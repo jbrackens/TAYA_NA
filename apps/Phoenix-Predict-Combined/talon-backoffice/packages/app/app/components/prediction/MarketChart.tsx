@@ -47,6 +47,52 @@ interface MarketChartProps {
 
 const RANGES: TimeRange[] = ["1H", "6H", "1D", "1W", "ALL"];
 
+const CHART_CARD_CLASS =
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-6 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+const CHART_HEAD_CLASS =
+  "mb-[18px] flex flex-wrap items-end justify-between gap-4";
+const CHART_PRICE_ROW_CLASS = "flex items-baseline gap-[14px]";
+const CHART_PRICE_CLASS =
+  "font-['Inter_Tight',_'Inter',_sans-serif] text-[56px] font-semibold leading-none tracking-[-0.04em] text-[var(--t1)] [font-variant-numeric:tabular-nums] max-[720px]:text-[40px]";
+const CHART_SWITCHER_CLASS =
+  "inline-flex gap-1 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-[3px]";
+const CHART_BUTTON_BASE_CLASS =
+  "min-w-11 cursor-pointer rounded-md border-0 px-[14px] py-1.5 font-['Inter',_sans-serif] text-xs font-semibold transition-colors duration-[120ms]";
+const CHART_SVG_CLASS =
+  "block h-[320px] w-full rounded-[var(--r-rh-sm)]";
+const CHART_FOOT_CLASS =
+  "mt-6 grid grid-cols-4 gap-6 border-t border-[var(--border-1)] pt-5 max-[720px]:grid-cols-2";
+const CHART_STAT_LABEL_CLASS =
+  "mb-1.5 text-xs font-medium text-[var(--t3)]";
+const CHART_STAT_VALUE_CLASS =
+  "font-['IBM_Plex_Mono',_monospace] text-lg font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
+
+function chartDeltaClass(down: boolean): string {
+  return `rounded-[var(--r-pill)] px-2.5 py-1 font-['IBM_Plex_Mono',_monospace] text-[13px] font-semibold [font-variant-numeric:tabular-nums] ${
+    down
+      ? "bg-[var(--no-soft)] text-[var(--no-text)]"
+      : "bg-[var(--yes-soft)] text-[var(--yes-text)]"
+  }`;
+}
+
+function rangeButtonClass(active: boolean): string {
+  return `${CHART_BUTTON_BASE_CLASS} ${
+    active
+      ? "bg-[var(--yes)] text-[#061a10]"
+      : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)]"
+  }`;
+}
+
+function chartStatValueClass(side?: "yes" | "no"): string {
+  const color =
+    side === "yes"
+      ? "text-[var(--yes-text)]"
+      : side === "no"
+        ? "text-[var(--no-text)]"
+        : "text-[var(--t1)]";
+  return `${CHART_STAT_VALUE_CLASS} ${color}`;
+}
+
 function seededRandom(seed: number): () => number {
   let s = seed | 0;
   return () => {
@@ -192,228 +238,128 @@ export default function MarketChart({
   const oi = typeof openInterestShares === "number" ? openInterestShares : 0;
 
   return (
-    <>
-      <style>{`
-        .mc-card {
-          background: var(--surface-1);
-          border: 1px solid var(--border-1);
-          padding: 24px 28px;
-          border-radius: var(--r-rh-lg);
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        .mc-head {
-          display: flex;
-          align-items: flex-end;
-          justify-content: space-between;
-          margin-bottom: 18px;
-          gap: 16px;
-          flex-wrap: wrap;
-        }
-        .mc-price-row { display: flex; align-items: baseline; gap: 14px; }
-        .mc-price {
-          font-family: 'Inter Tight', 'Inter', sans-serif;
-          font-size: 56px;
-          font-weight: 600;
-          color: var(--t1);
-          line-height: 1;
-          letter-spacing: -0.04em;
-          font-variant-numeric: tabular-nums;
-        }
-        .mc-delta {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 13px;
-          font-weight: 600;
-          color: var(--yes-text);
-          padding: 4px 10px;
-          border-radius: var(--r-pill);
-          background: var(--yes-soft);
-          font-variant-numeric: tabular-nums;
-        }
-        .mc-delta.down {
-          color: var(--no-text);
-          background: var(--no-soft);
-        }
-        .mc-switcher {
-          display: inline-flex;
-          gap: 4px;
-          padding: 3px;
-          background: var(--surface-2);
-          border: 1px solid var(--border-1);
-          border-radius: 6px;
-        }
-        .mc-switcher button {
-          background: transparent;
-          border: none;
-          color: var(--t3);
-          padding: 6px 14px;
-          min-width: 44px;
-          border-radius: 6px;
-          font-family: 'Inter', sans-serif;
-          font-size: 12px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: color 120ms ease, background 120ms ease;
-        }
-        .mc-switcher button:hover { color: var(--t1); }
-        .mc-switcher button.is-active {
-          color: #061a10;
-          background: var(--yes);
-        }
-        .mc-svg {
-          width: 100%;
-          height: 320px;
-          display: block;
-          border-radius: var(--r-rh-sm);
-        }
-        .mc-foot {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 24px;
-          margin-top: 24px;
-          padding-top: 20px;
-          border-top: 1px solid var(--border-1);
-        }
-        .mc-stat .l {
-          font-size: 12px;
-          color: var(--t3);
-          margin-bottom: 6px;
-          font-weight: 500;
-        }
-        .mc-stat .v {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 18px;
-          font-weight: 600;
-          color: var(--t1);
-          font-variant-numeric: tabular-nums;
-        }
-        .mc-stat .v.yes { color: var(--yes-text); }
-        .mc-stat .v.no { color: var(--no-text); }
-        @media (max-width: 720px) {
-          .mc-price { font-size: 40px; }
-          .mc-foot { grid-template-columns: repeat(2, 1fr); }
-        }
-      `}</style>
-      <section className="mc-card">
-        <div className="mc-head">
-          <div className="mc-price-row">
-            <div className="mc-price">{activePriceCents}¢</div>
-            {typeof previousPriceCents === "number" && (
-              <div className={`mc-delta ${deltaCents < 0 ? "down" : ""}`}>
-                {deltaStr}
-              </div>
-            )}
-          </div>
-          <div className="mc-switcher" role="tablist" aria-label={t("TIME_RANGE")}>
-            {RANGES.map((r) => (
-              <button
-                key={r}
-                role="tab"
-                aria-selected={r === range}
-                className={r === range ? "is-active" : ""}
-                onClick={() => setRange(r)}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <svg
-          className="mc-svg"
-          viewBox={`0 0 ${width} ${height}`}
-          preserveAspectRatio="none"
-          aria-label={t(side === "no" ? "NO_PRICE_CHART" : "YES_PRICE_CHART", {
-            ticker,
-          })}
-        >
-          <defs>
-            <linearGradient
-              id={`mc-fill-${ticker}`}
-              x1="0"
-              y1="0"
-              x2="0"
-              y2="1"
-            >
-              <stop offset="0%" stopColor={lineColor} stopOpacity="0.32" />
-              <stop offset="100%" stopColor={lineColor} stopOpacity="0" />
-            </linearGradient>
-          </defs>
-
-          <g stroke="rgba(26,26,26,0.07)" strokeWidth="1">
-            <line x1="0" x2={width} y1={height * 0.2} y2={height * 0.2} />
-            <line x1="0" x2={width} y1={height * 0.4} y2={height * 0.4} />
-            <line x1="0" x2={width} y1={height * 0.6} y2={height * 0.6} />
-            <line x1="0" x2={width} y1={height * 0.8} y2={height * 0.8} />
-          </g>
-          <g
-            fontFamily="IBM Plex Mono"
-            fontSize="10"
-            fill="rgba(255,255,255,0.28)"
-          >
-            <text x="8" y="20">
-              100¢
-            </text>
-            <text x="8" y={height * 0.2 + 4}>
-              75¢
-            </text>
-            <text x="8" y={height * 0.4 + 4}>
-              50¢
-            </text>
-            <text x="8" y={height * 0.6 + 4}>
-              25¢
-            </text>
-            <text x="8" y={height - 8}>
-              0¢
-            </text>
-          </g>
-
-          <path d={area} fill={`url(#mc-fill-${ticker})`} />
-          <path
-            d={line}
-            stroke={lineColor}
-            strokeWidth="2.5"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-
-          <line
-            x1="0"
-            x2={width}
-            y1={markerY}
-            y2={markerY}
-            stroke={lineColor}
-            strokeOpacity="0.3"
-            strokeWidth="1"
-            strokeDasharray="4 6"
-          />
-          <g transform={`translate(${width},${markerY})`}>
-            <circle r="5" fill={lineColor} />
-            <circle r="3" fill="#ffffff" />
-          </g>
-        </svg>
-
-        <div className="mc-foot">
-          <div className="mc-stat">
-            <div className="l">{t("IMPLIED_PROBABILITY")}</div>
-            <div className={`v ${side}`}>{prob.toFixed(1)}%</div>
-          </div>
-          <div className="mc-stat">
-            <div className="l">{t("24H_RANGE")}</div>
-            <div className="v">
-              {rangeLow}¢ – {rangeHigh}¢
+    <section className={CHART_CARD_CLASS}>
+      <div className={CHART_HEAD_CLASS}>
+        <div className={CHART_PRICE_ROW_CLASS}>
+          <div className={CHART_PRICE_CLASS}>{activePriceCents}¢</div>
+          {typeof previousPriceCents === "number" && (
+            <div className={chartDeltaClass(deltaCents < 0)}>
+              {deltaStr}
             </div>
-          </div>
-          <div className="mc-stat">
-            <div className="l">{t("24H_VOLUME")}</div>
-            <div className="v">${(vol24h / 100).toFixed(2)}</div>
-          </div>
-          <div className="mc-stat">
-            <div className="l">{t("OPEN_INTEREST")}</div>
-            <div className="v">{t("SHARES_COUNT", { quantity: oi.toLocaleString() })}</div>
+          )}
+        </div>
+        <div className={CHART_SWITCHER_CLASS} role="tablist" aria-label={t("TIME_RANGE")}>
+          {RANGES.map((r) => (
+            <button
+              key={r}
+              role="tab"
+              aria-selected={r === range}
+              className={rangeButtonClass(r === range)}
+              onClick={() => setRange(r)}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <svg
+        className={CHART_SVG_CLASS}
+        viewBox={`0 0 ${width} ${height}`}
+        preserveAspectRatio="none"
+        aria-label={t(side === "no" ? "NO_PRICE_CHART" : "YES_PRICE_CHART", {
+          ticker,
+        })}
+      >
+        <defs>
+          <linearGradient
+            id={`mc-fill-${ticker}`}
+            x1="0"
+            y1="0"
+            x2="0"
+            y2="1"
+          >
+            <stop offset="0%" stopColor={lineColor} stopOpacity="0.32" />
+            <stop offset="100%" stopColor={lineColor} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        <g stroke="rgba(26,26,26,0.07)" strokeWidth="1">
+          <line x1="0" x2={width} y1={height * 0.2} y2={height * 0.2} />
+          <line x1="0" x2={width} y1={height * 0.4} y2={height * 0.4} />
+          <line x1="0" x2={width} y1={height * 0.6} y2={height * 0.6} />
+          <line x1="0" x2={width} y1={height * 0.8} y2={height * 0.8} />
+        </g>
+        <g
+          fontFamily="IBM Plex Mono"
+          fontSize="10"
+          fill="rgba(255,255,255,0.28)"
+        >
+          <text x="8" y="20">
+            100¢
+          </text>
+          <text x="8" y={height * 0.2 + 4}>
+            75¢
+          </text>
+          <text x="8" y={height * 0.4 + 4}>
+            50¢
+          </text>
+          <text x="8" y={height * 0.6 + 4}>
+            25¢
+          </text>
+          <text x="8" y={height - 8}>
+            0¢
+          </text>
+        </g>
+
+        <path d={area} fill={`url(#mc-fill-${ticker})`} />
+        <path
+          d={line}
+          stroke={lineColor}
+          strokeWidth="2.5"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        <line
+          x1="0"
+          x2={width}
+          y1={markerY}
+          y2={markerY}
+          stroke={lineColor}
+          strokeOpacity="0.3"
+          strokeWidth="1"
+          strokeDasharray="4 6"
+        />
+        <g transform={`translate(${width},${markerY})`}>
+          <circle r="5" fill={lineColor} />
+          <circle r="3" fill="#ffffff" />
+        </g>
+      </svg>
+
+      <div className={CHART_FOOT_CLASS}>
+        <div>
+          <div className={CHART_STAT_LABEL_CLASS}>{t("IMPLIED_PROBABILITY")}</div>
+          <div className={chartStatValueClass(side)}>{prob.toFixed(1)}%</div>
+        </div>
+        <div>
+          <div className={CHART_STAT_LABEL_CLASS}>{t("24H_RANGE")}</div>
+          <div className={chartStatValueClass()}>
+            {rangeLow}¢ – {rangeHigh}¢
           </div>
         </div>
-      </section>
-    </>
+        <div>
+          <div className={CHART_STAT_LABEL_CLASS}>{t("24H_VOLUME")}</div>
+          <div className={chartStatValueClass()}>${(vol24h / 100).toFixed(2)}</div>
+        </div>
+        <div>
+          <div className={CHART_STAT_LABEL_CLASS}>{t("OPEN_INTEREST")}</div>
+          <div className={chartStatValueClass()}>
+            {t("SHARES_COUNT", { quantity: oi.toLocaleString() })}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 
 interface QuickStakeProps {
   onStakeSelect: (amount: number) => void;
@@ -9,38 +9,13 @@ interface QuickStakeProps {
 const STAKE_OPTIONS = [5, 10, 25, 50, 100];
 
 export const QuickStake: React.FC<QuickStakeProps> = ({ onStakeSelect }) => {
-  const [hoveredButton, setHoveredButton] = React.useState<number | null>(null);
-
   return (
-    <div
-      style={{
-        display: 'flex',
-        gap: '8px',
-      }}
-    >
+    <div className="flex gap-2">
       {STAKE_OPTIONS.map((amount) => (
         <button
           key={amount}
           onClick={() => onStakeSelect(amount)}
-          onMouseEnter={() => setHoveredButton(amount)}
-          onMouseLeave={() => setHoveredButton(null)}
-          style={{
-            flex: 1,
-            padding: '10px',
-            backgroundColor:
-              hoveredButton === amount ? '#4a7eff' : '#0f3460',
-            border:
-              hoveredButton === amount
-                ? '1px solid #4a7eff'
-                : '1px solid #0f3460',
-            color: hoveredButton === amount ? '#000' : '#ffffff',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontWeight: 600,
-            transition: 'all 0.2s',
-            outline: 'none',
-          }}
+          className="flex-1 cursor-pointer rounded border border-[#0f3460] bg-[#0f3460] p-2.5 text-xs font-semibold text-white outline-none transition-all duration-200 hover:border-[#4a7eff] hover:bg-[#4a7eff] hover:text-black"
         >
           ${amount}
         </button>

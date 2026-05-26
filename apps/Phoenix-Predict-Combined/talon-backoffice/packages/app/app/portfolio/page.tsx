@@ -42,6 +42,25 @@ const api = createPredictionClient();
 
 type TabKey = "positions" | "orders" | "history";
 
+const cx = (...classes: Array<string | false | null | undefined>) =>
+  classes.filter(Boolean).join(" ");
+
+const MONO =
+  "[font-family:'IBM_Plex_Mono',monospace] [font-variant-numeric:tabular-nums]";
+const STAT_CARD =
+  "relative flex flex-col gap-1 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[18px] py-4 text-[var(--t1)] no-underline [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
+const STAT_LABEL = "text-xs font-medium text-[var(--t3)]";
+const STAT_VALUE = cx(
+  MONO,
+  "text-[22px] font-semibold tracking-normal text-[var(--t1)]",
+);
+const STAT_SUB = "text-[11px] text-[var(--t3)]";
+const TABLE_GRID_ROW = "grid items-center gap-[14px] px-[18px]";
+const TABLE_CELL = cx(MONO, "min-w-0 text-[13px] text-[var(--t1)]");
+const DIM_TEXT = "text-[var(--t3)]";
+const LOGIN_CTA =
+  "inline-block rounded-[var(--r-md)] border border-[rgba(43,228,128,0.6)] bg-[linear-gradient(180deg,rgba(255,255,255,0.25)_0%,rgba(255,255,255,0)_50%),linear-gradient(115deg,#2be480_0%,#00ffaa_100%)] px-[22px] py-3 text-[13px] font-bold text-[#04140a] no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_10px_24px_rgba(43,228,128,0.18)] hover:brightness-105";
+
 export default function PortfolioPage() {
   const { t } = useTranslation("portfolio");
   const [positions, setPositions] = useState<Position[]>([]);
@@ -169,26 +188,25 @@ export default function PortfolioPage() {
   if (authError && !summary && positions.length === 0 && orders.length === 0) {
     return (
       <PageState>
-        <div style={{ textAlign: "center" }}>
-          <p style={{ marginBottom: 12, color: "var(--t2)" }}>
+        <div className="text-center">
+          <p className="mb-3 text-[var(--t2)]">
             {t("state.signIn", "Sign in to see your portfolio.")}
           </p>
-          <Link href="/auth/login" className="pf-login-cta">
+          <Link href="/auth/login" className={LOGIN_CTA}>
             {t("state.login", "Log in")}
           </Link>
         </div>
-        <Styles />
       </PageState>
     );
   }
 
   return (
-    <div className="pf-wrap">
-      <Styles />
-
-      <header className="pf-head">
-        <h1 className="pf-title">{t("title", "Portfolio")}</h1>
-        <p className="pf-sub">
+    <div className="mx-auto max-w-[1280px] pb-[60px]">
+      <header className="mb-5">
+        <h1 className="m-0 mb-1 text-[28px] font-extrabold tracking-normal text-[var(--t1)]">
+          {t("title", "Portfolio")}
+        </h1>
+        <p className="m-0 text-[13px] text-[var(--t3)]">
           {t("subtitle", "Open positions, active orders, settled payouts.")}
         </p>
       </header>
@@ -230,16 +248,7 @@ export default function PortfolioPage() {
 
 function PageState({ children }: { children: React.ReactNode }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "60vh",
-        fontSize: 13,
-        color: "var(--t3)",
-      }}
-    >
+    <div className="flex min-h-[60vh] items-center justify-center text-[13px] text-[var(--t3)]">
       {children}
     </div>
   );
@@ -259,7 +268,7 @@ function SummaryStrip({
   const pnl = s?.realizedPnlCents ?? 0;
   const pnlUp = pnl >= 0;
   return (
-    <section className="pf-summary pf-summary-5">
+    <section className="mb-6 grid grid-cols-5 gap-[14px] max-lg:grid-cols-3 max-[720px]:grid-cols-2">
       <StatCard
         label={t("summary.invested", "Invested")}
         value={s ? formatUSD(s.totalValueCents) : "—"}
@@ -305,17 +314,22 @@ function RankChip({ entry }: { entry: LeaderboardEntry | null }) {
   return (
     <Link
       href={href}
-      className="pf-rank-chip"
+      className={cx(
+        STAT_CARD,
+        "border-[rgba(43,228,128,0.3)] bg-[var(--accent-soft)] transition-[transform,border-color] duration-150 hover:-translate-y-px hover:border-[rgba(43,228,128,0.55)] focus-visible:border-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-soft)]",
+      )}
       aria-label={rankAriaLabel(entry)}
     >
-      <span className="pf-stat-label">
+      <span className={STAT_LABEL}>
         {entry ? formatBoardLabel(entry.boardId, t) : t("rank.label", "Rank")}
       </span>
-      <span className="pf-stat-value mono">
+      <span className={STAT_VALUE}>
         {entry ? `#${entry.rank}` : t("rank.notRanked", "Not ranked yet")}
       </span>
-      <span className="pf-stat-sub">
-        {entry ? formatBoardMetric(entry, t) : t("rank.qualify", "Settle more markets to qualify")}
+      <span className={STAT_SUB}>
+        {entry
+          ? formatBoardMetric(entry, t)
+          : t("rank.qualify", "Settle more markets to qualify")}
       </span>
     </Link>
   );
@@ -380,11 +394,19 @@ function StatCard({
   sub?: string;
   tone?: "yes" | "no" | "gain";
 }) {
+  const valueTone =
+    tone === "yes"
+      ? "text-[var(--yes-text)]"
+      : tone === "no"
+        ? "text-[var(--no-text)]"
+        : tone === "gain"
+          ? "text-[var(--accent)]"
+          : undefined;
   return (
-    <div className={`pf-stat ${tone ? `pf-stat-${tone}` : ""}`}>
-      <span className="pf-stat-label">{label}</span>
-      <span className="pf-stat-value mono">{value}</span>
-      {sub && <span className="pf-stat-sub">{sub}</span>}
+    <div className={STAT_CARD}>
+      <span className={STAT_LABEL}>{label}</span>
+      <span className={cx(STAT_VALUE, valueTone)}>{value}</span>
+      {sub && <span className={STAT_SUB}>{sub}</span>}
     </div>
   );
 }
@@ -402,22 +424,51 @@ function TabBar({
 }) {
   const { t } = useTranslation("portfolio");
   const tabs: { key: TabKey; label: string; count: number }[] = [
-    { key: "positions", label: t("tabs.positions", "Positions"), count: counts.positions },
-    { key: "orders", label: t("tabs.orders", "Open orders"), count: counts.orders },
-    { key: "history", label: t("tabs.history", "History"), count: counts.history },
+    {
+      key: "positions",
+      label: t("tabs.positions", "Positions"),
+      count: counts.positions,
+    },
+    {
+      key: "orders",
+      label: t("tabs.orders", "Open orders"),
+      count: counts.orders,
+    },
+    {
+      key: "history",
+      label: t("tabs.history", "History"),
+      count: counts.history,
+    },
   ];
   return (
-    <nav className="pf-tabs" role="tablist" aria-label="Portfolio tabs">
+    <nav
+      className="mb-[18px] inline-flex gap-1 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-white/[0.04] p-[3px]"
+      role="tablist"
+      aria-label="Portfolio tabs"
+    >
       {tabs.map((t) => (
         <button
           key={t.key}
           role="tab"
           aria-selected={tab === t.key}
-          className={`pf-tab ${tab === t.key ? "active" : ""}`}
+          className={cx(
+            "inline-flex cursor-pointer items-center gap-2 rounded-[var(--r-pill)] border-0 bg-transparent px-4 py-2 text-xs font-semibold text-[var(--t3)] transition-colors duration-150 hover:text-[var(--t1)]",
+            tab === t.key && "bg-[var(--accent)] text-[#061a10]",
+          )}
           onClick={() => setTab(t.key)}
         >
           <span>{t.label}</span>
-          {t.count > 0 && <span className="pf-tab-count mono">{t.count}</span>}
+          {t.count > 0 && (
+            <span
+              className={cx(
+                MONO,
+                "rounded-[var(--r-pill)] bg-black/20 px-[7px] py-px text-[10px] text-[var(--t2)]",
+                tab === t.key && "text-[#061a10]",
+              )}
+            >
+              {t.count}
+            </span>
+          )}
         </button>
       ))}
     </nav>
@@ -439,7 +490,10 @@ function PositionsTable({
       <EmptyState
         line={t("positions.empty", "No open positions.")}
         action={
-          <Link href="/predict" className="pf-inline-link">
+          <Link
+            href="/predict"
+            className="font-semibold text-[var(--accent)] no-underline hover:underline"
+          >
             {t("positions.browse", "Browse markets")} →
           </Link>
         }
@@ -448,13 +502,14 @@ function PositionsTable({
   }
   return (
     <DataTable
+      gridClass="grid-cols-[minmax(200px,2fr)_60px_60px_80px_90px_90px]"
       columns={[
-        { label: t("table.market", "Market"), width: "minmax(200px, 2fr)" },
-        { label: t("table.side", "Side"), width: "60px", align: "center" },
-        { label: t("table.qty", "Qty"), width: "60px", align: "right" },
-        { label: t("table.available", "Available"), width: "80px", align: "right" },
-        { label: t("table.avgPrice", "Avg price"), width: "90px", align: "right" },
-        { label: t("table.cost", "Cost"), width: "90px", align: "right" },
+        { label: t("table.market", "Market") },
+        { label: t("table.side", "Side"), align: "center" },
+        { label: t("table.qty", "Qty"), align: "right" },
+        { label: t("table.available", "Available"), align: "right" },
+        { label: t("table.avgPrice", "Avg price"), align: "right" },
+        { label: t("table.cost", "Cost"), align: "right" },
       ]}
       rows={positions.map((p) => {
         const m = marketsById.get(p.marketId);
@@ -471,27 +526,24 @@ function PositionsTable({
           cells: [
             <MarketCell key="m" market={m} fallback={p.marketId} />,
             <SideChip key="s" side={p.side} />,
-            <span key="q" className="mono">
+            <span key="q" className={MONO}>
               {p.quantity}
             </span>,
             <span
               key="av"
-              className="mono"
+              className={cx(MONO, reserved > 0 && "text-[var(--accent)]")}
               title={
                 reserved > 0
                   ? `${reserved} share${reserved === 1 ? "" : "s"} locked by resting sell orders`
                   : undefined
               }
-              style={
-                reserved > 0 ? { color: "var(--accent, var(--t1))" } : undefined
-              }
             >
               {available}
             </span>,
-            <span key="p" className="mono">
+            <span key="p" className={MONO}>
               {p.avgPriceCents}¢
             </span>,
-            <span key="c" className="mono">
+            <span key="c" className={MONO}>
               {formatUSD(p.totalCostCents)}
             </span>,
           ],
@@ -532,7 +584,10 @@ function OrdersTable({
         }),
       );
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : t("orders.cancelFailed", "Cancel failed");
+      const message =
+        err instanceof Error
+          ? err.message
+          : t("orders.cancelFailed", "Cancel failed");
       logger.warn("Portfolio", "cancel order failed", message);
       toast.error(t("orders.cancelFailed", "Cancel failed"), message);
     } finally {
@@ -542,14 +597,15 @@ function OrdersTable({
 
   return (
     <DataTable
+      gridClass="grid-cols-[minmax(180px,2fr)_60px_60px_90px_100px_100px_90px]"
       columns={[
-        { label: t("table.market", "Market"), width: "minmax(180px, 2fr)" },
-        { label: t("table.side", "Side"), width: "60px", align: "center" },
-        { label: t("table.qty", "Qty"), width: "60px", align: "right" },
-        { label: t("table.cost", "Cost"), width: "90px", align: "right" },
-        { label: t("table.status", "Status"), width: "100px", align: "center" },
-        { label: t("table.placed", "Placed"), width: "100px", align: "right" },
-        { label: "", width: "90px", align: "right" },
+        { label: t("table.market", "Market") },
+        { label: t("table.side", "Side"), align: "center" },
+        { label: t("table.qty", "Qty"), align: "right" },
+        { label: t("table.cost", "Cost"), align: "right" },
+        { label: t("table.status", "Status"), align: "center" },
+        { label: t("table.placed", "Placed"), align: "right" },
+        { label: "", align: "right" },
       ]}
       rows={orders.map((o) => {
         const m = marketsById.get(o.marketId);
@@ -561,10 +617,10 @@ function OrdersTable({
           cells: [
             <MarketCell key="m" market={m} fallback={o.marketId} />,
             <SideChip key="s" side={o.side} />,
-            <span key="q" className="mono">
+            <span key="q" className={MONO}>
               {o.quantity}
             </span>,
-            <span key="c" className="mono">
+            <span key="c" className={MONO}>
               {formatUSD(o.totalCostCents)}
             </span>,
             <StatusChip
@@ -572,7 +628,7 @@ function OrdersTable({
               status={o.status}
               failureReason={o.failureReason}
             />,
-            <span key="d" className="mono pf-dim">
+            <span key="d" className={cx(MONO, DIM_TEXT)}>
               {formatDate(o.createdAt)}
             </span>,
             // Per-row Cancel. e.stopPropagation + preventDefault keep the
@@ -583,7 +639,7 @@ function OrdersTable({
             <button
               key="cx"
               type="button"
-              className="pf-cancel-btn"
+              className="cursor-pointer rounded-[var(--r-sm)] border border-[var(--border-1)] bg-transparent px-[10px] py-1 text-[11px] font-semibold tracking-normal text-[var(--t2)] transition-colors duration-150 hover:border-[var(--no-text)] hover:bg-[var(--no-soft)] hover:text-[var(--no-text)] disabled:cursor-default disabled:opacity-50"
               disabled={isCancelling}
               onClick={(e) => {
                 e.stopPropagation();
@@ -624,15 +680,16 @@ function HistoryTable({
   }
   return (
     <DataTable
+      gridClass="grid-cols-[minmax(200px,2fr)_60px_60px_70px_70px_90px_70px_100px]"
       columns={[
-        { label: t("table.market", "Market"), width: "minmax(200px, 2fr)" },
-        { label: t("table.side", "Side"), width: "60px", align: "center" },
-        { label: t("table.qty", "Qty"), width: "60px", align: "right" },
-        { label: t("table.entry", "Entry"), width: "70px", align: "right" },
-        { label: t("table.exit", "Exit"), width: "70px", align: "right" },
-        { label: t("table.pnl", "P&L"), width: "90px", align: "right" },
-        { label: t("table.points", "Points"), width: "70px", align: "right" },
-        { label: t("table.settled", "Settled"), width: "100px", align: "right" },
+        { label: t("table.market", "Market") },
+        { label: t("table.side", "Side"), align: "center" },
+        { label: t("table.qty", "Qty"), align: "right" },
+        { label: t("table.entry", "Entry"), align: "right" },
+        { label: t("table.exit", "Exit"), align: "right" },
+        { label: t("table.pnl", "P&L"), align: "right" },
+        { label: t("table.points", "Points"), align: "right" },
+        { label: t("table.settled", "Settled"), align: "right" },
       ]}
       rows={history.map((h) => {
         const m = marketsById.get(h.marketId);
@@ -649,22 +706,31 @@ function HistoryTable({
           cells: [
             <MarketCell key="m" market={m} fallback={h.marketId} />,
             <SideChip key="s" side={h.side} />,
-            <span key="q" className="mono">
+            <span key="q" className={MONO}>
               {h.quantity}
             </span>,
-            <span key="e" className="mono">
+            <span key="e" className={MONO}>
               {h.entryPriceCents}¢
             </span>,
-            <span key="x" className="mono">
+            <span key="x" className={MONO}>
               {h.exitPriceCents}¢
             </span>,
-            <span key="p" className={`mono ${up ? "pf-gain" : "pf-loss"}`}>
+            <span
+              key="p"
+              className={cx(
+                MONO,
+                "font-bold",
+                up
+                  ? "text-[var(--accent)] [text-shadow:0_0_6px_var(--accent-glow-color)]"
+                  : "text-[var(--no-text)]",
+              )}
+            >
               {up ? "+" : "−"}
               {formatUSD(Math.abs(h.pnlCents))}
             </span>,
             <span
               key="pts"
-              className="mono pf-pts"
+              className={cx(MONO, "whitespace-nowrap text-xs text-[var(--t3)]")}
               aria-label={
                 pointsDisplay !== null
                   ? t("history.earnedPoints", "Earned {{points}} points", {
@@ -679,7 +745,7 @@ function HistoryTable({
                   })
                 : ""}
             </span>,
-            <span key="d" className="mono pf-dim">
+            <span key="d" className={cx(MONO, DIM_TEXT)}>
               {formatDate(h.paidAt)}
             </span>,
           ],
@@ -700,13 +766,22 @@ function MarketCell({
 }) {
   const { t } = useTranslation("market-content");
   if (!market) {
-    return <span className="pf-dim mono">{fallback.slice(0, 8)}…</span>;
+    return <span className={cx(MONO, DIM_TEXT)}>{fallback.slice(0, 8)}…</span>;
   }
   const displayMarket = localizedMarket(t, market);
   return (
-    <div className="pf-market">
-      <span className="pf-market-title">{displayMarket.title}</span>
-      <span className="pf-market-ticker mono">{displayMarket.ticker}</span>
+    <div className="flex min-w-0 flex-col gap-0.5">
+      <span className="truncate text-[13px] font-semibold text-[var(--t1)] [font-family:'Inter',sans-serif]">
+        {displayMarket.title}
+      </span>
+      <span
+        className={cx(
+          MONO,
+          "text-[10px] uppercase tracking-normal text-[var(--t3)]",
+        )}
+      >
+        {displayMarket.ticker}
+      </span>
     </div>
   );
 }
@@ -714,7 +789,14 @@ function MarketCell({
 function SideChip({ side }: { side: "yes" | "no" }) {
   const { t } = useTranslation("portfolio");
   return (
-    <span className={`pf-side pf-side-${side}`}>
+    <span
+      className={cx(
+        "inline-block rounded-[var(--r-sm)] px-2 py-[3px] text-[10px] font-bold tracking-normal",
+        side === "yes"
+          ? "bg-[var(--yes-soft)] text-[var(--yes-text)]"
+          : "bg-[var(--no-soft)] text-[var(--no-text)]",
+      )}
+    >
       {side === "yes" ? t("side.yes", "YES") : t("side.no", "NO")}
     </span>
   );
@@ -748,11 +830,22 @@ function StatusChip({
   const phrase = failureReason
     ? FAILURE_REASON_TEXT[failureReason] || failureReason
     : undefined;
+  const statusTone =
+    status === "filled"
+      ? "border-[var(--yes-border)] bg-[var(--yes-soft)] text-[var(--yes-text)]"
+      : status === "open" || status === "partial"
+        ? "border-[rgba(43,228,128,0.3)] bg-[rgba(43,228,128,0.14)] text-[var(--accent)]"
+        : status === "cancelled" || status === "expired"
+          ? "border-white/10 bg-white/[0.04] text-[var(--t3)]"
+          : "border-white/10 bg-white/[0.06] text-[var(--t2)]";
   return (
     <span
-      className={`pf-status pf-status-${status}`}
+      className={cx(
+        "inline-block rounded-[var(--r-pill)] border px-[10px] py-[3px] text-[10px] font-semibold capitalize tracking-normal",
+        statusTone,
+        phrase && "cursor-help",
+      )}
       title={phrase}
-      style={phrase ? { cursor: "help" } : undefined}
     >
       {status}
     </span>
@@ -761,7 +854,6 @@ function StatusChip({
 
 interface Column {
   label: string;
-  width: string;
   align?: "left" | "right" | "center";
 }
 
@@ -771,46 +863,79 @@ interface Row {
   cells: React.ReactNode[];
 }
 
-function DataTable({ columns, rows }: { columns: Column[]; rows: Row[] }) {
-  const template = columns.map((c) => c.width).join(" ");
+function alignClass(align?: Column["align"]) {
+  if (align === "right") return "text-right";
+  if (align === "center") return "text-center";
+  return "text-left";
+}
+
+function DataTable({
+  columns,
+  rows,
+  gridClass,
+}: {
+  columns: Column[];
+  rows: Row[];
+  gridClass: string;
+}) {
   return (
     <div
-      className="pf-table"
+      className="relative overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]"
       role="table"
-      style={{ ["--pf-cols" as string]: template }}
     >
-      <div className="pf-thead" role="row">
+      <div
+        className={cx(
+          TABLE_GRID_ROW,
+          gridClass,
+          "border-b border-[var(--border-1)] bg-white/[0.02] py-3",
+        )}
+        role="row"
+      >
         {columns.map((c) => (
           <span
             key={c.label}
             role="columnheader"
-            style={{ textAlign: c.align ?? "left" }}
-            className="pf-th"
+            className={cx(
+              "text-[11px] font-medium uppercase tracking-normal text-[var(--t3)]",
+              alignClass(c.align),
+            )}
           >
             {c.label}
           </span>
         ))}
       </div>
-      <ul className="pf-tbody">
+      <ul className="m-0 list-none p-0">
         {rows.map((r) => {
           const body = columns.map((c, i) => (
             <span
               key={i}
               role="cell"
-              className="pf-td"
-              style={{ textAlign: c.align ?? "left" }}
+              className={cx(TABLE_CELL, alignClass(c.align))}
             >
               {r.cells[i]}
             </span>
           ));
           return (
-            <li key={r.key} role="row" className="pf-tr">
+            <li
+              key={r.key}
+              role="row"
+              className="border-t border-[var(--border-1)] first:border-t-0"
+            >
               {r.href ? (
-                <Link href={r.href} className="pf-tr-link">
+                <Link
+                  href={r.href}
+                  className={cx(
+                    TABLE_GRID_ROW,
+                    gridClass,
+                    "py-[14px] text-inherit no-underline transition-colors duration-150 hover:bg-[var(--surface-2)]",
+                  )}
+                >
                   {body}
                 </Link>
               ) : (
-                <div className="pf-tr-static">{body}</div>
+                <div className={cx(TABLE_GRID_ROW, gridClass, "py-[14px]")}>
+                  {body}
+                </div>
               )}
             </li>
           );
@@ -828,7 +953,7 @@ function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="pf-empty">
+    <div className="flex flex-col items-center gap-[10px] rounded-[var(--r-md)] border border-dashed border-white/10 bg-black/20 px-5 py-10 text-center text-[13px] text-[var(--t3)]">
       <span>{line}</span>
       {action}
     </div>
@@ -860,331 +985,4 @@ function formatDate(iso: string): string {
     month: "short",
     day: "numeric",
   });
-}
-
-// ── Styles ─────────────────────────────────────────────────────────────────
-
-function Styles() {
-  return (
-    <style>{`
-      .pf-wrap {
-        max-width: 1280px;
-        margin: 0 auto;
-        padding: 0 0 60px;
-      }
-
-      .pf-head { margin-bottom: 20px; }
-      .pf-title {
-        font-size: 28px;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        color: var(--t1);
-        margin: 0 0 4px;
-      }
-      .pf-sub {
-        font-size: 13px;
-        color: var(--t3);
-        margin: 0;
-      }
-
-      .pf-login-cta {
-        display: inline-block;
-        padding: 12px 22px;
-        color: #04140a;
-        border-radius: var(--r-md);
-        font-weight: 700;
-        font-size: 13px;
-        text-decoration: none;
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 50%),
-          linear-gradient(115deg, #2be480 0%, #00ffaa 100%);
-        border: 1px solid rgba(43, 228, 128, 0.6);
-        box-shadow:
-          inset 0 1px 0 rgba(255,255,255,0.5),
-          0 10px 24px rgba(43, 228, 128, 0.18);
-      }
-      .pf-login-cta:hover { filter: brightness(1.05); }
-
-      /* Summary strip */
-      .pf-summary {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 14px;
-        margin-bottom: 24px;
-      }
-      .pf-summary-5 { grid-template-columns: repeat(5, 1fr); }
-      @media (max-width: 1024px) {
-        .pf-summary-5 { grid-template-columns: repeat(3, 1fr); }
-      }
-      @media (max-width: 720px) {
-        .pf-summary,
-        .pf-summary-5 { grid-template-columns: repeat(2, 1fr); }
-      }
-
-      /* Stat card — soft warm-dark surface (Robinhood, P6). Same geometry
-       * on all 5 cards, including the RankChip to keep the strip optically
-       * even. */
-      .pf-stat, .pf-rank-chip {
-        position: relative;
-        padding: 16px 18px;
-        border-radius: var(--r-rh-lg);
-        color: var(--t1);
-        background: var(--surface-1);
-        border: 1px solid var(--border-1);
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        text-decoration: none;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      }
-      .pf-rank-chip {
-        background: var(--accent-soft);
-        border-color: rgba(43, 228, 128, 0.3);
-      }
-      .pf-rank-chip:hover {
-        border-color: rgba(43, 228, 128, 0.55);
-        transform: translateY(-1px);
-        transition: transform 120ms ease, border-color 120ms ease;
-      }
-      .pf-rank-chip:focus-visible {
-        outline: none;
-        border-color: var(--accent);
-        box-shadow: 0 0 0 2px var(--accent-soft);
-      }
-
-      .pf-pts {
-        color: var(--t3);
-        font-size: 12px;
-        white-space: nowrap;
-      }
-      .pf-stat-label {
-        font-size: 12px;
-        font-weight: 500;
-        color: var(--t3);
-      }
-      .pf-stat-value {
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 22px;
-        font-weight: 600;
-        color: var(--t1);
-        letter-spacing: -0.01em;
-        font-variant-numeric: tabular-nums;
-      }
-      .pf-stat-yes .pf-stat-value { color: var(--yes-text); }
-      .pf-stat-no .pf-stat-value { color: var(--no-text); }
-      .pf-stat-gain .pf-stat-value { color: var(--accent); }
-      .pf-stat-sub { font-size: 11px; color: var(--t3); }
-
-      /* Tab bar — segmented pill control */
-      .pf-tabs {
-        display: inline-flex;
-        gap: 4px;
-        padding: 3px;
-        margin-bottom: 18px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid var(--border-1);
-        border-radius: var(--r-pill);
-      }
-      .pf-tab {
-        background: transparent;
-        border: 0;
-        padding: 8px 16px;
-        border-radius: var(--r-pill);
-        font-family: inherit;
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--t3);
-        cursor: pointer;
-        transition: color 120ms ease, background 120ms ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .pf-tab:hover { color: var(--t1); }
-      .pf-tab.active {
-        color: #061a10;
-        background: var(--accent);
-      }
-      .pf-tab-count {
-        font-size: 10px;
-        padding: 1px 7px;
-        border-radius: var(--r-pill);
-        background: rgba(0, 0, 0, 0.18);
-        color: var(--t2);
-        font-variant-numeric: tabular-nums;
-      }
-      .pf-tab.active .pf-tab-count {
-        background: rgba(0, 0, 0, 0.18);
-        color: #061a10;
-      }
-
-      /* Table container — soft warm-dark card */
-      .pf-table {
-        position: relative;
-        border-radius: var(--r-rh-lg);
-        overflow: hidden;
-        background: var(--surface-1);
-        border: 1px solid var(--border-1);
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      }
-      .pf-thead, .pf-tr-link, .pf-tr-static {
-        display: grid;
-        grid-template-columns: var(--pf-cols);
-        gap: 14px;
-        padding: 12px 18px;
-        align-items: center;
-      }
-      .pf-thead {
-        background: rgba(255, 255, 255, 0.02);
-        border-bottom: 1px solid var(--border-1);
-      }
-      .pf-th {
-        font-size: 11px;
-        font-weight: 500;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--t3);
-      }
-      .pf-tbody {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-      }
-      .pf-tr {
-        border-top: 1px solid var(--border-1);
-      }
-      .pf-tr:first-child { border-top: 0; }
-      .pf-tr-link, .pf-tr-static {
-        padding: 14px 18px;
-        color: inherit;
-        text-decoration: none;
-        transition: background 120ms ease;
-      }
-      .pf-tr-link:hover { background: var(--surface-2); }
-      .pf-td {
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 13px;
-        color: var(--t1);
-        min-width: 0;
-        font-variant-numeric: tabular-nums;
-      }
-
-      .pf-market {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        min-width: 0;
-      }
-      .pf-market-title {
-        font-family: 'Inter', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--t1);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .pf-market-ticker {
-        font-size: 10px;
-        color: var(--t3);
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-
-      .pf-side {
-        display: inline-block;
-        padding: 3px 8px;
-        border-radius: var(--r-sm);
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-      }
-      .pf-side-yes {
-        background: var(--yes-soft);
-        color: var(--yes-text);
-      }
-      .pf-side-no {
-        background: var(--no-soft);
-        color: var(--no-text);
-      }
-
-      .pf-status {
-        display: inline-block;
-        padding: 3px 10px;
-        border-radius: var(--r-pill);
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 0.06em;
-        text-transform: capitalize;
-        background: rgba(255, 255, 255, 0.06);
-        color: var(--t2);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-      .pf-status-filled {
-        background: var(--yes-soft);
-        color: var(--yes-text);
-        border-color: var(--yes-border);
-      }
-      .pf-status-open, .pf-status-partial {
-        background: rgba(43, 228, 128, 0.14);
-        color: var(--accent);
-        border-color: rgba(43, 228, 128, 0.3);
-      }
-      .pf-status-cancelled, .pf-status-expired {
-        background: rgba(255, 255, 255, 0.04);
-        color: var(--t3);
-      }
-
-      .pf-gain { color: var(--accent); font-weight: 700; text-shadow: 0 0 6px var(--accent-glow-color); }
-      .pf-loss { color: var(--no-text); font-weight: 700; }
-      .pf-dim  { color: var(--t3); }
-
-      /* Inline Cancel button on Open orders rows. Quiet by default —
-         it's a destructive action, but a low-stakes one (limit order
-         releases reserved cash). Red on hover to match destructive
-         convention without screaming red at rest. */
-      .pf-cancel-btn {
-        padding: 4px 10px;
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.04em;
-        color: var(--t2);
-        background: transparent;
-        border: 1px solid var(--border-1, rgba(0,0,0,0.12));
-        border-radius: var(--r-sm);
-        cursor: pointer;
-        transition: color 0.15s, border-color 0.15s, background 0.15s;
-      }
-      .pf-cancel-btn:hover:not(:disabled) {
-        color: var(--no-text);
-        border-color: var(--no-text);
-        background: var(--no-soft);
-      }
-      .pf-cancel-btn:disabled {
-        cursor: default;
-        opacity: 0.5;
-      }
-
-      .pf-inline-link {
-        color: var(--accent);
-        text-decoration: none;
-        font-weight: 600;
-      }
-      .pf-inline-link:hover { text-decoration: underline; }
-
-      .pf-empty {
-        border-radius: var(--r-md);
-        padding: 40px 20px;
-        text-align: center;
-        color: var(--t3);
-        font-size: 13px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        align-items: center;
-        background: rgba(0, 0, 0, 0.18);
-        border: 1px dashed rgba(255, 255, 255, 0.1);
-      }
-    `}</style>
-  );
 }

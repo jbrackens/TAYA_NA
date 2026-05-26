@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 
 interface StaticPageProps {
   title: string;
@@ -19,45 +19,16 @@ export const StaticPage: React.FC<StaticPageProps> = ({
   lastUpdated,
 }) => {
   return (
-    <div
-      style={{
-        maxWidth: '800px',
-        margin: '0 auto',
-        padding: '32px 16px',
-      }}
-    >
-      <h1
-        style={{
-          fontSize: '28px',
-          fontWeight: 800,
-          color: '#f8fafc',
-          marginBottom: '8px',
-        }}
-      >
-        {title}
-      </h1>
+    <div className="mx-auto max-w-[800px] px-4 py-8">
+      <h1 className="mb-2 text-[28px] font-extrabold text-slate-50">{title}</h1>
 
       {lastUpdated && (
-        <p
-          style={{
-            fontSize: '12px',
-            color: '#64748b',
-            marginBottom: '24px',
-          }}
-        >
+        <p className="mb-6 text-xs text-slate-500">
           Last updated: {lastUpdated}
         </p>
       )}
 
-      <div
-        style={{
-          color: '#D3D3D3',
-          fontSize: '14px',
-          lineHeight: '1.75',
-        }}
-      >
-        {children}
-      </div>
+      <div className="text-sm leading-[1.75] text-[#D3D3D3]">{children}</div>
     </div>
   );
 };

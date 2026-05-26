@@ -1,60 +1,14 @@
 import React from 'react';
-import styled, { css, keyframes, DefaultTheme } from 'styled-components';
+import { cx } from '../utils/classNames';
 
 type BadgeVariant = 'live' | 'finished' | 'upcoming' | 'cancelled';
 
-interface StyledBadgeProps {
-  $variant: BadgeVariant;
-}
-
-const pulse = keyframes`
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-`;
-
-const getVariantStyles = ($variant: BadgeVariant, theme: DefaultTheme) => {
-  switch ($variant) {
-    case 'live':
-      return css`
-        background-color: ${theme.colors.live};
-        color: #000;
-        animation: ${pulse} ${theme.motion.pulse};
-      `;
-    case 'finished':
-      return css`
-        background-color: ${theme.colors.finished};
-        color: #fff;
-      `;
-    case 'upcoming':
-      return css`
-        background-color: ${theme.colors.upcoming};
-        color: ${theme.colors.text};
-      `;
-    case 'cancelled':
-      return css`
-        background-color: ${theme.colors.cancelled};
-        color: #fff;
-      `;
-  }
+const badgeVariants: Record<BadgeVariant, string> = {
+  live: 'animate-pulse bg-[#f5c842] text-black',
+  finished: 'bg-[#4cd964] text-white',
+  upcoming: 'bg-[#9a9aad] text-white',
+  cancelled: 'bg-[#e85a71] text-white',
 };
-
-const StyledBadge = styled.span<StyledBadgeProps>`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: ${({ theme }) => `${theme.spacing.xs} ${theme.spacing.sm}`};
-  border-radius: ${({ theme }) => theme.radius.full};
-  font-size: ${({ theme }) => theme.typography.small.fontSize};
-  font-weight: 600;
-  line-height: ${({ theme }) => theme.typography.small.lineHeight};
-  white-space: nowrap;
-
-  ${({ $variant, theme }) => getVariantStyles($variant, theme)}
-`;
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant;
@@ -62,11 +16,19 @@ interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
-  ({ variant = 'upcoming', children, ...props }, ref) => {
+  ({ variant = 'upcoming', children, className, ...props }, ref) => {
     return (
-      <StyledBadge ref={ref} $variant={variant} {...props}>
+      <span
+        ref={ref}
+        className={cx(
+          'inline-flex items-center justify-center whitespace-nowrap rounded-full px-2 py-1 text-[12px] font-semibold leading-[16px]',
+          badgeVariants[variant],
+          className
+        )}
+        {...props}
+      >
         {children}
-      </StyledBadge>
+      </span>
     );
   }
 );

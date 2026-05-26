@@ -11,12 +11,7 @@ const DropdownMenu = ({ menu }: DropdownMenuProps) => {
   return (
     <Dropdown key="more" dropdownRender={() => menu}>
       <MoreButton shape="round">
-        <EllipsisOutlined
-          style={{
-            fontSize: 20,
-            verticalAlign: "top",
-          }}
-        />
+        <EllipsisOutlined className="align-top text-xl" />
       </MoreButton>
     </Dropdown>
   );

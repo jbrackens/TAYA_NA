@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { ThemeProvider } from "styled-components";
+import { ThemeProvider } from "components/app/theme-context";
 import { PunterRoleEnum } from "@phoenix-ui/utils";
 import PredictionOpsContainer from "..";
 import { useApi, UseApi } from "../../../services/api/api-service";

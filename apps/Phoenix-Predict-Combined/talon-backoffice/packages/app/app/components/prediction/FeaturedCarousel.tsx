@@ -20,7 +20,7 @@
  * external carousel dependency.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
@@ -38,6 +38,19 @@ export interface FeaturedSlide {
 
 const AUTO_ADVANCE_MS = 7000;
 
+const CAROUSEL_MESSAGE_CLASS =
+  "flex min-h-[200px] items-center justify-center rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-9 text-center text-[13px] text-[var(--t3)]";
+const CAROUSEL_CLASS =
+  "font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+const CAROUSEL_VIEWPORT_CLASS =
+  "relative [&_.rh-hero-eyebrow]:pr-[104px] max-[720px]:[&_.rh-hero-eyebrow]:pr-[92px]";
+const CAROUSEL_NAV_CLASS =
+  "absolute top-[22px] right-6 z-[2] inline-flex items-center gap-1.5 max-[720px]:top-[18px] max-[720px]:right-[18px]";
+const CAROUSEL_ARROW_CLASS =
+  "inline-flex h-[30px] w-[30px] flex-[0_0_auto] cursor-pointer items-center justify-center rounded-full border border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t2)] transition-colors duration-[120ms] hover:border-[var(--border-2)] hover:bg-[var(--surface-1)] hover:text-[var(--t1)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)] max-[720px]:h-7 max-[720px]:w-7 [&_svg]:h-4 [&_svg]:w-4";
+const CAROUSEL_COUNT_CLASS =
+  "min-w-[46px] text-center text-xs font-medium text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+
 function usePrefersReducedMotion(): boolean {
   const [reduced, setReduced] = useState(false);
   useEffect(() => {
@@ -52,22 +65,7 @@ function usePrefersReducedMotion(): boolean {
 
 function CarouselMessage({ children }: { children: ReactNode }) {
   return (
-    <section
-      aria-label="Featured market"
-      style={{
-        background: "var(--surface-1)",
-        border: "1px solid var(--border-1)",
-        borderRadius: "var(--r-rh-lg)",
-        padding: 36,
-        minHeight: 200,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        textAlign: "center",
-        color: "var(--t3)",
-        fontSize: 13,
-      }}
-    >
+    <section aria-label="Featured market" className={CAROUSEL_MESSAGE_CLASS}>
       {children}
     </section>
   );
@@ -107,6 +105,7 @@ export function FeaturedCarousel({
   const [dir, setDir] = useState<"next" | "prev">("next");
   const [paused, setPaused] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
+  const stageRef = useRef<HTMLDivElement | null>(null);
 
   const count = slides.length;
 
@@ -125,6 +124,21 @@ export function FeaturedCarousel({
     }, AUTO_ADVANCE_MS);
     return () => clearInterval(timer);
   }, [paused, reducedMotion, count]);
+
+  useEffect(() => {
+    if (reducedMotion || count === 0) return;
+    const el = stageRef.current;
+    if (!el) return;
+    const start = dir === "next" ? "translateX(16px)" : "translateX(-16px)";
+    const animation = el.animate(
+      [
+        { opacity: 0, transform: start },
+        { opacity: 1, transform: "translateX(0)" },
+      ],
+      { duration: 300, easing: "ease", fill: "both" },
+    );
+    return () => animation.cancel();
+  }, [active, count, dir, reducedMotion]);
 
   function goTo(index: number) {
     if (count === 0) return;
@@ -149,134 +163,75 @@ export function FeaturedCarousel({
   const slide = slides[Math.min(active, count - 1)];
 
   return (
-    <>
-      <FeaturedCarouselStyles />
-      <section
-        className="fc"
-        role="region"
-        aria-roledescription="carousel"
-        aria-label={t("FEATURED_MARKETS")}
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onFocus={() => setPaused(true)}
-        onBlur={() => setPaused(false)}
-        onKeyDown={(e) => {
-          if (count < 2) return;
-          if (e.key === "ArrowRight") {
-            e.preventDefault();
-            next();
-          } else if (e.key === "ArrowLeft") {
-            e.preventDefault();
-            prev();
-          }
-        }}
-      >
-        <div className="fc-viewport">
-          {/* Only the active slide is mounted (one chart + one price-history
-           * fetch at a time); the key restarts the enter animation per change. */}
-          <div
-            className={`fc-stage fc-in-${dir}`}
-            key={slide.key}
-            aria-roledescription="slide"
-            aria-label={t("FEATURED_MARKET_SLIDE_LABEL", {
-              label: slide.label,
-              index: active + 1,
-              count,
-            })}
-          >
-            <DiscoveryHero
-              market={slide.market}
-              categoryName={slide.categoryName}
-            />
-          </div>
-
-          {/* Kalshi-style control: overlaid in the card's top-right as a
-           * neutral "N of M" counter flanked by prev/next arrows. The slide's
-           * eyebrow carries the category, so the control stays category-
-           * agnostic; the eyebrow reserves right-padding (scoped CSS) so it
-           * never runs under the control. */}
-          {count > 1 && (
-            <div className="fc-nav">
-              <button
-                type="button"
-                className="fc-arrow"
-                aria-label={t("PREVIOUS_FEATURED_MARKET")}
-                onClick={prev}
-              >
-                <Chevron left />
-              </button>
-              <span className="fc-nav-count">
-                {t("CAROUSEL_COUNT", { index: active + 1, count })}
-              </span>
-              <button
-                type="button"
-                className="fc-arrow"
-                aria-label={t("NEXT_FEATURED_MARKET")}
-                onClick={next}
-              >
-                <Chevron />
-              </button>
-            </div>
-          )}
+    <section
+      className={CAROUSEL_CLASS}
+      role="region"
+      aria-roledescription="carousel"
+      aria-label={t("FEATURED_MARKETS")}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
+      onKeyDown={(e) => {
+        if (count < 2) return;
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          next();
+        } else if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          prev();
+        }
+      }}
+    >
+      <div className={CAROUSEL_VIEWPORT_CLASS}>
+        {/* Only the active slide is mounted (one chart + one price-history
+         * fetch at a time); the key restarts the enter animation per change. */}
+        <div
+          ref={stageRef}
+          className="min-w-0"
+          key={slide.key}
+          aria-roledescription="slide"
+          aria-label={t("FEATURED_MARKET_SLIDE_LABEL", {
+            label: slide.label,
+            index: active + 1,
+            count,
+          })}
+        >
+          <DiscoveryHero
+            market={slide.market}
+            categoryName={slide.categoryName}
+          />
         </div>
-      </section>
-    </>
-  );
-}
 
-function FeaturedCarouselStyles() {
-  return (
-    <style>{`
-      .fc { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
-      .fc-stage { min-width: 0; }
-      @keyframes fc-slide-next {
-        from { opacity: 0; transform: translateX(16px); }
-        to   { opacity: 1; transform: translateX(0); }
-      }
-      @keyframes fc-slide-prev {
-        from { opacity: 0; transform: translateX(-16px); }
-        to   { opacity: 1; transform: translateX(0); }
-      }
-      .fc-in-next { animation: fc-slide-next 300ms ease both; }
-      .fc-in-prev { animation: fc-slide-prev 300ms ease both; }
-
-      .fc-viewport { position: relative; }
-      /* Reserve room at the eyebrow's right edge so the overlaid control never
-       * overlaps the LIVE · CATEGORY · TICKER line (scoped to the carousel). */
-      .fc-viewport .rh-hero-eyebrow { padding-right: 104px; }
-
-      .fc-nav {
-        position: absolute; top: 22px; right: 24px; z-index: 2;
-        display: inline-flex; align-items: center; gap: 6px;
-      }
-      .fc-nav-count {
-        min-width: 46px; text-align: center;
-        font-size: 12px; font-weight: 500; color: var(--t3);
-        font-variant-numeric: tabular-nums;
-      }
-      .fc-arrow {
-        flex: 0 0 auto;
-        width: 30px; height: 30px; border-radius: 50%;
-        display: inline-flex; align-items: center; justify-content: center;
-        background: var(--surface-2); color: var(--t2);
-        border: 1px solid var(--border-1); cursor: pointer;
-        transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
-      }
-      .fc-arrow:hover {
-        color: var(--t1); background: var(--surface-1); border-color: var(--border-2);
-      }
-      .fc-arrow:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
-      .fc-arrow svg { width: 16px; height: 16px; }
-
-      @media (max-width: 720px) {
-        .fc-viewport .rh-hero-eyebrow { padding-right: 92px; }
-        .fc-nav { top: 18px; right: 18px; }
-        .fc-arrow { width: 28px; height: 28px; }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .fc-in-next, .fc-in-prev { animation: none; }
-      }
-    `}</style>
+        {/* Kalshi-style control: overlaid in the card's top-right as a
+         * neutral "N of M" counter flanked by prev/next arrows. The slide's
+         * eyebrow carries the category, so the control stays category-
+         * agnostic; the eyebrow reserves right-padding so it never runs under
+         * the control. */}
+        {count > 1 && (
+          <div className={CAROUSEL_NAV_CLASS}>
+            <button
+              type="button"
+              className={CAROUSEL_ARROW_CLASS}
+              aria-label={t("PREVIOUS_FEATURED_MARKET")}
+              onClick={prev}
+            >
+              <Chevron left />
+            </button>
+            <span className={CAROUSEL_COUNT_CLASS}>
+              {t("CAROUSEL_COUNT", { index: active + 1, count })}
+            </span>
+            <button
+              type="button"
+              className={CAROUSEL_ARROW_CLASS}
+              aria-label={t("NEXT_FEATURED_MARKET")}
+              onClick={next}
+            >
+              <Chevron />
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

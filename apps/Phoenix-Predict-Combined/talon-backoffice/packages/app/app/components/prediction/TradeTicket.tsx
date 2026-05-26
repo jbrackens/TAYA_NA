@@ -92,6 +92,91 @@ const QUICK_AMOUNTS = [5, 25, 100] as const;
 
 type TicketMode = "market" | "limit";
 
+const TICKET_CARD_CLASS =
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+const TICKET_HEAD_CLASS = "mb-[14px] flex items-center justify-between";
+const TICKET_TITLE_CLASS =
+  "text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
+const TICKET_MODE_CLASS =
+  "inline-flex gap-0.5 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-white/[0.04] p-[3px]";
+const TICKET_MODE_BUTTON_BASE_CLASS =
+  "cursor-pointer rounded-[var(--r-pill)] border-0 px-3 py-[5px] [font-family:inherit] text-[11px] font-semibold transition-colors duration-[120ms] disabled:cursor-not-allowed disabled:opacity-40 disabled:text-[var(--t3)] disabled:hover:bg-transparent disabled:hover:text-[var(--t3)]";
+const TICKET_SIDES_CLASS = "mb-4 grid grid-cols-2 gap-2.5";
+const TICKET_SIDE_BASE_CLASS =
+  "relative cursor-pointer rounded-[var(--r-rh-md)] border p-[14px] [font-family:inherit] text-left text-[var(--t1)] transition-colors duration-[120ms] focus-visible:border-[var(--accent)] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)]";
+const TICKET_SIDE_LABEL_CLASS =
+  "mb-1.5 block text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--t3)]";
+const TICKET_SIDE_PRICE_CLASS =
+  "block font-['IBM_Plex_Mono',_monospace] text-[28px] font-semibold leading-none tracking-[-0.02em] text-[var(--t1)] [font-variant-numeric:tabular-nums]";
+const TICKET_SIDE_SUB_CLASS =
+  "mt-1.5 block font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+const TICKET_AMOUNT_CLASS = "mb-[14px]";
+const TICKET_AMOUNT_HEAD_CLASS =
+  "mb-2 flex items-baseline justify-between";
+const TICKET_AMOUNT_LABEL_CLASS = "text-xs font-medium text-[var(--t3)]";
+const TICKET_AMOUNT_BALANCE_CLASS =
+  "font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+const TICKET_LIMIT_INPUT_CLASS =
+  "w-full rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2.5 font-['IBM_Plex_Mono',_monospace] text-[22px] text-[var(--t1)] outline-none [font-variant-numeric:tabular-nums]";
+const TICKET_LIMIT_HELP_CLASS =
+  "mt-1.5 font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)]";
+const TICKET_AMOUNT_DISPLAY_CLASS =
+  "mb-2.5 flex items-center justify-between rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-white/[0.02] p-[14px]";
+const TICKET_AMOUNT_VALUE_CLASS =
+  "font-['IBM_Plex_Mono',_monospace] text-[28px] font-medium leading-none tracking-[-0.02em] text-[var(--t1)] [font-variant-numeric:tabular-nums]";
+const TICKET_AMOUNT_AFFIX_CLASS = "text-[var(--t3)]";
+const TICKET_AMOUNT_SUB_CLASS =
+  "text-right font-['IBM_Plex_Mono',_monospace] text-[10px] leading-[1.4] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+const TICKET_CHIPS_CLASS = "grid grid-cols-4 gap-1.5";
+const TICKET_CHIP_BASE_CLASS =
+  "cursor-pointer rounded-[var(--r-pill)] border-0 px-1 py-2 font-['IBM_Plex_Mono',_monospace] text-xs font-semibold transition-colors duration-[120ms] [font-variant-numeric:tabular-nums]";
+const TICKET_SUMMARY_CLASS =
+  "mt-[14px] flex flex-col gap-2 border-t border-[var(--border-1)] pt-[14px] font-['IBM_Plex_Mono',_monospace] text-xs [font-variant-numeric:tabular-nums]";
+const TICKET_SUMMARY_ROW_CLASS = "flex justify-between";
+const TICKET_CTA_CLASS =
+  "mt-4 flex w-full cursor-pointer items-center justify-center rounded-[var(--r-pill)] border-0 bg-[var(--accent)] px-4 py-[14px] [font-family:inherit] text-[15px] font-semibold text-[#061a10] no-underline transition-[filter,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:brightness-[1.05] disabled:cursor-not-allowed disabled:opacity-[0.45] disabled:filter-none disabled:transform-none";
+const TICKET_NOTE_CLASS =
+  "mt-2.5 text-center text-xs leading-[1.45] text-[var(--t2)]";
+const TICKET_TRUST_CLASS =
+  "mt-2.5 text-center text-xs leading-[1.45] text-[var(--t3)]";
+const TICKET_ERROR_CLASS =
+  "mt-2.5 text-center text-xs text-[var(--no-text)]";
+const TICKET_CLOSED_CLASS =
+  "mt-3 rounded-[var(--r-rh-sm)] border border-dashed border-[var(--border-1)] p-2.5 text-center text-xs text-[var(--t3)]";
+
+function ticketModeButtonClass(active: boolean): string {
+  return `${TICKET_MODE_BUTTON_BASE_CLASS} ${
+    active
+      ? "bg-[var(--accent)] text-[#061a10]"
+      : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)]"
+  }`;
+}
+
+function ticketSideClass(side: OrderSide, selected: boolean): string {
+  const selectedClass =
+    side === "yes"
+      ? "border-[rgba(113,238,184,0.4)] bg-[var(--yes-soft)]"
+      : "border-[rgba(255,139,107,0.4)] bg-[var(--no-soft)]";
+  return `${TICKET_SIDE_BASE_CLASS} ${
+    selected
+      ? selectedClass
+      : "border-[var(--border-1)] bg-white/[0.02] hover:bg-white/[0.04]"
+  }`;
+}
+
+function selectedSideTextClass(side: OrderSide, selected: boolean): string {
+  if (!selected) return "";
+  return side === "yes" ? "text-[var(--yes-text)]" : "text-[var(--no-text)]";
+}
+
+function ticketChipClass(active: boolean): string {
+  return `${TICKET_CHIP_BASE_CLASS} ${
+    active
+      ? "bg-[var(--accent)] text-[#061a10]"
+      : "bg-white/[0.04] text-[var(--t2)] hover:bg-white/[0.08] hover:text-[var(--t1)]"
+  }`;
+}
+
 /**
  * Replacement body for non-open markets (settled, halted, closed, voided).
  * Previously the full ticket rendered with a pre-filled $25 amount and a
@@ -121,10 +206,10 @@ function renderSettledTicket(
     : t("MARKET_PAUSED_EXPLAINER", { status: market.status });
   return (
     <>
-      <div className="tt-head">
-        <span className="tt-title">{outcomeLabel}</span>
+      <div className={TICKET_HEAD_CLASS}>
+        <span className={TICKET_TITLE_CLASS}>{outcomeLabel}</span>
       </div>
-      <div className="tt-closed">{explainer}</div>
+      <div className={TICKET_CLOSED_CLASS}>{explainer}</div>
     </>
   );
 }
@@ -445,296 +530,17 @@ export function TradeTicket({
   const centsStr = cents.toString().padStart(2, "0");
 
   return (
-    <>
-      <style>{`
-        .tt {
-          background: var(--surface-1);
-          border: 1px solid var(--border-1);
-          padding: 20px;
-          border-radius: var(--r-rh-lg);
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        .tt-head {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 14px;
-        }
-        .tt-title {
-          font-size: 14px;
-          font-weight: 600;
-          color: var(--t1);
-          letter-spacing: -0.01em;
-        }
-        .tt-mode {
-          display: inline-flex;
-          gap: 2px;
-          padding: 3px;
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid var(--border-1);
-          border-radius: var(--r-pill);
-        }
-        .tt-mode button {
-          background: transparent;
-          border: 0;
-          color: var(--t3);
-          padding: 5px 12px;
-          border-radius: var(--r-pill);
-          font-family: inherit;
-          font-size: 11px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: color 120ms ease, background 120ms ease;
-        }
-        .tt-mode button:hover { color: var(--t1); }
-        .tt-mode button.is-active {
-          color: #061a10;
-          background: var(--accent);
-        }
-        /* AMM markets disable the Limit toggle (no limit-order support).
-         * Without these styles the button looked fully clickable, which
-         * QA reported as "clicking Limit on AMM appears to do nothing."
-         * Now the disabled state is visually unambiguous. */
-        .tt-mode button:disabled {
-          color: var(--t3);
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
-        .tt-mode button:disabled:hover {
-          color: var(--t3);
-          background: transparent;
-        }
-
-        .tt-sides {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 10px;
-          margin-bottom: 16px;
-        }
-        .tt-side {
-          position: relative;
-          border: 1px solid var(--border-1);
-          border-radius: var(--r-rh-md);
-          padding: 14px;
-          cursor: pointer;
-          font-family: inherit;
-          color: var(--t1);
-          background: rgba(255, 255, 255, 0.02);
-          text-align: left;
-          transition: background 120ms ease, border-color 120ms ease;
-        }
-        .tt-side:hover {
-          background: rgba(255, 255, 255, 0.04);
-        }
-        .tt-side:focus-visible {
-          outline: none;
-          border-color: var(--accent);
-          box-shadow: 0 0 0 2px var(--accent-soft);
-        }
-        .tt-side.yes.is-selected {
-          background: var(--yes-soft);
-          border-color: rgba(113, 238, 184, 0.4);
-        }
-        .tt-side.no.is-selected {
-          background: var(--no-soft);
-          border-color: rgba(255, 139, 107, 0.4);
-        }
-
-        .tt-side-label {
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-          color: var(--t3);
-          margin-bottom: 6px;
-          display: block;
-        }
-        .tt-side.yes.is-selected .tt-side-label { color: var(--yes-text); }
-        .tt-side.no.is-selected  .tt-side-label { color: var(--no-text); }
-        .tt-side-price {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 28px;
-          font-weight: 600;
-          font-variant-numeric: tabular-nums;
-          letter-spacing: -0.02em;
-          line-height: 1;
-          color: var(--t1);
-          display: block;
-        }
-        .tt-side.yes.is-selected .tt-side-price { color: var(--yes-text); }
-        .tt-side.no.is-selected  .tt-side-price { color: var(--no-text); }
-        .tt-side-sub {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 11px;
-          color: var(--t3);
-          margin-top: 6px;
-          font-variant-numeric: tabular-nums;
-          display: block;
-        }
-
-        .tt-amount { margin-bottom: 14px; }
-        .tt-amt-head {
-          display: flex;
-          align-items: baseline;
-          justify-content: space-between;
-          margin-bottom: 8px;
-        }
-        .tt-amt-label {
-          font-size: 12px;
-          color: var(--t3);
-          font-weight: 500;
-        }
-        .tt-amt-balance {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 11px;
-          color: var(--t3);
-          font-variant-numeric: tabular-nums;
-        }
-
-        .tt-amt-display {
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px solid var(--border-1);
-          border-radius: var(--r-rh-md);
-          padding: 14px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 10px;
-        }
-        .tt-amt-value {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 28px;
-          font-weight: 600;
-          font-variant-numeric: tabular-nums;
-          letter-spacing: -0.02em;
-          color: var(--t1);
-          line-height: 1;
-          border: 0;
-          background: transparent;
-          outline: none;
-          width: 120px;
-          padding: 0;
-        }
-        .tt-amt-value:focus-visible { color: var(--accent); }
-        .tt-amt-affix { color: var(--t3); }
-        .tt-amt-sub {
-          text-align: right;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 10px;
-          color: var(--t3);
-          font-variant-numeric: tabular-nums;
-          line-height: 1.4;
-        }
-        .tt-amt-sub .win { color: var(--yes-text); font-weight: 600; }
-
-        .tt-chips {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 6px;
-        }
-        .tt-chip {
-          background: rgba(255, 255, 255, 0.04);
-          color: var(--t2);
-          border: 0;
-          border-radius: var(--r-pill);
-          padding: 8px 4px;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 12px;
-          font-weight: 600;
-          font-variant-numeric: tabular-nums;
-          cursor: pointer;
-          transition: background 120ms ease, color 120ms ease;
-        }
-        .tt-chip:hover {
-          background: rgba(255, 255, 255, 0.08);
-          color: var(--t1);
-        }
-        .tt-chip.is-active {
-          background: var(--accent);
-          color: #061a10;
-        }
-
-        .tt-summary {
-          margin-top: 14px;
-          padding-top: 14px;
-          border-top: 1px solid var(--border-1);
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 12px;
-          font-variant-numeric: tabular-nums;
-        }
-        .tt-summary-row { display: flex; justify-content: space-between; }
-        .tt-summary-row .k { color: var(--t3); }
-        .tt-summary-row .v { color: var(--t1); }
-        .tt-summary-row .v.accent { color: var(--yes-text); }
-
-        .tt-cta {
-          margin-top: 16px;
-          width: 100%;
-          background: var(--accent);
-          color: #061a10;
-          border: 0;
-          border-radius: var(--r-pill);
-          padding: 14px 16px;
-          font-family: inherit;
-          font-size: 15px;
-          font-weight: 600;
-          cursor: pointer;
-          text-decoration: none;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: filter 120ms ease, transform 120ms ease;
-        }
-        .tt-cta:hover { filter: brightness(1.05); transform: translateY(-1px); }
-        .tt-cta:disabled {
-          cursor: not-allowed;
-          opacity: 0.45;
-          transform: none;
-          filter: none;
-        }
-
-        .tt-error {
-          margin-top: 10px;
-          font-size: 12px;
-          color: var(--no-text);
-          text-align: center;
-        }
-        .tt-state-note,
-        .tt-trust {
-          margin-top: 10px;
-          font-size: 12px;
-          line-height: 1.45;
-          color: var(--t2);
-          text-align: center;
-        }
-        .tt-trust {
-          color: var(--t3);
-        }
-        .tt-closed {
-          margin-top: 12px;
-          font-size: 12px;
-          color: var(--t3);
-          text-align: center;
-          padding: 10px;
-          border: 1px dashed var(--border-1);
-          border-radius: var(--r-rh-sm);
-        }
-      `}</style>
-
-      <section className="tt" aria-label={t("TRADE_TICKET")}>
+    <section className={TICKET_CARD_CLASS} aria-label={t("TRADE_TICKET")}>
         {!isOpen && renderSettledTicket(market, t)}
         {isOpen && (
           <>
-            <div className="tt-head">
-              <span className="tt-title">{t("TRADE")}</span>
-              <div className="tt-mode" role="tablist" aria-label={t("ORDER_TYPE")}>
+            <div className={TICKET_HEAD_CLASS}>
+              <span className={TICKET_TITLE_CLASS}>{t("TRADE")}</span>
+              <div className={TICKET_MODE_CLASS} role="tablist" aria-label={t("ORDER_TYPE")}>
                 <button
                   role="tab"
                   aria-selected={mode === "market"}
-                  className={mode === "market" ? "is-active" : ""}
+                  className={ticketModeButtonClass(mode === "market")}
                   onClick={() => setMode("market")}
                 >
                   {t("MARKET_ORDER")}
@@ -742,7 +548,7 @@ export function TradeTicket({
                 <button
                   role="tab"
                   aria-selected={mode === "limit"}
-                  className={mode === "limit" ? "is-active" : ""}
+                  className={ticketModeButtonClass(mode === "limit")}
                   onClick={() => isExchange && setMode("limit")}
                   disabled={!isExchange}
                   title={
@@ -761,15 +567,14 @@ export function TradeTicket({
             order-book book's job. */}
             {isExchange && (
               <div
-                className="tt-mode"
+                className={`${TICKET_MODE_CLASS} mb-[14px] self-start`}
                 role="tablist"
                 aria-label={t("ACTION")}
-                style={{ marginBottom: 14, alignSelf: "flex-start" }}
               >
                 <button
                   role="tab"
                   aria-selected={action === "buy"}
-                  className={action === "buy" ? "is-active" : ""}
+                  className={ticketModeButtonClass(action === "buy")}
                   onClick={() => setAction("buy")}
                 >
                   {t("BUY")}
@@ -777,7 +582,7 @@ export function TradeTicket({
                 <button
                   role="tab"
                   aria-selected={action === "sell"}
-                  className={action === "sell" ? "is-active" : ""}
+                  className={ticketModeButtonClass(action === "sell")}
                   onClick={() => setAction("sell")}
                   disabled={availableShares === 0}
                   title={
@@ -794,16 +599,20 @@ export function TradeTicket({
               </div>
             )}
 
-            <div className="tt-sides" role="tablist" aria-label={t("SIDE")}>
+            <div className={TICKET_SIDES_CLASS} role="tablist" aria-label={t("SIDE")}>
               <button
                 role="tab"
                 aria-selected={side === "yes"}
                 onClick={() => setSideAndReset("yes")}
-                className={`tt-side yes ${side === "yes" ? "is-selected" : ""}`}
+                className={ticketSideClass("yes", side === "yes")}
               >
-                <span className="tt-side-label">{t("YES")}</span>
-                <span className="tt-side-price">{market.yesPriceCents}¢</span>
-                <span className="tt-side-sub">
+                <span className={`${TICKET_SIDE_LABEL_CLASS} ${selectedSideTextClass("yes", side === "yes")}`}>
+                  {t("YES")}
+                </span>
+                <span className={`${TICKET_SIDE_PRICE_CLASS} ${selectedSideTextClass("yes", side === "yes")}`}>
+                  {market.yesPriceCents}¢
+                </span>
+                <span className={TICKET_SIDE_SUB_CLASS}>
                   {market.yesPriceCents >= 50 ? "+" : "−"}
                   {Math.abs(market.yesPriceCents - 50)} · {market.yesPriceCents}
                   % {t("PROB")}
@@ -813,11 +622,15 @@ export function TradeTicket({
                 role="tab"
                 aria-selected={side === "no"}
                 onClick={() => setSideAndReset("no")}
-                className={`tt-side no ${side === "no" ? "is-selected" : ""}`}
+                className={ticketSideClass("no", side === "no")}
               >
-                <span className="tt-side-label">{t("NO")}</span>
-                <span className="tt-side-price">{market.noPriceCents}¢</span>
-                <span className="tt-side-sub">
+                <span className={`${TICKET_SIDE_LABEL_CLASS} ${selectedSideTextClass("no", side === "no")}`}>
+                  {t("NO")}
+                </span>
+                <span className={`${TICKET_SIDE_PRICE_CLASS} ${selectedSideTextClass("no", side === "no")}`}>
+                  {market.noPriceCents}¢
+                </span>
+                <span className={TICKET_SIDE_SUB_CLASS}>
                   {market.noPriceCents >= 50 ? "+" : "−"}
                   {Math.abs(market.noPriceCents - 50)} · {market.noPriceCents}%
                   {t("PROB")}
@@ -830,15 +643,14 @@ export function TradeTicket({
             are rejected at the API). Step is 1¢ to match tick size. */}
             {isExchange && mode === "limit" && (
               <div
-                className="tt-amount"
-                style={{ marginBottom: 14 }}
+                className={TICKET_AMOUNT_CLASS}
                 aria-label={t("LIMIT_PRICE")}
               >
-                <div className="tt-amt-head">
-                  <span className="tt-amt-label">
+                <div className={TICKET_AMOUNT_HEAD_CLASS}>
+                  <span className={TICKET_AMOUNT_LABEL_CLASS}>
                     {t("LIMIT_PRICE_SIDE", { side: side.toUpperCase() })}
                   </span>
-                  <span className="tt-amt-balance">
+                  <span className={TICKET_AMOUNT_BALANCE_CLASS}>
                     {t("MID_PRICE", { price: marketPrice })}
                   </span>
                 </div>
@@ -854,27 +666,9 @@ export function TradeTicket({
                       setLimitPriceCents(Math.max(1, Math.min(99, v)));
                     }
                   }}
-                  style={{
-                    width: "100%",
-                    background: "var(--surface-2)",
-                    border: "1px solid var(--border-1)",
-                    color: "var(--t1)",
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: 22,
-                    fontVariantNumeric: "tabular-nums",
-                    padding: "10px 12px",
-                    borderRadius: "var(--r-rh-md)",
-                    outline: "none",
-                  }}
+                  className={TICKET_LIMIT_INPUT_CLASS}
                 />
-                <p
-                  style={{
-                    fontSize: 11,
-                    color: "var(--t3)",
-                    marginTop: 6,
-                    fontFamily: "'IBM Plex Mono', monospace",
-                  }}
-                >
+                <p className={TICKET_LIMIT_HELP_CLASS}>
                   {action === "buy"
                     ? t("LIMIT_BUY_HELP", { price: limitPriceCents })
                     : t("LIMIT_SELL_HELP", { price: limitPriceCents })}
@@ -882,12 +676,12 @@ export function TradeTicket({
               </div>
             )}
 
-            <div className="tt-amount">
-              <div className="tt-amt-head">
-                <span className="tt-amt-label">
+            <div className={TICKET_AMOUNT_CLASS}>
+              <div className={TICKET_AMOUNT_HEAD_CLASS}>
+                <span className={TICKET_AMOUNT_LABEL_CLASS}>
                   {action === "sell" ? t("SHARES_TO_SELL") : t("AMOUNT")}
                 </span>
-                <span className="tt-amt-balance">
+                <span className={TICKET_AMOUNT_BALANCE_CLASS}>
                   {action === "sell"
                     ? t("AVAILABLE_SHARES", { quantity: availableShares })
                     : t("BALANCE_AMOUNT", {
@@ -896,29 +690,22 @@ export function TradeTicket({
                       })}
                 </span>
               </div>
-              <div className="tt-amt-display">
-                <div
-                  style={{
-                    fontFamily: "IBM Plex Mono, monospace",
-                    fontSize: 28,
-                    fontWeight: 500,
-                    lineHeight: 1,
-                    letterSpacing: "-0.02em",
-                    color: "var(--t1)",
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
-                  <span className="tt-amt-affix">$</span>
+              <div className={TICKET_AMOUNT_DISPLAY_CLASS}>
+                <div className={TICKET_AMOUNT_VALUE_CLASS}>
+                  <span className={TICKET_AMOUNT_AFFIX_CLASS}>$</span>
                   {dollars}
-                  <span className="tt-amt-affix">.{centsStr}</span>
+                  <span className={TICKET_AMOUNT_AFFIX_CLASS}>.{centsStr}</span>
                 </div>
-                <div className="tt-amt-sub">
+                <div className={TICKET_AMOUNT_SUB_CLASS}>
                   {t("SHARES_COUNT", { quantity: Math.floor(shares) })}
                   <br />
-                  {t("PAYOUT")} <span className="win">${payout.toFixed(2)}</span>
+                  {t("PAYOUT")}{" "}
+                  <span className="font-semibold text-[var(--yes-text)]">
+                    ${payout.toFixed(2)}
+                  </span>
                 </div>
               </div>
-              <div className="tt-chips" role="group" aria-label={t("QUICK_AMOUNT")}>
+              <div className={TICKET_CHIPS_CLASS} role="group" aria-label={t("QUICK_AMOUNT")}>
                 {QUICK_AMOUNTS.map((a) => {
                   const isActive = Math.floor(amount) === a;
                   return (
@@ -936,7 +723,7 @@ export function TradeTicket({
                         if (!isActive) setAmount(a);
                       }}
                       aria-pressed={isActive}
-                      className={`tt-chip ${isActive ? "is-active" : ""}`}
+                      className={ticketChipClass(isActive)}
                     >
                       ${a}
                     </button>
@@ -949,7 +736,7 @@ export function TradeTicket({
                     const next = Math.floor(balance);
                     if (Math.floor(amount) !== next) setAmount(next);
                   }}
-                  className="tt-chip"
+                  className={ticketChipClass(false)}
                   disabled={typeof balance !== "number" || balance <= 0}
                 >
                   {t("MAX")}
@@ -957,57 +744,57 @@ export function TradeTicket({
               </div>
             </div>
 
-            <div className="tt-summary">
-              <div className="tt-summary-row">
-                <span className="k">{t("AVG_FILL_PRICE")}</span>
-                <span className="v">
+            <div className={TICKET_SUMMARY_CLASS}>
+              <div className={TICKET_SUMMARY_ROW_CLASS}>
+                <span className="text-[var(--t3)]">{t("AVG_FILL_PRICE")}</span>
+                <span className="text-[var(--t1)]">
                   {previewLoading ? t("LOADING") : `${summaryPrice}¢`}
                 </span>
               </div>
-              <div className="tt-summary-row">
-                <span className="k">{t("IMPLIED_PROB")}</span>
-                <span className="v">{impliedProb}%</span>
+              <div className={TICKET_SUMMARY_ROW_CLASS}>
+                <span className="text-[var(--t3)]">{t("IMPLIED_PROB")}</span>
+                <span className="text-[var(--t1)]">{impliedProb}%</span>
               </div>
-              <div className="tt-summary-row">
-                <span className="k">{t("SHARES")}</span>
-                <span className="v">{shares.toFixed(2)}</span>
+              <div className={TICKET_SUMMARY_ROW_CLASS}>
+                <span className="text-[var(--t3)]">{t("SHARES")}</span>
+                <span className="text-[var(--t1)]">{shares.toFixed(2)}</span>
               </div>
-              <div className="tt-summary-row">
-                <span className="k">
+              <div className={TICKET_SUMMARY_ROW_CLASS}>
+                <span className="text-[var(--t3)]">
                   {t("PAYOUT_IF_SIDE", { side: side.toUpperCase() })}
                 </span>
-                <span className="v accent">${payout.toFixed(2)}</span>
+                <span className="text-[var(--yes-text)]">${payout.toFixed(2)}</span>
               </div>
             </div>
 
             {authLoading ? (
-              <button type="button" className="tt-cta" disabled>
+              <button type="button" className={TICKET_CTA_CLASS} disabled>
                 {t("CHECKING_SESSION")}
               </button>
             ) : !isAuthenticated ? (
               <>
-                <Link href={loginHref} className="tt-cta">
+                <Link href={loginHref} className={TICKET_CTA_CLASS}>
                   {t("LOG_IN_TO_TRADE")}
                 </Link>
-                <p className="tt-state-note">
+                <p className={TICKET_NOTE_CLASS}>
                   {t("SIGN_IN_TO_PLACE_ORDER", { side: side.toUpperCase() })}
                 </p>
               </>
             ) : insufficientFunds ? (
               <>
-                <Link href="/cashier" className="tt-cta">
+                <Link href="/cashier" className={TICKET_CTA_CLASS}>
                   {t("ADD_FUNDS")}
                 </Link>
-                <p className="tt-state-note" role="alert">
+                <p className={TICKET_NOTE_CLASS} role="alert">
                   {t("BALANCE_BELOW_ORDER", { amount: amount.toFixed(2) })}
                 </p>
               </>
             ) : marketBuyHasNoLiquidity ? (
               <>
-                <button type="button" className="tt-cta" disabled>
+                <button type="button" className={TICKET_CTA_CLASS} disabled>
                   {t("ORDER_STATUS", { status: t("CANCELLED_NO_LIQUIDITY") })}
                 </button>
-                <p className="tt-state-note" role="alert">
+                <p className={TICKET_NOTE_CLASS} role="alert">
                   {t("ORDER_STATUS_BODY", {
                     quantity: requestedQuantity,
                     side: side.toUpperCase(),
@@ -1018,10 +805,10 @@ export function TradeTicket({
               </>
             ) : insufficientShares ? (
               <>
-                <button type="button" className="tt-cta" disabled>
+                <button type="button" className={TICKET_CTA_CLASS} disabled>
                   {t("NOT_ENOUGH_SHARES")}
                 </button>
-                <p className="tt-state-note" role="alert">
+                <p className={TICKET_NOTE_CLASS} role="alert">
                   {t("NOT_ENOUGH_SHARES_DETAIL", {
                     available: availableShares,
                     side: side.toUpperCase(),
@@ -1033,7 +820,7 @@ export function TradeTicket({
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="tt-cta"
+                className={TICKET_CTA_CLASS}
                 disabled={submitting || quantity < 1}
               >
                 {/*
@@ -1052,17 +839,16 @@ export function TradeTicket({
               </button>
             )}
 
-            <p className="tt-trust">
+            <p className={TICKET_TRUST_CLASS}>
               {t("TRADE_TRUST_NOTE", { price: summaryPrice, probability: impliedProb })}
             </p>
 
             {/* Suppress unused-warning: API surface preserved for Phase 4 */}
             <input type="hidden" value={otherPrice} readOnly />
 
-            {error && <div className="tt-error">{error}</div>}
+            {error && <div className={TICKET_ERROR_CLASS}>{error}</div>}
           </>
         )}
-      </section>
-    </>
+    </section>
   );
 }

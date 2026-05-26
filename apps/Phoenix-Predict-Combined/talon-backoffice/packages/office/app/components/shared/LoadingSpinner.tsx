@@ -1,47 +1,8 @@
 "use client";
 
-import styled, { keyframes } from "styled-components";
-
-const spin = keyframes`
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-`;
-
-const pulse = keyframes`
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-`;
-
-const SpinnerContainer = styled.div<{ $centered?: boolean }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  ${(props) => (props.$centered ? "min-height: 400px;" : "")}
-`;
-
-const Spinner = styled.div`
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border-1, #e5dfd2);
-  border-top-color: var(--accent, #2be480);
-  border-radius: 50%;
-  animation: ${spin} 0.8s linear infinite;
-`;
-
-const LoadingText = styled.p`
-  margin: 12px 0 0 0;
-  font-size: 14px;
-  color: var(--t3, #8b8378);
-  text-align: center;
-`;
+function cx(...classes: Array<string | false | null | undefined>) {
+  return classes.filter(Boolean).join(" ");
+}
 
 interface LoadingSpinnerProps {
   centered?: boolean;
@@ -53,55 +14,43 @@ export function LoadingSpinner({
   text = "Loading...",
 }: LoadingSpinnerProps) {
   return (
-    <SpinnerContainer $centered={centered}>
+    <div
+      className={cx(
+        "flex items-center justify-center",
+        centered && "min-h-[400px]",
+      )}
+    >
       <div>
-        <Spinner />
-        {text && <LoadingText>{text}</LoadingText>}
+        <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-[var(--border-1,#e5dfd2)] border-t-[var(--accent,#2be480)]" />
+        {text && (
+          <p className="m-0 mt-3 text-center text-sm text-[var(--t3,#8b8378)]">
+            {text}
+          </p>
+        )}
       </div>
-    </SpinnerContainer>
+    </div>
   );
 }
-
-// Skeleton for list items
-const SkeletonLine = styled.div`
-  height: 16px;
-  background: linear-gradient(
-    90deg,
-    var(--surface-2, #fcfaf5) 25%,
-    var(--border-1, #e5dfd2) 50%,
-    var(--surface-2, #fcfaf5) 75%
-  );
-  background-size: 200% 100%;
-  border-radius: 6px;
-  margin-bottom: 12px;
-  animation: ${pulse} 1.5s ease-in-out infinite;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-const SkeletonCard = styled.div`
-  padding: 16px;
-  background-color: var(--surface-1, #ffffff);
-  border: 1px solid var(--border-1, #e5dfd2);
-  border-radius: 12px;
-  margin-bottom: 12px;
-`;
 
 interface SkeletonProps {
   count?: number;
 }
 
+const skeletonLineClass =
+  "mb-3 h-4 animate-pulse rounded-md bg-[linear-gradient(90deg,var(--surface-2,#fcfaf5)_25%,var(--border-1,#e5dfd2)_50%,var(--surface-2,#fcfaf5)_75%)] bg-[length:200%_100%] last:mb-0";
+
 export function SkeletonLoader({ count = 3 }: SkeletonProps) {
   return (
     <>
-      {Array.from({ length: count }).map((_, i) => (
-        <SkeletonCard key={i}>
-          <SkeletonLine style={{ width: "80%" }} />
-          <SkeletonLine style={{ width: "60%" }} />
-          <SkeletonLine style={{ width: "70%" }} />
-        </SkeletonCard>
+      {Array.from({ length: count }).map((_, index) => (
+        <div
+          className="mb-3 rounded-xl border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] p-4"
+          key={index}
+        >
+          <div className={`${skeletonLineClass} w-4/5`} />
+          <div className={`${skeletonLineClass} w-3/5`} />
+          <div className={`${skeletonLineClass} w-[70%]`} />
+        </div>
       ))}
     </>
   );

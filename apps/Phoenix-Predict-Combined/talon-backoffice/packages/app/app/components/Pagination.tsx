@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
@@ -13,6 +11,11 @@ export default function Pagination({
   totalPages,
   onPageChange,
 }: PaginationProps) {
+  const buttonClass =
+    "inline-flex h-9 min-w-9 cursor-pointer items-center justify-center rounded-md border border-[#1a1f3a] bg-[#0f1225] px-3 py-2 text-center text-[13px] font-semibold text-[#e2e8f0] transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 enabled:hover:border-[var(--accent)] enabled:hover:text-[var(--accent)]";
+  const activeButtonClass =
+    "inline-flex h-9 min-w-9 cursor-pointer items-center justify-center rounded-md border border-[var(--accent)] bg-[var(--accent)] px-3 py-2 text-center text-[13px] font-semibold text-[#0f1225] transition-all duration-200";
+
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
     const maxVisible = 5;
@@ -48,73 +51,16 @@ export default function Pagination({
     return pages;
   };
 
-  const containerStyle: React.CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "8px",
-    padding: "16px",
-  };
-
-  const buttonStyle: React.CSSProperties = {
-    padding: "8px 12px",
-    minWidth: "36px",
-    height: "36px",
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#e2e8f0",
-    backgroundColor: "#0f1225",
-    border: "1px solid #1a1f3a",
-    borderRadius: "6px",
-    cursor: "pointer",
-    transition: "all 0.2s",
-    textAlign: "center",
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-  };
-
-  const activeButtonStyle: React.CSSProperties = {
-    ...buttonStyle,
-    backgroundColor: "var(--accent)",
-    borderColor: "var(--accent)",
-    color: "#0f1225",
-  };
-
-  const disabledButtonStyle: React.CSSProperties = {
-    ...buttonStyle,
-    opacity: 0.5,
-    cursor: "not-allowed",
-  };
-
-  const ellipsisStyle: React.CSSProperties = {
-    padding: "8px 12px",
-    color: "#D3D3D3",
-    fontSize: "13px",
-  };
-
   const pages = getPageNumbers();
   const canGoPrev = currentPage > 1;
   const canGoNext = currentPage < totalPages;
 
   return (
-    <div style={containerStyle}>
+    <div className="flex items-center justify-center gap-2 p-4">
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={!canGoPrev}
-        style={canGoPrev ? buttonStyle : disabledButtonStyle}
-        onMouseEnter={(e) => {
-          if (canGoPrev) {
-            const btn = e.currentTarget as HTMLButtonElement;
-            btn.style.borderColor = "var(--accent)";
-            btn.style.color = "var(--accent)";
-          }
-        }}
-        onMouseLeave={(e) => {
-          const btn = e.currentTarget as HTMLButtonElement;
-          btn.style.borderColor = "#1a1f3a";
-          btn.style.color = "#e2e8f0";
-        }}
+        className={buttonClass}
       >
         Previous
       </button>
@@ -122,7 +68,10 @@ export default function Pagination({
       {pages.map((page, idx) => {
         if (page === "...") {
           return (
-            <div key={`ellipsis-${idx}`} style={ellipsisStyle}>
+            <div
+              key={`ellipsis-${idx}`}
+              className="px-3 py-2 text-[13px] text-[#D3D3D3]"
+            >
               ...
             </div>
           );
@@ -133,19 +82,7 @@ export default function Pagination({
           <button
             key={page}
             onClick={() => onPageChange(page as number)}
-            style={isActive ? activeButtonStyle : buttonStyle}
-            onMouseEnter={(e) => {
-              if (!isActive) {
-                const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.borderColor = "var(--accent)";
-                btn.style.color = "var(--accent)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              const btn = e.currentTarget as HTMLButtonElement;
-              btn.style.borderColor = "#1a1f3a";
-              btn.style.color = "#e2e8f0";
-            }}
+            className={isActive ? activeButtonClass : buttonClass}
           >
             {page}
           </button>
@@ -155,19 +92,7 @@ export default function Pagination({
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={!canGoNext}
-        style={canGoNext ? buttonStyle : disabledButtonStyle}
-        onMouseEnter={(e) => {
-          if (canGoNext) {
-            const btn = e.currentTarget as HTMLButtonElement;
-            btn.style.borderColor = "var(--accent)";
-            btn.style.color = "var(--accent)";
-          }
-        }}
-        onMouseLeave={(e) => {
-          const btn = e.currentTarget as HTMLButtonElement;
-          btn.style.borderColor = "#1a1f3a";
-          btn.style.color = "#e2e8f0";
-        }}
+        className={buttonClass}
       >
         Next
       </button>

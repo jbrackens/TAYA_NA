@@ -28,6 +28,78 @@ const PAYMENT_METHODS = [
   { id: "crypto", label: "Crypto" },
 ];
 
+const childCashierClasses = `
+  [&_.cashier-section]:mb-5
+  [&_.cashier-label]:mb-2.5 [&_.cashier-label]:block [&_.cashier-label]:text-[10px] [&_.cashier-label]:font-bold [&_.cashier-label]:uppercase [&_.cashier-label]:tracking-[0.08em] [&_.cashier-label]:text-[var(--t3)]
+  [&_.cashier-msg]:mb-[14px] [&_.cashier-msg]:rounded-[var(--r-sm)] [&_.cashier-msg]:px-3 [&_.cashier-msg]:py-2.5 [&_.cashier-msg]:text-[13px] [&_.cashier-msg]:font-medium
+  [&_.cashier-msg.error]:border [&_.cashier-msg.error]:border-[rgba(255,155,107,0.3)] [&_.cashier-msg.error]:bg-[rgba(255,155,107,0.1)] [&_.cashier-msg.error]:text-[var(--no-text)]
+  [&_.cashier-msg.success]:border [&_.cashier-msg.success]:border-[rgba(127,200,255,0.3)] [&_.cashier-msg.success]:bg-[rgba(127,200,255,0.1)] [&_.cashier-msg.success]:text-[var(--yes-text)]
+  [&_.cashier-msg.pending]:flex [&_.cashier-msg.pending]:items-center [&_.cashier-msg.pending]:gap-2.5 [&_.cashier-msg.pending]:border [&_.cashier-msg.pending]:border-[rgba(43,228,128,0.3)] [&_.cashier-msg.pending]:bg-[var(--accent-soft)] [&_.cashier-msg.pending]:text-[var(--accent)]
+  [&_.cashier-quick-btn]:min-w-[60px] [&_.cashier-quick-btn]:cursor-pointer [&_.cashier-quick-btn]:rounded-[var(--r-sm)] [&_.cashier-quick-btn]:border [&_.cashier-quick-btn]:border-[var(--b1)] [&_.cashier-quick-btn]:bg-[var(--s2)] [&_.cashier-quick-btn]:px-2 [&_.cashier-quick-btn]:py-2.5 [&_.cashier-quick-btn]:font-mono [&_.cashier-quick-btn]:text-[13px] [&_.cashier-quick-btn]:font-semibold [&_.cashier-quick-btn]:text-[var(--t2)] [&_.cashier-quick-btn]:tabular-nums [&_.cashier-quick-btn]:transition-all [&_.cashier-quick-btn]:duration-150 [&_.cashier-quick-btn:hover]:border-[var(--b2)] [&_.cashier-quick-btn:hover]:text-[var(--t1)]
+  [&_.cashier-balance-sub]:block [&_.cashier-balance-sub]:font-mono [&_.cashier-balance-sub]:text-base [&_.cashier-balance-sub]:font-semibold [&_.cashier-balance-sub]:text-[var(--t2)] [&_.cashier-balance-sub]:tabular-nums
+  [&_.cashier-status-panel]:mb-[18px] [&_.cashier-status-panel]:rounded-[var(--r-sm)] [&_.cashier-status-panel]:border [&_.cashier-status-panel]:border-[var(--b1)] [&_.cashier-status-panel]:bg-[var(--s2)] [&_.cashier-status-panel]:p-[14px]
+  [&_.cashier-status-head]:mb-3 [&_.cashier-status-head]:flex [&_.cashier-status-head]:items-center [&_.cashier-status-head]:justify-between [&_.cashier-status-head]:gap-3
+  [&_.cashier-status-pill]:rounded-full [&_.cashier-status-pill]:border [&_.cashier-status-pill]:border-[rgba(43,228,128,0.3)] [&_.cashier-status-pill]:bg-[var(--accent-soft)] [&_.cashier-status-pill]:px-[7px] [&_.cashier-status-pill]:py-1 [&_.cashier-status-pill]:font-mono [&_.cashier-status-pill]:text-[10px] [&_.cashier-status-pill]:font-bold [&_.cashier-status-pill]:uppercase [&_.cashier-status-pill]:text-[var(--accent)]
+  [&_.cashier-timeline]:grid [&_.cashier-timeline]:gap-2.5
+  [&_.cashier-timeline-row]:grid [&_.cashier-timeline-row]:grid-cols-[14px_minmax(0,1fr)] [&_.cashier-timeline-row]:items-start [&_.cashier-timeline-row]:gap-2.5 [&_.cashier-timeline-row]:text-[var(--t3)]
+  [&_.cashier-timeline-row.done]:text-[var(--t1)] [&_.cashier-timeline-row.active]:text-[var(--t1)]
+  [&_.cashier-timeline-dot]:mt-1 [&_.cashier-timeline-dot]:h-[9px] [&_.cashier-timeline-dot]:w-[9px] [&_.cashier-timeline-dot]:rounded-full [&_.cashier-timeline-dot]:bg-[var(--b2)] [&_.cashier-timeline-dot]:shadow-[0_0_0_3px_var(--s1)]
+  [&_.cashier-timeline-row.done_.cashier-timeline-dot]:bg-[var(--yes)] [&_.cashier-timeline-row.active_.cashier-timeline-dot]:bg-[var(--accent)]
+  [&_.cashier-timeline-label]:text-[13px] [&_.cashier-timeline-label]:font-bold
+  [&_.cashier-timeline-detail]:mt-0.5 [&_.cashier-timeline-detail]:text-xs [&_.cashier-timeline-detail]:leading-normal [&_.cashier-timeline-detail]:text-[var(--t3)]
+  [&_.cashier-status-note]:mb-0 [&_.cashier-status-note]:mt-[14px]
+  [&_.cashier-canary-panel]:mt-5 [&_.cashier-canary-panel]:border-t [&_.cashier-canary-panel]:border-[var(--b1)] [&_.cashier-canary-panel]:pt-4
+  [&_.cashier-canary-head]:mb-3 [&_.cashier-canary-head]:flex [&_.cashier-canary-head]:items-center [&_.cashier-canary-head]:justify-between [&_.cashier-canary-head]:gap-3
+  [&_.cashier-canary-row]:grid [&_.cashier-canary-row]:grid-cols-[12px_minmax(0,1fr)] [&_.cashier-canary-row]:items-start [&_.cashier-canary-row]:gap-[9px] [&_.cashier-canary-row]:border-b [&_.cashier-canary-row]:border-[var(--b1)] [&_.cashier-canary-row]:py-2 [&_.cashier-canary-row:last-child]:border-b-0
+  [&_.cashier-canary-dot]:mt-[5px] [&_.cashier-canary-dot]:h-2 [&_.cashier-canary-dot]:w-2 [&_.cashier-canary-dot]:rounded-full [&_.cashier-canary-dot]:bg-[var(--b2)]
+  [&_.cashier-canary-dot.ok]:bg-[var(--yes)] [&_.cashier-canary-dot.warn]:bg-[#ffd166] [&_.cashier-canary-dot.blocked]:bg-[var(--no)]
+  [&_.cashier-canary-name]:text-xs [&_.cashier-canary-name]:font-bold [&_.cashier-canary-name]:text-[var(--t2)]
+  [&_.cashier-canary-detail]:mt-0.5 [&_.cashier-canary-detail]:text-[11px] [&_.cashier-canary-detail]:leading-snug [&_.cashier-canary-detail]:text-[var(--t3)]
+`;
+
+const pageClass = `mx-auto max-w-[1100px] px-6 pb-[60px] pt-6 [--b1:var(--border-1)] [--b2:var(--border-2)] [--s1:var(--surface-1)] [--s2:var(--surface-2)] ${childCashierClasses}`;
+const cardClass =
+  "rounded-[var(--r-md)] border border-[var(--b1)] bg-[var(--s1)] p-[22px]";
+const labelClass =
+  "mb-2.5 block text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
+const summaryRowClass =
+  "flex justify-between border-b border-[var(--b1)] py-[9px] font-mono text-[13px] text-[var(--t2)] tabular-nums last:border-b-0";
+
+function tabClass(active: boolean) {
+  return `mb-[-1px] flex-1 cursor-pointer border-0 border-b-2 bg-transparent px-[14px] py-2.5 text-center text-[13px] font-semibold transition-colors duration-150 ${
+    active
+      ? "border-[var(--accent)] text-[var(--t1)]"
+      : "border-transparent text-[var(--t3)] hover:text-[var(--t1)]"
+  }`;
+}
+
+function quickAmountClass(active: boolean) {
+  return `min-w-[60px] flex-1 cursor-pointer rounded-[var(--r-sm)] border px-2 py-2.5 font-mono text-[13px] font-semibold tabular-nums transition-all duration-150 ${
+    active
+      ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+      : "border-[var(--b1)] bg-[var(--s2)] text-[var(--t2)] hover:border-[var(--b2)] hover:text-[var(--t1)]"
+  }`;
+}
+
+function paymentButtonClass(active: boolean) {
+  return `cursor-pointer rounded-[var(--r-sm)] border px-2 py-[11px] text-xs font-semibold transition-all duration-150 ${
+    active
+      ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+      : "border-[var(--b1)] bg-[var(--s2)] text-[var(--t2)] hover:border-[var(--b2)] hover:text-[var(--t1)]"
+  }`;
+}
+
+function messageClass(tone: "pending" | "error" | "success") {
+  const base = "mb-[14px] rounded-[var(--r-sm)] px-3 py-2.5 text-[13px] font-medium";
+  if (tone === "pending") {
+    return `${base} flex items-center gap-2.5 border border-[rgba(43,228,128,0.3)] bg-[var(--accent-soft)] text-[var(--accent)]`;
+  }
+  if (tone === "error") {
+    return `${base} border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.1)] text-[var(--no-text)]`;
+  }
+  return `${base} border border-[rgba(127,200,255,0.3)] bg-[rgba(127,200,255,0.1)] text-[var(--yes-text)]`;
+}
+
 export default function CashierPage() {
   const [activeTab, setActiveTab] = useState<"deposit" | "withdrawal">(
     "deposit",
@@ -360,45 +432,42 @@ export default function CashierPage() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: cashierStyles }} />
-      <div className="cashier-page">
-        <h1 className="cashier-title">Cashier</h1>
+      <div className={pageClass}>
+        <h1 className="mb-4 text-[28px] font-extrabold tracking-[-0.02em] text-[var(--t1)]">
+          Cashier
+        </h1>
 
         {/* Balance banner */}
-        <div className="cashier-balance-banner">
+        <div className="mb-4 flex items-center justify-between rounded-[var(--r-md)] border border-[var(--b1)] bg-[var(--s1)] px-[22px] py-5">
           <div>
-            <span className="cashier-balance-label">Available Balance</span>
-            <span className="cashier-balance-value">
+            <span className={labelClass}>Available Balance</span>
+            <span className="font-mono text-[28px] font-bold tracking-[-0.01em] text-[var(--accent)] tabular-nums">
               ${balance ? balance.availableBalance.toFixed(2) : "0.00"}
             </span>
           </div>
           {balance && (
-            <div style={{ textAlign: "right" }}>
-              <span className="cashier-balance-label">Reserved</span>
-              <span className="cashier-balance-sub">
+            <div className="text-right">
+              <span className={labelClass}>Reserved</span>
+              <span className="block font-mono text-base font-semibold text-[var(--t2)] tabular-nums">
                 ${balance.reservedBalance.toFixed(2)}
               </span>
             </div>
           )}
         </div>
 
-        <div className="cashier-grid">
+        <div className="grid grid-cols-[minmax(0,1fr)_320px] items-start gap-4 max-[768px]:grid-cols-1">
           {/* Main form */}
-          <div className="cashier-card">
+          <div className={cardClass}>
             {/* Tabs */}
-            <div className="cashier-tabs">
+            <div className="mb-5 flex gap-1 border-b border-[var(--b1)]">
               <button
-                className={`cashier-tab ${
-                  activeTab === "deposit" ? "active" : ""
-                }`}
+                className={tabClass(activeTab === "deposit")}
                 onClick={() => setActiveTab("deposit")}
               >
                 Deposit
               </button>
               <button
-                className={`cashier-tab ${
-                  activeTab === "withdrawal" ? "active" : ""
-                }`}
+                className={tabClass(activeTab === "withdrawal")}
                 onClick={() => setActiveTab("withdrawal")}
               >
                 Withdrawal
@@ -406,15 +475,13 @@ export default function CashierPage() {
             </div>
 
             {!isCryptoRail && (
-              <div className="cashier-section">
-                <label className="cashier-label">Amount</label>
-                <div className="cashier-quick-amounts">
+              <div className="mb-5">
+                <label className={labelClass}>Amount</label>
+                <div className="mb-2.5 flex flex-wrap gap-2">
                   {QUICK_AMOUNTS.map((val) => (
                     <button
                       key={val}
-                      className={`cashier-quick-btn ${
-                        selectedQuick === val ? "active" : ""
-                      }`}
+                      className={quickAmountClass(selectedQuick === val)}
                       onClick={() => handleQuickAmount(val)}
                     >
                       ${val}
@@ -423,7 +490,7 @@ export default function CashierPage() {
                 </div>
                 <input
                   type="number"
-                  className="cashier-input"
+                  className="w-full rounded-[var(--r-sm)] border border-[var(--b1)] bg-[var(--s2)] px-[14px] py-[11px] font-mono text-sm text-[var(--t1)] tabular-nums outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--t4)] focus:border-[var(--accent)] focus:shadow-[0_0_0_2px_var(--accent-soft)]"
                   placeholder="Or enter custom amount"
                   value={amount}
                   onChange={(e) => {
@@ -437,21 +504,19 @@ export default function CashierPage() {
             )}
 
             {/* Payment methods */}
-            <div className="cashier-section">
-              <label className="cashier-label">
+            <div className="mb-5">
+              <label className={labelClass}>
                 {activeTab === "deposit"
                   ? "Payment Method"
                   : "Withdrawal Method"}
               </label>
-              <div className="cashier-payment-grid">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-2">
                 {PAYMENT_METHODS.filter(
                   (m) => activeTab === "deposit" || m.id !== "card",
                 ).map((m) => (
                   <button
                     key={m.id}
-                    className={`cashier-payment-btn ${
-                      selectedPayment === m.id ? "active" : ""
-                    }`}
+                    className={paymentButtonClass(selectedPayment === m.id)}
                     onClick={() => setSelectedPayment(m.id)}
                   >
                     {m.label}
@@ -472,17 +537,17 @@ export default function CashierPage() {
 
             {/* Messages */}
             {pendingTxId && (
-              <div className="cashier-msg pending">
-                <span className="cashier-spinner" />
+              <div className={messageClass("pending")}>
+                <span className="inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-[rgba(43,228,128,0.3)] border-t-[var(--accent)]" />
                 {pollMessage}
               </div>
             )}
-            {error && <div className="cashier-msg error">{error}</div>}
-            {success && <div className="cashier-msg success">{success}</div>}
+            {error && <div className={messageClass("error")}>{error}</div>}
+            {success && <div className={messageClass("success")}>{success}</div>}
 
             {!isCryptoRail && (
               <button
-                className="cashier-submit"
+                className="w-full cursor-pointer rounded-[var(--r-sm)] border-0 bg-[var(--accent)] px-4 py-3 text-sm font-bold tracking-[0.02em] text-[#06170a] transition-[transform,filter] duration-150 hover:-translate-y-px hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
                 onClick={handleSubmit}
                 disabled={loading || displayAmount <= 0 || !!pendingTxId}
               >
@@ -498,20 +563,12 @@ export default function CashierPage() {
           </div>
 
           {/* Summary sidebar */}
-          <div className="cashier-card cashier-summary">
-            <h3
-              style={{
-                color: "var(--t1)",
-                fontSize: 14,
-                fontWeight: 700,
-                marginBottom: 14,
-                letterSpacing: "-0.01em",
-              }}
-            >
+          <div className={`${cardClass} h-fit`}>
+            <h3 className="mb-[14px] text-sm font-bold tracking-[-0.01em] text-[var(--t1)]">
               Summary
             </h3>
             {isCryptoRail ? (
-              <div className="cashier-summary-row total">
+              <div className={`${summaryRowClass} mt-1.5 border-b-0 border-t border-[var(--b2)] pt-3 text-[15px] font-bold text-[var(--accent)]`}>
                 <span>
                   {activeTab === "deposit" ? "Crypto deposit" : "Crypto withdrawal"}
                 </span>
@@ -519,15 +576,15 @@ export default function CashierPage() {
               </div>
             ) : (
               <>
-                <div className="cashier-summary-row">
+                <div className={summaryRowClass}>
                   <span>Amount</span>
                   <span>${displayAmount.toFixed(2)}</span>
                 </div>
-                <div className="cashier-summary-row">
+                <div className={summaryRowClass}>
                   <span>Fee (2%)</span>
                   <span>${fee.toFixed(2)}</span>
                 </div>
-                <div className="cashier-summary-row total">
+                <div className={`${summaryRowClass} mt-1.5 border-b-0 border-t border-[var(--b2)] pt-3 text-[15px] font-bold text-[var(--accent)]`}>
                   <span>Total</span>
                   <span>${total.toFixed(2)}</span>
                 </div>
@@ -537,35 +594,24 @@ export default function CashierPage() {
             {/* Recent transactions */}
             {transactions.length > 0 && (
               <>
-                <h4
-                  style={{
-                    color: "var(--t3)",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    marginTop: 22,
-                    marginBottom: 10,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                  }}
-                >
+                <h4 className="mb-2.5 mt-[22px] text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]">
                   Recent transactions
                 </h4>
                 {transactions.slice(0, 5).map((tx) => (
                   <div
                     key={tx.transactionId}
-                    className="cashier-summary-row"
-                    style={{ fontSize: 12 }}
+                    className={`${summaryRowClass} text-xs`}
                   >
                     <span
-                      style={{
-                        color:
-                          tx.type === "deposit" ? "var(--yes)" : "var(--no)",
-                        fontWeight: 600,
-                      }}
+                      className={
+                        tx.type === "deposit"
+                          ? "font-semibold text-[var(--yes)]"
+                          : "font-semibold text-[var(--no)]"
+                      }
                     >
                       {tx.type === "deposit" ? "+" : "−"}${tx.amount.toFixed(2)}
                     </span>
-                    <span style={{ color: "var(--t3)" }}>
+                    <span className="text-[var(--t3)]">
                       {new Date(tx.createdAt).toLocaleDateString()}
                     </span>
                   </div>
@@ -590,174 +636,3 @@ export default function CashierPage() {
     </>
   );
 }
-
-const cashierStyles = `
-  /*
-   * P8 token override scope. The cashier predates the P8 design migration
-   * and references the legacy --s1 / --s2 / --b1 / --b2 surface aliases
-   * from globals.css, which still resolve to dark-navy values (P6
-   * sportsbook era — kept for backward compat with surfaces that haven't
-   * migrated yet). Until each cashier surface is rewritten against the
-   * new --surface-1 / --border-1 token names, redirect the aliases
-   * inside this page only so the cashier renders with the warm-cream
-   * palette every other player-app surface uses. Doesn't affect other
-   * pages — scoped to .cashier-page descendants.
-   *
-   * Discovered by /qa on 2026-05-12: cashier was the only logged-in
-   * surface rendering dark; jarring context switch from /account/ or
-   * /portfolio/.
-   */
-  .cashier-page {
-    --s1: var(--surface-1, #ffffff);
-    --s2: var(--surface-2, #fbfaf6);
-    --b1: var(--border-1, #e5dfd2);
-    --b2: var(--border-2, #d7d1c0);
-  }
-  .cashier-page { max-width: 1100px; margin: 0 auto; padding: 24px 24px 60px; }
-  .cashier-title { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; color: var(--t1); margin: 0 0 16px; }
-  .cashier-balance-banner {
-    display: flex; justify-content: space-between; align-items: center;
-    background: var(--s1);
-    border: 1px solid var(--b1); border-radius: var(--r-md); padding: 20px 22px; margin-bottom: 16px;
-  }
-  .cashier-balance-label {
-    display: block; font-size: 10px; color: var(--t3); font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;
-  }
-  .cashier-balance-value {
-    font-size: 28px; font-weight: 700; color: var(--accent); letter-spacing: -0.01em;
-    font-family: 'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums;
-  }
-  .cashier-balance-sub {
-    display: block; font-size: 16px; font-weight: 600; color: var(--t2);
-    font-family: 'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums;
-  }
-  .cashier-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
-  @media (max-width: 768px) { .cashier-grid { grid-template-columns: 1fr; } }
-  .cashier-card {
-    background: var(--s1); border: 1px solid var(--b1); border-radius: var(--r-md); padding: 22px;
-  }
-  .cashier-tabs {
-    display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--b1);
-  }
-  .cashier-tab {
-    flex: 1; padding: 10px 14px; text-align: center; font-family: inherit; font-size: 13px; font-weight: 600;
-    color: var(--t3); background: transparent; border: 0; border-bottom: 2px solid transparent;
-    margin-bottom: -1px; cursor: pointer; transition: color 0.15s, border-color 0.15s;
-  }
-  .cashier-tab:hover { color: var(--t1); }
-  .cashier-tab.active { color: var(--t1); border-bottom-color: var(--accent); }
-  .cashier-section { margin-bottom: 20px; }
-  .cashier-label {
-    display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--t3); margin-bottom: 10px;
-  }
-  .cashier-quick-amounts { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
-  .cashier-quick-btn {
-    flex: 1; min-width: 60px; padding: 10px 8px; border-radius: var(--r-sm); font-size: 13px;
-    font-weight: 600; background: var(--s2); border: 1px solid var(--b1); color: var(--t2);
-    font-family: 'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums;
-    cursor: pointer; transition: all 0.15s;
-  }
-  .cashier-quick-btn:hover { border-color: var(--b2); color: var(--t1); }
-  .cashier-quick-btn.active {
-    background: var(--accent-soft); border-color: var(--accent); color: var(--accent);
-  }
-  .cashier-input {
-    width: 100%; padding: 11px 14px; border-radius: var(--r-sm); font-size: 14px;
-    background: var(--s2); border: 1px solid var(--b1); color: var(--t1);
-    font-family: 'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums;
-    outline: none; transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  .cashier-input::placeholder { color: var(--t4); font-family: inherit; }
-  .cashier-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
-  .cashier-payment-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; }
-  .cashier-payment-btn {
-    padding: 11px 8px; border-radius: var(--r-sm); font-family: inherit; font-size: 12px; font-weight: 600;
-    background: var(--s2); border: 1px solid var(--b1); color: var(--t2); cursor: pointer;
-    transition: all 0.15s;
-  }
-  .cashier-payment-btn:hover { border-color: var(--b2); color: var(--t1); }
-  .cashier-payment-btn.active {
-    background: var(--accent-soft); border-color: var(--accent); color: var(--accent);
-  }
-  .cashier-msg {
-    padding: 10px 12px; border-radius: var(--r-sm); font-size: 13px; font-weight: 500; margin-bottom: 14px;
-  }
-  .cashier-msg.error {
-    background: rgba(255, 155, 107,0.1); border: 1px solid rgba(255, 155, 107,0.3); color: var(--no-text);
-  }
-  .cashier-msg.success {
-    background: rgba(127, 200, 255,0.1); border: 1px solid rgba(127, 200, 255,0.3); color: var(--yes-text);
-  }
-  .cashier-msg.pending {
-    background: var(--accent-soft); border: 1px solid rgba(43, 228, 128,0.3); color: var(--accent);
-    display: flex; align-items: center; gap: 10px;
-  }
-  @keyframes cashier-spin { to { transform: rotate(360deg); } }
-  .cashier-spinner {
-    display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(43, 228, 128,0.3);
-    border-top-color: var(--accent); border-radius: 50%;
-    animation: cashier-spin 0.8s linear infinite; flex-shrink: 0;
-  }
-  .cashier-submit {
-    width: 100%; padding: 12px 16px; border-radius: var(--r-sm); font-family: inherit;
-    font-size: 14px; font-weight: 700; letter-spacing: 0.02em;
-    background: var(--accent); border: 0; color: #06170a; cursor: pointer;
-    transition: transform 0.15s, filter 0.15s;
-  }
-  .cashier-submit:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.05); }
-  .cashier-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-  .cashier-summary { height: fit-content; }
-  .cashier-summary-row {
-    display: flex; justify-content: space-between; padding: 9px 0;
-    border-bottom: 1px solid var(--b1); font-size: 13px; color: var(--t2);
-    font-family: 'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums;
-  }
-  .cashier-summary-row:last-child { border-bottom: 0; }
-  .cashier-summary-row.total {
-    margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--b2); border-bottom: 0;
-    font-size: 15px; font-weight: 700; color: var(--accent);
-  }
-  .cashier-status-panel {
-    border: 1px solid var(--b1); border-radius: var(--r-sm); padding: 14px; margin-bottom: 18px;
-    background: var(--s2);
-  }
-  .cashier-status-head, .cashier-canary-head {
-    display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px;
-  }
-  .cashier-status-pill {
-    font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; font-weight: 700;
-    color: var(--accent); background: var(--accent-soft); border: 1px solid rgba(43, 228, 128,0.3);
-    border-radius: 999px; padding: 4px 7px; text-transform: uppercase;
-  }
-  .cashier-timeline { display: grid; gap: 10px; }
-  .cashier-timeline-row {
-    display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 10px; align-items: start;
-    color: var(--t3);
-  }
-  .cashier-timeline-row.done, .cashier-timeline-row.active { color: var(--t1); }
-  .cashier-timeline-dot {
-    width: 9px; height: 9px; margin-top: 4px; border-radius: 50%; background: var(--b2);
-    box-shadow: 0 0 0 3px var(--s1);
-  }
-  .cashier-timeline-row.done .cashier-timeline-dot { background: var(--yes); }
-  .cashier-timeline-row.active .cashier-timeline-dot { background: var(--accent); }
-  .cashier-timeline-label { font-size: 13px; font-weight: 700; }
-  .cashier-timeline-detail { margin-top: 2px; font-size: 12px; line-height: 1.45; color: var(--t3); }
-  .cashier-status-note { margin-top: 14px; margin-bottom: 0; }
-  .cashier-canary-panel {
-    margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--b1);
-  }
-  .cashier-canary-row {
-    display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 9px; align-items: start; padding: 8px 0;
-    border-bottom: 1px solid var(--b1);
-  }
-  .cashier-canary-row:last-child { border-bottom: 0; }
-  .cashier-canary-dot { width: 8px; height: 8px; margin-top: 5px; border-radius: 50%; background: var(--b2); }
-  .cashier-canary-dot.ok { background: var(--yes); }
-  .cashier-canary-dot.warn { background: #ffd166; }
-  .cashier-canary-dot.blocked { background: var(--no); }
-  .cashier-canary-name { font-size: 12px; font-weight: 700; color: var(--t2); }
-  .cashier-canary-detail { margin-top: 2px; font-size: 11px; line-height: 1.4; color: var(--t3); }
-`;

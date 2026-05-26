@@ -1,7 +1,6 @@
 import React from "react";
 import { Typography, Space, Button, Breadcrumb } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { PageHeaderWrap } from "./index.styled";
 
 // AntD v5 removed `PageHeader` (and `antd/lib/page-header`). Local
 // API-compatible replacement covering the props this office actually
@@ -39,11 +38,14 @@ const PageHeader: React.FC<PageHeaderProps> = ({
 }) => {
   const showBack = Boolean(onBack) && backIcon !== false;
   return (
-    <PageHeaderWrap className={className} style={style}>
+    <div
+      className={["mb-4 p-0", className].filter(Boolean).join(" ")}
+      style={style}
+    >
       {breadcrumb?.items?.length ? (
-        <Breadcrumb items={breadcrumb.items} style={{ marginBottom: 8 }} />
+        <Breadcrumb items={breadcrumb.items} className="mb-2" />
       ) : null}
-      <div className="ph-row">
+      <div className="flex items-center justify-between gap-4">
         <Space align="center" size={12}>
           {showBack ? (
             <Button
@@ -54,7 +56,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             />
           ) : null}
           {title ? (
-            <Typography.Title level={4} style={{ margin: 0 }}>
+            <Typography.Title level={4} className="!m-0">
               {title}
             </Typography.Title>
           ) : null}
@@ -62,11 +64,11 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             <Typography.Text type="secondary">{subTitle}</Typography.Text>
           ) : null}
         </Space>
-        {extra ? <div className="ph-extra">{extra}</div> : null}
+        {extra ? <div className="flex items-center gap-2">{extra}</div> : null}
       </div>
       {children}
       {footer}
-    </PageHeaderWrap>
+    </div>
   );
 };
 

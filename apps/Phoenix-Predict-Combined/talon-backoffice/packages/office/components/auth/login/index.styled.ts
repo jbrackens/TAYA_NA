@@ -1,39 +1,66 @@
-import styled from "styled-components";
+import React from "react";
 import { Form } from "antd";
+import type { FormItemProps } from "antd";
 
-export const LoginWrapper = styled.div`
-  display: flex;
-  height: 100%;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-`;
+const classNames = (...classes: Array<string | undefined>) =>
+  classes.filter(Boolean).join(" ");
 
-export const LoginFormComponent = styled.div`
-  width: 32rem;
-  background: var(--surface-1, #ffffff);
-  border: 1px solid var(--border-1, #e5dfd2);
-  border-radius: 16px;
-  box-shadow:
-    0 12px 48px rgba(26, 26, 26, 0.06),
-    0 1px 2px rgba(26, 26, 26, 0.04);
-`;
+export const LoginWrapper = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) =>
+  React.createElement("div", {
+    ...props,
+    className: classNames(
+      "flex h-full flex-row items-center justify-center",
+      className,
+    ),
+  });
 
-export const LoginForm = styled.div`
-  padding: 1.5rem;
-  position: relative;
-`;
+export const LoginFormComponent = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) =>
+  React.createElement("div", {
+    ...props,
+    className: classNames(
+      "w-[32rem] rounded-2xl border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[0_12px_48px_rgba(26,26,26,0.06),0_1px_2px_rgba(26,26,26,0.04)]",
+      className,
+    ),
+  });
 
-export const StyledA = styled.a`
-  padding-left: 28px;
-`;
+export const LoginForm = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) =>
+  React.createElement("div", {
+    ...props,
+    className: classNames("relative p-6", className),
+  });
 
-export const StyledLabel = styled.label`
-  padding-left: 7px;
-`;
+export const StyledA = ({
+  className,
+  ...props
+}: React.AnchorHTMLAttributes<HTMLAnchorElement>) =>
+  React.createElement("a", {
+    ...props,
+    className: classNames("pl-7", className),
+  });
 
-export const FormItemWithSmallerMarginBottom: typeof Form.Item = styled(
-  Form.Item,
-)`
-  margin-bottom: 5px;
-`;
+export const StyledLabel = ({
+  className,
+  ...props
+}: React.LabelHTMLAttributes<HTMLLabelElement>) =>
+  React.createElement("label", {
+    ...props,
+    className: classNames("pl-[7px]", className),
+  });
+
+export const FormItemWithSmallerMarginBottom = (({
+  className,
+  ...props
+}: FormItemProps) =>
+  React.createElement(Form.Item, {
+    ...props,
+    className: classNames("!mb-[5px]", className),
+  })) as typeof Form.Item;

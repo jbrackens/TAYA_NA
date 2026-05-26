@@ -1,100 +1,4 @@
 import React, { useEffect } from 'react';
-import styled from 'styled-components';
-
-const Overlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn ${({ theme }) => theme.motion.fast};
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-`;
-
-const ModalContent = styled.div`
-  background-color: ${({ theme }) => theme.colors.surface};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radius.lg};
-  max-width: 500px;
-  width: 90%;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-  animation: slideUp ${({ theme }) => theme.motion.fast};
-
-  @keyframes slideUp {
-    from {
-      transform: translateY(20px);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: ${({ theme }) => theme.spacing.lg};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-`;
-
-const ModalTitle = styled.h2`
-  font-size: ${({ theme }) => theme.typography.large.fontSize};
-  font-weight: ${({ theme }) => theme.typography.weights.bold};
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 24px;
-  cursor: pointer;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color ${({ theme }) => theme.motion.fast};
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.text};
-  }
-`;
-
-const ModalBody = styled.div`
-  padding: ${({ theme }) => theme.spacing.lg};
-  overflow-y: auto;
-  flex: 1;
-`;
-
-const ModalFooter = styled.div`
-  padding: ${({ theme }) => theme.spacing.lg};
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.md};
-  justify-content: flex-end;
-`;
 
 interface ModalProps {
   isOpen: boolean;
@@ -127,16 +31,33 @@ export const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
     };
 
     return (
-      <Overlay onClick={handleOverlayClick}>
-        <ModalContent ref={ref}>
-          <ModalHeader>
-            <ModalTitle>{title}</ModalTitle>
-            <CloseButton onClick={onClose}>×</CloseButton>
-          </ModalHeader>
-          <ModalBody>{children}</ModalBody>
-          {footer && <ModalFooter>{footer}</ModalFooter>}
-        </ModalContent>
-      </Overlay>
+      <div
+        className="fixed inset-0 z-[1000] flex animate-[phoenix-fade-in_0.2s_ease] items-center justify-center bg-black/50"
+        onClick={handleOverlayClick}
+      >
+        <div
+          ref={ref}
+          className="flex max-h-[90vh] w-[90%] max-w-[500px] animate-[phoenix-slide-up_0.2s_ease] flex-col rounded-[16px] border border-[#3d3d5c] bg-[#2d2d44] shadow-[0_10px_40px_rgba(0,0,0,0.5)]"
+        >
+          <div className="flex items-center justify-between border-b border-[#3d3d5c] p-6">
+            <h2 className="m-0 text-[28px] font-bold leading-[36px] text-white">
+              {title}
+            </h2>
+            <button
+              className="flex h-8 w-8 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-2xl text-[#9a9aad] transition-colors duration-200 ease-in-out hover:text-white"
+              onClick={onClose}
+            >
+              ×
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-6">{children}</div>
+          {footer && (
+            <div className="flex justify-end gap-4 border-t border-[#3d3d5c] p-6">
+              {footer}
+            </div>
+          )}
+        </div>
+      </div>
     );
   }
 );

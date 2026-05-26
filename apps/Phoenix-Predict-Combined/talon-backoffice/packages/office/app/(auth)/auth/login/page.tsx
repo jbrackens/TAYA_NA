@@ -26,7 +26,6 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [focusedField, setFocusedField] = useState("");
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -80,116 +79,33 @@ function LoginForm() {
     }
   }
 
-  const inputStyle = (field: string): React.CSSProperties => ({
-    width: "100%",
-    padding: "12px 16px",
-    backgroundColor: "var(--surface-1, #ffffff)",
-    border: `1.5px solid ${
-      focusedField === field
-        ? "var(--focus-ring, #0e7a53)"
-        : "var(--border-1, #e5dfd2)"
-    }`,
-    borderRadius: 8,
-    color: "var(--t1, #1a1a1a)",
-    fontSize: 14,
-    fontFamily: "'Inter', sans-serif",
-    outline: "none",
-    transition: "border-color 0.2s, box-shadow 0.2s",
-    boxShadow:
-      focusedField === field
-        ? "0 0 0 3px var(--accent-soft, rgba(43, 228, 128, 0.14))"
-        : "none",
-    boxSizing: "border-box" as const,
-  });
-
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
-        background: "var(--bg-deep, #f7f3ed)",
-        backgroundImage: "var(--bg-pattern)",
-        backgroundSize: "var(--bg-pattern-size, 32px 32px)",
-        padding: 20,
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 420,
-          padding: "44px 40px",
-          background: "var(--surface-1, #ffffff)",
-          borderRadius: 16,
-          border: "1px solid var(--border-1, #e5dfd2)",
-          boxShadow:
-            "0 12px 48px rgba(26, 26, 26, 0.06), 0 1px 2px rgba(26, 26, 26, 0.04)",
-        }}
-      >
+    <div className="flex min-h-screen items-center justify-center bg-[var(--bg-deep,#f7f3ed)] bg-[image:var(--bg-pattern)] bg-[length:var(--bg-pattern-size,32px_32px)] p-5">
+      <div className="w-full max-w-[420px] rounded-2xl border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] px-10 py-11 shadow-[0_12px_48px_rgba(26,26,26,0.06),0_1px_2px_rgba(26,26,26,0.04)]">
         {/* Logo */}
-        <div style={{ textAlign: "center", marginBottom: 36 }}>
+        <div className="mb-9 text-center">
           <img
             src="/logo-hn-full.png"
             alt="Hula Na!"
-            style={{
-              width: "100%",
-              maxWidth: 240,
-              height: "auto",
-              marginBottom: 16,
-            }}
+            className="mb-4 h-auto w-full max-w-[240px]"
           />
-          <h1
-            style={{
-              fontSize: 22,
-              fontWeight: 700,
-              color: "var(--t1, #1a1a1a)",
-              marginBottom: 6,
-              letterSpacing: "-0.01em",
-            }}
-          >
+          <h1 className="mb-1.5 text-[22px] font-bold tracking-normal text-[var(--t1,#1a1a1a)]">
             Backoffice
           </h1>
-          <p
-            style={{
-              fontSize: 14,
-              color: "var(--t2, #4a4a4a)",
-              fontWeight: 400,
-            }}
-          >
+          <p className="text-sm font-normal text-[var(--t2,#4a4a4a)]">
             Sign in to your admin account
           </p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: "flex", flexDirection: "column", gap: 20 }}
-        >
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {error && (
-            <div
-              style={{
-                padding: "12px 16px",
-                background: "var(--no-soft, rgba(255, 139, 107, 0.16))",
-                border: "1px solid var(--no, #ff8b6b)",
-                borderRadius: 8,
-                color: "var(--no-text, #a8472d)",
-                fontSize: 13,
-                fontWeight: 500,
-              }}
-            >
+            <div className="rounded-lg border border-[var(--no,#ff8b6b)] bg-[var(--no-soft,rgba(255,139,107,0.16))] px-4 py-3 text-[13px] font-medium text-[var(--no-text,#a8472d)]">
               {error}
             </div>
           )}
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <label
-              style={{
-                fontSize: 13,
-                fontWeight: 500,
-                color: "var(--t2, #4a4a4a)",
-                letterSpacing: "0.02em",
-              }}
-            >
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[13px] font-medium tracking-[0.02em] text-[var(--t2,#4a4a4a)]">
               Email
             </label>
             <input
@@ -197,29 +113,14 @@ function LoginForm() {
               placeholder="admin@phoenix.local"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              onFocus={() => setFocusedField("email")}
-              onBlur={() => setFocusedField("")}
-              style={inputStyle("email")}
+              className={inputClassName}
               required
             />
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <label
-                style={{
-                  fontSize: 13,
-                  fontWeight: 500,
-                  color: "var(--t2, #4a4a4a)",
-                  letterSpacing: "0.02em",
-                }}
-              >
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-[13px] font-medium tracking-[0.02em] text-[var(--t2,#4a4a4a)]">
                 Password
               </label>
               {/*
@@ -229,20 +130,11 @@ function LoginForm() {
                 admins email IT to be re-issued credentials. We surface
                 the address inline so the dead `href="#"` link is gone.
               */}
-              <span
-                style={{
-                  fontSize: 12,
-                  color: "var(--t3, #8b8378)",
-                  fontWeight: 500,
-                }}
-              >
+              <span className="text-xs font-medium text-[var(--t3,#8b8378)]">
                 Locked out?{" "}
                 <a
                   href="mailto:admin@hulana.com?subject=Backoffice%20password%20reset"
-                  style={{
-                    color: "var(--focus-ring, #0e7a53)",
-                    fontWeight: 500,
-                  }}
+                  className="font-medium text-[var(--focus-ring,#0e7a53)]"
                 >
                   Email IT
                 </a>
@@ -253,9 +145,7 @@ function LoginForm() {
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onFocus={() => setFocusedField("password")}
-              onBlur={() => setFocusedField("")}
-              style={inputStyle("password")}
+              className={inputClassName}
               required
             />
           </div>
@@ -263,42 +153,28 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            style={{
-              width: "100%",
-              padding: "12px 20px",
-              marginTop: 4,
-              background: loading
-                ? "var(--accent-soft, rgba(43, 228, 128, 0.14))"
-                : "var(--accent, #2be480)",
-              border: "none",
-              borderRadius: 8,
-              color: loading ? "var(--t3, #8b8378)" : "#003827",
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: loading ? "not-allowed" : "pointer",
-              fontFamily: "'Inter', sans-serif",
-              transition: "all 0.2s",
-              opacity: loading ? 0.7 : 1,
-              boxShadow: loading
-                ? "none"
-                : "0 4px 12px rgba(43, 228, 128, 0.18)",
-            }}
+            className={buttonClassName(loading)}
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
-        <p
-          style={{
-            textAlign: "center",
-            marginTop: 28,
-            fontSize: 12,
-            color: "var(--t3, #8b8378)",
-          }}
-        >
+        <p className="mt-7 text-center text-xs text-[var(--t3,#8b8378)]">
           Hula Na Predict Admin
         </p>
       </div>
     </div>
   );
+}
+
+const inputClassName =
+  "box-border w-full rounded-lg border-[1.5px] border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] px-4 py-3 font-['Inter',sans-serif] text-sm text-[var(--t1,#1a1a1a)] outline-none transition-[border-color,box-shadow] duration-200 focus:border-[var(--focus-ring,#0e7a53)] focus:shadow-[0_0_0_3px_var(--accent-soft,rgba(43,228,128,0.14))]";
+
+function buttonClassName(loading: boolean): string {
+  return [
+    "mt-1 w-full rounded-lg border-0 px-5 py-3 font-['Inter',sans-serif] text-sm font-semibold transition-all duration-200",
+    loading
+      ? "cursor-not-allowed bg-[var(--accent-soft,rgba(43,228,128,0.14))] text-[var(--t3,#8b8378)] opacity-70 shadow-none"
+      : "cursor-pointer bg-[var(--accent,#2be480)] text-[#003827] shadow-[0_4px_12px_rgba(43,228,128,0.18)]",
+  ].join(" ");
 }

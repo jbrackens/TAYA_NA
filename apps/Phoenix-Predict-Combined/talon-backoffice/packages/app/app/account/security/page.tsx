@@ -12,6 +12,34 @@ import {
 import { Session } from "../../lib/api/auth-client";
 import { logger } from "../../lib/logger";
 
+const pageClass = "mx-auto max-w-[800px] px-4 py-6";
+const headerClass =
+  "mb-8 flex items-start justify-between max-[640px]:flex-col max-[640px]:gap-4";
+const backClass =
+  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)]";
+const cardClass =
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-6";
+const descClass = "mb-6 text-[13px] text-[var(--t2)]";
+const labelClass = "text-[13px] font-semibold text-[var(--t2)]";
+const inputClass =
+  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2.5 text-sm text-[var(--t1)] outline-none transition-colors duration-150 focus:border-[var(--accent)]";
+
+function tabClass(active: boolean) {
+  return `cursor-pointer border-0 border-b-2 bg-transparent px-4 py-3 text-sm font-semibold transition-all duration-150 ${
+    active
+      ? "border-[var(--accent)] text-[var(--accent)]"
+      : "border-transparent text-[var(--t2)]"
+  }`;
+}
+
+function twoFaButtonClass(enabled: boolean) {
+  return `cursor-pointer rounded-lg px-4 py-2.5 text-[13px] font-bold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
+    enabled
+      ? "border border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t1)] hover:bg-[var(--border-1)]"
+      : "border-0 bg-[var(--accent)] text-[#04140a] hover:opacity-90"
+  }`;
+}
+
 export default function SecurityPage() {
   const { user } = useAuth();
   const toast = useToast();
@@ -137,371 +165,207 @@ export default function SecurityPage() {
   };
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: securityStyles }} />
-      <div className="sec-page">
-        <div className="sec-header">
-          <div>
-            <h1>Security Settings</h1>
-            <p>Manage your password, authentication, and active sessions</p>
-          </div>
-          <Link href="/account" className="sec-back">
-            ← Back
-          </Link>
+    <div className={pageClass}>
+      <div className={headerClass}>
+        <div>
+          <h1 className="mb-1 text-[28px] font-extrabold text-[var(--t1)]">
+            Security Settings
+          </h1>
+          <p className="text-sm text-[var(--t3)]">
+            Manage your password, authentication, and active sessions
+          </p>
         </div>
-
-        {/* Tabs */}
-        <div className="sec-tabs">
-          <button
-            className={`sec-tab ${tab === "password" ? "active" : ""}`}
-            onClick={() => setTab("password")}
-          >
-            Password
-          </button>
-          <button
-            className={`sec-tab ${tab === "twofa" ? "active" : ""}`}
-            onClick={() => setTab("twofa")}
-          >
-            Two-Factor Auth
-          </button>
-          <button
-            className={`sec-tab ${tab === "sessions" ? "active" : ""}`}
-            onClick={() => setTab("sessions")}
-          >
-            Active Sessions
-          </button>
-        </div>
-
-        {/* Password Tab */}
-        {tab === "password" && (
-          <div className="sec-card">
-            <h2>Change Password</h2>
-            <p className="sec-desc">
-              Update your password to keep your account secure
-            </p>
-
-            <form onSubmit={handleChangePassword} className="sec-form">
-              <div className="sec-field">
-                <label className="sec-label">Current Password</label>
-                <input
-                  type="password"
-                  className="sec-input"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="Enter current password"
-                />
-              </div>
-
-              <div className="sec-field">
-                <label className="sec-label">New Password</label>
-                <input
-                  type="password"
-                  className="sec-input"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Enter new password (min 12 chars)"
-                />
-              </div>
-
-              <div className="sec-field">
-                <label className="sec-label">Confirm Password</label>
-                <input
-                  type="password"
-                  className="sec-input"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm new password"
-                />
-              </div>
-
-              {passwordError && (
-                <div className="sec-error">{passwordError}</div>
-              )}
-
-              <button
-                type="submit"
-                className="sec-submit"
-                disabled={passwordLoading}
-              >
-                {passwordLoading ? "Updating..." : "Change Password"}
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* 2FA Tab */}
-        {tab === "twofa" && (
-          <div className="sec-card">
-            <h2>Two-Factor Authentication</h2>
-            <p className="sec-desc">
-              Add an extra layer of security to your account
-            </p>
-
-            <div className="sec-twofa">
-              <div className="sec-twofa-info">
-                <div className="sec-twofa-icon">🔐</div>
-                <div>
-                  <div className="sec-twofa-title">
-                    {twoFaEnabled ? "2FA Enabled" : "2FA Disabled"}
-                  </div>
-                  <div className="sec-twofa-desc">
-                    {twoFaEnabled
-                      ? "Your account is protected with two-factor authentication"
-                      : "Enable 2FA to add extra security via authenticator app"}
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={handleToggle2FA}
-                disabled={twoFaLoading}
-                className={`sec-twofa-btn ${
-                  twoFaEnabled ? "disable" : "enable"
-                }`}
-              >
-                {twoFaLoading
-                  ? "Updating..."
-                  : twoFaEnabled
-                    ? "Disable 2FA"
-                    : "Enable 2FA"}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Sessions Tab */}
-        {tab === "sessions" && (
-          <div className="sec-card">
-            <h2>Active Sessions</h2>
-            <p className="sec-desc">
-              View and manage devices logged into your account
-            </p>
-
-            <div className="sec-sessions">
-              {sessionsLoading && (
-                <div
-                  style={{
-                    padding: "24px",
-                    textAlign: "center",
-                    color: "var(--t3)",
-                  }}
-                >
-                  Loading sessions...
-                </div>
-              )}
-              {!sessionsLoading && sessions.length === 0 && (
-                <div
-                  style={{
-                    padding: "24px",
-                    textAlign: "center",
-                    color: "var(--t3)",
-                  }}
-                >
-                  No active sessions found.
-                </div>
-              )}
-              {sessions.map((session) => (
-                <div key={session.id} className="sec-session-item">
-                  <div className="sec-session-info">
-                    <div className="sec-session-device">{session.device}</div>
-                    <div className="sec-session-location">
-                      {session.location}
-                    </div>
-                    <div className="sec-session-time">
-                      Last active:{" "}
-                      {new Date(session.lastActive).toLocaleString()}
-                    </div>
-                  </div>
-                  <div className="sec-session-actions">
-                    {session.current && (
-                      <span className="sec-session-badge">Current</span>
-                    )}
-                    {!session.current && (
-                      <button
-                        className="sec-session-logout"
-                        onClick={() => handleRevokeSession(session.id)}
-                        disabled={revokingId === session.id}
-                      >
-                        {revokingId === session.id ? "Revoking..." : "Sign Out"}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-
-              <div className="sec-session-note">
-                ℹ️ Showing all active sessions. You can sign out of other
-                devices above.
-              </div>
-            </div>
-          </div>
-        )}
+        <Link href="/account" className={backClass}>
+          ← Back
+        </Link>
       </div>
-    </>
+
+      {/* Tabs */}
+      <div className="mb-6 flex gap-0 border-b border-[var(--border-1)]">
+        <button
+          className={tabClass(tab === "password")}
+          onClick={() => setTab("password")}
+        >
+          Password
+        </button>
+        <button
+          className={tabClass(tab === "twofa")}
+          onClick={() => setTab("twofa")}
+        >
+          Two-Factor Auth
+        </button>
+        <button
+          className={tabClass(tab === "sessions")}
+          onClick={() => setTab("sessions")}
+        >
+          Active Sessions
+        </button>
+      </div>
+
+      {/* Password Tab */}
+      {tab === "password" && (
+        <div className={cardClass}>
+          <h2 className="mb-2 text-lg font-bold text-[var(--t1)]">
+            Change Password
+          </h2>
+          <p className={descClass}>
+            Update your password to keep your account secure
+          </p>
+
+          <form onSubmit={handleChangePassword} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <label className={labelClass}>Current Password</label>
+              <input
+                type="password"
+                className={inputClass}
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Enter current password"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className={labelClass}>New Password</label>
+              <input
+                type="password"
+                className={inputClass}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password (min 12 chars)"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className={labelClass}>Confirm Password</label>
+              <input
+                type="password"
+                className={inputClass}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+              />
+            </div>
+
+            {passwordError && (
+              <div className="rounded-lg border border-[rgba(255,155,107,0.2)] bg-[rgba(255,155,107,0.08)] px-3 py-2.5 text-[13px] font-medium text-[var(--no-text)]">
+                {passwordError}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="cursor-pointer rounded-lg border-0 bg-[var(--accent)] px-4 py-3 text-sm font-bold text-white transition-opacity duration-150 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={passwordLoading}
+            >
+              {passwordLoading ? "Updating..." : "Change Password"}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* 2FA Tab */}
+      {tab === "twofa" && (
+        <div className={cardClass}>
+          <h2 className="mb-2 text-lg font-bold text-[var(--t1)]">
+            Two-Factor Authentication
+          </h2>
+          <p className={descClass}>
+            Add an extra layer of security to your account
+          </p>
+
+          <div className="flex items-center justify-between rounded-[var(--r-rh-md)] bg-[var(--surface-2)] p-4 max-[640px]:flex-col max-[640px]:items-start max-[640px]:gap-4">
+            <div className="flex flex-1 items-start gap-4">
+              <div className="shrink-0 text-[32px]">🔐</div>
+              <div>
+                <div className="mb-1 text-[15px] font-bold text-[var(--t1)]">
+                  {twoFaEnabled ? "2FA Enabled" : "2FA Disabled"}
+                </div>
+                <div className="text-[13px] text-[var(--t3)]">
+                  {twoFaEnabled
+                    ? "Your account is protected with two-factor authentication"
+                    : "Enable 2FA to add extra security via authenticator app"}
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleToggle2FA}
+              disabled={twoFaLoading}
+              className={twoFaButtonClass(twoFaEnabled)}
+            >
+              {twoFaLoading
+                ? "Updating..."
+                : twoFaEnabled
+                  ? "Disable 2FA"
+                  : "Enable 2FA"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Sessions Tab */}
+      {tab === "sessions" && (
+        <div className={cardClass}>
+          <h2 className="mb-2 text-lg font-bold text-[var(--t1)]">
+            Active Sessions
+          </h2>
+          <p className={descClass}>
+            View and manage devices logged into your account
+          </p>
+
+          <div className="flex flex-col gap-3">
+            {sessionsLoading && (
+              <div className="p-6 text-center text-[var(--t3)]">
+                Loading sessions...
+              </div>
+            )}
+            {!sessionsLoading && sessions.length === 0 && (
+              <div className="p-6 text-center text-[var(--t3)]">
+                No active sessions found.
+              </div>
+            )}
+            {sessions.map((session) => (
+              <div
+                key={session.id}
+                className="flex items-center justify-between rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-4 max-[640px]:flex-col max-[640px]:items-start max-[640px]:gap-3"
+              >
+                <div className="flex-1">
+                  <div className="mb-1 text-sm font-semibold text-[var(--t1)]">
+                    {session.device}
+                  </div>
+                  <div className="mb-1 text-xs text-[var(--t3)]">
+                    {session.location}
+                  </div>
+                  <div className="text-xs text-[var(--t3)]">
+                    Last active: {new Date(session.lastActive).toLocaleString()}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {session.current && (
+                    <span className="inline-block rounded bg-[rgba(43,228,128,0.1)] px-2 py-1 text-xs font-semibold text-[var(--accent)]">
+                      Current
+                    </span>
+                  )}
+                  {!session.current && (
+                    <button
+                      className="cursor-pointer rounded-md border-0 bg-[var(--no)] px-3 py-1.5 text-xs font-semibold text-white transition-opacity duration-150 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                      onClick={() => handleRevokeSession(session.id)}
+                      disabled={revokingId === session.id}
+                    >
+                      {revokingId === session.id ? "Revoking..." : "Sign Out"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            <div className="mt-3 rounded-[var(--r-rh-md)] bg-[var(--surface-2)] px-4 py-3 text-xs text-[var(--t3)]">
+              ℹ️ Showing all active sessions. You can sign out of other devices
+              above.
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
-
-const securityStyles = `
-  .sec-page { max-width: 800px; margin: 0 auto; padding: 24px 16px; }
-
-  .sec-header {
-    display: flex; justify-content: space-between; align-items: flex-start;
-    margin-bottom: 32px;
-  }
-  @media (max-width: 640px) {
-    .sec-header { flex-direction: column; gap: 16px; }
-  }
-
-  .sec-header h1 { font-size: 28px; font-weight: 800; color: var(--t1); margin-bottom: 4px; }
-  .sec-header p { font-size: 14px; color: var(--t3); }
-
-  .sec-back {
-    padding: 10px 16px; background: var(--surface-1); border: 1px solid var(--border-1);
-    border-radius: var(--r-rh-md); color: var(--t1); text-decoration: none; font-size: 13px;
-    font-weight: 600; transition: all 0.15s;
-  }
-  .sec-back:hover { border-color: var(--accent); color: var(--accent); }
-
-  .sec-tabs {
-    display: flex; gap: 0; margin-bottom: 24px; border-bottom: 1px solid var(--border-1);
-  }
-
-  .sec-tab {
-    padding: 12px 16px; font-size: 14px; font-weight: 600; color: var(--t2);
-    background: none; border: none; cursor: pointer;
-    border-bottom: 2px solid transparent; transition: all 0.15s;
-  }
-
-  .sec-tab.active {
-    color: var(--accent); border-bottom-color: var(--accent);
-  }
-
-  .sec-card {
-    background: var(--surface-1); border: 1px solid var(--border-1); border-radius: var(--r-rh-lg);
-    padding: 24px;
-  }
-
-  .sec-card h2 {
-    font-size: 18px; font-weight: 700; color: var(--t1); margin-bottom: 8px;
-  }
-
-  .sec-desc {
-    font-size: 13px; color: var(--t2); margin-bottom: 24px;
-  }
-
-  .sec-form {
-    display: flex; flex-direction: column; gap: 16px;
-  }
-
-  .sec-field { display: flex; flex-direction: column; gap: 8px; }
-
-  .sec-label {
-    font-size: 13px; font-weight: 600; color: var(--t2);
-  }
-
-  .sec-input {
-    padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--border-1);
-    border-radius: var(--r-rh-md); color: var(--t1); font-size: 14px;
-    outline: none; transition: border-color 0.15s;
-  }
-
-  .sec-input:focus {
-    border-color: var(--accent);
-  }
-
-  .sec-error {
-    padding: 10px 12px; background: rgba(255, 155, 107, 0.08);
-    border: 1px solid rgba(255, 155, 107, 0.2); border-radius: 8px;
-    color: var(--no-text); font-size: 13px; font-weight: 500;
-  }
-
-  .sec-submit {
-    padding: 12px 16px; background: var(--accent); border: none;
-    border-radius: 8px; color: #fff; font-size: 14px; font-weight: 700;
-    cursor: pointer; transition: opacity 0.15s;
-  }
-
-  .sec-submit:hover { opacity: 0.9; }
-  .sec-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  .sec-twofa {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 16px; background: var(--surface-2); border-radius: var(--r-rh-md);
-  }
-  @media (max-width: 640px) {
-    .sec-twofa { flex-direction: column; gap: 16px; align-items: flex-start; }
-  }
-
-  .sec-twofa-info {
-    display: flex; gap: 16px; align-items: flex-start; flex: 1;
-  }
-
-  .sec-twofa-icon {
-    font-size: 32px; flex-shrink: 0;
-  }
-
-  .sec-twofa-title {
-    font-size: 15px; font-weight: 700; color: var(--t1); margin-bottom: 4px;
-  }
-
-  .sec-twofa-desc {
-    font-size: 13px; color: var(--t3);
-  }
-
-  .sec-twofa-btn {
-    padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 700;
-    border: none; cursor: pointer; transition: all 0.15s;
-  }
-
-  .sec-twofa-btn.enable {
-    background: var(--accent); color: #04140a;
-  }
-
-  .sec-twofa-btn.enable:hover { opacity: 0.9; }
-  .sec-twofa-btn.disable {
-    background: var(--surface-2); border: 1px solid var(--border-1); color: var(--t1);
-  }
-
-  .sec-twofa-btn.disable:hover { background: var(--border-1); }
-  .sec-twofa-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  .sec-sessions {
-    display: flex; flex-direction: column; gap: 12px;
-  }
-
-  .sec-session-item {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 16px; background: var(--surface-2); border-radius: var(--r-rh-md);
-    border: 1px solid var(--border-1);
-  }
-  @media (max-width: 640px) {
-    .sec-session-item { flex-direction: column; gap: 12px; align-items: flex-start; }
-  }
-
-  .sec-session-info { flex: 1; }
-  .sec-session-device { font-size: 14px; font-weight: 600; color: var(--t1); margin-bottom: 4px; }
-  .sec-session-location { font-size: 12px; color: var(--t3); margin-bottom: 4px; }
-  .sec-session-time { font-size: 12px; color: var(--t3); }
-
-  .sec-session-actions {
-    display: flex; gap: 8px; align-items: center;
-  }
-
-  .sec-session-badge {
-    display: inline-block; padding: 4px 8px; background: rgba(43, 228, 128,0.1);
-    border-radius: 4px; color: var(--accent); font-size: 12px; font-weight: 600;
-  }
-
-  .sec-session-logout {
-    padding: 6px 12px; background: var(--no); border: none;
-    border-radius: 6px; color: #fff; font-size: 12px; font-weight: 600;
-    cursor: pointer; transition: opacity 0.15s;
-  }
-
-  .sec-session-logout:hover { opacity: 0.9; }
-
-  .sec-session-note {
-    padding: 12px 16px; background: var(--surface-2); border-radius: var(--r-rh-md);
-    color: var(--t3); font-size: 12px; margin-top: 12px;
-  }
-`;

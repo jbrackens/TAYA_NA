@@ -52,6 +52,80 @@ const NAV_LINKS: { href: string; labelKey: string; requiresAuth?: boolean }[] = 
   { href: "/rewards", labelKey: "NAV_REWARDS", requiresAuth: true },
 ];
 
+const TOP_BAR_CLASS =
+  "sticky top-0 z-[100] border-b border-[var(--border-1)] bg-[var(--bg-deep)] [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
+
+const TOP_BAR_INNER_CLASS =
+  "box-border mx-auto flex h-16 w-full max-w-[1588px] items-center gap-6 px-6 max-[900px]:h-16 max-[900px]:gap-3 max-[900px]:px-4";
+
+const TOP_BAR_BRAND_CLASS =
+  "inline-flex min-h-11 shrink-0 items-center gap-2 text-[28px] font-normal leading-none tracking-[0.025em] text-[#121114] no-underline [font-family:'Bebas_Neue','Arial_Narrow',Impact,sans-serif] max-[900px]:gap-[7px] max-[900px]:text-2xl";
+
+const TOP_BAR_WORDMARK_CLASS =
+  "whitespace-nowrap text-[23px] font-bold leading-none tracking-[-0.01em] text-[var(--t1)] [font-family:'Space_Grotesk',-apple-system,BlinkMacSystemFont,sans-serif] max-[900px]:text-xl";
+
+const TOP_BAR_NAV_CLASS = "flex min-w-0 flex-1 gap-1.5 max-[900px]:hidden";
+
+const TOP_BAR_LINK_CLASS =
+  "inline-flex min-h-11 items-center whitespace-nowrap rounded-md px-3.5 text-[15px] no-underline transition-[color,background,box-shadow] duration-[180ms] ease-[ease]";
+
+const TOP_BAR_LINK_INACTIVE_CLASS =
+  "font-medium text-[var(--t2)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)]";
+
+const TOP_BAR_LINK_ACTIVE_CLASS = "bg-[var(--yes)] font-semibold text-[#061a10]";
+
+const TOP_BAR_RIGHT_CLASS = [
+  "flex shrink-0 items-center gap-2.5",
+  "[&_.lang-select-wrap]:relative [&_.lang-select-wrap]:inline-flex [&_.lang-select-wrap]:min-h-10 [&_.lang-select-wrap]:max-w-[190px] [&_.lang-select-wrap]:items-center [&_.lang-select-wrap]:gap-1.5 [&_.lang-select-wrap]:rounded-[var(--r-pill)] [&_.lang-select-wrap]:border [&_.lang-select-wrap]:border-[var(--border-1)] [&_.lang-select-wrap]:bg-[var(--surface-1)] [&_.lang-select-wrap]:px-2.5 [&_.lang-select-wrap]:py-0 [&_.lang-select-wrap]:text-xs [&_.lang-select-wrap]:font-semibold [&_.lang-select-wrap]:text-[var(--t1)]",
+  "[&_.lang-select]:absolute [&_.lang-select]:inset-0 [&_.lang-select]:cursor-pointer [&_.lang-select]:opacity-0",
+  "[&_.lang-current]:block [&_.lang-current]:overflow-hidden [&_.lang-current]:text-ellipsis [&_.lang-current]:whitespace-nowrap",
+  "[&_.sr-only]:absolute [&_.sr-only]:-m-px [&_.sr-only]:h-px [&_.sr-only]:w-px [&_.sr-only]:overflow-hidden [&_.sr-only]:whitespace-nowrap [&_.sr-only]:border-0 [&_.sr-only]:p-0 [&_.sr-only]:[clip:rect(0,0,0,0)]",
+  "max-[900px]:[&_.lang-select-wrap]:max-w-14 max-[900px]:[&_.lang-select-wrap]:px-3 max-[900px]:[&_.lang-current]:hidden",
+].join(" ");
+
+const TOP_BAR_SEARCH_WRAP_CLASS = "relative max-[900px]:hidden";
+const TOP_BAR_SEARCH_LABEL_CLASS = "relative inline-flex items-center";
+const TOP_BAR_SEARCH_INPUT_CLASS =
+  "h-10 w-[280px] rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-1)] py-0 pl-9 pr-3.5 text-[13px] text-[var(--t1)] outline-none transition-[border-color,box-shadow] duration-[120ms] ease-[ease] placeholder:text-[var(--t3)] focus-visible:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] [font-family:inherit]";
+const TOP_BAR_SEARCH_ICON_CLASS =
+  "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--t3)]";
+const TOP_BAR_SEARCH_RESULTS_CLASS =
+  "absolute left-0 right-0 top-[calc(100%_+_6px)] z-[110] m-0 max-h-[360px] list-none overflow-y-auto rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1 shadow-[0_20px_40px_rgba(0,0,0,0.5)]";
+const TOP_BAR_SEARCH_HIT_CLASS =
+  "flex cursor-pointer flex-col gap-0.5 rounded-[var(--r-sm)] px-3 py-2";
+const TOP_BAR_SEARCH_HIT_INACTIVE_CLASS = "hover:bg-[var(--accent-soft)]";
+const TOP_BAR_SEARCH_HIT_ACTIVE_CLASS = "bg-[var(--accent-soft)]";
+const TOP_BAR_SEARCH_HIT_TITLE_CLASS =
+  "text-[13px] font-semibold text-[var(--t1)]";
+const TOP_BAR_SEARCH_HIT_META_CLASS =
+  "text-[11px] text-[var(--t3)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+const TOP_BAR_SEARCH_EMPTY_CLASS =
+  "px-3 py-3.5 text-center text-xs text-[var(--t3)]";
+
+const TOP_BAR_BALANCE_CLASS =
+  "inline-flex items-center gap-2 rounded-[var(--r-pill)] bg-[var(--accent-soft)] px-3 py-[7px] text-[13px] font-semibold text-[var(--yes-text)] tabular-nums [font-family:'IBM_Plex_Mono',monospace]";
+const TOP_BAR_BALANCE_LABEL_CLASS =
+  "text-[11px] font-medium text-[var(--t3)] [font-family:'Inter',sans-serif]";
+
+const TOP_BAR_AVATAR_CLASS =
+  "grid size-11 cursor-pointer place-items-center rounded-full border border-[rgba(255,255,255,0.18)] bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.25),transparent_60%),linear-gradient(145deg,#a56bff_0%,#5b38a8_100%)] text-[15px] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_2px_6px_rgba(0,0,0,0.3)] hover:brightness-[1.08]";
+
+const TOP_BAR_BUTTON_CLASS =
+  "inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-[var(--r-pill)] border-0 px-4 text-[13px] font-semibold no-underline transition-[transform,filter] duration-150 ease-[ease] [font-family:inherit]";
+const TOP_BAR_BUTTON_GHOST_CLASS =
+  "bg-transparent text-[var(--t1)] hover:bg-[var(--surface-2)]";
+const TOP_BAR_BUTTON_ACCENT_CLASS =
+  "bg-[var(--accent)] text-[#061a10] hover:-translate-y-px hover:brightness-[1.05]";
+
+const TOP_BAR_MENU_WRAP_CLASS = "relative";
+const TOP_BAR_MENU_CLASS =
+  "absolute right-0 top-[calc(100%_+_6px)] z-[110] min-w-[200px] rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1 shadow-[0_20px_40px_rgba(0,0,0,0.5)]";
+const TOP_BAR_MENU_ITEM_BASE_CLASS =
+  "flex w-full cursor-pointer items-center gap-2 rounded-[var(--r-sm)] border-0 bg-transparent px-3 py-2 text-left text-[13px] no-underline hover:bg-[var(--surface-2)] [font-family:inherit]";
+const TOP_BAR_MENU_ITEM_CLASS = `${TOP_BAR_MENU_ITEM_BASE_CLASS} text-[var(--t1)]`;
+const TOP_BAR_MENU_LOGOUT_CLASS = `${TOP_BAR_MENU_ITEM_BASE_CLASS} text-[var(--no)]`;
+const TOP_BAR_MENU_DIVIDER_CLASS = "my-1 h-px bg-[var(--surface-2)]";
+
 export function TopBar() {
   const { t } = useTranslation("header");
   const { t: contentT } = useTranslation("market-content");
@@ -91,7 +165,7 @@ export function TopBar() {
   const [allMarkets, setAllMarkets] = useState<PredictionMarket[]>([]);
   const [cursor, setCursor] = useState(0);
 
-  // Mobile-vs-desktop gate. Matches the CSS breakpoint in .tb below so
+  // Mobile-vs-desktop gate. Matches the Tailwind max-[900px] breakpoint so
   // the nav links + search are removed from the DOM on mobile (not just
   // display:none), which keeps text-based tests deterministic — the
   // same "Rewards" label shouldn't appear twice in DOM order (once in
@@ -218,433 +292,133 @@ export function TopBar() {
   };
 
   return (
-    <>
-      <style>{`
-        .tb {
-          position: sticky;
-          top: 0;
-          z-index: 100;
-          background: var(--bg-deep);
-          border-bottom: 1px solid var(--border-1);
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        .tb-inner {
-          /* Match the app-shell row that contains the community chat panel
-             plus the prediction market area. This keeps brand/nav aligned
-             to the chat panel's left edge and the utility controls aligned
-             to the market area's right edge. */
-          width: 100%;
-          max-width: 1588px;
-          margin: 0 auto;
-          height: 64px;
-          display: flex;
-          align-items: center;
-          gap: 24px;
-          padding: 0 24px;
-          box-sizing: border-box;
-        }
-        .tb-brand {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          min-height: 44px;
-          font-family: 'Bebas Neue', 'Arial Narrow', Impact, sans-serif;
-          font-size: 28px;
-          font-weight: 400;
-          letter-spacing: 0.025em;
-          line-height: 1;
-          color: #121114;
-          text-decoration: none;
-          flex-shrink: 0;
-        }
-        .tb-brand-txt {
-          white-space: nowrap;
-          text-transform: uppercase;
-          transform: translateY(1px);
-        }
-        .tb-brand-txt .accent {
-          color: #25eb2a;
-          margin-left: 4px;
-          text-shadow: 0 0 12px rgba(37, 235, 42, 0.18);
-        }
-        .tb-wm {
-          font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-          font-weight: 700;
-          font-size: 23px;
-          letter-spacing: -0.01em;
-          line-height: 1;
-          color: var(--t1);
-          white-space: nowrap;
-        }
-        .tb-wm .tb-bang { color: var(--accent); margin-left: 1px; }
+    <header className={TOP_BAR_CLASS}>
+      <div className={TOP_BAR_INNER_CLASS}>
+        <Link
+          href="/predict"
+          className={TOP_BAR_BRAND_CLASS}
+          aria-label="Hula Na! — home"
+        >
+          <span className={TOP_BAR_WORDMARK_CLASS}>
+            Hula Na<span className="ml-px text-[var(--accent)]">!</span>
+          </span>
+        </Link>
 
-        .tb-nav {
-          display: flex;
-          gap: 6px;
-          flex: 1;
-          min-width: 0;
-        }
-        .tb-link {
-          display: inline-flex;
-          align-items: center;
-          min-height: 44px;
-          padding: 0 14px;
-          border-radius: 6px;
-          font-size: 15px;
-          font-weight: 500;
-          color: var(--t2);
-          text-decoration: none;
-          transition: color 180ms ease, background 180ms ease, box-shadow 180ms ease;
-          white-space: nowrap;
-        }
-        .tb-link:hover { color: var(--t1); background: var(--surface-2); }
-        .tb-link.is-active {
-          color: #061a10;
-          background: var(--yes);
-          font-weight: 600;
-        }
-
-        .tb-right {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          flex-shrink: 0;
-        }
-        .lang-select-wrap {
-          position: relative;
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          min-height: 40px;
-          max-width: 190px;
-          padding: 0 10px;
-          border-radius: var(--r-pill);
-          border: 1px solid var(--border-1);
-          background: var(--surface-1);
-          color: var(--t1);
-          font-size: 12px;
-          font-weight: 600;
-        }
-        .lang-select {
-          position: absolute;
-          inset: 0;
-          opacity: 0;
-          cursor: pointer;
-        }
-        .lang-current {
-          display: block;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-        .sr-only {
-          position: absolute;
-          width: 1px;
-          height: 1px;
-          padding: 0;
-          margin: -1px;
-          overflow: hidden;
-          clip: rect(0, 0, 0, 0);
-          white-space: nowrap;
-          border: 0;
-        }
-        .tb-search-wrap { position: relative; }
-        .tb-search-label {
-          position: relative;
-          display: inline-flex;
-          align-items: center;
-        }
-        .tb-search {
-          width: 280px;
-          height: 40px;
-          padding: 0 14px 0 36px;
-          border-radius: var(--r-pill);
-          border: 1px solid var(--border-1);
-          background: var(--surface-1);
-          color: var(--t1);
-          font-family: inherit;
-          font-size: 13px;
-          outline: none;
-          transition: border-color 120ms ease, box-shadow 120ms ease;
-        }
-        .tb-search::placeholder { color: var(--t3); }
-        .tb-search:focus-visible {
-          border-color: var(--accent);
-          box-shadow: 0 0 0 2px var(--accent-soft);
-        }
-        .tb-search-icon {
-          position: absolute;
-          left: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          color: var(--t3);
-          pointer-events: none;
-        }
-        .tb-search-results {
-          position: absolute;
-          top: calc(100% + 6px);
-          left: 0;
-          right: 0;
-          list-style: none;
-          margin: 0;
-          padding: 4px;
-          background: var(--surface-1);
-          border: 1px solid var(--border-1);
-          border-radius: var(--r-rh-md);
-          box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-          z-index: 110;
-          max-height: 360px;
-          overflow-y: auto;
-        }
-        .tb-search-hit {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          padding: 8px 12px;
-          border-radius: var(--r-sm);
-          cursor: pointer;
-        }
-        .tb-search-hit.active, .tb-search-hit:hover {
-          background: var(--accent-soft);
-        }
-        .tb-search-hit-title {
-          font-size: 13px;
-          font-weight: 600;
-          color: var(--t1);
-        }
-        .tb-search-hit-meta { font-size: 11px; color: var(--t3); }
-        .tb-search-empty {
-          padding: 14px 12px;
-          font-size: 12px;
-          color: var(--t3);
-          text-align: center;
-        }
-
-        .tb-balance {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 7px 12px;
-          border-radius: var(--r-pill);
-          background: var(--accent-soft);
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 13px;
-          font-weight: 600;
-          font-variant-numeric: tabular-nums;
-          /* --yes-text is the design system's AA-compliant green for text
-             on light surfaces (6.1:1 on cream per globals.css). Was using
-             --accent (#2be480) which only hit 1.47:1 against the mint-soft
-             pill bg — failed WCAG AA at the 13px size used here. */
-          color: var(--yes-text);
-        }
-        .tb-balance .lbl {
-          color: var(--t3);
-          font-family: 'Inter', sans-serif;
-          font-size: 11px;
-          font-weight: 500;
-        }
-
-        .tb-avatar {
-          /* WCAG / Apple HIG / Material recommend >=44px for touch
-             targets. Bumped from 36x36 -> 44x44 so mobile users don't
-             miss-tap. Font size and shadow scale proportionally; the
-             slightly larger avatar also reads as "this is YOU" more
-             clearly in the header chrome. */
-          width: 44px;
-          height: 44px;
-          border-radius: 50%;
-          background:
-            radial-gradient(circle at 35% 30%, rgba(255,255,255,0.25), transparent 60%),
-            linear-gradient(145deg, #a56bff 0%, #5b38a8 100%);
-          border: 1px solid rgba(255,255,255,0.18);
-          box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.25),
-            0 2px 6px rgba(0,0,0,0.3);
-          display: grid;
-          place-items: center;
-          font-weight: 700;
-          font-size: 15px;
-          color: #fff;
-          cursor: pointer;
-        }
-        .tb-avatar:hover { filter: brightness(1.08); }
-
-        .tb-btn {
-          min-height: 44px;
-          padding: 0 16px;
-          border-radius: var(--r-pill);
-          font-weight: 600;
-          font-size: 13px;
-          border: 0;
-          cursor: pointer;
-          font-family: inherit;
-          text-decoration: none;
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          transition: transform 150ms ease, filter 150ms ease;
-        }
-        .tb-btn-ghost { background: transparent; color: var(--t1); }
-        .tb-btn-ghost:hover { background: var(--surface-2); }
-        .tb-btn-accent {
-          color: #061a10;
-          background: var(--accent);
-        }
-        .tb-btn-accent:hover { filter: brightness(1.05); transform: translateY(-1px); }
-
-        .tb-menu {
-          position: absolute;
-          right: 0;
-          top: calc(100% + 6px);
-          min-width: 200px;
-          background: var(--surface-1);
-          border: 1px solid var(--border-1);
-          border-radius: var(--r-rh-md);
-          padding: 4px;
-          box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-          z-index: 110;
-        }
-        .tb-menu a, .tb-menu button {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 8px 12px;
-          border-radius: var(--r-sm);
-          font-size: 13px;
-          color: var(--t1);
-          background: transparent;
-          border: 0;
-          text-decoration: none;
-          width: 100%;
-          text-align: left;
-          cursor: pointer;
-          font-family: inherit;
-        }
-        .tb-menu a:hover, .tb-menu button:hover { background: var(--surface-2); }
-
-        /* Mobile: hide nav links + search, keep brand + balance + avatar */
-        @media (max-width: 900px) {
-          .tb-inner { gap: 12px; padding: 0 16px; height: 64px; }
-          .tb-brand { font-size: 24px; gap: 7px; }
-          /* Slightly smaller wordmark on mobile so it never crowds the
-             right rail / compresses the balance at 375px. */
-          .tb-wm { font-size: 20px; }
-          .tb-nav { display: none; }
-          .tb-search-wrap { display: none; }
-          .lang-select-wrap { max-width: 56px; padding: 0 12px; }
-          .lang-current { display: none; }
-        }
-      `}</style>
-
-      <header className="tb">
-        <div className="tb-inner">
-          <Link
-            href="/predict"
-            className="tb-brand"
-            aria-label="Hula Na! — home"
-          >
-            <span className="tb-wm">
-              Hula Na<span className="tb-bang">!</span>
-            </span>
-          </Link>
-
-          {isDesktop && (
-            <nav className="tb-nav" aria-label="Primary">
-              {NAV_LINKS.filter((l) => !l.requiresAuth || isAuthenticated).map(
-                (l) => (
+        {isDesktop && (
+          <nav className={TOP_BAR_NAV_CLASS} aria-label="Primary">
+            {NAV_LINKS.filter((l) => !l.requiresAuth || isAuthenticated).map(
+              (l) => {
+                const active = isActive(l.href);
+                return (
                   <Link
                     key={l.href}
                     href={l.href}
-                    className={`tb-link ${isActive(l.href) ? "is-active" : ""}`}
+                    className={`${TOP_BAR_LINK_CLASS} ${
+                      active
+                        ? TOP_BAR_LINK_ACTIVE_CLASS
+                        : TOP_BAR_LINK_INACTIVE_CLASS
+                    }`}
                   >
                     {t(l.labelKey)}
                   </Link>
-                ),
-              )}
-            </nav>
-          )}
+                );
+              },
+            )}
+          </nav>
+        )}
 
-          <div className="tb-right">
-            <div
-              className="tb-search-wrap"
-              ref={searchRef}
-              role="combobox"
-              aria-haspopup="listbox"
-              aria-expanded={searchOpen && searchResults.length > 0}
-              aria-owns="tb-search-listbox"
-              aria-activedescendant={
-                searchOpen && searchResults[cursor]
-                  ? `tb-search-option-${searchResults[cursor].id}`
-                  : undefined
-              }
-            >
-              <label className="tb-search-label">
-                <Search size={14} className="tb-search-icon" />
-                <input
-                  ref={searchInputRef}
-                  type="search"
-                  className="tb-search"
-                  placeholder={t("SEARCH_MARKETS_PLACEHOLDER")}
-                  aria-label={t("SEARCH_MARKETS")}
-                  aria-autocomplete="list"
-                  aria-controls="tb-search-listbox"
-                  value={query}
-                  onChange={(e) => {
-                    setQuery(e.target.value);
-                    setSearchOpen(true);
-                  }}
-                  onFocus={() => {
-                    setSearchOpen(true);
-                    void loadMarketsIfNeeded();
-                  }}
-                  onKeyDown={handleSearchKey}
-                />
-              </label>
-              {searchOpen && query.trim() !== "" && (
-                <ul
-                  id="tb-search-listbox"
-                  role="listbox"
-                  className="tb-search-results"
-                >
-                  {searchResults.length === 0 ? (
-                    <li className="tb-search-empty" aria-live="polite">
-                      {t("SEARCH_NO_MARKETS", { query: query.trim() })}
-                    </li>
-                  ) : (
-                    searchResults.map((m, i) => (
+        <div className={TOP_BAR_RIGHT_CLASS}>
+          <div
+            className={TOP_BAR_SEARCH_WRAP_CLASS}
+            ref={searchRef}
+            role="combobox"
+            aria-haspopup="listbox"
+            aria-expanded={searchOpen && searchResults.length > 0}
+            aria-owns="tb-search-listbox"
+            aria-activedescendant={
+              searchOpen && searchResults[cursor]
+                ? `tb-search-option-${searchResults[cursor].id}`
+                : undefined
+            }
+          >
+            <label className={TOP_BAR_SEARCH_LABEL_CLASS}>
+              <Search size={14} className={TOP_BAR_SEARCH_ICON_CLASS} />
+              <input
+                ref={searchInputRef}
+                type="search"
+                className={TOP_BAR_SEARCH_INPUT_CLASS}
+                placeholder={t("SEARCH_MARKETS_PLACEHOLDER")}
+                aria-label={t("SEARCH_MARKETS")}
+                aria-autocomplete="list"
+                aria-controls="tb-search-listbox"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setSearchOpen(true);
+                }}
+                onFocus={() => {
+                  setSearchOpen(true);
+                  void loadMarketsIfNeeded();
+                }}
+                onKeyDown={handleSearchKey}
+              />
+            </label>
+            {searchOpen && query.trim() !== "" && (
+              <ul
+                id="tb-search-listbox"
+                role="listbox"
+                className={TOP_BAR_SEARCH_RESULTS_CLASS}
+              >
+                {searchResults.length === 0 ? (
+                  <li className={TOP_BAR_SEARCH_EMPTY_CLASS} aria-live="polite">
+                    {t("SEARCH_NO_MARKETS", { query: query.trim() })}
+                  </li>
+                ) : (
+                  searchResults.map((m, i) => {
+                    const active = i === cursor;
+                    return (
                       <li
                         key={m.id}
                         id={`tb-search-option-${m.id}`}
                         role="option"
-                        aria-selected={i === cursor}
-                        className={`tb-search-hit ${i === cursor ? "active" : ""}`}
+                        aria-selected={active}
+                        className={`${TOP_BAR_SEARCH_HIT_CLASS} ${
+                          active
+                            ? TOP_BAR_SEARCH_HIT_ACTIVE_CLASS
+                            : TOP_BAR_SEARCH_HIT_INACTIVE_CLASS
+                        }`}
                         onMouseDown={(e) => {
                           e.preventDefault();
                           navigateToMarket(m.ticker);
                         }}
                         onMouseEnter={() => setCursor(i)}
                       >
-                        <span className="tb-search-hit-title">{m.title}</span>
-                        <span className="tb-search-hit-meta mono">
+                        <span className={TOP_BAR_SEARCH_HIT_TITLE_CLASS}>
+                          {m.title}
+                        </span>
+                        <span className={TOP_BAR_SEARCH_HIT_META_CLASS}>
                           {t("SEARCH_RESULT_META", {
                             ticker: m.ticker,
                             price: m.yesPriceCents,
                           })}
                         </span>
                       </li>
-                    ))
-                  )}
-                </ul>
-              )}
-            </div>
+                    );
+                  })
+                )}
+              </ul>
+            )}
+          </div>
 
-            {isAuthenticated && <TierPill />}
-            <LanguageSelector source={isDesktop ? "header" : "mobile_menu"} />
-            {isAuthenticated && (
-              <div className="tb-balance">
-                <span className="lbl">{t("BALANCE_LABEL")}</span>
-                <span>
-                  {/*
+          {isAuthenticated && <TierPill />}
+          <LanguageSelector source={isDesktop ? "header" : "mobile_menu"} />
+          {isAuthenticated && (
+            <div className={TOP_BAR_BALANCE_CLASS}>
+              <span className={TOP_BAR_BALANCE_LABEL_CLASS}>
+                {t("BALANCE_LABEL")}
+              </span>
+              <span>
+                {/*
                   Render a placeholder when the balance is undefined
                   (still loading) instead of "$0.00". The literal $0
                   was misleading: on every page navigation, between the
@@ -653,75 +427,77 @@ export function TopBar() {
                   "your account is empty" and panic. A neutral "—"
                   reads as "loading" without claiming a value.
                 */}
-                  {typeof balance === "number"
-                    ? `$${balance.toFixed(2)}`
-                    : "$—"}
-                </span>
-              </div>
-            )}
+                {typeof balance === "number"
+                  ? `$${balance.toFixed(2)}`
+                  : "$—"}
+              </span>
+            </div>
+          )}
 
-            {isLoading ? null : isAuthenticated ? (
-              <div style={{ position: "relative" }} ref={menuRef}>
-                <button
-                  type="button"
-                  className="tb-avatar"
-                  onClick={() => setUserMenuOpen((o) => !o)}
-                  aria-haspopup="menu"
-                  aria-expanded={userMenuOpen}
-                  aria-label={t("USER_MENU")}
-                >
-                  {initial}
-                </button>
-                {userMenuOpen && (
-                  <div className="tb-menu" role="menu">
-                    <Link
-                      href="/account"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      <UserIcon size={14} /> {t("NAV_ACCOUNT")}
-                    </Link>
-                    <Link
-                      href="/portfolio"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      <Wallet size={14} /> {t("NAV_PORTFOLIO")}
-                    </Link>
-                    <Link
-                      href="/account/settings"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      <Settings size={14} /> {t("NAV_SETTINGS")}
-                    </Link>
-                    <div
-                      style={{
-                        height: 1,
-                        background: "var(--surface-2)",
-                        margin: "4px 0",
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      style={{ color: "var(--no)" }}
-                    >
-                      <LogOut size={14} /> {t("LOG_OUT")}
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <>
-                <Link href="/auth/login" className="tb-btn tb-btn-ghost">
-                  {t("LOG_IN")}
-                </Link>
-                <Link href="/auth/register" className="tb-btn tb-btn-accent">
-                  {t("SIGN_UP")}
-                </Link>
-              </>
-            )}
-          </div>
+          {isLoading ? null : isAuthenticated ? (
+            <div className={TOP_BAR_MENU_WRAP_CLASS} ref={menuRef}>
+              <button
+                type="button"
+                className={TOP_BAR_AVATAR_CLASS}
+                onClick={() => setUserMenuOpen((o) => !o)}
+                aria-haspopup="menu"
+                aria-expanded={userMenuOpen}
+                aria-label={t("USER_MENU")}
+              >
+                {initial}
+              </button>
+              {userMenuOpen && (
+                <div className={TOP_BAR_MENU_CLASS} role="menu">
+                  <Link
+                    href="/account"
+                    className={TOP_BAR_MENU_ITEM_CLASS}
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <UserIcon size={14} /> {t("NAV_ACCOUNT")}
+                  </Link>
+                  <Link
+                    href="/portfolio"
+                    className={TOP_BAR_MENU_ITEM_CLASS}
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <Wallet size={14} /> {t("NAV_PORTFOLIO")}
+                  </Link>
+                  <Link
+                    href="/account/settings"
+                    className={TOP_BAR_MENU_ITEM_CLASS}
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <Settings size={14} /> {t("NAV_SETTINGS")}
+                  </Link>
+                  <div className={TOP_BAR_MENU_DIVIDER_CLASS} />
+                  <button
+                    type="button"
+                    className={TOP_BAR_MENU_LOGOUT_CLASS}
+                    onClick={handleLogout}
+                  >
+                    <LogOut size={14} /> {t("LOG_OUT")}
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Link
+                href="/auth/login"
+                className={`${TOP_BAR_BUTTON_CLASS} ${TOP_BAR_BUTTON_GHOST_CLASS}`}
+              >
+                {t("LOG_IN")}
+              </Link>
+              <Link
+                href="/auth/register"
+                className={`${TOP_BAR_BUTTON_CLASS} ${TOP_BAR_BUTTON_ACCENT_CLASS}`}
+              >
+                {t("SIGN_UP")}
+              </Link>
+            </>
+          )}
         </div>
-      </header>
-    </>
+      </div>
+    </header>
   );
 }

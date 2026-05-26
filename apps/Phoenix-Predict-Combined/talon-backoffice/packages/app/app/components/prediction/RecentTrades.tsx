@@ -75,6 +75,43 @@ function collapseTrades(trades: Trade[]): TapeRow[] {
   return order.map((k) => seen.get(k)!).filter(Boolean);
 }
 
+const RECENT_TRADES_CARD_CLASS =
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+const RECENT_TRADES_HEAD_CLASS =
+  "mb-[14px] flex items-center justify-between border-b border-[var(--border-1)] pb-3";
+const RECENT_TRADES_TITLE_CLASS =
+  "text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
+const RECENT_TRADES_SUB_CLASS =
+  "font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)]";
+const RECENT_TRADES_TAPE_CLASS =
+  "flex max-h-[264px] flex-col gap-0.5 overflow-hidden font-['IBM_Plex_Mono',_monospace] text-xs [font-variant-numeric:tabular-nums]";
+const RECENT_TRADES_ROW_CLASS =
+  "grid grid-cols-[56px_52px_1fr_52px] items-center gap-2 rounded-[var(--r-rh-sm)] px-2 py-1.5 text-[var(--t1)] [&:nth-child(odd)]:bg-white/[0.02]";
+const RECENT_TRADES_SIDE_BASE_CLASS =
+  "rounded-[var(--r-pill)] px-1.5 py-0.5 text-center text-[10px] font-semibold tracking-[0.08em]";
+const RECENT_TRADES_SIZE_CLASS = "text-[11px] text-[var(--t2)]";
+const RECENT_TRADES_TIME_CLASS = "text-right text-[10px] text-[var(--t3)]";
+
+function tradeSideClass(side: "yes" | "no" | "mint"): string {
+  const color =
+    side === "yes"
+      ? "bg-[var(--yes-soft)] text-[var(--yes-text)]"
+      : side === "no"
+        ? "bg-[var(--no-soft)] text-[var(--no-text)]"
+        : "bg-[var(--accent-soft)] text-[var(--accent)]";
+  return `${RECENT_TRADES_SIDE_BASE_CLASS} ${color}`;
+}
+
+function tradePriceClass(side?: "yes" | "no"): string {
+  const color =
+    side === "yes"
+      ? "text-[var(--yes-text)]"
+      : side === "no"
+        ? "text-[var(--no-text)]"
+        : "";
+  return `font-semibold ${color}`;
+}
+
 export default function RecentTrades({
   trades,
   limit = 12,
@@ -84,142 +121,66 @@ export default function RecentTrades({
   const visible = collapsed.slice(0, limit);
 
   return (
-    <>
-      <style>{`
-        .rt-card {
-          background: var(--surface-1);
-          border: 1px solid var(--border-1);
-          padding: 20px;
-          border-radius: var(--r-rh-lg);
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        .rt-head {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 14px;
-          padding-bottom: 12px;
-          border-bottom: 1px solid var(--border-1);
-        }
-        .rt-title {
-          font-size: 14px;
-          font-weight: 600;
-          color: var(--t1);
-          letter-spacing: -0.01em;
-        }
-        .rt-sub {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 11px;
-          color: var(--t3);
-        }
-        .rt-tape {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 12px;
-          font-variant-numeric: tabular-nums;
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          max-height: 264px;
-          overflow: hidden;
-        }
-        .rt-row {
-          display: grid;
-          grid-template-columns: 56px 52px 1fr 52px;
-          align-items: center;
-          padding: 6px 8px;
-          border-radius: var(--r-rh-sm);
-          color: var(--t1);
-          gap: 8px;
-        }
-        .rt-row:nth-child(odd) { background: rgba(255, 255, 255, 0.02); }
-        .rt-side {
-          font-weight: 600;
-          font-size: 10px;
-          letter-spacing: 0.08em;
-          text-align: center;
-          padding: 2px 6px;
-          border-radius: var(--r-pill);
-        }
-        .rt-side.yes { color: var(--yes-text); background: var(--yes-soft); }
-        .rt-side.no  { color: var(--no-text);  background: var(--no-soft); }
-        .rt-px { font-weight: 600; }
-        .rt-px.yes { color: var(--yes-text); }
-        .rt-px.no  { color: var(--no-text); }
-        .rt-sz { color: var(--t2); font-size: 11px; }
-        .rt-t  { text-align: right; color: var(--t3); font-size: 10px; }
-        .rt-empty {
-          text-align: center;
-          color: var(--t3);
-          font-size: 12px;
-          padding: 20px 0;
-        }
-      `}</style>
-      <section className="rt-card" aria-label={t("RECENT_TRADES")}>
-        <div className="rt-head">
-          <span className="rt-title">{t("RECENT_TRADES")}</span>
-          <span className="rt-sub">
-            {visible.length > 0
-              ? t("LAST_COUNT", { count: visible.length })
-              : t("TAPE")}
-          </span>
+    <section className={RECENT_TRADES_CARD_CLASS} aria-label={t("RECENT_TRADES")}>
+      <div className={RECENT_TRADES_HEAD_CLASS}>
+        <span className={RECENT_TRADES_TITLE_CLASS}>{t("RECENT_TRADES")}</span>
+        <span className={RECENT_TRADES_SUB_CLASS}>
+          {visible.length > 0
+            ? t("LAST_COUNT", { count: visible.length })
+            : t("TAPE")}
+        </span>
+      </div>
+      {visible.length === 0 ? (
+        <div className="py-5 text-center text-xs text-[var(--t3)]">
+          {t("NO_RECENT_TRADES")}
         </div>
-        {visible.length === 0 ? (
-          <div className="rt-empty">{t("NO_RECENT_TRADES")}</div>
-        ) : (
-          <div className="rt-tape">
-            {visible.map((row) => {
-              if (row.kind === "issuance") {
-                // Both sides minted in one match. Show a "MINT" pill and
-                // both prices side-by-side. Notional = qty * 100¢ ($1/contract).
-                const yPx = row.yesTrade.priceCents;
-                const nPx = row.noTrade.priceCents;
-                const qty = row.yesTrade.quantity;
-                const size = qty; // $1/contract on issuance
-                return (
-                  <div key={row.matchId} className="rt-row">
-                    <span
-                      className="rt-side"
-                      style={{
-                        background: "var(--accent-soft)",
-                        color: "var(--accent)",
-                      }}
-                      title={t("MINT_TITLE")}
-                    >
-                      {t("MINT")}
-                    </span>
-                    <span className="rt-px">
-                      <span className="rt-px yes">{yPx}¢</span>
-                      <span style={{ color: "var(--t3)", margin: "0 4px" }}>
-                        /
-                      </span>
-                      <span className="rt-px no">{nPx}¢</span>
-                    </span>
-                    <span className="rt-sz">${size.toFixed(2)}</span>
-                    <span className="rt-t">
-                      {timeAgo(row.yesTrade.tradedAt)}
-                    </span>
-                  </div>
-                );
-              }
-              const trade = row.trade;
-              const sideKey = trade.side === "yes" ? "yes" : "no";
-              const px =
-                trade.side === "yes" ? trade.priceCents : 100 - trade.priceCents;
-              const size = (trade.quantity * px) / 100;
+      ) : (
+        <div className={RECENT_TRADES_TAPE_CLASS}>
+          {visible.map((row) => {
+            if (row.kind === "issuance") {
+              // Both sides minted in one match. Show a "MINT" pill and
+              // both prices side-by-side. Notional = qty * 100¢ ($1/contract).
+              const yPx = row.yesTrade.priceCents;
+              const nPx = row.noTrade.priceCents;
+              const qty = row.yesTrade.quantity;
+              const size = qty; // $1/contract on issuance
               return (
-                <div key={trade.id} className="rt-row">
-                  <span className={`rt-side ${sideKey}`}>
-                    {t(trade.side === "yes" ? "YES" : "NO")}
+                <div key={row.matchId} className={RECENT_TRADES_ROW_CLASS}>
+                  <span className={tradeSideClass("mint")} title={t("MINT_TITLE")}>
+                    {t("MINT")}
                   </span>
-                  <span className={`rt-px ${sideKey}`}>{px}¢</span>
-                  <span className="rt-sz">${size.toFixed(2)}</span>
-                  <span className="rt-t">{timeAgo(trade.tradedAt)}</span>
+                  <span className={tradePriceClass()}>
+                    <span className={tradePriceClass("yes")}>{yPx}¢</span>
+                    <span className="mx-1 text-[var(--t3)]">/</span>
+                    <span className={tradePriceClass("no")}>{nPx}¢</span>
+                  </span>
+                  <span className={RECENT_TRADES_SIZE_CLASS}>${size.toFixed(2)}</span>
+                  <span className={RECENT_TRADES_TIME_CLASS}>
+                    {timeAgo(row.yesTrade.tradedAt)}
+                  </span>
                 </div>
               );
-            })}
-          </div>
-        )}
-      </section>
-    </>
+            }
+            const trade = row.trade;
+            const sideKey = trade.side === "yes" ? "yes" : "no";
+            const px =
+              trade.side === "yes" ? trade.priceCents : 100 - trade.priceCents;
+            const size = (trade.quantity * px) / 100;
+            return (
+              <div key={trade.id} className={RECENT_TRADES_ROW_CLASS}>
+                <span className={tradeSideClass(sideKey)}>
+                  {t(trade.side === "yes" ? "YES" : "NO")}
+                </span>
+                <span className={tradePriceClass(sideKey)}>{px}¢</span>
+                <span className={RECENT_TRADES_SIZE_CLASS}>${size.toFixed(2)}</span>
+                <span className={RECENT_TRADES_TIME_CLASS}>
+                  {timeAgo(trade.tradedAt)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
   );
 }

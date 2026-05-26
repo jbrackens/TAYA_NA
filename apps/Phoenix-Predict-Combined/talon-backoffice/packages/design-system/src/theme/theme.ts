@@ -1,7 +1,6 @@
-import { DefaultTheme } from 'styled-components';
 import { colors, typography, spacing, breakpoints, motion, radius } from '../tokens';
 
-export const darkTheme: DefaultTheme = {
+export const darkTheme = {
   colors: {
     background: colors.background,
     surface: colors.surface,

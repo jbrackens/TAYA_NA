@@ -1,87 +1,6 @@
 "use client";
 
-import styled from "styled-components";
 import { Card } from "../shared";
-
-const WidgetCard = styled(Card)`
-  padding: 20px;
-  grid-column: span 1;
-
-  @media (max-width: 1024px) {
-    grid-column: span 2;
-  }
-
-  @media (max-width: 640px) {
-    grid-column: span 1;
-  }
-`;
-
-const Label = styled.p`
-  margin: 0 0 12px 0;
-  font-size: 12px;
-  color: var(--t2, #4a4a4a);
-  text-transform: uppercase;
-  font-weight: 500;
-`;
-
-const Timeline = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-height: 300px;
-  overflow-y: auto;
-`;
-
-const TimelineItem = styled.div`
-  display: flex;
-  gap: 12px;
-  padding: 12px;
-  background-color: var(--border-1, #e5dfd2);
-  border-radius: 4px;
-  border-left: 3px solid var(--focus-ring, #0e7a53);
-`;
-
-const IconContainer = styled.div`
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: rgba(74, 126, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  font-size: 14px;
-`;
-
-const ItemContent = styled.div`
-  flex: 1;
-  min-width: 0;
-`;
-
-const ItemTitle = styled.div`
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--t1, #1a1a1a);
-  margin-bottom: 2px;
-`;
-
-const ItemDescription = styled.p`
-  margin: 0;
-  font-size: 11px;
-  color: var(--t2, #4a4a4a);
-`;
-
-const ItemTime = styled.span`
-  font-size: 10px;
-  color: var(--t2, #4a4a4a);
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 20px;
-  color: var(--t2, #4a4a4a);
-  font-size: 12px;
-`;
 
 interface ActivityLog {
   id: string;
@@ -127,29 +46,40 @@ export function RecentActivityWidget({
   };
 
   return (
-    <WidgetCard>
-      <Label>Recent Activity</Label>
+    <Card className="col-span-1 max-[640px]:col-span-1 min-[641px]:max-[1024px]:col-span-2">
+      <p className="mb-3 text-xs font-medium uppercase text-[var(--t2,#4a4a4a)]">
+        Recent Activity
+      </p>
 
       {activities.length > 0 ? (
-        <Timeline>
+        <div className="flex max-h-[300px] flex-col gap-3 overflow-y-auto">
           {activities.map((activity) => (
-            <TimelineItem key={activity.id}>
-              <IconContainer>
+            <div
+              key={activity.id}
+              className="flex gap-3 rounded border-l-[3px] [border-left-color:var(--focus-ring,#0e7a53)] bg-[var(--border-1,#e5dfd2)] p-3"
+            >
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[rgba(74,126,255,0.2)] text-sm">
                 {activity.icon || getActivityIcon(activity.action)}
-              </IconContainer>
-              <ItemContent>
-                <ItemTitle>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="mb-0.5 text-[13px] font-semibold text-[var(--t1,#1a1a1a)]">
                   {activity.actor} - {activity.action}
-                </ItemTitle>
-                <ItemDescription>{activity.description}</ItemDescription>
-                <ItemTime>{formatTime(activity.timestamp)}</ItemTime>
-              </ItemContent>
-            </TimelineItem>
+                </div>
+                <p className="m-0 text-[11px] text-[var(--t2,#4a4a4a)]">
+                  {activity.description}
+                </p>
+                <span className="text-[10px] text-[var(--t2,#4a4a4a)]">
+                  {formatTime(activity.timestamp)}
+                </span>
+              </div>
+            </div>
           ))}
-        </Timeline>
+        </div>
       ) : (
-        <EmptyState>No recent activity</EmptyState>
+        <div className="p-5 text-center text-xs text-[var(--t2,#4a4a4a)]">
+          No recent activity
+        </div>
       )}
-    </WidgetCard>
+    </Card>
   );
 }

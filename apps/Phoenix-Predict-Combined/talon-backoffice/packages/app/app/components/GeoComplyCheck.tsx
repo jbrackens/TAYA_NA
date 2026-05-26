@@ -42,33 +42,12 @@ export default function GeoComplyCheck({
     checkCompliance();
   }, [user?.id]);
 
-  const containerStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-  };
-
-  const loadingStyle: React.CSSProperties = {
-    padding: "16px",
-    backgroundColor: "#0a0e18",
-    border: "1px solid #1a1f3a",
-    borderRadius: "4px",
-    color: "#64748b",
-    fontSize: "13px",
-    textAlign: "center",
-  };
-
-  const errorStyle: React.CSSProperties = {
-    padding: "16px",
-    backgroundColor: "rgba(244, 63, 94, 0.1)",
-    border: "1px solid var(--no)",
-    borderRadius: "4px",
-    color: "var(--no)",
-    fontSize: "13px",
-  };
-
   if (loading) {
-    return <div style={loadingStyle}>Verifying your location...</div>;
+    return (
+      <div className="rounded border border-[#1a1f3a] bg-[#0a0e18] p-4 text-center text-[13px] text-[#64748b]">
+        Verifying your location...
+      </div>
+    );
   }
 
   if (!result?.allowed) {
@@ -77,12 +56,12 @@ export default function GeoComplyCheck({
     }
 
     return (
-      <div style={errorStyle}>
+      <div className="rounded border border-[var(--no)] bg-[rgba(244,63,94,0.1)] p-4 text-[13px] text-[var(--no)]">
         {result?.errorMessage ||
           "Your location is not allowed to access this content."}
       </div>
     );
   }
 
-  return <div style={containerStyle}>{children}</div>;
+  return <div className="flex flex-col gap-3">{children}</div>;
 }

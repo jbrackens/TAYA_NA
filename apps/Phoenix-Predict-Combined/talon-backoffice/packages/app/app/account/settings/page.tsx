@@ -40,6 +40,18 @@ const TIMEZONES = [
   "Australia/Sydney",
 ];
 
+const pageClass = "mx-auto max-w-[800px] px-4 py-6";
+const headerClass =
+  "mb-6 flex items-start justify-between max-[640px]:flex-col max-[640px]:gap-4";
+const backClass =
+  "rounded-lg border border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.22)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)]";
+const cardClass =
+  "mb-4 rounded-xl border border-[var(--border-1)] bg-[var(--surface-1)] px-6 py-[22px]";
+const descClass = "m-0 mb-4 text-[13px] leading-normal text-[var(--t3)]";
+const labelClass = "text-[13px] font-semibold text-[var(--t2)]";
+const selectClass =
+  "cursor-pointer rounded-lg border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.04)] px-3 py-2.5 text-sm text-[var(--t1)] outline-none transition-colors duration-150 focus:border-[var(--accent)]";
+
 function browserTimezone(): string {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
@@ -98,163 +110,112 @@ export default function SettingsPage() {
   }
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: settingsStyles }} />
-      <div className="set-page">
-        <div className="set-header">
-          <div>
-            <h1>{t("TITLE", "Settings")}</h1>
-            <p>{t("subtitle", "Language and timezone preferences for your account.")}</p>
-          </div>
-          <Link href="/account" className="set-back">
-            ← {t("back", "Back")}
-          </Link>
+    <div className={pageClass}>
+      <div className={headerClass}>
+        <div>
+          <h1 className="m-0 mb-1 text-[28px] font-extrabold tracking-[-0.02em] text-[var(--t1)]">
+            {t("TITLE", "Settings")}
+          </h1>
+          <p className="m-0 text-sm text-[var(--t3)]">
+            {t("subtitle", "Language and timezone preferences for your account.")}
+          </p>
         </div>
-
-        {savedFlash && <div className="set-flash">{savedFlash}</div>}
-
-        <section className="set-card">
-          <h2>{t("language.title", "Language")}</h2>
-          <p className="set-desc">
-            {t(
-              "language.description",
-              "Translations apply across the app immediately, and persist for future sessions on this device.",
-            )}
-          </p>
-          <div className="set-row">
-            <label className="set-label" htmlFor="set-lang">
-              {t("language.display", "Display language")}
-            </label>
-            <select
-              id="set-lang"
-              className="set-select"
-              value={language}
-              onChange={(e) => handleLanguageChange(e.target.value)}
-            >
-              {SUPPORTED_LANGUAGES.map((lng) => (
-                <option key={lng} value={lng}>
-                  {LANGUAGE_LABELS[lng] ?? lng.toUpperCase()}
-                </option>
-              ))}
-            </select>
-          </div>
-        </section>
-
-        <section className="set-card">
-          <h2>{t("timezone.title", "Timezone")}</h2>
-          <p className="set-desc">
-            {t(
-              "timezone.description",
-              "Used to display market close times and trade history in your local time. Defaults to your browser’s timezone",
-            )}
-            {browserTz ? ` (${browserTz})` : ""}.
-          </p>
-          <div className="set-row">
-            <label className="set-label" htmlFor="set-tz">
-              {t("timezone.display", "Display timezone")}
-            </label>
-            <select
-              id="set-tz"
-              className="set-select"
-              value={timezone}
-              onChange={(e) => handleTimezoneChange(e.target.value)}
-            >
-              {tzOptions.map((tz) => (
-                <option key={tz} value={tz}>
-                  {tz === browserTz ? `${tz} (${t("timezone.browser", "browser")})` : tz}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="set-preview">
-            <span className="set-preview-label">{t("timezone.preview", "Preview")}</span>
-            <span className="set-preview-value mono">{zonedExample}</span>
-          </div>
-        </section>
-
-        <p className="set-foot">
-          {t(
-            "footer.beforeLinks",
-            "Need security, password, or notification settings? Find them in",
-          )}{" "}
-          <Link href="/account/security">{t("footer.security", "Security")}</Link>,{" "}
-          <Link href="/account/notifications">{t("footer.alerts", "Alerts")}</Link>,{" "}
-          {t("footer.and", "and")}{" "}
-          <Link href="/account">{t("footer.account", "Account")}</Link>.
-        </p>
+        <Link href="/account" className={backClass}>
+          ← {t("back", "Back")}
+        </Link>
       </div>
-    </>
+
+      {savedFlash && (
+        <div className="mb-4 rounded-lg border border-[rgba(43,228,128,0.28)] bg-[var(--accent-soft)] px-[14px] py-2.5 text-[13px] font-semibold text-[var(--accent)]">
+          {savedFlash}
+        </div>
+      )}
+
+      <section className={cardClass}>
+        <h2 className="m-0 mb-1.5 text-base font-bold tracking-[-0.01em] text-[var(--t1)]">
+          {t("language.title", "Language")}
+        </h2>
+        <p className={descClass}>
+          {t(
+            "language.description",
+            "Translations apply across the app immediately, and persist for future sessions on this device.",
+          )}
+        </p>
+        <div className="flex flex-col gap-2">
+          <label className={labelClass} htmlFor="set-lang">
+            {t("language.display", "Display language")}
+          </label>
+          <select
+            id="set-lang"
+            className={selectClass}
+            value={language}
+            onChange={(e) => handleLanguageChange(e.target.value)}
+          >
+            {SUPPORTED_LANGUAGES.map((lng) => (
+              <option key={lng} value={lng}>
+                {LANGUAGE_LABELS[lng] ?? lng.toUpperCase()}
+              </option>
+            ))}
+          </select>
+        </div>
+      </section>
+
+      <section className={cardClass}>
+        <h2 className="m-0 mb-1.5 text-base font-bold tracking-[-0.01em] text-[var(--t1)]">
+          {t("timezone.title", "Timezone")}
+        </h2>
+        <p className={descClass}>
+          {t(
+            "timezone.description",
+            "Used to display market close times and trade history in your local time. Defaults to your browser’s timezone",
+          )}
+          {browserTz ? ` (${browserTz})` : ""}.
+        </p>
+        <div className="flex flex-col gap-2">
+          <label className={labelClass} htmlFor="set-tz">
+            {t("timezone.display", "Display timezone")}
+          </label>
+          <select
+            id="set-tz"
+            className={selectClass}
+            value={timezone}
+            onChange={(e) => handleTimezoneChange(e.target.value)}
+          >
+            {tzOptions.map((tz) => (
+              <option key={tz} value={tz}>
+                {tz === browserTz ? `${tz} (${t("timezone.browser", "browser")})` : tz}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="mt-[14px] flex items-baseline gap-[14px] border-t border-[var(--border-1)] pt-[14px]">
+          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]">
+            {t("timezone.preview", "Preview")}
+          </span>
+          <span className="font-mono text-sm font-semibold text-[var(--t1)] tabular-nums">
+            {zonedExample}
+          </span>
+        </div>
+      </section>
+
+      <p className="mt-2 text-[13px] leading-relaxed text-[var(--t3)]">
+        {t(
+          "footer.beforeLinks",
+          "Need security, password, or notification settings? Find them in",
+        )}{" "}
+        <Link href="/account/security" className="text-[var(--accent)] no-underline hover:underline">
+          {t("footer.security", "Security")}
+        </Link>
+        ,{" "}
+        <Link href="/account/notifications" className="text-[var(--accent)] no-underline hover:underline">
+          {t("footer.alerts", "Alerts")}
+        </Link>
+        , {t("footer.and", "and")}{" "}
+        <Link href="/account" className="text-[var(--accent)] no-underline hover:underline">
+          {t("footer.account", "Account")}
+        </Link>
+        .
+      </p>
+    </div>
   );
 }
-
-const settingsStyles = `
-  .set-page { max-width: 800px; margin: 0 auto; padding: 24px 16px; }
-
-  .set-header {
-    display: flex; justify-content: space-between; align-items: flex-start;
-    margin-bottom: 24px;
-  }
-  @media (max-width: 640px) {
-    .set-header { flex-direction: column; gap: 16px; }
-  }
-  .set-header h1 {
-    font-size: 28px; font-weight: 800; color: var(--t1); margin: 0 0 4px;
-    letter-spacing: -0.02em;
-  }
-  .set-header p { font-size: 14px; color: var(--t3); margin: 0; }
-
-  .set-back {
-    padding: 10px 16px; background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px; color: var(--t1); text-decoration: none; font-size: 13px;
-    font-weight: 600; transition: all 0.15s;
-  }
-  .set-back:hover { border-color: var(--accent); color: var(--accent); }
-
-  .set-flash {
-    padding: 10px 14px; margin-bottom: 16px;
-    background: var(--accent-soft, rgba(43, 228, 128, 0.08));
-    border: 1px solid rgba(43, 228, 128, 0.28);
-    border-radius: 8px; color: var(--accent);
-    font-size: 13px; font-weight: 600;
-  }
-
-  .set-card {
-    background: var(--surface-1, rgba(0, 0, 0, 0.22));
-    border: 1px solid var(--border-1, rgba(255, 255, 255, 0.08));
-    border-radius: 12px; padding: 22px 24px;
-    margin-bottom: 16px;
-  }
-  .set-card h2 {
-    font-size: 16px; font-weight: 700; color: var(--t1); margin: 0 0 6px;
-    letter-spacing: -0.01em;
-  }
-  .set-desc { font-size: 13px; color: var(--t3); margin: 0 0 16px; line-height: 1.5; }
-
-  .set-row { display: flex; flex-direction: column; gap: 8px; }
-  .set-label { font-size: 13px; font-weight: 600; color: var(--t2); }
-  .set-select {
-    padding: 10px 12px; background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px;
-    color: var(--t1); font-size: 14px; outline: none; cursor: pointer;
-    transition: border-color 0.15s;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  }
-  .set-select:focus { border-color: var(--accent); }
-
-  .set-preview {
-    display: flex; gap: 14px; align-items: baseline; margin-top: 14px;
-    padding-top: 14px; border-top: 1px solid var(--border-1, rgba(255, 255, 255, 0.08));
-  }
-  .set-preview-label {
-    font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--t3);
-  }
-  .set-preview-value { font-size: 14px; color: var(--t1); font-weight: 600; }
-  .mono { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
-
-  .set-foot {
-    margin-top: 8px; font-size: 13px; color: var(--t3); line-height: 1.6;
-  }
-  .set-foot a { color: var(--accent); text-decoration: none; }
-  .set-foot a:hover { text-decoration: underline; }
-`;

@@ -25,31 +25,21 @@ const LINKS = [
 
 export function PredictFooter() {
   return (
-    <footer
-      style={{
-        borderTop: "1px solid var(--border-1)",
-        padding: "16px 24px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 8,
-        fontSize: 12,
-        color: "var(--t3)",
-      }}
-    >
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
+    <footer className="flex flex-col gap-2 border-t border-[var(--border-1)] px-6 py-4 text-xs text-[var(--t3)]">
+      <div className="flex flex-wrap gap-4">
         {LINKS.map((l) => (
           <Link
             key={l.href}
             href={l.href}
-            style={{ color: "var(--t3)", textDecoration: "none" }}
+            className="text-[var(--t3)] no-underline"
           >
             {l.label}
           </Link>
         ))}
       </div>
-      <div style={{ opacity: 0.7 }}>
-        <span style={{ color: "var(--t1)", fontWeight: 700 }}>
-          Hula <span style={{ color: "var(--accent)" }}>Na!</span>
+      <div className="opacity-70">
+        <span className="font-bold text-[var(--t1)]">
+          Hula <span className="text-[var(--accent)]">Na!</span>
         </span>
         {" · "}© {YEAR} DORA Research, Inc.
         {" · "}Trade event contracts, not sports bets

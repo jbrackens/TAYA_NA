@@ -1,80 +1,8 @@
 "use client";
 
-import styled from "styled-components";
 import { Badge } from "../shared";
 import { useState } from "react";
 import { DataTable, ColumnDef } from "../shared/DataTable";
-
-const TableContainer = styled.div`
-  background-color: var(--surface-1, var(--t1, #1a1a1a));
-  border: 1px solid var(--border-1, #e5dfd2);
-  border-radius: 6px;
-  padding: 20px;
-`;
-
-const Title = styled.h3`
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--t1, #1a1a1a);
-`;
-
-const DetailModal = styled.div<{ $isOpen?: boolean }>`
-  display: ${(props) => (props.$isOpen ? "flex" : "none")};
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-`;
-
-const ModalContent = styled.div`
-  background-color: var(--surface-1, var(--t1, #1a1a1a));
-  border: 1px solid var(--border-1, #e5dfd2);
-  border-radius: 8px;
-  padding: 24px;
-  max-width: 600px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-`;
-
-const ModalTitle = styled.h2`
-  margin: 0 0 16px 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--t1, #1a1a1a);
-`;
-
-const JsonDiff = styled.div`
-  background-color: var(--border-1, #e5dfd2);
-  padding: 12px;
-  border-radius: 4px;
-  font-family: "Courier New", monospace;
-  font-size: 12px;
-  color: var(--focus-ring, #0e7a53);
-  overflow-x: auto;
-  margin-bottom: 12px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-const CloseButton = styled.button`
-  background-color: var(--focus-ring, #0e7a53);
-  color: var(--bg-deep, #f7f3ed);
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  margin-top: 16px;
-`;
 
 export interface AuditLogEntry {
   id: string;
@@ -91,6 +19,13 @@ interface AuditLogTableProps {
   logs?: AuditLogEntry[];
   isLoading?: boolean;
 }
+
+const detailLabelClassName = "mb-1 text-xs text-[var(--t2,#4a4a4a)]";
+const detailValueClassName = "text-sm font-semibold text-[var(--t1,#1a1a1a)]";
+const diffLabelClassName =
+  "mb-2 text-[13px] font-semibold text-[var(--t2,#4a4a4a)]";
+const jsonDiffClassName =
+  "mb-3 overflow-x-auto rounded bg-[var(--border-1,#e5dfd2)] p-3 font-['Courier_New',monospace] text-xs text-[var(--focus-ring,#0e7a53)]";
 
 export function AuditLogTable({
   logs = [],
@@ -127,13 +62,7 @@ export function AuditLogTable({
       label: "Entity ID",
       sortable: true,
       render: (value) => (
-        <span
-          style={{
-            fontFamily: "monospace",
-            fontSize: "12px",
-            color: "var(--t2, #4a4a4a)",
-          }}
-        >
+        <span className="font-mono text-xs text-[var(--t2,#4a4a4a)]">
           {value.substring(0, 8)}...
         </span>
       ),
@@ -148,8 +77,10 @@ export function AuditLogTable({
 
   return (
     <>
-      <TableContainer>
-        <Title>Audit Log</Title>
+      <div className="rounded-md border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] p-5">
+        <h3 className="m-0 mb-4 text-base font-semibold text-[var(--t1,#1a1a1a)]">
+          Audit Log
+        </h3>
         <DataTable<AuditLogEntry>
           columns={columns}
           data={logs}
@@ -158,110 +89,71 @@ export function AuditLogTable({
           loading={isLoading}
           emptyMessage="No audit logs available"
         />
-      </TableContainer>
+      </div>
 
-      <DetailModal $isOpen={!!expanded} onClick={() => setExpandedId(null)}>
+      <div
+        className={`fixed inset-0 z-[999] items-center justify-center bg-black/50 ${
+          expanded ? "flex" : "hidden"
+        }`}
+        onClick={() => setExpandedId(null)}
+      >
         {expanded && (
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalTitle>Audit Details</ModalTitle>
+          <div
+            className="max-h-[80vh] w-[90%] max-w-[600px] overflow-y-auto rounded-lg border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="m-0 mb-4 text-lg font-bold text-[var(--t1,#1a1a1a)]">
+              Audit Details
+            </h2>
 
-            <div style={{ marginBottom: "16px" }}>
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "var(--t2, #4a4a4a)",
-                  marginBottom: "4px",
-                }}
-              >
-                Action
-              </div>
-              <div
-                style={{
-                  fontSize: "14px",
-                  color: "var(--t1, #1a1a1a)",
-                  fontWeight: "600",
-                }}
-              >
+            <div className="mb-4">
+              <div className={detailLabelClassName}>Action</div>
+              <div className={detailValueClassName}>
                 {expanded.action} on {expanded.entityType} ({expanded.entityId})
               </div>
             </div>
 
-            <div style={{ marginBottom: "16px" }}>
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "var(--t2, #4a4a4a)",
-                  marginBottom: "4px",
-                }}
-              >
-                Actor
-              </div>
-              <div
-                style={{
-                  fontSize: "14px",
-                  color: "var(--focus-ring, #0e7a53)",
-                  fontWeight: "600",
-                }}
-              >
+            <div className="mb-4">
+              <div className={detailLabelClassName}>Actor</div>
+              <div className="text-sm font-semibold text-[var(--focus-ring,#0e7a53)]">
                 {expanded.actor}
               </div>
             </div>
 
-            <div style={{ marginBottom: "16px" }}>
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "var(--t2, #4a4a4a)",
-                  marginBottom: "4px",
-                }}
-              >
-                Timestamp
-              </div>
-              <div style={{ fontSize: "14px", color: "var(--t1, #1a1a1a)" }}>
+            <div className="mb-4">
+              <div className={detailLabelClassName}>Timestamp</div>
+              <div className="text-sm text-[var(--t1,#1a1a1a)]">
                 {new Date(expanded.timestamp).toLocaleString()}
               </div>
             </div>
 
             {expanded.dataBefore && (
               <>
-                <div
-                  style={{
-                    fontSize: "13px",
-                    color: "var(--t2, #4a4a4a)",
-                    marginBottom: "8px",
-                    fontWeight: "600",
-                  }}
-                >
-                  Before
-                </div>
-                <JsonDiff>
+                <div className={diffLabelClassName}>Before</div>
+                <div className={jsonDiffClassName}>
                   {JSON.stringify(expanded.dataBefore, null, 2)}
-                </JsonDiff>
+                </div>
               </>
             )}
 
             {expanded.dataAfter && (
               <>
-                <div
-                  style={{
-                    fontSize: "13px",
-                    color: "var(--t2, #4a4a4a)",
-                    marginBottom: "8px",
-                    fontWeight: "600",
-                  }}
-                >
-                  After
-                </div>
-                <JsonDiff>
+                <div className={diffLabelClassName}>After</div>
+                <div className={jsonDiffClassName}>
                   {JSON.stringify(expanded.dataAfter, null, 2)}
-                </JsonDiff>
+                </div>
               </>
             )}
 
-            <CloseButton onClick={() => setExpandedId(null)}>Close</CloseButton>
-          </ModalContent>
+            <button
+              className="mt-4 cursor-pointer rounded border-0 bg-[var(--focus-ring,#0e7a53)] px-4 py-2 font-semibold text-[var(--bg-deep,#f7f3ed)]"
+              onClick={() => setExpandedId(null)}
+            >
+              Close
+            </button>
+          </div>
         )}
-      </DetailModal>
+      </div>
     </>
   );
 }

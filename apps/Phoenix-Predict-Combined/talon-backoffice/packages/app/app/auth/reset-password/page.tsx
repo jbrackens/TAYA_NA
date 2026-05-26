@@ -5,6 +5,37 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { resetPassword } from "../../lib/api";
 
+const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
+const CARD_CLASS =
+  "relative w-full max-w-[440px] rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[34px] pb-[30px] pt-9 text-[var(--t1)]";
+const HEAD_CLASS = "mb-6 text-center";
+const EYEBROW_CLASS =
+  "mb-3.5 inline-block rounded-[var(--r-pill)] border border-[rgba(43,228,128,0.3)] bg-[var(--accent-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]";
+const TITLE_CLASS =
+  "m-0 mb-2 text-[28px] font-extrabold tracking-[-0.02em] text-[var(--t1)]";
+const SUBTITLE_CLASS = "m-0 text-sm leading-[1.55] text-[var(--t2)]";
+const ALERT_BASE_CLASS = "mb-4 rounded-[var(--r-sm)] px-3 py-2.5 text-xs";
+const ALERT_ERROR_CLASS =
+  "border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.12)] text-[var(--no-text)]";
+const ALERT_SUCCESS_CLASS =
+  "border border-[rgba(43,228,128,0.28)] bg-[rgba(43,228,128,0.1)] text-[var(--accent)]";
+const FORM_CLASS = "flex flex-col gap-3.5";
+const LABEL_CLASS =
+  "mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
+const INPUT_CLASS =
+  "w-full box-border rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3 text-sm text-[var(--t1)] outline-none transition-[border-color] duration-150 ease-[ease] placeholder:text-[var(--t4)] focus-visible:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] [font-family:inherit]";
+const FIELD_ERROR_CLASS = "mt-1 text-xs text-[var(--no-text)]";
+const SUBMIT_CLASS =
+  "cursor-pointer rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-4 py-3.5 text-sm font-bold tracking-[0.02em] text-[#04140a] transition-[transform,filter] duration-[180ms] ease-[ease] enabled:hover:-translate-y-px enabled:hover:brightness-[1.05] enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 [font-family:inherit]";
+const DIVIDER_CLASS =
+  "mb-4 mt-[22px] flex items-center gap-3 before:h-px before:flex-1 before:bg-[rgba(255,255,255,0.08)] before:content-[''] after:h-px after:flex-1 after:bg-[rgba(255,255,255,0.08)] after:content-['']";
+const DIVIDER_TEXT_CLASS =
+  "text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+const LINKS_CLASS = "text-center text-[13px] text-[var(--t2)]";
+const LINK_ROW_CLASS = "mb-2 last:mb-0";
+const LINK_CLASS =
+  "font-semibold text-[var(--accent)] no-underline hover:text-[var(--accent)] hover:brightness-110 hover:underline";
+
 interface Errors {
   [key: string]: string;
 }
@@ -85,91 +116,29 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="auth-shell">
-      <style>{`
-        .rp-head { text-align: center; margin-bottom: 24px; }
-        .rp-title {
-          margin: 0 0 8px;
-          font-size: 28px;
-          font-weight: 800;
-          color: var(--t1);
-          letter-spacing: -0.02em;
-        }
-        .rp-sub { margin: 0; font-size: 14px; color: var(--t2); line-height: 1.55; }
-        .rp-alert {
-          padding: 10px 12px;
-          margin-bottom: 16px;
-          border-radius: var(--r-sm);
-          font-size: 12px;
-        }
-        .rp-alert.err {
-          background: rgba(255, 155, 107, 0.12);
-          border: 1px solid rgba(255, 155, 107, 0.3);
-          color: var(--no-text);
-        }
-        .rp-alert.ok {
-          background: rgba(43, 228, 128, 0.1);
-          border: 1px solid rgba(43, 228, 128, 0.28);
-          color: var(--accent);
-        }
-        .rp-label {
-          display: block;
-          margin-bottom: 6px;
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--t3);
-        }
-        .rp-field-err {
-          font-size: 12px;
-          color: var(--no-text);
-          margin-top: 4px;
-        }
-        .rp-divider {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin: 22px 0 16px;
-        }
-        .rp-divider::before, .rp-divider::after {
-          content: "";
-          flex: 1;
-          height: 1px;
-          background: rgba(255, 255, 255, 0.08);
-        }
-        .rp-divider span {
-          font-size: 11px;
-          font-weight: 600;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--t3);
-        }
-        .rp-links {
-          text-align: center;
-          color: var(--t2);
-          font-size: 13px;
-        }
-        .rp-links > div { margin-bottom: 8px; }
-        .rp-links > div:last-child { margin-bottom: 0; }
-      `}</style>
-      <div className="auth-card">
-        <div className="rp-head">
-          <span className="auth-eyebrow">Set a new password</span>
-          <h1 className="rp-title">Reset password</h1>
-          <p className="rp-sub">Pick something at least 8 characters long.</p>
+    <div className={SHELL_CLASS}>
+      <div className={CARD_CLASS}>
+        <div className={HEAD_CLASS}>
+          <span className={EYEBROW_CLASS}>Set a new password</span>
+          <h1 className={TITLE_CLASS}>Reset password</h1>
+          <p className={SUBTITLE_CLASS}>Pick something at least 8 characters long.</p>
         </div>
 
-        {errorMessage && <div className="rp-alert err">{errorMessage}</div>}
-        {successMessage && <div className="rp-alert ok">{successMessage}</div>}
+        {errorMessage && (
+          <div className={`${ALERT_BASE_CLASS} ${ALERT_ERROR_CLASS}`}>
+            {errorMessage}
+          </div>
+        )}
+        {successMessage && (
+          <div className={`${ALERT_BASE_CLASS} ${ALERT_SUCCESS_CLASS}`}>
+            {successMessage}
+          </div>
+        )}
 
         {!submitted && token && (
-          <form
-            onSubmit={handleSubmit}
-            style={{ display: "flex", flexDirection: "column", gap: 14 }}
-          >
+          <form onSubmit={handleSubmit} className={FORM_CLASS}>
             <div>
-              <label className="rp-label" htmlFor="rp-pw">
+              <label className={LABEL_CLASS} htmlFor="rp-pw">
                 New password
               </label>
               <input
@@ -187,17 +156,16 @@ export default function ResetPasswordPage() {
                   }
                 }}
                 placeholder="At least 8 characters"
-                className="auth-input"
-                style={{ width: "100%", boxSizing: "border-box" }}
+                className={INPUT_CLASS}
                 disabled={isLoading}
               />
               {errors.password && (
-                <div className="rp-field-err">{errors.password}</div>
+                <div className={FIELD_ERROR_CLASS}>{errors.password}</div>
               )}
             </div>
 
             <div>
-              <label className="rp-label" htmlFor="rp-pw2">
+              <label className={LABEL_CLASS} htmlFor="rp-pw2">
                 Confirm password
               </label>
               <input
@@ -215,34 +183,33 @@ export default function ResetPasswordPage() {
                   }
                 }}
                 placeholder="Confirm your password"
-                className="auth-input"
-                style={{ width: "100%", boxSizing: "border-box" }}
+                className={INPUT_CLASS}
                 disabled={isLoading}
               />
               {errors.confirmPassword && (
-                <div className="rp-field-err">{errors.confirmPassword}</div>
+                <div className={FIELD_ERROR_CLASS}>{errors.confirmPassword}</div>
               )}
             </div>
 
-            <button type="submit" disabled={isLoading} className="auth-submit">
+            <button type="submit" disabled={isLoading} className={SUBMIT_CLASS}>
               {isLoading ? "Resetting…" : "Reset password"}
             </button>
           </form>
         )}
 
-        <div className="rp-divider">
-          <span>or</span>
+        <div className={DIVIDER_CLASS}>
+          <span className={DIVIDER_TEXT_CLASS}>or</span>
         </div>
 
-        <div className="rp-links">
-          <div>
-            <Link href="/auth/login" className="auth-link">
+        <div className={LINKS_CLASS}>
+          <div className={LINK_ROW_CLASS}>
+            <Link href="/auth/login" className={LINK_CLASS}>
               Back to login
             </Link>
           </div>
-          <div>
+          <div className={LINK_ROW_CLASS}>
             Need help?{" "}
-            <Link href="/auth/forgot-password" className="auth-link">
+            <Link href="/auth/forgot-password" className={LINK_CLASS}>
               Request another reset
             </Link>
           </div>

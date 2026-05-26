@@ -151,13 +151,13 @@ export default function RoleMatrix({
         <div>
           <Text strong>{role.name}</Text>
           {role.isSystem ? (
-            <Tag style={{ marginLeft: 8 }}>system</Tag>
+            <Tag className="!ml-2">system</Tag>
           ) : (
             <Button
               type="link"
               size="small"
               danger
-              style={{ paddingLeft: 8 }}
+              className="!pl-2"
               onClick={() => confirmDeleteRole(role)}
             >
               Delete
@@ -165,7 +165,7 @@ export default function RoleMatrix({
           )}
           {role.description ? (
             <div>
-              <Text type="secondary" style={{ fontSize: 12 }}>
+              <Text type="secondary" className="!text-xs">
                 {role.description}
               </Text>
             </div>
@@ -205,16 +205,9 @@ export default function RoleMatrix({
 
   return (
     <>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
+      <div className="mb-4 flex items-center justify-between">
         <div>
-          <Title level={4} style={{ margin: 0 }}>
+          <Title level={4} className="!m-0">
             Role matrix
           </Title>
           <Text type="secondary">

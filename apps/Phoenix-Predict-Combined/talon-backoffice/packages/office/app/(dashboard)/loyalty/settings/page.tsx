@@ -4,12 +4,12 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import {
-  CSSProperties,
   ChangeEvent,
   FormEvent,
   useEffect,
   useMemo,
   useState,
+  type CSSProperties,
 } from "react";
 import { adminFetch } from "../../../lib/admin-fetch";
 import {
@@ -41,6 +41,8 @@ interface LoyaltyRule {
   effectiveFrom?: string;
   effectiveTo?: string;
 }
+
+type CssVars = CSSProperties & Record<`--${string}`, string | number>;
 
 /** Convert an RFC3339 string to a datetime-local input value (YYYY-MM-DDTHH:mm). */
 function rfc3339ToLocal(rfc: string | undefined): string {
@@ -322,7 +324,7 @@ function LoyaltySettingsPageContent() {
   if (isLoading) {
     return (
       <div>
-        <h1 style={pageTitleStyle}>Loyalty Settings</h1>
+        <h1 className={pageTitleClassName}>Loyalty Settings</h1>
         <LoadingSpinner
           centered={true}
           text="Loading loyalty rules and tiers..."
@@ -346,28 +348,28 @@ function LoyaltySettingsPageContent() {
 
   return (
     <div>
-      <div style={headerRowStyle}>
+      <div className={headerRowClassName}>
         <div>
-          <h1 style={pageTitleStyle}>Loyalty Settings</h1>
-          <p style={subtitleStyle}>
+          <h1 className={pageTitleClassName}>Loyalty Settings</h1>
+          <p className={subtitleClassName}>
             Tune tier thresholds and settled-bet accrual rules without leaving
             the backoffice.
           </p>
         </div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <Link
-            href="/loyalty"
-            style={{ ...buttonStyle(), textDecoration: "none" }}
-          >
+        <div className="flex flex-wrap gap-2.5">
+          <Link href="/loyalty" className={`${buttonClassName()} no-underline`}>
             Back to Loyalty
           </Link>
-          <button style={buttonStyle()} onClick={() => void loadConfig()}>
+          <button
+            className={buttonClassName()}
+            onClick={() => void loadConfig()}
+          >
             Refresh
           </button>
         </div>
       </div>
 
-      <div style={metricsGridStyle}>
+      <div className={metricsGridClassName}>
         <MetricCard
           label="Tier Ladder"
           value={tierSummary || "No active tiers"}
@@ -381,51 +383,41 @@ function LoyaltySettingsPageContent() {
 
       {/* Tier Ladder Visual */}
       {sortedTiers.length > 0 && (
-        <div style={tierLadderContainerStyle}>
-          <h3
-            style={{ ...sectionTitleStyle, fontSize: 14, margin: "0 0 12px 0" }}
-          >
+        <div className={tierLadderContainerClassName}>
+          <h3 className="m-0 mb-3 text-sm font-bold text-[var(--t1,#1a1a1a)]">
             Tier Ladder
           </h3>
-          <div style={tierLadderRowStyle}>
+          <div className={tierLadderRowClassName}>
             {sortedTiers.map((tier, idx) => (
-              <div
-                key={tier.tierCode}
-                style={{ display: "flex", alignItems: "flex-end", gap: 0 }}
-              >
+              <div key={tier.tierCode} className="flex items-end gap-0">
                 <div
-                  style={tierStepStyle(idx, sortedTiers.length, tier.active)}
+                  className={tierStepClassName(tier.active)}
+                  style={tierStepVars(idx, sortedTiers.length)}
                 >
                   <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: tier.active ? "#39ff14" : "var(--t3, #8b8378)",
-                    }}
+                    className={
+                      tier.active
+                        ? "text-[13px] font-bold text-[#39ff14]"
+                        : "text-[13px] font-bold text-[var(--t3,#8b8378)]"
+                    }
                   >
                     {tier.displayName}
                   </div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: "var(--t3, #8b8378)",
-                      marginTop: 2,
-                    }}
-                  >
+                  <div className="mt-0.5 text-[11px] text-[var(--t3,#8b8378)]">
                     {tier.minLifetimePoints.toLocaleString()} pts
                   </div>
                   <div
-                    style={{
-                      fontSize: 10,
-                      marginTop: 4,
-                      color: tier.active ? "var(--accent, #2be480)" : "#475569",
-                    }}
+                    className={
+                      tier.active
+                        ? "mt-1 text-[10px] text-[var(--accent,#2be480)]"
+                        : "mt-1 text-[10px] text-[#475569]"
+                    }
                   >
                     {tier.active ? "Active" : "Inactive"}
                   </div>
                 </div>
                 {idx < sortedTiers.length - 1 && (
-                  <div style={tierLadderConnectorStyle} />
+                  <div className={tierLadderConnectorClassName} />
                 )}
               </div>
             ))}
@@ -433,18 +425,20 @@ function LoyaltySettingsPageContent() {
         </div>
       )}
 
-      {feedback ? <div style={successBannerStyle}>{feedback}</div> : null}
-      {error ? <div style={errorBannerStyle}>{error}</div> : null}
+      {feedback ? (
+        <div className={successBannerClassName}>{feedback}</div>
+      ) : null}
+      {error ? <div className={errorBannerClassName}>{error}</div> : null}
 
-      <div style={settingsGridStyle}>
-        <div style={surfaceCardStyle}>
-          <h2 style={sectionTitleStyle}>Tier Management</h2>
-          <div style={pillRowStyle}>
+      <div className={settingsGridClassName}>
+        <div className={surfaceCardClassName}>
+          <h2 className={sectionTitleClassName}>Tier Management</h2>
+          <div className={pillRowClassName}>
             {tiers.map((tier) => (
               <button
                 key={tier.tierCode}
                 type="button"
-                style={pillStyle(selectedTierCode === tier.tierCode)}
+                className={pillClassName(selectedTierCode === tier.tierCode)}
                 onClick={() => setSelectedTierCode(tier.tierCode)}
               >
                 {tier.displayName}
@@ -453,12 +447,12 @@ function LoyaltySettingsPageContent() {
           </div>
 
           {tierDraft ? (
-            <form style={formStyle} onSubmit={saveTier}>
-              <div style={formColumnsStyle}>
-                <label style={labelStyle}>
+            <form className={formClassName} onSubmit={saveTier}>
+              <div className={formColumnsClassName}>
+                <label className={labelClassName}>
                   Display Name
                   <input
-                    style={inputStyle}
+                    className={inputClassName}
                     value={tierDraft.displayName}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
                       setTierDraft((current) =>
@@ -469,10 +463,10 @@ function LoyaltySettingsPageContent() {
                     }
                   />
                 </label>
-                <label style={labelStyle}>
+                <label className={labelClassName}>
                   Rank
                   <input
-                    style={inputStyle}
+                    className={inputClassName}
                     type="number"
                     value={tierDraft.rank}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
@@ -485,11 +479,11 @@ function LoyaltySettingsPageContent() {
                   />
                 </label>
               </div>
-              <div style={formColumnsStyle}>
-                <label style={labelStyle}>
+              <div className={formColumnsClassName}>
+                <label className={labelClassName}>
                   Min Lifetime Points
                   <input
-                    style={inputStyle}
+                    className={inputClassName}
                     type="number"
                     value={tierDraft.minLifetimePoints}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
@@ -504,10 +498,10 @@ function LoyaltySettingsPageContent() {
                     }
                   />
                 </label>
-                <label style={labelStyle}>
+                <label className={labelClassName}>
                   Min Rolling 30D Points
                   <input
-                    style={inputStyle}
+                    className={inputClassName}
                     type="number"
                     value={tierDraft.minRolling30dPoints || 0}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
@@ -523,7 +517,7 @@ function LoyaltySettingsPageContent() {
                   />
                 </label>
               </div>
-              <label style={checkboxLabelStyle}>
+              <label className={checkboxLabelClassName}>
                 <input
                   type="checkbox"
                   checked={tierDraft.active}
@@ -539,41 +533,30 @@ function LoyaltySettingsPageContent() {
               </label>
 
               {/* Benefits Editor */}
-              <div style={benefitsSectionStyle}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 10,
-                  }}
-                >
-                  <span
-                    style={{ color: "#cbd5e1", fontSize: 13, fontWeight: 600 }}
-                  >
+              <div className={benefitsSectionClassName}>
+                <div className="mb-2.5 flex items-center justify-between">
+                  <span className="text-[13px] font-semibold text-[#cbd5e1]">
                     Tier Benefits
                   </span>
                   <button
                     type="button"
-                    style={smallButtonStyle}
+                    className={smallButtonClassName}
                     onClick={addBenefitRow}
                   >
                     + Add Benefit
                   </button>
                 </div>
                 {benefitRows.length === 0 ? (
-                  <div style={helperTextStyle}>
+                  <div className={helperTextClassName}>
                     No benefits configured. Click &quot;Add Benefit&quot; to
                     define key-value pairs.
                   </div>
                 ) : (
-                  <div
-                    style={{ display: "flex", flexDirection: "column", gap: 8 }}
-                  >
+                  <div className="flex flex-col gap-2">
                     {benefitRows.map((row, idx) => (
-                      <div key={idx} style={benefitRowStyle}>
+                      <div key={idx} className={benefitRowClassName}>
                         <input
-                          style={{ ...inputStyle, flex: "1 1 40%" }}
+                          className={`${inputClassName} flex-[1_1_40%]`}
                           value={row.key}
                           onChange={(event: ChangeEvent<HTMLInputElement>) =>
                             updateBenefitRow(idx, "key", event.target.value)
@@ -581,7 +564,7 @@ function LoyaltySettingsPageContent() {
                           placeholder="e.g. cashback_rate"
                         />
                         <input
-                          style={{ ...inputStyle, flex: "1 1 40%" }}
+                          className={`${inputClassName} flex-[1_1_40%]`}
                           value={row.value}
                           onChange={(event: ChangeEvent<HTMLInputElement>) =>
                             updateBenefitRow(idx, "value", event.target.value)
@@ -590,7 +573,7 @@ function LoyaltySettingsPageContent() {
                         />
                         <button
                           type="button"
-                          style={removeBenefitBtnStyle}
+                          className={removeBenefitBtnClassName}
                           onClick={() => removeBenefitRow(idx)}
                           title="Remove benefit"
                         >
@@ -604,32 +587,32 @@ function LoyaltySettingsPageContent() {
 
               <button
                 type="submit"
-                style={buttonStyle(isSavingTier)}
+                className={buttonClassName(isSavingTier)}
                 disabled={isSavingTier}
               >
                 {isSavingTier ? "Saving Tier..." : "Save Tier"}
               </button>
             </form>
           ) : (
-            <div style={helperTextStyle}>No tier selected.</div>
+            <div className={helperTextClassName}>No tier selected.</div>
           )}
         </div>
 
-        <div style={surfaceCardStyle}>
-          <h2 style={sectionTitleStyle}>Accrual Rules</h2>
+        <div className={surfaceCardClassName}>
+          <h2 className={sectionTitleClassName}>Accrual Rules</h2>
 
           {/* Mode toggle: Edit Existing / Create New */}
-          <div style={{ ...pillRowStyle, marginBottom: 12 }}>
+          <div className={pillRowTightClassName}>
             <button
               type="button"
-              style={pillStyle(ruleMode === "edit")}
+              className={pillClassName(ruleMode === "edit")}
               onClick={() => setRuleMode("edit")}
             >
               Edit Existing
             </button>
             <button
               type="button"
-              style={pillStyle(ruleMode === "create")}
+              className={pillClassName(ruleMode === "create")}
               onClick={() => setRuleMode("create")}
             >
               + Create Rule
@@ -638,26 +621,26 @@ function LoyaltySettingsPageContent() {
 
           {ruleMode === "edit" ? (
             <>
-              <div style={pillRowStyle}>
+              <div className={pillRowClassName}>
                 {rules.map((rule) => (
                   <button
                     key={rule.ruleId}
                     type="button"
-                    style={pillStyle(selectedRuleId === rule.ruleId)}
+                    className={pillClassName(selectedRuleId === rule.ruleId)}
                     onClick={() => setSelectedRuleId(rule.ruleId)}
                   >
-                    <span style={statusDotStyle(rule.active)} />
+                    <span className={statusDotClassName(rule.active)} />
                     {rule.name}
                   </button>
                 ))}
               </div>
 
               {ruleDraft ? (
-                <form style={formStyle} onSubmit={saveRule}>
-                  <label style={labelStyle}>
+                <form className={formClassName} onSubmit={saveRule}>
+                  <label className={labelClassName}>
                     Rule Name
                     <input
-                      style={inputStyle}
+                      className={inputClassName}
                       value={ruleDraft.name}
                       onChange={(event: ChangeEvent<HTMLInputElement>) =>
                         setRuleDraft((current) =>
@@ -668,11 +651,11 @@ function LoyaltySettingsPageContent() {
                       }
                     />
                   </label>
-                  <div style={formColumnsStyle}>
-                    <label style={labelStyle}>
+                  <div className={formColumnsClassName}>
+                    <label className={labelClassName}>
                       Source Type
                       <input
-                        style={inputStyle}
+                        className={inputClassName}
                         value={ruleDraft.sourceType}
                         onChange={(event: ChangeEvent<HTMLInputElement>) =>
                           setRuleDraft((current) =>
@@ -683,10 +666,10 @@ function LoyaltySettingsPageContent() {
                         }
                       />
                     </label>
-                    <label style={labelStyle}>
+                    <label className={labelClassName}>
                       Multiplier
                       <input
-                        style={inputStyle}
+                        className={inputClassName}
                         type="number"
                         step="0.1"
                         value={ruleDraft.multiplier}
@@ -703,11 +686,11 @@ function LoyaltySettingsPageContent() {
                       />
                     </label>
                   </div>
-                  <div style={formColumnsStyle}>
-                    <label style={labelStyle}>
+                  <div className={formColumnsClassName}>
+                    <label className={labelClassName}>
                       Min Qualified Stake (cents)
                       <input
-                        style={inputStyle}
+                        className={inputClassName}
                         type="number"
                         value={ruleDraft.minQualifiedStakeCents}
                         onChange={(event: ChangeEvent<HTMLInputElement>) =>
@@ -724,10 +707,10 @@ function LoyaltySettingsPageContent() {
                         }
                       />
                     </label>
-                    <label style={labelStyle}>
+                    <label className={labelClassName}>
                       Max Points / Event
                       <input
-                        style={inputStyle}
+                        className={inputClassName}
                         type="number"
                         value={ruleDraft.maxPointsPerEvent || 0}
                         onChange={(event: ChangeEvent<HTMLInputElement>) =>
@@ -745,11 +728,11 @@ function LoyaltySettingsPageContent() {
                   </div>
 
                   {/* Effective Date Range */}
-                  <div style={formColumnsStyle}>
-                    <label style={labelStyle}>
+                  <div className={formColumnsClassName}>
+                    <label className={labelClassName}>
                       Effective From
                       <input
-                        style={inputStyle}
+                        className={inputClassName}
                         type="datetime-local"
                         value={rfc3339ToLocal(ruleDraft.effectiveFrom)}
                         onChange={(event: ChangeEvent<HTMLInputElement>) =>
@@ -766,10 +749,10 @@ function LoyaltySettingsPageContent() {
                         }
                       />
                     </label>
-                    <label style={labelStyle}>
+                    <label className={labelClassName}>
                       Effective To
                       <input
-                        style={inputStyle}
+                        className={inputClassName}
                         type="datetime-local"
                         value={rfc3339ToLocal(ruleDraft.effectiveTo)}
                         onChange={(event: ChangeEvent<HTMLInputElement>) =>
@@ -788,7 +771,7 @@ function LoyaltySettingsPageContent() {
                     </label>
                   </div>
 
-                  <label style={checkboxLabelStyle}>
+                  <label className={checkboxLabelClassName}>
                     <input
                       type="checkbox"
                       checked={ruleDraft.active}
@@ -802,29 +785,29 @@ function LoyaltySettingsPageContent() {
                     />
                     Rule is active
                   </label>
-                  <div style={helperTextStyle}>
+                  <div className={helperTextClassName}>
                     This MVP applies the first active settled-bet rule. Use one
                     active default rule at a time until multi-rule evaluation is
                     expanded.
                   </div>
                   <button
                     type="submit"
-                    style={buttonStyle(isSavingRule)}
+                    className={buttonClassName(isSavingRule)}
                     disabled={isSavingRule}
                   >
                     {isSavingRule ? "Saving Rule..." : "Save Rule"}
                   </button>
                 </form>
               ) : (
-                <div style={helperTextStyle}>No rule selected.</div>
+                <div className={helperTextClassName}>No rule selected.</div>
               )}
             </>
           ) : (
-            <form style={formStyle} onSubmit={createRule}>
-              <label style={labelStyle}>
+            <form className={formClassName} onSubmit={createRule}>
+              <label className={labelClassName}>
                 Rule Name
                 <input
-                  style={inputStyle}
+                  className={inputClassName}
                   value={newRuleDraft.name}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setNewRuleDraft((current) => ({
@@ -836,11 +819,11 @@ function LoyaltySettingsPageContent() {
                   required
                 />
               </label>
-              <div style={formColumnsStyle}>
-                <label style={labelStyle}>
+              <div className={formColumnsClassName}>
+                <label className={labelClassName}>
                   Source Type
                   <input
-                    style={inputStyle}
+                    className={inputClassName}
                     value={newRuleDraft.sourceType}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
                       setNewRuleDraft((current) => ({
@@ -850,10 +833,10 @@ function LoyaltySettingsPageContent() {
                     }
                   />
                 </label>
-                <label style={labelStyle}>
+                <label className={labelClassName}>
                   Multiplier
                   <input
-                    style={inputStyle}
+                    className={inputClassName}
                     type="number"
                     step="0.1"
                     min="0.1"
@@ -867,11 +850,11 @@ function LoyaltySettingsPageContent() {
                   />
                 </label>
               </div>
-              <div style={formColumnsStyle}>
-                <label style={labelStyle}>
+              <div className={formColumnsClassName}>
+                <label className={labelClassName}>
                   Min Qualified Stake (cents)
                   <input
-                    style={inputStyle}
+                    className={inputClassName}
                     type="number"
                     min="0"
                     value={newRuleDraft.minQualifiedStakeCents}
@@ -883,10 +866,10 @@ function LoyaltySettingsPageContent() {
                     }
                   />
                 </label>
-                <label style={labelStyle}>
+                <label className={labelClassName}>
                   Max Points / Event (0 = unlimited)
                   <input
-                    style={inputStyle}
+                    className={inputClassName}
                     type="number"
                     min="0"
                     value={newRuleDraft.maxPointsPerEvent || 0}
@@ -899,7 +882,7 @@ function LoyaltySettingsPageContent() {
                   />
                 </label>
               </div>
-              <label style={checkboxLabelStyle}>
+              <label className={checkboxLabelClassName}>
                 <input
                   type="checkbox"
                   checked={newRuleDraft.active}
@@ -912,13 +895,13 @@ function LoyaltySettingsPageContent() {
                 />
                 Rule is active
               </label>
-              <div style={helperTextStyle}>
+              <div className={helperTextClassName}>
                 Creates a new accrual rule. You can set effective dates after
                 creation by editing the rule.
               </div>
               <button
                 type="submit"
-                style={buttonStyle(isCreatingRule)}
+                className={buttonClassName(isCreatingRule)}
                 disabled={isCreatingRule}
               >
                 {isCreatingRule ? "Creating Rule..." : "Create Rule"}
@@ -933,278 +916,109 @@ function LoyaltySettingsPageContent() {
 
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
-    <div style={surfaceCardStyle}>
-      <div style={metricLabelStyle}>{label}</div>
-      <div style={metricValueStyle}>{value}</div>
+    <div className={surfaceCardClassName}>
+      <div className={metricLabelClassName}>{label}</div>
+      <div className={metricValueClassName}>{value}</div>
     </div>
   );
 }
 
 /* ── Style constants ── */
 
-const pageTitleStyle: CSSProperties = {
-  fontSize: 28,
-  fontWeight: 700,
-  marginBottom: 8,
-  color: "var(--t1, #1a1a1a)",
-};
+const pageTitleClassName =
+  "mb-2 text-[28px] font-bold text-[var(--t1,#1a1a1a)]";
+const subtitleClassName = "m-0 text-sm text-[var(--t2,#4a4a4a)]";
+const headerRowClassName = "mb-5 flex items-end justify-between gap-4";
+const metricsGridClassName =
+  "mb-5 grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4";
+const settingsGridClassName =
+  "grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-5";
+const surfaceCardClassName =
+  "rounded-xl border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,var(--t1,#1a1a1a))] p-5";
+const metricLabelClassName =
+  "mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--t3,#8b8378)]";
+const metricValueClassName = "text-2xl font-extrabold text-[var(--t1,#1a1a1a)]";
+const sectionTitleClassName =
+  "m-0 mb-4 text-lg font-bold text-[var(--t1,#1a1a1a)]";
+const formClassName = "flex flex-col gap-[14px]";
+const formColumnsClassName =
+  "grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-3";
+const labelClassName =
+  "flex flex-col gap-1.5 text-[13px] font-semibold text-[#cbd5e1]";
+const inputClassName =
+  "w-full rounded-lg border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] px-3 py-2.5 text-sm text-[var(--t1,#1a1a1a)]";
+const checkboxLabelClassName =
+  "flex items-center gap-2.5 text-[13px] font-semibold text-[#cbd5e1]";
+const helperTextClassName = "text-xs leading-[1.5] text-[var(--t3,#8b8378)]";
+const pillRowClassName = "mb-4 flex flex-wrap gap-2";
+const pillRowTightClassName = "mb-3 flex flex-wrap gap-2";
 
-const subtitleStyle: CSSProperties = {
-  margin: 0,
-  color: "var(--t2, #4a4a4a)",
-  fontSize: 14,
-};
-
-const headerRowStyle: CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 16,
-  alignItems: "flex-end",
-  marginBottom: 20,
-};
-
-const metricsGridStyle: CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: 16,
-  marginBottom: 20,
-};
-
-const settingsGridStyle: CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-  gap: 20,
-};
-
-const surfaceCardStyle: CSSProperties = {
-  background: "var(--surface-1, var(--t1, #1a1a1a))",
-  border: "1px solid var(--border-1, #e5dfd2)",
-  borderRadius: 12,
-  padding: 20,
-};
-
-const metricLabelStyle: CSSProperties = {
-  color: "var(--t3, #8b8378)",
-  fontSize: 12,
-  fontWeight: 600,
-  marginBottom: 8,
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
-};
-
-const metricValueStyle: CSSProperties = {
-  color: "var(--t1, #1a1a1a)",
-  fontSize: 24,
-  fontWeight: 800,
-};
-
-const sectionTitleStyle: CSSProperties = {
-  margin: "0 0 16px 0",
-  color: "var(--t1, #1a1a1a)",
-  fontSize: 18,
-  fontWeight: 700,
-};
-
-const formStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-};
-
-const formColumnsStyle: CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-  gap: 12,
-};
-
-const labelStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 6,
-  color: "#cbd5e1",
-  fontSize: 13,
-  fontWeight: 600,
-};
-
-const inputStyle: CSSProperties = {
-  width: "100%",
-  background: "var(--surface-1, #ffffff)",
-  border: "1px solid var(--border-1, #e5dfd2)",
-  borderRadius: 8,
-  padding: "10px 12px",
-  color: "var(--t1, #1a1a1a)",
-  fontSize: 14,
-};
-
-const checkboxLabelStyle: CSSProperties = {
-  display: "flex",
-  gap: 10,
-  alignItems: "center",
-  color: "#cbd5e1",
-  fontSize: 13,
-  fontWeight: 600,
-};
-
-const helperTextStyle: CSSProperties = {
-  color: "var(--t3, #8b8378)",
-  fontSize: 12,
-  lineHeight: 1.5,
-};
-
-const pillRowStyle: CSSProperties = {
-  display: "flex",
-  gap: 8,
-  flexWrap: "wrap",
-  marginBottom: 16,
-};
-
-function pillStyle(active: boolean): CSSProperties {
-  return {
-    padding: "8px 12px",
-    borderRadius: 999,
-    border: `1px solid ${active ? "var(--focus-ring, #0e7a53)" : "#1e3a5f"}`,
-    background: active ? "var(--focus-ring, #0e7a53)" : "#0f172a",
-    color: active ? "#0b1020" : "#cbd5e1",
-    cursor: "pointer",
-    fontSize: 12,
-    fontWeight: 700,
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 6,
-  };
+function pillClassName(active: boolean): string {
+  return [
+    "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-bold",
+    active
+      ? "border-[var(--focus-ring,#0e7a53)] bg-[var(--focus-ring,#0e7a53)] text-[#0b1020]"
+      : "border-[#1e3a5f] bg-[#0f172a] text-[#cbd5e1]",
+  ].join(" ");
 }
 
-function statusDotStyle(active: boolean): CSSProperties {
-  return {
-    display: "inline-block",
-    width: 8,
-    height: 8,
-    borderRadius: "50%",
-    backgroundColor: active ? "#39ff14" : "#475569",
-    flexShrink: 0,
-  };
+function statusDotClassName(active: boolean): string {
+  return `inline-block h-2 w-2 shrink-0 rounded-full ${
+    active ? "bg-[#39ff14]" : "bg-[#475569]"
+  }`;
 }
 
-function buttonStyle(disabled = false): CSSProperties {
-  return {
-    padding: "10px 16px",
-    backgroundColor: disabled ? "#3b4c7a" : "var(--focus-ring, #0e7a53)",
-    color: "var(--bg-deep, #f7f3ed)",
-    border: "none",
-    borderRadius: 8,
-    cursor: disabled ? "not-allowed" : "pointer",
-    fontWeight: 700,
-    fontSize: 14,
-  };
+function buttonClassName(disabled = false): string {
+  return [
+    "rounded-lg border-0 px-4 py-2.5 text-sm font-bold text-[var(--bg-deep,#f7f3ed)]",
+    disabled
+      ? "cursor-not-allowed bg-[#3b4c7a]"
+      : "cursor-pointer bg-[var(--focus-ring,#0e7a53)]",
+  ].join(" ");
 }
 
-const smallButtonStyle: CSSProperties = {
-  padding: "4px 10px",
-  backgroundColor: "transparent",
-  color: "var(--focus-ring, #0e7a53)",
-  border: "1px solid var(--focus-ring, #0e7a53)",
-  borderRadius: 6,
-  cursor: "pointer",
-  fontWeight: 600,
-  fontSize: 12,
-};
-
-const successBannerStyle: CSSProperties = {
-  marginBottom: 16,
-  padding: "12px 14px",
-  borderRadius: 10,
-  background: "rgba(34,197,94,0.14)",
-  border: "1px solid rgba(34,197,94,0.24)",
-  color: "#dcfce7",
-};
-
-const errorBannerStyle: CSSProperties = {
-  marginBottom: 16,
-  padding: "12px 14px",
-  borderRadius: 10,
-  background: "rgba(248,113,113,0.14)",
-  border: "1px solid rgba(248,113,113,0.24)",
-  color: "#fee2e2",
-};
+const smallButtonClassName =
+  "cursor-pointer rounded-md border border-[var(--focus-ring,#0e7a53)] bg-transparent px-2.5 py-1 text-xs font-semibold text-[var(--focus-ring,#0e7a53)]";
+const successBannerClassName =
+  "mb-4 rounded-[10px] border border-[rgba(34,197,94,0.24)] bg-[rgba(34,197,94,0.14)] px-[14px] py-3 text-[#dcfce7]";
+const errorBannerClassName =
+  "mb-4 rounded-[10px] border border-[rgba(248,113,113,0.24)] bg-[rgba(248,113,113,0.14)] px-[14px] py-3 text-[#fee2e2]";
 
 /* Benefits editor styles */
 
-const benefitsSectionStyle: CSSProperties = {
-  border: "1px solid #1e3a5f",
-  borderRadius: 8,
-  padding: 14,
-  background: "rgba(15, 23, 42, 0.5)",
-};
-
-const benefitRowStyle: CSSProperties = {
-  display: "flex",
-  gap: 8,
-  alignItems: "center",
-};
-
-const removeBenefitBtnStyle: CSSProperties = {
-  width: 28,
-  height: 28,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  borderRadius: 6,
-  border: "1px solid #7f1d1d",
-  background: "rgba(127, 29, 29, 0.3)",
-  color: "var(--no-text, #a8472d)",
-  cursor: "pointer",
-  fontSize: 16,
-  fontWeight: 700,
-  flexShrink: 0,
-};
+const benefitsSectionClassName =
+  "rounded-lg border border-[#1e3a5f] bg-[rgba(15,23,42,0.5)] p-[14px]";
+const benefitRowClassName = "flex items-center gap-2";
+const removeBenefitBtnClassName =
+  "flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md border border-[#7f1d1d] bg-[rgba(127,29,29,0.3)] text-base font-bold text-[var(--no-text,#a8472d)]";
 
 /* Tier Ladder Visual styles */
 
-const tierLadderContainerStyle: CSSProperties = {
-  background: "var(--surface-1, var(--t1, #1a1a1a))",
-  border: "1px solid var(--border-1, #e5dfd2)",
-  borderRadius: 12,
-  padding: 20,
-  marginBottom: 20,
-};
+const tierLadderContainerClassName =
+  "mb-5 rounded-xl border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,var(--t1,#1a1a1a))] p-5";
+const tierLadderRowClassName = "flex items-end gap-0 overflow-x-auto";
 
-const tierLadderRowStyle: CSSProperties = {
-  display: "flex",
-  alignItems: "flex-end",
-  gap: 0,
-  overflowX: "auto",
-};
-
-function tierStepStyle(
-  idx: number,
-  total: number,
-  active: boolean,
-): CSSProperties {
+function tierStepHeight(idx: number, total: number): number {
   const minH = 48;
   const maxH = 110;
-  const h = total > 1 ? minH + ((maxH - minH) * idx) / (total - 1) : maxH;
-  return {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    minWidth: 100,
-    height: h,
-    background: active ? "rgba(74, 126, 255, 0.12)" : "rgba(15, 23, 42, 0.6)",
-    border: `1px solid ${active ? "var(--focus-ring, #0e7a53)" : "#1e3a5f"}`,
-    borderRadius: 8,
-    padding: "8px 12px",
-    textAlign: "center",
-  };
+  return total > 1 ? minH + ((maxH - minH) * idx) / (total - 1) : maxH;
 }
 
-const tierLadderConnectorStyle: CSSProperties = {
-  width: 24,
-  height: 2,
-  background: "#1e3a5f",
-  flexShrink: 0,
-  alignSelf: "center",
-};
+function tierStepVars(idx: number, total: number): CssVars {
+  return { "--tier-step-height": `${tierStepHeight(idx, total)}px` };
+}
+
+function tierStepClassName(active: boolean): string {
+  return [
+    "flex h-[var(--tier-step-height)] min-w-[100px] flex-col items-center justify-center rounded-lg px-3 py-2 text-center",
+    active
+      ? "border border-[var(--focus-ring,#0e7a53)] bg-[rgba(74,126,255,0.12)]"
+      : "border border-[#1e3a5f] bg-[rgba(15,23,42,0.6)]",
+  ].join(" ");
+}
+
+const tierLadderConnectorClassName =
+  "h-0.5 w-6 shrink-0 self-center bg-[#1e3a5f]";
 
 export default function LoyaltySettingsPage() {
   return (

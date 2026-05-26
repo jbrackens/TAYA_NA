@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import Modal from "./Modal";
 import CodeInput from "./CodeInput";
 import {
@@ -61,37 +61,6 @@ export default function MfaModal({
     }
   };
 
-  const containerStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-  };
-
-  const titleStyle: React.CSSProperties = {
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#e2e8f0",
-    marginBottom: "8px",
-  };
-
-  const descriptionStyle: React.CSSProperties = {
-    fontSize: "13px",
-    color: "#64748b",
-    marginBottom: "12px",
-  };
-
-  const buttonStyle: React.CSSProperties = {
-    padding: "8px 12px",
-    backgroundColor: "transparent",
-    border: "1px solid var(--accent)",
-    color: "var(--accent)",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontSize: "13px",
-    fontWeight: "600",
-    transition: "all 0.2s",
-  };
-
   return (
     <Modal
       open={open}
@@ -99,10 +68,12 @@ export default function MfaModal({
       title="Two-Factor Authentication"
       maxWidth={400}
     >
-      <div style={containerStyle}>
+      <div className="flex flex-col gap-4">
         <div>
-          <h3 style={titleStyle}>Enter verification code</h3>
-          <p style={descriptionStyle}>
+          <h3 className="mb-2 text-base font-semibold text-[#e2e8f0]">
+            Enter verification code
+          </h3>
+          <p className="mb-3 text-[13px] text-[#64748b]">
             We've sent a 6-digit code to your registered phone number.
           </p>
         </div>
@@ -115,21 +86,13 @@ export default function MfaModal({
         />
 
         {error && (
-          <div
-            style={{ fontSize: "13px", color: "var(--no)", marginTop: "8px" }}
-          >
-            {error}
-          </div>
+          <div className="mt-2 text-[13px] text-[var(--no)]">{error}</div>
         )}
 
         <button
           onClick={handleRequestNewCode}
           disabled={requestingCode}
-          style={{
-            ...buttonStyle,
-            opacity: requestingCode ? 0.6 : 1,
-            cursor: requestingCode ? "not-allowed" : "pointer",
-          }}
+          className="cursor-pointer rounded border border-[var(--accent)] bg-transparent px-3 py-2 text-[13px] font-semibold text-[var(--accent)] transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {requestingCode ? "Requesting..." : "Request New Code"}
         </button>

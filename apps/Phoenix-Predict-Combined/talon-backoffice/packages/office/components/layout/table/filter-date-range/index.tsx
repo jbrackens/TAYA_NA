@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { Space, DatePicker } from "antd";
+import { Space, DatePicker, Button } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { RefsCollection } from "../../../../lib/utils/filters";
 import { useTranslation } from "i18n";
-import { FilterButton } from "./index.styled";
 import dayjs, { Dayjs } from "dayjs";
 
 type TableFilterDateRangeProps = {
@@ -69,7 +68,7 @@ const TableFilterDateRange = ({
   };
 
   return (
-    <div style={{ padding: 8 }}>
+    <div className="p-2">
       <DatePicker
         ref={(node) => {
           refs && refs.set(dataIndex, node);
@@ -77,7 +76,7 @@ const TableFilterDateRange = ({
         placeholder={t("TABLE_FILTER_FROM")}
         value={searchSinceValue ? dayjs(searchSinceValue) : undefined}
         onChange={handleSinceChange}
-        style={{ display: "flex", marginBottom: "5px" }}
+        className="mb-[5px] flex"
       />
       <DatePicker
         ref={(node) => {
@@ -86,21 +85,22 @@ const TableFilterDateRange = ({
         placeholder={t("TABLE_FILTER_TO")}
         value={searchUntilValue ? dayjs(searchUntilValue) : undefined}
         onChange={handleUntilChange}
-        style={{ display: "flex", marginBottom: "5px" }}
+        className="mb-[5px] flex"
       />
 
       <Space>
-        <FilterButton onClick={handleReset} size="small">
+        <Button className="w-[90px]" onClick={handleReset} size="small">
           {t("TABLE_FILTER_RESET")}
-        </FilterButton>
-        <FilterButton
+        </Button>
+        <Button
+          className="w-[90px]"
           type="primary"
           onClick={handleSearch}
           icon={<SearchOutlined />}
           size="small"
         >
           {t("TABLE_FILTER_APPLY")}
-        </FilterButton>
+        </Button>
       </Space>
     </div>
   );
@@ -126,7 +126,7 @@ TableFilterDateRange.getColumnSearchProps = (
     />
   ),
   filterIcon: (filtered: boolean) => (
-    <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
+    <SearchOutlined className={filtered ? "text-[#1890ff]" : undefined} />
   ),
 });
 

@@ -84,88 +84,27 @@ export default function AcceptTermsModal({
     }
   };
 
-  const containerStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-  };
-
-  const contentWrapperStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-  };
-
-  const scrollContainerStyle: React.CSSProperties = {
-    height: "300px",
-    overflowY: "auto",
-    backgroundColor: "#0a0e18",
-    border: "1px solid #1a1f3a",
-    borderRadius: "4px",
-    padding: "12px",
-    fontSize: "13px",
-    color: "#cbd5e1",
-    lineHeight: "1.6",
-  };
-
-  const buttonGroupStyle: React.CSSProperties = {
-    display: "flex",
-    gap: "12px",
-    marginTop: "8px",
-  };
-
-  const acceptButtonStyle: React.CSSProperties = {
-    flex: 1,
-    padding: "10px 16px",
-    backgroundColor: isScrolledToBottom ? "var(--accent)" : "#4b5563",
-    color: isScrolledToBottom ? "#0f1225" : "#cbd5e1",
-    border: "none",
-    borderRadius: "4px",
-    cursor: isScrolledToBottom ? "pointer" : "not-allowed",
-    fontWeight: "600",
-    fontSize: "13px",
-    transition: "all 0.2s",
-    opacity: loading ? 0.6 : 1,
-  };
-
-  const logoutButtonStyle: React.CSSProperties = {
-    flex: 1,
-    padding: "10px 16px",
-    backgroundColor: "transparent",
-    border: "1px solid #64748b",
-    color: "#64748b",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "13px",
-    transition: "all 0.2s",
-  };
-
-  const errorStyle: React.CSSProperties = {
-    fontSize: "13px",
-    color: "var(--no)",
-    padding: "8px 12px",
-    backgroundColor: "rgba(244, 63, 94, 0.1)",
-    borderRadius: "4px",
-  };
+  const scrollContainerClass =
+    "h-[300px] overflow-y-auto rounded border border-[#1a1f3a] bg-[#0a0e18] p-3 text-[13px] leading-[1.6] text-slate-300";
+  const acceptButtonClass = [
+    "flex-1 rounded border-0 px-4 py-2.5 text-[13px] font-semibold transition-all duration-200",
+    isScrolledToBottom
+      ? "cursor-pointer bg-[var(--accent)] text-[#0f1225] enabled:hover:bg-[#ea580c]"
+      : "cursor-not-allowed bg-gray-600 text-slate-300",
+    loading ? "opacity-60" : "opacity-100",
+  ].join(" ");
 
   return (
     <Modal open={open} onClose={() => {}} title="Terms and Conditions">
-      <div style={containerStyle}>
-        <div style={contentWrapperStyle}>
-          <p style={{ fontSize: "13px", color: "#cbd5e1", margin: 0 }}>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
+          <p className="m-0 text-[13px] text-slate-300">
             Please review and accept our terms and conditions to continue.
           </p>
 
           {contentLoading ? (
             <div
-              style={{
-                ...scrollContainerStyle,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#64748b",
-              }}
+              className={`${scrollContainerClass} flex items-center justify-center text-slate-500`}
             >
               Loading terms...
             </div>
@@ -173,52 +112,37 @@ export default function AcceptTermsModal({
             <div
               ref={scrollContainerRef}
               onScroll={handleScroll}
-              style={scrollContainerStyle}
+              className={scrollContainerClass}
             >
               {termsContent}
             </div>
           )}
 
           {!contentLoading && !isScrolledToBottom && (
-            <div style={{ fontSize: "12px", color: "var(--accent)" }}>
+            <div className="text-xs text-[var(--accent)]">
               Please scroll down to read the complete terms
             </div>
           )}
 
-          {error && <div style={errorStyle}>{error}</div>}
+          {error && (
+            <div className="rounded bg-[rgba(244,63,94,0.1)] px-3 py-2 text-[13px] text-[var(--no)]">
+              {error}
+            </div>
+          )}
         </div>
 
-        <div style={buttonGroupStyle}>
+        <div className="mt-2 flex gap-3">
           <button
             onClick={handleAccept}
             disabled={!isScrolledToBottom || loading}
-            style={acceptButtonStyle}
-            onMouseEnter={(e) => {
-              if (isScrolledToBottom && !loading) {
-                e.currentTarget.style.backgroundColor = "#ea580c";
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = isScrolledToBottom
-                ? "var(--accent)"
-                : "#4b5563";
-            }}
+            className={acceptButtonClass}
           >
             {loading ? "Accepting..." : "Accept Terms"}
           </button>
           <button
             onClick={onLogout}
             disabled={loading}
-            style={logoutButtonStyle}
-            onMouseEnter={(e) => {
-              if (!loading) {
-                e.currentTarget.style.backgroundColor =
-                  "rgba(100, 116, 139, 0.1)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
+            className="flex-1 cursor-pointer rounded border border-slate-500 bg-transparent px-4 py-2.5 text-[13px] font-semibold text-slate-500 transition-all duration-200 enabled:hover:bg-slate-500/10"
           >
             Logout
           </button>

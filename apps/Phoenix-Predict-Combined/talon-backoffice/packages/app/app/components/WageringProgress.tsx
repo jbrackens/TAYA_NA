@@ -39,15 +39,16 @@ export const WageringProgress: React.FC<WageringProgressProps> = ({
   return (
     <div className="flex flex-col gap-1.5">
       {/* Progress bar */}
-      <div className="w-full h-2 bg-[#1a1f3a] rounded-full overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all duration-500"
-          style={{
-            width: `${clampedPct}%`,
-            backgroundColor: clampedPct >= 100 ? "#22c55e" : "var(--accent)",
-          }}
-        />
-      </div>
+      <progress
+        className={`block h-2 w-full appearance-none overflow-hidden rounded-full border-0 bg-[#1a1f3a] [&::-moz-progress-bar]:rounded-full [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-bar]:bg-[#1a1f3a] [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:transition-all [&::-webkit-progress-value]:duration-500 ${
+          clampedPct >= 100
+            ? "[&::-moz-progress-bar]:bg-[#22c55e] [&::-webkit-progress-value]:bg-[#22c55e]"
+            : "[&::-moz-progress-bar]:bg-[var(--accent)] [&::-webkit-progress-value]:bg-[var(--accent)]"
+        }`}
+        value={clampedPct}
+        max={100}
+        aria-label="Wagering progress"
+      />
 
       {/* Labels */}
       <div className="flex items-center justify-between text-xs">

@@ -98,9 +98,5 @@ module.exports = {
       },
     };
   },
-  compiler: {
-    styledComponents: true,
-  },
-  // compiler.styledComponents removed — no longer using styled-components in app/
   trailingSlash: true,
 };

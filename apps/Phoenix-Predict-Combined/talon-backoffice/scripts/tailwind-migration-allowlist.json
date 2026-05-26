@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "description": "Baseline for the Hula Na Tailwind migration audit. Lower or remove entries as files are migrated.",
+  "targets": [
+    "packages/app",
+    "packages/office",
+    "packages/design-system"
+  ],
+  "rules": [
+    {
+      "id": "styled-components-import",
+      "label": "styled-components imports"
+    },
+    {
+      "id": "styled-component-factory",
+      "label": "styled(...) factories"
+    },
+    {
+      "id": "component-style-block",
+      "label": "component <style> blocks"
+    },
+    {
+      "id": "ui-layout-inline-style",
+      "label": "UI layout inline styles"
+    }
+  ],
+  "entries": [
+    {
+      "allowed": 1,
+      "file": "packages/app/app/components/DataTable.tsx",
+      "rule": "ui-layout-inline-style"
+    },
+    {
+      "allowed": 1,
+      "file": "packages/design-system/src/components/Skeleton.tsx",
+      "rule": "ui-layout-inline-style"
+    },
+    {
+      "allowed": 1,
+      "file": "packages/office/app/components/shared/DataTable.tsx",
+      "rule": "ui-layout-inline-style"
+    },
+    {
+      "allowed": 1,
+      "file": "packages/office/components/layout/header/logo/index.tsx",
+      "rule": "ui-layout-inline-style"
+    },
+    {
+      "allowed": 1,
+      "file": "packages/office/pages/_document.tsx",
+      "rule": "component-style-block"
+    }
+  ]
+}

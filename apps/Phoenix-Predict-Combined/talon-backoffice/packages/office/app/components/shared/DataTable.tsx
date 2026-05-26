@@ -1,108 +1,13 @@
 "use client";
 
-import styled from "styled-components";
 import { useState, useMemo } from "react";
 
-const TableContainer = styled.div`
-  width: 100%;
-  overflow-x: auto;
-`;
-
-const StyledTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  background-color: var(--surface-1, #ffffff);
-  border-radius: 12px;
-  overflow: hidden;
-
-  th {
-    text-align: left;
-    padding: 12px;
-    border-bottom: 1px solid var(--border-1, #e5dfd2);
-    font-weight: 600;
-    font-size: 12px;
-    color: var(--t2, #4a4a4a);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    background-color: var(--surface-2, #fcfaf5);
-    cursor: pointer;
-    user-select: none;
-
-    &:hover {
-      background-color: var(--accent-soft, rgba(43, 228, 128, 0.14));
-    }
-  }
-
-  td {
-    padding: 12px;
-    border-bottom: 1px solid var(--border-1, #e5dfd2);
-    font-size: 14px;
-    color: var(--t1, #1a1a1a);
-  }
-
-  tbody tr {
-    transition: background-color 0.2s ease;
-
-    &:hover {
-      background-color: var(--surface-2, #fcfaf5);
-    }
-  }
-`;
-
-const NoDataRow = styled.tr`
-  td {
-    text-align: center;
-    padding: 32px 12px;
-    color: var(--t3, #8b8378);
-  }
-`;
-
-const PaginationContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border-1, #e5dfd2);
-`;
-
-const PaginationInfo = styled.span`
-  font-size: 12px;
-  color: var(--t3, #8b8378);
-`;
-
-const PaginationControls = styled.div`
-  display: flex;
-  gap: 8px;
-`;
-
-const SortIndicator = styled.span`
-  margin-left: 4px;
-  color: var(--focus-ring, #0e7a53);
-`;
-
-const PaginationButton = styled.button<{ disabled?: boolean }>`
-  padding: 6px 12px;
-  background-color: var(--surface-1, #ffffff);
-  color: var(--t1, #1a1a1a);
-  border: 1px solid var(--border-1, #e5dfd2);
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 12px;
-  transition: all 0.2s ease;
-
-  &:hover:not(:disabled) {
-    background-color: var(--surface-2, #fcfaf5);
-    border-color: var(--focus-ring, #0e7a53);
-    color: var(--focus-ring, #0e7a53);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
+const headerCellClass =
+  "cursor-pointer select-none border-b border-[var(--border-1,#e5dfd2)] bg-[var(--surface-2,#fcfaf5)] p-3 text-left text-xs font-semibold uppercase tracking-[0.04em] text-[var(--t2,#4a4a4a)] hover:bg-[var(--accent-soft,rgba(43,228,128,0.14))]";
+const bodyCellClass =
+  "border-b border-[var(--border-1,#e5dfd2)] p-3 text-sm text-[var(--t1,#1a1a1a)]";
+const paginationButtonClass =
+  "cursor-pointer rounded-lg border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] px-3 py-1.5 text-xs font-semibold text-[var(--t1,#1a1a1a)] transition-all duration-200 hover:enabled:border-[var(--focus-ring,#0e7a53)] hover:enabled:bg-[var(--surface-2,#fcfaf5)] hover:enabled:text-[var(--focus-ring,#0e7a53)] disabled:cursor-not-allowed disabled:opacity-50";
 
 export interface ColumnDef<T> {
   key: keyof T;
@@ -171,21 +76,22 @@ export function DataTable<T extends Record<string, any>>({
 
   return (
     <div>
-      <TableContainer>
-        <StyledTable>
+      <div className="w-full overflow-x-auto">
+        <table className="w-full overflow-hidden rounded-xl border-collapse bg-[var(--surface-1,#ffffff)]">
           <thead>
             <tr>
               {columns.map((col) => (
                 <th
+                  className={headerCellClass}
                   key={String(col.key)}
                   onClick={() => col.sortable && handleSort(col.key)}
                   style={{ width: col.width }}
                 >
                   {col.label}
                   {col.sortable && sortKey === col.key && (
-                    <SortIndicator>
+                    <span className="ml-1 text-[var(--focus-ring,#0e7a53)]">
                       {sortOrder === "asc" ? "↑" : "↓"}
-                    </SortIndicator>
+                    </span>
                   )}
                 </th>
               ))}
@@ -195,12 +101,14 @@ export function DataTable<T extends Record<string, any>>({
             {paginatedData.length > 0 ? (
               paginatedData.map((row, idx) => (
                 <tr
+                  className={`transition-colors duration-200 hover:bg-[var(--surface-2,#fcfaf5)] ${
+                    onRowClick ? "cursor-pointer" : "cursor-default"
+                  }`}
                   key={idx}
                   onClick={() => onRowClick?.(row)}
-                  style={{ cursor: onRowClick ? "pointer" : "default" }}
                 >
                   {columns.map((col) => (
-                    <td key={String(col.key)}>
+                    <td className={bodyCellClass} key={String(col.key)}>
                       {col.render
                         ? col.render(row[col.key], row)
                         : row[col.key]}
@@ -209,34 +117,41 @@ export function DataTable<T extends Record<string, any>>({
                 </tr>
               ))
             ) : (
-              <NoDataRow>
-                <td colSpan={columns.length}>{emptyMessage}</td>
-              </NoDataRow>
+              <tr>
+                <td
+                  className="px-3 py-8 text-center text-[var(--t3,#8b8378)]"
+                  colSpan={columns.length}
+                >
+                  {emptyMessage}
+                </td>
+              </tr>
             )}
           </tbody>
-        </StyledTable>
-      </TableContainer>
+        </table>
+      </div>
 
       {totalPages > 1 && (
-        <PaginationContainer>
-          <PaginationInfo>
+        <div className="mt-5 flex items-center justify-between border-t border-[var(--border-1,#e5dfd2)] pt-5">
+          <span className="text-xs text-[var(--t3,#8b8378)]">
             Page {currentPage} of {totalPages} ({sortedData.length} total)
-          </PaginationInfo>
-          <PaginationControls>
-            <PaginationButton
+          </span>
+          <div className="flex gap-2">
+            <button
+              className={paginationButtonClass}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
             >
               Previous
-            </PaginationButton>
-            <PaginationButton
+            </button>
+            <button
+              className={paginationButtonClass}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
             >
               Next
-            </PaginationButton>
-          </PaginationControls>
-        </PaginationContainer>
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

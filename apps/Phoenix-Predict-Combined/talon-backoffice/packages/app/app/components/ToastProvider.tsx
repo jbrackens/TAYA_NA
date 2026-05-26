@@ -53,48 +53,38 @@ const icons: Record<ToastType, React.ReactNode> = {
 // (caught when QA placed a trade and saw no feedback despite the toast
 // existing in the DOM). Backgrounds use the existing *-soft tokens; titles
 // and messages now sit on AA-contrast text tokens.
-const colors: Record<
+const toastClasses: Record<
   ToastType,
   {
-    bg: string;
-    border: string;
+    root: string;
     icon: string;
-    iconBg: string;
-    titleColor: string;
-    messageColor: string;
+    title: string;
+    message: string;
   }
 > = {
   success: {
-    bg: "var(--yes-soft)",
-    border: "var(--yes-text)",
-    icon: "var(--yes-text)",
-    iconBg: "var(--yes-soft)",
-    titleColor: "var(--yes-text)",
-    messageColor: "var(--t2)",
+    root: "border-[var(--yes-text)] bg-[var(--yes-soft)]",
+    icon: "bg-[var(--yes-soft)] text-[var(--yes-text)]",
+    title: "text-[var(--yes-text)]",
+    message: "text-[var(--t2)]",
   },
   error: {
-    bg: "var(--no-soft)",
-    border: "var(--no-text)",
-    icon: "var(--no-text)",
-    iconBg: "var(--no-soft)",
-    titleColor: "var(--no-text)",
-    messageColor: "var(--t2)",
+    root: "border-[var(--no-text)] bg-[var(--no-soft)]",
+    icon: "bg-[var(--no-soft)] text-[var(--no-text)]",
+    title: "text-[var(--no-text)]",
+    message: "text-[var(--t2)]",
   },
   info: {
-    bg: "var(--accent-soft)",
-    border: "var(--focus-ring)",
-    icon: "var(--focus-ring)",
-    iconBg: "var(--accent-soft)",
-    titleColor: "var(--t1)",
-    messageColor: "var(--t2)",
+    root: "border-[var(--focus-ring)] bg-[var(--accent-soft)]",
+    icon: "bg-[var(--accent-soft)] text-[var(--focus-ring)]",
+    title: "text-[var(--t1)]",
+    message: "text-[var(--t2)]",
   },
   warning: {
-    bg: "rgba(251, 191, 36, 0.18)",
-    border: "#b45309",
-    icon: "#b45309",
-    iconBg: "rgba(251, 191, 36, 0.22)",
-    titleColor: "#b45309",
-    messageColor: "var(--t2)",
+    root: "border-[#b45309] bg-[rgba(251,191,36,0.18)]",
+    icon: "bg-[rgba(251,191,36,0.22)] text-[#b45309]",
+    title: "text-[#b45309]",
+    message: "text-[var(--t2)]",
   },
 };
 
@@ -105,7 +95,7 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
 }) => {
   const [exiting, setExiting] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const c = colors[toast.type];
+  const c = toastClasses[toast.type];
   const toastId = toast.id;
   const toastDuration = toast.duration;
 
@@ -128,63 +118,20 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
 
   return (
     <div
-      style={{
-        display: "flex",
-        alignItems: "flex-start",
-        gap: 12,
-        padding: "14px 16px",
-        borderRadius: 10,
-        background: c.bg,
-        border: `1px solid ${c.border}`,
-        boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-        minWidth: 300,
-        maxWidth: 400,
-        animation: exiting
-          ? "ps-toast-out 0.3s ease forwards"
-          : "ps-toast-in 0.3s ease forwards",
-        pointerEvents: "auto",
-      }}
+      className={`pointer-events-auto flex min-w-[300px] max-w-[400px] items-start gap-3 rounded-[10px] border px-4 py-3.5 shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition-all duration-300 ${exiting ? "translate-x-10 opacity-0" : "translate-x-0 opacity-100"} ${c.root}`}
     >
       {/* Icon */}
-      <div
-        style={{
-          width: 28,
-          height: 28,
-          borderRadius: 8,
-          flexShrink: 0,
-          background: c.iconBg,
-          color: c.icon,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 14,
-          fontWeight: 700,
-        }}
-      >
+      <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${c.icon}`}>
         {icons[toast.type]}
       </div>
 
       {/* Text */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            fontSize: 13,
-            fontWeight: 600,
-            color: c.titleColor,
-            lineHeight: 1.4,
-          }}
-        >
+      <div className="min-w-0 flex-1">
+        <div className={`text-[13px] font-semibold leading-[1.4] ${c.title}`}>
           {toast.title}
         </div>
         {toast.message && (
-          <div
-            style={{
-              fontSize: 12,
-              color: c.messageColor,
-              marginTop: 2,
-              lineHeight: 1.5,
-            }}
-          >
+          <div className={`mt-0.5 text-xs leading-normal ${c.message}`}>
             {toast.message}
           </div>
         )}
@@ -193,23 +140,7 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
       {/* Close */}
       <button
         onClick={handleClose}
-        style={{
-          background: "none",
-          border: "none",
-          color: "var(--t3)",
-          cursor: "pointer",
-          fontSize: 16,
-          padding: 2,
-          lineHeight: 1,
-          flexShrink: 0,
-          transition: "color 0.15s",
-        }}
-        onMouseEnter={(e) => {
-          (e.target as HTMLElement).style.color = "var(--t1)";
-        }}
-        onMouseLeave={(e) => {
-          (e.target as HTMLElement).style.color = "var(--t3)";
-        }}
+        className="shrink-0 cursor-pointer border-0 bg-transparent p-0.5 text-base leading-none text-[var(--t3)] transition-colors duration-150 hover:text-[var(--t1)]"
       >
         ×
       </button>
@@ -263,38 +194,11 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
       {children}
 
       {/* Toast Container — fixed top-right */}
-      <div
-        style={{
-          position: "fixed",
-          top: 16,
-          right: 16,
-          zIndex: 9999,
-          display: "flex",
-          flexDirection: "column",
-          gap: 8,
-          pointerEvents: "none",
-        }}
-      >
+      <div className="pointer-events-none fixed right-4 top-4 z-[9999] flex flex-col gap-2">
         {toasts.map((t) => (
           <ToastItem key={t.id} toast={t} onRemove={removeToast} />
         ))}
       </div>
-
-      {/* Keyframe animations */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        @keyframes ps-toast-in {
-          from { opacity: 0; transform: translateX(40px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes ps-toast-out {
-          from { opacity: 1; transform: translateX(0); }
-          to   { opacity: 0; transform: translateX(40px); }
-        }
-      `,
-        }}
-      />
     </ToastContext.Provider>
   );
 };

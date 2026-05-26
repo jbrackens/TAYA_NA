@@ -16,6 +16,44 @@ import { safeReturnPath, returnUrlSuffix } from "../../lib/safeReturnPath";
 import { FEATURE_SOCIAL_AUTH } from "../../lib/features";
 import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
 
+const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
+const CARD_CLASS =
+  "relative w-full max-w-[440px] rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[34px] pb-[30px] pt-9";
+const HEAD_CLASS = "mb-6 text-center";
+const EYEBROW_CLASS =
+  "mb-3.5 inline-block rounded-full border border-[rgba(43,228,128,0.3)] bg-[var(--accent-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]";
+const TITLE_CLASS =
+  "m-0 mb-2 text-[28px] font-extrabold tracking-[-0.02em] text-[var(--t1)]";
+const SUBTITLE_CLASS = "m-0 text-sm leading-[1.55] text-[var(--t2)]";
+const FORM_CLASS = "flex flex-col gap-3.5";
+const FIELD_CLASS = "flex flex-col gap-1.5";
+const FIELD_LABEL_CLASS =
+  "text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
+const INPUT_CLASS =
+  "w-full box-border rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3 text-sm text-[var(--t1)] outline-none transition-[border-color] duration-150 ease-[ease] placeholder:text-[var(--t4)] focus-visible:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] [font-family:inherit]";
+const ERROR_CLASS =
+  "rounded-[var(--r-sm)] border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.1)] px-3 py-2.5 text-xs text-[var(--no-text)]";
+const SUBMIT_CLASS =
+  "mt-1 cursor-pointer rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-4 py-3.5 text-sm font-bold tracking-[0.02em] text-[#04140a] transition-[transform,filter] duration-[180ms] ease-[ease] enabled:hover:-translate-y-px enabled:hover:brightness-[1.05] enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 [font-family:inherit]";
+const LINKS_CLASS = "flex justify-end";
+const LINK_CLASS =
+  "text-xs text-[var(--t3)] no-underline transition-colors duration-150 hover:text-[var(--t1)]";
+const LINK_ACCENT_CLASS =
+  "font-semibold text-[var(--accent)] hover:text-[var(--accent)] hover:brightness-110";
+const DEV_CLASS =
+  "mt-[18px] rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3";
+const DEV_EYEBROW_CLASS =
+  "mb-1 block text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
+const MONO_CLASS =
+  "tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+const DIVIDER_CLASS =
+  "my-5 mb-4 flex items-center gap-3 before:h-px before:flex-1 before:bg-[var(--border-1)] before:content-[''] after:h-px after:flex-1 after:bg-[var(--border-1)] after:content-['']";
+const DIVIDER_TEXT_CLASS =
+  "text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+const SOCIAL_CLASS = "mb-5";
+const FOOTER_CLASS =
+  "border-t border-[var(--border-1)] pt-3.5 text-center text-[13px] text-[var(--t2)]";
+
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -55,271 +93,94 @@ export default function LoginPage() {
     "/auth/register" + returnUrlSuffix(searchParams.get("returnUrl"));
 
   return (
-    <div className="la-shell">
-      <Styles />
-      <div className="la-card">
-        <header className="la-head">
-          <span className="la-eyebrow">Player access</span>
-          <h1 className="la-title">
-            Hula <span>Na!</span>
+    <div className={SHELL_CLASS}>
+      <div className={CARD_CLASS}>
+        <header className={HEAD_CLASS}>
+          <span className={EYEBROW_CLASS}>Player access</span>
+          <h1 className={TITLE_CLASS}>
+            Hula <span className="text-[var(--accent)]">Na!</span>
           </h1>
-          <p className="la-sub">
+          <p className={SUBTITLE_CLASS}>
             Sign in to track your positions, follow live markets, and trade on
             real-world outcomes.
           </p>
         </header>
 
-        <form onSubmit={onSubmit} className="la-form" noValidate>
-          <label className="la-field">
-            <span className="la-field-label">Username or email</span>
+        <form onSubmit={onSubmit} className={FORM_CLASS} noValidate>
+          <label className={FIELD_CLASS}>
+            <span className={FIELD_LABEL_CLASS}>Username or email</span>
             <input
               type="text"
               name="username"
               autoComplete="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="la-input"
+              className={INPUT_CLASS}
               placeholder="you@example.com"
               required
             />
           </label>
 
-          <label className="la-field">
-            <span className="la-field-label">Password</span>
+          <label className={FIELD_CLASS}>
+            <span className={FIELD_LABEL_CLASS}>Password</span>
             <input
               type="password"
               name="password"
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="la-input"
+              className={INPUT_CLASS}
               placeholder="••••••••"
               required
             />
           </label>
 
-          {error && <div className="la-error">{error}</div>}
+          {error && <div className={ERROR_CLASS}>{error}</div>}
 
           <button
             type="submit"
             disabled={submitting || !username || !password}
-            className="la-submit"
+            className={SUBMIT_CLASS}
           >
             {submitting ? "Signing in…" : "Log in"}
           </button>
 
-          <div className="la-links">
-            <Link href="/auth/forgot-password" className="la-link">
+          <div className={LINKS_CLASS}>
+            <Link href="/auth/forgot-password" className={LINK_CLASS}>
               Forgot password?
             </Link>
           </div>
         </form>
 
         {isLocalDev && (
-          <aside className="la-dev">
-            <span className="la-dev-eyebrow">Local demo access</span>
-            <p>
-              <span className="mono">demo@phoenix.local</span> · password{" "}
-              <span className="mono">demo123</span>
+          <aside className={DEV_CLASS}>
+            <span className={DEV_EYEBROW_CLASS}>Local demo access</span>
+            <p className="m-0 text-[13px] text-[var(--t2)]">
+              <span className={MONO_CLASS}>demo@phoenix.local</span> · password{" "}
+              <span className={MONO_CLASS}>demo123</span>
             </p>
           </aside>
         )}
 
         {FEATURE_SOCIAL_AUTH && (
           <>
-            <div className="la-divider">
-              <span>or continue with</span>
+            <div className={DIVIDER_CLASS}>
+              <span className={DIVIDER_TEXT_CLASS}>or continue with</span>
             </div>
 
-            <div className="la-social">
+            <div className={SOCIAL_CLASS}>
               <SocialAuthButtons />
             </div>
           </>
         )}
 
-        <footer className="la-foot">
+        <footer className={FOOTER_CLASS}>
           New to Predict?{" "}
-          <Link href={registerHref} className="la-link la-link-accent">
+          <Link href={registerHref} className={`${LINK_CLASS} ${LINK_ACCENT_CLASS}`}>
             Create an account
           </Link>
         </footer>
       </div>
     </div>
-  );
-}
-
-function Styles() {
-  return (
-    <style>{`
-      .la-shell {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 40px 20px;
-      }
-      .la-card {
-        position: relative;
-        width: 100%;
-        max-width: 440px;
-        padding: 36px 34px 30px;
-        border-radius: var(--r-rh-lg);
-        background: var(--surface-1);
-        border: 1px solid var(--border-1);
-      }
-      .la-head { text-align: center; margin-bottom: 24px; }
-      .la-eyebrow {
-        display: inline-block;
-        padding: 4px 12px;
-        margin-bottom: 14px;
-        background: var(--accent-soft);
-        border: 1px solid rgba(43, 228, 128,0.3);
-        color: var(--accent);
-        border-radius: 999px;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-      }
-      .la-title {
-        margin: 0 0 8px;
-        font-size: 28px;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        color: var(--t1);
-      }
-      .la-title span { color: var(--accent); }
-      .la-sub {
-        margin: 0;
-        font-size: 14px;
-        color: var(--t2);
-        line-height: 1.55;
-      }
-
-      .la-form {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-      }
-      .la-field {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      .la-field-label {
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--t3);
-      }
-      .la-input {
-        background: var(--surface-2);
-        border: 1px solid var(--border-1);
-        border-radius: var(--r-rh-md);
-        padding: 12px 14px;
-        font-family: inherit;
-        font-size: 14px;
-        color: var(--t1);
-        outline: none;
-        transition: border-color 150ms ease;
-      }
-      .la-input::placeholder { color: var(--t4); }
-      .la-input:focus-visible {
-        border-color: var(--accent);
-        box-shadow: 0 0 0 2px var(--accent-soft);
-      }
-
-      .la-error {
-        background: rgba(255, 155, 107,0.1);
-        border: 1px solid rgba(255, 155, 107,0.3);
-        border-radius: var(--r-sm);
-        padding: 10px 12px;
-        font-size: 12px;
-        color: var(--no-text);
-      }
-
-      .la-submit {
-        margin-top: 4px;
-        padding: 14px 16px;
-        color: #04140a;
-        border: none;
-        border-radius: var(--r-rh-md);
-        font-family: inherit;
-        font-size: 14px;
-        font-weight: 700;
-        letter-spacing: 0.02em;
-        cursor: pointer;
-        background: var(--accent);
-        transition: transform 180ms ease, filter 180ms ease;
-      }
-      .la-submit:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.05); }
-      .la-submit:active:not(:disabled) { transform: scale(0.98); }
-      .la-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-
-      .la-links {
-        display: flex;
-        justify-content: flex-end;
-      }
-      .la-link {
-        font-size: 12px;
-        color: var(--t3);
-        text-decoration: none;
-        transition: color 0.15s;
-      }
-      .la-link:hover { color: var(--t1); }
-      .la-link-accent { color: var(--accent); font-weight: 600; }
-      .la-link-accent:hover { color: var(--accent); filter: brightness(1.1); }
-
-      .la-dev {
-        margin-top: 18px;
-        padding: 12px 14px;
-        border-radius: var(--r-rh-md);
-        background: var(--surface-2);
-        border: 1px solid var(--border-1);
-      }
-      .la-dev-eyebrow {
-        display: block;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--t3);
-        margin-bottom: 4px;
-      }
-      .la-dev p { margin: 0; font-size: 13px; color: var(--t2); }
-
-      .la-divider {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin: 20px 0 16px;
-      }
-      .la-divider::before, .la-divider::after {
-        content: "";
-        flex: 1;
-        height: 1px;
-        background: var(--border-1);
-      }
-      .la-divider span {
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--t3);
-      }
-
-      .la-social {
-        margin-bottom: 20px;
-      }
-
-      .la-foot {
-        padding-top: 14px;
-        border-top: 1px solid var(--border-1);
-        text-align: center;
-        font-size: 13px;
-        color: var(--t2);
-      }
-    `}</style>
   );
 }

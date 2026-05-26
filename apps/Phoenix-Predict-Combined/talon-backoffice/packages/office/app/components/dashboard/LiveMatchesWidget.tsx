@@ -1,82 +1,8 @@
 "use client";
 
-import styled from "styled-components";
 import { Card } from "../shared";
 import { useState, useEffect } from "react";
 import { useTradingWebSocket } from "../../hooks/useTradingWebSocket";
-
-const WidgetCard = styled(Card)`
-  padding: 20px;
-`;
-
-const Label = styled.p`
-  margin: 0 0 12px 0;
-  font-size: 12px;
-  color: var(--t2, #4a4a4a);
-  text-transform: uppercase;
-  font-weight: 500;
-`;
-
-const SportsList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-
-const SportRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  background-color: var(--border-1, #e5dfd2);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
-
-  &:hover {
-    border-color: var(--focus-ring, #0e7a53);
-    background-color: rgba(74, 126, 255, 0.1);
-  }
-`;
-
-const SportName = styled.span`
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--t1, #1a1a1a);
-`;
-
-const MatchCount = styled.span`
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--focus-ring, #0e7a53);
-  padding: 2px 8px;
-  background-color: rgba(74, 126, 255, 0.2);
-  border-radius: 3px;
-`;
-
-const ConnectionStatus = styled.div<{ $connected?: boolean }>`
-  font-size: 11px;
-  color: ${(props) =>
-    props.$connected ? "var(--accent-lo, #1fa65e)" : "var(--no-text, #a8472d)"};
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-1, #e5dfd2);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-
-  &::before {
-    content: "";
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background-color: ${(props) =>
-      props.$connected
-        ? "var(--accent-lo, #1fa65e)"
-        : "var(--no-text, #a8472d)"};
-  }
-`;
 
 interface SportMatch {
   sport: string;
@@ -116,49 +42,47 @@ export function LiveMatchesWidget({
   }, [subscribe]);
 
   const totalMatches = matches.reduce((sum, m) => sum + m.count, 0);
+  const connectionClass = isConnected
+    ? "text-[var(--accent-lo,#1fa65e)] before:bg-[var(--accent-lo,#1fa65e)]"
+    : "text-[var(--no-text,#a8472d)] before:bg-[var(--no-text,#a8472d)]";
 
   return (
-    <WidgetCard>
-      <Label>Live Matches</Label>
-      <div
-        style={{
-          fontSize: "24px",
-          fontWeight: "700",
-          color: "var(--focus-ring, #0e7a53)",
-          marginBottom: "16px",
-        }}
-      >
+    <Card>
+      <p className="mb-3 text-xs font-medium uppercase text-[var(--t2,#4a4a4a)]">
+        Live Matches
+      </p>
+      <div className="mb-4 text-2xl font-bold text-[var(--focus-ring,#0e7a53)]">
         {totalMatches} Total
       </div>
 
-      <SportsList>
+      <div className="flex flex-col gap-2.5">
         {matches.length > 0 ? (
           matches.map((match) => (
-            <SportRow
+            <div
               key={match.sport}
+              className="flex cursor-pointer items-center justify-between rounded border border-transparent bg-[var(--border-1,#e5dfd2)] p-2.5 transition-all duration-200 hover:border-[var(--focus-ring,#0e7a53)] hover:bg-[rgba(74,126,255,0.1)]"
               onClick={() => onSportClick?.(match.sport)}
             >
-              <SportName>{match.sport}</SportName>
-              <MatchCount>{match.count}</MatchCount>
-            </SportRow>
+              <span className="text-[13px] font-medium text-[var(--t1,#1a1a1a)]">
+                {match.sport}
+              </span>
+              <span className="rounded-[3px] bg-[rgba(74,126,255,0.2)] px-2 py-0.5 text-sm font-bold text-[var(--focus-ring,#0e7a53)]">
+                {match.count}
+              </span>
+            </div>
           ))
         ) : (
-          <div
-            style={{
-              fontSize: "12px",
-              color: "var(--t2, #4a4a4a)",
-              textAlign: "center",
-              padding: "20px 0",
-            }}
-          >
+          <div className="py-5 text-center text-xs text-[var(--t2,#4a4a4a)]">
             No live matches
           </div>
         )}
-      </SportsList>
+      </div>
 
-      <ConnectionStatus $connected={isConnected}>
+      <div
+        className={`mt-3 flex items-center gap-1.5 border-t border-[var(--border-1,#e5dfd2)] pt-3 text-[11px] before:h-1.5 before:w-1.5 before:rounded-full before:content-[''] ${connectionClass}`}
+      >
         {isConnected ? "Live" : "Offline"} Updates
-      </ConnectionStatus>
-    </WidgetCard>
+      </div>
+    </Card>
   );
 }

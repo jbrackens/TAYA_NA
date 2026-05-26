@@ -1,13 +1,25 @@
+import React from "react";
 import { Alert } from "antd";
-import styled from "styled-components";
-import type { ComponentType, ComponentProps } from "react";
 
-const Alert19 = Alert as ComponentType<ComponentProps<typeof Alert>>;
+const classNames = (...classes: Array<string | undefined>) =>
+  classes.filter(Boolean).join(" ");
 
-export const ModalContent = styled.span`
-  margin-right: 10px;
-`;
+const AlertComponent = Alert as React.ElementType;
 
-export const StyledAlert = styled(Alert19)`
-  margin: 10px 0;
-`;
+export const ModalContent = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) =>
+  React.createElement("span", {
+    ...props,
+    className: classNames("mr-[10px]", className),
+  });
+
+export const StyledAlert = ({
+  className,
+  ...props
+}: React.ComponentProps<typeof Alert>) =>
+  React.createElement(AlertComponent, {
+    ...props,
+    className: classNames("my-[10px]", className),
+  });

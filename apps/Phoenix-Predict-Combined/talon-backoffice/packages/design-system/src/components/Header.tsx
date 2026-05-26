@@ -1,133 +1,6 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
+import { cx } from '../utils/classNames';
 import Input from './Input';
-
-const HeaderContainer = styled.header`
-  background-color: ${({ theme }) => theme.colors.surface};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  padding: ${({ theme }) => `${theme.spacing.md} ${theme.spacing.lg}`};
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.lg};
-`;
-
-const LogoContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-  font-size: ${({ theme }) => theme.typography.large.fontSize};
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const LogoIcon = styled.span`
-  font-size: 28px;
-`;
-
-const NavContainer = styled.nav`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.lg};
-  flex: 1;
-  margin-left: ${({ theme }) => theme.spacing.xl};
-
-  ${({ theme }) => theme.breakpoints.md} {
-    display: none;
-  }
-`;
-
-const NavLink = styled.a<{ $active?: boolean }>`
-  color: ${({ theme, $active }) =>
-    $active ? theme.colors.accentBlue : theme.colors.textSecondary};
-  text-decoration: none;
-  font-weight: 500;
-  transition: color ${({ theme }) => theme.motion.fast};
-  cursor: pointer;
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.text};
-  }
-`;
-
-const SearchContainer = styled.div`
-  flex: 1;
-  max-width: 400px;
-  position: relative;
-`;
-
-const SearchIcon = styled.span`
-  position: absolute;
-  left: ${({ theme }) => theme.spacing.md};
-  top: 50%;
-  transform: translateY(-50%);
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 18px;
-`;
-
-const SearchInput = styled(Input)`
-  padding-left: 40px;
-
-  &::placeholder {
-    color: ${({ theme }) => theme.colors.textSecondary};
-  }
-`;
-
-const UserMenuContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const UserButton = styled.button`
-  background: none;
-  border: none;
-  color: ${({ theme }) => theme.colors.text};
-  cursor: pointer;
-  font-size: 24px;
-  width: 40px;
-  height: 40px;
-  border-radius: ${({ theme }) => theme.radius.full};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all ${({ theme }) => theme.motion.fast};
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.card};
-  }
-`;
-
-const Dropdown = styled.div<{ $open: boolean }>`
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background-color: ${({ theme }) => theme.colors.surface};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radius.md};
-  margin-top: ${({ theme }) => theme.spacing.sm};
-  min-width: 200px;
-  display: ${({ $open }) => ($open ? 'block' : 'none')};
-  z-index: 100;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-`;
-
-const DropdownItem = styled.a`
-  display: block;
-  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
-  color: ${({ theme }) => theme.colors.text};
-  text-decoration: none;
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.motion.fast};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.card};
-  }
-`;
 
 interface HeaderNavItem {
   label: string;
@@ -167,49 +40,77 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <HeaderContainer>
-      <LogoContainer>
-        <LogoIcon>{logoIcon}</LogoIcon>
+    <header className="flex items-center justify-between gap-6 border-b border-[#3d3d5c] bg-[#2d2d44] px-6 py-4">
+      <div className="flex items-center gap-4 text-[28px] font-bold leading-[36px] text-white">
+        <span className="text-[28px]">{logoIcon}</span>
         <span>{logo}</span>
-      </LogoContainer>
+      </div>
 
-      <NavContainer>
+      <nav className="ml-8 flex flex-1 gap-6 max-[899px]:hidden">
         {navItems.map((item, index) => (
-          <NavLink key={index} $active={item.active} onClick={item.onClick}>
+          <a
+            key={index}
+            className={cx(
+              'cursor-pointer font-medium no-underline transition-colors duration-200 ease-in-out hover:text-white',
+              item.active ? 'text-[#2196f3]' : 'text-[#9a9aad]'
+            )}
+            onClick={item.onClick}
+          >
             {item.label}
-          </NavLink>
+          </a>
         ))}
-      </NavContainer>
+      </nav>
 
-      <SearchContainer>
-        <SearchIcon>🔍</SearchIcon>
-        <SearchInput
+      <div className="relative max-w-[400px] flex-1">
+        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[18px] text-[#9a9aad]">
+          🔍
+        </span>
+        <Input
           type="text"
+          className="!pl-10"
           placeholder="Search..."
           value={searchQuery}
           onChange={handleSearch}
         />
-      </SearchContainer>
+      </div>
 
-      <UserMenuContainer>
-        <div style={{ position: 'relative' }}>
-          <UserButton onClick={() => setUserMenuOpen(!userMenuOpen)}>
+      <div className="flex items-center gap-4">
+        <div className="relative">
+          <button
+            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-2xl text-white transition-all duration-200 ease-in-out hover:bg-[#4a4a5e]"
+            aria-label={`${userName} menu`}
+            onClick={() => setUserMenuOpen(!userMenuOpen)}
+          >
             👤
-          </UserButton>
-          <Dropdown $open={userMenuOpen}>
-            <DropdownItem onClick={() => handleUserMenuAction('profile')}>
+          </button>
+          <div
+            className={cx(
+              'absolute right-0 top-full z-[100] mt-2 min-w-[200px] rounded-[12px] border border-[#3d3d5c] bg-[#2d2d44] shadow-[0_4px_12px_rgba(0,0,0,0.3)]',
+              userMenuOpen ? 'block' : 'hidden'
+            )}
+          >
+            <a
+              className="block cursor-pointer border-b border-[#3d3d5c] px-4 py-2 text-white no-underline transition-all duration-200 ease-in-out hover:bg-[#4a4a5e]"
+              onClick={() => handleUserMenuAction('profile')}
+            >
               Profile
-            </DropdownItem>
-            <DropdownItem onClick={() => handleUserMenuAction('settings')}>
+            </a>
+            <a
+              className="block cursor-pointer border-b border-[#3d3d5c] px-4 py-2 text-white no-underline transition-all duration-200 ease-in-out hover:bg-[#4a4a5e]"
+              onClick={() => handleUserMenuAction('settings')}
+            >
               Settings
-            </DropdownItem>
-            <DropdownItem onClick={() => handleUserMenuAction('logout')}>
+            </a>
+            <a
+              className="block cursor-pointer px-4 py-2 text-white no-underline transition-all duration-200 ease-in-out hover:bg-[#4a4a5e]"
+              onClick={() => handleUserMenuAction('logout')}
+            >
               Logout
-            </DropdownItem>
-          </Dropdown>
+            </a>
+          </div>
         </div>
-      </UserMenuContainer>
-    </HeaderContainer>
+      </div>
+    </header>
   );
 };
 

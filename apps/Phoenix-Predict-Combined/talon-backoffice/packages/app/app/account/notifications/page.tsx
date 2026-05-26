@@ -6,6 +6,23 @@ import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
 import { updatePreferences } from "../../lib/api/user-client";
 
+const pageClass = "mx-auto max-w-[800px] px-4 py-6";
+const headerClass =
+  "mb-8 flex items-start justify-between max-[640px]:flex-col max-[640px]:gap-4";
+const backClass =
+  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)]";
+const cardClass =
+  "mb-6 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-6";
+const descClass = "mb-6 text-[13px] text-[var(--t2)]";
+const itemClass =
+  "flex items-center justify-between rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-4 max-[640px]:flex-col max-[640px]:items-start max-[640px]:gap-3";
+const itemTitleClass = "mb-1 text-sm font-bold text-[var(--t1)]";
+const itemDescClass = "text-xs text-[var(--t3)]";
+const toggleClass = "relative inline-flex h-7 w-12 cursor-pointer items-center";
+const toggleInputClass = "peer sr-only";
+const toggleSliderClass =
+  "absolute inset-0 cursor-pointer rounded-[14px] bg-[var(--border-2)] transition-all duration-300 before:absolute before:bottom-[3px] before:left-[3px] before:h-[22px] before:w-[22px] before:rounded-full before:bg-[var(--t3)] before:transition-all before:duration-300 peer-checked:bg-[var(--accent)] peer-checked:before:translate-x-5 peer-checked:before:bg-white";
+
 export default function NotificationsPage() {
   const { user } = useAuth();
   const toast = useToast();
@@ -76,414 +93,273 @@ export default function NotificationsPage() {
   };
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: notificationsStyles }} />
-      <div className="notif-page">
-        <div className="notif-header">
-          <div>
-            <h1>Notification Preferences</h1>
-            <p>Choose how you want to receive updates</p>
-          </div>
-          <Link href="/account" className="notif-back">
-            ← Back
-          </Link>
-        </div>
-
-        {/* Notification Settings Card */}
-        <div className="notif-card">
-          <h2>Communication Channels</h2>
-          <p className="notif-desc">
-            Select which channels you want to receive notifications on
+    <div className={pageClass}>
+      <div className={headerClass}>
+        <div>
+          <h1 className="mb-1 text-[28px] font-extrabold text-[var(--t1)]">
+            Notification Preferences
+          </h1>
+          <p className="text-sm text-[var(--t3)]">
+            Choose how you want to receive updates
           </p>
+        </div>
+        <Link href="/account" className={backClass}>
+          ← Back
+        </Link>
+      </div>
 
-          <div className="notif-notice" role="status">
-            <span className="notif-notice-icon" aria-hidden="true">
-              ⚠️
-            </span>
-            <span>
-              Heads up — notification preferences aren&apos;t saved yet.
-              We&apos;re still building this, so your selections won&apos;t
-              persist after you leave this page.
-            </span>
+      {/* Notification Settings Card */}
+      <div className={cardClass}>
+        <h2 className="mb-2 text-lg font-bold text-[var(--t1)]">
+          Communication Channels
+        </h2>
+        <p className={descClass}>
+          Select which channels you want to receive notifications on
+        </p>
+
+        <div
+          className="mb-6 flex items-start gap-2.5 rounded-[var(--r-rh-md)] border border-l-[3px] border-[var(--border-1)] border-l-[var(--accent)] bg-[var(--surface-2)] px-[14px] py-3 text-[13px] leading-normal text-[var(--t2)]"
+          role="status"
+        >
+          <span className="shrink-0" aria-hidden="true">
+            ⚠️
+          </span>
+          <span>
+            Heads up — notification preferences aren&apos;t saved yet.
+            We&apos;re still building this, so your selections won&apos;t
+            persist after you leave this page.
+          </span>
+        </div>
+
+        <div className="mb-6 flex flex-col gap-4">
+          {/* Email Notifications */}
+          <div className={itemClass}>
+            <div className="flex-1">
+              <div className={itemTitleClass}>Email Notifications</div>
+              <div className={itemDescClass}>
+                Receive notifications about your account activity via email
+              </div>
+            </div>
+            <label className={toggleClass}>
+              <input
+                className={toggleInputClass}
+                type="checkbox"
+                checked={prefs.notification_email}
+                onChange={() => handleToggle("notification_email")}
+              />
+              <span className={toggleSliderClass}></span>
+            </label>
           </div>
 
-          <div className="notif-settings">
-            {/* Email Notifications */}
-            <div className="notif-item">
-              <div className="notif-item-info">
-                <div className="notif-item-title">Email Notifications</div>
-                <div className="notif-item-desc">
-                  Receive notifications about your account activity via email
-                </div>
+          {/* SMS Notifications */}
+          <div className={itemClass}>
+            <div className="flex-1">
+              <div className={itemTitleClass}>SMS Notifications</div>
+              <div className={itemDescClass}>
+                Receive important alerts via text message
               </div>
-              <label className="notif-toggle">
-                <input
-                  type="checkbox"
-                  checked={prefs.notification_email}
-                  onChange={() => handleToggle("notification_email")}
-                />
-                <span className="notif-toggle-slider"></span>
-              </label>
             </div>
-
-            {/* SMS Notifications */}
-            <div className="notif-item">
-              <div className="notif-item-info">
-                <div className="notif-item-title">SMS Notifications</div>
-                <div className="notif-item-desc">
-                  Receive important alerts via text message
-                </div>
-              </div>
-              <label className="notif-toggle">
-                <input
-                  type="checkbox"
-                  checked={prefs.notification_sms}
-                  onChange={() => handleToggle("notification_sms")}
-                />
-                <span className="notif-toggle-slider"></span>
-              </label>
-            </div>
-
-            {/* Push Notifications */}
-            <div className="notif-item">
-              <div className="notif-item-info">
-                <div className="notif-item-title">Push Notifications</div>
-                <div className="notif-item-desc">
-                  Get real-time notifications on your browser or mobile app
-                </div>
-              </div>
-              <label className="notif-toggle">
-                <input
-                  type="checkbox"
-                  checked={prefs.notification_push}
-                  onChange={() => handleToggle("notification_push")}
-                />
-                <span className="notif-toggle-slider"></span>
-              </label>
-            </div>
-
-            {/* Marketing Email */}
-            <div className="notif-item">
-              <div className="notif-item-info">
-                <div className="notif-item-title">Marketing Emails</div>
-                <div className="notif-item-desc">
-                  Receive emails about new features, promotions, and special
-                  offers
-                </div>
-              </div>
-              <label className="notif-toggle">
-                <input
-                  type="checkbox"
-                  checked={prefs.marketing_email}
-                  onChange={() => handleToggle("marketing_email")}
-                />
-                <span className="notif-toggle-slider"></span>
-              </label>
-            </div>
+            <label className={toggleClass}>
+              <input
+                className={toggleInputClass}
+                type="checkbox"
+                checked={prefs.notification_sms}
+                onChange={() => handleToggle("notification_sms")}
+              />
+              <span className={toggleSliderClass}></span>
+            </label>
           </div>
 
-          {/* Email Frequency */}
-          <div style={{ marginBottom: "24px" }}>
-            <h3
-              style={{
-                fontSize: "15px",
-                fontWeight: 700,
-                color: "var(--t1)",
-                marginBottom: "12px",
-              }}
-            >
-              Email Frequency
-            </h3>
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-            >
-              {(
-                [
-                  {
-                    value: "instant",
-                    label: "Instant",
-                    desc: "Receive emails as events happen",
-                  },
-                  {
-                    value: "daily",
-                    label: "Daily Digest",
-                    desc: "One summary email per day",
-                  },
-                  {
-                    value: "weekly",
-                    label: "Weekly Digest",
-                    desc: "One summary email per week",
-                  },
-                ] as const
-              ).map((opt) => (
-                <label
-                  key={opt.value}
-                  className="notif-item"
-                  style={{ cursor: "pointer" }}
-                >
-                  <div className="notif-item-info">
-                    <div className="notif-item-title">{opt.label}</div>
-                    <div className="notif-item-desc">{opt.desc}</div>
-                  </div>
-                  <input
-                    type="radio"
-                    name="emailFrequency"
-                    value={opt.value}
-                    checked={emailFrequency === opt.value}
-                    onChange={() => setEmailFrequency(opt.value)}
-                    style={{
-                      width: "18px",
-                      height: "18px",
-                      accentColor: "var(--accent)",
-                    }}
-                  />
-                </label>
-              ))}
+          {/* Push Notifications */}
+          <div className={itemClass}>
+            <div className="flex-1">
+              <div className={itemTitleClass}>Push Notifications</div>
+              <div className={itemDescClass}>
+                Get real-time notifications on your browser or mobile app
+              </div>
             </div>
+            <label className={toggleClass}>
+              <input
+                className={toggleInputClass}
+                type="checkbox"
+                checked={prefs.notification_push}
+                onChange={() => handleToggle("notification_push")}
+              />
+              <span className={toggleSliderClass}></span>
+            </label>
           </div>
 
-          {/* Notification Categories */}
-          <div style={{ marginBottom: "24px" }}>
-            <h3
-              style={{
-                fontSize: "15px",
-                fontWeight: 700,
-                color: "var(--t1)",
-                marginBottom: "12px",
-              }}
-            >
-              Notification Categories
-            </h3>
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-            >
-              {[
-                {
-                  key: "bet_results" as const,
-                  label: "Bet Results",
-                  desc: "Get notified when your bets are settled",
-                },
-                {
-                  key: "promotions" as const,
-                  label: "Promotions",
-                  desc: "Special offers, bonuses, and promotional events",
-                },
-                {
-                  key: "account_updates" as const,
-                  label: "Account Updates",
-                  desc: "Deposit confirmations, withdrawal status, and security alerts",
-                },
-                {
-                  key: "new_markets" as const,
-                  label: "New Markets",
-                  desc: "Be notified when new sports or leagues are added",
-                },
-                {
-                  key: "odds_alerts" as const,
-                  label: "Odds Alerts",
-                  desc: "Get alerted when odds change significantly on your favorites",
-                },
-              ].map((cat) => (
-                <label
-                  key={cat.key}
-                  className="notif-item"
-                  style={{ cursor: "pointer" }}
-                >
-                  <div className="notif-item-info">
-                    <div className="notif-item-title">{cat.label}</div>
-                    <div className="notif-item-desc">{cat.desc}</div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={categories[cat.key]}
-                    onChange={() => handleCategoryToggle(cat.key)}
-                    style={{
-                      width: "18px",
-                      height: "18px",
-                      accentColor: "var(--accent)",
-                    }}
-                  />
-                </label>
-              ))}
+          {/* Marketing Email */}
+          <div className={itemClass}>
+            <div className="flex-1">
+              <div className={itemTitleClass}>Marketing Emails</div>
+              <div className={itemDescClass}>
+                Receive emails about new features, promotions, and special
+                offers
+              </div>
             </div>
-          </div>
-
-          {/* Save Button */}
-          <div className="notif-actions">
-            <button
-              className="notif-save-btn"
-              onClick={handleSave}
-              disabled={saveLoading}
-            >
-              {saveLoading ? "Saving..." : "Save Preferences"}
-            </button>
+            <label className={toggleClass}>
+              <input
+                className={toggleInputClass}
+                type="checkbox"
+                checked={prefs.marketing_email}
+                onChange={() => handleToggle("marketing_email")}
+              />
+              <span className={toggleSliderClass}></span>
+            </label>
           </div>
         </div>
 
-        {/* Notification Types Info */}
-        <div className="notif-info-card">
-          <h3>What You'll Receive</h3>
-          <div className="notif-info-grid">
-            <div className="notif-info-item">
-              <div className="notif-info-icon">📢</div>
-              <div className="notif-info-title">Announcements</div>
-              <div className="notif-info-desc">
-                Important updates about your account and our service
-              </div>
-            </div>
-
-            <div className="notif-info-item">
-              <div className="notif-info-icon">🎁</div>
-              <div className="notif-info-title">Promotions</div>
-              <div className="notif-info-desc">
-                Special offers and bonus opportunities
-              </div>
-            </div>
-
-            <div className="notif-info-item">
-              <div className="notif-info-icon">📅</div>
-              <div className="notif-info-title">Subscription Updates</div>
-              <div className="notif-info-desc">
-                Renewal reminders and billing notifications
-              </div>
-            </div>
-
-            <div className="notif-info-item">
-              <div className="notif-info-icon">🔐</div>
-              <div className="notif-info-title">Sign-in Notifications</div>
-              <div className="notif-info-desc">
-                Alerts when your account is accessed
-              </div>
-            </div>
+        {/* Email Frequency */}
+        <div className="mb-6">
+          <h3 className="mb-3 text-[15px] font-bold text-[var(--t1)]">
+            Email Frequency
+          </h3>
+          <div className="flex flex-col gap-2">
+            {(
+              [
+                {
+                  value: "instant",
+                  label: "Instant",
+                  desc: "Receive emails as events happen",
+                },
+                {
+                  value: "daily",
+                  label: "Daily Digest",
+                  desc: "One summary email per day",
+                },
+                {
+                  value: "weekly",
+                  label: "Weekly Digest",
+                  desc: "One summary email per week",
+                },
+              ] as const
+            ).map((opt) => (
+              <label key={opt.value} className={`${itemClass} cursor-pointer`}>
+                <div className="flex-1">
+                  <div className={itemTitleClass}>{opt.label}</div>
+                  <div className={itemDescClass}>{opt.desc}</div>
+                </div>
+                <input
+                  className="h-[18px] w-[18px] accent-[var(--accent)]"
+                  type="radio"
+                  name="emailFrequency"
+                  value={opt.value}
+                  checked={emailFrequency === opt.value}
+                  onChange={() => setEmailFrequency(opt.value)}
+                />
+              </label>
+            ))}
           </div>
+        </div>
+
+        {/* Notification Categories */}
+        <div className="mb-6">
+          <h3 className="mb-3 text-[15px] font-bold text-[var(--t1)]">
+            Notification Categories
+          </h3>
+          <div className="flex flex-col gap-2">
+            {[
+              {
+                key: "bet_results" as const,
+                label: "Bet Results",
+                desc: "Get notified when your bets are settled",
+              },
+              {
+                key: "promotions" as const,
+                label: "Promotions",
+                desc: "Special offers, bonuses, and promotional events",
+              },
+              {
+                key: "account_updates" as const,
+                label: "Account Updates",
+                desc: "Deposit confirmations, withdrawal status, and security alerts",
+              },
+              {
+                key: "new_markets" as const,
+                label: "New Markets",
+                desc: "Be notified when new sports or leagues are added",
+              },
+              {
+                key: "odds_alerts" as const,
+                label: "Odds Alerts",
+                desc: "Get alerted when odds change significantly on your favorites",
+              },
+            ].map((cat) => (
+              <label key={cat.key} className={`${itemClass} cursor-pointer`}>
+                <div className="flex-1">
+                  <div className={itemTitleClass}>{cat.label}</div>
+                  <div className={itemDescClass}>{cat.desc}</div>
+                </div>
+                <input
+                  className="h-[18px] w-[18px] accent-[var(--accent)]"
+                  type="checkbox"
+                  checked={categories[cat.key]}
+                  onChange={() => handleCategoryToggle(cat.key)}
+                />
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Save Button */}
+        <div className="flex gap-3">
+          <button
+            className="cursor-pointer rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-6 py-3 text-sm font-bold text-white transition-all duration-150 hover:-translate-y-px hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={handleSave}
+            disabled={saveLoading}
+          >
+            {saveLoading ? "Saving..." : "Save Preferences"}
+          </button>
         </div>
       </div>
-    </>
+
+      {/* Notification Types Info */}
+      <div className={cardClass}>
+        <h3 className="mb-4 text-base font-bold text-[var(--t1)]">
+          What You'll Receive
+        </h3>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
+          <InfoItem
+            icon="📢"
+            title="Announcements"
+            desc="Important updates about your account and our service"
+          />
+          <InfoItem
+            icon="🎁"
+            title="Promotions"
+            desc="Special offers and bonus opportunities"
+          />
+          <InfoItem
+            icon="📅"
+            title="Subscription Updates"
+            desc="Renewal reminders and billing notifications"
+          />
+          <InfoItem
+            icon="🔐"
+            title="Sign-in Notifications"
+            desc="Alerts when your account is accessed"
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 
-const notificationsStyles = `
-  .notif-page { max-width: 800px; margin: 0 auto; padding: 24px 16px; }
-
-  .notif-header {
-    display: flex; justify-content: space-between; align-items: flex-start;
-    margin-bottom: 32px;
-  }
-  @media (max-width: 640px) {
-    .notif-header { flex-direction: column; gap: 16px; }
-  }
-
-  .notif-header h1 { font-size: 28px; font-weight: 800; color: var(--t1); margin-bottom: 4px; }
-  .notif-header p { font-size: 14px; color: var(--t3); }
-
-  .notif-back {
-    padding: 10px 16px; background: var(--surface-1); border: 1px solid var(--border-1);
-    border-radius: var(--r-rh-md); color: var(--t1); text-decoration: none; font-size: 13px;
-    font-weight: 600; transition: all 0.15s;
-  }
-  .notif-back:hover { border-color: var(--accent); color: var(--accent); }
-
-  .notif-card {
-    background: var(--surface-1); border: 1px solid var(--border-1); border-radius: var(--r-rh-lg);
-    padding: 24px; margin-bottom: 24px;
-  }
-
-  .notif-card h2 {
-    font-size: 18px; font-weight: 700; color: var(--t1); margin-bottom: 8px;
-  }
-
-  .notif-desc {
-    font-size: 13px; color: var(--t2); margin-bottom: 24px;
-  }
-
-  .notif-notice {
-    display: flex; gap: 10px; align-items: flex-start;
-    padding: 12px 14px; margin-bottom: 24px;
-    background: var(--surface-2); border: 1px solid var(--border-1);
-    border-left: 3px solid var(--accent); border-radius: var(--r-rh-md);
-    font-size: 13px; color: var(--t2); line-height: 1.45;
-  }
-  .notif-notice-icon { flex-shrink: 0; }
-
-  .notif-settings {
-    display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;
-  }
-
-  .notif-item {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 16px; background: var(--surface-2); border-radius: var(--r-rh-md);
-    border: 1px solid var(--border-1);
-  }
-  @media (max-width: 640px) {
-    .notif-item { flex-direction: column; gap: 12px; align-items: flex-start; }
-  }
-
-  .notif-item-info { flex: 1; }
-  .notif-item-title { font-size: 14px; font-weight: 700; color: var(--t1); margin-bottom: 4px; }
-  .notif-item-desc { font-size: 12px; color: var(--t3); }
-
-  .notif-toggle {
-    display: inline-flex; align-items: center; cursor: pointer;
-    position: relative; width: 48px; height: 28px;
-  }
-
-  .notif-toggle input {
-    display: none;
-  }
-
-  .notif-toggle-slider {
-    position: absolute; cursor: pointer; top: 0; left: 0;
-    right: 0; bottom: 0; background-color: var(--border-2);
-    transition: 0.3s; border-radius: 14px;
-  }
-
-  .notif-toggle-slider:before {
-    position: absolute; content: "";
-    height: 22px; width: 22px; left: 3px; bottom: 3px;
-    background-color: var(--t3); transition: 0.3s; border-radius: 50%;
-  }
-
-  .notif-toggle input:checked + .notif-toggle-slider {
-    background-color: var(--accent);
-  }
-
-  .notif-toggle input:checked + .notif-toggle-slider:before {
-    transform: translateX(20px); background-color: #fff;
-  }
-
-  .notif-actions {
-    display: flex; gap: 12px;
-  }
-
-  .notif-save-btn {
-    padding: 12px 24px; background: var(--accent); border: none;
-    border-radius: var(--r-rh-md); color: #fff; font-size: 14px; font-weight: 700;
-    cursor: pointer; transition: all 0.15s;
-  }
-
-  .notif-save-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
-  .notif-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  .notif-info-card {
-    background: var(--surface-1); border: 1px solid var(--border-1); border-radius: var(--r-rh-lg);
-    padding: 24px;
-  }
-
-  .notif-info-card h3 {
-    font-size: 16px; font-weight: 700; color: var(--t1); margin-bottom: 16px;
-  }
-
-  .notif-info-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-  }
-
-  .notif-info-item {
-    padding: 16px; background: var(--surface-2); border-radius: var(--r-rh-md);
-    border: 1px solid var(--border-1); text-align: center;
-  }
-
-  .notif-info-icon { font-size: 32px; margin-bottom: 8px; }
-  .notif-info-title { font-size: 13px; font-weight: 700; color: var(--t1); margin-bottom: 4px; }
-  .notif-info-desc { font-size: 12px; color: var(--t3); line-height: 1.4; }
-`;
+function InfoItem({
+  icon,
+  title,
+  desc,
+}: {
+  icon: string;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <div className="rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-4 text-center">
+      <div className="mb-2 text-[32px]">{icon}</div>
+      <div className="mb-1 text-[13px] font-bold text-[var(--t1)]">{title}</div>
+      <div className="text-xs leading-snug text-[var(--t3)]">{desc}</div>
+    </div>
+  );
+}

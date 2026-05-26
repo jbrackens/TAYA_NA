@@ -70,9 +70,9 @@ export default function EditRolesModal({
       <Checkbox.Group
         value={selected}
         onChange={(values) => setSelected(values as string[])}
-        style={{ width: "100%" }}
+        className="w-full"
       >
-        <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+        <Space direction="vertical" size="middle" className="w-full">
           {roles.map((role) => {
             const locked =
               !!lockSuperAdminRemoval && role.id === SUPER_ADMIN_ROLE_ID;
@@ -88,7 +88,7 @@ export default function EditRolesModal({
                 {locked ? (
                   <>
                     <br />
-                    <Text type="warning" style={{ fontSize: 12 }}>
+                    <Text type="warning" className="!text-xs">
                       Cannot remove the last Super Admin.
                     </Text>
                   </>

@@ -1,85 +1,8 @@
 "use client";
 
-import styled from "styled-components";
 import { Input, Button } from "../shared";
 import { useState, useMemo } from "react";
 import { DataTable, ColumnDef } from "../shared/DataTable";
-
-const SearchContainer = styled.div`
-  background-color: var(--surface-1, var(--t1, #1a1a1a));
-  border: 1px solid var(--border-1, #e5dfd2);
-  border-radius: 6px;
-  padding: 20px;
-  margin-bottom: 20px;
-`;
-
-const Title = styled.h3`
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--t1, #1a1a1a);
-`;
-
-const FilterRow = styled.div`
-  display: grid;
-  grid-template-columns: 2fr 1fr auto;
-  gap: 12px;
-  margin-bottom: 16px;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const FilterGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-`;
-
-const Label = styled.label`
-  font-size: 12px;
-  color: var(--t2, #4a4a4a);
-  text-transform: uppercase;
-  font-weight: 500;
-`;
-
-const StyledInput = styled(Input)`
-  background-color: var(--border-1, #e5dfd2);
-  border: 1px solid var(--border-1, #e5dfd2);
-  color: var(--t1, #1a1a1a);
-
-  &:focus {
-    border-color: var(--focus-ring, #0e7a53);
-  }
-`;
-
-const StyledSelect = styled.select`
-  background-color: var(--border-1, #e5dfd2);
-  border: 1px solid var(--border-1, #e5dfd2);
-  color: var(--t1, #1a1a1a);
-  padding: 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 13px;
-
-  &:focus {
-    outline: none;
-    border-color: var(--focus-ring, #0e7a53);
-  }
-
-  option {
-    background-color: var(--surface-1, var(--t1, #1a1a1a));
-    color: var(--t1, #1a1a1a);
-  }
-`;
-
-const TableContainer = styled.div`
-  background-color: var(--surface-1, var(--t1, #1a1a1a));
-  border: 1px solid var(--border-1, #e5dfd2);
-  border-radius: 6px;
-  padding: 20px;
-`;
 
 export interface PunterData {
   id: string;
@@ -105,14 +28,26 @@ interface PunterSearchProps {
   isLoading?: boolean;
 }
 
+const panelClassName =
+  "rounded-md border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] p-5";
+const titleClassName =
+  "m-0 mb-4 text-base font-semibold text-[var(--t1,#1a1a1a)]";
+const filterGroupClassName = "flex flex-col gap-1.5";
+const labelClassName = "text-xs font-medium uppercase text-[var(--t2,#4a4a4a)]";
+const inputClassName =
+  "!border-[var(--border-1,#e5dfd2)] !bg-[var(--border-1,#e5dfd2)] !text-[var(--t1,#1a1a1a)] focus:!border-[var(--focus-ring,#0e7a53)]";
+const selectClassName =
+  "cursor-pointer rounded border border-[var(--border-1,#e5dfd2)] bg-[var(--border-1,#e5dfd2)] p-2 text-[13px] text-[var(--t1,#1a1a1a)] focus:border-[var(--focus-ring,#0e7a53)] focus:outline-none";
+const optionClassName =
+  "bg-[var(--surface-1,#ffffff)] text-[var(--t1,#1a1a1a)]";
+
 export function PunterSearch({
   punters = [],
   onPunterSelect,
   isLoading = false,
 }: PunterSearchProps) {
   const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] =
-    useState<PunterStatusFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<PunterStatusFilter>("all");
 
   const filteredPunters = useMemo(() => {
     return punters.filter((p) => {
@@ -139,30 +74,22 @@ export function PunterSearch({
       key: "status",
       label: "Status",
       sortable: true,
-      render: (value) => (
-        <span
-          style={{
-            padding: "2px 8px",
-            borderRadius: "3px",
-            fontSize: "11px",
-            fontWeight: "600",
-            backgroundColor:
-              value === "active"
-                ? "rgba(34, 197, 94, 0.2)"
-                : value === "suspended"
-                  ? "rgba(248, 113, 113, 0.2)"
-                  : "rgba(160, 160, 160, 0.2)",
-            color:
-              value === "active"
-                ? "var(--accent-lo, #1fa65e)"
-                : value === "suspended"
-                  ? "var(--no-text, #a8472d)"
-                  : "var(--t2, #4a4a4a)",
-          }}
-        >
-          {value.toUpperCase()}
-        </span>
-      ),
+      render: (value) => {
+        const statusClassName =
+          value === "active"
+            ? "bg-[rgba(34,197,94,0.2)] text-[var(--accent-lo,#1fa65e)]"
+            : value === "suspended"
+              ? "bg-[rgba(248,113,113,0.2)] text-[var(--no-text,#a8472d)]"
+              : "bg-[rgba(160,160,160,0.2)] text-[var(--t2,#4a4a4a)]";
+
+        return (
+          <span
+            className={`rounded-[3px] px-2 py-0.5 text-[11px] font-semibold ${statusClassName}`}
+          >
+            {value.toUpperCase()}
+          </span>
+        );
+      },
     },
     {
       key: "balance",
@@ -180,13 +107,11 @@ export function PunterSearch({
       sortable: true,
       render: (value) => (
         <span
-          style={{
-            color:
-              value >= 0
-                ? "var(--accent-lo, #1fa65e)"
-                : "var(--no-text, #a8472d)",
-            fontWeight: "600",
-          }}
+          className={`font-semibold ${
+            value >= 0
+              ? "text-[var(--accent-lo,#1fa65e)]"
+              : "text-[var(--no-text,#a8472d)]"
+          }`}
         >
           {value < 0 ? "-" : "+"}$
           {Math.abs(value).toLocaleString(undefined, {
@@ -205,22 +130,24 @@ export function PunterSearch({
 
   return (
     <>
-      <SearchContainer>
-        <Title>Search Punters</Title>
-        <FilterRow>
-          <FilterGroup>
-            <Label>Name or Email</Label>
-            <StyledInput
+      <div className={`${panelClassName} mb-5`}>
+        <h3 className={titleClassName}>Search Punters</h3>
+        <div className="mb-4 grid grid-cols-[2fr_1fr_auto] gap-3 max-[1024px]:grid-cols-1">
+          <div className={filterGroupClassName}>
+            <label className={labelClassName}>Name or Email</label>
+            <Input
+              className={inputClassName}
               type="text"
               placeholder="Search..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
             />
-          </FilterGroup>
+          </div>
 
-          <FilterGroup>
-            <Label>Status</Label>
-            <StyledSelect
+          <div className={filterGroupClassName}>
+            <label className={labelClassName}>Status</label>
+            <select
+              className={selectClassName}
               value={statusFilter}
               onChange={(e) => {
                 const nextStatusFilter = e.target.value;
@@ -229,14 +156,22 @@ export function PunterSearch({
                 }
               }}
             >
-              <option value="all">All</option>
-              <option value="active">Active</option>
-              <option value="suspended">Suspended</option>
-              <option value="inactive">Inactive</option>
-            </StyledSelect>
-          </FilterGroup>
+              <option className={optionClassName} value="all">
+                All
+              </option>
+              <option className={optionClassName} value="active">
+                Active
+              </option>
+              <option className={optionClassName} value="suspended">
+                Suspended
+              </option>
+              <option className={optionClassName} value="inactive">
+                Inactive
+              </option>
+            </select>
+          </div>
 
-          <FilterGroup style={{ justifyContent: "flex-end" }}>
+          <div className={`${filterGroupClassName} justify-end`}>
             <Button
               variant="primary"
               onClick={() => {
@@ -246,11 +181,11 @@ export function PunterSearch({
             >
               Reset
             </Button>
-          </FilterGroup>
-        </FilterRow>
-      </SearchContainer>
+          </div>
+        </div>
+      </div>
 
-      <TableContainer>
+      <div className={panelClassName}>
         <DataTable<PunterData>
           columns={columns}
           data={filteredPunters}
@@ -263,7 +198,7 @@ export function PunterSearch({
               : "No results match your filters"
           }
         />
-      </TableContainer>
+      </div>
     </>
   );
 }

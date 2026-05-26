@@ -7,7 +7,7 @@
  * renders on the Predict auth shell. Step progress bar uses --accent.
  */
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { register as registerUser } from "../../lib/api";
@@ -53,6 +53,79 @@ const EMPTY_FORM: FormData = {
 
 const TOTAL_STEPS = 4;
 const STEP_TITLES = ["Account", "Personal", "Address", "Terms"];
+
+const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
+const CARD_CLASS =
+  "relative w-full max-w-[500px] rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-8 pb-[26px] pt-8 text-[var(--t1)]";
+const HEAD_CLASS = "mb-4 text-center";
+const EYEBROW_CLASS =
+  "mb-2.5 inline-block rounded-full border border-[rgba(43,228,128,0.3)] bg-[var(--accent-soft)] px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]";
+const TITLE_CLASS =
+  "m-0 mb-1 text-[22px] font-extrabold tracking-[-0.02em] text-[var(--t1)]";
+const SUBTITLE_CLASS = "m-0 text-[13px] text-[var(--t3)]";
+const PROGRESS_CLASS =
+  "relative mb-[22px] h-1 overflow-hidden rounded-full border border-[var(--border-1)] bg-[var(--surface-2)]";
+const PROGRESS_FILL_BASE_CLASS =
+  "absolute inset-y-0 left-0 rounded-[inherit] bg-[var(--accent)] transition-[width] duration-300 ease-[ease]";
+const DIVIDER_CLASS =
+  "my-0.5 flex items-center gap-3 before:h-px before:flex-1 before:bg-[var(--border-1)] before:content-[''] after:h-px after:flex-1 after:bg-[var(--border-1)] after:content-['']";
+const DIVIDER_TEXT_CLASS =
+  "text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+const BANNER_BASE_CLASS = "mb-3.5 rounded-[var(--r-rh-md)] px-3 py-2.5 text-[13px]";
+const BANNER_ERROR_CLASS =
+  "border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.1)] text-[var(--no-text)]";
+const BANNER_SUCCESS_CLASS =
+  "border border-[var(--border-2)] bg-[var(--accent-soft)] text-[var(--accent)]";
+const FORM_CLASS = "flex flex-col gap-3.5";
+const ROW_CLASS = "grid grid-cols-2 gap-3";
+const FIELD_CLASS = "flex flex-col gap-1.5";
+const FIELD_LABEL_CLASS =
+  "text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
+const INPUT_BASE_CLASS =
+  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-[13px] py-[11px] text-sm text-[var(--t1)] outline-none transition-[border-color] duration-150 ease-[ease] placeholder:text-[var(--t4)] focus-visible:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] [font-family:inherit]";
+const INPUT_ERROR_CLASS = "border-[var(--no-text)]";
+const FIELD_ERROR_CLASS = "text-[11px] text-[var(--no-text)]";
+const TERMS_CLASS =
+  "max-h-[220px] overflow-y-auto rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-4 py-3.5";
+const TERMS_TITLE_CLASS = "m-0 mb-2 text-sm font-bold text-[var(--t1)]";
+const TERMS_COPY_CLASS = "m-0 mb-2.5 text-xs leading-[1.55] text-[var(--t2)]";
+const CHECK_CLASS =
+  "flex cursor-pointer items-center gap-2.5 text-[13px] text-[var(--t1)]";
+const CHECK_INPUT_CLASS = "size-4 accent-[var(--accent)]";
+const SUMMARY_CLASS =
+  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3";
+const SUMMARY_EYEBROW_CLASS =
+  "mb-2 block text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
+const SUMMARY_LIST_CLASS = "m-0 flex flex-col gap-1";
+const SUMMARY_ROW_CLASS = "flex justify-between gap-2.5 text-xs";
+const SUMMARY_TERM_CLASS = "text-[var(--t3)]";
+const SUMMARY_DESC_CLASS = "m-0 text-[var(--t1)]";
+const MONO_CLASS =
+  "tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+const ACTIONS_CLASS = "mt-5 flex gap-2.5";
+const BUTTON_BASE_CLASS =
+  "flex-1 cursor-pointer rounded-[var(--r-rh-md)] border px-3.5 py-[11px] text-[13px] font-bold tracking-[0.02em] transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 [font-family:inherit]";
+const BUTTON_GHOST_CLASS =
+  "border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t2)] enabled:hover:border-[var(--accent)] enabled:hover:text-[var(--t1)]";
+const BUTTON_PRIMARY_CLASS =
+  "border-transparent bg-[var(--accent)] text-[#04140a] enabled:hover:-translate-y-px enabled:hover:brightness-[1.05] enabled:active:scale-[0.98]";
+const FOOTER_CLASS =
+  "mt-[18px] border-t border-[var(--border-1)] pt-3.5 text-center text-[13px] text-[var(--t2)]";
+const LINK_ACCENT_CLASS =
+  "font-semibold text-[var(--accent)] no-underline hover:brightness-110";
+
+function progressWidthClass(step: number): string {
+  switch (step) {
+    case 1:
+      return "w-1/4";
+    case 2:
+      return "w-1/2";
+    case 3:
+      return "w-3/4";
+    default:
+      return "w-full";
+  }
+}
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1);
@@ -165,36 +238,43 @@ export default function RegisterPage() {
     }
   }, [form, validate, returnSuffix]);
 
-  const progress = useMemo(() => (step / TOTAL_STEPS) * 100, [step]);
-
   return (
-    <div className="ra-shell">
-      <Styles />
-      <div className="ra-card">
-        <header className="ra-head">
-          <span className="ra-eyebrow">
+    <div className={SHELL_CLASS}>
+      <div className={CARD_CLASS}>
+        <header className={HEAD_CLASS}>
+          <span className={EYEBROW_CLASS}>
             Step {step} of {TOTAL_STEPS}
           </span>
-          <h1 className="ra-title">Create your account</h1>
-          <p className="ra-sub">{STEP_TITLES[step - 1]}</p>
+          <h1 className={TITLE_CLASS}>Create your account</h1>
+          <p className={SUBTITLE_CLASS}>{STEP_TITLES[step - 1]}</p>
         </header>
 
-        <div className="ra-progress" aria-hidden="true">
-          <div className="ra-progress-fill" style={{ width: `${progress}%` }} />
+        <div className={PROGRESS_CLASS} aria-hidden="true">
+          <div
+            className={`${PROGRESS_FILL_BASE_CLASS} ${progressWidthClass(step)}`}
+          />
         </div>
 
-        {errorMessage && <div className="ra-banner error">{errorMessage}</div>}
+        {errorMessage && (
+          <div className={`${BANNER_BASE_CLASS} ${BANNER_ERROR_CLASS}`}>
+            {errorMessage}
+          </div>
+        )}
         {successMessage && (
-          <div className="ra-banner success">{successMessage}</div>
+          <div className={`${BANNER_BASE_CLASS} ${BANNER_SUCCESS_CLASS}`}>
+            {successMessage}
+          </div>
         )}
 
         {step === 1 && (
-          <div className="ra-form">
+          <div className={FORM_CLASS}>
             {FEATURE_SOCIAL_AUTH && (
               <>
                 <SocialAuthButtons />
-                <div className="ra-divider">
-                  <span>or sign up with email</span>
+                <div className={DIVIDER_CLASS}>
+                  <span className={DIVIDER_TEXT_CLASS}>
+                    or sign up with email
+                  </span>
                 </div>
               </>
             )}
@@ -237,7 +317,7 @@ export default function RegisterPage() {
         )}
 
         {step === 2 && (
-          <div className="ra-form">
+          <div className={FORM_CLASS}>
             <Field
               label="First name"
               value={form.firstName}
@@ -273,7 +353,7 @@ export default function RegisterPage() {
         )}
 
         {step === 3 && (
-          <div className="ra-form">
+          <div className={FORM_CLASS}>
             <Field
               label="Street"
               value={form.street}
@@ -282,7 +362,7 @@ export default function RegisterPage() {
               error={errors.street}
               autoComplete="address-line1"
             />
-            <div className="ra-row">
+            <div className={ROW_CLASS}>
               <Field
                 label="City"
                 value={form.city}
@@ -298,7 +378,7 @@ export default function RegisterPage() {
                 autoComplete="address-level1"
               />
             </div>
-            <div className="ra-row">
+            <div className={ROW_CLASS}>
               <Field
                 label="ZIP"
                 value={form.zip}
@@ -318,47 +398,50 @@ export default function RegisterPage() {
         )}
 
         {step === 4 && (
-          <div className="ra-form">
-            <div className="ra-terms">
-              <h3>Terms and conditions</h3>
-              <p>
+          <div className={FORM_CLASS}>
+            <div className={TERMS_CLASS}>
+              <h3 className={TERMS_TITLE_CLASS}>Terms and conditions</h3>
+              <p className={TERMS_COPY_CLASS}>
                 By creating a Predict account you agree to our Terms of Service
                 and Privacy Policy. You must be 18 or older to trade binary
                 contracts on this platform.
               </p>
-              <p>
+              <p className="m-0 text-xs leading-[1.55] text-[var(--t2)]">
                 You agree to keep your account information accurate and to trade
                 responsibly. Predict is committed to providing tools and
                 resources for responsible participation.
               </p>
             </div>
 
-            <label className="ra-check">
+            <label className={CHECK_CLASS}>
               <input
                 type="checkbox"
+                className={CHECK_INPUT_CLASS}
                 checked={form.acceptTerms}
                 onChange={(e) => update("acceptTerms", e.target.checked)}
               />
               <span>I agree to the Terms of Service and Privacy Policy</span>
             </label>
             {errors.acceptTerms && (
-              <div className="ra-field-error">{errors.acceptTerms}</div>
+              <div className={FIELD_ERROR_CLASS}>{errors.acceptTerms}</div>
             )}
 
-            <div className="ra-summary">
-              <span className="ra-summary-eyebrow">Account summary</span>
-              <dl>
-                <div>
-                  <dt>Username</dt>
-                  <dd className="mono">{form.username}</dd>
+            <div className={SUMMARY_CLASS}>
+              <span className={SUMMARY_EYEBROW_CLASS}>Account summary</span>
+              <dl className={SUMMARY_LIST_CLASS}>
+                <div className={SUMMARY_ROW_CLASS}>
+                  <dt className={SUMMARY_TERM_CLASS}>Username</dt>
+                  <dd className={`${SUMMARY_DESC_CLASS} ${MONO_CLASS}`}>
+                    {form.username}
+                  </dd>
                 </div>
-                <div>
-                  <dt>Email</dt>
-                  <dd>{form.email}</dd>
+                <div className={SUMMARY_ROW_CLASS}>
+                  <dt className={SUMMARY_TERM_CLASS}>Email</dt>
+                  <dd className={SUMMARY_DESC_CLASS}>{form.email}</dd>
                 </div>
-                <div>
-                  <dt>Name</dt>
-                  <dd>
+                <div className={SUMMARY_ROW_CLASS}>
+                  <dt className={SUMMARY_TERM_CLASS}>Name</dt>
+                  <dd className={SUMMARY_DESC_CLASS}>
                     {form.firstName} {form.lastName}
                   </dd>
                 </div>
@@ -367,12 +450,12 @@ export default function RegisterPage() {
           </div>
         )}
 
-        <div className="ra-actions">
+        <div className={ACTIONS_CLASS}>
           <button
             type="button"
             onClick={onPrev}
             disabled={step === 1 || submitting}
-            className="ra-btn ghost"
+            className={`${BUTTON_BASE_CLASS} ${BUTTON_GHOST_CLASS}`}
           >
             Back
           </button>
@@ -380,7 +463,7 @@ export default function RegisterPage() {
             type="button"
             onClick={step === TOTAL_STEPS ? onSubmit : onNext}
             disabled={submitting}
-            className="ra-btn primary"
+            className={`${BUTTON_BASE_CLASS} ${BUTTON_PRIMARY_CLASS}`}
           >
             {submitting
               ? "Processing…"
@@ -390,9 +473,9 @@ export default function RegisterPage() {
           </button>
         </div>
 
-        <footer className="ra-foot">
+        <footer className={FOOTER_CLASS}>
           Already have an account?{" "}
-          <Link href={"/auth/login" + returnSuffix} className="ra-link-accent">
+          <Link href={"/auth/login" + returnSuffix} className={LINK_ACCENT_CLASS}>
             Sign in
           </Link>
         </footer>
@@ -419,284 +502,17 @@ function Field({
   autoComplete?: string;
 }) {
   return (
-    <label className="ra-field">
-      <span className="ra-field-label">{label}</span>
+    <label className={FIELD_CLASS}>
+      <span className={FIELD_LABEL_CLASS}>{label}</span>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         autoComplete={autoComplete}
-        className={`ra-input ${error ? "ra-input-error" : ""}`}
+        className={`${INPUT_BASE_CLASS} ${error ? INPUT_ERROR_CLASS : ""}`}
       />
-      {error && <span className="ra-field-error">{error}</span>}
+      {error && <span className={FIELD_ERROR_CLASS}>{error}</span>}
     </label>
-  );
-}
-
-function Styles() {
-  return (
-    <style>{`
-      .ra-shell {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 40px 20px;
-      }
-      .ra-card {
-        position: relative;
-        width: 100%;
-        max-width: 500px;
-        padding: 32px 32px 26px;
-        border-radius: var(--r-rh-lg);
-        background: var(--surface-1);
-        border: 1px solid var(--border-1);
-        color: var(--t1);
-      }
-      .ra-head { text-align: center; margin-bottom: 16px; }
-      .ra-eyebrow {
-        display: inline-block;
-        padding: 3px 10px;
-        margin-bottom: 10px;
-        background: var(--accent-soft);
-        border: 1px solid rgba(43, 228, 128,0.3);
-        color: var(--accent);
-        border-radius: 999px;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-      }
-      .ra-title {
-        margin: 0 0 4px;
-        font-size: 22px;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        color: var(--t1);
-      }
-      .ra-sub {
-        margin: 0;
-        font-size: 13px;
-        color: var(--t3);
-      }
-
-      .ra-progress {
-        position: relative;
-        height: 4px;
-        background: var(--surface-2);
-        border: 1px solid var(--border-1);
-        border-radius: 999px;
-        overflow: hidden;
-        margin-bottom: 22px;
-      }
-      .ra-progress-fill {
-        position: absolute;
-        inset: 0 auto 0 0;
-        background: var(--accent);
-        border-radius: inherit;
-        transition: width 0.3s ease;
-      }
-
-      .ra-divider {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin: 2px 0;
-      }
-      .ra-divider::before, .ra-divider::after {
-        content: "";
-        flex: 1;
-        height: 1px;
-        background: var(--border-1);
-      }
-      .ra-divider span {
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--t3);
-      }
-
-      .ra-banner {
-        padding: 10px 12px;
-        border-radius: var(--r-rh-md);
-        font-size: 13px;
-        margin-bottom: 14px;
-      }
-      .ra-banner.error {
-        background: rgba(255, 155, 107,0.1);
-        border: 1px solid rgba(255, 155, 107,0.3);
-        color: var(--no-text);
-      }
-      .ra-banner.success {
-        background: var(--accent-soft);
-        border: 1px solid var(--border-2);
-        color: var(--accent);
-      }
-
-      .ra-form {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-      }
-      .ra-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-      }
-      .ra-field {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      .ra-field-label {
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--t3);
-      }
-      .ra-input {
-        background: var(--surface-2);
-        border: 1px solid var(--border-1);
-        border-radius: var(--r-rh-md);
-        padding: 11px 13px;
-        font-family: inherit;
-        font-size: 14px;
-        color: var(--t1);
-        outline: none;
-        transition: border-color 150ms ease;
-      }
-      .ra-input::placeholder { color: var(--t4); }
-      .ra-input:focus-visible {
-        border-color: var(--accent);
-        box-shadow: 0 0 0 2px var(--accent-soft);
-      }
-      .ra-input-error { border-color: var(--no-text); }
-      .ra-field-error {
-        font-size: 11px;
-        color: var(--no-text);
-      }
-
-      .ra-terms {
-        background: var(--surface-2);
-        border: 1px solid var(--border-1);
-        border-radius: var(--r-rh-md);
-        padding: 14px 16px;
-        max-height: 220px;
-        overflow-y: auto;
-      }
-      .ra-terms h3 {
-        margin: 0 0 8px;
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--t1);
-      }
-      .ra-terms p {
-        margin: 0 0 10px;
-        font-size: 12px;
-        line-height: 1.55;
-        color: var(--t2);
-      }
-      .ra-terms p:last-child { margin-bottom: 0; }
-
-      .ra-check {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 13px;
-        color: var(--t1);
-        cursor: pointer;
-      }
-      .ra-check input {
-        width: 16px;
-        height: 16px;
-        accent-color: var(--accent);
-      }
-
-      .ra-summary {
-        background: var(--surface-2);
-        border: 1px solid var(--border-1);
-        border-radius: var(--r-rh-md);
-        padding: 12px 14px;
-      }
-      .ra-summary-eyebrow {
-        display: block;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--t3);
-        margin-bottom: 8px;
-      }
-      .ra-summary dl {
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
-      .ra-summary dl > div {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        font-size: 12px;
-      }
-      .ra-summary dt { color: var(--t3); }
-      .ra-summary dd { margin: 0; color: var(--t1); }
-
-      .ra-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
-      }
-      .ra-btn {
-        flex: 1;
-        padding: 11px 14px;
-        border: 1px solid transparent;
-        border-radius: var(--r-rh-md);
-        font-family: inherit;
-        font-size: 13px;
-        font-weight: 700;
-        letter-spacing: 0.02em;
-        cursor: pointer;
-        transition: all 0.15s;
-      }
-      .ra-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-      .ra-btn.ghost {
-        background: var(--surface-2);
-        color: var(--t2);
-        border-color: var(--border-1);
-      }
-      .ra-btn.ghost:hover:not(:disabled) {
-        border-color: var(--accent);
-        color: var(--t1);
-      }
-      .ra-btn.primary {
-        color: #04140a;
-        border-color: transparent;
-        background: var(--accent);
-      }
-      .ra-btn.primary:hover:not(:disabled) {
-        filter: brightness(1.05);
-        transform: translateY(-1px);
-      }
-      .ra-btn.primary:active:not(:disabled) { transform: scale(0.98); }
-
-      .ra-foot {
-        padding-top: 14px;
-        margin-top: 18px;
-        border-top: 1px solid var(--border-1);
-        text-align: center;
-        font-size: 13px;
-        color: var(--t2);
-      }
-      .ra-link-accent {
-        color: var(--accent);
-        text-decoration: none;
-        font-weight: 600;
-      }
-      .ra-link-accent:hover { filter: brightness(1.1); }
-    `}</style>
   );
 }

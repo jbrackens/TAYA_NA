@@ -15,81 +15,24 @@ export default function Error({
   }, [error]);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "60vh",
-        padding: "40px 20px",
-        textAlign: "center",
-      }}
-    >
-      <div
-        style={{
-          width: 64,
-          height: 64,
-          borderRadius: 16,
-          background: "rgba(255, 155, 107, 0.1)",
-          border: "1px solid rgba(255, 155, 107, 0.2)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          marginBottom: 24,
-          fontSize: 28,
-        }}
-      >
+    <div className="flex min-h-[60vh] flex-col items-center justify-center px-5 py-10 text-center">
+      <div className="mb-6 flex size-16 items-center justify-center rounded-2xl border border-[rgba(255,155,107,0.2)] bg-[rgba(255,155,107,0.1)] text-[28px]">
         ⚠️
       </div>
-      <h2
-        style={{
-          fontSize: 20,
-          fontWeight: 700,
-          color: "#f8fafc",
-          marginBottom: 8,
-        }}
-      >
+      <h2 className="mb-2 text-xl font-bold text-[#f8fafc]">
         Something went wrong
       </h2>
-      <p
-        style={{
-          fontSize: 14,
-          color: "#64748b",
-          marginBottom: 24,
-          maxWidth: 400,
-          lineHeight: 1.6,
-        }}
-      >
+      <p className="mb-6 max-w-[400px] text-sm leading-relaxed text-[#64748b]">
         Something went wrong. Please try again or contact support.
         {process.env.NODE_ENV === "development" && error.message && (
-          <span
-            style={{
-              display: "block",
-              marginTop: 8,
-              fontSize: 12,
-              color: "var(--t3)",
-              fontFamily: "monospace",
-            }}
-          >
+          <span className="mt-2 block font-mono text-xs text-[var(--t3)]">
             {error.message}
           </span>
         )}
       </p>
       <button
         onClick={reset}
-        style={{
-          padding: "10px 24px",
-          borderRadius: 8,
-          border: "none",
-          background:
-            "linear-gradient(135deg, var(--accent), var(--accent-lo))",
-          color: "#04140a",
-          fontSize: 14,
-          fontWeight: 600,
-          cursor: "pointer",
-          boxShadow: "0 4px 12px rgba(43, 228, 128,0.25)",
-        }}
+        className="cursor-pointer rounded-lg border-0 bg-[linear-gradient(135deg,var(--accent),var(--accent-lo))] px-6 py-2.5 text-sm font-semibold text-[#04140a] shadow-[0_4px_12px_rgba(43,228,128,0.25)]"
       >
         Try Again
       </button>

@@ -1,28 +1,32 @@
-import styled from "styled-components";
+import React from "react";
 
 export const SPORT_ICON_SIZE = 24;
 
-export const SportIconStyled = styled.span`
-  display: inline-flex;
-  width: ${SPORT_ICON_SIZE}px;
-  height: ${SPORT_ICON_SIZE}px;
+const classNames = (...classes: Array<string | undefined>) =>
+  classes.filter(Boolean).join(" ");
 
-  border: 1px transparent solid;
-  border-radius: 0.33rem;
+const SPORT_ICON_CLASS_NAME = [
+  "inline-flex",
+  "h-6",
+  "w-6",
+  "overflow-hidden",
+  "rounded-[0.33rem]",
+  "border",
+  "border-transparent",
+  "bg-[var(--surface-1)]",
+  "[&+span]:-ml-2",
+  "[&+span]:border-[rgba(0,0,0,0.15)]",
+  "[&_img]:h-6",
+  "[&_img]:w-6",
+  "[&_img]:-mt-px",
+  "[&_img]:-ml-px",
+].join(" ");
 
-  background: var(--surface-1, #ffffff);
-
-  overflow: hidden;
-
-  & + span {
-    margin-left: ${SPORT_ICON_SIZE / -3}px;
-    border-color: rgba(0, 0, 0, 0.15);
-  }
-
-  img {
-    width: ${SPORT_ICON_SIZE}px;
-    height: ${SPORT_ICON_SIZE}px;
-    margin-top: -1px;
-    margin-left: -1px;
-  }
-`;
+export const SportIconStyled = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) =>
+  React.createElement("span", {
+    ...props,
+    className: classNames(SPORT_ICON_CLASS_NAME, className),
+  });

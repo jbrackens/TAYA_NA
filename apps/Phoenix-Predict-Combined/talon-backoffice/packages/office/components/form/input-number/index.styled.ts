@@ -1,6 +1,14 @@
-import styled from "styled-components";
-import { InputNumber } from "antd";
+import React from "react";
+import { InputNumber as AntdInputNumber } from "antd";
 
-export const InputNumberStyled = styled(InputNumber)`
-  width: 100%;
-`;
+const classNames = (...classes: Array<string | undefined>) =>
+  classes.filter(Boolean).join(" ");
+
+export const InputNumberStyled = ({
+  className,
+  ...props
+}: React.ComponentProps<typeof AntdInputNumber>) =>
+  React.createElement(AntdInputNumber, {
+    ...props,
+    className: classNames("w-full", className),
+  });

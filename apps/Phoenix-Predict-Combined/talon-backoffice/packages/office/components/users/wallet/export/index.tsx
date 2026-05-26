@@ -92,13 +92,7 @@ const UserDetailsWalletExport = ({ id }: UserDetailsWalletExportProps) => {
 
   return (
     <>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          paddingRight: "30px",
-        }}
-      >
+      <div className="flex justify-end pr-[30px]">
         <Button
           key="action-add-note"
           shape="round"

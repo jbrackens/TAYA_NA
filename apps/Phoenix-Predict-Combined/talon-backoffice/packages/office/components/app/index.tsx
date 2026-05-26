@@ -1,5 +1,5 @@
 import { Provider } from "react-redux";
-import { ThemeProvider } from "styled-components";
+import { ThemeProvider } from "./theme-context";
 import { MenuProvider } from "../../providers/menu";
 import SessionGuard from "../auth/session-guard/index";
 import { useRouter } from "next/router";

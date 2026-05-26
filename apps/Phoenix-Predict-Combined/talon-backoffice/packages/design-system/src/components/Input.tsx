@@ -1,45 +1,25 @@
 import React from 'react';
-import styled from 'styled-components';
-
-interface StyledInputProps {
-  $hasError?: boolean;
-}
-
-const StyledInput = styled.input<StyledInputProps>`
-  width: 100%;
-  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
-  background-color: ${({ theme }) => theme.colors.surface};
-  border: 1px solid ${({ theme, $hasError }) => ($hasError ? theme.colors.error : theme.colors.border)};
-  border-radius: ${({ theme }) => theme.radius.sm};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: ${({ theme }) => theme.typography.base.fontSize};
-  font-family: ${({ theme }) => theme.typography.fontFamily};
-  transition: all ${({ theme }) => theme.motion.fast};
-
-  &::placeholder {
-    color: ${({ theme }) => theme.colors.textSecondary};
-  }
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme, $hasError }) => ($hasError ? theme.colors.error : theme.colors.accentBlue)};
-    box-shadow: 0 0 0 3px ${({ theme, $hasError }) => ($hasError ? 'rgba(232, 90, 113, 0.1)' : 'rgba(33, 150, 243, 0.1)')};
-  }
-
-  &:disabled {
-    background-color: ${({ theme }) => theme.colors.card};
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
+import { cx } from '../utils/classNames';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ error, ...props }, ref) => {
-    return <StyledInput ref={ref} $hasError={error} {...props} />;
+  ({ error, className, ...props }, ref) => {
+    return (
+      <input
+        ref={ref}
+        className={cx(
+          'w-full rounded-lg border bg-[#2d2d44] px-4 py-2 text-[14px] leading-[20px] text-white placeholder:text-[#9a9aad] transition-all duration-200 ease-in-out focus:outline-none focus:ring-[3px] disabled:cursor-not-allowed disabled:bg-[#4a4a5e] disabled:opacity-50',
+          error
+            ? 'border-[#e85a71] focus:border-[#e85a71] focus:ring-[rgba(232,90,113,0.1)]'
+            : 'border-[#3d3d5c] focus:border-[#2196f3] focus:ring-[rgba(33,150,243,0.1)]',
+          className
+        )}
+        {...props}
+      />
+    );
   }
 );
 

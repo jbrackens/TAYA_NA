@@ -38,6 +38,48 @@ const TIME_PILLS: { value: DateWindow; labelKey?: string; label?: string }[] = [
   { value: "30d", label: "1M" },
 ];
 
+const FILTER_HEAD_CLASS =
+  "mt-8 mb-[18px] flex flex-wrap items-center justify-between gap-4 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[768px]:mt-6 max-[768px]:mb-4 max-[768px]:flex-col max-[768px]:flex-nowrap max-[768px]:items-stretch max-[768px]:justify-start max-[768px]:gap-2.5";
+
+const CATEGORY_LIST_CLASS =
+  "flex min-w-0 flex-1 flex-wrap gap-2 max-[768px]:mx-[-16px] max-[768px]:w-[calc(100%+32px)] max-[768px]:flex-[0_0_auto] max-[768px]:flex-row max-[768px]:flex-nowrap max-[768px]:overflow-x-auto max-[768px]:overflow-y-hidden max-[768px]:whitespace-nowrap max-[768px]:px-4 max-[768px]:pt-0 max-[768px]:pb-0.5 max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
+
+const CATEGORY_PILL_BASE_CLASS =
+  "cursor-pointer appearance-none rounded-md border-0 px-[18px] py-[9px] [font-family:inherit] text-[13px] transition-colors duration-[120ms] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap max-[768px]:px-4";
+
+const TIME_PILLS_CLASS =
+  "inline-flex shrink-0 gap-1 rounded-md border border-[var(--border-1)] bg-white/[0.04] p-[3px] max-[768px]:max-w-full max-[768px]:self-start max-[768px]:overflow-x-auto max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
+
+const TIME_PILL_BASE_CLASS =
+  "min-w-11 cursor-pointer appearance-none rounded-md border-0 px-[14px] py-1.5 [font-family:inherit] text-xs font-semibold transition-colors duration-[120ms] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
+
+const LOAD_MORE_CLASS = "mt-6 mb-0 flex justify-center";
+
+const LOAD_MORE_BUTTON_CLASS =
+  "cursor-pointer appearance-none rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-3 font-['Inter',_sans-serif] text-sm font-semibold text-[var(--t1)] transition-colors duration-[120ms] [&:not(:disabled):hover]:border-[rgba(43,228,128,0.5)] [&:not(:disabled):hover]:bg-[var(--surface-2)] [&:not(:disabled):hover]:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-[0.55]";
+
+const EMPTY_CLASS =
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-14 text-center";
+
+const EMPTY_TITLE_CLASS = "m-0 text-[18px] font-bold text-[var(--t1)]";
+const EMPTY_TEXT_CLASS = "mt-2 mb-0 text-[13px] text-[var(--t3)]";
+
+function categoryPillClass(active: boolean): string {
+  return `${CATEGORY_PILL_BASE_CLASS} ${
+    active
+      ? "bg-[var(--yes)] font-semibold text-[#061a10]"
+      : "bg-white/[0.05] font-medium text-[var(--t2)] hover:bg-white/[0.08] hover:text-[var(--t1)]"
+  }`;
+}
+
+function timePillClass(active: boolean): string {
+  return `${TIME_PILL_BASE_CLASS} ${
+    active
+      ? "bg-[var(--yes)] text-[#061a10]"
+      : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)]"
+  }`;
+}
+
 function dateWindowToCloseBefore(w: DateWindow): string | undefined {
   if (w === "all") return undefined;
   const ms = w === "24h" ? 24 : w === "7d" ? 24 * 7 : 24 * 30;
@@ -127,179 +169,9 @@ export function AllMarketsSection({ categories }: Props) {
 
   return (
     <>
-      <style>{`
-        .ams-head {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-          margin: 32px 0 18px;
-          flex-wrap: wrap;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        .ams-categories {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-          flex: 1;
-          min-width: 0;
-        }
-        .ams-cat-pill {
-          appearance: none;
-          background: rgba(255, 255, 255, 0.05);
-          color: var(--t2);
-          border: 0;
-          border-radius: 6px;
-          padding: 9px 18px;
-          font-family: inherit;
-          font-size: 13px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: background 120ms ease, color 120ms ease;
-        }
-        .ams-cat-pill:hover {
-          background: rgba(255, 255, 255, 0.08);
-          color: var(--t1);
-        }
-        .ams-cat-pill:focus-visible {
-          outline: none;
-          box-shadow: 0 0 0 2px var(--accent-soft);
-        }
-        .ams-cat-pill.is-active {
-          background: var(--yes);
-          color: #061a10;
-          font-weight: 600;
-        }
-
-        .ams-time-pills {
-          display: inline-flex;
-          gap: 4px;
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid var(--border-1);
-          border-radius: 6px;
-          padding: 3px;
-          flex-shrink: 0;
-        }
-        .ams-time-pill {
-          appearance: none;
-          background: transparent;
-          color: var(--t3);
-          border: 0;
-          border-radius: 6px;
-          padding: 6px 14px;
-          min-width: 44px;
-          font-family: inherit;
-          font-size: 12px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: color 120ms ease, background 120ms ease;
-        }
-        .ams-time-pill:hover { color: var(--t1); }
-        .ams-time-pill.is-active {
-          background: var(--yes);
-          color: #061a10;
-        }
-
-        .pred-load-more {
-          display: flex;
-          justify-content: center;
-          margin: 24px 0 0;
-        }
-        .pred-load-more-btn {
-          appearance: none;
-          background: var(--surface-1);
-          color: var(--t1);
-          border: 1px solid var(--border-1);
-          border-radius: var(--r-pill);
-          padding: 12px 28px;
-          font-family: 'Inter', sans-serif;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
-        }
-        .pred-load-more-btn:hover:not(:disabled) {
-          background: var(--surface-2);
-          border-color: rgba(43, 228, 128, 0.5);
-          color: var(--accent);
-        }
-        .pred-load-more-btn:disabled {
-          opacity: 0.55;
-          cursor: not-allowed;
-        }
-
-        .ams-empty {
-          background: var(--surface-1);
-          border: 1px solid var(--border-1);
-          border-radius: var(--r-rh-lg);
-          padding: 56px;
-          text-align: center;
-        }
-        .ams-empty h3 {
-          margin: 0;
-          font-size: 18px;
-          font-weight: 700;
-          color: var(--t1);
-        }
-        .ams-empty p {
-          margin: 8px 0 0;
-          color: var(--t3);
-          font-size: 13px;
-        }
-
-        @media (max-width: 768px) {
-          .ams-head {
-            align-items: stretch;
-            justify-content: flex-start;
-            gap: 10px;
-            flex-direction: column;
-            flex-wrap: nowrap;
-            margin: 24px 0 16px;
-          }
-          .ams-categories {
-            flex: 0 0 auto;
-            flex-direction: row;
-            flex-wrap: nowrap;
-            gap: 8px;
-            width: calc(100% + 32px);
-            margin: 0 -16px;
-            padding: 0 16px 2px;
-            overflow-x: auto;
-            overflow-y: hidden;
-            white-space: nowrap;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            -webkit-overflow-scrolling: touch;
-          }
-          .ams-categories::-webkit-scrollbar {
-            display: none;
-          }
-          .ams-cat-pill {
-            flex: 0 0 auto;
-            white-space: nowrap;
-            padding: 9px 16px;
-          }
-          .ams-time-pills {
-            align-self: flex-start;
-            max-width: 100%;
-            overflow-x: auto;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            -webkit-overflow-scrolling: touch;
-          }
-          .ams-time-pills::-webkit-scrollbar {
-            display: none;
-          }
-          .ams-time-pill {
-            flex: 0 0 auto;
-            white-space: nowrap;
-          }
-        }
-      `}</style>
-
-      <header className="ams-head">
+      <header className={FILTER_HEAD_CLASS}>
         <nav
-          className="ams-categories"
+          className={CATEGORY_LIST_CLASS}
           role="tablist"
           aria-label={t("FILTER_BY_CATEGORY")}
         >
@@ -307,7 +179,7 @@ export function AllMarketsSection({ categories }: Props) {
             type="button"
             role="tab"
             aria-selected={categorySlug === "all"}
-            className={`ams-cat-pill ${categorySlug === "all" ? "is-active" : ""}`}
+            className={categoryPillClass(categorySlug === "all")}
             onClick={() => setCategorySlug("all")}
           >
             {t("ALL")}
@@ -320,7 +192,7 @@ export function AllMarketsSection({ categories }: Props) {
                 type="button"
                 role="tab"
                 aria-selected={isActive}
-                className={`ams-cat-pill ${isActive ? "is-active" : ""}`}
+                className={categoryPillClass(isActive)}
                 onClick={() => setCategorySlug(c.slug)}
               >
                 {categoryName(contentT, c)}
@@ -329,7 +201,7 @@ export function AllMarketsSection({ categories }: Props) {
           })}
         </nav>
         <div
-          className="ams-time-pills"
+          className={TIME_PILLS_CLASS}
           role="tablist"
           aria-label={t("FILTER_BY_CLOSING_WINDOW")}
         >
@@ -341,7 +213,7 @@ export function AllMarketsSection({ categories }: Props) {
                 type="button"
                 role="tab"
                 aria-selected={isActive}
-                className={`ams-time-pill ${isActive ? "is-active" : ""}`}
+                className={timePillClass(isActive)}
                 onClick={() => setDateWindow(pill.value)}
               >
                 {pill.labelKey ? t(pill.labelKey) : pill.label}
@@ -352,30 +224,23 @@ export function AllMarketsSection({ categories }: Props) {
       </header>
 
       {loading && markets.length === 0 ? (
-        <div
-          style={{
-            color: "var(--t3)",
-            fontSize: 13,
-            padding: 56,
-            textAlign: "center",
-          }}
-        >
+        <div className="p-14 text-center text-[13px] text-[var(--t3)]">
           {t("LOADING_MARKETS")}
         </div>
       ) : error && markets.length === 0 ? (
-        <div className="ams-empty">
-          <p style={{ margin: 0, color: "var(--t2)", fontSize: 13 }}>
+        <div className={EMPTY_CLASS}>
+          <p className="m-0 text-[13px] text-[var(--t2)]">
             {t("COULD_NOT_LOAD_MARKETS")} {error}
           </p>
         </div>
       ) : !loading && markets.length === 0 ? (
-        <div className="ams-empty">
-          <h3>
+        <div className={EMPTY_CLASS}>
+          <h3 className={EMPTY_TITLE_CLASS}>
             {filtered
               ? t("NO_FILTER_MATCH")
               : t("NO_OPEN_MARKETS")}
           </h3>
-          <p>
+          <p className={EMPTY_TEXT_CLASS}>
             {filtered
               ? t("TRY_DIFFERENT_FILTER")
               : t("CHECK_BACK_SOON")}
@@ -385,10 +250,10 @@ export function AllMarketsSection({ categories }: Props) {
         <>
           <MarketGrid markets={markets} />
           {hasNext && (
-            <div className="pred-load-more">
+            <div className={LOAD_MORE_CLASS}>
               <button
                 type="button"
-                className="pred-load-more-btn"
+                className={LOAD_MORE_BUTTON_CLASS}
                 onClick={loadMore}
                 disabled={loadingMore}
               >

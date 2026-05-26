@@ -62,6 +62,35 @@ const TABS: TabDef[] = [
   },
 ];
 
+const MOBILE_TAB_BAR_CLASS =
+  "fixed left-3 right-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-[90] grid rounded-[var(--r-rh-xl)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1.5 shadow-[0_10px_28px_rgba(60,50,30,0.14)]";
+
+const MOBILE_TAB_ITEM_CLASS =
+  "flex min-h-12 flex-col items-center justify-center gap-1 rounded-[var(--r-rh-md)] px-0.5 py-2 text-center text-[10px] tracking-[0.02em] no-underline transition-[color,background] duration-150 ease-[ease] [font-family:inherit]";
+
+const MOBILE_TAB_ITEM_INACTIVE_CLASS =
+  "font-semibold text-[var(--t3)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)]";
+
+const MOBILE_TAB_ITEM_ACTIVE_CLASS =
+  "bg-[var(--accent)] font-bold text-[#061a10]";
+
+function gridClassForCount(count: number): string {
+  switch (count) {
+    case 1:
+      return "grid-cols-1";
+    case 2:
+      return "grid-cols-2";
+    case 3:
+      return "grid-cols-3";
+    case 4:
+      return "grid-cols-4";
+    case 5:
+      return "grid-cols-5";
+    default:
+      return "grid-cols-1";
+  }
+}
+
 function matches(pathname: string | null, tab: TabDef): boolean {
   if (!pathname) return false;
   const prefixes = tab.matchPrefixes ?? [tab.href];
@@ -94,70 +123,29 @@ export default function MobileTabBar() {
   );
 
   return (
-    <>
-      <style>{`
-        .mtb {
-          position: fixed;
-          left: 12px;
-          right: 12px;
-          bottom: max(12px, env(safe-area-inset-bottom));
-          z-index: 90;
-          display: grid;
-          grid-template-columns: repeat(${visibleTabs.length}, 1fr);
-          padding: 6px;
-          border-radius: var(--r-rh-xl);
-          background: var(--surface-1);
-          border: 1px solid var(--border-1);
-          box-shadow: 0 10px 28px rgba(60, 50, 30, 0.14);
-        }
-        .mtb-item {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 4px;
-          min-height: 48px;
-          padding: 8px 2px;
-          border-radius: var(--r-rh-md);
-          color: var(--t3);
-          font-family: inherit;
-          font-size: 10px;
-          font-weight: 600;
-          letter-spacing: 0.02em;
-          text-decoration: none;
-          text-align: center;
-          transition: color 150ms ease, background 150ms ease;
-        }
-        .mtb-item:hover { color: var(--t1); background: var(--surface-2); }
-        .mtb-item.is-active {
-          color: #061a10;
-          background: var(--accent);
-          font-weight: 700;
-        }
-        .mtb-icon { display: block; }
-        /* Page content lifts above the floating tab bar so last rows
-         * aren't clipped on scroll. Paired with max-width main padding. */
-        @media (max-width: 899px) {
-          main { padding-bottom: calc(108px + env(safe-area-inset-bottom)) !important; }
-        }
-      `}</style>
-      <nav className="mtb" aria-label="Primary (mobile)">
-        {visibleTabs.map((tab) => {
-          const active = matches(pathname, tab);
-          const Icon = tab.Icon;
-          return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={`mtb-item ${active ? "is-active" : ""}`}
-              aria-current={active ? "page" : undefined}
-            >
-              <Icon size={18} className="mtb-icon" aria-hidden="true" />
-              <span>{t(tab.labelKey)}</span>
-            </Link>
-          );
-        })}
-      </nav>
-    </>
+    <nav
+      className={`${MOBILE_TAB_BAR_CLASS} ${gridClassForCount(visibleTabs.length)}`}
+      aria-label="Primary (mobile)"
+    >
+      {visibleTabs.map((tab) => {
+        const active = matches(pathname, tab);
+        const Icon = tab.Icon;
+        return (
+          <Link
+            key={tab.href}
+            href={tab.href}
+            className={`${MOBILE_TAB_ITEM_CLASS} ${
+              active
+                ? MOBILE_TAB_ITEM_ACTIVE_CLASS
+                : MOBILE_TAB_ITEM_INACTIVE_CLASS
+            }`}
+            aria-current={active ? "page" : undefined}
+          >
+            <Icon size={18} className="block" aria-hidden="true" />
+            <span>{t(tab.labelKey)}</span>
+          </Link>
+        );
+      })}
+    </nav>
   );
 }

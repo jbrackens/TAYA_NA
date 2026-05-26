@@ -1,20 +1,11 @@
-import { ChangeEvent, ComponentType, RefAttributes, useState } from "react";
-import { Space, DatePicker } from "antd";
-import type { InputProps, InputRef } from "antd";
+import { ChangeEvent, useState } from "react";
+import { Space, DatePicker, Input, Button } from "antd";
+import type { InputRef } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { get } from "lodash";
 import { RefsCollection } from "../../../../lib/utils/filters";
 import { useTranslation } from "i18n";
-import { FilterInput as StyledFilterInput, FilterButton } from "./index.styled";
 import dayjs, { Dayjs } from "dayjs";
-
-// The styled wrapper drops AntD's `forwardRef`/ref typing (its base is cast to
-// `ComponentType<ComponentProps<typeof Input>>` in the .styled file). Re-attach
-// the Input ref attributes here so the callback ref type-checks against AntD's
-// `InputRef` instead of styled-components' polymorphic string-ref overload.
-const FilterInput = StyledFilterInput as unknown as ComponentType<
-  InputProps & RefAttributes<InputRef>
->;
 
 type TableFilterTextProps = {
   dataIndex: string;
@@ -74,9 +65,10 @@ const TableFilterText = ({
   };
 
   return (
-    <div style={{ padding: 8 }}>
+    <div className="p-2">
       {!type || type === "string" ? (
-        <FilterInput
+        <Input
+          className="mb-2 block w-[188px]"
           ref={(node: InputRef | null) => {
             refs && refs.set(dataIndex, node);
           }}
@@ -97,22 +89,23 @@ const TableFilterText = ({
           })}
           value={searchInputValue ? dayjs(searchInputValue) : undefined}
           onChange={handleDateChange}
-          style={{ display: "flex", marginBottom: "5px" }}
+          className="mb-[5px] flex"
         />
       )}
 
       <Space>
-        <FilterButton onClick={handleReset} size="small">
+        <Button className="w-[90px]" onClick={handleReset} size="small">
           {t("TABLE_FILTER_RESET")}
-        </FilterButton>
-        <FilterButton
+        </Button>
+        <Button
+          className="w-[90px]"
           type="primary"
           onClick={handleSearch}
           icon={<SearchOutlined />}
           size="small"
         >
           {t("TABLE_FILTER_APPLY")}
-        </FilterButton>
+        </Button>
       </Space>
     </div>
   );
@@ -138,7 +131,7 @@ TableFilterText.getColumnSearchProps = (
     />
   ),
   filterIcon: (filtered: boolean) => (
-    <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
+    <SearchOutlined className={filtered ? "text-[#1890ff]" : undefined} />
   ),
 });
 

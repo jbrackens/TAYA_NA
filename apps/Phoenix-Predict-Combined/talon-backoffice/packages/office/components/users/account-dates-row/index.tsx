@@ -23,15 +23,18 @@ export const AccountDatesRow: FC<Props> = ({
   const { getTimeWithTimezone } = useTimezone();
 
   return (
-    <Row gutter={16} style={{ marginBottom: "20px" }}>
+    <Row gutter={16} className="mb-5">
       <Col span={24}>
         <Descriptions
           size="small"
           column={{ xxl: 5, xl: 5, lg: 1, md: 1, sm: 1, xs: 1 }}
         >
           <Descriptions.Item
-            labelStyle={{ fontWeight: "bold" }}
-            label={t("HEADER_CARD_DETAILS_SIGNED_UP")}
+            label={
+              <span className="font-bold">
+                {t("HEADER_CARD_DETAILS_SIGNED_UP")}
+              </span>
+            }
           >
             <span role="userSignUpTime">
               {signUpDate
@@ -42,8 +45,11 @@ export const AccountDatesRow: FC<Props> = ({
             </span>
           </Descriptions.Item>
           <Descriptions.Item
-            labelStyle={{ fontWeight: "bold" }}
-            label={t("HEADER_CARD_DETAILS_VERIFIED")}
+            label={
+              <span className="font-bold">
+                {t("HEADER_CARD_DETAILS_VERIFIED")}
+              </span>
+            }
           >
             <span role="verifiedAtTime">
               {verifiedAt
@@ -54,8 +60,11 @@ export const AccountDatesRow: FC<Props> = ({
             </span>
           </Descriptions.Item>
           <Descriptions.Item
-            labelStyle={{ fontWeight: "bold" }}
-            label={t("HEADER_CARD_DETAILS_LAST_LOGIN")}
+            label={
+              <span className="font-bold">
+                {t("HEADER_CARD_DETAILS_LAST_LOGIN")}
+              </span>
+            }
           >
             <span role="lastLogin">
               {lastSignIn
@@ -66,8 +75,11 @@ export const AccountDatesRow: FC<Props> = ({
             </span>
           </Descriptions.Item>
           <Descriptions.Item
-            labelStyle={{ fontWeight: "bold" }}
-            label={t("HEADER_CARD_DETAILS_TERMS_ACCEPTED")}
+            label={
+              <span className="font-bold">
+                {t("HEADER_CARD_DETAILS_TERMS_ACCEPTED")}
+              </span>
+            }
           >
             {acceptedAt ? (
               <>

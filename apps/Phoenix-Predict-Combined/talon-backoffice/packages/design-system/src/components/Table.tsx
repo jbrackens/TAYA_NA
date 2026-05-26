@@ -1,60 +1,5 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
-
-const TableContainer = styled.div`
-  overflow-x: auto;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radius.md};
-`;
-
-const StyledTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  font-size: ${({ theme }) => theme.typography.base.fontSize};
-`;
-
-const TableHead = styled.thead`
-  background-color: ${({ theme }) => theme.colors.surface};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-`;
-
-const TableHeader = styled.th<{ $sortable?: boolean }>`
-  padding: ${({ theme }) => theme.spacing.md};
-  text-align: left;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.text};
-  cursor: ${({ $sortable }) => ($sortable ? 'pointer' : 'default')};
-  user-select: none;
-  transition: background-color ${({ theme }) => theme.motion.fast};
-
-  &:hover {
-    background-color: ${({ theme, $sortable }) =>
-      $sortable ? theme.colors.card : 'transparent'};
-  }
-`;
-
-const TableBody = styled.tbody``;
-
-interface StyledTableRowProps {
-  $striped?: boolean;
-  $index: number;
-}
-
-const TableRow = styled.tr<StyledTableRowProps>`
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  background-color: ${({ theme, $striped, $index }) =>
-    $striped && $index % 2 === 1 ? theme.colors.surface : 'transparent'};
-  transition: background-color ${({ theme }) => theme.motion.fast};
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.card};
-  }
-`;
-
-const TableCell = styled.td`
-  padding: ${({ theme }) => theme.spacing.md};
-  color: ${({ theme }) => theme.colors.text};
-`;
+import { cx } from '../utils/classNames';
 
 interface Column<T> {
   key: keyof T;
@@ -96,41 +41,52 @@ export function Table<T extends Record<string, any>>({
   };
 
   return (
-    <TableContainer>
-      <StyledTable>
-        <TableHead>
-          <TableRow $index={0}>
+    <div className="overflow-x-auto rounded-[12px] border border-[#3d3d5c]">
+      <table className="w-full border-collapse text-[14px] leading-[20px]">
+        <thead className="border-b border-[#3d3d5c] bg-[#2d2d44]">
+          <tr className="border-b border-[#3d3d5c] transition-colors duration-200 ease-in-out hover:bg-[#4a4a5e]">
             {columns.map((column) => (
-              <TableHeader
+              <th
                 key={String(column.key)}
-                $sortable={column.sortable}
+                className={cx(
+                  'select-none p-4 text-left font-semibold text-white transition-colors duration-200 ease-in-out',
+                  column.sortable
+                    ? 'cursor-pointer hover:bg-[#4a4a5e]'
+                    : 'cursor-default'
+                )}
                 onClick={() => column.sortable && handleSort(column.key)}
               >
                 {column.label}
                 {column.sortable && sortConfig?.key === column.key && (
-                  <span style={{ marginLeft: '8px' }}>
+                  <span className="ml-2">
                     {sortConfig.direction === 'asc' ? '↑' : '↓'}
                   </span>
                 )}
-              </TableHeader>
+              </th>
             ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
+          </tr>
+        </thead>
+        <tbody>
           {data.map((row, rowIndex) => (
-            <TableRow key={rowIndex} $striped={striped} $index={rowIndex}>
+            <tr
+              key={rowIndex}
+              className={cx(
+                'border-b border-[#3d3d5c] transition-colors duration-200 ease-in-out hover:bg-[#4a4a5e]',
+                striped && rowIndex % 2 === 1 ? 'bg-[#2d2d44]' : 'bg-transparent'
+              )}
+            >
               {columns.map((column) => (
-                <TableCell key={String(column.key)}>
+                <td key={String(column.key)} className="p-4 text-white">
                   {column.render
                     ? column.render(row[column.key], row)
                     : row[column.key]}
-                </TableCell>
+                </td>
               ))}
-            </TableRow>
+            </tr>
           ))}
-        </TableBody>
-      </StyledTable>
-    </TableContainer>
+        </tbody>
+      </table>
+    </div>
   );
 }
 

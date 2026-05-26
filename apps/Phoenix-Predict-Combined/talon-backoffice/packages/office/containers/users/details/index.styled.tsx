@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
 import type { ComponentType, ComponentProps } from "react";
-import styled from "styled-components";
 import { Row, Tabs } from "antd";
 import type { TabsProps } from "antd";
 
@@ -19,11 +18,8 @@ import {
 // (marker-guard, Fragment flattening, missing-key warning, full prop
 // forward, destroyInactiveTabPane → destroyOnHidden, memoized).
 
-const StyledTabsUserDetails = styled(Tabs19)`
-  .ant-tabs-nav {
-    margin-bottom: 0;
-  }
-`;
+const classNames = (...classes: Array<string | undefined>) =>
+  classes.filter(Boolean).join(" ");
 
 export const TabPane: React.FC<LegacyTabPaneProps> = () => null;
 
@@ -33,33 +29,55 @@ type TabsUserDetailsProps = Omit<TabsProps, "items"> & {
 
 export const TabsUserDetails: React.FC<TabsUserDetailsProps> = ({
   children,
+  className,
   ...rest
 }) => {
   const items = useMemo(
     () => buildTabsItemsFromChildren(children, TabPane, "TabsUserDetails"),
     [children],
   );
-  return <StyledTabsUserDetails items={items} {...rest} />;
+  return (
+    <Tabs19
+      items={items}
+      className={classNames("[&_.ant-tabs-nav]:!mb-0", className)}
+      {...rest}
+    />
+  );
 };
 
-export const DescriptionItemText = styled.span`
-  margin-right: 5px;
-`;
+export function DescriptionItemText({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) {
+  return <span {...props} className={classNames("mr-[5px]", className)} />;
+}
 
-export const DescriptionItemLink = styled.a`
-  margin-right: 10px;
-  &.extra-left {
-    margin-left: 10px;
-  }
-  svg {
-    margin-right: 2px;
-  }
-`;
+export function DescriptionItemLink({
+  className,
+  ...props
+}: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
+  return (
+    <a
+      {...props}
+      className={classNames(
+        "mr-2.5 [&.extra-left]:ml-2.5 [&_svg]:mr-0.5",
+        className,
+      )}
+    />
+  );
+}
 
-export const UserDetailsRow = styled(Row19)`
-  .ant-tabs-content,
-  .ant-card,
-  .ant-tabs {
-    height: 100%;
-  }
-`;
+export function UserDetailsRow({
+  className,
+  ...props
+}: ComponentProps<typeof Row>) {
+  return (
+    <Row19
+      {...props}
+      className={classNames(
+        "[&_.ant-card]:h-full [&_.ant-tabs-content]:h-full [&_.ant-tabs]:h-full",
+        className,
+      )}
+    />
+  );
+}

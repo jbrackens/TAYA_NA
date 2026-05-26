@@ -74,12 +74,12 @@ export default function AccountPage() {
     .toUpperCase();
 
   return (
-    <div className="acct-wrap">
-      <Styles />
-
-      <header className="acct-head">
-        <h1 className="acct-title">{t("hub.title", "Account")}</h1>
-        <p className="acct-sub">
+    <div className="mx-auto max-w-[1100px] px-6 pb-[60px] pt-6">
+      <header className="mb-5">
+        <h1 className="m-0 mb-1 text-[28px] font-extrabold tracking-[-0.02em] text-[var(--t1)]">
+          {t("hub.title", "Account")}
+        </h1>
+        <p className="m-0 text-[13px] text-[var(--t3)]">
           {t(
             "hub.subtitle",
             "Profile, wallet, security, and notification preferences.",
@@ -87,19 +87,23 @@ export default function AccountPage() {
         </p>
       </header>
 
-      <section className="acct-banner">
-        <div className="acct-identity">
-          <div className="acct-avatar">{initial}</div>
+      <section className="mb-4 flex flex-wrap items-center justify-between gap-5 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[22px] py-5">
+        <div className="flex items-center gap-[14px]">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[rgba(43,228,128,0.3)] bg-[var(--accent-soft)] text-xl font-bold text-[var(--accent)]">
+            {initial}
+          </div>
           <div>
-            <div className="acct-username">{username}</div>
-            <div className="acct-email">{email}</div>
+            <div className="text-base font-bold text-[var(--t1)]">
+              {username}
+            </div>
+            <div className="mt-0.5 text-xs text-[var(--t3)]">{email}</div>
           </div>
         </div>
-        <div className="acct-balance">
-          <span className="acct-balance-label">
+        <div className="flex flex-col gap-0.5 text-right">
+          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]">
             {t("hub.availableBalance", "Available balance")}
           </span>
-          <span className="acct-balance-value mono">
+          <span className="font-mono text-[22px] font-bold tracking-[-0.01em] text-[var(--accent)] tabular-nums">
             {balance ? formatUSD(balance.availableBalance * 100) : "—"}
           </span>
         </div>
@@ -109,7 +113,7 @@ export default function AccountPage() {
 
       <PrivacyCard />
 
-      <section className="acct-grid">
+      <section className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
         <ActionCard
           href="/account/security"
           icon={<Settings size={20} />}
@@ -206,32 +210,41 @@ function PrivacyCard() {
   }
 
   return (
-    <section className="acct-privacy" aria-labelledby="acct-privacy-title">
-      <div className="acct-privacy-head">
-        <div>
-          <span className="acct-kicker">{t("privacy.kicker", "Privacy")}</span>
-          <h2 id="acct-privacy-title" className="acct-privacy-title">
-            {t("privacy.title", "Appearance on public boards")}
-          </h2>
-        </div>
+    <section
+      className="mb-5 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[22px] py-5"
+      aria-labelledby="acct-privacy-title"
+    >
+      <div className="mb-[14px]">
+        <span className="mb-0.5 block text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]">
+          {t("privacy.kicker", "Privacy")}
+        </span>
+        <h2
+          id="acct-privacy-title"
+          className="m-0 text-base font-bold text-[var(--t1)]"
+        >
+          {t("privacy.title", "Appearance on public boards")}
+        </h2>
       </div>
-      <label className="acct-privacy-row">
+      <label className="grid cursor-pointer grid-cols-[auto_1fr] items-start gap-3">
         <input
           type="checkbox"
+          className="mt-0.5 h-[18px] w-[18px] cursor-pointer accent-[var(--accent)] disabled:cursor-wait disabled:opacity-60"
           checked={displayAnonymous ?? false}
           disabled={displayAnonymous === null || saving}
           onChange={(e) => onToggle(e.target.checked)}
         />
         <div>
-          <div className="acct-privacy-label">
+          <div className="mb-1 text-sm font-semibold text-[var(--t1)]">
             {t("privacy.label", "Appear anonymously on leaderboards")}
           </div>
-          <div className="acct-privacy-sub">
+          <div className="text-[13px] leading-normal text-[var(--t2)]">
             {t(
               "privacy.descriptionBeforeRank",
               "When on, your username is hidden on public boards and replaced with your rank (e.g.",
             )}{" "}
-            <span className="mono">{t("privacy.rankExample", "Trader #14")}</span>
+            <span className="font-mono tabular-nums">
+              {t("privacy.rankExample", "Trader #14")}
+            </span>
             {t(
               "privacy.descriptionAfterRank",
               "). Your rank and stats still show; only your handle is hidden.",
@@ -239,7 +252,11 @@ function PrivacyCard() {
           </div>
         </div>
       </label>
-      {error && <div className="acct-privacy-error">{error}</div>}
+      {error && (
+        <div className="mt-2.5 rounded-[var(--r-sm)] border border-[rgba(255,155,107,0.2)] bg-[rgba(255,155,107,0.08)] px-3 py-2 text-xs text-[var(--no-text)]">
+          {error}
+        </div>
+      )}
     </section>
   );
 }
@@ -249,17 +266,24 @@ function PortfolioStrip({ summary }: { summary: PortfolioSummary }) {
   const pnl = summary.realizedPnlCents;
   const pnlUp = pnl >= 0;
   return (
-    <section className="acct-portfolio">
-      <header className="acct-portfolio-head">
+    <section className="mb-5 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[22px] py-5">
+      <header className="mb-[14px] flex items-baseline justify-between gap-[14px]">
         <div>
-          <span className="acct-kicker">{t("portfolio.kicker", "Portfolio")}</span>
-          <h2 className="acct-portfolio-title">{t("portfolio.title", "Your positions at a glance")}</h2>
+          <span className="mb-0.5 block text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]">
+            {t("portfolio.kicker", "Portfolio")}
+          </span>
+          <h2 className="m-0 text-base font-bold text-[var(--t1)]">
+            {t("portfolio.title", "Your positions at a glance")}
+          </h2>
         </div>
-        <Link href="/portfolio" className="acct-portfolio-link">
+        <Link
+          href="/portfolio"
+          className="whitespace-nowrap text-xs font-semibold text-[var(--accent)] no-underline hover:underline"
+        >
           {t("portfolio.open", "Open portfolio")} →
         </Link>
       </header>
-      <div className="acct-portfolio-stats">
+      <div className="grid grid-cols-4 gap-3 max-[720px]:grid-cols-2">
         <Stat label={t("stats.invested", "Invested")} value={formatUSD(summary.totalValueCents)} />
         <Stat
           label={t("stats.realizedPnl", "Realized P&L")}
@@ -297,11 +321,24 @@ function Stat({
   sub?: string;
   tone?: "yes" | "no" | "gain";
 }) {
+  const toneClass =
+    tone === "yes"
+      ? "text-[var(--yes-text)]"
+      : tone === "no"
+        ? "text-[var(--no-text)]"
+        : tone === "gain"
+          ? "text-[var(--accent)]"
+          : "text-[var(--t1)]";
+
   return (
-    <div className={`acct-stat ${tone ? `acct-stat-${tone}` : ""}`}>
-      <span className="acct-stat-label">{label}</span>
-      <span className="acct-stat-value mono">{value}</span>
-      {sub && <span className="acct-stat-sub">{sub}</span>}
+    <div className="flex flex-col gap-0.5 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-[14px] py-3">
+      <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]">
+        {label}
+      </span>
+      <span className={`font-mono text-lg font-bold tabular-nums ${toneClass}`}>
+        {value}
+      </span>
+      {sub && <span className="text-[11px] text-[var(--t3)]">{sub}</span>}
     </div>
   );
 }
@@ -318,10 +355,15 @@ function ActionCard({
   desc: string;
 }) {
   return (
-    <Link href={href} className="acct-card">
-      <div className="acct-card-icon">{icon}</div>
-      <div className="acct-card-title">{title}</div>
-      <div className="acct-card-desc">{desc}</div>
+    <Link
+      href={href}
+      className="rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-5 py-[18px] no-underline transition-[border-color,background,transform] duration-150 hover:-translate-y-px hover:border-[var(--accent)] hover:bg-[rgba(43,228,128,0.06)]"
+    >
+      <div className="mb-2.5 inline-flex h-9 w-9 items-center justify-center rounded-[var(--r-sm)] bg-[var(--accent-soft)] text-[var(--accent)]">
+        {icon}
+      </div>
+      <div className="mb-0.5 text-sm font-bold text-[var(--t1)]">{title}</div>
+      <div className="text-xs leading-normal text-[var(--t3)]">{desc}</div>
     </Link>
   );
 }
@@ -331,252 +373,4 @@ function formatUSD(cents: number): string {
     return `$${(cents / 1_000_000_00).toFixed(1)}M`;
   if (Math.abs(cents) >= 10_000_00) return `$${(cents / 1_000_00).toFixed(1)}K`;
   return `$${(cents / 100).toFixed(2)}`;
-}
-
-function Styles() {
-  return (
-    <style>{`
-      .acct-wrap {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 24px 24px 60px;
-      }
-
-      .acct-head { margin-bottom: 20px; }
-      .acct-title {
-        font-size: 28px;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        color: var(--t1);
-        margin: 0 0 4px;
-      }
-      .acct-sub {
-        font-size: 13px;
-        color: var(--t3);
-        margin: 0;
-      }
-
-      .acct-banner {
-        background: var(--surface-1);
-        border: 1px solid var(--border-1);
-        border-radius: var(--r-rh-lg);
-        padding: 20px 22px;
-        margin-bottom: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 20px;
-        flex-wrap: wrap;
-      }
-      .acct-identity {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-      }
-      .acct-avatar {
-        width: 48px;
-        height: 48px;
-        border-radius: 999px;
-        background: var(--accent-soft);
-        border: 1px solid rgba(43, 228, 128,0.3);
-        color: var(--accent);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        font-weight: 700;
-      }
-      .acct-username {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--t1);
-      }
-      .acct-email {
-        font-size: 12px;
-        color: var(--t3);
-        margin-top: 2px;
-      }
-      .acct-balance {
-        text-align: right;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-      .acct-balance-label {
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--t3);
-      }
-      .acct-balance-value {
-        font-size: 22px;
-        font-weight: 700;
-        color: var(--accent);
-        letter-spacing: -0.01em;
-      }
-
-      .acct-portfolio,
-      .acct-privacy {
-        background: var(--surface-1);
-        border: 1px solid var(--border-1);
-        border-radius: var(--r-rh-lg);
-        padding: 20px 22px;
-        margin-bottom: 20px;
-      }
-      .acct-privacy-head { margin-bottom: 14px; }
-      .acct-privacy-title {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--t1);
-        margin: 0;
-      }
-      .acct-privacy-row {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 12px;
-        align-items: flex-start;
-        cursor: pointer;
-      }
-      .acct-privacy-row input[type="checkbox"] {
-        width: 18px;
-        height: 18px;
-        margin-top: 2px;
-        accent-color: var(--accent);
-        cursor: pointer;
-      }
-      .acct-privacy-row input[type="checkbox"]:disabled {
-        cursor: wait;
-        opacity: 0.6;
-      }
-      .acct-privacy-label {
-        color: var(--t1);
-        font-size: 14px;
-        font-weight: 600;
-        margin-bottom: 4px;
-      }
-      .acct-privacy-sub {
-        color: var(--t2);
-        font-size: 13px;
-        line-height: 1.5;
-      }
-      .acct-privacy-error {
-        margin-top: 10px;
-        padding: 8px 12px;
-        background: color-mix(in srgb, var(--no) 15%, transparent);
-        border: 1px solid color-mix(in srgb, var(--no) 35%, transparent);
-        border-radius: var(--r-sm);
-        color: var(--no-text);
-        font-size: 12px;
-      }
-      .acct-portfolio-head {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        margin-bottom: 14px;
-        gap: 14px;
-      }
-      .acct-kicker {
-        display: block;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--t3);
-        margin-bottom: 2px;
-      }
-      .acct-portfolio-title {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--t1);
-        margin: 0;
-      }
-      .acct-portfolio-link {
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--accent);
-        text-decoration: none;
-        white-space: nowrap;
-      }
-      .acct-portfolio-link:hover { text-decoration: underline; }
-
-      .acct-portfolio-stats {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 12px;
-      }
-      @media (max-width: 720px) {
-        .acct-portfolio-stats { grid-template-columns: repeat(2, 1fr); }
-      }
-      .acct-stat {
-        background: var(--surface-2);
-        border: 1px solid var(--border-1);
-        border-radius: var(--r-rh-md);
-        padding: 12px 14px;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-      .acct-stat-label {
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--t3);
-      }
-      .acct-stat-value {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--t1);
-      }
-      .acct-stat-yes .acct-stat-value { color: var(--yes-text); }
-      .acct-stat-no .acct-stat-value { color: var(--no-text); }
-      .acct-stat-gain .acct-stat-value { color: var(--accent); }
-      .acct-stat-sub {
-        font-size: 11px;
-        color: var(--t3);
-      }
-
-      .acct-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 12px;
-      }
-      .acct-card {
-        background: var(--surface-1);
-        border: 1px solid var(--border-1);
-        border-radius: var(--r-rh-lg);
-        padding: 18px 20px;
-        text-decoration: none;
-        transition: border-color 0.15s, background 0.15s, transform 0.15s;
-      }
-      .acct-card:hover {
-        border-color: var(--accent);
-        background: rgba(43, 228, 128, 0.06);
-        transform: translateY(-1px);
-      }
-      .acct-card-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: var(--r-sm);
-        background: var(--accent-soft);
-        color: var(--accent);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 10px;
-      }
-      .acct-card-title {
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--t1);
-        margin-bottom: 2px;
-      }
-      .acct-card-desc {
-        font-size: 12px;
-        color: var(--t3);
-        line-height: 1.5;
-      }
-    `}</style>
-  );
 }

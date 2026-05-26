@@ -1,63 +1,7 @@
 import React from 'react';
-import styled from 'styled-components';
 import Card from './Card';
 import Badge from './Badge';
 import OddsButton from './OddsButton';
-
-const MatchCardContainer = styled(Card)`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const MatchHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const StatusBadgeContainer = styled.div`
-  flex-shrink: 0;
-`;
-
-const ScoreSection = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: ${({ theme }) => theme.spacing.lg};
-`;
-
-const TeamScore = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-`;
-
-const TeamName = styled.div`
-  font-size: ${({ theme }) => theme.typography.base.fontSize};
-  font-weight: ${({ theme }) => theme.typography.weights.semibold};
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const Score = styled.div`
-  font-size: ${({ theme }) => theme.typography.xlarge.fontSize};
-  font-weight: ${({ theme }) => theme.typography.weights.bold};
-  color: ${({ theme }) => theme.colors.live};
-`;
-
-const ScoreDivider = styled.div`
-  width: 2px;
-  height: 100px;
-  background-color: ${({ theme }) => theme.colors.border};
-`;
-
-const QuickBetRow = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
-  padding-top: ${({ theme }) => theme.spacing.md};
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-`;
 
 interface MatchCardProps {
   homeTeam: string;
@@ -87,36 +31,44 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   onBetAway,
 }) => {
   return (
-    <MatchCardContainer>
-      <MatchHeader>
+    <Card className="flex flex-col gap-4">
+      <div className="flex items-center justify-between">
         <div />
-        <StatusBadgeContainer>
+        <div className="shrink-0">
           <Badge variant={status}>
             {status.charAt(0).toUpperCase() + status.slice(1)}
           </Badge>
-        </StatusBadgeContainer>
-      </MatchHeader>
+        </div>
+      </div>
 
-      <ScoreSection>
-        <TeamScore>
-          <TeamName>{homeTeam}</TeamName>
-          <Score>{homeScore}</Score>
-        </TeamScore>
-        <ScoreDivider />
-        <TeamScore>
-          <TeamName>{awayTeam}</TeamName>
-          <Score>{awayScore}</Score>
-        </TeamScore>
-      </ScoreSection>
+      <div className="flex items-center justify-center gap-6">
+        <div className="flex flex-col items-center gap-2">
+          <div className="text-[14px] font-semibold leading-[20px] text-white">
+            {homeTeam}
+          </div>
+          <div className="text-[56px] font-bold leading-[64px] text-[#f5c842]">
+            {homeScore}
+          </div>
+        </div>
+        <div className="h-[100px] w-0.5 bg-[#3d3d5c]" />
+        <div className="flex flex-col items-center gap-2">
+          <div className="text-[14px] font-semibold leading-[20px] text-white">
+            {awayTeam}
+          </div>
+          <div className="text-[56px] font-bold leading-[64px] text-[#f5c842]">
+            {awayScore}
+          </div>
+        </div>
+      </div>
 
       {status !== 'cancelled' && (
-        <QuickBetRow>
+        <div className="flex gap-2 border-t border-[#3d3d5c] pt-4">
           <OddsButton odds={homeOdds} onClick={onBetHome} />
           {drawOdds && <OddsButton odds={drawOdds} onClick={onBetDraw} />}
           <OddsButton odds={awayOdds} onClick={onBetAway} />
-        </QuickBetRow>
+        </div>
       )}
-    </MatchCardContainer>
+    </Card>
   );
 };
 

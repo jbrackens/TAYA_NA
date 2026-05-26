@@ -1,25 +1,15 @@
 'use client';
 
-import styled from 'styled-components';
-
-const GridContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-  }
-`;
+import type { ReactNode } from 'react';
 
 interface DashboardLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  return <GridContainer>{children}</GridContainer>;
+  return (
+    <div className="grid grid-cols-1 gap-5 min-[641px]:grid-cols-2 min-[1025px]:grid-cols-[repeat(auto-fit,minmax(280px,1fr))]">
+      {children}
+    </div>
+  );
 }

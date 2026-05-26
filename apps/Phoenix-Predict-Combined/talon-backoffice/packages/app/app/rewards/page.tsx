@@ -22,6 +22,136 @@ import { logger } from "../lib/logger";
 
 const LEDGER_LIMIT = 20;
 
+const WRAP_CLASS =
+  "mx-auto max-w-[1120px] pb-[60px] max-[768px]:px-4";
+const HEAD_CLASS =
+  "mb-[22px] flex items-end justify-between gap-4";
+const KICKER_CLASS =
+  "mb-1.5 inline-block text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]";
+const TITLE_CLASS =
+  "m-0 text-[34px] font-extrabold tracking-[-0.02em] text-[var(--t1)] max-[768px]:text-[26px]";
+const CROSS_LINK_CLASS =
+  "border-b border-[var(--border-1)] pb-0.5 text-[13px] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--t1)]";
+const LADDER_CLASS =
+  "mb-[22px] grid grid-cols-5 gap-2 max-[768px]:grid-flow-col max-[768px]:auto-cols-[140px] max-[768px]:grid-cols-none max-[768px]:overflow-x-auto max-[768px]:[scroll-snap-type:x_mandatory]";
+const LADDER_STEP_BASE_CLASS =
+  "relative flex flex-col gap-1.5 rounded-[var(--r-rh-md)] border-x border-b border-x-[var(--border-1)] border-b-[var(--border-1)] border-t-[3px] bg-[var(--surface-1)] px-3.5 pb-3.5 pt-4 max-[768px]:[scroll-snap-align:start]";
+const LADDER_NAME_CLASS =
+  "text-sm font-bold text-[var(--t1)]";
+const LADDER_THRESHOLD_CLASS =
+  "text-xs text-[var(--t3)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+const GRID_CLASS =
+  "grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-[18px] max-[1024px]:grid-cols-1";
+const SURFACE_CARD_CLASS =
+  "relative rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-[22px]";
+const TIER_CARD_HEAD_CLASS =
+  "mb-[18px] flex items-baseline justify-between gap-3";
+const TIER_PILL_BASE_CLASS =
+  "inline-flex items-center rounded-full px-3 py-1.5 text-xs font-bold tracking-[0.04em] text-[var(--t1)]";
+const BALANCE_CLASS =
+  "m-0 text-[34px] font-extrabold tracking-[-0.02em] text-[var(--t1)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace] max-[768px]:text-[28px]";
+const BALANCE_UNIT_CLASS =
+  "ml-1 text-sm font-medium text-[var(--t3)]";
+const PROGRESS_CLASS = "mb-5";
+const PROGRESS_HEAD_CLASS =
+  "mb-2 flex justify-between text-[13px] text-[var(--t2)]";
+const PROGRESS_PCT_CLASS =
+  "font-bold text-[var(--t1)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+const PROGRESS_TRACK_CLASS =
+  "block h-2 w-full overflow-hidden rounded-full border border-[var(--border-1)] bg-[var(--surface-2)] [appearance:none] [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-[var(--accent)] [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-[var(--accent)] [&::-webkit-progress-value]:transition-all [&::-webkit-progress-value]:duration-[240ms] [&::-webkit-progress-value]:ease-out";
+const TOPPED_OUT_CLASS = "m-0 mb-5 text-sm text-[var(--t2)]";
+const BENEFITS_TITLE_CLASS =
+  "m-0 mb-2.5 text-[13px] font-bold uppercase tracking-[0.04em] text-[var(--t3)]";
+const BENEFITS_LIST_CLASS =
+  "m-0 flex list-none flex-col gap-2.5 p-0";
+const BENEFIT_CLASS =
+  "grid grid-cols-[10px_1fr_auto] items-center gap-2.5 text-sm text-[var(--t1)]";
+const BENEFIT_DOT_BASE_CLASS = "size-2.5 rounded-full";
+const BENEFIT_SOURCE_CLASS =
+  "text-[11px] uppercase tracking-[0.04em] text-[var(--t3)]";
+const LEDGER_HEAD_CLASS =
+  "mb-3.5 flex items-baseline justify-between";
+const LEDGER_TITLE_CLASS =
+  "m-0 text-base font-bold text-[var(--t1)]";
+const LEDGER_META_CLASS = "text-xs text-[var(--t3)]";
+const LEDGER_EMPTY_CLASS =
+  "py-10 text-center text-[13px] text-[var(--t3)]";
+const LEDGER_TABLE_CLASS =
+  "w-full border-collapse text-[13px] [&_td]:border-b [&_td]:border-[var(--border-1)] [&_td]:px-1.5 [&_td]:py-2.5 [&_td]:align-top [&_th]:border-b [&_th]:border-[var(--border-1)] [&_th]:px-1.5 [&_th]:py-2.5 [&_th]:align-top [&_th]:text-[11px] [&_th]:font-bold [&_th]:uppercase [&_th]:tracking-[0.08em] [&_th]:text-[var(--t3)]";
+const TEXT_LEFT_CLASS = "text-left";
+const NUM_CLASS = "text-right";
+const MONO_CLASS =
+  "tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+const DATE_CLASS = `${MONO_CLASS} whitespace-nowrap text-[var(--t2)]`;
+const EVENT_CLASS = "text-[var(--t1)]";
+const REASON_CLASS = "mt-0.5 text-xs text-[var(--t3)]";
+const POS_CLASS = "text-[var(--accent)]";
+const NEG_CLASS = "text-[var(--no-text)]";
+const SUBTLE_CLASS = "text-[var(--t3)]";
+const STATE_CLASS =
+  "flex min-h-[60vh] items-center justify-center px-6";
+const PREFIRST_CARD_CLASS = "w-full max-w-[440px] text-center";
+const PREFIRST_TITLE_CLASS =
+  "m-0 mb-2.5 text-[26px] font-extrabold text-[var(--t1)]";
+const PREFIRST_BODY_CLASS =
+  "m-0 mb-5 text-sm leading-[1.6] text-[var(--t2)]";
+const CTA_CLASS =
+  "inline-flex items-center gap-1.5 rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-5 py-3 text-[13px] font-bold text-[#04140a] no-underline transition-[transform,filter] duration-[180ms] ease-[ease] hover:-translate-y-px hover:brightness-[1.05]";
+const STATE_CARD_CLASS = `${SURFACE_CARD_CLASS} w-full max-w-[440px] text-center`;
+const STATE_MESSAGE_CLASS = "m-0 mb-3.5 leading-[1.6] text-[var(--t2)]";
+
+function tierColorClass(tier: number, target: "ladder" | "pill" | "dot") {
+  switch (tier) {
+    case 1:
+      if (target === "ladder") return "[border-top-color:var(--tier-1)]";
+      if (target === "pill")
+        return "border bg-[color-mix(in_srgb,var(--tier-1)_14%,transparent)] [border-color:color-mix(in_srgb,var(--tier-1)_30%,transparent)]";
+      return "bg-[var(--tier-1)]";
+    case 2:
+      if (target === "ladder") return "[border-top-color:var(--tier-2)]";
+      if (target === "pill")
+        return "border bg-[color-mix(in_srgb,var(--tier-2)_14%,transparent)] [border-color:color-mix(in_srgb,var(--tier-2)_30%,transparent)]";
+      return "bg-[var(--tier-2)]";
+    case 3:
+      if (target === "ladder") return "[border-top-color:var(--tier-3)]";
+      if (target === "pill")
+        return "border bg-[color-mix(in_srgb,var(--tier-3)_14%,transparent)] [border-color:color-mix(in_srgb,var(--tier-3)_30%,transparent)]";
+      return "bg-[var(--tier-3)]";
+    case 4:
+      if (target === "ladder") return "[border-top-color:var(--tier-4)]";
+      if (target === "pill")
+        return "border bg-[color-mix(in_srgb,var(--tier-4)_14%,transparent)] [border-color:color-mix(in_srgb,var(--tier-4)_30%,transparent)]";
+      return "bg-[var(--tier-4)]";
+    case 5:
+      if (target === "ladder") return "[border-top-color:var(--tier-5)]";
+      if (target === "pill")
+        return "border bg-[color-mix(in_srgb,var(--tier-5)_14%,transparent)] [border-color:color-mix(in_srgb,var(--tier-5)_30%,transparent)]";
+      return "bg-[var(--tier-5)]";
+    default:
+      if (target === "ladder") return "[border-top-color:var(--border-2)]";
+      if (target === "pill")
+        return "border border-[var(--border-1)] bg-[var(--surface-2)]";
+      return "bg-[var(--border-2)]";
+  }
+}
+
+function currentTierBorderClass(tier: number) {
+  switch (tier) {
+    case 1:
+      return "[border-bottom-color:var(--tier-1)] [border-left-color:var(--tier-1)] [border-right-color:var(--tier-1)]";
+    case 2:
+      return "[border-bottom-color:var(--tier-2)] [border-left-color:var(--tier-2)] [border-right-color:var(--tier-2)]";
+    case 3:
+      return "[border-bottom-color:var(--tier-3)] [border-left-color:var(--tier-3)] [border-right-color:var(--tier-3)]";
+    case 4:
+      return "[border-bottom-color:var(--tier-4)] [border-left-color:var(--tier-4)] [border-right-color:var(--tier-4)]";
+    case 5:
+      return "[border-bottom-color:var(--tier-5)] [border-left-color:var(--tier-5)] [border-right-color:var(--tier-5)]";
+    default:
+      return "[border-bottom-color:var(--border-1)] [border-left-color:var(--border-1)] [border-right-color:var(--border-1)]";
+  }
+}
+
 export default function RewardsPage() {
   const { t } = useTranslation("rewards");
   const { user, isLoading: authLoading } = useAuth();
@@ -121,54 +251,61 @@ export default function RewardsPage() {
   }
 
   return (
-    <div className="rw-wrap">
-      <Styles />
-      <header className="rw-head">
+    <div className={WRAP_CLASS}>
+      <header className={HEAD_CLASS}>
         <div>
-          <span className="rw-kicker">{t("kickerShort", "Rewards")}</span>
-          <h1 className="rw-title">{t("loyaltyTitle", "Loyalty")}</h1>
+          <span className={KICKER_CLASS}>{t("kickerShort", "Rewards")}</span>
+          <h1 className={TITLE_CLASS}>{t("loyaltyTitle", "Loyalty")}</h1>
         </div>
-        <Link href="/leaderboards" className="rw-xlink">
+        <Link href="/leaderboards" className={CROSS_LINK_CLASS}>
           {t("viewLeaderboards", "View leaderboards")} →
         </Link>
       </header>
 
       <TierLadder tiers={visibleTiers} current={standing.tier} />
 
-      <div className="rw-grid">
-        <section className="rw-tier-card" aria-labelledby="rw-tier-title">
-          <header className="rw-tier-card-head">
-            <span className={`rw-tier-pill tier-${standing.tier}`}>
+      <div className={GRID_CLASS}>
+        <section className={SURFACE_CARD_CLASS} aria-labelledby="rw-tier-title">
+          <header className={TIER_CARD_HEAD_CLASS}>
+            <span
+              className={`${TIER_PILL_BASE_CLASS} ${tierColorClass(
+                standing.tier,
+                "pill",
+              )}`}
+            >
               {standing.tierName}
             </span>
-            <h2 id="rw-tier-title" className="rw-balance mono">
+            <h2 id="rw-tier-title" className={BALANCE_CLASS}>
               {formatPoints(standing.pointsBalance)}
-              <span className="rw-balance-unit"> {t("pointsShort", "pts")}</span>
+              <span className={BALANCE_UNIT_CLASS}>
+                {" "}
+                {t("pointsShort", "pts")}
+              </span>
             </h2>
           </header>
 
           {standing.nextTierName ? (
-            <div className="rw-progress">
-              <div className="rw-progress-head">
+            <div className={PROGRESS_CLASS}>
+              <div className={PROGRESS_HEAD_CLASS}>
                 <span>
                   {t("progress.pointsTo", "{{points}} pts to", {
                     points: formatPoints(standing.pointsToNextTier),
                   })}{" "}
                   <strong>{standing.nextTierName}</strong>
                 </span>
-                <span className="mono rw-progress-pct">
+                <span className={PROGRESS_PCT_CLASS}>
                   {Math.round(progressPct)}%
                 </span>
               </div>
-              <div className="rw-progress-track">
-                <div
-                  className="rw-progress-fill"
-                  style={{ width: `${progressPct}%` }}
-                />
-              </div>
+              <progress
+                className={PROGRESS_TRACK_CLASS}
+                value={progressPct}
+                max={100}
+                aria-label={t("progress.label", "Tier progress")}
+              />
             </div>
           ) : (
-            <p className="rw-topped-out">
+            <p className={TOPPED_OUT_CLASS}>
               {t("progress.topTier", "Top tier reached — thanks for trading with us.")}
             </p>
           )}
@@ -176,23 +313,23 @@ export default function RewardsPage() {
           <BenefitsList tiers={visibleTiers} current={standing.tier} />
         </section>
 
-        <section className="rw-ledger" aria-labelledby="rw-ledger-title">
-          <header className="rw-ledger-head">
-            <h3 id="rw-ledger-title" className="rw-ledger-title">
+        <section className={SURFACE_CARD_CLASS} aria-labelledby="rw-ledger-title">
+          <header className={LEDGER_HEAD_CLASS}>
+            <h3 id="rw-ledger-title" className={LEDGER_TITLE_CLASS}>
               {t("ledger.title", "Recent activity")}
             </h3>
-            <span className="rw-ledger-meta">
+            <span className={LEDGER_META_CLASS}>
               {t("ledger.entries", "{{count}} entries", {
                 count: ledger.length,
               })}
             </span>
           </header>
           {ledger.length === 0 ? (
-            <div className="rw-ledger-empty">
+            <div className={LEDGER_EMPTY_CLASS}>
               {t("ledger.empty", "No activity yet — settle a market to start earning.")}
             </div>
           ) : (
-            <table className="rw-ledger-table">
+            <table className={LEDGER_TABLE_CLASS}>
               <caption className="sr-only">
                 {t(
                   "ledger.caption",
@@ -202,12 +339,16 @@ export default function RewardsPage() {
               </caption>
               <thead>
                 <tr>
-                  <th scope="col">{t("ledger.date", "Date")}</th>
-                  <th scope="col">{t("ledger.event", "Event")}</th>
-                  <th scope="col" className="rw-num">
+                  <th scope="col" className={TEXT_LEFT_CLASS}>
+                    {t("ledger.date", "Date")}
+                  </th>
+                  <th scope="col" className={TEXT_LEFT_CLASS}>
+                    {t("ledger.event", "Event")}
+                  </th>
+                  <th scope="col" className={NUM_CLASS}>
                     {t("ledger.change", "Change")}
                   </th>
-                  <th scope="col" className="rw-num">
+                  <th scope="col" className={NUM_CLASS}>
                     {t("ledger.balance", "Balance")}
                   </th>
                 </tr>
@@ -215,22 +356,24 @@ export default function RewardsPage() {
               <tbody>
                 {ledger.map((entry) => (
                   <tr key={entry.id}>
-                    <td className="mono rw-date">
+                    <td className={DATE_CLASS}>
                       {formatDate(entry.createdAt)}
                     </td>
                     <td>
-                      <div className="rw-event">{labelForEntry(entry, t)}</div>
+                      <div className={EVENT_CLASS}>{labelForEntry(entry, t)}</div>
                       {shouldShowReason(entry) && (
-                        <div className="rw-reason">{entry.reason}</div>
+                        <div className={REASON_CLASS}>{entry.reason}</div>
                       )}
                     </td>
                     <td
-                      className={`mono rw-num ${entry.deltaPoints >= 0 ? "rw-pos" : "rw-neg"}`}
+                      className={`${MONO_CLASS} ${NUM_CLASS} ${
+                        entry.deltaPoints >= 0 ? POS_CLASS : NEG_CLASS
+                      }`}
                     >
                       {entry.deltaPoints >= 0 ? "+" : ""}
                       {formatPoints(entry.deltaPoints)}
                     </td>
-                    <td className="mono rw-num rw-subtle">
+                    <td className={`${MONO_CLASS} ${NUM_CLASS} ${SUBTLE_CLASS}`}>
                       {formatPoints(entry.balanceAfter)}
                     </td>
                   </tr>
@@ -253,7 +396,7 @@ function TierLadder({
 }) {
   const { t } = useTranslation("rewards");
   return (
-    <div className="rw-ladder" role="list" aria-label={t("ladder.aria", "Tier ladder")}>
+    <div className={LADDER_CLASS} role="list" aria-label={t("ladder.aria", "Tier ladder")}>
       {tiers.map((t) => {
         const isCurrent = t.tier === current;
         const isPast = t.tier < current;
@@ -261,13 +404,20 @@ function TierLadder({
           <div
             key={t.tier}
             role="listitem"
-            className={`rw-ladder-step tier-${t.tier} ${
-              isCurrent ? "is-current" : isPast ? "is-past" : "is-future"
+            className={`${LADDER_STEP_BASE_CLASS} ${tierColorClass(
+              t.tier,
+              "ladder",
+            )} ${
+              isCurrent
+                ? `bg-[var(--surface-2)] ${currentTierBorderClass(t.tier)}`
+                : isPast
+                  ? ""
+                : "opacity-[0.45]"
             }`}
             aria-current={isCurrent ? "step" : undefined}
           >
-            <span className="rw-ladder-name">{t.name}</span>
-            <span className="rw-ladder-threshold mono">
+            <span className={LADDER_NAME_CLASS}>{t.name}</span>
+            <span className={LADDER_THRESHOLD_CLASS}>
               {formatPoints(t.pointsThreshold)}
             </span>
           </div>
@@ -303,17 +453,20 @@ function BenefitsList({
   }
   if (rows.length === 0) return null;
   return (
-    <div className="rw-benefits">
-      <h3 className="rw-benefits-title">{t("benefits.unlocked", "Unlocked")}</h3>
-      <ul className="rw-benefits-list">
+    <div>
+      <h3 className={BENEFITS_TITLE_CLASS}>{t("benefits.unlocked", "Unlocked")}</h3>
+      <ul className={BENEFITS_LIST_CLASS}>
         {rows.map((row) => (
-          <li key={row.key} className="rw-benefit">
+          <li key={row.key} className={BENEFIT_CLASS}>
             <span
-              className={`rw-benefit-dot tier-${row.tier}`}
+              className={`${BENEFIT_DOT_BASE_CLASS} ${tierColorClass(
+                row.tier,
+                "dot",
+              )}`}
               aria-hidden="true"
             />
-            <span className="rw-benefit-copy">{row.copy}</span>
-            <span className="rw-benefit-source">{row.name}</span>
+            <span>{row.copy}</span>
+            <span className={BENEFIT_SOURCE_CLASS}>{row.name}</span>
           </li>
         ))}
       </ul>
@@ -324,18 +477,17 @@ function BenefitsList({
 function PreFirstSettleState() {
   const { t } = useTranslation("rewards");
   return (
-    <div className="rw-prefirst">
-      <Styles />
-      <div className="rw-prefirst-card">
-        <span className="rw-kicker">{t("kickerShort", "Rewards")}</span>
-        <h1 className="rw-prefirst-title">{t("prefirst.title", "No activity yet")}</h1>
-        <p className="rw-prefirst-body">
+    <div className={STATE_CLASS}>
+      <div className={PREFIRST_CARD_CLASS}>
+        <span className={KICKER_CLASS}>{t("kickerShort", "Rewards")}</span>
+        <h1 className={PREFIRST_TITLE_CLASS}>{t("prefirst.title", "No activity yet")}</h1>
+        <p className={PREFIRST_BODY_CLASS}>
           {t(
             "prefirst.body",
             "Settle your first trade to start earning points and climb the tier ladder.",
           )}
         </p>
-        <Link href="/predict" className="rw-prefirst-cta">
+        <Link href="/predict" className={CTA_CLASS}>
           {t("prefirst.browse", "Browse markets")} →
         </Link>
       </div>
@@ -351,12 +503,11 @@ function PageState({
   cta?: { href: string; label: string };
 }) {
   return (
-    <div className="rw-state">
-      <Styles />
-      <div className="rw-state-card">
-        <p>{message}</p>
+    <div className={STATE_CLASS}>
+      <div className={STATE_CARD_CLASS}>
+        <p className={STATE_MESSAGE_CLASS}>{message}</p>
         {cta && (
-          <Link href={cta.href} className="rw-prefirst-cta">
+          <Link href={cta.href} className={CTA_CLASS}>
             {cta.label}
           </Link>
         )}
@@ -413,340 +564,4 @@ function formatDate(iso: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-function Styles() {
-  return (
-    <style>{`
-      .rw-wrap {
-        max-width: 1120px;
-        margin: 0 auto;
-        padding: 0 0 60px;
-      }
-      .rw-head {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 16px;
-        margin-bottom: 22px;
-      }
-      .rw-kicker {
-        display: inline-block;
-        margin-bottom: 6px;
-        color: var(--accent);
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        font-size: 11px;
-        font-weight: 700;
-      }
-      .rw-title {
-        margin: 0;
-        font-size: 34px;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        color: var(--t1);
-      }
-      .rw-xlink {
-        font-size: 13px;
-        color: var(--t2);
-        border-bottom: 1px solid var(--border-1);
-        padding-bottom: 2px;
-      }
-      .rw-xlink:hover { color: var(--t1); border-color: var(--accent); }
-
-      /* ── Horizontal tier ladder strip — no centered hero, no big circle ── */
-      .rw-ladder {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 8px;
-        margin-bottom: 22px;
-      }
-      .rw-ladder-step {
-        position: relative;
-        padding: 16px 14px 14px;
-        border-radius: var(--r-rh-md);
-        border-top: 3px solid var(--tier-step-color, var(--border-2));
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        background: var(--surface-1);
-        border-left: 1px solid var(--border-1);
-        border-right: 1px solid var(--border-1);
-        border-bottom: 1px solid var(--border-1);
-      }
-      .rw-ladder-step.tier-1 { --tier-step-color: var(--tier-1); }
-      .rw-ladder-step.tier-2 { --tier-step-color: var(--tier-2); }
-      .rw-ladder-step.tier-3 { --tier-step-color: var(--tier-3); }
-      .rw-ladder-step.tier-4 { --tier-step-color: var(--tier-4); }
-      .rw-ladder-step.tier-5 { --tier-step-color: var(--tier-5); }
-      .rw-ladder-step.is-future { opacity: 0.45; }
-      .rw-ladder-step.is-current {
-        background: var(--surface-2);
-        border-left-color: var(--tier-step-color);
-        border-right-color: var(--tier-step-color);
-        border-bottom-color: var(--tier-step-color);
-      }
-      .rw-ladder-name {
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--t1);
-      }
-      .rw-ladder-threshold {
-        font-size: 12px;
-        color: var(--t3);
-      }
-
-      /* ── 2fr / 1fr grid: tier card + ledger ──
-       * Plan §5 swapped left/right from the original: tier card is meaningful
-       * detail, ledger is the wider glanceable table. */
-      .rw-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-        gap: 18px;
-      }
-      .rw-tier-card,
-      .rw-ledger,
-      .rw-state-card {
-        position: relative;
-        padding: 22px;
-        border-radius: var(--r-rh-lg);
-        background: var(--surface-1);
-        border: 1px solid var(--border-1);
-      }
-      .rw-tier-card-head {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 18px;
-      }
-      .rw-balance {
-        margin: 0;
-        font-size: 34px;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        color: var(--t1);
-      }
-      .rw-balance-unit {
-        font-size: 14px;
-        color: var(--t3);
-        font-weight: 500;
-        margin-left: 4px;
-      }
-
-      /* ── Tier pill in the card header, and the shared tier-N colorway ── */
-      .rw-tier-pill {
-        display: inline-flex;
-        align-items: center;
-        padding: 6px 12px;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        border-radius: 999px;
-        color: var(--t1);
-        background: color-mix(in srgb, var(--tier-pill-color) 14%, transparent);
-        border: 1px solid color-mix(in srgb, var(--tier-pill-color) 30%, transparent);
-      }
-      .rw-tier-pill.tier-1 { --tier-pill-color: var(--tier-1); }
-      .rw-tier-pill.tier-2 { --tier-pill-color: var(--tier-2); }
-      .rw-tier-pill.tier-3 { --tier-pill-color: var(--tier-3); }
-      .rw-tier-pill.tier-4 { --tier-pill-color: var(--tier-4); }
-      .rw-tier-pill.tier-5 { --tier-pill-color: var(--tier-5); }
-
-      /* ── Progress bar to next tier ── */
-      .rw-progress {
-        margin-bottom: 20px;
-      }
-      .rw-progress-head {
-        display: flex;
-        justify-content: space-between;
-        font-size: 13px;
-        color: var(--t2);
-        margin-bottom: 8px;
-      }
-      .rw-progress-pct { color: var(--t1); font-weight: 700; }
-      .rw-progress-track {
-        height: 8px;
-        border-radius: 999px;
-        background: var(--surface-2);
-        border: 1px solid var(--border-1);
-        overflow: hidden;
-      }
-      .rw-progress-fill {
-        height: 100%;
-        border-radius: 999px;
-        background: var(--accent);
-        transition: width 240ms ease-out;
-      }
-      .rw-topped-out {
-        margin: 0 0 20px;
-        color: var(--t2);
-        font-size: 14px;
-      }
-
-      /* ── Benefits list ── */
-      .rw-benefits-title {
-        margin: 0 0 10px;
-        font-size: 13px;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        color: var(--t3);
-      }
-      .rw-benefits-list {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      .rw-benefit {
-        display: grid;
-        grid-template-columns: 10px 1fr auto;
-        align-items: center;
-        gap: 10px;
-        font-size: 14px;
-        color: var(--t1);
-      }
-      .rw-benefit-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-      }
-      .rw-benefit-dot.tier-1 { background: var(--tier-1); }
-      .rw-benefit-dot.tier-2 { background: var(--tier-2); }
-      .rw-benefit-dot.tier-3 { background: var(--tier-3); }
-      .rw-benefit-dot.tier-4 { background: var(--tier-4); }
-      .rw-benefit-dot.tier-5 { background: var(--tier-5); }
-      .rw-benefit-source {
-        font-size: 11px;
-        color: var(--t3);
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-      }
-
-      /* ── Ledger table — plain <table>, not cards ── */
-      .rw-ledger-head {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        margin-bottom: 14px;
-      }
-      .rw-ledger-title {
-        margin: 0;
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--t1);
-      }
-      .rw-ledger-meta {
-        font-size: 12px;
-        color: var(--t3);
-      }
-      .rw-ledger-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13px;
-      }
-      .rw-ledger-table th,
-      .rw-ledger-table td {
-        padding: 10px 6px;
-        text-align: left;
-        border-bottom: 1px solid var(--border-1);
-        vertical-align: top;
-      }
-      .rw-ledger-table th {
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--t3);
-      }
-      .rw-num { text-align: right; }
-      .rw-pos { color: var(--accent); }
-      .rw-neg { color: var(--no-text); }
-      .rw-subtle { color: var(--t3); }
-      .rw-date { color: var(--t2); white-space: nowrap; }
-      .rw-event { color: var(--t1); }
-      .rw-reason {
-        margin-top: 2px;
-        color: var(--t3);
-        font-size: 12px;
-      }
-      .rw-ledger-empty {
-        padding: 40px 0;
-        text-align: center;
-        color: var(--t3);
-        font-size: 13px;
-      }
-
-      /* ── Pre-first-settle empty state + generic state card ── */
-      .rw-state,
-      .rw-prefirst {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 60vh;
-        padding: 0 24px;
-      }
-      .rw-prefirst-card,
-      .rw-state-card {
-        max-width: 440px;
-        width: 100%;
-        text-align: center;
-      }
-      .rw-prefirst-title {
-        margin: 0 0 10px;
-        font-size: 26px;
-        font-weight: 800;
-        color: var(--t1);
-      }
-      .rw-prefirst-body {
-        margin: 0 0 20px;
-        color: var(--t2);
-        font-size: 14px;
-        line-height: 1.6;
-      }
-      .rw-prefirst-cta,
-      .rw-state-card a {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 12px 20px;
-        color: #04140a;
-        border-radius: var(--r-rh-md);
-        font-size: 13px;
-        font-weight: 700;
-        text-decoration: none;
-        background: var(--accent);
-        border: none;
-        transition: transform 180ms ease, filter 180ms ease;
-      }
-      .rw-prefirst-cta:hover,
-      .rw-state-card a:hover { transform: translateY(-1px); filter: brightness(1.05); }
-      .rw-state-card p {
-        margin: 0 0 14px;
-        color: var(--t2);
-        line-height: 1.6;
-      }
-
-      /* ── Responsive ── */
-      @media (max-width: 1024px) {
-        .rw-grid { grid-template-columns: 1fr; }
-      }
-      @media (max-width: 768px) {
-        .rw-wrap { padding-inline: 16px; }
-        .rw-ladder {
-          grid-auto-flow: column;
-          grid-auto-columns: 140px;
-          grid-template-columns: none;
-          overflow-x: auto;
-          scroll-snap-type: x mandatory;
-        }
-        .rw-ladder-step { scroll-snap-align: start; }
-        .rw-title { font-size: 26px; }
-        .rw-balance { font-size: 28px; }
-      }
-    `}</style>
-  );
 }

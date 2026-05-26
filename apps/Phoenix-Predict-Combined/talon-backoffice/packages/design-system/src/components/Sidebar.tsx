@@ -1,81 +1,5 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
-
-const SidebarContainer = styled.div<{ $collapsed: boolean }>`
-  width: ${({ $collapsed }) => ($collapsed ? '60px' : '240px')};
-  background-color: ${({ theme }) => theme.colors.surface};
-  border-right: 1px solid ${({ theme }) => theme.colors.border};
-  padding: ${({ theme }) => theme.spacing.md};
-  transition: width ${({ theme }) => theme.motion.fast};
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow-y: auto;
-`;
-
-const ToggleButton = styled.button`
-  background: none;
-  border: none;
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 20px;
-  cursor: pointer;
-  padding: ${({ theme }) => theme.spacing.sm};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-  align-self: flex-end;
-  transition: color ${({ theme }) => theme.motion.fast};
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.accentBlue};
-  }
-`;
-
-const NavList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  flex: 1;
-`;
-
-interface StyledNavItemProps {
-  $active: boolean;
-  $collapsed: boolean;
-}
-
-const NavItem = styled.li`
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
-`;
-
-const NavLink = styled.a<StyledNavItemProps>`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
-  border-radius: ${({ theme }) => theme.radius.sm};
-  color: ${({ theme, $active }) =>
-    $active ? theme.colors.accentBlue : theme.colors.textSecondary};
-  text-decoration: none;
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.motion.fast};
-  white-space: nowrap;
-  background-color: ${({ theme, $active }) =>
-    $active ? 'rgba(33, 150, 243, 0.1)' : 'transparent'};
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.card};
-    color: ${({ theme }) => theme.colors.text};
-  }
-`;
-
-const NavIcon = styled.span`
-  font-size: 20px;
-  flex-shrink: 0;
-`;
-
-const NavLabel = styled.span<{ $collapsed: boolean }>`
-  font-size: ${({ theme }) => theme.typography.base.fontSize};
-  font-weight: 500;
-  display: ${({ $collapsed }) => ($collapsed ? 'none' : 'block')};
-`;
+import { cx } from '../utils/classNames';
 
 interface NavItemConfig {
   id: string;
@@ -98,25 +22,44 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, onItemClick }) => {
   };
 
   return (
-    <SidebarContainer $collapsed={collapsed}>
-      <ToggleButton onClick={() => setCollapsed(!collapsed)}>
+    <div
+      className={cx(
+        'flex h-screen flex-col overflow-y-auto border-r border-[#3d3d5c] bg-[#2d2d44] p-4 transition-[width] duration-200 ease-in-out',
+        collapsed ? 'w-[60px]' : 'w-[240px]'
+      )}
+    >
+      <button
+        className="mb-4 cursor-pointer self-end border-0 bg-transparent p-2 text-[20px] text-white transition-colors duration-200 ease-in-out hover:text-[#2196f3]"
+        onClick={() => setCollapsed(!collapsed)}
+      >
         {collapsed ? '→' : '←'}
-      </ToggleButton>
-      <NavList>
+      </button>
+      <ul className="m-0 flex-1 list-none p-0">
         {items.map((item) => (
-          <NavItem key={item.id}>
-            <NavLink
-              $active={item.active || false}
-              $collapsed={collapsed}
+          <li key={item.id} className="mb-2">
+            <a
+              className={cx(
+                'flex cursor-pointer items-center gap-4 whitespace-nowrap rounded-lg px-4 py-2 no-underline transition-all duration-200 ease-in-out hover:bg-[#4a4a5e] hover:text-white',
+                item.active
+                  ? 'bg-[rgba(33,150,243,0.1)] text-[#2196f3]'
+                  : 'bg-transparent text-[#9a9aad]'
+              )}
               onClick={() => handleItemClick(item.id)}
             >
-              <NavIcon>{item.icon}</NavIcon>
-              <NavLabel $collapsed={collapsed}>{item.label}</NavLabel>
-            </NavLink>
-          </NavItem>
+              <span className="shrink-0 text-[20px]">{item.icon}</span>
+              <span
+                className={cx(
+                  'text-[14px] font-medium leading-[20px]',
+                  collapsed ? 'hidden' : 'block'
+                )}
+              >
+                {item.label}
+              </span>
+            </a>
+          </li>
         ))}
-      </NavList>
-    </SidebarContainer>
+      </ul>
+    </div>
   );
 };
 

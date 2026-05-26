@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-
 interface CountrySelectProps {
   value: string;
   onChange: (value: string) => void;
@@ -36,44 +34,17 @@ export default function CountrySelect({
   onChange,
   label,
 }: CountrySelectProps) {
-  const containerStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#cbd5e1",
-  };
-
-  const selectStyle: React.CSSProperties = {
-    padding: "10px 12px",
-    backgroundColor: "#0f1225",
-    border: "1px solid #1a1f3a",
-    borderRadius: "4px",
-    color: "#e2e8f0",
-    fontSize: "13px",
-    cursor: "pointer",
-    transition: "all 0.2s",
-  };
-
   return (
-    <div style={containerStyle}>
-      {label && <label style={labelStyle}>{label}</label>}
+    <div className="flex flex-col gap-1.5">
+      {label && (
+        <label className="text-[13px] font-semibold text-slate-300">
+          {label}
+        </label>
+      )}
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        style={selectStyle}
-        onFocus={(e) => {
-          e.currentTarget.style.borderColor = "var(--accent)";
-          e.currentTarget.style.boxShadow = "0 0 0 3px rgba(43, 228, 128, 0.1)";
-        }}
-        onBlur={(e) => {
-          e.currentTarget.style.borderColor = "#1a1f3a";
-          e.currentTarget.style.boxShadow = "none";
-        }}
+        className="cursor-pointer rounded border border-[#1a1f3a] bg-[#0f1225] px-3 py-2.5 text-[13px] text-slate-200 transition-all duration-200 focus:border-[var(--accent)] focus:shadow-[0_0_0_3px_rgba(43,228,128,0.1)] focus:outline-none"
       >
         <option value="">Select a country</option>
         {COUNTRIES.map((country) => (

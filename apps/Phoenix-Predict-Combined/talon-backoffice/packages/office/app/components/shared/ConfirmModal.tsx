@@ -1,118 +1,5 @@
 "use client";
 
-import styled from "styled-components";
-
-const ModalOverlay = styled.div<{ $isOpen?: boolean }>`
-  display: ${(props) => (props.$isOpen ? "flex" : "none")};
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(26, 26, 26, 0.45);
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background-color: var(--surface-1, #ffffff);
-  border: 1px solid var(--border-1, #e5dfd2);
-  border-radius: 16px;
-  padding: 24px;
-  max-width: 400px;
-  width: 90%;
-  box-shadow:
-    0 12px 48px rgba(26, 26, 26, 0.08),
-    0 1px 2px rgba(26, 26, 26, 0.04);
-`;
-
-const ModalTitle = styled.h2`
-  margin: 0 0 12px 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--t1, #1a1a1a);
-  letter-spacing: -0.01em;
-`;
-
-const ModalMessage = styled.p`
-  margin: 0 0 20px 0;
-  font-size: 14px;
-  color: var(--t2, #4a4a4a);
-  line-height: 1.5;
-`;
-
-const ImpactSummary = styled.div`
-  background-color: var(--no-soft, rgba(255, 139, 107, 0.16));
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border-left: 3px solid var(--no-text, #a8472d);
-`;
-
-const ImpactText = styled.p`
-  margin: 0;
-  font-size: 13px;
-  color: var(--no-text, #a8472d);
-  font-weight: 500;
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-`;
-
-const BaseButton = styled.button`
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all 0.2s ease;
-  flex: 1;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-  }
-`;
-
-const CancelButton = styled(BaseButton)`
-  background-color: var(--surface-1, #ffffff);
-  color: var(--t1, #1a1a1a);
-  border: 1px solid var(--border-1, #e5dfd2);
-
-  &:hover:not(:disabled) {
-    background-color: var(--surface-2, #fcfaf5);
-    border-color: var(--focus-ring, #0e7a53);
-  }
-`;
-
-const ConfirmButton = styled(BaseButton)`
-  background-color: var(--accent, #2be480);
-  color: #003827;
-
-  &:hover:not(:disabled) {
-    background-color: var(--accent-lo, #1fa65e);
-    color: #ffffff;
-  }
-
-  &.danger {
-    background-color: var(--no-text, #a8472d);
-    color: #ffffff;
-
-    &:hover:not(:disabled) {
-      background-color: #8b3a25;
-    }
-  }
-`;
-
 interface ConfirmModalProps {
   isOpen?: boolean;
   title: string;
@@ -126,6 +13,9 @@ interface ConfirmModalProps {
   onCancel: () => void;
 }
 
+const baseButtonClass =
+  "flex-1 cursor-pointer rounded-lg border-0 px-4 py-2.5 text-sm font-semibold transition-all duration-200 hover:enabled:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60";
+
 export function ConfirmModal({
   isOpen = false,
   title,
@@ -138,31 +28,54 @@ export function ConfirmModal({
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
+  if (!isOpen) return null;
+
+  const confirmClass =
+    variant === "danger"
+      ? `${baseButtonClass} bg-[var(--no-text,#a8472d)] text-white hover:enabled:bg-[#8b3a25]`
+      : `${baseButtonClass} bg-[var(--accent,#2be480)] text-[#003827] hover:enabled:bg-[var(--accent-lo,#1fa65e)] hover:enabled:text-white`;
+
   return (
-    <ModalOverlay $isOpen={isOpen} onClick={onCancel}>
-      <ModalContent onClick={(e) => e.stopPropagation()}>
-        <ModalTitle>{title}</ModalTitle>
-        <ModalMessage>{message}</ModalMessage>
+    <div
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-[rgba(26,26,26,0.45)]"
+      onClick={onCancel}
+    >
+      <div
+        className="w-[90%] max-w-[400px] rounded-2xl border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] p-6 shadow-[0_12px_48px_rgba(26,26,26,0.08),0_1px_2px_rgba(26,26,26,0.04)]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <h2 className="m-0 mb-3 text-lg font-bold tracking-[-0.01em] text-[var(--t1,#1a1a1a)]">
+          {title}
+        </h2>
+        <p className="m-0 mb-5 text-sm leading-[1.5] text-[var(--t2,#4a4a4a)]">
+          {message}
+        </p>
 
         {impactSummary && (
-          <ImpactSummary>
-            <ImpactText>{impactSummary}</ImpactText>
-          </ImpactSummary>
+          <div className="mb-5 rounded-lg border-l-[3px] border-l-[var(--no-text,#a8472d)] bg-[var(--no-soft,rgba(255,139,107,0.16))] p-3">
+            <p className="m-0 text-[13px] font-medium text-[var(--no-text,#a8472d)]">
+              {impactSummary}
+            </p>
+          </div>
         )}
 
-        <ButtonGroup>
-          <CancelButton onClick={onCancel} disabled={isLoading}>
+        <div className="flex justify-end gap-3">
+          <button
+            className={`${baseButtonClass} border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] text-[var(--t1,#1a1a1a)] hover:enabled:border-[var(--focus-ring,#0e7a53)] hover:enabled:bg-[var(--surface-2,#fcfaf5)]`}
+            onClick={onCancel}
+            disabled={isLoading}
+          >
             {cancelText}
-          </CancelButton>
-          <ConfirmButton
-            className={variant === "danger" ? "danger" : ""}
+          </button>
+          <button
+            className={confirmClass}
             onClick={onConfirm}
             disabled={isLoading}
           >
             {isLoading ? "Processing..." : confirmText}
-          </ConfirmButton>
-        </ButtonGroup>
-      </ModalContent>
-    </ModalOverlay>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

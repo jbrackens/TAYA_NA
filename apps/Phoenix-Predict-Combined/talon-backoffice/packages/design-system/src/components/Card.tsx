@@ -1,29 +1,23 @@
 import React from 'react';
-import styled from 'styled-components';
-
-const StyledCard = styled.div`
-  background-color: ${({ theme }) => theme.colors.card};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radius.md};
-  padding: ${({ theme }) => theme.spacing.md};
-  transition: all ${({ theme }) => theme.motion.fast};
-
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.textSecondary};
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  }
-`;
+import { cx } from '../utils/classNames';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ children, ...props }, ref) => {
+  ({ children, className, ...props }, ref) => {
     return (
-      <StyledCard ref={ref} {...props}>
+      <div
+        ref={ref}
+        className={cx(
+          'rounded-[12px] border border-[#3d3d5c] bg-[#4a4a5e] p-4 transition-all duration-200 ease-in-out hover:border-[#9a9aad] hover:shadow-[0_4px_12px_rgba(0,0,0,0.3)]',
+          className
+        )}
+        {...props}
+      >
         {children}
-      </StyledCard>
+      </div>
     );
   }
 );

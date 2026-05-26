@@ -1,60 +1,5 @@
 import React from 'react';
-import styled from 'styled-components';
-
-interface StyledOddsButtonProps {
-  $selected?: boolean;
-  $suspended?: boolean;
-}
-
-const StyledOddsButton = styled.button<StyledOddsButtonProps>`
-  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
-  background-color: ${({ theme, $selected }) =>
-    $selected ? theme.colors.accentBlue : theme.colors.surface};
-  border: 2px solid ${({ theme, $selected }) =>
-    $selected ? theme.colors.accentBlue : theme.colors.border};
-  border-radius: ${({ theme }) => theme.radius.sm};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: ${({ theme }) => theme.typography.base.fontSize};
-  font-weight: 600;
-  font-family: ${({ theme }) => theme.typography.fontFamily};
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.motion.fast};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
-  min-width: 80px;
-
-  ${({ $suspended }) =>
-    $suspended &&
-    `
-    opacity: 0.5;
-    cursor: not-allowed;
-    pointer-events: none;
-  `}
-
-  &:hover:not(:disabled) {
-    border-color: ${({ theme }) => theme.colors.accentBlue};
-    background-color: ${({ theme, $selected }) =>
-      $selected ? theme.colors.accentBlue : theme.colors.card};
-  }
-
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
-  }
-`;
-
-const OddsValue = styled.span`
-  font-weight: 700;
-  font-size: ${({ theme }) => theme.typography.large.fontSize};
-`;
-
-const MovementIndicator = styled.span<{ $direction: 'up' | 'down' }>`
-  font-size: ${({ theme }) => theme.typography.small.fontSize};
-  color: ${({ $direction, theme }) =>
-    $direction === 'up' ? theme.colors.accentGreen : theme.colors.error};
-`;
+import { cx } from '../utils/classNames';
 
 interface OddsButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
   odds: number;
@@ -64,17 +9,42 @@ interface OddsButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElem
 }
 
 export const OddsButton = React.forwardRef<HTMLButtonElement, OddsButtonProps>(
-  ({ odds, selected = false, suspended = false, movement, ...props }, ref) => {
+  (
+    { odds, selected = false, suspended = false, movement, className, ...props },
+    ref
+  ) => {
     const getMovementSymbol = () => {
       if (!movement) return null;
       return movement === 'up' ? '↑' : '↓';
     };
 
     return (
-      <StyledOddsButton ref={ref} $selected={selected} $suspended={suspended} {...props}>
-        <OddsValue>{odds.toFixed(2)}</OddsValue>
-        {movement && <MovementIndicator $direction={movement}>{getMovementSymbol()}</MovementIndicator>}
-      </StyledOddsButton>
+      <button
+        ref={ref}
+        className={cx(
+          'flex min-w-[80px] cursor-pointer flex-col items-center gap-1 rounded-lg border-2 px-4 py-2 text-[14px] font-semibold leading-[20px] text-white transition-all duration-200 ease-in-out focus:outline-none focus:ring-[3px] focus:ring-[rgba(33,150,243,0.2)] disabled:cursor-not-allowed disabled:opacity-50',
+          selected
+            ? 'border-[#2196f3] bg-[#2196f3] hover:border-[#2196f3] hover:bg-[#2196f3]'
+            : 'border-[#3d3d5c] bg-[#2d2d44] hover:border-[#2196f3] hover:bg-[#4a4a5e]',
+          suspended && 'pointer-events-none cursor-not-allowed opacity-50',
+          className
+        )}
+        {...props}
+      >
+        <span className="text-[28px] font-bold leading-[36px]">
+          {odds.toFixed(2)}
+        </span>
+        {movement && (
+          <span
+            className={cx(
+              'text-[12px] leading-[16px]',
+              movement === 'up' ? 'text-[#4caf50]' : 'text-[#e85a71]'
+            )}
+          >
+            {getMovementSymbol()}
+          </span>
+        )}
+      </button>
     );
   }
 );

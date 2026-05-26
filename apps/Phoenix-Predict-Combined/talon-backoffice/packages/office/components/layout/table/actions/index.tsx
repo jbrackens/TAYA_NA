@@ -1,20 +1,20 @@
 import React from "react";
-import { Divider } from "antd";
+import { Divider, Space } from "antd";
 import { Layout } from "@phoenix-ui/utils";
-import { SpaceStyled } from "./index.styled";
 
 export type TableActions = {
   children: React.ReactNode;
 };
 
 const TableActions = ({ children }: TableActions) => (
-  <SpaceStyled
+  <Space
+    className="w-full flex-row items-center justify-end"
     size={Layout.Size.MEDIUM}
     align={Layout.Align.END}
     split={<Divider type={Layout.Direction.HORIZONTAL} />}
   >
     {children}
-  </SpaceStyled>
+  </Space>
 );
 
 export default TableActions;

@@ -4,7 +4,6 @@ export const dynamic = "force-dynamic";
 
 import {
   ChangeEvent,
-  CSSProperties,
   FormEvent,
   useCallback,
   useEffect,
@@ -327,7 +326,7 @@ function LeaderboardDetailPageContent() {
   if (isLoading) {
     return (
       <div>
-        <h1 style={pageTitleStyle}>Loading leaderboard...</h1>
+        <h1 className={pageTitleClassName}>Loading leaderboard...</h1>
         <LoadingSpinner centered={true} text="Loading leaderboard detail..." />
       </div>
     );
@@ -357,23 +356,23 @@ function LeaderboardDetailPageContent() {
 
   return (
     <div>
-      <div style={headerBarStyle}>
+      <div className={headerBarClassName}>
         <div>
-          <h1 style={pageTitleStyle}>{definition.name}</h1>
-          <p style={subtitleStyle}>
+          <h1 className={pageTitleClassName}>{definition.name}</h1>
+          <p className={subtitleClassName}>
             {definition.metricKey} · {definition.rankingMode.toUpperCase()} ·{" "}
             {definition.order.toUpperCase()} · {definition.status.toUpperCase()}
           </p>
         </div>
-        <div style={actionsRowStyle}>
+        <div className={actionsRowClassName}>
           <button
-            style={buttonStyle(true)}
+            className={buttonClassName(true)}
             onClick={() => router.push("/leaderboards")}
           >
             Back
           </button>
           <button
-            style={buttonStyle(isRecomputing)}
+            className={buttonClassName(isRecomputing)}
             onClick={() => void recompute()}
             disabled={isRecomputing}
           >
@@ -382,7 +381,7 @@ function LeaderboardDetailPageContent() {
         </div>
       </div>
 
-      <div style={metricsGridStyle}>
+      <div className={metricsGridClassName}>
         <MetricCard label="Status" value={definition.status.toUpperCase()} />
         <MetricCard
           label="Entries Ranked"
@@ -402,31 +401,39 @@ function LeaderboardDetailPageContent() {
         />
       </div>
 
-      {feedback ? <div style={successBannerStyle}>{feedback}</div> : null}
-      {error ? <div style={errorBannerStyle}>{error}</div> : null}
+      {feedback ? (
+        <div className={successBannerClassName}>{feedback}</div>
+      ) : null}
+      {error ? <div className={errorBannerClassName}>{error}</div> : null}
 
-      <div style={detailGridStyle}>
-        <div style={surfaceCardStyle}>
-          <h2 style={sectionTitleStyle}>Definition</h2>
+      <div className={detailGridClassName}>
+        <div className={surfaceCardClassName}>
+          <h2 className={sectionTitleClassName}>Definition</h2>
 
           {/* Lifecycle buttons */}
-          <div style={lifecycleRowStyle}>
+          <div className={lifecycleRowClassName}>
             <button
-              style={lifecyclePillStyle(form.status === "draft", isSaving)}
+              className={lifecyclePillClassName(
+                form.status === "draft",
+                isSaving,
+              )}
               disabled={form.status === "draft" || isSaving}
               onClick={() => void setStatusAndSave("draft")}
             >
               Set Draft
             </button>
             <button
-              style={lifecyclePillStyle(form.status === "active", isSaving)}
+              className={lifecyclePillClassName(
+                form.status === "active",
+                isSaving,
+              )}
               disabled={form.status === "active" || isSaving}
               onClick={() => void setStatusAndSave("active")}
             >
               Activate
             </button>
             <button
-              style={lifecyclePillStyle(
+              className={lifecyclePillClassName(
                 form.status === "closed",
                 isSaving,
                 true,
@@ -438,12 +445,12 @@ function LeaderboardDetailPageContent() {
             </button>
           </div>
 
-          <form style={formStyle} onSubmit={saveDefinition}>
-            <div style={formColumnsStyle}>
-              <label style={labelStyle}>
+          <form className={formClassName} onSubmit={saveDefinition}>
+            <div className={formColumnsClassName}>
+              <label className={labelClassName}>
                 Name
                 <input
-                  style={inputStyle}
+                  className={inputClassName}
                   value={form.name}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setForm((current) => ({
@@ -453,10 +460,10 @@ function LeaderboardDetailPageContent() {
                   }
                 />
               </label>
-              <label style={labelStyle}>
+              <label className={labelClassName}>
                 Slug
                 <input
-                  style={inputStyle}
+                  className={inputClassName}
                   value={form.slug}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setForm((current) => ({
@@ -467,10 +474,10 @@ function LeaderboardDetailPageContent() {
                 />
               </label>
             </div>
-            <label style={labelStyle}>
+            <label className={labelClassName}>
               Description
               <textarea
-                style={textAreaStyle}
+                className={textAreaClassName}
                 value={form.description}
                 onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
                   setForm((current) => ({
@@ -480,11 +487,11 @@ function LeaderboardDetailPageContent() {
                 }
               />
             </label>
-            <div style={formColumnsStyle}>
-              <label style={labelStyle}>
+            <div className={formColumnsClassName}>
+              <label className={labelClassName}>
                 Metric Key
                 <input
-                  style={inputStyle}
+                  className={inputClassName}
                   value={form.metricKey}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setForm((current) => ({
@@ -494,10 +501,10 @@ function LeaderboardDetailPageContent() {
                   }
                 />
               </label>
-              <label style={labelStyle}>
+              <label className={labelClassName}>
                 Event Type
                 <input
-                  style={inputStyle}
+                  className={inputClassName}
                   value={form.eventType}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setForm((current) => ({
@@ -508,11 +515,11 @@ function LeaderboardDetailPageContent() {
                 />
               </label>
             </div>
-            <div style={formColumnsStyle}>
-              <label style={labelStyle}>
+            <div className={formColumnsClassName}>
+              <label className={labelClassName}>
                 Mode
                 <select
-                  style={selectStyle}
+                  className={selectClassName}
                   value={form.rankingMode}
                   onChange={(event: ChangeEvent<HTMLSelectElement>) =>
                     setForm((current) => ({
@@ -526,10 +533,10 @@ function LeaderboardDetailPageContent() {
                   <option value="max">MAX</option>
                 </select>
               </label>
-              <label style={labelStyle}>
+              <label className={labelClassName}>
                 Order
                 <select
-                  style={selectStyle}
+                  className={selectClassName}
                   value={form.order}
                   onChange={(event: ChangeEvent<HTMLSelectElement>) =>
                     setForm((current) => ({
@@ -542,10 +549,10 @@ function LeaderboardDetailPageContent() {
                   <option value="asc">ASC</option>
                 </select>
               </label>
-              <label style={labelStyle}>
+              <label className={labelClassName}>
                 Status
                 <select
-                  style={selectStyle}
+                  className={selectClassName}
                   value={form.status}
                   onChange={(event: ChangeEvent<HTMLSelectElement>) =>
                     setForm((current) => ({
@@ -560,12 +567,12 @@ function LeaderboardDetailPageContent() {
                 </select>
               </label>
             </div>
-            <div style={formColumnsStyle}>
-              <label style={labelStyle}>
+            <div className={formColumnsClassName}>
+              <label className={labelClassName}>
                 Window Start
                 <input
                   type="datetime-local"
-                  style={inputStyle}
+                  className={inputClassName}
                   value={form.windowStartsAt}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setForm((current) => ({
@@ -575,11 +582,11 @@ function LeaderboardDetailPageContent() {
                   }
                 />
               </label>
-              <label style={labelStyle}>
+              <label className={labelClassName}>
                 Window End
                 <input
                   type="datetime-local"
-                  style={inputStyle}
+                  className={inputClassName}
                   value={form.windowEndsAt}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setForm((current) => ({
@@ -590,11 +597,11 @@ function LeaderboardDetailPageContent() {
                 />
               </label>
             </div>
-            <div style={formColumnsStyle}>
-              <label style={labelStyle}>
+            <div className={formColumnsClassName}>
+              <label className={labelClassName}>
                 Currency
                 <input
-                  style={inputStyle}
+                  className={inputClassName}
                   value={form.currency}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setForm((current) => ({
@@ -604,10 +611,10 @@ function LeaderboardDetailPageContent() {
                   }
                 />
               </label>
-              <label style={labelStyle}>
+              <label className={labelClassName}>
                 Prize Summary
                 <input
-                  style={inputStyle}
+                  className={inputClassName}
                   value={form.prizeSummary}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setForm((current) => ({
@@ -620,7 +627,7 @@ function LeaderboardDetailPageContent() {
             </div>
             <button
               type="submit"
-              style={buttonStyle(isSaving)}
+              className={buttonClassName(isSaving)}
               disabled={isSaving}
             >
               {isSaving ? "Saving..." : "Save Definition"}
@@ -628,13 +635,13 @@ function LeaderboardDetailPageContent() {
           </form>
         </div>
 
-        <div style={surfaceCardStyle}>
-          <h2 style={sectionTitleStyle}>Record Score Event</h2>
-          <form style={formStyle} onSubmit={recordEvent}>
-            <label style={labelStyle}>
+        <div className={surfaceCardClassName}>
+          <h2 className={sectionTitleClassName}>Record Score Event</h2>
+          <form className={formClassName} onSubmit={recordEvent}>
+            <label className={labelClassName}>
               Player ID
               <input
-                style={inputStyle}
+                className={inputClassName}
                 value={eventForm.playerId}
                 onChange={(event: ChangeEvent<HTMLInputElement>) =>
                   setEventForm((current) => ({
@@ -644,10 +651,10 @@ function LeaderboardDetailPageContent() {
                 }
               />
             </label>
-            <label style={labelStyle}>
+            <label className={labelClassName}>
               Score
               <input
-                style={inputStyle}
+                className={inputClassName}
                 value={eventForm.score}
                 onChange={(event: ChangeEvent<HTMLInputElement>) =>
                   setEventForm((current) => ({
@@ -657,10 +664,10 @@ function LeaderboardDetailPageContent() {
                 }
               />
             </label>
-            <label style={labelStyle}>
+            <label className={labelClassName}>
               Source Type
               <input
-                style={inputStyle}
+                className={inputClassName}
                 value={eventForm.sourceType}
                 onChange={(event: ChangeEvent<HTMLInputElement>) =>
                   setEventForm((current) => ({
@@ -670,10 +677,10 @@ function LeaderboardDetailPageContent() {
                 }
               />
             </label>
-            <label style={labelStyle}>
+            <label className={labelClassName}>
               Source ID
               <input
-                style={inputStyle}
+                className={inputClassName}
                 value={eventForm.sourceId}
                 onChange={(event: ChangeEvent<HTMLInputElement>) =>
                   setEventForm((current) => ({
@@ -686,7 +693,7 @@ function LeaderboardDetailPageContent() {
             </label>
             <button
               type="submit"
-              style={buttonStyle(isRecording)}
+              className={buttonClassName(isRecording)}
               disabled={isRecording}
             >
               {isRecording ? "Recording..." : "Record Event"}
@@ -695,11 +702,11 @@ function LeaderboardDetailPageContent() {
         </div>
       </div>
 
-      <div style={surfaceCardStyle}>
-        <div style={standingsHeaderStyle}>
-          <h2 style={{ ...sectionTitleStyle, marginBottom: 0 }}>Standings</h2>
+      <div className={surfaceCardClassName}>
+        <div className={standingsHeaderClassName}>
+          <h2 className={standingsTitleClassName}>Standings</h2>
           {standingsMeta ? (
-            <div style={standingsMetaStyle}>
+            <div className={standingsMetaClassName}>
               {standingsMeta.total} entries &middot; Top:{" "}
               {standingsMeta.top.toLocaleString()} &middot; Range:{" "}
               {standingsMeta.bottom.toLocaleString()} &ndash;{" "}
@@ -708,27 +715,29 @@ function LeaderboardDetailPageContent() {
           ) : null}
         </div>
         {standings.length ? (
-          <div style={standingsListStyle}>
+          <div className={standingsListClassName}>
             {standings.map((standing) => (
-              <div key={standing.playerId} style={standingRowStyle}>
-                <div style={rankCellStyle}>#{standing.rank}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={standingTitleStyle}>{standing.playerId}</div>
-                  <div style={standingMetaTextStyle}>
+              <div key={standing.playerId} className={standingRowClassName}>
+                <div className={rankCellClassName}>#{standing.rank}</div>
+                <div className="flex-1">
+                  <div className={standingTitleClassName}>
+                    {standing.playerId}
+                  </div>
+                  <div className={standingMetaTextClassName}>
                     {standing.eventCount} events
                     {standing.lastEventAt
                       ? ` · last event ${new Date(standing.lastEventAt).toLocaleString()}`
                       : ""}
                   </div>
                 </div>
-                <div style={scoreCellStyle}>
+                <div className={scoreCellClassName}>
                   {standing.score.toLocaleString()}
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div style={emptyTextStyle}>
+          <div className={emptyTextClassName}>
             No standings yet. Record events, then recompute the leaderboard.
           </div>
         )}
@@ -739,223 +748,92 @@ function LeaderboardDetailPageContent() {
 
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
-    <div style={metricCardStyle}>
-      <div style={metricLabelStyle}>{label}</div>
-      <div style={metricValueStyle}>{value}</div>
+    <div className={metricCardClassName}>
+      <div className={metricLabelClassName}>{label}</div>
+      <div className={metricValueClassName}>{value}</div>
     </div>
   );
 }
 
-function buttonStyle(disabled = false): CSSProperties {
-  return {
-    padding: "8px 16px",
-    backgroundColor: disabled ? "#3b4c7a" : "var(--focus-ring, #0e7a53)",
-    color: "var(--bg-deep, #f7f3ed)",
-    border: "none",
-    borderRadius: 4,
-    cursor: disabled ? "not-allowed" : "pointer",
-    fontWeight: 600,
-    fontSize: 14,
-  };
+function cx(...classes: Array<string | false | null | undefined>) {
+  return classes.filter(Boolean).join(" ");
 }
 
-function lifecyclePillStyle(
+function buttonClassName(disabled = false) {
+  return cx(
+    "rounded border-0 px-4 py-2 text-sm font-semibold text-[var(--bg-deep,#f7f3ed)]",
+    disabled
+      ? "cursor-not-allowed bg-[#3b4c7a]"
+      : "cursor-pointer bg-[var(--focus-ring,#0e7a53)]",
+  );
+}
+
+function lifecyclePillClassName(
   active: boolean,
   saving: boolean,
   danger = false,
-): CSSProperties {
-  const baseColor = danger ? "#dc2626" : "var(--focus-ring, #0e7a53)";
+) {
   const isDisabled = active || saving;
-  return {
-    padding: "6px 14px",
-    borderRadius: 20,
-    border: active ? `2px solid ${baseColor}` : "2px solid #263056",
-    backgroundColor: active ? (danger ? "#7f1d1d" : "#1e3a5f") : "transparent",
-    color: active ? "var(--t1, #1a1a1a)" : "var(--t3, #8b8378)",
-    cursor: isDisabled ? "not-allowed" : "pointer",
-    fontWeight: 700,
-    fontSize: 12,
-    textTransform: "uppercase",
-    letterSpacing: "0.05em",
-    opacity: isDisabled ? 0.7 : 1,
-  };
+
+  return cx(
+    "rounded-[20px] border-2 px-[14px] py-1.5 text-xs font-bold uppercase tracking-[0.05em]",
+    active &&
+      danger &&
+      "border-[#dc2626] bg-[#7f1d1d] text-[var(--t1,#1a1a1a)]",
+    active &&
+      !danger &&
+      "border-[var(--focus-ring,#0e7a53)] bg-[#1e3a5f] text-[var(--t1,#1a1a1a)]",
+    !active && "border-[#263056] bg-transparent text-[var(--t3,#8b8378)]",
+    isDisabled ? "cursor-not-allowed opacity-70" : "cursor-pointer opacity-100",
+  );
 }
 
-const pageTitleStyle: CSSProperties = {
-  fontSize: 28,
-  fontWeight: 700,
-  marginBottom: 8,
-  color: "var(--t1, #1a1a1a)",
-};
-const subtitleStyle: CSSProperties = {
-  margin: 0,
-  color: "var(--t2, #4a4a4a)",
-  fontSize: 14,
-};
-const headerBarStyle: CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-end",
-  gap: 16,
-  marginBottom: 20,
-};
-const actionsRowStyle: CSSProperties = {
-  display: "flex",
-  gap: 12,
-  flexWrap: "wrap",
-};
-const metricsGridStyle: CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-  gap: 16,
-  marginBottom: 20,
-};
-const metricCardStyle: CSSProperties = {
-  background: "#111328",
-  border: "1px solid #1e2243",
-  borderRadius: 12,
-  padding: 18,
-};
-const metricLabelStyle: CSSProperties = {
-  color: "var(--t3, #8b8378)",
-  fontSize: 12,
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
-  marginBottom: 8,
-};
-const metricValueStyle: CSSProperties = {
-  color: "var(--t1, #1a1a1a)",
-  fontSize: 22,
-  fontWeight: 700,
-};
-const successBannerStyle: CSSProperties = {
-  background: "#052e24",
-  border: "1px solid #14532d",
-  color: "#86efac",
-  borderRadius: 10,
-  padding: "12px 14px",
-  marginBottom: 16,
-  fontWeight: 600,
-};
-const errorBannerStyle: CSSProperties = {
-  background: "#3a1014",
-  border: "1px solid #7f1d1d",
-  color: "#fca5a5",
-  borderRadius: 10,
-  padding: "12px 14px",
-  marginBottom: 16,
-  fontWeight: 600,
-};
-const detailGridStyle: CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "minmax(0, 2fr) minmax(280px, 1fr)",
-  gap: 20,
-  marginBottom: 20,
-};
-const surfaceCardStyle: CSSProperties = {
-  background: "#111328",
-  border: "1px solid #1e2243",
-  borderRadius: 12,
-  padding: 20,
-};
-const sectionTitleStyle: CSSProperties = {
-  fontSize: 18,
-  fontWeight: 700,
-  color: "var(--t1, #1a1a1a)",
-  marginTop: 0,
-  marginBottom: 16,
-};
-const lifecycleRowStyle: CSSProperties = {
-  display: "flex",
-  gap: 10,
-  marginBottom: 16,
-  flexWrap: "wrap",
-};
-const formStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-};
-const formColumnsStyle: CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-  gap: 12,
-};
-const labelStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 6,
-  color: "#cbd5e1",
-  fontSize: 13,
-  fontWeight: 600,
-};
-const inputStyle: CSSProperties = {
-  background: "#0b1021",
-  border: "1px solid #263056",
-  borderRadius: 8,
-  padding: "10px 12px",
-  color: "var(--t1, #1a1a1a)",
-  fontSize: 14,
-};
-const selectStyle: CSSProperties = { ...inputStyle, appearance: "none" };
-const textAreaStyle: CSSProperties = {
-  ...inputStyle,
-  minHeight: 84,
-  resize: "vertical",
-};
-const standingsHeaderStyle: CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: 16,
-  flexWrap: "wrap",
-  gap: 8,
-};
-const standingsMetaStyle: CSSProperties = {
-  color: "#93c5fd",
-  fontSize: 13,
-  fontWeight: 600,
-};
-const standingsListStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 12,
-};
-const standingRowStyle: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 16,
-  padding: "14px 16px",
-  borderRadius: 10,
-  background: "#0b1021",
-  border: "1px solid #1e2243",
-};
-const rankCellStyle: CSSProperties = {
-  width: 52,
-  textAlign: "center",
-  color: "#93c5fd",
-  fontSize: 22,
-  fontWeight: 700,
-};
-const standingTitleStyle: CSSProperties = {
-  color: "var(--t1, #1a1a1a)",
-  fontSize: 15,
-  fontWeight: 700,
-};
-const standingMetaTextStyle: CSSProperties = {
-  color: "var(--t3, #8b8378)",
-  fontSize: 12,
-  marginTop: 4,
-};
-const scoreCellStyle: CSSProperties = {
-  color: "var(--t1, #1a1a1a)",
-  fontSize: 20,
-  fontWeight: 700,
-};
-const emptyTextStyle: CSSProperties = {
-  color: "var(--t3, #8b8378)",
-  fontSize: 14,
-};
+const pageTitleClassName =
+  "mb-2 text-[28px] font-bold text-[var(--t1,#1a1a1a)]";
+const subtitleClassName = "m-0 text-sm text-[var(--t2,#4a4a4a)]";
+const headerBarClassName = "mb-5 flex items-end justify-between gap-4";
+const actionsRowClassName = "flex flex-wrap gap-3";
+const metricsGridClassName =
+  "mb-5 grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4";
+const metricCardClassName =
+  "rounded-[12px] border border-[#1e2243] bg-[#111328] p-[18px]";
+const metricLabelClassName =
+  "mb-2 text-xs uppercase tracking-[0.08em] text-[var(--t3,#8b8378)]";
+const metricValueClassName = "text-[22px] font-bold text-[var(--t1,#1a1a1a)]";
+const successBannerClassName =
+  "mb-4 rounded-[10px] border border-[#14532d] bg-[#052e24] px-[14px] py-3 font-semibold text-[#86efac]";
+const errorBannerClassName =
+  "mb-4 rounded-[10px] border border-[#7f1d1d] bg-[#3a1014] px-[14px] py-3 font-semibold text-[#fca5a5]";
+const detailGridClassName =
+  "mb-5 grid grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] gap-5";
+const surfaceCardClassName =
+  "rounded-[12px] border border-[#1e2243] bg-[#111328] p-5";
+const sectionTitleClassName =
+  "mb-4 mt-0 text-lg font-bold text-[var(--t1,#1a1a1a)]";
+const lifecycleRowClassName = "mb-4 flex flex-wrap gap-2.5";
+const formClassName = "flex flex-col gap-[14px]";
+const formColumnsClassName =
+  "grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3";
+const labelClassName =
+  "flex flex-col gap-1.5 text-[13px] font-semibold text-[#cbd5e1]";
+const inputClassName =
+  "rounded-lg border border-[#263056] bg-[#0b1021] px-3 py-2.5 text-sm text-[var(--t1,#1a1a1a)]";
+const selectClassName = `${inputClassName} appearance-none`;
+const textAreaClassName = `${inputClassName} min-h-[84px] resize-y`;
+const standingsHeaderClassName =
+  "mb-4 flex flex-wrap items-center justify-between gap-2";
+const standingsTitleClassName =
+  "m-0 text-lg font-bold text-[var(--t1,#1a1a1a)]";
+const standingsMetaClassName = "text-[13px] font-semibold text-[#93c5fd]";
+const standingsListClassName = "flex flex-col gap-3";
+const standingRowClassName =
+  "flex items-center gap-4 rounded-[10px] border border-[#1e2243] bg-[#0b1021] px-4 py-[14px]";
+const rankCellClassName =
+  "w-[52px] text-center text-[22px] font-bold text-[#93c5fd]";
+const standingTitleClassName = "text-[15px] font-bold text-[var(--t1,#1a1a1a)]";
+const standingMetaTextClassName = "mt-1 text-xs text-[var(--t3,#8b8378)]";
+const scoreCellClassName = "text-xl font-bold text-[var(--t1,#1a1a1a)]";
+const emptyTextClassName = "text-sm text-[var(--t3,#8b8378)]";
 
 export default function LeaderboardDetailPage() {
   return (

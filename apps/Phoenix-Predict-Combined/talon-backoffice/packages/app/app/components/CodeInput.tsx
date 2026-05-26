@@ -80,46 +80,15 @@ export default function CodeInput({
     }
   };
 
-  const containerStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-  };
-
-  const inputsContainerStyle: React.CSSProperties = {
-    display: "flex",
-    gap: "12px",
-    justifyContent: "center",
-  };
-
-  const getInputStyle = (_index: number): React.CSSProperties => {
-    const baseStyle: React.CSSProperties = {
-      width: "48px",
-      height: "48px",
-      fontSize: "20px",
-      fontWeight: "600",
-      color: "#e2e8f0",
-      textAlign: "center",
-      backgroundColor: "#0f1225",
-      border: error ? "2px solid #ef4444" : "2px solid #1a1f3a",
-      borderRadius: "6px",
-      cursor: disabled ? "not-allowed" : "text",
-      opacity: disabled ? 0.6 : 1,
-      transition: "all 0.2s",
-      boxSizing: "border-box",
-    };
-
-    return baseStyle;
-  };
-
-  const errorStyle: React.CSSProperties = {
-    fontSize: "13px",
-    color: "var(--no)",
-  };
+  const inputClass = [
+    "box-border h-12 w-12 rounded-md border-2 bg-[#0f1225] text-center text-xl font-semibold text-slate-200 transition-all duration-200 focus:border-[var(--accent)] focus:shadow-[0_0_0_3px_rgba(43,228,128,0.1)] focus:outline-none",
+    error ? "border-red-500" : "border-[#1a1f3a]",
+    disabled ? "cursor-not-allowed opacity-60" : "cursor-text",
+  ].join(" ");
 
   return (
-    <div style={containerStyle}>
-      <div style={inputsContainerStyle}>
+    <div className="flex flex-col gap-3">
+      <div className="flex justify-center gap-3">
         {Array(length)
           .fill(0)
           .map((_, index) => (
@@ -134,26 +103,14 @@ export default function CodeInput({
               onChange={(e) => handleInput(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
               onPaste={handlePaste}
-              onFocus={(e) => {
-                if (!disabled) {
-                  const el = e.currentTarget as HTMLInputElement;
-                  el.style.borderColor = "var(--accent)";
-                  el.style.boxShadow = "0 0 0 3px rgba(43, 228, 128, 0.1)";
-                }
-              }}
-              onBlur={(e) => {
-                const el = e.currentTarget as HTMLInputElement;
-                el.style.borderColor = error ? "#ef4444" : "#1a1f3a";
-                el.style.boxShadow = "none";
-              }}
-              style={getInputStyle(index)}
+              className={inputClass}
               disabled={disabled}
               maxLength={1}
             />
           ))}
       </div>
 
-      {error && <div style={errorStyle}>{error}</div>}
+      {error && <div className="text-[13px] text-[var(--no)]">{error}</div>}
     </div>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import styled from "styled-components";
 import { PunterSearch } from "../../components/users";
 import {
   ErrorBoundary,
@@ -9,13 +8,6 @@ import {
 } from "../../components/shared";
 import { useState, useEffect } from "react";
 import { adminFetch } from "../../lib/admin-fetch";
-
-const PageTitle = styled.h1`
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 24px;
-  color: var(--t1, #1a1a1a);
-`;
 
 interface PunterData {
   id: string;
@@ -119,7 +111,9 @@ function UsersPageContent() {
 
   return (
     <div>
-      <PageTitle>Users</PageTitle>
+      <h1 className="mb-6 text-[28px] font-bold text-[var(--t1,#1a1a1a)]">
+        Users
+      </h1>
 
       {error ? (
         <ErrorState

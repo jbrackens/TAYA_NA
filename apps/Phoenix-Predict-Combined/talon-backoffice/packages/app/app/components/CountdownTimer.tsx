@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from "react";
 
 interface CountdownTimerProps {
   targetDate: string | Date;
@@ -53,7 +53,9 @@ export default function CountdownTimer({
       }
 
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const hours = Math.floor(
+        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+      );
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
@@ -68,7 +70,10 @@ export default function CountdownTimer({
 
     calculateTime();
 
-    const timerInterval: number | null = window.setInterval(calculateTime, 1000);
+    const timerInterval: number | null = window.setInterval(
+      calculateTime,
+      1000,
+    );
 
     return () => {
       if (timerInterval !== null) {
@@ -77,97 +82,62 @@ export default function CountdownTimer({
     };
   }, [targetDate]);
 
-  const containerStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  };
-
-  const labelStyle: React.CSSProperties = {
-    fontSize: '12px',
-    fontWeight: '600',
-    color: '#64748b',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  };
-
-  const timerStyle: React.CSSProperties = {
-    display: 'flex',
-    gap: '12px',
-    alignItems: 'center',
-    justifyContent: 'center',
-  };
-
-  const unitStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '4px',
-  };
-
-  const numberStyle: React.CSSProperties = {
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#e2e8f0',
-    minWidth: '40px',
-    textAlign: 'center',
-  };
-
-  const labelSmallStyle: React.CSSProperties = {
-    fontSize: '11px',
-    color: '#64748b',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  };
-
-  const separatorStyle: React.CSSProperties = {
-    fontSize: '20px',
-    color: '#64748b',
-    marginBottom: '12px',
-  };
-
-  const expiredStyle: React.CSSProperties = {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#ef4444',
-    textAlign: 'center',
-  };
+  const labelClass =
+    "text-xs font-semibold uppercase tracking-normal text-slate-500";
+  const unitClass = "flex flex-col items-center gap-1";
+  const numberClass = "min-w-10 text-center text-2xl font-bold text-slate-200";
+  const unitLabelClass = "text-[11px] uppercase tracking-normal text-slate-500";
+  const separatorClass = "mb-3 text-xl text-slate-500";
 
   if (time.expired) {
     return (
-      <div style={containerStyle}>
-        {label && <div style={labelStyle}>{label}</div>}
-        <div style={expiredStyle}>Expired</div>
+      <div className="flex flex-col gap-2">
+        {label && <div className={labelClass}>{label}</div>}
+        <div className="text-center text-sm font-semibold text-red-500">
+          Expired
+        </div>
       </div>
     );
   }
 
   return (
-    <div style={containerStyle}>
-      {label && <div style={labelStyle}>{label}</div>}
-      <div style={timerStyle}>
+    <div className="flex flex-col gap-2">
+      {label && <div className={labelClass}>{label}</div>}
+      <div className="flex items-center justify-center gap-3">
         {time.days > 0 && (
           <>
-            <div style={unitStyle}>
-              <div style={numberStyle}>{String(time.days).padStart(2, '0')}</div>
-              <div style={labelSmallStyle}>Day{time.days !== 1 ? 's' : ''}</div>
+            <div className={unitClass}>
+              <div className={numberClass}>
+                {String(time.days).padStart(2, "0")}
+              </div>
+              <div className={unitLabelClass}>
+                Day{time.days !== 1 ? "s" : ""}
+              </div>
             </div>
-            <div style={separatorStyle}>:</div>
+            <div className={separatorClass}>:</div>
           </>
         )}
-        <div style={unitStyle}>
-          <div style={numberStyle}>{String(time.hours).padStart(2, '0')}</div>
-          <div style={labelSmallStyle}>Hour{time.hours !== 1 ? 's' : ''}</div>
+        <div className={unitClass}>
+          <div className={numberClass}>
+            {String(time.hours).padStart(2, "0")}
+          </div>
+          <div className={unitLabelClass}>
+            Hour{time.hours !== 1 ? "s" : ""}
+          </div>
         </div>
-        <div style={separatorStyle}>:</div>
-        <div style={unitStyle}>
-          <div style={numberStyle}>{String(time.minutes).padStart(2, '0')}</div>
-          <div style={labelSmallStyle}>Min</div>
+        <div className={separatorClass}>:</div>
+        <div className={unitClass}>
+          <div className={numberClass}>
+            {String(time.minutes).padStart(2, "0")}
+          </div>
+          <div className={unitLabelClass}>Min</div>
         </div>
-        <div style={separatorStyle}>:</div>
-        <div style={unitStyle}>
-          <div style={numberStyle}>{String(time.seconds).padStart(2, '0')}</div>
-          <div style={labelSmallStyle}>Sec</div>
+        <div className={separatorClass}>:</div>
+        <div className={unitClass}>
+          <div className={numberClass}>
+            {String(time.seconds).padStart(2, "0")}
+          </div>
+          <div className={unitLabelClass}>Sec</div>
         </div>
       </div>
     </div>

@@ -459,8 +459,8 @@ const VerificationReviewPanel = () => {
 
   return (
     <>
-      <Card title={t("VERIFICATION_QUEUE_TITLE")} style={{ marginBottom: 16 }}>
-        <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
+      <Card title={t("VERIFICATION_QUEUE_TITLE")} className="mb-4">
+        <Row gutter={[12, 12]} className="mb-4">
           <Col xs={24} md={6}>
             <Input
               value={filters.assignedTo}
@@ -484,7 +484,7 @@ const VerificationReviewPanel = () => {
                 }))
               }
               placeholder={t("VERIFICATION_FILTER_FLOW")}
-              style={{ width: "100%" }}
+              className="w-full"
             >
               <Select.Option value="kba">KBA</Select.Option>
               <Select.Option value="idpv">IDPV</Select.Option>
@@ -501,7 +501,7 @@ const VerificationReviewPanel = () => {
                 }))
               }
               placeholder={t("VERIFICATION_FILTER_STATUS")}
-              style={{ width: "100%" }}
+              className="w-full"
             >
               <Select.Option value="pending_review">
                 pending_review
@@ -536,25 +536,25 @@ const VerificationReviewPanel = () => {
           </Col>
         </Row>
 
-        <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
+        <Row gutter={[12, 12]} className="mb-4">
           <Col xs={24} sm={12} lg={6}>
-            <Typography.Paragraph style={{ marginBottom: 0 }}>
+            <Typography.Paragraph className="!mb-0">
               {t("VERIFICATION_METRIC_TOTAL")}: {queueCounts.total}
             </Typography.Paragraph>
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Typography.Paragraph style={{ marginBottom: 0 }}>
+            <Typography.Paragraph className="!mb-0">
               {t("VERIFICATION_METRIC_UNASSIGNED")}: {queueCounts.unassigned}
             </Typography.Paragraph>
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Typography.Paragraph style={{ marginBottom: 0 }}>
+            <Typography.Paragraph className="!mb-0">
               {t("VERIFICATION_METRIC_PENDING_REVIEW")}:{" "}
               {queueCounts.pendingReview}
             </Typography.Paragraph>
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Typography.Paragraph style={{ marginBottom: 0 }}>
+            <Typography.Paragraph className="!mb-0">
               {t("VERIFICATION_METRIC_PROVIDER_REVIEWING")}:{" "}
               {queueCounts.providerReviewing}
             </Typography.Paragraph>
@@ -582,12 +582,7 @@ const VerificationReviewPanel = () => {
           <Empty description={t("VERIFICATION_EMPTY")} />
         ) : (
           <>
-            <Descriptions
-              bordered
-              size="small"
-              column={1}
-              style={{ marginBottom: 16 }}
-            >
+            <Descriptions bordered size="small" column={1} className="mb-4">
               <Descriptions.Item label={t("VERIFICATION_HEADER_USER")}>
                 {selectedSession.userId}
               </Descriptions.Item>
@@ -642,7 +637,7 @@ const VerificationReviewPanel = () => {
             <Card
               title={t("VERIFICATION_ASSIGN_TITLE")}
               size="small"
-              style={{ marginBottom: 16 }}
+              className="mb-4"
               loading={detailLoading || assignLoading}
             >
               <Row gutter={[12, 12]}>
@@ -676,7 +671,7 @@ const VerificationReviewPanel = () => {
             <Card
               title={t("VERIFICATION_NOTE_TITLE")}
               size="small"
-              style={{ marginBottom: 16 }}
+              className="mb-4"
               loading={noteLoading}
             >
               <Row gutter={[12, 12]}>
@@ -704,7 +699,7 @@ const VerificationReviewPanel = () => {
             <Card
               title={t("VERIFICATION_DECISION_TITLE")}
               size="small"
-              style={{ marginBottom: 16 }}
+              className="mb-4"
               loading={decisionLoading}
             >
               <Row gutter={[12, 12]}>
@@ -718,7 +713,7 @@ const VerificationReviewPanel = () => {
                       }
                     }}
                     placeholder={t("VERIFICATION_DECISION_PLACEHOLDER")}
-                    style={{ width: "100%" }}
+                    className="w-full"
                   >
                     {DECISION_OPTIONS.map((opt) => (
                       <Select.Option key={opt.value} value={opt.value}>
@@ -737,19 +732,12 @@ const VerificationReviewPanel = () => {
                 </Col>
                 {decision === "questions" && (
                   <Col span={24}>
-                    <Divider style={{ margin: "8px 0" }} />
-                    <Typography.Text
-                      strong
-                      style={{ display: "block", marginBottom: 8 }}
-                    >
+                    <Divider className="!my-2" />
+                    <Typography.Text strong className="mb-2 block">
                       {t("VERIFICATION_DECISION_QUESTIONS_LABEL")}
                     </Typography.Text>
                     {decisionQuestions.map((q, idx) => (
-                      <Row
-                        key={idx}
-                        gutter={[8, 8]}
-                        style={{ marginBottom: 8 }}
-                      >
+                      <Row key={idx} gutter={[8, 8]} className="mb-2">
                         <Col flex="auto">
                           <Input
                             value={q.text}
@@ -822,7 +810,7 @@ const VerificationReviewPanel = () => {
                         }
                         description={
                           <>
-                            <Typography.Paragraph style={{ marginBottom: 4 }}>
+                            <Typography.Paragraph className="!mb-1">
                               {renderTimestamp(
                                 event.createdAt,
                                 t("common:DATE_TIME_FORMAT"),
@@ -830,13 +818,13 @@ const VerificationReviewPanel = () => {
                               )}
                             </Typography.Paragraph>
                             {event.reason ? (
-                              <Typography.Paragraph style={{ marginBottom: 4 }}>
+                              <Typography.Paragraph className="!mb-1">
                                 {event.reason}
                               </Typography.Paragraph>
                             ) : null}
                             {event.payload ? (
                               <Typography.Paragraph
-                                style={{ marginBottom: 0 }}
+                                className="!mb-0"
                                 ellipsis={{
                                   rows: 3,
                                   expandable: true,

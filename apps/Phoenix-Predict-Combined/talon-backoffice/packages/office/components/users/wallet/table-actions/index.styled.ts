@@ -1,18 +1,28 @@
+import React from "react";
 import { Button } from "antd";
-import styled from "styled-components";
-import type { ComponentType, ComponentProps } from "react";
 
-const Button19 = Button as ComponentType<ComponentProps<typeof Button>>;
+const classNames = (...classes: Array<string | undefined>) =>
+  classes.filter(Boolean).join(" ");
 
-export const ActionButtonContainer = styled.div`
-  button:first-child {
-    margin-bottom: 5px;
-  }
-  button {
-    width: 100%;
-  }
-`;
+const ButtonComponent = Button as React.ElementType;
 
-export const CancelButton = styled(Button19)`
-  margin-left: 10px;
-`;
+export const ActionButtonContainer = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) =>
+  React.createElement("div", {
+    ...props,
+    className: classNames(
+      "[&_button]:w-full [&_button:first-child]:mb-[5px]",
+      className,
+    ),
+  });
+
+export const CancelButton = ({
+  className,
+  ...props
+}: React.ComponentProps<typeof Button>) =>
+  React.createElement(ButtonComponent, {
+    ...props,
+    className: classNames("ml-[10px]", className),
+  });

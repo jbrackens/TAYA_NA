@@ -85,9 +85,6 @@ module.exports = {
       },
     };
   },
-  compiler: {
-    styledComponents: true,
-  },
   experimental: {
     optimizePackageImports: [],
   },

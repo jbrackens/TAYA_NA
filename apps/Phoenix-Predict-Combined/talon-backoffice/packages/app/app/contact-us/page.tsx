@@ -47,127 +47,30 @@ export default function ContactUsPage() {
     }
   };
 
-  const containerStyle: React.CSSProperties = {
-    maxWidth: "600px",
-    margin: "0 auto",
-    padding: "40px 20px",
-  };
-
-  const titleStyle: React.CSSProperties = {
-    fontSize: "28px",
-    fontWeight: "800",
-    color: "var(--t1)",
-    marginBottom: "24px",
-    letterSpacing: "-0.02em",
-  };
-
-  const formGroupStyle: React.CSSProperties = {
-    marginBottom: "20px",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    display: "block",
-    fontSize: "14px",
-    fontWeight: "600",
-    color: "var(--t2)",
-    marginBottom: "8px",
-  };
-
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "12px 14px",
-    fontSize: "14px",
-    color: "var(--t1)",
-    backgroundColor: "rgba(0, 0, 0, 0.22)",
-    border: "1px solid rgba(255, 255, 255, 0.08)",
-    borderRadius: "6px",
-    boxSizing: "border-box",
-    transition: "all 0.3s",
-  };
-
-  const textareaStyle: React.CSSProperties = {
-    ...inputStyle,
-    minHeight: "140px",
-    resize: "vertical",
-    fontFamily: "inherit",
-  };
-
-  const buttonStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "12px 20px",
-    fontSize: "15px",
-    fontWeight: "600",
-    color: "rgba(0, 0, 0, 0.22)",
-    backgroundColor: "var(--accent)",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    transition: "all 0.3s",
-    opacity: loading ? 0.7 : 1,
-  };
-
-  const infoBoxStyle: React.CSSProperties = {
-    marginTop: "40px",
-    padding: "20px",
-    backgroundColor: "rgba(0, 0, 0, 0.22)",
-    border: "1px solid rgba(255, 255, 255, 0.08)",
-    borderRadius: "8px",
-  };
-
-  const infoTitleStyle: React.CSSProperties = {
-    fontSize: "16px",
-    fontWeight: "700",
-    color: "var(--t1)",
-    marginBottom: "12px",
-  };
-
-  const infoItemStyle: React.CSSProperties = {
-    fontSize: "14px",
-    color: "#D3D3D3",
-    marginBottom: "8px",
-  };
-
   return (
-    <div style={containerStyle}>
-      <style dangerouslySetInnerHTML={{ __html: inputFocusStyles }} />
-
-      <h1 style={titleStyle}>Contact Us</h1>
+    <div className="mx-auto max-w-[600px] px-5 py-10">
+      <h1 className="mb-6 text-[28px] font-extrabold tracking-normal text-[var(--t1)]">
+        Contact Us
+      </h1>
 
       {submitted && (
-        <div
-          style={{
-            padding: "16px",
-            backgroundColor: "rgba(34, 197, 94, 0.1)",
-            border: "1px solid rgba(34, 197, 94, 0.3)",
-            borderRadius: "6px",
-            color: "#86efac",
-            marginBottom: "24px",
-            fontSize: "14px",
-          }}
-        >
+        <div className="mb-6 rounded-md border border-[rgba(34,197,94,0.3)] bg-[rgba(34,197,94,0.1)] p-4 text-sm text-[#86efac]">
           Your message has been sent successfully. We'll get back to you soon!
         </div>
       )}
 
       {error && (
-        <div
-          style={{
-            padding: "16px",
-            backgroundColor: "rgba(255, 155, 107, 0.1)",
-            border: "1px solid rgba(255, 155, 107, 0.3)",
-            borderRadius: "6px",
-            color: "#fca5a5",
-            marginBottom: "24px",
-            fontSize: "14px",
-          }}
-        >
+        <div className="mb-6 rounded-md border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.1)] p-4 text-sm text-[#fca5a5]">
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit}>
-        <div style={formGroupStyle}>
-          <label htmlFor="name" style={labelStyle}>
+        <div className="mb-5">
+          <label
+            htmlFor="name"
+            className="mb-2 block text-sm font-semibold text-[var(--t2)]"
+          >
             Full Name
           </label>
           <input
@@ -178,13 +81,15 @@ export default function ContactUsPage() {
             onChange={handleChange}
             required
             placeholder="Your name"
-            style={inputStyle}
-            className="form-input"
+            className="box-border w-full rounded-md border border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.22)] px-3.5 py-3 text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(43,228,128,0.1)]"
           />
         </div>
 
-        <div style={formGroupStyle}>
-          <label htmlFor="email" style={labelStyle}>
+        <div className="mb-5">
+          <label
+            htmlFor="email"
+            className="mb-2 block text-sm font-semibold text-[var(--t2)]"
+          >
             Email Address
           </label>
           <input
@@ -195,13 +100,15 @@ export default function ContactUsPage() {
             onChange={handleChange}
             required
             placeholder="your@email.com"
-            style={inputStyle}
-            className="form-input"
+            className="box-border w-full rounded-md border border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.22)] px-3.5 py-3 text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(43,228,128,0.1)]"
           />
         </div>
 
-        <div style={formGroupStyle}>
-          <label htmlFor="subject" style={labelStyle}>
+        <div className="mb-5">
+          <label
+            htmlFor="subject"
+            className="mb-2 block text-sm font-semibold text-[var(--t2)]"
+          >
             Subject
           </label>
           <input
@@ -212,13 +119,15 @@ export default function ContactUsPage() {
             onChange={handleChange}
             required
             placeholder="What is this about?"
-            style={inputStyle}
-            className="form-input"
+            className="box-border w-full rounded-md border border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.22)] px-3.5 py-3 text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(43,228,128,0.1)]"
           />
         </div>
 
-        <div style={formGroupStyle}>
-          <label htmlFor="message" style={labelStyle}>
+        <div className="mb-5">
+          <label
+            htmlFor="message"
+            className="mb-2 block text-sm font-semibold text-[var(--t2)]"
+          >
             Message
           </label>
           <textarea
@@ -228,52 +137,35 @@ export default function ContactUsPage() {
             onChange={handleChange}
             required
             placeholder="Please tell us more..."
-            style={textareaStyle}
-            className="form-input"
+            className="box-border min-h-[140px] w-full resize-y rounded-md border border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.22)] px-3.5 py-3 font-[inherit] text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(43,228,128,0.1)]"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          style={buttonStyle}
-          onMouseEnter={(e) => {
-            if (!loading) {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                "#ea580c";
-            }
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-              "var(--accent)";
-          }}
+          className="w-full cursor-pointer rounded-md border-0 bg-[var(--accent)] px-5 py-3 text-[15px] font-semibold text-[rgba(0,0,0,0.22)] transition-all duration-300 hover:bg-[#ea580c] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {loading ? "Sending..." : "Send Message"}
         </button>
       </form>
 
-      <div style={infoBoxStyle}>
-        <div style={infoTitleStyle}>Other Ways to Reach Us</div>
-        <div style={infoItemStyle}>
-          <strong style={{ color: "var(--t1)" }}>Email:</strong>{" "}
+      <div className="mt-10 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.22)] p-5">
+        <div className="mb-3 text-base font-bold text-[var(--t1)]">
+          Other Ways to Reach Us
+        </div>
+        <div className="mb-2 text-sm text-[#D3D3D3]">
+          <strong className="text-[var(--t1)]">Email:</strong>{" "}
           support@hulana.com
         </div>
-        <div style={infoItemStyle}>
-          <strong style={{ color: "var(--t1)" }}>Phone:</strong> 1-800-HULA-NA
+        <div className="mb-2 text-sm text-[#D3D3D3]">
+          <strong className="text-[var(--t1)]">Phone:</strong> 1-800-HULA-NA
         </div>
-        <div style={infoItemStyle}>
-          <strong style={{ color: "var(--t1)" }}>Support Hours:</strong> Monday
-          - Friday, 9 AM - 10 PM EST
+        <div className="mb-2 text-sm text-[#D3D3D3]">
+          <strong className="text-[var(--t1)]">Support Hours:</strong> Monday -
+          Friday, 9 AM - 10 PM EST
         </div>
       </div>
     </div>
   );
 }
-
-const inputFocusStyles = `
-  .form-input:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(43, 228, 128, 0.1);
-  }
-`;

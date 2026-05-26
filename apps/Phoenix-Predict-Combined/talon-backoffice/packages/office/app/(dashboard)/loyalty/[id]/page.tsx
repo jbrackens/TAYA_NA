@@ -2,14 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import {
-  ChangeEvent,
-  CSSProperties,
-  FormEvent,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   ErrorBoundary,
@@ -220,7 +213,7 @@ function LoyaltyDetailPageContent() {
   if (isLoading) {
     return (
       <div>
-        <h1 style={pageTitleStyle}>Loading loyalty account...</h1>
+        <h1 className={pageTitleClassName}>Loading loyalty account...</h1>
         <LoadingSpinner centered={true} text="Loading loyalty details..." />
       </div>
     );
@@ -250,17 +243,17 @@ function LoyaltyDetailPageContent() {
 
   return (
     <div>
-      <div style={headerBarStyle}>
+      <div className={headerBarClassName}>
         <div>
-          <h1 style={pageTitleStyle}>
+          <h1 className={pageTitleClassName}>
             {account.playerId}
             {account.lastAccrualAt ? (
-              <span style={lastAccrualBadgeStyle}>
+              <span className={lastAccrualBadgeClassName}>
                 Last accrual {new Date(account.lastAccrualAt).toLocaleString()}
               </span>
             ) : null}
           </h1>
-          <p style={subtitleStyle}>
+          <p className={subtitleClassName}>
             Current tier {currentTierName}
             {account.nextTier
               ? `, ${account.pointsToNextTier} points to ${nextTierName}`
@@ -268,20 +261,20 @@ function LoyaltyDetailPageContent() {
             .
           </p>
         </div>
-        <div style={inlineActionsStyle}>
+        <div className={inlineActionsClassName}>
           <button
-            style={buttonStyle(true)}
+            className={buttonClassName(true)}
             onClick={() => router.push("/loyalty")}
           >
             Back to Loyalty
           </button>
-          <span style={badgeStyle(tierVariant(account.currentTier))}>
+          <span className={badgeClassName(tierVariant(account.currentTier))}>
             {String(currentTierName).toUpperCase()}
           </span>
         </div>
       </div>
 
-      <div style={metricsGridStyle}>
+      <div className={metricsGridClassName}>
         <MetricCard
           label="Points Balance"
           value={account.pointsBalance.toLocaleString()}
@@ -302,89 +295,75 @@ function LoyaltyDetailPageContent() {
 
       {/* Tier Progress Bar */}
       {tierProgress ? (
-        <div style={progressContainerStyle}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: 6,
-            }}
-          >
-            <span style={{ color: "#39ff14", fontSize: 13, fontWeight: 700 }}>
+        <div className={progressContainerClassName}>
+          <div className="mb-1.5 flex justify-between">
+            <span className="text-[13px] font-bold text-[#39ff14]">
               {tierProgress.currentName}
             </span>
-            <span style={{ color: "var(--t3, #8b8378)", fontSize: 12 }}>
+            <span className="text-xs text-[var(--t3,#8b8378)]">
               {tierProgress.pointsToNext.toLocaleString()} pts to{" "}
               {tierProgress.nextName}
             </span>
           </div>
-          <div style={progressTrackStyle}>
-            <div style={progressBarStyle(tierProgress.percent)} />
-          </div>
+          <progress
+            className={progressClassName}
+            value={tierProgress.percent}
+            max={100}
+            aria-label={`${tierProgress.currentName} tier progress`}
+          />
         </div>
       ) : !account.nextTier ? (
-        <div style={progressContainerStyle}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: 6,
-            }}
-          >
-            <span style={{ color: "#39ff14", fontSize: 13, fontWeight: 700 }}>
+        <div className={progressContainerClassName}>
+          <div className="mb-1.5 flex justify-between">
+            <span className="text-[13px] font-bold text-[#39ff14]">
               {currentTierName}
             </span>
-            <span style={{ color: "var(--accent, #2be480)", fontSize: 12 }}>
+            <span className="text-xs text-[var(--accent,#2be480)]">
               Top tier reached
             </span>
           </div>
-          <div style={progressTrackStyle}>
-            <div style={progressBarStyle(100)} />
-          </div>
+          <progress
+            className={progressClassName}
+            value={100}
+            max={100}
+            aria-label="Top tier reached"
+          />
         </div>
       ) : null}
 
       {/* Referral Activity */}
-      <div style={{ ...surfaceCardStyle, marginBottom: 20 }}>
-        <h2 style={sectionTitleStyle}>Referral Activity</h2>
+      <div className={`${surfaceCardClassName} mb-5`}>
+        <h2 className={sectionTitleClassName}>Referral Activity</h2>
         {referralsLoading ? (
-          <div style={helperTextStyle}>Loading referrals...</div>
+          <div className={helperTextClassName}>Loading referrals...</div>
         ) : referrals.length === 0 ? (
-          <div style={helperTextStyle}>
+          <div className={helperTextClassName}>
             No referral activity found for this player.
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div className="flex flex-col gap-2">
             {referrals.map((ref) => (
-              <div key={ref.referralId} style={referralRowStyle}>
-                <div style={{ flex: 1 }}>
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: "var(--t1, #1a1a1a)",
-                    }}
-                  >
+              <div key={ref.referralId} className={referralRowClassName}>
+                <div className="flex-1">
+                  <div className="text-[13px] font-semibold text-[var(--t1,#1a1a1a)]">
                     {ref.referrerPlayerId === playerId ? (
                       <>Referred {ref.referredPlayerId}</>
                     ) : (
                       <>Referred by {ref.referrerPlayerId}</>
                     )}
                   </div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: "var(--t3, #8b8378)",
-                      marginTop: 2,
-                    }}
-                  >
+                  <div className="mt-0.5 text-[11px] text-[var(--t3,#8b8378)]">
                     {new Date(ref.createdAt).toLocaleString()}
                     {ref.qualifiedAt
                       ? ` — qualified ${new Date(ref.qualifiedAt).toLocaleString()}`
                       : ""}
                   </div>
                 </div>
-                <span style={qualificationBadgeStyle(ref.qualificationState)}>
+                <span
+                  className={qualificationBadgeClassName(
+                    ref.qualificationState,
+                  )}
+                >
                   {ref.qualificationState}
                 </span>
               </div>
@@ -393,30 +372,32 @@ function LoyaltyDetailPageContent() {
         )}
       </div>
 
-      <div style={gridStyle}>
+      <div className={gridClassName}>
         <div>
-          <div style={surfaceCardStyle}>
-            <h2 style={sectionTitleStyle}>Recent Ledger</h2>
+          <div className={surfaceCardClassName}>
+            <h2 className={sectionTitleClassName}>Recent Ledger</h2>
             {ledger.length > 0 ? (
-              <div style={ledgerListStyle}>
+              <div className={ledgerListClassName}>
                 {ledger.map((entry) => (
-                  <div key={entry.entryId} style={ledgerItemStyle}>
-                    <div style={ledgerHeadStyle}>
+                  <div key={entry.entryId} className={ledgerItemClassName}>
+                    <div className={ledgerHeadClassName}>
                       <div>
-                        <div style={ledgerTitleStyle}>
+                        <div className={ledgerTitleClassName}>
                           {formatLedgerLabel(entry)}
                         </div>
-                        <div style={ledgerMetaStyle}>
+                        <div className={ledgerMetaClassName}>
                           {new Date(entry.createdAt).toLocaleString()} • source{" "}
                           {entry.sourceId}
                         </div>
                       </div>
-                      <div style={ledgerDeltaStyle(entry.pointsDelta < 0)}>
+                      <div
+                        className={ledgerDeltaClassName(entry.pointsDelta < 0)}
+                      >
                         {entry.pointsDelta > 0 ? "+" : ""}
                         {entry.pointsDelta}
                       </div>
                     </div>
-                    <div style={ledgerMetaStyle}>
+                    <div className={ledgerMetaClassName}>
                       Balance after entry: {entry.balanceAfter.toLocaleString()}
                       {entry.createdBy
                         ? ` • created by ${entry.createdBy}`
@@ -426,7 +407,7 @@ function LoyaltyDetailPageContent() {
                 ))}
               </div>
             ) : (
-              <div style={helperTextStyle}>
+              <div className={helperTextClassName}>
                 No loyalty ledger activity recorded yet.
               </div>
             )}
@@ -434,13 +415,13 @@ function LoyaltyDetailPageContent() {
         </div>
 
         <div>
-          <div style={surfaceCardStyle}>
-            <h2 style={sectionTitleStyle}>Manual Adjustment</h2>
-            <form style={formStyle} onSubmit={submitAdjustment}>
-              <label style={labelStyle}>
+          <div className={surfaceCardClassName}>
+            <h2 className={sectionTitleClassName}>Manual Adjustment</h2>
+            <form className={formClassName} onSubmit={submitAdjustment}>
+              <label className={labelClassName}>
                 Points Delta
                 <input
-                  style={inputStyle}
+                  className={inputClassName}
                   value={pointsDelta}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setPointsDelta(event.target.value)
@@ -449,10 +430,10 @@ function LoyaltyDetailPageContent() {
                 />
               </label>
 
-              <label style={labelStyle}>
+              <label className={labelClassName}>
                 Entry Subtype
                 <input
-                  style={inputStyle}
+                  className={inputClassName}
                   value={entrySubtype}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setEntrySubtype(event.target.value)
@@ -461,10 +442,10 @@ function LoyaltyDetailPageContent() {
                 />
               </label>
 
-              <label style={labelStyle}>
+              <label className={labelClassName}>
                 Reason
                 <textarea
-                  style={textAreaStyle}
+                  className={textAreaClassName}
                   value={reason}
                   onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
                     setReason(event.target.value)
@@ -473,17 +454,22 @@ function LoyaltyDetailPageContent() {
                 />
               </label>
 
-              <div style={helperTextStyle}>
+              <div className={helperTextClassName}>
                 Positive values award points. Negative values claw points back.
                 Every adjustment is written to the loyalty ledger.
               </div>
 
               {feedback ? (
-                <div style={feedbackStyle(false)}>{feedback}</div>
+                <div className={feedbackClassName(false)}>{feedback}</div>
               ) : null}
-              {error ? <div style={feedbackStyle(true)}>{error}</div> : null}
+              {error ? (
+                <div className={feedbackClassName(true)}>{error}</div>
+              ) : null}
 
-              <button style={buttonStyle(false)} disabled={isSubmitting}>
+              <button
+                className={buttonClassName(false)}
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? "Saving..." : "Apply Adjustment"}
               </button>
             </form>
@@ -496,9 +482,9 @@ function LoyaltyDetailPageContent() {
 
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
-    <div style={surfaceCardStyle}>
-      <div style={metricLabelStyle}>{label}</div>
-      <div style={metricValueStyle}>{value}</div>
+    <div className={surfaceCardClassName}>
+      <div className={metricLabelClassName}>{label}</div>
+      <div className={metricValueClassName}>{value}</div>
     </div>
   );
 }
@@ -528,280 +514,93 @@ function tierVariant(
   }
 }
 
-function badgeStyle(
+function badgeClassName(
   variant: "default" | "success" | "warning" | "danger",
-): CSSProperties {
-  const backgrounds: Record<string, string> = {
-    default: "var(--border-1, #e5dfd2)",
-    success: "#065f46",
-    warning: "#92400e",
-    danger: "#7f1d1d",
+): string {
+  const classNames: Record<typeof variant, string> = {
+    default: "bg-[var(--border-1,#e5dfd2)] text-[#93c5fd]",
+    success: "bg-[#065f46] text-[#dcfce7]",
+    warning: "bg-[#92400e] text-[#fef3c7]",
+    danger: "bg-[#7f1d1d] text-[#fee2e2]",
   };
-  const colors: Record<string, string> = {
-    default: "#93c5fd",
-    success: "#dcfce7",
-    warning: "#fef3c7",
-    danger: "#fee2e2",
-  };
-  return {
-    display: "inline-block",
-    padding: "4px 8px",
-    borderRadius: 4,
-    fontSize: 12,
-    fontWeight: 600,
-    backgroundColor: backgrounds[variant],
-    color: colors[variant],
-  };
+  return `inline-block rounded px-2 py-1 text-xs font-semibold ${classNames[variant]}`;
 }
 
-function qualificationBadgeStyle(state: string): CSSProperties {
+function qualificationBadgeClassName(state: string): string {
   const isQualified = state === "qualified" || state === "completed";
-  return {
-    display: "inline-block",
-    padding: "3px 8px",
-    borderRadius: 4,
-    fontSize: 11,
-    fontWeight: 600,
-    backgroundColor: isQualified
-      ? "rgba(57, 255, 20, 0.12)"
-      : "rgba(148, 163, 184, 0.12)",
-    color: isQualified ? "#39ff14" : "var(--t3, #8b8378)",
-    border: `1px solid ${isQualified ? "rgba(57, 255, 20, 0.25)" : "rgba(148, 163, 184, 0.25)"}`,
-    textTransform: "uppercase",
-    letterSpacing: "0.05em",
-  };
+  return [
+    "inline-block rounded border px-2 py-[3px] text-[11px] font-semibold uppercase tracking-[0.05em]",
+    isQualified
+      ? "border-[rgba(57,255,20,0.25)] bg-[rgba(57,255,20,0.12)] text-[#39ff14]"
+      : "border-[rgba(148,163,184,0.25)] bg-[rgba(148,163,184,0.12)] text-[var(--t3,#8b8378)]",
+  ].join(" ");
 }
 
-function buttonStyle(secondary: boolean): CSSProperties {
-  return {
-    padding: "8px 16px",
-    backgroundColor: secondary
-      ? "var(--border-1, #e5dfd2)"
-      : "var(--focus-ring, #0e7a53)",
-    color: secondary ? "var(--focus-ring, #0e7a53)" : "var(--bg-deep, #f7f3ed)",
-    border: secondary ? "1px solid var(--border-1, #e5dfd2)" : "none",
-    borderRadius: 4,
-    cursor: "pointer",
-    fontWeight: 600,
-    fontSize: 14,
-    opacity: 1,
-  };
+function buttonClassName(secondary: boolean): string {
+  return [
+    "cursor-pointer rounded px-4 py-2 text-sm font-semibold opacity-100",
+    secondary
+      ? "border border-[var(--border-1,#e5dfd2)] bg-[var(--border-1,#e5dfd2)] text-[var(--focus-ring,#0e7a53)]"
+      : "border-0 bg-[var(--focus-ring,#0e7a53)] text-[var(--bg-deep,#f7f3ed)] disabled:cursor-not-allowed",
+  ].join(" ");
 }
 
-function ledgerDeltaStyle(negative: boolean): CSSProperties {
-  return {
-    fontSize: 18,
-    fontWeight: 700,
-    color: negative ? "var(--no-text, #a8472d)" : "#39ff14",
-  };
+function ledgerDeltaClassName(negative: boolean): string {
+  return `text-lg font-bold ${
+    negative ? "text-[var(--no-text,#a8472d)]" : "text-[#39ff14]"
+  }`;
 }
 
-function feedbackStyle(isError: boolean): CSSProperties {
-  return {
-    color: isError ? "#fda4af" : "#86efac",
-    fontSize: 13,
-  };
+function feedbackClassName(isError: boolean): string {
+  return `text-[13px] ${isError ? "text-[#fda4af]" : "text-[#86efac]"}`;
 }
 
 /* ── Style constants ── */
 
-const pageTitleStyle: CSSProperties = {
-  fontSize: 28,
-  fontWeight: 700,
-  marginBottom: 8,
-  color: "var(--t1, #1a1a1a)",
-  display: "flex",
-  alignItems: "baseline",
-  gap: 12,
-  flexWrap: "wrap",
-};
-
-const lastAccrualBadgeStyle: CSSProperties = {
-  fontSize: 12,
-  fontWeight: 500,
-  color: "var(--t3, #8b8378)",
-  background: "rgba(15, 52, 96, 0.6)",
-  padding: "3px 8px",
-  borderRadius: 4,
-  border: "1px solid #1e3a5f",
-  whiteSpace: "nowrap",
-};
-
-const subtitleStyle: CSSProperties = {
-  margin: 0,
-  color: "var(--t2, #4a4a4a)",
-  fontSize: 14,
-};
-
-const headerBarStyle: CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-start",
-  gap: 16,
-  marginBottom: 24,
-  flexWrap: "wrap",
-};
-
-const inlineActionsStyle: CSSProperties = {
-  display: "flex",
-  gap: 10,
-  flexWrap: "wrap",
-};
-
-const metricsGridStyle: CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-  gap: 16,
-  marginBottom: 20,
-};
-
-const surfaceCardStyle: CSSProperties = {
-  padding: 16,
-  backgroundColor: "var(--surface-1, var(--t1, #1a1a1a))",
-  border: "1px solid var(--border-1, #e5dfd2)",
-  borderRadius: 8,
-};
-
-const metricLabelStyle: CSSProperties = {
-  fontSize: 12,
-  color: "var(--t3, #8b8378)",
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
-};
-
-const metricValueStyle: CSSProperties = {
-  fontSize: 24,
-  fontWeight: 700,
-  color: "var(--t1, #1a1a1a)",
-  marginTop: 8,
-};
-
-const gridStyle: CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "2fr 1fr",
-  gap: 20,
-};
-
-const sectionTitleStyle: CSSProperties = {
-  fontSize: 18,
-  fontWeight: 700,
-  color: "var(--t1, #1a1a1a)",
-  margin: "0 0 16px",
-};
-
-const ledgerListStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 12,
-};
-
-const ledgerItemStyle: CSSProperties = {
-  border: "1px solid var(--border-1, #e5dfd2)",
-  borderRadius: 8,
-  padding: 14,
-  background: "rgba(15, 52, 96, 0.35)",
-};
-
-const ledgerHeadStyle: CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 12,
-  alignItems: "center",
-  marginBottom: 8,
-};
-
-const ledgerTitleStyle: CSSProperties = {
-  fontSize: 15,
-  fontWeight: 600,
-  color: "var(--t1, #1a1a1a)",
-};
-
-const ledgerMetaStyle: CSSProperties = {
-  color: "var(--t3, #8b8378)",
-  fontSize: 12,
-  lineHeight: 1.5,
-};
-
-const formStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 12,
-};
-
-const labelStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 6,
-  color: "#cbd5e1",
-  fontSize: 13,
-  fontWeight: 600,
-};
-
-const inputStyle: CSSProperties = {
-  padding: "10px 12px",
-  backgroundColor: "var(--border-1, #e5dfd2)",
-  border: "1px solid var(--border-1, #e5dfd2)",
-  color: "var(--t1, #1a1a1a)",
-  borderRadius: 4,
-  fontSize: 14,
-};
-
-const textAreaStyle: CSSProperties = {
-  minHeight: 96,
-  padding: "10px 12px",
-  backgroundColor: "var(--border-1, #e5dfd2)",
-  border: "1px solid var(--border-1, #e5dfd2)",
-  color: "var(--t1, #1a1a1a)",
-  borderRadius: 4,
-  fontSize: 14,
-  resize: "vertical",
-};
-
-const helperTextStyle: CSSProperties = {
-  color: "var(--t3, #8b8378)",
-  fontSize: 12,
-  lineHeight: 1.5,
-};
+const pageTitleClassName =
+  "mb-2 flex flex-wrap items-baseline gap-3 text-[28px] font-bold text-[var(--t1,#1a1a1a)]";
+const lastAccrualBadgeClassName =
+  "whitespace-nowrap rounded border border-[#1e3a5f] bg-[rgba(15,52,96,0.6)] px-2 py-[3px] text-xs font-medium text-[var(--t3,#8b8378)]";
+const subtitleClassName = "m-0 text-sm text-[var(--t2,#4a4a4a)]";
+const headerBarClassName =
+  "mb-6 flex flex-wrap items-start justify-between gap-4";
+const inlineActionsClassName = "flex flex-wrap gap-2.5";
+const metricsGridClassName =
+  "mb-5 grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-4";
+const surfaceCardClassName =
+  "rounded-lg border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,var(--t1,#1a1a1a))] p-4";
+const metricLabelClassName =
+  "text-xs uppercase tracking-[0.08em] text-[var(--t3,#8b8378)]";
+const metricValueClassName = "mt-2 text-2xl font-bold text-[var(--t1,#1a1a1a)]";
+const gridClassName = "grid grid-cols-[2fr_1fr] gap-5";
+const sectionTitleClassName =
+  "m-0 mb-4 text-lg font-bold text-[var(--t1,#1a1a1a)]";
+const ledgerListClassName = "flex flex-col gap-3";
+const ledgerItemClassName =
+  "rounded-lg border border-[var(--border-1,#e5dfd2)] bg-[rgba(15,52,96,0.35)] p-[14px]";
+const ledgerHeadClassName = "mb-2 flex items-center justify-between gap-3";
+const ledgerTitleClassName =
+  "text-[15px] font-semibold text-[var(--t1,#1a1a1a)]";
+const ledgerMetaClassName = "text-xs leading-[1.5] text-[var(--t3,#8b8378)]";
+const formClassName = "flex flex-col gap-3";
+const labelClassName =
+  "flex flex-col gap-1.5 text-[13px] font-semibold text-[#cbd5e1]";
+const inputClassName =
+  "rounded border border-[var(--border-1,#e5dfd2)] bg-[var(--border-1,#e5dfd2)] px-3 py-2.5 text-sm text-[var(--t1,#1a1a1a)]";
+const textAreaClassName = `${inputClassName} min-h-24 resize-y`;
+const helperTextClassName = "text-xs leading-[1.5] text-[var(--t3,#8b8378)]";
 
 /* Progress bar styles */
 
-const progressContainerStyle: CSSProperties = {
-  background: "var(--surface-1, var(--t1, #1a1a1a))",
-  border: "1px solid var(--border-1, #e5dfd2)",
-  borderRadius: 8,
-  padding: 16,
-  marginBottom: 20,
-};
-
-const progressTrackStyle: CSSProperties = {
-  width: "100%",
-  height: 10,
-  background: "#0f172a",
-  borderRadius: 5,
-  overflow: "hidden",
-};
-
-function progressBarStyle(percent: number): CSSProperties {
-  return {
-    width: `${percent}%`,
-    height: "100%",
-    background: "linear-gradient(90deg, var(--focus-ring, #0e7a53), #39ff14)",
-    borderRadius: 5,
-    transition: "width 0.4s ease",
-  };
-}
+const progressContainerClassName =
+  "mb-5 rounded-lg border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,var(--t1,#1a1a1a))] p-4";
+const progressClassName =
+  "block h-2.5 w-full appearance-none overflow-hidden rounded-[5px] border-0 bg-[#0f172a] [&::-moz-progress-bar]:rounded-[5px] [&::-moz-progress-bar]:bg-[linear-gradient(90deg,var(--focus-ring,#0e7a53),#39ff14)] [&::-webkit-progress-bar]:rounded-[5px] [&::-webkit-progress-bar]:bg-[#0f172a] [&::-webkit-progress-value]:rounded-[5px] [&::-webkit-progress-value]:bg-[linear-gradient(90deg,var(--focus-ring,#0e7a53),#39ff14)] [&::-webkit-progress-value]:transition-all [&::-webkit-progress-value]:duration-[400ms] [&::-webkit-progress-value]:ease-[ease]";
 
 /* Referral row styles */
 
-const referralRowStyle: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 12,
-  padding: 12,
-  border: "1px solid var(--border-1, #e5dfd2)",
-  borderRadius: 8,
-  background: "rgba(15, 52, 96, 0.35)",
-};
+const referralRowClassName =
+  "flex items-center gap-3 rounded-lg border border-[var(--border-1,#e5dfd2)] bg-[rgba(15,52,96,0.35)] p-3";
 
 export default function LoyaltyDetailPage() {
   return (

@@ -161,25 +161,25 @@ const UsersPredictionOrdersContainer = ({
       render: (_: unknown, order: PredictionOrder) => (
         <div>
           {order.marketStatus ? (
-            <Typography.Text type="secondary" style={{ display: "block" }}>
+            <Typography.Text type="secondary" className="block">
               {t("page-prediction-ops:EXPORT_COLUMN_MARKET_STATUS")}:{" "}
               {order.marketStatus}
             </Typography.Text>
           ) : null}
           {order.winningOutcomeLabel ? (
-            <Typography.Text type="secondary" style={{ display: "block" }}>
+            <Typography.Text type="secondary" className="block">
               {t("page-prediction-ops:EXPORT_COLUMN_WINNING_OUTCOME")}:{" "}
               {order.winningOutcomeLabel}
             </Typography.Text>
           ) : null}
           {order.settledAt ? (
-            <Typography.Text type="secondary" style={{ display: "block" }}>
+            <Typography.Text type="secondary" className="block">
               {t("page-prediction-ops:EXPORT_COLUMN_SETTLED_AT")}:{" "}
               {new Date(order.settledAt).toLocaleString()}
             </Typography.Text>
           ) : null}
           {order.previousSettlementStatus ? (
-            <Typography.Text type="secondary" style={{ display: "block" }}>
+            <Typography.Text type="secondary" className="block">
               {t(
                 "page-prediction-ops:EXPORT_COLUMN_PREVIOUS_SETTLEMENT_STATUS",
               )}
@@ -187,25 +187,25 @@ const UsersPredictionOrdersContainer = ({
             </Typography.Text>
           ) : null}
           {order.previousSettledAt ? (
-            <Typography.Text type="secondary" style={{ display: "block" }}>
+            <Typography.Text type="secondary" className="block">
               {t("page-prediction-ops:EXPORT_COLUMN_PREVIOUS_SETTLED_AT")}:{" "}
               {new Date(order.previousSettledAt).toLocaleString()}
             </Typography.Text>
           ) : null}
           {order.previousSettledAmountUsd !== undefined ? (
-            <Typography.Text type="secondary" style={{ display: "block" }}>
+            <Typography.Text type="secondary" className="block">
               {t("page-prediction-ops:EXPORT_COLUMN_PREVIOUS_SETTLED_AMOUNT")}:
               ${Number(order.previousSettledAmountUsd || 0).toFixed(2)}
             </Typography.Text>
           ) : null}
           {order.settlementReason ? (
-            <Typography.Text type="secondary" style={{ display: "block" }}>
+            <Typography.Text type="secondary" className="block">
               {t("page-prediction-ops:EXPORT_COLUMN_SETTLEMENT_REASON")}:{" "}
               {order.settlementReason}
             </Typography.Text>
           ) : null}
           {order.settlementActor ? (
-            <Typography.Text type="secondary" style={{ display: "block" }}>
+            <Typography.Text type="secondary" className="block">
               {t("page-prediction-ops:EXPORT_COLUMN_SETTLEMENT_ACTOR")}:{" "}
               {order.settlementActor}
             </Typography.Text>

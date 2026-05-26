@@ -48,88 +48,28 @@ export default function Modal({
 
   if (!open) return null;
 
-  const backdropStyle: React.CSSProperties = {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 1000,
-  };
-
-  const contentStyle: React.CSSProperties = {
-    position: "relative",
-    backgroundColor: "#0f1225",
-    border: "1px solid #1a1f3a",
-    borderRadius: "8px",
-    maxWidth: `${maxWidth}px`,
-    width: "90%",
-    maxHeight: "90vh",
-    overflowY: "auto",
-    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5)",
-  };
-
-  const headerStyle: React.CSSProperties = {
-    padding: "20px",
-    borderBottom: "1px solid #1a1f3a",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  };
-
-  const titleStyle: React.CSSProperties = {
-    fontSize: "18px",
-    fontWeight: "700",
-    color: "#e2e8f0",
-    margin: 0,
-  };
-
-  const closeButtonStyle: React.CSSProperties = {
-    width: "32px",
-    height: "32px",
-    padding: 0,
-    backgroundColor: "transparent",
-    border: "none",
-    color: "#64748b",
-    fontSize: "20px",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: "all 0.2s",
-  };
-
-  const bodyStyle: React.CSSProperties = {
-    padding: "20px",
-  };
-
   return (
-    <div style={backdropStyle} onClick={onClose}>
-      <div style={contentStyle} onClick={(e) => e.stopPropagation()}>
-        <div style={headerStyle}>
-          {title && <h2 style={titleStyle}>{title}</h2>}
+    <div
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50"
+      onClick={onClose}
+    >
+      <div
+        className="relative max-h-[90vh] w-[90%] overflow-y-auto rounded-lg border border-[#1a1f3a] bg-[#0f1225] shadow-[0_20px_25px_-5px_rgba(0,0,0,0.5)]"
+        style={{ maxWidth }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-[#1a1f3a] p-5">
+          {title && (
+            <h2 className="m-0 text-lg font-bold text-slate-200">{title}</h2>
+          )}
           <button
             onClick={onClose}
-            style={closeButtonStyle}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLButtonElement;
-              el.style.color = "var(--accent)";
-              el.style.backgroundColor = "rgba(43, 228, 128, 0.1)";
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLButtonElement;
-              el.style.color = "#64748b";
-              el.style.backgroundColor = "transparent";
-            }}
+            className="flex h-8 w-8 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-xl text-slate-500 transition-all duration-200 hover:bg-[rgba(43,228,128,0.1)] hover:text-[var(--accent)]"
           >
             <X size={16} strokeWidth={2} />
           </button>
         </div>
-        {children && <div style={bodyStyle}>{children}</div>}
+        {children && <div className="p-5">{children}</div>}
       </div>
     </div>
   );

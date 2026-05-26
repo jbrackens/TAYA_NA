@@ -43,6 +43,11 @@ const api = createPredictionClient();
 // categories, in order. Slugs match the gateway's category slugs.
 const FEATURED_CATEGORY_SLUGS = ["sports", "crypto", "politics"] as const;
 
+const ROUTE_LOADING_CLASS = "p-20 text-center text-[13px] text-[var(--t3)]";
+const DISCOVERY_GRID_CLASS =
+  "grid grid-cols-[1fr_320px] items-start gap-5 max-[960px]:grid-cols-1";
+const HERO_CELL_CLASS = "min-w-0";
+
 // Open markets ranked by volume (most active first). The carousel then picks
 // the highest-volume market in each category that isn't already on an earlier
 // slide, so every slide shows a distinct market.
@@ -148,39 +153,13 @@ export default function PredictDiscoveryPage() {
   const featuredRest = featured.filter((m) => !carouselIds.has(m.id));
 
   if (loading) {
-    return (
-      <div
-        style={{
-          color: "var(--t3)",
-          fontSize: 13,
-          padding: 80,
-          textAlign: "center",
-        }}
-      >
-        {t("LOADING_MARKETS")}
-      </div>
-    );
+    return <div className={ROUTE_LOADING_CLASS}>{t("LOADING_MARKETS")}</div>;
   }
 
   return (
     <div>
-      <style>{`
-        .pred-discovery-grid {
-          display: grid;
-          grid-template-columns: 1fr 320px;
-          gap: 20px;
-          align-items: start;
-        }
-        .pred-discovery-grid > .pred-hero-cell {
-          min-width: 0;
-        }
-        @media (max-width: 960px) {
-          .pred-discovery-grid { grid-template-columns: 1fr; }
-        }
-      `}</style>
-
-      <div className="pred-discovery-grid">
-        <div className="pred-hero-cell">
+      <div className={DISCOVERY_GRID_CLASS}>
+        <div className={HERO_CELL_CLASS}>
           <FeaturedCarousel
             slides={featuredSlides}
             loading={loading}

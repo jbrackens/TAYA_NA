@@ -533,7 +533,7 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
         <Button
           type="link"
           onClick={() => openMarket(record.marketId)}
-          style={{ padding: 0 }}
+          className="!p-0"
         >
           {record.title}
         </Button>
@@ -710,7 +710,7 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
     <>
       <PageHeader title={t("HEADER")} backIcon={Boolean(marketId)} />
       {canViewPredictionOps && !canManagePredictionSettlement && (
-        <div style={{ marginBottom: 12 }}>
+        <div className="mb-3">
           <Alert
             type={canManagePredictionMarketState ? "info" : "warning"}
             showIcon
@@ -770,7 +770,7 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
                 value={categoryFilter}
                 list="prediction-category-list"
                 onChange={(event) => setCategoryFilter(event.target.value)}
-                style={{ width: 220 }}
+                className="w-[220px]"
               />
               <datalist id="prediction-category-list">
                 {categoryOptions.map((option) => (
@@ -783,7 +783,7 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
                 placeholder={t("FILTER_STATUS_PLACEHOLDER")}
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value)}
-                style={{ width: 180 }}
+                className="w-[180px]"
               />
               <Button
                 type="primary"
@@ -869,7 +869,7 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
                   </Card>
                 </Col>
               </Row>
-              <Typography.Title level={5} style={{ marginTop: 16 }}>
+              <Typography.Title level={5} className="!mt-4">
                 {t("DETAIL_OUTCOMES")}
               </Typography.Title>
               <Space wrap>
@@ -879,7 +879,7 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
                   </Tag>
                 ))}
               </Space>
-              <Typography.Title level={5} style={{ marginTop: 16 }}>
+              <Typography.Title level={5} className="!mt-4">
                 {t("DETAIL_RULES")}
               </Typography.Title>
               <ul>
@@ -887,7 +887,7 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
                   <li key={rule}>{rule}</li>
                 ))}
               </ul>
-              <Typography.Title level={5} style={{ marginTop: 16 }}>
+              <Typography.Title level={5} className="!mt-4">
                 {t("DETAIL_ORDERS")}
               </Typography.Title>
               {canViewPredictionOrderFlow ? (
@@ -907,7 +907,7 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
                   message={t("ORDER_FLOW_TRADER_ONLY")}
                 />
               )}
-              <Typography.Title level={5} style={{ marginTop: 16 }}>
+              <Typography.Title level={5} className="!mt-4">
                 {t("DETAIL_LIFECYCLE_HISTORY")}
               </Typography.Title>
               <Table
@@ -953,7 +953,7 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
                   },
                 ]}
               />
-              <Typography.Title level={5} style={{ marginTop: 16 }}>
+              <Typography.Title level={5} className="!mt-4">
                 {t("DETAIL_AUDIT_TRAIL")}
               </Typography.Title>
               <List
@@ -1058,7 +1058,7 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
           <Alert
             type="warning"
             showIcon
-            style={{ marginBottom: 16 }}
+            className="mb-4"
             message={t("LIFECYCLE_WARNING_TITLE")}
             description={
               openOrdersPreviewLoading
@@ -1073,7 +1073,7 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
           <Alert
             type="info"
             showIcon
-            style={{ marginBottom: 16 }}
+            className="mb-4"
             message={t("LIFECYCLE_INFO_TITLE")}
             description={
               openOrdersPreviewLoading
@@ -1084,15 +1084,12 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
         )}
         {(lifecycleAction === "resolve" || lifecycleAction === "resettle") &&
         lifecycleMarket ? (
-          <Space
-            direction="vertical"
-            style={{ width: "100%", marginBottom: 16 }}
-          >
+          <Space direction="vertical" className="mb-4 w-full">
             <Typography.Text>{t("LIFECYCLE_OUTCOME_LABEL")}</Typography.Text>
             <Select
               value={lifecycleOutcomeId || undefined}
               onChange={setLifecycleOutcomeId}
-              style={{ width: "100%" }}
+              className="w-full"
             >
               {lifecycleMarket.outcomes.map((outcome) => (
                 <Select.Option
@@ -1105,7 +1102,7 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
             </Select>
           </Space>
         ) : null}
-        <Space direction="vertical" style={{ width: "100%" }}>
+        <Space direction="vertical" className="w-full">
           <Typography.Text>{t("LIFECYCLE_REASON_LABEL")}</Typography.Text>
           <Input.TextArea
             rows={4}
@@ -1115,7 +1112,7 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
           />
         </Space>
         {requiresExplicitConfirmation ? (
-          <Space direction="vertical" style={{ width: "100%", marginTop: 16 }}>
+          <Space direction="vertical" className="mt-4 w-full">
             <Typography.Text>
               {t("LIFECYCLE_CONFIRMATION_LABEL", { token: confirmationToken })}
             </Typography.Text>
@@ -1126,7 +1123,7 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
             />
           </Space>
         ) : null}
-        <Typography.Title level={5} style={{ marginTop: 16 }}>
+        <Typography.Title level={5} className="!mt-4">
           {t("LIFECYCLE_MODAL_RECENT_HISTORY")}
         </Typography.Title>
         <List

@@ -34,13 +34,7 @@ export const OddsMovement: React.FC<OddsMovementProps> = ({
 
   if (!movement || !previousOdds) {
     return (
-      <span
-        style={{
-          fontSize: "14px",
-          fontWeight: 600,
-          color: "#e2e8f0",
-        }}
-      >
+      <span className="text-sm font-semibold text-[#e2e8f0]">
         {currentOdds.toFixed(2)}
       </span>
     );
@@ -53,73 +47,28 @@ export const OddsMovement: React.FC<OddsMovementProps> = ({
     ) : (
       <TrendingDown size={12} strokeWidth={2} />
     );
-  const arrowColor = movement === "up" ? "#22c55e" : "var(--no)";
-  const percentageColor = movement === "up" ? "#22c55e" : "var(--no)";
+  const movementColor =
+    movement === "up" ? "text-[#22c55e]" : "text-[var(--no)]";
 
   return (
-    <>
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-          @keyframes flashAnimation {
-            0% {
-              opacity: 1;
-              background-color: rgba(74, 126, 255, 0.25);
-            }
-            100% {
-              opacity: 1;
-              background-color: transparent;
-            }
-          }
-        `,
-        }}
-      />
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "6px",
-          padding: "4px 8px",
-          borderRadius: "4px",
-          animation: isFlashing ? "flashAnimation 0.6s ease-out" : "none",
-        }}
+    <div
+      className={`flex items-center gap-1.5 rounded px-2 py-1 transition-colors duration-700 ${isFlashing ? "bg-[rgba(74,126,255,0.25)]" : "bg-transparent"}`}
+    >
+      <span
+        className={`inline-flex min-w-5 items-center justify-center text-sm font-bold ${movementColor}`}
       >
-        <span
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            minWidth: "20px",
-            fontSize: "14px",
-            fontWeight: 700,
-            color: arrowColor,
-          }}
-        >
-          {arrow}
+        {arrow}
+      </span>
+      <span className="text-sm font-semibold text-[#e2e8f0]">
+        {currentOdds.toFixed(2)}
+      </span>
+      {showPercentage && (
+        <span className={`text-[11px] font-semibold ${movementColor}`}>
+          {percentageChange > 0 ? "+" : ""}
+          {percentageChange.toFixed(1)}%
         </span>
-        <span
-          style={{
-            fontSize: "14px",
-            fontWeight: 600,
-            color: "#e2e8f0",
-          }}
-        >
-          {currentOdds.toFixed(2)}
-        </span>
-        {showPercentage && (
-          <span
-            style={{
-              fontSize: "11px",
-              color: percentageColor,
-              fontWeight: 600,
-            }}
-          >
-            {percentageChange > 0 ? "+" : ""}
-            {percentageChange.toFixed(1)}%
-          </span>
-        )}
-      </div>
-    </>
+      )}
+    </div>
   );
 };
 

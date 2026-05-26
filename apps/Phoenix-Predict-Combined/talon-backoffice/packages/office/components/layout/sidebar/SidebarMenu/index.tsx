@@ -80,7 +80,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
       mode="inline"
       defaultSelectedKeys={[activeGroupItem?.key as string]}
       defaultOpenKeys={[activeGroupItem?.group as string]}
-      style={{ paddingTop: 64, height: "100vh", borderRight: 0 }}
+      className="h-screen border-r-0 pt-16"
       items={items}
     />
   );

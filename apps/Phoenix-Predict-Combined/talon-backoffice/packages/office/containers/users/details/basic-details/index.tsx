@@ -389,7 +389,7 @@ export const BasicDetails = ({
                   labelStyle={{ fontWeight: "bold" }}
                   label={t("HEADER_CARD_DETAILS_COMMS")}
                 >
-                  <Checkbox.Group style={{ width: "100%" }}>
+                  <Checkbox.Group className="w-full">
                     <Row>
                       <Col span={24}>
                         <Checkbox

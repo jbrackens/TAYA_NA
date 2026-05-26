@@ -2,7 +2,6 @@
 
 export const dynamic = "force-dynamic";
 
-import styled from "styled-components";
 import { PunterProfile, AccountActions } from "../../../components/users";
 import type {
   SettlementRow,
@@ -16,61 +15,6 @@ import {
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { adminFetch } from "../../../lib/admin-fetch";
-
-const PageTitle = styled.h1`
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 24px;
-  color: var(--t1, #1a1a1a);
-`;
-
-const ContentGrid = styled.div`
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const NotesCard = styled.div`
-  margin-top: 20px;
-  background-color: var(--surface-1, #fff);
-  border: 1px solid var(--border-1, #e5dfd2);
-  border-radius: 6px;
-  padding: 20px;
-`;
-
-const NotesTitle = styled.h3`
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--t1, #1a1a1a);
-`;
-
-const NoteItem = styled.div`
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border-1, #e5dfd2);
-  font-size: 13px;
-  color: var(--t1, #1a1a1a);
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const NoteMeta = styled.div`
-  margin-top: 4px;
-  font-size: 11px;
-  color: var(--t3, #8b8378);
-`;
-
-const EmptyNotes = styled.p`
-  margin: 0;
-  font-size: 13px;
-  color: var(--t3, #8b8378);
-`;
 
 interface PunterProfileData {
   id: string;
@@ -97,6 +41,13 @@ interface PunterNote {
   authorId?: string;
   createdAt: string;
 }
+
+const pageTitleClassName =
+  "mb-6 text-[28px] font-bold text-[var(--t1,#1a1a1a)]";
+const notesCardClassName =
+  "mt-5 rounded-md border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#fff)] p-5";
+const noteItemClassName =
+  "border-b border-[var(--border-1,#e5dfd2)] py-2.5 text-[13px] text-[var(--t1,#1a1a1a)] last:border-b-0";
 
 const toDisplayName = (email: string) =>
   email
@@ -273,7 +224,7 @@ function UserDetailPageContent() {
   if (isLoading) {
     return (
       <div>
-        <PageTitle>Loading...</PageTitle>
+        <h1 className={pageTitleClassName}>Loading...</h1>
         <LoadingSpinner centered={true} text="Loading user details..." />
       </div>
     );
@@ -282,7 +233,7 @@ function UserDetailPageContent() {
   if (error || !punter) {
     return (
       <div>
-        <PageTitle>Error</PageTitle>
+        <h1 className={pageTitleClassName}>Error</h1>
         <ErrorState
           title="Failed to load user"
           message={error || "User not found"}
@@ -295,9 +246,9 @@ function UserDetailPageContent() {
 
   return (
     <div>
-      <PageTitle>{punter.name}</PageTitle>
+      <h1 className={pageTitleClassName}>{punter.name}</h1>
 
-      <ContentGrid>
+      <div className="grid grid-cols-[2fr_1fr] gap-5 max-[900px]:grid-cols-1">
         <div>
           <PunterProfile
             punter={punter}
@@ -308,30 +259,34 @@ function UserDetailPageContent() {
           />
         </div>
 
-        <div style={{ height: "fit-content" }}>
+        <div className="h-fit">
           <AccountActions
             currentStatus={punter.status}
             onAction={handleAction}
           />
-          <NotesCard>
-            <NotesTitle>Admin Notes</NotesTitle>
+          <div className={notesCardClassName}>
+            <h3 className="m-0 mb-4 text-base font-semibold text-[var(--t1,#1a1a1a)]">
+              Admin Notes
+            </h3>
             {notes.length === 0 ? (
-              <EmptyNotes>No notes yet.</EmptyNotes>
+              <p className="m-0 text-[13px] text-[var(--t3,#8b8378)]">
+                No notes yet.
+              </p>
             ) : (
               notes.map((note) => (
-                <NoteItem key={note.id}>
+                <div className={noteItemClassName} key={note.id}>
                   {note.content}
-                  <NoteMeta>
+                  <div className="mt-1 text-[11px] text-[var(--t3,#8b8378)]">
                     {note.category} ·{" "}
                     {new Date(note.createdAt).toLocaleString()}
                     {note.authorId ? ` · ${note.authorId}` : ""}
-                  </NoteMeta>
-                </NoteItem>
+                  </div>
+                </div>
               ))
             )}
-          </NotesCard>
+          </div>
         </div>
-      </ContentGrid>
+      </div>
     </div>
   );
 }

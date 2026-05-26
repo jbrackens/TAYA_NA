@@ -19,6 +19,50 @@ interface KbaQuestion {
   options: string[];
 }
 
+const overlayClass =
+  "fixed inset-0 z-[9999] flex items-center justify-center bg-[rgba(0,0,0,0.7)]";
+const modalClass =
+  "w-full max-w-[480px] rounded-[16px] border border-[#1a1f3a] bg-[#111328] p-8";
+const selectTitleClass = "mb-2 text-[20px] font-bold text-[#f1f5f9]";
+const titleClass = "mb-4 text-[20px] font-bold text-[#f1f5f9]";
+const selectCopyClass = "mb-6 text-[14px] text-[#D3D3D3]";
+const errorNoticeClass =
+  "mb-3 rounded-[8px] bg-[rgba(239,68,68,0.08)] p-2.5 text-[13px] text-[var(--no)]";
+const selectErrorNoticeClass =
+  "mb-4 rounded-[8px] border border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.08)] p-2.5 text-[13px] text-[var(--no)]";
+const methodStackClass = "flex flex-col gap-3";
+const methodButtonClass =
+  "cursor-pointer rounded-[10px] border border-[#1e2243] bg-[#161a35] p-4 text-left text-[#f1f5f9] transition-[border-color] duration-150";
+const methodTitleClass = "mb-1 text-[15px] font-semibold";
+const methodDescriptionClass = "text-[12px] text-[#64748b]";
+const secondaryActionClass =
+  "mt-4 w-full cursor-pointer rounded-[8px] border border-[#1e2243] bg-transparent p-3 text-[14px] text-[#64748b]";
+const backActionClass =
+  "mt-2 w-full cursor-pointer rounded-[8px] border border-[#1e2243] bg-transparent p-3 text-[14px] text-[#64748b]";
+const questionBlockClass = "mb-4";
+const questionLabelClass =
+  "mb-2 block text-[13px] font-semibold text-[#D3D3D3]";
+const optionStackClass = "flex flex-col gap-1.5";
+const kbaOptionClass = (selected: boolean) =>
+  selected
+    ? "cursor-pointer rounded-[8px] border border-[var(--accent)] bg-[rgba(43,228,128,0.1)] px-3.5 py-2.5 text-left text-[13px] text-[var(--accent)]"
+    : "cursor-pointer rounded-[8px] border border-[#1e2243] bg-[#161a35] px-3.5 py-2.5 text-left text-[13px] text-[#D3D3D3]";
+const primaryActionClass =
+  "w-full cursor-pointer rounded-[10px] border-0 bg-[var(--accent)] p-3.5 text-[15px] font-bold text-white disabled:opacity-40";
+const formFieldClass = "mb-4";
+const formControlClass =
+  "w-full rounded-[8px] border border-[#1e2243] bg-[#0b0e1c] px-3.5 py-2.5 text-[14px] text-[#e2e8f0]";
+const fileHintClass = "mt-1.5 text-[11px] text-[#64748b]";
+const centerStateClass = "py-6 text-center";
+const hourglassClass = "mb-4 text-[32px]";
+const iconWrapClass = "mb-4";
+const bodyTextClass = "text-[14px] text-[#D3D3D3]";
+const bodyTextSpacedClass = "mb-4 text-[14px] text-[#D3D3D3]";
+const successTitleClass = "mb-2 text-[20px] font-bold text-[#22c55e]";
+const failedTitleClass = "mb-2 text-[20px] font-bold text-[var(--no)]";
+const retryButtonClass =
+  "cursor-pointer rounded-[10px] border-0 bg-[var(--accent)] px-6 py-3 font-bold text-white";
+
 /**
  * ID-Comply KBA/IDPV verification modal.
  *
@@ -206,167 +250,52 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
 
   if (!isOpen) return null;
 
-  const overlayStyle: React.CSSProperties = {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.7)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 9999,
-  };
-
-  const modalStyle: React.CSSProperties = {
-    backgroundColor: "#111328",
-    borderRadius: "16px",
-    padding: "32px",
-    maxWidth: "480px",
-    width: "100%",
-    border: "1px solid #1a1f3a",
-  };
-
   return (
-    <div style={overlayStyle} onClick={onClose}>
-      <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
+    <div className={overlayClass} onClick={onClose}>
+      <div className={modalClass} onClick={(e) => e.stopPropagation()}>
         {step === "select" && (
           <>
-            <h2
-              style={{
-                color: "#f1f5f9",
-                fontSize: "20px",
-                fontWeight: 700,
-                marginBottom: "8px",
-              }}
-            >
-              Identity Verification
-            </h2>
-            <p
-              style={{
-                color: "#D3D3D3",
-                fontSize: "14px",
-                marginBottom: "24px",
-              }}
-            >
+            <h2 className={selectTitleClass}>Identity Verification</h2>
+            <p className={selectCopyClass}>
               To comply with regulations, we need to verify your identity.
               Choose a verification method below.
             </p>
-            {error && (
-              <div
-                style={{
-                  padding: "10px",
-                  borderRadius: "8px",
-                  background: "rgba(239,68,68,0.08)",
-                  border: "1px solid rgba(239,68,68,0.2)",
-                  color: "var(--no)",
-                  fontSize: "13px",
-                  marginBottom: "16px",
-                }}
-              >
-                {error}
-              </div>
-            )}
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "12px" }}
-            >
+            {error && <div className={selectErrorNoticeClass}>{error}</div>}
+            <div className={methodStackClass}>
               <button
                 onClick={startKba}
                 disabled={loading}
-                style={{
-                  padding: "16px",
-                  borderRadius: "10px",
-                  background: "#161a35",
-                  border: "1px solid #1e2243",
-                  color: "#f1f5f9",
-                  cursor: "pointer",
-                  textAlign: "left",
-                  transition: "border-color 0.15s",
-                }}
+                className={methodButtonClass}
               >
-                <div
-                  style={{
-                    fontWeight: 600,
-                    fontSize: "15px",
-                    marginBottom: "4px",
-                  }}
-                >
+                <div className={methodTitleClass}>
                   Knowledge-Based Authentication
                 </div>
-                <div style={{ fontSize: "12px", color: "#64748b" }}>
+                <div className={methodDescriptionClass}>
                   Answer a few questions to verify your identity
                 </div>
               </button>
               <button
                 onClick={startIdpv}
                 disabled={loading}
-                style={{
-                  padding: "16px",
-                  borderRadius: "10px",
-                  background: "#161a35",
-                  border: "1px solid #1e2243",
-                  color: "#f1f5f9",
-                  cursor: "pointer",
-                  textAlign: "left",
-                  transition: "border-color 0.15s",
-                }}
+                className={methodButtonClass}
               >
-                <div
-                  style={{
-                    fontWeight: 600,
-                    fontSize: "15px",
-                    marginBottom: "4px",
-                  }}
-                >
-                  Document Verification
-                </div>
-                <div style={{ fontSize: "12px", color: "#64748b" }}>
+                <div className={methodTitleClass}>Document Verification</div>
+                <div className={methodDescriptionClass}>
                   Upload a government-issued ID and take a selfie
                 </div>
               </button>
               <button
                 onClick={() => setStep("upload")}
                 disabled={loading}
-                style={{
-                  padding: "16px",
-                  borderRadius: "10px",
-                  background: "#161a35",
-                  border: "1px solid #1e2243",
-                  color: "#f1f5f9",
-                  cursor: "pointer",
-                  textAlign: "left",
-                  transition: "border-color 0.15s",
-                }}
+                className={methodButtonClass}
               >
-                <div
-                  style={{
-                    fontWeight: 600,
-                    fontSize: "15px",
-                    marginBottom: "4px",
-                  }}
-                >
-                  Upload Documents
-                </div>
-                <div style={{ fontSize: "12px", color: "#64748b" }}>
+                <div className={methodTitleClass}>Upload Documents</div>
+                <div className={methodDescriptionClass}>
                   Upload a photo of your ID, passport, or proof of address
                 </div>
               </button>
             </div>
-            <button
-              onClick={onClose}
-              style={{
-                marginTop: "16px",
-                width: "100%",
-                padding: "12px",
-                borderRadius: "8px",
-                background: "transparent",
-                border: "1px solid #1e2243",
-                color: "#64748b",
-                cursor: "pointer",
-                fontSize: "14px",
-              }}
-            >
+            <button onClick={onClose} className={secondaryActionClass}>
               Cancel
             </button>
           </>
@@ -374,36 +303,11 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
 
         {step === "kba" && (
           <>
-            <h2
-              style={{
-                color: "#f1f5f9",
-                fontSize: "20px",
-                fontWeight: 700,
-                marginBottom: "16px",
-              }}
-            >
-              Answer Verification Questions
-            </h2>
+            <h2 className={titleClass}>Answer Verification Questions</h2>
             {kbaQuestions.map((q) => (
-              <div key={q.questionId} style={{ marginBottom: "16px" }}>
-                <label
-                  style={{
-                    color: "#D3D3D3",
-                    fontSize: "13px",
-                    fontWeight: 600,
-                    display: "block",
-                    marginBottom: "8px",
-                  }}
-                >
-                  {q.question}
-                </label>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "6px",
-                  }}
-                >
+              <div key={q.questionId} className={questionBlockClass}>
+                <label className={questionLabelClass}>{q.question}</label>
+                <div className={optionStackClass}>
                   {q.options.map((opt) => (
                     <button
                       key={opt}
@@ -413,26 +317,9 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
                           [q.questionId]: opt,
                         }))
                       }
-                      style={{
-                        padding: "10px 14px",
-                        borderRadius: "8px",
-                        fontSize: "13px",
-                        background:
-                          kbaAnswers[q.questionId] === opt
-                            ? "rgba(43, 228, 128,0.1)"
-                            : "#161a35",
-                        border: `1px solid ${
-                          kbaAnswers[q.questionId] === opt
-                            ? "var(--accent)"
-                            : "#1e2243"
-                        }`,
-                        color:
-                          kbaAnswers[q.questionId] === opt
-                            ? "var(--accent)"
-                            : "#D3D3D3",
-                        cursor: "pointer",
-                        textAlign: "left",
-                      }}
+                      className={kbaOptionClass(
+                        kbaAnswers[q.questionId] === opt,
+                      )}
                     >
                       {opt}
                     </button>
@@ -440,41 +327,13 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
                 </div>
               </div>
             ))}
-            {error && (
-              <div
-                style={{
-                  padding: "10px",
-                  borderRadius: "8px",
-                  background: "rgba(239,68,68,0.08)",
-                  color: "var(--no)",
-                  fontSize: "13px",
-                  marginBottom: "12px",
-                }}
-              >
-                {error}
-              </div>
-            )}
+            {error && <div className={errorNoticeClass}>{error}</div>}
             <button
               onClick={submitKba}
               disabled={
                 loading || Object.keys(kbaAnswers).length < kbaQuestions.length
               }
-              style={{
-                width: "100%",
-                padding: "14px",
-                borderRadius: "10px",
-                background: "var(--accent)",
-                border: "none",
-                color: "#fff",
-                fontWeight: 700,
-                fontSize: "15px",
-                cursor: "pointer",
-                opacity:
-                  loading ||
-                  Object.keys(kbaAnswers).length < kbaQuestions.length
-                    ? 0.4
-                    : 1,
-              }}
+              className={primaryActionClass}
             >
               {loading ? "Verifying..." : "Submit Answers"}
             </button>
@@ -483,40 +342,13 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
 
         {step === "upload" && (
           <>
-            <h2
-              style={{
-                color: "#f1f5f9",
-                fontSize: "20px",
-                fontWeight: 700,
-                marginBottom: "16px",
-              }}
-            >
-              Upload Documents
-            </h2>
-            <div style={{ marginBottom: "16px" }}>
-              <label
-                style={{
-                  color: "#D3D3D3",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  display: "block",
-                  marginBottom: "8px",
-                }}
-              >
-                Document Type
-              </label>
+            <h2 className={titleClass}>Upload Documents</h2>
+            <div className={formFieldClass}>
+              <label className={questionLabelClass}>Document Type</label>
               <select
                 value={documentType}
                 onChange={(e) => setDocumentType(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  borderRadius: "8px",
-                  border: "1px solid #1e2243",
-                  background: "#0b0e1c",
-                  color: "#e2e8f0",
-                  fontSize: "14px",
-                }}
+                className={formControlClass}
               >
                 <option value="passport">Passport</option>
                 <option value="drivers_license">Driver&apos;s License</option>
@@ -524,68 +356,24 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
                 <option value="proof_of_address">Proof of Address</option>
               </select>
             </div>
-            <div style={{ marginBottom: "16px" }}>
-              <label
-                style={{
-                  color: "#D3D3D3",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  display: "block",
-                  marginBottom: "8px",
-                }}
-              >
-                File
-              </label>
+            <div className={formFieldClass}>
+              <label className={questionLabelClass}>File</label>
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*,.pdf"
                 onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  borderRadius: "8px",
-                  border: "1px solid #1e2243",
-                  background: "#0b0e1c",
-                  color: "#e2e8f0",
-                  fontSize: "14px",
-                }}
+                className={formControlClass}
               />
-              <div
-                style={{ fontSize: "11px", color: "#64748b", marginTop: "6px" }}
-              >
+              <div className={fileHintClass}>
                 Accepted formats: JPEG, PNG, PDF. Max size: 10MB.
               </div>
             </div>
-            {error && (
-              <div
-                style={{
-                  padding: "10px",
-                  borderRadius: "8px",
-                  background: "rgba(239,68,68,0.08)",
-                  color: "var(--no)",
-                  fontSize: "13px",
-                  marginBottom: "12px",
-                }}
-              >
-                {error}
-              </div>
-            )}
+            {error && <div className={errorNoticeClass}>{error}</div>}
             <button
               onClick={handleDocumentUpload}
               disabled={loading || !uploadFile}
-              style={{
-                width: "100%",
-                padding: "14px",
-                borderRadius: "10px",
-                background: "var(--accent)",
-                border: "none",
-                color: "#fff",
-                fontWeight: 700,
-                fontSize: "15px",
-                cursor: "pointer",
-                opacity: loading || !uploadFile ? 0.4 : 1,
-              }}
+              className={primaryActionClass}
             >
               {loading ? "Uploading..." : "Upload Document"}
             </button>
@@ -595,17 +383,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
                 setError(null);
                 setUploadFile(null);
               }}
-              style={{
-                marginTop: "8px",
-                width: "100%",
-                padding: "12px",
-                borderRadius: "8px",
-                background: "transparent",
-                border: "1px solid #1e2243",
-                color: "#64748b",
-                cursor: "pointer",
-                fontSize: "14px",
-              }}
+              className={backActionClass}
             >
               Back
             </button>
@@ -613,19 +391,10 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
         )}
 
         {step === "processing" && (
-          <div style={{ textAlign: "center", padding: "24px 0" }}>
-            <div style={{ fontSize: "32px", marginBottom: "16px" }}>⏳</div>
-            <h2
-              style={{
-                color: "#f1f5f9",
-                fontSize: "20px",
-                fontWeight: 700,
-                marginBottom: "8px",
-              }}
-            >
-              Verification In Progress
-            </h2>
-            <p style={{ color: "#D3D3D3", fontSize: "14px" }}>
+          <div className={centerStateClass}>
+            <div className={hourglassClass}>⏳</div>
+            <h2 className={selectTitleClass}>Verification In Progress</h2>
+            <p className={bodyTextClass}>
               Please complete the verification in the opened window. This page
               will update automatically.
             </p>
@@ -633,48 +402,24 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
         )}
 
         {step === "success" && (
-          <div style={{ textAlign: "center", padding: "24px 0" }}>
-            <div style={{ marginBottom: "16px" }}>
+          <div className={centerStateClass}>
+            <div className={iconWrapClass}>
               <CheckCircle size={48} strokeWidth={2} />
             </div>
-            <h2
-              style={{
-                color: "#22c55e",
-                fontSize: "20px",
-                fontWeight: 700,
-                marginBottom: "8px",
-              }}
-            >
-              Verification Successful
-            </h2>
-            <p style={{ color: "#D3D3D3", fontSize: "14px" }}>
+            <h2 className={successTitleClass}>Verification Successful</h2>
+            <p className={bodyTextClass}>
               Your identity has been verified. You may now continue.
             </p>
           </div>
         )}
 
         {step === "failed" && (
-          <div style={{ textAlign: "center", padding: "24px 0" }}>
-            <div style={{ marginBottom: "16px" }}>
+          <div className={centerStateClass}>
+            <div className={iconWrapClass}>
               <XCircle size={48} strokeWidth={2} />
             </div>
-            <h2
-              style={{
-                color: "var(--no)",
-                fontSize: "20px",
-                fontWeight: 700,
-                marginBottom: "8px",
-              }}
-            >
-              Verification Failed
-            </h2>
-            <p
-              style={{
-                color: "#D3D3D3",
-                fontSize: "14px",
-                marginBottom: "16px",
-              }}
-            >
+            <h2 className={failedTitleClass}>Verification Failed</h2>
+            <p className={bodyTextSpacedClass}>
               {error ||
                 "Unable to verify your identity. Please try again or contact support."}
             </p>
@@ -683,15 +428,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
                 setStep("select");
                 setError(null);
               }}
-              style={{
-                padding: "12px 24px",
-                borderRadius: "10px",
-                background: "var(--accent)",
-                border: "none",
-                color: "#fff",
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
+              className={retryButtonClass}
             >
               Try Again
             </button>

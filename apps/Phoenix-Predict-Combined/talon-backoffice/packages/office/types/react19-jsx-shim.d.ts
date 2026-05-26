@@ -1,11 +1,10 @@
 // React 19 moved the JSX namespace from the global `JSX` namespace to
 // `React.JSX`. Libraries still typed against the global namespace
-// (styled-components v5 via @types/styled-components 5.x) resolve intrinsic
-// element props to `{}`, which breaks every `styled.<tag>` usage (TS2769:
-// children/onClick/value not assignable). Re-export React's JSX namespace into
-// the global namespace so those libraries type-check correctly. Actual JSX
-// checking uses the react-jsx runtime (React.JSX), so this only restores what
-// older library typings expect; it does not change app JSX semantics.
+// can resolve intrinsic element props to `{}` under older typings. Re-export
+// React's JSX namespace into the global namespace so those libraries type-check
+// correctly. Actual JSX checking uses the react-jsx runtime (React.JSX), so
+// this only restores what older library typings expect; it does not change app
+// JSX semantics.
 import type * as React from "react";
 
 declare global {

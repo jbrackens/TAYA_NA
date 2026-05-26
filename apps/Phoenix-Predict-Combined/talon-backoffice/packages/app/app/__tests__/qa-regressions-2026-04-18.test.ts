@@ -110,32 +110,28 @@ describe("compliance-client: cool-off stub", () => {
   });
 });
 
-// ── Bug D: MarketCard <style> must not be inside <Link> ───────────
+// ── Bug D: MarketCard styling must not be inside <Link> ───────────
 
-describe("MarketCard: style hoisted outside Link", () => {
+describe("MarketCard: Tailwind styling outside Link", () => {
   const source = read("components/prediction/MarketCard.tsx");
 
   it("does not render <style> as a child of <Link>", () => {
     // The bug: a <style>{...}</style> block was placed right after the
     // opening <Link> tag, so its text content was concatenated into
-    // the link's accessible name. The fix hoists styles out via a
-    // MarketCardStyles sibling component.
+    // the link's accessible name. The Tailwind migration keeps all styling
+    // in className strings and renders no local style block.
     const linkBlock = /<Link[\s\S]*?<\/Link>/.exec(source);
     assert.ok(linkBlock, "<Link> should exist in MarketCard");
     assert.ok(
       !linkBlock![0].includes("<style>"),
-      "Link element should not contain a <style> tag — use MarketCardStyles sibling instead",
+      "Link element should not contain a <style> tag — keep styling in Tailwind classes outside the Link body",
     );
   });
 
-  it("exposes a MarketCardStyles sibling component", () => {
+  it("does not reintroduce a MarketCardStyles style helper", () => {
     assert.ok(
-      /function\s+MarketCardStyles\s*\(/.test(source),
-      "MarketCardStyles component should exist as the style container",
-    );
-    assert.ok(
-      /<MarketCardStyles\s*\/>/.test(source),
-      "MarketCard should render <MarketCardStyles /> as a sibling of <Link>",
+      !/MarketCardStyles/.test(source),
+      "MarketCard should not rely on a local style helper after Tailwind migration",
     );
   });
 });
@@ -152,28 +148,31 @@ describe("MarketCard: style hoisted outside Link", () => {
 describe("MarketCard P8 composition", () => {
   const marketCardSource = read("components/prediction/MarketCard.tsx");
 
-  it("renders the .mkt-bar probability bar", () => {
+  it("renders the probability bar", () => {
     assert.ok(
-      /mkt-bar/.test(marketCardSource),
-      "MarketCard should render a YES/NO probability bar (.mkt-bar)",
+      /role="img"[\s\S]*?MARKET_BAR_LABEL/.test(marketCardSource),
+      "MarketCard should render an accessible YES/NO probability bar",
     );
   });
 
   it("renders percentage labels above the probability bar", () => {
     assert.ok(
-      marketCardSource.includes("mkt-bar-labels"),
+      /aria-hidden="true"[\s\S]*?\{yesPriceCents\}%[\s\S]*?\{noPriceCents\}%/.test(
+        marketCardSource,
+      ),
       "MarketCard should render a separate label row above the probability bar",
     );
     assert.ok(
-      marketCardSource.includes("mkt-bar-pct-yes") &&
-        marketCardSource.includes("mkt-bar-pct-no"),
+      marketCardSource.includes("text-[var(--yes-text)]") &&
+        marketCardSource.includes("text-[var(--no-text)]"),
       "MarketCard should expose YES and NO percentage labels outside the bar segments",
     );
   });
 
   it("keeps the probability bar slim and true to percentages", () => {
     assert.ok(
-      /\.mkt-bar\s*\{[\s\S]*?height:\s*14px/.test(marketCardSource),
+      /className="[^"]*h-3\.5/.test(marketCardSource) &&
+        /viewBox="0 0 100 14"/.test(marketCardSource),
       "MarketCard probability bar should be half-height",
     );
     assert.ok(
@@ -181,27 +180,23 @@ describe("MarketCard P8 composition", () => {
       "MarketCard should not inflate tiny bar segments just to fit labels",
     );
     assert.ok(
-      /style=\{\{\s*width:\s*`\$\{yesPriceCents\}%`\s*\}\}/.test(marketCardSource) &&
-        /style=\{\{\s*width:\s*`\$\{noPriceCents\}%`\s*\}\}/.test(marketCardSource),
+      /<rect\s+width=\{yesPriceCents\}/.test(marketCardSource) &&
+        /width=\{noPriceCents\}/.test(marketCardSource),
       "MarketCard bar segments should use the actual YES/NO percentages",
     );
   });
 
   it("keeps YES/NO action pills slimmer without losing tap size", () => {
-    const pillBlock = /\.mkt-pill\s*\{[\s\S]*?\}/.exec(marketCardSource);
-    assert.ok(pillBlock, "MarketCard should style YES/NO pills");
     assert.ok(
-      pillBlock![0].includes("min-height: 38px"),
+      marketCardSource.includes("min-h-9"),
       "YES/NO pills should be slimmer by default",
     );
     assert.ok(
-      pillBlock![0].includes("padding: 6px 12px"),
+      marketCardSource.includes("py-1.5"),
       "YES/NO pills should use slimmer vertical padding",
     );
     assert.ok(
-      /@media\s*\(max-width:\s*768px\)[\s\S]*?\.mkt-pill\s*\{[\s\S]*?min-height:\s*40px/.test(
-        marketCardSource,
-      ),
+      marketCardSource.includes("max-[768px]:min-h-10"),
       "YES/NO pills should keep a mobile-friendly tap size on small screens",
     );
   });
@@ -243,7 +238,7 @@ describe("MarketChart side colors", () => {
 
   it("colors implied probability with the selected side token", () => {
     assert.ok(
-      /className=\{`v \$\{side\}`\}/.test(marketChartSource),
+      /chartStatValueClass\(side\)/.test(marketChartSource),
       "MarketChart implied probability should use the selected side color",
     );
   });
@@ -255,33 +250,46 @@ describe("Navigation pill radius", () => {
   const marketChartSource = read("components/prediction/MarketChart.tsx");
   const globalsSource = read("globals.css");
 
+  function constValue(source: string, name: string): string {
+    const match = new RegExp(
+      `const\\s+${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`,
+    ).exec(source);
+    assert.ok(match, `${name} should be declared as a class constant`);
+    return match[1] ?? match[2] ?? "";
+  }
+
   it("uses soft rectangular corners for category filter pills", () => {
-    const categoryBlock = /\.ams-cat-pill\s*\{[\s\S]*?\}/.exec(allMarketsSource);
-    assert.ok(categoryBlock, "AllMarketsSection should style category pills");
+    const categoryPillClass = constValue(
+      allMarketsSource,
+      "CATEGORY_PILL_BASE_CLASS",
+    );
     assert.ok(
-      categoryBlock![0].includes("border-radius: 6px"),
+      categoryPillClass.includes("rounded-md"),
       "Category pills should use 6px corners",
     );
     assert.ok(
-      !categoryBlock![0].includes("var(--r-pill)") && !categoryBlock![0].includes("999px"),
+      !categoryPillClass.includes("var(--r-pill)") &&
+        !categoryPillClass.includes("999px"),
       "Category pills should not use capsule radius",
     );
   });
 
   it("uses soft rectangular corners for active segmented controls", () => {
-    for (const [label, source, selector] of [
-      ["closing-window shell", allMarketsSource, ".ams-time-pills"],
-      ["closing-window button", allMarketsSource, ".ams-time-pill"],
-      ["chart range shell", marketChartSource, ".mc-switcher"],
-      ["chart range button", marketChartSource, ".mc-switcher button"],
-      ["top navigation link", topBarSource, ".tb-link"],
+    for (const [label, source, constant] of [
+      ["closing-window shell", allMarketsSource, "TIME_PILLS_CLASS"],
+      ["closing-window button", allMarketsSource, "TIME_PILL_BASE_CLASS"],
+      ["chart range shell", marketChartSource, "CHART_SWITCHER_CLASS"],
+      ["chart range button", marketChartSource, "CHART_BUTTON_BASE_CLASS"],
+      ["top navigation link", topBarSource, "TOP_BAR_LINK_CLASS"],
     ] as const) {
-      const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const block = new RegExp(`${escaped}\\s*\\{[\\s\\S]*?\\}`).exec(source);
-      assert.ok(block, `${label} should have a style block`);
-      assert.ok(block![0].includes("border-radius: 6px"), `${label} should use 6px corners`);
+      const classValue = constValue(source, constant);
       assert.ok(
-        !block![0].includes("var(--r-pill)") && !block![0].includes("999px"),
+        classValue.includes("rounded-md"),
+        `${label} should use 6px Tailwind corners`,
+      );
+      assert.ok(
+        !classValue.includes("var(--r-pill)") &&
+          !classValue.includes("999px"),
         `${label} should not use capsule radius`,
       );
     }
@@ -303,18 +311,49 @@ describe("Navigation pill active colors", () => {
   const marketChartSource = read("components/prediction/MarketChart.tsx");
   const globalsSource = read("globals.css");
 
+  function functionBody(source: string, name: string): string {
+    const match = new RegExp(`function\\s+${name}\\([\\s\\S]*?^\\}`, "m").exec(
+      source,
+    );
+    assert.ok(match, `${name} should be declared`);
+    return match[0];
+  }
+
+  function constValue(source: string, name: string): string {
+    const match = new RegExp(
+      `const\\s+${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`,
+    ).exec(source);
+    assert.ok(match, `${name} should be declared as a class constant`);
+    return match[1] ?? match[2] ?? "";
+  }
+
   it("uses seafoam for category and segmented active fills", () => {
-    for (const [label, source, selector] of [
-      ["category active", allMarketsSource, ".ams-cat-pill.is-active"],
-      ["closing-window active", allMarketsSource, ".ams-time-pill.is-active"],
-      ["chart range active", marketChartSource, ".mc-switcher button.is-active"],
-      ["top navigation active", topBarSource, ".tb-link.is-active"],
+    for (const [label, activeClass] of [
+      [
+        "category active",
+        functionBody(allMarketsSource, "categoryPillClass"),
+      ],
+      [
+        "closing-window active",
+        functionBody(allMarketsSource, "timePillClass"),
+      ],
+      [
+        "chart range active",
+        functionBody(marketChartSource, "rangeButtonClass"),
+      ],
+      [
+        "top navigation active",
+        constValue(topBarSource, "TOP_BAR_LINK_ACTIVE_CLASS"),
+      ],
     ] as const) {
-      const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const block = new RegExp(`${escaped}\\s*\\{[\\s\\S]*?\\}`).exec(source);
-      assert.ok(block, `${label} should have a style block`);
-      assert.ok(block![0].includes("background: var(--yes)"), `${label} should use seafoam`);
-      assert.ok(!block![0].includes("background: var(--accent)"), `${label} should not use bright brand green`);
+      assert.ok(
+        activeClass.includes("bg-[var(--yes)]"),
+        `${label} should use seafoam`,
+      );
+      assert.ok(
+        !activeClass.includes("bg-[var(--accent)]"),
+        `${label} should not use bright brand green`,
+      );
     }
   });
 

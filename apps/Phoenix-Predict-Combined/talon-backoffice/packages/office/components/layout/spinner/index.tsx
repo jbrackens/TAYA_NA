@@ -3,7 +3,6 @@ import { Space, Spin, Typography } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import type { SpinProps } from "antd";
 import { Layout } from "@phoenix-ui/utils/dist/types/layout";
-import { Wrapper } from "./index.styled";
 
 const { Text } = Typography;
 
@@ -17,12 +16,14 @@ const Spinner = ({ inline, label, overlay, ...props }: SpinnerProps) => {
   const spin = (
     <Spin
       {...props}
-      indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
+      indicator={<LoadingOutlined className="text-2xl" spin />}
     />
   );
 
   const wrapWithOverlay = (component: ReactNode) => (
-    <Wrapper>{component}</Wrapper>
+    <Space className="absolute inset-0 z-[1] flex flex-row items-center justify-center bg-white/95">
+      {component}
+    </Space>
   );
 
   if (label) {

@@ -222,20 +222,14 @@ radius.lg    // 16px
 radius.full  // 9999px
 ```
 
-## Using with styled-components
+## Tailwind Composition
 
 ```typescript
-import styled from 'styled-components';
 import { Card } from '@phoenix-ui/design-system';
 
-const CustomCard = styled(Card)`
-  padding: ${({ theme }) => theme.spacing.lg};
-  background: ${({ theme }) => theme.colors.surface};
-  
-  ${({ theme }) => theme.breakpoints.md} {
-    padding: ${({ theme }) => theme.spacing.md};
-  }
-`;
+<Card className="bg-[#2d2d44] p-6 max-[899px]:p-4">
+  Custom content
+</Card>
 ```
 
 ## TypeScript Support
@@ -257,7 +251,7 @@ The design system includes a pre-configured dark theme based on the MG-live-scor
 
 When adding new components:
 1. Create the component in `src/components/`
-2. Use styled-components for styling
+2. Use Tailwind utility classes through `className`
 3. Export from `src/components/index.ts`
 4. Re-export from `src/index.ts`
 5. Add TypeScript types for all props

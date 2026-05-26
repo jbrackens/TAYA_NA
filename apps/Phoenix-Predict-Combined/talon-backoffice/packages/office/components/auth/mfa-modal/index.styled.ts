@@ -1,9 +1,16 @@
+import React from "react";
 import { Row } from "antd";
-import styled from "styled-components";
-import type { ComponentType, ComponentProps } from "react";
 
-const Row19 = Row as ComponentType<ComponentProps<typeof Row>>;
+const classNames = (...classes: Array<string | undefined>) =>
+  classes.filter(Boolean).join(" ");
 
-export const ErrorRow = styled(Row19)`
-  margin-bottom: 10px;
-`;
+const RowComponent = Row as React.ElementType;
+
+export const ErrorRow = ({
+  className,
+  ...props
+}: React.ComponentProps<typeof Row>) =>
+  React.createElement(RowComponent, {
+    ...props,
+    className: classNames("mb-[10px]", className),
+  });

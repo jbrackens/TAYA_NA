@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
 import UsersDetailsLimits from "..";
 import { render, screen } from "@testing-library/react";
-import { ThemeProvider } from "styled-components";
+import { ThemeProvider } from "components/app/theme-context";
 
 //declared becuase of TypeError: window.matchMedia is not a function
 Object.defineProperty(window, "matchMedia", {

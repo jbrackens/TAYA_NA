@@ -27,6 +27,14 @@ interface TierPillProps {
   refreshMs?: number;
 }
 
+const TIER_PILL_BASE_CLASS =
+  "inline-flex h-9 min-w-11 items-center whitespace-nowrap rounded-full border border-[color-mix(in_srgb,var(--tp-color)_30%,transparent)] bg-[color-mix(in_srgb,var(--tp-color)_14%,transparent)] px-[14px] text-xs font-bold tracking-[0.02em] text-[var(--t1)] no-underline [transition:background_120ms_ease,border-color_120ms_ease,box-shadow_400ms_ease] hover:border-[color-mix(in_srgb,var(--tp-color)_48%,transparent)] hover:bg-[color-mix(in_srgb,var(--tp-color)_22%,transparent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] max-[480px]:min-w-0 max-[480px]:px-2.5";
+const TIER_PILL_BLOOM_CLASS =
+  "shadow-[var(--accent-glow)] motion-reduce:shadow-none motion-reduce:transition-none";
+const TIER_SEPARATOR_CLASS = "mx-1.5 text-[var(--t3)] font-medium";
+const TIER_POINTS_CLASS =
+  "font-['IBM_Plex_Mono',_ui-monospace,_monospace] font-semibold [font-variant-numeric:tabular-nums]";
+
 export function TierPill({ refreshMs = 60_000 }: TierPillProps) {
   const { user } = useAuth();
   const [standing, setStanding] = useState<LoyaltyStanding | null>(null);
@@ -99,75 +107,23 @@ export function TierPill({ refreshMs = 60_000 }: TierPillProps) {
     : `Tier: ${standing.tierName}, ${points} points. Top tier.`;
 
   return (
-    <>
-      <style>{`
-        .tp-link {
-          display: inline-flex;
-          align-items: center;
-          min-width: 44px;
-          height: 36px;
-          padding: 0 14px;
-          border-radius: 999px;
-          border: 1px solid color-mix(in srgb, var(--tp-color) 30%, transparent);
-          background: color-mix(in srgb, var(--tp-color) 14%, transparent);
-          color: var(--t1);
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.02em;
-          text-decoration: none;
-          white-space: nowrap;
-          transition: background 120ms ease, border-color 120ms ease, box-shadow 400ms ease;
-        }
-        .tp-link:hover {
-          background: color-mix(in srgb, var(--tp-color) 22%, transparent);
-          border-color: color-mix(in srgb, var(--tp-color) 48%, transparent);
-        }
-        .tp-link.is-bloom {
-          box-shadow: var(--accent-glow);
-        }
-        .tp-link:focus-visible {
-          outline: 2px solid var(--accent);
-          outline-offset: 2px;
-        }
-        .tp-sep {
-          color: var(--t3);
-          margin: 0 6px;
-          font-weight: 500;
-        }
-        .tp-points {
-          font-variant-numeric: tabular-nums;
-          font-family: "IBM Plex Mono", ui-monospace, monospace;
-          font-weight: 600;
-        }
-        @media (max-width: 480px) {
-          .tp-link { padding: 0 10px; min-width: 0; }
-          .tp-points-long { display: none; }
-        }
-        @media (min-width: 481px) {
-          .tp-points-short { display: none; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .tp-link.is-bloom { box-shadow: none; transition: none; }
-        }
-      `}</style>
-      <Link
-        href="/rewards"
-        aria-label={ariaLabel}
-        className={`tp-link tp-tier-${standing.tier} ${bloom ? "is-bloom" : ""}`}
-        style={{ ["--tp-color" as string]: `var(--tier-${standing.tier})` }}
-      >
-        <span>{standing.tierName}</span>
-        <span className="tp-sep" aria-hidden="true">
-          ·
-        </span>
-        <span className="tp-points tp-points-long">
-          {formatPoints(points)} pts
-        </span>
-        <span className="tp-points tp-points-short">
-          {formatCompact(points)}
-        </span>
-      </Link>
-    </>
+    <Link
+      href="/rewards"
+      aria-label={ariaLabel}
+      className={`${TIER_PILL_BASE_CLASS} ${bloom ? TIER_PILL_BLOOM_CLASS : ""}`}
+      style={{ ["--tp-color" as string]: `var(--tier-${standing.tier})` }}
+    >
+      <span>{standing.tierName}</span>
+      <span className={TIER_SEPARATOR_CLASS} aria-hidden="true">
+        ·
+      </span>
+      <span className={`${TIER_POINTS_CLASS} max-[480px]:hidden`}>
+        {formatPoints(points)} pts
+      </span>
+      <span className={`${TIER_POINTS_CLASS} min-[481px]:hidden`}>
+        {formatCompact(points)}
+      </span>
+    </Link>
   );
 }
 

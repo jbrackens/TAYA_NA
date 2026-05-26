@@ -4,6 +4,25 @@ import React, { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { withdraw } from "../../lib/api/wallet-client";
 
+const pageClass = "min-h-screen bg-[var(--bg-deep)] p-6";
+const contentClass = "mx-auto max-w-[600px]";
+const titleClass = "mb-8 text-[28px] font-bold text-[var(--t1)]";
+const panelClass =
+  "flex flex-col gap-4 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-6";
+const formClass = "flex flex-col gap-4";
+const formGroupClass = "flex flex-col gap-1.5";
+const labelClass = "text-[13px] font-semibold text-[var(--t2)]";
+const inputClass =
+  "box-border w-full rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2.5 text-[13px] text-[var(--t1)] outline-none focus:border-[var(--accent)] focus:shadow-[0_0_0_2px_var(--accent-soft)] disabled:cursor-not-allowed disabled:opacity-60 [font-family:inherit]";
+const textareaClass = `${inputClass} min-h-[100px] resize-y`;
+const submitButtonClass =
+  "rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-4 py-3 text-[14px] font-semibold text-[#04140a] transition-[filter,transform] duration-150 enabled:cursor-pointer enabled:hover:brightness-[1.05] disabled:cursor-not-allowed disabled:opacity-60";
+const errorClass =
+  "rounded-[var(--r-rh-md)] border border-[var(--no)] bg-[rgba(244,63,94,0.1)] px-4 py-3 text-[13px] text-[var(--no)]";
+const successClass =
+  "rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--accent-soft)] px-4 py-3 text-[13px] text-[var(--accent)]";
+const noteClass = "mt-4 text-[12px] text-[var(--t3)]";
+
 export default function ChequeWithdrawalPage() {
   const { user } = useAuth();
   const [amount, setAmount] = useState("");
@@ -58,115 +77,23 @@ export default function ChequeWithdrawalPage() {
     }
   };
 
-  const containerStyle: React.CSSProperties = {
-    minHeight: "100vh",
-    padding: "24px",
-    background: "var(--bg-deep)",
-  };
-
-  const contentStyle: React.CSSProperties = {
-    maxWidth: "600px",
-    margin: "0 auto",
-  };
-
-  const titleStyle: React.CSSProperties = {
-    fontSize: "28px",
-    fontWeight: "700",
-    color: "var(--t1)",
-    marginBottom: "32px",
-  };
-
-  const formStyle: React.CSSProperties = {
-    backgroundColor: "var(--surface-1)",
-    border: "1px solid var(--border-1)",
-    borderRadius: "var(--r-rh-lg)",
-    padding: "24px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-  };
-
-  const formGroupStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "var(--t2)",
-  };
-
-  const inputStyle: React.CSSProperties = {
-    padding: "10px 12px",
-    backgroundColor: "var(--surface-2)",
-    border: "1px solid var(--border-1)",
-    borderRadius: "var(--r-rh-md)",
-    color: "var(--t1)",
-    fontSize: "13px",
-    fontFamily: "inherit",
-    outline: "none",
-  };
-
-  const textareaStyle: React.CSSProperties = {
-    ...inputStyle,
-    minHeight: "100px",
-    fontFamily: "inherit",
-    resize: "vertical",
-  };
-
-  const submitButtonStyle: React.CSSProperties = {
-    padding: "12px 16px",
-    backgroundColor: "var(--accent)",
-    color: "#04140a",
-    border: "none",
-    borderRadius: "var(--r-rh-md)",
-    fontWeight: "600",
-    fontSize: "14px",
-    cursor: loading ? "not-allowed" : "pointer",
-    transition: "transform 0.15s, filter 0.15s",
-    opacity: loading ? 0.6 : 1,
-  };
-
-  const errorStyle: React.CSSProperties = {
-    padding: "12px 16px",
-    backgroundColor: "rgba(244, 63, 94, 0.1)",
-    border: "1px solid var(--no)",
-    borderRadius: "var(--r-rh-md)",
-    color: "var(--no)",
-    fontSize: "13px",
-  };
-
-  const successStyle: React.CSSProperties = {
-    padding: "12px 16px",
-    backgroundColor: "var(--accent-soft)",
-    border: "1px solid var(--border-2)",
-    borderRadius: "var(--r-rh-md)",
-    color: "var(--accent)",
-    fontSize: "13px",
-  };
-
   return (
-    <div style={containerStyle}>
-      <div style={contentStyle}>
-        <h1 style={titleStyle}>Cheque Withdrawal</h1>
+    <div className={pageClass}>
+      <div className={contentClass}>
+        <h1 className={titleClass}>Cheque Withdrawal</h1>
 
-        <div style={formStyle}>
-          {error && <div style={errorStyle}>{error}</div>}
+        <div className={panelClass}>
+          {error && <div className={errorClass}>{error}</div>}
           {success && (
-            <div style={successStyle}>
+            <div className={successClass}>
               Withdrawal request submitted successfully. Please allow 5-7
               business days for processing.
             </div>
           )}
 
-          <form
-            onSubmit={handleSubmit}
-            style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-          >
-            <div style={formGroupStyle}>
-              <label style={labelStyle}>Amount (USD)</label>
+          <form onSubmit={handleSubmit} className={formClass}>
+            <div className={formGroupClass}>
+              <label className={labelClass}>Amount (USD)</label>
               <input
                 type="number"
                 step="0.01"
@@ -174,54 +101,30 @@ export default function ChequeWithdrawalPage() {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="Enter amount"
-                style={inputStyle}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "var(--accent)";
-                  e.currentTarget.style.boxShadow = "0 0 0 2px var(--accent-soft)";
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "var(--border-1)";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
+                className={inputClass}
                 disabled={loading}
               />
             </div>
 
-            <div style={formGroupStyle}>
-              <label style={labelStyle}>Payee Name</label>
+            <div className={formGroupClass}>
+              <label className={labelClass}>Payee Name</label>
               <input
                 type="text"
                 value={payeeName}
                 onChange={(e) => setPayeeName(e.target.value)}
                 placeholder="Name on cheque"
-                style={inputStyle}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "var(--accent)";
-                  e.currentTarget.style.boxShadow = "0 0 0 2px var(--accent-soft)";
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "var(--border-1)";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
+                className={inputClass}
                 disabled={loading}
               />
             </div>
 
-            <div style={formGroupStyle}>
-              <label style={labelStyle}>Mailing Address</label>
+            <div className={formGroupClass}>
+              <label className={labelClass}>Mailing Address</label>
               <textarea
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="Full mailing address"
-                style={textareaStyle}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "var(--accent)";
-                  e.currentTarget.style.boxShadow = "0 0 0 2px var(--accent-soft)";
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "var(--border-1)";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
+                className={textareaClass}
                 disabled={loading}
               />
             </div>
@@ -229,25 +132,17 @@ export default function ChequeWithdrawalPage() {
             <button
               type="submit"
               disabled={loading}
-              style={submitButtonStyle}
-              onMouseEnter={(e) => {
-                if (!loading) e.currentTarget.style.filter = "brightness(1.05)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.filter = "none";
-              }}
+              className={submitButtonClass}
             >
               {loading ? "Processing..." : "Request Cheque"}
             </button>
           </form>
 
-          <div
-            style={{ fontSize: "12px", color: "var(--t3)", marginTop: "16px" }}
-          >
-            <p style={{ margin: "0 0 8px 0" }}>
+          <div className={noteClass}>
+            <p className="m-0 mb-2">
               Cheque withdrawals typically take 5-7 business days to arrive.
             </p>
-            <p style={{ margin: 0 }}>
+            <p className="m-0">
               A fee may apply depending on your withdrawal amount.
             </p>
           </div>

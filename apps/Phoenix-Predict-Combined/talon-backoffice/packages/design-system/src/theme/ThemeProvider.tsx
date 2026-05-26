@@ -1,7 +1,5 @@
 import React from 'react';
-import { ThemeProvider as StyledThemeProvider } from 'styled-components';
 import GlobalStyle from './GlobalStyle';
-import { darkTheme } from './theme';
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -9,10 +7,10 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   return (
-    <StyledThemeProvider theme={darkTheme}>
+    <>
       <GlobalStyle />
       {children}
-    </StyledThemeProvider>
+    </>
   );
 };
 

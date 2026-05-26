@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { ThemeProvider } from "styled-components";
+import { ThemeProvider } from "components/app/theme-context";
 import { useRouter } from "next/router";
 import ProviderOpsContainer from "..";
 import { useApi, UseApi } from "../../../services/api/api-service";

@@ -59,7 +59,9 @@ export default function CurrentBalance({
 
   if (error) {
     return (
-      <div style={{ color: "var(--no)", fontSize: compact ? "13px" : "14px" }}>
+      <div
+        className={`${compact ? "text-[13px]" : "text-sm"} text-[var(--no)]`}
+      >
         {error}
       </div>
     );
@@ -74,9 +76,9 @@ export default function CurrentBalance({
 
   if (compact) {
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <span style={{ color: "#64748b", fontSize: "12px" }}>Balance:</span>
-        <span style={{ color: "#e2e8f0", fontWeight: "600", fontSize: "13px" }}>
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-slate-500">Balance:</span>
+        <span className="text-[13px] font-semibold text-slate-200">
           {availableAmount}
         </span>
       </div>
@@ -84,51 +86,18 @@ export default function CurrentBalance({
   }
 
   return (
-    <div
-      style={{
-        padding: "12px 16px",
-        backgroundColor: "#0a0e18",
-        border: "1px solid #1a1f3a",
-        borderRadius: "4px",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "8px",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <span style={{ fontSize: "12px", color: "#64748b" }}>
-            Available Balance
-          </span>
-          <span
-            style={{ fontSize: "16px", fontWeight: "600", color: "#e2e8f0" }}
-          >
+    <div className="rounded border border-[#1a1f3a] bg-[#0a0e18] px-4 py-3">
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-slate-500">Available Balance</span>
+          <span className="text-base font-semibold text-slate-200">
             {availableAmount}
           </span>
         </div>
         {balance.reservedBalance > 0 && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <span style={{ fontSize: "12px", color: "#64748b" }}>
-              Pending Balance
-            </span>
-            <span style={{ fontSize: "14px", color: "#cbd5e1" }}>
-              {pendingAmount}
-            </span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-500">Pending Balance</span>
+            <span className="text-sm text-slate-300">{pendingAmount}</span>
           </div>
         )}
       </div>

@@ -97,6 +97,70 @@ const MOCK_CHAT_MESSAGES: ChatMessage[] = [
   },
 ];
 
+const chatClasses = {
+  statusRow:
+    "flex min-h-[38px] items-center gap-2 border-b border-[var(--border-1)] bg-[var(--surface-2)] px-2.5 text-[11px] font-bold text-[var(--t3)]",
+  onlineDot:
+    "h-1.5 w-1.5 shrink-0 rounded-full bg-[#20d878] shadow-[0_0_10px_rgba(32,216,120,0.55)]",
+  reportToggle:
+    "inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 border-0 border-t border-[var(--border-1)] bg-[var(--surface-1)] text-xs font-bold text-[var(--t2)]",
+  mobileButton:
+    "fixed right-[18px] bottom-[calc(92px+env(safe-area-inset-bottom))] z-[95] inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--r-pill)] border-0 bg-[var(--accent)] px-3.5 text-[13px] font-bold text-[#061a10] shadow-[0_10px_28px_rgba(60,50,30,0.18)]",
+  mobileOverlay:
+    "fixed inset-0 z-[120] flex items-end justify-stretch bg-[rgba(18,16,12,0.28)] px-2.5 pt-0 pb-[max(10px,env(safe-area-inset-bottom))]",
+  mobileSheet:
+    "chat-mobile-sheet flex h-[min(78vh,680px)] min-h-[420px] w-full flex-col overflow-hidden rounded-2xl border border-[var(--border-1)] bg-[var(--surface-2)] shadow-[0_18px_48px_rgba(40,35,22,0.24)]",
+  mobileHeader:
+    "flex min-h-12 items-center justify-between gap-3 border-b border-[var(--border-1)] bg-[var(--surface-1)] py-0 pr-3 pl-3.5",
+  mobileTitle:
+    "flex min-w-0 items-center gap-2 text-[13px] font-extrabold text-[var(--t1)]",
+  mobileClose:
+    "grid h-[34px] w-[34px] cursor-pointer place-items-center rounded-[var(--r-rh-sm)] border-0 bg-[var(--surface-2)] text-[var(--t2)]",
+  sidebarBase:
+    "sticky top-[66px] left-0 z-[70] flex h-[calc(100vh-66px)] flex-col overflow-hidden border-x border-[var(--border-1)] bg-[var(--surface-2)] shadow-none",
+  sidebarOpen: "w-[260px] min-w-[260px]",
+  sidebarCollapsed: "w-[52px] min-w-[52px]",
+  railButton:
+    "inline-flex h-full w-full cursor-pointer flex-col items-center justify-start gap-2 border-0 border-r border-[var(--border-1)] bg-[var(--surface-1)] pt-3.5 text-xs font-extrabold text-[var(--t2)]",
+  railIcon:
+    "h-7 w-7 rounded-lg bg-[var(--accent)] p-1.5 text-[#061a10]",
+  reportForm:
+    "grid gap-2 border-t border-[var(--border-1)] bg-[var(--surface-2)] p-3",
+  reportRow: "flex items-center justify-between gap-2",
+  reportClose:
+    "grid h-7 w-7 cursor-pointer place-items-center rounded-[var(--r-rh-sm)] border-0 bg-[var(--surface-1)] text-[var(--t3)]",
+  reportLabel: "text-[11px] font-bold text-[var(--t2)]",
+  reportInput:
+    "w-full rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-1)] px-2.5 text-xs text-[var(--t1)] font-[inherit]",
+  reportTextArea:
+    "min-h-[72px] w-full resize-y rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-1)] px-2.5 py-2 text-xs text-[var(--t1)] font-[inherit]",
+  reportSubmit:
+    "min-h-9 cursor-pointer rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] text-xs font-extrabold text-[#061a10] disabled:cursor-not-allowed disabled:opacity-55",
+  reportStatus: "text-xs font-bold text-[var(--t2)]",
+  reportError: "text-[#b3261e]",
+  state:
+    "relative grid flex-1 place-items-center bg-[var(--surface-1)] p-3.5 text-center text-xs font-bold text-[var(--t3)]",
+  stream:
+    "relative flex min-h-0 flex-1 flex-col bg-[var(--surface-2)]",
+  messageList:
+    "flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto px-2.5 pt-3 pb-[62px]",
+  message:
+    "rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-1)] p-2.5",
+  messageMeta:
+    "flex items-center justify-between gap-2 text-[10px] font-bold text-[var(--t3)]",
+  messageUser:
+    "min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[var(--t2)]",
+  messageText: "mt-[5px] mb-0 text-xs font-[650] leading-[1.35] text-[var(--t1)]",
+  readonlyComposer:
+    "absolute right-2.5 bottom-3 left-2.5 flex min-h-[34px] items-center rounded-[7px] border border-[var(--border-1)] bg-[var(--surface-2)] px-2.5 text-left text-xs font-extrabold text-[var(--t3)] shadow-[0_8px_20px_rgba(48,42,28,0.08)]",
+  composer:
+    "absolute right-2.5 bottom-3 left-2.5 grid grid-cols-[1fr_auto] gap-2 rounded-lg border border-[var(--border-1)] bg-[var(--surface-1)] p-1.5 shadow-[0_8px_20px_rgba(48,42,28,0.08)]",
+  composerInput:
+    "h-8 min-w-0 border-0 bg-transparent text-xs font-bold text-[var(--t1)] outline-none placeholder:text-[var(--t3)]",
+  composerButton:
+    "h-8 rounded-[var(--r-pill)] border-0 bg-[var(--accent)] px-3 text-xs font-[850] text-[#061a10] disabled:cursor-not-allowed disabled:opacity-45",
+};
+
 export function ChatSidebar() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [isDesktop, setIsDesktop] = useState(false);
@@ -161,8 +225,8 @@ export function ChatSidebar() {
   const renderChatPanel = (showStatus = true) => (
     <>
       {showStatus && (
-        <div className="chat-status-row">
-          <span className="chat-online-dot" aria-hidden="true" />
+        <div className={chatClasses.statusRow}>
+          <span className={chatClasses.onlineDot} aria-hidden="true" />
           <span>Community online</span>
         </div>
       )}
@@ -174,9 +238,9 @@ export function ChatSidebar() {
         onSend={handleSendMessage}
       />
       {isAuthenticated && reportEnabled && (
-        <>
+          <>
           <button
-            className="chat-report-toggle"
+            className={chatClasses.reportToggle}
             type="button"
             onClick={() => setReportOpen((open) => !open)}
           >
@@ -199,7 +263,7 @@ export function ChatSidebar() {
       <>
         {!mobileOpen && (
           <button
-            className="chat-mobile-button"
+            className={chatClasses.mobileButton}
             type="button"
             aria-label="Open chat"
             onClick={() => setMobileOpen(true)}
@@ -209,20 +273,20 @@ export function ChatSidebar() {
           </button>
         )}
         {mobileOpen && (
-          <div className="chat-mobile-overlay">
+          <div className={chatClasses.mobileOverlay}>
             <section
-              className="chat-mobile-sheet"
+              className={chatClasses.mobileSheet}
               role="dialog"
               aria-modal="true"
               aria-label="Community chat"
             >
-              <div className="chat-mobile-header">
-                <div className="chat-mobile-title">
-                  <span className="chat-online-dot" aria-hidden="true" />
+              <div className={chatClasses.mobileHeader}>
+                <div className={chatClasses.mobileTitle}>
+                  <span className={chatClasses.onlineDot} aria-hidden="true" />
                   <span>Community chat</span>
                 </div>
                 <button
-                  className="chat-mobile-close"
+                  className={chatClasses.mobileClose}
                   type="button"
                   aria-label="Close chat"
                   onClick={() => setMobileOpen(false)}
@@ -239,15 +303,23 @@ export function ChatSidebar() {
   }
 
   return (
-    <aside className={`chat-sidebar ${collapsed ? "is-collapsed" : ""}`}>
+    <aside
+      className={`${chatClasses.sidebarBase} ${
+        collapsed ? chatClasses.sidebarCollapsed : chatClasses.sidebarOpen
+      }`}
+    >
       {collapsed ? (
         <button
-          className="chat-rail-button"
+          className={chatClasses.railButton}
           type="button"
           aria-label="Open chat"
           onClick={() => persistCollapsed(false)}
         >
-          <MessageCircle size={20} aria-hidden="true" />
+          <MessageCircle
+            size={20}
+            className={chatClasses.railIcon}
+            aria-hidden="true"
+          />
           <span>Chat</span>
         </button>
       ) : (
@@ -290,40 +362,53 @@ function ChatReportForm({
   };
 
   return (
-    <form className="chat-report-form" onSubmit={submit}>
-      <div className="chat-report-row">
-        <label htmlFor="chat-report-message">Message ID or link</label>
-        <button type="button" onClick={onClose} aria-label="Close report form">
+    <form className={chatClasses.reportForm} onSubmit={submit}>
+      <div className={chatClasses.reportRow}>
+        <label className={chatClasses.reportLabel} htmlFor="chat-report-message">
+          Message ID or link
+        </label>
+        <button
+          className={chatClasses.reportClose}
+          type="button"
+          onClick={onClose}
+          aria-label="Close report form"
+        >
           <X size={14} aria-hidden="true" />
         </button>
       </div>
       <input
         id="chat-report-message"
+        className={`${chatClasses.reportInput} h-[34px]`}
         value={messageId}
         onChange={(event) => setMessageId(event.target.value)}
         autoComplete="off"
         maxLength={255}
       />
-      <label htmlFor="chat-report-reason">Reason</label>
+      <label className={chatClasses.reportLabel} htmlFor="chat-report-reason">
+        Reason
+      </label>
       <textarea
         id="chat-report-reason"
+        className={chatClasses.reportTextArea}
         value={reason}
         onChange={(event) => setReason(event.target.value)}
         maxLength={1000}
         rows={3}
       />
       <button
-        className="chat-report-submit"
+        className={chatClasses.reportSubmit}
         type="submit"
         disabled={status === "saving" || !messageId.trim() || !reason.trim()}
       >
         {status === "saving" ? "Submitting..." : "Submit report"}
       </button>
       {status === "saved" && (
-        <div className="chat-report-status">Report submitted</div>
+        <div className={chatClasses.reportStatus}>Report submitted</div>
       )}
       {status === "error" && (
-        <div className="chat-report-status is-error">Report unavailable</div>
+        <div className={`${chatClasses.reportStatus} ${chatClasses.reportError}`}>
+          Report unavailable
+        </div>
       )}
     </form>
   );
@@ -343,12 +428,12 @@ function ChatFrame({
   onSend: (message: string) => void;
 }) {
   if (state === "loading" || state === "idle") {
-    return <div className="chat-state">Loading chat...</div>;
+    return <div className={chatClasses.state}>Loading chat...</div>;
   }
 
   if (state === "unavailable") {
     return (
-      <div className="chat-state">
+      <div className={chatClasses.state}>
         {message || "Chat unavailable"}
       </div>
     );
@@ -376,35 +461,40 @@ function NativeChatStream({
   };
 
   return (
-    <div className="chat-public-stream" aria-label="Community chat">
-      <div className="chat-message-list">
+    <div className={chatClasses.stream} aria-label="Community chat">
+      <div className={chatClasses.messageList}>
         {messages.map((chatMessage) => (
           <article
-            className="chat-message"
+            className={chatClasses.message}
             key={`${chatMessage.username}-${chatMessage.timestamp}-${chatMessage.content}`}
           >
-            <div className="chat-message-meta">
-              <span className="chat-message-user">{chatMessage.username}</span>
+            <div className={chatClasses.messageMeta}>
+              <span className={chatClasses.messageUser}>{chatMessage.username}</span>
               <time>{chatMessage.timestamp}</time>
             </div>
-            <p>{chatMessage.content}</p>
+            <p className={chatClasses.messageText}>{chatMessage.content}</p>
           </article>
         ))}
       </div>
       {readOnly ? (
-        <a className="chat-readonly-composer" href="/auth/login">
+        <a className={chatClasses.readonlyComposer} href="/auth/login">
           Login to chat
         </a>
       ) : (
-        <form className="chat-composer" onSubmit={submit}>
+        <form className={chatClasses.composer} onSubmit={submit}>
           <input
             aria-label="Chat message"
+            className={chatClasses.composerInput}
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             placeholder="Message community"
             maxLength={500}
           />
-          <button type="submit" disabled={!draft.trim()}>
+          <button
+            className={chatClasses.composerButton}
+            type="submit"
+            disabled={!draft.trim()}
+          >
             Send
           </button>
         </form>

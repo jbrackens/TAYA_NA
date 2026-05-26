@@ -446,7 +446,7 @@ function SportSvg({
       strokeWidth="1.75"
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={{ flexShrink: 0 }}
+      className="shrink-0"
     >
       {paths.map((p, i) => {
         if (p.fill) {

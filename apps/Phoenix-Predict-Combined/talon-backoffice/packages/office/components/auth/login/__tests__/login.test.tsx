@@ -3,7 +3,7 @@ import { LoginComponent } from "..";
 import { render, screen } from "@testing-library/react";
 // import userEvent from "@testing-library/user-event";
 import { useApi, UseApi } from "../../../../services/api/api-service";
-import { ThemeProvider } from "styled-components";
+import { ThemeProvider } from "components/app/theme-context";
 
 jest.mock("../../../../services/api/api-service");
 

@@ -1,28 +1,34 @@
 import React from "react";
-import { Logo as LogoStyled } from "./index.styles";
 
 type LogoProps = {
-  source: string;
+  source?: string;
   width?: number;
   height?: number;
+  unit?: string;
 };
 
 type ComponentProps = {
-  theme: LogoProps | undefined;
+  theme: LogoProps | string | undefined;
 };
 
 const Logo: React.FC<ComponentProps> = ({ theme }: ComponentProps) => {
-  const { source } = theme || {};
+  const logoTheme =
+    typeof theme === "object" && theme !== null ? theme : undefined;
+  const { source, width, height, unit = "px" } = logoTheme || {};
   if (source) {
+    const logoStyle = {
+      "--office-logo-width": width ? `${width}${unit}` : "100%",
+      "--office-logo-height": height ? `${height}${unit}` : "auto",
+      "--office-logo-image-max-height": width ? `${width * 0.75}px` : "none",
+    } as React.CSSProperties;
+
     return (
-      <LogoStyled
-        theme={{
-          ...theme,
-          unit: "px",
-        }}
+      <div
+        className="mr-16 flex h-[var(--office-logo-height)] max-h-full w-[var(--office-logo-width)] items-center justify-center [&_img]:max-h-[var(--office-logo-image-max-height)]"
+        style={logoStyle}
       >
         <img src={source} />
-      </LogoStyled>
+      </div>
     );
   }
   return null;

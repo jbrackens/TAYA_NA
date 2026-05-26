@@ -153,7 +153,7 @@ export default function PredictionSettlementsContainer() {
           <Space size={6}>
             <Text>{ticker}</Text>
             <Tooltip title={tip}>
-              <Tag color="red" style={{ marginLeft: 0 }}>
+              <Tag color="red" className="!ml-0">
                 drift
               </Tag>
             </Tooltip>
@@ -233,11 +233,7 @@ export default function PredictionSettlementsContainer() {
     <>
       <PageHeader title="Settlement Queue" />
       <Card>
-        <Row
-          justify="space-between"
-          align="middle"
-          style={{ marginBottom: 16 }}
-        >
+        <Row justify="space-between" align="middle" className="mb-4">
           <Col>
             <Text type="secondary">
               {markets.length} market{markets.length !== 1 ? "s" : ""} awaiting
@@ -273,7 +269,7 @@ export default function PredictionSettlementsContainer() {
         okButtonProps={{ danger: true }}
       >
         {selectedMarket && (
-          <div style={{ marginBottom: 16 }}>
+          <div className="mb-4">
             <Text strong>{selectedMarket.title}</Text>
             <br />
             <Text type="secondary">
@@ -285,10 +281,10 @@ export default function PredictionSettlementsContainer() {
         {selectedMarket?.settlementParams?.resolutionCriteria != null && (
           <Alert
             type="info"
-            style={{ marginBottom: 16 }}
+            className="mb-4"
             message="AI resolution criteria"
             description={
-              <pre style={{ whiteSpace: "pre-wrap", margin: 0, fontSize: 12 }}>
+              <pre className="m-0 whitespace-pre-wrap text-xs">
                 {JSON.stringify(
                   {
                     criteria:
@@ -306,7 +302,7 @@ export default function PredictionSettlementsContainer() {
           <Alert
             type="warning"
             showIcon
-            style={{ marginBottom: 16 }}
+            className="mb-4"
             message="Collateral drift detected on this market"
             description={`${driftOnSelected.adjustmentCount} adjustment(s), max drift ${formatUsd(
               Math.abs(driftOnSelected.maxDriftCents),

@@ -1,58 +1,6 @@
 "use client";
 
 import React, { ReactNode, ErrorInfo } from "react";
-import styled from "styled-components";
-
-const ErrorContainer = styled.div`
-  padding: 24px;
-  background-color: var(--surface-1, #ffffff);
-  border: 1px solid var(--no, #ff8b6b);
-  border-radius: 12px;
-  margin: 24px 0;
-`;
-
-const ErrorTitle = styled.h2`
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--no-text, #a8472d);
-  margin: 0 0 12px 0;
-`;
-
-const ErrorMessage = styled.p`
-  font-size: 14px;
-  color: var(--t2, #4a4a4a);
-  margin: 0 0 12px 0;
-  line-height: 1.6;
-`;
-
-const ErrorDetails = styled.pre`
-  background-color: var(--surface-2, #fcfaf5);
-  border: 1px solid var(--border-1, #e5dfd2);
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  color: var(--t2, #4a4a4a);
-  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  overflow-x: auto;
-  margin: 12px 0 0 0;
-`;
-
-const RetryButton = styled.button`
-  padding: 8px 16px;
-  background-color: var(--accent, #2be480);
-  color: #003827;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: var(--accent-lo, #1fa65e);
-    color: #ffffff;
-    transform: translateY(-1px);
-  }
-`;
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -101,21 +49,28 @@ export class ErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <ErrorContainer>
-          <ErrorTitle>Oops! Something went wrong</ErrorTitle>
-          <ErrorMessage>
+        <div className="my-6 rounded-xl border border-[var(--no,#ff8b6b)] bg-[var(--surface-1,#ffffff)] p-6">
+          <h2 className="m-0 mb-3 text-lg font-semibold text-[var(--no-text,#a8472d)]">
+            Oops! Something went wrong
+          </h2>
+          <p className="m-0 mb-3 text-sm leading-[1.6] text-[var(--t2,#4a4a4a)]">
             We encountered an unexpected error. Please try again or contact
             support if the problem persists.
-          </ErrorMessage>
+          </p>
           {process.env.NODE_ENV === "development" && this.state.error && (
-            <ErrorDetails>
+            <pre className="m-0 mt-3 overflow-x-auto rounded-lg border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-2,#fcfaf5)] p-3 font-['IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace] text-xs text-[var(--t2,#4a4a4a)]">
               {this.state.error.toString()}
               {"\n\n"}
               {this.state.errorInfo?.componentStack}
-            </ErrorDetails>
+            </pre>
           )}
-          <RetryButton onClick={this.handleRetry}>Try Again</RetryButton>
-        </ErrorContainer>
+          <button
+            className="mt-3 cursor-pointer rounded-lg border-0 bg-[var(--accent,#2be480)] px-4 py-2 font-semibold text-[#003827] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--accent-lo,#1fa65e)] hover:text-white"
+            onClick={this.handleRetry}
+          >
+            Try Again
+          </button>
+        </div>
       );
     }
 

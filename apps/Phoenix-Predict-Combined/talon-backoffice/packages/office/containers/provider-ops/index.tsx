@@ -887,7 +887,7 @@ const ProviderOpsContainer = () => {
     <>
       <PageHeader title={t("HEADER")} backIcon={false} />
 
-      <Card style={{ marginBottom: 16 }}>
+      <Card className="mb-4">
         <Space wrap>
           <Button type="primary" onClick={refreshFeed} loading={feedLoading}>
             {t("ACTION_REFRESH")}
@@ -898,7 +898,7 @@ const ProviderOpsContainer = () => {
             value={adapterFilter || undefined}
             onChange={(value) => setAdapterFilter(`${value || ""}`)}
             placeholder={t("FILTER_ADAPTER_PLACEHOLDER")}
-            style={{ minWidth: 220 }}
+            className="min-w-[220px]"
           >
             {adapterOptions.map((adapter) => (
               <Select.Option key={adapter} value={adapter}>
@@ -917,13 +917,13 @@ const ProviderOpsContainer = () => {
         </Space>
       </Card>
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+      <Row gutter={[16, 16]} className="mb-4">
         <Col xs={24} sm={12} lg={6}>
           <Card loading={feedLoading}>
             <Typography.Text type="secondary">
               {t("METRIC_RUNTIME")}
             </Typography.Text>
-            <Typography.Title level={3} style={{ margin: 0 }}>
+            <Typography.Title level={3} className="!m-0">
               {providerOpsState.enabled
                 ? t("VALUE_ENABLED")
                 : t("VALUE_DISABLED")}
@@ -935,7 +935,7 @@ const ProviderOpsContainer = () => {
             <Typography.Text type="secondary">
               {t("METRIC_STREAM_COUNT")}
             </Typography.Text>
-            <Typography.Title level={3} style={{ margin: 0 }}>
+            <Typography.Title level={3} className="!m-0">
               {providerOpsState.summary.streamCount}
             </Typography.Title>
           </Card>
@@ -945,7 +945,7 @@ const ProviderOpsContainer = () => {
             <Typography.Text type="secondary">
               {t("METRIC_UNHEALTHY_STREAMS")}
             </Typography.Text>
-            <Typography.Title level={3} style={{ margin: 0 }}>
+            <Typography.Title level={3} className="!m-0">
               {providerOpsState.summary.unhealthyStreams}
             </Typography.Title>
           </Card>
@@ -955,23 +955,23 @@ const ProviderOpsContainer = () => {
             <Typography.Text type="secondary">
               {t("METRIC_TOTAL_ERRORS")}
             </Typography.Text>
-            <Typography.Title level={3} style={{ margin: 0 }}>
+            <Typography.Title level={3} className="!m-0">
               {providerOpsState.summary.totalErrors}
             </Typography.Title>
           </Card>
         </Col>
       </Row>
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+      <Row gutter={[16, 16]} className="mb-4">
         <Col xs={24} lg={12}>
           <Card title={t("THRESHOLDS_TITLE")} loading={feedLoading}>
-            <Typography.Paragraph style={{ marginBottom: 8 }}>
+            <Typography.Paragraph className="!mb-2">
               {t("THRESHOLD_LAG_MS")}: {providerOpsState.thresholds.maxLagMs}
             </Typography.Paragraph>
-            <Typography.Paragraph style={{ marginBottom: 8 }}>
+            <Typography.Paragraph className="!mb-2">
               {t("THRESHOLD_GAPS")}: {providerOpsState.thresholds.maxGapCount}
             </Typography.Paragraph>
-            <Typography.Paragraph style={{ marginBottom: 0 }}>
+            <Typography.Paragraph className="!mb-0">
               {t("THRESHOLD_DUPLICATES")}:{" "}
               {providerOpsState.thresholds.maxDuplicateCount}
             </Typography.Paragraph>
@@ -979,26 +979,26 @@ const ProviderOpsContainer = () => {
         </Col>
         <Col xs={24} lg={12}>
           <Card title={t("CANCEL_METRICS_TITLE")} loading={feedLoading}>
-            <Typography.Paragraph style={{ marginBottom: 8 }}>
+            <Typography.Paragraph className="!mb-2">
               {t("CANCEL_TOTAL_ATTEMPTS")}:{" "}
               {providerOpsState.cancel.totalAttempts}
             </Typography.Paragraph>
-            <Typography.Paragraph style={{ marginBottom: 8 }}>
+            <Typography.Paragraph className="!mb-2">
               {t("CANCEL_TOTAL_RETRIES")}:{" "}
               {providerOpsState.cancel.totalRetries}
             </Typography.Paragraph>
-            <Typography.Paragraph style={{ marginBottom: 8 }}>
+            <Typography.Paragraph className="!mb-2">
               {t("CANCEL_TOTAL_SUCCESS")}:{" "}
               {providerOpsState.cancel.totalSuccess}
             </Typography.Paragraph>
-            <Typography.Paragraph style={{ marginBottom: 0 }}>
+            <Typography.Paragraph className="!mb-0">
               {t("CANCEL_TOTAL_FAILED")}: {providerOpsState.cancel.totalFailed}
             </Typography.Paragraph>
           </Card>
         </Col>
       </Row>
 
-      <Card title={t("ACK_SLA_SETTINGS_TITLE")} style={{ marginBottom: 16 }}>
+      <Card title={t("ACK_SLA_SETTINGS_TITLE")} className="mb-4">
         <Row gutter={[12, 12]}>
           <Col span={24}>
             <Typography.Text type="secondary">
@@ -1046,7 +1046,7 @@ const ProviderOpsContainer = () => {
               value={ackSLAForm.adapter || undefined}
               onChange={(value) => applyAdapterSLASettings(`${value || ""}`)}
               placeholder={t("ACK_SLA_FIELD_ADAPTER")}
-              style={{ width: "100%" }}
+              className="w-full"
             >
               {adapterOptions.map((adapter) => (
                 <Select.Option key={adapter} value={adapter}>
@@ -1105,16 +1105,13 @@ const ProviderOpsContainer = () => {
               {t("ACK_SLA_EFFECTIVE_TITLE")}
             </Typography.Text>
             {effectiveAcknowledgementSLASettings.length === 0 ? (
-              <Typography.Paragraph style={{ marginBottom: 0 }}>
+              <Typography.Paragraph className="!mb-0">
                 {t("ACK_SLA_EFFECTIVE_EMPTY")}
               </Typography.Paragraph>
             ) : (
-              <Space direction="vertical" size={4} style={{ width: "100%" }}>
+              <Space direction="vertical" size={4} className="w-full">
                 {effectiveAcknowledgementSLASettings.map((setting) => (
-                  <Typography.Paragraph
-                    key={setting.adapter}
-                    style={{ marginBottom: 0 }}
-                  >
+                  <Typography.Paragraph key={setting.adapter} className="!mb-0">
                     {setting.adapter}: {setting.warningMinutes}/
                     {setting.criticalMinutes} (
                     {setting.source === "override"
@@ -1129,7 +1126,7 @@ const ProviderOpsContainer = () => {
         </Row>
       </Card>
 
-      <Card title={t("STREAMS_TABLE_TITLE")} style={{ marginBottom: 16 }}>
+      <Card title={t("STREAMS_TABLE_TITLE")} className="mb-4">
         <Table
           rowKey={(record: Record<string, any>) =>
             `${record.adapter}:${record.stream}:${record.updatedAt || ""}`
@@ -1141,50 +1138,50 @@ const ProviderOpsContainer = () => {
         />
       </Card>
 
-      <Card title={t("TRIAGE_SUMMARY_TITLE")} style={{ marginBottom: 16 }}>
+      <Card title={t("TRIAGE_SUMMARY_TITLE")} className="mb-4">
         <Row gutter={[12, 12]}>
           <Col xs={24} sm={12} md={8} lg={6}>
-            <Typography.Paragraph style={{ marginBottom: 0 }}>
+            <Typography.Paragraph className="!mb-0">
               {t("TRIAGE_UNHEALTHY")}: {triageSummary.unhealthy}
             </Typography.Paragraph>
           </Col>
           <Col xs={24} sm={12} md={8} lg={6}>
-            <Typography.Paragraph style={{ marginBottom: 0 }}>
+            <Typography.Paragraph className="!mb-0">
               {t("TRIAGE_HEALTHY")}: {triageSummary.healthy}
             </Typography.Paragraph>
           </Col>
           <Col xs={24} sm={12} md={8} lg={6}>
-            <Typography.Paragraph style={{ marginBottom: 0 }}>
+            <Typography.Paragraph className="!mb-0">
               {t("TRIAGE_LAG")}: {triageSummary.lag}
             </Typography.Paragraph>
           </Col>
           <Col xs={24} sm={12} md={8} lg={6}>
-            <Typography.Paragraph style={{ marginBottom: 0 }}>
+            <Typography.Paragraph className="!mb-0">
               {t("TRIAGE_GAP")}: {triageSummary.gap}
             </Typography.Paragraph>
           </Col>
           <Col xs={24} sm={12} md={8} lg={6}>
-            <Typography.Paragraph style={{ marginBottom: 0 }}>
+            <Typography.Paragraph className="!mb-0">
               {t("TRIAGE_DUPLICATE")}: {triageSummary.duplicate}
             </Typography.Paragraph>
           </Col>
           <Col xs={24} sm={12} md={8} lg={6}>
-            <Typography.Paragraph style={{ marginBottom: 0 }}>
+            <Typography.Paragraph className="!mb-0">
               {t("TRIAGE_ERROR")}: {triageSummary.error}
             </Typography.Paragraph>
           </Col>
           <Col xs={24} sm={12} md={8} lg={6}>
-            <Typography.Paragraph style={{ marginBottom: 0 }}>
+            <Typography.Paragraph className="!mb-0">
               {t("TRIAGE_ACKNOWLEDGED")}: {activeAcknowledgementsCount}
             </Typography.Paragraph>
           </Col>
           <Col xs={24} sm={12} md={8} lg={6}>
-            <Typography.Paragraph style={{ marginBottom: 0 }}>
+            <Typography.Paragraph className="!mb-0">
               {t("TRIAGE_RESOLVED")}: {resolvedAcknowledgementsCount}
             </Typography.Paragraph>
           </Col>
           <Col xs={24} sm={12} md={8} lg={6}>
-            <Typography.Paragraph style={{ marginBottom: 0 }}>
+            <Typography.Paragraph className="!mb-0">
               {t("TRIAGE_ACK_STALE")}: {staleAcknowledgementsCount}
             </Typography.Paragraph>
           </Col>
@@ -1195,7 +1192,7 @@ const ProviderOpsContainer = () => {
 
       <CashierReviewPanel />
 
-      <Card title={t("ACK_FORM_TITLE")} style={{ marginBottom: 16 }}>
+      <Card title={t("ACK_FORM_TITLE")} className="mb-4">
         <Row gutter={[12, 12]}>
           <Col xs={24} md={6}>
             <Select
@@ -1207,7 +1204,7 @@ const ProviderOpsContainer = () => {
                 }))
               }
               placeholder={t("ACK_FIELD_STREAM")}
-              style={{ width: "100%" }}
+              className="w-full"
             >
               {sortedStreams.map((stream) => {
                 const streamKey = buildStreamKey(stream);
@@ -1229,7 +1226,7 @@ const ProviderOpsContainer = () => {
                 }))
               }
               placeholder={t("ACK_FIELD_ACTION")}
-              style={{ width: "100%" }}
+              className="w-full"
             >
               <Select.Option value="acknowledge">
                 {t("ACK_ACTION_ACKNOWLEDGE")}
@@ -1379,7 +1376,7 @@ const ProviderOpsContainer = () => {
 
         {lastCancelResult && (
           <Alert
-            style={{ marginTop: 16 }}
+            className="mt-4"
             type={
               lastCancelResult.state === "cancelled" ? "success" : "warning"
             }
@@ -1400,7 +1397,7 @@ const ProviderOpsContainer = () => {
         )}
       </Card>
 
-      <Card title={t("BET_INTERVENTION_TITLE")} style={{ marginTop: 16 }}>
+      <Card title={t("BET_INTERVENTION_TITLE")} className="mt-4">
         <Row gutter={[12, 12]}>
           <Col xs={24} md={8}>
             <Input
@@ -1423,7 +1420,7 @@ const ProviderOpsContainer = () => {
                   action: value as BetLifecycleAction,
                 }))
               }
-              style={{ width: "100%" }}
+              className="w-full"
             >
               <Select.Option value="cancel">
                 {t("BET_ACTION_CANCEL")}
@@ -1511,7 +1508,7 @@ const ProviderOpsContainer = () => {
         </Row>
         {lastBetInterventionResult && (
           <Alert
-            style={{ marginTop: 16 }}
+            className="mt-4"
             type="info"
             message={t("BET_LAST_RESULT")}
             description={

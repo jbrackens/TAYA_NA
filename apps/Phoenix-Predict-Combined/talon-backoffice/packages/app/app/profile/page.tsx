@@ -30,33 +30,56 @@ const tabValues: TabType[] = (
   ["settings", "limits", "verification", "security"] as TabType[]
 ).filter((v) => FEATURE_LIMITS || v !== "limits");
 
+const statusBadgeClasses: Record<string, string> = {
+  verified:
+    "inline-block rounded-[4px] bg-[#1e7e34] px-3 py-1 text-[12px] font-semibold text-[#22c55e]",
+  pending:
+    "inline-block rounded-[4px] bg-[#665700] px-3 py-1 text-[12px] font-semibold text-[#fbbf24]",
+  failed:
+    "inline-block rounded-[4px] bg-[#7f1d1d] px-3 py-1 text-[12px] font-semibold text-[var(--no)]",
+  unverified:
+    "inline-block rounded-[4px] bg-[#3a3a3a] px-3 py-1 text-[12px] font-semibold text-[var(--t3)]",
+  default:
+    "inline-block rounded-[4px] bg-[#0f3460] px-3 py-1 text-[12px] font-semibold text-[#4a7eff]",
+};
+
+const tabListClass = "mb-6 flex border-b border-[var(--border-1)]";
+const tabButtonClass = (active: boolean) =>
+  active
+    ? "cursor-pointer border-0 border-b-2 border-b-[var(--accent)] bg-transparent px-4 py-3 text-[14px] font-medium text-[var(--accent)]"
+    : "cursor-pointer border-0 bg-transparent px-4 py-3 text-[14px] font-medium text-[var(--t2)]";
+
+const inputClass =
+  "box-border w-full rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2 text-[14px] text-[var(--t1)]";
+const labelClass = "mb-2 block text-[14px] font-semibold text-[var(--t1)]";
+const buttonClass =
+  "cursor-pointer rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-5 py-2.5 text-[14px] font-semibold text-[#04140a] disabled:cursor-not-allowed disabled:opacity-60";
+const loadingClass = "max-w-[800px] p-10 text-[var(--t3)]";
+const pageClass = "max-w-[800px]";
+const pageTitleClass = "mb-6 text-[28px] font-bold text-[var(--t1)]";
+const cardClass =
+  "mb-6 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-6";
+const sectionClass = "mb-6";
+const sectionTitleClass = "mb-4 text-[16px] font-semibold text-[var(--t1)]";
+const twoColumnGridClass = "grid grid-cols-2 gap-4";
+const hintClass = "mt-2 text-[12px] text-[var(--t3)]";
+const preferenceSectionClass = "border-t border-[var(--border-1)] pt-6";
+const fieldClass = "mb-4";
+const verificationRowClass =
+  "flex justify-between border-b border-[var(--border-1)] py-3";
+const mutedTextClass = "text-[14px] text-[var(--t3)]";
+const securityRowClass =
+  "flex items-center justify-between border-b border-[var(--border-1)] py-4";
+const accountValueClass = "font-semibold text-[var(--t1)]";
+const checkboxSwitchClass = "h-6 w-[50px] cursor-pointer";
+
 function StatusBadge({
   status,
 }: {
   status?: "verified" | "pending" | "failed" | "unverified";
 }) {
-  const statusColors: Record<string, { bg: string; color: string }> = {
-    verified: { bg: "#1e7e34", color: "#22c55e" },
-    pending: { bg: "#665700", color: "#fbbf24" },
-    failed: { bg: "#7f1d1d", color: "var(--no)" },
-    unverified: { bg: "#3a3a3a", color: "var(--t3)" },
-    default: { bg: "#0f3460", color: "#4a7eff" },
-  };
-
-  const colors = status ? statusColors[status] : statusColors.default;
-
   return (
-    <span
-      style={{
-        display: "inline-block",
-        padding: "4px 12px",
-        borderRadius: "4px",
-        fontSize: "12px",
-        fontWeight: "600",
-        backgroundColor: colors.bg,
-        color: colors.color,
-      }}
-    >
+    <span className={statusBadgeClasses[status ?? "default"]}>
       {status === "verified" && "Verified"}
       {status === "pending" && "Pending"}
       {status === "failed" && "Failed"}
@@ -77,28 +100,12 @@ function TabNavigation({
   );
 
   return (
-    <div
-      style={{
-        display: "flex",
-        borderBottom: "1px solid var(--border-1)",
-        marginBottom: "24px",
-      }}
-    >
+    <div className={tabListClass}>
       {tabs.map((label, index) => (
         <button
           key={index}
           onClick={() => onChange(index)}
-          style={{
-            padding: "12px 16px",
-            border: "none",
-            backgroundColor: "transparent",
-            color: activeTabIndex === index ? "var(--accent)" : "var(--t2)",
-            borderBottom:
-              activeTabIndex === index ? "2px solid var(--accent)" : "none",
-            cursor: "pointer",
-            fontSize: "14px",
-            fontWeight: "500",
-          }}
+          className={tabButtonClass(activeTabIndex === index)}
         >
           {label}
         </button>
@@ -106,36 +113,6 @@ function TabNavigation({
     </div>
   );
 }
-
-const inputStyle = {
-  width: "100%",
-  padding: "8px 12px",
-  backgroundColor: "var(--surface-2)",
-  border: "1px solid var(--border-1)",
-  borderRadius: "var(--r-rh-md)",
-  color: "var(--t1)",
-  fontSize: "14px",
-  boxSizing: "border-box" as const,
-};
-
-const labelStyle = {
-  display: "block",
-  fontSize: "14px",
-  fontWeight: "600" as const,
-  marginBottom: "8px",
-  color: "var(--t1)",
-};
-
-const btnStyle = {
-  padding: "10px 20px",
-  backgroundColor: "var(--accent)",
-  color: "#04140a",
-  border: "none",
-  borderRadius: "var(--r-rh-md)",
-  fontSize: "14px",
-  fontWeight: "600" as const,
-  cursor: "pointer",
-};
 
 const TIMEZONES = [
   "UTC",
@@ -401,35 +378,14 @@ export default function ProfilePage() {
   }, [user?.id, toast]);
 
   if (profileLoading) {
-    return (
-      <div style={{ maxWidth: "800px", padding: "40px", color: "var(--t3)" }}>
-        Loading profile...
-      </div>
-    );
+    return <div className={loadingClass}>Loading profile...</div>;
   }
 
   return (
-    <div style={{ maxWidth: "800px" }}>
-      <h1
-        style={{
-          fontSize: "28px",
-          fontWeight: "700",
-          marginBottom: "24px",
-          color: "var(--t1)",
-        }}
-      >
-        My Account
-      </h1>
+    <div className={pageClass}>
+      <h1 className={pageTitleClass}>My Account</h1>
 
-      <div
-        style={{
-          padding: "24px",
-          marginBottom: "24px",
-          backgroundColor: "var(--surface-1)",
-          borderRadius: "var(--r-rh-lg)",
-          border: "1px solid var(--border-1)",
-        }}
-      >
+      <div className={cardClass}>
         <TabNavigation
           activeTabIndex={activeTabIndex}
           onChange={setActiveTabIndex}
@@ -437,120 +393,87 @@ export default function ProfilePage() {
 
         {activeTab === "settings" && (
           <>
-            <div style={{ marginBottom: "24px" }}>
-              <h2
-                style={{
-                  fontSize: "16px",
-                  fontWeight: "600",
-                  marginBottom: "16px",
-                  color: "var(--t1)",
-                }}
-              >
-                Personal Information
-              </h2>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "16px",
-                }}
-              >
+            <div className={sectionClass}>
+              <h2 className={sectionTitleClass}>Personal Information</h2>
+              <div className={twoColumnGridClass}>
                 <div>
-                  <label style={labelStyle}>First Name</label>
+                  <label className={labelClass}>First Name</label>
                   <input
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    style={inputStyle}
+                    className={inputClass}
                   />
                 </div>
                 <div>
-                  <label style={labelStyle}>Last Name</label>
+                  <label className={labelClass}>Last Name</label>
                   <input
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    style={inputStyle}
+                    className={inputClass}
                   />
                 </div>
               </div>
             </div>
 
-            <div style={{ marginBottom: "24px" }}>
-              <label style={labelStyle}>Email Address</label>
+            <div className={sectionClass}>
+              <label className={labelClass}>Email Address</label>
               <input
                 type="email"
                 value={email}
                 disabled
-                style={{ ...inputStyle, opacity: "0.6" }}
+                className={`${inputClass} opacity-60`}
               />
-              <p
-                style={{
-                  fontSize: "12px",
-                  color: "var(--t3)",
-                  marginTop: "8px",
-                }}
-              >
+              <p className={hintClass}>
                 Email cannot be changed. Contact support if you need to update
                 it.
               </p>
             </div>
 
-            <div style={{ marginBottom: "24px" }}>
-              <label style={labelStyle}>Phone Number</label>
+            <div className={sectionClass}>
+              <label className={labelClass}>Phone Number</label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+1 (555) 123-4567"
-                style={inputStyle}
+                className={inputClass}
               />
             </div>
 
-            <div style={{ marginBottom: "24px" }}>
-              <label style={labelStyle}>Date of Birth</label>
+            <div className={sectionClass}>
+              <label className={labelClass}>Date of Birth</label>
               <input
                 type="date"
                 value={dateOfBirth}
                 onChange={(e) => setDateOfBirth(e.target.value)}
-                style={inputStyle}
+                className={inputClass}
               />
             </div>
 
-            <div style={{ marginBottom: "24px" }}>
+            <div className={sectionClass}>
               <button
                 onClick={handleSaveProfile}
                 disabled={saving}
-                style={{ ...btnStyle, opacity: saving ? 0.6 : 1 }}
+                className={buttonClass}
               >
                 {saving ? "Saving..." : "Save Changes"}
               </button>
             </div>
 
             {/* Preferences Section */}
-            <div
-              style={{
-                borderTop: "1px solid var(--border-1)",
-                paddingTop: "24px",
-              }}
-            >
-              <h2
-                style={{
-                  fontSize: "16px",
-                  fontWeight: "600",
-                  marginBottom: "16px",
-                  color: "var(--t1)",
-                }}
-              >
-                Preferences
-              </h2>
+            <div className={preferenceSectionClass}>
+              <h2 className={sectionTitleClass}>Preferences</h2>
 
-              <div style={{ marginBottom: "16px" }}>
-                <label style={labelStyle}>Language</label>
+              <div className={fieldClass}>
+                <label className={labelClass}>Language</label>
                 <select
                   value={prefLanguage}
-                  onChange={(e) => setPrefLanguage(normalizeLocale(e.target.value))}
-                  style={inputStyle}
+                  onChange={(e) =>
+                    setPrefLanguage(normalizeLocale(e.target.value))
+                  }
+                  className={inputClass}
                 >
                   {supportedLocales.map((lang) => (
                     <option key={lang.code} value={lang.code}>
@@ -560,12 +483,12 @@ export default function ProfilePage() {
                 </select>
               </div>
 
-              <div style={{ marginBottom: "16px" }}>
-                <label style={labelStyle}>Timezone</label>
+              <div className={fieldClass}>
+                <label className={labelClass}>Timezone</label>
                 <select
                   value={prefTimezone}
                   onChange={(e) => setPrefTimezone(e.target.value)}
-                  style={inputStyle}
+                  className={inputClass}
                 >
                   {TIMEZONES.map((tz) => (
                     <option key={tz} value={tz}>
@@ -575,7 +498,7 @@ export default function ProfilePage() {
                 </select>
               </div>
 
-              <button onClick={handleSavePreferences} style={btnStyle}>
+              <button onClick={handleSavePreferences} className={buttonClass}>
                 Save Preferences
               </button>
             </div>
@@ -584,83 +507,53 @@ export default function ProfilePage() {
 
         {activeTab === "limits" && (
           <>
-            <div style={{ marginBottom: "24px" }}>
-              <h2
-                style={{
-                  fontSize: "16px",
-                  fontWeight: "600",
-                  marginBottom: "16px",
-                  color: "var(--t1)",
-                }}
-              >
-                Deposit Limits
-              </h2>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "16px",
-                }}
-              >
+            <div className={sectionClass}>
+              <h2 className={sectionTitleClass}>Deposit Limits</h2>
+              <div className={twoColumnGridClass}>
                 <div>
-                  <label style={labelStyle}>Daily Limit ($)</label>
+                  <label className={labelClass}>Daily Limit ($)</label>
                   <input
                     type="number"
                     value={dailyLimit}
                     onChange={(e) => setDailyLimit(e.target.value)}
                     placeholder="1000"
-                    style={inputStyle}
+                    className={inputClass}
                   />
                 </div>
                 <div>
-                  <label style={labelStyle}>Weekly Limit ($)</label>
+                  <label className={labelClass}>Weekly Limit ($)</label>
                   <input
                     type="number"
                     value={weeklyLimit}
                     onChange={(e) => setWeeklyLimit(e.target.value)}
                     placeholder="5000"
-                    style={inputStyle}
+                    className={inputClass}
                   />
                 </div>
                 <div>
-                  <label style={labelStyle}>Monthly Limit ($)</label>
+                  <label className={labelClass}>Monthly Limit ($)</label>
                   <input
                     type="number"
                     value={monthlyLimit}
                     onChange={(e) => setMonthlyLimit(e.target.value)}
                     placeholder="10000"
-                    style={inputStyle}
+                    className={inputClass}
                   />
                 </div>
               </div>
             </div>
 
-            <div style={{ marginBottom: "24px" }}>
-              <h2
-                style={{
-                  fontSize: "16px",
-                  fontWeight: "600",
-                  marginBottom: "16px",
-                  color: "var(--t1)",
-                }}
-              >
-                Betting Limits
-              </h2>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "16px",
-                }}
-              >
+            <div className={sectionClass}>
+              <h2 className={sectionTitleClass}>Betting Limits</h2>
+              <div className={twoColumnGridClass}>
                 <div>
-                  <label style={labelStyle}>Max Bet Amount ($)</label>
+                  <label className={labelClass}>Max Bet Amount ($)</label>
                   <input
                     type="number"
                     value={maxStake}
                     onChange={(e) => setMaxStake(e.target.value)}
                     placeholder="500"
-                    style={inputStyle}
+                    className={inputClass}
                   />
                 </div>
               </div>
@@ -670,7 +563,7 @@ export default function ProfilePage() {
               <button
                 onClick={handleSaveLimits}
                 disabled={savingLimits}
-                style={{ ...btnStyle, opacity: savingLimits ? 0.6 : 1 }}
+                className={buttonClass}
               >
                 {savingLimits ? "Saving..." : "Update Limits"}
               </button>
@@ -680,56 +573,22 @@ export default function ProfilePage() {
 
         {activeTab === "verification" && (
           <>
-            <div style={{ marginBottom: "24px" }}>
-              <h2
-                style={{
-                  fontSize: "16px",
-                  fontWeight: "600",
-                  marginBottom: "16px",
-                  color: "var(--t1)",
-                }}
-              >
-                Verification Status
-              </h2>
+            <div className={sectionClass}>
+              <h2 className={sectionTitleClass}>Verification Status</h2>
               <div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    padding: "12px 0",
-                    borderBottom: "1px solid var(--border-1)",
-                  }}
-                >
-                  <span style={{ color: "var(--t3)", fontSize: "14px" }}>
-                    Email Verification
-                  </span>
+                <div className={verificationRowClass}>
+                  <span className={mutedTextClass}>Email Verification</span>
                   <StatusBadge status="verified" />
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    padding: "12px 0",
-                    borderBottom: "1px solid var(--border-1)",
-                  }}
-                >
-                  <span style={{ color: "var(--t3)", fontSize: "14px" }}>
-                    Phone Verification
-                  </span>
+                <div className={verificationRowClass}>
+                  <span className={mutedTextClass}>Phone Verification</span>
                   <StatusBadge
                     status={profile?.phone ? "verified" : "pending"}
                   />
                 </div>
                 {FEATURE_KYC && (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      padding: "12px 0",
-                      borderBottom: "1px solid var(--border-1)",
-                    }}
-                  >
-                    <span style={{ color: "var(--t3)", fontSize: "14px" }}>
+                  <div className={verificationRowClass}>
+                    <span className={mutedTextClass}>
                       Identity Verification (KYC)
                     </span>
                     <StatusBadge
@@ -750,33 +609,14 @@ export default function ProfilePage() {
             </div>
 
             {FEATURE_KYC && (
-              <div style={{ marginBottom: "24px" }}>
-                <h2
-                  style={{
-                    fontSize: "16px",
-                    fontWeight: "600",
-                    marginBottom: "16px",
-                    color: "var(--t1)",
-                  }}
-                >
-                  Complete Verification
-                </h2>
-                <p
-                  style={{
-                    color: "var(--t3)",
-                    fontSize: "14px",
-                    marginBottom: "16px",
-                  }}
-                >
+              <div className={sectionClass}>
+                <h2 className={sectionTitleClass}>Complete Verification</h2>
+                <p className="mb-4 text-[14px] text-[var(--t3)]">
                   Verify your identity to unlock higher limits and improved
                   features.
                 </p>
                 <button
-                  style={{
-                    ...btnStyle,
-                    opacity: verifying ? 0.6 : 1,
-                    cursor: verifying ? "not-allowed" : "pointer",
-                  }}
+                  className={buttonClass}
                   onClick={handleStartVerification}
                   disabled={verifying}
                 >
@@ -789,121 +629,65 @@ export default function ProfilePage() {
 
         {activeTab === "security" && (
           <>
-            <div style={{ marginBottom: "24px" }}>
-              <h2
-                style={{
-                  fontSize: "16px",
-                  fontWeight: "600",
-                  marginBottom: "16px",
-                  color: "var(--t1)",
-                }}
-              >
-                Password
-              </h2>
-              <div style={{ marginBottom: "16px" }}>
-                <label style={labelStyle}>Current Password</label>
+            <div className={sectionClass}>
+              <h2 className={sectionTitleClass}>Password</h2>
+              <div className={fieldClass}>
+                <label className={labelClass}>Current Password</label>
                 <input
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="Enter current password"
-                  style={inputStyle}
+                  className={inputClass}
                 />
               </div>
-              <div style={{ marginBottom: "16px" }}>
-                <label style={labelStyle}>New Password</label>
+              <div className={fieldClass}>
+                <label className={labelClass}>New Password</label>
                 <input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter new password"
-                  style={inputStyle}
+                  className={inputClass}
                 />
               </div>
-              <div style={{ marginBottom: "16px" }}>
-                <label style={labelStyle}>Confirm Password</label>
+              <div className={fieldClass}>
+                <label className={labelClass}>Confirm Password</label>
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm new password"
-                  style={inputStyle}
+                  className={inputClass}
                 />
               </div>
-              <button onClick={handleChangePassword} style={btnStyle}>
+              <button onClick={handleChangePassword} className={buttonClass}>
                 Change Password
               </button>
             </div>
 
-            <div style={{ marginBottom: "24px" }}>
-              <h2
-                style={{
-                  fontSize: "16px",
-                  fontWeight: "600",
-                  marginBottom: "16px",
-                  color: "var(--t1)",
-                }}
-              >
-                Two-Factor Authentication
-              </h2>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "16px 0",
-                  borderBottom: "1px solid var(--border-1)",
-                }}
-              >
-                <span style={{ color: "var(--t3)", fontSize: "14px" }}>
+            <div className={sectionClass}>
+              <h2 className={sectionTitleClass}>Two-Factor Authentication</h2>
+              <div className={securityRowClass}>
+                <span className={mutedTextClass}>
                   Enable 2FA for added security
                 </span>
-                <input
-                  type="checkbox"
-                  style={{ width: "50px", height: "24px", cursor: "pointer" }}
-                />
+                <input type="checkbox" className={checkboxSwitchClass} />
               </div>
             </div>
 
-            <div style={{ marginBottom: "24px" }}>
-              <h2
-                style={{
-                  fontSize: "16px",
-                  fontWeight: "600",
-                  marginBottom: "16px",
-                  color: "var(--t1)",
-                }}
-              >
-                Account Info
-              </h2>
+            <div className={sectionClass}>
+              <h2 className={sectionTitleClass}>Account Info</h2>
               <div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    padding: "12px 0",
-                    borderBottom: "1px solid var(--border-1)",
-                  }}
-                >
-                  <span style={{ color: "var(--t3)", fontSize: "14px" }}>
-                    Username
-                  </span>
-                  <span style={{ color: "var(--t1)", fontWeight: "600" }}>
+                <div className={verificationRowClass}>
+                  <span className={mutedTextClass}>Username</span>
+                  <span className={accountValueClass}>
                     {profile?.username || user?.username}
                   </span>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    padding: "12px 0",
-                    borderBottom: "1px solid var(--border-1)",
-                  }}
-                >
-                  <span style={{ color: "var(--t3)", fontSize: "14px" }}>
-                    Member Since
-                  </span>
-                  <span style={{ color: "var(--t1)", fontWeight: "600" }}>
+                <div className={verificationRowClass}>
+                  <span className={mutedTextClass}>Member Since</span>
+                  <span className={accountValueClass}>
                     {profile?.createdAt
                       ? new Date(profile.createdAt).toLocaleDateString()
                       : "-"}

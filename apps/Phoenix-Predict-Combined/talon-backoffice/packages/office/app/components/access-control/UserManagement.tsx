@@ -165,16 +165,9 @@ export default function UserManagement({ users, roles, onChanged }: Props) {
 
   return (
     <>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
+      <div className="mb-4 flex items-center justify-between">
         <div>
-          <Title level={4} style={{ margin: 0 }}>
+          <Title level={4} className="!m-0">
             Back-office users
           </Title>
           <Text type="secondary">Staff accounts and their assigned roles.</Text>

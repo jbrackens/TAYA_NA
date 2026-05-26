@@ -302,15 +302,7 @@ const renderValue = (value: unknown) => {
   }
   if (typeof value === "object") {
     return (
-      <pre
-        style={{
-          margin: 0,
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-          maxHeight: 180,
-          overflow: "auto",
-        }}
-      >
+      <pre className="m-0 max-h-[180px] overflow-auto whitespace-pre-wrap [word-break:break-word]">
         {JSON.stringify(value, null, 2)}
       </pre>
     );
@@ -898,8 +890,8 @@ const CashierReviewPanel = () => {
 
   return (
     <>
-      <Card title={t("CASHIER_QUEUE_TITLE")} style={{ marginBottom: 16 }}>
-        <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
+      <Card title={t("CASHIER_QUEUE_TITLE")} className="mb-4">
+        <Row gutter={[12, 12]} className="mb-4">
           <Col xs={24} md={5}>
             <Input
               value={filters.userId}
@@ -1002,13 +994,13 @@ const CashierReviewPanel = () => {
           </Col>
         </Row>
 
-        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+        <Row gutter={[16, 16]} className="mb-4">
           <Col xs={24} sm={12} lg={6}>
             <Card loading={summaryLoading}>
               <Typography.Text type="secondary">
                 {t("CASHIER_METRIC_QUEUE_ITEMS")}
               </Typography.Text>
-              <Typography.Title level={3} style={{ margin: 0 }}>
+              <Typography.Title level={3} className="!m-0">
                 {paymentQueuePagination.total || paymentQueue.length}
               </Typography.Title>
             </Card>
@@ -1018,7 +1010,7 @@ const CashierReviewPanel = () => {
               <Typography.Text type="secondary">
                 {t("CASHIER_METRIC_RECONCILIATION_ITEMS")}
               </Typography.Text>
-              <Typography.Title level={3} style={{ margin: 0 }}>
+              <Typography.Title level={3} className="!m-0">
                 {reconciliationPagination.total || reconciliationQueue.length}
               </Typography.Title>
             </Card>
@@ -1028,7 +1020,7 @@ const CashierReviewPanel = () => {
               <Typography.Text type="secondary">
                 {t("CASHIER_METRIC_SUMMARY_GROUPS")}
               </Typography.Text>
-              <Typography.Title level={3} style={{ margin: 0 }}>
+              <Typography.Title level={3} className="!m-0">
                 {summaryCounts.groups}
               </Typography.Title>
             </Card>
@@ -1038,7 +1030,7 @@ const CashierReviewPanel = () => {
               <Typography.Text type="secondary">
                 {t("CASHIER_METRIC_SUMMARY_TRANSACTIONS")}
               </Typography.Text>
-              <Typography.Title level={3} style={{ margin: 0 }}>
+              <Typography.Title level={3} className="!m-0">
                 {summaryCounts.transactions}
               </Typography.Title>
             </Card>
@@ -1056,11 +1048,7 @@ const CashierReviewPanel = () => {
                   dataSource={summary}
                   renderItem={(item) => (
                     <List.Item>
-                      <Space
-                        direction="vertical"
-                        size={0}
-                        style={{ width: "100%" }}
-                      >
+                      <Space direction="vertical" size={0} className="w-full">
                         <Typography.Text>
                           {`${item.provider || t("CASHIER_UNSPECIFIED_PROVIDER")} / ${item.type} / ${item.status}`}
                         </Typography.Text>
@@ -1113,10 +1101,7 @@ const CashierReviewPanel = () => {
         </Row>
       </Card>
 
-      <Card
-        title={t("CASHIER_RECONCILIATION_WORKFLOW_TITLE")}
-        style={{ marginBottom: 16 }}
-      >
+      <Card title={t("CASHIER_RECONCILIATION_WORKFLOW_TITLE")} className="mb-4">
         <Row gutter={[12, 12]}>
           <Col xs={24} md={6}>
             <Input
@@ -1244,7 +1229,7 @@ const CashierReviewPanel = () => {
         </Row>
       </Card>
 
-      <Card title={t("CASHIER_ALL_QUEUE_TITLE")} style={{ marginBottom: 16 }}>
+      <Card title={t("CASHIER_ALL_QUEUE_TITLE")} className="mb-4">
         <Table
           rowKey={(record: Record<string, any>) =>
             `${record.transactionId}:${record.timestamp || ""}`
@@ -1276,7 +1261,7 @@ const CashierReviewPanel = () => {
         onClose={closeDrawer}
       >
         {selectedTransaction ? (
-          <Space direction="vertical" size={16} style={{ width: "100%" }}>
+          <Space direction="vertical" size={16} className="w-full">
             <Descriptions bordered column={1} size="small">
               <Descriptions.Item label={t("CASHIER_HEADER_TRANSACTION")}>
                 {selectedTransaction.transactionId}
@@ -1485,10 +1470,7 @@ const CashierReviewPanel = () => {
                   />
                   {REASON_REQUIRED_ACTIONS.includes(pendingAction.type) &&
                     !confirmReason.trim() && (
-                      <Typography.Text
-                        type="danger"
-                        style={{ display: "block", marginTop: 4 }}
-                      >
+                      <Typography.Text type="danger" className="mt-1 block">
                         {t("CASHIER_CONFIRM_REASON_REQUIRED_HINT")}
                       </Typography.Text>
                     )}
@@ -1531,11 +1513,7 @@ const CashierReviewPanel = () => {
                   dataSource={events}
                   renderItem={(event) => (
                     <List.Item key={event.id}>
-                      <Space
-                        direction="vertical"
-                        size={0}
-                        style={{ width: "100%" }}
-                      >
+                      <Space direction="vertical" size={0} className="w-full">
                         <Typography.Text strong>
                           {`${event.status} / ${event.source}`}
                         </Typography.Text>

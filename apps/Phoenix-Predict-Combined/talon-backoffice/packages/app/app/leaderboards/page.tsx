@@ -20,9 +20,72 @@ import { logger } from "../lib/logger";
 // row is highlighted with --accent-soft and #N You prefix.
 //
 // Category Champions boards share one slot in the sidebar via a <select>.
-// Mobile: standing summary card above active board (responsive logic in CSS).
+// Mobile: standing summary card above active board (responsive Tailwind classes).
 
 const ENTRIES_LIMIT = 25;
+
+const WRAP_CLASS =
+  "mx-auto max-w-[1180px] pb-[60px] max-[720px]:px-4";
+const HEAD_CLASS =
+  "mb-[22px] flex items-end justify-between gap-4";
+const KICKER_CLASS =
+  "mb-1.5 inline-block text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]";
+const TITLE_CLASS =
+  "m-0 text-[34px] font-extrabold tracking-[-0.02em] text-[var(--t1)] max-[720px]:text-[26px]";
+const CROSS_LINK_CLASS =
+  "border-b border-[var(--border-1)] pb-0.5 text-[13px] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--t1)]";
+const GRID_CLASS =
+  "grid grid-cols-[280px_minmax(0,1fr)] items-start gap-[18px] max-[1024px]:grid-cols-1";
+const SURFACE_CLASS =
+  "relative rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)]";
+const SIDEBAR_CLASS =
+  `${SURFACE_CLASS} flex flex-col gap-1.5 p-2.5 max-[1024px]:flex-row max-[1024px]:overflow-x-auto max-[1024px]:[scroll-snap-type:x_mandatory]`;
+const TAB_BASE_CLASS =
+  "grid cursor-pointer grid-cols-[1fr_auto] grid-rows-[auto_auto] items-center gap-x-3 gap-y-0.5 rounded-[var(--r-rh-md)] border p-3.5 text-left text-[var(--t2)] transition-[background,border-color] duration-[120ms] ease-[ease] [font-family:inherit] hover:bg-[var(--surface-2)] max-[1024px]:flex-[0_0_220px] max-[1024px]:[scroll-snap-align:start]";
+const TAB_ACTIVE_CLASS =
+  "border-[var(--accent)] bg-[var(--accent-soft)] hover:bg-[var(--accent-soft)]";
+const TAB_INACTIVE_CLASS = "border-transparent bg-transparent";
+const TAB_NAME_CLASS =
+  "col-start-1 row-start-1 text-sm font-bold text-[var(--t1)]";
+const TAB_SUB_CLASS =
+  "col-start-1 row-start-2 text-[11px] uppercase tracking-[0.04em] text-[var(--t3)]";
+const TAB_RANK_BASE_CLASS =
+  "col-start-2 row-span-2 row-start-1 self-center text-base font-bold text-[var(--t1)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+const TAB_RANK_ACTIVE_CLASS = "text-[var(--accent)]";
+const CATEGORY_CLASS =
+  `${TAB_BASE_CLASS} cursor-default max-[1024px]:flex-[0_0_280px]`;
+const CATEGORY_SELECT_CLASS =
+  "col-start-1 row-start-2 mt-1 cursor-pointer appearance-none rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-2)] px-2 py-1 text-xs text-[var(--t1)] focus-visible:[outline:2px_solid_var(--accent)] focus-visible:outline-offset-2 [font-family:inherit] max-[1024px]:min-h-9 max-[1024px]:w-full max-[1024px]:px-2.5 max-[1024px]:py-2 max-[1024px]:text-[13px]";
+const DETAIL_CLASS = `${SURFACE_CLASS} min-h-[420px] p-[22px]`;
+const DETAIL_HEAD_CLASS =
+  "mb-[18px] flex items-start justify-between gap-[18px] max-[720px]:flex-col max-[720px]:gap-2";
+const DETAIL_TITLE_CLASS =
+  "m-0 mb-1.5 text-[22px] font-extrabold text-[var(--t1)]";
+const DETAIL_BODY_CLASS =
+  "m-0 max-w-[540px] text-[13px] leading-[1.6] text-[var(--t2)]";
+const DETAIL_WINDOW_CLASS =
+  "text-[11px] uppercase tracking-[0.08em] text-[var(--t3)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+const EMPTY_CLASS = "py-[60px] text-center text-sm text-[var(--t2)]";
+const EMPTY_SUB_CLASS = "mt-1.5 text-xs text-[var(--t3)]";
+const TABLE_CLASS =
+  "w-full border-collapse text-[13px] [&_td]:border-b [&_td]:border-[var(--border-1)] [&_td]:px-1.5 [&_td]:py-2.5 [&_td]:align-middle [&_th]:border-b [&_th]:border-[var(--border-1)] [&_th]:px-1.5 [&_th]:py-2.5 [&_th]:text-[11px] [&_th]:font-bold [&_th]:uppercase [&_th]:tracking-[0.08em] [&_th]:text-[var(--t3)]";
+const TEXT_LEFT_CLASS = "text-left";
+const NUM_CLASS = "text-right";
+const MONO_CLASS =
+  "tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+const HIDE_SM_CLASS = "max-[720px]:hidden";
+const TRADER_CLASS = "font-medium text-[var(--t1)]";
+const SUBTLE_CLASS = "text-[var(--t3)]";
+const VIEWER_ROW_CLASS =
+  "bg-[var(--accent-soft)] [&>td]:font-semibold [&>td]:text-[var(--t1)]";
+const VIEWER_CELL_CLASS = "p-3 text-center text-[var(--t1)]";
+const STATE_CLASS =
+  "flex min-h-[60vh] items-center justify-center px-6";
+const STATE_CARD_CLASS =
+  `${SURFACE_CLASS} max-w-[440px] p-7 text-center`;
+const STATE_MESSAGE_CLASS = "m-0 mb-3.5 leading-[1.6] text-[var(--t2)]";
+const STATE_CTA_CLASS =
+  "inline-flex items-center gap-1.5 rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-[22px] py-3 text-[13px] font-bold text-[#04140a] no-underline transition-[transform,filter] duration-[180ms] ease-[ease] hover:-translate-y-px hover:brightness-[1.05]";
 
 export default function LeaderboardsPage() {
   const { t } = useTranslation("leaderboards");
@@ -183,21 +246,20 @@ export default function LeaderboardsPage() {
   }
 
   return (
-    <div className="lb-wrap">
-      <Styles />
-      <header className="lb-head">
+    <div className={WRAP_CLASS}>
+      <header className={HEAD_CLASS}>
         <div>
-          <span className="lb-kicker">{t("kicker", "Leaderboards")}</span>
-          <h1 className="lb-title">{t("title", "Rankings")}</h1>
+          <span className={KICKER_CLASS}>{t("kicker", "Leaderboards")}</span>
+          <h1 className={TITLE_CLASS}>{t("title", "Rankings")}</h1>
         </div>
-        <Link href="/rewards" className="lb-xlink">
+        <Link href="/rewards" className={CROSS_LINK_CLASS}>
           {t("viewTier", "View your tier")} →
         </Link>
       </header>
 
-      <div className="lb-grid">
+      <div className={GRID_CLASS}>
         <aside
-          className="lb-sidebar"
+          className={SIDEBAR_CLASS}
           role="tablist"
           aria-label={t("boardsAria", "Boards")}
         >
@@ -221,7 +283,7 @@ export default function LeaderboardsPage() {
           )}
         </aside>
 
-        <section className="lb-detail" aria-labelledby="lb-detail-title">
+        <section className={DETAIL_CLASS} aria-labelledby="lb-detail-title">
           {selectedBoard ? (
             <DetailPanel
               board={selectedBoard}
@@ -231,7 +293,7 @@ export default function LeaderboardsPage() {
               currentUserId={user?.id ?? ""}
             />
           ) : (
-            <div className="lb-empty">
+            <div className={EMPTY_CLASS}>
               {t("state.pickBoard", "Pick a board to see rankings.")}
             </div>
           )}
@@ -258,12 +320,18 @@ function BoardTab({
       type="button"
       role="tab"
       aria-selected={active}
-      className={`lb-tab ${active ? "is-active" : ""}`}
+      className={`${TAB_BASE_CLASS} ${
+        active ? TAB_ACTIVE_CLASS : TAB_INACTIVE_CLASS
+      }`}
       onClick={onClick}
     >
-      <span className="lb-tab-name">{boardName(board, t)}</span>
-      <span className="lb-tab-sub">{metricLabel(board, t)}</span>
-      <span className="lb-tab-rank mono">
+      <span className={TAB_NAME_CLASS}>{boardName(board, t)}</span>
+      <span className={TAB_SUB_CLASS}>{metricLabel(board, t)}</span>
+      <span
+        className={`${TAB_RANK_BASE_CLASS} ${
+          active ? TAB_RANK_ACTIVE_CLASS : ""
+        }`}
+      >
         {userEntry ? `#${userEntry.rank}` : "—"}
       </span>
     </button>
@@ -288,15 +356,17 @@ function CategoryPicker({
 
   return (
     <div
-      className={`lb-tab lb-category ${activeInCategory ? "is-active" : ""}`}
+      className={`${CATEGORY_CLASS} ${
+        activeInCategory ? TAB_ACTIVE_CLASS : TAB_INACTIVE_CLASS
+      }`}
       role="tab"
       aria-selected={activeInCategory}
     >
-      <span className="lb-tab-name">
+      <span className={TAB_NAME_CLASS}>
         {t("categoryChampions", "Category Champions")}
       </span>
       <select
-        className="lb-category-select"
+        className={CATEGORY_SELECT_CLASS}
         value={currentValue}
         onChange={(e) => onSelect(e.target.value)}
         aria-label={t("chooseCategory", "Choose a category")}
@@ -307,7 +377,11 @@ function CategoryPicker({
           </option>
         ))}
       </select>
-      <span className="lb-tab-rank mono">
+      <span
+        className={`${TAB_RANK_BASE_CLASS} ${
+          activeInCategory ? TAB_RANK_ACTIVE_CLASS : ""
+        }`}
+      >
         {userEntry ? `#${userEntry.rank}` : "—"}
       </span>
     </div>
@@ -330,27 +404,27 @@ function DetailPanel({
   const { t } = useTranslation("leaderboards");
   return (
     <>
-      <header className="lb-detail-head">
+      <header className={DETAIL_HEAD_CLASS}>
         <div>
-          <h2 id="lb-detail-title" className="lb-detail-title">
+          <h2 id="lb-detail-title" className={DETAIL_TITLE_CLASS}>
             {boardName(board, t)}
           </h2>
-          <p className="lb-detail-body">{boardDescription(board, t)}</p>
+          <p className={DETAIL_BODY_CLASS}>{boardDescription(board, t)}</p>
         </div>
-        <div className="lb-detail-window mono">
+        <div className={DETAIL_WINDOW_CLASS}>
           {windowLabel(board.window, t)}
         </div>
       </header>
 
       {loading ? (
-        <div className="lb-empty">
+        <div className={EMPTY_CLASS}>
           {t("state.loadingRankings", "Loading rankings…")}
         </div>
       ) : entries.length === 0 ? (
-        <div className="lb-empty">
+        <div className={EMPTY_CLASS}>
           <p>{qualificationMessage(board, t)}</p>
           {viewerEntry === null && (
-            <p className="lb-empty-sub">
+            <p className={EMPTY_SUB_CLASS}>
               {t(
                 "state.noQualified",
                 "Nobody has qualified for this board yet.",
@@ -360,7 +434,7 @@ function DetailPanel({
         </div>
       ) : (
         <table
-          className="lb-table"
+          className={TABLE_CLASS}
           aria-label={t("table.rankingsAria", "{{board}} rankings", {
             board: boardName(board, t),
           })}
@@ -373,14 +447,16 @@ function DetailPanel({
           </caption>
           <thead>
             <tr>
-              <th scope="col" className="lb-num">
+              <th scope="col" className={NUM_CLASS}>
                 {t("table.rank", "Rank")}
               </th>
-              <th scope="col">{t("table.trader", "Trader")}</th>
-              <th scope="col" className="lb-num">
+              <th scope="col" className={TEXT_LEFT_CLASS}>
+                {t("table.trader", "Trader")}
+              </th>
+              <th scope="col" className={NUM_CLASS}>
                 {metricLabel(board, t)}
               </th>
-              <th scope="col" className="lb-num lb-hide-sm">
+              <th scope="col" className={`${NUM_CLASS} ${HIDE_SM_CLASS}`}>
                 {t("table.settled", "Settled")}
               </th>
             </tr>
@@ -391,23 +467,23 @@ function DetailPanel({
               return (
                 <tr
                   key={`${e.boardId}:${e.userId}`}
-                  className={isViewer ? "is-viewer" : ""}
+                  className={isViewer ? VIEWER_ROW_CLASS : ""}
                   aria-current={isViewer ? "true" : undefined}
                 >
-                  <td className="lb-num mono">
+                  <td className={`${NUM_CLASS} ${MONO_CLASS}`}>
                     {isViewer
                       ? t("table.youRank", "#{{rank}} You", { rank: e.rank })
                       : `#${e.rank}`}
                   </td>
-                  <td className="lb-trader">{e.displayName}</td>
-                  <td className="lb-num mono">
+                  <td className={TRADER_CLASS}>{e.displayName}</td>
+                  <td className={`${NUM_CLASS} ${MONO_CLASS}`}>
                     {formatMetric(board, e.metricValue)}
                   </td>
-                  <td className="lb-num lb-hide-sm mono">
+                  <td className={`${NUM_CLASS} ${HIDE_SM_CLASS} ${MONO_CLASS}`}>
                     {typeof e.settledCount === "number" ? (
                       e.settledCount
                     ) : (
-                      <span className="lb-subtle">—</span>
+                      <span className={SUBTLE_CLASS}>—</span>
                     )}
                   </td>
                 </tr>
@@ -415,8 +491,8 @@ function DetailPanel({
             })}
             {viewerEntry &&
               !entries.some((e) => e.userId === currentUserId) && (
-                <tr className="is-viewer" aria-current="true">
-                  <td colSpan={4} className="lb-viewer-row">
+                <tr className={VIEWER_ROW_CLASS} aria-current="true">
+                  <td colSpan={4} className={VIEWER_CELL_CLASS}>
                     {t("table.viewerRow", "#{{rank}} You · {{metric}}", {
                       rank: viewerEntry.rank,
                       metric: formatMetric(board, viewerEntry.metricValue),
@@ -439,12 +515,11 @@ function PageState({
   cta?: { href: string; label: string };
 }) {
   return (
-    <div className="lb-state">
-      <Styles />
-      <div className="lb-state-card">
-        <p>{message}</p>
+    <div className={STATE_CLASS}>
+      <div className={STATE_CARD_CLASS}>
+        <p className={STATE_MESSAGE_CLASS}>{message}</p>
         {cta && (
-          <Link href={cta.href} className="lb-state-cta">
+          <Link href={cta.href} className={STATE_CTA_CLASS}>
             {cta.label}
           </Link>
         )}
@@ -561,278 +636,4 @@ function formatCents(cents: number): string {
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
   }).format(dollars)}`;
-}
-
-function Styles() {
-  return (
-    <style>{`
-      .lb-wrap {
-        max-width: 1180px;
-        margin: 0 auto;
-        padding: 0 0 60px;
-      }
-      .lb-head {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 16px;
-        margin-bottom: 22px;
-      }
-      .lb-kicker {
-        display: inline-block;
-        margin-bottom: 6px;
-        color: var(--accent);
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        font-size: 11px;
-        font-weight: 700;
-      }
-      .lb-title {
-        margin: 0;
-        font-size: 34px;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        color: var(--t1);
-      }
-      .lb-xlink {
-        font-size: 13px;
-        color: var(--t2);
-        border-bottom: 1px solid var(--border-1);
-        padding-bottom: 2px;
-      }
-      .lb-xlink:hover { color: var(--t1); border-color: var(--accent); }
-
-      .lb-grid {
-        display: grid;
-        grid-template-columns: 280px minmax(0, 1fr);
-        gap: 18px;
-        align-items: start;
-      }
-
-      /* ── Sidebar / Detail / State cards ── */
-      .lb-sidebar,
-      .lb-detail,
-      .lb-state-card {
-        position: relative;
-        border-radius: var(--r-rh-lg);
-        background: var(--surface-1);
-        border: 1px solid var(--border-1);
-      }
-      .lb-sidebar {
-        padding: 10px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      .lb-tab {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        grid-template-rows: auto auto;
-        gap: 2px 12px;
-        align-items: center;
-        padding: 12px 14px;
-        background: transparent;
-        border: 1px solid transparent;
-        border-radius: var(--r-rh-md);
-        color: var(--t2);
-        text-align: left;
-        cursor: pointer;
-        font-family: inherit;
-        transition: background 120ms ease, border-color 120ms ease;
-      }
-      .lb-tab:hover { background: var(--surface-2); }
-      .lb-tab.is-active {
-        background: var(--accent-soft);
-        border-color: var(--accent);
-      }
-      .lb-tab-name {
-        grid-column: 1;
-        grid-row: 1;
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--t1);
-      }
-      .lb-tab-sub {
-        grid-column: 1;
-        grid-row: 2;
-        font-size: 11px;
-        color: var(--t3);
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-      }
-      .lb-tab-rank {
-        grid-column: 2;
-        grid-row: 1 / 3;
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--t1);
-        align-self: center;
-      }
-      .lb-tab.is-active .lb-tab-rank { color: var(--accent); }
-
-      .lb-category {
-        cursor: default;
-      }
-      .lb-category-select {
-        grid-column: 1;
-        grid-row: 2;
-        margin-top: 4px;
-        appearance: none;
-        background: var(--surface-2);
-        border: 1px solid var(--border-1);
-        color: var(--t1);
-        padding: 4px 8px;
-        border-radius: var(--r-rh-sm);
-        font-size: 12px;
-        font-family: inherit;
-        cursor: pointer;
-      }
-      .lb-category-select:focus-visible {
-        outline: 2px solid var(--accent);
-        outline-offset: 2px;
-      }
-
-      /* ── Detail pane ── */
-      .lb-detail {
-        padding: 22px;
-        min-height: 420px;
-      }
-      .lb-detail-head {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 18px;
-        margin-bottom: 18px;
-      }
-      .lb-detail-title {
-        margin: 0 0 6px;
-        font-size: 22px;
-        font-weight: 800;
-        color: var(--t1);
-      }
-      .lb-detail-body {
-        margin: 0;
-        color: var(--t2);
-        font-size: 13px;
-        line-height: 1.6;
-        max-width: 540px;
-      }
-      .lb-detail-window {
-        font-size: 11px;
-        color: var(--t3);
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-
-      /* ── Table ── */
-      .lb-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13px;
-      }
-      .lb-table th,
-      .lb-table td {
-        padding: 10px 6px;
-        border-bottom: 1px solid var(--border-1);
-        vertical-align: middle;
-      }
-      .lb-table th {
-        text-align: left;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--t3);
-      }
-      .lb-num { text-align: right; }
-      .lb-trader { color: var(--t1); font-weight: 500; }
-      .lb-subtle { color: var(--t3); }
-      .lb-table tbody tr.is-viewer {
-        background: var(--accent-soft);
-      }
-      .lb-table tbody tr.is-viewer td {
-        color: var(--t1);
-        font-weight: 600;
-      }
-      .lb-viewer-row {
-        text-align: center;
-        color: var(--t1);
-        padding: 12px;
-      }
-
-      .lb-empty {
-        padding: 60px 0;
-        text-align: center;
-        color: var(--t2);
-        font-size: 14px;
-      }
-      .lb-empty-sub {
-        margin-top: 6px;
-        font-size: 12px;
-        color: var(--t3);
-      }
-
-      /* ── State shell ── */
-      .lb-state {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 60vh;
-        padding: 0 24px;
-      }
-      .lb-state-card {
-        max-width: 440px;
-        padding: 28px;
-        text-align: center;
-      }
-      .lb-state-card p { margin: 0 0 14px; color: var(--t2); line-height: 1.6; }
-      .lb-state-cta {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 12px 22px;
-        color: #04140a;
-        border-radius: var(--r-rh-md);
-        font-size: 13px;
-        font-weight: 700;
-        text-decoration: none;
-        background: var(--accent);
-        border: none;
-        transition: transform 180ms ease, filter 180ms ease;
-      }
-      .lb-state-cta:hover { transform: translateY(-1px); filter: brightness(1.05); }
-
-      /* ── Responsive ── */
-      @media (max-width: 1024px) {
-        .lb-grid { grid-template-columns: 1fr; }
-        .lb-sidebar {
-          flex-direction: row;
-          overflow-x: auto;
-          scroll-snap-type: x mandatory;
-        }
-        .lb-sidebar > * {
-          flex: 0 0 220px;
-          scroll-snap-align: start;
-        }
-        /* Category Champions packs a dropdown + title + rank into one tab;
-           give it more horizontal room and a bigger touch target than the
-           regular 220px tab so the select isn't cramped on phones. */
-        .lb-sidebar > .lb-category {
-          flex: 0 0 280px;
-        }
-        .lb-category-select {
-          width: 100%;
-          padding: 8px 10px;
-          min-height: 36px;
-          font-size: 13px;
-        }
-      }
-      @media (max-width: 720px) {
-        .lb-wrap { padding-inline: 16px; }
-        .lb-title { font-size: 26px; }
-        .lb-hide-sm { display: none; }
-        .lb-detail-head { flex-direction: column; gap: 8px; }
-      }
-    `}</style>
-  );
 }

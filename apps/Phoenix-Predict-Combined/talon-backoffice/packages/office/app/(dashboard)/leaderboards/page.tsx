@@ -2,7 +2,6 @@
 
 import {
   ChangeEvent,
-  CSSProperties,
   FormEvent,
   useCallback,
   useEffect,
@@ -181,8 +180,8 @@ function LeaderboardsPageContent() {
       sortable: true,
       render: (value, row) => (
         <div>
-          <div style={{ fontWeight: 600 }}>{String(value)}</div>
-          <div style={{ color: "var(--t3, #8b8378)", fontSize: 12 }}>
+          <div className="font-semibold">{String(value)}</div>
+          <div className="text-xs text-[var(--t3,#8b8378)]">
             {row.slug || row.metricKey}
           </div>
         </div>
@@ -200,7 +199,7 @@ function LeaderboardsPageContent() {
       label: "Status",
       sortable: true,
       render: (value) => (
-        <span style={badgeStyle(statusVariant(String(value)))}>
+        <span className={badgeClassName(statusVariant(String(value)))}>
           {String(value).toUpperCase()}
         </span>
       ),
@@ -215,13 +214,12 @@ function LeaderboardsPageContent() {
       label: "Window",
       render: (_, row) => (
         <span
-          style={{
-            color:
-              row.windowStartsAt || row.windowEndsAt
-                ? "var(--t1, #1a1a1a)"
-                : "var(--t3, #8b8378)",
-            fontSize: 13,
-          }}
+          className={cx(
+            "text-[13px]",
+            row.windowStartsAt || row.windowEndsAt
+              ? "text-[var(--t1,#1a1a1a)]"
+              : "text-[var(--t3,#8b8378)]",
+          )}
         >
           {formatWindowRange(row.windowStartsAt, row.windowEndsAt)}
         </span>
@@ -244,9 +242,9 @@ function LeaderboardsPageContent() {
       key: "leaderboardId",
       label: "Actions",
       render: (_, row) => (
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div className="flex flex-wrap gap-2">
           <button
-            style={miniButtonStyle(false)}
+            className={miniButtonClassName(false)}
             onClick={(event) => {
               event.stopPropagation();
               router.push(`/leaderboards/${row.leaderboardId}`);
@@ -255,7 +253,7 @@ function LeaderboardsPageContent() {
             Edit
           </button>
           <button
-            style={miniButtonStyle(recomputingId === row.leaderboardId)}
+            className={miniButtonClassName(recomputingId === row.leaderboardId)}
             disabled={recomputingId === row.leaderboardId}
             onClick={async (event) => {
               event.stopPropagation();
@@ -364,44 +362,47 @@ function LeaderboardsPageContent() {
 
   return (
     <div>
-      <div style={headerRowStyle}>
+      <div className={headerRowClassName}>
         <div>
-          <h1 style={pageTitleStyle}>Leaderboards</h1>
-          <p style={subtitleStyle}>
+          <h1 className={pageTitleClassName}>Leaderboards</h1>
+          <p className={subtitleClassName}>
             Manage prediction-market leaderboards, ranking logic, and recompute
             state.
           </p>
         </div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <div className="flex flex-wrap gap-2.5">
           <button
-            style={batchRecomputeButtonStyle(isBatchRecomputing)}
+            className={batchRecomputeButtonClassName(isBatchRecomputing)}
             disabled={isBatchRecomputing}
             onClick={() => void recomputeAllActive()}
           >
             {isBatchRecomputing ? "Recomputing All..." : "Recompute All Active"}
           </button>
-          <button style={buttonStyle()} onClick={() => void loadItems()}>
+          <button
+            className={buttonClassName()}
+            onClick={() => void loadItems()}
+          >
             Refresh
           </button>
         </div>
       </div>
 
-      <div style={metricsGridStyle}>
+      <div className={metricsGridClassName}>
         <MetricCard label="Total Boards" value={stats.total.toLocaleString()} />
         <MetricCard label="Active" value={stats.active.toLocaleString()} />
         <MetricCard label="Draft" value={stats.draft.toLocaleString()} />
         <MetricCard label="Closed" value={stats.closed.toLocaleString()} />
       </div>
 
-      <div style={formGridStyle}>
-        <div style={surfaceCardStyle}>
-          <h2 style={sectionTitleStyle}>Create Leaderboard</h2>
-          <form style={formStyle} onSubmit={submitCreate}>
-            <div style={formColumnsStyle}>
-              <label style={labelStyle}>
+      <div className={formGridClassName}>
+        <div className={surfaceCardClassName}>
+          <h2 className={sectionTitleClassName}>Create Leaderboard</h2>
+          <form className={formClassName} onSubmit={submitCreate}>
+            <div className={formColumnsClassName}>
+              <label className={labelClassName}>
                 Name
                 <input
-                  style={inputStyle}
+                  className={inputClassName}
                   value={form.name}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setForm((current) => ({
@@ -411,10 +412,10 @@ function LeaderboardsPageContent() {
                   }
                 />
               </label>
-              <label style={labelStyle}>
+              <label className={labelClassName}>
                 Slug
                 <input
-                  style={inputStyle}
+                  className={inputClassName}
                   value={form.slug}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setForm((current) => ({
@@ -426,10 +427,10 @@ function LeaderboardsPageContent() {
                 />
               </label>
             </div>
-            <label style={labelStyle}>
+            <label className={labelClassName}>
               Description
               <textarea
-                style={textAreaStyle}
+                className={textAreaClassName}
                 value={form.description}
                 onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
                   setForm((current) => ({
@@ -439,11 +440,11 @@ function LeaderboardsPageContent() {
                 }
               />
             </label>
-            <div style={formColumnsStyle}>
-              <label style={labelStyle}>
+            <div className={formColumnsClassName}>
+              <label className={labelClassName}>
                 Metric Key
                 <input
-                  style={inputStyle}
+                  className={inputClassName}
                   value={form.metricKey}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setForm((current) => ({
@@ -453,10 +454,10 @@ function LeaderboardsPageContent() {
                   }
                 />
               </label>
-              <label style={labelStyle}>
+              <label className={labelClassName}>
                 Currency
                 <input
-                  style={inputStyle}
+                  className={inputClassName}
                   value={form.currency}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setForm((current) => ({
@@ -467,11 +468,11 @@ function LeaderboardsPageContent() {
                 />
               </label>
             </div>
-            <div style={formColumnsStyle}>
-              <label style={labelStyle}>
+            <div className={formColumnsClassName}>
+              <label className={labelClassName}>
                 Ranking Mode
                 <select
-                  style={selectStyle}
+                  className={selectClassName}
                   value={form.rankingMode}
                   onChange={(event: ChangeEvent<HTMLSelectElement>) =>
                     setForm((current) => ({
@@ -485,10 +486,10 @@ function LeaderboardsPageContent() {
                   <option value="max">MAX</option>
                 </select>
               </label>
-              <label style={labelStyle}>
+              <label className={labelClassName}>
                 Order
                 <select
-                  style={selectStyle}
+                  className={selectClassName}
                   value={form.order}
                   onChange={(event: ChangeEvent<HTMLSelectElement>) =>
                     setForm((current) => ({
@@ -501,10 +502,10 @@ function LeaderboardsPageContent() {
                   <option value="asc">ASC</option>
                 </select>
               </label>
-              <label style={labelStyle}>
+              <label className={labelClassName}>
                 Status
                 <select
-                  style={selectStyle}
+                  className={selectClassName}
                   value={form.status}
                   onChange={(event: ChangeEvent<HTMLSelectElement>) =>
                     setForm((current) => ({
@@ -519,12 +520,12 @@ function LeaderboardsPageContent() {
                 </select>
               </label>
             </div>
-            <div style={formColumnsStyle}>
-              <label style={labelStyle}>
+            <div className={formColumnsClassName}>
+              <label className={labelClassName}>
                 Window Start
                 <input
                   type="datetime-local"
-                  style={inputStyle}
+                  className={inputClassName}
                   value={form.windowStartsAt}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setForm((current) => ({
@@ -534,11 +535,11 @@ function LeaderboardsPageContent() {
                   }
                 />
               </label>
-              <label style={labelStyle}>
+              <label className={labelClassName}>
                 Window End
                 <input
                   type="datetime-local"
-                  style={inputStyle}
+                  className={inputClassName}
                   value={form.windowEndsAt}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setForm((current) => ({
@@ -549,10 +550,10 @@ function LeaderboardsPageContent() {
                 />
               </label>
             </div>
-            <label style={labelStyle}>
+            <label className={labelClassName}>
               Prize Summary
               <input
-                style={inputStyle}
+                className={inputClassName}
                 value={form.prizeSummary}
                 onChange={(event: ChangeEvent<HTMLInputElement>) =>
                   setForm((current) => ({
@@ -562,10 +563,12 @@ function LeaderboardsPageContent() {
                 }
               />
             </label>
-            {feedback ? <div style={successTextStyle}>{feedback}</div> : null}
-            {error ? <div style={errorTextStyle}>{error}</div> : null}
+            {feedback ? (
+              <div className={successTextClassName}>{feedback}</div>
+            ) : null}
+            {error ? <div className={errorTextClassName}>{error}</div> : null}
             <button
-              style={buttonStyle(isCreating)}
+              className={buttonClassName(isCreating)}
               type="submit"
               disabled={isCreating}
             >
@@ -574,11 +577,11 @@ function LeaderboardsPageContent() {
           </form>
         </div>
 
-        <div style={surfaceCardStyle}>
-          <h2 style={sectionTitleStyle}>Filters</h2>
-          <div style={filtersColumnStyle}>
+        <div className={surfaceCardClassName}>
+          <h2 className={sectionTitleClassName}>Filters</h2>
+          <div className={filtersColumnClassName}>
             <input
-              style={inputStyle}
+              className={inputClassName}
               value={search}
               onChange={(event: ChangeEvent<HTMLInputElement>) =>
                 setSearch(event.target.value)
@@ -586,7 +589,7 @@ function LeaderboardsPageContent() {
               placeholder="Search name, slug, or description"
             />
             <select
-              style={selectStyle}
+              className={selectClassName}
               value={statusFilter}
               onChange={(event: ChangeEvent<HTMLSelectElement>) =>
                 setStatusFilter(event.target.value)
@@ -597,7 +600,10 @@ function LeaderboardsPageContent() {
               <option value="draft">Draft</option>
               <option value="closed">Closed</option>
             </select>
-            <button style={buttonStyle()} onClick={() => void loadItems()}>
+            <button
+              className={buttonClassName()}
+              onClick={() => void loadItems()}
+            >
               Apply Filters
             </button>
           </div>
@@ -630,9 +636,9 @@ function LeaderboardsPageContent() {
 
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
-    <div style={surfaceCardStyle}>
-      <div style={metricLabelStyle}>{label}</div>
-      <div style={metricValueStyle}>{value}</div>
+    <div className={surfaceCardClassName}>
+      <div className={metricLabelClassName}>{label}</div>
+      <div className={metricValueClassName}>{value}</div>
     </div>
   );
 }
@@ -648,169 +654,77 @@ function statusVariant(status: string): "default" | "success" | "warning" {
   }
 }
 
-function badgeStyle(variant: "default" | "success" | "warning"): CSSProperties {
-  const backgrounds: Record<string, string> = {
-    default: "#1e3a5f",
-    success: "#065f46",
-    warning: "#92400e",
-  };
-  const colors: Record<string, string> = {
-    default: "#bfdbfe",
-    success: "#dcfce7",
-    warning: "#fef3c7",
-  };
-  return {
-    display: "inline-block",
-    padding: "4px 8px",
-    borderRadius: 4,
-    fontSize: 12,
-    fontWeight: 600,
-    backgroundColor: backgrounds[variant],
-    color: colors[variant],
-  };
+function cx(...classes: Array<string | false | null | undefined>) {
+  return classes.filter(Boolean).join(" ");
 }
 
-function miniButtonStyle(disabled = false): CSSProperties {
-  return {
-    padding: "6px 10px",
-    backgroundColor: disabled ? "#3b4c7a" : "var(--border-1, #e5dfd2)",
-    color: disabled ? "#cbd5e1" : "#93c5fd",
-    border: "1px solid #1e3a5f",
-    borderRadius: 6,
-    cursor: disabled ? "not-allowed" : "pointer",
-    fontSize: 12,
-    fontWeight: 700,
+function badgeClassName(variant: "default" | "success" | "warning") {
+  const variantClasses: Record<typeof variant, string> = {
+    default: "bg-[#1e3a5f] text-[#bfdbfe]",
+    success: "bg-[#065f46] text-[#dcfce7]",
+    warning: "bg-[#92400e] text-[#fef3c7]",
   };
+
+  return cx(
+    "inline-block rounded px-2 py-1 text-xs font-semibold",
+    variantClasses[variant],
+  );
 }
 
-function buttonStyle(disabled = false): CSSProperties {
-  return {
-    padding: "8px 16px",
-    backgroundColor: disabled ? "#3b4c7a" : "var(--focus-ring, #0e7a53)",
-    color: "var(--bg-deep, #f7f3ed)",
-    border: "none",
-    borderRadius: 4,
-    cursor: disabled ? "not-allowed" : "pointer",
-    fontWeight: 600,
-    fontSize: 14,
-  };
+function miniButtonClassName(disabled = false) {
+  return cx(
+    "rounded-md border border-[#1e3a5f] px-2.5 py-1.5 text-xs font-bold",
+    disabled
+      ? "cursor-not-allowed bg-[#3b4c7a] text-[#cbd5e1]"
+      : "cursor-pointer bg-[var(--border-1,#e5dfd2)] text-[#93c5fd]",
+  );
 }
 
-function batchRecomputeButtonStyle(disabled = false): CSSProperties {
-  return {
-    padding: "8px 16px",
-    backgroundColor: disabled ? "#3b4c7a" : "#065f46",
-    color: disabled ? "var(--t3, #8b8378)" : "#86efac",
-    border: "1px solid #14532d",
-    borderRadius: 4,
-    cursor: disabled ? "not-allowed" : "pointer",
-    fontWeight: 600,
-    fontSize: 14,
-  };
+function buttonClassName(disabled = false) {
+  return cx(
+    "rounded border-0 px-4 py-2 text-sm font-semibold text-[var(--bg-deep,#f7f3ed)]",
+    disabled
+      ? "cursor-not-allowed bg-[#3b4c7a]"
+      : "cursor-pointer bg-[var(--focus-ring,#0e7a53)]",
+  );
 }
 
-const pageTitleStyle: CSSProperties = {
-  fontSize: 28,
-  fontWeight: 700,
-  marginBottom: 8,
-  color: "var(--t1, #1a1a1a)",
-};
-const subtitleStyle: CSSProperties = {
-  margin: 0,
-  color: "var(--t2, #4a4a4a)",
-  fontSize: 14,
-};
-const headerRowStyle: CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 16,
-  alignItems: "flex-end",
-  marginBottom: 20,
-};
-const metricsGridStyle: CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-  gap: 16,
-  marginBottom: 20,
-};
-const formGridStyle: CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "minmax(0, 2fr) minmax(280px, 1fr)",
-  gap: 20,
-  marginBottom: 20,
-};
-const surfaceCardStyle: CSSProperties = {
-  background: "#111328",
-  border: "1px solid #1e2243",
-  borderRadius: 12,
-  padding: 20,
-};
-const sectionTitleStyle: CSSProperties = {
-  fontSize: 18,
-  fontWeight: 700,
-  color: "var(--t1, #1a1a1a)",
-  marginTop: 0,
-  marginBottom: 16,
-};
-const formStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-};
-const formColumnsStyle: CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-  gap: 12,
-};
-const filtersColumnStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 12,
-};
-const labelStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 6,
-  color: "#cbd5e1",
-  fontSize: 13,
-  fontWeight: 600,
-};
-const inputStyle: CSSProperties = {
-  background: "#0b1021",
-  border: "1px solid #263056",
-  borderRadius: 8,
-  padding: "10px 12px",
-  color: "var(--t1, #1a1a1a)",
-  fontSize: 14,
-};
-const selectStyle: CSSProperties = { ...inputStyle, appearance: "none" };
-const textAreaStyle: CSSProperties = {
-  ...inputStyle,
-  minHeight: 84,
-  resize: "vertical",
-};
-const metricLabelStyle: CSSProperties = {
-  color: "var(--t3, #8b8378)",
-  fontSize: 12,
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
-  marginBottom: 8,
-};
-const metricValueStyle: CSSProperties = {
-  color: "var(--t1, #1a1a1a)",
-  fontSize: 26,
-  fontWeight: 700,
-};
-const successTextStyle: CSSProperties = {
-  color: "#86efac",
-  fontSize: 13,
-  fontWeight: 600,
-};
-const errorTextStyle: CSSProperties = {
-  color: "#fca5a5",
-  fontSize: 13,
-  fontWeight: 600,
-};
+function batchRecomputeButtonClassName(disabled = false) {
+  return cx(
+    "rounded border border-[#14532d] px-4 py-2 text-sm font-semibold",
+    disabled
+      ? "cursor-not-allowed bg-[#3b4c7a] text-[var(--t3,#8b8378)]"
+      : "cursor-pointer bg-[#065f46] text-[#86efac]",
+  );
+}
+
+const pageTitleClassName =
+  "mb-2 text-[28px] font-bold text-[var(--t1,#1a1a1a)]";
+const subtitleClassName = "m-0 text-sm text-[var(--t2,#4a4a4a)]";
+const headerRowClassName = "mb-5 flex items-end justify-between gap-4";
+const metricsGridClassName =
+  "mb-5 grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4";
+const formGridClassName =
+  "mb-5 grid grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] gap-5";
+const surfaceCardClassName =
+  "rounded-[12px] border border-[#1e2243] bg-[#111328] p-5";
+const sectionTitleClassName =
+  "mb-4 mt-0 text-lg font-bold text-[var(--t1,#1a1a1a)]";
+const formClassName = "flex flex-col gap-[14px]";
+const formColumnsClassName =
+  "grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3";
+const filtersColumnClassName = "flex flex-col gap-3";
+const labelClassName =
+  "flex flex-col gap-1.5 text-[13px] font-semibold text-[#cbd5e1]";
+const inputClassName =
+  "rounded-lg border border-[#263056] bg-[#0b1021] px-3 py-2.5 text-sm text-[var(--t1,#1a1a1a)]";
+const selectClassName = `${inputClassName} appearance-none`;
+const textAreaClassName = `${inputClassName} min-h-[84px] resize-y`;
+const metricLabelClassName =
+  "mb-2 text-xs uppercase tracking-[0.08em] text-[var(--t3,#8b8378)]";
+const metricValueClassName = "text-[26px] font-bold text-[var(--t1,#1a1a1a)]";
+const successTextClassName = "text-[13px] font-semibold text-[#86efac]";
+const errorTextClassName = "text-[13px] font-semibold text-[#fca5a5]";
 
 export default function LeaderboardsPage() {
   return (

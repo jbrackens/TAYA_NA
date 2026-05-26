@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { getCryptoConfig, type CryptoRailConfig } from "../lib/api/crypto-client";
+import {
+  getCryptoConfig,
+  type CryptoRailConfig,
+} from "../lib/api/crypto-client";
 import { logger } from "../lib/logger";
 
 type LoadState = "loading" | "coming-soon" | "ready" | "error";
@@ -63,13 +66,15 @@ export default function CryptoDepositCard() {
 
   return (
     <div className="cashier-section">
-      <label className="cashier-label">{asset} deposits ({network})</label>
+      <label className="cashier-label">
+        {asset} deposits ({network})
+      </label>
       <div className="cashier-msg pending">
         Crypto deposits are being moved to the non-custodial cashier. We will
         show a Tron USDT deposit address here once the new bridge-backed rail is
         live.
       </div>
-      <p className="cashier-balance-sub" style={{ marginTop: "0.75rem" }}>
+      <p className="cashier-balance-sub mt-3">
         Do not send funds to any old Hula Na! custodial BSC address. V1 crypto
         deposits must be non-custodial and bridge into your user wallet.
       </p>

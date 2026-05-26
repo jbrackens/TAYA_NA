@@ -17,13 +17,7 @@ const SidebarComponent: React.FC<SidebarComponentProps> = ({
   return (
     <Sider
       width={200}
-      className="site-layout-background"
-      style={{
-        overflow: "auto",
-        height: "100vh",
-        position: "fixed",
-        left: 0,
-      }}
+      className="site-layout-background fixed left-0 h-screen overflow-auto"
     >
       <SidebarMenu menu={menu} onVisibilityChange={onVisibilityChange} />
     </Sider>

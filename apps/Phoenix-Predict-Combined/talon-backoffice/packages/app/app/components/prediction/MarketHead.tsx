@@ -62,6 +62,30 @@ function formatCloseDate(iso: string): string {
   return `${month} ${day}, ${hours}:${mins} UTC`;
 }
 
+const MARKET_HEAD_CLASS =
+  "mb-5 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-6 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[720px]:p-5";
+const MARKET_HEAD_TOP_CLASS =
+  "mb-[14px] flex flex-wrap items-center justify-between gap-3";
+const MARKET_HEAD_PILLS_CLASS = "flex flex-wrap items-center gap-2";
+const MARKET_HEAD_LIVE_CLASS =
+  "inline-flex items-center gap-1.5 font-['IBM_Plex_Mono',_monospace] text-[10px] font-bold tracking-[0.16em] text-[var(--accent)]";
+const MARKET_HEAD_LIVE_DOT_CLASS =
+  "h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent)] shadow-[0_0_0_4px_rgba(43,228,128,0.18)] motion-reduce:animate-none";
+const MARKET_HEAD_SETTLED_CLASS =
+  "inline-flex items-center gap-1.5 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-black/[0.05] px-2.5 py-1 font-['IBM_Plex_Mono',_monospace] text-[10px] font-bold tracking-[0.16em] text-[var(--t2)]";
+const MARKET_HEAD_SETTLED_OUTCOME_CLASS =
+  "tracking-[0.04em] text-[var(--t1)]";
+const MARKET_HEAD_PILL_CLASS =
+  "rounded-[var(--r-pill)] bg-white/[0.04] px-2.5 py-1 font-['IBM_Plex_Mono',_monospace] text-[11px] font-medium text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+const MARKET_HEAD_CATEGORY_PILL_CLASS =
+  "rounded-[var(--r-pill)] bg-[var(--accent-soft)] px-2.5 py-1 font-['Inter',_sans-serif] text-[11px] font-semibold tracking-[0.04em] text-[var(--accent)] [font-variant-numeric:tabular-nums]";
+const MARKET_HEAD_COUNTDOWN_CLASS =
+  "font-['IBM_Plex_Mono',_monospace] text-xs text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+const MARKET_HEAD_TITLE_CLASS =
+  "mb-2 text-[28px] font-semibold leading-[1.22] tracking-[-0.02em] text-[var(--t1)] max-[720px]:text-[22px]";
+const MARKET_HEAD_DESC_CLASS =
+  "mt-2 mb-0 max-w-[680px] text-sm leading-[1.5] text-[var(--t2)]";
+
 export default function MarketHead({
   market,
   categoryName,
@@ -100,151 +124,50 @@ export default function MarketHead({
     : null;
 
   return (
-    <>
-      <style>{`
-        .mh {
-          background: var(--surface-1);
-          border: 1px solid var(--border-1);
-          padding: 24px 28px;
-          margin-bottom: 20px;
-          border-radius: var(--r-rh-lg);
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        .mh-top {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 14px;
-          flex-wrap: wrap;
-          gap: 12px;
-        }
-        .mh-pills {
-          display: flex;
-          gap: 8px;
-          align-items: center;
-          flex-wrap: wrap;
-        }
-        .mh-live {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          color: var(--accent);
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.16em;
-        }
-        .mh-live-dot {
-          width: 6px; height: 6px;
-          border-radius: 50%;
-          background: var(--accent);
-          box-shadow: 0 0 0 4px rgba(43, 228, 128, 0.18);
-          animation: mh-pulse 2s ease-in-out infinite;
-        }
-        @keyframes mh-pulse { 50% { opacity: 0.55; } }
-        .mh-settled {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          color: var(--t2);
-          background: rgba(0, 0, 0, 0.05);
-          border: 1px solid var(--border-1);
-          padding: 4px 10px;
-          border-radius: var(--r-pill);
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.16em;
-        }
-        .mh-settled-outcome {
-          color: var(--t1);
-          letter-spacing: 0.04em;
-        }
-        .mh-pill {
-          color: var(--t3);
-          font-size: 11px;
-          font-weight: 500;
-          padding: 4px 10px;
-          border-radius: var(--r-pill);
-          background: rgba(255, 255, 255, 0.04);
-          font-variant-numeric: tabular-nums;
-          font-family: 'IBM Plex Mono', monospace;
-        }
-        .mh-pill.cat {
-          color: var(--accent);
-          background: var(--accent-soft);
-          font-family: 'Inter', sans-serif;
-          font-weight: 600;
-          letter-spacing: 0.04em;
-        }
-        .mh-countdown {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 12px;
-          color: var(--t3);
-          font-variant-numeric: tabular-nums;
-        }
-        .mh-countdown .sep { margin: 0 8px; color: var(--t4); }
-        .mh-q {
-          font-size: 28px;
-          font-weight: 600;
-          line-height: 1.22;
-          letter-spacing: -0.02em;
-          color: var(--t1);
-          margin-bottom: 8px;
-        }
-        .mh-desc {
-          color: var(--t2);
-          font-size: 14px;
-          line-height: 1.5;
-          max-width: 680px;
-          margin: 8px 0 0;
-        }
-        @media (max-width: 720px) {
-          .mh { padding: 20px; }
-          .mh-q { font-size: 22px; }
-        }
-      `}</style>
-      <section className="mh">
-        <div className="mh-top">
-          <div className="mh-pills">
-            {isLive && (
-              <span className="mh-live">
-                <span className="mh-live-dot" aria-hidden="true" />
-                {t("LIVE")}
-              </span>
-            )}
-            {isSettled && settledLabel && (
-              <span className="mh-settled">
-                {t("SETTLED")}
-                <span className="mh-settled-outcome">· {settledLabel}</span>
-              </span>
-            )}
-            {displayCategory && (
-              <span className="mh-pill cat">{displayCategory}</span>
-            )}
-            <span className="mh-pill">
-              {t("VOLUME_VALUE", {
-                value: formatVolume(displayMarket.volumeCents),
-              })}
+    <section className={MARKET_HEAD_CLASS}>
+      <div className={MARKET_HEAD_TOP_CLASS}>
+        <div className={MARKET_HEAD_PILLS_CLASS}>
+          {isLive && (
+            <span className={MARKET_HEAD_LIVE_CLASS}>
+              <span className={MARKET_HEAD_LIVE_DOT_CLASS} aria-hidden="true" />
+              {t("LIVE")}
             </span>
-            {typeof tradersCount === "number" && (
-              <span className="mh-pill">
-                {t("TRADER_COUNT", { count: tradersCount })}
+          )}
+          {isSettled && settledLabel && (
+            <span className={MARKET_HEAD_SETTLED_CLASS}>
+              {t("SETTLED")}
+              <span className={MARKET_HEAD_SETTLED_OUTCOME_CLASS}>
+                · {settledLabel}
               </span>
-            )}
-            <span className="mh-pill">{displayMarket.ticker}</span>
-          </div>
-          <span className="mh-countdown">
-            {isSettled ? t("CLOSED") : countdown}
-            <span className="sep">·</span>
-            {formatCloseDate(displayMarket.closeAt)}
+            </span>
+          )}
+          {displayCategory && (
+            <span className={MARKET_HEAD_CATEGORY_PILL_CLASS}>
+              {displayCategory}
+            </span>
+          )}
+          <span className={MARKET_HEAD_PILL_CLASS}>
+            {t("VOLUME_VALUE", {
+              value: formatVolume(displayMarket.volumeCents),
+            })}
           </span>
+          {typeof tradersCount === "number" && (
+            <span className={MARKET_HEAD_PILL_CLASS}>
+              {t("TRADER_COUNT", { count: tradersCount })}
+            </span>
+          )}
+          <span className={MARKET_HEAD_PILL_CLASS}>{displayMarket.ticker}</span>
         </div>
-        <h1 className="mh-q">{displayMarket.title}</h1>
-        {displayMarket.description && (
-          <p className="mh-desc">{displayMarket.description}</p>
-        )}
-      </section>
-    </>
+        <span className={MARKET_HEAD_COUNTDOWN_CLASS}>
+          {isSettled ? t("CLOSED") : countdown}
+          <span className="mx-2 text-[var(--t4)]">·</span>
+          {formatCloseDate(displayMarket.closeAt)}
+        </span>
+      </div>
+      <h1 className={MARKET_HEAD_TITLE_CLASS}>{displayMarket.title}</h1>
+      {displayMarket.description && (
+        <p className={MARKET_HEAD_DESC_CLASS}>{displayMarket.description}</p>
+      )}
+    </section>
   );
 }

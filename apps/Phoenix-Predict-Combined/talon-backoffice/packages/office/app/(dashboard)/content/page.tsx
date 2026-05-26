@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, CSSProperties } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   DataTable,
   ErrorBoundary,
@@ -162,22 +162,7 @@ function ContentPageContent() {
         key: "status",
         label: "Status",
         render: (_value, row) => (
-          <span
-            style={{
-              padding: "2px 8px",
-              borderRadius: "4px",
-              fontSize: "11px",
-              fontWeight: 600,
-              backgroundColor:
-                row.status === "published"
-                  ? "rgba(34,197,94,0.15)"
-                  : "rgba(251,191,36,0.15)",
-              color:
-                row.status === "published"
-                  ? "var(--accent, #2be480)"
-                  : "var(--warn, #d97706)",
-            }}
-          >
+          <span className={statusBadgeClassName(row.status === "published")}>
             {row.status}
           </span>
         ),
@@ -189,7 +174,7 @@ function ContentPageContent() {
           row.status === "draft" ? (
             <button
               onClick={() => publishPage(row.page_id)}
-              style={actionBtnStyle}
+              className={actionBtnClassName}
             >
               Publish
             </button>
@@ -216,34 +201,10 @@ function ContentPageContent() {
     [],
   );
 
-  const tabStyle = (isActive: boolean): CSSProperties => ({
-    padding: "8px 16px",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: 600,
-    borderBottom: isActive ? "2px solid #39ff14" : "2px solid transparent",
-    color: isActive ? "var(--t1, #1a1a1a)" : "var(--t3, #8b8378)",
-    background: "none",
-    border: "none",
-  });
-
   return (
-    <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "32px 20px" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "24px",
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "24px",
-            fontWeight: 800,
-            color: "var(--t1, #1a1a1a)",
-          }}
-        >
+    <div className="mx-auto max-w-[1000px] px-5 py-8">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-extrabold text-[var(--t1,#1a1a1a)]">
           Content Management
         </h1>
         <button
@@ -252,70 +213,61 @@ function ContentPageContent() {
               ? setShowPageForm(true)
               : setShowBannerForm(true)
           }
-          style={createBtnStyle}
+          className={createBtnClassName}
         >
           + New {activeTab === "pages" ? "Page" : "Banner"}
         </button>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: "4px",
-          borderBottom: "1px solid var(--border-1, #e5dfd2)",
-          marginBottom: "20px",
-        }}
-      >
+      <div className="mb-5 flex gap-1 border-b border-[var(--border-1,#e5dfd2)]">
         <button
-          style={tabStyle(activeTab === "pages")}
+          className={tabClassName(activeTab === "pages")}
           onClick={() => setActiveTab("pages")}
         >
           Pages
         </button>
         <button
-          style={tabStyle(activeTab === "banners")}
+          className={tabClassName(activeTab === "banners")}
           onClick={() => setActiveTab("banners")}
         >
           Banners
         </button>
       </div>
 
-      {error && <div style={errorStyle}>{error}</div>}
+      {error && <div className={errorClassName}>{error}</div>}
 
       {showPageForm && (
-        <div style={formStyle}>
-          <h3 style={{ color: "var(--t1, #1a1a1a)", marginBottom: "12px" }}>
-            New Page
-          </h3>
+        <div className={formClassName}>
+          <h3 className="mb-3 text-[var(--t1,#1a1a1a)]">New Page</h3>
           <input
             placeholder="Slug (e.g. about-us)"
             value={pageSlug}
             onChange={(e) => setPageSlug(e.target.value)}
-            style={inputStyle}
+            className={inputClassName}
           />
           <input
             placeholder="Title"
             value={pageTitle}
             onChange={(e) => setPageTitle(e.target.value)}
-            style={inputStyle}
+            className={inputClassName}
           />
           <textarea
             placeholder="Content (HTML)"
             value={pageContent}
             onChange={(e) => setPageContent(e.target.value)}
-            style={{ ...inputStyle, height: "100px" }}
+            className={`${inputClassName} h-[100px]`}
           />
-          <div style={{ display: "flex", gap: "8px" }}>
+          <div className="flex gap-2">
             <button
               onClick={createPage}
               disabled={saving || !pageSlug || !pageTitle}
-              style={createBtnStyle}
+              className={createBtnClassName}
             >
               {saving ? "Saving..." : "Create Draft"}
             </button>
             <button
               onClick={() => setShowPageForm(false)}
-              style={cancelBtnStyle}
+              className={cancelBtnClassName}
             >
               Cancel
             </button>
@@ -324,48 +276,46 @@ function ContentPageContent() {
       )}
 
       {showBannerForm && (
-        <div style={formStyle}>
-          <h3 style={{ color: "var(--t1, #1a1a1a)", marginBottom: "12px" }}>
-            New Banner
-          </h3>
+        <div className={formClassName}>
+          <h3 className="mb-3 text-[var(--t1,#1a1a1a)]">New Banner</h3>
           <input
             placeholder="Title"
             value={bannerTitle}
             onChange={(e) => setBannerTitle(e.target.value)}
-            style={inputStyle}
+            className={inputClassName}
           />
           <input
             placeholder="Image URL"
             value={bannerImageUrl}
             onChange={(e) => setBannerImageUrl(e.target.value)}
-            style={inputStyle}
+            className={inputClassName}
           />
           <input
             placeholder="Link URL"
             value={bannerLinkUrl}
             onChange={(e) => setBannerLinkUrl(e.target.value)}
-            style={inputStyle}
+            className={inputClassName}
           />
           <select
             value={bannerPosition}
             onChange={(e) => setBannerPosition(e.target.value)}
-            style={inputStyle}
+            className={inputClassName}
           >
             <option value="hero">Hero</option>
             <option value="sidebar">Sidebar</option>
             <option value="footer">Footer</option>
           </select>
-          <div style={{ display: "flex", gap: "8px" }}>
+          <div className="flex gap-2">
             <button
               onClick={createBanner}
               disabled={saving || !bannerTitle || !bannerImageUrl}
-              style={createBtnStyle}
+              className={createBtnClassName}
             >
               {saving ? "Saving..." : "Create Banner"}
             </button>
             <button
               onClick={() => setShowBannerForm(false)}
-              style={cancelBtnStyle}
+              className={cancelBtnClassName}
             >
               Cancel
             </button>
@@ -392,62 +342,36 @@ function ContentPageContent() {
   );
 }
 
-const createBtnStyle: CSSProperties = {
-  padding: "8px 16px",
-  borderRadius: "6px",
-  border: "1px solid #39ff14",
-  backgroundColor: "rgba(57, 255, 20, 0.1)",
-  color: "#39ff14",
-  fontSize: "13px",
-  fontWeight: 600,
-  cursor: "pointer",
-};
-const cancelBtnStyle: CSSProperties = {
-  padding: "8px 16px",
-  borderRadius: "6px",
-  border: "1px solid var(--border-1, #e5dfd2)",
-  backgroundColor: "transparent",
-  color: "var(--t3, #8b8378)",
-  fontSize: "13px",
-  cursor: "pointer",
-};
-const actionBtnStyle: CSSProperties = {
-  padding: "4px 10px",
-  borderRadius: "4px",
-  border: "1px solid #39ff14",
-  backgroundColor: "transparent",
-  color: "#39ff14",
-  fontSize: "11px",
-  fontWeight: 600,
-  cursor: "pointer",
-};
-const inputStyle: CSSProperties = {
-  width: "100%",
-  padding: "8px 12px",
-  marginBottom: "8px",
-  borderRadius: "6px",
-  border: "1px solid var(--border-1, #e5dfd2)",
-  backgroundColor: "var(--bg-deep, #f7f3ed)",
-  color: "var(--t1, #1a1a1a)",
-  fontSize: "13px",
-  outline: "none",
-};
-const formStyle: CSSProperties = {
-  padding: "20px",
-  backgroundColor: "var(--surface-1, var(--t1, #1a1a1a))",
-  border: "1px solid var(--border-1, #e5dfd2)",
-  borderRadius: "8px",
-  marginBottom: "20px",
-};
-const errorStyle: CSSProperties = {
-  padding: "12px",
-  backgroundColor: "rgba(239,68,68,0.1)",
-  border: "1px solid rgba(239,68,68,0.3)",
-  borderRadius: "6px",
-  color: "#fca5a5",
-  marginBottom: "16px",
-  fontSize: "13px",
-};
+const createBtnClassName =
+  "cursor-pointer rounded-md border border-[#39ff14] bg-[rgba(57,255,20,0.1)] px-4 py-2 text-[13px] font-semibold text-[#39ff14] disabled:cursor-not-allowed disabled:opacity-60";
+const cancelBtnClassName =
+  "cursor-pointer rounded-md border border-[var(--border-1,#e5dfd2)] bg-transparent px-4 py-2 text-[13px] text-[var(--t3,#8b8378)]";
+const actionBtnClassName =
+  "cursor-pointer rounded border border-[#39ff14] bg-transparent px-2.5 py-1 text-[11px] font-semibold text-[#39ff14]";
+const inputClassName =
+  "mb-2 w-full rounded-md border border-[var(--border-1,#e5dfd2)] bg-[var(--bg-deep,#f7f3ed)] px-3 py-2 text-[13px] text-[var(--t1,#1a1a1a)] outline-none";
+const formClassName =
+  "mb-5 rounded-lg border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,var(--t1,#1a1a1a))] p-5";
+const errorClassName =
+  "mb-4 rounded-md border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] p-3 text-[13px] text-[#fca5a5]";
+
+function statusBadgeClassName(published: boolean): string {
+  return [
+    "rounded px-2 py-0.5 text-[11px] font-semibold",
+    published
+      ? "bg-[rgba(34,197,94,0.15)] text-[var(--accent,#2be480)]"
+      : "bg-[rgba(251,191,36,0.15)] text-[var(--warn,#d97706)]",
+  ].join(" ");
+}
+
+function tabClassName(isActive: boolean): string {
+  return [
+    "cursor-pointer border-b-2 border-l-0 border-r-0 border-t-0 bg-transparent px-4 py-2 text-sm font-semibold",
+    isActive
+      ? "border-b-[#39ff14] text-[var(--t1,#1a1a1a)]"
+      : "border-b-transparent text-[var(--t3,#8b8378)]",
+  ].join(" ");
+}
 
 export default function ContentPage() {
   return (

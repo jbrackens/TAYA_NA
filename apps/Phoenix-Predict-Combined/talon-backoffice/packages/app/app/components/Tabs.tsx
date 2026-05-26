@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-
 interface TabsProps {
   tabs: { label: string; key: string }[];
   activeKey: string;
@@ -9,53 +7,25 @@ interface TabsProps {
 }
 
 export default function Tabs({ tabs, activeKey, onChange }: TabsProps) {
-  const containerStyle: React.CSSProperties = {
-    display: "flex",
-    borderBottom: "1px solid #1a1f3a",
-    gap: "0",
-  };
-
-  const getTabStyle = (key: string): React.CSSProperties => {
-    const isActive = key === activeKey;
-    return {
-      padding: "12px 20px",
-      fontSize: "14px",
-      fontWeight: "600",
-      color: isActive ? "var(--accent)" : "#64748b",
-      backgroundColor: "transparent",
-      border: "none",
-      cursor: "pointer",
-      borderBottom: isActive ? "2px solid var(--accent)" : "none",
-      marginBottom: isActive ? "-1px" : "0",
-      transition: "all 0.2s",
-      whiteSpace: "nowrap",
-      position: "relative",
-    };
-  };
-
   return (
-    <div style={containerStyle}>
-      {tabs.map((tab) => (
-        <button
-          key={tab.key}
-          onClick={() => onChange(tab.key)}
-          style={getTabStyle(tab.key)}
-          onMouseEnter={(e) => {
-            if (tab.key !== activeKey) {
-              const el = e.currentTarget as HTMLButtonElement;
-              el.style.color = "#cbd5e1";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (tab.key !== activeKey) {
-              const el = e.currentTarget as HTMLButtonElement;
-              el.style.color = "#64748b";
-            }
-          }}
-        >
-          {tab.label}
-        </button>
-      ))}
+    <div className="flex border-b border-[#1a1f3a]">
+      {tabs.map((tab) => {
+        const isActive = tab.key === activeKey;
+
+        return (
+          <button
+            key={tab.key}
+            onClick={() => onChange(tab.key)}
+            className={`relative cursor-pointer whitespace-nowrap border-x-0 border-t-0 border-b-2 border-solid bg-transparent px-5 py-3 text-sm font-semibold transition-all duration-200 ${
+              isActive
+                ? "mb-[-1px] border-b-[var(--accent)] text-[var(--accent)]"
+                : "border-b-transparent text-[#64748b] hover:text-[#cbd5e1]"
+            }`}
+          >
+            {tab.label}
+          </button>
+        );
+      })}
     </div>
   );
 }

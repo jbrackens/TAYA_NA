@@ -1,10 +1,8 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "i18n";
 import { PoweroffOutlined, UserOutlined } from "@ant-design/icons";
 import { get, find } from "lodash";
-import { ThemeContext } from "styled-components";
 import type { MenuProps } from "antd";
-import { Header, LeftMenu } from "./index.styles";
 import { Logo } from "./logo";
 import { MenuItem } from "../../../types/menu";
 import {
@@ -15,8 +13,14 @@ import {
 import { useRouter } from "next/router";
 import { isActive } from "../../../providers/menu/utils/resolvers";
 import Profile from "./profile";
-import { Avatar, Dropdown } from "antd";
+import { Avatar, Dropdown, Layout, Menu } from "antd";
 import Link from "next/link";
+
+const { Header } = Layout;
+const HEADER_LOGO = {
+  source: "/logo-hn.png",
+  width: 60,
+};
 
 type HeaderComponentProps = {
   home?: Boolean | undefined;
@@ -24,7 +28,6 @@ type HeaderComponentProps = {
 };
 
 const HeaderComponent: React.FC<HeaderComponentProps> = ({ menu }) => {
-  const theme = useContext(ThemeContext);
   const router = useRouter();
   // Defer token resolution to client to avoid SSR hydration mismatch
   const [mounted, setMounted] = useState(false);
@@ -72,10 +75,11 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({ menu }) => {
   );
 
   return (
-    <Header>
-      <Logo theme={theme.logo} />
-      <LeftMenu
-        theme={theme.menu}
+    <Header className="fixed z-[1] flex w-screen items-center border-b border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t1)]">
+      <Logo theme={HEADER_LOGO} />
+      <Menu
+        className="grow !border-b-0 !bg-transparent"
+        theme="light"
         mode="horizontal"
         selectedKeys={[
           get(
@@ -88,9 +92,9 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({ menu }) => {
         ]}
         items={leftMenuItems}
       />
-      <Profile theme={theme} />
+      <Profile />
       <Dropdown menu={{ items: dropdownItems }} trigger={["click"]}>
-        <Avatar size={40} icon={<UserOutlined />} />
+        <Avatar className="cursor-pointer" size={40} icon={<UserOutlined />} />
       </Dropdown>
     </Header>
   );

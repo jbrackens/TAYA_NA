@@ -64,6 +64,67 @@ import {
 
 const api = createPredictionClient();
 
+const GLASS_SURFACE_CLASS =
+  "relative border border-white/[0.13] bg-[color:var(--glass-regular)] bg-[image:linear-gradient(180deg,_rgba(255,255,255,0.14)_0%,_rgba(255,255,255,0.05)_30%,_rgba(255,255,255,0.025)_100%)] shadow-[inset_0_1px_0_var(--rim-top),inset_0_-1px_0_var(--rim-bottom),inset_1px_0_2px_var(--chroma-1),inset_-1px_0_2px_var(--chroma-2),0_2px_6px_rgba(0,0,0,0.18),0_8px_24px_rgba(0,0,0,0.28),0_16px_48px_rgba(0,0,0,0.2)] backdrop-blur-[30px] backdrop-saturate-[180%] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-1/2 before:rounded-[inherit] before:bg-[image:linear-gradient(180deg,_rgba(255,255,255,0.06)_0%,_transparent_100%)] before:mix-blend-overlay before:content-['']";
+const MARKET_WRAP_CLASS = "text-[var(--t1)]";
+const MARKET_CRUMB_CLASS =
+  "mb-[18px] flex flex-wrap items-center gap-2 text-[13px] text-[var(--t3)]";
+const MARKET_CRUMB_LINK_CLASS =
+  "text-[var(--t2)] no-underline hover:text-[var(--t1)]";
+const MARKET_CRUMB_SEP_CLASS = "opacity-50";
+const MARKET_GRID_CLASS =
+  "grid grid-cols-[minmax(0,_1fr)_360px] gap-6 max-[1100px]:grid-cols-1";
+const MARKET_MAIN_CLASS =
+  "flex min-w-0 flex-col gap-6 max-[1100px]:contents";
+const MARKET_SIDE_CLASS =
+  "flex min-w-0 flex-col gap-6 max-[1100px]:contents";
+const MARKET_TICKET_STICKY_CLASS =
+  "sticky top-[84px] max-[1100px]:static max-[1100px]:top-auto max-[1100px]:order-2";
+const MARKET_DATA_ROW_CLASS =
+  "grid grid-cols-2 gap-6 max-[1100px]:order-3 max-[720px]:grid-cols-1";
+const MARKET_HERO_CLASS =
+  "overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] max-[1100px]:order-1 [&>section:first-child]:mb-0 [&>section:first-child]:rounded-none [&>section:first-child]:border-0 [&>section:first-child]:bg-transparent [&>section:first-child]:px-7 [&>section:first-child]:pt-5 [&>section:first-child]:pb-0 [&>section:nth-child(2)]:rounded-none [&>section:nth-child(2)]:border-0 [&>section:nth-child(2)]:bg-transparent [&>section:nth-child(2)]:px-7 [&>section:nth-child(2)]:pt-3 [&>section:nth-child(2)]:pb-5 [&>section:nth-child(2)_svg]:h-[280px] max-[720px]:[&>section:first-child]:px-5 max-[720px]:[&>section:first-child]:pt-[18px] max-[720px]:[&>section:nth-child(2)]:px-5 max-[720px]:[&>section:nth-child(2)]:pt-2.5 max-[720px]:[&>section:nth-child(2)]:pb-4 max-[720px]:[&>section:nth-child(2)_svg]:h-[220px]";
+const MARKET_DETAILS_CLASS =
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-6 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[1100px]:order-4";
+const MARKET_DETAILS_TITLE_CLASS =
+  "mb-3 text-base font-semibold tracking-[-0.01em] text-[var(--t1)]";
+const MARKET_DETAILS_COPY_CLASS =
+  "mb-2.5 text-sm leading-[1.6] text-[var(--t2)]";
+const MARKET_RULES_CLASS =
+  "mt-[14px] flex list-none flex-col gap-2 border-t border-[var(--border-1)] p-0 pt-[14px]";
+const MARKET_RULE_CLASS =
+  "relative pl-[18px] text-[13px] leading-[1.5] text-[var(--t2)] before:absolute before:left-1 before:top-2 before:h-1.5 before:w-1.5 before:rounded-full before:bg-[var(--accent)] before:content-['']";
+const RELATED_CARD_CLASS =
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[1100px]:order-5";
+const RELATED_TITLE_CLASS =
+  "mb-[14px] border-b border-[var(--border-1)] pb-3 text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
+const RELATED_EMPTY_CLASS = "text-xs text-[var(--t3)]";
+const RELATED_LIST_CLASS = "flex flex-col";
+const RELATED_ROW_CLASS =
+  "group block border-t border-[var(--border-1)] py-3 no-underline first:border-t-0 first:pt-0 last:pb-0";
+const RELATED_QUESTION_CLASS =
+  "mb-1.5 text-[13px] font-medium leading-[1.35] text-[var(--t1)] group-hover:text-[var(--accent)]";
+const RELATED_LINE_CLASS =
+  "flex items-center justify-between font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+const RELATED_YES_CLASS = "font-semibold text-[var(--yes-text)]";
+const PAGE_STATE_WRAP_CLASS = "grid min-h-[60vh] place-items-center px-4 py-8";
+const PAGE_STATE_CARD_CLASS = `${GLASS_SURFACE_CLASS} w-[min(100%,440px)] rounded-[var(--r-lg)] p-7 text-center text-[var(--t1)]`;
+const PAGE_STATE_EYEBROW_BASE_CLASS =
+  "mb-[14px] inline-flex min-h-7 items-center justify-center rounded-[var(--r-pill)] border px-3 text-[11px] font-bold uppercase tracking-[0.12em]";
+const PAGE_STATE_TITLE_CLASS =
+  "m-0 text-[22px] font-extrabold tracking-[-0.01em]";
+const PAGE_STATE_COPY_CLASS = "mt-2.5 mb-0 text-sm leading-[1.5] text-[var(--t2)]";
+const PAGE_STATE_ACTION_CLASS =
+  "mt-[22px] inline-flex min-h-11 items-center justify-center rounded-[var(--r-md)] border border-[rgba(43,228,128,0.6)] bg-[image:linear-gradient(180deg,_rgba(255,255,255,0.25)_0%,_rgba(255,255,255,0)_50%),linear-gradient(115deg,_#2be480_0%,_#00ffaa_100%)] px-5 text-sm font-bold text-[#04140a] no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.5),_0_10px_28px_rgba(43,228,128,0.18)] transition-[transform,filter] duration-[180ms] ease-[ease] hover:-translate-y-px hover:brightness-[1.05]";
+
+function pageStateEyebrowClass(isError: boolean): string {
+  return `${PAGE_STATE_EYEBROW_BASE_CLASS} ${
+    isError
+      ? "border-[rgba(255,155,107,0.28)] bg-[rgba(255,155,107,0.08)] text-[var(--no)]"
+      : "border-[rgba(43,228,128,0.28)] bg-[rgba(43,228,128,0.08)] text-[var(--accent)]"
+  }`;
+}
+
 function synthesizeBook(market: PredictionMarket): {
   bids: BookLevel[];
   asks: BookLevel[];
@@ -483,207 +544,29 @@ export default function MarketDetailPage() {
   const tradersCount = traders.size;
 
   return (
-    <div className="md-wrap">
-      <style>{`
-        .md-wrap { color: var(--t1); }
-        .md-crumb {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          color: var(--t3);
-          font-size: 13px;
-          margin-bottom: 18px;
-          flex-wrap: wrap;
-        }
-        .md-crumb a { color: var(--t2); text-decoration: none; }
-        .md-crumb a:hover { color: var(--t1); }
-        .md-crumb .sep { opacity: 0.5; }
-
-        /* 2-col primary layout: main flow on the left (hero, orderbook+trades,
-         * details), sticky trade ticket + related on the right. Matches the
-         * file-header diagram and Robinhood's stock detail pattern. Below
-         * 1100px the grid collapses to single column for tablet/mobile. */
-        .md-grid {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) 360px;
-          gap: 24px;
-        }
-        .md-main {
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-          min-width: 0;
-        }
-        .md-side {
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-          min-width: 0;
-        }
-        .md-ticket-sticky { position: sticky; top: 84px; }
-        .md-data-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 24px;
-        }
-
-        /* Collapse MarketHead + MarketChart into one card. CSS overrides
-         * the children's own card chrome via .md-hero descendant selectors
-         * (higher specificity wins regardless of style-tag order). The
-         * narrower 2-col chart column lets the SVG be shorter (280 vs 320)
-         * so the trade ticket sits above the fold. */
-        .md-hero {
-          background: var(--surface-1);
-          border: 1px solid var(--border-1);
-          border-radius: var(--r-rh-lg);
-          overflow: hidden;
-        }
-        .md-hero .mh {
-          background: transparent;
-          border: 0;
-          padding: 20px 28px 0;
-          margin-bottom: 0;
-          border-radius: 0;
-        }
-        .md-hero .mc-card {
-          background: transparent;
-          border: 0;
-          padding: 12px 28px 20px;
-          border-radius: 0;
-        }
-        .md-hero .mc-svg { height: 280px; }
-
-        .md-details {
-          background: var(--surface-1);
-          border: 1px solid var(--border-1);
-          padding: 24px 28px;
-          border-radius: var(--r-rh-lg);
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        .md-details h3 {
-          font-size: 16px;
-          font-weight: 600;
-          color: var(--t1);
-          margin-bottom: 12px;
-          letter-spacing: -0.01em;
-        }
-        .md-details p {
-          color: var(--t2);
-          font-size: 14px;
-          line-height: 1.6;
-          margin-bottom: 10px;
-        }
-        .md-rules {
-          list-style: none;
-          padding: 0;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          margin-top: 14px;
-          padding-top: 14px;
-          border-top: 1px solid var(--border-1);
-        }
-        .md-rules li {
-          font-size: 13px;
-          color: var(--t2);
-          padding-left: 18px;
-          position: relative;
-          line-height: 1.5;
-        }
-        .md-rules li::before {
-          content: '';
-          position: absolute;
-          left: 4px;
-          top: 8px;
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: var(--accent);
-        }
-
-        .md-related {
-          background: var(--surface-1);
-          border: 1px solid var(--border-1);
-          padding: 20px;
-          border-radius: var(--r-rh-lg);
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        .md-related h3 {
-          font-size: 14px;
-          font-weight: 600;
-          color: var(--t1);
-          margin-bottom: 14px;
-          letter-spacing: -0.01em;
-          padding-bottom: 12px;
-          border-bottom: 1px solid var(--border-1);
-        }
-        .md-related-list {
-          display: flex;
-          flex-direction: column;
-        }
-        .md-related-row {
-          padding: 12px 0;
-          border-top: 1px solid var(--border-1);
-          text-decoration: none;
-          display: block;
-        }
-        .md-related-row:first-of-type { border-top: none; padding-top: 0; }
-        .md-related-row:last-child { padding-bottom: 0; }
-        .md-related-q {
-          font-size: 13px;
-          font-weight: 500;
-          line-height: 1.35;
-          margin-bottom: 6px;
-          color: var(--t1);
-        }
-        .md-related-row:hover .md-related-q { color: var(--accent); }
-        .md-related-line {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 11px;
-          font-family: 'IBM Plex Mono', monospace;
-          font-variant-numeric: tabular-nums;
-          color: var(--t3);
-        }
-        .md-related-yes { color: var(--yes-text); font-weight: 600; }
-
-        @media (max-width: 1100px) {
-          /* Single-column flow: dissolve the column wrappers via
-           * display:contents so we can reorder children at the grid
-           * level. Keeps the trade ticket directly under the hero
-           * (where it lived before the 2-col restructure). */
-          .md-grid { grid-template-columns: 1fr; }
-          .md-main, .md-side { display: contents; }
-          .md-hero { order: 1; }
-          .md-ticket-sticky { order: 2; position: static; top: auto; }
-          .md-data-row { order: 3; }
-          .md-details { order: 4; }
-          .md-related { order: 5; }
-        }
-        @media (max-width: 720px) {
-          .md-data-row { grid-template-columns: 1fr; }
-          .md-hero .mh { padding: 18px 20px 0; }
-          .md-hero .mc-card { padding: 10px 20px 16px; }
-          .md-hero .mc-svg { height: 220px; }
-        }
-      `}</style>
-
-      <nav className="md-crumb" aria-label="Breadcrumb">
-        <Link href="/predict">{t("MARKETS_TITLE")}</Link>
+    <div className={MARKET_WRAP_CLASS}>
+      <nav className={MARKET_CRUMB_CLASS} aria-label="Breadcrumb">
+        <Link href="/predict" className={MARKET_CRUMB_LINK_CLASS}>
+          {t("MARKETS_TITLE")}
+        </Link>
         {category && (
           <>
-            <span className="sep">›</span>
-            <Link href={`/category/${category.slug}`}>{displayCategory}</Link>
+            <span className={MARKET_CRUMB_SEP_CLASS}>›</span>
+            <Link
+              href={`/category/${category.slug}`}
+              className={MARKET_CRUMB_LINK_CLASS}
+            >
+              {displayCategory}
+            </Link>
           </>
         )}
-        <span className="sep">›</span>
+        <span className={MARKET_CRUMB_SEP_CLASS}>›</span>
         <span>{displayMarket?.title}</span>
       </nav>
 
-      <div className="md-grid">
-        <div className="md-main">
-          <section className="md-hero">
+      <div className={MARKET_GRID_CLASS}>
+        <div className={MARKET_MAIN_CLASS}>
+          <section className={MARKET_HERO_CLASS}>
             <MarketHead
               market={displayMarket ?? market}
               categoryName={displayCategory}
@@ -701,29 +584,35 @@ export default function MarketDetailPage() {
             />
           </section>
 
-          <div className="md-data-row">
+          <div className={MARKET_DATA_ROW_CLASS}>
             <OrderBook bids={bids} asks={asks} />
             <RecentTrades trades={trades} />
           </div>
 
-          <section className="md-details">
-            <h3>{t("MARKET_DETAILS_RESOLUTION")}</h3>
-            {displayMarket?.description && <p>{displayMarket.description}</p>}
-            <ul className="md-rules">
-              <li>
+          <section className={MARKET_DETAILS_CLASS}>
+            <h3 className={MARKET_DETAILS_TITLE_CLASS}>
+              {t("MARKET_DETAILS_RESOLUTION")}
+            </h3>
+            {displayMarket?.description && (
+              <p className={MARKET_DETAILS_COPY_CLASS}>
+                {displayMarket.description}
+              </p>
+            )}
+            <ul className={MARKET_RULES_CLASS}>
+              <li className={MARKET_RULE_CLASS}>
                 {t("SETTLEMENT_SOURCE", {
                   source: market.settlementSourceKey,
                 })}
               </li>
-              <li>
+              <li className={MARKET_RULE_CLASS}>
                 {t("RESOLUTION_RULE", { rule: market.settlementRule })}
               </li>
-              <li>
+              <li className={MARKET_RULE_CLASS}>
                 {t("FEES_ON_FILLS", {
                   fee: (market.feeRateBps / 100).toFixed(2),
                 })}
               </li>
-              <li>
+              <li className={MARKET_RULE_CLASS}>
                 {t("CLOSES_AT_UTC", {
                   date: new Date(market.closeAt).toUTCString().slice(5, -4),
                 })}
@@ -732,8 +621,8 @@ export default function MarketDetailPage() {
           </section>
         </div>
 
-        <aside className="md-side">
-          <div className="md-ticket-sticky">
+        <aside className={MARKET_SIDE_CLASS}>
+          <div className={MARKET_TICKET_STICKY_CLASS}>
             <TradeTicket
               market={market}
               balance={typeof balance === "number" ? balance : undefined}
@@ -765,25 +654,23 @@ export default function MarketDetailPage() {
             />
           </div>
 
-          <aside className="md-related" aria-label={t("RELATED_MARKETS")}>
-            <h3>{t("RELATED_MARKETS")}</h3>
+          <aside className={RELATED_CARD_CLASS} aria-label={t("RELATED_MARKETS")}>
+            <h3 className={RELATED_TITLE_CLASS}>{t("RELATED_MARKETS")}</h3>
             {related.length === 0 ? (
-              <p style={{ color: "var(--t3)", fontSize: 12 }}>
-                {t("NO_RELATED_MARKETS")}
-              </p>
+              <p className={RELATED_EMPTY_CLASS}>{t("NO_RELATED_MARKETS")}</p>
             ) : (
-              <div className="md-related-list">
+              <div className={RELATED_LIST_CLASS}>
                 {related.map((market) => {
                   const m = localizedMarket(contentT, market);
                   return (
                     <Link
                       key={m.id}
                       href={`/market/${m.ticker}`}
-                      className="md-related-row"
+                      className={RELATED_ROW_CLASS}
                     >
-                      <div className="md-related-q">{m.title}</div>
-                      <div className="md-related-line">
-                        <span className="md-related-yes">
+                      <div className={RELATED_QUESTION_CLASS}>{m.title}</div>
+                      <div className={RELATED_LINE_CLASS}>
+                        <span className={RELATED_YES_CLASS}>
                           {t("YES")} {m.yesPriceCents}¢
                         </span>
                         <span>
@@ -822,97 +709,23 @@ function PageState({
   const isError = tone === "error";
 
   return (
-    <>
-      <style>{`
-        .md-state {
-          min-height: 60vh;
-          display: grid;
-          place-items: center;
-          padding: 32px 16px;
-        }
-        .md-state-card {
-          width: min(100%, 440px);
-          padding: 28px;
-          border-radius: var(--r-lg);
-          text-align: center;
-          color: var(--t1);
-        }
-        .md-state-eyebrow {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 28px;
-          padding: 0 12px;
-          margin-bottom: 14px;
-          border-radius: var(--r-pill);
-          border: 1px solid ${isError ? "rgba(255, 155, 107, 0.28)" : "rgba(43, 228, 128, 0.28)"};
-          color: ${isError ? "var(--no)" : "var(--accent)"};
-          background: ${isError ? "rgba(255, 155, 107, 0.08)" : "rgba(43, 228, 128, 0.08)"};
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-        }
-        .md-state-title {
-          margin: 0;
-          font-size: 22px;
-          font-weight: 800;
-          letter-spacing: -0.01em;
-        }
-        .md-state-copy {
-          margin: 10px 0 0;
-          color: var(--t2);
-          font-size: 14px;
-          line-height: 1.5;
-        }
-        .md-state-action {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 44px;
-          margin-top: 22px;
-          padding: 0 20px;
-          border-radius: var(--r-md);
-          color: #04140a;
-          font-size: 14px;
-          font-weight: 700;
-          text-decoration: none;
-          background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 50%),
-            linear-gradient(115deg, #2be480 0%, #00ffaa 100%);
-          border: 1px solid rgba(43, 228, 128, 0.6);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.5),
-            0 10px 28px rgba(43, 228, 128, 0.18);
-          transition:
-            transform 180ms ease,
-            filter 180ms ease;
-        }
-        .md-state-action:hover {
-          transform: translateY(-1px);
-          filter: brightness(1.05);
-        }
-      `}</style>
-      <div className="md-state">
-        <section className="glass md-state-card" aria-live="polite">
-          <div className="md-state-eyebrow">
-            {isError ? errorLabel : loadingLabel}
-          </div>
-          <h1 className="md-state-title">
-            {isError ? errorTitle : children}
-          </h1>
-          {isError && (
-            <>
-              <p className="md-state-copy">
-                {children}
-              </p>
-              <Link href="/predict" className="md-state-action">
-                {actionLabel}
-              </Link>
-            </>
-          )}
-        </section>
-      </div>
-    </>
+    <div className={PAGE_STATE_WRAP_CLASS}>
+      <section className={PAGE_STATE_CARD_CLASS} aria-live="polite">
+        <div className={pageStateEyebrowClass(isError)}>
+          {isError ? errorLabel : loadingLabel}
+        </div>
+        <h1 className={PAGE_STATE_TITLE_CLASS}>
+          {isError ? errorTitle : children}
+        </h1>
+        {isError && (
+          <>
+            <p className={PAGE_STATE_COPY_CLASS}>{children}</p>
+            <Link href="/predict" className={PAGE_STATE_ACTION_CLASS}>
+              {actionLabel}
+            </Link>
+          </>
+        )}
+      </section>
+    </div>
   );
 }

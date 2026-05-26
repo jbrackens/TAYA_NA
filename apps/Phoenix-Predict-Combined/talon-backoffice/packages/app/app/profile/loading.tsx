@@ -1,71 +1,18 @@
 export default function ProfileLoading() {
+  const blockClass =
+    "animate-pulse bg-[linear-gradient(90deg,rgba(255,255,255,0.04)_25%,rgba(255,255,255,0.08)_50%,rgba(255,255,255,0.04)_75%)] bg-[length:200%_100%]";
+
   return (
-    <div
-      style={{
-        padding: "24px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 20,
-      }}
-    >
+    <div className="flex flex-col gap-5 p-6">
       {/* Avatar skeleton */}
-      <div
-        style={{
-          width: 80,
-          height: 80,
-          borderRadius: "50%",
-          background:
-            "linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.04) 75%)",
-          backgroundSize: "200% 100%",
-          animation: "shimmer 1.5s infinite",
-          margin: "0 auto",
-        }}
-      />
+      <div className={`${blockClass} mx-auto h-20 w-20 rounded-full`} />
       {/* Name and email skeleton */}
-      <div
-        style={{
-          background:
-            "linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.04) 75%)",
-          backgroundSize: "200% 100%",
-          animation: "shimmer 1.5s infinite",
-          borderRadius: 8,
-          height: 20,
-          marginBottom: 8,
-        }}
-      />
-      <div
-        style={{
-          background:
-            "linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.04) 75%)",
-          backgroundSize: "200% 100%",
-          animation: "shimmer 1.5s infinite",
-          borderRadius: 8,
-          height: 16,
-          width: "70%",
-        }}
-      />
+      <div className={`${blockClass} mb-2 h-5 rounded-lg`} />
+      <div className={`${blockClass} h-4 w-[70%] rounded-lg`} />
       {/* Settings fields skeleton */}
       {[1, 2, 3].map((i) => (
-        <div
-          key={i}
-          style={{
-            background:
-              "linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.04) 75%)",
-            backgroundSize: "200% 100%",
-            animation: "shimmer 1.5s infinite",
-            borderRadius: 8,
-            height: 12,
-            width: "50%",
-          }}
-        />
+        <div key={i} className={`${blockClass} h-3 w-1/2 rounded-lg`} />
       ))}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-      `,
-        }}
-      />
     </div>
   );
 }

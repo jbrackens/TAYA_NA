@@ -100,7 +100,7 @@ export default function DraftFromArticleModal({
       footer={null}
       width={760}
     >
-      <Space direction="vertical" style={{ width: "100%" }} size="middle">
+      <Space direction="vertical" className="w-full" size="middle">
         <TextArea
           rows={6}
           placeholder="Paste the article text…"
@@ -156,14 +156,14 @@ export default function DraftFromArticleModal({
               </Space>
               {v.warnings.length > 0 && (
                 <Alert
-                  style={{ marginTop: 8 }}
+                  className="mt-2"
                   type="warning"
                   message={v.warnings.join("; ")}
                 />
               )}
               {!usable && (
                 <Alert
-                  style={{ marginTop: 8 }}
+                  className="mt-2"
                   type="error"
                   message={
                     v.blocked
@@ -172,7 +172,7 @@ export default function DraftFromArticleModal({
                   }
                 />
               )}
-              <div style={{ marginTop: 8 }}>
+              <div className="mt-2">
                 <Button
                   type="primary"
                   disabled={!usable}

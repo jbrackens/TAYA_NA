@@ -52,14 +52,7 @@ export function DiscoveryHero({
   if (!market) {
     return (
       <section
-        style={{
-          background: "var(--surface-1)",
-          border: "1px solid var(--border-1)",
-          borderRadius: "var(--r-rh-lg)",
-          padding: 36,
-          minHeight: 480,
-          color: "var(--t3)",
-        }}
+        className="min-h-[480px] rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-9 text-[var(--t3)]"
       >
         {t("LOADING_MARKETS")}
       </section>
@@ -91,156 +84,23 @@ export function DiscoveryHero({
       ? formatHeroVolume(displayMarket.openInterestCents)
       : "—";
   const closesLabel = formatHeroCloseLeft(displayMarket.closeAt);
+  const changeClass = isUp
+    ? "text-[var(--yes-text)]"
+    : "text-[var(--no-text)]";
 
   return (
-    <>
-      <style>{`
-        .rh-hero {
-          background: var(--surface-1);
-          border: 1px solid var(--border-1);
-          border-radius: var(--r-rh-lg);
-          padding: 28px;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        .rh-hero-eyebrow {
-          display: flex; align-items: center; gap: 10px;
-          font-size: 12px; font-weight: 500;
-          color: var(--t3);
-          margin-bottom: 14px;
-        }
-        .rh-hero-eyebrow .live {
-          display: inline-flex; gap: 6px; align-items: center;
-          color: var(--accent); font-weight: 600;
-          letter-spacing: 0.08em;
-        }
-        .rh-hero-dot {
-          width: 7px; height: 7px; border-radius: 50%;
-          background: var(--accent);
-          box-shadow: 0 0 0 4px rgba(43, 228, 128, 0.18);
-          animation: rh-pulse 2s ease-in-out infinite;
-        }
-        @keyframes rh-pulse { 50% { opacity: 0.55; } }
-        .rh-hero-q {
-          font-family: 'Inter', sans-serif;
-          font-size: 28px; font-weight: 600;
-          line-height: 1.2; letter-spacing: -0.02em;
-          margin: 0 0 16px;
-          color: var(--t1);
-          max-width: 720px;
-        }
-        .rh-bigprice {
-          font-family: 'Inter Tight', 'Inter', sans-serif;
-          font-size: 88px; font-weight: 600;
-          line-height: 1; letter-spacing: -0.04em;
-          font-variant-numeric: tabular-nums;
-          color: var(--t1);
-          margin: 0 0 12px;
-        }
-        .rh-bigprice .cents {
-          font-size: 56px; color: var(--t3); font-weight: 500;
-          margin-left: 4px;
-        }
-        .rh-change {
-          display: inline-flex; align-items: center; gap: 10px;
-          font-size: 17px; font-weight: 600;
-          font-variant-numeric: tabular-nums;
-          margin-bottom: 18px;
-        }
-        .rh-change.up    { color: var(--yes-text); }
-        .rh-change.down  { color: var(--no-text); }
-        .rh-change .arrow {
-          display: inline-block;
-          width: 0; height: 0;
-          border-left: 5px solid transparent;
-          border-right: 5px solid transparent;
-        }
-        .rh-change.up   .arrow { border-bottom: 7px solid var(--yes-text); }
-        .rh-change.down .arrow { border-top:    7px solid var(--no-text); }
-        .rh-change .label {
-          color: var(--t3); font-weight: 500; font-size: 14px;
-        }
-
-        .rh-chart { margin-bottom: 16px; }
-        .rh-chart svg { width: 100%; height: 140px; display: block; }
-        .rh-periods {
-          display: flex; gap: 4px;
-          margin-top: 14px;
-        }
-        .rh-period {
-          padding: 6px 14px;
-          border-radius: var(--r-pill);
-          background: transparent;
-          color: var(--t3);
-          font-size: 12px; font-weight: 600;
-          font-family: inherit;
-          border: 0; cursor: pointer;
-        }
-        .rh-period:hover { color: var(--t1); }
-        .rh-period.is-active {
-          background: var(--accent-soft);
-          color: var(--accent);
-        }
-
-        .rh-actions {
-          display: flex; gap: 12px;
-          margin-top: 20px;
-        }
-        .rh-buy-yes, .rh-buy-no {
-          flex: 1; max-width: 280px;
-          display: inline-flex; align-items: center; justify-content: center;
-          font-family: inherit;
-          font-weight: 600; font-size: 15px;
-          padding: 16px 24px;
-          border: 0; border-radius: var(--r-pill);
-          cursor: pointer; text-decoration: none;
-          font-variant-numeric: tabular-nums;
-          transition: filter 120ms ease, background 120ms ease, transform 120ms ease;
-        }
-        .rh-buy-yes {
-          background: var(--accent);
-          color: #061a10;
-        }
-        .rh-buy-yes:hover { filter: brightness(1.05); transform: translateY(-1px); }
-        .rh-buy-no {
-          background: var(--no-soft);
-          color: var(--no-text);
-        }
-        .rh-buy-no:hover { background: rgba(255, 139, 107, 0.22); }
-
-        .rh-stats {
-          display: grid; grid-template-columns: repeat(4, 1fr);
-          gap: 24px;
-          margin-top: 24px;
-          padding-top: 24px;
-          border-top: 1px solid var(--border-1);
-        }
-        .rh-stat-label {
-          font-size: 12px; color: var(--t3);
-          margin-bottom: 6px;
-        }
-        .rh-stat-value {
-          font-size: 18px; font-weight: 600;
-          color: var(--t1);
-          font-variant-numeric: tabular-nums;
-        }
-
-        @media (max-width: 720px) {
-          .rh-hero { padding: 24px; }
-          .rh-bigprice { font-size: 64px; }
-          .rh-bigprice .cents { font-size: 40px; }
-          .rh-hero-q { font-size: 22px; margin-bottom: 18px; }
-          .rh-change { margin-bottom: 18px; }
-          .rh-chart svg { height: 120px; }
-          .rh-actions { margin-top: 18px; }
-          .rh-stats { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-        }
-      `}</style>
-      <section className="rh-hero" aria-label={t("FEATURED_MARKET")}>
-        <header className="rh-hero-eyebrow">
+    <section
+      className="rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-7 font-sans max-[720px]:p-6"
+      aria-label={t("FEATURED_MARKET")}
+    >
+        <header className="mb-3.5 flex items-center gap-2.5 text-xs font-medium text-[var(--t3)]">
           {displayMarket.status === "open" && (
             <>
-              <span className="live">
-                <span className="rh-hero-dot" aria-hidden="true" />
+              <span className="inline-flex items-center gap-1.5 font-semibold uppercase tracking-[0.08em] text-[var(--accent)]">
+                <span
+                  className="h-[7px] w-[7px] animate-pulse rounded-full bg-[var(--accent)] shadow-[0_0_0_4px_rgba(43,228,128,0.18)]"
+                  aria-hidden="true"
+                />
                 {t("LIVE")}
               </span>
               <span aria-hidden="true">·</span>
@@ -252,22 +112,37 @@ export function DiscoveryHero({
           </span>
         </header>
 
-        <h1 className="rh-hero-q">{displayMarket.title}</h1>
+        <h1 className="m-0 mb-4 max-w-[720px] text-[28px] font-semibold leading-[1.2] text-[var(--t1)] max-[720px]:mb-[18px] max-[720px]:text-[22px]">
+          {displayMarket.title}
+        </h1>
 
-        <div className="rh-bigprice" aria-label={`Yes price ${yes} cents`}>
+        <div
+          className="m-0 mb-3 font-sans text-[88px] font-semibold leading-none text-[var(--t1)] tabular-nums max-[720px]:text-[64px]"
+          aria-label={`Yes price ${yes} cents`}
+        >
           {yes}
-          <span className="cents">¢</span>
+          <span className="ml-1 text-[56px] font-medium text-[var(--t3)] max-[720px]:text-[40px]">
+            ¢
+          </span>
         </div>
-        <div className={`rh-change ${isUp ? "up" : "down"}`}>
-          <span className="arrow" aria-hidden="true" />
+        <div
+          className={`mb-[18px] inline-flex items-center gap-2.5 text-[17px] font-semibold tabular-nums ${changeClass}`}
+        >
+          <span aria-hidden="true">{isUp ? "▲" : "▼"}</span>
           {isUp ? "+" : ""}
           {delta}¢ ({isUp ? "+" : ""}
           {pct.toFixed(1)}%)
-          <span className="label">{t("TODAY")}</span>
+          <span className="text-sm font-medium text-[var(--t3)]">
+            {t("TODAY")}
+          </span>
         </div>
 
-        <div className="rh-chart">
-          <svg viewBox="0 0 800 140" preserveAspectRatio="none">
+        <div className="mb-4">
+          <svg
+            className="block h-[140px] w-full max-[720px]:h-[120px]"
+            viewBox="0 0 800 140"
+            preserveAspectRatio="none"
+          >
             <defs>
               <linearGradient id="rh-chart-fill" x1="0" x2="0" y1="0" y2="1">
                 <stop
@@ -292,34 +167,55 @@ export function DiscoveryHero({
           </svg>
         </div>
 
-        <div className="rh-actions">
-          <Link href={`/market/${displayMarket.ticker}`} className="rh-buy-yes">
+        <div className="mt-5 flex gap-3 max-[720px]:mt-[18px]">
+          <Link
+            href={`/market/${displayMarket.ticker}`}
+            className="inline-flex max-w-[280px] flex-1 items-center justify-center rounded-[var(--r-pill)] border-0 bg-[var(--accent)] px-6 py-4 text-[15px] font-semibold text-[#061a10] no-underline tabular-nums transition-[filter,transform] duration-150 hover:-translate-y-px hover:brightness-105"
+          >
             {t("BUY_YES")} · {yes}¢
           </Link>
-          <Link href={`/market/${displayMarket.ticker}`} className="rh-buy-no">
+          <Link
+            href={`/market/${displayMarket.ticker}`}
+            className="inline-flex max-w-[280px] flex-1 items-center justify-center rounded-[var(--r-pill)] border-0 bg-[var(--no-soft)] px-6 py-4 text-[15px] font-semibold text-[var(--no-text)] no-underline tabular-nums transition-colors duration-150 hover:bg-[rgba(255,139,107,0.22)]"
+          >
             {t("BUY_NO")} · {no}¢
           </Link>
         </div>
 
-        <div className="rh-stats">
+        <div className="mt-6 grid grid-cols-4 gap-6 border-t border-[var(--border-1)] pt-6 max-[720px]:grid-cols-2 max-[720px]:gap-4">
           <div>
-            <div className="rh-stat-label">{t("24H_VOLUME")}</div>
-            <div className="rh-stat-value">{volumeLabel}</div>
+            <div className="mb-1.5 text-xs text-[var(--t3)]">
+              {t("24H_VOLUME")}
+            </div>
+            <div className="text-lg font-semibold text-[var(--t1)] tabular-nums">
+              {volumeLabel}
+            </div>
           </div>
           <div>
-            <div className="rh-stat-label">{t("OPEN_INTEREST")}</div>
-            <div className="rh-stat-value">{oiLabel}</div>
+            <div className="mb-1.5 text-xs text-[var(--t3)]">
+              {t("OPEN_INTEREST")}
+            </div>
+            <div className="text-lg font-semibold text-[var(--t1)] tabular-nums">
+              {oiLabel}
+            </div>
           </div>
           <div>
-            <div className="rh-stat-label">{t("TRADERS")}</div>
-            <div className="rh-stat-value">—</div>
+            <div className="mb-1.5 text-xs text-[var(--t3)]">
+              {t("TRADERS")}
+            </div>
+            <div className="text-lg font-semibold text-[var(--t1)] tabular-nums">
+              —
+            </div>
           </div>
           <div>
-            <div className="rh-stat-label">{t("CLOSES")}</div>
-            <div className="rh-stat-value">{closesLabel}</div>
+            <div className="mb-1.5 text-xs text-[var(--t3)]">
+              {t("CLOSES")}
+            </div>
+            <div className="text-lg font-semibold text-[var(--t1)] tabular-nums">
+              {closesLabel}
+            </div>
           </div>
         </div>
       </section>
-    </>
   );
 }

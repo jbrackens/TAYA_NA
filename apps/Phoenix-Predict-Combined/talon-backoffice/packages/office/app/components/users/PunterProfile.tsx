@@ -1,134 +1,7 @@
 "use client";
 
-import styled from "styled-components";
 import { Badge, Button, Card } from "../shared";
 import { useState } from "react";
-
-const ProfileContainer = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 20px;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const InfoCard = styled(Card)`
-  padding: 20px;
-`;
-
-const ProfileHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
-`;
-
-const Avatar = styled.div`
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    var(--focus-ring, #0e7a53) 0%,
-    #2e5cb8 100%
-  );
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--t1, #1a1a1a);
-  font-weight: 700;
-  font-size: 24px;
-`;
-
-const HeaderInfo = styled.div`
-  flex: 1;
-`;
-
-const Name = styled.h2`
-  margin: 0 0 4px 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--t1, #1a1a1a);
-`;
-
-const Email = styled.p`
-  margin: 0 0 8px 0;
-  font-size: 13px;
-  color: var(--t2, #4a4a4a);
-`;
-
-const BadgeGroup = styled.div`
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-`;
-
-const InfoRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border-1, #e5dfd2);
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const InfoLabel = styled.span`
-  color: var(--t2, #4a4a4a);
-  font-size: 12px;
-`;
-
-const InfoValue = styled.span`
-  color: var(--t1, #1a1a1a);
-  font-weight: 600;
-  font-size: 13px;
-`;
-
-const TabsContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-`;
-
-const TabButton = styled.button<{ $active?: boolean }>`
-  padding: 12px;
-  background-color: ${(props) =>
-    props.$active ? "var(--focus-ring, #0e7a53)" : "var(--border-1, #e5dfd2)"};
-  color: ${(props) =>
-    props.$active ? "var(--bg-deep, #f7f3ed)" : "var(--t2, #4a4a4a)"};
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 12px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: ${(props) =>
-      props.$active ? "var(--focus-ring, #0e7a53)" : "rgba(74, 126, 255, 0.2)"};
-  }
-`;
-
-const ActionButtons = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 20px;
-`;
-
-const ContentArea = styled(Card)`
-  padding: 20px;
-  background-color: var(--surface-1, var(--t1, #1a1a1a));
-  border: 1px solid var(--border-1, #e5dfd2);
-`;
-
-const TabContent = styled.div`
-  color: var(--t2, #4a4a4a);
-`;
 
 export interface PunterProfileData {
   id: string;
@@ -184,25 +57,27 @@ const signedCents = (c: number) =>
   `${c < 0 ? "-" : "+"}$${money(Math.abs(c) / 100)}`;
 const fmtDate = (iso: string) => (iso ? new Date(iso).toLocaleString() : "—");
 
-const HistTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-`;
-const HistTh = styled.th`
-  text-align: left;
-  padding: 8px 10px;
-  color: var(--t2, #4a4a4a);
-  border-bottom: 1px solid var(--border-1, #e5dfd2);
-  font-weight: 600;
-  white-space: nowrap;
-`;
-const HistTd = styled.td`
-  padding: 8px 10px;
-  color: var(--t1, #1a1a1a);
-  border-bottom: 1px solid var(--border-1, #e5dfd2);
-  white-space: nowrap;
-`;
+const infoRowClassName =
+  "flex items-center justify-between border-b border-[var(--border-1,#e5dfd2)] py-3 last:border-b-0";
+const infoLabelClassName = "text-xs text-[var(--t2,#4a4a4a)]";
+const infoValueBaseClassName = "text-[13px] font-semibold";
+const infoValueClassName = `${infoValueBaseClassName} text-[var(--t1,#1a1a1a)]`;
+const tabButtonBaseClassName =
+  "cursor-pointer rounded border-0 p-3 text-xs font-semibold transition-all duration-200 ease-[ease]";
+const tabContentClassName = "text-[var(--t2,#4a4a4a)]";
+const histThClassName =
+  "whitespace-nowrap border-b border-[var(--border-1,#e5dfd2)] px-2.5 py-2 text-left font-semibold text-[var(--t2,#4a4a4a)]";
+const histTdBaseClassName =
+  "whitespace-nowrap border-b border-[var(--border-1,#e5dfd2)] px-2.5 py-2";
+const histTdClassName = `${histTdBaseClassName} text-[var(--t1,#1a1a1a)]`;
+const positiveMoneyClassName = "text-[var(--accent-lo,#1fa65e)]";
+const negativeMoneyClassName = "text-[var(--no-text,#a8472d)]";
+
+function tabButtonClassName(active: boolean) {
+  return active
+    ? `${tabButtonBaseClassName} bg-[var(--focus-ring,#0e7a53)] text-[var(--bg-deep,#f7f3ed)] hover:bg-[var(--focus-ring,#0e7a53)]`
+    : `${tabButtonBaseClassName} bg-[var(--border-1,#e5dfd2)] text-[var(--t2,#4a4a4a)] hover:bg-[rgba(74,126,255,0.2)]`;
+}
 
 export function PunterProfile({
   punter,
@@ -215,13 +90,7 @@ export function PunterProfile({
 
   if (!punter) {
     return (
-      <div
-        style={{
-          padding: "40px",
-          textAlign: "center",
-          color: "var(--t2, #4a4a4a)",
-        }}
-      >
+      <div className="p-10 text-center text-[var(--t2,#4a4a4a)]">
         Select a punter to view profile
       </div>
     );
@@ -248,80 +117,92 @@ export function PunterProfile({
   const canActivate = actionsAvailable && punter.status === "suspended";
 
   return (
-    <ProfileContainer>
+    <div className="grid grid-cols-[1fr_2fr] gap-5 max-[1024px]:grid-cols-1">
       <div>
-        <InfoCard>
-          <ProfileHeader>
-            <Avatar>{initials}</Avatar>
-            <HeaderInfo>
-              <Name>{punter.name}</Name>
-              <Email>{punter.email}</Email>
-              <BadgeGroup>
+        <Card className="p-5">
+          <div className="mb-5 flex items-center gap-4">
+            <div className="flex h-[60px] w-[60px] items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--focus-ring)_0%,#2e5cb8_100%)] text-2xl font-bold text-[var(--t1,#1a1a1a)]">
+              {initials}
+            </div>
+            <div className="flex-1">
+              <h2 className="m-0 mb-1 text-lg font-bold text-[var(--t1,#1a1a1a)]">
+                {punter.name}
+              </h2>
+              <p className="m-0 mb-2 text-[13px] text-[var(--t2,#4a4a4a)]">
+                {punter.email}
+              </p>
+              <div className="flex flex-wrap gap-2">
                 <Badge $variant={statusColor[punter.status]}>
                   {punter.status.toUpperCase()}
                 </Badge>
                 <Badge $variant={verificationColor[punter.verificationStatus]}>
                   {punter.verificationStatus.toUpperCase()}
                 </Badge>
-              </BadgeGroup>
-            </HeaderInfo>
-          </ProfileHeader>
+              </div>
+            </div>
+          </div>
 
-          <InfoRow>
-            <InfoLabel>Member Since</InfoLabel>
-            <InfoValue>
+          <div className={infoRowClassName}>
+            <span className={infoLabelClassName}>Member Since</span>
+            <span className={infoValueClassName}>
               {new Date(punter.createdAt).toLocaleDateString()}
-            </InfoValue>
-          </InfoRow>
-          <InfoRow>
-            <InfoLabel>Wallet Balance</InfoLabel>
-            <InfoValue>${money(punter.balance)}</InfoValue>
-          </InfoRow>
-          <InfoRow>
-            <InfoLabel>Portfolio Value</InfoLabel>
-            <InfoValue>${money(punter.portfolioValue)}</InfoValue>
-          </InfoRow>
-          <InfoRow>
-            <InfoLabel>Open Positions</InfoLabel>
-            <InfoValue>{punter.openPositions.toLocaleString()}</InfoValue>
-          </InfoRow>
-          <InfoRow>
-            <InfoLabel>Total Predictions</InfoLabel>
-            <InfoValue>{punter.totalPredictions.toLocaleString()}</InfoValue>
-          </InfoRow>
-          <InfoRow>
-            <InfoLabel>Accuracy</InfoLabel>
-            <InfoValue>{punter.accuracyPct.toFixed(1)}%</InfoValue>
-          </InfoRow>
-          <InfoRow>
-            <InfoLabel>Realized P&L</InfoLabel>
-            <InfoValue
-              style={{
-                color:
-                  punter.pnl >= 0
-                    ? "var(--accent-lo, #1fa65e)"
-                    : "var(--no-text, #a8472d)",
-              }}
+            </span>
+          </div>
+          <div className={infoRowClassName}>
+            <span className={infoLabelClassName}>Wallet Balance</span>
+            <span className={infoValueClassName}>${money(punter.balance)}</span>
+          </div>
+          <div className={infoRowClassName}>
+            <span className={infoLabelClassName}>Portfolio Value</span>
+            <span className={infoValueClassName}>
+              ${money(punter.portfolioValue)}
+            </span>
+          </div>
+          <div className={infoRowClassName}>
+            <span className={infoLabelClassName}>Open Positions</span>
+            <span className={infoValueClassName}>
+              {punter.openPositions.toLocaleString()}
+            </span>
+          </div>
+          <div className={infoRowClassName}>
+            <span className={infoLabelClassName}>Total Predictions</span>
+            <span className={infoValueClassName}>
+              {punter.totalPredictions.toLocaleString()}
+            </span>
+          </div>
+          <div className={infoRowClassName}>
+            <span className={infoLabelClassName}>Accuracy</span>
+            <span className={infoValueClassName}>
+              {punter.accuracyPct.toFixed(1)}%
+            </span>
+          </div>
+          <div className={infoRowClassName}>
+            <span className={infoLabelClassName}>Realized P&L</span>
+            <span
+              className={`${infoValueBaseClassName} ${
+                punter.pnl >= 0
+                  ? positiveMoneyClassName
+                  : negativeMoneyClassName
+              }`}
             >
               {punter.pnl < 0 ? "-" : "+"}${money(Math.abs(punter.pnl))}
-            </InfoValue>
-          </InfoRow>
-          <InfoRow>
-            <InfoLabel>Unrealized P&L</InfoLabel>
-            <InfoValue
-              style={{
-                color:
-                  punter.unrealizedPnl >= 0
-                    ? "var(--accent-lo, #1fa65e)"
-                    : "var(--no-text, #a8472d)",
-              }}
+            </span>
+          </div>
+          <div className={infoRowClassName}>
+            <span className={infoLabelClassName}>Unrealized P&L</span>
+            <span
+              className={`${infoValueBaseClassName} ${
+                punter.unrealizedPnl >= 0
+                  ? positiveMoneyClassName
+                  : negativeMoneyClassName
+              }`}
             >
               {punter.unrealizedPnl < 0 ? "-" : "+"}$
               {money(Math.abs(punter.unrealizedPnl))}
-            </InfoValue>
-          </InfoRow>
+            </span>
+          </div>
 
-          <ActionButtons>
+          <div className="mt-5 flex flex-col gap-2">
             <Button
               variant="secondary"
               onClick={() =>
@@ -349,148 +230,149 @@ export function PunterProfile({
             >
               Add Note
             </Button>
-          </ActionButtons>
+          </div>
 
-          <div
-            style={{
-              marginTop: "12px",
-              fontSize: "12px",
-              color: "var(--t2, #4a4a4a)",
-              lineHeight: 1.5,
-            }}
-          >
+          <div className="mt-3 text-xs leading-[1.5] text-[var(--t2,#4a4a4a)]">
             {actionsAvailable
               ? "Suspend, activate, and admin notes are live. Force password reset is awaiting auth-service support."
               : "Admin account mutations are read-only here until the Go backoffice mutation routes are implemented."}
           </div>
-        </InfoCard>
+        </Card>
       </div>
 
       <div>
-        <InfoCard>
-          <TabsContainer>
-            <TabButton
-              $active={activeTab === "overview"}
+        <Card className="p-5">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
+            <button
+              className={tabButtonClassName(activeTab === "overview")}
               onClick={() => setActiveTab("overview")}
             >
               Overview
-            </TabButton>
-            <TabButton
-              $active={activeTab === "bets"}
+            </button>
+            <button
+              className={tabButtonClassName(activeTab === "bets")}
               onClick={() => setActiveTab("bets")}
             >
               Trade History
-            </TabButton>
-            <TabButton
-              $active={activeTab === "wallet"}
+            </button>
+            <button
+              className={tabButtonClassName(activeTab === "wallet")}
               onClick={() => setActiveTab("wallet")}
             >
               Wallet
-            </TabButton>
-          </TabsContainer>
-        </InfoCard>
+            </button>
+          </div>
+        </Card>
 
-        <ContentArea>
+        <Card className="border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] p-5">
           {activeTab === "overview" && (
-            <TabContent>
-              <h4 style={{ color: "var(--t1, #1a1a1a)", marginTop: 0 }}>
+            <div className={tabContentClassName}>
+              <h4 className="mt-0 text-[var(--t1,#1a1a1a)]">
                 Account Overview
               </h4>
               <p>
                 Detailed account information and activity logs would be
                 displayed here.
               </p>
-            </TabContent>
+            </div>
           )}
           {activeTab === "bets" && (
-            <TabContent>
-              <h4 style={{ color: "var(--t1, #1a1a1a)", marginTop: 0 }}>
-                Trade History
-              </h4>
+            <div className={tabContentClassName}>
+              <h4 className="mt-0 text-[var(--t1,#1a1a1a)]">Trade History</h4>
               {settlements.length === 0 ? (
                 <p>No settled trades yet.</p>
               ) : (
-                <HistTable>
+                <table className="w-full border-collapse text-[13px]">
                   <thead>
                     <tr>
-                      <HistTh>Market</HistTh>
-                      <HistTh>Side</HistTh>
-                      <HistTh>Qty</HistTh>
-                      <HistTh>P&L</HistTh>
-                      <HistTh>Payout</HistTh>
-                      <HistTh>Settled</HistTh>
+                      <th className={histThClassName}>Market</th>
+                      <th className={histThClassName}>Side</th>
+                      <th className={histThClassName}>Qty</th>
+                      <th className={histThClassName}>P&amp;L</th>
+                      <th className={histThClassName}>Payout</th>
+                      <th className={histThClassName}>Settled</th>
                     </tr>
                   </thead>
                   <tbody>
                     {settlements.map((s) => (
                       <tr key={s.id}>
-                        <HistTd>{s.marketId.slice(0, 8)}</HistTd>
-                        <HistTd>{s.side.toUpperCase()}</HistTd>
-                        <HistTd>{s.quantity.toLocaleString()}</HistTd>
-                        <HistTd
-                          style={{
-                            color:
-                              s.pnlCents < 0
-                                ? "var(--no-text, #a8472d)"
-                                : "var(--accent-lo, #1fa65e)",
-                          }}
+                        <td className={histTdClassName}>
+                          {s.marketId.slice(0, 8)}
+                        </td>
+                        <td className={histTdClassName}>
+                          {s.side.toUpperCase()}
+                        </td>
+                        <td className={histTdClassName}>
+                          {s.quantity.toLocaleString()}
+                        </td>
+                        <td
+                          className={`${histTdBaseClassName} ${
+                            s.pnlCents < 0
+                              ? negativeMoneyClassName
+                              : positiveMoneyClassName
+                          }`}
                         >
                           {signedCents(s.pnlCents)}
-                        </HistTd>
-                        <HistTd>{cents(s.payoutCents)}</HistTd>
-                        <HistTd>{fmtDate(s.paidAt)}</HistTd>
+                        </td>
+                        <td className={histTdClassName}>
+                          {cents(s.payoutCents)}
+                        </td>
+                        <td className={histTdClassName}>{fmtDate(s.paidAt)}</td>
                       </tr>
                     ))}
                   </tbody>
-                </HistTable>
+                </table>
               )}
-            </TabContent>
+            </div>
           )}
           {activeTab === "wallet" && (
-            <TabContent>
-              <h4 style={{ color: "var(--t1, #1a1a1a)", marginTop: 0 }}>
+            <div className={tabContentClassName}>
+              <h4 className="mt-0 text-[var(--t1,#1a1a1a)]">
                 Wallet & Transactions
               </h4>
               {walletLedger.length === 0 ? (
                 <p>No wallet transactions yet.</p>
               ) : (
-                <HistTable>
+                <table className="w-full border-collapse text-[13px]">
                   <thead>
                     <tr>
-                      <HistTh>Type</HistTh>
-                      <HistTh>Amount</HistTh>
-                      <HistTh>Balance</HistTh>
-                      <HistTh>Reason</HistTh>
-                      <HistTh>Time</HistTh>
+                      <th className={histThClassName}>Type</th>
+                      <th className={histThClassName}>Amount</th>
+                      <th className={histThClassName}>Balance</th>
+                      <th className={histThClassName}>Reason</th>
+                      <th className={histThClassName}>Time</th>
                     </tr>
                   </thead>
                   <tbody>
                     {walletLedger.map((e) => (
                       <tr key={e.entryId}>
-                        <HistTd>{e.type}</HistTd>
-                        <HistTd
-                          style={{
-                            color:
-                              e.type.toLowerCase() === "debit"
-                                ? "var(--no-text, #a8472d)"
-                                : "var(--accent-lo, #1fa65e)",
-                          }}
+                        <td className={histTdClassName}>{e.type}</td>
+                        <td
+                          className={`${histTdBaseClassName} ${
+                            e.type.toLowerCase() === "debit"
+                              ? negativeMoneyClassName
+                              : positiveMoneyClassName
+                          }`}
                         >
                           {e.type.toLowerCase() === "debit" ? "-" : "+"}$
                           {money(Math.abs(e.amountCents) / 100)}
-                        </HistTd>
-                        <HistTd>{cents(e.balanceCents)}</HistTd>
-                        <HistTd>{e.reason || "—"}</HistTd>
-                        <HistTd>{fmtDate(e.transactionTime)}</HistTd>
+                        </td>
+                        <td className={histTdClassName}>
+                          {cents(e.balanceCents)}
+                        </td>
+                        <td className={histTdClassName}>{e.reason || "—"}</td>
+                        <td className={histTdClassName}>
+                          {fmtDate(e.transactionTime)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
-                </HistTable>
+                </table>
               )}
-            </TabContent>
+            </div>
           )}
-        </ContentArea>
+        </Card>
       </div>
-    </ProfileContainer>
+    </div>
   );
 }

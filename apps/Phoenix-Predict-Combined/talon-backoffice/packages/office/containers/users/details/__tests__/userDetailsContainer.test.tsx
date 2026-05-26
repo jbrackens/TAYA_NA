@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
 import { useApi, UseApi } from "../../../../services/api/api-service";
-import { ThemeProvider } from "styled-components";
+import { ThemeProvider } from "components/app/theme-context";
 import { selectBasicData } from "../../../../lib/slices/usersDetailsSlice";
 import dayjs from "dayjs";
 import { useRouter } from "next/router";

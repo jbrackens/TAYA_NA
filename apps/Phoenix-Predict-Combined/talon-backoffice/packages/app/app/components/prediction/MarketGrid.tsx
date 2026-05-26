@@ -18,33 +18,24 @@ export function MarketGrid({ markets }: Props) {
   const { t } = useTranslation("market-content");
   if (!markets || markets.length === 0) return null;
   return (
-    <>
-      <style>{`
-        .pred-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: 16px;
-        }
-      `}</style>
-      <div className="pred-grid">
-        {markets.map((market) => {
-          const m = localizedMarket(t, market);
-          return (
-            <MarketCard
-              key={m.id}
-              ticker={m.ticker}
-              title={m.title}
-              yesPriceCents={m.yesPriceCents}
-              noPriceCents={m.noPriceCents}
-              volumeCents={m.volumeCents}
-              liquidityCents={m.liquidityCents}
-              closeAt={m.closeAt}
-              status={m.status}
-              imagePath={m.imagePath}
-            />
-          );
-        })}
-      </div>
-    </>
+    <div className="grid grid-cols-[repeat(auto-fill,_minmax(300px,_1fr))] gap-4">
+      {markets.map((market) => {
+        const m = localizedMarket(t, market);
+        return (
+          <MarketCard
+            key={m.id}
+            ticker={m.ticker}
+            title={m.title}
+            yesPriceCents={m.yesPriceCents}
+            noPriceCents={m.noPriceCents}
+            volumeCents={m.volumeCents}
+            liquidityCents={m.liquidityCents}
+            closeAt={m.closeAt}
+            status={m.status}
+            imagePath={m.imagePath}
+          />
+        );
+      })}
+    </div>
   );
 }

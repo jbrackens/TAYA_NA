@@ -90,6 +90,24 @@ function LucideIcon({
   );
 }
 
+const navItemClassName = [
+  "flex cursor-pointer items-center gap-[10px] rounded-[8px] border-0 border-l-[3px] border-l-transparent bg-transparent px-[14px] py-[9px]",
+  "text-[13px] font-medium text-[color:var(--t2)] no-underline transition-all duration-150 ease-[ease]",
+  "hover:bg-[var(--surface-2)] hover:text-[color:var(--t1)]",
+  "max-[768px]:min-w-max max-[768px]:border-l-0 max-[768px]:px-3 max-[768px]:py-2.5",
+].join(" ");
+
+const activeNavItemClassName = [
+  "border-l-[color:var(--focus-ring)] bg-[var(--accent-soft)] font-semibold text-[color:var(--focus-ring)] [&_svg]:stroke-[var(--focus-ring)]",
+  "max-[768px]:border-l-0 max-[768px]:border-b-2 max-[768px]:border-b-[color:var(--focus-ring)]",
+].join(" ");
+
+function getNavItemClassName(isActive: boolean) {
+  return isActive
+    ? `${navItemClassName} ${activeNavItemClassName}`
+    : navItemClassName;
+}
+
 export default function DashboardLayout({
   children,
 }: {
@@ -98,168 +116,67 @@ export default function DashboardLayout({
   const pathname = usePathname();
 
   return (
-    <>
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        .dash-shell { display: flex; min-height: 100vh; }
-        .dash-sidebar {
-          width: 240px; background: var(--surface-1); border-right: 1px solid var(--border-1);
-          display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0;
-          z-index: 10;
-        }
-        .dash-brand {
-          padding: 24px 20px 20px; display: flex; align-items: center; gap: 12px;
-          border-bottom: 1px solid var(--border-1);
-        }
-        .dash-brand-logo {
-          width: 36px; height: 36px; border-radius: 8px; object-fit: contain;
-        }
-        .dash-brand-text { font-size: 14px; font-weight: 600; color: var(--t1); }
-        .dash-nav-section {
-          font-size: 11px; font-weight: 600; color: var(--t3); text-transform: uppercase;
-          letter-spacing: 0.04em; padding: 16px 16px 6px;
-        }
-        .dash-nav { flex: 1; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
-        .dash-nav-item {
-          display: flex; align-items: center; gap: 10px;
-          padding: 9px 14px; border-radius: 8px;
-          font-size: 13px; font-weight: 500; color: var(--t2);
-          transition: all 0.15s; cursor: pointer; border: none; background: none;
-          text-decoration: none; border-left: 3px solid transparent;
-        }
-        .dash-nav-item:hover { color: var(--t1); background: var(--surface-2); }
-        .dash-nav-item.active {
-          color: var(--focus-ring); background: var(--accent-soft); font-weight: 600;
-          border-left-color: var(--focus-ring);
-        }
-        .dash-nav-item.active svg { stroke: var(--focus-ring); }
-        .dash-nav-icon { width: 18px; height: 18px; flex-shrink: 0; }
-        .dash-content { flex: 1; margin-left: 240px; display: flex; flex-direction: column; min-height: 100vh; }
-        .dash-header {
-          display: flex; justify-content: space-between; align-items: center;
-          padding: 18px 28px; background: var(--surface-1); border-bottom: 1px solid var(--border-1);
-          position: sticky; top: 0; z-index: 5;
-        }
-        .dash-header-title { font-size: 15px; font-weight: 600; color: var(--t1); letter-spacing: -0.01em; }
-        .dash-user-badge {
-          display: flex; align-items: center; gap: 10px;
-          padding: 6px 14px 6px 8px; border-radius: 8px; background: var(--surface-2);
-          border: 1px solid var(--border-1);
-        }
-        .dash-avatar {
-          width: 30px; height: 30px; border-radius: 8px;
-          background: var(--accent);
-          display: flex; align-items: center; justify-content: center;
-          font-size: 13px; font-weight: 700; color: #003827;
-        }
-        .dash-page { flex: 1; padding: 28px; }
-        .dash-signout { color: var(--no-text) !important; font-size: 13px !important; }
-        .dash-signout:hover { background: var(--no-soft) !important; }
-        @media (max-width: 768px) {
-          .dash-shell { flex-direction: column; }
-          .dash-sidebar {
-            display: flex;
-            position: relative;
-            width: 100%;
-            top: auto; bottom: auto; left: auto;
-            border-right: none;
-            border-bottom: 1px solid var(--border-1);
-          }
-          .dash-brand {
-            padding: 14px 16px;
-            border-bottom: none;
-            border-right: 1px solid var(--border-1);
-            min-width: max-content;
-          }
-          .dash-nav {
-            flex-direction: row;
-            gap: 4px;
-            padding: 12px;
-            overflow-x: auto;
-            flex: 1;
-          }
-          .dash-nav-item {
-            min-width: max-content;
-            padding: 10px 12px;
-            border-left: none;
-          }
-          .dash-nav-item.active { border-left: none; border-bottom: 2px solid var(--focus-ring); }
-          .dash-nav-section { display: none; }
-          .dash-sidebar > div:last-child {
-            padding: 12px;
-            border-top: none !important;
-            border-left: 1px solid var(--border-1);
-          }
-          .dash-content { margin-left: 0; }
-          .dash-header {
-            padding: 14px 16px;
-            flex-wrap: wrap;
-            gap: 10px;
-          }
-          .dash-page { padding: 16px; }
-        }
-      `,
-        }}
-      />
-
-      <div className="dash-shell">
-        <aside className="dash-sidebar">
-          <div className="dash-brand">
-            <img
-              src="/logo-hn.png"
-              alt="Hula Na!"
-              className="dash-brand-logo"
-            />
-            <span className="dash-brand-text">Backoffice</span>
-          </div>
-          <nav className="dash-nav">
-            <div className="dash-nav-section">Operations</div>
-            {navItems.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className={`dash-nav-item ${pathname?.startsWith(item.href) ? "active" : ""}`}
-              >
-                <span className="dash-nav-icon">
-                  <LucideIcon name={item.icon} />
-                </span>
-                {item.label}
-              </a>
-            ))}
-          </nav>
-          <div style={{ padding: "16px 12px", borderTop: "1px solid #1a1f3a" }}>
-            <a href="/auth/login" className="dash-nav-item dash-signout">
-              <span className="dash-nav-icon">
-                <LucideIcon name="log-out" />
-              </span>
-              Sign Out
-            </a>
-          </div>
-        </aside>
-
-        <div className="dash-content">
-          <header className="dash-header">
-            <span className="dash-header-title">
-              {navItems.find((i) => pathname?.startsWith(i.href))?.label ||
-                "Dashboard"}
-            </span>
-            <div className="dash-user-badge">
-              <div className="dash-avatar">A</div>
-              <span
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: "var(--t1, #1a1a1a)",
-                }}
-              >
-                Admin
-              </span>
-            </div>
-          </header>
-          <div className="dash-page">{children}</div>
+    <div className="flex min-h-screen max-[768px]:flex-col">
+      <aside className="fixed bottom-0 left-0 top-0 z-10 flex w-[240px] flex-col border-r border-[color:var(--border-1)] bg-[var(--surface-1)] max-[768px]:relative max-[768px]:bottom-auto max-[768px]:left-auto max-[768px]:top-auto max-[768px]:w-full max-[768px]:border-b max-[768px]:border-r-0">
+        <div className="flex items-center gap-3 border-b border-[color:var(--border-1)] px-5 pb-5 pt-6 max-[768px]:min-w-max max-[768px]:border-b-0 max-[768px]:border-r max-[768px]:px-4 max-[768px]:py-[14px]">
+          <img
+            src="/logo-hn.png"
+            alt="Hula Na!"
+            className="h-9 w-9 rounded-[8px] object-contain"
+          />
+          <span className="text-[14px] font-semibold text-[color:var(--t1)]">
+            Backoffice
+          </span>
         </div>
+        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-2 max-[768px]:flex-row max-[768px]:gap-1 max-[768px]:overflow-x-auto max-[768px]:p-3">
+          <div className="px-4 pb-[6px] pt-4 text-[11px] font-semibold uppercase tracking-[0.04em] text-[color:var(--t3)] max-[768px]:hidden">
+            Operations
+          </div>
+          {navItems.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              className={getNavItemClassName(
+                Boolean(pathname?.startsWith(item.href)),
+              )}
+            >
+              <span className="h-[18px] w-[18px] shrink-0">
+                <LucideIcon name={item.icon} />
+              </span>
+              {item.label}
+            </a>
+          ))}
+        </nav>
+        <div className="border-t border-t-[#1a1f3a] px-3 py-4 max-[768px]:border-l max-[768px]:border-l-[color:var(--border-1)] max-[768px]:border-t-0 max-[768px]:p-3">
+          <a
+            href="/auth/login"
+            className={`${navItemClassName} !text-[13px] !text-[color:var(--no-text)] hover:!bg-[var(--no-soft)]`}
+          >
+            <span className="h-[18px] w-[18px] shrink-0">
+              <LucideIcon name="log-out" />
+            </span>
+            Sign Out
+          </a>
+        </div>
+      </aside>
+
+      <div className="ml-[240px] flex min-h-screen flex-1 flex-col max-[768px]:ml-0">
+        <header className="sticky top-0 z-[5] flex items-center justify-between border-b border-[color:var(--border-1)] bg-[var(--surface-1)] px-7 py-[18px] max-[768px]:flex-wrap max-[768px]:gap-[10px] max-[768px]:px-4 max-[768px]:py-[14px]">
+          <span className="text-[15px] font-semibold tracking-[-0.01em] text-[color:var(--t1)]">
+            {navItems.find((i) => pathname?.startsWith(i.href))?.label ||
+              "Dashboard"}
+          </span>
+          <div className="flex items-center gap-[10px] rounded-[8px] border border-[color:var(--border-1)] bg-[var(--surface-2)] py-[6px] pl-2 pr-[14px]">
+            <div className="flex h-[30px] w-[30px] items-center justify-center rounded-[8px] bg-[var(--accent)] text-[13px] font-bold text-[#003827]">
+              A
+            </div>
+            <span className="text-[13px] font-semibold text-[color:var(--t1,#1a1a1a)]">
+              Admin
+            </span>
+          </div>
+        </header>
+        <div className="flex-1 p-7 max-[768px]:p-4">{children}</div>
       </div>
-    </>
+    </div>
   );
 }

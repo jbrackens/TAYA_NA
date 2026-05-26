@@ -17,12 +17,7 @@ export default function BrandMark({ size = 32 }: BrandMarkProps) {
       alt=""
       aria-hidden="true"
       height={size}
-      style={{
-        height: size,
-        width: "auto",
-        display: "block",
-        flexShrink: 0,
-      }}
+      className="block w-auto shrink-0"
     />
   );
 }

@@ -20,14 +20,13 @@ import "../styles/p8-antd.css";
 import { defaultMenuItems } from "../providers/menu/defaults";
 
 // P8 theme (light cream) — replaces the prior dark menu/header.
-// Keys match what providers/menu/* and components/layout/* read off
-// the styled-components ThemeProvider downstream. See DESIGN.md §3 / §4.
+// Keys match what providers/menu/* and components/layout/* read from the
+// local ThemeContext provider downstream. See DESIGN.md §3 / §4.
 const theme = {
   menu: "light",
   // Sidebar background reads the P8 surface-1 token at runtime; the
-  // hex fallback is only used if styled-components is parsed before
-  // p8-tokens.css mounts (SSR first paint). Both values are the same
-  // so there's no flash.
+  // hex fallback is only used if this is read before p8-tokens.css mounts
+  // during SSR first paint. Both values are the same so there's no flash.
   menuBg: "var(--surface-1, #ffffff)",
   menuDefaultColor: "var(--t1, #1a1a1a)",
   menuActiveColor: "var(--focus-ring, #0e7a53)",

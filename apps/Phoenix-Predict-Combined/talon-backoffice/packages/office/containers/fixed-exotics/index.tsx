@@ -341,7 +341,7 @@ const FixedExoticsContainer = () => {
       <PageHeader title={t("HEADER")} backIcon={false} />
       <Card
         title={t("OPS_CARD_TITLE")}
-        style={{ marginBottom: 16 }}
+        className="mb-4"
         loading={opsLoading || auditLogsLoading}
       >
         <Row gutter={[16, 16]}>
@@ -350,7 +350,7 @@ const FixedExoticsContainer = () => {
               {t("OPS_COUNT_TOTAL")}
             </Typography.Text>
             <div>
-              <Typography.Title level={3} style={{ marginBottom: 0 }}>
+              <Typography.Title level={3} className="!mb-0">
                 {statusCounts.total}
               </Typography.Title>
             </div>
@@ -360,7 +360,7 @@ const FixedExoticsContainer = () => {
               {t("OPS_COUNT_OPEN")}
             </Typography.Text>
             <div>
-              <Typography.Title level={3} style={{ marginBottom: 0 }}>
+              <Typography.Title level={3} className="!mb-0">
                 {statusCounts.open}
               </Typography.Title>
             </div>
@@ -370,7 +370,7 @@ const FixedExoticsContainer = () => {
               {t("OPS_COUNT_ACCEPTED")}
             </Typography.Text>
             <div>
-              <Typography.Title level={3} style={{ marginBottom: 0 }}>
+              <Typography.Title level={3} className="!mb-0">
                 {statusCounts.accepted}
               </Typography.Title>
             </div>
@@ -380,13 +380,13 @@ const FixedExoticsContainer = () => {
               {t("OPS_COUNT_EXPIRED")}
             </Typography.Text>
             <div>
-              <Typography.Title level={3} style={{ marginBottom: 0 }}>
+              <Typography.Title level={3} className="!mb-0">
                 {statusCounts.expired}
               </Typography.Title>
             </div>
           </Col>
         </Row>
-        <div style={{ marginTop: 16 }}>
+        <div className="mt-4">
           <Typography.Text strong>
             {t("OPS_RECENT_EXPIRES_TITLE")}
           </Typography.Text>
@@ -406,13 +406,13 @@ const FixedExoticsContainer = () => {
                       <Typography.Text code>{targetId}</Typography.Text>
                       {actorLine}
                     </Typography.Text>
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    <Typography.Text type="secondary" className="text-xs">
                       {occurredAt}
                     </Typography.Text>
                     {details && (
                       <Typography.Text
                         type="secondary"
-                        style={{ fontSize: 12 }}
+                        className="text-xs"
                       >
                         {details}
                       </Typography.Text>
@@ -423,9 +423,9 @@ const FixedExoticsContainer = () => {
             }}
           />
         </div>
-        <div style={{ marginTop: 8 }}>
+        <div className="mt-2">
           {canExpireQuotes ? (
-            <Button type="link" href={auditLogHref} style={{ paddingLeft: 0 }}>
+            <Button type="link" href={auditLogHref} className="!pl-0">
               {t("OPS_AUDIT_LOG_LINK")}
             </Button>
           ) : (
@@ -435,17 +435,17 @@ const FixedExoticsContainer = () => {
           )}
         </div>
       </Card>
-      <Space style={{ marginBottom: 16 }} wrap>
+      <Space className="mb-4" wrap>
         <Input
           placeholder={t("FILTER_USER_ID")}
           value={userIdFilter}
           onChange={(event) => setUserIdFilter(event.target.value)}
-          style={{ width: 220 }}
+          className="w-[220px]"
         />
         <Select
           value={statusFilter}
           onChange={(value) => setStatusFilter(value)}
-          style={{ width: 180 }}
+          className="w-[180px]"
         >
           <Select.Option value="">{t("STATUS_ALL")}</Select.Option>
           <Select.Option value="open">{t("STATUS_OPEN")}</Select.Option>
@@ -458,7 +458,7 @@ const FixedExoticsContainer = () => {
         <Button onClick={resetFilters}>{t("FILTER_RESET")}</Button>
       </Space>
       {!canExpireQuotes && (
-        <div style={{ marginBottom: 12 }}>
+        <div className="mb-3">
           <Tag color="warning">{t("READ_ONLY_WARNING")}</Tag>
         </div>
       )}
@@ -484,7 +484,7 @@ const FixedExoticsContainer = () => {
         ]}
         onCancel={() => setDetailsVisible(false)}
       >
-        <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+        <pre className="whitespace-pre-wrap [word-break:break-word]">
           {JSON.stringify(detailsRecord || {}, null, 2)}
         </pre>
       </Modal>

@@ -171,126 +171,33 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
   if (!showWarning || !isAuthenticated) return null;
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 9999,
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: "#ffffff",
-          borderRadius: 12,
-          padding: 32,
-          maxWidth: 400,
-          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
-          textAlign: "center",
-        }}
-      >
-        <h2
-          style={{
-            margin: "0 0 12px 0",
-            fontSize: 20,
-            fontWeight: 700,
-            color: "#1f2937",
-          }}
-        >
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
+      <div className="max-w-[400px] rounded-xl bg-white p-8 text-center shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1)]">
+        <h2 className="mb-3 text-xl font-bold text-[#1f2937]">
           Inactivity Warning
         </h2>
 
-        <p
-          style={{
-            margin: "0 0 24px 0",
-            fontSize: 14,
-            color: "#6b7280",
-            lineHeight: 1.5,
-          }}
-        >
+        <p className="mb-6 text-sm leading-[1.5] text-[#6b7280]">
           Your session will expire due to inactivity. Click below to stay logged
           in.
         </p>
 
-        <div
-          style={{
-            backgroundColor: "#f3f4f6",
-            borderRadius: 8,
-            padding: 16,
-            marginBottom: 24,
-          }}
-        >
-          <p
-            style={{
-              margin: 0,
-              fontSize: 24,
-              fontWeight: 700,
-              color: "#ef4444",
-            }}
-          >
-            {countdown}s
-          </p>
-          <p
-            style={{
-              margin: "8px 0 0 0",
-              fontSize: 12,
-              color: "#6b7280",
-            }}
-          >
-            Seconds remaining
-          </p>
+        <div className="mb-6 rounded-lg bg-[#f3f4f6] p-4">
+          <p className="text-2xl font-bold text-[#ef4444]">{countdown}s</p>
+          <p className="mt-2 text-xs text-[#6b7280]">Seconds remaining</p>
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 12,
-            flexDirection: "column",
-          }}
-        >
+        <div className="flex flex-col gap-3">
           <button
             onClick={handleActivity}
-            style={{
-              padding: "10px 16px",
-              borderRadius: 8,
-              border: "none",
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: "pointer",
-              background:
-                "linear-gradient(135deg, var(--accent) 0%, #ea580c 100%)",
-              color: "#ffffff",
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.opacity = "0.9";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.opacity = "1";
-            }}
+            className="cursor-pointer rounded-lg border-0 bg-[linear-gradient(135deg,var(--accent)_0%,#ea580c_100%)] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 ease-in-out hover:opacity-90"
           >
             Stay Logged In
           </button>
 
           <button
             onClick={() => onLogoutRef.current()}
-            style={{
-              padding: "10px 16px",
-              borderRadius: 8,
-              border: "1px solid #d1d5db",
-              fontSize: 14,
-              fontWeight: 500,
-              cursor: "pointer",
-              backgroundColor: "#ffffff",
-              color: "#374151",
-              transition: "all 0.2s ease",
-            }}
+            className="cursor-pointer rounded-lg border border-[#d1d5db] bg-white px-4 py-2.5 text-sm font-medium text-[#374151] transition-all duration-200 ease-in-out"
           >
             Log Out Now
           </button>

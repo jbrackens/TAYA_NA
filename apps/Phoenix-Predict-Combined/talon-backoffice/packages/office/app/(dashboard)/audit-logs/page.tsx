@@ -1,68 +1,9 @@
 "use client";
 
-import styled from "styled-components";
 import { AuditLogTable } from "../../components/audit";
 import { ErrorBoundary, ErrorState } from "../../components/shared";
 import { useState, useEffect } from "react";
 import { adminFetch } from "../../lib/admin-fetch";
-
-const PageTitle = styled.h1`
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 24px;
-  color: var(--t1, #1a1a1a);
-`;
-
-const FilterBar = styled.div`
-  display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-`;
-
-const FilterInput = styled.input`
-  flex: 1;
-  min-width: 200px;
-  padding: 10px 16px;
-  background-color: var(--border-1, #e5dfd2);
-  border: 1px solid var(--border-1, #e5dfd2);
-  color: var(--t1, #1a1a1a);
-  border-radius: 4px;
-  font-size: 14px;
-
-  &::placeholder {
-    color: var(--t2, #4a4a4a);
-  }
-
-  &:focus {
-    outline: none;
-    border-color: var(--focus-ring, #0e7a53);
-  }
-`;
-
-const FilterSelect = styled.select`
-  padding: 10px 16px;
-  background-color: var(--border-1, #e5dfd2);
-  border: 1px solid var(--border-1, #e5dfd2);
-  color: var(--t1, #1a1a1a);
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-
-  &:focus {
-    outline: none;
-    border-color: var(--focus-ring, #0e7a53);
-  }
-
-  option {
-    background-color: var(--surface-1, var(--t1, #1a1a1a));
-    color: var(--t1, #1a1a1a);
-  }
-`;
 
 interface AuditLogEntry {
   id: string;
@@ -100,6 +41,15 @@ const deriveActionLabel = (action: string) => {
   }
   return action.toUpperCase();
 };
+
+const filterInputClassName =
+  "min-w-[200px] flex-1 rounded border border-[var(--border-1,#e5dfd2)] bg-[var(--border-1,#e5dfd2)] px-4 py-2.5 text-sm text-[var(--t1,#1a1a1a)] placeholder:text-[var(--t2,#4a4a4a)] focus:border-[var(--focus-ring,#0e7a53)] focus:outline-none";
+
+const filterSelectClassName =
+  "cursor-pointer rounded border border-[var(--border-1,#e5dfd2)] bg-[var(--border-1,#e5dfd2)] px-4 py-2.5 text-sm text-[var(--t1,#1a1a1a)] focus:border-[var(--focus-ring,#0e7a53)] focus:outline-none";
+
+const optionClassName =
+  "bg-[var(--surface-1,#ffffff)] text-[var(--t1,#1a1a1a)]";
 
 function AuditLogsPageContent() {
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
@@ -180,38 +130,63 @@ function AuditLogsPageContent() {
 
   return (
     <div>
-      <PageTitle>Audit Logs</PageTitle>
+      <h1 className="mb-6 text-[28px] font-bold text-[var(--t1,#1a1a1a)]">
+        Audit Logs
+      </h1>
 
-      <FilterBar>
-        <FilterInput
+      <div className="mb-6 flex flex-wrap gap-3 max-[768px]:flex-col">
+        <input
+          className={filterInputClassName}
           type="text"
           placeholder="Search by resource or admin..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
 
-        <FilterSelect
+        <select
+          className={filterSelectClassName}
           value={actionFilter}
           onChange={(e) => setActionFilter(e.target.value)}
         >
-          <option value="">All Actions</option>
-          <option value="CREATE">Create</option>
-          <option value="UPDATE">Update</option>
-          <option value="DELETE">Delete</option>
-          <option value="LOGIN">Login</option>
-          <option value="LOGOUT">Logout</option>
-        </FilterSelect>
+          <option className={optionClassName} value="">
+            All Actions
+          </option>
+          <option className={optionClassName} value="CREATE">
+            Create
+          </option>
+          <option className={optionClassName} value="UPDATE">
+            Update
+          </option>
+          <option className={optionClassName} value="DELETE">
+            Delete
+          </option>
+          <option className={optionClassName} value="LOGIN">
+            Login
+          </option>
+          <option className={optionClassName} value="LOGOUT">
+            Logout
+          </option>
+        </select>
 
-        <FilterSelect
+        <select
+          className={filterSelectClassName}
           value={resourceFilter}
           onChange={(e) => setResourceFilter(e.target.value)}
         >
-          <option value="">All Resources</option>
-          <option value="user">User</option>
-          <option value="market">Market</option>
-          <option value="alert">Alert</option>
-        </FilterSelect>
-      </FilterBar>
+          <option className={optionClassName} value="">
+            All Resources
+          </option>
+          <option className={optionClassName} value="user">
+            User
+          </option>
+          <option className={optionClassName} value="market">
+            Market
+          </option>
+          <option className={optionClassName} value="alert">
+            Alert
+          </option>
+        </select>
+      </div>
 
       {error ? (
         <ErrorState

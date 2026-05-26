@@ -4,6 +4,6 @@ import { Layout } from "antd";
 const { Footer } = Layout;
 
 const FooterComponent: React.FC = () => {
-  return <Footer style={{ textAlign: "center" }}>Footer</Footer>;
+  return <Footer className="text-center">Footer</Footer>;
 };
 export { FooterComponent };

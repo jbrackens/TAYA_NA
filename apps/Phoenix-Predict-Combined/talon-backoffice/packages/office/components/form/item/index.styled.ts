@@ -1,39 +1,32 @@
-import styled from "styled-components";
+import React from "react";
 import { Form } from "antd";
 import type { FormItemProps } from "antd";
 
-export const FormItemPreview = styled(Form.Item)<FormItemProps>`
-  &:last-child {
-    margin-bottom: 0;
-  }
+const classNames = (...classes: Array<string | undefined>) =>
+  classes.filter(Boolean).join(" ");
 
-  .ant-form-item-label {
-    position: relative;
-    z-index: 0;
+const FORM_ITEM_PREVIEW_CLASS_NAME = [
+  "[&:last-child]:mb-0",
+  "[&_.ant-form-item-label]:relative",
+  "[&_.ant-form-item-label]:z-0",
+  "[&_.ant-form-item-label_label]:static",
+  "[&_.ant-form-item-label_label]:bg-[var(--surface-1)]",
+  "[&_.ant-form-item-label_label]:pr-4",
+  "[&_.ant-form-item-label_label]:italic",
+  "[&_.ant-form-item-label_label]:after:absolute",
+  "[&_.ant-form-item-label_label]:after:left-0",
+  "[&_.ant-form-item-label_label]:after:top-1/2",
+  "[&_.ant-form-item-label_label]:after:z-[-1]",
+  "[&_.ant-form-item-label_label]:after:mt-[-4px]",
+  "[&_.ant-form-item-label_label]:after:block",
+  "[&_.ant-form-item-label_label]:after:h-px",
+  "[&_.ant-form-item-label_label]:after:w-full",
+  "[&_.ant-form-item-label_label]:after:bg-[rgba(0,0,0,0.075)]",
+  "[&_.ant-form-item-label_label]:after:content-['']",
+].join(" ");
 
-    label {
-      padding-right: 1rem;
-
-      font-style: italic;
-
-      background: var(--surface-1, #ffffff);
-
-      position: static;
-
-      &:after {
-        display: block;
-        content: "";
-        width: 100%;
-        height: 1px;
-        margin-top: calc(-4px);
-
-        position: absolute;
-        top: 50%;
-        left: 0;
-        z-index: -1;
-
-        background: rgba(0, 0, 0, 0.075);
-      }
-    }
-  }
-`;
+export const FormItemPreview = ({ className, ...props }: FormItemProps) =>
+  React.createElement(Form.Item, {
+    ...props,
+    className: classNames(FORM_ITEM_PREVIEW_CLASS_NAME, className),
+  });

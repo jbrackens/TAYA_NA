@@ -453,13 +453,13 @@ const AuditLogsContainer = () => {
 
   return (
     <>
-      <Card title={t("FILTER_TITLE")} style={{ marginBottom: 16 }}>
+      <Card title={t("FILTER_TITLE")} className="mb-4">
         {activePreset ? (
           <>
             <Alert
               type="info"
               showIcon
-              style={{ marginBottom: 12 }}
+              className="mb-3"
               message={`${t("FILTER_PRESET_ACTIVE_LABEL")} ${t(activePreset.labelKey)}`}
               action={
                 <Space>
@@ -480,10 +480,10 @@ const AuditLogsContainer = () => {
               <Alert
                 type="warning"
                 showIcon
-                style={{ marginBottom: 12 }}
+                className="mb-3"
                 message={t("FILTER_PRESET_COPY_URL_FALLBACK_MESSAGE")}
                 description={
-                  <Space direction="vertical" style={{ width: "100%" }}>
+                  <Space direction="vertical" className="w-full">
                     <Input
                       data-testid="audit-scoped-url-fallback"
                       readOnly
@@ -568,7 +568,7 @@ const AuditLogsContainer = () => {
             <Button
               type="primary"
               onClick={applyFilters}
-              style={{ marginRight: 8 }}
+              className="mr-2"
             >
               {t("FILTER_APPLY")}
             </Button>
@@ -577,7 +577,7 @@ const AuditLogsContainer = () => {
           <Col span={24}>
             <Typography.Text
               type="secondary"
-              style={{ display: "block", marginBottom: 8 }}
+              className="mb-2 block"
             >
               {t("FILTER_PRESETS_LABEL")}
             </Typography.Text>

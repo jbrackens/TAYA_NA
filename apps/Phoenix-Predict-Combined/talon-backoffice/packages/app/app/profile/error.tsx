@@ -3,6 +3,17 @@
 import { useEffect } from "react";
 import { logger } from "../lib/logger";
 
+const shellClass =
+  "flex min-h-[50vh] flex-col items-center justify-center px-5 py-10 text-center";
+const iconClass = "mb-4 text-[48px] leading-none opacity-60";
+const titleClass = "mb-2 text-[20px] font-bold text-[#f8fafc]";
+const copyClass = "mb-6 max-w-[400px] text-[14px] leading-[1.6] text-[#64748b]";
+const actionRowClass = "flex gap-3";
+const primaryActionClass =
+  "cursor-pointer rounded-[8px] border-0 bg-[linear-gradient(135deg,var(--accent),var(--accent-lo))] px-6 py-2.5 text-[14px] font-semibold text-[#04140a]";
+const secondaryActionClass =
+  "flex items-center rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-transparent px-6 py-2.5 text-[14px] font-semibold text-[#D3D3D3] no-underline";
+
 export default function ProfileError({
   error,
   reset,
@@ -15,80 +26,18 @@ export default function ProfileError({
   }, [error]);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "50vh",
-        padding: "40px 20px",
-        textAlign: "center",
-      }}
-    >
-      <div
-        style={{
-          fontSize: 48,
-          marginBottom: 16,
-          opacity: 0.6,
-        }}
-      >
-        👤
-      </div>
-      <h2
-        style={{
-          fontSize: 20,
-          fontWeight: 700,
-          color: "#f8fafc",
-          marginBottom: 8,
-        }}
-      >
-        Profile Error
-      </h2>
-      <p
-        style={{
-          fontSize: 14,
-          color: "#64748b",
-          marginBottom: 24,
-          maxWidth: 400,
-          lineHeight: 1.6,
-        }}
-      >
+    <div className={shellClass}>
+      <div className={iconClass}>👤</div>
+      <h2 className={titleClass}>Profile Error</h2>
+      <p className={copyClass}>
         {error.message ||
           "We couldn't load your profile. Please check your connection and try again."}
       </p>
-      <div style={{ display: "flex", gap: 12 }}>
-        <button
-          onClick={reset}
-          style={{
-            padding: "10px 24px",
-            borderRadius: 8,
-            border: "none",
-            background:
-              "linear-gradient(135deg, var(--accent), var(--accent-lo))",
-            color: "#04140a",
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
+      <div className={actionRowClass}>
+        <button onClick={reset} className={primaryActionClass}>
           Try Again
         </button>
-        <a
-          href="/"
-          style={{
-            padding: "10px 24px",
-            borderRadius: 8,
-            border: "1px solid rgba(255, 255, 255, 0.08)",
-            background: "transparent",
-            color: "#D3D3D3",
-            fontSize: 14,
-            fontWeight: 600,
-            textDecoration: "none",
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
+        <a href="/" className={secondaryActionClass}>
           Back to Home
         </a>
       </div>

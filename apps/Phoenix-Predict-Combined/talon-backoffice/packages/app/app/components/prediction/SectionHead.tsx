@@ -13,37 +13,18 @@ interface Props {
 
 export function SectionHead({ title, count, href }: Props) {
   return (
-    <>
-      <style>{`
-        .pred-section-head {
-          display: flex;
-          align-items: baseline;
-          justify-content: space-between;
-          margin: 32px 0 14px;
-        }
-        .pred-section-title {
-          font-size: 18px;
-          font-weight: 700;
-          letter-spacing: -0.01em;
-          margin: 0;
-          color: var(--t1);
-        }
-        .pred-section-link {
-          font-size: 13px;
-          color: var(--accent);
-          text-decoration: none;
-          text-shadow: 0 0 6px var(--accent-glow-color);
-        }
-        .pred-section-link:hover { text-decoration: underline; }
-      `}</style>
-      <div className="pred-section-head">
-        <h2 className="pred-section-title">{title}</h2>
-        {href && (
-          <a href={href} className="pred-section-link">
-            {count != null ? `See all ${count} →` : "See all →"}
-          </a>
-        )}
-      </div>
-    </>
+    <div className="mt-8 mb-[14px] flex items-baseline justify-between">
+      <h2 className="m-0 text-[18px] font-bold tracking-[-0.01em] text-[var(--t1)]">
+        {title}
+      </h2>
+      {href && (
+        <a
+          href={href}
+          className="text-[13px] text-[var(--accent)] no-underline [text-shadow:0_0_6px_var(--accent-glow-color)] hover:underline"
+        >
+          {count != null ? `See all ${count} →` : "See all →"}
+        </a>
+      )}
+    </div>
   );
 }

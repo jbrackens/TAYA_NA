@@ -6,7 +6,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useTranslation } from "react-i18next";
 
 const Button: React.FC<
-  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "style"> & {
     variant?: "primary" | "secondary" | "ghost" | "danger";
     size?: "sm" | "md" | "lg";
   }
@@ -14,40 +14,26 @@ const Button: React.FC<
   variant = "primary",
   size = "md",
   children,
-  style,
+  className = "",
   disabled,
   ...rest
 }) => {
   const sizes = {
-    sm: { padding: "6px 12px", fontSize: 12 },
-    md: { padding: "10px 18px", fontSize: 14 },
-    lg: { padding: "14px 24px", fontSize: 16 },
+    sm: "px-3 py-1.5 text-xs",
+    md: "px-[18px] py-2.5 text-sm",
+    lg: "px-6 py-3.5 text-base",
   };
   const variants = {
-    primary: { background: "var(--accent)", color: "#101114", border: "none" },
-    secondary: {
-      background: "#1a1f3a",
-      color: "#e2e8f0",
-      border: "1px solid #2a3150",
-    },
-    ghost: { background: "transparent", color: "#818cf8", border: "none" },
-    danger: { background: "#ef4444", color: "#fff", border: "none" },
+    primary: "border-0 bg-[var(--accent)] text-[#101114]",
+    secondary: "border border-[#2a3150] bg-[#1a1f3a] text-[#e2e8f0]",
+    ghost: "border-0 bg-transparent text-[#818cf8]",
+    danger: "border-0 bg-[#ef4444] text-white",
   };
   return (
     <button
       {...rest}
       disabled={disabled}
-      style={{
-        ...sizes[size],
-        ...variants[variant],
-        borderRadius: 8,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        transition: "opacity 0.15s",
-        whiteSpace: "nowrap" as const,
-        ...style,
-      }}
+      className={`whitespace-nowrap rounded-lg font-semibold transition-opacity duration-150 enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${sizes[size]} ${variants[variant]} ${className}`}
     >
       {children}
     </button>
@@ -56,23 +42,16 @@ const Button: React.FC<
 
 const Input = React.forwardRef<
   HTMLInputElement,
-  React.InputHTMLAttributes<HTMLInputElement> & { error?: boolean }
->(({ error, style, ...rest }, ref) => (
+  Omit<React.InputHTMLAttributes<HTMLInputElement>, "style"> & {
+    error?: boolean;
+  }
+>(({ error, className = "", ...rest }, ref) => (
   <input
     ref={ref}
     {...rest}
-    style={{
-      width: "100%",
-      padding: "10px 14px",
-      borderRadius: 8,
-      fontSize: 14,
-      background: "#0b0e1c",
-      border: `1px solid ${error ? "#ef4444" : "#1e2243"}`,
-      color: "#f1f5f9",
-      outline: "none",
-      transition: "border-color 0.15s",
-      ...style,
-    }}
+    className={`w-full rounded-lg border bg-[#0b0e1c] px-3.5 py-2.5 text-sm text-[#f1f5f9] outline-none transition-[border-color] duration-150 ${
+      error ? "border-[#ef4444]" : "border-[#1e2243]"
+    } ${className}`}
   />
 ));
 Input.displayName = "Input";
@@ -154,44 +133,15 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   }, []);
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "16px",
-      }}
-    >
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       {error && (
-        <div
-          style={{
-            padding: "12px",
-            backgroundColor: "rgba(255, 155, 107, 0.13)",
-            border: "1px solid var(--no)",
-            color: "var(--no)",
-            borderRadius: "4px",
-            fontSize: "13px",
-          }}
-        >
+        <div className="rounded border border-[var(--no)] bg-[rgba(255,155,107,0.13)] p-3 text-[13px] text-[var(--no)]">
           {error}
         </div>
       )}
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "8px",
-        }}
-      >
-        <label
-          htmlFor="username"
-          style={{
-            fontSize: "14px",
-            fontWeight: "600",
-            color: "#ffffff",
-          }}
-        >
+      <div className="flex flex-col gap-2">
+        <label htmlFor="username" className="text-sm font-semibold text-white">
           {tx("USERNAME", "Username")}
         </label>
         <Input
@@ -204,21 +154,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         />
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "8px",
-        }}
-      >
-        <label
-          htmlFor="password"
-          style={{
-            fontSize: "14px",
-            fontWeight: "600",
-            color: "#ffffff",
-          }}
-        >
+      <div className="flex flex-col gap-2">
+        <label htmlFor="password" className="text-sm font-semibold text-white">
           {tx("PASSWORD", "Password")}
         </label>
         <Input
@@ -231,32 +168,18 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         />
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-        }}
-      >
+      <div className="flex items-center gap-2">
         <input
           id="rememberMe"
           type="checkbox"
           checked={rememberMe}
           onChange={(e) => setRememberMe(e.target.checked)}
           disabled={isLoading}
-          style={{
-            width: "16px",
-            height: "16px",
-            cursor: "pointer",
-          }}
+          className="h-4 w-4 cursor-pointer disabled:cursor-not-allowed"
         />
         <label
           htmlFor="rememberMe"
-          style={{
-            fontSize: "13px",
-            color: "#a0a0a0",
-            cursor: "pointer",
-          }}
+          className="cursor-pointer text-[13px] text-[#a0a0a0]"
         >
           {tx("REMEMBER_ME", "Remember me")}
         </label>
@@ -266,7 +189,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         type="submit"
         variant="primary"
         disabled={isLoading}
-        style={{ width: "100%" }}
+        className="w-full"
       >
         {isLoading
           ? tx("SIGNING_IN", "Signing in...")

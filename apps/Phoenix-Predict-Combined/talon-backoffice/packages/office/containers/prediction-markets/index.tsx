@@ -254,14 +254,8 @@ export default function PredictionMarketsContainer() {
       width: 520,
       content: (
         <div>
-          <p style={{ marginBottom: 8 }}>{consequence}</p>
-          <p
-            style={{
-              marginBottom: 8,
-              fontSize: 12,
-              color: "var(--t3, #8b8378)",
-            }}
-          >
+          <p className="mb-2">{consequence}</p>
+          <p className="mb-2 text-xs text-[var(--t3,#8b8378)]">
             Reason is written to the lifecycle audit log.
           </p>
           <TextArea
@@ -304,7 +298,7 @@ export default function PredictionMarketsContainer() {
           <Space size={6}>
             <Text>{ticker}</Text>
             <Tooltip title={tip}>
-              <Tag color="red" style={{ marginLeft: 0 }}>
+              <Tag color="red" className="!ml-0">
                 drift
               </Tag>
             </Tooltip>
@@ -454,11 +448,7 @@ export default function PredictionMarketsContainer() {
     <>
       <PageHeader title="Prediction Markets" />
       <Card>
-        <Row
-          justify="space-between"
-          align="middle"
-          style={{ marginBottom: 16 }}
-        >
+        <Row justify="space-between" align="middle" className="mb-4">
           <Col>
             <Text type="secondary">{markets.length} markets</Text>
           </Col>
@@ -514,7 +504,7 @@ export default function PredictionMarketsContainer() {
           <Button
             type="link"
             size="small"
-            style={{ padding: 0, marginTop: -8, marginBottom: 8 }}
+            className="!-mt-2 !mb-2 !p-0"
             onClick={() => setCreateEventOpen(true)}
           >
             + Create new event
@@ -581,12 +571,12 @@ export default function PredictionMarketsContainer() {
                 label="AMM Liquidity (b)"
                 initialValue={100}
               >
-                <InputNumber min={1} max={10000} style={{ width: "100%" }} />
+                <InputNumber min={1} max={10000} className="w-full" />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item name="feeRateBps" label="Fee (bps)" initialValue={0}>
-                <InputNumber min={0} max={1000} style={{ width: "100%" }} />
+                <InputNumber min={0} max={1000} className="w-full" />
               </Form.Item>
             </Col>
             <Col span={8}>

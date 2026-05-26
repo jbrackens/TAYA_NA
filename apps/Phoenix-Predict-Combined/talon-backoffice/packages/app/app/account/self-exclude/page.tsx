@@ -23,6 +23,28 @@ import { FEATURE_RG } from "../../lib/features";
 type Step = "warning" | "form" | "confirm" | "success";
 type Duration = "1" | "5" | "lifetime";
 
+const pageClass = "mx-auto max-w-[700px] px-4 py-6";
+const cardClass =
+  "mb-6 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-8";
+const descClass = "mb-6 text-[13px] text-[var(--t3)]";
+const fieldClass = "flex flex-col gap-2";
+const labelClass = "text-[13px] font-semibold text-[var(--t2)]";
+const actionsClass =
+  "mt-6 flex gap-3 max-[640px]:flex-col-reverse";
+const buttonBaseClass =
+  "flex-1 cursor-pointer rounded-[var(--r-rh-md)] border px-5 py-3 text-center text-sm font-bold no-underline transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50";
+const primaryButtonClass = `${buttonBaseClass} border-transparent bg-[var(--accent)] text-[#04140a] hover:-translate-y-px hover:brightness-105`;
+const secondaryButtonClass = `${buttonBaseClass} border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t1)] hover:border-[var(--accent)] hover:text-[var(--accent)]`;
+const dangerButtonClass = `${buttonBaseClass} border-transparent bg-[var(--no)] text-white hover:brightness-105`;
+
+function durationButtonClass(active: boolean) {
+  return `flex-1 cursor-pointer rounded-[var(--r-rh-md)] border px-4 py-3 text-center text-[13px] font-semibold transition-all duration-150 ${
+    active
+      ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+      : "border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+  }`;
+}
+
 export default function SelfExcludePage() {
   if (!FEATURE_RG) notFound();
   return <SelfExcludePageContent />;
@@ -100,553 +122,307 @@ function SelfExcludePageContent() {
   };
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: selfExcludeStyles }} />
-      <div className="se-page">
-        <div className="se-header">
-          <h1>Self-Exclusion</h1>
-          <p>Permanently exclude yourself from your account</p>
-        </div>
+    <div className={pageClass}>
+      <div className="mb-8 text-center">
+        <h1 className="mb-1 text-[28px] font-extrabold text-[var(--t1)]">
+          Self-Exclusion
+        </h1>
+        <p className="text-sm text-[var(--t3)]">
+          Permanently exclude yourself from your account
+        </p>
+      </div>
 
-        {/* Warning Step */}
-        {step === "warning" && (
-          <div className="se-card se-warning-card">
-            <div className="se-warning-icon">
-              <AlertTriangle size={48} strokeWidth={1.5} color="var(--no)" />
-            </div>
-            <h2>Important Notice</h2>
-            <div className="se-warning-content">
-              <p>
-                Self-exclusion is a permanent decision that will close your
-                account immediately.
-              </p>
-
-              <div className="se-consequence-list">
-                <div className="se-consequence-item">
-                  <span className="se-consequence-icon">
-                    <Ban size={20} strokeWidth={1.75} />
-                  </span>
-                  <div>
-                    <strong>Account Closure</strong>
-                    <p>
-                      Your account will be completely blocked and cannot be
-                      reopened
-                    </p>
-                  </div>
-                </div>
-
-                <div className="se-consequence-item">
-                  <span className="se-consequence-icon">
-                    <Wallet size={20} strokeWidth={1.75} />
-                  </span>
-                  <div>
-                    <strong>Balance Handling</strong>
-                    <p>
-                      Any remaining balance will be processed according to our
-                      policy
-                    </p>
-                  </div>
-                </div>
-
-                <div className="se-consequence-item">
-                  <span className="se-consequence-icon">
-                    <Lock size={20} strokeWidth={1.75} />
-                  </span>
-                  <div>
-                    <strong>No Access</strong>
-                    <p>
-                      You will not be able to place orders or use any account
-                      features
-                    </p>
-                  </div>
-                </div>
-
-                <div className="se-consequence-item">
-                  <span className="se-consequence-icon">
-                    <Clock size={20} strokeWidth={1.75} />
-                  </span>
-                  <div>
-                    <strong>
-                      {duration === "lifetime"
-                        ? "Permanent Exclusion"
-                        : `${durationLabel} Exclusion`}
-                    </strong>
-                    <p>
-                      {duration === "lifetime"
-                        ? "This is a permanent action with no exceptions"
-                        : `Your account will be excluded for ${durationLabel.toLowerCase()}`}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="se-help-section">
-                <strong>Need Help?</strong>
-                <p>
-                  If you're struggling with gambling, please contact our support
-                  team or visit responsible gaming resources:
-                </p>
-                <ul>
-                  <li>National Problem Gambling Helpline: 1-800-GAMBLER</li>
-                  <li>Gamblers Anonymous: www.gamblersanonymous.org</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="se-actions">
-              <Link href="/account" className="se-btn se-btn-secondary">
-                Cancel
-              </Link>
-              <button className="se-btn se-btn-primary" onClick={handleProceed}>
-                I Understand, Continue
-              </button>
-            </div>
+      {/* Warning Step */}
+      {step === "warning" && (
+        <div className={`${cardClass} border-[var(--no-text)]`}>
+          <div className="mb-4 text-center text-5xl">
+            <AlertTriangle
+              size={48}
+              strokeWidth={1.5}
+              className="mx-auto text-[var(--no)]"
+            />
           </div>
-        )}
-
-        {/* Form Step */}
-        {step === "form" && (
-          <div className="se-card">
-            <h2>Self-Exclusion Request</h2>
-            <p className="se-desc">
-              Please provide a reason for your self-exclusion request
+          <h2 className="mb-2 text-xl font-bold text-[var(--t1)]">
+            Important Notice
+          </h2>
+          <div className="flex flex-col gap-5">
+            <p className="text-sm leading-relaxed text-[var(--t1)]">
+              Self-exclusion is a permanent decision that will close your
+              account immediately.
             </p>
 
-            <form onSubmit={handleSubmit} className="se-form">
-              <div className="se-field">
-                <label className="se-label">Exclusion Duration</label>
-                <div className="se-duration-options">
-                  <button
-                    type="button"
-                    className={`se-duration-btn${
-                      duration === "1" ? " active" : ""
-                    }`}
-                    onClick={() => setDuration("1")}
-                  >
-                    1 Year
-                  </button>
-                  <button
-                    type="button"
-                    className={`se-duration-btn${
-                      duration === "5" ? " active" : ""
-                    }`}
-                    onClick={() => setDuration("5")}
-                  >
-                    5 Years
-                  </button>
-                  <button
-                    type="button"
-                    className={`se-duration-btn${
-                      duration === "lifetime" ? " active" : ""
-                    }`}
-                    onClick={() => setDuration("lifetime")}
-                  >
-                    Lifetime
-                  </button>
-                </div>
-              </div>
+            <div className="flex flex-col gap-3">
+              <Consequence
+                icon={<Ban size={20} strokeWidth={1.75} />}
+                title="Account Closure"
+                desc="Your account will be completely blocked and cannot be reopened"
+              />
+              <Consequence
+                icon={<Wallet size={20} strokeWidth={1.75} />}
+                title="Balance Handling"
+                desc="Any remaining balance will be processed according to our policy"
+              />
+              <Consequence
+                icon={<Lock size={20} strokeWidth={1.75} />}
+                title="No Access"
+                desc="You will not be able to place orders or use any account features"
+              />
+              <Consequence
+                icon={<Clock size={20} strokeWidth={1.75} />}
+                title={
+                  duration === "lifetime"
+                    ? "Permanent Exclusion"
+                    : `${durationLabel} Exclusion`
+                }
+                desc={
+                  duration === "lifetime"
+                    ? "This is a permanent action with no exceptions"
+                    : `Your account will be excluded for ${durationLabel.toLowerCase()}`
+                }
+              />
+            </div>
 
-              <div className="se-field">
-                <label className="se-label">Reason for Self-Exclusion</label>
-                <textarea
-                  className="se-textarea"
-                  value={reason}
-                  onChange={handleReasonChange}
-                  placeholder="Please tell us why you want to self-exclude (optional but helpful)"
-                  rows={6}
-                />
-                <div className="se-char-count">{reason.length} characters</div>
-              </div>
+            <div className="rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-2)] p-4">
+              <strong className="mb-2 block text-[13px] text-[var(--t1)]">
+                Need Help?
+              </strong>
+              <p className="mb-2 text-xs text-[var(--t2)]">
+                If you're struggling with gambling, please contact our support
+                team or visit responsible gaming resources:
+              </p>
+              <ul className="m-0 pl-5 text-xs text-[var(--t2)]">
+                <li className="mb-1">National Problem Gambling Helpline: 1-800-GAMBLER</li>
+                <li className="mb-1">Gamblers Anonymous: www.gamblersanonymous.org</li>
+              </ul>
+            </div>
+          </div>
 
-              <div className="se-confirmation">
-                <label className="se-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={confirmed}
-                    onChange={handleConfirmToggle}
-                  />
-                  <span>
-                    I understand that self-exclusion is permanent and my account
-                    cannot be reopened
-                  </span>
-                </label>
-              </div>
+          <div className={actionsClass}>
+            <Link href="/account" className={secondaryButtonClass}>
+              Cancel
+            </Link>
+            <button className={primaryButtonClass} onClick={handleProceed}>
+              I Understand, Continue
+            </button>
+          </div>
+        </div>
+      )}
 
-              <div className="se-actions">
+      {/* Form Step */}
+      {step === "form" && (
+        <div className={cardClass}>
+          <h2 className="mb-2 text-xl font-bold text-[var(--t1)]">
+            Self-Exclusion Request
+          </h2>
+          <p className={descClass}>
+            Please provide a reason for your self-exclusion request
+          </p>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            <div className={fieldClass}>
+              <label className={labelClass}>Exclusion Duration</label>
+              <div className="flex flex-row gap-2.5">
                 <button
                   type="button"
-                  className="se-btn se-btn-secondary"
-                  onClick={() => setStep("warning")}
+                  className={durationButtonClass(duration === "1")}
+                  onClick={() => setDuration("1")}
                 >
-                  Back
+                  1 Year
                 </button>
                 <button
-                  type="submit"
-                  className="se-btn se-btn-primary"
-                  disabled={!confirmed || !reason.trim()}
+                  type="button"
+                  className={durationButtonClass(duration === "5")}
+                  onClick={() => setDuration("5")}
                 >
-                  Continue to Confirmation
+                  5 Years
+                </button>
+                <button
+                  type="button"
+                  className={durationButtonClass(duration === "lifetime")}
+                  onClick={() => setDuration("lifetime")}
+                >
+                  Lifetime
                 </button>
               </div>
-            </form>
-          </div>
-        )}
-
-        {/* Confirmation Step */}
-        {step === "confirm" && (
-          <div className="se-card se-confirm-card">
-            <div className="se-confirm-icon">
-              <ShieldCheck size={48} strokeWidth={1.5} color="#fbbf24" />
             </div>
-            <h2>Confirm Self-Exclusion</h2>
-            <p className="se-desc">
-              Please review your request before proceeding
-            </p>
 
-            <div className="se-review">
-              <div className="se-review-item">
-                <div className="se-review-label">Duration</div>
-                <div className="se-review-value">{durationLabel}</div>
+            <div className={fieldClass}>
+              <label className={labelClass}>Reason for Self-Exclusion</label>
+              <textarea
+                className="resize-y rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-[14px] py-3 text-[13px] text-[var(--t1)] outline-none transition-colors duration-150 focus:border-[var(--accent)]"
+                value={reason}
+                onChange={handleReasonChange}
+                placeholder="Please tell us why you want to self-exclude (optional but helpful)"
+                rows={6}
+              />
+              <div className="text-[11px] text-[var(--t3)]">
+                {reason.length} characters
               </div>
+            </div>
 
-              <div className="se-review-item">
-                <div className="se-review-label">Reason</div>
-                <div className="se-review-value">{reason}</div>
-              </div>
-
-              <div
-                className="se-review-warning"
-                style={{ display: "flex", alignItems: "center", gap: 8 }}
-              >
-                <AlertTriangle
-                  size={16}
-                  strokeWidth={2}
-                  style={{ flexShrink: 0 }}
+            <div className="rounded-[var(--r-rh-md)] bg-[var(--surface-2)] px-4 py-3">
+              <label className="flex cursor-pointer items-start gap-2.5">
+                <input
+                  className="mt-0.5 cursor-pointer accent-[var(--accent)]"
+                  type="checkbox"
+                  checked={confirmed}
+                  onChange={handleConfirmToggle}
                 />
-                This action cannot be undone. Your account will be permanently
-                closed.
-              </div>
-            </div>
-
-            <div className="se-actions">
-              <button
-                className="se-btn se-btn-secondary"
-                onClick={() => setStep("form")}
-              >
-                Back to Edit
-              </button>
-              <button
-                className="se-btn se-btn-danger"
-                onClick={handleConfirmExclude}
-                disabled={loading}
-              >
-                {loading ? "Processing..." : "Confirm Self-Exclusion"}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Success Step */}
-        {step === "success" && result && (
-          <div className="se-card se-success-card">
-            <div className="se-success-icon">
-              <CheckCircle2 size={56} strokeWidth={1.5} color="var(--accent)" />
-            </div>
-            <h2>Self-Exclusion Confirmed</h2>
-            <p className="se-desc">
-              Your account has been successfully self-excluded
-            </p>
-
-            <div className="se-success-details">
-              <div className="se-detail-item">
-                <span className="se-detail-label">Status:</span>
-                <span className="se-detail-value">{result.status}</span>
-              </div>
-              <div className="se-detail-item">
-                <span className="se-detail-label">Excluded Until:</span>
-                <span className="se-detail-value">
-                  {new Date(result.excludedUntil).toLocaleDateString()}
+                <span className="text-[13px] leading-snug text-[var(--t2)]">
+                  I understand that self-exclusion is permanent and my account
+                  cannot be reopened
                 </span>
-              </div>
+              </label>
             </div>
 
-            <div className="se-success-message">
-              <strong>Your account is now permanently closed.</strong>
-              <p>
-                If you need support or have questions about responsible gaming,
-                please contact us.
-              </p>
+            <div className={actionsClass}>
+              <button
+                type="button"
+                className={secondaryButtonClass}
+                onClick={() => setStep("warning")}
+              >
+                Back
+              </button>
+              <button
+                type="submit"
+                className={primaryButtonClass}
+                disabled={!confirmed || !reason.trim()}
+              >
+                Continue to Confirmation
+              </button>
             </div>
+          </form>
+        </div>
+      )}
 
-            <div className="se-actions">
-              <a href="/" className="se-btn se-btn-primary">
-                Return to Home
-              </a>
+      {/* Confirmation Step */}
+      {step === "confirm" && (
+        <div className={`${cardClass} text-center`}>
+          <div className="mb-4 text-5xl">
+            <ShieldCheck
+              size={48}
+              strokeWidth={1.5}
+              className="mx-auto text-[#fbbf24]"
+            />
+          </div>
+          <h2 className="mb-2 text-xl font-bold text-[var(--t1)]">
+            Confirm Self-Exclusion
+          </h2>
+          <p className={descClass}>
+            Please review your request before proceeding
+          </p>
+
+          <div className="my-6 flex flex-col gap-4">
+            <ReviewItem label="Duration" value={durationLabel} />
+            <ReviewItem label="Reason" value={reason} />
+
+            <div className="flex items-center gap-2 rounded-[var(--r-rh-md)] border border-[rgba(255,155,107,0.2)] bg-[rgba(255,155,107,0.08)] px-4 py-3 text-[13px] font-semibold text-[var(--no-text)]">
+              <AlertTriangle size={16} strokeWidth={2} className="shrink-0" />
+              This action cannot be undone. Your account will be permanently
+              closed.
             </div>
           </div>
-        )}
-      </div>
-    </>
+
+          <div className={actionsClass}>
+            <button
+              className={secondaryButtonClass}
+              onClick={() => setStep("form")}
+            >
+              Back to Edit
+            </button>
+            <button
+              className={dangerButtonClass}
+              onClick={handleConfirmExclude}
+              disabled={loading}
+            >
+              {loading ? "Processing..." : "Confirm Self-Exclusion"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Success Step */}
+      {step === "success" && result && (
+        <div className={`${cardClass} border-[var(--accent)] text-center`}>
+          <div className="mb-4 text-[56px]">
+            <CheckCircle2
+              size={56}
+              strokeWidth={1.5}
+              className="mx-auto text-[var(--accent)]"
+            />
+          </div>
+          <h2 className="mb-2 text-xl font-bold text-[var(--t1)]">
+            Self-Exclusion Confirmed
+          </h2>
+          <p className={descClass}>
+            Your account has been successfully self-excluded
+          </p>
+
+          <div className="my-6 rounded-[var(--r-rh-md)] bg-[var(--surface-2)] p-5">
+            <DetailItem label="Status:" value={result.status} />
+            <DetailItem
+              label="Excluded Until:"
+              value={new Date(result.excludedUntil).toLocaleDateString()}
+            />
+          </div>
+
+          <div className="my-4 rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--accent-soft)] p-4">
+            <strong className="mb-2 block text-sm text-[var(--accent)]">
+              Your account is now permanently closed.
+            </strong>
+            <p className="text-[13px] text-[var(--t2)]">
+              If you need support or have questions about responsible gaming,
+              please contact us.
+            </p>
+          </div>
+
+          <div className={actionsClass}>
+            <a href="/" className={primaryButtonClass}>
+              Return to Home
+            </a>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
-const selfExcludeStyles = `
-  .se-page { max-width: 700px; margin: 0 auto; padding: 24px 16px; }
+function Consequence({
+  icon,
+  title,
+  desc,
+}: {
+  icon: React.ReactNode;
+  title: React.ReactNode;
+  desc: React.ReactNode;
+}) {
+  return (
+    <div className="flex gap-3 rounded-[var(--r-rh-md)] border-l-[3px] border-l-[var(--no)] bg-[var(--surface-2)] p-3">
+      <span className="shrink-0 text-xl text-[var(--no)]">{icon}</span>
+      <div>
+        <strong className="mb-0.5 block text-[13px] text-[var(--t1)]">
+          {title}
+        </strong>
+        <p className="m-0 text-xs text-[var(--t3)]">{desc}</p>
+      </div>
+    </div>
+  );
+}
 
-  .se-header {
-    text-align: center; margin-bottom: 32px;
-  }
+function ReviewItem({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="rounded-[var(--r-rh-md)] bg-[var(--surface-2)] p-4 text-left">
+      <div className="mb-1 text-xs font-semibold text-[var(--t3)]">{label}</div>
+      <div className="break-words text-sm text-[var(--t1)]">{value}</div>
+    </div>
+  );
+}
 
-  .se-header h1 {
-    font-size: 28px; font-weight: 800; color: var(--t1); margin-bottom: 4px;
-  }
-
-  .se-header p {
-    font-size: 14px; color: var(--t3);
-  }
-
-  .se-card {
-    background: var(--surface-1); border: 1px solid var(--border-1); border-radius: var(--r-rh-lg);
-    padding: 32px; margin-bottom: 24px;
-  }
-
-  .se-card h2 {
-    font-size: 20px; font-weight: 700; color: var(--t1); margin-bottom: 8px;
-  }
-
-  .se-desc {
-    font-size: 13px; color: var(--t3); margin-bottom: 24px;
-  }
-
-  .se-warning-card {
-    border-color: var(--no-text);
-  }
-
-  .se-warning-icon {
-    font-size: 48px; text-align: center; margin-bottom: 16px;
-  }
-
-  .se-warning-content {
-    display: flex; flex-direction: column; gap: 20px;
-  }
-
-  .se-warning-content p {
-    font-size: 14px; color: var(--t1); line-height: 1.6;
-  }
-
-  .se-consequence-list {
-    display: flex; flex-direction: column; gap: 12px;
-  }
-
-  .se-consequence-item {
-    display: flex; gap: 12px; padding: 12px; background: var(--surface-2);
-    border-radius: var(--r-rh-md); border-left: 3px solid var(--no);
-  }
-
-  .se-consequence-icon {
-    font-size: 20px; flex-shrink: 0;
-  }
-
-  .se-consequence-item strong {
-    display: block; color: var(--t1); font-size: 13px; margin-bottom: 2px;
-  }
-
-  .se-consequence-item p {
-    font-size: 12px; color: var(--t3); margin: 0;
-  }
-
-  .se-help-section {
-    padding: 16px; background: var(--surface-2); border-radius: var(--r-rh-md);
-    border: 1px solid var(--border-2);
-  }
-
-  .se-help-section strong {
-    display: block; color: var(--t1); margin-bottom: 8px; font-size: 13px;
-  }
-
-  .se-help-section p {
-    font-size: 12px; color: var(--t2); margin: 0 0 8px 0;
-  }
-
-  .se-help-section ul {
-    margin: 0; padding-left: 20px; font-size: 12px; color: var(--t2);
-  }
-
-  .se-help-section li {
-    margin-bottom: 4px;
-  }
-
-  .se-duration-options {
-    display: flex; flex-direction: row; gap: 10px;
-  }
-
-  .se-duration-btn {
-    flex: 1; padding: 12px 16px; background: var(--surface-2); border: 1px solid var(--border-1);
-    border-radius: var(--r-rh-md); color: var(--t2); font-size: 13px; font-weight: 600;
-    cursor: pointer; transition: all 0.15s; text-align: center;
-  }
-
-  .se-duration-btn:hover {
-    border-color: var(--accent); color: var(--accent);
-  }
-
-  .se-duration-btn.active {
-    background: var(--accent-soft); border-color: var(--accent); color: var(--accent);
-  }
-
-  .se-form {
-    display: flex; flex-direction: column; gap: 20px;
-  }
-
-  .se-field {
-    display: flex; flex-direction: column; gap: 8px;
-  }
-
-  .se-label {
-    font-size: 13px; font-weight: 600; color: var(--t2);
-  }
-
-  .se-textarea {
-    padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border-1);
-    border-radius: var(--r-rh-md); color: var(--t1); font-size: 13px; font-family: inherit;
-    outline: none; resize: vertical; transition: border-color 0.15s;
-  }
-
-  .se-textarea:focus {
-    border-color: var(--accent);
-  }
-
-  .se-char-count {
-    font-size: 11px; color: var(--t3);
-  }
-
-  .se-confirmation {
-    padding: 12px 16px; background: var(--surface-2); border-radius: var(--r-rh-md);
-  }
-
-  .se-checkbox {
-    display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
-  }
-
-  .se-checkbox input {
-    margin-top: 2px; cursor: pointer;
-  }
-
-  .se-checkbox span {
-    font-size: 13px; color: var(--t2); line-height: 1.4;
-  }
-
-  .se-confirm-card {
-    text-align: center;
-  }
-
-  .se-confirm-icon {
-    font-size: 48px; margin-bottom: 16px;
-  }
-
-  .se-review {
-    display: flex; flex-direction: column; gap: 16px; margin: 24px 0;
-  }
-
-  .se-review-item {
-    padding: 16px; background: var(--surface-2); border-radius: var(--r-rh-md); text-align: left;
-  }
-
-  .se-review-label {
-    font-size: 12px; color: var(--t3); font-weight: 600; margin-bottom: 4px;
-  }
-
-  .se-review-value {
-    font-size: 14px; color: var(--t1); word-break: break-word;
-  }
-
-  .se-review-warning {
-    padding: 12px 16px; background: rgba(255, 155, 107, 0.08);
-    border: 1px solid rgba(255, 155, 107, 0.2); border-radius: var(--r-rh-md);
-    color: var(--no-text); font-size: 13px; font-weight: 600;
-  }
-
-  .se-success-card {
-    text-align: center; border-color: var(--accent);
-  }
-
-  .se-success-icon {
-    font-size: 56px; margin-bottom: 16px;
-  }
-
-  .se-success-details {
-    padding: 20px; background: var(--surface-2); border-radius: var(--r-rh-md);
-    margin: 24px 0;
-  }
-
-  .se-detail-item {
-    display: flex; justify-content: space-between; padding: 8px 0;
-    font-size: 13px; border-bottom: 1px solid var(--border-1);
-  }
-
-  .se-detail-item:last-child {
-    border-bottom: none;
-  }
-
-  .se-detail-label {
-    color: var(--t3); font-weight: 600;
-  }
-
-  .se-detail-value {
-    color: var(--t1); font-weight: 700;
-  }
-
-  .se-success-message {
-    padding: 16px; background: var(--accent-soft);
-    border: 1px solid var(--border-2); border-radius: var(--r-rh-md);
-    margin: 16px 0;
-  }
-
-  .se-success-message strong {
-    display: block; color: var(--accent); margin-bottom: 8px; font-size: 14px;
-  }
-
-  .se-success-message p {
-    font-size: 13px; color: var(--t2); margin: 0;
-  }
-
-  .se-actions {
-    display: flex; gap: 12px; margin-top: 24px;
-  }
-  @media (max-width: 640px) {
-    .se-actions { flex-direction: column-reverse; }
-  }
-
-  .se-btn {
-    flex: 1; padding: 12px 20px; border: none; border-radius: var(--r-rh-md);
-    font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.15s;
-  }
-
-  .se-btn-primary {
-    background: var(--accent); color: #04140a;
-  }
-
-  .se-btn-primary:hover:not(:disabled) {
-    transform: translateY(-1px); filter: brightness(1.05);
-  }
-
-  .se-btn-secondary {
-    background: var(--surface-2); border: 1px solid var(--border-1); color: var(--t1);
-  }
-
-  .se-btn-secondary:hover {
-    border-color: var(--accent); color: var(--accent);
-  }
-
-  .se-btn-danger {
-    background: var(--no); color: #fff;
-  }
-
-  .se-btn-danger:hover:not(:disabled) {
-    filter: brightness(1.05);
-  }
-
-  .se-btn:disabled {
-    opacity: 0.5; cursor: not-allowed;
-  }
-`;
+function DetailItem({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex justify-between border-b border-[var(--border-1)] py-2 text-[13px] last:border-b-0">
+      <span className="font-semibold text-[var(--t3)]">{label}</span>
+      <span className="font-bold text-[var(--t1)]">{value}</span>
+    </div>
+  );
+}

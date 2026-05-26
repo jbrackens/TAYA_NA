@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { MessageCircle } from "lucide-react";
 
 export default function OpenChatButton() {
   const [isVisible, setIsVisible] = useState(true);
-  const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
     // Always visible after mount (SSR guard)
@@ -20,84 +19,23 @@ export default function OpenChatButton() {
     window.open(chatUrl, "supportChat", "width=800,height=600");
   };
 
-  const buttonStyle: React.CSSProperties = {
-    position: "fixed",
-    bottom: "90px",
-    right: "24px",
-    width: "56px",
-    height: "56px",
-    borderRadius: "50%",
-    backgroundColor: "var(--accent)",
-    border: "none",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    boxShadow: "0 4px 12px rgba(43, 228, 128, 0.3)",
-    transition: "all 0.3s",
-    opacity: isVisible ? 1 : 0,
-    pointerEvents: isVisible ? "auto" : "none",
-    zIndex: 999,
-  };
-
-  const iconStyle: React.CSSProperties = {
-    width: "24px",
-    height: "24px",
-    color: "#0f1225",
-    fontWeight: "bold",
-    fontSize: "20px",
-  };
-
-  const tooltipStyle: React.CSSProperties = {
-    position: "absolute",
-    right: "64px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    background: "#1a1f3a",
-    color: "#e2e8f0",
-    padding: "6px 12px",
-    borderRadius: "6px",
-    fontSize: "12px",
-    fontWeight: 600,
-    whiteSpace: "nowrap",
-    pointerEvents: "none",
-    opacity: showTooltip ? 1 : 0,
-    transition: "opacity 0.2s",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-  };
-
   return (
     <div
-      style={{ position: "fixed", bottom: "90px", right: "24px", zIndex: 999 }}
+      className={`group fixed bottom-[90px] right-6 z-[999] transition-opacity duration-300 ${
+        isVisible
+          ? "pointer-events-auto opacity-100"
+          : "pointer-events-none opacity-0"
+      }`}
     >
-      <div style={tooltipStyle}>Need Help?</div>
+      <div className="pointer-events-none absolute right-16 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-md bg-[#1a1f3a] px-3 py-1.5 text-xs font-semibold text-[#e2e8f0] opacity-0 shadow-[0_2px_8px_rgba(0,0,0,0.3)] transition-opacity duration-200 group-hover:opacity-100">
+        Need Help?
+      </div>
       <button
         onClick={handleClick}
-        style={{
-          ...buttonStyle,
-          position: "relative",
-          bottom: "auto",
-          right: "auto",
-        }}
+        className="relative flex h-14 w-14 cursor-pointer items-center justify-center rounded-full border-0 bg-[var(--accent)] text-[#0f1225] shadow-[0_4px_12px_rgba(43,228,128,0.3)] transition-all duration-300 hover:scale-110 hover:bg-[#ea580c] hover:shadow-[0_6px_16px_rgba(43,228,128,0.4)]"
         title="Need Help?"
-        onMouseEnter={(e) => {
-          setShowTooltip(true);
-          e.currentTarget.style.backgroundColor = "#ea580c";
-          e.currentTarget.style.boxShadow =
-            "0 6px 16px rgba(43, 228, 128, 0.4)";
-          e.currentTarget.style.transform = "scale(1.1)";
-        }}
-        onMouseLeave={(e) => {
-          setShowTooltip(false);
-          e.currentTarget.style.backgroundColor = "var(--accent)";
-          e.currentTarget.style.boxShadow =
-            "0 4px 12px rgba(43, 228, 128, 0.3)";
-          e.currentTarget.style.transform = "scale(1)";
-        }}
       >
-        <span style={iconStyle}>
-          <MessageCircle size={24} strokeWidth={2} />
-        </span>
+        <MessageCircle className="h-6 w-6" strokeWidth={2} />
       </button>
     </div>
   );

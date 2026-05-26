@@ -1,38 +1,4 @@
 import React from 'react';
-import styled from 'styled-components';
-
-const ScoreContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const TeamInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
-`;
-
-const TeamName = styled.div`
-  font-size: ${({ theme }) => theme.typography.base.fontSize};
-  font-weight: ${({ theme }) => theme.typography.weights.semibold};
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const LargeScore = styled.div`
-  font-size: ${({ theme }) => theme.typography.xlarge.fontSize};
-  font-weight: ${({ theme }) => theme.typography.weights.bold};
-  line-height: ${({ theme }) => theme.typography.xlarge.lineHeight};
-  color: ${({ theme }) => theme.colors.live};
-  text-align: center;
-  min-width: 80px;
-`;
-
-const ScoreDivider = styled.div`
-  width: 2px;
-  height: 80px;
-  background-color: ${({ theme }) => theme.colors.border};
-`;
 
 interface ScoreDisplayProps {
   homeTeam: string;
@@ -48,17 +14,25 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
   awayScore,
 }) => {
   return (
-    <ScoreContainer>
-      <TeamInfo>
-        <TeamName>{homeTeam}</TeamName>
-        <LargeScore>{homeScore}</LargeScore>
-      </TeamInfo>
-      <ScoreDivider />
-      <TeamInfo>
-        <TeamName>{awayTeam}</TeamName>
-        <LargeScore>{awayScore}</LargeScore>
-      </TeamInfo>
-    </ScoreContainer>
+    <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-1">
+        <div className="text-[14px] font-semibold leading-[20px] text-white">
+          {homeTeam}
+        </div>
+        <div className="min-w-[80px] text-center text-[56px] font-bold leading-[64px] text-[#f5c842]">
+          {homeScore}
+        </div>
+      </div>
+      <div className="h-20 w-0.5 bg-[#3d3d5c]" />
+      <div className="flex flex-col gap-1">
+        <div className="text-[14px] font-semibold leading-[20px] text-white">
+          {awayTeam}
+        </div>
+        <div className="min-w-[80px] text-center text-[56px] font-bold leading-[64px] text-[#f5c842]">
+          {awayScore}
+        </div>
+      </div>
+    </div>
   );
 };
 

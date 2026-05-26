@@ -14,7 +14,7 @@ import {
 import { isEligibleToAccess, validateAndDecode } from "../../../utils/auth";
 import { LoginFormComponent, LoginForm, LoginWrapper } from "./index.styled";
 import { useContext } from "react";
-import { ThemeContext } from "styled-components";
+import { ThemeContext } from "../../app/theme-context";
 import { Logo } from "../../layout/header/logo";
 import { isEqual } from "lodash";
 import Spinner from "../../layout/spinner";
@@ -136,7 +136,7 @@ const LoginComponent: React.FC = () => {
     <LoginWrapper>
       <LoginFormComponent>
         <Header>
-          <Logo theme={theme.logo} />
+          <Logo theme={theme?.logo} />
           Talon
         </Header>
 

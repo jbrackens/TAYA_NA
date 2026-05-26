@@ -6,7 +6,6 @@
 // (SQLRepository.RiskSnapshot) — settlement aging, cost-basis concentration,
 // and platform money invariants. No mock data.
 import { useEffect, useState } from "react";
-import styled from "styled-components";
 import { Card } from "../../../components/shared";
 import { adminFetch } from "../../../lib/admin-fetch";
 
@@ -48,80 +47,6 @@ interface RiskSnapshot {
   moneyInvariants: MoneyInvariants;
 }
 
-const PageTitle = styled.h1`
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 4px;
-  color: var(--t1, #1a1a1a);
-`;
-
-const Subtle = styled.p`
-  font-size: 12px;
-  color: var(--t2, #4a4a4a);
-  margin: 0 0 24px 0;
-`;
-
-const SectionTitle = styled.h2`
-  font-size: 18px;
-  font-weight: 600;
-  margin: 28px 0 14px 0;
-  color: var(--t1, #1a1a1a);
-`;
-
-const StatGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-`;
-
-const StatCard = styled(Card)`
-  padding: 18px;
-`;
-
-const StatLabel = styled.div`
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--t2, #4a4a4a);
-  margin-bottom: 8px;
-`;
-
-const StatValue = styled.div<{ $danger?: boolean }>`
-  font-size: 26px;
-  font-weight: 700;
-  color: ${(p) =>
-    p.$danger ? "var(--no-text, #b4321f)" : "var(--focus-ring, #0e7a53)"};
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-`;
-
-const Th = styled.th`
-  text-align: left;
-  padding: 10px 12px;
-  border-bottom: 2px solid var(--border-1, #e5dfd2);
-  color: var(--t2, #4a4a4a);
-  font-weight: 600;
-`;
-
-const Td = styled.td`
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border-1, #e5dfd2);
-  color: var(--t1, #1a1a1a);
-`;
-
-const Banner = styled.div<{ $kind: "loading" | "error" | "empty" }>`
-  padding: 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  background: var(--surface-1, #f6f1e7);
-  color: ${(p) =>
-    p.$kind === "error" ? "var(--no-text, #b4321f)" : "var(--t2, #4a4a4a)"};
-`;
-
 function formatCents(cents: number): string {
   return (cents / 100).toLocaleString("en-US", {
     style: "currency",
@@ -137,6 +62,34 @@ function formatAge(seconds: number): string {
   if (d > 0) return `${d}d ${h}h`;
   if (h > 0) return `${h}h ${m}m`;
   return `${m}m`;
+}
+
+const pageTitleClassName =
+  "mb-1 text-[28px] font-bold text-[var(--t1,#1a1a1a)]";
+const sectionTitleClassName =
+  "mb-[14px] mt-7 text-lg font-semibold text-[var(--t1,#1a1a1a)]";
+const statLabelClassName =
+  "mb-2 text-xs font-normal uppercase tracking-[0.04em] text-[var(--t2,#4a4a4a)]";
+const tableClassName = "w-full border-collapse text-[13px]";
+const thClassName =
+  "border-b-2 border-[var(--border-1,#e5dfd2)] px-3 py-2.5 text-left font-semibold text-[var(--t2,#4a4a4a)]";
+const tdClassName =
+  "border-b border-[var(--border-1,#e5dfd2)] px-3 py-2.5 text-[var(--t1,#1a1a1a)]";
+
+function statValueClassName(danger?: boolean) {
+  return `text-[26px] font-bold ${
+    danger
+      ? "text-[var(--no-text,#b4321f)]"
+      : "text-[var(--focus-ring,#0e7a53)]"
+  }`;
+}
+
+function bannerClassName(kind: "loading" | "error" | "empty") {
+  return `rounded-lg bg-[var(--surface-1,#f6f1e7)] p-4 text-sm ${
+    kind === "error"
+      ? "text-[var(--no-text,#b4321f)]"
+      : "text-[var(--t2,#4a4a4a)]"
+  }`;
 }
 
 export default function PredictionRiskPage() {
@@ -173,8 +126,8 @@ export default function PredictionRiskPage() {
   if (loading) {
     return (
       <div>
-        <PageTitle>Risk — Prediction</PageTitle>
-        <Banner $kind="loading">Loading risk snapshot…</Banner>
+        <h1 className={pageTitleClassName}>Risk — Prediction</h1>
+        <div className={bannerClassName("loading")}>Loading risk snapshot…</div>
       </div>
     );
   }
@@ -182,10 +135,10 @@ export default function PredictionRiskPage() {
   if (error || !snapshot) {
     return (
       <div>
-        <PageTitle>Risk — Prediction</PageTitle>
-        <Banner $kind="error">
+        <h1 className={pageTitleClassName}>Risk — Prediction</h1>
+        <div className={bannerClassName("error")}>
           Could not load risk snapshot: {error ?? "no data"}
-        </Banner>
+        </div>
       </div>
     );
   }
@@ -195,98 +148,116 @@ export default function PredictionRiskPage() {
 
   return (
     <div>
-      <PageTitle>Risk — Prediction</PageTitle>
-      <Subtle>
+      <h1 className={pageTitleClassName}>Risk — Prediction</h1>
+      <p className="m-0 mb-6 text-xs text-[var(--t2,#4a4a4a)]">
         Snapshot generated {new Date(snapshot.generatedAt).toLocaleString()}
-      </Subtle>
+      </p>
 
-      <SectionTitle>Money invariants</SectionTitle>
-      <StatGrid>
-        <StatCard>
-          <StatLabel>Open position cost basis</StatLabel>
-          <StatValue>{formatCents(mi.openPositionCostCents)}</StatValue>
-        </StatCard>
-        <StatCard>
-          <StatLabel>Max settlement liability</StatLabel>
-          <StatValue $danger>
+      <h2 className={sectionTitleClassName}>Money invariants</h2>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
+        <Card className="!p-[18px]">
+          <div className={statLabelClassName}>Open position cost basis</div>
+          <div className={statValueClassName()}>
+            {formatCents(mi.openPositionCostCents)}
+          </div>
+        </Card>
+        <Card className="!p-[18px]">
+          <div className={statLabelClassName}>Max settlement liability</div>
+          <div className={statValueClassName(true)}>
             {formatCents(mi.maxSettlementLiabilityCents)}
-          </StatValue>
-        </StatCard>
-        <StatCard>
-          <StatLabel>Reserved (held) cash</StatLabel>
-          <StatValue>{formatCents(mi.reservedCashCents)}</StatValue>
-        </StatCard>
-        <StatCard>
-          <StatLabel>Resting orders</StatLabel>
-          <StatValue>{mi.openOrderCount.toLocaleString()}</StatValue>
-        </StatCard>
-        <StatCard>
-          <StatLabel>Non-terminal markets</StatLabel>
-          <StatValue>{mi.nonTerminalMarkets.toLocaleString()}</StatValue>
-        </StatCard>
-        <StatCard>
-          <StatLabel>Collateral drift alerts (24h)</StatLabel>
-          <StatValue $danger={mi.driftAlerts24h > 0}>
+          </div>
+        </Card>
+        <Card className="!p-[18px]">
+          <div className={statLabelClassName}>Reserved (held) cash</div>
+          <div className={statValueClassName()}>
+            {formatCents(mi.reservedCashCents)}
+          </div>
+        </Card>
+        <Card className="!p-[18px]">
+          <div className={statLabelClassName}>Resting orders</div>
+          <div className={statValueClassName()}>
+            {mi.openOrderCount.toLocaleString()}
+          </div>
+        </Card>
+        <Card className="!p-[18px]">
+          <div className={statLabelClassName}>Non-terminal markets</div>
+          <div className={statValueClassName()}>
+            {mi.nonTerminalMarkets.toLocaleString()}
+          </div>
+        </Card>
+        <Card className="!p-[18px]">
+          <div className={statLabelClassName}>
+            Collateral drift alerts (24h)
+          </div>
+          <div className={statValueClassName(mi.driftAlerts24h > 0)}>
             {mi.driftAlerts24h.toLocaleString()}
-          </StatValue>
-        </StatCard>
-      </StatGrid>
+          </div>
+        </Card>
+      </div>
 
-      <SectionTitle>
+      <h2 className={sectionTitleClassName}>
         Settlement aging — {aging.closedAwaitingSettlement} closed awaiting
         settlement (oldest {formatAge(aging.oldestAgeSeconds)})
-      </SectionTitle>
+      </h2>
       {aging.items.length === 0 ? (
-        <Banner $kind="empty">No closed markets awaiting settlement.</Banner>
+        <div className={bannerClassName("empty")}>
+          No closed markets awaiting settlement.
+        </div>
       ) : (
-        <Table>
+        <table className={tableClassName}>
           <thead>
             <tr>
-              <Th>Ticker</Th>
-              <Th>Closed at</Th>
-              <Th>Age</Th>
+              <th className={thClassName}>Ticker</th>
+              <th className={thClassName}>Closed at</th>
+              <th className={thClassName}>Age</th>
             </tr>
           </thead>
           <tbody>
             {aging.items.map((m) => (
               <tr key={m.marketId}>
-                <Td>{m.ticker}</Td>
-                <Td>{new Date(m.closedAt).toLocaleString()}</Td>
-                <Td>{formatAge(m.ageSeconds)}</Td>
+                <td className={tdClassName}>{m.ticker}</td>
+                <td className={tdClassName}>
+                  {new Date(m.closedAt).toLocaleString()}
+                </td>
+                <td className={tdClassName}>{formatAge(m.ageSeconds)}</td>
               </tr>
             ))}
           </tbody>
-        </Table>
+        </table>
       )}
 
-      <SectionTitle>
+      <h2 className={sectionTitleClassName}>
         Cost-basis concentration (top markets by open exposure)
-      </SectionTitle>
+      </h2>
       {snapshot.costBasisConcentration.length === 0 ? (
-        <Banner $kind="empty">No open exposure on any market.</Banner>
+        <div className={bannerClassName("empty")}>
+          No open exposure on any market.
+        </div>
       ) : (
-        <Table>
+        <table className={tableClassName}>
           <thead>
             <tr>
-              <Th>Ticker</Th>
-              <Th>Status</Th>
-              <Th>Open cost</Th>
-              <Th>Max payout liability</Th>
-              <Th>Holders</Th>
+              <th className={thClassName}>Ticker</th>
+              <th className={thClassName}>Status</th>
+              <th className={thClassName}>Open cost</th>
+              <th className={thClassName}>Max payout liability</th>
+              <th className={thClassName}>Holders</th>
             </tr>
           </thead>
           <tbody>
             {snapshot.costBasisConcentration.map((m) => (
               <tr key={m.marketId}>
-                <Td>{m.ticker}</Td>
-                <Td>{m.status}</Td>
-                <Td>{formatCents(m.openCostCents)}</Td>
-                <Td>{formatCents(m.maxPayoutLiabilityCents)}</Td>
-                <Td>{m.holders.toLocaleString()}</Td>
+                <td className={tdClassName}>{m.ticker}</td>
+                <td className={tdClassName}>{m.status}</td>
+                <td className={tdClassName}>{formatCents(m.openCostCents)}</td>
+                <td className={tdClassName}>
+                  {formatCents(m.maxPayoutLiabilityCents)}
+                </td>
+                <td className={tdClassName}>{m.holders.toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
-        </Table>
+        </table>
       )}
     </div>
   );

@@ -1,6 +1,5 @@
 "use client";
 
-import styled from "styled-components";
 import { useState, useEffect } from "react";
 import {
   ConfirmModal,
@@ -48,195 +47,6 @@ interface SourceHealth {
 
 type Decision = "uphold" | "reject";
 
-const PageTitle = styled.h1`
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--t1, #1a1a1a);
-`;
-
-const PageSubtitle = styled.p`
-  font-size: 14px;
-  color: var(--t2, #4a4a4a);
-  margin: 0 0 24px 0;
-  line-height: 1.5;
-`;
-
-const TableContainer = styled.div`
-  width: 100%;
-  overflow-x: auto;
-`;
-
-const StyledTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  background-color: var(--surface-1, #ffffff);
-  border-radius: 12px;
-  overflow: hidden;
-
-  th {
-    text-align: left;
-    padding: 12px;
-    border-bottom: 1px solid var(--border-1, #e5dfd2);
-    font-weight: 600;
-    font-size: 12px;
-    color: var(--t2, #4a4a4a);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    background-color: var(--surface-2, #fcfaf5);
-  }
-
-  td {
-    padding: 12px;
-    border-bottom: 1px solid var(--border-1, #e5dfd2);
-    font-size: 14px;
-    color: var(--t1, #1a1a1a);
-    vertical-align: top;
-  }
-
-  tbody tr {
-    transition: background-color 0.2s ease;
-
-    &:hover {
-      background-color: var(--surface-2, #fcfaf5);
-    }
-  }
-`;
-
-const Mono = styled.span`
-  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 13px;
-  color: var(--t1, #1a1a1a);
-`;
-
-const ReasonCell = styled.div`
-  max-width: 360px;
-  white-space: pre-wrap;
-  word-break: break-word;
-  color: var(--t1, #1a1a1a);
-`;
-
-const NoteField = styled.textarea`
-  width: 100%;
-  min-width: 220px;
-  min-height: 56px;
-  padding: 8px 10px;
-  margin-bottom: 8px;
-  background-color: var(--surface-2, #fcfaf5);
-  border: 1px solid var(--border-1, #e5dfd2);
-  color: var(--t1, #1a1a1a);
-  border-radius: 8px;
-  font-size: 13px;
-  font-family: inherit;
-  resize: vertical;
-
-  &::placeholder {
-    color: var(--t3, #8b8378);
-  }
-
-  &:focus {
-    outline: none;
-    border-color: var(--focus-ring, #0e7a53);
-  }
-`;
-
-const ActionGroup = styled.div`
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-`;
-
-const ActionButton = styled.button`
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--border-1, #e5dfd2);
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
-const RejectButton = styled(ActionButton)`
-  background-color: var(--surface-1, #ffffff);
-  color: var(--t1, #1a1a1a);
-
-  &:hover:not(:disabled) {
-    border-color: var(--focus-ring, #0e7a53);
-    color: var(--focus-ring, #0e7a53);
-  }
-`;
-
-const UpholdButton = styled(ActionButton)`
-  background-color: var(--no-text, #a8472d);
-  color: #ffffff;
-  border-color: var(--no-text, #a8472d);
-
-  &:hover:not(:disabled) {
-    background-color: #8b3a25;
-    border-color: #8b3a25;
-  }
-`;
-
-const EmptyState = styled.div`
-  padding: 48px 24px;
-  text-align: center;
-  background-color: var(--surface-1, #ffffff);
-  border: 1px solid var(--border-1, #e5dfd2);
-  border-radius: 12px;
-  color: var(--t3, #8b8378);
-  font-size: 15px;
-`;
-
-const LoadingState = styled.div`
-  padding: 48px 24px;
-  text-align: center;
-  background-color: var(--surface-1, #ffffff);
-  border: 1px solid var(--border-1, #e5dfd2);
-  border-radius: 12px;
-  color: var(--t2, #4a4a4a);
-  font-size: 14px;
-`;
-
-const SourceHealthBar = styled.div`
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 24px;
-`;
-
-const SourceChip = styled.span<{ $healthy: boolean }>`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  border: 1px solid
-    ${(props) =>
-      props.$healthy ? "var(--border-1, #e5dfd2)" : "var(--no, #ff8b6b)"};
-  background-color: ${(props) =>
-    props.$healthy
-      ? "var(--surface-2, #fcfaf5)"
-      : "var(--no-soft, rgba(255, 139, 107, 0.16))"};
-  color: ${(props) =>
-    props.$healthy ? "var(--t2, #4a4a4a)" : "var(--no-text, #a8472d)"};
-`;
-
-const HealthDot = styled.span<{ $healthy: boolean }>`
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: ${(props) =>
-    props.$healthy ? "var(--accent, #2be480)" : "var(--no-text, #a8472d)"};
-`;
-
 function formatTimestamp(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
@@ -264,6 +74,27 @@ function isSourceHealth(value: unknown): value is SourceHealth {
   return (
     typeof record.source === "string" && typeof record.healthy === "boolean"
   );
+}
+
+const pageTitleClassName =
+  "mb-2 text-[28px] font-bold text-[var(--t1,#1a1a1a)]";
+const tableHeaderClassName =
+  "border-b border-[var(--border-1,#e5dfd2)] bg-[var(--surface-2,#fcfaf5)] p-3 text-left text-xs font-semibold uppercase tracking-[0.04em] text-[var(--t2,#4a4a4a)]";
+const tableCellClassName =
+  "border-b border-[var(--border-1,#e5dfd2)] p-3 align-top text-sm text-[var(--t1,#1a1a1a)]";
+const monoClassName =
+  "font-['IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace] text-[13px] text-[var(--t1,#1a1a1a)]";
+const buttonBaseClassName =
+  "cursor-pointer whitespace-nowrap rounded-lg border px-[14px] py-2 text-[13px] font-semibold transition-all duration-200 ease-[ease] disabled:cursor-not-allowed disabled:opacity-60";
+const stateClassName =
+  "rounded-xl border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] px-6 py-12 text-center";
+
+function sourceChipClassName(healthy: boolean) {
+  return `inline-flex items-center gap-1.5 rounded-[999px] border px-3 py-1.5 text-xs font-semibold ${
+    healthy
+      ? "border-[var(--border-1,#e5dfd2)] bg-[var(--surface-2,#fcfaf5)] text-[var(--t2,#4a4a4a)]"
+      : "border-[var(--no,#ff8b6b)] bg-[var(--no-soft,rgba(255,139,107,0.16))] text-[var(--no-text,#a8472d)]"
+  }`;
 }
 
 function DisputesPageContent() {
@@ -401,25 +232,34 @@ function DisputesPageContent() {
 
   return (
     <div>
-      <PageTitle>Disputes</PageTitle>
-      <PageSubtitle>
+      <h1 className={pageTitleClassName}>Disputes</h1>
+      <p className="m-0 mb-6 text-sm leading-[1.5] text-[var(--t2,#4a4a4a)]">
         Review user-filed disputes against market resolutions. Upholding a
         dispute voids the market and refunds all stakes; rejecting closes it so
         the resolution can be finalized.
-      </PageSubtitle>
+      </p>
 
       {sources.length > 0 && (
-        <SourceHealthBar>
+        <div className="mb-6 flex flex-wrap gap-2">
           {sources.map((source) => (
-            <SourceChip key={source.source} $healthy={source.healthy}>
-              <HealthDot $healthy={source.healthy} />
+            <span
+              className={sourceChipClassName(source.healthy)}
+              key={source.source}
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  source.healthy
+                    ? "bg-[var(--accent,#2be480)]"
+                    : "bg-[var(--no-text,#a8472d)]"
+                }`}
+              />
               {source.source}
               {!source.healthy && source.consecutiveFailures > 0
                 ? ` · ${source.consecutiveFailures} fails`
                 : ""}
-            </SourceChip>
+            </span>
           ))}
-        </SourceHealthBar>
+        </div>
       )}
 
       {error && (
@@ -431,41 +271,57 @@ function DisputesPageContent() {
         />
       )}
 
-      {!error && isLoading && <LoadingState>Loading disputes…</LoadingState>}
+      {!error && isLoading && (
+        <div className={`${stateClassName} text-sm text-[var(--t2,#4a4a4a)]`}>
+          Loading disputes…
+        </div>
+      )}
 
       {!error && !isLoading && disputes.length === 0 && (
-        <EmptyState>No open disputes</EmptyState>
+        <div
+          className={`${stateClassName} text-[15px] text-[var(--t3,#8b8378)]`}
+        >
+          No open disputes
+        </div>
       )}
 
       {!error && !isLoading && disputes.length > 0 && (
-        <TableContainer>
-          <StyledTable>
+        <div className="w-full overflow-x-auto">
+          <table className="w-full overflow-hidden rounded-xl border-collapse bg-[var(--surface-1,#ffffff)]">
             <thead>
               <tr>
-                <th>Market</th>
-                <th>User</th>
-                <th>Reason</th>
-                <th>Filed</th>
-                <th>Actions</th>
+                <th className={tableHeaderClassName}>Market</th>
+                <th className={tableHeaderClassName}>User</th>
+                <th className={tableHeaderClassName}>Reason</th>
+                <th className={tableHeaderClassName}>Filed</th>
+                <th className={tableHeaderClassName}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {disputes.map((dispute) => {
                 const isRowBusy = resolvingId === dispute.id;
                 return (
-                  <tr key={dispute.id}>
-                    <td>
-                      <Mono>{dispute.marketId}</Mono>
+                  <tr
+                    className="transition-colors duration-200 ease-[ease] hover:bg-[var(--surface-2,#fcfaf5)]"
+                    key={dispute.id}
+                  >
+                    <td className={tableCellClassName}>
+                      <span className={monoClassName}>{dispute.marketId}</span>
                     </td>
-                    <td>
-                      <Mono>{dispute.userId}</Mono>
+                    <td className={tableCellClassName}>
+                      <span className={monoClassName}>{dispute.userId}</span>
                     </td>
-                    <td>
-                      <ReasonCell>{dispute.reason}</ReasonCell>
+                    <td className={tableCellClassName}>
+                      <div className="max-w-[360px] whitespace-pre-wrap break-words text-[var(--t1,#1a1a1a)]">
+                        {dispute.reason}
+                      </div>
                     </td>
-                    <td>{formatTimestamp(dispute.createdAt)}</td>
-                    <td>
-                      <NoteField
+                    <td className={tableCellClassName}>
+                      {formatTimestamp(dispute.createdAt)}
+                    </td>
+                    <td className={tableCellClassName}>
+                      <textarea
+                        className="mb-2 min-h-14 w-full min-w-[220px] resize-y rounded-lg border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-2,#fcfaf5)] px-2.5 py-2 font-[inherit] text-[13px] text-[var(--t1,#1a1a1a)] placeholder:text-[var(--t3,#8b8378)] focus:border-[var(--focus-ring,#0e7a53)] focus:outline-none"
                         placeholder="Resolution note (optional)"
                         value={notes[dispute.id] ?? ""}
                         disabled={isRowBusy}
@@ -476,29 +332,31 @@ function DisputesPageContent() {
                           }))
                         }
                       />
-                      <ActionGroup>
-                        <RejectButton
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          className={`${buttonBaseClassName} border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] text-[var(--t1,#1a1a1a)] hover:enabled:border-[var(--focus-ring,#0e7a53)] hover:enabled:text-[var(--focus-ring,#0e7a53)]`}
                           type="button"
                           disabled={isRowBusy}
                           onClick={() => resolveDispute(dispute, "reject")}
                         >
                           {isRowBusy ? "Working…" : "Reject"}
-                        </RejectButton>
-                        <UpholdButton
+                        </button>
+                        <button
+                          className={`${buttonBaseClassName} border-[var(--no-text,#a8472d)] bg-[var(--no-text,#a8472d)] text-white hover:enabled:border-[#8b3a25] hover:enabled:bg-[#8b3a25]`}
                           type="button"
                           disabled={isRowBusy}
                           onClick={() => setPendingUphold(dispute)}
                         >
                           Uphold (void &amp; refund)
-                        </UpholdButton>
-                      </ActionGroup>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
               })}
             </tbody>
-          </StyledTable>
-        </TableContainer>
+          </table>
+        </div>
       )}
 
       <ConfirmModal

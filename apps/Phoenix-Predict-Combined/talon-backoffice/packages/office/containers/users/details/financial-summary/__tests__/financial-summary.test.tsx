@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { ThemeProvider } from "styled-components";
+import { ThemeProvider } from "components/app/theme-context";
 
 import { useApi, UseApi } from "../../../../../services/api/api-service";
 import { FinancialSummary } from "..";

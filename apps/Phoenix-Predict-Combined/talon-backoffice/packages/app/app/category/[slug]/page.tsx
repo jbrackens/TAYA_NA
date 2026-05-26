@@ -17,6 +17,18 @@ import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-cl
 
 const api = createPredictionClient();
 
+const ROUTE_LOADING_CLASS = "p-20 text-center text-[13px] text-[var(--t3)]";
+const CATEGORY_HEAD_CLASS =
+  "mb-6 flex flex-wrap items-baseline justify-between gap-3 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+const CATEGORY_TITLE_CLASS =
+  "m-0 font-['Inter',_sans-serif] text-[28px] font-bold tracking-[-0.02em] text-[var(--t1)]";
+const CATEGORY_SUB_CLASS =
+  "font-['IBM_Plex_Mono',_monospace] text-xs text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+const CATEGORY_GRID_CLASS =
+  "grid grid-cols-[repeat(auto-fill,_minmax(300px,_1fr))] gap-4";
+const CATEGORY_EMPTY_CLASS =
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-5 py-14 text-center text-[13px] text-[var(--t3)]";
+
 export default function CategoryPage() {
   const { t } = useTranslation("prediction");
   const { t: contentT } = useTranslation("market-content");
@@ -59,95 +71,45 @@ export default function CategoryPage() {
   }, [slug]);
 
   if (loading) {
-    return (
-      <div
-        style={{
-          color: "var(--t3)",
-          fontSize: 13,
-          padding: 80,
-          textAlign: "center",
-        }}
-      >
-        {t("LOADING_MARKETS")}
-      </div>
-    );
+    return <div className={ROUTE_LOADING_CLASS}>{t("LOADING_MARKETS")}</div>;
   }
 
   return (
-    <>
-      <style>{`
-        .cat-head {
-          display: flex;
-          align-items: baseline;
-          justify-content: space-between;
-          gap: 12px;
-          margin-bottom: 24px;
-          flex-wrap: wrap;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        .cat-title {
-          font-family: 'Inter', sans-serif;
-          font-size: 28px;
-          font-weight: 700;
-          letter-spacing: -0.02em;
-          color: var(--t1);
-          margin: 0;
-        }
-        .cat-sub {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 12px;
-          color: var(--t3);
-          font-variant-numeric: tabular-nums;
-        }
-        .cat-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: 16px;
-        }
-        .cat-empty {
-          padding: 56px 20px;
-          text-align: center;
-          color: var(--t3);
-          font-size: 13px;
-          border-radius: var(--r-rh-lg);
-          background: var(--surface-1);
-          border: 1px solid var(--border-1);
-        }
-      `}</style>
-      <div>
-        <header className="cat-head">
-          <h1 className="cat-title">
-            {category ? categoryName(contentT, category) : slug}
-          </h1>
-          <p className="cat-sub">
-            {t("OPEN_MARKET_COUNT", { count: markets.length })}
-          </p>
-        </header>
+    <div>
+      <header className={CATEGORY_HEAD_CLASS}>
+        <h1 className={CATEGORY_TITLE_CLASS}>
+          {category ? categoryName(contentT, category) : slug}
+        </h1>
+        <p className={CATEGORY_SUB_CLASS}>
+          {t("OPEN_MARKET_COUNT", { count: markets.length })}
+        </p>
+      </header>
 
-        {markets.length === 0 ? (
-          <div className="cat-empty">{t("NO_OPEN_MARKETS_IN_CATEGORY")}</div>
-        ) : (
-          <div className="cat-grid">
-            {markets.map((market) => {
-              const m = localizedMarket(contentT, market);
-              return (
-                <MarketCard
-                  key={m.id}
-                  ticker={m.ticker}
-                  title={m.title}
-                  yesPriceCents={m.yesPriceCents}
-                  noPriceCents={m.noPriceCents}
-                  volumeCents={m.volumeCents}
-                  liquidityCents={m.liquidityCents}
-                  closeAt={m.closeAt}
-                  status={m.status}
-                  imagePath={m.imagePath}
-                />
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </>
+      {markets.length === 0 ? (
+        <div className={CATEGORY_EMPTY_CLASS}>
+          {t("NO_OPEN_MARKETS_IN_CATEGORY")}
+        </div>
+      ) : (
+        <div className={CATEGORY_GRID_CLASS}>
+          {markets.map((market) => {
+            const m = localizedMarket(contentT, market);
+            return (
+              <MarketCard
+                key={m.id}
+                ticker={m.ticker}
+                title={m.title}
+                yesPriceCents={m.yesPriceCents}
+                noPriceCents={m.noPriceCents}
+                volumeCents={m.volumeCents}
+                liquidityCents={m.liquidityCents}
+                closeAt={m.closeAt}
+                status={m.status}
+                imagePath={m.imagePath}
+              />
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

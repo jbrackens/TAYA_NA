@@ -1,50 +1,9 @@
 "use client";
 
-import styled from "styled-components";
 import { Button } from "../shared";
 import { useState } from "react";
 import { ConfirmModal } from "../shared/ConfirmModal";
 import { useConfirm } from "../../hooks/useConfirm";
-
-const ActionsContainer = styled.div`
-  background-color: var(--surface-1, var(--t1, #1a1a1a));
-  border: 1px solid var(--border-1, #e5dfd2);
-  border-radius: 6px;
-  padding: 20px;
-`;
-
-const Title = styled.h3`
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--t1, #1a1a1a);
-`;
-
-const ActionGroup = styled.div`
-  margin-bottom: 20px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-const GroupTitle = styled.h4`
-  margin: 0 0 12px 0;
-  font-size: 13px;
-  color: var(--t2, #4a4a4a);
-  text-transform: uppercase;
-  font-weight: 600;
-`;
-
-const ButtonGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 8px;
-`;
-
-const StyledButton = styled(Button)`
-  width: 100%;
-`;
 
 interface AccountActionsProps {
   currentStatus?: "active" | "suspended" | "inactive";
@@ -87,13 +46,18 @@ export function AccountActions({
 
   return (
     <>
-      <ActionsContainer>
-        <Title>Account Actions</Title>
+      <div className="rounded-md border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] p-5">
+        <h3 className="m-0 mb-4 text-base font-semibold text-[var(--t1,#1a1a1a)]">
+          Account Actions
+        </h3>
 
-        <ActionGroup>
-          <GroupTitle>Account Status</GroupTitle>
-          <ButtonGrid>
-            <StyledButton
+        <div className="mb-5 last:mb-0">
+          <h4 className="m-0 mb-3 text-[13px] font-semibold uppercase text-[var(--t2,#4a4a4a)]">
+            Account Status
+          </h4>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-2">
+            <Button
+              className="w-full"
               variant="danger"
               onClick={() =>
                 handleAction(
@@ -105,8 +69,9 @@ export function AccountActions({
               disabled={isLoading || !canSuspend}
             >
               Suspend
-            </StyledButton>
-            <StyledButton
+            </Button>
+            <Button
+              className="w-full"
               variant="secondary"
               onClick={() =>
                 handleAction(
@@ -118,14 +83,17 @@ export function AccountActions({
               disabled={isLoading || !canActivate}
             >
               Activate
-            </StyledButton>
-          </ButtonGrid>
-        </ActionGroup>
+            </Button>
+          </div>
+        </div>
 
-        <ActionGroup>
-          <GroupTitle>Notes & Documentation</GroupTitle>
-          <ButtonGrid style={{ gridTemplateColumns: "1fr" }}>
-            <StyledButton
+        <div className="mb-0">
+          <h4 className="m-0 mb-3 text-[13px] font-semibold uppercase text-[var(--t2,#4a4a4a)]">
+            Notes & Documentation
+          </h4>
+          <div className="grid grid-cols-1 gap-2">
+            <Button
+              className="w-full"
               variant="secondary"
               onClick={() => {
                 if (!statusActionsAvailable) return;
@@ -139,10 +107,10 @@ export function AccountActions({
               disabled={isLoading}
             >
               Add Admin Note
-            </StyledButton>
-          </ButtonGrid>
-        </ActionGroup>
-      </ActionsContainer>
+            </Button>
+          </div>
+        </div>
+      </div>
 
       <ConfirmModal
         isOpen={confirm.isOpen}

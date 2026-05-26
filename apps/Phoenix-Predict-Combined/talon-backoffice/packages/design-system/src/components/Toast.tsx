@@ -1,75 +1,14 @@
 import React, { useEffect } from 'react';
-import styled from 'styled-components';
+import { cx } from '../utils/classNames';
 
 type ToastVariant = 'success' | 'error' | 'warning' | 'info';
 
-interface StyledToastProps {
-  $variant: ToastVariant;
-}
-
-const getVariantColor = (variant: ToastVariant, theme: any) => {
-  switch (variant) {
-    case 'success':
-      return theme.colors.finished;
-    case 'error':
-      return theme.colors.error;
-    case 'warning':
-      return theme.colors.live;
-    case 'info':
-      return theme.colors.accentBlue;
-  }
+const toastVariants: Record<ToastVariant, string> = {
+  success: 'border-[#4cd964]',
+  error: 'border-[#e85a71]',
+  warning: 'border-[#f5c842]',
+  info: 'border-[#2196f3]',
 };
-
-const StyledToast = styled.div<StyledToastProps>`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => theme.spacing.md};
-  background-color: ${({ theme }) => theme.colors.surface};
-  border: 2px solid ${({ theme, $variant }) => getVariantColor($variant, theme)};
-  border-radius: ${({ theme }) => theme.radius.md};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: ${({ theme }) => theme.typography.base.fontSize};
-  font-weight: 500;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  animation: slideIn ${({ theme }) => theme.motion.fast};
-  min-width: 300px;
-
-  @keyframes slideIn {
-    from {
-      transform: translateX(400px);
-      opacity: 0;
-    }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-`;
-
-const ToastIcon = styled.span`
-  font-size: 20px;
-  flex-shrink: 0;
-`;
-
-const ToastMessage = styled.span`
-  flex: 1;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  cursor: pointer;
-  padding: 0;
-  font-size: 20px;
-  flex-shrink: 0;
-  transition: color ${({ theme }) => theme.motion.fast};
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.text};
-  }
-`;
 
 interface ToastProps {
   variant?: ToastVariant;
@@ -101,11 +40,24 @@ export const Toast = React.forwardRef<HTMLDivElement, ToastProps>(
     };
 
     return (
-      <StyledToast ref={ref} $variant={variant}>
-        <ToastIcon>{getIcon()}</ToastIcon>
-        <ToastMessage>{message}</ToastMessage>
-        {onClose && <CloseButton onClick={onClose}>×</CloseButton>}
-      </StyledToast>
+      <div
+        ref={ref}
+        className={cx(
+          'flex min-w-[300px] animate-[phoenix-slide-in_0.2s_ease] items-center gap-4 rounded-[12px] border-2 bg-[#2d2d44] p-4 text-[14px] font-medium leading-[20px] text-white shadow-[0_4px_12px_rgba(0,0,0,0.3)]',
+          toastVariants[variant]
+        )}
+      >
+        <span className="shrink-0 text-[20px]">{getIcon()}</span>
+        <span className="flex-1">{message}</span>
+        {onClose && (
+          <button
+            className="shrink-0 cursor-pointer border-0 bg-transparent p-0 text-[20px] text-[#9a9aad] transition-colors duration-200 ease-in-out hover:text-white"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        )}
+      </div>
     );
   }
 );

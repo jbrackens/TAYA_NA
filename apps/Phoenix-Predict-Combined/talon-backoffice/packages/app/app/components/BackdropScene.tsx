@@ -22,7 +22,7 @@ export default function BackdropScene() {
         height="100%"
         viewBox="0 0 1440 900"
         preserveAspectRatio="none"
-        style={{ position: "absolute", inset: 0, opacity: 0.18 }}
+        className="absolute inset-0 opacity-[0.18]"
       >
         <defs>
           <linearGradient id="bd-yes" x1="0%" y1="0%" x2="100%" y2="0%">

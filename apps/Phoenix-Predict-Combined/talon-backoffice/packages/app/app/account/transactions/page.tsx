@@ -11,6 +11,26 @@ import { logger } from "../../lib/logger";
 type DateRange = "all" | "24h" | "week" | "month" | "3m" | "6m" | "year";
 type TxType = "all" | "deposit" | "withdrawal";
 
+const pageClass = "mx-auto max-w-[1200px] px-4 py-6";
+const headerClass =
+  "mb-8 flex items-start justify-between max-[640px]:flex-col max-[640px]:gap-4";
+const backClass =
+  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50";
+const filterButtonBase =
+  "cursor-pointer rounded-[var(--r-rh-sm)] border px-3 py-2 text-xs font-semibold transition-all duration-150";
+const tableHeadCellClass =
+  "px-4 py-3 text-left text-xs font-bold uppercase tracking-[0.05em] text-[var(--t3)]";
+const tableCellClass =
+  "border-b border-[var(--border-1)] px-4 py-3 text-[13px] text-[var(--t1)]";
+
+function filterButtonClass(active: boolean) {
+  return `${filterButtonBase} ${
+    active
+      ? "border-[var(--accent)] bg-[var(--surface-1)] text-[var(--accent)]"
+      : "border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+  }`;
+}
+
 export default function TransactionsPage() {
   const { user } = useAuth();
   const { success, error: showError } = useToast();
@@ -99,43 +119,42 @@ export default function TransactionsPage() {
   const totalPages = response?.totalPages || 1;
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: transactionsStyles }} />
-      <div className="tx-page">
-        <div className="tx-header">
-          <div>
-            <h1>Transaction History</h1>
-            <p>View all your deposits and withdrawals</p>
-          </div>
-          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <button
-              className="tx-back"
-              onClick={handleExportCSV}
-              disabled={exporting}
-              style={{
-                cursor: exporting ? "not-allowed" : "pointer",
-                opacity: exporting ? 0.5 : 1,
-              }}
-            >
-              {exporting ? "Exporting..." : "Export CSV"}
-            </button>
-            <Link href="/account" className="tx-back">
-              ← Back to Account
-            </Link>
-          </div>
+    <div className={pageClass}>
+      <div className={headerClass}>
+        <div>
+          <h1 className="mb-1 text-[28px] font-extrabold text-[var(--t1)]">
+            Transaction History
+          </h1>
+          <p className="text-sm text-[var(--t3)]">
+            View all your deposits and withdrawals
+          </p>
         </div>
+        <div className="flex items-center gap-2">
+          <button
+            className={backClass}
+            onClick={handleExportCSV}
+            disabled={exporting}
+          >
+            {exporting ? "Exporting..." : "Export CSV"}
+          </button>
+          <Link href="/account" className={backClass}>
+            ← Back to Account
+          </Link>
+        </div>
+      </div>
 
-        {/* Filters */}
-        <div className="tx-filters">
-          <div className="tx-filter-group">
-            <label className="tx-filter-label">Date Range</label>
-            <div className="tx-filter-buttons">
-              {(
-                ["all", "24h", "week", "month", "3m", "6m", "year"] as const
-              ).map((r) => (
+      {/* Filters */}
+      <div className="mb-6">
+        <div className="mb-4">
+          <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.05em] text-[var(--t3)]">
+            Date Range
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {(["all", "24h", "week", "month", "3m", "6m", "year"] as const).map(
+              (r) => (
                 <button
                   key={r}
-                  className={`tx-filter-btn ${dateRange === r ? "active" : ""}`}
+                  className={filterButtonClass(dateRange === r)}
                   onClick={() => {
                     setDateRange(r);
                     setPage(1);
@@ -155,230 +174,128 @@ export default function TransactionsPage() {
                               ? "Last 6 Months"
                               : "Last Year"}
                 </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="tx-filter-group">
-            <label className="tx-filter-label">Type</label>
-            <div className="tx-filter-buttons">
-              {(["all", "deposit", "withdrawal"] as const).map((t) => (
-                <button
-                  key={t}
-                  className={`tx-filter-btn ${txType === t ? "active" : ""}`}
-                  onClick={() => {
-                    setTxType(t);
-                    setPage(1);
-                  }}
-                >
-                  {t === "all"
-                    ? "All"
-                    : t === "deposit"
-                      ? "Deposit"
-                      : "Withdrawal"}
-                </button>
-              ))}
-            </div>
+              ),
+            )}
           </div>
         </div>
 
-        {/* Table */}
-        <div className="tx-card">
-          {loading ? (
-            <div className="tx-loading">Loading transactions...</div>
-          ) : loadError ? (
-            <div className="tx-empty">
-              Transaction history is temporarily unavailable.
-            </div>
-          ) : transactions.length === 0 ? (
-            <div className="tx-empty">
-              No transactions found for this period.
-            </div>
-          ) : (
-            <>
-              <div className="tx-table-container">
-                <table className="tx-table">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Type</th>
-                      <th>Amount</th>
-                      <th>Balance After</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactions.map((tx) => (
-                      <tr key={tx.transactionId}>
-                        <td>{new Date(tx.createdAt).toLocaleString()}</td>
-                        <td>
-                          <span className="tx-type">
-                            {tx.type === "deposit"
-                              ? "Deposit"
-                              : tx.type === "withdrawal"
-                                ? "Withdrawal"
-                                : tx.type}
-                          </span>
-                        </td>
-                        <td>
-                          <span
-                            className={
-                              tx.type === "deposit" ? "tx-credit" : "tx-debit"
-                            }
-                          >
-                            {tx.type === "deposit" ? "+" : "-"}$
-                            {Math.abs(tx.amount).toFixed(2)}
-                          </span>
-                        </td>
-                        <td>${tx.balanceAfter?.toFixed(2) || "—"}</td>
-                        <td>
-                          <span className="tx-status">{tx.type}</span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="tx-pagination">
-                  <button
-                    className="tx-page-btn"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                  >
-                    ← Prev
-                  </button>
-                  <div className="tx-page-info">
-                    Page {page} of {totalPages}
-                  </div>
-                  <button
-                    className="tx-page-btn"
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={page === totalPages}
-                  >
-                    Next →
-                  </button>
-                </div>
-              )}
-            </>
-          )}
+        <div className="mb-4">
+          <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.05em] text-[var(--t3)]">
+            Type
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {(["all", "deposit", "withdrawal"] as const).map((t) => (
+              <button
+                key={t}
+                className={filterButtonClass(txType === t)}
+                onClick={() => {
+                  setTxType(t);
+                  setPage(1);
+                }}
+              >
+                {t === "all" ? "All" : t === "deposit" ? "Deposit" : "Withdrawal"}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
-    </>
+
+      {/* Table */}
+      <div className="overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)]">
+        {loading ? (
+          <div className="p-10 text-center text-sm text-[var(--t3)]">
+            Loading transactions...
+          </div>
+        ) : loadError ? (
+          <div className="p-10 text-center text-sm text-[var(--t3)]">
+            Transaction history is temporarily unavailable.
+          </div>
+        ) : transactions.length === 0 ? (
+          <div className="p-10 text-center text-sm text-[var(--t3)]">
+            No transactions found for this period.
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead className="border-b border-[var(--border-1)] bg-[var(--surface-2)]">
+                  <tr>
+                    <th className={tableHeadCellClass}>Date</th>
+                    <th className={tableHeadCellClass}>Type</th>
+                    <th className={tableHeadCellClass}>Amount</th>
+                    <th className={tableHeadCellClass}>Balance After</th>
+                    <th className={tableHeadCellClass}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactions.map((tx) => (
+                    <tr
+                      key={tx.transactionId}
+                      className="hover:bg-[var(--surface-2)]"
+                    >
+                      <td className={tableCellClass}>
+                        {new Date(tx.createdAt).toLocaleString()}
+                      </td>
+                      <td className={tableCellClass}>
+                        <span className="inline-block rounded-[var(--r-rh-sm)] bg-[var(--accent-soft)] px-2 py-1 text-xs font-semibold text-[var(--accent)]">
+                          {tx.type === "deposit"
+                            ? "Deposit"
+                            : tx.type === "withdrawal"
+                              ? "Withdrawal"
+                              : tx.type}
+                        </span>
+                      </td>
+                      <td className={tableCellClass}>
+                        <span
+                          className={
+                            tx.type === "deposit"
+                              ? "font-bold text-[var(--accent)]"
+                              : "font-bold text-[var(--no-text)]"
+                          }
+                        >
+                          {tx.type === "deposit" ? "+" : "-"}$
+                          {Math.abs(tx.amount).toFixed(2)}
+                        </span>
+                      </td>
+                      <td className={tableCellClass}>
+                        ${tx.balanceAfter?.toFixed(2) || "—"}
+                      </td>
+                      <td className={tableCellClass}>
+                        <span className="inline-block rounded-[var(--r-rh-sm)] bg-[var(--surface-2)] px-2 py-1 text-xs font-semibold text-[var(--t2)]">
+                          {tx.type}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-4 border-t border-[var(--border-1)] p-4">
+                <button
+                  className="cursor-pointer rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2 text-xs font-semibold text-[var(--t2)] transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  ← Prev
+                </button>
+                <div className="text-[13px] font-semibold text-[var(--t2)]">
+                  Page {page} of {totalPages}
+                </div>
+                <button
+                  className="cursor-pointer rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2 text-xs font-semibold text-[var(--t2)] transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
   );
 }
-
-const transactionsStyles = `
-  .tx-page { max-width: 1200px; margin: 0 auto; padding: 24px 16px; }
-
-  .tx-header {
-    display: flex; justify-content: space-between; align-items: flex-start;
-    margin-bottom: 32px;
-  }
-  @media (max-width: 640px) {
-    .tx-header { flex-direction: column; gap: 16px; }
-  }
-
-  .tx-header h1 { font-size: 28px; font-weight: 800; color: var(--t1); margin-bottom: 4px; }
-  .tx-header p { font-size: 14px; color: var(--t3); }
-
-  .tx-back {
-    padding: 10px 16px; background: var(--surface-1); border: 1px solid var(--border-1);
-    border-radius: var(--r-rh-md); color: var(--t1); text-decoration: none; font-size: 13px;
-    font-weight: 600; transition: all 0.15s;
-  }
-  .tx-back:hover { border-color: var(--accent); color: var(--accent); }
-
-  .tx-filters { margin-bottom: 24px; }
-  .tx-filter-group { margin-bottom: 16px; }
-  .tx-filter-label { display: block; font-size: 12px; color: var(--t3); font-weight: 600;
-    margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
-
-  .tx-filter-buttons {
-    display: flex; gap: 8px; flex-wrap: wrap;
-  }
-
-  .tx-filter-btn {
-    padding: 8px 12px; border-radius: var(--r-rh-sm); font-size: 12px; font-weight: 600;
-    background: var(--surface-1); border: 1px solid var(--border-1); color: var(--t2);
-    cursor: pointer; transition: all 0.15s;
-  }
-
-  .tx-filter-btn.active, .tx-filter-btn:hover {
-    border-color: var(--accent); color: var(--accent);
-  }
-
-  .tx-card {
-    background: var(--surface-1); border: 1px solid var(--border-1); border-radius: var(--r-rh-lg);
-    overflow: hidden;
-  }
-
-  .tx-loading, .tx-empty {
-    padding: 40px; text-align: center; color: var(--t3); font-size: 14px;
-  }
-
-  .tx-table-container {
-    overflow-x: auto;
-  }
-
-  .tx-table {
-    width: 100%; border-collapse: collapse;
-  }
-
-  .tx-table thead {
-    background: var(--surface-2); border-bottom: 1px solid var(--border-1);
-  }
-
-  .tx-table th {
-    padding: 12px 16px; text-align: left; font-size: 12px;
-    font-weight: 700; color: var(--t3); text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .tx-table td {
-    padding: 12px 16px; border-bottom: 1px solid var(--border-1);
-    font-size: 13px; color: var(--t1);
-  }
-
-  .tx-table tbody tr:hover {
-    background: var(--surface-2);
-  }
-
-  .tx-type {
-    display: inline-block; padding: 4px 8px; background: var(--accent-soft);
-    border-radius: var(--r-rh-sm); color: var(--accent); font-weight: 600; font-size: 12px;
-  }
-
-  .tx-credit { color: var(--accent); font-weight: 700; }
-  .tx-debit { color: var(--no-text); font-weight: 700; }
-
-  .tx-status {
-    display: inline-block; padding: 4px 8px; background: var(--surface-2);
-    border-radius: var(--r-rh-sm); color: var(--t2); font-size: 12px; font-weight: 600;
-  }
-
-  .tx-pagination {
-    display: flex; justify-content: center; align-items: center;
-    gap: 16px; padding: 16px; border-top: 1px solid var(--border-1);
-  }
-
-  .tx-page-btn {
-    padding: 8px 12px; background: var(--surface-2); border: 1px solid var(--border-1);
-    border-radius: var(--r-rh-sm); color: var(--t2); font-size: 12px; font-weight: 600;
-    cursor: pointer; transition: all 0.15s;
-  }
-
-  .tx-page-btn:hover:not(:disabled) {
-    border-color: var(--accent); color: var(--accent);
-  }
-
-  .tx-page-btn:disabled {
-    opacity: 0.4; cursor: not-allowed;
-  }
-
-  .tx-page-info {
-    font-size: 13px; color: var(--t2); font-weight: 600;
-  }
-`;

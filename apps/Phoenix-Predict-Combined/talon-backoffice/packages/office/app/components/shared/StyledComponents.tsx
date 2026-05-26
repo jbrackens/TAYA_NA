@@ -1,171 +1,118 @@
 "use client";
 
-import styled from "styled-components";
+import type { ComponentPropsWithoutRef } from "react";
 
-// Reusable Card component — P8 cream surface
-export const Card = styled.div`
-  padding: 20px;
-  background-color: var(--surface-1, #ffffff);
-  border: 1px solid var(--border-1, #e5dfd2);
-  border-radius: 12px;
-`;
+function cx(...classes: Array<string | false | null | undefined>) {
+  return classes.filter(Boolean).join(" ");
+}
 
-// Reusable Badge component — semantic status colors mapped to P8
-export const Badge = styled.span<{
-  $variant?: "default" | "success" | "warning" | "danger";
-}>`
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  background-color: ${(props) => {
-    switch (props.$variant) {
-      case "success":
-        return "var(--yes-soft, rgba(113, 238, 184, 0.18))";
-      case "warning":
-        return "rgba(217, 119, 6, 0.12)";
-      case "danger":
-        return "var(--no-soft, rgba(255, 139, 107, 0.16))";
-      default:
-        return "var(--accent-soft, rgba(43, 228, 128, 0.14))";
-    }
-  }};
-  color: ${(props) => {
-    switch (props.$variant) {
-      case "success":
-        return "var(--yes-text, #1a6849)";
-      case "warning":
-        return "var(--warn, #d97706)";
-      case "danger":
-        return "var(--no-text, #a8472d)";
-      default:
-        return "var(--focus-ring, #0e7a53)";
-    }
-  }};
-  border: 1px solid
-    ${(props) => {
-      switch (props.$variant) {
-        case "success":
-          return "var(--yes, #71eeb8)";
-        case "warning":
-          return "rgba(217, 119, 6, 0.4)";
-        case "danger":
-          return "var(--no, #ff8b6b)";
-        default:
-          return "var(--accent, #2be480)";
-      }
-    }};
-`;
+type CardProps = ComponentPropsWithoutRef<"div">;
 
-// Reusable Button component — P8 mint primary, secondary white card, ghost danger
-export const Button = styled.button<{
-  $variant?: "primary" | "secondary" | "danger";
-  $size?: "sm" | "md" | "lg";
-  variant?: "primary" | "secondary" | "danger";
-  size?: "sm" | "md" | "lg";
-}>`
-  padding: ${(props) => {
-    const sz = props.$size || props.size;
-    switch (sz) {
-      case "sm":
-        return "6px 12px";
-      case "lg":
-        return "12px 24px";
-      default:
-        return "10px 20px";
-    }
-  }};
-  background: ${(props) => {
-    const variant = props.$variant || props.variant;
-    switch (variant) {
-      case "secondary":
-        return "var(--surface-1, #ffffff)";
-      case "danger":
-        return "transparent";
-      default:
-        return "var(--accent, #2be480)";
-    }
-  }};
-  color: ${(props) => {
-    const variant = props.$variant || props.variant;
-    switch (variant) {
-      case "secondary":
-        return "var(--t1, #1a1a1a)";
-      case "danger":
-        return "var(--no-text, #a8472d)";
-      default:
-        return "#003827";
-    }
-  }};
-  border: ${(props) => {
-    const variant = props.$variant || props.variant;
-    switch (variant) {
-      case "secondary":
-        return "1px solid var(--border-1, #e5dfd2)";
-      case "danger":
-        return "1.5px solid var(--no, #ff8b6b)";
-      default:
-        return "none";
-    }
-  }};
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: "Inter", sans-serif;
-  font-weight: 600;
-  font-size: ${(props) => {
-    const sz = props.$size || props.size;
-    return sz === "sm" ? "12px" : "14px";
-  }};
-  transition: all 0.15s ease;
-  box-shadow: ${(props) => {
-    const variant = props.$variant || props.variant;
-    return variant === "primary" || !variant
-      ? "0 4px 12px rgba(43, 228, 128, 0.18)"
-      : "none";
-  }};
+export function Card({ className, ...props }: CardProps) {
+  return (
+    <div
+      className={cx(
+        "rounded-xl border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] p-5",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
 
-  &:hover:not(:disabled) {
-    ${(props) => {
-      const variant = props.$variant || props.variant;
-      switch (variant) {
-        case "secondary":
-          return "background-color: var(--surface-2, #fcfaf5); border-color: var(--focus-ring, #0e7a53); color: var(--focus-ring, #0e7a53);";
-        case "danger":
-          return "background: var(--no-soft, rgba(255, 139, 107, 0.16));";
-        default:
-          return "background: var(--accent-lo, #1fa65e); color: #ffffff; box-shadow: 0 6px 18px rgba(43, 228, 128, 0.25);";
-      }
-    }}
-  }
+type BadgeVariant = "default" | "success" | "warning" | "danger";
+type BadgeProps = ComponentPropsWithoutRef<"span"> & {
+  $variant?: BadgeVariant;
+  variant?: BadgeVariant;
+};
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
+const badgeVariantClasses: Record<BadgeVariant, string> = {
+  default:
+    "border-[var(--accent,#2be480)] bg-[var(--accent-soft,rgba(43,228,128,0.14))] text-[var(--focus-ring,#0e7a53)]",
+  success:
+    "border-[var(--yes,#71eeb8)] bg-[var(--yes-soft,rgba(113,238,184,0.18))] text-[var(--yes-text,#1a6849)]",
+  warning:
+    "border-[rgba(217,119,6,0.4)] bg-[rgba(217,119,6,0.12)] text-[var(--warn,#d97706)]",
+  danger:
+    "border-[var(--no,#ff8b6b)] bg-[var(--no-soft,rgba(255,139,107,0.16))] text-[var(--no-text,#a8472d)]",
+};
 
-// Reusable Input component — P8 form styling
-export const Input = styled.input`
-  padding: 10px 14px;
-  background-color: var(--surface-1, #ffffff);
-  border: 1px solid var(--border-1, #e5dfd2);
-  color: var(--t1, #1a1a1a);
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: "Inter", sans-serif;
-  height: 40px;
-  transition: all 0.15s ease;
+export function Badge({
+  className,
+  $variant,
+  variant,
+  ...props
+}: BadgeProps) {
+  const resolvedVariant = $variant || variant || "default";
+  return (
+    <span
+      className={cx(
+        "inline-block rounded-[999px] border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.04em]",
+        badgeVariantClasses[resolvedVariant],
+        className,
+      )}
+      {...props}
+    />
+  );
+}
 
-  &::placeholder {
-    color: var(--t3, #8b8378);
-  }
+type ButtonVariant = "primary" | "secondary" | "danger";
+type ButtonSize = "sm" | "md" | "lg";
+type ButtonProps = ComponentPropsWithoutRef<"button"> & {
+  $variant?: ButtonVariant;
+  $size?: ButtonSize;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+};
 
-  &:focus {
-    outline: none;
-    border-color: var(--focus-ring, #0e7a53);
-    box-shadow: 0 0 0 3px var(--accent-soft, rgba(43, 228, 128, 0.14));
-  }
-`;
+const buttonSizeClasses: Record<ButtonSize, string> = {
+  sm: "px-3 py-1.5 text-xs",
+  md: "px-5 py-2.5 text-sm",
+  lg: "px-6 py-3 text-sm",
+};
+
+const buttonVariantClasses: Record<ButtonVariant, string> = {
+  primary:
+    "border-0 bg-[var(--accent,#2be480)] text-[#003827] shadow-[0_4px_12px_rgba(43,228,128,0.18)] hover:bg-[var(--accent-lo,#1fa65e)] hover:text-white hover:shadow-[0_6px_18px_rgba(43,228,128,0.25)]",
+  secondary:
+    "border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] text-[var(--t1,#1a1a1a)] shadow-none hover:border-[var(--focus-ring,#0e7a53)] hover:bg-[var(--surface-2,#fcfaf5)] hover:text-[var(--focus-ring,#0e7a53)]",
+  danger:
+    "border-[1.5px] border-[var(--no,#ff8b6b)] bg-transparent text-[var(--no-text,#a8472d)] shadow-none hover:bg-[var(--no-soft,rgba(255,139,107,0.16))]",
+};
+
+export function Button({
+  className,
+  $variant,
+  $size,
+  variant,
+  size,
+  ...props
+}: ButtonProps) {
+  const resolvedVariant = $variant || variant || "primary";
+  const resolvedSize = $size || size || "md";
+  return (
+    <button
+      className={cx(
+        "cursor-pointer rounded-lg font-['Inter',sans-serif] font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 hover:enabled:-translate-y-px",
+        buttonSizeClasses[resolvedSize],
+        buttonVariantClasses[resolvedVariant],
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+type InputProps = ComponentPropsWithoutRef<"input">;
+
+export function Input({ className, ...props }: InputProps) {
+  return (
+    <input
+      className={cx(
+        "h-10 rounded-lg border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] px-3.5 py-2.5 font-['Inter',sans-serif] text-sm text-[var(--t1,#1a1a1a)] transition-all duration-150 placeholder:text-[var(--t3,#8b8378)] focus:border-[var(--focus-ring,#0e7a53)] focus:outline-none focus:shadow-[0_0_0_3px_var(--accent-soft,rgba(43,228,128,0.14))]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}

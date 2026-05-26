@@ -6,7 +6,6 @@ import type { Metadata } from "next";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import AntdConfigProvider from "./lib/antd-config-provider";
 import AntdPatch from "./lib/antd-patch";
-import StyledComponentsRegistry from "./lib/styled-components-registry";
 // P8 design tokens — shared with the Pages Router via the same
 // stylesheet so /auth/login (App Router) and /prediction-admin/*
 // (Pages Router) paint against one palette. See styles/p8-tokens.css.
@@ -31,13 +30,11 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <StyledComponentsRegistry>
-          <AntdRegistry>
-            <AntdPatch>
-              <AntdConfigProvider>{children}</AntdConfigProvider>
-            </AntdPatch>
-          </AntdRegistry>
-        </StyledComponentsRegistry>
+        <AntdRegistry>
+          <AntdPatch>
+            <AntdConfigProvider>{children}</AntdConfigProvider>
+          </AntdPatch>
+        </AntdRegistry>
       </body>
     </html>
   );

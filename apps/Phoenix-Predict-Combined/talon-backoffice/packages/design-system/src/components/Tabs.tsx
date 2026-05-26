@@ -1,45 +1,5 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
-
-const TabsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const TabList = styled.div`
-  display: flex;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  gap: ${({ theme }) => theme.spacing.lg};
-`;
-
-interface StyledTabButtonProps {
-  $isActive: boolean;
-}
-
-const TabButton = styled.button<StyledTabButtonProps>`
-  padding: ${({ theme }) => `${theme.spacing.md} 0`};
-  background: none;
-  border: none;
-  color: ${({ theme, $isActive }) =>
-    $isActive ? theme.colors.accentBlue : theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.typography.base.fontSize};
-  font-weight: 600;
-  font-family: ${({ theme }) => theme.typography.fontFamily};
-  cursor: pointer;
-  position: relative;
-  transition: color ${({ theme }) => theme.motion.fast};
-  border-bottom: 2px solid
-    ${({ theme, $isActive }) =>
-      $isActive ? theme.colors.accentBlue : 'transparent'};
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.text};
-  }
-`;
-
-const TabContent = styled.div`
-  padding: ${({ theme }) => theme.spacing.lg} 0;
-`;
+import { cx } from '../utils/classNames';
 
 interface TabItem {
   label: string;
@@ -61,22 +21,30 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, defaultTab = 0, onChange }) =>
   };
 
   return (
-    <TabsContainer>
-      <TabList role="tablist">
+    <div className="flex flex-col">
+      <div className="flex gap-6 border-b border-[#3d3d5c]" role="tablist">
         {tabs.map((tab, index) => (
-          <TabButton
+          <button
             key={index}
             role="tab"
-            $isActive={activeTab === index}
+            type="button"
+            className={cx(
+              'relative cursor-pointer border-0 border-b-2 bg-transparent py-4 text-[14px] font-semibold leading-[20px] transition-colors duration-200 ease-in-out hover:text-white',
+              activeTab === index
+                ? 'border-[#2196f3] text-[#2196f3]'
+                : 'border-transparent text-[#9a9aad]'
+            )}
             onClick={() => handleTabChange(index)}
             aria-selected={activeTab === index}
           >
             {tab.label}
-          </TabButton>
+          </button>
         ))}
-      </TabList>
-      <TabContent role="tabpanel">{tabs[activeTab].content}</TabContent>
-    </TabsContainer>
+      </div>
+      <div className="py-6" role="tabpanel">
+        {tabs[activeTab].content}
+      </div>
+    </div>
   );
 };
 

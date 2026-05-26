@@ -1,11 +1,12 @@
 import React, { ReactNode, useContext, useState, useEffect } from "react";
-import { LayoutContent, LayoutWrapper } from "./index.styled";
 import { SidebarComponent } from "./sidebar";
 import MenuContext from "../../providers/menu";
 import { isEmpty } from "lodash";
-import { App } from "antd";
+import { App, Layout as AntdLayout } from "antd";
 import { useTranslation } from "i18n";
 import dynamic from "next/dynamic";
+
+const { Content } = AntdLayout;
 
 const HeaderComponentWithNoSSR = dynamic(import("./header"), {
   ssr: false,
@@ -50,25 +51,29 @@ const Layout: React.FC<LayoutComponentProps> = ({
   }, []);
 
   return (
-    <LayoutWrapper className="layout" $fullscreen={true}>
+    <AntdLayout className="layout h-full">
       {!isAuth && <HeaderComponentWithNoSSR menu={menu} />}
-      <LayoutWrapper>
+      <AntdLayout>
         {!isAuth && sidebarVisible && (
           <SidebarComponent
             menu={menu}
             onVisibilityChange={updateSidebarVisibility}
           />
         )}
-        <LayoutWrapper $fullscreen={true} $hasSidebar={hasSidebar}>
-          <LayoutContent
-            className="site-layout-background"
-            $hasSidebar={hasSidebar}
+        <AntdLayout
+          className={hasSidebar ? "h-full pb-6 pl-56 pr-6 pt-16" : "h-full"}
+        >
+          <Content
+            className={[
+              "site-layout-background m-0 flex min-h-screen flex-col",
+              hasSidebar ? "p-6" : "px-12 pb-6 pt-[88px]",
+            ].join(" ")}
           >
             {children}
-          </LayoutContent>
-        </LayoutWrapper>
-      </LayoutWrapper>
-    </LayoutWrapper>
+          </Content>
+        </AntdLayout>
+      </AntdLayout>
+    </AntdLayout>
   );
 };
 

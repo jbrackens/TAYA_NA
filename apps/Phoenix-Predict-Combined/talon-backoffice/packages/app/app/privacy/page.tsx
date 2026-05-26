@@ -2,16 +2,16 @@
 
 export default function PrivacyPage() {
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: legalStyles }} />
-      <div className="legal-page">
-        <h1>Privacy Policy</h1>
-        <p className="legal-updated">
+    <div className="relative mx-auto max-w-[720px] rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-9 pb-8 pt-9">
+        <h1 className="mb-1.5 text-[26px] font-extrabold tracking-normal text-[var(--t1)]">
+          Privacy Policy
+        </h1>
+        <p className="mb-7 font-mono text-xs tracking-[0.04em] text-[var(--t3)]">
           Last updated: May 2026 · Controller: DORA Research, Inc.
         </p>
 
-        <section>
-          <p>
+        <section className="mb-6">
+          <p className="text-sm leading-[1.7] text-[var(--t2)]">
             This Privacy Policy explains how DORA Research, Inc. ("DORA
             Research", "we", "us"), operator of Hula Na!, collects, uses, and
             protects personal information when you use the Platform. DORA
@@ -19,9 +19,11 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2>1. Information We Collect</h2>
-          <p>
+        <section className="mb-6">
+          <h2 className="mb-2.5 text-base font-bold tracking-normal text-[var(--t1)]">
+            1. Information We Collect
+          </h2>
+          <p className="text-sm leading-[1.7] text-[var(--t2)]">
             We collect information you provide when creating an account (name,
             email, date of birth, address), payment information for deposits and
             withdrawals, and usage data including trading history, device
@@ -29,9 +31,11 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2>2. How We Use Your Information</h2>
-          <p>
+        <section className="mb-6">
+          <h2 className="mb-2.5 text-base font-bold tracking-normal text-[var(--t1)]">
+            2. How We Use Your Information
+          </h2>
+          <p className="text-sm leading-[1.7] text-[var(--t2)]">
             Your data is used to operate your account, process transactions,
             comply with regulatory obligations (KYC/AML), provide customer
             support, improve our services, and communicate important account
@@ -39,9 +43,11 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2>3. Data Sharing</h2>
-          <p>
+        <section className="mb-6">
+          <h2 className="mb-2.5 text-base font-bold tracking-normal text-[var(--t1)]">
+            3. Data Sharing
+          </h2>
+          <p className="text-sm leading-[1.7] text-[var(--t2)]">
             We do not sell your personal information. We may share data with
             payment processors, identity verification providers, regulatory
             authorities as required by law, and service providers who assist in
@@ -49,9 +55,11 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2>4. Data Security</h2>
-          <p>
+        <section className="mb-6">
+          <h2 className="mb-2.5 text-base font-bold tracking-normal text-[var(--t1)]">
+            4. Data Security
+          </h2>
+          <p className="text-sm leading-[1.7] text-[var(--t2)]">
             We use industry-standard encryption and security measures to protect
             your data. All financial transactions are encrypted in transit and
             at rest. Access to personal data is restricted to authorized
@@ -59,18 +67,22 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2>5. Cookies &amp; Tracking</h2>
-          <p>
+        <section className="mb-6">
+          <h2 className="mb-2.5 text-base font-bold tracking-normal text-[var(--t1)]">
+            5. Cookies &amp; Tracking
+          </h2>
+          <p className="text-sm leading-[1.7] text-[var(--t2)]">
             We use essential cookies for authentication and session management.
             Analytics cookies help us understand how the platform is used. You
             can manage cookie preferences in your browser settings.
           </p>
         </section>
 
-        <section>
-          <h2>6. Your Rights</h2>
-          <p>
+        <section className="mb-6">
+          <h2 className="mb-2.5 text-base font-bold tracking-normal text-[var(--t1)]">
+            6. Your Rights
+          </h2>
+          <p className="text-sm leading-[1.7] text-[var(--t2)]">
             Depending on your jurisdiction, you may have the right to access,
             correct, or delete your personal data, object to processing, and
             request data portability. To exercise these rights, contact our
@@ -78,18 +90,22 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2>7. Data Retention</h2>
-          <p>
+        <section className="mb-6">
+          <h2 className="mb-2.5 text-base font-bold tracking-normal text-[var(--t1)]">
+            7. Data Retention
+          </h2>
+          <p className="text-sm leading-[1.7] text-[var(--t2)]">
             We retain account data for the duration of your account and for a
             period thereafter as required by regulatory obligations. Transaction
             records are retained for a minimum of 5 years.
           </p>
         </section>
 
-        <section>
-          <h2>8. Legal Bases for Processing</h2>
-          <p>
+        <section className="mb-6">
+          <h2 className="mb-2.5 text-base font-bold tracking-normal text-[var(--t1)]">
+            8. Legal Bases for Processing
+          </h2>
+          <p className="text-sm leading-[1.7] text-[var(--t2)]">
             Where applicable law requires a legal basis, we process personal
             data to perform our contract with you (operating your account and
             transactions), to comply with legal and regulatory obligations
@@ -98,9 +114,11 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2>9. International Data Transfers</h2>
-          <p>
+        <section className="mb-6">
+          <h2 className="mb-2.5 text-base font-bold tracking-normal text-[var(--t1)]">
+            9. International Data Transfers
+          </h2>
+          <p className="text-sm leading-[1.7] text-[var(--t2)]">
             We and our service providers may process personal data in countries
             other than the one in which you reside. Where data is transferred
             across borders, we apply appropriate safeguards consistent with
@@ -108,9 +126,11 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2>10. Children</h2>
-          <p>
+        <section className="mb-6">
+          <h2 className="mb-2.5 text-base font-bold tracking-normal text-[var(--t1)]">
+            10. Children
+          </h2>
+          <p className="text-sm leading-[1.7] text-[var(--t2)]">
             The Platform is not directed to, and may not be used by, anyone
             below the minimum age for participation in event-contract markets in
             their jurisdiction. We do not knowingly collect data from such
@@ -118,9 +138,11 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2>11. Changes to This Policy</h2>
-          <p>
+        <section className="mb-6">
+          <h2 className="mb-2.5 text-base font-bold tracking-normal text-[var(--t1)]">
+            11. Changes to This Policy
+          </h2>
+          <p className="text-sm leading-[1.7] text-[var(--t2)]">
             We may update this Policy from time to time. Material changes will
             be reflected by updating the "Last updated" date above. Continued
             use of the Platform after an update constitutes acceptance of the
@@ -128,64 +150,22 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2>12. Contact</h2>
-          <p>
+        <section className="mb-6">
+          <h2 className="mb-2.5 text-base font-bold tracking-normal text-[var(--t1)]">
+            12. Contact
+          </h2>
+          <p className="text-sm leading-[1.7] text-[var(--t2)]">
             Privacy inquiries can be sent to{" "}
-            <a href="mailto:privacy@hulana.com">privacy@hulana.com</a>, DORA
+            <a
+              href="mailto:privacy@hulana.com"
+              className="font-semibold text-[var(--accent)] no-underline hover:brightness-110 hover:underline"
+            >
+              privacy@hulana.com
+            </a>
+            , DORA
             Research, Inc.
           </p>
         </section>
       </div>
-    </>
   );
 }
-
-const legalStyles = `
-  .legal-page {
-    position: relative;
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 36px 36px 32px;
-    border-radius: var(--r-rh-lg);
-    background: var(--surface-1);
-    border: 1px solid var(--border-1);
-  }
-  .legal-page h1 {
-    font-size: 26px;
-    font-weight: 800;
-    color: var(--t1);
-    margin-bottom: 6px;
-    letter-spacing: -0.02em;
-  }
-  .legal-updated {
-    font-size: 12px;
-    color: var(--t3);
-    margin-bottom: 28px;
-    font-family: 'IBM Plex Mono', monospace;
-    letter-spacing: 0.04em;
-  }
-  .legal-page section { margin-bottom: 24px; }
-  .legal-page h2 {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--t1);
-    margin-bottom: 10px;
-    letter-spacing: -0.01em;
-  }
-  .legal-page p {
-    font-size: 14px;
-    line-height: 1.7;
-    color: var(--t2);
-  }
-  .legal-page a {
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 600;
-  }
-  .legal-page a:hover {
-    text-decoration: underline;
-    color: var(--accent);
-    filter: brightness(1.1);
-  }
-`;

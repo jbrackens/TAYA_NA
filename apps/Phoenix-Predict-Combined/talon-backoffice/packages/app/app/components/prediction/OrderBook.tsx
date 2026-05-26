@@ -27,6 +27,25 @@ interface OrderBookProps {
   maxDepth?: number;
 }
 
+const ORDER_BOOK_CARD_CLASS =
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+const ORDER_BOOK_HEAD_CLASS =
+  "mb-[14px] flex items-center justify-between border-b border-[var(--border-1)] pb-3";
+const ORDER_BOOK_TITLE_CLASS =
+  "text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
+const ORDER_BOOK_SUB_CLASS =
+  "font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)]";
+const ORDER_BOOK_TABLE_CLASS =
+  "relative isolate w-full border-collapse font-['IBM_Plex_Mono',_monospace] text-[13px] [font-variant-numeric:tabular-nums]";
+const ORDER_BOOK_TH_CLASS =
+  "border-b border-[var(--border-1)] px-2.5 py-1.5 text-left font-['Inter',_sans-serif] text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--t3)]";
+const ORDER_BOOK_TD_CLASS =
+  "relative px-2.5 py-[7px] text-[var(--t1)]";
+const ORDER_BOOK_DEPTH_ROW_CLASS =
+  "relative after:pointer-events-none after:absolute after:top-[3px] after:right-0 after:bottom-[3px] after:z-[-1] after:w-[calc(var(--depth,0)*1%)] after:rounded-[3px] after:content-['']";
+const ORDER_BOOK_SPREAD_CLASS =
+  "my-1 flex items-center justify-center border-y border-[var(--border-1)] py-2.5 font-['IBM_Plex_Mono',_monospace] text-[11px] uppercase tracking-[0.08em] text-[var(--t3)]";
+
 export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
   const { t } = useTranslation("prediction");
   const bestBid = bids[0]?.priceCents ?? 0;
@@ -42,190 +61,96 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
   );
 
   return (
-    <>
-      <style>{`
-        .ob-card {
-          background: var(--surface-1);
-          border: 1px solid var(--border-1);
-          padding: 20px;
-          border-radius: var(--r-rh-lg);
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        .ob-head {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 14px;
-          padding-bottom: 12px;
-          border-bottom: 1px solid var(--border-1);
-        }
-        .ob-title {
-          font-size: 14px;
-          font-weight: 600;
-          color: var(--t1);
-          letter-spacing: -0.01em;
-        }
-        .ob-sub {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 11px;
-          color: var(--t3);
-        }
-        .ob-table {
-          width: 100%;
-          border-collapse: collapse;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 13px;
-          font-variant-numeric: tabular-nums;
-          position: relative;
-          isolation: isolate;
-        }
-        .ob-table th {
-          text-align: left;
-          font-weight: 500;
-          font-size: 10px;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-          color: var(--t3);
-          font-family: 'Inter', sans-serif;
-          padding: 6px 10px;
-          border-bottom: 1px solid var(--border-1);
-        }
-        .ob-table th.n, .ob-table td.n { text-align: right; }
-        .ob-table td {
-          padding: 7px 10px;
-          color: var(--t1);
-          position: relative;
-        }
-        .ob-table td.yes-px { color: var(--yes-text); font-weight: 600; }
-        .ob-table td.no-px { color: var(--no-text); font-weight: 600; }
-        .ob-table tr { position: relative; }
-        .ob-table tr.bid::after, .ob-table tr.ask::after {
-          content: '';
-          position: absolute;
-          top: 3px;
-          bottom: 3px;
-          right: 0;
-          width: calc(var(--depth, 0) * 1%);
-          border-radius: 3px;
-          z-index: -1;
-          pointer-events: none;
-        }
-        .ob-table tr.bid::after {
-          background: linear-gradient(90deg, transparent, var(--yes-soft));
-        }
-        .ob-table tr.ask::after {
-          background: linear-gradient(90deg, transparent, var(--no-soft));
-        }
-        .ob-spread {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          padding: 10px 0;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 11px;
-          color: var(--t3);
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          border-top: 1px solid var(--border-1);
-          border-bottom: 1px solid var(--border-1);
-          margin: 4px 0;
-        }
-        .ob-empty {
-          text-align: center;
-          color: var(--t3);
-          font-size: 12px;
-          padding: 16px 0;
-        }
-      `}</style>
-      <section className="ob-card" aria-label={t("ORDER_BOOK")}>
-        <div className="ob-head">
-          <span className="ob-title">{t("ORDER_BOOK")}</span>
-          <span className="ob-sub">
-            {t("AGGREGATED_LEVELS", { count: asks.length + bids.length })}
-          </span>
+    <section className={ORDER_BOOK_CARD_CLASS} aria-label={t("ORDER_BOOK")}>
+      <div className={ORDER_BOOK_HEAD_CLASS}>
+        <span className={ORDER_BOOK_TITLE_CLASS}>{t("ORDER_BOOK")}</span>
+        <span className={ORDER_BOOK_SUB_CLASS}>
+          {t("AGGREGATED_LEVELS", { count: asks.length + bids.length })}
+        </span>
+      </div>
+
+      {asks.length + bids.length === 0 ? (
+        <div className="py-4 text-center text-xs text-[var(--t3)]">
+          {t("NO_RESTING_ORDERS")}
         </div>
-
-        {asks.length + bids.length === 0 ? (
-          <div className="ob-empty">{t("NO_RESTING_ORDERS")}</div>
-        ) : (
-          <>
-            {asks.length > 0 && (
-              <table className="ob-table">
-                <thead>
-                  <tr>
-                    <th>{t("SIDE")}</th>
-                    <th className="n">{t("PRICE")}</th>
-                    <th className="n">{t("SIZE")}</th>
-                    <th className="n">{t("TOTAL")}</th>
+      ) : (
+        <>
+          {asks.length > 0 && (
+            <table className={ORDER_BOOK_TABLE_CLASS}>
+              <thead>
+                <tr>
+                  <th className={ORDER_BOOK_TH_CLASS}>{t("SIDE")}</th>
+                  <th className={`${ORDER_BOOK_TH_CLASS} text-right`}>{t("PRICE")}</th>
+                  <th className={`${ORDER_BOOK_TH_CLASS} text-right`}>{t("SIZE")}</th>
+                  <th className={`${ORDER_BOOK_TH_CLASS} text-right`}>{t("TOTAL")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {asks.map((l) => (
+                  <tr
+                    key={`ask-${l.priceCents}`}
+                    className={`${ORDER_BOOK_DEPTH_ROW_CLASS} after:bg-[linear-gradient(90deg,_transparent,_var(--no-soft))]`}
+                    style={{
+                      ["--depth" as string]: Math.min(
+                        100,
+                        (l.size / maxSize) * 100,
+                      ),
+                    }}
+                  >
+                    <td className={`${ORDER_BOOK_TD_CLASS} font-semibold text-[var(--no-text)]`}>
+                      {t("NO")} {100 - l.priceCents}¢
+                    </td>
+                    <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>{l.size}</td>
+                    <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
+                      {((l.size * (100 - l.priceCents)) / 100).toFixed(2)}
+                    </td>
+                    <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
+                      {((l.total * (100 - l.priceCents)) / 100).toFixed(2)}
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {asks.map((l) => (
-                    <tr
-                      key={`ask-${l.priceCents}`}
-                      className="ask"
-                      style={{
-                        ["--depth" as string]: Math.min(
-                          100,
-                          (l.size / maxSize) * 100,
-                        ),
-                      }}
-                    >
-                      <td className="no-px">
-                        {t("NO")} {100 - l.priceCents}¢
-                      </td>
-                      <td className="n">{l.size}</td>
-                      <td className="n">
-                        {((l.size * (100 - l.priceCents)) / 100).toFixed(2)}
-                      </td>
-                      <td className="n">
-                        {((l.total * (100 - l.priceCents)) / 100).toFixed(2)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                ))}
+              </tbody>
+            </table>
+          )}
 
-            {bestBid > 0 && bestAsk > 0 && (
-              <div className="ob-spread">
-                {t("SPREAD_MID", { spread, mid })}
-              </div>
-            )}
+          {bestBid > 0 && bestAsk > 0 && (
+            <div className={ORDER_BOOK_SPREAD_CLASS}>
+              {t("SPREAD_MID", { spread, mid })}
+            </div>
+          )}
 
-            {bids.length > 0 && (
-              <table className="ob-table">
-                <tbody>
-                  {bids.map((l) => (
-                    <tr
-                      key={`bid-${l.priceCents}`}
-                      className="bid"
-                      style={{
-                        ["--depth" as string]: Math.min(
-                          100,
-                          (l.size / maxSize) * 100,
-                        ),
-                      }}
-                    >
-                      <td className="yes-px">
-                        {t("YES")} {l.priceCents}¢
-                      </td>
-                      <td className="n">{l.size}</td>
-                      <td className="n">
-                        {((l.size * l.priceCents) / 100).toFixed(2)}
-                      </td>
-                      <td className="n">
-                        {((l.total * l.priceCents) / 100).toFixed(2)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </>
-        )}
-      </section>
-    </>
+          {bids.length > 0 && (
+            <table className={ORDER_BOOK_TABLE_CLASS}>
+              <tbody>
+                {bids.map((l) => (
+                  <tr
+                    key={`bid-${l.priceCents}`}
+                    className={`${ORDER_BOOK_DEPTH_ROW_CLASS} after:bg-[linear-gradient(90deg,_transparent,_var(--yes-soft))]`}
+                    style={{
+                      ["--depth" as string]: Math.min(
+                        100,
+                        (l.size / maxSize) * 100,
+                      ),
+                    }}
+                  >
+                    <td className={`${ORDER_BOOK_TD_CLASS} font-semibold text-[var(--yes-text)]`}>
+                      {t("YES")} {l.priceCents}¢
+                    </td>
+                    <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>{l.size}</td>
+                    <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
+                      {((l.size * l.priceCents) / 100).toFixed(2)}
+                    </td>
+                    <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
+                      {((l.total * l.priceCents) / 100).toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </>
+      )}
+    </section>
   );
 }
 

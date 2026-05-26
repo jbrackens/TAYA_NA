@@ -60,37 +60,18 @@ export function BackendStatusBanner() {
   return (
     <div
       role="alert"
-      style={{
-        background: "linear-gradient(90deg, #92400e 0%, #78350f 100%)",
-        color: "#fef3c7",
-        padding: "8px 16px",
-        fontSize: "13px",
-        fontWeight: 500,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: "12px",
-        borderBottom: "1px solid rgba(251, 191, 36, 0.3)",
-      }}
+      className="flex items-center justify-between gap-3 border-b border-[rgba(251,191,36,0.3)] bg-[linear-gradient(90deg,#92400e_0%,#78350f_100%)] px-4 py-2 text-[13px] font-medium text-amber-100"
     >
       <span>
-        ⚠ {t("BACKEND_OFFLINE", {
+        ⚠{" "}
+        {t("BACKEND_OFFLINE", {
           defaultValue:
             "Backend services are offline — some features may not work. Check that the Go gateway is running on port 18080.",
         })}
       </span>
       <button
         onClick={() => setDismissed(true)}
-        style={{
-          background: "none",
-          border: "1px solid rgba(251, 191, 36, 0.4)",
-          color: "#fef3c7",
-          padding: "2px 8px",
-          borderRadius: "4px",
-          fontSize: "11px",
-          cursor: "pointer",
-          flexShrink: 0,
-        }}
+        className="shrink-0 cursor-pointer rounded border border-[rgba(251,191,36,0.4)] bg-transparent px-2 py-0.5 text-[11px] text-amber-100"
       >
         {t("DISMISS", { defaultValue: "Dismiss" })}
       </button>
