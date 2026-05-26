@@ -30,6 +30,7 @@ func main() {
 		model          = flag.String("model", cfg.Model, "OpenAI-compatible model name")
 		provider       = flag.String("provider", cfg.Provider, "provider label stored in translation cache")
 		apiKeyEnv      = flag.String("api-key-env", "", "environment variable that contains the translation API key; overrides AI_TRANSLATION_API_KEY fallback chain")
+		failOnFailures = flag.Bool("fail-on-failures", true, "exit non-zero when any market translation fails")
 	)
 	flag.Parse()
 
@@ -78,7 +79,7 @@ func main() {
 		strings.Join(cfg.Locales, ","),
 		cfg.Model,
 	)
-	if summary.Failures > 0 {
+	if summary.Failures > 0 && *failOnFailures {
 		os.Exit(1)
 	}
 }

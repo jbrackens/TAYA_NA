@@ -343,7 +343,7 @@ jobs:
                 -e AI_TRANSLATION_ENDPOINT=https://openrouter.ai/api/v1 \
                 -e AI_TRANSLATION_MODEL=openai/gpt-4o-mini \
                 -e AI_TRANSLATION_PROVIDER=openai-compatible \
-                gateway ./translate-markets -limit 120 -timeout 900 -request-timeout 45 &
+                gateway ./translate-markets -limit 120 -timeout 1800 -request-timeout 45 -fail-on-failures=false &
             backfill_pid=$!
             while kill -0 "$backfill_pid" 2>/dev/null; do
               echo "market translation backfill still running..."
