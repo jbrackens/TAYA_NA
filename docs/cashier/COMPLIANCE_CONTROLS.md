@@ -8,6 +8,13 @@ and compliance can sign off.
 
 ## V1 Controls
 
+- Beta trading policy: `BETA_COMPLIANCE_MODE=permissive` disables trading KYC and
+  geo gates for the Asia/Africa/LATAM beta. Production-like deployments must also
+  set `COMPLIANCE_STARTUP_ACK=true`; otherwise startup fails closed.
+- Cashier policy has an explicit `complianceMode="permissive_beta"` evaluator
+  path for the beta period: missing geo approval or unavailable address screening
+  does not pause deposits/withdrawals, while known sanctions hits and explicit
+  manual-review signals still stop the flow.
 - Geo policy before wallet creation and before every deposit/withdrawal action.
 - Address screening for source, destination, and smart-wallet addresses where data
   is available.
@@ -47,6 +54,8 @@ watcher, and operator tooling can share one decision ladder:
 - Sanctions hit escalates to `quarantine`.
 - Screening unavailable/manual-review, beta cap breach, daily velocity breach, or
   cashier pause escalates to `manual_review`.
+- In `permissive_beta` mode, geo blocks and unavailable screening are bypassed;
+  explicit sanctions hits and manual-review screening are still enforced.
 - The highest-severity decision wins when multiple reasons are present.
 
 The Go gateway package mirrors the same rules in `internal/cashier` for handlers

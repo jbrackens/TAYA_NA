@@ -17,10 +17,10 @@
   "summary": {
     "note": "Counts intentionally omitted until per-route verification lands. A hand-asserted count is the exact failure this manifest exists to prevent (a head-truncated `ls` produced a false 'broken settlements' call on 2026-05-18).",
     "total_routes": 12,
-    "verified": 2,
-    "inferred": 5,
-    "unverified": 5,
-    "sportsbook_leftovers_to_remove": 8
+    "verified": 5,
+    "inferred": 6,
+    "unverified": 1,
+    "sportsbook_leftovers_to_remove": 0
   },
   "known_blockers": [
     {
@@ -93,60 +93,60 @@
     {
       "route": "/users",
       "router": "app",
-      "file": "app/(dashboard)/users/{page,[id]}.tsx + containers/users/*",
-      "domain": "mixed",
-      "status": "STUBBED",
+      "file": "app/(dashboard)/users/{page,[id]}.tsx",
+      "domain": "prediction",
+      "status": "REAL",
       "verification": "inferred",
-      "notes": "containers/users/details/* has SAMPLE_ data (grep-confirmed). containers/users/prediction-orders + wallet are real. containers/users/bets/ is sportsbook leftover (see remove list). Split needed."
+      "notes": "2026-05-26: source-read confirmed. List page fetches /api/v1/admin/punters?page=1&pageSize=100 and renders API rows only. Detail page fetches /api/v1/admin/punters/:id, notes, settlements, wallet ledger, and writes status/notes through adminFetch. Reset-password shell action and sportsbook bets UI were removed/quarantined. Live API payload not observed in this pass."
     },
     {
       "route": "/leaderboards",
       "router": "app",
       "file": "app/(dashboard)/leaderboards/{page,[id]}.tsx",
       "domain": "prediction",
-      "status": "STUBBED",
+      "status": "REAL",
       "verification": "inferred",
-      "notes": "Both SAMPLE_ AND /api/v1 calls present (grep-confirmed) — partial wiring. Gateway has registerPredictLeaderboardRoutes; finish the wiring."
+      "notes": "2026-05-26: source-read confirmed. List/detail pages use adminFetch against /api/v1/admin/leaderboards, /api/v1/admin/leaderboards/:id, recompute endpoints, standings, and event recording. No SAMPLE_/MOCK_ fallback detected by gate. Live API payload not observed in this pass."
     },
     {
       "route": "/audit-logs",
       "router": "app",
-      "file": "app/(dashboard)/audit-logs/page.tsx + containers/audit-logs/index.tsx",
-      "domain": "mixed",
-      "status": "STUBBED",
+      "file": "app/(dashboard)/audit-logs/page.tsx",
+      "domain": "prediction",
+      "status": "REAL",
       "verification": "inferred",
-      "notes": "SAMPLE_ data + sportsbook resolvers. ALSO has a confirmed infinite-render bug (containers/audit-logs/index.tsx:268 useEffect -> setState loop; api-service base resolves to 'undefined' -> GET /undefined/admin/audit-logs 404). Tracked as a separate task."
+      "notes": "2026-05-26: App Router page read and narrowed to prediction-safe filters; no SAMPLE_/MOCK_ data; fetches /api/v1/admin/audit-logs via adminFetch. Legacy /logs now redirects here. Live API payload not observed, so verification remains inferred."
     },
     {
       "route": "/reports",
       "router": "app",
       "file": "app/(dashboard)/reports/page.tsx",
-      "domain": "sportsbook",
-      "status": "STUBBED",
-      "verification": "inferred",
-      "notes": "Flagged sportsbook-domain (fixtures/odds language). Stale docs describe SAMPLE_ metrics. Needs reframe to prediction analytics or removal."
+      "domain": "removed",
+      "status": "REMOVE",
+      "verification": "verified",
+      "notes": "2026-05-26: beta-hidden report shell replaced with an App Router redirect to /dashboard. No report UI or sample metrics are directly exposed."
     },
     {
       "route": "/risk-management",
       "router": "app",
-      "file": "app/(dashboard)/risk-management/page.tsx + containers/risk-management-summary/",
-      "domain": "mixed",
-      "status": "STUBBED",
-      "verification": "inferred",
-      "notes": "app/(dashboard)/risk-management/page.tsx flagged sportsbook. containers/risk-management-summary/ is prediction + in real-API set. Old sportsbook page likely superseded; confirm and drop the sportsbook variant."
+      "file": "app/(dashboard)/risk-management/page.tsx",
+      "domain": "removed",
+      "status": "REMOVE",
+      "verification": "verified",
+      "notes": "2026-05-26: legacy URL redirects to /prediction-admin/risk, and the redirected Pages Router /risk-management subtree was deleted. Shared containers remain on disk only where still import-entangled."
     },
     {
       "route": "/campaigns",
       "router": "app",
       "file": "app/(dashboard)/campaigns/page.tsx",
-      "domain": "sportsbook",
-      "status": "STUBBED",
-      "verification": "unverified",
-      "notes": "Flagged sportsbook-domain. Gateway has /api/v1/admin/campaigns; decide reframe vs remove."
+      "domain": "removed",
+      "status": "REMOVE",
+      "verification": "verified",
+      "notes": "2026-05-26: beta-hidden campaign shell replaced with an App Router redirect to /dashboard. Re-add only after a prediction-native campaign flow is verified."
     }
   ],
   "sportsbook_leftovers_removal": {
-    "note": "2026-05-18 importer audit: these are NOT clean leaf deletions. They are entangled with Redux slices (lib/slices/fixturesSlice, fixturesDetailsSlice, usersDetailsSlice — wired into the store), shared lib/ + types/, barrels (app/hooks/index.ts), a live page route (pages/risk-management/fixed-exotics), and at least one PREDICTION container imports a leftover (containers/markets/details/index.tsx -> components/markets/odds). Office next.config has ignoreBuildErrors:true, so a dangling import fails SILENTLY at runtime, not at build. Removal is a multi-file REFACTOR (untangle slices/store, fix prediction containers that import odds, update barrels + the risk-management/fixed-exotics route), not a deletion. Do NOT 'just delete' these and do NOT attempt unsupervised on the deployed branch. The earlier 'verification: verified' meant 'confirmed to be sportsbook-domain', NOT 'confirmed safe to delete'.",
+    "note": "2026-05-26 cleanup: Gate 2 sportsbook-domain scan is at zero. The legacy fixtures, odds, phone-bet, pages/risk-management, and risk-management-summary trees were removed or quarantined; markets detail now renders prediction-safe outcomes directly; store.config no longer wires dead fixtures/markets reducers. Keep this section as historical evidence of what was removed.",
     "items": [
       {
         "path": "components/fixtures/",
@@ -194,8 +194,8 @@
         "path": "app/api/fixtures/route.ts",
         "reason": "Live sportsbook fixtures API route in office.",
         "domain_verified": true,
-        "safe_to_delete": false,
-        "entanglement": "route handler; verify no fixtures UI still calls /api/fixtures before removing (fixtures containers do)"
+        "safe_to_delete": true,
+        "entanglement": "removed 2026-05-26 after rg found no /api/fixtures callers; legacy fixture containers still call admin/fixtures and remain entangled"
       },
       {
         "path": "app/hooks/useTradingWebSocket.ts",

@@ -136,6 +136,7 @@ func TestBuildPlan_BuyYesMatchesSellYesAtMakerPrice(t *testing.T) {
 	market := makeMarket()
 	taker := makeOrder("t", "alice", OrderSideYes, OrderActionBuy, OrderTypeLimit, intPtr(60), 10)
 	maker := makeOrder("m", "bob", OrderSideYes, OrderActionSell, OrderTypeLimit, intPtr(55), 10)
+	maker.ReservedQuantity = 10
 
 	plan, err := e.BuildPlan(MatchInput{
 		Market: market, Taker: taker,
@@ -167,6 +168,41 @@ func TestBuildPlan_BuyYesMatchesSellYesAtMakerPrice(t *testing.T) {
 	// (10 × 55 = 550). Pre-fix, no secondary fill credited any seller.
 	if len(plan.SellerCredits) != 1 || plan.SellerCredits[0].UserID != "bob" || plan.SellerCredits[0].AmountCents != 550 {
 		t.Errorf("expected seller credit bob/550, got %+v", plan.SellerCredits)
+	}
+	if len(plan.PositionReservationDeltas) != 1 || plan.PositionReservationDeltas[0].UserID != "bob" || plan.PositionReservationDeltas[0].Delta != -10 {
+		t.Errorf("expected bob reserved-share release of 10, got %+v", plan.PositionReservationDeltas)
+	}
+	if len(plan.MakerUpdates) != 1 || plan.MakerUpdates[0].ReservedQuantity != 0 {
+		t.Errorf("expected maker reserved quantity to drop to 0, got %+v", plan.MakerUpdates)
+	}
+}
+
+func TestBuildPlan_SellLimitRemainderReservesShares(t *testing.T) {
+	e := NewExchangeEngine()
+	market := makeMarket()
+	taker := makeOrder("t", "alice", OrderSideYes, OrderActionSell, OrderTypeLimit, intPtr(50), 10)
+	maker := makeOrder("m", "bob", OrderSideYes, OrderActionBuy, OrderTypeLimit, intPtr(55), 4)
+
+	plan, err := e.BuildPlan(MatchInput{
+		Market: market, Taker: taker,
+		MakersSecondary: []Order{maker},
+		Now:             time.Now(), IDFactory: counterIDs(),
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if plan.Taker.Status != OrderStatusPartial || plan.Taker.RemainingQuantity != 6 {
+		t.Fatalf("expected partial sell with 6 remaining, got status=%s remaining=%d", plan.Taker.Status, plan.Taker.RemainingQuantity)
+	}
+	if plan.Taker.ReservedQuantity != 6 {
+		t.Fatalf("expected taker to reserve 6 resting shares, got %d", plan.Taker.ReservedQuantity)
+	}
+	if len(plan.PositionReservationDeltas) != 1 {
+		t.Fatalf("expected one reservation delta, got %+v", plan.PositionReservationDeltas)
+	}
+	d := plan.PositionReservationDeltas[0]
+	if d.UserID != "alice" || d.Side != OrderSideYes || d.Delta != 6 {
+		t.Fatalf("expected alice YES +6 reservation, got %+v", d)
 	}
 }
 

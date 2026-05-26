@@ -450,16 +450,25 @@ type PlaceOrderRequest struct {
 
 // OrderPreview is the response from previewing an order cost.
 type OrderPreview struct {
-	Side        OrderSide   `json:"side"`
-	Action      OrderAction `json:"action"`
-	Quantity    int         `json:"quantity"`
-	PriceCents  int         `json:"priceCents"`
-	TotalCost   int64       `json:"totalCostCents"`
-	FeeCents    int64       `json:"feeCents"`
-	MaxProfit   int64       `json:"maxProfitCents"`
-	MaxLoss     int64       `json:"maxLossCents"`
-	NewYesPrice int         `json:"newYesPriceCents"`
-	NewNoPrice  int         `json:"newNoPriceCents"`
+	Side                    OrderSide     `json:"side"`
+	Action                  OrderAction   `json:"action"`
+	Quantity                int           `json:"quantity"`
+	PriceCents              int           `json:"priceCents"`
+	TotalCost               int64         `json:"totalCostCents"`
+	FeeCents                int64         `json:"feeCents"`
+	MaxProfit               int64         `json:"maxProfitCents"`
+	MaxLoss                 int64         `json:"maxLossCents"`
+	NewYesPrice             int           `json:"newYesPriceCents"`
+	NewNoPrice              int           `json:"newNoPriceCents"`
+	ExecutionMode           ExecutionMode `json:"executionMode,omitempty"`
+	FilledQuantity          int           `json:"filledQuantity"`
+	UnfilledQuantity        int           `json:"unfilledQuantity"`
+	AverageFillPriceCents   int           `json:"averageFillPriceCents"`
+	TotalCostWithFeesCents  int64         `json:"totalCostWithFeesCents"`
+	EstimatedSlippageCents  int           `json:"estimatedSlippageCents"`
+	QuoteStatus             OrderStatus   `json:"quoteStatus,omitempty"`
+	QuoteStaleAfterMillis   int64         `json:"quoteStaleAfterMillis,omitempty"`
+	QuoteGeneratedAtUnixSec int64         `json:"quoteGeneratedAtUnixSec,omitempty"`
 }
 
 // PortfolioSummary provides a user's aggregate prediction stats.

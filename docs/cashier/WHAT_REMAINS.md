@@ -15,6 +15,12 @@
   idempotency, provider callbacks, decimal handling, and relayer policy.
 - Local SQL migration, rollback artifact, and deterministic seed data.
 - TronGrid authenticated smoke check script.
+- SQL-backed cashier repository bootstrap with production-like fail-closed
+  in-memory protection.
+- Immutable audit-event writes for mutating cashier handlers.
+- Recovery approval status check requiring two distinct approving operators.
+- Daily reconciliation report generation from persisted deposit intents and
+  bridge/provider observations.
 
 Primary verification:
 

@@ -330,15 +330,23 @@ export default function MarketDetailPage() {
   }, [market?.id, market?.executionMode, authLoading, isAuthenticated]);
 
   const handlePreview = useCallback(
-    async (side: OrderSide, quantity: number): Promise<OrderPreview | null> => {
+    async (
+      side: OrderSide,
+      quantity: number,
+      opts?: TradeTicketSubmitOptions,
+    ): Promise<OrderPreview | null> => {
       if (!market) return null;
       try {
         return await api.previewOrder({
           marketId: market.id,
           side,
-          action: "buy",
-          orderType: "market",
+          action: opts?.action ?? "buy",
+          orderType: opts?.orderType ?? "market",
           quantity,
+          priceCents: opts?.priceCents,
+          timeInForce: opts?.timeInForce,
+          postOnly: opts?.postOnly,
+          notionalCapCents: opts?.notionalCapCents,
         });
       } catch (err: unknown) {
         logger.warn("MarketDetail", "preview failed", err);

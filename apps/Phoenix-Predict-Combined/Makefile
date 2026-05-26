@@ -6,6 +6,7 @@ STACK_SCRIPT := $(ROOT)/scripts/local-stack.sh
 JAVA_PROFILE_SCRIPT := $(ROOT)/scripts/runtime/java-profile.sh
 SBOM_SCRIPT := $(ROOT)/scripts/security/generate-sbom.sh
 MIGRATION_SCRIPT := $(ROOT)/scripts/data/validate-db-migrations.sh
+GO_GATEWAY_MIGRATION_SCRIPT := $(ROOT)/scripts/data/validate-go-gateway-migrations.sh
 SEED_SCRIPT := $(ROOT)/scripts/data/prepare-deterministic-seeds.sh
 PLATFORM_HEALTH_SCRIPT := $(ROOT)/scripts/platform/health-check.sh
 PLATFORM_METRICS_SCRIPT := $(ROOT)/scripts/platform/metrics-smoke.sh
@@ -26,7 +27,7 @@ PRIVATE_HOOKS_INSTALL_SCRIPT := $(ROOT)/scripts/release/install-private-governan
 HISTORICAL_BETS_CSV ?= $(ROOT)/phoenix-backend/services/src/test/resources/data/reports/application/multiple-states-bets.csv
 HISTORICAL_BETS_DIR ?= $(ROOT)/phoenix-backend/services/src/test/resources/data/reports/application
 
-.PHONY: help bootstrap start stop restart status logs java-profile verify verify-backend verify-talon verify-sportsbook verify-go verify-api-contract-fixtures frontend-deps-baseline security-secrets security-deps security-jvm security-sbom security-baseline validate-migrations seed-deterministic platform-health platform-metrics qa-e2e-critical qa-load-baseline qa-capability-slo qa-provider-conformance qa-regression-pack qa-provider-chaos qa-sports-route-smoke qa-sports-regression release-cutover-rehearsal release-launch-readiness release-launch-readiness-runtime release-launch-readiness-runtime-profile release-governance-private release-install-private-governance-hooks release-stability-burnin go-test go-run-gateway go-run-auth go-reconciliation-report go-reconciliation-report-historical go-reconciliation-report-historical-strict go-reconciliation-report-historical-dir
+.PHONY: help bootstrap start stop restart status logs java-profile verify verify-backend verify-talon verify-sportsbook verify-go verify-api-contract-fixtures frontend-deps-baseline security-secrets security-deps security-jvm security-sbom security-baseline validate-migrations validate-go-migrations seed-deterministic platform-health platform-metrics qa-e2e-critical qa-load-baseline qa-capability-slo qa-provider-conformance qa-regression-pack qa-provider-chaos qa-sports-route-smoke qa-sports-regression release-cutover-rehearsal release-launch-readiness release-launch-readiness-runtime release-launch-readiness-runtime-profile release-governance-private release-install-private-governance-hooks release-stability-burnin go-test go-run-gateway go-run-auth go-reconciliation-report go-reconciliation-report-historical go-reconciliation-report-historical-strict go-reconciliation-report-historical-dir
 
 help:
 	@echo "Available targets:"
@@ -50,6 +51,7 @@ help:
 	@echo "  make security-sbom     # generate SBOM artifacts across major components"
 	@echo "  make security-baseline # run all security baseline reports"
 	@echo "  make validate-migrations # validate Flyway migrations from clean Postgres state"
+	@echo "  make validate-go-migrations # validate Go gateway SQL migrations from clean Postgres state"
 	@echo "  make seed-deterministic  # materialize deterministic local seed files/env"
 	@echo "  make platform-health   # run health/readiness/liveness smoke checks"
 	@echo "  make platform-metrics  # run metrics endpoint smoke checks"
@@ -110,7 +112,7 @@ verify-talon:
 verify-sportsbook:
 	@bash "$(ROOT)/scripts/frontend/verify-sportsbook.sh"
 
-verify-go:
+verify-go: validate-go-migrations
 	@$(MAKE) qa-provider-conformance
 	@$(MAKE) qa-regression-pack
 	@$(MAKE) qa-provider-chaos
@@ -138,6 +140,9 @@ security-baseline: security-secrets security-deps security-jvm security-sbom
 
 validate-migrations:
 	@bash "$(MIGRATION_SCRIPT)"
+
+validate-go-migrations:
+	@bash "$(GO_GATEWAY_MIGRATION_SCRIPT)"
 
 seed-deterministic:
 	@bash "$(SEED_SCRIPT)"

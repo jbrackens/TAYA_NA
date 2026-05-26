@@ -28,6 +28,11 @@ type GoSupportNotesResponse = {
   totalCount?: number;
 };
 
+type SupportNotesPayload =
+  | GoSupportNotesResponse
+  | GoSupportNote[]
+  | TalonPunterNotes;
+
 const SYSTEM_AUTHOR: TalonPunterNotesAuthor = {
   firstName: "System",
   lastName: "",
@@ -68,12 +73,10 @@ const normalizeNoteItem = (item: GoSupportNote): TalonPunterNotesItem => ({
   text: item.text || "",
 });
 
-const extractNotes = (
-  payload: GoSupportNotesResponse | TalonPunterNotes,
-): TalonPunterNotes => {
+const extractNotes = (payload: SupportNotesPayload): TalonPunterNotes => {
   if (Array.isArray(payload)) {
     return payload.map((item) =>
-      isLegacyNoteItem(item) ? item : normalizeNoteItem(item as any),
+      isLegacyNoteItem(item) ? item : normalizeNoteItem(item),
     );
   }
 
@@ -89,7 +92,7 @@ const extractNotes = (
 };
 
 const normalizePagination = (
-  payload: GoSupportNotesResponse | TalonPunterNotes,
+  payload: SupportNotesPayload,
   totalCount: number,
 ): TablePaginationResponse => {
   if (!Array.isArray(payload) && payload?.pagination) {
@@ -108,7 +111,7 @@ const normalizePagination = (
 };
 
 export const normalizeSupportNotesResponse = (
-  payload: GoSupportNotesResponse | TalonPunterNotes,
+  payload: SupportNotesPayload,
 ): { data: TalonPunterNotes; pagination: TablePaginationResponse } => {
   const data = extractNotes(payload);
   return {

@@ -18,57 +18,66 @@ export type GoAuditPagination = {
   total?: number;
 };
 
+type AuditPaginationResponse = Partial<TablePaginationResponse> &
+  Partial<GoAuditPagination>;
+
 export type AuditLogsAuditLogsResponse = {
   data: TalonAuditLogs;
   items?: TalonAuditLogs;
-  pagination?: TablePaginationResponse | GoAuditPagination;
+  pagination?: AuditPaginationResponse;
 } & TablePaginationResponse;
 
-const normalizeGoAuditRow = (row: any): TalonAuditLog => {
+const normalizeGoAuditRow = (row: unknown): TalonAuditLog => {
   if (!row || typeof row !== "object") {
-    return row;
+    return {};
   }
-  const normalized: TalonAuditLog = { ...row };
-  if (row.actor_id !== undefined && normalized.actorId === undefined) {
-    normalized.actorId = row.actor_id;
+  const source = row as Record<string, unknown>;
+  const normalized: TalonAuditLog = { ...source };
+  if (typeof source.actor_id === "string" && normalized.actorId === undefined) {
+    normalized.actorId = source.actor_id;
   }
-  if (row.entity_type !== undefined) {
+  if (typeof source.entity_type === "string") {
     if (normalized.category === undefined) {
-      normalized.category = row.entity_type;
+      normalized.category = source.entity_type;
     }
     if (normalized.type === undefined) {
-      normalized.type = row.entity_type;
+      normalized.type = source.entity_type;
     }
   }
-  if (row.entity_id !== undefined && normalized.targetId === undefined) {
-    normalized.targetId = row.entity_id;
+  if (typeof source.entity_id === "string" && normalized.targetId === undefined) {
+    normalized.targetId = source.entity_id;
   }
-  if (row.old_value !== undefined && normalized.dataBefore === undefined) {
-    normalized.dataBefore = typeof row.old_value === "object" ? row.old_value : undefined;
+  if (source.old_value !== undefined && normalized.dataBefore === undefined) {
+    normalized.dataBefore =
+      source.old_value && typeof source.old_value === "object"
+        ? (source.old_value as Record<string, unknown>)
+        : undefined;
   }
-  if (row.new_value !== undefined && normalized.dataAfter === undefined) {
-    normalized.dataAfter = typeof row.new_value === "object" ? row.new_value : undefined;
+  if (source.new_value !== undefined && normalized.dataAfter === undefined) {
+    normalized.dataAfter =
+      source.new_value && typeof source.new_value === "object"
+        ? (source.new_value as Record<string, unknown>)
+        : undefined;
   }
-  if (row.created_at !== undefined && normalized.createdAt === undefined) {
-    normalized.createdAt = row.created_at;
+  if (typeof source.created_at === "string" && normalized.createdAt === undefined) {
+    normalized.createdAt = source.created_at;
   }
-  if (row.ip_address !== undefined) {
-    normalized.ipAddress = row.ip_address;
+  if (typeof source.ip_address === "string") {
+    normalized.ipAddress = source.ip_address;
   }
   return normalized;
 };
 
 const normalizeGoPagination = (
-  pagination: GoAuditPagination | TablePaginationResponse | undefined,
+  pagination: AuditPaginationResponse | undefined,
 ): TablePaginationResponse => {
   if (!pagination || typeof pagination !== "object") {
     return { currentPage: 1, itemsPerPage: 20, totalCount: 0 };
   }
-  const p = pagination as any;
   return {
-    currentPage: p.currentPage || p.page || 1,
-    itemsPerPage: p.itemsPerPage || p.limit || 20,
-    totalCount: p.totalCount ?? p.total ?? 0,
+    currentPage: pagination.currentPage || pagination.page || 1,
+    itemsPerPage: pagination.itemsPerPage || pagination.limit || 20,
+    totalCount: pagination.totalCount ?? pagination.total ?? 0,
   };
 };
 

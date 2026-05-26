@@ -26,7 +26,7 @@ export type UsersSlice = {
 
 const initialState: UsersSliceState = {
   data: [],
-  recentActivities: [] as any,
+  recentActivities: [],
   pagination: {},
   paginationResponse: {},
   filters: {},

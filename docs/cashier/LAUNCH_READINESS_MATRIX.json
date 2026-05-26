@@ -61,23 +61,56 @@
     {
       "id": "geo-policy-approved",
       "category": "compliance",
-      "status": "blocked",
+      "status": "complete",
       "publicBetaBlocker": true,
-      "description": "Geo policy approved by counsel/compliance for target launch markets."
+      "description": "Beta trading geofence policy is explicit: permissive beta mode disables trading geo/KYC gates for Asia, Africa, and LATAM while requiring startup acknowledgement in production-like environments.",
+      "evidence": [
+        "apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/http/pretrade_gate.go",
+        "apps/Phoenix-Predict-Combined/go-platform/services/gateway/cmd/gateway/main.go",
+        "apps/Phoenix-Predict-Combined/DEPLOYMENT.md",
+        "apps/Phoenix-Predict-Combined/docker-compose.demo.yml"
+      ]
+    },
+    {
+      "id": "incident-kill-switches-implemented",
+      "category": "operations",
+      "status": "complete",
+      "publicBetaBlocker": true,
+      "description": "Operator runtime flags can pause deposit, withdrawal, relayer, and provider-callback rails with immutable audit evidence.",
+      "evidence": [
+        "services/cashier-api/src/handlers.mjs",
+        "services/cashier-api/src/repository.mjs",
+        "services/cashier-api/src/sql-repository.mjs",
+        "services/cashier-api/test/handlers.test.mjs"
+      ]
     },
     {
       "id": "operator-recovery-queue-implemented",
       "category": "operations",
-      "status": "blocked",
+      "status": "complete",
       "publicBetaBlocker": true,
-      "description": "Operator recovery queue enforces auth, audit logging, and two-person approval."
+      "description": "Operator recovery queue enforces auth, audit logging, and two-person approval.",
+      "evidence": [
+        "services/cashier-api/src/handlers.mjs",
+        "services/cashier-api/src/repository.mjs",
+        "services/cashier-api/src/sql-repository.mjs",
+        "services/cashier-api/test/handlers.test.mjs",
+        "services/cashier-api/test/sql-repository.test.mjs"
+      ]
     },
     {
       "id": "daily-reconciliation-export-implemented",
       "category": "operations",
-      "status": "blocked",
+      "status": "complete",
       "publicBetaBlocker": true,
-      "description": "Daily reconciliation export compares cashier state, provider state, and chain evidence."
+      "description": "Daily reconciliation export compares cashier state, provider state, and chain evidence.",
+      "evidence": [
+        "services/cashier-api/src/reconciliation.mjs",
+        "services/cashier-api/src/handlers.mjs",
+        "services/cashier-api/src/sql-repository.mjs",
+        "services/cashier-api/test/handlers.test.mjs",
+        "services/cashier-api/test/sql-repository.test.mjs"
+      ]
     }
   ]
 }

@@ -24,6 +24,9 @@ export function createInMemoryCashierRepository(seed = {}) {
   const recoveryApprovals = new Map(
     (seed.recoveryApprovals ?? []).map((approval) => [approval.id, clone(approval)]),
   );
+  const auditEvents = new Map(
+    (seed.auditEvents ?? []).map((event) => [event.id, clone(event)]),
+  );
   const bridgeEvents = new Map(
     (seed.bridgeEvents ?? []).map((event) => [event.idempotencyKey, clone(event)]),
   );
@@ -74,6 +77,13 @@ export function createInMemoryCashierRepository(seed = {}) {
     async listDepositIntentsByUser(userId) {
       return [...depositIntents.values()]
         .filter((intent) => intent.userId === userId)
+        .sort(descCreatedAt)
+        .map(clone);
+    },
+
+    async listDepositIntentsForReconciliation(businessDate) {
+      return [...depositIntents.values()]
+        .filter((intent) => toBusinessDate(intent.createdAt) === businessDate)
         .sort(descCreatedAt)
         .map(clone);
     },
@@ -143,10 +153,31 @@ export function createInMemoryCashierRepository(seed = {}) {
         .map(clone);
     },
 
+    async recordAuditEvent(event) {
+      auditEvents.set(event.id, clone(event));
+      return clone(event);
+    },
+
+    async listAuditEventsBySubject(subjectType, subjectId) {
+      return [...auditEvents.values()]
+        .filter((event) => event.subjectType === subjectType && event.subjectId === subjectId)
+        .sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt))
+        .map(clone);
+    },
+
     async getReconciliationReportByBusinessDate(businessDate) {
       return clone(reconciliationReports.get(businessDate));
     },
+
+    async saveReconciliationReport(report) {
+      reconciliationReports.set(report.businessDate, clone(report));
+      return clone(report);
+    },
   };
+}
+
+function toBusinessDate(value) {
+  return value ? String(value).slice(0, 10) : "";
 }
 
 function descCreatedAt(a, b) {

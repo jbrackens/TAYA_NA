@@ -17,7 +17,7 @@ const { TextArea } = Input;
 export type GoMarketSettleProps = {
   id: Id;
   lifecycle: MarketLifecycleType;
-  selections: SelectionOdd[];
+  outcomes: SelectionOdd[];
   label: string;
   onComplete: Function;
 };
@@ -33,7 +33,7 @@ export type GoMarketSettleProps = {
 const GoMarketSettle = ({
   id,
   lifecycle,
-  selections,
+  outcomes,
   label,
   onComplete,
 }: GoMarketSettleProps) => {
@@ -112,7 +112,7 @@ const GoMarketSettle = ({
               filterOption={false}
               notFoundContent={null}
             >
-              {selections?.map((item: SelectionOdd) => (
+              {outcomes?.map((item: SelectionOdd) => (
                 <Option
                   key={`outcome-${item.selectionId}`}
                   value={item.selectionId}

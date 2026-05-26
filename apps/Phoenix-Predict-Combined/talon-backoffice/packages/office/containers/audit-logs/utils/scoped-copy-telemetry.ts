@@ -3,9 +3,8 @@ export type ScopedAuditFilters = {
   actorId: string;
   targetId: string;
   userId: string;
-  freebetId: string;
-  oddsBoostId: string;
   product?: string;
+  [key: string]: string | undefined;
 };
 
 export type ScopedCopyTelemetryContext = {

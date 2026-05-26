@@ -199,8 +199,8 @@ gate_router_coexistence() {
 # GATE 7: Next.js Build
 ###############################################################################
 gate_next_build() {
-    print_gate_start "7" "Next.js Build (note: ignoreBuildErrors:true masks TS — Gate 1 is authoritative)"
-    if timeout 420 npx next build 2>&1 | tee /tmp/office_next_build.log; then
+    print_gate_start "7" "Next.js Build (package build script; Gate 1 remains authoritative for TS)"
+    if timeout 420 yarn build 2>&1 | tee /tmp/office_next_build.log; then
         print_pass
     else
         local ec=$?

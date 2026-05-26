@@ -91,6 +91,14 @@ export interface PunterData {
   lastActivity: string;
 }
 
+type PunterStatusFilter = "all" | PunterData["status"];
+
+const isPunterStatusFilter = (value: string): value is PunterStatusFilter =>
+  value === "all" ||
+  value === "active" ||
+  value === "suspended" ||
+  value === "inactive";
+
 interface PunterSearchProps {
   punters?: PunterData[];
   onPunterSelect?: (punter: PunterData) => void;
@@ -103,9 +111,8 @@ export function PunterSearch({
   isLoading = false,
 }: PunterSearchProps) {
   const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "active" | "suspended" | "inactive"
-  >("all");
+  const [statusFilter, setStatusFilter] =
+    useState<PunterStatusFilter>("all");
 
   const filteredPunters = useMemo(() => {
     return punters.filter((p) => {
@@ -215,7 +222,12 @@ export function PunterSearch({
             <Label>Status</Label>
             <StyledSelect
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
+              onChange={(e) => {
+                const nextStatusFilter = e.target.value;
+                if (isPunterStatusFilter(nextStatusFilter)) {
+                  setStatusFilter(nextStatusFilter);
+                }
+              }}
             >
               <option value="all">All</option>
               <option value="active">Active</option>

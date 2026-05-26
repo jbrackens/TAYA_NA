@@ -124,7 +124,7 @@ const normalizeGoAuditRow = (row: any): TalonAuditLog => {
     normalized.createdAt = row.created_at;
   }
   if (row.ip_address !== undefined) {
-    (normalized as any).ipAddress = row.ip_address;
+    normalized.ipAddress = row.ip_address;
   }
   return normalized;
 };
@@ -144,7 +144,7 @@ const normalizeGoAuditPagination = (
 
 const initialState: UsersDetailsSliceState = {
   basic: {} as TalonPunter,
-  recentActivities: [] as any,
+  recentActivities: [],
   betsHistory: {
     data: [],
     pagination: {},

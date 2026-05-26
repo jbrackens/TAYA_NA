@@ -21,17 +21,10 @@ const OfficeRole = {
 // but PR #48 (feat/risk-dashboard-v1) supersedes it with a proper
 // /prediction-admin/risk dashboard.
 //
-// What's left: LOGS (operator log viewer) and TERMS_AND_CONDITIONS
-// (static page). The MenuModulesPathEnum keeps USERS and
-// RISK_MANAGEMENT for backwards compatibility with sportsbook-era
+// What's left: TERMS_AND_CONDITIONS (static page). The MenuModulesPathEnum
+// keeps USERS and RISK_MANAGEMENT for backwards compatibility with legacy
 // components that still reference them for path generation.
 export const defaultMenuItems: MenuItem[] = [
-  {
-    key: "logs",
-    path: defaultMenuStructure.logs.path(),
-    label: "LOGS",
-    roles: [OfficeRole.ADMIN, OfficeRole.OPERATOR],
-  },
   {
     key: "terms-and-conditions",
     path: defaultMenuStructure

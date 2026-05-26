@@ -3,11 +3,7 @@ import { buildTableFilterOptions } from "../../../lib/utils/filters";
 import { TalonAuditLogCategory, TalonAuditLogType } from "../../../types/logs";
 
 const resolveActionCategory = (action: string): string => {
-  if (
-    action.startsWith("bet.") ||
-    action.startsWith("fixed_exotic.") ||
-    action.startsWith("prediction.")
-  ) {
+  if (action.startsWith("prediction.")) {
     return "CELL_TYPE_TRADING";
   }
   if (action.startsWith("provider.")) {
@@ -16,7 +12,7 @@ const resolveActionCategory = (action: string): string => {
   if (action.startsWith("punter.")) {
     return "CELL_TYPE_ACCOUNT";
   }
-  if (action.startsWith("market.") || action.startsWith("fixture.")) {
+  if (action.startsWith("market.")) {
     return "CELL_TYPE_OPERATIONS";
   }
   if (action.startsWith("config.")) {
@@ -40,13 +36,7 @@ export const resolveCategory = (
 };
 
 const actionTypeMap: Record<string, string> = {
-  "bet.placed": "CELL_ACTION_BET_PLACED",
-  "bet.precheck.failed": "CELL_ACTION_BET_PRECHECK_FAILED",
-  "fixed_exotic.quote.expired": "CELL_ACTION_FIXED_EXOTIC_EXPIRED",
-  "fixed_exotic.quote.accepted": "CELL_ACTION_FIXED_EXOTIC_ACCEPTED",
-  "fixed_exotic.quote.created": "CELL_ACTION_FIXED_EXOTIC_CREATED",
   "market.updated": "CELL_ACTION_MARKET_UPDATED",
-  "fixture.updated": "CELL_ACTION_FIXTURE_UPDATED",
   "config.updated": "CELL_ACTION_CONFIG_UPDATED",
   "punter.suspended": "CELL_ACTION_PUNTER_SUSPENDED",
   "provider.cancel.failed": "CELL_ACTION_PROVIDER_CANCEL_FAILED",
@@ -80,7 +70,7 @@ export const resolveProductLabel = (
   if (`${action || ""}`.trim().toLowerCase().startsWith("prediction.")) {
     return "CELL_PRODUCT_PREDICTION";
   }
-  return "CELL_PRODUCT_SPORTSBOOK";
+  return "CELL_RESULT_UNKNOWN";
 };
 
 export const resolveType = (

@@ -13,6 +13,11 @@ import (
 // interface or a method signature drifts, the build fails here.
 var _ ExchangeRepository = (*SQLRepository)(nil)
 
+type positionKey struct {
+	UserID string
+	Side   OrderSide
+}
+
 // PersistMatchAtomic applies a MatchPlan to the database in a single
 // transaction held under a per-market advisory lock.
 //
@@ -63,32 +68,16 @@ func (r *SQLRepository) PersistMatchAtomic(ctx context.Context, walletAdapter Ex
 		return ErrClosedMarket
 	}
 
-	// Authoritative oversell guard for EVERY seller in the match — the
-	// taker AND every resting maker. Pre-trade validation
-	// (ValidatePlaceOrderRequest) ran against a position snapshot that can
-	// be stale by commit time, and resting sells do not reserve shares
-	// (reserved_quantity is never written), so two resting maker sells by
-	// one user that together exceed their position both pass pre-trade and,
-	// without this check, both get credited while ApplyPositionMutation
-	// silently clamps the phantom shares to zero (UAT D-1 / codex [P1]
-	// phantom-share double-payout — D-1 closed only the taker leg; LC-31
-	// is the maker leg). We are inside the per-market advisory lock;
-	// re-read each selling user's position FOR UPDATE so we see any prior
-	// sell that already committed, and reject the whole match before any
-	// reservation/credit/position write. Sorted for deterministic lock
-	// acquisition order.
+	// Authoritative oversell guard for every seller and every new resting
+	// sell reservation. Pre-trade validation read a snapshot that can go
+	// stale before commit; this check runs under the per-market advisory lock
+	// and row locks. Existing resting sell makers consume reserved shares
+	// first, while new taker sells and newly resting sell remainders consume
+	// currently available shares.
 	soldByPosition := AggregateSoldQty(plan.PositionMutations)
-	if len(soldByPosition) > 0 {
-		keys := make([]SellerPositionKey, 0, len(soldByPosition))
-		for k := range soldByPosition {
-			keys = append(keys, k)
-		}
-		sort.Slice(keys, func(i, j int) bool {
-			if keys[i].UserID != keys[j].UserID {
-				return keys[i].UserID < keys[j].UserID
-			}
-			return keys[i].Side < keys[j].Side
-		})
+	reservationDeltas := aggregateReservationDeltas(plan.PositionReservationDeltas)
+	if len(soldByPosition) > 0 || len(reservationDeltas) > 0 {
+		keys := positionKeys(soldByPosition, reservationDeltas)
 		for _, k := range keys {
 			var owned, reserved int
 			err := tx.QueryRowContext(ctx,
@@ -98,14 +87,24 @@ func (r *SQLRepository) PersistMatchAtomic(ctx context.Context, walletAdapter Ex
 				  FOR UPDATE`,
 				k.UserID, plan.Market.ID, string(k.Side),
 			).Scan(&owned, &reserved)
+			delta := reservationDeltas[k]
+			reserveIncrease := positiveInt(delta)
+			reserveRelease := positiveInt(-delta)
+			reservedReleaseApplied := minInt(reserveRelease, reserved)
+			requiredAvailable := soldByPosition[SellerPositionKey{UserID: k.UserID, Side: k.Side}] + reserveIncrease - reservedReleaseApplied
+			if requiredAvailable < 0 {
+				requiredAvailable = 0
+			}
 			if err == sql.ErrNoRows {
-				// No position row → owns nothing on this side.
-				return ErrInsufficientPosition
+				if requiredAvailable > 0 {
+					return ErrInsufficientPosition
+				}
+				continue
 			}
 			if err != nil {
 				return fmt.Errorf("revalidate sell position: %w", err)
 			}
-			if SellExceedsOwned(soldByPosition[k], owned, reserved) {
+			if SellExceedsOwned(requiredAvailable, owned, reserved) {
 				return ErrInsufficientPosition
 			}
 		}
@@ -153,7 +152,7 @@ func (r *SQLRepository) PersistMatchAtomic(ctx context.Context, walletAdapter Ex
 		return fmt.Errorf("update taker %s: %w", plan.Taker.ID, err)
 	}
 
-	if err := r.applyPositionMutationsWithTx(ctx, tx, plan.Market.ID, plan.PositionMutations); err != nil {
+	if err := r.applyPositionChangesWithTx(ctx, tx, plan.Market.ID, plan.PositionMutations, plan.PositionReservationDeltas); err != nil {
 		return fmt.Errorf("apply positions: %w", err)
 	}
 
@@ -205,38 +204,32 @@ func (r *SQLRepository) updateOrderFillStateWithTx(ctx context.Context, tx *sql.
 		   released_cash_cents = $6,
 		   filled_cost_cents = $7,
 		   average_fill_price_cents = $8,
-		   failure_reason = $9,
-		   filled_at = $10,
-		   cancelled_at = $11,
+		   reserved_quantity = $9,
+		   failure_reason = $10,
+		   filled_at = $11,
+		   cancelled_at = $12,
 		   updated_at = NOW()
 		 WHERE id = $1`,
 		o.ID, o.FilledQuantity, o.RemainingQuantity, string(o.Status),
 		o.CapturedCashCents, o.ReleasedCashCents, o.FilledCostCents,
-		o.AverageFillPriceCents, o.FailureReason, o.FilledAt, o.CancelledAt,
+		o.AverageFillPriceCents, o.ReservedQuantity, o.FailureReason, o.FilledAt, o.CancelledAt,
 	)
 	return err
 }
 
-// applyPositionMutationsWithTx groups mutations by (user_id, side), loads
-// each existing position FOR UPDATE, applies the group's mutations in order
-// via ApplyPositionMutation, and upserts the merged result.
-//
-// reserved_quantity is preserved from the existing row (the existing UPSERT
-// clause does not overwrite it). Reserved-quantity bookkeeping for
-// resting/cancelled sell orders is handled by separate paths (TODO Lane C
-// follow-up).
-func (r *SQLRepository) applyPositionMutationsWithTx(ctx context.Context, tx *sql.Tx, marketID string, mutations []PositionMutation) error {
-	type key struct {
-		UserID string
-		Side   OrderSide
-	}
-	groups := make(map[key][]PositionMutation)
+// applyPositionChangesWithTx groups position mutations and share-reservation
+// deltas by (user_id, side), loads each position FOR UPDATE, then applies:
+// released reserved shares, fills, and newly reserved resting sell shares.
+func (r *SQLRepository) applyPositionChangesWithTx(ctx context.Context, tx *sql.Tx, marketID string, mutations []PositionMutation, reservationDeltas []PositionReservationDelta) error {
+	groups := make(map[positionKey][]PositionMutation)
 	for _, m := range mutations {
-		k := key{m.UserID, m.Side}
+		k := positionKey{m.UserID, m.Side}
 		groups[k] = append(groups[k], m)
 	}
+	reservations := aggregateReservationDeltas(reservationDeltas)
 
-	for k, ms := range groups {
+	for _, k := range positionChangeKeys(groups, reservations) {
+		ms := groups[k]
 		var p Position
 		err := tx.QueryRowContext(ctx,
 			`SELECT id, user_id, market_id, side, quantity, avg_price_cents,
@@ -257,15 +250,92 @@ func (r *SQLRepository) applyPositionMutationsWithTx(ctx context.Context, tx *sq
 			return fmt.Errorf("load position %s/%s: %w", k.UserID, k.Side, err)
 		}
 
+		delta := reservations[k]
+		if delta < 0 {
+			p.ReservedQuantity -= -delta
+			if p.ReservedQuantity < 0 {
+				p.ReservedQuantity = 0
+			}
+		}
+
 		for _, m := range ms {
 			ApplyPositionMutation(&p, m)
 		}
 
-		if err := r.upsertPositionWithExec(ctx, tx, &p); err != nil {
+		if delta > 0 {
+			if AvailableQuantity(&p) < delta {
+				return ErrInsufficientPosition
+			}
+			p.ReservedQuantity += delta
+		}
+		if p.ReservedQuantity > p.Quantity {
+			return ErrInsufficientPosition
+		}
+
+		if err := r.upsertPositionWithReservedWithExec(ctx, tx, &p); err != nil {
 			return fmt.Errorf("upsert position %s/%s: %w", k.UserID, k.Side, err)
 		}
 	}
 	return nil
+}
+
+func aggregateReservationDeltas(deltas []PositionReservationDelta) map[positionKey]int {
+	out := make(map[positionKey]int)
+	for _, d := range deltas {
+		if d.Delta == 0 {
+			continue
+		}
+		out[positionKey{UserID: d.UserID, Side: d.Side}] += d.Delta
+	}
+	return out
+}
+
+func positionKeys(sold map[SellerPositionKey]int, reservations map[positionKey]int) []positionKey {
+	seen := make(map[positionKey]struct{}, len(sold)+len(reservations))
+	for k := range sold {
+		seen[positionKey{UserID: k.UserID, Side: k.Side}] = struct{}{}
+	}
+	for k := range reservations {
+		seen[k] = struct{}{}
+	}
+	keys := make([]positionKey, 0, len(seen))
+	for k := range seen {
+		keys = append(keys, k)
+	}
+	sortPositionKeys(keys)
+	return keys
+}
+
+func positionChangeKeys(groups map[positionKey][]PositionMutation, reservations map[positionKey]int) []positionKey {
+	seen := make(map[positionKey]struct{}, len(groups)+len(reservations))
+	for k := range groups {
+		seen[k] = struct{}{}
+	}
+	for k := range reservations {
+		seen[k] = struct{}{}
+	}
+	keys := make([]positionKey, 0, len(seen))
+	for k := range seen {
+		keys = append(keys, k)
+	}
+	sortPositionKeys(keys)
+	return keys
+}
+
+func sortPositionKeys(keys []positionKey) {
+	sort.Slice(keys, func(i, j int) bool {
+		if keys[i].UserID != keys[j].UserID {
+			return keys[i].UserID < keys[j].UserID
+		}
+		return keys[i].Side < keys[j].Side
+	})
+}
+
+func positiveInt(v int) int {
+	if v > 0 {
+		return v
+	}
+	return 0
 }
 
 // insertLedgerEntriesWithTx writes ledger rows in order, computing

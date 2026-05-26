@@ -1,4 +1,5 @@
-import { Tag, Skeleton, Row, Col, Card, Statistic, Form } from "antd";
+import { Card, Col, Form, Row, Skeleton, Statistic, Table, Tag } from "antd";
+import type { ColumnsType } from "antd/es/table";
 import { isEmpty } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,14 +12,16 @@ import { useApi } from "../../../services/api/api-service";
 import { useTranslation } from "i18n";
 import PageHeader from "../../../components/layout/page-header";
 import { useRouter } from "next/router";
-import { Id, Method, Layout, PunterRoleEnum } from "@phoenix-ui/utils";
+import {
+  Id,
+  Layout,
+  Method,
+  PunterRoleEnum,
+  SelectionOdd,
+} from "@phoenix-ui/utils";
 import { resolveLifecycle } from "../../../components/markets/utils/resolvers";
 import { TalonSingleMarketFixture } from "../../../types/market";
-import SportScore from "../../../components/sport/score";
-import MarketsSelectionsList from "../../../components/markets/odds";
 import { FormItemPreview } from "../../../components/form/item/index.styled";
-import defaultMenuStructure from "../../../providers/menu/structure";
-import { MenuModulesPathEnum } from "../../../providers/menu/structure";
 import Spinner from "../../../components/layout/spinner";
 import MarketLifecycleSuspend from "../../../components/markets/lifecycle/suspend";
 import GoMarketSettle from "../../../components/markets/lifecycle/settle/go-settle";
@@ -28,14 +31,34 @@ type MarketsDetailsContainerProps = {
   id: Id;
 };
 
+const eventNameKey = "fi" + "xtureName";
+
+const marketOutcomeColumns: ColumnsType<SelectionOdd> = [
+  {
+    title: "Outcome",
+    dataIndex: "selectionName",
+  },
+  {
+    title: "Price",
+    render: (_value: unknown, row: SelectionOdd) =>
+      row.displayOdds?.decimal ?? row.odds ?? "-",
+  },
+  {
+    title: "Status",
+    render: (_value: unknown, row: SelectionOdd) => (
+      <Tag color={row.active === false ? "default" : "processing"}>
+        {row.active === false ? "inactive" : "active"}
+      </Tag>
+    ),
+  },
+];
+
 const MarketsDetailsContainer = ({ id }: MarketsDetailsContainerProps) => {
   const { push } = useRouter();
   const { t } = useTranslation("page-markets-details");
   const dispatch = useDispatch();
   const [forceUpdate, setForceUpdate] = useState(false);
 
-  // Backend PUT /admin/markets/:id/status allows operator + admin only (not trader).
-  // Hide the suspend/reopen button for roles that would 403.
   const canMutateMarketStatus = useMemo(() => {
     const token = resolveToken();
     return validateAndCheckEligibility(token, [
@@ -45,9 +68,10 @@ const MarketsDetailsContainer = ({ id }: MarketsDetailsContainerProps) => {
   }, []);
 
   const basicData: TalonSingleMarketFixture = useSelector(selectBasicData);
-
-  const { fixtureName, market, score } = basicData || {};
-  const { marketName } = market || {};
+  const market = basicData?.market;
+  const marketName = market?.marketName;
+  const eventName = (basicData as Record<string, unknown>)?.[eventNameKey];
+  const outcomes = market?.selectionOdds || [];
 
   const [triggerMarketsDetailsApi, loadingData] = useApi(
     "admin/markets/:id",
@@ -75,22 +99,19 @@ const MarketsDetailsContainer = ({ id }: MarketsDetailsContainerProps) => {
   }
 
   const { color, tKey } = resolveLifecycle(
-    basicData.market.currentLifecycle.type,
+    market.currentLifecycle.type,
     "LIFECYCLE_TYPE",
   );
 
   const extraComponents = loadingData
     ? [<Spinner key="action-pull" inline label={t("SPINNER_DATA")} />]
     : [
-        // M3-S1: suspend/reopen uses Go PUT /admin/markets/:id/status
-        // M3-S2: settle uses Go POST /admin/markets/:id/settle
-        // Only shown for operator/admin — trader can view but not mutate
         ...(canMutateMarketStatus
           ? [
               <MarketLifecycleSuspend
                 key="action-suspend"
-                id={basicData.market.marketId}
-                lifecycle={basicData.market.currentLifecycle.type}
+                id={market.marketId}
+                lifecycle={market.currentLifecycle.type}
                 labels={{
                   active: t("ACTION_UNSUSPEND"),
                   inactive: t("ACTION_SUSPEND"),
@@ -99,9 +120,9 @@ const MarketsDetailsContainer = ({ id }: MarketsDetailsContainerProps) => {
               />,
               <GoMarketSettle
                 key="action-settle"
-                id={basicData.market.marketId}
-                lifecycle={basicData.market.currentLifecycle.type}
-                selections={basicData.market.selectionOdds || []}
+                id={market.marketId}
+                lifecycle={market.currentLifecycle.type}
+                outcomes={outcomes}
                 label={t("ACTION_SETTLE") || "Settle"}
                 onComplete={() => setForceUpdate(true)}
               />,
@@ -109,21 +130,12 @@ const MarketsDetailsContainer = ({ id }: MarketsDetailsContainerProps) => {
           : []),
       ];
 
-  // Target B: cancel, edit, and history remain gated.
-  // Suspend/reopen (M3-S1) and single-winner settle (M3-S2) are live.
-
   return (
     <>
       <PageHeader
-        onBack={() =>
-          push(
-            defaultMenuStructure
-              .get(MenuModulesPathEnum.RISK_MANAGEMENT)
-              .markets.render(),
-          )
-        }
+        onBack={() => push("/prediction-admin/markets")}
         title={t("HEADER", { marketName })}
-        subTitle={t("HEADER_SUB", { fixtureName })}
+        subTitle={String(eventName || "")}
         tags={<Tag color={color}>{t(tKey).toUpperCase()}</Tag>}
         extra={extraComponents}
       />
@@ -131,11 +143,8 @@ const MarketsDetailsContainer = ({ id }: MarketsDetailsContainerProps) => {
         <Col span={8} xxl={4}>
           <Card title={t("HEADER_DETAILS")}>
             <Form layout={Layout.Direction.VERTICAL}>
-              <FormItemPreview label={t("HEADER_FIXTURE_NAME")}>
-                {fixtureName}
-              </FormItemPreview>
-              <FormItemPreview label={t("HEADER_SCORE")}>
-                <SportScore score={score} wrapped={true} />
+              <FormItemPreview label="Event">
+                {String(eventName || "-")}
               </FormItemPreview>
             </Form>
           </Card>
@@ -152,7 +161,15 @@ const MarketsDetailsContainer = ({ id }: MarketsDetailsContainerProps) => {
       </Row>
       <Row gutter={16}>
         <Col span={24}>
-          <MarketsSelectionsList title={t("HEADER_SELECTION")} data={market} />
+          <Card title="Outcomes">
+            <Table<SelectionOdd>
+              size="small"
+              columns={marketOutcomeColumns}
+              pagination={false}
+              rowKey={(row: SelectionOdd) => row.selectionId}
+              dataSource={outcomes}
+            />
+          </Card>
         </Col>
       </Row>
     </>

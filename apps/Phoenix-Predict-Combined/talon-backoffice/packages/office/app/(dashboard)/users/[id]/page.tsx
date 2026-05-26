@@ -228,18 +228,6 @@ function UserDetailPageContent() {
           setPunter(mapPunter(result));
           break;
         }
-        case "resetPassword": {
-          const response = await adminFetch(
-            `/api/v1/admin/punters/${punterId}/reset-password`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-            },
-          );
-          if (!response.ok) throw new Error("Failed to reset password");
-          await response.json();
-          break;
-        }
         case "addNote": {
           const response = await adminFetch(
             `/api/v1/admin/punters/${punterId}/notes`,

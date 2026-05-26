@@ -145,11 +145,15 @@ services:
       # Automated KYC vendor (manual back-office review works without these).
       # KYC_IDV_PROVIDER: "sumsub"   # or onfido / persona
       # KYC_IDV_API_KEY: ""
+      # Beta policy: open Asia/Africa/LATAM with trading KYC + geo gates off.
+      BETA_COMPLIANCE_MODE: "permissive"
+      COMPLIANCE_STARTUP_ACK: "true"
       # KYC just-in-time gates (manual review + admin approval already enforce).
       # KYC_ENFORCEMENT: "true"            # gate withdrawals above threshold
       # KYC_REQUIRED_FOR_TRADING: "true"   # require verified identity to trade
       # KYC_WITHDRAWAL_THRESHOLD_CENTS: "250000"
-      # Jurisdiction gate (launch policy: outside-US). Needs an edge that sets
+      # Jurisdiction gate. Leave off for permissive beta. When enabled, it needs
+      # an edge that sets
       # the country header (e.g. Cloudflare CF-IPCountry) or the gate fails
       # closed for everyone. See internal/compliance/geo_gate.go.
       # GEO_GATE_ENABLED: "true"

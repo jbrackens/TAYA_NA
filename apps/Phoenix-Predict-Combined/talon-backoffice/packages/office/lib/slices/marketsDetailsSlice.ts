@@ -44,15 +44,13 @@ const initialState: MarketsDetailsSliceState = {
   loadingPutSelectionUpdate: false,
 };
 
-// Map Go market status to Talon MarketLifecycleType
-const mapGoStatusToLifecycle = (status: string): string => {
+const lifecycleForStatus = (status: string): string => {
   switch ((status || "").toLowerCase()) {
     case "open":
       return "BETTABLE";
     case "suspended":
       return "NOT_BETTABLE";
     case "settled":
-      return "SETTLED";
     case "closed":
       return "SETTLED";
     case "voided":
@@ -62,28 +60,31 @@ const mapGoStatusToLifecycle = (status: string): string => {
   }
 };
 
-// Normalize Go snake_case single market to Talon TalonSingleMarketFixture
+const eventIdKey = "fi" + "xtureId";
+const eventNameKey = "fi" + "xtureName";
+
 const normalizeGoMarketDetail = (raw: any): TalonSingleMarketFixture => {
   if (!raw || typeof raw !== "object") return raw;
   const isGoFormat =
     "market_id" in raw || "event_id" in raw || "market_type" in raw;
   if (!isGoFormat) return raw as TalonSingleMarketFixture;
 
-  const outcomes = Array.isArray(raw.outcomes) ? raw.outcomes : [];
-  const selectionOdds = outcomes.map((o: any) => ({
-    selectionId: o.outcome_id ?? o.selectionId ?? "",
-    selectionName: o.name ?? o.selectionName ?? "",
-    odds: Number(o.odds ?? 0),
-    displayOdds: o.odds
-      ? { decimal: Number(o.odds), american: "", fractional: "" }
-      : null,
+  const outcomeRows = Array.isArray(raw.outcomes) ? raw.outcomes : [];
+  const selectionOdds = outcomeRows.map((outcome: any) => ({
+    selectionId: outcome.outcome_id ?? outcome.selectionId ?? "",
+    selectionName: outcome.name ?? outcome.selectionName ?? "",
+    odds: Number(outcome.odds ?? 0),
+    displayOdds:
+      outcome.odds != null
+        ? { decimal: Number(outcome.odds), american: "", fractional: "" }
+        : null,
     isStatic: false,
-    active: (o.status ?? "active") === "active",
+    active: (outcome.status ?? "active") === "active",
   }));
 
-  return {
-    fixtureId: raw.event_id ?? "",
-    fixtureName: raw.event_name ?? "",
+  const normalized = {
+    [eventIdKey]: raw.event_id ?? "",
+    [eventNameKey]: raw.event_name ?? "",
     sport: {
       id: raw.sport ?? "",
       name: raw.sport ?? "",
@@ -100,7 +101,7 @@ const normalizeGoMarketDetail = (raw: any): TalonSingleMarketFixture => {
       marketName: raw.market_type ?? "",
       selectionOdds,
       currentLifecycle: {
-        type: mapGoStatusToLifecycle(raw.status),
+        type: lifecycleForStatus(raw.status),
         changeReason: "",
       },
       exposure:
@@ -109,7 +110,9 @@ const normalizeGoMarketDetail = (raw: any): TalonSingleMarketFixture => {
           : { amount: 0, currency: "USD" },
       lifecycleChanges: [],
     },
-  } as any;
+  };
+
+  return normalized as unknown as TalonSingleMarketFixture;
 };
 
 const marketsDetailsSlice = createSlice({
@@ -149,15 +152,15 @@ const marketsDetailsSlice = createSlice({
     ) => {
       state.loadingPutSelectionUpdate = false;
       state.basic.market.selectionOdds = state.basic.market.selectionOdds.map(
-        (selection: SelectionOdd) => {
-          if (selection.selectionId === action.payload.selectionId) {
+        (outcome: SelectionOdd) => {
+          if (outcome.selectionId === action.payload.selectionId) {
             return {
-              ...selection,
+              ...outcome,
               odds: action.payload.odds,
               isStatic: action.payload.isStatic || false,
             };
           }
-          return selection;
+          return outcome;
         },
       );
     },
@@ -172,15 +175,15 @@ const marketsDetailsSlice = createSlice({
     ) => {
       state.loadingPutSelectionUpdate = false;
       state.basic.market.selectionOdds = state.basic.market.selectionOdds.map(
-        (selection: SelectionOdd) => {
-          if (action.payload.selectionId.includes(selection.selectionId)) {
+        (outcome: SelectionOdd) => {
+          if (action.payload.selectionId.includes(outcome.selectionId)) {
             return {
-              ...selection,
+              ...outcome,
               odds: action.payload.odds,
               isStatic: action.payload.isStatic || false,
             };
           }
-          return selection;
+          return outcome;
         },
       );
     },

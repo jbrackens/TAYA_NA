@@ -203,9 +203,7 @@ export const normalizePredictionOrders = (
 ): PredictionOrdersResponse => {
   const rawOrders = Array.isArray(payload?.orders) ? payload!.orders! : [];
   return {
-    totalCount: Number(
-      payload?.totalCount ?? (payload as any)?.total_count ?? 0,
-    ),
+    totalCount: Number(payload?.totalCount ?? payload?.total_count ?? 0),
     orders: rawOrders.map(normalizeGoOrder),
   };
 };

@@ -375,11 +375,13 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// docs/compliance/geofencing-kyc.md (depth pending legal sign-off).
 	tradeGeoGate = compliance.NewGeoGateFromEnv()
 	tradeKYCGate = kycService
+	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
+	logPreTradeComplianceMode(env, tradeGeoGate)
 	// The geo gate is intentionally default-off (depth pending legal), so a
 	// missing GEO_GATE_ENABLED fails open. Make that loud in prod/staging so a
 	// deploy that MEANT to enforce "outside-US only" but forgot the flag is a
 	// visible misconfiguration, not a silent compliance gap.
-	if env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT"))); (env == "production" || env == "staging") && !tradeGeoGate.Enabled() {
+	if (env == "production" || env == "staging") && !tradeGeoGate.Enabled() && !permissiveBetaComplianceMode() {
 		slog.Warn("geo gate DISABLED — jurisdiction policy NOT enforced; set GEO_GATE_ENABLED=true once legal sign-off lands", "environment", env)
 	}
 	// Gate prediction order placement through the same RG service instance the

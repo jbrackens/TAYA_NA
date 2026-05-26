@@ -94,6 +94,8 @@ export type MarketStatus =
   | "open"
   | "halted"
   | "closed"
+  | "proposed_resolution"
+  | "disputed"
   | "settled"
   | "voided";
 
@@ -213,6 +215,15 @@ export interface OrderPreview {
   maxLossCents: number;
   newYesPriceCents: number;
   newNoPriceCents: number;
+  executionMode?: ExecutionMode;
+  filledQuantity?: number;
+  unfilledQuantity?: number;
+  averageFillPriceCents?: number;
+  totalCostWithFeesCents?: number;
+  estimatedSlippageCents?: number;
+  quoteStatus?: OrderStatus;
+  quoteStaleAfterMillis?: number;
+  quoteGeneratedAtUnixSec?: number;
 }
 
 export interface PortfolioSummary {

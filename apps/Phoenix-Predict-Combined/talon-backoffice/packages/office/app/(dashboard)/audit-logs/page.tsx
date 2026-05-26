@@ -75,11 +75,22 @@ interface AuditLogEntry {
   dataAfter?: Record<string, any>;
 }
 
+const entityPrefixMap: Record<string, string> = {
+  p: "user",
+  m: "market",
+};
+
 const deriveEntityType = (action: string, targetId: string) => {
-  if (targetId.startsWith("p:")) return "user";
-  if (targetId.startsWith("m:")) return "market";
-  if (targetId.startsWith("f:")) return "fixture";
-  if (action.includes(".")) return action.split(".")[0];
+  const prefix = targetId.slice(0, 1);
+  if (targetId.slice(1, 2) === ":" && entityPrefixMap[prefix]) {
+    return entityPrefixMap[prefix];
+  }
+  if (action.startsWith("prediction.")) {
+    return "market";
+  }
+  if (action.includes(".")) {
+    return action.split(".")[0];
+  }
   return "system";
 };
 
@@ -197,9 +208,7 @@ function AuditLogsPageContent() {
         >
           <option value="">All Resources</option>
           <option value="user">User</option>
-          <option value="fixture">Fixture</option>
           <option value="market">Market</option>
-          <option value="odds">Odds</option>
           <option value="alert">Alert</option>
         </FilterSelect>
       </FilterBar>

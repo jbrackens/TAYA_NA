@@ -337,13 +337,6 @@ export function PunterProfile({
             </Button>
             <Button
               variant="secondary"
-              onClick={() => onAction?.("resetPassword")}
-              disabled={true}
-            >
-              Force Password Reset
-            </Button>
-            <Button
-              variant="secondary"
               onClick={() => {
                 const content = window.prompt(
                   "Add an admin note for this punter:",

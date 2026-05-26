@@ -342,6 +342,7 @@ export interface CashierCompliancePolicyInput {
   readonly perTransactionCapUnits?: string;
   readonly dailyAggregateUnits?: string;
   readonly dailyCapUnits?: string;
+  readonly complianceMode?: "enforced" | "permissive_beta";
   readonly geoAllowed: boolean;
   readonly addressScreening:
     | "clear"
@@ -1148,6 +1149,7 @@ export function evaluateCashierCompliancePolicy(
 
   const reasons: string[] = [];
   let decision: CashierCompliancePolicyResult["decision"] = "allow";
+  const permissiveBeta = input.complianceMode === "permissive_beta";
 
   const escalate = (nextDecision: CashierCompliancePolicyResult["decision"]) => {
     const rank = { allow: 0, manual_review: 1, quarantine: 2, deny: 3 };
@@ -1160,7 +1162,7 @@ export function evaluateCashierCompliancePolicy(
     reasons.push("cashier_paused");
     escalate("manual_review");
   }
-  if (!input.geoAllowed) {
+  if (!input.geoAllowed && !permissiveBeta) {
     reasons.push("geo_blocked");
     escalate("deny");
   }
@@ -1172,7 +1174,7 @@ export function evaluateCashierCompliancePolicy(
     reasons.push("address_screening_manual_review");
     escalate("manual_review");
   }
-  if (input.addressScreening === "unavailable") {
+  if (input.addressScreening === "unavailable" && !permissiveBeta) {
     reasons.push("address_screening_unavailable");
     escalate("manual_review");
   }

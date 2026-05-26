@@ -1,11 +1,19 @@
-# Phoenix Sportsbook Gateway Migrations
+# Hula Na Gateway Migrations
 
-This directory contains database migrations for the Phoenix Sportsbook Gateway service using [Goose](https://github.com/pressly/goose).
+This directory contains database migrations for the Go gateway service using [Goose](https://github.com/pressly/goose). The early files still include sportsbook-era tables because the gateway was migrated in place; prediction-market tables start at `014_prediction_schema.sql`.
+
+From the Phoenix-Predict-Combined root, validate these migrations against a clean Postgres container with:
+
+```bash
+make validate-go-migrations
+```
+
+That is the release gate for this directory. The legacy root target `make validate-migrations` validates the old Scala/Flyway backend and is not sufficient for the Go gateway schema.
 
 ## Migration Files
 
 - `001_punters.sql` - Users/punters table with authentication fields
-- `002_sports_tournaments.sql` - Sports and tournaments reference data
+- `002_sports_tournaments.sql` - Legacy sports and tournaments reference data
 - `003_fixtures.sql` - Sports fixtures/matches
 - `004_markets_selections.sql` - Betting markets and selections
 - `005_bets.sql` - User bets and their status

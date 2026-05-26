@@ -123,25 +123,6 @@ export function AccountActions({
         </ActionGroup>
 
         <ActionGroup>
-          <GroupTitle>Security</GroupTitle>
-          <ButtonGrid>
-            <StyledButton
-              variant="secondary"
-              onClick={() =>
-                handleAction(
-                  "resetPassword",
-                  "Force Password Reset",
-                  "Force this punter to reset their password on next login.",
-                )
-              }
-              disabled={isLoading}
-            >
-              Reset Password
-            </StyledButton>
-          </ButtonGrid>
-        </ActionGroup>
-
-        <ActionGroup>
           <GroupTitle>Notes & Documentation</GroupTitle>
           <ButtonGrid style={{ gridTemplateColumns: "1fr" }}>
             <StyledButton

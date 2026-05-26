@@ -45,10 +45,12 @@ These are hard blockers for public beta or mainnet funds.
 
 - Canary path implemented.
 - Dashboards and alerts created.
-- Recovery queue implemented.
-- Operator auth and two-person approval implemented.
+- Recovery queue implemented locally; still needs deployed operator-flow proof.
+- Operator auth and two-person approval implemented locally; still needs deployed
+  operator-flow proof.
 - Incident kill switches implemented.
-- Daily reconciliation export implemented.
+- Daily reconciliation export implemented locally; still needs live
+  provider/chain evidence.
 
 No item in this document may be waived silently. Any waiver needs owner, date,
 reason, compensating control, and explicit launch-risk acceptance.

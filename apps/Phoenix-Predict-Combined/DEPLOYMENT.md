@@ -52,7 +52,9 @@ Also rotate before launch (these are baked into the local `docker-compose.yml` f
 
 Note: `JWT_SECRET` is currently **vestigial** — the auth service issues opaque, Redis-backed session tokens (`atk_`/`rtk_`), not JWTs, so nothing reads it. The dev value is therefore not a live risk, but the variable and the "JWT Configuration" subsection below are stale and should be removed in a future cleanup.
 
-Activation knobs that are off by default and required for the real-money / outside-US launch (see `docker-compose.demo.yml` for the full annotated list): the crypto rail (`CRYPTO_RPC_URL`, `CRYPTO_ASSET_CONTRACT`, `CRYPTO_DEPOSIT_ADDRESS_SOURCE`), KYC enforcement (`KYC_ENFORCEMENT`, `KYC_REQUIRED_FOR_TRADING`, optional `KYC_IDV_PROVIDER`/`KYC_IDV_API_KEY`), the jurisdiction gate (`GEO_GATE_ENABLED` plus an edge country header), and email (`SMTP_HOST`).
+Beta compliance policy is explicit: set `BETA_COMPLIANCE_MODE=permissive` to disable trading KYC and geofence checks for the Asia/Africa/LATAM beta. In `production` or `staging`, that mode also requires `COMPLIANCE_STARTUP_ACK=true` so the deployed process cannot silently run with KYC/geofence disabled.
+
+Activation knobs that remain off by default and are required only when the policy changes: the crypto rail (`CRYPTO_RPC_URL`, `CRYPTO_ASSET_CONTRACT`, `CRYPTO_DEPOSIT_ADDRESS_SOURCE`), KYC enforcement (`KYC_ENFORCEMENT`, `KYC_REQUIRED_FOR_TRADING`, optional `KYC_IDV_PROVIDER`/`KYC_IDV_API_KEY`), the jurisdiction gate (`GEO_GATE_ENABLED` plus an edge country header), and email (`SMTP_HOST`).
 
 ## Environment Variables Reference
 

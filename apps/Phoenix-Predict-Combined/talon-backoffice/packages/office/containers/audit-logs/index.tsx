@@ -38,8 +38,6 @@ type AuditLogFilters = {
   actorId: string;
   targetId: string;
   userId: string;
-  freebetId: string;
-  oddsBoostId: string;
   product: string;
 };
 
@@ -56,8 +54,6 @@ const buildFilterQuery = (
   ...(filters.actorId ? { actorId: filters.actorId } : {}),
   ...(filters.targetId ? { targetId: filters.targetId } : {}),
   ...(filters.userId ? { userId: filters.userId } : {}),
-  ...(filters.freebetId ? { freebetId: filters.freebetId } : {}),
-  ...(filters.oddsBoostId ? { oddsBoostId: filters.oddsBoostId } : {}),
   ...(filters.product ? { product: filters.product } : {}),
 });
 
@@ -155,8 +151,6 @@ const AuditLogsContainer = () => {
     actorId,
     targetId,
     userId,
-    freebetId,
-    oddsBoostId,
     product,
   } = router.query as {
     p?: string | string[];
@@ -166,8 +160,6 @@ const AuditLogsContainer = () => {
     actorId?: string | string[];
     targetId?: string | string[];
     userId?: string | string[];
-    freebetId?: string | string[];
-    oddsBoostId?: string | string[];
     product?: string | string[];
   };
   const currentPage = resolveQueryPositiveInt(p, 1);
@@ -187,11 +179,9 @@ const AuditLogsContainer = () => {
       actorId: resolveQueryValue(actorId).trim(),
       targetId: resolveQueryValue(targetId).trim(),
       userId: resolveQueryValue(userId).trim(),
-      freebetId: resolveQueryValue(freebetId).trim(),
-      oddsBoostId: resolveQueryValue(oddsBoostId).trim(),
       product: resolveQueryValue(product).trim(),
     }),
-    [action, actorId, targetId, userId, freebetId, oddsBoostId, product],
+    [action, actorId, targetId, userId, product],
   );
   const appliedFilters = useMemo(
     () => ({
@@ -199,9 +189,6 @@ const AuditLogsContainer = () => {
       actorId: explicitFilters.actorId || presetFilters.actorId || "",
       targetId: explicitFilters.targetId || presetFilters.targetId || "",
       userId: explicitFilters.userId || presetFilters.userId || "",
-      freebetId: explicitFilters.freebetId || presetFilters.freebetId || "",
-      oddsBoostId:
-        explicitFilters.oddsBoostId || presetFilters.oddsBoostId || "",
       product: explicitFilters.product || presetFilters.product || "",
     }),
     [explicitFilters, presetFilters],
@@ -220,8 +207,6 @@ const AuditLogsContainer = () => {
     appliedFilters.actorId,
     appliedFilters.targetId,
     appliedFilters.userId,
-    appliedFilters.freebetId,
-    appliedFilters.oddsBoostId,
     appliedFilters.product,
     currentPage,
     pageSize,
@@ -288,8 +273,6 @@ const AuditLogsContainer = () => {
       actorId: draftFilters.actorId.trim(),
       targetId: draftFilters.targetId.trim(),
       userId: draftFilters.userId.trim(),
-      freebetId: draftFilters.freebetId.trim(),
-      oddsBoostId: draftFilters.oddsBoostId.trim(),
       product: draftFilters.product.trim(),
     };
 
@@ -314,8 +297,6 @@ const AuditLogsContainer = () => {
       actorId: selectedFilters.actorId || "",
       targetId: selectedFilters.targetId || "",
       userId: selectedFilters.userId || "",
-      freebetId: selectedFilters.freebetId || "",
-      oddsBoostId: selectedFilters.oddsBoostId || "",
       product: selectedFilters.product || "",
     };
     setDraftFilters(preset);
@@ -438,8 +419,6 @@ const AuditLogsContainer = () => {
       actorId: "",
       targetId: "",
       userId: "",
-      freebetId: "",
-      oddsBoostId: "",
       product: "",
     };
     setDraftFilters(cleared);
@@ -468,20 +447,6 @@ const AuditLogsContainer = () => {
       value: {
         title: t("HEADER_USER"),
         dataIndex: "userId",
-      },
-    },
-    {
-      index: 3,
-      value: {
-        title: t("HEADER_FREEBET"),
-        dataIndex: "freebetId",
-      },
-    },
-    {
-      index: 4,
-      value: {
-        title: t("HEADER_ODDS_BOOST"),
-        dataIndex: "oddsBoostId",
       },
     },
   ];
@@ -585,30 +550,6 @@ const AuditLogsContainer = () => {
                 }))
               }
               placeholder={t("FILTER_USER_PLACEHOLDER")}
-            />
-          </Col>
-          <Col xs={24} md={12} lg={8}>
-            <Input
-              value={draftFilters.freebetId}
-              onChange={(event) =>
-                setDraftFilters((previous) => ({
-                  ...previous,
-                  freebetId: event.target.value,
-                }))
-              }
-              placeholder={t("FILTER_FREEBET_PLACEHOLDER")}
-            />
-          </Col>
-          <Col xs={24} md={12} lg={8}>
-            <Input
-              value={draftFilters.oddsBoostId}
-              onChange={(event) =>
-                setDraftFilters((previous) => ({
-                  ...previous,
-                  oddsBoostId: event.target.value,
-                }))
-              }
-              placeholder={t("FILTER_ODDS_BOOST_PLACEHOLDER")}
             />
           </Col>
           <Col xs={24} md={12} lg={8}>

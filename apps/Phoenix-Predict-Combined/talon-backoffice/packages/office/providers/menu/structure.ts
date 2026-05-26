@@ -28,7 +28,6 @@ export enum MenuModulesPathEnum {
 }
 
 const defaultMenuStructure = initMenuBuilder()
-  .set(MenuModulesPathEnum.LOGS)
   .set(MenuModulesPathEnum.TERMS_AND_CONDITIONS);
 
 export default defaultMenuStructure;

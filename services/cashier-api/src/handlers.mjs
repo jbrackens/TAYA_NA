@@ -1,3 +1,14 @@
+import { createHash } from "node:crypto";
+import { buildDailyReconciliationReport } from "./reconciliation.mjs";
+
+const RUNTIME_FLAG_KEYS = new Set([
+  "tron_deposits_enabled",
+  "evm_deposits_enabled",
+  "withdrawals_enabled",
+  "relayer_enabled",
+  "provider_callbacks_enabled",
+]);
+
 export function createCashierHandlers({ repo, providerAdapter, now = () => new Date().toISOString() }) {
   return {
     async getWallet(ctx) {
@@ -53,7 +64,23 @@ export function createCashierHandlers({ repo, providerAdapter, now = () => new D
         createdAt: route.createdAt,
         updatedAt: route.createdAt,
       };
-      return json(201, await repo.saveDepositIntent(intent));
+      const saved = await repo.saveDepositIntent(intent);
+      await recordAudit(repo, {
+        subjectType: "deposit",
+        subjectId: saved.id,
+        eventType: "cashier.deposit_intent.created",
+        eventPayload: {
+          userId: ctx.userId,
+          rail: request.rail,
+          settlementChain: request.settlementChain,
+          provider: saved.provider,
+          providerRequestId: saved.providerRequestId,
+        },
+        actorType: "user",
+        actorId: ctx.userId,
+        createdAt: saved.createdAt ?? now(),
+      });
+      return json(201, saved);
     },
 
     async getDepositIntent(ctx, id) {
@@ -99,7 +126,24 @@ export function createCashierHandlers({ repo, providerAdapter, now = () => new D
         createdAt,
         updatedAt: createdAt,
       };
-      return json(201, await repo.saveWithdrawalIntent(intent));
+      const saved = await repo.saveWithdrawalIntent(intent);
+      await recordAudit(repo, {
+        subjectType: "withdrawal",
+        subjectId: saved.id,
+        eventType: "cashier.withdrawal_intent.created",
+        eventPayload: {
+          userId: ctx.userId,
+          settlementChain: request.settlementChain,
+          destinationAddress: request.destinationAddress,
+          asset: request.asset,
+          amountUnits: request.amountUnits,
+          userAuthorizationHash: request.userAuthorizationHash,
+        },
+        actorType: "user",
+        actorId: ctx.userId,
+        createdAt: saved.createdAt ?? createdAt,
+      });
+      return json(201, saved);
     },
 
     async ingestProviderCallback(ctx, provider, event) {
@@ -110,6 +154,24 @@ export function createCashierHandlers({ repo, providerAdapter, now = () => new D
         return json(401, { error: "invalid_provider_signature" });
       }
       const inserted = await repo.insertBridgeEvent({ ...event, provider });
+      if (inserted.inserted) {
+        await recordAudit(repo, {
+          subjectType: "bridge_event",
+          subjectId: inserted.event.id,
+          eventType: "cashier.bridge_event.inserted",
+          eventPayload: {
+            provider,
+            providerRequestId: inserted.event.providerRequestId,
+            depositIntentId: inserted.event.depositIntentId,
+            status: inserted.event.status,
+            idempotencyKey: inserted.event.idempotencyKey,
+            rawBodySha256: inserted.event.rawBodySha256,
+          },
+          actorType: "provider",
+          actorId: provider,
+          createdAt: inserted.event.createdAt ?? now(),
+        });
+      }
       return json(inserted.inserted ? 202 : 200, {
         accepted: true,
         duplicate: !inserted.inserted,
@@ -121,6 +183,48 @@ export function createCashierHandlers({ repo, providerAdapter, now = () => new D
       const auth = requireOperator(ctx);
       if (!auth.ok) return auth;
       return json(200, { recoveryCases: await repo.listRecoveryCases(filter) });
+    },
+
+    async listRuntimeFlags(ctx) {
+      const auth = requireOperator(ctx);
+      if (!auth.ok) return auth;
+      return json(200, { runtimeFlags: await repo.listRuntimeFlags() });
+    },
+
+    async setRuntimeFlag(ctx, flagKey, request) {
+      const auth = requireOperator(ctx);
+      if (!auth.ok) return auth;
+      if (!RUNTIME_FLAG_KEYS.has(flagKey)) {
+        return json(400, { error: "unsupported_runtime_flag", flagKey });
+      }
+      if (typeof request?.enabled !== "boolean") {
+        return json(400, { error: "runtime_flag_enabled_required" });
+      }
+      if (!request.reason) {
+        return json(400, { error: "runtime_flag_reason_required" });
+      }
+
+      const saved = await repo.setRuntimeFlag({
+        flagKey,
+        enabled: request.enabled,
+        reason: request.reason,
+        updatedBy: ctx.operatorId,
+        updatedAt: now(),
+      });
+      await recordAudit(repo, {
+        subjectType: "runtime_flag",
+        subjectId: flagKey,
+        eventType: "cashier.runtime_flag.changed",
+        eventPayload: {
+          enabled: saved.enabled,
+          reason: saved.reason,
+          updatedBy: saved.updatedBy,
+        },
+        actorType: "operator",
+        actorId: ctx.operatorId,
+        createdAt: saved.updatedAt,
+      });
+      return json(200, saved);
     },
 
     async getRecoveryCase(ctx, id) {
@@ -147,7 +251,36 @@ export function createCashierHandlers({ repo, providerAdapter, now = () => new D
         note: request.note,
         createdAt,
       };
-      return json(201, await repo.recordRecoveryApproval(approval));
+      const saved = await repo.recordRecoveryApproval(approval);
+      await recordAudit(repo, {
+        subjectType: "recovery_case",
+        subjectId: recoveryCaseId,
+        eventType: "cashier.recovery_case.approval_recorded",
+        eventPayload: {
+          approvalId: saved.id,
+          approvalType: saved.approvalType,
+          decision: saved.decision,
+          evidenceSha256: saved.evidenceSha256,
+        },
+        actorType: "operator",
+        actorId: ctx.operatorId,
+        createdAt: saved.createdAt ?? createdAt,
+      });
+      return json(201, saved);
+    },
+
+    async getRecoveryApprovalStatus(ctx, recoveryCaseId, approvalType) {
+      const auth = requireOperator(ctx);
+      if (!auth.ok) return auth;
+      const recoveryCase = await repo.getRecoveryCase(recoveryCaseId);
+      if (!recoveryCase) return json(404, { error: "recovery_case_not_found" });
+      const approvals = await repo.listRecoveryApprovals(recoveryCaseId);
+      return json(200, {
+        recoveryCaseId,
+        approvalType,
+        approvalCount: countApprovingOperators(approvals, approvalType),
+        twoPersonApproved: hasTwoPersonApproval(approvals, approvalType),
+      });
     },
 
     async getReconciliationReport(ctx, businessDate) {
@@ -156,6 +289,34 @@ export function createCashierHandlers({ repo, providerAdapter, now = () => new D
       const report = await repo.getReconciliationReportByBusinessDate(businessDate);
       if (!report) return json(404, { error: "reconciliation_report_not_found" });
       return json(200, report);
+    },
+
+    async generateReconciliationReport(ctx, businessDate) {
+      const auth = requireOperator(ctx);
+      if (!auth.ok) return auth;
+      const generatedAt = now();
+      const report = buildDailyReconciliationReport({
+        businessDate,
+        generatedAt,
+        generatedBy: ctx.operatorId,
+        depositIntents: await repo.listDepositIntentsForReconciliation(businessDate),
+        bridgeEvents: await repo.listBridgeEvents(),
+      });
+      const saved = await repo.saveReconciliationReport(report);
+      await recordAudit(repo, {
+        subjectType: "reconciliation_report",
+        subjectId: saved.id,
+        eventType: "cashier.reconciliation.completed",
+        eventPayload: {
+          businessDate,
+          itemCount: saved.items.length,
+          mismatchCount: saved.items.filter((item) => item.status !== "matched").length,
+        },
+        actorType: "operator",
+        actorId: ctx.operatorId,
+        createdAt: generatedAt,
+      });
+      return json(201, saved);
     },
   };
 }
@@ -184,6 +345,56 @@ function requireIdempotencyKey(ctx) {
 
 function json(status, body) {
   return { ok: status >= 200 && status < 300, status, body };
+}
+
+async function recordAudit(repo, event) {
+  const eventPayload = event.eventPayload ?? {};
+  const payloadSha256 = sha256(canonicalJson(eventPayload));
+  return repo.recordAuditEvent({
+    id:
+      event.id ??
+      `audit_local_${stableSuffix(
+        `${event.subjectType}:${event.subjectId}:${event.eventType}:${event.actorType}:${event.actorId ?? ""}:${payloadSha256}`,
+      )}`,
+    ...event,
+    eventPayload,
+    payloadSha256,
+  });
+}
+
+function canonicalJson(value) {
+  if (Array.isArray(value)) {
+    return `[${value.map(canonicalJson).join(",")}]`;
+  }
+  if (value && typeof value === "object") {
+    return `{${Object.keys(value)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function sha256(input) {
+  return createHash("sha256").update(input).digest("hex");
+}
+
+function countApprovingOperators(approvals, approvalType) {
+  return approvingOperators(approvals, approvalType).size;
+}
+
+function hasTwoPersonApproval(approvals, approvalType) {
+  return countApprovingOperators(approvals, approvalType) >= 2;
+}
+
+function approvingOperators(approvals, approvalType) {
+  const operators = new Set();
+  for (const approval of approvals) {
+    if (approval.approvalType === approvalType && approval.decision === "approve") {
+      operators.add(approval.operatorId);
+    }
+  }
+  return operators;
 }
 
 function stableSuffix(input) {

@@ -523,7 +523,7 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			return httpx.BadRequest("invalid request body", nil)
 		}
-		preview, err := svc.PreviewOrder(r.Context(), req)
+		preview, err := svc.PreviewOrderForUser(r.Context(), req, userIDFromRequest(r))
 		if err != nil {
 			return httpx.BadRequest(err.Error(), nil)
 		}

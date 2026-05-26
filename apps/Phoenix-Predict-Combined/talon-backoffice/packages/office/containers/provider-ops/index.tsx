@@ -62,6 +62,18 @@ import {
 import VerificationReviewPanel from "./verification-review";
 import CashierReviewPanel from "./cashier-review";
 
+type BetDetailLookupResponse = {
+  legs?: unknown[];
+};
+
+const extractBetLegs = (value: unknown): unknown[] => {
+  if (!value || typeof value !== "object") {
+    return [];
+  }
+  const candidate = value as BetDetailLookupResponse;
+  return Array.isArray(candidate.legs) ? candidate.legs : [];
+};
+
 const statusColor = (state: string): string => {
   const normalized = `${state || ""}`.toLowerCase();
   if (normalized === "running" || normalized === "connected") {
@@ -124,7 +136,7 @@ const ProviderOpsContainer = () => {
       "admin/bets/:id/lifecycle/:action",
       Method.POST,
     );
-  const [triggerBetDetailLookup] = useApi<Record<string, any>>(
+  const [triggerBetDetailLookup] = useApi<BetDetailLookupResponse>(
     "admin/bets/:id",
     Method.GET,
   );
@@ -516,10 +528,10 @@ const ProviderOpsContainer = () => {
     }
     const timer = setTimeout(async () => {
       try {
-        const result = await triggerBetDetailLookup(undefined, { id: betId });
-        const legs = Array.isArray((result as any)?.legs)
-          ? (result as any).legs
-          : [];
+        const result: unknown = await triggerBetDetailLookup(undefined, {
+          id: betId,
+        });
+        const legs = extractBetLegs(result);
         setBetIsMultiLeg(legs.length > 0);
         // If bet is multi-leg and settle is selected, switch to cancel
         if (legs.length > 0 && betInterventionForm.action === "settle") {

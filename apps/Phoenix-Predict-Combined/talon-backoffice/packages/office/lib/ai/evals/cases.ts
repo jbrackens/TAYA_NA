@@ -1,18 +1,18 @@
-// Golden-article fixtures for the LLM eval suite (plan §17d). Each pairs an
+// Golden article cases for the LLM eval suite (plan §17d). Each pairs an
 // article with the properties a good drafting model should satisfy. Run them
 // against the real model with runEval(createAISDKProvider()) once an endpoint +
 // key are configured; the property checks themselves are unit-tested offline.
 
 import type { EvalExpectation } from "./properties";
 
-export interface EvalFixture {
+export interface EvalCase {
   name: string;
   articleText: string;
   notes?: string;
   expectation: EvalExpectation;
 }
 
-export const EVAL_FIXTURES: EvalFixture[] = [
+export const EVAL_CASES: EvalCase[] = [
   {
     name: "clean-legal",
     articleText:

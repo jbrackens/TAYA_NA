@@ -82,6 +82,9 @@ type MatchPlan struct {
 	// the matching credit to the seller goes here. Issuance fills mint
 	// contracts (both sides pay) and produce no SellerCredits.
 	SellerCredits []SellerCredit
+	// PositionReservationDeltas locks shares for newly resting sell orders
+	// and releases those locks as resting sell makers fill.
+	PositionReservationDeltas []PositionReservationDelta
 	// FillSummary is a succinct human-readable summary for logs/WS.
 	FillSummary string
 }
@@ -116,6 +119,16 @@ type ReservationHold struct {
 	Type        string
 	ID          string
 	ExpiresIn   time.Duration
+}
+
+// PositionReservationDelta changes prediction_positions.reserved_quantity.
+// Positive values lock shares for a resting sell order; negative values
+// release shares that a resting sell maker just delivered.
+type PositionReservationDelta struct {
+	UserID   string
+	MarketID string
+	Side     OrderSide
+	Delta    int
 }
 
 // --- Validation ---
@@ -403,6 +416,15 @@ func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int,
 		maker.CapturedCashCents += int64(fillQty) * int64(fillPrice)
 	}
 	maker.FilledCostCents += int64(fillQty) * int64(fillPrice)
+	if taker.Action == OrderActionBuy && maker.Action == OrderActionSell {
+		maker.ReservedQuantity -= fillQty
+		if maker.ReservedQuantity < 0 {
+			maker.ReservedQuantity = 0
+		}
+		plan.PositionReservationDeltas = append(plan.PositionReservationDeltas, PositionReservationDelta{
+			UserID: maker.UserID, MarketID: plan.Market.ID, Side: maker.Side, Delta: -fillQty,
+		})
+	}
 	if maker.RemainingQuantity == 0 {
 		maker.Status = OrderStatusFilled
 		filled := now
@@ -621,6 +643,12 @@ func applyTIF(plan *MatchPlan, taker *Order) error {
 			taker.Status = OrderStatusPartial
 		} else {
 			taker.Status = OrderStatusOpen
+		}
+		if taker.Action == OrderActionSell {
+			taker.ReservedQuantity = taker.RemainingQuantity
+			plan.PositionReservationDeltas = append(plan.PositionReservationDeltas, PositionReservationDelta{
+				UserID: taker.UserID, MarketID: plan.Market.ID, Side: taker.Side, Delta: taker.RemainingQuantity,
+			})
 		}
 		return nil
 	default:

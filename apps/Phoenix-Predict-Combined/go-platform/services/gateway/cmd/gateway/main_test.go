@@ -218,3 +218,45 @@ func TestValidateGatewayRuntimeConfigAllowsRealSecretsInProduction(t *testing.T)
 		t.Fatalf("expected production with real secrets to validate, got %v", err)
 	}
 }
+
+func TestValidateGatewayRuntimeConfigRequiresAckForPermissiveBetaComplianceInDeployedEnvs(t *testing.T) {
+	err := validateGatewayRuntimeConfig(func(key string) string {
+		switch key {
+		case "ENVIRONMENT":
+			return "staging"
+		case "PAYMENTS_WEBHOOK_SECRET":
+			return "whsec_a-real-and-strong-secret"
+		case "GATEWAY_DB_DSN", "WALLET_DB_DSN":
+			return "postgres://predict:S3cure-Prod-Pass@db.internal:5432/predict?sslmode=require"
+		case "BETA_COMPLIANCE_MODE":
+			return "permissive"
+		default:
+			return ""
+		}
+	})
+	if err == nil {
+		t.Fatalf("expected deployed permissive beta compliance mode to require COMPLIANCE_STARTUP_ACK=true")
+	}
+}
+
+func TestValidateGatewayRuntimeConfigAllowsAckedPermissiveBetaComplianceInDeployedEnvs(t *testing.T) {
+	err := validateGatewayRuntimeConfig(func(key string) string {
+		switch key {
+		case "ENVIRONMENT":
+			return "staging"
+		case "PAYMENTS_WEBHOOK_SECRET":
+			return "whsec_a-real-and-strong-secret"
+		case "GATEWAY_DB_DSN", "WALLET_DB_DSN":
+			return "postgres://predict:S3cure-Prod-Pass@db.internal:5432/predict?sslmode=require"
+		case "BETA_COMPLIANCE_MODE":
+			return "permissive"
+		case "COMPLIANCE_STARTUP_ACK":
+			return "true"
+		default:
+			return ""
+		}
+	})
+	if err != nil {
+		t.Fatalf("expected acknowledged permissive beta compliance mode to validate, got %v", err)
+	}
+}

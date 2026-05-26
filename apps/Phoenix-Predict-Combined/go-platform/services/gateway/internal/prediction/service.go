@@ -396,11 +396,221 @@ func (s *Service) ListRecentDriftAlerts(ctx context.Context, lookback time.Durat
 
 // PreviewOrder returns a cost preview for a proposed order without executing it.
 func (s *Service) PreviewOrder(ctx context.Context, req PlaceOrderRequest) (*OrderPreview, error) {
+	return s.PreviewOrderForUser(ctx, req, "")
+}
+
+// PreviewOrderForUser previews a proposed order without executing it. The user
+// id is optional for buy previews; sell previews and self-match checks need it
+// to reflect the same constraints the execution path will enforce.
+func (s *Service) PreviewOrderForUser(ctx context.Context, req PlaceOrderRequest, userID string) (*OrderPreview, error) {
 	market, err := s.repo.GetMarket(ctx, req.MarketID)
 	if err != nil {
 		return nil, fmt.Errorf("market not found: %w", err)
 	}
-	return s.amm.PreviewTrade(market, req.Side, req.Action, req.Quantity)
+	if market.ExecutionMode == ExecutionModeOrderBook {
+		return s.previewExchangeOrder(ctx, req, userID, market)
+	}
+	preview, err := s.amm.PreviewTrade(market, req.Side, req.Action, req.Quantity)
+	if err != nil {
+		return nil, err
+	}
+	preview.ExecutionMode = ExecutionModeAMM
+	preview.FilledQuantity = req.Quantity
+	preview.UnfilledQuantity = 0
+	preview.AverageFillPriceCents = preview.PriceCents
+	preview.TotalCostWithFeesCents = preview.TotalCost + preview.FeeCents
+	preview.QuoteStatus = OrderStatusFilled
+	preview.QuoteStaleAfterMillis = int64((5 * time.Second) / time.Millisecond)
+	preview.QuoteGeneratedAtUnixSec = time.Now().UTC().Unix()
+	return preview, nil
+}
+
+func (s *Service) previewExchangeOrder(ctx context.Context, req PlaceOrderRequest, userID string, market *Market) (*OrderPreview, error) {
+	exchangeRepo, ok := s.repo.(ExchangeRepository)
+	if !ok {
+		return nil, fmt.Errorf("order-book preview requires SQL repository support")
+	}
+	if req.Action == OrderActionSell && strings.TrimSpace(userID) == "" {
+		return nil, fmt.Errorf("authentication required to preview sell orders")
+	}
+
+	var position *Position
+	if req.Action == OrderActionSell {
+		p, err := s.repo.GetPosition(ctx, userID, req.MarketID, req.Side)
+		if err == nil {
+			position = p
+		}
+	}
+	if err := ValidatePlaceOrderRequest(req, market, position); err != nil {
+		return nil, err
+	}
+
+	tif := req.TimeInForce
+	if tif == "" {
+		tif = TIFGTC
+	}
+	if req.OrderType == OrderTypeMarket {
+		tif = TIFIOC
+	}
+	smAction := req.SelfMatchAction
+	if smAction == "" {
+		smAction = SelfMatchCancelTaker
+	}
+
+	now := time.Now().UTC()
+	taker := Order{
+		ID:                "preview-taker",
+		UserID:            strings.TrimSpace(userID),
+		MarketID:          req.MarketID,
+		Side:              req.Side,
+		Action:            req.Action,
+		OrderType:         req.OrderType,
+		PriceCents:        req.PriceCents,
+		Quantity:          req.Quantity,
+		RemainingQuantity: req.Quantity,
+		Status:            OrderStatusPending,
+		TimeInForce:       tif,
+		PostOnly:          req.PostOnly,
+		SelfMatchAction:   smAction,
+		NotionalCapCents:  req.NotionalCapCents,
+		ReservedCashCents: worstCaseSpend(req),
+		TotalCostCents:    worstCaseSpend(req),
+		CreatedAt:         now,
+		UpdatedAt:         now,
+	}
+
+	makersSec, err := exchangeRepo.LoadMakersForSecondary(ctx, market.ID, req.Side, req.Action, req.PriceCents, MaxOrderBookDepth)
+	if err != nil {
+		return nil, fmt.Errorf("load secondary makers: %w", err)
+	}
+	var makersIss []Order
+	if req.Action == OrderActionBuy {
+		otherSide := OrderSideNo
+		if req.Side == OrderSideNo {
+			otherSide = OrderSideYes
+		}
+		takerLimit := MaxTickPriceCents
+		if req.PriceCents != nil {
+			takerLimit = *req.PriceCents
+		}
+		makersIss, err = exchangeRepo.LoadMakersForIssuance(ctx, market.ID, otherSide, takerLimit, MaxOrderBookDepth)
+		if err != nil {
+			return nil, fmt.Errorf("load issuance makers: %w", err)
+		}
+	}
+
+	seq := 0
+	plan, err := NewExchangeEngine().BuildPlan(MatchInput{
+		Market:          *market,
+		Taker:           taker,
+		MakersSecondary: makersSec,
+		MakersIssuance:  makersIss,
+		TakerPosition:   position,
+		Now:             now,
+		IDFactory: func() string {
+			seq++
+			return fmt.Sprintf("preview-%d", seq)
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return orderBookPreviewFromPlan(req, market, plan, now), nil
+}
+
+func orderBookPreviewFromPlan(req PlaceOrderRequest, market *Market, plan *MatchPlan, now time.Time) *OrderPreview {
+	filledQty := plan.Taker.FilledQuantity
+	unfilledQty := plan.Taker.RemainingQuantity
+	totalCost := plan.Taker.CapturedCashCents
+	if req.Action == OrderActionSell {
+		totalCost = 0
+	}
+
+	var feeCents int64
+	for _, trade := range plan.Trades {
+		if trade.BuyOrderID != nil && *trade.BuyOrderID == plan.Taker.ID {
+			feeCents += int64(trade.FeeCents)
+			continue
+		}
+		if trade.SellOrderID != nil && *trade.SellOrderID == plan.Taker.ID {
+			feeCents += int64(trade.FeeCents)
+		}
+	}
+
+	avg := 0
+	if filledQty > 0 && plan.Taker.FilledCostCents > 0 {
+		avg = int((plan.Taker.FilledCostCents + int64(filledQty) - 1) / int64(filledQty))
+	}
+	price := avg
+	if price == 0 && req.PriceCents != nil {
+		price = *req.PriceCents
+	}
+	if price == 0 {
+		if req.Side == OrderSideYes {
+			price = market.YesPriceCents
+		} else {
+			price = market.NoPriceCents
+		}
+	}
+
+	referencePrice := price
+	if req.PriceCents != nil {
+		referencePrice = *req.PriceCents
+	} else if req.Side == OrderSideYes {
+		referencePrice = market.YesPriceCents
+	} else {
+		referencePrice = market.NoPriceCents
+	}
+	slippage := 0
+	if avg > 0 && req.Action == OrderActionBuy {
+		slippage = avg - referencePrice
+		if slippage < 0 {
+			slippage = 0
+		}
+	}
+
+	maxLoss := totalCost + feeCents
+	maxProfit := int64(0)
+	if req.Action == OrderActionBuy {
+		maxProfit = int64(filledQty)*int64(ParPriceCents) - maxLoss
+		if maxProfit < 0 {
+			maxProfit = 0
+		}
+	}
+
+	newYesPrice := market.YesPriceCents
+	newNoPrice := market.NoPriceCents
+	if plan.Market.LastTradePriceCents != nil {
+		if req.Side == OrderSideYes {
+			newYesPrice = *plan.Market.LastTradePriceCents
+			newNoPrice = ParPriceCents - newYesPrice
+		} else {
+			newNoPrice = *plan.Market.LastTradePriceCents
+			newYesPrice = ParPriceCents - newNoPrice
+		}
+	}
+
+	return &OrderPreview{
+		Side:                    req.Side,
+		Action:                  req.Action,
+		Quantity:                req.Quantity,
+		PriceCents:              price,
+		TotalCost:               totalCost,
+		FeeCents:                feeCents,
+		MaxProfit:               maxProfit,
+		MaxLoss:                 maxLoss,
+		NewYesPrice:             newYesPrice,
+		NewNoPrice:              newNoPrice,
+		ExecutionMode:           ExecutionModeOrderBook,
+		FilledQuantity:          filledQty,
+		UnfilledQuantity:        unfilledQty,
+		AverageFillPriceCents:   avg,
+		TotalCostWithFeesCents:  totalCost + feeCents,
+		EstimatedSlippageCents:  slippage,
+		QuoteStatus:             plan.Taker.Status,
+		QuoteStaleAfterMillis:   int64((3 * time.Second) / time.Millisecond),
+		QuoteGeneratedAtUnixSec: now.Unix(),
+	}
 }
 
 // PlaceOrder executes a market order against the AMM.
@@ -1023,8 +1233,7 @@ func (s *Service) cancelExchangeOrder(ctx context.Context, exchangeWallet Exchan
 // so the wallet reservation release commits with the status update, then
 // reconciles the RG committed stake (release reserved−captured, scoped to
 // the order's original commit period — D-5). Buy orders had cash held; sell
-// orders had shares reserved (TODO follow-up for resting-sell
-// reserved_quantity bookkeeping).
+// orders had shares reserved and those share locks are released here.
 func (s *Service) finalizeRestingExchangeOrder(ctx context.Context, exchangeWallet ExchangeWalletAdapter, order *Order, terminal OrderStatus) error {
 	tx, err := exchangeWallet.BeginExchangeTx(ctx)
 	if err != nil {
@@ -1036,6 +1245,17 @@ func (s *Service) finalizeRestingExchangeOrder(ctx context.Context, exchangeWall
 	// never had a reservation (e.g., a sell), this is a no-op at the wallet.
 	if err := exchangeWallet.ReleaseReservationWithTx(ctx, tx, "prediction_order", order.ID); err != nil {
 		return fmt.Errorf("release reservation: %w", err)
+	}
+	if order.Action == OrderActionSell && order.RemainingQuantity > 0 {
+		if _, err := tx.ExecContext(ctx,
+			`UPDATE prediction_positions
+			    SET reserved_quantity = GREATEST(reserved_quantity - $4, 0),
+			        updated_at = NOW()
+			  WHERE user_id = $1 AND market_id = $2 AND side = $3`,
+			order.UserID, order.MarketID, string(order.Side), order.RemainingQuantity,
+		); err != nil {
+			return fmt.Errorf("release reserved shares: %w", err)
+		}
 	}
 
 	// Update order row inside the same tx via direct SQL — we don't have a
@@ -1055,6 +1275,7 @@ func (s *Service) finalizeRestingExchangeOrder(ctx context.Context, exchangeWall
 	if err := tx.QueryRowContext(ctx,
 		`UPDATE prediction_orders
 		   SET status = $2,
+		       reserved_quantity = 0,
 		       cancelled_at = $3,
 		       updated_at = NOW()
 		 WHERE id = $1

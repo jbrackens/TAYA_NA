@@ -66,6 +66,7 @@ interface TradeTicketProps {
   onPreview?: (
     side: OrderSide,
     quantity: number,
+    opts?: TradeTicketSubmitOptions,
   ) => Promise<OrderPreview | null>;
   /**
    * Submit handler returns the gateway's PlaceOrderResponse so the ticket
@@ -137,7 +138,7 @@ export function TradeTicket({
   authLoading,
   availableYesShares = 0,
   availableNoShares = 0,
-  onPreview: _onPreview,
+  onPreview,
   onSubmit,
   onSideChange,
 }: TradeTicketProps) {
@@ -151,6 +152,8 @@ export function TradeTicket({
   const [limitPriceCents, setLimitPriceCents] = useState<number>(
     side === "yes" ? market.yesPriceCents : market.noPriceCents,
   );
+  const [preview, setPreview] = useState<OrderPreview | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const toast = useToast();
@@ -177,24 +180,88 @@ export function TradeTicket({
     () => (price > 0 ? Math.max(0, amount / (price / 100)) : 0),
     [amount, price],
   );
-  const shares = quantity;
+  const requestedQuantity = Math.floor(quantity);
+
+  useEffect(() => {
+    if (!onPreview || !isOpen || requestedQuantity < 1) {
+      setPreview(null);
+      setPreviewLoading(false);
+      return;
+    }
+    let cancelled = false;
+    const opts: TradeTicketSubmitOptions = {
+      orderType: mode,
+      action,
+    };
+    if (isExchange && mode === "limit") {
+      opts.priceCents = limitPriceCents;
+      opts.timeInForce = "gtc";
+    } else if (action === "buy") {
+      opts.notionalCapCents = Math.ceil(amount * 100);
+    }
+    setPreviewLoading(true);
+    onPreview(side, requestedQuantity, opts)
+      .then((quote) => {
+        if (!cancelled) setPreview(quote);
+      })
+      .catch(() => {
+        if (!cancelled) setPreview(null);
+      })
+      .finally(() => {
+        if (!cancelled) setPreviewLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    action,
+    amount,
+    isExchange,
+    isOpen,
+    limitPriceCents,
+    mode,
+    onPreview,
+    requestedQuantity,
+    side,
+  ]);
+
+  const previewFilledQuantity = preview?.filledQuantity;
+  const shares =
+    typeof previewFilledQuantity === "number" && action === "buy"
+      ? previewFilledQuantity
+      : quantity;
   const payout = shares * 1; // winning contracts pay $1 each
-  const impliedProb = price; // cents are already 0-100, readable as %
+  const summaryPrice =
+    preview?.averageFillPriceCents || preview?.priceCents || price;
+  const impliedProb = summaryPrice; // cents are already 0-100, readable as %
+  const effectiveSpend =
+    action === "buy" && typeof preview?.totalCostWithFeesCents === "number"
+      ? preview.totalCostWithFeesCents / 100
+      : amount;
   const hasKnownBalance = typeof balance === "number";
   // Cash-side check applies only to buys. Sells require enough position.
   const insufficientFunds =
-    action === "buy" && isAuthenticated && hasKnownBalance && amount > balance;
+    action === "buy" &&
+    isAuthenticated &&
+    hasKnownBalance &&
+    effectiveSpend > balance;
   const insufficientShares =
     action === "sell" &&
     isAuthenticated &&
     Math.floor(quantity) > availableShares;
+  const marketBuyHasNoLiquidity =
+    isExchange &&
+    mode === "market" &&
+    action === "buy" &&
+    preview?.quoteStatus === "cancelled" &&
+    preview.filledQuantity === 0;
   const loginReturnPath = `/market/${market.ticker}?side=${side}&amount=${amount.toFixed(2)}`;
   const loginHref = `/auth/login?returnUrl=${encodeURIComponent(loginReturnPath)}`;
 
   const handleSubmit = useCallback(async () => {
     if (!onSubmit) return;
     if (!isAuthenticated || authLoading || !isOpen) return;
-    if (insufficientFunds || insufficientShares) return;
+    if (insufficientFunds || insufficientShares || marketBuyHasNoLiquidity) return;
     if (quantity < 1) {
       setError(t("AMOUNT_TOO_SMALL"));
       return;
@@ -355,6 +422,7 @@ export function TradeTicket({
     authLoading,
     insufficientFunds,
     insufficientShares,
+    marketBuyHasNoLiquidity,
     isOpen,
     isExchange,
     mode,
@@ -892,7 +960,9 @@ export function TradeTicket({
             <div className="tt-summary">
               <div className="tt-summary-row">
                 <span className="k">{t("AVG_FILL_PRICE")}</span>
-                <span className="v">{price}¢</span>
+                <span className="v">
+                  {previewLoading ? t("LOADING") : `${summaryPrice}¢`}
+                </span>
               </div>
               <div className="tt-summary-row">
                 <span className="k">{t("IMPLIED_PROB")}</span>
@@ -932,6 +1002,20 @@ export function TradeTicket({
                   {t("BALANCE_BELOW_ORDER", { amount: amount.toFixed(2) })}
                 </p>
               </>
+            ) : marketBuyHasNoLiquidity ? (
+              <>
+                <button type="button" className="tt-cta" disabled>
+                  {t("ORDER_STATUS", { status: t("CANCELLED_NO_LIQUIDITY") })}
+                </button>
+                <p className="tt-state-note" role="alert">
+                  {t("ORDER_STATUS_BODY", {
+                    quantity: requestedQuantity,
+                    side: side.toUpperCase(),
+                    ticker: market.ticker,
+                    reason: t("CANCELLED_NO_LIQUIDITY"),
+                  })}
+                </p>
+              </>
             ) : insufficientShares ? (
               <>
                 <button type="button" className="tt-cta" disabled>
@@ -969,7 +1053,7 @@ export function TradeTicket({
             )}
 
             <p className="tt-trust">
-              {t("TRADE_TRUST_NOTE", { price, probability: impliedProb })}
+              {t("TRADE_TRUST_NOTE", { price: summaryPrice, probability: impliedProb })}
             </p>
 
             {/* Suppress unused-warning: API surface preserved for Phase 4 */}

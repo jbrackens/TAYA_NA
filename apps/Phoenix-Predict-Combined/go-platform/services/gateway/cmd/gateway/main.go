@@ -226,6 +226,17 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 			return fmt.Errorf("%s must not be set in production: legacy custodial cashier rail is prototype-only; use non-custodial cashier services instead", key)
 		}
 	}
+
+	complianceMode := strings.ToLower(strings.TrimSpace(getenv("BETA_COMPLIANCE_MODE")))
+	if complianceMode == "" {
+		complianceMode = strings.ToLower(strings.TrimSpace(getenv("COMPLIANCE_MODE")))
+	}
+	switch complianceMode {
+	case "permissive", "permissive_beta", "beta_permissive":
+		if !strings.EqualFold(strings.TrimSpace(getenv("COMPLIANCE_STARTUP_ACK")), "true") {
+			return fmt.Errorf("permissive beta compliance mode disables KYC/geofence gates; set COMPLIANCE_STARTUP_ACK=true when ENVIRONMENT=%s to acknowledge this beta policy", env)
+		}
+	}
 	return nil
 }
 

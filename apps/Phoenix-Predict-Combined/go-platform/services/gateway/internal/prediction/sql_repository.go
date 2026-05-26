@@ -637,7 +637,7 @@ func (r *SQLRepository) UpdateOrder(ctx context.Context, o *Order) error {
 func (r *SQLRepository) ListPositions(ctx context.Context, userID string) ([]Position, error) {
 	rows, err := r.db.QueryContext(ctx,
 		`SELECT id, user_id, market_id, side, quantity, avg_price_cents, total_cost_cents,
-		        realized_pnl_cents, created_at, updated_at
+		        realized_pnl_cents, reserved_quantity, created_at, updated_at
 		 FROM prediction_positions WHERE user_id = $1 AND quantity > 0
 		 ORDER BY updated_at DESC`, userID)
 	if err != nil {
@@ -649,7 +649,7 @@ func (r *SQLRepository) ListPositions(ctx context.Context, userID string) ([]Pos
 	for rows.Next() {
 		var p Position
 		if err := rows.Scan(&p.ID, &p.UserID, &p.MarketID, &p.Side, &p.Quantity,
-			&p.AvgPriceCents, &p.TotalCostCents, &p.RealizedPnlCents, &p.CreatedAt, &p.UpdatedAt); err != nil {
+			&p.AvgPriceCents, &p.TotalCostCents, &p.RealizedPnlCents, &p.ReservedQuantity, &p.CreatedAt, &p.UpdatedAt); err != nil {
 			return nil, err
 		}
 		positions = append(positions, p)
@@ -695,10 +695,30 @@ func (r *SQLRepository) upsertPositionWithExec(ctx context.Context, execer sqlRo
 	).Scan(&p.ID, &p.CreatedAt, &p.UpdatedAt)
 }
 
+func (r *SQLRepository) upsertPositionWithReservedWithExec(ctx context.Context, execer sqlRowExecer, p *Position) error {
+	if err := r.ensurePunterExistsWithExec(ctx, execer, p.UserID); err != nil {
+		return err
+	}
+	return execer.QueryRowContext(ctx,
+		`INSERT INTO prediction_positions
+		   (user_id, market_id, side, quantity, avg_price_cents, total_cost_cents, realized_pnl_cents, reserved_quantity)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		 ON CONFLICT (user_id, market_id, side) DO UPDATE SET
+		   quantity = EXCLUDED.quantity,
+		   avg_price_cents = EXCLUDED.avg_price_cents,
+		   total_cost_cents = EXCLUDED.total_cost_cents,
+		   realized_pnl_cents = EXCLUDED.realized_pnl_cents,
+		   reserved_quantity = EXCLUDED.reserved_quantity,
+		   updated_at = NOW()
+		 RETURNING id, created_at, updated_at`,
+		p.UserID, p.MarketID, p.Side, p.Quantity, p.AvgPriceCents, p.TotalCostCents, p.RealizedPnlCents, p.ReservedQuantity,
+	).Scan(&p.ID, &p.CreatedAt, &p.UpdatedAt)
+}
+
 func (r *SQLRepository) ListPositionsByMarket(ctx context.Context, marketID string) ([]Position, error) {
 	rows, err := r.db.QueryContext(ctx,
 		`SELECT id, user_id, market_id, side, quantity, avg_price_cents, total_cost_cents,
-		        realized_pnl_cents, created_at, updated_at
+		        realized_pnl_cents, reserved_quantity, created_at, updated_at
 		 FROM prediction_positions WHERE market_id = $1 AND quantity > 0`, marketID)
 	if err != nil {
 		return nil, err
@@ -709,7 +729,7 @@ func (r *SQLRepository) ListPositionsByMarket(ctx context.Context, marketID stri
 	for rows.Next() {
 		var p Position
 		if err := rows.Scan(&p.ID, &p.UserID, &p.MarketID, &p.Side, &p.Quantity,
-			&p.AvgPriceCents, &p.TotalCostCents, &p.RealizedPnlCents, &p.CreatedAt, &p.UpdatedAt); err != nil {
+			&p.AvgPriceCents, &p.TotalCostCents, &p.RealizedPnlCents, &p.ReservedQuantity, &p.CreatedAt, &p.UpdatedAt); err != nil {
 			return nil, err
 		}
 		positions = append(positions, p)

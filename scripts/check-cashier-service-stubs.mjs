@@ -12,6 +12,7 @@ import {
   summarizeReconciliationReport,
 } from "../packages/cashier-sdk/.tmp-test-dist/index.js";
 import { createCashierHandlers } from "../services/cashier-api/src/handlers.mjs";
+import { createCashierRepositoryFromEnv } from "../services/cashier-api/src/bootstrap.mjs";
 import { createInMemoryCashierRepository } from "../services/cashier-api/src/repository.mjs";
 import {
   renderCanaryReport,
@@ -46,6 +47,22 @@ const repo = createInMemoryCashierRepository({
   recoveryApprovals: [fixtures.recoveryApproval],
   reconciliationReports: [fixtures.reconciliationReport],
 });
+await assert.rejects(
+  () =>
+    createCashierRepositoryFromEnv({
+      env: { NODE_ENV: "production", CASHIER_REPOSITORY_BACKEND: "memory" },
+    }),
+  /cashier_in_memory_repository_forbidden/,
+);
+const bootstrappedMemory = await createCashierRepositoryFromEnv({
+  env: { NODE_ENV: "test", CASHIER_REPOSITORY_BACKEND: "memory" },
+  seed: { wallets: [fixtures.wallet] },
+});
+assert.equal(bootstrappedMemory.backend, "memory");
+assert.equal(
+  (await bootstrappedMemory.repo.getWalletByUserId(fixtures.wallet.userId)).smartWalletAddress,
+  fixtures.wallet.smartWalletAddress,
+);
 const providerAdapter = createLocalProviderAdapter({ rootDir: root });
 const handlers = createCashierHandlers({
   repo,

@@ -2,7 +2,6 @@ import { useTranslation } from "i18n";
 import { useState } from "react";
 import { App, Upload, Button, InputNumber, Card, Form, Spin } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-// @ts-ignore
 import mammoth from "mammoth";
 import { useApi } from "../../services/api/api-service";
 import { Method } from "@phoenix-ui/utils";

@@ -1,4 +1,4 @@
-// LLM eval runner (plan §17d). Runs the drafter on each golden fixture and
+// LLM eval runner (plan §17d). Runs the drafter on each golden case and
 // scores it with the deterministic property checks.
 //
 // Real-model run (needs AI_HARD_*/AI_ROUTINE_* configured + reachable):
@@ -9,7 +9,7 @@
 import type { ModelProvider } from "../provider-types";
 import { draftMarketsFromArticle } from "../marketDrafter";
 import { evaluateDraft } from "./properties";
-import { EVAL_FIXTURES, type EvalFixture } from "./fixtures";
+import { EVAL_CASES, type EvalCase } from "./cases";
 
 export interface EvalReport {
   name: string;
@@ -19,17 +19,17 @@ export interface EvalReport {
 
 export async function runEval(
   provider: ModelProvider,
-  fixtures: EvalFixture[] = EVAL_FIXTURES,
+  cases: EvalCase[] = EVAL_CASES,
 ): Promise<EvalReport[]> {
   const reports: EvalReport[] = [];
-  for (const fixture of fixtures) {
+  for (const currentCase of cases) {
     const result = await draftMarketsFromArticle(provider, {
-      articleText: fixture.articleText,
-      userNotes: fixture.notes,
+      articleText: currentCase.articleText,
+      userNotes: currentCase.notes,
     });
-    const outcome = evaluateDraft(fixture.expectation, result);
+    const outcome = evaluateDraft(currentCase.expectation, result);
     reports.push({
-      name: fixture.name,
+      name: currentCase.name,
       passed: outcome.passed,
       failures: outcome.failures,
     });

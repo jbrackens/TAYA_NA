@@ -88,6 +88,9 @@ module.exports = {
   compiler: {
     styledComponents: true,
   },
+  experimental: {
+    optimizePackageImports: [],
+  },
   trailingSlash: true,
   // Without `skipTrailingSlashRedirect`, Next.js auto-308s `/foo` → `/foo/`
   // before applying the `/api/v1/:path*` rewrite. That breaks admin GETs

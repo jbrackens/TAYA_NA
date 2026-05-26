@@ -1,23 +1,22 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { TalonFixture } from "../../types/fixture";
-import { Id, FixtureStatus } from "@phoenix-ui/utils";
-import { Overwrite } from "utility-types";
+import { Id } from "@phoenix-ui/utils";
 
 export type FixturesDetailsSliceState = {
-  basic: TalonFixture;
+  basic: any;
+  loadingPostDetailsUpdate: boolean;
 };
 
-export type FixturesDetailsResponse = TalonFixture;
+export type FixturesDetailsResponse = Record<string, unknown>;
 
 export type FixturesDetailsUpdateResponse = {
   id: Id;
-  fixtureName: string;
-  status?: FixtureStatus;
+  name?: string;
+  status?: string;
 };
 
 export type FixturesStatusUpdateResponse = {
   id: Id;
-  status?: FixtureStatus;
+  status: string;
 };
 
 export type FixturesSelectionUpdateResponse = {
@@ -27,23 +26,24 @@ export type FixturesSelectionUpdateResponse = {
   isStatic?: boolean;
 };
 
-export type FixturesBatchSelectionUpdateResponse = Overwrite<
-  FixturesSelectionUpdateResponse,
-  {
-    selectionId: Id[];
-  }
->;
+export type FixturesBatchSelectionUpdateResponse = {
+  id: Id;
+  selectionId: Id[];
+  odds: number;
+  isStatic?: boolean;
+};
 
 export type FixturesDetailsSlice = {
-  fixturesDetails: FixturesDetailsSliceState;
+  retiredEventDetails: FixturesDetailsSliceState;
 };
 
 const initialState: FixturesDetailsSliceState = {
-  basic: {} as TalonFixture,
+  basic: {},
+  loadingPostDetailsUpdate: false,
 };
 
-const fixturesDetailsSlice = createSlice({
-  name: "fixturesDetails",
+const retiredEventDetailsSlice = createSlice({
+  name: "retiredEventDetails",
   initialState,
   reducers: {
     getFixturesDetails: () => {},
@@ -52,46 +52,49 @@ const fixturesDetailsSlice = createSlice({
       state: FixturesDetailsSliceState,
       action: PayloadAction<FixturesDetailsResponse>,
     ) => {
-      if (action?.payload) {
-        state.basic = action.payload;
-      }
+      state.basic = action.payload || {};
     },
 
-    postFixtureDetailsUpdate: () => {},
+    postFixtureDetailsUpdate: (state: FixturesDetailsSliceState) => {
+      state.loadingPostDetailsUpdate = true;
+    },
 
     postFixtureDetailsUpdateSucceeded: (
       state: FixturesDetailsSliceState,
       action: PayloadAction<FixturesDetailsUpdateResponse>,
     ) => {
-      state.basic.fixtureName = action.payload.fixtureName;
-      if (action.payload?.status) {
-        state.basic.status = action.payload.status;
-      }
+      state.loadingPostDetailsUpdate = false;
+      state.basic = {
+        ...state.basic,
+        ...action.payload,
+      };
     },
 
-    postFixtureStatusUpdate: () => {},
-
-    postFixtureStatusUpdateSucceeded: (
+    putFixtureStatusUpdateSucceeded: (
       state: FixturesDetailsSliceState,
       action: PayloadAction<FixturesStatusUpdateResponse>,
     ) => {
-      if (action.payload?.status) {
-        state.basic.status = action.payload.status;
-      }
+      state.basic = {
+        ...state.basic,
+        status: action.payload.status,
+      };
     },
   },
 });
 
-export const selectBasicData = (state: FixturesDetailsSlice): TalonFixture =>
-  state.fixturesDetails.basic;
+export const selectBasicData = (state: FixturesDetailsSlice): any =>
+  state.retiredEventDetails.basic;
+
+export const selectUpdateDataLoading = (
+  state: FixturesDetailsSlice,
+): boolean => state.retiredEventDetails.loadingPostDetailsUpdate;
 
 export const {
   getFixturesDetails,
   getFixturesDetailsSucceeded,
   postFixtureDetailsUpdate,
   postFixtureDetailsUpdateSucceeded,
-  postFixtureStatusUpdate,
-  postFixtureStatusUpdateSucceeded,
-} = fixturesDetailsSlice.actions;
+  putFixtureStatusUpdateSucceeded,
+} = retiredEventDetailsSlice.actions;
 
-export default fixturesDetailsSlice.reducer;
+export default retiredEventDetailsSlice.reducer;

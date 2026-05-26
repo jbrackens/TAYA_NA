@@ -557,6 +557,22 @@ test("cashier compliance policy maps caps, geo, and screening to stable decision
     addressScreening: "sanctions_hit",
   });
   assert.equal(denyBeatsQuarantine.decision, "deny");
+
+  const permissiveBeta = evaluateCashierCompliancePolicy({
+    subjectType: "deposit",
+    geoAllowed: false,
+    addressScreening: "unavailable",
+    complianceMode: "permissive_beta",
+  });
+  assert.deepEqual(permissiveBeta, { decision: "allow", reasons: [] });
+
+  const betaStillQuarantinesKnownHits = evaluateCashierCompliancePolicy({
+    subjectType: "withdrawal",
+    geoAllowed: false,
+    addressScreening: "sanctions_hit",
+    complianceMode: "permissive_beta",
+  });
+  assert.equal(betaStillQuarantinesKnownHits.decision, "quarantine");
 });
 
 test("provider callback signatures verify raw body before parsing", () => {
