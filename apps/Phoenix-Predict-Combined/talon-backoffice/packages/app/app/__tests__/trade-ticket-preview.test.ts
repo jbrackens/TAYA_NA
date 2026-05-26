@@ -24,6 +24,7 @@ function readRepo(rel: string): string {
 
 describe("TradeTicket order-book preview UX", () => {
   const source = readApp("components/prediction/TradeTicket.tsx");
+  const marketPageSource = readApp("market/[ticker]/page.tsx");
 
   it("requests a server preview with order options instead of relying only on the market snapshot", () => {
     assert.match(
@@ -96,6 +97,24 @@ describe("TradeTicket order-book preview UX", () => {
       source,
       /marketBuyHasNoLiquidity\s*\?\s*\([\s\S]*?<button\s+type="button"\s+className=\{TICKET_CTA_CLASS\}\s+disabled>/,
       "the no-liquidity state should render a disabled CTA instead of a live submit button",
+    );
+  });
+
+  it("does not call the authenticated preview endpoint before auth is ready", () => {
+    assert.match(
+      marketPageSource,
+      /if\s*\(\s*!market\s*\|\|\s*authLoading\s*\|\|\s*!isAuthenticated\s*\)\s*return\s+null/,
+      "Market detail preview handler should bail before calling /orders/preview without a session",
+    );
+    assert.match(
+      marketPageSource,
+      /const\s+canPreviewOrders\s*=\s*isAuthenticated\s*&&\s*!authLoading/,
+      "Market detail should compute an auth-ready preview gate",
+    );
+    assert.match(
+      marketPageSource,
+      /onPreview=\{canPreviewOrders\s*\?\s*handlePreview\s*:\s*undefined\}/,
+      "TradeTicket should not receive onPreview until auth has resolved true",
     );
   });
 });

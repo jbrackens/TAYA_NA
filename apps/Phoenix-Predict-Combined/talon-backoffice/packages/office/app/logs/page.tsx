@@ -1,0 +1,20 @@
+import { redirect } from "next/navigation";
+
+type LogsSearchParams = Record<string, string | string[] | undefined>;
+
+export default async function LogsRedirectPage({
+  searchParams,
+}: {
+  searchParams?: Promise<LogsSearchParams>;
+}) {
+  const params = (await searchParams) || {};
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (Array.isArray(value)) {
+      value.forEach((item) => query.append(key, item));
+    } else if (value !== undefined) {
+      query.set(key, value);
+    }
+  }
+  redirect(`/audit-logs${query.size > 0 ? `?${query.toString()}` : ""}`);
+}

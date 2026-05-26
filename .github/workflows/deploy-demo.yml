@@ -35,6 +35,10 @@ on:
         description: "Run one-shot imported-market catalog sync and thumbnail rehost"
         type: boolean
         default: false
+      translate_markets:
+        description: "Generate cached LLM translations for markets missing locale copy"
+        type: boolean
+        default: false
 
 concurrency:
   group: deploy-demo
@@ -316,6 +320,29 @@ jobs:
               go run ./cmd/sync-markets -polymarket 200 -kalshi 200 -manifold 100 -timeout 240 -public-root /pub
             docker run --rm -v "$VOL":/v alpine sh -c "chmod -R a+rX /v"
             docker restart predict_player
+          '
+
+      - name: Optional market translation backfill
+        if: ${{ (github.event_name == 'workflow_dispatch' && inputs.translate_markets) || contains(github.event.head_commit.message, '[translate-markets]') }}
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          if [ -z "$OPENROUTER_API_KEY" ]; then
+            echo "::error::OPENROUTER_API_KEY secret is unset — cannot generate market translations."
+            exit 1
+          fi
+          printf "%s\n" "$OPENROUTER_API_KEY" | ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            set -euo pipefail
+            IFS= read -r GITHUB_OPENROUTER_API_KEY
+            cd /opt/phoenix
+            set -a && . ./.env && set +a
+            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              run --rm --no-deps \
+                -e AI_TRANSLATION_API_KEY="${GITHUB_OPENROUTER_API_KEY}" \
+                -e AI_TRANSLATION_ENDPOINT=https://openrouter.ai/api/v1 \
+                -e AI_TRANSLATION_MODEL=openai/gpt-4o-mini \
+                -e AI_TRANSLATION_PROVIDER=openai-compatible \
+                gateway ./translate-markets -limit 120 -timeout 900 -request-timeout 45
           '
 
       - name: Health check (player)

@@ -18,16 +18,20 @@ import (
 	_ "github.com/lib/pq"
 
 	"phoenix-revival/gateway/internal/discover"
+	"phoenix-revival/gateway/internal/markettranslate"
 	"phoenix-revival/gateway/internal/prediction"
 )
 
 func main() {
 	var (
-		polymarketLimit = flag.Int("polymarket", 200, "max markets to pull from polymarket")
-		kalshiLimit     = flag.Int("kalshi", 200, "max markets to pull from kalshi")
-		manifoldLimit   = flag.Int("manifold", 100, "max markets to pull from manifold")
-		publicRoot      = flag.String("public-root", "", "absolute path to player-app public/ dir for image rehosting (defaults to talon-backoffice/packages/app/public)")
-		timeoutSec      = flag.Int("timeout", 180, "overall sync timeout in seconds")
+		polymarketLimit  = flag.Int("polymarket", 200, "max markets to pull from polymarket")
+		kalshiLimit      = flag.Int("kalshi", 200, "max markets to pull from kalshi")
+		manifoldLimit    = flag.Int("manifold", 100, "max markets to pull from manifold")
+		publicRoot       = flag.String("public-root", "", "absolute path to player-app public/ dir for image rehosting (defaults to talon-backoffice/packages/app/public)")
+		timeoutSec       = flag.Int("timeout", 180, "overall sync timeout in seconds")
+		translate        = flag.Bool("translate", envBool("AI_MARKET_TRANSLATION_ENABLED", false), "generate cached LLM translations after promotion")
+		translateLimit   = flag.Int("translate-limit", envInt("AI_TRANSLATION_LIMIT", 50), "maximum promoted markets to scan for missing/stale translations")
+		translateLocales = flag.String("translate-locales", strings.Join(markettranslate.DefaultLocaleCodes(), ","), "comma-separated target locales for translation")
 	)
 	flag.Parse()
 
@@ -87,6 +91,21 @@ func main() {
 		log.Fatalf("promote failed after %s: %v", time.Since(t0).Round(time.Millisecond), err)
 	}
 
+	translationSummary := markettranslate.Summary{}
+	if *translate {
+		cfg := markettranslate.ConfigFromEnv()
+		cfg.Limit = *translateLimit
+		cfg.Locales = markettranslate.ParseLocaleList(*translateLocales)
+		repo := markettranslate.NewRepository(db)
+		translator := markettranslate.NewOpenAICompatibleClient(cfg)
+		translationCtx, translationCancel := context.WithTimeout(context.Background(), time.Duration(envInt("AI_TRANSLATION_JOB_TIMEOUT_SECONDS", 300))*time.Second)
+		translationSummary, err = markettranslate.Backfill(translationCtx, repo, translator, cfg)
+		translationCancel()
+		if err != nil {
+			slog.Warn("sync-markets: translation backfill failed", "err", err)
+		}
+	}
+
 	totalElapsed := time.Since(t0).Round(time.Millisecond)
 	fmt.Fprintf(os.Stderr,
 		"sync-markets: ok in %s\n"+
@@ -94,18 +113,40 @@ func main() {
 			"  dedupe  : %d → %d\n"+
 			"  imported: created=%d updated=%d images=%d (failed=%d)\n"+
 			"  promote : open=%d resolved=%d closed=%d resolved_existing=%d skipped=%d failed=%d\n"+
+			"  translate: enabled=%t scanned=%d markets=%d written=%d skipped=%d failed=%d\n"+
 			"  by_cat  : %v\n",
 		totalElapsed,
 		res.FetchedPolymarket, res.FetchedKalshi, res.FetchedManifold,
 		res.BeforeDedupe, res.AfterDedupe,
 		res.Created, res.Updated, res.ImagesRehosted, res.ImagesFailed,
 		promoteRes.Created, promoteRes.Resolved, promoteRes.Closed, promoteRes.ResolvedExisting, promoteRes.Skipped, promoteRes.Failed,
+		*translate, translationSummary.MarketsScanned, translationSummary.MarketsTranslated, translationSummary.TranslationsWritten, translationSummary.MarketsSkipped, translationSummary.Failures,
 		promoteRes.ByCategory,
 	)
 	if len(res.FetchErrors) > 0 {
 		fmt.Fprintf(os.Stderr, "  warnings: %d fetch errors (see stderr above)\n",
 			len(res.FetchErrors))
 	}
+}
+
+func envBool(key string, fallback bool) bool {
+	v := strings.TrimSpace(strings.ToLower(os.Getenv(key)))
+	if v == "" {
+		return fallback
+	}
+	return v == "1" || v == "true" || v == "yes" || v == "on"
+}
+
+func envInt(key string, fallback int) int {
+	v := strings.TrimSpace(os.Getenv(key))
+	if v == "" {
+		return fallback
+	}
+	var out int
+	if _, err := fmt.Sscanf(v, "%d", &out); err == nil && out > 0 {
+		return out
+	}
+	return fallback
 }
 
 // defaultPublicRoot resolves the player-app public/ directory relative to the

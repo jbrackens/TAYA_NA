@@ -396,7 +396,7 @@ export default function MarketDetailPage() {
       quantity: number,
       opts?: TradeTicketSubmitOptions,
     ): Promise<OrderPreview | null> => {
-      if (!market) return null;
+      if (!market || authLoading || !isAuthenticated) return null;
       try {
         return await api.previewOrder({
           marketId: market.id,
@@ -414,7 +414,7 @@ export default function MarketDetailPage() {
         return null;
       }
     },
-    [market],
+    [authLoading, isAuthenticated, market],
   );
 
   const handleSubmit = useCallback(
@@ -514,6 +514,7 @@ export default function MarketDetailPage() {
   }, [market, event, categories]);
   const displayMarket = market ? localizedMarket(contentT, market) : null;
   const displayCategory = category ? categoryName(contentT, category) : "";
+  const canPreviewOrders = isAuthenticated && !authLoading;
 
   if (loading) {
     return <PageState loadingLabel={t("LOADING")}>{t("LOADING_MARKET")}</PageState>;
@@ -649,7 +650,7 @@ export default function MarketDetailPage() {
                     sum + Math.max(0, p.quantity - (p.reservedQuantity || 0)),
                   0,
                 )}
-              onPreview={handlePreview}
+              onPreview={canPreviewOrders ? handlePreview : undefined}
               onSubmit={handleSubmit}
             />
           </div>

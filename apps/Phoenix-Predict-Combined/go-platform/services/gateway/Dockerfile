@@ -22,6 +22,7 @@ COPY services/gateway/ ./services/gateway/
 WORKDIR /build/services/gateway
 RUN CGO_ENABLED=0 GOOS=linux go build -o /gateway ./cmd/gateway
 RUN CGO_ENABLED=0 GOOS=linux go build -o /migrate ./cmd/migrate
+RUN CGO_ENABLED=0 GOOS=linux go build -o /translate-markets ./cmd/translate-markets
 
 # Runtime image
 FROM alpine:3.19
@@ -29,6 +30,7 @@ RUN apk add --no-cache ca-certificates tzdata
 WORKDIR /app
 COPY --from=builder /gateway .
 COPY --from=builder /migrate .
+COPY --from=builder /translate-markets .
 COPY services/gateway/migrations/ ./migrations/
 
 EXPOSE 18080

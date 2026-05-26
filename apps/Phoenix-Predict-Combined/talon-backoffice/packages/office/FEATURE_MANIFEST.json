@@ -26,10 +26,10 @@
     {
       "id": "pages-router-no-hydration",
       "severity": "S1-architectural",
-      "status": "RESOLVED for prediction-admin (2026-05-18) via Option A — markets+settlements migrated Pages->App Router and verified hydrating with live data. The underlying Next-16/React-19 legacy-Pages-Router bootstrap failure still affects the REMAINING Pages-Router routes (pages/logs, pages/terms-and-conditions, pages/index, pages/not-authorized, the market-categories container) — migrate any that must be interactive; do NOT add new Pages-Router routes to this app.",
+      "status": "RESOLVED for active office routes. Prediction-admin markets+settlements moved Pages->App Router on 2026-05-18, and the remaining legacy user-facing Pages Router entrypoints were removed on 2026-05-26 in favor of App Router redirects/static pages (/ -> /dashboard, /logs -> /audit-logs, /terms-and-conditions -> /content, /account/security -> /access-control, /account/settings -> /dashboard, /not-authorized -> App Router 403). Only framework support files pages/_app.js and pages/_document.tsx remain, and no new Pages-Router routes should be added.",
       "discovered": "2026-05-18",
       "summary": "EVERY Pages-Router route in this office app fails to hydrate on the client. Verified across /prediction-admin/settlements, /prediction-admin/markets, and /logs: the page+container+_app JS modules all evaluate, but NO React component renders client-side (AppComponent/SessionGuard/page/container render markers never fire), there are ZERO client errors (window.onerror + unhandledrejection + console.error all empty with _app.js suppression disabled), and no DOM node has a React fiber. Only SSR HTML is shown; effects never run; data never loads. App-Router routes (/auth/login, /dashboard, /audit-logs) hydrate fine. Root cause is at the Next Pages-Router CLIENT BOOTSTRAP itself — pages/_app.js modules evaluate but PhoenixApp/AppComponent never render. Stack: Next 16.2.2 + React 19.2.4 + legacy Pages Router (+ AntD 4.16, next-i18next ^14).",
-      "impact": "All Pages-Router admin surfaces (prediction-admin/markets, prediction-admin/settlements, logs, terms-and-conditions, market-categories) are server-rendered but non-interactive: tables never populate, buttons/modals/forms do nothing. The 'settlements/markets show 0 markets' symptom is one facet of this.",
+      "impact": "Historical only for active office routes. Any reintroduced Pages-Router admin surface risks server-rendered but non-interactive UI: tables never populate, buttons/modals/forms do nothing. Keep new office work in app/ and delete or redirect legacy pages instead of reviving them.",
       "not_the_cause": "Ruled out, each EMPIRICALLY (not assumed): data/CORS (gateway returns 22 closed markets; raw fetch from page ctx OK); the useApi render-loop (fixed 4e148445); hydration text-mismatch (none captured); useApiHookTyped SSR pre-hooks early-return (fixed 6ab68903, clean-rebuilt, still dead); NEXT-I18NEXT/appWithTranslation (Codex-prescribed experiment 2026-05-18: `export default PhoenixApp` without the HOC -> STILL no hydration -> next-i18next is NOT the cause; the earlier 'next-i18next prime suspect' hypothesis is FALSIFIED); _app.getInitialProps (experiment: disabled it too, combined with no-HOC -> STILL no hydration). Remaining suspects (untested): Next 16/React 19 Pages-Router client bootstrap incompatibility, or the `react-dom$` webpack alias shim in next.config.js (~L86). Next experiment if pursued: PhoenixApp returning bare <Component {...pageProps}/> to isolate provider stack from framework bootstrap.",
       "recommended_fix": "Architectural: migrate the prediction-admin Pages-Router pages to the App Router (the office's active tree per root CLAUDE.md). Independently confirmed by Codex (2026-05-18, repo-inspected): Option A (migrate) is correct; Option B (fix Pages bootstrap) is now effectively NON-VIABLE — with next-i18next AND _app.getInitialProps both eliminated, B means resolving a Next-16/React-19 legacy-Pages-Router framework bootstrap failure, strictly worse than migrating. Re-scope warning (Codex): the container logic is reusable but the RUNTIME ENVELOPE is the real work — AntD CSS is only in pages/_app.js (app/layout.tsx lacks antd.css), App Router does not mount Redux/Theme/SessionGuard/MenuProvider, do NOT reuse the legacy <Layout> (use the app dashboard shell), securedPage getInitialProps is not portable (needs middleware/cookie or client guard), and plan the pages/->app/ route-collision delete in the same migration. styled-components is NOT a risk (app/lib/styled-components-registry.tsx already exists). Do NOT attempt under time pressure or unsupervised on the deployed branch.",
       "fixes_shipped_enroute": "ROUTE_AUTH /auth->/auth/login 404 auth-thrash (ed71d8c3), useApi triggerApi useCallback memo killing the app-router Maximum-update-depth loop (4e148445), useApiHookTyped hooks-stable SSR fix (6ab68903) — all real, verified, pushed; none resolves this dual-router blocker."
@@ -56,12 +56,12 @@
     },
     {
       "route": "/prediction-admin (market-categories)",
-      "router": "pages",
+      "router": "removed",
       "file": "containers/market-categories/",
       "domain": "prediction",
-      "status": "REAL",
-      "verification": "unverified",
-      "notes": "Prediction taxonomy admin container exists; not per-file inspected this session."
+      "status": "REMOVE",
+      "verification": "verified",
+      "notes": "No active route remains. Legacy market-categories container exists in source history but should not be exposed through Pages Router; use App Router prediction-admin surfaces for active operator workflows."
     },
     {
       "route": "/dashboard",

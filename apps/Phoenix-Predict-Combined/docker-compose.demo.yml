@@ -166,6 +166,14 @@ services:
       # SMTP_PASSWORD: ""
       # SMTP_FROM: "no-reply@hulana.app"
       # NOTIFY_RESOLUTION_TO: "ops@hulana.app"
+      # Server-side market translation backfill. The translate-markets helper
+      # uses this same OpenRouter key path as office AI drafting, but writes
+      # cached DB rows and prediction_markets.translations rather than calling
+      # a model at page-render time.
+      AI_TRANSLATION_PROVIDER: "openai-compatible"
+      AI_TRANSLATION_ENDPOINT: "https://openrouter.ai/api/v1"
+      AI_TRANSLATION_MODEL: "openai/gpt-4o-mini"
+      AI_TRANSLATION_API_KEY: "${OPENROUTER_API_KEY:-}"
 
   player:
     image: predict-frontend:app-slim
