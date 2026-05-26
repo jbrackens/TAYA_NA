@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/lib/pq"
 )
@@ -17,11 +18,12 @@ func NewRepository(db *sql.DB) *Repository {
 	return &Repository{db: db}
 }
 
-func (r *Repository) ListCandidates(ctx context.Context, locales []string, limit int) ([]MarketCopy, error) {
+func (r *Repository) ListCandidates(ctx context.Context, locales []string, limit int, tickers []string) ([]MarketCopy, error) {
 	if limit <= 0 {
 		limit = 50
 	}
 	locales = NormalizeLocales(locales)
+	tickers = ParseTickerList(strings.Join(tickers, ","))
 	rows, err := r.db.QueryContext(ctx, `
 		WITH target_locale AS (
 			SELECT unnest($1::text[]) AS locale
@@ -45,6 +47,7 @@ func (r *Repository) ListCandidates(ctx context.Context, locales []string, limit
 		       END AS priority
 		FROM prediction_markets m
 		WHERE btrim(m.title) <> ''
+		  AND (COALESCE(cardinality($3::text[]), 0) = 0 OR m.ticker = ANY($3::text[]))
 		  AND (
 		    EXISTS (
 		      SELECT 1
@@ -63,7 +66,7 @@ func (r *Repository) ListCandidates(ctx context.Context, locales []string, limit
 		  )
 		ORDER BY priority ASC, m.updated_at DESC, m.id DESC
 		LIMIT $2
-	`, pq.Array(locales), limit)
+	`, pq.Array(locales), limit, pq.Array(tickers))
 	if err != nil {
 		return nil, fmt.Errorf("list translation candidates: %w", err)
 	}

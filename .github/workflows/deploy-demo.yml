@@ -39,6 +39,10 @@ on:
         description: "Generate cached LLM translations for markets missing locale copy"
         type: boolean
         default: false
+      translate_tickers:
+        description: "Optional comma-separated market tickers to target during translation backfill"
+        type: string
+        default: ""
 
 concurrency:
   group: deploy-demo
@@ -326,16 +330,23 @@ jobs:
         if: ${{ (github.event_name == 'workflow_dispatch' && inputs.translate_markets) || contains(github.event.head_commit.message, '[translate-markets]') }}
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          TRANSLATE_TICKERS: ${{ github.event_name == 'workflow_dispatch' && inputs.translate_tickers || '' }}
         run: |
           if [ -z "$OPENROUTER_API_KEY" ]; then
             echo "::error::OPENROUTER_API_KEY secret is unset — cannot generate market translations."
             exit 1
           fi
-          printf "%s\n" "$OPENROUTER_API_KEY" | ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+          printf "%s\n%s\n" "$OPENROUTER_API_KEY" "$TRANSLATE_TICKERS" | ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
             set -euo pipefail
             IFS= read -r GITHUB_OPENROUTER_API_KEY
+            IFS= read -r TRANSLATE_TICKERS
             cd /opt/phoenix
             set -a && . ./.env && set +a
+            ticker_arg=""
+            if [ -n "$TRANSLATE_TICKERS" ]; then
+              ticker_arg="-tickers=$TRANSLATE_TICKERS"
+              echo "Targeting market translation tickers: $TRANSLATE_TICKERS"
+            fi
             echo "Starting market translation backfill..."
             JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
               run --rm --no-deps \
@@ -343,7 +354,7 @@ jobs:
                 -e AI_TRANSLATION_ENDPOINT=https://openrouter.ai/api/v1 \
                 -e AI_TRANSLATION_MODEL=openai/gpt-4o-mini \
                 -e AI_TRANSLATION_PROVIDER=openai-compatible \
-                gateway ./translate-markets -limit 120 -timeout 1800 -request-timeout 45 -fail-on-failures=false &
+                gateway ./translate-markets -limit 120 -timeout 1800 -request-timeout 45 -fail-on-failures=false $ticker_arg &
             backfill_pid=$!
             while kill -0 "$backfill_pid" 2>/dev/null; do
               echo "market translation backfill still running..."

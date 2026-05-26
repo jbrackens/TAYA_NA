@@ -23,6 +23,7 @@ func main() {
 	var (
 		limit          = flag.Int("limit", cfg.Limit, "maximum markets to scan")
 		locales        = flag.String("locales", strings.Join(cfg.Locales, ","), "comma-separated target locales")
+		tickers        = flag.String("tickers", strings.Join(cfg.Tickers, ","), "optional comma-separated market tickers to translate")
 		dryRun         = flag.Bool("dry-run", false, "show how many translations would be generated without calling the model or writing DB rows")
 		timeout        = flag.Int("timeout", 600, "overall job timeout in seconds")
 		requestTimeout = flag.Int("request-timeout", int(cfg.Timeout.Seconds()), "per-provider-request timeout in seconds")
@@ -41,6 +42,7 @@ func main() {
 
 	cfg.Limit = *limit
 	cfg.Locales = markettranslate.ParseLocaleList(*locales)
+	cfg.Tickers = markettranslate.ParseTickerList(*tickers)
 	cfg.DryRun = *dryRun
 	cfg.Timeout = time.Duration(*requestTimeout) * time.Second
 	cfg.Endpoint = strings.TrimSpace(*endpoint)

@@ -62,12 +62,27 @@ func ParseLocaleList(value string) []string {
 	return NormalizeLocales(strings.Split(value, ","))
 }
 
+func ParseTickerList(value string) []string {
+	seen := map[string]bool{}
+	out := []string{}
+	for _, raw := range strings.Split(value, ",") {
+		ticker := strings.ToUpper(strings.TrimSpace(raw))
+		if ticker == "" || seen[ticker] {
+			continue
+		}
+		seen[ticker] = true
+		out = append(out, ticker)
+	}
+	return out
+}
+
 type Config struct {
 	Endpoint            string
 	APIKey              string
 	Model               string
 	Provider            string
 	Locales             []string
+	Tickers             []string
 	Limit               int
 	Timeout             time.Duration
 	MaxDescriptionChars int

@@ -10,9 +10,11 @@ type memoryStore struct {
 	candidates []MarketCopy
 	cache      map[string]map[string]string
 	writes     []string
+	tickers    []string
 }
 
-func (s *memoryStore) ListCandidates(context.Context, []string, int) ([]MarketCopy, error) {
+func (s *memoryStore) ListCandidates(_ context.Context, _ []string, _ int, tickers []string) ([]MarketCopy, error) {
+	s.tickers = append([]string(nil), tickers...)
 	return s.candidates, nil
 }
 
@@ -135,5 +137,23 @@ func TestBackfillGeneratesOnlyMissingLocales(t *testing.T) {
 	}
 	if len(translator.locales) != 1 || translator.locales[0] != "id" {
 		t.Fatalf("provider locales = %#v, want only id", translator.locales)
+	}
+}
+
+func TestBackfillPassesTargetTickersToStore(t *testing.T) {
+	store := &memoryStore{}
+
+	_, err := Backfill(context.Background(), store, &memoryTranslator{}, Config{
+		Locales: []string{"id"},
+		Tickers: []string{
+			"IMP-485DDC71",
+		},
+		Limit: 1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(store.tickers) != 1 || store.tickers[0] != "IMP-485DDC71" {
+		t.Fatalf("tickers = %#v, want target ticker", store.tickers)
 	}
 }

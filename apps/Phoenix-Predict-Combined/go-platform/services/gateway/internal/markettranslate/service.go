@@ -9,7 +9,7 @@ import (
 )
 
 type Store interface {
-	ListCandidates(ctx context.Context, locales []string, limit int) ([]MarketCopy, error)
+	ListCandidates(ctx context.Context, locales []string, limit int, tickers []string) ([]MarketCopy, error)
 	CacheHashes(ctx context.Context, marketID string, locales []string) (map[string]string, error)
 	UpsertTranslation(ctx context.Context, marketID string, locale string, sourceHash string, translation Translation, meta TranslationMeta) error
 }
@@ -23,7 +23,7 @@ func Backfill(ctx context.Context, store Store, translator Translator, cfg Confi
 		cfg.MaxDescriptionChars = 6000
 	}
 
-	candidates, err := store.ListCandidates(ctx, cfg.Locales, cfg.Limit)
+	candidates, err := store.ListCandidates(ctx, cfg.Locales, cfg.Limit, cfg.Tickers)
 	if err != nil {
 		return Summary{}, err
 	}
