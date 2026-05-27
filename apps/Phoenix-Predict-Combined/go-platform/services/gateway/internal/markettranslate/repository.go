@@ -89,6 +89,47 @@ func (r *Repository) ListCandidates(ctx context.Context, locales []string, limit
 	return out, nil
 }
 
+func (r *Repository) CountUntranslated(ctx context.Context, locales []string, tickers []string) (map[string]int, error) {
+	locales = NormalizeLocales(locales)
+	tickers = ParseTickerList(strings.Join(tickers, ","))
+	out := make(map[string]int, len(locales))
+	for _, locale := range locales {
+		out[locale] = 0
+	}
+
+	rows, err := r.db.QueryContext(ctx, `
+		WITH target_locale AS (
+			SELECT unnest($1::text[]) AS locale
+		)
+		SELECT tl.locale, COUNT(m.id)::int AS missing_count
+		FROM target_locale tl
+		LEFT JOIN prediction_markets m
+		  ON btrim(m.title) <> ''
+		 AND (COALESCE(cardinality($2::text[]), 0) = 0 OR m.ticker = ANY($2::text[]))
+		 AND (
+		   NOT (COALESCE(m.translations, '{}'::jsonb) ? tl.locale)
+		   OR COALESCE(m.translations->tl.locale->>'title', '') = ''
+		   OR (COALESCE(m.description, '') <> ''
+		       AND COALESCE(m.translations->tl.locale->>'description', '') = '')
+		 )
+		GROUP BY tl.locale
+	`, pq.Array(locales), pq.Array(tickers))
+	if err != nil {
+		return nil, fmt.Errorf("count untranslated markets: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var locale string
+		var count int
+		if err := rows.Scan(&locale, &count); err != nil {
+			return nil, fmt.Errorf("scan untranslated market count: %w", err)
+		}
+		out[locale] = count
+	}
+	return out, rows.Err()
+}
+
 func (r *Repository) CacheHashes(ctx context.Context, marketID string, locales []string) (map[string]string, error) {
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT locale, source_hash

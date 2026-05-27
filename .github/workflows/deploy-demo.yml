@@ -43,6 +43,14 @@ on:
         description: "Optional comma-separated market tickers to target during translation backfill"
         type: string
         default: ""
+      translate_limit:
+        description: "Markets to scan per translation batch"
+        type: string
+        default: "120"
+      translate_batches:
+        description: "Sequential translation batches to run from the remaining high-priority queue"
+        type: string
+        default: "1"
 
 concurrency:
   group: deploy-demo
@@ -331,30 +339,50 @@ jobs:
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           TRANSLATE_TICKERS: ${{ github.event_name == 'workflow_dispatch' && inputs.translate_tickers || '' }}
+          TRANSLATE_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.translate_limit || '120' }}
+          TRANSLATE_BATCHES: ${{ github.event_name == 'workflow_dispatch' && inputs.translate_batches || '1' }}
         run: |
           if [ -z "$OPENROUTER_API_KEY" ]; then
             echo "::error::OPENROUTER_API_KEY secret is unset — cannot generate market translations."
             exit 1
           fi
-          printf "%s\n%s\n" "$OPENROUTER_API_KEY" "$TRANSLATE_TICKERS" | ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+          printf "%s\n%s\n%s\n%s\n" "$OPENROUTER_API_KEY" "$TRANSLATE_TICKERS" "$TRANSLATE_LIMIT" "$TRANSLATE_BATCHES" | ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
             set -euo pipefail
             IFS= read -r GITHUB_OPENROUTER_API_KEY
             IFS= read -r TRANSLATE_TICKERS
+            IFS= read -r TRANSLATE_LIMIT
+            IFS= read -r TRANSLATE_BATCHES
             cd /opt/phoenix
             set -a && . ./.env && set +a
-            ticker_arg=""
+            case "$TRANSLATE_LIMIT" in
+              ""|*[!0-9]*)
+                echo "translate_limit must be a positive integer"
+                exit 1
+                ;;
+            esac
+            case "$TRANSLATE_BATCHES" in
+              ""|*[!0-9]*)
+                echo "translate_batches must be a positive integer"
+                exit 1
+                ;;
+            esac
+            if [ "$TRANSLATE_LIMIT" -lt 1 ] || [ "$TRANSLATE_BATCHES" -lt 1 ]; then
+              echo "translate_limit and translate_batches must be greater than zero"
+              exit 1
+            fi
+            set -- ./translate-markets -limit "$TRANSLATE_LIMIT" -batches "$TRANSLATE_BATCHES" -timeout 1800 -request-timeout 45 -fail-on-failures=false
             if [ -n "$TRANSLATE_TICKERS" ]; then
-              ticker_arg="-tickers=$TRANSLATE_TICKERS"
+              set -- "$@" "-tickers=$TRANSLATE_TICKERS"
               echo "Targeting market translation tickers: $TRANSLATE_TICKERS"
             fi
-            echo "Starting market translation backfill..."
+            echo "Starting market translation backfill: limit=$TRANSLATE_LIMIT batches=$TRANSLATE_BATCHES"
             JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
               run --rm --no-deps \
                 -e AI_TRANSLATION_API_KEY="${GITHUB_OPENROUTER_API_KEY}" \
                 -e AI_TRANSLATION_ENDPOINT=https://openrouter.ai/api/v1 \
                 -e AI_TRANSLATION_MODEL=openai/gpt-4o-mini \
                 -e AI_TRANSLATION_PROVIDER=openai-compatible \
-                gateway ./translate-markets -limit 120 -timeout 1800 -request-timeout 45 -fail-on-failures=false $ticker_arg &
+                gateway "$@" &
             backfill_pid=$!
             while kill -0 "$backfill_pid" 2>/dev/null; do
               echo "market translation backfill still running..."
@@ -376,6 +404,58 @@ jobs:
             echo "attempt $i: $code, retrying…"; sleep 10
           done
           echo "demo did not return 200 after deploy"; exit 1
+
+      - name: Live player route smoke
+        run: |
+          node <<'NODE'
+          const base = "https://demo.99rtp.io";
+
+          async function fetchJson(path) {
+            const res = await fetch(`${base}${path}`, { redirect: "follow" });
+            if (!res.ok) {
+              throw new Error(`${path} returned ${res.status}`);
+            }
+            return res.json();
+          }
+
+          async function assertHealthyPage(path) {
+            const res = await fetch(`${base}${path}`, { redirect: "follow" });
+            if (!res.ok) {
+              throw new Error(`${path} returned ${res.status}`);
+            }
+            const html = await res.text();
+            if (html.length < 1000) {
+              throw new Error(`${path} rendered suspiciously small HTML (${html.length} bytes)`);
+            }
+            if (/application error|server-side exception|something went wrong/i.test(html)) {
+              throw new Error(`${path} rendered a Next/React error page`);
+            }
+            console.log(`${path} OK (${html.length} bytes)`);
+          }
+
+          const discovery = await fetchJson("/api/v1/discovery");
+          const markets = await fetchJson("/api/v1/markets?limit=3");
+          const ticker =
+            discovery?.featured?.find((m) => m?.ticker)?.ticker ||
+            discovery?.trending?.find((m) => m?.ticker)?.ticker ||
+            markets?.markets?.find((m) => m?.ticker)?.ticker ||
+            markets?.items?.find((m) => m?.ticker)?.ticker;
+
+          if (!ticker) {
+            throw new Error("No ticker available from discovery or markets API");
+          }
+
+          await assertHealthyPage("/");
+          await assertHealthyPage(`/market/${encodeURIComponent(ticker)}/`);
+
+          const regressionTicker = "IMP-485DDC71";
+          const regressionApi = await fetch(`${base}/api/v1/markets/${regressionTicker}`, { redirect: "follow" });
+          if (regressionApi.status === 200) {
+            await assertHealthyPage(`/market/${regressionTicker}/`);
+          } else {
+            console.log(`${regressionTicker} not present on this catalog (${regressionApi.status}); skipping targeted route smoke`);
+          }
+          NODE
 
       - name: Build office image on the box
         run: |

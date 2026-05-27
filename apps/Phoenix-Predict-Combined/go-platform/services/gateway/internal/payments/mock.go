@@ -117,7 +117,6 @@ func (m *MockPaymentService) InitiateWithdrawal(ctx context.Context, userID stri
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	// Check wallet balance
 	if m.walletService != nil {
 		balance := m.walletService.Balance(userID)
 		if balance < amountCents {
@@ -129,6 +128,19 @@ func (m *MockPaymentService) InitiateWithdrawal(ctx context.Context, userID stri
 	txnID := fmt.Sprintf("wdr:%d", m.withdrawalSeq)
 	now := time.Now().UTC().Format(time.RFC3339)
 	estimatedAt := time.Now().Add(2 * time.Hour).UTC().Format(time.RFC3339)
+
+	if m.walletService != nil {
+		_, err := m.walletService.Debit(wallet.MutationRequest{
+			UserID:         userID,
+			AmountCents:    amountCents,
+			IdempotencyKey: txnID,
+			Reason:         fmt.Sprintf("withdrawal via %s (pending)", paymentMethod),
+		})
+		if err != nil {
+			slog.Warn("failed to debit wallet for withdrawal", "txn_id", txnID, "error", err)
+			return nil, ErrWithdrawalFailed
+		}
+	}
 
 	result := &WithdrawalResult{
 		TransactionID: txnID,
@@ -155,19 +167,6 @@ func (m *MockPaymentService) InitiateWithdrawal(ctx context.Context, userID stri
 		UpdatedAt:     now,
 	}
 	m.transactions[txnID] = txn
-
-	// Debit wallet immediately (withdrawal is pending but funds are held)
-	if m.walletService != nil {
-		_, err := m.walletService.Debit(wallet.MutationRequest{
-			UserID:         userID,
-			AmountCents:    amountCents,
-			IdempotencyKey: txnID,
-			Reason:         fmt.Sprintf("withdrawal via %s (pending)", paymentMethod),
-		})
-		if err != nil {
-			slog.Warn("failed to debit wallet for withdrawal", "txn_id", txnID, "error", err)
-		}
-	}
 
 	return result, nil
 }
@@ -301,13 +300,12 @@ func (m *MockPaymentService) HandleWebhook(ctx context.Context, payload WebhookP
 		return ErrTransactionNotFound
 	}
 
-	// Update transaction status
 	if !canApplyWebhookTransition(txn.Status) {
 		slog.Info("ignoring duplicate or stale mock webhook", "txn_id", payload.TransactionID, "current_status", txn.Status, "incoming_status", payload.Status)
 		return nil
 	}
-	txn.Status = payload.Status
-	txn.UpdatedAt = time.Now().UTC().Format(time.RFC3339)
+
+	now := time.Now().UTC().Format(time.RFC3339)
 
 	// If deposit is confirmed, credit wallet
 	if txn.Type == "deposit" && payload.Status == "approved" && m.walletService != nil {
@@ -317,8 +315,28 @@ func (m *MockPaymentService) HandleWebhook(ctx context.Context, payload WebhookP
 
 	// If withdrawal is processed, mark as complete
 	if txn.Type == "withdrawal" && payload.Status == "processed" {
-		txn.ProcessedAt = time.Now().UTC().Format(time.RFC3339)
+		txn.ProcessedAt = now
 		slog.Info("webhook withdrawal processed", "txn_id", payload.TransactionID, "user_id", payload.UserID)
+	}
+	if txn.Type == "withdrawal" && (payload.Status == "failed" || payload.Status == "declined") {
+		if m.walletService != nil {
+			if _, err := m.walletService.Credit(wallet.MutationRequest{
+				UserID:         txn.UserID,
+				AmountCents:    txn.Amount,
+				IdempotencyKey: "withdrawal-refund:" + payload.TransactionID,
+				Reason:         "withdrawal failed; funds returned",
+			}); err != nil {
+				slog.Warn("failed to refund wallet debit for withdrawal", "txn_id", payload.TransactionID, "error", err)
+				return ErrWithdrawalFailed
+			}
+		}
+	}
+
+	txn.Status = payload.Status
+	txn.UpdatedAt = now
+	if wd, found := m.withdrawals[payload.TransactionID]; found {
+		wd.Status = payload.Status
+		wd.ProcessedAt = txn.ProcessedAt
 	}
 
 	return nil

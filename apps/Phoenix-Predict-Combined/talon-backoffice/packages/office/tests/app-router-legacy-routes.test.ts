@@ -49,3 +49,55 @@ describe("legacy office Pages Router entrypoints", () => {
     expect(logsPage).toContain('redirect(`/audit-logs');
   });
 });
+
+describe("retired App Router sportsbook and prototype surfaces", () => {
+  it("keeps beta-hidden dead dashboard routes as redirects", () => {
+    const redirects = [
+      ["app/(dashboard)/campaigns/page.tsx", 'redirect("/dashboard")'],
+      ["app/(dashboard)/reports/page.tsx", 'redirect("/dashboard")'],
+      [
+        "app/(dashboard)/risk-management/page.tsx",
+        'redirect("/prediction-admin/risk")',
+      ],
+    ] as const;
+
+    for (const [rel, redirectCall] of redirects) {
+      expect(read(rel), `${rel} should remain a redirect`).toContain(
+        redirectCall,
+      );
+    }
+  });
+
+  it("keeps sportsbook-era dashboard widgets out of source", () => {
+    for (const rel of [
+      "app/components/dashboard/ActiveBetsWidget.tsx",
+      "app/components/dashboard/LiveMatchesWidget.tsx",
+      "app/components/dashboard/RevenueWidget.tsx",
+      "app/components/dashboard/RiskAlertsWidget.tsx",
+      "app/components/dashboard/RecentActivityWidget.tsx",
+      "app/hooks/useTradingWebSocket.ts",
+    ]) {
+      expect(exists(rel), `${rel} should stay retired`).toBe(false);
+    }
+  });
+
+  it("keeps active barrels limited to prediction-safe exports", () => {
+    const dashboardBarrel = read("app/components/dashboard/index.ts");
+    expect(dashboardBarrel).toContain(
+      'export { DashboardLayout } from "./DashboardLayout"',
+    );
+    for (const retiredExport of [
+      "RevenueWidget",
+      "ActiveBetsWidget",
+      "LiveMatchesWidget",
+      "RiskAlertsWidget",
+      "RecentActivityWidget",
+    ]) {
+      expect(dashboardBarrel).not.toContain(retiredExport);
+    }
+
+    const hooksBarrel = read("app/hooks/index.ts");
+    expect(hooksBarrel).toContain('export { useConfirm } from "./useConfirm"');
+    expect(hooksBarrel).not.toContain("useTradingWebSocket");
+  });
+});

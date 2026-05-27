@@ -10,18 +10,26 @@ import (
 	"time"
 
 	"phoenix-revival/gateway/internal/compliance"
+	"phoenix-revival/platform/transport/httpx"
 )
 
 type stubPaymentService struct {
 	depositCalls        int
+	lastDepositUserID   string
 	webhookCalls        int
 	lastWebhook         WebhookPayload
 	cumulativeWithdrawn int64
 	withdrawalCalls     int
+	methodCalls         int
+	lastMethodsUserID   string
+	statusCalls         int
+	lastStatusTxnID     string
+	transactionStatus   *TransactionStatus
 }
 
 func (s *stubPaymentService) InitiateDeposit(ctx context.Context, userID string, amountCents int64, paymentMethod string) (*DepositResult, error) {
 	s.depositCalls++
+	s.lastDepositUserID = userID
 	return &DepositResult{
 		TransactionID: "dep:test",
 		UserID:        userID,
@@ -50,12 +58,16 @@ func (s *stubPaymentService) InitiateGatedWithdrawal(_ context.Context, userID s
 	return &WithdrawalResult{UserID: userID, Amount: amountCents, Status: "pending"}, nil
 }
 
-func (s *stubPaymentService) GetPaymentMethods(context.Context, string) ([]PaymentMethod, error) {
-	return nil, nil
+func (s *stubPaymentService) GetPaymentMethods(_ context.Context, userID string) ([]PaymentMethod, error) {
+	s.methodCalls++
+	s.lastMethodsUserID = userID
+	return []PaymentMethod{{ID: "card:test", Type: "credit_card", Label: "Test card", IsActive: true, IsDefault: true}}, nil
 }
 
-func (s *stubPaymentService) GetTransactionStatus(context.Context, string) (*TransactionStatus, error) {
-	return nil, nil
+func (s *stubPaymentService) GetTransactionStatus(_ context.Context, txnID string) (*TransactionStatus, error) {
+	s.statusCalls++
+	s.lastStatusTxnID = txnID
+	return s.transactionStatus, nil
 }
 
 func (s *stubPaymentService) HandleWebhook(_ context.Context, payload WebhookPayload) error {
@@ -82,6 +94,7 @@ func TestRegisterPaymentRoutes_DepositBlocksOnComplianceDenial(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/payments/deposit", strings.NewReader(`{"userId":"u-1","amountCents":901,"paymentMethod":"card"}`))
 	req.Header.Set("Content-Type", "application/json")
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-1", "u-1", "player"))
 	rec := httptest.NewRecorder()
 
 	mux.ServeHTTP(rec, req)
@@ -91,6 +104,134 @@ func TestRegisterPaymentRoutes_DepositBlocksOnComplianceDenial(t *testing.T) {
 	}
 	if service.depositCalls != 0 {
 		t.Fatalf("expected payment service not to run when deposit is denied, got %d calls", service.depositCalls)
+	}
+}
+
+func TestRegisterPaymentRoutes_DepositBindsToAuthenticatedSession(t *testing.T) {
+	service := &stubPaymentService{}
+	mux := http.NewServeMux()
+	RegisterPaymentRoutes(mux, service)
+
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/payments/deposit", strings.NewReader(`{"amountCents":1000,"paymentMethod":"card"}`))
+	req.Header.Set("Content-Type", "application/json")
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-session", "u-session", "player"))
+	rec := httptest.NewRecorder()
+
+	mux.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("expected 201 for session-bound deposit, got %d body=%s", rec.Code, rec.Body.String())
+	}
+	if service.depositCalls != 1 {
+		t.Fatalf("expected one deposit call, got %d", service.depositCalls)
+	}
+	if service.lastDepositUserID != "u-session" {
+		t.Fatalf("expected deposit to use session user, got %q", service.lastDepositUserID)
+	}
+}
+
+func TestRegisterPaymentRoutes_DepositRejectsCrossUserBody(t *testing.T) {
+	service := &stubPaymentService{}
+	mux := http.NewServeMux()
+	RegisterPaymentRoutes(mux, service)
+
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/payments/deposit", strings.NewReader(`{"userId":"u-victim","amountCents":1000,"paymentMethod":"card"}`))
+	req.Header.Set("Content-Type", "application/json")
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-attacker", "u-attacker", "player"))
+	rec := httptest.NewRecorder()
+
+	mux.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("expected 403 for cross-user deposit body, got %d body=%s", rec.Code, rec.Body.String())
+	}
+	if service.depositCalls != 0 {
+		t.Fatalf("expected no deposit call for cross-user request, got %d", service.depositCalls)
+	}
+}
+
+func TestRegisterPaymentRoutes_MethodsDefaultToSessionUser(t *testing.T) {
+	service := &stubPaymentService{}
+	mux := http.NewServeMux()
+	RegisterPaymentRoutes(mux, service)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/payments/methods", nil)
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-session", "u-session", "player"))
+	rec := httptest.NewRecorder()
+
+	mux.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200 for session payment methods, got %d body=%s", rec.Code, rec.Body.String())
+	}
+	if service.methodCalls != 1 || service.lastMethodsUserID != "u-session" {
+		t.Fatalf("expected methods lookup for session user, calls=%d user=%q", service.methodCalls, service.lastMethodsUserID)
+	}
+}
+
+func TestRegisterPaymentRoutes_MethodsRejectCrossUserForPlayer(t *testing.T) {
+	service := &stubPaymentService{}
+	mux := http.NewServeMux()
+	RegisterPaymentRoutes(mux, service)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/payments/methods?userId=u-victim", nil)
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-attacker", "u-attacker", "player"))
+	rec := httptest.NewRecorder()
+
+	mux.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("expected 403 for cross-user payment methods, got %d body=%s", rec.Code, rec.Body.String())
+	}
+	if service.methodCalls != 0 {
+		t.Fatalf("expected no methods lookup for cross-user request, got %d", service.methodCalls)
+	}
+}
+
+func TestRegisterPaymentRoutes_StatusRejectsCrossUserForPlayer(t *testing.T) {
+	service := &stubPaymentService{
+		transactionStatus: &TransactionStatus{
+			TransactionID: "dep:victim",
+			UserID:        "u-victim",
+			Status:        "approved",
+		},
+	}
+	mux := http.NewServeMux()
+	RegisterPaymentRoutes(mux, service)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/payments/status?transactionId=dep:victim", nil)
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-attacker", "u-attacker", "player"))
+	rec := httptest.NewRecorder()
+
+	mux.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("expected 403 for cross-user transaction status, got %d body=%s", rec.Code, rec.Body.String())
+	}
+	if service.statusCalls != 1 || service.lastStatusTxnID != "dep:victim" {
+		t.Fatalf("expected status lookup before ownership check, calls=%d txn=%q", service.statusCalls, service.lastStatusTxnID)
+	}
+}
+
+func TestRegisterPaymentRoutes_StatusAllowsAdminCrossUser(t *testing.T) {
+	service := &stubPaymentService{
+		transactionStatus: &TransactionStatus{
+			TransactionID: "dep:victim",
+			UserID:        "u-victim",
+			Status:        "approved",
+		},
+	}
+	mux := http.NewServeMux()
+	RegisterPaymentRoutes(mux, service)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/payments/status?transactionId=dep:victim", nil)
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@example.test", "admin"))
+	rec := httptest.NewRecorder()
+
+	mux.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200 for admin transaction status, got %d body=%s", rec.Code, rec.Body.String())
 	}
 }
 

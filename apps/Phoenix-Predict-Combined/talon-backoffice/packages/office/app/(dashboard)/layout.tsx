@@ -7,15 +7,14 @@ import { usePathname } from "next/navigation";
 //
 // /users is wired: admin/punters (GW-1) returns prediction-native punter
 // identity + financials (wallet balance, portfolio P&L, positions,
-// accuracy), so the list + detail render real data. /access-control (RBAC)
-// and /audit-logs are also wired.
+// accuracy), so the list + detail render real data. /access-control (RBAC),
+// /disputes, and /audit-logs are also wired.
 //
-// Still hidden pending verification of their predict-native backends:
-// /content, /campaigns, /loyalty, /leaderboards, /reports,
-// /risk-management. Their UI shells still need prediction-domain review;
-// re-add each here once confirmed it loads without "Failed to load X". The
-// pages still exist under app/(dashboard)/<name>/page.tsx for direct URL
-// access during development.
+// Still hidden pending prediction-domain route review:
+// /content, /loyalty, /leaderboards. Re-add each here once confirmed it loads
+// without "Failed to load X". Retired shells stay redirects only:
+// /campaigns and /reports -> /dashboard, /risk-management ->
+// /prediction-admin/risk.
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: "layout-dashboard" },
   { href: "/users", label: "Users", icon: "users" },

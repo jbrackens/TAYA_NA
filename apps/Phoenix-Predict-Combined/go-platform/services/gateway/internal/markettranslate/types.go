@@ -156,10 +156,12 @@ type Translator interface {
 }
 
 type Summary struct {
-	MarketsScanned      int
-	MarketsTranslated   int
-	MarketsSkipped      int
-	TranslationsWritten int
-	Failures            int
-	DryRun              bool
+	MarketsScanned                int
+	MarketsTranslated             int
+	MarketsSkipped                int
+	TranslationsWritten           int
+	Failures                      int
+	RemainingUntranslatedTotal    int
+	RemainingUntranslatedByLocale map[string]int
+	DryRun                        bool
 }

@@ -10,6 +10,7 @@ import (
 
 type Store interface {
 	ListCandidates(ctx context.Context, locales []string, limit int, tickers []string) ([]MarketCopy, error)
+	CountUntranslated(ctx context.Context, locales []string, tickers []string) (map[string]int, error)
 	CacheHashes(ctx context.Context, marketID string, locales []string) (map[string]string, error)
 	UpsertTranslation(ctx context.Context, marketID string, locale string, sourceHash string, translation Translation, meta TranslationMeta) error
 }
@@ -97,6 +98,15 @@ func Backfill(ctx context.Context, store Store, translator Translator, cfg Confi
 		if wrote > 0 {
 			summary.MarketsTranslated++
 		}
+	}
+
+	remaining, err := store.CountUntranslated(ctx, cfg.Locales, cfg.Tickers)
+	if err != nil {
+		return summary, fmt.Errorf("count remaining untranslated markets: %w", err)
+	}
+	summary.RemainingUntranslatedByLocale = remaining
+	for _, count := range remaining {
+		summary.RemainingUntranslatedTotal += count
 	}
 
 	return summary, nil

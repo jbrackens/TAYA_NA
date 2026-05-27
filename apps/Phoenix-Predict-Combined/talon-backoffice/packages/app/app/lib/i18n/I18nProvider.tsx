@@ -25,8 +25,8 @@ interface I18nProviderProps {
  * error.
  *
  * We wait for the `initialized` event, which fires after the INIT_NAMESPACES
- * (common, header, sidebar, footer, landing, prediction, market-content) have
- * been fetched. Less common page namespaces (cashier, betslip, etc.) are
+ * (common, header, sidebar, footer, prediction, market-content) have
+ * been fetched. Less common page namespaces (cashier, account, etc.) are
  * loaded lazily by useTranslation().
  */
 export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {

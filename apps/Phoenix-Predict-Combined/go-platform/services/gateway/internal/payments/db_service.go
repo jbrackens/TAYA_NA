@@ -186,12 +186,15 @@ func (s *DBPaymentService) InitiateWithdrawal(ctx context.Context, userID string
 	ctx, cancel := context.WithTimeout(ctx, paymentDBTimeout)
 	defer cancel()
 
+	now := time.Now().UTC()
+	txnID := fmt.Sprintf("wdr:db:%d", now.UnixNano())
+
 	// Use wallet reservation to hold funds (instead of direct debit)
 	reservation, err := s.walletService.Hold(wallet.HoldRequest{
 		UserID:        userID,
 		AmountCents:   amountCents,
 		ReferenceType: "withdrawal",
-		ReferenceID:   fmt.Sprintf("wdr:%s:%d", userID, time.Now().UTC().UnixNano()),
+		ReferenceID:   txnID,
 		ExpiresIn:     24 * time.Hour, // withdrawal holds last 24h
 	})
 	if err != nil {
@@ -200,9 +203,6 @@ func (s *DBPaymentService) InitiateWithdrawal(ctx context.Context, userID string
 		}
 		return nil, fmt.Errorf("failed to hold funds: %w", err)
 	}
-
-	now := time.Now().UTC()
-	txnID := fmt.Sprintf("wdr:db:%d", now.UnixNano())
 
 	_, err = s.db.ExecContext(ctx, `
 INSERT INTO payment_transactions (txn_id, user_id, txn_type, amount_cents, payment_method, status, idempotency_key)
@@ -302,6 +302,9 @@ WHERE user_id = $1 AND txn_type = 'withdrawal' AND status NOT IN ('failed','canc
 		}
 	}
 
+	now := time.Now().UTC()
+	txnID := fmt.Sprintf("wdr:db:%d", now.UnixNano())
+
 	// Hold funds, then record the pending withdrawal on the tx so the row
 	// is covered by the advisory lock and visible to the next serialized
 	// caller once committed.
@@ -309,7 +312,7 @@ WHERE user_id = $1 AND txn_type = 'withdrawal' AND status NOT IN ('failed','canc
 		UserID:        userID,
 		AmountCents:   amountCents,
 		ReferenceType: "withdrawal",
-		ReferenceID:   fmt.Sprintf("wdr:%s:%d", userID, time.Now().UTC().UnixNano()),
+		ReferenceID:   txnID,
 		ExpiresIn:     24 * time.Hour,
 	})
 	if err != nil {
@@ -319,8 +322,6 @@ WHERE user_id = $1 AND txn_type = 'withdrawal' AND status NOT IN ('failed','canc
 		return nil, fmt.Errorf("failed to hold funds: %w", err)
 	}
 
-	now := time.Now().UTC()
-	txnID := fmt.Sprintf("wdr:db:%d", now.UnixNano())
 	if _, err = tx.ExecContext(ctx, `
 INSERT INTO payment_transactions (txn_id, user_id, txn_type, amount_cents, payment_method, status, idempotency_key)
 VALUES ($1, $2, 'withdrawal', $3, $4, 'pending', $5)`,
@@ -454,10 +455,13 @@ WHERE txn_id = $1 FOR UPDATE`, payload.TransactionID).Scan(
 			_, captureErr := s.walletService.Capture("withdrawal", payload.TransactionID)
 			if captureErr != nil {
 				slog.Error("withdrawal capture failed", "txn_id", payload.TransactionID, "error", captureErr)
+				return fmt.Errorf("capture withdrawal hold: %w", captureErr)
 			}
-			_, _ = s.db.ExecContext(ctx, `
+			if _, err := s.db.ExecContext(ctx, `
 UPDATE payment_transactions SET status = 'processed', processed_at = NOW(), updated_at = NOW()
-WHERE txn_id = $1`, payload.TransactionID)
+WHERE txn_id = $1`, payload.TransactionID); err != nil {
+				return fmt.Errorf("mark withdrawal processed: %w", err)
+			}
 		}
 
 	case "failed", "declined":
@@ -467,11 +471,15 @@ WHERE txn_id = $1`, payload.TransactionID)
 		}
 		if txnType == "withdrawal" && currentStatus == "pending" {
 			// Release the hold
-			_ = s.walletService.Release("withdrawal", payload.TransactionID)
+			if err := s.walletService.Release("withdrawal", payload.TransactionID); err != nil {
+				return fmt.Errorf("release withdrawal hold: %w", err)
+			}
 		}
-		_, _ = s.db.ExecContext(ctx, `
+		if _, err := s.db.ExecContext(ctx, `
 UPDATE payment_transactions SET status = $2, error_message = $3, updated_at = NOW()
-WHERE txn_id = $1`, payload.TransactionID, payload.Status, payload.Data["error"])
+WHERE txn_id = $1`, payload.TransactionID, payload.Status, payload.Data["error"]); err != nil {
+			return fmt.Errorf("mark payment failed: %w", err)
+		}
 	}
 
 	slog.Info("webhook processed", "txn_id", payload.TransactionID, "event", payload.EventType, "status", payload.Status)

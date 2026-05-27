@@ -99,10 +99,14 @@ func TestWithdrawalFlowDebitsWallet(t *testing.T) {
 		t.Fatalf("expected amount 2000, got %d", result.Amount)
 	}
 
-	// Verify wallet was debited (funds held)
+	// In-memory mock mode has no reservation table, so pending withdrawals debit immediately.
 	balance := ws.Balance("u-wdr-1")
 	if balance != 3000 {
-		t.Fatalf("expected wallet balance 3000 after withdrawal, got %d", balance)
+		t.Fatalf("expected wallet balance 3000 after pending withdrawal debit, got %d", balance)
+	}
+	available := ws.AvailableBalance("u-wdr-1")
+	if available != 3000 {
+		t.Fatalf("expected available balance 3000 after pending withdrawal debit, got %d", available)
 	}
 
 	// Verify transaction record exists
@@ -213,6 +217,12 @@ func TestWithdrawalStatusTransitionPendingToFailed(t *testing.T) {
 	}
 	if txn.Status != "failed" {
 		t.Fatalf("expected status failed, got %s", txn.Status)
+	}
+	if balance := ws.Balance("u-status-1"); balance != 1500 {
+		t.Fatalf("expected failed withdrawal to leave balance 1500, got %d", balance)
+	}
+	if available := ws.AvailableBalance("u-status-1"); available != 1500 {
+		t.Fatalf("expected failed withdrawal to release available balance to 1500, got %d", available)
 	}
 }
 
@@ -491,6 +501,12 @@ func TestWithdrawalWebhookProcessedSetsProcessedAt(t *testing.T) {
 	}
 	if txn.ProcessedAt == "" {
 		t.Fatal("expected non-empty processedAt after processed webhook")
+	}
+	if balance := ws.Balance("u-wdr-webhook-1"); balance != 3000 {
+		t.Fatalf("expected processed withdrawal to leave debited balance 3000, got %d", balance)
+	}
+	if available := ws.AvailableBalance("u-wdr-webhook-1"); available != 3000 {
+		t.Fatalf("expected processed withdrawal to leave available balance 3000, got %d", available)
 	}
 }
 

@@ -262,8 +262,8 @@ export default function NotificationsPage() {
             {[
               {
                 key: "bet_results" as const,
-                label: "Bet Results",
-                desc: "Get notified when your bets are settled",
+                label: "Market Results",
+                desc: "Get notified when your positions are settled",
               },
               {
                 key: "promotions" as const,
@@ -282,8 +282,8 @@ export default function NotificationsPage() {
               },
               {
                 key: "odds_alerts" as const,
-                label: "Odds Alerts",
-                desc: "Get alerted when odds change significantly on your favorites",
+                label: "Price Alerts",
+                desc: "Get alerted when prices change significantly on your favorites",
               },
             ].map((cat) => (
               <label key={cat.key} className={`${itemClass} cursor-pointer`}>

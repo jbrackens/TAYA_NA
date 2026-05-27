@@ -7,15 +7,24 @@ import (
 )
 
 type memoryStore struct {
-	candidates []MarketCopy
-	cache      map[string]map[string]string
-	writes     []string
-	tickers    []string
+	candidates         []MarketCopy
+	cache              map[string]map[string]string
+	untranslatedCounts map[string]int
+	writes             []string
+	tickers            []string
 }
 
 func (s *memoryStore) ListCandidates(_ context.Context, _ []string, _ int, tickers []string) ([]MarketCopy, error) {
 	s.tickers = append([]string(nil), tickers...)
 	return s.candidates, nil
+}
+
+func (s *memoryStore) CountUntranslated(_ context.Context, locales []string, _ []string) (map[string]int, error) {
+	out := map[string]int{}
+	for _, locale := range NormalizeLocales(locales) {
+		out[locale] = s.untranslatedCounts[locale]
+	}
+	return out, nil
 }
 
 func (s *memoryStore) CacheHashes(_ context.Context, marketID string, _ []string) (map[string]string, error) {
@@ -155,5 +164,35 @@ func TestBackfillPassesTargetTickersToStore(t *testing.T) {
 	}
 	if len(store.tickers) != 1 || store.tickers[0] != "IMP-485DDC71" {
 		t.Fatalf("tickers = %#v, want target ticker", store.tickers)
+	}
+}
+
+func TestBackfillReportsRemainingUntranslatedCounts(t *testing.T) {
+	store := &memoryStore{
+		candidates: []MarketCopy{{
+			ID:          "m1",
+			Ticker:      "IMP-MISSING",
+			Title:       "Will Team win?",
+			Description: "Resolves YES if Team wins.",
+		}},
+		untranslatedCounts: map[string]int{
+			"zh-Hans": 2,
+			"id":      1,
+		},
+	}
+
+	summary, err := Backfill(context.Background(), store, &memoryTranslator{}, Config{
+		Locales: []string{"zh-Hans", "id"},
+		Limit:   1,
+		DryRun:  true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if summary.RemainingUntranslatedTotal != 3 {
+		t.Fatalf("remaining total = %d, want 3", summary.RemainingUntranslatedTotal)
+	}
+	if summary.RemainingUntranslatedByLocale["zh-Hans"] != 2 || summary.RemainingUntranslatedByLocale["id"] != 1 {
+		t.Fatalf("remaining by locale = %#v", summary.RemainingUntranslatedByLocale)
 	}
 }

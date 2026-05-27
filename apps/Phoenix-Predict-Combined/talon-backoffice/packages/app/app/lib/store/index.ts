@@ -37,66 +37,6 @@ export {
   selectIsWsConnected,
 } from './authSlice';
 
-// Bet slice
-export {
-  setBets,
-  toggleBetElement,
-  updateBetElementOdds,
-  clearBets,
-  clearOpenBets,
-  removeBet,
-  setSummaryValues,
-  updateSummaryValuesAfterOddsUpdate,
-  clearSummaryValues,
-  resetBetslipState,
-  setBetValues,
-  setOpenBets,
-  setOpenBetsSize,
-  setHandledOpenBetsPages,
-  setMultiBetsStake,
-  setTotalOddsValue,
-  wsBetUpdateOpened,
-  wsBetUpdateCancelled,
-  wsBetUpdateSettled,
-  wsBetUpdateFailed,
-  setShouldScrollToErrorElement,
-  setErrorCodes,
-  setIsErrorVisible,
-  setSingleBets,
-  setIsListErrorVisible,
-  setIsConfirmationComponentVisible,
-  setIsOddsChangesConfirmed,
-  selectBets,
-  selectSummaryValues,
-  selectBetValues,
-  selectOpenBets,
-  selectHandledOpenBetsPages,
-  selectOpenBetsSize,
-  selectMultiBetsStake,
-  selectShouldScrollToErrorElement,
-  selectBetslipErrorCodes,
-  selectIsBetslipErrorVisible,
-  selectSingleBets,
-  selectIsListErrorVisble,
-  selectIsConfirmationComponentVisible,
-  selectIsOddsChangesConfirmed,
-} from './betSlice';
-
-// Sport slice
-export {
-  setSports,
-  setTimeOfSportsGet,
-  selectSports,
-  selectTimeOfSportsGet,
-  selectSportByAbbreviation,
-} from './sportSlice';
-
-// Market slice
-export { addMarketUpdate, removeMarketUpdate, selectMarkets } from './marketSlice';
-
-// Fixture slice
-export { addFixtureUpdate, removeFixtureUpdate, selectFixtures } from './fixtureSlice';
-
 // Settings slice
 export {
   DisplayOddsEnum,

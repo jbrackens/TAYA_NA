@@ -257,9 +257,9 @@
     },
     {
       "legacy_path": "components/bet-button",
-      "app_equivalent": "app/components/MarketRow.tsx",
+      "app_equivalent": "app/components/prediction/TradeTicket.tsx",
       "status": "REAL",
-      "notes": "MarketRow with OddsButton, integrated with betSlice toggleBetElement dispatch"
+      "notes": "Prediction trade ticket handles yes/no order intent; legacy betSlice dispatch path removed."
     },
     {
       "legacy_path": "components/cashier",
@@ -269,9 +269,9 @@
     },
     {
       "legacy_path": "components/fixture",
-      "app_equivalent": "app/components/FixtureList.tsx",
+      "app_equivalent": "app/components/prediction/MarketGrid.tsx",
       "status": "REAL",
-      "notes": "FixtureList using events-client getEvents with pagination and betslip integration"
+      "notes": "Prediction market grid replaces sportsbook fixture list; fixtures API and betslip integration removed."
     },
     {
       "legacy_path": "components/geocomply",
@@ -473,9 +473,9 @@
     },
     {
       "legacy_path": "app/components/OddsMovement.tsx",
-      "app_equivalent": "app/components/OddsMovement.tsx",
-      "status": "REAL",
-      "notes": ""
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Removed with stale sportsbook component cleanup; prediction cards render market movement directly."
     },
     {
       "legacy_path": "app/components/QuickStake.tsx",
@@ -639,9 +639,9 @@
     },
     {
       "legacy_path": "lib/slices/betSlice",
-      "app_equivalent": "app/lib/store/betSlice.ts",
-      "status": "REAL",
-      "notes": ""
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Removed with sportsbook betslip state; prediction order state is local to the trade ticket and API calls."
     },
     {
       "legacy_path": "lib/slices/cashierSlice",
@@ -651,15 +651,15 @@
     },
     {
       "legacy_path": "lib/slices/fixtureSlice",
-      "app_equivalent": "app/lib/store/fixtureSlice.ts",
-      "status": "REAL",
-      "notes": ""
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Removed with stale fixture feed."
     },
     {
       "legacy_path": "lib/slices/marketSlice",
-      "app_equivalent": "app/lib/store/marketSlice.ts",
-      "status": "REAL",
-      "notes": ""
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Removed legacy sportsbook market-update slice; prediction market data is fetched through prediction clients/components."
     },
     {
       "legacy_path": "lib/slices/navigationSlice",
@@ -687,9 +687,9 @@
     },
     {
       "legacy_path": "lib/slices/sportSlice",
-      "app_equivalent": "app/lib/store/sportSlice.ts",
-      "status": "REAL",
-      "notes": ""
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Removed sportsbook navigation state; prediction category/subcategory filtering now derives from market data."
     },
     {
       "legacy_path": "lib/slices/channels/channelSubscriptionSlice",

@@ -64,6 +64,22 @@ func kycStatusPasses(status string) bool {
 	}
 }
 
+func paymentRouteUserID(r *stdhttp.Request, requestedUserID string, allowAdmin bool) (string, error) {
+	sessionUserID := httpx.UserIDFromContext(r.Context())
+	if sessionUserID == "" {
+		return "", httpx.Forbidden("authentication required")
+	}
+
+	requestedUserID = strings.TrimSpace(requestedUserID)
+	if requestedUserID == "" || requestedUserID == sessionUserID {
+		return sessionUserID, nil
+	}
+	if allowAdmin && strings.EqualFold(httpx.RoleFromContext(r.Context()), "admin") {
+		return requestedUserID, nil
+	}
+	return "", httpx.Forbidden("cannot access another user's payment account")
+}
+
 // RegisterPaymentRoutes registers all payment-related HTTP handlers
 func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 	mux.Handle("/api/v1/payments/deposit", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -76,8 +92,9 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
 		}
 
-		if req.UserID == "" {
-			return httpx.BadRequest("userId is required", map[string]any{"field": "userId"})
+		userID, err := paymentRouteUserID(r, req.UserID, false)
+		if err != nil {
+			return err
 		}
 		if req.Amount <= 0 {
 			return httpx.BadRequest("amountCents must be greater than zero", map[string]any{"field": "amountCents"})
@@ -90,23 +107,23 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 		if DepositComplianceChecker != nil {
 			ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
 			defer cancel()
-			allowed, reason, err := DepositComplianceChecker.CheckDepositAllowed(ctx, req.UserID, req.Amount)
+			allowed, reason, err := DepositComplianceChecker.CheckDepositAllowed(ctx, userID, req.Amount)
 			if err != nil {
 				if errors.Is(err, compliance.ErrDepositLimitExceeded) || errors.Is(err, compliance.ErrUserExcluded) || errors.Is(err, compliance.ErrUserBlocked) {
 					return httpx.Forbidden("deposit not allowed: " + reason)
 				}
 				env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
 				if env == "production" || env == "staging" {
-					slog.Error("deposit compliance check failed", "user_id", req.UserID, "env", env, "error", err)
+					slog.Error("deposit compliance check failed", "user_id", userID, "env", env, "error", err)
 					return httpx.Forbidden("deposit compliance check unavailable")
 				}
-				slog.Warn("deposit compliance check failed, allowing deposit in dev mode", "user_id", req.UserID, "error", err)
+				slog.Warn("deposit compliance check failed, allowing deposit in dev mode", "user_id", userID, "error", err)
 			} else if !allowed {
 				return httpx.Forbidden("deposit not allowed: " + reason)
 			}
 		}
 
-		result, err := service.InitiateDeposit(r.Context(), req.UserID, req.Amount, req.PaymentMethod)
+		result, err := service.InitiateDeposit(r.Context(), userID, req.Amount, req.PaymentMethod)
 		if err != nil {
 			return mapPaymentError(err)
 		}
@@ -115,8 +132,8 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 		if DepositComplianceChecker != nil {
 			ctx2, cancel2 := context.WithTimeout(r.Context(), 2*time.Second)
 			defer cancel2()
-			if err := DepositComplianceChecker.RecordDeposit(ctx2, req.UserID, req.Amount); err != nil {
-				slog.Warn("failed to record deposit for compliance tracking", "user_id", req.UserID, "error", err)
+			if err := DepositComplianceChecker.RecordDeposit(ctx2, userID, req.Amount); err != nil {
+				slog.Warn("failed to record deposit for compliance tracking", "user_id", userID, "error", err)
 			}
 		}
 
@@ -217,9 +234,9 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
 
-		userID := r.URL.Query().Get("userId")
-		if userID == "" {
-			return httpx.BadRequest("userId query parameter is required", map[string]any{"field": "userId"})
+		userID, err := paymentRouteUserID(r, r.URL.Query().Get("userId"), true)
+		if err != nil {
+			return err
 		}
 
 		methods, err := service.GetPaymentMethods(r.Context(), userID)
@@ -244,9 +261,20 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 			return httpx.BadRequest("transactionId query parameter is required", map[string]any{"field": "transactionId"})
 		}
 
+		sessionUserID := httpx.UserIDFromContext(r.Context())
+		if sessionUserID == "" {
+			return httpx.Forbidden("authentication required")
+		}
+
 		status, err := service.GetTransactionStatus(r.Context(), txnID)
 		if err != nil {
 			return mapPaymentError(err)
+		}
+		if status == nil {
+			return httpx.NotFound("transaction not found")
+		}
+		if status.UserID != sessionUserID && !strings.EqualFold(httpx.RoleFromContext(r.Context()), "admin") {
+			return httpx.Forbidden("cannot access another user's payment account")
 		}
 
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{

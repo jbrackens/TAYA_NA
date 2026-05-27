@@ -16,10 +16,10 @@
   },
   "summary": {
     "note": "Counts intentionally omitted until per-route verification lands. A hand-asserted count is the exact failure this manifest exists to prevent (a head-truncated `ls` produced a false 'broken settlements' call on 2026-05-18).",
-    "total_routes": 12,
-    "verified": 5,
-    "inferred": 6,
-    "unverified": 1,
+    "total_routes": 14,
+    "verified": 6,
+    "inferred": 8,
+    "unverified": 0,
     "sportsbook_leftovers_to_remove": 0
   },
   "known_blockers": [
@@ -70,7 +70,25 @@
       "domain": "prediction",
       "status": "REAL",
       "verification": "inferred",
-      "notes": "Observed calling /api/v1/markets?status=open|closed and /api/v1/admin/dashboard/volume. Stale INTEGRATION_PROGRESS.md describes a sportsbook SAMPLE_ version — superseded; verify the live wiring."
+      "notes": "Observed calling /api/v1/markets?status=open|closed and /api/v1/admin/dashboard/volume. Stale INTEGRATION_PROGRESS.md describes a sportsbook SAMPLE_ version — superseded; verify the live wiring. 2026-05-27: source cleanup removed unused sportsbook-era dashboard widget exports/files (ActiveBetsWidget, LiveMatchesWidget, RevenueWidget, RiskAlertsWidget, RecentActivityWidget) plus the mock trading websocket hook; the active dashboard imports DashboardLayout only."
+    },
+    {
+      "route": "/access-control",
+      "router": "app",
+      "file": "app/(dashboard)/access-control/page.tsx -> app/components/access-control/* + app/lib/rbac-api.ts",
+      "domain": "prediction",
+      "status": "REAL",
+      "verification": "inferred",
+      "notes": "2026-05-27: source-read confirmed active nav route. AccessControlContainer uses app/lib/rbac-api.ts, which calls adminFetch against /api/v1/admin/users and /api/v1/admin/roles for back-office RBAC. rg found no SAMPLE_/MOCK_ or sportsbook terms in app/components/access-control. Live API payload not observed in this pass."
+    },
+    {
+      "route": "/disputes",
+      "router": "app",
+      "file": "app/(dashboard)/disputes/page.tsx",
+      "domain": "prediction",
+      "status": "REAL",
+      "verification": "inferred",
+      "notes": "2026-05-27: source-read confirmed active nav route. Fetches /api/v1/admin/disputes, best-effort /api/v1/admin/resolution-sources, and resolves rows via /api/v1/admin/disputes/:id/resolve through adminFetch. Uphold is gated by ConfirmModal. No SAMPLE_/MOCK_ fallback detected. Live API payload not observed in this pass."
     },
     {
       "route": "/loyalty",
@@ -146,7 +164,7 @@
     }
   ],
   "sportsbook_leftovers_removal": {
-    "note": "2026-05-26 cleanup: Gate 2 sportsbook-domain scan is at zero. The legacy fixtures, odds, phone-bet, pages/risk-management, and risk-management-summary trees were removed or quarantined; markets detail now renders prediction-safe outcomes directly; store.config no longer wires dead fixtures/markets reducers. Keep this section as historical evidence of what was removed.",
+    "note": "2026-05-26 cleanup: Gate 2 sportsbook-domain scan is at zero. The legacy fixtures, odds, phone-bet, pages/risk-management, and risk-management-summary trees were removed or quarantined; markets detail now renders prediction-safe outcomes directly; store.config no longer wires dead fixtures/markets reducers. 2026-05-27: unused sportsbook/prototype dashboard widgets and the mock trading websocket hook were removed from app/ after rg confirmed no live imports beyond barrels. Keep this section as historical evidence of what was removed.",
     "items": [
       {
         "path": "components/fixtures/",
@@ -198,11 +216,18 @@
         "entanglement": "removed 2026-05-26 after rg found no /api/fixtures callers; legacy fixture containers still call admin/fixtures and remain entangled"
       },
       {
+        "path": "app/components/dashboard/{ActiveBetsWidget,LiveMatchesWidget,RevenueWidget,RiskAlertsWidget,RecentActivityWidget}.tsx",
+        "reason": "Unused sportsbook/prototype dashboard widgets, including Active Bets and Live Matches, were exposed through the dashboard barrel.",
+        "domain_verified": true,
+        "safe_to_delete": true,
+        "entanglement": "removed 2026-05-27 after rg found no source imports except app/components/dashboard/index.ts; /dashboard imports DashboardLayout only"
+      },
+      {
         "path": "app/hooks/useTradingWebSocket.ts",
         "reason": "Sportsbook trading WS hook with mock data.",
         "domain_verified": true,
-        "safe_to_delete": false,
-        "entanglement": "re-exported by app/hooks/index.ts barrel; imported by app/components/dashboard/LiveMatchesWidget.tsx (sportsbook dashboard widget) — barrel + widget must be updated"
+        "safe_to_delete": true,
+        "entanglement": "removed 2026-05-27 after rg found only the hooks barrel and LiveMatchesWidget importer; app/hooks/index.ts now exports useConfirm only"
       }
     ]
   }
