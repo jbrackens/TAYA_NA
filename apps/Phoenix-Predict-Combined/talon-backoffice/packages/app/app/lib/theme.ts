@@ -30,7 +30,7 @@ export const colors = {
   // Backgrounds (dark → light)
   bgDeep: "#0a0e1a", // Deepest background
   bgBase: "#0b0e1c", // Body / input backgrounds
-  bgSurface: "#0f1225", // Cards, sidebar, header, betslip
+  bgSurface: "#0f1225", // Cards, sidebar, header
   bgElevated: "#111631", // Hover states, table headers
   bgActive: "#1a2040", // Active sidebar items, selected states
   bgHover: "#161a35", // Generic hover
@@ -134,8 +134,6 @@ export const breakpoint = {
 export const zIndex = {
   sidebar: 20,
   topbar: 10,
-  betslipBackdrop: 29,
-  betslip: 30,
   modal: 50,
   toast: 60,
   overlay: 40,
@@ -145,7 +143,6 @@ export const zIndex = {
 export const layout = {
   sidebarWidth: "220px",
   sidebarCollapsed: "60px",
-  betslipWidth: "380px",
   maxContentWidth: "1440px",
   headerHeight: "56px",
 } as const;

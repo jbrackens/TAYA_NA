@@ -1,5 +1,10 @@
 # Phoenix Sportsbook E2E Test Suites
 
+> Historical sportsbook-era note: these suites and selectors document the
+> pre-migration sportsbook app. They are not the current prediction-market QA
+> contract unless a spec has been explicitly rewritten against Hula Na routes,
+> prediction orders, and portfolio/accounting APIs.
+
 Comprehensive Playwright E2E tests for both the Phoenix Sportsbook Player App and Talon Backoffice admin interface.
 
 ## Quick Start

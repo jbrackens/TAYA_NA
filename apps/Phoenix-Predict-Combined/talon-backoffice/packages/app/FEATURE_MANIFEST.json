@@ -293,15 +293,15 @@
     },
     {
       "legacy_path": "components/layout/betslip",
-      "app_equivalent": "app/components/Betslip.tsx + BetslipPanel.tsx",
-      "status": "REAL",
-      "notes": "BetslipPanel wired to placeBet/placeParlay with real userId from auth, cashout support"
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Removed with sportsbook betslip flow; prediction orders are placed from app/components/prediction/TradeTicket.tsx."
     },
     {
       "legacy_path": "components/layout/sidebar",
-      "app_equivalent": "app/components/SportsSidebar.tsx",
-      "status": "REAL",
-      "notes": ""
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Removed with sportsbook navigation; active navigation is prediction category/subcategory filtering."
     },
     {
       "legacy_path": "components/results",
@@ -479,15 +479,15 @@
     },
     {
       "legacy_path": "app/components/QuickStake.tsx",
-      "app_equivalent": "app/components/QuickStake.tsx",
-      "status": "REAL",
-      "notes": ""
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Removed as unused sportsbook stake shortcut UI."
     },
     {
       "legacy_path": "app/components/BetLeg.tsx",
-      "app_equivalent": "app/components/BetLeg.tsx",
-      "status": "REAL",
-      "notes": ""
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Removed with sportsbook betslip leg UI."
     },
     {
       "legacy_path": "app/components/ToastProvider.tsx",
@@ -497,15 +497,15 @@
     },
     {
       "legacy_path": "app/components/BetslipProvider.tsx",
-      "app_equivalent": "app/components/BetslipProvider.tsx",
-      "status": "REAL",
-      "notes": ""
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Removed with sportsbook betslip state provider."
     },
     {
       "legacy_path": "app/components/SportSidebar.tsx",
-      "app_equivalent": "app/components/SportSidebar.tsx",
-      "status": "REAL",
-      "notes": ""
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Removed with sportsbook sport navigation."
     },
     {
       "name": "WalletBreakdown",

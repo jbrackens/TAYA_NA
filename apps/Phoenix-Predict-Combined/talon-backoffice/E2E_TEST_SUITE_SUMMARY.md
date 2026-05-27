@@ -1,5 +1,10 @@
 # E2E Test Suite Implementation Summary
 
+> Historical sportsbook-era note: this document describes the Phoenix sportsbook
+> test suite that predated the Hula Na prediction-market migration. It is kept
+> only as migration history; it is not evidence that fixture, betslip, parlay, or
+> sportsbook bet-history flows are current production behavior.
+
 ## Overview
 
 A comprehensive Playwright E2E test suite has been created for both the Phoenix Sportsbook Player App and Talon Backoffice admin interface. The test suites include critical user flows, API mocking, shared fixtures, and detailed documentation.

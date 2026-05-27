@@ -1,5 +1,9 @@
 # Error Handling & Loading States Enhancement
 
+> Historical sportsbook-era note: these examples describe an older sample-data
+> pass and are not proof that a current office route is wired to production
+> APIs. Treat `FEATURE_MANIFEST.json` and live route verification as canonical.
+
 ## Overview
 
 This document details the enhancements made to the Phoenix Backoffice pages to improve error handling, user feedback, and overall UX through proper loading states and error boundaries.

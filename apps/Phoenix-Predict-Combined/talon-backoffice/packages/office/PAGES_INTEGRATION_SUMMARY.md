@@ -1,5 +1,10 @@
 # Phoenix Backoffice Pages Integration Summary
 
+> Historical sportsbook-era note: this document describes a pre-migration
+> component/sample-data integration pass. Do not use it as evidence of current
+> office readiness. Current route status and verification live in
+> `FEATURE_MANIFEST.json`.
+
 ## Completion Status
 
 All major App Router pages have been successfully integrated with the new component-based architecture. This document summarizes the changes made.

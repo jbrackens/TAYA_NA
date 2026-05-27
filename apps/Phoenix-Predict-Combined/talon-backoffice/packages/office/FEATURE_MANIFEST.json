@@ -11,6 +11,7 @@
   },
   "verification_legend": {
     "verified": "Confirmed this session by reading the file AND observing the live API call (status + payload).",
+    "live_auth_probe": "Source-read confirmed, and the deployed gateway route was observed live with an auth-protected JSON response. Authenticated payload was not inspected.",
     "inferred": "Grep-level signal only (appears in real-API-call set, no SAMPLE_ hit) — not per-file confirmed.",
     "unverified": "Not yet inspected. Status is a placeholder; the gate must not treat it as truth."
   },
@@ -18,7 +19,8 @@
     "note": "Counts intentionally omitted until per-route verification lands. A hand-asserted count is the exact failure this manifest exists to prevent (a head-truncated `ls` produced a false 'broken settlements' call on 2026-05-18).",
     "total_routes": 14,
     "verified": 6,
-    "inferred": 8,
+    "live_auth_probe": 3,
+    "inferred": 5,
     "unverified": 0,
     "sportsbook_leftovers_to_remove": 0
   },
@@ -96,8 +98,8 @@
       "file": "app/(dashboard)/loyalty/{page,settings,[id]}.tsx",
       "domain": "prediction",
       "status": "REAL",
-      "verification": "inferred",
-      "notes": "In real-API-call grep set (/api/v1/...). Predict-native loyalty admin per gateway registerPredictLoyaltyRoutes. Per-route confirm pending."
+      "verification": "live_auth_probe",
+      "notes": "2026-05-27: source-read confirmed list/detail/settings pages call adminFetch against /api/v1/admin/loyalty/accounts, /config, /tiers, /rules, and /adjustments with no SAMPLE_/MOCK_ fallback. Live unauthenticated probes to /api/v1/admin/loyalty/accounts and /api/v1/admin/loyalty/config returned gateway JSON 401 authentication required, proving the routes are mounted and protected; authenticated payload not inspected because local office basic-auth/deploy SSH credentials are unavailable."
     },
     {
       "route": "/content",
@@ -105,8 +107,8 @@
       "file": "app/(dashboard)/content/page.tsx",
       "domain": "prediction",
       "status": "REAL",
-      "verification": "inferred",
-      "notes": "In real-API-call grep set. Maps to gateway /api/v1/admin/content/pages + /admin/banners. Per-route confirm pending."
+      "verification": "live_auth_probe",
+      "notes": "2026-05-27: source-read confirmed the page loads, saves, and publishes through adminFetch against /api/v1/admin/content/pages and /api/v1/admin/banners. Live unauthenticated probes to both endpoints returned gateway JSON 401 authentication required, proving the routes are mounted and protected; authenticated payload not inspected because local office basic-auth/deploy SSH credentials are unavailable."
     },
     {
       "route": "/users",
@@ -123,8 +125,8 @@
       "file": "app/(dashboard)/leaderboards/{page,[id]}.tsx",
       "domain": "prediction",
       "status": "REAL",
-      "verification": "inferred",
-      "notes": "2026-05-26: source-read confirmed. List/detail pages use adminFetch against /api/v1/admin/leaderboards, /api/v1/admin/leaderboards/:id, recompute endpoints, standings, and event recording. No SAMPLE_/MOCK_ fallback detected by gate. Live API payload not observed in this pass."
+      "verification": "live_auth_probe",
+      "notes": "2026-05-27: source-read confirmed list/detail pages use adminFetch against /api/v1/admin/leaderboards, /api/v1/admin/leaderboards/:id, recompute endpoints, standings, and event recording. No SAMPLE_/MOCK_ fallback detected by gate. Live unauthenticated probe to /api/v1/admin/leaderboards returned gateway JSON 401 authentication required, proving the route is mounted and protected; authenticated payload not inspected because local office basic-auth/deploy SSH credentials are unavailable."
     },
     {
       "route": "/audit-logs",

@@ -1,5 +1,10 @@
 # Error Handling & Loading States Enhancement - Summary
 
+> Historical sportsbook-era note: this summary predates the current
+> prediction-admin App Router implementation. It is retained for migration
+> context only; verify live behavior from source and gateway calls before
+> marking any route production-ready.
+
 ## Session Overview
 
 **Date**: April 2026  

@@ -1,5 +1,10 @@
 # Phoenix Backoffice Integration Progress
 
+> Historical sportsbook-era note: this document captured an older sample-data
+> integration pass. The active source of truth is `FEATURE_MANIFEST.json` plus
+> the App Router pages under `app/(dashboard)`, which must use real
+> `/api/v1/admin/*` gateway calls and no `SAMPLE_`/mock data.
+
 ## Current Phase: Error Handling & Loading States
 
 ### Completion Status: 100%

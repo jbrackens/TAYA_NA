@@ -2,10 +2,6 @@
 
 /**
  * CategoryPills — horizontal category filter.
- *
- * Uses the sportsbook .sport-pills / .sport-pill / .sport-pill-icon classes
- * from globals.css — same look as the sport navigation on the sportsbook
- * discovery page, just with category labels instead of sports.
  */
 
 import Link from "next/link";
@@ -22,6 +18,20 @@ const CATEGORY_EMOJI: Record<string, string> = {
   economics: "\u{1F4C8}",
 };
 
+const PILLS_WRAPPER_CLASS =
+  "flex min-w-max gap-2.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden";
+const PILL_BASE_CLASS =
+  "inline-flex items-center gap-2 whitespace-nowrap rounded-md border px-4 py-2.5 text-[13px] font-bold transition-all duration-150";
+const PILL_ACTIVE_CLASS =
+  "border-[var(--yes-border)] bg-[var(--yes-soft)] text-[var(--yes-text)] shadow-[0_0_24px_rgba(113,238,184,0.12)]";
+const PILL_INACTIVE_CLASS =
+  "border-[rgba(42,49,80,0.9)] bg-[#0f1630] text-[#d3d3d3] hover:-translate-y-px hover:border-[#435079] hover:text-[#dbeafe]";
+const PILL_ICON_CLASS = "text-[15px] leading-none";
+
+function pillClass(active: boolean): string {
+  return `${PILL_BASE_CLASS} ${active ? PILL_ACTIVE_CLASS : PILL_INACTIVE_CLASS}`;
+}
+
 interface CategoryPillsProps {
   categories: Category[];
   activeSlug?: string | null;
@@ -36,13 +46,13 @@ export function CategoryPills({
   const { t } = useTranslation("prediction");
   const { t: contentT } = useTranslation("market-content");
   return (
-    <div className="sport-pills">
+    <div className={PILLS_WRAPPER_CLASS}>
       <button
         type="button"
         onClick={() => onSelect?.(null)}
-        className={`sport-pill${!activeSlug ? " active" : ""}`}
+        className={pillClass(!activeSlug)}
       >
-        <span className="sport-pill-icon">{"\u{2728}"}</span>
+        <span className={PILL_ICON_CLASS}>{"\u{2728}"}</span>
         {t("ALL")}
       </button>
       {categories.map((cat) => {
@@ -57,9 +67,9 @@ export function CategoryPills({
                 onSelect(cat.slug);
               }
             }}
-            className={`sport-pill${active ? " active" : ""}`}
+            className={pillClass(active)}
           >
-            <span className="sport-pill-icon">
+            <span className={PILL_ICON_CLASS}>
               {CATEGORY_EMOJI[cat.slug] ?? "\u{2022}"}
             </span>
             {categoryName(contentT, cat)}

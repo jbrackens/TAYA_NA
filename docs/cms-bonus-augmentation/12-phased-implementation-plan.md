@@ -1,5 +1,9 @@
 # 12 — Phased Implementation Plan
 
+> Historical sportsbook-era note: this phased plan predates the prediction
+> market migration. Treat betslip/parlay/sportsbook references as archived
+> context, not active roadmap.
+
 **Date:** 2026-04-16
 
 ---

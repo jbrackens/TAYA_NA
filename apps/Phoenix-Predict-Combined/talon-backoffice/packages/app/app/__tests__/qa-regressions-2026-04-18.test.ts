@@ -295,12 +295,17 @@ describe("Navigation pill radius", () => {
     }
   });
 
-  it("uses soft rectangular corners for legacy category navigation pills", () => {
-    const sportPillBlock = /\.sport-pill\s*\{[\s\S]*?\}/.exec(globalsSource);
-    assert.ok(sportPillBlock, "Legacy category pills should have a style block");
+  it("uses soft rectangular corners for category navigation pills", () => {
+    const categoryPillsSource = read("components/prediction/CategoryPills.tsx");
+    const categoryPillClass = constValue(categoryPillsSource, "PILL_BASE_CLASS");
     assert.ok(
-      sportPillBlock![0].includes("border-radius: 6px"),
-      "Legacy category pills should use 6px corners",
+      categoryPillClass.includes("rounded-md"),
+      "Category pills should use 6px Tailwind corners",
+    );
+    assert.ok(
+      !categoryPillClass.includes("var(--r-pill)") &&
+        !categoryPillClass.includes("999px"),
+      "Category pills should not use capsule radius",
     );
   });
 });
@@ -310,6 +315,7 @@ describe("Navigation pill active colors", () => {
   const topBarSource = read("components/prediction/TopBar.tsx");
   const marketChartSource = read("components/prediction/MarketChart.tsx");
   const globalsSource = read("globals.css");
+  const categoryPillsSource = read("components/prediction/CategoryPills.tsx");
 
   function functionBody(source: string, name: string): string {
     const match = new RegExp(`function\\s+${name}\\([\\s\\S]*?^\\}`, "m").exec(
@@ -357,14 +363,13 @@ describe("Navigation pill active colors", () => {
     }
   });
 
-  it("uses seafoam tokens for legacy active category pills", () => {
-    const sportActiveBlock = /\.sport-pill\.active\s*\{[\s\S]*?\}/.exec(globalsSource);
-    assert.ok(sportActiveBlock, "Legacy active category pills should have a style block");
+  it("uses seafoam tokens for active category pills", () => {
+    const categoryActiveClass = constValue(categoryPillsSource, "PILL_ACTIVE_CLASS");
     assert.ok(
-      sportActiveBlock![0].includes("background: var(--yes-soft)") &&
-        sportActiveBlock![0].includes("border-color: var(--yes-border)") &&
-        sportActiveBlock![0].includes("color: var(--yes-text)"),
-      "Legacy active category pills should use seafoam tokens",
+      categoryActiveClass.includes("bg-[var(--yes-soft)]") &&
+        categoryActiveClass.includes("border-[var(--yes-border)]") &&
+        categoryActiveClass.includes("text-[var(--yes-text)]"),
+      "Active category pills should use seafoam tokens",
     );
   });
 });
