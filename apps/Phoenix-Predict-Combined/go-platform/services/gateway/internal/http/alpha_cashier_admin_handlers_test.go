@@ -86,6 +86,30 @@ func TestAlphaCashierAdminRoutesExposeDepositsAndAudit(t *testing.T) {
 	}
 }
 
+func TestAlphaCashierAdminPreflightRoute(t *testing.T) {
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "")
+	mux := stdhttp.NewServeMux()
+	svc := alphacashier.NewService(alphaCashierHTTPTestConfig(), alphacashier.NewMemoryRepository())
+	svc.SetWalletLedger(&alphaHTTPFakeLedger{})
+	registerAlphaCashierAdminRoutes(mux, svc, nil)
+
+	req := adminAlphaReq(stdhttp.MethodGet, "/api/v1/admin/cashier/alpha/preflight", "")
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+	if rec.Code != stdhttp.StatusOK {
+		t.Fatalf("preflight status=%d body=%s", rec.Code, rec.Body.String())
+	}
+	var payload struct {
+		Preflight alphacashier.PreflightReport `json:"preflight"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode preflight: %v", err)
+	}
+	if payload.Preflight.Overall == "" || len(payload.Preflight.Checks) == 0 {
+		t.Fatalf("unexpected preflight payload: %+v", payload.Preflight)
+	}
+}
+
 func TestAlphaCashierAdminRoutesRequireCashierRBACPermissions(t *testing.T) {
 	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "")
 	mux := stdhttp.NewServeMux()

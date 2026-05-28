@@ -177,8 +177,8 @@ and keep `ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED=true`.
 Before turning on the rail, operators still need to choose the single live chain,
 verify the USDC token contract from chain-native sources, create and label the
 Hula treasury wallet, provision RPC secrets, run the `030_alpha_cashier.sql`
-migration, and complete deposit/replay/reconciliation smoke tests with a fake or
-test RPC.
+migration, run `GET /api/v1/admin/cashier/alpha/preflight`, and complete
+deposit/replay/reconciliation smoke tests with a fake or test RPC.
 
 ## V3 Non-Custodial Planning
 

@@ -1,9 +1,53 @@
 # Hula Na! Cashier Testnet E2E Acceptance
 
-**Status:** Draft gate for Phase 3-5.
-**Date:** 2026-05-25.
+**Status:** Stage 1 Alpha plus V3 testnet gates.
+**Date:** 2026-05-28.
 
 No mainnet integration may start until this testnet matrix is boring.
+
+## Stage 1: Custodial USDC Alpha Smoke
+
+Stage 1 uses the Go gateway `alphacashier` rail, not the V3 non-custodial
+cashier service. This smoke can run against a fake EVM client in unit tests, a
+test RPC, or a supervised live-chain micro-deposit after treasury setup.
+
+Happy path:
+
+1. User signs in.
+2. User requests `POST /api/v1/cashier/alpha/wallet/challenge`.
+3. User signs the exact challenge message with MetaMask.
+4. Gateway verifies `personal_sign` server-side and stores the wallet
+   connection.
+5. User creates an exact-amount deposit intent with an `Idempotency-Key`.
+6. User sends the exact ERC-20 USDC transfer from the connected wallet to the
+   Hula treasury.
+7. User submits the tx hash.
+8. Gateway verifies receipt status, token contract, sender, recipient, amount,
+   log index, and confirmations.
+9. Gateway credits the internal wallet ledger exactly once.
+10. Replaying the same tx submission does not create a second credit.
+11. User creates a withdrawal request only if the Alpha queue is enabled.
+12. Operator approves with a review note, records manual broadcast tx hash, and
+    marks completed only after on-chain visibility.
+13. Backoffice reconciliation reports expected reserve, treasury reserve, and
+    drift.
+
+Required local guard:
+
+```bash
+scripts/check-alpha-cashier-stage1.sh
+```
+
+Pass condition: deposit credit count remains one after replay, withdrawal funds
+are held before approval, completion captures the reservation, audit events are
+written, and reconciliation drift is zero for the fake-chain fixture.
+
+Before Alpha invite:
+
+- `GET /api/v1/admin/cashier/alpha/preflight` has no `fail` checks.
+- Any `warn` checks have an owner-approved launch note.
+- The first real transaction is a tiny operator-controlled deposit, not a user
+  deposit.
 
 ## Phase 3: TRC-20 USDT Deposit Path
 

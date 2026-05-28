@@ -488,6 +488,7 @@ Admin routes:
 | `POST` | `/api/v1/admin/cashier/alpha/withdrawals/{id}/mark-broadcasted` | Store manually broadcast tx hash. |
 | `POST` | `/api/v1/admin/cashier/alpha/withdrawals/{id}/mark-completed` | Capture held funds after manual payout confirmation. |
 | `GET` | `/api/v1/admin/cashier/alpha/reconciliation` | Return treasury-vs-ledger reconciliation summary. |
+| `GET` | `/api/v1/admin/cashier/alpha/preflight` | Return launch-readiness checks for config, limits, ledger wiring, RPC, treasury, and withdrawal flags. |
 | `GET` | `/api/v1/admin/cashier/alpha/audit-events` | Search audit events. |
 
 ### Wallet Ownership Flow
@@ -934,9 +935,9 @@ Remaining live-chain setup before inviting Alpha users:
 3. Provision primary and backup RPC providers; store only the active RPC URL in
    deployment secrets.
 4. Apply the gateway migration and deploy with `ALPHA_CASHIER_ENABLED=false`.
-5. Smoke test config, wallet challenge, deposit intent creation, tx submission,
-   duplicate tx replay, manual withdrawal request, and reconciliation against a
-   fake or test RPC.
+5. Smoke test config, admin preflight, wallet challenge, deposit intent
+   creation, tx submission, duplicate tx replay, manual withdrawal request, and
+   reconciliation against a fake or test RPC.
 6. Set low Alpha limits, enable for the supervised cohort, and run daily
    ledger-to-treasury reconciliation before expanding access.
 

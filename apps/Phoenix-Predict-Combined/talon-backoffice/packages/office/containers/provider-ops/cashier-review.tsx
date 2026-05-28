@@ -158,6 +158,30 @@ type AlphaReconciliationResponse = {
   reconciliation?: AlphaReconciliation;
 };
 
+type AlphaPreflightCheck = {
+  key: string;
+  status: "pass" | "warn" | "fail" | string;
+  message: string;
+  metadata?: Record<string, any>;
+};
+
+type AlphaPreflight = {
+  overall: "pass" | "warn" | "fail" | string;
+  enabled: boolean;
+  chainId: number;
+  chainName: string;
+  tokenSymbol: string;
+  tokenAddress?: string;
+  treasuryAddress?: string;
+  withdrawalsEnabled: boolean;
+  generatedAt: string;
+  checks: AlphaPreflightCheck[];
+};
+
+type AlphaPreflightResponse = {
+  preflight?: AlphaPreflight;
+};
+
 type PaymentAssignmentRequest = {
   assigned_to: string;
   reason?: string;
@@ -352,6 +376,19 @@ const paymentStatusColor = (status: string): string => {
   }
 };
 
+const preflightStatusColor = (status: string): string => {
+  switch (`${status || ""}`.trim().toLowerCase()) {
+    case "pass":
+      return "success";
+    case "warn":
+      return "warning";
+    case "fail":
+      return "error";
+    default:
+      return "default";
+  }
+};
+
 const renderTimestamp = (
   value: string | undefined,
   format: string,
@@ -425,6 +462,8 @@ const CashierReviewPanel = () => {
   );
   const [alphaReconciliation, setAlphaReconciliation] =
     useState<AlphaReconciliation | null>(null);
+  const [alphaPreflight, setAlphaPreflight] =
+    useState<AlphaPreflight | null>(null);
 
   const [triggerQueue, queueLoading, queueResponse] =
     useApi<PaymentQueueResponse>("admin/payments/transactions", Method.GET);
@@ -544,10 +583,18 @@ const CashierReviewPanel = () => {
     "admin/cashier/alpha/reconciliation",
     Method.GET,
   );
+  const [
+    triggerAlphaPreflight,
+    alphaPreflightLoading,
+    alphaPreflightResponse,
+  ] = useApi<AlphaPreflightResponse>(
+    "admin/cashier/alpha/preflight",
+    Method.GET,
+  );
   const [triggerAlphaApprove, alphaApproveLoading] = useApi<
     AlphaWithdrawalResponse,
     any,
-    { reviewNote?: string }
+    { reviewNote: string }
   >("admin/cashier/alpha/withdrawals/:withdrawalID/approve", Method.POST);
   const [triggerAlphaReject, alphaRejectLoading] = useApi<
     AlphaWithdrawalResponse,
@@ -756,6 +803,7 @@ const CashierReviewPanel = () => {
       triggerAlphaDeposits(undefined, { query: { limit: 50 } }),
       triggerAlphaAuditEvents(undefined, { query: { limit: 50 } }),
       triggerAlphaReconciliation(),
+      triggerAlphaPreflight(),
     ]);
   };
 
@@ -878,6 +926,13 @@ const CashierReviewPanel = () => {
     alphaReconciliationResponse.succeeded,
     alphaReconciliationResponse.data,
   ]);
+
+  useEffect(() => {
+    if (!alphaPreflightResponse.succeeded) {
+      return;
+    }
+    setAlphaPreflight(alphaPreflightResponse.data?.preflight || null);
+  }, [alphaPreflightResponse.succeeded, alphaPreflightResponse.data]);
 
   const openTransaction = async (record: PaymentQueueItem) => {
     setDrawerVisible(true);
@@ -1284,6 +1339,45 @@ const CashierReviewPanel = () => {
   return (
     <>
       <Card title="Alpha USDC cashier" className="mb-4">
+        <div className="mb-4 rounded-md border border-gray-200 p-4">
+          <Space direction="vertical" size={12} className="w-full">
+            <Space wrap>
+              <Typography.Text strong>Launch preflight</Typography.Text>
+              {alphaPreflightLoading ? <Tag>LOADING</Tag> : null}
+              <Tag color={preflightStatusColor(alphaPreflight?.overall || "")}>
+                {(alphaPreflight?.overall || "unknown").toUpperCase()}
+              </Tag>
+              <Tag color={alphaPreflight?.enabled ? "success" : "warning"}>
+                {alphaPreflight?.enabled ? "ENABLED" : "DISABLED"}
+              </Tag>
+              <Typography.Text type="secondary">
+                {alphaPreflight
+                  ? `${alphaPreflight.chainName || "chain"} #${alphaPreflight.chainId || "-"} · ${alphaPreflight.tokenSymbol || "token"}`
+                  : "No preflight report loaded"}
+              </Typography.Text>
+            </Space>
+            <List
+              size="small"
+              dataSource={(alphaPreflight?.checks || []).slice(0, 8)}
+              renderItem={(item) => (
+                <List.Item>
+                  <Space align="start">
+                    <Tag color={preflightStatusColor(item.status)}>
+                      {item.status.toUpperCase()}
+                    </Tag>
+                    <div>
+                      <Typography.Text strong>{item.key}</Typography.Text>
+                      <br />
+                      <Typography.Text type="secondary">
+                        {item.message}
+                      </Typography.Text>
+                    </div>
+                  </Space>
+                </List.Item>
+              )}
+            />
+          </Space>
+        </div>
         <Row gutter={[16, 16]} className="mb-4">
           <Col xs={24} sm={12} lg={6}>
             <Card loading={alphaReconciliationLoading}>

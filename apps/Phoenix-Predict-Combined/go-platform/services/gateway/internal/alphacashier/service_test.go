@@ -131,6 +131,18 @@ func TestServiceWithdrawalReviewLifecycle(t *testing.T) {
 	}
 }
 
+func TestServiceApproveWithdrawalRequiresReviewNote(t *testing.T) {
+	svc := NewService(testConfig(), NewMemoryRepository())
+	svc.SetWalletLedger(&fakeLedger{})
+	req, err := svc.CreateWithdrawalRequest(context.Background(), "u-1", "0x0000000000000000000000000000000000000009", 2500, "wd-1")
+	if err != nil {
+		t.Fatalf("CreateWithdrawalRequest: %v", err)
+	}
+	if _, err := svc.ApproveWithdrawal(context.Background(), req.ID, "admin-1", " "); err != ErrReviewNoteRequired {
+		t.Fatalf("ApproveWithdrawal got %v, want ErrReviewNoteRequired", err)
+	}
+}
+
 func TestServiceRejectWithdrawalReleasesFunds(t *testing.T) {
 	svc := NewService(testConfig(), NewMemoryRepository())
 	ledger := &fakeLedger{}
@@ -148,6 +160,43 @@ func TestServiceRejectWithdrawalReleasesFunds(t *testing.T) {
 	}
 	if len(ledger.released) != 1 {
 		t.Fatalf("release calls: got %d, want 1", len(ledger.released))
+	}
+}
+
+func TestServicePreflightDisabledWarnsWithoutFailing(t *testing.T) {
+	svc := NewService(Config{Enabled: false}, NewMemoryRepository())
+	report := svc.Preflight(context.Background())
+	if report.Overall != "warn" {
+		t.Fatalf("overall got %s, want warn", report.Overall)
+	}
+	if report.Enabled {
+		t.Fatalf("expected disabled report")
+	}
+}
+
+func TestServicePreflightEnabledPassesWithRPCAndLedger(t *testing.T) {
+	svc := NewService(testConfig(), NewMemoryRepository())
+	svc.SetWalletLedger(&fakeLedger{})
+	svc.SetEVMClient(fakeEVMClient{latest: 1234, balance: bigInt(25000000)})
+	report := svc.Preflight(context.Background())
+	if report.Overall != "warn" {
+		t.Fatalf("overall got %s, want warn because withdrawal queue is enabled in test config", report.Overall)
+	}
+	foundRPC := false
+	foundBalance := false
+	for _, check := range report.Checks {
+		if check.Key == "evm_rpc.block_number" && check.Status == "pass" {
+			foundRPC = true
+		}
+		if check.Key == "treasury.balance" && check.Status == "pass" {
+			foundBalance = true
+		}
+		if check.IsFailure() {
+			t.Fatalf("unexpected failure check: %+v", check)
+		}
+	}
+	if !foundRPC || !foundBalance {
+		t.Fatalf("expected RPC and balance preflight checks, got %+v", report.Checks)
 	}
 }
 

@@ -171,3 +171,23 @@ type ReconciliationLedgerSnapshot struct {
 	WalletBalanceCents       int64
 	ActiveReservationCents   int64
 }
+
+type PreflightCheck struct {
+	Key      string         `json:"key"`
+	Status   string         `json:"status"`
+	Message  string         `json:"message"`
+	Metadata map[string]any `json:"metadata,omitempty"`
+}
+
+type PreflightReport struct {
+	Overall            string           `json:"overall"`
+	Enabled            bool             `json:"enabled"`
+	ChainID            int64            `json:"chainId"`
+	ChainName          string           `json:"chainName"`
+	TokenSymbol        string           `json:"tokenSymbol"`
+	TokenAddress       string           `json:"tokenAddress,omitempty"`
+	TreasuryAddress    string           `json:"treasuryAddress,omitempty"`
+	WithdrawalsEnabled bool             `json:"withdrawalsEnabled"`
+	GeneratedAt        time.Time        `json:"generatedAt"`
+	Checks             []PreflightCheck `json:"checks"`
+}

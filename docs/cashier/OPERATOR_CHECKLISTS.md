@@ -1,7 +1,80 @@
 # Hula Na! Cashier Operator Checklists
 
-**Status:** Draft.
-**Date:** 2026-05-25.
+**Status:** Stage 1 Alpha operational checklist.
+**Date:** 2026-05-28.
+
+## Stage 1 Alpha Enablement
+
+Use this checklist before setting `ALPHA_CASHIER_ENABLED=true`.
+
+1. Confirm the single Alpha chain and chain id.
+2. Verify the USDC contract address from chain-native documentation or explorer
+   sources; do not copy from screenshots or chat.
+3. Create the Hula treasury wallet and record owner, backup owner, creation date,
+   chain, and intended use in the private operations register.
+4. Confirm no treasury private key, seed phrase, or payout signing credential is
+   stored in the app, repository, CI variables, or server `.env` files.
+5. Provision primary RPC URL in deployment secrets and record the backup provider
+   in the private operations register.
+6. Keep `ALPHA_CASHIER_WITHDRAWALS_ENABLED=false` unless the operator team is
+   ready to receive user withdrawal requests in backoffice.
+7. Keep `ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED=true`.
+8. Run the admin Alpha preflight endpoint:
+   `GET /api/v1/admin/cashier/alpha/preflight`.
+9. Do not invite users unless preflight has no `fail` checks and every `warn`
+   check has an explicit owner-approved note.
+10. Run the fake/test RPC smoke flow and record the result in the launch log.
+
+## Stage 1 Daily Reconciliation
+
+Run once per operating day while Alpha is enabled.
+
+1. Open backoffice `/cashier`.
+2. Review the Alpha preflight panel; any `fail` check pauses new deposits.
+3. Review treasury reserve, expected reserve, reserve drift, and pending
+   withdrawals.
+4. Compare the on-chain treasury balance with the backoffice reconciliation
+   number.
+5. If drift is non-zero, pause deposit invitations and open an incident before
+   processing withdrawals.
+6. Export or screenshot the deposit list, withdrawal queue, and audit trail into
+   the private launch log.
+7. Confirm every credited deposit has a tx hash and a matching audit event.
+8. Confirm every completed withdrawal has a broadcast tx hash and two humans
+   aware of the payout.
+
+## Stage 1 Manual Withdrawal Review
+
+Stage 1 does not broadcast payouts from application code.
+
+1. Confirm the request status is `requested`.
+2. Confirm destination address format and chain.
+3. Confirm amount is within the Alpha limit and does not exceed current available
+   treasury balance.
+4. Confirm the user's account is not flagged for fraud, abuse, or unresolved
+   support issues.
+5. Approve only with a concrete review note. Generic notes such as `ok` or empty
+   strings are not acceptable.
+6. Broadcast the payout manually from the approved operations wallet.
+7. Mark the request `broadcasted` with the tx hash.
+8. Mark the request `completed` only after the transaction is visible on-chain.
+9. If rejecting, include the reason and confirm the wallet reservation was
+   released.
+
+## Stage 1 Pause Criteria
+
+Pause new cashier activity immediately if any of these occur:
+
+- Alpha preflight reports `fail`.
+- RPC is unavailable or returns inconsistent chain data.
+- Treasury balance cannot be confirmed independently.
+- Reconciliation drift is non-zero and unexplained.
+- Duplicate tx replay guard fails in smoke or live monitoring.
+- Backoffice RBAC cannot distinguish `cashier:read` and `cashier:write`.
+- A private key or seed phrase is found in any app, deploy, or CI surface.
+
+Pause means: set `ALPHA_CASHIER_ENABLED=false`, redeploy, leave existing audit
+records intact, and continue reconciliation before deciding on user messaging.
 
 ## Stuck Deposit
 

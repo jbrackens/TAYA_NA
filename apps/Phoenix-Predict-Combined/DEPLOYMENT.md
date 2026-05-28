@@ -117,6 +117,17 @@ ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED=true
 ALPHA_CASHIER_WITHDRAWAL_BROADCAST_ACK=false
 ```
 
+Before flipping `ALPHA_CASHIER_ENABLED=true`, run the Stage 1 local guard:
+
+```bash
+scripts/check-alpha-cashier-stage1.sh
+```
+
+Then verify the deployed admin preflight endpoint:
+`GET /api/v1/admin/cashier/alpha/preflight`. Treat any `fail` check as a launch
+blocker, and document owner approval for every `warn` check before inviting an
+Alpha cohort.
+
 ### Auth Service
 
 ```bash

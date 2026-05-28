@@ -20,6 +20,16 @@ const (
 )
 
 func registerAlphaCashierAdminRoutes(mux *stdhttp.ServeMux, svc *alphacashier.Service, rbacSvc *rbac.Service) {
+	mux.Handle("/api/v1/admin/cashier/alpha/preflight", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		if err := requireAlphaCashierPermission(r, rbacSvc, alphaCashierReadPermission); err != nil {
+			return err
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"preflight": svc.Preflight(r.Context())})
+	}))
+
 	mux.Handle("/api/v1/admin/cashier/alpha/deposits", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)

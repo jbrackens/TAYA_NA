@@ -13,6 +13,7 @@ describe("alpha cashier review panel", () => {
     expect(source).toContain('"admin/cashier/alpha/deposits"');
     expect(source).toContain('"admin/cashier/alpha/audit-events"');
     expect(source).toContain('"admin/cashier/alpha/reconciliation"');
+    expect(source).toContain('"admin/cashier/alpha/preflight"');
     expect(source).toContain(
       '"admin/cashier/alpha/withdrawals/:withdrawalID/approve"',
     );
@@ -33,10 +34,12 @@ describe("alpha cashier review panel", () => {
     expect(source).toContain("triggerAlphaDeposits");
     expect(source).toContain("triggerAlphaAuditEvents");
     expect(source).toContain("triggerAlphaReconciliation()");
+    expect(source).toContain("triggerAlphaPreflight()");
     expect(source).toContain("setAlphaWithdrawals(");
     expect(source).toContain("setAlphaDeposits(");
     expect(source).toContain("setAlphaAuditEvents(");
     expect(source).toContain("setAlphaReconciliation(");
+    expect(source).toContain("setAlphaPreflight(");
   });
 
   it("requires review notes for alpha rejection and tx hashes for broadcast marking", () => {

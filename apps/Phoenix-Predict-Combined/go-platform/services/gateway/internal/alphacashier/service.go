@@ -461,9 +461,13 @@ func (s *Service) ApproveWithdrawal(ctx context.Context, id string, actorID stri
 	if err := s.requireEnabled(); err != nil {
 		return nil, err
 	}
+	note = strings.TrimSpace(note)
 	req, err := s.repo.GetWithdrawalRequest(ctx, strings.TrimSpace(id))
 	if err != nil {
 		return nil, err
+	}
+	if note == "" {
+		return nil, ErrReviewNoteRequired
 	}
 	if req.Status == "approved" {
 		return req, nil
@@ -472,14 +476,14 @@ func (s *Service) ApproveWithdrawal(ctx context.Context, id string, actorID stri
 		return nil, ErrInvalidStatus
 	}
 	now := s.now().UTC()
-	approved, err := s.repo.MarkWithdrawalReviewed(ctx, req.ID, "approved", strings.TrimSpace(actorID), strings.TrimSpace(note), now)
+	approved, err := s.repo.MarkWithdrawalReviewed(ctx, req.ID, "approved", strings.TrimSpace(actorID), note, now)
 	if err != nil {
 		return nil, err
 	}
 	_ = s.recordAudit(ctx, "withdrawal_request", req.ID, "alpha_cashier.withdrawal.approved", "admin", actorID, map[string]any{
 		"userId":      req.UserID,
 		"amountCents": req.AmountCents,
-		"note":        strings.TrimSpace(note),
+		"note":        note,
 	})
 	return approved, nil
 }
