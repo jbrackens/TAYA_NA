@@ -54,7 +54,7 @@ Note: `JWT_SECRET` is currently **vestigial** — the auth service issues opaque
 
 Beta compliance policy is explicit: set `BETA_COMPLIANCE_MODE=permissive` to disable trading KYC and geofence checks for the Asia/Africa/LATAM beta. In `production` or `staging`, that mode also requires `COMPLIANCE_STARTUP_ACK=true` so the deployed process cannot silently run with KYC/geofence disabled.
 
-Activation knobs that remain off by default and are required only when the policy changes: the crypto rail (`CRYPTO_RPC_URL`, `CRYPTO_ASSET_CONTRACT`, `CRYPTO_DEPOSIT_ADDRESS_SOURCE`), KYC enforcement (`KYC_ENFORCEMENT`, `KYC_REQUIRED_FOR_TRADING`, optional `KYC_IDV_PROVIDER`/`KYC_IDV_API_KEY`), the jurisdiction gate (`GEO_GATE_ENABLED` plus an edge country header), and email (`SMTP_HOST`).
+Activation knobs that remain off by default and are required only when the policy changes: the closed Alpha custodial USDC cashier (`ALPHA_CASHIER_*`; use this instead of the legacy `CRYPTO_*` prototype rail), KYC enforcement (`KYC_ENFORCEMENT`, `KYC_REQUIRED_FOR_TRADING`, optional `KYC_IDV_PROVIDER`/`KYC_IDV_API_KEY`), the jurisdiction gate (`GEO_GATE_ENABLED` plus an edge country header), and email (`SMTP_HOST`).
 
 ## Environment Variables Reference
 
@@ -98,6 +98,23 @@ AUTH_CACHE_TTL=5m                   # How long to cache auth results
 ENABLE_FREEBETS=true
 ENABLE_ODDSBOOSTS=true
 ENABLE_LIVE_STREAMING=false
+
+# Closed Alpha custodial USDC cashier; disabled until live-chain setup is complete.
+ALPHA_CASHIER_ENABLED=false
+ALPHA_CASHIER_CHAIN_ID=8453
+ALPHA_CASHIER_CHAIN_NAME=base
+ALPHA_CASHIER_RPC_URL=                 # Secret in deployed envs; required when enabled
+ALPHA_CASHIER_TOKEN_SYMBOL=USDC
+ALPHA_CASHIER_TOKEN_ADDRESS=           # Verified USDC contract; required when enabled
+ALPHA_CASHIER_TOKEN_DECIMALS=6
+ALPHA_CASHIER_TREASURY_ADDRESS=        # Hula-controlled treasury; required when enabled
+ALPHA_CASHIER_CONFIRMATIONS=12
+ALPHA_CASHIER_MIN_DEPOSIT_CENTS=100
+ALPHA_CASHIER_MAX_DEPOSIT_CENTS=25000
+ALPHA_CASHIER_DAILY_DEPOSIT_LIMIT_CENTS=100000
+ALPHA_CASHIER_WITHDRAWALS_ENABLED=false
+ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED=true
+ALPHA_CASHIER_WITHDRAWAL_BROADCAST_ACK=false
 ```
 
 ### Auth Service

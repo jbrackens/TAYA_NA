@@ -1,0 +1,421 @@
+package alphacashier
+
+import (
+	"context"
+	"sort"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+)
+
+type Repository interface {
+	SaveWalletChallenge(ctx context.Context, challenge WalletChallenge) error
+	GetWalletChallenge(ctx context.Context, nonce string) (*WalletChallenge, error)
+	ConsumeWalletChallenge(ctx context.Context, nonce string, consumedAt time.Time) error
+	UpsertWalletConnection(ctx context.Context, connection WalletConnection) (*WalletConnection, error)
+	FindWalletConnection(ctx context.Context, userID string, chainID int64, normalizedAddress string) (*WalletConnection, error)
+	ListWalletConnections(ctx context.Context, userID string) ([]WalletConnection, error)
+	FindDepositIntentByIdempotencyKey(ctx context.Context, userID string, idempotencyKey string) (*DepositIntent, error)
+	SaveDepositIntent(ctx context.Context, intent DepositIntent) (*DepositIntent, error)
+	MarkDepositSubmitted(ctx context.Context, id string, txHash string, submittedAt time.Time) (*DepositIntent, error)
+	MarkDepositCredited(ctx context.Context, id string, walletEntryID string, confirmedAt time.Time, creditedAt time.Time) (*DepositIntent, error)
+	RecordChainTransaction(ctx context.Context, tx ChainTransaction) error
+	GetDepositIntent(ctx context.Context, id string) (*DepositIntent, error)
+	ListDepositIntents(ctx context.Context, userID string) ([]DepositIntent, error)
+	ListAdminDepositIntents(ctx context.Context, filter DepositIntentFilter) ([]DepositIntent, error)
+	SumUserDepositIntentCentsSince(ctx context.Context, userID string, since time.Time) (int64, error)
+	FindWithdrawalRequestByIdempotencyKey(ctx context.Context, userID string, idempotencyKey string) (*WithdrawalRequest, error)
+	SaveWithdrawalRequest(ctx context.Context, request WithdrawalRequest) (*WithdrawalRequest, error)
+	GetWithdrawalRequest(ctx context.Context, id string) (*WithdrawalRequest, error)
+	ListWithdrawalRequests(ctx context.Context, userID string) ([]WithdrawalRequest, error)
+	ListAdminWithdrawalRequests(ctx context.Context, status string) ([]WithdrawalRequest, error)
+	MarkWithdrawalReviewed(ctx context.Context, id string, status string, reviewedBy string, reviewNote string, reviewedAt time.Time) (*WithdrawalRequest, error)
+	MarkWithdrawalBroadcasted(ctx context.Context, id string, txHash string, updatedAt time.Time) (*WithdrawalRequest, error)
+	MarkWithdrawalCompleted(ctx context.Context, id string, completedAt time.Time) (*WithdrawalRequest, error)
+	ReconciliationSnapshot(ctx context.Context) (ReconciliationLedgerSnapshot, error)
+	RecordAudit(ctx context.Context, event AuditEvent) error
+	ListAuditEvents(ctx context.Context, filter AuditEventFilter) ([]AuditEvent, error)
+}
+
+type MemoryRepository struct {
+	mu          sync.Mutex
+	challenges  map[string]WalletChallenge
+	wallets     map[string]WalletConnection
+	deposits    map[string]DepositIntent
+	withdrawals map[string]WithdrawalRequest
+	audits      []AuditEvent
+	seq         int64
+}
+
+func NewMemoryRepository() *MemoryRepository {
+	return &MemoryRepository{
+		challenges:  map[string]WalletChallenge{},
+		wallets:     map[string]WalletConnection{},
+		deposits:    map[string]DepositIntent{},
+		withdrawals: map[string]WithdrawalRequest{},
+	}
+}
+
+func (r *MemoryRepository) SaveWalletChallenge(_ context.Context, challenge WalletChallenge) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.challenges[challenge.Nonce] = challenge
+	return nil
+}
+
+func (r *MemoryRepository) GetWalletChallenge(_ context.Context, nonce string) (*WalletChallenge, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	ch, ok := r.challenges[nonce]
+	if !ok {
+		return nil, ErrChallengeNotFound
+	}
+	return &ch, nil
+}
+
+func (r *MemoryRepository) ConsumeWalletChallenge(_ context.Context, nonce string, consumedAt time.Time) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	ch, ok := r.challenges[nonce]
+	if !ok {
+		return ErrChallengeNotFound
+	}
+	if ch.ConsumedAt != nil {
+		return ErrChallengeConsumed
+	}
+	ch.ConsumedAt = &consumedAt
+	r.challenges[nonce] = ch
+	return nil
+}
+
+func (r *MemoryRepository) UpsertWalletConnection(_ context.Context, connection WalletConnection) (*WalletConnection, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	key := walletKey(connection.UserID, connection.ChainID, connection.NormalizedAddress)
+	if existing, ok := r.wallets[key]; ok {
+		connection.ID = existing.ID
+		connection.CreatedAt = existing.CreatedAt
+	} else {
+		r.seq++
+		connection.ID = "awc:mem:" + strconv64(r.seq)
+	}
+	r.wallets[key] = connection
+	out := r.wallets[key]
+	return &out, nil
+}
+
+func (r *MemoryRepository) FindWalletConnection(_ context.Context, userID string, chainID int64, normalizedAddress string) (*WalletConnection, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if conn, ok := r.wallets[walletKey(userID, chainID, normalizedAddress)]; ok {
+		return &conn, nil
+	}
+	return nil, ErrWalletNotConnected
+}
+
+func (r *MemoryRepository) ListWalletConnections(_ context.Context, userID string) ([]WalletConnection, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	out := []WalletConnection{}
+	for _, conn := range r.wallets {
+		if conn.UserID == userID {
+			out = append(out, conn)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].LastSeenAt.After(out[j].LastSeenAt) })
+	return out, nil
+}
+
+func (r *MemoryRepository) FindDepositIntentByIdempotencyKey(_ context.Context, userID string, idempotencyKey string) (*DepositIntent, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	for _, intent := range r.deposits {
+		if intent.UserID == userID && intent.IdempotencyKey == idempotencyKey {
+			return &intent, nil
+		}
+	}
+	return nil, nil
+}
+
+func (r *MemoryRepository) SaveDepositIntent(_ context.Context, intent DepositIntent) (*DepositIntent, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.seq++
+	intent.ID = "adi:mem:" + strconv64(r.seq)
+	r.deposits[intent.ID] = intent
+	return &intent, nil
+}
+
+func (r *MemoryRepository) MarkDepositSubmitted(_ context.Context, id string, txHash string, submittedAt time.Time) (*DepositIntent, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	intent, ok := r.deposits[id]
+	if !ok {
+		return nil, nil
+	}
+	intent.Status = "submitted"
+	intent.TxHash = txHash
+	intent.SubmittedAt = &submittedAt
+	intent.UpdatedAt = submittedAt
+	r.deposits[id] = intent
+	return &intent, nil
+}
+
+func (r *MemoryRepository) MarkDepositCredited(_ context.Context, id string, walletEntryID string, confirmedAt time.Time, creditedAt time.Time) (*DepositIntent, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	intent, ok := r.deposits[id]
+	if !ok {
+		return nil, nil
+	}
+	intent.Status = "credited"
+	intent.CreditedWalletEntryID = walletEntryID
+	intent.ConfirmedAt = &confirmedAt
+	intent.CreditedAt = &creditedAt
+	intent.UpdatedAt = creditedAt
+	r.deposits[id] = intent
+	return &intent, nil
+}
+
+func (r *MemoryRepository) RecordChainTransaction(_ context.Context, _ ChainTransaction) error {
+	return nil
+}
+
+func (r *MemoryRepository) GetDepositIntent(_ context.Context, id string) (*DepositIntent, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	intent, ok := r.deposits[id]
+	if !ok {
+		return nil, nil
+	}
+	return &intent, nil
+}
+
+func (r *MemoryRepository) ListDepositIntents(_ context.Context, userID string) ([]DepositIntent, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	out := []DepositIntent{}
+	for _, intent := range r.deposits {
+		if intent.UserID == userID {
+			out = append(out, intent)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
+	return out, nil
+}
+
+func (r *MemoryRepository) ListAdminDepositIntents(_ context.Context, filter DepositIntentFilter) ([]DepositIntent, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	status := strings.TrimSpace(filter.Status)
+	userID := strings.TrimSpace(filter.UserID)
+	txHash := strings.ToLower(strings.TrimSpace(filter.TxHash))
+	out := []DepositIntent{}
+	for _, intent := range r.deposits {
+		if status != "" && intent.Status != status {
+			continue
+		}
+		if userID != "" && intent.UserID != userID {
+			continue
+		}
+		if txHash != "" && strings.ToLower(intent.TxHash) != txHash {
+			continue
+		}
+		out = append(out, intent)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
+	if filter.Limit > 0 && len(out) > filter.Limit {
+		out = out[:filter.Limit]
+	}
+	return out, nil
+}
+
+func (r *MemoryRepository) SumUserDepositIntentCentsSince(_ context.Context, userID string, since time.Time) (int64, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	var total int64
+	for _, intent := range r.deposits {
+		if intent.UserID != userID || intent.CreatedAt.Before(since) {
+			continue
+		}
+		switch intent.Status {
+		case "failed", "expired", "quarantined":
+			continue
+		default:
+			total += intent.AmountCents
+		}
+	}
+	return total, nil
+}
+
+func (r *MemoryRepository) FindWithdrawalRequestByIdempotencyKey(_ context.Context, userID string, idempotencyKey string) (*WithdrawalRequest, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	for _, req := range r.withdrawals {
+		if req.UserID == userID && req.IdempotencyKey == idempotencyKey {
+			return &req, nil
+		}
+	}
+	return nil, nil
+}
+
+func (r *MemoryRepository) SaveWithdrawalRequest(_ context.Context, request WithdrawalRequest) (*WithdrawalRequest, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if request.ID == "" {
+		r.seq++
+		request.ID = "awr:mem:" + strconv64(r.seq)
+	}
+	r.withdrawals[request.ID] = request
+	return &request, nil
+}
+
+func (r *MemoryRepository) GetWithdrawalRequest(_ context.Context, id string) (*WithdrawalRequest, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	req, ok := r.withdrawals[id]
+	if !ok {
+		return nil, ErrWithdrawalNotFound
+	}
+	return &req, nil
+}
+
+func (r *MemoryRepository) ListWithdrawalRequests(_ context.Context, userID string) ([]WithdrawalRequest, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	out := []WithdrawalRequest{}
+	for _, req := range r.withdrawals {
+		if req.UserID == userID {
+			out = append(out, req)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
+	return out, nil
+}
+
+func (r *MemoryRepository) ListAdminWithdrawalRequests(_ context.Context, status string) ([]WithdrawalRequest, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	status = strings.TrimSpace(status)
+	out := []WithdrawalRequest{}
+	for _, req := range r.withdrawals {
+		if status == "" || req.Status == status {
+			out = append(out, req)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
+	return out, nil
+}
+
+func (r *MemoryRepository) MarkWithdrawalReviewed(_ context.Context, id string, status string, reviewedBy string, reviewNote string, reviewedAt time.Time) (*WithdrawalRequest, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	req, ok := r.withdrawals[id]
+	if !ok {
+		return nil, ErrWithdrawalNotFound
+	}
+	req.Status = status
+	req.ReviewedAt = &reviewedAt
+	req.ReviewedBy = reviewedBy
+	req.ReviewNote = reviewNote
+	req.UpdatedAt = reviewedAt
+	r.withdrawals[id] = req
+	return &req, nil
+}
+
+func (r *MemoryRepository) MarkWithdrawalBroadcasted(_ context.Context, id string, txHash string, updatedAt time.Time) (*WithdrawalRequest, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	req, ok := r.withdrawals[id]
+	if !ok {
+		return nil, ErrWithdrawalNotFound
+	}
+	req.Status = "broadcasted"
+	req.BroadcastTxHash = txHash
+	req.UpdatedAt = updatedAt
+	r.withdrawals[id] = req
+	return &req, nil
+}
+
+func (r *MemoryRepository) MarkWithdrawalCompleted(_ context.Context, id string, completedAt time.Time) (*WithdrawalRequest, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	req, ok := r.withdrawals[id]
+	if !ok {
+		return nil, ErrWithdrawalNotFound
+	}
+	req.Status = "completed"
+	req.CompletedAt = &completedAt
+	req.UpdatedAt = completedAt
+	r.withdrawals[id] = req
+	return &req, nil
+}
+
+func (r *MemoryRepository) ReconciliationSnapshot(_ context.Context) (ReconciliationLedgerSnapshot, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	var snap ReconciliationLedgerSnapshot
+	for _, intent := range r.deposits {
+		if intent.Status == "credited" {
+			snap.CreditedDepositCents += intent.AmountCents
+		}
+	}
+	for _, req := range r.withdrawals {
+		switch req.Status {
+		case "completed":
+			snap.CompletedWithdrawalCents += req.AmountCents
+		case "requested", "under_review", "approved", "broadcasted":
+			snap.PendingWithdrawalCents += req.AmountCents
+		}
+	}
+	return snap, nil
+}
+
+func (r *MemoryRepository) RecordAudit(_ context.Context, event AuditEvent) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if event.ID == "" {
+		r.seq++
+		event.ID = "aae:mem:" + strconv64(r.seq)
+	}
+	r.audits = append(r.audits, event)
+	return nil
+}
+
+func (r *MemoryRepository) ListAuditEvents(_ context.Context, filter AuditEventFilter) ([]AuditEvent, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	out := []AuditEvent{}
+	for _, event := range r.audits {
+		if filter.SubjectType != "" && event.SubjectType != filter.SubjectType {
+			continue
+		}
+		if filter.SubjectID != "" && event.SubjectID != filter.SubjectID {
+			continue
+		}
+		if filter.EventType != "" && event.EventType != filter.EventType {
+			continue
+		}
+		if filter.ActorType != "" && event.ActorType != filter.ActorType {
+			continue
+		}
+		if filter.ActorID != "" && event.ActorID != filter.ActorID {
+			continue
+		}
+		out = append(out, event)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
+	if filter.Limit > 0 && len(out) > filter.Limit {
+		out = out[:filter.Limit]
+	}
+	return out, nil
+}
+
+func walletKey(userID string, chainID int64, normalizedAddress string) string {
+	return strings.Join([]string{userID, strconv64(chainID), strings.ToLower(normalizedAddress)}, "|")
+}
+
+func strconv64(n int64) string {
+	return strconv.FormatInt(n, 10)
+}

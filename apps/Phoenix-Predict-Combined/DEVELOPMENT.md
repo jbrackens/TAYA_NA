@@ -112,6 +112,32 @@ PAYMENTS_WEBHOOK_SECRET=whsec_local \
 go run ./cmd/gateway
 ```
 
+Closed Alpha USDC cashier local flags are disabled by default. Add these only
+when testing the Alpha cashier flow with a fake RPC, test RPC, or reviewed live
+RPC:
+
+```bash
+ALPHA_CASHIER_ENABLED=false
+ALPHA_CASHIER_CHAIN_ID=8453
+ALPHA_CASHIER_CHAIN_NAME=base
+ALPHA_CASHIER_RPC_URL=
+ALPHA_CASHIER_TOKEN_SYMBOL=USDC
+ALPHA_CASHIER_TOKEN_ADDRESS=
+ALPHA_CASHIER_TOKEN_DECIMALS=6
+ALPHA_CASHIER_TREASURY_ADDRESS=
+ALPHA_CASHIER_CONFIRMATIONS=12
+ALPHA_CASHIER_MIN_DEPOSIT_CENTS=100
+ALPHA_CASHIER_MAX_DEPOSIT_CENTS=25000
+ALPHA_CASHIER_DAILY_DEPOSIT_LIMIT_CENTS=100000
+ALPHA_CASHIER_WITHDRAWALS_ENABLED=false
+ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED=true
+ALPHA_CASHIER_WITHDRAWAL_BROADCAST_ACK=false
+```
+
+Keep `ALPHA_CASHIER_WITHDRAWALS_ENABLED=false` for Stage 1. Manual payout keys
+stay outside the app, and local development should not set the legacy
+`CRYPTO_RPC_URL`/`CRYPTO_ASSET_CONTRACT` rail for Alpha cashier testing.
+
 Run auth manually:
 
 ```bash

@@ -27,7 +27,7 @@ Open `http://localhost:3010/predict`.
 | --- | --- | --- |
 | Player app | `http://localhost:3010/predict` | Market discovery, market detail, trade ticket, portfolio |
 | Backoffice | `http://localhost:3001` | Market creation, lifecycle, settlement, risk |
-| Gateway API | `http://localhost:18080/api/v1` | Prediction, orders, portfolio, wallet, payments (incl. crypto rail), compliance/KYC, auth proxy |
+| Gateway API | `http://localhost:18080/api/v1` | Prediction, orders, portfolio, wallet, Alpha cashier, compliance/KYC, auth proxy |
 | Auth service | `http://localhost:18081` | Login, refresh, session management |
 | PostgreSQL | `localhost:5434` | Database `predict`, user `predict`, password `localdev` |
 | Redis | `localhost:6380` | Cache and pub/sub |
@@ -106,6 +106,14 @@ go run ./cmd/migrate up
 GATEWAY_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable" \
 go run ./cmd/seed
 ```
+
+Alpha cashier is disabled by default. To exercise the closed Alpha USDC rail,
+run the gateway with the `ALPHA_CASHIER_*` variables documented in
+[the cashier plan](../../docs/cashier/CUSTODIAL_USDC_ALPHA_PLAN.md), then apply
+`go-platform/services/gateway/migrations/030_alpha_cashier.sql`. Live-chain
+setup still requires a reviewed RPC URL, verified USDC token contract, and
+Hula-controlled treasury address; do not use the legacy `CRYPTO_*` rail for this
+path.
 
 ## Documentation
 

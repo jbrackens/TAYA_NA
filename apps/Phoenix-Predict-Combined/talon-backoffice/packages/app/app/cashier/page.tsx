@@ -17,7 +17,6 @@ import { useToast } from "../components/ToastProvider";
 import { useAuth } from "../hooks/useAuth";
 import DepositThresholdModal from "../components/DepositThresholdModal";
 import CryptoDepositCard from "../components/CryptoDepositCard";
-import NonCustodialCashierStatus from "../components/NonCustodialCashierStatus";
 import CashierCanaryPanel from "../components/CashierCanaryPanel";
 
 const QUICK_AMOUNTS = ["10", "25", "50", "100", "250", "500"];
@@ -127,6 +126,14 @@ export default function CashierPage() {
   const isCryptoWithdrawal =
     activeTab === "withdrawal" && selectedPayment === "crypto";
   const isCryptoRail = isCryptoDeposit || isCryptoWithdrawal;
+
+  const refreshBalance = useCallback(async () => {
+    const userId = user?.id;
+    if (!userId) return;
+    const bal = await getBalance(userId);
+    setBalance(bal);
+    dispatch(setCurrentBalance(bal.availableBalance));
+  }, [dispatch, user?.id]);
 
   // Load balance on mount — guard against empty userId (before auth resolves).
   // Without the guard, `${userId}` expands to "" and produces malformed URLs
@@ -474,34 +481,32 @@ export default function CashierPage() {
               </button>
             </div>
 
-            {!isCryptoRail && (
-              <div className="mb-5">
-                <label className={labelClass}>Amount</label>
-                <div className="mb-2.5 flex flex-wrap gap-2">
-                  {QUICK_AMOUNTS.map((val) => (
-                    <button
-                      key={val}
-                      className={quickAmountClass(selectedQuick === val)}
-                      onClick={() => handleQuickAmount(val)}
-                    >
-                      ${val}
-                    </button>
-                  ))}
-                </div>
-                <input
-                  type="number"
-                  className="w-full rounded-[var(--r-sm)] border border-[var(--b1)] bg-[var(--s2)] px-[14px] py-[11px] font-mono text-sm text-[var(--t1)] tabular-nums outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--t4)] focus:border-[var(--accent)] focus:shadow-[0_0_0_2px_var(--accent-soft)]"
-                  placeholder="Or enter custom amount"
-                  value={amount}
-                  onChange={(e) => {
-                    setAmount(e.target.value);
-                    setSelectedQuick("");
-                  }}
-                  min="1"
-                  step="0.01"
-                />
+            <div className="mb-5">
+              <label className={labelClass}>Amount</label>
+              <div className="mb-2.5 flex flex-wrap gap-2">
+                {QUICK_AMOUNTS.map((val) => (
+                  <button
+                    key={val}
+                    className={quickAmountClass(selectedQuick === val)}
+                    onClick={() => handleQuickAmount(val)}
+                  >
+                    ${val}
+                  </button>
+                ))}
               </div>
-            )}
+              <input
+                type="number"
+                className="w-full rounded-[var(--r-sm)] border border-[var(--b1)] bg-[var(--s2)] px-[14px] py-[11px] font-mono text-sm text-[var(--t1)] tabular-nums outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--t4)] focus:border-[var(--accent)] focus:shadow-[0_0_0_2px_var(--accent-soft)]"
+                placeholder="Or enter custom amount"
+                value={amount}
+                onChange={(e) => {
+                  setAmount(e.target.value);
+                  setSelectedQuick("");
+                }}
+                min="1"
+                step="0.01"
+              />
+            </div>
 
             {/* Payment methods */}
             <div className="mb-5">
@@ -525,13 +530,11 @@ export default function CashierPage() {
               </div>
             </div>
 
-            {/* Crypto deposit: show the non-custodial rail status instead of
-                submitting a fiat-style amount form. */}
-            {isCryptoDeposit && <CryptoDepositCard />}
             {isCryptoRail && (
-              <NonCustodialCashierStatus
+              <CryptoDepositCard
                 mode={activeTab}
-                status={isCryptoDeposit ? "address_issued" : "user_authorized"}
+                amount={displayAmount}
+                onBalanceChanged={refreshBalance}
               />
             )}
 
@@ -568,12 +571,26 @@ export default function CashierPage() {
               Summary
             </h3>
             {isCryptoRail ? (
-              <div className={`${summaryRowClass} mt-1.5 border-b-0 border-t border-[var(--b2)] pt-3 text-[15px] font-bold text-[var(--accent)]`}>
-                <span>
-                  {activeTab === "deposit" ? "Crypto deposit" : "Crypto withdrawal"}
-                </span>
-                <span>{activeTab === "deposit" ? "Address only" : "Signature only"}</span>
-              </div>
+              <>
+                <div className={summaryRowClass}>
+                  <span>Amount</span>
+                  <span>${displayAmount.toFixed(2)}</span>
+                </div>
+                <div className={summaryRowClass}>
+                  <span>Hula fee</span>
+                  <span>$0.00</span>
+                </div>
+                <div
+                  className={`${summaryRowClass} mt-1.5 border-b-0 border-t border-[var(--b2)] pt-3 text-[15px] font-bold text-[var(--accent)]`}
+                >
+                  <span>
+                    {activeTab === "deposit"
+                      ? "USDC transfer"
+                      : "Manual withdrawal"}
+                  </span>
+                  <span>${displayAmount.toFixed(2)}</span>
+                </div>
+              </>
             ) : (
               <>
                 <div className={summaryRowClass}>

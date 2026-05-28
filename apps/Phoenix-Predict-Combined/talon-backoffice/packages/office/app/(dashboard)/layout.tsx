@@ -8,8 +8,8 @@ import { usePathname } from "next/navigation";
 // /users is wired: admin/punters (GW-1) returns prediction-native punter
 // identity + financials (wallet balance, portfolio P&L, positions,
 // accuracy), so the list + detail render real data. /access-control (RBAC),
-// /disputes, /content, /loyalty, /leaderboards, and /audit-logs are also
-// wired to mounted /api/v1/admin/* gateway routes.
+// /cashier, /disputes, /content, /loyalty, /leaderboards, and /audit-logs are
+// also wired to mounted /api/v1/admin/* gateway routes.
 //
 // Retired shells stay redirects only:
 // /campaigns and /reports -> /dashboard, /risk-management ->
@@ -18,6 +18,7 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: "layout-dashboard" },
   { href: "/users", label: "Users", icon: "users" },
   { href: "/access-control", label: "Access Control", icon: "shield-check" },
+  { href: "/cashier", label: "Cashier", icon: "credit-card" },
   {
     href: "/prediction-admin/markets",
     label: "Markets",
@@ -55,6 +56,8 @@ const lucideIcons: Record<string, string> = {
     '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
   trophy:
     '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+  "credit-card":
+    '<rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>',
   medal:
     '<path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/><path d="M11 12 5.12 2.2"/><path d="m13 12 5.88-9.8"/><path d="M8 7h8"/><circle cx="12" cy="17" r="5"/><path d="M12 18v-2h-.5"/>',
   "scroll-text":

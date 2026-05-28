@@ -133,15 +133,25 @@ services:
       STARTER_GRANT_CENTS: "1000000"
       # --- Activation knobs for wired-but-unconfigured features (off by ---
       # --- default; uncomment + supply real values to take each live). ---
-      # Crypto (USDC) on-chain rail — needs an RPC, the asset contract, and a
-      # deposit-address source (HD xpub / KMS / custody provider). Fails closed
-      # until all three are set. See internal/payments/crypto_rail.go.
-      # CRYPTO_NETWORK: "base"
-      # CRYPTO_ASSET: "USDC"
-      # CRYPTO_RPC_URL: ""
-      # CRYPTO_ASSET_CONTRACT: ""
-      # CRYPTO_DEPOSIT_ADDRESS_SOURCE: ""
-      # CRYPTO_CONFIRMATIONS: "12"
+      # Closed Alpha custodial USDC cashier. Fails closed until explicitly
+      # enabled with reviewed RPC, token, and treasury values. Keep withdrawals
+      # manual-review only for Stage 1; do NOT use the legacy CRYPTO_* prototype
+      # rail for this Alpha path.
+      # ALPHA_CASHIER_ENABLED: "false"
+      # ALPHA_CASHIER_CHAIN_ID: "8453"
+      # ALPHA_CASHIER_CHAIN_NAME: "base"
+      # ALPHA_CASHIER_RPC_URL: ""
+      # ALPHA_CASHIER_TOKEN_SYMBOL: "USDC"
+      # ALPHA_CASHIER_TOKEN_ADDRESS: ""
+      # ALPHA_CASHIER_TOKEN_DECIMALS: "6"
+      # ALPHA_CASHIER_TREASURY_ADDRESS: ""
+      # ALPHA_CASHIER_CONFIRMATIONS: "12"
+      # ALPHA_CASHIER_MIN_DEPOSIT_CENTS: "100"
+      # ALPHA_CASHIER_MAX_DEPOSIT_CENTS: "25000"
+      # ALPHA_CASHIER_DAILY_DEPOSIT_LIMIT_CENTS: "100000"
+      # ALPHA_CASHIER_WITHDRAWALS_ENABLED: "false"
+      # ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED: "true"
+      # ALPHA_CASHIER_WITHDRAWAL_BROADCAST_ACK: "false"
       # Automated KYC vendor (manual back-office review works without these).
       # KYC_IDV_PROVIDER: "sumsub"   # or onfido / persona
       # KYC_IDV_API_KEY: ""

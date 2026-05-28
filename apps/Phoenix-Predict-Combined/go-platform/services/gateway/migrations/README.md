@@ -22,6 +22,7 @@ That is the release gate for this directory. The legacy root target `make valida
 - `008_match_timelines.sql` - Match timelines and incidents (goals, cards, etc)
 - `009_audit_logs.sql` - Audit logging with JSONB details
 - `010_indexes.sql` - Performance indexes and partial indexes
+- `030_alpha_cashier.sql` - Closed Alpha custodial USDC cashier tables for wallet connections, deposit intents, withdrawals, chain evidence, reconciliation, and audit events
 
 ## Running Migrations
 

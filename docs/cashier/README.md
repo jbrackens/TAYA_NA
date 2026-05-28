@@ -1,32 +1,41 @@
 # Hula Na! Cashier — design & decision record
 
-**Status:** Architecture pivot approved 2026-05-25.
+**Status:** Architecture timeline updated 2026-05-27.
 **Owner:** John Brackens.
-**Decision:** Non-custodial EVM cashier with Tron USDT as the primary funding rail.
+**Decision:** V1/V2 use a custodial USDC cashier; non-custodial cashier/settlement moves to V3.
+
+> **Update 2026-05-27:** Non-custodial cashier/settlement is now deferred to
+> **V3**. The closed Alpha and Beta execution path is custodial USDC funded from
+> MetaMask into a Hula-controlled treasury and credited to the internal wallet
+> ledger. The non-custodial material below remains useful as the V3 strategy
+> record, but it is no longer the V1/V2 implementation target. See
+> [Closed Alpha custodial USDC cashier plan](./CUSTODIAL_USDC_ALPHA_PLAN.md).
 
 ---
 
 ## TL;DR
 
-Hula Na! Cashier should mirror the parts of Polymarket that matter: users hold funds
-in a non-custodial smart wallet, the platform abstracts gas, and deposits are routed
-into one tradeable USD balance. For Southeast Asia, the entry rail should be **TRC-20
-USDT**, because that is where many retail users already hold dollars. Tron is the
-funding rail; it is not the trading/settlement layer.
+Hula Na! Cashier V1/V2 should launch with the simplest credible crypto-native rail:
+users fund from MetaMask, send USDC to a Hula-controlled treasury, and receive an
+internal Hula wallet balance after server-side chain verification. This lets the
+closed Alpha and Beta test real prediction-market workflows without waiting for a
+PSP, bridge provider, smart-wallet stack, or Polymarket-style settlement layer.
 
-The previous repo-local plan pivoted to a custodial Go ledger on BSC because this
-codebase already had wallet, payment, and ledger primitives. That was expedient, but
-it does not match the Polymarket-like product posture we want. We are reverting to
-the original non-custodial direction, with one adjustment: **Tron-first deposits for
-Maria from Manila.**
+The Polymarket-like direction still matters, but it is now a **V3** track:
+non-custodial smart wallets, gas abstraction, tokenized positions, and on-chain
+settlement should be revisited after the custodial cashier is operating safely.
 
-**Custody decision (founder-confirmed 2026-05-25): non-custodial.** Hula Na! should
-not custody user funds for V1. Any existing custodial cashier code is prototype
-scaffolding only and must not be wired to production funds.
+**Custody decision update (founder-confirmed 2026-05-27): custodial for V1/V2,
+non-custodial deferred to V3.** Custodial code may be wired for closed Alpha and
+Beta only when it is feature-flagged, low-limit, ledger-backed, chain-verified,
+manually reconciled, and operationally reviewed.
 
 ---
 
-## Target Architecture
+## V3 Target Architecture
+
+The remainder of this section records the V3 non-custodial target. It is not the
+V1/V2 implementation plan.
 
 ### Core shape
 
@@ -51,7 +60,7 @@ is:
 | BSC | Familiar to Binance/OKX users, USDT liquidity, low fees | Less Polymarket-like; noisier risk/compliance surface |
 | Base / Arbitrum | Strong EVM infra and AA ecosystem | Less natural for Asian USDT users |
 
-Default recommendation: **BSC or Polygon for V1 settlement, decided by bridge UX and
+Default recommendation: **BSC or Polygon for V3 settlement, decided by bridge UX and
 liquidity tests.** Do not settle markets directly on Tron.
 
 ### Funding rails
@@ -61,7 +70,7 @@ liquidity tests.** Do not settle markets directly on Tron.
 | P0 | TRC-20 USDT | Primary SEA/Maria deposit path |
 | P0 | Direct EVM stablecoin deposit | Crypto-native path; BSC USDT or Polygon USDC depending on settlement chain |
 | P1 | Polygon USDC/USDC.e | Polymarket-compatible funding path if settlement is not Polygon |
-| P1 | Bridge-out to Tron | Withdrawal convenience; not required for first non-custodial beta |
+| P1 | Bridge-out to Tron | Withdrawal convenience; not required for first non-custodial V3 release |
 
 ---
 
@@ -76,15 +85,16 @@ liquidity tests.** Do not settle markets directly on Tron.
 | Gas sponsorship | Restore relayer/paymaster/account-abstraction work. Users should not need BNB/MATIC/ETH. |
 | TRC-20 deposit | Build as a bridge/deposit-address rail into the user's EVM wallet/collateral account. |
 | BEP-20 or Polygon direct deposit | Keep as secondary direct deposit rail. |
-| Existing Go wallet ledger | Use only for legacy sportsbook/prediction prototype flows, admin reporting, or off-chain mirror data. It is not the source of truth for user funds. |
+| Existing Go wallet ledger | V1/V2 source of truth for custodial internal balances; V3 should demote it to mirror/reporting data if non-custodial settlement ships. |
 | Existing Go crypto watcher | Treat as prototype/reference for finality, idempotency, and decimal tests. Do not ship it as the production cashier money path. |
-| Custodial HD wallet / KMS sweeper | Drop for V1 cashier unless we deliberately re-open custody as a separate regulated product. |
+| Custodial HD wallet / KMS sweeper | Out of Stage 1; evaluate in V2 only if manual withdrawals become too operationally heavy. |
 
 ---
 
-## Production Money-Path Requirements
+## V3 Production Money-Path Requirements
 
-These replace the custodial watcher requirements.
+These are V3 non-custodial requirements. The V1/V2 custodial requirements live in
+[Closed Alpha custodial USDC cashier plan](./CUSTODIAL_USDC_ALPHA_PLAN.md).
 
 1. **Non-custodial source of truth.** User funds must live in user-controlled smart
    wallets or protocol contracts, not Hula Na treasury addresses.
@@ -92,7 +102,7 @@ These replace the custodial watcher requirements.
    EVM smart wallet or collateral onramp. Tron is not the market execution layer.
 3. **Passive deposit UX or no-go.** The Tron flow must be "show address, user sends
    USDT, balance appears." If a provider requires Maria to sign a multi-step bridge
-   transaction in TronLink, that provider is not V1 material.
+   transaction in TronLink, that provider is not V3 material.
 4. **Bridge attribution must be deterministic.** Every incoming bridge event must map
    to exactly one user wallet and one source transaction. Ambiguous deposits go to
    recovery, not credit.
@@ -113,7 +123,9 @@ These replace the custodial watcher requirements.
 
 ## Current Repo State
 
-The repo currently contains a **custodial prototype**:
+The repo currently contains custodial wallet and payment primitives that are now
+useful for V1/V2, plus non-custodial prototype artifacts that should remain V3
+reference material:
 
 - Go payment and wallet services with cents ledger accounting.
 - `internal/payments` crypto deposit watcher that scans ERC-20 transfers.
@@ -127,25 +139,53 @@ Useful pieces to keep:
 - UI fail-closed posture.
 - Server-proxied chain access pattern.
 
-Pieces not suitable for production cashier:
+Pieces not suitable for Stage 1 closed Alpha:
 
-- `wallet.Credit` as the money source of truth.
 - Per-user custodial deposit addresses controlled by Hula Na!.
 - KMS sweeper/withdrawal signer design.
 - Legacy fiat/card cashier UI mixed with crypto deposit UX.
 
 ---
 
-## Immediate Migration Plan
+## V1/V2 Execution Plan
 
-### Phase A — Freeze custodial money-path work
+The immediate build target is the custodial USDC Alpha/Beta plan:
 
-- Do not implement HD deposit-address derivation.
-- Do not implement custodial withdrawal signing.
-- Keep existing crypto rail fail-closed.
-- Add warnings in docs and PR descriptions that custodial cashier code is prototype-only.
+- Build the Alpha cashier in the Go gateway.
+- Use MetaMask wallet ownership proof.
+- Verify exact USDC ERC-20 transfers to the Hula treasury.
+- Credit the existing wallet ledger idempotently.
+- Keep withdrawals manual-review only in Stage 1.
+- Add reconciliation and backoffice review before enabling real users.
 
-### Phase B — Select non-custodial stack
+See [Closed Alpha custodial USDC cashier plan](./CUSTODIAL_USDC_ALPHA_PLAN.md)
+for the implementation checklist.
+
+### V1/V2 Handoff And Environment
+
+The active Stage 1 rail is the Go gateway `alphacashier` package and the
+`ALPHA_CASHIER_*` environment contract. Do not configure the legacy
+`CRYPTO_RPC_URL`, `CRYPTO_ASSET_CONTRACT`, or `CRYPTO_DEPOSIT_ADDRESS_SOURCE`
+variables for the Alpha cashier; production startup still treats those as the
+old prototype rail.
+
+Committed samples keep `ALPHA_CASHIER_ENABLED=false`. A live Alpha deployment
+must provide `ALPHA_CASHIER_RPC_URL`, `ALPHA_CASHIER_TOKEN_ADDRESS`, and
+`ALPHA_CASHIER_TREASURY_ADDRESS`, keep `ALPHA_CASHIER_WITHDRAWALS_ENABLED=false`,
+and keep `ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED=true`.
+
+Before turning on the rail, operators still need to choose the single live chain,
+verify the USDC token contract from chain-native sources, create and label the
+Hula treasury wallet, provision RPC secrets, run the `030_alpha_cashier.sql`
+migration, and complete deposit/replay/reconciliation smoke tests with a fake or
+test RPC.
+
+## V3 Non-Custodial Planning
+
+The previous non-custodial work should move to V3 planning. Do not block V1/V2 on
+these spikes.
+
+### Phase A — Select non-custodial stack
 
 Run four spikes:
 
@@ -166,7 +206,7 @@ TRONGRID_API_KEY=... node scripts/check-trongrid-smoke.mjs
 This validates authenticated TronGrid access and confirms TRC-20 USDT decimals
 are 6 on Tron. Do not commit API keys; `.env*` files are ignored.
 
-### Phase C — Build the real cashier package
+### Phase B — Build the V3 cashier package
 
 Recommended repo shape once stack is selected:
 
@@ -179,11 +219,13 @@ packages/cashier-sdk/       # typed SDK consumed by markets app
 apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app/cashier/
 ```
 
-The existing Go gateway can consume the SDK during migration, but the cashier should
-not be implemented as a custodial extension of the legacy Go payments package.
+The existing Go gateway can consume the SDK during V3 migration, but the V3
+cashier should not be implemented as a custodial extension of the legacy Go
+payments package.
 
 ## Current Phase Artifacts
 
+- [Closed Alpha custodial USDC cashier plan](./CUSTODIAL_USDC_ALPHA_PLAN.md)
 - [Phase 0-10 execution board](./PHASE_0_TO_10_EXECUTION_BOARD.md)
 - [Non-custodial implementation kickoff](./NON_CUSTODIAL_IMPLEMENTATION_PLAN.md)
 - [ADR-001: Non-custodial cashier boundary](./adrs/ADR-001-non-custodial-cashier-boundary.md)
@@ -229,20 +271,20 @@ make cashier-check
 
 ---
 
-## Open Decisions
+## V3 Open Decisions
 
-1. **Settlement chain:** Polygon vs BSC for V1.
+1. **Settlement chain:** Polygon vs BSC for V3.
 2. **Collateral token:** `hUSD` wrapper vs provider-native pUSD-style accounting.
 3. **Embedded wallet provider:** Thirdweb vs Privy vs Web3Auth.
 4. **Smart wallet pattern:** Safe, ERC-4337 account, or Polymarket proxy fork.
 5. **Bridge provider:** Symbiosis, Relay, deBridge, LI.FI, custom provider mix, or
    Polymarket-like bridge API pattern.
-6. **Tron withdrawal:** V1 or fast-follow. Recommended: fast-follow unless bridge-out
+6. **Tron withdrawal:** V3 or fast-follow. Recommended: fast-follow unless bridge-out
    UX is simple and reliable.
 
 ---
 
-## Consequences
+## V3 Consequences
 
 - More up-front engineering than custodial BSC.
 - Lower custody and licensing burden than holding user funds.
@@ -250,5 +292,5 @@ make cashier-check
 - Better fit for users who care about getting funds back out without trusting Hula Na!.
 - Requires contract audits and relayer/paymaster hardening before mainnet.
 
-This is the right shape if Hula Na! wants to be a Polymarket competitor, not a
-centralized sportsbook wallet with crypto rails.
+This remains the right V3 shape if Hula Na! wants to converge toward Polymarket's
+trust model after proving the product with a custodial Alpha/Beta cashier.

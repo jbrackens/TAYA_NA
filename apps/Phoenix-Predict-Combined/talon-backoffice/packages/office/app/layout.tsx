@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 // don't apply and Modal/Drawer enter-leave animations freeze mid-
 // transition (rc-motion never sees transitionend). Required for v5.
 import { AntdRegistry } from "@ant-design/nextjs-registry";
+import AppRouterProviders from "./app-router-providers";
 import AntdConfigProvider from "./lib/antd-config-provider";
 import AntdPatch from "./lib/antd-patch";
 // P8 design tokens — shared with the Pages Router via the same
@@ -32,7 +33,9 @@ export default function RootLayout({
       <body>
         <AntdRegistry>
           <AntdPatch>
-            <AntdConfigProvider>{children}</AntdConfigProvider>
+            <AntdConfigProvider>
+              <AppRouterProviders>{children}</AppRouterProviders>
+            </AntdConfigProvider>
           </AntdPatch>
         </AntdRegistry>
       </body>

@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"phoenix-revival/gateway/internal/alphacashier"
 	"phoenix-revival/gateway/internal/bonus"
 	"phoenix-revival/gateway/internal/compliance"
 	"phoenix-revival/gateway/internal/content"
@@ -242,8 +243,10 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// granular permissions (migration 027). Independent of the prediction repo;
 	// needs only the shared DB. Permission enforcement maps the session email to
 	// an admin_users record, so it fails closed when no DB is wired.
+	var rbacService *rbac.Service
 	if rbacDB := walletService.DB(); rbacDB != nil {
-		registerRBACAdminRoutes(mux, rbac.NewService(rbac.NewSQLRepository(rbacDB)))
+		rbacService = rbac.NewService(rbac.NewSQLRepository(rbacDB))
+		registerRBACAdminRoutes(mux, rbacService)
 	}
 
 	// --- Feed Adapters & Background Workers ---
@@ -328,6 +331,30 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// credit/debit routes were removed per ADR-0002; this admin-only route is
 	// the sole HTTP money-mutation surface.
 	registerAdminWalletMutationRoutes(mux, "/api/v1/admin", walletService)
+
+	alphaCashierConfig, err := alphacashier.LoadConfigFromEnv(os.Getenv)
+	if err != nil {
+		slog.Error("alpha cashier: invalid configuration", "error", err)
+		alphaCashierConfig = alphacashier.Config{Enabled: false}
+	}
+	var alphaCashierRepo alphacashier.Repository
+	if walletDB := walletService.DB(); walletDB != nil {
+		alphaCashierRepo = alphacashier.NewSQLRepository(walletDB)
+	} else {
+		alphaCashierRepo = alphacashier.NewMemoryRepository()
+	}
+	alphaCashierService := alphacashier.NewService(alphaCashierConfig, alphaCashierRepo)
+	alphaCashierService.SetWalletLedger(walletService)
+	if alphaCashierConfig.Enabled {
+		if evmClient, err := alphacashier.NewJSONRPCEVMClient(context.Background(), alphaCashierConfig.RPCURL); err != nil {
+			slog.Warn("alpha cashier: EVM RPC client unavailable; tx submission will fail closed", "error", err)
+		} else {
+			alphaCashierService.SetEVMClient(evmClient)
+		}
+	}
+	alphacashier.RegisterRoutes(mux, alphaCashierService)
+	registerAlphaCashierAdminRoutes(mux, alphaCashierService, rbacService)
+	slog.Info("alpha cashier: routes registered", "enabled", alphaCashierConfig.Enabled, "chain", alphaCashierConfig.ChainName)
 
 	// --- Account/User Routes ---
 	registerUserRoutes(mux)

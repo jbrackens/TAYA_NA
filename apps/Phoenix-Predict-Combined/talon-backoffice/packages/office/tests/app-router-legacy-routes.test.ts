@@ -35,6 +35,7 @@ describe("legacy office Pages Router entrypoints", () => {
       "app/logs/page.tsx",
       "app/not-authorized/page.tsx",
       "app/terms-and-conditions/page.tsx",
+      "app/(dashboard)/cashier/page.tsx",
       "app/account/settings/page.tsx",
       "app/account/security/page.tsx",
     ]) {
@@ -99,5 +100,16 @@ describe("retired App Router sportsbook and prototype surfaces", () => {
     const hooksBarrel = read("app/hooks/index.ts");
     expect(hooksBarrel).toContain('export { useConfirm } from "./useConfirm"');
     expect(hooksBarrel).not.toContain("useTradingWebSocket");
+  });
+
+  it("mounts the closed Alpha cashier as a live dashboard route", () => {
+    const cashierPage = read("app/(dashboard)/cashier/page.tsx");
+    const dashboardLayout = read("app/(dashboard)/layout.tsx");
+    const appLayout = read("app/layout.tsx");
+
+    expect(cashierPage).toContain("CashierReviewPanel");
+    expect(dashboardLayout).toContain('href: "/cashier"');
+    expect(dashboardLayout).toContain('label: "Cashier"');
+    expect(appLayout).toContain("AppRouterProviders");
   });
 });

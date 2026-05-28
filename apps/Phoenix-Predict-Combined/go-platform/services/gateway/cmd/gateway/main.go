@@ -11,6 +11,7 @@ import (
 	"strings"
 	"syscall"
 
+	"phoenix-revival/gateway/internal/alphacashier"
 	gatewayhttp "phoenix-revival/gateway/internal/http"
 	"phoenix-revival/gateway/internal/tracing"
 	"phoenix-revival/platform/logging"
@@ -178,6 +179,10 @@ func gatewayCSRFSkipPrefixes() []string {
 }
 
 func validateGatewayRuntimeConfig(getenv func(string) string) error {
+	if err := alphacashier.ValidateRuntimeConfig(getenv); err != nil {
+		return err
+	}
+
 	env := strings.ToLower(strings.TrimSpace(getenv("ENVIRONMENT")))
 	realEnv := env == "production" || env == "staging"
 

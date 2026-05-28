@@ -91,6 +91,73 @@ type PaymentEventListResponse = {
   data?: PaymentEvent[];
 };
 
+type AlphaWithdrawalRequest = {
+  id: string;
+  userId: string;
+  tokenSymbol: string;
+  destinationAddress: string;
+  amountCents: number;
+  status: string;
+  broadcastTxHash?: string;
+  requestedAt: string;
+  reviewedAt?: string;
+};
+
+type AlphaWithdrawalResponse = {
+  withdrawalRequests?: AlphaWithdrawalRequest[];
+  withdrawalRequest?: AlphaWithdrawalRequest;
+};
+
+type AlphaDepositIntent = {
+  id: string;
+  userId: string;
+  tokenSymbol: string;
+  fromAddress: string;
+  amountCents: number;
+  status: string;
+  txHash?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type AlphaDepositResponse = {
+  depositIntents?: AlphaDepositIntent[];
+};
+
+type AlphaAuditEvent = {
+  id?: string;
+  subjectType: string;
+  subjectId: string;
+  eventType: string;
+  actorType: string;
+  actorId?: string;
+  eventPayload: string;
+  createdAt: string;
+};
+
+type AlphaAuditResponse = {
+  auditEvents?: AlphaAuditEvent[];
+};
+
+type AlphaReconciliation = {
+  chainId: number;
+  tokenSymbol: string;
+  treasuryAddress: string;
+  treasuryBalanceCents?: number;
+  creditedDepositCents: number;
+  completedWithdrawalCents: number;
+  pendingWithdrawalCents: number;
+  walletBalanceCents: number;
+  activeReservationCents: number;
+  cashierExpectedReserveCents: number;
+  cashierDriftCents?: number;
+  generatedAt: string;
+};
+
+type AlphaReconciliationResponse = {
+  reconciliation?: AlphaReconciliation;
+};
+
 type PaymentAssignmentRequest = {
   assigned_to: string;
   reason?: string;
@@ -310,6 +377,9 @@ const renderValue = (value: unknown) => {
   return `${value}`;
 };
 
+const formatCents = (value: number | undefined) =>
+  `$${((value || 0) / 100).toFixed(2)}`;
+
 const CashierReviewPanel = () => {
   const { t } = useTranslation(["page-provider-ops", "common"]);
   const { getTimeWithTimezone } = useTimezone();
@@ -346,6 +416,15 @@ const CashierReviewPanel = () => {
     });
   const [reconciliationPreview, setReconciliationPreview] =
     useState<PaymentReconciliationPreview | null>(null);
+  const [alphaWithdrawals, setAlphaWithdrawals] = useState<
+    AlphaWithdrawalRequest[]
+  >([]);
+  const [alphaDeposits, setAlphaDeposits] = useState<AlphaDepositIntent[]>([]);
+  const [alphaAuditEvents, setAlphaAuditEvents] = useState<AlphaAuditEvent[]>(
+    [],
+  );
+  const [alphaReconciliation, setAlphaReconciliation] =
+    useState<AlphaReconciliation | null>(null);
 
   const [triggerQueue, queueLoading, queueResponse] =
     useApi<PaymentQueueResponse>("admin/payments/transactions", Method.GET);
@@ -439,6 +518,55 @@ const CashierReviewPanel = () => {
     any,
     PaymentActionRequest
   >("admin/payments/transactions/:transactionID/chargeback", Method.POST);
+  const [
+    triggerAlphaWithdrawals,
+    alphaWithdrawalsLoading,
+    alphaWithdrawalsResponse,
+  ] = useApi<AlphaWithdrawalResponse>(
+    "admin/cashier/alpha/withdrawals",
+    Method.GET,
+  );
+  const [triggerAlphaDeposits, alphaDepositsLoading, alphaDepositsResponse] =
+    useApi<AlphaDepositResponse>(
+      "admin/cashier/alpha/deposits",
+      Method.GET,
+    );
+  const [triggerAlphaAuditEvents, alphaAuditLoading, alphaAuditResponse] =
+    useApi<AlphaAuditResponse>(
+      "admin/cashier/alpha/audit-events",
+      Method.GET,
+    );
+  const [
+    triggerAlphaReconciliation,
+    alphaReconciliationLoading,
+    alphaReconciliationResponse,
+  ] = useApi<AlphaReconciliationResponse>(
+    "admin/cashier/alpha/reconciliation",
+    Method.GET,
+  );
+  const [triggerAlphaApprove, alphaApproveLoading] = useApi<
+    AlphaWithdrawalResponse,
+    any,
+    { reviewNote?: string }
+  >("admin/cashier/alpha/withdrawals/:withdrawalID/approve", Method.POST);
+  const [triggerAlphaReject, alphaRejectLoading] = useApi<
+    AlphaWithdrawalResponse,
+    any,
+    { reviewNote: string }
+  >("admin/cashier/alpha/withdrawals/:withdrawalID/reject", Method.POST);
+  const [triggerAlphaBroadcasted, alphaBroadcastedLoading] = useApi<
+    AlphaWithdrawalResponse,
+    any,
+    { txHash: string }
+  >(
+    "admin/cashier/alpha/withdrawals/:withdrawalID/mark-broadcasted",
+    Method.POST,
+  );
+  const [triggerAlphaCompleted, alphaCompletedLoading] =
+    useApi<AlphaWithdrawalResponse>(
+      "admin/cashier/alpha/withdrawals/:withdrawalID/mark-completed",
+      Method.POST,
+    );
 
   const actionLoading =
     assignLoading ||
@@ -450,7 +578,11 @@ const CashierReviewPanel = () => {
     refundLoading ||
     reverseLoading ||
     chargebackLoading ||
-    reconcileLoading;
+    reconcileLoading ||
+    alphaApproveLoading ||
+    alphaRejectLoading ||
+    alphaBroadcastedLoading ||
+    alphaCompletedLoading;
 
   const [pendingAction, setPendingAction] =
     useState<PendingCashierAction | null>(null);
@@ -618,11 +750,21 @@ const CashierReviewPanel = () => {
     ]);
   };
 
+  const refreshAlphaCashier = async () => {
+    await Promise.all([
+      triggerAlphaWithdrawals(),
+      triggerAlphaDeposits(undefined, { query: { limit: 50 } }),
+      triggerAlphaAuditEvents(undefined, { query: { limit: 50 } }),
+      triggerAlphaReconciliation(),
+    ]);
+  };
+
   useEffect(() => {
     void Promise.all([
       refreshQueue(),
       refreshSummary(),
       refreshReconciliationQueue(),
+      refreshAlphaCashier(),
     ]);
   }, [
     filters.userId,
@@ -701,6 +843,42 @@ const CashierReviewPanel = () => {
     setEvents(normalizeEvents(eventsResponse.data));
   }, [eventsResponse.succeeded, eventsResponse.data]);
 
+  useEffect(() => {
+    if (!alphaWithdrawalsResponse.succeeded) {
+      return;
+    }
+    const items = alphaWithdrawalsResponse.data?.withdrawalRequests;
+    setAlphaWithdrawals(Array.isArray(items) ? items : []);
+  }, [alphaWithdrawalsResponse.succeeded, alphaWithdrawalsResponse.data]);
+
+  useEffect(() => {
+    if (!alphaDepositsResponse.succeeded) {
+      return;
+    }
+    const items = alphaDepositsResponse.data?.depositIntents;
+    setAlphaDeposits(Array.isArray(items) ? items : []);
+  }, [alphaDepositsResponse.succeeded, alphaDepositsResponse.data]);
+
+  useEffect(() => {
+    if (!alphaAuditResponse.succeeded) {
+      return;
+    }
+    const items = alphaAuditResponse.data?.auditEvents;
+    setAlphaAuditEvents(Array.isArray(items) ? items : []);
+  }, [alphaAuditResponse.succeeded, alphaAuditResponse.data]);
+
+  useEffect(() => {
+    if (!alphaReconciliationResponse.succeeded) {
+      return;
+    }
+    setAlphaReconciliation(
+      alphaReconciliationResponse.data?.reconciliation || null,
+    );
+  }, [
+    alphaReconciliationResponse.succeeded,
+    alphaReconciliationResponse.data,
+  ]);
+
   const openTransaction = async (record: PaymentQueueItem) => {
     setDrawerVisible(true);
     setSelectedTransactionId(record.transactionId);
@@ -735,7 +913,45 @@ const CashierReviewPanel = () => {
         reconciliationState.page,
         reconciliationState.limit,
       ),
+      refreshAlphaCashier(),
     ]);
+  };
+
+  const approveAlphaWithdrawal = async (id: string) => {
+    await triggerAlphaApprove(
+      { reviewNote: "approved in alpha cashier backoffice" },
+      { withdrawalID: id },
+    );
+    await refreshAlphaCashier();
+  };
+
+  const rejectAlphaWithdrawal = async (id: string) => {
+    const reviewNote = window.prompt("Reject reason");
+    if (!reviewNote?.trim()) {
+      return;
+    }
+    await triggerAlphaReject(
+      { reviewNote: reviewNote.trim() },
+      { withdrawalID: id },
+    );
+    await refreshAlphaCashier();
+  };
+
+  const markAlphaBroadcasted = async (id: string) => {
+    const txHash = window.prompt("Broadcast transaction hash");
+    if (!txHash?.trim()) {
+      return;
+    }
+    await triggerAlphaBroadcasted(
+      { txHash: txHash.trim() },
+      { withdrawalID: id },
+    );
+    await refreshAlphaCashier();
+  };
+
+  const markAlphaCompleted = async (id: string) => {
+    await triggerAlphaCompleted(undefined, { withdrawalID: id });
+    await refreshAlphaCashier();
   };
 
   const submitQueueExport = async () => {
@@ -888,8 +1104,262 @@ const CashierReviewPanel = () => {
     },
   ];
 
+  const alphaWithdrawalColumns = [
+    {
+      title: "Request",
+      dataIndex: "id",
+      key: "id",
+      ellipsis: true,
+    },
+    {
+      title: "User",
+      dataIndex: "userId",
+      key: "userId",
+      ellipsis: true,
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (value: string) => <Tag>{value || "-"}</Tag>,
+    },
+    {
+      title: "Amount",
+      dataIndex: "amountCents",
+      key: "amountCents",
+      render: (value: number, record: AlphaWithdrawalRequest) =>
+        `${formatCents(value)} ${record.tokenSymbol}`,
+    },
+    {
+      title: "Destination",
+      dataIndex: "destinationAddress",
+      key: "destinationAddress",
+      ellipsis: true,
+    },
+    {
+      title: "Requested",
+      dataIndex: "requestedAt",
+      key: "requestedAt",
+      render: (value: string) =>
+        renderTimestamp(
+          value,
+          t("common:DATE_TIME_FORMAT"),
+          getTimeWithTimezone,
+        ),
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_: unknown, record: AlphaWithdrawalRequest) => (
+        <Space wrap>
+          <Button
+            size="small"
+            disabled={record.status !== "requested" || actionLoading}
+            onClick={() => void approveAlphaWithdrawal(record.id)}
+          >
+            Approve
+          </Button>
+          <Button
+            size="small"
+            danger
+            disabled={
+              !["requested", "under_review", "approved"].includes(
+                record.status,
+              ) || actionLoading
+            }
+            onClick={() => void rejectAlphaWithdrawal(record.id)}
+          >
+            Reject
+          </Button>
+          <Button
+            size="small"
+            disabled={record.status !== "approved" || actionLoading}
+            onClick={() => void markAlphaBroadcasted(record.id)}
+          >
+            Broadcasted
+          </Button>
+          <Button
+            size="small"
+            disabled={record.status !== "broadcasted" || actionLoading}
+            onClick={() => void markAlphaCompleted(record.id)}
+          >
+            Complete
+          </Button>
+        </Space>
+      ),
+    },
+  ];
+
+  const alphaDepositColumns = [
+    {
+      title: "Intent",
+      dataIndex: "id",
+      key: "id",
+      ellipsis: true,
+    },
+    {
+      title: "User",
+      dataIndex: "userId",
+      key: "userId",
+      ellipsis: true,
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (value: string) => <Tag>{value || "-"}</Tag>,
+    },
+    {
+      title: "Amount",
+      dataIndex: "amountCents",
+      key: "amountCents",
+      render: (value: number, record: AlphaDepositIntent) =>
+        `${formatCents(value)} ${record.tokenSymbol}`,
+    },
+    {
+      title: "From",
+      dataIndex: "fromAddress",
+      key: "fromAddress",
+      ellipsis: true,
+    },
+    {
+      title: "Tx",
+      dataIndex: "txHash",
+      key: "txHash",
+      ellipsis: true,
+      render: (value: string) => value || "-",
+    },
+    {
+      title: "Created",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (value: string) =>
+        renderTimestamp(
+          value,
+          t("common:DATE_TIME_FORMAT"),
+          getTimeWithTimezone,
+        ),
+    },
+  ];
+
+  const alphaAuditColumns = [
+    {
+      title: "Event",
+      dataIndex: "eventType",
+      key: "eventType",
+      ellipsis: true,
+    },
+    {
+      title: "Subject",
+      key: "subject",
+      render: (_: unknown, record: AlphaAuditEvent) =>
+        `${record.subjectType}/${record.subjectId}`,
+    },
+    {
+      title: "Actor",
+      key: "actor",
+      render: (_: unknown, record: AlphaAuditEvent) =>
+        `${record.actorType}${record.actorId ? `/${record.actorId}` : ""}`,
+    },
+    {
+      title: "Payload",
+      dataIndex: "eventPayload",
+      key: "eventPayload",
+      ellipsis: true,
+      render: (value: string) => value || "{}",
+    },
+    {
+      title: "Created",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (value: string) =>
+        renderTimestamp(
+          value,
+          t("common:DATE_TIME_FORMAT"),
+          getTimeWithTimezone,
+        ),
+    },
+  ];
+
   return (
     <>
+      <Card title="Alpha USDC cashier" className="mb-4">
+        <Row gutter={[16, 16]} className="mb-4">
+          <Col xs={24} sm={12} lg={6}>
+            <Card loading={alphaReconciliationLoading}>
+              <Typography.Text type="secondary">
+                Treasury reserve
+              </Typography.Text>
+              <Typography.Title level={3} className="!m-0">
+                {formatCents(alphaReconciliation?.treasuryBalanceCents)}
+              </Typography.Title>
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <Card loading={alphaReconciliationLoading}>
+              <Typography.Text type="secondary">
+                Expected reserve
+              </Typography.Text>
+              <Typography.Title level={3} className="!m-0">
+                {formatCents(
+                  alphaReconciliation?.cashierExpectedReserveCents,
+                )}
+              </Typography.Title>
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <Card loading={alphaReconciliationLoading}>
+              <Typography.Text type="secondary">Reserve drift</Typography.Text>
+              <Typography.Title level={3} className="!m-0">
+                {formatCents(alphaReconciliation?.cashierDriftCents)}
+              </Typography.Title>
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <Card loading={alphaReconciliationLoading}>
+              <Typography.Text type="secondary">
+                Pending withdrawals
+              </Typography.Text>
+              <Typography.Title level={3} className="!m-0">
+                {formatCents(alphaReconciliation?.pendingWithdrawalCents)}
+              </Typography.Title>
+            </Card>
+          </Col>
+        </Row>
+        <Table
+          rowKey={(record: Record<string, any>) => record.id}
+          columns={alphaWithdrawalColumns}
+          dataSource={alphaWithdrawals}
+          pagination={false}
+          loading={alphaWithdrawalsLoading}
+          locale={{ emptyText: "No alpha withdrawal requests." }}
+        />
+        <Typography.Title level={5} className="!mt-6">
+          Recent deposits
+        </Typography.Title>
+        <Table
+          rowKey={(record: Record<string, any>) => record.id}
+          columns={alphaDepositColumns}
+          dataSource={alphaDeposits}
+          pagination={false}
+          loading={alphaDepositsLoading}
+          locale={{ emptyText: "No alpha deposit intents." }}
+        />
+        <Typography.Title level={5} className="!mt-6">
+          Cashier audit trail
+        </Typography.Title>
+        <Table
+          rowKey={(record: Record<string, any>) =>
+            record.id || `${record.eventType}:${record.createdAt}`
+          }
+          columns={alphaAuditColumns}
+          dataSource={alphaAuditEvents}
+          pagination={false}
+          loading={alphaAuditLoading}
+          locale={{ emptyText: "No alpha cashier audit events." }}
+        />
+      </Card>
+
       <Card title={t("CASHIER_QUEUE_TITLE")} className="mb-4">
         <Row gutter={[12, 12]} className="mb-4">
           <Col xs={24} md={5}>
