@@ -244,11 +244,19 @@ describe("MarketChart side colors", () => {
   });
 });
 
-describe("Navigation pill radius", () => {
+describe("Navigation underline treatment", () => {
   const allMarketsSource = read("components/prediction/AllMarketsSection.tsx");
   const topBarSource = read("components/prediction/TopBar.tsx");
   const marketChartSource = read("components/prediction/MarketChart.tsx");
   const globalsSource = read("globals.css");
+
+  function functionBody(source: string, name: string): string {
+    const match = new RegExp(`function\\s+${name}\\([\\s\\S]*?^\\}`, "m").exec(
+      source,
+    );
+    assert.ok(match, `${name} should be declared`);
+    return match[0];
+  }
 
   function constValue(source: string, name: string): string {
     const match = new RegExp(
@@ -258,19 +266,72 @@ describe("Navigation pill radius", () => {
     return match[1] ?? match[2] ?? "";
   }
 
-  it("uses soft rectangular corners for category filter pills", () => {
-    const categoryPillClass = constValue(
-      allMarketsSource,
-      "CATEGORY_PILL_BASE_CLASS",
+  it("uses Tailwind underline links for category and top navigation", () => {
+    for (const [label, source, container, item, active] of [
+      [
+        "category navigation",
+        allMarketsSource,
+        "CATEGORY_LIST_CLASS",
+        "CATEGORY_PILL_BASE_CLASS",
+        "categoryPillClass",
+      ],
+      [
+        "top navigation",
+        topBarSource,
+        "TOP_BAR_NAV_CLASS",
+        "TOP_BAR_LINK_CLASS",
+        "TOP_BAR_LINK_ACTIVE_CLASS",
+      ],
+    ] as const) {
+      assert.ok(
+        constValue(source, container).includes(
+          "flex items-center gap-6 border-b border-neutral-200 w-full",
+        ),
+        `${label} should use the shared underline container classes`,
+      );
+      const itemClass = constValue(source, item);
+      for (const token of [
+        "relative",
+        "pb-3",
+        "pt-2",
+        "text-sm",
+        "font-medium",
+        "border-b-2",
+        "transition-all",
+        "duration-200",
+      ]) {
+        assert.ok(itemClass.includes(token), `${label} should include ${token}`);
+      }
+      assert.ok(
+        source.includes("text-neutral-500") &&
+          source.includes("border-transparent") &&
+          source.includes("hover:text-neutral-800") &&
+          source.includes("hover:border-neutral-300"),
+        `${label} should keep inactive borders transparent`,
+      );
+      const activeClass =
+        active === "categoryPillClass"
+          ? functionBody(source, active)
+          : constValue(source, active);
+      assert.ok(
+        activeClass.includes("text-neutral-900") &&
+          source.includes("font-semibold") &&
+          source.includes("border-neutral-900"),
+        `${label} should draw the selected underline`,
+      );
+    }
+
+    assert.ok(
+      !functionBody(allMarketsSource, "categoryPillClass").includes(
+        "bg-[var(--yes)] font-semibold text-[#061a10]",
+      ),
+      "Category navigation should no longer use active pill fill",
     );
     assert.ok(
-      categoryPillClass.includes("rounded-md"),
-      "Category pills should use 6px corners",
-    );
-    assert.ok(
-      !categoryPillClass.includes("var(--r-pill)") &&
-        !categoryPillClass.includes("999px"),
-      "Category pills should not use capsule radius",
+      !constValue(topBarSource, "TOP_BAR_LINK_ACTIVE_CLASS").includes(
+        "bg-[var(--yes)] font-semibold text-[#061a10]",
+      ),
+      "Top navigation should no longer use active pill fill",
     );
   });
 
@@ -280,7 +341,6 @@ describe("Navigation pill radius", () => {
       ["closing-window button", allMarketsSource, "TIME_PILL_BASE_CLASS"],
       ["chart range shell", marketChartSource, "CHART_SWITCHER_CLASS"],
       ["chart range button", marketChartSource, "CHART_BUTTON_BASE_CLASS"],
-      ["top navigation link", topBarSource, "TOP_BAR_LINK_CLASS"],
     ] as const) {
       const classValue = constValue(source, constant);
       assert.ok(
@@ -312,7 +372,6 @@ describe("Navigation pill radius", () => {
 
 describe("Navigation pill active colors", () => {
   const allMarketsSource = read("components/prediction/AllMarketsSection.tsx");
-  const topBarSource = read("components/prediction/TopBar.tsx");
   const marketChartSource = read("components/prediction/MarketChart.tsx");
   const globalsSource = read("globals.css");
   const categoryPillsSource = read("components/prediction/CategoryPills.tsx");
@@ -325,20 +384,8 @@ describe("Navigation pill active colors", () => {
     return match[0];
   }
 
-  function constValue(source: string, name: string): string {
-    const match = new RegExp(
-      `const\\s+${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`,
-    ).exec(source);
-    assert.ok(match, `${name} should be declared as a class constant`);
-    return match[1] ?? match[2] ?? "";
-  }
-
-  it("uses seafoam for category and segmented active fills", () => {
+  it("uses seafoam for remaining segmented active fills", () => {
     for (const [label, activeClass] of [
-      [
-        "category active",
-        functionBody(allMarketsSource, "categoryPillClass"),
-      ],
       [
         "closing-window active",
         functionBody(allMarketsSource, "timePillClass"),
@@ -346,10 +393,6 @@ describe("Navigation pill active colors", () => {
       [
         "chart range active",
         functionBody(marketChartSource, "rangeButtonClass"),
-      ],
-      [
-        "top navigation active",
-        constValue(topBarSource, "TOP_BAR_LINK_ACTIVE_CLASS"),
       ],
     ] as const) {
       assert.ok(
@@ -364,6 +407,14 @@ describe("Navigation pill active colors", () => {
   });
 
   it("uses seafoam tokens for active category pills", () => {
+    function constValue(source: string, name: string): string {
+      const match = new RegExp(
+        `const\\s+${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`,
+      ).exec(source);
+      assert.ok(match, `${name} should be declared as a class constant`);
+      return match[1] ?? match[2] ?? "";
+    }
+
     const categoryActiveClass = constValue(categoryPillsSource, "PILL_ACTIVE_CLASS");
     assert.ok(
       categoryActiveClass.includes("bg-[var(--yes-soft)]") &&

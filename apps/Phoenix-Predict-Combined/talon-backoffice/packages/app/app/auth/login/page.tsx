@@ -175,7 +175,7 @@ export default function LoginPage() {
         )}
 
         <footer className={FOOTER_CLASS}>
-          New to Predict?{" "}
+          New to Hula Na?{" "}
           <Link href={registerHref} className={`${LINK_CLASS} ${LINK_ACCENT_CLASS}`}>
             Create an account
           </Link>

@@ -2,8 +2,8 @@
 
 /**
  * AllMarketsSection — paginated grid of open prediction markets, owning
- * its own filter state. The section header is a single row of pills:
- * category pills (All / Politics / Crypto / ...) on the left, closing-
+ * its own filter state. The section header is a single row of category
+ * underline tabs (All / Politics / Crypto / ...) on the left, closing-
  * window pills (All / 1D / 1W / 1M) on the right. No title — the layout
  * is self-evident.
  *
@@ -47,10 +47,10 @@ const FILTER_HEAD_CLASS =
   "mt-8 mb-[18px] flex flex-wrap items-center justify-between gap-4 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[768px]:mt-6 max-[768px]:mb-4 max-[768px]:flex-col max-[768px]:flex-nowrap max-[768px]:items-stretch max-[768px]:justify-start max-[768px]:gap-2.5";
 
 const CATEGORY_LIST_CLASS =
-  "flex min-w-0 flex-1 flex-wrap gap-2 max-[768px]:mx-[-16px] max-[768px]:w-[calc(100%+32px)] max-[768px]:flex-[0_0_auto] max-[768px]:flex-row max-[768px]:flex-nowrap max-[768px]:overflow-x-auto max-[768px]:overflow-y-hidden max-[768px]:whitespace-nowrap max-[768px]:px-4 max-[768px]:pt-0 max-[768px]:pb-0.5 max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
+  "flex items-center gap-6 border-b border-neutral-200 w-full max-[768px]:mx-[-16px] max-[768px]:w-[calc(100%+32px)] max-[768px]:flex-[0_0_auto] max-[768px]:flex-row max-[768px]:flex-nowrap max-[768px]:overflow-x-auto max-[768px]:overflow-y-hidden max-[768px]:whitespace-nowrap max-[768px]:px-4 max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
 
 const CATEGORY_PILL_BASE_CLASS =
-  "cursor-pointer appearance-none rounded-md border-0 px-[18px] py-[9px] [font-family:inherit] text-[13px] transition-colors duration-[120ms] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap max-[768px]:px-4";
+  "relative cursor-pointer appearance-none bg-transparent pb-3 pt-2 text-sm font-medium border-b-2 transition-all duration-200 [font-family:inherit] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
 
 const TIME_PILLS_CLASS =
   "inline-flex shrink-0 gap-1 rounded-md border border-[var(--border-1)] bg-white/[0.04] p-[3px] max-[768px]:max-w-full max-[768px]:self-start max-[768px]:overflow-x-auto max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
@@ -84,8 +84,8 @@ const EMPTY_TEXT_CLASS = "mt-2 mb-0 text-[13px] text-[var(--t3)]";
 function categoryPillClass(active: boolean): string {
   return `${CATEGORY_PILL_BASE_CLASS} ${
     active
-      ? "bg-[var(--yes)] font-semibold text-[#061a10]"
-      : "bg-white/[0.05] font-medium text-[var(--t2)] hover:bg-white/[0.08] hover:text-[var(--t1)]"
+      ? "text-neutral-900 font-semibold border-neutral-900"
+      : "text-neutral-500 border-transparent hover:text-neutral-800 hover:border-neutral-300"
   }`;
 }
 

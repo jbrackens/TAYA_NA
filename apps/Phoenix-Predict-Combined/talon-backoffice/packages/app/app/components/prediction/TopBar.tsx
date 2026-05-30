@@ -64,15 +64,17 @@ const TOP_BAR_BRAND_CLASS =
 const TOP_BAR_WORDMARK_CLASS =
   "whitespace-nowrap text-[23px] font-bold leading-none tracking-[-0.01em] text-[var(--t1)] [font-family:'Space_Grotesk',-apple-system,BlinkMacSystemFont,sans-serif] max-[900px]:text-xl";
 
-const TOP_BAR_NAV_CLASS = "flex min-w-0 flex-1 gap-1.5 max-[900px]:hidden";
+const TOP_BAR_NAV_CLASS =
+  "flex items-center gap-6 border-b border-neutral-200 w-full min-w-0 flex-1 max-[900px]:hidden";
 
 const TOP_BAR_LINK_CLASS =
-  "inline-flex min-h-11 items-center whitespace-nowrap rounded-md px-3.5 text-[15px] no-underline transition-[color,background,box-shadow] duration-[180ms] ease-[ease]";
+  "relative pb-3 pt-2 text-sm font-medium border-b-2 transition-all duration-200 no-underline whitespace-nowrap";
 
 const TOP_BAR_LINK_INACTIVE_CLASS =
-  "font-medium text-[var(--t2)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)]";
+  "text-neutral-500 !text-neutral-500 border-transparent hover:text-neutral-800 hover:!text-neutral-800 hover:border-neutral-300";
 
-const TOP_BAR_LINK_ACTIVE_CLASS = "bg-[var(--yes)] font-semibold text-[#061a10]";
+const TOP_BAR_LINK_ACTIVE_CLASS =
+  "text-neutral-900 !text-neutral-900 font-semibold border-neutral-900";
 
 const TOP_BAR_RIGHT_CLASS = [
   "flex shrink-0 items-center gap-2.5",

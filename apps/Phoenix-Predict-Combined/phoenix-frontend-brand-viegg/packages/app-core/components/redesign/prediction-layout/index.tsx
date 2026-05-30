@@ -8,9 +8,11 @@ import { PredictionLeftNav } from "./left-nav";
 import { PredictionTradeRail } from "./trade-rail";
 import { SportsbookTopBarActions } from "../sportsbook-layout/top-bar";
 import {
+  PredictionRightRailContent,
   PredictionTopBarBrand,
   PredictionTopBarBrandMark,
 } from "./index.styled";
+import { NewsSidebar } from "./news-sidebar";
 import {
   PredictionMobileActionBar,
   PredictionMobileBottomNav,
@@ -82,7 +84,12 @@ export const PredictionLayout: React.FC<PredictionLayoutProps> = ({
             {children}
           </>
         }
-        rightRail={<PredictionTradeRail />}
+        rightRail={
+          <PredictionRightRailContent>
+            <PredictionTradeRail />
+            <NewsSidebar />
+          </PredictionRightRailContent>
+        }
         mobileActionBar={
           isTabletViewport ? (
             <PredictionMobileActionBar

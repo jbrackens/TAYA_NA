@@ -49,6 +49,14 @@ export const PredictionActionPanel = styled.div`
   align-content: start;
 `;
 
+export const PredictionRightRailContent = styled.div`
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(260px, 1fr);
+  gap: var(--space-3);
+`;
+
 export const PredictionActionCard = styled.section`
   border: 1px solid rgba(99, 120, 136, 0.22);
   border-radius: var(--radius-lg);

@@ -227,7 +227,7 @@ export function ChatSidebar() {
       {showStatus && (
         <div className={chatClasses.statusRow}>
           <span className={chatClasses.onlineDot} aria-hidden="true" />
-          <span>Community online</span>
+          <span>Online</span>
         </div>
       )}
       <ChatFrame
