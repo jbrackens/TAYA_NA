@@ -74,7 +74,7 @@ const TOP_BAR_LINK_INACTIVE_CLASS =
   "text-neutral-500 !text-neutral-500 border-transparent hover:text-neutral-800 hover:!text-neutral-800 hover:border-neutral-300";
 
 const TOP_BAR_LINK_ACTIVE_CLASS =
-  "text-neutral-900 !text-neutral-900 font-semibold border-neutral-900";
+  "text-[var(--accent)] !text-[var(--accent)] font-semibold border-[var(--accent)]";
 
 const TOP_BAR_RIGHT_CLASS = [
   "flex shrink-0 items-center gap-2.5",

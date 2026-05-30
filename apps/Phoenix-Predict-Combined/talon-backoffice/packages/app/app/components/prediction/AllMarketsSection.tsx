@@ -84,7 +84,7 @@ const EMPTY_TEXT_CLASS = "mt-2 mb-0 text-[13px] text-[var(--t3)]";
 function categoryPillClass(active: boolean): string {
   return `${CATEGORY_PILL_BASE_CLASS} ${
     active
-      ? "text-neutral-900 font-semibold border-neutral-900"
+      ? "text-[var(--accent)] font-semibold border-[var(--accent)]"
       : "text-neutral-500 border-transparent hover:text-neutral-800 hover:border-neutral-300"
   }`;
 }

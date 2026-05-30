@@ -314,10 +314,10 @@ describe("Navigation underline treatment", () => {
           ? functionBody(source, active)
           : constValue(source, active);
       assert.ok(
-        activeClass.includes("text-neutral-900") &&
+        activeClass.includes("text-[var(--accent)]") &&
           source.includes("font-semibold") &&
-          source.includes("border-neutral-900"),
-        `${label} should draw the selected underline`,
+          source.includes("border-[var(--accent)]"),
+        `${label} should draw the selected mint underline`,
       );
     }
 
