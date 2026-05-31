@@ -28,7 +28,9 @@ name: Deploy demo (Hetzner)
 on:
   push:
     branches: [feat/binary-exchange-engine]   # the deployed branch; change here to retarget
-    paths: ['apps/Phoenix-Predict-Combined/**']
+    paths:
+      - 'apps/Phoenix-Predict-Combined/**'
+      - '.github/workflows/deploy-demo.yml'
   workflow_dispatch: # manual "Run workflow" button
     inputs:
       sync_catalog:
