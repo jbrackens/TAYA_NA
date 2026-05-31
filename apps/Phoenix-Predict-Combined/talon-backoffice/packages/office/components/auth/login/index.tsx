@@ -137,7 +137,7 @@ const LoginComponent: React.FC = () => {
       <LoginFormComponent>
         <Header>
           <Logo theme={theme?.logo} />
-          Talon
+          HulaNaBO
         </Header>
 
         <LoginForm>
