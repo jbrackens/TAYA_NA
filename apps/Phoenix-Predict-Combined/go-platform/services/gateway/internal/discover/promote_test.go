@@ -208,6 +208,26 @@ func TestShouldRemoveFromPlayer(t *testing.T) {
 			},
 			want: true,
 		},
+		{
+			name: "eliminated NBA outright is removed despite future close",
+			m: Market{
+				Status:      "open",
+				EndTime:     &future,
+				Title:       "Will the Detroit Pistons win the 2026 NBA Finals?",
+				Description: "This market will resolve to No if it becomes impossible for this team to win the 2026 NBA Finals based off the rules of the NBA.",
+			},
+			want: true,
+		},
+		{
+			name: "active NBA finalist stays visible",
+			m: Market{
+				Status:      "open",
+				EndTime:     &future,
+				Title:       "Will the New York Knicks win the 2026 NBA Finals?",
+				Description: "This market will resolve to No if it becomes impossible for this team to win the 2026 NBA Finals based off the rules of the NBA.",
+			},
+			want: false,
+		},
 	}
 
 	for _, c := range cases {
@@ -253,6 +273,75 @@ func TestTextHasPastScheduledDate(t *testing.T) {
 	}
 	if textHasPastScheduledDate("market closes on May 25, 2026", now) {
 		t.Fatal("generic dates without scheduled-for wording should not be matched")
+	}
+}
+
+func TestOutrightWinnerNoLongerActive(t *testing.T) {
+	afterNBAFinalsStart := time.Date(2026, time.June, 4, 12, 0, 0, 0, time.UTC)
+	beforeNBAFinalsStart := time.Date(2026, time.June, 1, 12, 0, 0, 0, time.UTC)
+
+	cases := []struct {
+		name  string
+		title string
+		now   time.Time
+		want  bool
+	}{
+		{
+			name:  "detroit eliminated after finals start",
+			title: "Will the Detroit Pistons win the 2026 NBA Finals?",
+			now:   afterNBAFinalsStart,
+			want:  true,
+		},
+		{
+			name:  "okc eliminated despite stale high source price",
+			title: "Will the Oklahoma City Thunder win the 2026 NBA Finals?",
+			now:   afterNBAFinalsStart,
+			want:  true,
+		},
+		{
+			name:  "knicks active finalist",
+			title: "Will the New York Knicks win the 2026 NBA Finals?",
+			now:   afterNBAFinalsStart,
+			want:  false,
+		},
+		{
+			name:  "spurs active finalist",
+			title: "Will the San Antonio Spurs win the 2026 NBA Finals?",
+			now:   afterNBAFinalsStart,
+			want:  false,
+		},
+		{
+			name:  "do not remove before finals matchup lock",
+			title: "Will the Detroit Pistons win the 2026 NBA Finals?",
+			now:   beforeNBAFinalsStart,
+			want:  false,
+		},
+		{
+			name:  "colorado eliminated from stanley cup",
+			title: "Will the Colorado Avalanche win the 2026 NHL Stanley Cup?",
+			now:   afterNBAFinalsStart,
+			want:  true,
+		},
+		{
+			name:  "vegas active stanley cup finalist",
+			title: "Will the Vegas Golden Knights win the 2026 NHL Stanley Cup?",
+			now:   afterNBAFinalsStart,
+			want:  false,
+		},
+		{
+			name:  "world cup longshot not in scoped finalist detector",
+			title: "Will Ivory Coast win the 2026 FIFA World Cup?",
+			now:   afterNBAFinalsStart,
+			want:  false,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := outrightWinnerNoLongerActive(c.title, c.now); got != c.want {
+				t.Fatalf("outrightWinnerNoLongerActive(%q) = %v, want %v", c.title, got, c.want)
+			}
+		})
 	}
 }
 

@@ -197,6 +197,7 @@ func (r *Repository) MarkMissing(ctx context.Context, externalHashes []string) (
 func (r *Repository) StaleImportedHashes(ctx context.Context, now time.Time) ([]string, error) {
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT im.external_hash,
+		       im.title,
 		       COALESCE(im.description, ''),
 		       COALESCE(im.rules_text, ''),
 		       im.end_time
@@ -208,6 +209,7 @@ func (r *Repository) StaleImportedHashes(ctx context.Context, now time.Time) ([]
 		       im.end_time <= $1
 		       OR im.description ~* '(originally[[:space:]]+scheduled[[:space:]]+for|scheduled[[:space:]]+for|scheduled[[:space:]]+on)[[:space:]]+[A-Z][a-z]+[[:space:]]+[0-9]{1,2},[[:space:]]*[0-9]{4}'
 		       OR im.rules_text ~* '(originally[[:space:]]+scheduled[[:space:]]+for|scheduled[[:space:]]+for|scheduled[[:space:]]+on)[[:space:]]+[A-Z][a-z]+[[:space:]]+[0-9]{1,2},[[:space:]]*[0-9]{4}'
+		       OR im.title ~* '^Will .+ win the [0-9]{4} (NBA Finals|NHL Stanley Cup)\\??$'
 		   )
 	`, now.UTC())
 	if err != nil {
@@ -218,9 +220,9 @@ func (r *Repository) StaleImportedHashes(ctx context.Context, now time.Time) ([]
 	var out []string
 	for rows.Next() {
 		var hash string
-		var description, rulesText string
+		var title, description, rulesText string
 		var endTime sql.NullTime
-		if err := rows.Scan(&hash, &description, &rulesText, &endTime); err != nil {
+		if err := rows.Scan(&hash, &title, &description, &rulesText, &endTime); err != nil {
 			return nil, err
 		}
 		if endTime.Valid && !endTime.Time.After(now.UTC()) {
@@ -228,6 +230,10 @@ func (r *Repository) StaleImportedHashes(ctx context.Context, now time.Time) ([]
 			continue
 		}
 		if textHasPastScheduledDate(description, now.UTC()) || textHasPastScheduledDate(rulesText, now.UTC()) {
+			out = append(out, hash)
+			continue
+		}
+		if outrightWinnerNoLongerActive(title, now.UTC()) {
 			out = append(out, hash)
 		}
 	}

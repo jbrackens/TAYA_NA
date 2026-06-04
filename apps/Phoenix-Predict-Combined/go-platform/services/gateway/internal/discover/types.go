@@ -59,6 +59,10 @@ func marketEventDatePassed(m Market, now time.Time) bool {
 	return textHasPastScheduledDate(m.Description, now) || textHasPastScheduledDate(m.RulesText, now)
 }
 
+func marketImpossibleOutcomePassed(m Market, now time.Time) bool {
+	return outrightWinnerNoLongerActive(m.Title, now)
+}
+
 func textHasPastScheduledDate(text string, now time.Time) bool {
 	matches := scheduledForDatePattern.FindAllStringSubmatch(text, -1)
 	if len(matches) == 0 {
@@ -126,4 +130,48 @@ func monthNumber(name string) (time.Month, bool) {
 
 func startOfDay(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+}
+
+var outrightWinnerPattern = regexp.MustCompile(`(?i)^will\s+(.+?)\s+win\s+the\s+(\d{4})\s+(NBA Finals|NHL Stanley Cup)\??$`)
+
+type activeOutrightField struct {
+	startAt    time.Time
+	activeTeam map[string]struct{}
+}
+
+var activeOutrightFields = map[string]activeOutrightField{
+	"nba finals:2026": {
+		startAt: time.Date(2026, time.June, 3, 0, 0, 0, 0, time.UTC),
+		activeTeam: map[string]struct{}{
+			normalizeTeamName("New York Knicks"):   {},
+			normalizeTeamName("San Antonio Spurs"): {},
+		},
+	},
+	"nhl stanley cup:2026": {
+		startAt: time.Date(2026, time.June, 2, 0, 0, 0, 0, time.UTC),
+		activeTeam: map[string]struct{}{
+			normalizeTeamName("Carolina Hurricanes"):  {},
+			normalizeTeamName("Vegas Golden Knights"): {},
+		},
+	},
+}
+
+func outrightWinnerNoLongerActive(title string, now time.Time) bool {
+	match := outrightWinnerPattern.FindStringSubmatch(strings.TrimSpace(title))
+	if len(match) != 4 {
+		return false
+	}
+	team := normalizeTeamName(match[1])
+	key := strings.ToLower(strings.TrimSpace(match[3])) + ":" + strings.TrimSpace(match[2])
+	field, ok := activeOutrightFields[key]
+	if !ok || now.UTC().Before(field.startAt) {
+		return false
+	}
+	_, active := field.activeTeam[team]
+	return !active
+}
+
+func normalizeTeamName(s string) string {
+	normalized := strings.Join(strings.Fields(strings.ToLower(strings.TrimSpace(s))), " ")
+	return strings.TrimPrefix(normalized, "the ")
 }
