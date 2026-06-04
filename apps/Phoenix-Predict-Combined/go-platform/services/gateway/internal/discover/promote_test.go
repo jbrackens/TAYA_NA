@@ -162,6 +162,7 @@ func TestPickCloseAt_PastTimeFallsBack(t *testing.T) {
 func TestShouldRemoveFromPlayer(t *testing.T) {
 	past := pastTime()
 	future := time.Now().UTC().Add(24 * time.Hour)
+	now := time.Date(2026, time.June, 4, 12, 0, 0, 0, time.UTC)
 
 	cases := []struct {
 		name string
@@ -198,10 +199,22 @@ func TestShouldRemoveFromPlayer(t *testing.T) {
 			m:    Market{Status: "closed", Resolution: &Resolution{Outcome: "yes", ResolvedAt: past}},
 			want: false,
 		},
+		{
+			name: "past scheduled game date is removed despite future trading close",
+			m: Market{
+				Status:      "open",
+				EndTime:     &future,
+				Description: "If Jaylon Tyson records 20+ Points in the New York vs Cleveland professional basketball game originally scheduled for May 25, 2026, then the market resolves to Yes.",
+			},
+			want: true,
+		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
+			oldNow := timeNowUTC
+			timeNowUTC = func() time.Time { return now }
+			t.Cleanup(func() { timeNowUTC = oldNow })
 			if got := shouldRemoveFromPlayer(c.m); got != c.want {
 				t.Fatalf("shouldRemoveFromPlayer() = %v, want %v", got, c.want)
 			}
@@ -227,6 +240,19 @@ func TestApplyUpstreamStateToExistingVoidsExpiredMarket(t *testing.T) {
 	}
 	if !strings.Contains(svc.reason, "inactive or expired") {
 		t.Fatalf("reason = %q, want inactive/expired audit reason", svc.reason)
+	}
+}
+
+func TestTextHasPastScheduledDate(t *testing.T) {
+	now := time.Date(2026, time.June, 4, 12, 0, 0, 0, time.UTC)
+	if !textHasPastScheduledDate("game originally scheduled for May 25, 2026", now) {
+		t.Fatal("expected May 25, 2026 scheduled date to be stale on June 4, 2026")
+	}
+	if textHasPastScheduledDate("game scheduled for June 4, 2026", now) {
+		t.Fatal("same-day scheduled date should not be considered stale")
+	}
+	if textHasPastScheduledDate("market closes on May 25, 2026", now) {
+		t.Fatal("generic dates without scheduled-for wording should not be matched")
 	}
 }
 

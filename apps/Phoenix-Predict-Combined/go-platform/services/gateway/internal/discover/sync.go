@@ -155,13 +155,13 @@ func Sync(ctx context.Context, repo *Repository, rehoster *ImageRehoster,
 		}
 	}
 
-	expiredHashes, err := repo.ExpiredImportedHashes(ctx, timeNowUTC())
+	staleHashes, err := repo.StaleImportedHashes(ctx, timeNowUTC())
 	if err != nil {
-		slog.Warn("discover expired cleanup scan failed", "err", err)
-	} else if len(expiredHashes) > 0 {
-		removed, err := repo.MarkMissing(ctx, expiredHashes)
+		slog.Warn("discover stale cleanup scan failed", "err", err)
+	} else if len(staleHashes) > 0 {
+		removed, err := repo.MarkMissing(ctx, staleHashes)
 		if err != nil {
-			slog.Warn("discover expired cleanup failed", "err", err)
+			slog.Warn("discover stale cleanup failed", "err", err)
 		} else {
 			res.RemovedExpired = removed
 		}
