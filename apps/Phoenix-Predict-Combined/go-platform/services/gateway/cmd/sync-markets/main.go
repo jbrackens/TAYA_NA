@@ -111,15 +111,15 @@ func main() {
 		"sync-markets: ok in %s\n"+
 			"  fetched : polymarket=%d kalshi=%d manifold=%d\n"+
 			"  dedupe  : %d → %d\n"+
-			"  imported: created=%d updated=%d images=%d (failed=%d)\n"+
-			"  promote : open=%d resolved=%d closed=%d resolved_existing=%d skipped=%d failed=%d\n"+
+			"  imported: created=%d updated=%d expired_removed=%d images=%d (failed=%d)\n"+
+			"  promote : open=%d resolved=%d closed=%d resolved_existing=%d removed=%d skipped=%d failed=%d\n"+
 			"  translate: enabled=%t scanned=%d markets=%d written=%d skipped=%d failed=%d\n"+
 			"  by_cat  : %v\n",
 		totalElapsed,
 		res.FetchedPolymarket, res.FetchedKalshi, res.FetchedManifold,
 		res.BeforeDedupe, res.AfterDedupe,
-		res.Created, res.Updated, res.ImagesRehosted, res.ImagesFailed,
-		promoteRes.Created, promoteRes.Resolved, promoteRes.Closed, promoteRes.ResolvedExisting, promoteRes.Skipped, promoteRes.Failed,
+		res.Created, res.Updated, res.RemovedExpired, res.ImagesRehosted, res.ImagesFailed,
+		promoteRes.Created, promoteRes.Resolved, promoteRes.Closed, promoteRes.ResolvedExisting, promoteRes.Removed, promoteRes.Skipped, promoteRes.Failed,
 		*translate, translationSummary.MarketsScanned, translationSummary.MarketsTranslated, translationSummary.TranslationsWritten, translationSummary.MarketsSkipped, translationSummary.Failures,
 		promoteRes.ByCategory,
 	)

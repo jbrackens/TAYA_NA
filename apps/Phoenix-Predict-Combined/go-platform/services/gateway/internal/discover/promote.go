@@ -33,6 +33,7 @@ type PromoteResult struct {
 	Resolved         int            // newly inserted, status=settled with payouts
 	ResolvedExisting int            // existing-ticker rows we transitioned and settled
 	Closed           int            // newly inserted, status=closed (ambiguous, awaiting manual)
+	Removed          int            // existing imported rows voided because upstream is inactive/expired
 	Skipped          int            // already exists, no new resolution to apply
 	Failed           int            // logged via slog.Warn, sync continues
 	ByCategory       map[string]int // category -> count of created+resolved
@@ -111,16 +112,23 @@ func Promote(
 		ticker := generateTicker(m)
 		existing, _ := repo.GetMarketByTicker(ctx, ticker)
 		if existing != nil {
-			outcome := applyResolutionToExisting(ctx, svc, existing, m)
+			outcome := applyUpstreamStateToExisting(ctx, svc, existing, m)
 			switch outcome {
 			case "resolved":
 				res.ResolvedExisting++
 				res.ByCategory[category]++
+			case "removed":
+				res.Removed++
 			case "skip":
 				res.Skipped++
 			case "fail":
 				res.Failed++
 			}
+			continue
+		}
+
+		if shouldRemoveFromPlayer(m) {
+			res.Skipped++
 			continue
 		}
 
@@ -213,12 +221,16 @@ func Promote(
 	return res, nil
 }
 
-// applyResolutionToExisting handles the "ticker already exists" branch.
+// applyUpstreamStateToExisting handles the "ticker already exists" branch.
 // Returns "resolved" if we transitioned + resolved a previously-open market,
-// "skip" if there's nothing to do (already settled, or no new resolution),
+// "removed" if we voided an imported market that is no longer active upstream,
+// "skip" if there's nothing to do (already terminal, or no new upstream signal),
 // "fail" if a transition or resolve errored.
-func applyResolutionToExisting(ctx context.Context, svc Service, existing *prediction.Market, m Market) string {
+func applyUpstreamStateToExisting(ctx context.Context, svc Service, existing *prediction.Market, m Market) string {
 	if m.Resolution == nil {
+		if shouldRemoveFromPlayer(m) {
+			return voidExistingImported(ctx, svc, existing, "re-sync: upstream market inactive or expired")
+		}
 		return "skip"
 	}
 	// Only act on markets that are still in the open lifecycle. Settled,
@@ -227,9 +239,7 @@ func applyResolutionToExisting(ctx context.Context, svc Service, existing *predi
 		return "skip"
 	}
 	if m.Resolution.Outcome == "ambiguous" {
-		// Don't auto-close ambiguous; let the existing market run to its
-		// own close_at and let ops handle.
-		return "skip"
+		return voidExistingImported(ctx, svc, existing, "re-sync: upstream market closed without a binary result")
 	}
 	actor := "promote-resync"
 	if err := svc.TransitionMarketStatus(ctx, existing.ID, prediction.MarketStatusClosed, "re-sync: upstream resolved", &actor); err != nil {
@@ -249,6 +259,29 @@ func applyResolutionToExisting(ctx context.Context, svc Service, existing *predi
 		return "fail"
 	}
 	return "resolved"
+}
+
+func shouldRemoveFromPlayer(m Market) bool {
+	if m.Resolution != nil {
+		return m.Resolution.Outcome == "ambiguous"
+	}
+	status := strings.ToLower(strings.TrimSpace(m.Status))
+	if status == "closed" || status == "inactive" || status == "expired" || status == "settled" || status == "finalized" {
+		return true
+	}
+	return marketExpired(m.EndTime)
+}
+
+func voidExistingImported(ctx context.Context, svc Service, existing *prediction.Market, reason string) string {
+	if prediction.IsTerminal(existing.Status) {
+		return "skip"
+	}
+	actor := "market-sync"
+	if err := svc.TransitionMarketStatus(ctx, existing.ID, prediction.MarketStatusVoided, reason, &actor); err != nil {
+		slog.Warn("promote: void stale imported market failed", "ticker", existing.Ticker, "err", err)
+		return "fail"
+	}
+	return "removed"
 }
 
 // initAMMShares returns the AMM share state (yesShares, noShares) such that

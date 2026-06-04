@@ -1,6 +1,7 @@
 package discover
 
 import (
+	"context"
 	"math"
 	"strings"
 	"testing"
@@ -82,11 +83,11 @@ func TestInitAMMShares_OneSidePinnedAtZero(t *testing.T) {
 // is the only place we satisfy that, so its invariants matter.
 func TestClampPrices(t *testing.T) {
 	cases := []struct {
-		name      string
-		input     []float64
-		wantYes   int
-		wantNo    int
-		wantSum   int
+		name    string
+		input   []float64
+		wantYes int
+		wantNo  int
+		wantSum int
 	}{
 		{"normal_42", []float64{0.42, 0.58}, 42, 58, 100},
 		{"normal_58", []float64{0.58, 0.42}, 58, 42, 100},
@@ -156,4 +157,96 @@ func TestPickCloseAt_PastTimeFallsBack(t *testing.T) {
 	if !got.After(past) {
 		t.Fatalf("pickCloseAt returned past time %v for past input %v", got, past)
 	}
+}
+
+func TestShouldRemoveFromPlayer(t *testing.T) {
+	past := pastTime()
+	future := time.Now().UTC().Add(24 * time.Hour)
+
+	cases := []struct {
+		name string
+		m    Market
+		want bool
+	}{
+		{
+			name: "open future stays visible",
+			m:    Market{Status: "open", EndTime: &future},
+			want: false,
+		},
+		{
+			name: "open expired is removed",
+			m:    Market{Status: "open", EndTime: &past},
+			want: true,
+		},
+		{
+			name: "inactive is removed",
+			m:    Market{Status: "inactive", EndTime: &future},
+			want: true,
+		},
+		{
+			name: "closed without binary resolution is removed",
+			m:    Market{Status: "closed", EndTime: &future},
+			want: true,
+		},
+		{
+			name: "ambiguous resolution is removed",
+			m:    Market{Status: "closed", Resolution: &Resolution{Outcome: "ambiguous", ResolvedAt: past}},
+			want: true,
+		},
+		{
+			name: "binary resolution follows settlement path",
+			m:    Market{Status: "closed", Resolution: &Resolution{Outcome: "yes", ResolvedAt: past}},
+			want: false,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := shouldRemoveFromPlayer(c.m); got != c.want {
+				t.Fatalf("shouldRemoveFromPlayer() = %v, want %v", got, c.want)
+			}
+		})
+	}
+}
+
+func TestApplyUpstreamStateToExistingVoidsExpiredMarket(t *testing.T) {
+	existing := &prediction.Market{
+		ID:     "mkt-expired",
+		Ticker: "IMP-EXPIRED",
+		Status: prediction.MarketStatusOpen,
+	}
+	svc := &recordingPromoteService{}
+
+	outcome := applyUpstreamStateToExisting(context.Background(), svc, existing, Market{Status: "expired"})
+
+	if outcome != "removed" {
+		t.Fatalf("outcome = %q, want removed", outcome)
+	}
+	if svc.marketID != existing.ID || svc.to != prediction.MarketStatusVoided {
+		t.Fatalf("transition = (%q,%q), want (%q,%q)", svc.marketID, svc.to, existing.ID, prediction.MarketStatusVoided)
+	}
+	if !strings.Contains(svc.reason, "inactive or expired") {
+		t.Fatalf("reason = %q, want inactive/expired audit reason", svc.reason)
+	}
+}
+
+type recordingPromoteService struct {
+	marketID string
+	to       prediction.MarketStatus
+	reason   string
+}
+
+func (s *recordingPromoteService) CreateMarket(context.Context, prediction.CreateMarketRequest) (*prediction.Market, error) {
+	return nil, nil
+}
+
+func (s *recordingPromoteService) TransitionMarketStatus(_ context.Context, marketID string, to prediction.MarketStatus, reason string, _ *string) error {
+	s.marketID = marketID
+	s.to = to
+	s.reason = reason
+	return nil
+}
+
+func (s *recordingPromoteService) ResolveMarket(context.Context, string, prediction.ResolveMarketRequest, *string) (*prediction.Settlement, []prediction.Payout, error) {
+	return nil, nil, nil
 }

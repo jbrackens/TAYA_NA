@@ -90,6 +90,10 @@ func FetchPolymarket(limit int) ([]Market, error) {
 				Tags:        stringSlice(m["tags"]),
 			}
 
+			if market.Resolution == nil && marketExpired(market.EndTime) {
+				market.Status = "expired"
+			}
+
 			// Resolution: Polymarket sets `closed=true` and the winning side's
 			// price collapses to ≥0.95 once UMA settles.
 			if isClosed, _ := m["closed"].(bool); isClosed && len(prices) >= 2 {

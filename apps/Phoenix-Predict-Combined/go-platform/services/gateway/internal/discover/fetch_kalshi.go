@@ -131,6 +131,10 @@ func FetchKalshi(limit int) ([]Market, error) {
 					Tags:        compactStrings(strs(m["category"]), strs(m["market_type"])),
 				}
 
+				if market.Resolution == nil && marketExpired(market.EndTime) {
+					market.Status = "expired"
+				}
+
 				// Resolution: status=="settled" + result field set.
 				marketStatus := strs(m["status"])
 				if marketStatus == "settled" || marketStatus == "finalized" {

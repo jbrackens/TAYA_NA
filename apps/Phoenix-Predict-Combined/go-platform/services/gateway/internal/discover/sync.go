@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"strings"
+	"time"
 )
 
 // upstreamNames are source-venue brand names that must never appear in any
@@ -39,6 +40,7 @@ type SyncResult struct {
 	Updated           int
 	ImagesRehosted    int
 	ImagesFailed      int
+	RemovedExpired    int
 	FetchErrors       []error
 }
 
@@ -153,8 +155,22 @@ func Sync(ctx context.Context, repo *Repository, rehoster *ImageRehoster,
 		}
 	}
 
+	expiredHashes, err := repo.ExpiredImportedHashes(ctx, timeNowUTC())
+	if err != nil {
+		slog.Warn("discover expired cleanup scan failed", "err", err)
+	} else if len(expiredHashes) > 0 {
+		removed, err := repo.MarkMissing(ctx, expiredHashes)
+		if err != nil {
+			slog.Warn("discover expired cleanup failed", "err", err)
+		} else {
+			res.RemovedExpired = removed
+		}
+	}
+
 	if len(res.FetchErrors) == 3 && res.AfterDedupe == 0 {
 		return res, deduped, errors.New("all three fetchers failed")
 	}
 	return res, deduped, nil
 }
+
+var timeNowUTC = func() time.Time { return time.Now().UTC() }
