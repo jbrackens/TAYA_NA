@@ -564,6 +564,8 @@ func startHourlyMarketSyncWorker(db *sql.DB, repo discover.PredictionRepo, svc d
 			"after_dedupe", res.AfterDedupe,
 			"created", promoteRes.Created,
 			"resolved", promoteRes.Resolved+promoteRes.ResolvedExisting,
+			"removed_expired", res.RemovedExpired,
+			"removed_inactive", promoteRes.Removed,
 			"skipped", promoteRes.Skipped,
 			"failed", promoteRes.Failed,
 		)

@@ -43,3 +43,7 @@ type Resolution struct {
 	Outcome    string // "yes" | "no" | "ambiguous" — ambiguous routes to manual settlement
 	ResolvedAt time.Time
 }
+
+func marketExpired(t *time.Time) bool {
+	return t != nil && !t.After(time.Now().UTC())
+}

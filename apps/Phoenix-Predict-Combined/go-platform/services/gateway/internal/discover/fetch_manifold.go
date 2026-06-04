@@ -71,6 +71,10 @@ func FetchManifold(limit int) ([]Market, error) {
 				Tags:        stringSlice(m["groupSlugs"]),
 			}
 
+			if market.Resolution == nil && marketExpired(market.EndTime) {
+				market.Status = "expired"
+			}
+
 			// Resolution: isResolved=true + resolution field.
 			if resolved, _ := m["isResolved"].(bool); resolved {
 				resolvedAt := time.Now().UTC()

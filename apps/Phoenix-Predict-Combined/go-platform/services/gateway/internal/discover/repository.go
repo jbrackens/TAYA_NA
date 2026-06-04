@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 // Row is the persisted shape — the user-safe subset of Market plus our own
@@ -107,6 +109,7 @@ func (r *Repository) Update(ctx context.Context, id string, row Row) error {
 			tags = $14::jsonb,
 			volume_24h = $15,
 			liquidity = $16,
+			last_seen_at = now(),
 			updated_at = now()
 		WHERE id = $1
 	`,
@@ -134,6 +137,88 @@ func (r *Repository) Update(ctx context.Context, id string, row Row) error {
 		return err
 	}
 	return nil
+}
+
+// MarkMissing marks imported rows as no longer active upstream and voids their
+// promoted player markets. Native/admin markets are untouched: promoted imports
+// are identified only by their deterministic IMP-* ticker.
+func (r *Repository) MarkMissing(ctx context.Context, externalHashes []string) (int, error) {
+	if len(externalHashes) == 0 {
+		return 0, nil
+	}
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE imported_markets
+		   SET missing_since = COALESCE(missing_since, now()),
+		       updated_at = now()
+		 WHERE external_hash = ANY($1::text[])
+		   AND missing_since IS NULL
+	`, pq.Array(externalHashes))
+	if err != nil {
+		return 0, fmt.Errorf("mark missing imported markets: %w", err)
+	}
+
+	res, err := r.db.ExecContext(ctx, `
+		WITH candidates AS (
+			SELECT pm.id, pm.ticker
+			  FROM imported_markets im
+			  JOIN prediction_markets pm
+			    ON pm.ticker = 'IMP-' || upper(substr(im.external_hash, 1, 8))
+			 WHERE im.external_hash = ANY($1::text[])
+			   AND pm.status IN ('unopened','open','halted','closed','proposed_resolution','disputed')
+		),
+		updated AS (
+			UPDATE prediction_markets pm
+			   SET status = 'voided',
+			       updated_at = now()
+			  FROM candidates c
+			 WHERE pm.id = c.id
+			RETURNING pm.id
+		)
+		INSERT INTO prediction_lifecycle_events
+			(market_id, event_type, actor_id, actor_type, reason, metadata)
+		SELECT id,
+		       'voided',
+		       'market-sync',
+		       'system',
+		       'removed from player catalog because upstream market is no longer active',
+		       '{}'::jsonb
+		  FROM updated
+	`, pq.Array(externalHashes))
+	if err != nil {
+		return 0, fmt.Errorf("void missing imported markets: %w", err)
+	}
+	n, _ := res.RowsAffected()
+	return int(n), nil
+}
+
+// ExpiredImportedHashes returns imported rows whose promoted player-market
+// counterpart is still non-terminal even though its stored close time is past.
+func (r *Repository) ExpiredImportedHashes(ctx context.Context, now time.Time) ([]string, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT im.external_hash
+		  FROM imported_markets im
+		  JOIN prediction_markets pm
+		    ON pm.ticker = 'IMP-' || upper(substr(im.external_hash, 1, 8))
+		 WHERE pm.status IN ('unopened','open','halted','closed','proposed_resolution','disputed')
+		   AND im.end_time <= $1
+	`, now.UTC())
+	if err != nil {
+		return nil, fmt.Errorf("list expired imported markets: %w", err)
+	}
+	defer rows.Close()
+
+	var out []string
+	for rows.Next() {
+		var hash string
+		if err := rows.Scan(&hash); err != nil {
+			return nil, err
+		}
+		out = append(out, hash)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (r *Repository) RecordSnapshot(ctx context.Context, id string, row Row) error {
