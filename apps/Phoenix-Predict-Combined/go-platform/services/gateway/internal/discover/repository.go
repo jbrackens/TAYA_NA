@@ -191,29 +191,45 @@ func (r *Repository) MarkMissing(ctx context.Context, externalHashes []string) (
 	return int(n), nil
 }
 
-// ExpiredImportedHashes returns imported rows whose promoted player-market
-// counterpart is still non-terminal even though its stored close time is past.
-func (r *Repository) ExpiredImportedHashes(ctx context.Context, now time.Time) ([]string, error) {
+// StaleImportedHashes returns imported rows whose promoted player-market
+// counterpart is still non-terminal even though the market is no longer
+// appropriate for the player catalog.
+func (r *Repository) StaleImportedHashes(ctx context.Context, now time.Time) ([]string, error) {
 	rows, err := r.db.QueryContext(ctx, `
-		SELECT im.external_hash
+		SELECT im.external_hash,
+		       COALESCE(im.description, ''),
+		       COALESCE(im.rules_text, ''),
+		       im.end_time
 		  FROM imported_markets im
 		  JOIN prediction_markets pm
 		    ON pm.ticker = 'IMP-' || upper(substr(im.external_hash, 1, 8))
 		 WHERE pm.status IN ('unopened','open','halted','closed','proposed_resolution','disputed')
-		   AND im.end_time <= $1
+		   AND (
+		       im.end_time <= $1
+		       OR im.description ~* '(originally[[:space:]]+scheduled[[:space:]]+for|scheduled[[:space:]]+for|scheduled[[:space:]]+on)[[:space:]]+[A-Z][a-z]+[[:space:]]+[0-9]{1,2},[[:space:]]*[0-9]{4}'
+		       OR im.rules_text ~* '(originally[[:space:]]+scheduled[[:space:]]+for|scheduled[[:space:]]+for|scheduled[[:space:]]+on)[[:space:]]+[A-Z][a-z]+[[:space:]]+[0-9]{1,2},[[:space:]]*[0-9]{4}'
+		   )
 	`, now.UTC())
 	if err != nil {
-		return nil, fmt.Errorf("list expired imported markets: %w", err)
+		return nil, fmt.Errorf("list stale imported markets: %w", err)
 	}
 	defer rows.Close()
 
 	var out []string
 	for rows.Next() {
 		var hash string
-		if err := rows.Scan(&hash); err != nil {
+		var description, rulesText string
+		var endTime sql.NullTime
+		if err := rows.Scan(&hash, &description, &rulesText, &endTime); err != nil {
 			return nil, err
 		}
-		out = append(out, hash)
+		if endTime.Valid && !endTime.Time.After(now.UTC()) {
+			out = append(out, hash)
+			continue
+		}
+		if textHasPastScheduledDate(description, now.UTC()) || textHasPastScheduledDate(rulesText, now.UTC()) {
+			out = append(out, hash)
+		}
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

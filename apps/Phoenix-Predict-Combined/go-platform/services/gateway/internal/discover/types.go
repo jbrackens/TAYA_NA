@@ -8,7 +8,12 @@
 // (stderr, slog) are fine; client-reachable strings are not.
 package discover
 
-import "time"
+import (
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
+)
 
 // Market is the in-memory unified shape produced by the fetchers and consumed
 // by dedupe + persistence. Source and ExternalID are used to compute the
@@ -46,4 +51,79 @@ type Resolution struct {
 
 func marketExpired(t *time.Time) bool {
 	return t != nil && !t.After(time.Now().UTC())
+}
+
+var scheduledForDatePattern = regexp.MustCompile(`(?i)\b(?:originally\s+scheduled\s+for|scheduled\s+for|scheduled\s+on)\s+([A-Z][a-z]+)\s+(\d{1,2}),\s*(\d{4})\b`)
+
+func marketEventDatePassed(m Market, now time.Time) bool {
+	return textHasPastScheduledDate(m.Description, now) || textHasPastScheduledDate(m.RulesText, now)
+}
+
+func textHasPastScheduledDate(text string, now time.Time) bool {
+	matches := scheduledForDatePattern.FindAllStringSubmatch(text, -1)
+	if len(matches) == 0 {
+		return false
+	}
+	for _, match := range matches {
+		t, ok := parseScheduledDate(match[1], match[2], match[3], now.Location())
+		if ok && t.Before(startOfDay(now)) {
+			return true
+		}
+	}
+	return false
+}
+
+func parseScheduledDate(monthName, dayText, yearText string, loc *time.Location) (time.Time, bool) {
+	month, ok := monthNumber(monthName)
+	if !ok {
+		return time.Time{}, false
+	}
+	day, err := strconv.Atoi(dayText)
+	if err != nil {
+		return time.Time{}, false
+	}
+	year, err := strconv.Atoi(yearText)
+	if err != nil {
+		return time.Time{}, false
+	}
+	t := time.Date(year, month, day, 0, 0, 0, 0, loc)
+	if t.Month() != month || t.Day() != day || t.Year() != year {
+		return time.Time{}, false
+	}
+	return t, true
+}
+
+func monthNumber(name string) (time.Month, bool) {
+	switch strings.ToLower(strings.TrimSpace(name)) {
+	case "january":
+		return time.January, true
+	case "february":
+		return time.February, true
+	case "march":
+		return time.March, true
+	case "april":
+		return time.April, true
+	case "may":
+		return time.May, true
+	case "june":
+		return time.June, true
+	case "july":
+		return time.July, true
+	case "august":
+		return time.August, true
+	case "september":
+		return time.September, true
+	case "october":
+		return time.October, true
+	case "november":
+		return time.November, true
+	case "december":
+		return time.December, true
+	default:
+		return 0, false
+	}
+}
+
+func startOfDay(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
 }
