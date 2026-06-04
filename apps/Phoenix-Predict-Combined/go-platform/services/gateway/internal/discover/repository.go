@@ -209,7 +209,7 @@ func (r *Repository) StaleImportedHashes(ctx context.Context, now time.Time) ([]
 		       im.end_time <= $1
 		       OR im.description ~* '(originally[[:space:]]+scheduled[[:space:]]+for|scheduled[[:space:]]+for|scheduled[[:space:]]+on)[[:space:]]+[A-Z][a-z]+[[:space:]]+[0-9]{1,2},[[:space:]]*[0-9]{4}'
 		       OR im.rules_text ~* '(originally[[:space:]]+scheduled[[:space:]]+for|scheduled[[:space:]]+for|scheduled[[:space:]]+on)[[:space:]]+[A-Z][a-z]+[[:space:]]+[0-9]{1,2},[[:space:]]*[0-9]{4}'
-		       OR im.title ~* '^Will .+ win the [0-9]{4} (NBA Finals|NHL Stanley Cup)\\??$'
+		       OR im.title ~* '^Will .+ win the [0-9]{4} (NBA Finals|NHL Stanley Cup)'
 		   )
 	`, now.UTC())
 	if err != nil {
