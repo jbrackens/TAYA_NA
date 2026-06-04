@@ -27,7 +27,11 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { formatCompactUsd } from "./market-display";
+import {
+  formatCompactUsd,
+  isOpenMarketStatus,
+  marketStatusLabel,
+} from "./market-display";
 import { getMarketImageProps } from "./utils/marketImage";
 
 interface MarketCardProps {
@@ -71,12 +75,14 @@ export function MarketCard({
   noPriceCents,
   volumeCents,
   closeAt,
+  status,
   categoryLabel,
   imagePath,
   imageUrl,
   image_url,
 }: MarketCardProps) {
   const { t } = useTranslation("prediction");
+  const isOpen = isOpenMarketStatus(status);
 
   const image = getMarketImageProps({
     ticker,
@@ -136,7 +142,10 @@ export function MarketCard({
         </div>
 
         <div className="flex flex-col gap-[5px]">
-          <div className="flex items-center justify-between leading-none" aria-hidden="true">
+          <div
+            className="flex items-center justify-between leading-none"
+            aria-hidden="true"
+          >
             <span className="font-mono text-xs font-bold tabular-nums text-[var(--yes-text)]">
               {yesPriceCents}%
             </span>
@@ -202,9 +211,11 @@ export function MarketCard({
           </span>
         </div>
         <div className="inline-flex items-baseline gap-1.5 whitespace-nowrap text-xs">
-          <span className="font-medium text-[var(--t3)]">{t("CLOSES")}</span>
+          <span className="font-medium text-[var(--t3)]">
+            {isOpen ? t("CLOSES") : t("STATUS")}
+          </span>
           <span className="font-mono text-[13px] font-semibold text-[var(--t1)] tabular-nums">
-            {formatCloseAt(closeAt)}
+            {isOpen ? formatCloseAt(closeAt) : marketStatusLabel(status, t)}
           </span>
         </div>
       </div>

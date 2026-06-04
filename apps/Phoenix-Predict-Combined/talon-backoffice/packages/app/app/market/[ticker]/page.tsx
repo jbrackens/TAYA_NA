@@ -61,6 +61,10 @@ import {
   categoryName,
   localizedMarket,
 } from "../../components/prediction/market-content";
+import {
+  isOpenMarketStatus,
+  marketStatusLabel,
+} from "../../components/prediction/market-display";
 
 const api = createPredictionClient();
 
@@ -74,10 +78,8 @@ const MARKET_CRUMB_LINK_CLASS =
 const MARKET_CRUMB_SEP_CLASS = "opacity-50";
 const MARKET_GRID_CLASS =
   "grid grid-cols-[minmax(0,_1fr)_360px] gap-6 max-[1100px]:grid-cols-1";
-const MARKET_MAIN_CLASS =
-  "flex min-w-0 flex-col gap-6 max-[1100px]:contents";
-const MARKET_SIDE_CLASS =
-  "flex min-w-0 flex-col gap-6 max-[1100px]:contents";
+const MARKET_MAIN_CLASS = "flex min-w-0 flex-col gap-6 max-[1100px]:contents";
+const MARKET_SIDE_CLASS = "flex min-w-0 flex-col gap-6 max-[1100px]:contents";
 const MARKET_TICKET_STICKY_CLASS =
   "sticky top-[84px] max-[1100px]:static max-[1100px]:top-auto max-[1100px]:order-2";
 const MARKET_DATA_ROW_CLASS =
@@ -113,7 +115,8 @@ const PAGE_STATE_EYEBROW_BASE_CLASS =
   "mb-[14px] inline-flex min-h-7 items-center justify-center rounded-[var(--r-pill)] border px-3 text-[11px] font-bold uppercase tracking-[0.12em]";
 const PAGE_STATE_TITLE_CLASS =
   "m-0 text-[22px] font-extrabold tracking-[-0.01em]";
-const PAGE_STATE_COPY_CLASS = "mt-2.5 mb-0 text-sm leading-[1.5] text-[var(--t2)]";
+const PAGE_STATE_COPY_CLASS =
+  "mt-2.5 mb-0 text-sm leading-[1.5] text-[var(--t2)]";
 const PAGE_STATE_ACTION_CLASS =
   "mt-[22px] inline-flex min-h-11 items-center justify-center rounded-[var(--r-md)] border border-[rgba(43,228,128,0.6)] bg-[image:linear-gradient(180deg,_rgba(255,255,255,0.25)_0%,_rgba(255,255,255,0)_50%),linear-gradient(115deg,_#2be480_0%,_#00ffaa_100%)] px-5 text-sm font-bold text-[#04140a] no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.5),_0_10px_28px_rgba(43,228,128,0.18)] transition-[transform,filter] duration-[180ms] ease-[ease] hover:-translate-y-px hover:brightness-[1.05]";
 
@@ -517,7 +520,9 @@ export default function MarketDetailPage() {
   const canPreviewOrders = isAuthenticated && !authLoading;
 
   if (loading) {
-    return <PageState loadingLabel={t("LOADING")}>{t("LOADING_MARKET")}</PageState>;
+    return (
+      <PageState loadingLabel={t("LOADING")}>{t("LOADING_MARKET")}</PageState>
+    );
   }
   if (error || !market) {
     return (
@@ -614,9 +619,13 @@ export default function MarketDetailPage() {
                 })}
               </li>
               <li className={MARKET_RULE_CLASS}>
-                {t("CLOSES_AT_UTC", {
-                  date: new Date(market.closeAt).toUTCString().slice(5, -4),
-                })}
+                {isOpenMarketStatus(market.status)
+                  ? t("CLOSES_AT_UTC", {
+                      date: new Date(market.closeAt).toUTCString().slice(5, -4),
+                    })
+                  : t("MARKET_CURRENT_STATUS", {
+                      status: marketStatusLabel(market.status, t),
+                    })}
               </li>
             </ul>
           </section>
@@ -655,7 +664,10 @@ export default function MarketDetailPage() {
             />
           </div>
 
-          <aside className={RELATED_CARD_CLASS} aria-label={t("RELATED_MARKETS")}>
+          <aside
+            className={RELATED_CARD_CLASS}
+            aria-label={t("RELATED_MARKETS")}
+          >
             <h3 className={RELATED_TITLE_CLASS}>{t("RELATED_MARKETS")}</h3>
             {related.length === 0 ? (
               <p className={RELATED_EMPTY_CLASS}>{t("NO_RELATED_MARKETS")}</p>

@@ -1,4 +1,9 @@
-import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
+import type {
+  MarketStatus,
+  PredictionMarket,
+} from "@phoenix-ui/api-client/src/prediction-types";
+
+type Translate = (key: string, options?: Record<string, unknown>) => string;
 
 export function formatCompactUsd(cents: number): string {
   const dollars = Math.max(0, cents) / 100;
@@ -32,6 +37,36 @@ export function formatTimeLeft(closeAt: string): string {
 
   const days = Math.floor(hours / 24);
   return `${days}d left`;
+}
+
+export function isOpenMarketStatus(status: MarketStatus | string): boolean {
+  return status === "open";
+}
+
+export function marketStatusLabel(
+  status: MarketStatus | string,
+  t: Translate,
+): string {
+  switch (status) {
+    case "open":
+      return t("LIVE");
+    case "unopened":
+      return t("UNOPENED");
+    case "halted":
+      return t("HALTED");
+    case "closed":
+      return t("CLOSED");
+    case "proposed_resolution":
+      return t("PROPOSED_RESOLUTION");
+    case "disputed":
+      return t("DISPUTED");
+    case "settled":
+      return t("SETTLED");
+    case "voided":
+      return t("VOIDED");
+    default:
+      return t("MARKET_STATUS", { status });
+  }
 }
 
 export function dedupeMarkets(markets: PredictionMarket[]): PredictionMarket[] {

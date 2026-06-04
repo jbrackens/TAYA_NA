@@ -17,6 +17,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
 import { categoryLabel, localizedMarket } from "./market-content";
+import { isOpenMarketStatus, marketStatusLabel } from "./market-display";
 
 interface MarketHeadProps {
   market: PredictionMarket;
@@ -73,8 +74,7 @@ const MARKET_HEAD_LIVE_DOT_CLASS =
   "h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent)] shadow-[0_0_0_4px_rgba(43,228,128,0.18)] motion-reduce:animate-none";
 const MARKET_HEAD_SETTLED_CLASS =
   "inline-flex items-center gap-1.5 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-black/[0.05] px-2.5 py-1 font-['IBM_Plex_Mono',_monospace] text-[10px] font-bold tracking-[0.16em] text-[var(--t2)]";
-const MARKET_HEAD_SETTLED_OUTCOME_CLASS =
-  "tracking-[0.04em] text-[var(--t1)]";
+const MARKET_HEAD_SETTLED_OUTCOME_CLASS = "tracking-[0.04em] text-[var(--t1)]";
 const MARKET_HEAD_PILL_CLASS =
   "rounded-[var(--r-pill)] bg-white/[0.04] px-2.5 py-1 font-['IBM_Plex_Mono',_monospace] text-[11px] font-medium text-[var(--t3)] [font-variant-numeric:tabular-nums]";
 const MARKET_HEAD_CATEGORY_PILL_CLASS =
@@ -109,12 +109,11 @@ export default function MarketHead({
   }, []);
 
   const countdown = formatCountdown(closeAtMs - now, t);
-  const isLive = displayMarket.status === "open";
+  const isLive = isOpenMarketStatus(displayMarket.status);
   const isSettled = displayMarket.status === "settled";
-  // Settled markets surface the resolved outcome instead of a live countdown.
-  // Without this, the hero kept saying "Closes in 172d" for a market that
-  // resolved weeks ago, contradicting the "Trading is paused" banner in the
-  // ticket and confusing investors during walkthroughs.
+  const lifecycleLabel = marketStatusLabel(displayMarket.status, t);
+  // Settled markets get an outcome pill; every other non-open lifecycle state
+  // surfaces its status instead of the original contractual close date.
   const settledLabel = isSettled
     ? displayMarket.result === "yes"
       ? t("SETTLED_YES_WINS")
@@ -159,9 +158,15 @@ export default function MarketHead({
           <span className={MARKET_HEAD_PILL_CLASS}>{displayMarket.ticker}</span>
         </div>
         <span className={MARKET_HEAD_COUNTDOWN_CLASS}>
-          {isSettled ? t("CLOSED") : countdown}
-          <span className="mx-2 text-[var(--t4)]">·</span>
-          {formatCloseDate(displayMarket.closeAt)}
+          {isLive ? (
+            <>
+              {countdown}
+              <span className="mx-2 text-[var(--t4)]">·</span>
+              {formatCloseDate(displayMarket.closeAt)}
+            </>
+          ) : (
+            lifecycleLabel
+          )}
         </span>
       </div>
       <h1 className={MARKET_HEAD_TITLE_CLASS}>{displayMarket.title}</h1>
