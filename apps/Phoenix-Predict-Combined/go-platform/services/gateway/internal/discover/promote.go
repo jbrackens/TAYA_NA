@@ -269,7 +269,8 @@ func shouldRemoveFromPlayer(m Market) bool {
 	if status == "closed" || status == "inactive" || status == "expired" || status == "settled" || status == "finalized" {
 		return true
 	}
-	return marketExpired(m.EndTime) || marketEventDatePassed(m, timeNowUTC())
+	now := timeNowUTC()
+	return marketExpired(m.EndTime) || marketEventDatePassed(m, now) || marketImpossibleOutcomePassed(m, now)
 }
 
 func voidExistingImported(ctx context.Context, svc Service, existing *prediction.Market, reason string) string {
