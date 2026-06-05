@@ -40,6 +40,7 @@ const APP_SHELL_MAIN_CLASS =
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthRoute = pathname?.startsWith("/auth/");
+  const isLandingRoute = pathname === "/";
 
   return (
     <StoreProvider>
@@ -49,6 +50,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <AuthProvider>
               {isAuthRoute ? (
                 <div className={AUTH_LAYOUT_CLASS}>{children}</div>
+              ) : isLandingRoute ? (
+                <div className="min-h-screen bg-[var(--bg-deep)] text-[var(--t1)]">
+                  {children}
+                </div>
               ) : (
                 <div className={APP_SHELL_CLASS}>
                   <TopBar />
