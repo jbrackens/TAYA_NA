@@ -1,5 +1,5 @@
 /**
- * Hula Na! Player App — Design Tokens
+ * Tiangge Player App — Design Tokens
  * ====================================
  * Single source of truth for colors, spacing, typography, and shadows.
  * Import this instead of using inline hex values.

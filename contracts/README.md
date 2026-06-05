@@ -1,4 +1,4 @@
-# Hula Na! Cashier Contracts
+# Tiangge Cashier Contracts
 
 Non-custodial contract boundary for the real cashier.
 

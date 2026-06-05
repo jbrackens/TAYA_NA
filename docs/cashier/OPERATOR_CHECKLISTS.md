@@ -1,4 +1,4 @@
-# Hula Na! Cashier Operator Checklists
+# Tiangge Cashier Operator Checklists
 
 **Status:** Stage 1 Alpha operational checklist.
 **Date:** 2026-05-28.
@@ -10,7 +10,7 @@ Use this checklist before setting `ALPHA_CASHIER_ENABLED=true`.
 1. Confirm the single Alpha chain and chain id.
 2. Verify the USDC contract address from chain-native documentation or explorer
    sources; do not copy from screenshots or chat.
-3. Create the Hula treasury wallet and record owner, backup owner, creation date,
+3. Create the Tiangge treasury wallet and record owner, backup owner, creation date,
    chain, and intended use in the private operations register.
 4. Confirm no treasury private key, seed phrase, or payout signing credential is
    stored in the app, repository, CI variables, or server `.env` files.

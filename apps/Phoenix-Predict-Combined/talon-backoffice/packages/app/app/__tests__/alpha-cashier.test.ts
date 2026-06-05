@@ -92,7 +92,7 @@ describe("alpha cashier player UI", () => {
     assert.ok(cashierPageSource.includes("{isCryptoRail && ("));
     assert.ok(cashierPageSource.includes("<CryptoDepositCard"));
     assert.ok(cashierPageSource.includes("{!isCryptoRail && ("));
-    assert.ok(cashierPageSource.includes("<span>Hula fee</span>"));
+    assert.ok(cashierPageSource.includes("<span>Tiangge fee</span>"));
     assert.ok(cashierPageSource.includes("<span>$0.00</span>"));
   });
 

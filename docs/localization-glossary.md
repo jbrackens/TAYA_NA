@@ -1,4 +1,4 @@
-# Hula Na! Localization Glossary
+# Tiangge Localization Glossary
 
 Use this glossary to keep core product terms consistent across locales. Translate full sentences naturally, but keep these product concepts stable wherever they appear.
 

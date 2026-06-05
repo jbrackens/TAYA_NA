@@ -7,7 +7,7 @@
 // and tells the user "check your email" when nothing was sent.
 import Link from "next/link";
 
-const SUPPORT_EMAIL = "support@hulana.com";
+const SUPPORT_EMAIL = "support@tiangge.com";
 const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
 const CARD_CLASS =
   "relative w-full max-w-[440px] rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[34px] pb-[30px] pt-9 text-[var(--t1)]";

@@ -1,4 +1,4 @@
-# Hula Na! Player App i18n Implementation Notes
+# Tiangge Player App i18n Implementation Notes
 
 ## Scope
 

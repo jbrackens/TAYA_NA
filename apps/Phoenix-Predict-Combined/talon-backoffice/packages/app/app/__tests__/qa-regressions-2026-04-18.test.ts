@@ -300,7 +300,10 @@ describe("Navigation underline treatment", () => {
         "transition-all",
         "duration-200",
       ]) {
-        assert.ok(itemClass.includes(token), `${label} should include ${token}`);
+        assert.ok(
+          itemClass.includes(token),
+          `${label} should include ${token}`,
+        );
       }
       assert.ok(
         source.includes("text-neutral-500") &&
@@ -348,8 +351,7 @@ describe("Navigation underline treatment", () => {
         `${label} should use 6px Tailwind corners`,
       );
       assert.ok(
-        !classValue.includes("var(--r-pill)") &&
-          !classValue.includes("999px"),
+        !classValue.includes("var(--r-pill)") && !classValue.includes("999px"),
         `${label} should not use capsule radius`,
       );
     }
@@ -357,7 +359,10 @@ describe("Navigation underline treatment", () => {
 
   it("uses soft rectangular corners for category navigation pills", () => {
     const categoryPillsSource = read("components/prediction/CategoryPills.tsx");
-    const categoryPillClass = constValue(categoryPillsSource, "PILL_BASE_CLASS");
+    const categoryPillClass = constValue(
+      categoryPillsSource,
+      "PILL_BASE_CLASS",
+    );
     assert.ok(
       categoryPillClass.includes("rounded-md"),
       "Category pills should use 6px Tailwind corners",
@@ -415,7 +420,10 @@ describe("Navigation pill active colors", () => {
       return match[1] ?? match[2] ?? "";
     }
 
-    const categoryActiveClass = constValue(categoryPillsSource, "PILL_ACTIVE_CLASS");
+    const categoryActiveClass = constValue(
+      categoryPillsSource,
+      "PILL_ACTIVE_CLASS",
+    );
     assert.ok(
       categoryActiveClass.includes("bg-[var(--yes-soft)]") &&
         categoryActiveClass.includes("border-[var(--yes-border)]") &&
@@ -440,7 +448,7 @@ describe("Static informational pages", () => {
     );
     assert.ok(
       aboutSource.includes('slug="about-us"') &&
-        aboutSource.includes("About Hula Na!"),
+        aboutSource.includes("About Tiangge"),
       "/about should render the About Us fallback content",
     );
   });
@@ -506,11 +514,13 @@ describe("Registration auth flow", () => {
       "register page should establish an authenticated session after successful signup",
     );
     assert.ok(
-      registerSource.includes("router.replace(safeReturnPath(searchParams.get(\"returnUrl\")))"),
+      registerSource.includes(
+        'router.replace(safeReturnPath(searchParams.get("returnUrl")))',
+      ),
       "register page should land on the validated returnUrl after automatic login",
     );
     assert.ok(
-      !registerSource.includes("window.location.href = \"/auth/login\""),
+      !registerSource.includes('window.location.href = "/auth/login"'),
       "register page should not force users back through the sign-in screen after signup",
     );
   });
@@ -638,10 +648,7 @@ describe("Full-page translation coverage", () => {
 
   function readLocale(lang: string, namespace: string): Record<string, string> {
     const source = readFileSync(
-      resolve(
-        appRoot,
-        `../public/static/locales/${lang}/${namespace}.json`,
-      ),
+      resolve(appRoot, `../public/static/locales/${lang}/${namespace}.json`),
       "utf-8",
     );
     return flattenStrings(JSON.parse(source));

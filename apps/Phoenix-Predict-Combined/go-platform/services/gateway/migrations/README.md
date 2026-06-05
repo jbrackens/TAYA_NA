@@ -1,4 +1,4 @@
-# Hula Na Gateway Migrations
+# Tiangge Gateway Migrations
 
 This directory contains database migrations for the Go gateway service using [Goose](https://github.com/pressly/goose). The early files still include sportsbook-era tables because the gateway was migrated in place; prediction-market tables start at `014_prediction_schema.sql`.
 

@@ -92,7 +92,7 @@ func NewFromEnv() Notifier {
 		port: envOr("SMTP_PORT", "587"),
 		user: strings.TrimSpace(os.Getenv("SMTP_USER")),
 		pass: os.Getenv("SMTP_PASSWORD"),
-		from: envOr("SMTP_FROM", "no-reply@hulana.app"),
+		from: envOr("SMTP_FROM", "no-reply@tiangge.app"),
 	}
 }
 

@@ -26,9 +26,9 @@ func TestLogNotifier_NeverErrors(t *testing.T) {
 }
 
 func TestResolutionRecipients(t *testing.T) {
-	t.Setenv("NOTIFY_RESOLUTION_TO", " ops@hulana.app , risk@hulana.app ")
+	t.Setenv("NOTIFY_RESOLUTION_TO", " ops@tiangge.app , risk@tiangge.app ")
 	got := ResolutionRecipients()
-	if len(got) != 2 || got[0] != "ops@hulana.app" || got[1] != "risk@hulana.app" {
+	if len(got) != 2 || got[0] != "ops@tiangge.app" || got[1] != "risk@tiangge.app" {
 		t.Fatalf("parse failed: %#v", got)
 	}
 	t.Setenv("NOTIFY_RESOLUTION_TO", "")

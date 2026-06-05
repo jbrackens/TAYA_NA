@@ -1,4 +1,4 @@
-# Hula Na! Cashier Security Threat Model
+# Tiangge Cashier Security Threat Model
 
 **Status:** Draft gate for Phase 8.
 **Date:** 2026-05-25.

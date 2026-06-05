@@ -23,12 +23,7 @@ import { logger } from "../lib/logger";
 
 type Mode = "deposit" | "withdrawal";
 type LoadState = "loading" | "ready" | "error";
-type BusyState =
-  | "idle"
-  | "connecting"
-  | "creating"
-  | "wallet"
-  | "submitting";
+type BusyState = "idle" | "connecting" | "creating" | "wallet" | "submitting";
 
 export default function CryptoDepositCard({
   mode,
@@ -126,7 +121,7 @@ export default function CryptoDepositCard({
       setMessage("Confirm the USDC transfer in MetaMask.");
       const txHash = await sendUSDCTransfer(intent);
       setBusy("submitting");
-      setMessage("Verifying transaction with Hula.");
+      setMessage("Verifying transaction with Tiangge.");
       const credited = await submitDepositTx(intent.id, txHash);
       if (credited?.status === "credited") {
         setDeposits((items) =>
@@ -141,7 +136,7 @@ export default function CryptoDepositCard({
         await onBalanceChanged();
       } else {
         setMessage(
-          "Transfer submitted. Hula will credit once the transaction has enough confirmations.",
+          "Transfer submitted. Tiangge will credit once the transaction has enough confirmations.",
         );
         await load();
       }
@@ -230,7 +225,9 @@ export default function CryptoDepositCard({
       <div className="cashier-status-panel">
         <div className="cashier-status-head">
           <span className="cashier-balance-sub">
-            {wallet ? shortAddress(wallet.walletAddress) : "No wallet connected"}
+            {wallet
+              ? shortAddress(wallet.walletAddress)
+              : "No wallet connected"}
           </span>
           <span className="cashier-status-pill">
             {config.withdrawalReviewRequired ? "manual review" : "alpha"}
@@ -342,7 +339,9 @@ function StepRow({
   readonly label: string;
 }) {
   return (
-    <div className={`cashier-timeline-row ${done ? "done" : active ? "active" : ""}`}>
+    <div
+      className={`cashier-timeline-row ${done ? "done" : active ? "active" : ""}`}
+    >
       <span className="cashier-timeline-dot" />
       <div className="cashier-timeline-label">{label}</div>
     </div>

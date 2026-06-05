@@ -34,7 +34,7 @@ import (
 //     owned by the gateway and created lazily; crypto deposit addresses come
 //     from the gateway's fail-closed CryptoRail. (Confirmed design boundary.)
 
-const oauthUserAgent = "hula-na-auth/1.0"
+const oauthUserAgent = "tiangge-auth/1.0"
 
 var oauthHTTPClient = &stdhttp.Client{Timeout: 10 * time.Second}
 

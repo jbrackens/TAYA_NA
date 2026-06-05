@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CHAT_PUBLIC_URL="${CHAT_PUBLIC_URL:?CHAT_PUBLIC_URL is required, e.g. https://chat.hulana.com}"
-CHAT_PARENT_ORIGIN="${CHAT_PARENT_ORIGIN:?CHAT_PARENT_ORIGIN is required, e.g. https://app.hulana.com}"
+CHAT_PUBLIC_URL="${CHAT_PUBLIC_URL:?CHAT_PUBLIC_URL is required, e.g. https://chat.tiangge.com}"
+CHAT_PARENT_ORIGIN="${CHAT_PARENT_ORIGIN:?CHAT_PARENT_ORIGIN is required, e.g. https://app.tiangge.com}"
 CHAT_ROOM="${CHAT_DEFAULT_ROOM:-global}"
 
 origin_of() {
@@ -43,7 +43,7 @@ if [[ -z "$csp" ]]; then
 fi
 
 if ! printf '%s' "$csp" | grep -qi 'frame-ancestors'; then
-  echo "FAIL: CSP does not include frame-ancestors. Add a tight edge policy for the Hula app origin." >&2
+  echo "FAIL: CSP does not include frame-ancestors. Add a tight edge policy for the Tiangge app origin." >&2
   exit 1
 fi
 

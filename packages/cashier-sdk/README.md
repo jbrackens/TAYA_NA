@@ -1,4 +1,4 @@
-# Hula Na! Cashier SDK
+# Tiangge Cashier SDK
 
 Shared typed contract for cashier UI and backend services.
 

@@ -1,4 +1,4 @@
-# Hula Na! Cashier API
+# Tiangge Cashier API
 
 API boundary for non-custodial wallet and cashier state.
 

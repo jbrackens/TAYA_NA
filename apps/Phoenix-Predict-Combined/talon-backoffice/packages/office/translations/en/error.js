@@ -21,7 +21,7 @@ module.exports = {
   registrationInformationZipInvalid: "ZIP code invalid",
   photoVerificationNotCompleted: "Photo verification not completed",
   MaximumAmountOfPuntersCheckNotPassed:
-    "Thank you for visiting HulaNAFE! We have reached the soft play registration limit, please come back and visit us once HulaNAFE has completed its soft play process next week.",
+    "Thank you for visiting Tiangge! We have reached the soft play registration limit, please come back and visit us once Tiangge has completed its soft play process next week.",
   ageRestrictionNotPassed: "Age restriction not passed",
   cannotVerifyPunter: "Cannot verify punter",
   invalidAuthToken: "Invalid auth token",

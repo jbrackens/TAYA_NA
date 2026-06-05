@@ -125,7 +125,7 @@ export default function DashboardLayout({
         <div className="flex items-center gap-3 border-b border-[color:var(--border-1)] px-5 pb-5 pt-6 max-[768px]:min-w-max max-[768px]:border-b-0 max-[768px]:border-r max-[768px]:px-4 max-[768px]:py-[14px]">
           <img
             src="/logo-hn.png"
-            alt="Hula Na!"
+            alt="Tiangge"
             className="h-9 w-9 rounded-[8px] object-contain"
           />
           <span className="text-[14px] font-semibold text-[color:var(--t1)]">

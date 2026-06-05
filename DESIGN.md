@@ -1,8 +1,8 @@
-# Design System — Hula Na!
+# Design System — Tiangge
 
 > Robinhood for prediction markets, **light theme**. Warm-light surfaces on a faint chart-paper grid, soft-flat cards, big confident numbers, a dominant chart, mint as the action color. Markets are treated like stocks: the question is the sub-headline, the price IS the page, two pill buttons commit you to a side.
 
-This document governs both the **Hula Na! player app** at `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/` (port 3000) and the **back-office** at `apps/Phoenix-Predict-Combined/talon-backoffice/packages/office/` (port 3001). Both surfaces share the same `:root` token set, the same Inter + IBM Plex Mono fonts, and the same warm-cream + chart-paper-grid backdrop.
+This document governs both the **Tiangge player app** at `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/` (port 3000) and the **back-office** at `apps/Phoenix-Predict-Combined/talon-backoffice/packages/office/` (port 3001). Both surfaces share the same `:root` token set, the same Inter + IBM Plex Mono fonts, and the same warm-cream + chart-paper-grid backdrop.
 
 The prior Liquid Glass spec (active 2026-04-24 → 2026-04-26) is retired. The warm-dark Robinhood spec (active 2026-04-26 → 2026-04-27) is retired. Their decisions remain in §11 for context. Glass tokens, rim highlights, chromatic fringes, multi-stop backdrop scene, and the dark surface system are all out. Historical TAYA NA references remain only in the decision log and archived handoff material.
 
@@ -18,19 +18,19 @@ The prior Liquid Glass spec (active 2026-04-24 → 2026-04-26) is retired. The w
   - Pariflow (dark fintech) — prior Predict direction.
   - **Robinhood (warm dark, big numbers, dominant chart) — direction adopted 2026-04-26.**
 - **Project type:** real-time trading web app.
-- **Positioning:** Hula Na! should feel familiar to anyone who has bought a stock. Calm warm-light surfaces, big confident prices, the chart owns the hero, mint pops on the action button.
+- **Positioning:** Tiangge should feel familiar to anyone who has bought a stock. Calm warm-light surfaces, big confident prices, the chart owns the hero, mint pops on the action button.
 
 ---
 
-## Active Brand: Hula Na!
+## Active Brand: Tiangge
 
-**Brand name:** `Hula Na!` is the visible product name in the player app. Do not render `TAYA NA Predict` in active player-app chrome, browser titles, auth cards, share surfaces, or empty states.
+**Brand name:** `Tiangge` is the visible product name in the player app. Do not render `TAYA NA Predict` in active player-app chrome, browser titles, auth cards, share surfaces, or empty states.
 
-**Product descriptor:** Keep the wordmark clean as `Hula Na!`. Use a restrained descriptor outside the wordmark when orientation matters: `prediction markets`, `event markets`, or `trade real-world outcomes`. Good placements: document title metadata, auth supporting copy, first-time trade-ticket trust copy, empty states, and social/share descriptions. Avoid `Hula Na Predict` as the visible logo unless a future brand review explicitly chooses that direction.
+**Product descriptor:** Keep the wordmark clean as `Tiangge`. Use a restrained descriptor outside the wordmark when orientation matters: `prediction markets`, `event markets`, or `trade real-world outcomes`. Good placements: document title metadata, auth supporting copy, first-time trade-ticket trust copy, empty states, and social/share descriptions. Avoid `Tiangge Predict` as the visible logo unless a future brand review explicitly chooses that direction.
 
 **Brand mark:** the active mark is a compact H glyph on a mint-forward surface. It must read as a product mark, not as a decorative app-template square. Use the mark only in navigation, auth, launch/loading states, and approved share surfaces. Do not spray the mint-to-teal-to-azure gradient through cards, CTAs, or page backgrounds; market and trade surfaces stay flat.
 
-**First-screen hierarchy:** the first viewport should answer, in order: this is Hula Na!, this is a prediction-market trading app, this is a live market with a price, and these are the YES/NO actions. Do not add a marketing hero above the market hero.
+**First-screen hierarchy:** the first viewport should answer, in order: this is Tiangge, this is a prediction-market trading app, this is a live market with a price, and these are the YES/NO actions. Do not add a marketing hero above the market hero.
 
 **Trust copy:** explain mechanics at the money moment, not in a tutorial block. The trade ticket may use one compact line such as: `63¢ means a 63% implied probability. Winning contracts pay $1 each.`
 

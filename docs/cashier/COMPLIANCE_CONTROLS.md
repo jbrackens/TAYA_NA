@@ -1,4 +1,4 @@
-# Hula Na! Cashier Compliance Controls
+# Tiangge Cashier Compliance Controls
 
 **Status:** Draft gate for Phase 7.
 **Date:** 2026-05-25.

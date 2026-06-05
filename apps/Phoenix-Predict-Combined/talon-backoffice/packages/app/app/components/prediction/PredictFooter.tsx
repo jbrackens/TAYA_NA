@@ -38,9 +38,7 @@ export function PredictFooter() {
         ))}
       </div>
       <div className="opacity-70">
-        <span className="font-bold text-[var(--t1)]">
-          Hula <span className="text-[var(--accent)]">Na!</span>
-        </span>
+        <span className="font-bold text-[var(--t1)]">Tiangge</span>
         {" · "}© {YEAR} DORA Research, Inc.
         {" · "}Trade event contracts, not sports bets
       </div>

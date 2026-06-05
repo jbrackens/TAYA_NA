@@ -1,4 +1,4 @@
-# Hula Na! Cashier — non-custodial implementation kickoff
+# Tiangge Cashier — non-custodial implementation kickoff
 
 **Status:** Kickoff plan.
 **Approved direction:** non-custodial EVM smart wallet with TRC-20 USDT as the

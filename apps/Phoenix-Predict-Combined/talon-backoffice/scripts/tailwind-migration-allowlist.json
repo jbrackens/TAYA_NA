@@ -1,11 +1,7 @@
 {
   "version": 1,
-  "description": "Baseline for the Hula Na Tailwind migration audit. Lower or remove entries as files are migrated.",
-  "targets": [
-    "packages/app",
-    "packages/office",
-    "packages/design-system"
-  ],
+  "description": "Baseline for the Tiangge Tailwind migration audit. Lower or remove entries as files are migrated.",
+  "targets": ["packages/app", "packages/office", "packages/design-system"],
   "rules": [
     {
       "id": "styled-components-import",

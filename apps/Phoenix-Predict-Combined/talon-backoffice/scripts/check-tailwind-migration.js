@@ -15,7 +15,14 @@ const targetDirs = [
   "packages/design-system",
 ];
 
-const sourceExtensions = new Set([".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"]);
+const sourceExtensions = new Set([
+  ".js",
+  ".jsx",
+  ".ts",
+  ".tsx",
+  ".mjs",
+  ".cjs",
+]);
 const ignoredDirs = new Set([
   ".git",
   ".next",
@@ -466,7 +473,8 @@ function collectLayoutProperties(expression) {
 
 function collectStyleSpreadReferences(expression) {
   const references = new Set();
-  const pattern = /\.\.\.\s*([$A-Z_a-z][$\w.]*(?:Style|Styles|style|styles)\b(?:\([^)]*\))?)/g;
+  const pattern =
+    /\.\.\.\s*([$A-Z_a-z][$\w.]*(?:Style|Styles|style|styles)\b(?:\([^)]*\))?)/g;
 
   for (const match of expression.matchAll(pattern)) {
     references.add(match[1]);
@@ -477,7 +485,8 @@ function collectStyleSpreadReferences(expression) {
 
 function collectStyleReferences(expression) {
   const references = new Set();
-  const pattern = /\b([$A-Z_a-z][$\w.]*(?:Style|Styles|style|styles)\b(?:\([^)]*\))?)/g;
+  const pattern =
+    /\b([$A-Z_a-z][$\w.]*(?:Style|Styles|style|styles)\b(?:\([^)]*\))?)/g;
 
   for (const match of expression.matchAll(pattern)) {
     references.add(match[1]);
@@ -682,7 +691,9 @@ function loadAllowlist(allowlistPath) {
   try {
     parsed = JSON.parse(fs.readFileSync(allowlistPath, "utf8"));
   } catch (error) {
-    console.error(`Unable to parse allowlist ${allowlistPath}: ${error.message}`);
+    console.error(
+      `Unable to parse allowlist ${allowlistPath}: ${error.message}`,
+    );
     process.exit(2);
   }
 
@@ -713,15 +724,16 @@ function writeAllowlist(allowlistPath, findings) {
       const [file, rule] = key.split("::");
       return { allowed, file, rule };
     })
-    .sort((left, right) =>
-      left.file.localeCompare(right.file) ||
-      ruleOrder.indexOf(left.rule) - ruleOrder.indexOf(right.rule),
+    .sort(
+      (left, right) =>
+        left.file.localeCompare(right.file) ||
+        ruleOrder.indexOf(left.rule) - ruleOrder.indexOf(right.rule),
     );
 
   const allowlist = {
     version: 1,
     description:
-      "Baseline for the Hula Na Tailwind migration audit. Lower or remove entries as files are migrated.",
+      "Baseline for the Tiangge Tailwind migration audit. Lower or remove entries as files are migrated.",
     targets: targetDirs,
     rules: ruleOrder.map((rule) => ({
       id: rule,
@@ -880,15 +892,17 @@ function printSummaryTable(findings) {
 
   const headers = ["Rule", ...packages, "Total"];
   const widths = headers.map((header, index) =>
-    Math.max(
-      header.length,
-      ...rows.map((row) => String(row[index]).length),
-    ),
+    Math.max(header.length, ...rows.map((row) => String(row[index]).length)),
   );
 
   console.log("");
   console.log(formatRow(headers, widths));
-  console.log(formatRow(widths.map((width) => "-".repeat(width)), widths));
+  console.log(
+    formatRow(
+      widths.map((width) => "-".repeat(width)),
+      widths,
+    ),
+  );
   for (const row of rows) {
     console.log(formatRow(row, widths));
   }

@@ -306,11 +306,9 @@ export function TopBar() {
         <Link
           href="/predict"
           className={TOP_BAR_BRAND_CLASS}
-          aria-label="Hula Na! — home"
+          aria-label="Tiangge — home"
         >
-          <span className={TOP_BAR_WORDMARK_CLASS}>
-            Hula Na<span className="ml-px text-[var(--accent)]">!</span>
-          </span>
+          <span className={TOP_BAR_WORDMARK_CLASS}>Tiangge</span>
         </Link>
 
         {isDesktop && (

@@ -1,7 +1,7 @@
 # 09 — Parlay Mechanics Plan
 
 > Historical sportsbook-era note: this plan describes the prior sportsbook
-> parlay/betslip domain. Hula Na prediction-market beta work should use
+> parlay/betslip domain. Tiangge prediction-market beta work should use
 > prediction orders, positions, and settlement APIs instead.
 
 **Date:** 2026-04-16

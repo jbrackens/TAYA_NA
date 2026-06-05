@@ -156,10 +156,10 @@ export default function ContactUsPage() {
         </div>
         <div className="mb-2 text-sm text-[#D3D3D3]">
           <strong className="text-[var(--t1)]">Email:</strong>{" "}
-          support@hulana.com
+          support@tiangge.com
         </div>
         <div className="mb-2 text-sm text-[#D3D3D3]">
-          <strong className="text-[var(--t1)]">Phone:</strong> 1-800-HULA-NA
+          <strong className="text-[var(--t1)]">Phone:</strong> 1-800-TIANGGE
         </div>
         <div className="mb-2 text-sm text-[#D3D3D3]">
           <strong className="text-[var(--t1)]">Support Hours:</strong> Monday -

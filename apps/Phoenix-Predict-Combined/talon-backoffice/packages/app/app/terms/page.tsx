@@ -7,7 +7,7 @@ const FALLBACK_CONTENT = `
 <p style="opacity:0.6;font-size:12px;margin-bottom:28px;">Last updated: May 2026 · Operated by DORA Research, Inc.</p>
 
 <h2>1. Agreement to These Terms</h2>
-<p>Hula Na! (the "Platform") is operated by DORA Research, Inc. ("DORA Research", "we", "us", or "our"). These Terms of Use ("Terms") form a binding agreement between you and DORA Research, Inc. governing your access to and use of the Platform. By creating an account, accessing, or using the Platform, you accept these Terms in full. If you do not agree, do not use the Platform.</p>
+<p>Tiangge (the "Platform") is operated by DORA Research, Inc. ("DORA Research", "we", "us", or "our"). These Terms of Use ("Terms") form a binding agreement between you and DORA Research, Inc. governing your access to and use of the Platform. By creating an account, accessing, or using the Platform, you accept these Terms in full. If you do not agree, do not use the Platform.</p>
 
 <h2>2. Eligibility and Jurisdiction</h2>
 <p>You must be at least the minimum legal age to participate in event-contract markets in your jurisdiction and must have the legal capacity to enter into this agreement. The Platform is not offered where its use would be unlawful. You are solely responsible for determining whether your use of the Platform is permitted under the laws applicable to you, and for compliance with those laws.</p>
@@ -49,7 +49,7 @@ const FALLBACK_CONTENT = `
 <p>These Terms are governed by the laws of the jurisdiction in which DORA Research, Inc. is organized, without regard to conflict-of-laws rules. Disputes will be resolved through binding individual arbitration to the extent permitted by applicable law, and you and DORA Research, Inc. waive any right to participate in a class proceeding.</p>
 
 <h2>15. Contact</h2>
-<p>Questions about these Terms may be directed to <a href="mailto:legal@hulana.com">legal@hulana.com</a>, DORA Research, Inc.</p>
+<p>Questions about these Terms may be directed to <a href="mailto:legal@tiangge.com">legal@tiangge.com</a>, DORA Research, Inc.</p>
 `;
 
 export default function TermsPage() {

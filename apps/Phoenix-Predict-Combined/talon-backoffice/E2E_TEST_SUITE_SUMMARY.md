@@ -1,13 +1,16 @@
 # E2E Test Suite Implementation Summary
 
 > Historical sportsbook-era note: this document describes the Phoenix sportsbook
-> test suite that predated the Hula Na prediction-market migration. It is kept
-> only as migration history; it is not evidence that fixture, betslip, parlay, or
-> sportsbook bet-history flows are current production behavior.
+> test suite that predated the Tiangge prediction-market migration. It is kept
+> only as migration history; it is not evidence that fixture, betslip, parlay,
+> or sportsbook bet-history flows are current production behavior.
 
 ## Overview
 
-A comprehensive Playwright E2E test suite has been created for both the Phoenix Sportsbook Player App and Talon Backoffice admin interface. The test suites include critical user flows, API mocking, shared fixtures, and detailed documentation.
+A comprehensive Playwright E2E test suite has been created for both the Phoenix
+Sportsbook Player App and Talon Backoffice admin interface. The test suites
+include critical user flows, API mocking, shared fixtures, and detailed
+documentation.
 
 ## What Was Created
 
@@ -53,6 +56,7 @@ Existing Files:
 ### Total Tests Created: 98 Tests
 
 #### Player App: 47 Tests
+
 - **auth.spec.ts**: 7 tests
   - Login flow verification
   - Protected route access
@@ -106,6 +110,7 @@ Existing Files:
   - Match card responsiveness
 
 #### Backoffice: 51 Tests
+
 - **auth.spec.ts**: 8 tests
   - Unauthenticated redirect
   - Admin login
@@ -164,6 +169,7 @@ Existing Files:
 ## Shared Fixtures & Helpers
 
 ### fixtures/test-data.ts
+
 - **TEST_FIXTURES object** with:
   - Admin & player credentials
   - Sample sports data
@@ -184,6 +190,7 @@ Existing Files:
   - `clickAndWaitForNavigation(selector)` - Click & wait
 
 ### fixtures/auth.ts
+
 - **loginAsPlayer(page, username?, password?)** - Login player with credentials
 - **loginAsAdmin(page, username?, password?)** - Login admin with credentials
 - **logoutPlayer(page)** - Logout player
@@ -192,6 +199,7 @@ Existing Files:
 - **getAuthToken(page)** - Retrieve auth token from storage
 
 ### fixtures/api-mock.ts
+
 - **mockAuthAPI(page)** - Mock authentication endpoints
 - **mockUserProfileAPI(page)** - Mock user profile data
 - **mockSportsAPI(page)** - Mock sports list
@@ -208,6 +216,7 @@ Existing Files:
 ### playwright.config.ts Changes
 
 **New Projects:**
+
 1. **backoffice** - Main backoffice test suite
    - Base URL: `http://localhost:3000`
    - Viewport: 1920x1080
@@ -230,11 +239,13 @@ Existing Files:
    - Tests responsive.spec.ts only
 
 **Web Servers:**
+
 - Mock server on port 3010 (for backoffice)
 - Office package on port 3000 (backoffice)
 - App package on port 3002 (player app)
 
 **Reporters:**
+
 - HTML report (no auto-open)
 - JUnit XML for CI integration
 - List output to console
@@ -280,6 +291,7 @@ npx playwright show-report
 ### Selector Priority
 
 All tests follow this selector priority:
+
 1. `[data-testid="..."]` - Explicit test IDs (preferred)
 2. `[role="..."]` - ARIA roles (fallback)
 3. `text=/.../"` - Text content (fallback)
@@ -301,6 +313,7 @@ await page.waitForURL((url) => url.includes("/path"));
 ### Optional Elements
 
 Tests gracefully handle optional UI components:
+
 ```typescript
 const isVisible = await element.isVisible().catch(() => false);
 if (isVisible) {
@@ -311,6 +324,7 @@ if (isVisible) {
 ### DRY Code with Helpers
 
 All tests use shared helpers from `fixtures/`:
+
 - Auth helpers for login/logout
 - Test data for consistent fixtures
 - API mocks for consistent responses
@@ -318,18 +332,21 @@ All tests use shared helpers from `fixtures/`:
 ## Key Features
 
 ### Comprehensive Coverage
+
 - 98 total tests covering critical user flows
 - Both happy path and error scenarios
 - Responsive design testing
 - API mocking for reliability
 
 ### Reusable Components
+
 - Shared authentication helpers
 - Centralized test data
 - API route interceptors
 - BasePage class for page objects
 
 ### Production Ready
+
 - HTML & JUnit XML reports
 - Screenshots on failure
 - Video capture on failure
@@ -338,6 +355,7 @@ All tests use shared helpers from `fixtures/`:
 - Proper error handling throughout
 
 ### Well Documented
+
 - Comprehensive README.md
 - Inline comments in test files
 - Clear selector documentation
@@ -346,9 +364,11 @@ All tests use shared helpers from `fixtures/`:
 ## File Paths
 
 All new files are located at:
+
 - `/sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/talon-backoffice/e2e/`
 
 Key files:
+
 - Player App Tests: `e2e/player-app/*.spec.ts`
 - Backoffice Tests: `e2e/backoffice/*.spec.ts`
 - Shared Helpers: `e2e/fixtures/*.ts`
@@ -364,12 +384,14 @@ Key files:
    - Go backend: ports 18080-18081
 
 2. **Run Tests**: Execute test suite
+
    ```bash
    cd talon-backoffice
    npx playwright test
    ```
 
 3. **Review Reports**: Check HTML reports for results
+
    ```bash
    npx playwright show-report
    ```
@@ -387,19 +409,25 @@ Key files:
 ## Testing Approach
 
 ### Focus on Critical Flows
+
 Tests focus on essential user journeys:
+
 - **Player App**: Login, browse sports, place bets, view history
 - **Backoffice**: Admin login, manage users, trading, audit logs
 
 ### Mock External Dependencies
+
 All API calls are mocked for:
+
 - Consistent test execution
 - Fast test performance
 - No backend dependencies
 - Easy test data control
 
 ### Realistic Assertions
+
 Tests verify:
+
 - Element visibility
 - Navigation success
 - Data display
@@ -408,7 +436,9 @@ Tests verify:
 - Error handling
 
 ### Responsive Design
+
 Player app includes specific tests for:
+
 - Mobile (375x667)
 - Tablet (768x1024)
 - Desktop (1920x1080)
@@ -416,6 +446,7 @@ Player app includes specific tests for:
 ## Summary
 
 A production-ready E2E test suite has been successfully created covering:
+
 - 98 comprehensive tests across both applications
 - Shared reusable fixtures and helpers
 - Updated Playwright configuration with 5 test projects
@@ -424,4 +455,5 @@ A production-ready E2E test suite has been successfully created covering:
 - API mocking for test reliability
 - Responsive design testing
 
-The test suite is ready to run and can be integrated into CI/CD pipelines for continuous quality assurance.
+The test suite is ready to run and can be integrated into CI/CD pipelines for
+continuous quality assurance.

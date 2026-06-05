@@ -137,7 +137,7 @@ const LoginComponent: React.FC = () => {
       <LoginFormComponent>
         <Header>
           <Logo theme={theme?.logo} />
-          HulaNaBO
+          Tiangge Backoffice
         </Header>
 
         <LoginForm>

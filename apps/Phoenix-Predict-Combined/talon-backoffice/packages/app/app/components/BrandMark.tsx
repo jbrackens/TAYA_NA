@@ -1,5 +1,5 @@
 /**
- * BrandMark — Hula Na identity mark for the top shell.
+ * BrandMark — Tiangge identity mark for the top shell.
  *
  * Renders the brand asset at /public/brand/mark.png. Source PNG was
  * trimmed of whitespace and downsized to 512px on the long edge for

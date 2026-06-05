@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CHAT_PUBLIC_URL="${CHAT_PUBLIC_URL:-http://localhost:3002}"
 CHAT_PARENT_ORIGIN="${CHAT_PARENT_ORIGIN:-http://localhost:3000}"
-ROCKETCHAT_ADMIN_USERNAME="${ROCKETCHAT_ADMIN_USERNAME:-hula-admin}"
+ROCKETCHAT_ADMIN_USERNAME="${ROCKETCHAT_ADMIN_USERNAME:-tiangge-admin}"
 ROCKETCHAT_ADMIN_PASSWORD="${ROCKETCHAT_ADMIN_PASSWORD:-ChangeMe123!}"
 ROCKETCHAT_GLOBAL_ROOM="${CHAT_DEFAULT_ROOM:-global}"
 OUTPUT_ENV_FILE="${CHAT_SPIKE_OUTPUT_ENV_FILE:-$ROOT/.env.chat-spike}"
@@ -112,7 +112,7 @@ cat <<EOF
 
 Next manual checks:
   1. Complete any remaining Rocket.Chat setup wizard step in the browser.
-  2. Verify iframe origin settings for the real Hula origin.
+  2. Verify iframe origin settings for the real Tiangge origin.
   3. Verify mute/ban/delete/report moderation in the Rocket.Chat admin UI.
   4. Verify Chrome cookie behavior under the same-site chat domain.
 EOF

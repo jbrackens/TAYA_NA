@@ -22,7 +22,7 @@ func NewNonce() (string, error) {
 
 func BuildWalletChallengeMessage(userID string, walletAddress string, chainID int64, nonce string, issuedAt time.Time, expiresAt time.Time) string {
 	return fmt.Sprintf(
-		"Hula Na!\n\nAction: Connect wallet\nUser ID: %s\nWallet: %s\nChain ID: %d\nNonce: %s\nIssued At: %s\nExpires At: %s",
+		"Tiangge\n\nAction: Connect wallet\nUser ID: %s\nWallet: %s\nChain ID: %d\nNonce: %s\nIssued At: %s\nExpires At: %s",
 		userID,
 		common.HexToAddress(walletAddress).Hex(),
 		chainID,

@@ -1,4 +1,4 @@
-# Grafana dashboard — Hula Na prediction exchange
+# Grafana dashboard — Tiangge prediction exchange
 
 `prediction-exchange-dashboard.json` is a Grafana 9+ dashboard that visualises
 the prediction-domain counters exposed at `/metrics/prediction` (defined in

@@ -1,6 +1,6 @@
 # 06 — Player App Plan: Frontend Changes
 
-> Historical sportsbook-era note: this April 2026 plan predates the Hula Na
+> Historical sportsbook-era note: this April 2026 plan predates the Tiangge
 > prediction-market migration. References to `betSlice`, betslip providers, and
 > sportsbook bet summaries are not current implementation guidance.
 

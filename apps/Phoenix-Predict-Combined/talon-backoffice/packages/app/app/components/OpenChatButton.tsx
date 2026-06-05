@@ -15,7 +15,7 @@ export default function OpenChatButton() {
     // Open external support chat
     const chatUrl =
       process.env.NEXT_PUBLIC_SUPPORT_CHAT_URL ||
-      "https://support.hulana.com/chat";
+      "https://support.tiangge.com/chat";
     window.open(chatUrl, "supportChat", "width=800,height=600");
   };
 

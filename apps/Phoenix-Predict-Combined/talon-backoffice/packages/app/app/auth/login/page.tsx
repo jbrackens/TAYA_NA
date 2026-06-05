@@ -97,9 +97,7 @@ export default function LoginPage() {
       <div className={CARD_CLASS}>
         <header className={HEAD_CLASS}>
           <span className={EYEBROW_CLASS}>Player access</span>
-          <h1 className={TITLE_CLASS}>
-            Hula <span className="text-[var(--accent)]">Na!</span>
-          </h1>
+          <h1 className={TITLE_CLASS}>Tiangge</h1>
           <p className={SUBTITLE_CLASS}>
             Sign in to track your positions, follow live markets, and trade on
             real-world outcomes.
@@ -175,8 +173,11 @@ export default function LoginPage() {
         )}
 
         <footer className={FOOTER_CLASS}>
-          New to Hula Na?{" "}
-          <Link href={registerHref} className={`${LINK_CLASS} ${LINK_ACCENT_CLASS}`}>
+          New to Tiangge?{" "}
+          <Link
+            href={registerHref}
+            className={`${LINK_CLASS} ${LINK_ACCENT_CLASS}`}
+          >
             Create an account
           </Link>
         </footer>

@@ -1,4 +1,4 @@
-# Hula Na Player App — Development Rules
+# Tiangge Player App — Development Rules
 
 ## Mandatory Quality Gates
 

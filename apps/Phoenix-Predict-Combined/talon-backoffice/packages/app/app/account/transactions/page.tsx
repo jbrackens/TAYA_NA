@@ -68,7 +68,7 @@ export default function TransactionsPage() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `hula_na_transactions_${new Date()
+      link.download = `tiangge_transactions_${new Date()
         .toISOString()
         .slice(0, 10)}.csv`;
       document.body.appendChild(link);
@@ -193,7 +193,11 @@ export default function TransactionsPage() {
                   setPage(1);
                 }}
               >
-                {t === "all" ? "All" : t === "deposit" ? "Deposit" : "Withdrawal"}
+                {t === "all"
+                  ? "All"
+                  : t === "deposit"
+                    ? "Deposit"
+                    : "Withdrawal"}
               </button>
             ))}
           </div>

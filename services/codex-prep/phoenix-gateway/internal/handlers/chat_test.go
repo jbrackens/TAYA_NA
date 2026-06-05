@@ -40,7 +40,7 @@ func TestResolveChatRoomEnabled(t *testing.T) {
 	h := newChatTestHandlers(config.ChatConfig{
 		Enabled:                  true,
 		Provider:                 "rocketchat",
-		PublicURL:                "https://chat.hulana.com",
+		PublicURL:                "https://chat.tiangge.com",
 		InternalURL:              "http://rocketchat:3000",
 		DefaultRoom:              "global",
 		IframePath:               "/channel/%s?layout=embedded",
@@ -63,7 +63,7 @@ func TestResolveChatRoomEnabled(t *testing.T) {
 	if !body.Enabled || body.Room == nil || body.Room.ID != "global" {
 		t.Fatalf("unexpected room response: %+v", body)
 	}
-	if body.EmbedURL != "https://chat.hulana.com/channel/global?layout=embedded" {
+	if body.EmbedURL != "https://chat.tiangge.com/channel/global?layout=embedded" {
 		t.Fatalf("unexpected embed url: %s", body.EmbedURL)
 	}
 }
@@ -87,11 +87,11 @@ func newChatTestHandlers(chat config.ChatConfig) *Handlers {
 
 func TestBuildChatEmbedURLWithResumeToken(t *testing.T) {
 	cfg := config.ChatConfig{
-		PublicURL:  "https://chat.hulana.com",
+		PublicURL:  "https://chat.tiangge.com",
 		IframePath: "/channel/%s?layout=embedded",
 	}
 	got := buildChatEmbedURL(cfg, "global", "resume-token")
-	want := "https://chat.hulana.com/channel/global?layout=embedded&resumeToken=resume-token"
+	want := "https://chat.tiangge.com/channel/global?layout=embedded&resumeToken=resume-token"
 	if got != want {
 		t.Fatalf("expected %s, got %s", want, got)
 	}

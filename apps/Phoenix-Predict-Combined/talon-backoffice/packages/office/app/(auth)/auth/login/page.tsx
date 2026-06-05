@@ -86,7 +86,7 @@ function LoginForm() {
         <div className="mb-9 text-center">
           <img
             src="/logo-hn-full.png"
-            alt="Hula Na!"
+            alt="Tiangge"
             className="mb-4 h-auto w-full max-w-[240px]"
           />
           <h1 className="mb-1.5 text-[22px] font-bold tracking-normal text-[var(--t1,#1a1a1a)]">
@@ -133,7 +133,7 @@ function LoginForm() {
               <span className="text-xs font-medium text-[var(--t3,#8b8378)]">
                 Locked out?{" "}
                 <a
-                  href="mailto:admin@hulana.com?subject=Backoffice%20password%20reset"
+                  href="mailto:admin@tiangge.com?subject=Backoffice%20password%20reset"
                   className="font-medium text-[var(--focus-ring,#0e7a53)]"
                 >
                   Email IT
@@ -160,7 +160,7 @@ function LoginForm() {
         </form>
 
         <p className="mt-7 text-center text-xs text-[var(--t3,#8b8378)]">
-          Hula Na Predict Admin
+          Tiangge Predict Admin
         </p>
       </div>
     </div>

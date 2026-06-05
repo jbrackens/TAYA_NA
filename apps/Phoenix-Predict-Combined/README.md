@@ -112,7 +112,7 @@ run the gateway with the `ALPHA_CASHIER_*` variables documented in
 [the cashier plan](../../docs/cashier/CUSTODIAL_USDC_ALPHA_PLAN.md), then apply
 `go-platform/services/gateway/migrations/030_alpha_cashier.sql`. Live-chain
 setup still requires a reviewed RPC URL, verified USDC token contract, and
-Hula-controlled treasury address; do not use the legacy `CRYPTO_*` rail for this
+Tiangge-controlled treasury address; do not use the legacy `CRYPTO_*` rail for this
 path.
 
 ## Documentation

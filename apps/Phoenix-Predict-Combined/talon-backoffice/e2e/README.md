@@ -2,14 +2,16 @@
 
 > Historical sportsbook-era note: these suites and selectors document the
 > pre-migration sportsbook app. They are not the current prediction-market QA
-> contract unless a spec has been explicitly rewritten against Hula Na routes,
+> contract unless a spec has been explicitly rewritten against Tiangge routes,
 > prediction orders, and portfolio/accounting APIs.
 
-Comprehensive Playwright E2E tests for both the Phoenix Sportsbook Player App and Talon Backoffice admin interface.
+Comprehensive Playwright E2E tests for both the Phoenix Sportsbook Player App
+and Talon Backoffice admin interface.
 
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js >= 20
 - Yarn >= 1.22.22
 - Playwright dependencies installed
@@ -76,6 +78,7 @@ e2e/
 ### Player App Tests
 
 #### 1. Authentication (`auth.spec.ts`)
+
 - Login flow with credential validation
 - Protected route access (redirects to login)
 - Session persistence across page refreshes
@@ -84,6 +87,7 @@ e2e/
 - Token refresh during active session
 
 **Key Selectors:**
+
 - `[data-testid="login-username"]` - Username input
 - `[data-testid="login-password"]` - Password input
 - `[data-testid="login-submit"]` - Submit button
@@ -91,6 +95,7 @@ e2e/
 - `[data-testid="logout-button"]` - Logout button
 
 #### 2. Browse Sports (`browse-sports.spec.ts`)
+
 - Featured matches visibility
 - Live section with badge indicators
 - Sport filtering via sidebar
@@ -99,6 +104,7 @@ e2e/
 - Fixture list pagination/infinite scroll
 
 **Key Selectors:**
+
 - `[data-testid="featured-matches"]` - Featured section
 - `[data-testid="live-section"]` - Live matches section
 - `[data-testid="live-badge"]` - Live badge indicator
@@ -109,6 +115,7 @@ e2e/
 - `[data-testid="team-name"]` - Team name display
 
 #### 3. Match Detail (`match-detail.spec.ts`)
+
 - Navigate to match detail page
 - Display match header with teams and time
 - Market sections visibility
@@ -118,6 +125,7 @@ e2e/
 - Live score display
 
 **Key Selectors:**
+
 - `[data-testid="match-header"]` - Match header
 - `[data-testid="home-team-name"]` - Home team
 - `[data-testid="away-team-name"]` - Away team
@@ -129,6 +137,7 @@ e2e/
 - `[data-testid="live-badge"]` - Live status indicator
 
 #### 4. Betslip (`betslip.spec.ts`)
+
 - Add single selection to betslip
 - Add multiple selections (parlay/accumulator)
 - Stake entry and potential return calculation
@@ -139,6 +148,7 @@ e2e/
 - Clear betslip
 
 **Key Selectors:**
+
 - `[data-testid="betslip"]` - Betslip container
 - `[data-testid="selection-item"]` - Betslip leg
 - `[data-testid="stake-input"]` - Stake input field
@@ -150,6 +160,7 @@ e2e/
 - `[data-testid="clear-betslip"]` - Clear button
 
 #### 5. Bet History (`bet-history.spec.ts`)
+
 - Navigate to /bets page
 - Bet list displays (ID, status, stake, returns)
 - Filter by status (open, won, lost)
@@ -159,6 +170,7 @@ e2e/
 - Bet history pagination
 
 **Key Selectors:**
+
 - `[data-testid="bet-list"]` - Bets container
 - `[data-testid="bet-item"]` - Individual bet
 - `[data-testid="status-filter"]` - Status filter
@@ -167,6 +179,7 @@ e2e/
 - `[data-testid="bet-leg"]` - Leg information
 
 #### 6. Responsive Design (`responsive.spec.ts`)
+
 - Mobile (375x667): Sidebar collapse, bottom sheet betslip
 - Mobile: Bottom navigation with Home, Sports, Bets, Account
 - Tablet (768x1024): Responsive layout
@@ -174,6 +187,7 @@ e2e/
 - Viewport-specific layout changes
 
 **Tested Viewports:**
+
 - Mobile: 375x667 (iPhone SE)
 - Tablet: 768x1024 (iPad)
 - Desktop: 1920x1080 (Full HD)
@@ -181,6 +195,7 @@ e2e/
 ### Backoffice Tests
 
 #### 1. Admin Authentication (`auth.spec.ts`)
+
 - Redirect to login when accessing /dashboard unauthenticated
 - Login with admin credentials
 - Verify admin sidebar navigation
@@ -190,6 +205,7 @@ e2e/
 - Session persistence across refreshes
 
 **Key Selectors:**
+
 - `[data-testid="auth-username"]` - Username input
 - `[data-testid="auth-password"]` - Password input
 - `[data-testid="admin-sidebar"]` - Navigation sidebar
@@ -197,6 +213,7 @@ e2e/
 - `[data-testid="admin-logout"]` - Logout button
 
 #### 2. Dashboard (`dashboard.spec.ts`)
+
 - Dashboard widget visibility (Revenue, Active Bets, Live Matches, Alerts)
 - Revenue widget displays numeric values
 - Active bets count display
@@ -208,6 +225,7 @@ e2e/
 - Loading states
 
 **Key Selectors:**
+
 - `[data-testid="dashboard"]` - Dashboard container
 - `[data-testid="revenue-widget"]` - Revenue widget
 - `[data-testid="active-bets-widget"]` - Active bets widget
@@ -216,6 +234,7 @@ e2e/
 - `[data-testid="last-update"]` - Last update timestamp
 
 #### 3. Trading (`trading.spec.ts`)
+
 - Fixture board loads with matches
 - Click fixture → market management panel opens
 - Market list display
@@ -227,6 +246,7 @@ e2e/
 - Export trading data
 
 **Key Selectors:**
+
 - `[data-testid="trading-view"]` - Trading page container
 - `[data-testid="fixture-board"]` - Fixture board
 - `[data-testid="trading-fixture"]` - Fixture item
@@ -240,6 +260,7 @@ e2e/
 - `[data-testid="export-button"]` - Export button
 
 #### 4. User Management (`user-management.spec.ts`)
+
 - Users page with search and table
 - Search for user → results filter
 - Click user row → detail page/modal
@@ -252,6 +273,7 @@ e2e/
 - User pagination
 
 **Key Selectors:**
+
 - `[data-testid="users-page"]` - Users page
 - `[data-testid="users-table"]` - User table
 - `[data-testid="user-search"]` - Search input
@@ -263,6 +285,7 @@ e2e/
 - `[data-testid="pagination-next"]` - Next page button
 
 #### 5. Audit Logs (`audit-logs.spec.ts`)
+
 - Audit logs page loads with log table
 - Table displays columns (timestamp, action, user, resource, result)
 - Filter by action type
@@ -275,6 +298,7 @@ e2e/
 - Filter by user who performed action
 
 **Key Selectors:**
+
 - `[data-testid="logs-page"]` - Audit logs page
 - `[data-testid="audit-logs"]` - Logs container
 - `[data-testid="log-table"]` - Log table
@@ -303,6 +327,7 @@ await logoutAdmin(page);
 ```
 
 Functions:
+
 - `loginAsPlayer(page, username?, password?)` - Login player
 - `loginAsAdmin(page, username?, password?)` - Login admin
 - `logoutPlayer(page)` - Logout player
@@ -318,14 +343,14 @@ Reusable test data and fixtures:
 import { TEST_FIXTURES } from "../fixtures/test-data";
 
 // Access test data:
-TEST_FIXTURES.admin        // Admin credentials
-TEST_FIXTURES.player       // Player credentials
-TEST_FIXTURES.sports       // Sample sports
-TEST_FIXTURES.fixtures     // Sample matches
-TEST_FIXTURES.markets      // Sample markets
-TEST_FIXTURES.selections   // Sample odds
-TEST_FIXTURES.bets         // Sample bets
-TEST_FIXTURES.quickStakes  // [$5, $10, $25, $50, $100]
+TEST_FIXTURES.admin; // Admin credentials
+TEST_FIXTURES.player; // Player credentials
+TEST_FIXTURES.sports; // Sample sports
+TEST_FIXTURES.fixtures; // Sample matches
+TEST_FIXTURES.markets; // Sample markets
+TEST_FIXTURES.selections; // Sample odds
+TEST_FIXTURES.bets; // Sample bets
+TEST_FIXTURES.quickStakes; // [$5, $10, $25, $50, $100]
 ```
 
 Also includes `BasePage` class for page object patterns.
@@ -338,12 +363,13 @@ Playwright route interceptors for mocking API responses:
 import { setupAllMocks, mockBetsAPI } from "../fixtures/api-mock";
 
 // In tests:
-await setupAllMocks(page);        // Mock all APIs
-await mockBetsAPI(page);          // Mock specific API
+await setupAllMocks(page); // Mock all APIs
+await mockBetsAPI(page); // Mock specific API
 await mockNetworkError(page, "..."); // Mock errors
 ```
 
 Available mocks:
+
 - `mockAuthAPI()` - Authentication endpoints
 - `mockUserProfileAPI()` - User profile data
 - `mockSportsAPI()` - Sports list
@@ -377,6 +403,7 @@ Two main projects:
 ### Environment Variables
 
 Player App (.env):
+
 ```
 NEXT_PUBLIC_API_ENDPOINT=http://localhost:18080
 NEXT_PUBLIC_AUTH_ENDPOINT=http://localhost:18081
@@ -384,6 +411,7 @@ NEXT_PUBLIC_WS_ENDPOINT=ws://localhost:18080
 ```
 
 Backoffice (.env):
+
 ```
 API_GLOBAL_ENDPOINT=http://localhost:3010
 WS_GLOBAL_ENDPOINT=ws://localhost:3010
@@ -413,7 +441,8 @@ await page.waitForURL((url) => url.includes("/dashboard"));
 
 ### Handling Optional Elements
 
-Many tests check for element visibility with `.catch(() => false)` to gracefully handle optional UI elements:
+Many tests check for element visibility with `.catch(() => false)` to gracefully
+handle optional UI elements:
 
 ```typescript
 const isVisible = await element.isVisible().catch(() => false);
@@ -426,7 +455,9 @@ This approach allows tests to pass even if certain UI components are optional.
 
 ### Test Data
 
-Use `TEST_FIXTURES` from `fixtures/test-data.ts` for consistent test data across all tests. This ensures:
+Use `TEST_FIXTURES` from `fixtures/test-data.ts` for consistent test data across
+all tests. This ensures:
+
 - Consistent credentials
 - Predictable test data
 - Easy maintenance of fixtures
@@ -435,26 +466,31 @@ Use `TEST_FIXTURES` from `fixtures/test-data.ts` for consistent test data across
 ## Debugging
 
 ### Run Single Test
+
 ```bash
 npx playwright test auth.spec.ts
 ```
 
 ### Run Specific Test
+
 ```bash
 npx playwright test -g "Login flow"
 ```
 
 ### Debug Mode
+
 ```bash
 npx playwright test --debug
 ```
 
 ### View Report
+
 ```bash
 npx playwright show-report
 ```
 
 ### Verbose Output
+
 ```bash
 npx playwright test --reporter=list
 ```
@@ -462,21 +498,25 @@ npx playwright test --reporter=list
 ## Common Issues
 
 ### Authentication State Not Persisting
+
 - Ensure browser context storage is properly saved
 - Check token storage in localStorage/sessionStorage
 - Verify session cookie domain settings
 
 ### API Calls Failing
+
 - Verify mock-server is running on port 3010
 - Check Go backend is running on ports 18080-18081
 - Review API mock interceptors in `fixtures/api-mock.ts`
 
 ### Tests Timing Out
+
 - Increase timeout in specific tests: `{ timeout: 60_000 }`
 - Check that web servers are properly started
 - Verify network connectivity
 
 ### Selector Issues
+
 - Use Playwright inspector: `npx playwright test --debug`
 - Check browser dev tools for correct selectors
 - Update test IDs if UI structure changes

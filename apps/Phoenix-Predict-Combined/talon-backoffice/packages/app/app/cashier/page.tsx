@@ -89,7 +89,8 @@ function paymentButtonClass(active: boolean) {
 }
 
 function messageClass(tone: "pending" | "error" | "success") {
-  const base = "mb-[14px] rounded-[var(--r-sm)] px-3 py-2.5 text-[13px] font-medium";
+  const base =
+    "mb-[14px] rounded-[var(--r-sm)] px-3 py-2.5 text-[13px] font-medium";
   if (tone === "pending") {
     return `${base} flex items-center gap-2.5 border border-[rgba(43,228,128,0.3)] bg-[var(--accent-soft)] text-[var(--accent)]`;
   }
@@ -546,7 +547,9 @@ export default function CashierPage() {
               </div>
             )}
             {error && <div className={messageClass("error")}>{error}</div>}
-            {success && <div className={messageClass("success")}>{success}</div>}
+            {success && (
+              <div className={messageClass("success")}>{success}</div>
+            )}
 
             {!isCryptoRail && (
               <button
@@ -577,7 +580,7 @@ export default function CashierPage() {
                   <span>${displayAmount.toFixed(2)}</span>
                 </div>
                 <div className={summaryRowClass}>
-                  <span>Hula fee</span>
+                  <span>Tiangge fee</span>
                   <span>$0.00</span>
                 </div>
                 <div
@@ -601,7 +604,9 @@ export default function CashierPage() {
                   <span>Fee (2%)</span>
                   <span>${fee.toFixed(2)}</span>
                 </div>
-                <div className={`${summaryRowClass} mt-1.5 border-b-0 border-t border-[var(--b2)] pt-3 text-[15px] font-bold text-[var(--accent)]`}>
+                <div
+                  className={`${summaryRowClass} mt-1.5 border-b-0 border-t border-[var(--b2)] pt-3 text-[15px] font-bold text-[var(--accent)]`}
+                >
                   <span>Total</span>
                   <span>${total.toFixed(2)}</span>
                 </div>
