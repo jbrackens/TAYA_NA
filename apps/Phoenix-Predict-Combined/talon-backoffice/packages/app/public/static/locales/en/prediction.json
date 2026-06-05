@@ -161,5 +161,19 @@
   "DISCOVER_TITLE": "What's moving right now",
   "DISCOVER_SUBTITLE": "Markets ranked by 24h activity and the contracts closing soonest.",
   "DISCOVER_TRENDING": "Trending",
-  "DISCOVER_CLOSING_SOON": "Closing soon"
+  "DISCOVER_CLOSING_SOON": "Closing soon",
+  "LIVE_LOADING": "Loading live moments...",
+  "LIVE_LOAD_ERROR_TITLE": "Couldn't load live moments",
+  "LIVE_EYEBROW": "Live",
+  "LIVE_TITLE": "In-play moments",
+  "LIVE_SUBTITLE": "Realtime sports state and market-data ticks from upstream live feeds. These updates inform this page only; Tiangge market prices remain driven by our exchange.",
+  "LIVE_REFRESH": "Refresh",
+  "LIVE_PROVIDERS": "Live data providers",
+  "LIVE_EMPTY_TITLE": "No in-play moments yet",
+  "LIVE_EMPTY_COPY": "The feed will populate when the live sports socket sends active events.",
+  "LIVE_NOW": "Live now",
+  "LIVE_ENDED": "Ended",
+  "LIVE_RECENT": "Recent",
+  "LIVE_SCORE_PENDING": "Score pending",
+  "LIVE_UPDATED": "Updated {{value}}"
 }

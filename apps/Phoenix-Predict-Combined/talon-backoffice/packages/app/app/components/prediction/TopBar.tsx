@@ -44,13 +44,15 @@ const api = createPredictionClient();
 // they would either land on a sign-in wall (Portfolio) or render with an
 // empty / placeholder state (Leaderboards, Rewards), neither of which makes
 // sense as a discoverable destination before login.
-const NAV_LINKS: { href: string; labelKey: string; requiresAuth?: boolean }[] = [
-  { href: "/predict", labelKey: "NAV_MARKETS" },
-  { href: "/discover", labelKey: "NAV_DISCOVER" },
-  { href: "/portfolio", labelKey: "NAV_PORTFOLIO", requiresAuth: true },
-  { href: "/leaderboards", labelKey: "NAV_LEADERBOARDS", requiresAuth: true },
-  { href: "/rewards", labelKey: "NAV_REWARDS", requiresAuth: true },
-];
+const NAV_LINKS: { href: string; labelKey: string; requiresAuth?: boolean }[] =
+  [
+    { href: "/predict", labelKey: "NAV_MARKETS" },
+    { href: "/discover", labelKey: "NAV_DISCOVER" },
+    { href: "/live", labelKey: "NAV_LIVE" },
+    { href: "/portfolio", labelKey: "NAV_PORTFOLIO", requiresAuth: true },
+    { href: "/leaderboards", labelKey: "NAV_LEADERBOARDS", requiresAuth: true },
+    { href: "/rewards", labelKey: "NAV_REWARDS", requiresAuth: true },
+  ];
 
 const TOP_BAR_CLASS =
   "sticky top-0 z-[100] border-b border-[var(--border-1)] bg-[var(--bg-deep)] [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
@@ -193,7 +195,12 @@ export function TopBar() {
   }, [allMarkets.length]);
 
   const searchResults = useMemo(
-    () => searchMarkets(allMarkets.map((m) => localizedMarket(contentT, m)), query, 8),
+    () =>
+      searchMarkets(
+        allMarkets.map((m) => localizedMarket(contentT, m)),
+        query,
+        8,
+      ),
     [query, allMarkets, contentT],
   );
 
@@ -429,9 +436,7 @@ export function TopBar() {
                   "your account is empty" and panic. A neutral "—"
                   reads as "loading" without claiming a value.
                 */}
-                {typeof balance === "number"
-                  ? `$${balance.toFixed(2)}`
-                  : "$—"}
+                {typeof balance === "number" ? `$${balance.toFixed(2)}` : "$—"}
               </span>
             </div>
           )}

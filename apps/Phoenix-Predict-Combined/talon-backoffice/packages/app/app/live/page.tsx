@@ -1,0 +1,209 @@
+"use client";
+
+import { Activity, Radio, RotateCw } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  getLiveMarkets,
+  type LiveMarketEvent,
+  type LiveProviderStatus,
+} from "../lib/api/live-markets-client";
+
+const ROUTE_LOADING_CLASS = "p-20 text-center text-[13px] text-[var(--t3)]";
+const GLASS_SURFACE_CLASS =
+  "relative border border-white/[0.13] bg-[color:var(--glass-regular)] bg-[image:linear-gradient(180deg,_rgba(255,255,255,0.14)_0%,_rgba(255,255,255,0.05)_30%,_rgba(255,255,255,0.025)_100%)] shadow-[inset_0_1px_0_var(--rim-top),inset_0_-1px_0_var(--rim-bottom),inset_1px_0_2px_var(--chroma-1),inset_-1px_0_2px_var(--chroma-2),0_2px_6px_rgba(0,0,0,0.18),0_8px_24px_rgba(0,0,0,0.28),0_16px_48px_rgba(0,0,0,0.2)] backdrop-blur-[30px] backdrop-saturate-[180%] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-1/2 before:rounded-[inherit] before:bg-[image:linear-gradient(180deg,_rgba(255,255,255,0.06)_0%,_transparent_100%)] before:mix-blend-overlay before:content-['']";
+const STATE_CARD_CLASS = `${GLASS_SURFACE_CLASS} mx-auto my-[60px] max-w-[560px] rounded-[var(--r-lg)] p-14 text-center`;
+const HEADER_CLASS = "mb-5 flex flex-wrap items-end justify-between gap-4";
+const EYEBROW_CLASS =
+  "mt-0 mb-1.5 inline-flex items-center gap-2 font-['IBM_Plex_Mono',_monospace] text-[10px] uppercase tracking-[0.16em] text-[var(--t3)]";
+const TITLE_CLASS = "mt-0 mb-2 text-[28px] font-extrabold text-[var(--t1)]";
+const SUB_CLASS = "m-0 max-w-[680px] text-sm leading-[1.5] text-[var(--t2)]";
+const REFRESH_BUTTON_CLASS =
+  "inline-flex min-h-10 items-center gap-2 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 text-[13px] font-semibold text-[var(--t1)]";
+const PROVIDER_GRID_CLASS =
+  "mb-6 grid grid-cols-2 gap-3 max-[720px]:grid-cols-1";
+const PROVIDER_CARD_CLASS = `${GLASS_SURFACE_CLASS} rounded-[var(--r-md)] p-4`;
+const PROVIDER_LABEL_CLASS = "mb-1 text-[13px] font-bold text-[var(--t1)]";
+const PROVIDER_META_CLASS =
+  "text-[11px] leading-[1.5] text-[var(--t3)] [font-family:'IBM_Plex_Mono',monospace]";
+const EVENT_GRID_CLASS = "grid grid-cols-2 gap-4 max-[900px]:grid-cols-1";
+const EVENT_CARD_CLASS = `${GLASS_SURFACE_CLASS} rounded-[var(--r-md)] p-5`;
+const EVENT_META_CLASS =
+  "mb-3 flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+const LIVE_PILL_CLASS =
+  "inline-flex items-center gap-1.5 rounded-[var(--r-pill)] bg-[rgba(255,107,107,0.16)] px-2.5 py-1 text-[11px] font-bold text-[var(--live)]";
+const STATE_PILL_CLASS =
+  "inline-flex rounded-[var(--r-pill)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-bold text-[var(--t2)]";
+const MATCHUP_CLASS = "m-0 text-[19px] font-extrabold text-[var(--t1)]";
+const SCORE_CLASS =
+  "mt-4 text-[34px] font-black tracking-[-0.02em] text-[var(--t1)] [font-family:'IBM_Plex_Mono',monospace]";
+const DETAIL_ROW_CLASS =
+  "mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-[var(--t3)]";
+
+type LiveState = {
+  events: LiveMarketEvent[];
+  providers: LiveProviderStatus[];
+  generatedAt: string;
+};
+
+function statusLabel(provider: LiveProviderStatus): string {
+  if (provider.state === "connected" && provider.lastMessageAt) {
+    return `connected · message ${timeAgo(provider.lastMessageAt)}`;
+  }
+  if (provider.state === "connected") return "connected";
+  if (provider.state === "not_configured") return "not configured";
+  if (provider.state === "not_wired") return "credentials present, not wired";
+  return provider.state.replace(/_/g, " ");
+}
+
+function timeAgo(iso: string): string {
+  const stamp = new Date(iso).getTime();
+  if (!Number.isFinite(stamp)) return "unknown";
+  const seconds = Math.max(0, Math.round((Date.now() - stamp) / 1000));
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  return `${Math.round(minutes / 60)}h ago`;
+}
+
+function eventTitle(event: LiveMarketEvent): string {
+  if (event.title) return event.title;
+  const home = event.homeTeam || "Home";
+  const away = event.awayTeam || "Away";
+  return `${away} at ${home}`;
+}
+
+export default function LiveMarketsPage() {
+  const { t } = useTranslation("prediction");
+  const [state, setState] = useState<LiveState | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = async () => {
+    setError(null);
+    try {
+      const next = await getLiveMarkets();
+      setState(next);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    const tick = async () => {
+      if (!cancelled) await load();
+    };
+    tick();
+    const id = window.setInterval(tick, 15_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, []);
+
+  const liveEvents = useMemo(
+    () => (state?.events ?? []).filter((event) => event.live && !event.ended),
+    [state],
+  );
+  const recentEvents =
+    liveEvents.length > 0 ? liveEvents : (state?.events ?? []);
+
+  if (loading) {
+    return <div className={ROUTE_LOADING_CLASS}>{t("LIVE_LOADING")}</div>;
+  }
+
+  return (
+    <div>
+      <header className={HEADER_CLASS}>
+        <div>
+          <p className={EYEBROW_CLASS}>
+            <Radio size={13} aria-hidden="true" />
+            {t("LIVE_EYEBROW")}
+          </p>
+          <h1 className={TITLE_CLASS}>{t("LIVE_TITLE")}</h1>
+          <p className={SUB_CLASS}>{t("LIVE_SUBTITLE")}</p>
+        </div>
+        <button type="button" className={REFRESH_BUTTON_CLASS} onClick={load}>
+          <RotateCw size={15} aria-hidden="true" />
+          {t("LIVE_REFRESH")}
+        </button>
+      </header>
+
+      {(state?.providers?.length ?? 0) > 0 && (
+        <section
+          className={PROVIDER_GRID_CLASS}
+          aria-label={t("LIVE_PROVIDERS")}
+        >
+          {state?.providers.map((provider) => (
+            <div key={provider.key} className={PROVIDER_CARD_CLASS}>
+              <div className={PROVIDER_LABEL_CLASS}>{provider.label}</div>
+              <div className={PROVIDER_META_CLASS}>{statusLabel(provider)}</div>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {error && !state ? (
+        <div className={STATE_CARD_CLASS}>
+          <h2 className="m-0 text-[18px] font-bold text-[var(--t1)]">
+            {t("LIVE_LOAD_ERROR_TITLE")}
+          </h2>
+          <p className="mt-2 mb-0 text-[13px] text-[var(--t3)]">{error}</p>
+        </div>
+      ) : recentEvents.length === 0 ? (
+        <div className={STATE_CARD_CLASS}>
+          <Activity
+            className="mx-auto mb-4 text-[var(--t3)]"
+            size={32}
+            aria-hidden="true"
+          />
+          <h2 className="m-0 text-[18px] font-bold text-[var(--t1)]">
+            {t("LIVE_EMPTY_TITLE")}
+          </h2>
+          <p className="mt-2 mb-0 text-[13px] text-[var(--t3)]">
+            {t("LIVE_EMPTY_COPY")}
+          </p>
+        </div>
+      ) : (
+        <section className={EVENT_GRID_CLASS}>
+          {recentEvents.map((event) => (
+            <article key={event.id} className={EVENT_CARD_CLASS}>
+              <div className={EVENT_META_CLASS}>
+                {event.live ? (
+                  <span className={LIVE_PILL_CLASS}>
+                    <span className="live-dot" aria-hidden="true" />
+                    {t("LIVE_NOW")}
+                  </span>
+                ) : (
+                  <span className={STATE_PILL_CLASS}>
+                    {event.ended
+                      ? t("LIVE_ENDED")
+                      : event.status || t("LIVE_RECENT")}
+                  </span>
+                )}
+                {event.league && <span>{event.league}</span>}
+                {event.sport && <span>{event.sport}</span>}
+                {event.source === "market-data" && <span>market data</span>}
+              </div>
+              <h2 className={MATCHUP_CLASS}>{eventTitle(event)}</h2>
+              <div className={SCORE_CLASS}>
+                {event.score || t("LIVE_SCORE_PENDING")}
+              </div>
+              <div className={DETAIL_ROW_CLASS}>
+                {event.detail && <span>{event.detail}</span>}
+                {event.period && <span>{event.period}</span>}
+                {event.clock && <span>{event.clock}</span>}
+                <span>
+                  {t("LIVE_UPDATED", { value: timeAgo(event.updatedAt) })}
+                </span>
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
+    </div>
+  );
+}

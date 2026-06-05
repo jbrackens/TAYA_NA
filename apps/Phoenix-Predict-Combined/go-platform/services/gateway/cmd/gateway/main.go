@@ -149,6 +149,7 @@ func gatewayPublicPrefixes() []string {
 		// Prediction platform — public read-only endpoints
 		"/api/v1/discover", // demo product feed (imported_markets); pre-launch behind app auth, but no session needed for the read
 		"/api/v1/discovery",
+		"/api/v1/live-markets",
 		"/api/v1/categories",
 		"/api/v1/events",
 		"/api/v1/markets",

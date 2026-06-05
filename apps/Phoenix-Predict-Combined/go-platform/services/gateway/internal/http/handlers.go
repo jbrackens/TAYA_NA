@@ -20,6 +20,7 @@ import (
 	"phoenix-revival/gateway/internal/discover"
 	"phoenix-revival/gateway/internal/events"
 	"phoenix-revival/gateway/internal/leaderboards"
+	"phoenix-revival/gateway/internal/livemarkets"
 	"phoenix-revival/gateway/internal/loyalty"
 	"phoenix-revival/gateway/internal/notify"
 	"phoenix-revival/gateway/internal/payments"
@@ -53,6 +54,9 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	wsHub := ws.NewHub()
 	go wsHub.Run(context.Background())
 	registerWebSocketRoutes(mux, wsHub)
+	liveMarketService := livemarkets.NewServiceFromEnv()
+	liveMarketService.Start(context.Background())
+	registerLiveMarketRoutes(mux, liveMarketService)
 
 	// --- Health & Status (keep from sportsbook) ---
 

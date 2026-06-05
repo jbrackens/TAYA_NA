@@ -12,6 +12,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Compass,
+  Activity,
   LayoutGrid,
   PieChart,
   Trophy,
@@ -41,6 +42,12 @@ const TABS: TabDef[] = [
     labelKey: "NAV_DISCOVER",
     Icon: Compass,
     matchPrefixes: ["/discover"],
+  },
+  {
+    href: "/live",
+    labelKey: "NAV_LIVE",
+    Icon: Activity,
+    matchPrefixes: ["/live"],
   },
   {
     href: "/portfolio",
@@ -86,6 +93,8 @@ function gridClassForCount(count: number): string {
       return "grid-cols-4";
     case 5:
       return "grid-cols-5";
+    case 6:
+      return "grid-cols-6";
     default:
       return "grid-cols-1";
   }
