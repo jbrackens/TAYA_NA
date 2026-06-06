@@ -590,10 +590,12 @@ export default function MarketDetailPage() {
             />
           </section>
 
-          <div className={MARKET_DATA_ROW_CLASS}>
-            <OrderBook bids={bids} asks={asks} />
-            <RecentTrades trades={trades} />
-          </div>
+          {isAuthenticated && (
+            <div className={MARKET_DATA_ROW_CLASS}>
+              <OrderBook bids={bids} asks={asks} />
+              <RecentTrades trades={trades} />
+            </div>
+          )}
 
           <section className={MARKET_DETAILS_CLASS}>
             <h3 className={MARKET_DETAILS_TITLE_CLASS}>

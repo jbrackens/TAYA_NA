@@ -568,7 +568,7 @@ export function TradeTicket({
           {/* Buy/Sell toggle — only meaningful for exchange markets. AMM stays
             buy-only because the curve only mints; sell support is the
             order-book book's job. */}
-          {isExchange && (
+          {isExchange && isAuthenticated && (
             <div
               className={`${TICKET_MODE_CLASS} mb-[14px] self-start`}
               role="tablist"
