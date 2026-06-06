@@ -135,13 +135,14 @@ export default function HomePage() {
           aria-hidden="true"
         />
 
-        <div className="relative z-10 mx-auto flex min-h-[calc(100svh-64px)] max-w-[1440px] flex-col items-center justify-end px-8 pb-[76px] pt-10 text-center max-[720px]:min-h-[620px] max-[720px]:px-5 max-[720px]:pb-16">
-          <h1 className="m-0 max-w-[1180px] text-balance text-[clamp(48px,6.4vw,86px)] font-normal leading-[1] tracking-normal text-white [font-family:Georgia,'Times_New_Roman',serif] max-[720px]:text-[clamp(46px,13vw,64px)]">
+        <div className="relative z-10 mx-auto flex min-h-[calc(100svh-64px)] max-w-[1440px] flex-col items-center justify-center px-8 pb-8 pt-8 text-center max-[720px]:min-h-[620px] max-[720px]:px-5">
+          <h1 className="m-0 max-w-none text-balance text-[clamp(52px,5.45vw,82px)] font-normal leading-[1] tracking-normal text-white [font-family:Georgia,'Times_New_Roman',serif] min-[1100px]:whitespace-nowrap max-[720px]:max-w-[620px] max-[720px]:text-[clamp(42px,12vw,58px)]">
             Where local moments become markets.
           </h1>
-          <p className="mx-auto mt-6 max-w-[980px] text-balance text-[23px] font-medium leading-[1.26] text-white/90 max-[720px]:mt-5 max-[720px]:text-[18px]">
-            Trade Yes or No on politics, basketball, pageants, crypto, gaming,
-            and the moments Filipinos are watching.
+          <p className="mx-auto mt-6 max-w-[880px] text-balance text-[clamp(19px,1.75vw,24px)] font-medium leading-[1.22] text-white/90 max-[720px]:mt-5 max-[720px]:max-w-[560px] max-[720px]:text-[18px] max-[720px]:leading-[1.32]">
+            Tiangge turns the moments Filipinos are already watching into live
+            prediction markets — from basketball and pageants to crypto, gaming,
+            politics, and pop culture.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3 max-[720px]:mt-7">
             <Link
