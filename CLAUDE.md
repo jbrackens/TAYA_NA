@@ -48,6 +48,33 @@ Taya_Na_Predict/
 - GitHub user: `jbrackens`
 - The sister repo `jbrackens/Taya_Na_Sportsbook` is the on-hold sportsbook. Don't touch it unless the user explicitly asks.
 
+## Agent Branch / Deploy Policy
+
+Active development and demo deployment happen from the live worktree:
+
+- Worktree: `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict-cashier`
+- Branch: `feat/binary-exchange-engine`
+- Deploy workflow: `.github/workflows/deploy-demo.yml`
+
+Before any agent starts edits, and again before any `commit/push/deploy`, run:
+
+```bash
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict-cashier
+scripts/agent-preflight.sh
+```
+
+Treat the user phrase `commit/push/deploy` as a strict procedure:
+
+1. Stay in `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict-cashier`.
+2. Confirm the branch is `feat/binary-exchange-engine`.
+3. Fetch `origin` and refuse if the branch is behind or diverged.
+4. Review `git status` and commit only intended files.
+5. Run the relevant local validation before committing.
+6. Push only `feat/binary-exchange-engine`.
+7. Monitor the GitHub Actions deploy run and smoke-check the demo URLs after success.
+
+Do not commit or push from `main`, `chore/safe-brand-text-cleanup`, or any other branch unless the user explicitly names that branch. Do not include unrelated untracked files from sibling worktrees without explicit user approval. The sibling cleanup worktree `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict` may contain unrelated untracked market images; ignore them unless the user asks for them.
+
 ## Critical Rules
 
 ### Never Do These

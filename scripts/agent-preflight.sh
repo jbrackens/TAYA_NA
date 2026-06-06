@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+required_root="/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict-cashier"
+required_branch="feat/binary-exchange-engine"
+remote_ref="origin/${required_branch}"
+sibling_root="/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict"
+
+root="$(git rev-parse --show-toplevel)"
+if [[ "${root}" != "${required_root}" ]]; then
+  echo "ERROR: wrong worktree."
+  echo "Expected: ${required_root}"
+  echo "Actual:   ${root}"
+  exit 1
+fi
+
+branch="$(git branch --show-current)"
+if [[ "${branch}" != "${required_branch}" ]]; then
+  echo "ERROR: wrong branch."
+  echo "Expected: ${required_branch}"
+  echo "Actual:   ${branch:-detached HEAD}"
+  exit 1
+fi
+
+git fetch origin --prune
+
+if ! git rev-parse --verify --quiet "${remote_ref}" >/dev/null; then
+  echo "ERROR: missing remote ref ${remote_ref}."
+  exit 1
+fi
+
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "ERROR: tracked changes are present."
+  echo "Review and commit/stash them before using this preflight as a clean start."
+  git status --short
+  exit 1
+fi
+
+if ! git merge-base --is-ancestor "${remote_ref}" HEAD; then
+  echo "ERROR: local branch is behind ${remote_ref}. Pull/rebase before editing."
+  exit 1
+fi
+
+if ! git merge-base --is-ancestor HEAD "${remote_ref}"; then
+  echo "ERROR: local branch has unpushed commits. Push or resolve before proceeding."
+  exit 1
+fi
+
+if [[ -d "${sibling_root}/.git" || -d "${sibling_root}" ]]; then
+  if ! git -C "${sibling_root}" diff --quiet || ! git -C "${sibling_root}" diff --cached --quiet; then
+    echo "ERROR: sibling worktree has tracked changes."
+    echo "Sibling: ${sibling_root}"
+    git -C "${sibling_root}" status --short
+    exit 1
+  fi
+fi
+
+echo "OK: ${required_branch} is clean and synced in ${required_root}."
