@@ -238,9 +238,15 @@ func (r *SQLRepository) ListMarkets(ctx context.Context, filter MarketFilter) ([
 	// GetMarket etc. all see it. Earlier inline SELECT here drifted apart
 	// from marketSelectQuery() when image_path was added (migration 018),
 	// breaking ListMarkets with a 500. Don't reintroduce that fork.
-	// Public discovery is visual-first: imported catalog rows that have a
-	// rehosted thumbnail should not be buried behind older no-image rows.
-	q := marketSelectQuery() + where + ` ORDER BY (COALESCE(m.image_path, im.image_path) IS NULL), close_at ASC`
+	q := `SELECT rm.* FROM (` + marketSelectQuery() + where + `) rm
+	      LEFT JOIN prediction_events pe ON pe.id = rm.event_id
+	      LEFT JOIN prediction_categories pc ON pc.id = pe.category_id
+	      LEFT JOIN LATERAL (
+	          SELECT COALESCE(SUM(t.price_cents::bigint * t.quantity), 0)::bigint AS volume_24h_cents
+	          FROM prediction_trades t
+	          WHERE t.market_id = rm.id
+	            AND t.traded_at >= NOW() - INTERVAL '24 hours'
+	      ) v24 ON true` + marketRankingOrderClause()
 	q += fmt.Sprintf(` LIMIT %d OFFSET %d`, filter.PageSize, (filter.Page-1)*filter.PageSize)
 
 	rows, err := r.db.QueryContext(ctx, q, args...)
@@ -1390,7 +1396,7 @@ func (r *SQLRepository) GetDiscovery(ctx context.Context) (*DiscoveryResponse, e
 
 func marketSelectQuery() string {
 	return `SELECT m.id, m.event_id, m.ticker, m.title, m.description,
-	               COALESCE(m.translations, '{}'::jsonb) AS translations,
+		               COALESCE(m.translations, '{}'::jsonb) AS translations,
 	               m.status, m.result,
 	               m.yes_price_cents, m.no_price_cents, m.last_trade_price_cents,
 	               GREATEST(m.volume_cents, COALESCE(ROUND(im.volume * 100), 0)::bigint) AS volume_cents,
@@ -1412,7 +1418,69 @@ func marketSelectQuery() string {
 	              AND upper(substr(im.external_hash, 1, 8)) = upper(substr(m.ticker, 5, 8))
 	            ORDER BY im.volume DESC
 	            LIMIT 1
-	        ) im ON true`
+		        ) im ON true`
+}
+
+func marketRankingOrderClause() string {
+	return ` ORDER BY (
+		-- Polymarket/Kalshi-style activity score:
+		-- 35% 24h volume, 20% liquidity/depth proxy, 15% open interest,
+		-- 10% total volume, 10% freshness/trending movement,
+		-- 5% closing-soon relevance, 5% editorial/featured boost.
+		0.35 * COALESCE(
+			COALESCE(v24.volume_24h_cents, 0)::double precision /
+			NULLIF(MAX(COALESCE(v24.volume_24h_cents, 0)) OVER (), 0),
+			0
+		) +
+		0.20 * COALESCE(
+			rm.liquidity_cents::double precision /
+			NULLIF(MAX(rm.liquidity_cents) OVER (), 0),
+			0
+		) +
+		0.15 * COALESCE(
+			rm.open_interest_cents::double precision /
+			NULLIF(MAX(rm.open_interest_cents) OVER (), 0),
+			0
+		) +
+		0.10 * COALESCE(
+			rm.volume_cents::double precision /
+			NULLIF(MAX(rm.volume_cents) OVER (), 0),
+			0
+		) +
+		0.10 * GREATEST(
+			0,
+			1 - LEAST(
+				EXTRACT(EPOCH FROM (NOW() - GREATEST(rm.updated_at, COALESCE(rm.last_quote_at, rm.updated_at)))) / 604800.0,
+				1
+			)
+		) +
+		0.05 * CASE
+			WHEN rm.close_at <= NOW() THEN 0
+			ELSE 1 - LEAST(EXTRACT(EPOCH FROM (rm.close_at - NOW())) / 2592000.0, 1)
+		END +
+		CASE WHEN COALESCE(pe.featured, false) THEN 0.05 ELSE 0 END +
+		-- Light category preference: entertainment/tech/politics first, then sports.
+		CASE COALESCE(pc.slug, '')
+			WHEN 'entertainment' THEN 0.04
+			WHEN 'tech' THEN 0.035
+			WHEN 'technology' THEN 0.035
+			WHEN 'politics' THEN 0.03
+			WHEN 'sports' THEN 0.02
+			ELSE 0
+		END -
+		CASE
+			WHEN rm.best_yes_bid_cents IS NOT NULL AND rm.best_yes_ask_cents IS NOT NULL
+			THEN 0.08 * LEAST(GREATEST((rm.best_yes_ask_cents - rm.best_yes_bid_cents)::double precision, 0) / 25.0, 1)
+			ELSE 0
+		END -
+		CASE WHEN COALESCE(rm.image_path, '') = '' THEN 0.06 ELSE 0 END -
+		CASE
+			WHEN NOW() - GREATEST(rm.updated_at, COALESCE(rm.last_quote_at, rm.updated_at)) > INTERVAL '14 days'
+			THEN 0.05
+			ELSE 0
+		END -
+		CASE WHEN rm.status <> 'open' THEN 0.20 ELSE 0 END
+	) DESC, rm.close_at ASC, rm.id DESC`
 }
 
 type scannable interface {
