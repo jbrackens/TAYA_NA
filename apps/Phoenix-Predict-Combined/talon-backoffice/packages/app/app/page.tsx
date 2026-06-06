@@ -107,7 +107,7 @@ export default function HomePage() {
           </p>
           <div className="mt-8">
             <Link
-              href="/auth/register"
+              href="/predict"
               className="inline-flex h-12 min-w-[154px] items-center justify-center rounded-[var(--r-pill)] bg-[var(--accent)] px-7 text-[15px] font-semibold !text-[#061a10] transition-transform hover:-translate-y-px hover:brightness-105"
             >
               Hula Na!

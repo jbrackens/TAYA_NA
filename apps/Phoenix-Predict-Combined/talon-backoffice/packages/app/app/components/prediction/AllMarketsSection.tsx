@@ -36,6 +36,16 @@ const SUBCATEGORY_CORPUS_SIZE = 120;
 
 type DateWindow = "all" | "24h" | "7d" | "30d";
 
+const CATEGORY_ORDER = [
+  "entertainment",
+  "politics",
+  "sports",
+  "tech",
+  "crypto",
+  "economics",
+  "general",
+] as const;
+
 const TIME_PILLS: { value: DateWindow; labelKey?: string; label?: string }[] = [
   { value: "all", labelKey: "ALL" },
   { value: "24h", label: "1D" },
@@ -125,6 +135,18 @@ function mergeMarkets(
   return merged;
 }
 
+function orderCategories(categories: Category[]): Category[] {
+  const rank = new Map<string, number>(
+    CATEGORY_ORDER.map((slug, index) => [slug, index]),
+  );
+  return [...categories].sort((a, b) => {
+    const aRank = rank.get(a.slug.toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
+    const bRank = rank.get(b.slug.toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
+    if (aRank !== bRank) return aRank - bRank;
+    return categories.indexOf(a) - categories.indexOf(b);
+  });
+}
+
 interface Props {
   categories: Category[];
 }
@@ -144,6 +166,10 @@ export function AllMarketsSection({ categories }: Props) {
   const [categorySlug, setCategorySlug] = useState<string>("all");
   const [subcategory, setSubcategory] = useState<string | null>(null);
   const [dateWindow, setDateWindow] = useState<DateWindow>("all");
+  const orderedCategories = useMemo(
+    () => orderCategories(categories),
+    [categories],
+  );
 
   const activeCategory = categories.find((c) => c.slug === categorySlug);
   const categoryId = activeCategory?.id;
@@ -200,10 +226,10 @@ export function AllMarketsSection({ categories }: Props) {
     setSubcategoryCorpus([]);
     setPage(1);
     const baseParams = {
-        status: "open",
-        categoryId,
-        closeBefore: dateWindowToCloseBefore(dateWindow),
-      };
+      status: "open",
+      categoryId,
+      closeBefore: dateWindowToCloseBefore(dateWindow),
+    };
     const pageRequest = api.getMarkets({
       ...baseParams,
       page: 1,
@@ -300,7 +326,7 @@ export function AllMarketsSection({ categories }: Props) {
           >
             {t("ALL")}
           </button>
-          {categories.map((c) => {
+          {orderedCategories.map((c) => {
             const isActive = categorySlug === c.slug;
             return (
               <button
@@ -392,12 +418,10 @@ export function AllMarketsSection({ categories }: Props) {
                 </nav>
               </aside>
             </div>
+          ) : visibleMarkets.length > 0 ? (
+            <MarketGrid markets={visibleMarkets} columns={4} />
           ) : (
-            visibleMarkets.length > 0 ? (
-              <MarketGrid markets={visibleMarkets} columns={4} />
-            ) : (
-              emptyState
-            )
+            emptyState
           )}
           {hasNext && subcategory === null && (
             <div className={LOAD_MORE_CLASS}>
