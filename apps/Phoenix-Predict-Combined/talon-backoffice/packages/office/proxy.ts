@@ -39,7 +39,7 @@ export function proxy(request: NextRequest) {
 export const config = {
   // Skip API, Next internals, and static asset files. The trailing
   // alternative `[^/]+\\.[a-zA-Z0-9]+` skips any path whose final segment
-  // contains a dot — i.e. file requests like /logo-hn.png, /images/foo.svg,
+  // contains a dot — i.e. file requests like /favicon.ico, /images/foo.svg,
   // /favicon.ico. Without this the proxy was redirecting public/*.png to
   // /auth/login, breaking the login screen's own logo.
   matcher: [
