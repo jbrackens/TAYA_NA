@@ -84,11 +84,36 @@ function LoginForm() {
       <div className="w-full max-w-[420px] rounded-2xl border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] px-10 py-11 shadow-[0_12px_48px_rgba(26,26,26,0.06),0_1px_2px_rgba(26,26,26,0.04)]">
         {/* Logo */}
         <div className="mb-9 text-center">
-          <img
-            src="/logo-hn-full.png"
-            alt="Tiangge"
-            className="mb-4 h-auto w-full max-w-[240px]"
-          />
+          <div className="mb-4 inline-flex items-end justify-center gap-3 text-[var(--focus-ring,#0e7a53)]">
+            <span className="text-[40px] font-black leading-none tracking-normal">
+              Tiangge
+            </span>
+            <svg
+              aria-hidden="true"
+              className="mb-2 h-6 w-12 overflow-visible"
+              viewBox="0 0 48 24"
+              fill="none"
+            >
+              <path
+                d="M4 16 L18 9 L31 13 L44 5"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              {[4, 18, 31, 44].map((cx, index) => (
+                <circle
+                  key={cx}
+                  cx={cx}
+                  cy={[16, 9, 13, 5][index]}
+                  r="3"
+                  fill="var(--surface-1,#ffffff)"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                />
+              ))}
+            </svg>
+          </div>
           <h1 className="mb-1.5 text-[22px] font-bold tracking-normal text-[var(--t1,#1a1a1a)]">
             Backoffice
           </h1>

@@ -123,11 +123,35 @@ export default function DashboardLayout({
     <div className="flex min-h-screen max-[768px]:flex-col">
       <aside className="fixed bottom-0 left-0 top-0 z-10 flex w-[240px] flex-col border-r border-[color:var(--border-1)] bg-[var(--surface-1)] max-[768px]:relative max-[768px]:bottom-auto max-[768px]:left-auto max-[768px]:top-auto max-[768px]:w-full max-[768px]:border-b max-[768px]:border-r-0">
         <div className="flex items-center gap-3 border-b border-[color:var(--border-1)] px-5 pb-5 pt-6 max-[768px]:min-w-max max-[768px]:border-b-0 max-[768px]:border-r max-[768px]:px-4 max-[768px]:py-[14px]">
-          <img
-            src="/logo-hn.png"
-            alt="Tiangge"
-            className="h-9 w-9 rounded-[8px] object-contain"
-          />
+          <div
+            aria-hidden="true"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-[8px] border border-[color:var(--border-1)] bg-[var(--surface-1)] text-[var(--focus-ring)]"
+          >
+            <svg
+              className="h-5 w-6 overflow-visible"
+              viewBox="0 0 32 24"
+              fill="none"
+            >
+              <path
+                d="M3 16 L12 10 L21 14 L29 6"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              {[3, 12, 21, 29].map((cx, index) => (
+                <circle
+                  key={cx}
+                  cx={cx}
+                  cy={[16, 10, 14, 6][index]}
+                  r="2.5"
+                  fill="var(--surface-1)"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                />
+              ))}
+            </svg>
+          </div>
           <span className="text-[14px] font-semibold text-[color:var(--t1)]">
             Backoffice
           </span>

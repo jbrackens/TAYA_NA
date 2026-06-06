@@ -18,8 +18,7 @@ import Link from "next/link";
 
 const { Header } = Layout;
 const HEADER_LOGO = {
-  source: "/logo-hn.png",
-  width: 60,
+  width: 92,
 };
 
 type HeaderComponentProps = {
