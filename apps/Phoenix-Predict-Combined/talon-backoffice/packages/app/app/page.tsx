@@ -32,15 +32,12 @@ export default function HomePage() {
       <header className="mx-auto flex h-16 w-full max-w-[1440px] items-center justify-between px-8 max-[720px]:px-5">
         <Link
           href="/"
-          className="inline-flex min-h-11 flex-col items-end justify-center gap-0 [color:var(--accent-lo)] no-underline"
+          className="inline-flex min-h-11 items-center gap-[10px] no-underline"
           aria-label="Tiangge home"
         >
-          <BrandMark className="mb-[-2px]" size={17} />
-          <span className="text-[28px] font-black leading-[0.8] tracking-normal [color:var(--accent-lo)] [font-family:'Inter_Tight','Inter',-apple-system,BlinkMacSystemFont,sans-serif] max-[420px]:text-[26px]">
-            Tiangge
-          </span>
-          <span className="mt-[1px] text-[10px] font-semibold uppercase leading-none tracking-[0.16em] text-[#5f6f7a] [font-family:'Inter_Tight','Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
-            PREDICTIONS
+          <BrandMark size={34} />
+          <span className="text-[26px] font-bold leading-none tracking-[-0.03em] [color:var(--brand-ink)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif] max-[420px]:text-[23px]">
+            Tiangge<span className="[color:var(--brand-period)]">.</span>
           </span>
         </Link>
 

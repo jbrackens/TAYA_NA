@@ -26,9 +26,9 @@ The prior Liquid Glass spec (active 2026-04-24 → 2026-04-26) is retired. The w
 
 **Brand name:** `Tiangge` is the visible product name in the player app. Do not render `TAYA NA Predict` in active player-app chrome, browser titles, auth cards, share surfaces, or empty states.
 
-**Product descriptor:** Keep the wordmark clean as `Tiangge`. Use a restrained descriptor outside the wordmark when orientation matters: `prediction markets`, `event markets`, or `trade real-world outcomes`. Good placements: document title metadata, auth supporting copy, first-time trade-ticket trust copy, empty states, and social/share descriptions. Avoid `Tiangge Predict` as the visible logo unless a future brand review explicitly chooses that direction.
+**Wordmark (refreshed 2026-06-06):** the wordmark is **`Tiangge.`** set in **Schibsted Grotesk 700**, color `--brand-ink` (deep forest `#0b4332`), tracking `-0.03em`, with a **mint period** (`--brand-period` `#10c8a0`) as the recurring signature element. Keep the wordmark clean — no descriptor baked into the lockup. Use a restrained descriptor _outside_ the wordmark when orientation matters: `prediction markets`, `event markets`, or `trade real-world outcomes` — in document-title metadata, auth supporting copy, first-time trade-ticket trust copy, empty states, and social/share descriptions. The brand color is its own layer: never `--accent` (CTA mint) or `--yes` (signal seafoam).
 
-**Brand mark:** the active mark is a compact H glyph on a mint-forward surface. It must read as a product mark, not as a decorative app-template square. Use the mark only in navigation, auth, launch/loading states, and approved share surfaces. Do not spray the mint-to-teal-to-azure gradient through cards, CTAs, or page backgrounds; market and trade surfaces stay flat.
+**Brand mark (refreshed 2026-06-06):** a solid **deep-forest rounded-square token** holding a **split "T"** (two top bars over one stem — reads as the bid/ask · YES/NO binary) plus a **mint period dot** bottom-right. It must read as a product/app mark and stays crisp from a 16px favicon up to a large lockup. Source of truth: `app/components/BrandMark.tsx` (code-native SVG, themed off the `--brand-*` tokens); favicon/app-icon: `app/icon.svg` + `app/icon.png`. Use the mark in navigation, auth, launch/loading, the app icon, and approved share surfaces. The prior chart-line mark and the older "H glyph" are **retired**. Keep market and trade surfaces flat — do not spray brand color through cards, CTAs, or page backgrounds.
 
 **First-screen hierarchy:** the first viewport should answer, in order: this is Tiangge, this is a prediction-market trading app, this is a live market with a price, and these are the YES/NO actions. Do not add a marketing hero above the market hero.
 
@@ -71,8 +71,9 @@ The prior Liquid Glass spec (active 2026-04-24 → 2026-04-26) is retired. The w
 - **Display sub-variant for hero numbers:** `Inter Tight` if available — slightly tighter spacing for the 88px hero price. Falls back to Inter at -0.04em letter-spacing.
 - **Numeric / tabular:** `IBM Plex Mono` with `font-variant-numeric: tabular-nums`. Used for prices in cards and price tickers. Big hero price uses Inter Tight (not mono) because the 88px size carries its own weight; mono at that scale fights the chart.
 - **Fallback stack:** `-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`.
+- **Brand wordmark (chrome only, added 2026-06-06):** `Schibsted Grotesk` 700, used solely for the `Tiangge.` wordmark in nav / auth / landing — never for UI, body, or headlines (those stay Inter). The wordmark is the single sanctioned exception to the no-serif / no-display-font rule, because it is brand chrome, not content.
 
-Loaded in `app/layout.tsx` via Google Fonts `<link>`. Drop the Outfit and Plex Sans loads.
+Loaded in `app/layout.tsx` via Google Fonts `<link>` (Inter, Inter Tight, IBM Plex Mono, Schibsted Grotesk; Outfit + Space Grotesk remain as legacy loads pending removal).
 
 ### Scale
 
@@ -127,6 +128,18 @@ Warm gray hierarchy — the muted tones (`--t3`, `--t4`) carry a warm beige cast
 Accent family kept: `--accent-soft: rgba(43,228,128,0.14)` for soft pill backgrounds, `--accent-glow-color` for the LIVE pulse.
 
 **Retired:** `--accent-hi`, `--accent-lo`, `--accent-deep`, `--accent-gradient`. The 3-stop signature gradient is gone.
+
+### Brand identity color (third layer — wordmark/mark only, added 2026-06-06)
+
+A separate layer from action-mint (`--accent`) and signal-seafoam (`--yes`). It appears ONLY in the `Tiangge.` wordmark and the brand mark — never in UI controls, prices, or data.
+
+| Token                 | Value     | Usage                                                            |
+| --------------------- | --------- | ---------------------------------------------------------------- |
+| `--brand-ink`         | `#0b4332` | deep forest — the wordmark and the mark tile. ~10:1 on `--bg-deep`. |
+| `--brand-period`      | `#10c8a0` | mint — the "period" signature and the mark's dot.               |
+| `--brand-fg`          | `#f8f9fa` | the split-T sitting on the forest tile.                         |
+| `--brand-on-dark`     | `#f1ece3` | wordmark on dark surfaces (ivory).                              |
+| `--brand-period-dark` | `#2fe0a8` | brighter period on dark.                                        |
 
 ### Semantic (data layer — kept seafoam + coral)
 

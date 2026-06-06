@@ -21,7 +21,7 @@ export default function RootLayout({
          * P2-P6 sweep). IBM Plex Mono for tabular numerics.
          */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Schibsted+Grotesk:wght@700&display=swap"
           rel="stylesheet"
         />
         {process.env.NODE_ENV === "production" && (

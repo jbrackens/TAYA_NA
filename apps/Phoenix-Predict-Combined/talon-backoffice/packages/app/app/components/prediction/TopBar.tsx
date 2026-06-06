@@ -62,13 +62,12 @@ const TOP_BAR_INNER_CLASS =
   "box-border mx-auto flex h-16 w-full max-w-[1588px] items-center gap-6 px-6 max-[900px]:h-16 max-[900px]:gap-3 max-[900px]:px-4";
 
 const TOP_BAR_BRAND_CLASS =
-  "inline-flex min-h-11 shrink-0 flex-col items-end justify-center gap-0 [color:var(--accent-lo)] no-underline";
+  "inline-flex min-h-11 shrink-0 items-center gap-[10px] no-underline";
 
 const TOP_BAR_WORDMARK_CLASS =
-  "whitespace-nowrap text-[28px] font-black leading-[0.8] tracking-normal [color:var(--accent-lo)] [font-family:'Inter_Tight','Inter',-apple-system,BlinkMacSystemFont,sans-serif] max-[900px]:text-[26px]";
+  "whitespace-nowrap text-[26px] font-bold leading-none tracking-[-0.03em] [color:var(--brand-ink)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif] max-[900px]:text-[23px]";
 
-const TOP_BAR_BRAND_SUBHEADER_CLASS =
-  "mt-[1px] whitespace-nowrap text-[10px] font-semibold uppercase leading-none tracking-[0.16em] text-[#5f6f7a] [font-family:'Inter_Tight','Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
+const TOP_BAR_PERIOD_CLASS = "[color:var(--brand-period)]";
 
 const TOP_BAR_NAV_CLASS =
   "flex items-center gap-6 border-b border-neutral-200 w-full min-w-0 flex-1 max-[900px]:hidden";
@@ -312,9 +311,10 @@ export function TopBar() {
           className={TOP_BAR_BRAND_CLASS}
           aria-label="Tiangge — home"
         >
-          <BrandMark className="mb-[-2px]" size={17} />
-          <span className={TOP_BAR_WORDMARK_CLASS}>Tiangge</span>
-          <span className={TOP_BAR_BRAND_SUBHEADER_CLASS}>PREDICTIONS</span>
+          <BrandMark size={34} />
+          <span className={TOP_BAR_WORDMARK_CLASS}>
+            Tiangge<span className={TOP_BAR_PERIOD_CLASS}>.</span>
+          </span>
         </Link>
 
         {isDesktop && (
