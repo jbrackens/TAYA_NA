@@ -47,6 +47,7 @@ const api = createPredictionClient();
 // sense as a discoverable destination before login.
 const NAV_LINKS: { href: string; labelKey: string; requiresAuth?: boolean }[] =
   [
+    { href: "/", labelKey: "NAV_HOME" },
     { href: "/predict", labelKey: "NAV_MARKETS" },
     { href: "/discover", labelKey: "NAV_DISCOVER" },
     { href: "/live", labelKey: "NAV_LIVE" },
@@ -83,7 +84,7 @@ const TOP_BAR_LINK_ACTIVE_CLASS =
 
 const TOP_BAR_RIGHT_CLASS = [
   "flex shrink-0 items-center gap-2.5",
-  "[&_.lang-select-wrap]:relative [&_.lang-select-wrap]:inline-flex [&_.lang-select-wrap]:min-h-10 [&_.lang-select-wrap]:max-w-[190px] [&_.lang-select-wrap]:items-center [&_.lang-select-wrap]:gap-1.5 [&_.lang-select-wrap]:rounded-[var(--r-pill)] [&_.lang-select-wrap]:border [&_.lang-select-wrap]:border-[var(--border-1)] [&_.lang-select-wrap]:bg-[var(--surface-1)] [&_.lang-select-wrap]:px-2.5 [&_.lang-select-wrap]:py-0 [&_.lang-select-wrap]:text-xs [&_.lang-select-wrap]:font-semibold [&_.lang-select-wrap]:text-[var(--t1)]",
+  "[&_.lang-select-wrap]:relative [&_.lang-select-wrap]:inline-flex [&_.lang-select-wrap]:min-h-10 [&_.lang-select-wrap]:max-w-[190px] [&_.lang-select-wrap]:items-center [&_.lang-select-wrap]:gap-1.5 [&_.lang-select-wrap]:rounded-md [&_.lang-select-wrap]:border [&_.lang-select-wrap]:border-[var(--border-1)] [&_.lang-select-wrap]:bg-[var(--surface-1)] [&_.lang-select-wrap]:px-2.5 [&_.lang-select-wrap]:py-0 [&_.lang-select-wrap]:text-xs [&_.lang-select-wrap]:font-semibold [&_.lang-select-wrap]:text-[var(--t1)]",
   "[&_.lang-select]:absolute [&_.lang-select]:inset-0 [&_.lang-select]:cursor-pointer [&_.lang-select]:opacity-0",
   "[&_.lang-current]:block [&_.lang-current]:overflow-hidden [&_.lang-current]:text-ellipsis [&_.lang-current]:whitespace-nowrap",
   "[&_.sr-only]:absolute [&_.sr-only]:-m-px [&_.sr-only]:h-px [&_.sr-only]:w-px [&_.sr-only]:overflow-hidden [&_.sr-only]:whitespace-nowrap [&_.sr-only]:border-0 [&_.sr-only]:p-0 [&_.sr-only]:[clip:rect(0,0,0,0)]",
@@ -118,7 +119,7 @@ const TOP_BAR_AVATAR_CLASS =
   "grid size-11 cursor-pointer place-items-center rounded-full border border-[rgba(255,255,255,0.18)] bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.25),transparent_60%),linear-gradient(145deg,#a56bff_0%,#5b38a8_100%)] text-[15px] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_2px_6px_rgba(0,0,0,0.3)] hover:brightness-[1.08]";
 
 const TOP_BAR_BUTTON_CLASS =
-  "inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-[var(--r-pill)] border-0 px-4 text-[13px] font-semibold no-underline transition-[transform,filter] duration-150 ease-[ease] [font-family:inherit]";
+  "inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-md border-0 px-4 text-[13px] font-semibold no-underline transition-[transform,filter] duration-150 ease-[ease] [font-family:inherit]";
 const TOP_BAR_BUTTON_GHOST_CLASS =
   "bg-transparent text-[var(--t1)] hover:bg-[var(--surface-2)]";
 const TOP_BAR_BUTTON_ACCENT_CLASS =

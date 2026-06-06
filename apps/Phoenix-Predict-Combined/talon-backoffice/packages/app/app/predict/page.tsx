@@ -5,21 +5,18 @@
  *
  * Structure:
  *   [Hero row]          ← FeaturedCarousel (1fr) + TrendingSidebar (320px)
- *   [Featured grid]     ← curated highlights (excludes carousel markets)
  *   [All Markets grid]  ← paginated full market list, scoped by the filter
  *
  * The hero is a carousel of the top market from All / Sports / Crypto /
  * Politics (see FeaturedCarousel). Trending and Closing Soon grids moved
  * to /discover. The pills sit directly above the section they scope; the
- * hero, sidebar, and Featured grid stay visible at all filter states.
+ * hero and sidebar stay visible at all filter states.
  */
 
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TrendingSidebar } from "../components/prediction/TrendingSidebar";
 import { AllMarketsSection } from "../components/prediction/AllMarketsSection";
-import { SectionHead } from "../components/prediction/SectionHead";
-import { MarketGrid } from "../components/prediction/MarketGrid";
 import {
   FeaturedCarousel,
   type FeaturedSlide,
@@ -147,10 +144,6 @@ export default function PredictDiscoveryPage() {
   }, [contentT, t]);
 
   const trending = discovery?.trending ?? [];
-  const featured = discovery?.featured ?? [];
-  // Don't repeat carousel markets in the Featured grid directly below it.
-  const carouselIds = new Set(featuredSlides.map((s) => s.market.id));
-  const featuredRest = featured.filter((m) => !carouselIds.has(m.id));
 
   if (loading) {
     return <div className={ROUTE_LOADING_CLASS}>{t("LOADING_MARKETS")}</div>;
@@ -168,13 +161,6 @@ export default function PredictDiscoveryPage() {
         </div>
         <TrendingSidebar markets={trending} />
       </div>
-
-      {featuredRest.length > 0 && (
-        <>
-          <SectionHead title={t("FEATURED_MARKETS")} count={featuredRest.length} />
-          <MarketGrid markets={featuredRest} />
-        </>
-      )}
 
       <AllMarketsSection categories={categories} />
     </div>

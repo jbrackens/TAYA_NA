@@ -103,29 +103,29 @@ export function MarketCard({
       : fallbackImage;
 
   return (
-    <article className="flex flex-col gap-3.5 rounded-[14px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans text-[var(--t1)] transition-[transform,box-shadow,border-color] duration-[140ms] hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[0_10px_24px_rgba(60,50,30,0.08)] focus-within:-translate-y-0.5 focus-within:border-[var(--border-2)] focus-within:shadow-[0_10px_24px_rgba(60,50,30,0.08)]">
+    <article className="flex h-full min-h-[258px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans text-[var(--t1)] transition-[transform,box-shadow,border-color] duration-[140ms] hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[0_12px_28px_rgba(60,50,30,0.08)] focus-within:-translate-y-0.5 focus-within:border-[var(--border-2)] focus-within:shadow-[0_12px_28px_rgba(60,50,30,0.08)] max-[640px]:min-h-[236px] max-[640px]:p-4">
       {/* The card body links to the market detail page (no preselect).
        * The YES/NO pills below are SIBLING links carrying ?side=yes|no
        * so clicking a pill deep-links into a side-preselected ticket.
        * Avoids invalid nested anchors. */}
       <Link
         href={`/market/${ticker}`}
-        className="flex flex-col gap-3.5 text-inherit no-underline"
+        className="flex flex-1 flex-col gap-4 text-inherit no-underline"
         aria-label={t("MARKET_CARD_LABEL", {
           title,
           yes: yesPriceCents,
           no: noPriceCents,
         })}
       >
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 flex-auto flex-col gap-2">
-            <h3 className="m-0 line-clamp-2 min-h-[calc(16px*1.3*2)] overflow-hidden text-base font-semibold leading-[1.3] text-[var(--t1)]">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex min-w-0 flex-auto flex-col">
+            <h3 className="m-0 line-clamp-2 min-h-[44px] overflow-hidden text-[17px] font-semibold leading-[1.3] text-[var(--t1)] max-[640px]:min-h-[42px] max-[640px]:text-base">
               {title}
             </h3>
           </div>
           {visibleImage.kind === "image" ? (
             <img
-              className="inline-flex h-11 w-11 flex-none items-center justify-center rounded-full object-cover text-[15px] font-bold text-white"
+              className="inline-flex h-12 w-12 flex-none items-center justify-center rounded-[10px] object-cover text-[15px] font-bold text-white max-[640px]:h-11 max-[640px]:w-11"
               src={visibleImage.src}
               alt=""
               aria-hidden="true"
@@ -133,7 +133,7 @@ export function MarketCard({
             />
           ) : (
             <span
-              className={`inline-flex h-11 w-11 flex-none items-center justify-center rounded-full font-sans text-[15px] font-bold text-white ${monogramBgClasses[visibleImage.bgClass] ?? monogramBgClasses["bg-slate"]}`}
+              className={`inline-flex h-12 w-12 flex-none items-center justify-center rounded-[10px] font-sans text-[15px] font-bold text-white max-[640px]:h-11 max-[640px]:w-11 ${monogramBgClasses[visibleImage.bgClass] ?? monogramBgClasses["bg-slate"]}`}
               aria-hidden="true"
             >
               {visibleImage.monogram}
@@ -141,16 +141,16 @@ export function MarketCard({
           )}
         </div>
 
-        <div className="flex flex-col gap-[5px]">
+        <div className="mt-auto flex flex-col gap-2">
           <div
-            className="flex items-center justify-between leading-none"
+            className="flex items-center justify-between text-[11px] leading-none"
             aria-hidden="true"
           >
-            <span className="font-mono text-xs font-bold tabular-nums text-[var(--yes-text)]">
-              {yesPriceCents}%
+            <span className="font-medium tabular-nums text-[var(--yes-text)]">
+              {t("YES")} {yesPriceCents}%
             </span>
-            <span className="font-mono text-xs font-bold tabular-nums text-[var(--no-text)]">
-              {noPriceCents}%
+            <span className="font-medium tabular-nums text-[var(--no-text)]">
+              {t("NO")} {noPriceCents}%
             </span>
           </div>
           <svg
@@ -174,28 +174,28 @@ export function MarketCard({
         </div>
       </Link>
 
-      <div className="flex gap-2.5">
+      <div className="mt-4 grid grid-cols-2 gap-2.5">
         <Link
           href={`/market/${ticker}?side=yes`}
-          className="flex min-h-9 flex-1 items-center justify-between gap-2 rounded-full border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-1.5 font-sans no-underline transition-colors duration-150 hover:border-[var(--yes-bar)] hover:bg-[var(--yes-soft)] max-[768px]:min-h-10 max-[768px]:py-[7px]"
+          className="flex min-h-9 items-center justify-between gap-2 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-1.5 font-sans no-underline transition-colors duration-150 hover:border-[var(--yes-bar)] hover:bg-[var(--yes-soft)] max-[768px]:min-h-10"
           aria-label={t("BUY_YES_AT", { price: yesPriceCents })}
         >
-          <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--yes-text)]">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--yes-text)]">
             {t("YES")}
           </span>
-          <span className="font-mono text-base font-semibold tracking-normal text-[var(--yes-text)] tabular-nums">
+          <span className="font-mono text-[15px] font-semibold tracking-normal text-[var(--yes-text)] tabular-nums">
             {yesPriceCents}¢
           </span>
         </Link>
         <Link
           href={`/market/${ticker}?side=no`}
-          className="flex min-h-9 flex-1 items-center justify-between gap-2 rounded-full border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-1.5 font-sans no-underline transition-colors duration-150 hover:border-[var(--no-bar)] hover:bg-[var(--no-soft)] max-[768px]:min-h-10 max-[768px]:py-[7px]"
+          className="flex min-h-9 items-center justify-between gap-2 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-1.5 font-sans no-underline transition-colors duration-150 hover:border-[var(--no-bar)] hover:bg-[var(--no-soft)] max-[768px]:min-h-10"
           aria-label={t("BUY_NO_AT", { price: noPriceCents })}
         >
-          <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--no-text)]">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--no-text)]">
             {t("NO")}
           </span>
-          <span className="font-mono text-base font-semibold tracking-normal text-[var(--no-text)] tabular-nums">
+          <span className="font-mono text-[15px] font-semibold tracking-normal text-[var(--no-text)] tabular-nums">
             {noPriceCents}¢
           </span>
         </Link>
@@ -203,18 +203,20 @@ export function MarketCard({
 
       {/* Secondary stats sit in a quiet footer below the bar + pills.
        * Plain text, not a link — the body link above owns navigation. */}
-      <div className="flex items-baseline justify-between gap-3">
-        <div className="inline-flex items-baseline gap-1.5 whitespace-nowrap text-xs">
-          <span className="font-medium text-[var(--t3)]">{t("VOLUME")}</span>
-          <span className="font-mono text-[13px] font-semibold text-[var(--t1)] tabular-nums">
+      <div className="mt-4 flex items-center justify-between gap-4 border-t border-[var(--border-1)] pt-3.5">
+        <div className="min-w-0 text-xs">
+          <span className="block text-[11px] font-medium text-[var(--t3)]">
+            {t("VOLUME")}
+          </span>
+          <span className="mt-1 block truncate font-mono text-[12px] font-semibold text-[var(--t2)] tabular-nums">
             {formatCompactUsd(volumeCents)}
           </span>
         </div>
-        <div className="inline-flex items-baseline gap-1.5 whitespace-nowrap text-xs">
-          <span className="font-medium text-[var(--t3)]">
+        <div className="min-w-0 text-right text-xs">
+          <span className="block text-[11px] font-medium text-[var(--t3)]">
             {isOpen ? t("CLOSES") : t("STATUS")}
           </span>
-          <span className="font-mono text-[13px] font-semibold text-[var(--t1)] tabular-nums">
+          <span className="mt-1 block truncate font-mono text-[12px] font-semibold text-[var(--t2)] tabular-nums">
             {isOpen ? formatCloseAt(closeAt) : marketStatusLabel(status, t)}
           </span>
         </div>

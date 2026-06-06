@@ -16,8 +16,8 @@ interface Props {
 }
 
 const GRID_CLASS_BY_COLUMNS: Record<NonNullable<Props["columns"]>, string> = {
-  3: "grid grid-cols-3 gap-4 max-[1120px]:grid-cols-2 max-[640px]:grid-cols-1",
-  4: "grid grid-cols-4 gap-4 max-[1280px]:grid-cols-3 max-[960px]:grid-cols-2 max-[640px]:grid-cols-1",
+  3: "grid auto-rows-fr grid-cols-3 items-stretch gap-5 max-[1120px]:grid-cols-2 max-[640px]:grid-cols-1 max-[640px]:gap-4",
+  4: "grid auto-rows-fr grid-cols-4 items-stretch gap-5 max-[1280px]:grid-cols-3 max-[960px]:grid-cols-2 max-[640px]:grid-cols-1 max-[640px]:gap-4",
 };
 
 export function MarketGrid({ markets, columns = 4 }: Props) {

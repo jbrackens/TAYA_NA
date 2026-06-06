@@ -71,7 +71,7 @@ const TIME_PILL_BASE_CLASS =
 const LOAD_MORE_CLASS = "mt-6 mb-0 flex justify-center";
 
 const LOAD_MORE_BUTTON_CLASS =
-  "cursor-pointer appearance-none rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-3 font-['Inter',_sans-serif] text-sm font-semibold text-[var(--t1)] transition-colors duration-[120ms] [&:not(:disabled):hover]:border-[rgba(43,228,128,0.5)] [&:not(:disabled):hover]:bg-[var(--surface-2)] [&:not(:disabled):hover]:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-[0.55]";
+  "cursor-pointer appearance-none rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-3 font-['Inter',_sans-serif] text-sm font-semibold text-[var(--t1)] transition-colors duration-[120ms] [&:not(:disabled):hover]:border-[rgba(43,228,128,0.5)] [&:not(:disabled):hover]:bg-[var(--surface-2)] [&:not(:disabled):hover]:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-[0.55]";
 
 const FEED_WITH_SUBNAV_CLASS =
   "grid grid-cols-4 items-start gap-4 max-[1120px]:grid-cols-1";

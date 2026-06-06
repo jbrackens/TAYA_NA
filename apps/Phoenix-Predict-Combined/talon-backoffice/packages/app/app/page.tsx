@@ -1,30 +1,34 @@
-import { Fragment } from "react";
+"use client";
+
+import { Fragment, useState } from "react";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import BrandMark from "./components/BrandMark";
+import { LanguageSelector } from "./components/i18n/LanguageSelector";
 
 const EXAMPLE_MARKETS = [
   {
-    category: "Politics",
-    question: "Will this Senate candidate enter the top 12?",
-    consensus: "Market says 61% Yes",
+    categoryKey: "markets.politics.category",
+    questionKey: "markets.politics.question",
+    consensusKey: "markets.politics.consensus",
     yesPercent: 61,
   },
   {
-    category: "Basketball",
-    question: "Will Ginebra win its next game?",
-    consensus: "Market says 62% Yes",
+    categoryKey: "markets.basketball.category",
+    questionKey: "markets.basketball.question",
+    consensusKey: "markets.basketball.consensus",
     yesPercent: 62,
   },
   {
-    category: "Pageants",
-    question: "Will the Philippines place in the Miss Universe top 5?",
-    consensus: "Market says 57% Yes",
+    categoryKey: "markets.pageants.category",
+    questionKey: "markets.pageants.question",
+    consensusKey: "markets.pageants.consensus",
     yesPercent: 57,
   },
   {
-    category: "Crypto",
-    question: "Will Bitcoin close above the target price this week?",
-    consensus: "Market says 54% Yes",
+    categoryKey: "markets.crypto.category",
+    questionKey: "markets.crypto.question",
+    consensusKey: "markets.crypto.consensus",
     yesPercent: 54,
   },
 ];
@@ -32,41 +36,154 @@ const EXAMPLE_MARKETS = [
 const JOURNEY_STEPS = [
   {
     step: "01",
-    title: "Choose a market",
-    body: "Find a question tied to politics, basketball, pageants, crypto, MLBB, or Filipino culture.",
+    titleKey: "journey.choose.title",
+    bodyKey: "journey.choose.body",
   },
   {
     step: "02",
-    title: "Pick Yes or No",
-    body: "Trade the side you think is more likely.",
+    titleKey: "journey.pick.title",
+    bodyKey: "journey.pick.body",
   },
   {
     step: "03",
-    title: "Settle by the rules",
-    body: "Results follow the market's published rules and settlement source.",
+    titleKey: "journey.settle.title",
+    bodyKey: "journey.settle.body",
   },
 ];
 
 const TRUST_CARDS = [
   {
-    title: "Rules upfront",
-    body: "See the question, closing time, fees, and payout logic before joining.",
+    titleKey: "trust.rules.title",
+    bodyKey: "trust.rules.body",
   },
   {
-    title: "Listed sources",
-    body: "Outcomes are settled using the sources shown on each market.",
+    titleKey: "trust.sources.title",
+    bodyKey: "trust.sources.body",
   },
   {
-    title: "Made for local moments",
-    body: "Markets focus on the politics, basketball, pageants, crypto, games, and trends Filipinos follow.",
+    titleKey: "trust.local.title",
+    bodyKey: "trust.local.body",
   },
   {
-    title: "Simple by design",
-    body: "Pick Yes or No. Follow the market. See the result.",
+    titleKey: "trust.simple.title",
+    bodyKey: "trust.simple.body",
   },
 ];
 
+const FOOTER_LINKS = [
+  { href: "/terms", labelKey: "footer.terms" },
+  { href: "/privacy", labelKey: "footer.privacy" },
+  { href: "/terms#market-rules", labelKey: "footer.marketRules" },
+  { href: "/terms#fees", labelKey: "footer.fees" },
+  { href: "/responsible-gaming", labelKey: "footer.responsibleUse" },
+  { href: "/contact-us", labelKey: "footer.support" },
+  { href: "/terms#eligibility", labelKey: "footer.eligibility" },
+];
+
+type MarketSide = "yes" | "no";
+
+type MarketPreviewCardProps = {
+  category: string;
+  question: string;
+  consensus: string;
+  yesLabel: string;
+  noLabel: string;
+  yesPercent: number;
+};
+
+function marketSignalText(
+  consensus: string,
+  percent: number,
+  sideLabel: string,
+): string {
+  return consensus.replace(/\d+%\s+\S+\s*$/, `${percent}% ${sideLabel}`);
+}
+
+function MarketPreviewCard({
+  category,
+  question,
+  consensus,
+  yesLabel,
+  noLabel,
+  yesPercent,
+}: MarketPreviewCardProps) {
+  const [activeSide, setActiveSide] = useState<MarketSide>("yes");
+  const noPercent = 100 - yesPercent;
+  const activePercent = activeSide === "yes" ? yesPercent : noPercent;
+  const inactivePercent = activeSide === "yes" ? noPercent : yesPercent;
+  const activeSideLabel = activeSide === "yes" ? yesLabel : noLabel;
+  const inactiveSideLabel = activeSide === "yes" ? noLabel : yesLabel;
+  const activeConsensus = marketSignalText(
+    consensus,
+    activePercent,
+    activeSideLabel,
+  );
+  const barFillClass = activeSide === "yes" ? "justify-start" : "justify-end";
+  const barColorClass =
+    activeSide === "yes" ? "bg-[var(--accent)]" : "bg-[var(--no)]";
+
+  return (
+    <article className="grid gap-3 border border-[#07150d]/20 bg-[#07150d] p-5 text-white transition-colors hover:bg-[#101b14]">
+      <span className="text-[13px] font-bold uppercase tracking-[0.14em] text-[var(--accent)]">
+        {category}
+      </span>
+      <span className="text-[19px] font-semibold leading-[1.25] text-white max-[520px]:text-[18px]">
+        {question}
+      </span>
+      <div className="grid grid-cols-[1fr_auto] items-center gap-4 text-white max-[520px]:grid-cols-1">
+        <div>
+          <div
+            className={`flex h-[7px] overflow-hidden rounded-[var(--r-pill)] bg-white/16 ${barFillClass}`}
+          >
+            <div
+              className={`h-full rounded-[var(--r-pill)] transition-[width,background-color] duration-300 ease-out ${barColorClass}`}
+              style={{ width: `${activePercent}%` }}
+            />
+          </div>
+          <p className="m-0 mt-2 text-[13px] font-semibold text-white/68">
+            {activeConsensus}
+          </p>
+          <p className="m-0 mt-1 text-[12px] font-semibold text-white/52">
+            {activeSideLabel} {activePercent}% · {inactiveSideLabel}{" "}
+            {inactivePercent}%
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className={`inline-flex h-9 min-w-14 cursor-pointer items-center justify-center rounded-md border px-4 text-[13px] font-bold transition-colors ${
+              activeSide === "yes"
+                ? "border-[var(--accent)] bg-[var(--accent)] text-[#061a10]"
+                : "border-white/20 bg-transparent text-white hover:border-[var(--accent)] hover:text-[var(--accent)]"
+            }`}
+            onPointerDown={() => setActiveSide("yes")}
+            onClick={() => setActiveSide("yes")}
+            aria-pressed={activeSide === "yes"}
+          >
+            {yesLabel}
+          </button>
+          <button
+            type="button"
+            className={`inline-flex h-9 min-w-14 cursor-pointer items-center justify-center rounded-md border px-4 text-[13px] font-bold transition-colors ${
+              activeSide === "no"
+                ? "border-[var(--no)] bg-[var(--no)] text-[#2a0f09]"
+                : "border-white/20 bg-transparent text-white hover:border-[var(--no)] hover:text-[var(--no-bar)]"
+            }`}
+            onPointerDown={() => setActiveSide("no")}
+            onClick={() => setActiveSide("no")}
+            aria-pressed={activeSide === "no"}
+          >
+            {noLabel}
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 export default function HomePage() {
+  const { t } = useTranslation("page-home");
+
   return (
     <div className="min-h-screen bg-[#050706] text-[var(--t1)] [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
       <header className="mx-auto flex h-16 w-full max-w-[1440px] items-center justify-between bg-[#050706] px-8 text-white max-[720px]:px-5">
@@ -82,29 +199,25 @@ export default function HomePage() {
         </Link>
 
         <div className="flex items-center gap-3 text-sm font-semibold text-white max-[640px]:gap-2">
-          <button
-            type="button"
-            className="inline-flex h-10 items-center justify-center px-2 text-[15px] font-medium text-white/85 transition-colors hover:text-white max-[520px]:hidden"
-            aria-label="Selected language English"
-          >
-            EN
-          </button>
+          <div className="max-[520px]:hidden [&_.lang-current]:max-w-[92px] [&_.lang-current]:truncate [&_.lang-current]:text-white/90 [&_.lang-select-wrap]:relative [&_.lang-select-wrap]:inline-flex [&_.lang-select-wrap]:h-10 [&_.lang-select-wrap]:items-center [&_.lang-select-wrap]:gap-1.5 [&_.lang-select-wrap]:rounded-[var(--r-pill)] [&_.lang-select-wrap]:border [&_.lang-select-wrap]:border-white/20 [&_.lang-select-wrap]:bg-white/5 [&_.lang-select-wrap]:px-3 [&_.lang-select-wrap]:py-0 [&_.lang-select-wrap]:text-[13px] [&_.lang-select-wrap]:font-semibold [&_.lang-select-wrap]:text-white/90 [&_.lang-select-wrap]:transition-colors hover:[&_.lang-select-wrap]:border-white/36 hover:[&_.lang-select-wrap]:bg-white/10 [&_.lang-select]:absolute [&_.lang-select]:inset-0 [&_.lang-select]:cursor-pointer [&_.lang-select]:opacity-0">
+            <LanguageSelector source="header" />
+          </div>
           <Link
             href="/auth/login"
             className="inline-flex h-11 items-center justify-center rounded-[var(--r-pill)] border border-[var(--accent)] px-7 text-[15px] font-medium !text-[var(--accent)] transition-colors hover:bg-[rgba(43,228,128,0.12)] max-[720px]:hidden"
           >
-            Log in
+            {t("nav.login")}
           </Link>
           <Link
             href="/predict"
             className="inline-flex h-11 items-center justify-center rounded-[var(--r-pill)] bg-[var(--accent)] px-8 text-[15px] font-semibold !text-[#061a10] transition-transform hover:-translate-y-px hover:brightness-105 max-[420px]:px-5"
           >
-            Browse markets
+            {t("nav.browseMarkets")}
           </Link>
           <button
             type="button"
             className="inline-flex h-10 w-10 items-center justify-center text-white"
-            aria-label="Open menu"
+            aria-label={t("nav.openMenu")}
           >
             <span
               className="flex w-[22px] flex-col gap-[5px]"
@@ -136,26 +249,24 @@ export default function HomePage() {
         />
 
         <div className="relative z-10 mx-auto flex min-h-[calc(100svh-64px)] max-w-[1440px] flex-col items-center justify-center px-8 pb-8 pt-8 text-center max-[720px]:min-h-[620px] max-[720px]:px-5">
-          <h1 className="m-0 max-w-none text-balance text-[clamp(52px,5.45vw,82px)] font-normal leading-[1] tracking-normal text-white [font-family:Georgia,'Times_New_Roman',serif] min-[1100px]:whitespace-nowrap max-[720px]:max-w-[620px] max-[720px]:text-[clamp(42px,12vw,58px)]">
-            Where local moments become markets.
+          <h1 className="m-0 max-w-[min(1320px,calc(100vw-32px))] text-balance text-[clamp(52px,5.45vw,82px)] font-normal leading-[1] tracking-normal text-white [font-family:Georgia,'Times_New_Roman',serif] max-[720px]:max-w-[620px] max-[720px]:text-[clamp(42px,12vw,58px)]">
+            {t("hero.title")}
           </h1>
-          <p className="mx-auto mt-6 max-w-[880px] text-balance text-[clamp(19px,1.75vw,24px)] font-medium leading-[1.22] text-white/90 max-[720px]:mt-5 max-[720px]:max-w-[560px] max-[720px]:text-[18px] max-[720px]:leading-[1.32]">
-            Tiangge turns the moments Filipinos are already watching into live
-            prediction markets — from basketball and pageants to crypto, gaming,
-            politics, and pop culture.
+          <p className="mx-auto mt-5 max-w-[1080px] text-balance text-[22px] font-medium leading-[1.24] text-white/90 max-[1100px]:max-w-[920px] max-[1100px]:text-[21px] max-[720px]:mt-5 max-[720px]:max-w-[560px] max-[720px]:text-[18px] max-[720px]:leading-[1.32]">
+            {t("hero.subtitle")}
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3 max-[720px]:mt-7">
             <Link
               href="/predict"
               className="inline-flex h-[46px] min-w-[154px] items-center justify-center rounded-[var(--r-pill)] bg-[var(--accent)] px-8 text-[16px] font-semibold !text-[#061a10] transition-transform hover:-translate-y-px hover:brightness-105"
             >
-              Browse markets
+              {t("nav.browseMarkets")}
             </Link>
             <Link
               href="#how-it-works"
               className="inline-flex h-[46px] min-w-[154px] items-center justify-center rounded-[var(--r-pill)] border border-white/50 bg-transparent px-8 text-[16px] font-semibold !text-white transition-colors hover:bg-white/12"
             >
-              How it works
+              {t("hero.howItWorks")}
             </Link>
           </div>
         </div>
@@ -167,60 +278,34 @@ export default function HomePage() {
             <div className="grid grid-cols-[minmax(0,1.05fr)_minmax(330px,0.85fr)] items-center gap-16 max-[900px]:grid-cols-1 max-[900px]:gap-10">
               <div className="grid gap-3">
                 {EXAMPLE_MARKETS.map((market) => (
-                  <Link
-                    key={market.question}
-                    href="/predict"
-                    className="grid gap-3 border border-[#07150d]/20 bg-[#07150d] p-5 !text-white transition-colors hover:bg-[#101b14]"
-                  >
-                    <span className="text-[13px] font-bold uppercase tracking-[0.14em] text-[var(--accent)]">
-                      {market.category}
-                    </span>
-                    <span className="text-[19px] font-semibold leading-[1.25] text-white max-[520px]:text-[18px]">
-                      {market.question}
-                    </span>
-                    <div className="grid grid-cols-[1fr_auto] items-center gap-4 text-white max-[520px]:grid-cols-1">
-                      <div>
-                        <div className="h-[7px] overflow-hidden rounded-[var(--r-pill)] bg-white/16">
-                          <div
-                            className="h-full rounded-[var(--r-pill)] bg-[var(--accent)]"
-                            style={{ width: `${market.yesPercent}%` }}
-                          />
-                        </div>
-                        <p className="m-0 mt-2 text-[13px] font-semibold text-white/68">
-                          {market.consensus}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <span className="inline-flex h-9 min-w-14 items-center justify-center rounded-[var(--r-pill)] bg-[var(--accent)] px-4 text-[13px] font-bold text-[#061a10]">
-                          Yes
-                        </span>
-                        <span className="inline-flex h-9 min-w-14 items-center justify-center rounded-[var(--r-pill)] border border-white/20 px-4 text-[13px] font-bold text-white">
-                          No
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
+                  <MarketPreviewCard
+                    key={market.questionKey}
+                    category={t(market.categoryKey)}
+                    question={t(market.questionKey)}
+                    consensus={t(market.consensusKey)}
+                    yesLabel={t("marketActions.yes")}
+                    noLabel={t("marketActions.no")}
+                    yesPercent={market.yesPercent}
+                  />
                 ))}
               </div>
 
               <div>
                 <p className="m-0 text-[30px] font-medium leading-none text-[#0b3c25]/55 max-[720px]:text-[24px]">
-                  Browse
+                  {t("browse.eyebrow")}
                 </p>
-                <h2 className="m-0 mt-3 max-w-[520px] text-[40px] font-medium leading-[1.04] tracking-normal max-[720px]:text-[32px]">
-                  Markets Filipinos are watching
+                <h2 className="m-0 mt-3 max-w-[500px] text-[34px] font-medium leading-[1.1] tracking-normal max-[720px]:text-[29px]">
+                  {t("browse.title")}
                 </h2>
                 <p className="mt-5 max-w-[520px] text-[19px] leading-[1.38] text-[#07150d]/78">
-                  From elections and basketball to pageants, crypto, and MLBB,
-                  Tiangge turns live conversations into simple Yes-or-No
-                  markets.
+                  {t("browse.body")}
                 </p>
                 <div className="mt-8">
                   <Link
                     href="/predict"
                     className="inline-flex h-[46px] items-center justify-center rounded-[var(--r-pill)] bg-[#07150d] px-8 text-[16px] font-semibold !text-white transition-transform hover:-translate-y-px hover:bg-[#101b14]"
                   >
-                    Browse live markets
+                    {t("browse.cta")}
                   </Link>
                 </div>
               </div>
@@ -234,17 +319,16 @@ export default function HomePage() {
         >
           <div className="mx-auto grid max-w-[1180px] grid-cols-[minmax(0,0.95fr)_minmax(300px,0.72fr)] items-center gap-12 max-[900px]:grid-cols-1 max-[900px]:gap-10">
             <div>
-              <h2 className="m-0 max-w-[700px] text-[clamp(44px,6vw,80px)] font-normal leading-[0.98] tracking-normal [font-family:Georgia,'Times_New_Roman',serif]">
-                Pick a side. Follow the result.
+              <h2 className="m-0 max-w-[620px] text-[clamp(38px,4.8vw,58px)] font-normal leading-[1.04] tracking-normal [font-family:Georgia,'Times_New_Roman',serif]">
+                {t("journey.title")}
               </h2>
               <p className="mt-5 max-w-[620px] text-[20px] font-medium leading-[1.36] text-[var(--t2)]">
-                Choose a market, pick Yes or No, and track how the crowd is
-                pricing the outcome.
+                {t("journey.subtitle")}
               </p>
               <div className="mt-10 grid gap-0 border-t border-[var(--border-1)]">
                 {JOURNEY_STEPS.map((row) => (
                   <div
-                    key={row.title}
+                    key={row.titleKey}
                     className="grid grid-cols-[64px_minmax(0,1fr)] gap-5 border-b border-[var(--border-1)] py-6 max-[560px]:grid-cols-1 max-[560px]:gap-3"
                   >
                     <span className="font-['IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace] text-[12px] font-semibold text-[var(--accent-lo)]">
@@ -252,10 +336,10 @@ export default function HomePage() {
                     </span>
                     <div>
                       <h3 className="m-0 text-[26px] font-semibold leading-[1.05] text-[var(--t1)]">
-                        {row.title}
+                        {t(row.titleKey)}
                       </h3>
                       <p className="m-0 mt-2 max-w-[560px] text-[17px] leading-[1.42] text-[var(--t2)]">
-                        {row.body}
+                        {t(row.bodyKey)}
                       </p>
                     </div>
                   </div>
@@ -263,21 +347,20 @@ export default function HomePage() {
               </div>
               <div className="mt-6 border-l-4 border-[var(--accent)] bg-[var(--accent-soft)] px-5 py-4">
                 <p className="m-0 text-[16px] leading-[1.45] text-[var(--t2)]">
-                  Every market shows its rules, fees, closing time, and
-                  settlement source before you participate.
+                  {t("journey.note")}
                 </p>
               </div>
             </div>
 
             <div
               className="mx-auto w-full max-w-[360px]"
-              aria-label="Tiangge player app mobile mockup"
+              aria-label={t("mockup.ariaLabel")}
             >
               <div className="rounded-[42px] border border-[rgba(26,26,26,0.16)] bg-[#151716] p-3 shadow-[0_28px_80px_rgba(0,0,0,0.18)]">
                 <div className="overflow-hidden rounded-[32px] bg-[var(--bg-deep)]">
                   <img
                     src="/brand/player-market-trade-mockup.png"
-                    alt="Tiangge player app market page with a trade ticket open"
+                    alt={t("mockup.alt")}
                     className="block h-auto w-full"
                     width={390}
                     height={844}
@@ -292,24 +375,24 @@ export default function HomePage() {
           <div className="mx-auto max-w-[1180px]">
             <div className="grid grid-cols-[0.72fr_1.28fr] gap-14 max-[900px]:grid-cols-1">
               <div>
-                <h2 className="m-0 text-[clamp(42px,5.5vw,78px)] font-normal leading-[0.98] tracking-normal [font-family:Georgia,'Times_New_Roman',serif]">
-                  Clear before every trade.
+                <h2 className="m-0 text-[clamp(36px,4.4vw,54px)] font-normal leading-[1.05] tracking-normal [font-family:Georgia,'Times_New_Roman',serif]">
+                  {t("trust.title")}
                 </h2>
                 <p className="mt-5 text-[20px] font-medium leading-[1.36] text-white/72">
-                  Markets should be easy to understand before you enter.
+                  {t("trust.subtitle")}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
                 {TRUST_CARDS.map((card) => (
                   <div
-                    key={card.title}
+                    key={card.titleKey}
                     className="border border-white/16 bg-white/[0.04] p-6"
                   >
                     <h3 className="m-0 text-[18px] font-semibold leading-tight">
-                      {card.title}
+                      {t(card.titleKey)}
                     </h3>
                     <p className="m-0 mt-3 text-[15px] leading-[1.45] text-white/68">
-                      {card.body}
+                      {t(card.bodyKey)}
                     </p>
                   </div>
                 ))}
@@ -321,14 +404,14 @@ export default function HomePage() {
         <section className="bg-[var(--accent)] px-8 py-20 text-center text-[#07150d] max-[720px]:px-5 max-[720px]:py-14">
           <div className="mx-auto max-w-[760px]">
             <h2 className="m-0 text-[clamp(46px,6vw,82px)] font-normal leading-[0.98] tracking-normal [font-family:Georgia,'Times_New_Roman',serif]">
-              See today's markets.
+              {t("cta.title")}
             </h2>
             <div className="mt-8">
               <Link
                 href="/predict"
                 className="inline-flex h-[46px] items-center justify-center rounded-[var(--r-pill)] bg-[#07150d] px-8 text-[16px] font-semibold !text-white transition-transform hover:-translate-y-px hover:bg-[#101b14]"
               >
-                Browse markets
+                {t("nav.browseMarkets")}
               </Link>
             </div>
           </div>
@@ -337,16 +420,8 @@ export default function HomePage() {
         <footer className="border-t border-white/10 bg-[#050706] px-8 py-10 text-white/64 max-[720px]:px-5">
           <div className="mx-auto max-w-[1180px]">
             <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2 text-sm leading-none max-[760px]:justify-start">
-              {[
-                { href: "/terms", label: "Terms" },
-                { href: "/privacy", label: "Privacy" },
-                { href: "/terms#market-rules", label: "Market Rules" },
-                { href: "/terms#fees", label: "Fees" },
-                { href: "/responsible-gaming", label: "Responsible Use" },
-                { href: "/contact-us", label: "Support" },
-                { href: "/terms#eligibility", label: "Eligibility" },
-              ].map((item, index) => (
-                <Fragment key={`${item.href}-${item.label}`}>
+              {FOOTER_LINKS.map((item, index) => (
+                <Fragment key={`${item.href}-${item.labelKey}`}>
                   {index > 0 ? (
                     <span className="text-[var(--t3)]">·</span>
                   ) : null}
@@ -354,7 +429,7 @@ export default function HomePage() {
                     href={item.href}
                     className="text-white/64 hover:text-white"
                   >
-                    {item.label}
+                    {t(item.labelKey)}
                   </Link>
                 </Fragment>
               ))}
