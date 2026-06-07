@@ -242,12 +242,12 @@ export default function HomePage() {
           aria-hidden="true"
         >
           <source
-            src="/brand/tiangge-hero-second-pass-24s.mp4"
+            src="/brand/tiangge-homepage-bg-clean-24s.mp4"
             type="video/mp4"
           />
         </video>
         <div
-          className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(0,0,0,0.58)_0%,rgba(0,0,0,0.44)_45%,rgba(0,0,0,0.78)_100%)]"
+          className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(0,0,0,0.72)_0%,rgba(0,0,0,0.66)_45%,rgba(0,0,0,0.84)_100%)]"
           aria-hidden="true"
         />
 
