@@ -2,15 +2,9 @@
 
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
-import {
-  Flag,
-  MessageCircle,
-  X,
-} from "lucide-react";
+import { Flag, MessageCircle, X } from "lucide-react";
 import { FEATURE_CHAT } from "../../lib/features";
-import {
-  reportChatMessage,
-} from "../../lib/api/chat-client";
+import { reportChatMessage } from "../../lib/api/chat-client";
 import { useAuth } from "../../hooks/useAuth";
 import { logger } from "../../lib/logger";
 
@@ -28,84 +22,89 @@ const MOCK_CHAT_MESSAGES: ChatMessage[] = [
   {
     username: "marketmaker23",
     timestamp: "now",
-    content: "BTC above $100K just ticked to 63c. Feels like the book is pricing in a soft CPI print.",
+    content: "BTC above $100K just ticked to 63c.",
   },
   {
     username: "linewatcher",
     timestamp: "1m",
-    content: "I grabbed NO on Lakers finals at 41c. Schedule spot looks brutal if Denver closes tonight.",
+    content: "Lakers NO moved to 41c after Denver closed strong.",
   },
   {
     username: "island_alpha",
     timestamp: "3m",
-    content: "Barcelona CL market moved after the injury update. YES at 14c is finally interesting.",
+    content: "Barcelona CL market moved after the injury update.",
   },
   {
     username: "oddswatcher",
     timestamp: "4m",
-    content: "Solana Q2 just ticked up again. NO side has real liquidity now instead of dust.",
+    content: "Solana Q2 ticked up again with deeper NO liquidity.",
   },
   {
     username: "macro_mina",
     timestamp: "6m",
-    content: "Fed cut by September is stuck around 48c. Waiting for payrolls before adding.",
+    content: "Fed cut by September is holding near 48c.",
   },
   {
     username: "propdesk",
     timestamp: "7m",
-    content: "Someone swept the YES side on oil above $90. Either headline risk or a very confident punt.",
+    content: "Someone swept YES side on oil above $90.",
   },
   {
     username: "chalk_eater",
     timestamp: "9m",
-    content: "Election turnout market is moving faster than the polls. Watch the county-level updates.",
+    content: "Election turnout is moving faster than the polls.",
   },
   {
     username: "arb_hunter",
     timestamp: "11m",
-    content: "NBA MVP spread is wider here than on the other venue. Not huge, but worth tracking.",
+    content: "NBA MVP spread widened after the injury report.",
   },
   {
     username: "quant_kai",
     timestamp: "13m",
-    content: "If ETH ETF approval stays above 70c into close, I expect weekend liquidity to get weird.",
+    content: "ETH ETF approval stayed above 70c into close.",
   },
   {
     username: "sportsbook_sam",
     timestamp: "15m",
-    content: "Weather delay could matter for the grand prix market. Rain probability jumped again.",
+    content: "Rain probability jumped on the grand prix market.",
   },
   {
     username: "creator_lani",
     timestamp: "18m",
-    content: "New market idea: will the first debate get over 50M viewers? Resolution source feels clean.",
+    content: "Debate viewership over 50M has a clean source path.",
   },
   {
     username: "vol_trader",
     timestamp: "21m",
-    content: "The Metacritic market is quiet, but one review batch could move it 20 points.",
+    content: "One review batch could move the Metacritic market.",
   },
   {
     username: "risk_check",
     timestamp: "24m",
-    content: "Reminder to size positions like they can go to zero. These thin markets can gap hard.",
+    content: "Thin markets can gap hard. Size accordingly.",
   },
   {
     username: "mod_malia",
     timestamp: "27m",
-    content: "Keep it to market discussion. No personal attacks, no phishing links, no fake screenshots.",
+    content: "Keep it to market discussion and verified sources.",
   },
 ];
 
 const chatClasses = {
   statusRow:
-    "flex min-h-[38px] items-center gap-2 border-b border-[var(--border-1)] bg-[var(--surface-2)] px-2.5 text-[11px] font-bold text-[var(--t3)]",
+    "flex min-h-[58px] items-center gap-2.5 border-b border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3",
+  statusCopy: "flex min-w-0 flex-col gap-0.5",
+  statusTitle:
+    "text-[12px] font-semibold leading-none tracking-[-0.01em] text-[var(--t1)]",
+  statusSub:
+    "text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--t3)]",
   onlineDot:
-    "h-1.5 w-1.5 shrink-0 rounded-full bg-[#20d878] shadow-[0_0_10px_rgba(32,216,120,0.55)]",
+    "h-2 w-2 shrink-0 rounded-full bg-[#11945f] shadow-[0_0_9px_rgba(17,148,95,0.45)]",
   reportToggle:
-    "inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 border-0 border-t border-[var(--border-1)] bg-[var(--surface-1)] text-xs font-bold text-[var(--t2)]",
+    "inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 border-0 border-t border-[var(--border-1)] bg-[var(--surface-1)] text-xs font-semibold text-[var(--t2)]",
   mobileButton:
-    "fixed right-[18px] bottom-[calc(92px+env(safe-area-inset-bottom))] z-[95] inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--r-pill)] border-0 bg-[var(--accent)] px-3.5 text-[13px] font-bold text-[#061a10] shadow-[0_10px_28px_rgba(60,50,30,0.18)]",
+    "fixed right-[18px] bottom-[calc(92px+env(safe-area-inset-bottom))] z-[95] inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-3.5 text-[13px] font-semibold text-[#061a10] shadow-[0_10px_28px_rgba(60,50,30,0.18)]",
   mobileOverlay:
     "fixed inset-0 z-[120] flex items-end justify-stretch bg-[rgba(18,16,12,0.28)] px-2.5 pt-0 pb-[max(10px,env(safe-area-inset-bottom))]",
   mobileSheet:
@@ -117,13 +116,12 @@ const chatClasses = {
   mobileClose:
     "grid h-[34px] w-[34px] cursor-pointer place-items-center rounded-[var(--r-rh-sm)] border-0 bg-[var(--surface-2)] text-[var(--t2)]",
   sidebarBase:
-    "sticky top-[66px] left-0 z-[70] flex h-[calc(100vh-66px)] flex-col overflow-hidden border-x border-[var(--border-1)] bg-[var(--surface-2)] shadow-none",
-  sidebarOpen: "w-[260px] min-w-[260px]",
+    "sticky top-[82px] left-0 z-[70] flex h-[calc(100vh-104px)] flex-col overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[0_14px_36px_rgba(60,50,30,0.08)] max-[1099px]:hidden",
+  sidebarOpen: "w-[280px] min-w-[280px]",
   sidebarCollapsed: "w-[52px] min-w-[52px]",
   railButton:
-    "inline-flex h-full w-full cursor-pointer flex-col items-center justify-start gap-2 border-0 border-r border-[var(--border-1)] bg-[var(--surface-1)] pt-3.5 text-xs font-extrabold text-[var(--t2)]",
-  railIcon:
-    "h-7 w-7 rounded-lg bg-[var(--accent)] p-1.5 text-[#061a10]",
+    "inline-flex h-full w-full cursor-pointer flex-col items-center justify-start gap-2 border-0 bg-[var(--surface-1)] pt-3.5 text-xs font-semibold text-[var(--t2)]",
+  railIcon: "h-7 w-7 rounded-lg bg-[var(--accent)] p-1.5 text-[#061a10]",
   reportForm:
     "grid gap-2 border-t border-[var(--border-1)] bg-[var(--surface-2)] p-3",
   reportRow: "flex items-center justify-between gap-2",
@@ -139,26 +137,33 @@ const chatClasses = {
   reportStatus: "text-xs font-bold text-[var(--t2)]",
   reportError: "text-[#b3261e]",
   state:
-    "relative grid flex-1 place-items-center bg-[var(--surface-1)] p-3.5 text-center text-xs font-bold text-[var(--t3)]",
-  stream:
-    "relative flex min-h-0 flex-1 flex-col bg-[var(--surface-2)]",
+    "relative grid flex-1 place-items-center bg-[var(--surface-1)] p-3.5 text-center text-xs font-medium text-[var(--t3)]",
+  stream: "flex min-h-0 flex-1 flex-col gap-3 bg-[var(--surface-1)] p-3",
   messageList:
-    "flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto px-2.5 pt-3 pb-[62px]",
+    "flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto pr-1 [scrollbar-color:rgba(13,31,45,0.22)_transparent] [scrollbar-width:thin]",
   message:
-    "rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-1)] p-2.5",
+    "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2.5 shadow-[0_1px_0_rgba(255,255,255,0.55)]",
   messageMeta:
-    "flex items-center justify-between gap-2 text-[10px] font-bold text-[var(--t3)]",
+    "mb-1.5 flex items-center justify-between gap-2 text-[10px] font-medium text-[var(--t3)]",
   messageUser:
-    "min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[var(--t2)]",
-  messageText: "mt-[5px] mb-0 text-xs font-[650] leading-[1.35] text-[var(--t1)]",
+    "min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[var(--t3)]",
+  messageTime: "shrink-0 text-[var(--t3)] opacity-75",
+  messageText:
+    "m-0 overflow-hidden text-[12px] font-normal leading-[1.45] text-[var(--t1)] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3]",
   readonlyComposer:
-    "absolute right-2.5 bottom-3 left-2.5 flex min-h-[34px] items-center rounded-[7px] border border-[var(--border-1)] bg-[var(--surface-2)] px-2.5 text-left text-xs font-extrabold text-[var(--t3)] shadow-[0_8px_20px_rgba(48,42,28,0.08)]",
+    "shrink-0 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-3 shadow-[0_8px_20px_rgba(48,42,28,0.08)]",
+  readonlyComposerTitle:
+    "m-0 text-[12px] font-semibold leading-tight text-[var(--t1)]",
+  readonlyComposerCopy:
+    "mt-1 mb-2.5 text-[11px] leading-[1.35] text-[var(--t3)]",
+  readonlyComposerButton:
+    "inline-flex min-h-8 items-center justify-center rounded-md bg-[var(--accent)] px-3 text-xs font-semibold text-[#061a10] no-underline",
   composer:
-    "absolute right-2.5 bottom-3 left-2.5 grid grid-cols-[1fr_auto] gap-2 rounded-lg border border-[var(--border-1)] bg-[var(--surface-1)] p-1.5 shadow-[0_8px_20px_rgba(48,42,28,0.08)]",
+    "grid shrink-0 grid-cols-[1fr_auto] gap-2 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-1.5 shadow-[0_8px_20px_rgba(48,42,28,0.08)]",
   composerInput:
-    "h-8 min-w-0 border-0 bg-transparent text-xs font-bold text-[var(--t1)] outline-none placeholder:text-[var(--t3)]",
+    "h-8 min-w-0 border-0 bg-transparent px-1 text-xs font-medium text-[var(--t1)] outline-none placeholder:text-[var(--t3)]",
   composerButton:
-    "h-8 rounded-[var(--r-pill)] border-0 bg-[var(--accent)] px-3 text-xs font-[850] text-[#061a10] disabled:cursor-not-allowed disabled:opacity-45",
+    "h-8 rounded-md border-0 bg-[var(--accent)] px-3 text-xs font-semibold text-[#061a10] disabled:cursor-not-allowed disabled:opacity-45",
 };
 
 export function ChatSidebar() {
@@ -227,7 +232,10 @@ export function ChatSidebar() {
       {showStatus && (
         <div className={chatClasses.statusRow}>
           <span className={chatClasses.onlineDot} aria-hidden="true" />
-          <span>Online</span>
+          <div className={chatClasses.statusCopy}>
+            <span className={chatClasses.statusTitle}>Live activity</span>
+            <span className={chatClasses.statusSub}>Market chatter</span>
+          </div>
         </div>
       )}
       <ChatFrame
@@ -238,7 +246,7 @@ export function ChatSidebar() {
         onSend={handleSendMessage}
       />
       {isAuthenticated && reportEnabled && (
-          <>
+        <>
           <button
             className={chatClasses.reportToggle}
             type="button"
@@ -283,7 +291,7 @@ export function ChatSidebar() {
               <div className={chatClasses.mobileHeader}>
                 <div className={chatClasses.mobileTitle}>
                   <span className={chatClasses.onlineDot} aria-hidden="true" />
-                  <span>Community chat</span>
+                  <span>Live activity</span>
                 </div>
                 <button
                   className={chatClasses.mobileClose}
@@ -364,7 +372,10 @@ function ChatReportForm({
   return (
     <form className={chatClasses.reportForm} onSubmit={submit}>
       <div className={chatClasses.reportRow}>
-        <label className={chatClasses.reportLabel} htmlFor="chat-report-message">
+        <label
+          className={chatClasses.reportLabel}
+          htmlFor="chat-report-message"
+        >
           Message ID or link
         </label>
         <button
@@ -406,7 +417,9 @@ function ChatReportForm({
         <div className={chatClasses.reportStatus}>Report submitted</div>
       )}
       {status === "error" && (
-        <div className={`${chatClasses.reportStatus} ${chatClasses.reportError}`}>
+        <div
+          className={`${chatClasses.reportStatus} ${chatClasses.reportError}`}
+        >
           Report unavailable
         </div>
       )}
@@ -433,13 +446,13 @@ function ChatFrame({
 
   if (state === "unavailable") {
     return (
-      <div className={chatClasses.state}>
-        {message || "Chat unavailable"}
-      </div>
+      <div className={chatClasses.state}>{message || "Chat unavailable"}</div>
     );
   }
 
-  return <NativeChatStream messages={messages} readOnly={readOnly} onSend={onSend} />;
+  return (
+    <NativeChatStream messages={messages} readOnly={readOnly} onSend={onSend} />
+  );
 }
 
 function NativeChatStream({
@@ -469,17 +482,29 @@ function NativeChatStream({
             key={`${chatMessage.username}-${chatMessage.timestamp}-${chatMessage.content}`}
           >
             <div className={chatClasses.messageMeta}>
-              <span className={chatClasses.messageUser}>{chatMessage.username}</span>
-              <time>{chatMessage.timestamp}</time>
+              <span className={chatClasses.messageUser}>
+                {chatMessage.username}
+              </span>
+              <time className={chatClasses.messageTime}>
+                {chatMessage.timestamp}
+              </time>
             </div>
             <p className={chatClasses.messageText}>{chatMessage.content}</p>
           </article>
         ))}
       </div>
       {readOnly ? (
-        <a className={chatClasses.readonlyComposer} href="/auth/login">
-          Login to chat
-        </a>
+        <div className={chatClasses.readonlyComposer}>
+          <p className={chatClasses.readonlyComposerTitle}>
+            Log in to join the chat
+          </p>
+          <p className={chatClasses.readonlyComposerCopy}>
+            Follow the live read without crowding the market view.
+          </p>
+          <a className={chatClasses.readonlyComposerButton} href="/auth/login">
+            Log in
+          </a>
+        </div>
       ) : (
         <form className={chatClasses.composer} onSubmit={submit}>
           <input
