@@ -6,16 +6,18 @@
  *   ┌─────────────────────────────────────────────────────┐
  *   │ Title clamped to 2 lines               [⊙ image]    │
  *   ├─────────────────────────────────────────────────────┤
- *   │ [ YES   7% ]            [ NO   93% ]                 │
+ *   │ Yes leads at 57%                                  │
+ *   ├─────────────────────────────────────────────────────┤
+ *   │ [ YES 7¢ ]                    [ NO 93¢ ]            │
  *   ├─────────────────────────────────────────────────────┤
  *   │ Volume  $25K                 Closes  Dec 31, 2026   │
  *   └─────────────────────────────────────────────────────┘
  *
  * Header is title + corner image only (no category eyebrow — category is
- * implied by the surface the card sits on). The pills show the execution
- * price. Secondary stats (volume, close date) drop to a quiet footer below
- * the pills so the card reads title → trade affordance → metadata without
- * redundant consensus bars competing for attention.
+ * implied by the surface the card sits on). A short colored trend sentence
+ * anchors the middle of the card. Secondary stats (volume, close date) drop
+ * to a quiet footer below the action pills so the card reads title → trend →
+ * action → metadata without redundant consensus bars.
  */
 
 import Link from "next/link";
@@ -26,6 +28,7 @@ import {
   isOpenMarketStatus,
   marketStatusLabel,
 } from "./market-display";
+import { calculateMarketSentiment } from "./marketSentiment";
 import { getMarketImageProps } from "./utils/marketImage";
 
 interface MarketCardProps {
@@ -95,25 +98,41 @@ export function MarketCard({
     image.kind === "image" && failedImageSrc !== image.src
       ? image
       : fallbackImage;
+  const marketSentiment = calculateMarketSentiment(yesPriceCents);
+  const trendClassName =
+    marketSentiment.sentimentState === "neutral"
+      ? "text-[var(--t3)]"
+      : marketSentiment.sentimentState === "yes"
+        ? "text-[var(--yes-text)]"
+        : "text-[var(--no-text)]";
+  const trendDotClassName =
+    marketSentiment.sentimentState === "neutral"
+      ? "bg-[var(--border-2)]"
+      : marketSentiment.sentimentState === "yes"
+        ? "bg-[var(--yes-bar)]"
+        : "bg-[var(--no-bar)]";
 
   return (
-    <article className="flex h-full min-h-[224px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans text-[var(--t1)] transition-[transform,box-shadow,border-color] duration-[140ms] hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[0_12px_28px_rgba(60,50,30,0.08)] focus-within:-translate-y-0.5 focus-within:border-[var(--border-2)] focus-within:shadow-[0_12px_28px_rgba(60,50,30,0.08)] max-[640px]:min-h-[214px] max-[640px]:p-4">
+    <article className="flex h-full min-h-[286px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans text-[var(--t1)] transition-[transform,box-shadow,border-color] duration-[140ms] hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[0_12px_28px_rgba(60,50,30,0.08)] focus-within:-translate-y-0.5 focus-within:border-[var(--border-2)] focus-within:shadow-[0_12px_28px_rgba(60,50,30,0.08)] max-[640px]:min-h-[272px] max-[640px]:p-4">
       {/* The card body links to the market detail page (no preselect).
        * The YES/NO pills below are SIBLING links carrying ?side=yes|no
        * so clicking a pill deep-links into a side-preselected ticket.
        * Avoids invalid nested anchors. */}
       <Link
         href={`/market/${ticker}`}
-        className="flex flex-col gap-4 text-inherit no-underline"
-        aria-label={t("MARKET_CARD_LABEL", {
-          title,
-          yes: yesPriceCents,
-          no: noPriceCents,
-        })}
+        className="flex flex-1 flex-col text-inherit no-underline"
+        aria-label={title}
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex min-w-0 flex-auto flex-col">
-            <h3 className="m-0 line-clamp-2 min-h-[44px] overflow-hidden text-[17px] font-semibold leading-[1.3] text-[var(--t1)] max-[640px]:min-h-[42px] max-[640px]:text-base">
+            <h3
+              className="m-0 min-h-[44px] overflow-hidden text-[17px] font-semibold leading-[1.3] text-[var(--t1)] max-[640px]:min-h-[42px] max-[640px]:text-base"
+              style={{
+                display: "-webkit-box",
+                WebkitBoxOrient: "vertical",
+                WebkitLineClamp: 2,
+              }}
+            >
               {title}
             </h3>
           </div>
@@ -134,31 +153,43 @@ export function MarketCard({
             </span>
           )}
         </div>
+
+        <div className="mt-5 flex min-h-[58px] items-center max-[640px]:mt-4 max-[640px]:min-h-[52px]">
+          <span
+            className={`inline-flex items-center gap-2 text-[15px] font-semibold leading-snug max-[640px]:text-sm ${trendClassName}`}
+          >
+            <span
+              className={`h-2 w-2 rounded-full ${trendDotClassName}`}
+              aria-hidden="true"
+            />
+            {marketSentiment.displayString}
+          </span>
+        </div>
       </Link>
 
       <div className="mt-4 grid grid-cols-2 gap-2.5">
         <Link
           href={`/market/${ticker}?side=yes`}
-          className="flex min-h-9 items-center justify-between gap-2 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-1.5 font-sans no-underline transition-colors duration-150 hover:border-[var(--yes-bar)] hover:bg-[var(--yes-soft)] max-[768px]:min-h-10"
-          aria-label={t("BUY_YES_AT", { price: yesPriceCents })}
+          className="flex min-h-10 items-center justify-between gap-3 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-2 font-sans no-underline transition-colors duration-150 hover:border-[var(--yes-bar)] hover:bg-[var(--yes-soft)] max-[768px]:min-h-11"
+          aria-label={t("BUY_YES")}
         >
           <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--yes-text)]">
             {t("YES")}
           </span>
-          <span className="font-mono text-[15px] font-semibold tracking-normal text-[var(--yes-text)] tabular-nums">
-            {yesPriceCents}%
+          <span className="font-mono text-[16px] font-semibold text-[var(--yes-text)] tabular-nums">
+            {yesPriceCents}¢
           </span>
         </Link>
         <Link
           href={`/market/${ticker}?side=no`}
-          className="flex min-h-9 items-center justify-between gap-2 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-1.5 font-sans no-underline transition-colors duration-150 hover:border-[var(--no-bar)] hover:bg-[var(--no-soft)] max-[768px]:min-h-10"
-          aria-label={t("BUY_NO_AT", { price: noPriceCents })}
+          className="flex min-h-10 items-center justify-between gap-3 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-2 font-sans no-underline transition-colors duration-150 hover:border-[var(--no-bar)] hover:bg-[var(--no-soft)] max-[768px]:min-h-11"
+          aria-label={t("BUY_NO")}
         >
           <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--no-text)]">
             {t("NO")}
           </span>
-          <span className="font-mono text-[15px] font-semibold tracking-normal text-[var(--no-text)] tabular-nums">
-            {noPriceCents}%
+          <span className="font-mono text-[16px] font-semibold text-[var(--no-text)] tabular-nums">
+            {noPriceCents}¢
           </span>
         </Link>
       </div>

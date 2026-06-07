@@ -140,12 +140,16 @@ describe("MarketCard: Tailwind styling outside Link", () => {
 //
 // Replaces the Phase-4 / Robinhood-P3 era assertions. P8 (light theme,
 // landed 2026-04-28; layout remodeled 2026-05-24) composes MarketCard
-// from: corner image + title, YES/NO pills as siblings of the body link,
-// then a Volume / Closes stat footer below the pills. The older probability
-// bar was removed as redundant with the price pills.
+// from: corner image + title, a short YES/NO-leading trend sentence,
+// YES/NO side-price pills as siblings of the body link, then a Volume /
+// Closes stat footer below the pills. The older probability bar was removed
+// as redundant visual noise.
 
 describe("MarketCard P8 composition", () => {
   const marketCardSource = read("components/prediction/MarketCard.tsx");
+  const marketSentimentSource = read(
+    "components/prediction/marketSentiment.ts",
+  );
 
   it("does not render redundant probability bars in grid cards", () => {
     assert.ok(
@@ -159,18 +163,42 @@ describe("MarketCard P8 composition", () => {
     );
   });
 
-  it("keeps YES/NO action pills slimmer without losing tap size", () => {
+  it("renders one card-level trend sentence instead of a probability pill", () => {
     assert.ok(
-      marketCardSource.includes("min-h-9"),
-      "YES/NO pills should be slimmer by default",
+      marketCardSource.includes("calculateMarketSentiment") &&
+        marketCardSource.includes("marketSentiment.displayString"),
+      "MarketCard should render the helper-provided market sentiment string",
     );
     assert.ok(
-      marketCardSource.includes("py-1.5"),
-      "YES/NO pills should use slimmer vertical padding",
+      marketSentimentSource.includes("Split Room • 50/50 Toss-up") &&
+        marketSentimentSource.includes("Strong Doubt") &&
+        marketSentimentSource.includes("Heavy Backing"),
+      "Market sentiment helper should cover neutral and heavy leading copy",
     );
     assert.ok(
-      marketCardSource.includes("max-[768px]:min-h-10"),
+      !marketCardSource.includes("PROBABILITY_CHANCE") &&
+        !marketCardSource.includes("probabilityDescriptorKey"),
+      "MarketCard should not render the old chance/descriptor probability pill",
+    );
+  });
+
+  it("keeps YES/NO action pills priced without losing tap size", () => {
+    assert.ok(
+      marketCardSource.includes("min-h-10"),
+      "YES/NO pills should keep a firm tap size",
+    );
+    assert.ok(
+      marketCardSource.includes("justify-between"),
+      "YES/NO pills should separate the side label from the side price",
+    );
+    assert.ok(
+      marketCardSource.includes("max-[768px]:min-h-11"),
       "YES/NO pills should keep a mobile-friendly tap size on small screens",
+    );
+    assert.ok(
+      />\s*{yesPriceCents}¢\s*</.test(marketCardSource) &&
+        />\s*{noPriceCents}¢\s*</.test(marketCardSource),
+      "YES/NO action pills should show the side prices in cents",
     );
   });
 
