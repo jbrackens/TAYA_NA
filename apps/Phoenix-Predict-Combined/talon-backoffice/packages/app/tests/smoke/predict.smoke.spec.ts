@@ -18,10 +18,12 @@ test.describe("/predict — discovery landing", () => {
     ).toBeVisible();
 
     // At least one market card should expose both sides in its accessible name.
-    // The visual order can change (YES 65 cents vs 65 cents YES), but the card
+    // The visual order can change (YES 65 percent vs 65 percent YES), but the card
     // still needs to announce the tradeable YES/NO prices.
     await expect(
-      page.getByRole("link", { name: /YES \d+ cents.*NO \d+ cents/i }).first(),
+      page
+        .getByRole("link", { name: /YES \d+ percent.*NO \d+ percent/i })
+        .first(),
     ).toBeVisible({ timeout: 10_000 });
 
     checkErrors();

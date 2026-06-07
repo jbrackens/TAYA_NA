@@ -168,13 +168,13 @@ export function DiscoveryHero({
           href={`/market/${displayMarket.ticker}`}
           className="inline-flex max-w-[280px] flex-1 items-center justify-center rounded-md border-0 bg-[var(--accent)] px-6 py-4 text-[15px] font-semibold text-[#061a10] no-underline tabular-nums transition-[filter,transform] duration-150 hover:-translate-y-px hover:brightness-105"
         >
-          {t("BUY_YES")} · {yes}¢
+          {t("BUY_YES")} · {yes}%
         </Link>
         <Link
           href={`/market/${displayMarket.ticker}`}
           className="inline-flex max-w-[280px] flex-1 items-center justify-center rounded-md border-0 bg-[var(--no-soft)] px-6 py-4 text-[15px] font-semibold text-[var(--no-text)] no-underline tabular-nums transition-colors duration-150 hover:bg-[rgba(255,139,107,0.22)]"
         >
-          {t("BUY_NO")} · {no}¢
+          {t("BUY_NO")} · {no}%
         </Link>
       </div>
 

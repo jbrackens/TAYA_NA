@@ -6,7 +6,7 @@
  *   ┌─────────────────────────────────────────────────────┐
  *   │ Title clamped to 2 lines               [⊙ image]    │
  *   ├─────────────────────────────────────────────────────┤
- *   │ [ YES   7¢ ]            [ NO   93¢ ]                 │
+ *   │ [ YES   7% ]            [ NO   93% ]                 │
  *   ├─────────────────────────────────────────────────────┤
  *   │ Volume  $25K                 Closes  Dec 31, 2026   │
  *   └─────────────────────────────────────────────────────┘
@@ -146,7 +146,7 @@ export function MarketCard({
             {t("YES")}
           </span>
           <span className="font-mono text-[15px] font-semibold tracking-normal text-[var(--yes-text)] tabular-nums">
-            {yesPriceCents}¢
+            {yesPriceCents}%
           </span>
         </Link>
         <Link
@@ -158,7 +158,7 @@ export function MarketCard({
             {t("NO")}
           </span>
           <span className="font-mono text-[15px] font-semibold tracking-normal text-[var(--no-text)] tabular-nums">
-            {noPriceCents}¢
+            {noPriceCents}%
           </span>
         </Link>
       </div>
