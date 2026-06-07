@@ -6,22 +6,16 @@
  *   ┌─────────────────────────────────────────────────────┐
  *   │ Title clamped to 2 lines               [⊙ image]    │
  *   ├─────────────────────────────────────────────────────┤
- *   │ ▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  7%    93%   │
- *   ├─────────────────────────────────────────────────────┤
  *   │ [ YES   7¢ ]            [ NO   93¢ ]                 │
  *   ├─────────────────────────────────────────────────────┤
  *   │ Volume  $25K                 Closes  Dec 31, 2026   │
  *   └─────────────────────────────────────────────────────┘
  *
  * Header is title + corner image only (no category eyebrow — category is
- * implied by the surface the card sits on). The bar shows the visual
- * YES/NO split; the pills show the execution price — the same number for
- * binary contracts, but different jobs. Secondary stats (volume, close
- * date) drop to a quiet footer below the pills so the card reads
- * title → probability → trade affordance without metadata competing.
- *
- * Percentage labels sit above the bar so the bar itself can stay slim and
- * true to the actual YES/NO split.
+ * implied by the surface the card sits on). The pills show the execution
+ * price. Secondary stats (volume, close date) drop to a quiet footer below
+ * the pills so the card reads title → trade affordance → metadata without
+ * redundant consensus bars competing for attention.
  */
 
 import Link from "next/link";
@@ -103,14 +97,14 @@ export function MarketCard({
       : fallbackImage;
 
   return (
-    <article className="flex h-full min-h-[258px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans text-[var(--t1)] transition-[transform,box-shadow,border-color] duration-[140ms] hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[0_12px_28px_rgba(60,50,30,0.08)] focus-within:-translate-y-0.5 focus-within:border-[var(--border-2)] focus-within:shadow-[0_12px_28px_rgba(60,50,30,0.08)] max-[640px]:min-h-[236px] max-[640px]:p-4">
+    <article className="flex h-full min-h-[224px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans text-[var(--t1)] transition-[transform,box-shadow,border-color] duration-[140ms] hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[0_12px_28px_rgba(60,50,30,0.08)] focus-within:-translate-y-0.5 focus-within:border-[var(--border-2)] focus-within:shadow-[0_12px_28px_rgba(60,50,30,0.08)] max-[640px]:min-h-[214px] max-[640px]:p-4">
       {/* The card body links to the market detail page (no preselect).
        * The YES/NO pills below are SIBLING links carrying ?side=yes|no
        * so clicking a pill deep-links into a side-preselected ticket.
        * Avoids invalid nested anchors. */}
       <Link
         href={`/market/${ticker}`}
-        className="flex flex-1 flex-col gap-4 text-inherit no-underline"
+        className="flex flex-col gap-4 text-inherit no-underline"
         aria-label={t("MARKET_CARD_LABEL", {
           title,
           yes: yesPriceCents,
@@ -139,38 +133,6 @@ export function MarketCard({
               {visibleImage.monogram}
             </span>
           )}
-        </div>
-
-        <div className="mt-auto flex flex-col gap-2">
-          <div
-            className="flex items-center justify-between text-[11px] leading-none"
-            aria-hidden="true"
-          >
-            <span className="font-medium tabular-nums text-[var(--yes-text)]">
-              {t("YES")} {yesPriceCents}%
-            </span>
-            <span className="font-medium tabular-nums text-[var(--no-text)]">
-              {t("NO")} {noPriceCents}%
-            </span>
-          </div>
-          <svg
-            className="h-3.5 w-full overflow-hidden rounded-md bg-[var(--surface-2)]"
-            viewBox="0 0 100 14"
-            preserveAspectRatio="none"
-            role="img"
-            aria-label={t("MARKET_BAR_LABEL", {
-              yes: yesPriceCents,
-              no: noPriceCents,
-            })}
-          >
-            <rect width={yesPriceCents} height="14" fill="var(--yes-bar)" />
-            <rect
-              x={yesPriceCents}
-              width={noPriceCents}
-              height="14"
-              fill="var(--no-bar)"
-            />
-          </svg>
         </div>
       </Link>
 

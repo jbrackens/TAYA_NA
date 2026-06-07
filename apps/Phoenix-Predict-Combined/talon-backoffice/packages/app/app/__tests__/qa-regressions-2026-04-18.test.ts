@@ -140,49 +140,22 @@ describe("MarketCard: Tailwind styling outside Link", () => {
 //
 // Replaces the Phase-4 / Robinhood-P3 era assertions. P8 (light theme,
 // landed 2026-04-28; layout remodeled 2026-05-24) composes MarketCard
-// from: corner image + title, a probability label row above a slim bar,
-// YES/NO pills as siblings of the body link, then a Volume / Closes stat
-// footer below the pills. The percentage labels are outside the colored
-// segments so the bar can stay visually compact and true to the split.
+// from: corner image + title, YES/NO pills as siblings of the body link,
+// then a Volume / Closes stat footer below the pills. The older probability
+// bar was removed as redundant with the price pills.
 
 describe("MarketCard P8 composition", () => {
   const marketCardSource = read("components/prediction/MarketCard.tsx");
 
-  it("renders the probability bar", () => {
+  it("does not render redundant probability bars in grid cards", () => {
     assert.ok(
-      /role="img"[\s\S]*?MARKET_BAR_LABEL/.test(marketCardSource),
-      "MarketCard should render an accessible YES/NO probability bar",
-    );
-  });
-
-  it("renders percentage labels above the probability bar", () => {
-    assert.ok(
-      /aria-hidden="true"[\s\S]*?\{yesPriceCents\}%[\s\S]*?\{noPriceCents\}%/.test(
-        marketCardSource,
-      ),
-      "MarketCard should render a separate label row above the probability bar",
+      !/MARKET_BAR_LABEL/.test(marketCardSource) &&
+        !/role="img"[\s\S]*?yesPriceCents/.test(marketCardSource),
+      "MarketCard should not render a redundant YES/NO probability bar",
     );
     assert.ok(
-      marketCardSource.includes("text-[var(--yes-text)]") &&
-        marketCardSource.includes("text-[var(--no-text)]"),
-      "MarketCard should expose YES and NO percentage labels outside the bar segments",
-    );
-  });
-
-  it("keeps the probability bar slim and true to percentages", () => {
-    assert.ok(
-      /className="[^"]*h-3\.5/.test(marketCardSource) &&
-        /viewBox="0 0 100 14"/.test(marketCardSource),
-      "MarketCard probability bar should be half-height",
-    );
-    assert.ok(
-      !/MIN_SEGMENT_PX\s*=/.test(marketCardSource),
-      "MarketCard should not inflate tiny bar segments just to fit labels",
-    );
-    assert.ok(
-      /<rect\s+width=\{yesPriceCents\}/.test(marketCardSource) &&
-        /width=\{noPriceCents\}/.test(marketCardSource),
-      "MarketCard bar segments should use the actual YES/NO percentages",
+      !/<svg[\s\S]*?<\/svg>/.test(marketCardSource),
+      "MarketCard should not use an inline SVG for a card-level probability bar",
     );
   });
 
