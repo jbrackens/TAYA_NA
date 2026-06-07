@@ -1,13 +1,15 @@
 "use client";
 
 import { Activity, Radio, RotateCw } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   getLiveMarkets,
   type LiveMarketEvent,
   type LiveProviderStatus,
 } from "../lib/api/live-markets-client";
+import { FEATURE_LIVE_MARKETS } from "../lib/features";
 
 const ROUTE_LOADING_CLASS = "p-20 text-center text-[13px] text-[var(--t3)]";
 const GLASS_SURFACE_CLASS =
@@ -134,11 +136,13 @@ function eventMetaLabels(event: LiveMarketEvent): string[] {
 
 export default function LiveMarketsPage() {
   const { t } = useTranslation("prediction");
+  const router = useRouter();
   const [state, setState] = useState<LiveState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
+    if (!FEATURE_LIVE_MARKETS) return;
     setError(null);
     try {
       const next = await getLiveMarkets();
@@ -148,9 +152,13 @@ export default function LiveMarketsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    if (!FEATURE_LIVE_MARKETS) {
+      router.replace("/predict");
+      return;
+    }
     let cancelled = false;
     const tick = async () => {
       if (!cancelled) await load();
@@ -161,7 +169,7 @@ export default function LiveMarketsPage() {
       cancelled = true;
       window.clearInterval(id);
     };
-  }, []);
+  }, [load, router]);
 
   const liveEvents = useMemo(
     () => (state?.events ?? []).filter((event) => event.live && !event.ended),
@@ -169,6 +177,10 @@ export default function LiveMarketsPage() {
   );
   const recentEvents =
     liveEvents.length > 0 ? liveEvents : (state?.events ?? []);
+
+  if (!FEATURE_LIVE_MARKETS) {
+    return <div className={ROUTE_LOADING_CLASS}>{t("LIVE_LOADING")}</div>;
+  }
 
   if (loading) {
     return <div className={ROUTE_LOADING_CLASS}>{t("LIVE_LOADING")}</div>;

@@ -85,3 +85,12 @@ export const CHAT_PUBLIC_URL = (
  */
 export const FEATURE_SOCIAL_AUTH =
   process.env.NEXT_PUBLIC_FEATURE_SOCIAL_AUTH === "true";
+
+/**
+ * Dedicated live/in-play markets surface. Off by default while private
+ * provider access and event-data coverage are still being finalized.
+ *
+ * Currently gates: the /live/ route content and Live nav entries.
+ */
+export const FEATURE_LIVE_MARKETS =
+  process.env.NEXT_PUBLIC_FEATURE_LIVE_MARKETS === "true";

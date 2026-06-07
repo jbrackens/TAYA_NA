@@ -99,7 +99,7 @@ export default function LoginPage() {
           <span className={EYEBROW_CLASS}>Player access</span>
           <h1 className={TITLE_CLASS}>Tiangge</h1>
           <p className={SUBTITLE_CLASS}>
-            Sign in to track your positions, follow live markets, and trade on
+            Sign in to track your positions, follow market moves, and trade on
             real-world outcomes.
           </p>
         </header>

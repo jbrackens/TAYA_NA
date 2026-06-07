@@ -38,6 +38,7 @@ import { getBalance } from "../../lib/api/wallet-client";
 import { TierPill } from "./TierPill";
 import { LanguageSelector } from "../i18n/LanguageSelector";
 import { localizedMarket } from "./market-content";
+import { FEATURE_LIVE_MARKETS } from "../../lib/features";
 
 const api = createPredictionClient();
 
@@ -45,16 +46,20 @@ const api = createPredictionClient();
 // they would either land on a sign-in wall (Portfolio) or render with an
 // empty / placeholder state (Leaderboards, Rewards), neither of which makes
 // sense as a discoverable destination before login.
-const NAV_LINKS: { href: string; labelKey: string; requiresAuth?: boolean }[] =
-  [
-    { href: "/", labelKey: "NAV_HOME" },
-    { href: "/predict", labelKey: "NAV_MARKETS" },
-    { href: "/discover", labelKey: "NAV_DISCOVER" },
-    { href: "/live", labelKey: "NAV_LIVE" },
-    { href: "/portfolio", labelKey: "NAV_PORTFOLIO", requiresAuth: true },
-    { href: "/leaderboards", labelKey: "NAV_LEADERBOARDS", requiresAuth: true },
-    { href: "/rewards", labelKey: "NAV_REWARDS", requiresAuth: true },
-  ];
+const NAV_LINKS: {
+  href: string;
+  labelKey: string;
+  requiresAuth?: boolean;
+  enabled?: boolean;
+}[] = [
+  { href: "/", labelKey: "NAV_HOME" },
+  { href: "/predict", labelKey: "NAV_MARKETS" },
+  { href: "/discover", labelKey: "NAV_DISCOVER" },
+  { href: "/live", labelKey: "NAV_LIVE", enabled: FEATURE_LIVE_MARKETS },
+  { href: "/portfolio", labelKey: "NAV_PORTFOLIO", requiresAuth: true },
+  { href: "/leaderboards", labelKey: "NAV_LEADERBOARDS", requiresAuth: true },
+  { href: "/rewards", labelKey: "NAV_REWARDS", requiresAuth: true },
+];
 
 const TOP_BAR_CLASS =
   "sticky top-0 z-[100] border-b border-[var(--border-1)] bg-[var(--bg-deep)] [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
@@ -320,24 +325,25 @@ export function TopBar() {
 
         {isDesktop && (
           <nav className={TOP_BAR_NAV_CLASS} aria-label="Primary">
-            {NAV_LINKS.filter((l) => !l.requiresAuth || isAuthenticated).map(
-              (l) => {
-                const active = isActive(l.href);
-                return (
-                  <Link
-                    key={l.href}
-                    href={l.href}
-                    className={`${TOP_BAR_LINK_CLASS} ${
-                      active
-                        ? TOP_BAR_LINK_ACTIVE_CLASS
-                        : TOP_BAR_LINK_INACTIVE_CLASS
-                    }`}
-                  >
-                    {t(l.labelKey)}
-                  </Link>
-                );
-              },
-            )}
+            {NAV_LINKS.filter(
+              (l) =>
+                l.enabled !== false && (!l.requiresAuth || isAuthenticated),
+            ).map((l) => {
+              const active = isActive(l.href);
+              return (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className={`${TOP_BAR_LINK_CLASS} ${
+                    active
+                      ? TOP_BAR_LINK_ACTIVE_CLASS
+                      : TOP_BAR_LINK_INACTIVE_CLASS
+                  }`}
+                >
+                  {t(l.labelKey)}
+                </Link>
+              );
+            })}
           </nav>
         )}
 

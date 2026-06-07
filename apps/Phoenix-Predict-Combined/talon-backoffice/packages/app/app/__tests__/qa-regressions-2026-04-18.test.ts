@@ -504,6 +504,39 @@ describe("Social auth feature gate", () => {
   });
 });
 
+describe("Live markets feature gate", () => {
+  const featuresSource = read("lib/features.ts");
+  const topBarSource = read("components/prediction/TopBar.tsx");
+  const mobileTabBarSource = read("components/MobileTabBar.tsx");
+  const livePageSource = read("live/page.tsx");
+
+  it("keeps the dedicated Live surface hidden unless explicitly enabled", () => {
+    assert.ok(
+      featuresSource.includes("FEATURE_LIVE_MARKETS") &&
+        featuresSource.includes("NEXT_PUBLIC_FEATURE_LIVE_MARKETS"),
+      "live markets should have an explicit public feature flag",
+    );
+    assert.ok(
+      topBarSource.includes("FEATURE_LIVE_MARKETS") &&
+        topBarSource.includes('href: "/live"') &&
+        topBarSource.includes("enabled: FEATURE_LIVE_MARKETS"),
+      "desktop nav should hide Live unless FEATURE_LIVE_MARKETS is enabled",
+    );
+    assert.ok(
+      mobileTabBarSource.includes("FEATURE_LIVE_MARKETS") &&
+        mobileTabBarSource.includes('href: "/live"') &&
+        mobileTabBarSource.includes("enabled: FEATURE_LIVE_MARKETS"),
+      "mobile nav should hide Live unless FEATURE_LIVE_MARKETS is enabled",
+    );
+    assert.ok(
+      livePageSource.includes("FEATURE_LIVE_MARKETS") &&
+        livePageSource.includes('router.replace("/predict")') &&
+        livePageSource.includes("getLiveMarkets"),
+      "direct /live visits should redirect without fetching live data when the flag is off",
+    );
+  });
+});
+
 describe("Registration auth flow", () => {
   const registerSource = read("auth/register/page.tsx");
 

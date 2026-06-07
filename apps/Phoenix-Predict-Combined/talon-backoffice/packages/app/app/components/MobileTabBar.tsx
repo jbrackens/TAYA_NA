@@ -21,12 +21,14 @@ import {
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
+import { FEATURE_LIVE_MARKETS } from "../lib/features";
 
 type TabDef = {
   href: string;
   labelKey: string;
   Icon: typeof LayoutGrid;
   requiresAuth?: boolean;
+  enabled?: boolean;
   matchPrefixes?: string[];
 };
 
@@ -47,6 +49,7 @@ const TABS: TabDef[] = [
     href: "/live",
     labelKey: "NAV_LIVE",
     Icon: Activity,
+    enabled: FEATURE_LIVE_MARKETS,
     matchPrefixes: ["/live"],
   },
   {
@@ -128,7 +131,7 @@ export default function MobileTabBar() {
 
   if (!isMobile) return null;
   const visibleTabs = TABS.filter(
-    (tab) => !tab.requiresAuth || isAuthenticated,
+    (tab) => tab.enabled !== false && (!tab.requiresAuth || isAuthenticated),
   );
 
   return (
