@@ -22,23 +22,38 @@ const REFRESH_BUTTON_CLASS =
   "inline-flex min-h-10 items-center gap-2 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 text-[13px] font-semibold text-[var(--t1)]";
 const PROVIDER_GRID_CLASS =
   "mb-6 grid grid-cols-2 gap-3 max-[720px]:grid-cols-1";
-const PROVIDER_CARD_CLASS = `${GLASS_SURFACE_CLASS} rounded-[var(--r-md)] p-4`;
+const PROVIDER_CARD_CLASS =
+  "rounded-xl border border-[var(--border-1)] bg-[var(--surface-1)] p-4 shadow-[0_1px_0_rgba(255,255,255,0.65)]";
 const PROVIDER_LABEL_CLASS = "mb-1 text-[13px] font-bold text-[var(--t1)]";
 const PROVIDER_META_CLASS =
   "text-[11px] leading-[1.5] text-[var(--t3)] [font-family:'IBM_Plex_Mono',monospace]";
-const EVENT_GRID_CLASS = "grid grid-cols-2 gap-4 max-[900px]:grid-cols-1";
-const EVENT_CARD_CLASS = `${GLASS_SURFACE_CLASS} rounded-[var(--r-md)] p-5`;
+const EVENT_GRID_CLASS = "grid gap-3";
+const EVENT_CARD_CLASS =
+  "group rounded-xl border border-[var(--border-1)] bg-[var(--surface-1)] p-0 shadow-[0_1px_0_rgba(255,255,255,0.7)] transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[0_12px_28px_rgba(60,50,30,0.08)]";
 const EVENT_META_CLASS =
-  "mb-3 flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+  "flex min-h-10 flex-wrap items-center gap-2 border-b border-[var(--border-1)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
 const LIVE_PILL_CLASS =
-  "inline-flex items-center gap-1.5 rounded-[var(--r-pill)] bg-[rgba(255,107,107,0.16)] px-2.5 py-1 text-[11px] font-bold text-[var(--live)]";
+  "inline-flex items-center gap-1.5 rounded-md bg-[rgba(255,107,107,0.14)] px-2 py-1 text-[10px] font-bold text-[var(--live)]";
 const STATE_PILL_CLASS =
-  "inline-flex rounded-[var(--r-pill)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-bold text-[var(--t2)]";
-const MATCHUP_CLASS = "m-0 text-[19px] font-extrabold text-[var(--t1)]";
-const SCORE_CLASS =
-  "mt-4 text-[34px] font-black tracking-[-0.02em] text-[var(--t1)] [font-family:'IBM_Plex_Mono',monospace]";
+  "inline-flex rounded-md bg-[var(--surface-2)] px-2 py-1 text-[10px] font-bold text-[var(--t2)]";
+const EVENT_BODY_CLASS =
+  "grid grid-cols-[minmax(0,1fr)_minmax(220px,0.42fr)] gap-5 px-4 py-4 max-[760px]:grid-cols-1 max-[640px]:gap-4 max-[640px]:px-3.5";
+const MATCHUP_CLASS =
+  "m-0 line-clamp-2 text-[17px] font-semibold leading-[1.28] text-[var(--t1)]";
+const MARKET_STYLE_COPY_CLASS =
+  "mt-1.5 text-[12px] leading-[1.35] text-[var(--t3)]";
+const SIDE_PANEL_CLASS =
+  "grid gap-2 rounded-lg border border-[var(--border-1)] bg-[var(--surface-2)] p-2.5";
+const SIDE_ROW_CLASS =
+  "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-md bg-[var(--surface-1)] px-3 py-2";
+const SIDE_LABEL_CLASS =
+  "min-w-0 truncate text-[13px] font-semibold text-[var(--t1)]";
+const SIDE_SCORE_CLASS =
+  "font-['IBM_Plex_Mono',monospace] text-[14px] font-bold tabular-nums text-[var(--t1)]";
 const DETAIL_ROW_CLASS =
-  "mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-[var(--t3)]";
+  "mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-[var(--t3)]";
+const FOOTER_CLASS =
+  "border-t border-[var(--border-1)] px-4 py-3 text-[12px] text-[var(--t3)]";
 
 type LiveState = {
   events: LiveMarketEvent[];
@@ -71,6 +86,50 @@ function eventTitle(event: LiveMarketEvent): string {
   const home = event.homeTeam || "Home";
   const away = event.awayTeam || "Away";
   return `${away} at ${home}`;
+}
+
+function scoreParts(score?: string): [string, string] | null {
+  if (!score) return null;
+  const parts = score.split(/\s*[-–]\s*/);
+  if (parts.length < 2) return null;
+  return [parts[0]?.trim() || "—", parts[1]?.trim() || "—"];
+}
+
+function eventSides(event: LiveMarketEvent): Array<{
+  label: string;
+  score: string;
+}> {
+  const parsed = scoreParts(event.score);
+  if (event.awayTeam || event.homeTeam) {
+    return [
+      {
+        label: event.awayTeam || "Away",
+        score: parsed?.[0] || event.score || "—",
+      },
+      {
+        label: event.homeTeam || "Home",
+        score: parsed?.[1] || event.score || "—",
+      },
+    ];
+  }
+  return [
+    {
+      label: "Current score",
+      score: event.score || "—",
+    },
+  ];
+}
+
+function eventMetaLabels(event: LiveMarketEvent): string[] {
+  const labels = [
+    event.league,
+    event.sport,
+    event.source === "market-data" ? "market data" : undefined,
+  ].filter(Boolean) as string[];
+
+  return Array.from(new Set(labels.map((label) => label.toLowerCase()))).map(
+    (key) => labels.find((label) => label.toLowerCase() === key) || key,
+  );
 }
 
 export default function LiveMarketsPage() {
@@ -184,20 +243,44 @@ export default function LiveMarketsPage() {
                       : event.status || t("LIVE_RECENT")}
                   </span>
                 )}
-                {event.league && <span>{event.league}</span>}
-                {event.sport && <span>{event.sport}</span>}
-                {event.source === "market-data" && <span>market data</span>}
+                {eventMetaLabels(event).map((label) => (
+                  <span key={label}>{label}</span>
+                ))}
               </div>
-              <h2 className={MATCHUP_CLASS}>{eventTitle(event)}</h2>
-              <div className={SCORE_CLASS}>
-                {event.score || t("LIVE_SCORE_PENDING")}
+              <div className={EVENT_BODY_CLASS}>
+                <div>
+                  <h2 className={MATCHUP_CLASS}>{eventTitle(event)}</h2>
+                  <p className={MARKET_STYLE_COPY_CLASS}>
+                    {event.detail ||
+                      event.period ||
+                      event.score ||
+                      t("LIVE_SCORE_PENDING")}
+                  </p>
+                  <div className={DETAIL_ROW_CLASS}>
+                    {event.period && <span>{event.period}</span>}
+                    {event.clock && <span>{event.clock}</span>}
+                    <span>
+                      {t("LIVE_UPDATED", { value: timeAgo(event.updatedAt) })}
+                    </span>
+                  </div>
+                </div>
+                <div
+                  className={SIDE_PANEL_CLASS}
+                  aria-label={eventTitle(event)}
+                >
+                  {eventSides(event).map((side) => (
+                    <div className={SIDE_ROW_CLASS} key={side.label}>
+                      <span className={SIDE_LABEL_CLASS}>{side.label}</span>
+                      <span className={SIDE_SCORE_CLASS}>{side.score}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className={DETAIL_ROW_CLASS}>
-                {event.detail && <span>{event.detail}</span>}
-                {event.period && <span>{event.period}</span>}
-                {event.clock && <span>{event.clock}</span>}
+              <div className={FOOTER_CLASS}>
                 <span>
-                  {t("LIVE_UPDATED", { value: timeAgo(event.updatedAt) })}
+                  {event.source === "market-data"
+                    ? "Live market signal"
+                    : "Live event signal"}
                 </span>
               </div>
             </article>
