@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"phoenix-revival/gateway/internal/compliance"
 	"phoenix-revival/gateway/internal/prediction"
 	"phoenix-revival/platform/transport/httpx"
 )
@@ -392,7 +393,7 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 			}
 			// Jurisdiction + KYC gates (launch policy: crypto-native, outside
 			// US). Both default-off; no-op until configured (see pretrade_gate.go).
-			if err := checkPreTradeCompliance(r, userID); err != nil {
+			if err := checkComplianceGates(r, userID, compliance.SurfaceTrade); err != nil {
 				return err
 			}
 			var req prediction.PlaceOrderRequest

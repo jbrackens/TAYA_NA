@@ -160,16 +160,29 @@ services:
       # KYC_IDV_PROVIDER: "sumsub"   # or onfido / persona
       # KYC_IDV_API_KEY: ""
       # Beta policy: open Asia/Africa/LATAM with trading KYC + geo gates off.
+      # NOTE deny-by-default boot policy: when ENVIRONMENT=production the
+      # gateway REFUSES to boot in permissive mode (ack or no ack), and when
+      # ENVIRONMENT is production/staging WITHOUT acked-permissive mode it
+      # requires GEO_GATE_ENABLED=true + non-empty GEO_ALLOWED_COUNTRIES and
+      # an explicit KYC posture (each KYC flag 'true' or its _ACK_DISABLED
+      # set). This demo box leaves ENVIRONMENT unset, so none of that bites
+      # here. See cmd/gateway/main.go validateGatewayRuntimeConfig.
       BETA_COMPLIANCE_MODE: "permissive"
       COMPLIANCE_STARTUP_ACK: "true"
       # KYC just-in-time gates (manual review + admin approval already enforce).
       # KYC_ENFORCEMENT: "true"            # gate withdrawals above threshold
       # KYC_REQUIRED_FOR_TRADING: "true"   # require verified identity to trade
-      # KYC_WITHDRAWAL_THRESHOLD_CENTS: "250000"
-      # Jurisdiction gate. Leave off for permissive beta. When enabled, it needs
-      # an edge that sets
-      # the country header (e.g. Cloudflare CF-IPCountry) or the gate fails
-      # closed for everyone. See internal/compliance/geo_gate.go.
+      # KYC_ENFORCEMENT_ACK_DISABLED: "true"          # prod/staging only: explicit off
+      # KYC_REQUIRED_FOR_TRADING_ACK_DISABLED: "true" # prod/staging only: explicit off
+      # Beta launch default: $0 threshold — EVERY withdrawal requires verified
+      # identity once KYC_ENFORCEMENT=true. Raise deliberately, not by accident.
+      KYC_WITHDRAWAL_THRESHOLD_CENTS: "0"
+      # Jurisdiction gate. Leave off for permissive beta. When enabled, it
+      # covers trading AND cashier deposits/withdrawals, and it needs an edge
+      # that sets the country header (e.g. Cloudflare CF-IPCountry) or the
+      # gate fails closed for everyone. Allowlist mode (GEO_ALLOWED_COUNTRIES
+      # non-empty) is mandatory in prod/staging. See
+      # internal/compliance/geo_gate.go and docs/compliance/geofencing-kyc.md.
       # GEO_GATE_ENABLED: "true"
       # GEO_ALLOWED_COUNTRIES: "PH,ID,TH,VN,MY,SG"
       # GEO_COUNTRY_HEADER: "CF-IPCountry"

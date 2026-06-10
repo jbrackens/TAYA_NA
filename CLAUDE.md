@@ -331,10 +331,18 @@ STARTER_GRANT_CENTS=            # >0 enables the play-money faucet (one grant/us
 KYC_IDV_PROVIDER=               # ''/'manual' = back-office review; else a vendor (needs KYC_IDV_API_KEY)
 KYC_ENFORCEMENT=                # 'true' gates withdrawals above KYC_WITHDRAWAL_THRESHOLD_CENTS
 KYC_REQUIRED_FOR_TRADING=       # 'true' requires verified identity to trade
+# Deny-by-default boot policy (ENVIRONMENT=production/staging, not acked-permissive):
+# boot REQUIRES GEO_GATE_ENABLED=true + non-empty GEO_ALLOWED_COUNTRIES (allowlist
+# mode mandatory) and each KYC flag above either 'true' or explicitly acked off:
+KYC_ENFORCEMENT_ACK_DISABLED=          # 'true' = deliberately run without the withdrawal KYC gate
+KYC_REQUIRED_FOR_TRADING_ACK_DISABLED= # 'true' = deliberately run without trading KYC
+# BETA_COMPLIANCE_MODE=permissive is INVALID in production (boot error); staging/demo
+# only, with COMPLIANCE_STARTUP_ACK=true.
 CRYPTO_RPC_URL=                 # crypto rail stays fail-closed until RPC + contract + address source are set
 CRYPTO_ASSET_CONTRACT=
 CRYPTO_DEPOSIT_ADDRESS_SOURCE=
-GEO_GATE_ENABLED=               # 'true' enforces jurisdiction (needs an edge country header, e.g. CF-IPCountry)
+GEO_GATE_ENABLED=               # 'true' enforces jurisdiction on trade + deposit + withdraw (needs an edge country header, e.g. CF-IPCountry)
+GEO_ALLOWED_COUNTRIES=          # comma-separated ISO-3166 allowlist; required in prod/staging
 SMTP_HOST=                      # set to send resolution emails; otherwise notifications log
 
 # Auth service — Social OAuth (full reference: go-platform/services/auth/.env.example).

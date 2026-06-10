@@ -82,25 +82,27 @@ func logPreTradeComplianceMode(environment string, gate *compliance.GeoGate) {
 	)
 }
 
-// checkPreTradeCompliance blocks order placement when a configured jurisdiction
-// or KYC gate denies the user. Default-off: returns nil when neither gate is
-// enabled. The geo signal comes from an upstream edge header; an enabled geo
-// gate with no signal fails closed. On a KYC-backend error it fails closed in
-// production/staging and open in development (same posture as the withdrawal
-// KYC gate).
-func checkPreTradeCompliance(r *stdhttp.Request, userID string) error {
+// checkComplianceGates blocks trading and money movement when a configured
+// jurisdiction or KYC gate denies the user. Default-off: returns nil when
+// neither gate is enabled. The geo gate applies to every surface (trade,
+// deposit, withdraw); the trading-KYC gate applies to the trade surface only
+// (withdrawal KYC is the threshold gate in internal/payments). The geo signal
+// comes from an upstream edge header; an enabled geo gate with no signal
+// fails closed. On a KYC-backend error it fails closed in production/staging
+// and open in development (same posture as the withdrawal KYC gate).
+func checkComplianceGates(r *stdhttp.Request, userID string, surface compliance.Surface) error {
 	if permissiveBetaComplianceMode() {
 		return nil
 	}
 	if tradeGeoGate.Enabled() {
 		country := strings.TrimSpace(r.Header.Get(geoCountryHeader()))
 		if allowed, reason := tradeGeoGate.Evaluate(country); !allowed {
-			slog.Info("trade blocked by geo gate", "user_id", userID, "country", country, "reason", reason)
+			logGeoDenial(userID, country, reason, surface)
 			return httpx.Forbidden(reason)
 		}
 	}
 
-	if tradeKYCGate != nil && tradingKYCRequired() {
+	if surface == compliance.SurfaceTrade && tradeKYCGate != nil && tradingKYCRequired() {
 		gctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
 		defer cancel()
 		st, err := tradeKYCGate.GetVerificationStatus(gctx, userID)
@@ -119,4 +121,9 @@ func checkPreTradeCompliance(r *stdhttp.Request, userID string) error {
 		}
 	}
 	return nil
+}
+
+func logGeoDenial(userID, country, reason string, surface compliance.Surface) {
+	slog.Info(string(surface)+" blocked by geo gate",
+		"surface", surface, "user_id", userID, "country", country, "reason", reason)
 }

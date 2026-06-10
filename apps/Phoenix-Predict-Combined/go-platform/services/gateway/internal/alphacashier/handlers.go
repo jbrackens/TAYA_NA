@@ -6,9 +6,23 @@ import (
 	stdhttp "net/http"
 	"strings"
 
+	"phoenix-revival/gateway/internal/compliance"
 	"phoenix-revival/gateway/internal/wallet"
 	"phoenix-revival/platform/transport/httpx"
 )
+
+// ComplianceGate gates money movement (deposit/withdraw surfaces) behind the
+// jurisdiction/KYC checks owned by the HTTP layer. Wired in
+// internal/http/handlers.go; nil (e.g. in package tests) is a no-op. Mirrors
+// the payments.KYCGate injection pattern.
+var ComplianceGate compliance.GateFunc
+
+func checkComplianceGate(r *stdhttp.Request, userID string, surface compliance.Surface) error {
+	if ComplianceGate == nil {
+		return nil
+	}
+	return ComplianceGate(r, userID, surface)
+}
 
 func RegisterRoutes(mux *stdhttp.ServeMux, svc *Service) {
 	mux.Handle("/api/v1/cashier/alpha/config", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -90,6 +104,9 @@ func RegisterRoutes(mux *stdhttp.ServeMux, svc *Service) {
 			}
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"depositIntents": intents})
 		case stdhttp.MethodPost:
+			if err := checkComplianceGate(r, userID, compliance.SurfaceDeposit); err != nil {
+				return err
+			}
 			idempotencyKey := strings.TrimSpace(r.Header.Get("Idempotency-Key"))
 			var body struct {
 				WalletAddress string `json:"walletAddress"`
@@ -136,6 +153,9 @@ func RegisterRoutes(mux *stdhttp.ServeMux, svc *Service) {
 			if r.Method != stdhttp.MethodPost {
 				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 			}
+			if err := checkComplianceGate(r, userID, compliance.SurfaceDeposit); err != nil {
+				return err
+			}
 			if strings.TrimSpace(r.Header.Get("Idempotency-Key")) == "" {
 				return httpx.BadRequest("Idempotency-Key header is required", map[string]any{"field": "Idempotency-Key"})
 			}
@@ -173,6 +193,9 @@ func RegisterRoutes(mux *stdhttp.ServeMux, svc *Service) {
 			}
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"withdrawalRequests": requests})
 		case stdhttp.MethodPost:
+			if err := checkComplianceGate(r, userID, compliance.SurfaceWithdraw); err != nil {
+				return err
+			}
 			idempotencyKey := strings.TrimSpace(r.Header.Get("Idempotency-Key"))
 			var body struct {
 				DestinationAddress string `json:"destinationAddress"`

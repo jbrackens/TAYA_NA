@@ -236,13 +236,54 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 	if complianceMode == "" {
 		complianceMode = strings.ToLower(strings.TrimSpace(getenv("COMPLIANCE_MODE")))
 	}
+	ackedPermissive := false
 	switch complianceMode {
 	case "permissive", "permissive_beta", "beta_permissive":
+		// The permissive bypass disables the jurisdiction and trading-KYC
+		// gates entirely. That is a staging/demo posture only — production
+		// must never run ungated, ack or no ack.
+		if env == "production" {
+			return fmt.Errorf("BETA_COMPLIANCE_MODE=%s is not permitted when ENVIRONMENT=production; permissive mode is for staging/demo only", complianceMode)
+		}
 		if !strings.EqualFold(strings.TrimSpace(getenv("COMPLIANCE_STARTUP_ACK")), "true") {
 			return fmt.Errorf("permissive beta compliance mode disables KYC/geofence gates; set COMPLIANCE_STARTUP_ACK=true when ENVIRONMENT=%s to acknowledge this beta policy", env)
 		}
+		ackedPermissive = true
+	}
+
+	// Deny-by-default jurisdiction + KYC posture: a deployed environment that
+	// is not in acked-permissive mode must enforce the geo gate in allowlist
+	// mode and state its KYC posture explicitly. The boot checks demand the
+	// canonical value "true" (stricter than the runtime parsers, which also
+	// accept 1/yes) so a deploy can never pass validation with a value the
+	// runtime might not honor.
+	if !ackedPermissive {
+		if !strings.EqualFold(strings.TrimSpace(getenv("GEO_GATE_ENABLED")), "true") {
+			return fmt.Errorf("GEO_GATE_ENABLED=true is required when ENVIRONMENT=%s (deny-by-default jurisdiction posture); use BETA_COMPLIANCE_MODE=permissive + COMPLIANCE_STARTUP_ACK=true on staging if the bypass is intended", env)
+		}
+		if !hasCountryEntries(getenv("GEO_ALLOWED_COUNTRIES")) {
+			return fmt.Errorf("GEO_ALLOWED_COUNTRIES must list the permitted ISO-3166 countries when ENVIRONMENT=%s — allowlist mode is mandatory for launch (a blocklist is too easy to under-specify)", env)
+		}
+		for _, kycVar := range []string{"KYC_ENFORCEMENT", "KYC_REQUIRED_FOR_TRADING"} {
+			v := strings.TrimSpace(getenv(kycVar))
+			ack := strings.EqualFold(strings.TrimSpace(getenv(kycVar+"_ACK_DISABLED")), "true")
+			if !strings.EqualFold(v, "true") && !ack {
+				return fmt.Errorf("%s must be explicitly 'true' or explicitly acknowledged off via %s_ACK_DISABLED=true when ENVIRONMENT=%s — KYC posture must not default off silently", kycVar, kycVar, env)
+			}
+		}
 	}
 	return nil
+}
+
+// hasCountryEntries reports whether a comma-separated country list contains at
+// least one non-empty entry (mirrors compliance.parseCountrySet's tokenizing).
+func hasCountryEntries(raw string) bool {
+	for _, tok := range strings.Split(raw, ",") {
+		if strings.TrimSpace(tok) != "" {
+			return true
+		}
+	}
+	return false
 }
 
 // CORS configuration moved to platform/transport/httpx as httpx.CORS — see
