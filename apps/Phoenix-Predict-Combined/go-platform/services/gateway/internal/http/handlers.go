@@ -406,6 +406,12 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// docs/compliance/geofencing-kyc.md (depth pending legal sign-off).
 	tradeGeoGate = compliance.NewGeoGateFromEnv()
 	tradeKYCGate = kycService
+	// Money movement runs through the same gates: the geo gate covers the
+	// deposit and withdraw surfaces in the alpha cashier and legacy payments
+	// handlers (registration stays un-gated — account creation is fine,
+	// money movement is not; see docs/compliance/geofencing-kyc.md).
+	alphacashier.ComplianceGate = checkComplianceGates
+	payments.ComplianceGate = checkComplianceGates
 	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
 	logPreTradeComplianceMode(env, tradeGeoGate)
 	// The geo gate is intentionally default-off (depth pending legal), so a

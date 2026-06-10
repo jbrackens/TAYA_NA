@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Link from "next/link";
 import {
   getBalance,
   deposit,
@@ -11,6 +12,7 @@ import {
 import { Balance, Transaction } from "../lib/api/wallet-client";
 import { logger } from "../lib/logger";
 import { getMonthlyDepositTotal } from "../lib/api/compliance-client";
+import { complianceDenialKind } from "../lib/compliance-denial";
 import { useAppDispatch } from "../lib/store/hooks";
 import { setCurrentBalance } from "../lib/store/cashierSlice";
 import { useToast } from "../components/ToastProvider";
@@ -546,7 +548,22 @@ export default function CashierPage() {
                 {pollMessage}
               </div>
             )}
-            {error && <div className={messageClass("error")}>{error}</div>}
+            {error && (
+              <div className={messageClass("error")} role="alert">
+                <span>
+                  {error}
+                  {/* KYC gate denial: deep-link to verification */}
+                  {complianceDenialKind(error) === "kyc" && (
+                    <>
+                      {" "}
+                      <Link href="/profile" className="font-semibold underline">
+                        Complete verification
+                      </Link>
+                    </>
+                  )}
+                </span>
+              </div>
+            )}
             {success && (
               <div className={messageClass("success")}>{success}</div>
             )}

@@ -33,6 +33,7 @@ import type {
   TimeInForce,
 } from "@phoenix-ui/api-client/src/prediction-types";
 import { useToast } from "../ToastProvider";
+import { complianceDenialKind } from "../../lib/compliance-denial";
 
 /**
  * Extra fields the trade ticket can pass to the parent's submit handler
@@ -139,6 +140,8 @@ const TICKET_NOTE_CLASS =
 const TICKET_TRUST_CLASS =
   "mt-2.5 text-center text-xs leading-[1.45] text-[var(--t3)]";
 const TICKET_ERROR_CLASS = "mt-2.5 text-center text-xs text-[var(--no-text)]";
+const TICKET_COMPLIANCE_CLASS =
+  "mt-3 rounded-[var(--r-rh-sm)] border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.1)] p-2.5 text-center text-xs leading-[1.45] text-[var(--no-text)]";
 const TICKET_CLOSED_CLASS =
   "mt-3 rounded-[var(--r-rh-sm)] border border-dashed border-[var(--border-1)] p-2.5 text-center text-xs text-[var(--t3)]";
 
@@ -867,7 +870,25 @@ export function TradeTicket({
           {/* Suppress unused-warning: API surface preserved for Phase 4 */}
           <input type="hidden" value={otherPrice} readOnly />
 
-          {error && <div className={TICKET_ERROR_CLASS}>{error}</div>}
+          {error &&
+            (complianceDenialKind(error) ? (
+              // Jurisdiction/KYC gate denial from the gateway: surface the
+              // user-readable reason as a banner; KYC denials deep-link to
+              // verification.
+              <div className={TICKET_COMPLIANCE_CLASS} role="alert">
+                {error}
+                {complianceDenialKind(error) === "kyc" && (
+                  <Link
+                    href="/profile"
+                    className="mt-1.5 block font-semibold text-[var(--t1)] underline"
+                  >
+                    {t("COMPLETE_VERIFICATION")}
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <div className={TICKET_ERROR_CLASS}>{error}</div>
+            ))}
         </>
       )}
     </section>

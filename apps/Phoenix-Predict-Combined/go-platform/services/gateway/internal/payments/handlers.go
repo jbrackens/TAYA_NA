@@ -27,6 +27,19 @@ var DepositComplianceChecker compliance.ResponsibleGamblingService
 // Checker injection pattern; wired in internal/http/handlers.go.
 var KYCGate compliance.KYCService
 
+// ComplianceGate gates money movement behind the jurisdiction/KYC checks
+// owned by the HTTP layer (geo gate on deposit/withdraw surfaces). Wired in
+// internal/http/handlers.go; nil (e.g. in package tests) is a no-op. Same
+// injection pattern as KYCGate above.
+var ComplianceGate compliance.GateFunc
+
+func checkComplianceGate(r *stdhttp.Request, userID string, surface compliance.Surface) error {
+	if ComplianceGate == nil {
+		return nil
+	}
+	return ComplianceGate(r, userID, surface)
+}
+
 const defaultKYCWithdrawalThresholdCents int64 = 250000 // $2,500 cumulative
 
 // kycEnforcementEnabled reports whether the KYC JIT gate is active. Off by
@@ -94,6 +107,9 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 
 		userID, err := paymentRouteUserID(r, req.UserID, false)
 		if err != nil {
+			return err
+		}
+		if err := checkComplianceGate(r, userID, compliance.SurfaceDeposit); err != nil {
 			return err
 		}
 		if req.Amount <= 0 {
@@ -174,6 +190,9 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 		}
 		if req.UserID != "" && req.UserID != userID {
 			return httpx.Forbidden("cannot withdraw for another user")
+		}
+		if err := checkComplianceGate(r, userID, compliance.SurfaceWithdraw); err != nil {
+			return err
 		}
 
 		// KYC just-in-time gate (LC-22/D-8), evaluated atomically with the

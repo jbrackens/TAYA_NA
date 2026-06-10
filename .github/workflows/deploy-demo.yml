@@ -304,6 +304,7 @@ jobs:
               --build-arg NEXT_PUBLIC_WS_URL=wss://demo.99rtp.io/ws \
               --build-arg NEXT_PUBLIC_FEATURE_CHAT=true \
               --build-arg NEXT_PUBLIC_CHAT_PUBLIC_URL=https://demo.99rtp.io/chat \
+              --build-arg NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS=true \
               -t predict-frontend:app-slim .'
 
       - name: Recreate player container

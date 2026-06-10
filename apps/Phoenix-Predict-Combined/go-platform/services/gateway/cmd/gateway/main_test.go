@@ -201,21 +201,92 @@ func TestValidateGatewayRuntimeConfigRejectsDevDBPasswordInProduction(t *testing
 	}
 }
 
+// prodBaseEnv is a passing production configuration: real secrets plus the
+// deny-by-default compliance posture (geo allowlist on, KYC stated
+// explicitly). Tests override single keys to probe each boot requirement.
+func prodBaseEnv(overrides map[string]string) func(string) string {
+	base := map[string]string{
+		"ENVIRONMENT":              "production",
+		"PAYMENTS_WEBHOOK_SECRET":  "whsec_a-real-and-strong-secret",
+		"GATEWAY_DB_DSN":           "postgres://predict:S3cure-Prod-Pass@db.internal:5432/predict?sslmode=require",
+		"WALLET_DB_DSN":            "postgres://predict:S3cure-Prod-Pass@db.internal:5432/predict?sslmode=require",
+		"GEO_GATE_ENABLED":         "true",
+		"GEO_ALLOWED_COUNTRIES":    "PH,TH,VN",
+		"KYC_ENFORCEMENT":          "true",
+		"KYC_REQUIRED_FOR_TRADING": "true",
+	}
+	for k, v := range overrides {
+		base[k] = v
+	}
+	return func(key string) string { return base[key] }
+}
+
 func TestValidateGatewayRuntimeConfigAllowsRealSecretsInProduction(t *testing.T) {
-	err := validateGatewayRuntimeConfig(func(key string) string {
-		switch key {
-		case "ENVIRONMENT":
-			return "production"
-		case "PAYMENTS_WEBHOOK_SECRET":
-			return "whsec_a-real-and-strong-secret"
-		case "GATEWAY_DB_DSN", "WALLET_DB_DSN":
-			return "postgres://predict:S3cure-Prod-Pass@db.internal:5432/predict?sslmode=require"
-		default:
-			return ""
-		}
-	})
+	err := validateGatewayRuntimeConfig(prodBaseEnv(nil))
 	if err != nil {
-		t.Fatalf("expected production with real secrets to validate, got %v", err)
+		t.Fatalf("expected production with real secrets and compliance posture to validate, got %v", err)
+	}
+}
+
+func TestValidateGatewayRuntimeConfigRequiresGeoGateInDeployedEnvs(t *testing.T) {
+	cases := map[string]map[string]string{
+		"geo gate off":          {"GEO_GATE_ENABLED": ""},
+		"geo gate false":        {"GEO_GATE_ENABLED": "false"},
+		"empty allowlist":       {"GEO_ALLOWED_COUNTRIES": ""},
+		"allowlist only commas": {"GEO_ALLOWED_COUNTRIES": " , ,"},
+	}
+	for name, overrides := range cases {
+		t.Run(name, func(t *testing.T) {
+			if err := validateGatewayRuntimeConfig(prodBaseEnv(overrides)); err == nil {
+				t.Fatalf("expected production boot refusal with %s", name)
+			}
+		})
+	}
+}
+
+func TestValidateGatewayRuntimeConfigRequiresExplicitKYCPostureInDeployedEnvs(t *testing.T) {
+	for _, kycVar := range []string{"KYC_ENFORCEMENT", "KYC_REQUIRED_FOR_TRADING"} {
+		t.Run(kycVar+" silently off", func(t *testing.T) {
+			if err := validateGatewayRuntimeConfig(prodBaseEnv(map[string]string{kycVar: ""})); err == nil {
+				t.Fatalf("expected production boot refusal when %s is silently off", kycVar)
+			}
+		})
+		t.Run(kycVar+" acked off", func(t *testing.T) {
+			err := validateGatewayRuntimeConfig(prodBaseEnv(map[string]string{
+				kycVar:                   "",
+				kycVar + "_ACK_DISABLED": "true",
+			}))
+			if err != nil {
+				t.Fatalf("expected acked-off %s to validate, got %v", kycVar, err)
+			}
+		})
+	}
+}
+
+func TestValidateGatewayRuntimeConfigRefusesPermissiveComplianceInProduction(t *testing.T) {
+	err := validateGatewayRuntimeConfig(prodBaseEnv(map[string]string{
+		"BETA_COMPLIANCE_MODE":   "permissive",
+		"COMPLIANCE_STARTUP_ACK": "true",
+	}))
+	if err == nil {
+		t.Fatalf("expected production boot refusal for permissive compliance mode even with ack")
+	}
+}
+
+func TestValidateGatewayRuntimeConfigAckedPermissiveStagingSkipsGateRequirements(t *testing.T) {
+	// Acked-permissive staging intentionally runs ungated (closed beta), so
+	// the geo/KYC posture requirements must not apply there.
+	err := validateGatewayRuntimeConfig(prodBaseEnv(map[string]string{
+		"ENVIRONMENT":              "staging",
+		"BETA_COMPLIANCE_MODE":     "permissive",
+		"COMPLIANCE_STARTUP_ACK":   "true",
+		"GEO_GATE_ENABLED":         "",
+		"GEO_ALLOWED_COUNTRIES":    "",
+		"KYC_ENFORCEMENT":          "",
+		"KYC_REQUIRED_FOR_TRADING": "",
+	}))
+	if err != nil {
+		t.Fatalf("expected acked-permissive staging to validate without geo/KYC posture, got %v", err)
 	}
 }
 

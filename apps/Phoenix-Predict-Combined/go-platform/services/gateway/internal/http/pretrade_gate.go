@@ -6,6 +6,7 @@ import (
 	stdhttp "net/http"
 	"os"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"phoenix-revival/gateway/internal/compliance"
@@ -40,6 +41,22 @@ func geoCountryHeader() string {
 		return h
 	}
 	return "CF-IPCountry"
+}
+
+// geoMissingSignalDenials counts gate denials caused by an absent country
+// header. With a healthy edge every request carries the header, so a rising
+// count means the edge is misconfigured (or traffic is bypassing it) — the
+// kind of break that should be visible within minutes, not after a regulator
+// notices. Logged with each denial when GEO_TRUSTED_PROXY_MODE=require.
+var geoMissingSignalDenials atomic.Int64
+
+// trustedProxyModeRequired reports whether the deploy declares a trusted
+// edge that always sets the country header (GEO_TRUSTED_PROXY_MODE=require).
+// The gate already fails closed on a missing signal either way; this flag
+// only escalates missing-signal denials from routine geo denials to loud
+// edge-misconfiguration errors with a running counter.
+func trustedProxyModeRequired() bool {
+	return strings.EqualFold(strings.TrimSpace(os.Getenv("GEO_TRUSTED_PROXY_MODE")), "require")
 }
 
 func tradingKYCRequired() bool {
@@ -82,25 +99,34 @@ func logPreTradeComplianceMode(environment string, gate *compliance.GeoGate) {
 	)
 }
 
-// checkPreTradeCompliance blocks order placement when a configured jurisdiction
-// or KYC gate denies the user. Default-off: returns nil when neither gate is
-// enabled. The geo signal comes from an upstream edge header; an enabled geo
-// gate with no signal fails closed. On a KYC-backend error it fails closed in
-// production/staging and open in development (same posture as the withdrawal
-// KYC gate).
-func checkPreTradeCompliance(r *stdhttp.Request, userID string) error {
+// checkComplianceGates blocks trading and money movement when a configured
+// jurisdiction or KYC gate denies the user. Default-off: returns nil when
+// neither gate is enabled. The geo gate applies to every surface (trade,
+// deposit, withdraw); the trading-KYC gate applies to the trade surface only
+// (withdrawal KYC is the threshold gate in internal/payments). The geo signal
+// comes from an upstream edge header; an enabled geo gate with no signal
+// fails closed. On a KYC-backend error it fails closed in production/staging
+// and open in development (same posture as the withdrawal KYC gate).
+func checkComplianceGates(r *stdhttp.Request, userID string, surface compliance.Surface) error {
 	if permissiveBetaComplianceMode() {
 		return nil
 	}
 	if tradeGeoGate.Enabled() {
 		country := strings.TrimSpace(r.Header.Get(geoCountryHeader()))
 		if allowed, reason := tradeGeoGate.Evaluate(country); !allowed {
-			slog.Info("trade blocked by geo gate", "user_id", userID, "country", country, "reason", reason)
+			if country == "" && trustedProxyModeRequired() {
+				n := geoMissingSignalDenials.Add(1)
+				slog.Error("geo gate: country header missing behind a trusted edge — edge misconfigured or bypassed",
+					"surface", surface, "user_id", userID,
+					"header", geoCountryHeader(), "missing_signal_denials_total", n)
+			} else {
+				logGeoDenial(userID, country, reason, surface)
+			}
 			return httpx.Forbidden(reason)
 		}
 	}
 
-	if tradeKYCGate != nil && tradingKYCRequired() {
+	if surface == compliance.SurfaceTrade && tradeKYCGate != nil && tradingKYCRequired() {
 		gctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
 		defer cancel()
 		st, err := tradeKYCGate.GetVerificationStatus(gctx, userID)
@@ -119,4 +145,9 @@ func checkPreTradeCompliance(r *stdhttp.Request, userID string) error {
 		}
 	}
 	return nil
+}
+
+func logGeoDenial(userID, country, reason string, surface compliance.Surface) {
+	slog.Info(string(surface)+" blocked by geo gate",
+		"surface", surface, "user_id", userID, "country", country, "reason", reason)
 }
