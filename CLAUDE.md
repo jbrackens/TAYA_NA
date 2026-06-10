@@ -343,6 +343,7 @@ CRYPTO_ASSET_CONTRACT=
 CRYPTO_DEPOSIT_ADDRESS_SOURCE=
 GEO_GATE_ENABLED=               # 'true' enforces jurisdiction on trade + deposit + withdraw (needs an edge country header, e.g. CF-IPCountry)
 GEO_ALLOWED_COUNTRIES=          # comma-separated ISO-3166 allowlist; required in prod/staging
+GEO_TRUSTED_PROXY_MODE=         # 'require' = edge always sets the header; missing-signal denials log Error + counter
 SMTP_HOST=                      # set to send resolution emails; otherwise notifications log
 
 # Auth service — Social OAuth (full reference: go-platform/services/auth/.env.example).

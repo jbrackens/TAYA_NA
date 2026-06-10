@@ -31,7 +31,19 @@ demo.99rtp.io {
 	}
 	@backend path /api/* /admin/* /ws /ws/*
 	handle @backend {
-		reverse_proxy predict_gateway:18080
+		# Geo signal trust chain (geo gate, GEO_COUNTRY_HEADER=CF-IPCountry):
+		#   - X-Geo-Country is never legitimate at this hop (only an
+		#     in-Caddy GeoIP module would set it) — strip it so a client
+		#     can't smuggle a value past a misconfigured GEO_COUNTRY_HEADER.
+		#   - CF-IPCountry is set by Cloudflare (orange-cloud proxy) and CF
+		#     overwrites any client-supplied copy, so it must be FORWARDED
+		#     here. Before enabling the geo gate, flip DNS to proxied and
+		#     firewall :80/:443 to Cloudflare IP ranges so requests cannot
+		#     bypass the edge and forge it (see
+		#     docs/compliance/geofencing-kyc.md "Edge geo signal").
+		reverse_proxy predict_gateway:18080 {
+			header_up -X-Geo-Country
+		}
 	}
 	handle {
 		reverse_proxy predict_player:3000
@@ -47,7 +59,10 @@ office.99rtp.io {
 	# + handlers.go) and /admin/*, so this matcher still covers them.
 	@backend path /api/v1/* /admin/* /ws /ws/*
 	handle @backend {
-		reverse_proxy predict_gateway:18080
+		# Same geo-header hygiene as the player host (see comment there).
+		reverse_proxy predict_gateway:18080 {
+			header_up -X-Geo-Country
+		}
 	}
 	# Generate the hash on the box:  docker run --rm caddy:2 caddy hash-password --plaintext 'YOURPASS'
 	# then paste it below (Caddy >=2.8 uses `basic_auth`; older uses `basicauth`).

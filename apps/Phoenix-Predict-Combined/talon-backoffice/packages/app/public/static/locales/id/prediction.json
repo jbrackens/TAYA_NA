@@ -49,6 +49,7 @@
   "PRICE_HISTORY_UNAVAILABLE": "Riwayat harga tidak tersedia",
   "RETRY": "Coba lagi",
   "NO_TRADES_IN_RANGE": "Belum ada perdagangan dalam rentang ini",
+  "COMPLETE_VERIFICATION": "Selesaikan verifikasi",
   "TRADE": "Trading",
   "TRADE_TICKET": "Tiket trading",
   "ORDER_TYPE": "Jenis order",

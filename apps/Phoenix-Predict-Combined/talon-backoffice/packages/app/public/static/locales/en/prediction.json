@@ -49,6 +49,7 @@
   "PRICE_HISTORY_UNAVAILABLE": "Price history unavailable",
   "RETRY": "Retry",
   "NO_TRADES_IN_RANGE": "No trades yet in this range",
+  "COMPLETE_VERIFICATION": "Complete verification",
   "TRADE": "Trade",
   "TRADE_TICKET": "Trade ticket",
   "ORDER_TYPE": "Order type",

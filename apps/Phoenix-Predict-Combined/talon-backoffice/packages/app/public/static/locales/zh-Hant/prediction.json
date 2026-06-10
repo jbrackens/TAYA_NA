@@ -49,6 +49,7 @@
   "PRICE_HISTORY_UNAVAILABLE": "價格歷史不可用",
   "RETRY": "重試",
   "NO_TRADES_IN_RANGE": "此時間段內暫無交易",
+  "COMPLETE_VERIFICATION": "完成身分驗證",
   "TRADE": "交易",
   "TRADE_TICKET": "交易單",
   "ORDER_TYPE": "訂單類型",

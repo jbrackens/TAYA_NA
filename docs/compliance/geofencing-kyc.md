@@ -68,6 +68,54 @@ must not be silently bypassable by a missing header).
 | `KYC_ENFORCEMENT` | `false` | Gate withdrawals above `KYC_WITHDRAWAL_THRESHOLD_CENTS` (beta default `0` in the demo compose = every withdrawal). |
 | `KYC_ENFORCEMENT_ACK_DISABLED` | *(unset)* | Prod/staging: explicit acknowledgment that withdrawal KYC is off. |
 | `KYC_REQUIRED_FOR_TRADING_ACK_DISABLED` | *(unset)* | Prod/staging: explicit acknowledgment that trading KYC is off. |
+| `GEO_TRUSTED_PROXY_MODE` | *(unset)* | `require` = the deploy declares a trusted edge that always sets the country header; missing-signal denials then log at Error with a running counter (`missing_signal_denials_total`) so a broken edge is visible in minutes. |
+
+## Edge geo signal (decision: Cloudflare proxy)
+
+The gateway never geolocates IPs itself — it trusts `GEO_COUNTRY_HEADER`. The
+chosen edge is **Cloudflare** (plan option (a)): the demo/beta DNS already
+lives at Cloudflare (grey-cloud), and flipping the records to **proxied
+(orange-cloud)** makes Cloudflare set `CF-IPCountry` on every request with no
+code or image changes. The alternative (b) — a custom Caddy build with
+`caddy-maxmind-geolocation` plus a GeoLite2 database and a MaxMind license to
+keep it updated — adds an image build + data pipeline for no extra fidelity.
+
+**Spoofing model and controls:**
+
+1. **Through Cloudflare:** CF strips/overwrites any client-supplied
+   `CF-IPCountry`; the value is trustworthy.
+2. **At Caddy:** the Caddyfile deletes inbound `X-Geo-Country` toward the
+   gateway (nothing legitimate sets it in this topology), so a stray
+   `GEO_COUNTRY_HEADER=X-Geo-Country` misconfiguration cannot be spoofed
+   through. `CF-IPCountry` is deliberately forwarded — Cloudflare is the one
+   who sets it.
+3. **Direct-to-origin bypass:** an attacker hitting the box IP directly can
+   forge `CF-IPCountry`. Closing this is an on-box firewall step, part of
+   enabling the gate (below).
+4. **Defense in depth:** `GEO_TRUSTED_PROXY_MODE=require` makes
+   missing-header denials loud (Error log + counter), so an edge break —
+   misconfigured DNS, dropped header, traffic bypassing CF — surfaces in
+   minutes instead of silently denying everyone (the gate fails closed
+   either way).
+
+**Runbook — enabling the geo gate on the demo/beta box:**
+
+1. Cloudflare DNS: flip `demo.99rtp.io` / `office.99rtp.io` A records to
+   **proxied** (orange cloud).
+2. Firewall the origin so only Cloudflare can reach it, e.g.
+   `for r in $(curl -s https://www.cloudflare.com/ips-v4); do ufw allow from $r to any port 443,80 proto tcp; done`
+   then deny 80/443 from anywhere else (keep SSH).
+3. Gateway env: `GEO_GATE_ENABLED=true`, `GEO_ALLOWED_COUNTRIES=<legal list>`,
+   `GEO_TRUSTED_PROXY_MODE=require` (and drop `BETA_COMPLIANCE_MODE`).
+4. **Manual spoof check** (from a host outside Cloudflare):
+   - `curl -H "CF-IPCountry: SG" https://<origin-ip>/api/v1/...` must NOT
+     reach the gateway (firewall drops it). If it does reach it, the
+     firewall step failed — fix before launch.
+   - A normal request through the domain from a non-allowlisted country (or
+     `curl -H "CF-IPCountry: US"` via the domain — CF overwrites it) gets
+     403 with the user-facing jurisdiction reason.
+   - `docker logs predict_gateway | grep missing_signal_denials_total`
+     stays flat while real traffic flows.
 
 On a KYC-backend error the trading gate fails **closed** in production/staging
 and **open** in development — the same posture as the withdrawal KYC gate.

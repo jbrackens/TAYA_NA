@@ -6,6 +6,7 @@ import (
 	stdhttp "net/http"
 	"os"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"phoenix-revival/gateway/internal/compliance"
@@ -40,6 +41,22 @@ func geoCountryHeader() string {
 		return h
 	}
 	return "CF-IPCountry"
+}
+
+// geoMissingSignalDenials counts gate denials caused by an absent country
+// header. With a healthy edge every request carries the header, so a rising
+// count means the edge is misconfigured (or traffic is bypassing it) — the
+// kind of break that should be visible within minutes, not after a regulator
+// notices. Logged with each denial when GEO_TRUSTED_PROXY_MODE=require.
+var geoMissingSignalDenials atomic.Int64
+
+// trustedProxyModeRequired reports whether the deploy declares a trusted
+// edge that always sets the country header (GEO_TRUSTED_PROXY_MODE=require).
+// The gate already fails closed on a missing signal either way; this flag
+// only escalates missing-signal denials from routine geo denials to loud
+// edge-misconfiguration errors with a running counter.
+func trustedProxyModeRequired() bool {
+	return strings.EqualFold(strings.TrimSpace(os.Getenv("GEO_TRUSTED_PROXY_MODE")), "require")
 }
 
 func tradingKYCRequired() bool {
@@ -97,7 +114,14 @@ func checkComplianceGates(r *stdhttp.Request, userID string, surface compliance.
 	if tradeGeoGate.Enabled() {
 		country := strings.TrimSpace(r.Header.Get(geoCountryHeader()))
 		if allowed, reason := tradeGeoGate.Evaluate(country); !allowed {
-			logGeoDenial(userID, country, reason, surface)
+			if country == "" && trustedProxyModeRequired() {
+				n := geoMissingSignalDenials.Add(1)
+				slog.Error("geo gate: country header missing behind a trusted edge — edge misconfigured or bypassed",
+					"surface", surface, "user_id", userID,
+					"header", geoCountryHeader(), "missing_signal_denials_total", n)
+			} else {
+				logGeoDenial(userID, country, reason, surface)
+			}
 			return httpx.Forbidden(reason)
 		}
 	}

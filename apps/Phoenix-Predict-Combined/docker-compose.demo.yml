@@ -186,6 +186,7 @@ services:
       # GEO_GATE_ENABLED: "true"
       # GEO_ALLOWED_COUNTRIES: "PH,ID,TH,VN,MY,SG"
       # GEO_COUNTRY_HEADER: "CF-IPCountry"
+      # GEO_TRUSTED_PROXY_MODE: "require"  # loud Error+counter on missing edge signal
       # Email notifications (resolution/payout). Logs until SMTP_HOST is set.
       # SMTP_HOST: ""
       # SMTP_PORT: "587"

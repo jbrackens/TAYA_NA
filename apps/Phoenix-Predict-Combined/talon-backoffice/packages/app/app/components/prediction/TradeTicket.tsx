@@ -33,6 +33,7 @@ import type {
   TimeInForce,
 } from "@phoenix-ui/api-client/src/prediction-types";
 import { useToast } from "../ToastProvider";
+import { complianceDenialKind } from "../../lib/compliance-denial";
 
 /**
  * Extra fields the trade ticket can pass to the parent's submit handler
@@ -111,8 +112,7 @@ const TICKET_SIDE_PRICE_CLASS =
 const TICKET_SIDE_SUB_CLASS =
   "mt-1.5 block font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
 const TICKET_AMOUNT_CLASS = "mb-[14px]";
-const TICKET_AMOUNT_HEAD_CLASS =
-  "mb-2 flex items-baseline justify-between";
+const TICKET_AMOUNT_HEAD_CLASS = "mb-2 flex items-baseline justify-between";
 const TICKET_AMOUNT_LABEL_CLASS = "text-xs font-medium text-[var(--t3)]";
 const TICKET_AMOUNT_BALANCE_CLASS =
   "font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
@@ -139,8 +139,9 @@ const TICKET_NOTE_CLASS =
   "mt-2.5 text-center text-xs leading-[1.45] text-[var(--t2)]";
 const TICKET_TRUST_CLASS =
   "mt-2.5 text-center text-xs leading-[1.45] text-[var(--t3)]";
-const TICKET_ERROR_CLASS =
-  "mt-2.5 text-center text-xs text-[var(--no-text)]";
+const TICKET_ERROR_CLASS = "mt-2.5 text-center text-xs text-[var(--no-text)]";
+const TICKET_COMPLIANCE_CLASS =
+  "mt-3 rounded-[var(--r-rh-sm)] border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.1)] p-2.5 text-center text-xs leading-[1.45] text-[var(--no-text)]";
 const TICKET_CLOSED_CLASS =
   "mt-3 rounded-[var(--r-rh-sm)] border border-dashed border-[var(--border-1)] p-2.5 text-center text-xs text-[var(--t3)]";
 
@@ -346,7 +347,8 @@ export function TradeTicket({
   const handleSubmit = useCallback(async () => {
     if (!onSubmit) return;
     if (!isAuthenticated || authLoading || !isOpen) return;
-    if (insufficientFunds || insufficientShares || marketBuyHasNoLiquidity) return;
+    if (insufficientFunds || insufficientShares || marketBuyHasNoLiquidity)
+      return;
     if (quantity < 1) {
       setError(t("AMOUNT_TOO_SMALL"));
       return;
@@ -531,299 +533,318 @@ export function TradeTicket({
 
   return (
     <section className={TICKET_CARD_CLASS} aria-label={t("TRADE_TICKET")}>
-        {!isOpen && renderSettledTicket(market, t)}
-        {isOpen && (
-          <>
-            <div className={TICKET_HEAD_CLASS}>
-              <span className={TICKET_TITLE_CLASS}>{t("TRADE")}</span>
-              <div className={TICKET_MODE_CLASS} role="tablist" aria-label={t("ORDER_TYPE")}>
-                <button
-                  role="tab"
-                  aria-selected={mode === "market"}
-                  className={ticketModeButtonClass(mode === "market")}
-                  onClick={() => setMode("market")}
-                >
-                  {t("MARKET_ORDER")}
-                </button>
-                <button
-                  role="tab"
-                  aria-selected={mode === "limit"}
-                  className={ticketModeButtonClass(mode === "limit")}
-                  onClick={() => isExchange && setMode("limit")}
-                  disabled={!isExchange}
-                  title={
-                    isExchange
-                      ? t("LIMIT_ORDER_TITLE")
-                      : t("LIMIT_ORDER_DISABLED_TITLE")
-                  }
-                >
-                  {t("LIMIT_ORDER")}
-                </button>
-              </div>
+      {!isOpen && renderSettledTicket(market, t)}
+      {isOpen && (
+        <>
+          <div className={TICKET_HEAD_CLASS}>
+            <span className={TICKET_TITLE_CLASS}>{t("TRADE")}</span>
+            <div
+              className={TICKET_MODE_CLASS}
+              role="tablist"
+              aria-label={t("ORDER_TYPE")}
+            >
+              <button
+                role="tab"
+                aria-selected={mode === "market"}
+                className={ticketModeButtonClass(mode === "market")}
+                onClick={() => setMode("market")}
+              >
+                {t("MARKET_ORDER")}
+              </button>
+              <button
+                role="tab"
+                aria-selected={mode === "limit"}
+                className={ticketModeButtonClass(mode === "limit")}
+                onClick={() => isExchange && setMode("limit")}
+                disabled={!isExchange}
+                title={
+                  isExchange
+                    ? t("LIMIT_ORDER_TITLE")
+                    : t("LIMIT_ORDER_DISABLED_TITLE")
+                }
+              >
+                {t("LIMIT_ORDER")}
+              </button>
             </div>
+          </div>
 
-            {/* Buy/Sell toggle — only meaningful for exchange markets. AMM stays
+          {/* Buy/Sell toggle — only meaningful for exchange markets. AMM stays
             buy-only because the curve only mints; sell support is the
             order-book book's job. */}
-            {isExchange && (
-              <div
-                className={`${TICKET_MODE_CLASS} mb-[14px] self-start`}
-                role="tablist"
-                aria-label={t("ACTION")}
-              >
-                <button
-                  role="tab"
-                  aria-selected={action === "buy"}
-                  className={ticketModeButtonClass(action === "buy")}
-                  onClick={() => setAction("buy")}
-                >
-                  {t("BUY")}
-                </button>
-                <button
-                  role="tab"
-                  aria-selected={action === "sell"}
-                  className={ticketModeButtonClass(action === "sell")}
-                  onClick={() => setAction("sell")}
-                  disabled={availableShares === 0}
-                  title={
-                    availableShares === 0
-                      ? t("NO_SHARES_TO_SELL")
-                      : t("SELL_UP_TO_SHARES", {
-                          quantity: availableShares,
-                          side: side.toUpperCase(),
-                        })
-                  }
-                >
-                  {t("SELL")}
-                </button>
-              </div>
-            )}
-
-            <div className={TICKET_SIDES_CLASS} role="tablist" aria-label={t("SIDE")}>
+          {isExchange && (
+            <div
+              className={`${TICKET_MODE_CLASS} mb-[14px] self-start`}
+              role="tablist"
+              aria-label={t("ACTION")}
+            >
               <button
                 role="tab"
-                aria-selected={side === "yes"}
-                onClick={() => setSideAndReset("yes")}
-                className={ticketSideClass("yes", side === "yes")}
+                aria-selected={action === "buy"}
+                className={ticketModeButtonClass(action === "buy")}
+                onClick={() => setAction("buy")}
               >
-                <span className={`${TICKET_SIDE_LABEL_CLASS} ${selectedSideTextClass("yes", side === "yes")}`}>
-                  {t("YES")}
-                </span>
-                <span className={`${TICKET_SIDE_PRICE_CLASS} ${selectedSideTextClass("yes", side === "yes")}`}>
-                  {market.yesPriceCents}¢
-                </span>
-                <span className={TICKET_SIDE_SUB_CLASS}>
-                  {market.yesPriceCents >= 50 ? "+" : "−"}
-                  {Math.abs(market.yesPriceCents - 50)} · {market.yesPriceCents}
-                  % {t("PROB")}
-                </span>
+                {t("BUY")}
               </button>
               <button
                 role="tab"
-                aria-selected={side === "no"}
-                onClick={() => setSideAndReset("no")}
-                className={ticketSideClass("no", side === "no")}
+                aria-selected={action === "sell"}
+                className={ticketModeButtonClass(action === "sell")}
+                onClick={() => setAction("sell")}
+                disabled={availableShares === 0}
+                title={
+                  availableShares === 0
+                    ? t("NO_SHARES_TO_SELL")
+                    : t("SELL_UP_TO_SHARES", {
+                        quantity: availableShares,
+                        side: side.toUpperCase(),
+                      })
+                }
               >
-                <span className={`${TICKET_SIDE_LABEL_CLASS} ${selectedSideTextClass("no", side === "no")}`}>
-                  {t("NO")}
-                </span>
-                <span className={`${TICKET_SIDE_PRICE_CLASS} ${selectedSideTextClass("no", side === "no")}`}>
-                  {market.noPriceCents}¢
-                </span>
-                <span className={TICKET_SIDE_SUB_CLASS}>
-                  {market.noPriceCents >= 50 ? "+" : "−"}
-                  {Math.abs(market.noPriceCents - 50)} · {market.noPriceCents}%
-                  {t("PROB")}
-                </span>
+                {t("SELL")}
               </button>
             </div>
+          )}
 
-            {/* Limit price input — appears in exchange + limit mode. Bounded
+          <div
+            className={TICKET_SIDES_CLASS}
+            role="tablist"
+            aria-label={t("SIDE")}
+          >
+            <button
+              role="tab"
+              aria-selected={side === "yes"}
+              onClick={() => setSideAndReset("yes")}
+              className={ticketSideClass("yes", side === "yes")}
+            >
+              <span
+                className={`${TICKET_SIDE_LABEL_CLASS} ${selectedSideTextClass("yes", side === "yes")}`}
+              >
+                {t("YES")}
+              </span>
+              <span
+                className={`${TICKET_SIDE_PRICE_CLASS} ${selectedSideTextClass("yes", side === "yes")}`}
+              >
+                {market.yesPriceCents}¢
+              </span>
+              <span className={TICKET_SIDE_SUB_CLASS}>
+                {market.yesPriceCents >= 50 ? "+" : "−"}
+                {Math.abs(market.yesPriceCents - 50)} · {market.yesPriceCents}%{" "}
+                {t("PROB")}
+              </span>
+            </button>
+            <button
+              role="tab"
+              aria-selected={side === "no"}
+              onClick={() => setSideAndReset("no")}
+              className={ticketSideClass("no", side === "no")}
+            >
+              <span
+                className={`${TICKET_SIDE_LABEL_CLASS} ${selectedSideTextClass("no", side === "no")}`}
+              >
+                {t("NO")}
+              </span>
+              <span
+                className={`${TICKET_SIDE_PRICE_CLASS} ${selectedSideTextClass("no", side === "no")}`}
+              >
+                {market.noPriceCents}¢
+              </span>
+              <span className={TICKET_SIDE_SUB_CLASS}>
+                {market.noPriceCents >= 50 ? "+" : "−"}
+                {Math.abs(market.noPriceCents - 50)} · {market.noPriceCents}%
+                {t("PROB")}
+              </span>
+            </button>
+          </div>
+
+          {/* Limit price input — appears in exchange + limit mode. Bounded
             [1, 99] cents per the engine's price bounds (out-of-range prices
             are rejected at the API). Step is 1¢ to match tick size. */}
-            {isExchange && mode === "limit" && (
-              <div
-                className={TICKET_AMOUNT_CLASS}
-                aria-label={t("LIMIT_PRICE")}
-              >
-                <div className={TICKET_AMOUNT_HEAD_CLASS}>
-                  <span className={TICKET_AMOUNT_LABEL_CLASS}>
-                    {t("LIMIT_PRICE_SIDE", { side: side.toUpperCase() })}
-                  </span>
-                  <span className={TICKET_AMOUNT_BALANCE_CLASS}>
-                    {t("MID_PRICE", { price: marketPrice })}
-                  </span>
-                </div>
-                <input
-                  type="number"
-                  min={1}
-                  max={99}
-                  step={1}
-                  value={limitPriceCents}
-                  onChange={(e) => {
-                    const v = parseInt(e.target.value, 10);
-                    if (Number.isFinite(v)) {
-                      setLimitPriceCents(Math.max(1, Math.min(99, v)));
-                    }
-                  }}
-                  className={TICKET_LIMIT_INPUT_CLASS}
-                />
-                <p className={TICKET_LIMIT_HELP_CLASS}>
-                  {action === "buy"
-                    ? t("LIMIT_BUY_HELP", { price: limitPriceCents })
-                    : t("LIMIT_SELL_HELP", { price: limitPriceCents })}
-                </p>
-              </div>
-            )}
-
-            <div className={TICKET_AMOUNT_CLASS}>
+          {isExchange && mode === "limit" && (
+            <div className={TICKET_AMOUNT_CLASS} aria-label={t("LIMIT_PRICE")}>
               <div className={TICKET_AMOUNT_HEAD_CLASS}>
                 <span className={TICKET_AMOUNT_LABEL_CLASS}>
-                  {action === "sell" ? t("SHARES_TO_SELL") : t("AMOUNT")}
+                  {t("LIMIT_PRICE_SIDE", { side: side.toUpperCase() })}
                 </span>
                 <span className={TICKET_AMOUNT_BALANCE_CLASS}>
-                  {action === "sell"
-                    ? t("AVAILABLE_SHARES", { quantity: availableShares })
-                    : t("BALANCE_AMOUNT", {
-                        amount:
-                          typeof balance === "number" ? balance.toFixed(2) : "—",
-                      })}
+                  {t("MID_PRICE", { price: marketPrice })}
                 </span>
               </div>
-              <div className={TICKET_AMOUNT_DISPLAY_CLASS}>
-                <div className={TICKET_AMOUNT_VALUE_CLASS}>
-                  <span className={TICKET_AMOUNT_AFFIX_CLASS}>$</span>
-                  {dollars}
-                  <span className={TICKET_AMOUNT_AFFIX_CLASS}>.{centsStr}</span>
-                </div>
-                <div className={TICKET_AMOUNT_SUB_CLASS}>
-                  {t("SHARES_COUNT", { quantity: Math.floor(shares) })}
-                  <br />
-                  {t("PAYOUT")}{" "}
-                  <span className="font-semibold text-[var(--yes-text)]">
-                    ${payout.toFixed(2)}
-                  </span>
-                </div>
+              <input
+                type="number"
+                min={1}
+                max={99}
+                step={1}
+                value={limitPriceCents}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  if (Number.isFinite(v)) {
+                    setLimitPriceCents(Math.max(1, Math.min(99, v)));
+                  }
+                }}
+                className={TICKET_LIMIT_INPUT_CLASS}
+              />
+              <p className={TICKET_LIMIT_HELP_CLASS}>
+                {action === "buy"
+                  ? t("LIMIT_BUY_HELP", { price: limitPriceCents })
+                  : t("LIMIT_SELL_HELP", { price: limitPriceCents })}
+              </p>
+            </div>
+          )}
+
+          <div className={TICKET_AMOUNT_CLASS}>
+            <div className={TICKET_AMOUNT_HEAD_CLASS}>
+              <span className={TICKET_AMOUNT_LABEL_CLASS}>
+                {action === "sell" ? t("SHARES_TO_SELL") : t("AMOUNT")}
+              </span>
+              <span className={TICKET_AMOUNT_BALANCE_CLASS}>
+                {action === "sell"
+                  ? t("AVAILABLE_SHARES", { quantity: availableShares })
+                  : t("BALANCE_AMOUNT", {
+                      amount:
+                        typeof balance === "number" ? balance.toFixed(2) : "—",
+                    })}
+              </span>
+            </div>
+            <div className={TICKET_AMOUNT_DISPLAY_CLASS}>
+              <div className={TICKET_AMOUNT_VALUE_CLASS}>
+                <span className={TICKET_AMOUNT_AFFIX_CLASS}>$</span>
+                {dollars}
+                <span className={TICKET_AMOUNT_AFFIX_CLASS}>.{centsStr}</span>
               </div>
-              <div className={TICKET_CHIPS_CLASS} role="group" aria-label={t("QUICK_AMOUNT")}>
-                {QUICK_AMOUNTS.map((a) => {
-                  const isActive = Math.floor(amount) === a;
-                  return (
-                    <button
-                      key={a}
-                      type="button"
-                      // No-op when the chip is already active. Without this guard
-                      // every click on the active chip still calls setAmount with
-                      // the same value, which React treats as an update and
-                      // triggers a re-render of the ticket. Cheap individually,
-                      // but combined with a parent that prefetches a returnUrl
-                      // bound to amount it can feel like the page hangs in dev
-                      // mode while chunks recompile. Cheap defensive change.
-                      onClick={() => {
-                        if (!isActive) setAmount(a);
-                      }}
-                      aria-pressed={isActive}
-                      className={ticketChipClass(isActive)}
-                    >
-                      ${a}
-                    </button>
-                  );
-                })}
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (typeof balance !== "number" || balance <= 0) return;
-                    const next = Math.floor(balance);
-                    if (Math.floor(amount) !== next) setAmount(next);
-                  }}
-                  className={ticketChipClass(false)}
-                  disabled={typeof balance !== "number" || balance <= 0}
-                >
-                  {t("MAX")}
-                </button>
+              <div className={TICKET_AMOUNT_SUB_CLASS}>
+                {t("SHARES_COUNT", { quantity: Math.floor(shares) })}
+                <br />
+                {t("PAYOUT")}{" "}
+                <span className="font-semibold text-[var(--yes-text)]">
+                  ${payout.toFixed(2)}
+                </span>
               </div>
             </div>
-
-            <div className={TICKET_SUMMARY_CLASS}>
-              <div className={TICKET_SUMMARY_ROW_CLASS}>
-                <span className="text-[var(--t3)]">{t("AVG_FILL_PRICE")}</span>
-                <span className="text-[var(--t1)]">
-                  {previewLoading ? t("LOADING") : `${summaryPrice}¢`}
-                </span>
-              </div>
-              <div className={TICKET_SUMMARY_ROW_CLASS}>
-                <span className="text-[var(--t3)]">{t("IMPLIED_PROB")}</span>
-                <span className="text-[var(--t1)]">{impliedProb}%</span>
-              </div>
-              <div className={TICKET_SUMMARY_ROW_CLASS}>
-                <span className="text-[var(--t3)]">{t("SHARES")}</span>
-                <span className="text-[var(--t1)]">{shares.toFixed(2)}</span>
-              </div>
-              <div className={TICKET_SUMMARY_ROW_CLASS}>
-                <span className="text-[var(--t3)]">
-                  {t("PAYOUT_IF_SIDE", { side: side.toUpperCase() })}
-                </span>
-                <span className="text-[var(--yes-text)]">${payout.toFixed(2)}</span>
-              </div>
-            </div>
-
-            {authLoading ? (
-              <button type="button" className={TICKET_CTA_CLASS} disabled>
-                {t("CHECKING_SESSION")}
-              </button>
-            ) : !isAuthenticated ? (
-              <>
-                <Link href={loginHref} className={TICKET_CTA_CLASS}>
-                  {t("LOG_IN_TO_TRADE")}
-                </Link>
-                <p className={TICKET_NOTE_CLASS}>
-                  {t("SIGN_IN_TO_PLACE_ORDER", { side: side.toUpperCase() })}
-                </p>
-              </>
-            ) : insufficientFunds ? (
-              <>
-                <Link href="/cashier" className={TICKET_CTA_CLASS}>
-                  {t("ADD_FUNDS")}
-                </Link>
-                <p className={TICKET_NOTE_CLASS} role="alert">
-                  {t("BALANCE_BELOW_ORDER", { amount: amount.toFixed(2) })}
-                </p>
-              </>
-            ) : marketBuyHasNoLiquidity ? (
-              <>
-                <button type="button" className={TICKET_CTA_CLASS} disabled>
-                  {t("ORDER_STATUS", { status: t("CANCELLED_NO_LIQUIDITY") })}
-                </button>
-                <p className={TICKET_NOTE_CLASS} role="alert">
-                  {t("ORDER_STATUS_BODY", {
-                    quantity: requestedQuantity,
-                    side: side.toUpperCase(),
-                    ticker: market.ticker,
-                    reason: t("CANCELLED_NO_LIQUIDITY"),
-                  })}
-                </p>
-              </>
-            ) : insufficientShares ? (
-              <>
-                <button type="button" className={TICKET_CTA_CLASS} disabled>
-                  {t("NOT_ENOUGH_SHARES")}
-                </button>
-                <p className={TICKET_NOTE_CLASS} role="alert">
-                  {t("NOT_ENOUGH_SHARES_DETAIL", {
-                    available: availableShares,
-                    side: side.toUpperCase(),
-                    quantity: Math.floor(quantity),
-                  })}
-                </p>
-              </>
-            ) : (
+            <div
+              className={TICKET_CHIPS_CLASS}
+              role="group"
+              aria-label={t("QUICK_AMOUNT")}
+            >
+              {QUICK_AMOUNTS.map((a) => {
+                const isActive = Math.floor(amount) === a;
+                return (
+                  <button
+                    key={a}
+                    type="button"
+                    // No-op when the chip is already active. Without this guard
+                    // every click on the active chip still calls setAmount with
+                    // the same value, which React treats as an update and
+                    // triggers a re-render of the ticket. Cheap individually,
+                    // but combined with a parent that prefetches a returnUrl
+                    // bound to amount it can feel like the page hangs in dev
+                    // mode while chunks recompile. Cheap defensive change.
+                    onClick={() => {
+                      if (!isActive) setAmount(a);
+                    }}
+                    aria-pressed={isActive}
+                    className={ticketChipClass(isActive)}
+                  >
+                    ${a}
+                  </button>
+                );
+              })}
               <button
                 type="button"
-                onClick={handleSubmit}
-                className={TICKET_CTA_CLASS}
-                disabled={submitting || quantity < 1}
+                onClick={() => {
+                  if (typeof balance !== "number" || balance <= 0) return;
+                  const next = Math.floor(balance);
+                  if (Math.floor(amount) !== next) setAmount(next);
+                }}
+                className={ticketChipClass(false)}
+                disabled={typeof balance !== "number" || balance <= 0}
               >
-                {/*
+                {t("MAX")}
+              </button>
+            </div>
+          </div>
+
+          <div className={TICKET_SUMMARY_CLASS}>
+            <div className={TICKET_SUMMARY_ROW_CLASS}>
+              <span className="text-[var(--t3)]">{t("AVG_FILL_PRICE")}</span>
+              <span className="text-[var(--t1)]">
+                {previewLoading ? t("LOADING") : `${summaryPrice}¢`}
+              </span>
+            </div>
+            <div className={TICKET_SUMMARY_ROW_CLASS}>
+              <span className="text-[var(--t3)]">{t("IMPLIED_PROB")}</span>
+              <span className="text-[var(--t1)]">{impliedProb}%</span>
+            </div>
+            <div className={TICKET_SUMMARY_ROW_CLASS}>
+              <span className="text-[var(--t3)]">{t("SHARES")}</span>
+              <span className="text-[var(--t1)]">{shares.toFixed(2)}</span>
+            </div>
+            <div className={TICKET_SUMMARY_ROW_CLASS}>
+              <span className="text-[var(--t3)]">
+                {t("PAYOUT_IF_SIDE", { side: side.toUpperCase() })}
+              </span>
+              <span className="text-[var(--yes-text)]">
+                ${payout.toFixed(2)}
+              </span>
+            </div>
+          </div>
+
+          {authLoading ? (
+            <button type="button" className={TICKET_CTA_CLASS} disabled>
+              {t("CHECKING_SESSION")}
+            </button>
+          ) : !isAuthenticated ? (
+            <>
+              <Link href={loginHref} className={TICKET_CTA_CLASS}>
+                {t("LOG_IN_TO_TRADE")}
+              </Link>
+              <p className={TICKET_NOTE_CLASS}>
+                {t("SIGN_IN_TO_PLACE_ORDER", { side: side.toUpperCase() })}
+              </p>
+            </>
+          ) : insufficientFunds ? (
+            <>
+              <Link href="/cashier" className={TICKET_CTA_CLASS}>
+                {t("ADD_FUNDS")}
+              </Link>
+              <p className={TICKET_NOTE_CLASS} role="alert">
+                {t("BALANCE_BELOW_ORDER", { amount: amount.toFixed(2) })}
+              </p>
+            </>
+          ) : marketBuyHasNoLiquidity ? (
+            <>
+              <button type="button" className={TICKET_CTA_CLASS} disabled>
+                {t("ORDER_STATUS", { status: t("CANCELLED_NO_LIQUIDITY") })}
+              </button>
+              <p className={TICKET_NOTE_CLASS} role="alert">
+                {t("ORDER_STATUS_BODY", {
+                  quantity: requestedQuantity,
+                  side: side.toUpperCase(),
+                  ticker: market.ticker,
+                  reason: t("CANCELLED_NO_LIQUIDITY"),
+                })}
+              </p>
+            </>
+          ) : insufficientShares ? (
+            <>
+              <button type="button" className={TICKET_CTA_CLASS} disabled>
+                {t("NOT_ENOUGH_SHARES")}
+              </button>
+              <p className={TICKET_NOTE_CLASS} role="alert">
+                {t("NOT_ENOUGH_SHARES_DETAIL", {
+                  available: availableShares,
+                  side: side.toUpperCase(),
+                  quantity: Math.floor(quantity),
+                })}
+              </p>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              className={TICKET_CTA_CLASS}
+              disabled={submitting || quantity < 1}
+            >
+              {/*
                 Label says "Place trade", not "Review trade", because
                 clicking this button submits the order immediately. The
                 quote panel above already shows fill price, shares, and
@@ -831,24 +852,45 @@ export function TradeTicket({
                 would imply a confirm modal that does not exist and was
                 a stage gotcha during the 2026-05-03 demo dry-run.
               */}
-                {submitting
-                  ? t("PLACING")
-                  : t(action === "sell" ? "SELL_AMOUNT" : "PLACE_TRADE_AMOUNT", {
-                      amount: amount.toFixed(2),
-                    })}
-              </button>
-            )}
+              {submitting
+                ? t("PLACING")
+                : t(action === "sell" ? "SELL_AMOUNT" : "PLACE_TRADE_AMOUNT", {
+                    amount: amount.toFixed(2),
+                  })}
+            </button>
+          )}
 
-            <p className={TICKET_TRUST_CLASS}>
-              {t("TRADE_TRUST_NOTE", { price: summaryPrice, probability: impliedProb })}
-            </p>
+          <p className={TICKET_TRUST_CLASS}>
+            {t("TRADE_TRUST_NOTE", {
+              price: summaryPrice,
+              probability: impliedProb,
+            })}
+          </p>
 
-            {/* Suppress unused-warning: API surface preserved for Phase 4 */}
-            <input type="hidden" value={otherPrice} readOnly />
+          {/* Suppress unused-warning: API surface preserved for Phase 4 */}
+          <input type="hidden" value={otherPrice} readOnly />
 
-            {error && <div className={TICKET_ERROR_CLASS}>{error}</div>}
-          </>
-        )}
+          {error &&
+            (complianceDenialKind(error) ? (
+              // Jurisdiction/KYC gate denial from the gateway: surface the
+              // user-readable reason as a banner; KYC denials deep-link to
+              // verification.
+              <div className={TICKET_COMPLIANCE_CLASS} role="alert">
+                {error}
+                {complianceDenialKind(error) === "kyc" && (
+                  <Link
+                    href="/profile"
+                    className="mt-1.5 block font-semibold text-[var(--t1)] underline"
+                  >
+                    {t("COMPLETE_VERIFICATION")}
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <div className={TICKET_ERROR_CLASS}>{error}</div>
+            ))}
+        </>
+      )}
     </section>
   );
 }

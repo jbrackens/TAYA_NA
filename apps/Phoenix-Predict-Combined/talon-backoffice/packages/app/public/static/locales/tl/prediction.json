@@ -49,6 +49,7 @@
   "PRICE_HISTORY_UNAVAILABLE": "Hindi available ang price history",
   "RETRY": "Subukan ulit",
   "NO_TRADES_IN_RANGE": "Wala pang trade sa range na ito",
+  "COMPLETE_VERIFICATION": "Kumpletuhin ang verification",
   "TRADE": "Trade",
   "TRADE_TICKET": "Trade ticket",
   "ORDER_TYPE": "Uri ng order",

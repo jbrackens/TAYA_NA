@@ -145,3 +145,27 @@ func TestComplianceGates_TradingKYCDoesNotGateMoneySurfaces(t *testing.T) {
 		t.Fatalf("trade surface must be blocked for an unverified user when trading KYC is required")
 	}
 }
+
+func TestComplianceGates_TrustedProxyModeCountsMissingSignalDenials(t *testing.T) {
+	setAllowlistGeoGate(t)
+	t.Setenv("GEO_TRUSTED_PROXY_MODE", "require")
+
+	before := geoMissingSignalDenials.Load()
+	req := httptest.NewRequest(stdhttp.MethodPost, "/api/v1/orders", nil)
+	if err := checkComplianceGates(req, "u-edgegap", compliance.SurfaceTrade); err == nil {
+		t.Fatalf("missing geo signal must still fail closed in trusted-proxy mode")
+	}
+	if got := geoMissingSignalDenials.Load(); got != before+1 {
+		t.Fatalf("expected missing-signal denial counter to increment, got %d -> %d", before, got)
+	}
+
+	// A denial with a country present is a routine geo denial, not an edge gap.
+	req2 := httptest.NewRequest(stdhttp.MethodPost, "/api/v1/orders", nil)
+	req2.Header.Set("CF-IPCountry", "US")
+	if err := checkComplianceGates(req2, "u-blocked", compliance.SurfaceTrade); err == nil {
+		t.Fatalf("non-allowlisted country must be denied")
+	}
+	if got := geoMissingSignalDenials.Load(); got != before+1 {
+		t.Fatalf("country-present denial must not bump the missing-signal counter, got %d", got)
+	}
+}
