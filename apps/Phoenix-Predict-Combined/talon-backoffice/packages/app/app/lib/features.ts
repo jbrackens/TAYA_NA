@@ -85,3 +85,13 @@ export const CHAT_PUBLIC_URL = (
  */
 export const FEATURE_SOCIAL_AUTH =
   process.env.NEXT_PUBLIC_FEATURE_SOCIAL_AUTH === "true";
+
+/**
+ * Demo-only synthetic chart fallback. When on, MarketChart falls back to a
+ * deterministic seeded walk while price history is loading, failed, or has
+ * no movement — the pre-launch behavior that keeps the seeded demo box
+ * pretty. Off by default: real deploys show honest loading / error / empty
+ * chart states instead of fabricated price movement.
+ */
+export const DEMO_SYNTHETIC_CHARTS =
+  process.env.NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS === "true";

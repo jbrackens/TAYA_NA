@@ -311,6 +311,7 @@ NEXT_PUBLIC_WS_URL=ws://localhost:18080/ws
 NEXT_PUBLIC_FEATURE_RG=        # responsible-gambling pages (rg-history, self-exclude, /responsible-gaming/)
 NEXT_PUBLIC_FEATURE_KYC=       # KYC / identity verification surface on /profile/
 NEXT_PUBLIC_FEATURE_LIMITS=    # user-set deposit/stake/session limits — Limits tab on /profile/
+NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS= # demo boxes ONLY: synthetic-walk chart fallback while loading/error/flat; real deploys show honest states
 
 # Gateway
 GATEWAY_DB_DSN=postgres://...

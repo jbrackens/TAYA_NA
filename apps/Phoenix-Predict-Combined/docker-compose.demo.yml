@@ -14,7 +14,11 @@
 #   1. Build the slim images first (on the box, on corp VPN NOT required):
 #        cd talon-backoffice
 #        docker build -f docker/frontend.Dockerfile --build-arg module_name=app \
-#          --build-arg NEXT_PUBLIC_WS_URL=wss://demo.99rtp.io/ws   -t predict-frontend:app-slim .
+#          --build-arg NEXT_PUBLIC_WS_URL=wss://demo.99rtp.io/ws \
+#          --build-arg NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS=true \
+#          -t predict-frontend:app-slim .
+#        (NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS keeps the seeded demo charts on the
+#        legacy synthetic-walk fallback; never set it for a real-money deploy.)
 #        docker build -f docker/frontend.Dockerfile --build-arg module_name=office \
 #          --build-arg NEXT_PUBLIC_WS_URL=wss://office.99rtp.io/ws -t predict-frontend:office-slim .
 #   2. export JWT_SECRET=$(openssl rand -hex 32)
