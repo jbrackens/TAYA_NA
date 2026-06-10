@@ -1,0 +1,40 @@
+name: Frontend Build
+
+# Clean-clone self-containment check: a fresh checkout with no sibling repos
+# on the runner must install, typecheck, unit-test, and production-build the
+# player app. Catches cross-repo symlinks and other machine-local
+# dependencies that unit tests alone tolerate.
+on:
+  pull_request:
+    paths:
+      - 'apps/Phoenix-Predict-Combined/talon-backoffice/**'
+
+jobs:
+  clean-clone-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/Phoenix-Predict-Combined/talon-backoffice
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'yarn'
+          cache-dependency-path: apps/Phoenix-Predict-Combined/talon-backoffice/yarn.lock
+
+      - name: Install dependencies (workspace root)
+        run: yarn install --frozen-lockfile
+
+      - name: Typecheck player app
+        run: yarn workspace @phoenix-ui/app typecheck
+
+      - name: Unit tests (player app)
+        working-directory: apps/Phoenix-Predict-Combined/talon-backoffice/packages/app
+        run: npm test
+
+      - name: Production build (player app)
+        working-directory: apps/Phoenix-Predict-Combined/talon-backoffice/packages/app
+        run: yarn build
