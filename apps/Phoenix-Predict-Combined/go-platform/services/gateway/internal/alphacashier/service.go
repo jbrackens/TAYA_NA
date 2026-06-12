@@ -28,6 +28,7 @@ type Service struct {
 	repo         Repository
 	ledger       WalletLedger
 	evmClient    EVMClient
+	screener     AddressScreener
 	now          func() time.Time
 	challengeTTL time.Duration
 	intentTTL    time.Duration
@@ -184,6 +185,11 @@ func (s *Service) CreateDepositIntent(ctx context.Context, userID string, wallet
 	}
 	normalized, err := NormalizeAddress(walletAddress)
 	if err != nil {
+		return nil, err
+	}
+	// Sanctions/AML screening on the depositing wallet before an intent is
+	// created (audit CMP-01).
+	if err := s.screenAddress(ctx, userID, normalized, "deposit_from"); err != nil {
 		return nil, err
 	}
 	conn, err := s.repo.FindWalletConnection(ctx, userID, s.cfg.ChainID, normalized)
@@ -372,6 +378,11 @@ func (s *Service) CreateWithdrawalRequest(ctx context.Context, userID string, de
 	}
 	normalized, err := NormalizeAddress(destinationAddress)
 	if err != nil {
+		return nil, err
+	}
+	// Sanctions/AML screening on the withdrawal destination before any funds
+	// are reserved (audit CMP-01).
+	if err := s.screenAddress(ctx, userID, normalized, "withdrawal_destination"); err != nil {
 		return nil, err
 	}
 	units, err := CentsToTokenUnits(amountCents, s.cfg.TokenDecimals)

@@ -23,6 +23,10 @@ type Config struct {
 	DailyDepositLimitCents int64  `json:"dailyDepositLimitCents"`
 	WithdrawalsEnabled     bool   `json:"withdrawalsEnabled"`
 	WithdrawalReviewNeeded bool   `json:"withdrawalReviewRequired"`
+	// ScreeningEnforced makes non-clear address-screening verdicts block the
+	// money movement (audit CMP-01). When false, screening runs observe-only
+	// (logs, never blocks) except a sanctions hit, which always blocks.
+	ScreeningEnforced bool `json:"screeningEnforced"`
 }
 
 func LoadConfigFromEnv(getenv func(string) string) (Config, error) {
@@ -41,6 +45,7 @@ func LoadConfigFromEnv(getenv func(string) string) (Config, error) {
 		DailyDepositLimitCents: envInt64(getenv, "ALPHA_CASHIER_DAILY_DEPOSIT_LIMIT_CENTS", 100000),
 		WithdrawalsEnabled:     envBool(getenv, "ALPHA_CASHIER_WITHDRAWALS_ENABLED", false),
 		WithdrawalReviewNeeded: envBool(getenv, "ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED", true),
+		ScreeningEnforced:      envBool(getenv, "ALPHA_CASHIER_SCREENING_ENFORCEMENT", false),
 	}
 	if !cfg.Enabled {
 		return cfg, nil
