@@ -3,6 +3,7 @@ package prediction
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"strconv"
 	"strings"
@@ -880,8 +881,15 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 	}
 
 	if err := s.repo.PersistFilledOrder(ctx, order, trade, position, market); err != nil {
-		_ = s.wallet.Credit(userID, totalCost, debitKey+":refund",
-			fmt.Sprintf("refund: filled order persistence failed for %s", market.Ticker))
+		// Compensating refund (memory-mode fallback path; the SQL path commits
+		// debit+persist in one tx). A failed refund here means the user was
+		// debited without a position — must be loud, not silent (audit COR-04).
+		if rerr := s.wallet.Credit(userID, totalCost, debitKey+":refund",
+			fmt.Sprintf("refund: filled order persistence failed for %s", market.Ticker)); rerr != nil {
+			slog.ErrorContext(ctx, "CRITICAL: refund after failed order persist also failed — user debited without position",
+				"user_id", userID, "market", market.Ticker, "cents", totalCost,
+				"persist_error", err, "refund_error", rerr)
+		}
 		return nil, nil, fmt.Errorf("persist filled order: %w", err)
 	}
 
@@ -1033,7 +1041,12 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 		reason := err.Error()
 		taker.Status = OrderStatusRejected
 		taker.FailureReason = &reason
-		_ = s.repo.UpdateOrder(ctx, taker)
+		if uerr := s.repo.UpdateOrder(ctx, taker); uerr != nil {
+			// A failed mark leaves a phantom 'pending' order the demo sweep
+			// only clears after >1h; log so it's visible (audit COR-04).
+			slog.WarnContext(ctx, "failed to mark rejected order after engine rejection",
+				"order_id", taker.ID, "market_id", market.ID, "error", uerr)
+		}
 		s.metrics.RecordOrder(market.ID, req.Side, req.Action, req.OrderType, OrderStatusRejected)
 		return taker, nil, false, nil
 	}
@@ -1067,7 +1080,10 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 		reason := err.Error()
 		taker.Status = OrderStatusRejected
 		taker.FailureReason = &reason
-		_ = s.repo.UpdateOrder(ctx, taker)
+		if uerr := s.repo.UpdateOrder(ctx, taker); uerr != nil {
+			slog.WarnContext(ctx, "failed to mark rejected order after persist-match failure",
+				"order_id", taker.ID, "market_id", market.ID, "error", uerr)
+		}
 		s.metrics.RecordOrder(market.ID, req.Side, req.Action, req.OrderType, OrderStatusRejected)
 		return taker, nil, false, fmt.Errorf("persist match: %w", err)
 	}
@@ -1085,9 +1101,11 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 	// failures here don't roll back the match (the columns are derived
 	// data; a missed refresh self-heals on the next match).
 	if err := exchangeRepo.RefreshMarketBestQuotes(ctx, market.ID); err != nil {
-		// Log via existing pattern; don't propagate. The next match — or
-		// a periodic background refresher — will fix the staleness.
-		_ = err
+		// Best-effort: derived top-of-book columns self-heal on the next
+		// match. Don't propagate, but actually log it (the previous `_ = err`
+		// claimed to log and didn't — audit COR-04).
+		slog.WarnContext(ctx, "refresh best quotes after match failed",
+			"market_id", market.ID, "error", err)
 	}
 
 	var firstTrade *Trade

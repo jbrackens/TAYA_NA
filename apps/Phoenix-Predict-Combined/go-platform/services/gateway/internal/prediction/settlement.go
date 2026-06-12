@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 )
@@ -603,13 +604,16 @@ func (s *SettlementEngine) resolveMarket(ctx context.Context, req ResolveMarketR
 	if err := s.repo.UpdateMarket(ctx, market); err != nil {
 		return nil, nil, fmt.Errorf("update market: %w", err)
 	}
-	_ = s.repo.CreateLifecycleEvent(ctx, lifecycle)
+	if err := s.repo.CreateLifecycleEvent(ctx, lifecycle); err != nil {
+		slog.WarnContext(ctx, "failed to record settlement lifecycle event (non-atomic path)",
+			"market_id", marketID, "error", err)
+	}
 
-	// TODO: thread override flag through ResolveMarketRequest once the
-	// HTTP layer pipes overrideReason from the back-office settlement
-	// modal into the request body. Until then, every settlement records
-	// override=false even when the admin filled in the override field.
-	s.metrics.RecordSettlement(marketID, string(result), false)
+	// OverrideReason is populated from ResolveMarketRequest above (it flows
+	// from the back-office settlement modal), so record the real override
+	// state — matching the atomic path (COR-04/COR-08; the old TODO claiming
+	// the flag wasn't threaded was stale).
+	s.metrics.RecordSettlement(marketID, string(result), settlement.OverrideReason != nil)
 	s.fireMarketLifecycle(market, lifecycle)
 	s.recordSettlementAudit(settledBy, settlement)
 	return settlement, payouts, nil
