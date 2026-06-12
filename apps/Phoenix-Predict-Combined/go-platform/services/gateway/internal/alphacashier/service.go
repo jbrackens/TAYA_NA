@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"math/big"
 	"strings"
 	"time"
@@ -553,6 +554,22 @@ func (s *Service) MarkWithdrawalBroadcasted(ctx context.Context, id string, acto
 	}
 	if req.Status != "approved" {
 		return nil, ErrInvalidStatus
+	}
+	// Two-person control (A2-04): the operator broadcasting the payout must be
+	// different from the one who approved it. The approver is recorded in
+	// reviewed_by; the broadcaster is this actor. Idempotent re-broadcast of
+	// the same tx above is exempt (already returned).
+	if s.cfg.TwoPersonWithdrawal {
+		broadcaster := strings.TrimSpace(actorID)
+		approver := strings.TrimSpace(req.ReviewedBy)
+		if broadcaster == "" {
+			return nil, ErrSecondApproverRequired
+		}
+		if approver == "" || strings.EqualFold(broadcaster, approver) {
+			slog.WarnContext(ctx, "withdrawal broadcast blocked: two-person control",
+				"withdrawal_id", req.ID, "approver", approver, "broadcaster", broadcaster)
+			return nil, ErrSecondApproverRequired
+		}
 	}
 	now := s.now().UTC()
 	broadcasted, err := s.repo.MarkWithdrawalBroadcasted(ctx, req.ID, txHash, now)

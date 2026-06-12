@@ -27,6 +27,9 @@ var (
 	ErrWithdrawalNotFound    = errors.New("withdrawal request not found")
 	ErrInvalidStatus         = errors.New("invalid status transition")
 	ErrReviewNoteRequired    = errors.New("review note required")
+	// ErrSecondApproverRequired is returned when two-person withdrawal control
+	// is on and the broadcaster is the same operator who approved (A2-04).
+	ErrSecondApproverRequired = errors.New("withdrawal broadcast requires a different operator than the approver")
 )
 
 type WalletChallenge struct {

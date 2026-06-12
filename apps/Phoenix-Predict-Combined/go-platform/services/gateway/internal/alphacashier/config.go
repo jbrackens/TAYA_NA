@@ -27,6 +27,10 @@ type Config struct {
 	// money movement (audit CMP-01). When false, screening runs observe-only
 	// (logs, never blocks) except a sanctions hit, which always blocks.
 	ScreeningEnforced bool `json:"screeningEnforced"`
+	// TwoPersonWithdrawal requires the operator who broadcasts a withdrawal to
+	// be different from the one who approved it (audit A2-04). Two-eyes control
+	// on the custodial payout: one approves, a different person broadcasts.
+	TwoPersonWithdrawal bool `json:"twoPersonWithdrawal"`
 }
 
 func LoadConfigFromEnv(getenv func(string) string) (Config, error) {
@@ -46,6 +50,7 @@ func LoadConfigFromEnv(getenv func(string) string) (Config, error) {
 		WithdrawalsEnabled:     envBool(getenv, "ALPHA_CASHIER_WITHDRAWALS_ENABLED", false),
 		WithdrawalReviewNeeded: envBool(getenv, "ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED", true),
 		ScreeningEnforced:      envBool(getenv, "ALPHA_CASHIER_SCREENING_ENFORCEMENT", false),
+		TwoPersonWithdrawal:    envBool(getenv, "ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL", false),
 	}
 	if !cfg.Enabled {
 		return cfg, nil
@@ -71,6 +76,10 @@ func ValidateRuntimeConfig(getenv func(string) string) error {
 	if (env == "production" || env == "staging") && cfg.WithdrawalsEnabled {
 		if !envBool(getenv, "ALPHA_CASHIER_WITHDRAWAL_BROADCAST_ACK", false) {
 			return fmt.Errorf("ALPHA_CASHIER_WITHDRAWALS_ENABLED requires ALPHA_CASHIER_WITHDRAWAL_BROADCAST_ACK=true when ENVIRONMENT=%s", env)
+		}
+		// Two-person control must be ON or explicitly acknowledged off (A2-04).
+		if !cfg.TwoPersonWithdrawal && !envBool(getenv, "ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL_ACK_DISABLED", false) {
+			return fmt.Errorf("ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL must be true, or explicitly acked off via ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL_ACK_DISABLED=true, when withdrawals are enabled and ENVIRONMENT=%s", env)
 		}
 	}
 	return nil
