@@ -208,6 +208,15 @@ func (s *RedisSessionStore) ListByUserID(userID string) ([]session, error) {
 	return result, nil
 }
 
+// DeleteByUserID revokes every session belonging to the user (password-change
+// revocation). Reuses the same eviction walk Put performs for the
+// single-active-session model.
+func (s *RedisSessionStore) DeleteByUserID(userID string) error {
+	ctx, cancel := sessCtx()
+	defer cancel()
+	return s.evictUser(ctx, userID)
+}
+
 // DeleteBySessionID removes a session identified by a token digest (access or
 // refresh), matching FileBackedSessionStore.DeleteBySessionID which compares
 // the id against both digests.
