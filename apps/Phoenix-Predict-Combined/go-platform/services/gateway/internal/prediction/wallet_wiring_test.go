@@ -220,6 +220,7 @@ func (r *atomicMemRepo) PersistResolvedMarketAtomic(
 	ctx context.Context,
 	wallet WalletAdapter,
 	market *Market,
+	prevStatus MarketStatus,
 	settlement *Settlement,
 	payouts []Payout,
 	credits []WalletCreditRequest,
@@ -230,6 +231,11 @@ func (r *atomicMemRepo) PersistResolvedMarketAtomic(
 	r.atomicSettlementCalls++
 	if r.atomicErr != nil {
 		return nil, r.atomicErr
+	}
+	// Mirror the SQL persister's status guard (COR-01): the stored market
+	// must still be in the status the engine validated.
+	if stored, err := r.memRepo.GetMarket(ctx, market.ID); err == nil && stored.Status != prevStatus {
+		return nil, ErrStaleMarketStatus
 	}
 	if err := r.memRepo.CreateSettlement(ctx, settlement); err != nil {
 		return nil, err
@@ -273,6 +279,7 @@ func (r *atomicMemRepo) PersistVoidedMarketAtomic(
 	ctx context.Context,
 	wallet WalletAdapter,
 	market *Market,
+	prevStatus MarketStatus,
 	payouts []Payout,
 	credits []WalletCreditRequest,
 	lifecycle *LifecycleEvent,
@@ -280,6 +287,10 @@ func (r *atomicMemRepo) PersistVoidedMarketAtomic(
 	r.atomicVoidCalls++
 	if r.atomicErr != nil {
 		return r.atomicErr
+	}
+	// Mirror the SQL persister's status guard (COR-01).
+	if stored, err := r.memRepo.GetMarket(ctx, market.ID); err == nil && stored.Status != prevStatus {
+		return ErrStaleMarketStatus
 	}
 	if err := r.memRepo.UpdateMarket(ctx, market); err != nil {
 		return err

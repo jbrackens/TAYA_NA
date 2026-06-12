@@ -176,10 +176,16 @@ type ExchangeRepository interface {
 // The persister returns per-accrual results so the caller can fire
 // post-commit WebSocket events (e.g. TierPromoted) after a successful tx.
 type AtomicMarketSettlementPersister interface {
+	// prevStatus is the market status the engine validated before computing
+	// payouts/refunds. Implementations MUST re-assert it atomically inside
+	// the transaction (status-guarded UPDATE) and return ErrStaleMarketStatus
+	// — rolling back everything — when it no longer holds, so concurrent
+	// settle/void flows can never both commit (audit COR-01).
 	PersistResolvedMarketAtomic(
 		ctx context.Context,
 		wallet WalletAdapter,
 		market *Market,
+		prevStatus MarketStatus,
 		settlement *Settlement,
 		payouts []Payout,
 		credits []WalletCreditRequest,
@@ -191,6 +197,7 @@ type AtomicMarketSettlementPersister interface {
 		ctx context.Context,
 		wallet WalletAdapter,
 		market *Market,
+		prevStatus MarketStatus,
 		payouts []Payout,
 		credits []WalletCreditRequest,
 		lifecycle *LifecycleEvent,

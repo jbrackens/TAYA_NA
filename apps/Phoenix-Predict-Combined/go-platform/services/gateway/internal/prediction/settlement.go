@@ -4,10 +4,19 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 )
+
+// ErrStaleMarketStatus is returned by the atomic settle/void persisters when
+// the market's status changed between the engine's validation read and the
+// status-guarded UPDATE inside the transaction — i.e. a concurrent settle,
+// void, or lifecycle transition won the race. The caller's entire transaction
+// rolls back (no payouts, no refunds, no settlement row). HTTP handlers map
+// this to 409 Conflict.
+var ErrStaleMarketStatus = errors.New("market status changed concurrently; settlement/void aborted")
 
 // SettlementEngine handles resolving markets and distributing payouts.
 type SettlementEngine struct {
@@ -518,7 +527,11 @@ func (s *SettlementEngine) resolveMarket(ctx context.Context, req ResolveMarketR
 	settlement.TotalPayoutCents = totalPayout
 	settlement.PositionsSettled = positionsSettled
 
-	// Transition market to settled
+	// Transition market to settled. prevStatus is the status this flow
+	// validated above; the atomic persister re-asserts it under the row lock
+	// (status-guarded UPDATE) so a concurrent settle/void/halt that won the
+	// race aborts this whole transaction instead of double-paying (COR-01).
+	prevStatus := market.Status
 	marketResult := result
 	market.Result = &marketResult
 	if err := TransitionMarket(market, MarketStatusSettled); err != nil {
@@ -548,7 +561,7 @@ func (s *SettlementEngine) resolveMarket(ctx context.Context, req ResolveMarketR
 
 	if atomicRepo, ok := s.repo.(AtomicMarketSettlementPersister); ok {
 		if _, walletIsTxCapable := s.wallet.(TxWalletAdapter); walletIsTxCapable {
-			loyaltyResults, err := atomicRepo.PersistResolvedMarketAtomic(ctx, s.wallet, market, settlement, payouts, credits, s.loyalty, accruals, lifecycle)
+			loyaltyResults, err := atomicRepo.PersistResolvedMarketAtomic(ctx, s.wallet, market, prevStatus, settlement, payouts, credits, s.loyalty, accruals, lifecycle)
 			if err != nil {
 				return nil, nil, fmt.Errorf("persist resolved market atomically: %w", err)
 			}
@@ -657,7 +670,10 @@ func (s *SettlementEngine) VoidMarket(ctx context.Context, marketID string, reas
 		return nil, fmt.Errorf("market %s is already in terminal state: %s", market.Ticker, market.Status)
 	}
 
-	// Transition to voided
+	// Transition to voided. prevStatus is re-asserted by the persister under
+	// the row lock so a void can never land on top of a concurrent settle
+	// (and vice versa) — see COR-01 in docs/audit/AUDIT_REPORT.md.
+	prevStatus := market.Status
 	if err := TransitionMarket(market, MarketStatusVoided); err != nil {
 		return nil, fmt.Errorf("transition market: %w", err)
 	}
@@ -711,7 +727,7 @@ func (s *SettlementEngine) VoidMarket(ctx context.Context, marketID string, reas
 
 	if atomicRepo, ok := s.repo.(AtomicMarketSettlementPersister); ok {
 		if _, walletIsTxCapable := s.wallet.(TxWalletAdapter); walletIsTxCapable {
-			if err := atomicRepo.PersistVoidedMarketAtomic(ctx, s.wallet, market, payouts, credits, lifecycle); err != nil {
+			if err := atomicRepo.PersistVoidedMarketAtomic(ctx, s.wallet, market, prevStatus, payouts, credits, lifecycle); err != nil {
 				return nil, fmt.Errorf("persist voided market atomically: %w", err)
 			}
 			s.fireMarketLifecycle(market, lifecycle)

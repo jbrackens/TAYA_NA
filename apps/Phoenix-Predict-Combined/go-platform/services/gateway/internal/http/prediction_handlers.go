@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	stdhttp "net/http"
@@ -855,6 +856,9 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			case "finalize":
 				settlement, payouts, err := svc.FinalizeResolution(r.Context(), parts[0], actorID)
 				if err != nil {
+					if errors.Is(err, prediction.ErrStaleMarketStatus) {
+						return httpx.Conflict("market was settled or voided by a concurrent operation", nil)
+					}
 					return httpx.BadRequest(err.Error(), nil)
 				}
 				recordMoneyAuditEntry(adminID, "market.finalized", parts[0], map[string]any{
@@ -922,6 +926,9 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			}
 			payouts, err := svc.VoidMarket(r.Context(), parts[0], reason, actorID)
 			if err != nil {
+				if errors.Is(err, prediction.ErrStaleMarketStatus) {
+					return httpx.Conflict("market was settled or voided by a concurrent operation", nil)
+				}
 				return httpx.BadRequest(err.Error(), nil)
 			}
 			recordMoneyAuditEntry(adminID, "market.voided", parts[0], map[string]any{
@@ -958,6 +965,9 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		}
 		settlement, payouts, err := svc.ResolveMarket(r.Context(), marketID, req, actorIDPointer(adminID))
 		if err != nil {
+			if errors.Is(err, prediction.ErrStaleMarketStatus) {
+				return httpx.Conflict("market was settled or voided by a concurrent operation", nil)
+			}
 			return httpx.BadRequest(err.Error(), nil)
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]interface{}{

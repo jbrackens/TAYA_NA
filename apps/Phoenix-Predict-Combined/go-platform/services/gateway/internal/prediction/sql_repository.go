@@ -468,6 +468,37 @@ func (r *SQLRepository) updateMarketWithExec(ctx context.Context, execer sqlRowE
 	return err
 }
 
+// transitionMarketStatusWithExec persists the same fields as
+// updateMarketWithExec but guards the write on the status the caller
+// validated (optimistic concurrency on the lifecycle FSM). Zero rows updated
+// means a concurrent settle/void/lifecycle transition won the race; the
+// caller's transaction must abort so none of its money side-effects commit.
+// Mirrors the guard PersistProposalAtomic has used since ADR-0003/0004.
+func (r *SQLRepository) transitionMarketStatusWithExec(ctx context.Context, execer sqlRowExecer, m *Market, expectedPrev MarketStatus) error {
+	res, err := execer.ExecContext(ctx,
+		`UPDATE prediction_markets SET
+		  status=$1, result=$2, yes_price_cents=$3, no_price_cents=$4,
+		  last_trade_price_cents=$5, volume_cents=$6, open_interest_cents=$7,
+		  liquidity_cents=$8, amm_yes_shares=$9, amm_no_shares=$10,
+		  updated_at=NOW()
+		 WHERE id=$11 AND status=$12`,
+		m.Status, m.Result, m.YesPriceCents, m.NoPriceCents,
+		m.LastTradePriceCents, m.VolumeCents, m.OpenInterestCents,
+		m.LiquidityCents, m.AMMYesShares, m.AMMNoShares,
+		m.ID, string(expectedPrev))
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return fmt.Errorf("market %s: expected status %q: %w", m.ID, expectedPrev, ErrStaleMarketStatus)
+	}
+	return nil
+}
+
 func (r *SQLRepository) UpdateMarketStatus(ctx context.Context, id string, status MarketStatus) error {
 	_, err := r.db.ExecContext(ctx,
 		`UPDATE prediction_markets SET status = $1, updated_at = NOW() WHERE id = $2`,
@@ -881,6 +912,7 @@ func (r *SQLRepository) PersistResolvedMarketAtomic(
 	ctx context.Context,
 	wallet WalletAdapter,
 	market *Market,
+	prevStatus MarketStatus,
 	settlement *Settlement,
 	payouts []Payout,
 	credits []WalletCreditRequest,
@@ -898,6 +930,13 @@ func (r *SQLRepository) PersistResolvedMarketAtomic(
 		return nil, err
 	}
 	defer func() { _ = tx.Rollback() }()
+
+	// Status-guarded transition FIRST: it takes the market row lock and
+	// fails fast with ErrStaleMarketStatus if a concurrent settle/void won,
+	// before any payout or credit is written (COR-01).
+	if err := r.transitionMarketStatusWithExec(ctx, tx, market, prevStatus); err != nil {
+		return nil, err
+	}
 
 	if err := r.createSettlementWithExec(ctx, tx, settlement); err != nil {
 		return nil, err
@@ -927,9 +966,6 @@ func (r *SQLRepository) PersistResolvedMarketAtomic(
 				loyaltyResults = append(loyaltyResults, *res)
 			}
 		}
-	}
-	if err := r.updateMarketWithExec(ctx, tx, market); err != nil {
-		return nil, err
 	}
 	if lifecycle != nil {
 		if err := r.createLifecycleEventWithExec(ctx, tx, lifecycle); err != nil {
@@ -999,6 +1035,7 @@ func (r *SQLRepository) PersistVoidedMarketAtomic(
 	ctx context.Context,
 	wallet WalletAdapter,
 	market *Market,
+	prevStatus MarketStatus,
 	payouts []Payout,
 	credits []WalletCreditRequest,
 	lifecycle *LifecycleEvent,
@@ -1014,7 +1051,10 @@ func (r *SQLRepository) PersistVoidedMarketAtomic(
 	}
 	defer func() { _ = tx.Rollback() }()
 
-	if err := r.updateMarketWithExec(ctx, tx, market); err != nil {
+	// Status-guarded transition FIRST — a void must never land on top of a
+	// concurrent settle (or another void): if the status moved since the
+	// engine validated it, abort before any refund is written (COR-01).
+	if err := r.transitionMarketStatusWithExec(ctx, tx, market, prevStatus); err != nil {
 		return err
 	}
 	for _, credit := range credits {
