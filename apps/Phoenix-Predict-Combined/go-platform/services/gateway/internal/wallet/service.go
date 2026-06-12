@@ -1692,6 +1692,10 @@ func (s *Service) ensureSchema() error {
   UNIQUE (reference_type, reference_id)
 )`,
 		`CREATE INDEX IF NOT EXISTS idx_reservations_user_status ON wallet_reservations (user_id, status)`,
+		// Serves the per-user ledger read (WHERE user_id ORDER BY id DESC);
+		// kept in sync with migration 032 so code-bootstrapped schemas match
+		// goose-migrated ones (audit PERF-02).
+		`CREATE INDEX IF NOT EXISTS idx_wallet_ledger_user_id ON wallet_ledger (user_id, id DESC)`,
 	}
 
 	for _, statement := range statements {

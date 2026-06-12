@@ -212,7 +212,7 @@ func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo pred
 
 			filter := prediction.MarketFilter{
 				Page:     intQueryParam(r, "page", 1),
-				PageSize: intQueryParam(r, "pageSize", 50),
+				PageSize: clampedQueryParam(r, "pageSize", 50, 200),
 			}
 			if status := r.URL.Query().Get("status"); status != "" {
 				s := prediction.MarketStatus(status)

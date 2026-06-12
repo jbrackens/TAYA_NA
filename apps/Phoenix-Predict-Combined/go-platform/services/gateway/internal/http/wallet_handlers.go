@@ -64,6 +64,13 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service) {
 				if err != nil || parsed <= 0 {
 					return httpx.BadRequest("limit must be a positive integer", map[string]any{"field": "limit", "value": raw})
 				}
+				// Ceiling: the ledger is the busiest append-only table and the
+				// query is unindexed before migration 032; an unclamped limit
+				// is the worst per-request scan a logged-in user can trigger
+				// (audit PERF-01).
+				if parsed > 500 {
+					parsed = 500
+				}
 				limit = parsed
 			}
 
