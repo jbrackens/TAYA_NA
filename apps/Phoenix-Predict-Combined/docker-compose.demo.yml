@@ -187,6 +187,13 @@ services:
       # GEO_ALLOWED_COUNTRIES: "PH,ID,TH,VN,MY,SG"
       # GEO_COUNTRY_HEADER: "CF-IPCountry"
       # GEO_TRUSTED_PROXY_MODE: "require"  # loud Error+counter on missing edge signal
+      # Anti-spoof edge-auth (audit SEC-03): with require-mode on, the gateway
+      # rejects money-path requests lacking this shared secret, so a request
+      # that skips Caddy and hits the origin directly with a forged
+      # CF-IPCountry is denied. Set the SAME value on the Caddy container
+      # ({$EDGE_SHARED_SECRET} in Caddyfile). REQUIRED in prod/staging when
+      # GEO_TRUSTED_PROXY_MODE=require (boot fails otherwise).
+      # EDGE_SHARED_SECRET: "set-a-long-random-value"
       # Email notifications (resolution/payout). Logs until SMTP_HOST is set.
       # SMTP_HOST: ""
       # SMTP_PORT: "587"

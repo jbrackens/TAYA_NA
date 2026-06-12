@@ -43,6 +43,14 @@ demo.99rtp.io {
 		#     docs/compliance/geofencing-kyc.md "Edge geo signal").
 		reverse_proxy predict_gateway:18080 {
 			header_up -X-Geo-Country
+			# Anti-spoof edge-auth (audit SEC-03): strip any client copy, then
+			# stamp the shared secret the gateway checks under
+			# GEO_TRUSTED_PROXY_MODE=require + EDGE_SHARED_SECRET. Set the
+			# {$EDGE_SHARED_SECRET} env on the Caddy container to the same
+			# value as the gateway. A direct origin request lacks this header
+			# and is denied on money-path routes.
+			header_up -X-Edge-Auth
+			header_up X-Edge-Auth "{$EDGE_SHARED_SECRET}"
 		}
 	}
 	handle {
@@ -62,6 +70,8 @@ office.99rtp.io {
 		# Same geo-header hygiene as the player host (see comment there).
 		reverse_proxy predict_gateway:18080 {
 			header_up -X-Geo-Country
+			header_up -X-Edge-Auth
+			header_up X-Edge-Auth "{$EDGE_SHARED_SECRET}"
 		}
 	}
 	# Generate the hash on the box:  docker run --rm caddy:2 caddy hash-password --plaintext 'YOURPASS'

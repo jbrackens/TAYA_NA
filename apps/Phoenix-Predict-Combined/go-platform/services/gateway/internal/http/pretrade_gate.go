@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"crypto/subtle"
 	"log/slog"
 	stdhttp "net/http"
 	"os"
@@ -49,6 +50,43 @@ func geoCountryHeader() string {
 // kind of break that should be visible within minutes, not after a regulator
 // notices. Logged with each denial when GEO_TRUSTED_PROXY_MODE=require.
 var geoMissingSignalDenials atomic.Int64
+
+// geoEdgeAuthDenials counts money-path requests rejected because they did not
+// carry the shared edge-auth secret while GEO_TRUSTED_PROXY_MODE=require. A
+// nonzero value means something reached the gateway origin without transiting
+// the trusted edge — i.e. an attempt to bypass geo-fencing by hitting the
+// origin directly with a forged country header (audit SEC-03).
+var geoEdgeAuthDenials atomic.Int64
+
+// edgeAuthHeader carries a shared secret the trusted edge (Caddy/CDN) stamps
+// on every proxied request. Configurable for parity with geoCountryHeader.
+func edgeAuthHeader() string {
+	if h := strings.TrimSpace(os.Getenv("EDGE_AUTH_HEADER")); h != "" {
+		return h
+	}
+	return "X-Edge-Auth"
+}
+
+// edgeRequestVerified reports whether a request carries the configured
+// edge-auth secret. Only meaningful when GEO_TRUSTED_PROXY_MODE=require AND
+// EDGE_SHARED_SECRET is set; callers gate on requireEdgeAuth() first. The
+// compare is constant-time. With no secret configured this returns true so
+// dev/demo (no edge) is unaffected — boot validation forbids that combination
+// in prod/staging (see validateGatewayRuntimeConfig).
+func edgeRequestVerified(r *stdhttp.Request) bool {
+	secret := strings.TrimSpace(os.Getenv("EDGE_SHARED_SECRET"))
+	if secret == "" {
+		return true
+	}
+	got := strings.TrimSpace(r.Header.Get(edgeAuthHeader()))
+	return subtle.ConstantTimeCompare([]byte(got), []byte(secret)) == 1
+}
+
+// requireEdgeAuth reports whether money-path requests must prove they came
+// through the trusted edge: trusted-proxy mode on AND a secret configured.
+func requireEdgeAuth() bool {
+	return trustedProxyModeRequired() && strings.TrimSpace(os.Getenv("EDGE_SHARED_SECRET")) != ""
+}
 
 // trustedProxyModeRequired reports whether the deploy declares a trusted
 // edge that always sets the country header (GEO_TRUSTED_PROXY_MODE=require).
@@ -110,6 +148,17 @@ func logPreTradeComplianceMode(environment string, gate *compliance.GeoGate) {
 func checkComplianceGates(r *stdhttp.Request, userID string, surface compliance.Surface) error {
 	if permissiveBetaComplianceMode() {
 		return nil
+	}
+	// Anti-spoof (audit SEC-03): when the deploy declares a trusted edge and a
+	// shared secret, a money-path request that doesn't carry the secret never
+	// transited the edge — so its CF-IPCountry is attacker-supplied. Reject it
+	// before reading the country header at all. Fails closed.
+	if requireEdgeAuth() && !edgeRequestVerified(r) {
+		n := geoEdgeAuthDenials.Add(1)
+		slog.Error("geo gate: request missing trusted-edge auth — possible origin-direct geo bypass",
+			"surface", surface, "user_id", userID,
+			"header", edgeAuthHeader(), "edge_auth_denials_total", n)
+		return httpx.Forbidden("request did not transit the required edge")
 	}
 	if tradeGeoGate.Enabled() {
 		country := strings.TrimSpace(r.Header.Get(geoCountryHeader()))

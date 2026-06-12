@@ -344,6 +344,7 @@ CRYPTO_DEPOSIT_ADDRESS_SOURCE=
 GEO_GATE_ENABLED=               # 'true' enforces jurisdiction on trade + deposit + withdraw (needs an edge country header, e.g. CF-IPCountry)
 GEO_ALLOWED_COUNTRIES=          # comma-separated ISO-3166 allowlist; required in prod/staging
 GEO_TRUSTED_PROXY_MODE=         # 'require' = edge always sets the header; missing-signal denials log Error + counter
+EDGE_SHARED_SECRET=             # anti-spoof (SEC-03): with TRUSTED_PROXY_MODE=require, money-path requests must carry this secret (stamped by Caddy as X-Edge-Auth) or be denied — blocks direct-to-origin geo bypass. REQUIRED in prod/staging when require-mode is on (boot fails otherwise). Bind gateway :18080 to loopback so only the edge can reach it.
 SMTP_HOST=                      # set to send resolution emails; otherwise notifications log
 
 # Auth service — Social OAuth (full reference: go-platform/services/auth/.env.example).
