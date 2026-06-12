@@ -31,6 +31,9 @@ type Config struct {
 	// be different from the one who approved it (audit A2-04). Two-eyes control
 	// on the custodial payout: one approves, a different person broadcasts.
 	TwoPersonWithdrawal bool `json:"twoPersonWithdrawal"`
+	// FinalityConfirmationsValue is the block depth at which a credited deposit
+	// is considered final by the reorg watcher (audit A2-03). 0 = default (64).
+	FinalityConfirmationsValue int64 `json:"finalityConfirmations"`
 }
 
 func LoadConfigFromEnv(getenv func(string) string) (Config, error) {
@@ -49,8 +52,9 @@ func LoadConfigFromEnv(getenv func(string) string) (Config, error) {
 		DailyDepositLimitCents: envInt64(getenv, "ALPHA_CASHIER_DAILY_DEPOSIT_LIMIT_CENTS", 100000),
 		WithdrawalsEnabled:     envBool(getenv, "ALPHA_CASHIER_WITHDRAWALS_ENABLED", false),
 		WithdrawalReviewNeeded: envBool(getenv, "ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED", true),
-		ScreeningEnforced:      envBool(getenv, "ALPHA_CASHIER_SCREENING_ENFORCEMENT", false),
-		TwoPersonWithdrawal:    envBool(getenv, "ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL", false),
+		ScreeningEnforced:          envBool(getenv, "ALPHA_CASHIER_SCREENING_ENFORCEMENT", false),
+		TwoPersonWithdrawal:        envBool(getenv, "ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL", false),
+		FinalityConfirmationsValue: envInt64(getenv, "ALPHA_CASHIER_FINALITY_CONFIRMATIONS", 0),
 	}
 	if !cfg.Enabled {
 		return cfg, nil

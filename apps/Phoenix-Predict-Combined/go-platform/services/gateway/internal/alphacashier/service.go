@@ -22,6 +22,10 @@ const (
 	maxAdminListLimit        = 500
 	withdrawalReservationTTL = 7 * 24 * time.Hour
 	withdrawalReferenceType  = "alpha_withdrawal"
+	// reorgFreezeTTL is long: a reorg-frozen balance stays held until a human
+	// resolves it (audit A2-03). Re-asserted idempotently by the watcher, so a
+	// still-unresolved freeze is renewed well before this elapses.
+	reorgFreezeTTL = 30 * 24 * time.Hour
 )
 
 type Service struct {
