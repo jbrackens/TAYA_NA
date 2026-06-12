@@ -2,6 +2,8 @@ package prediction
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -822,8 +824,17 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 
 	// Build the final position snapshot before persisting so the repository can
 	// commit the fill as one prediction-side unit.
+	//
+	// The GetPosition error must NOT be swallowed (audit COR-03): the upsert
+	// below writes ABSOLUTE values, so on a transient read error we would build
+	// a fresh snapshot holding only this trade's quantity and silently
+	// overwrite the user's real existing position. Only sql.ErrNoRows means
+	// "no position yet"; any other error aborts the order.
 	var position *Position
-	existing, _ := s.repo.GetPosition(ctx, userID, req.MarketID, req.Side)
+	existing, getErr := s.repo.GetPosition(ctx, userID, req.MarketID, req.Side)
+	if getErr != nil && !errors.Is(getErr, ErrPositionNotFound) && !errors.Is(getErr, sql.ErrNoRows) {
+		return nil, nil, fmt.Errorf("load existing position: %w", getErr)
+	}
 	if existing != nil {
 		totalQty := existing.Quantity + req.Quantity
 		totalCostAll := existing.TotalCostCents + totalCost
@@ -1534,6 +1545,12 @@ func (s *Service) CreateMarket(ctx context.Context, req CreateMarketRequest) (*M
 		Description:         req.Description,
 		Translations:        defaultJSONObject(req.Translations),
 		Status:              MarketStatusUnopened,
+		// New markets are always order-book; the AMM is a legacy mode kept
+		// only for pre-019 markets and is slated for removal (audit COR-03 /
+		// P2-09). Setting it explicitly (the DB default agrees) documents the
+		// intent and guards against a future INSERT that starts writing the
+		// column.
+		ExecutionMode:       ExecutionModeOrderBook,
 		YesPriceCents:       50,
 		NoPriceCents:        50,
 		AMMLiquidityParam:   b,

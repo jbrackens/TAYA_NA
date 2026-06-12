@@ -110,7 +110,7 @@ func (r *memRepo) GetPosition(ctx context.Context, userID, marketID string, side
 	if p, ok := r.positions[key]; ok {
 		return clonePosition(p), nil
 	}
-	return nil, fmt.Errorf("not found")
+	return nil, ErrPositionNotFound
 }
 func (r *memRepo) UpsertPosition(ctx context.Context, p *Position) error {
 	if r.upsertPositionErr != nil {

@@ -2,8 +2,16 @@ package prediction
 
 import (
 	"context"
+	"errors"
 	"time"
 )
+
+// ErrPositionNotFound is the domain sentinel for "no position row" so callers
+// can distinguish a legitimate absence from a real read failure regardless of
+// the backing store (SQL returns it in place of sql.ErrNoRows; fakes return it
+// directly). Critical on the AMM write path, which upserts absolute values
+// (audit COR-03).
+var ErrPositionNotFound = errors.New("position not found")
 
 // Repository defines the data access interface for the prediction platform.
 // Implementations: sql_repository.go (PostgreSQL), inmemory_repository.go (testing).

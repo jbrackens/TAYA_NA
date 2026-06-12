@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -698,6 +699,9 @@ func (r *SQLRepository) GetPosition(ctx context.Context, userID, marketID string
 	).Scan(&p.ID, &p.UserID, &p.MarketID, &p.Side, &p.Quantity,
 		&p.AvgPriceCents, &p.TotalCostCents, &p.RealizedPnlCents, &p.ReservedQuantity,
 		&p.CreatedAt, &p.UpdatedAt)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrPositionNotFound
+	}
 	if err != nil {
 		return nil, err
 	}
