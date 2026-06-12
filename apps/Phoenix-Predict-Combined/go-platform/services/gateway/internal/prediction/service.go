@@ -1001,94 +1001,124 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 		return nil, nil, false, fmt.Errorf("create pending order: %w", err)
 	}
 
-	// Load candidate makers for both match modes. The engine will pick which
-	// fills to execute based on price-time priority and feasibility.
-	makersSec, err := exchangeRepo.LoadMakersForSecondary(ctx, market.ID, req.Side, req.Action, req.PriceCents, MaxOrderBookDepth)
-	if err != nil {
-		return nil, nil, false, fmt.Errorf("load secondary makers: %w", err)
-	}
-	var makersIss []Order
-	if req.Action == OrderActionBuy {
-		otherSide := OrderSideNo
-		if req.Side == OrderSideNo {
-			otherSide = OrderSideYes
-		}
-		// For market buys the taker has no explicit price; treat it as
-		// willing to pay up to the highest in-band price (MaxTickPriceCents)
-		// for issuance feasibility. That makes every Buy-NO maker eligible
-		// because `taker_limit + maker_limit >= par` reduces to
-		// `99 + maker_limit >= 100`, which is true for any maker_limit >= 1.
-		// The notional cap on the request bounds the dollar exposure
-		// upstream of the match loop.
-		//
-		// Before this change, market buys returned "cancelled — no matching
-		// liquidity" on every order_book market even when SMM-provided Buy-NO
-		// quotes were sitting on the book — flagged in SMM Phase 1's runbook
-		// known-constraint section. With this fix, the default trade ticket
-		// (market buy) fills against issuance makers correctly.
-		takerLimit := MaxTickPriceCents
-		if req.PriceCents != nil {
-			takerLimit = *req.PriceCents
-		}
-		makersIss, err = exchangeRepo.LoadMakersForIssuance(ctx, market.ID, otherSide, takerLimit, MaxOrderBookDepth)
-		if err != nil {
-			return nil, nil, false, fmt.Errorf("load issuance makers: %w", err)
-		}
-	}
-
+	// Match attempt loop. The plan is built from a snapshot of the book read
+	// OUTSIDE the per-market lock, then PersistMatchAtomic re-asserts each
+	// touched maker's fill state under the lock. If a concurrent taker moved a
+	// maker between our read and the commit, PersistMatchAtomic returns
+	// ErrBookChanged and we re-load the book and re-plan rather than writing
+	// stale absolute fill values that would regress the maker (audit COR-02).
+	// Bounded so a pathologically hot market can't spin forever; the taker
+	// order row is pristine across attempts (BuildPlan copies it).
 	engine := NewExchangeEngine()
-	plan, err := engine.BuildPlan(MatchInput{
-		Market:          *market,
-		Taker:           *taker,
-		MakersSecondary: makersSec,
-		MakersIssuance:  makersIss,
-		TakerPosition:   position,
-		Now:             now,
-		IDFactory:       newUUIDString,
-	})
-	if err != nil {
-		// Engine sentinel rejection (FOK / post-only / self-match). Mark the
-		// already-persisted pending order as rejected and surface the reason.
-		reason := err.Error()
-		taker.Status = OrderStatusRejected
-		taker.FailureReason = &reason
-		if uerr := s.repo.UpdateOrder(ctx, taker); uerr != nil {
-			// A failed mark leaves a phantom 'pending' order the demo sweep
-			// only clears after >1h; log so it's visible (audit COR-04).
-			slog.WarnContext(ctx, "failed to mark rejected order after engine rejection",
-				"order_id", taker.ID, "market_id", market.ID, "error", uerr)
+	const maxMatchAttempts = 3
+	for attempt := 1; attempt <= maxMatchAttempts; attempt++ {
+		// Load candidate makers for both match modes. The engine will pick which
+		// fills to execute based on price-time priority and feasibility.
+		makersSec, err := exchangeRepo.LoadMakersForSecondary(ctx, market.ID, req.Side, req.Action, req.PriceCents, MaxOrderBookDepth)
+		if err != nil {
+			return nil, nil, false, fmt.Errorf("load secondary makers: %w", err)
 		}
-		s.metrics.RecordOrder(market.ID, req.Side, req.Action, req.OrderType, OrderStatusRejected)
-		return taker, nil, false, nil
-	}
-
-	// Wallet hold for buys: reserve worst-case spend up front. The match
-	// captures incrementally; any unfilled remainder is released by
-	// applyTIF or the caller's cancel flow.
-	if req.Action == OrderActionBuy && totalCost > 0 {
-		plan.HoldReservation = &ReservationHold{
-			UserID:      userID,
-			AmountCents: totalCost,
-			Type:        "prediction_order",
-			ID:          taker.ID,
-			ExpiresIn:   reservationTTL(tif, market.CloseAt, now),
+		var makersIss []Order
+		if req.Action == OrderActionBuy {
+			otherSide := OrderSideNo
+			if req.Side == OrderSideNo {
+				otherSide = OrderSideYes
+			}
+			// For market buys the taker has no explicit price; treat it as
+			// willing to pay up to the highest in-band price (MaxTickPriceCents)
+			// for issuance feasibility. That makes every Buy-NO maker eligible
+			// because `taker_limit + maker_limit >= par` reduces to
+			// `99 + maker_limit >= 100`, which is true for any maker_limit >= 1.
+			// The notional cap on the request bounds the dollar exposure
+			// upstream of the match loop.
+			takerLimit := MaxTickPriceCents
+			if req.PriceCents != nil {
+				takerLimit = *req.PriceCents
+			}
+			makersIss, err = exchangeRepo.LoadMakersForIssuance(ctx, market.ID, otherSide, takerLimit, MaxOrderBookDepth)
+			if err != nil {
+				return nil, nil, false, fmt.Errorf("load issuance makers: %w", err)
+			}
 		}
-	}
 
-	if err := exchangeRepo.PersistMatchAtomic(ctx, exchangeWallet, plan); err != nil {
-		// The pending order row is already committed (the INSERT at the
-		// top of this function happens outside the match tx so the trade
-		// FKs can resolve). PersistMatchAtomic's tx rolls back its own
-		// inserts on error, but the pending order survives. Without
-		// cleanup it sits as a status='pending' orphan with no fills,
-		// no reservations, and no cancelled_at — users see "Order failed"
-		// in the toast but /portfolio/ keeps showing it as pending until
-		// the next demo-seed Phase 0 sweep cancels stale-pendings >1h.
-		// Mirror the engine-error path (line ~470 above): mark the order
-		// rejected with the rollback reason. The taker pointer is still
-		// the latest in-memory state, so failed-fill counters / failure
-		// reasons propagate to the response.
-		reason := err.Error()
+		plan, err := engine.BuildPlan(MatchInput{
+			Market:          *market,
+			Taker:           *taker,
+			MakersSecondary: makersSec,
+			MakersIssuance:  makersIss,
+			TakerPosition:   position,
+			Now:             now,
+			IDFactory:       newUUIDString,
+		})
+		if err != nil {
+			// Engine sentinel rejection (FOK / post-only / self-match). Mark the
+			// already-persisted pending order as rejected and surface the reason.
+			reason := err.Error()
+			taker.Status = OrderStatusRejected
+			taker.FailureReason = &reason
+			if uerr := s.repo.UpdateOrder(ctx, taker); uerr != nil {
+				// A failed mark leaves a phantom 'pending' order the demo sweep
+				// only clears after >1h; log so it's visible (audit COR-04).
+				slog.WarnContext(ctx, "failed to mark rejected order after engine rejection",
+					"order_id", taker.ID, "market_id", market.ID, "error", uerr)
+			}
+			s.metrics.RecordOrder(market.ID, req.Side, req.Action, req.OrderType, OrderStatusRejected)
+			return taker, nil, false, nil
+		}
+
+		// Wallet hold for buys: reserve worst-case spend up front. The match
+		// captures incrementally; any unfilled remainder is released by
+		// applyTIF or the caller's cancel flow. HoldWithTx is idempotent by
+		// (type,id), so a retry re-holds harmlessly after the prior attempt's
+		// tx rolled back.
+		if req.Action == OrderActionBuy && totalCost > 0 {
+			plan.HoldReservation = &ReservationHold{
+				UserID:      userID,
+				AmountCents: totalCost,
+				Type:        "prediction_order",
+				ID:          taker.ID,
+				ExpiresIn:   reservationTTL(tif, market.CloseAt, now),
+			}
+		}
+
+		perr := exchangeRepo.PersistMatchAtomic(ctx, exchangeWallet, plan)
+		if perr == nil {
+			// Success. Domain metrics: one order observation by final status,
+			// one trade observation per fill.
+			s.metrics.RecordOrder(market.ID, req.Side, req.Action, req.OrderType, plan.Taker.Status)
+			for _, t := range plan.Trades {
+				s.metrics.RecordTrade(market.ID, t.TradeKind, t.EngineKind)
+			}
+			// Post-commit: refresh top-of-book snapshot. Best-effort — derived
+			// columns self-heal on the next match (audit COR-04).
+			if rerr := exchangeRepo.RefreshMarketBestQuotes(ctx, market.ID); rerr != nil {
+				slog.WarnContext(ctx, "refresh best quotes after match failed",
+					"market_id", market.ID, "error", rerr)
+			}
+			var firstTrade *Trade
+			if len(plan.Trades) > 0 {
+				t := plan.Trades[0]
+				firstTrade = &t
+			}
+			return &plan.Taker, firstTrade, false, nil
+		}
+
+		// A maker moved under the lock: re-load the book and re-plan, up to the
+		// attempt bound. The failed attempt's tx already rolled back (no fills,
+		// no captures), so nothing to undo.
+		if errors.Is(perr, ErrBookChanged) && attempt < maxMatchAttempts {
+			slog.InfoContext(ctx, "match replan: book changed under lock",
+				"order_id", taker.ID, "market_id", market.ID, "attempt", attempt)
+			continue
+		}
+
+		// Terminal persist failure (or retries exhausted). The pending order
+		// row committed before the match tx (so trade FKs resolve); mark it
+		// rejected so it isn't a phantom 'pending' until the stale sweep.
+		reason := perr.Error()
+		if errors.Is(perr, ErrBookChanged) {
+			reason = "order book is moving too fast; please retry"
+		}
 		taker.Status = OrderStatusRejected
 		taker.FailureReason = &reason
 		if uerr := s.repo.UpdateOrder(ctx, taker); uerr != nil {
@@ -1096,35 +1126,12 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 				"order_id", taker.ID, "market_id", market.ID, "error", uerr)
 		}
 		s.metrics.RecordOrder(market.ID, req.Side, req.Action, req.OrderType, OrderStatusRejected)
-		return taker, nil, false, fmt.Errorf("persist match: %w", err)
+		return taker, nil, false, fmt.Errorf("persist match: %w", perr)
 	}
 
-	// Domain metrics: one order observation by final status, one trade
-	// observation per fill. Cheap (a few map ops under a mutex). Failure
-	// to record is silent — see Metrics docstring.
-	s.metrics.RecordOrder(market.ID, req.Side, req.Action, req.OrderType, plan.Taker.Status)
-	for _, t := range plan.Trades {
-		s.metrics.RecordTrade(market.ID, t.TradeKind, t.EngineKind)
-	}
-
-	// Post-commit: refresh top-of-book snapshot on the market row so
-	// market:<id> subscribers see the new best bid/ask. Best-effort —
-	// failures here don't roll back the match (the columns are derived
-	// data; a missed refresh self-heals on the next match).
-	if err := exchangeRepo.RefreshMarketBestQuotes(ctx, market.ID); err != nil {
-		// Best-effort: derived top-of-book columns self-heal on the next
-		// match. Don't propagate, but actually log it (the previous `_ = err`
-		// claimed to log and didn't — audit COR-04).
-		slog.WarnContext(ctx, "refresh best quotes after match failed",
-			"market_id", market.ID, "error", err)
-	}
-
-	var firstTrade *Trade
-	if len(plan.Trades) > 0 {
-		t := plan.Trades[0]
-		firstTrade = &t
-	}
-	return &plan.Taker, firstTrade, false, nil
+	// Unreachable: the loop returns on success, engine rejection, or terminal
+	// failure. Present so the function has a terminal statement.
+	return taker, nil, false, fmt.Errorf("match exhausted %d attempts", maxMatchAttempts)
 }
 
 // worstCaseSpend computes the maximum cents a buy order could spend. For
