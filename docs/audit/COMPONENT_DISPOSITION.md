@@ -30,7 +30,8 @@ archived — this is the decision input. Verdicts:
 | GeoComplyCheck | 2026-04-04 | **SUPERSEDED** | Server-side geo gate (Phase 1) is the enforcement; a client widget is not the control. |
 | AcceptTermsModal | 2026-04-04 | SUPERSEDED? | Confirm the prediction signup/terms flow; likely superseded. |
 | CurrentBalance | 2026-04-04 | SUPERSEDED? | Balance is shown via the live wallet client / TopBar; confirm. |
-| BackdropScene, BrandMark | 2026-04-24 | **SUPERSEDED** | Superseded by the current P8 design shell + TopBar. |
+| BackdropScene | 2026-04-24 | **SUPERSEDED (archived)** | Unused design experiment. |
+| BrandMark | 2026-04-24 | **LIVE — KEPT** | Correction discovered at merge: the deployed branch's "Tiangge" TopBar + homepage import it. It was dead on the older chore branch but is live on the deployed line — restored. |
 | Avatar, Collapse, CountdownTimer, CountrySelect, DataTable, Pagination, StatusBadge, Tabs, StaticPage, OpenChatButton, MarketDetailLoading | 2026-04-04/08 | **GENERIC** | Unused UI primitives; reusable. Archiving saves little; keeping costs little. |
 
 ## Office (`talon-backoffice/packages/office/`) — ~145 dead files
