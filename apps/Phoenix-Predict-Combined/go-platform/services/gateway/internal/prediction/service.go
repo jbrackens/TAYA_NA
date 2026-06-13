@@ -2,7 +2,6 @@ package prediction
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -16,9 +15,12 @@ import (
 
 // Service is the primary business logic layer for the prediction platform.
 type Service struct {
-	repo              Repository
-	wallet            WalletAdapter
-	amm               *AMMEngine
+	repo   Repository
+	wallet WalletAdapter
+	// AMM execution is retired (P2-09): the order path no longer holds an
+	// AMMEngine. The LMSR price math in amm.go remains as an unwired library
+	// (used by discover price tests); PlaceOrder/PreviewOrder reject any
+	// lingering execution_mode='amm' market.
 	settlement        *SettlementEngine
 	onMarketLifecycle MarketLifecycleHandler // optional; fired post-commit
 	// Optional Prometheus-format counter registry. nil is safe — Record*
@@ -270,7 +272,6 @@ func NewService(repo Repository, wallet WalletAdapter) *Service {
 	return &Service{
 		repo:       repo,
 		wallet:     wallet,
-		amm:        &AMMEngine{},
 		settlement: NewSettlementEngine(repo, wallet),
 	}
 }
@@ -413,19 +414,9 @@ func (s *Service) PreviewOrderForUser(ctx context.Context, req PlaceOrderRequest
 	if market.ExecutionMode == ExecutionModeOrderBook {
 		return s.previewExchangeOrder(ctx, req, userID, market)
 	}
-	preview, err := s.amm.PreviewTrade(market, req.Side, req.Action, req.Quantity)
-	if err != nil {
-		return nil, err
-	}
-	preview.ExecutionMode = ExecutionModeAMM
-	preview.FilledQuantity = req.Quantity
-	preview.UnfilledQuantity = 0
-	preview.AverageFillPriceCents = preview.PriceCents
-	preview.TotalCostWithFeesCents = preview.TotalCost + preview.FeeCents
-	preview.QuoteStatus = OrderStatusFilled
-	preview.QuoteStaleAfterMillis = int64((5 * time.Second) / time.Millisecond)
-	preview.QuoteGeneratedAtUnixSec = time.Now().UTC().Unix()
-	return preview, nil
+	// AMM execution is retired (P2-09): no quote is produced for a legacy
+	// AMM market — its trading path is closed (positions remain settleable).
+	return nil, fmt.Errorf("market %s uses the retired AMM engine and is no longer tradeable", market.Ticker)
 }
 
 func (s *Service) previewExchangeOrder(ctx context.Context, req PlaceOrderRequest, userID string, market *Market) (*OrderPreview, error) {
@@ -688,229 +679,17 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 		return o, t, perr
 	}
 
-	// AMM path. The shared RG gate above already recorded the committed
-	// worst-case stake atomically (codex-#4) when gateRecorded is true. AMM
-	// is buy-only and fills immediately (no resting), so reconcile the
-	// gate-recorded amount on EVERY exit via defer: release it entirely on
-	// any failure before the fill (no realized spend), or release
-	// committed−realized on success. rgRecorded accumulates the atomically
-	// recorded amount; the bound==0 capless re-gate below adds the actual
-	// cost it records. A non-atomic checker recorded nothing here
-	// (rgRecorded==0) and the legacy record-realized-on-success calls below
-	// are kept untouched.
-	rgRecorded := int64(0)
+	// AMM execution is RETIRED (audit strategy §4 / P2-09). New markets are
+	// always order_book — P1-03 gates creation — but a pre-019 market could
+	// still carry execution_mode='amm'. New trades on such a market are refused;
+	// existing positions stay fully settleable and voidable because settlement is
+	// engine-agnostic (it pays 100c/contract from prediction_positions, never
+	// touching AMM state). Release any RG stake the gate atomically recorded,
+	// since no order is placed.
 	if gateRecorded {
-		rgRecorded = committed
+		s.releaseComplianceOrder(ctx, userID, committed, time.Now().UTC())
 	}
-	ammFilled := false
-	var ammRealized int64
-	defer func() {
-		if rgRecorded <= 0 {
-			return
-		}
-		rel := rgRecorded
-		if ammFilled {
-			if rel = rgRecorded - ammRealized; rel < 0 {
-				rel = 0
-			}
-		}
-		if rel > 0 {
-			s.releaseComplianceOrder(context.Background(), userID, rel, time.Now().UTC())
-		}
-	}()
-
-	if req.Action == OrderActionSell {
-		return nil, nil, fmt.Errorf("sell orders not yet supported (requires existing position)")
-	}
-
-	// Preview cost without mutating market state, so we can check balance first.
-	preview, err := s.amm.PreviewTrade(market, req.Side, req.Action, req.Quantity)
-	if err != nil {
-		return nil, nil, fmt.Errorf("AMM preview failed: %w", err)
-	}
-
-	totalCost := preview.TotalCost + preview.FeeCents
-
-	// Notional-cap ceiling. The order-book path clamps fills to
-	// notionalCapCents (capFillQtyByNotionalCap); the AMM path historically
-	// did not, so an LMSR cost above the bound both fat-fingered the wallet
-	// AND slipped the RG gate, which evaluated worstCaseSpend — not the real
-	// cost. This is an AMM *buy* here (sells were rejected above). The gate
-	// already ran on worstCaseSpend(req); enforce that the actual cost does
-	// not exceed it. worstCaseSpend is 0 for a buy with neither a notional
-	// cap (market) nor a limit price — an unbounded order the gate could not
-	// meaningfully evaluate (stake 0). The HTTP handler rejects capless
-	// market buys, but the bot path calls PlaceOrder directly and bypasses
-	// that, so enforce it here at the service layer for every caller.
-	// (UAT 2026-05-16 D-5 codex review P1 #1 + re-review.)
-	bound := worstCaseSpend(req)
-	if bound > 0 && totalCost > bound {
-		// An explicit cap (market) or limit price was given and the real
-		// LMSR cost exceeds it — honor the user's bound (fat-finger / cap).
-		return nil, nil, fmt.Errorf("order cost %d cents exceeds notional cap %d cents", totalCost, bound)
-	}
-	if totalCost > bound {
-		// bound == 0: a capless market buy (or limit buy without price) the
-		// RG gate could only evaluate at stake 0 — i.e. it under-gated. The
-		// HTTP handler rejects capless market buys, but the bot path calls
-		// PlaceOrder directly and bypasses that. Re-run the RG gate against
-		// the *actual* cost before executing so the limit can't be slipped.
-		// No-op when no RG checker is wired (nil compliance), so legitimate
-		// unbounded AMM buys on the non-RG path are unaffected.
-		rec2, gerr := s.checkComplianceForOrder(ctx, userID, totalCost)
-		if gerr != nil {
-			return nil, nil, gerr
-		}
-		// If this capless re-gate recorded atomically, the deferred
-		// reconcile must also account for that actual-cost record.
-		if rec2 {
-			rgRecorded += totalCost
-		}
-	}
-
-	// Balance check — reject early before mutating anything. NoopWallet returns
-	// math.MaxInt64 so test paths that don't care about wallet state pass
-	// through; real wallets return actual balances and will reject correctly.
-	if balance := s.wallet.Balance(userID); balance < totalCost {
-		return nil, nil, fmt.Errorf("insufficient balance: have %d cents, need %d cents", balance, totalCost)
-	}
-
-	// Execute against AMM (mutates market.AMMYesShares / AMMNoShares / prices)
-	costCents, feeCents, err := s.amm.ExecuteTrade(market, req.Side, req.Quantity)
-	if err != nil {
-		return nil, nil, fmt.Errorf("AMM execution failed: %w", err)
-	}
-
-	// Use the actual executed cost (should match preview, but trust the engine).
-	totalCost = costCents + feeCents
-	debitKey := "prediction_order:" + *idempotencyKey
-	debitReason := fmt.Sprintf("prediction order: %s %s x%d", req.Side, market.Ticker, req.Quantity)
-	now := time.Now().UTC()
-	priceCents := market.YesPriceCents
-	if req.Side == OrderSideNo {
-		priceCents = market.NoPriceCents
-	}
-
-	// Create order
-	order := &Order{
-		UserID:            userID,
-		MarketID:          req.MarketID,
-		Side:              req.Side,
-		Action:            req.Action,
-		OrderType:         req.OrderType,
-		PriceCents:        &priceCents,
-		Quantity:          req.Quantity,
-		FilledQuantity:    req.Quantity,
-		RemainingQuantity: 0,
-		TotalCostCents:    totalCost,
-		Status:            OrderStatusFilled,
-		IdempotencyKey:    idempotencyKey,
-		FilledAt:          &now,
-		CreatedAt:         now,
-		UpdatedAt:         now,
-	}
-
-	trade := &Trade{
-		MarketID:   req.MarketID,
-		BuyOrderID: &order.ID,
-		BuyerID:    userID,
-		Side:       req.Side,
-		PriceCents: priceCents,
-		Quantity:   req.Quantity,
-		FeeCents:   int(feeCents),
-		IsAMMTrade: true,
-		TradedAt:   now,
-	}
-
-	// Build the final position snapshot before persisting so the repository can
-	// commit the fill as one prediction-side unit.
-	//
-	// The GetPosition error must NOT be swallowed (audit COR-03): the upsert
-	// below writes ABSOLUTE values, so on a transient read error we would build
-	// a fresh snapshot holding only this trade's quantity and silently
-	// overwrite the user's real existing position. Only sql.ErrNoRows means
-	// "no position yet"; any other error aborts the order.
-	var position *Position
-	existing, getErr := s.repo.GetPosition(ctx, userID, req.MarketID, req.Side)
-	if getErr != nil && !errors.Is(getErr, ErrPositionNotFound) && !errors.Is(getErr, sql.ErrNoRows) {
-		return nil, nil, fmt.Errorf("load existing position: %w", getErr)
-	}
-	if existing != nil {
-		totalQty := existing.Quantity + req.Quantity
-		totalCostAll := existing.TotalCostCents + totalCost
-		existing.AvgPriceCents = int(totalCostAll / int64(totalQty))
-		existing.Quantity = totalQty
-		existing.TotalCostCents = totalCostAll
-		existing.UpdatedAt = now
-		position = existing
-	} else {
-		position = &Position{
-			UserID:         userID,
-			MarketID:       req.MarketID,
-			Side:           req.Side,
-			Quantity:       req.Quantity,
-			AvgPriceCents:  int(totalCost / int64(req.Quantity)),
-			TotalCostCents: totalCost,
-			CreatedAt:      now,
-			UpdatedAt:      now,
-		}
-	}
-
-	if atomicRepo, ok := s.repo.(AtomicFilledOrderPersister); ok {
-		if _, walletIsTxCapable := s.wallet.(TxWalletAdapter); walletIsTxCapable {
-			if err := atomicRepo.PersistFilledOrderAtomic(
-				ctx,
-				s.wallet,
-				userID,
-				totalCost,
-				debitKey,
-				debitReason,
-				order,
-				trade,
-				position,
-				market,
-			); err != nil {
-				return nil, nil, fmt.Errorf("persist filled order atomically: %w", err)
-			}
-			if rgRecorded > 0 {
-				// codex-#4 atomic path: committed was recorded at the gate;
-				// mark filled so the deferred reconcile releases
-				// committed−realized. Do NOT record again here.
-				ammFilled = true
-				ammRealized = realizedStakeCents(order)
-			} else {
-				s.recordComplianceOrder(ctx, userID, realizedStakeCents(order))
-			}
-			return order, trade, nil
-		}
-	}
-
-	// Fallback path for memory-mode/local tests where wallet and prediction
-	// state cannot share one SQL transaction.
-	if err := s.wallet.Debit(userID, totalCost, debitKey, debitReason); err != nil {
-		return nil, nil, fmt.Errorf("wallet debit failed: %w", err)
-	}
-
-	if err := s.repo.PersistFilledOrder(ctx, order, trade, position, market); err != nil {
-		// Compensating refund (memory-mode fallback path; the SQL path commits
-		// debit+persist in one tx). A failed refund here means the user was
-		// debited without a position — must be loud, not silent (audit COR-04).
-		if rerr := s.wallet.Credit(userID, totalCost, debitKey+":refund",
-			fmt.Sprintf("refund: filled order persistence failed for %s", market.Ticker)); rerr != nil {
-			slog.ErrorContext(ctx, "CRITICAL: refund after failed order persist also failed — user debited without position",
-				"user_id", userID, "market", market.Ticker, "cents", totalCost,
-				"persist_error", err, "refund_error", rerr)
-		}
-		return nil, nil, fmt.Errorf("persist filled order: %w", err)
-	}
-
-	if rgRecorded > 0 {
-		ammFilled = true
-		ammRealized = realizedStakeCents(order)
-	} else {
-		s.recordComplianceOrder(ctx, userID, realizedStakeCents(order))
-	}
-	return order, trade, nil
+	return nil, nil, fmt.Errorf("market %s uses the retired AMM engine and is no longer tradeable; existing positions can still be settled", market.Ticker)
 }
 
 // placeExchangeOrder is the order-book execution path. Validates, loads the
