@@ -7,14 +7,7 @@ import {
   getWalletBreakdown,
   type WalletBreakdown as WalletBreakdownType,
 } from "../lib/api/bonus-client";
-
-function formatCents(cents: number, currency: string = "USD"): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-  }).format(cents / 100);
-}
+import { formatCents } from "../lib/format";
 
 export const WalletBreakdownDisplay: React.FC = () => {
   const { t } = useTranslation("bonus");
@@ -68,7 +61,7 @@ export const WalletBreakdownDisplay: React.FC = () => {
           {t("totalBalance")}
         </span>
         <span className="text-sm font-semibold text-white">
-          {formatCents(breakdown.totalCents, currency)}
+          {formatCents(breakdown.totalCents, { currency })}
         </span>
       </div>
 
@@ -79,14 +72,14 @@ export const WalletBreakdownDisplay: React.FC = () => {
             <span className="w-2 h-2 rounded-full bg-green-400" />
             <span className="text-gray-400">{t("realMoney")}</span>
             <span className="text-white font-medium">
-              {formatCents(breakdown.realMoneyCents, currency)}
+              {formatCents(breakdown.realMoneyCents, { currency })}
             </span>
           </div>
           <div className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-yellow-400" />
             <span className="text-gray-400">{t("bonusFunds")}</span>
             <span className="text-white font-medium">
-              {formatCents(breakdown.bonusFundCents, currency)}
+              {formatCents(breakdown.bonusFundCents, { currency })}
             </span>
           </div>
         </div>

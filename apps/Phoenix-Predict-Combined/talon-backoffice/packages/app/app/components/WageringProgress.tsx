@@ -2,20 +2,13 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { formatCents } from "../lib/format";
 
 interface WageringProgressProps {
   requiredCents: number;
   completedCents: number;
   progressPct: number;
   expiresAt: string;
-}
-
-function formatCents(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-  }).format(cents / 100);
 }
 
 function daysUntil(dateStr: string): number {
@@ -54,8 +47,8 @@ export const WageringProgress: React.FC<WageringProgressProps> = ({
       <div className="flex items-center justify-between text-xs">
         <span className="text-gray-400">
           {t("wageringRequired", {
-            completed: formatCents(completedCents),
-            required: formatCents(requiredCents),
+            completed: formatCents(completedCents, { minimumFractionDigits: 0 }),
+            required: formatCents(requiredCents, { minimumFractionDigits: 0 }),
           })}
         </span>
         <span className={isExpired ? "text-red-400" : "text-gray-400"}>
