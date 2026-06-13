@@ -33,28 +33,30 @@ INSERT INTO tenants (id, display_name, status)
   VALUES ('hula', 'Hula Na!', 'active')
   ON CONFLICT (id) DO NOTHING;
 
+-- NOTE: only migration-created tables are altered here. wallet_balances (and
+-- the other wallet_* tables) are created lazily by the wallet service's
+-- ensureSchema(), NOT by goose — so they do not exist when this migration runs
+-- on a fresh database. Their tenant_id column is added in ensureSchema instead
+-- (caught by guardrail G-03: the original 037 failed `migrate up` on a clean DB
+-- with "relation wallet_balances does not exist").
 ALTER TABLE punters              ADD COLUMN tenant_id TEXT NOT NULL DEFAULT 'hula' REFERENCES tenants(id);
 ALTER TABLE prediction_markets   ADD COLUMN tenant_id TEXT NOT NULL DEFAULT 'hula' REFERENCES tenants(id);
 ALTER TABLE prediction_orders    ADD COLUMN tenant_id TEXT NOT NULL DEFAULT 'hula' REFERENCES tenants(id);
 ALTER TABLE prediction_positions ADD COLUMN tenant_id TEXT NOT NULL DEFAULT 'hula' REFERENCES tenants(id);
 ALTER TABLE prediction_payouts   ADD COLUMN tenant_id TEXT NOT NULL DEFAULT 'hula' REFERENCES tenants(id);
-ALTER TABLE wallet_balances      ADD COLUMN tenant_id TEXT NOT NULL DEFAULT 'hula' REFERENCES tenants(id);
 
 CREATE INDEX idx_punters_tenant              ON punters(tenant_id);
 CREATE INDEX idx_pred_markets_tenant         ON prediction_markets(tenant_id);
 CREATE INDEX idx_pred_orders_tenant          ON prediction_orders(tenant_id);
 CREATE INDEX idx_pred_positions_tenant       ON prediction_positions(tenant_id);
 CREATE INDEX idx_pred_payouts_tenant         ON prediction_payouts(tenant_id);
-CREATE INDEX idx_wallet_balances_tenant      ON wallet_balances(tenant_id);
 
 -- +goose Down
-DROP INDEX IF EXISTS idx_wallet_balances_tenant;
 DROP INDEX IF EXISTS idx_pred_payouts_tenant;
 DROP INDEX IF EXISTS idx_pred_positions_tenant;
 DROP INDEX IF EXISTS idx_pred_orders_tenant;
 DROP INDEX IF EXISTS idx_pred_markets_tenant;
 DROP INDEX IF EXISTS idx_punters_tenant;
-ALTER TABLE wallet_balances      DROP COLUMN IF EXISTS tenant_id;
 ALTER TABLE prediction_payouts   DROP COLUMN IF EXISTS tenant_id;
 ALTER TABLE prediction_positions DROP COLUMN IF EXISTS tenant_id;
 ALTER TABLE prediction_orders    DROP COLUMN IF EXISTS tenant_id;

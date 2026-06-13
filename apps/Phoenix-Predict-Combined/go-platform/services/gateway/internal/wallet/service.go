@@ -1675,6 +1675,7 @@ func (s *Service) ensureSchema() error {
   user_id TEXT PRIMARY KEY,
   balance_cents BIGINT NOT NULL DEFAULT 0,
   bonus_balance_cents BIGINT NOT NULL DEFAULT 0,
+  tenant_id TEXT NOT NULL DEFAULT 'hula',
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )`,
 		`CREATE TABLE IF NOT EXISTS wallet_ledger (
@@ -1706,6 +1707,13 @@ func (s *Service) ensureSchema() error {
 		// kept in sync with migration 032 so code-bootstrapped schemas match
 		// goose-migrated ones (audit PERF-02).
 		`CREATE INDEX IF NOT EXISTS idx_wallet_ledger_user_id ON wallet_ledger (user_id, id DESC)`,
+		// tenant_id discriminator (ADR-0005 / P3-01). wallet_balances is
+		// app-created here (not by a goose migration), so its tenant column
+		// lives here too — migration 037 deliberately does NOT touch it, since
+		// the table doesn't exist when goose runs on a fresh DB. ADD COLUMN
+		// IF NOT EXISTS covers DBs whose wallet_balances predates this.
+		`ALTER TABLE wallet_balances ADD COLUMN IF NOT EXISTS tenant_id TEXT NOT NULL DEFAULT 'hula'`,
+		`CREATE INDEX IF NOT EXISTS idx_wallet_balances_tenant ON wallet_balances (tenant_id)`,
 	}
 
 	for _, statement := range statements {
