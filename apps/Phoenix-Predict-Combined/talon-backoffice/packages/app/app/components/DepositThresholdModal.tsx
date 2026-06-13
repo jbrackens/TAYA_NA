@@ -1,6 +1,7 @@
 "use client";
 
 import Modal from "./Modal";
+import { formatDollars } from "../lib/format";
 
 interface DepositThresholdModalProps {
   open: boolean;
@@ -17,13 +18,6 @@ export default function DepositThresholdModal({
   amount,
   currentLimit,
 }: DepositThresholdModalProps) {
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(value);
-  };
-
   const isExceeding = amount > currentLimit;
 
   const warningClass = isExceeding
@@ -48,13 +42,13 @@ export default function DepositThresholdModal({
           <div className="flex justify-between rounded bg-[#0a0e18] px-3 py-2.5 text-[13px]">
             <span className="text-[#64748b]">Current Daily Limit:</span>
             <span className="font-semibold text-[#e2e8f0]">
-              {formatCurrency(currentLimit)}
+              {formatDollars(currentLimit)}
             </span>
           </div>
           <div className="flex justify-between rounded bg-[#0a0e18] px-3 py-2.5 text-[13px]">
             <span className="text-[#64748b]">Requested Deposit:</span>
             <span className="font-semibold text-[#e2e8f0]">
-              {formatCurrency(amount)}
+              {formatDollars(amount)}
             </span>
           </div>
           <div
@@ -69,7 +63,7 @@ export default function DepositThresholdModal({
               }`}
             >
               {isExceeding ? "+" : "-"}
-              {formatCurrency(Math.abs(amount - currentLimit))}
+              {formatDollars(Math.abs(amount - currentLimit))}
             </span>
           </div>
         </div>

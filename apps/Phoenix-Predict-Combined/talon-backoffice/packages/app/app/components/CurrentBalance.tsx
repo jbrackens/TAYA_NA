@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { getBalance, Balance } from "../lib/api/wallet-client";
 import { Spinner } from "./Spinner";
+import { formatDollars } from "../lib/format";
 
 interface CurrentBalanceProps {
   compact?: boolean;
@@ -41,14 +42,6 @@ export default function CurrentBalance({
     fetchBalance();
   }, [user?.id]);
 
-  const formatCurrency = (amount: number): string => {
-    // wallet-client already converts cents→dollars, so amount is in dollars
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
-
   if (!user) {
     return null;
   }
@@ -71,8 +64,8 @@ export default function CurrentBalance({
     return null;
   }
 
-  const availableAmount = formatCurrency(balance.availableBalance);
-  const pendingAmount = formatCurrency(balance.reservedBalance);
+  const availableAmount = formatDollars(balance.availableBalance);
+  const pendingAmount = formatDollars(balance.reservedBalance);
 
   if (compact) {
     return (

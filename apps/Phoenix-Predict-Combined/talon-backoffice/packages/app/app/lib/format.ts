@@ -8,12 +8,14 @@
  *     trailing ".00" by passing 0)
  *   - currency (default "USD")
  *
+ * formatDollars is the same formatter for values already in dollars (e.g.
+ * wallet-client converts cents→dollars before display).
+ *
  * Remaining P2-08 formatter work (later increments): the compact "$1.2K/$3.4M"
  * abbreviation (formatCompactUsd in prediction/market-display.ts) is a distinct
- * helper; the dollars-input formatCurrency in CurrentBalance /
- * DepositThresholdModal takes already-converted dollars; and several inline
- * `${(cents/100).toFixed(2)}` sites use no thousands separator — folding those
- * in changes rendered output, so each is migrated deliberately, not blindly.
+ * helper, and several inline `${(cents/100).toFixed(2)}` sites use no thousands
+ * separator — folding those in changes rendered output, so each is migrated
+ * deliberately, not blindly.
  */
 
 export interface FormatCentsOptions {
@@ -21,8 +23,8 @@ export interface FormatCentsOptions {
   currency?: string;
 }
 
-export function formatCents(
-  cents: number,
+export function formatDollars(
+  dollars: number,
   opts: FormatCentsOptions = {},
 ): string {
   const { minimumFractionDigits = 2, currency = "USD" } = opts;
@@ -30,5 +32,13 @@ export function formatCents(
     style: "currency",
     currency,
     minimumFractionDigits,
-  }).format(cents / 100);
+  }).format(dollars);
+}
+
+// Integer-cents convenience wrapper (cents is the storage + API unit).
+export function formatCents(
+  cents: number,
+  opts: FormatCentsOptions = {},
+): string {
+  return formatDollars(cents / 100, opts);
 }
