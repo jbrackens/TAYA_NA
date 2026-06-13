@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MessageCircle } from "lucide-react";
+import { brand } from "../lib/brand";
 
 export default function OpenChatButton() {
   const [isVisible, setIsVisible] = useState(true);
@@ -12,11 +13,9 @@ export default function OpenChatButton() {
   }, []);
 
   const handleClick = () => {
-    // Open external support chat
-    const chatUrl =
-      process.env.NEXT_PUBLIC_SUPPORT_CHAT_URL ||
-      "https://support.tiangge.com/chat";
-    window.open(chatUrl, "supportChat", "width=800,height=600");
+    // Open external support chat (brand.supportChatUrl honors the existing
+    // NEXT_PUBLIC_SUPPORT_CHAT_URL env, now centralized in the brand config).
+    window.open(brand.supportChatUrl, "supportChat", "width=800,height=600");
   };
 
   return (

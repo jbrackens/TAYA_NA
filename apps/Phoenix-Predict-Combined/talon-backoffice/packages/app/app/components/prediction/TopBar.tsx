@@ -29,6 +29,7 @@ import { logger } from "../../lib/logger";
 import { searchMarkets } from "../../lib/marketSearch";
 import { useAuth } from "../../hooks/useAuth";
 import BrandMark from "../BrandMark";
+import { brand } from "../../lib/brand";
 import { useAppDispatch, useAppSelector } from "../../lib/store/hooks";
 import {
   selectCurrentBalance,
@@ -315,11 +316,11 @@ export function TopBar() {
         <Link
           href="/"
           className={TOP_BAR_BRAND_CLASS}
-          aria-label="Tiangge — home"
+          aria-label={`${brand.name} — home`}
         >
           <BrandMark size={34} />
           <span className={TOP_BAR_WORDMARK_CLASS}>
-            Tiangge<span className={TOP_BAR_PERIOD_CLASS}>.</span>
+            {brand.name}<span className={TOP_BAR_PERIOD_CLASS}>.</span>
           </span>
         </Link>
 

@@ -10,6 +10,7 @@
 
 import Link from "next/link";
 import { FEATURE_RG } from "../../lib/features";
+import { brand } from "../../lib/brand";
 
 const YEAR = new Date().getFullYear();
 
@@ -38,8 +39,8 @@ export function PredictFooter() {
         ))}
       </div>
       <div className="opacity-70">
-        <span className="font-bold text-[var(--t1)]">Tiangge</span>
-        {" · "}© {YEAR} DORA Research, Inc.
+        <span className="font-bold text-[var(--t1)]">{brand.name}</span>
+        {" · "}© {YEAR} {brand.legalEntity}
         {" · "}Trade event contracts, not sports bets
       </div>
     </footer>

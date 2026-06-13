@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import BrandMark from "./components/BrandMark";
 import { LanguageSelector } from "./components/i18n/LanguageSelector";
+import { brand } from "./lib/brand";
 
 const EXAMPLE_MARKETS = [
   {
@@ -190,11 +191,11 @@ export default function HomePage() {
         <Link
           href="/"
           className="inline-flex min-h-11 items-center gap-[10px] no-underline"
-          aria-label="Tiangge home"
+          aria-label={`${brand.name} home`}
         >
           <BrandMark size={34} />
           <span className="text-[25px] font-bold leading-none tracking-[-0.02em] text-[var(--brand-on-dark)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif] max-[420px]:text-[22px]">
-            Tiangge<span className="text-[var(--brand-period-dark)]">.</span>
+            {brand.name}<span className="text-[var(--brand-period-dark)]">.</span>
           </span>
         </Link>
 
@@ -439,7 +440,7 @@ export default function HomePage() {
             </div>
             <div className="mt-8 border-t border-white/10 pt-6">
               <p className="m-0 text-[clamp(64px,15vw,192px)] font-black leading-[0.9] tracking-normal text-[var(--accent)] [font-family:'Inter_Tight','Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
-                Tiangge
+                {brand.name}
               </p>
             </div>
           </div>
