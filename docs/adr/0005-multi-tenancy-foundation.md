@@ -1,6 +1,6 @@
 # ADR-0005: Multi-tenancy foundation (tenant model for B2B)
 
-**Status:** Proposed — awaiting owner decision (improvement-plan **P3-01**)
+**Status:** Accepted — Option A approved by owner 2026-06-13 (improvement-plan **P3-01**). Foundation spike applied + proven; epic sequenced below.
 
 **Deciders:** John Brackens (owner)
 **Date:** 2026-06-13
@@ -118,10 +118,50 @@ change applies to the seeded DB with zero data migration** — that is the
   claim → (3) repository-boundary scoping → (4) RLS backstop + leak test →
   (5) RBAC per-tenant → (6) per-tenant config table (feeds P3-02/P3-04).
 
+## Spike results (2026-06-13)
+
+Migration `037_multitenancy_foundation.sql` (branch `phase3/tenancy-spike`,
+**not deployed**) creates `tenants`, seeds the default `hula` tenant, and adds
+`tenant_id TEXT NOT NULL DEFAULT 'hula'` (FK → `tenants.id`, + a per-table
+index) to the 6 core tables. Applied against the seeded dev DB:
+
+- **Additive + fast:** whole migration applied in **~44 ms** across all 6
+  tables including `prediction_orders` (~7.7k rows) — a metadata-only column
+  add, no table rewrite.
+- **Clean backfill:** **zero** non-`hula`/NULL rows afterward; no data
+  migration step needed.
+- **Reversible:** `down` → `up` cycles cleanly.
+- **Dormant / non-breaking:** nothing reads `tenant_id` yet, so the full
+  no-DSN gateway suite stays green (23/23 pkgs). Behavior is identical to today.
+
+Conclusion: Option A is additive exactly as predicted. The foundation can land
+whenever the epic continues; it carries no behavior change on its own.
+
+## Epic sequencing (post-spike)
+
+Each step is its own tested, deployable unit. Steps 1–2 are safe/additive;
+the cross-tenant-leak risk concentrates in 3–4, which is why RLS (4) is a hard
+gate, not optional.
+
+| # | Step | Effort | Risk | Notes |
+|---|------|--------|------|-------|
+| 1 | Land migration 037 (tenants + `tenant_id` on the 6 core tables) | S | none | additive/dormant; this spike |
+| 1b | Extend `tenant_id` to remaining tenant-owned tables (`wallet_ledger`, `wallet_reservations`, `events`, `series`, `categories`, bonus/loyalty) | M | low | same additive pattern; big tables use ADD COLUMN → ADD CONSTRAINT NOT VALID → VALIDATE |
+| 2 | Request-scoped tenant **context** + auth claim (edge resolves tenant → ctx before any handler) | M | low | no query changes yet; just plumbs the value |
+| 3 | **Repository-boundary scoping** — every query gains `AND tenant_id = $tenant` (~143 sites), threaded via ctx; `WalletAdapter` gains a tenant dimension | L | **med-high** | a missed predicate = cross-tenant leak; do per-package with tests |
+| 4 | **Postgres RLS backstop** + a leak test asserting a query with no tenant scope returns nothing | M | med | non-optional safety net under step 3 |
+| 5 | RBAC scoped per tenant (staff roles apply within their tenant; super-admin spans) | M | low | builds on existing migration 027 RBAC |
+| 6 | Per-tenant **config table** (flags/branding/catalog) — feeds P3-02 partner sandbox + P3-04 white-label | M | low | unblocks the B2B surface |
+
+Tripwire: if step 3's churn proves too leak-prone under app-layer scoping alone,
+RLS (4) becomes the *primary* enforcement (deny-by-default policies) rather than
+a backstop — heavier per-query but structurally safe.
+
 ## Action Items
 
-- [ ] **Owner:** approve Option A (or direct B/C for a specific isolation need).
-- [ ] On approval: run the spike branch; confirm additive; size each epic step.
-- [ ] Sequence the epic after the current Phase-3 work stabilizes (the audit
-      notes P3-01 should follow the mainline consolidation so tenancy lands on
-      one branch, not two).
+- [x] **Owner:** approve Option A — approved 2026-06-13.
+- [x] Run the spike; confirm additive — done (results above).
+- [ ] **Owner:** green-light epic execution (steps 1→6), or schedule it after
+      other priorities. Foundation (step 1) is ready to land on request.
+- [ ] When executing: do step 3 package-by-package behind RLS (step 4) so a
+      missed predicate fails closed, not open.
