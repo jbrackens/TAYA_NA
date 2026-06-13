@@ -1134,15 +1134,27 @@ func (r *SQLRepository) createPayoutWithExec(ctx context.Context, execer sqlRowE
 	if err := r.ensurePunterExistsWithExec(ctx, execer, p.UserID); err != nil {
 		return err
 	}
-	return execer.QueryRowContext(ctx,
+	// ON CONFLICT makes this idempotent against uq_payout_settlement_position
+	// (migration 034): a resumed/retried settlement batch that re-inserts the
+	// payout for a (settlement, position) already paid is a no-op rather than a
+	// duplicate row. In the single-tx path no conflict ever fires, so the
+	// RETURNING populates p.ID/p.PaidAt exactly as before. On conflict the
+	// RETURNING yields no row (sql.ErrNoRows) — that is the success signal for
+	// the resume path, so we swallow it.
+	err := execer.QueryRowContext(ctx,
 		`INSERT INTO prediction_payouts
 		 (settlement_id, position_id, user_id, market_id, side,
 		  quantity, entry_price_cents, exit_price_cents, pnl_cents, payout_cents)
 		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+		 ON CONFLICT (settlement_id, position_id) DO NOTHING
 		 RETURNING id, paid_at`,
 		p.SettlementID, p.PositionID, p.UserID, p.MarketID, p.Side,
 		p.Quantity, p.EntryPriceCents, p.ExitPriceCents, p.PnlCents, p.PayoutCents,
 	).Scan(&p.ID, &p.PaidAt)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil
+	}
+	return err
 }
 
 // closeSettledPositionWithExec zeroes a settled position's quantity AND its
@@ -1157,6 +1169,12 @@ func (r *SQLRepository) createPayoutWithExec(ctx context.Context, execer sqlRowE
 // built before this call (settlement.go), so its recorded entry price / pnl
 // are unaffected. realized_pnl_cents accumulates and is preserved.
 func (r *SQLRepository) closeSettledPositionWithExec(ctx context.Context, execer sqlRowExecer, positionID string, pnlCents int64) error {
+	// The `AND quantity > 0` guard makes this idempotent: realized_pnl_cents is
+	// accumulated (+= $2), so re-running a settlement batch on a position that
+	// was already closed (quantity == 0) would otherwise double-count its PnL.
+	// With the guard a re-close matches zero rows and is a no-op. Required by
+	// the resumable batched settler (P3-12); harmless in the single-tx path
+	// where each position is closed exactly once.
 	_, err := execer.ExecContext(ctx,
 		`UPDATE prediction_positions
 		   SET quantity = 0,
@@ -1164,7 +1182,7 @@ func (r *SQLRepository) closeSettledPositionWithExec(ctx context.Context, execer
 		       avg_price_cents = 0,
 		       realized_pnl_cents = realized_pnl_cents + $2,
 		       updated_at = NOW()
-		 WHERE id = $1`,
+		 WHERE id = $1 AND quantity > 0`,
 		positionID, pnlCents,
 	)
 	return err
