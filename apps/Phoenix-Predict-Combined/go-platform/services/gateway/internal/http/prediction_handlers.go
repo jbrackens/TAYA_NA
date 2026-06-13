@@ -349,7 +349,7 @@ func buildPortfolioUpdatePayload(o *prediction.Order, t *prediction.Trade) map[s
 	return out
 }
 
-func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifier marketUpdateBroadcaster) {
+func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifier marketUpdateBroadcaster, webhookEnq webhookEnqueuer) {
 	// --- Authenticated: Orders ---
 	mux.Handle("/api/v1/orders", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		switch r.Method {
@@ -516,6 +516,14 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 						"orderId":      order.ID,
 					})
 				}
+			}
+
+			// Outbound webhook (P3-03): a fill enqueues an order.filled event
+			// for subscribed partner endpoints. Independent of the WS notifier
+			// (separate sink) and post-commit fire-and-forget — the dispatch
+			// worker signs, delivers, and retries.
+			if trade != nil {
+				enqueueOrderFilled(r.Context(), webhookEnq, trade)
 			}
 
 			return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]interface{}{

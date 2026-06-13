@@ -37,7 +37,7 @@ func postOrder(t *testing.T, body interface{}) *httptest.ResponseRecorder {
 	rec := httptest.NewRecorder()
 
 	mux := stdhttp.NewServeMux()
-	registerOrderRoutes(mux, prediction.NewService(nil, nil), stubMarketBroadcaster{})
+	registerOrderRoutes(mux, prediction.NewService(nil, nil), stubMarketBroadcaster{}, nil)
 	mux.ServeHTTP(rec, req)
 	return rec
 }

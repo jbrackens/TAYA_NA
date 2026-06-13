@@ -29,6 +29,7 @@ import (
 	"phoenix-revival/gateway/internal/prediction/workers"
 	"phoenix-revival/gateway/internal/rbac"
 	"phoenix-revival/gateway/internal/wallet"
+	"phoenix-revival/gateway/internal/webhooks"
 	"phoenix-revival/gateway/internal/ws"
 	"phoenix-revival/platform/transport/httpx"
 
@@ -183,11 +184,19 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// when a DB is available (the windowed path requires persistence). Hoisted
 	// out of the if so the AutoSettler (below) can share the same store.
 	var predResolutionStore prediction.ResolutionStore
+	// Outbound webhooks (P3-03): the SQL store (concrete, for the dispatch
+	// worker below) + a nil-safe enqueuer interface for the HTTP hooks. Both
+	// stay nil without a DB, so the order/lifecycle hooks no-op and a
+	// webhook-less deploy is unchanged.
+	var webhookStore *webhooks.SQLStore
+	var webhookEnq webhookEnqueuer
 	if predDB := walletService.DB(); predDB != nil {
 		predResolutionStore = prediction.NewSQLResolutionStore(predDB)
 		predictionService.SetResolutionStore(predResolutionStore)
 		registerDisputeRoutes(mux, predictionService, predResolutionStore, wsHub)
 		registerAdminDisputeRoutes(mux, predictionService, predResolutionStore)
+		webhookStore = webhooks.NewSQLStore(predDB)
+		webhookEnq = webhookStore
 	}
 	// Prediction-domain counters: orders placed (by status + side + action +
 	// type), trades produced, reconciler runs (clean/drift/error), drift
@@ -250,10 +259,15 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 					slog.Warn("notify: resolution notification failed", "market_id", m.ID, "error", err)
 				}
 			}(*market)
+			// Outbound webhook (P3-03): emit market.settled / market.voided to
+			// subscribed partner endpoints. Same fire-and-forget seam; nil-safe
+			// without a DB. Background context — this handler also fires from the
+			// auto-settler/closer workers, which have no request context.
+			enqueueMarketResolution(context.Background(), webhookEnq, market)
 		}
 	})
 	registerPredictionRoutes(mux, predictionService)
-	registerOrderRoutes(mux, predictionService, wsHub)
+	registerOrderRoutes(mux, predictionService, wsHub, webhookEnq)
 	registerPortfolioRoutes(mux, predictionService)
 	registerSettlementRoutes(mux, predictionService)
 	registerDashboardRoutes(mux, predictionService)
@@ -275,6 +289,16 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	if rbacDB := walletService.DB(); rbacDB != nil {
 		rbacService = rbac.NewService(rbac.NewSQLRepository(rbacDB))
 		registerRBACAdminRoutes(mux, rbacService)
+	}
+
+	// Outbound webhook dispatcher (P3-03): drains the delivery outbox —
+	// claim due rows, POST the HMAC-signed event, retry with backoff or
+	// dead-letter. Started whenever the store is wired (DB present),
+	// independent of the prediction worker set below.
+	if webhookStore != nil {
+		dispatcher := webhooks.NewDispatcher(webhookStore, webhooks.DefaultDispatcherConfig())
+		go dispatcher.Run(context.Background())
+		slog.Info("webhooks: dispatch worker started")
 	}
 
 	// --- Feed Adapters & Background Workers ---
