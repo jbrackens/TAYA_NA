@@ -42,7 +42,6 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "pages/_app.js",
     "next.config.js",
     "public/static/locales/en/common.js",
     "public/static/locales/en/header.js",

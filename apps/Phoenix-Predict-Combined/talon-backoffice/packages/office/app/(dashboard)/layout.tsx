@@ -1,6 +1,9 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+
+import { adminFetch } from "../lib/admin-fetch";
 
 // Sidebar navigation. Only entries whose backend is wired for the
 // prediction platform are shown, and restored as each backend lands.
@@ -14,20 +17,52 @@ import { usePathname } from "next/navigation";
 // Retired shells stay redirects only:
 // /campaigns and /reports -> /dashboard, /risk-management ->
 // /prediction-admin/risk.
-const navItems = [
+//
+// P2-12: `requiredPermission` mirrors the RBAC permission the gateway enforces
+// on that section's API (rbac_admin_handlers.go / migration 027). Items without
+// one are gated by the coarse admin-session check only (requireAdminRole) and so
+// are shown to every signed-in admin. The list is filtered from
+// GET /api/v1/admin/me purely as a UX hint — the gateway stays the authorization
+// boundary, so the filter fails OPEN (full menu) while permissions load or if
+// the lookup fails; an over-shown item just 403s when its API is called.
+interface NavItem {
+  href: string;
+  label: string;
+  icon: string;
+  requiredPermission?: string;
+}
+
+const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: "layout-dashboard" },
-  { href: "/users", label: "Users", icon: "users" },
-  { href: "/access-control", label: "Access Control", icon: "shield-check" },
-  { href: "/cashier", label: "Cashier", icon: "credit-card" },
+  {
+    href: "/users",
+    label: "Users",
+    icon: "users",
+    requiredPermission: "users:read",
+  },
+  {
+    href: "/access-control",
+    label: "Access Control",
+    icon: "shield-check",
+    requiredPermission: "roles:read",
+  },
+  {
+    href: "/cashier",
+    label: "Cashier",
+    icon: "credit-card",
+    requiredPermission: "finances:view",
+  },
   {
     href: "/prediction-admin/markets",
     label: "Markets",
     icon: "trending-up",
+    requiredPermission: "markets:read",
   },
   {
     href: "/prediction-admin/settlements",
     label: "Settlements",
     icon: "check-square",
+    requiredPermission: "settlements:resolve",
   },
   {
     href: "/disputes",
@@ -119,6 +154,40 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
 
+  // Permission-aware menu (P2-12). `perms === null` means "not loaded yet"; the
+  // filter below treats that — plus the dev anonymous bypass — as fail-open so
+  // the full menu renders. The gateway enforces every route regardless, so an
+  // over-shown item simply 403s on click; an under-shown item would strand a
+  // legitimate admin, which is the worse failure. Hence: hide an item only once
+  // we positively know the signed-in admin lacks its permission.
+  const [perms, setPerms] = useState<string[] | null>(null);
+  const [unconstrained, setUnconstrained] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    adminFetch("/api/v1/admin/me")
+      .then((res) => (res.ok ? res.json() : null))
+      .then(
+        (data: { permissions?: string[]; unconstrained?: boolean } | null) => {
+          if (cancelled || !data) return;
+          setPerms(Array.isArray(data.permissions) ? data.permissions : []);
+          setUnconstrained(Boolean(data.unconstrained));
+        },
+      )
+      .catch(() => {
+        // Fail open: leave perms === null so the full menu renders.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const visibleNavItems = navItems.filter((item) => {
+    if (!item.requiredPermission) return true;
+    if (perms === null || unconstrained) return true;
+    return perms.includes(item.requiredPermission);
+  });
+
   return (
     <div className="flex min-h-screen max-[768px]:flex-col">
       <aside className="fixed bottom-0 left-0 top-0 z-10 flex w-[240px] flex-col border-r border-[color:var(--border-1)] bg-[var(--surface-1)] max-[768px]:relative max-[768px]:bottom-auto max-[768px]:left-auto max-[768px]:top-auto max-[768px]:w-full max-[768px]:border-b max-[768px]:border-r-0">
@@ -160,7 +229,7 @@ export default function DashboardLayout({
           <div className="px-4 pb-[6px] pt-4 text-[11px] font-semibold uppercase tracking-[0.04em] text-[color:var(--t3)] max-[768px]:hidden">
             Operations
           </div>
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <a
               key={item.href}
               href={item.href}

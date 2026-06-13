@@ -31,8 +31,45 @@ func registerRBACAdminRoutes(mux *stdhttp.ServeMux, svc *rbac.Service) {
 		registerRBACUserSubtree(mux, base+"/users/", svc)
 		registerRBACRolesCollection(mux, base+"/roles", svc)
 		registerRBACRoleSubtree(mux, base+"/roles/", svc)
+		registerRBACMe(mux, base+"/me", svc)
 	}
-	slog.Info("rbac: admin access-control routes registered (users, roles)")
+	slog.Info("rbac: admin access-control routes registered (users, roles, me)")
+}
+
+// GET /api/v1/admin/me — the caller's own identity + effective permissions.
+// Any authenticated admin may read their OWN permissions, so this gates on the
+// coarse admin-session check only (requiring a specific permission here would
+// be circular — the menu that drives access needs this to render). The
+// back-office uses the result to show a permission-aware sidebar; it is a UX
+// hint, never the authorization boundary — every route still enforces its own
+// permission server-side. Under the dev anonymous bypass it reports
+// unconstrained so the menu shows everything, matching requireRBACPermission.
+func registerRBACMe(mux *stdhttp.ServeMux, path string, svc *rbac.Service) {
+	mux.Handle(path, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+		if adminAnonBypassEnabled() {
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+				"email":         rbacActor(r),
+				"permissions":   []string{},
+				"unconstrained": true,
+			})
+		}
+		email := strings.TrimSpace(httpx.UsernameFromContext(r.Context()))
+		perms, err := svc.EffectivePermissions(r.Context(), email)
+		if err != nil {
+			return writeRBACError(err)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"email":         email,
+			"permissions":   perms,
+			"unconstrained": false,
+		})
+	}))
 }
 
 // GET (list) + POST (create) on the users collection.
