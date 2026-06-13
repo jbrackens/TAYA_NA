@@ -2,6 +2,7 @@ package ws
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"strings"
 	"sync"
@@ -30,6 +31,26 @@ func WSSlowClientsDisconnected() int64 { return slowClientsDisconnectedTotal.Loa
 // WSBroadcastsDropped returns how many broadcasts were dropped because the
 // hub's command queue was full (producer-side backpressure).
 func WSBroadcastsDropped() int64 { return broadcastsDroppedTotal.Load() }
+
+// RenderMetrics returns the hub fan-out health counters in Prometheus text
+// format. It is folded into the gateway /metrics endpoint via the collector
+// registered in cmd/gateway/main.go (see internal/http.GatewayInfraMetrics).
+// Each metric carries its own # HELP/# TYPE lines. Safe for concurrent use.
+func RenderMetrics() string {
+	var b strings.Builder
+	b.WriteString("# HELP gateway_ws_messages_dropped_total Messages dropped because a client's send buffer was full.\n")
+	b.WriteString("# TYPE gateway_ws_messages_dropped_total counter\n")
+	fmt.Fprintf(&b, "gateway_ws_messages_dropped_total %d\n", droppedMessagesTotal.Load())
+
+	b.WriteString("# HELP gateway_ws_slow_clients_disconnected_total Clients force-disconnected for failing to drain their send buffer.\n")
+	b.WriteString("# TYPE gateway_ws_slow_clients_disconnected_total counter\n")
+	fmt.Fprintf(&b, "gateway_ws_slow_clients_disconnected_total %d\n", slowClientsDisconnectedTotal.Load())
+
+	b.WriteString("# HELP gateway_ws_broadcasts_dropped_total Broadcasts dropped because the hub's command queue was full.\n")
+	b.WriteString("# TYPE gateway_ws_broadcasts_dropped_total counter\n")
+	fmt.Fprintf(&b, "gateway_ws_broadcasts_dropped_total %d\n", broadcastsDroppedTotal.Load())
+	return b.String()
+}
 
 // Conn abstracts the WebSocket connection for testing
 type Conn interface {

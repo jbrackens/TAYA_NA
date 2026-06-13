@@ -58,6 +58,9 @@ func main() {
 
 	mux := stdhttp.NewServeMux()
 	metricsRegistry := httpx.NewMetricsRegistry()
+	// Fold gateway infrastructure counters (geo-gate denials, WS fan-out drops)
+	// into the canonical /metrics scrape alongside HTTP request metrics (P3-05).
+	metricsRegistry.RegisterCollector(gatewayhttp.GatewayInfraMetrics)
 	mux.Handle("/metrics", httpx.MetricsHandler(metricsRegistry, cfg.Name))
 	gatewayhttp.RegisterRoutes(mux, cfg.Name)
 
