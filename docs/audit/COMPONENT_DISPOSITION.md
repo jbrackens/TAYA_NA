@@ -43,8 +43,15 @@ admin (`containers/prediction-markets`, `prediction-settlements`,
 |---|---|---|
 | `containers/markets` (`SelectionOdd`, `TalonSingleMarketFixture`), `components/markets` | **SUPERSEDED** | Sportsbook market/odds admin; prediction uses `containers/prediction-markets`. No prediction analog for odds/selections. |
 | `containers/fixed-exotics`, `components/sport`, `components/bets` | **SUPERSEDED (dead)** | Exotic-bet / sport / bet-grading admin — no prediction concept. |
-| `containers/users`, `components/users` (~32 files), `ModifyPunterModal` | **SUPERSEDED** | Pages-router sportsbook punter admin; prediction uses the App-Router `access-control` / `users` RBAC surface. |
-| `containers/market-categories`, `components/market-categories` | SUPERSEDED? | Confirm vs. the prediction category admin. |
+| `containers/users` | **SUPERSEDED (archived)** | Pages-router sportsbook punter admin; the live App-Router `app/(dashboard)/users` uses `components/users` directly. |
+| `components/users` (~32 files), `ModifyPunterModal` | **LIVE — KEPT** | Correction: the App-Router users admin imports `PunterSearch`/`PunterProfile`/`AccountActions` from `components/users`. These punter components were repurposed for the prediction user admin. NOT archived. |
+| `containers/market-categories`, `components/market-categories` | **SUPERSEDED (archived)** | 0 importers from any live surface; prediction category admin lives elsewhere. |
+
+**Archived in P2-02/P2-03 (superseded only):** app — ProtectedRoute, SessionTimer,
+LoginForm, GeoComplyCheck, BackdropScene, BrandMark. office — containers/{markets,
+fixed-exotics, users, market-categories}, components/{sport, bets, markets,
+market-categories} (40 files). Verified: app + office `tsc --noEmit` and the
+office production build all pass with them removed.
 
 ## Recommended action
 
