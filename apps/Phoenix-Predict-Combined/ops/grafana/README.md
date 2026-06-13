@@ -4,7 +4,8 @@ Two Grafana 9+ dashboards plus a Prometheus alert-rule set (improvement-plan
 P3-05). All series are exposed unauthenticated by the gateway:
 
 - **`/metrics`** — HTTP request metrics **and** gateway-infrastructure counters
-  (`gateway_ws_*` fan-out drops, `gateway_geo_*` gate denials).
+  (`gateway_ws_*` fan-out drops, `gateway_geo_*` gate denials,
+  `gateway_audit_write_failures_total`).
 - **`/metrics/prediction`** — prediction-domain counters and the operation
   latency histograms (`prediction_operation_duration_ms`).
 
@@ -12,7 +13,7 @@ P3-05). All series are exposed unauthenticated by the gateway:
 |---|---|---|
 | `prediction-exchange-dashboard.json` | order/trade/settlement/reconciler domain counters | `/metrics/prediction` |
 | `gateway-infra-dashboard.json` | geo denials, WS drops, PlaceOrder/settlement latency p50/p95/p99, HTTP rate & latency | `/metrics` + `/metrics/prediction` |
-| `../prometheus/alert-rules.yml` | 9 alerts: geo-bypass, drift, reconciler errors, override rate, WS drops, latency SLOs | both |
+| `../prometheus/alert-rules.yml` | 10 alerts: geo-bypass, drift, reconciler errors, audit-write failures, override rate, WS drops, latency SLOs | both |
 
 ## Prediction-exchange dashboard panels
 

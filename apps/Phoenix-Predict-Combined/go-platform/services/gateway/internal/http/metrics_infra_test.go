@@ -13,6 +13,7 @@ func TestGatewayInfraMetricsRendersAllCounters(t *testing.T) {
 	for _, name := range []string{
 		"gateway_geo_missing_signal_denials_total",
 		"gateway_geo_edge_auth_denials_total",
+		"gateway_audit_write_failures_total",
 		"gateway_ws_messages_dropped_total",
 		"gateway_ws_slow_clients_disconnected_total",
 		"gateway_ws_broadcasts_dropped_total",

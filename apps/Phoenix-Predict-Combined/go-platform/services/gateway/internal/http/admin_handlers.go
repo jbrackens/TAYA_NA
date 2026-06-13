@@ -63,11 +63,13 @@ func recordProviderOpsAuditEntry(entry auditLogEntry) {
 	providerOpsAuditEntries = trimAuditEntries(providerOpsAuditEntries, providerOpsAuditLimit)
 	if providerOpsAuditStore != nil {
 		if err := providerOpsAuditStore.Append(entry, providerOpsAuditLimit); err != nil {
+			auditWriteFailures.Add(1)
 			slog.Warn("failed to persist provider ops audit entry", "store_mode", providerOpsAuditStoreMode, "error", err)
 		}
 		return
 	}
 	if err := persistProviderOpsAuditEntriesLocked(); err != nil {
+		auditWriteFailures.Add(1)
 		slog.Warn("failed to persist provider ops audit entries", "error", err)
 	}
 }

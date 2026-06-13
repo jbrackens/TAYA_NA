@@ -67,6 +67,19 @@ groups:
             {{ $value }} reconciler run(s) errored in 15m — invariant checks
             are not completing, so drift could accumulate undetected.
 
+      - alert: AuditWriteFailures
+        expr: increase(gateway_audit_write_failures_total[10m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Provider-ops audit entries failing to persist"
+          description: >
+            {{ $value }} provider-ops audit entry/entries failed to durably
+            persist in 10m (accepted in-memory, degraded to a log line). A
+            compliance audit trail is silently incomplete — investigate the
+            audit store (DB reachability / disk) immediately.
+
       - alert: SettlementOverrideRateHigh
         expr: |
           sum(increase(prediction_settlements_total{override="true"}[6h]))
