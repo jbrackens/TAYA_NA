@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	stdhttp "net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -28,8 +29,62 @@ func botKeySelfServeEnabled() bool {
 // defaultBotKeyTTL bounds self-issued keys; previously keys never expired.
 const defaultBotKeyTTL = 90 * 24 * time.Hour
 
+// botRateLimitPerMin / botRateLimitBurst configure the per-API-key token bucket
+// for the bot/partner API (audit G: partner rate limits / SEC-02). Defaults are
+// generous for legitimate automated trading; the cap throttles a single key's
+// abuse or retry storms. Overridable via BOT_RATE_LIMIT_PER_MIN / _BURST.
+//
+// NOTE: this bucket is in-process, so it is authoritative per gateway instance —
+// correct for the single-instance demo. A multi-replica deployment should move
+// it to a shared Redis token bucket (the same primitive the auth service uses)
+// so the limit is global; that is the P3-02 productization step, tracked
+// separately. The per-key semantics + 429/Retry-After contract here are
+// identical either way.
+func botRateLimitPerMin() int {
+	if v := strings.TrimSpace(os.Getenv("BOT_RATE_LIMIT_PER_MIN")); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			return n
+		}
+	}
+	return 600
+}
+
+func botRateLimitBurst() int {
+	if v := strings.TrimSpace(os.Getenv("BOT_RATE_LIMIT_BURST")); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			return n
+		}
+	}
+	return 120
+}
+
+// botRateLimitMiddleware throttles requests per authenticated API key. The key
+// id comes from X-Bot-Key-ID, which botAuth.Wrap sets after authentication, so
+// this is only meaningful chained INSIDE Wrap. A 429 + Retry-After is returned
+// when the key's token bucket is empty; a request with no key id is passed
+// through (auth already rejected unauthenticated callers upstream).
+func botRateLimitMiddleware(limiter *userRateLimiter, next stdhttp.Handler) stdhttp.Handler {
+	return stdhttp.HandlerFunc(func(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+		if keyID := r.Header.Get("X-Bot-Key-ID"); keyID != "" && !limiter.Allow(keyID) {
+			w.Header().Set("Retry-After", "1")
+			stdhttp.Error(w, `{"error":{"code":"rate_limited","message":"API key rate limit exceeded; slow down"}}`, stdhttp.StatusTooManyRequests)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo prediction.Repository, notifier marketUpdateBroadcaster) {
 	botAuth := prediction.NewBotAuthMiddleware(repo)
+
+	// Per-API-key rate limiting (P3-02). botAuth.Wrap sets X-Bot-Key-ID after it
+	// authenticates the key, so this MUST wrap the inner handler INSIDE Wrap —
+	// botAuth.Wrap(botRateLimited(h), scope) — to see the key id. Keyed on the
+	// stable key ID, not the user, so one partner's key can't exhaust another's.
+	botLimiter := newUserRateLimiter(botRateLimitPerMin(), botRateLimitBurst())
+	botRateLimited := func(next stdhttp.Handler) stdhttp.Handler {
+		return botRateLimitMiddleware(botLimiter, next)
+	}
 
 	// Bot: Issue API key — cookie-auth route (player creates their own bot key)
 	mux.Handle("/api/v1/bot/keys", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -51,8 +106,8 @@ func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo pred
 				return httpx.Forbidden("self-serve API key creation is disabled; contact the operator")
 			}
 			var req struct {
-				Name    string   `json:"name"`
-				Scopes  []string `json:"scopes"`
+				Name   string   `json:"name"`
+				Scopes []string `json:"scopes"`
 			}
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				return httpx.BadRequest("invalid request body", nil)
@@ -71,12 +126,12 @@ func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo pred
 
 			expiresAt := time.Now().UTC().Add(defaultBotKeyTTL)
 			key := &prediction.APIKey{
-				UserID:   userID,
-				Name:     req.Name,
-				KeyHash:  hash,
+				UserID:    userID,
+				Name:      req.Name,
+				KeyHash:   hash,
 				KeyPrefix: prefix,
-				Scopes:   req.Scopes,
-				Active:   true,
+				Scopes:    req.Scopes,
+				Active:    true,
 				ExpiresAt: &expiresAt,
 			}
 
@@ -138,7 +193,7 @@ func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo pred
 
 	// Bot: Place order (API key auth, requires 'trade' scope)
 	mux.Handle("/api/v1/bot/orders",
-		botAuth.Wrap(stdhttp.HandlerFunc(func(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+		botAuth.Wrap(botRateLimited(stdhttp.HandlerFunc(func(w stdhttp.ResponseWriter, r *stdhttp.Request) {
 			if r.Method != stdhttp.MethodPost {
 				stdhttp.Error(w, `{"error":{"code":"method_not_allowed"}}`, stdhttp.StatusMethodNotAllowed)
 				return
@@ -195,11 +250,11 @@ func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo pred
 				"order": order,
 				"trade": trade,
 			})
-		}), "trade"))
+		})), "trade"))
 
 	// Bot: Get positions (API key auth, requires 'read' scope)
 	mux.Handle("/api/v1/bot/positions",
-		botAuth.Wrap(stdhttp.HandlerFunc(func(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+		botAuth.Wrap(botRateLimited(stdhttp.HandlerFunc(func(w stdhttp.ResponseWriter, r *stdhttp.Request) {
 			if r.Method != stdhttp.MethodGet {
 				stdhttp.Error(w, `{"error":{"code":"method_not_allowed"}}`, stdhttp.StatusMethodNotAllowed)
 				return
@@ -214,11 +269,11 @@ func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo pred
 
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(positions)
-		}), "read"))
+		})), "read"))
 
 	// Bot: Get markets (API key auth, requires 'read' scope)
 	mux.Handle("/api/v1/bot/markets",
-		botAuth.Wrap(stdhttp.HandlerFunc(func(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+		botAuth.Wrap(botRateLimited(stdhttp.HandlerFunc(func(w stdhttp.ResponseWriter, r *stdhttp.Request) {
 			if r.Method != stdhttp.MethodGet {
 				stdhttp.Error(w, `{"error":{"code":"method_not_allowed"}}`, stdhttp.StatusMethodNotAllowed)
 				return
@@ -249,7 +304,7 @@ func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo pred
 					HasNext:  filter.Page*filter.PageSize < total,
 				},
 			})
-		}), "read"))
+		})), "read"))
 
 	slog.Info("bot API routes registered")
 }
