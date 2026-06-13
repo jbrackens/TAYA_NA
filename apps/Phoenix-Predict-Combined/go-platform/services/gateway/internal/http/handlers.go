@@ -373,6 +373,14 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 
 		// --- Bot API Routes ---
 		registerBotRoutes(mux, predictionService, predRepo, wsHub)
+
+		// Partner API admin (P3-02): operator-issued partner keys, gated by the
+		// partners:write RBAC permission. Needs both the RBAC service (permission
+		// check) and the prediction repo (key persistence), so it mounts here
+		// where both are in scope — only when the RBAC service is wired.
+		if rbacService != nil {
+			registerPartnerAdminRoutes(mux, rbacService, predRepo)
+		}
 	}
 
 	// --- Wallet Routes (kept from sportsbook — adapt for prediction stakes) ---
