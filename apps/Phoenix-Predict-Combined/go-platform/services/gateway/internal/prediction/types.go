@@ -379,6 +379,13 @@ type Settlement struct {
 	TotalPayoutCents  int64           `json:"totalPayoutCents" db:"total_payout_cents"`
 	PositionsSettled  int             `json:"positionsSettled" db:"positions_settled"`
 
+	// Disbursement progress (migration 034, P3-12). PayoutsTotal is the number
+	// of positions to pay, snapshotted when the header commits; PayoutsCompleted
+	// advances as each payout batch commits. Completed < Total means a resume
+	// pass must finish disbursing this settlement.
+	PayoutsTotal     int `json:"payoutsTotal" db:"payouts_total"`
+	PayoutsCompleted int `json:"payoutsCompleted" db:"payouts_completed"`
+
 	// Admin override audit (migration 019). Either all three are null or all
 	// three are set together; enforced by a CHECK constraint.
 	OverrideReason     *string    `json:"overrideReason,omitempty" db:"override_reason"`

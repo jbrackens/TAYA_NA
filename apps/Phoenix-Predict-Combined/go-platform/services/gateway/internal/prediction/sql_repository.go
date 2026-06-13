@@ -989,6 +989,186 @@ func (r *SQLRepository) PersistResolvedMarketAtomic(
 	return loyaltyResults, nil
 }
 
+// PersistSettlementHeader commits the settlement header — the status-guarded
+// transition (COR-01), the settlement row with its payouts_total snapshot, and
+// the lifecycle event — in one fast transaction, releasing the market lock
+// before the payout batches run (P3-12 / COR-05).
+func (r *SQLRepository) PersistSettlementHeader(ctx context.Context, market *Market, prevStatus MarketStatus, settlement *Settlement, lifecycle *LifecycleEvent) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	if err := r.transitionMarketStatusWithExec(ctx, tx, market, prevStatus); err != nil {
+		return err
+	}
+	if err := tx.QueryRowContext(ctx,
+		`INSERT INTO prediction_settlements
+		 (market_id, result, attestation_source, attestation_id, attestation_digest,
+		  attestation_data, settled_by, total_payout_cents, positions_settled,
+		  payouts_total, payouts_completed)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,0)
+		 RETURNING id, settled_at`,
+		settlement.MarketID, settlement.Result, settlement.AttestationSource,
+		settlement.AttestationID, settlement.AttestationDigest, settlement.AttestationData,
+		settlement.SettledBy, settlement.TotalPayoutCents, settlement.PositionsSettled,
+		settlement.PayoutsTotal,
+	).Scan(&settlement.ID, &settlement.SettledAt); err != nil {
+		return fmt.Errorf("insert settlement header: %w", err)
+	}
+	if lifecycle != nil {
+		if err := r.createLifecycleEventWithExec(ctx, tx, lifecycle); err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
+// CommitPayoutBatch writes one chunk of positions' payouts, position closes,
+// wallet credits, and loyalty accruals, then re-derives payouts_completed from
+// the actual payout-row count — all in one transaction (P3-12). Every write is
+// idempotent and the cursor is recomputed (not incremented), so a re-applied
+// batch after a crash, or a duplicate batch from two concurrent resume passes,
+// can neither double-pay nor over-count (audit COR-05 resume safety).
+func (r *SQLRepository) CommitPayoutBatch(ctx context.Context, wallet WalletAdapter, settlementID string, payouts []Payout, credits []*WalletCreditRequest, loyalty LoyaltyAdapter, accruals []*LoyaltyAccrualRequest) ([]LoyaltyAccrualResult, error) {
+	if len(payouts) == 0 {
+		return nil, nil
+	}
+	txWallet, ok := wallet.(TxWalletAdapter)
+	if !ok {
+		return nil, fmt.Errorf("wallet does not support shared transactions")
+	}
+	tx, err := txWallet.BeginTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	var loyaltyResults []LoyaltyAccrualResult
+	for i := range payouts {
+		payouts[i].SettlementID = settlementID
+		if err := r.createPayoutWithExec(ctx, tx, &payouts[i]); err != nil {
+			return nil, fmt.Errorf("create payout for position %s: %w", payouts[i].PositionID, err)
+		}
+		if err := r.closeSettledPositionWithExec(ctx, tx, payouts[i].PositionID, payouts[i].PnlCents); err != nil {
+			return nil, fmt.Errorf("close settled position %s: %w", payouts[i].PositionID, err)
+		}
+		if i < len(credits) && credits[i] != nil {
+			if err := txWallet.CreditWithTx(ctx, tx, credits[i].UserID, credits[i].AmountCents, credits[i].IdempotencyKey, credits[i].Reason); err != nil {
+				return nil, fmt.Errorf("wallet credit for user %s: %w", credits[i].UserID, err)
+			}
+		}
+		if loyalty != nil && i < len(accruals) && accruals[i] != nil {
+			res, err := loyalty.AccrueSettledWithTx(ctx, tx, *accruals[i])
+			if err != nil {
+				return nil, fmt.Errorf("loyalty accrual for user %s: %w", accruals[i].UserID, err)
+			}
+			if res != nil {
+				loyaltyResults = append(loyaltyResults, *res)
+			}
+		}
+	}
+	// Recompute the cursor from the source of truth (payout rows) rather than
+	// incrementing, so a re-run or concurrent batch is self-correcting.
+	if _, err := tx.ExecContext(ctx,
+		`UPDATE prediction_settlements
+		   SET payouts_completed = (SELECT COUNT(*) FROM prediction_payouts WHERE settlement_id = $1)
+		 WHERE id = $1`,
+		settlementID,
+	); err != nil {
+		return nil, fmt.Errorf("advance payout cursor: %w", err)
+	}
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+	return loyaltyResults, nil
+}
+
+// ListUnpaidSettlementPositions returns up to `limit` positions for the market
+// that still have no payout row for this settlement and a positive quantity, in
+// stable id order. Already-paid positions are excluded (they carry a payout row
+// and quantity 0), so recomputing their payout from the live row — which has
+// been zeroed — is never attempted. Drives the resume scanner.
+func (r *SQLRepository) ListUnpaidSettlementPositions(ctx context.Context, settlementID, marketID string, limit int) ([]Position, error) {
+	if limit <= 0 {
+		limit = 500
+	}
+	rows, err := r.db.QueryContext(ctx,
+		`SELECT p.id, p.user_id, p.market_id, p.side, p.quantity, p.avg_price_cents,
+		        p.total_cost_cents, p.realized_pnl_cents, p.reserved_quantity,
+		        p.created_at, p.updated_at
+		 FROM prediction_positions p
+		 WHERE p.market_id = $1 AND p.quantity > 0
+		   AND NOT EXISTS (
+		     SELECT 1 FROM prediction_payouts pay
+		     WHERE pay.settlement_id = $2 AND pay.position_id = p.id)
+		 ORDER BY p.id
+		 LIMIT $3`, marketID, settlementID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var positions []Position
+	for rows.Next() {
+		var p Position
+		if err := rows.Scan(&p.ID, &p.UserID, &p.MarketID, &p.Side, &p.Quantity,
+			&p.AvgPriceCents, &p.TotalCostCents, &p.RealizedPnlCents, &p.ReservedQuantity, &p.CreatedAt, &p.UpdatedAt); err != nil {
+			return nil, err
+		}
+		positions = append(positions, p)
+	}
+	return positions, rows.Err()
+}
+
+// ListIncompleteSettlements returns up to `limit` settlements whose
+// disbursement did not finish (payouts_completed < payouts_total), oldest
+// first. Drives the resume scanner (P3-12).
+func (r *SQLRepository) ListIncompleteSettlements(ctx context.Context, limit int) ([]Settlement, error) {
+	if limit <= 0 {
+		limit = 100
+	}
+	rows, err := r.db.QueryContext(ctx,
+		`SELECT id, market_id, result, attestation_source, attestation_id,
+		        attestation_digest, attestation_data, settled_by, settled_at,
+		        total_payout_cents, positions_settled, payouts_total, payouts_completed
+		 FROM prediction_settlements
+		 WHERE payouts_completed < payouts_total
+		 ORDER BY settled_at
+		 LIMIT $1`, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []Settlement
+	for rows.Next() {
+		var s Settlement
+		var attID, attDigest, settledBy sql.NullString
+		var attData []byte // attestation_data may be NULL
+		if err := rows.Scan(&s.ID, &s.MarketID, &s.Result, &s.AttestationSource, &attID,
+			&attDigest, &attData, &settledBy, &s.SettledAt,
+			&s.TotalPayoutCents, &s.PositionsSettled, &s.PayoutsTotal, &s.PayoutsCompleted); err != nil {
+			return nil, err
+		}
+		if attData != nil {
+			s.AttestationData = attData
+		}
+		if attID.Valid {
+			s.AttestationID = &attID.String
+		}
+		if attDigest.Valid {
+			s.AttestationDigest = &attDigest.String
+		}
+		if settledBy.Valid {
+			s.SettledBy = &settledBy.String
+		}
+		out = append(out, s)
+	}
+	return out, rows.Err()
+}
+
 // PersistProposalAtomic records a resolution proposal and the closed ->
 // proposed_resolution market transition (plus the lifecycle event) in one
 // transaction (ADR-0003/0004). The market UPDATE is guarded on status='closed',

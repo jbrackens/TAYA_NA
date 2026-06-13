@@ -415,6 +415,11 @@ func (s *SettlementEngine) recordSettlementAudit(settledBy *string, settlement *
 	})
 }
 
+// settlementPayoutBatchSize is the number of positions disbursed per
+// transaction on the batched settlement path (P3-12 / COR-05). Kept as a
+// package var so tests can shrink it to force multi-batch / resume paths.
+var settlementPayoutBatchSize = 500
+
 // ResolveMarket is the DIRECT (immediate) settle path: admin "settle now" and
 // the backward-compat AutoSettler path when no resolution store is wired. It
 // only accepts a `closed` market. A market already in the windowed resolution
@@ -486,49 +491,40 @@ func (s *SettlementEngine) resolveMarket(ctx context.Context, req ResolveMarketR
 		return nil, nil, fmt.Errorf("list positions: %w", err)
 	}
 
-	// Calculate payouts and the wallet credits they imply.
-	var payouts []Payout
-	var credits []WalletCreditRequest
-	var accruals []LoyaltyAccrualRequest
+	// Compute the per-position settlement effects once. units[i] bundles the
+	// payout, optional wallet credit, and optional loyalty accrual for one
+	// position; both the batched and the atomic/in-memory persist paths derive
+	// their inputs from it (P3-12).
+	var units []settlementUnit
 	var totalPayout int64
-	var positionsSettled int
-
 	for _, pos := range positions {
 		if pos.Quantity <= 0 {
 			continue
 		}
-
-		payout := s.calculatePayout(pos, result, settlement.ID)
-		if payout.PayoutCents > 0 {
-			credits = append(credits, WalletCreditRequest{
-				UserID:         pos.UserID,
-				AmountCents:    payout.PayoutCents,
-				IdempotencyKey: fmt.Sprintf("prediction_payout:%s:%s", marketID, pos.ID),
-				Reason: fmt.Sprintf("prediction settlement: market %s resolved %s, %s position won",
-					marketID, result, pos.Side),
-			})
-		}
-
-		if s.loyalty != nil && pos.TotalCostCents > 0 {
-			won := (pos.Side == OrderSideYes && result == MarketResultYes) ||
-				(pos.Side == OrderSideNo && result == MarketResultNo)
-			accruals = append(accruals, LoyaltyAccrualRequest{
-				UserID:         pos.UserID,
-				VolumeCents:    pos.TotalCostCents,
-				IsCorrect:      won,
-				MarketID:       marketID,
-				IdempotencyKey: fmt.Sprintf("accrual:%s:%s", marketID, pos.ID),
-			})
-		}
-
-		payouts = append(payouts, payout)
-		totalPayout += payout.PayoutCents
-		positionsSettled++
+		u := s.buildSettlementUnit(pos, result, settlement.ID, marketID)
+		units = append(units, u)
+		totalPayout += u.payout.PayoutCents
 	}
 
-	// Update settlement totals
+	// Compacted slices for the atomic / in-memory persist paths (credits and
+	// accruals omit the nil entries, exactly as the prior loop produced them).
+	payouts := make([]Payout, 0, len(units))
+	var credits []WalletCreditRequest
+	var accruals []LoyaltyAccrualRequest
+	for _, u := range units {
+		payouts = append(payouts, u.payout)
+		if u.credit != nil {
+			credits = append(credits, *u.credit)
+		}
+		if u.accrual != nil {
+			accruals = append(accruals, *u.accrual)
+		}
+	}
+
+	// Update settlement totals + the disbursement target (P3-12).
 	settlement.TotalPayoutCents = totalPayout
-	settlement.PositionsSettled = positionsSettled
+	settlement.PositionsSettled = len(units)
+	settlement.PayoutsTotal = len(units)
 
 	// Transition market to settled. prevStatus is the status this flow
 	// validated above; the atomic persister re-asserts it under the row lock
@@ -550,7 +546,7 @@ func (s *SettlementEngine) resolveMarket(ctx context.Context, req ResolveMarketR
 		"result":             string(result),
 		"attestation_source": req.AttestationSource,
 		"total_payout_cents": totalPayout,
-		"positions_settled":  positionsSettled,
+		"positions_settled":  len(units),
 	})
 	lifecycle := &LifecycleEvent{
 		MarketID:   marketID,
@@ -560,6 +556,53 @@ func (s *SettlementEngine) resolveMarket(ctx context.Context, req ResolveMarketR
 		Reason:     &reason,
 		Metadata:   metadata,
 		OccurredAt: time.Now().UTC(),
+	}
+
+	// Preferred path (P3-12 / COR-05): commit the settlement header fast, then
+	// disburse payouts in idempotent batches so we never hold thousands of
+	// wallet row locks in one transaction. A batch failure leaves the market
+	// settled with the unpaid positions carrying no payout row, which
+	// ResumeIncompleteSettlements finishes — so progress is preserved, not
+	// rolled back.
+	if batchedRepo, ok := s.repo.(BatchedMarketSettlementPersister); ok {
+		if _, walletIsTxCapable := s.wallet.(TxWalletAdapter); walletIsTxCapable {
+			if err := batchedRepo.PersistSettlementHeader(ctx, market, prevStatus, settlement, lifecycle); err != nil {
+				return nil, nil, fmt.Errorf("persist settlement header: %w", err)
+			}
+			// Aligned per-position slices for the batch writer (nil = no
+			// credit/accrual for that position).
+			bp := make([]Payout, len(units))
+			bc := make([]*WalletCreditRequest, len(units))
+			ba := make([]*LoyaltyAccrualRequest, len(units))
+			for i, u := range units {
+				bp[i] = u.payout
+				bc[i] = u.credit
+				ba[i] = u.accrual
+			}
+			var loyaltyResults []LoyaltyAccrualResult
+			for start := 0; start < len(bp); start += settlementPayoutBatchSize {
+				end := start + settlementPayoutBatchSize
+				if end > len(bp) {
+					end = len(bp)
+				}
+				res, err := batchedRepo.CommitPayoutBatch(ctx, s.wallet, settlement.ID, bp[start:end], bc[start:end], s.loyalty, ba[start:end])
+				if err != nil {
+					return nil, nil, fmt.Errorf("commit payout batch [%d:%d] for market %s (settled; disbursement will be resumed): %w", start, end, marketID, err)
+				}
+				loyaltyResults = append(loyaltyResults, res...)
+			}
+			if s.onTierPromoted != nil {
+				for _, res := range loyaltyResults {
+					if res.Promoted {
+						go s.onTierPromoted(res.UserID, res.FromTier, res.ToTier)
+					}
+				}
+			}
+			s.metrics.RecordSettlement(marketID, string(result), settlement.OverrideReason != nil)
+			s.fireMarketLifecycle(market, lifecycle)
+			s.recordSettlementAudit(settledBy, settlement)
+			return settlement, payouts, nil
+		}
 	}
 
 	if atomicRepo, ok := s.repo.(AtomicMarketSettlementPersister); ok {
@@ -621,6 +664,74 @@ func (s *SettlementEngine) resolveMarket(ctx context.Context, req ResolveMarketR
 	return settlement, payouts, nil
 }
 
+// ResumeIncompleteSettlements finishes disbursing any settlement whose payout
+// batches did not complete — the process crashed, or a batch errored after the
+// header committed (P3-12 / COR-05). Safe to call repeatedly and concurrently
+// with live settlement: every write is idempotent and the cursor is recomputed
+// from payout rows, so a re-applied batch cannot double-pay. Returns the number
+// of settlements fully disbursed this pass. A no-op on repos that don't batch.
+func (s *SettlementEngine) ResumeIncompleteSettlements(ctx context.Context) (int, error) {
+	batchedRepo, ok := s.repo.(BatchedMarketSettlementPersister)
+	if !ok {
+		return 0, nil
+	}
+	incomplete, err := batchedRepo.ListIncompleteSettlements(ctx, 100)
+	if err != nil {
+		return 0, fmt.Errorf("list incomplete settlements: %w", err)
+	}
+	completed := 0
+	for i := range incomplete {
+		st := &incomplete[i]
+		if err := s.finishSettlementDisbursement(ctx, batchedRepo, st); err != nil {
+			slog.WarnContext(ctx, "resume: failed to finish settlement disbursement",
+				"settlement_id", st.ID, "market_id", st.MarketID, "error", err)
+			continue
+		}
+		completed++
+	}
+	return completed, nil
+}
+
+// finishSettlementDisbursement runs payout batches for one settlement until no
+// unpaid position remains. Each batch writes payout rows for the positions it
+// processes, so the unpaid set strictly shrinks; the iteration cap is a
+// belt-and-suspenders guard against an unexpected non-shrinking set.
+func (s *SettlementEngine) finishSettlementDisbursement(ctx context.Context, repo BatchedMarketSettlementPersister, st *Settlement) error {
+	maxIters := st.PayoutsTotal/settlementPayoutBatchSize + 2
+	for iter := 0; ; iter++ {
+		if iter > maxIters {
+			return fmt.Errorf("settlement %s did not converge after %d batches (unpaid set not shrinking)", st.ID, iter)
+		}
+		positions, err := repo.ListUnpaidSettlementPositions(ctx, st.ID, st.MarketID, settlementPayoutBatchSize)
+		if err != nil {
+			return fmt.Errorf("list unpaid positions: %w", err)
+		}
+		if len(positions) == 0 {
+			return nil
+		}
+		bp := make([]Payout, len(positions))
+		bc := make([]*WalletCreditRequest, len(positions))
+		ba := make([]*LoyaltyAccrualRequest, len(positions))
+		for i, pos := range positions {
+			u := s.buildSettlementUnit(pos, st.Result, st.ID, st.MarketID)
+			bp[i] = u.payout
+			bc[i] = u.credit
+			ba[i] = u.accrual
+		}
+		loyaltyResults, err := repo.CommitPayoutBatch(ctx, s.wallet, st.ID, bp, bc, s.loyalty, ba)
+		if err != nil {
+			return fmt.Errorf("commit payout batch: %w", err)
+		}
+		if s.onTierPromoted != nil {
+			for _, res := range loyaltyResults {
+				if res.Promoted {
+					go s.onTierPromoted(res.UserID, res.FromTier, res.ToTier)
+				}
+			}
+		}
+	}
+}
+
 // fireMarketLifecycle dispatches the post-commit lifecycle callback if one
 // is registered. Always fires in a goroutine so a slow / blocking handler
 // (e.g. a stuck WebSocket publish) cannot stall the settlement caller.
@@ -663,6 +774,48 @@ func (s *SettlementEngine) calculatePayout(pos Position, result MarketResult, se
 		PayoutCents:     payoutCents,
 		PaidAt:          time.Now().UTC(),
 	}
+}
+
+// settlementUnit bundles the three writes a single position's settlement
+// implies: its payout row, the wallet credit (nil for losers), and the loyalty
+// accrual (nil when loyalty is off). Keeping them together keeps the slices
+// aligned across batches and lets the resume scanner recompute a position's
+// effects identically from (position, result).
+type settlementUnit struct {
+	payout  Payout
+	credit  *WalletCreditRequest
+	accrual *LoyaltyAccrualRequest
+}
+
+// buildSettlementUnit computes the settlement effects for one position. It is
+// pure given (pos, result, settlementID, marketID) and whether loyalty is
+// enabled, so resolveMarket and ResumeIncompleteSettlements derive identical
+// units. The wallet/loyalty idempotency keys are deterministic per
+// (market, position), so a re-applied unit is a no-op (P3-12 resume safety).
+func (s *SettlementEngine) buildSettlementUnit(pos Position, result MarketResult, settlementID, marketID string) settlementUnit {
+	payout := s.calculatePayout(pos, result, settlementID)
+	u := settlementUnit{payout: payout}
+	if payout.PayoutCents > 0 {
+		u.credit = &WalletCreditRequest{
+			UserID:         pos.UserID,
+			AmountCents:    payout.PayoutCents,
+			IdempotencyKey: fmt.Sprintf("prediction_payout:%s:%s", marketID, pos.ID),
+			Reason: fmt.Sprintf("prediction settlement: market %s resolved %s, %s position won",
+				marketID, result, pos.Side),
+		}
+	}
+	if s.loyalty != nil && pos.TotalCostCents > 0 {
+		won := (pos.Side == OrderSideYes && result == MarketResultYes) ||
+			(pos.Side == OrderSideNo && result == MarketResultNo)
+		u.accrual = &LoyaltyAccrualRequest{
+			UserID:         pos.UserID,
+			VolumeCents:    pos.TotalCostCents,
+			IsCorrect:      won,
+			MarketID:       marketID,
+			IdempotencyKey: fmt.Sprintf("accrual:%s:%s", marketID, pos.ID),
+		}
+	}
+	return u
 }
 
 // VoidMarket voids a market and refunds all positions at their entry cost.

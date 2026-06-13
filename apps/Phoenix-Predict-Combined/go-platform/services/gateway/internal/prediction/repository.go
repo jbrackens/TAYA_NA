@@ -212,6 +212,43 @@ type AtomicMarketSettlementPersister interface {
 	) error
 }
 
+// BatchedMarketSettlementPersister is an optional repository capability that
+// settles a market WITHOUT holding every wallet row lock in one transaction
+// (audit COR-05). Settlement is split into a fast header commit plus N
+// idempotent payout batches, tracked by a resume cursor (migration 034), so a
+// crash or error mid-settlement is finished by ResumeIncompleteSettlements
+// rather than leaving winners unpaid or the whole settlement rolled back.
+//
+// Every batch is idempotent — uq_payout_settlement_position + ON CONFLICT, the
+// `quantity > 0` close guard, and the wallet/loyalty idempotency keys — so a
+// re-applied batch can never double-pay. A repository that does not implement
+// this interface falls back to the single-transaction atomic persister.
+type BatchedMarketSettlementPersister interface {
+	// PersistSettlementHeader commits the status-guarded transition (COR-01),
+	// the settlement row (with the payouts_total snapshot), and the lifecycle
+	// event in one fast transaction. prevStatus is re-asserted atomically; a
+	// stale value returns ErrStaleMarketStatus and writes nothing. After it
+	// returns the market is `settled`.
+	PersistSettlementHeader(ctx context.Context, market *Market, prevStatus MarketStatus, settlement *Settlement, lifecycle *LifecycleEvent) error
+
+	// CommitPayoutBatch writes one chunk of positions' payouts, position
+	// closes, wallet credits, and loyalty accruals, then advances
+	// payouts_completed by len(payouts) — all in one transaction.
+	// payouts[i]/credits[i]/accruals[i] describe the same position; credits[i]
+	// is nil for losers and accruals[i] is nil when loyalty is disabled.
+	CommitPayoutBatch(ctx context.Context, wallet WalletAdapter, settlementID string, payouts []Payout, credits []*WalletCreditRequest, loyalty LoyaltyAdapter, accruals []*LoyaltyAccrualRequest) ([]LoyaltyAccrualResult, error)
+
+	// ListUnpaidSettlementPositions returns up to `limit` positions for the
+	// market that still have no payout row for this settlement and a positive
+	// quantity, in a stable id order. Drives the resume scanner.
+	ListUnpaidSettlementPositions(ctx context.Context, settlementID, marketID string, limit int) ([]Position, error)
+
+	// ListIncompleteSettlements returns up to `limit` settlements whose
+	// disbursement did not finish (payouts_completed < payouts_total), oldest
+	// first, for the resume scanner.
+	ListIncompleteSettlements(ctx context.Context, limit int) ([]Settlement, error)
+}
+
 // AtomicProposalPersister is an optional repository capability (ADR-0003/0004)
 // that records a resolution proposal AND the closed -> proposed_resolution
 // market transition (plus the lifecycle event) in ONE transaction. Without it a

@@ -288,6 +288,28 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		expirer := workers.NewRestingOrderExpirer(predictionService, 60*time.Second)
 		go expirer.Run(context.Background())
 
+		// Settlement resumer (P3-12 / COR-05): batched settlement commits the
+		// header fast, then disburses payouts in idempotent batches. If the
+		// process died — or a batch errored — after the header committed, this
+		// finishes the remaining payouts. Runs once on boot to recover anything
+		// a prior crash left mid-disbursement, then every 60s. Idempotent.
+		go func() {
+			rctx := context.Background()
+			resume := func() {
+				if done, err := predictionService.ResumeIncompleteSettlements(rctx); err != nil {
+					slog.Warn("settlement resumer: pass failed", "error", err)
+				} else if done > 0 {
+					slog.Info("settlement resumer: finished disbursing settlements", "count", done)
+				}
+			}
+			resume()
+			ticker := time.NewTicker(60 * time.Second)
+			defer ticker.Stop()
+			for range ticker.C {
+				resume()
+			}
+		}()
+
 		// Reconciler: 15-minute two-phase collateral check across all open
 		// order-book markets per the engine plan. Phase 1 reads without
 		// taking the per-market advisory lock so healthy markets see zero
@@ -311,7 +333,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		smm.SetMetrics(predictionMetrics)
 		go smm.Run(context.Background())
 
-		slog.Info("prediction: background workers started (closer, settler, reconciler, smm)")
+		slog.Info("prediction: background workers started (closer, settler, resumer, reconciler, smm)")
 
 		// Leaderboards recomputer: 5-minute tick per PLAN §8. First tick runs
 		// immediately so the boards populate at startup.

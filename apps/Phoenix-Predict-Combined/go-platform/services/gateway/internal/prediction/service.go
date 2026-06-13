@@ -1189,6 +1189,13 @@ func (s *Service) VoidMarket(ctx context.Context, marketID, reason string, actor
 	return s.settlement.VoidMarket(ctx, marketID, reason, actorID)
 }
 
+// ResumeIncompleteSettlements finishes disbursing any settlement whose batched
+// payouts did not complete (P3-12 / COR-05). Delegates to the settlement engine
+// so resume reuses the same loyalty/tier wiring as the live settle path.
+func (s *Service) ResumeIncompleteSettlements(ctx context.Context) (int, error) {
+	return s.settlement.ResumeIncompleteSettlements(ctx)
+}
+
 // SetResolutionStore wires the propose -> finalize resolution store onto the
 // settlement engine. Pass nil to disable the windowed path.
 func (s *Service) SetResolutionStore(store ResolutionStore) {
