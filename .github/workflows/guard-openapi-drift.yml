@@ -1,0 +1,29 @@
+name: Guard — OpenAPI drift (G-04)
+
+# Improvement-plan guardrail G-04: api/openapi.yaml must stay in sync with the
+# gateway's registered routes (every documented path resolves to a route; no
+# undocumented new public route group). Runs on changes to the HTTP handlers,
+# the spec, or the check itself. Verify: add an undocumented public route → red.
+
+on:
+  push:
+    branches: [main, feat/binary-exchange-engine]
+    paths:
+      - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/http/**'
+      - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/api/openapi.yaml'
+      - 'scripts/check-openapi-drift.sh'
+      - '.github/workflows/guard-openapi-drift.yml'
+  pull_request:
+    paths:
+      - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/http/**'
+      - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/api/openapi.yaml'
+      - 'scripts/check-openapi-drift.sh'
+      - '.github/workflows/guard-openapi-drift.yml'
+
+jobs:
+  openapi-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check OpenAPI drift
+        run: scripts/check-openapi-drift.sh

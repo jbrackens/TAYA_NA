@@ -1,0 +1,68 @@
+name: Guard — fresh-DB migrations (G-03)
+
+# Improvement-plan guardrail G-03: prove migrations apply cleanly from scratch
+# on a real Postgres 16, the seed runs, and no migration is left pending. Runs
+# on any change to the gateway migrations (or this workflow / the migrate+seed
+# commands). Verify: a syntactically-broken migration on a branch → this job red.
+
+on:
+  push:
+    branches: [main, feat/binary-exchange-engine]
+    paths:
+      - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/migrations/**'
+      - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/cmd/migrate/**'
+      - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/cmd/seed/**'
+      - '.github/workflows/guard-db-migrations.yml'
+  pull_request:
+    paths:
+      - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/migrations/**'
+      - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/cmd/migrate/**'
+      - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/cmd/seed/**'
+      - '.github/workflows/guard-db-migrations.yml'
+
+jobs:
+  fresh-db-migrate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: predict
+          POSTGRES_PASSWORD: localdev
+          POSTGRES_DB: predict
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U predict"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      GATEWAY_DB_DSN: postgres://predict:localdev@localhost:5432/predict?sslmode=disable
+    defaults:
+      run:
+        working-directory: apps/Phoenix-Predict-Combined/go-platform/services/gateway
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Migrate up (fresh database)
+        run: |
+          export MIGRATIONS_DIR="$(pwd)/migrations"
+          go run ./cmd/migrate up
+
+      - name: Seed base data
+        run: go run ./cmd/seed
+
+      - name: Assert no pending migrations
+        run: |
+          export MIGRATIONS_DIR="$(pwd)/migrations"
+          status="$(go run ./cmd/migrate status 2>&1)"
+          echo "$status"
+          if echo "$status" | grep -qi 'Pending'; then
+            echo "::error::migrations left pending after 'up' — fresh-DB migrate did not fully apply"
+            exit 1
+          fi
+          echo "OK: all migrations applied, none pending."
