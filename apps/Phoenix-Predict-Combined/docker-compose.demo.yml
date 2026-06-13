@@ -156,6 +156,21 @@ services:
       # ALPHA_CASHIER_WITHDRAWALS_ENABLED: "false"
       # ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED: "true"
       # ALPHA_CASHIER_WITHDRAWAL_BROADCAST_ACK: "false"
+      # Two-person control on the custodial payout: the broadcaster must differ
+      # from the approver (P1-13/A2-04). Required true in prod/staging when
+      # withdrawals are enabled, unless explicitly acked off.
+      # ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL: "true"
+      # ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL_ACK_DISABLED: "false"
+      # Sanctions/AML address screening on deposit (from) + withdrawal (to)
+      # addresses (P1-12/CMP-01). With enforcement on, a non-clear verdict
+      # blocks pending a real provider or review; a sanctions hit always blocks.
+      # ALPHA_CASHIER_SCREENING_ENFORCEMENT: "false"
+      # Deposit reorg watch: finality depth at which a credited deposit is
+      # considered final (P1-14/A2-03). 0 = default (64 blocks).
+      # ALPHA_CASHIER_FINALITY_CONFIRMATIONS: "0"
+      # Bot/partner API keys: self-serve key creation is OFF by default in
+      # prod/staging (partners get operator-issued keys); ON in dev/demo (P1-06).
+      # BOT_KEYS_SELF_SERVE: "false"
       # Automated KYC vendor (manual back-office review works without these).
       # KYC_IDV_PROVIDER: "sumsub"   # or onfido / persona
       # KYC_IDV_API_KEY: ""
