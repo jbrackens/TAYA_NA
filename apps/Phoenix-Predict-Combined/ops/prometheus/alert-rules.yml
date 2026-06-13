@@ -1,0 +1,142 @@
+# Prometheus alerting rules for the Hula Na! gateway (improvement-plan P3-05).
+#
+# Load via the Prometheus server config:
+#   rule_files:
+#     - /etc/prometheus/alert-rules.yml
+# Validate before shipping:  promtool check rules alert-rules.yml
+#
+# Every series referenced here is exposed unauthenticated by the gateway:
+#   /metrics             — HTTP request metrics + gateway-infra counters
+#                          (gateway_ws_*, gateway_geo_*)
+#   /metrics/prediction  — prediction-domain counters + latency histograms
+# See ops/grafana/README.md for the scrape config.
+
+groups:
+  # --- Security: geo-fence integrity (audit SEC-03 / GEO-01) ---
+  - name: hulana-gateway-security
+    rules:
+      - alert: GeoEdgeAuthDenialsPresent
+        expr: increase(gateway_geo_edge_auth_denials_total[5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Direct-to-origin geo-bypass attempt"
+          description: >
+            {{ $value }} money-path request(s) in the last 5m reached the
+            gateway origin without a valid X-Edge-Auth secret while
+            GEO_TRUSTED_PROXY_MODE=require. Something is hitting :18080
+            directly to dodge geo-fencing. Confirm the gateway bind is
+            loopback-only and the trusted edge is the only ingress.
+
+      - alert: GeoMissingSignalDenialsSpike
+        expr: rate(gateway_geo_missing_signal_denials_total[5m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Geo country signal missing on money-path requests"
+          description: >
+            Sustained denials from an absent country header (>0.1/s for 10m).
+            With a healthy edge every request carries it, so the edge is
+            likely misconfigured or traffic is bypassing it.
+
+  # --- Settlement / collateral integrity (audit COR-01 adjacency) ---
+  - name: hulana-gateway-settlement
+    rules:
+      - alert: ReconcilerDriftDetected
+        expr: increase(prediction_drift_events_total[1h]) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Collateral drift detected (market {{ $labels.market_id }})"
+          description: >
+            The reconciler recorded {{ $value }} drift event(s) for market
+            {{ $labels.market_id }} in 1h. Settlement collateral does not
+            reconcile — investigate before settling this market.
+
+      - alert: ReconcilerErrors
+        expr: increase(prediction_reconciler_runs_total{outcome="error"}[15m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Reconciler iterations failing"
+          description: >
+            {{ $value }} reconciler run(s) errored in 15m — invariant checks
+            are not completing, so drift could accumulate undetected.
+
+      - alert: SettlementOverrideRateHigh
+        expr: |
+          sum(increase(prediction_settlements_total{override="true"}[6h]))
+            / clamp_min(sum(increase(prediction_settlements_total[6h])), 1) > 0.2
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High settlement override rate (>20% in 6h)"
+          description: >
+            More than 20% of settlements in the last 6h required a
+            collateral-imbalance override. Override rate is a leading
+            indicator of upstream drift.
+
+  # --- Real-time delivery health (audit PERF-03 / P1-10) ---
+  - name: hulana-gateway-realtime
+    rules:
+      - alert: WebSocketMessageDropRate
+        expr: rate(gateway_ws_messages_dropped_total[5m]) > 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "WebSocket messages being dropped"
+          description: >
+            Client send buffers are overflowing (>1 msg/s dropped for 10m).
+            Real-time price/portfolio updates are being lost — check client
+            count and per-client buffer sizing.
+
+      - alert: WebSocketBroadcastsDropped
+        expr: increase(gateway_ws_broadcasts_dropped_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Hub broadcasts dropped (producer backpressure)"
+          description: >
+            The hub command queue is full — {{ $value }} broadcast(s) dropped
+            in 5m. Notifiers are outpacing the hub; market updates may reach
+            no client.
+
+  # --- Latency SLOs (histograms from P3-05) ---
+  - name: hulana-gateway-latency
+    rules:
+      - alert: PlaceOrderP95Slow
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(prediction_operation_duration_ms_bucket{op="place_order"}[5m]))
+          ) > 500
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PlaceOrder p95 > 500ms"
+          description: >
+            Order-placement p95 has exceeded 500ms for 10m
+            (current {{ $value | humanize }}ms). Check DB contention and
+            per-market advisory-lock waits on hot markets.
+
+      - alert: SettlementP95Slow
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(prediction_operation_duration_ms_bucket{op="settlement"}[5m]))
+          ) > 2000
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Settlement p95 > 2s"
+          description: >
+            Settlement p95 has exceeded 2s for 10m
+            (current {{ $value | humanize }}ms). Large markets likely need
+            batched payouts (improvement-plan P3-12).

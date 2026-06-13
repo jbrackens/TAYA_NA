@@ -1,10 +1,20 @@
-# Grafana dashboard — Tiangge prediction exchange
+# Observability — gateway dashboards & alerts
 
-`prediction-exchange-dashboard.json` is a Grafana 9+ dashboard that visualises
-the prediction-domain counters exposed at `/metrics/prediction` (defined in
-`go-platform/services/gateway/internal/prediction/metrics.go`).
+Two Grafana 9+ dashboards plus a Prometheus alert-rule set (improvement-plan
+P3-05). All series are exposed unauthenticated by the gateway:
 
-## Panels
+- **`/metrics`** — HTTP request metrics **and** gateway-infrastructure counters
+  (`gateway_ws_*` fan-out drops, `gateway_geo_*` gate denials).
+- **`/metrics/prediction`** — prediction-domain counters and the operation
+  latency histograms (`prediction_operation_duration_ms`).
+
+| File | Covers | Endpoint(s) |
+|---|---|---|
+| `prediction-exchange-dashboard.json` | order/trade/settlement/reconciler domain counters | `/metrics/prediction` |
+| `gateway-infra-dashboard.json` | geo denials, WS drops, PlaceOrder/settlement latency p50/p95/p99, HTTP rate & latency | `/metrics` + `/metrics/prediction` |
+| `../prometheus/alert-rules.yml` | 9 alerts: geo-bypass, drift, reconciler errors, override rate, WS drops, latency SLOs | both |
+
+## Prediction-exchange dashboard panels
 
 | # | Panel | Source metric |
 |---|-------|---------------|
@@ -43,27 +53,82 @@ scrape_configs:
       - targets: ['gateway:18080']
 ```
 
-The two endpoints are intentionally separate. `/metrics` only emits HTTP
-request counters (low cardinality, bounded by route count). `/metrics/prediction`
-emits domain counters keyed on `market_id` (cardinality scales with active
-market count — fine at the hundreds-of-markets range we operate, would need
-capping or aggregation if we ever ran 10k+ markets simultaneously).
+The two endpoints are intentionally separate. `/metrics` emits HTTP request
+counters plus the gateway-infrastructure counters (`gateway_ws_*`,
+`gateway_geo_*`) — all low cardinality, bounded by route count and a handful of
+fixed infra series. `/metrics/prediction` emits domain counters keyed on
+`market_id` (cardinality scales with active market count — fine at the
+hundreds-of-markets range we operate, would need capping or aggregation if we
+ever ran 10k+ markets simultaneously). The latency histograms on
+`/metrics/prediction` are deliberately keyed only on `op` (two series), not
+`market_id`, to keep bucket cardinality flat.
 
-## Importing the dashboard
+The infra counters are folded onto `/metrics` via a collector registered on the
+platform metrics registry (`RegisterCollector` in
+`modules/platform/transport/httpx/metrics.go`; wired in `cmd/gateway/main.go`),
+so a single `/metrics` scrape covers both HTTP and infra signals.
 
-In Grafana: Dashboards → New → Import → upload `prediction-exchange-dashboard.json`.
+## Importing the dashboards
 
-Or via the HTTP API:
+In Grafana: Dashboards → New → Import → upload the `.json` file
+(`prediction-exchange-dashboard.json` and/or `gateway-infra-dashboard.json`).
+
+Or via the HTTP API (run once per file):
 
 ```bash
-curl -X POST http://grafana:3000/api/dashboards/db \
-  -H "Authorization: Bearer $GRAFANA_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d "$(jq '{dashboard: ., overwrite: true}' prediction-exchange-dashboard.json)"
+for f in prediction-exchange-dashboard.json gateway-infra-dashboard.json; do
+  curl -X POST http://grafana:3000/api/dashboards/db \
+    -H "Authorization: Bearer $GRAFANA_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "$(jq '{dashboard: ., overwrite: true}' "$f")"
+done
 ```
 
 Datasource UID assumed to be `prometheus` — change in the JSON if your
-Prometheus datasource UID differs.
+Prometheus datasource UID differs. The infra dashboard's panels use the
+default datasource, so importing against a single-Prometheus Grafana needs no
+edits.
+
+## Alerting rules
+
+`../prometheus/alert-rules.yml` defines the alerts that back the SLOs above.
+Load it from the Prometheus server config and validate before shipping:
+
+```yaml
+# prometheus.yml
+rule_files:
+  - /etc/prometheus/alert-rules.yml
+```
+
+```bash
+promtool check rules ../prometheus/alert-rules.yml   # CI/pre-ship gate
+```
+
+Severities: `critical` (page) = active geo-bypass attempt or reconciler-detected
+collateral drift; `warning` = degradation (missing geo signal, reconciler
+errors, high override rate, WS drops, latency SLO breach). The drill that
+satisfies P3-05 acceptance: force one alert (e.g. curl the origin directly with
+a forged `CF-IPCountry` and no edge-auth → `GeoEdgeAuthDenialsPresent` fires).
+
+## Distributed tracing (OTLP)
+
+Tracing is already OTLP-ready (`internal/tracing/tracing.go`). Point it at a
+collector with env — no code change:
+
+```
+OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317   # set → enables the OTLP/gRPC exporter
+OTEL_TRACES_EXPORTER=stdout                        # alternative: print spans to stdout (debug)
+```
+
+Selection logic (`buildExporter`): if `OTEL_EXPORTER_OTLP_ENDPOINT` is set it
+wins and exports OTLP/gRPC; else `OTEL_TRACES_EXPORTER=stdout` prints spans;
+else tracing is a no-op (safe default). Spans cover the HTTP middleware chain;
+correlate a latency-histogram spike with traces by time window.
+
+> **Note:** the OTLP exporter currently connects **insecure (plaintext gRPC)** —
+> `WithInsecure()` is hard-coded and there is *no* TLS env knob yet (the
+> `OTEL_EXPORTER_OTLP_INSECURE` comment in the code is aspirational). Keep the
+> collector on a trusted network / sidecar until TLS is wired.
 
 ## Verifying the endpoint manually
 
