@@ -464,6 +464,17 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 					return httpx.BadRequest("market buy orders require notionalCapCents > 0", map[string]any{"field": "notionalCapCents"})
 				}
 			}
+			// Per-market jurisdiction overlay (P3-07): once the global gate has
+			// passed, a market may further restrict by country. Fail closed if
+			// the policy lookup errors.
+			jpolicy, jerr := svc.GetMarketJurisdictionPolicy(r.Context(), req.MarketID)
+			if jerr != nil {
+				slog.ErrorContext(r.Context(), "order: jurisdiction policy lookup failed", "market_id", req.MarketID, "error", jerr)
+				return httpx.Forbidden("jurisdiction check unavailable")
+			}
+			if cerr := checkMarketJurisdiction(r, userID, req.MarketID, jpolicy); cerr != nil {
+				return cerr
+			}
 			order, trade, err := svc.PlaceOrder(r.Context(), req, userID)
 			if err != nil {
 				return httpx.BadRequest(err.Error(), nil)
@@ -870,6 +881,35 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 					"settlement": settlement,
 					"payouts":    payouts,
 				})
+			case "jurisdiction":
+				// Set or clear the per-market jurisdiction overlay (P3-07).
+				// Strict validation here (unlike the lenient read-path parser):
+				// a malformed body is rejected, not silently treated as "clear".
+				var in prediction.MarketJurisdictionPolicy
+				if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+					return httpx.BadRequest("invalid request body", nil)
+				}
+				in.Mode = prediction.JurisdictionMode(strings.ToLower(strings.TrimSpace(string(in.Mode))))
+				var policy *prediction.MarketJurisdictionPolicy
+				if in.Mode != "" || len(in.Countries) > 0 { // empty body = clear
+					if in.Mode != prediction.JurisdictionAllow && in.Mode != prediction.JurisdictionDeny {
+						return httpx.BadRequest(`jurisdiction mode must be "allow" or "deny"`, map[string]any{"field": "mode"})
+					}
+					if len(in.Countries) == 0 {
+						return httpx.BadRequest("jurisdiction policy requires a non-empty countries list", map[string]any{"field": "countries"})
+					}
+					policy = &in
+				}
+				if err := svc.SetMarketJurisdictionPolicy(r.Context(), parts[0], policy); err != nil {
+					if errors.Is(err, prediction.ErrJurisdictionUnsupported) {
+						return httpx.BadRequest("per-market jurisdiction is not supported by this deployment", nil)
+					}
+					return httpx.BadRequest(err.Error(), nil)
+				}
+				recordMoneyAuditEntry(adminID, "market.jurisdiction_set", parts[0], map[string]any{
+					"cleared": policy == nil,
+				})
+				return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"marketId": parts[0], "policy": policy})
 			default:
 				return httpx.NotFound("route not found")
 			}

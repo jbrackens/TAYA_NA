@@ -249,6 +249,19 @@ type BatchedMarketSettlementPersister interface {
 	ListIncompleteSettlements(ctx context.Context, limit int) ([]Settlement, error)
 }
 
+// MarketJurisdictionStore is an optional repository capability for the
+// per-market jurisdiction overlay (P3-07). Repositories that don't implement it
+// (in-memory fakes) simply have no overlay — the global geo gate still applies.
+type MarketJurisdictionStore interface {
+	// GetMarketJurisdictionPolicy returns the market's parsed overlay, or
+	// (nil, nil) when the market has no policy or does not exist (the caller's
+	// downstream market load produces the canonical not-found error).
+	GetMarketJurisdictionPolicy(ctx context.Context, marketID string) (*MarketJurisdictionPolicy, error)
+	// SetMarketJurisdictionPolicy writes (or clears, when policy is nil) the
+	// overlay for a market.
+	SetMarketJurisdictionPolicy(ctx context.Context, marketID string, policy *MarketJurisdictionPolicy) error
+}
+
 // AtomicProposalPersister is an optional repository capability (ADR-0003/0004)
 // that records a resolution proposal AND the closed -> proposed_resolution
 // market transition (plus the lifecycle event) in ONE transaction. Without it a

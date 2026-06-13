@@ -1196,6 +1196,24 @@ func (s *Service) ResumeIncompleteSettlements(ctx context.Context) (int, error) 
 	return s.settlement.ResumeIncompleteSettlements(ctx)
 }
 
+// GetMarketJurisdictionPolicy returns a market's per-market jurisdiction overlay
+// (P3-07), or (nil, nil) when none is set or the repo doesn't support overlays.
+func (s *Service) GetMarketJurisdictionPolicy(ctx context.Context, marketID string) (*MarketJurisdictionPolicy, error) {
+	if store, ok := s.repo.(MarketJurisdictionStore); ok {
+		return store.GetMarketJurisdictionPolicy(ctx, marketID)
+	}
+	return nil, nil
+}
+
+// SetMarketJurisdictionPolicy writes or clears a market's jurisdiction overlay.
+// Returns ErrJurisdictionUnsupported when the repo has no overlay storage.
+func (s *Service) SetMarketJurisdictionPolicy(ctx context.Context, marketID string, policy *MarketJurisdictionPolicy) error {
+	if store, ok := s.repo.(MarketJurisdictionStore); ok {
+		return store.SetMarketJurisdictionPolicy(ctx, marketID, policy)
+	}
+	return ErrJurisdictionUnsupported
+}
+
 // SetResolutionStore wires the propose -> finalize resolution store onto the
 // settlement engine. Pass nil to disable the windowed path.
 func (s *Service) SetResolutionStore(store ResolutionStore) {

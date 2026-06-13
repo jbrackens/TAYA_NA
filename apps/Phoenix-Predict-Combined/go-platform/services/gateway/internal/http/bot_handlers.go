@@ -160,6 +160,20 @@ func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo pred
 				return
 			}
 
+			// Per-market jurisdiction overlay (P3-07): once the global gate has
+			// passed, a market may further restrict by country. Fail closed if
+			// the policy lookup errors.
+			jpolicy, jerr := svc.GetMarketJurisdictionPolicy(r.Context(), req.MarketID)
+			if jerr != nil {
+				slog.Error("bot order: jurisdiction policy lookup failed", "market_id", req.MarketID, "error", jerr)
+				httpx.WriteError(w, r, httpx.Forbidden("jurisdiction check unavailable"))
+				return
+			}
+			if cerr := checkMarketJurisdiction(r, userID, req.MarketID, jpolicy); cerr != nil {
+				httpx.WriteError(w, r, cerr)
+				return
+			}
+
 			order, trade, err := svc.PlaceOrder(r.Context(), req, userID)
 			if err != nil {
 				stdhttp.Error(w, `{"error":{"code":"bad_request","message":"`+err.Error()+`"}}`, stdhttp.StatusBadRequest)

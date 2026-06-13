@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"phoenix-revival/gateway/internal/compliance"
+	"phoenix-revival/gateway/internal/prediction"
 	"phoenix-revival/platform/transport/httpx"
 )
 
@@ -199,4 +200,23 @@ func checkComplianceGates(r *stdhttp.Request, userID string, surface compliance.
 func logGeoDenial(userID, country, reason string, surface compliance.Surface) {
 	slog.Info(string(surface)+" blocked by geo gate",
 		"surface", surface, "user_id", userID, "country", country, "reason", reason)
+}
+
+// checkMarketJurisdiction applies a market's optional per-market jurisdiction
+// overlay (P3-07) AFTER the global geo gate has already passed for this request.
+// It can only further restrict — the global allowlist is the floor — so a nil
+// policy is a no-op. The country comes from the same trusted-edge header the
+// global gate validated; missing-signal handling is owned by the global gate,
+// so an empty country defers (EvaluateMarketJurisdiction allows it).
+func checkMarketJurisdiction(r *stdhttp.Request, userID, marketID string, policy *prediction.MarketJurisdictionPolicy) error {
+	if policy == nil {
+		return nil
+	}
+	country := strings.TrimSpace(r.Header.Get(geoCountryHeader()))
+	if allowed, reason := prediction.EvaluateMarketJurisdiction(policy, country); !allowed {
+		slog.Info("trade blocked by per-market jurisdiction overlay",
+			"user_id", userID, "market_id", marketID, "country", country)
+		return httpx.Forbidden(reason)
+	}
+	return nil
 }

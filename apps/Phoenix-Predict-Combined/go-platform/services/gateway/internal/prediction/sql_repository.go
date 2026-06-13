@@ -1293,6 +1293,51 @@ func (r *SQLRepository) CreateSettlement(ctx context.Context, s *Settlement) err
 	return r.createSettlementWithExec(ctx, r.db, s)
 }
 
+// GetMarketJurisdictionPolicy returns the parsed per-market jurisdiction overlay
+// (P3-07), or (nil, nil) when the market carries no policy or does not exist
+// (the order path's own market load produces the canonical not-found error).
+func (r *SQLRepository) GetMarketJurisdictionPolicy(ctx context.Context, marketID string) (*MarketJurisdictionPolicy, error) {
+	var raw []byte
+	err := r.db.QueryRowContext(ctx,
+		`SELECT jurisdiction_policy FROM prediction_markets WHERE id=$1`, marketID,
+	).Scan(&raw)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return ParseMarketJurisdictionPolicy(raw)
+}
+
+// SetMarketJurisdictionPolicy writes (policy != nil) or clears (policy == nil)
+// the per-market jurisdiction overlay. Errors if the market does not exist.
+func (r *SQLRepository) SetMarketJurisdictionPolicy(ctx context.Context, marketID string, policy *MarketJurisdictionPolicy) error {
+	var raw interface{} // nil → SQL NULL (clears the overlay)
+	if policy != nil {
+		b, err := json.Marshal(policy)
+		if err != nil {
+			return err
+		}
+		raw = b
+	}
+	res, err := r.db.ExecContext(ctx,
+		`UPDATE prediction_markets SET jurisdiction_policy=$1, updated_at=NOW() WHERE id=$2`,
+		raw, marketID,
+	)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return fmt.Errorf("market %s not found", marketID)
+	}
+	return nil
+}
+
 func (r *SQLRepository) createSettlementWithExec(ctx context.Context, execer sqlRowExecer, s *Settlement) error {
 	return execer.QueryRowContext(ctx,
 		`INSERT INTO prediction_settlements
