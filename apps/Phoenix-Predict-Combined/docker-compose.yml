@@ -60,6 +60,10 @@ services:
       WALLET_STORE_MODE: "db"
       GATEWAY_READ_REPO_MODE: "db"
       REDIS_URL: "redis://redis:6379/0"
+      # P2-07 cross-instance WS backbone. Default (unset) = local in-process,
+      # correct for this single-instance demo. Set WS_BACKBONE=redis to fan
+      # WebSocket broadcasts across multiple gateway replicas over REDIS_URL.
+      # WS_BACKBONE: "redis"
       AUTH_SERVICE_URL: "http://auth:18081"
       PAYMENTS_WEBHOOK_SECRET: "whsec_local"
       LOG_LEVEL: "debug"

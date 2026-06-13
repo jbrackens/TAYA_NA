@@ -31,6 +31,8 @@ import (
 	"phoenix-revival/gateway/internal/wallet"
 	"phoenix-revival/gateway/internal/ws"
 	"phoenix-revival/platform/transport/httpx"
+
+	"github.com/redis/go-redis/v9"
 )
 
 func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
@@ -50,8 +52,23 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		}
 	}()
 
-	// Initialize WebSocket hub
+	// Initialize WebSocket hub. P2-07: cross-instance event backbone is
+	// flag-gated (WS_BACKBONE=redis|local, default local). Redis fans
+	// broadcasts across gateway instances; an invalid/missing config or a
+	// later Redis outage degrades to local-only (never crashes).
 	wsHub := ws.NewHub()
+	if strings.EqualFold(strings.TrimSpace(os.Getenv("WS_BACKBONE")), "redis") {
+		if redisURL := strings.TrimSpace(os.Getenv("REDIS_URL")); redisURL != "" {
+			if opt, perr := redis.ParseURL(redisURL); perr == nil {
+				wsHub.SetBackbone(ws.NewRedisBackbone(redis.NewClient(opt)))
+				slog.Info("ws: redis backbone enabled (cross-instance fan-out)", "addr", opt.Addr)
+			} else {
+				slog.Error("ws: WS_BACKBONE=redis but REDIS_URL invalid; using local backbone", "error", perr)
+			}
+		} else {
+			slog.Warn("ws: WS_BACKBONE=redis but REDIS_URL unset; using local backbone")
+		}
+	}
 	go wsHub.Run(context.Background())
 	registerWebSocketRoutes(mux, wsHub)
 	liveMarketService := livemarkets.NewServiceFromEnv()
@@ -111,6 +128,13 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		}
 
 		checks["service"] = service
+		// P2-07: cross-instance WS backbone health (informational — a degraded
+		// backbone is local-only, not a readiness failure).
+		if wsHub.BackboneHealthy() {
+			checks["ws_backbone"] = "ok"
+		} else {
+			checks["ws_backbone"] = "degraded"
+		}
 		if allReady {
 			checks["status"] = "ready"
 			return httpx.WriteJSON(w, stdhttp.StatusOK, checks)
