@@ -9,9 +9,12 @@ func baseProdEnv(overrides map[string]string) func(string) string {
 	base := map[string]string{
 		"ENVIRONMENT":             "production",
 		"PAYMENTS_WEBHOOK_SECRET": "whsec_present",
-		"GEO_GATE_ENABLED":        "true",
-		"GEO_ALLOWED_COUNTRIES":   "PH,TH,VN",
-		"KYC_ENFORCEMENT":         "true",
+		// A real prod DSN — required for the DB-backed provider-ops audit store
+		// (P3-06) and carrying a non-dev password so the localdev guard is happy.
+		"GATEWAY_DB_DSN":           "postgres://predict:S3cure-Prod-Pass@db.internal:5432/predict?sslmode=require",
+		"GEO_GATE_ENABLED":         "true",
+		"GEO_ALLOWED_COUNTRIES":    "PH,TH,VN",
+		"KYC_ENFORCEMENT":          "true",
 		"KYC_REQUIRED_FOR_TRADING": "true",
 	}
 	for k, v := range overrides {

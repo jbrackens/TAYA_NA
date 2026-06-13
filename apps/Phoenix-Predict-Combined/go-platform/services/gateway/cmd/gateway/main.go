@@ -232,6 +232,21 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 		}
 	}
 
+	// P3-06: the provider-ops audit trail is append-only (migration 036) and is
+	// the system of record for compliance actions, so in a deployed environment
+	// it must be DB-backed. The JSON-file fallback is mutable and per-instance —
+	// it cannot be authoritative — so fail closed rather than silently degrade.
+	// (Mirrors buildProviderOpsAuditStoreFromEnv's DB-selection branch.)
+	auditMode := strings.ToLower(strings.TrimSpace(getenv("PROVIDER_OPS_AUDIT_STORE_MODE")))
+	auditDSN := strings.TrimSpace(getenv("PROVIDER_OPS_AUDIT_DB_DSN"))
+	if auditDSN == "" {
+		auditDSN = strings.TrimSpace(getenv("GATEWAY_DB_DSN"))
+	}
+	auditDB := auditMode == "db" || auditMode == "sql" || auditMode == "postgres" || auditMode == "shared" || (auditMode == "" && auditDSN != "")
+	if !auditDB {
+		return fmt.Errorf("provider-ops audit store must be DB-backed when ENVIRONMENT=%s: set PROVIDER_OPS_AUDIT_STORE_MODE=db (or leave it unset with a valid GATEWAY_DB_DSN); the JSON-file fallback is mutable and per-instance and cannot be the audit system of record", env)
+	}
+
 	for _, key := range []string{"CRYPTO_RPC_URL", "CRYPTO_ASSET_CONTRACT", "CRYPTO_DEPOSIT_ADDRESS_SOURCE"} {
 		if strings.TrimSpace(getenv(key)) != "" {
 			return fmt.Errorf("%s must not be set in production: legacy custodial cashier rail is prototype-only; use non-custodial cashier services instead", key)

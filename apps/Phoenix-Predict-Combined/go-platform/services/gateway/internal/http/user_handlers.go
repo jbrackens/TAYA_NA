@@ -9,7 +9,6 @@ import (
 	stdhttp "net/http"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
 	"phoenix-revival/gateway/internal/compliance"
@@ -44,9 +43,6 @@ func registerUserRoutes(mux *stdhttp.ServeMux) {
 	if authURL == "" {
 		authURL = "http://localhost:18081"
 	}
-
-	// In-memory profile store for updates (production would use DB)
-	profileStore := &sync.Map{}
 
 	// POST /api/v1/punters/delete — player-initiated account deletion
 	mux.Handle("/api/v1/punters/delete", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -92,8 +88,11 @@ func registerUserRoutes(mux *stdhttp.ServeMux) {
 			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 				return httpx.BadRequest("invalid JSON payload", nil)
 			}
-			storeKey := requestedUserID + ":" + subRoute
-			profileStore.Store(storeKey, body)
+			// NOTE: profile updates are not yet persisted. The prior in-memory
+			// store (removed, P3-06) was write-only — the GET path derives the
+			// profile from the auth session and never read it back, so it held
+			// nothing across requests/instances. Echo the accepted fields;
+			// durable per-user profile storage is a DB-backed follow-up.
 			return httpx.WriteJSON(w, stdhttp.StatusOK, body)
 		}
 

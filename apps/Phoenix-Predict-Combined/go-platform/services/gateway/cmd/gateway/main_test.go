@@ -228,6 +228,24 @@ func TestValidateGatewayRuntimeConfigAllowsRealSecretsInProduction(t *testing.T)
 	}
 }
 
+func TestValidateGatewayRuntimeConfigRequiresDBAuditStoreInDeployedEnvs(t *testing.T) {
+	// The provider-ops audit trail (append-only, migration 036) must be DB-backed
+	// in a deployed environment; the mutable per-instance JSON-file fallback must
+	// not boot (P3-06).
+	if err := validateGatewayRuntimeConfig(prodBaseEnv(map[string]string{
+		"PROVIDER_OPS_AUDIT_STORE_MODE": "file",
+	})); err == nil {
+		t.Fatalf("expected production boot refusal when the provider-ops audit store is file-backed")
+	}
+	// An explicit db mode (and the default unset-with-DSN, covered by the
+	// passing prodBaseEnv case) validates.
+	if err := validateGatewayRuntimeConfig(prodBaseEnv(map[string]string{
+		"PROVIDER_OPS_AUDIT_STORE_MODE": "db",
+	})); err != nil {
+		t.Fatalf("expected db audit store mode to validate in production, got %v", err)
+	}
+}
+
 func TestValidateGatewayRuntimeConfigRequiresGeoGateInDeployedEnvs(t *testing.T) {
 	cases := map[string]map[string]string{
 		"geo gate off":          {"GEO_GATE_ENABLED": ""},
