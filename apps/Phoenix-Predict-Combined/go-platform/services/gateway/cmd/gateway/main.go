@@ -13,6 +13,7 @@ import (
 
 	"phoenix-revival/gateway/internal/alphacashier"
 	gatewayhttp "phoenix-revival/gateway/internal/http"
+	"phoenix-revival/gateway/internal/tenant"
 	"phoenix-revival/gateway/internal/tracing"
 	"phoenix-revival/platform/logging"
 	"phoenix-revival/platform/runtime"
@@ -93,6 +94,7 @@ func main() {
 	authEnabled := strings.ToLower(strings.TrimSpace(os.Getenv("GATEWAY_AUTH_ENABLED"))) != "false"
 
 	middlewares := []httpx.Middleware{
+		tenant.Middleware, // innermost: resolves the active tenant after auth (ADR-0005 step 2)
 		httpx.RequestID(),
 		httpx.NormalizeTrailingSlash("/api/", "/admin/", "/auth/"),
 		tracing.Middleware(),
