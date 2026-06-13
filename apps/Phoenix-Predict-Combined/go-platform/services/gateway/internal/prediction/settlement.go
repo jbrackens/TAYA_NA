@@ -431,6 +431,8 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 // In DB mode, settlement records, payout records, wallet credits, market
 // status, and lifecycle logging can commit as one shared transaction.
 func (s *SettlementEngine) resolveMarket(ctx context.Context, req ResolveMarketRequest, marketID string, settledBy *string, allowWindowed bool) (*Settlement, []Payout, error) {
+	defer func(start time.Time) { s.metrics.RecordLatency("settlement", time.Since(start)) }(time.Now())
+
 	market, err := s.repo.GetMarket(ctx, marketID)
 	if err != nil {
 		return nil, nil, fmt.Errorf("get market: %w", err)

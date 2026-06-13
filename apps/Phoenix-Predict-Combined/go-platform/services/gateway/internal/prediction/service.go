@@ -612,6 +612,8 @@ func orderBookPreviewFromPlan(req PlaceOrderRequest, market *Market, plan *Match
 // the created order and trade fill. Broadcasts the trade via WebSocket is the
 // caller's responsibility.
 func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID string) (*Order, *Trade, error) {
+	defer func(start time.Time) { s.metrics.RecordLatency("place_order", time.Since(start)) }(time.Now())
+
 	idempotencyKey := ensureOrderIdempotencyKey(req, userID)
 
 	// Idempotency check

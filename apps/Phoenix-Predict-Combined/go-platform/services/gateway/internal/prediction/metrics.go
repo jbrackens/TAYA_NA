@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 // Metrics is the prediction-domain Prometheus-format counter registry. It
@@ -46,6 +48,28 @@ type Metrics struct {
 	// post a quote on a tick. Key is the reason string (kept opaque so
 	// callers can add new reasons without touching this file).
 	smmSkips map[smmSkipKey]int64
+
+	// Operation latency histograms, keyed by a low-cardinality op name
+	// ("place_order", "settlement"). Lets Prometheus compute p95/p99 via
+	// histogram_quantile. Deliberately NOT keyed on market_id — latency
+	// percentiles are a system-health signal, not a per-market one, and a
+	// per-market histogram would multiply bucket cardinality by market count.
+	opLatency map[string]*histogram
+}
+
+// latencyBucketsMs are the cumulative histogram upper bounds (the Prometheus
+// `le` label), in milliseconds. Chosen to bracket the sub-millisecond to
+// multi-second range a single PlaceOrder or settlement can span.
+var latencyBucketsMs = []float64{1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000}
+
+// histogram holds non-cumulative per-bucket counts plus the running sum and
+// total. Cumulative bucket values (what Prometheus expects) are computed at
+// render time. An observation larger than the largest explicit bound lands
+// only in the implicit +Inf bucket (which always equals count).
+type histogram struct {
+	bucketCounts []int64 // len == len(latencyBucketsMs); obs falls in exactly one
+	sumMs        float64
+	count        int64
 }
 
 type smmSkipKey struct {
@@ -73,7 +97,33 @@ func NewMetrics() *Metrics {
 		driftEvents:    make(map[string]int64),
 		settlements:    make(map[settlementKey]int64),
 		smmSkips:       make(map[smmSkipKey]int64),
+		opLatency:      make(map[string]*histogram),
 	}
+}
+
+// RecordLatency observes one operation's wall-clock duration into the
+// histogram for op (e.g. "place_order", "settlement"). Constant-time after
+// the first observation of an op. nil receiver / empty op are no-ops.
+func (m *Metrics) RecordLatency(op string, d time.Duration) {
+	if m == nil || op == "" {
+		return
+	}
+	ms := float64(d.Microseconds()) / 1000.0
+	m.mu.Lock()
+	h := m.opLatency[op]
+	if h == nil {
+		h = &histogram{bucketCounts: make([]int64, len(latencyBucketsMs))}
+		m.opLatency[op] = h
+	}
+	for i, ub := range latencyBucketsMs {
+		if ms <= ub {
+			h.bucketCounts[i]++
+			break
+		}
+	}
+	h.sumMs += ms
+	h.count++
+	m.mu.Unlock()
 }
 
 // RecordSMMSkip increments a counter when the SMM declines to post a
@@ -277,6 +327,29 @@ func (m *Metrics) Render() string {
 			`prediction_smm_skips_total{market_id=%q,side=%q,reason=%q} %d`+"\n",
 			esc(k.market), esc(k.side), esc(k.reason), m.smmSkips[k],
 		)
+	}
+
+	// Operation latency histograms
+	b.WriteString("# HELP prediction_operation_duration_ms Operation wall-clock latency in milliseconds.\n")
+	b.WriteString("# TYPE prediction_operation_duration_ms histogram\n")
+	ops := make([]string, 0, len(m.opLatency))
+	for op := range m.opLatency {
+		ops = append(ops, op)
+	}
+	sort.Strings(ops)
+	for _, op := range ops {
+		h := m.opLatency[op]
+		var cum int64
+		for i, ub := range latencyBucketsMs {
+			cum += h.bucketCounts[i]
+			fmt.Fprintf(&b,
+				`prediction_operation_duration_ms_bucket{op=%q,le=%q} %d`+"\n",
+				esc(op), strconv.FormatFloat(ub, 'g', -1, 64), cum,
+			)
+		}
+		fmt.Fprintf(&b, `prediction_operation_duration_ms_bucket{op=%q,le="+Inf"} %d`+"\n", esc(op), h.count)
+		fmt.Fprintf(&b, `prediction_operation_duration_ms_sum{op=%q} %g`+"\n", esc(op), h.sumMs)
+		fmt.Fprintf(&b, `prediction_operation_duration_ms_count{op=%q} %d`+"\n", esc(op), h.count)
 	}
 
 	return b.String()
