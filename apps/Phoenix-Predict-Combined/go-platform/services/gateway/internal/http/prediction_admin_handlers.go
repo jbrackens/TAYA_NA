@@ -34,9 +34,9 @@ type predictionAdminReader interface {
 // a single cash balance (detail) and a batched lookup (list). Satisfied by
 // *wallet.Service — kept behind an interface so the http layer stays testable.
 type adminWalletBalanceReader interface {
-	Balance(userID string) int64
-	Balances(userIDs []string) map[string]int64
-	Ledger(userID string, limit int) []wallet.LedgerEntry
+	Balance(ctx context.Context, userID string) int64
+	Balances(ctx context.Context, userIDs []string) map[string]int64
+	Ledger(ctx context.Context, userID string, limit int) []wallet.LedgerEntry
 }
 
 // allowedPunterAdminStatuses gates the status values the office can set.
@@ -112,7 +112,7 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 			}
 			detail := prediction.AdminPunterDetail{
 				AdminPunter:        *p,
-				WalletBalanceCents: wallet.Balance(id),
+				WalletBalanceCents: wallet.Balance(r.Context(), id),
 				Portfolio:          *ps,
 			}
 			return httpx.WriteJSON(w, stdhttp.StatusOK, detail)
@@ -210,7 +210,7 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 				}
 			}
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-				"items": wallet.Ledger(id, limit),
+				"items": wallet.Ledger(r.Context(), id, limit),
 			})
 		case "reset-password", "risk-segment", "limits":
 			// reset-password: deferred (spans the auth service — needs a flow
@@ -251,7 +251,7 @@ func registerAdminPuntersList(mux *stdhttp.ServeMux, path string, repo predictio
 		for _, it := range items {
 			ids = append(ids, it.ID)
 		}
-		balances := wallet.Balances(ids)
+		balances := wallet.Balances(r.Context(), ids)
 		pnls, err := repo.ListPuntersRealizedPnl(r.Context(), ids)
 		if err != nil {
 			return httpx.Internal("failed to load punter financials", err)

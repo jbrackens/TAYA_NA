@@ -40,10 +40,10 @@ type Service struct {
 }
 
 type WalletLedger interface {
-	Credit(request wallet.MutationRequest) (wallet.LedgerEntry, error)
-	Hold(request wallet.HoldRequest) (wallet.Reservation, error)
-	Release(referenceType, referenceID string) error
-	Capture(referenceType, referenceID string) (wallet.LedgerEntry, error)
+	Credit(ctx context.Context, request wallet.MutationRequest) (wallet.LedgerEntry, error)
+	Hold(ctx context.Context, request wallet.HoldRequest) (wallet.Reservation, error)
+	Release(ctx context.Context, referenceType, referenceID string) error
+	Capture(ctx context.Context, referenceType, referenceID string) (wallet.LedgerEntry, error)
 }
 
 func NewService(cfg Config, repo Repository) *Service {
@@ -335,7 +335,7 @@ func (s *Service) SubmitDepositTx(ctx context.Context, userID string, id string,
 	if err := s.repo.RecordChainTransaction(ctx, *evidence); err != nil {
 		return nil, err
 	}
-	entry, err := s.ledger.Credit(wallet.MutationRequest{
+	entry, err := s.ledger.Credit(ctx, wallet.MutationRequest{
 		UserID:         submitted.UserID,
 		AmountCents:    submitted.AmountCents,
 		IdempotencyKey: "alpha-cashier:deposit:" + strconv64(evidence.ChainID) + ":" + strings.ToLower(evidence.TxHash) + ":" + strconv64(int64(evidence.LogIndex)),
@@ -396,7 +396,7 @@ func (s *Service) CreateWithdrawalRequest(ctx context.Context, userID string, de
 	}
 	now := s.now().UTC()
 	id := uuid.NewString()
-	reservation, err := s.ledger.Hold(wallet.HoldRequest{
+	reservation, err := s.ledger.Hold(ctx, wallet.HoldRequest{
 		UserID:        userID,
 		AmountCents:   amountCents,
 		ReferenceType: withdrawalReferenceType,
@@ -424,7 +424,7 @@ func (s *Service) CreateWithdrawalRequest(ctx context.Context, userID string, de
 	}
 	saved, err := s.repo.SaveWithdrawalRequest(ctx, req)
 	if err != nil {
-		_ = s.ledger.Release(withdrawalReferenceType, id)
+		_ = s.ledger.Release(ctx, withdrawalReferenceType, id)
 		return nil, err
 	}
 	_ = s.recordAudit(ctx, "withdrawal_request", saved.ID, "alpha_cashier.withdrawal.requested", "user", userID, map[string]any{
@@ -525,7 +525,7 @@ func (s *Service) RejectWithdrawal(ctx context.Context, id string, actorID strin
 	if s.ledger == nil {
 		return nil, ErrWalletLedgerMissing
 	}
-	if err := s.ledger.Release(withdrawalReferenceType, req.ID); err != nil {
+	if err := s.ledger.Release(ctx, withdrawalReferenceType, req.ID); err != nil {
 		return nil, err
 	}
 	now := s.now().UTC()
@@ -605,7 +605,7 @@ func (s *Service) MarkWithdrawalCompleted(ctx context.Context, id string, actorI
 	if req.Status != "broadcasted" {
 		return nil, ErrInvalidStatus
 	}
-	entry, err := s.ledger.Capture(withdrawalReferenceType, req.ID)
+	entry, err := s.ledger.Capture(ctx, withdrawalReferenceType, req.ID)
 	if err != nil {
 		return nil, err
 	}

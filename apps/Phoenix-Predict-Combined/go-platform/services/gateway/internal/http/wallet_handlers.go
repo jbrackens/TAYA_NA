@@ -48,7 +48,7 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service) {
 		}
 
 		if len(parts) == 2 && parts[1] == "breakdown" {
-			breakdown := service.BalanceWithBreakdown(userID)
+			breakdown := service.BalanceWithBreakdown(r.Context(), userID)
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 				"realMoneyCents": breakdown.RealMoneyCents,
 				"bonusFundCents": breakdown.BonusFundCents,
@@ -74,7 +74,7 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service) {
 				limit = parsed
 			}
 
-			entries := service.Ledger(userID, limit)
+			entries := service.Ledger(r.Context(), userID, limit)
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 				"userId": userID,
 				"items":  entries,
@@ -83,14 +83,14 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service) {
 		}
 
 		if len(parts) == 1 {
-			balance := service.Balance(userID)
+			balance := service.Balance(r.Context(), userID)
 			// Available = balance - held reservations. A pending
 			// withdrawal places a hold, not a raw-balance debit, so
 			// returning only balanceCents made withdrawals invisible to
 			// the client and the BAL pill never moved (F-3).
 			// AvailableBalance already exists on the service; expose it
 			// plus the reserved delta. balanceCents kept for back-compat.
-			available := service.AvailableBalance(userID)
+			available := service.AvailableBalance(r.Context(), userID)
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 				"userId":         userID,
 				"balanceCents":   balance,
@@ -122,10 +122,10 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service) {
 		if grant <= 0 {
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 				"enabled":      false,
-				"balanceCents": service.Balance(userID),
+				"balanceCents": service.Balance(r.Context(), userID),
 			})
 		}
-		_, err := service.Credit(wallet.MutationRequest{
+		_, err := service.Credit(r.Context(), wallet.MutationRequest{
 			UserID:         userID,
 			AmountCents:    grant,
 			IdempotencyKey: "starter_grant:" + userID,
@@ -140,7 +140,7 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service) {
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 			"enabled":      true,
 			"grantCents":   grant,
-			"balanceCents": service.Balance(userID),
+			"balanceCents": service.Balance(r.Context(), userID),
 		})
 	}))
 }

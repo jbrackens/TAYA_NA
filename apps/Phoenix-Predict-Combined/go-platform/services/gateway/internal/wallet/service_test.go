@@ -1,6 +1,7 @@
 package wallet
 
 import (
+	"context"
 	"path/filepath"
 	"testing"
 	"time"
@@ -9,7 +10,7 @@ import (
 func TestCreditAndDebitFlow(t *testing.T) {
 	svc := NewService()
 
-	credit, err := svc.Credit(MutationRequest{
+	credit, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "u-1",
 		AmountCents:    1000,
 		IdempotencyKey: "k1",
@@ -22,7 +23,7 @@ func TestCreditAndDebitFlow(t *testing.T) {
 		t.Fatalf("expected balance 1000 after credit, got %d", credit.BalanceCents)
 	}
 
-	debit, err := svc.Debit(MutationRequest{
+	debit, err := svc.Debit(context.Background(), MutationRequest{
 		UserID:         "u-1",
 		AmountCents:    300,
 		IdempotencyKey: "k2",
@@ -39,7 +40,7 @@ func TestCreditAndDebitFlow(t *testing.T) {
 func TestCreditIsIdempotentByKey(t *testing.T) {
 	svc := NewService()
 
-	first, err := svc.Credit(MutationRequest{
+	first, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "u-2",
 		AmountCents:    500,
 		IdempotencyKey: "same-key",
@@ -48,7 +49,7 @@ func TestCreditIsIdempotentByKey(t *testing.T) {
 		t.Fatalf("first credit: %v", err)
 	}
 
-	second, err := svc.Credit(MutationRequest{
+	second, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "u-2",
 		AmountCents:    500,
 		IdempotencyKey: "same-key",
@@ -60,7 +61,7 @@ func TestCreditIsIdempotentByKey(t *testing.T) {
 	if first.EntryID != second.EntryID {
 		t.Fatalf("expected same ledger entry for idempotent replay")
 	}
-	if svc.Balance("u-2") != 500 {
+	if svc.Balance(context.Background(), "u-2") != 500 {
 		t.Fatalf("expected balance to remain 500 after idempotent replay")
 	}
 }
@@ -68,7 +69,7 @@ func TestCreditIsIdempotentByKey(t *testing.T) {
 func TestIdempotencyKeyConflictReturnsError(t *testing.T) {
 	svc := NewService()
 
-	_, err := svc.Credit(MutationRequest{
+	_, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "u-2",
 		AmountCents:    500,
 		IdempotencyKey: "same-key",
@@ -78,7 +79,7 @@ func TestIdempotencyKeyConflictReturnsError(t *testing.T) {
 		t.Fatalf("initial credit: %v", err)
 	}
 
-	_, err = svc.Credit(MutationRequest{
+	_, err = svc.Credit(context.Background(), MutationRequest{
 		UserID:         "u-2",
 		AmountCents:    700,
 		IdempotencyKey: "same-key",
@@ -95,7 +96,7 @@ func TestIdempotencyKeyConflictReturnsError(t *testing.T) {
 func TestDebitFailsWhenInsufficientFunds(t *testing.T) {
 	svc := NewService()
 
-	_, err := svc.Debit(MutationRequest{
+	_, err := svc.Debit(context.Background(), MutationRequest{
 		UserID:         "u-3",
 		AmountCents:    200,
 		IdempotencyKey: "debit-insufficient",
@@ -112,7 +113,7 @@ func TestWalletStatePersistsAcrossServiceInstances(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "wallet-state.json")
 
 	first := NewServiceWithPath(path)
-	_, err := first.Credit(MutationRequest{
+	_, err := first.Credit(context.Background(), MutationRequest{
 		UserID:         "u-4",
 		AmountCents:    250,
 		IdempotencyKey: "credit-1",
@@ -123,7 +124,7 @@ func TestWalletStatePersistsAcrossServiceInstances(t *testing.T) {
 	}
 
 	second := NewServiceWithPath(path)
-	if got := second.Balance("u-4"); got != 250 {
+	if got := second.Balance(context.Background(), "u-4"); got != 250 {
 		t.Fatalf("expected persisted balance 250, got %d", got)
 	}
 }
@@ -147,7 +148,7 @@ func TestReconciliationSummaryLocalStore(t *testing.T) {
 	base := time.Date(2026, 3, 2, 10, 0, 0, 0, time.UTC)
 	svc.now = func() time.Time { return base }
 
-	_, err := svc.Credit(MutationRequest{
+	_, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "u-recon-1",
 		AmountCents:    1200,
 		IdempotencyKey: "credit-1",
@@ -157,7 +158,7 @@ func TestReconciliationSummaryLocalStore(t *testing.T) {
 	}
 
 	svc.now = func() time.Time { return base.Add(5 * time.Minute) }
-	_, err = svc.Debit(MutationRequest{
+	_, err = svc.Debit(context.Background(), MutationRequest{
 		UserID:         "u-recon-1",
 		AmountCents:    300,
 		IdempotencyKey: "debit-1",
@@ -166,7 +167,7 @@ func TestReconciliationSummaryLocalStore(t *testing.T) {
 		t.Fatalf("debit: %v", err)
 	}
 
-	summary, err := svc.ReconciliationSummary(nil, nil)
+	summary, err := svc.ReconciliationSummary(context.Background(), nil, nil)
 	if err != nil {
 		t.Fatalf("reconciliation summary: %v", err)
 	}
@@ -183,7 +184,7 @@ func TestReconciliationSummaryLocalStore(t *testing.T) {
 
 func TestManualCorrectionTaskLifecycle(t *testing.T) {
 	svc := NewService()
-	_, err := svc.Credit(MutationRequest{
+	_, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "u-correction-1",
 		AmountCents:    1000,
 		IdempotencyKey: "seed-correction-1",
@@ -192,7 +193,7 @@ func TestManualCorrectionTaskLifecycle(t *testing.T) {
 		t.Fatalf("seed balance: %v", err)
 	}
 
-	task, err := svc.CreateManualCorrectionTask("u-correction-1", "manual review requested", "operator requested check", 250)
+	task, err := svc.CreateManualCorrectionTask(context.Background(), "u-correction-1", "manual review requested", "operator requested check", 250)
 	if err != nil {
 		t.Fatalf("create manual task: %v", err)
 	}

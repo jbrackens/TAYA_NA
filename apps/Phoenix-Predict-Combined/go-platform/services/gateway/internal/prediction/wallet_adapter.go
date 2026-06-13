@@ -12,16 +12,16 @@ import (
 type WalletAdapter interface {
 	// Debit removes funds from a user's wallet (e.g., when placing an order).
 	// Returns an error if the user has insufficient balance.
-	Debit(userID string, amountCents int64, idempotencyKey, reason string) error
+	Debit(ctx context.Context, userID string, amountCents int64, idempotencyKey, reason string) error
 
 	// Credit adds funds to a user's wallet (e.g., when a settlement pays out).
-	Credit(userID string, amountCents int64, idempotencyKey, reason string) error
+	Credit(ctx context.Context, userID string, amountCents int64, idempotencyKey, reason string) error
 
 	// Balance returns the user's current balance in cents. Implementations
 	// should return math.MaxInt64 to signal "unlimited" when they don't track
 	// balances (see NoopWallet), so service-layer balance checks short-circuit
 	// instead of incorrectly rejecting valid orders.
-	Balance(userID string) int64
+	Balance(ctx context.Context, userID string) int64
 }
 
 // TxWalletAdapter is an optional wallet capability for callers that need to
@@ -75,15 +75,15 @@ type ExchangeWalletAdapter interface {
 // checks in the service layer always pass.
 type NoopWallet struct{}
 
-func (NoopWallet) Debit(userID string, amountCents int64, idempotencyKey, reason string) error {
+func (NoopWallet) Debit(_ context.Context, userID string, amountCents int64, idempotencyKey, reason string) error {
 	return nil
 }
 
-func (NoopWallet) Credit(userID string, amountCents int64, idempotencyKey, reason string) error {
+func (NoopWallet) Credit(_ context.Context, userID string, amountCents int64, idempotencyKey, reason string) error {
 	return nil
 }
 
 // Balance returns math.MaxInt64 so that `balance < totalCost` is always false
 // and the service-layer pre-check lets the order through. The noop adapter
 // doesn't track real balances, so it cannot meaningfully reject anyone.
-func (NoopWallet) Balance(userID string) int64 { return math.MaxInt64 }
+func (NoopWallet) Balance(_ context.Context, userID string) int64 { return math.MaxInt64 }

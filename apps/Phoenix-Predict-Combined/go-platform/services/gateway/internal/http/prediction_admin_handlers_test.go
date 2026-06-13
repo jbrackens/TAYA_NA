@@ -323,9 +323,13 @@ func (r *predictionAdminRepo) DashboardVolumeStatsSince(context.Context, time.Ti
 
 type predictionAdminWallet struct{}
 
-func (predictionAdminWallet) Debit(string, int64, string, string) error  { return nil }
-func (predictionAdminWallet) Credit(string, int64, string, string) error { return nil }
-func (predictionAdminWallet) Balance(string) int64                       { return 1_000_000 }
+func (predictionAdminWallet) Debit(context.Context, string, int64, string, string) error {
+	return nil
+}
+func (predictionAdminWallet) Credit(context.Context, string, int64, string, string) error {
+	return nil
+}
+func (predictionAdminWallet) Balance(context.Context, string) int64 { return 1_000_000 }
 
 func TestPredictionAdminCreateMarketWorksWithNormalizedTrailingSlash(t *testing.T) {
 	repo := newPredictionAdminRepo()

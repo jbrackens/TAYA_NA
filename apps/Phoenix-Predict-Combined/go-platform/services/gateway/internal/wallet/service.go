@@ -292,23 +292,23 @@ func (s *Service) evictStaleIdempotencyKeys() {
 	}
 }
 
-func (s *Service) Credit(request MutationRequest) (LedgerEntry, error) {
+func (s *Service) Credit(ctx context.Context, request MutationRequest) (LedgerEntry, error) {
 	if s.db != nil {
-		return s.applyMutationDB("credit", request)
+		return s.applyMutationDB(ctx, "credit", request)
 	}
 	return s.applyMutationMemory("credit", request)
 }
 
-func (s *Service) Debit(request MutationRequest) (LedgerEntry, error) {
+func (s *Service) Debit(ctx context.Context, request MutationRequest) (LedgerEntry, error) {
 	if s.db != nil {
-		return s.applyMutationDB("debit", request)
+		return s.applyMutationDB(ctx, "debit", request)
 	}
 	return s.applyMutationMemory("debit", request)
 }
 
-func (s *Service) Balance(userID string) int64 {
+func (s *Service) Balance(ctx context.Context, userID string) int64 {
 	if s.db != nil {
-		ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+		ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 		defer cancel()
 		var balance int64
 		err := s.db.QueryRowContext(ctx, "SELECT balance_cents FROM wallet_balances WHERE user_id = $1", userID).Scan(&balance)
@@ -328,13 +328,13 @@ func (s *Service) Balance(userID string) int64 {
 
 // Balances returns the cash balance for each user ID in a single query, for
 // admin list views. Users with no wallet row default to 0.
-func (s *Service) Balances(userIDs []string) map[string]int64 {
+func (s *Service) Balances(ctx context.Context, userIDs []string) map[string]int64 {
 	out := make(map[string]int64, len(userIDs))
 	if len(userIDs) == 0 {
 		return out
 	}
 	if s.db != nil {
-		ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+		ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 		defer cancel()
 		rows, err := s.db.QueryContext(ctx,
 			"SELECT user_id, balance_cents FROM wallet_balances WHERE user_id = ANY($1)",
@@ -370,9 +370,9 @@ type BalanceBreakdown struct {
 	TotalCents     int64 `json:"totalCents"`
 }
 
-func (s *Service) BalanceWithBreakdown(userID string) BalanceBreakdown {
+func (s *Service) BalanceWithBreakdown(ctx context.Context, userID string) BalanceBreakdown {
 	if s.db != nil {
-		ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+		ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 		defer cancel()
 		var real, bonus int64
 		err := s.db.QueryRowContext(ctx,
@@ -395,20 +395,20 @@ func (s *Service) BalanceWithBreakdown(userID string) BalanceBreakdown {
 }
 
 // CreditBonus adds bonus funds to a user's bonus balance.
-func (s *Service) CreditBonus(request MutationRequest) (LedgerEntry, error) {
+func (s *Service) CreditBonus(ctx context.Context, request MutationRequest) (LedgerEntry, error) {
 	if s.db == nil {
 		// In memory mode, bonus funds go to regular balance
 		return s.applyMutationMemory("credit", request)
 	}
-	return s.applyBonusMutationDB("credit", request)
+	return s.applyBonusMutationDB(ctx, "credit", request)
 }
 
-func (s *Service) applyBonusMutationDB(kind string, request MutationRequest) (LedgerEntry, error) {
+func (s *Service) applyBonusMutationDB(ctx context.Context, kind string, request MutationRequest) (LedgerEntry, error) {
 	if request.UserID == "" || request.AmountCents <= 0 || request.IdempotencyKey == "" {
 		return LedgerEntry{}, ErrInvalidMutationRequest
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
@@ -509,13 +509,13 @@ func (s *Service) recordMetric(kind string, amountCents int64) {
 
 // AvailableBalance returns the balance minus all active (held) reservations.
 // This is the amount actually available for new bets/withdrawals.
-func (s *Service) AvailableBalance(userID string) int64 {
-	balance := s.Balance(userID)
+func (s *Service) AvailableBalance(ctx context.Context, userID string) int64 {
+	balance := s.Balance(ctx, userID)
 	if s.db == nil {
 		return balance // no reservations in memory mode
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	var heldTotal int64
@@ -537,7 +537,7 @@ WHERE user_id = $1 AND status = 'held' AND expires_at > NOW()`,
 // Hold creates a fund reservation that reduces available balance without
 // actually debiting. The hold can later be Captured (converting to a real
 // debit) or Released (restoring availability).
-func (s *Service) Hold(request HoldRequest) (Reservation, error) {
+func (s *Service) Hold(ctx context.Context, request HoldRequest) (Reservation, error) {
 	if request.UserID == "" || request.AmountCents <= 0 || request.ReferenceID == "" {
 		return Reservation{}, ErrInvalidMutationRequest
 	}
@@ -553,7 +553,7 @@ func (s *Service) Hold(request HoldRequest) (Reservation, error) {
 		return Reservation{}, fmt.Errorf("reservations require DB mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
@@ -642,12 +642,12 @@ RETURNING id`,
 // Capture converts a held reservation into an actual debit + ledger entry.
 // This is called when the operation the hold was created for succeeds
 // (e.g., bet is confirmed, withdrawal is approved).
-func (s *Service) Capture(referenceType, referenceID string) (LedgerEntry, error) {
+func (s *Service) Capture(ctx context.Context, referenceType, referenceID string) (LedgerEntry, error) {
 	if s.db == nil {
 		return LedgerEntry{}, fmt.Errorf("reservations require DB mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
@@ -717,12 +717,12 @@ UPDATE wallet_reservations SET status = 'captured', resolved_at = NOW() WHERE id
 // Release cancels a held reservation, making the funds available again.
 // This is called when the operation is cancelled (e.g., bet placement fails,
 // withdrawal is declined).
-func (s *Service) Release(referenceType, referenceID string) error {
+func (s *Service) Release(ctx context.Context, referenceType, referenceID string) error {
 	if s.db == nil {
 		return fmt.Errorf("reservations require DB mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	result, err := s.db.ExecContext(ctx, `
@@ -935,12 +935,12 @@ WHERE reference_type = $1 AND reference_id = $2 AND status = 'held'`,
 
 // ExpireStaleReservations marks overdue held reservations as expired.
 // Should be called periodically (e.g., every minute) as a background job.
-func (s *Service) ExpireStaleReservations() (int64, error) {
+func (s *Service) ExpireStaleReservations(ctx context.Context) (int64, error) {
 	if s.db == nil {
 		return 0, nil
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	result, err := s.db.ExecContext(ctx, `
@@ -953,9 +953,9 @@ WHERE status = 'held' AND expires_at < NOW()`)
 	return result.RowsAffected()
 }
 
-func (s *Service) Ledger(userID string, limit int) []LedgerEntry {
+func (s *Service) Ledger(ctx context.Context, userID string, limit int) []LedgerEntry {
 	if s.db != nil {
-		return s.ledgerFromDB(userID, limit)
+		return s.ledgerFromDB(ctx, userID, limit)
 	}
 
 	s.mu.RLock()
@@ -978,9 +978,9 @@ func (s *Service) Ledger(userID string, limit int) []LedgerEntry {
 	return out
 }
 
-func (s *Service) ReconciliationSummary(from *time.Time, to *time.Time) (ReconciliationSummary, error) {
+func (s *Service) ReconciliationSummary(ctx context.Context, from *time.Time, to *time.Time) (ReconciliationSummary, error) {
 	if s.db != nil {
-		return s.reconciliationSummaryFromDB(from, to)
+		return s.reconciliationSummaryFromDB(ctx, from, to)
 	}
 
 	s.mu.RLock()
@@ -1023,8 +1023,8 @@ func (s *Service) ReconciliationSummary(from *time.Time, to *time.Time) (Reconci
 	return summary, nil
 }
 
-func (s *Service) ScanCorrectionTasks() ([]CorrectionTask, error) {
-	issues, err := s.collectCorrectionIssues()
+func (s *Service) ScanCorrectionTasks(ctx context.Context) ([]CorrectionTask, error) {
+	issues, err := s.collectCorrectionIssues(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1076,7 +1076,7 @@ func (s *Service) ListCorrectionTasks(status string, userID string, limit int) [
 	return s.listCorrectionTasksLocked(status, userID, limit)
 }
 
-func (s *Service) CreateManualCorrectionTask(userID string, reason string, details string, suggestedAdjustmentCents int64) (CorrectionTask, error) {
+func (s *Service) CreateManualCorrectionTask(ctx context.Context, userID string, reason string, details string, suggestedAdjustmentCents int64) (CorrectionTask, error) {
 	trimmedUserID := strings.TrimSpace(userID)
 	trimmedReason := strings.TrimSpace(reason)
 	if trimmedUserID == "" || trimmedReason == "" {
@@ -1084,7 +1084,7 @@ func (s *Service) CreateManualCorrectionTask(userID string, reason string, detai
 	}
 
 	now := s.now().UTC().Format(time.RFC3339)
-	currentBalance := s.Balance(trimmedUserID)
+	currentBalance := s.Balance(ctx, trimmedUserID)
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -1207,12 +1207,12 @@ func (s *Service) applyMutationMemory(kind string, request MutationRequest) (Led
 	return entry, nil
 }
 
-func (s *Service) applyMutationDB(kind string, request MutationRequest) (LedgerEntry, error) {
+func (s *Service) applyMutationDB(ctx context.Context, kind string, request MutationRequest) (LedgerEntry, error) {
 	if request.UserID == "" || request.AmountCents <= 0 || request.IdempotencyKey == "" {
 		return LedgerEntry{}, ErrInvalidMutationRequest
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
@@ -1337,8 +1337,8 @@ RETURNING id, CAST(transaction_time AS TEXT)`,
 	}, nil
 }
 
-func (s *Service) ledgerFromDB(userID string, limit int) []LedgerEntry {
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+func (s *Service) ledgerFromDB(ctx context.Context, userID string, limit int) []LedgerEntry {
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	query := `
@@ -1383,8 +1383,8 @@ ORDER BY id DESC`
 	return descending
 }
 
-func (s *Service) reconciliationSummaryFromDB(from *time.Time, to *time.Time) (ReconciliationSummary, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+func (s *Service) reconciliationSummaryFromDB(ctx context.Context, from *time.Time, to *time.Time) (ReconciliationSummary, error) {
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	conditions := make([]string, 0, 2)
@@ -1493,9 +1493,9 @@ type correctionIssue struct {
 	AutomationSource         string
 }
 
-func (s *Service) collectCorrectionIssues() ([]correctionIssue, error) {
+func (s *Service) collectCorrectionIssues(ctx context.Context) ([]correctionIssue, error) {
 	if s.db != nil {
-		return s.collectCorrectionIssuesDB()
+		return s.collectCorrectionIssuesDB(ctx)
 	}
 	return s.collectCorrectionIssuesMemory(), nil
 }
@@ -1547,8 +1547,8 @@ func (s *Service) collectCorrectionIssuesMemory() []correctionIssue {
 	return out
 }
 
-func (s *Service) collectCorrectionIssuesDB() ([]correctionIssue, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+func (s *Service) collectCorrectionIssuesDB(ctx context.Context) ([]correctionIssue, error) {
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	rows, err := s.db.QueryContext(ctx, `

@@ -2,6 +2,7 @@ package http
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	stdhttp "net/http"
 	"net/http/httptest"
@@ -200,7 +201,7 @@ type alphaHTTPFakeLedger struct {
 	released []string
 }
 
-func (l *alphaHTTPFakeLedger) Credit(request wallet.MutationRequest) (wallet.LedgerEntry, error) {
+func (l *alphaHTTPFakeLedger) Credit(_ context.Context, request wallet.MutationRequest) (wallet.LedgerEntry, error) {
 	return wallet.LedgerEntry{
 		EntryID:      "entry-" + request.IdempotencyKey,
 		UserID:       request.UserID,
@@ -209,7 +210,7 @@ func (l *alphaHTTPFakeLedger) Credit(request wallet.MutationRequest) (wallet.Led
 	}, nil
 }
 
-func (l *alphaHTTPFakeLedger) Hold(request wallet.HoldRequest) (wallet.Reservation, error) {
+func (l *alphaHTTPFakeLedger) Hold(_ context.Context, request wallet.HoldRequest) (wallet.Reservation, error) {
 	return wallet.Reservation{
 		ID:            "rsv-" + request.ReferenceID,
 		UserID:        request.UserID,
@@ -220,12 +221,12 @@ func (l *alphaHTTPFakeLedger) Hold(request wallet.HoldRequest) (wallet.Reservati
 	}, nil
 }
 
-func (l *alphaHTTPFakeLedger) Release(referenceType, referenceID string) error {
+func (l *alphaHTTPFakeLedger) Release(_ context.Context, referenceType, referenceID string) error {
 	l.released = append(l.released, referenceType+":"+referenceID)
 	return nil
 }
 
-func (l *alphaHTTPFakeLedger) Capture(referenceType, referenceID string) (wallet.LedgerEntry, error) {
+func (l *alphaHTTPFakeLedger) Capture(_ context.Context, referenceType, referenceID string) (wallet.LedgerEntry, error) {
 	return wallet.LedgerEntry{
 		EntryID: "captured-" + referenceType + "-" + referenceID,
 	}, nil

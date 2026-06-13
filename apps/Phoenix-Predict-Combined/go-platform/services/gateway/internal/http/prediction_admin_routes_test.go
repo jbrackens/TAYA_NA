@@ -90,9 +90,9 @@ func (f *fakeAdminReader) GetPortfolioSummary(_ context.Context, _ string) (*pre
 	return &prediction.PortfolioSummary{}, nil
 }
 
-func (f *fakeAdminReader) Balance(_ string) int64 { return f.walletBalance }
+func (f *fakeAdminReader) Balance(_ context.Context, _ string) int64 { return f.walletBalance }
 
-func (f *fakeAdminReader) Balances(_ []string) map[string]int64 {
+func (f *fakeAdminReader) Balances(_ context.Context, _ []string) map[string]int64 {
 	if f.balancesByID != nil {
 		return f.balancesByID
 	}
@@ -110,7 +110,7 @@ func (f *fakeAdminReader) ListSettledPositions(_ context.Context, _ string, _, _
 	return f.settled, len(f.settled), nil
 }
 
-func (f *fakeAdminReader) Ledger(_ string, _ int) []wallet.LedgerEntry { return f.ledger }
+func (f *fakeAdminReader) Ledger(_ context.Context, _ string, _ int) []wallet.LedgerEntry { return f.ledger }
 
 func adminTestHandler(repo *fakeAdminReader) http.Handler {
 	mux := http.NewServeMux()

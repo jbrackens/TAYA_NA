@@ -15,20 +15,20 @@ var (
 
 // DebitBonus deducts from the user's bonus balance. Symmetric to CreditBonus.
 // Used by: bonus forfeiture, bonus expiry, bet placement (when drawdown uses bonus).
-func (s *Service) DebitBonus(request MutationRequest) (LedgerEntry, error) {
+func (s *Service) DebitBonus(ctx context.Context, request MutationRequest) (LedgerEntry, error) {
 	if s.db == nil {
 		// In memory mode, bonus funds live in regular balance
 		return s.applyMutationMemory("debit", request)
 	}
-	return s.applyBonusDebitDB(request)
+	return s.applyBonusDebitDB(ctx, request)
 }
 
-func (s *Service) applyBonusDebitDB(request MutationRequest) (LedgerEntry, error) {
+func (s *Service) applyBonusDebitDB(ctx context.Context, request MutationRequest) (LedgerEntry, error) {
 	if request.UserID == "" || request.AmountCents <= 0 || request.IdempotencyKey == "" {
 		return LedgerEntry{}, ErrInvalidMutationRequest
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
@@ -119,7 +119,7 @@ type DrawdownResult struct {
 // DrawdownDebit debits the requested amount from the correct balance(s)
 // based on drawdown order rules. Real-first is the default and recommended
 // for regulatory compliance.
-func (s *Service) DrawdownDebit(request DrawdownRequest) (DrawdownResult, error) {
+func (s *Service) DrawdownDebit(ctx context.Context, request DrawdownRequest) (DrawdownResult, error) {
 	if request.UserID == "" || request.AmountCents <= 0 || request.IdempotencyKey == "" {
 		return DrawdownResult{}, ErrInvalidMutationRequest
 	}
@@ -146,7 +146,7 @@ func (s *Service) DrawdownDebit(request DrawdownRequest) (DrawdownResult, error)
 		}, nil
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
@@ -288,7 +288,7 @@ RETURNING id, CAST(transaction_time AS TEXT)`,
 
 // ConvertBonusToReal atomically moves funds from bonus balance to real balance.
 // Called when wagering requirements are met.
-func (s *Service) ConvertBonusToReal(userID string, amountCents int64, idempotencyKey string) (LedgerEntry, error) {
+func (s *Service) ConvertBonusToReal(ctx context.Context, userID string, amountCents int64, idempotencyKey string) (LedgerEntry, error) {
 	if s.db == nil {
 		// Memory mode: bonus and real are the same pool — no-op
 		return LedgerEntry{}, nil
@@ -297,7 +297,7 @@ func (s *Service) ConvertBonusToReal(userID string, amountCents int64, idempoten
 		return LedgerEntry{}, ErrInvalidMutationRequest
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
@@ -385,7 +385,7 @@ RETURNING id, CAST(transaction_time AS TEXT)`,
 // ForfeitBonus zeroes the bonus-attributable amount for a user. Called on
 // bonus expiry or admin forfeiture. The amount forfeited is capped at the
 // current bonus balance to handle partial consumption.
-func (s *Service) ForfeitBonus(userID string, amountCents int64, reason string, idempotencyKey string) (LedgerEntry, error) {
+func (s *Service) ForfeitBonus(ctx context.Context, userID string, amountCents int64, reason string, idempotencyKey string) (LedgerEntry, error) {
 	if s.db == nil {
 		return LedgerEntry{}, nil
 	}
@@ -394,7 +394,7 @@ func (s *Service) ForfeitBonus(userID string, amountCents int64, reason string, 
 	}
 
 	// Cap at actual bonus balance
-	breakdown := s.BalanceWithBreakdown(userID)
+	breakdown := s.BalanceWithBreakdown(ctx, userID)
 	forfeitAmount := amountCents
 	if forfeitAmount > breakdown.BonusFundCents {
 		forfeitAmount = breakdown.BonusFundCents
@@ -403,7 +403,7 @@ func (s *Service) ForfeitBonus(userID string, amountCents int64, reason string, 
 		return LedgerEntry{}, nil
 	}
 
-	return s.DebitBonus(MutationRequest{
+	return s.DebitBonus(ctx, MutationRequest{
 		UserID:         userID,
 		AmountCents:    forfeitAmount,
 		IdempotencyKey: idempotencyKey,

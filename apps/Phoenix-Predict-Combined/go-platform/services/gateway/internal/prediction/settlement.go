@@ -638,7 +638,7 @@ func (s *SettlementEngine) resolveMarket(ctx context.Context, req ResolveMarketR
 		}
 	}
 	for _, credit := range credits {
-		if err := s.wallet.Credit(credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
+		if err := s.wallet.Credit(ctx, credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
 			return nil, nil, fmt.Errorf("wallet credit failed for user %s: %w", credit.UserID, err)
 		}
 	}
@@ -898,7 +898,7 @@ func (s *SettlementEngine) VoidMarket(ctx context.Context, marketID string, reas
 		return nil, fmt.Errorf("update market: %w", err)
 	}
 	for _, credit := range credits {
-		if err := s.wallet.Credit(credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
+		if err := s.wallet.Credit(ctx, credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
 			return nil, fmt.Errorf("wallet refund failed for user %s: %w", credit.UserID, err)
 		}
 	}

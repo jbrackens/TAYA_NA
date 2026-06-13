@@ -182,7 +182,7 @@ type fakeLedger struct {
 	captured []string
 }
 
-func (l *fakeLedger) Credit(req wallet.MutationRequest) (wallet.LedgerEntry, error) {
+func (l *fakeLedger) Credit(_ context.Context, req wallet.MutationRequest) (wallet.LedgerEntry, error) {
 	l.calls++
 	return wallet.LedgerEntry{
 		EntryID:        "le:test",
@@ -192,7 +192,7 @@ func (l *fakeLedger) Credit(req wallet.MutationRequest) (wallet.LedgerEntry, err
 	}, nil
 }
 
-func (l *fakeLedger) Hold(req wallet.HoldRequest) (wallet.Reservation, error) {
+func (l *fakeLedger) Hold(_ context.Context, req wallet.HoldRequest) (wallet.Reservation, error) {
 	if l.holds == nil {
 		l.holds = map[string]wallet.Reservation{}
 	}
@@ -208,12 +208,12 @@ func (l *fakeLedger) Hold(req wallet.HoldRequest) (wallet.Reservation, error) {
 	return reservation, nil
 }
 
-func (l *fakeLedger) Release(referenceType, referenceID string) error {
+func (l *fakeLedger) Release(_ context.Context, referenceType, referenceID string) error {
 	l.released = append(l.released, referenceType+":"+referenceID)
 	return nil
 }
 
-func (l *fakeLedger) Capture(referenceType, referenceID string) (wallet.LedgerEntry, error) {
+func (l *fakeLedger) Capture(_ context.Context, referenceType, referenceID string) (wallet.LedgerEntry, error) {
 	l.captured = append(l.captured, referenceType+":"+referenceID)
 	return wallet.LedgerEntry{
 		EntryID:     "le:capture:" + referenceID,

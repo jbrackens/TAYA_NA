@@ -138,7 +138,7 @@ WHERE txn_id = $1`, txnID, err.Error())
 
 func (s *DBPaymentService) processDepositApproval(ctx context.Context, txnID, userID string, amountCents int64, paymentMethod string) (*DepositResult, error) {
 	// Credit wallet with idempotency
-	entry, err := s.walletService.Credit(wallet.MutationRequest{
+	entry, err := s.walletService.Credit(ctx, wallet.MutationRequest{
 		UserID:         userID,
 		AmountCents:    amountCents,
 		IdempotencyKey: "payment:" + txnID,
@@ -190,7 +190,7 @@ func (s *DBPaymentService) InitiateWithdrawal(ctx context.Context, userID string
 	txnID := fmt.Sprintf("wdr:db:%d", now.UnixNano())
 
 	// Use wallet reservation to hold funds (instead of direct debit)
-	reservation, err := s.walletService.Hold(wallet.HoldRequest{
+	reservation, err := s.walletService.Hold(ctx, wallet.HoldRequest{
 		UserID:        userID,
 		AmountCents:   amountCents,
 		ReferenceType: "withdrawal",
@@ -210,7 +210,7 @@ VALUES ($1, $2, 'withdrawal', $3, $4, 'pending', $5)`,
 		txnID, userID, amountCents, paymentMethod, reservation.ID)
 	if err != nil {
 		// Release the hold if we can't record the transaction
-		_ = s.walletService.Release(reservation.ReferenceType, reservation.ReferenceID)
+		_ = s.walletService.Release(ctx, reservation.ReferenceType, reservation.ReferenceID)
 		return nil, fmt.Errorf("create withdrawal record: %w", err)
 	}
 
@@ -308,7 +308,7 @@ WHERE user_id = $1 AND txn_type = 'withdrawal' AND status NOT IN ('failed','canc
 	// Hold funds, then record the pending withdrawal on the tx so the row
 	// is covered by the advisory lock and visible to the next serialized
 	// caller once committed.
-	reservation, err := s.walletService.Hold(wallet.HoldRequest{
+	reservation, err := s.walletService.Hold(ctx, wallet.HoldRequest{
 		UserID:        userID,
 		AmountCents:   amountCents,
 		ReferenceType: "withdrawal",
@@ -326,12 +326,12 @@ WHERE user_id = $1 AND txn_type = 'withdrawal' AND status NOT IN ('failed','canc
 INSERT INTO payment_transactions (txn_id, user_id, txn_type, amount_cents, payment_method, status, idempotency_key)
 VALUES ($1, $2, 'withdrawal', $3, $4, 'pending', $5)`,
 		txnID, userID, amountCents, paymentMethod, reservation.ID); err != nil {
-		_ = s.walletService.Release(reservation.ReferenceType, reservation.ReferenceID)
+		_ = s.walletService.Release(ctx, reservation.ReferenceType, reservation.ReferenceID)
 		return nil, fmt.Errorf("create withdrawal record: %w", err)
 	}
 
 	if err = tx.Commit(); err != nil {
-		_ = s.walletService.Release(reservation.ReferenceType, reservation.ReferenceID)
+		_ = s.walletService.Release(ctx, reservation.ReferenceType, reservation.ReferenceID)
 		return nil, fmt.Errorf("commit gated withdrawal: %w", err)
 	}
 	committed = true
@@ -452,7 +452,7 @@ WHERE txn_id = $1 FOR UPDATE`, payload.TransactionID).Scan(
 		}
 		if txnType == "withdrawal" && currentStatus == "pending" {
 			// Capture the held funds
-			_, captureErr := s.walletService.Capture("withdrawal", payload.TransactionID)
+			_, captureErr := s.walletService.Capture(ctx, "withdrawal", payload.TransactionID)
 			if captureErr != nil {
 				slog.Error("withdrawal capture failed", "txn_id", payload.TransactionID, "error", captureErr)
 				return fmt.Errorf("capture withdrawal hold: %w", captureErr)
@@ -471,7 +471,7 @@ WHERE txn_id = $1`, payload.TransactionID); err != nil {
 		}
 		if txnType == "withdrawal" && currentStatus == "pending" {
 			// Release the hold
-			if err := s.walletService.Release("withdrawal", payload.TransactionID); err != nil {
+			if err := s.walletService.Release(ctx, "withdrawal", payload.TransactionID); err != nil {
 				return fmt.Errorf("release withdrawal hold: %w", err)
 			}
 		}

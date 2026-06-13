@@ -508,7 +508,7 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 					notifier.NotifyPredictionTrade(req.MarketID, buildTradeFillPayload(trade))
 				}
 				notifier.NotifyPortfolioUpdate(userID, buildPortfolioUpdatePayload(order, trade))
-				if balance := svc.WalletBalance(userID); balance >= 0 {
+				if balance := svc.WalletBalance(r.Context(), userID); balance >= 0 {
 					notifier.NotifyWalletUpdate(userID, map[string]any{
 						"userId":       userID,
 						"balanceCents": balance,

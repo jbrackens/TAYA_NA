@@ -189,7 +189,7 @@ func registerAdminWalletMutationRoutes(mux *stdhttp.ServeMux, basePath string, w
 		if err != nil {
 			return err
 		}
-		entry, err := walletService.Credit(wallet.MutationRequest{
+		entry, err := walletService.Credit(r.Context(), wallet.MutationRequest{
 			UserID:         request.UserID,
 			AmountCents:    request.AmountCents,
 			IdempotencyKey: request.IdempotencyKey,
@@ -222,7 +222,7 @@ func registerAdminWalletMutationRoutes(mux *stdhttp.ServeMux, basePath string, w
 		if err != nil {
 			return err
 		}
-		entry, err := walletService.Debit(wallet.MutationRequest{
+		entry, err := walletService.Debit(r.Context(), wallet.MutationRequest{
 			UserID:         request.UserID,
 			AmountCents:    request.AmountCents,
 			IdempotencyKey: request.IdempotencyKey,

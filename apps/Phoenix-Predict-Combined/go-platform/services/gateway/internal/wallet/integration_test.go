@@ -1,6 +1,7 @@
 package wallet
 
 import (
+	"context"
 	"sync"
 	"testing"
 	"time"
@@ -12,7 +13,7 @@ func TestCreditDebitIdempotency(t *testing.T) {
 	svc := NewService()
 
 	// Seed balance
-	entry1, err := svc.Credit(MutationRequest{
+	entry1, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "user-1",
 		AmountCents:    10000,
 		IdempotencyKey: "seed-1",
@@ -26,7 +27,7 @@ func TestCreditDebitIdempotency(t *testing.T) {
 	}
 
 	// Replay same credit — should return same entry
-	entry2, err := svc.Credit(MutationRequest{
+	entry2, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "user-1",
 		AmountCents:    10000,
 		IdempotencyKey: "seed-1",
@@ -40,8 +41,8 @@ func TestCreditDebitIdempotency(t *testing.T) {
 	}
 
 	// Balance should still be 10000 (not 20000)
-	if svc.Balance("user-1") != 10000 {
-		t.Errorf("balance should be 10000 after idempotent replay, got %d", svc.Balance("user-1"))
+	if svc.Balance(context.Background(), "user-1") != 10000 {
+		t.Errorf("balance should be 10000 after idempotent replay, got %d", svc.Balance(context.Background(), "user-1"))
 	}
 }
 
@@ -50,7 +51,7 @@ func TestDebitInsufficientFunds(t *testing.T) {
 	svc := NewService()
 
 	// Seed 5000
-	_, err := svc.Credit(MutationRequest{
+	_, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "user-2",
 		AmountCents:    5000,
 		IdempotencyKey: "seed-2",
@@ -61,7 +62,7 @@ func TestDebitInsufficientFunds(t *testing.T) {
 	}
 
 	// Debit 6000 — should fail
-	_, err = svc.Debit(MutationRequest{
+	_, err = svc.Debit(context.Background(), MutationRequest{
 		UserID:         "user-2",
 		AmountCents:    6000,
 		IdempotencyKey: "over-debit",
@@ -72,8 +73,8 @@ func TestDebitInsufficientFunds(t *testing.T) {
 	}
 
 	// Balance unchanged
-	if svc.Balance("user-2") != 5000 {
-		t.Errorf("balance should be 5000 after failed debit, got %d", svc.Balance("user-2"))
+	if svc.Balance(context.Background(), "user-2") != 5000 {
+		t.Errorf("balance should be 5000 after failed debit, got %d", svc.Balance(context.Background(), "user-2"))
 	}
 }
 
@@ -84,7 +85,7 @@ func TestConcurrentDebitsOnSameBalance(t *testing.T) {
 	svc := NewService()
 
 	// Seed 10000
-	_, err := svc.Credit(MutationRequest{
+	_, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "user-concurrent",
 		AmountCents:    10000,
 		IdempotencyKey: "seed-concurrent",
@@ -103,7 +104,7 @@ func TestConcurrentDebitsOnSameBalance(t *testing.T) {
 		wg.Add(1)
 		go func(idx int) {
 			defer wg.Done()
-			_, err := svc.Debit(MutationRequest{
+			_, err := svc.Debit(context.Background(), MutationRequest{
 				UserID:         "user-concurrent",
 				AmountCents:    10000,
 				IdempotencyKey: time.Now().String() + string(rune(idx+'A')),
@@ -127,7 +128,7 @@ func TestConcurrentDebitsOnSameBalance(t *testing.T) {
 		t.Errorf("expected exactly 1 successful debit, got %d", successCount)
 	}
 
-	finalBalance := svc.Balance("user-concurrent")
+	finalBalance := svc.Balance(context.Background(), "user-concurrent")
 	if finalBalance != 0 {
 		t.Errorf("expected final balance 0, got %d", finalBalance)
 	}
@@ -138,7 +139,7 @@ func TestConcurrentDebitsOnSameBalance(t *testing.T) {
 func TestIdempotencyConflictDetection(t *testing.T) {
 	svc := NewService()
 
-	_, err := svc.Credit(MutationRequest{
+	_, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "user-conflict",
 		AmountCents:    5000,
 		IdempotencyKey: "deposit-1",
@@ -149,7 +150,7 @@ func TestIdempotencyConflictDetection(t *testing.T) {
 	}
 
 	// Replay with different amount — should be rejected
-	_, err = svc.Credit(MutationRequest{
+	_, err = svc.Credit(context.Background(), MutationRequest{
 		UserID:         "user-conflict",
 		AmountCents:    7000, // different amount!
 		IdempotencyKey: "deposit-1",
@@ -164,11 +165,11 @@ func TestIdempotencyConflictDetection(t *testing.T) {
 func TestReconciliationSummary(t *testing.T) {
 	svc := NewService()
 
-	_, _ = svc.Credit(MutationRequest{UserID: "u-a", AmountCents: 10000, IdempotencyKey: "c1", Reason: "deposit"})
-	_, _ = svc.Credit(MutationRequest{UserID: "u-b", AmountCents: 5000, IdempotencyKey: "c2", Reason: "deposit"})
-	_, _ = svc.Debit(MutationRequest{UserID: "u-a", AmountCents: 3000, IdempotencyKey: "d1", Reason: "bet"})
+	_, _ = svc.Credit(context.Background(), MutationRequest{UserID: "u-a", AmountCents: 10000, IdempotencyKey: "c1", Reason: "deposit"})
+	_, _ = svc.Credit(context.Background(), MutationRequest{UserID: "u-b", AmountCents: 5000, IdempotencyKey: "c2", Reason: "deposit"})
+	_, _ = svc.Debit(context.Background(), MutationRequest{UserID: "u-a", AmountCents: 3000, IdempotencyKey: "d1", Reason: "bet"})
 
-	summary, err := svc.ReconciliationSummary(nil, nil)
+	summary, err := svc.ReconciliationSummary(context.Background(), nil, nil)
 	if err != nil {
 		t.Fatalf("reconciliation failed: %v", err)
 	}
@@ -200,7 +201,7 @@ func TestCorrectionTaskScanDetectsNegativeBalance(t *testing.T) {
 	svc.balances["user-negative"] = -500
 	svc.mu.Unlock()
 
-	tasks, err := svc.ScanCorrectionTasks()
+	tasks, err := svc.ScanCorrectionTasks(context.Background())
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}

@@ -21,13 +21,13 @@ import (
 // share the transaction.
 type txWalletStub struct{ db *sql.DB }
 
-func (w *txWalletStub) Debit(userID string, amountCents int64, idempotencyKey, reason string) error {
+func (w *txWalletStub) Debit(_ context.Context, userID string, amountCents int64, idempotencyKey, reason string) error {
 	return nil
 }
-func (w *txWalletStub) Credit(userID string, amountCents int64, idempotencyKey, reason string) error {
+func (w *txWalletStub) Credit(_ context.Context, userID string, amountCents int64, idempotencyKey, reason string) error {
 	return nil
 }
-func (w *txWalletStub) Balance(userID string) int64 { return 0 }
+func (w *txWalletStub) Balance(_ context.Context, userID string) int64 { return 0 }
 func (w *txWalletStub) BeginTx(ctx context.Context) (*sql.Tx, error) {
 	return w.db.BeginTx(ctx, nil)
 }

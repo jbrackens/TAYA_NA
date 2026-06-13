@@ -40,7 +40,7 @@ func registerReportsRoutes(mux *stdhttp.ServeMux, walletSvc *wallet.Service) {
 			if walletSvc == nil {
 				return map[string]any{"netMovementCents": 0, "entryCount": 0, "distinctUserCount": 0}, nil
 			}
-			summary, err := walletSvc.ReconciliationSummary(nil, nil)
+			summary, err := walletSvc.ReconciliationSummary(r.Context(), nil, nil)
 			if err != nil {
 				return nil, err
 			}

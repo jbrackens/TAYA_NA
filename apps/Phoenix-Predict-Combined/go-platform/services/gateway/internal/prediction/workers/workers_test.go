@@ -131,14 +131,14 @@ type fakeWallet struct {
 
 func newFakeWallet() *fakeWallet { return &fakeWallet{credits: map[string]int64{}} }
 
-func (w *fakeWallet) Debit(string, int64, string, string) error { return nil }
-func (w *fakeWallet) Credit(userID string, cents int64, _ string, _ string) error {
+func (w *fakeWallet) Debit(context.Context, string, int64, string, string) error { return nil }
+func (w *fakeWallet) Credit(_ context.Context, userID string, cents int64, _ string, _ string) error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	w.credits[userID] += cents
 	return nil
 }
-func (w *fakeWallet) Balance(string) int64 { return 0 }
+func (w *fakeWallet) Balance(context.Context, string) int64 { return 0 }
 
 // fakeAdapter is a feed adapter that returns a configured result. Name() is
 // the source key markets reference.

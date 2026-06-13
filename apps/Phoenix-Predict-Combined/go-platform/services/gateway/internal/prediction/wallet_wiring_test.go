@@ -27,7 +27,7 @@ func newFakeWallet(initialBalance int64) *fakeWallet {
 	return &fakeWallet{balances: map[string]int64{"user1": initialBalance}}
 }
 
-func (f *fakeWallet) Debit(userID string, amountCents int64, idempotencyKey, reason string) error {
+func (f *fakeWallet) Debit(_ context.Context, userID string, amountCents int64, idempotencyKey, reason string) error {
 	if f.debitErr != nil {
 		return f.debitErr
 	}
@@ -39,13 +39,13 @@ func (f *fakeWallet) Debit(userID string, amountCents int64, idempotencyKey, rea
 	return nil
 }
 
-func (f *fakeWallet) Credit(userID string, amountCents int64, idempotencyKey, reason string) error {
+func (f *fakeWallet) Credit(_ context.Context, userID string, amountCents int64, idempotencyKey, reason string) error {
 	f.balances[userID] += amountCents
 	f.creditCalls = append(f.creditCalls, walletCall{userID, amountCents, idempotencyKey, reason})
 	return nil
 }
 
-func (f *fakeWallet) Balance(userID string) int64 { return f.balances[userID] }
+func (f *fakeWallet) Balance(_ context.Context, userID string) int64 { return f.balances[userID] }
 
 // memRepo is a minimal in-memory Repository for wiring tests. It only supports
 // the subset of methods exercised by the tests below.
@@ -210,7 +210,7 @@ func (r *atomicMemRepo) PersistFilledOrderAtomic(
 	if r.atomicErr != nil {
 		return r.atomicErr
 	}
-	if err := wallet.Debit(userID, totalCost, debitKey, debitReason); err != nil {
+	if err := wallet.Debit(context.Background(), userID, totalCost, debitKey, debitReason); err != nil {
 		return err
 	}
 	return r.memRepo.PersistFilledOrder(ctx, order, trade, position, market)
@@ -254,7 +254,7 @@ func (r *atomicMemRepo) PersistResolvedMarketAtomic(
 		}
 	}
 	for _, credit := range credits {
-		if err := wallet.Credit(credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
+		if err := wallet.Credit(context.Background(), credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
 			return nil, err
 		}
 	}
@@ -296,7 +296,7 @@ func (r *atomicMemRepo) PersistVoidedMarketAtomic(
 		return err
 	}
 	for _, credit := range credits {
-		if err := wallet.Credit(credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
+		if err := wallet.Credit(context.Background(), credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
 			return err
 		}
 	}
@@ -503,10 +503,10 @@ type fakeTxWallet struct {
 
 func (f *fakeTxWallet) BeginTx(context.Context) (*sql.Tx, error) { return nil, nil }
 func (f *fakeTxWallet) DebitWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, idempotencyKey, reason string) error {
-	return f.Debit(userID, amountCents, idempotencyKey, reason)
+	return f.Debit(ctx, userID, amountCents, idempotencyKey, reason)
 }
 func (f *fakeTxWallet) CreditWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, idempotencyKey, reason string) error {
-	return f.Credit(userID, amountCents, idempotencyKey, reason)
+	return f.Credit(ctx, userID, amountCents, idempotencyKey, reason)
 }
 
 // TestPlaceOrder_ZeroBalance_Rejected guards against a regression where the

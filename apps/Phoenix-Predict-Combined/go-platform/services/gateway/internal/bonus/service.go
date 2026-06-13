@@ -213,7 +213,7 @@ func (s *Service) ClaimBonus(ctx context.Context, req ClaimBonusRequest) (Player
 
 	// Credit bonus funds to wallet
 	idempKey := fmt.Sprintf("bonus-grant:%d", created.ID)
-	_, err = s.walletSvc.CreditBonus(wallet.MutationRequest{
+	_, err = s.walletSvc.CreditBonus(ctx, wallet.MutationRequest{
 		UserID:         req.UserID,
 		AmountCents:    bonusAmount,
 		IdempotencyKey: idempKey,
@@ -323,7 +323,7 @@ func (s *Service) GrantBonus(ctx context.Context, req GrantBonusRequest) (Player
 	}
 
 	idempKey := fmt.Sprintf("admin-bonus-grant:%d", created.ID)
-	_, err = s.walletSvc.CreditBonus(wallet.MutationRequest{
+	_, err = s.walletSvc.CreditBonus(ctx, wallet.MutationRequest{
 		UserID:         req.UserID,
 		AmountCents:    bonusAmount,
 		IdempotencyKey: idempKey,
@@ -358,7 +358,7 @@ func (s *Service) ForfeitPlayerBonus(ctx context.Context, bonusID int64, req For
 
 	// Forfeit wallet bonus funds
 	idempKey := fmt.Sprintf("bonus-forfeit:%d", bonusID)
-	_, err = s.walletSvc.ForfeitBonus(pb.UserID, pb.RemainingAmountCents,
+	_, err = s.walletSvc.ForfeitBonus(ctx, pb.UserID, pb.RemainingAmountCents,
 		fmt.Sprintf("forfeited: %s", req.Reason), idempKey)
 	if err != nil {
 		slog.Error("wallet forfeit failed", "bonusId", bonusID, "error", err)
@@ -404,7 +404,7 @@ func (s *Service) ExpireActiveBonuses(ctx context.Context) (int64, error) {
 	var count int64
 	for _, pb := range expired {
 		idempKey := fmt.Sprintf("bonus-expire:%d", pb.ID)
-		_, err := s.walletSvc.ForfeitBonus(pb.UserID, pb.RemainingAmountCents,
+		_, err := s.walletSvc.ForfeitBonus(ctx, pb.UserID, pb.RemainingAmountCents,
 			"bonus expired", idempKey)
 		if err != nil {
 			slog.Error("wallet forfeit on expiry failed",

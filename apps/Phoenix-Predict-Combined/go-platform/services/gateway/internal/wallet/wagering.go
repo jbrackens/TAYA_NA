@@ -34,7 +34,7 @@ type WageringResult struct {
 // player bonus. If the contribution pushes wagering past the required
 // threshold, the bonus is automatically completed and remaining bonus funds
 // are converted to real money.
-func (s *Service) RecordWageringContribution(record WageringContributionRecord) (WageringResult, error) {
+func (s *Service) RecordWageringContribution(ctx context.Context, record WageringContributionRecord) (WageringResult, error) {
 	if s.db == nil {
 		return WageringResult{}, nil
 	}
@@ -48,7 +48,7 @@ func (s *Service) RecordWageringContribution(record WageringContributionRecord) 
 		record.LegCount = 1
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
@@ -135,7 +135,7 @@ WHERE id = $1`,
 
 		// Convert bonus to real money (outside the inner TX since ConvertBonusToReal starts its own)
 		idempKey := fmt.Sprintf("wagering-complete:%d", record.PlayerBonusID)
-		creditEntry, err := s.ConvertBonusToReal(userID, remainingAmount, idempKey)
+		creditEntry, err := s.ConvertBonusToReal(ctx, userID, remainingAmount, idempKey)
 		if err != nil {
 			slog.Error("bonus conversion failed after wagering completion",
 				"playerBonusId", record.PlayerBonusID,

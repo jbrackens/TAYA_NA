@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"phoenix-revival/gateway/internal/wallet"
@@ -41,7 +42,7 @@ var demoTopupTargets = []topupTarget{
 
 func runWalletTopUp(walletSvc *wallet.Service) error {
 	for _, t := range demoTopupTargets {
-		current := walletSvc.Balance(t.UserID)
+		current := walletSvc.Balance(context.Background(), t.UserID)
 		if current >= t.Cents {
 			continue
 		}
@@ -54,7 +55,7 @@ func runWalletTopUp(walletSvc *wallet.Service) error {
 		// is true for re-running -mode demo against an unchanged
 		// snapshot but never after any demo activity ran.
 		idemKey := fmt.Sprintf("demo:topup:%s:from%d:to%d", t.UserID, current, t.Cents)
-		_, err := walletSvc.Credit(wallet.MutationRequest{
+		_, err := walletSvc.Credit(context.Background(), wallet.MutationRequest{
 			UserID:         t.UserID,
 			AmountCents:    delta,
 			IdempotencyKey: idemKey,

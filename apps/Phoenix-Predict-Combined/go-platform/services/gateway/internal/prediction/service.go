@@ -365,11 +365,11 @@ func (s *Service) DashboardVolumeStats(ctx context.Context, since time.Time, top
 // or -1 if the wallet adapter is unavailable / errors. Used by the HTTP
 // layer to populate wallet:<uid> WS broadcasts after order fills without
 // having to import the wallet package directly.
-func (s *Service) WalletBalance(userID string) int64 {
+func (s *Service) WalletBalance(ctx context.Context, userID string) int64 {
 	if s == nil || s.wallet == nil {
 		return -1
 	}
-	return s.wallet.Balance(userID)
+	return s.wallet.Balance(ctx, userID)
 }
 
 // GetOrderBook returns the L2 order book for a market. Requires the

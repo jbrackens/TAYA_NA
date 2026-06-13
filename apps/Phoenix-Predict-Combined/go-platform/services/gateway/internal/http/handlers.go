@@ -43,7 +43,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		ticker := time.NewTicker(60 * time.Second)
 		defer ticker.Stop()
 		for range ticker.C {
-			expired, err := walletService.ExpireStaleReservations()
+			expired, err := walletService.ExpireStaleReservations(context.Background())
 			if err != nil {
 				slog.Warn("reservation expiry failed", "error", err)
 			} else if expired > 0 {
