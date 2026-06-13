@@ -110,7 +110,7 @@ func (r *memRepo) GetPosition(ctx context.Context, userID, marketID string, side
 	if p, ok := r.positions[key]; ok {
 		return clonePosition(p), nil
 	}
-	return nil, fmt.Errorf("not found")
+	return nil, ErrPositionNotFound
 }
 func (r *memRepo) UpsertPosition(ctx context.Context, p *Position) error {
 	if r.upsertPositionErr != nil {
@@ -220,6 +220,7 @@ func (r *atomicMemRepo) PersistResolvedMarketAtomic(
 	ctx context.Context,
 	wallet WalletAdapter,
 	market *Market,
+	prevStatus MarketStatus,
 	settlement *Settlement,
 	payouts []Payout,
 	credits []WalletCreditRequest,
@@ -230,6 +231,11 @@ func (r *atomicMemRepo) PersistResolvedMarketAtomic(
 	r.atomicSettlementCalls++
 	if r.atomicErr != nil {
 		return nil, r.atomicErr
+	}
+	// Mirror the SQL persister's status guard (COR-01): the stored market
+	// must still be in the status the engine validated.
+	if stored, err := r.memRepo.GetMarket(ctx, market.ID); err == nil && stored.Status != prevStatus {
+		return nil, ErrStaleMarketStatus
 	}
 	if err := r.memRepo.CreateSettlement(ctx, settlement); err != nil {
 		return nil, err
@@ -273,6 +279,7 @@ func (r *atomicMemRepo) PersistVoidedMarketAtomic(
 	ctx context.Context,
 	wallet WalletAdapter,
 	market *Market,
+	prevStatus MarketStatus,
 	payouts []Payout,
 	credits []WalletCreditRequest,
 	lifecycle *LifecycleEvent,
@@ -280,6 +287,10 @@ func (r *atomicMemRepo) PersistVoidedMarketAtomic(
 	r.atomicVoidCalls++
 	if r.atomicErr != nil {
 		return r.atomicErr
+	}
+	// Mirror the SQL persister's status guard (COR-01).
+	if stored, err := r.memRepo.GetMarket(ctx, market.ID); err == nil && stored.Status != prevStatus {
+		return ErrStaleMarketStatus
 	}
 	if err := r.memRepo.UpdateMarket(ctx, market); err != nil {
 		return err
@@ -486,52 +497,6 @@ func seedMarket(t *testing.T, repo *memRepo) *Market {
 	return m
 }
 
-func TestPlaceOrder_DebitsWallet(t *testing.T) {
-	repo := newMemRepo()
-	seedMarket(t, repo)
-	wallet := newFakeWallet(10000) // $100.00
-	svc := NewService(repo, wallet)
-
-	order, trade, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:  "mkt-1",
-		Side:      OrderSideYes,
-		Action:    OrderActionBuy,
-		OrderType: OrderTypeMarket,
-		Quantity:  10,
-	}, "user1")
-	if err != nil {
-		t.Fatalf("PlaceOrder failed: %v", err)
-	}
-	if order == nil || trade == nil {
-		t.Fatal("expected order and trade to be non-nil")
-	}
-	if len(wallet.debitCalls) != 1 {
-		t.Fatalf("expected 1 debit call, got %d", len(wallet.debitCalls))
-	}
-	if wallet.debitCalls[0].userID != "user1" {
-		t.Errorf("wrong user: %s", wallet.debitCalls[0].userID)
-	}
-	if wallet.debitCalls[0].amountCents != order.TotalCostCents {
-		t.Errorf("debit amount mismatch: wallet=%d order=%d",
-			wallet.debitCalls[0].amountCents, order.TotalCostCents)
-	}
-	if wallet.debitCalls[0].idempKey == "" {
-		t.Fatal("expected wallet debit idempotency key to be auto-generated")
-	}
-	if order.IdempotencyKey == nil || *order.IdempotencyKey == "" {
-		t.Fatal("expected stored order to carry a non-empty idempotency key")
-	}
-	if wallet.debitCalls[0].idempKey != "prediction_order:"+*order.IdempotencyKey {
-		t.Fatalf("wallet debit key %q did not match stored order key %q", wallet.debitCalls[0].idempKey, *order.IdempotencyKey)
-	}
-	if wallet.balances["user1"] != 10000-order.TotalCostCents {
-		t.Errorf("balance not reduced: %d", wallet.balances["user1"])
-	}
-	if repo.persistCalls != 1 {
-		t.Fatalf("expected one persist call, got %d", repo.persistCalls)
-	}
-}
-
 type fakeTxWallet struct {
 	*fakeWallet
 }
@@ -544,185 +509,12 @@ func (f *fakeTxWallet) CreditWithTx(ctx context.Context, tx *sql.Tx, userID stri
 	return f.Credit(userID, amountCents, idempotencyKey, reason)
 }
 
-func TestPlaceOrder_UsesAtomicFillWhenRepoAndWalletSupportIt(t *testing.T) {
-	repo := &atomicMemRepo{memRepo: newMemRepo()}
-	seedMarket(t, repo.memRepo)
-	wallet := &fakeTxWallet{fakeWallet: newFakeWallet(10000)}
-	svc := NewService(repo, wallet)
-
-	order, trade, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:  "mkt-1",
-		Side:      OrderSideYes,
-		Action:    OrderActionBuy,
-		OrderType: OrderTypeMarket,
-		Quantity:  10,
-	}, "user1")
-	if err != nil {
-		t.Fatalf("PlaceOrder failed: %v", err)
-	}
-	if order == nil || trade == nil {
-		t.Fatal("expected order and trade from atomic fill path")
-	}
-	if repo.atomicOrderCalls != 1 {
-		t.Fatalf("expected one atomic fill call, got %d", repo.atomicOrderCalls)
-	}
-	if repo.persistCalls != 1 {
-		t.Fatalf("expected one persisted fill from atomic path, got %d", repo.persistCalls)
-	}
-	if len(wallet.debitCalls) != 1 {
-		t.Fatalf("expected one wallet debit from atomic path, got %d", len(wallet.debitCalls))
-	}
-}
-
-func TestPlaceOrder_InsufficientBalance_Rejected(t *testing.T) {
-	repo := newMemRepo()
-	seedMarket(t, repo)
-	wallet := newFakeWallet(10) // $0.10 — too little
-	svc := NewService(repo, wallet)
-
-	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:  "mkt-1",
-		Side:      OrderSideYes,
-		Action:    OrderActionBuy,
-		OrderType: OrderTypeMarket,
-		Quantity:  10,
-	}, "user1")
-	if err == nil {
-		t.Fatal("expected insufficient balance error")
-	}
-	if len(wallet.debitCalls) != 0 {
-		t.Errorf("expected 0 debit calls on rejection, got %d", len(wallet.debitCalls))
-	}
-	if len(repo.orders) != 0 {
-		t.Errorf("no order should have been created on rejection")
-	}
-}
-
-func TestPlaceOrder_CreateOrderFailure_RefundsWallet(t *testing.T) {
-	repo := newMemRepo()
-	seedMarket(t, repo)
-	repo.createOrderErr = fmt.Errorf("db unavailable")
-	wallet := newFakeWallet(10000)
-	svc := NewService(repo, wallet)
-
-	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:  "mkt-1",
-		Side:      OrderSideYes,
-		Action:    OrderActionBuy,
-		OrderType: OrderTypeMarket,
-		Quantity:  10,
-	}, "user1")
-	if err == nil {
-		t.Fatal("expected create order failure")
-	}
-	if len(wallet.debitCalls) != 1 {
-		t.Fatalf("expected one debit before refund, got %d", len(wallet.debitCalls))
-	}
-	if len(wallet.creditCalls) != 1 {
-		t.Fatalf("expected one compensating refund, got %d", len(wallet.creditCalls))
-	}
-	if wallet.creditCalls[0].amountCents != wallet.debitCalls[0].amountCents {
-		t.Fatalf("refund amount %d should match debit amount %d", wallet.creditCalls[0].amountCents, wallet.debitCalls[0].amountCents)
-	}
-	if wallet.balances["user1"] != 10000 {
-		t.Fatalf("expected balance restored to 10000, got %d", wallet.balances["user1"])
-	}
-	if len(repo.orders) != 0 {
-		t.Fatalf("expected no persisted order on create failure, got %d", len(repo.orders))
-	}
-}
-
-func TestPlaceOrder_UpdateMarketFailure_RefundsWalletAndRollsBackFill(t *testing.T) {
-	repo := newMemRepo()
-	seedMarket(t, repo)
-	repo.updateMarketErr = fmt.Errorf("market write failed")
-	wallet := newFakeWallet(10000)
-	svc := NewService(repo, wallet)
-
-	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:  "mkt-1",
-		Side:      OrderSideYes,
-		Action:    OrderActionBuy,
-		OrderType: OrderTypeMarket,
-		Quantity:  10,
-	}, "user1")
-	if err == nil {
-		t.Fatal("expected update market failure")
-	}
-	if len(wallet.debitCalls) != 1 {
-		t.Fatalf("expected one debit before refund, got %d", len(wallet.debitCalls))
-	}
-	if len(wallet.creditCalls) != 1 {
-		t.Fatalf("expected one compensating refund, got %d", len(wallet.creditCalls))
-	}
-	if wallet.balances["user1"] != 10000 {
-		t.Fatalf("expected balance restored to 10000, got %d", wallet.balances["user1"])
-	}
-	if len(repo.orders) != 0 {
-		t.Fatalf("expected no persisted orders after rollback, got %d", len(repo.orders))
-	}
-	if len(repo.trades) != 0 {
-		t.Fatalf("expected no persisted trades after rollback, got %d", len(repo.trades))
-	}
-	if len(repo.positions) != 0 {
-		t.Fatalf("expected no persisted positions after rollback, got %d", len(repo.positions))
-	}
-	stored := repo.markets["mkt-1"]
-	if stored.YesPriceCents != 50 || stored.NoPriceCents != 50 || stored.VolumeCents != 0 {
-		t.Fatalf("expected original market snapshot to remain unchanged, got yes=%d no=%d volume=%d", stored.YesPriceCents, stored.NoPriceCents, stored.VolumeCents)
-	}
-}
-
 // TestPlaceOrder_ZeroBalance_Rejected guards against a regression where the
 // balance check was skipped when balance == 0, letting users with empty
 // wallets place orders that would only fail later at debit time.
-func TestPlaceOrder_ZeroBalance_Rejected(t *testing.T) {
-	repo := newMemRepo()
-	seedMarket(t, repo)
-	wallet := &fakeWallet{balances: map[string]int64{"user1": 0}}
-	svc := NewService(repo, wallet)
-
-	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:  "mkt-1",
-		Side:      OrderSideYes,
-		Action:    OrderActionBuy,
-		OrderType: OrderTypeMarket,
-		Quantity:  10,
-	}, "user1")
-	if err == nil {
-		t.Fatal("expected rejection for zero balance")
-	}
-	if len(wallet.debitCalls) != 0 {
-		t.Errorf("wallet.Debit must not be called when pre-check rejects; got %d calls", len(wallet.debitCalls))
-	}
-	if len(repo.orders) != 0 {
-		t.Errorf("no order should be created on rejection")
-	}
-}
-
 // TestPlaceOrder_NoopWallet_AllowsAnyBalance ensures the NoopWallet sentinel
 // (math.MaxInt64 from Balance) short-circuits the pre-check, so tests that
 // don't care about wallet behavior can still exercise trading paths.
-func TestPlaceOrder_NoopWallet_AllowsAnyBalance(t *testing.T) {
-	repo := newMemRepo()
-	seedMarket(t, repo)
-	svc := NewService(repo, nil) // nil → NoopWallet
-
-	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:  "mkt-1",
-		Side:      OrderSideYes,
-		Action:    OrderActionBuy,
-		OrderType: OrderTypeMarket,
-		Quantity:  10,
-	}, "anyone")
-	if err != nil {
-		t.Fatalf("NoopWallet should allow order; got error: %v", err)
-	}
-	if len(repo.orders) != 1 {
-		t.Errorf("expected 1 order created under NoopWallet, got %d", len(repo.orders))
-	}
-}
-
 func TestResolveMarket_CreditsWinnersOnly(t *testing.T) {
 	repo := newMemRepo()
 	m := seedMarket(t, repo)
@@ -916,5 +708,39 @@ func TestVoidMarket_UsesAtomicVoidWhenAvailable(t *testing.T) {
 	}
 	if len(wallet.creditCalls) != 2 {
 		t.Fatalf("expected 2 refund credits from atomic void path, got %d", len(wallet.creditCalls))
+	}
+}
+
+// TestPlaceOrder_AMMMarketRetired_Rejected guards the P2-09 AMM retirement: a
+// non-order_book market refuses new orders and previews with no wallet debit.
+// (Existing positions are unaffected — settlement is engine-agnostic.)
+func TestPlaceOrder_AMMMarketRetired_Rejected(t *testing.T) {
+	repo := newMemRepo()
+	seedMarket(t, repo) // ExecutionMode defaults to "" (not order_book)
+	wallet := newFakeWallet(10000)
+	svc := NewService(repo, wallet)
+
+	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
+		MarketID:  "mkt-1",
+		Side:      OrderSideYes,
+		Action:    OrderActionBuy,
+		OrderType: OrderTypeMarket,
+		Quantity:  10,
+	}, "user1")
+	if err == nil {
+		t.Fatal("expected a retired AMM market to reject new orders")
+	}
+	if len(wallet.debitCalls) != 0 {
+		t.Fatalf("no wallet debit should occur on a retired AMM market, got %d", len(wallet.debitCalls))
+	}
+
+	if _, perr := svc.PreviewOrder(context.Background(), PlaceOrderRequest{
+		MarketID:  "mkt-1",
+		Side:      OrderSideYes,
+		Action:    OrderActionBuy,
+		OrderType: OrderTypeMarket,
+		Quantity:  10,
+	}); perr == nil {
+		t.Fatal("expected a retired AMM market to reject previews")
 	}
 }

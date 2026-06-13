@@ -595,11 +595,16 @@ SELECT balance_cents FROM wallet_balances WHERE user_id = $1 FOR UPDATE`,
 	}
 
 	var heldTotal int64
-	_ = tx.QueryRowContext(ctx, `
+	// Must not swallow this error: on failure heldTotal stays 0 and the
+	// available-funds check below degrades to balance-only, weakening the
+	// insufficient-funds guard (audit COR-04). Fail closed instead.
+	if err := tx.QueryRowContext(ctx, `
 SELECT COALESCE(SUM(amount_cents), 0)
 FROM wallet_reservations
 WHERE user_id = $1 AND status = 'held' AND expires_at > NOW()`,
-		request.UserID).Scan(&heldTotal)
+		request.UserID).Scan(&heldTotal); err != nil {
+		return Reservation{}, fmt.Errorf("sum held reservations: %w", err)
+	}
 
 	available := balance - heldTotal
 	if available < request.AmountCents {
@@ -673,10 +678,15 @@ FOR UPDATE`,
 		return LedgerEntry{}, ErrReservationNotHeld
 	}
 	if time.Now().UTC().After(expiresAt) {
-		// Auto-expire
-		_, _ = tx.ExecContext(ctx, `
-UPDATE wallet_reservations SET status = 'expired', resolved_at = NOW() WHERE id = $1`, resID)
-		_ = tx.Commit()
+		// Auto-expire. Surface a marking/commit failure rather than reporting
+		// "expired" while the row is still 'held' (audit COR-04).
+		if _, err := tx.ExecContext(ctx, `
+UPDATE wallet_reservations SET status = 'expired', resolved_at = NOW() WHERE id = $1`, resID); err != nil {
+			return LedgerEntry{}, fmt.Errorf("mark reservation expired: %w", err)
+		}
+		if err := tx.Commit(); err != nil {
+			return LedgerEntry{}, fmt.Errorf("commit reservation expiry: %w", err)
+		}
 		return LedgerEntry{}, ErrReservationExpired
 	}
 
@@ -1692,6 +1702,10 @@ func (s *Service) ensureSchema() error {
   UNIQUE (reference_type, reference_id)
 )`,
 		`CREATE INDEX IF NOT EXISTS idx_reservations_user_status ON wallet_reservations (user_id, status)`,
+		// Serves the per-user ledger read (WHERE user_id ORDER BY id DESC);
+		// kept in sync with migration 032 so code-bootstrapped schemas match
+		// goose-migrated ones (audit PERF-02).
+		`CREATE INDEX IF NOT EXISTS idx_wallet_ledger_user_id ON wallet_ledger (user_id, id DESC)`,
 	}
 
 	for _, statement := range statements {

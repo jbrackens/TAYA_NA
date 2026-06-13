@@ -2,8 +2,16 @@ package prediction
 
 import (
 	"context"
+	"errors"
 	"time"
 )
+
+// ErrPositionNotFound is the domain sentinel for "no position row" so callers
+// can distinguish a legitimate absence from a real read failure regardless of
+// the backing store (SQL returns it in place of sql.ErrNoRows; fakes return it
+// directly). Critical on the AMM write path, which upserts absolute values
+// (audit COR-03).
+var ErrPositionNotFound = errors.New("position not found")
 
 // Repository defines the data access interface for the prediction platform.
 // Implementations: sql_repository.go (PostgreSQL), inmemory_repository.go (testing).
@@ -176,10 +184,16 @@ type ExchangeRepository interface {
 // The persister returns per-accrual results so the caller can fire
 // post-commit WebSocket events (e.g. TierPromoted) after a successful tx.
 type AtomicMarketSettlementPersister interface {
+	// prevStatus is the market status the engine validated before computing
+	// payouts/refunds. Implementations MUST re-assert it atomically inside
+	// the transaction (status-guarded UPDATE) and return ErrStaleMarketStatus
+	// — rolling back everything — when it no longer holds, so concurrent
+	// settle/void flows can never both commit (audit COR-01).
 	PersistResolvedMarketAtomic(
 		ctx context.Context,
 		wallet WalletAdapter,
 		market *Market,
+		prevStatus MarketStatus,
 		settlement *Settlement,
 		payouts []Payout,
 		credits []WalletCreditRequest,
@@ -191,6 +205,7 @@ type AtomicMarketSettlementPersister interface {
 		ctx context.Context,
 		wallet WalletAdapter,
 		market *Market,
+		prevStatus MarketStatus,
 		payouts []Payout,
 		credits []WalletCreditRequest,
 		lifecycle *LifecycleEvent,

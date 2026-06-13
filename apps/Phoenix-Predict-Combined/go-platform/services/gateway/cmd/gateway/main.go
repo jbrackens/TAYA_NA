@@ -272,6 +272,15 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 				return fmt.Errorf("%s must be explicitly 'true' or explicitly acknowledged off via %s_ACK_DISABLED=true when ENVIRONMENT=%s — KYC posture must not default off silently", kycVar, kycVar, env)
 			}
 		}
+		// Anti-spoof edge-auth (audit SEC-03): in a trusted-edge deploy the
+		// gateway origin must not be reachable with a forged country header.
+		// If GEO_TRUSTED_PROXY_MODE=require, EDGE_SHARED_SECRET must be set so
+		// the gate can prove a request transited the edge — otherwise
+		// require-mode is a no-op and the bypass stays open.
+		if strings.EqualFold(strings.TrimSpace(getenv("GEO_TRUSTED_PROXY_MODE")), "require") &&
+			strings.TrimSpace(getenv("EDGE_SHARED_SECRET")) == "" {
+			return fmt.Errorf("EDGE_SHARED_SECRET must be set when GEO_TRUSTED_PROXY_MODE=require and ENVIRONMENT=%s — without it the origin can be hit directly with a spoofed country header (audit SEC-03); set it here and stamp it at the edge (Caddy: header_up X-Edge-Auth)", env)
+		}
 	}
 	return nil
 }

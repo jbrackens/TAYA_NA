@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"net"
 	stdhttp "net/http"
 	"os"
 	"strconv"
@@ -403,6 +404,15 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 			return httpx.BadRequest("username and password are required", nil)
 		}
 
+		// Per-IP limit alongside the per-username one inside Login: a
+		// password spray (one password across many usernames) never trips a
+		// per-username counter, so it needs its own bucket (audit SEC-05).
+		// 30/min = 3x the per-username budget, low enough to blunt sprays.
+		if ip := extractIP(r); ip != "" && !auth.loginLimiter.Allow("login-ip:"+ip, 30, time.Minute) {
+			auth.audit.Event("auth.login.rate_limited_ip", map[string]any{"ip": ip})
+			return httpx.TooManyRequests("too many login attempts, try again later")
+		}
+
 		response, err := auth.Login(body.Username, body.Password)
 		if err != nil {
 			return err
@@ -594,7 +604,12 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 			}
 		}
 		if tokenToInvalidate != "" {
-			_ = auth.store.DeleteByAccessToken(digestToken(tokenToInvalidate))
+			// Pass the RAW token: the store digests internally. Digesting here
+			// double-hashed the key, so logout never actually revoked the
+			// session server-side (audit SEC-01).
+			if err := auth.store.DeleteByAccessToken(tokenToInvalidate); err != nil {
+				slog.Warn("auth: logout session revocation failed", "error", err)
+			}
 		}
 
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{"status": "logged_out"})
@@ -611,6 +626,39 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		sessionID = strings.TrimSuffix(sessionID, "/")
 		if sessionID == "" {
 			return httpx.BadRequest("session ID required", nil)
+		}
+
+		// Authenticate the caller and scope revocation to their own sessions
+		// (this endpoint previously required no auth at all — audit SEC-05).
+		var token string
+		if cookie, err := r.Cookie("access_token"); err == nil && cookie.Value != "" {
+			token = cookie.Value
+		} else {
+			var parseErr error
+			token, parseErr = parseBearerToken(r.Header.Get("Authorization"))
+			if parseErr != nil {
+				return parseErr
+			}
+		}
+		currentSession, err := auth.ValidateAccessToken(token)
+		if err != nil {
+			return err
+		}
+		owned, err := auth.store.ListByUserID(currentSession.UserID)
+		if err != nil {
+			return httpx.Internal("failed to list sessions", err)
+		}
+		owns := false
+		for _, s := range owned {
+			if s.AccessTokenDigest == sessionID || s.RefreshTokenDigest == sessionID {
+				owns = true
+				break
+			}
+		}
+		if !owns {
+			// Same response for "someone else's session" and "no such
+			// session" — don't leak which digests exist.
+			return httpx.NotFound("session not found")
 		}
 
 		if err := auth.store.DeleteBySessionID(sessionID); err != nil {
@@ -859,6 +907,14 @@ func (a *AuthService) ChangePassword(username string, currentPassword string, ne
 		updated.PasswordHash = string(hash)
 		a.usersByUsername[username] = updated
 		a.mu.Unlock()
+	}
+
+	// Revoke every live session for this user: a hijacked session must not
+	// outlive the password rotation that was meant to evict it (SEC-01
+	// sibling, audit P1-05). The user re-authenticates with the new password.
+	if err := a.store.DeleteByUserID(account.ID); err != nil {
+		slog.Warn("auth: failed to revoke sessions after password change",
+			"userId", account.ID, "error", err)
 	}
 
 	a.audit.Event("auth.password_change.success", map[string]any{"username": username, "userId": account.ID})
@@ -1261,20 +1317,58 @@ func (l *structuredAuditLogger) Event(name string, fields map[string]any) {
 	l.logger.Printf("event=%s fields=%s", name, string(payload))
 }
 
+// extractIP returns the client IP for rate-limiting. Forwarding headers are
+// client-controlled, so they are honored ONLY when the direct peer is inside
+// TRUSTED_PROXY_CIDRS (comma-separated; e.g. the Caddy/edge subnet) — and then
+// the RIGHTMOST X-Forwarded-For entry is used, the one appended by our proxy.
+// Previously the leftmost (attacker-chosen) entry was trusted unconditionally,
+// which let registration/login limits be bypassed by varying XFF (audit
+// SEC-05). With no trusted proxies configured the peer address is the answer.
 func extractIP(r *stdhttp.Request) string {
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		if i := strings.IndexByte(xff, ','); i > 0 {
-			return strings.TrimSpace(xff[:i])
-		}
-		return strings.TrimSpace(xff)
+	host := r.RemoteAddr
+	if h, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
+		host = h
 	}
-	if xri := r.Header.Get("X-Real-Ip"); xri != "" {
+	peer := net.ParseIP(host)
+	if peer == nil || !ipInTrustedProxies(peer) {
+		return host
+	}
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		parts := strings.Split(xff, ",")
+		if ip := strings.TrimSpace(parts[len(parts)-1]); ip != "" {
+			return ip
+		}
+	}
+	if xri := strings.TrimSpace(r.Header.Get("X-Real-Ip")); xri != "" {
 		return xri
 	}
-	if i := strings.LastIndex(r.RemoteAddr, ":"); i > 0 {
-		return r.RemoteAddr[:i]
+	return host
+}
+
+// ipInTrustedProxies parses TRUSTED_PROXY_CIDRS on each call — auth endpoints
+// are low-rate, and re-parsing keeps the function trivially testable with
+// t.Setenv. Bare IPs are accepted as /32 (/128 for IPv6).
+func ipInTrustedProxies(ip net.IP) bool {
+	raw := strings.TrimSpace(os.Getenv("TRUSTED_PROXY_CIDRS"))
+	if raw == "" {
+		return false
 	}
-	return r.RemoteAddr
+	for _, part := range strings.Split(raw, ",") {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		if !strings.Contains(part, "/") {
+			if single := net.ParseIP(part); single != nil && single.Equal(ip) {
+				return true
+			}
+			continue
+		}
+		if _, network, err := net.ParseCIDR(part); err == nil && network.Contains(ip) {
+			return true
+		}
+	}
+	return false
 }
 
 func getEnvOrDefault(name string, fallback string) string {

@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	stdhttp "net/http"
@@ -65,7 +66,7 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		}
 		filter := prediction.EventFilter{
 			Page:     intQueryParam(r, "page", 1),
-			PageSize: intQueryParam(r, "pageSize", 20),
+			PageSize: clampedQueryParam(r, "pageSize", 20, 100),
 		}
 		if cat := r.URL.Query().Get("categoryId"); cat != "" {
 			filter.CategoryID = &cat
@@ -115,7 +116,7 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		}
 		filter := prediction.MarketFilter{
 			Page:     intQueryParam(r, "page", 1),
-			PageSize: intQueryParam(r, "pageSize", 20),
+			PageSize: clampedQueryParam(r, "pageSize", 20, 100),
 		}
 		if eid := r.URL.Query().Get("eventId"); eid != "" {
 			filter.EventID = &eid
@@ -360,7 +361,7 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 			filter := prediction.OrderFilter{
 				UserID:   userID,
 				Page:     intQueryParam(r, "page", 1),
-				PageSize: intQueryParam(r, "pageSize", 20),
+				PageSize: clampedQueryParam(r, "pageSize", 20, 200),
 			}
 			if mid := r.URL.Query().Get("marketId"); mid != "" {
 				filter.MarketID = &mid
@@ -620,7 +621,7 @@ func registerPortfolioRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			return httpx.Unauthorized("authentication required")
 		}
 		page := intQueryParam(r, "page", 1)
-		pageSize := intQueryParam(r, "pageSize", 20)
+		pageSize := clampedQueryParam(r, "pageSize", 20, 200)
 		payouts, total, err := svc.ListSettledPositions(r.Context(), userID, page, pageSize)
 		if err != nil {
 			return httpx.Internal("failed to fetch data", err)
@@ -654,7 +655,7 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if r.Method == stdhttp.MethodGet {
 			filter := prediction.MarketFilter{
 				Page:            intQueryParam(r, "page", 1),
-				PageSize:        intQueryParam(r, "pageSize", 20),
+				PageSize:        clampedQueryParam(r, "pageSize", 20, 500),
 				IncludeUnopened: true,
 			}
 			if eid := r.URL.Query().Get("eventId"); eid != "" {
@@ -855,6 +856,9 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			case "finalize":
 				settlement, payouts, err := svc.FinalizeResolution(r.Context(), parts[0], actorID)
 				if err != nil {
+					if errors.Is(err, prediction.ErrStaleMarketStatus) {
+						return httpx.Conflict("market was settled or voided by a concurrent operation", nil)
+					}
 					return httpx.BadRequest(err.Error(), nil)
 				}
 				recordMoneyAuditEntry(adminID, "market.finalized", parts[0], map[string]any{
@@ -922,6 +926,9 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			}
 			payouts, err := svc.VoidMarket(r.Context(), parts[0], reason, actorID)
 			if err != nil {
+				if errors.Is(err, prediction.ErrStaleMarketStatus) {
+					return httpx.Conflict("market was settled or voided by a concurrent operation", nil)
+				}
 				return httpx.BadRequest(err.Error(), nil)
 			}
 			recordMoneyAuditEntry(adminID, "market.voided", parts[0], map[string]any{
@@ -958,6 +965,9 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		}
 		settlement, payouts, err := svc.ResolveMarket(r.Context(), marketID, req, actorIDPointer(adminID))
 		if err != nil {
+			if errors.Is(err, prediction.ErrStaleMarketStatus) {
+				return httpx.Conflict("market was settled or voided by a concurrent operation", nil)
+			}
 			return httpx.BadRequest(err.Error(), nil)
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]interface{}{
@@ -1098,6 +1108,18 @@ func intQueryParam(r *stdhttp.Request, key string, defaultVal int) int {
 	n, err := strconv.Atoi(val)
 	if err != nil || n < 1 {
 		return defaultVal
+	}
+	return n
+}
+
+// clampedQueryParam is intQueryParam with an upper bound. Every list/pagination
+// endpoint MUST use this: the unclamped variant let a caller pass
+// ?pageSize=1000000 on a public, unauthenticated route, turning one request
+// into a full-table scan (audit PERF-01). max is an inclusive ceiling.
+func clampedQueryParam(r *stdhttp.Request, key string, defaultVal, max int) int {
+	n := intQueryParam(r, key, defaultVal)
+	if n > max {
+		return max
 	}
 	return n
 }

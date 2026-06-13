@@ -20,6 +20,9 @@ type predictionAdminRepo struct {
 	lifecycle []prediction.LifecycleEvent
 	aiLogs    []prediction.AIGenerationLog
 	marketSeq int
+	// apiKey, when set, is returned by GetAPIKeyByPrefix so tests can
+	// exercise the bot-auth-wrapped routes end to end.
+	apiKey *prediction.APIKey
 }
 
 func newPredictionAdminRepo() *predictionAdminRepo {
@@ -291,6 +294,9 @@ func (r *predictionAdminRepo) ListAPIKeys(context.Context, string) ([]prediction
 }
 
 func (r *predictionAdminRepo) GetAPIKeyByPrefix(context.Context, string) (*prediction.APIKey, error) {
+	if r.apiKey != nil {
+		return r.apiKey, nil
+	}
 	return nil, errors.New("not found")
 }
 

@@ -163,11 +163,17 @@ func (h *Hub) Disconnect(client *Client) {
 	}
 }
 
-// Broadcast sends a message to all clients subscribed to a channel
+// Broadcast sends a message to all clients subscribed to a channel. It never
+// blocks the caller: the HTTP order/settlement handlers publish through here
+// on the request path, so a full hub queue must not stall them (audit
+// PERF-03). On a full queue the broadcast is dropped and counted — subscribers
+// resync on the next event or reconnect.
 func (h *Hub) Broadcast(channel string, message []byte) {
 	select {
 	case h.broadcast <- &broadcastCmd{channel: channel, message: message}:
 	case <-h.ctx.Done():
+	default:
+		broadcastsDroppedTotal.Add(1)
 	}
 }
 

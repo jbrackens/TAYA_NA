@@ -156,6 +156,21 @@ services:
       # ALPHA_CASHIER_WITHDRAWALS_ENABLED: "false"
       # ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED: "true"
       # ALPHA_CASHIER_WITHDRAWAL_BROADCAST_ACK: "false"
+      # Two-person control on the custodial payout: the broadcaster must differ
+      # from the approver (P1-13/A2-04). Required true in prod/staging when
+      # withdrawals are enabled, unless explicitly acked off.
+      # ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL: "true"
+      # ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL_ACK_DISABLED: "false"
+      # Sanctions/AML address screening on deposit (from) + withdrawal (to)
+      # addresses (P1-12/CMP-01). With enforcement on, a non-clear verdict
+      # blocks pending a real provider or review; a sanctions hit always blocks.
+      # ALPHA_CASHIER_SCREENING_ENFORCEMENT: "false"
+      # Deposit reorg watch: finality depth at which a credited deposit is
+      # considered final (P1-14/A2-03). 0 = default (64 blocks).
+      # ALPHA_CASHIER_FINALITY_CONFIRMATIONS: "0"
+      # Bot/partner API keys: self-serve key creation is OFF by default in
+      # prod/staging (partners get operator-issued keys); ON in dev/demo (P1-06).
+      # BOT_KEYS_SELF_SERVE: "false"
       # Automated KYC vendor (manual back-office review works without these).
       # KYC_IDV_PROVIDER: "sumsub"   # or onfido / persona
       # KYC_IDV_API_KEY: ""
@@ -187,6 +202,13 @@ services:
       # GEO_ALLOWED_COUNTRIES: "PH,ID,TH,VN,MY,SG"
       # GEO_COUNTRY_HEADER: "CF-IPCountry"
       # GEO_TRUSTED_PROXY_MODE: "require"  # loud Error+counter on missing edge signal
+      # Anti-spoof edge-auth (audit SEC-03): with require-mode on, the gateway
+      # rejects money-path requests lacking this shared secret, so a request
+      # that skips Caddy and hits the origin directly with a forged
+      # CF-IPCountry is denied. Set the SAME value on the Caddy container
+      # ({$EDGE_SHARED_SECRET} in Caddyfile). REQUIRED in prod/staging when
+      # GEO_TRUSTED_PROXY_MODE=require (boot fails otherwise).
+      # EDGE_SHARED_SECRET: "set-a-long-random-value"
       # Email notifications (resolution/payout). Logs until SMTP_HOST is set.
       # SMTP_HOST: ""
       # SMTP_PORT: "587"

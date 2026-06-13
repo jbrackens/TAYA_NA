@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"math/big"
 	"strings"
 	"time"
@@ -21,6 +22,10 @@ const (
 	maxAdminListLimit        = 500
 	withdrawalReservationTTL = 7 * 24 * time.Hour
 	withdrawalReferenceType  = "alpha_withdrawal"
+	// reorgFreezeTTL is long: a reorg-frozen balance stays held until a human
+	// resolves it (audit A2-03). Re-asserted idempotently by the watcher, so a
+	// still-unresolved freeze is renewed well before this elapses.
+	reorgFreezeTTL = 30 * 24 * time.Hour
 )
 
 type Service struct {
@@ -28,6 +33,7 @@ type Service struct {
 	repo         Repository
 	ledger       WalletLedger
 	evmClient    EVMClient
+	screener     AddressScreener
 	now          func() time.Time
 	challengeTTL time.Duration
 	intentTTL    time.Duration
@@ -184,6 +190,11 @@ func (s *Service) CreateDepositIntent(ctx context.Context, userID string, wallet
 	}
 	normalized, err := NormalizeAddress(walletAddress)
 	if err != nil {
+		return nil, err
+	}
+	// Sanctions/AML screening on the depositing wallet before an intent is
+	// created (audit CMP-01).
+	if err := s.screenAddress(ctx, userID, normalized, "deposit_from"); err != nil {
 		return nil, err
 	}
 	conn, err := s.repo.FindWalletConnection(ctx, userID, s.cfg.ChainID, normalized)
@@ -374,6 +385,11 @@ func (s *Service) CreateWithdrawalRequest(ctx context.Context, userID string, de
 	if err != nil {
 		return nil, err
 	}
+	// Sanctions/AML screening on the withdrawal destination before any funds
+	// are reserved (audit CMP-01).
+	if err := s.screenAddress(ctx, userID, normalized, "withdrawal_destination"); err != nil {
+		return nil, err
+	}
 	units, err := CentsToTokenUnits(amountCents, s.cfg.TokenDecimals)
 	if err != nil {
 		return nil, err
@@ -542,6 +558,22 @@ func (s *Service) MarkWithdrawalBroadcasted(ctx context.Context, id string, acto
 	}
 	if req.Status != "approved" {
 		return nil, ErrInvalidStatus
+	}
+	// Two-person control (A2-04): the operator broadcasting the payout must be
+	// different from the one who approved it. The approver is recorded in
+	// reviewed_by; the broadcaster is this actor. Idempotent re-broadcast of
+	// the same tx above is exempt (already returned).
+	if s.cfg.TwoPersonWithdrawal {
+		broadcaster := strings.TrimSpace(actorID)
+		approver := strings.TrimSpace(req.ReviewedBy)
+		if broadcaster == "" {
+			return nil, ErrSecondApproverRequired
+		}
+		if approver == "" || strings.EqualFold(broadcaster, approver) {
+			slog.WarnContext(ctx, "withdrawal broadcast blocked: two-person control",
+				"withdrawal_id", req.ID, "approver", approver, "broadcaster", broadcaster)
+			return nil, ErrSecondApproverRequired
+		}
 	}
 	now := s.now().UTC()
 	broadcasted, err := s.repo.MarkWithdrawalBroadcasted(ctx, req.ID, txHash, now)

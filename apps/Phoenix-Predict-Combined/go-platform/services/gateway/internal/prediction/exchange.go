@@ -57,6 +57,13 @@ type MatchPlan struct {
 	Taker Order
 	// MakerUpdates are the post-match versions of any makers touched.
 	MakerUpdates []Order
+	// MakerPreFill records each touched maker's filled_quantity as it was when
+	// the plan was built (before this plan's fills). The persistence layer
+	// re-asserts it under the per-market lock with a guarded UPDATE so a maker
+	// that another taker advanced between plan-build and commit is detected
+	// (ErrBookChanged) instead of being regressed to stale absolute values
+	// (audit COR-02). Keyed by maker order ID.
+	MakerPreFill map[string]int
 	// Trades are the immutable fill records to insert. For issuance fills,
 	// two rows share a match_id and trade_kind='issuance'.
 	Trades []Trade
@@ -140,6 +147,22 @@ var ErrPriceBandViolation = errors.New(FailurePriceBandViolation)
 // quantity at submission.
 var ErrPostOnlyWouldTake = errors.New(FailurePostOnlyWouldTake)
 
+// ErrBookChanged is returned by the persistence layer when a maker's on-disk
+// fill state no longer matches what the plan was built against — another taker
+// matched it first. The caller re-loads the book and re-plans (audit COR-02).
+var ErrBookChanged = errors.New("order book changed during match; replan required")
+
+// recordMakerPreFill captures a maker's filled_quantity the first time it is
+// touched in a plan, so the persistence layer can re-assert it under the lock.
+func recordMakerPreFill(plan *MatchPlan, maker *Order) {
+	if plan.MakerPreFill == nil {
+		plan.MakerPreFill = map[string]int{}
+	}
+	if _, seen := plan.MakerPreFill[maker.ID]; !seen {
+		plan.MakerPreFill[maker.ID] = maker.FilledQuantity
+	}
+}
+
 // ErrSelfMatchRejected is returned when the taker's first crossing maker
 // belongs to the same user and self_match_action='cancel_taker'.
 var ErrSelfMatchRejected = errors.New(FailureSelfMatchRejected)
@@ -215,6 +238,7 @@ func (e *ExchangeEngine) BuildPlan(input MatchInput) (*MatchPlan, error) {
 		Trades:            []Trade{},
 		PositionMutations: []PositionMutation{},
 		LedgerEntries:     []CollateralLedgerEntry{},
+		MakerPreFill:      map[string]int{},
 	}
 
 	// Secondary matching (same-side transfer) runs for BOTH buy and sell
@@ -362,6 +386,7 @@ func applySelfMatch(taker, maker *Order) (bool, error) {
 // fillSecondary applies a same-side transfer fill: buyer pays seller, position
 // moves, no collateral pool change.
 func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int, now time.Time, idFactory func() string) {
+	recordMakerPreFill(plan, maker)
 	tradeID := idFactory()
 	matchID := tradeID // secondary: match_id = trade id
 
@@ -495,6 +520,7 @@ func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int,
 // taker pays (100 - maker_limit). Both sides receive a position; collateral
 // pool grows by 100¢ × fillQty.
 func fillIssuance(plan *MatchPlan, taker, maker *Order, fillQty int, now time.Time, idFactory func() string) {
+	recordMakerPreFill(plan, maker)
 	matchID := idFactory()
 	makerLimit := *maker.PriceCents
 	takerPrice := ComplementaryTakerPriceCents(makerLimit)

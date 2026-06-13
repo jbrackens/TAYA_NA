@@ -23,6 +23,17 @@ type Config struct {
 	DailyDepositLimitCents int64  `json:"dailyDepositLimitCents"`
 	WithdrawalsEnabled     bool   `json:"withdrawalsEnabled"`
 	WithdrawalReviewNeeded bool   `json:"withdrawalReviewRequired"`
+	// ScreeningEnforced makes non-clear address-screening verdicts block the
+	// money movement (audit CMP-01). When false, screening runs observe-only
+	// (logs, never blocks) except a sanctions hit, which always blocks.
+	ScreeningEnforced bool `json:"screeningEnforced"`
+	// TwoPersonWithdrawal requires the operator who broadcasts a withdrawal to
+	// be different from the one who approved it (audit A2-04). Two-eyes control
+	// on the custodial payout: one approves, a different person broadcasts.
+	TwoPersonWithdrawal bool `json:"twoPersonWithdrawal"`
+	// FinalityConfirmationsValue is the block depth at which a credited deposit
+	// is considered final by the reorg watcher (audit A2-03). 0 = default (64).
+	FinalityConfirmationsValue int64 `json:"finalityConfirmations"`
 }
 
 func LoadConfigFromEnv(getenv func(string) string) (Config, error) {
@@ -41,6 +52,9 @@ func LoadConfigFromEnv(getenv func(string) string) (Config, error) {
 		DailyDepositLimitCents: envInt64(getenv, "ALPHA_CASHIER_DAILY_DEPOSIT_LIMIT_CENTS", 100000),
 		WithdrawalsEnabled:     envBool(getenv, "ALPHA_CASHIER_WITHDRAWALS_ENABLED", false),
 		WithdrawalReviewNeeded: envBool(getenv, "ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED", true),
+		ScreeningEnforced:          envBool(getenv, "ALPHA_CASHIER_SCREENING_ENFORCEMENT", false),
+		TwoPersonWithdrawal:        envBool(getenv, "ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL", false),
+		FinalityConfirmationsValue: envInt64(getenv, "ALPHA_CASHIER_FINALITY_CONFIRMATIONS", 0),
 	}
 	if !cfg.Enabled {
 		return cfg, nil
@@ -66,6 +80,10 @@ func ValidateRuntimeConfig(getenv func(string) string) error {
 	if (env == "production" || env == "staging") && cfg.WithdrawalsEnabled {
 		if !envBool(getenv, "ALPHA_CASHIER_WITHDRAWAL_BROADCAST_ACK", false) {
 			return fmt.Errorf("ALPHA_CASHIER_WITHDRAWALS_ENABLED requires ALPHA_CASHIER_WITHDRAWAL_BROADCAST_ACK=true when ENVIRONMENT=%s", env)
+		}
+		// Two-person control must be ON or explicitly acknowledged off (A2-04).
+		if !cfg.TwoPersonWithdrawal && !envBool(getenv, "ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL_ACK_DISABLED", false) {
+			return fmt.Errorf("ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL must be true, or explicitly acked off via ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL_ACK_DISABLED=true, when withdrawals are enabled and ENVIRONMENT=%s", env)
 		}
 	}
 	return nil

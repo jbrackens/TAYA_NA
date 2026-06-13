@@ -20,6 +20,10 @@ type SessionStore interface {
 	DeleteExpired(now time.Time) error
 	ListByUserID(userID string) ([]session, error)
 	DeleteBySessionID(sessionID string) error
+	// DeleteByUserID revokes every session belonging to the user. Used on
+	// password change so a hijacked session cannot outlive the password
+	// rotation that was meant to evict it.
+	DeleteByUserID(userID string) error
 }
 
 type persistedSessionStore struct {
@@ -175,6 +179,24 @@ func (s *FileBackedSessionStore) DeleteBySessionID(sessionID string) error {
 		}
 	}
 	return nil
+}
+
+func (s *FileBackedSessionStore) DeleteByUserID(userID string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	deleted := false
+	for refreshDigest, current := range s.byRefresh {
+		if current.UserID == userID {
+			delete(s.byRefresh, refreshDigest)
+			delete(s.byAccess, current.AccessTokenDigest)
+			deleted = true
+		}
+	}
+	if !deleted {
+		return nil
+	}
+	return s.persistLocked()
 }
 
 func (s *FileBackedSessionStore) load() error {

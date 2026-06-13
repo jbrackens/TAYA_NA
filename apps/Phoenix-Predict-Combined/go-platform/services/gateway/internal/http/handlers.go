@@ -349,6 +349,12 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	}
 	alphaCashierService := alphacashier.NewService(alphaCashierConfig, alphaCashierRepo)
 	alphaCashierService.SetWalletLedger(walletService)
+	// Default address-screening seam (audit CMP-01). The manual-review screener
+	// never auto-clears, so with ALPHA_CASHIER_SCREENING_ENFORCEMENT=true the
+	// deposit/withdrawal addresses are blocked pending a real provider or human
+	// review; with enforcement off it is observe-only (a sanctions hit still
+	// blocks). A vendor screener is wired in place of the default here.
+	alphaCashierService.SetScreener(alphacashier.DefaultScreener())
 	if alphaCashierConfig.Enabled {
 		if evmClient, err := alphacashier.NewJSONRPCEVMClient(context.Background(), alphaCashierConfig.RPCURL); err != nil {
 			slog.Warn("alpha cashier: EVM RPC client unavailable; tx submission will fail closed", "error", err)
