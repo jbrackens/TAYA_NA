@@ -28,4 +28,20 @@ as the hybrid-CLOB future — `contracts/`, `packages/cashier-sdk`, and
 `services/{relayer,bridge-watcher,cashier-api}` — stay at the repo root. They
 are executed by improvement-plan task **P3-09**.
 
+## `docs-sportsbook/` (P2-04)
+
+Eight sportsbook-era docs that described fixtures/betslips/freebets and a
+fictional Kubernetes/Cloud-SQL/Memorystore topology that never existed
+(audit ARCH-05 / ORG-02). Replaced by accurate, prediction-native versions at
+`apps/Phoenix-Predict-Combined/{ARCHITECTURE,RUNBOOKS,DEPLOYMENT}.md`:
+
+| Archived | Disposition |
+|---|---|
+| `ARCHITECTURE.md` | rewritten (real services/ports/money-path/deploy) |
+| `RUNBOOKS.md` | rewritten (prediction ops: lifecycle, settlement, cashier, restore) |
+| `DEPLOYMENT.md` | rewritten (real Hetzner SSH + docker-compose + Caddy pipeline) |
+| `LAUNCH_CHECKLIST.md` | archived (unchecked K8s template; no replacement) |
+| `PLAYER_APP_GAP_ANALYSIS.md` | archived (describes the abandoned betslip app) |
+| `INTEGRATION_GUIDE.md` / `INTEGRATION_SETUP.md` / `INTEGRATION_COMPLETE.md` | archived (sportsbook-era migration artifacts) |
+
 To restore something: `git mv archive/dead-2026-06/<path> <original-location>`.
