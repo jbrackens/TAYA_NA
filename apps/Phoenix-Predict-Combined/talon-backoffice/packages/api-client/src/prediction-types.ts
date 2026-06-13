@@ -91,6 +91,14 @@ export interface PredictionMarket {
   lastQuoteAt?: string;
 }
 
+// Per-market jurisdiction overlay (P3-07). An optional country allow/deny list
+// evaluated AFTER the global geo gate — it can only further restrict, never
+// widen. null/absent = no overlay (the global gate is the only control).
+export interface MarketJurisdictionPolicy {
+  mode: "allow" | "deny";
+  countries: string[]; // ISO-3166 alpha-2, e.g. ["US", "CA"]
+}
+
 export type MarketStatus =
   | "unopened"
   | "open"

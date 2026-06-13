@@ -821,14 +821,28 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if err := requireAdminRole(r); err != nil {
 			return err
 		}
-		if r.Method != stdhttp.MethodPost {
-			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
-		}
-
 		path := strings.TrimPrefix(r.URL.Path, "/api/v1/admin/markets/")
 		parts := strings.Split(path, "/")
 		if len(parts) == 0 || parts[0] == "" {
 			return httpx.NotFound("route not found")
+		}
+
+		// P3-07: read-only GET of the per-market jurisdiction overlay so the
+		// back-office form can pre-fill its control. Handled before the
+		// POST-only gate and the dual-control identity guard below — reading an
+		// overlay is neither a write nor a dual-control action. Every other
+		// verb/route on this handler stays POST-only.
+		if len(parts) == 2 &&
+			strings.EqualFold(strings.TrimSpace(parts[1]), "jurisdiction") &&
+			r.Method == stdhttp.MethodGet {
+			policy, err := svc.GetMarketJurisdictionPolicy(r.Context(), parts[0])
+			if err != nil {
+				return httpx.Internal("failed to read jurisdiction policy", err)
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"marketId": parts[0], "policy": policy})
+		}
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
 
 		adminID := userIDFromRequest(r)

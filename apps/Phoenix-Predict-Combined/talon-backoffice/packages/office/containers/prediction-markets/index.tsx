@@ -78,6 +78,13 @@ export default function PredictionMarketsContainer() {
     Record<string, CollateralDriftAlert>
   >({});
   const [form] = Form.useForm();
+  // P3-07 per-market jurisdiction overlay editor (null market = modal closed).
+  const [jurisForm] = Form.useForm();
+  const [jurisMarket, setJurisMarket] = useState<PredictionMarket | null>(
+    null,
+  );
+  const [jurisLoading, setJurisLoading] = useState(false);
+  const [jurisSaving, setJurisSaving] = useState(false);
   // `App.useApp()` returns the contextual message/modal handles instead of
   // the top-level statics — required by v5 for theme-aware rendering and
   // silences the "Static function can not consume context" dev warning.
@@ -280,6 +287,66 @@ export default function PredictionMarketsContainer() {
     });
   }
 
+  // P3-07: load a market's current overlay into the modal form, pre-filling
+  // mode + countries (or "none" when there is no overlay / the read fails).
+  async function openJurisdiction(market: PredictionMarket) {
+    setJurisMarket(market);
+    setJurisLoading(true);
+    jurisForm.setFieldsValue({ mode: "none", countries: [] });
+    try {
+      const { policy } = await predictionClient.getMarketJurisdiction(
+        market.id,
+      );
+      jurisForm.setFieldsValue({
+        mode: policy?.mode ?? "none",
+        countries: policy?.countries ?? [],
+      });
+    } catch (err: unknown) {
+      message.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to load the current jurisdiction policy",
+      );
+    } finally {
+      setJurisLoading(false);
+    }
+  }
+
+  // "none" clears the overlay (the gateway treats an empty body as clear);
+  // allow/deny require a non-empty country list. Codes are upper-cased here so
+  // the stored policy is canonical (the gate matches case-insensitively).
+  async function handleJurisdictionSave(values: {
+    mode: "none" | "allow" | "deny";
+    countries?: string[];
+  }) {
+    if (!jurisMarket) return;
+    const countries = (values.countries ?? [])
+      .map((c) => c.trim().toUpperCase())
+      .filter(Boolean);
+    if (values.mode !== "none" && countries.length === 0) {
+      message.error("Add at least one country, or choose “No restriction”.");
+      return;
+    }
+    setJurisSaving(true);
+    try {
+      const policy =
+        values.mode === "none" ? null : { mode: values.mode, countries };
+      await predictionClient.setMarketJurisdiction(jurisMarket.id, policy);
+      message.success(
+        policy ? "Jurisdiction policy saved" : "Jurisdiction overlay cleared",
+      );
+      setJurisMarket(null);
+    } catch (err: unknown) {
+      message.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to save the jurisdiction policy",
+      );
+    } finally {
+      setJurisSaving(false);
+    }
+  }
+
   const columns = [
     {
       title: "Ticker",
@@ -441,6 +508,9 @@ export default function PredictionMarketsContainer() {
               Resume
             </Button>
           )}
+          <Button size="small" onClick={() => openJurisdiction(record)}>
+            Region
+          </Button>
         </Space>
       ),
     },
@@ -607,6 +677,50 @@ export default function PredictionMarketsContainer() {
         categories={categories}
         onCreated={handleEventCreated}
       />
+
+      <Modal
+        title={
+          jurisMarket ? `Jurisdiction — ${jurisMarket.ticker}` : "Jurisdiction"
+        }
+        open={jurisMarket !== null}
+        onCancel={() => setJurisMarket(null)}
+        onOk={() => jurisForm.submit()}
+        confirmLoading={jurisSaving}
+        okText="Save"
+      >
+        <Text type="secondary" className="mb-3 block">
+          Optional per-market country overlay. It is evaluated AFTER the global
+          geo gate, so it can only further restrict access — never widen it.
+          Choose “No restriction” to clear the overlay for this market.
+        </Text>
+        <Form
+          form={jurisForm}
+          layout="vertical"
+          onFinish={handleJurisdictionSave}
+          disabled={jurisLoading}
+        >
+          <Form.Item name="mode" label="Mode" initialValue="none">
+            <Select
+              options={[
+                { value: "none", label: "No restriction (clear overlay)" },
+                { value: "allow", label: "Allow only these countries" },
+                { value: "deny", label: "Deny these countries" },
+              ]}
+            />
+          </Form.Item>
+          <Form.Item
+            name="countries"
+            label="Countries (ISO-3166 alpha-2)"
+            tooltip="Two-letter codes, e.g. US, CA, GB. Type and press enter, or paste comma-separated."
+          >
+            <Select
+              mode="tags"
+              tokenSeparators={[",", " "]}
+              placeholder="US, CA, GB"
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
     </>
   );
 }

@@ -20,6 +20,7 @@ import type {
   CreateMarketRequest,
   CreateEventRequest,
   MarketLifecycleAction,
+  MarketJurisdictionPolicy,
   SettleMarketRequest,
   SettleMarketResponse,
   DashboardVolumeStats,
@@ -335,6 +336,25 @@ export class PredictionApiClient {
         body: JSON.stringify(reason ? { reason } : {}),
       },
     );
+  }
+
+  // Per-market jurisdiction overlay (P3-07). GET reads the current policy
+  // (policy: null = no overlay); POST sets it, or clears it when passed null
+  // (an empty body, which the gateway treats as "clear").
+  async getMarketJurisdiction(
+    marketId: string,
+  ): Promise<{ marketId: string; policy: MarketJurisdictionPolicy | null }> {
+    return this.request(`/api/v1/admin/markets/${marketId}/jurisdiction`);
+  }
+
+  async setMarketJurisdiction(
+    marketId: string,
+    policy: MarketJurisdictionPolicy | null,
+  ): Promise<{ marketId: string; policy: MarketJurisdictionPolicy | null }> {
+    return this.request(`/api/v1/admin/markets/${marketId}/jurisdiction`, {
+      method: "POST",
+      body: JSON.stringify(policy ?? {}),
+    });
   }
 
   async settleMarket(
