@@ -78,7 +78,7 @@ jobs:
               ;;
             *)
               echo "::error::Refusing to deploy '$GITHUB_REF_NAME'. Live demo deploys are allowed only from: $DEMO_DEPLOY_BRANCH_ALLOWLIST"
-              echo "::error::Deploy from feat/binary-exchange-engine after merging validated changes there."
+              echo "::error::Deploy from main (the consolidated mainline)."
               exit 1
               ;;
           esac

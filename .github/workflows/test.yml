@@ -2,9 +2,9 @@ name: Tests
 
 on:
   push:
-    branches: [main, feat/binary-exchange-engine]
+    branches: [main]
   pull_request:
-    branches: [main, feat/binary-exchange-engine]
+    branches: [main]
 
 jobs:
   cashier-guards:

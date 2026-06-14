@@ -7,7 +7,7 @@ name: Guard — fresh-DB migrations (G-03)
 
 on:
   push:
-    branches: [main, feat/binary-exchange-engine]
+    branches: [main]
     paths:
       - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/migrations/**'
       - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/cmd/migrate/**'

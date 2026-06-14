@@ -7,7 +7,7 @@ name: Guard — OpenAPI drift (G-04)
 
 on:
   push:
-    branches: [main, feat/binary-exchange-engine]
+    branches: [main]
     paths:
       - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/http/**'
       - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/api/openapi.yaml'
