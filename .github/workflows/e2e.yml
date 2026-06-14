@@ -54,14 +54,20 @@ jobs:
           cache: 'yarn'
           cache-dependency-path: apps/Phoenix-Predict-Combined/talon-backoffice/yarn.lock
 
-      - name: Migrate schema + seed base data
+      - name: Migrate schema + seed demo data
         working-directory: ${{ env.GW }}
         env:
           GATEWAY_DB_DSN: ${{ env.DSN }}
+          WALLET_DB_DSN: ${{ env.DSN }}
+          WALLET_STORE_MODE: db
         run: |
           export MIGRATIONS_DIR="$(pwd)/migrations"
           go run ./cmd/migrate up
-          go run ./cmd/seed
+          # demo mode (not base): layers on order-book liquidity, trade volume,
+          # price history, and a demo portfolio — the smoke suite is written
+          # against a demo-seeded stack (base leaves empty books, so the
+          # discovery cards have no YES/NO prices and the trade ticket is inert).
+          go run ./cmd/seed -mode demo
 
       - name: Start auth service (:18081)
         working-directory: ${{ env.AUTH }}
