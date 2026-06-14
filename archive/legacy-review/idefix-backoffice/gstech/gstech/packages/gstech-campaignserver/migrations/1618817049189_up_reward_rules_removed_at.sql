@@ -1,1 +1,0 @@
-alter table reward_rules add column "removedAt" timestamptz;

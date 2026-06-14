@@ -1,1 +1,0 @@
-alter table players add column "potentialGamblingProblem" boolean not null default false;

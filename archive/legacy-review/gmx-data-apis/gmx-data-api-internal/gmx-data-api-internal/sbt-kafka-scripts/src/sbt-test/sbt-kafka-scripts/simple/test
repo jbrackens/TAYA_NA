@@ -1,5 +1,0 @@
-# check if the file gets created
-> kafkascriptsRegisterSchema
-$ exists target/register-schema.sh
-
-$ pause

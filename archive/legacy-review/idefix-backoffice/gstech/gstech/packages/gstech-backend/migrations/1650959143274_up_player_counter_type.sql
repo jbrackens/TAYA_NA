@@ -1,1 +1,0 @@
-alter type player_counter_type add value 'promotion_wins';

@@ -1,1 +1,0 @@
-ALTER TABLE markets DROP COLUMN sport_id;

@@ -1,1 +1,0 @@
-UPDATE game_manufacturers SET name = 'Pragmatic Play' WHERE id = 'PP';

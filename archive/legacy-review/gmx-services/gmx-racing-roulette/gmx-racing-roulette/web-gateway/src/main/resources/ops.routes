@@ -1,6 +1,0 @@
-+operations
-GET        /events            net.flipsports.gmx.game.argyll.racingroulette.webgateway.controller.OperatorController.displayEvents()
-+operations
-GET        /events/:id        net.flipsports.gmx.game.argyll.racingroulette.webgateway.controller.OperatorController.displayEvent(id: String)
-+operations
-GET        /actors            net.flipsports.gmx.game.argyll.racingroulette.webgateway.controller.OperatorController.displayActors()

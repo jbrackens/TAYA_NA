@@ -1,6 +1,0 @@
-/* @flow */
-
-const MANUFACTURER_ID = 'RLX';
-const DEFAULT_JURISDICTION = 'MT';
-
-module.exports = { MANUFACTURER_ID, DEFAULT_JURISDICTION };

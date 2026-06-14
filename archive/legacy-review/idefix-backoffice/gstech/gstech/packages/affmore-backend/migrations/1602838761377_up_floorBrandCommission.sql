@@ -1,1 +1,0 @@
-alter table affiliates add column "floorBrandCommission" boolean not null default false;

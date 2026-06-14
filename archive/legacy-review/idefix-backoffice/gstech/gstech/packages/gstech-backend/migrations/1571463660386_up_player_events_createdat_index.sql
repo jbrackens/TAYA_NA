@@ -1,1 +1,0 @@
-CREATE index "player_events_createdAt_idx" on player_events("createdAt");

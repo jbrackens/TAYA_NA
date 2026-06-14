@@ -1,2 +1,0 @@
-CREATE DATABASE rule_configurator;
-REVOKE ALL PRIVILEGES ON DATABASE rule_configurator FROM PUBLIC;

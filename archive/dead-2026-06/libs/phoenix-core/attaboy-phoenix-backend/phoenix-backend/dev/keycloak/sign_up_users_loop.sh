@@ -1,1 +1,0 @@
-../../k8s-operations/sign_up_users_loop.sh

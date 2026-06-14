@@ -1,1 +1,0 @@
-ALTER TYPE brand_id ADD VALUE 'VB';

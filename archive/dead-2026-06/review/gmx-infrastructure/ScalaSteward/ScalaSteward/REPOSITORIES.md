@@ -1,4 +1,0 @@
-- flipadmin/gmx-waysun-event-aggregator
-- flipadmin/gmx-waysun-event-validdator
-- flipadmin/gmx-waysun-event-achievement
-- flipadmin/gmx-waysun-event-ingestor

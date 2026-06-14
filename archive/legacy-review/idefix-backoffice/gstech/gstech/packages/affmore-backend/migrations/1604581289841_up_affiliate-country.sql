@@ -1,1 +1,0 @@
-alter table affiliates add column "countryId" char(2) null;

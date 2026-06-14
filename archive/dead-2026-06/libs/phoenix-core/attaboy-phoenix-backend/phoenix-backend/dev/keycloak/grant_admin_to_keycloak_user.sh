@@ -1,1 +1,0 @@
-../../k8s-operations/grant_admin_to_keycloak_user.sh

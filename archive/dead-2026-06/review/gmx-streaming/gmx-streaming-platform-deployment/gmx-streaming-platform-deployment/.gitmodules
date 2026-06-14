@@ -1,3 +1,0 @@
-[submodule "deployment-scripts"]
-	path = deployment-scripts
-	url = git@github.com:flipadmin/gmx-streaming-platform-deployment-scripts.git

@@ -1,3 +1,0 @@
-[submodule "src/avro"]
-	path = src/avro
-	url = git@github.com:flipadmin/gmx-avro-schema.git

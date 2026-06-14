@@ -1,1 +1,0 @@
-../../../../k8s-operations/setup_elk.sh
