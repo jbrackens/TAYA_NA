@@ -404,6 +404,12 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		// where both are in scope — only when the RBAC service is wired.
 		if rbacService != nil {
 			registerPartnerAdminRoutes(mux, rbacService, predRepo)
+			// Partner webhook endpoints (P3-03): operator registers/lists/toggles
+			// a partner's receivers, gated by the same partners:write/read perms.
+			// Only when the webhooks store is wired (DB present).
+			if webhookStore != nil {
+				registerWebhookAdminRoutes(mux, rbacService, webhookStore)
+			}
 		}
 	}
 
