@@ -89,8 +89,12 @@ test.describe("/market/[ticker] — market detail", () => {
       await expect(
         page.getByRole("link", { name: "Log in to trade" }),
       ).toBeVisible();
-      await page.getByRole("button", { name: "$100" }).click();
-      await expect(page.locator(".tt-amt-display")).toContainText("$100.00");
+      const hundredChip = page.getByRole("button", { name: "$100" });
+      await hundredChip.click();
+      // Phase 3 ticket: the active quick-amount chip is aria-pressed. A pressed
+      // $100 chip proves amount=100 stuck (ISSUE-001: chips must not clamp to a
+      // zero balance). Replaces the removed .tt-amt-display element.
+      await expect(hundredChip).toHaveAttribute("aria-pressed", "true");
       await expect(
         page.getByRole("link", { name: "Log in to trade" }),
       ).toBeVisible();
