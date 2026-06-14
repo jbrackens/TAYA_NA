@@ -54,20 +54,13 @@ jobs:
           cache: 'yarn'
           cache-dependency-path: apps/Phoenix-Predict-Combined/talon-backoffice/yarn.lock
 
-      - name: Migrate schema + seed demo data
+      - name: Migrate schema
         working-directory: ${{ env.GW }}
         env:
           GATEWAY_DB_DSN: ${{ env.DSN }}
-          WALLET_DB_DSN: ${{ env.DSN }}
-          WALLET_STORE_MODE: db
         run: |
           export MIGRATIONS_DIR="$(pwd)/migrations"
           go run ./cmd/migrate up
-          # demo mode (not base): layers on order-book liquidity, trade volume,
-          # price history, and a demo portfolio — the smoke suite is written
-          # against a demo-seeded stack (base leaves empty books, so the
-          # discovery cards have no YES/NO prices and the trade ticket is inert).
-          go run ./cmd/seed -mode demo
 
       - name: Start auth service (:18081)
         working-directory: ${{ env.AUTH }}
@@ -96,8 +89,24 @@ jobs:
           nohup go run ./cmd/gateway > /tmp/gateway.log 2>&1 &
           for i in $(seq 1 45); do curl -fsS http://localhost:18080/healthz >/dev/null && break || sleep 2; done
           curl -fsS http://localhost:18080/healthz || { echo "::error::gateway failed to start"; tail -50 /tmp/gateway.log; exit 1; }
-          # Prove the stack is seeded + reachable through the gateway.
+          # Gateway reachable (markets endpoint serves; empty pre-seed is fine).
           curl -fsS http://localhost:18080/api/v1/markets >/dev/null || { echo "::error::gateway /markets not serving"; tail -50 /tmp/gateway.log; exit 1; }
+
+      - name: Seed demo data
+        working-directory: ${{ env.GW }}
+        env:
+          GATEWAY_DB_DSN: ${{ env.DSN }}
+          WALLET_DB_DSN: ${{ env.DSN }}
+          WALLET_STORE_MODE: db
+        run: |
+          # AFTER gateway boot on purpose: the wallet tables
+          # (wallet_balances/ledger/reservations) are created by the wallet
+          # service's ensureSchema at gateway startup, NOT by goose migrations,
+          # and the demo seed's phase-0 cleanup touches wallet_ledger — so it
+          # must exist first. demo mode layers order-book liquidity + trade
+          # volume + a demo portfolio (base leaves empty books -> no card
+          # prices, inert trade ticket).
+          go run ./cmd/seed -mode demo
 
       - name: Install frontend deps + build api-client
         working-directory: ${{ env.APP }}
