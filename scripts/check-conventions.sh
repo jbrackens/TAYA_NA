@@ -20,6 +20,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 APP="apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app"
+APIC="apps/Phoenix-Predict-Combined/talon-backoffice/packages/api-client/src"
 PRED="apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/prediction"
 TS="--include=*.ts --include=*.tsx"
 TEST_RE="\.test\.|\.spec\.|__tests__|/tests/"
@@ -59,6 +60,13 @@ report "no \`any\` type in app/ production" \
 #    real code referencing the banned tokens fails.
 report "no sportsbook concepts in prediction Go" \
   "$(grep -rnE "fixtures|selections|betslip|sport_key|punter_bets|freebets|odds_boosts|match_tracker" "$PRED" --include="*.go" 2>/dev/null | grep -v "_test.go" | grep -vE "^[^:]+:[0-9]+:[[:space:]]*(//|\*)")"
+
+# 6. No sportsbook concepts in the TS app + api-client production trees. Scoped to
+#    UNAMBIGUOUS sportsbook tokens only: `fixtures`/`selections` are intentionally
+#    NOT banned here because in the prediction app they are legitimate vocabulary
+#    (a market "selection" is the user's YES/NO pick; "fixture" is test infra).
+report "no sportsbook concepts in app/ + api-client/" \
+  "$(grep -rnE "betslip|sport_key|punter_bets|freebets|odds_boosts|match_tracker" $TS "$APP" "$APIC" 2>/dev/null | grep -viE "$TEST_RE")"
 
 echo "== convention gate: $fails ban(s) failed =="
 [ "$fails" -eq 0 ] || exit 1

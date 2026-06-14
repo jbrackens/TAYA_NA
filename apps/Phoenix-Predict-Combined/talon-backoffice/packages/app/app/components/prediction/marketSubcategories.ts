@@ -220,7 +220,6 @@ const DIRECT_FIELDS = [
   "series_title",
   "sport",
   "sportKey",
-  "sport_key",
   "tag",
   "tags",
   "topic",
