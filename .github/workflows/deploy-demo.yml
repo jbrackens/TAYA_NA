@@ -27,7 +27,7 @@ name: Deploy demo (Hetzner)
 
 on:
   push:
-    branches: [feat/binary-exchange-engine, main]   # deploy branch; 'main' added during P2-06 mainline promotion (narrow to main-only once feat is retired)
+    branches: [main]   # deploy branch (P2-06: consolidated onto main; feat/binary-exchange-engine retired 2026-06-14)
     paths:
       - 'apps/Phoenix-Predict-Combined/**'
       - '.github/workflows/deploy-demo.yml'
@@ -61,7 +61,7 @@ concurrency:
 env:
   BOX: 91.98.118.132
   SSH_OPTS: -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=30 -o ServerAliveCountMax=20
-  DEMO_DEPLOY_BRANCH_ALLOWLIST: feat/binary-exchange-engine main
+  DEMO_DEPLOY_BRANCH_ALLOWLIST: main
 
 jobs:
   deploy:
