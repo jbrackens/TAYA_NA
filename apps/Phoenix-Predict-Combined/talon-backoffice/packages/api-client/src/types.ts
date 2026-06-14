@@ -30,84 +30,6 @@ export interface PaginationMeta {
   itemsPerPage: number;
 }
 
-export interface Fixture {
-  id: string;
-  tournament: string;
-  homeTeam: string;
-  awayTeam: string;
-  startsAt: string;
-  status: 'scheduled' | 'in_play' | 'finished' | 'cancelled' | 'suspended';
-}
-
-export interface Selection {
-  id: string;
-  name: string;
-  odds: number;
-  status: string;
-}
-
-export interface Market {
-  id: string;
-  fixtureId: string;
-  name: string;
-  status: 'open' | 'suspended' | 'closed' | 'settled' | 'cancelled';
-  startsAt: string;
-  selections?: Selection[];
-}
-
-export interface SportCatalogItem {
-  sportKey: string;
-  name: string;
-  leagueCount: number;
-  eventCount: number;
-}
-
-export interface SportLeagueItem {
-  leagueKey: string;
-  name: string;
-  eventCount: number;
-}
-
-export interface SportEventItem {
-  eventKey: string;
-  fixtureId: string;
-  sportKey: string;
-  leagueKey: string;
-  leagueName: string;
-  seasonKey?: string;
-  name: string;
-  homeTeam: string;
-  awayTeam: string;
-  startTime: string;
-  status: 'scheduled' | 'in_play' | 'finished' | 'cancelled' | 'suspended';
-  marketsTotalCount: number;
-}
-
-export interface Bet {
-  betId: string;
-  userId: string;
-  marketId: string;
-  selectionId: string;
-  stakeCents: number;
-  odds: number;
-  status: 'pending' | 'accepted' | 'settled' | 'cancelled' | 'refunded';
-  createdAt: string;
-  settledAt?: string;
-}
-
-export interface BetPrecheckResult {
-  valid: boolean;
-  warnings: string[];
-  estimatedReturns: number;
-}
-
-export interface CashoutQuote {
-  quoteId: string;
-  betId: string;
-  amountCents: number;
-  expiresAt: string;
-}
-
 export interface WalletBalance {
   userId: string;
   balanceCents: number;
@@ -126,84 +48,6 @@ export interface WalletLedgerEntry {
 export interface WalletMutationResponse {
   entry: WalletLedgerEntry;
   balanceCents: number;
-}
-
-export interface Freebet {
-  freebetId: string;
-  playerId: string;
-  campaignId?: string;
-  currency: string;
-  totalAmountCents: number;
-  remainingAmountCents: number;
-  minOddsDecimal?: number;
-  appliesToSportIds?: string[];
-  appliesToTournamentIds?: string[];
-  expiresAt: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface OddsBoost {
-  oddsBoostId: string;
-  playerId: string;
-  campaignId?: string;
-  marketId: string;
-  selectionId: string;
-  currency: string;
-  originalOdds: number;
-  boostedOdds: number;
-  maxStakeCents?: number;
-  minOddsDecimal?: number;
-  status: string;
-  expiresAt: string;
-  acceptedAt?: string;
-  acceptRequestId?: string;
-  acceptReason?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface MatchTrackerScore {
-  home: number;
-  away: number;
-}
-
-export interface MatchTrackerIncident {
-  incidentId: string;
-  fixtureId: string;
-  type: string;
-  period?: string;
-  clockSeconds?: number;
-  score?: MatchTrackerScore;
-  details?: Record<string, string>;
-  occurredAt: string;
-}
-
-export interface MatchTrackerTimeline {
-  fixtureId: string;
-  status: 'scheduled' | 'in_play' | 'finished' | 'cancelled' | 'suspended';
-  period?: string;
-  clockSeconds?: number;
-  score: MatchTrackerScore;
-  incidents?: MatchTrackerIncident[];
-  updatedAt: string;
-}
-
-export interface AdminPunter {
-  userId: string;
-  email: string;
-  status: 'active' | 'suspended' | 'self_excluded' | 'deactivated';
-  createdAt: string;
-  lastLoginAt?: string;
-}
-
-export interface AdminMarketView {
-  id: string;
-  fixtureId: string;
-  name: string;
-  status: string;
-  startsAt: string;
 }
 
 export interface AuditLogEntry {
@@ -230,76 +74,10 @@ export interface RefreshRequest {
   refreshToken: string;
 }
 
-export interface PlaceBetRequest {
-  userId: string;
-  requestId?: string;
-  deviceId?: string;
-  segmentId?: string;
-  ipAddress?: string;
-  oddsPrecision?: number;
-  acceptAnyOdds?: boolean;
-  marketId: string;
-  selectionId: string;
-  stakeCents: number;
-  odds: number;
-  freebetId?: string;
-  oddsBoostId?: string;
-  idempotencyKey: string;
-}
-
-export interface PrecheckBetRequest {
-  userId: string;
-  requestId?: string;
-  deviceId?: string;
-  segmentId?: string;
-  ipAddress?: string;
-  oddsPrecision?: number;
-  acceptAnyOdds?: boolean;
-  marketId: string;
-  selectionId: string;
-  stakeCents: number;
-  odds: number;
-  freebetId?: string;
-  oddsBoostId?: string;
-}
-
-export interface CashoutQuoteRequest {
-  betId: string;
-  userId: string;
-  requestId: string;
-  providerAmountCents?: number;
-  providerRevision?: number;
-  providerSource?: string;
-  providerExpiresAt?: string;
-}
-
-export interface CashoutAcceptRequest {
-  betId: string;
-  userId: string;
-  quoteId: string;
-  requestId: string;
-  quoteRevision?: number;
-  reason?: string;
-}
-
 export interface WalletMutationRequest {
   userId: string;
   amountCents: number;
   idempotencyKey: string;
-  reason?: string;
-}
-
-export interface OddsBoostAcceptRequest {
-  userId: string;
-  requestId: string;
-  reason?: string;
-}
-
-export interface ProviderCancelRequest {
-  adapter: string;
-  playerId: string;
-  betId: string;
-  requestId: string;
   reason?: string;
 }
 

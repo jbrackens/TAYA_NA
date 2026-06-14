@@ -15,18 +15,10 @@ export {
   decodeJWT,
   isJWTExpired,
 } from "./auth";
-export { PhoenixWebSocketClient } from "./websocket";
 export {
   PredictionApiClient,
   createPredictionClient,
 } from "./prediction-client";
-export type {
-  WebSocketConfig,
-  WebSocketMessage,
-  MessageHandler,
-  ConnectionHandler,
-  ErrorHandler,
-} from "./websocket";
 export type { AuthTokens } from "./auth";
 
 // Type exports
@@ -35,35 +27,13 @@ export type {
   SessionResponse,
   ErrorResponse,
   PaginationMeta,
-  Fixture,
-  Selection,
-  Market,
-  SportCatalogItem,
-  SportLeagueItem,
-  SportEventItem,
-  Bet,
-  BetPrecheckResult,
-  CashoutQuote,
   WalletBalance,
   WalletLedgerEntry,
   WalletMutationResponse,
-  Freebet,
-  OddsBoost,
-  MatchTrackerScore,
-  MatchTrackerIncident,
-  MatchTrackerTimeline,
-  AdminPunter,
-  AdminMarketView,
   AuditLogEntry,
   LoginRequest,
   RefreshRequest,
-  PlaceBetRequest,
-  PrecheckBetRequest,
-  CashoutQuoteRequest,
-  CashoutAcceptRequest,
   WalletMutationRequest,
-  OddsBoostAcceptRequest,
-  ProviderCancelRequest,
   PaginationOptions,
   ListResponse,
   SimpleListResponse,

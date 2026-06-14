@@ -12,33 +12,12 @@ import {
   ErrorResponse,
   LoginRequest,
   RefreshRequest,
-  ListResponse,
-  SimpleListResponse,
-  Fixture,
-  Market,
-  Bet,
-  BetPrecheckResult,
-  CashoutQuote,
   WalletBalance,
   WalletLedgerEntry,
   WalletMutationResponse,
   WalletMutationRequest,
-  Freebet,
-  OddsBoost,
-  MatchTrackerTimeline,
-  AdminPunter,
-  AdminMarketView,
   AuditLogEntry,
-  SportCatalogItem,
-  SportLeagueItem,
-  SportEventItem,
   PaginationOptions,
-  PlaceBetRequest,
-  PrecheckBetRequest,
-  CashoutQuoteRequest,
-  CashoutAcceptRequest,
-  OddsBoostAcceptRequest,
-  ProviderCancelRequest,
 } from './types';
 
 const DEFAULT_TIMEOUT = 30000;
@@ -121,116 +100,6 @@ export class PhoenixApiClient {
     return this.get<SessionResponse>('/api/v1/auth/session');
   }
 
-  // ===== Fixtures & Markets =====
-
-  /**
-   * List fixtures with pagination
-   */
-  async listFixtures(options?: PaginationOptions & { tournament?: string }): Promise<ListResponse<Fixture>> {
-    const params = this.buildQueryParams(options);
-    return this.get<ListResponse<Fixture>>('/api/v1/fixtures', params);
-  }
-
-  /**
-   * Get fixture detail with markets
-   */
-  async getFixture(fixtureId: string): Promise<Fixture> {
-    return this.get<Fixture>(`/api/v1/fixtures/${fixtureId}`);
-  }
-
-  /**
-   * List markets with pagination
-   */
-  async listMarkets(
-    options?: PaginationOptions & { status?: string; fixtureId?: string }
-  ): Promise<ListResponse<Market>> {
-    const params = this.buildQueryParams(options);
-    return this.get<ListResponse<Market>>('/api/v1/markets', params);
-  }
-
-  /**
-   * Get market detail with selections
-   */
-  async getMarket(marketId: string): Promise<Market> {
-    return this.get<Market>(`/api/v1/markets/${marketId}`);
-  }
-
-  // ===== Sports =====
-
-  /**
-   * List all sports catalog
-   */
-  async listSports(): Promise<{ items: SportCatalogItem[] }> {
-    return this.get<{ items: SportCatalogItem[] }>('/api/v1/sports');
-  }
-
-  /**
-   * Get sport detail with leagues
-   */
-  async getSportLeagues(sportKey: string): Promise<{ sportKey: string; items: SportLeagueItem[] }> {
-    return this.get<{ sportKey: string; items: SportLeagueItem[] }>(`/api/v1/sports/${sportKey}`);
-  }
-
-  /**
-   * List sport events
-   */
-  async listSportEvents(
-    sportKey: string,
-    options?: PaginationOptions & { status?: string; leagueKey?: string }
-  ): Promise<{ sportKey: string; items: SportEventItem[]; pagination: any }> {
-    const params = this.buildQueryParams(options);
-    return this.get(`/api/v1/sports/${sportKey}/events`, params);
-  }
-
-  /**
-   * List markets for a sport event
-   */
-  async listSportEventMarkets(
-    sportKey: string,
-    eventKey: string,
-    options?: PaginationOptions
-  ): Promise<{ sportKey: string; eventKey: string; fixtureId: string; items: Market[]; pagination: any }> {
-    const params = this.buildQueryParams(options);
-    return this.get(`/api/v1/sports/${sportKey}/events/${eventKey}/markets`, params);
-  }
-
-  // ===== Betting =====
-
-  /**
-   * Precheck bet before placement
-   */
-  async precheckBet(request: PrecheckBetRequest): Promise<BetPrecheckResult> {
-    return this.post<BetPrecheckResult>('/api/v1/bets/precheck', request);
-  }
-
-  /**
-   * Place a single bet
-   */
-  async placeBet(request: PlaceBetRequest): Promise<Bet> {
-    return this.post<Bet>('/api/v1/bets/place', request);
-  }
-
-  /**
-   * Get bet by ID
-   */
-  async getBet(betId: string): Promise<Bet> {
-    return this.get<Bet>(`/api/v1/bets/${betId}`);
-  }
-
-  /**
-   * Get cashout quote for a bet
-   */
-  async getCashoutQuote(request: CashoutQuoteRequest): Promise<CashoutQuote> {
-    return this.post<CashoutQuote>('/api/v1/bets/cashout/quote', request);
-  }
-
-  /**
-   * Accept cashout quote
-   */
-  async acceptCashout(request: CashoutAcceptRequest): Promise<{ bet: Bet; quote: CashoutQuote }> {
-    return this.post<{ bet: Bet; quote: CashoutQuote }>('/api/v1/bets/cashout/accept', request);
-  }
-
   // ===== Wallet =====
 
   /**
@@ -263,85 +132,7 @@ export class PhoenixApiClient {
     return this.post<WalletMutationResponse>('/api/v1/wallet/debit', request);
   }
 
-  // ===== Promotions =====
-
-  /**
-   * List freebets for user
-   */
-  async listFreebets(userId: string, status?: string): Promise<SimpleListResponse<Freebet>> {
-    const params = new URLSearchParams();
-    params.append('userId', userId);
-    if (status) params.append('status', status);
-    return this.get<SimpleListResponse<Freebet>>('/api/v1/freebets', params);
-  }
-
-  /**
-   * Get freebet detail
-   */
-  async getFreebet(freebetId: string): Promise<Freebet> {
-    return this.get<Freebet>(`/api/v1/freebets/${freebetId}`);
-  }
-
-  /**
-   * List odds boosts for user
-   */
-  async listOddsBoosts(userId: string, status?: string): Promise<SimpleListResponse<OddsBoost>> {
-    const params = new URLSearchParams();
-    params.append('userId', userId);
-    if (status) params.append('status', status);
-    return this.get<SimpleListResponse<OddsBoost>>('/api/v1/odds-boosts', params);
-  }
-
-  /**
-   * Get odds boost detail
-   */
-  async getOddsBoost(oddsBoostId: string): Promise<OddsBoost> {
-    return this.get<OddsBoost>(`/api/v1/odds-boosts/${oddsBoostId}`);
-  }
-
-  /**
-   * Accept odds boost
-   */
-  async acceptOddsBoost(oddsBoostId: string, request: OddsBoostAcceptRequest): Promise<OddsBoost> {
-    return this.post<OddsBoost>(`/api/v1/odds-boosts/${oddsBoostId}/accept`, request);
-  }
-
-  // ===== Match Tracking =====
-
-  /**
-   * Get match tracker timeline for fixture
-   */
-  async getMatchTracker(fixtureId: string): Promise<MatchTrackerTimeline> {
-    return this.get<MatchTrackerTimeline>(`/api/v1/match-tracker/fixtures/${fixtureId}`);
-  }
-
   // ===== Admin =====
-
-  /**
-   * List fixtures (admin only)
-   */
-  async adminListFixtures(options?: PaginationOptions & { tournament?: string }): Promise<{ items: Fixture[]; pagination: any }> {
-    const params = this.buildQueryParams(options);
-    return this.get('/admin/fixtures', params);
-  }
-
-  /**
-   * List markets (admin only)
-   */
-  async adminListMarkets(
-    options?: PaginationOptions & { status?: string; fixtureId?: string }
-  ): Promise<{ items: AdminMarketView[]; pagination: any }> {
-    const params = this.buildQueryParams(options);
-    return this.get('/admin/markets', params);
-  }
-
-  /**
-   * List punters (admin only)
-   */
-  async adminListPunters(options?: PaginationOptions & { status?: string }): Promise<{ items: AdminPunter[]; pagination: any }> {
-    const params = this.buildQueryParams(options);
-    return this.get('/admin/punters', params);
-  }
 
   /**
    * List audit logs (admin only)
@@ -349,41 +140,6 @@ export class PhoenixApiClient {
   async adminListAuditLogs(options?: PaginationOptions): Promise<{ items: AuditLogEntry[]; pagination: any }> {
     const params = this.buildQueryParams(options);
     return this.get('/admin/audit-logs', params);
-  }
-
-  /**
-   * Cancel provider operation (admin only)
-   */
-  async adminCancelProvider(request: ProviderCancelRequest): Promise<{ status: string }> {
-    return this.post('/admin/provider/cancel', request);
-  }
-
-  /**
-   * Get risk rankings (admin only)
-   */
-  async adminGetRiskRankings(limit?: number): Promise<{ items: any[] }> {
-    const params = new URLSearchParams();
-    if (limit) params.append('limit', limit.toString());
-    return this.get('/admin/risk/rankings', params);
-  }
-
-  /**
-   * Get player risk score (admin only)
-   */
-  async adminGetPlayerScore(userId: string): Promise<any> {
-    const params = new URLSearchParams();
-    params.append('userId', userId);
-    return this.get('/admin/risk/player-scores', params);
-  }
-
-  /**
-   * Get risk segments (admin only)
-   */
-  async adminGetRiskSegments(userId?: string, limit?: number): Promise<{ items: any[]; total: number }> {
-    const params = new URLSearchParams();
-    if (userId) params.append('userId', userId);
-    if (limit) params.append('limit', limit.toString());
-    return this.get('/admin/risk/segments', params);
   }
 
   // ===== Internal HTTP Methods =====
