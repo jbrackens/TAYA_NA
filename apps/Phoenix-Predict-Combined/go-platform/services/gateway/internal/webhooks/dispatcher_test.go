@@ -131,7 +131,11 @@ func testDispatcher(st Store, cfg func(*DispatcherConfig)) *Dispatcher {
 	if cfg != nil {
 		cfg(&c)
 	}
-	return NewDispatcher(st, c)
+	d := NewDispatcher(st, c)
+	// Tests deliver to a loopback httptest server; the production SSRF-safe
+	// client blocks loopback, so use a plain client for the test harness.
+	d.client = &stdhttp.Client{Timeout: c.Timeout}
+	return d
 }
 
 // drive ticks the dispatcher until predicate holds or the deadline passes.

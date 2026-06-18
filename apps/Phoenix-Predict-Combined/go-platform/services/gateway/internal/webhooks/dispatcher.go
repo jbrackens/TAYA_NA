@@ -48,8 +48,11 @@ type Dispatcher struct {
 // (per-delivery timeout from cfg).
 func NewDispatcher(store Store, cfg DispatcherConfig) *Dispatcher {
 	return &Dispatcher{
-		store:  store,
-		client: &stdhttp.Client{Timeout: cfg.Timeout},
+		store: store,
+		// SSRF-safe client: refuses to dial private/loopback/link-local addresses,
+		// so a partner-controlled endpoint URL can't reach internal services or
+		// cloud metadata (SECURITY-REVIEW #6).
+		client: SafeHTTPClient(cfg.Timeout),
 		cfg:    cfg,
 	}
 }

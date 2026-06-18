@@ -7,7 +7,6 @@ import (
 	"errors"
 	"log/slog"
 	stdhttp "net/http"
-	"net/url"
 	"strings"
 
 	"phoenix-revival/gateway/internal/rbac"
@@ -173,20 +172,9 @@ func registerWebhookAdminRoutes(mux *stdhttp.ServeMux, rbacSvc *rbac.Service, st
 // expected in production (and can be enforced at the edge); http is permitted
 // so local/demo receivers work.
 func validateWebhookURL(raw string) error {
-	if raw == "" {
-		return errors.New("url is required")
-	}
-	u, err := url.Parse(raw)
-	if err != nil {
-		return errors.New("url is not a valid URL")
-	}
-	if u.Scheme != "http" && u.Scheme != "https" {
-		return errors.New("url must be http or https")
-	}
-	if u.Host == "" {
-		return errors.New("url must include a host")
-	}
-	return nil
+	// SSRF-aware: http(s) + public host only, blocking private/loopback/
+	// link-local/cloud-metadata addresses (SECURITY-REVIEW #6).
+	return webhooks.ValidatePublicURL(raw)
 }
 
 // unknownEventTypes returns any requested event types not in the canonical set.
