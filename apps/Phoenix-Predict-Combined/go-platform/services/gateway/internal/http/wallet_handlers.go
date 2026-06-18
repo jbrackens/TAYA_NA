@@ -41,9 +41,14 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service) {
 			return httpx.NotFound("wallet not found")
 		}
 
-		// Enforce auth context: players can only access their own wallet
+		// Enforce auth context: players can only access their own wallet. Deny on
+		// an empty session identity rather than skipping the check (fail closed,
+		// not open — SECURITY-REVIEW #14).
 		authUserID := httpx.UserIDFromContext(r.Context())
-		if authUserID != "" && userID != authUserID && httpx.RoleFromContext(r.Context()) != "admin" {
+		if authUserID == "" {
+			return httpx.Unauthorized("authentication required")
+		}
+		if userID != authUserID && httpx.RoleFromContext(r.Context()) != "admin" {
 			return httpx.Forbidden("cannot access another user's wallet")
 		}
 

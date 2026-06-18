@@ -259,19 +259,18 @@ func parseAdminRFC3339(raw string, field string) (time.Time, error) {
 	})
 }
 
-// adminActorFromRequest returns the actor id for audit attribution on admin
-// routes, from the X-Admin-Actor / X-Admin-User / X-Actor-Id headers, defaulting
-// to "admin". Only consulted after requireAdminRole has authorized the caller.
+// adminActorFromRequest returns the actor id for audit attribution + two-person
+// controls on admin routes. It is taken from the AUTHENTICATED session identity
+// (username/email, then user id) — never a client-supplied header, which would
+// be spoofable and could defeat the withdrawal broadcaster≠approver check and
+// forge the audit trail (SECURITY-REVIEW #7). Only consulted after
+// requireAdminRole has authorized the caller.
 func adminActorFromRequest(r *stdhttp.Request) string {
-	candidates := []string{
-		strings.TrimSpace(r.Header.Get("X-Admin-Actor")),
-		strings.TrimSpace(r.Header.Get("X-Admin-User")),
-		strings.TrimSpace(r.Header.Get("X-Actor-Id")),
+	if email := strings.TrimSpace(httpx.UsernameFromContext(r.Context())); email != "" {
+		return email
 	}
-	for _, candidate := range candidates {
-		if candidate != "" {
-			return candidate
-		}
+	if uid := strings.TrimSpace(httpx.UserIDFromContext(r.Context())); uid != "" {
+		return uid
 	}
 	return "admin"
 }

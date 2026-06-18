@@ -40,7 +40,7 @@ func TestWalletCreditDebitBalanceAndLedgerFlow(t *testing.T) {
 		t.Fatalf("expected debit status 200, got %d, body=%s", debitRes.Code, debitRes.Body.String())
 	}
 
-	balanceReq := httptest.NewRequest(http.MethodGet, "/api/v1/wallet/u-wallet-1", nil)
+	balanceReq := adminWalletContext(httptest.NewRequest(http.MethodGet, "/api/v1/wallet/u-wallet-1", nil))
 	balanceRes := httptest.NewRecorder()
 	handler.ServeHTTP(balanceRes, balanceReq)
 	if balanceRes.Code != http.StatusOK {
@@ -55,7 +55,7 @@ func TestWalletCreditDebitBalanceAndLedgerFlow(t *testing.T) {
 		t.Fatalf("expected balance 600, got %v", balancePayload["balanceCents"])
 	}
 
-	ledgerReq := httptest.NewRequest(http.MethodGet, "/api/v1/wallet/u-wallet-1/ledger?limit=10", nil)
+	ledgerReq := adminWalletContext(httptest.NewRequest(http.MethodGet, "/api/v1/wallet/u-wallet-1/ledger?limit=10", nil))
 	ledgerRes := httptest.NewRecorder()
 	handler.ServeHTTP(ledgerRes, ledgerReq)
 	if ledgerRes.Code != http.StatusOK {

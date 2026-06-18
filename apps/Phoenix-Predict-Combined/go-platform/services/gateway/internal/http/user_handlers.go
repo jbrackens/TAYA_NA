@@ -49,15 +49,16 @@ func registerUserRoutes(mux *stdhttp.ServeMux) {
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
-		var body struct {
-			UserID string `json:"user_id"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.UserID == "" {
-			return httpx.BadRequest("user_id is required", nil)
+		// Self-service deletion: the subject is the authenticated session user,
+		// never a client-supplied user_id (which would let any authenticated user
+		// schedule deletion for any account — SECURITY-REVIEW #13, IDOR).
+		userID := httpx.UserIDFromContext(r.Context())
+		if userID == "" {
+			return httpx.Unauthorized("authentication required")
 		}
 		deletionDate := time.Now().AddDate(0, 0, 30).UTC().Format(time.RFC3339)
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{
-			"user_id":                 body.UserID,
+			"user_id":                 userID,
 			"status":                  "pending_deletion",
 			"scheduled_deletion_date": deletionDate,
 		})
