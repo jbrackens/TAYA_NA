@@ -110,7 +110,7 @@ func (r *predictionAdminRepo) UpdateMarket(_ context.Context, market *prediction
 	return nil
 }
 
-func (r *predictionAdminRepo) UpdateMarketStatus(_ context.Context, id string, status prediction.MarketStatus) error {
+func (r *predictionAdminRepo) UpdateMarketStatus(_ context.Context, id string, status, _ prediction.MarketStatus) error {
 	market, ok := r.markets[id]
 	if !ok {
 		return errors.New("not found")

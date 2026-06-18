@@ -22,7 +22,7 @@ import (
 // DB-backed (a real persistent decision target).
 func registerKYCAdminRoutes(mux *stdhttp.ServeMux, kyc *compliance.PostgresKYCService) {
 	mux.Handle("/api/v1/admin/kyc/decision", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if err := requireAdminRole(r); err != nil {
+		if err := requireAdminPermission(r, "compliance:write"); err != nil {
 			return err
 		}
 		if r.Method != stdhttp.MethodPost {

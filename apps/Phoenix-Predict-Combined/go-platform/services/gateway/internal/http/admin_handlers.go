@@ -181,7 +181,7 @@ func registerAdminWalletMutationRoutes(mux *stdhttp.ServeMux, basePath string, w
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
-		if err := requireAdminRole(r); err != nil {
+		if err := requireAdminPermission(r, "finances:write"); err != nil {
 			return err
 		}
 
@@ -214,7 +214,7 @@ func registerAdminWalletMutationRoutes(mux *stdhttp.ServeMux, basePath string, w
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
-		if err := requireAdminRole(r); err != nil {
+		if err := requireAdminPermission(r, "finances:write"); err != nil {
 			return err
 		}
 

@@ -290,6 +290,10 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		rbacService = rbac.NewService(rbac.NewSQLRepository(rbacDB))
 		registerRBACAdminRoutes(mux, rbacService)
 	}
+	// Expose the RBAC service to the admin money/market route guards
+	// (requireAdminPermission). Set once at boot, read per-request; nil in
+	// memory mode / tests, where the admin-role gate alone applies.
+	adminRBAC = rbacService
 
 	// Outbound webhook dispatcher (P3-03): drains the delivery outbox —
 	// claim due rows, POST the HMAC-signed event, retry with backoff or

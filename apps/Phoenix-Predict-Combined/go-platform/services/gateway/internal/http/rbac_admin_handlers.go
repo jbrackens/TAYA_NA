@@ -349,6 +349,24 @@ func requireRBACPermission(r *stdhttp.Request, svc *rbac.Service, permission str
 	return nil
 }
 
+// adminRBAC is the process-wide RBAC service used by requireAdminPermission. It
+// is set once by RegisterRoutes (read per-request from handler closures, so
+// registration order does not matter) and is nil in memory mode / tests, where
+// requireAdminPermission degrades to the admin-role gate alone — preserving
+// prior behavior.
+var adminRBAC *rbac.Service
+
+// requireAdminPermission gates an admin route on the session admin role and,
+// when the RBAC service is wired, the given fine-grained permission. It closes
+// the escalation where any admin_users staffer could reach money/market routes
+// that previously checked only requireAdminRole (SECURITY-REVIEW #5).
+func requireAdminPermission(r *stdhttp.Request, permission string) error {
+	if adminRBAC == nil {
+		return requireAdminRole(r)
+	}
+	return requireRBACPermission(r, adminRBAC, permission)
+}
+
 // writeRBACError maps domain errors to HTTP responses.
 func writeRBACError(err error) error {
 	switch {

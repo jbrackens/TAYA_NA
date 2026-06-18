@@ -665,7 +665,7 @@ func registerPortfolioRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 	// Admin: list markets (GET — includes unopened drafts) + create market (POST)
 	mux.Handle("/api/v1/admin/markets", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if err := requireAdminRole(r); err != nil {
+		if err := requireAdminPermission(r, "markets:edit"); err != nil {
 			return err
 		}
 
@@ -791,7 +791,7 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 
 	// Admin: Create event (the parent an AI-drafted or hand-made market attaches to).
 	mux.Handle("/api/v1/admin/events", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if err := requireAdminRole(r); err != nil {
+		if err := requireAdminPermission(r, "markets:edit"); err != nil {
 			return err
 		}
 		if r.Method != stdhttp.MethodPost {
@@ -826,7 +826,7 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 
 	// Admin: Market lifecycle transitions
 	mux.Handle("/api/v1/admin/markets/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if err := requireAdminRole(r); err != nil {
+		if err := requireAdminPermission(r, "markets:edit"); err != nil {
 			return err
 		}
 		path := strings.TrimPrefix(r.URL.Path, "/api/v1/admin/markets/")
@@ -1010,7 +1010,7 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 
 	// Admin: Settle market
 	mux.Handle("/api/v1/admin/settlements/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if err := requireAdminRole(r); err != nil {
+		if err := requireAdminPermission(r, "settlements:resolve"); err != nil {
 			return err
 		}
 		if r.Method != stdhttp.MethodPost {

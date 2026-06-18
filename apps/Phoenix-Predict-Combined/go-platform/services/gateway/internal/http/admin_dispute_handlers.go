@@ -71,7 +71,7 @@ func registerAdminDisputeRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, 
 
 	// Resolve: uphold (void the market, refund) or reject a single dispute.
 	mux.Handle("/api/v1/admin/disputes/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if err := requireAdminRole(r); err != nil {
+		if err := requireAdminPermission(r, "settlements:resolve"); err != nil {
 			return err
 		}
 		if r.Method != stdhttp.MethodPost {
