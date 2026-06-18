@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import DOMPurify from "isomorphic-dompurify";
 import { useTranslation } from "react-i18next";
 import {
   getPage,
@@ -20,7 +21,7 @@ function ContentBody({ html }: { html: string }) {
   return (
     <div
       className="content-page-body"
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
     />
   );
 }
@@ -100,8 +101,9 @@ export const ContentPageRenderer: React.FC<ContentPageProps> = ({
                       key={block.blockId}
                       className="content-page-body"
                       dangerouslySetInnerHTML={{
-                        __html:
+                        __html: DOMPurify.sanitize(
                           (block.content as Record<string, string>).html || "",
+                        ),
                       }}
                     />
                   );

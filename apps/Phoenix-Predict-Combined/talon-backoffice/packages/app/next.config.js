@@ -20,7 +20,11 @@ const realtimeOrigin = (() => {
 })();
 
 const frameSrc = ["'self'", "https://www.googletagmanager.com"];
-const connectSrc = ["'self'"];
+const connectSrc = [
+  "'self'",
+  "https://www.googletagmanager.com",
+  "https://www.google-analytics.com",
+];
 if (chatOrigin) {
   frameSrc.push(chatOrigin);
   connectSrc.push(chatOrigin, chatOrigin.replace(/^http/, "ws"));
@@ -33,6 +37,13 @@ const securityHeaders = [
   {
     key: "Content-Security-Policy",
     value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com data:",
+      "img-src 'self' data: blob: https:",
+      "object-src 'none'",
+      "base-uri 'self'",
       "frame-ancestors 'self'",
       `frame-src ${frameSrc.join(" ")}`,
       `connect-src ${connectSrc.join(" ")}`,

@@ -37,6 +37,7 @@
     "@types/react-infinite-scroller": "^1.2.1",
     "formik": "^2.2.9",
     "i18next": "^23.7.0",
+    "isomorphic-dompurify": "^2.16.0",
     "jsonwebtoken": "^9.0.0",
     "libphonenumber-js": "^1.9.20",
     "lucide-react": "^1.7.0",

@@ -77,8 +77,13 @@ function redirectToLogin(request: NextRequest, pathname: string): NextResponse {
 }
 
 export async function proxy(request: NextRequest): Promise<NextResponse> {
-  // Hard escape hatch for local dev / a backend-less environment.
-  if (process.env.OFFICE_AUTH_GUARD_DISABLED === "true") {
+  // Hard escape hatch for local dev / a backend-less environment. Gated to
+  // non-production so a stray OFFICE_AUTH_GUARD_DISABLED=true can never open
+  // the admin shell in prod (instrumentation.ts also refuses boot in that case).
+  if (
+    process.env.OFFICE_AUTH_GUARD_DISABLED === "true" &&
+    process.env.NODE_ENV !== "production"
+  ) {
     return NextResponse.next();
   }
 
@@ -101,6 +106,15 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   // presence check (token present => allow) so the office is never hard-locked.
   const valid = await validateSession(request, token);
   if (valid === false) {
+    return redirectToLogin(request, pathname);
+  }
+
+  // Fail CLOSED in production when the validator is unreachable (null): a
+  // forged/expired token must not be served the shell just because the auth
+  // backend is down or misconfigured. In dev we keep the prior fail-OPEN
+  // degrade-to-presence-check behaviour so a backend-less environment still
+  // works.
+  if (valid === null && process.env.NODE_ENV === "production") {
     return redirectToLogin(request, pathname);
   }
 

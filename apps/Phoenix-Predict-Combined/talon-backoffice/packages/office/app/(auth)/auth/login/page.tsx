@@ -71,7 +71,14 @@ function LoginForm() {
         }
       }
 
-      const destination = returnUrl.startsWith("/") ? returnUrl : "/dashboard";
+      // Guard against open-redirect: only allow same-origin absolute paths.
+      // Reject protocol-relative ("//evil.com") and backslash ("/\evil.com")
+      // forms that browsers normalize to a cross-origin destination.
+      const isSafeReturn =
+        returnUrl.startsWith("/") &&
+        !returnUrl.startsWith("//") &&
+        !returnUrl.startsWith("/\\");
+      const destination = isSafeReturn ? returnUrl : "/dashboard";
       window.location.assign(destination);
     } catch (err) {
       setError("Network error. Please try again.");

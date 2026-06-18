@@ -287,7 +287,15 @@ export default function CashierPage() {
           "Deposit requires redirect to payment gateway",
           depositRes.redirectUrl,
         );
-        window.open(depositRes.redirectUrl, "payment", "width=600,height=800");
+        // Only follow https:// gateway URLs and isolate the popup from
+        // window.opener (noopener,noreferrer) to prevent reverse tabnabbing.
+        if (/^https:\/\//i.test(String(depositRes.redirectUrl))) {
+          window.open(
+            depositRes.redirectUrl,
+            "payment",
+            "noopener,noreferrer,width=600,height=800",
+          );
+        }
         startPolling(depositRes.transactionId);
         return;
       }
@@ -370,11 +378,15 @@ export default function CashierPage() {
             "Deposit requires redirect to payment gateway",
             depositRes.redirectUrl,
           );
-          window.open(
-            depositRes.redirectUrl,
-            "payment",
-            "width=600,height=800",
-          );
+          // Only follow https:// gateway URLs and isolate the popup from
+          // window.opener (noopener,noreferrer) to prevent reverse tabnabbing.
+          if (/^https:\/\//i.test(String(depositRes.redirectUrl))) {
+            window.open(
+              depositRes.redirectUrl,
+              "payment",
+              "noopener,noreferrer,width=600,height=800",
+            );
+          }
           startPolling(depositRes.transactionId);
           return;
         }

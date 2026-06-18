@@ -182,9 +182,16 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
       const data = await res.json();
 
       // In production, the ID-Comply SDK opens an iframe/redirect here
-      // data.redirectUrl would point to the ID-Comply hosted verification page
-      if (data.redirectUrl) {
-        window.open(data.redirectUrl, "_blank", "width=600,height=800");
+      // data.redirectUrl would point to the ID-Comply hosted verification page.
+      // Only follow https:// URLs (blocks javascript:/data: redirect injection)
+      // and pass noopener,noreferrer so the popup can't reach back via
+      // window.opener (reverse tabnabbing).
+      if (data.redirectUrl && /^https:\/\//i.test(String(data.redirectUrl))) {
+        window.open(
+          data.redirectUrl,
+          "_blank",
+          "noopener,noreferrer,width=600,height=800",
+        );
       }
 
       // Poll for verification status
