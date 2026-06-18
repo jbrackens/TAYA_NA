@@ -643,6 +643,15 @@ func applyTIF(plan *MatchPlan, taker *Order) error {
 		if filled != nil {
 			taker.FilledAt = filled
 		}
+		// Release any uncaptured surplus of the taker's cash reservation. A buy
+		// holds worst-case priceCents×qty but captures at the (better) fill price,
+		// so on a full fill the difference must be freed now — otherwise it stays
+		// locked against available balance until the reservation expires at
+		// CloseAt+TTL (days). Idempotent: a no-op when capture equalled the hold,
+		// and for share-reserved sells (SECURITY-REVIEW #10).
+		plan.ReleaseReservations = append(plan.ReleaseReservations, ReservationRef{
+			Type: "prediction_order", ID: taker.ID,
+		})
 		return nil
 	}
 	switch taker.TimeInForce {
