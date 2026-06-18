@@ -449,6 +449,12 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		} else {
 			alphaCashierService.SetEVMClient(evmClient)
 		}
+		// Reorg finality watcher (audit A2-03): re-verify credited deposits every
+		// 5 minutes and freeze any whose backing tx was orphaned by a reorg. The
+		// tick self-guards on the EVM client + ledger being present, so it is a
+		// no-op until the RPC client above connects.
+		reorgWatcher := alphacashier.NewReorgWatcher(alphaCashierService, 5*time.Minute)
+		go reorgWatcher.Run(context.Background())
 	}
 	alphacashier.RegisterRoutes(mux, alphaCashierService)
 	registerAlphaCashierAdminRoutes(mux, alphaCashierService, rbacService)

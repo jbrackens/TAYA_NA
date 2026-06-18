@@ -73,6 +73,7 @@ func TestTwoPersonBootValidation(t *testing.T) {
 		"ALPHA_CASHIER_TREASURY_ADDRESS":         "0x0000000000000000000000000000000000000002",
 		"ALPHA_CASHIER_WITHDRAWALS_ENABLED":      "true",
 		"ALPHA_CASHIER_WITHDRAWAL_BROADCAST_ACK": "true",
+		"ALPHA_CASHIER_SCREENING_ENFORCEMENT":    "true",
 	}
 	getenv := func(over map[string]string) func(string) string {
 		m := map[string]string{}

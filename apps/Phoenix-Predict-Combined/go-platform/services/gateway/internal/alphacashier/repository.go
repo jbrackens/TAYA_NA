@@ -2,6 +2,7 @@ package alphacashier
 
 import (
 	"context"
+	"database/sql"
 	"sort"
 	"strconv"
 	"strings"
@@ -20,10 +21,17 @@ type Repository interface {
 	SaveDepositIntent(ctx context.Context, intent DepositIntent) (*DepositIntent, error)
 	MarkDepositSubmitted(ctx context.Context, id string, txHash string, submittedAt time.Time) (*DepositIntent, error)
 	MarkDepositCredited(ctx context.Context, id string, walletEntryID string, confirmedAt time.Time, creditedAt time.Time) (*DepositIntent, error)
+	// MarkDepositCreditedTx is the tx-aware variant of MarkDepositCredited; it
+	// participates in the caller's *sql.Tx so the wallet credit and the intent
+	// status update commit atomically (audit A2/HIGH #9).
+	MarkDepositCreditedTx(ctx context.Context, tx *sql.Tx, id string, walletEntryID string, confirmedAt time.Time, creditedAt time.Time) (*DepositIntent, error)
 	RecordChainTransaction(ctx context.Context, tx ChainTransaction) error
 	GetDepositIntent(ctx context.Context, id string) (*DepositIntent, error)
 	ListDepositIntents(ctx context.Context, userID string) ([]DepositIntent, error)
 	ListAdminDepositIntents(ctx context.Context, filter DepositIntentFilter) ([]DepositIntent, error)
+	// ListCreditedDepositsForFinality returns credited deposits paired with the
+	// on-chain evidence they were credited from, for the reorg watcher (A2-03).
+	ListCreditedDepositsForFinality(ctx context.Context, limit int) ([]CreditedDeposit, error)
 	SumUserDepositIntentCentsSince(ctx context.Context, userID string, since time.Time) (int64, error)
 	FindWithdrawalRequestByIdempotencyKey(ctx context.Context, userID string, idempotencyKey string) (*WithdrawalRequest, error)
 	SaveWithdrawalRequest(ctx context.Context, request WithdrawalRequest) (*WithdrawalRequest, error)
@@ -44,6 +52,7 @@ type MemoryRepository struct {
 	wallets     map[string]WalletConnection
 	deposits    map[string]DepositIntent
 	withdrawals map[string]WithdrawalRequest
+	chainTxs    map[string]ChainTransaction
 	audits      []AuditEvent
 	seq         int64
 }
@@ -54,6 +63,7 @@ func NewMemoryRepository() *MemoryRepository {
 		wallets:     map[string]WalletConnection{},
 		deposits:    map[string]DepositIntent{},
 		withdrawals: map[string]WithdrawalRequest{},
+		chainTxs:    map[string]ChainTransaction{},
 	}
 }
 
@@ -178,8 +188,46 @@ func (r *MemoryRepository) MarkDepositCredited(_ context.Context, id string, wal
 	return &intent, nil
 }
 
-func (r *MemoryRepository) RecordChainTransaction(_ context.Context, _ ChainTransaction) error {
+// MarkDepositCreditedTx mirrors MarkDepositCredited for the memory repo. The
+// memory ledger has no real transaction, so the *sql.Tx is ignored and the
+// passthrough simply delegates to the non-tx path.
+func (r *MemoryRepository) MarkDepositCreditedTx(ctx context.Context, _ *sql.Tx, id string, walletEntryID string, confirmedAt time.Time, creditedAt time.Time) (*DepositIntent, error) {
+	return r.MarkDepositCredited(ctx, id, walletEntryID, confirmedAt, creditedAt)
+}
+
+func (r *MemoryRepository) RecordChainTransaction(_ context.Context, tx ChainTransaction) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if tx.DepositIntentID != "" {
+		r.chainTxs[tx.DepositIntentID] = tx
+	}
 	return nil
+}
+
+func (r *MemoryRepository) ListCreditedDepositsForFinality(_ context.Context, limit int) ([]CreditedDeposit, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	out := []CreditedDeposit{}
+	for _, intent := range r.deposits {
+		if intent.Status != "credited" {
+			continue
+		}
+		tx, ok := r.chainTxs[intent.ID]
+		if !ok {
+			continue
+		}
+		out = append(out, CreditedDeposit{
+			DepositID:   intent.ID,
+			UserID:      intent.UserID,
+			AmountCents: intent.AmountCents,
+			Tx:          tx,
+		})
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].DepositID < out[j].DepositID })
+	if limit > 0 && len(out) > limit {
+		out = out[:limit]
+	}
+	return out, nil
 }
 
 func (r *MemoryRepository) GetDepositIntent(_ context.Context, id string) (*DepositIntent, error) {

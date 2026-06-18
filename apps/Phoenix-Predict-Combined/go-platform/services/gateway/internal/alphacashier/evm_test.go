@@ -2,6 +2,7 @@ package alphacashier
 
 import (
 	"context"
+	"database/sql"
 	"math/big"
 	"strings"
 	"testing"
@@ -191,6 +192,15 @@ func (l *fakeLedger) Credit(_ context.Context, req wallet.MutationRequest) (wall
 		IdempotencyKey: req.IdempotencyKey,
 	}, nil
 }
+
+// CreditWithTx delegates to Credit in the fake: the memory-mode path never
+// reaches it (DB() returns nil), but it satisfies the WalletLedger interface.
+func (l *fakeLedger) CreditWithTx(ctx context.Context, _ *sql.Tx, req wallet.MutationRequest) (wallet.LedgerEntry, error) {
+	return l.Credit(ctx, req)
+}
+
+// DB returns nil so SubmitDepositTx takes the non-tx (memory-mode) path.
+func (l *fakeLedger) DB() *sql.DB { return nil }
 
 func (l *fakeLedger) Hold(_ context.Context, req wallet.HoldRequest) (wallet.Reservation, error) {
 	if l.holds == nil {

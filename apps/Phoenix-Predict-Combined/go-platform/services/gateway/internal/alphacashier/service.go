@@ -2,11 +2,13 @@ package alphacashier
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"log/slog"
 	"math/big"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"phoenix-revival/gateway/internal/wallet"
@@ -14,6 +16,16 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"
 )
+
+// auditWriteFailures counts alpha-cashier audit-log persistence failures
+// (audit CMP-02/03 / LOW #22). A nonzero value means a money-path audit entry
+// failed to durably persist — the money op still succeeded (audit is never on
+// the critical path), but the compliance trail silently degraded to a log line,
+// so this is surfaced on /metrics to drive an alert.
+var auditWriteFailures atomic.Int64
+
+// AuditWriteFailures returns the cumulative count of dropped audit writes.
+func AuditWriteFailures() int64 { return auditWriteFailures.Load() }
 
 const (
 	defaultChallengeTTL      = 10 * time.Minute
@@ -41,9 +53,15 @@ type Service struct {
 
 type WalletLedger interface {
 	Credit(ctx context.Context, request wallet.MutationRequest) (wallet.LedgerEntry, error)
+	// CreditWithTx applies a credit inside the caller's transaction so the
+	// deposit credit + intent status update commit atomically (HIGH #9).
+	CreditWithTx(ctx context.Context, tx *sql.Tx, request wallet.MutationRequest) (wallet.LedgerEntry, error)
 	Hold(ctx context.Context, request wallet.HoldRequest) (wallet.Reservation, error)
 	Release(ctx context.Context, referenceType, referenceID string) error
 	Capture(ctx context.Context, referenceType, referenceID string) (wallet.LedgerEntry, error)
+	// DB exposes the underlying *sql.DB for atomic multi-step operations, or
+	// nil in memory mode (callers must fall back to the non-tx path).
+	DB() *sql.DB
 }
 
 func NewService(cfg Config, repo Repository) *Service {
@@ -93,11 +111,11 @@ func (s *Service) CreateWalletChallenge(ctx context.Context, userID string, wall
 		ExpiresAt:     expiresAt,
 		CreatedAt:     now,
 	}
-	challenge.Message = BuildWalletChallengeMessage(userID, challenge.WalletAddress, s.cfg.ChainID, nonce, now, expiresAt)
+	challenge.Message = BuildWalletChallengeMessage(s.cfg.ChallengeDomain(), userID, challenge.WalletAddress, s.cfg.ChainID, nonce, now, expiresAt)
 	if err := s.repo.SaveWalletChallenge(ctx, challenge); err != nil {
 		return nil, err
 	}
-	_ = s.recordAudit(ctx, "wallet_challenge", nonce, "alpha_cashier.wallet.challenge_created", "user", userID, map[string]any{
+	s.auditOrLog(ctx, "wallet_challenge", nonce, "alpha_cashier.wallet.challenge_created", "user", userID, map[string]any{
 		"userId":        userID,
 		"chainId":       s.cfg.ChainID,
 		"walletAddress": challenge.WalletAddress,
@@ -154,7 +172,7 @@ func (s *Service) ConnectWallet(ctx context.Context, userID string, nonce string
 	if err != nil {
 		return nil, err
 	}
-	_ = s.recordAudit(ctx, "wallet_connection", saved.ID, "alpha_cashier.wallet.connected", "user", userID, map[string]any{
+	s.auditOrLog(ctx, "wallet_connection", saved.ID, "alpha_cashier.wallet.connected", "user", userID, map[string]any{
 		"userId":        userID,
 		"chainId":       saved.ChainID,
 		"walletAddress": saved.WalletAddress,
@@ -236,7 +254,7 @@ func (s *Service) CreateDepositIntent(ctx context.Context, userID string, wallet
 	if err != nil {
 		return nil, err
 	}
-	_ = s.recordAudit(ctx, "deposit_intent", saved.ID, "alpha_cashier.deposit_intent.created", "user", userID, map[string]any{
+	s.auditOrLog(ctx, "deposit_intent", saved.ID, "alpha_cashier.deposit_intent.created", "user", userID, map[string]any{
 		"userId":       userID,
 		"chainId":      saved.ChainID,
 		"amountCents":  saved.AmountCents,
@@ -318,6 +336,13 @@ func (s *Service) SubmitDepositTx(ctx context.Context, userID string, id string,
 	if submitted == nil {
 		return nil, nil
 	}
+	// Re-screen the depositing wallet at submit time (audit CMP-01): screening
+	// only at intent creation is insufficient — a wallet can be listed between
+	// intent and the on-chain transfer that actually moves funds. No-op when no
+	// screener is configured.
+	if err := s.screenAddress(ctx, submitted.UserID, submitted.FromAddress, "deposit_from_submit"); err != nil {
+		return nil, err
+	}
 	evidence, err := VerifyERC20Transfer(ctx, s.evmClient, TransferExpectation{
 		ChainID:               submitted.ChainID,
 		TxHash:                txHash,
@@ -335,20 +360,54 @@ func (s *Service) SubmitDepositTx(ctx context.Context, userID string, id string,
 	if err := s.repo.RecordChainTransaction(ctx, *evidence); err != nil {
 		return nil, err
 	}
-	entry, err := s.ledger.Credit(ctx, wallet.MutationRequest{
+	mutation := wallet.MutationRequest{
 		UserID:         submitted.UserID,
 		AmountCents:    submitted.AmountCents,
 		IdempotencyKey: "alpha-cashier:deposit:" + strconv64(evidence.ChainID) + ":" + strings.ToLower(evidence.TxHash) + ":" + strconv64(int64(evidence.LogIndex)),
 		Reason:         "alpha USDC deposit " + strconv64(evidence.ChainID) + "/" + strings.ToLower(evidence.TxHash),
-	})
-	if err != nil {
-		return nil, err
 	}
-	credited, err := s.repo.MarkDepositCredited(ctx, submitted.ID, entry.EntryID, now, now)
-	if err != nil {
-		return nil, err
+	// HIGH #9: credit the wallet and mark the intent credited in ONE DB tx so a
+	// crash between them can never leave a credited balance with the intent
+	// stuck on 'submitted' (or vice versa). The wallet credit is idempotent by
+	// key, so a replay returns the same entry without double-crediting. In
+	// memory mode (DB() == nil) there is no real tx, so fall back to the
+	// sequential path the tests exercise.
+	var entry wallet.LedgerEntry
+	var credited *DepositIntent
+	if db := s.ledger.DB(); db != nil {
+		tx, err := db.BeginTx(ctx, nil)
+		if err != nil {
+			return nil, err
+		}
+		committed := false
+		defer func() {
+			if !committed {
+				_ = tx.Rollback()
+			}
+		}()
+		entry, err = s.ledger.CreditWithTx(ctx, tx, mutation)
+		if err != nil {
+			return nil, err
+		}
+		credited, err = s.repo.MarkDepositCreditedTx(ctx, tx, submitted.ID, entry.EntryID, now, now)
+		if err != nil {
+			return nil, err
+		}
+		if err := tx.Commit(); err != nil {
+			return nil, err
+		}
+		committed = true
+	} else {
+		entry, err = s.ledger.Credit(ctx, mutation)
+		if err != nil {
+			return nil, err
+		}
+		credited, err = s.repo.MarkDepositCredited(ctx, submitted.ID, entry.EntryID, now, now)
+		if err != nil {
+			return nil, err
+		}
 	}
-	_ = s.recordAudit(ctx, "deposit_intent", submitted.ID, "alpha_cashier.deposit.credited", "system", "alpha-cashier", map[string]any{
+	s.auditOrLog(ctx, "deposit_intent", submitted.ID, "alpha_cashier.deposit.credited", "system", "alpha-cashier", map[string]any{
 		"userId":        submitted.UserID,
 		"chainId":       evidence.ChainID,
 		"txHash":        evidence.TxHash,
@@ -427,7 +486,7 @@ func (s *Service) CreateWithdrawalRequest(ctx context.Context, userID string, de
 		_ = s.ledger.Release(ctx, withdrawalReferenceType, id)
 		return nil, err
 	}
-	_ = s.recordAudit(ctx, "withdrawal_request", saved.ID, "alpha_cashier.withdrawal.requested", "user", userID, map[string]any{
+	s.auditOrLog(ctx, "withdrawal_request", saved.ID, "alpha_cashier.withdrawal.requested", "user", userID, map[string]any{
 		"userId":             userID,
 		"chainId":            saved.ChainID,
 		"amountCents":        saved.AmountCents,
@@ -501,7 +560,7 @@ func (s *Service) ApproveWithdrawal(ctx context.Context, id string, actorID stri
 	if err != nil {
 		return nil, err
 	}
-	_ = s.recordAudit(ctx, "withdrawal_request", req.ID, "alpha_cashier.withdrawal.approved", "admin", actorID, map[string]any{
+	s.auditOrLog(ctx, "withdrawal_request", req.ID, "alpha_cashier.withdrawal.approved", "admin", actorID, map[string]any{
 		"userId":      req.UserID,
 		"amountCents": req.AmountCents,
 		"note":        note,
@@ -538,7 +597,7 @@ func (s *Service) RejectWithdrawal(ctx context.Context, id string, actorID strin
 	if err != nil {
 		return nil, err
 	}
-	_ = s.recordAudit(ctx, "withdrawal_request", req.ID, "alpha_cashier.withdrawal.rejected", "admin", actorID, map[string]any{
+	s.auditOrLog(ctx, "withdrawal_request", req.ID, "alpha_cashier.withdrawal.rejected", "admin", actorID, map[string]any{
 		"userId":      req.UserID,
 		"amountCents": req.AmountCents,
 		"note":        note,
@@ -585,7 +644,7 @@ func (s *Service) MarkWithdrawalBroadcasted(ctx context.Context, id string, acto
 	if err != nil {
 		return nil, err
 	}
-	_ = s.recordAudit(ctx, "withdrawal_request", req.ID, "alpha_cashier.withdrawal.broadcasted", "admin", actorID, map[string]any{
+	s.auditOrLog(ctx, "withdrawal_request", req.ID, "alpha_cashier.withdrawal.broadcasted", "admin", actorID, map[string]any{
 		"userId":      req.UserID,
 		"amountCents": req.AmountCents,
 		"txHash":      txHash,
@@ -619,7 +678,7 @@ func (s *Service) MarkWithdrawalCompleted(ctx context.Context, id string, actorI
 	if err != nil {
 		return nil, err
 	}
-	_ = s.recordAudit(ctx, "withdrawal_request", req.ID, "alpha_cashier.withdrawal.completed", "admin", actorID, map[string]any{
+	s.auditOrLog(ctx, "withdrawal_request", req.ID, "alpha_cashier.withdrawal.completed", "admin", actorID, map[string]any{
 		"userId":        req.UserID,
 		"amountCents":   req.AmountCents,
 		"walletEntryId": entry.EntryID,
@@ -697,6 +756,18 @@ func (s *Service) requireWithdrawalsEnabled() error {
 		return ErrWithdrawalsDisabled
 	}
 	return nil
+}
+
+// auditOrLog records an audit event and, if the write fails, logs at ERROR and
+// increments auditWriteFailures rather than dropping the error silently (LOW
+// #22). The money operation is never failed on an audit write error — the audit
+// trail is observability, not a transactional precondition.
+func (s *Service) auditOrLog(ctx context.Context, subjectType string, subjectID string, eventType string, actorType string, actorID string, payload map[string]any) {
+	if err := s.recordAudit(ctx, subjectType, subjectID, eventType, actorType, actorID, payload); err != nil {
+		auditWriteFailures.Add(1)
+		slog.ErrorContext(ctx, "alpha cashier: audit write failed — entry not durably persisted",
+			"event_type", eventType, "subject_type", subjectType, "subject_id", subjectID, "error", err)
+	}
 }
 
 func (s *Service) recordAudit(ctx context.Context, subjectType string, subjectID string, eventType string, actorType string, actorID string, payload map[string]any) error {

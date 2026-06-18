@@ -13,6 +13,9 @@ var (
 	ErrInsufficientFunds    = errors.New("insufficient funds")
 	ErrWithdrawalFailed     = errors.New("withdrawal failed")
 	ErrDepositFailed        = errors.New("deposit failed")
+	// ErrWebhookMismatch is returned when a webhook's asserted amount/user does
+	// not match the locked payment row before any money is moved (MEDIUM #17).
+	ErrWebhookMismatch = errors.New("webhook amount/user does not match transaction record")
 )
 
 // PaymentService defines the interface for payment operations

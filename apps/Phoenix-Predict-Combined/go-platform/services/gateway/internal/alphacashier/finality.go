@@ -106,7 +106,7 @@ func (s *Service) FreezeReorgedDeposit(ctx context.Context, depositID, userID st
 	}
 	slog.ErrorContext(ctx, "alpha cashier: REORG detected on credited deposit — funds frozen pending review",
 		"deposit_id", depositID, "user_id", userID, "amount_cents", amountCents)
-	_ = s.recordAudit(ctx, "deposit_intent", depositID, "alpha_cashier.deposit.reorg_frozen", "system", "alpha-cashier", map[string]any{
+	s.auditOrLog(ctx, "deposit_intent", depositID, "alpha_cashier.deposit.reorg_frozen", "system", "alpha-cashier", map[string]any{
 		"userId":      userID,
 		"amountCents": amountCents,
 		"holdKey":     holdKey,

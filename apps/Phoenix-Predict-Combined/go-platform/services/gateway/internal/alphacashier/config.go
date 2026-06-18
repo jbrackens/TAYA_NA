@@ -34,6 +34,18 @@ type Config struct {
 	// FinalityConfirmationsValue is the block depth at which a credited deposit
 	// is considered final by the reorg watcher (audit A2-03). 0 = default (64).
 	FinalityConfirmationsValue int64 `json:"finalityConfirmations"`
+	// ChallengeDomainValue is the origin/domain bound into the wallet-connect
+	// challenge message (audit #19). Empty = default ("hula-na").
+	ChallengeDomainValue string `json:"challengeDomain"`
+}
+
+// ChallengeDomain returns the origin/domain to bind into the wallet challenge
+// message (audit #19), defaulting to "hula-na" when unset.
+func (c Config) ChallengeDomain() string {
+	if d := strings.TrimSpace(c.ChallengeDomainValue); d != "" {
+		return d
+	}
+	return defaultChallengeDomain
 }
 
 func LoadConfigFromEnv(getenv func(string) string) (Config, error) {
@@ -55,6 +67,7 @@ func LoadConfigFromEnv(getenv func(string) string) (Config, error) {
 		ScreeningEnforced:          envBool(getenv, "ALPHA_CASHIER_SCREENING_ENFORCEMENT", false),
 		TwoPersonWithdrawal:        envBool(getenv, "ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL", true),
 		FinalityConfirmationsValue: envInt64(getenv, "ALPHA_CASHIER_FINALITY_CONFIRMATIONS", 0),
+		ChallengeDomainValue:       envString(getenv, "ALPHA_CASHIER_CHALLENGE_DOMAIN", defaultChallengeDomain),
 	}
 	if !cfg.Enabled {
 		return cfg, nil
@@ -76,6 +89,15 @@ func ValidateRuntimeConfig(getenv func(string) string) error {
 	env := strings.ToLower(strings.TrimSpace(getenv("ENVIRONMENT")))
 	if (env == "production" || env == "staging") && !cfg.WithdrawalReviewNeeded {
 		return fmt.Errorf("ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED=false is not allowed when ENVIRONMENT=%s", env)
+	}
+	// Sanctions/AML screening enforcement must be ON, or explicitly acked off,
+	// whenever the rail is enabled in prod/staging (audit CMP-01 / HIGH #9).
+	// Mirrors the two-person ack pattern: running a live custodial rail with
+	// observe-only screening is a deliberate, audited choice — not a default.
+	if (env == "production" || env == "staging") &&
+		!cfg.ScreeningEnforced &&
+		!envBool(getenv, "ALPHA_CASHIER_SCREENING_ENFORCEMENT_ACK_DISABLED", false) {
+		return fmt.Errorf("ALPHA_CASHIER_SCREENING_ENFORCEMENT must be true, or explicitly acked off via ALPHA_CASHIER_SCREENING_ENFORCEMENT_ACK_DISABLED=true, when the rail is enabled and ENVIRONMENT=%s", env)
 	}
 	if (env == "production" || env == "staging") && cfg.WithdrawalsEnabled {
 		if !envBool(getenv, "ALPHA_CASHIER_WITHDRAWAL_BROADCAST_ACK", false) {

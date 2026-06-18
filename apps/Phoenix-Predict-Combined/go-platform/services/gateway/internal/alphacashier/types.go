@@ -128,6 +128,16 @@ type ChainTransaction struct {
 	CreatedAt       time.Time
 }
 
+// CreditedDeposit pairs a credited deposit intent with the on-chain evidence it
+// was credited from, so the reorg watcher (audit A2-03) can re-verify finality
+// of the exact transaction/block that backed the credit.
+type CreditedDeposit struct {
+	DepositID   string
+	UserID      string
+	AmountCents int64
+	Tx          ChainTransaction
+}
+
 type WithdrawalRequest struct {
 	ID                  string     `json:"id"`
 	UserID              string     `json:"userId"`

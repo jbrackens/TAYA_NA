@@ -5,6 +5,7 @@ import (
 	"strings"
 	"sync/atomic"
 
+	"phoenix-revival/gateway/internal/alphacashier"
 	"phoenix-revival/gateway/internal/ws"
 )
 
@@ -38,6 +39,10 @@ func GatewayInfraMetrics() string {
 	b.WriteString("# HELP gateway_audit_write_failures_total Provider-ops audit-log entries that failed to durably persist.\n")
 	b.WriteString("# TYPE gateway_audit_write_failures_total counter\n")
 	fmt.Fprintf(&b, "gateway_audit_write_failures_total %d\n", auditWriteFailures.Load())
+
+	b.WriteString("# HELP gateway_alpha_cashier_audit_write_failures_total Alpha-cashier money-path audit-log entries that failed to durably persist.\n")
+	b.WriteString("# TYPE gateway_alpha_cashier_audit_write_failures_total counter\n")
+	fmt.Fprintf(&b, "gateway_alpha_cashier_audit_write_failures_total %d\n", alphacashier.AuditWriteFailures())
 
 	b.WriteString(ws.RenderMetrics())
 	return b.String()

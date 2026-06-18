@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"math/big"
 	"strings"
 	"time"
 
@@ -11,6 +12,11 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 )
+
+// defaultChallengeDomain is the origin/domain stamped into the wallet challenge
+// so a signature for one application cannot be replayed as a connect on another
+// (audit #19). Replaces the legacy literal "Tiangge".
+const defaultChallengeDomain = "hula-na"
 
 func NewNonce() (string, error) {
 	var b [16]byte
@@ -20,9 +26,18 @@ func NewNonce() (string, error) {
 	return hex.EncodeToString(b[:]), nil
 }
 
-func BuildWalletChallengeMessage(userID string, walletAddress string, chainID int64, nonce string, issuedAt time.Time, expiresAt time.Time) string {
+// BuildWalletChallengeMessage builds the personal-sign challenge text. domain is
+// the binding origin (e.g. "hula-na"); an empty domain falls back to the
+// default. NOTE (#19): this is a plain personal_sign message, not EIP-712/SIWE —
+// full structured SIWE is out of scope and tracked separately.
+func BuildWalletChallengeMessage(domain string, userID string, walletAddress string, chainID int64, nonce string, issuedAt time.Time, expiresAt time.Time) string {
+	domain = strings.TrimSpace(domain)
+	if domain == "" {
+		domain = defaultChallengeDomain
+	}
 	return fmt.Sprintf(
-		"Tiangge\n\nAction: Connect wallet\nUser ID: %s\nWallet: %s\nChain ID: %d\nNonce: %s\nIssued At: %s\nExpires At: %s",
+		"%s\n\nAction: Connect wallet\nUser ID: %s\nWallet: %s\nChain ID: %d\nNonce: %s\nIssued At: %s\nExpires At: %s",
+		domain,
 		userID,
 		common.HexToAddress(walletAddress).Hex(),
 		chainID,
@@ -44,6 +59,15 @@ func VerifyPersonalSignature(message string, signatureHex string, expectedAddres
 		sig[64] -= 27
 	}
 	if sig[64] != 0 && sig[64] != 1 {
+		return ErrSignatureInvalid
+	}
+	// Reject high-S (malleable) signatures per EIP-2 (audit #19): for any valid
+	// signature (r,s) there is a complementary (r, N-s) that recovers the same
+	// key, so without this check a distinct-looking signature could pass and be
+	// replayed. ValidateSignatureValues with homestead=true rejects s > N/2.
+	r := new(big.Int).SetBytes(sig[:32])
+	sVal := new(big.Int).SetBytes(sig[32:64])
+	if !crypto.ValidateSignatureValues(sig[64], r, sVal, true) {
 		return ErrSignatureInvalid
 	}
 	pub, err := crypto.SigToPub(accounts.TextHash([]byte(message)), sig)

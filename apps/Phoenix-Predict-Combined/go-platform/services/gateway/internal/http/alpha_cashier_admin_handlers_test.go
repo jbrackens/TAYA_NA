@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
 	stdhttp "net/http"
 	"net/http/httptest"
@@ -209,6 +210,12 @@ func (l *alphaHTTPFakeLedger) Credit(_ context.Context, request wallet.MutationR
 		BalanceCents: request.AmountCents,
 	}, nil
 }
+
+func (l *alphaHTTPFakeLedger) CreditWithTx(ctx context.Context, _ *sql.Tx, request wallet.MutationRequest) (wallet.LedgerEntry, error) {
+	return l.Credit(ctx, request)
+}
+
+func (l *alphaHTTPFakeLedger) DB() *sql.DB { return nil }
 
 func (l *alphaHTTPFakeLedger) Hold(_ context.Context, request wallet.HoldRequest) (wallet.Reservation, error) {
 	return wallet.Reservation{
