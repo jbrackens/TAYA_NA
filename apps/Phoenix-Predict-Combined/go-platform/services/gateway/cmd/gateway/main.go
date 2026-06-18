@@ -94,6 +94,9 @@ func main() {
 	authEnabled := strings.ToLower(strings.TrimSpace(os.Getenv("GATEWAY_AUTH_ENABLED"))) != "false"
 
 	middlewares := []httpx.Middleware{
+		// Auth-disabled (dev/demo) chain has no httpx.Auth to strip client-set
+		// identity headers, so do it explicitly here (SECURITY-REVIEW #24).
+		stripClientIdentityHeaders,
 		tenant.Middleware, // innermost: resolves the active tenant after auth (ADR-0005 step 2)
 		httpx.RequestID(),
 		httpx.NormalizeTrailingSlash("/api/", "/admin/", "/auth/"),
@@ -137,6 +140,19 @@ func main() {
 		log.Fatalf("%s service failed: %v", cfg.Name, err)
 	}
 	slog.Info("service stopped gracefully", "service", cfg.Name)
+}
+
+// stripClientIdentityHeaders removes client-supplied identity headers at ingress.
+// httpx.Auth performs this in the auth-enabled chain; the auth-disabled (dev/demo)
+// chain has none, so we strip explicitly to stop a handler's header fallback from
+// honoring an attacker-set identity (SECURITY-REVIEW #24, defense-in-depth).
+func stripClientIdentityHeaders(next stdhttp.Handler) stdhttp.Handler {
+	return stdhttp.HandlerFunc(func(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+		for _, h := range []string{"X-User-ID", "X-Admin-Role", "X-Bot-Scopes", "X-Bot-Key-ID", "X-Admin-Actor", "X-Admin-User", "X-Actor-Id"} {
+			r.Header.Del(h)
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func gatewayPublicPrefixes() []string {

@@ -65,7 +65,7 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
 		filter := prediction.EventFilter{
-			Page:     intQueryParam(r, "page", 1),
+			Page:     clampedQueryParam(r, "page", 1, 100000),
 			PageSize: clampedQueryParam(r, "pageSize", 20, 100),
 		}
 		if cat := r.URL.Query().Get("categoryId"); cat != "" {
@@ -115,7 +115,7 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
 		filter := prediction.MarketFilter{
-			Page:     intQueryParam(r, "page", 1),
+			Page:     clampedQueryParam(r, "page", 1, 100000),
 			PageSize: clampedQueryParam(r, "pageSize", 20, 100),
 		}
 		if eid := r.URL.Query().Get("eventId"); eid != "" {
@@ -360,7 +360,7 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 			}
 			filter := prediction.OrderFilter{
 				UserID:   userID,
-				Page:     intQueryParam(r, "page", 1),
+				Page:     clampedQueryParam(r, "page", 1, 100000),
 				PageSize: clampedQueryParam(r, "pageSize", 20, 200),
 			}
 			if mid := r.URL.Query().Get("marketId"); mid != "" {
@@ -639,7 +639,7 @@ func registerPortfolioRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if userID == "" {
 			return httpx.Unauthorized("authentication required")
 		}
-		page := intQueryParam(r, "page", 1)
+		page := clampedQueryParam(r, "page", 1, 100000)
 		pageSize := clampedQueryParam(r, "pageSize", 20, 200)
 		payouts, total, err := svc.ListSettledPositions(r.Context(), userID, page, pageSize)
 		if err != nil {
@@ -673,7 +673,7 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		// pre-launch `unopened` drafts so the backoffice can review and open them.
 		if r.Method == stdhttp.MethodGet {
 			filter := prediction.MarketFilter{
-				Page:            intQueryParam(r, "page", 1),
+				Page:            clampedQueryParam(r, "page", 1, 100000),
 				PageSize:        clampedQueryParam(r, "pageSize", 20, 500),
 				IncludeUnopened: true,
 			}

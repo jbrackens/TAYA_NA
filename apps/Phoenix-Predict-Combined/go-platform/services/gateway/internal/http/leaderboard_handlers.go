@@ -285,6 +285,11 @@ func parseLeaderboardPagination(r *stdhttp.Request) (limit int, offset int, err 
 		}
 		limit = parsed
 	}
+	if limit > 200 {
+		// Clamp the public, unauthenticated leaderboard page size (SECURITY-REVIEW
+		// #16: ?limit=100000000 → full-table sort/DoS).
+		limit = 200
+	}
 	if raw := strings.TrimSpace(r.URL.Query().Get("offset")); raw != "" {
 		parsed, parseErr := strconv.Atoi(raw)
 		if parseErr != nil || parsed < 0 {

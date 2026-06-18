@@ -150,7 +150,8 @@ func (r *SQLRepository) ListEvents(ctx context.Context, filter EventFilter) ([]E
 	q := `SELECT id, series_id, title, description, category_id, status, featured,
 	             open_at, close_at, settle_at, settled_at, metadata, created_by, created_at, updated_at
 	      FROM prediction_events` + where + ` ORDER BY close_at ASC`
-	q += fmt.Sprintf(` LIMIT %d OFFSET %d`, filter.PageSize, (filter.Page-1)*filter.PageSize)
+	q += fmt.Sprintf(` LIMIT $%d OFFSET $%d`, len(args)+1, len(args)+2)
+	args = append(args, filter.PageSize, (filter.Page-1)*filter.PageSize)
 
 	rows, err := r.db.QueryContext(ctx, q, args...)
 	if err != nil {
@@ -248,7 +249,8 @@ func (r *SQLRepository) ListMarkets(ctx context.Context, filter MarketFilter) ([
 	          WHERE t.market_id = rm.id
 	            AND t.traded_at >= NOW() - INTERVAL '24 hours'
 	      ) v24 ON true` + marketRankingOrderClause()
-	q += fmt.Sprintf(` LIMIT %d OFFSET %d`, filter.PageSize, (filter.Page-1)*filter.PageSize)
+	q += fmt.Sprintf(` LIMIT $%d OFFSET $%d`, len(args)+1, len(args)+2)
+	args = append(args, filter.PageSize, (filter.Page-1)*filter.PageSize)
 
 	rows, err := r.db.QueryContext(ctx, q, args...)
 	if err != nil {
@@ -578,7 +580,8 @@ func (r *SQLRepository) ListOrders(ctx context.Context, filter OrderFilter) ([]O
 	             status, wallet_reservation_id, idempotency_key,
 	             expires_at, filled_at, cancelled_at, created_at, updated_at
 	      FROM prediction_orders` + where + ` ORDER BY created_at DESC`
-	q += fmt.Sprintf(` LIMIT %d OFFSET %d`, filter.PageSize, (filter.Page-1)*filter.PageSize)
+	q += fmt.Sprintf(` LIMIT $%d OFFSET $%d`, len(args)+1, len(args)+2)
+	args = append(args, filter.PageSize, (filter.Page-1)*filter.PageSize)
 
 	rows, err := r.db.QueryContext(ctx, q, args...)
 	if err != nil {
