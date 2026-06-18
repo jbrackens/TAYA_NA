@@ -11,6 +11,10 @@ import (
 var (
 	ErrInsufficientBonusFunds = errors.New("insufficient bonus funds")
 	ErrBonusNotActive         = errors.New("player bonus is not active")
+	// ErrWageringNotMet is returned by ConvertBonusToReal when no backing bonus
+	// has satisfied its wagering requirement, so bonus funds may not yet be
+	// converted into withdrawable real money.
+	ErrWageringNotMet = errors.New("bonus wagering requirement not met")
 )
 
 // DebitBonus deducts from the user's bonus balance. Symmetric to CreditBonus.
@@ -321,6 +325,32 @@ SELECT balance_cents, bonus_balance_cents FROM wallet_balances WHERE user_id = $
 		userID).Scan(&realBalance, &bonusBalance)
 	if err != nil {
 		return LedgerEntry{}, err
+	}
+
+	// Wagering gate (SECURITY-REVIEW finding #11): converting bonus funds into
+	// withdrawable real money is only permitted once a backing bonus has met its
+	// wagering requirement. Re-read the user's bonus rows FOR UPDATE inside this
+	// same tx and require at least one eligible bonus where wagering is
+	// satisfied. A bonus is eligible while 'active' or just-'completed' (the
+	// wagering completion path flips it to 'completed' before calling this);
+	// 'expired'/'forfeited' bonuses never qualify.
+	//
+	// NOTE: this gate is currently only exercised via RecordWageringContribution
+	// (the sole caller), which is itself not yet wired to bet settlement — so
+	// this closes a latent hole rather than an actively-reachable one.
+	var eligibleWageredBonuses int
+	err = tx.QueryRowContext(ctx, `
+SELECT COUNT(1) FROM player_bonuses
+WHERE user_id = $1
+  AND status IN ('active','completed')
+  AND wagering_completed_cents >= wagering_required_cents
+FOR UPDATE`,
+		userID).Scan(&eligibleWageredBonuses)
+	if err != nil {
+		return LedgerEntry{}, err
+	}
+	if eligibleWageredBonuses == 0 {
+		return LedgerEntry{}, ErrWageringNotMet
 	}
 
 	// Cap at available bonus

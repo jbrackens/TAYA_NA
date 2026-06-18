@@ -137,6 +137,74 @@ WHERE id = $1`, campaignID, spentCents)
 	return err
 }
 
+// ErrCampaignLimitReached indicates an atomic claim-count/budget reservation
+// was rejected because the campaign is at its claim cap or would exceed budget.
+var ErrCampaignLimitReached = errors.New("campaign claim or budget limit reached")
+
+// ReserveClaim atomically increments claim_count and spent_cents only if the
+// campaign still has claim and budget headroom. It is the race-safe replacement
+// for the read-then-IncrementClaimCount pattern: concurrent claims can no
+// longer push claim_count past max_claims or spent_cents past budget_cents.
+// Returns ErrCampaignLimitReached if no row qualified.
+func (r *Repository) ReserveClaim(ctx context.Context, campaignID int64, amountCents int64) error {
+	res, err := r.db.ExecContext(ctx, `
+UPDATE campaigns
+SET claim_count = claim_count + 1,
+    spent_cents = spent_cents + $2,
+    updated_at = NOW()
+WHERE id = $1
+  AND status = 'active'
+  AND (max_claims IS NULL OR claim_count < max_claims)
+  AND (budget_cents IS NULL OR spent_cents + $2 <= budget_cents)`,
+		campaignID, amountCents)
+	if err != nil {
+		return err
+	}
+	n, _ := res.RowsAffected()
+	if n == 0 {
+		return ErrCampaignLimitReached
+	}
+	return nil
+}
+
+// ReleaseClaim reverses a ReserveClaim reservation. Used to compensate when a
+// downstream step (e.g. creating the player_bonus row) fails after the claim
+// slot was reserved, so the campaign counters do not drift.
+func (r *Repository) ReleaseClaim(ctx context.Context, campaignID int64, amountCents int64) error {
+	_, err := r.db.ExecContext(ctx, `
+UPDATE campaigns
+SET claim_count = GREATEST(claim_count - 1, 0),
+    spent_cents = GREATEST(spent_cents - $2, 0),
+    updated_at = NOW()
+WHERE id = $1`,
+		campaignID, amountCents)
+	return err
+}
+
+// PunterRegistration holds the eligibility-relevant fields for a punter.
+type PunterRegistration struct {
+	Found     bool
+	Status    string
+	CreatedAt time.Time
+}
+
+// GetPunterRegistration returns the punter's status and registration time for
+// eligibility checks. Found is false (no error) when the punter row is absent,
+// so callers can decide how to treat unknown users.
+func (r *Repository) GetPunterRegistration(ctx context.Context, userID string) (PunterRegistration, error) {
+	var pr PunterRegistration
+	err := r.db.QueryRowContext(ctx, `
+SELECT status, created_at FROM punters WHERE id = $1`, userID).Scan(&pr.Status, &pr.CreatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return PunterRegistration{Found: false}, nil
+		}
+		return PunterRegistration{}, err
+	}
+	pr.Found = true
+	return pr, nil
+}
+
 // GetCampaignRules returns all rules for a campaign, keyed by rule_type.
 func (r *Repository) GetCampaignRules(ctx context.Context, campaignID int64) ([]CampaignRule, error) {
 	rows, err := r.db.QueryContext(ctx, `
