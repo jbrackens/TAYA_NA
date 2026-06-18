@@ -1269,11 +1269,12 @@ func (s *Service) TransitionMarketStatus(ctx context.Context, marketID string, t
 		return fmt.Errorf("market not found: %w", err)
 	}
 
+	prev := market.Status
 	if err := TransitionMarket(market, to); err != nil {
 		return err
 	}
 
-	if err := s.repo.UpdateMarketStatus(ctx, marketID, to); err != nil {
+	if err := s.repo.UpdateMarketStatus(ctx, marketID, to, prev); err != nil {
 		return fmt.Errorf("update market status: %w", err)
 	}
 
@@ -1352,12 +1353,12 @@ func (s *Service) CreateMarket(ctx context.Context, req CreateMarketRequest) (*M
 	}
 
 	market := &Market{
-		EventID:             req.EventID,
-		Ticker:              req.Ticker,
-		Title:               req.Title,
-		Description:         req.Description,
-		Translations:        defaultJSONObject(req.Translations),
-		Status:              MarketStatusUnopened,
+		EventID:      req.EventID,
+		Ticker:       req.Ticker,
+		Title:        req.Title,
+		Description:  req.Description,
+		Translations: defaultJSONObject(req.Translations),
+		Status:       MarketStatusUnopened,
 		// New markets are always order-book; the AMM is a legacy mode kept
 		// only for pre-019 markets and is slated for removal (audit COR-03 /
 		// P2-09). Setting it explicitly (the DB default agrees) documents the

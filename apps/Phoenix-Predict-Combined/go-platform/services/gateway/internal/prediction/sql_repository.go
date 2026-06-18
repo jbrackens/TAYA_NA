@@ -506,11 +506,27 @@ func (r *SQLRepository) transitionMarketStatusWithExec(ctx context.Context, exec
 	return nil
 }
 
-func (r *SQLRepository) UpdateMarketStatus(ctx context.Context, id string, status MarketStatus) error {
-	_, err := r.db.ExecContext(ctx,
-		`UPDATE prediction_markets SET status = $1, updated_at = NOW() WHERE id = $2`,
-		status, id)
-	return err
+// UpdateMarketStatus performs a guarded compare-and-set: the row is updated
+// only while its current status still equals expectedPrev (mirroring
+// transitionMarketStatusWithExec). This stops the closer or an admin
+// transition from silently clobbering a concurrent settle/void — which would
+// resurrect a terminal market into a settleable state and double-pay.
+// Returns ErrStaleMarketStatus when the precondition no longer holds.
+func (r *SQLRepository) UpdateMarketStatus(ctx context.Context, id string, status, expectedPrev MarketStatus) error {
+	res, err := r.db.ExecContext(ctx,
+		`UPDATE prediction_markets SET status = $1, updated_at = NOW() WHERE id = $2 AND status = $3`,
+		status, id, string(expectedPrev))
+	if err != nil {
+		return err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affected != 1 {
+		return fmt.Errorf("market %s: expected status %q: %w", id, expectedPrev, ErrStaleMarketStatus)
+	}
+	return nil
 }
 
 func (r *SQLRepository) ListMarketsToClose(ctx context.Context) ([]Market, error) {

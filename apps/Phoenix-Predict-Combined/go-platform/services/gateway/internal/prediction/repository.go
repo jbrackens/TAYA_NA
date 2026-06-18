@@ -38,7 +38,7 @@ type Repository interface {
 	GetMarketByTicker(ctx context.Context, ticker string) (*Market, error)
 	CreateMarket(ctx context.Context, m *Market) error
 	UpdateMarket(ctx context.Context, m *Market) error
-	UpdateMarketStatus(ctx context.Context, id string, status MarketStatus) error
+	UpdateMarketStatus(ctx context.Context, id string, status, expectedPrev MarketStatus) error
 	ListMarketsToClose(ctx context.Context) ([]Market, error)
 	ListMarketsToSettle(ctx context.Context) ([]Market, error)
 

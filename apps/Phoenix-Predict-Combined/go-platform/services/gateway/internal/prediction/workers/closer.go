@@ -2,6 +2,7 @@ package workers
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"time"
 
@@ -49,8 +50,16 @@ func (w *MarketCloser) tick(ctx context.Context) {
 			continue
 		}
 
-		if err := w.repo.UpdateMarketStatus(ctx, m.ID, prediction.MarketStatusClosed); err != nil {
-			slog.Warn("market closer: failed to update", "market", m.Ticker, "error", err)
+		// Guarded CAS: close only while the market is still open. If an admin
+		// voided/halted it in the read→write window, the precondition fails and
+		// we skip rather than clobber the terminal state (which would let a
+		// voided market be re-settled and double-pay).
+		if err := w.repo.UpdateMarketStatus(ctx, m.ID, prediction.MarketStatusClosed, prediction.MarketStatusOpen); err != nil {
+			if errors.Is(err, prediction.ErrStaleMarketStatus) {
+				slog.Info("market closer: skipped, status changed concurrently", "market", m.Ticker)
+			} else {
+				slog.Warn("market closer: failed to update", "market", m.Ticker, "error", err)
+			}
 			continue
 		}
 

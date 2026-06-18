@@ -21,9 +21,9 @@ type fakeWorkerRepo struct {
 
 	mu sync.Mutex
 
-	toClose     []prediction.Market
-	toSettle    []prediction.Market
-	positions   map[string][]prediction.Position
+	toClose      []prediction.Market
+	toSettle     []prediction.Market
+	positions    map[string][]prediction.Position
 	listCloseErr error
 
 	statusUpdates  map[string]prediction.MarketStatus
@@ -63,7 +63,7 @@ func (r *fakeWorkerRepo) ListMarketsToSettle(context.Context) ([]prediction.Mark
 	return out, nil
 }
 
-func (r *fakeWorkerRepo) UpdateMarketStatus(_ context.Context, id string, status prediction.MarketStatus) error {
+func (r *fakeWorkerRepo) UpdateMarketStatus(_ context.Context, id string, status, _ prediction.MarketStatus) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.statusUpdates[id] = status
@@ -148,7 +148,7 @@ type fakeAdapter struct {
 	err    error
 }
 
-func (a *fakeAdapter) Name() string { return a.name }
+func (a *fakeAdapter) Name() string                           { return a.name }
 func (a *fakeAdapter) CanSettle(string, json.RawMessage) bool { return true }
 func (a *fakeAdapter) FetchResult(context.Context, string, json.RawMessage) (*feed.Result, error) {
 	return a.result, a.err

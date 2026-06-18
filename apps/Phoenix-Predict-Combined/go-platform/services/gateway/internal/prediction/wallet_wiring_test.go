@@ -356,11 +356,13 @@ func (r *memRepo) LogAIGeneration(context.Context, *AIGenerationLog) error   { r
 func (r *memRepo) LinkAIGenerationLogsToMarket(context.Context, string, []string, *string) error {
 	return nil
 }
-func (r *memRepo) GetMarketByTicker(context.Context, string) (*Market, error)     { return nil, nil }
-func (r *memRepo) CreateMarket(context.Context, *Market) error                    { return nil }
-func (r *memRepo) UpdateMarketStatus(context.Context, string, MarketStatus) error { return nil }
-func (r *memRepo) ListMarketsToClose(context.Context) ([]Market, error)           { return nil, nil }
-func (r *memRepo) ListMarketsToSettle(context.Context) ([]Market, error)          { return nil, nil }
+func (r *memRepo) GetMarketByTicker(context.Context, string) (*Market, error) { return nil, nil }
+func (r *memRepo) CreateMarket(context.Context, *Market) error                { return nil }
+func (r *memRepo) UpdateMarketStatus(context.Context, string, MarketStatus, MarketStatus) error {
+	return nil
+}
+func (r *memRepo) ListMarketsToClose(context.Context) ([]Market, error)  { return nil, nil }
+func (r *memRepo) ListMarketsToSettle(context.Context) ([]Market, error) { return nil, nil }
 func (r *memRepo) ListRestingOrdersOnInactiveMarkets(context.Context, int) ([]Order, error) {
 	return nil, nil
 }

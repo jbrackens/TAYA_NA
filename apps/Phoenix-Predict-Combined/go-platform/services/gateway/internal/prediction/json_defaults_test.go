@@ -79,10 +79,12 @@ func (r *jsonDefaultRepo) ReserveAIUsage(_ context.Context, _ string, estimatedI
 	status.TokensToday += int64(estimatedInputTokens)
 	return status, nil
 }
-func (r *jsonDefaultRepo) UpdateMarket(context.Context, *Market) error                    { return nil }
-func (r *jsonDefaultRepo) UpdateMarketStatus(context.Context, string, MarketStatus) error { return nil }
-func (r *jsonDefaultRepo) ListMarketsToClose(context.Context) ([]Market, error)           { return nil, nil }
-func (r *jsonDefaultRepo) ListMarketsToSettle(context.Context) ([]Market, error)          { return nil, nil }
+func (r *jsonDefaultRepo) UpdateMarket(context.Context, *Market) error { return nil }
+func (r *jsonDefaultRepo) UpdateMarketStatus(context.Context, string, MarketStatus, MarketStatus) error {
+	return nil
+}
+func (r *jsonDefaultRepo) ListMarketsToClose(context.Context) ([]Market, error)  { return nil, nil }
+func (r *jsonDefaultRepo) ListMarketsToSettle(context.Context) ([]Market, error) { return nil, nil }
 func (r *jsonDefaultRepo) ListRestingOrdersOnInactiveMarkets(context.Context, int) ([]Order, error) {
 	return nil, nil
 }
