@@ -66,12 +66,12 @@ func TestTwoPersonWithdrawalControl(t *testing.T) {
 // explicit ack-off.
 func TestTwoPersonBootValidation(t *testing.T) {
 	base := map[string]string{
-		"ENVIRONMENT":                          "production",
-		"ALPHA_CASHIER_ENABLED":                "true",
-		"ALPHA_CASHIER_RPC_URL":                "https://rpc.example",
-		"ALPHA_CASHIER_TOKEN_ADDRESS":          "0x0000000000000000000000000000000000000001",
-		"ALPHA_CASHIER_TREASURY_ADDRESS":       "0x0000000000000000000000000000000000000002",
-		"ALPHA_CASHIER_WITHDRAWALS_ENABLED":    "true",
+		"ENVIRONMENT":                            "production",
+		"ALPHA_CASHIER_ENABLED":                  "true",
+		"ALPHA_CASHIER_RPC_URL":                  "https://rpc.example",
+		"ALPHA_CASHIER_TOKEN_ADDRESS":            "0x0000000000000000000000000000000000000001",
+		"ALPHA_CASHIER_TREASURY_ADDRESS":         "0x0000000000000000000000000000000000000002",
+		"ALPHA_CASHIER_WITHDRAWALS_ENABLED":      "true",
 		"ALPHA_CASHIER_WITHDRAWAL_BROADCAST_ACK": "true",
 	}
 	getenv := func(over map[string]string) func(string) string {
@@ -85,13 +85,13 @@ func TestTwoPersonBootValidation(t *testing.T) {
 		return func(k string) string { return m[k] }
 	}
 
-	if err := ValidateRuntimeConfig(getenv(nil)); err == nil {
-		t.Fatal("expected boot error: two-person control neither on nor acked off")
+	if err := ValidateRuntimeConfig(getenv(map[string]string{"ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL": "false"})); err == nil {
+		t.Fatal("expected boot error: two-person control explicitly off and not acked")
 	}
 	if err := ValidateRuntimeConfig(getenv(map[string]string{"ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL": "true"})); err != nil {
 		t.Fatalf("two-person on should boot, got %v", err)
 	}
-	if err := ValidateRuntimeConfig(getenv(map[string]string{"ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL_ACK_DISABLED": "true"})); err != nil {
+	if err := ValidateRuntimeConfig(getenv(map[string]string{"ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL": "false", "ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL_ACK_DISABLED": "true"})); err != nil {
 		t.Fatalf("explicit ack-off should boot, got %v", err)
 	}
 }

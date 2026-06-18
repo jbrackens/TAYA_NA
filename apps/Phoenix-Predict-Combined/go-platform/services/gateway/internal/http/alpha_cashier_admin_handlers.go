@@ -15,8 +15,9 @@ import (
 )
 
 const (
-	alphaCashierReadPermission  = "cashier:read"
-	alphaCashierWritePermission = "cashier:write"
+	alphaCashierReadPermission      = "cashier:read"
+	alphaCashierWritePermission     = "cashier:write"
+	alphaCashierBroadcastPermission = "cashier:broadcast"
 )
 
 func registerAlphaCashierAdminRoutes(mux *stdhttp.ServeMux, svc *alphacashier.Service, rbacSvc *rbac.Service) {
@@ -102,9 +103,6 @@ func registerAlphaCashierAdminRoutes(mux *stdhttp.ServeMux, svc *alphacashier.Se
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
-		if err := requireAlphaCashierPermission(r, rbacSvc, alphaCashierWritePermission); err != nil {
-			return err
-		}
 		rest := strings.Trim(strings.TrimPrefix(r.URL.Path, "/api/v1/admin/cashier/alpha/withdrawals/"), "/")
 		parts := strings.Split(rest, "/")
 		if len(parts) != 2 || parts[0] == "" {
@@ -126,12 +124,28 @@ func registerAlphaCashierAdminRoutes(mux *stdhttp.ServeMux, svc *alphacashier.Se
 		)
 		switch parts[1] {
 		case "approve":
+			if err := requireAlphaCashierPermission(r, rbacSvc, alphaCashierWritePermission); err != nil {
+				return err
+			}
 			req, err = svc.ApproveWithdrawal(r.Context(), parts[0], actorID, body.ReviewNote)
 		case "reject":
+			if err := requireAlphaCashierPermission(r, rbacSvc, alphaCashierWritePermission); err != nil {
+				return err
+			}
 			req, err = svc.RejectWithdrawal(r.Context(), parts[0], actorID, body.ReviewNote)
 		case "mark-broadcasted":
+			// Separation of duties: broadcasting (on-chain release) requires a
+			// permission distinct from approval, so RBAC enforces two-person
+			// control at the permission layer, not just by actor identity
+			// (SECURITY-REVIEW #8).
+			if err := requireAlphaCashierPermission(r, rbacSvc, alphaCashierBroadcastPermission); err != nil {
+				return err
+			}
 			req, err = svc.MarkWithdrawalBroadcasted(r.Context(), parts[0], actorID, body.TxHash)
 		case "mark-completed":
+			if err := requireAlphaCashierPermission(r, rbacSvc, alphaCashierBroadcastPermission); err != nil {
+				return err
+			}
 			req, err = svc.MarkWithdrawalCompleted(r.Context(), parts[0], actorID)
 		default:
 			return httpx.NotFound("withdrawal action not found")

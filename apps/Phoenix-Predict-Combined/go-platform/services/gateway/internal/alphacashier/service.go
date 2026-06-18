@@ -491,6 +491,11 @@ func (s *Service) ApproveWithdrawal(ctx context.Context, id string, actorID stri
 	if req.Status != "requested" && req.Status != "under_review" {
 		return nil, ErrInvalidStatus
 	}
+	// Two-person control (SECURITY-REVIEW #8): the approver must not be the
+	// withdrawal's owning user — a user must never self-approve their cash-out.
+	if s.cfg.TwoPersonWithdrawal && strings.EqualFold(strings.TrimSpace(actorID), strings.TrimSpace(req.UserID)) {
+		return nil, ErrSecondApproverRequired
+	}
 	now := s.now().UTC()
 	approved, err := s.repo.MarkWithdrawalReviewed(ctx, req.ID, "approved", strings.TrimSpace(actorID), note, now)
 	if err != nil {
