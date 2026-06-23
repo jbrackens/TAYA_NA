@@ -18,12 +18,14 @@ name: Deploy demo (Hetzner)
 # backfills are opt-in data ops. Market thumbnails live on the `market_images`
 # Docker volume, so `rsync --delete` is safe (it can't touch the volume).
 #
-# Requires repo secret DEPLOY_SSH_KEY = the private key whose public half is
-# in the box's root authorized_keys (a DEDICATED, revocable deploy key —
-# not an admin key). Note: anyone who can run/modify this workflow or has
-# repo admin can reach root on the demo box. Acceptable for a throwaway
-# 2-6 week demo box; rotate/lock down (non-root deploy user) for anything
-# longer-lived.
+# Requires repo secrets:
+#   DEPLOY_SSH_KEY           — private key for root on the box (dedicated deploy key)
+#   BACKOFFICE_BASIC_AUTH_HASH — bcrypt hash for office.99rtp.io basic_auth
+#   EDGE_SHARED_SECRET       — anti-spoof token shared by Caddy + gateway (openssl rand -hex 32)
+#   OPENROUTER_API_KEY       — (optional) AI drafting + market translation
+# Note: anyone who can run/modify this workflow or has repo admin can reach
+# root on the demo box. Acceptable for a throwaway 2-6 week demo box;
+# rotate/lock down (non-root deploy user) for anything longer-lived.
 
 on:
   push:
@@ -120,20 +122,29 @@ jobs:
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
               'python3 -c "import sys; h=sys.stdin.read().strip(); p=\"/opt/phoenix/Caddyfile\"; src=open(p).read(); assert \"REPLACE_WITH_BCRYPT_HASH\" in src, \"placeholder missing in /opt/phoenix/Caddyfile — schema drift or already patched out-of-band\"; open(p,\"w\").write(src.replace(\"REPLACE_WITH_BCRYPT_HASH\", h)); print(\"Caddyfile basic_auth hash patched\")"'
 
-      - name: Inject OpenRouter key into box .env (compose substitution)
-        # The office AI-drafting route reads AI_HARD_API_KEY / AI_ROUTINE_API_KEY
-        # at runtime; docker-compose.demo.yml maps both to ${OPENROUTER_API_KEY}.
-        # Write it to /opt/phoenix/.env (compose auto-reads ./.env from the project
-        # dir) via stdin, so the secret never appears in a command line / process
-        # list — same posture as the Caddyfile step above. MUST run after the rsync
-        # (which --deletes a pre-existing .env), so it is re-written every deploy.
-        # If the secret is unset we write an empty value: drafting then fails closed
-        # (the rest of the app is unaffected), so a missing key never breaks deploy.
+      - name: Inject secrets into box .env (compose substitution)
+        # docker-compose.demo.yml reads these from /opt/phoenix/.env (compose
+        # auto-reads ./.env from the project dir). Secrets are piped via stdin
+        # so they never appear in a command line / process list. MUST run after
+        # the rsync (which --deletes a pre-existing .env), so it is re-written
+        # every deploy.
+        #   OPENROUTER_API_KEY  — office AI drafting + gateway market translation
+        #   EDGE_SHARED_SECRET  — anti-spoof header Caddy stamps → gateway validates
+        # If OPENROUTER_API_KEY is unset, drafting fails closed (app unaffected).
+        # EDGE_SHARED_SECRET is required — Caddy and gateway both use the :? guard.
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          EDGE_SHARED_SECRET: ${{ secrets.EDGE_SHARED_SECRET }}
         run: |
+          if [ -z "$EDGE_SHARED_SECRET" ]; then
+            echo "::error::EDGE_SHARED_SECRET repo secret is unset — Caddy and gateway will refuse to start."
+            echo "Generate one with:  openssl rand -hex 32"
+            echo "Then add it to repo Settings → Secrets and variables → Actions."
+            exit 1
+          fi
           {
             printf 'OPENROUTER_API_KEY=%s\n' "$OPENROUTER_API_KEY"
+            printf 'EDGE_SHARED_SECRET=%s\n' "$EDGE_SHARED_SECRET"
             printf 'ROCKETCHAT_ADMIN_PASSWORD=%s\n' "$(openssl rand -hex 24)"
             printf 'CHAT_PUBLIC_URL=https://demo.99rtp.io/chat\n'
             printf 'CHAT_PARENT_ORIGIN=https://demo.99rtp.io\n'

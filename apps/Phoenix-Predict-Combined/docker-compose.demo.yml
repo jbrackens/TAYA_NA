@@ -208,7 +208,7 @@ services:
       # CF-IPCountry is denied. Set the SAME value on the Caddy container
       # ({$EDGE_SHARED_SECRET} in Caddyfile). REQUIRED in prod/staging when
       # GEO_TRUSTED_PROXY_MODE=require (boot fails otherwise).
-      # EDGE_SHARED_SECRET: "set-a-long-random-value"
+      EDGE_SHARED_SECRET: "${EDGE_SHARED_SECRET:?export EDGE_SHARED_SECRET before up}"
       # Email notifications (resolution/payout). Logs until SMTP_HOST is set.
       # SMTP_HOST: ""
       # SMTP_PORT: "587"
@@ -290,6 +290,10 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      # Shared with the gateway — Caddy stamps this as X-Edge-Auth so the
+      # gateway can verify requests arrived through the edge, not direct-to-origin.
+      EDGE_SHARED_SECRET: "${EDGE_SHARED_SECRET:?export EDGE_SHARED_SECRET before up}"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data                         # persists Let's Encrypt certs across restarts
