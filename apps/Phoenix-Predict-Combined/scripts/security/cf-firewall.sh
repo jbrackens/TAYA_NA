@@ -4,9 +4,12 @@
 # Run once on the Hetzner box after switching DNS to proxied (orange-cloud).
 # Prevents direct-to-origin requests that could forge CF-IPCountry.
 #
-# Uses iptables (nftables variant: adapt if needed). The box must already
-# have iptables installed (Hetzner base images do). SSH (:22) is left open
-# so you don't lock yourself out.
+# Docker publishes container ports via PREROUTING nat + FORWARD, NOT INPUT.
+# Packets to published ports (80/443) never hit the INPUT chain, so we
+# must filter in DOCKER-USER (the official hook Docker provides for
+# user-defined rules in the FORWARD path). Docker inserts a RETURN at the
+# end of DOCKER-USER by default; we jump to our CF-ALLOW chain before that
+# RETURN. Non-Docker traffic (if any) is also covered via INPUT.
 #
 # Re-run periodically or on a cron to pick up new CF ranges:
 #   0 4 * * 0  /opt/phoenix/scripts/security/cf-firewall.sh 2>&1 | logger -t cf-fw
@@ -32,42 +35,65 @@ if [ -z "$CF_IPV4" ]; then
   exit 1
 fi
 
+# --- Flush old rules ---
 echo "Flushing old CF-ALLOW chains..."
-for chain in CF-ALLOW CF-ALLOW6; do
-  if iptables -L "$chain" -n >/dev/null 2>&1; then
-    run_cmd iptables -D INPUT -j "$chain" 2>/dev/null || true
-    run_cmd iptables -F "$chain"
-    run_cmd iptables -X "$chain"
-  fi
-  if ip6tables -L "$chain" -n >/dev/null 2>&1; then
-    run_cmd ip6tables -D INPUT -j "$chain" 2>/dev/null || true
-    run_cmd ip6tables -F "$chain"
-    run_cmd ip6tables -X "$chain"
+for table_cmd in iptables ip6tables; do
+  for parent in INPUT DOCKER-USER; do
+    $table_cmd -D "$parent" -j CF-ALLOW 2>/dev/null || true
+  done
+  if $table_cmd -L CF-ALLOW -n >/dev/null 2>&1; then
+    run_cmd $table_cmd -F CF-ALLOW
+    run_cmd $table_cmd -X CF-ALLOW
   fi
 done
 
+# --- IPv4: DOCKER-USER (published ports) + INPUT (non-Docker) ---
 echo "Creating CF-ALLOW chain (IPv4)..."
 run_cmd iptables -N CF-ALLOW
 for cidr in $CF_IPV4; do
-  run_cmd iptables -A CF-ALLOW -p tcp -m multiport --dports 80,443 -s "$cidr" -j ACCEPT
+  run_cmd iptables -A CF-ALLOW -p tcp -m multiport --dports 80,443 -s "$cidr" -j RETURN
 done
 run_cmd iptables -A CF-ALLOW -p tcp -m multiport --dports 80,443 -j DROP
+
+# DOCKER-USER: Docker-published ports flow through here
+if iptables -L DOCKER-USER -n >/dev/null 2>&1; then
+  run_cmd iptables -I DOCKER-USER -j CF-ALLOW
+  echo "  -> inserted into DOCKER-USER"
+fi
+# INPUT: catch any non-Docker traffic to host ports
 run_cmd iptables -I INPUT -j CF-ALLOW
+echo "  -> inserted into INPUT"
 
-echo "Creating CF-ALLOW6 chain (IPv6)..."
-run_cmd ip6tables -N CF-ALLOW6
-for cidr in $CF_IPV6; do
-  run_cmd ip6tables -A CF-ALLOW6 -p tcp -m multiport --dports 80,443 -s "$cidr" -j ACCEPT
-done
-run_cmd ip6tables -A CF-ALLOW6 -p tcp -m multiport --dports 80,443 -j DROP
-run_cmd ip6tables -I INPUT -j CF-ALLOW6
+# --- IPv6: same pattern (Docker on IPv6 is rare but cover it) ---
+echo "Creating CF-ALLOW chain (IPv6)..."
+if ip6tables -L DOCKER-USER -n >/dev/null 2>&1; then
+  run_cmd ip6tables -N CF-ALLOW 2>/dev/null || { ip6tables -F CF-ALLOW; }
+  for cidr in $CF_IPV6; do
+    run_cmd ip6tables -A CF-ALLOW -p tcp -m multiport --dports 80,443 -s "$cidr" -j RETURN
+  done
+  run_cmd ip6tables -A CF-ALLOW -p tcp -m multiport --dports 80,443 -j DROP
+  run_cmd ip6tables -I DOCKER-USER -j CF-ALLOW
+  run_cmd ip6tables -I INPUT -j CF-ALLOW
+  echo "  -> inserted into DOCKER-USER + INPUT (IPv6)"
+else
+  run_cmd ip6tables -N CF-ALLOW 2>/dev/null || { ip6tables -F CF-ALLOW; }
+  for cidr in $CF_IPV6; do
+    run_cmd ip6tables -A CF-ALLOW -p tcp -m multiport --dports 80,443 -s "$cidr" -j RETURN
+  done
+  run_cmd ip6tables -A CF-ALLOW -p tcp -m multiport --dports 80,443 -j DROP
+  run_cmd ip6tables -I INPUT -j CF-ALLOW
+  echo "  -> inserted into INPUT only (IPv6, no DOCKER-USER)"
+fi
 
+# --- Persist ---
 echo "Persisting rules..."
 if command -v netfilter-persistent >/dev/null 2>&1; then
   run_cmd netfilter-persistent save
-elif command -v iptables-save >/dev/null 2>&1; then
+else
+  mkdir -p /etc/iptables
   run_cmd sh -c 'iptables-save > /etc/iptables/rules.v4'
   run_cmd sh -c 'ip6tables-save > /etc/iptables/rules.v6'
+  echo "  (install iptables-persistent for auto-restore on reboot)"
 fi
 
 echo "Done. HTTP(S) traffic is now restricted to Cloudflare IPs."
