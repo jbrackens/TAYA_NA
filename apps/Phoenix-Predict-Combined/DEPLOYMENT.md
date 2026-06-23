@@ -8,8 +8,11 @@
 ## Topology (demo)
 
 ```
-GitHub Actions ──SSH──▶ Hetzner box (2 vCPU)
-                          ├─ Caddy            TLS, basic_auth on office host,
+Cloudflare (orange-cloud proxy, Full Strict TLS)
+       │
+       ▼
+GitHub Actions ──SSH──▶ Hetzner box (2 vCPU, :80/:443 firewalled to CF IPs)
+                          ├─ Caddy            TLS (LE), basic_auth on office host,
                           │                   strips client geo headers, stamps X-Edge-Auth
                           ├─ predict_gateway  :18080  (bind to 127.0.0.1; only Caddy reaches it)
                           ├─ predict_auth     :18081
@@ -43,13 +46,18 @@ Three GitHub Actions workflows (`.github/workflows/`):
    a named docker volume, so `--delete` can't touch DB data).
 3. **Patch Caddyfile** `basic_auth` hash on the box (the bcrypt hash never lives
    in source control — `${{ secrets.BACKOFFICE_BASIC_AUTH_HASH }}`).
-4. **Inject `OPENROUTER_API_KEY`** into the box `.env` for compose substitution.
+4. **Inject secrets** into the box `.env` for compose substitution:
+   `OPENROUTER_API_KEY` (AI drafting/translation) and `EDGE_SHARED_SECRET`
+   (anti-spoof edge auth — hard-fails if missing).
 5. **Build + recreate `auth`**, then health-check `:18081/healthz` (abort on fail).
 6. **Build `gateway`**, **apply migrations** (`run --rm migrate up`), **recreate
    `gateway`**, health-check `:18080/healthz` (abort on fail — built first so a Go
    failure aborts before any frontend is touched).
 7. Build + recreate the player and office frontends.
 8. Start Rocket.Chat; configure public read.
+9. **Recreate Caddy** (force-recreate to pick up new Caddyfile inode after rsync).
+10. **Firewall origin** — `cf-firewall.sh` restricts `:80/:443` to Cloudflare IP
+    ranges via iptables (re-runs every deploy to pick up new ranges).
 
 Migrations run via the compose `migrate` service (goose, idempotent). Apply them
 before recreating the gateway so the schema is always ahead of the binary.
@@ -76,14 +84,21 @@ If the **alpha cashier** is enabled (`ALPHA_CASHIER_ENABLED=true`) with withdraw
 `ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL_ACK_DISABLED=true` (A2-04). Full env reference
 is the commented block in `docker-compose.demo.yml` and `../../CLAUDE.md`.
 
-## Network hardening
+## Network hardening (Cloudflare proxied mode)
 
-- Bind the gateway port to loopback (`127.0.0.1:18080:18080`) so the origin is
-  not reachable off-box — the edge (Caddy) is the only ingress. A direct request
-  to the origin could otherwise supply a forged `CF-IPCountry` and bypass
-  geo-fencing (SEC-03).
-- Firewall `:80/:443` to the CDN/edge ranges before enabling the geo gate, so
-  requests cannot bypass the edge and forge the country header.
+DNS is proxied (orange-cloud) through Cloudflare. CF SSL/TLS is set to
+**Full (Strict)** so CF validates the Let's Encrypt cert on the origin. ACME
+HTTP-01 challenges pass through CF to Caddy.
+
+- **Origin firewall:** `:80/:443` are restricted to Cloudflare IP ranges via
+  `scripts/security/cf-firewall.sh` (iptables, runs automatically on every
+  deploy). This prevents direct-to-origin requests that could forge
+  `CF-IPCountry`.
+- **Edge auth:** Caddy stamps `X-Edge-Auth` with `EDGE_SHARED_SECRET`; the
+  gateway validates it under `GEO_TRUSTED_PROXY_MODE=require`. A request that
+  bypasses Caddy lacks this header and is denied on money-path routes (SEC-03).
+- **Loopback binding:** gateway port (`127.0.0.1:18080:18080`) is not reachable
+  off-box — Caddy is the only ingress.
 
 ## Backup & restore
 

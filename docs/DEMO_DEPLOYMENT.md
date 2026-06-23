@@ -2,25 +2,27 @@
 
 ## Current live branch
 
-The Hetzner demo deploys from `feat/binary-exchange-engine`.
+The Hetzner demo deploys from `main`.
 
-Do not deploy `main` to the demo box until `main` and the live feature branch
-are reconciled. `main` can contain newer isolated work while still missing
-features that are already live on the demo server.
+## Edge / DNS
 
-## Safe integration flow
+DNS is proxied (orange-cloud) through **Cloudflare**. CF SSL/TLS mode is
+**Full (Strict)** (CF validates the origin Let's Encrypt cert). The deploy
+pipeline automatically firewalls `:80/:443` to Cloudflare IP ranges
+(`scripts/security/cf-firewall.sh`) on every push.
 
-1. Branch from `origin/feat/binary-exchange-engine`.
-2. Port the intended commits into that branch.
-3. Run the cashier and gateway/frontend verification commands.
-4. Push the integration branch.
-5. Manually dispatch `Deploy demo (Hetzner)` from that integration branch.
-6. After verification, merge the integration branch back into the chosen long
-   term base.
+`EDGE_SHARED_SECRET` (repo secret) is injected into both Caddy and the gateway
+at deploy time. Caddy stamps it as `X-Edge-Auth`; the gateway validates it so
+direct-to-origin requests are denied.
 
-The deploy workflow has a branch allowlist to prevent accidental `main`
-deploys. Update that allowlist only when intentionally retargeting the live
-demo.
+## Required repo secrets
+
+| Secret | Purpose |
+|---|---|
+| `DEPLOY_SSH_KEY` | SSH private key for root on the Hetzner box |
+| `BACKOFFICE_BASIC_AUTH_HASH` | bcrypt hash for `office.99rtp.io` basic_auth |
+| `EDGE_SHARED_SECRET` | Anti-spoof token shared by Caddy + gateway (`openssl rand -hex 32`) |
+| `OPENROUTER_API_KEY` | *(optional)* AI drafting + market translation |
 
 ## Smoke checks
 

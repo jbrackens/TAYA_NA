@@ -73,10 +73,10 @@ must not be silently bypassable by a missing header).
 ## Edge geo signal (decision: Cloudflare proxy)
 
 The gateway never geolocates IPs itself — it trusts `GEO_COUNTRY_HEADER`. The
-chosen edge is **Cloudflare** (plan option (a)): the demo/beta DNS already
-lives at Cloudflare (grey-cloud), and flipping the records to **proxied
-(orange-cloud)** makes Cloudflare set `CF-IPCountry` on every request with no
-code or image changes. The alternative (b) — a custom Caddy build with
+chosen edge is **Cloudflare** (plan option (a)): demo/beta DNS is **proxied
+(orange-cloud)** through Cloudflare (switched 2026-06-23), so Cloudflare sets
+`CF-IPCountry` on every request with no code or image changes. CF SSL/TLS is
+Full (Strict); ACME HTTP-01 challenges pass through CF to Caddy. The alternative (b) — a custom Caddy build with
 `caddy-maxmind-geolocation` plus a GeoLite2 database and a MaxMind license to
 keep it updated — adds an image build + data pipeline for no extra fidelity.
 
@@ -100,11 +100,10 @@ keep it updated — adds an image build + data pipeline for no extra fidelity.
 
 **Runbook — enabling the geo gate on the demo/beta box:**
 
-1. Cloudflare DNS: flip `demo.99rtp.io` / `office.99rtp.io` A records to
-   **proxied** (orange cloud).
-2. Firewall the origin so only Cloudflare can reach it, e.g.
-   `for r in $(curl -s https://www.cloudflare.com/ips-v4); do ufw allow from $r to any port 443,80 proto tcp; done`
-   then deny 80/443 from anywhere else (keep SSH).
+1. ~~Cloudflare DNS: flip to proxied (orange cloud).~~ **DONE** (2026-06-23).
+2. ~~Firewall origin to CF IPs.~~ **DONE** — `scripts/security/cf-firewall.sh`
+   runs automatically on every deploy (iptables, restricts `:80/:443` to
+   Cloudflare IP ranges). `EDGE_SHARED_SECRET` anti-spoof also active.
 3. Gateway env: `GEO_GATE_ENABLED=true`, `GEO_ALLOWED_COUNTRIES=<legal list>`,
    `GEO_TRUSTED_PROXY_MODE=require` (and drop `BETA_COMPLIANCE_MODE`).
 4. **Manual spoof check** (from a host outside Cloudflare):
