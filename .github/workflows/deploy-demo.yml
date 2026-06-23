@@ -532,3 +532,14 @@ jobs:
             cd /opt/phoenix &&
             JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
               up -d --no-deps --force-recreate caddy'
+
+      - name: Firewall origin to Cloudflare IPs
+        # Restrict :80/:443 to CF ranges so direct-to-origin requests can't
+        # forge CF-IPCountry. Re-runs every deploy to pick up new ranges.
+        # Non-fatal: if iptables is missing the EDGE_SHARED_SECRET check is
+        # the backstop — the deploy still succeeds.
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+            'bash /opt/phoenix/scripts/security/cf-firewall.sh' || {
+              echo "::warning::cf-firewall.sh failed — EDGE_SHARED_SECRET still protects the origin, but fix the firewall."
+            }
