@@ -36,7 +36,7 @@ type AuthService struct {
 
 	usersByUsername  map[string]user
 	oauthIdentities  map[string]string // "provider:subject" -> userID (in-memory fallback when db == nil)
-	twoFactorEnabled map[string]bool
+	mfaMem           map[string]*mfaRecord // TOTP enrollments when db == nil (mirrors auth_mfa)
 	db               *sql.DB // nil = in-memory mode
 	store            SessionStore
 	audit            AuditLogger
@@ -85,6 +85,10 @@ type session struct {
 type loginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	// OTP carries the TOTP second factor for accounts with active MFA. Accepted
+	// under both "otp" and "code" for client convenience.
+	OTP  string `json:"otp"`
+	Code string `json:"code"`
 }
 
 type refreshRequest struct {
@@ -100,8 +104,11 @@ type changePasswordRequest struct {
 	NewCamel        string `json:"newPassword"`
 }
 
-type toggleTwoFactorRequest struct {
-	Enabled *bool `json:"enabled"`
+// mfaCodeRequest carries a TOTP code for activate/disable. Accepted under both
+// "code" and "otp" for client convenience.
+type mfaCodeRequest struct {
+	Code string `json:"code"`
+	OTP  string `json:"otp"`
 }
 
 type tokenResponse struct {
@@ -252,7 +259,7 @@ func NewAuthService() *AuthService {
 	svc := &AuthService{
 		usersByUsername:  users,
 		oauthIdentities:  map[string]string{},
-		twoFactorEnabled: map[string]bool{},
+		mfaMem:           map[string]*mfaRecord{},
 		store:            sessionStore,
 		audit:            &structuredAuditLogger{logger: log.Default()},
 		accessTTL:        durationFromEnvSeconds("AUTH_ACCESS_TTL_SECONDS", defaultAccessTokenTTL),
@@ -326,7 +333,7 @@ CREATE TABLE IF NOT EXISTS auth_users (
 	// email — so that two providers asserting the same email only merge when the
 	// email is provider-verified (see resolveOAuthAccount). email_verified is
 	// recorded so the linking decision is auditable after the fact.
-	_, err := db.ExecContext(ctx, `
+	if _, err := db.ExecContext(ctx, `
 CREATE TABLE IF NOT EXISTS auth_identities (
   id VARCHAR(255) PRIMARY KEY,
   user_id VARCHAR(255) NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
@@ -336,6 +343,21 @@ CREATE TABLE IF NOT EXISTS auth_identities (
   email_verified BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (provider, subject)
+)`); err != nil {
+		return err
+	}
+
+	// auth_mfa stores a user's TOTP second factor. user_id is the account id
+	// (auth_users.id for players, admin_users.id for staff) — kept FK-free
+	// because it spans two tables. activated_at IS NULL means the secret is
+	// pending (enrolled but unconfirmed) and is NOT enforced at login.
+	_, err := db.ExecContext(ctx, `
+CREATE TABLE IF NOT EXISTS auth_mfa (
+  user_id VARCHAR(255) PRIMARY KEY,
+  secret TEXT NOT NULL,
+  activated_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )`)
 	return err
 }
@@ -403,7 +425,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 			return httpx.BadRequest("username and password are required", nil)
 		}
 
-		response, err := auth.Login(body.Username, body.Password)
+		response, err := auth.Login(body.Username, body.Password, firstNonEmpty(body.OTP, body.Code))
 		if err != nil {
 			return err
 		}
@@ -706,37 +728,87 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{"message": "password updated"})
 	}))
 
-	mux.Handle("/api/v1/auth/2fa/toggle", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if r.Method != stdhttp.MethodPost {
-			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
-		}
+	// ─── Multi-factor authentication (TOTP) ─────────────────────────
+	// Real second factor, replacing the former in-memory 2FA toggle stub. Each
+	// route is self-service for the authenticated session: a user manages their
+	// own factor. Once activated, the factor is enforced at login (see Login).
 
-		currentSession, err := auth.currentSessionFromRequest(r)
+	// GET /api/v1/auth/2fa/status → { enrolled, active }
+	mux.Handle("/api/v1/auth/2fa/status", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		cs, err := auth.currentSessionFromRequest(r)
 		if err != nil {
 			return err
 		}
+		enrolled, active, err := auth.mfaStatus(cs.UserID)
+		if err != nil {
+			return httpx.Internal("failed to read multi-factor state", err)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"userId":   cs.UserID,
+			"enrolled": enrolled,
+			"active":   active,
+		})
+	}))
 
-		var body toggleTwoFactorRequest
+	// POST /api/v1/auth/2fa/enroll → generates a pending secret + otpauth URI.
+	mux.Handle("/api/v1/auth/2fa/enroll", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+		cs, err := auth.currentSessionFromRequest(r)
+		if err != nil {
+			return err
+		}
+		secret, uri, err := auth.MFABeginEnroll(cs.UserID, cs.Username)
+		if err != nil {
+			return err
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"userId":     cs.UserID,
+			"secret":     secret,
+			"otpauthUri": uri,
+		})
+	}))
+
+	// POST /api/v1/auth/2fa/activate { code } → confirms enrollment.
+	mux.Handle("/api/v1/auth/2fa/activate", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+		cs, err := auth.currentSessionFromRequest(r)
+		if err != nil {
+			return err
+		}
+		var body mfaCodeRequest
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
 		}
-
-		enabled := !auth.IsTwoFactorEnabled(currentSession.UserID)
-		if body.Enabled != nil {
-			enabled = *body.Enabled
+		if err := auth.MFAActivate(cs.UserID, firstNonEmpty(body.Code, body.OTP)); err != nil {
+			return err
 		}
-		auth.SetTwoFactorEnabled(currentSession.UserID, enabled)
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"userId": cs.UserID, "active": true})
+	}))
 
-		status := "disabled"
-		if enabled {
-			status = "enabled"
+	// POST /api/v1/auth/2fa/disable { code } → turns off the factor (code required).
+	mux.Handle("/api/v1/auth/2fa/disable", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
-
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"userId":  currentSession.UserID,
-			"enabled": enabled,
-			"status":  status,
-		})
+		cs, err := auth.currentSessionFromRequest(r)
+		if err != nil {
+			return err
+		}
+		var body mfaCodeRequest
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+		}
+		if err := auth.MFADisable(cs.UserID, firstNonEmpty(body.Code, body.OTP)); err != nil {
+			return err
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"userId": cs.UserID, "active": false})
 	}))
 
 	mux.Handle("/api/v1/auth/metrics", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -757,7 +829,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 	registerSocialOAuthRoutes(mux, auth, frontendURL)
 }
 
-func (a *AuthService) Login(username string, password string) (tokenResponse, error) {
+func (a *AuthService) Login(username string, password string, otp string) (tokenResponse, error) {
 	a.PruneExpiredSessions()
 
 	// Rate limit: 10 login attempts per minute per username
@@ -788,6 +860,30 @@ func (a *AuthService) Login(username string, password string) (tokenResponse, er
 		a.recordAuthMetric("login_failure")
 		a.audit.Event("auth.login.failed", map[string]any{"username": username, "reason": "invalid_credentials"})
 		return tokenResponse{}, httpx.Unauthorized("invalid username or password")
+	}
+
+	// Second-factor gate: an account with ACTIVE MFA cannot complete login on
+	// password alone. Fail closed — a lookup error denies the login rather than
+	// silently skipping the factor. Accounts without active MFA are unaffected,
+	// so existing (un-enrolled) admins are never locked out by this slice.
+	secret, mfaActive, mfaErr := a.mfaActiveSecret(account.ID)
+	if mfaErr != nil {
+		a.recordAuthMetric("login_failure")
+		a.audit.Event("auth.login.failed", map[string]any{"username": username, "reason": "mfa_lookup_failed"})
+		return tokenResponse{}, httpx.Internal("failed to verify multi-factor state", mfaErr)
+	}
+	if mfaActive {
+		if otp == "" {
+			a.audit.Event("auth.login.mfa_required", map[string]any{"username": username, "userId": account.ID})
+			return tokenResponse{}, httpx.Unauthorized("multi-factor authentication code required")
+		}
+		if !totpVerify(secret, otp, time.Now()) {
+			a.lockout.RecordFailure(username)
+			a.recordAuthMetric("login_failure")
+			a.audit.Event("auth.login.mfa_invalid", map[string]any{"username": username, "userId": account.ID})
+			return tokenResponse{}, httpx.Unauthorized("invalid multi-factor authentication code")
+		}
+		a.audit.Event("auth.login.mfa_verified", map[string]any{"username": username, "userId": account.ID})
 	}
 
 	// Successful login clears lockout state
@@ -1110,18 +1206,6 @@ WHERE lower(email) = lower($1) AND status = 'active'`, username).
 	}
 	u.Role = "admin"
 	return u, true
-}
-
-func (a *AuthService) IsTwoFactorEnabled(userID string) bool {
-	a.mu.RLock()
-	defer a.mu.RUnlock()
-	return a.twoFactorEnabled[userID]
-}
-
-func (a *AuthService) SetTwoFactorEnabled(userID string, enabled bool) {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	a.twoFactorEnabled[userID] = enabled
 }
 
 func newSession(account user, accessTTL, refreshTTL time.Duration) (session, tokenResponse, error) {

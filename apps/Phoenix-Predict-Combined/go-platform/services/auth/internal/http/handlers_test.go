@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"phoenix-revival/platform/transport/httpx"
 )
@@ -205,7 +206,7 @@ func TestLoginRejectsInvalidCredentials(t *testing.T) {
 	}
 }
 
-func TestChangePasswordAndToggleTwoFactor(t *testing.T) {
+func TestChangePasswordMFAEnrollmentAndLoginGate(t *testing.T) {
 	t.Setenv("AUTH_DEMO_USERNAME", "demo@phoenix.local")
 	t.Setenv("AUTH_DEMO_PASSWORD", "Password123!")
 
@@ -266,19 +267,78 @@ func TestChangePasswordAndToggleTwoFactor(t *testing.T) {
 		t.Fatalf("decode refreshed login response: %v", err)
 	}
 
-	twoFaReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/2fa/toggle/", bytes.NewBufferString(`{"enabled":true}`))
-	twoFaReq.Header.Set("Authorization", "Bearer "+refreshedTokens.AccessToken)
-	twoFaRes := httptest.NewRecorder()
-	handler.ServeHTTP(twoFaRes, twoFaReq)
-	if twoFaRes.Code != http.StatusOK {
-		t.Fatalf("expected 2fa toggle status 200, got %d, body=%s", twoFaRes.Code, twoFaRes.Body.String())
+	// ── Real MFA enrollment (TOTP), replacing the former toggle stub ──
+	enrollReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/2fa/enroll", nil)
+	enrollReq.Header.Set("Authorization", "Bearer "+refreshedTokens.AccessToken)
+	enrollRes := httptest.NewRecorder()
+	handler.ServeHTTP(enrollRes, enrollReq)
+	if enrollRes.Code != http.StatusOK {
+		t.Fatalf("expected 2fa enroll status 200, got %d, body=%s", enrollRes.Code, enrollRes.Body.String())
+	}
+	var enrollPayload struct {
+		Secret     string `json:"secret"`
+		OtpauthURI string `json:"otpauthUri"`
+	}
+	if err := json.Unmarshal(enrollRes.Body.Bytes(), &enrollPayload); err != nil {
+		t.Fatalf("decode enroll payload: %v", err)
+	}
+	if enrollPayload.Secret == "" || enrollPayload.OtpauthURI == "" {
+		t.Fatalf("expected secret + otpauthUri, got %#v", enrollPayload)
 	}
 
-	var twoFaPayload map[string]any
-	if err := json.Unmarshal(twoFaRes.Body.Bytes(), &twoFaPayload); err != nil {
-		t.Fatalf("decode 2fa payload: %v", err)
+	activateCode, err := totpCode(enrollPayload.Secret, time.Now())
+	if err != nil {
+		t.Fatalf("totpCode: %v", err)
 	}
-	if enabled, _ := twoFaPayload["enabled"].(bool); !enabled {
-		t.Fatalf("expected enabled=true in 2fa response, got %#v", twoFaPayload["enabled"])
+	activateBody, _ := json.Marshal(map[string]string{"code": activateCode})
+	activateReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/2fa/activate", bytes.NewBuffer(activateBody))
+	activateReq.Header.Set("Authorization", "Bearer "+refreshedTokens.AccessToken)
+	activateRes := httptest.NewRecorder()
+	handler.ServeHTTP(activateRes, activateReq)
+	if activateRes.Code != http.StatusOK {
+		t.Fatalf("expected 2fa activate status 200, got %d, body=%s", activateRes.Code, activateRes.Body.String())
+	}
+
+	statusReq := httptest.NewRequest(http.MethodGet, "/api/v1/auth/2fa/status", nil)
+	statusReq.Header.Set("Authorization", "Bearer "+refreshedTokens.AccessToken)
+	statusRes := httptest.NewRecorder()
+	handler.ServeHTTP(statusRes, statusReq)
+	if statusRes.Code != http.StatusOK {
+		t.Fatalf("expected 2fa status 200, got %d, body=%s", statusRes.Code, statusRes.Body.String())
+	}
+	var statusPayload map[string]any
+	if err := json.Unmarshal(statusRes.Body.Bytes(), &statusPayload); err != nil {
+		t.Fatalf("decode status payload: %v", err)
+	}
+	if active, _ := statusPayload["active"].(bool); !active {
+		t.Fatalf("expected active=true after activation, got %#v", statusPayload)
+	}
+
+	// ── Login is now gated by the active second factor ──
+	gatedLoginPayload, _ := json.Marshal(map[string]string{
+		"username": "demo@phoenix.local",
+		"password": "UpdatedPassword123",
+	})
+	gatedReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login", bytes.NewBuffer(gatedLoginPayload))
+	gatedRes := httptest.NewRecorder()
+	handler.ServeHTTP(gatedRes, gatedReq)
+	if gatedRes.Code != http.StatusUnauthorized {
+		t.Fatalf("expected login without OTP to be rejected (401), got %d, body=%s", gatedRes.Code, gatedRes.Body.String())
+	}
+
+	otp, err := totpCode(enrollPayload.Secret, time.Now())
+	if err != nil {
+		t.Fatalf("totpCode: %v", err)
+	}
+	mfaLoginPayload, _ := json.Marshal(map[string]string{
+		"username": "demo@phoenix.local",
+		"password": "UpdatedPassword123",
+		"otp":      otp,
+	})
+	mfaReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login", bytes.NewBuffer(mfaLoginPayload))
+	mfaRes := httptest.NewRecorder()
+	handler.ServeHTTP(mfaRes, mfaReq)
+	if mfaRes.Code != http.StatusOK {
+		t.Fatalf("expected login with valid OTP to succeed, got %d, body=%s", mfaRes.Code, mfaRes.Body.String())
 	}
 }
