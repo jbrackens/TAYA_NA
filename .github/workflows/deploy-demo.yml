@@ -162,7 +162,7 @@ jobs:
             cd /opt/phoenix
             for attempt in 1 2 3; do
               echo "auth image build attempt ${attempt}/3"
-              if timeout 25m env JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              if timeout -k 1m 10m env JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
                 build --build-arg "GOPROXY=https://proxy.golang.org|direct" auth; then
                 exit 0
               fi
@@ -205,7 +205,7 @@ jobs:
             cd /opt/phoenix
             for attempt in 1 2 3; do
               echo "gateway image build attempt ${attempt}/3"
-              if timeout 25m env JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              if timeout -k 1m 10m env JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
                 build --build-arg "GOPROXY=https://proxy.golang.org|direct" gateway; then
                 exit 0
               fi
