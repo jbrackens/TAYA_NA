@@ -158,9 +158,18 @@ jobs:
         # changes.
         run: |
           ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
-            cd /opt/phoenix &&
-            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
-              build auth'
+            set -eu
+            cd /opt/phoenix
+            for attempt in 1 2 3; do
+              echo "auth image build attempt ${attempt}/3"
+              if timeout 25m env JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+                build --build-arg "GOPROXY=https://proxy.golang.org|direct" auth; then
+                exit 0
+              fi
+              echo "auth image build attempt ${attempt} failed"
+              sleep $((attempt * 20))
+            done
+            exit 1'
 
       - name: Recreate auth container
         run: |
@@ -192,9 +201,18 @@ jobs:
         # failure aborts the whole run before any frontend is recreated.
         run: |
           ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
-            cd /opt/phoenix &&
-            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
-              build gateway'
+            set -eu
+            cd /opt/phoenix
+            for attempt in 1 2 3; do
+              echo "gateway image build attempt ${attempt}/3"
+              if timeout 25m env JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+                build --build-arg "GOPROXY=https://proxy.golang.org|direct" gateway; then
+                exit 0
+              fi
+              echo "gateway image build attempt ${attempt} failed"
+              sleep $((attempt * 20))
+            done
+            exit 1'
 
       - name: Apply gateway migrations
         # Keep DB schema ahead of the recreated gateway. The gateway image
