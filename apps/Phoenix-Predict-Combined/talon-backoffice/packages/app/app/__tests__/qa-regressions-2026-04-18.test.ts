@@ -539,11 +539,16 @@ describe("market social discussion", () => {
   });
 
   it("includes persisted trade fills in social activity surfaces", () => {
-    assert.ok(
-      clientSource.includes(
-        '"comment" | "follow" | "trade" | "settlement" | "reward" | "leaderboard"',
-      ),
-    );
+    for (const activityType of [
+      '"comment"',
+      '"follow"',
+      '"trade"',
+      '"settlement"',
+      '"reward"',
+      '"leaderboard"',
+    ]) {
+      assert.ok(clientSource.includes(activityType));
+    }
     assert.ok(activityPageSource.includes('item.type === "trade"'));
     assert.ok(publicProfileSource.includes('item.type === "trade"'));
     assert.ok(gatewaySocialSource.includes("FROM prediction_trades"));

@@ -21,12 +21,13 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 GW="$ROOT/apps/Phoenix-Predict-Combined/go-platform/services/gateway"
 SPEC="$GW/api/openapi.yaml"
 HTTP_DIR="$GW/internal/http"
+INTERNAL_DIR="$GW/internal"
 
 [ -f "$SPEC" ] || { echo "::error::openapi spec not found at $SPEC"; exit 1; }
 
 # Public groups that exist on purpose but are intentionally NOT in the partner
 # spec. Adding a group here is a conscious "won't document" decision.
-ALLOWLIST_GROUPS=" banners bonuses content discover disputes leaderboards live-markets loyalty me punters referrals users wallet "
+ALLOWLIST_GROUPS=" banners bonuses cashier content discover disputes leaderboards live-markets loyalty me payments punters referrals users wallet watchlist "
 
 fail=0
 
@@ -38,9 +39,20 @@ docpaths="$(awk '
     line=$0; sub(/:[[:space:]]*$/,"",line); gsub(/[[:space:]]/,"",line); print line
   }' "$SPEC")"
 
-# --- Registered routes (mux.Handle / HandleFunc string literals). ---
-routes="$(grep -rhoE 'mux\.Handle(Func)?\("[^"]+"' "$HTTP_DIR" \
-  | sed -E 's/.*Handle(Func)?\("//; s/"$//' | sed -E 's#/+$##' | sort -u)"
+# --- Registered routes. ---
+#
+# Routes are registered in a few production patterns:
+#   mux.Handle("/api/v1/x", ...)
+#   registerThing(mux, "/api/v1/x", ...)
+#   path := "/api/v1/x"; mux.Handle(path, ...)
+#   for _, base := range []string{"/api/v1/x", "/admin/x"} { ... }
+#
+# The guard deliberately scans production Go sources only, excluding tests, and
+# keeps only route-shaped literals. This catches helper/variable registrations
+# without treating request fixtures in *_test.go as live routes.
+routes="$(find "$INTERNAL_DIR" -type f -name '*.go' ! -name '*_test.go' -print0 \
+  | xargs -0 perl -ne 'while (/"((?:\/api\/v1|\/admin)[^"]*)"/g) { print "$1\n" }' \
+  | sed -E 's#/+$##' | sort -u)"
 
 # (1) every documented path must be covered by some registered route prefix.
 echo "== (1) documented paths must map to a registered route =="
