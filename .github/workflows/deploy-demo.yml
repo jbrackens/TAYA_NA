@@ -163,7 +163,7 @@ jobs:
             for attempt in 1 2 3; do
               echo "auth image build attempt ${attempt}/3"
               if timeout -k 1m 10m env JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
-                build --build-arg "GOPROXY=https://proxy.golang.org|direct" auth; then
+                build --build-arg "GOPROXY=https://goproxy.io|https://proxy.golang.org|direct" auth; then
                 exit 0
               fi
               echo "auth image build attempt ${attempt} failed"
@@ -206,7 +206,7 @@ jobs:
             for attempt in 1 2 3; do
               echo "gateway image build attempt ${attempt}/3"
               if timeout -k 1m 10m env JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
-                build --build-arg "GOPROXY=https://proxy.golang.org|direct" gateway; then
+                build --build-arg "GOPROXY=https://goproxy.io|https://proxy.golang.org|direct" gateway; then
                 exit 0
               fi
               echo "gateway image build attempt ${attempt} failed"
