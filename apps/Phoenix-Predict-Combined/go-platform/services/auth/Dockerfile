@@ -1,12 +1,10 @@
 # Build context: go-platform/
-FROM golang:1.25-alpine AS builder
+FROM golang:1.25 AS builder
 
 ARG GOPROXY=https://goproxy.io|https://proxy.golang.org|direct
 ENV GOPROXY=${GOPROXY}
 
 WORKDIR /build
-
-RUN apk add --no-cache git ca-certificates
 
 # Copy go.work and module definitions
 COPY go.work ./
