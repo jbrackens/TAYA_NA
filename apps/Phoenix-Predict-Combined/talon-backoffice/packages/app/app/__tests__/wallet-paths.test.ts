@@ -347,13 +347,16 @@ describe("wallet-client endpoint paths", () => {
       "amountPointsCents",
       "availablePointsCents",
       "reservedPointsCents",
-      "unit: 'PTS'",
     ]) {
       assert.ok(
         sharedApiTypesSource.includes(token),
         `shared API-client wallet types should expose ${token}`,
       );
     }
+    assert.ok(
+      /unit:\s*["']PTS["']/.test(sharedApiTypesSource),
+      "shared API-client wallet types should expose unit: 'PTS'",
+    );
     assert.ok(
       sharedApiClientSource.includes("interface LegacyWalletBalancePayload") &&
         sharedApiClientSource.includes("payload.balanceCents") &&
