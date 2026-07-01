@@ -52,7 +52,7 @@ class View08PatronGameLimsProjectionHandler(
     clock: Clock,
     log: Logger)(implicit ec: ExecutionContext)
     extends ProjectionEventHandler[PunterEvent] {
-  private val nanosInHour = 60 * 60 * 1000000000
+  private val nanosInHour = 60L * 60L * 1000000000L
   override def process(envelope: EventEnvelope[PunterEvent]): Future[Done] = {
     val eventDateTime = OffsetDateTime.ofInstant(Instant.ofEpochMilli(envelope.timestamp), clock.zone)
     (envelope.event match {

@@ -31,7 +31,7 @@ object CustomKeycloakDeploymentBuilder {
 
   def loadAdapterConfig(is: InputStream): AdapterConfig = {
     val mapper = new ObjectMapper(new SystemPropertiesJsonParserFactory)
-    mapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT)
+    mapper.setDefaultPropertyInclusion(JsonInclude.Value.construct(JsonInclude.Include.NON_DEFAULT, JsonInclude.Include.NON_DEFAULT))
     mapper.readValue(is, classOf[AdapterConfig])
   }
 }

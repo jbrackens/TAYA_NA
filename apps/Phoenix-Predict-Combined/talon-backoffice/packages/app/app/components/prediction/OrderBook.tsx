@@ -7,18 +7,16 @@
  * the top N bid levels (YES side) descending. Depth bars render as
  * row ::after gradients (CSS lives here; data sets --depth per row).
  *
- * Real level data isn't wired to the gateway yet. Until /orderbook lands,
- * callers can pass a synthesized book derived from the current
- * yes/noPrice + liquidity for shape-only rendering. When real levels
- * arrive the shape won't change.
+ * Callers pass real /orderbook levels only. AMM markets render a separate
+ * liquidity-model snapshot.
  */
 
 import { useTranslation } from "react-i18next";
 
 interface BookLevel {
-  priceCents: number;
-  size: number;
-  total: number;
+  pricePointsCents: number;
+  shares: number;
+  cumulativeShares: number;
 }
 
 interface OrderBookProps {
@@ -39,8 +37,7 @@ const ORDER_BOOK_TABLE_CLASS =
   "relative isolate w-full border-collapse font-['IBM_Plex_Mono',_monospace] text-[13px] [font-variant-numeric:tabular-nums]";
 const ORDER_BOOK_TH_CLASS =
   "border-b border-[var(--border-1)] px-2.5 py-1.5 text-left font-['Inter',_sans-serif] text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--t3)]";
-const ORDER_BOOK_TD_CLASS =
-  "relative px-2.5 py-[7px] text-[var(--t1)]";
+const ORDER_BOOK_TD_CLASS = "relative px-2.5 py-[7px] text-[var(--t1)]";
 const ORDER_BOOK_DEPTH_ROW_CLASS =
   "relative after:pointer-events-none after:absolute after:top-[3px] after:right-0 after:bottom-[3px] after:z-[-1] after:w-[calc(var(--depth,0)*1%)] after:rounded-[3px] after:content-['']";
 const ORDER_BOOK_SPREAD_CLASS =
@@ -48,15 +45,15 @@ const ORDER_BOOK_SPREAD_CLASS =
 
 export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
   const { t } = useTranslation("prediction");
-  const bestBid = bids[0]?.priceCents ?? 0;
-  const bestAsk = asks[asks.length - 1]?.priceCents ?? 0;
+  const bestBid = bids[0]?.pricePointsCents ?? 0;
+  const bestAsk = asks[asks.length - 1]?.pricePointsCents ?? 0;
   const mid =
     bestBid && bestAsk ? Math.round((bestBid + (100 - bestAsk)) / 2) : 0;
   const spread = bestBid && bestAsk ? Math.abs(100 - bestAsk - bestBid) : 0;
   const maxSize = Math.max(
     maxDepth ?? 0,
-    ...bids.map((l) => l.size),
-    ...asks.map((l) => l.size),
+    ...bids.map((l) => l.shares),
+    ...asks.map((l) => l.shares),
     1,
   );
 
@@ -80,32 +77,47 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
               <thead>
                 <tr>
                   <th className={ORDER_BOOK_TH_CLASS}>{t("SIDE")}</th>
-                  <th className={`${ORDER_BOOK_TH_CLASS} text-right`}>{t("PRICE")}</th>
-                  <th className={`${ORDER_BOOK_TH_CLASS} text-right`}>{t("SIZE")}</th>
-                  <th className={`${ORDER_BOOK_TH_CLASS} text-right`}>{t("TOTAL")}</th>
+                  <th className={`${ORDER_BOOK_TH_CLASS} text-right`}>
+                    {t("PRICE")}
+                  </th>
+                  <th className={`${ORDER_BOOK_TH_CLASS} text-right`}>
+                    {t("SIZE")}
+                  </th>
+                  <th className={`${ORDER_BOOK_TH_CLASS} text-right`}>
+                    {t("TOTAL")}
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {asks.map((l) => (
                   <tr
-                    key={`ask-${l.priceCents}`}
+                    key={`ask-${l.pricePointsCents}`}
                     className={`${ORDER_BOOK_DEPTH_ROW_CLASS} after:bg-[linear-gradient(90deg,_transparent,_var(--no-soft))]`}
                     style={{
                       ["--depth" as string]: Math.min(
                         100,
-                        (l.size / maxSize) * 100,
+                        (l.shares / maxSize) * 100,
                       ),
                     }}
                   >
-                    <td className={`${ORDER_BOOK_TD_CLASS} font-semibold text-[var(--no-text)]`}>
-                      {t("NO")} {100 - l.priceCents}¢
-                    </td>
-                    <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>{l.size}</td>
-                    <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
-                      {((l.size * (100 - l.priceCents)) / 100).toFixed(2)}
+                    <td
+                      className={`${ORDER_BOOK_TD_CLASS} font-semibold text-[var(--no-text)]`}
+                    >
+                      {t("NO")} {100 - l.pricePointsCents}¢
                     </td>
                     <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
-                      {((l.total * (100 - l.priceCents)) / 100).toFixed(2)}
+                      {l.shares}
+                    </td>
+                    <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
+                      {((l.shares * (100 - l.pricePointsCents)) / 100).toFixed(
+                        2,
+                      )}
+                    </td>
+                    <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
+                      {(
+                        (l.cumulativeShares * (100 - l.pricePointsCents)) /
+                        100
+                      ).toFixed(2)}
                     </td>
                   </tr>
                 ))}
@@ -124,24 +136,31 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
               <tbody>
                 {bids.map((l) => (
                   <tr
-                    key={`bid-${l.priceCents}`}
+                    key={`bid-${l.pricePointsCents}`}
                     className={`${ORDER_BOOK_DEPTH_ROW_CLASS} after:bg-[linear-gradient(90deg,_transparent,_var(--yes-soft))]`}
                     style={{
                       ["--depth" as string]: Math.min(
                         100,
-                        (l.size / maxSize) * 100,
+                        (l.shares / maxSize) * 100,
                       ),
                     }}
                   >
-                    <td className={`${ORDER_BOOK_TD_CLASS} font-semibold text-[var(--yes-text)]`}>
-                      {t("YES")} {l.priceCents}¢
-                    </td>
-                    <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>{l.size}</td>
-                    <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
-                      {((l.size * l.priceCents) / 100).toFixed(2)}
+                    <td
+                      className={`${ORDER_BOOK_TD_CLASS} font-semibold text-[var(--yes-text)]`}
+                    >
+                      {t("YES")} {l.pricePointsCents}¢
                     </td>
                     <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
-                      {((l.total * l.priceCents) / 100).toFixed(2)}
+                      {l.shares}
+                    </td>
+                    <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
+                      {((l.shares * l.pricePointsCents) / 100).toFixed(2)}
+                    </td>
+                    <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
+                      {(
+                        (l.cumulativeShares * l.pricePointsCents) /
+                        100
+                      ).toFixed(2)}
                     </td>
                   </tr>
                 ))}

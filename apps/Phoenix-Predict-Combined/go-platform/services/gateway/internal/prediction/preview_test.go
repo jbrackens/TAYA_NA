@@ -103,6 +103,72 @@ func TestPreviewOrder_OrderBookUsesExchangeEngine(t *testing.T) {
 	}
 }
 
+func TestPreviewOrder_AMMReturnsReadOnlyCurveQuote(t *testing.T) {
+	repo := newMemRepo()
+	m := seedMarket(t, repo)
+	m.ExecutionMode = ExecutionModeAMM
+
+	svc := NewService(repo, newFakeWallet(0))
+	preview, err := svc.PreviewOrderForUser(context.Background(), PlaceOrderRequest{
+		MarketID:  "mkt-1",
+		Side:      OrderSideYes,
+		Action:    OrderActionBuy,
+		OrderType: OrderTypeMarket,
+		Quantity:  10,
+	}, "")
+	if err != nil {
+		t.Fatalf("PreviewOrderForUser failed: %v", err)
+	}
+
+	if preview.ExecutionMode != ExecutionModeAMM {
+		t.Fatalf("execution mode = %q, want %q", preview.ExecutionMode, ExecutionModeAMM)
+	}
+	if preview.FilledQuantity != 10 || preview.UnfilledQuantity != 0 {
+		t.Fatalf("fill summary = %d filled / %d unfilled, want 10/0", preview.FilledQuantity, preview.UnfilledQuantity)
+	}
+	if preview.QuoteStatus != OrderStatusFilled {
+		t.Fatalf("quote status = %q, want filled", preview.QuoteStatus)
+	}
+	if preview.AverageFillPriceCents <= 0 || preview.TotalCostWithFeesCents <= 0 {
+		t.Fatalf("quote economics missing: avg=%d total=%d", preview.AverageFillPriceCents, preview.TotalCostWithFeesCents)
+	}
+	if preview.EstimatedSlippageCents <= 0 {
+		t.Fatalf("estimated slippage = %d, want positive AMM impact", preview.EstimatedSlippageCents)
+	}
+	if preview.NewYesPrice <= m.YesPriceCents || preview.NewNoPrice >= m.NoPriceCents {
+		t.Fatalf("new prices = YES %d NO %d, want YES up and NO down", preview.NewYesPrice, preview.NewNoPrice)
+	}
+}
+
+func TestPreviewOrder_AMMNoSideUsesNoPrice(t *testing.T) {
+	repo := newMemRepo()
+	m := seedMarket(t, repo)
+	m.ExecutionMode = ExecutionModeAMM
+	m.YesPriceCents = 40
+	m.NoPriceCents = 60
+	m.AMMYesShares = 0
+	m.AMMNoShares = 40.6
+
+	svc := NewService(repo, newFakeWallet(0))
+	preview, err := svc.PreviewOrderForUser(context.Background(), PlaceOrderRequest{
+		MarketID:  "mkt-1",
+		Side:      OrderSideNo,
+		Action:    OrderActionBuy,
+		OrderType: OrderTypeMarket,
+		Quantity:  5,
+	}, "")
+	if err != nil {
+		t.Fatalf("PreviewOrderForUser failed: %v", err)
+	}
+
+	if preview.PriceCents != m.NoPriceCents {
+		t.Fatalf("price cents = %d, want NO price %d", preview.PriceCents, m.NoPriceCents)
+	}
+	if preview.NewNoPrice <= m.NoPriceCents || preview.NewYesPrice >= m.YesPriceCents {
+		t.Fatalf("new prices = YES %d NO %d, want NO up and YES down", preview.NewYesPrice, preview.NewNoPrice)
+	}
+}
+
 func TestPreviewOrder_OrderBookNoLiquidityReturnsZeroFillQuote(t *testing.T) {
 	repo := &previewExchangeRepo{memRepo: newMemRepo()}
 	m := seedMarket(t, repo.memRepo)

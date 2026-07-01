@@ -1,11 +1,11 @@
 /**
  * Stack smoke tests — verifies the full backend is running and the
- * critical money paths work end-to-end.
+ * critical points-only prediction paths work end-to-end.
  *
  * REQUIRES: Go gateway on :18080, auth on :18081, PostgreSQL, Redis.
- * Skip with: SKIP_STACK_SMOKE=1 npx tsx --test app/__tests__/stack-smoke.test.ts
+ * Skip with: SKIP_STACK_SMOKE=1 npx tsx --test app/__tests__/integration/stack-smoke.test.ts
  *
- * Run:  npx tsx --test app/__tests__/stack-smoke.test.ts
+ * Run:  npx tsx --test app/__tests__/integration/stack-smoke.test.ts
  */
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
@@ -34,6 +34,8 @@ async function isGatewayUp(): Promise<boolean> {
 interface LoginResponse {
   access_token?: string;
   token?: string;
+  user_id?: string;
+  userId?: string;
   user?: Record<string, unknown>;
 }
 
@@ -42,9 +44,14 @@ interface StatusResponse {
   version?: string;
 }
 
+interface MarketsResponse {
+  data?: Array<{ id?: string; status?: string }>;
+}
+
 let accessToken = "";
 let csrfToken = "";
 let cookies = "";
+let demoUserId = "p:001";
 
 async function login(): Promise<void> {
   const res = await fetch(`${AUTH}/api/v1/auth/login`, {
@@ -70,11 +77,22 @@ async function login(): Promise<void> {
   }
   cookies = cookieParts.join("; ");
 
+  let body: LoginResponse | undefined;
+  try {
+    body = (await res.json()) as LoginResponse;
+  } catch {
+    body = undefined;
+  }
+
   // Fallback: some auth implementations return tokens in body
   if (!accessToken) {
-    const body = (await res.json()) as LoginResponse;
-    accessToken = body.access_token || body.token || "";
+    accessToken = body?.access_token || body?.token || "";
   }
+  demoUserId =
+    body?.user_id ||
+    body?.userId ||
+    (typeof body?.user?.id === "string" ? body.user.id : "") ||
+    demoUserId;
 }
 
 function authHeaders(): Record<string, string> {
@@ -83,6 +101,15 @@ function authHeaders(): Record<string, string> {
   if (accessToken) h["Authorization"] = `Bearer ${accessToken}`;
   if (csrfToken) h["X-CSRF-Token"] = csrfToken;
   return h;
+}
+
+async function firstOpenMarketId(): Promise<string> {
+  const res = await fetch(`${GATEWAY}/api/v1/markets?status=open&pageSize=20`);
+  assert.equal(res.status, 200, `Markets returned ${res.status}`);
+  const body = (await res.json()) as MarketsResponse;
+  const marketId = body.data?.find((market) => market.id)?.id;
+  assert.ok(marketId, "Expected at least one open market");
+  return marketId;
 }
 
 describe("Stack Smoke Tests", { skip: false }, () => {
@@ -119,60 +146,68 @@ describe("Stack Smoke Tests", { skip: false }, () => {
     assert.ok(accessToken || cookies, "Expected access_token from login");
   });
 
-  it("authenticated GET /api/v1/bets returns array", async () => {
+  it("authenticated GET /api/v1/orders returns paginated point-order data", async () => {
     if (!gatewayUp) return;
-    const res = await fetch(`${GATEWAY}/api/v1/bets/`, {
+    const res = await fetch(`${GATEWAY}/api/v1/orders?pageSize=5`, {
       headers: authHeaders(),
     });
-    assert.equal(res.status, 200, `GET /bets returned ${res.status}`);
+    assert.equal(res.status, 200, `GET /orders returned ${res.status}`);
     const body = (await res.json()) as Record<string, unknown>;
-    const bets = Array.isArray(body) ? body : body.bets || [];
-    assert.ok(Array.isArray(bets), "Expected bets array");
+    assert.ok(Array.isArray(body.data), "Expected orders data array");
+    assert.ok(body.meta, "Expected orders pagination metadata");
   });
 
-  it("unauthenticated POST /api/v1/bets/place returns 401", async () => {
+  it("unauthenticated POST /api/v1/orders returns 401", async () => {
     if (!gatewayUp) return;
-    const res = await fetch(`${GATEWAY}/api/v1/bets/place/`, {
+    const res = await fetch(`${GATEWAY}/api/v1/orders`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items: [] }),
+      body: JSON.stringify({
+        marketId: "test-market-1",
+        side: "yes",
+        action: "buy",
+        orderType: "market",
+        quantity: 1,
+        notionalCapPointsCents: 100,
+      }),
     });
-    assert.equal(res.status, 401, "Unauth bet placement should be 401");
+    assert.equal(res.status, 401, "Unauth order placement should be 401");
   });
 
-  it("POST /api/v1/bets/precheck works when authenticated", async () => {
+  it("POST /api/v1/orders/preview works with a point-native request", async () => {
     if (!gatewayUp) return;
-    const res = await fetch(`${GATEWAY}/api/v1/bets/precheck/`, {
+    const marketId = await firstOpenMarketId();
+    const res = await fetch(`${GATEWAY}/api/v1/orders/preview`, {
       method: "POST",
       headers: authHeaders(),
       body: JSON.stringify({
-        items: [
-          {
-            market_id: "test-market-1",
-            selection_id: "test-sel-1",
-            odds: 2.5,
-            stake_cents: 1000,
-          },
-        ],
+        marketId,
+        side: "yes",
+        action: "buy",
+        orderType: "market",
+        quantity: 1,
+        notionalCapPointsCents: 100,
       }),
     });
-    assert.ok(
-      res.status >= 200 && res.status < 500,
-      `Precheck returned server error: ${res.status}`,
-    );
+    assert.equal(res.status, 200, `Order preview returned ${res.status}`);
+    const body = (await res.json()) as Record<string, unknown>;
+    assert.equal(body.unit, "PTS", "Expected preview to use gameplay points");
   });
 
-  it("GET /api/v1/wallet/balance returns balance when authenticated", async () => {
+  it("GET /api/v1/wallet/{userId} returns point balance when authenticated", async () => {
     if (!gatewayUp) return;
-    const res = await fetch(`${GATEWAY}/api/v1/wallet/balance/`, {
+    const res = await fetch(`${GATEWAY}/api/v1/wallet/${demoUserId}`, {
       headers: authHeaders(),
     });
     assert.equal(res.status, 200, `Wallet balance returned ${res.status}`);
     const body = (await res.json()) as Record<string, unknown>;
+    assert.equal(body.unit, "PTS", "Expected wallet balance unit to be PTS");
+    assert.ok("balancePointsCents" in body, "Expected point balance field");
     assert.ok(
-      "balance_cents" in body || "balanceCents" in body || "balance" in body,
-      "Expected balance field in response",
+      "availablePointsCents" in body,
+      "Expected available gameplay points field",
     );
+    assert.ok(!("balanceCents" in body), "Retired cash balance field leaked");
   });
 
   it("GET /api/v1/events returns events list", async () => {

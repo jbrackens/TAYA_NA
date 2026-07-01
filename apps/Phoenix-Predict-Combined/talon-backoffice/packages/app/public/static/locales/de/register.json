@@ -9,5 +9,6 @@
   "PASSWORD": "Passwort",
   "PASSWORD_ERROR": "Bitte geben Sie Ihr Passwort ein",
   "SIGN_UP": "Anmelden",
-  "CANCEL": "Stornieren"
+  "CANCEL": "Stornieren",
+  "RG_MESSAGE": "Tiangge provides responsible-play tools such as point-use limits, session limits, cool-off periods, and self-exclusion from gameplay. Visit the responsible play page for additional information."
 }

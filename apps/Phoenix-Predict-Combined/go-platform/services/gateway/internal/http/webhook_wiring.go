@@ -17,9 +17,10 @@ import (
 //
 // Enqueue is post-commit and fire-and-forget: the trade or settlement has
 // already committed by the time these run, so a failed enqueue is logged and
-// swallowed — it must never block or fail the money path. (The transactional-
-// outbox-with-commit upgrade — enqueue inside the same tx for exactly-once —
-// is deferred; it would couple this to the money-path transaction.)
+// swallowed — it must never block or fail the prediction event path. The
+// transactional-outbox-with-commit upgrade — enqueue inside the same tx for
+// exactly-once — is deferred; it would couple this to the prediction
+// transaction.
 type webhookEnqueuer interface {
 	Enqueue(ctx context.Context, eventType string, data json.RawMessage) (int, error)
 }

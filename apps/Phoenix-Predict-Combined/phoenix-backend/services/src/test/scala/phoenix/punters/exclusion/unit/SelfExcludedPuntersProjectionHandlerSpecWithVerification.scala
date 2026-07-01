@@ -22,7 +22,7 @@ final class SelfExcludedPuntersProjectionHandlerSpecWithVerification
     with ActorSystemIntegrationSpec
     with FutureSupport {
 
-  implicit val clock = new FakeHardcodedClock()
+  implicit val clock: FakeHardcodedClock = new FakeHardcodedClock()
 
   val repository = new InMemorySelfExcludedPuntersRepository()
 

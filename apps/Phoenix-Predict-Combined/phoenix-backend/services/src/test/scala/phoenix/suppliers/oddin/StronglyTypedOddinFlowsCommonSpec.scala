@@ -54,8 +54,8 @@ class StronglyTypedOddinFlowsCommonSpec
     with HttpSpec {
   import StronglyTypedOddinFlowsSpec._
 
-  implicit val clock = Clock.utcClock
-  implicit val typedSystem = system
+  implicit val clock: Clock = Clock.utcClock
+  implicit val typedSystem: akka.actor.typed.ActorSystem[Nothing] = system
 
   val eventuallyTimeout = Timeout(awaitTimeout.value * 3)
   val eventuallyInterval = awaitInterval

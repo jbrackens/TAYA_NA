@@ -1,5 +1,6 @@
 package phoenix.oddin.infrastructure
 
+import scala.concurrent.ExecutionContextExecutor
 import scala.reflect.ClassTag
 
 import akka.NotUsed
@@ -28,7 +29,7 @@ import phoenix.utils.UUIDGenerator
 class OddinMessageAdapter(uuidGenerator: UUIDGenerator, clock: Clock)(implicit system: ActorSystem[_])
     extends OddinMessageHandler {
 
-  implicit private val ec = system.executionContext
+  implicit private val ec: ExecutionContextExecutor = system.executionContext
 
   private val log = LoggerFactory.getLogger(getClass)
 

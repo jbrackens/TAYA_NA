@@ -175,6 +175,18 @@ type ExchangeRepository interface {
 	ListRecentDriftAlerts(ctx context.Context, since time.Time) ([]CollateralDriftAlert, error)
 }
 
+// RestingOrderFinalizer is the repository capability for atomically moving a
+// resting exchange order to a terminal state while releasing its wallet point
+// reservation and any sell-side share reservation in the same transaction.
+type RestingOrderFinalizer interface {
+	FinalizeRestingOrderAtomic(
+		ctx context.Context,
+		walletAdapter ExchangeWalletAdapter,
+		order *Order,
+		terminal OrderStatus,
+	) (reservedCents int64, capturedCents int64, placedAt time.Time, err error)
+}
+
 // AtomicMarketSettlementPersister is an optional repository capability for
 // market settlement/void flows that need wallet credits and prediction writes
 // to commit together.
@@ -288,10 +300,14 @@ type EventFilter struct {
 // MarketFilter provides filtering options for listing markets.
 type MarketFilter struct {
 	EventID     *string
+	SeriesID    *string
 	CategoryID  *string
 	Status      *MarketStatus
 	Ticker      *string
+	Search      *string
+	Tag         *string
 	CloseBefore *time.Time
+	Sort        string
 	Page        int
 	PageSize    int
 	// IncludeUnopened opts IN to returning markets in the pre-publication

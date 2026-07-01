@@ -2,8 +2,9 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-SPORTSBOOK_DIR="$ROOT_DIR/phoenix-frontend-brand-viegg"
-YARN_MUTEX="file:/tmp/yarn-mutex-sportsbook-api-contracts"
+TALON_DIR="$ROOT_DIR/talon-backoffice"
+APP_DIR="$TALON_DIR/packages/app"
+YARN_MUTEX="file:/tmp/yarn-mutex-tiangge-api-contracts"
 YARN_BIN=""
 
 HAS_NVM=false
@@ -70,12 +71,29 @@ ensure_yarn() {
   fi
 }
 
+build_api_client_contracts() {
+  (
+    cd "$TALON_DIR"
+    YARN_MUTEX="$YARN_MUTEX" run_yarn workspace @phoenix-ui/api-client build
+  )
+}
+
 run_contract_fixture_tests() {
-  local app_dir="$SPORTSBOOK_DIR/packages/app-core"
+  local tsx_bin="$TALON_DIR/node_modules/.bin/tsx"
+  if [[ ! -x "$tsx_bin" ]]; then
+    echo "error: tsx test runner not found at $tsx_bin" >&2
+    return 1
+  fi
 
   (
-    cd "$app_dir"
-    CI=1 BROWSERSLIST_IGNORE_OLD_DATA=1 run_yarn test --runTestsByPath services/api/__tests__/response-shapes.test.ts --coverage=false
+    cd "$APP_DIR"
+    CI=1 BROWSERSLIST_IGNORE_OLD_DATA=1 "$tsx_bin" --test --test-reporter=tap \
+      app/__tests__/prediction-client-browser-base.test.ts \
+      app/__tests__/prediction-client-refresh.test.ts \
+      app/__tests__/prediction-order-validation.test.ts \
+      app/__tests__/trade-ticket-preview.test.ts \
+      app/__tests__/wallet-paths.test.ts \
+      app/__tests__/point-ledger.test.ts
   )
 }
 
@@ -83,11 +101,8 @@ use_node_runtime
 ensure_yarn
 select_yarn_bin
 
-cd "$SPORTSBOOK_DIR"
+cd "$TALON_DIR"
 YARN_MUTEX="$YARN_MUTEX" run_yarn install --frozen-lockfile
 
-if ! run_contract_fixture_tests; then
-  echo "warn: response-shape test run failed; building @phoenix-ui/utils and retrying" >&2
-  YARN_MUTEX="$YARN_MUTEX" run_yarn workspace @phoenix-ui/utils dist
-  run_contract_fixture_tests
-fi
+build_api_client_contracts
+run_contract_fixture_tests

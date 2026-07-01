@@ -3,6 +3,7 @@ package prediction
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 )
@@ -18,11 +19,11 @@ type fakeCompliance struct {
 	reason        string
 	denyErr       error // returned alongside allowed=false on a deliberate deny
 	infraErr      error // returned alongside allowed=true (could not evaluate)
-	checkCalls   []int64
-	recordErr    error
-	recordCalls  []int64
-	releaseErr   error
-	releaseCalls []int64
+	checkCalls    []int64
+	recordErr     error
+	recordCalls   []int64
+	releaseErr    error
+	releaseCalls  []int64
 }
 
 func (f *fakeCompliance) CheckBetAllowed(_ context.Context, _ string, stakeCents int64) (bool, string, error) {
@@ -73,8 +74,11 @@ func TestPlaceOrder_BlockedByComplianceGate(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected PlaceOrder to be blocked by the compliance gate, got nil error")
 	}
-	if got := err.Error(); got != "Bet limit exceeded for daily period" {
-		t.Fatalf("expected RG reason surfaced verbatim, got %q", got)
+	if got := err.Error(); got != "Prediction limit exceeded for daily period" {
+		t.Fatalf("expected launch-safe RG reason surfaced, got %q", got)
+	}
+	if strings.Contains(err.Error(), "Bet limit") || strings.Contains(err.Error(), "bet limit") {
+		t.Fatalf("order error must not expose inherited bet-limit wording, got %q", err.Error())
 	}
 	if len(rg.checkCalls) != 1 {
 		t.Fatalf("expected exactly 1 CheckBetAllowed call, got %d", len(rg.checkCalls))
@@ -125,8 +129,11 @@ func TestPlaceOrder_DenyWithSentinelError_BlocksEvenInDev(t *testing.T) {
 	if err == nil {
 		t.Fatal("deny carrying a sentinel error must still block in dev, got nil (LC-17 regression)")
 	}
-	if got := err.Error(); got != "Bet limit exceeded for daily period" {
-		t.Fatalf("expected the RG reason, not the sentinel, surfaced; got %q", got)
+	if got := err.Error(); got != "Prediction limit exceeded for daily period" {
+		t.Fatalf("expected the launch-safe RG reason, not the sentinel, surfaced; got %q", got)
+	}
+	if strings.Contains(err.Error(), "Bet limit") || strings.Contains(err.Error(), "bet limit") {
+		t.Fatalf("order error must not expose inherited bet-limit wording, got %q", err.Error())
 	}
 	if len(wallet.debitCalls) != 0 {
 		t.Errorf("blocked order must not debit wallet; got %d", len(wallet.debitCalls))
@@ -207,7 +214,7 @@ func TestRGPlacementAccounting(t *testing.T) {
 			&Order{Status: OrderStatusPartial, FilledQuantity: 3, CapturedCashCents: 1500}, 5000, 0},
 
 		// Terminal taker: record committed, release the uncaptured remainder
-		// so the net equals realized captured cash.
+		// so the net equals realized captured points.
 		{"filled taker nets to realized (5000 committed, 4994 captured)", 5000,
 			&Order{Status: OrderStatusFilled, FilledQuantity: 136, CapturedCashCents: 4994}, 5000, 6},
 		{"market IOC cancelled remainder nets to realized (2500 cap, 190 captured)", 2500,

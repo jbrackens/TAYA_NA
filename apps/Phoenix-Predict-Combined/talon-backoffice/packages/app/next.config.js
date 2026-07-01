@@ -18,6 +18,14 @@ const realtimeOrigin = (() => {
     return "";
   }
 })();
+const apiOrigin = (() => {
+  const raw = process.env.NEXT_PUBLIC_API_URL || "";
+  try {
+    return raw ? new URL(raw).origin : "";
+  } catch {
+    return "";
+  }
+})();
 
 const frameSrc = ["'self'", "https://www.googletagmanager.com"];
 const connectSrc = [
@@ -25,9 +33,18 @@ const connectSrc = [
   "https://www.googletagmanager.com",
   "https://www.google-analytics.com",
 ];
+const scriptSrc = [
+  "'self'",
+  "'unsafe-inline'",
+  ...(process.env.NODE_ENV !== "production" ? ["'unsafe-eval'"] : []),
+  "https://www.googletagmanager.com",
+];
 if (chatOrigin) {
   frameSrc.push(chatOrigin);
   connectSrc.push(chatOrigin, chatOrigin.replace(/^http/, "ws"));
+}
+if (apiOrigin) {
+  connectSrc.push(apiOrigin);
 }
 if (realtimeOrigin) {
   connectSrc.push(realtimeOrigin);
@@ -38,7 +55,7 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com",
+      `script-src ${scriptSrc.join(" ")}`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: blob: https:",

@@ -1,17 +1,16 @@
 import { apiClient } from "./client";
 
 // Request types
-export interface SetDepositLimitsRequest {
+export interface SetPointUseLimitsRequest {
   user_id: string;
-  daily_limit?: number;
-  weekly_limit?: number;
-  monthly_limit?: number;
+  dailyLimitPoints?: number;
+  weeklyLimitPoints?: number;
+  monthlyLimitPoints?: number;
 }
 
-export interface SetStakeLimitsRequest {
+export interface SetPredictionLimitsRequest {
   user_id: string;
-  max_stake?: number;
-  currency?: string;
+  maxOrderPoints?: number;
 }
 
 export interface SetSessionLimitsRequest {
@@ -31,20 +30,21 @@ export interface SelfExcludeRequest {
 }
 
 // Response types (Go API uses snake_case)
-interface DepositLimitsRaw {
+interface PointUseLimitsRaw {
   user_id: string;
   daily_limit?: number;
   weekly_limit?: number;
   monthly_limit?: number;
-  currency: string;
+  unit?: string;
   effective_date: string;
   created_at: string;
 }
 
-interface StakeLimitsRaw {
+interface PredictionLimitsRaw {
   user_id: string;
-  max_stake?: number;
-  currency: string;
+  max_order_points?: number;
+  limitPointsCents?: number;
+  unit?: string;
   effective_date: string;
   created_at: string;
 }
@@ -71,20 +71,20 @@ interface SelfExcludeResponseRaw {
 }
 
 // Normalized response types (camelCase)
-export interface DepositLimits {
+export interface PointUseLimits {
   userId: string;
-  dailyLimit?: number;
-  weeklyLimit?: number;
-  monthlyLimit?: number;
-  currency: string;
+  dailyLimitPoints?: number;
+  weeklyLimitPoints?: number;
+  monthlyLimitPoints?: number;
+  unit: "PTS";
   effectiveDate: string;
   createdAt: string;
 }
 
-export interface StakeLimits {
+export interface PredictionLimits {
   userId: string;
-  maxStake?: number;
-  currency: string;
+  maxOrderPoints?: number;
+  unit: "PTS";
   effectiveDate: string;
   createdAt: string;
 }
@@ -129,6 +129,35 @@ export interface GetLimitsHistoryResponse {
   total: number;
 }
 
+const POINT_UNIT = "PTS" as const;
+
+function normalizePointUseLimits(raw: PointUseLimitsRaw): PointUseLimits {
+  return {
+    userId: raw.user_id,
+    dailyLimitPoints: raw.daily_limit,
+    weeklyLimitPoints: raw.weekly_limit,
+    monthlyLimitPoints: raw.monthly_limit,
+    unit: POINT_UNIT,
+    effectiveDate: raw.effective_date,
+    createdAt: raw.created_at,
+  };
+}
+
+function normalizePredictionLimits(raw: PredictionLimitsRaw): PredictionLimits {
+  return {
+    userId: raw.user_id,
+    maxOrderPoints:
+      typeof raw.max_order_points === "number"
+        ? raw.max_order_points
+        : typeof raw.limitPointsCents === "number"
+          ? raw.limitPointsCents / 100
+          : undefined,
+    unit: POINT_UNIT,
+    effectiveDate: raw.effective_date,
+    createdAt: raw.created_at,
+  };
+}
+
 // Utility function to normalize snake_case to camelCase
 function normalizeSnakeCase<T extends object>(obj: T): unknown {
   if (Array.isArray(obj)) {
@@ -153,46 +182,46 @@ function normalizeSnakeCase<T extends object>(obj: T): unknown {
 }
 
 /**
- * Set deposit limits for a user
+ * Set point-use limits for a user.
  */
-export async function setDepositLimits(
-  request: SetDepositLimitsRequest,
-): Promise<DepositLimits> {
-  const raw = await apiClient.post<DepositLimitsRaw>(
-    "/api/v1/compliance/rg/deposit-limit",
+export async function setPointUseLimits(
+  request: SetPointUseLimitsRequest,
+): Promise<PointUseLimits> {
+  const raw = await apiClient.post<PointUseLimitsRaw>(
+    "/api/v1/compliance/rg/point-use-limit",
     {
       userId: request.user_id,
-      period: request.monthly_limit
+      period: request.monthlyLimitPoints
         ? "monthly"
-        : request.weekly_limit
+        : request.weeklyLimitPoints
           ? "weekly"
           : "daily",
-      amountCents: Math.round(
-        ((request.monthly_limit ||
-          request.weekly_limit ||
-          request.daily_limit ||
+      amountPointsCents: Math.round(
+        ((request.monthlyLimitPoints ||
+          request.weeklyLimitPoints ||
+          request.dailyLimitPoints ||
           0) as number) * 100,
       ),
     },
   );
-  return normalizeSnakeCase(raw) as DepositLimits;
+  return normalizePointUseLimits(raw);
 }
 
 /**
- * Set stake limits for a user
+ * Set prediction order-size limits for a user.
  */
-export async function setStakeLimits(
-  request: SetStakeLimitsRequest,
-): Promise<StakeLimits> {
-  const raw = await apiClient.post<StakeLimitsRaw>(
-    "/api/v1/compliance/rg/bet-limit",
+export async function setPredictionLimits(
+  request: SetPredictionLimitsRequest,
+): Promise<PredictionLimits> {
+  const raw = await apiClient.post<PredictionLimitsRaw>(
+    "/api/v1/compliance/rg/prediction-limit",
     {
       userId: request.user_id,
       period: "daily",
-      amountCents: Math.round((request.max_stake || 0) * 100),
+      amountPointsCents: Math.round((request.maxOrderPoints || 0) * 100),
     },
   );
-  return normalizeSnakeCase(raw) as StakeLimits;
+  return normalizePredictionLimits(raw);
 }
 
 /**
@@ -296,62 +325,48 @@ export async function verifyIdentity(
 }
 
 /**
- * Get current month's cumulative deposit total for threshold checking.
- * Uses wallet transactions to sum deposits in the current calendar month.
- */
-export async function getMonthlyDepositTotal(userId: string): Promise<number> {
-  try {
-    const { getTransactions } = await import("./wallet-client");
-    const result = await getTransactions(userId, {
-      limit: 200,
-      transaction_type: "deposit",
-    });
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    return (result.transactions || [])
-      .filter((tx) => new Date(tx.createdAt) >= monthStart)
-      .reduce((sum, tx) => sum + (tx.amount || 0), 0);
-  } catch {
-    return 0;
-  }
-}
-
-/**
  * Get limits history for a user.
- * Composes deposit limits + bet limits from the two Go compliance endpoints.
+ * Composes point-use limits + prediction limits from the two Go compliance endpoints.
  */
 export async function getLimitsHistory(
   userId: string,
 ): Promise<GetLimitsHistoryResponse> {
   try {
-    const [depositLimits, betLimits, restrictionsResponse] = await Promise.all([
-      apiClient
-        .get<
-          Record<string, unknown>
-        >("/api/v1/compliance/rg/deposit-limits", { userId })
-        .catch(() => null),
-      apiClient
-        .get<
-          Record<string, unknown>
-        >("/api/v1/compliance/rg/bet-limits", { userId })
-        .catch(() => null),
-      apiClient
-        .get<
-          Record<string, unknown>
-        >("/api/v1/compliance/rg/restrictions", { userId })
-        .catch(() => null),
-    ]);
+    const [pointUseLimits, predictionLimits, restrictionsResponse] =
+      await Promise.all([
+        apiClient
+          .get<
+            Record<string, unknown>
+          >("/api/v1/compliance/rg/point-use-limits", { userId })
+          .catch(() => null),
+        apiClient
+          .get<
+            Record<string, unknown>
+          >("/api/v1/compliance/rg/prediction-limits", { userId })
+          .catch(() => null),
+        apiClient
+          .get<
+            Record<string, unknown>
+          >("/api/v1/compliance/rg/restrictions", { userId })
+          .catch(() => null),
+      ]);
 
     const history: LimitHistoryItem[] = [];
-    const depositItems = Array.isArray(depositLimits?.limits)
-      ? (depositLimits.limits as Array<Record<string, unknown>>)
+    const pointUseItems = Array.isArray(pointUseLimits?.limits)
+      ? (pointUseLimits.limits as Array<Record<string, unknown>>)
       : [];
-    for (const limit of depositItems) {
+    for (const limit of pointUseItems) {
+      const limitPointsCents =
+        typeof limit.limitPointsCents === "number"
+          ? limit.limitPointsCents
+          : typeof limit.limitCents === "number"
+            ? limit.limitCents
+            : undefined;
       history.push({
-        limitType: "deposit_limit",
+        limitType: "point_use_limit",
         newValue:
-          typeof limit.limitCents === "number"
-            ? limit.limitCents / 100
+          typeof limitPointsCents === "number"
+            ? limitPointsCents / 100
             : undefined,
         effectiveDate: String(
           limit.resetsAt || limit.createdAt || new Date().toISOString(),
@@ -359,15 +374,21 @@ export async function getLimitsHistory(
         createdAt: String(limit.createdAt || new Date().toISOString()),
       });
     }
-    const betItems = Array.isArray(betLimits?.limits)
-      ? (betLimits.limits as Array<Record<string, unknown>>)
+    const predictionItems = Array.isArray(predictionLimits?.limits)
+      ? (predictionLimits.limits as Array<Record<string, unknown>>)
       : [];
-    for (const limit of betItems) {
+    for (const limit of predictionItems) {
+      const limitPointsCents =
+        typeof limit.limitPointsCents === "number"
+          ? limit.limitPointsCents
+          : typeof limit.limitCents === "number"
+            ? limit.limitCents
+            : undefined;
       history.push({
-        limitType: "stake_limit",
+        limitType: "prediction_limit",
         newValue:
-          typeof limit.limitCents === "number"
-            ? limit.limitCents / 100
+          typeof limitPointsCents === "number"
+            ? limitPointsCents / 100
             : undefined,
         effectiveDate: String(
           limit.resetsAt || limit.createdAt || new Date().toISOString(),

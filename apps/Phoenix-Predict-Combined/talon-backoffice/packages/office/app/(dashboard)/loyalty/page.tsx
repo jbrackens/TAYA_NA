@@ -15,14 +15,17 @@ import { adminFetch } from "../../lib/admin-fetch";
 interface LoyaltyAccountRow {
   accountId: string;
   playerId: string;
-  currentTier: string;
-  nextTier: string;
+  rank: number;
+  rankName: string;
+  nextRank: number;
+  nextRankName: string;
   pointsBalance: number;
   pointsEarnedLifetime: number;
   pointsEarned7D: number;
   pointsEarned30D: number;
   pointsEarnedCurrentMonth: number;
-  pointsToNextTier: number;
+  xpToNextRank: number;
+  unit: "PTS";
   updatedAt: string;
 }
 
@@ -32,7 +35,7 @@ function LoyaltyPageContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [tierCode, setTierCode] = useState("");
+  const [rankName, setRankName] = useState("");
 
   const loadAccounts = async () => {
     setIsLoading(true);
@@ -40,7 +43,7 @@ function LoyaltyPageContent() {
     try {
       const params = new URLSearchParams();
       if (search.trim()) params.set("search", search.trim());
-      if (tierCode) params.set("tierCode", tierCode);
+      if (rankName) params.set("rankName", rankName);
       const query = params.toString();
       const response = await adminFetch(
         `/api/v1/admin/loyalty/accounts${query ? `?${query}` : ""}`,
@@ -74,7 +77,7 @@ function LoyaltyPageContent() {
         (sum, account) => sum + account.pointsEarnedLifetime,
         0,
       ),
-      vipCount: accounts.filter((account) => account.currentTier === "vip")
+      topRankCount: accounts.filter((account) => account.rankName === "Legend")
         .length,
     };
   }, [accounts]);
@@ -94,12 +97,12 @@ function LoyaltyPageContent() {
       ),
     },
     {
-      key: "currentTier",
-      label: "Tier",
+      key: "rankName",
+      label: "Rank",
       sortable: true,
-      render: (value) => (
-        <span className={badgeClassName(tierVariant(String(value)))}>
-          {String(value).toUpperCase()}
+      render: (_value, row) => (
+        <span className={badgeClassName(rankVariant(row.rankName))}>
+          {row.rankName ? row.rankName.toUpperCase() : "UNRANKED"}
         </span>
       ),
     },
@@ -116,13 +119,13 @@ function LoyaltyPageContent() {
       render: (value) => Number(value).toLocaleString(),
     },
     {
-      key: "pointsToNextTier",
-      label: "To Next Tier",
+      key: "xpToNextRank",
+      label: "To Next Rank",
       sortable: true,
       render: (value, row) =>
-        row.nextTier
-          ? `${Number(value).toLocaleString()} to ${row.nextTier.toUpperCase()}`
-          : "Top tier",
+        row.nextRankName
+          ? `${Number(value).toLocaleString()} to ${row.nextRankName.toUpperCase()}`
+          : "Top rank",
     },
     {
       key: "updatedAt",
@@ -138,7 +141,7 @@ function LoyaltyPageContent() {
         <div>
           <h1 className={pageTitleClassName}>Loyalty</h1>
           <p className={subtitleClassName}>
-            Review player rewards balances, tier position, and recent accrual
+            Review player rewards balances, rank position, and recent accrual
             momentum.
           </p>
         </div>
@@ -147,7 +150,7 @@ function LoyaltyPageContent() {
             href="/loyalty/settings"
             className={`${buttonClassName} no-underline`}
           >
-            Manage Rules & Tiers
+            Manage Rules & Ranks
           </Link>
           <button
             className={buttonClassName}
@@ -172,8 +175,8 @@ function LoyaltyPageContent() {
           value={stats.totalLifetime.toLocaleString()}
         />
         <MetricCard
-          label="VIP Players"
-          value={stats.vipCount.toLocaleString()}
+          label="Legend Players"
+          value={stats.topRankCount.toLocaleString()}
         />
       </div>
 
@@ -189,16 +192,17 @@ function LoyaltyPageContent() {
           />
           <select
             className={inputClassName}
-            value={tierCode}
+            value={rankName}
             onChange={(event: ChangeEvent<HTMLSelectElement>) =>
-              setTierCode(event.target.value)
+              setRankName(event.target.value)
             }
           >
-            <option value="">All tiers</option>
-            <option value="bronze">Bronze</option>
-            <option value="silver">Silver</option>
-            <option value="gold">Gold</option>
-            <option value="vip">VIP</option>
+            <option value="">All ranks</option>
+            <option value="Newcomer">Newcomer</option>
+            <option value="Trader">Trader</option>
+            <option value="Sharp">Sharp</option>
+            <option value="Whale">Whale</option>
+            <option value="Legend">Legend</option>
           </select>
           <button
             className={buttonClassName}
@@ -240,15 +244,16 @@ function MetricCard({ label, value }: { label: string; value: string }) {
   );
 }
 
-function tierVariant(
-  tier: string,
+function rankVariant(
+  rankName: string,
 ): "default" | "success" | "warning" | "danger" {
-  switch (tier) {
-    case "vip":
+  switch (rankName.toLowerCase()) {
+    case "legend":
+    case "whale":
       return "danger";
-    case "gold":
+    case "sharp":
       return "warning";
-    case "silver":
+    case "trader":
       return "success";
     default:
       return "default";

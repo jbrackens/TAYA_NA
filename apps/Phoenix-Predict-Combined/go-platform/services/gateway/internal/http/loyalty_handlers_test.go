@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+	"time"
 
+	canonicalv1 "phoenix-revival/platform/canonical/v1"
 	"phoenix-revival/platform/transport/httpx"
 )
 
@@ -29,8 +32,24 @@ func TestLoyaltyRoutesExposeAccountLedgerAndTiers(t *testing.T) {
 	if err := json.Unmarshal(accountRes.Body.Bytes(), &accountPayload); err != nil {
 		t.Fatalf("decode account payload: %v", err)
 	}
-	if accountPayload["playerId"] != "u-1" {
-		t.Fatalf("expected playerId u-1, got %v", accountPayload["playerId"])
+	if accountPayload["userId"] != "u-1" {
+		t.Fatalf("expected userId u-1, got %v", accountPayload["userId"])
+	}
+	if accountPayload["unit"] != "PTS" {
+		t.Fatalf("expected loyalty standing unit PTS, got %+v", accountPayload)
+	}
+	for _, required := range []string{"pointsBalance", "xp", "xpPoints", "rank", "rankName", "nextRank", "nextRankName", "xpToNextRank"} {
+		if _, ok := accountPayload[required]; !ok {
+			t.Fatalf("expected loyalty standing field %q in %+v", required, accountPayload)
+		}
+	}
+	if accountPayload["xp"] != accountPayload["xpPoints"] {
+		t.Fatalf("expected xp and xpPoints to match in %+v", accountPayload)
+	}
+	for _, retired := range []string{"accountId", "playerId", "currentTier", "currentTierAssignedAt", "nextTier", "pointsToNextTier", "lastAccrualAt"} {
+		if _, ok := accountPayload[retired]; ok {
+			t.Fatalf("public loyalty standing should not emit retired/canonical alias %q in %+v", retired, accountPayload)
+		}
 	}
 
 	ledgerReq := httptest.NewRequest(http.MethodGet, "/api/v1/loyalty/ledger?userId=u-1&limit=5", nil)
@@ -55,6 +74,44 @@ func TestLoyaltyRoutesExposeAccountLedgerAndTiers(t *testing.T) {
 	if ledgerPayload.Total < 1 {
 		t.Fatalf("expected seeded ledger total >= 1, got %d", ledgerPayload.Total)
 	}
+	var settlementEntry map[string]any
+	for _, item := range ledgerPayload.Items {
+		if item["predictionSourceType"] == "prediction_settlement" {
+			settlementEntry = item
+			break
+		}
+	}
+	if settlementEntry == nil {
+		t.Fatal("expected seeded prediction-settlement loyalty ledger entry")
+	}
+	if got := settlementEntry["predictionSourceId"]; got != "prediction:seed:1001" {
+		t.Fatalf("expected predictionSourceId prediction:seed:1001, got %v", got)
+	}
+	if got := settlementEntry["unit"]; got != "PTS" {
+		t.Fatalf("expected loyalty ledger entry unit PTS, got %v", got)
+	}
+	metadata, ok := settlementEntry["metadata"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected settlement metadata map, got %v", settlementEntry["metadata"])
+	}
+	if got := metadata["predictionId"]; got != "prediction:seed:1001" {
+		t.Fatalf("expected predictionId metadata alias, got %v", got)
+	}
+	if got := metadata["pointVolumeCents"]; got != "12500" {
+		t.Fatalf("expected pointVolumeCents metadata alias, got %v", got)
+	}
+	if got := metadata["reason"]; got != "seeded prediction settlement loyalty accrual" {
+		t.Fatalf("expected point-safe loyalty reason, got %v", got)
+	}
+	for _, blocked := range []string{"sourceType", "sourceId", "bet_settlement", "bet:", "betId", "stakeCents", "settled bet"} {
+		encoded, err := json.Marshal(settlementEntry)
+		if err != nil {
+			t.Fatalf("marshal settlement entry: %v", err)
+		}
+		if bytes.Contains(encoded, []byte(blocked)) {
+			t.Fatalf("expected settlement entry payload to avoid %q, got %s", blocked, string(encoded))
+		}
+	}
 
 	tiersReq := httptest.NewRequest(http.MethodGet, "/api/v1/loyalty/tiers", nil)
 	tiersRes := httptest.NewRecorder()
@@ -72,6 +129,91 @@ func TestLoyaltyRoutesExposeAccountLedgerAndTiers(t *testing.T) {
 	}
 	if tiersPayload.TotalCount < 4 {
 		t.Fatalf("expected at least four loyalty tiers, got %d", tiersPayload.TotalCount)
+	}
+	if len(tiersPayload.Items) != tiersPayload.TotalCount {
+		t.Fatalf("expected tier item count to match totalCount, got items=%d total=%d", len(tiersPayload.Items), tiersPayload.TotalCount)
+	}
+	firstTier := tiersPayload.Items[0]
+	for _, required := range []string{"rank", "rankName", "minXpPoints", "unit", "benefits"} {
+		if _, ok := firstTier[required]; !ok {
+			t.Fatalf("expected loyalty tier field %q in %+v", required, firstTier)
+		}
+	}
+	if firstTier["unit"] != "PTS" {
+		t.Fatalf("expected loyalty tier unit PTS, got %+v", firstTier)
+	}
+	for _, retired := range []string{"tierCode", "displayName", "minLifetimePoints", "minRolling30dPoints", "active", "tier", "name", "pointsThreshold"} {
+		if _, ok := firstTier[retired]; ok {
+			t.Fatalf("public loyalty tier should not emit retired/canonical alias %q in %+v", retired, firstTier)
+		}
+	}
+}
+
+func TestLoyaltyTierPayloadRedactsLegacyUnsafeBenefits(t *testing.T) {
+	payload := toLoyaltyTierResponse(canonicalv1.LoyaltyTier{
+		TierCode:          canonicalv1.LoyaltyTierSilver,
+		DisplayName:       "Cash prize elite",
+		Rank:              2,
+		MinLifetimePoints: 700,
+		Benefits: map[string]string{
+			"safe":   "early market access",
+			"unsafe": "crypto payout priority",
+		},
+	})
+
+	if payload["rankName"] != launchRedactedUserText {
+		t.Fatalf("expected unsafe rankName redaction, got %+v", payload)
+	}
+	benefits, ok := payload["benefits"].([]string)
+	if !ok || len(benefits) != 2 {
+		t.Fatalf("expected benefit slice, got %#v", payload["benefits"])
+	}
+	if benefits[0] != "early market access" {
+		t.Fatalf("safe benefit should be preserved, got %+v", benefits)
+	}
+	if benefits[1] != launchRedactedUserText {
+		t.Fatalf("unsafe benefit should be redacted, got %+v", benefits)
+	}
+}
+
+func TestLoyaltyLedgerPayloadRedactsLegacyUnsafeMetadata(t *testing.T) {
+	metadata := map[string]string{
+		"betId":         "bet:legacy:1001",
+		"reason":        "cash payout loyalty bonus",
+		"reviewComment": "crypto prize review",
+	}
+	payload := toLoyaltyLedgerEntryResponse(canonicalv1.LoyaltyLedgerEntry{
+		EntryID:      "ledger-legacy-unsafe",
+		AccountID:    "acct-legacy-unsafe",
+		PlayerID:     "u-legacy-unsafe",
+		SourceType:   canonicalv1.LoyaltyLedgerSourceBetSettlement,
+		SourceID:     "bet:legacy:1001",
+		PointsDelta:  100,
+		BalanceAfter: 100,
+		Metadata:     metadata,
+		CreatedAt:    time.Unix(0, 0).UTC(),
+	})
+
+	if payload.PredictionSourceID != "prediction:legacy:1001" {
+		t.Fatalf("expected prediction source alias, got %+v", payload)
+	}
+	if payload.Metadata["predictionId"] != "prediction:legacy:1001" {
+		t.Fatalf("expected predictionId metadata alias, got %+v", payload.Metadata)
+	}
+	if payload.Metadata["reason"] != launchRedactedUserText || payload.Metadata["reviewComment"] != launchRedactedUserText {
+		t.Fatalf("expected unsafe metadata redacted, got %+v", payload.Metadata)
+	}
+	if metadata["reason"] != "cash payout loyalty bonus" || metadata["reviewComment"] != "crypto prize review" {
+		t.Fatalf("redaction should not mutate raw loyalty metadata, got %+v", metadata)
+	}
+	encoded, err := json.Marshal(payload)
+	if err != nil {
+		t.Fatalf("marshal loyalty ledger payload: %v", err)
+	}
+	for _, unsafe := range []string{"cash payout", "crypto prize", "bet:"} {
+		if bytes.Contains(encoded, []byte(unsafe)) {
+			t.Fatalf("loyalty ledger payload should not expose unsafe metadata %q in %s", unsafe, string(encoded))
+		}
 	}
 }
 
@@ -156,6 +298,14 @@ func TestAdminLoyaltyAdjustmentAndDetailFlow(t *testing.T) {
 	if int(adjustPayload.Account["pointsBalance"].(float64)) != 250 {
 		t.Fatalf("expected pointsBalance 250, got %v", adjustPayload.Account["pointsBalance"])
 	}
+	if adjustPayload.Entry["unit"] != "PTS" {
+		t.Fatalf("expected adjustment ledger entry to expose PTS unit, got %+v", adjustPayload.Entry)
+	}
+	for _, retired := range []string{"sourceType", "sourceId"} {
+		if _, ok := adjustPayload.Entry[retired]; ok {
+			t.Fatalf("admin adjustment entry should not emit retired alias %q in %+v", retired, adjustPayload.Entry)
+		}
+	}
 
 	listReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/loyalty/accounts?search=u-loyalty-admin-1", nil)
 	listReq = listReq.WithContext(httpx.WithTestUser(listReq.Context(), "admin-test", "admin-test", "admin"))
@@ -174,6 +324,14 @@ func TestAdminLoyaltyAdjustmentAndDetailFlow(t *testing.T) {
 	}
 	if listPayload.TotalCount != 1 {
 		t.Fatalf("expected one loyalty account in filtered admin list, got %d", listPayload.TotalCount)
+	}
+	if listPayload.Items[0]["unit"] != "PTS" {
+		t.Fatalf("expected list loyalty account to expose PTS unit, got %+v", listPayload.Items[0])
+	}
+	for _, retired := range []string{"currentTier", "nextTier", "pointsToNextTier"} {
+		if _, ok := listPayload.Items[0][retired]; ok {
+			t.Fatalf("admin loyalty account list should not emit retired alias %q in %+v", retired, listPayload.Items[0])
+		}
 	}
 
 	detailReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/loyalty/accounts/u-loyalty-admin-1?limit=5", nil)
@@ -197,6 +355,57 @@ func TestAdminLoyaltyAdjustmentAndDetailFlow(t *testing.T) {
 	}
 	if detailPayload.Account["playerId"] != "u-loyalty-admin-1" {
 		t.Fatalf("expected detail playerId u-loyalty-admin-1, got %v", detailPayload.Account["playerId"])
+	}
+	if detailPayload.Account["unit"] != "PTS" {
+		t.Fatalf("expected detail loyalty account to expose PTS unit, got %+v", detailPayload.Account)
+	}
+	if detailPayload.Ledger[0]["unit"] != "PTS" {
+		t.Fatalf("expected detail loyalty ledger to expose PTS unit, got %+v", detailPayload.Ledger[0])
+	}
+	for _, retired := range []string{"sourceType", "sourceId"} {
+		if _, ok := detailPayload.Ledger[0][retired]; ok {
+			t.Fatalf("admin loyalty ledger should not emit retired alias %q in %+v", retired, detailPayload.Ledger[0])
+		}
+	}
+	for _, retired := range []string{"currentTier", "nextTier", "pointsToNextTier"} {
+		if _, ok := detailPayload.Account[retired]; ok {
+			t.Fatalf("admin loyalty account detail should not emit retired alias %q in %+v", retired, detailPayload.Account)
+		}
+	}
+}
+
+func TestAdminLoyaltyAdjustmentRejectsMoneyWordingReason(t *testing.T) {
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, "gateway")
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	payload := []byte(`{"playerId":"u-loyalty-unsafe-reason","pointsDelta":250,"idempotencyKey":"unsafe-loyalty-adjustment","reason":"cash payout loyalty adjustment","createdBy":"admin-ops-1","entrySubtype":"goodwill"}`)
+	adjustReq := httptest.NewRequest(http.MethodPost, "/api/v1/admin/loyalty/adjustments", bytes.NewBuffer(payload))
+	adjustReq = adjustReq.WithContext(httpx.WithTestUser(adjustReq.Context(), "admin-test", "admin-test", "admin"))
+	adjustRes := httptest.NewRecorder()
+	handler.ServeHTTP(adjustRes, adjustReq)
+
+	if adjustRes.Code != http.StatusBadRequest {
+		t.Fatalf("expected unsafe adjustment reason status 400, got %d, body=%s", adjustRes.Code, adjustRes.Body.String())
+	}
+	var envelope httpx.ErrorEnvelope
+	if err := json.Unmarshal(adjustRes.Body.Bytes(), &envelope); err != nil {
+		t.Fatalf("decode unsafe-reason error: %v", err)
+	}
+	details, ok := envelope.Error.Details.(map[string]any)
+	if !ok || details["field"] != "reason" {
+		t.Fatalf("expected reason error field, got %+v", envelope.Error.Details)
+	}
+	if strings.Contains(adjustRes.Body.String(), "cash payout") {
+		t.Fatalf("unsafe adjustment reason should not be echoed: %s", adjustRes.Body.String())
+	}
+
+	detailReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/loyalty/accounts/u-loyalty-unsafe-reason?limit=5", nil)
+	detailReq = detailReq.WithContext(httpx.WithTestUser(detailReq.Context(), "admin-test", "admin-test", "admin"))
+	detailRes := httptest.NewRecorder()
+	handler.ServeHTTP(detailRes, detailReq)
+	if detailRes.Code != http.StatusNotFound {
+		t.Fatalf("unsafe adjustment reason should not create account or ledger entries, got %d body=%s", detailRes.Code, detailRes.Body.String())
 	}
 }
 
@@ -271,11 +480,37 @@ func TestAdminLoyaltyConfigAndSettingsUpdateFlow(t *testing.T) {
 	if configRes.Code != http.StatusOK {
 		t.Fatalf("expected config status 200, got %d, body=%s", configRes.Code, configRes.Body.String())
 	}
+	var configPayload struct {
+		Rules []map[string]any `json:"rules"`
+	}
+	if err := json.Unmarshal(configRes.Body.Bytes(), &configPayload); err != nil {
+		t.Fatalf("decode config payload: %v", err)
+	}
+	if len(configPayload.Rules) == 0 {
+		t.Fatal("expected seeded loyalty rules")
+	}
+	if got := configPayload.Rules[0]["predictionSourceType"]; got != "prediction_settlement" {
+		t.Fatalf("expected predictionSourceType prediction_settlement, got %v", got)
+	}
+	if got := configPayload.Rules[0]["minQualifiedPointsCents"]; int(got.(float64)) != 100 {
+		t.Fatalf("expected minQualifiedPointsCents 100, got %v", got)
+	}
+	if _, ok := configPayload.Rules[0]["eligiblePredictionTypes"]; !ok {
+		t.Fatal("expected eligiblePredictionTypes alias on loyalty rule payload")
+	}
+	if got := configPayload.Rules[0]["unit"]; got != "PTS" {
+		t.Fatalf("expected loyalty config rule unit PTS, got %v", got)
+	}
+	for _, retired := range []string{"sourceType", "minQualifiedStakeCents", "eligibleSportIds", "eligibleBetTypes"} {
+		if _, ok := configPayload.Rules[0][retired]; ok {
+			t.Fatalf("loyalty config rule leaked retired field %q in %+v", retired, configPayload.Rules[0])
+		}
+	}
 
 	tierReq := httptest.NewRequest(
 		http.MethodPut,
 		"/api/v1/admin/loyalty/tiers/silver",
-		bytes.NewBufferString(`{"displayName":"Silver","rank":2,"minLifetimePoints":700,"minRolling30dPoints":0,"benefits":{"cashoutBoost":"priority"},"active":true}`),
+		bytes.NewBufferString(`{"displayName":"Silver","rank":2,"minLifetimePoints":700,"minRolling30dPoints":0,"benefits":{"statusBoost":"priority"},"active":true}`),
 	)
 	tierReq.Header.Set("Content-Type", "application/json")
 	tierReq = tierReq.WithContext(httpx.WithTestUser(tierReq.Context(), "admin-test", "admin-test", "admin"))
@@ -288,7 +523,7 @@ func TestAdminLoyaltyConfigAndSettingsUpdateFlow(t *testing.T) {
 	ruleReq := httptest.NewRequest(
 		http.MethodPut,
 		"/api/v1/admin/loyalty/rules/rule:loyalty:default-settlement",
-		bytes.NewBufferString(`{"name":"Default settled bet accrual","sourceType":"bet_settlement","active":true,"multiplier":2,"minQualifiedStakeCents":100,"eligibleSportIds":[],"eligibleBetTypes":[],"maxPointsPerEvent":0}`),
+		bytes.NewBufferString(`{"name":"Default prediction settlement accrual","predictionSourceType":"prediction_settlement","active":true,"multiplier":2,"minQualifiedPointsCents":125,"eligiblePredictionTypes":["yes_no_prediction"],"maxPointsPerEvent":0}`),
 	)
 	ruleReq.Header.Set("Content-Type", "application/json")
 	ruleReq = ruleReq.WithContext(httpx.WithTestUser(ruleReq.Context(), "admin-test", "admin-test", "admin"))
@@ -296,5 +531,196 @@ func TestAdminLoyaltyConfigAndSettingsUpdateFlow(t *testing.T) {
 	handler.ServeHTTP(ruleRes, ruleReq)
 	if ruleRes.Code != http.StatusOK {
 		t.Fatalf("expected rule update status 200, got %d, body=%s", ruleRes.Code, ruleRes.Body.String())
+	}
+	var rulePayload struct {
+		Rules []map[string]any `json:"rules"`
+	}
+	if err := json.Unmarshal(ruleRes.Body.Bytes(), &rulePayload); err != nil {
+		t.Fatalf("decode rule update payload: %v", err)
+	}
+	updated := rulePayload.Rules[0]
+	if got := updated["predictionSourceType"]; got != "prediction_settlement" {
+		t.Fatalf("expected predictionSourceType prediction_settlement, got %v", got)
+	}
+	if got := updated["minQualifiedPointsCents"]; int(got.(float64)) != 125 {
+		t.Fatalf("expected minQualifiedPointsCents 125, got %v", got)
+	}
+	if got := updated["unit"]; got != "PTS" {
+		t.Fatalf("expected updated loyalty rule unit PTS, got %v", got)
+	}
+	predictionTypes, ok := updated["eligiblePredictionTypes"].([]any)
+	if !ok || len(predictionTypes) != 1 || predictionTypes[0] != "yes_no_prediction" {
+		t.Fatalf("expected eligiblePredictionTypes alias, got %v", updated["eligiblePredictionTypes"])
+	}
+	for _, retired := range []string{"sourceType", "minQualifiedStakeCents", "eligibleSportIds", "eligibleBetTypes"} {
+		if _, ok := updated[retired]; ok {
+			t.Fatalf("loyalty update leaked retired field %q in %+v", retired, updated)
+		}
+	}
+
+	createReq := httptest.NewRequest(
+		http.MethodPost,
+		"/api/v1/admin/loyalty/rules",
+		bytes.NewBufferString(`{"name":"Weekend prediction boost","predictionSourceType":"prediction_settlement","active":true,"multiplier":1.5,"minQualifiedPointsCents":50,"eligiblePredictionTypes":[],"maxPointsPerEvent":250}`),
+	)
+	createReq.Header.Set("Content-Type", "application/json")
+	createReq = createReq.WithContext(httpx.WithTestUser(createReq.Context(), "admin-test", "admin-test", "admin"))
+	createRes := httptest.NewRecorder()
+	handler.ServeHTTP(createRes, createReq)
+	if createRes.Code != http.StatusCreated {
+		t.Fatalf("expected rule create status 201, got %d, body=%s", createRes.Code, createRes.Body.String())
+	}
+	var createPayload struct {
+		Rules []map[string]any `json:"rules"`
+	}
+	if err := json.Unmarshal(createRes.Body.Bytes(), &createPayload); err != nil {
+		t.Fatalf("decode rule create payload: %v", err)
+	}
+	created := createPayload.Rules[len(createPayload.Rules)-1]
+	if got := created["predictionSourceType"]; got != "prediction_settlement" {
+		t.Fatalf("expected created predictionSourceType prediction_settlement, got %v", got)
+	}
+	if got := created["minQualifiedPointsCents"]; int(got.(float64)) != 50 {
+		t.Fatalf("expected created minQualifiedPointsCents 50, got %v", got)
+	}
+	if got := created["unit"]; got != "PTS" {
+		t.Fatalf("expected created loyalty rule unit PTS, got %v", got)
+	}
+	for _, retired := range []string{"sourceType", "minQualifiedStakeCents", "eligibleSportIds", "eligibleBetTypes"} {
+		if _, ok := created[retired]; ok {
+			t.Fatalf("loyalty create leaked retired field %q in %+v", retired, created)
+		}
+	}
+}
+
+func TestAdminLoyaltyTierRejectsMoneyWordingBenefits(t *testing.T) {
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, "gateway")
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	tierReq := httptest.NewRequest(
+		http.MethodPut,
+		"/api/v1/admin/loyalty/tiers/silver",
+		bytes.NewBufferString(`{"displayName":"Silver","rank":2,"minLifetimePoints":700,"minRolling30dPoints":0,"benefits":{"statusBoost":"cash prize priority"},"active":true}`),
+	)
+	tierReq.Header.Set("Content-Type", "application/json")
+	tierReq = tierReq.WithContext(httpx.WithTestUser(tierReq.Context(), "admin-test", "admin-test", "admin"))
+	tierRes := httptest.NewRecorder()
+	handler.ServeHTTP(tierRes, tierReq)
+
+	if tierRes.Code != http.StatusBadRequest {
+		t.Fatalf("expected unsafe tier benefit status 400, got %d, body=%s", tierRes.Code, tierRes.Body.String())
+	}
+	var envelope httpx.ErrorEnvelope
+	if err := json.Unmarshal(tierRes.Body.Bytes(), &envelope); err != nil {
+		t.Fatalf("decode unsafe-benefit error: %v", err)
+	}
+	details, ok := envelope.Error.Details.(map[string]any)
+	if !ok || details["field"] != "benefits" {
+		t.Fatalf("expected benefits error field, got %+v", envelope.Error.Details)
+	}
+	if strings.Contains(tierRes.Body.String(), "cash prize") {
+		t.Fatalf("unsafe tier benefit should not be echoed: %s", tierRes.Body.String())
+	}
+
+	publicReq := httptest.NewRequest(http.MethodGet, "/api/v1/loyalty/tiers", nil)
+	publicRes := httptest.NewRecorder()
+	handler.ServeHTTP(publicRes, publicReq)
+	if publicRes.Code != http.StatusOK {
+		t.Fatalf("expected public tiers status 200, got %d, body=%s", publicRes.Code, publicRes.Body.String())
+	}
+	if strings.Contains(publicRes.Body.String(), "cash prize") {
+		t.Fatalf("unsafe tier benefit should not be persisted into public tiers: %s", publicRes.Body.String())
+	}
+}
+
+func TestAdminLoyaltyRuleRejectsMoneyWordingName(t *testing.T) {
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, "gateway")
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	ruleReq := httptest.NewRequest(
+		http.MethodPost,
+		"/api/v1/admin/loyalty/rules",
+		bytes.NewBufferString(`{"name":"Cash payout multiplier","predictionSourceType":"prediction_settlement","active":true,"multiplier":1,"minQualifiedPointsCents":100,"eligiblePredictionTypes":[]}`),
+	)
+	ruleReq.Header.Set("Content-Type", "application/json")
+	ruleReq = ruleReq.WithContext(httpx.WithTestUser(ruleReq.Context(), "admin-test", "admin-test", "admin"))
+	ruleRes := httptest.NewRecorder()
+	handler.ServeHTTP(ruleRes, ruleReq)
+
+	if ruleRes.Code != http.StatusBadRequest {
+		t.Fatalf("expected unsafe loyalty rule name status 400, got %d, body=%s", ruleRes.Code, ruleRes.Body.String())
+	}
+	var envelope httpx.ErrorEnvelope
+	if err := json.Unmarshal(ruleRes.Body.Bytes(), &envelope); err != nil {
+		t.Fatalf("decode unsafe-rule-name error: %v", err)
+	}
+	details, ok := envelope.Error.Details.(map[string]any)
+	if !ok || details["field"] != "name" {
+		t.Fatalf("expected name error field, got %+v", envelope.Error.Details)
+	}
+	if strings.Contains(ruleRes.Body.String(), "Cash payout") {
+		t.Fatalf("unsafe loyalty rule name should not be echoed: %s", ruleRes.Body.String())
+	}
+
+	configReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/loyalty/config", nil)
+	configReq = configReq.WithContext(httpx.WithTestUser(configReq.Context(), "admin-test", "admin-test", "admin"))
+	configRes := httptest.NewRecorder()
+	handler.ServeHTTP(configRes, configReq)
+	if configRes.Code != http.StatusOK {
+		t.Fatalf("expected config status 200, got %d, body=%s", configRes.Code, configRes.Body.String())
+	}
+	if strings.Contains(configRes.Body.String(), "Cash payout") {
+		t.Fatalf("unsafe loyalty rule name should not be persisted into config: %s", configRes.Body.String())
+	}
+}
+
+func TestAdminLoyaltyRuleRejectsRetiredRequestFields(t *testing.T) {
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, "gateway")
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	cases := []struct {
+		name      string
+		body      string
+		wantField string
+	}{
+		{
+			name:      "sourceType",
+			body:      `{"name":"Retired source","sourceType":"bet_settlement","active":true,"multiplier":1,"minQualifiedPointsCents":100,"eligiblePredictionTypes":[]}`,
+			wantField: "predictionSourceType",
+		},
+		{
+			name:      "minQualifiedStakeCents",
+			body:      `{"name":"Retired stake","predictionSourceType":"prediction_settlement","active":true,"multiplier":1,"minQualifiedStakeCents":100,"eligiblePredictionTypes":[]}`,
+			wantField: "minQualifiedPointsCents",
+		},
+		{
+			name:      "eligibleSportIds",
+			body:      `{"name":"Retired sports","predictionSourceType":"prediction_settlement","active":true,"multiplier":1,"minQualifiedPointsCents":100,"eligibleSportIds":["football"],"eligiblePredictionTypes":[]}`,
+			wantField: "eligiblePredictionTypes",
+		},
+		{
+			name:      "eligibleBetTypes",
+			body:      `{"name":"Retired bet types","predictionSourceType":"prediction_settlement","active":true,"multiplier":1,"minQualifiedPointsCents":100,"eligibleBetTypes":["single"]}`,
+			wantField: "eligiblePredictionTypes",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/loyalty/rules", bytes.NewBufferString(tc.body))
+			req.Header.Set("Content-Type", "application/json")
+			req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-test", "admin-test", "admin"))
+			res := httptest.NewRecorder()
+			handler.ServeHTTP(res, req)
+			if res.Code != http.StatusBadRequest {
+				t.Fatalf("expected retired field to return 400, got %d, body=%s", res.Code, res.Body.String())
+			}
+			if !strings.Contains(res.Body.String(), tc.wantField) {
+				t.Fatalf("expected error to mention %s, body=%s", tc.wantField, res.Body.String())
+			}
+		})
 	}
 }

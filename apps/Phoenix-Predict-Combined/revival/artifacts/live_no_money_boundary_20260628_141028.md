@@ -1,0 +1,41 @@
+# Live No-Money Boundary Report
+
+- Generated: `2026-06-28T12:10:28.550Z`
+- Surfaces: `gateway`
+- Checks: 32
+- Failures: 21
+
+| Surface | Method | Path | Status | Expectation | Result |
+|---|---|---|---:|---|---:|
+gateway | GET | `/api/v1/status` | 200 | gateway reports point launch boundary | Pass
+gateway | GET | `/api/v1/status` | 200 | status includes prediction | Pass
+gateway | GET | `/api/v1/status` | 200 | status includes orders | Pass
+gateway | GET | `/api/v1/status` | 200 | status includes point_wallet | Pass
+gateway | GET | `/api/v1/status` | 200 | status includes responsible_play | Pass
+gateway | GET | `/api/v1/status` | 200 | status includes loyalty | Pass
+gateway | GET | `/api/v1/status` | 200 | status includes leaderboards | Pass
+gateway | GET | `/api/v1/status` | 200 | status includes auth | Pass
+gateway | GET | `/api/v1/status` | 200 | status excludes alpha_cashier | Pass
+gateway | GET | `/api/v1/status` | 200 | status excludes payments | Pass
+gateway | GET | `/api/v1/status` | 200 | status excludes crypto_payments | Pass
+gateway | GET | `/api/v1/cashier/alpha/config` | 401 | gateway money path is absent | Fail
+gateway | GET | `/api/v1/cashier/alpha/wallet/challenge` | 401 | gateway money path is absent | Fail
+gateway | POST | `/api/v1/cashier/alpha/wallet/connect` | 401 | gateway money path is absent | Fail
+gateway | GET | `/api/v1/cashier/alpha/wallets` | 401 | gateway money path is absent | Fail
+gateway | POST | `/api/v1/cashier/alpha/deposit-intents` | 401 | gateway money path is absent | Fail
+gateway | POST | `/api/v1/cashier/alpha/deposit-intents/intent-1/submit-tx` | 401 | gateway money path is absent | Fail
+gateway | POST | `/api/v1/cashier/alpha/withdrawal-requests` | 401 | gateway money path is absent | Fail
+gateway | POST | `/api/v1/cashier/alpha/withdrawal-requests/request-1/cancel` | 401 | gateway money path is absent | Fail
+gateway | GET | `/api/v1/admin/cashier/alpha/preflight` | 401 | gateway money path is absent | Fail
+gateway | POST | `/api/v1/admin/cashier/alpha/deposits` | 401 | gateway money path is absent | Fail
+gateway | GET | `/api/v1/admin/cashier/alpha/reconciliation` | 401 | gateway money path is absent | Fail
+gateway | POST | `/api/v1/admin/cashier/alpha/withdrawals` | 401 | gateway money path is absent | Fail
+gateway | GET | `/api/v1/admin/cashier/alpha/audit-events` | 401 | gateway money path is absent | Fail
+gateway | POST | `/api/v1/admin/cashier/alpha/withdrawals/request-1/approve` | 401 | gateway money path is absent | Fail
+gateway | POST | `/api/v1/payments/deposit` | 401 | gateway money path is absent | Fail
+gateway | POST | `/api/v1/payments/withdraw` | 401 | gateway money path is absent | Fail
+gateway | GET | `/api/v1/payments/methods` | 401 | gateway money path is absent | Fail
+gateway | GET | `/api/v1/payments/status?transactionId=dep-1` | 401 | gateway money path is absent | Fail
+gateway | POST | `/api/v1/payments/webhook` | 401 | gateway money path is absent | Fail
+gateway | GET | `/api/v1/payments/crypto/config` | 401 | gateway money path is absent | Fail
+gateway | POST | `/api/v1/payments/crypto/deposit-address` | 401 | gateway money path is absent | Fail

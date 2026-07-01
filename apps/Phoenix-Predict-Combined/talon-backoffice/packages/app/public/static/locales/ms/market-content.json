@@ -1,7 +1,7 @@
 {
   "categories": {
     "politics": "Politik",
-    "crypto": "Kripto",
+    "crypto": "Esports",
     "sports": "Sukan",
     "entertainment": "Hiburan",
     "tech": "Teknologi",
@@ -87,7 +87,7 @@
       "title": "Adakah Hope (arah. Na Hong-jin) menang Palme d'Or Cannes 2026?"
     },
     "IMP-B6E6D4BE": {
-      "title": "Adakah SPY ditutup bawah $720 pada Jumaat, 29 Mei 2026?"
+      "title": "Adakah Ginebra menahan lawannya bawah 90 mata pada Jumaat, 29 Mei 2026?"
     },
     "UCL-REAL-2526": {
       "title": "Adakah Real Madrid menang Champions League 2025/26?",
@@ -108,14 +108,14 @@
       "title": "Adakah model LLM baharu akan dilancarkan sebelum akhir Mei?"
     },
     "BTC-100K-APR26": {
-      "title": "Bitcoin melebihi $100K sebelum 30 April",
-      "description": "Diselesaikan sebagai YES jika BTC/USD didagangkan pada atau melebihi $100,000 di mana-mana bursa utama sebelum 30 April 2026 23:59 UTC."
+      "title": "Adakah pasukan MLBB ini menang siri 30 April?",
+      "description": "Diselesaikan sebagai YES jika pasukan MLBB yang disenaraikan menang siri rasmi best-of yang dijadualkan pada 30 April 2026."
     },
     "IMP-CFD8F644": {
       "title": "Adakah saya akan pergi gim sekurang-kurangnya 2 kali seminggu untuk baki bulan Mei?"
     },
     "IMP-5CFF0A78": {
-      "title": "Adakah NVDA ditutup melebihi $250 pada Jumaat, 5 Jun 2026?"
+      "title": "Adakah finalis MLBB menang game pertama pada Jumaat, 5 Jun 2026?"
     },
     "IMP-23AD5D16": {
       "title": "Adakah Euphoria Musim 3 berakhir dengan skor Metacritic 70 atau lebih?"
@@ -127,7 +127,7 @@
       "title": "Adakah final perseorangan lelaki French Open 2026 dimenangi straight sets?"
     },
     "IMP-F4C02A8F": {
-      "title": "Adakah IPO SpaceX (ticker SPCX) ditetapkan harga pada atau sebelum 11 Jun 2026?"
+      "title": "Adakah kerjasama teknologi angkasa Filipina diumumkan sebelum 11 Jun 2026?"
     },
     "IMP-6570BEFD": {
       "title": "Adakah Julia Letlow menang primary Republican Louisiana untuk Senat?"
@@ -139,11 +139,11 @@
       "title": "Adakah Restore Britain mendapat sekurang-kurangnya 4% dalam pilihan raya kecil Makerfield?"
     },
     "IMP-7AC91349": {
-      "title": "Adakah SPCX ditutup lebih 30% atas harga IPO pada hari dagangan pertamanya?"
+      "title": "Adakah tetingkap pelancaran yang diumumkan selesai pada hari pertama dijadualkan?"
     },
     "SOL-300-Q2": {
-      "title": "Solana melebihi $300 menjelang akhir Q2",
-      "description": "Diselesaikan sebagai YES jika SOL/USD didagangkan pada atau melebihi $300 sebelum 1 Julai 2026."
+      "title": "Adakah pasukan PVL ini menamatkan Q2 dengan tiga kemenangan berturut-turut?",
+      "description": "Diselesaikan sebagai YES jika pasukan PVL yang disenaraikan mencatat tiga kemenangan rasmi berturut-turut sebelum 1 Julai 2026."
     },
     "IMP-9B0E8C46": {
       "title": "Adakah Montreal Canadiens menang NHL Stanley Cup 2026?",

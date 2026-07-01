@@ -1,16 +1,16 @@
 {
   "TITLE": "User Profile",
   "PERSONAL_DETAILS": "Personal Details",
-  "WALLET_AND_INVENTORY": "Wallet and Inventory",
+  "WALLET_AND_INVENTORY": "Points and Inventory",
   "SECURITY": "Security",
   "LANGUAGE_AND_TIME_ZONE": "Language and Time Zone",
   "SELF_EXCLUSION": "Self Exclusion",
   "EMAIL_SETTINGS": "Email Settings",
-  "DEPOSIT_LIMITS": "Deposit Limits",
+  "DEPOSIT_LIMITS": "Point-Use Limits",
   "hub": {
     "title": "帳戶",
-    "subtitle": "管理個人資料、錢包、安全和通知偏好。",
-    "availableBalance": "可用餘額"
+    "subtitle": "Profile, points, security, and notification preferences.",
+    "availableBalance": "Available points"
   },
   "actions": {
     "profile": {
@@ -21,13 +21,9 @@
       "title": "投资组合",
       "desc": "持仓、订单和已结算历史"
     },
-    "cashier": {
-      "title": "收银台",
-      "desc": "存款和提款"
-    },
     "walletActivity": {
-      "title": "钱包活动",
-      "desc": "账本记录和交易历史"
+      "title": "Point ledger",
+      "desc": "Starter grants, predictions, and rewards"
     },
     "security": {
       "title": "安全",
@@ -39,7 +35,7 @@
     },
     "responsible": {
       "title": "理性参与",
-      "desc": "存款限额、冷静期和自我排除"
+      "desc": "Point-use limits, cool-offs, and self-exclusion"
     }
   },
   "privacy": {
@@ -58,7 +54,7 @@
   },
   "stats": {
     "invested": "已投入",
-    "realizedPnl": "已实现盈亏",
+    "realizedPnl": "已實現點數結果",
     "openPositions": "未平仓持仓",
     "accuracy": "准确率",
     "noSettledMarkets": "还没有已结算市场"

@@ -158,7 +158,7 @@ final class Postgres extends PostgreSQLContainer[Postgres]("postgres:13.4") with
   private def runMigrations(databaseName: String): Unit = {
     val configMap = Map(
       "profile" -> "slick.jdbc.PostgresProfile$",
-      "db.url" -> s"jdbc:postgresql://$getContainerIpAddress:$getFirstMappedPort/$databaseName?reWriteBatchedInserts=true",
+      "db.url" -> s"jdbc:postgresql://$getHost:$getFirstMappedPort/$databaseName?reWriteBatchedInserts=true",
       "db.user" -> flywayUser,
       "db.password" -> flywayUser)
     val migrationSettings = ConfigFactory.fromEnvironment(configMap)

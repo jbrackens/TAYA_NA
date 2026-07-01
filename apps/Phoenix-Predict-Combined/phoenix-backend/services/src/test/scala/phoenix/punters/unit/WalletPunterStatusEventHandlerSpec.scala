@@ -98,7 +98,7 @@ final class WalletPunterStatusEventHandlerSpec extends AnyWordSpec with Matchers
 }
 
 private abstract class StatusEventHandlerScope() {
-  implicit val clock = new FakeHardcodedClock()
+  implicit val clock: FakeHardcodedClock = new FakeHardcodedClock()
   val notesRepository: InMemoryNoteRepository = new InMemoryNoteRepository()
   val insertNotes = new InsertNotes(notesRepository, clock, RandomUUIDGenerator)
   var suspended = List.empty[PunterId]

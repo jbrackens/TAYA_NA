@@ -1,6 +1,6 @@
 {
   "title": "投资组合",
-  "subtitle": "未平仓持仓、活跃订单、已结算赔付。",
+  "subtitle": "未平仓持仓、活跃订单、已结算结果。",
   "state": {
     "loading": "正在加载投资组合…",
     "signIn": "登录后查看你的投资组合。",
@@ -8,7 +8,7 @@
   },
   "summary": {
     "invested": "已投入",
-    "realizedPnl": "已实现盈亏",
+    "realizedPnl": "已实现点数结果",
     "openPositions": "未平仓持仓",
     "accuracy": "准确率",
     "correctCount": "{{correct}}/{{total}} 正确",
@@ -19,12 +19,12 @@
     "notRanked": "尚未排名",
     "qualify": "结算更多市场即可获得排名资格",
     "metricAccuracy": "{{value}}% 正确",
-    "metricSharpness": "{{value}}% ROI",
-    "metricPnl": "{{value}} 盈亏"
+    "metricSharpness": "{{value}}% 积分效率",
+    "metricPnl": "{{value}} 点数结果"
   },
   "boards": {
     "accuracy": "准确率",
-    "pnlWeekly": "每周盈亏",
+    "pnlWeekly": "每周点数结果",
     "sharpness": "敏锐度"
   },
   "tabs": {
@@ -39,7 +39,7 @@
   "orders": {
     "empty": "没有开放订单。",
     "cancelled": "订单已取消",
-    "released": "{{ticker}} 的预留现金已释放",
+    "released": "{{ticker}} 的锁定积分已解锁",
     "cancelFailed": "取消失败",
     "cancel": "取消"
   },
@@ -59,7 +59,7 @@
     "placed": "下单时间",
     "entry": "入场",
     "exit": "出场",
-    "pnl": "盈亏",
+    "pnl": "点数结果",
     "points": "积分",
     "settled": "已结算"
   },

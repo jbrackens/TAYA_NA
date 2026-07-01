@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ReloadOutlined } from "@ant-design/icons";
 import {
   Alert,
   App,
@@ -18,6 +19,7 @@ import {
 } from "antd";
 import PageHeader from "../../components/layout/page-header";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import { describeTianggeMarketLifecycle } from "@phoenix-ui/api-client/src/prediction-types";
 import type {
   CollateralDriftAlert,
   PredictionMarket,
@@ -28,8 +30,8 @@ const { TextArea } = Input;
 
 const predictionClient = createPredictionClient();
 
-const formatUsd = (cents: number) =>
-  `$${(cents / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+const formatPoints = (points: number) =>
+  `${points.toLocaleString(undefined, { maximumFractionDigits: 0 })} pts`;
 
 export default function PredictionSettlementsContainer() {
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
@@ -42,6 +44,7 @@ export default function PredictionSettlementsContainer() {
     Record<string, CollateralDriftAlert>
   >({});
   const [settleOpen, setSettleOpen] = useState(false);
+  const [replaying, setReplaying] = useState(false);
   const [selectedMarket, setSelectedMarket] = useState<PredictionMarket | null>(
     null,
   );
@@ -92,6 +95,27 @@ export default function PredictionSettlementsContainer() {
     setSettleOpen(true);
   }
 
+  async function handleReplaySettlements() {
+    setReplaying(true);
+    try {
+      const result = await predictionClient.replayIncompleteSettlements();
+      message.success(
+        `Replay complete: ${result.completedSettlements} settlement${
+          result.completedSettlements === 1 ? "" : "s"
+        } finished`,
+      );
+      loadData();
+    } catch (err: unknown) {
+      message.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to replay point disbursements",
+      );
+    } finally {
+      setReplaying(false);
+    }
+  }
+
   async function handleSettle(values: Record<string, unknown>) {
     if (!selectedMarket) return;
     try {
@@ -116,9 +140,9 @@ export default function PredictionSettlementsContainer() {
         // CHECK passes when no override is intended.
         overrideReason,
       });
-      const payoutCount = result.payouts?.length || 0;
+      const pointDisbursementCount = result.pointDisbursements?.length || 0;
       message.success(
-        `Market settled: ${selectedMarket.ticker} → ${values.result} (${payoutCount} payouts)`,
+        `Market settled: ${selectedMarket.ticker} → ${values.result} (${pointDisbursementCount} point disbursements)`,
       );
       setSettleOpen(false);
       setSelectedMarket(null);
@@ -146,7 +170,7 @@ export default function PredictionSettlementsContainer() {
         }
         const tip = `${drift.adjustmentCount} adjustment${
           drift.adjustmentCount === 1 ? "" : "s"
-        } · max drift ${formatUsd(Math.abs(drift.maxDriftCents))} · ${
+        } · max drift ${formatPoints(Math.abs(drift.maxDriftPointsCents))} · ${
           drift.latestReason || "see ledger"
         } — settlement needs an override reason`;
         return (
@@ -164,7 +188,7 @@ export default function PredictionSettlementsContainer() {
     { title: "Title", dataIndex: "title", key: "title", ellipsis: true },
     {
       title: "Last YES",
-      dataIndex: "yesPriceCents",
+      dataIndex: "yesPricePointsCents",
       key: "yes",
       width: 80,
       render: (v: number) => (
@@ -183,7 +207,7 @@ export default function PredictionSettlementsContainer() {
     },
     {
       title: "Volume",
-      dataIndex: "volumeCents",
+      dataIndex: "volumePointsCents",
       key: "vol",
       width: 100,
       render: (v: number) => (
@@ -195,7 +219,7 @@ export default function PredictionSettlementsContainer() {
             color: "var(--t1, #1a1a1a)",
           }}
         >
-          ${(v / 100).toLocaleString()}
+          {formatPoints(v)}
         </span>
       ),
     },
@@ -218,9 +242,23 @@ export default function PredictionSettlementsContainer() {
       key: "actions",
       width: 120,
       render: (_: unknown, record: PredictionMarket) => (
-        <Button size="small" type="primary" onClick={() => openSettle(record)}>
-          Settle
-        </Button>
+        <Space size={6}>
+          <Tag color="orange">
+            {
+              (
+                record.tianggeLifecycle ||
+                describeTianggeMarketLifecycle(record.status)
+              ).label
+            }
+          </Tag>
+          <Button
+            size="small"
+            type="primary"
+            onClick={() => openSettle(record)}
+          >
+            Settle
+          </Button>
+        </Space>
       ),
     },
   ];
@@ -241,7 +279,16 @@ export default function PredictionSettlementsContainer() {
             </Text>
           </Col>
           <Col>
-            <Button onClick={loadData}>Refresh</Button>
+            <Space>
+              <Button
+                icon={<ReloadOutlined />}
+                loading={replaying}
+                onClick={handleReplaySettlements}
+              >
+                Replay Points
+              </Button>
+              <Button onClick={loadData}>Refresh</Button>
+            </Space>
           </Col>
         </Row>
         <Table
@@ -273,7 +320,7 @@ export default function PredictionSettlementsContainer() {
             <Text strong>{selectedMarket.title}</Text>
             <br />
             <Text type="secondary">
-              Last YES: {selectedMarket.yesPriceCents}% | Source:{" "}
+              Last YES: {selectedMarket.yesPricePointsCents}% | Source:{" "}
               {selectedMarket.settlementSourceKey}
             </Text>
           </div>
@@ -304,8 +351,8 @@ export default function PredictionSettlementsContainer() {
             showIcon
             className="mb-4"
             message="Collateral drift detected on this market"
-            description={`${driftOnSelected.adjustmentCount} adjustment(s), max drift ${formatUsd(
-              Math.abs(driftOnSelected.maxDriftCents),
+            description={`${driftOnSelected.adjustmentCount} adjustment(s), max drift ${formatPoints(
+              Math.abs(driftOnSelected.maxDriftPointsCents),
             )}. An override reason is required to settle.`}
           />
         )}
@@ -342,7 +389,7 @@ export default function PredictionSettlementsContainer() {
           {/*
             Collateral-imbalance override. Required only when the gateway
             detects that prediction_collateral_ledger doesn't match the
-            sum of YES/NO positions × 100¢ on this market. If the gateway
+            sum of YES/NO positions times 100 points on this market. If the gateway
             rejects with "override_reason required", admin fills this and
             re-submits. Leaving it empty is the default safe path — the
             gateway will reject if it actually needs an override.
@@ -373,11 +420,11 @@ export default function PredictionSettlementsContainer() {
           >
             <TextArea
               rows={2}
-              placeholder="e.g., Drift confirmed at $0.12 — investigated, ops approved settlement; ticket OPS-1234"
+              placeholder="e.g., Drift confirmed at 12 pts; investigated, ops approved settlement; ticket OPS-1234"
             />
           </Form.Item>
           {/*
-            Settlement is irreversible: payouts are credited atomically
+            Settlement is irreversible: point disbursements are credited atomically
             against the collateral pool and there is no "unsettle" path.
             Require the admin to type the exact ticker (case-sensitive)
             before the OK button accepts the form. Validates against

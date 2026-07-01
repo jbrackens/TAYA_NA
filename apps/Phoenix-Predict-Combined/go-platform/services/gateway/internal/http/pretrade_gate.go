@@ -15,7 +15,7 @@ import (
 	"phoenix-revival/platform/transport/httpx"
 )
 
-// Pre-trade compliance gates (launch policy: crypto-native, OUTSIDE-US only).
+// Pre-trade compliance gates.
 //
 // Both gates ship OFF: the precise jurisdiction list and the depth of KYC are
 // LEGAL decisions (see docs/compliance/geofencing-kyc.md). With the flags unset
@@ -31,8 +31,7 @@ import (
 var tradeGeoGate *compliance.GeoGate
 
 // tradeKYCGate enforces identity verification on the trading path when
-// KYC_REQUIRED_FOR_TRADING=true. nil = no-op (mirrors payments.KYCGate, which
-// gates withdrawals). Set from env in RegisterRoutes.
+// KYC_REQUIRED_FOR_TRADING=true. nil = no-op. Set from env in RegisterRoutes.
 var tradeKYCGate compliance.KYCService
 
 // geoCountryHeader is the request header an upstream edge/CDN sets with the
@@ -52,7 +51,7 @@ func geoCountryHeader() string {
 // notices. Logged with each denial when GEO_TRUSTED_PROXY_MODE=require.
 var geoMissingSignalDenials atomic.Int64
 
-// geoEdgeAuthDenials counts money-path requests rejected because they did not
+// geoEdgeAuthDenials counts guarded requests rejected because they did not
 // carry the shared edge-auth secret while GEO_TRUSTED_PROXY_MODE=require. A
 // nonzero value means something reached the gateway origin without transiting
 // the trusted edge — i.e. an attempt to bypass geo-fencing by hitting the
@@ -83,7 +82,7 @@ func edgeRequestVerified(r *stdhttp.Request) bool {
 	return subtle.ConstantTimeCompare([]byte(got), []byte(secret)) == 1
 }
 
-// requireEdgeAuth reports whether money-path requests must prove they came
+// requireEdgeAuth reports whether guarded requests must prove they came
 // through the trusted edge: trusted-proxy mode on AND a secret configured.
 func requireEdgeAuth() bool {
 	return trustedProxyModeRequired() && strings.TrimSpace(os.Getenv("EDGE_SHARED_SECRET")) != ""
@@ -138,20 +137,18 @@ func logPreTradeComplianceMode(environment string, gate *compliance.GeoGate) {
 	)
 }
 
-// checkComplianceGates blocks trading and money movement when a configured
-// jurisdiction or KYC gate denies the user. Default-off: returns nil when
-// neither gate is enabled. The geo gate applies to every surface (trade,
-// deposit, withdraw); the trading-KYC gate applies to the trade surface only
-// (withdrawal KYC is the threshold gate in internal/payments). The geo signal
-// comes from an upstream edge header; an enabled geo gate with no signal
-// fails closed. On a KYC-backend error it fails closed in production/staging
-// and open in development (same posture as the withdrawal KYC gate).
+// checkComplianceGates blocks guarded surfaces when a configured jurisdiction
+// or KYC gate denies the user. Default-off: returns nil when neither gate is
+// enabled. The geo gate applies to every guarded surface; the trading-KYC gate
+// applies to the trade surface only. The geo signal comes from an upstream edge
+// header; an enabled geo gate with no signal fails closed. On a KYC-backend
+// error it fails closed in production/staging and open in development.
 func checkComplianceGates(r *stdhttp.Request, userID string, surface compliance.Surface) error {
 	if permissiveBetaComplianceMode() {
 		return nil
 	}
 	// Anti-spoof (audit SEC-03): when the deploy declares a trusted edge and a
-	// shared secret, a money-path request that doesn't carry the secret never
+	// shared secret, a guarded request that doesn't carry the secret never
 	// transited the edge — so its CF-IPCountry is attacker-supplied. Reject it
 	// before reading the country header at all. Fails closed.
 	if requireEdgeAuth() && !edgeRequestVerified(r) {

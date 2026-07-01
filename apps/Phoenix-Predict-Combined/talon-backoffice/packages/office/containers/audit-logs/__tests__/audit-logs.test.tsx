@@ -12,7 +12,9 @@ import {
 } from "../utils/scoped-copy-telemetry";
 
 jest.mock("../../../services/api/api-service");
-jest.mock("next/router");
+jest.mock("next/router", () => ({
+  useRouter: jest.fn(),
+}));
 
 const mockDispatch = jest.fn();
 const mockState = {
@@ -37,11 +39,15 @@ jest.mock("i18n", () => ({
   }),
 }));
 
-jest.mock("next/config", () => ({
-  default: () => ({
-    publicRuntimeConfig: {},
+jest.mock(
+  "next/config",
+  () => ({
+    default: () => ({
+      publicRuntimeConfig: {},
+    }),
   }),
-}));
+  { virtual: true },
+);
 
 Object.defineProperty(window, "matchMedia", {
   writable: true,
@@ -78,7 +84,7 @@ describe("AuditLogsContainer", () => {
     jest.clearAllMocks();
   });
 
-  test("includes promo filters in audit log api query", async () => {
+  test("ignores retired promo filters in audit log api query", async () => {
     const triggerApi = jest.fn().mockResolvedValue({});
     mockedUseApi.mockReturnValue([
       triggerApi,
@@ -373,6 +379,8 @@ describe("AuditLogsContainer", () => {
         preset: "provider-ack-sla-default",
         action: "provider.stream.reassigned",
         targetId: "odds88:settlement",
+        freebetId: "fb-77",
+        oddsBoostId: "ob-42",
         p: "1",
         limit: "20",
       },
@@ -390,6 +398,8 @@ describe("AuditLogsContainer", () => {
     expect(copiedUrl).toContain("preset=provider-ack-sla-default");
     expect(copiedUrl).toContain("action=provider.stream.reassigned");
     expect(copiedUrl).toContain("targetId=odds88%3Asettlement");
+    expect(copiedUrl).not.toContain("freebet");
+    expect(copiedUrl).not.toContain("oddsBoost");
     const copyEvent = dispatchSpy.mock.calls
       .map(([event]) => event as CustomEvent)
       .find((event) => event.detail?.event === "copy_success");

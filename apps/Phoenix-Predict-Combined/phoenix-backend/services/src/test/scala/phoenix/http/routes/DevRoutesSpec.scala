@@ -101,6 +101,17 @@ final class DevRoutesSpec extends RoutesSpecSupport with Inspectors with FutureS
     }
   }
 
+  "GET /docs/docs.yaml" should {
+    "render OpenAPI YAML" in {
+      Get("/docs/docs.yaml") ~> buildRoutes() ~> check {
+        status shouldEqual StatusCodes.OK
+        val yaml = responseAs[String]
+        yaml should include("openapi:")
+        yaml should include("servers:")
+      }
+    }
+  }
+
   "POST /test-account-sign-up" should {
     def validTestAccountSignUpRequest(verification: Option[SignUpVerification] = None) =
       json"""

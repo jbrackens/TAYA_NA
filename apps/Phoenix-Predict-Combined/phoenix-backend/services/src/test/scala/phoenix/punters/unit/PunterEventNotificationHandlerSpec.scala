@@ -155,7 +155,7 @@ final class PunterEventNotificationHandlerSpec
       // then
       emailSender shouldContainEmailMessage { message =>
         message.subject.value == "Punter account suspended" &&
-        message.recipient == customerServiceEmail &&
+        message.recipient == this.customerServiceEmail &&
         message.content.value.contains(s"Punter account has been suspended due to '${suspensionReason.details}'") &&
         message.content.value.contains(s"https://office.dev.phoenix.darkstormlabs.net/users/${punterId.value}")
       }
@@ -223,7 +223,7 @@ final class PunterEventNotificationHandlerSpec
 
       emailSender shouldContainEmailMessage { message =>
         message.subject == PlayerHasSelfExcludedNotification.subject &&
-        message.recipient == customerServiceEmail &&
+        message.recipient == this.customerServiceEmail &&
         message.content.value.contains(s"https://office.dev.phoenix.darkstormlabs.net/users/${punterId.value}")
       }
     }
@@ -240,7 +240,7 @@ final class PunterEventNotificationHandlerSpec
       // then
       emailSender shouldContainEmailMessage { message =>
         message.subject == PlayerHasSelfExcludedNotification.subject &&
-        message.recipient == customerServiceEmail &&
+        message.recipient == this.customerServiceEmail &&
         message.content.value.contains(s"https://office.dev.phoenix.darkstormlabs.net/users/${punterId.value}")
       }
     }

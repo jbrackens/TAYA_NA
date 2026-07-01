@@ -12,6 +12,7 @@ import (
 // Compile-time check: SQLRepository implements ExchangeRepository. If the
 // interface or a method signature drifts, the build fails here.
 var _ ExchangeRepository = (*SQLRepository)(nil)
+var _ RestingOrderFinalizer = (*SQLRepository)(nil)
 
 type positionKey struct {
 	UserID string
@@ -128,7 +129,7 @@ func (r *SQLRepository) PersistMatchAtomic(ctx context.Context, walletAdapter Ex
 		}
 	}
 
-	// Seller proceeds on secondary fills: the buyer's captured cash (above)
+	// Seller proceeds on secondary fills: the buyer's captured point reservation
 	// is credited to the seller. CreditKey is unique per trade so a retried
 	// persist is idempotent.
 	for _, sc := range plan.SellerCredits {
@@ -180,6 +181,64 @@ func (r *SQLRepository) PersistMatchAtomic(ctx context.Context, walletAdapter Ex
 	}
 
 	return tx.Commit()
+}
+
+// FinalizeRestingOrderAtomic cancels or expires a resting exchange order in
+// the same transaction that releases wallet point reservations and sell-side
+// share reservations.
+func (r *SQLRepository) FinalizeRestingOrderAtomic(
+	ctx context.Context,
+	walletAdapter ExchangeWalletAdapter,
+	order *Order,
+	terminal OrderStatus,
+) (reservedCents int64, capturedCents int64, placedAt time.Time, err error) {
+	tx, err := walletAdapter.BeginExchangeTx(ctx)
+	if err != nil {
+		return 0, 0, time.Time{}, fmt.Errorf("begin %s tx: %w", terminal, err)
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	// Release the uncaptured point reservation. Idempotent: if the order
+	// never had a reservation (e.g., a sell), this is a no-op at the wallet.
+	if err := walletAdapter.ReleaseReservationWithTx(ctx, tx, "prediction_order", order.ID); err != nil {
+		return 0, 0, time.Time{}, fmt.Errorf("release reservation: %w", err)
+	}
+	if order.Action == OrderActionSell && order.RemainingQuantity > 0 {
+		if _, err := tx.ExecContext(ctx,
+			`UPDATE prediction_positions
+			    SET reserved_quantity = GREATEST(reserved_quantity - $4, 0),
+			        updated_at = NOW()
+			  WHERE user_id = $1 AND market_id = $2 AND side = $3`,
+			order.UserID, order.MarketID, string(order.Side), order.RemainingQuantity,
+		); err != nil {
+			return 0, 0, time.Time{}, fmt.Errorf("release reserved shares: %w", err)
+		}
+	}
+
+	// cancelled_at is only meaningful for a user cancel; an expiry leaves it
+	// NULL (the order was not cancelled — its market closed under it).
+	now := time.Now().UTC()
+	var cancelledAt interface{}
+	if terminal == OrderStatusCancelled {
+		cancelledAt = now
+	}
+	if err := tx.QueryRowContext(ctx,
+		`UPDATE prediction_orders
+		   SET status = $2,
+		       reserved_quantity = 0,
+		       cancelled_at = $3,
+		       updated_at = NOW()
+		 WHERE id = $1
+		 RETURNING reserved_cash_cents, captured_cash_cents, created_at`,
+		order.ID, string(terminal), cancelledAt,
+	).Scan(&reservedCents, &capturedCents, &placedAt); err != nil {
+		return 0, 0, time.Time{}, fmt.Errorf("update order to %s: %w", terminal, err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, 0, time.Time{}, fmt.Errorf("commit %s tx: %w", terminal, err)
+	}
+	return reservedCents, capturedCents, placedAt, nil
 }
 
 // insertExchangeTradeWithTx inserts a trade row with the engine-supplied ID

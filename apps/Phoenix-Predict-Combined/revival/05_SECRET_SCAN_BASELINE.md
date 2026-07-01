@@ -1,9 +1,9 @@
 # Secret Scan Baseline (2026-03-02)
 
 ## Scope
-- `/Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/phoenix-backend`
-- `/Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/talon-backoffice`
-- `/Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/phoenix-frontend-brand-viegg`
+- `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/phoenix-backend`
+- `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/talon-backoffice`
+- `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/go-platform`
 
 ## Method
 - Scanner: local regex baseline using `git grep` on tracked files.
@@ -15,13 +15,13 @@
   - `test_fixture`
 
 ## Results Summary
-- Total findings: **14**
+- Total findings: **21**
 - Critical pattern hits: **0**
 - Medium pattern hits: **1**
-- Low pattern hits: **13**
-- Candidate findings requiring remediation: **0**
+- Low pattern hits: **20**
+- Candidate findings requiring remediation: **8**
 - Fixture-only findings: **5**
-- Placeholder-only findings: **8**
+- Placeholder-only findings: **7**
 - Documentation command findings: **1**
 
 ## Key Outcome

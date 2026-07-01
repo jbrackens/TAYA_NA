@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
+import { ActiveBonusesControl } from "./ActiveBonusesControl";
+import { getActiveBonuses, type PlayerBonus } from "../lib/api/bonus-client";
 import {
   getLoyaltyStanding,
   getLoyaltyLedger,
@@ -12,6 +14,22 @@ import {
   type LoyaltyLedgerEntry,
   type LoyaltyTier,
 } from "../lib/api/loyalty-client";
+import {
+  claimDailyPoints,
+  claimMission,
+  claimPointPack,
+  claimStreak,
+  getBadges,
+  getMissions,
+  getPointPacks,
+  getRewardLimitStatus,
+  getStreaks,
+  type Badge,
+  type Mission,
+  type PointPack,
+  type RewardLimitStatus,
+  type Streak,
+} from "../lib/api/wallet-client";
 import { logger } from "../lib/logger";
 
 // /rewards — Predict-native loyalty center. Layout follows PLAN-loyalty-
@@ -22,10 +40,8 @@ import { logger } from "../lib/logger";
 
 const LEDGER_LIMIT = 20;
 
-const WRAP_CLASS =
-  "mx-auto max-w-[1120px] pb-[60px] max-[768px]:px-4";
-const HEAD_CLASS =
-  "mb-[22px] flex items-end justify-between gap-4";
+const WRAP_CLASS = "mx-auto max-w-[1120px] pb-[60px] max-[768px]:px-4";
+const HEAD_CLASS = "mb-[22px] flex items-end justify-between gap-4";
 const KICKER_CLASS =
   "mb-1.5 inline-block text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]";
 const TITLE_CLASS =
@@ -36,8 +52,7 @@ const LADDER_CLASS =
   "mb-[22px] grid grid-cols-5 gap-2 max-[768px]:grid-flow-col max-[768px]:auto-cols-[140px] max-[768px]:grid-cols-none max-[768px]:overflow-x-auto max-[768px]:[scroll-snap-type:x_mandatory]";
 const LADDER_STEP_BASE_CLASS =
   "relative flex flex-col gap-1.5 rounded-[var(--r-rh-md)] border-x border-b border-x-[var(--border-1)] border-b-[var(--border-1)] border-t-[3px] bg-[var(--surface-1)] px-3.5 pb-3.5 pt-4 max-[768px]:[scroll-snap-align:start]";
-const LADDER_NAME_CLASS =
-  "text-sm font-bold text-[var(--t1)]";
+const LADDER_NAME_CLASS = "text-sm font-bold text-[var(--t1)]";
 const LADDER_THRESHOLD_CLASS =
   "text-xs text-[var(--t3)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
 const GRID_CLASS =
@@ -50,8 +65,7 @@ const TIER_PILL_BASE_CLASS =
   "inline-flex items-center rounded-full px-3 py-1.5 text-xs font-bold tracking-[0.04em] text-[var(--t1)]";
 const BALANCE_CLASS =
   "m-0 text-[34px] font-extrabold tracking-[-0.02em] text-[var(--t1)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace] max-[768px]:text-[28px]";
-const BALANCE_UNIT_CLASS =
-  "ml-1 text-sm font-medium text-[var(--t3)]";
+const BALANCE_UNIT_CLASS = "ml-1 text-sm font-medium text-[var(--t3)]";
 const PROGRESS_CLASS = "mb-5";
 const PROGRESS_HEAD_CLASS =
   "mb-2 flex justify-between text-[13px] text-[var(--t2)]";
@@ -62,20 +76,41 @@ const PROGRESS_TRACK_CLASS =
 const TOPPED_OUT_CLASS = "m-0 mb-5 text-sm text-[var(--t2)]";
 const BENEFITS_TITLE_CLASS =
   "m-0 mb-2.5 text-[13px] font-bold uppercase tracking-[0.04em] text-[var(--t3)]";
-const BENEFITS_LIST_CLASS =
-  "m-0 flex list-none flex-col gap-2.5 p-0";
+const BENEFITS_LIST_CLASS = "m-0 flex list-none flex-col gap-2.5 p-0";
 const BENEFIT_CLASS =
   "grid grid-cols-[10px_1fr_auto] items-center gap-2.5 text-sm text-[var(--t1)]";
 const BENEFIT_DOT_BASE_CLASS = "size-2.5 rounded-full";
 const BENEFIT_SOURCE_CLASS =
   "text-[11px] uppercase tracking-[0.04em] text-[var(--t3)]";
-const LEDGER_HEAD_CLASS =
-  "mb-3.5 flex items-baseline justify-between";
-const LEDGER_TITLE_CLASS =
-  "m-0 text-base font-bold text-[var(--t1)]";
+const CLAIM_WRAP_CLASS =
+  "mb-5 mt-6 border-t border-[var(--border-1)] pt-5 text-left";
+const CLAIM_TITLE_CLASS =
+  "m-0 mb-1 text-[13px] font-bold uppercase tracking-[0.04em] text-[var(--t3)]";
+const CLAIM_BODY_CLASS = "m-0 mb-3 text-sm leading-[1.55] text-[var(--t2)]";
+const CLAIM_STATUS_CLASS = "mt-3 text-xs leading-[1.5] text-[var(--t2)]";
+const PACKS_LIST_CLASS = "mt-3 flex flex-col gap-2";
+const PACK_ROW_CLASS =
+  "flex items-center justify-between gap-3 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-3";
+const PACK_NAME_CLASS = "m-0 text-sm font-bold text-[var(--t1)]";
+const PACK_DESC_CLASS = "m-0 mt-0.5 text-xs leading-[1.45] text-[var(--t3)]";
+const PACK_AMOUNT_CLASS =
+  "whitespace-nowrap text-sm font-bold text-[var(--accent)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+const MISSION_PROGRESS_CLASS =
+  "mt-1 text-xs text-[var(--t3)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+const BADGE_GRID_CLASS = "mt-3 grid grid-cols-3 gap-2 max-[768px]:grid-cols-1";
+const BADGE_CARD_BASE_CLASS = "rounded-[var(--r-rh-md)] border p-3 text-left";
+const BADGE_EARNED_CLASS =
+  "border-[color-mix(in_srgb,var(--accent)_45%,var(--border-1))] bg-[color-mix(in_srgb,var(--accent)_9%,var(--surface-2))]";
+const BADGE_LOCKED_CLASS =
+  "border-[var(--border-1)] bg-[var(--surface-2)] opacity-70";
+const BADGE_STATUS_CLASS =
+  "mt-2 text-[11px] font-bold uppercase tracking-[0.04em] text-[var(--t3)]";
+const LIMIT_CLASS =
+  "mb-5 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-3 text-left";
+const LEDGER_HEAD_CLASS = "mb-3.5 flex items-baseline justify-between";
+const LEDGER_TITLE_CLASS = "m-0 text-base font-bold text-[var(--t1)]";
 const LEDGER_META_CLASS = "text-xs text-[var(--t3)]";
-const LEDGER_EMPTY_CLASS =
-  "py-10 text-center text-[13px] text-[var(--t3)]";
+const LEDGER_EMPTY_CLASS = "py-10 text-center text-[13px] text-[var(--t3)]";
 const LEDGER_TABLE_CLASS =
   "w-full border-collapse text-[13px] [&_td]:border-b [&_td]:border-[var(--border-1)] [&_td]:px-1.5 [&_td]:py-2.5 [&_td]:align-top [&_th]:border-b [&_th]:border-[var(--border-1)] [&_th]:px-1.5 [&_th]:py-2.5 [&_th]:align-top [&_th]:text-[11px] [&_th]:font-bold [&_th]:uppercase [&_th]:tracking-[0.08em] [&_th]:text-[var(--t3)]";
 const TEXT_LEFT_CLASS = "text-left";
@@ -88,15 +123,14 @@ const REASON_CLASS = "mt-0.5 text-xs text-[var(--t3)]";
 const POS_CLASS = "text-[var(--accent)]";
 const NEG_CLASS = "text-[var(--no-text)]";
 const SUBTLE_CLASS = "text-[var(--t3)]";
-const STATE_CLASS =
-  "flex min-h-[60vh] items-center justify-center px-6";
+const STATE_CLASS = "flex min-h-[60vh] items-center justify-center px-6";
 const PREFIRST_CARD_CLASS = "w-full max-w-[440px] text-center";
 const PREFIRST_TITLE_CLASS =
   "m-0 mb-2.5 text-[26px] font-extrabold text-[var(--t1)]";
-const PREFIRST_BODY_CLASS =
-  "m-0 mb-5 text-sm leading-[1.6] text-[var(--t2)]";
+const PREFIRST_BODY_CLASS = "m-0 mb-5 text-sm leading-[1.6] text-[var(--t2)]";
 const CTA_CLASS =
   "inline-flex items-center gap-1.5 rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-5 py-3 text-[13px] font-bold text-[#04140a] no-underline transition-[transform,filter] duration-[180ms] ease-[ease] hover:-translate-y-px hover:brightness-[1.05]";
+const CLAIM_BUTTON_CLASS = `${CTA_CLASS} cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:brightness-100`;
 const STATE_CARD_CLASS = `${SURFACE_CARD_CLASS} w-full max-w-[440px] text-center`;
 const STATE_MESSAGE_CLASS = "m-0 mb-3.5 leading-[1.6] text-[var(--t2)]";
 
@@ -160,6 +194,26 @@ export default function RewardsPage() {
   const [tiers, setTiers] = useState<LoyaltyTier[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dailyClaimLoading, setDailyClaimLoading] = useState(false);
+  const [dailyClaimMessage, setDailyClaimMessage] = useState<string | null>(
+    null,
+  );
+  const [pointPacks, setPointPacks] = useState<PointPack[]>([]);
+  const [pointPackLoadingId, setPointPackLoadingId] = useState<string | null>(
+    null,
+  );
+  const [pointPackMessage, setPointPackMessage] = useState<string | null>(null);
+  const [missions, setMissions] = useState<Mission[]>([]);
+  const [missionLoadingId, setMissionLoadingId] = useState<string | null>(null);
+  const [missionMessage, setMissionMessage] = useState<string | null>(null);
+  const [streaks, setStreaks] = useState<Streak[]>([]);
+  const [streakLoadingId, setStreakLoadingId] = useState<string | null>(null);
+  const [streakMessage, setStreakMessage] = useState<string | null>(null);
+  const [badges, setBadges] = useState<Badge[]>([]);
+  const [rewardLimit, setRewardLimit] = useState<RewardLimitStatus | null>(
+    null,
+  );
+  const [activeBonuses, setActiveBonuses] = useState<PlayerBonus[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -169,20 +223,48 @@ export default function RewardsPage() {
         setStanding(null);
         setLedger([]);
         setTiers([]);
+        setPointPacks([]);
+        setMissions([]);
+        setStreaks([]);
+        setBadges([]);
+        setRewardLimit(null);
+        setActiveBonuses([]);
         setLoading(false);
         return;
       }
       try {
         setLoading(true);
-        const [standingResult, ledgerResult, tiersResult] = await Promise.all([
+        const [
+          standingResult,
+          ledgerResult,
+          tiersResult,
+          packsResult,
+          missionsResult,
+          streaksResult,
+          badgesResult,
+          rewardLimitResult,
+          activeBonusesResult,
+        ] = await Promise.all([
           getLoyaltyStanding(),
           getLoyaltyLedger(LEDGER_LIMIT),
           getLoyaltyTiers(),
+          getPointPacks(),
+          getMissions(),
+          getStreaks(),
+          getBadges(),
+          getRewardLimitStatus(),
+          getActiveBonuses(),
         ]);
         if (cancelled) return;
         setStanding(standingResult);
         setLedger(ledgerResult);
         setTiers(tiersResult);
+        setPointPacks(packsResult);
+        setMissions(missionsResult);
+        setStreaks(streaksResult);
+        setBadges(badgesResult);
+        setRewardLimit(rewardLimitResult);
+        setActiveBonuses(activeBonusesResult);
         setError(null);
       } catch (err) {
         if (cancelled) return;
@@ -205,19 +287,191 @@ export default function RewardsPage() {
 
   // Visible tier list excludes tier 0 (the "hidden" state before any activity).
   const visibleTiers = useMemo(
-    () => tiers.filter((t) => t.tier >= 1).sort((a, b) => a.tier - b.tier),
+    () => tiers.filter((t) => t.rank >= 1).sort((a, b) => a.rank - b.rank),
     [tiers],
   );
 
   const progressPct = useMemo(() => {
     if (!standing || visibleTiers.length === 0) return 0;
-    const curr = visibleTiers.find((t) => t.tier === standing.tier);
-    const next = visibleTiers.find((t) => t.tier === standing.nextTier);
+    const curr = visibleTiers.find((t) => t.rank === standing.rank);
+    const next = visibleTiers.find((t) => t.rank === standing.nextRank);
     if (!curr || !next) return 100;
-    const span = Math.max(1, next.pointsThreshold - curr.pointsThreshold);
-    const advanced = Math.max(0, standing.pointsBalance - curr.pointsThreshold);
+    const span = Math.max(1, next.minXpPoints - curr.minXpPoints);
+    const advanced = Math.max(0, standing.pointsBalance - curr.minXpPoints);
     return Math.min(100, Math.max(0, (advanced / span) * 100));
   }, [standing, visibleTiers]);
+
+  const dailyClaimed = useMemo(
+    () =>
+      missions.some(
+        (mission) => mission.id === "daily_check_in" && mission.completed,
+      ),
+    [missions],
+  );
+
+  async function refreshRewardCollections() {
+    const [
+      packsResult,
+      missionsResult,
+      streaksResult,
+      badgesResult,
+      rewardLimitResult,
+      activeBonusesResult,
+    ] = await Promise.all([
+      getPointPacks(),
+      getMissions(),
+      getStreaks(),
+      getBadges(),
+      getRewardLimitStatus(),
+      getActiveBonuses(),
+    ]);
+    setPointPacks(packsResult);
+    setMissions(missionsResult);
+    setStreaks(streaksResult);
+    setBadges(badgesResult);
+    setRewardLimit(rewardLimitResult);
+    setActiveBonuses(activeBonusesResult);
+  }
+
+  async function handleDailyClaim() {
+    if (!user?.id || dailyClaimLoading || dailyClaimed) return;
+    setDailyClaimLoading(true);
+    setDailyClaimMessage(null);
+    try {
+      const result = await claimDailyPoints(user.id);
+      if (!result) {
+        setDailyClaimMessage(
+          t(
+            "dailyClaim.error",
+            "Daily claim could not be recorded. Try again shortly.",
+          ),
+        );
+        return;
+      }
+      if (!result.enabled) {
+        setDailyClaimMessage(
+          t("dailyClaim.disabled", "Daily claim is not available right now."),
+        );
+        return;
+      }
+      setDailyClaimMessage(
+        t(
+          "dailyClaim.success",
+          "Today's claim is recorded: {{points}} pts added to your point ledger.",
+          {
+            points: formatPoints(result.claimPointsCents ?? 0),
+          },
+        ),
+      );
+      if (result.rewardLimit) {
+        setRewardLimit(result.rewardLimit);
+      }
+      await refreshRewardCollections();
+    } finally {
+      setDailyClaimLoading(false);
+    }
+  }
+
+  async function handlePointPackClaim(packId: string) {
+    if (!user?.id || pointPackLoadingId) return;
+    setPointPackLoadingId(packId);
+    setPointPackMessage(null);
+    try {
+      const result = await claimPointPack(user.id, packId);
+      if (!result?.enabled) {
+        setPointPackMessage(
+          t(
+            "pointPacks.error",
+            "Point pack could not be recorded. Try again shortly.",
+          ),
+        );
+        return;
+      }
+      setPointPackMessage(
+        t("pointPacks.success", "{{points}} pts added to your point ledger.", {
+          points: formatPoints(result.claimPointsCents ?? 0),
+        }),
+      );
+      if (result.rewardLimit) {
+        setRewardLimit(result.rewardLimit);
+      }
+      await refreshRewardCollections();
+    } finally {
+      setPointPackLoadingId(null);
+    }
+  }
+
+  async function handleMissionClaim(missionId: string) {
+    if (!user?.id || missionLoadingId) return;
+    setMissionLoadingId(missionId);
+    setMissionMessage(null);
+    try {
+      const result = await claimMission(user.id, missionId);
+      if (!result?.enabled) {
+        setMissionMessage(
+          t(
+            "missions.error",
+            "Mission reward could not be recorded. Try again shortly.",
+          ),
+        );
+        return;
+      }
+      setMissionMessage(
+        t("missions.success", "{{points}} pts added to your point ledger.", {
+          points: formatPoints(result.claimPointsCents ?? 0),
+        }),
+      );
+      if (result.mission) {
+        setMissions((current) =>
+          current.map((mission) =>
+            mission.id === result.mission?.id ? result.mission : mission,
+          ),
+        );
+      }
+      if (result.rewardLimit) {
+        setRewardLimit(result.rewardLimit);
+      }
+      void refreshRewardCollections();
+    } finally {
+      setMissionLoadingId(null);
+    }
+  }
+
+  async function handleStreakClaim(streakId: string) {
+    if (!user?.id || streakLoadingId) return;
+    setStreakLoadingId(streakId);
+    setStreakMessage(null);
+    try {
+      const result = await claimStreak(user.id, streakId);
+      if (!result?.enabled) {
+        setStreakMessage(
+          t(
+            "streaks.error",
+            "Streak reward could not be recorded. Try again shortly.",
+          ),
+        );
+        return;
+      }
+      setStreakMessage(
+        t("streaks.success", "{{points}} pts added to your point ledger.", {
+          points: formatPoints(result.claimPointsCents ?? 0),
+        }),
+      );
+      if (result.streak) {
+        setStreaks((current) =>
+          current.map((streak) =>
+            streak.id === result.streak?.id ? result.streak : streak,
+          ),
+        );
+      }
+      if (result.rewardLimit) {
+        setRewardLimit(result.rewardLimit);
+      }
+      void refreshRewardCollections();
+    } finally {
+      setStreakLoadingId(null);
+    }
+  }
 
   if (authLoading || loading) {
     return <PageState message={t("state.loading", "Loading rewards…")} />;
@@ -246,8 +500,38 @@ export default function RewardsPage() {
   }
 
   // Pre-first-settle: full-page empty state with a CTA. Plan §3.
-  if (!standing || standing.tier === 0) {
-    return <PreFirstSettleState />;
+  if (!standing || standing.rank === 0) {
+    return (
+      <PreFirstSettleState
+        dailyClaim={{
+          loading: dailyClaimLoading,
+          claimed: dailyClaimed,
+          message: dailyClaimMessage,
+          onClaim: handleDailyClaim,
+        }}
+        pointPacks={{
+          packs: pointPacks,
+          loadingPackId: pointPackLoadingId,
+          message: pointPackMessage,
+          onClaim: handlePointPackClaim,
+        }}
+        missions={{
+          missions,
+          loadingMissionId: missionLoadingId,
+          message: missionMessage,
+          onClaim: handleMissionClaim,
+        }}
+        streaks={{
+          streaks,
+          loadingStreakId: streakLoadingId,
+          message: streakMessage,
+          onClaim: handleStreakClaim,
+        }}
+        badges={badges}
+        rewardLimit={rewardLimit}
+        activeBonuses={activeBonuses}
+      />
+    );
   }
 
   return (
@@ -262,18 +546,18 @@ export default function RewardsPage() {
         </Link>
       </header>
 
-      <TierLadder tiers={visibleTiers} current={standing.tier} />
+      <TierLadder tiers={visibleTiers} current={standing.rank} />
 
       <div className={GRID_CLASS}>
         <section className={SURFACE_CARD_CLASS} aria-labelledby="rw-tier-title">
           <header className={TIER_CARD_HEAD_CLASS}>
             <span
               className={`${TIER_PILL_BASE_CLASS} ${tierColorClass(
-                standing.tier,
+                standing.rank,
                 "pill",
               )}`}
             >
-              {standing.tierName}
+              {standing.rankName}
             </span>
             <h2 id="rw-tier-title" className={BALANCE_CLASS}>
               {formatPoints(standing.pointsBalance)}
@@ -284,14 +568,14 @@ export default function RewardsPage() {
             </h2>
           </header>
 
-          {standing.nextTierName ? (
+          {standing.nextRankName ? (
             <div className={PROGRESS_CLASS}>
               <div className={PROGRESS_HEAD_CLASS}>
                 <span>
                   {t("progress.pointsTo", "{{points}} pts to", {
-                    points: formatPoints(standing.pointsToNextTier),
+                    points: formatPoints(standing.xpToNextRank),
                   })}{" "}
-                  <strong>{standing.nextTierName}</strong>
+                  <strong>{standing.nextRankName}</strong>
                 </span>
                 <span className={PROGRESS_PCT_CLASS}>
                   {Math.round(progressPct)}%
@@ -306,14 +590,47 @@ export default function RewardsPage() {
             </div>
           ) : (
             <p className={TOPPED_OUT_CLASS}>
-              {t("progress.topTier", "Top tier reached — thanks for trading with us.")}
+              {t(
+                "progress.topTier",
+                "Top tier reached — thanks for trading with us.",
+              )}
             </p>
           )}
 
-          <BenefitsList tiers={visibleTiers} current={standing.tier} />
+          <BenefitsList tiers={visibleTiers} current={standing.rank} />
+          <RewardLimitControl status={rewardLimit} />
+          <ActiveBonusesControl bonuses={activeBonuses} />
+          <DailyClaimControl
+            loading={dailyClaimLoading}
+            claimed={dailyClaimed}
+            message={dailyClaimMessage}
+            onClaim={handleDailyClaim}
+          />
+          <PointPacksControl
+            packs={pointPacks}
+            loadingPackId={pointPackLoadingId}
+            message={pointPackMessage}
+            onClaim={handlePointPackClaim}
+          />
+          <MissionsControl
+            missions={missions}
+            loadingMissionId={missionLoadingId}
+            message={missionMessage}
+            onClaim={handleMissionClaim}
+          />
+          <StreaksControl
+            streaks={streaks}
+            loadingStreakId={streakLoadingId}
+            message={streakMessage}
+            onClaim={handleStreakClaim}
+          />
+          <BadgesControl badges={badges} />
         </section>
 
-        <section className={SURFACE_CARD_CLASS} aria-labelledby="rw-ledger-title">
+        <section
+          className={SURFACE_CARD_CLASS}
+          aria-labelledby="rw-ledger-title"
+        >
           <header className={LEDGER_HEAD_CLASS}>
             <h3 id="rw-ledger-title" className={LEDGER_TITLE_CLASS}>
               {t("ledger.title", "Recent activity")}
@@ -326,7 +643,10 @@ export default function RewardsPage() {
           </header>
           {ledger.length === 0 ? (
             <div className={LEDGER_EMPTY_CLASS}>
-              {t("ledger.empty", "No activity yet — settle a market to start earning.")}
+              {t(
+                "ledger.empty",
+                "No activity yet — settle a market to start earning.",
+              )}
             </div>
           ) : (
             <table className={LEDGER_TABLE_CLASS}>
@@ -360,7 +680,9 @@ export default function RewardsPage() {
                       {formatDate(entry.createdAt)}
                     </td>
                     <td>
-                      <div className={EVENT_CLASS}>{labelForEntry(entry, t)}</div>
+                      <div className={EVENT_CLASS}>
+                        {labelForEntry(entry, t)}
+                      </div>
                       {shouldShowReason(entry) && (
                         <div className={REASON_CLASS}>{entry.reason}</div>
                       )}
@@ -373,7 +695,9 @@ export default function RewardsPage() {
                       {entry.deltaPoints >= 0 ? "+" : ""}
                       {formatPoints(entry.deltaPoints)}
                     </td>
-                    <td className={`${MONO_CLASS} ${NUM_CLASS} ${SUBTLE_CLASS}`}>
+                    <td
+                      className={`${MONO_CLASS} ${NUM_CLASS} ${SUBTLE_CLASS}`}
+                    >
                       {formatPoints(entry.balanceAfter)}
                     </td>
                   </tr>
@@ -382,6 +706,317 @@ export default function RewardsPage() {
             </table>
           )}
         </section>
+      </div>
+    </div>
+  );
+}
+
+interface DailyClaimControlProps {
+  loading: boolean;
+  claimed: boolean;
+  message: string | null;
+  onClaim: () => void;
+}
+
+interface PointPacksControlProps {
+  packs: PointPack[];
+  loadingPackId: string | null;
+  message: string | null;
+  onClaim: (packId: string) => void;
+}
+
+interface MissionsControlProps {
+  missions: Mission[];
+  loadingMissionId: string | null;
+  message: string | null;
+  onClaim: (missionId: string) => void;
+}
+
+interface StreaksControlProps {
+  streaks: Streak[];
+  loadingStreakId: string | null;
+  message: string | null;
+  onClaim: (streakId: string) => void;
+}
+
+function RewardLimitControl({ status }: { status: RewardLimitStatus | null }) {
+  const { t } = useTranslation("rewards");
+  if (!status?.enabled) return null;
+  return (
+    <div className={LIMIT_CLASS}>
+      <h3 className={CLAIM_TITLE_CLASS}>
+        {t("rewardLimit.title", "Daily reward limit")}
+      </h3>
+      <p className={CLAIM_BODY_CLASS}>
+        {t(
+          "rewardLimit.body",
+          "{{remaining}} of {{limit}} reward pts remain for today.",
+          {
+            remaining: formatPoints(status.remainingPointsCents),
+            limit: formatPoints(status.limitPointsCents),
+          },
+        )}
+      </p>
+      <div className={MISSION_PROGRESS_CLASS}>
+        {t("rewardLimit.reset", "Resets {{date}}", {
+          date: new Date(status.nextResetAt).toLocaleString(),
+        })}
+      </div>
+    </div>
+  );
+}
+
+function DailyClaimControl({
+  loading,
+  claimed,
+  message,
+  onClaim,
+}: DailyClaimControlProps) {
+  const { t } = useTranslation("rewards");
+  return (
+    <div className={CLAIM_WRAP_CLASS}>
+      <h3 className={CLAIM_TITLE_CLASS}>
+        {t("dailyClaim.title", "Daily claim")}
+      </h3>
+      <p className={CLAIM_BODY_CLASS}>
+        {t(
+          "dailyClaim.body",
+          "Claim non-redeemable gameplay points once per day for predictions only.",
+        )}
+      </p>
+      <button
+        type="button"
+        className={CLAIM_BUTTON_CLASS}
+        disabled={loading || claimed}
+        onClick={onClaim}
+      >
+        {loading
+          ? t("dailyClaim.claiming", "Claiming")
+          : claimed
+            ? t("dailyClaim.claimed", "Claimed today")
+            : t("dailyClaim.cta", "Claim today")}
+      </button>
+      {message && <div className={CLAIM_STATUS_CLASS}>{message}</div>}
+    </div>
+  );
+}
+
+function PointPacksControl({
+  packs,
+  loadingPackId,
+  message,
+  onClaim,
+}: PointPacksControlProps) {
+  const { t } = useTranslation("rewards");
+  if (packs.length === 0) return null;
+  return (
+    <div className={CLAIM_WRAP_CLASS}>
+      <h3 className={CLAIM_TITLE_CLASS}>
+        {t("pointPacks.title", "Point packs")}
+      </h3>
+      <p className={CLAIM_BODY_CLASS}>
+        {t(
+          "pointPacks.body",
+          "Claim configured one-time gameplay point packs for predictions only.",
+        )}
+      </p>
+      <p className={CLAIM_BODY_CLASS}>
+        {t(
+          "pointPacks.disclosure",
+          "Points are non-redeemable gameplay points with no cashout, withdrawal, crypto, fiat, or prize path.",
+        )}
+      </p>
+      <div className={PACKS_LIST_CLASS}>
+        {packs.map((pack) => (
+          <div key={pack.id} className={PACK_ROW_CLASS}>
+            <div>
+              <p className={PACK_NAME_CLASS}>{pack.name}</p>
+              <p className={PACK_DESC_CLASS}>{pack.description}</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className={PACK_AMOUNT_CLASS}>
+                {formatPoints(pack.amountPointsCents)}
+              </span>
+              <button
+                type="button"
+                className={CLAIM_BUTTON_CLASS}
+                disabled={
+                  !pack.enabled ||
+                  Boolean(pack.claimed) ||
+                  loadingPackId !== null
+                }
+                onClick={() => onClaim(pack.id)}
+              >
+                {loadingPackId === pack.id
+                  ? t("pointPacks.claiming", "Claiming")
+                  : pack.claimed
+                    ? t("pointPacks.claimed", "Claimed")
+                    : pack.enabled
+                      ? t("pointPacks.cta", "Claim")
+                      : t("pointPacks.unavailable", "Unavailable")}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      {message && <div className={CLAIM_STATUS_CLASS}>{message}</div>}
+    </div>
+  );
+}
+
+function MissionsControl({
+  missions,
+  loadingMissionId,
+  message,
+  onClaim,
+}: MissionsControlProps) {
+  const { t } = useTranslation("rewards");
+  if (missions.length === 0) return null;
+  return (
+    <div className={CLAIM_WRAP_CLASS}>
+      <h3 className={CLAIM_TITLE_CLASS}>{t("missions.title", "Missions")}</h3>
+      <p className={CLAIM_BODY_CLASS}>
+        {t(
+          "missions.body",
+          "Complete gameplay missions to earn non-redeemable reward points.",
+        )}
+      </p>
+      <div className={PACKS_LIST_CLASS}>
+        {missions.map((mission) => (
+          <div key={mission.id} className={PACK_ROW_CLASS}>
+            <div>
+              <p className={PACK_NAME_CLASS}>{mission.name}</p>
+              <p className={PACK_DESC_CLASS}>{mission.description}</p>
+              <div className={MISSION_PROGRESS_CLASS}>
+                {t("missions.progress", "{{progress}} / {{target}} complete", {
+                  progress: mission.progress,
+                  target: mission.target,
+                })}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className={PACK_AMOUNT_CLASS}>
+                {formatPoints(mission.rewardPointsCents)}
+              </span>
+              <button
+                type="button"
+                className={CLAIM_BUTTON_CLASS}
+                disabled={
+                  !mission.enabled ||
+                  !mission.completed ||
+                  mission.claimed ||
+                  loadingMissionId !== null
+                }
+                onClick={() => onClaim(mission.id)}
+              >
+                {loadingMissionId === mission.id
+                  ? t("missions.claiming", "Claiming")
+                  : mission.claimed
+                    ? t("missions.claimed", "Claimed")
+                    : mission.completed
+                      ? t("missions.cta", "Claim")
+                      : t("missions.incomplete", "Incomplete")}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      {message && <div className={CLAIM_STATUS_CLASS}>{message}</div>}
+    </div>
+  );
+}
+
+function StreaksControl({
+  streaks,
+  loadingStreakId,
+  message,
+  onClaim,
+}: StreaksControlProps) {
+  const { t } = useTranslation("rewards");
+  if (streaks.length === 0) return null;
+  return (
+    <div className={CLAIM_WRAP_CLASS}>
+      <h3 className={CLAIM_TITLE_CLASS}>{t("streaks.title", "Streaks")}</h3>
+      <p className={CLAIM_BODY_CLASS}>
+        {t(
+          "streaks.body",
+          "Keep daily gameplay-point claims going to earn non-redeemable streak rewards.",
+        )}
+      </p>
+      <div className={PACKS_LIST_CLASS}>
+        {streaks.map((streak) => (
+          <div key={streak.id} className={PACK_ROW_CLASS}>
+            <div>
+              <p className={PACK_NAME_CLASS}>{streak.name}</p>
+              <p className={PACK_DESC_CLASS}>{streak.description}</p>
+              <div className={MISSION_PROGRESS_CLASS}>
+                {t("streaks.progress", "{{current}} / {{target}} days", {
+                  current: streak.currentStreak,
+                  target: streak.target,
+                })}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className={PACK_AMOUNT_CLASS}>
+                {formatPoints(streak.rewardPointsCents)}
+              </span>
+              <button
+                type="button"
+                className={CLAIM_BUTTON_CLASS}
+                disabled={
+                  !streak.enabled ||
+                  !streak.completed ||
+                  streak.claimed ||
+                  loadingStreakId !== null
+                }
+                onClick={() => onClaim(streak.id)}
+              >
+                {loadingStreakId === streak.id
+                  ? t("streaks.claiming", "Claiming")
+                  : streak.claimed
+                    ? t("streaks.claimed", "Claimed")
+                    : streak.completed
+                      ? t("streaks.cta", "Claim")
+                      : t("streaks.incomplete", "Incomplete")}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      {message && <div className={CLAIM_STATUS_CLASS}>{message}</div>}
+    </div>
+  );
+}
+
+function BadgesControl({ badges }: { badges: Badge[] }) {
+  const { t } = useTranslation("rewards");
+  if (badges.length === 0) return null;
+  return (
+    <div className={CLAIM_WRAP_CLASS}>
+      <h3 className={CLAIM_TITLE_CLASS}>{t("badges.title", "Badges")}</h3>
+      <p className={CLAIM_BODY_CLASS}>
+        {t(
+          "badges.body",
+          "Unlock cosmetic badges from gameplay milestones. Badges are non-redeemable status markers.",
+        )}
+      </p>
+      <div className={BADGE_GRID_CLASS}>
+        {badges.map((badge) => (
+          <div
+            key={badge.id}
+            className={`${BADGE_CARD_BASE_CLASS} ${
+              badge.earned ? BADGE_EARNED_CLASS : BADGE_LOCKED_CLASS
+            }`}
+          >
+            <p className={PACK_NAME_CLASS}>{badge.name}</p>
+            <p className={PACK_DESC_CLASS}>{badge.description}</p>
+            <div className={BADGE_STATUS_CLASS}>
+              {badge.earned
+                ? t("badges.earned", "Earned")
+                : t("badges.locked", "Locked")}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -396,29 +1031,33 @@ function TierLadder({
 }) {
   const { t } = useTranslation("rewards");
   return (
-    <div className={LADDER_CLASS} role="list" aria-label={t("ladder.aria", "Tier ladder")}>
+    <div
+      className={LADDER_CLASS}
+      role="list"
+      aria-label={t("ladder.aria", "Tier ladder")}
+    >
       {tiers.map((t) => {
-        const isCurrent = t.tier === current;
-        const isPast = t.tier < current;
+        const isCurrent = t.rank === current;
+        const isPast = t.rank < current;
         return (
           <div
-            key={t.tier}
+            key={t.rank}
             role="listitem"
             className={`${LADDER_STEP_BASE_CLASS} ${tierColorClass(
-              t.tier,
+              t.rank,
               "ladder",
             )} ${
               isCurrent
-                ? `bg-[var(--surface-2)] ${currentTierBorderClass(t.tier)}`
+                ? `bg-[var(--surface-2)] ${currentTierBorderClass(t.rank)}`
                 : isPast
                   ? ""
-                : "opacity-[0.45]"
+                  : "opacity-[0.45]"
             }`}
             aria-current={isCurrent ? "step" : undefined}
           >
-            <span className={LADDER_NAME_CLASS}>{t.name}</span>
+            <span className={LADDER_NAME_CLASS}>{t.rankName}</span>
             <span className={LADDER_THRESHOLD_CLASS}>
-              {formatPoints(t.pointsThreshold)}
+              {formatPoints(t.minXpPoints)}
             </span>
           </div>
         );
@@ -440,13 +1079,13 @@ function BenefitsList({
   const rows: Array<{ key: string; tier: number; name: string; copy: string }> =
     [];
   for (const t of tiers) {
-    if (t.tier > current) continue;
+    if (t.rank > current) continue;
     const benefits = t.benefits ?? [];
     for (let i = 0; i < benefits.length; i++) {
       rows.push({
-        key: `${t.tier}-${i}`,
-        tier: t.tier,
-        name: t.name,
+        key: `${t.rank}-${i}`,
+        tier: t.rank,
+        name: t.rankName,
         copy: benefits[i],
       });
     }
@@ -454,7 +1093,9 @@ function BenefitsList({
   if (rows.length === 0) return null;
   return (
     <div>
-      <h3 className={BENEFITS_TITLE_CLASS}>{t("benefits.unlocked", "Unlocked")}</h3>
+      <h3 className={BENEFITS_TITLE_CLASS}>
+        {t("benefits.unlocked", "Unlocked")}
+      </h3>
       <ul className={BENEFITS_LIST_CLASS}>
         {rows.map((row) => (
           <li key={row.key} className={BENEFIT_CLASS}>
@@ -474,19 +1115,44 @@ function BenefitsList({
   );
 }
 
-function PreFirstSettleState() {
+function PreFirstSettleState({
+  dailyClaim,
+  pointPacks,
+  missions,
+  streaks,
+  badges,
+  rewardLimit,
+  activeBonuses,
+}: {
+  dailyClaim: DailyClaimControlProps;
+  pointPacks: PointPacksControlProps;
+  missions: MissionsControlProps;
+  streaks: StreaksControlProps;
+  badges: Badge[];
+  rewardLimit: RewardLimitStatus | null;
+  activeBonuses: PlayerBonus[];
+}) {
   const { t } = useTranslation("rewards");
   return (
     <div className={STATE_CLASS}>
       <div className={PREFIRST_CARD_CLASS}>
         <span className={KICKER_CLASS}>{t("kickerShort", "Rewards")}</span>
-        <h1 className={PREFIRST_TITLE_CLASS}>{t("prefirst.title", "No activity yet")}</h1>
+        <h1 className={PREFIRST_TITLE_CLASS}>
+          {t("prefirst.title", "No activity yet")}
+        </h1>
         <p className={PREFIRST_BODY_CLASS}>
           {t(
             "prefirst.body",
             "Settle your first trade to start earning points and climb the tier ladder.",
           )}
         </p>
+        <RewardLimitControl status={rewardLimit} />
+        <ActiveBonusesControl bonuses={activeBonuses} />
+        <DailyClaimControl {...dailyClaim} />
+        <MissionsControl {...missions} />
+        <StreaksControl {...streaks} />
+        <BadgesControl badges={badges} />
+        <PointPacksControl {...pointPacks} />
         <Link href="/predict" className={CTA_CLASS}>
           {t("prefirst.browse", "Browse markets")} →
         </Link>
@@ -525,8 +1191,10 @@ function labelForEntry(
       // Backend reason is "settled trade (won)" / "settled trade (lost)".
       // Fold the outcome into the label so the reason row doesn't duplicate it.
       const r = e.reason ?? "";
-      if (r.includes("(won)")) return t("ledger.settledWon", "Settled trade · won");
-      if (r.includes("(lost)")) return t("ledger.settledLost", "Settled trade · lost");
+      if (r.includes("(won)"))
+        return t("ledger.settledWon", "Settled trade · won");
+      if (r.includes("(lost)"))
+        return t("ledger.settledLost", "Settled trade · lost");
       return t("ledger.settledTrade", "Settled trade");
     }
     case "adjustment":

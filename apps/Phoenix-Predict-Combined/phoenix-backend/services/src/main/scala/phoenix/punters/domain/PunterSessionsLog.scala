@@ -61,8 +61,8 @@ final case class PunterSessionsLog(
 
   def startSession(session: PunterState.StartedSession): PunterSessionsLog =
     activeSession match {
-      case Some(session) =>
-        log.debug(s"Attempt to start a session, but session $session already present")
+      case Some(active) =>
+        log.debug(s"Attempt to start a session, but session $active already present")
         this
 
       case None =>

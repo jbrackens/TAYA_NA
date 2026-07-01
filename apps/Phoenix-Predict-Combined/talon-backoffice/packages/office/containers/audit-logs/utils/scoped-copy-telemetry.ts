@@ -39,6 +39,14 @@ export type BuildScopedCopyTelemetryContextInput = {
   pageSize: number;
 };
 
+const launchScopedFilterKeys = new Set([
+  "action",
+  "actorId",
+  "targetId",
+  "userId",
+  "product",
+]);
+
 export const resolveScopedUrlLengthBucket = (
   url: string,
 ): "short" | "medium" | "long" => {
@@ -111,6 +119,7 @@ export const resolveFilterKeySignature = (
   filters: ScopedAuditFilters,
 ): string => {
   const keys = Object.entries(filters)
+    .filter(([key]) => launchScopedFilterKeys.has(key))
     .filter(([_key, value]) => Boolean(`${value || ""}`.trim()))
     .map(([key]) => key)
     .sort();
@@ -132,11 +141,13 @@ export const buildScopedCopyTelemetryContext = ({
   page,
   pageSize,
 }: BuildScopedCopyTelemetryContextInput): ScopedCopyTelemetryContext => {
-  const nonEmptyFilterCount = Object.values(appliedFilters).filter((value) =>
-    Boolean(`${value || ""}`.trim()),
+  const nonEmptyFilterCount = Object.entries(appliedFilters).filter(
+    ([key, value]) =>
+      launchScopedFilterKeys.has(key) && Boolean(`${value || ""}`.trim()),
   ).length;
-  const explicitOverrideCount = Object.values(explicitFilters).filter((value) =>
-    Boolean(`${value || ""}`.trim()),
+  const explicitOverrideCount = Object.entries(explicitFilters).filter(
+    ([key, value]) =>
+      launchScopedFilterKeys.has(key) && Boolean(`${value || ""}`.trim()),
   ).length;
 
   return {

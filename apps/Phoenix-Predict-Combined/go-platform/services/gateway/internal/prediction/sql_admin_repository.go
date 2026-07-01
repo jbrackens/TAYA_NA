@@ -38,22 +38,24 @@ type AdminPunterFilter struct {
 }
 
 // AdminPunterDetail is the full admin user-detail view: identity (AdminPunter)
-// plus the player's financials — wallet cash balance and the prediction
-// portfolio summary (value, realized P&L, open positions, accuracy). Returned
-// by GET /api/v1/admin/punters/{id}; the list endpoint stays identity-only.
+// plus the player's point-account balance and prediction portfolio summary.
+// Returned by GET /api/v1/admin/punters/{id}; the list endpoint stays
+// identity-only.
 type AdminPunterDetail struct {
 	AdminPunter
-	WalletBalanceCents int64            `json:"walletBalanceCents"`
-	Portfolio          PortfolioSummary `json:"portfolio"`
+	PointAccountBalanceCents int64            `json:"pointAccountBalanceCents"`
+	Portfolio                PortfolioSummary `json:"portfolio"`
+	Unit                     string           `json:"unit"`
 }
 
 // AdminPunterListItem is one row of the admin punter list: identity plus the
-// two financials the roster surfaces (wallet balance + realized P&L). Both are
-// batch-fetched for the whole page, not per-row.
+// point-account balance and realized prediction result. Both are batch-fetched
+// for the whole page, not per-row.
 type AdminPunterListItem struct {
 	AdminPunter
-	WalletBalanceCents int64 `json:"walletBalanceCents"`
-	RealizedPnlCents   int64 `json:"realizedPnlCents"`
+	PointAccountBalanceCents int64  `json:"pointAccountBalanceCents"`
+	RealizedPointsCents      int64  `json:"realizedPointsCents"`
+	Unit                     string `json:"unit"`
 }
 
 // AdminAuditLog is the admin view of an audit_logs row. Field names match

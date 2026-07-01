@@ -12,8 +12,8 @@ import (
 // orders whose market is no longer tradeable (closed / settled / voided).
 // No market-transition path (admin transition, the MarketCloser worker, or
 // the settlement-engine void) finalizes resting orders, so their RG
-// committed stake stays counted toward the user's period bet-limit and
-// their wallet cash reservation stays held forever. This reconciling sweep
+// committed stake stays counted toward the user's period risk limit and
+// their wallet point reservation stays held forever. This reconciling sweep
 // is the single place that drains them — robust to whichever path made the
 // market inactive, and self-healing for historical orphans.
 type RestingOrderExpirer struct {

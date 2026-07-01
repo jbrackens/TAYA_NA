@@ -28,7 +28,8 @@ func registerAlphaCashierAdminRoutes(mux *stdhttp.ServeMux, svc *alphacashier.Se
 		if err := requireAlphaCashierPermission(r, rbacSvc, alphaCashierReadPermission); err != nil {
 			return err
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"preflight": svc.Preflight(r.Context())})
+		preflight := alphacashier.LaunchSafePreflightReport(svc.Preflight(r.Context()))
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"preflight": preflight})
 	}))
 
 	mux.Handle("/api/v1/admin/cashier/alpha/deposits", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -47,7 +48,7 @@ func registerAlphaCashierAdminRoutes(mux *stdhttp.ServeMux, svc *alphacashier.Se
 		if err != nil {
 			return mapAlphaCashierAdminError(err)
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"depositIntents": deposits})
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"depositIntents": alphaCashierDepositIntentPayloads(deposits)})
 	}))
 
 	mux.Handle("/api/v1/admin/cashier/alpha/reconciliation", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -61,7 +62,7 @@ func registerAlphaCashierAdminRoutes(mux *stdhttp.ServeMux, svc *alphacashier.Se
 		if err != nil {
 			return mapAlphaCashierAdminError(err)
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"reconciliation": summary})
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"reconciliation": alphaCashierReconciliationPayload(summary)})
 	}))
 
 	mux.Handle("/api/v1/admin/cashier/alpha/withdrawals", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -75,7 +76,7 @@ func registerAlphaCashierAdminRoutes(mux *stdhttp.ServeMux, svc *alphacashier.Se
 		if err != nil {
 			return mapAlphaCashierAdminError(err)
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"withdrawalRequests": requests})
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"withdrawalRequests": alphaCashierWithdrawalRequestPayloads(requests)})
 	}))
 
 	mux.Handle("/api/v1/admin/cashier/alpha/audit-events", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -96,7 +97,7 @@ func registerAlphaCashierAdminRoutes(mux *stdhttp.ServeMux, svc *alphacashier.Se
 		if err != nil {
 			return mapAlphaCashierAdminError(err)
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"auditEvents": events})
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"auditEvents": alphaCashierAuditEventPayloads(events)})
 	}))
 
 	mux.Handle("/api/v1/admin/cashier/alpha/withdrawals/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -106,7 +107,7 @@ func registerAlphaCashierAdminRoutes(mux *stdhttp.ServeMux, svc *alphacashier.Se
 		rest := strings.Trim(strings.TrimPrefix(r.URL.Path, "/api/v1/admin/cashier/alpha/withdrawals/"), "/")
 		parts := strings.Split(rest, "/")
 		if len(parts) != 2 || parts[0] == "" {
-			return httpx.NotFound("withdrawal request not found")
+			return httpx.NotFound("legacy release request not found")
 		}
 		var body struct {
 			ReviewNote string `json:"reviewNote"`
@@ -127,12 +128,20 @@ func registerAlphaCashierAdminRoutes(mux *stdhttp.ServeMux, svc *alphacashier.Se
 			if err := requireAlphaCashierPermission(r, rbacSvc, alphaCashierWritePermission); err != nil {
 				return err
 			}
-			req, err = svc.ApproveWithdrawal(r.Context(), parts[0], actorID, body.ReviewNote)
+			reviewNote := strings.TrimSpace(body.ReviewNote)
+			if err := validateLaunchFacingReason("reviewNote", reviewNote); err != nil {
+				return err
+			}
+			req, err = svc.ApproveWithdrawal(r.Context(), parts[0], actorID, reviewNote)
 		case "reject":
 			if err := requireAlphaCashierPermission(r, rbacSvc, alphaCashierWritePermission); err != nil {
 				return err
 			}
-			req, err = svc.RejectWithdrawal(r.Context(), parts[0], actorID, body.ReviewNote)
+			reviewNote := strings.TrimSpace(body.ReviewNote)
+			if err := validateLaunchFacingReason("reviewNote", reviewNote); err != nil {
+				return err
+			}
+			req, err = svc.RejectWithdrawal(r.Context(), parts[0], actorID, reviewNote)
 		case "mark-broadcasted":
 			// Separation of duties: broadcasting (on-chain release) requires a
 			// permission distinct from approval, so RBAC enforces two-person
@@ -148,13 +157,102 @@ func registerAlphaCashierAdminRoutes(mux *stdhttp.ServeMux, svc *alphacashier.Se
 			}
 			req, err = svc.MarkWithdrawalCompleted(r.Context(), parts[0], actorID)
 		default:
-			return httpx.NotFound("withdrawal action not found")
+			return httpx.NotFound("legacy release action not found")
 		}
 		if err != nil {
 			return mapAlphaCashierAdminError(err)
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"withdrawalRequest": req})
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"withdrawalRequest": alphaCashierWithdrawalRequestPayload(req)})
 	}))
+}
+
+func alphaCashierDepositIntentPayloads(deposits []alphacashier.DepositIntent) []alphacashier.DepositIntent {
+	out := make([]alphacashier.DepositIntent, len(deposits))
+	for i := range deposits {
+		out[i] = *alphaCashierDepositIntentPayload(&deposits[i])
+	}
+	return out
+}
+
+func alphaCashierDepositIntentPayload(deposit *alphacashier.DepositIntent) *alphacashier.DepositIntent {
+	if deposit == nil {
+		return nil
+	}
+	out := *deposit
+	out.ChainName = redactLaunchProhibitedUserText(out.ChainName)
+	out.TokenSymbol = redactLaunchProhibitedUserText(out.TokenSymbol)
+	out.TokenAddress = redactLaunchProhibitedUserText(out.TokenAddress)
+	out.TreasuryAddress = redactLaunchProhibitedUserText(out.TreasuryAddress)
+	out.FailureReason = redactLaunchProhibitedUserText(out.FailureReason)
+	return &out
+}
+
+func alphaCashierWithdrawalRequestPayloads(requests []alphacashier.WithdrawalRequest) []alphacashier.WithdrawalRequest {
+	out := make([]alphacashier.WithdrawalRequest, len(requests))
+	for i := range requests {
+		out[i] = *alphaCashierWithdrawalRequestPayload(&requests[i])
+	}
+	return out
+}
+
+func alphaCashierWithdrawalRequestPayload(request *alphacashier.WithdrawalRequest) *alphacashier.WithdrawalRequest {
+	if request == nil {
+		return nil
+	}
+	out := *request
+	out.TokenSymbol = redactLaunchProhibitedUserText(out.TokenSymbol)
+	out.TokenAddress = redactLaunchProhibitedUserText(out.TokenAddress)
+	out.ReviewNote = redactLaunchProhibitedUserText(out.ReviewNote)
+	out.FailureReason = redactLaunchProhibitedUserText(out.FailureReason)
+	return &out
+}
+
+func alphaCashierReconciliationPayload(summary *alphacashier.ReconciliationSummary) *alphacashier.ReconciliationSummary {
+	if summary == nil {
+		return nil
+	}
+	out := *summary
+	out.TokenSymbol = redactLaunchProhibitedUserText(out.TokenSymbol)
+	out.TreasuryAddress = redactLaunchProhibitedUserText(out.TreasuryAddress)
+	out.TreasuryBalanceUnits = redactLaunchProhibitedUserText(out.TreasuryBalanceUnits)
+	return &out
+}
+
+func alphaCashierAuditEventPayloads(events []alphacashier.AuditEvent) []alphacashier.AuditEvent {
+	out := make([]alphacashier.AuditEvent, len(events))
+	for i, event := range events {
+		out[i] = event
+		out[i].SubjectType = alphaCashierAuditIdentifierPayload(event.SubjectType)
+		out[i].EventType = alphaCashierAuditIdentifierPayload(event.EventType)
+		out[i].EventPayload = alphaCashierAuditEventPayload(event.EventPayload)
+	}
+	return out
+}
+
+func alphaCashierAuditIdentifierPayload(value string) string {
+	lower := strings.ToLower(value)
+	for _, unsafe := range []string{"alpha_cashier", "cashier", "deposit", "withdraw", "withdrawal", "crypto", "fiat", "payout", "wallet"} {
+		if strings.Contains(lower, unsafe) {
+			return launchRedactedUserText
+		}
+	}
+	return redactLaunchProhibitedUserText(value)
+}
+
+func alphaCashierAuditEventPayload(raw string) string {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" {
+		return raw
+	}
+	var parsed any
+	if err := json.Unmarshal([]byte(trimmed), &parsed); err != nil {
+		return redactLaunchProhibitedUserText(raw)
+	}
+	encoded, err := json.Marshal(redactAuditDetailValue(parsed))
+	if err != nil {
+		return redactLaunchProhibitedUserText(raw)
+	}
+	return string(encoded)
 }
 
 func requireAlphaCashierPermission(r *stdhttp.Request, rbacSvc *rbac.Service, permission string) error {
@@ -179,22 +277,22 @@ func parseAlphaCashierLimit(r *stdhttp.Request) int {
 func mapAlphaCashierAdminError(err error) error {
 	switch {
 	case errors.Is(err, alphacashier.ErrDisabled):
-		return httpx.Forbidden("alpha cashier is disabled")
+		return httpx.Forbidden("legacy transfer rail is disabled")
 	case errors.Is(err, alphacashier.ErrWithdrawalsDisabled):
-		return httpx.Forbidden("alpha withdrawals are disabled")
+		return httpx.Forbidden("legacy external releases are disabled")
 	case errors.Is(err, alphacashier.ErrInvalidStatus):
-		return httpx.Conflict("withdrawal request is not in a valid status for this action", nil)
+		return httpx.Conflict("legacy release request is not in a valid status for this action", nil)
 	case errors.Is(err, alphacashier.ErrReviewNoteRequired):
 		return httpx.BadRequest("review note is required", map[string]any{"field": "reviewNote"})
 	case errors.Is(err, alphacashier.ErrWithdrawalNotFound):
-		return httpx.NotFound("withdrawal request not found")
+		return httpx.NotFound("legacy release request not found")
 	case errors.Is(err, alphacashier.ErrTxHashInvalid):
-		return httpx.BadRequest("txHash must be a valid EVM transaction hash", map[string]any{"field": "txHash"})
+		return httpx.BadRequest("txHash must be valid for this legacy route", map[string]any{"field": "txHash"})
 	case errors.Is(err, wallet.ErrInsufficientFunds):
-		return httpx.BadRequest("insufficient wallet balance", map[string]any{"field": "amountCents"})
+		return httpx.BadRequest("insufficient point account balance", map[string]any{"field": "amountCents"})
 	case errors.Is(err, wallet.ErrReservationNotFound), errors.Is(err, wallet.ErrReservationNotHeld), errors.Is(err, wallet.ErrReservationExpired):
-		return httpx.Conflict("withdrawal wallet reservation cannot be resolved", nil)
+		return httpx.Conflict("legacy point reservation cannot be resolved", nil)
 	default:
-		return httpx.Internal("alpha cashier admin operation failed", err)
+		return httpx.Internal("legacy transfer admin operation failed", err)
 	}
 }

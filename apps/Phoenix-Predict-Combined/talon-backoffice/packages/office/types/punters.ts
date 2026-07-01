@@ -24,8 +24,8 @@ export type TalonPunterLimits = {
 };
 
 export enum TalonPunterLimitsTypesEnum {
-  DEPOSITS = "deposits",
-  STAKE = "stake",
+  POINT_ADD = "deposits",
+  POINT_USE = "stake",
   SESSION = "session",
 }
 
@@ -43,15 +43,15 @@ export type TalonPunterWalletItem = WalletHistoryActionElement & {
 export type TalonPunterWallet = TalonPunterWalletItem[];
 
 export enum TalonPunterActivityEnum {
-  BET_PLACEMENT = "BET_PLACEMENT",
-  BET_WON = "BET_WON",
+  PREDICTION_ORDER = "PREDICTION_ORDER",
+  PREDICTION_RESULT = "PREDICTION_RESULT",
   SYSTEM_LOGIN = "SYSTEM_LOGIN",
 }
 
 export type TalonPunterActivity =
   | TalonPunterActivityEnum.SYSTEM_LOGIN
-  | TalonPunterActivityEnum.BET_PLACEMENT
-  | TalonPunterActivityEnum.BET_WON;
+  | TalonPunterActivityEnum.PREDICTION_ORDER
+  | TalonPunterActivityEnum.PREDICTION_RESULT;
 
 export type TalonPunterRecentActivityItem = {
   id: Id;
@@ -125,14 +125,14 @@ export enum PeriodEnum {
 export type PeriodType = PeriodEnum.DAY | PeriodEnum.MONTH | PeriodEnum.WEEK;
 
 export enum LimitTypeEnum {
-  DEPOSIT_AMOUNT = "DEPOSIT_AMOUNT",
-  STAKE_AMOUNT = "STAKE_AMOUNT",
+  POINT_ADD_AMOUNT = "DEPOSIT_AMOUNT",
+  PREDICTION_POINT_AMOUNT = "STAKE_AMOUNT",
   SESSION_TIME = "SESSION_TIME",
 }
 
 export type LimitType =
-  | LimitTypeEnum.DEPOSIT_AMOUNT
-  | LimitTypeEnum.STAKE_AMOUNT
+  | LimitTypeEnum.POINT_ADD_AMOUNT
+  | LimitTypeEnum.PREDICTION_POINT_AMOUNT
   | LimitTypeEnum.SESSION_TIME;
 
 export type LimitsHistoryData = {

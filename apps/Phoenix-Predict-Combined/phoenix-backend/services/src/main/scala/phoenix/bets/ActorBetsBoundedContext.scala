@@ -11,6 +11,7 @@ import scala.util.Try
 
 import akka.NotUsed
 import akka.actor.typed.ActorSystem
+import akka.actor.typed.Scheduler
 import akka.cluster.sharding.typed.scaladsl.ClusterSharding
 import akka.cluster.sharding.typed.scaladsl.EntityRef
 import akka.stream.Materializer
@@ -64,7 +65,7 @@ private class ActorBetsBoundedContext(
     extends BetsBoundedContext {
   private val log = LoggerFactory.getLogger(getClass)
   implicit val mat: Materializer = Materializer(system)
-  implicit val scheduler = system.scheduler
+  implicit val scheduler: Scheduler = system.scheduler
 
   private val sharding = ClusterSharding(system)
   private implicit val timeout: Timeout = Timeout(10.seconds)

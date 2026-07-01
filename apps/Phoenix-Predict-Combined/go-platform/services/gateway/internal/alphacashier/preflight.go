@@ -154,6 +154,49 @@ func (s *Service) Preflight(ctx context.Context) PreflightReport {
 	return report
 }
 
+func LaunchSafePreflightReport(report PreflightReport) PreflightReport {
+	out := report
+	out.TokenSymbol = alphaRedactLaunchProhibitedUserText(out.TokenSymbol)
+	out.ChainName = alphaRedactLaunchProhibitedUserText(out.ChainName)
+	out.TokenAddress = alphaRedactLaunchProhibitedUserText(out.TokenAddress)
+	out.TreasuryAddress = alphaRedactLaunchProhibitedUserText(out.TreasuryAddress)
+	out.Checks = make([]PreflightCheck, len(report.Checks))
+	for i, check := range report.Checks {
+		out.Checks[i] = check
+		out.Checks[i].Message = alphaRedactLaunchProhibitedUserText(check.Message)
+		out.Checks[i].Metadata = alphaLaunchSafeMetadata(check.Metadata)
+	}
+	return out
+}
+
+func alphaLaunchSafeMetadata(metadata map[string]any) map[string]any {
+	if metadata == nil {
+		return nil
+	}
+	out := make(map[string]any, len(metadata))
+	for key, value := range metadata {
+		out[key] = alphaLaunchSafeMetadataValue(value)
+	}
+	return out
+}
+
+func alphaLaunchSafeMetadataValue(value any) any {
+	switch typed := value.(type) {
+	case string:
+		return alphaRedactLaunchProhibitedUserText(typed)
+	case map[string]any:
+		return alphaLaunchSafeMetadata(typed)
+	case []any:
+		out := make([]any, len(typed))
+		for i, item := range typed {
+			out[i] = alphaLaunchSafeMetadataValue(item)
+		}
+		return out
+	default:
+		return value
+	}
+}
+
 func statusForEnabled(enabled bool) string {
 	if enabled {
 		return preflightFail

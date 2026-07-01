@@ -11,11 +11,11 @@ import (
 // seeded by the auth service on startup). Keep these in sync with CLAUDE.md
 // "Test credentials" section.
 const (
-	demoBotUserID     = "user-bot"
-	demoUserID        = "u-1"
-	demoTakerUserID1  = "user-001"
-	demoTakerUserID2  = "user-002"
-	demoTakerUserID3  = "user-003"
+	demoBotUserID    = "user-bot"
+	demoUserID       = "u-1"
+	demoTakerUserID1 = "user-001"
+	demoTakerUserID2 = "user-002"
+	demoTakerUserID3 = "user-003"
 )
 
 // Phase 1 places a 5-level limit-bid book on every open order_book market.
@@ -30,21 +30,22 @@ const (
 //	NO  bids (buy NO):    N-5, N-4, N-3, N-2, N-1   where N = 100-Y
 //
 // 10 limit orders per market × 119 markets ≈ 1,190 resting orders.
-// Bot wallet starts at $9,976.55 and each order reserves price×qty cents:
+// Bot point balance starts high enough and each order reserves price×qty
+// point-cents:
 // 5 YES bids × 5 ticks × bookLevelQty + 5 NO bids × 5 ticks × bookLevelQty
-// At qty=10 and prices around 50¢ the worst case is roughly $50 per market,
-// or ~$6,000 total. Well within the bot's headroom, but Phase 5 will top
-// the bot up before this runs to keep margin for re-seed cycles.
+// At qty=100 and prices around 50 point-cents, the worst case is roughly
+// 500 points per market. Well within the bot's headroom, but the wallet
+// top-up phase runs before this to keep margin for re-seed cycles.
 //
 // Why limit BUYs only: limit SELLs require an existing position OR pair
 // issuance with another taker, which complicates the demo. Buys-only
-// guarantees the bot can park resting cash without owning shares. The
+// guarantees the bot can park resting point bids without owning shares. The
 // other side of the book gets populated naturally in Phase 2 when
 // alice/bob/charlie take the bot's bids.
 const (
 	bookLevels      = 5   // 5 prices each side
-	bookLevelQty    = 100 // 100 contracts per level (500/side; covers ~$100 stakes 3x over)
-	bookSpreadTicks = 5   // anchor ± 5 cents
+	bookLevelQty    = 100 // 100 contracts per level (500/side; covers 10,000 point-cents 3x over)
+	bookSpreadTicks = 5   // anchor +/- 5 point-cents
 )
 
 // PhaseStats summarizes a phase run for the seed log.
@@ -95,28 +96,28 @@ func seedMarketBook(ctx context.Context, h *Harness, m *prediction.Market) (plac
 	noMid := 100 - yesMid
 
 	for level := 1; level <= bookLevels; level++ {
-		// YES bid at yesMid - level (clamped to >= 1¢).
+		// YES bid at yesMid - level (clamped to at least 1 point-cent).
 		yesPrice := yesMid - level
 		if yesPrice < 1 {
 			yesPrice = 1
 		}
 		if p, s, e := placeBookOrder(ctx, h, m, prediction.OrderSideYes, yesPrice, level); e != nil {
 			errs++
-			fmt.Printf("    [phase1] %s YES@%d¢ err: %v\n", m.Ticker, yesPrice, e)
+			fmt.Printf("    [phase1] %s YES@%d point-cents err: %v\n", m.Ticker, yesPrice, e)
 		} else if s {
 			skipped++
 		} else if p {
 			placed++
 		}
 
-		// NO bid at noMid - level (clamped to >= 1¢).
+		// NO bid at noMid - level (clamped to at least 1 point-cent).
 		noPrice := noMid - level
 		if noPrice < 1 {
 			noPrice = 1
 		}
 		if p, s, e := placeBookOrder(ctx, h, m, prediction.OrderSideNo, noPrice, level); e != nil {
 			errs++
-			fmt.Printf("    [phase1] %s NO@%d¢ err: %v\n", m.Ticker, noPrice, e)
+			fmt.Printf("    [phase1] %s NO@%d point-cents err: %v\n", m.Ticker, noPrice, e)
 		} else if s {
 			skipped++
 		} else if p {

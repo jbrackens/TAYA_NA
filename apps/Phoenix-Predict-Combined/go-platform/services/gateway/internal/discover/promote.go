@@ -100,6 +100,10 @@ func Promote(
 			res.Skipped++
 			continue
 		}
+		if IsLaunchProhibitedMarket(m) {
+			res.Skipped++
+			continue
+		}
 
 		category := Classify(m)
 		eventID, ok := eventIDs[category]
@@ -420,7 +424,7 @@ func resolveCategoryIDs(ctx context.Context, db *sql.DB) (map[string]string, err
 	}
 	for _, slug := range AllCategories {
 		if _, ok := out[slug]; !ok {
-			return nil, fmt.Errorf("category %q not found in prediction_categories — run migration 018", slug)
+			return nil, fmt.Errorf("category %q not found in prediction_categories — run migrations 018 and 046", slug)
 		}
 	}
 	return out, nil

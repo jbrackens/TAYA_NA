@@ -1,6 +1,7 @@
 package phoenix.oddin.infrastructure.http
 
 import scala.annotation.nowarn
+import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.Future
 import scala.util.Try
 import scala.xml.NodeSeq
@@ -26,7 +27,7 @@ import phoenix.oddin.infrastructure.xml.SportXmlReaders._
 
 final class AkkaHttpOddinRestApi(httpClient: HttpClient, config: OddinApiConfig)(implicit system: ActorSystem[_])
     extends OddinRestApi {
-  implicit val ec = system.executionContext
+  implicit val ec: ExecutionContextExecutor = system.executionContext
 
   lazy val requestHeaders = Seq(`X-Access-Token`(config.accessToken))
 

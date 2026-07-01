@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	stdhttp "net/http"
+	"regexp"
 	"strings"
 
 	"phoenix-revival/gateway/internal/compliance"
@@ -16,6 +17,14 @@ import (
 // internal/http/handlers.go; nil (e.g. in package tests) is a no-op. Mirrors
 // the payments.KYCGate injection pattern.
 var ComplianceGate compliance.GateFunc
+
+var (
+	alphaLaunchCopyProhibited       = regexp.MustCompile(`(?i)(\$|\b(cash|cashier|cashout|deposit|withdraw|withdrawal|crypto|fiat|freebets?|bets?|prizes?|payout|sportsbook|stakes?|wagers?|wagering|usdc|usd|dollars?|money|redeem)\b)`)
+	alphaLaunchRedeemableProhibited = regexp.MustCompile(`(?i)\bredeemable\b`)
+	alphaLaunchNonRedeemableAllowed = regexp.MustCompile(`(?i)\bnon-redeemable\b`)
+)
+
+const alphaLaunchRedactedUserText = "Removed by points-only safety boundary."
 
 func checkComplianceGate(r *stdhttp.Request, userID string, surface compliance.Surface) error {
 	if ComplianceGate == nil {
@@ -30,7 +39,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, svc *Service) {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
 		cfg := svc.Config()
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"alphaCashier": cfg})
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"alphaCashier": alphaCashierConfigPayload(cfg)})
 	}))
 
 	mux.Handle("/api/v1/cashier/alpha/wallet/challenge", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -102,7 +111,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, svc *Service) {
 			if err != nil {
 				return mapAlphaError(err)
 			}
-			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"depositIntents": intents})
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"depositIntents": depositIntentPayloads(intents)})
 		case stdhttp.MethodPost:
 			if err := checkComplianceGate(r, userID, compliance.SurfaceDeposit); err != nil {
 				return err
@@ -119,7 +128,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, svc *Service) {
 			if err != nil {
 				return mapAlphaError(err)
 			}
-			return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{"depositIntent": intent})
+			return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{"depositIntent": depositIntentPayload(intent)})
 		default:
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPost)
 		}
@@ -132,7 +141,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, svc *Service) {
 		}
 		rest := strings.Trim(strings.TrimPrefix(r.URL.Path, "/api/v1/cashier/alpha/deposit-intents/"), "/")
 		if rest == "" {
-			return httpx.NotFound("deposit intent not found")
+			return httpx.NotFound("legacy point request not found")
 		}
 		parts := strings.Split(rest, "/")
 		id := parts[0]
@@ -145,9 +154,9 @@ func RegisterRoutes(mux *stdhttp.ServeMux, svc *Service) {
 				return mapAlphaError(err)
 			}
 			if intent == nil {
-				return httpx.NotFound("deposit intent not found")
+				return httpx.NotFound("legacy point request not found")
 			}
-			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"depositIntent": intent})
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"depositIntent": depositIntentPayload(intent)})
 		}
 		if len(parts) == 2 && parts[1] == "submit-tx" {
 			if r.Method != stdhttp.MethodPost {
@@ -173,11 +182,11 @@ func RegisterRoutes(mux *stdhttp.ServeMux, svc *Service) {
 				return mapAlphaError(err)
 			}
 			if intent == nil {
-				return httpx.NotFound("deposit intent not found")
+				return httpx.NotFound("legacy point request not found")
 			}
-			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"depositIntent": intent})
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"depositIntent": depositIntentPayload(intent)})
 		}
-		return httpx.NotFound("deposit intent not found")
+		return httpx.NotFound("legacy point request not found")
 	}))
 
 	mux.Handle("/api/v1/cashier/alpha/withdrawal-requests", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -191,7 +200,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, svc *Service) {
 			if err != nil {
 				return mapAlphaError(err)
 			}
-			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"withdrawalRequests": requests})
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"withdrawalRequests": withdrawalRequestPayloads(requests)})
 		case stdhttp.MethodPost:
 			if err := checkComplianceGate(r, userID, compliance.SurfaceWithdraw); err != nil {
 				return err
@@ -208,7 +217,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, svc *Service) {
 			if err != nil {
 				return mapAlphaError(err)
 			}
-			return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{"withdrawalRequest": req})
+			return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{"withdrawalRequest": withdrawalRequestPayload(req)})
 		default:
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPost)
 		}
@@ -224,60 +233,128 @@ func RegisterRoutes(mux *stdhttp.ServeMux, svc *Service) {
 		}
 		id := strings.Trim(strings.TrimPrefix(r.URL.Path, "/api/v1/cashier/alpha/withdrawal-requests/"), "/")
 		if id == "" || strings.Contains(id, "/") {
-			return httpx.NotFound("withdrawal request not found")
+			return httpx.NotFound("legacy point request not found")
 		}
 		req, err := svc.GetWithdrawalRequest(r.Context(), userID, id)
 		if err != nil {
 			return mapAlphaError(err)
 		}
 		if req == nil {
-			return httpx.NotFound("withdrawal request not found")
+			return httpx.NotFound("legacy point request not found")
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"withdrawalRequest": req})
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"withdrawalRequest": withdrawalRequestPayload(req)})
 	}))
+}
+
+func alphaCashierConfigPayload(cfg Config) Config {
+	out := cfg
+	out.ChainName = alphaRedactLaunchProhibitedUserText(out.ChainName)
+	out.TokenSymbol = alphaRedactLaunchProhibitedUserText(out.TokenSymbol)
+	out.TokenAddress = alphaRedactLaunchProhibitedUserText(out.TokenAddress)
+	out.TreasuryAddress = alphaRedactLaunchProhibitedUserText(out.TreasuryAddress)
+	return out
+}
+
+func depositIntentPayloads(intents []DepositIntent) []DepositIntent {
+	out := make([]DepositIntent, len(intents))
+	for i := range intents {
+		out[i] = *depositIntentPayload(&intents[i])
+	}
+	return out
+}
+
+func depositIntentPayload(intent *DepositIntent) *DepositIntent {
+	if intent == nil {
+		return nil
+	}
+	out := *intent
+	out.ChainName = alphaRedactLaunchProhibitedUserText(out.ChainName)
+	out.TokenSymbol = alphaRedactLaunchProhibitedUserText(out.TokenSymbol)
+	out.TokenAddress = alphaRedactLaunchProhibitedUserText(out.TokenAddress)
+	out.TreasuryAddress = alphaRedactLaunchProhibitedUserText(out.TreasuryAddress)
+	out.FailureReason = alphaRedactLaunchProhibitedUserText(out.FailureReason)
+	return &out
+}
+
+func withdrawalRequestPayloads(requests []WithdrawalRequest) []WithdrawalRequest {
+	out := make([]WithdrawalRequest, len(requests))
+	for i := range requests {
+		out[i] = *withdrawalRequestPayload(&requests[i])
+	}
+	return out
+}
+
+func withdrawalRequestPayload(request *WithdrawalRequest) *WithdrawalRequest {
+	if request == nil {
+		return nil
+	}
+	out := *request
+	out.TokenSymbol = alphaRedactLaunchProhibitedUserText(out.TokenSymbol)
+	out.TokenAddress = alphaRedactLaunchProhibitedUserText(out.TokenAddress)
+	out.ReviewNote = alphaRedactLaunchProhibitedUserText(out.ReviewNote)
+	out.FailureReason = alphaRedactLaunchProhibitedUserText(out.FailureReason)
+	return &out
+}
+
+func alphaRedactLaunchProhibitedUserText(value string) string {
+	if alphaLaunchHasProhibitedCopy(value) {
+		return alphaLaunchRedactedUserText
+	}
+	return value
+}
+
+func alphaLaunchHasProhibitedCopy(value string) bool {
+	if value == "" {
+		return false
+	}
+	if alphaLaunchCopyProhibited.MatchString(value) {
+		return true
+	}
+	redeemableCandidate := alphaLaunchNonRedeemableAllowed.ReplaceAllString(value, "")
+	return alphaLaunchRedeemableProhibited.MatchString(redeemableCandidate)
 }
 
 func mapAlphaError(err error) error {
 	switch {
 	case errors.Is(err, ErrDisabled):
-		return httpx.Forbidden("alpha cashier is disabled")
+		return httpx.Forbidden("legacy point rail is disabled")
 	case errors.Is(err, ErrWithdrawalsDisabled):
-		return httpx.Forbidden("alpha withdrawals are disabled")
+		return httpx.Forbidden("legacy external point requests are disabled")
 	case errors.Is(err, ErrInvalidAddress):
-		return httpx.BadRequest("walletAddress must be a valid EVM address", map[string]any{"field": "walletAddress"})
+		return httpx.BadRequest("address must be valid for this legacy route", map[string]any{"field": "walletAddress"})
 	case errors.Is(err, ErrInvalidAmount):
-		return httpx.BadRequest("amount is outside alpha cashier limits", map[string]any{"field": "amountCents"})
+		return httpx.BadRequest("amount is outside legacy point-route limits", map[string]any{"field": "amountCents"})
 	case errors.Is(err, ErrInvalidIdempotencyKey):
 		return httpx.BadRequest("Idempotency-Key header is required", map[string]any{"field": "Idempotency-Key"})
 	case errors.Is(err, ErrChallengeNotFound), errors.Is(err, ErrWalletNotConnected):
-		return httpx.NotFound("wallet connection not found")
+		return httpx.NotFound("legacy route connection not found")
 	case errors.Is(err, ErrChallengeExpired):
-		return httpx.BadRequest("wallet challenge expired", map[string]any{"field": "nonce"})
+		return httpx.BadRequest("legacy route challenge expired", map[string]any{"field": "nonce"})
 	case errors.Is(err, ErrChallengeConsumed):
-		return httpx.Conflict("wallet challenge already consumed", nil)
+		return httpx.Conflict("legacy route challenge already consumed", nil)
 	case errors.Is(err, ErrSignatureInvalid):
-		return httpx.Forbidden("wallet signature invalid")
+		return httpx.Forbidden("legacy route signature invalid")
 	case errors.Is(err, ErrTxVerificationMissing):
-		return httpx.Internal("transaction verifier unavailable", err)
+		return httpx.Internal("legacy route verifier unavailable", err)
 	case errors.Is(err, ErrWalletLedgerMissing):
-		return httpx.Internal("wallet ledger unavailable", err)
+		return httpx.Internal("point ledger unavailable", err)
 	case errors.Is(err, ErrTxHashInvalid):
-		return httpx.BadRequest("txHash must be a valid EVM transaction hash for this intent", map[string]any{"field": "txHash"})
+		return httpx.BadRequest("txHash must be valid for this legacy route", map[string]any{"field": "txHash"})
 	case errors.Is(err, ErrTxFailed):
-		return httpx.BadRequest("transaction failed on-chain", map[string]any{"field": "txHash"})
+		return httpx.BadRequest("legacy route verification failed", map[string]any{"field": "txHash"})
 	case errors.Is(err, ErrTransferMismatch):
-		return httpx.BadRequest("transaction does not match deposit intent", map[string]any{"field": "txHash"})
+		return httpx.BadRequest("legacy route evidence does not match the point request", map[string]any{"field": "txHash"})
 	case errors.Is(err, ErrDepositExpired):
-		return httpx.BadRequest("deposit intent expired", nil)
+		return httpx.BadRequest("legacy point request expired", nil)
 	case errors.Is(err, ErrWithdrawalNotFound):
-		return httpx.NotFound("withdrawal request not found")
+		return httpx.NotFound("legacy point request not found")
 	case errors.Is(err, ErrInvalidStatus):
-		return httpx.Conflict("withdrawal request is not in a valid status for this action", nil)
+		return httpx.Conflict("legacy point request is not in a valid status for this action", nil)
 	case errors.Is(err, ErrReviewNoteRequired):
 		return httpx.BadRequest("review note is required", map[string]any{"field": "reviewNote"})
 	case errors.Is(err, wallet.ErrInsufficientFunds):
-		return httpx.BadRequest("insufficient wallet balance", map[string]any{"field": "amountCents"})
+		return httpx.BadRequest("insufficient point account balance", map[string]any{"field": "amountCents"})
 	default:
-		return httpx.Internal("alpha cashier operation failed", err)
+		return httpx.Internal("legacy point-route operation failed", err)
 	}
 }

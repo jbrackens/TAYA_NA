@@ -3,8 +3,7 @@ import assert from "node:assert/strict";
 import { complianceDenialKind } from "../lib/compliance-denial";
 
 // The matched strings are the gateway's user-facing 403 reasons — see
-// internal/compliance/geo_gate.go, internal/http/pretrade_gate.go, and
-// internal/payments/handlers.go.
+// internal/compliance/geo_gate.go and internal/http/pretrade_gate.go.
 describe("compliance denial classification", () => {
   it("classifies jurisdiction denials", () => {
     assert.equal(
@@ -23,12 +22,6 @@ describe("compliance denial classification", () => {
     assert.equal(
       complianceDenialKind(
         "identity verification required to trade — complete verification under Profile → Verification",
-      ),
-      "kyc",
-    );
-    assert.equal(
-      complianceDenialKind(
-        "identity verification required to withdraw above this amount — complete verification under Profile → Verification",
       ),
       "kyc",
     );

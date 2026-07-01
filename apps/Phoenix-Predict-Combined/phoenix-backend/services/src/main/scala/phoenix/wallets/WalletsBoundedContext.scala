@@ -192,8 +192,8 @@ object WalletsBoundedContextProtocol {
   case class Balance(realMoney: RealMoney, bonusFunds: Seq[BonusFunds] = Seq.empty) {
     def +(funds: Funds): Balance = {
       funds match {
-        case realMoney: RealMoney   => copy(realMoney = this.realMoney + realMoney)
-        case bonusFunds: BonusFunds => copy(bonusFunds = bonusFunds +: this.bonusFunds)
+        case addedRealMoney: RealMoney   => copy(realMoney = this.realMoney + addedRealMoney)
+        case addedBonusFunds: BonusFunds => copy(bonusFunds = addedBonusFunds +: this.bonusFunds)
       }
     }
   }

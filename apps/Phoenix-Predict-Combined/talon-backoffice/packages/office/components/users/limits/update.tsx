@@ -4,6 +4,7 @@ import FormModal from "../../form/modal";
 import { FormValues } from "../../form/modal";
 import {
   TalonPunterLimits,
+  TalonPunterLimitsScope,
   TalonPunterLimitsTypesEnum,
 } from "../../../types/punters";
 import PageHeader from "../../layout/page-header";
@@ -19,6 +20,8 @@ export type UsersDetailsLimitsUpdateProps = {
   onClose: Function;
 };
 
+type EditableLimitSection = "pointAdd" | "pointUse" | "session";
+
 const UsersDetailsLimitsUpdate: React.FC<UsersDetailsLimitsUpdateProps> = ({
   data,
   visible,
@@ -27,27 +30,33 @@ const UsersDetailsLimitsUpdate: React.FC<UsersDetailsLimitsUpdateProps> = ({
   onClose,
 }: UsersDetailsLimitsUpdateProps) => {
   const { t } = useTranslation(["common", "page-users-details"]);
-  const [editables, setEditables] = useState<any>({});
+  const [editables, setEditables] = useState<
+    Partial<Record<EditableLimitSection, boolean>>
+  >({});
   const { spy } = useSpy();
 
-  const initializeValues = (values: TalonPunterLimits): TalonPunterLimits => ({
-    deposits: values.deposits || undefined,
-    stake: values.stake || undefined,
+  const initializeValues = (
+    values: TalonPunterLimits,
+  ): Record<string, TalonPunterLimitsScope | undefined> => ({
+    pointAdd: values[TalonPunterLimitsTypesEnum.POINT_ADD] || undefined,
+    pointUse: values[TalonPunterLimitsTypesEnum.POINT_USE] || undefined,
     session: values.session || undefined,
   });
 
   const onFinish = (values: FormValues): void => {
-    onSubmit(
-      Object.keys(editables)
-        .filter((key: string) => editables[key])
-        .reduce(
-          (prev, curr) => ({
-            ...prev,
-            [curr]: values[curr],
-          }),
-          {},
-        ),
-    );
+    const payload: Partial<TalonPunterLimits> = {};
+
+    if (editables.pointAdd) {
+      payload[TalonPunterLimitsTypesEnum.POINT_ADD] = values.pointAdd;
+    }
+    if (editables.pointUse) {
+      payload[TalonPunterLimitsTypesEnum.POINT_USE] = values.pointUse;
+    }
+    if (editables.session) {
+      payload[TalonPunterLimitsTypesEnum.SESSION] = values.session;
+    }
+
+    onSubmit(payload);
   };
 
   spy(visible, ({ values, prevValues }) => {
@@ -56,10 +65,7 @@ const UsersDetailsLimitsUpdate: React.FC<UsersDetailsLimitsUpdateProps> = ({
     }
   });
 
-  const onSectionUpdate = (
-    key: TalonPunterLimitsTypesEnum,
-    value: boolean,
-  ): void =>
+  const onSectionUpdate = (key: EditableLimitSection, value: boolean): void =>
     setEditables({
       ...editables,
       [key]: value,
@@ -79,45 +85,43 @@ const UsersDetailsLimitsUpdate: React.FC<UsersDetailsLimitsUpdateProps> = ({
       initialValues={initializeValues(data)}
     >
       <PageHeader
-        title={t("page-users-details:HEADER_CARD_LIMITS_DEPOSIT")}
+        title={t("page-users-details:HEADER_CARD_LIMITS_POINT_ADD")}
         subTitle={
           <UsersDetailsLimitsSectionSwitch
-            value={editables.deposits}
-            onChange={(value: boolean) =>
-              onSectionUpdate(TalonPunterLimitsTypesEnum.DEPOSITS, value)
-            }
+            value={Boolean(editables.pointAdd)}
+            onChange={(value: boolean) => onSectionUpdate("pointAdd", value)}
           />
         }
       />
       <UsersDetailsLimitsSection
-        field="deposits"
-        unit="$"
-        disabled={loading || !editables.deposits}
+        field="pointAdd"
+        unit="pts"
+        unitAsPrefix={false}
+        separator=" "
+        disabled={loading || !editables.pointAdd}
       />
       <PageHeader
-        title={t("page-users-details:HEADER_CARD_LIMITS_STAKE")}
+        title={t("page-users-details:HEADER_CARD_LIMITS_POINT_USE")}
         subTitle={
           <UsersDetailsLimitsSectionSwitch
-            value={editables.stake}
-            onChange={(value: boolean) =>
-              onSectionUpdate(TalonPunterLimitsTypesEnum.STAKE, value)
-            }
+            value={Boolean(editables.pointUse)}
+            onChange={(value: boolean) => onSectionUpdate("pointUse", value)}
           />
         }
       />
       <UsersDetailsLimitsSection
-        field="losses"
-        unit="$"
-        disabled={loading || !editables.stake}
+        field="pointUse"
+        unit="pts"
+        unitAsPrefix={false}
+        separator=" "
+        disabled={loading || !editables.pointUse}
       />
       <PageHeader
         title={t("page-users-details:HEADER_CARD_LIMITS_SESSION")}
         subTitle={
           <UsersDetailsLimitsSectionSwitch
-            value={editables.session}
-            onChange={(value: boolean) =>
-              onSectionUpdate(TalonPunterLimitsTypesEnum.SESSION, value)
-            }
+            value={Boolean(editables.session)}
+            onChange={(value: boolean) => onSectionUpdate("session", value)}
           />
         }
       />

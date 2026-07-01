@@ -86,7 +86,8 @@ class SelfExcludeSpec
     with DatabaseIntegrationSpec
     with Eventually {
 
-  implicit val eventuallyPatience = PatienceConfig(scaled(Span(30, Seconds)), scaled(Span(1, Seconds)))
+  implicit val eventuallyPatience: PatienceConfig =
+    PatienceConfig(scaled(Span(30, Seconds)), scaled(Span(1, Seconds)))
 
   implicit val clock: Clock = Clock.utcClock
   val schedulerModule: SchedulerModule = SchedulerModule.init(clock)(system)

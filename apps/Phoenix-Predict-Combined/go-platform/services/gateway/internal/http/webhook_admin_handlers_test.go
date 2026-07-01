@@ -7,9 +7,11 @@ import (
 	"encoding/json"
 	stdhttp "net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"phoenix-revival/gateway/internal/webhooks"
+	"phoenix-revival/platform/transport/httpx"
 )
 
 // fakeWebhookStore implements webhookEndpointStore for handler tests.
@@ -130,6 +132,112 @@ func TestWebhookAdminListMasksSecret(t *testing.T) {
 	mux.ServeHTTP(w, r)
 	if w.Code != stdhttp.StatusBadRequest {
 		t.Fatalf("missing userId: want 400, got %d", w.Code)
+	}
+}
+
+func TestWebhookAdminListRedactsLegacyUnsafeURLAndEvents(t *testing.T) {
+	store := &fakeWebhookStore{byUser: map[string][]webhooks.Endpoint{
+		"partner-7": {{
+			ID:        "e1",
+			PartnerID: "partner-7",
+			URL:       "https://a.example/cashier/deposit",
+			Secret:    "whsec_abcdef0123456789",
+			Events:    []string{"order.filled", webhooks.EventWithdrawalStatus},
+			Active:    true,
+		}},
+	}}
+	mux := stdhttp.NewServeMux()
+	registerWebhookAdminRoutes(mux, nil, store)
+
+	req := httptest.NewRequest(stdhttp.MethodGet, "/api/v1/admin/webhook-endpoints?userId=partner-7", nil)
+	res := httptest.NewRecorder()
+	mux.ServeHTTP(res, req)
+
+	if res.Code != stdhttp.StatusOK {
+		t.Fatalf("list: want 200, got %d (%s)", res.Code, res.Body.String())
+	}
+	if store.byUser["partner-7"][0].URL != "https://a.example/cashier/deposit" ||
+		store.byUser["partner-7"][0].Events[1] != webhooks.EventWithdrawalStatus {
+		t.Fatalf("raw webhook endpoint should remain unchanged, got %+v", store.byUser["partner-7"][0])
+	}
+	var payload struct {
+		Endpoints []struct {
+			URL    string   `json:"url"`
+			Events []string `json:"events"`
+		} `json:"endpoints"`
+	}
+	if err := json.Unmarshal(res.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode endpoint list: %v body=%s", err, res.Body.String())
+	}
+	if len(payload.Endpoints) != 1 ||
+		payload.Endpoints[0].URL != launchRedactedUserText ||
+		len(payload.Endpoints[0].Events) != 2 ||
+		payload.Endpoints[0].Events[0] != "order.filled" ||
+		payload.Endpoints[0].Events[1] != launchRedactedUserText {
+		t.Fatalf("expected redacted unsafe URL/event in response, got %+v", payload.Endpoints)
+	}
+	if strings.Contains(res.Body.String(), "/cashier/deposit") || strings.Contains(res.Body.String(), webhooks.EventWithdrawalStatus) {
+		t.Fatalf("unsafe legacy webhook endpoint copy leaked in response: %s", res.Body.String())
+	}
+}
+
+func TestWebhookAdminRegisterRejectsMoneyPathURL(t *testing.T) {
+	store := &fakeWebhookStore{byUser: map[string][]webhooks.Endpoint{}}
+	mux := stdhttp.NewServeMux()
+	registerWebhookAdminRoutes(mux, nil, store)
+
+	req := httptest.NewRequest(stdhttp.MethodPost, "/api/v1/admin/webhook-endpoints", bytes.NewBufferString(
+		`{"userId":"partner-7","url":"https://acme.example/cashier/deposit","events":["order.filled"]}`,
+	))
+	res := httptest.NewRecorder()
+	mux.ServeHTTP(res, req)
+
+	if res.Code != stdhttp.StatusBadRequest {
+		t.Fatalf("unsafe webhook URL: want 400, got %d (%s)", res.Code, res.Body.String())
+	}
+	var envelope httpx.ErrorEnvelope
+	if err := json.Unmarshal(res.Body.Bytes(), &envelope); err != nil {
+		t.Fatalf("decode error envelope: %v", err)
+	}
+	details, ok := envelope.Error.Details.(map[string]any)
+	if !ok || details["field"] != "url" {
+		t.Fatalf("expected field=url detail, got %+v", envelope.Error.Details)
+	}
+	if strings.Contains(res.Body.String(), "/cashier/deposit") {
+		t.Fatalf("error response echoed unsafe URL: %s", res.Body.String())
+	}
+	if len(store.created) != 0 {
+		t.Fatalf("unsafe webhook URL must not persist endpoints, got %+v", store.created)
+	}
+}
+
+func TestWebhookAdminRegisterRejectsLaunchProhibitedEventType(t *testing.T) {
+	store := &fakeWebhookStore{byUser: map[string][]webhooks.Endpoint{}}
+	mux := stdhttp.NewServeMux()
+	registerWebhookAdminRoutes(mux, nil, store)
+
+	req := httptest.NewRequest(stdhttp.MethodPost, "/api/v1/admin/webhook-endpoints", bytes.NewBufferString(
+		`{"userId":"partner-7","url":"https://acme.example/hooks","events":["withdrawal.status"]}`,
+	))
+	res := httptest.NewRecorder()
+	mux.ServeHTTP(res, req)
+
+	if res.Code != stdhttp.StatusBadRequest {
+		t.Fatalf("unsafe webhook event: want 400, got %d (%s)", res.Code, res.Body.String())
+	}
+	var envelope httpx.ErrorEnvelope
+	if err := json.Unmarshal(res.Body.Bytes(), &envelope); err != nil {
+		t.Fatalf("decode error envelope: %v", err)
+	}
+	details, ok := envelope.Error.Details.(map[string]any)
+	if !ok || details["field"] != "events" {
+		t.Fatalf("expected field=events detail, got %+v", envelope.Error.Details)
+	}
+	if strings.Contains(res.Body.String(), webhooks.EventWithdrawalStatus) {
+		t.Fatalf("error response echoed unsafe event type: %s", res.Body.String())
+	}
+	if len(store.created) != 0 {
+		t.Fatalf("unsafe webhook event must not persist endpoints, got %+v", store.created)
 	}
 }
 

@@ -83,7 +83,7 @@ const UserDetailsWalletExport = ({ id }: UserDetailsWalletExportProps) => {
     );
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `Account Activity - ${id}.csv`);
+    link.setAttribute("download", `Point Ledger - ${id}.csv`);
 
     document.body.appendChild(link);
 

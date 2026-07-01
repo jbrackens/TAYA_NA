@@ -9,6 +9,7 @@ import {
   resolveProductLabel,
   resolveType,
 } from "./utils/resolvers";
+import { sanitizeAuditDetailsForDisplay } from "./utils/display-sanitizer";
 import Table from "../layout/table";
 // import TableFilterText from "../layout/table/filter-text";
 import {
@@ -48,7 +49,7 @@ const AuditLogsList = ({
   // const refs = new RefsCollection();
 
   const formatJSON = (value: unknown) =>
-    JSON.stringify(value || {}, null, "  ");
+    JSON.stringify(sanitizeAuditDetailsForDisplay(value || {}), null, "  ");
 
   const renderLog = (value: TalonAuditLog) => {
     const category = value?.category;

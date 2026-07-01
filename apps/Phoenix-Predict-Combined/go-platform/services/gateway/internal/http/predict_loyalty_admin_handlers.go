@@ -13,7 +13,7 @@ import (
 // registerPredictLoyaltyAdminRoutes wires the office loyalty admin pages to the
 // Predict-native loyalty service:
 //
-//	GET  /api/v1/admin/loyalty/accounts?search=&tierCode=&page=&pageSize=  (list)
+//	GET  /api/v1/admin/loyalty/accounts?search=&rankName=&page=&pageSize=  (list)
 //	GET  /api/v1/admin/loyalty/accounts/{playerId}?limit=                  (detail + ledger + tiers)
 //	POST /api/v1/admin/loyalty/adjustments                                 (manual points adjust)
 //	GET  /api/v1/admin/loyalty/config                                      (DB-backed tier config)
@@ -54,10 +54,14 @@ func registerLoyaltyAdminAccounts(mux *stdhttp.ServeMux, base string, service *l
 			return err
 		}
 		page, pageSize := parseAdminPaging(r)
+		rankFilter := strings.TrimSpace(r.URL.Query().Get("rankName"))
+		if rankFilter == "" {
+			rankFilter = strings.TrimSpace(r.URL.Query().Get("tierCode"))
+		}
 		items, total, err := service.ListAdminAccounts(
 			r.Context(),
 			strings.TrimSpace(r.URL.Query().Get("search")),
-			strings.TrimSpace(r.URL.Query().Get("tierCode")),
+			rankFilter,
 			page, pageSize,
 		)
 		if err != nil {
@@ -130,18 +134,22 @@ func registerLoyaltyAdminAdjustments(mux *stdhttp.ServeMux, base string, service
 		if body.PointsDelta == 0 {
 			return httpx.BadRequest("pointsDelta must be non-zero", map[string]any{"field": "pointsDelta"})
 		}
-		if strings.TrimSpace(body.Reason) == "" {
+		reason := strings.TrimSpace(body.Reason)
+		if reason == "" {
 			return httpx.BadRequest("reason is required for auditability", map[string]any{"field": "reason"})
+		}
+		if err := validateLaunchFacingReason("reason", reason); err != nil {
+			return err
 		}
 		result, err := service.Adjust(r.Context(), loyalty.PredictAdjustment{
 			UserID:         body.PlayerID,
 			DeltaPoints:    body.PointsDelta,
-			Reason:         body.Reason,
+			Reason:         reason,
 			IdempotencyKey: body.IdempotencyKey,
 			EventType:      "adjustment",
 		})
 		if err != nil {
-			return httpx.BadRequest(err.Error(), nil)
+			return serviceBadRequestError(err, nil)
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 			"pointsBalance": result.Account.PointsBalance,
@@ -208,6 +216,9 @@ func registerLoyaltyAdminTiers(mux *stdhttp.ServeMux, base string, service *loya
 		if body.MinRolling30dPoints < 0 {
 			return httpx.BadRequest("minRolling30dPoints must be non-negative", map[string]any{"field": "minRolling30dPoints"})
 		}
+		if err := validatePredictLoyaltyEditableTierLaunchCopy(body); err != nil {
+			return err
+		}
 
 		tiers, err := service.UpdateTier(r.Context(), tierCode, body)
 		switch {
@@ -223,6 +234,18 @@ func registerLoyaltyAdminTiers(mux *stdhttp.ServeMux, base string, service *loya
 			"tiers": tiers,
 		})
 	}))
+}
+
+func validatePredictLoyaltyEditableTierLaunchCopy(tier loyalty.EditableTier) error {
+	if err := validateLaunchFacingReason("displayName", strings.TrimSpace(tier.DisplayName)); err != nil {
+		return err
+	}
+	for _, benefit := range tier.Benefits {
+		if err := validateLaunchFacingReason("benefits", strings.TrimSpace(benefit)); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // loyaltyLedgerPayload maps internal ledger entries to the office's
@@ -247,7 +270,7 @@ func loyaltyLedgerPayload(entries []loyalty.PredictLedgerEntry) []map[string]any
 			"pointsDelta":  e.DeltaPoints,
 			"balanceAfter": e.BalanceAfter,
 			"createdAt":    e.CreatedAt.UTC().Format("2006-01-02T15:04:05Z07:00"),
-			"metadata":     map[string]string{"reason": e.Reason},
+			"metadata":     map[string]string{"reason": redactLaunchProhibitedUserText(e.Reason)},
 		})
 	}
 	return out

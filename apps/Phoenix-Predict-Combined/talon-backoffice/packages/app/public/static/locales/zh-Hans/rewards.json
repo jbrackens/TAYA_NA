@@ -24,7 +24,7 @@
   "HOW_TITLE": "How You Earn",
   "HOW_SUBTITLE": "Points accumulate automatically from qualifying activity.",
   "HOW_BET": "已结算交易",
-  "HOW_BET_DESC": "每完成 1 美元符合条件的已结算交易，即可获得 1 点积分。",
+  "HOW_BET_DESC": "每个符合条件的已结算预测都可以获得积分。",
   "HOW_REFERRAL": "Referrals",
   "HOW_REFERRAL_DESC": "当你推荐的好友完成第一笔符合条件的交易时，可获得 {{points}} 奖励积分。",
   "HOW_PROMO": "Promotions",

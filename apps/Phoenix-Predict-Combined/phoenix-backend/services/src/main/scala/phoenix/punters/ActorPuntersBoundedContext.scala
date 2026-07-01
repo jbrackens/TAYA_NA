@@ -134,7 +134,7 @@ private[this] class ActorPuntersBoundedContext(system: ActorSystem[_], clock: Cl
       id,
       replyTo => GetPunterProfile(id, replyTo)) {
       case success.PunterProfileResponse(_, profile) => toPublic(profile, clock).asRight
-      case failure.DoesNotExist(id)                  => PunterProfileDoesNotExist(id).asLeft
+      case failure.DoesNotExist(missingId)           => PunterProfileDoesNotExist(missingId).asLeft
     }
 
   override def beginCoolOff(id: PunterId, duration: FiniteDuration, cause: CoolOffCause)(implicit

@@ -13,7 +13,7 @@ import phoenix.support.ActorSystemIntegrationSpec
 
 class BetEventsWebSocketSingleton extends AnyFreeSpec with Matchers with ActorSystemIntegrationSpec {
 
-  implicit val sys = system.classicSystem
+  implicit val sys: akka.actor.ActorSystem = system.classicSystem
 
   val socketFlow = BetEventsWebsocketSingleton.messageCollectorFlow
 

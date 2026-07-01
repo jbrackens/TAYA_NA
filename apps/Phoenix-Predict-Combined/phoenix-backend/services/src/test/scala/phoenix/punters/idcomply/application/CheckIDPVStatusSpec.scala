@@ -42,7 +42,7 @@ import phoenix.time.FakeHardcodedClock
 import phoenix.utils.RandomUUIDGenerator
 
 class CheckIDPVStatusSpec extends AnyWordSpec with Matchers with FutureSupport with GivenWhenThen {
-  implicit val clock = new FakeHardcodedClock()
+  implicit val clock: FakeHardcodedClock = new FakeHardcodedClock()
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
   val twentyOneYearsAgo = clock.currentOffsetDateTime().minusYears(21).toLocalDate
 

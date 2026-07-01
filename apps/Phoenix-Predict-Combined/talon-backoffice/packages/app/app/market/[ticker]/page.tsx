@@ -14,9 +14,8 @@
  *   └──────────────────────────────┘ └─────────────┘
  *
  * Data wiring is preserved from the prior versions: the gateway's REST
- * endpoints are untouched. Order book levels are synthesized from the
- * current mid + liquidity until the gateway exposes /orderbook
- * (shape-only, so swapping in real levels later is a drop-in).
+ * endpoints are untouched. Order-book markets render only real /orderbook
+ * depth; AMM markets render an explicit curve-liquidity snapshot instead.
  */
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
@@ -25,6 +24,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import MarketHead from "../../components/prediction/MarketHead";
 import MarketChart from "../../components/prediction/MarketChart";
+import MarketDiscussion from "../../components/prediction/MarketDiscussion";
 import OrderBook from "../../components/prediction/OrderBook";
 import type { BookLevel } from "../../components/prediction/OrderBook";
 import RecentTrades from "../../components/prediction/RecentTrades";
@@ -39,7 +39,7 @@ import { useAppDispatch, useAppSelector } from "../../lib/store/hooks";
 import {
   selectCurrentBalance,
   setCurrentBalance,
-} from "../../lib/store/cashierSlice";
+} from "../../lib/store/pointBalanceSlice";
 import { getBalance } from "../../lib/api/wallet-client";
 import type {
   PredictionMarket,
@@ -63,10 +63,64 @@ import {
 } from "../../components/prediction/market-content";
 import {
   isOpenMarketStatus,
+  formatCompactPoints,
   marketStatusLabel,
 } from "../../components/prediction/market-display";
 
 const api = createPredictionClient();
+
+type LegacyMarketUpdate = Partial<PredictionMarket> & {
+  yesPriceCents?: number;
+  noPriceCents?: number;
+  lastTradePriceCents?: number;
+  volumeCents?: number;
+  openInterestCents?: number;
+};
+
+function normalizeMarketUpdateFields(
+  payload: LegacyMarketUpdate,
+): Partial<PredictionMarket> {
+  const yesPricePointsCents =
+    typeof payload.yesPricePointsCents === "number"
+      ? payload.yesPricePointsCents
+      : payload.yesPriceCents;
+  const noPricePointsCents =
+    typeof payload.noPricePointsCents === "number"
+      ? payload.noPricePointsCents
+      : payload.noPriceCents;
+  const lastTradePricePointsCents =
+    typeof payload.lastTradePricePointsCents === "number"
+      ? payload.lastTradePricePointsCents
+      : payload.lastTradePriceCents;
+  const volumePointsCents =
+    typeof payload.volumePointsCents === "number"
+      ? payload.volumePointsCents
+      : payload.volumeCents;
+  const openInterestPointsCents =
+    typeof payload.openInterestPointsCents === "number"
+      ? payload.openInterestPointsCents
+      : payload.openInterestCents;
+  const pointPayload = { ...payload };
+  delete pointPayload.yesPriceCents;
+  delete pointPayload.noPriceCents;
+  delete pointPayload.lastTradePriceCents;
+  delete pointPayload.volumeCents;
+  delete pointPayload.openInterestCents;
+
+  return {
+    ...pointPayload,
+    ...(typeof yesPricePointsCents === "number" ? { yesPricePointsCents } : {}),
+    ...(typeof noPricePointsCents === "number" ? { noPricePointsCents } : {}),
+    ...(typeof lastTradePricePointsCents === "number"
+      ? { lastTradePricePointsCents }
+      : {}),
+    ...(typeof volumePointsCents === "number" ? { volumePointsCents } : {}),
+    ...(typeof openInterestPointsCents === "number"
+      ? { openInterestPointsCents }
+      : {}),
+    unit: payload.unit || "PTS",
+  };
+}
 
 const GLASS_SURFACE_CLASS =
   "relative border border-white/[0.13] bg-[color:var(--glass-regular)] bg-[image:linear-gradient(180deg,_rgba(255,255,255,0.14)_0%,_rgba(255,255,255,0.05)_30%,_rgba(255,255,255,0.025)_100%)] shadow-[inset_0_1px_0_var(--rim-top),inset_0_-1px_0_var(--rim-bottom),inset_1px_0_2px_var(--chroma-1),inset_-1px_0_2px_var(--chroma-2),0_2px_6px_rgba(0,0,0,0.18),0_8px_24px_rgba(0,0,0,0.28),0_16px_48px_rgba(0,0,0,0.2)] backdrop-blur-[30px] backdrop-saturate-[180%] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-1/2 before:rounded-[inherit] before:bg-[image:linear-gradient(180deg,_rgba(255,255,255,0.06)_0%,_transparent_100%)] before:mix-blend-overlay before:content-['']";
@@ -84,6 +138,51 @@ const MARKET_TICKET_STICKY_CLASS =
   "sticky top-[84px] max-[1100px]:static max-[1100px]:top-auto max-[1100px]:order-2";
 const MARKET_DATA_ROW_CLASS =
   "grid grid-cols-2 gap-6 max-[1100px]:order-3 max-[720px]:grid-cols-1";
+const LIQUIDITY_CARD_CLASS =
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+const LIQUIDITY_HEAD_CLASS =
+  "mb-[14px] flex items-center justify-between border-b border-[var(--border-1)] pb-3";
+const LIQUIDITY_TITLE_CLASS =
+  "text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
+const LIQUIDITY_BADGE_CLASS =
+  "rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-2 py-1 font-['IBM_Plex_Mono',_monospace] text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
+const LIQUIDITY_COPY_CLASS = "mb-4 text-[13px] leading-5 text-[var(--t2)]";
+const LIQUIDITY_GRID_CLASS = "grid grid-cols-2 gap-3";
+const LIQUIDITY_METRIC_CLASS =
+  "rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2";
+const LIQUIDITY_METRIC_LABEL_CLASS =
+  "mb-1 font-['IBM_Plex_Mono',_monospace] text-[10px] uppercase tracking-[0.12em] text-[var(--t3)]";
+const LIQUIDITY_METRIC_VALUE_CLASS =
+  "font-['IBM_Plex_Mono',_monospace] text-[13px] font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
+const AMM_CURVE_CLASS =
+  "mt-4 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-3";
+const AMM_CURVE_ROW_CLASS = "mb-3 last:mb-0";
+const AMM_CURVE_HEAD_CLASS =
+  "mb-2 flex items-center justify-between gap-3 text-[11px] text-[var(--t3)]";
+const AMM_CURVE_LABEL_CLASS =
+  "font-['IBM_Plex_Mono',_monospace] text-[10px] uppercase text-[var(--t3)]";
+const AMM_CURVE_VALUE_CLASS =
+  "font-['IBM_Plex_Mono',_monospace] text-[11px] font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
+const AMM_CURVE_TRACK_CLASS =
+  "relative flex h-3 overflow-hidden rounded-full border border-[var(--border-1)] bg-[var(--surface-3)]";
+const AMM_CURVE_YES_FILL_CLASS =
+  "h-full rounded-l-full bg-[color:var(--yes-bg)]";
+const AMM_CURVE_NO_FILL_CLASS = "h-full bg-[color:var(--no-bg)]";
+const AMM_CURVE_MARKER_CLASS =
+  "absolute top-[-3px] h-[18px] w-0.5 rounded-full bg-[var(--t1)] shadow-[0_0_0_2px_var(--surface-2)]";
+const AMM_CURVE_AXIS_CLASS =
+  "mt-1 flex items-center justify-between font-['IBM_Plex_Mono',_monospace] text-[10px] text-[var(--t3)]";
+const AMM_RESERVE_TRACK_CLASS =
+  "flex h-3 overflow-hidden rounded-full border border-[var(--border-1)] bg-[var(--surface-3)]";
+const AMM_RESERVE_YES_CLASS = "h-full bg-[color:var(--yes-bg)]";
+const AMM_RESERVE_NO_CLASS = "h-full bg-[color:var(--no-bg)]";
+const AMM_QUOTE_LIST_CLASS = "mt-2 flex flex-col gap-2";
+const AMM_QUOTE_ROW_CLASS =
+  "grid grid-cols-[minmax(0,_1fr)_auto_auto] items-center gap-3 rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-2 max-[520px]:grid-cols-1 max-[520px]:gap-1";
+const AMM_QUOTE_LABEL_CLASS =
+  "min-w-0 text-[12px] font-medium text-[var(--t1)]";
+const AMM_QUOTE_VALUE_CLASS =
+  "font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t2)] [font-variant-numeric:tabular-nums]";
 const MARKET_HERO_CLASS =
   "overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] max-[1100px]:order-1 [&>section:first-child]:mb-0 [&>section:first-child]:rounded-none [&>section:first-child]:border-0 [&>section:first-child]:bg-transparent [&>section:first-child]:px-7 [&>section:first-child]:pt-5 [&>section:first-child]:pb-0 [&>section:nth-child(2)]:rounded-none [&>section:nth-child(2)]:border-0 [&>section:nth-child(2)]:bg-transparent [&>section:nth-child(2)]:px-7 [&>section:nth-child(2)]:pt-3 [&>section:nth-child(2)]:pb-5 [&>section:nth-child(2)_svg]:h-[280px] max-[720px]:[&>section:first-child]:px-5 max-[720px]:[&>section:first-child]:pt-[18px] max-[720px]:[&>section:nth-child(2)]:px-5 max-[720px]:[&>section:nth-child(2)]:pt-2.5 max-[720px]:[&>section:nth-child(2)]:pb-4 max-[720px]:[&>section:nth-child(2)_svg]:h-[220px]";
 const MARKET_DETAILS_CLASS =
@@ -96,6 +195,11 @@ const MARKET_RULES_CLASS =
   "mt-[14px] flex list-none flex-col gap-2 border-t border-[var(--border-1)] p-0 pt-[14px]";
 const MARKET_RULE_CLASS =
   "relative pl-[18px] text-[13px] leading-[1.5] text-[var(--t2)] before:absolute before:left-1 before:top-2 before:h-1.5 before:w-1.5 before:rounded-full before:bg-[var(--accent)] before:content-['']";
+const MARKET_SHARE_ROW_CLASS =
+  "mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border-1)] pt-4";
+const MARKET_SHARE_BUTTON_CLASS =
+  "inline-flex min-h-9 items-center justify-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 text-xs font-bold text-[var(--t1)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]";
+const MARKET_SHARE_STATUS_CLASS = "text-xs text-[var(--t3)]";
 const RELATED_CARD_CLASS =
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[1100px]:order-5";
 const RELATED_TITLE_CLASS =
@@ -128,40 +232,20 @@ function pageStateEyebrowClass(isError: boolean): string {
   }`;
 }
 
-function synthesizeBook(market: PredictionMarket): {
-  bids: BookLevel[];
-  asks: BookLevel[];
-} {
-  const yesPx = market.yesPriceCents;
-  const liqShares = Math.max(
-    100,
-    Math.round((market.liquidityCents || market.volumeCents || 200000) / 100),
-  );
-  const bids: BookLevel[] = [];
-  let cumBid = 0;
-  for (let i = 0; i < 3; i++) {
-    const px = Math.max(1, yesPx - i);
-    const size = Math.max(40, Math.round(liqShares * (0.28 - i * 0.06)));
-    cumBid += size;
-    bids.push({ priceCents: px, size, total: cumBid });
-  }
-  const asks: BookLevel[] = [];
-  let cumAsk = 0;
-  // Asks stored in the "NO priceCents" convention (the OrderBook component
-  // inverts to show `NO Xc`), descending from the top of the stack.
-  for (let i = 2; i >= 0; i--) {
-    const px = Math.min(99, yesPx + i + 1);
-    const size = Math.max(40, Math.round(liqShares * (0.26 - i * 0.05)));
-    cumAsk += size;
-    asks.push({ priceCents: px, size, total: cumAsk });
-  }
-  return { bids, asks };
+function clampPercent(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.min(100, Math.max(0, value));
+}
+
+function formatAMMShareCount(value?: number): string {
+  if (!Number.isFinite(value) || (value ?? 0) <= 0) return "—";
+  return Math.round(value ?? 0).toLocaleString();
 }
 
 /**
  * Adapt a real /orderbook response into the legacy {bids, asks} pair the
  * OrderBook presentational component expects. The visual convention is:
- *   - bids = YES buy orders (priceCents = YES price ladder, descending)
+ *   - bids = YES buy orders (pricePointsCents = YES price ladder, descending)
  *   - asks = NO buy orders rendered as YES sells (the OrderBook component
  *     internally inverts NO bids to "ask at 100-NoBid"). For an exchange
  *     market we use the real NO bid ladder for the ask side; real YES
@@ -174,9 +258,9 @@ function adaptBookForDisplay(book: ApiOrderBook): {
   asks: BookLevel[];
 } {
   const bids: BookLevel[] = book.yes.bids.map((lvl) => ({
-    priceCents: lvl.priceCents,
-    size: lvl.quantity,
-    total: lvl.total,
+    pricePointsCents: lvl.pricePointsCents,
+    shares: lvl.shares,
+    cumulativeShares: lvl.cumulativeShares,
   }));
   // Ask side: render NO bids in descending order for visual stack consistency.
   // The OrderBook component inverts these to "NO Xc" labels via its own logic.
@@ -184,11 +268,324 @@ function adaptBookForDisplay(book: ApiOrderBook): {
     .slice()
     .reverse()
     .map((lvl) => ({
-      priceCents: lvl.priceCents,
-      size: lvl.quantity,
-      total: lvl.total,
+      pricePointsCents: lvl.pricePointsCents,
+      shares: lvl.shares,
+      cumulativeShares: lvl.cumulativeShares,
     }));
   return { bids, asks };
+}
+
+type OrderBookStatus = "idle" | "loading" | "ready" | "error";
+type AMMQuoteStatus = "idle" | "loading" | "ready" | "error";
+
+const AMM_QUOTE_SIZES = [1, 10, 25];
+
+interface MarketDepthProps {
+  ammQuoteStatus: AMMQuoteStatus;
+  ammQuotes: OrderPreview[];
+  market: PredictionMarket;
+  orderBook: ApiOrderBook | null;
+  orderBookStatus: OrderBookStatus;
+}
+
+function MarketDepth({
+  ammQuoteStatus,
+  ammQuotes,
+  market,
+  orderBook,
+  orderBookStatus,
+}: MarketDepthProps) {
+  const { t } = useTranslation("prediction");
+  if (market.executionMode === "order_book") {
+    if (orderBook) {
+      const { bids, asks } = adaptBookForDisplay(orderBook);
+      return <OrderBook bids={bids} asks={asks} />;
+    }
+    const copy =
+      orderBookStatus === "error"
+        ? t(
+            "ORDER_BOOK_UNAVAILABLE",
+            "Real order book depth is unavailable right now.",
+          )
+        : t("ORDER_BOOK_LOADING", "Loading real order book depth.");
+    return (
+      <LiquiditySnapshot
+        badge={t("ORDER_BOOK", "Order book")}
+        copy={copy}
+        market={market}
+        title={t("ORDER_BOOK", "Order book")}
+      />
+    );
+  }
+
+  return (
+    <LiquiditySnapshot
+      badge={t("AMM", "AMM")}
+      copy={t(
+        "AMM_LIQUIDITY_MODEL_COPY",
+        "Pricing uses the market's automated curve. This market does not show public order-book depth.",
+      )}
+      ammQuoteStatus={ammQuoteStatus}
+      ammQuotes={ammQuotes}
+      market={market}
+      title={t("AMM_LIQUIDITY", "AMM liquidity")}
+    />
+  );
+}
+
+interface LiquiditySnapshotProps {
+  ammQuoteStatus?: AMMQuoteStatus;
+  ammQuotes?: OrderPreview[];
+  badge: string;
+  copy: string;
+  market: PredictionMarket;
+  title: string;
+}
+
+function LiquiditySnapshot({
+  ammQuoteStatus = "idle",
+  ammQuotes = [],
+  badge,
+  copy,
+  market,
+  title,
+}: LiquiditySnapshotProps) {
+  const { t } = useTranslation("prediction");
+  const collateral = market.collateralPoolPointsCents ?? 0;
+  const liquidityParam = market.ammLiquidityParam ?? 0;
+  const metrics = [
+    {
+      label: t("YES_PRICE", "YES price"),
+      value: `${market.yesPricePointsCents}¢`,
+    },
+    {
+      label: t("NO_PRICE", "NO price"),
+      value: `${market.noPricePointsCents}¢`,
+    },
+    {
+      label: t("VISIBLE_LIQUIDITY", "Liquidity"),
+      value: formatCompactPoints(market.liquidityPointsCents),
+    },
+    {
+      label:
+        collateral > 0 ? t("COLLATERAL_POOL", "Pool") : t("CURVE_K", "Curve K"),
+      value:
+        collateral > 0
+          ? formatCompactPoints(collateral)
+          : liquidityParam > 0
+            ? liquidityParam.toLocaleString(undefined, {
+                maximumFractionDigits: 2,
+              })
+            : "—",
+    },
+  ];
+  return (
+    <section className={LIQUIDITY_CARD_CLASS} aria-label={title}>
+      <div className={LIQUIDITY_HEAD_CLASS}>
+        <span className={LIQUIDITY_TITLE_CLASS}>{title}</span>
+        <span className={LIQUIDITY_BADGE_CLASS}>{badge}</span>
+      </div>
+      <p className={LIQUIDITY_COPY_CLASS}>{copy}</p>
+      <div className={LIQUIDITY_GRID_CLASS}>
+        {metrics.map((metric) => (
+          <div key={metric.label} className={LIQUIDITY_METRIC_CLASS}>
+            <div className={LIQUIDITY_METRIC_LABEL_CLASS}>{metric.label}</div>
+            <div className={LIQUIDITY_METRIC_VALUE_CLASS}>{metric.value}</div>
+          </div>
+        ))}
+      </div>
+      {market.executionMode !== "order_book" ? (
+        <AMMCurve
+          market={market}
+          quoteStatus={ammQuoteStatus}
+          quotes={ammQuotes}
+        />
+      ) : null}
+    </section>
+  );
+}
+
+function AMMCurve({
+  market,
+  quoteStatus,
+  quotes,
+}: {
+  market: PredictionMarket;
+  quoteStatus: AMMQuoteStatus;
+  quotes: OrderPreview[];
+}) {
+  const { t } = useTranslation("prediction");
+  const yesPrice = clampPercent(market.yesPricePointsCents);
+  const noPrice = clampPercent(100 - yesPrice);
+  const yesShares = market.ammYesShares ?? 0;
+  const noShares = market.ammNoShares ?? 0;
+  const reserveTotal = Math.max(0, yesShares) + Math.max(0, noShares);
+  const hasReserveData = reserveTotal > 0;
+  const yesReserveShare = hasReserveData
+    ? clampPercent((Math.max(0, yesShares) / reserveTotal) * 100)
+    : 50;
+  const noReserveShare = 100 - yesReserveShare;
+  const curveK = market.ammLiquidityParam ?? 0;
+  const subsidy = market.ammSubsidyPointsCents ?? 0;
+
+  return (
+    <div className={AMM_CURVE_CLASS}>
+      <div className={AMM_CURVE_ROW_CLASS}>
+        <div className={AMM_CURVE_HEAD_CLASS}>
+          <span className={AMM_CURVE_LABEL_CLASS}>
+            {t("AMM_PRICE_MARKER", "Price marker")}
+          </span>
+          <span className={AMM_CURVE_VALUE_CLASS}>
+            {t("YES_PRICE_VALUE", "YES {{price}}¢", {
+              price: Math.round(yesPrice),
+            })}
+          </span>
+        </div>
+        <div className={AMM_CURVE_TRACK_CLASS} aria-hidden="true">
+          <div
+            className={AMM_CURVE_YES_FILL_CLASS}
+            style={{ width: `${yesPrice}%` }}
+          />
+          <div
+            className={AMM_CURVE_NO_FILL_CLASS}
+            style={{ width: `${noPrice}%` }}
+          />
+          <span
+            className={AMM_CURVE_MARKER_CLASS}
+            style={{ left: `${yesPrice}%` }}
+          />
+        </div>
+        <div className={AMM_CURVE_AXIS_CLASS}>
+          <span>0¢</span>
+          <span>100¢</span>
+        </div>
+      </div>
+
+      <div className={AMM_CURVE_ROW_CLASS}>
+        <div className={AMM_CURVE_HEAD_CLASS}>
+          <span className={AMM_CURVE_LABEL_CLASS}>
+            {t("AMM_RESERVE_BALANCE", "Reserve balance")}
+          </span>
+          <span className={AMM_CURVE_VALUE_CLASS}>
+            {hasReserveData
+              ? t("AMM_RESERVE_SPLIT", "YES {{yes}} / NO {{no}}", {
+                  yes: formatAMMShareCount(yesShares),
+                  no: formatAMMShareCount(noShares),
+                })
+              : t("AMM_RESERVES_UNAVAILABLE", "Reserves unavailable")}
+          </span>
+        </div>
+        <div className={AMM_RESERVE_TRACK_CLASS} aria-hidden="true">
+          <div
+            className={AMM_RESERVE_YES_CLASS}
+            style={{ width: `${yesReserveShare}%` }}
+          />
+          <div
+            className={AMM_RESERVE_NO_CLASS}
+            style={{ width: `${noReserveShare}%` }}
+          />
+        </div>
+      </div>
+
+      <div className={LIQUIDITY_GRID_CLASS}>
+        <div className={LIQUIDITY_METRIC_CLASS}>
+          <div className={LIQUIDITY_METRIC_LABEL_CLASS}>
+            {t("YES_RESERVE", "YES reserve")}
+          </div>
+          <div className={LIQUIDITY_METRIC_VALUE_CLASS}>
+            {formatAMMShareCount(yesShares)}
+          </div>
+        </div>
+        <div className={LIQUIDITY_METRIC_CLASS}>
+          <div className={LIQUIDITY_METRIC_LABEL_CLASS}>
+            {t("NO_RESERVE", "NO reserve")}
+          </div>
+          <div className={LIQUIDITY_METRIC_VALUE_CLASS}>
+            {formatAMMShareCount(noShares)}
+          </div>
+        </div>
+        <div className={LIQUIDITY_METRIC_CLASS}>
+          <div className={LIQUIDITY_METRIC_LABEL_CLASS}>
+            {t("AMM_SUBSIDY", "AMM subsidy")}
+          </div>
+          <div className={LIQUIDITY_METRIC_VALUE_CLASS}>
+            {subsidy > 0 ? formatCompactPoints(subsidy) : "—"}
+          </div>
+        </div>
+        <div className={LIQUIDITY_METRIC_CLASS}>
+          <div className={LIQUIDITY_METRIC_LABEL_CLASS}>
+            {t("CURVE_K", "Curve K")}
+          </div>
+          <div className={LIQUIDITY_METRIC_VALUE_CLASS}>
+            {curveK > 0
+              ? curveK.toLocaleString(undefined, {
+                  maximumFractionDigits: 2,
+                })
+              : "—"}
+          </div>
+        </div>
+      </div>
+
+      <div className={AMM_CURVE_ROW_CLASS}>
+        <div className={AMM_CURVE_HEAD_CLASS}>
+          <span className={AMM_CURVE_LABEL_CLASS}>
+            {t("AMM_IMPACT_QUOTES", "Impact quotes")}
+          </span>
+          <span className={AMM_CURVE_VALUE_CLASS}>
+            {quoteStatus === "loading"
+              ? t("LOADING")
+              : quoteStatus === "ready"
+                ? t("PREVIEW_BACKED", "Preview-backed")
+                : t("QUOTE_UNAVAILABLE", "Quote unavailable")}
+          </span>
+        </div>
+        {quoteStatus === "ready" && quotes.length > 0 ? (
+          <div className={AMM_QUOTE_LIST_CLASS}>
+            {quotes.map((quote) => {
+              const afterPrice =
+                quote.side === "no"
+                  ? quote.newNoPricePointsCents
+                  : quote.newYesPricePointsCents;
+              const impact = Math.max(0, afterPrice - quote.pricePointsCents);
+              const totalCost =
+                quote.totalCostWithFeesPointsCents ??
+                quote.totalCostPointsCents;
+              const avgPrice =
+                quote.averageFillPricePointsCents || quote.pricePointsCents;
+              return (
+                <div key={quote.quantity} className={AMM_QUOTE_ROW_CLASS}>
+                  <span className={AMM_QUOTE_LABEL_CLASS}>
+                    {t("BUY_YES_QUANTITY", "Buy {{quantity}} YES", {
+                      quantity: quote.quantity,
+                    })}
+                  </span>
+                  <span className={AMM_QUOTE_VALUE_CLASS}>
+                    {formatCompactPoints(totalCost)}
+                  </span>
+                  <span className={AMM_QUOTE_VALUE_CLASS}>
+                    {t("AMM_AFTER_IMPACT", "{{avg}}¢ avg -> {{after}}¢", {
+                      avg: avgPrice,
+                      after: afterPrice,
+                      impact,
+                    })}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className={LIQUIDITY_COPY_CLASS}>
+            {quoteStatus === "loading"
+              ? t("AMM_QUOTES_LOADING", "Loading preview-backed impact quotes.")
+              : t(
+                  "AMM_QUOTES_UNAVAILABLE",
+                  "Preview-backed impact quotes are unavailable right now.",
+                )}
+          </p>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function MarketDetailPage() {
@@ -213,14 +610,19 @@ export default function MarketDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   // Real /orderbook fetch (only populated when executionMode='order_book').
-  // null while loading or when AMM mode; falls back to synthesizeBook below.
+  // AMM markets render an explicit curve-liquidity snapshot instead.
   const [orderBook, setOrderBook] = useState<ApiOrderBook | null>(null);
+  const [orderBookStatus, setOrderBookStatus] =
+    useState<OrderBookStatus>("idle");
+  const [ammQuotes, setAmmQuotes] = useState<OrderPreview[]>([]);
+  const [ammQuoteStatus, setAmmQuoteStatus] = useState<AMMQuoteStatus>("idle");
   // User's positions on THIS market — drives the Sell tab. Empty array when
   // signed out (no positions) or before /portfolio responds. Without this,
   // TradeTicket received availableYes/NoShares = 0 and the Sell button was
   // permanently disabled even for users holding hundreds of contracts.
   const [positions, setPositions] = useState<Position[]>([]);
   const [selectedSide, setSelectedSide] = useState<OrderSide>(initialSide);
+  const [shareMessage, setShareMessage] = useState<string | null>(null);
   const balance = useAppSelector(selectCurrentBalance);
   const dispatch = useAppDispatch();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
@@ -271,24 +673,57 @@ export default function MarketDetailPage() {
     };
   }, [loadMarket]);
 
-  // Load up to 4 related markets in the same category (excluding this one).
+  // Prefer markets genuinely related to this one: same event first, then
+  // recurring series, then category, with a general fallback only to avoid an
+  // empty sidebar on sparse seed data.
   useEffect(() => {
     let cancelled = false;
     if (!market) return;
-    api
-      .getMarkets({ status: "open", pageSize: 8 })
-      .then((res) => {
-        if (cancelled) return;
-        const picks = res.data.filter((m) => m.id !== market.id).slice(0, 4);
-        setRelated(picks);
-      })
-      .catch((err: unknown) => {
+    const currentMarketId = market.id;
+    const currentEventId = market.eventId;
+
+    async function loadRelated() {
+      const picks: PredictionMarket[] = [];
+      const seen = new Set([currentMarketId]);
+      async function addRelated(params: {
+        eventId?: string;
+        seriesId?: string;
+        categoryId?: string;
+      }) {
+        if (picks.length >= 4) return;
+        const res = await api.getMarkets({
+          ...params,
+          status: "open",
+          pageSize: 8,
+        });
+        for (const candidate of res.data || []) {
+          if (seen.has(candidate.id)) continue;
+          seen.add(candidate.id);
+          picks.push(candidate);
+          if (picks.length >= 4) break;
+        }
+      }
+
+      try {
+        await addRelated({ eventId: currentEventId });
+        if (event?.seriesId) {
+          await addRelated({ seriesId: event.seriesId });
+        }
+        if (event?.categoryId) {
+          await addRelated({ categoryId: event.categoryId });
+        }
+        await addRelated({});
+        if (!cancelled) setRelated(picks);
+      } catch (err: unknown) {
         logger.warn("MarketDetail", "related fetch failed", err);
-      });
+      }
+    }
+
+    loadRelated();
     return () => {
       cancelled = true;
     };
-  }, [market]);
+  }, [event?.categoryId, event?.seriesId, market?.eventId, market?.id]);
 
   // Fetch the user's positions filtered to this market so the Sell tab can
   // show actual available share counts. Refreshes when the market id or
@@ -347,33 +782,40 @@ export default function MarketDetailPage() {
       // Strip ts before merging so it doesn't drift onto state (it's not
       // part of the canonical PredictionMarket shape).
       const { ts: _ts, ...marketFields } = payload;
-      setMarket((prev) => (prev ? { ...prev, ...marketFields } : prev));
+      const normalizedMarketFields = normalizeMarketUpdateFields(marketFields);
+      setMarket((prev) =>
+        prev ? { ...prev, ...normalizedMarketFields } : prev,
+      );
     });
     return unsubscribe;
   }, [market?.id, authLoading, isAuthenticated]);
 
-  // Real /orderbook fetch + WS refresh for exchange-mode markets.
-  //
-  // AMM markets ignore this entirely — synthesizeBook handles them. For
-  // order-book markets we fetch once on market load, then refetch on the
-  // `orderbook:<id>` WS channel which carries a "stale" hint after each
-  // fill (engine plan §Data Flow: one batched orderbook update per
-  // request). Failures fall back to the synthesized ladder so the page
-  // still renders even if /orderbook is temporarily unreachable.
+  // Real /orderbook fetch + WS refresh for exchange-mode markets. AMM markets
+  // skip this entirely and render their AMM liquidity snapshot.
   useEffect(() => {
     const id = market?.id;
     if (!id) return;
     if (market?.executionMode !== "order_book") {
       setOrderBook(null);
+      setOrderBookStatus("idle");
       return;
     }
     let cancelled = false;
+    setOrderBook(null);
+    setOrderBookStatus("loading");
     const fetchBook = async () => {
       try {
         const book = await api.getOrderBook(id, 20);
-        if (!cancelled) setOrderBook(book);
+        if (!cancelled) {
+          setOrderBook(book);
+          setOrderBookStatus("ready");
+        }
       } catch (err: unknown) {
         logger.warn("MarketDetail", "orderbook fetch failed", err);
+        if (!cancelled) {
+          setOrderBook(null);
+          setOrderBookStatus("error");
+        }
       }
     };
     fetchBook();
@@ -393,6 +835,49 @@ export default function MarketDetailPage() {
     };
   }, [market?.id, market?.executionMode, authLoading, isAuthenticated]);
 
+  useEffect(() => {
+    const id = market?.id;
+    if (
+      !id ||
+      market?.executionMode === "order_book" ||
+      market.status !== "open"
+    ) {
+      setAmmQuotes([]);
+      setAmmQuoteStatus("idle");
+      return;
+    }
+    let cancelled = false;
+    setAmmQuotes([]);
+    setAmmQuoteStatus("loading");
+    Promise.all(
+      AMM_QUOTE_SIZES.map((quantity) =>
+        api.previewOrder({
+          marketId: id,
+          side: "yes",
+          action: "buy",
+          orderType: "market",
+          quantity,
+        }),
+      ),
+    )
+      .then((quotes) => {
+        if (!cancelled) {
+          setAmmQuotes(quotes);
+          setAmmQuoteStatus("ready");
+        }
+      })
+      .catch((err: unknown) => {
+        logger.warn("MarketDetail", "AMM quote preview failed", err);
+        if (!cancelled) {
+          setAmmQuotes([]);
+          setAmmQuoteStatus("error");
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [market?.executionMode, market?.id, market?.status]);
+
   const handlePreview = useCallback(
     async (
       side: OrderSide,
@@ -407,10 +892,10 @@ export default function MarketDetailPage() {
           action: opts?.action ?? "buy",
           orderType: opts?.orderType ?? "market",
           quantity,
-          priceCents: opts?.priceCents,
+          pricePointsCents: opts?.pricePointsCents,
           timeInForce: opts?.timeInForce,
           postOnly: opts?.postOnly,
-          notionalCapCents: opts?.notionalCapCents,
+          notionalCapPointsCents: opts?.notionalCapPointsCents,
         });
       } catch (err: unknown) {
         logger.warn("MarketDetail", "preview failed", err);
@@ -438,10 +923,10 @@ export default function MarketDetailPage() {
         action: opts?.action ?? "buy",
         orderType: opts?.orderType ?? "market",
         quantity,
-        priceCents: opts?.priceCents,
+        pricePointsCents: opts?.pricePointsCents,
         timeInForce: opts?.timeInForce,
         postOnly: opts?.postOnly,
-        notionalCapCents: opts?.notionalCapCents,
+        notionalCapPointsCents: opts?.notionalCapPointsCents,
       };
       // LC-38: attach a stable idempotency key. A manual re-submit after a
       // dropped network response (same order params, outcome unconfirmed)
@@ -476,10 +961,14 @@ export default function MarketDetailPage() {
         // market changes the depth even when the order rests (no fill).
         if (updated.executionMode === "order_book") {
           try {
+            setOrderBookStatus("loading");
             const book = await api.getOrderBook(updated.id, 20);
             setOrderBook(book);
+            setOrderBookStatus("ready");
           } catch (err: unknown) {
             logger.warn("MarketDetail", "post-trade book refresh failed", err);
+            setOrderBook(null);
+            setOrderBookStatus("error");
           }
         }
         // Refresh positions so the Sell tab's available-shares count
@@ -487,8 +976,8 @@ export default function MarketDetailPage() {
         // limit order). Without this the count is stale until the next
         // navigation.
         await loadPositions();
-        // Refresh the cashier slice's currentBalance so the top-nav BAL
-        // pill matches the post-trade wallet. Without this, the pill is
+        // Refresh the point-balance slice's currentBalance so the top-nav BAL
+        // pill matches the post-trade ledger. Without this, the pill is
         // stale until the next page navigation triggers TopBar's onMount
         // fetch.
         if (user?.id) {
@@ -519,6 +1008,29 @@ export default function MarketDetailPage() {
   const displayCategory = category ? categoryName(contentT, category) : "";
   const canPreviewOrders = isAuthenticated && !authLoading;
 
+  async function handleShareMarket() {
+    if (!market || !displayMarket) return;
+    const url =
+      typeof window !== "undefined"
+        ? window.location.href
+        : `/market/${market.ticker}`;
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share({
+          title: displayMarket.title,
+          text: displayMarket.description || displayMarket.title,
+          url,
+        });
+      } else if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(url);
+      }
+      setShareMessage(t("SHARE_COPIED", "Market link copied."));
+    } catch (err) {
+      logger.warn("MarketDetail", "share failed", err);
+      setShareMessage(t("SHARE_FAILED", "Share could not be opened."));
+    }
+  }
+
   if (loading) {
     return (
       <PageState loadingLabel={t("LOADING")}>{t("LOADING_MARKET")}</PageState>
@@ -537,11 +1049,6 @@ export default function MarketDetailPage() {
     );
   }
 
-  // Real book wins when populated (exchange-mode markets); fall back to
-  // synthesizeBook for AMM markets and during the initial fetch.
-  const { bids, asks } = orderBook
-    ? adaptBookForDisplay(orderBook)
-    : synthesizeBook(market);
   const traders = new Set<string>();
   for (const trade of trades) {
     if (trade.buyerId) traders.add(trade.buyerId);
@@ -581,18 +1088,26 @@ export default function MarketDetailPage() {
             <MarketChart
               ticker={market.ticker}
               side={selectedSide}
-              yesPriceCents={market.yesPriceCents}
-              noPriceCents={market.noPriceCents}
-              previousPriceCents={market.lastTradePriceCents ?? undefined}
-              impliedProbability={market.yesPriceCents}
-              volume24hCents={market.volumeCents}
-              openInterestShares={Math.round(market.openInterestCents / 100)}
+              yesPriceCents={market.yesPricePointsCents}
+              noPriceCents={market.noPricePointsCents}
+              previousPriceCents={market.lastTradePricePointsCents ?? undefined}
+              impliedProbability={market.yesPricePointsCents}
+              volume24hCents={market.volumePointsCents}
+              openInterestShares={Math.round(
+                market.openInterestPointsCents / 100,
+              )}
             />
           </section>
 
           {isAuthenticated && (
             <div className={MARKET_DATA_ROW_CLASS}>
-              <OrderBook bids={bids} asks={asks} />
+              <MarketDepth
+                ammQuoteStatus={ammQuoteStatus}
+                ammQuotes={ammQuotes}
+                market={market}
+                orderBook={orderBook}
+                orderBookStatus={orderBookStatus}
+              />
               <RecentTrades trades={trades} />
             </div>
           )}
@@ -630,7 +1145,27 @@ export default function MarketDetailPage() {
                     })}
               </li>
             </ul>
+            <div className={MARKET_SHARE_ROW_CLASS}>
+              <button
+                type="button"
+                className={MARKET_SHARE_BUTTON_CLASS}
+                onClick={handleShareMarket}
+              >
+                {t("SHARE_MARKET", "Share market")}
+              </button>
+              {shareMessage && (
+                <span className={MARKET_SHARE_STATUS_CLASS}>
+                  {shareMessage}
+                </span>
+              )}
+            </div>
           </section>
+
+          <MarketDiscussion
+            marketId={market.id}
+            isAuthenticated={isAuthenticated}
+            authLoading={authLoading}
+          />
         </div>
 
         <aside className={MARKET_SIDE_CLASS}>
@@ -686,11 +1221,11 @@ export default function MarketDetailPage() {
                       <div className={RELATED_QUESTION_CLASS}>{m.title}</div>
                       <div className={RELATED_LINE_CLASS}>
                         <span className={RELATED_YES_CLASS}>
-                          {t("YES")} {m.yesPriceCents}¢
+                          {t("YES")} {m.yesPricePointsCents}¢
                         </span>
                         <span>
                           {t("VOLUME_VALUE", {
-                            value: `$${(m.volumeCents / 100).toFixed(0)}`,
+                            value: formatCompactPoints(m.volumePointsCents),
                           })}
                         </span>
                       </div>

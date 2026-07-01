@@ -41,14 +41,12 @@ module.exports = {
     };
   },
   // Redirect the entire legacy /risk-management subtree to /dashboard.
-  // pages/risk-management/{summary,prediction,markets,fixed-exotics,
-  // market-categories,provider-ops}/ render sportsbook-shaped surfaces
-  // (freebet usage, odds-boost breakdowns, bet/stake counts, fixture
-  // exposure) that don't exist in the prediction-market product. Visible
+  // Those retired Pages Router screens render pre-Tiangge operations
+  // widgets that don't exist in the prediction-market product. Visible
   // under the prediction brand they read as a credibility leak.
   //
   // The page files stay on disk (deleting them is a separate cleanup
-  // PR — they share state with sportsbook-era hooks that need an audit
+  // PR — they share legacy state that needs an audit
   // first); the redirect just makes sure no operator can land on them.
   // When PR #48 (feat/risk-dashboard-v1) merges, change the destination
   // to /prediction-admin/risk so the redirect lands on the real

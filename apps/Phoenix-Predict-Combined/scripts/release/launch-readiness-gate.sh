@@ -7,12 +7,8 @@ REPORT_FILE="$ROOT_DIR/revival/30_LAUNCH_READINESS_GATE.md"
 DATE_TAG="$(date +%F)"
 TS_TAG="$(date +%Y%m%d_%H%M%S)"
 RESULT_FILE="$ARTIFACT_DIR/launch_readiness_${TS_TAG}.md"
-RUN_MULTI_SPORT_RUNTIME_GATE="${RUN_MULTI_SPORT_RUNTIME_GATE:-0}"
-MULTI_SPORT_FRONTEND_BASE_URL="${MULTI_SPORT_FRONTEND_BASE_URL:-http://127.0.0.1:3002}"
-MULTI_SPORT_GATEWAY_BASE_URL="${MULTI_SPORT_GATEWAY_BASE_URL:-http://127.0.0.1:18080}"
-MULTI_SPORT_ITERATIONS="${MULTI_SPORT_ITERATIONS:-5}"
-MULTI_SPORT_SPORTS_CSV="${MULTI_SPORT_SPORTS_CSV:-mlb,nfl,nba,ufc,ncaa_baseball}"
-MULTI_SPORT_CHECK_ESPORTS_COMPAT="${MULTI_SPORT_CHECK_ESPORTS_COMPAT:-1}"
+RUN_TIANGGE_DISCOVERY_CONTRACT_GATE="${RUN_TIANGGE_DISCOVERY_CONTRACT_GATE:-${RUN_MULTI_SPORT_RUNTIME_GATE:-0}}"
+TIANGGE_DISCOVERY_CONTRACT_ITERATIONS="${TIANGGE_DISCOVERY_CONTRACT_ITERATIONS:-${MULTI_SPORT_ITERATIONS:-1}}"
 
 mkdir -p "$ARTIFACT_DIR"
 
@@ -49,6 +45,19 @@ overall=0
 run_step "go verify gate" make -C "$ROOT_DIR" verify-go || overall=1
 run_step "security secrets baseline" make -C "$ROOT_DIR" security-secrets || overall=1
 run_step "security sbom baseline" make -C "$ROOT_DIR" security-sbom || overall=1
+run_step "required JVM/SBT dependency baseline" make -C "$ROOT_DIR" security-jvm-required || overall=1
+run_step "jvm direct OSV baseline" make -C "$ROOT_DIR" security-jvm-osv-direct || overall=1
+run_step "jvm resolved classpath OSV baseline" make -C "$ROOT_DIR" security-jvm-osv-resolved-classpath || overall=1
+run_step "jvm direct residual advisory governance" make -C "$ROOT_DIR" security-jvm-direct-residual-advisories || overall=1
+run_step "jvm resolved residual advisory governance" make -C "$ROOT_DIR" security-jvm-resolved-residual-advisories || overall=1
+run_step "frontend residual advisory governance" make -C "$ROOT_DIR" qa-frontend-residual-advisories || overall=1
+run_step "reward and social abuse boundary proof" make -C "$ROOT_DIR" qa-abuse-boundary || overall=1
+run_step "preservation deletion classification" make -C "$ROOT_DIR" qa-preservation-deletions || overall=1
+run_step "preservation modification classification" make -C "$ROOT_DIR" qa-preservation-modifications || overall=1
+run_step "preservation public contract anchors" make -C "$ROOT_DIR" qa-preservation-contract-anchors || overall=1
+run_step "preservation production dossier" make -C "$ROOT_DIR" qa-preservation-production-dossier || overall=1
+run_step "Scenario 11 API/data surface gate" make -C "$ROOT_DIR" qa-scenario-11-api-surface || overall=1
+run_step "Scenario 12 signoff gate" make -C "$ROOT_DIR" qa-scenario-12-signoff || overall=1
 run_step "platform health baseline" make -C "$ROOT_DIR" platform-health || overall=1
 run_step "platform metrics baseline" make -C "$ROOT_DIR" platform-metrics || overall=1
 run_step "critical path e2e" make -C "$ROOT_DIR" qa-e2e-critical || overall=1
@@ -56,21 +65,19 @@ run_step "load baseline" make -C "$ROOT_DIR" qa-load-baseline || overall=1
 run_step "capability slo gate" make -C "$ROOT_DIR" qa-capability-slo || overall=1
 run_step "cutover rehearsal" make -C "$ROOT_DIR" release-cutover-rehearsal || overall=1
 
-if [[ "$RUN_MULTI_SPORT_RUNTIME_GATE" == "1" || "$RUN_MULTI_SPORT_RUNTIME_GATE" == "true" ]]; then
+if [[ "$RUN_TIANGGE_DISCOVERY_CONTRACT_GATE" == "1" || "$RUN_TIANGGE_DISCOVERY_CONTRACT_GATE" == "true" ]]; then
   run_step \
-    "multi-sport runtime regression gate" \
+    "Tiangge discovery/API compatibility regression gate" \
     env \
-    FRONTEND_BASE_URL="$MULTI_SPORT_FRONTEND_BASE_URL" \
-    GATEWAY_BASE_URL="$MULTI_SPORT_GATEWAY_BASE_URL" \
-    ITERATIONS="$MULTI_SPORT_ITERATIONS" \
-    SPORTS_CSV="$MULTI_SPORT_SPORTS_CSV" \
-    CHECK_ESPORTS_COMPAT="$MULTI_SPORT_CHECK_ESPORTS_COMPAT" \
+    ITERATIONS="$TIANGGE_DISCOVERY_CONTRACT_ITERATIONS" \
     make -C "$ROOT_DIR" qa-sports-regression || overall=1
 else
   run_skip_step \
-    "multi-sport runtime regression gate" \
-    "disabled (set RUN_MULTI_SPORT_RUNTIME_GATE=1; requires live sportsbook/go-gateway runtimes)"
+    "Tiangge discovery/API compatibility regression gate" \
+    "disabled (set RUN_TIANGGE_DISCOVERY_CONTRACT_GATE=1; legacy RUN_MULTI_SPORT_RUNTIME_GATE is accepted as a compatibility alias)"
 fi
+
+run_step "RC completion audit" make -C "$ROOT_DIR" qa-rc-completion-audit || overall=1
 
 result="pass"
 go_no_go="GO"
@@ -87,15 +94,18 @@ fi
   echo "- Result: **$result**"
   echo "- Decision: **$go_no_go**"
   echo "- Checklist artifact: \`$RESULT_FILE\`"
-  echo "- Multi-sport runtime gate enabled: \`$RUN_MULTI_SPORT_RUNTIME_GATE\`"
+  echo "- Tiangge discovery/API compatibility gate enabled: \`$RUN_TIANGGE_DISCOVERY_CONTRACT_GATE\`"
   echo
   echo "## Decision Notes"
   echo
   echo "1. GO only when all checklist steps pass in the same run."
   echo "2. Any failed step requires remediation and full gate rerun."
   echo "3. Keep this report and checklist artifact attached to release sign-off records."
-  echo "4. Multi-sport runtime gate is optional by default to keep CI deterministic."
-  echo "5. Enable multi-sport runtime gate for local release sign-off rehearsal where sportsbook/go-gateway are running."
+  echo "4. The compatibility discovery/API gate is optional by default to keep CI deterministic."
+  echo "5. Enable the compatibility gate for local release sign-off rehearsal when the extra Tiangge contract pass is desired."
+  echo "6. Preservation deletion, modification, public contract-anchor, and production-dossier gates are mandatory for launch readiness; inherited artifact removals or broad rewrites must stay classified and reviewable."
+  echo "7. Reward/social abuse-boundary proof is mandatory for launch readiness; blocked reward claims and social writes must remain non-persistent and reviewable."
+  echo "8. Scenario 12 security residual and production-preservation signoffs are mandatory for launch readiness; unsigned packets or templates are not sufficient."
 } >"$REPORT_FILE"
 
 echo "Launch readiness checklist: $RESULT_FILE"

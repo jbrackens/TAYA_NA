@@ -14,15 +14,18 @@ import { adminFetch } from "../../../lib/admin-fetch";
 interface LoyaltyAccount {
   accountId: string;
   playerId: string;
-  currentTier: string;
-  nextTier: string;
+  rank: number;
+  rankName: string;
+  nextRank: number;
+  nextRankName: string;
   pointsBalance: number;
   pointsEarnedLifetime: number;
   pointsEarned7D: number;
   pointsEarned30D: number;
   pointsEarnedCurrentMonth: number;
-  pointsToNextTier: number;
-  currentTierAssignedAt?: string;
+  xpToNextRank: number;
+  unit: "PTS";
+  rankAssignedAt?: string;
   lastAccrualAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -33,7 +36,9 @@ interface LoyaltyLedgerEntry {
   entryType: string;
   entrySubtype?: string;
   sourceType: string;
+  predictionSourceType?: string;
   sourceId: string;
+  predictionSourceId?: string;
   pointsDelta: number;
   balanceAfter: number;
   createdBy?: string;
@@ -44,6 +49,7 @@ interface LoyaltyLedgerEntry {
 interface LoyaltyTier {
   tierCode: string;
   displayName: string;
+  rank?: number;
   minLifetimePoints?: number;
 }
 
@@ -122,41 +128,44 @@ function LoyaltyDetailPageContent() {
     void loadReferrals();
   }, [playerId]);
 
-  const currentTierName = useMemo(
+  const currentRankName = useMemo(
     () =>
-      tiers.find((tier) => tier.tierCode === account?.currentTier)
-        ?.displayName ||
-      account?.currentTier ||
-      "Bronze",
-    [tiers, account?.currentTier],
+      account?.rankName ||
+      tiers.find((tier) => tier.rank === account?.rank)?.displayName ||
+      "Unranked",
+    [tiers, account?.rank, account?.rankName],
   );
-  const nextTierName = useMemo(
-    () =>
-      tiers.find((tier) => tier.tierCode === account?.nextTier)?.displayName ||
-      account?.nextTier ||
-      "",
-    [tiers, account?.nextTier],
+  const nextRankName = useMemo(
+    () => account?.nextRankName || "",
+    [account?.nextRankName],
   );
 
-  // Compute tier progress for the progress bar
-  const tierProgress = useMemo(() => {
+  const rankProgress = useMemo(() => {
     if (!account) return null;
-    const currentTierObj = tiers.find(
-      (t) => t.tierCode === account.currentTier,
+    const currentRankObj = tiers.find(
+      (t) =>
+        t.rank === account.rank ||
+        t.displayName === account.rankName ||
+        t.tierCode === account.rankName,
     );
-    const nextTierObj = tiers.find((t) => t.tierCode === account.nextTier);
-    if (!nextTierObj?.minLifetimePoints) return null;
-    const currentMin = currentTierObj?.minLifetimePoints ?? 0;
-    const nextMin = nextTierObj.minLifetimePoints;
+    const nextRankObj = tiers.find(
+      (t) =>
+        t.rank === account.nextRank ||
+        t.displayName === account.nextRankName ||
+        t.tierCode === account.nextRankName,
+    );
+    if (!nextRankObj?.minLifetimePoints) return null;
+    const currentMin = currentRankObj?.minLifetimePoints ?? 0;
+    const nextMin = nextRankObj.minLifetimePoints;
     const range = nextMin - currentMin;
     if (range <= 0) return null;
     const earned = account.pointsEarnedLifetime - currentMin;
     const pct = Math.min(100, Math.max(0, (earned / range) * 100));
     return {
       percent: pct,
-      pointsToNext: account.pointsToNextTier,
-      nextName: nextTierObj.displayName || account.nextTier,
-      currentName: currentTierObj?.displayName || account.currentTier,
+      xpToNext: account.xpToNextRank,
+      nextName: nextRankObj.displayName || account.nextRankName,
+      currentName: currentRankObj?.displayName || account.rankName,
     };
   }, [account, tiers]);
 
@@ -194,9 +203,7 @@ function LoyaltyDetailPageContent() {
       if (!response.ok) {
         throw new Error("Failed to save loyalty adjustment");
       }
-      const data = await response.json();
-      setAccount(data.account || null);
-      setLedger((current) => [data.entry, ...current].slice(0, 20));
+      await loadDetail();
       setReason("");
       setFeedback("Loyalty adjustment applied successfully.");
     } catch (err: unknown) {
@@ -254,10 +261,10 @@ function LoyaltyDetailPageContent() {
             ) : null}
           </h1>
           <p className={subtitleClassName}>
-            Current tier {currentTierName}
-            {account.nextTier
-              ? `, ${account.pointsToNextTier} points to ${nextTierName}`
-              : ", top tier unlocked"}
+            Current rank {currentRankName}
+            {account.nextRankName
+              ? `, ${account.xpToNextRank} XP points to ${nextRankName}`
+              : ", top rank unlocked"}
             .
           </p>
         </div>
@@ -268,8 +275,8 @@ function LoyaltyDetailPageContent() {
           >
             Back to Loyalty
           </button>
-          <span className={badgeClassName(tierVariant(account.currentTier))}>
-            {String(currentTierName).toUpperCase()}
+          <span className={badgeClassName(rankVariant(account.rankName))}>
+            {String(currentRankName).toUpperCase()}
           </span>
         </div>
       </div>
@@ -293,40 +300,39 @@ function LoyaltyDetailPageContent() {
         />
       </div>
 
-      {/* Tier Progress Bar */}
-      {tierProgress ? (
+      {rankProgress ? (
         <div className={progressContainerClassName}>
           <div className="mb-1.5 flex justify-between">
             <span className="text-[13px] font-bold text-[#39ff14]">
-              {tierProgress.currentName}
+              {rankProgress.currentName}
             </span>
             <span className="text-xs text-[var(--t3,#8b8378)]">
-              {tierProgress.pointsToNext.toLocaleString()} pts to{" "}
-              {tierProgress.nextName}
+              {rankProgress.xpToNext.toLocaleString()} XP points to{" "}
+              {rankProgress.nextName}
             </span>
           </div>
           <progress
             className={progressClassName}
-            value={tierProgress.percent}
+            value={rankProgress.percent}
             max={100}
-            aria-label={`${tierProgress.currentName} tier progress`}
+            aria-label={`${rankProgress.currentName} rank progress`}
           />
         </div>
-      ) : !account.nextTier ? (
+      ) : !account.nextRankName ? (
         <div className={progressContainerClassName}>
           <div className="mb-1.5 flex justify-between">
             <span className="text-[13px] font-bold text-[#39ff14]">
-              {currentTierName}
+              {currentRankName}
             </span>
             <span className="text-xs text-[var(--accent,#2be480)]">
-              Top tier reached
+              Top rank reached
             </span>
           </div>
           <progress
             className={progressClassName}
             value={100}
             max={100}
-            aria-label="Top tier reached"
+            aria-label="Top rank reached"
           />
         </div>
       ) : null}
@@ -387,7 +393,7 @@ function LoyaltyDetailPageContent() {
                         </div>
                         <div className={ledgerMetaClassName}>
                           {new Date(entry.createdAt).toLocaleString()} • source{" "}
-                          {entry.sourceId}
+                          {entry.predictionSourceId || entry.sourceId}
                         </div>
                       </div>
                       <div
@@ -490,24 +496,29 @@ function MetricCard({ label, value }: { label: string; value: string }) {
 }
 
 function formatLedgerLabel(entry: LoyaltyLedgerEntry): string {
-  if (entry.sourceType === "bet_settlement") {
-    return "Settled bet reward";
+  const sourceType = entry.predictionSourceType || entry.sourceType;
+  if (
+    sourceType === "prediction_settlement" ||
+    sourceType === "bet_settlement"
+  ) {
+    return "Settled prediction reward";
   }
-  if (entry.sourceType === "admin_manual") {
+  if (sourceType === "admin_manual") {
     return "Manual loyalty adjustment";
   }
   return entry.entrySubtype || entry.entryType;
 }
 
-function tierVariant(
-  tier: string,
+function rankVariant(
+  rankName: string,
 ): "default" | "success" | "warning" | "danger" {
-  switch (tier) {
-    case "vip":
+  switch (rankName.toLowerCase()) {
+    case "legend":
+    case "whale":
       return "danger";
-    case "gold":
+    case "sharp":
       return "warning";
-    case "silver":
+    case "trader":
       return "success";
     default:
       return "default";

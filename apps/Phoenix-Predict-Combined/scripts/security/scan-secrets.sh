@@ -8,12 +8,12 @@ REPORT_OUT="$REVIVAL_DIR/05_SECRET_SCAN_BASELINE.md"
 
 BACKEND_REPO="$ROOT_DIR/phoenix-backend"
 TALON_REPO="$ROOT_DIR/talon-backoffice"
-SPORTSBOOK_REPO="$ROOT_DIR/phoenix-frontend-brand-viegg"
+GO_PLATFORM_REPO="$ROOT_DIR/go-platform"
 
 declare -a REPOS=(
   "$BACKEND_REPO"
   "$TALON_REPO"
-  "$SPORTSBOOK_REPO"
+  "$GO_PLATFORM_REPO"
 )
 
 mkdir -p "$REVIVAL_DIR"
@@ -131,7 +131,7 @@ cat > "$REPORT_OUT" <<EOF
 ## Scope
 - \`$BACKEND_REPO\`
 - \`$TALON_REPO\`
-- \`$SPORTSBOOK_REPO\`
+- \`$GO_PLATFORM_REPO\`
 
 ## Method
 - Scanner: local regex baseline using \`git grep\` on tracked files.

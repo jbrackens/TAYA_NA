@@ -1,10 +1,11 @@
-# Go Platform Scaffold
+# Tiangge Go Platform
 
-This directory is the initial Go workspace for the Phoenix sportsbook backend migration.
+This directory is the Go workspace for Tiangge backend services. Tiangge is a
+prediction-market app that uses non-redeemable gameplay points only.
 
 ## Workspace Layout
 - `modules/platform`: shared runtime primitives and reusable platform utilities.
-- `services/gateway`: sportsbook-facing API gateway scaffold.
+- `services/gateway`: prediction-market API gateway.
 - `services/auth`: authentication/session service scaffold.
 
 ## Quick Start
@@ -30,19 +31,9 @@ Override with:
 PORT=19000 go run ./services/gateway/cmd/gateway
 ```
 
-## Alpha Cashier Config
+## Launch Boundary
 
-The closed Alpha custodial USDC cashier lives in the gateway under
-`services/gateway/internal/alphacashier` and is disabled unless
-`ALPHA_CASHIER_ENABLED=true`.
-
-Required live-chain values when enabled:
-
-- `ALPHA_CASHIER_RPC_URL`
-- `ALPHA_CASHIER_TOKEN_ADDRESS`
-- `ALPHA_CASHIER_TREASURY_ADDRESS`
-
-Stage 1 defaults remain conservative: Base chain ID `8453`, `USDC`, 6 decimals,
-12 confirmations, $1 minimum, $250 max per deposit, $1,000 daily limit,
-withdrawals disabled, and withdrawal review required. Keep payout keys outside
-the app and do not use the legacy `CRYPTO_*` prototype rail for this path.
+Launch services register points-only prediction, account, reward, moderation,
+and admin operations. Historical compatibility packages may remain in source for
+tests and archival migration work, but launch service configuration keeps those
+external-value rails out of the active route tree.

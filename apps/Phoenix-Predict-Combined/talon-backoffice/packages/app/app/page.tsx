@@ -27,9 +27,9 @@ const EXAMPLE_MARKETS = [
     yesPercent: 57,
   },
   {
-    categoryKey: "markets.crypto.category",
-    questionKey: "markets.crypto.question",
-    consensusKey: "markets.crypto.consensus",
+    categoryKey: "markets.esports.category",
+    questionKey: "markets.esports.question",
+    consensusKey: "markets.esports.consensus",
     yesPercent: 54,
   },
 ];
@@ -195,7 +195,8 @@ export default function HomePage() {
         >
           <BrandMark size={34} />
           <span className="text-[25px] font-bold leading-none tracking-[-0.02em] text-[var(--brand-on-dark)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif] max-[420px]:text-[22px]">
-            {brand.name}<span className="text-[var(--brand-period-dark)]">.</span>
+            {brand.name}
+            <span className="text-[var(--brand-period-dark)]">.</span>
           </span>
         </Link>
 

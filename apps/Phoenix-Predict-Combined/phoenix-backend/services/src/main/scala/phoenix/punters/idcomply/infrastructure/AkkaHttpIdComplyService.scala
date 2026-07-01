@@ -408,7 +408,7 @@ private object AkkaHttpIdComplyService {
   implicit val userFieldsCodec: Codec[UserFields] = deriveCodec
 
   implicit val idpvTokenStatusResponseCodec: Decoder[IDPVTokenStatusResponse] = new Decoder[IDPVTokenStatusResponse] {
-    implicit val idpvTokenStatusResponseCompletedDecoder =
+    implicit val idpvTokenStatusResponseCompletedDecoder: Decoder[IDPVTokenStatusResponse.Completed] =
       Decoder.instance[IDPVTokenStatusResponse.Completed]((c: HCursor) =>
         c.downField("match").as[String].flatMap {
           case "full"          => c.downField("userFields").as[IDPVTokenStatusResponse.FullMatch]

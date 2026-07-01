@@ -7,6 +7,8 @@ import (
 	"errors"
 	"log/slog"
 	stdhttp "net/http"
+	"net/url"
+	"regexp"
 	"strings"
 
 	"phoenix-revival/gateway/internal/rbac"
@@ -24,6 +26,8 @@ type webhookEndpointStore interface {
 }
 
 const webhookEndpointsPath = "/api/v1/admin/webhook-endpoints"
+
+var webhookLaunchDestinationProhibited = regexp.MustCompile(`(?i)(^|[^a-z0-9])(cashier|cashout|deposit|withdraw|withdrawal|crypto|fiat|redeem|redemption)([^a-z0-9]|$)`)
 
 // registerWebhookAdminRoutes exposes operator-managed partner webhook endpoints
 // (P3-03). Mirrors the partner-keys admin API: an operator with partners:write
@@ -55,10 +59,16 @@ func registerWebhookAdminRoutes(mux *stdhttp.ServeMux, rbacSvc *rbac.Service, st
 				return httpx.BadRequest("userId is required (the partner this endpoint belongs to)", map[string]any{"field": "userId"})
 			}
 			if err := validateWebhookURL(req.URL); err != nil {
-				return httpx.BadRequest(err.Error(), map[string]any{"field": "url"})
+				return serviceBadRequestError(err, map[string]any{"field": "url"})
+			}
+			if err := validateWebhookLaunchDestination(req.URL); err != nil {
+				return err
 			}
 			if bad := unknownEventTypes(req.Events); len(bad) > 0 {
 				return httpx.BadRequest("unknown event type(s): "+strings.Join(bad, ", "), map[string]any{"field": "events"})
+			}
+			if err := validateWebhookLaunchEvents(req.Events); err != nil {
+				return err
 			}
 
 			secret := strings.TrimSpace(req.Secret)
@@ -80,7 +90,7 @@ func registerWebhookAdminRoutes(mux *stdhttp.ServeMux, rbacSvc *rbac.Service, st
 				return httpx.Internal("failed to create webhook endpoint", err)
 			}
 
-			recordMoneyAuditEntry(rbacActor(r), "partner.webhook.registered", req.UserID, map[string]any{
+			recordProviderOpsAuditAction(rbacActor(r), "partner.webhook.registered", req.UserID, map[string]any{
 				"endpointId": created.ID,
 				"url":        created.URL,
 				"events":     created.Events,
@@ -111,13 +121,7 @@ func registerWebhookAdminRoutes(mux *stdhttp.ServeMux, rbacSvc *rbac.Service, st
 			}
 			out := make([]map[string]any, 0, len(eps))
 			for _, ep := range eps {
-				out = append(out, map[string]any{
-					"id":           ep.ID,
-					"url":          ep.URL,
-					"events":       ep.Events,
-					"active":       ep.Active,
-					"secretMasked": maskSecret(ep.Secret),
-				})
+				out = append(out, webhookEndpointPayload(ep))
 			}
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"userId": userID, "endpoints": out})
 
@@ -158,7 +162,7 @@ func registerWebhookAdminRoutes(mux *stdhttp.ServeMux, rbacSvc *rbac.Service, st
 			}
 			return httpx.Internal("failed to update webhook endpoint", err)
 		}
-		recordMoneyAuditEntry(rbacActor(r), "partner.webhook.toggled", req.UserID, map[string]any{
+		recordProviderOpsAuditAction(rbacActor(r), "partner.webhook.toggled", req.UserID, map[string]any{
 			"endpointId": id,
 			"active":     *req.Active,
 		})
@@ -175,6 +179,37 @@ func validateWebhookURL(raw string) error {
 	// SSRF-aware: http(s) + public host only, blocking private/loopback/
 	// link-local/cloud-metadata addresses (SECURITY-REVIEW #6).
 	return webhooks.ValidatePublicURL(raw)
+}
+
+func validateWebhookLaunchDestination(raw string) error {
+	u, err := url.Parse(raw)
+	if err != nil {
+		return nil
+	}
+	destination := strings.Join([]string{u.Path, u.RawQuery, u.Fragment}, " ")
+	if webhookLaunchDestinationProhibited.MatchString(destination) {
+		return httpx.BadRequest("url must use point-native destination wording", map[string]any{"field": "url"})
+	}
+	return nil
+}
+
+func validateWebhookLaunchEvents(events []string) error {
+	for _, event := range events {
+		if launchReasonHasProhibitedCopy(event) {
+			return httpx.BadRequest("events must use point-native event types", map[string]any{"field": "events"})
+		}
+	}
+	return nil
+}
+
+func webhookEndpointPayload(ep webhooks.Endpoint) map[string]any {
+	return map[string]any{
+		"id":           ep.ID,
+		"url":          redactLaunchProhibitedUserText(ep.URL),
+		"events":       redactLaunchProhibitedStrings(ep.Events),
+		"active":       ep.Active,
+		"secretMasked": maskSecret(ep.Secret),
+	}
 }
 
 // unknownEventTypes returns any requested event types not in the canonical set.

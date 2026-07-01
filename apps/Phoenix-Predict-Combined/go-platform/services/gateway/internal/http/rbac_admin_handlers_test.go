@@ -3,8 +3,10 @@ package http
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	stdhttp "net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"phoenix-revival/gateway/internal/rbac"
@@ -19,6 +21,7 @@ import (
 type rbacHandlerFake struct {
 	perms map[string]map[string]struct{} // email -> permission set
 	roles []rbac.RoleWithPermissions
+	users []rbac.UserWithRoles
 }
 
 func (f *rbacHandlerFake) EffectivePermissions(_ context.Context, email string) (map[string]struct{}, error) {
@@ -34,7 +37,7 @@ func (f *rbacHandlerFake) ListPermissions(context.Context) ([]rbac.Permission, e
 	return []rbac.Permission{{ID: "users:read"}, {ID: "users:write"}, {ID: "roles:read"}, {ID: "roles:write"}}, nil
 }
 func (f *rbacHandlerFake) ListUsersWithRoles(context.Context) ([]rbac.UserWithRoles, error) {
-	return []rbac.UserWithRoles{}, nil
+	return f.users, nil
 }
 func (f *rbacHandlerFake) GetUserByID(_ context.Context, id string) (*rbac.User, error) {
 	return &rbac.User{ID: id, Email: "target@test", Status: rbac.StatusActive}, nil
@@ -109,6 +112,118 @@ func TestRBACHandlers_PermissionGating(t *testing.T) {
 				t.Fatalf("%s %s: got %d, want %d", tc.method, tc.path, got, tc.want)
 			}
 		})
+	}
+}
+
+func TestRBACCreateRoleRejectsMoneyWordingDescription(t *testing.T) {
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "")
+	mux := newRBACTestMux()
+	req := httptest.NewRequest(
+		stdhttp.MethodPost,
+		"/api/v1/admin/roles",
+		bytes.NewBufferString(`{"name":"Ops Reviewer","description":"cash payout reviewer"}`),
+	)
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "uid-super@test", "super@test", "admin"))
+	res := httptest.NewRecorder()
+
+	mux.ServeHTTP(res, req)
+
+	if res.Code != stdhttp.StatusBadRequest {
+		t.Fatalf("expected unsafe role description status 400, got %d body=%s", res.Code, res.Body.String())
+	}
+	var envelope httpx.ErrorEnvelope
+	if err := json.Unmarshal(res.Body.Bytes(), &envelope); err != nil {
+		t.Fatalf("decode unsafe role description error: %v", err)
+	}
+	details, ok := envelope.Error.Details.(map[string]any)
+	if !ok || details["field"] != "description" {
+		t.Fatalf("expected description error field, got %+v", envelope.Error.Details)
+	}
+	if strings.Contains(res.Body.String(), "cash payout") {
+		t.Fatalf("unsafe role description should not be echoed: %s", res.Body.String())
+	}
+
+	listReq := httptest.NewRequest(stdhttp.MethodGet, "/api/v1/admin/roles", nil)
+	listReq = listReq.WithContext(httpx.WithTestUser(listReq.Context(), "uid-super@test", "super@test", "admin"))
+	listRes := httptest.NewRecorder()
+	mux.ServeHTTP(listRes, listReq)
+	if strings.Contains(listRes.Body.String(), "cash payout") {
+		t.Fatalf("unsafe role description should not be persisted into role list: %s", listRes.Body.String())
+	}
+}
+
+func TestRBACRoleReadsRedactLegacyUnsafeCopy(t *testing.T) {
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "")
+	fake := &rbacHandlerFake{
+		perms: map[string]map[string]struct{}{
+			"super@test": {"users:read": {}, "roles:read": {}},
+		},
+		roles: []rbac.RoleWithPermissions{
+			{
+				Role:        rbac.Role{ID: "legacy-role", Name: "cash payout ops", Description: "crypto payout controls", IsSystem: false},
+				Permissions: []string{"users:read"},
+			},
+		},
+		users: []rbac.UserWithRoles{
+			{
+				User:  rbac.User{ID: "user-1", Email: "ops@test", Name: "Ops Reviewer", Status: rbac.StatusActive},
+				Roles: []rbac.RoleRef{{ID: "legacy-role", Name: "cash payout ops"}},
+			},
+		},
+	}
+	mux := stdhttp.NewServeMux()
+	registerRBACAdminRoutes(mux, rbac.NewService(fake))
+
+	roleReq := httptest.NewRequest(stdhttp.MethodGet, "/api/v1/admin/roles", nil)
+	roleReq = roleReq.WithContext(httpx.WithTestUser(roleReq.Context(), "uid-super@test", "super@test", "admin"))
+	roleRes := httptest.NewRecorder()
+	mux.ServeHTTP(roleRes, roleReq)
+
+	if roleRes.Code != stdhttp.StatusOK {
+		t.Fatalf("role list: want 200, got %d body=%s", roleRes.Code, roleRes.Body.String())
+	}
+	if fake.roles[0].Name != "cash payout ops" || fake.roles[0].Description != "crypto payout controls" {
+		t.Fatalf("raw role copy should remain unchanged, got %+v", fake.roles[0].Role)
+	}
+	var rolePayload struct {
+		Roles []rbac.RoleWithPermissions `json:"roles"`
+	}
+	if err := json.Unmarshal(roleRes.Body.Bytes(), &rolePayload); err != nil {
+		t.Fatalf("decode role list: %v body=%s", err, roleRes.Body.String())
+	}
+	if len(rolePayload.Roles) != 1 ||
+		rolePayload.Roles[0].Name != launchRedactedUserText ||
+		rolePayload.Roles[0].Description != launchRedactedUserText {
+		t.Fatalf("expected redacted role copy, got %+v", rolePayload.Roles)
+	}
+	if strings.Contains(roleRes.Body.String(), "cash payout") || strings.Contains(roleRes.Body.String(), "crypto payout") {
+		t.Fatalf("unsafe legacy role copy leaked in role response: %s", roleRes.Body.String())
+	}
+
+	userReq := httptest.NewRequest(stdhttp.MethodGet, "/api/v1/admin/users", nil)
+	userReq = userReq.WithContext(httpx.WithTestUser(userReq.Context(), "uid-super@test", "super@test", "admin"))
+	userRes := httptest.NewRecorder()
+	mux.ServeHTTP(userRes, userReq)
+
+	if userRes.Code != stdhttp.StatusOK {
+		t.Fatalf("user list: want 200, got %d body=%s", userRes.Code, userRes.Body.String())
+	}
+	if fake.users[0].Roles[0].Name != "cash payout ops" {
+		t.Fatalf("raw user role ref should remain unchanged, got %+v", fake.users[0].Roles)
+	}
+	var userPayload struct {
+		Users []rbac.UserWithRoles `json:"users"`
+	}
+	if err := json.Unmarshal(userRes.Body.Bytes(), &userPayload); err != nil {
+		t.Fatalf("decode user list: %v body=%s", err, userRes.Body.String())
+	}
+	if len(userPayload.Users) != 1 ||
+		len(userPayload.Users[0].Roles) != 1 ||
+		userPayload.Users[0].Roles[0].Name != launchRedactedUserText {
+		t.Fatalf("expected redacted role ref in user response, got %+v", userPayload.Users)
+	}
+	if strings.Contains(userRes.Body.String(), "cash payout") {
+		t.Fatalf("unsafe legacy role ref leaked in user response: %s", userRes.Body.String())
 	}
 }
 

@@ -6,9 +6,9 @@ import { notFound } from "next/navigation";
 import {
   AlertTriangle,
   Ban,
-  Wallet,
   Lock,
   Clock,
+  Coins,
   ShieldCheck,
   CheckCircle2,
 } from "lucide-react";
@@ -29,8 +29,7 @@ const cardClass =
 const descClass = "mb-6 text-[13px] text-[var(--t3)]";
 const fieldClass = "flex flex-col gap-2";
 const labelClass = "text-[13px] font-semibold text-[var(--t2)]";
-const actionsClass =
-  "mt-6 flex gap-3 max-[640px]:flex-col-reverse";
+const actionsClass = "mt-6 flex gap-3 max-[640px]:flex-col-reverse";
 const buttonBaseClass =
   "flex-1 cursor-pointer rounded-[var(--r-rh-md)] border px-5 py-3 text-center text-sm font-bold no-underline transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50";
 const primaryButtonClass = `${buttonBaseClass} border-transparent bg-[var(--accent)] text-[#04140a] hover:-translate-y-px hover:brightness-105`;
@@ -158,9 +157,9 @@ function SelfExcludePageContent() {
                 desc="Your account will be completely blocked and cannot be reopened"
               />
               <Consequence
-                icon={<Wallet size={20} strokeWidth={1.75} />}
-                title="Balance Handling"
-                desc="Any remaining balance will be processed according to our policy"
+                icon={<Coins size={20} strokeWidth={1.75} />}
+                title="Point Handling"
+                desc="Any remaining gameplay points will be locked or cleared according to our policy"
               />
               <Consequence
                 icon={<Lock size={20} strokeWidth={1.75} />}
@@ -191,8 +190,12 @@ function SelfExcludePageContent() {
                 team or visit responsible gaming resources:
               </p>
               <ul className="m-0 pl-5 text-xs text-[var(--t2)]">
-                <li className="mb-1">National Problem Gambling Helpline: 1-800-GAMBLER</li>
-                <li className="mb-1">Gamblers Anonymous: www.gamblersanonymous.org</li>
+                <li className="mb-1">
+                  National Problem Gambling Helpline: 1-800-GAMBLER
+                </li>
+                <li className="mb-1">
+                  Gamblers Anonymous: www.gamblersanonymous.org
+                </li>
               </ul>
             </div>
           </div>
@@ -409,7 +412,13 @@ function Consequence({
   );
 }
 
-function ReviewItem({ label, value }: { label: string; value: React.ReactNode }) {
+function ReviewItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
   return (
     <div className="rounded-[var(--r-rh-md)] bg-[var(--surface-2)] p-4 text-left">
       <div className="mb-1 text-xs font-semibold text-[var(--t3)]">{label}</div>
@@ -418,7 +427,13 @@ function ReviewItem({ label, value }: { label: string; value: React.ReactNode })
   );
 }
 
-function DetailItem({ label, value }: { label: string; value: React.ReactNode }) {
+function DetailItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
   return (
     <div className="flex justify-between border-b border-[var(--border-1)] py-2 text-[13px] last:border-b-0">
       <span className="font-semibold text-[var(--t3)]">{label}</span>

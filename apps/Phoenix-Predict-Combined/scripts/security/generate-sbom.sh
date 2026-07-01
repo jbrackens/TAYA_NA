@@ -146,6 +146,9 @@ run_backend_inventory() {
   if [[ $status -eq 0 ]]; then
     record_result "phoenix-backend (resolved classpath)" "ok" "$classpath_file"
   else
+    if [[ ! -s "$classpath_err" ]]; then
+      printf 'sbt dependency classpath command failed with exit code %s before writing stderr. JAVA_HOME may be unavailable or sbt/JDK startup may have failed.\n' "$status" >"$classpath_err"
+    fi
     record_result "phoenix-backend (resolved classpath)" "blocked" "$classpath_err"
   fi
 
@@ -177,10 +180,10 @@ run_npm_sbom \
   "$OUT_DIR/talon-backoffice.cyclonedx.error.log"
 
 run_npm_sbom \
-  "phoenix-frontend-brand-viegg" \
-  "$ROOT_DIR/phoenix-frontend-brand-viegg" \
-  "$OUT_DIR/phoenix-frontend-brand-viegg.cyclonedx.json" \
-  "$OUT_DIR/phoenix-frontend-brand-viegg.cyclonedx.error.log"
+  "tiangge-player-app" \
+  "$ROOT_DIR/talon-backoffice/packages/app" \
+  "$OUT_DIR/tiangge-player-app.cyclonedx.json" \
+  "$OUT_DIR/tiangge-player-app.cyclonedx.error.log"
 
 if command -v go >/dev/null 2>&1; then
   run_go_module_inventory \

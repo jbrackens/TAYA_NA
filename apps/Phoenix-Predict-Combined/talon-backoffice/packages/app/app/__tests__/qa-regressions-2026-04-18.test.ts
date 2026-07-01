@@ -9,7 +9,7 @@
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -19,47 +19,231 @@ function read(rel: string): string {
   return readFileSync(resolve(appRoot, rel), "utf-8");
 }
 
-// ── Bug C: cashier must guard wallet fetches on empty userId ──────
+function sliceBetween(
+  source: string,
+  startToken: string,
+  endToken: string,
+): string {
+  const start = source.indexOf(startToken);
+  const end = source.indexOf(endToken, start + startToken.length);
+  assert.notEqual(start, -1, `missing start token ${startToken}`);
+  assert.notEqual(end, -1, `missing end token ${endToken}`);
+  return source.slice(start, end);
+}
 
-describe("cashier page: userId guard", () => {
-  const source = read("cashier/page.tsx");
+function listSourceFiles(rel: string): string[] {
+  const root = resolve(appRoot, rel);
+  if (!existsSync(root)) return [];
+  const out: string[] = [];
+  for (const entry of readdirSync(root)) {
+    const path = resolve(root, entry);
+    const stat = statSync(path);
+    if (stat.isDirectory()) {
+      if (entry === "__tests__" || entry === "node_modules") continue;
+      out.push(...listSourceFiles(`${rel}/${entry}`));
+      continue;
+    }
+    if (/\.(ts|tsx|json)$/.test(entry)) {
+      out.push(`${rel}/${entry}`);
+    }
+  }
+  return out;
+}
 
-  it('load effect no longer passes "" fallback for the initial fetches', () => {
-    // Before: the mount useEffect did `getBalance(user?.id || "")` which
-    // produced /wallet//ledger (double slash → 308 → 403) and
-    // /wallets//transactions (404) when auth had not resolved yet.
-    // We now extract userId once, bail if empty, and pass it through.
-    const loadEffect =
-      /useEffect\(\(\)\s*=>\s*\{[\s\S]*?const\s+load\s*=[\s\S]*?load\(\);[\s\S]*?\}/m.exec(
-        source,
+// ── Tiangge safety: user-facing cashier surfaces stay absent ──────
+
+describe("points-only safety boundary", () => {
+  it("does not ship the user-facing cashier routes", () => {
+    for (const rel of [
+      "cashier/page.tsx",
+      "cashier/cheque/page.tsx",
+      "cashier/loading.tsx",
+      "cashier/error.tsx",
+    ]) {
+      assert.equal(
+        existsSync(resolve(appRoot, rel)),
+        false,
+        `${rel} should not exist in the points-only app`,
       );
-    assert.ok(loadEffect, "cashier should have a load useEffect");
+    }
+  });
+
+  it("does not expose prohibited money path segments in app routes", () => {
+    const routeFiles = listSourceFiles(".").filter((rel) =>
+      /\/(?:page|route)\.tsx?$/.test(rel),
+    );
+    const prohibitedSegment =
+      /(^|\/)(cashier|cashout|crypto|deposit|deposits|fiat|payment|payments|prize|prizes|redeem|redemption|withdraw|withdrawal|withdrawals)(\/|$)/i;
+    const offenders = routeFiles.filter((rel) =>
+      prohibitedSegment.test(rel.replace(/^\.\//, "")),
+    );
+
+    assert.deepEqual(offenders, []);
+  });
+
+  it("returns retired money paths as absent before auth redirects", () => {
+    const proxySource = read("../proxy.ts");
+    const protectedRoutes = sliceBetween(
+      proxySource,
+      "const PROTECTED_ROUTES = [",
+      "];",
+    );
+
     assert.ok(
-      /const\s+userId\s*=\s*user\?\.id/.test(loadEffect![0]),
-      "load effect should extract userId from user?.id",
+      proxySource.includes("RETIRED_MONEY_ROUTE_PATTERN") &&
+        proxySource.includes("isRetiredMoneyRoute(pathname)") &&
+        proxySource.includes('new NextResponse("Not found", { status: 404 })'),
+      "proxy should 404 retired money paths before auth redirects",
     );
     assert.ok(
-      !/getBalance\(user\?\.id\s*\|\|\s*""\)/.test(loadEffect![0]),
-      "load effect should not call getBalance with empty-string fallback",
-    );
-    assert.ok(
-      !/getTransactions\(user\?\.id\s*\|\|\s*""/.test(loadEffect![0]),
-      "load effect should not call getTransactions with empty-string fallback",
+      !protectedRoutes.includes('"/cashier"'),
+      "cashier must not stay in auth-protected routes because that creates a live login redirect",
     );
   });
 
-  it("effect bails out when userId is not yet loaded", () => {
-    assert.ok(
-      /if\s*\(\s*!userId\s*\)\s*return/.test(source),
-      "cashier load effect should early-return when userId is empty",
+  it("does not ship the old cashier UI components", () => {
+    for (const rel of [
+      "components/CryptoDepositCard.tsx",
+      "components/NonCustodialCashierStatus.tsx",
+      "components/DepositThresholdModal.tsx",
+      "components/CashierCanaryPanel.tsx",
+    ]) {
+      assert.equal(
+        existsSync(resolve(appRoot, rel)),
+        false,
+        `${rel} should not exist in the points-only app`,
+      );
+    }
+  });
+
+  it("does not ship cashier or crypto payment API clients in the user app", () => {
+    for (const rel of [
+      "lib/api/alpha-cashier-client.ts",
+      "lib/api/noncustodial-cashier-client.ts",
+      "lib/api/crypto-client.ts",
+      "lib/services/currency.ts",
+      "lib/format.ts",
+    ]) {
+      assert.equal(
+        existsSync(resolve(appRoot, rel)),
+        false,
+        `${rel} should not exist in the points-only app`,
+      );
+    }
+
+    const apiIndex = read("lib/api/index.ts");
+    assert.ok(!apiIndex.includes("cashier-client"));
+    assert.ok(!apiIndex.includes("crypto-client"));
+  });
+
+  it("does not keep generic money formatter or site currency settings contracts", () => {
+    const storeIndex = read("lib/store/index.ts");
+    const settings = read("lib/store/settingsSlice.ts");
+    const siteSettings = read("lib/store/siteSettingsSlice.ts");
+
+    for (const source of [storeIndex, settings, siteSettings]) {
+      assert.ok(!source.includes("Currency"));
+      assert.ok(!source.includes("setCurrency"));
+      assert.ok(!source.includes("selectCurrency"));
+      assert.ok(!source.includes("DisplayOddsEnum"));
+      assert.ok(!source.includes("oddsFormat"));
+      assert.ok(!source.includes("setOddsFormat"));
+      assert.ok(!source.includes("selectOddsFormat"));
+      assert.ok(!source.includes("BettingPreferences"));
+      assert.ok(!source.includes("bettingPreferences"));
+      assert.ok(!source.includes("minWithdrawal"));
+      assert.ok(!source.includes("maxWithdrawal"));
+      assert.ok(!source.includes("minDeposit"));
+      assert.ok(!source.includes("maxDeposit"));
+      assert.ok(!source.includes("minStake"));
+      assert.ok(!source.includes("maxStake"));
+      assert.ok(!source.includes("thresholdValue"));
+    }
+    assert.equal(
+      existsSync(resolve(appRoot, "lib/utils/odds.ts")),
+      false,
+      "unused sportsbook odds formatter should not ship in the points-only app",
     );
   });
 
-  it("effect deps array includes user?.id so it re-runs on auth resolve", () => {
-    assert.ok(
-      /\[dispatch,\s*user\?\.id\]/.test(source),
-      "cashier useEffect deps should include user?.id",
+  it("does not keep the retired dollar-stake prediction store contract", () => {
+    assert.equal(
+      existsSync(resolve(appRoot, "lib/store/predictionSlice.ts")),
+      false,
+      "unused predictionSlice.ts carried retired stakeUsd state",
     );
+
+    const storeSource = read("lib/store/store.ts");
+    const storeIndex = read("lib/store/index.ts");
+
+    for (const source of [storeSource, storeIndex]) {
+      assert.ok(!source.includes("predictionReducer"));
+      assert.ok(!source.includes("predictionSlice"));
+      assert.ok(!source.includes("stakeUsd"));
+      assert.ok(!source.includes("setPredictionStake"));
+      assert.ok(!source.includes("selectPredictionStake"));
+    }
+  });
+
+  it("does not keep a cashier-named Redux slice in the launch store", () => {
+    assert.equal(
+      existsSync(resolve(appRoot, "lib/store/cashierSlice.ts")),
+      false,
+      "cashierSlice.ts should be renamed away from cashier terminology",
+    );
+
+    const storeSource = read("lib/store/store.ts");
+    assert.ok(!storeSource.includes("cashierReducer"));
+    assert.ok(!storeSource.includes("cashier:"));
+    assert.ok(storeSource.includes("pointBalance:"));
+  });
+
+  it("trade ticket never links insufficient-balance users to cashier", () => {
+    const source = read("components/prediction/TradeTicket.tsx");
+    assert.ok(!source.includes('href="/cashier"'));
+    assert.ok(source.includes('t("NOT_ENOUGH_POINTS")'));
+  });
+
+  it("recent trade tape displays sizes as points, not cash", () => {
+    const source = read("components/prediction/RecentTrades.tsx");
+    assert.ok(source.includes("formatTradePoints"));
+    assert.ok(!source.includes(">${size.toFixed(2)}"));
+    assert.ok(!source.includes("$1/contract"));
+  });
+
+  it("has no launch-source cashier route links", () => {
+    const offenders = listSourceFiles(".")
+      .filter((rel) => !rel.startsWith("./__tests__/"))
+      .filter((rel) => {
+        const source = read(rel.replace(/^\.\//, ""));
+        return /href=["']\/cashier\b|router\.push\(["']\/cashier\b|\/cashier\/cheque\b/.test(
+          source,
+        );
+      });
+    assert.deepEqual(offenders, []);
+  });
+
+  it("has no cashier or crypto payment endpoints in the user app API layer", () => {
+    const forbiddenEndpoint =
+      /\/api\/v1\/cashier|\/v1\/cashier|\/api\/v1\/payments\/crypto|deposit-intents|withdrawal-intents|wallet_switchEthereumChain|eth_sendTransaction|MetaMask is required|USDC cashier/;
+    const offenders = listSourceFiles("lib/api").filter((rel) =>
+      forbiddenEndpoint.test(read(rel)),
+    );
+    assert.deepEqual(offenders, []);
+  });
+
+  it("keeps public homepage teasers away from crypto and cash-value framing", () => {
+    const homepageSource = read("page.tsx");
+    assert.ok(homepageSource.includes("markets.esports.category"));
+    assert.ok(!homepageSource.includes("markets.crypto.category"));
+
+    const forbiddenHomepageCopy =
+      /crypto|bitcoin|btc|usd|\$|dollar|cash|deposit|withdraw|withdrawal|prize|redeem|payout|wager|stake|fiat|kripto|加密|pembayaran|赔付|賠付/i;
+    const offenders = listSourceFiles("../public/static/locales")
+      .filter((rel) => rel.endsWith("/page-home.json"))
+      .filter((rel) => forbiddenHomepageCopy.test(read(rel)));
+
+    assert.deepEqual(offenders, []);
   });
 });
 
@@ -81,6 +265,416 @@ describe("wallet-client: no sportsbook fallbacks", () => {
     assert.ok(
       source.includes("/api/v1/wallet/${userId}/ledger"),
       "wallet-client should use /wallet/{id}/ledger as the primary path",
+    );
+  });
+
+  it("daily claim uses the wallet ledger-backed endpoint", () => {
+    assert.ok(source.includes("claimDailyPoints"));
+    assert.ok(source.includes("/api/v1/wallet/daily-claim"));
+  });
+
+  it("wallet reservations write point-ledger review markers", () => {
+    const walletServiceSource = read(
+      "../../../../go-platform/services/gateway/internal/wallet/service.go",
+    );
+
+    assert.ok(
+      walletServiceSource.includes(
+        'insertLedgerMarkerTx(ctx, tx, request.UserID, "reservation"',
+      ),
+      "wallet holds should write reservation ledger markers",
+    );
+    assert.ok(
+      walletServiceSource.includes(
+        'insertLedgerMarkerTx(ctx, tx, userID, "release"',
+      ),
+      "wallet releases should write release ledger markers",
+    );
+    assert.ok(
+      walletServiceSource.includes("reservationLedgerKey"),
+      "reservation/release marker idempotency should be keyed by reference",
+    );
+  });
+});
+
+describe("rewards daily claim", () => {
+  const source = read("rewards/page.tsx");
+  const walletClientSource = read("lib/api/wallet-client.ts");
+  const loyaltyClientSource = read("lib/api/loyalty-client.ts");
+  const gatewayWalletSource = read(
+    "../../../../go-platform/services/gateway/internal/http/wallet_handlers.go",
+  );
+
+  it("renders a real daily claim action wired to the wallet client", () => {
+    assert.ok(source.includes("claimDailyPoints"));
+    assert.ok(source.includes("handleDailyClaim"));
+    assert.ok(source.includes("DailyClaimControl"));
+    assert.ok(source.includes("point ledger"));
+  });
+
+  it("renders configured point packs backed by idempotent point-ledger grants", () => {
+    assert.ok(source.includes("getPointPacks"));
+    assert.ok(source.includes("claimPointPack"));
+    assert.ok(source.includes("PointPacksControl"));
+    assert.ok(source.includes("gameplay point packs for predictions only"));
+    assert.ok(
+      source.includes("no cashout, withdrawal, crypto, fiat, or prize path"),
+    );
+    assert.ok(walletClientSource.includes("/api/v1/wallet/point-packs"));
+    assert.ok(walletClientSource.includes("/api/v1/wallet/point-packs/claim"));
+    assert.ok(gatewayWalletSource.includes("POINT_PACK_STARTER_BOOST_CENTS"));
+    assert.ok(
+      gatewayWalletSource.includes('Reason:         "point_pack_grant"'),
+    );
+    assert.ok(
+      gatewayWalletSource.includes('"point_pack:" + userID + ":" + pack.ID'),
+    );
+  });
+
+  it("renders missions backed by completed ledger activity and mission rewards", () => {
+    assert.ok(source.includes("getMissions"));
+    assert.ok(source.includes("claimMission"));
+    assert.ok(source.includes("MissionsControl"));
+    assert.ok(source.includes("Complete gameplay missions"));
+    assert.ok(walletClientSource.includes("/api/v1/wallet/missions"));
+    assert.ok(walletClientSource.includes("/api/v1/wallet/missions/claim"));
+    assert.ok(
+      gatewayWalletSource.includes("MISSION_DAILY_CHECK_IN_REWARD_CENTS"),
+    );
+    assert.ok(
+      gatewayWalletSource.includes("MISSION_FIVE_PREDICTIONS_REWARD_CENTS"),
+    );
+    assert.ok(
+      gatewayWalletSource.includes("MISSION_TEN_PREDICTIONS_REWARD_CENTS"),
+    );
+    assert.ok(
+      gatewayWalletSource.includes("MISSION_FIVE_SETTLED_RESULTS_REWARD_CENTS"),
+    );
+    assert.ok(
+      gatewayWalletSource.includes("MISSION_TEN_SETTLED_RESULTS_REWARD_CENTS"),
+    );
+    assert.ok(
+      gatewayWalletSource.includes("MISSION_MONTHLY_CHECK_IN_REWARD_CENTS"),
+    );
+    assert.ok(gatewayWalletSource.includes('"five_predictions"'));
+    assert.ok(gatewayWalletSource.includes('"ten_predictions"'));
+    assert.ok(gatewayWalletSource.includes('"five_settled_results"'));
+    assert.ok(gatewayWalletSource.includes('"ten_settled_results"'));
+    assert.ok(gatewayWalletSource.includes('"monthly_check_in"'));
+    assert.ok(
+      gatewayWalletSource.includes("MISSION_SEASONAL_CHECK_IN_REWARD_CENTS"),
+    );
+    assert.ok(gatewayWalletSource.includes('"seasonal_check_in"'));
+    assert.ok(
+      gatewayWalletSource.includes("MISSION_QUARTERLY_CHECK_IN_REWARD_CENTS"),
+    );
+    assert.ok(gatewayWalletSource.includes('"quarterly_check_in"'));
+    assert.ok(gatewayWalletSource.includes('Reason:         "mission_reward"'));
+    assert.ok(gatewayWalletSource.includes('"daily_claim:"+userID+":"+date'));
+  });
+
+  it("renders streaks backed by daily claim ledger activity and streak rewards", () => {
+    assert.ok(source.includes("getStreaks"));
+    assert.ok(source.includes("claimStreak"));
+    assert.ok(source.includes("StreaksControl"));
+    assert.ok(source.includes("Keep daily gameplay-point claims going"));
+    assert.ok(walletClientSource.includes("/api/v1/wallet/streaks"));
+    assert.ok(walletClientSource.includes("/api/v1/wallet/streaks/claim"));
+    assert.ok(gatewayWalletSource.includes("STREAK_DAILY_3_REWARD_CENTS"));
+    assert.ok(gatewayWalletSource.includes("STREAK_DAILY_14_REWARD_CENTS"));
+    assert.ok(gatewayWalletSource.includes('"daily_14"'));
+    assert.ok(gatewayWalletSource.includes("STREAK_DAILY_30_REWARD_CENTS"));
+    assert.ok(gatewayWalletSource.includes('"daily_30"'));
+    assert.ok(gatewayWalletSource.includes("STREAK_DAILY_60_REWARD_CENTS"));
+    assert.ok(gatewayWalletSource.includes('"daily_60"'));
+    assert.ok(gatewayWalletSource.includes("STREAK_DAILY_90_REWARD_CENTS"));
+    assert.ok(gatewayWalletSource.includes('"daily_90"'));
+    assert.ok(gatewayWalletSource.includes('Reason:         "streak_reward"'));
+    assert.ok(
+      gatewayWalletSource.includes('prefix := "daily_claim:" + userID + ":"'),
+    );
+  });
+
+  it("renders badges as non-redeemable cosmetics backed by ledger achievements", () => {
+    assert.ok(source.includes("getBadges"));
+    assert.ok(source.includes("BadgesControl"));
+    assert.ok(source.includes("non-redeemable status markers"));
+    assert.ok(walletClientSource.includes("/api/v1/wallet/badges"));
+    assert.ok(gatewayWalletSource.includes("badgeDefinitions"));
+    assert.ok(gatewayWalletSource.includes("CosmeticID"));
+    assert.ok(gatewayWalletSource.includes("ledgerHasIdempotencyPrefix"));
+    assert.ok(gatewayWalletSource.includes('"prediction_veteran"'));
+    assert.ok(gatewayWalletSource.includes('"prediction_expert"'));
+    assert.ok(gatewayWalletSource.includes('"streak_champion"'));
+    assert.ok(gatewayWalletSource.includes('"monthly_streak"'));
+    assert.ok(gatewayWalletSource.includes('"double_monthly_streak"'));
+    assert.ok(gatewayWalletSource.includes('"quarterly_streak"'));
+    assert.ok(gatewayWalletSource.includes('"monthly_check_in"'));
+    assert.ok(gatewayWalletSource.includes('"seasonal_check_in"'));
+    assert.ok(gatewayWalletSource.includes('"quarterly_check_in"'));
+    assert.ok(gatewayWalletSource.includes('"settlement_veteran"'));
+    assert.ok(gatewayWalletSource.includes('"settlement_expert"'));
+  });
+
+  it("renders reward limit status backed by ledger-based grant caps", () => {
+    assert.ok(source.includes("getRewardLimitStatus"));
+    assert.ok(source.includes("RewardLimitControl"));
+    assert.ok(source.includes("Daily reward limit"));
+    assert.ok(walletClientSource.includes("/api/v1/wallet/reward-limits"));
+    assert.ok(gatewayWalletSource.includes("REWARD_DAILY_GRANT_LIMIT_CENTS"));
+    assert.ok(gatewayWalletSource.includes("checkRewardGrantLimit"));
+    assert.ok(gatewayWalletSource.includes("daily reward point limit reached"));
+  });
+
+  it("models loyalty standing and tiers with point-native XP/rank aliases", () => {
+    const standingInterface =
+      /export interface LoyaltyStanding \{[\s\S]*?\n\}/.exec(
+        loyaltyClientSource,
+      )?.[0] ?? "";
+    const tierInterface =
+      /export interface LoyaltyTier \{[\s\S]*?\n\}/.exec(
+        loyaltyClientSource,
+      )?.[0] ?? "";
+    for (const token of [
+      "xpPoints: number",
+      "rankName: string",
+      "nextRankName: string",
+      "xpToNextRank: number",
+      'unit: "PTS"',
+      "minXpPoints: number",
+    ]) {
+      assert.ok(
+        loyaltyClientSource.includes(token),
+        `loyalty-client should expose point-native field ${token}`,
+      );
+    }
+    for (const retired of [
+      "tierName",
+      "nextTier",
+      "nextTierName",
+      "pointsToNextTier",
+      "pointsThreshold",
+    ]) {
+      assert.ok(
+        !standingInterface.includes(retired) &&
+          !tierInterface.includes(retired),
+        `exported loyalty types should not expose retired tier alias ${retired}`,
+      );
+    }
+    assert.ok(
+      loyaltyClientSource.includes("type RawLoyaltyStanding") &&
+        loyaltyClientSource.includes("normalizeLoyaltyStanding") &&
+        loyaltyClientSource.includes("normalizeLoyaltyTier"),
+      "older loyalty response parsing should stay private to the normalizer",
+    );
+  });
+});
+
+describe("market social discussion", () => {
+  const clientSource = read("lib/api/market-social-client.ts");
+  const componentSource = read("components/prediction/MarketDiscussion.tsx");
+  const marketPageSource = read("market/[ticker]/page.tsx");
+  const publicProfileSource = read("users/[userId]/page.tsx");
+  const activityPageSource = read("activity/page.tsx");
+  const gatewaySocialSource = read(
+    "../../../../go-platform/services/gateway/internal/http/market_social_handlers.go",
+  );
+
+  it("uses prediction-native market social endpoints", () => {
+    assert.ok(
+      clientSource.includes("/api/v1/social/markets/${marketId}/comments"),
+    );
+    assert.ok(
+      clientSource.includes("/api/v1/social/comments/${commentId}/react"),
+    );
+    assert.ok(
+      clientSource.includes("/api/v1/social/comments/${commentId}/report"),
+    );
+  });
+
+  it("renders comments, replies, reactions, and reports on market detail", () => {
+    assert.ok(marketPageSource.includes("MarketDiscussion"));
+    assert.ok(componentSource.includes("getMarketComments"));
+    assert.ok(componentSource.includes("createMarketComment"));
+    assert.ok(componentSource.includes("reactToMarketComment"));
+    assert.ok(componentSource.includes("reportMarketComment"));
+    assert.ok(componentSource.includes("setReplyTo(comment.id)"));
+  });
+
+  it("exposes a real market share action with clipboard fallback", () => {
+    assert.ok(marketPageSource.includes("handleShareMarket"));
+    assert.ok(marketPageSource.includes("navigator.share"));
+    assert.ok(marketPageSource.includes("navigator.clipboard.writeText"));
+    assert.ok(marketPageSource.includes("SHARE_MARKET"));
+  });
+
+  it("ships public profiles, follows, and activity feed wiring", () => {
+    assert.ok(
+      clientSource.includes(
+        "/api/v1/social/users/${encodeURIComponent(userId)}/profile",
+      ),
+    );
+    assert.ok(
+      clientSource.includes(
+        "/api/v1/social/users/${encodeURIComponent(userId)}/follow",
+      ),
+    );
+    assert.ok(
+      clientSource.includes(
+        "/api/v1/social/users/${encodeURIComponent(userId)}/activity",
+      ),
+    );
+    assert.ok(clientSource.includes("/api/v1/social/activity"));
+    assert.ok(componentSource.includes("followSocialUser"));
+    assert.ok(
+      componentSource.includes(
+        "href={`/users/${encodeURIComponent(comment.userId)}`",
+      ),
+    );
+    assert.ok(componentSource.includes('href="/activity"'));
+    assert.ok(publicProfileSource.includes("getPublicUserProfile"));
+    assert.ok(publicProfileSource.includes("getUserActivity"));
+    assert.ok(publicProfileSource.includes("followSocialUser"));
+    assert.ok(activityPageSource.includes("getGlobalActivity"));
+  });
+
+  it("includes persisted trade fills in social activity surfaces", () => {
+    assert.ok(
+      clientSource.includes(
+        '"comment" | "follow" | "trade" | "settlement" | "reward" | "leaderboard"',
+      ),
+    );
+    assert.ok(activityPageSource.includes('item.type === "trade"'));
+    assert.ok(publicProfileSource.includes('item.type === "trade"'));
+    assert.ok(gatewaySocialSource.includes("FROM prediction_trades"));
+    assert.ok(gatewaySocialSource.includes("'trade' AS type"));
+    assert.ok(gatewaySocialSource.includes("'Bought ' || quantity::text"));
+    assert.ok(gatewaySocialSource.includes("'Sold ' || quantity::text"));
+  });
+
+  it("includes settlement and payout events in social activity surfaces", () => {
+    assert.ok(gatewaySocialSource.includes("prediction_payouts p"));
+    assert.ok(gatewaySocialSource.includes("prediction_settlements s"));
+    assert.ok(gatewaySocialSource.includes("'settlement' AS type"));
+    assert.ok(
+      gatewaySocialSource.includes("'Market resolved ' || upper(result)"),
+    );
+    assert.ok(gatewaySocialSource.includes("'Settled ' || upper(p.side)"));
+    assert.ok(activityPageSource.includes('item.type === "settlement"'));
+    assert.ok(publicProfileSource.includes('item.type === "settlement"'));
+  });
+
+  it("includes reward and leaderboard movement in social activity surfaces", () => {
+    assert.ok(gatewaySocialSource.includes("FROM loyalty_ledger"));
+    assert.ok(gatewaySocialSource.includes("'reward' AS type"));
+    assert.ok(
+      gatewaySocialSource.includes(
+        "'Earned ' || delta_points::text || ' reward points",
+      ),
+    );
+    assert.ok(gatewaySocialSource.includes("FROM leaderboard_snapshots"));
+    assert.ok(gatewaySocialSource.includes("'leaderboard' AS type"));
+    assert.ok(gatewaySocialSource.includes("'Rank #' || rank::text"));
+    assert.ok(activityPageSource.includes('item.type === "reward"'));
+    assert.ok(activityPageSource.includes('item.type === "leaderboard"'));
+    assert.ok(publicProfileSource.includes('item.type === "reward"'));
+    assert.ok(publicProfileSource.includes('item.type === "leaderboard"'));
+  });
+});
+
+describe("market detail liquidity honesty", () => {
+  const marketPageSource = read("market/[ticker]/page.tsx");
+  const orderBookSource = read("components/prediction/OrderBook.tsx");
+  const predictionTypesSource = read(
+    "../../api-client/src/prediction-types.ts",
+  );
+  const seedPredictionSource = read(
+    "../../../../go-platform/services/gateway/seed-data/seed_prediction.sql",
+  );
+
+  it("does not synthesize order book rows from price and liquidity", () => {
+    assert.ok(!marketPageSource.includes("function synthesizeBook"));
+    assert.ok(!marketPageSource.includes("synthesizeBook("));
+    assert.ok(!orderBookSource.includes("synthesized book"));
+    assert.ok(!orderBookSource.includes("shape-only rendering"));
+  });
+
+  it("renders real order book depth or an explicit AMM liquidity snapshot", () => {
+    assert.ok(
+      marketPageSource.includes("function MarketDepth") &&
+        marketPageSource.includes('market.executionMode === "order_book"') &&
+        marketPageSource.includes("adaptBookForDisplay(orderBook)") &&
+        marketPageSource.includes("function LiquiditySnapshot") &&
+        marketPageSource.includes("AMM_LIQUIDITY"),
+      "Market detail should branch between real order book data and explicit AMM liquidity",
+    );
+  });
+
+  it("renders AMM curve and reserve fields without inventing order book depth", () => {
+    assert.ok(predictionTypesSource.includes("ammYesShares?: number"));
+    assert.ok(predictionTypesSource.includes("ammNoShares?: number"));
+    assert.ok(predictionTypesSource.includes("ammSubsidyPointsCents?: number"));
+    assert.ok(marketPageSource.includes("function AMMCurve"));
+    assert.ok(marketPageSource.includes("AMM_PRICE_MARKER"));
+    assert.ok(marketPageSource.includes("AMM_RESERVE_BALANCE"));
+    assert.ok(marketPageSource.includes("market.ammYesShares"));
+    assert.ok(marketPageSource.includes("market.ammNoShares"));
+    assert.ok(marketPageSource.includes("market.ammSubsidyPointsCents"));
+    assert.ok(marketPageSource.includes("formatCompactPoints(subsidy)"));
+  });
+
+  it("backs AMM impact quotes with the order preview endpoint", () => {
+    assert.ok(marketPageSource.includes("const AMM_QUOTE_SIZES = [1, 10, 25]"));
+    assert.ok(marketPageSource.includes("api.previewOrder({"));
+    assert.ok(marketPageSource.includes('side: "yes"'));
+    assert.ok(marketPageSource.includes('action: "buy"'));
+    assert.ok(marketPageSource.includes('orderType: "market"'));
+    assert.ok(marketPageSource.includes("function AMMCurve"));
+    assert.ok(marketPageSource.includes("AMM_IMPACT_QUOTES"));
+    assert.ok(marketPageSource.includes("quote.newYesPricePointsCents"));
+    assert.ok(marketPageSource.includes("quote.averageFillPricePointsCents"));
+    assert.ok(marketPageSource.includes("quote.totalCostWithFeesPointsCents"));
+  });
+
+  it("keeps a launch-safe legacy AMM seed market for live detail proof", () => {
+    assert.ok(seedPredictionSource.includes("WHERE ticker = 'DOTA-GF-MAP1'"));
+    assert.ok(seedPredictionSource.includes("execution_mode = 'amm'"));
+    assert.ok(seedPredictionSource.includes("amm_yes_shares = 18.50000000"));
+    assert.ok(seedPredictionSource.includes("amm_no_shares = 42.00000000"));
+    assert.ok(
+      seedPredictionSource.includes("quote-only AMM detail UI"),
+      "seed should document why this AMM fixture exists",
+    );
+  });
+});
+
+describe("market detail related markets", () => {
+  const marketPageSource = read("market/[ticker]/page.tsx");
+
+  it("prefers event, series, and category related markets before fallback", () => {
+    assert.ok(
+      marketPageSource.includes(
+        "await addRelated({ eventId: currentEventId })",
+      ) &&
+        marketPageSource.includes(
+          "await addRelated({ seriesId: event.seriesId })",
+        ) &&
+        marketPageSource.includes(
+          "await addRelated({ categoryId: event.categoryId })",
+        ) &&
+        marketPageSource.includes("await addRelated({})"),
+      "related markets should be selected by actual event/series/category context before generic fallback",
+    );
+  });
+
+  it("keeps related market volume in points copy", () => {
+    assert.ok(
+      marketPageSource.includes("formatCompactPoints(m.volumePointsCents)"),
+    );
+    assert.ok(
+      !marketPageSource.includes(
+        "value: `$${(m.volumePointsCents / 100).toFixed(0)}`",
+      ),
     );
   });
 });
@@ -147,6 +741,7 @@ describe("MarketCard: Tailwind styling outside Link", () => {
 
 describe("MarketCard P8 composition", () => {
   const marketCardSource = read("components/prediction/MarketCard.tsx");
+  const marketGridSource = read("components/prediction/MarketGrid.tsx");
   const marketSentimentSource = read(
     "components/prediction/marketSentiment.ts",
   );
@@ -217,6 +812,45 @@ describe("MarketCard P8 composition", () => {
     assert.ok(
       !marketCardSource.includes("mkt-delta"),
       "MarketCard should not render placeholder cent deltas",
+    );
+  });
+
+  it("renders category and liquidity metadata on market cards", () => {
+    assert.ok(
+      marketCardSource.includes('t("CATEGORY", "Category")') &&
+        marketCardSource.includes('t("LIQUIDITY")') &&
+        marketCardSource.includes(
+          "formatCompactPoints(liquidityPointsCents ?? 0)",
+        ),
+      "MarketCard should expose category and liquidity as card metadata",
+    );
+    assert.ok(
+      marketGridSource.includes("categoryLabel(t, m.categorySlug)") &&
+        marketGridSource.includes("m.categoryName || undefined"),
+      "MarketGrid should pass API-backed category labels into cards",
+    );
+  });
+
+  it("keeps card activity volume on the point-native prop contract", () => {
+    assert.ok(
+      marketCardSource.includes("volumePointsCents: number") &&
+        marketCardSource.includes("liquidityPointsCents?: number") &&
+        marketCardSource.includes("formatCompactPoints(volumePointsCents)") &&
+        marketCardSource.includes(
+          "formatCompactPoints(liquidityPointsCents ?? 0)",
+        ) &&
+        !marketCardSource.includes("volumeCents: number") &&
+        !marketCardSource.includes("liquidityCents?: number") &&
+        !marketCardSource.includes("formatCompactPoints(volumeCents)") &&
+        !marketCardSource.includes("formatCompactPoints(liquidityCents"),
+      "MarketCard should render activity from point-native props, not retired volumeCents/liquidityCents props",
+    );
+    assert.ok(
+      marketGridSource.includes("volumePointsCents={m.volumePointsCents}") &&
+        marketGridSource.includes(
+          "liquidityPointsCents={m.liquidityPointsCents}",
+        ),
+      "MarketGrid should pass point-native market activity and liquidity into MarketCard",
     );
   });
 });
@@ -434,6 +1068,120 @@ describe("Navigation pill active colors", () => {
   });
 });
 
+describe("Predict discovery controls", () => {
+  const allMarketsSource = read("components/prediction/AllMarketsSection.tsx");
+  const discoverPageSource = read("discover/page.tsx");
+  const seriesPageSource = read("series/[slug]/page.tsx");
+  const marketGridSource = read("components/prediction/MarketGrid.tsx");
+  const marketCardSource = read("components/prediction/MarketCard.tsx");
+  const watchlistClientSource = read("lib/api/market-watchlist-client.ts");
+  const predictionClientSource = read(
+    "../../api-client/src/prediction-client.ts",
+  );
+
+  it("backs in-page search and sort with market-list API params", () => {
+    assert.ok(
+      allMarketsSource.includes('const [query, setQuery] = useState("")'),
+      "AllMarketsSection should own an in-page search query",
+    );
+    assert.ok(
+      allMarketsSource.includes(
+        'const [sortBy, setSortBy] = useState<MarketSort>("activity")',
+      ),
+      "AllMarketsSection should own an explicit sort mode",
+    );
+    assert.ok(
+      allMarketsSource.includes("q: search || undefined") &&
+        allMarketsSource.includes("sort: sortBy"),
+      "initial market load should pass search and sort to getMarkets",
+    );
+    assert.ok(
+      allMarketsSource.includes("q: query.trim() || undefined") &&
+        allMarketsSource.includes("sort: sortBy"),
+      "load more should keep search and sort scoped",
+    );
+    assert.ok(
+      predictionClientSource.includes('query.set("q", params.q)') &&
+        predictionClientSource.includes('query.set("sort", params.sort)'),
+      "PredictionApiClient.getMarkets should serialize q and sort",
+    );
+  });
+
+  it("backs watchlist filtering with persistent watchlist endpoints", () => {
+    assert.ok(
+      watchlistClientSource.includes('"/api/v1/watchlist/markets"') &&
+        watchlistClientSource.includes("apiClient.put") &&
+        watchlistClientSource.includes("apiClient.delete"),
+      "market-watchlist-client should list, add, and remove persistent watchlist rows",
+    );
+    assert.ok(
+      allMarketsSource.includes("getMarketWatchlist") &&
+        allMarketsSource.includes("addMarketToWatchlist") &&
+        allMarketsSource.includes("removeMarketFromWatchlist"),
+      "AllMarketsSection should hydrate and mutate the persisted watchlist",
+    );
+    assert.ok(
+      allMarketsSource.includes("showWatchlistOnly") &&
+        allMarketsSource.includes("watchedMarketIds") &&
+        allMarketsSource.includes("onToggleWatchlist={toggleWatchlist}"),
+      "AllMarketsSection should filter by watched markets and pass toggle state into the grid",
+    );
+    assert.ok(
+      marketGridSource.includes("marketId={m.id}") &&
+        marketGridSource.includes(
+          "watched={watchedMarketIds?.has(m.id) ?? false}",
+        ) &&
+        marketGridSource.includes("onToggleWatchlist={onToggleWatchlist}"),
+      "MarketGrid should pass market identity and watch state into each MarketCard",
+    );
+    assert.ok(
+      marketCardSource.includes("aria-pressed={watched}") &&
+        marketCardSource.includes("REMOVE_FROM_WATCHLIST") &&
+        marketCardSource.includes("ADD_TO_WATCHLIST"),
+      "MarketCard should expose an accessible watch/unwatch control",
+    );
+  });
+
+  it("backs /discover movement with market price history instead of deterministic deltas", () => {
+    assert.ok(
+      discoverPageSource.includes("getMarketPriceHistory") &&
+        discoverPageSource.includes("movementFromHistory") &&
+        discoverPageSource.includes('"1d"'),
+      "/discover should derive 24h movement from market price history",
+    );
+    assert.ok(
+      !discoverPageSource.includes("deterministicDelta"),
+      "/discover should not render pseudo-random movement deltas",
+    );
+  });
+
+  it("backs series and tag browsing with taxonomy API params", () => {
+    assert.ok(
+      predictionClientSource.includes("/api/v1/series") &&
+        predictionClientSource.includes("/api/v1/tags") &&
+        predictionClientSource.includes(
+          'query.set("seriesId", params.seriesId)',
+        ) &&
+        predictionClientSource.includes('query.set("tag", params.tag)'),
+      "PredictionApiClient should expose series/tags and serialize seriesId/tag market filters",
+    );
+    assert.ok(
+      allMarketsSource.includes("getSeries") &&
+        allMarketsSource.includes("getTags") &&
+        allMarketsSource.includes("selectedTag") &&
+        allMarketsSource.includes("tag: selectedTag || undefined") &&
+        allMarketsSource.includes("href={`/series/${item.slug}`}"),
+      "AllMarketsSection should render backed series links and tag-filtered market queries",
+    );
+    assert.ok(
+      seriesPageSource.includes("getSeries") &&
+        seriesPageSource.includes("seriesId: match.id") &&
+        seriesPageSource.includes("MarketGrid"),
+      "/series/[slug] should resolve a real series and list its open markets",
+    );
+  });
+});
+
 describe("Static informational pages", () => {
   const contentPageSource = read("components/ContentPage.tsx");
   const footerSource = read("components/prediction/PredictFooter.tsx");
@@ -540,11 +1288,14 @@ describe("Live markets feature gate", () => {
 
 describe("Registration auth flow", () => {
   const registerSource = read("auth/register/page.tsx");
+  const authProviderSource = read("components/AuthProvider.tsx");
 
   it("signs the user in after account creation instead of returning to login", () => {
     assert.ok(
       registerSource.includes("const { login } = useAuth();") &&
-        registerSource.includes("await login(form.username, form.password);"),
+        registerSource.includes(
+          "const newUser = await login(form.username, form.password);",
+        ),
       "register page should establish an authenticated session after successful signup",
     );
     assert.ok(
@@ -556,6 +1307,42 @@ describe("Registration auth flow", () => {
     assert.ok(
       !registerSource.includes('window.location.href = "/auth/login"'),
       "register page should not force users back through the sign-in screen after signup",
+    );
+  });
+
+  it("claims starter points and shows the points-only no-cashout disclosure", () => {
+    assert.ok(
+      registerSource.includes("import { claimStarterGrant }") &&
+        registerSource.includes("await claimStarterGrant(newUser.id)"),
+      "register page should claim starter points immediately after signup login",
+    );
+    assert.ok(
+      registerSource.includes("non-redeemable gameplay points") &&
+        registerSource.includes("cannot be cashed") &&
+        registerSource.includes("no-cashout disclosure"),
+      "register page should require an explicit points-only no-cashout disclosure",
+    );
+    assert.ok(
+      registerSource.includes("terms_accepted: true") &&
+        registerSource.includes("terms_version: TERMS_VERSION") &&
+        registerSource.includes("launch_disclosure_accepted: true") &&
+        registerSource.includes(
+          "launch_disclosure_version: LAUNCH_DISCLOSURE_VERSION",
+        ),
+      "register page should persist terms and points-only disclosure acceptance with the auth service",
+    );
+  });
+
+  it("keeps the session-level starter grant fallback idempotent per user", () => {
+    assert.ok(
+      authProviderSource.includes(
+        "const starterGrantClaimedFor = useRef<string | null>(null)",
+      ) &&
+        authProviderSource.includes(
+          "starterGrantClaimedFor.current === user.id",
+        ) &&
+        authProviderSource.includes("starterGrantClaimedFor.current = user.id"),
+      "AuthProvider should claim the starter grant once per authenticated user id",
     );
   });
 });
@@ -594,6 +1381,50 @@ describe("Mobile navigation and chat parity", () => {
       !chatSidebarSource.includes("window.open"),
       "mobile chat should not send users to a different external chat flow",
     );
+  });
+
+  it("keeps chat seed messages away from sportsbook and cash-value topics", () => {
+    for (const retired of [
+      "oddswatcher",
+      "sportsbook_sam",
+      "BTC",
+      "$100K",
+      "Solana",
+      "ETH",
+      "$90",
+      "oil above",
+    ]) {
+      assert.ok(
+        !chatSidebarSource.includes(retired),
+        `chat seed messages should not include ${retired}`,
+      );
+    }
+
+    assert.ok(chatSidebarSource.includes("pricewatcher"));
+    assert.ok(chatSidebarSource.includes("grand prix safety-car market"));
+  });
+
+  it("keeps footer and geo denial copy point-native", () => {
+    const footerSource = read("components/prediction/PredictFooter.tsx");
+    const geoComplySource = read("lib/services/geocomply.ts");
+    const accountSource = read("account/page.tsx");
+    const tradeTicketSource = read("components/prediction/TradeTicket.tsx");
+
+    assert.ok(
+      footerSource.includes("Non-redeemable point prediction markets"),
+      "footer should state the point-native launch boundary",
+    );
+    assert.ok(!footerSource.includes("sports bets"));
+    assert.ok(!geoComplySource.includes("Betting is not available"));
+    assert.ok(!geoComplySource.includes("place a bet"));
+    assert.ok(
+      geoComplySource.includes("submit a prediction order"),
+      "geo denial copy should describe prediction orders",
+    );
+    assert.ok(!accountSource.includes("bet analytics"));
+    assert.ok(!accountSource.includes("betting heatmap"));
+    assert.ok(!accountSource.includes("sportsbook products"));
+    assert.ok(!tradeTicketSource.includes("not restart from $25"));
   });
 });
 
@@ -649,10 +1480,97 @@ describe("Market copy localization", () => {
       "marketDescription should prefer API translations before bundled market-content fallbacks",
     );
   });
+
+  it("keeps bundled market-content fallbacks away from crypto and cash-value framing", () => {
+    const forbiddenMarketCopy =
+      /\b(?:crypto|bitcoin|btc|usd|dollar|cash|deposit|withdraw|withdrawal|prize|redeem|payout|wager|stake|fiat|kripto|solana|spcx|ipo|nvda|spy)\b|\$|加密|比特幣|比特币|美元/i;
+    const offenders: string[] = [];
+
+    function visit(value: unknown, source: string, keyPath: string) {
+      if (typeof value === "string") {
+        if (forbiddenMarketCopy.test(value)) {
+          offenders.push(`${source}:${keyPath}`);
+        }
+        return;
+      }
+      if (!value || typeof value !== "object") return;
+      for (const [key, next] of Object.entries(value)) {
+        visit(next, source, `${keyPath}.${key}`);
+      }
+    }
+
+    for (const rel of listSourceFiles("../public/static/locales").filter(
+      (file) => file.endsWith("/market-content.json"),
+    )) {
+      visit(JSON.parse(read(rel)), rel, "$");
+    }
+
+    assert.deepEqual(offenders, []);
+  });
+
+  it("does not feature crypto as a launch discovery category", () => {
+    const predictSource = read("predict/page.tsx");
+    const allMarketsSource = read(
+      "components/prediction/AllMarketsSection.tsx",
+    );
+    const trendingSource = read("components/prediction/TrendingSidebar.tsx");
+    const categoryPillsSource = read("components/prediction/CategoryPills.tsx");
+    const featuredCarouselSource = read(
+      "components/prediction/FeaturedCarousel.tsx",
+    );
+    const marketImageSource = read(
+      "components/prediction/utils/marketImage.ts",
+    );
+    const subcategorySource = read(
+      "components/prediction/marketSubcategories.ts",
+    );
+    const layoutSource = read("layout.tsx");
+
+    assert.ok(predictSource.includes('"entertainment"'));
+    assert.ok(!predictSource.includes('"crypto", "politics"'));
+    assert.ok(allMarketsSource.includes('slug.toLowerCase() !== "crypto"'));
+    assert.ok(!trendingSource.includes('btc: "Crypto"'));
+    assert.ok(!trendingSource.includes('crypto: "Crypto"'));
+    assert.ok(!trendingSource.includes('btc: "Technology"'));
+    assert.ok(!trendingSource.includes('eth: "Technology"'));
+    assert.ok(!trendingSource.includes('crypto: "Technology"'));
+    assert.ok(!categoryPillsSource.includes("crypto:"));
+    assert.ok(!featuredCarouselSource.includes("Crypto"));
+    assert.ok(!marketImageSource.includes("crypto:"));
+    assert.ok(!subcategorySource.includes("Crypto Markets"));
+    assert.ok(!subcategorySource.includes('label: "Bitcoin"'));
+    assert.ok(!layoutSource.includes("pageants, crypto"));
+  });
 });
 
 describe("Full-page translation coverage", () => {
   const i18nConfigSource = read("lib/i18n/config.ts");
+  const portfolioSource = read("portfolio/page.tsx");
+  const marketPageSource = read("market/[ticker]/page.tsx");
+  const marketChartSource = read("components/prediction/MarketChart.tsx");
+  const orderBookSource = read("components/prediction/OrderBook.tsx");
+  const discoverPageSource = read("discover/page.tsx");
+  const heroPriceHistorySource = read(
+    "components/prediction/utils/useHeroPriceHistory.ts",
+  );
+  const portfolioLocaleSource = read(
+    "../public/static/locales/en/portfolio.json",
+  );
+  const predictionClientSource = read(
+    "../../api-client/src/prediction-client.ts",
+  );
+  const predictionTypesSource = read(
+    "../../api-client/src/prediction-types.ts",
+  );
+  const officePunterSearchSource = read(
+    "../../office/app/components/users/PunterSearch.tsx",
+  );
+  const officeRiskSummarySource = read(
+    "../../office/translations/en/page-risk-management-summary.js",
+  );
+  const gatewayHandlerSource = read(
+    "../../../../go-platform/services/gateway/internal/http/handlers.go",
+  );
   const criticalPageNamespaces = [
     "account",
     "portfolio",
@@ -660,6 +1578,16 @@ describe("Full-page translation coverage", () => {
     "settings",
     "leaderboards",
   ];
+  const supportedLaunchLanguages = [
+    "en",
+    "zh-Hans",
+    "zh-Hant",
+    "tl",
+    "ms",
+    "id",
+  ];
+  const launchUnsafeValuePattern =
+    /\b(?:deposit|withdrawals?|cash(?:ier|out)?|casino|crypto|fiat|redeem(?:able)?|prizes?|bets?|betting|odds|sportsbook|wagers?|wagering|stakes?|payouts?|payments?|usd|dollars?)\b|\$|tunai|kasino|kripto|penarikan|deposito|pembayaran|bayaran|现金|現金|加密|提款|取款|存款|支付|賠付|赔付|奖金|獎金|投注|下注|赌|賭/i;
 
   function flattenStrings(
     value: unknown,
@@ -688,6 +1616,158 @@ describe("Full-page translation coverage", () => {
     return flattenStrings(JSON.parse(source));
   }
 
+  function listLocaleNamespaces(lang: string): string[] {
+    return readdirSync(resolve(appRoot, `../public/static/locales/${lang}`))
+      .filter((file) => file.endsWith(".json"))
+      .map((file) => file.replace(/\.json$/, ""))
+      .sort();
+  }
+
+  function isAllowedLocaleSafetyValue(key: string, value: string): boolean {
+    return key.endsWith("PASSWORD_REGEX") && value.startsWith("^");
+  }
+
+  it("keeps supported launch locale values inside the points-only boundary", () => {
+    const offenders: string[] = [];
+
+    for (const lang of supportedLaunchLanguages) {
+      for (const namespace of listLocaleNamespaces(lang)) {
+        const locale = readLocale(lang, namespace);
+        for (const [key, value] of Object.entries(locale)) {
+          if (
+            launchUnsafeValuePattern.test(value) &&
+            !isAllowedLocaleSafetyValue(key, value)
+          ) {
+            offenders.push(`${lang}/${namespace}.json ${key}: ${value}`);
+          }
+        }
+      }
+    }
+
+    assert.deepStrictEqual(offenders, []);
+  });
+
+  it("keeps legacy result and esports locale labels point-native", () => {
+    const unsafeLegacyValue =
+      /Financial Transaction ID|^Sport$|^OUTRIGHTS$|^Matches$|^Decimal$|^American$|^Fractional$/;
+    const offenders: string[] = [];
+
+    for (const lang of supportedLaunchLanguages) {
+      for (const namespace of ["page-esports-bets", "win-loss-statistics"]) {
+        const locale = readLocale(lang, namespace);
+        for (const [key, value] of Object.entries(locale)) {
+          if (unsafeLegacyValue.test(value)) {
+            offenders.push(`${lang}/${namespace}.json ${key}: ${value}`);
+          }
+        }
+      }
+    }
+
+    assert.deepStrictEqual(offenders, []);
+  });
+
+  it("keeps leaderboard locale labels on point-result wording", () => {
+    const unsafeLeaderboardPattern =
+      /\bP&L\b|profit|keuntungan|\bkita\b|盈亏|盈虧|利润|利潤/i;
+    const offenders: string[] = [];
+
+    for (const lang of supportedLaunchLanguages) {
+      const locale = readLocale(lang, "leaderboards");
+      for (const [key, value] of Object.entries(locale)) {
+        if (unsafeLeaderboardPattern.test(value)) {
+          offenders.push(`${lang}/leaderboards.json ${key}: ${value}`);
+        }
+      }
+    }
+
+    assert.deepStrictEqual(offenders, []);
+  });
+
+  it("keeps portfolio and account result labels on point wording", () => {
+    const unsafeResultPattern =
+      /\bP&L\b|profit|keuntungan|\bkita\b|盈亏|盈虧|利润|利潤/i;
+    const offenders: string[] = [];
+
+    for (const lang of supportedLaunchLanguages) {
+      for (const namespace of ["portfolio", "account", "win-loss-statistics"]) {
+        const locale = readLocale(lang, namespace);
+        for (const [key, value] of Object.entries(locale)) {
+          if (unsafeResultPattern.test(value)) {
+            offenders.push(`${lang}/${namespace}.json ${key}: ${value}`);
+          }
+        }
+      }
+    }
+
+    assert.deepStrictEqual(offenders, []);
+  });
+
+  it("keeps office account-review result copy point-denominated", () => {
+    assert.ok(
+      officePunterSearchSource.includes('label: "Point balance"'),
+      "office account search should label balances as points",
+    );
+    assert.ok(
+      officePunterSearchSource.includes('label: "Point result"'),
+      "office account search should label results as point results",
+    );
+    assert.ok(
+      officePunterSearchSource.includes("pts"),
+      "office account search should render account amounts in points",
+    );
+    assert.ok(
+      !officePunterSearchSource.includes('label: "P&L"') &&
+        !officePunterSearchSource.includes("`$${value.toLocaleString") &&
+        !/\{value < 0 \? "-" : "\+"\}\$/.test(officePunterSearchSource),
+      "office account search should not render P&L or dollar-formatted account results",
+    );
+    assert.ok(
+      !/Platform profit/i.test(officeRiskSummarySource),
+      "office risk reports should not render platform profit wording",
+    );
+    assert.ok(
+      officeRiskSummarySource.includes(
+        'DAILY_REPORTS_PLATFORM_PROFIT: "Platform point result"',
+      ),
+      "office risk reports should render platform point-result wording",
+    );
+    assert.ok(
+      !/"(?:Total bets|Bets with odds boost|Bets with both|Bet count|Odds boost ID|Unique odds boosts|Odds boost usage breakdown)"/.test(
+        officeRiskSummarySource,
+      ),
+      "office risk reports should not render bet or odds-boost wording",
+    );
+    assert.ok(
+      officeRiskSummarySource.includes(
+        'DAILY_REPORTS_TOTAL_BETS: "Total predictions"',
+      ) &&
+        officeRiskSummarySource.includes(
+          'METRIC_BETS_WITH_ODDS_BOOST: "Predictions with point boosts"',
+        ) &&
+        officeRiskSummarySource.includes('TABLE_BET_COUNT: "Prediction count"'),
+      "office risk reports should render prediction and point-boost wording",
+    );
+  });
+
+  it("keeps sharpness copy away from investment-return wording", () => {
+    const unsafeSharpnessPattern =
+      /\bROI\b|return on risk|return on investment|imbal hasil atas risiko|pulangan atas risiko|风险回报率|風險回報率/i;
+    const offenders: string[] = [];
+
+    for (const lang of supportedLaunchLanguages) {
+      for (const namespace of ["portfolio", "leaderboards"]) {
+        const locale = readLocale(lang, namespace);
+        for (const [key, value] of Object.entries(locale)) {
+          if (unsafeSharpnessPattern.test(value)) {
+            offenders.push(`${lang}/${namespace}.json ${key}: ${value}`);
+          }
+        }
+      }
+    }
+
+    assert.deepStrictEqual(offenders, []);
+  });
+
   it("loads page namespaces for portfolio and leaderboards", () => {
     assert.ok(
       i18nConfigSource.includes('"portfolio"') &&
@@ -711,6 +1791,791 @@ describe("Full-page translation coverage", () => {
     }
   });
 
+  it("prefers point-native portfolio settlement history aliases", () => {
+    const settledPositionResultTypeSource = predictionTypesSource.slice(
+      predictionTypesSource.indexOf("export interface SettledPositionResult"),
+      predictionTypesSource.indexOf("export interface DiscoveryResponse"),
+    );
+    const settledPositionResultNormalizerSource = predictionClientSource.slice(
+      predictionClientSource.indexOf("function normalizeSettledPositionResult"),
+      predictionClientSource.indexOf(
+        "function normalizeSettlementPointDisbursement",
+      ),
+    );
+    assert.ok(
+      settledPositionResultTypeSource.includes(
+        "entryPricePointsCents: number",
+      ) &&
+        settledPositionResultTypeSource.includes(
+          "exitPricePointsCents: number",
+        ) &&
+        settledPositionResultTypeSource.includes(
+          "realizedPointsCents: number",
+        ) &&
+        settledPositionResultTypeSource.includes(
+          "settlementPointsCents: number",
+        ) &&
+        predictionTypesSource.includes('unit?: "PTS" | string'),
+      "SettledPositionResult should expose point-native settlement-history fields",
+    );
+    assert.ok(
+      !predictionTypesSource.includes("export interface SettledPayout") &&
+        !settledPositionResultTypeSource.includes("entryPriceCents") &&
+        !settledPositionResultTypeSource.includes("exitPriceCents") &&
+        !settledPositionResultTypeSource.includes("pnlCents") &&
+        !settledPositionResultTypeSource.includes("payoutCents"),
+      "SettledPositionResult should not export retired price/payout/P&L aliases or payout-named history type",
+    );
+    assert.ok(
+      predictionClientSource.includes("normalizeSettledPositionResult") &&
+        settledPositionResultNormalizerSource.includes(
+          "row.entryPricePointsCents",
+        ) &&
+        settledPositionResultNormalizerSource.includes(
+          "row.exitPricePointsCents",
+        ) &&
+        predictionClientSource.includes("row.realizedPointsCents") &&
+        predictionClientSource.includes("row.settlementPointsCents") &&
+        predictionClientSource.includes('unit: row.unit || "PTS"'),
+      "PredictionApiClient should normalize portfolio history from point-native aliases",
+    );
+    assert.ok(
+      !settledPositionResultNormalizerSource.includes(
+        "entryPriceCents: entryPricePointsCents",
+      ) &&
+        !settledPositionResultNormalizerSource.includes(
+          "exitPriceCents: exitPricePointsCents",
+        ) &&
+        !settledPositionResultNormalizerSource.includes(
+          "pnlCents: realizedPointsCents",
+        ) &&
+        !settledPositionResultNormalizerSource.includes(
+          "payoutCents: settlementPointsCents",
+        ),
+      "PredictionApiClient should not reattach retired portfolio-history price/result aliases",
+    );
+    assert.ok(
+      portfolioSource.includes("settled results") &&
+        portfolioLocaleSource.includes("settled results") &&
+        !portfolioSource.includes("settled payouts") &&
+        !portfolioLocaleSource.includes("settled payouts"),
+      "Portfolio visible copy should describe settled results, not payouts",
+    );
+    assert.ok(
+      portfolioSource.includes("h.settlementPointsCents") &&
+        portfolioSource.includes("h.realizedPointsCents") &&
+        portfolioSource.includes("h.entryPricePointsCents") &&
+        portfolioSource.includes("h.exitPricePointsCents") &&
+        !portfolioSource.includes("h.entryPriceCents") &&
+        !portfolioSource.includes("h.exitPriceCents") &&
+        !portfolioSource.includes("h.payoutCents") &&
+        !portfolioSource.includes("h.pnlCents") &&
+        !portfolioSource.includes("pointsByMarketId") &&
+        !portfolioSource.includes("getLoyaltyLedger"),
+      "Portfolio history points should render the settlement credit, not loyalty accrual",
+    );
+    assert.ok(
+      portfolioLocaleSource.includes('"pointsShort": "+{{points}}"') &&
+        portfolioLocaleSource.includes(
+          '"earnedPoints": "Settlement {{points}}"',
+        ),
+      "Portfolio history point copy should not duplicate point units",
+    );
+    assert.ok(
+      gatewayHandlerSource.includes(
+        "Winning positions settle at 100 points per share.",
+      ) &&
+        !gatewayHandlerSource.includes("Winning positions pay 100¢/contract."),
+      "Settlement notifications should use point-native language",
+    );
+  });
+
+  it("prefers point-native market payload aliases", () => {
+    const marketType = predictionTypesSource.slice(
+      predictionTypesSource.indexOf("export interface PredictionMarket"),
+      predictionTypesSource.indexOf(
+        "export interface MarketJurisdictionPolicy",
+      ),
+    );
+    const normalizeMarket = predictionClientSource.slice(
+      predictionClientSource.indexOf("function normalizePredictionMarket"),
+      predictionClientSource.indexOf("function normalizeMarketPriceHistory"),
+    );
+    assert.ok(
+      marketType.includes("yesPricePointsCents: number") &&
+        marketType.includes("noPricePointsCents: number") &&
+        marketType.includes("volumePointsCents: number") &&
+        marketType.includes("openInterestPointsCents: number") &&
+        marketType.includes("liquidityPointsCents: number") &&
+        predictionTypesSource.includes("ammSubsidyPointsCents?: number") &&
+        predictionTypesSource.includes("collateralPoolPointsCents?: number") &&
+        predictionTypesSource.includes("settlementPoolPointsCents?: number"),
+      "PredictionMarket should expose point-native market payload fields",
+    );
+    assert.ok(
+      !marketType.includes("yesPriceCents") &&
+        !marketType.includes("noPriceCents") &&
+        !marketType.includes("lastTradePriceCents") &&
+        !marketType.includes("volumeCents") &&
+        !marketType.includes("openInterestCents") &&
+        !marketType.includes("liquidityCents") &&
+        !marketType.includes("ammSubsidyCents") &&
+        !marketType.includes("collateralPoolCents") &&
+        !marketType.includes("settledPayoutPoolPointsCents") &&
+        !marketType.includes("settledPayoutPoolCents"),
+      "PredictionMarket should not export retired market response aliases",
+    );
+    assert.ok(
+      predictionClientSource.includes("normalizePredictionMarket") &&
+        predictionClientSource.includes("type LegacyPredictionMarket") &&
+        predictionClientSource.includes("normalizeDiscoveryResponse") &&
+        predictionClientSource.includes(
+          "response.data.map(normalizePredictionMarket)",
+        ) &&
+        predictionClientSource.includes("row.volumePointsCents") &&
+        predictionClientSource.includes("row.liquidityPointsCents") &&
+        predictionClientSource.includes("row.bestYesBidPointsCents") &&
+        predictionClientSource.includes('unit: row.unit || "PTS"'),
+      "PredictionApiClient should normalize market payloads from point-native aliases",
+    );
+    assert.ok(
+      !/yesPriceCents: yesPricePointsCents|volumeCents: volumePointsCents|liquidityCents: liquidityPointsCents/.test(
+        normalizeMarket,
+      ),
+      "normalizePredictionMarket should not reattach retired market aliases",
+    );
+  });
+
+  it("prefers point-native live market update aliases", () => {
+    const liveMarketPageSource = read("market/[ticker]/page.tsx");
+    const gatewayPredictionHandlersSource = read(
+      "../../../../go-platform/services/gateway/internal/http/prediction_handlers.go",
+    );
+    const liveMarketPayloadSource = sliceBetween(
+      gatewayPredictionHandlersSource,
+      "type marketUpdatePayload struct",
+      "// buildOrderBookHintPayload",
+    );
+    const orderBookHintPayloadSource = sliceBetween(
+      gatewayPredictionHandlersSource,
+      "func buildOrderBookHintPayload",
+      "func buildMarketUpdatePayload",
+    );
+    assert.ok(
+      liveMarketPageSource.includes("normalizeMarketUpdateFields") &&
+        liveMarketPageSource.includes("payload.yesPricePointsCents") &&
+        liveMarketPageSource.includes("payload.noPricePointsCents") &&
+        liveMarketPageSource.includes("payload.lastTradePricePointsCents") &&
+        liveMarketPageSource.includes("payload.volumePointsCents") &&
+        liveMarketPageSource.includes("payload.openInterestPointsCents") &&
+        liveMarketPageSource.includes("normalizedMarketFields"),
+      "Market detail live updates should normalize WebSocket frames from point-native aliases",
+    );
+    assert.ok(
+      liveMarketPayloadSource.includes("YesPricePointsCents") &&
+        liveMarketPayloadSource.includes("NoPricePointsCents") &&
+        liveMarketPayloadSource.includes("LastTradePricePointsCents") &&
+        liveMarketPayloadSource.includes("VolumePointsCents") &&
+        liveMarketPayloadSource.includes("OpenInterestPointsCents") &&
+        !liveMarketPayloadSource.includes('json:"yesPriceCents"') &&
+        !liveMarketPayloadSource.includes('json:"noPriceCents"') &&
+        !liveMarketPayloadSource.includes('json:"lastTradePriceCents') &&
+        !liveMarketPayloadSource.includes('json:"volumeCents"') &&
+        !liveMarketPayloadSource.includes('json:"openInterestCents"'),
+      "Gateway live market update frames should not emit retired market aliases",
+    );
+    assert.ok(
+      orderBookHintPayloadSource.includes('"bestYesBidPointsCents"') &&
+        orderBookHintPayloadSource.includes('"bestYesAskPointsCents"') &&
+        orderBookHintPayloadSource.includes('"bestNoBidPointsCents"') &&
+        orderBookHintPayloadSource.includes('"bestNoAskPointsCents"') &&
+        !orderBookHintPayloadSource.includes('"bestYesBidCents"') &&
+        !orderBookHintPayloadSource.includes('"bestYesAskCents"') &&
+        !orderBookHintPayloadSource.includes('"bestNoBidCents"') &&
+        !orderBookHintPayloadSource.includes('"bestNoAskCents"') &&
+        predictionTypesSource.includes("bestYesBidPointsCents?: number") &&
+        predictionTypesSource.includes("bestYesAskPointsCents?: number") &&
+        predictionTypesSource.includes("bestNoBidPointsCents?: number") &&
+        predictionTypesSource.includes("bestNoAskPointsCents?: number"),
+      "OrderBookHint should expose only point-native best-quote aliases",
+    );
+  });
+
+  it("prefers point-native admin dashboard activity aliases", () => {
+    const dashboardMoverType = sliceBetween(
+      predictionTypesSource,
+      "export interface DashboardMover",
+      "export interface DashboardVolumeStats",
+    );
+    const dashboardStatsType = sliceBetween(
+      predictionTypesSource,
+      "export interface DashboardVolumeStats",
+      "// --- Market price history",
+    );
+    const dashboardNormalizerSource = sliceBetween(
+      predictionClientSource,
+      "function normalizeDashboardVolumeStats",
+      "function normalizeDashboardMover",
+    );
+    const dashboardMoverNormalizerSource = sliceBetween(
+      predictionClientSource,
+      "function normalizeDashboardMover",
+      "function normalizePricePoint",
+    );
+
+    assert.ok(
+      dashboardMoverType.includes("yesPricePointsCentsStart: number") &&
+        dashboardMoverType.includes("yesPricePointsCentsNow: number") &&
+        dashboardMoverType.includes("volumePointsCents: number") &&
+        dashboardMoverType.includes('unit: "PTS" | string') &&
+        dashboardStatsType.includes("totalVolumePointsCents: number") &&
+        dashboardStatsType.includes('unit: "PTS" | string'),
+      "Dashboard stats types should expose required point-native activity fields",
+    );
+    assert.ok(
+      !dashboardMoverType.includes("yesPriceCentsStart") &&
+        !dashboardMoverType.includes("yesPriceCentsNow") &&
+        !dashboardMoverType.includes("volumeCents") &&
+        !dashboardStatsType.includes("totalVolumeCents"),
+      "Exported dashboard stats types should not expose retired activity aliases",
+    );
+    assert.ok(
+      predictionClientSource.includes("type LegacyDashboardMover") &&
+        predictionClientSource.includes("type LegacyDashboardVolumeStats") &&
+        predictionClientSource.includes("row.totalVolumePointsCents") &&
+        predictionClientSource.includes("row.yesPricePointsCentsStart") &&
+        predictionClientSource.includes("row.yesPricePointsCentsNow") &&
+        predictionClientSource.includes("row.volumePointsCents"),
+      "PredictionApiClient should normalize dashboard activity from point-native aliases",
+    );
+    assert.ok(
+      !dashboardNormalizerSource.includes("...row") &&
+        !dashboardNormalizerSource.includes("totalVolumeCents:") &&
+        !dashboardMoverNormalizerSource.includes("...row") &&
+        !dashboardMoverNormalizerSource.includes("yesPriceCentsStart:") &&
+        !dashboardMoverNormalizerSource.includes("yesPriceCentsNow:") &&
+        !dashboardMoverNormalizerSource.includes("volumeCents:"),
+      "Dashboard normalizers should not reattach retired activity aliases",
+    );
+  });
+
+  it("prefers point-native admin drift alert aliases", () => {
+    const driftAlertType = sliceBetween(
+      predictionTypesSource,
+      "export interface CollateralDriftAlert",
+      "export interface DriftAlertsResponse",
+    );
+    const driftAlertNormalizerSource = sliceBetween(
+      predictionClientSource,
+      "function normalizeCollateralDriftAlert",
+      "function normalizeSettledPositionResult",
+    );
+
+    assert.ok(
+      driftAlertType.includes("maxDriftPointsCents: number") &&
+        driftAlertType.includes("totalDriftPointsCents: number") &&
+        driftAlertType.includes('unit: "PTS" | string'),
+      "CollateralDriftAlert should expose required point-native drift fields",
+    );
+    assert.ok(
+      !driftAlertType.includes("maxDriftCents") &&
+        !driftAlertType.includes("totalDriftCents"),
+      "Exported CollateralDriftAlert should not expose retired drift aliases",
+    );
+    assert.ok(
+      predictionClientSource.includes("type LegacyCollateralDriftAlert") &&
+        predictionClientSource.includes("type LegacyDriftAlertsResponse") &&
+        predictionClientSource.includes("normalizeCollateralDriftAlert") &&
+        predictionClientSource.includes("row.maxDriftPointsCents") &&
+        predictionClientSource.includes("row.totalDriftPointsCents") &&
+        predictionClientSource.includes(
+          "data: response.data.map(normalizeCollateralDriftAlert)",
+        ),
+      "PredictionApiClient should normalize drift alerts from point-native aliases",
+    );
+    assert.ok(
+      !driftAlertNormalizerSource.includes("...row") &&
+        !driftAlertNormalizerSource.includes("maxDriftCents:") &&
+        !driftAlertNormalizerSource.includes("totalDriftCents:"),
+      "Drift alert normalizer should not reattach retired drift aliases",
+    );
+  });
+
+  it("keeps price history rows point-native after private legacy normalization", () => {
+    const pricePointTypeStart = predictionTypesSource.indexOf(
+      "export interface PricePoint",
+    );
+    const pricePointTypeEnd = predictionTypesSource.indexOf(
+      "export interface MarketPriceHistory",
+      pricePointTypeStart,
+    );
+    const pricePointType = predictionTypesSource.slice(
+      pricePointTypeStart,
+      pricePointTypeEnd,
+    );
+    const pricePointNormalizerStart = predictionClientSource.indexOf(
+      "function normalizePricePoint",
+    );
+    const pricePointNormalizerEnd = predictionClientSource.indexOf(
+      "type LegacyPortfolioSummary",
+      pricePointNormalizerStart,
+    );
+    const pricePointNormalizer = predictionClientSource.slice(
+      pricePointNormalizerStart,
+      pricePointNormalizerEnd,
+    );
+    assert.ok(
+      pricePointType.includes("yesPricePointsCents: number") &&
+        pricePointType.includes("volumePointsCents: number") &&
+        pricePointType.includes('unit?: "PTS" | string'),
+      "PricePoint should expose required point-native price-history fields",
+    );
+    assert.ok(
+      !pricePointType.includes("yesPriceCents") &&
+        !pricePointType.includes("volumeCents"),
+      "exported PricePoint should not expose retired price-history aliases",
+    );
+    assert.ok(
+      predictionClientSource.includes("normalizeMarketPriceHistory") &&
+        predictionClientSource.includes("normalizePricePoint") &&
+        predictionClientSource.includes("type LegacyPricePoint") &&
+        predictionClientSource.includes("row.yesPricePointsCents") &&
+        predictionClientSource.includes("row.volumePointsCents") &&
+        predictionClientSource.includes('unit: row.unit || "PTS"'),
+      "PredictionApiClient should normalize price-history buckets from point-native aliases",
+    );
+    assert.ok(
+      !/yesPriceCents: yesPricePointsCents|volumeCents: volumePointsCents/.test(
+        pricePointNormalizer,
+      ),
+      "normalizePricePoint should not reattach retired price-history aliases",
+    );
+    assert.ok(
+      marketChartSource.includes("p.yesPricePointsCents") &&
+        discoverPageSource.includes("point.yesPricePointsCents") &&
+        heroPriceHistorySource.includes("p.yesPricePointsCents"),
+      "price-history UI consumers should read point-native history fields",
+    );
+  });
+
+  it("keeps order book depth rows point-native after private legacy normalization", () => {
+    const orderBookLevelTypeStart = predictionTypesSource.indexOf(
+      "export interface OrderBookLevel",
+    );
+    const orderBookLevelTypeEnd = predictionTypesSource.indexOf(
+      "export interface OrderBookSide",
+      orderBookLevelTypeStart,
+    );
+    const orderBookLevelType = predictionTypesSource.slice(
+      orderBookLevelTypeStart,
+      orderBookLevelTypeEnd,
+    );
+    const orderBookNormalizerStart = predictionClientSource.indexOf(
+      "function normalizeOrderBookLevel",
+    );
+    const orderBookNormalizerEnd = predictionClientSource.indexOf(
+      "function normalizePricePoint",
+      orderBookNormalizerStart,
+    );
+    const orderBookNormalizer = predictionClientSource.slice(
+      orderBookNormalizerStart,
+      orderBookNormalizerEnd,
+    );
+    assert.ok(
+      orderBookLevelType.includes("pricePointsCents: number") &&
+        orderBookLevelType.includes("shares: number") &&
+        orderBookLevelType.includes("cumulativeShares: number") &&
+        orderBookLevelType.includes("notionalPointsCents: number") &&
+        orderBookLevelType.includes("totalNotionalPointsCents: number") &&
+        orderBookLevelType.includes('unit: "PTS" | string') &&
+        !orderBookLevelType.includes("priceCents") &&
+        !orderBookLevelType.includes("quantity") &&
+        !orderBookLevelType.includes("total: number"),
+      "OrderBookLevel should expose point-native depth fields without retired aliases",
+    );
+    assert.ok(
+      predictionClientSource.includes("normalizeOrderBook") &&
+        predictionClientSource.includes("normalizeOrderBookLevel") &&
+        predictionClientSource.includes("type LegacyOrderBookLevel") &&
+        predictionClientSource.includes("row.pricePointsCents") &&
+        predictionClientSource.includes("row.shares") &&
+        predictionClientSource.includes("row.cumulativeShares") &&
+        predictionClientSource.includes("row.notionalPointsCents") &&
+        predictionClientSource.includes("row.totalNotionalPointsCents") &&
+        predictionClientSource.includes('unit: row.unit || "PTS"'),
+      "PredictionApiClient should normalize order-book levels from point-native fields",
+    );
+    assert.ok(
+      !/priceCents: pricePointsCents|quantity: shares|total: cumulativeShares/.test(
+        orderBookNormalizer,
+      ),
+      "normalizeOrderBookLevel should not reattach retired order-book depth aliases",
+    );
+    assert.ok(
+      marketPageSource.includes("lvl.pricePointsCents") &&
+        marketPageSource.includes("lvl.shares") &&
+        marketPageSource.includes("lvl.cumulativeShares") &&
+        orderBookSource.includes("pricePointsCents: number") &&
+        orderBookSource.includes("cumulativeShares: number") &&
+        !marketPageSource.includes("lvl.priceCents") &&
+        !marketPageSource.includes("lvl.quantity") &&
+        !marketPageSource.includes("lvl.total"),
+      "market detail order-book UI should consume normalized point-native depth fields",
+    );
+  });
+
+  it("prefers point-native portfolio summary aliases", () => {
+    const accountSource = read("account/page.tsx");
+    const summaryTypeSource = predictionTypesSource.slice(
+      predictionTypesSource.indexOf("export interface PortfolioSummary"),
+      predictionTypesSource.indexOf("export interface SettledPositionResult"),
+    );
+    const summaryNormalizerSource = predictionClientSource.slice(
+      predictionClientSource.indexOf("function normalizePortfolioSummary"),
+      predictionClientSource.indexOf("function normalizeOrderPreview"),
+    );
+    assert.ok(
+      summaryTypeSource.includes("totalValuePointsCents: number") &&
+        summaryTypeSource.includes("portfolioValuePointsCents: number") &&
+        summaryTypeSource.includes("investedPointsCents: number") &&
+        summaryTypeSource.includes("unrealizedPointsCents: number") &&
+        summaryTypeSource.includes("realizedPointsCents: number") &&
+        !summaryTypeSource.includes("totalValueCents") &&
+        !summaryTypeSource.includes("unrealizedPnlCents") &&
+        !summaryTypeSource.includes("realizedPnlCents"),
+      "PortfolioSummary should expose point-native summary aliases",
+    );
+    assert.ok(
+      summaryNormalizerSource.includes("normalizePortfolioSummary") &&
+        summaryNormalizerSource.includes("row.totalValuePointsCents") &&
+        summaryNormalizerSource.includes("row.portfolioValuePointsCents") &&
+        summaryNormalizerSource.includes("row.unrealizedPointsCents") &&
+        summaryNormalizerSource.includes("row.realizedPointsCents") &&
+        predictionClientSource.includes("type LegacyPortfolioSummary") &&
+        !summaryNormalizerSource.includes(
+          "totalValueCents: totalValuePointsCents",
+        ) &&
+        !summaryNormalizerSource.includes(
+          "unrealizedPnlCents: unrealizedPointsCents",
+        ) &&
+        !summaryNormalizerSource.includes(
+          "realizedPnlCents: realizedPointsCents",
+        ) &&
+        summaryNormalizerSource.includes('unit: row.unit || "PTS"'),
+      "PredictionApiClient should normalize portfolio summary from point-native aliases",
+    );
+    assert.ok(
+      portfolioSource.includes("s.totalValuePointsCents") &&
+        portfolioSource.includes("s?.realizedPointsCents") &&
+        accountSource.includes("summary.totalValuePointsCents") &&
+        accountSource.includes("summary.realizedPointsCents") &&
+        !portfolioSource.includes("s.totalValueCents") &&
+        !portfolioSource.includes("s?.realizedPnlCents") &&
+        !accountSource.includes("summary.totalValueCents") &&
+        !accountSource.includes("summary.realizedPnlCents"),
+      "Portfolio/account pages should render summary cards from point-native fields",
+    );
+  });
+
+  it("prefers point-native portfolio position aliases", () => {
+    const positionTypeSource = predictionTypesSource.slice(
+      predictionTypesSource.indexOf("export interface Position"),
+      predictionTypesSource.indexOf("export interface Trade"),
+    );
+    const positionNormalizerSource = predictionClientSource.slice(
+      predictionClientSource.indexOf("function normalizePosition"),
+      predictionClientSource.indexOf("function normalizeSettleMarketResponse"),
+    );
+    assert.ok(
+      positionTypeSource.includes("avgPricePointsCents: number") &&
+        positionTypeSource.includes("totalCostPointsCents: number") &&
+        positionTypeSource.includes("realizedPointsCents: number") &&
+        positionTypeSource.includes('unit?: "PTS" | string') &&
+        !positionTypeSource.includes("avgPriceCents") &&
+        !positionTypeSource.includes("totalCostCents") &&
+        !positionTypeSource.includes("realizedPnlCents"),
+      "Position should expose point-native position price/cost/result aliases",
+    );
+    assert.ok(
+      positionNormalizerSource.includes("normalizePosition") &&
+        positionNormalizerSource.includes("row.avgPricePointsCents") &&
+        positionNormalizerSource.includes("row.totalCostPointsCents") &&
+        positionNormalizerSource.includes("row.realizedPointsCents") &&
+        predictionClientSource.includes("LegacyPosition[]") &&
+        predictionClientSource.includes("positions.map(normalizePosition)") &&
+        !positionNormalizerSource.includes(
+          "avgPriceCents: avgPricePointsCents",
+        ) &&
+        !positionNormalizerSource.includes(
+          "totalCostCents: totalCostPointsCents",
+        ) &&
+        !positionNormalizerSource.includes(
+          "realizedPnlCents: realizedPointsCents",
+        ) &&
+        positionNormalizerSource.includes('unit: row.unit || "PTS"'),
+      "PredictionApiClient should normalize portfolio positions from point-native price/cost/result aliases",
+    );
+    assert.ok(
+      portfolioSource.includes("p.avgPricePointsCents") &&
+        portfolioSource.includes("p.totalCostPointsCents") &&
+        !portfolioSource.includes("p.avgPriceCents") &&
+        !portfolioSource.includes("p.totalCostCents") &&
+        !portfolioSource.includes("p.realizedPnlCents"),
+      "Portfolio page should render positions from point-native fields",
+    );
+  });
+
+  it("prefers point-native order cost aliases", () => {
+    const orderTypeSource = predictionTypesSource.slice(
+      predictionTypesSource.indexOf("export interface PredictionOrder"),
+      predictionTypesSource.indexOf("export interface Position"),
+    );
+    const orderNormalizerSource = predictionClientSource.slice(
+      predictionClientSource.indexOf("function normalizePredictionOrder"),
+      predictionClientSource.indexOf("function normalizePosition"),
+    );
+    assert.ok(
+      orderTypeSource.includes("totalCostPointsCents: number") &&
+        orderTypeSource.includes("pricePointsCents?: number") &&
+        orderTypeSource.includes("reservedPointsCents?: number") &&
+        orderTypeSource.includes("capturedPointsCents?: number") &&
+        orderTypeSource.includes("releasedPointsCents?: number") &&
+        orderTypeSource.includes("averageFillPricePointsCents?: number") &&
+        orderTypeSource.includes("filledCostPointsCents?: number") &&
+        orderTypeSource.includes("notionalCapPointsCents?: number") &&
+        !orderTypeSource.includes("priceCents?: number") &&
+        !orderTypeSource.includes("averageFillPriceCents?: number") &&
+        !orderTypeSource.includes("walletReservationId") &&
+        !orderTypeSource.includes("totalCostCents") &&
+        !orderTypeSource.includes("filledCostCents") &&
+        !orderTypeSource.includes("notionalCapCents"),
+      "PredictionOrder should expose point-native order price/cost aliases",
+    );
+    assert.ok(
+      predictionTypesSource.includes(
+        "notionalCapPointsCents: preferred point-native",
+      ) &&
+        predictionTypesSource.includes(
+          "pricePointsCents: preferred point-native",
+        ) &&
+        !predictionTypesSource.includes("priceCents?: number") &&
+        !predictionTypesSource.includes("notionalCapCents?: number") &&
+        !predictionTypesSource.includes("transitional compatibility alias"),
+      "PlaceOrderRequest should expose only point-native price/cap aliases",
+    );
+    assert.ok(
+      orderNormalizerSource.includes("normalizePredictionOrder") &&
+        orderNormalizerSource.includes("row.pricePointsCents") &&
+        orderNormalizerSource.includes("row.averageFillPricePointsCents") &&
+        orderNormalizerSource.includes("row.capturedPointsCents") &&
+        orderNormalizerSource.includes("row.reservedPointsCents") &&
+        orderNormalizerSource.includes("row.notionalCapPointsCents") &&
+        predictionClientSource.includes("LegacyPredictionOrder") &&
+        !orderNormalizerSource.includes("priceCents: pricePointsCents") &&
+        !orderNormalizerSource.includes(
+          "averageFillPriceCents: averageFillPricePointsCents",
+        ) &&
+        !orderNormalizerSource.includes(
+          "totalCostCents: totalCostPointsCents",
+        ) &&
+        !orderNormalizerSource.includes(
+          "filledCostCents: filledCostPointsCents",
+        ) &&
+        !orderNormalizerSource.includes(
+          "notionalCapCents: notionalCapPointsCents",
+        ) &&
+        !orderNormalizerSource.includes("walletReservationId") &&
+        orderNormalizerSource.includes('unit: row.unit || "PTS"'),
+      "PredictionApiClient should normalize orders from point-native aliases",
+    );
+    assert.ok(
+      portfolioSource.includes("o.totalCostPointsCents") &&
+        !portfolioSource.includes("o.totalCostCents"),
+      "Portfolio page should render orders from point-native fields",
+    );
+    assert.ok(
+      !predictionTypesSource.includes("reservedCashCents?: number") &&
+        !predictionTypesSource.includes("capturedCashCents?: number") &&
+        !predictionTypesSource.includes("releasedCashCents?: number"),
+      "PredictionOrder should not expose retired cash-named reservation aliases",
+    );
+    assert.ok(
+      !predictionClientSource.includes(
+        "reservedCashCents: reservedPointsCents",
+      ) &&
+        !predictionClientSource.includes(
+          "capturedCashCents: capturedPointsCents",
+        ) &&
+        !predictionClientSource.includes(
+          "releasedCashCents: releasedPointsCents",
+        ),
+      "PredictionApiClient should not reattach retired cash-named order aliases",
+    );
+  });
+
+  it("prefers point-native order preview aliases", () => {
+    const previewTypeSource = predictionTypesSource.slice(
+      predictionTypesSource.indexOf("export interface OrderPreview"),
+      predictionTypesSource.indexOf("export interface PortfolioSummary"),
+    );
+    const previewNormalizerSource = predictionClientSource.slice(
+      predictionClientSource.indexOf("function normalizeOrderPreview"),
+      predictionClientSource.indexOf("function normalizeTrade"),
+    );
+    assert.ok(
+      previewTypeSource.includes("pricePointsCents: number") &&
+        previewTypeSource.includes("totalCostPointsCents: number") &&
+        previewTypeSource.includes("feePointsCents: number") &&
+        previewTypeSource.includes("maxResultPointsCents: number") &&
+        previewTypeSource.includes("maxLossPointsCents: number") &&
+        previewTypeSource.includes("newYesPricePointsCents: number") &&
+        previewTypeSource.includes("newNoPricePointsCents: number") &&
+        predictionTypesSource.includes(
+          "totalCostWithFeesPointsCents?: number",
+        ) &&
+        predictionTypesSource.includes(
+          "estimatedSlippagePointsCents?: number",
+        ) &&
+        !previewTypeSource.includes("priceCents") &&
+        !previewTypeSource.includes("totalCostCents") &&
+        !previewTypeSource.includes("feeCents") &&
+        !previewTypeSource.includes("maxProfitCents") &&
+        !previewTypeSource.includes("maxProfitPointsCents") &&
+        !previewTypeSource.includes("maxLossCents") &&
+        !previewTypeSource.includes("newYesPriceCents") &&
+        !previewTypeSource.includes("newNoPriceCents") &&
+        !previewTypeSource.includes("averageFillPriceCents") &&
+        !previewTypeSource.includes("totalCostWithFeesCents") &&
+        !previewTypeSource.includes("estimatedSlippageCents"),
+      "OrderPreview should expose point-native cost/result/slippage aliases",
+    );
+    assert.ok(
+      previewNormalizerSource.includes("normalizeOrderPreview") &&
+        previewNormalizerSource.includes("row.totalCostPointsCents") &&
+        previewNormalizerSource.includes("row.maxResultPointsCents") &&
+        previewNormalizerSource.includes("row.estimatedSlippagePointsCents") &&
+        predictionClientSource.includes("type LegacyOrderPreview") &&
+        !previewNormalizerSource.includes("priceCents: pricePointsCents") &&
+        !previewNormalizerSource.includes(
+          "totalCostCents: totalCostPointsCents",
+        ) &&
+        !previewNormalizerSource.includes("feeCents: feePointsCents") &&
+        !previewNormalizerSource.includes(
+          "maxProfitCents: maxResultPointsCents",
+        ) &&
+        !previewNormalizerSource.includes(
+          "maxProfitPointsCents: maxResultPointsCents",
+        ) &&
+        !previewNormalizerSource.includes("maxLossCents: maxLossPointsCents") &&
+        !previewNormalizerSource.includes(
+          "newYesPriceCents: newYesPricePointsCents",
+        ) &&
+        !previewNormalizerSource.includes(
+          "newNoPriceCents: newNoPricePointsCents",
+        ) &&
+        !previewNormalizerSource.includes(
+          "averageFillPriceCents: averageFillPricePointsCents",
+        ) &&
+        !previewNormalizerSource.includes(
+          "totalCostWithFeesCents: totalCostWithFeesPointsCents",
+        ) &&
+        !previewNormalizerSource.includes(
+          "estimatedSlippageCents: estimatedSlippagePointsCents",
+        ) &&
+        !predictionClientSource.includes("toPointNativeOrderRequest") &&
+        !predictionClientSource.includes(
+          "notionalCapPointsCents: req.notionalCapCents",
+        ) &&
+        previewNormalizerSource.includes('unit: row.unit || "PTS"'),
+      "PredictionApiClient should normalize order previews without preserving request cap shims",
+    );
+    assert.ok(
+      marketPageSource.includes("quote.newYesPricePointsCents") &&
+        marketPageSource.includes("quote.averageFillPricePointsCents") &&
+        marketPageSource.includes("quote.totalCostWithFeesPointsCents") &&
+        !marketPageSource.includes("quote.newYesPriceCents") &&
+        !marketPageSource.includes("quote.averageFillPriceCents") &&
+        !marketPageSource.includes("quote.totalCostWithFeesCents"),
+      "Market detail AMM preview quotes should render from point-native preview fields",
+    );
+  });
+
+  it("prefers point-native trade tape aliases", () => {
+    const tradeTypeSource = predictionTypesSource.slice(
+      predictionTypesSource.indexOf("export interface Trade"),
+      predictionTypesSource.indexOf("export interface OrderPreview"),
+    );
+    const tradeNormalizerSource = predictionClientSource.slice(
+      predictionClientSource.indexOf("function normalizeTrade"),
+      predictionClientSource.indexOf("function normalizePredictionOrder"),
+    );
+    const recentTradesSource = read("components/prediction/RecentTrades.tsx");
+    assert.ok(
+      tradeTypeSource.includes("pricePointsCents: number") &&
+        tradeTypeSource.includes("feePointsCents: number") &&
+        tradeTypeSource.includes("notionalPointsCents: number") &&
+        tradeTypeSource.includes('unit?: "PTS" | string') &&
+        !tradeTypeSource.includes("priceCents") &&
+        !tradeTypeSource.includes("feeCents"),
+      "Trade should expose point-native trade-tape aliases",
+    );
+    assert.ok(
+      tradeNormalizerSource.includes("normalizeTrade") &&
+        predictionClientSource.includes("trades.map(normalizeTrade)") &&
+        predictionClientSource.includes("type LegacyTrade") &&
+        tradeNormalizerSource.includes("row.pricePointsCents") &&
+        tradeNormalizerSource.includes("row.feePointsCents") &&
+        tradeNormalizerSource.includes("row.notionalPointsCents") &&
+        !tradeNormalizerSource.includes("priceCents: pricePointsCents") &&
+        !tradeNormalizerSource.includes("feeCents: feePointsCents") &&
+        tradeNormalizerSource.includes('unit: row.unit || "PTS"'),
+      "PredictionApiClient should normalize trade tape rows from point-native aliases",
+    );
+    assert.ok(
+      recentTradesSource.includes("pricePointsCents") &&
+        !recentTradesSource.includes(".priceCents"),
+      "RecentTrades should render trade prices from point-native fields",
+    );
+  });
+
+  it("prefers point-native admin settlement disbursement aliases", () => {
+    const settlementNormalizerSource = predictionClientSource.slice(
+      predictionClientSource.indexOf(
+        "function normalizeSettlementPointDisbursement",
+      ),
+      predictionClientSource.indexOf(
+        "function normalizeSettlementPointDisbursement",
+      ) + 1200,
+    );
+    assert.ok(
+      predictionTypesSource.includes("interface SettlementPointDisbursement") &&
+        predictionTypesSource.includes(
+          "pointDisbursements?: SettlementPointDisbursement[]",
+        ) &&
+        !predictionTypesSource.includes("payouts?: SettlementPayout[]") &&
+        predictionTypesSource.includes("totalSettlementPointsCents?: number") &&
+        predictionTypesSource.includes("settlementPointsCents?: number") &&
+        !predictionTypesSource.includes("totalPayoutCents?: number"),
+      "Settlement admin response types should expose point-native disbursement aliases",
+    );
+    assert.ok(
+      predictionClientSource.includes("normalizeSettleMarketResponse") &&
+        predictionClientSource.includes("response.pointDisbursements") &&
+        predictionClientSource.includes(
+          "normalizeSettlementPointDisbursement",
+        ) &&
+        predictionClientSource.includes("settlementPointsCents") &&
+        !settlementNormalizerSource.includes(
+          "payoutCents: settlementPointsCents",
+        ),
+      "PredictionApiClient should normalize admin settlement responses from point-native aliases",
+    );
+    assert.ok(
+      !predictionClientSource.includes("payouts: pointDisbursements"),
+      "PredictionApiClient should not reattach retired settlement payouts arrays",
+    );
+  });
+
   it("ships locale JSON for requested pages in every supported language", () => {
     for (const lang of ["en", "zh-Hans", "zh-Hant", "tl", "ms", "id"]) {
       for (const ns of ["portfolio", "leaderboards"]) {
@@ -726,13 +2591,10 @@ describe("Full-page translation coverage", () => {
 
   it("does not ship mostly-English fallback copy for SEA full-page locales", () => {
     const allowedSharedStrings = new Set([
-      "P&L",
-      "ROI",
       "YES",
       "NO",
       "pts",
       "Portfolio",
-      "Cashier",
       "Rewards Center",
       "Leaderboards",
     ]);

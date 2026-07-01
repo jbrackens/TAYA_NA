@@ -166,7 +166,7 @@ export default function MarketChart({
   const { state: chartState, values } = useMemo(() => {
     const realValues = history
       ? history.points.map((p) =>
-          side === "no" ? 100 - p.yesPriceCents : p.yesPriceCents,
+          side === "no" ? 100 - p.yesPricePointsCents : p.yesPricePointsCents,
         )
       : null;
     return resolveChartSeries({
@@ -365,7 +365,7 @@ export default function MarketChart({
         <div>
           <div className={CHART_STAT_LABEL_CLASS}>{t("24H_VOLUME")}</div>
           <div className={chartStatValueClass()}>
-            ${(vol24h / 100).toFixed(2)}
+            {(vol24h / 100).toFixed(2)} pts
           </div>
         </div>
         <div>

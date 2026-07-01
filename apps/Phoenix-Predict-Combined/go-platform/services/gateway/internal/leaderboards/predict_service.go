@@ -3,6 +3,7 @@ package leaderboards
 import (
 	"context"
 	"strings"
+	"time"
 )
 
 // PredictService is the Predict-native leaderboards read-side service. HTTP
@@ -11,8 +12,13 @@ import (
 // Parallel to the sportsbook Service — the two coexist during the un-orphaning
 // transition. HTTP layer swaps to this when a DB is available.
 type PredictService struct {
-	repo        PredictLBRepo
-	categoryFn  CategoryLister
+	repo       PredictLBRepo
+	categoryFn CategoryLister
+}
+
+type PredictRecomputeResult struct {
+	BoardID string `json:"boardId"`
+	Rows    int    `json:"rows"`
 }
 
 // CategoryLister decouples the leaderboards service from the prediction
@@ -75,4 +81,50 @@ func (s *PredictService) UserEntry(ctx context.Context, boardID, userID string) 
 // chip + /leaderboards "my standings" summary.
 func (s *PredictService) UserStanding(ctx context.Context, userID string) ([]PredictEntry, error) {
 	return s.repo.ListUserRanks(ctx, userID)
+}
+
+// RecomputeNow refreshes the computed prediction leaderboard snapshots
+// synchronously for operator-triggered admin actions and deterministic QA.
+func (s *PredictService) RecomputeNow(ctx context.Context) ([]PredictRecomputeResult, error) {
+	now := time.Now().UTC()
+	rolling30Start := now.Add(-30 * 24 * time.Hour)
+	weekStart, weekEnd := weekBounds(now)
+
+	results := make([]PredictRecomputeResult, 0, len(PredictBoards()))
+	n, err := s.repo.RecomputeAccuracy(ctx, rolling30Start, now)
+	if err != nil {
+		return results, err
+	}
+	results = append(results, PredictRecomputeResult{BoardID: PredictBoardAccuracy, Rows: n})
+
+	n, err = s.repo.RecomputeWeeklyPnL(ctx, weekStart, weekEnd)
+	if err != nil {
+		return results, err
+	}
+	results = append(results, PredictRecomputeResult{BoardID: PredictBoardPnLWeekly, Rows: n})
+
+	n, err = s.repo.RecomputeSharpness(ctx, rolling30Start, now, 50_000)
+	if err != nil {
+		return results, err
+	}
+	results = append(results, PredictRecomputeResult{BoardID: PredictBoardSharpness, Rows: n})
+
+	if s.categoryFn == nil {
+		return results, nil
+	}
+	cats, err := s.categoryFn(ctx)
+	if err != nil {
+		return results, err
+	}
+	for _, c := range cats {
+		if strings.TrimSpace(c.Slug) == "" {
+			continue
+		}
+		n, err = s.repo.RecomputeCategoryChampions(ctx, c.Slug, weekStart, weekEnd)
+		if err != nil {
+			return results, err
+		}
+		results = append(results, PredictRecomputeResult{BoardID: PredictCategoryBoardID(c.Slug), Rows: n})
+	}
+	return results, nil
 }

@@ -11,7 +11,7 @@ import { categoryName } from "./market-content";
 
 const CATEGORY_EMOJI: Record<string, string> = {
   politics: "\u{1F3DB}\u{FE0F}",
-  crypto: "\u{1FA99}",
+  esports: "\u{1F3AE}",
   sports: "\u{1F3C6}",
   entertainment: "\u{1F3AC}",
   tech: "\u{1F4BB}",

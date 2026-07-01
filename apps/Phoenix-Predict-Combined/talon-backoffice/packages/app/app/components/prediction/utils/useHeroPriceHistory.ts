@@ -2,7 +2,7 @@
 
 /**
  * useHeroPriceHistory — fetches the backend price-history series for a
- * single market and returns its yes_price_cents sequence ready to feed
+ * single market and returns its point-native YES price sequence ready to feed
  * into heroChartPath. Returns null while loading or on failure so the
  * caller can fall back to the deterministic synthetic walk.
  *
@@ -34,7 +34,7 @@ export function useHeroPriceHistory(ticker: string): number[] | null {
         // the chart starts at the first real movement instead of a
         // long flat tail at the fallback price. Always keep at least
         // 8 points so the line has visible shape.
-        const all = h.points.map((p) => p.yesPriceCents);
+        const all = h.points.map((p) => p.yesPricePointsCents);
         if (!hasMovement(all)) {
           setPoints(null);
           return;

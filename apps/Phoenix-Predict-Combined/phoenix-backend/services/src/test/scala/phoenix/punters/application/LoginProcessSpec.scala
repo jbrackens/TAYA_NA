@@ -55,9 +55,10 @@ class LoginProcessSpec
     with DatabaseIntegrationSpec
     with Eventually {
 
-  implicit val eventuallyPatience = PatienceConfig(scaled(Span(30, Seconds)), scaled(Span(1, Seconds)))
+  implicit val eventuallyPatience: PatienceConfig =
+    PatienceConfig(scaled(Span(30, Seconds)), scaled(Span(1, Seconds)))
 
-  implicit val clock = new FakeHardcodedClock()
+  implicit val clock: FakeHardcodedClock = new FakeHardcodedClock()
   val schedulerModule: SchedulerModule = SchedulerModule.init(clock)(system)
 
   val authenticationRepository: AuthenticationRepository = new TestAuthenticationRepository() {

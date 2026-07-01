@@ -11,7 +11,7 @@ module.exports = {
   ACTION_UNLOCK: "Unfreeze",
   ACTION_CANCEL: "Cancel",
   ACTION_EDIT: "Edit",
-  ACTION_PHONE_BET: "Place Phone Bet",
+  ACTION_PHONE_BET: "Place phone prediction",
   ACTION_HISTORY: "History",
   STATUS_FINISHED: "Finished",
   STATUS_UNKNOWN: "Unknown",

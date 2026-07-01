@@ -29,7 +29,7 @@ class RefreshTokenUseCaseSpec
     with DatabaseIntegrationSpec
     with Eventually {
 
-  implicit val clock = new FakeHardcodedClock()
+  implicit val clock: FakeHardcodedClock = new FakeHardcodedClock()
 
   val userId = ConstantUUIDGenerator.generate().toString
 

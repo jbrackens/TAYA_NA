@@ -5,14 +5,14 @@ import (
 	"strings"
 )
 
-// CategorySlug is one of the 7 categories that imported markets land in:
-// 6 existing native categories + "general" for misfits. Any other value
-// (or empty) is invalid and indicates a missing migration 018.
+// CategorySlug is one of the 7 launch-safe categories that imported markets
+// land in: 6 native categories + "general" for misfits. Any other value (or
+// empty) is invalid and indicates a missing taxonomy migration.
 const (
 	CatPolitics      = "politics"
-	CatCrypto        = "crypto"
 	CatSports        = "sports"
 	CatEntertainment = "entertainment"
+	CatEsports       = "esports"
 	CatTech          = "tech"
 	CatEconomics     = "economics"
 	CatGeneral       = "general"
@@ -21,7 +21,7 @@ const (
 // AllCategories is the closed set used for synthetic-event seeding and
 // classifier output validation.
 var AllCategories = []string{
-	CatPolitics, CatCrypto, CatSports, CatEntertainment,
+	CatPolitics, CatSports, CatEntertainment, CatEsports,
 	CatTech, CatEconomics, CatGeneral,
 }
 
@@ -32,7 +32,7 @@ var AllCategories = []string{
 // "primary resolution source". An NBA market got classified as Politics.
 // Word boundaries fix this without growing the keyword list.
 //
-// Priority order: politics > crypto > sports > entertainment > tech >
+// Priority order: politics > sports > entertainment > esports > tech >
 // economics > general (fallback).
 var (
 	politicsKeywords = []string{
@@ -46,7 +46,7 @@ var (
 		// "primary resolution source" boilerplate.
 		// "campaign" was removed: matches ad campaigns, marketing campaigns.
 	}
-	cryptoKeywords = []string{
+	launchProhibitedMarketKeywords = []string{
 		"bitcoin", "btc", "ethereum", "eth", "crypto", "cryptocurrency",
 		"blockchain", "solana", "sol", "memecoin", "stablecoin", "tether",
 		"usdc", "usdt", "binance", "coinbase", "halving", "defi", "nft",
@@ -67,6 +67,11 @@ var (
 		"hbo", "disney", "marvel", "celebrity", "taylor swift", "kanye",
 		"beyonce", "drake", "rihanna",
 	}
+	esportsKeywords = []string{
+		"esports", "e-sports", "mlbb", "mobile legends", "valorant",
+		"league of legends", "dota", "dota 2", "counter-strike",
+		"cs2", "overwatch",
+	}
 	techKeywords = []string{
 		"openai", "chatgpt", "gpt", "claude", "anthropic", "gemini", "llama",
 		"google", "apple", "microsoft", "amazon", "meta", "tesla",
@@ -86,9 +91,10 @@ var (
 // fine for the ~150-row classification pass per sync.
 var (
 	politicsRE      = compileWordBoundary(politicsKeywords)
-	cryptoRE        = compileWordBoundary(cryptoKeywords)
+	prohibitedRE    = compileWordBoundary(launchProhibitedMarketKeywords)
 	sportsRE        = compileWordBoundary(sportsKeywords)
 	entertainmentRE = compileWordBoundary(entertainmentKeywords)
+	esportsRE       = compileWordBoundary(esportsKeywords)
 	techRE          = compileWordBoundary(techKeywords)
 	economicsRE     = compileWordBoundary(economicsKeywords)
 )
@@ -106,10 +112,18 @@ func compileWordBoundary(keywords []string) *regexp.Regexp {
 // upstream-provided category if present and recognized; otherwise runs the
 // keyword classifier; otherwise falls back to "general".
 func Classify(m Market) string {
+	if IsLaunchProhibitedMarket(m) {
+		return CatGeneral
+	}
 	if cat := normalizeUpstreamCategory(m.Category); cat != "" {
 		return cat
 	}
 	return classifyByKeyword(m.Title + " " + m.Description)
+}
+
+func IsLaunchProhibitedMarket(m Market) bool {
+	text := strings.Join([]string{m.Category, m.Title, m.Description}, " ")
+	return prohibitedRE.MatchString(text)
 }
 
 // normalizeUpstreamCategory maps upstream-provided category strings into
@@ -122,41 +136,46 @@ func normalizeUpstreamCategory(raw string) string {
 	if cat, ok := aliasMap[normalized]; ok {
 		return cat
 	}
-	for substr, cat := range aliasSubstrings {
-		if strings.Contains(normalized, substr) {
-			return cat
+	for _, alias := range aliasSubstrings {
+		if strings.Contains(normalized, alias.substr) {
+			return alias.cat
 		}
 	}
 	return ""
 }
 
 var aliasMap = map[string]string{
-	"politics":       CatPolitics,
-	"us politics":    CatPolitics,
-	"election":       CatPolitics,
-	"elections":      CatPolitics,
-	"crypto":         CatCrypto,
-	"cryptocurrency": CatCrypto,
-	"sports":         CatSports,
-	"entertainment":  CatEntertainment,
-	"culture":        CatEntertainment,
-	"pop culture":    CatEntertainment,
-	"tech":           CatTech,
-	"technology":     CatTech,
-	"science":        CatTech,
-	"economics":      CatEconomics,
-	"economy":        CatEconomics,
-	"business":       CatEconomics,
-	"finance":        CatEconomics,
+	"politics":      CatPolitics,
+	"us politics":   CatPolitics,
+	"election":      CatPolitics,
+	"elections":     CatPolitics,
+	"sports":        CatSports,
+	"entertainment": CatEntertainment,
+	"culture":       CatEntertainment,
+	"pop culture":   CatEntertainment,
+	"esports":       CatEsports,
+	"e-sports":      CatEsports,
+	"gaming":        CatEsports,
+	"tech":          CatTech,
+	"technology":    CatTech,
+	"science":       CatTech,
+	"economics":     CatEconomics,
+	"economy":       CatEconomics,
+	"business":      CatEconomics,
+	"finance":       CatEconomics,
 }
 
-var aliasSubstrings = map[string]string{
-	"polit":  CatPolitics,
-	"crypto": CatCrypto,
-	"sport":  CatSports,
-	"entert": CatEntertainment,
-	"econ":   CatEconomics,
-	"financ": CatEconomics,
+var aliasSubstrings = []struct {
+	substr string
+	cat    string
+}{
+	{"polit", CatPolitics},
+	{"esport", CatEsports},
+	{"gaming", CatEsports},
+	{"sport", CatSports},
+	{"entert", CatEntertainment},
+	{"econ", CatEconomics},
+	{"financ", CatEconomics},
 }
 
 // classifyByKeyword runs word-boundary regex matches in priority order.
@@ -165,14 +184,14 @@ func classifyByKeyword(text string) string {
 	if politicsRE.MatchString(text) {
 		return CatPolitics
 	}
-	if cryptoRE.MatchString(text) {
-		return CatCrypto
-	}
 	if sportsRE.MatchString(text) {
 		return CatSports
 	}
 	if entertainmentRE.MatchString(text) {
 		return CatEntertainment
+	}
+	if esportsRE.MatchString(text) {
+		return CatEsports
 	}
 	if techRE.MatchString(text) {
 		return CatTech

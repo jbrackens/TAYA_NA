@@ -3,6 +3,8 @@
 import { Badge, Button, Card } from "../shared";
 import { useState } from "react";
 
+type PunterProfileTab = "overview" | "trades" | "wallet";
+
 export interface PunterProfileData {
   id: string;
   name: string;
@@ -24,16 +26,16 @@ export interface SettlementRow {
   marketId: string;
   side: string;
   quantity: number;
-  pnlCents: number;
-  payoutCents: number;
+  realizedPointsCents: number;
+  settlementPointsCents: number;
   paidAt: string;
 }
 
 export interface WalletLedgerRow {
   entryId: string;
   type: string;
-  amountCents: number;
-  balanceCents: number;
+  amountPointsCents: number;
+  balancePointsCents: number;
   reason?: string;
   transactionTime: string;
 }
@@ -46,15 +48,18 @@ interface PunterProfileProps {
   walletLedger?: WalletLedgerRow[];
 }
 
-const money = (n: number) =>
+const pointAmount = (n: number) =>
   n.toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 
-const cents = (c: number) => `$${money(c / 100)}`;
-const signedCents = (c: number) =>
-  `${c < 0 ? "-" : "+"}$${money(Math.abs(c) / 100)}`;
+const points = (n: number) => `${pointAmount(n)} pts`;
+const pointsFromCents = (c: number) => points(c / 100);
+const signedPoints = (n: number) =>
+  `${n < 0 ? "-" : "+"}${points(Math.abs(n))}`;
+const signedPointsFromCents = (c: number) =>
+  `${c < 0 ? "-" : "+"}${pointsFromCents(Math.abs(c))}`;
 const fmtDate = (iso: string) => (iso ? new Date(iso).toLocaleString() : "—");
 
 const infoRowClassName =
@@ -70,8 +75,8 @@ const histThClassName =
 const histTdBaseClassName =
   "whitespace-nowrap border-b border-[var(--border-1,#e5dfd2)] px-2.5 py-2";
 const histTdClassName = `${histTdBaseClassName} text-[var(--t1,#1a1a1a)]`;
-const positiveMoneyClassName = "text-[var(--accent-lo,#1fa65e)]";
-const negativeMoneyClassName = "text-[var(--no-text,#a8472d)]";
+const positivePointClassName = "text-[var(--accent-lo,#1fa65e)]";
+const negativePointClassName = "text-[var(--no-text,#a8472d)]";
 
 function tabButtonClassName(active: boolean) {
   return active
@@ -86,7 +91,7 @@ export function PunterProfile({
   settlements = [],
   walletLedger = [],
 }: PunterProfileProps) {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState<PunterProfileTab>("overview");
 
   if (!punter) {
     return (
@@ -149,13 +154,13 @@ export function PunterProfile({
             </span>
           </div>
           <div className={infoRowClassName}>
-            <span className={infoLabelClassName}>Wallet Balance</span>
-            <span className={infoValueClassName}>${money(punter.balance)}</span>
+            <span className={infoLabelClassName}>Point Balance</span>
+            <span className={infoValueClassName}>{points(punter.balance)}</span>
           </div>
           <div className={infoRowClassName}>
-            <span className={infoLabelClassName}>Portfolio Value</span>
+            <span className={infoLabelClassName}>Portfolio Points</span>
             <span className={infoValueClassName}>
-              ${money(punter.portfolioValue)}
+              {points(punter.portfolioValue)}
             </span>
           </div>
           <div className={infoRowClassName}>
@@ -177,28 +182,27 @@ export function PunterProfile({
             </span>
           </div>
           <div className={infoRowClassName}>
-            <span className={infoLabelClassName}>Realized P&L</span>
+            <span className={infoLabelClassName}>Realized Points</span>
             <span
               className={`${infoValueBaseClassName} ${
                 punter.pnl >= 0
-                  ? positiveMoneyClassName
-                  : negativeMoneyClassName
+                  ? positivePointClassName
+                  : negativePointClassName
               }`}
             >
-              {punter.pnl < 0 ? "-" : "+"}${money(Math.abs(punter.pnl))}
+              {signedPoints(punter.pnl)}
             </span>
           </div>
           <div className={infoRowClassName}>
-            <span className={infoLabelClassName}>Unrealized P&L</span>
+            <span className={infoLabelClassName}>Unrealized Points</span>
             <span
               className={`${infoValueBaseClassName} ${
                 punter.unrealizedPnl >= 0
-                  ? positiveMoneyClassName
-                  : negativeMoneyClassName
+                  ? positivePointClassName
+                  : negativePointClassName
               }`}
             >
-              {punter.unrealizedPnl < 0 ? "-" : "+"}$
-              {money(Math.abs(punter.unrealizedPnl))}
+              {signedPoints(punter.unrealizedPnl)}
             </span>
           </div>
 
@@ -250,8 +254,8 @@ export function PunterProfile({
               Overview
             </button>
             <button
-              className={tabButtonClassName(activeTab === "bets")}
-              onClick={() => setActiveTab("bets")}
+              className={tabButtonClassName(activeTab === "trades")}
+              onClick={() => setActiveTab("trades")}
             >
               Trade History
             </button>
@@ -259,7 +263,7 @@ export function PunterProfile({
               className={tabButtonClassName(activeTab === "wallet")}
               onClick={() => setActiveTab("wallet")}
             >
-              Wallet
+              Point Ledger
             </button>
           </div>
         </Card>
@@ -276,7 +280,7 @@ export function PunterProfile({
               </p>
             </div>
           )}
-          {activeTab === "bets" && (
+          {activeTab === "trades" && (
             <div className={tabContentClassName}>
               <h4 className="mt-0 text-[var(--t1,#1a1a1a)]">Trade History</h4>
               {settlements.length === 0 ? (
@@ -288,8 +292,8 @@ export function PunterProfile({
                       <th className={histThClassName}>Market</th>
                       <th className={histThClassName}>Side</th>
                       <th className={histThClassName}>Qty</th>
-                      <th className={histThClassName}>P&amp;L</th>
-                      <th className={histThClassName}>Payout</th>
+                      <th className={histThClassName}>Point Change</th>
+                      <th className={histThClassName}>Points Returned</th>
                       <th className={histThClassName}>Settled</th>
                     </tr>
                   </thead>
@@ -307,15 +311,15 @@ export function PunterProfile({
                         </td>
                         <td
                           className={`${histTdBaseClassName} ${
-                            s.pnlCents < 0
-                              ? negativeMoneyClassName
-                              : positiveMoneyClassName
+                            s.realizedPointsCents < 0
+                              ? negativePointClassName
+                              : positivePointClassName
                           }`}
                         >
-                          {signedCents(s.pnlCents)}
+                          {signedPointsFromCents(s.realizedPointsCents)}
                         </td>
                         <td className={histTdClassName}>
-                          {cents(s.payoutCents)}
+                          {pointsFromCents(s.settlementPointsCents)}
                         </td>
                         <td className={histTdClassName}>{fmtDate(s.paidAt)}</td>
                       </tr>
@@ -327,18 +331,16 @@ export function PunterProfile({
           )}
           {activeTab === "wallet" && (
             <div className={tabContentClassName}>
-              <h4 className="mt-0 text-[var(--t1,#1a1a1a)]">
-                Wallet & Transactions
-              </h4>
+              <h4 className="mt-0 text-[var(--t1,#1a1a1a)]">Point Ledger</h4>
               {walletLedger.length === 0 ? (
-                <p>No wallet transactions yet.</p>
+                <p>No point ledger entries yet.</p>
               ) : (
                 <table className="w-full border-collapse text-[13px]">
                   <thead>
                     <tr>
                       <th className={histThClassName}>Type</th>
-                      <th className={histThClassName}>Amount</th>
-                      <th className={histThClassName}>Balance</th>
+                      <th className={histThClassName}>Point Movement</th>
+                      <th className={histThClassName}>Point Balance</th>
                       <th className={histThClassName}>Reason</th>
                       <th className={histThClassName}>Time</th>
                     </tr>
@@ -350,15 +352,15 @@ export function PunterProfile({
                         <td
                           className={`${histTdBaseClassName} ${
                             e.type.toLowerCase() === "debit"
-                              ? negativeMoneyClassName
-                              : positiveMoneyClassName
+                              ? negativePointClassName
+                              : positivePointClassName
                           }`}
                         >
-                          {e.type.toLowerCase() === "debit" ? "-" : "+"}$
-                          {money(Math.abs(e.amountCents) / 100)}
+                          {e.type.toLowerCase() === "debit" ? "-" : "+"}
+                          {pointsFromCents(Math.abs(e.amountPointsCents))}
                         </td>
                         <td className={histTdClassName}>
-                          {cents(e.balanceCents)}
+                          {pointsFromCents(e.balancePointsCents)}
                         </td>
                         <td className={histTdClassName}>{e.reason || "—"}</td>
                         <td className={histTdClassName}>

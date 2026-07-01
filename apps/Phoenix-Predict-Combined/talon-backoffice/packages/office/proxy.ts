@@ -22,6 +22,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+const RETIRED_MONEY_ROUTE_PATTERN =
+  /^\/(?:cashier|cashout|crypto|deposit|deposits|fiat|payment|payments|prize|prizes|redeem|redemption|withdraw|withdrawal|withdrawals)(?:\/|$)/i;
+
+function isRetiredMoneyRoute(pathname: string): boolean {
+  return RETIRED_MONEY_ROUTE_PATTERN.test(pathname);
+}
+
 function getAuthToken(request: NextRequest): string | null {
   const token = request.cookies.get("authToken")?.value;
   if (token) {
@@ -88,6 +95,10 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   }
 
   const pathname = request.nextUrl.pathname;
+
+  if (isRetiredMoneyRoute(pathname)) {
+    return new NextResponse("Not found", { status: 404 });
+  }
 
   // The login screen and the rest of /auth/* must stay open (no redirect loop).
   if (pathname.startsWith("/auth/")) {

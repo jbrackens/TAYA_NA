@@ -28,11 +28,11 @@ var auditWriteFailures atomic.Int64
 func GatewayInfraMetrics() string {
 	var b strings.Builder
 
-	b.WriteString("# HELP gateway_geo_missing_signal_denials_total Money-path requests denied because the edge country signal was absent.\n")
+	b.WriteString("# HELP gateway_geo_missing_signal_denials_total Guarded requests denied because the edge country signal was absent.\n")
 	b.WriteString("# TYPE gateway_geo_missing_signal_denials_total counter\n")
 	fmt.Fprintf(&b, "gateway_geo_missing_signal_denials_total %d\n", geoMissingSignalDenials.Load())
 
-	b.WriteString("# HELP gateway_geo_edge_auth_denials_total Money-path requests denied for a missing or invalid edge-auth secret (direct-to-origin bypass attempt).\n")
+	b.WriteString("# HELP gateway_geo_edge_auth_denials_total Guarded requests denied for a missing or invalid edge-auth secret (direct-to-origin bypass attempt).\n")
 	b.WriteString("# TYPE gateway_geo_edge_auth_denials_total counter\n")
 	fmt.Fprintf(&b, "gateway_geo_edge_auth_denials_total %d\n", geoEdgeAuthDenials.Load())
 
@@ -40,9 +40,11 @@ func GatewayInfraMetrics() string {
 	b.WriteString("# TYPE gateway_audit_write_failures_total counter\n")
 	fmt.Fprintf(&b, "gateway_audit_write_failures_total %d\n", auditWriteFailures.Load())
 
-	b.WriteString("# HELP gateway_alpha_cashier_audit_write_failures_total Alpha-cashier money-path audit-log entries that failed to durably persist.\n")
-	b.WriteString("# TYPE gateway_alpha_cashier_audit_write_failures_total counter\n")
-	fmt.Fprintf(&b, "gateway_alpha_cashier_audit_write_failures_total %d\n", alphacashier.AuditWriteFailures())
+	if legacyMoneyRoutesEnabled() {
+		b.WriteString("# HELP gateway_alpha_cashier_audit_write_failures_total Legacy alpha-cashier audit-log entries that failed to durably persist.\n")
+		b.WriteString("# TYPE gateway_alpha_cashier_audit_write_failures_total counter\n")
+		fmt.Fprintf(&b, "gateway_alpha_cashier_audit_write_failures_total %d\n", alphacashier.AuditWriteFailures())
+	}
 
 	b.WriteString(ws.RenderMetrics())
 	return b.String()

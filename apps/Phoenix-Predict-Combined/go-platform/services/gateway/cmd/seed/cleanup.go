@@ -10,13 +10,15 @@ import (
 // surfaces in the seed log. Each count is the number of rows the cleanup
 // SQL touched.
 type CleanupResult struct {
-	StalePendingCancelled  int64
-	ExpiredReservationsHealed int64
-	DemoOrdersDeleted      int64
-	DemoTradesDeleted      int64
-	DemoLedgerDeleted      int64
-	DemoSettlementsDeleted int64
-	DemoPositionsDeleted   int64
+	StalePendingCancelled          int64
+	ExpiredReservationsHealed      int64
+	DemoOrdersDeleted              int64
+	DemoTradesDeleted              int64
+	DemoLedgerDeleted              int64
+	DemoSettlementsDeleted         int64
+	DemoPositionsDeleted           int64
+	DemoBonusesDeleted             int64
+	DemoCampaignsDeleted           int64
 	OrphanOrderReservationsDeleted int64
 }
 
@@ -30,11 +32,11 @@ const stalePendingCutoff = time.Hour
 // wipe mode. Two responsibilities:
 //
 //  1. Cancel any 'pending' orders older than stalePendingCutoff. These
-//     orders are stuck — the gateway's reservedCashCents on the wallet
-//     is held by them and the demo flow can't place new orders for those
-//     users until the cash is released. We mark them 'cancelled' and let
-//     the wallet's reconciler refund the cash on its next cycle (any
-//     ledger 'capture' rows tied to them are already idempotent).
+//     orders are stuck — the gateway's reserved point balance is held by
+//     them and the demo flow can't place new orders for those users until
+//     the points are released. We mark them 'cancelled' and let the
+//     wallet reconciler release the points on its next cycle (any ledger
+//     'capture' rows tied to them are already idempotent).
 //
 //  2. Remove every row a prior demo seed wrote. Identified by
 //     idempotency_key LIKE 'demo:%' on orders and trade_kind='demo_history'
@@ -53,8 +55,8 @@ func RunPhase0Cleanup(db *sql.DB) (*CleanupResult, error) {
 	// Step 1: cancel stale pending orders. Older than stalePendingCutoff,
 	// status='pending'. Status transitions to 'cancelled' and updated_at
 	// bumps so the gateway's wallet reconciler picks them up. We do NOT
-	// touch capturedCashCents or reservedCashCents directly — that's
-	// the wallet ledger's job.
+	// touch captured or reserved point balances directly — that's the
+	// wallet ledger's job.
 	res, err := db.Exec(`
 		UPDATE prediction_orders
 		SET status='cancelled', updated_at=NOW()
@@ -66,7 +68,7 @@ func RunPhase0Cleanup(db *sql.DB) (*CleanupResult, error) {
 	r.StalePendingCancelled, _ = res.RowsAffected()
 
 	// Step 1b: heal expired reservations on orders that are still open.
-	// Old code reserved cash for 24h regardless of TIF. GTC limit orders
+	// Old code reserved points for 24h regardless of TIF. GTC limit orders
 	// that survived past 24h had their reservations expire while the
 	// order was still live on the book. When a taker eventually matched
 	// the maker's bid, the capture path errored with
@@ -95,6 +97,30 @@ func RunPhase0Cleanup(db *sql.DB) (*CleanupResult, error) {
 		return r, fmt.Errorf("heal expired reservations: %w", err)
 	}
 	r.ExpiredReservationsHealed, _ = res.RowsAffected()
+
+	// Step 1c: remove demo bonus rows before campaign rows. Campaign rules
+	// cascade from campaigns, while player bonus grants reference campaigns
+	// without cascade.
+	res, err = db.Exec(`
+		DELETE FROM player_bonuses
+		WHERE campaign_id IN (
+		  SELECT id FROM campaigns WHERE created_by = 'demo-seed'
+		)
+		   OR metadata->>'granted_by' = 'demo-seed'
+	`)
+	if err != nil {
+		return r, fmt.Errorf("delete demo player bonuses: %w", err)
+	}
+	r.DemoBonusesDeleted, _ = res.RowsAffected()
+
+	res, err = db.Exec(`
+		DELETE FROM campaigns
+		WHERE created_by = 'demo-seed'
+	`)
+	if err != nil {
+		return r, fmt.Errorf("delete demo campaigns: %w", err)
+	}
+	r.DemoCampaignsDeleted, _ = res.RowsAffected()
 
 	// Step 2a: delete demo-keyed ledger entries first (FK target). A ledger
 	// row qualifies as 'demo' if it carries demo provenance on any of the
@@ -158,7 +184,8 @@ func RunPhase0Cleanup(db *sql.DB) (*CleanupResult, error) {
 	}
 	r.DemoTradesDeleted, _ = res.RowsAffected()
 
-	// Step 2c: delete demo settlements + their payouts. Settlements have
+	// Step 2c: delete demo settlements + their settlement credit rows.
+	// Settlements have
 	// no idempotency_key column, so we tag demo-created ones via
 	// attestation_source='demo'. That field is part of the existing
 	// attestation contract (real settlements use 'manual', 'oracle',
@@ -171,10 +198,11 @@ func RunPhase0Cleanup(db *sql.DB) (*CleanupResult, error) {
 		)
 	`)
 	if err != nil {
-		return r, fmt.Errorf("delete demo payouts: %w", err)
+		return r, fmt.Errorf("delete demo settlement credit rows: %w", err)
 	}
 
-	// Step 2c.0: purge wallet_ledger payout entries for demo-settled markets.
+	// Step 2c.0: purge wallet_ledger settlement-credit entries for
+	// demo-settled markets.
 	// The settlement service uses the idempotency key
 	// `prediction_payout:<marketID>:<positionID>`, where both ids are
 	// stable across demo re-runs (market_id is md5(slug), position_id is
@@ -186,28 +214,33 @@ func RunPhase0Cleanup(db *sql.DB) (*CleanupResult, error) {
 	// entries here so the next ResolveMarket can write fresh credits.
 	// Scope is the same markets the revert below touches.
 	_, err = db.Exec(`
-		DELETE FROM wallet_ledger
-		WHERE idempotency_key LIKE 'prediction_payout:%'
-		  AND idempotency_key LIKE ANY (
-		    SELECT 'prediction_payout:' || m.id::text || ':%'
-		    FROM prediction_markets m
-		    WHERE
-		      (
-		        m.status = 'settled'
-		        AND (
-		          m.id IN (SELECT DISTINCT market_id FROM prediction_settlements WHERE attestation_source = 'demo')
-		          OR NOT EXISTS (SELECT 1 FROM prediction_settlements s WHERE s.market_id = m.id)
-		        )
-		      )
-		      OR (m.status = 'closed' AND m.close_at > NOW())
-		  )
+		DO $$
+		BEGIN
+		  IF to_regclass('public.wallet_ledger') IS NOT NULL THEN
+		    DELETE FROM wallet_ledger
+		    WHERE idempotency_key LIKE 'prediction_payout:%'
+		      AND idempotency_key LIKE ANY (
+		        SELECT 'prediction_payout:' || m.id::text || ':%'
+		        FROM prediction_markets m
+		        WHERE
+		          (
+		            m.status = 'settled'
+		            AND (
+		              m.id IN (SELECT DISTINCT market_id FROM prediction_settlements WHERE attestation_source = 'demo')
+		              OR NOT EXISTS (SELECT 1 FROM prediction_settlements s WHERE s.market_id = m.id)
+		            )
+		          )
+		          OR (m.status = 'closed' AND m.close_at > NOW())
+		      );
+		  END IF;
+		END $$;
 	`)
 	if err != nil {
-		return r, fmt.Errorf("purge demo payout wallet entries: %w", err)
+		return r, fmt.Errorf("purge demo settlement wallet entries: %w", err)
 	}
 
 	// Step 2c.1: revert markets that were settled by a demo settlement
-	// back to 'open' (clear result, reset payout pool). Without this,
+	// back to 'open' (clear result, reset settlement point pool). Without this,
 	// after the first demo run those market rows stay in status='settled'
 	// permanently — Phase 4 then can't re-place u-1 positions in them
 	// (it filters status='open') and Phase 5 can't re-settle them
@@ -310,10 +343,10 @@ func RunPhase0Cleanup(db *sql.DB) (*CleanupResult, error) {
 	// deletes demo orders but the wallet_reservations they created are
 	// left behind as status='held' orphans. AvailableBalance is
 	// balance - SUM(held) computed live (wallet/service.go), so every
-	// reseed within one gateway lifetime stacks another ~$200k of dead
-	// holds on user-bot until Phase 1 can no longer reserve and fails
-	// with "hold reservation: insufficient funds". That made the demo
-	// nondeterministic (101 payouts on a fresh DB, 26 after several
+	// reseed within one gateway lifetime stacks another large block of
+	// dead point holds on user-bot until Phase 1 can no longer reserve and
+	// fails with "hold reservation: insufficient points". That made the demo
+	// nondeterministic (101 settlement credits on a fresh DB, 26 after several
 	// reseeds). Scoped to reference_type='prediction_order'; only
 	// removes reservations whose backing order no longer exists, so it
 	// both heals accumulated cruft and stops future accumulation.

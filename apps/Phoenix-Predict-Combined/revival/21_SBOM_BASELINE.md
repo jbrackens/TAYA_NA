@@ -1,17 +1,17 @@
-# SBOM Baseline (2026-03-05)
+# SBOM Baseline (2026-06-30)
 
 Command: `make security-sbom`
 
-Latest artifact directory: `/Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/revival/artifacts/sbom_20260305_151421`
+Latest artifact directory: `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/revival/artifacts/sbom_20260630_185121`
 
-Summary artifact: `/Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/revival/artifacts/sbom_20260305_151421/summary.md`
+Summary artifact: `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/revival/artifacts/sbom_20260630_185121/summary.md`
 
 | Component | Status | Artifact |
 |---|---|---|
-| talon-backoffice | ok | /Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/revival/artifacts/sbom_20260305_151421/talon-backoffice.cyclonedx.json (cyclonedx-npm fallback used; see /Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/revival/artifacts/sbom_20260305_151421/talon-backoffice.cyclonedx.cyclonedx-npm.error.log) |
-| phoenix-frontend-brand-viegg | ok | /Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/revival/artifacts/sbom_20260305_151421/phoenix-frontend-brand-viegg.cyclonedx.json (cyclonedx-npm fallback used; see /Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/revival/artifacts/sbom_20260305_151421/phoenix-frontend-brand-viegg.cyclonedx.cyclonedx-npm.error.log) |
-| go-platform/modules/platform | ok | /Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/revival/artifacts/sbom_20260305_151421/go-platform-modules-platform.modules.jsonl |
-| go-platform/services/auth | ok | /Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/revival/artifacts/sbom_20260305_151421/go-platform-services-auth.modules.jsonl |
-| go-platform/services/gateway | ok | /Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/revival/artifacts/sbom_20260305_151421/go-platform-services-gateway.modules.jsonl |
-| phoenix-backend (resolved classpath) | ok | /Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/revival/artifacts/sbom_20260305_151421/phoenix-backend_dependency-classpath.log |
-| phoenix-backend (declared dependencies) | ok | /Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/revival/artifacts/sbom_20260305_151421/phoenix-backend_declared-dependencies.txt |
+| talon-backoffice | ok | /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/revival/artifacts/sbom_20260630_185121/talon-backoffice.cyclonedx.json (cyclonedx-npm fallback used; see /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/revival/artifacts/sbom_20260630_185121/talon-backoffice.cyclonedx.cyclonedx-npm.error.log) |
+| tiangge-player-app | ok | /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/revival/artifacts/sbom_20260630_185121/tiangge-player-app.cyclonedx.json (cyclonedx-npm fallback used; see /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/revival/artifacts/sbom_20260630_185121/tiangge-player-app.cyclonedx.cyclonedx-npm.error.log) |
+| go-platform/modules/platform | ok | /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/revival/artifacts/sbom_20260630_185121/go-platform-modules-platform.modules.jsonl |
+| go-platform/services/auth | ok | /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/revival/artifacts/sbom_20260630_185121/go-platform-services-auth.modules.jsonl |
+| go-platform/services/gateway | ok | /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/revival/artifacts/sbom_20260630_185121/go-platform-services-gateway.modules.jsonl |
+| phoenix-backend (resolved classpath) | ok | /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/revival/artifacts/sbom_20260630_185121/phoenix-backend_dependency-classpath.log |
+| phoenix-backend (declared dependencies) | ok | /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/revival/artifacts/sbom_20260630_185121/phoenix-backend_declared-dependencies.txt |

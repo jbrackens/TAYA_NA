@@ -1,16 +1,16 @@
 {
   "TITLE": "Profil Pengguna",
   "PERSONAL_DETAILS": "Detail Pribadi",
-  "WALLET_AND_INVENTORY": "Dompet dan Inventaris",
+  "WALLET_AND_INVENTORY": "Points and Inventory",
   "SECURITY": "Keamanan",
   "LANGUAGE_AND_TIME_ZONE": "Bahasa dan Zona Waktu",
   "SELF_EXCLUSION": "Pengecualian Diri",
   "EMAIL_SETTINGS": "Pengaturan Email",
-  "DEPOSIT_LIMITS": "Batas Deposit",
+  "DEPOSIT_LIMITS": "Point-Use Limits",
   "hub": {
     "title": "Akun",
-    "subtitle": "Preferensi profil, dompet, keamanan, dan notifikasi.",
-    "availableBalance": "Saldo tersedia"
+    "subtitle": "Profile, points, security, and notification preferences.",
+    "availableBalance": "Available points"
   },
   "actions": {
     "profile": {
@@ -21,13 +21,9 @@
       "title": "Portofolio",
       "desc": "Posisi terbuka, order, dan riwayat selesai"
     },
-    "cashier": {
-      "title": "Cashier",
-      "desc": "Deposit dan penarikan"
-    },
     "walletActivity": {
-      "title": "Aktivitas dompet",
-      "desc": "Entri ledger dan riwayat transaksi"
+      "title": "Point ledger",
+      "desc": "Starter grants, predictions, and rewards"
     },
     "security": {
       "title": "Keamanan",
@@ -39,7 +35,7 @@
     },
     "responsible": {
       "title": "Bermain secara bertanggung jawab",
-      "desc": "Batas deposit, jeda bermain, dan pengecualian diri"
+      "desc": "Point-use limits, cool-offs, and self-exclusion"
     }
   },
   "privacy": {
@@ -58,7 +54,7 @@
   },
   "stats": {
     "invested": "Diinvestasikan",
-    "realizedPnl": "P&L terealisasi",
+    "realizedPnl": "Hasil poin terealisasi",
     "openPositions": "Posisi terbuka",
     "accuracy": "Akurasi",
     "noSettledMarkets": "Belum ada market selesai"

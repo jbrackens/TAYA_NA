@@ -7,16 +7,16 @@ const FALLBACK_CONTENT = `
 <p style="font-size: 12px; color: #4a5580; margin-bottom: 32px;">Last updated: April 2026</p>
 
 <h2>Who We Are</h2>
-<p>Tiangge is a prediction market platform where traders take positions on real-world outcomes — politics, crypto, sports, entertainment, tech, and economics. Markets price probability as cents (0–99) and pay out 100¢ per contract on the winning side.</p>
+<p>Tiangge is a points-based prediction market platform where players take positions on real-world outcomes across politics, sports, entertainment, technology, culture, and economics. Markets express crowd probability from 1 to 99 and settle only in non-redeemable gameplay points.</p>
 
 <h2>Our Mission</h2>
 <p>We believe prediction markets are the most honest signal we have for what the world thinks will happen. Our platform exists to surface that signal with fair pricing, transparent settlement, and tools that keep the experience under your control.</p>
 
 <h2>What We Offer</h2>
-<p>Binary YES/NO contracts on real-world events across politics, crypto, sports, entertainment, tech, and economics. Continuous AMM-priced markets with live order books. Real-time portfolio tracking with positions, accuracy, and P&amp;L. Deposit and session limits you control. A full responsible-play suite including cool-off periods and self-exclusion.</p>
+<p>Binary YES/NO predictions on real-world events, transparent resolution rules, live depth, point-ledger history, portfolio tracking, rankings, rewards, and responsible-play tools. Tiangge points are for gameplay only and cannot be withdrawn, cashed out, redeemed, or transferred for money or prizes.</p>
 
 <h2>Licensing &amp; Regulation</h2>
-<p>Tiangge operates under applicable regulatory frameworks for event-contract trading. All trading activity is subject to the terms of service and applicable laws of the jurisdiction in which you are located.</p>
+<p>Tiangge is designed around non-redeemable gameplay points. Access and features may vary by jurisdiction, age, and responsible-play settings.</p>
 
 <h2>Contact</h2>
 <p>For support inquiries, reach us at <a href="mailto:support@tiangge.com">support@tiangge.com</a>.</p>

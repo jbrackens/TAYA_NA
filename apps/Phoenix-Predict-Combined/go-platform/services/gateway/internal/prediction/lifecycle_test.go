@@ -1,6 +1,9 @@
 package prediction
 
-import "testing"
+import (
+	"regexp"
+	"testing"
+)
 
 func TestValidMarketTransitions(t *testing.T) {
 	valid := []struct {
@@ -90,6 +93,78 @@ func TestIsTerminal(t *testing.T) {
 	}
 	if IsTerminal(MarketStatusOpen) {
 		t.Error("Open should not be terminal")
+	}
+}
+
+func TestDescribeTianggeMarketLifecycleMapsLaunchStages(t *testing.T) {
+	cases := []struct {
+		status        MarketStatus
+		stage         string
+		label         string
+		tradeable     bool
+		terminal      bool
+		action        string
+		targetStage   string
+		requiresAudit bool
+	}{
+		{MarketStatusUnopened, "draft", "Draft", false, false, "open", "open", false},
+		{MarketStatusOpen, "open", "Open", true, false, "halt", "paused", true},
+		{MarketStatusHalted, "paused", "Paused", false, false, "open", "open", false},
+		{MarketStatusClosed, "closed", "Closed", false, false, "propose", "resolving", true},
+		{MarketStatusProposedResolution, "resolving", "Resolving", false, false, "finalize", "settled", true},
+		{MarketStatusDisputed, "resolving", "Disputed", false, false, "finalize", "settled", true},
+		{MarketStatusSettled, "settled", "Settled", false, true, "", "", false},
+		{MarketStatusVoided, "invalid", "Invalid", false, true, "", "", false},
+	}
+
+	for _, tc := range cases {
+		got := DescribeTianggeMarketLifecycle(tc.status)
+		if got.Stage != tc.stage || got.Label != tc.label {
+			t.Fatalf("%s mapped to stage=%q label=%q, want stage=%q label=%q", tc.status, got.Stage, got.Label, tc.stage, tc.label)
+		}
+		if got.Tradeable != tc.tradeable || got.Terminal != tc.terminal {
+			t.Fatalf("%s tradeable=%v terminal=%v, want tradeable=%v terminal=%v", tc.status, got.Tradeable, got.Terminal, tc.tradeable, tc.terminal)
+		}
+		if tc.action == "" {
+			if len(got.AllowedActions) != 0 {
+				t.Fatalf("%s should have no launch-facing actions, got %+v", tc.status, got.AllowedActions)
+			}
+			continue
+		}
+		var matched *TianggeLifecycleAction
+		for i := range got.AllowedActions {
+			if got.AllowedActions[i].Action == tc.action {
+				matched = &got.AllowedActions[i]
+				break
+			}
+		}
+		if matched == nil {
+			t.Fatalf("%s missing launch action %q in %+v", tc.status, tc.action, got.AllowedActions)
+		}
+		if matched.TargetStage != tc.targetStage || matched.RequiresReason != tc.requiresAudit {
+			t.Fatalf("%s action %q targetStage=%q requiresReason=%v, want targetStage=%q requiresReason=%v", tc.status, tc.action, matched.TargetStage, matched.RequiresReason, tc.targetStage, tc.requiresAudit)
+		}
+	}
+}
+
+func TestDescribeTianggeMarketLifecycleUsesPointNativeCopy(t *testing.T) {
+	prohibited := regexp.MustCompile(`(?i)\b(cash|cashout|deposit|withdraw|withdrawal|crypto|fiat|money|payout|payouts|prize|redeem|sportsbook|wager|wagering|bet)\b`)
+
+	statuses := []MarketStatus{
+		MarketStatusUnopened,
+		MarketStatusOpen,
+		MarketStatusHalted,
+		MarketStatusClosed,
+		MarketStatusProposedResolution,
+		MarketStatusDisputed,
+		MarketStatusSettled,
+		MarketStatusVoided,
+	}
+	for _, status := range statuses {
+		got := DescribeTianggeMarketLifecycle(status)
+		if prohibited.MatchString(got.Description) {
+			t.Fatalf("%s lifecycle description uses launch-prohibited copy: %q", status, got.Description)
+		}
 	}
 }
 

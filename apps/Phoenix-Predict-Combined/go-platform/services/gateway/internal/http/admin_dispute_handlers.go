@@ -32,9 +32,21 @@ func registerResolutionSourceRoutes(mux *stdhttp.ServeMux, reporter resolutionSo
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"items": reporter.Health()})
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"items": resolutionSourceHealthPayloads(reporter.Health())})
 	}))
 	slog.Info("admin resolution-source health route registered")
+}
+
+func resolutionSourceHealthPayloads(items []feed.SourceHealth) []feed.SourceHealth {
+	if items == nil {
+		return nil
+	}
+	out := make([]feed.SourceHealth, len(items))
+	for i, item := range items {
+		out[i] = item
+		out[i].LastError = redactLaunchProhibitedUserText(item.LastError)
+	}
+	return out
 }
 
 // registerAdminDisputeRoutes wires the office dispute-review queue (ADR-0004 #6):
@@ -66,7 +78,7 @@ func registerAdminDisputeRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, 
 		if err != nil {
 			return httpx.Internal("failed to list disputes", err)
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"items": disputes})
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"items": disputePayloads(disputes)})
 	}))
 
 	// Resolve: uphold (void the market, refund) or reject a single dispute.
@@ -101,16 +113,20 @@ func registerAdminDisputeRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, 
 			return httpx.BadRequest("decision must be 'uphold' or 'reject'", map[string]any{"decision": req.Decision})
 		}
 
-		adminID := userIDFromRequest(r)
-		dispute, err := svc.ResolveDispute(r.Context(), disputeID, uphold, strings.TrimSpace(req.Note), actorIDPointer(adminID))
-		if err != nil {
-			return httpx.BadRequest(err.Error(), nil)
+		note := strings.TrimSpace(req.Note)
+		if err := validateLaunchFacingReason("note", note); err != nil {
+			return err
 		}
-		recordMoneyAuditEntry(adminID, "dispute.resolved", dispute.MarketID, map[string]any{
+		adminID := userIDFromRequest(r)
+		dispute, err := svc.ResolveDispute(r.Context(), disputeID, uphold, note, actorIDPointer(adminID))
+		if err != nil {
+			return serviceBadRequestError(err, nil)
+		}
+		recordProviderOpsAuditAction(adminID, "dispute.resolved", dispute.MarketID, map[string]any{
 			"disputeId": dispute.ID,
 			"decision":  dispute.Status,
 		})
-		return httpx.WriteJSON(w, stdhttp.StatusOK, dispute)
+		return httpx.WriteJSON(w, stdhttp.StatusOK, disputePayload(*dispute))
 	}))
 
 	slog.Info("admin dispute-review routes registered")

@@ -11,6 +11,14 @@ export interface Category {
   active: boolean;
 }
 
+export interface CreateCategoryRequest {
+  slug?: string;
+  name: string;
+  icon?: string;
+  sortOrder?: number;
+  active?: boolean;
+}
+
 export interface Series {
   id: string;
   slug: string;
@@ -20,6 +28,16 @@ export interface Series {
   frequency?: string;
   tags: string[];
   active: boolean;
+}
+
+export interface CreateSeriesRequest {
+  slug?: string;
+  title: string;
+  description?: string;
+  categoryId: string;
+  frequency?: string;
+  tags?: string[];
+  active?: boolean;
 }
 
 export interface PredictionEvent {
@@ -55,18 +73,21 @@ export interface MarketTranslation {
 export interface PredictionMarket {
   id: string;
   eventId: string;
+  categoryId?: string;
+  categorySlug?: string;
+  categoryName?: string;
   ticker: string;
   title: string;
   description?: string;
   translations?: Record<string, MarketTranslation>;
   status: MarketStatus;
   result?: "yes" | "no";
-  yesPriceCents: number;
-  noPriceCents: number;
-  lastTradePriceCents?: number;
-  volumeCents: number;
-  openInterestCents: number;
-  liquidityCents: number;
+  yesPricePointsCents: number;
+  noPricePointsCents: number;
+  lastTradePricePointsCents?: number;
+  volumePointsCents: number;
+  openInterestPointsCents: number;
+  liquidityPointsCents: number;
   settlementSourceKey: string;
   settlementRule: string;
   settlementParams?: Record<string, unknown>;
@@ -82,13 +103,19 @@ export interface PredictionMarket {
   // Trade ticket UI must branch on this — order book markets support
   // limit/market/sell/IOC/FOK; AMM markets remain buy-only.
   executionMode?: ExecutionMode;
-  collateralPoolCents?: number;
-  settledPayoutPoolCents?: number;
-  bestYesBidCents?: number;
-  bestYesAskCents?: number;
-  bestNoBidCents?: number;
-  bestNoAskCents?: number;
+  ammYesShares?: number;
+  ammNoShares?: number;
+  ammLiquidityParam?: number;
+  ammSubsidyPointsCents?: number;
+  collateralPoolPointsCents?: number;
+  bestYesBidPointsCents?: number;
+  bestYesAskPointsCents?: number;
+  bestNoBidPointsCents?: number;
+  bestNoAskPointsCents?: number;
+  settlementPoolPointsCents?: number;
+  unit?: "PTS" | string;
   lastQuoteAt?: string;
+  tianggeLifecycle?: TianggeMarketLifecycle;
 }
 
 // Per-market jurisdiction overlay (P3-07). An optional country allow/deny list
@@ -108,6 +135,188 @@ export type MarketStatus =
   | "disputed"
   | "settled"
   | "voided";
+
+export type TianggeMarketStage =
+  | "draft"
+  | "open"
+  | "paused"
+  | "closed"
+  | "resolving"
+  | "settled"
+  | "invalid"
+  | "unknown";
+
+export interface TianggeLifecycleAction {
+  action: string;
+  label: string;
+  targetStatus: MarketStatus;
+  targetStage: TianggeMarketStage;
+  requiresReason: boolean;
+  destructive: boolean;
+}
+
+export interface TianggeMarketLifecycle {
+  stage: TianggeMarketStage;
+  label: string;
+  description: string;
+  tradeable: boolean;
+  terminal: boolean;
+  allowedActions: TianggeLifecycleAction[];
+}
+
+export interface PredictionMarketLifecycleEvent {
+  id: string;
+  marketId: string;
+  eventType: MarketStatus | string;
+  actorId?: string;
+  actorType: string;
+  reason?: string;
+  metadata?: Record<string, unknown>;
+  occurredAt: string;
+  tianggeLifecycle: TianggeMarketLifecycle;
+}
+
+export interface PredictionMarketLifecycleAuditResponse {
+  marketId: string;
+  data: PredictionMarketLifecycleEvent[];
+}
+
+function lifecycleAction(
+  action: string,
+  label: string,
+  targetStatus: MarketStatus,
+  targetStage: TianggeMarketStage,
+  requiresReason: boolean,
+  destructive: boolean,
+): TianggeLifecycleAction {
+  return {
+    action,
+    label,
+    targetStatus,
+    targetStage,
+    requiresReason,
+    destructive,
+  };
+}
+
+export const TIANGGE_MARKET_LIFECYCLE_BY_STATUS: Record<
+  MarketStatus,
+  TianggeMarketLifecycle
+> = {
+  unopened: {
+    stage: "draft",
+    label: "Draft",
+    description:
+      "Not yet published. Admins can open or cancel before users can trade.",
+    tradeable: false,
+    terminal: false,
+    allowedActions: [
+      lifecycleAction("open", "Open", "open", "open", false, false),
+      lifecycleAction("void", "Cancel", "voided", "invalid", true, true),
+    ],
+  },
+  open: {
+    stage: "open",
+    label: "Open",
+    description: "Published and accepting prediction orders.",
+    tradeable: true,
+    terminal: false,
+    allowedActions: [
+      lifecycleAction("halt", "Pause", "halted", "paused", true, true),
+      lifecycleAction("close", "Close", "closed", "closed", true, true),
+      lifecycleAction("void", "Invalidate", "voided", "invalid", true, true),
+    ],
+  },
+  halted: {
+    stage: "paused",
+    label: "Paused",
+    description:
+      "Visible but not accepting new orders until resumed or closed.",
+    tradeable: false,
+    terminal: false,
+    allowedActions: [
+      lifecycleAction("open", "Resume", "open", "open", false, false),
+      lifecycleAction("close", "Close", "closed", "closed", true, true),
+      lifecycleAction("void", "Invalidate", "voided", "invalid", true, true),
+    ],
+  },
+  closed: {
+    stage: "closed",
+    label: "Closed",
+    description:
+      "Trading is closed. The market is ready for resolution or invalidation.",
+    tradeable: false,
+    terminal: false,
+    allowedActions: [
+      lifecycleAction(
+        "propose",
+        "Propose Resolution",
+        "proposed_resolution",
+        "resolving",
+        true,
+        true,
+      ),
+      lifecycleAction("settle", "Settle Now", "settled", "settled", true, true),
+      lifecycleAction("void", "Invalidate", "voided", "invalid", true, true),
+    ],
+  },
+  proposed_resolution: {
+    stage: "resolving",
+    label: "Resolving",
+    description:
+      "A resolution has been proposed and is awaiting challenge-window finalization.",
+    tradeable: false,
+    terminal: false,
+    allowedActions: [
+      lifecycleAction("finalize", "Finalize", "settled", "settled", true, true),
+      lifecycleAction("void", "Invalidate", "voided", "invalid", true, true),
+    ],
+  },
+  disputed: {
+    stage: "resolving",
+    label: "Disputed",
+    description: "Resolution is disputed and must be finalized or invalidated.",
+    tradeable: false,
+    terminal: false,
+    allowedActions: [
+      lifecycleAction("finalize", "Finalize", "settled", "settled", true, true),
+      lifecycleAction("void", "Invalidate", "voided", "invalid", true, true),
+    ],
+  },
+  settled: {
+    stage: "settled",
+    label: "Settled",
+    description: "Final result and point disbursements are recorded.",
+    tradeable: false,
+    terminal: true,
+    allowedActions: [],
+  },
+  voided: {
+    stage: "invalid",
+    label: "Invalid",
+    description:
+      "Market is canceled or invalidated and no longer accepts actions.",
+    tradeable: false,
+    terminal: true,
+    allowedActions: [],
+  },
+};
+
+export function describeTianggeMarketLifecycle(
+  status?: MarketStatus | string,
+): TianggeMarketLifecycle {
+  const mapped =
+    TIANGGE_MARKET_LIFECYCLE_BY_STATUS[status as MarketStatus] || null;
+  if (mapped) return mapped;
+  return {
+    stage: "unknown",
+    label: status || "unknown",
+    description: "Unknown lifecycle state.",
+    tradeable: false,
+    terminal: false,
+    allowedActions: [],
+  };
+}
 
 export type OrderSide = "yes" | "no";
 export type OrderAction = "buy" | "sell";
@@ -154,11 +363,11 @@ export interface PredictionOrder {
   side: OrderSide;
   action: OrderAction;
   orderType: OrderType;
-  priceCents?: number;
+  pricePointsCents?: number;
   quantity: number;
   filledQuantity: number;
   remainingQuantity: number;
-  totalCostCents: number;
+  totalCostPointsCents: number;
   status: OrderStatus;
   filledAt?: string;
   cancelledAt?: string;
@@ -166,17 +375,18 @@ export interface PredictionOrder {
 
   // Exchange engine fields (present on order_book markets; ignored on AMM).
   timeInForce?: TimeInForce;
-  reservedCashCents?: number;
-  capturedCashCents?: number;
-  releasedCashCents?: number;
+  reservedPointsCents?: number;
+  capturedPointsCents?: number;
+  releasedPointsCents?: number;
   reservedQuantity?: number;
-  averageFillPriceCents?: number;
-  filledCostCents?: number;
+  averageFillPricePointsCents?: number;
+  filledCostPointsCents?: number;
   failureReason?: OrderFailureReason;
   postOnly?: boolean;
   clientOrderId?: string;
   selfMatchAction?: SelfMatchAction;
-  notionalCapCents?: number;
+  notionalCapPointsCents?: number;
+  unit?: "PTS" | string;
 }
 
 export interface Position {
@@ -185,10 +395,11 @@ export interface Position {
   marketId: string;
   side: OrderSide;
   quantity: number;
-  avgPriceCents: number;
-  totalCostCents: number;
-  realizedPnlCents: number;
+  avgPricePointsCents: number;
+  totalCostPointsCents: number;
+  realizedPointsCents: number;
   reservedQuantity?: number;
+  unit?: "PTS" | string;
 }
 
 export interface Trade {
@@ -199,11 +410,13 @@ export interface Trade {
   buyOrderId?: string;
   sellOrderId?: string;
   side: OrderSide;
-  priceCents: number;
+  pricePointsCents: number;
   quantity: number;
-  feeCents: number;
+  feePointsCents: number;
+  notionalPointsCents: number;
   isAmmTrade: boolean;
   tradedAt: string;
+  unit?: "PTS" | string;
 
   // Exchange engine fields. matchId links the two trade rows produced by a
   // complementary issuance fill (yes + no, prices summing to 100); equals
@@ -218,43 +431,51 @@ export interface OrderPreview {
   side: OrderSide;
   action: OrderAction;
   quantity: number;
-  priceCents: number;
-  totalCostCents: number;
-  feeCents: number;
-  maxProfitCents: number;
-  maxLossCents: number;
-  newYesPriceCents: number;
-  newNoPriceCents: number;
+  pricePointsCents: number;
+  totalCostPointsCents: number;
+  feePointsCents: number;
+  maxResultPointsCents: number;
+  maxLossPointsCents: number;
+  newYesPricePointsCents: number;
+  newNoPricePointsCents: number;
   executionMode?: ExecutionMode;
   filledQuantity?: number;
   unfilledQuantity?: number;
-  averageFillPriceCents?: number;
-  totalCostWithFeesCents?: number;
-  estimatedSlippageCents?: number;
+  averageFillPricePointsCents?: number;
+  totalCostWithFeesPointsCents?: number;
+  estimatedSlippagePointsCents?: number;
   quoteStatus?: OrderStatus;
   quoteStaleAfterMillis?: number;
   quoteGeneratedAtUnixSec?: number;
+  unit?: "PTS" | string;
 }
 
 export interface PortfolioSummary {
-  totalValueCents: number;
-  unrealizedPnlCents: number;
-  realizedPnlCents: number;
+  totalValuePointsCents: number;
+  portfolioValuePointsCents: number;
+  investedPointsCents: number;
+  unrealizedPointsCents: number;
+  realizedPointsCents: number;
+  unit?: "PTS" | string;
   openPositions: number;
   totalPredictions: number;
   correctPredictions: number;
   accuracyPct: number;
 }
 
-export interface SettledPayout {
+export interface SettledPositionResult {
   id: string;
+  settlementId?: string;
+  positionId?: string;
+  userId?: string;
   marketId: string;
   side: OrderSide;
   quantity: number;
-  entryPriceCents: number;
-  exitPriceCents: number;
-  pnlCents: number;
-  payoutCents: number;
+  entryPricePointsCents: number;
+  exitPricePointsCents: number;
+  realizedPointsCents: number;
+  settlementPointsCents: number;
+  unit?: "PTS" | string;
   paidAt: string;
 }
 
@@ -270,7 +491,7 @@ export interface PlaceOrderRequest {
   side: OrderSide;
   action: OrderAction;
   orderType: OrderType;
-  priceCents?: number;
+  pricePointsCents?: number;
   quantity: number;
   idempotencyKey?: string;
 
@@ -279,22 +500,26 @@ export interface PlaceOrderRequest {
   // - postOnly: reject if the order would take any quantity at submission.
   // - clientOrderId: caller-supplied ID separate from idempotencyKey.
   // - selfMatchAction: how to handle same-user crossings.
-  // - notionalCapCents: required for market BUY orders (slippage cap).
+  // - pricePointsCents: preferred point-native limit price.
+  // - notionalCapPointsCents: preferred point-native market BUY slippage cap.
   timeInForce?: TimeInForce;
   postOnly?: boolean;
   clientOrderId?: string;
   selfMatchAction?: SelfMatchAction;
-  notionalCapCents?: number;
+  notionalCapPointsCents?: number;
 }
 
 /**
- * One price level in the L2 order book. `total` is the cumulative quantity
- * up to and including this level (used for ladder rendering).
+ * One price level in the L2 order book. `cumulativeShares` is the cumulative
+ * share count up to and including this level (used for ladder rendering).
  */
 export interface OrderBookLevel {
-  priceCents: number;
-  quantity: number;
-  total: number;
+  pricePointsCents: number;
+  shares: number;
+  cumulativeShares: number;
+  notionalPointsCents: number;
+  totalNotionalPointsCents: number;
+  unit: "PTS" | string;
 }
 
 export interface OrderBookSide {
@@ -304,8 +529,8 @@ export interface OrderBookSide {
 
 /**
  * Full L2 order book for a market. Both yes and no sides; bids descending
- * price, asks ascending. `total` on each level is the cumulative quantity
- * from the top of the book.
+ * price, asks ascending. `cumulativeShares` on each level is the cumulative
+ * share count from the top of the book.
  *
  * Populated by GET /api/v1/markets/{idOrTicker}/orderbook?depth=N.
  * Server clamps depth to [1, 100].
@@ -322,11 +547,12 @@ export interface OrderBook {
  */
 export interface OrderBookHint {
   marketId: string;
-  bestYesBidCents?: number;
-  bestYesAskCents?: number;
-  bestNoBidCents?: number;
-  bestNoAskCents?: number;
+  bestYesBidPointsCents?: number;
+  bestYesAskPointsCents?: number;
+  bestNoBidPointsCents?: number;
+  bestNoAskPointsCents?: number;
   lastQuoteAt?: string;
+  unit?: "PTS" | string;
   ts: string;
 }
 
@@ -362,7 +588,7 @@ export interface CreateMarketRequest {
   settlementCutoffAt?: string;
   feeRateBps?: number;
   ammLiquidityParam?: number;
-  ammSubsidyCents?: number;
+  ammSubsidyPointsCents?: number;
   articleSourceId?: string;
   aiGenerationLogIds?: string[];
 }
@@ -380,6 +606,13 @@ export interface CreateEventRequest {
 
 export type MarketLifecycleAction = "open" | "halt" | "close" | "void";
 
+export interface MarketLifecycleTransitionResponse {
+  marketId: string;
+  status: MarketStatus;
+  reason: string;
+  tianggeLifecycle: TianggeMarketLifecycle;
+}
+
 export type MarketResult = "yes" | "no";
 
 /**
@@ -392,10 +625,11 @@ export interface CollateralDriftAlert {
   marketId: string;
   ticker: string;
   adjustmentCount: number;
-  maxDriftCents: number;
-  totalDriftCents: number;
+  maxDriftPointsCents: number;
+  totalDriftPointsCents: number;
   latestAdjustedAt: string;
   latestReason: string;
+  unit: "PTS" | string;
 }
 
 export interface DriftAlertsResponse {
@@ -434,19 +668,37 @@ export interface SettlementRecord {
   attestationData?: Record<string, unknown>;
   settledBy?: string;
   settledAt: string;
+  totalSettlementPointsCents?: number;
+  unit?: "PTS" | string;
 }
 
-export interface SettlementPayout {
+export interface SettlementPointDisbursement {
   id: string;
   settlementId: string;
   positionId: string;
   userId: string;
-  payoutCents: number;
+  marketId?: string;
+  side?: OrderSide;
+  quantity?: number;
+  entryPricePointsCents?: number;
+  exitPricePointsCents?: number;
+  settlementPointsCents?: number;
+  realizedPointsCents?: number;
+  paidAt?: string;
+  unit?: "PTS" | string;
 }
 
 export interface SettleMarketResponse {
   settlement: SettlementRecord;
-  payouts: SettlementPayout[];
+  pointDisbursements?: SettlementPointDisbursement[];
+  totalSettlementPointsCents?: number;
+  unit?: "PTS" | string;
+  tianggeLifecycle?: TianggeMarketLifecycle;
+}
+
+export interface SettlementReplayResponse {
+  completedSettlements: number;
+  summary: string;
 }
 
 // --- Admin: Dashboard ---
@@ -455,26 +707,29 @@ export interface DashboardMover {
   marketId: string;
   ticker: string;
   title: string;
-  yesPriceCentsStart: number;
-  yesPriceCentsNow: number;
-  volumeCents: number;
+  yesPricePointsCentsStart: number;
+  yesPricePointsCentsNow: number;
+  volumePointsCents: number;
+  unit: "PTS" | string;
 }
 
 export interface DashboardVolumeStats {
   since: string;
   windowSeconds: number;
-  totalVolumeCents: number;
+  totalVolumePointsCents: number;
   tradeCount: number;
   topMovers: DashboardMover[];
+  unit: "PTS" | string;
 }
 
 // --- Market price history (charts) ---
 
 export interface PricePoint {
   bucketStart: string;
-  yesPriceCents: number;
+  yesPricePointsCents: number;
   tradeCount: number;
-  volumeCents: number;
+  volumePointsCents: number;
+  unit?: "PTS" | string;
 }
 
 export interface MarketPriceHistory {

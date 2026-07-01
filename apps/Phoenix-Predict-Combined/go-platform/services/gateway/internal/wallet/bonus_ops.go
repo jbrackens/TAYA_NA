@@ -12,8 +12,8 @@ var (
 	ErrInsufficientBonusFunds = errors.New("insufficient bonus funds")
 	ErrBonusNotActive         = errors.New("player bonus is not active")
 	// ErrWageringNotMet is returned by ConvertBonusToReal when no backing bonus
-	// has satisfied its wagering requirement, so bonus funds may not yet be
-	// converted into withdrawable real money.
+	// has satisfied its play-through requirement, so bonus points may not yet be
+	// converted into regular gameplay points.
 	ErrWageringNotMet = errors.New("bonus wagering requirement not met")
 )
 
@@ -114,9 +114,9 @@ type DrawdownRequest struct {
 
 // DrawdownResult reports how the debit was split across real and bonus balances.
 type DrawdownResult struct {
-	RealDebitCents  int64        `json:"realDebitCents"`
-	BonusDebitCents int64        `json:"bonusDebitCents"`
-	TotalDebitCents int64        `json:"totalDebitCents"`
+	RealDebitCents  int64         `json:"realDebitCents"`
+	BonusDebitCents int64         `json:"bonusDebitCents"`
+	TotalDebitCents int64         `json:"totalDebitCents"`
 	LedgerEntries   []LedgerEntry `json:"ledgerEntries"`
 }
 
@@ -327,12 +327,12 @@ SELECT balance_cents, bonus_balance_cents FROM wallet_balances WHERE user_id = $
 		return LedgerEntry{}, err
 	}
 
-	// Wagering gate (SECURITY-REVIEW finding #11): converting bonus funds into
-	// withdrawable real money is only permitted once a backing bonus has met its
-	// wagering requirement. Re-read the user's bonus rows FOR UPDATE inside this
-	// same tx and require at least one eligible bonus where wagering is
+	// Play-through gate (SECURITY-REVIEW finding #11): converting bonus points
+	// into regular gameplay points is only permitted once a backing bonus has met
+	// its play-through requirement. Re-read the user's bonus rows FOR UPDATE
+	// inside this same tx and require at least one eligible bonus where play is
 	// satisfied. A bonus is eligible while 'active' or just-'completed' (the
-	// wagering completion path flips it to 'completed' before calling this);
+	// play-through completion path flips it to 'completed' before calling this);
 	// 'expired'/'forfeited' bonuses never qualify.
 	//
 	// NOTE: this gate is currently only exercised via RecordWageringContribution

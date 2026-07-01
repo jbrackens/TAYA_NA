@@ -59,9 +59,14 @@ func registerPartnerAdminRoutes(mux *stdhttp.ServeMux, rbacSvc *rbac.Service, re
 			if req.Name == "" {
 				return httpx.BadRequest("name is required", map[string]any{"field": "name"})
 			}
-			// Default to read-only; an operator must opt a partner into trade.
-			if len(req.Scopes) == 0 {
-				req.Scopes = []string{"read"}
+			if err := validateLaunchFacingReason("name", req.Name); err != nil {
+				return err
+			}
+			// Default to read-only; an operator must explicitly opt a partner
+			// into trade, and no launch key issuance path can mint wildcard scopes.
+			scopes, err := normalizeBotKeyScopes(req.Scopes)
+			if err != nil {
+				return err
 			}
 
 			fullKey, prefix, hash, err := prediction.GenerateAPIKey()
@@ -78,7 +83,7 @@ func registerPartnerAdminRoutes(mux *stdhttp.ServeMux, rbacSvc *rbac.Service, re
 				Name:      req.Name,
 				KeyHash:   hash,
 				KeyPrefix: prefix,
-				Scopes:    req.Scopes,
+				Scopes:    scopes,
 				Active:    true,
 				ExpiresAt: &expiresAt,
 			}
@@ -88,7 +93,7 @@ func registerPartnerAdminRoutes(mux *stdhttp.ServeMux, rbacSvc *rbac.Service, re
 
 			// Audit the issuance (append-only, migration 036) — who issued a key
 			// for which partner, with what scopes.
-			recordMoneyAuditEntry(rbacActor(r), "partner.key.issued", req.UserID, map[string]any{
+			recordProviderOpsAuditAction(rbacActor(r), "partner.key.issued", req.UserID, map[string]any{
 				"keyId":  key.ID,
 				"prefix": key.KeyPrefix,
 				"scopes": key.Scopes,
@@ -118,7 +123,7 @@ func registerPartnerAdminRoutes(mux *stdhttp.ServeMux, rbacSvc *rbac.Service, re
 			if err != nil {
 				return httpx.Internal("failed to list API keys", err)
 			}
-			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"userId": userID, "keys": keys})
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"userId": userID, "keys": apiKeyPayloads(keys)})
 
 		default:
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPost)

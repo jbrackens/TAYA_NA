@@ -86,7 +86,7 @@ final class PunterRoutes(
     puntersDomainConfig: PuntersDomainConfig)(implicit auth: JwtAuthenticator, ec: ExecutionContext)
     extends Routes {
 
-  private implicit val c = clock
+  private implicit val c: Clock = clock
 
   private val refreshTokenUseCase = new RefreshTokenUseCase(authenticationRepository, punters)
 

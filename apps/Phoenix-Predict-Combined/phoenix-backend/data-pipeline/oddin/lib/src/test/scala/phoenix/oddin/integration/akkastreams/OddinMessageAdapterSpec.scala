@@ -35,7 +35,7 @@ import phoenix.time.FakeHardcodedClock
 
 class OddinMessageAdapterSpec extends ScalaTestWithActorTestKit with AnyWordSpecLike with Matchers with FileSupport {
 
-  implicit private val classicSystem = testKit.system.toClassic
+  implicit private val classicSystem: akka.actor.ActorSystem = testKit.system.toClassic
 
   private val clock = new FakeHardcodedClock()
 

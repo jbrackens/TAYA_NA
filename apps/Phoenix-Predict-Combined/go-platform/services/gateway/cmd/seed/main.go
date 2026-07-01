@@ -26,8 +26,8 @@ import (
 //	       rows with trade_kind='demo_history'. Base seed rows are
 //	       untouched.
 //
-// The mode flag is the contract used by `make demo-data` and `make wipe-demo`
-// in services/gateway/Makefile. Keep the names stable.
+// The mode flag is the contract used by `make seed`, `make demo-data`, and
+// `make wipe-demo` in services/gateway/Makefile. Keep the names stable.
 const (
 	modeBase = "base"
 	modeDemo = "demo"
@@ -173,7 +173,7 @@ func printSummary(db *sql.DB) {
 		if err := rows.Scan(&ticker, &title, &yesPrice, &volume); err != nil {
 			continue
 		}
-		fmt.Printf("  %-20s YES:%d%%  Vol:$%-8d %s\n", ticker, yesPrice, volume/100, truncate(title, 40))
+		fmt.Printf("  %-20s YES:%d%%  Vol:%-8d pts %s\n", ticker, yesPrice, volume/100, truncate(title, 40))
 	}
 }
 

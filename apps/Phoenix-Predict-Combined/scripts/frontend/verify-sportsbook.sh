@@ -2,12 +2,13 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-SPORTSBOOK_DIR="$ROOT_DIR/phoenix-frontend-brand-viegg"
-YARN_MUTEX="file:/tmp/yarn-mutex-sportsbook"
+TALON_DIR="$ROOT_DIR/talon-backoffice"
+APP_DIR="$TALON_DIR/packages/app"
+YARN_MUTEX="file:/tmp/yarn-mutex-tiangge-player"
 SKIP_UTILS_DIST_IF_PRESENT="${SKIP_UTILS_DIST_IF_PRESENT:-true}"
-BUILD_MAX_OLD_SPACE_MB="${BUILD_MAX_OLD_SPACE_MB:-1024}"
-BUILD_RETRIES_NODE20="${BUILD_RETRIES_NODE20:-3}"
-BUILD_RETRIES_NODE16="${BUILD_RETRIES_NODE16:-3}"
+BUILD_MAX_OLD_SPACE_MB="${BUILD_MAX_OLD_SPACE_MB:-4096}"
+BUILD_RETRIES_NODE20="${BUILD_RETRIES_NODE20:-2}"
+BUILD_RETRIES_NODE16="${BUILD_RETRIES_NODE16:-2}"
 YARN_BIN=""
 
 HAS_NVM=false
@@ -17,29 +18,29 @@ if [[ -s "$HOME/.nvm/nvm.sh" ]]; then
   HAS_NVM=true
 fi
 
-use_node20() {
-  if [[ "$HAS_NVM" != "true" ]]; then
-    if ! command -v node >/dev/null 2>&1; then
-      echo "error: node is required (nvm not found and node binary is missing)" >&2
-      exit 1
+use_node_runtime() {
+  if [[ "$HAS_NVM" == "true" ]]; then
+    if ! nvm use >/dev/null 2>&1; then
+      if ! nvm use 20 >/dev/null 2>&1 && ! nvm use 22 >/dev/null 2>&1; then
+        nvm install >/dev/null
+        nvm use >/dev/null
+      fi
     fi
-
-    local node_major
-    node_major="$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo "0")"
-    if [[ "$node_major" -lt 20 ]]; then
-      echo "error: Node 20+ is required when nvm is unavailable (found $(node -v))" >&2
-      exit 1
-    fi
+    hash -r
     return 0
   fi
 
-  if ! nvm use >/dev/null 2>&1; then
-    if ! nvm use 20 >/dev/null 2>&1 && ! nvm use 22 >/dev/null 2>&1; then
-      nvm install >/dev/null
-      nvm use >/dev/null
-    fi
+  if ! command -v node >/dev/null 2>&1; then
+    echo "error: node is required (nvm not found and node binary is missing)" >&2
+    exit 1
   fi
-  hash -r
+
+  local node_major
+  node_major="$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo "0")"
+  if [[ "$node_major" -lt 20 ]]; then
+    echo "error: Node 20+ is required when nvm is unavailable (found $(node -v))" >&2
+    exit 1
+  fi
 }
 
 select_yarn_bin() {
@@ -112,41 +113,17 @@ restore_node20() {
   fi
 }
 
-build_node_options() {
-  echo "--max-old-space-size=${BUILD_MAX_OLD_SPACE_MB}"
-}
-
-run_next_build() {
-  local node_opts next_bin node_major
-  node_opts="$(build_node_options)"
-  next_bin="$SPORTSBOOK_DIR/node_modules/.bin/next"
-  node_major="$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo "0")"
-
-  if [[ "$node_major" -ge 17 ]]; then
-    CI=1 \
-      NEXT_TELEMETRY_DISABLED=1 \
-      BROWSERSLIST_IGNORE_OLD_DATA=1 \
-      node $node_opts --openssl-legacy-provider "$next_bin" build
-  else
-    CI=1 \
-      NEXT_TELEMETRY_DISABLED=1 \
-      BROWSERSLIST_IGNORE_OLD_DATA=1 \
-      node $node_opts "$next_bin" build
-  fi
-}
-
-use_node20
+use_node_runtime
 ensure_yarn
 select_yarn_bin
 
-cd "$SPORTSBOOK_DIR"
-
+cd "$TALON_DIR"
 YARN_MUTEX="$YARN_MUTEX" run_yarn install --frozen-lockfile
 
-utils_dist_file="$SPORTSBOOK_DIR/packages/utils-core/dist/index.js"
+utils_dist_file="$TALON_DIR/packages/utils/dist/index.js"
 utils_skip=false
 if [[ "$SKIP_UTILS_DIST_IF_PRESENT" == "true" ]] && [[ -f "$utils_dist_file" ]]; then
-  if ! find "$SPORTSBOOK_DIR/packages/utils-core/src" -type f -newer "$utils_dist_file" -print -quit | grep -q .; then
+  if ! find "$TALON_DIR/packages/utils/src" -type f -newer "$utils_dist_file" -print -quit | grep -q .; then
     utils_skip=true
   fi
 fi
@@ -154,31 +131,31 @@ fi
 if [[ "$utils_skip" == "true" ]]; then
   echo "info: skipping @phoenix-ui/utils dist (already built and up-to-date)"
 else
-  if ! run_retries 2 env NODE_OPTIONS=--max-old-space-size=2048 YARN_MUTEX="$YARN_MUTEX" "$YARN_BIN" workspace @phoenix-ui/utils dist; then
+  if ! run_retries 2 env NODE_OPTIONS=--max-old-space-size=4096 YARN_MUTEX="$YARN_MUTEX" "$YARN_BIN" workspace @phoenix-ui/utils dist; then
     echo "warn: Node 20 utils dist failed; retrying under Node 16.16 compatibility bridge" >&2
     if try_node16_compat; then
-      run_retries 3 env NODE_OPTIONS=--max-old-space-size=2048 YARN_MUTEX="$YARN_MUTEX" "$YARN_BIN" workspace @phoenix-ui/utils dist
+      run_retries 3 env NODE_OPTIONS=--max-old-space-size=4096 YARN_MUTEX="$YARN_MUTEX" "$YARN_BIN" workspace @phoenix-ui/utils dist
       restore_node20
     else
-      run_retries 2 env NODE_OPTIONS=--max-old-space-size=2048 YARN_MUTEX="$YARN_MUTEX" "$YARN_BIN" workspace @phoenix-ui/utils dist
+      run_retries 2 env NODE_OPTIONS=--max-old-space-size=4096 YARN_MUTEX="$YARN_MUTEX" "$YARN_BIN" workspace @phoenix-ui/utils dist
     fi
   fi
 fi
 
-cd packages/app
+cd "$APP_DIR"
 
 build_node20() {
-  run_yarn bootstrap:locales
-  run_next_build
+  run_yarn typecheck
+  NODE_OPTIONS="--max-old-space-size=${BUILD_MAX_OLD_SPACE_MB}" run_yarn build
 }
 
 build_node16() {
-  run_yarn bootstrap:locales
-  run_next_build
+  run_yarn typecheck
+  NODE_OPTIONS="--max-old-space-size=${BUILD_MAX_OLD_SPACE_MB}" run_yarn build
 }
 
 if ! run_retries "$BUILD_RETRIES_NODE20" build_node20; then
-  echo "warn: Node 20 app build failed; retrying under Node 16.16 compatibility bridge" >&2
+  echo "warn: Node 20 Tiangge player build failed; retrying under Node 16.16 compatibility bridge" >&2
   if try_node16_compat; then
     run_retries "$BUILD_RETRIES_NODE16" build_node16
     restore_node20

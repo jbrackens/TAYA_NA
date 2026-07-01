@@ -6,19 +6,18 @@
  * Layout (DESIGN.md §6 + §8):
  *   Title + mode switcher (Market / Limit)
  *   YES/NO side selector
- *   Amount block + chips + balance
- *   Summary rows (avg fill, slippage, shares, payout)
+ *   Points block + chips + balance
+ *   Summary rows (avg fill, slippage, shares, points if correct)
  *   Auth-aware CTA
  *
- * Amount is in dollars. Quantity (shares) = amount / price * 100. The
+ * Amount is in gameplay points. Quantity (shares) = amount / price * 100. The
  * PredictionApiClient interface still takes `quantity`, so we convert
  * at submit time. This preserves API wiring untouched (D5-style
  * design-only change).
  *
- * Limit mode is UI-only in Phase 3 — placing a limit order still
- * requires the gateway to accept `orderType: 'limit'` with a
- * `priceCents`. The mockup shows Market as active, so Limit is parked
- * here for Phase 4 wire-up.
+ * Legacy AMM markets are quote-only: the detail page can show preview-backed
+ * curve impact, but the ticket must not submit orders against the retired AMM
+ * execution path.
  */
 
 import { useState, useCallback, useEffect, useMemo } from "react";
@@ -37,16 +36,15 @@ import { complianceDenialKind } from "../../lib/compliance-denial";
 
 /**
  * Extra fields the trade ticket can pass to the parent's submit handler
- * when an exchange-mode market enables advanced order types. All optional
- * for backward compatibility — AMM-mode markets ignore them entirely.
+ * when an exchange-mode market enables advanced order types.
  */
 export interface TradeTicketSubmitOptions {
   orderType?: "market" | "limit";
-  priceCents?: number;
+  pricePointsCents?: number;
   action?: OrderAction;
   timeInForce?: TimeInForce;
   postOnly?: boolean;
-  notionalCapCents?: number;
+  notionalCapPointsCents?: number;
 }
 
 interface TradeTicketProps {
@@ -124,7 +122,6 @@ const TICKET_AMOUNT_DISPLAY_CLASS =
   "mb-2.5 flex items-center justify-between rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-white/[0.02] p-[14px]";
 const TICKET_AMOUNT_VALUE_CLASS =
   "font-['IBM_Plex_Mono',_monospace] text-[28px] font-medium leading-none tracking-[-0.02em] text-[var(--t1)] [font-variant-numeric:tabular-nums]";
-const TICKET_AMOUNT_AFFIX_CLASS = "text-[var(--t3)]";
 const TICKET_AMOUNT_SUB_CLASS =
   "text-right font-['IBM_Plex_Mono',_monospace] text-[10px] leading-[1.4] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
 const TICKET_CHIPS_CLASS = "grid grid-cols-4 gap-1.5";
@@ -178,10 +175,14 @@ function ticketChipClass(active: boolean): string {
   }`;
 }
 
+function formatPointAmount(points: number): string {
+  return `${points.toFixed(2)} pts`;
+}
+
 /**
  * Replacement body for non-open markets (settled, halted, closed, voided).
- * Previously the full ticket rendered with a pre-filled $25 amount and a
- * "buy 38 shares · payout $38.46" projection on SETTLED markets, while a
+ * Previously the full ticket rendered with a pre-filled amount and a
+ * "buy 38 shares" projection on SETTLED markets, while a
  * "Trading is paused" banner sat at the bottom — investors read the
  * projection as a tradeable quote. The dedicated body shows only the
  * outcome and a one-line explanation.
@@ -236,7 +237,7 @@ export function TradeTicket({
   // Limit-mode price the user wants to bid/offer. Defaults to mid; exchange
   // mode enables editing.
   const [limitPriceCents, setLimitPriceCents] = useState<number>(
-    side === "yes" ? market.yesPriceCents : market.noPriceCents,
+    side === "yes" ? market.yesPricePointsCents : market.noPricePointsCents,
   );
   const [preview, setPreview] = useState<OrderPreview | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
@@ -251,13 +252,14 @@ export function TradeTicket({
 
   const isOpen = market.status === "open";
   const isExchange = market.executionMode === "order_book";
+  const isAmmQuoteOnly = market.executionMode === "amm";
   const marketPrice =
-    side === "yes" ? market.yesPriceCents : market.noPriceCents;
+    side === "yes" ? market.yesPricePointsCents : market.noPricePointsCents;
   // Effective price drives quantity math: limit orders use the user's price
   // (capped to [1, 99] at the API boundary); market orders use the snapshot.
   const price = mode === "limit" && isExchange ? limitPriceCents : marketPrice;
   const otherPrice =
-    side === "yes" ? market.noPriceCents : market.yesPriceCents;
+    side === "yes" ? market.noPricePointsCents : market.yesPricePointsCents;
   const availableShares =
     side === "yes" ? availableYesShares : availableNoShares;
 
@@ -280,10 +282,10 @@ export function TradeTicket({
       action,
     };
     if (isExchange && mode === "limit") {
-      opts.priceCents = limitPriceCents;
+      opts.pricePointsCents = limitPriceCents;
       opts.timeInForce = "gtc";
     } else if (action === "buy") {
-      opts.notionalCapCents = Math.ceil(amount * 100);
+      opts.notionalCapPointsCents = Math.ceil(amount * 100);
     }
     setPreviewLoading(true);
     onPreview(side, requestedQuantity, opts)
@@ -316,16 +318,18 @@ export function TradeTicket({
     typeof previewFilledQuantity === "number" && action === "buy"
       ? previewFilledQuantity
       : quantity;
-  const payout = shares * 1; // winning contracts pay $1 each
+  const pointsIfCorrect = shares * 1; // Correct contracts settle at 1 point each.
   const summaryPrice =
-    preview?.averageFillPriceCents || preview?.priceCents || price;
+    preview?.averageFillPricePointsCents || preview?.pricePointsCents || price;
   const impliedProb = summaryPrice; // cents are already 0-100, readable as %
   const effectiveSpend =
-    action === "buy" && typeof preview?.totalCostWithFeesCents === "number"
-      ? preview.totalCostWithFeesCents / 100
+    action === "buy" &&
+    mode === "market" &&
+    typeof preview?.totalCostWithFeesPointsCents === "number"
+      ? preview.totalCostWithFeesPointsCents / 100
       : amount;
   const hasKnownBalance = typeof balance === "number";
-  // Cash-side check applies only to buys. Sells require enough position.
+  // Point-balance check applies only to buys. Sells require enough position.
   const insufficientFunds =
     action === "buy" &&
     isAuthenticated &&
@@ -346,7 +350,7 @@ export function TradeTicket({
 
   const handleSubmit = useCallback(async () => {
     if (!onSubmit) return;
-    if (!isAuthenticated || authLoading || !isOpen) return;
+    if (!isAuthenticated || authLoading || !isOpen || isAmmQuoteOnly) return;
     if (insufficientFunds || insufficientShares || marketBuyHasNoLiquidity)
       return;
     if (quantity < 1) {
@@ -358,35 +362,18 @@ export function TradeTicket({
     try {
       const qty = Math.floor(quantity);
       let response: PlaceOrderResponse | void;
-      if (isExchange) {
-        const opts: TradeTicketSubmitOptions = {
-          orderType: mode,
-          action,
-        };
-        if (mode === "limit") {
-          opts.priceCents = limitPriceCents;
-          // Default time-in-force gtc; advanced section can override later.
-          opts.timeInForce = "gtc";
-        } else if (action === "buy") {
-          // Market buy: send a notional cap so the gateway can reject
-          // mis-priced fills. Server enforces this is required for ALL
-          // market buys — exchange and AMM alike. (QA caught this when
-          // AMM-mode markets returned 400 "market buy orders require
-          // notionalCapCents > 0".)
-          opts.notionalCapCents = Math.ceil(amount * 100);
-        }
-        response = await onSubmit(side, qty, opts);
-      } else {
-        // AMM mode: buy-only, market-only. Still needs the notional cap
-        // — the gateway-side validator doesn't care about execution_mode,
-        // only about orderType+action. Pass opts through so the cap
-        // arrives in the request body.
-        response = await onSubmit(side, qty, {
-          orderType: "market",
-          action: "buy",
-          notionalCapCents: Math.ceil(amount * 100),
-        });
+      const opts: TradeTicketSubmitOptions = {
+        orderType: mode,
+        action,
+      };
+      if (mode === "limit") {
+        opts.pricePointsCents = limitPriceCents;
+        // Default time-in-force gtc; advanced section can override later.
+        opts.timeInForce = "gtc";
+      } else if (action === "buy") {
+        opts.notionalCapPointsCents = Math.ceil(amount * 100);
       }
+      response = await onSubmit(side, qty, opts);
       // Truthful post-trade toast. The old version unconditionally said
       // "Bought N YES shares" based on the requested quantity, which lied
       // when the order didn't actually fill — e.g. an IOC market buy
@@ -396,7 +383,7 @@ export function TradeTicket({
       //
       // Keep the user's chosen amount in either branch so a follow-up
       // click reissues the same size — most users want to repeat the
-      // bet, not restart from $25.
+      // prediction order, not restart from the default point amount.
       const sideLabel = side.toUpperCase();
       const status = response?.order?.status;
       const filled = response?.order?.filledQuantity ?? 0;
@@ -429,7 +416,7 @@ export function TradeTicket({
               plural: filled === 1 ? "" : "s",
             }),
             t("ORDER_AMOUNT_ON_MARKET", {
-              amount: amount.toFixed(2),
+              amount: formatPointAmount(amount),
               ticker: market.ticker,
             }),
           );
@@ -507,6 +494,7 @@ export function TradeTicket({
     onSubmit,
     isAuthenticated,
     authLoading,
+    isAmmQuoteOnly,
     insufficientFunds,
     insufficientShares,
     marketBuyHasNoLiquidity,
@@ -526,10 +514,6 @@ export function TradeTicket({
     onSideChange?.(s);
     setError(null);
   };
-
-  const dollars = Math.floor(amount);
-  const cents = Math.round((amount - dollars) * 100);
-  const centsStr = cents.toString().padStart(2, "0");
 
   return (
     <section className={TICKET_CARD_CLASS} aria-label={t("TRADE_TICKET")}>
@@ -624,12 +608,12 @@ export function TradeTicket({
               <span
                 className={`${TICKET_SIDE_PRICE_CLASS} ${selectedSideTextClass("yes", side === "yes")}`}
               >
-                {market.yesPriceCents}¢
+                {market.yesPricePointsCents}¢
               </span>
               <span className={TICKET_SIDE_SUB_CLASS}>
-                {market.yesPriceCents >= 50 ? "+" : "−"}
-                {Math.abs(market.yesPriceCents - 50)} · {market.yesPriceCents}%{" "}
-                {t("PROB")}
+                {market.yesPricePointsCents >= 50 ? "+" : "−"}
+                {Math.abs(market.yesPricePointsCents - 50)} ·{" "}
+                {market.yesPricePointsCents}% {t("PROB")}
               </span>
             </button>
             <button
@@ -646,12 +630,12 @@ export function TradeTicket({
               <span
                 className={`${TICKET_SIDE_PRICE_CLASS} ${selectedSideTextClass("no", side === "no")}`}
               >
-                {market.noPriceCents}¢
+                {market.noPricePointsCents}¢
               </span>
               <span className={TICKET_SIDE_SUB_CLASS}>
-                {market.noPriceCents >= 50 ? "+" : "−"}
-                {Math.abs(market.noPriceCents - 50)} · {market.noPriceCents}%
-                {t("PROB")}
+                {market.noPricePointsCents >= 50 ? "+" : "−"}
+                {Math.abs(market.noPricePointsCents - 50)} ·{" "}
+                {market.noPricePointsCents}%{t("PROB")}
               </span>
             </button>
           </div>
@@ -707,16 +691,14 @@ export function TradeTicket({
             </div>
             <div className={TICKET_AMOUNT_DISPLAY_CLASS}>
               <div className={TICKET_AMOUNT_VALUE_CLASS}>
-                <span className={TICKET_AMOUNT_AFFIX_CLASS}>$</span>
-                {dollars}
-                <span className={TICKET_AMOUNT_AFFIX_CLASS}>.{centsStr}</span>
+                {formatPointAmount(amount)}
               </div>
               <div className={TICKET_AMOUNT_SUB_CLASS}>
                 {t("SHARES_COUNT", { quantity: Math.floor(shares) })}
                 <br />
-                {t("PAYOUT")}{" "}
+                {t("POTENTIAL_POINTS")}{" "}
                 <span className="font-semibold text-[var(--yes-text)]">
-                  ${payout.toFixed(2)}
+                  {formatPointAmount(pointsIfCorrect)}
                 </span>
               </div>
             </div>
@@ -744,7 +726,7 @@ export function TradeTicket({
                     aria-pressed={isActive}
                     className={ticketChipClass(isActive)}
                   >
-                    ${a}
+                    {formatPointAmount(a)}
                   </button>
                 );
               })}
@@ -780,10 +762,10 @@ export function TradeTicket({
             </div>
             <div className={TICKET_SUMMARY_ROW_CLASS}>
               <span className="text-[var(--t3)]">
-                {t("PAYOUT_IF_SIDE", { side: side.toUpperCase() })}
+                {t("POINTS_IF_SIDE", { side: side.toUpperCase() })}
               </span>
               <span className="text-[var(--yes-text)]">
-                ${payout.toFixed(2)}
+                {formatPointAmount(pointsIfCorrect)}
               </span>
             </div>
           </div>
@@ -803,11 +785,13 @@ export function TradeTicket({
             </>
           ) : insufficientFunds ? (
             <>
-              <Link href="/cashier" className={TICKET_CTA_CLASS}>
-                {t("ADD_FUNDS")}
-              </Link>
+              <button type="button" className={TICKET_CTA_CLASS} disabled>
+                {t("NOT_ENOUGH_POINTS")}
+              </button>
               <p className={TICKET_NOTE_CLASS} role="alert">
-                {t("BALANCE_BELOW_ORDER", { amount: amount.toFixed(2) })}
+                {t("BALANCE_BELOW_ORDER", {
+                  amount: formatPointAmount(amount),
+                })}
               </p>
             </>
           ) : marketBuyHasNoLiquidity ? (
@@ -822,6 +806,18 @@ export function TradeTicket({
                   ticker: market.ticker,
                   reason: t("CANCELLED_NO_LIQUIDITY"),
                 })}
+              </p>
+            </>
+          ) : isAmmQuoteOnly ? (
+            <>
+              <button type="button" className={TICKET_CTA_CLASS} disabled>
+                {t("AMM_QUOTE_ONLY", "Quote only")}
+              </button>
+              <p className={TICKET_NOTE_CLASS} role="status">
+                {t(
+                  "AMM_QUOTE_ONLY_DETAIL",
+                  "This legacy AMM market is shown for curve and impact inspection. New orders use order-book markets.",
+                )}
               </p>
             </>
           ) : insufficientShares ? (
@@ -848,14 +844,14 @@ export function TradeTicket({
                 Label says "Place trade", not "Review trade", because
                 clicking this button submits the order immediately. The
                 quote panel above already shows fill price, shares, and
-                payout — that IS the review surface. A "Review" label
+                points if correct — that IS the review surface. A "Review" label
                 would imply a confirm modal that does not exist and was
                 a stage gotcha during the 2026-05-03 demo dry-run.
               */}
               {submitting
                 ? t("PLACING")
                 : t(action === "sell" ? "SELL_AMOUNT" : "PLACE_TRADE_AMOUNT", {
-                    amount: amount.toFixed(2),
+                    amount: formatPointAmount(amount),
                   })}
             </button>
           )}

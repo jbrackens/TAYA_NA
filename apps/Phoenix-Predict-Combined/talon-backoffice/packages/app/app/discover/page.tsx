@@ -13,18 +13,18 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type {
   DiscoveryResponse,
+  MarketPriceHistory,
   PredictionMarket,
 } from "@phoenix-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
 import {
   dedupeMarkets,
-  formatCompactUsd,
+  formatCompactPoints,
   formatTimeLeft,
   isOpenMarketStatus,
   normalizePriceShares,
 } from "../components/prediction/market-display";
 import { localizedMarket } from "../components/prediction/market-content";
-import { deterministicDelta } from "../components/prediction/utils/spark";
 
 const api = createPredictionClient();
 
@@ -63,14 +63,19 @@ interface Sentiment {
   noShare: number;
 }
 
+interface MarketMovement {
+  pct: number;
+  direction: "up" | "down" | "flat";
+}
+
 function marketKey(market: PredictionMarket): string {
   return market.id || market.ticker;
 }
 
 function getSentiment(market: PredictionMarket): Sentiment {
   const { yesShare, noShare } = normalizePriceShares(
-    market.yesPriceCents,
-    market.noPriceCents,
+    market.yesPricePointsCents,
+    market.noPricePointsCents,
   );
   const roundedYes = Math.round(yesShare);
   const roundedNo = Math.round(noShare);
@@ -114,7 +119,7 @@ function rankBySignal(markets: PredictionMarket[]): PredictionMarket[] {
     const aSkew = Math.abs(aSentiment.yesShare - aSentiment.noShare);
     const bSkew = Math.abs(bSentiment.yesShare - bSentiment.noShare);
     if (bSkew !== aSkew) return bSkew - aSkew;
-    return b.volumeCents - a.volumeCents;
+    return b.volumePointsCents - a.volumePointsCents;
   });
 }
 
@@ -131,7 +136,9 @@ function filterMarkets(
     case "trending":
       return markets.filter((market) => trendingKeys.has(marketKey(market)));
     case "active":
-      return [...markets].sort((a, b) => b.volumeCents - a.volumeCents);
+      return [...markets].sort(
+        (a, b) => b.volumePointsCents - a.volumePointsCents,
+      );
     case "yes":
       return markets.filter(
         (market) => getSentiment(market).dominantSide === "YES",
@@ -152,7 +159,10 @@ function averageYesShare(markets: PredictionMarket[]): number {
   const total = markets.reduce((sum, market) => {
     return (
       sum +
-      normalizePriceShares(market.yesPriceCents, market.noPriceCents).yesShare
+      normalizePriceShares(
+        market.yesPricePointsCents,
+        market.noPricePointsCents,
+      ).yesShare
     );
   }, 0);
   return Math.round(total / markets.length);
@@ -169,12 +179,31 @@ function formatCloseLabel(market: PredictionMarket): string {
     : market.status.replace(/_/g, " ");
 }
 
-function marketChange24h(market: PredictionMarket) {
-  const leadingPrice =
-    market.yesPriceCents >= market.noPriceCents
-      ? market.yesPriceCents
-      : market.noPriceCents;
-  return deterministicDelta(market.ticker, leadingPrice);
+function getDiscoveryMarkets(
+  discovery: DiscoveryResponse | null,
+): PredictionMarket[] {
+  if (!discovery) return [];
+  return dedupeMarkets([
+    ...(discovery.trending ?? []),
+    ...(discovery.closingSoon ?? []),
+  ]);
+}
+
+function movementFromHistory(
+  history: MarketPriceHistory,
+): MarketMovement | null {
+  const points = history.points.filter((point) =>
+    Number.isFinite(point.yesPricePointsCents),
+  );
+  if (points.length < 2) return null;
+  const first = points[0]?.yesPricePointsCents;
+  const last = points[points.length - 1]?.yesPricePointsCents;
+  if (!first || !last) return null;
+  const delta = last - first;
+  return {
+    pct: Math.abs((delta / first) * 100),
+    direction: delta > 0 ? "up" : delta < 0 ? "down" : "flat",
+  };
 }
 
 function SentimentStat({
@@ -233,21 +262,37 @@ function FilterPill({
 function SentimentRow({
   market,
   rank,
+  movement,
 }: {
   market: PredictionMarket;
   rank: number;
+  movement?: MarketMovement | null;
 }) {
   const sentiment = getSentiment(market);
-  const change = marketChange24h(market);
   const toneClass =
     sentiment.tone === "no"
       ? "bg-[var(--no-soft)] text-[var(--no-text)]"
       : sentiment.tone === "yes"
         ? "bg-[var(--yes-soft)] text-[var(--yes-text)]"
         : "bg-[var(--surface-2)] text-[var(--t2)]";
-  const changeClass = change.up
-    ? "text-[var(--yes-text)]"
-    : "text-[var(--no-text)]";
+  const changeClass =
+    movement == null || movement.direction === "flat"
+      ? "text-[var(--t3)]"
+      : movement.direction === "up"
+        ? "text-[var(--yes-text)]"
+        : "text-[var(--no-text)]";
+  let changeLabel = "n/a";
+  if (movement === undefined) {
+    changeLabel = "...";
+  } else if (movement !== null) {
+    const sign =
+      movement.direction === "up"
+        ? "+"
+        : movement.direction === "down"
+          ? "-"
+          : "";
+    changeLabel = `${sign}${movement.pct.toFixed(1)}%`;
+  }
 
   return (
     <article
@@ -278,13 +323,10 @@ function SentimentRow({
         </Link>
       </div>
       <div className="font-mono text-[13px] font-semibold tabular-nums max-[1040px]:col-start-2 max-[1040px]:mt-1 max-[640px]:col-start-auto">
-        <span className={changeClass}>
-          {change.up ? "+" : ""}
-          {change.pct.toFixed(1)}%
-        </span>
+        <span className={changeClass}>{changeLabel}</span>
       </div>
       <div className="font-mono text-[13px] font-semibold text-[var(--t2)] tabular-nums max-[1040px]:col-start-2 max-[1040px]:mt-[-10px] max-[640px]:col-start-auto">
-        {formatCompactUsd(market.volumeCents)}
+        {formatCompactPoints(market.volumePointsCents)}
       </div>
       <div className="grid grid-cols-2 gap-2 max-[1040px]:col-start-3 max-[1040px]:row-span-2 max-[1040px]:row-start-1 max-[640px]:col-start-auto max-[640px]:row-auto">
         <Link
@@ -293,7 +335,7 @@ function SentimentRow({
         >
           <span className="text-[var(--yes-text)]">YES</span>
           <span className="font-mono text-[15px] text-[var(--yes-text)] tabular-nums">
-            {market.yesPriceCents}¢
+            {market.yesPricePointsCents}¢
           </span>
         </Link>
         <Link
@@ -302,7 +344,7 @@ function SentimentRow({
         >
           <span className="text-[var(--no-text)]">NO</span>
           <span className="font-mono text-[15px] text-[var(--no-text)] tabular-nums">
-            {market.noPriceCents}¢
+            {market.noPricePointsCents}¢
           </span>
         </Link>
       </div>
@@ -314,6 +356,9 @@ export default function DiscoverPage() {
   const { t } = useTranslation("prediction");
   const { t: contentT } = useTranslation("market-content");
   const [discovery, setDiscovery] = useState<DiscoveryResponse | null>(null);
+  const [marketMovements, setMarketMovements] = useState<
+    Record<string, MarketMovement | null>
+  >({});
   const [activeFilter, setActiveFilter] = useState<SentimentFilter>("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -336,6 +381,33 @@ export default function DiscoverPage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    const markets = getDiscoveryMarkets(discovery);
+    if (markets.length === 0) {
+      setMarketMovements({});
+      return;
+    }
+
+    let cancelled = false;
+    setMarketMovements({});
+    Promise.all(
+      markets.map(async (market) => {
+        try {
+          const history = await api.getMarketPriceHistory(market.id, "1d");
+          return [marketKey(market), movementFromHistory(history)] as const;
+        } catch {
+          return [marketKey(market), null] as const;
+        }
+      }),
+    ).then((entries) => {
+      if (cancelled) return;
+      setMarketMovements(Object.fromEntries(entries));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [discovery]);
 
   if (loading) {
     return <div className={ROUTE_LOADING_CLASS}>{t("DISCOVER_LOADING")}</div>;
@@ -382,7 +454,7 @@ export default function DiscoverPage() {
     activeFilter,
   );
   const totalVolume = allMarkets.reduce(
-    (sum, market) => sum + market.volumeCents,
+    (sum, market) => sum + market.volumePointsCents,
     0,
   );
   const yesLeaningCount = allMarkets.filter(
@@ -429,7 +501,7 @@ export default function DiscoverPage() {
         />
         <SentimentStat
           label="Volume pulse"
-          value={formatCompactUsd(totalVolume)}
+          value={formatCompactPoints(totalVolume)}
           meta="from discovery markets"
         />
       </section>
@@ -477,6 +549,7 @@ export default function DiscoverPage() {
             key={marketKey(market)}
             market={market}
             rank={index + 1}
+            movement={marketMovements[marketKey(market)]}
           />
         ))}
       </section>

@@ -5,31 +5,31 @@ import { ContentPageRenderer } from "../components/ContentPage";
 import { FEATURE_RG } from "../lib/features";
 
 const FALLBACK_CONTENT = `
-<h1>Responsible Gaming</h1>
+<h1>Responsible Play</h1>
 <p style="font-size: 12px; color: #4a5580; margin-bottom: 32px;">Last updated: April 2026</p>
 
 <h2>Our Commitment</h2>
 <p>We are committed to responsible play. Use the tools below to manage your trading activity and set personal limits.</p>
 
 <h2>Set Limits</h2>
-<p>You can set deposit, stake, and session limits at any time from your account settings. Deposit and stake limits can be set on a daily, weekly, or monthly basis. Session limits control how long you can remain active on the platform.</p>
+<p>You can set play, prediction, and session limits at any time from your account settings. Point-use limits can be set on a daily, weekly, or monthly basis. Session limits control how long you can remain active on the platform.</p>
 
 <h2>Cool Off Periods</h2>
 <p>Take a break by activating a cool-off period. During this time, you will not be able to place any trades. Cool-off periods range from 1 day to 30 days and cannot be reversed early.</p>
 
 <h2>Self-Exclusion</h2>
-<p>Self-exclusion permanently closes your account and prevents you from creating new accounts. This action cannot be undone. If you choose to self-exclude, you will lose access to your account, including any remaining balance.</p>
+<p>Self-exclusion permanently closes your account and prevents you from creating new accounts. This action cannot be undone. If you choose to self-exclude, you will lose access to your account and any remaining gameplay points.</p>
 
 <h2>Problem Play Warning Signs</h2>
 <p>Trading event-contract markets shares many of the risk patterns of gambling. If you recognize any of the following behaviors, it may be time to seek help:</p>
 <ul>
-<li>Spending more money or time on trading than you can afford</li>
+<li>Spending more time or gameplay points on predictions than you intended</li>
 <li>Difficulty controlling or stopping trading once you start</li>
 <li>Feeling restless or irritable when trying to stop</li>
 <li>Trading to escape problems or relieve feelings of anxiety or depression</li>
-<li>Chasing losses by trading more to recover money already lost</li>
+<li>Chasing losses by making more predictions to recover points already lost</li>
 <li>Lying to family members or others about how much you trade</li>
-<li>Borrowing money or selling possessions to fund your account</li>
+<li>Letting prediction activity interfere with everyday obligations</li>
 <li>Neglecting work, school, or family responsibilities</li>
 <li>Risking or losing important relationships because of your trading</li>
 <li>Feeling guilty or ashamed about your trading behavior</li>
@@ -45,7 +45,7 @@ const FALLBACK_CONTENT = `
 <p>Tiangge is committed to protecting our players. We implement the following measures:</p>
 <ul>
 <li>Age verification to prevent underage participation (18+ / 21+ depending on jurisdiction)</li>
-<li>Deposit, stake, and session limits that you can set and adjust at any time</li>
+<li>Point-use, prediction, and session limits that you can set and adjust at any time</li>
 <li>Cool-off periods and permanent self-exclusion options</li>
 <li>Transaction monitoring to detect unusual or harmful patterns</li>
 <li>Mandatory responsible-play messaging in all promotional materials</li>

@@ -91,37 +91,32 @@ func setAllowlistGeoGate(t *testing.T) {
 	})
 }
 
-func TestComplianceGates_DepositAndWithdrawSurfacesEnforceGeoAllowlist(t *testing.T) {
+func TestComplianceGates_TradeSurfaceEnforcesGeoAllowlist(t *testing.T) {
 	setAllowlistGeoGate(t)
 
-	for _, surface := range []compliance.Surface{compliance.SurfaceDeposit, compliance.SurfaceWithdraw} {
-		t.Run(string(surface)+" non-allowlisted country", func(t *testing.T) {
-			req := httptest.NewRequest(stdhttp.MethodPost, "/api/v1/cashier/alpha/deposit-intents", nil)
-			req.Header.Set("CF-IPCountry", "US")
-			if err := checkComplianceGates(req, "u-blocked", surface); err == nil {
-				t.Fatalf("expected %s from non-allowlisted country to be denied", surface)
-			}
-		})
-		t.Run(string(surface)+" missing header fails closed", func(t *testing.T) {
-			req := httptest.NewRequest(stdhttp.MethodPost, "/api/v1/cashier/alpha/deposit-intents", nil)
-			if err := checkComplianceGates(req, "u-nosignal", surface); err == nil {
-				t.Fatalf("expected %s with no geo signal to fail closed", surface)
-			}
-		})
-		t.Run(string(surface)+" allowlisted country", func(t *testing.T) {
-			req := httptest.NewRequest(stdhttp.MethodPost, "/api/v1/cashier/alpha/deposit-intents", nil)
-			req.Header.Set("CF-IPCountry", "PH")
-			if err := checkComplianceGates(req, "u-allowed", surface); err != nil {
-				t.Fatalf("expected %s from allowlisted country to pass, got %v", surface, err)
-			}
-		})
-	}
+	t.Run("non-allowlisted country", func(t *testing.T) {
+		req := httptest.NewRequest(stdhttp.MethodPost, "/api/v1/orders", nil)
+		req.Header.Set("CF-IPCountry", "US")
+		if err := checkComplianceGates(req, "u-blocked", compliance.SurfaceTrade); err == nil {
+			t.Fatalf("expected trade from non-allowlisted country to be denied")
+		}
+	})
+	t.Run("missing header fails closed", func(t *testing.T) {
+		req := httptest.NewRequest(stdhttp.MethodPost, "/api/v1/orders", nil)
+		if err := checkComplianceGates(req, "u-nosignal", compliance.SurfaceTrade); err == nil {
+			t.Fatalf("expected trade with no geo signal to fail closed")
+		}
+	})
+	t.Run("allowlisted country", func(t *testing.T) {
+		req := httptest.NewRequest(stdhttp.MethodPost, "/api/v1/orders", nil)
+		req.Header.Set("CF-IPCountry", "PH")
+		if err := checkComplianceGates(req, "u-allowed", compliance.SurfaceTrade); err != nil {
+			t.Fatalf("expected trade from allowlisted country to pass, got %v", err)
+		}
+	})
 }
 
-func TestComplianceGates_TradingKYCDoesNotGateMoneySurfaces(t *testing.T) {
-	// KYC_REQUIRED_FOR_TRADING gates the trade surface only — withdrawal KYC
-	// is the threshold gate in internal/payments, and deposits are not
-	// KYC-gated. An unverified user from an allowed country may deposit.
+func TestComplianceGates_TradingKYCBlocksUnverifiedTradeAndAllowsApprovedTrade(t *testing.T) {
 	t.Setenv("BETA_COMPLIANCE_MODE", "")
 	t.Setenv("GEO_GATE_ENABLED", "true")
 	t.Setenv("GEO_ALLOWED_COUNTRIES", "PH")
@@ -129,20 +124,25 @@ func TestComplianceGates_TradingKYCDoesNotGateMoneySurfaces(t *testing.T) {
 
 	prevGeo := tradeGeoGate
 	prevKYC := tradeKYCGate
+	kyc := &pretradeFakeKYC{status: "unverified"}
 	tradeGeoGate = compliance.NewGeoGateFromEnv()
-	tradeKYCGate = &pretradeFakeKYC{status: "unverified"}
+	tradeKYCGate = kyc
 	t.Cleanup(func() {
 		tradeGeoGate = prevGeo
 		tradeKYCGate = prevKYC
 	})
 
-	req := httptest.NewRequest(stdhttp.MethodPost, "/api/v1/cashier/alpha/deposit-intents", nil)
+	req := httptest.NewRequest(stdhttp.MethodPost, "/api/v1/orders", nil)
 	req.Header.Set("CF-IPCountry", "PH")
-	if err := checkComplianceGates(req, "u-unverified", compliance.SurfaceDeposit); err != nil {
-		t.Fatalf("deposit surface must not be blocked by the trading KYC gate, got %v", err)
-	}
 	if err := checkComplianceGates(req, "u-unverified", compliance.SurfaceTrade); err == nil {
 		t.Fatalf("trade surface must be blocked for an unverified user when trading KYC is required")
+	}
+
+	kyc.status = "approved"
+	req = httptest.NewRequest(stdhttp.MethodPost, "/api/v1/orders", nil)
+	req.Header.Set("CF-IPCountry", "PH")
+	if err := checkComplianceGates(req, "u-approved", compliance.SurfaceTrade); err != nil {
+		t.Fatalf("approved trade from allowlisted country should pass, got %v", err)
 	}
 }
 

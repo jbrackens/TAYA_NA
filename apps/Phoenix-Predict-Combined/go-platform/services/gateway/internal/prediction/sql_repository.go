@@ -248,7 +248,7 @@ func (r *SQLRepository) ListMarkets(ctx context.Context, filter MarketFilter) ([
 	          FROM prediction_trades t
 	          WHERE t.market_id = rm.id
 	            AND t.traded_at >= NOW() - INTERVAL '24 hours'
-	      ) v24 ON true` + marketRankingOrderClause()
+	      ) v24 ON true` + marketOrderClause(filter.Sort)
 	q += fmt.Sprintf(` LIMIT $%d OFFSET $%d`, len(args)+1, len(args)+2)
 	args = append(args, filter.PageSize, (filter.Page-1)*filter.PageSize)
 
@@ -273,12 +273,12 @@ func (r *SQLRepository) ListMarkets(ctx context.Context, filter MarketFilter) ([
 }
 
 func (r *SQLRepository) GetMarket(ctx context.Context, id string) (*Market, error) {
-	row := r.db.QueryRowContext(ctx, marketSelectQuery()+` WHERE id = $1`, id)
+	row := r.db.QueryRowContext(ctx, marketSelectQuery()+` WHERE m.id = $1`, id)
 	return scanMarketRow(row)
 }
 
 func (r *SQLRepository) GetMarketByTicker(ctx context.Context, ticker string) (*Market, error) {
-	row := r.db.QueryRowContext(ctx, marketSelectQuery()+` WHERE ticker = $1`, ticker)
+	row := r.db.QueryRowContext(ctx, marketSelectQuery()+` WHERE m.ticker = $1`, ticker)
 	return scanMarketRow(row)
 }
 
@@ -465,15 +465,25 @@ func (r *SQLRepository) UpdateMarket(ctx context.Context, m *Market) error {
 func (r *SQLRepository) updateMarketWithExec(ctx context.Context, execer sqlRowExecer, m *Market) error {
 	_, err := execer.ExecContext(ctx,
 		`UPDATE prediction_markets SET
-		  status=$1, result=$2, yes_price_cents=$3, no_price_cents=$4,
-		  last_trade_price_cents=$5, volume_cents=$6, open_interest_cents=$7,
-		  liquidity_cents=$8, amm_yes_shares=$9, amm_no_shares=$10,
-		  updated_at=NOW()
-		 WHERE id=$11`,
+		  event_id=$1, ticker=$2, title=$3, description=$4, translations=$5,
+		  status=$6, result=$7, yes_price_cents=$8, no_price_cents=$9,
+		  last_trade_price_cents=$10, volume_cents=$11, open_interest_cents=$12,
+		  liquidity_cents=$13, amm_yes_shares=$14, amm_no_shares=$15,
+		  amm_liquidity_param=$16, amm_subsidy_cents=$17,
+		  settlement_source_key=$18, settlement_cutoff_at=$19,
+		  settlement_rule=$20, settlement_params=$21, fallback_source_key=$22,
+		  fee_rate_bps=$23, maker_rebate_bps=$24, open_at=$25, close_at=$26,
+		  image_path=$27, article_source_id=$28, updated_at=NOW()
+		 WHERE id=$29`,
+		m.EventID, m.Ticker, m.Title, nullStr(m.Description), nullJSONArg(defaultJSONObject(m.Translations)),
 		m.Status, m.Result, m.YesPriceCents, m.NoPriceCents,
 		m.LastTradePriceCents, m.VolumeCents, m.OpenInterestCents,
 		m.LiquidityCents, m.AMMYesShares, m.AMMNoShares,
-		m.ID)
+		m.AMMLiquidityParam, m.AMMSubsidyCents,
+		m.SettlementSourceKey, m.SettlementCutoffAt,
+		m.SettlementRule, nullJSONArg(defaultJSONObject(m.SettlementParams)), m.FallbackSourceKey,
+		m.FeeRateBps, m.MakerRebateBps, m.OpenAt, m.CloseAt,
+		nullStr(m.ImagePath), m.ArticleSourceID, m.ID)
 	return err
 }
 
@@ -533,7 +543,7 @@ func (r *SQLRepository) UpdateMarketStatus(ctx context.Context, id string, statu
 
 func (r *SQLRepository) ListMarketsToClose(ctx context.Context) ([]Market, error) {
 	rows, err := r.db.QueryContext(ctx,
-		marketSelectQuery()+` WHERE status = 'open' AND close_at <= $1`, time.Now().UTC())
+		marketSelectQuery()+` WHERE m.status = 'open' AND m.close_at <= $1`, time.Now().UTC())
 	if err != nil {
 		return nil, err
 	}
@@ -543,8 +553,8 @@ func (r *SQLRepository) ListMarketsToClose(ctx context.Context) ([]Market, error
 
 func (r *SQLRepository) ListMarketsToSettle(ctx context.Context) ([]Market, error) {
 	rows, err := r.db.QueryContext(ctx,
-		marketSelectQuery()+` WHERE status = 'closed' AND settlement_cutoff_at <= $1
-		  AND id NOT IN (SELECT market_id FROM prediction_settlements)`,
+		marketSelectQuery()+` WHERE m.status = 'closed' AND m.settlement_cutoff_at <= $1
+		  AND m.id NOT IN (SELECT market_id FROM prediction_settlements)`,
 		time.Now().UTC())
 	if err != nil {
 		return nil, err
@@ -1446,8 +1456,8 @@ func (r *SQLRepository) ListLifecycleEvents(ctx context.Context, marketID string
 	var events []LifecycleEvent
 	for rows.Next() {
 		var e LifecycleEvent
-		var actorID, reason sql.NullString
-		if err := rows.Scan(&e.ID, &e.MarketID, &e.EventType, &actorID, &e.ActorType, &reason, &e.Metadata, &e.OccurredAt); err != nil {
+		var actorID, reason, metadata sql.NullString
+		if err := rows.Scan(&e.ID, &e.MarketID, &e.EventType, &actorID, &e.ActorType, &reason, &metadata, &e.OccurredAt); err != nil {
 			return nil, err
 		}
 		if actorID.Valid {
@@ -1455,6 +1465,9 @@ func (r *SQLRepository) ListLifecycleEvents(ctx context.Context, marketID string
 		}
 		if reason.Valid {
 			e.Reason = &reason.String
+		}
+		if metadata.Valid {
+			e.Metadata = json.RawMessage(metadata.String)
 		}
 		events = append(events, e)
 	}
@@ -1701,7 +1714,7 @@ func (r *SQLRepository) GetDiscovery(ctx context.Context) (*DiscoveryResponse, e
 // --- Helpers ---
 
 func marketSelectQuery() string {
-	return `SELECT m.id, m.event_id, m.ticker, m.title, m.description,
+	return `SELECT m.id, m.event_id, pe.category_id, pc.slug, pc.name, m.ticker, m.title, m.description,
 		               COALESCE(m.translations, '{}'::jsonb) AS translations,
 	               m.status, m.result,
 	               m.yes_price_cents, m.no_price_cents, m.last_trade_price_cents,
@@ -1717,6 +1730,8 @@ func marketSelectQuery() string {
 	               m.best_no_bid_cents, m.best_no_ask_cents, m.last_quote_at,
 	               m.article_source_id
 	        FROM prediction_markets m
+	        LEFT JOIN prediction_events pe ON pe.id = m.event_id
+	        LEFT JOIN prediction_categories pc ON pc.id = pe.category_id
 	        LEFT JOIN LATERAL (
 	            SELECT volume, liquidity, image_path
 	            FROM imported_markets im
@@ -1725,6 +1740,17 @@ func marketSelectQuery() string {
 	            ORDER BY im.volume DESC
 	            LIMIT 1
 		        ) im ON true`
+}
+
+func marketOrderClause(sort string) string {
+	switch strings.TrimSpace(sort) {
+	case "closing_soon":
+		return ` ORDER BY rm.close_at ASC, rm.volume_cents DESC, rm.id DESC`
+	case "newest":
+		return ` ORDER BY rm.created_at DESC, rm.volume_cents DESC, rm.id DESC`
+	default:
+		return marketRankingOrderClause()
+	}
 }
 
 func marketRankingOrderClause() string {
@@ -1798,6 +1824,7 @@ func scanMarketRow(row scannable) (*Market, error) {
 	var desc sql.NullString
 	var translations []byte
 	var result, fallback, imagePath sql.NullString
+	var categoryID, categorySlug, categoryName sql.NullString
 	var lastTradePrice sql.NullInt64
 	var settleCutoff, openAt sql.NullTime
 	// Exchange engine fields (migration 019). Best-quote columns are
@@ -1806,7 +1833,7 @@ func scanMarketRow(row scannable) (*Market, error) {
 	var lastQuoteAt sql.NullTime
 	var articleSourceID sql.NullString
 
-	err := row.Scan(&m.ID, &m.EventID, &m.Ticker, &m.Title, &desc, &translations, &m.Status, &result,
+	err := row.Scan(&m.ID, &m.EventID, &categoryID, &categorySlug, &categoryName, &m.Ticker, &m.Title, &desc, &translations, &m.Status, &result,
 		&m.YesPriceCents, &m.NoPriceCents, &lastTradePrice,
 		&m.VolumeCents, &m.OpenInterestCents, &m.LiquidityCents,
 		&m.AMMYesShares, &m.AMMNoShares, &m.AMMLiquidityParam, &m.AMMSubsidyCents,
@@ -1818,6 +1845,15 @@ func scanMarketRow(row scannable) (*Market, error) {
 		&articleSourceID)
 	if err != nil {
 		return nil, err
+	}
+	if categoryID.Valid {
+		m.CategoryID = categoryID.String
+	}
+	if categorySlug.Valid {
+		m.CategorySlug = categorySlug.String
+	}
+	if categoryName.Valid {
+		m.CategoryName = categoryName.String
 	}
 	m.Description = desc.String
 	m.Translations = defaultJSONObject(json.RawMessage(translations))
@@ -1997,12 +2033,18 @@ func buildMarketWhere(f MarketFilter) (string, []interface{}) {
 	// (status='unopened' AND status<>'unopened' yields nothing). Literal
 	// condition — no bound parameter, so idx is unaffected.
 	if !f.IncludeUnopened {
-		conds = append(conds, "status <> 'unopened'")
+		conds = append(conds, "m.status <> 'unopened'")
 	}
 
 	if f.EventID != nil {
-		conds = append(conds, fmt.Sprintf("event_id = $%d", idx))
+		conds = append(conds, fmt.Sprintf("m.event_id = $%d", idx))
 		args = append(args, *f.EventID)
+		idx++
+	}
+	if f.SeriesID != nil {
+		conds = append(conds,
+			fmt.Sprintf("m.event_id IN (SELECT id FROM prediction_events WHERE series_id = $%d)", idx))
+		args = append(args, *f.SeriesID)
 		idx++
 	}
 	if f.CategoryID != nil {
@@ -2012,25 +2054,42 @@ func buildMarketWhere(f MarketFilter) (string, []interface{}) {
 		// Only the event-listing endpoint hides synthetic events; the markets
 		// they host still surface flat under each category.
 		conds = append(conds,
-			fmt.Sprintf("event_id IN (SELECT id FROM prediction_events WHERE category_id = $%d)", idx))
+			fmt.Sprintf("m.event_id IN (SELECT id FROM prediction_events WHERE category_id = $%d)", idx))
 		args = append(args, *f.CategoryID)
 		idx++
 	}
 	if f.Status != nil {
-		conds = append(conds, fmt.Sprintf("status = $%d", idx))
+		conds = append(conds, fmt.Sprintf("m.status = $%d", idx))
 		args = append(args, *f.Status)
 		idx++
 	}
 	if f.Ticker != nil {
-		conds = append(conds, fmt.Sprintf("ticker = $%d", idx))
+		conds = append(conds, fmt.Sprintf("m.ticker = $%d", idx))
 		args = append(args, *f.Ticker)
+		idx++
+	}
+	if f.Search != nil && strings.TrimSpace(*f.Search) != "" {
+		conds = append(conds,
+			fmt.Sprintf("(m.ticker ILIKE $%d OR m.title ILIKE $%d OR COALESCE(m.description, '') ILIKE $%d)", idx, idx, idx))
+		args = append(args, "%"+strings.TrimSpace(*f.Search)+"%")
+		idx++
+	}
+	if f.Tag != nil && strings.TrimSpace(*f.Tag) != "" {
+		conds = append(conds,
+			fmt.Sprintf(`m.event_id IN (
+				SELECT e.id
+				FROM prediction_events e
+				JOIN prediction_series s ON s.id = e.series_id
+				WHERE lower($%d) IN (SELECT lower(unnest(s.tags)))
+			)`, idx))
+		args = append(args, strings.TrimSpace(*f.Tag))
 		idx++
 	}
 	if f.CloseBefore != nil {
 		// Players use this to ask "what's about to settle?". The bound is
 		// inclusive on the upper edge so a market closing exactly at the
 		// requested instant still appears in the result.
-		conds = append(conds, fmt.Sprintf("close_at <= $%d", idx))
+		conds = append(conds, fmt.Sprintf("m.close_at <= $%d", idx))
 		args = append(args, *f.CloseBefore)
 		idx++
 	}

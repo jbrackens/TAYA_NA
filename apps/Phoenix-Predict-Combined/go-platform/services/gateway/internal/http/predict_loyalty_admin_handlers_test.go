@@ -84,7 +84,7 @@ func TestLoyaltyAdminAccountsList(t *testing.T) {
 		t.Fatalf("expected 200, got %d body=%s", res.Code, res.Body.String())
 	}
 	var payload struct {
-		Items []loyalty.AdminAccountSummary `json:"items"`
+		Items      []map[string]any `json:"items"`
 		Pagination struct {
 			Total int `json:"total"`
 		} `json:"pagination"`
@@ -92,12 +92,20 @@ func TestLoyaltyAdminAccountsList(t *testing.T) {
 	if err := json.Unmarshal(res.Body.Bytes(), &payload); err != nil {
 		t.Fatalf("decode: %v", err)
 	}
-	if len(payload.Items) != 1 || payload.Items[0].PlayerID != "u-1" {
+	if len(payload.Items) != 1 || payload.Items[0]["playerId"] != "u-1" {
 		t.Fatalf("unexpected items: %+v", payload.Items)
 	}
-	// 5175 points → Sharp tier, next is Whale (10000 - 5175 = 4825 to next).
-	if payload.Items[0].CurrentTier != "Sharp" || payload.Items[0].PointsToNextTier != 4825 {
-		t.Fatalf("tier math wrong: %+v", payload.Items[0])
+	// 5175 points -> Sharp rank, next is Whale (10000 - 5175 = 4825 to next).
+	if payload.Items[0]["rankName"] != "Sharp" || int64(payload.Items[0]["xpToNextRank"].(float64)) != 4825 {
+		t.Fatalf("rank math wrong: %+v", payload.Items[0])
+	}
+	if payload.Items[0]["unit"] != "PTS" {
+		t.Fatalf("expected PTS unit, got %+v", payload.Items[0]["unit"])
+	}
+	for _, retired := range []string{"currentTier", "nextTier", "pointsToNextTier"} {
+		if _, ok := payload.Items[0][retired]; ok {
+			t.Fatalf("admin loyalty account list should not emit retired alias %q in %+v", retired, payload.Items[0])
+		}
 	}
 	if payload.Pagination.Total != 1 {
 		t.Fatalf("expected total 1, got %d", payload.Pagination.Total)
@@ -121,21 +129,72 @@ func TestLoyaltyAdminAccountDetail(t *testing.T) {
 		t.Fatalf("expected 200, got %d body=%s", res.Code, res.Body.String())
 	}
 	var payload struct {
-		Account *loyalty.AdminAccountSummary `json:"account"`
-		Ledger  []map[string]any             `json:"ledger"`
-		Tiers   []loyalty.AdminTierView      `json:"tiers"`
+		Account map[string]any          `json:"account"`
+		Ledger  []map[string]any        `json:"ledger"`
+		Tiers   []loyalty.AdminTierView `json:"tiers"`
 	}
 	if err := json.Unmarshal(res.Body.Bytes(), &payload); err != nil {
 		t.Fatalf("decode: %v", err)
 	}
-	if payload.Account == nil || payload.Account.PlayerID != "u-1" || payload.Account.CurrentTier != "Trader" {
+	if payload.Account == nil || payload.Account["playerId"] != "u-1" || payload.Account["rankName"] != "Trader" {
 		t.Fatalf("unexpected account: %+v", payload.Account)
+	}
+	if payload.Account["unit"] != "PTS" {
+		t.Fatalf("expected PTS unit, got %+v", payload.Account["unit"])
+	}
+	for _, retired := range []string{"currentTier", "nextTier", "pointsToNextTier"} {
+		if _, ok := payload.Account[retired]; ok {
+			t.Fatalf("admin loyalty account detail should not emit retired alias %q in %+v", retired, payload.Account)
+		}
 	}
 	if len(payload.Ledger) != 1 || payload.Ledger[0]["entryType"] != "accrual" {
 		t.Fatalf("unexpected ledger: %+v", payload.Ledger)
 	}
 	if len(payload.Tiers) != 5 {
 		t.Fatalf("expected 5 tiers (Newcomer..Legend), got %d", len(payload.Tiers))
+	}
+}
+
+func TestLoyaltyAdminAccountDetailRedactsLegacyUnsafeLedgerReason(t *testing.T) {
+	entry := loyalty.PredictLedgerEntry{
+		ID: 1, UserID: "u-legacy-loyalty", EventType: "adjustment",
+		DeltaPoints: 250, BalanceAfter: 250, Reason: "cash payout loyalty bonus",
+		CreatedAt: time.Now(),
+	}
+	repo := &fakeAdminLoyaltyRepo{
+		accounts: []loyalty.PredictAdminAccountRow{
+			{UserID: "u-legacy-loyalty", PointsBalance: 250, EarnedLifetime: 250},
+		},
+		ledger: []loyalty.PredictLedgerEntry{entry},
+	}
+	h := buildLoyaltyAdminHandler(repo)
+
+	res := httptest.NewRecorder()
+	h.ServeHTTP(res, adminReq(stdhttp.MethodGet, "/api/v1/admin/loyalty/accounts/u-legacy-loyalty?limit=5", ""))
+	if res.Code != stdhttp.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	var payload struct {
+		Ledger []map[string]any `json:"ledger"`
+	}
+	if err := json.Unmarshal(res.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if len(payload.Ledger) != 1 {
+		t.Fatalf("expected one ledger entry, got %+v", payload.Ledger)
+	}
+	metadata, ok := payload.Ledger[0]["metadata"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected metadata object, got %+v", payload.Ledger[0]["metadata"])
+	}
+	if metadata["reason"] != launchRedactedUserText {
+		t.Fatalf("unsafe admin ledger reason should be redacted, got %#v", metadata["reason"])
+	}
+	if repo.ledger[0].Reason != entry.Reason {
+		t.Fatalf("raw ledger reason should remain available for review, got %q", repo.ledger[0].Reason)
+	}
+	if strings.Contains(res.Body.String(), "cash payout") {
+		t.Fatalf("unsafe loyalty reason should not be echoed: %s", res.Body.String())
 	}
 }
 
@@ -176,6 +235,31 @@ func TestLoyaltyAdminAdjustment_RequiresReason(t *testing.T) {
 	}
 }
 
+func TestLoyaltyAdminAdjustmentRejectsMoneyWording(t *testing.T) {
+	repo := &fakeAdminLoyaltyRepo{balance: 600}
+	h := buildLoyaltyAdminHandler(repo)
+	res := httptest.NewRecorder()
+	h.ServeHTTP(res, adminReq(stdhttp.MethodPost, "/api/v1/admin/loyalty/adjustments",
+		`{"playerId":"u-1","pointsDelta":10,"reason":"cash prize adjustment","idempotencyKey":"unsafe-loyalty-reason"}`))
+	if res.Code != stdhttp.StatusBadRequest {
+		t.Fatalf("expected 400 for unsafe reason, got %d body=%s", res.Code, res.Body.String())
+	}
+	var envelope httpx.ErrorEnvelope
+	if err := json.Unmarshal(res.Body.Bytes(), &envelope); err != nil {
+		t.Fatalf("decode unsafe-reason error: %v", err)
+	}
+	details, ok := envelope.Error.Details.(map[string]any)
+	if !ok || details["field"] != "reason" {
+		t.Fatalf("expected reason error field, got %+v", envelope.Error.Details)
+	}
+	if strings.Contains(res.Body.String(), "cash prize") {
+		t.Fatalf("unsafe loyalty reason should not be echoed: %s", res.Body.String())
+	}
+	if repo.balance != 600 {
+		t.Fatalf("unsafe loyalty reason should not adjust balance, got %d", repo.balance)
+	}
+}
+
 func TestLoyaltyAdminConfig(t *testing.T) {
 	h := buildLoyaltyAdminHandler(&fakeAdminLoyaltyRepo{})
 	res := httptest.NewRecorder()
@@ -192,6 +276,28 @@ func TestLoyaltyAdminConfig(t *testing.T) {
 	}
 	if len(payload.Tiers) != 5 {
 		t.Fatalf("expected 5 tiers, got %d", len(payload.Tiers))
+	}
+}
+
+func TestPredictLoyaltyAdminTierRejectsMoneyWordingBenefits(t *testing.T) {
+	h := buildLoyaltyAdminHandler(&fakeAdminLoyaltyRepo{})
+	res := httptest.NewRecorder()
+	h.ServeHTTP(res, adminReq(stdhttp.MethodPut, "/api/v1/admin/loyalty/tiers/trader",
+		`{"displayName":"Trader","rank":2,"minLifetimePoints":500,"minRolling30dPoints":0,"benefits":{"statusBoost":"cash prize priority"},"active":true}`))
+
+	if res.Code != stdhttp.StatusBadRequest {
+		t.Fatalf("expected unsafe tier benefit status 400, got %d body=%s", res.Code, res.Body.String())
+	}
+	var envelope httpx.ErrorEnvelope
+	if err := json.Unmarshal(res.Body.Bytes(), &envelope); err != nil {
+		t.Fatalf("decode unsafe-benefit error: %v", err)
+	}
+	details, ok := envelope.Error.Details.(map[string]any)
+	if !ok || details["field"] != "benefits" {
+		t.Fatalf("expected benefits error field, got %+v", envelope.Error.Details)
+	}
+	if strings.Contains(res.Body.String(), "cash prize") {
+		t.Fatalf("unsafe tier benefit should not be echoed: %s", res.Body.String())
 	}
 }
 

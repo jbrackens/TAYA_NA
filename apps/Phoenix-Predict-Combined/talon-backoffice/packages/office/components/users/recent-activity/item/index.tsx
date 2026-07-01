@@ -1,6 +1,6 @@
 import { Typography, Timeline, Tag } from "antd";
 import {
-  DollarCircleOutlined,
+  ProfileOutlined,
   TrophyOutlined,
   CloudServerOutlined,
 } from "@ant-design/icons";
@@ -15,22 +15,17 @@ import { useTimezone } from "@phoenix-ui/utils";
 
 const { Text, Paragraph } = Typography;
 
+const formatPointTag = (amount: unknown, positive = false) => {
+  const prefix = positive ? "+" : "";
+  return `${prefix}${amount ?? 0} pts`;
+};
+
 const formatDataLine = (type: TalonPunterActivity, data: any) => {
   switch (type) {
-    case TalonPunterActivityEnum.BET_PLACEMENT:
-      return (
-        <Tag color="geekblue">
-          {data.unit}
-          {data.amount}
-        </Tag>
-      );
-    case TalonPunterActivityEnum.BET_WON:
-      return (
-        <Tag color="gold">
-          +{data.unit}
-          {data.amount}
-        </Tag>
-      );
+    case TalonPunterActivityEnum.PREDICTION_ORDER:
+      return <Tag color="geekblue">{formatPointTag(data.amount)}</Tag>;
+    case TalonPunterActivityEnum.PREDICTION_RESULT:
+      return <Tag color="gold">{formatPointTag(data.amount, true)}</Tag>;
     case TalonPunterActivityEnum.SYSTEM_LOGIN:
       return (
         <Text ellipsis style={{ fontSize: 11, color: "grey" }}>
@@ -51,11 +46,11 @@ const UserTalonPunterRecentActivityItem = ({
   let IconComponent;
   let color;
   switch (type) {
-    case TalonPunterActivityEnum.BET_PLACEMENT:
-      IconComponent = DollarCircleOutlined;
+    case TalonPunterActivityEnum.PREDICTION_ORDER:
+      IconComponent = ProfileOutlined;
       color = "green";
       break;
-    case TalonPunterActivityEnum.BET_WON:
+    case TalonPunterActivityEnum.PREDICTION_RESULT:
       IconComponent = TrophyOutlined;
       color = "gold";
       break;

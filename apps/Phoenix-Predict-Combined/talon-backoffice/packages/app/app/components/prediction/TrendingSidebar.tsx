@@ -37,9 +37,9 @@ const CATEGORY_LABEL: Record<string, string> = {
   house: "Politics",
   fed: "Fed",
   fomc: "Fed",
-  btc: "Crypto",
-  eth: "Crypto",
-  crypto: "Crypto",
+  mlbb: "Esports",
+  dota: "Esports",
+  valorant: "Esports",
   nba: "Sports",
   nfl: "Sports",
   ucl: "Sports",
@@ -101,8 +101,10 @@ export function TrendingSidebar({ markets, limit = 6 }: Props) {
       </div>
       <ul className={TOP_MOVERS_LIST_CLASS}>
         {rows.map((m) => {
-          const yesLeads = m.yesPriceCents >= m.noPriceCents;
-          const leadingPrice = yesLeads ? m.yesPriceCents : m.noPriceCents;
+          const yesLeads = m.yesPricePointsCents >= m.noPricePointsCents;
+          const leadingPrice = yesLeads
+            ? m.yesPricePointsCents
+            : m.noPricePointsCents;
           const { pct, up } = deterministicDelta(m.ticker, leadingPrice);
           const sparkColor = up ? "var(--yes-text)" : "var(--no-text)";
           const cat = categoryLabel(contentT, categoryFromTicker(m.ticker));

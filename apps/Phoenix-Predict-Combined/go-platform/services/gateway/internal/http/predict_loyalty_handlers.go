@@ -93,18 +93,34 @@ func registerPredictLoyaltyRoutes(mux *stdhttp.ServeMux, service *loyalty.Predic
 		tiers := service.Tiers()
 		items := make([]map[string]any, 0, len(tiers))
 		for _, t := range tiers {
-			items = append(items, map[string]any{
-				"tier":            int(t.Tier),
-				"name":            t.Name,
-				"pointsThreshold": t.PointsThreshold,
-				"benefits":        t.Benefits,
-			})
+			items = append(items, predictTierPayload(t))
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 			"items":      items,
 			"totalCount": len(items),
 		})
 	}))
+}
+
+func predictTierPayload(t loyalty.PredictTierDefinition) map[string]any {
+	return map[string]any{
+		"rank":        int(t.Tier),
+		"rankName":    redactLaunchProhibitedUserText(t.Name),
+		"minXpPoints": t.PointsThreshold,
+		"unit":        "PTS",
+		"benefits":    redactLaunchProhibitedStrings(t.Benefits),
+	}
+}
+
+func redactLaunchProhibitedStrings(values []string) []string {
+	if len(values) == 0 {
+		return values
+	}
+	out := make([]string, 0, len(values))
+	for _, value := range values {
+		out = append(out, redactLaunchProhibitedUserText(value))
+	}
+	return out
 }
 
 // resolveSelfUserID enforces "session user only" on private loyalty endpoints
@@ -127,13 +143,16 @@ func resolveSelfUserID(r *stdhttp.Request) (string, error) {
 
 func predictStandingPayload(s loyalty.PredictStanding) map[string]any {
 	out := map[string]any{
-		"userId":           s.UserID,
-		"pointsBalance":    s.PointsBalance,
-		"tier":             int(s.Tier),
-		"tierName":         s.TierName,
-		"nextTier":         int(s.NextTier),
-		"nextTierName":     s.NextTierName,
-		"pointsToNextTier": s.PointsToNextTier,
+		"userId":        s.UserID,
+		"pointsBalance": s.PointsBalance,
+		"xp":            s.PointsBalance,
+		"xpPoints":      s.PointsBalance,
+		"rank":          int(s.Tier),
+		"rankName":      redactLaunchProhibitedUserText(s.TierName),
+		"nextRank":      int(s.NextTier),
+		"nextRankName":  redactLaunchProhibitedUserText(s.NextTierName),
+		"xpToNextRank":  s.PointsToNextTier,
+		"unit":          "PTS",
 	}
 	if s.LastActivity != nil {
 		out["lastActivity"] = s.LastActivity.UTC()
@@ -148,7 +167,7 @@ func predictLedgerEntryPayload(e loyalty.PredictLedgerEntry) map[string]any {
 		"eventType":      e.EventType,
 		"deltaPoints":    e.DeltaPoints,
 		"balanceAfter":   e.BalanceAfter,
-		"reason":         e.Reason,
+		"reason":         redactLaunchProhibitedUserText(e.Reason),
 		"idempotencyKey": e.IdempotencyKey,
 		"createdAt":      e.CreatedAt.UTC(),
 	}

@@ -40,8 +40,8 @@ class FixturesCollectorSpec
     with HttpSpec {
   import FixturesCollectorSpec._
 
-  implicit val classicAS = system.toClassic
-  implicit val typedAS = system
+  implicit val classicAS: akka.actor.ActorSystem = system.toClassic
+  implicit val typedAS: akka.actor.typed.ActorSystem[Nothing] = system
 
   val fakeClock = new FakeHardcodedClock()
 

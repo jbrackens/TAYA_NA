@@ -81,11 +81,11 @@ type MatchPlan struct {
 	// snapshot, last_quote_at, etc.
 	Market Market
 	// Reservation operations the persistence layer should apply:
-	HoldReservation     *ReservationHold     // taker's cash reservation
+	HoldReservation     *ReservationHold     // taker's point reservation
 	CaptureReservations []ReservationCapture // per-fill captures from holds
 	ReleaseReservations []ReservationRef     // refund the unfilled portion
-	// SellerCredits pay the seller's cash proceeds on secondary (same-side
-	// transfer) fills. The buyer's cash is captured via CaptureReservations;
+	// SellerCredits pay the seller's point proceeds on secondary (same-side
+	// transfer) fills. The buyer's points are captured via CaptureReservations;
 	// the matching credit to the seller goes here. Issuance fills mint
 	// contracts (both sides pay) and produce no SellerCredits.
 	SellerCredits []SellerCredit
@@ -426,7 +426,7 @@ func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int,
 	}
 	plan.Trades = append(plan.Trades, trade)
 
-	// Update taker: filled, captured cash for buys.
+	// Update taker: filled, captured points for buys.
 	taker.FilledQuantity += fillQty
 	taker.RemainingQuantity -= fillQty
 	if taker.Action == OrderActionBuy {
@@ -459,7 +459,7 @@ func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int,
 	}
 	plan.MakerUpdates = append(plan.MakerUpdates, *maker)
 
-	// Capture buyer's cash from their reservation (per-fill).
+	// Capture buyer's points from their reservation (per-fill).
 	buyer := taker
 	if taker.Action != OrderActionBuy {
 		buyer = maker
@@ -472,7 +472,7 @@ func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int,
 	})
 
 	// Credit the seller's proceeds. A secondary fill is a same-side
-	// transfer: the buyer's captured cash (above) is paid to the seller.
+	// transfer: the buyer's captured points (above) are credited to the seller.
 	// Without this the seller's position decrements but they receive
 	// nothing — silent value loss (UAT 2026-05-16 D-1, second-order).
 	if sellerID != nil {
@@ -643,7 +643,7 @@ func applyTIF(plan *MatchPlan, taker *Order) error {
 		if filled != nil {
 			taker.FilledAt = filled
 		}
-		// Release any uncaptured surplus of the taker's cash reservation. A buy
+		// Release any uncaptured surplus of the taker's point reservation. A buy
 		// holds worst-case priceCents×qty but captures at the (better) fill price,
 		// so on a full fill the difference must be freed now — otherwise it stays
 		// locked against available balance until the reservation expires at

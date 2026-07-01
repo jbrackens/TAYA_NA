@@ -93,17 +93,17 @@ export function PunterSearch({
     },
     {
       key: "balance",
-      label: "Balance",
+      label: "Point balance",
       sortable: true,
       render: (value) =>
-        `$${value.toLocaleString(undefined, {
+        `${value.toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
-        })}`,
+        })} pts`,
     },
     {
       key: "pnl",
-      label: "P&L",
+      label: "Point result",
       sortable: true,
       render: (value) => (
         <span
@@ -113,11 +113,12 @@ export function PunterSearch({
               : "text-[var(--no-text,#a8472d)]"
           }`}
         >
-          {value < 0 ? "-" : "+"}$
+          {value < 0 ? "-" : "+"}
           {Math.abs(value).toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           })}
+          {" pts"}
         </span>
       ),
     },

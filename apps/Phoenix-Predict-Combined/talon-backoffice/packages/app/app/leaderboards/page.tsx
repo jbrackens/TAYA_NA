@@ -24,10 +24,8 @@ import { logger } from "../lib/logger";
 
 const ENTRIES_LIMIT = 25;
 
-const WRAP_CLASS =
-  "mx-auto max-w-[1180px] pb-[60px] max-[720px]:px-4";
-const HEAD_CLASS =
-  "mb-[22px] flex items-end justify-between gap-4";
+const WRAP_CLASS = "mx-auto max-w-[1180px] pb-[60px] max-[720px]:px-4";
+const HEAD_CLASS = "mb-[22px] flex items-end justify-between gap-4";
 const KICKER_CLASS =
   "mb-1.5 inline-block text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]";
 const TITLE_CLASS =
@@ -38,8 +36,7 @@ const GRID_CLASS =
   "grid grid-cols-[280px_minmax(0,1fr)] items-start gap-[18px] max-[1024px]:grid-cols-1";
 const SURFACE_CLASS =
   "relative rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)]";
-const SIDEBAR_CLASS =
-  `${SURFACE_CLASS} flex flex-col gap-1.5 p-2.5 max-[1024px]:flex-row max-[1024px]:overflow-x-auto max-[1024px]:[scroll-snap-type:x_mandatory]`;
+const SIDEBAR_CLASS = `${SURFACE_CLASS} flex flex-col gap-1.5 p-2.5 max-[1024px]:flex-row max-[1024px]:overflow-x-auto max-[1024px]:[scroll-snap-type:x_mandatory]`;
 const TAB_BASE_CLASS =
   "grid cursor-pointer grid-cols-[1fr_auto] grid-rows-[auto_auto] items-center gap-x-3 gap-y-0.5 rounded-[var(--r-rh-md)] border p-3.5 text-left text-[var(--t2)] transition-[background,border-color] duration-[120ms] ease-[ease] [font-family:inherit] hover:bg-[var(--surface-2)] max-[1024px]:flex-[0_0_220px] max-[1024px]:[scroll-snap-align:start]";
 const TAB_ACTIVE_CLASS =
@@ -52,8 +49,7 @@ const TAB_SUB_CLASS =
 const TAB_RANK_BASE_CLASS =
   "col-start-2 row-span-2 row-start-1 self-center text-base font-bold text-[var(--t1)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
 const TAB_RANK_ACTIVE_CLASS = "text-[var(--accent)]";
-const CATEGORY_CLASS =
-  `${TAB_BASE_CLASS} cursor-default max-[1024px]:flex-[0_0_280px]`;
+const CATEGORY_CLASS = `${TAB_BASE_CLASS} cursor-default max-[1024px]:flex-[0_0_280px]`;
 const CATEGORY_SELECT_CLASS =
   "col-start-1 row-start-2 mt-1 cursor-pointer appearance-none rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-2)] px-2 py-1 text-xs text-[var(--t1)] focus-visible:[outline:2px_solid_var(--accent)] focus-visible:outline-offset-2 [font-family:inherit] max-[1024px]:min-h-9 max-[1024px]:w-full max-[1024px]:px-2.5 max-[1024px]:py-2 max-[1024px]:text-[13px]";
 const DETAIL_CLASS = `${SURFACE_CLASS} min-h-[420px] p-[22px]`;
@@ -79,10 +75,8 @@ const SUBTLE_CLASS = "text-[var(--t3)]";
 const VIEWER_ROW_CLASS =
   "bg-[var(--accent-soft)] [&>td]:font-semibold [&>td]:text-[var(--t1)]";
 const VIEWER_CELL_CLASS = "p-3 text-center text-[var(--t1)]";
-const STATE_CLASS =
-  "flex min-h-[60vh] items-center justify-center px-6";
-const STATE_CARD_CLASS =
-  `${SURFACE_CLASS} max-w-[440px] p-7 text-center`;
+const STATE_CLASS = "flex min-h-[60vh] items-center justify-center px-6";
+const STATE_CARD_CLASS = `${SURFACE_CLASS} max-w-[440px] p-7 text-center`;
 const STATE_MESSAGE_CLASS = "m-0 mb-3.5 leading-[1.6] text-[var(--t2)]";
 const STATE_CTA_CLASS =
   "inline-flex items-center gap-1.5 rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-[22px] py-3 text-[13px] font-bold text-[#04140a] no-underline transition-[transform,filter] duration-[180ms] ease-[ease] hover:-translate-y-px hover:brightness-[1.05]";
@@ -240,7 +234,10 @@ export default function LeaderboardsPage() {
     return (
       <PageState
         message={t("state.none", "No leaderboards have been set up yet.")}
-        cta={{ href: "/predict", label: t("state.browseMarkets", "Browse markets") }}
+        cta={{
+          href: "/predict",
+          label: t("state.browseMarkets", "Browse markets"),
+        }}
       />
     );
   }
@@ -533,8 +530,7 @@ function windowLabel(
   t: ReturnType<typeof useTranslation>["t"],
 ): string {
   if (window === "weekly") return t("windows.weekly", "This week");
-  if (window === "rolling_30d")
-    return t("windows.rolling30d", "Last 30 days");
+  if (window === "rolling_30d") return t("windows.rolling30d", "Last 30 days");
   return window;
 }
 
@@ -544,9 +540,8 @@ function boardName(
 ): string {
   if (board.id === "accuracy") return t("boards.accuracy.name", "Accuracy");
   if (board.id === "pnl_weekly")
-    return t("boards.pnlWeekly.name", "Weekly P&L");
-  if (board.id === "sharpness")
-    return t("boards.sharpness.name", "Sharpness");
+    return t("boards.pnlWeekly.name", "Weekly Points");
+  if (board.id === "sharpness") return t("boards.sharpness.name", "Sharpness");
   if (board.id.startsWith("category:")) {
     return t("boards.category.name", "{{category}} Champions", {
       category: categoryLabel(board, t),
@@ -578,10 +573,11 @@ function metricLabel(
   t: ReturnType<typeof useTranslation>["t"],
 ): string {
   if (board.id === "accuracy") return t("metrics.accuracy", "Accuracy");
-  if (board.id === "pnl_weekly") return t("metrics.pnl", "P&L");
+  if (board.id === "pnl_weekly") return t("metrics.pnl", "Net points");
   if (board.id === "sharpness") return t("metrics.sharpness", "Sharpness");
-  if (board.id.startsWith("category:")) return t("metrics.category", "Profit");
-  return board.metricLabel;
+  if (board.id.startsWith("category:"))
+    return t("metrics.category", "Net points");
+  return board.pointMetricKey || board.metricKey;
 }
 
 function qualificationMessage(
@@ -589,14 +585,14 @@ function qualificationMessage(
   t: ReturnType<typeof useTranslation>["t"],
 ): string {
   if (board.id === "accuracy")
-    return t("qualification.accuracy", board.qualificationMsg);
+    return t("qualification.accuracy", board.rewardSummary);
   if (board.id === "pnl_weekly")
-    return t("qualification.pnlWeekly", board.qualificationMsg);
+    return t("qualification.pnlWeekly", board.rewardSummary);
   if (board.id === "sharpness")
-    return t("qualification.sharpness", board.qualificationMsg);
+    return t("qualification.sharpness", board.rewardSummary);
   if (board.id.startsWith("category:"))
-    return t("qualification.category", board.qualificationMsg);
-  return board.qualificationMsg;
+    return t("qualification.category", board.rewardSummary);
+  return board.rewardSummary;
 }
 
 function categoryLabel(
@@ -628,12 +624,10 @@ function formatMetric(board: LeaderboardDefinition, value: number): string {
 
 function formatCents(cents: number): string {
   const sign = cents < 0 ? "-" : "";
-  const dollars = Math.abs(cents) / 100;
-  // Two decimals under $100 so sub-dollar P&L doesn't collapse to "$0";
-  // whole-dollar display above that where fractional cents add visual noise.
-  const fractionDigits = dollars < 100 ? 2 : 0;
-  return `${sign}$${new Intl.NumberFormat("en-US", {
+  const points = Math.abs(cents) / 100;
+  const fractionDigits = points < 100 ? 2 : 0;
+  return `${sign}${new Intl.NumberFormat("en-US", {
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
-  }).format(dollars)}`;
+  }).format(points)} pts`;
 }

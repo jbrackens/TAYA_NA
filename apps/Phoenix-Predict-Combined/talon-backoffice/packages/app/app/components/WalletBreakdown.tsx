@@ -7,7 +7,6 @@ import {
   getWalletBreakdown,
   type WalletBreakdown as WalletBreakdownType,
 } from "../lib/api/bonus-client";
-import { formatCents } from "../lib/format";
 
 export const WalletBreakdownDisplay: React.FC = () => {
   const { t } = useTranslation("bonus");
@@ -50,8 +49,7 @@ export const WalletBreakdownDisplay: React.FC = () => {
 
   if (!breakdown) return null;
 
-  const hasBonusFunds = breakdown.bonusFundCents > 0;
-  const currency = breakdown.currency || "USD";
+  const hasBonusPoints = breakdown.bonusPointsCents > 0;
 
   return (
     <div className="flex flex-col gap-1 px-3 py-2 rounded-lg bg-[#0f1225]/60">
@@ -61,25 +59,29 @@ export const WalletBreakdownDisplay: React.FC = () => {
           {t("totalBalance")}
         </span>
         <span className="text-sm font-semibold text-white">
-          {formatCents(breakdown.totalCents, { currency })}
+          {formatPointsFromCents(breakdown.totalPointsCents)}
         </span>
       </div>
 
-      {/* Breakdown — only shown when bonus funds exist */}
-      {hasBonusFunds && (
+      {/* Breakdown - only shown when bonus points exist */}
+      {hasBonusPoints && (
         <div className="flex items-center gap-3 text-xs">
           <div className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-green-400" />
-            <span className="text-gray-400">{t("realMoney")}</span>
+            <span className="text-gray-400">
+              {t("basePoints", "Base Points")}
+            </span>
             <span className="text-white font-medium">
-              {formatCents(breakdown.realMoneyCents, { currency })}
+              {formatPointsFromCents(breakdown.basePointsCents)}
             </span>
           </div>
           <div className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-yellow-400" />
-            <span className="text-gray-400">{t("bonusFunds")}</span>
+            <span className="text-gray-400">
+              {t("bonusPoints", "Bonus Points")}
+            </span>
             <span className="text-white font-medium">
-              {formatCents(breakdown.bonusFundCents, { currency })}
+              {formatPointsFromCents(breakdown.bonusPointsCents)}
             </span>
           </div>
         </div>
@@ -87,3 +89,7 @@ export const WalletBreakdownDisplay: React.FC = () => {
     </div>
   );
 };
+
+function formatPointsFromCents(cents: number): string {
+  return `${(cents / 100).toFixed(2)} pts`;
+}

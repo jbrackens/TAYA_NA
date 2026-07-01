@@ -13,9 +13,10 @@ import (
 // surface. Replaces the sportsbook handlers when a DB is available.
 //
 // Routes:
-//   GET /api/v1/leaderboards              — list boards (public)
-//   GET /api/v1/leaderboards/:id/entries  — top entries + optional viewer rank (public)
-//   GET /api/v1/me/leaderboards           — session user's rank across boards (auth)
+//
+//	GET /api/v1/leaderboards              — list boards (public)
+//	GET /api/v1/leaderboards/:id/entries  — top entries + optional viewer rank (public)
+//	GET /api/v1/me/leaderboards           — session user's rank across boards (auth)
 //
 // Note: the per-user endpoint lives under /api/v1/me/ rather than nested
 // inside /api/v1/leaderboards/ because httpx.Auth matches public prefixes by
@@ -39,9 +40,16 @@ func registerPredictLeaderboardRoutes(mux *stdhttp.ServeMux, service *leaderboar
 		if err != nil {
 			return httpx.Internal("leaderboard list failed", err)
 		}
+		items := make([]map[string]any, 0, len(boards))
+		for _, board := range boards {
+			if predictBoardHasUnsafePublicIdentifier(board) {
+				continue
+			}
+			items = append(items, predictBoardPayload(board))
+		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"items":      boards,
-			"totalCount": len(boards),
+			"items":      items,
+			"totalCount": len(items),
 		})
 	}))
 
@@ -124,6 +132,43 @@ func registerPredictLeaderboardRoutes(mux *stdhttp.ServeMux, service *leaderboar
 	}))
 }
 
+func predictBoardPayload(b leaderboards.PredictBoardDef) map[string]any {
+	metricKey := predictBoardMetricKey(b)
+	p := map[string]any{
+		"id":             b.ID,
+		"name":           redactLaunchProhibitedUserText(b.Name),
+		"description":    redactLaunchProhibitedUserText(b.Description),
+		"metricKey":      metricKey,
+		"pointMetricKey": metricKey,
+		"window":         b.Window,
+		"minSettled":     b.MinSettled,
+		"unit":           "PTS",
+		"rewardSummary":  redactLaunchProhibitedUserText(b.QualificationMsg),
+	}
+	if b.MinVolumeCents > 0 {
+		p["minVolumePointsCents"] = b.MinVolumeCents
+	}
+	if b.CategorySlug != "" {
+		p["categorySlug"] = b.CategorySlug
+	}
+	return p
+}
+
+func predictBoardHasUnsafePublicIdentifier(b leaderboards.PredictBoardDef) bool {
+	return launchReasonHasProhibitedCopy(string(b.ID)) || launchReasonHasProhibitedCopy(b.CategorySlug)
+}
+
+func predictBoardMetricKey(b leaderboards.PredictBoardDef) string {
+	switch b.ID {
+	case leaderboards.PredictBoardAccuracy:
+		return "accuracy_points"
+	case leaderboards.PredictBoardSharpness:
+		return "point_return_rate"
+	default:
+		return "net_points"
+	}
+}
+
 // leaderboardViewerRank returns the session user's row on the given board, or
 // nil if unauthenticated / not qualified. The ?userId= query param must match
 // the session user (same allow-only-self rule as loyalty endpoints).
@@ -154,7 +199,7 @@ func predictEntryPayload(e leaderboards.PredictEntry) map[string]any {
 		"boardId":     e.BoardID,
 		"rank":        e.Rank,
 		"userId":      e.UserID,
-		"displayName": e.DisplayName,
+		"displayName": redactLaunchProhibitedUserText(e.DisplayName),
 		"metricValue": e.MetricValue,
 		"windowStart": e.WindowStart.UTC(),
 		"windowEnd":   e.WindowEnd.UTC(),

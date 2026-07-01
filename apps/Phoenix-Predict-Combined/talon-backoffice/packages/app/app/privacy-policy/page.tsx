@@ -7,16 +7,16 @@ const FALLBACK_CONTENT = `
 <p style="font-size: 12px; color: #4a5580; margin-bottom: 32px;">Effective: April 2026</p>
 
 <h2>1. Information We Collect</h2>
-<p>We collect information you provide when creating an account, such as username and email, plus identity, payment, and address information when needed for withdrawals, verification, or compliance. We also collect usage data including trading history, device information, and IP address.</p>
+<p>We collect information you provide when creating an account, such as username and email, plus information needed for eligibility, safety, verification, or compliance. We also collect usage data including prediction history, device information, and IP address.</p>
 
 <h2>2. How We Use Your Information</h2>
-<p>Your data is used to operate your account, process transactions, comply with regulatory obligations (KYC/AML), provide customer support, improve our services, and communicate important account updates.</p>
+<p>Your data is used to operate your account, maintain the point ledger, support responsible-play controls, provide customer support, improve our services, and communicate important account updates.</p>
 
 <h2>3. Data Sharing</h2>
-<p>We do not sell your personal information. We may share data with payment processors, identity verification providers, regulatory authorities as required by law, and service providers who assist in operating the platform.</p>
+<p>We do not sell your personal information. We may share data with eligibility and safety providers, regulatory authorities as required by law, and service providers who assist in operating the platform.</p>
 
 <h2>4. Data Security</h2>
-<p>We use industry-standard encryption and security measures to protect your data. All financial transactions are encrypted in transit and at rest. Access to personal data is restricted to authorized personnel only.</p>
+<p>We use industry-standard encryption and security measures to protect your data. Point-ledger and account activity records are protected in transit and at rest. Access to personal data is restricted to authorized personnel only.</p>
 
 <h2>5. Cookies &amp; Tracking</h2>
 <p>We use essential cookies for authentication and session management. Analytics cookies help us understand how the platform is used. You can manage cookie preferences in your browser settings.</p>

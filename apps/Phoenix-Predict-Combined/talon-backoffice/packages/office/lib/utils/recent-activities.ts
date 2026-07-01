@@ -11,17 +11,12 @@ type GoTimelineEntry = {
   description?: string;
   status?: string | null;
   amount?: string | number | null;
+  unit?: string | null;
   currency?: string | null;
   metadata?: Record<string, any>;
 };
 
-const CURRENCY_SYMBOLS: Record<string, string> = {
-  AUD: "$",
-  CAD: "$",
-  EUR: "EUR ",
-  GBP: "£",
-  USD: "$",
-};
+const POINT_UNIT = "PTS";
 
 const SYSTEM_FALLBACK_LABEL = "system";
 
@@ -46,12 +41,11 @@ const extractTimelineEntries = (payload: any): any[] => {
   return [];
 };
 
-const normalizeCurrency = (currency?: string | null): string => {
-  if (!currency) {
-    return "";
+const normalizePointUnit = (unit?: string | null): string => {
+  if (!unit) {
+    return POINT_UNIT;
   }
-  const normalizedCurrency = currency.trim().toUpperCase();
-  return CURRENCY_SYMBOLS[normalizedCurrency] || `${normalizedCurrency} `;
+  return unit.trim().toUpperCase() === POINT_UNIT ? POINT_UNIT : POINT_UNIT;
 };
 
 const normalizeAmount = (
@@ -71,6 +65,20 @@ const normalizeAmount = (
   return undefined;
 };
 
+const normalizeActivityType = (type: string): TalonPunterActivityEnum => {
+  switch (type) {
+    case "BET_PLACEMENT":
+    case "PREDICTION_ORDER":
+      return TalonPunterActivityEnum.PREDICTION_ORDER;
+    case "BET_WON":
+    case "PREDICTION_RESULT":
+      return TalonPunterActivityEnum.PREDICTION_RESULT;
+    case "SYSTEM_LOGIN":
+    default:
+      return TalonPunterActivityEnum.SYSTEM_LOGIN;
+  }
+};
+
 const resolveTimelineType = (
   entry: GoTimelineEntry,
 ): TalonPunterActivityEnum => {
@@ -80,14 +88,14 @@ const resolveTimelineType = (
 
   if (normalizedEntryType === "wallet_transaction") {
     return amount > 0
-      ? TalonPunterActivityEnum.BET_WON
-      : TalonPunterActivityEnum.BET_PLACEMENT;
+      ? TalonPunterActivityEnum.PREDICTION_RESULT
+      : TalonPunterActivityEnum.PREDICTION_ORDER;
   }
 
   if (normalizedEntryType === "bet") {
     return normalizedStatus === "won"
-      ? TalonPunterActivityEnum.BET_WON
-      : TalonPunterActivityEnum.BET_PLACEMENT;
+      ? TalonPunterActivityEnum.PREDICTION_RESULT
+      : TalonPunterActivityEnum.PREDICTION_ORDER;
   }
 
   return TalonPunterActivityEnum.SYSTEM_LOGIN;
@@ -135,7 +143,7 @@ const normalizeTimelineEntry = (
             ip: buildSystemLabel(entry),
           }
         : {
-            unit: normalizeCurrency(entry.currency),
+            unit: normalizePointUnit(entry.unit || entry.currency),
             amount: normalizeAmount(entry.amount),
           },
   };
@@ -146,6 +154,9 @@ export const normalizeRecentActivities = (
 ): TalonPunterRecentActivityItem[] =>
   extractTimelineEntries(payload).map((entry) =>
     isLegacyRecentActivity(entry)
-      ? entry
+      ? {
+          ...entry,
+          type: normalizeActivityType(entry.type),
+        }
       : normalizeTimelineEntry(entry as GoTimelineEntry),
   );

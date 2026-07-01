@@ -3,12 +3,152 @@ package main
 import (
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"phoenix-revival/platform/transport/httpx"
 )
 
-func TestPaymentsWebhookBypassesAuthAndCSRFMiddleware(t *testing.T) {
+func TestLegacyMoneyPathsAreNotPublicOrCSRFSkippedByDefault(t *testing.T) {
+	t.Setenv(legacyMoneyRoutesEnv, "")
+	publicPrefixes := gatewayPublicPrefixes()
+	csrfSkipPrefixes := gatewayCSRFSkipPrefixes()
+
+	paths := []string{
+		"/api/v1/cashier/alpha/config",
+		"/api/v1/cashier/alpha/wallet/challenge",
+		"/api/v1/cashier/alpha/wallet/connect",
+		"/api/v1/cashier/alpha/wallets",
+		"/api/v1/cashier/alpha/deposit-intents",
+		"/api/v1/cashier/alpha/deposit-intents/intent-1/submit-tx",
+		"/api/v1/cashier/alpha/withdrawal-requests",
+		"/api/v1/cashier/alpha/withdrawal-requests/request-1/cancel",
+		"/api/v1/admin/cashier/alpha/preflight",
+		"/api/v1/admin/cashier/alpha/deposits",
+		"/api/v1/admin/cashier/alpha/reconciliation",
+		"/api/v1/admin/cashier/alpha/withdrawals",
+		"/api/v1/admin/cashier/alpha/audit-events",
+		"/api/v1/admin/cashier/alpha/withdrawals/request-1/approve",
+		"/api/v1/payments/deposit",
+		"/api/v1/payments/withdraw",
+		"/api/v1/payments/methods",
+		"/api/v1/payments/status",
+		"/api/v1/payments/webhook",
+		"/api/v1/payments/crypto/config",
+		"/api/v1/payments/crypto/deposit-address",
+		"/v1/provider-callbacks/relay",
+	}
+
+	for _, path := range paths {
+		if matchesAnyPrefix(path, publicPrefixes) {
+			t.Fatalf("%s must not be public in launch mode; public prefixes=%v", path, publicPrefixes)
+		}
+		if matchesAnyPrefix(path, csrfSkipPrefixes) {
+			t.Fatalf("%s must not skip CSRF in launch mode; skip prefixes=%v", path, csrfSkipPrefixes)
+		}
+	}
+}
+
+func TestLegacyMoneyOptInOnlyExemptsProviderCallbacks(t *testing.T) {
+	t.Setenv(legacyMoneyRoutesEnv, "true")
+	publicPrefixes := gatewayPublicPrefixes()
+	csrfSkipPrefixes := gatewayCSRFSkipPrefixes()
+
+	exemptPaths := []string{
+		"/api/v1/payments/webhook",
+		"/v1/provider-callbacks/relay",
+	}
+	for _, path := range exemptPaths {
+		if !matchesAnyPrefix(path, publicPrefixes) {
+			t.Fatalf("%s should be public only after legacy opt-in; public prefixes=%v", path, publicPrefixes)
+		}
+		if !matchesAnyPrefix(path, csrfSkipPrefixes) {
+			t.Fatalf("%s should skip CSRF only after legacy opt-in; skip prefixes=%v", path, csrfSkipPrefixes)
+		}
+	}
+
+	interactivePaths := []string{
+		"/api/v1/cashier/alpha/config",
+		"/api/v1/cashier/alpha/wallet/challenge",
+		"/api/v1/cashier/alpha/wallet/connect",
+		"/api/v1/cashier/alpha/wallets",
+		"/api/v1/cashier/alpha/deposit-intents",
+		"/api/v1/cashier/alpha/deposit-intents/intent-1/submit-tx",
+		"/api/v1/cashier/alpha/withdrawal-requests",
+		"/api/v1/cashier/alpha/withdrawal-requests/request-1/cancel",
+		"/api/v1/admin/cashier/alpha/preflight",
+		"/api/v1/admin/cashier/alpha/deposits",
+		"/api/v1/admin/cashier/alpha/reconciliation",
+		"/api/v1/admin/cashier/alpha/withdrawals",
+		"/api/v1/admin/cashier/alpha/audit-events",
+		"/api/v1/admin/cashier/alpha/withdrawals/request-1/approve",
+		"/api/v1/payments/deposit",
+		"/api/v1/payments/withdraw",
+		"/api/v1/payments/methods",
+		"/api/v1/payments/status",
+		"/api/v1/payments/crypto/config",
+		"/api/v1/payments/crypto/deposit-address",
+	}
+	for _, path := range interactivePaths {
+		if matchesAnyPrefix(path, publicPrefixes) {
+			t.Fatalf("%s must still require auth after legacy opt-in; public prefixes=%v", path, publicPrefixes)
+		}
+		if matchesAnyPrefix(path, csrfSkipPrefixes) {
+			t.Fatalf("%s must still require CSRF after legacy opt-in; skip prefixes=%v", path, csrfSkipPrefixes)
+		}
+	}
+}
+
+func TestRetiredBetReconciliationReportCommandStaysAbsent(t *testing.T) {
+	root := filepath.Clean("../..")
+	retiredFiles := []string{
+		filepath.Join(root, "cmd/reconciliation-report/main.go"),
+		filepath.Join(root, "cmd/reconciliation-report/main_test.go"),
+		filepath.Join(root, "internal/http/testdata/reconciliation/lifecycle_cases.json"),
+	}
+	for _, path := range retiredFiles {
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			t.Fatalf("retired bet reconciliation replay artifact must stay absent: %s", path)
+		}
+	}
+}
+
+func matchesAnyPrefix(path string, prefixes []string) bool {
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(path, prefix) {
+			return true
+		}
+	}
+	return false
+}
+
+func TestPaymentsWebhookRequiresAuthByDefault(t *testing.T) {
+	t.Setenv(legacyMoneyRoutesEnv, "")
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/v1/payments/webhook", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+	})
+
+	handler := httpx.Chain(
+		mux,
+		httpx.RequestID(),
+		httpx.Auth("http://127.0.0.1:1", gatewayPublicPrefixes()),
+		httpx.CSRF(gatewayCSRFSkipPrefixes()),
+	)
+
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/payments/webhook", nil)
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+
+	if res.Code != http.StatusUnauthorized {
+		t.Fatalf("expected legacy payments webhook to require auth by default, got %d", res.Code)
+	}
+}
+
+func TestPaymentsWebhookBypassesAuthAndCSRFOnlyWhenLegacyMoneyRoutesOptIn(t *testing.T) {
+	t.Setenv(legacyMoneyRoutesEnv, "true")
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/v1/payments/webhook", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusAccepted)
@@ -26,11 +166,35 @@ func TestPaymentsWebhookBypassesAuthAndCSRFMiddleware(t *testing.T) {
 	handler.ServeHTTP(res, req)
 
 	if res.Code != http.StatusAccepted {
-		t.Fatalf("expected webhook request to bypass auth/csrf and reach handler, got %d", res.Code)
+		t.Fatalf("expected opted-in legacy webhook request to bypass auth/csrf and reach handler, got %d", res.Code)
 	}
 }
 
-func TestCashierProviderCallbackBypassesAuthAndCSRFMiddleware(t *testing.T) {
+func TestCashierProviderCallbackRequiresAuthByDefault(t *testing.T) {
+	t.Setenv(legacyMoneyRoutesEnv, "")
+	mux := http.NewServeMux()
+	mux.HandleFunc("/v1/provider-callbacks/relay", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+	})
+
+	handler := httpx.Chain(
+		mux,
+		httpx.RequestID(),
+		httpx.Auth("http://127.0.0.1:1", gatewayPublicPrefixes()),
+		httpx.CSRF(gatewayCSRFSkipPrefixes()),
+	)
+
+	req := httptest.NewRequest(http.MethodPost, "/v1/provider-callbacks/relay", nil)
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+
+	if res.Code != http.StatusUnauthorized {
+		t.Fatalf("expected cashier provider callback to require auth by default, got %d", res.Code)
+	}
+}
+
+func TestCashierProviderCallbackBypassesAuthAndCSRFOnlyWhenLegacyMoneyRoutesOptIn(t *testing.T) {
+	t.Setenv(legacyMoneyRoutesEnv, "true")
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v1/provider-callbacks/relay", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusAccepted)
@@ -48,7 +212,7 @@ func TestCashierProviderCallbackBypassesAuthAndCSRFMiddleware(t *testing.T) {
 	handler.ServeHTTP(res, req)
 
 	if res.Code != http.StatusAccepted {
-		t.Fatalf("expected cashier provider callback to bypass auth/csrf and reach handler, got %d", res.Code)
+		t.Fatalf("expected opted-in provider callback to bypass auth/csrf and reach handler, got %d", res.Code)
 	}
 }
 
@@ -74,43 +238,102 @@ func TestPaymentsDepositStillRequiresAuthentication(t *testing.T) {
 	}
 }
 
-func TestValidateGatewayRuntimeConfigRequiresWebhookSecretInProduction(t *testing.T) {
-	err := validateGatewayRuntimeConfig(func(key string) string {
-		switch key {
-		case "ENVIRONMENT":
-			return "production"
-		case "PAYMENTS_WEBHOOK_SECRET":
-			return ""
-		default:
-			return ""
-		}
-	})
+func TestPredictionTaxonomyReadEndpointsBypassAuth(t *testing.T) {
+	for _, path := range []string{"/api/v1/series", "/api/v1/tags"} {
+		t.Run(path, func(t *testing.T) {
+			mux := http.NewServeMux()
+			mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+			})
 
-	if err == nil {
-		t.Fatalf("expected production validation to require PAYMENTS_WEBHOOK_SECRET")
+			handler := httpx.Chain(
+				mux,
+				httpx.RequestID(),
+				httpx.Auth("http://127.0.0.1:1", gatewayPublicPrefixes()),
+				httpx.CSRF(gatewayCSRFSkipPrefixes()),
+			)
+
+			req := httptest.NewRequest(http.MethodGet, path, nil)
+			res := httptest.NewRecorder()
+			handler.ServeHTTP(res, req)
+
+			if res.Code != http.StatusOK {
+				t.Fatalf("expected public taxonomy route to bypass auth, got %d", res.Code)
+			}
+		})
 	}
 }
 
 func TestValidateGatewayRuntimeConfigBlocksLegacyCustodialCryptoRailInProduction(t *testing.T) {
 	for _, legacyKey := range []string{"CRYPTO_RPC_URL", "CRYPTO_ASSET_CONTRACT", "CRYPTO_DEPOSIT_ADDRESS_SOURCE"} {
 		t.Run(legacyKey, func(t *testing.T) {
-			err := validateGatewayRuntimeConfig(func(key string) string {
-				switch key {
-				case "ENVIRONMENT":
-					return "production"
-				case "PAYMENTS_WEBHOOK_SECRET":
-					return "whsec_test"
-				case legacyKey:
-					return "legacy-test-value"
-				default:
-					return ""
-				}
-			})
+			err := validateGatewayRuntimeConfig(prodBaseEnv(map[string]string{
+				legacyKey: "legacy-test-value",
+			}))
 
 			if err == nil {
 				t.Fatalf("expected production validation to block legacy custodial crypto rail config")
 			}
 		})
+	}
+}
+
+func TestValidateGatewayRuntimeConfigRejectsLegacyMoneyRoutesInDeployedEnvs(t *testing.T) {
+	for _, env := range []string{"production", "staging"} {
+		err := validateGatewayRuntimeConfig(func(key string) string {
+			switch key {
+			case "ENVIRONMENT":
+				return env
+			case legacyMoneyRoutesEnv:
+				return "true"
+			default:
+				return ""
+			}
+		})
+		if err == nil {
+			t.Fatalf("expected boot refusal for legacy money route opt-in in %s", env)
+		}
+	}
+}
+
+func TestValidateGatewayRuntimeConfigRejectsAlphaCashierInDeployedEnvs(t *testing.T) {
+	for _, env := range []string{"production", "staging"} {
+		err := validateGatewayRuntimeConfig(func(key string) string {
+			switch key {
+			case "ENVIRONMENT":
+				return env
+			case "ALPHA_CASHIER_ENABLED":
+				return "true"
+			default:
+				return ""
+			}
+		})
+		if err == nil {
+			t.Fatalf("expected boot refusal for alpha cashier in %s", env)
+		}
+	}
+}
+
+func TestValidateGatewayRuntimeConfigRequiresLegacyRouteOptInForAlphaCashier(t *testing.T) {
+	err := validateGatewayRuntimeConfig(alphaCashierEnv(map[string]string{
+		"ENVIRONMENT": "development",
+	}))
+	if err == nil {
+		t.Fatalf("expected alpha cashier to require explicit legacy route opt-in")
+	}
+	if !strings.Contains(err.Error(), legacyMoneyRoutesEnv) {
+		t.Fatalf("expected error to mention %s, got %v", legacyMoneyRoutesEnv, err)
+	}
+}
+
+func TestValidateGatewayRuntimeConfigAllowsAlphaCashierOnlyWithLegacyRouteOptIn(t *testing.T) {
+	err := validateGatewayRuntimeConfig(alphaCashierEnv(map[string]string{
+		"ENVIRONMENT":             "development",
+		legacyMoneyRoutesEnv:      "true",
+		"PAYMENTS_WEBHOOK_SECRET": "whsec_real_for_legacy_compat",
+	}))
+	if err != nil {
+		t.Fatalf("expected explicit local legacy opt-in with valid alpha cashier config to validate, got %v", err)
 	}
 }
 
@@ -124,6 +347,40 @@ func TestValidateGatewayRuntimeConfigAllowsMissingWebhookSecretInDevelopment(t *
 
 	if err != nil {
 		t.Fatalf("expected development validation to allow missing webhook secret, got %v", err)
+	}
+}
+
+func TestValidateGatewayRuntimeConfigRequiresWebhookSecretOnlyForLegacyMoneyOptIn(t *testing.T) {
+	cases := []struct {
+		name      string
+		secret    string
+		wantError bool
+	}{
+		{name: "missing secret", secret: "", wantError: true},
+		{name: "dev placeholder", secret: "whsec_local", wantError: true},
+		{name: "real secret", secret: "whsec_real_for_legacy_compat", wantError: false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateGatewayRuntimeConfig(func(key string) string {
+				switch key {
+				case "ENVIRONMENT":
+					return "development"
+				case legacyMoneyRoutesEnv:
+					return "true"
+				case "PAYMENTS_WEBHOOK_SECRET":
+					return tc.secret
+				default:
+					return ""
+				}
+			})
+			if tc.wantError && err == nil {
+				t.Fatalf("expected legacy money opt-in to require a real webhook secret")
+			}
+			if !tc.wantError && err != nil {
+				t.Fatalf("expected real webhook secret to validate for legacy money opt-in, got %v", err)
+			}
+		})
 	}
 }
 
@@ -165,24 +422,6 @@ func TestValidateGatewayRuntimeConfigAllowsAuthDisabledInDevelopment(t *testing.
 	}
 }
 
-func TestValidateGatewayRuntimeConfigRejectsDevWebhookSecretInDeployedEnvs(t *testing.T) {
-	for _, env := range []string{"production", "staging"} {
-		err := validateGatewayRuntimeConfig(func(key string) string {
-			switch key {
-			case "ENVIRONMENT":
-				return env
-			case "PAYMENTS_WEBHOOK_SECRET":
-				return "whsec_local" // the dev placeholder
-			default:
-				return ""
-			}
-		})
-		if err == nil {
-			t.Fatalf("expected boot refusal for dev webhook secret in %s", env)
-		}
-	}
-}
-
 func TestValidateGatewayRuntimeConfigRejectsDevDBPasswordInProduction(t *testing.T) {
 	err := validateGatewayRuntimeConfig(func(key string) string {
 		switch key {
@@ -201,9 +440,10 @@ func TestValidateGatewayRuntimeConfigRejectsDevDBPasswordInProduction(t *testing
 	}
 }
 
-// prodBaseEnv is a passing production configuration: real secrets plus the
-// deny-by-default compliance posture (geo allowlist on, KYC stated
-// explicitly). Tests override single keys to probe each boot requirement.
+// prodBaseEnv is a passing production launch configuration: real DB/audit
+// config plus the deny-by-default compliance posture (geo allowlist on, KYC
+// stated explicitly). Tests override single keys to probe each boot
+// requirement.
 func prodBaseEnv(overrides map[string]string) func(string) string {
 	base := map[string]string{
 		"ENVIRONMENT":              "production",
@@ -221,10 +461,32 @@ func prodBaseEnv(overrides map[string]string) func(string) string {
 	return func(key string) string { return base[key] }
 }
 
+func alphaCashierEnv(overrides map[string]string) func(string) string {
+	base := map[string]string{
+		"ALPHA_CASHIER_ENABLED":          "true",
+		"ALPHA_CASHIER_RPC_URL":          "https://rpc.example",
+		"ALPHA_CASHIER_TOKEN_ADDRESS":    "0x0000000000000000000000000000000000000001",
+		"ALPHA_CASHIER_TREASURY_ADDRESS": "0x0000000000000000000000000000000000000002",
+	}
+	for k, v := range overrides {
+		base[k] = v
+	}
+	return func(key string) string { return base[key] }
+}
+
 func TestValidateGatewayRuntimeConfigAllowsRealSecretsInProduction(t *testing.T) {
 	err := validateGatewayRuntimeConfig(prodBaseEnv(nil))
 	if err != nil {
 		t.Fatalf("expected production with real secrets and compliance posture to validate, got %v", err)
+	}
+}
+
+func TestValidateGatewayRuntimeConfigDoesNotRequirePaymentWebhookSecretForLaunch(t *testing.T) {
+	err := validateGatewayRuntimeConfig(prodBaseEnv(map[string]string{
+		"PAYMENTS_WEBHOOK_SECRET": "",
+	}))
+	if err != nil {
+		t.Fatalf("expected production launch config to validate without dormant payment webhook secret, got %v", err)
 	}
 }
 

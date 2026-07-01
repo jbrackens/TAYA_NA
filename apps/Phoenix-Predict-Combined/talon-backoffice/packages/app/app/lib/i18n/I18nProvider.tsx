@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { I18nextProvider } from 'react-i18next';
-import i18n from './config';
+import React, { useEffect, useState } from "react";
+import { I18nextProvider } from "react-i18next";
+import i18n from "./config";
 import {
   legacyLocaleStorageKey,
   localeStorageKey,
   normalizeLocale,
-} from './locales';
+} from "./locales";
 
 interface I18nProviderProps {
   children: React.ReactNode;
@@ -26,7 +26,7 @@ interface I18nProviderProps {
  *
  * We wait for the `initialized` event, which fires after the INIT_NAMESPACES
  * (common, header, sidebar, footer, prediction, market-content) have
- * been fetched. Less common page namespaces (cashier, account, etc.) are
+ * been fetched. Less common page namespaces (account, settings, etc.) are
  * loaded lazily by useTranslation().
  */
 export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
@@ -54,9 +54,9 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
     }
 
     const markReady = () => setReady(true);
-    i18n.on('initialized', markReady);
+    i18n.on("initialized", markReady);
     return () => {
-      i18n.off('initialized', markReady);
+      i18n.off("initialized", markReady);
     };
   }, []);
 
@@ -64,7 +64,11 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
     // Render a minimal placeholder that is identical on server and client.
     // The real children (AppShell with sidebar, header, page) render only
     // after every translation namespace is available.
-    return <I18nextProvider i18n={i18n}><div /></I18nextProvider>;
+    return (
+      <I18nextProvider i18n={i18n}>
+        <div />
+      </I18nextProvider>
+    );
   }
 
   return <I18nextProvider i18n={i18n}>{children}</I18nextProvider>;

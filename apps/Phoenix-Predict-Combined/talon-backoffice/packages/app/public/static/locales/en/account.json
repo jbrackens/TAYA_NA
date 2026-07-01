@@ -1,16 +1,16 @@
 {
   "TITLE": "User Profile",
   "PERSONAL_DETAILS": "Personal Details",
-  "WALLET_AND_INVENTORY": "Wallet and Inventory",
+  "WALLET_AND_INVENTORY": "Points and Inventory",
   "SECURITY": "Security",
   "LANGUAGE_AND_TIME_ZONE": "Language and Time Zone",
   "SELF_EXCLUSION": "Self Exclusion",
   "EMAIL_SETTINGS": "Email Settings",
-  "DEPOSIT_LIMITS": "Deposit Limits",
+  "DEPOSIT_LIMITS": "Point-Use Limits",
   "hub": {
     "title": "Account",
-    "subtitle": "Profile, wallet, security, and notification preferences.",
-    "availableBalance": "Available balance"
+    "subtitle": "Profile, points, security, and notification preferences.",
+    "availableBalance": "Available points"
   },
   "actions": {
     "profile": {
@@ -21,13 +21,9 @@
       "title": "Portfolio",
       "desc": "Open positions, orders, settled history"
     },
-    "cashier": {
-      "title": "Cashier",
-      "desc": "Deposits and withdrawals"
-    },
     "walletActivity": {
-      "title": "Wallet activity",
-      "desc": "Ledger entries and transaction history"
+      "title": "Point ledger",
+      "desc": "Starter grants, predictions, and rewards"
     },
     "security": {
       "title": "Security",
@@ -39,7 +35,7 @@
     },
     "responsible": {
       "title": "Play responsibly",
-      "desc": "Deposit limits, cool-offs, and self-exclusion"
+      "desc": "Point-use limits, cool-offs, and self-exclusion"
     }
   },
   "privacy": {
@@ -58,7 +54,7 @@
   },
   "stats": {
     "invested": "Invested",
-    "realizedPnl": "Realized P&L",
+    "realizedPnl": "Realized point result",
     "openPositions": "Open positions",
     "accuracy": "Accuracy",
     "noSettledMarkets": "No settled markets yet"

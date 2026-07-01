@@ -4,7 +4,7 @@
  * FeaturedCarousel — premium hero carousel for the discovery page.
  *
  * Rotates a curated set of featured markets (top market from
- * All / Sports / Crypto / Politics), each rendered as the full DiscoveryHero
+ * All / Esports / Sports / Politics), each rendered as the full DiscoveryHero
  * so the carousel inherits the hero's design language with zero visual
  * divergence (DESIGN.md §7 "Hero owns the page"). The active slide is the
  * emphasized big hero; the carousel control is overlaid in the card's
@@ -29,7 +29,7 @@ import { DiscoveryHero } from "./DiscoveryHero";
 export interface FeaturedSlide {
   /** Stable identity for the slide (category slug, or "all"). */
   key: string;
-  /** Chip label in the control bar ("All" | "Sports" | "Crypto" | …). */
+  /** Chip label in the control bar ("All" | "Esports" | "Sports" | …). */
   label: string;
   market: PredictionMarket;
   /** Category name for the hero eyebrow (omitted for the "All" slide). */

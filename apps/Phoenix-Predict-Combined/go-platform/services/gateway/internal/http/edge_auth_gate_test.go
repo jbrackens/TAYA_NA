@@ -8,7 +8,7 @@ import (
 )
 
 // Audit SEC-03: with a trusted edge declared (GEO_TRUSTED_PROXY_MODE=require +
-// EDGE_SHARED_SECRET), a money-path request that lacks the edge-auth header
+// EDGE_SHARED_SECRET), a guarded request that lacks the edge-auth header
 // must be denied before its country header is even read — closing the
 // direct-to-origin geo-spoof path.
 func TestCheckComplianceGates_EdgeAuthAntiSpoof(t *testing.T) {

@@ -6,6 +6,8 @@ import (
 )
 
 func TestGatewayInfraMetricsRendersAllCounters(t *testing.T) {
+	t.Setenv(legacyMoneyRoutesEnv, "")
+
 	body := GatewayInfraMetrics()
 
 	// Every infra counter must surface with its name, a # TYPE line, and a
@@ -24,5 +26,42 @@ func TestGatewayInfraMetricsRendersAllCounters(t *testing.T) {
 		if !strings.Contains(body, name+" ") {
 			t.Errorf("missing sample line for %s\n%s", name, body)
 		}
+	}
+}
+
+func TestLaunchInfraMetricsExcludeLegacyMoneyCollector(t *testing.T) {
+	t.Setenv(legacyMoneyRoutesEnv, "")
+
+	body := GatewayInfraMetrics()
+	moneyPathToken := "money" + "-path"
+	for _, token := range []string{
+		"gateway_alpha_cashier_audit_write_failures_total",
+		"alpha_cashier",
+		"Alpha-cashier",
+		moneyPathToken,
+		"cashier",
+		"payment",
+		"crypto",
+	} {
+		if strings.Contains(body, token) {
+			t.Fatalf("launch metrics must not advertise legacy money surface %q:\n%s", token, body)
+		}
+	}
+}
+
+func TestLegacyInfraMetricsRequiresExplicitOptIn(t *testing.T) {
+	t.Setenv(legacyMoneyRoutesEnv, "true")
+
+	body := GatewayInfraMetrics()
+	const name = "gateway_alpha_cashier_audit_write_failures_total"
+	if !strings.Contains(body, "# TYPE "+name+" counter") {
+		t.Fatalf("legacy opt-in metrics should include # TYPE line for %s:\n%s", name, body)
+	}
+	if !strings.Contains(body, name+" ") {
+		t.Fatalf("legacy opt-in metrics should include sample line for %s:\n%s", name, body)
+	}
+	moneyPathToken := "money" + "-path"
+	if strings.Contains(body, moneyPathToken) {
+		t.Fatalf("legacy opt-in metrics should avoid %q wording:\n%s", moneyPathToken, body)
 	}
 }

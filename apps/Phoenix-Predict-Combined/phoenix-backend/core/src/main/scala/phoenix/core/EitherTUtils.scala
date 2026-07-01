@@ -1,6 +1,5 @@
 package phoenix.core
 
-import scala.annotation.nowarn
 import scala.concurrent.Future
 
 import cats.Applicative
@@ -71,7 +70,6 @@ object EitherTUtils {
     def unit[F[_]: Applicative, L]: EitherT[F, L, Unit] = safeRightT[F, L](())
 
     class SafeRightTPartiallyApplied[F[_], A] {
-      @nowarn("cat=unused") // for the evidence of NotFuture
       def apply[B: NotFuture](b: B)(implicit F: Applicative[F]): EitherT[F, A, B] = EitherT(F.pure(Right(b)))
     }
   }

@@ -416,12 +416,29 @@ SELECT COUNT(1) FROM player_bonuses WHERE user_id = $1 AND campaign_id = $2`,
 }
 
 // CloseExpiredCampaigns transitions active campaigns past their end_at to closed.
-func (r *Repository) CloseExpiredCampaigns(ctx context.Context) (int64, error) {
-	result, err := r.db.ExecContext(ctx, `
+func (r *Repository) CloseExpiredCampaigns(ctx context.Context) ([]Campaign, error) {
+	rows, err := r.db.QueryContext(ctx, `
 UPDATE campaigns SET status = 'closed', updated_at = NOW()
-WHERE status = 'active' AND end_at < NOW()`)
+WHERE status = 'active' AND end_at < NOW()
+RETURNING id, name, description, campaign_type, status, start_at, end_at,
+          budget_cents, spent_cents, max_claims, claim_count, rules, created_by, created_at, updated_at`)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return result.RowsAffected()
+	defer rows.Close()
+
+	var campaigns []Campaign
+	for rows.Next() {
+		var c Campaign
+		if err := rows.Scan(
+			&c.ID, &c.Name, &c.Description, &c.CampaignType, &c.Status,
+			&c.StartAt, &c.EndAt, &c.BudgetCents, &c.SpentCents,
+			&c.MaxClaims, &c.ClaimCount, &c.Rules, &c.CreatedBy,
+			&c.CreatedAt, &c.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		campaigns = append(campaigns, c)
+	}
+	return campaigns, rows.Err()
 }

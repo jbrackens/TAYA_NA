@@ -28,8 +28,8 @@
  * that links to them. Off by default. Turn on for jurisdictional deploys
  * that legally require RG tooling (e.g. UK, regulated US sports-betting).
  *
- * Out of scope of this flag: KYC (FEATURE_KYC), deposit/stake/session
- * limits, cashier. Those are tracked separately.
+ * Out of scope of this flag: KYC (FEATURE_KYC) and point-use/session
+ * limits. Those are tracked separately.
  */
 export const FEATURE_RG = process.env.NEXT_PUBLIC_FEATURE_RG === "true";
 
@@ -43,14 +43,14 @@ export const FEATURE_RG = process.env.NEXT_PUBLIC_FEATURE_RG === "true";
  * Verification" CTA on /profile/. Email and phone verification rows are
  * NOT gated — those are sensible regardless of jurisdiction.
  *
- * Out of scope of this flag: deposit/stake/session limits (those are
- * "user-set spending caps" that stand alone), responsible-gambling
+ * Out of scope of this flag: point-use/prediction/session limits (those are
+ * user-set play caps that stand alone), responsible-play
  * tooling (FEATURE_RG).
  */
 export const FEATURE_KYC = process.env.NEXT_PUBLIC_FEATURE_KYC === "true";
 
 /**
- * User-facing spending-limit tooling: the deposit / stake / session limits
+ * User-facing play-limit tooling: point-use / prediction / session limits
  * UI on /profile/'s Limits tab. Off by default. Turn on for jurisdictional
  * deploys that require self-imposed spending caps (UK, regulated US sports
  * + prediction markets like Kalshi). Off for offshore-style deploys
@@ -60,9 +60,6 @@ export const FEATURE_KYC = process.env.NEXT_PUBLIC_FEATURE_KYC === "true";
  * tab navigation when off) and its panel content.
  *
  * Out of scope of this flag:
- *   - The /cashier/ deposit/withdraw flow itself — that ships regardless.
- *   - Server-side AML threshold checks (getMonthlyDepositTotal) — those
- *     are not user-set and stay always-on.
  *   - getLimitsHistory called from /account/rg-history/ — that page is
  *     already gated by FEATURE_RG.
  */

@@ -9,10 +9,10 @@ import { adminFetch } from "../lib/admin-fetch";
 // prediction platform are shown, and restored as each backend lands.
 //
 // /users is wired: admin/punters (GW-1) returns prediction-native punter
-// identity + financials (wallet balance, portfolio P&L, positions,
+// identity + point-account state (wallet balance, portfolio result, positions,
 // accuracy), so the list + detail render real data. /access-control (RBAC),
-// /cashier, /disputes, /content, /loyalty, /leaderboards, and /audit-logs are
-// also wired to mounted /api/v1/admin/* gateway routes.
+// /disputes, /social-moderation, /content, /loyalty, /leaderboards, and
+// /audit-logs are also wired to mounted /api/v1/admin/* gateway routes.
 //
 // Retired shells stay redirects only:
 // /campaigns and /reports -> /dashboard, /risk-management ->
@@ -47,16 +47,16 @@ const navItems: NavItem[] = [
     requiredPermission: "roles:read",
   },
   {
-    href: "/cashier",
-    label: "Cashier",
-    icon: "credit-card",
-    requiredPermission: "finances:view",
-  },
-  {
     href: "/prediction-admin/markets",
     label: "Markets",
     icon: "trending-up",
     requiredPermission: "markets:read",
+  },
+  {
+    href: "/prediction-admin/taxonomy",
+    label: "Taxonomy",
+    icon: "tags",
+    requiredPermission: "markets:edit",
   },
   {
     href: "/prediction-admin/settlements",
@@ -65,9 +65,24 @@ const navItems: NavItem[] = [
     requiredPermission: "settlements:resolve",
   },
   {
+    href: "/prediction-admin/reward-clusters",
+    label: "Reward Clusters",
+    icon: "shield-alert",
+  },
+  {
+    href: "/prediction-admin/activity",
+    label: "Activity Export",
+    icon: "scroll-text",
+  },
+  {
     href: "/disputes",
     label: "Disputes",
     icon: "shield-alert",
+  },
+  {
+    href: "/social-moderation",
+    label: "Social Reports",
+    icon: "message-square-warning",
   },
   { href: "/content", label: "Content", icon: "file-text" },
   { href: "/loyalty", label: "Loyalty", icon: "gift" },
@@ -81,18 +96,19 @@ const lucideIcons: Record<string, string> = {
     '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
   "trending-up":
     '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+  tags: '<path d="M13.172 2a2 2 0 0 1 1.414.586l6.71 6.71a2.4 2.4 0 0 1 0 3.408l-8.592 8.592a2.4 2.4 0 0 1-3.408 0l-6.71-6.71A2 2 0 0 1 2 13.172V4a2 2 0 0 1 2-2z"/><path d="M7 7h.01"/><path d="m9 15 6-6"/>',
   "shield-alert":
     '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M12 8v4"/><path d="M12 16h.01"/>',
   "shield-check":
     '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+  "message-square-warning":
+    '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v4"/><path d="M12 15h.01"/>',
   "check-square":
     '<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
   users:
     '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
   trophy:
     '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
-  "credit-card":
-    '<rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>',
   medal:
     '<path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/><path d="M11 12 5.12 2.2"/><path d="m13 12 5.88-9.8"/><path d="M8 7h8"/><circle cx="12" cy="17" r="5"/><path d="M12 18v-2h-.5"/>',
   "scroll-text":

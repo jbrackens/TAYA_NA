@@ -10,21 +10,20 @@
  *   ├─────────────────────────────────────────────────────┤
  *   │ [ YES 7¢ ]                    [ NO 93¢ ]            │
  *   ├─────────────────────────────────────────────────────┤
- *   │ Volume  $25K                 Closes  Dec 31, 2026   │
+ *   │ Volume  25K pts              Closes  Dec 31, 2026   │
  *   └─────────────────────────────────────────────────────┘
  *
- * Header is title + corner image only (no category eyebrow — category is
- * implied by the surface the card sits on). A short colored trend sentence
- * anchors the middle of the card. Secondary stats (volume, close date) drop
- * to a quiet footer below the action pills so the card reads title → trend →
- * action → metadata without redundant consensus bars.
+ * Header is title + corner image only. A short colored trend sentence anchors
+ * the middle of the card. Secondary stats (category, volume, liquidity, close
+ * date/status) drop to a quiet footer below the action pills so the card reads
+ * title → trend → action → metadata without redundant consensus bars.
  */
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  formatCompactUsd,
+  formatCompactPoints,
   isOpenMarketStatus,
   marketStatusLabel,
 } from "./market-display";
@@ -32,18 +31,21 @@ import { calculateMarketSentiment } from "./marketSentiment";
 import { getMarketImageProps } from "./utils/marketImage";
 
 interface MarketCardProps {
+  marketId: string;
   ticker: string;
   title: string;
   yesPriceCents: number;
   noPriceCents: number;
-  volumeCents: number;
-  liquidityCents?: number;
+  volumePointsCents: number;
+  liquidityPointsCents?: number;
   closeAt: string;
   status: string;
   categoryLabel?: string;
   imagePath?: string | null;
   imageUrl?: string | null;
   image_url?: string | null;
+  watched?: boolean;
+  onToggleWatchlist?: (marketId: string) => void;
 }
 
 function formatCloseAt(iso: string): string {
@@ -66,17 +68,21 @@ const monogramBgClasses: Record<string, string> = {
 };
 
 export function MarketCard({
+  marketId,
   ticker,
   title,
   yesPriceCents,
   noPriceCents,
-  volumeCents,
+  volumePointsCents,
+  liquidityPointsCents,
   closeAt,
   status,
   categoryLabel,
   imagePath,
   imageUrl,
   image_url,
+  watched = false,
+  onToggleWatchlist,
 }: MarketCardProps) {
   const { t } = useTranslation("prediction");
   const isOpen = isOpenMarketStatus(status);
@@ -114,6 +120,25 @@ export function MarketCard({
 
   return (
     <article className="flex h-full min-h-[286px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans text-[var(--t1)] transition-[transform,box-shadow,border-color] duration-[140ms] hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[0_12px_28px_rgba(60,50,30,0.08)] focus-within:-translate-y-0.5 focus-within:border-[var(--border-2)] focus-within:shadow-[0_12px_28px_rgba(60,50,30,0.08)] max-[640px]:min-h-[272px] max-[640px]:p-4">
+      {onToggleWatchlist && (
+        <button
+          type="button"
+          className={`mb-3 min-h-9 self-start rounded-md border px-3 text-[12px] font-semibold transition-colors duration-150 ${
+            watched
+              ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+              : "border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+          }`}
+          aria-pressed={watched}
+          aria-label={
+            watched
+              ? t("REMOVE_FROM_WATCHLIST", "Remove from watchlist")
+              : t("ADD_TO_WATCHLIST", "Add to watchlist")
+          }
+          onClick={() => onToggleWatchlist(marketId)}
+        >
+          {watched ? t("WATCHING", "Watching") : t("WATCH", "Watch")}
+        </button>
+      )}
       {/* The card body links to the market detail page (no preselect).
        * The YES/NO pills below are SIBLING links carrying ?side=yes|no
        * so clicking a pill deep-links into a side-preselected ticket.
@@ -196,13 +221,31 @@ export function MarketCard({
 
       {/* Secondary stats sit in a quiet footer below the bar + pills.
        * Plain text, not a link — the body link above owns navigation. */}
-      <div className="mt-4 flex items-center justify-between gap-4 border-t border-[var(--border-1)] pt-3.5">
+      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-[var(--border-1)] pt-3.5">
+        {categoryLabel && (
+          <div className="min-w-0 text-xs">
+            <span className="block text-[11px] font-medium text-[var(--t3)]">
+              {t("CATEGORY", "Category")}
+            </span>
+            <span className="mt-1 block truncate font-mono text-[12px] font-semibold text-[var(--t2)] tabular-nums">
+              {categoryLabel}
+            </span>
+          </div>
+        )}
         <div className="min-w-0 text-xs">
           <span className="block text-[11px] font-medium text-[var(--t3)]">
             {t("VOLUME")}
           </span>
           <span className="mt-1 block truncate font-mono text-[12px] font-semibold text-[var(--t2)] tabular-nums">
-            {formatCompactUsd(volumeCents)}
+            {formatCompactPoints(volumePointsCents)}
+          </span>
+        </div>
+        <div className="min-w-0 text-xs">
+          <span className="block text-[11px] font-medium text-[var(--t3)]">
+            {t("LIQUIDITY")}
+          </span>
+          <span className="mt-1 block truncate font-mono text-[12px] font-semibold text-[var(--t2)] tabular-nums">
+            {formatCompactPoints(liquidityPointsCents ?? 0)}
           </span>
         </div>
         <div className="min-w-0 text-right text-xs">

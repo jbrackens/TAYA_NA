@@ -37,7 +37,7 @@ export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<User>;
   logout: () => void;
   refreshToken: () => Promise<void>;
   error: Error | null;
@@ -81,18 +81,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   const toast = useToast();
 
-  // Play-money starter grant: when a session is established (login or restore),
+  // Starter point grant: when a session is established (login or restore),
   // claim the one-time faucet so a freshly-registered player is immediately
   // tradeable. The endpoint is idempotent and a no-op when the faucet is
   // disabled server-side (STARTER_GRANT_CENTS=0), so firing once per session is
   // safe. Best-effort — it never blocks auth.
-  const starterGrantClaimed = useRef(false);
+  const starterGrantClaimedFor = useRef<string | null>(null);
   useEffect(() => {
-    if (!user || starterGrantClaimed.current) return;
-    starterGrantClaimed.current = true;
+    if (!user || starterGrantClaimedFor.current === user.id) return;
+    starterGrantClaimedFor.current = user.id;
     void claimStarterGrant(user.id).then((res) => {
       if (res?.enabled) {
-        logger.info("Wallet", "starter grant applied", res.balanceCents);
+        logger.info("Points", "starter grant applied", res.balancePointsCents);
       }
     });
   }, [user]);
@@ -239,6 +239,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(authenticatedUser);
         setSessionStartTime(new Date());
         toast.success("Welcome back!", session.username);
+        return authenticatedUser;
       } catch (err) {
         // Issue #5 fix: clear cookies on any login failure to prevent half-auth
         await fetch("/api/v1/auth/logout/", {

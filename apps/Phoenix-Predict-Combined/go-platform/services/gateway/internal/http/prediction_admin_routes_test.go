@@ -110,7 +110,9 @@ func (f *fakeAdminReader) ListSettledPositions(_ context.Context, _ string, _, _
 	return f.settled, len(f.settled), nil
 }
 
-func (f *fakeAdminReader) Ledger(_ context.Context, _ string, _ int) []wallet.LedgerEntry { return f.ledger }
+func (f *fakeAdminReader) Ledger(_ context.Context, _ string, _ int) []wallet.LedgerEntry {
+	return f.ledger
+}
 
 func adminTestHandler(repo *fakeAdminReader) http.Handler {
 	mux := http.NewServeMux()
@@ -187,12 +189,22 @@ func TestAdminPuntersListIncludesFinancials(t *testing.T) {
 	if len(payload.Items) != 2 {
 		t.Fatalf("expected 2 items, got %d", len(payload.Items))
 	}
-	if payload.Items[0].WalletBalanceCents != 500000 || payload.Items[0].RealizedPnlCents != 4200 {
+	if payload.Items[0].PointAccountBalanceCents != 500000 ||
+		payload.Items[0].RealizedPointsCents != 4200 ||
+		payload.Items[0].Unit != "PTS" {
 		t.Fatalf("u-1 financials wrong: %+v", payload.Items[0])
 	}
 	// u-2 has a balance but no settled payouts -> realized pnl defaults to 0.
-	if payload.Items[1].WalletBalanceCents != 12345 || payload.Items[1].RealizedPnlCents != 0 {
+	if payload.Items[1].PointAccountBalanceCents != 12345 ||
+		payload.Items[1].RealizedPointsCents != 0 ||
+		payload.Items[1].Unit != "PTS" {
 		t.Fatalf("u-2 financials wrong: %+v", payload.Items[1])
+	}
+	body := res.Body.String()
+	for _, retired := range []string{`"walletBalanceCents"`, `"realizedPnlCents"`} {
+		if strings.Contains(body, retired) {
+			t.Fatalf("admin punter list should not emit %s: %s", retired, body)
+		}
 	}
 }
 
@@ -259,6 +271,58 @@ func TestAdminAuditLogsListReturnsItems(t *testing.T) {
 	}
 }
 
+func TestAdminAuditLogsListRedactsLegacyUnsafeDetailsOnRead(t *testing.T) {
+	rawDetails := json.RawMessage(`{"reason":"cash payout admin note","idempotencyKey":"db-safe-key","nested":{"note":"crypto payout review"}}`)
+	repo := &fakeAdminReader{
+		logs: []prediction.AdminAuditLog{
+			{
+				ID:         "db-audit-unsafe-copy",
+				Action:     "punter.note",
+				Status:     "success",
+				Details:    rawDetails,
+				OccurredAt: "2026-01-01T00:00:00Z",
+			},
+		},
+		logMeta: prediction.PageMeta{Page: 1, PageSize: 50, Total: 1},
+	}
+	handler := adminTestHandler(repo)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/audit-logs?action=punter.note", nil)
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+
+	if res.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	if !strings.Contains(string(repo.logs[0].Details), "cash payout admin note") ||
+		!strings.Contains(string(repo.logs[0].Details), "crypto payout review") {
+		t.Fatalf("raw repo audit details should remain available for review, got %s", repo.logs[0].Details)
+	}
+	var payload struct {
+		Items []prediction.AdminAuditLog `json:"items"`
+	}
+	if err := json.Unmarshal(res.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	var got *prediction.AdminAuditLog
+	for i := range payload.Items {
+		if payload.Items[i].ID == "db-audit-unsafe-copy" {
+			got = &payload.Items[i]
+		}
+	}
+	if got == nil {
+		t.Fatalf("expected db audit item, got %+v", payload.Items)
+	}
+	details := string(got.Details)
+	if strings.Contains(details, "cash payout admin note") || strings.Contains(details, "crypto payout review") {
+		t.Fatalf("admin audit response leaked unsafe db details: %s", details)
+	}
+	if !strings.Contains(details, launchRedactedUserText) || !strings.Contains(details, "db-safe-key") {
+		t.Fatalf("expected redacted unsafe text and preserved safe fields, got %s", details)
+	}
+}
+
 func TestAdminPunterDetailReturnsPunter(t *testing.T) {
 	repo := &fakeAdminReader{detail: &prediction.AdminPunter{ID: "u-1", Email: "a@b.dev", Status: "active"}}
 	handler := adminTestHandler(repo)
@@ -318,11 +382,24 @@ func TestAdminPunterDetailIncludesFinancials(t *testing.T) {
 	if d.ID != "u-1" {
 		t.Fatalf("identity not preserved: %+v", d.AdminPunter)
 	}
-	if d.WalletBalanceCents != 512300 {
-		t.Fatalf("wallet balance not returned: %d", d.WalletBalanceCents)
+	if d.PointAccountBalanceCents != 512300 || d.Unit != "PTS" {
+		t.Fatalf("point-account balance not returned: %+v", d)
 	}
-	if d.Portfolio.RealizedPnlCents != 4200 || d.Portfolio.OpenPositions != 3 || d.Portfolio.AccuracyPct != 70 {
+	if d.Portfolio.OpenPositions != 3 || d.Portfolio.AccuracyPct != 70 {
 		t.Fatalf("portfolio not returned: %+v", d.Portfolio)
+	}
+	for _, needle := range []string{`"portfolioValuePointsCents":100000`, `"realizedPointsCents":4200`} {
+		if !strings.Contains(res.Body.String(), needle) {
+			t.Fatalf("portfolio summary missing %s: %s", needle, res.Body.String())
+		}
+	}
+	if strings.Contains(res.Body.String(), `"walletBalanceCents"`) {
+		t.Fatalf("admin punter detail should not emit walletBalanceCents: %s", res.Body.String())
+	}
+	for _, retired := range []string{`"totalValueCents"`, `"realizedPnlCents"`, `"unrealizedPnlCents"`} {
+		if strings.Contains(res.Body.String(), retired) {
+			t.Fatalf("admin punter detail should not emit portfolio summary alias %s: %s", retired, res.Body.String())
+		}
 	}
 }
 
@@ -339,14 +416,25 @@ func TestAdminPunterSettlements(t *testing.T) {
 		t.Fatalf("expected 200, got %d body=%s", res.Code, res.Body.String())
 	}
 	var payload struct {
-		Items []prediction.Payout `json:"items"`
-		Total int                 `json:"total"`
+		Items []adminPunterSettlementItem `json:"items"`
+		Total int                         `json:"total"`
 	}
 	if err := json.Unmarshal(res.Body.Bytes(), &payload); err != nil {
 		t.Fatalf("decode: %v", err)
 	}
 	if len(payload.Items) != 1 || payload.Items[0].ID != "p-1" || payload.Total != 1 {
 		t.Fatalf("unexpected settlements: %+v total=%d", payload.Items, payload.Total)
+	}
+	if payload.Items[0].RealizedPointsCents != 250 ||
+		payload.Items[0].SettlementPointsCents != 1000 ||
+		payload.Items[0].Unit != "PTS" {
+		t.Fatalf("settlement point aliases missing: %+v", payload.Items[0])
+	}
+	body := res.Body.String()
+	for _, retired := range []string{`"payoutCents"`, `"pnlCents"`} {
+		if strings.Contains(body, retired) {
+			t.Fatalf("admin account settlement history should not emit %s: %s", retired, body)
+		}
 	}
 }
 
@@ -363,13 +451,18 @@ func TestAdminPunterWalletLedger(t *testing.T) {
 		t.Fatalf("expected 200, got %d body=%s", res.Code, res.Body.String())
 	}
 	var payload struct {
-		Items []wallet.LedgerEntry `json:"items"`
+		Items []map[string]any `json:"items"`
 	}
 	if err := json.Unmarshal(res.Body.Bytes(), &payload); err != nil {
 		t.Fatalf("decode: %v", err)
 	}
-	if len(payload.Items) != 1 || payload.Items[0].EntryID != "e-1" {
+	if len(payload.Items) != 1 || payload.Items[0]["entryId"] != "e-1" {
 		t.Fatalf("unexpected ledger: %+v", payload.Items)
+	}
+	if payload.Items[0]["amountPointsCents"] != float64(5000) ||
+		payload.Items[0]["balancePointsCents"] != float64(5000) ||
+		payload.Items[0]["unit"] != "PTS" {
+		t.Fatalf("ledger point aliases missing: %+v", payload.Items[0])
 	}
 }
 
@@ -438,6 +531,40 @@ func TestAdminPunterNotesList(t *testing.T) {
 	}
 }
 
+func TestAdminPunterNotesListRedactsLegacyUnsafeTextOnRead(t *testing.T) {
+	repo := &fakeAdminReader{notes: []prediction.AdminPunterNote{
+		{ID: 1, PunterID: "u-1", Category: "cash payout review", Content: "crypto payout escalation", CreatedAt: "2026-01-01T00:00:00Z"},
+	}}
+	handler := adminTestHandler(repo)
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/punters/u-1/notes", nil)
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+	if res.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	if repo.notes[0].Category != "cash payout review" || repo.notes[0].Content != "crypto payout escalation" {
+		t.Fatalf("raw repo note should remain available for review, got %+v", repo.notes[0])
+	}
+	var payload struct {
+		Items []adminPunterNotePayload `json:"items"`
+	}
+	if err := json.Unmarshal(res.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if len(payload.Items) != 1 {
+		t.Fatalf("unexpected notes: %+v", payload.Items)
+	}
+	if strings.Contains(payload.Items[0].Category, "cash payout") ||
+		strings.Contains(payload.Items[0].Content, "crypto payout") {
+		t.Fatalf("admin note response leaked unsafe text: %+v", payload.Items[0])
+	}
+	if payload.Items[0].Category != launchRedactedUserText ||
+		payload.Items[0].Content != launchRedactedUserText {
+		t.Fatalf("expected redacted note category/content, got %+v", payload.Items[0])
+	}
+}
+
 func TestAdminPunterAddNote(t *testing.T) {
 	repo := &fakeAdminReader{}
 	handler := adminTestHandler(repo)
@@ -467,5 +594,59 @@ func TestAdminPunterAddNoteRejectsEmpty(t *testing.T) {
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusBadRequest {
 		t.Fatalf("expected 400 for empty content, got %d", res.Code)
+	}
+}
+
+func TestAdminPunterAddNoteRejectsMoneyWording(t *testing.T) {
+	repo := &fakeAdminReader{}
+	handler := adminTestHandler(repo)
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/punters/u-1/notes",
+		strings.NewReader(`{"content":"cash payout review note","category":"risk"}`))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+	if res.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for unsafe note content, got %d body=%s", res.Code, res.Body.String())
+	}
+	var envelope httpx.ErrorEnvelope
+	if err := json.Unmarshal(res.Body.Bytes(), &envelope); err != nil {
+		t.Fatalf("decode error envelope: %v", err)
+	}
+	details, ok := envelope.Error.Details.(map[string]any)
+	if !ok || details["field"] != "content" {
+		t.Fatalf("expected content error field, got %+v", envelope.Error.Details)
+	}
+	if strings.Contains(res.Body.String(), "cash payout") {
+		t.Fatalf("unsafe note content should not be echoed: %s", res.Body.String())
+	}
+	if repo.gotNoteContent != "" || len(repo.notes) != 0 {
+		t.Fatalf("unsafe note content should not be persisted: got content=%q notes=%+v", repo.gotNoteContent, repo.notes)
+	}
+}
+
+func TestAdminPunterAddNoteRejectsMoneyWordingCategory(t *testing.T) {
+	repo := &fakeAdminReader{}
+	handler := adminTestHandler(repo)
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/punters/u-1/notes",
+		strings.NewReader(`{"content":"review account status","category":"cash payout review"}`))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+	if res.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for unsafe note category, got %d body=%s", res.Code, res.Body.String())
+	}
+	var envelope httpx.ErrorEnvelope
+	if err := json.Unmarshal(res.Body.Bytes(), &envelope); err != nil {
+		t.Fatalf("decode error envelope: %v", err)
+	}
+	details, ok := envelope.Error.Details.(map[string]any)
+	if !ok || details["field"] != "category" {
+		t.Fatalf("expected category error field, got %+v", envelope.Error.Details)
+	}
+	if strings.Contains(res.Body.String(), "cash payout") {
+		t.Fatalf("unsafe note category should not be echoed: %s", res.Body.String())
+	}
+	if repo.gotNoteContent != "" || repo.gotNoteCat != "" || len(repo.notes) != 0 {
+		t.Fatalf("unsafe note category should not be persisted: got content=%q category=%q notes=%+v", repo.gotNoteContent, repo.gotNoteCat, repo.notes)
 	}
 }

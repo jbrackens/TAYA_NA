@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { formatCents } from "../lib/format";
 
 interface WageringProgressProps {
   requiredCents: number;
@@ -40,15 +39,15 @@ export const WageringProgress: React.FC<WageringProgressProps> = ({
         }`}
         value={clampedPct}
         max={100}
-        aria-label="Wagering progress"
+        aria-label="Play progress"
       />
 
       {/* Labels */}
       <div className="flex items-center justify-between text-xs">
         <span className="text-gray-400">
-          {t("wageringRequired", {
-            completed: formatCents(completedCents, { minimumFractionDigits: 0 }),
-            required: formatCents(requiredCents, { minimumFractionDigits: 0 }),
+          {t("playProgressRequired", {
+            completed: formatPointsFromCents(completedCents),
+            required: formatPointsFromCents(requiredCents),
           })}
         </span>
         <span className={isExpired ? "text-red-400" : "text-gray-400"}>
@@ -58,3 +57,7 @@ export const WageringProgress: React.FC<WageringProgressProps> = ({
     </div>
   );
 };
+
+function formatPointsFromCents(cents: number): string {
+  return `${Math.round(cents / 100).toLocaleString()} pts`;
+}

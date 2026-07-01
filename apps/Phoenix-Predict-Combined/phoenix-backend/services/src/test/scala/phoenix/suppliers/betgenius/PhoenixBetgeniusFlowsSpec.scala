@@ -41,7 +41,7 @@ class PhoenixBetgeniusFlowsSpec
     with DatabaseIntegrationSpec
     with TruncatedTables {
 
-  implicit val clock = Clock.utcClock
+  implicit val clock: Clock = Clock.utcClock
   val marketsContext = ActorMarketsBoundedContext(system, dbConfig)
   val SpecDataDir = "data/common-flows-spec"
   val FixtureUpdateDataDir = s"$SpecDataDir/fixture-update"

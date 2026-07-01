@@ -26,6 +26,43 @@ func botKeySelfServeEnabled() bool {
 	return env != "production" && env != "staging"
 }
 
+func normalizeBotKeyScopes(scopes []string) ([]string, error) {
+	if len(scopes) == 0 {
+		return []string{"read"}, nil
+	}
+	out := make([]string, 0, len(scopes))
+	seen := map[string]struct{}{}
+	for _, raw := range scopes {
+		scope := strings.ToLower(strings.TrimSpace(raw))
+		switch scope {
+		case "read", "trade":
+			if _, ok := seen[scope]; ok {
+				continue
+			}
+			seen[scope] = struct{}{}
+			out = append(out, scope)
+		default:
+			return nil, httpx.BadRequest("scope must be \"read\" or \"trade\"", map[string]any{"field": "scopes", "got": raw})
+		}
+	}
+	if len(out) == 0 {
+		return nil, httpx.BadRequest("scope must be \"read\" or \"trade\"", map[string]any{"field": "scopes"})
+	}
+	return out, nil
+}
+
+func apiKeyPayloads(keys []prediction.APIKey) []prediction.APIKey {
+	if keys == nil {
+		return nil
+	}
+	out := make([]prediction.APIKey, 0, len(keys))
+	for _, key := range keys {
+		key.Name = redactLaunchProhibitedUserText(key.Name)
+		out = append(out, key)
+	}
+	return out
+}
+
 // defaultBotKeyTTL bounds self-issued keys; previously keys never expired.
 const defaultBotKeyTTL = 90 * 24 * time.Hour
 
@@ -99,7 +136,7 @@ func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo pred
 			if err != nil {
 				return httpx.Internal("failed to list API keys", err)
 			}
-			return httpx.WriteJSON(w, stdhttp.StatusOK, keys)
+			return httpx.WriteJSON(w, stdhttp.StatusOK, apiKeyPayloads(keys))
 
 		case stdhttp.MethodPost:
 			if !botKeySelfServeEnabled() {
@@ -112,11 +149,16 @@ func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo pred
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				return httpx.BadRequest("invalid request body", nil)
 			}
+			req.Name = strings.TrimSpace(req.Name)
 			if req.Name == "" {
 				return httpx.BadRequest("name is required", nil)
 			}
-			if len(req.Scopes) == 0 {
-				req.Scopes = []string{"read"}
+			if err := validateLaunchFacingReason("name", req.Name); err != nil {
+				return err
+			}
+			scopes, err := normalizeBotKeyScopes(req.Scopes)
+			if err != nil {
+				return err
 			}
 
 			fullKey, prefix, hash, err := prediction.GenerateAPIKey()
@@ -130,7 +172,7 @@ func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo pred
 				Name:      req.Name,
 				KeyHash:   hash,
 				KeyPrefix: prefix,
-				Scopes:    req.Scopes,
+				Scopes:    scopes,
 				Active:    true,
 				ExpiresAt: &expiresAt,
 			}
@@ -209,9 +251,13 @@ func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo pred
 				return
 			}
 
-			var req prediction.PlaceOrderRequest
-			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-				stdhttp.Error(w, `{"error":{"code":"bad_request","message":"invalid request body"}}`, stdhttp.StatusBadRequest)
+			req, err := decodePlaceOrderHTTPRequest(r.Body)
+			if err != nil {
+				httpx.WriteError(w, r, err)
+				return
+			}
+			if err := validatePlaceOrderHTTPRequest(req); err != nil {
+				httpx.WriteError(w, r, err)
 				return
 			}
 
@@ -231,7 +277,7 @@ func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo pred
 
 			order, trade, err := svc.PlaceOrder(r.Context(), req, userID)
 			if err != nil {
-				stdhttp.Error(w, `{"error":{"code":"bad_request","message":"`+err.Error()+`"}}`, stdhttp.StatusBadRequest)
+				httpx.WriteError(w, r, orderPlacementError(err))
 				return
 			}
 

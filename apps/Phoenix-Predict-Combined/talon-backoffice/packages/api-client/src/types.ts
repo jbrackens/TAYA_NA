@@ -1,6 +1,6 @@
 /**
- * Phoenix Sportsbook API Types
- * Auto-generated from OpenAPI specification
+ * Taya NA Predict API Types
+ * Maintained from the launch OpenAPI specification.
  */
 
 export interface TokenResponse {
@@ -32,22 +32,28 @@ export interface PaginationMeta {
 
 export interface WalletBalance {
   userId: string;
-  balanceCents: number;
+  balancePointsCents: number;
+  availablePointsCents?: number;
+  reservedPointsCents?: number;
+  unit: "PTS";
 }
 
 export interface WalletLedgerEntry {
   entryId: string;
   userId: string;
-  type: 'credit' | 'debit';
-  amountCents: number;
-  balanceCents: number;
+  type: string;
+  amountPointsCents: number;
+  balancePointsCents: number;
+  unit: "PTS";
   reason: string;
+  idempotencyKey?: string;
   createdAt: string;
 }
 
 export interface WalletMutationResponse {
   entry: WalletLedgerEntry;
-  balanceCents: number;
+  balancePointsCents: number;
+  unit: "PTS";
 }
 
 export interface AuditLogEntry {
@@ -56,9 +62,9 @@ export interface AuditLogEntry {
   actorId: string;
   userId?: string;
   targetId: string;
-  freebetId?: string;
-  oddsBoostId?: string;
-  freebetAppliedCents?: number;
+  pointGrantId?: string;
+  pointRuleId?: string;
+  pointGrantAppliedPointsCents?: number;
   occurredAt: string;
   details: string;
 }
@@ -76,7 +82,7 @@ export interface RefreshRequest {
 
 export interface WalletMutationRequest {
   userId: string;
-  amountCents: number;
+  amountPointsCents: number;
   idempotencyKey: string;
   reason?: string;
 }
@@ -87,7 +93,7 @@ export interface PaginationOptions {
   page?: number;
   pageSize?: number;
   sortBy?: string;
-  sortDir?: 'asc' | 'desc';
+  sortDir?: "asc" | "desc";
 }
 
 // List responses
@@ -119,9 +125,15 @@ export class ApiError extends Error {
   retryable: boolean;
   retryCount: number;
 
-  constructor(message: string, status: number, retryable = false, retryCount = 0, data?: ErrorResponse) {
+  constructor(
+    message: string,
+    status: number,
+    retryable = false,
+    retryCount = 0,
+    data?: ErrorResponse,
+  ) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
     this.status = status;
     this.retryable = retryable;
     this.retryCount = retryCount;

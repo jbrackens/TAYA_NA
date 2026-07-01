@@ -19,7 +19,6 @@ export interface UpdatePreferencesRequest {
   notification_sms?: boolean;
   notification_push?: boolean;
   marketing_email?: boolean;
-  currency?: string;
 }
 
 // Response types (Go API uses snake_case)
@@ -42,7 +41,7 @@ interface PreferencesRaw {
   notification_sms: boolean;
   notification_push: boolean;
   marketing_email: boolean;
-  currency: string;
+  currency?: string;
   updated_at: string;
 }
 
@@ -72,7 +71,6 @@ export interface Preferences {
   notificationSms: boolean;
   notificationPush: boolean;
   marketingEmail: boolean;
-  currency: string;
   updatedAt: string;
 }
 
@@ -119,6 +117,23 @@ function normalizeSnakeCase<T extends object>(obj: T): unknown {
     );
   }
   return obj;
+}
+
+function normalizePreferences(raw: PreferencesRaw): Preferences {
+  const normalized = normalizeSnakeCase(raw) as Omit<
+    Preferences,
+    "updatedAt"
+  > & {
+    updatedAt: string;
+  };
+  return {
+    userId: normalized.userId,
+    notificationEmail: normalized.notificationEmail,
+    notificationSms: normalized.notificationSms,
+    notificationPush: normalized.notificationPush,
+    marketingEmail: normalized.marketingEmail,
+    updatedAt: normalized.updatedAt,
+  };
 }
 
 /**
@@ -178,7 +193,7 @@ export async function updatePreferences(
     `/api/v1/users/${userId}/profile/preferences`,
     request,
   );
-  return normalizeSnakeCase(raw) as Preferences;
+  return normalizePreferences(raw);
 }
 
 /**

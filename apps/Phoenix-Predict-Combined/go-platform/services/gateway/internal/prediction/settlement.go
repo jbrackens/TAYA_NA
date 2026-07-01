@@ -109,7 +109,7 @@ func (s *SettlementEngine) ProposeResolution(ctx context.Context, req ResolveMar
 	if market.Status != MarketStatusClosed {
 		return nil, fmt.Errorf("market %s is not closed (status: %s), cannot propose", market.Ticker, market.Status)
 	}
-	if window <= 0 {
+	if window < 0 {
 		window = DefaultChallengeWindow
 	}
 
@@ -168,18 +168,19 @@ func (s *SettlementEngine) ProposeResolution(ctx context.Context, req ResolveMar
 }
 
 // FinalizeResolution finalizes a proposed resolution once the challenge window
-// has elapsed and no dispute is open: it credits payouts and settles the market
-// (reusing ResolveMarket). Idempotency for payouts is handled by the existing
+// has elapsed and no dispute is open: it credits point disbursements and settles
+// the market (reusing ResolveMarket). Idempotency is handled by the existing
 // per-position idempotency keys.
 func (s *SettlementEngine) FinalizeResolution(ctx context.Context, marketID string, finalizedBy *string) (*Settlement, []Payout, error) {
 	if s.resolutions == nil {
 		return nil, nil, fmt.Errorf("resolution store not configured")
 	}
 
-	// The whole check -> claim -> pay critical section runs under a per-market
+	// The whole check -> claim -> disburse critical section runs under a per-market
 	// lock so it cannot interleave with another finalizer (second admin, another
 	// replica, the worker) or a concurrently-filed dispute. This is what makes
-	// the windowed money path race-free; the CAS claim below is belt-and-braces.
+	// the windowed point-settlement path race-free; the CAS claim below is
+	// belt-and-braces.
 	var settlement *Settlement
 	var payouts []Payout
 	err := s.resolutions.WithMarketLock(ctx, marketID, func() error {
@@ -331,7 +332,7 @@ func (s *SettlementEngine) MarkMarketDisputed(ctx context.Context, marketID, dis
 
 // ResolveDispute records an admin decision on a dispute (ADR-0004 review queue).
 //
-//	uphold=true  → the proposed result was wrong: VOID the market (refund stakes,
+//	uphold=true  → the proposed result was wrong: VOID the market (return locked points,
 //	               no clawback since payouts were held) and terminate the
 //	               proposal so the auto-finalizer skips it. Every open dispute on
 //	               the market is marked upheld — the void vindicates all of them.
@@ -407,11 +408,12 @@ func (s *SettlementEngine) recordSettlementAudit(settledBy *string, settlement *
 		actor = *settledBy
 	}
 	s.auditor.RecordSettlement(actor, settlement.MarketID, map[string]any{
-		"settlementId":      settlement.ID,
-		"result":            settlement.Result,
-		"totalPayoutCents":  settlement.TotalPayoutCents,
-		"positionsSettled":  settlement.PositionsSettled,
-		"attestationSource": settlement.AttestationSource,
+		"settlementId":               settlement.ID,
+		"result":                     settlement.Result,
+		"totalSettlementPointsCents": settlement.TotalPayoutCents,
+		"pointDisbursementCount":     settlement.PositionsSettled,
+		"attestationSource":          settlement.AttestationSource,
+		"unit":                       "PTS",
 	})
 }
 
@@ -864,7 +866,7 @@ func (s *SettlementEngine) VoidMarket(ctx context.Context, marketID string, reas
 			UserID:         pos.UserID,
 			AmountCents:    pos.TotalCostCents,
 			IdempotencyKey: fmt.Sprintf("prediction_void:%s:%s", marketID, pos.ID),
-			Reason:         fmt.Sprintf("prediction refund: market %s voided, returning stake", market.Ticker),
+			Reason:         fmt.Sprintf("prediction refund: market %s voided, returning locked points", market.Ticker),
 		})
 		payouts = append(payouts, payout)
 	}

@@ -6,7 +6,9 @@ import {
 } from "./_shared";
 
 test.describe("/rewards — loyalty ledger + tiers", () => {
-  test("tier ladder + ledger table render", async ({ page }) => {
+  test("tier ladder, ledger, and active point-play bonus render", async ({
+    page,
+  }) => {
     const checkErrors = captureConsoleErrors(page);
 
     await assertPageHealthy(page, "/rewards");
@@ -29,6 +31,54 @@ test.describe("/rewards — loyalty ledger + tiers", () => {
       hasTierOrLedgerContent,
       "/rewards should show tier ladder or empty-state copy",
     ).toBe(true);
+
+    const activeBonusResponse = await page.request.get(
+      "/api/v1/bonuses/active",
+    );
+    expect(
+      activeBonusResponse.ok(),
+      `active bonus API returned ${activeBonusResponse.status()}`,
+    ).toBe(true);
+    const activeBonusPayload = await activeBonusResponse.json();
+    const activeBonuses = activeBonusPayload.bonuses ?? [];
+    expect(
+      activeBonuses.length,
+      "demo rewards smoke should include seeded active point-play bonus rows",
+    ).toBeGreaterThan(0);
+    const demoBonus = activeBonuses.find(
+      (bonus: Record<string, unknown>) =>
+        bonus.campaignName === "Demo Point-Play Bonus" ||
+        bonus.campaign_name === "Demo Point-Play Bonus",
+    );
+    expect(demoBonus, "demo active point-play bonus missing").toBeTruthy();
+    expect(demoBonus.unit).toBe("PTS");
+    expect(demoBonus.remainingPointsCents).toBe(15_000);
+    expect(demoBonus.playRequiredPointsCents).toBe(100_000);
+    expect(demoBonus.playCompletedPointsCents).toBe(25_000);
+    for (const retired of [
+      "remainingAmountCents",
+      "wageringRequiredCents",
+      "wageringCompletedCents",
+      "wageringProgressPct",
+    ]) {
+      expect(
+        demoBonus[retired],
+        `retired bonus API field ${retired} should not be present`,
+      ).toBeUndefined();
+    }
+
+    await expect(
+      page.getByText(/active point-play bonuses/i).first(),
+    ).toBeVisible();
+    await expect(page.getByText("Demo Point-Play Bonus")).toBeVisible();
+    await expect(page.getByText(/pts remaining/i).first()).toBeVisible();
+    const playProgress = page
+      .getByRole("progressbar", {
+        name: /play progress/i,
+      })
+      .first();
+    await expect(playProgress).toBeVisible();
+    await expect(playProgress).toHaveAttribute("value", "25");
 
     checkErrors();
   });

@@ -3,29 +3,19 @@
 /**
  * AccountPage — Predict-native profile hub.
  *
- * Replaces the sportsbook-era Player Hub (loyalty tiers, leaderboards,
- * bet analytics, betting heatmap) with a prediction-native layout:
- *   [identity banner: avatar + username + available balance]
+ * Replaces the inherited player hub with a prediction-native layout:
+ *   [identity banner: avatar + username + available points]
  *   [portfolio summary strip — pulled from /api/v1/portfolio/summary]
- *   [account actions grid: Profile, Portfolio, Wallet, Security, Alerts,
+ *   [account actions grid: Profile, Portfolio, Points, Security, Alerts,
  *    Responsible Play]
  *
- * Loyalty, leaderboards, bet analytics, and the betting heatmap are
- * sportsbook products that don't exist on Predict yet. They'll return
- * when Predict-specific versions are designed.
+ * Loyalty, leaderboards, analytics, and activity heatmaps should return
+ * only as Predict-specific point-native modules.
  */
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import {
-  Bell,
-  CreditCard,
-  HeartHandshake,
-  Lock,
-  Settings,
-  TrendingUp,
-  Wallet,
-} from "lucide-react";
+import { Bell, HeartHandshake, Lock, Settings, TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
 import { logger } from "../lib/logger";
@@ -82,7 +72,7 @@ export default function AccountPage() {
         <p className="m-0 text-[13px] text-[var(--t3)]">
           {t(
             "hub.subtitle",
-            "Profile, wallet, security, and notification preferences.",
+            "Profile, points, security, and notification preferences.",
           )}
         </p>
       </header>
@@ -101,10 +91,10 @@ export default function AccountPage() {
         </div>
         <div className="flex flex-col gap-0.5 text-right">
           <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]">
-            {t("hub.availableBalance", "Available balance")}
+            {t("hub.availableBalance", "Available points")}
           </span>
           <span className="font-mono text-[22px] font-bold tracking-[-0.01em] text-[var(--accent)] tabular-nums">
-            {balance ? formatUSD(balance.availableBalance * 100) : "—"}
+            {balance ? formatPoints(balance.availableBalance) : "—"}
           </span>
         </div>
       </section>
@@ -118,44 +108,56 @@ export default function AccountPage() {
           href="/account/security"
           icon={<Settings size={20} />}
           title={t("actions.profile.title", "Profile")}
-          desc={t("actions.profile.desc", "Update your details and account setup")}
+          desc={t(
+            "actions.profile.desc",
+            "Update your details and account setup",
+          )}
         />
         <ActionCard
           href="/portfolio"
           icon={<TrendingUp size={20} />}
           title={t("actions.portfolio.title", "Portfolio")}
-          desc={t("actions.portfolio.desc", "Open positions, orders, settled history")}
-        />
-        <ActionCard
-          href="/cashier"
-          icon={<Wallet size={20} />}
-          title={t("actions.cashier.title", "Cashier")}
-          desc={t("actions.cashier.desc", "Deposits and withdrawals")}
+          desc={t(
+            "actions.portfolio.desc",
+            "Open positions, orders, settled history",
+          )}
         />
         <ActionCard
           href="/account/transactions"
-          icon={<CreditCard size={20} />}
-          title={t("actions.walletActivity.title", "Wallet activity")}
-          desc={t("actions.walletActivity.desc", "Ledger entries and transaction history")}
+          icon={<TrendingUp size={20} />}
+          title={t("actions.points.title", "Point ledger")}
+          desc={t(
+            "actions.points.desc",
+            "Starter grants, predictions, and rewards",
+          )}
         />
         <ActionCard
           href="/account/security"
           icon={<Lock size={20} />}
           title={t("actions.security.title", "Security")}
-          desc={t("actions.security.desc", "Password, sessions, and sign-in protection")}
+          desc={t(
+            "actions.security.desc",
+            "Password, sessions, and sign-in protection",
+          )}
         />
         <ActionCard
           href="/account/notifications"
           icon={<Bell size={20} />}
           title={t("actions.alerts.title", "Alerts")}
-          desc={t("actions.alerts.desc", "Control market and account notifications")}
+          desc={t(
+            "actions.alerts.desc",
+            "Control market and account notifications",
+          )}
         />
         {FEATURE_RG && (
           <ActionCard
             href="/responsible-gaming"
             icon={<HeartHandshake size={20} />}
             title={t("actions.responsible.title", "Play responsibly")}
-            desc={t("actions.responsible.desc", "Deposit limits, cool-offs, and self-exclusion")}
+            desc={t(
+              "actions.responsible.desc",
+              "Play limits, cool-offs, and self-exclusion",
+            )}
           />
         )}
       </section>
@@ -202,7 +204,9 @@ function PrivacyCard() {
     } catch (err: unknown) {
       logger.warn("Account", "privacy update failed", err);
       setError(
-        err instanceof Error ? err.message : t("privacy.saveError", "Couldn’t save that change"),
+        err instanceof Error
+          ? err.message
+          : t("privacy.saveError", "Couldn’t save that change"),
       );
     } finally {
       setSaving(false);
@@ -263,7 +267,7 @@ function PrivacyCard() {
 
 function PortfolioStrip({ summary }: { summary: PortfolioSummary }) {
   const { t } = useTranslation("account");
-  const pnl = summary.realizedPnlCents;
+  const pnl = summary.realizedPointsCents;
   const pnlUp = pnl >= 0;
   return (
     <section className="mb-5 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[22px] py-5">
@@ -284,13 +288,19 @@ function PortfolioStrip({ summary }: { summary: PortfolioSummary }) {
         </Link>
       </header>
       <div className="grid grid-cols-4 gap-3 max-[720px]:grid-cols-2">
-        <Stat label={t("stats.invested", "Invested")} value={formatUSD(summary.totalValueCents)} />
         <Stat
-          label={t("stats.realizedPnl", "Realized P&L")}
-          value={`${pnlUp ? "+" : "−"}${formatUSD(Math.abs(pnl))}`}
+          label={t("stats.invested", "Points in play")}
+          value={formatPointsFromCents(summary.totalValuePointsCents)}
+        />
+        <Stat
+          label={t("stats.realizedPnl", "Settled result")}
+          value={`${pnlUp ? "+" : "-"}${formatPointsFromCents(Math.abs(pnl))}`}
           tone={pnlUp ? "gain" : "no"}
         />
-        <Stat label={t("stats.openPositions", "Open positions")} value={String(summary.openPositions)} />
+        <Stat
+          label={t("stats.openPositions", "Open positions")}
+          value={String(summary.openPositions)}
+        />
         <Stat
           label={t("stats.accuracy", "Accuracy")}
           value={
@@ -368,9 +378,13 @@ function ActionCard({
   );
 }
 
-function formatUSD(cents: number): string {
-  if (Math.abs(cents) >= 1_000_000_00)
-    return `$${(cents / 1_000_000_00).toFixed(1)}M`;
-  if (Math.abs(cents) >= 10_000_00) return `$${(cents / 1_000_00).toFixed(1)}K`;
-  return `$${(cents / 100).toFixed(2)}`;
+function formatPoints(value: number): string {
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M pts`;
+  if (abs >= 10_000) return `${(value / 1_000).toFixed(1)}K pts`;
+  return `${Math.round(value).toLocaleString()} pts`;
+}
+
+function formatPointsFromCents(cents: number): string {
+  return formatPoints(cents / 100);
 }

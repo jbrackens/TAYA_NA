@@ -20,7 +20,7 @@ import {
   LogOut,
   User as UserIcon,
   Settings,
-  Wallet,
+  TrendingUp,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
@@ -34,7 +34,7 @@ import { useAppDispatch, useAppSelector } from "../../lib/store/hooks";
 import {
   selectCurrentBalance,
   setCurrentBalance,
-} from "../../lib/store/cashierSlice";
+} from "../../lib/store/pointBalanceSlice";
 import { getBalance } from "../../lib/api/wallet-client";
 import { TierPill } from "./TierPill";
 import { LanguageSelector } from "../i18n/LanguageSelector";
@@ -153,11 +153,9 @@ export function TopBar() {
   const dispatch = useAppDispatch();
   const balance = useAppSelector(selectCurrentBalance);
 
-  // Hydrate the cashier slice's currentBalance whenever the user resolves.
+  // Hydrate the current point balance whenever the user resolves.
   // Without this, the BAL pill in the top nav reads zero on every page
-  // except /cashier (which is the only page that previously dispatched
-  // setCurrentBalance). Visiting /cashier first would warm the slice, but
-  // a fresh navigation to /predict or /portfolio would show $0.00.
+  // until a fresh navigation to /predict or /portfolio fetches points.
   // TopBar mounts on every page, so we fetch once when auth is ready.
   useEffect(() => {
     if (!isAuthenticated || !user?.id) return;
@@ -320,7 +318,8 @@ export function TopBar() {
         >
           <BrandMark size={34} />
           <span className={TOP_BAR_WORDMARK_CLASS}>
-            {brand.name}<span className={TOP_BAR_PERIOD_CLASS}>.</span>
+            {brand.name}
+            <span className={TOP_BAR_PERIOD_CLASS}>.</span>
           </span>
         </Link>
 
@@ -420,7 +419,7 @@ export function TopBar() {
                         <span className={TOP_BAR_SEARCH_HIT_META_CLASS}>
                           {t("SEARCH_RESULT_META", {
                             ticker: m.ticker,
-                            price: m.yesPriceCents,
+                            price: m.yesPricePointsCents,
                           })}
                         </span>
                       </li>
@@ -441,14 +440,16 @@ export function TopBar() {
               <span>
                 {/*
                   Render a placeholder when the balance is undefined
-                  (still loading) instead of "$0.00". The literal $0
+                  (still loading) instead of "0 pts". The literal zero
                   was misleading: on every page navigation, between the
-                  initial render and the wallet API resolving (~300ms-3s
-                  in dev), the user saw "BAL $0.00" — easy to read as
+                  initial render and the point-balance API resolving (~300ms-3s
+                  in dev), the user saw "BAL 0 pts" - easy to read as
                   "your account is empty" and panic. A neutral "—"
                   reads as "loading" without claiming a value.
                 */}
-                {typeof balance === "number" ? `$${balance.toFixed(2)}` : "$—"}
+                {typeof balance === "number"
+                  ? `${balance.toFixed(2)} pts`
+                  : "—"}
               </span>
             </div>
           )}
@@ -479,7 +480,7 @@ export function TopBar() {
                     className={TOP_BAR_MENU_ITEM_CLASS}
                     onClick={() => setUserMenuOpen(false)}
                   >
-                    <Wallet size={14} /> {t("NAV_PORTFOLIO")}
+                    <TrendingUp size={14} /> {t("NAV_PORTFOLIO")}
                   </Link>
                   <Link
                     href="/account/settings"

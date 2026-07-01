@@ -8,32 +8,33 @@ import (
 	"log/slog"
 )
 
-// WageringContributionRecord represents a single bet's contribution toward
-// bonus wagering completion.
+// WageringContributionRecord represents a single point-play contribution toward
+// bonus play-through completion. Field names preserve the inherited storage
+// contract; launch-facing responses expose point-native aliases.
 type WageringContributionRecord struct {
-	PlayerBonusID    int64
-	BetID            string
-	BetType          string  // "single", "parlay", "system"
-	StakeCents       int64
-	ContributionCents int64  // after multiplier; caller is responsible for calculation
-	OddsDecimal      float64
-	LegCount         int
+	PlayerBonusID     int64
+	BetID             string
+	BetType           string // "single", "parlay", "system"
+	StakeCents        int64
+	ContributionCents int64 // after multiplier; caller is responsible for calculation
+	OddsDecimal       float64
+	LegCount          int
 }
 
 // WageringResult reports the outcome of recording a wagering contribution,
 // including whether the bonus was completed as a result.
 type WageringResult struct {
-	ContributionCents        int64 `json:"contributionCents"`
-	WageringCompletedCents   int64 `json:"wageringCompletedCents"`
-	WageringRequiredCents    int64 `json:"wageringRequiredCents"`
-	BonusCompleted           bool  `json:"bonusCompleted"`
-	ConvertedAmountCents     int64 `json:"convertedAmountCents"`
+	ContributionCents      int64 `json:"contributionCents"`
+	WageringCompletedCents int64 `json:"wageringCompletedCents"`
+	WageringRequiredCents  int64 `json:"wageringRequiredCents"`
+	BonusCompleted         bool  `json:"bonusCompleted"`
+	ConvertedAmountCents   int64 `json:"convertedAmountCents"`
 }
 
-// RecordWageringContribution records a bet's wagering contribution toward a
-// player bonus. If the contribution pushes wagering past the required
-// threshold, the bonus is automatically completed and remaining bonus funds
-// are converted to real money.
+// RecordWageringContribution records a point-play contribution toward a player
+// bonus. If the contribution pushes play-through past the required threshold,
+// the bonus is automatically completed and remaining bonus points are converted
+// to regular gameplay points.
 func (s *Service) RecordWageringContribution(ctx context.Context, record WageringContributionRecord) (WageringResult, error) {
 	if s.db == nil {
 		return WageringResult{}, nil
@@ -133,7 +134,8 @@ WHERE id = $1`,
 			return WageringResult{}, err
 		}
 
-		// Convert bonus to real money (outside the inner TX since ConvertBonusToReal starts its own)
+		// Convert bonus points to regular gameplay points outside the inner tx
+		// because ConvertBonusToReal starts its own transaction.
 		idempKey := fmt.Sprintf("wagering-complete:%d", record.PlayerBonusID)
 		creditEntry, err := s.ConvertBonusToReal(ctx, userID, remainingAmount, idempKey)
 		if err != nil {

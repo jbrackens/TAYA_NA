@@ -67,7 +67,7 @@ final class AkkaHttpIdComplyServiceIntegrationSpec
     with FutureSupport {
 
   implicit val actorSystem: ActorSystem[Nothing] = system
-  implicit val classicSystem = system.toClassic
+  implicit val classicSystem: akka.actor.ActorSystem = system.toClassic
 
   lazy val registrationConfig: RegistrationConfig = RegistrationConfig(
     apiKey = ApiKey("some_api_key"),

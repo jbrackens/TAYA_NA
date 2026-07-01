@@ -36,6 +36,8 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+const legacyAssetPriceFeedsEnv = "TIANGGE_LEGACY_ASSET_PRICE_FEEDS_ENABLED"
+
 func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	walletService := wallet.NewServiceFromEnv()
 
@@ -149,9 +151,16 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{
-			"service": service,
-			"status":  "up",
+		legacyMoneyStatus := "disabled"
+		if legacyMoneyRoutesEnabled() {
+			legacyMoneyStatus = "enabled"
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"service":            service,
+			"status":             "up",
+			"pointMode":          "non_redeemable_points",
+			"legacyMoneyRoutes":  legacyMoneyStatus,
+			"launchRouteDomains": gatewayLaunchStatusDomains(),
 		})
 	}))
 
@@ -272,6 +281,10 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	registerSettlementRoutes(mux, predictionService)
 	registerDashboardRoutes(mux, predictionService)
 	registerDiscoverRoutes(mux, walletService.DB())
+	marketSocialStore := newMarketSocialStore(walletService.DB())
+	registerMarketSocialRoutes(mux, marketSocialStore, socialWriteUserLimiter(walletService.DB()), socialWriteIPLimiter(walletService.DB()))
+	registerMarketSocialAdminRoutes(mux, marketSocialStore)
+	registerMarketWatchlistRoutes(mux, newMarketWatchlistStore(walletService.DB()))
 	// Prediction-native admin read APIs (office /users + /audit-logs). Only
 	// registered when the SQL repo is live (DB present); the legacy
 	// sportsbook registerAdminRoutes in admin_handlers.go stays unwired.
@@ -308,12 +321,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// --- Feed Adapters & Background Workers ---
 	if predRepo != nil {
 		feedRegistry := feed.NewRegistry()
-		// Register both 'admin-manual' (canonical) and 'manual' (legacy
-		// seed-data key) so auto-settler doesn't WARN every tick on
-		// either set. Both route to the same CanSettle=false behavior.
-		feedRegistry.Register(feed.NewManualAdapter("admin-manual"))
-		feedRegistry.Register(feed.NewManualAdapter("manual"))
-		feedRegistry.Register(feed.NewCryptoFeedAdapter())
+		registerPredictionFeedAdapters(feedRegistry)
 
 		// Market closer: check every 30 seconds for markets past close_at
 		closer := workers.NewMarketCloser(predRepo, 30*time.Second)
@@ -418,47 +426,51 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	}
 
 	// --- Wallet Routes (kept from sportsbook — adapt for prediction stakes) ---
-	registerWalletRoutes(mux, walletService)
+	registerWalletRoutes(mux, walletService, predictLBService)
 	// Admin-gated wallet adjustments (requireAdminRole). The ungated public
 	// credit/debit routes were removed per ADR-0002; this admin-only route is
 	// the sole HTTP money-mutation surface.
 	registerAdminWalletMutationRoutes(mux, "/api/v1/admin", walletService)
 
-	alphaCashierConfig, err := alphacashier.LoadConfigFromEnv(os.Getenv)
-	if err != nil {
-		slog.Error("alpha cashier: invalid configuration", "error", err)
-		alphaCashierConfig = alphacashier.Config{Enabled: false}
-	}
-	var alphaCashierRepo alphacashier.Repository
-	if walletDB := walletService.DB(); walletDB != nil {
-		alphaCashierRepo = alphacashier.NewSQLRepository(walletDB)
-	} else {
-		alphaCashierRepo = alphacashier.NewMemoryRepository()
-	}
-	alphaCashierService := alphacashier.NewService(alphaCashierConfig, alphaCashierRepo)
-	alphaCashierService.SetWalletLedger(walletService)
-	// Default address-screening seam (audit CMP-01). The manual-review screener
-	// never auto-clears, so with ALPHA_CASHIER_SCREENING_ENFORCEMENT=true the
-	// deposit/withdrawal addresses are blocked pending a real provider or human
-	// review; with enforcement off it is observe-only (a sanctions hit still
-	// blocks). A vendor screener is wired in place of the default here.
-	alphaCashierService.SetScreener(alphacashier.DefaultScreener())
-	if alphaCashierConfig.Enabled {
-		if evmClient, err := alphacashier.NewJSONRPCEVMClient(context.Background(), alphaCashierConfig.RPCURL); err != nil {
-			slog.Warn("alpha cashier: EVM RPC client unavailable; tx submission will fail closed", "error", err)
-		} else {
-			alphaCashierService.SetEVMClient(evmClient)
+	if legacyMoneyRoutesEnabled() {
+		alphaCashierConfig, err := alphacashier.LoadConfigFromEnv(os.Getenv)
+		if err != nil {
+			slog.Error("alpha cashier: invalid configuration", "error", err)
+			alphaCashierConfig = alphacashier.Config{Enabled: false}
 		}
-		// Reorg finality watcher (audit A2-03): re-verify credited deposits every
-		// 5 minutes and freeze any whose backing tx was orphaned by a reorg. The
-		// tick self-guards on the EVM client + ledger being present, so it is a
-		// no-op until the RPC client above connects.
-		reorgWatcher := alphacashier.NewReorgWatcher(alphaCashierService, 5*time.Minute)
-		go reorgWatcher.Run(context.Background())
+		var alphaCashierRepo alphacashier.Repository
+		if walletDB := walletService.DB(); walletDB != nil {
+			alphaCashierRepo = alphacashier.NewSQLRepository(walletDB)
+		} else {
+			alphaCashierRepo = alphacashier.NewMemoryRepository()
+		}
+		alphaCashierService := alphacashier.NewService(alphaCashierConfig, alphaCashierRepo)
+		alphaCashierService.SetWalletLedger(walletService)
+		// Default address-screening seam (audit CMP-01). The manual-review screener
+		// never auto-clears, so with ALPHA_CASHIER_SCREENING_ENFORCEMENT=true the
+		// deposit/withdrawal addresses are blocked pending a real provider or human
+		// review; with enforcement off it is observe-only (a sanctions hit still
+		// blocks). A vendor screener is wired in place of the default here.
+		alphaCashierService.SetScreener(alphacashier.DefaultScreener())
+		if alphaCashierConfig.Enabled {
+			if evmClient, err := alphacashier.NewJSONRPCEVMClient(context.Background(), alphaCashierConfig.RPCURL); err != nil {
+				slog.Warn("alpha cashier: EVM RPC client unavailable; tx submission will fail closed", "error", err)
+			} else {
+				alphaCashierService.SetEVMClient(evmClient)
+			}
+			// Reorg finality watcher (audit A2-03): re-verify credited deposits every
+			// 5 minutes and freeze any whose backing tx was orphaned by a reorg. The
+			// tick self-guards on the EVM client + ledger being present, so it is a
+			// no-op until the RPC client above connects.
+			reorgWatcher := alphacashier.NewReorgWatcher(alphaCashierService, 5*time.Minute)
+			go reorgWatcher.Run(context.Background())
+		}
+		alphacashier.RegisterRoutes(mux, alphaCashierService)
+		registerAlphaCashierAdminRoutes(mux, alphaCashierService, rbacService)
+		slog.Info("alpha cashier: routes registered", "enabled", alphaCashierConfig.Enabled, "chain", alphaCashierConfig.ChainName)
+	} else {
+		slog.Info("legacy money routes disabled for Tiangge launch", "env", legacyMoneyRoutesEnv)
 	}
-	alphacashier.RegisterRoutes(mux, alphaCashierService)
-	registerAlphaCashierAdminRoutes(mux, alphaCashierService, rbacService)
-	slog.Info("alpha cashier: routes registered", "enabled", alphaCashierConfig.Enabled, "chain", alphaCashierConfig.ChainName)
 
 	// --- Account/User Routes ---
 	registerUserRoutes(mux)
@@ -500,16 +512,15 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		registerKYCAdminRoutes(mux, pgKYC)
 	}
 	compliance.RegisterComplianceRoutes(mux, geoComplianceService, kycService, rgService)
-	// Pre-trade jurisdiction + KYC gates (launch policy: crypto-native, outside
-	// US). Both default OFF — wired here so a single env flag activates them
-	// without a code change. See internal/http/pretrade_gate.go and
-	// docs/compliance/geofencing-kyc.md (depth pending legal sign-off).
+	// Pre-trade jurisdiction + KYC gates. Both default OFF — wired here so a
+	// single env flag activates them without a code change. See
+	// internal/http/pretrade_gate.go and docs/compliance/geofencing-kyc.md
+	// (depth pending legal sign-off).
 	tradeGeoGate = compliance.NewGeoGateFromEnv()
 	tradeKYCGate = kycService
-	// Money movement runs through the same gates: the geo gate covers the
-	// deposit and withdraw surfaces in the alpha cashier and legacy payments
-	// handlers (registration stays un-gated — account creation is fine,
-	// money movement is not; see docs/compliance/geofencing-kyc.md).
+	// Legacy guarded routes run through the same geo gate as trading. Their
+	// registration is still controlled by the Tiangge legacy-route opt-in; see
+	// docs/compliance/geofencing-kyc.md for the compliance posture.
 	alphacashier.ComplianceGate = checkComplianceGates
 	payments.ComplianceGate = checkComplianceGates
 	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
@@ -528,34 +539,34 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	predictionService.SetComplianceChecker(rgService)
 
 	// --- Payments Routes ---
-	var paymentService payments.PaymentService
-	if walletDB := walletService.DB(); walletDB != nil {
-		dbPaymentService, err := payments.NewDBPaymentService(walletDB, walletService)
-		if err != nil {
-			slog.Warn("payments: failed to initialize DB payment service, falling back to mock", "error", err)
-			paymentService = payments.NewMockPaymentService(walletService)
+	if legacyMoneyRoutesEnabled() {
+		var paymentService payments.PaymentService
+		if walletDB := walletService.DB(); walletDB != nil {
+			dbPaymentService, err := payments.NewDBPaymentService(walletDB, walletService)
+			if err != nil {
+				slog.Warn("payments: failed to initialize DB payment service, falling back to mock", "error", err)
+				paymentService = payments.NewMockPaymentService(walletService)
+			} else {
+				paymentService = dbPaymentService
+			}
 		} else {
-			paymentService = dbPaymentService
+			paymentService = payments.NewMockPaymentService(walletService)
+		}
+		payments.DepositComplianceChecker = rgService
+		payments.KYCGate = kycService // LC-22/D-8 KYC just-in-time withdrawal gate
+		payments.RegisterPaymentRoutes(mux, paymentService)
+		// Legacy on-chain rail. This branch is only registered when legacy money
+		// routes are explicitly enabled; launch mode leaves these routes absent.
+		if walletDB := walletService.DB(); walletDB != nil {
+			if err := payments.EnsureCryptoSchema(walletDB); err != nil {
+				slog.Warn("payments: crypto schema init failed", "error", err)
+			}
+			cryptoRail := payments.NewCryptoRailFromEnv(walletDB)
+			payments.RegisterCryptoRoutes(mux, cryptoRail)
+			slog.Info("payments: crypto rail registered", "network", cryptoRail.Network(), "asset", cryptoRail.Asset(), "configured", cryptoRail.Configured())
 		}
 	} else {
-		paymentService = payments.NewMockPaymentService(walletService)
-	}
-	payments.DepositComplianceChecker = rgService
-	payments.KYCGate = kycService // LC-22/D-8 KYC just-in-time withdrawal gate
-	payments.RegisterPaymentRoutes(mux, paymentService)
-	// Crypto (USDC) on-chain rail — launch policy is crypto-native. Wired behind
-	// a clean adapter that fails CLOSED until CRYPTO_RPC_URL +
-	// CRYPTO_ASSET_CONTRACT + CRYPTO_DEPOSIT_ADDRESS_SOURCE are configured
-	// (no faked addresses). Exposes /api/v1/payments/crypto/{config,deposit-address};
-	// on-chain deposit detection drives the existing payments webhook to credit
-	// the wallet after N confirmations.
-	if walletDB := walletService.DB(); walletDB != nil {
-		if err := payments.EnsureCryptoSchema(walletDB); err != nil {
-			slog.Warn("payments: crypto schema init failed", "error", err)
-		}
-		cryptoRail := payments.NewCryptoRailFromEnv(walletDB)
-		payments.RegisterCryptoRoutes(mux, cryptoRail)
-		slog.Info("payments: crypto rail registered", "network", cryptoRail.Network(), "asset", cryptoRail.Asset(), "configured", cryptoRail.Configured())
+		slog.Info("legacy payment routes disabled for Tiangge launch", "env", legacyMoneyRoutesEnv)
 	}
 
 	// --- Loyalty / Rewards ---
@@ -592,8 +603,8 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// already cover the office /content + /campaigns admin pages — they just
 	// were never wired into RegisterRoutes. Public delivery routes
 	// (/api/v1/content/, /api/v1/banners) come along for the player app.
-	// The bonus service's optional FreebetGranter is deliberately NOT set:
-	// freebet/odds-boost issuance is a sportsbook concept (CLAUDE.md rule #2);
+	// The bonus service's optional legacy promo granter is deliberately not set:
+	// sportsbook-style promo issuance is outside the Tiangge launch economy;
 	// campaigns/bonuses CRUD works without it.
 	if walletDB := walletService.DB(); walletDB != nil {
 		registerContentRoutes(mux, content.NewService(walletDB))
@@ -613,8 +624,51 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 
 	slog.Info("Taya NA Predict gateway initialized",
 		"service", service,
-		"routes", "prediction, orders, portfolio, settlement, wallet, users, compliance, payments, loyalty, leaderboards, auth",
+		"routes", strings.Join(gatewayRouteDomains(legacyMoneyRoutesEnabled()), ", "),
 	)
+}
+
+func gatewayRouteDomains(legacyMoneyEnabled bool) []string {
+	routes := []string{
+		"prediction",
+		"orders",
+		"portfolio",
+		"settlement",
+		"wallet",
+		"users",
+		"compliance",
+	}
+	if legacyMoneyEnabled {
+		routes = append(routes, "alpha_cashier", "payments", "crypto_payments")
+	}
+	routes = append(routes, "loyalty", "leaderboards", "auth")
+	return routes
+}
+
+func gatewayLaunchStatusDomains() []string {
+	return []string{
+		"prediction",
+		"orders",
+		"portfolio",
+		"settlement",
+		"point_wallet",
+		"users",
+		"responsible_play",
+		"loyalty",
+		"leaderboards",
+		"auth",
+	}
+}
+
+func registerPredictionFeedAdapters(feedRegistry *feed.Registry) {
+	// Register both 'admin-manual' (canonical) and 'manual' (legacy seed-data
+	// key) so auto-settler doesn't WARN every tick on either set. Both route to
+	// the same CanSettle=false behavior.
+	feedRegistry.Register(feed.NewManualAdapter("admin-manual"))
+	feedRegistry.Register(feed.NewManualAdapter("manual"))
+	if strings.EqualFold(strings.TrimSpace(os.Getenv(legacyAssetPriceFeedsEnv)), "true") {
+		feedRegistry.Register(feed.NewCryptoFeedAdapter())
+	}
 }
 
 func registerWebSocketRoutes(mux *stdhttp.ServeMux, hub *ws.Hub) {
@@ -767,12 +821,12 @@ func registerAuthProxy(mux *stdhttp.ServeMux) {
 func resolutionMessage(m *prediction.Market) (subject, body string) {
 	if m.Status == prediction.MarketStatusVoided {
 		return fmt.Sprintf("Market voided: %s", m.Ticker),
-			fmt.Sprintf("Market %q (%s) was voided. Stakes are refunded at entry cost.", m.Title, m.Ticker)
+			fmt.Sprintf("Market %q (%s) was voided. Locked points are returned at entry cost.", m.Title, m.Ticker)
 	}
 	result := "—"
 	if m.Result != nil {
 		result = strings.ToUpper(string(*m.Result))
 	}
 	return fmt.Sprintf("Market resolved %s: %s", result, m.Ticker),
-		fmt.Sprintf("Market %q (%s) resolved %s. Winning positions pay 100¢/contract.", m.Title, m.Ticker, result)
+		fmt.Sprintf("Market %q (%s) resolved %s. Winning positions settle at 100 points per share.", m.Title, m.Ticker, result)
 }

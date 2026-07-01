@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -17,10 +18,10 @@ import (
 type Service struct {
 	repo   Repository
 	wallet WalletAdapter
-	// AMM execution is retired (P2-09): the order path no longer holds an
-	// AMMEngine. The LMSR price math in amm.go remains as an unwired library
-	// (used by discover price tests); PlaceOrder/PreviewOrder reject any
-	// lingering execution_mode='amm' market.
+	// AMM execution is retired (P2-09): PlaceOrder rejects lingering
+	// execution_mode='amm' markets. PreviewOrder may still produce read-only
+	// curve quotes from AMMEngine so legacy AMM market detail can show honest
+	// impact without moving points.
 	settlement        *SettlementEngine
 	onMarketLifecycle MarketLifecycleHandler // optional; fired post-commit
 	// Optional Prometheus-format counter registry. nil is safe — Record*
@@ -31,6 +32,43 @@ type Service struct {
 	// any deployment that has not wired RG). Wired in internal/http.
 	compliance ComplianceChecker
 }
+
+// ErrLaunchProhibitedCategory blocks inherited real-money/crypto taxonomy from
+// Tiangge launch category management while deeper import compatibility is
+// retired incrementally.
+var ErrLaunchProhibitedCategory = errors.New("category is not allowed in Tiangge launch taxonomy")
+
+var launchHiddenCategorySlugs = map[string]struct{}{
+	"crypto": {},
+}
+
+var launchProhibitedCategoryTerms = map[string]struct{}{
+	"bitcoin":    {},
+	"btc":        {},
+	"cash":       {},
+	"cashout":    {},
+	"crypto":     {},
+	"eth":        {},
+	"ethereum":   {},
+	"fiat":       {},
+	"payout":     {},
+	"solana":     {},
+	"usdc":       {},
+	"withdraw":   {},
+	"withdrawal": {},
+}
+
+var launchAllowedSettlementSources = map[string]struct{}{
+	"admin-manual": {},
+	"manual":       {},
+}
+
+var launchProhibitedSettlementRules = map[string]struct{}{
+	"price_above": {},
+	"price_below": {},
+}
+
+var ErrLaunchProhibitedMarket = errors.New("market is not allowed in Tiangge launch mode")
 
 // ComplianceChecker gates order placement against responsible-gambling
 // controls (self-exclusion, cool-off, deposit/bet stake limits). It is an
@@ -76,7 +114,7 @@ func (s *Service) SetComplianceChecker(c ComplianceChecker) {
 }
 
 // checkComplianceForOrder blocks an order before any market-state mutation or
-// wallet debit if responsible-gambling controls disallow it. Mirrors the
+// wallet debit if responsible-play controls disallow it. Mirrors the
 // legacy bets.Service.checkComplianceForPlacement contract: fail-closed in
 // production/staging when the RG service errors, fail-open in development so
 // local testing isn't blocked by a misconfigured checker. nil checker = no-op.
@@ -107,7 +145,7 @@ func (s *Service) checkComplianceForOrder(ctx context.Context, userID string, st
 	} else {
 		allowed, reason, err = s.compliance.CheckBetAllowed(cctx, userID, stakeCents)
 	}
-	// `allowed == false` is an authoritative RG denial (bet limit /
+	// `allowed == false` is an authoritative RG denial (prediction limit /
 	// self-exclusion / cool-off). The wired RG service returns a sentinel
 	// error *alongside* allowed=false on a deliberate block — that is a
 	// decision, not an outage, so it MUST block regardless of environment.
@@ -115,7 +153,9 @@ func (s *Service) checkComplianceForOrder(ctx context.Context, userID string, st
 	// exactly what let an over-limit order through (UAT 2026-05-16 LC-17).
 	if !allowed {
 		if strings.TrimSpace(reason) == "" {
-			reason = "order blocked by responsible-gambling controls"
+			reason = "order blocked by responsible-play controls"
+		} else {
+			reason = predictionComplianceReason(reason)
 		}
 		return false, fmt.Errorf("%s", reason)
 	}
@@ -181,6 +221,12 @@ func (s *Service) releaseComplianceOrder(ctx context.Context, userID string, amo
 	cctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 	_ = s.compliance.ReleaseBet(cctx, userID, amountCents, committedAt)
+}
+
+func predictionComplianceReason(reason string) string {
+	reason = strings.Replace(reason, "Bet limit", "Prediction limit", 1)
+	reason = strings.Replace(reason, "bet limit", "prediction limit", 1)
+	return reason
 }
 
 // isTerminalReservedStatus reports whether an order-book order has reached a
@@ -310,11 +356,112 @@ func (s *Service) SetSettlementAuditor(a SettlementAuditor) {
 // --- Categories ---
 
 func (s *Service) ListCategories(ctx context.Context, activeOnly bool) ([]Category, error) {
-	return s.repo.ListCategories(ctx, activeOnly)
+	categories, err := s.repo.ListCategories(ctx, activeOnly)
+	if err != nil {
+		return nil, err
+	}
+	return filterLaunchCategories(categories), nil
 }
 
 func (s *Service) GetCategory(ctx context.Context, slug string) (*Category, error) {
-	return s.repo.GetCategory(ctx, slug)
+	if isLaunchHiddenCategorySlug(slug) {
+		return nil, ErrLaunchProhibitedCategory
+	}
+	category, err := s.repo.GetCategory(ctx, slug)
+	if err != nil {
+		return nil, err
+	}
+	if categoryHasLaunchProhibitedTerm(category) {
+		return nil, ErrLaunchProhibitedCategory
+	}
+	return category, nil
+}
+
+func (s *Service) CreateCategory(ctx context.Context, cat *Category) error {
+	if categoryHasLaunchProhibitedTerm(cat) {
+		return ErrLaunchProhibitedCategory
+	}
+	return s.repo.CreateCategory(ctx, cat)
+}
+
+func filterLaunchCategories(categories []Category) []Category {
+	if len(categories) == 0 {
+		return categories
+	}
+	out := categories[:0]
+	for _, category := range categories {
+		if categoryHasLaunchProhibitedTerm(&category) {
+			continue
+		}
+		out = append(out, category)
+	}
+	return out
+}
+
+func isLaunchHiddenCategorySlug(slug string) bool {
+	_, ok := launchHiddenCategorySlugs[strings.ToLower(strings.TrimSpace(slug))]
+	return ok
+}
+
+func categoryHasLaunchProhibitedTerm(category *Category) bool {
+	if category == nil {
+		return false
+	}
+	for _, field := range []string{category.Slug, category.Name, category.Icon} {
+		if textHasLaunchProhibitedCategoryTerm(field) {
+			return true
+		}
+	}
+	return false
+}
+
+func textHasLaunchProhibitedCategoryTerm(value string) bool {
+	tokens := strings.FieldsFunc(strings.ToLower(value), func(r rune) bool {
+		return (r < 'a' || r > 'z') && (r < '0' || r > '9')
+	})
+	for _, token := range tokens {
+		if _, ok := launchProhibitedCategoryTerms[token]; ok {
+			return true
+		}
+	}
+	return false
+}
+
+// --- Series ---
+
+func (s *Service) ListSeries(ctx context.Context, categoryID *string) ([]Series, error) {
+	return s.repo.ListSeries(ctx, categoryID)
+}
+
+func (s *Service) CreateSeries(ctx context.Context, series *Series) error {
+	return s.repo.CreateSeries(ctx, series)
+}
+
+func (s *Service) ListTags(ctx context.Context, categoryID *string) ([]string, error) {
+	series, err := s.repo.ListSeries(ctx, categoryID)
+	if err != nil {
+		return nil, err
+	}
+	seen := map[string]struct{}{}
+	tags := []string{}
+	for _, item := range series {
+		for _, tag := range item.Tags {
+			trimmed := strings.TrimSpace(tag)
+			if trimmed == "" {
+				continue
+			}
+			key := strings.ToLower(trimmed)
+			if _, ok := seen[key]; ok {
+				continue
+			}
+			seen[key] = struct{}{}
+			tags = append(tags, trimmed)
+		}
+	}
+	sort.Slice(tags, func(i, j int) bool {
+		return strings.ToLower(tags[i]) < strings.ToLower(tags[j])
+	})
+	return tags, nil
 }
 
 // --- Events ---
@@ -414,9 +561,50 @@ func (s *Service) PreviewOrderForUser(ctx context.Context, req PlaceOrderRequest
 	if market.ExecutionMode == ExecutionModeOrderBook {
 		return s.previewExchangeOrder(ctx, req, userID, market)
 	}
-	// AMM execution is retired (P2-09): no quote is produced for a legacy
-	// AMM market — its trading path is closed (positions remain settleable).
-	return nil, fmt.Errorf("market %s uses the retired AMM engine and is no longer tradeable", market.Ticker)
+	return s.previewAMMOrder(req, market)
+}
+
+func (s *Service) previewAMMOrder(req PlaceOrderRequest, market *Market) (*OrderPreview, error) {
+	if market.Status != MarketStatusOpen {
+		return nil, ErrClosedMarket
+	}
+	if req.Action != OrderActionBuy {
+		return nil, fmt.Errorf("sell against AMM is unavailable; legacy AMM markets are quote-only")
+	}
+	if req.OrderType != OrderTypeMarket {
+		return nil, fmt.Errorf("AMM preview supports market buys only")
+	}
+	if req.Quantity <= 0 {
+		return nil, fmt.Errorf("quantity must be positive")
+	}
+
+	now := time.Now().UTC()
+	preview, err := (&AMMEngine{}).PreviewTrade(market, req.Side, req.Action, req.Quantity)
+	if err != nil {
+		return nil, err
+	}
+	avg := 0
+	if req.Quantity > 0 {
+		avg = int(preview.TotalCost / int64(req.Quantity))
+	}
+	newSidePrice := preview.NewYesPrice
+	if req.Side == OrderSideNo {
+		newSidePrice = preview.NewNoPrice
+	}
+	slippage := newSidePrice - preview.PriceCents
+	if slippage < 0 {
+		slippage = -slippage
+	}
+	preview.ExecutionMode = ExecutionModeAMM
+	preview.FilledQuantity = req.Quantity
+	preview.UnfilledQuantity = 0
+	preview.AverageFillPriceCents = avg
+	preview.TotalCostWithFeesCents = preview.TotalCost + preview.FeeCents
+	preview.EstimatedSlippageCents = slippage
+	preview.QuoteStatus = OrderStatusFilled
+	preview.QuoteStaleAfterMillis = int64((3 * time.Second) / time.Millisecond)
+	preview.QuoteGeneratedAtUnixSec = now.Unix()
+	return preview, nil
 }
 
 func (s *Service) previewExchangeOrder(ctx context.Context, req PlaceOrderRequest, userID string, market *Market) (*OrderPreview, error) {
@@ -1000,8 +1188,8 @@ func ensureOrderIdempotencyKey(req PlaceOrderRequest, userID string) *string {
 // no-op (returns the current state via the repo's update path).
 //
 // For exchange-mode orders the cancellation runs in a tx that releases the
-// uncaptured cash reservation alongside the order status update, so the two
-// commit together (no window where cash is held but the order is gone).
+// uncaptured point reservation alongside the order status update, so the two
+// commit together (no window where points are held but the order is gone).
 // For AMM orders we just update the order row.
 func (s *Service) CancelOrder(ctx context.Context, orderID, userID string) error {
 	order, err := s.repo.GetOrder(ctx, orderID)
@@ -1052,59 +1240,16 @@ func (s *Service) cancelExchangeOrder(ctx context.Context, exchangeWallet Exchan
 // the order's original commit period — D-5). Buy orders had cash held; sell
 // orders had shares reserved and those share locks are released here.
 func (s *Service) finalizeRestingExchangeOrder(ctx context.Context, exchangeWallet ExchangeWalletAdapter, order *Order, terminal OrderStatus) error {
-	tx, err := exchangeWallet.BeginExchangeTx(ctx)
+	finalizer, ok := s.repo.(RestingOrderFinalizer)
+	if !ok {
+		return fmt.Errorf("exchange order finalizer unavailable")
+	}
+	reservedCents, capturedCents, placedAt, err := finalizer.FinalizeRestingOrderAtomic(ctx, exchangeWallet, order, terminal)
 	if err != nil {
-		return fmt.Errorf("begin %s tx: %w", terminal, err)
-	}
-	defer func() { _ = tx.Rollback() }()
-
-	// Release the uncaptured cash reservation. Idempotent: if the order
-	// never had a reservation (e.g., a sell), this is a no-op at the wallet.
-	if err := exchangeWallet.ReleaseReservationWithTx(ctx, tx, "prediction_order", order.ID); err != nil {
-		return fmt.Errorf("release reservation: %w", err)
-	}
-	if order.Action == OrderActionSell && order.RemainingQuantity > 0 {
-		if _, err := tx.ExecContext(ctx,
-			`UPDATE prediction_positions
-			    SET reserved_quantity = GREATEST(reserved_quantity - $4, 0),
-			        updated_at = NOW()
-			  WHERE user_id = $1 AND market_id = $2 AND side = $3`,
-			order.UserID, order.MarketID, string(order.Side), order.RemainingQuantity,
-		); err != nil {
-			return fmt.Errorf("release reserved shares: %w", err)
-		}
+		return err
 	}
 
-	// Update order row inside the same tx via direct SQL — we don't have a
-	// "withTx" repo method for this, so we run it here. SQL kept narrow.
-	// RETURNING the reservation columns (GetOrder's narrower scan does not
-	// load them) gives the exact committed-vs-captured split for the RG
-	// release below, without widening the shared order scan path.
-	// cancelled_at is only meaningful for a user cancel; an expiry leaves
-	// it NULL (the order was not cancelled — its market closed under it).
 	now := time.Now().UTC()
-	var cancelledAt interface{}
-	if terminal == OrderStatusCancelled {
-		cancelledAt = now
-	}
-	var reservedCents, capturedCents int64
-	var placedAt time.Time
-	if err := tx.QueryRowContext(ctx,
-		`UPDATE prediction_orders
-		   SET status = $2,
-		       reserved_quantity = 0,
-		       cancelled_at = $3,
-		       updated_at = NOW()
-		 WHERE id = $1
-		 RETURNING reserved_cash_cents, captured_cash_cents, created_at`,
-		order.ID, string(terminal), cancelledAt,
-	).Scan(&reservedCents, &capturedCents, &placedAt); err != nil {
-		return fmt.Errorf("update order to %s: %w", terminal, err)
-	}
-
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("commit %s tx: %w", terminal, err)
-	}
 	order.Status = terminal
 	if terminal == OrderStatusCancelled {
 		order.CancelledAt = &now
@@ -1129,7 +1274,7 @@ func (s *Service) finalizeRestingExchangeOrder(ctx context.Context, exchangeWall
 // transition path (admin TransitionMarketStatus, the MarketCloser worker,
 // or SettlementEngine void) finalizes resting orders, so without this sweep
 // the order's RG committed stake stays counted toward the user's period
-// bet-limit and its wallet cash reservation stays held — indefinitely
+// risk limit and its wallet point reservation stays held — indefinitely
 // (expired-order residual). Each order is finalized to OrderStatusExpired
 // via the same tx + RG-reconcile path as a user cancel. Best-effort: a
 // per-order failure is counted and retried on the next tick; returns
@@ -1334,23 +1479,11 @@ func (s *Service) CreateEvent(ctx context.Context, req CreateEventRequest) (*Eve
 }
 
 func (s *Service) CreateMarket(ctx context.Context, req CreateMarketRequest) (*Market, error) {
-	b := req.AMMLiquidityParam
-	if b <= 0 {
-		b = 100
+	if marketHasLaunchProhibitedContent(req) {
+		return nil, ErrLaunchProhibitedMarket
 	}
-
-	// Fee policy: req.FeeRateBps == 0 means "use the platform default"
-	// rather than "this market is fee-free." The 2026-04-24 fee-model
-	// design call settled on DefaultTakerFeeBps (100 bps). To set a
-	// market to true zero fees, callers can pass a negative value and
-	// we clamp to zero — keeps the explicit-fee-free path available
-	// without making it the silent default.
-	feeBps := req.FeeRateBps
-	if feeBps == 0 {
-		feeBps = DefaultTakerFeeBps
-	} else if feeBps < 0 {
-		feeBps = 0
-	}
+	b := defaultAMMLiquidityParam(req.AMMLiquidityParam)
+	feeBps := defaultMarketFeeRateBps(req.FeeRateBps)
 
 	market := &Market{
 		EventID:      req.EventID,
@@ -1402,6 +1535,107 @@ func (s *Service) CreateMarket(ctx context.Context, req CreateMarketRequest) (*M
 	})
 
 	return market, nil
+}
+
+// UpdateMarket lets admins edit market metadata and settlement controls without
+// bypassing the lifecycle FSM. Status/result changes still go through the
+// lifecycle and resolution APIs.
+func (s *Service) UpdateMarket(ctx context.Context, marketID string, req CreateMarketRequest) (*Market, error) {
+	if strings.TrimSpace(marketID) == "" {
+		return nil, fmt.Errorf("market id is required")
+	}
+	if marketHasLaunchProhibitedContent(req) {
+		return nil, ErrLaunchProhibitedMarket
+	}
+	market, err := s.repo.GetMarket(ctx, marketID)
+	if err != nil {
+		return nil, fmt.Errorf("get market: %w", err)
+	}
+	if market.Status == MarketStatusSettled || market.Status == MarketStatusVoided {
+		return nil, fmt.Errorf("terminal markets cannot be edited")
+	}
+
+	market.EventID = req.EventID
+	market.Ticker = req.Ticker
+	market.Title = req.Title
+	market.Description = req.Description
+	market.Translations = defaultJSONObject(req.Translations)
+	market.AMMLiquidityParam = defaultAMMLiquidityParam(req.AMMLiquidityParam)
+	market.AMMSubsidyCents = req.AMMSubsidyCents
+	market.SettlementSourceKey = req.SettlementSourceKey
+	market.SettlementRule = req.SettlementRule
+	market.SettlementParams = defaultJSONObject(req.SettlementParams)
+	market.SettlementCutoffAt = req.SettlementCutoffAt
+	market.FallbackSourceKey = req.FallbackSourceKey
+	market.FeeRateBps = defaultMarketFeeRateBps(req.FeeRateBps)
+	market.CloseAt = req.CloseAt
+	market.ArticleSourceID = req.ArticleSourceID
+	market.UpdatedAt = time.Now().UTC()
+
+	if err := s.repo.UpdateMarket(ctx, market); err != nil {
+		return nil, fmt.Errorf("update market: %w", err)
+	}
+	reason := "market edited by admin"
+	s.repo.CreateLifecycleEvent(ctx, &LifecycleEvent{
+		MarketID:   market.ID,
+		EventType:  "edited",
+		ActorID:    req.CreatedBy,
+		ActorType:  "admin",
+		Reason:     &reason,
+		OccurredAt: market.UpdatedAt,
+	})
+	return market, nil
+}
+
+func defaultAMMLiquidityParam(value float64) float64 {
+	if value <= 0 {
+		return 100
+	}
+	return value
+}
+
+func defaultMarketFeeRateBps(value int) int {
+	// Fee policy: value == 0 means "use the platform default" rather than
+	// "this market is fee-free." To set a market to true zero fees, callers can
+	// pass a negative value and we clamp to zero.
+	if value == 0 {
+		return DefaultTakerFeeBps
+	}
+	if value < 0 {
+		return 0
+	}
+	return value
+}
+
+func marketHasLaunchProhibitedContent(req CreateMarketRequest) bool {
+	source := strings.ToLower(strings.TrimSpace(req.SettlementSourceKey))
+	if _, ok := launchAllowedSettlementSources[source]; !ok {
+		return true
+	}
+	if req.FallbackSourceKey != nil {
+		fallback := strings.ToLower(strings.TrimSpace(*req.FallbackSourceKey))
+		if fallback != "" {
+			if _, ok := launchAllowedSettlementSources[fallback]; !ok {
+				return true
+			}
+		}
+	}
+	rule := strings.ToLower(strings.TrimSpace(req.SettlementRule))
+	if _, ok := launchProhibitedSettlementRules[rule]; ok {
+		return true
+	}
+	for _, field := range []string{
+		req.Ticker,
+		req.Title,
+		req.Description,
+		string(req.SettlementParams),
+		string(req.Translations),
+	} {
+		if textHasLaunchProhibitedCategoryTerm(field) {
+			return true
+		}
+	}
+	return false
 }
 
 // CreateArticleSource persists (deduped on TextHash) the provenance record for

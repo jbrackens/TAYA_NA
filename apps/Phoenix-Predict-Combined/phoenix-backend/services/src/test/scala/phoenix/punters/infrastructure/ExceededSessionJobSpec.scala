@@ -28,7 +28,7 @@ class ExceededSessionJobSpec
     with Eventually {
 
   val punterTimeRestrictedSessionRepository = new SlickPunterTimeRestrictedSessionsRepository(dbConfig)
-  implicit val clock = new FakeHardcodedClock()
+  implicit val clock: FakeHardcodedClock = new FakeHardcodedClock()
   val punters = new MemorizedTestPuntersContext()
 
   val exceedSessionJob = new ExceededSessionsJob(punters, punterTimeRestrictedSessionRepository, clock)

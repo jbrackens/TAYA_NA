@@ -94,7 +94,7 @@ func registerUserRoutes(mux *stdhttp.ServeMux) {
 			// profile from the auth session and never read it back, so it held
 			// nothing across requests/instances. Echo the accepted fields;
 			// durable per-user profile storage is a DB-backed follow-up.
-			return httpx.WriteJSON(w, stdhttp.StatusOK, body)
+			return httpx.WriteJSON(w, stdhttp.StatusOK, userProfileUpdatePayload(body))
 		}
 
 		if r.Method != stdhttp.MethodGet {
@@ -182,6 +182,40 @@ func registerUserRoutes(mux *stdhttp.ServeMux) {
 			UpdatedAt: now,
 		}
 
-		return httpx.WriteJSON(w, stdhttp.StatusOK, profile)
+		return httpx.WriteJSON(w, stdhttp.StatusOK, userProfilePayload(profile))
 	}))
+}
+
+func userProfilePayload(profile userProfileResponse) userProfileResponse {
+	profile.Username = redactLaunchProhibitedUserText(profile.Username)
+	return profile
+}
+
+func userProfileUpdatePayload(body map[string]interface{}) map[string]interface{} {
+	out := make(map[string]interface{}, len(body))
+	for key, value := range body {
+		out[key] = redactProfileUpdateValue(value)
+	}
+	return out
+}
+
+func redactProfileUpdateValue(value interface{}) interface{} {
+	switch typed := value.(type) {
+	case string:
+		return redactLaunchProhibitedUserText(typed)
+	case []interface{}:
+		out := make([]interface{}, len(typed))
+		for i, item := range typed {
+			out[i] = redactProfileUpdateValue(item)
+		}
+		return out
+	case map[string]interface{}:
+		out := make(map[string]interface{}, len(typed))
+		for key, item := range typed {
+			out[key] = redactProfileUpdateValue(item)
+		}
+		return out
+	default:
+		return value
+	}
 }

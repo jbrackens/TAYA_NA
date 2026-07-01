@@ -17,6 +17,20 @@ READ_MODEL_SRC="$SEED_SRC_DIR/read-model.seed.json"
 WALLET_SRC="$SEED_SRC_DIR/wallet.seed.json"
 BETS_SRC="$SEED_SRC_DIR/bets.seed.json"
 
+unexpected_seed_files="$(
+  find "$SEED_SRC_DIR" -maxdepth 1 -type f -name '*.seed*.json' \
+    ! -name 'read-model.seed.json' \
+    ! -name 'wallet.seed.json' \
+    ! -name 'bets.seed.json' \
+    -print
+)"
+if [[ -n "$unexpected_seed_files" ]]; then
+  echo "error: unexpected deterministic seed source file(s):" >&2
+  printf '%s\n' "$unexpected_seed_files" >&2
+  echo "Only read-model.seed.json, wallet.seed.json, and bets.seed.json are copied into the local seed profile." >&2
+  exit 1
+fi
+
 for file in "$READ_MODEL_SRC" "$WALLET_SRC" "$BETS_SRC"; do
   if [[ ! -f "$file" ]]; then
     echo "error: seed source file not found: $file" >&2
@@ -34,6 +48,7 @@ cp "$BETS_SRC" "$BETS_OUT"
 
 cat >"$ENV_FILE" <<EOF
 # Deterministic Phoenix local seed profile.
+# BET_STORE_FILE is retained as an inherited compatibility env var; launch surfaces must treat it as prediction-order state.
 export GATEWAY_READ_MODEL_FILE="$READ_MODEL_OUT"
 export WALLET_LEDGER_FILE="$WALLET_OUT"
 export BET_STORE_FILE="$BETS_OUT"
@@ -75,7 +90,7 @@ bets_sha="$(shasum -a 256 "$BETS_OUT" | awk '{print $1}')"
   echo
   echo "- Read model: \`$READ_MODEL_OUT\`"
   echo "- Wallet state: \`$WALLET_OUT\`"
-  echo "- Bet state: \`$BETS_OUT\`"
+  echo "- Legacy compatibility order state: \`$BETS_OUT\`"
   echo "- Manifest: \`$ARTIFACT_FILE\`"
 } >"$REPORT_FILE"
 

@@ -7,8 +7,6 @@ import java.util.UUID
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
-import io.circe.generic.auto._
-
 import phoenix.http.core.Routes
 import phoenix.jwt.JwtAuthenticator
 import phoenix.prediction.botauth.infrastructure.http.PredictionBotEndpoints.IssuedBotApiKeyResponse

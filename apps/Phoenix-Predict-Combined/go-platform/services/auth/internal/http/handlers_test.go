@@ -17,9 +17,13 @@ func TestRegisterAcceptsShortUsernameAndSevenCharacterPassword(t *testing.T) {
 	RegisterRoutes(mux, "auth", auth)
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
-	registerPayload, _ := json.Marshal(map[string]string{
-		"username": "abc",
-		"password": "Aa12345",
+	registerPayload, _ := json.Marshal(map[string]any{
+		"username":                   "abc",
+		"password":                   "Aa12345",
+		"terms_accepted":             true,
+		"terms_version":              "tiangge-launch-v1",
+		"launch_disclosure_accepted": true,
+		"launch_disclosure_version":  "points-no-cashout-v1",
 	})
 	registerReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/register", bytes.NewBuffer(registerPayload))
 	registerRes := httptest.NewRecorder()
@@ -37,6 +41,38 @@ func TestRegisterAcceptsShortUsernameAndSevenCharacterPassword(t *testing.T) {
 	if userID == "" || payload["username"] != "abc" || payload["role"] != rolePlayer {
 		t.Fatalf("unexpected register response: %#v", payload)
 	}
+	if payload["termsAccepted"] != true || payload["termsVersion"] != "tiangge-launch-v1" {
+		t.Fatalf("expected persisted terms acceptance in register response: %#v", payload)
+	}
+	if payload["launchDisclosureAccepted"] != true || payload["launchDisclosureVersion"] != "points-no-cashout-v1" {
+		t.Fatalf("expected persisted launch disclosure in register response: %#v", payload)
+	}
+	if payload["termsAcceptedAt"] == "" || payload["launchDisclosureAcceptedAt"] == "" {
+		t.Fatalf("expected acceptance timestamps in register response: %#v", payload)
+	}
+}
+
+func TestRegisterRequiresTianggeDisclosureAcceptance(t *testing.T) {
+	auth := NewAuthService()
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, "auth", auth)
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	registerPayload, _ := json.Marshal(map[string]any{
+		"username":       "nodisclosure",
+		"password":       "Aa12345",
+		"terms_accepted": true,
+	})
+	registerReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/register", bytes.NewBuffer(registerPayload))
+	registerRes := httptest.NewRecorder()
+	handler.ServeHTTP(registerRes, registerReq)
+
+	if registerRes.Code != http.StatusBadRequest {
+		t.Fatalf("expected register status 400, got %d, body=%s", registerRes.Code, registerRes.Body.String())
+	}
+	if !strings.Contains(registerRes.Body.String(), "no-cashout disclosure acceptance is required") {
+		t.Fatalf("expected launch disclosure validation message, got %s", registerRes.Body.String())
+	}
 }
 
 func TestRegisterRejectsSixCharacterPassword(t *testing.T) {
@@ -45,9 +81,11 @@ func TestRegisterRejectsSixCharacterPassword(t *testing.T) {
 	RegisterRoutes(mux, "auth", auth)
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
-	registerPayload, _ := json.Marshal(map[string]string{
-		"username": "newuser",
-		"password": "Aa1234",
+	registerPayload, _ := json.Marshal(map[string]any{
+		"username":                   "newuser",
+		"password":                   "Aa1234",
+		"terms_accepted":             true,
+		"launch_disclosure_accepted": true,
 	})
 	registerReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/register", bytes.NewBuffer(registerPayload))
 	registerRes := httptest.NewRecorder()
@@ -58,6 +96,61 @@ func TestRegisterRejectsSixCharacterPassword(t *testing.T) {
 	}
 	if !strings.Contains(registerRes.Body.String(), "at least 7 characters") {
 		t.Fatalf("expected minimum-length validation message, got %s", registerRes.Body.String())
+	}
+}
+
+func TestRegisterSessionIncludesTianggeDisclosureAcceptance(t *testing.T) {
+	auth := NewAuthService()
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, "auth", auth)
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	registerPayload, _ := json.Marshal(map[string]any{
+		"username":                 "accepteduser",
+		"password":                 "Aa12345",
+		"termsAccepted":            true,
+		"termsVersion":             "tiangge-launch-v1",
+		"launchDisclosureAccepted": true,
+		"launchDisclosureVersion":  "points-no-cashout-v1",
+	})
+	registerReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/register", bytes.NewBuffer(registerPayload))
+	registerRes := httptest.NewRecorder()
+	handler.ServeHTTP(registerRes, registerReq)
+	if registerRes.Code != http.StatusCreated {
+		t.Fatalf("expected register status 201, got %d, body=%s", registerRes.Code, registerRes.Body.String())
+	}
+
+	loginPayload, _ := json.Marshal(map[string]string{
+		"username": "accepteduser",
+		"password": "Aa12345",
+	})
+	loginReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login", bytes.NewBuffer(loginPayload))
+	loginRes := httptest.NewRecorder()
+	handler.ServeHTTP(loginRes, loginReq)
+	if loginRes.Code != http.StatusOK {
+		t.Fatalf("expected login status 200, got %d, body=%s", loginRes.Code, loginRes.Body.String())
+	}
+	var tokens tokenResponse
+	if err := json.Unmarshal(loginRes.Body.Bytes(), &tokens); err != nil {
+		t.Fatalf("decode login response: %v", err)
+	}
+
+	sessionReq := httptest.NewRequest(http.MethodGet, "/api/v1/auth/session", nil)
+	sessionReq.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
+	sessionRes := httptest.NewRecorder()
+	handler.ServeHTTP(sessionRes, sessionReq)
+	if sessionRes.Code != http.StatusOK {
+		t.Fatalf("expected session status 200, got %d, body=%s", sessionRes.Code, sessionRes.Body.String())
+	}
+	var sessionPayload map[string]any
+	if err := json.Unmarshal(sessionRes.Body.Bytes(), &sessionPayload); err != nil {
+		t.Fatalf("decode session response: %v", err)
+	}
+	if sessionPayload["termsAccepted"] != true || sessionPayload["termsVersion"] != "tiangge-launch-v1" {
+		t.Fatalf("expected terms acceptance in session response: %#v", sessionPayload)
+	}
+	if sessionPayload["launchDisclosureAccepted"] != true || sessionPayload["launchDisclosureVersion"] != "points-no-cashout-v1" {
+		t.Fatalf("expected launch disclosure in session response: %#v", sessionPayload)
 	}
 }
 

@@ -3,6 +3,7 @@ package phoenix.oddin.integration
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.scaladsl.adapter._
 import akka.http.scaladsl.model.StatusCodes
+import scala.concurrent.ExecutionContextExecutor
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
@@ -31,8 +32,8 @@ class OddinRestApiCachedMarketDescriptionsRepositorySpec
     with FutureSupport
     with FileSupport {
 
-  private implicit val classicSystem = system.toClassic
-  private implicit val ec = system.executionContext
+  private implicit val classicSystem: akka.actor.ActorSystem = system.toClassic
+  private implicit val ec: ExecutionContextExecutor = system.executionContext
 
   private val oddinConfig = OddinConfig.of(system)
 

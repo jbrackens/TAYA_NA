@@ -1,6 +1,7 @@
 package leaderboards
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -36,6 +37,29 @@ func TestCreateAndListDefinitions(t *testing.T) {
 	for _, item := range playerItems {
 		if item.Status != canonicalv1.LeaderboardStatusActive {
 			t.Fatalf("expected player list to exclude non-active leaderboards, saw status=%s", item.Status)
+		}
+	}
+}
+
+func TestSeededLeaderboardDefinitionsUsePointSafeCopy(t *testing.T) {
+	svc := NewService()
+	definitions := svc.ListDefinitions(DefinitionFilter{}, true)
+	if len(definitions) == 0 {
+		t.Fatal("expected seeded leaderboard definitions")
+	}
+	for _, definition := range definitions {
+		if definition.Currency != "" && definition.Currency != "PTS" {
+			t.Fatalf("expected %s to use PTS or empty currency, got %q", definition.LeaderboardID, definition.Currency)
+		}
+		joined := strings.ToLower(strings.Join([]string{
+			definition.Name,
+			definition.Description,
+			definition.PrizeSummary,
+		}, " "))
+		for _, banned := range []string{"cash", "usd", "prize", "stake ladder", "stake volume"} {
+			if strings.Contains(joined, banned) {
+				t.Fatalf("seeded leaderboard %s contains banned launch copy %q in %q", definition.LeaderboardID, banned, joined)
+			}
 		}
 	}
 }

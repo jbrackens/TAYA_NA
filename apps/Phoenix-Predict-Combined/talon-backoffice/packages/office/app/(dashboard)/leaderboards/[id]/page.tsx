@@ -24,12 +24,13 @@ interface LeaderboardDefinition {
   name: string;
   description?: string;
   metricKey: string;
+  pointMetricKey?: string;
   eventType?: string;
   rankingMode: string;
   order: string;
   status: string;
-  currency?: string;
-  prizeSummary?: string;
+  unit?: string;
+  rewardSummary?: string;
   windowStartsAt?: string;
   windowEndsAt?: string;
   lastComputedAt?: string;
@@ -71,6 +72,20 @@ function toRFC3339(dtLocal: string): string {
   }
 }
 
+function toLaunchMetricKey(value: string): string {
+  return value === "net_profit_cents" ? "net_points" : value;
+}
+
+function toLegacyMetricKey(value: string): string {
+  const trimmed = value.trim();
+  return trimmed === "net_points" ? "net_profit_cents" : trimmed;
+}
+
+function normalizePointUnit(value?: string): string {
+  const trimmed = value?.trim().toUpperCase();
+  return !trimmed || trimmed === "USD" ? "PTS" : trimmed;
+}
+
 function LeaderboardDetailPageContent() {
   const params = useParams();
   const router = useRouter();
@@ -95,8 +110,8 @@ function LeaderboardDetailPageContent() {
     rankingMode: "sum",
     order: "desc",
     status: "active",
-    currency: "USD",
-    prizeSummary: "",
+    unit: "PTS",
+    rewardSummary: "",
     windowStartsAt: "",
     windowEndsAt: "",
   });
@@ -142,13 +157,15 @@ function LeaderboardDetailPageContent() {
           slug: nextDefinition.slug || "",
           name: nextDefinition.name || "",
           description: nextDefinition.description || "",
-          metricKey: nextDefinition.metricKey || "",
+          metricKey: toLaunchMetricKey(
+            nextDefinition.pointMetricKey || nextDefinition.metricKey || "",
+          ),
           eventType: nextDefinition.eventType || "",
           rankingMode: nextDefinition.rankingMode || "sum",
           order: nextDefinition.order || "desc",
           status: nextDefinition.status || "active",
-          currency: nextDefinition.currency || "USD",
-          prizeSummary: nextDefinition.prizeSummary || "",
+          unit: normalizePointUnit(nextDefinition.unit),
+          rewardSummary: nextDefinition.rewardSummary || "",
           windowStartsAt: toDatetimeLocal(nextDefinition.windowStartsAt),
           windowEndsAt: toDatetimeLocal(nextDefinition.windowEndsAt),
         });
@@ -168,6 +185,9 @@ function LeaderboardDetailPageContent() {
 
   const buildSavePayload = (statusOverride?: string) => ({
     ...form,
+    metricKey: toLegacyMetricKey(form.metricKey),
+    unit: normalizePointUnit(form.unit),
+    rewardSummary: form.rewardSummary.trim(),
     status: statusOverride || form.status,
     windowStartsAt: toRFC3339(form.windowStartsAt) || undefined,
     windowEndsAt: toRFC3339(form.windowEndsAt) || undefined,
@@ -599,27 +619,27 @@ function LeaderboardDetailPageContent() {
             </div>
             <div className={formColumnsClassName}>
               <label className={labelClassName}>
-                Currency
+                Unit
                 <input
                   className={inputClassName}
-                  value={form.currency}
+                  value={form.unit}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setForm((current) => ({
                       ...current,
-                      currency: event.target.value,
+                      unit: normalizePointUnit(event.target.value),
                     }))
                   }
                 />
               </label>
               <label className={labelClassName}>
-                Prize Summary
+                Reward Summary
                 <input
                   className={inputClassName}
-                  value={form.prizeSummary}
+                  value={form.rewardSummary}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setForm((current) => ({
                       ...current,
-                      prizeSummary: event.target.value,
+                      rewardSummary: event.target.value,
                     }))
                   }
                 />

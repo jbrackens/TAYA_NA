@@ -1,7 +1,7 @@
 {
   "categories": {
     "politics": "Politik",
-    "crypto": "Kripto",
+    "crypto": "Esports",
     "sports": "Olahraga",
     "entertainment": "Hiburan",
     "tech": "Teknologi",
@@ -87,7 +87,7 @@
       "title": "Apakah Hope (sutradara Na Hong-jin) menang Palme d'Or Cannes 2026?"
     },
     "IMP-B6E6D4BE": {
-      "title": "Apakah SPY ditutup di bawah $720 pada Jumat, 29 Mei 2026?"
+      "title": "Apakah Ginebra menahan lawannya di bawah 90 poin pada Jumat, 29 Mei 2026?"
     },
     "UCL-REAL-2526": {
       "title": "Apakah Real Madrid menang Champions League 2025/26?",
@@ -108,14 +108,14 @@
       "title": "Apakah ada rilis LLM baru sebelum akhir Mei?"
     },
     "BTC-100K-APR26": {
-      "title": "Bitcoin di atas $100K sebelum 30 April",
-      "description": "Berakhir YES jika BTC/USD diperdagangkan pada atau di atas $100.000 di exchange besar mana pun sebelum 30 April 2026 23:59 UTC."
+      "title": "Apakah tim MLBB ini menang seri 30 April?",
+      "description": "Berakhir YES jika tim MLBB yang tercantum memenangkan seri resmi best-of yang dijadwalkan pada 30 April 2026."
     },
     "IMP-CFD8F644": {
       "title": "Apakah saya pergi ke gym minimal 2 kali per minggu selama sisa Mei?"
     },
     "IMP-5CFF0A78": {
-      "title": "Apakah NVDA ditutup di atas $250 pada Jumat, 5 Juni 2026?"
+      "title": "Apakah finalis MLBB menang game pertama pada Jumat, 5 Juni 2026?"
     },
     "IMP-23AD5D16": {
       "title": "Apakah Euphoria Season 3 berakhir dengan skor Metacritic 70 atau lebih?"
@@ -127,7 +127,7 @@
       "title": "Apakah final tunggal putra French Open 2026 dimenangkan straight set?"
     },
     "IMP-F4C02A8F": {
-      "title": "Apakah IPO SpaceX (ticker SPCX) priced pada atau sebelum 11 Juni 2026?"
+      "title": "Apakah kemitraan teknologi antariksa Filipina diumumkan sebelum 11 Juni 2026?"
     },
     "IMP-6570BEFD": {
       "title": "Apakah Julia Letlow menang primary Republican Louisiana untuk Senat?"
@@ -139,11 +139,11 @@
       "title": "Apakah Restore Britain mendapat minimal 4% di by-election Makerfield?"
     },
     "IMP-7AC91349": {
-      "title": "Apakah SPCX ditutup lebih dari 30% di atas harga IPO pada hari trading pertamanya?"
+      "title": "Apakah jendela peluncuran yang diumumkan selesai pada hari pertama yang dijadwalkan?"
     },
     "SOL-300-Q2": {
-      "title": "Solana di atas $300 pada akhir Q2",
-      "description": "Berakhir YES jika SOL/USD diperdagangkan pada atau di atas $300 sebelum 1 Juli 2026."
+      "title": "Apakah tim PVL ini menutup Q2 dengan tiga kemenangan beruntun?",
+      "description": "Berakhir YES jika tim PVL yang tercantum mencatat tiga kemenangan resmi berturut-turut sebelum 1 Juli 2026."
     },
     "IMP-9B0E8C46": {
       "title": "Apakah Montreal Canadiens menang NHL Stanley Cup 2026?",

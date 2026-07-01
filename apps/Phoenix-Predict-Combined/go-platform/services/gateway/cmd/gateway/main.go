@@ -22,6 +22,8 @@ import (
 	_ "github.com/lib/pq" // Register PostgreSQL driver for database/sql
 )
 
+const legacyMoneyRoutesEnv = "TIANGGE_LEGACY_MONEY_ROUTES_ENABLED"
+
 func main() {
 	// Subcommand dispatch runs before any server bootstrap. Keep this list
 	// small — the gateway is primarily a server; subcommands are narrow
@@ -156,7 +158,7 @@ func stripClientIdentityHeaders(next stdhttp.Handler) stdhttp.Handler {
 }
 
 func gatewayPublicPrefixes() []string {
-	return []string{
+	prefixes := []string{
 		"/healthz",
 		"/readyz",
 		"/metrics",
@@ -172,10 +174,10 @@ func gatewayPublicPrefixes() []string {
 		"/api/v1/discovery",
 		"/api/v1/live-markets",
 		"/api/v1/categories",
+		"/api/v1/series",
+		"/api/v1/tags",
 		"/api/v1/events",
 		"/api/v1/markets",
-		"/api/v1/payments/webhook",
-		"/v1/provider-callbacks/", // Non-custodial cashier provider callbacks verify raw-body signatures in-handler.
 
 		// Leaderboards — board list + per-board entries are public; the
 		// per-user /api/v1/me/leaderboards endpoint sits outside this prefix
@@ -185,28 +187,49 @@ func gatewayPublicPrefixes() []string {
 		// Bot API uses its own API-key auth middleware, not the session auth
 		"/api/v1/bot/",
 	}
+	if legacyMoneyRoutesEnabledFromOS() {
+		prefixes = append(prefixes,
+			"/api/v1/payments/webhook",
+			"/v1/provider-callbacks/", // Legacy cashier provider callbacks verify raw-body signatures in-handler.
+		)
+	}
+	return prefixes
 }
 
 func gatewayCSRFSkipPrefixes() []string {
-	return []string{
+	prefixes := []string{
 		"/api/v1/auth/",
 		"/auth/",
 		"/healthz",
 		"/readyz",
 		"/metrics",
 		"/api/v1/status",
-		"/api/v1/payments/webhook",
-		"/v1/provider-callbacks/",
 	}
+	if legacyMoneyRoutesEnabledFromOS() {
+		prefixes = append(prefixes,
+			"/api/v1/payments/webhook",
+			"/v1/provider-callbacks/",
+		)
+	}
+	return prefixes
 }
 
 func validateGatewayRuntimeConfig(getenv func(string) string) error {
+	env := strings.ToLower(strings.TrimSpace(getenv("ENVIRONMENT")))
+	realEnv := env == "production" || env == "staging"
+	if legacyMoneyRoutesEnabled(getenv) && realEnv {
+		return fmt.Errorf("%s=true is not permitted when ENVIRONMENT=%s; Tiangge launch must not expose deposit, withdrawal, cashier, crypto, or provider-callback routes", legacyMoneyRoutesEnv, env)
+	}
+	alphaCashierEnabled := strings.EqualFold(strings.TrimSpace(getenv("ALPHA_CASHIER_ENABLED")), "true")
+	if alphaCashierEnabled && realEnv {
+		return fmt.Errorf("ALPHA_CASHIER_ENABLED=true is not permitted when ENVIRONMENT=%s; Tiangge launch is points-only with no crypto cashier rail", env)
+	}
+	if alphaCashierEnabled && !legacyMoneyRoutesEnabled(getenv) {
+		return fmt.Errorf("ALPHA_CASHIER_ENABLED=true requires %s=true; Tiangge launch keeps the legacy cashier route tree disabled", legacyMoneyRoutesEnv)
+	}
 	if err := alphacashier.ValidateRuntimeConfig(getenv); err != nil {
 		return err
 	}
-
-	env := strings.ToLower(strings.TrimSpace(getenv("ENVIRONMENT")))
-	realEnv := env == "production" || env == "staging"
 
 	// The auth kill switch is a local-dev convenience only. Refuse to boot with
 	// it disabled in any deployed environment.
@@ -223,20 +246,22 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 		return fmt.Errorf("GATEWAY_ALLOW_ADMIN_ANON=true is not permitted when ENVIRONMENT=%s", env)
 	}
 
+	// Payment webhooks are not launch routes. Validate their HMAC secret only
+	// when the legacy money-route tree is explicitly enabled, so Tiangge launch
+	// does not require a dormant payment secret to boot.
+	if legacyMoneyRoutesEnabled(getenv) {
+		switch strings.TrimSpace(getenv("PAYMENTS_WEBHOOK_SECRET")) {
+		case "":
+			return fmt.Errorf("PAYMENTS_WEBHOOK_SECRET must be set when %s=true and ENVIRONMENT=%s", legacyMoneyRoutesEnv, env)
+		case "whsec_local":
+			return fmt.Errorf("PAYMENTS_WEBHOOK_SECRET is the dev placeholder 'whsec_local'; set a real secret when %s=true and ENVIRONMENT=%s", legacyMoneyRoutesEnv, env)
+		}
+	}
+
 	// Everything below applies only to deployed environments. Local dev and the
 	// demo box (ENVIRONMENT unset) keep the convenient docker-compose defaults.
 	if !realEnv {
 		return nil
-	}
-
-	// Payments webhook secret must be set, and must not be the dev placeholder
-	// baked into docker-compose. Reaching a deployed environment with it is a
-	// deploy mistake we fail fast on rather than run with a guessable HMAC key.
-	switch strings.TrimSpace(getenv("PAYMENTS_WEBHOOK_SECRET")) {
-	case "":
-		return fmt.Errorf("PAYMENTS_WEBHOOK_SECRET must be set when ENVIRONMENT=%s", env)
-	case "whsec_local":
-		return fmt.Errorf("PAYMENTS_WEBHOOK_SECRET is the dev placeholder 'whsec_local'; set a real secret when ENVIRONMENT=%s", env)
 	}
 
 	// Refuse the dev database password in a deployed environment. The local
@@ -319,6 +344,14 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 		}
 	}
 	return nil
+}
+
+func legacyMoneyRoutesEnabledFromOS() bool {
+	return legacyMoneyRoutesEnabled(os.Getenv)
+}
+
+func legacyMoneyRoutesEnabled(getenv func(string) string) bool {
+	return strings.EqualFold(strings.TrimSpace(getenv(legacyMoneyRoutesEnv)), "true")
 }
 
 // hasCountryEntries reports whether a comma-separated country list contains at

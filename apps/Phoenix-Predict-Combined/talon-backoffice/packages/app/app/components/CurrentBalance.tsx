@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { getBalance, Balance } from "../lib/api/wallet-client";
 import { Spinner } from "./Spinner";
-import { formatDollars } from "../lib/format";
 
 interface CurrentBalanceProps {
   compact?: boolean;
@@ -64,13 +63,13 @@ export default function CurrentBalance({
     return null;
   }
 
-  const availableAmount = formatDollars(balance.availableBalance);
-  const pendingAmount = formatDollars(balance.reservedBalance);
+  const availableAmount = formatPoints(balance.availableBalance);
+  const pendingAmount = formatPoints(balance.reservedBalance);
 
   if (compact) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-xs text-slate-500">Balance:</span>
+        <span className="text-xs text-slate-500">Points:</span>
         <span className="text-[13px] font-semibold text-slate-200">
           {availableAmount}
         </span>
@@ -82,18 +81,22 @@ export default function CurrentBalance({
     <div className="rounded border border-[#1a1f3a] bg-[#0a0e18] px-4 py-3">
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <span className="text-xs text-slate-500">Available Balance</span>
+          <span className="text-xs text-slate-500">Available Points</span>
           <span className="text-base font-semibold text-slate-200">
             {availableAmount}
           </span>
         </div>
         {balance.reservedBalance > 0 && (
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500">Pending Balance</span>
+            <span className="text-xs text-slate-500">Locked Points</span>
             <span className="text-sm text-slate-300">{pendingAmount}</span>
           </div>
         )}
       </div>
     </div>
   );
+}
+
+function formatPoints(points: number): string {
+  return `${points.toFixed(2)} pts`;
 }

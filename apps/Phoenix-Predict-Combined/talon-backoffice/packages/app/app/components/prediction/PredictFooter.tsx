@@ -41,7 +41,7 @@ export function PredictFooter() {
       <div className="opacity-70">
         <span className="font-bold text-[var(--t1)]">{brand.name}</span>
         {" · "}© {YEAR} {brand.legalEntity}
-        {" · "}Trade event contracts, not sports bets
+        {" · "}Non-redeemable point prediction markets
       </div>
     </footer>
   );

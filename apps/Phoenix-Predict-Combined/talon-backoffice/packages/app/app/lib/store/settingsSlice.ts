@@ -1,24 +1,8 @@
-'use client';
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from './store';
-
-export enum DisplayOddsEnum {
-  AMERICAN = 'american',
-  DECIMAL = 'decimal',
-  FRACTIONAL = 'fractional',
-}
-
-export enum LimitEnum {
-  STAKE = 'stakeLimits',
-  DEPOSIT = 'depositLimits',
-  SESSION = 'sessionLimits',
-}
+"use client";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import type { RootState } from "./store";
 
 interface CommunicationPreferences {
-  [key: string]: unknown;
-}
-
-interface BettingPreferences {
   [key: string]: unknown;
 }
 
@@ -30,17 +14,10 @@ interface UserData {
   name?: string;
   address?: string;
   dateOfBirth?: string;
-  depositLimits?: {
-    [key: string]: unknown;
-  };
-  stakeLimits?: {
-    [key: string]: unknown;
-  };
   sessionLimits?: {
     [key: string]: unknown;
   };
   communicationPreferences?: CommunicationPreferences;
-  bettingPreferences?: BettingPreferences;
   status?: string;
   coolOff?: boolean;
   terms?: boolean;
@@ -51,7 +28,6 @@ interface UserData {
 
 interface SettingsState {
   userData: UserData;
-  oddsFormat: DisplayOddsEnum;
   currentGame?: string;
   language: string;
   isUserDataLoading: boolean;
@@ -62,9 +38,8 @@ interface SettingsState {
 
 const initialState: SettingsState = {
   userData: {},
-  oddsFormat: DisplayOddsEnum.DECIMAL,
   currentGame: undefined,
-  language: 'en',
+  language: "en",
   isUserDataLoading: false,
   isGeocomplyRequired: false,
   isGeocomplyLocationFailed: false,
@@ -72,7 +47,7 @@ const initialState: SettingsState = {
 };
 
 const settingsSlice = createSlice({
-  name: 'settings',
+  name: "settings",
   initialState,
   reducers: {
     setUserData: (state, action: PayloadAction<UserData>) => {
@@ -80,9 +55,6 @@ const settingsSlice = createSlice({
     },
     updateUserData: (state, action: PayloadAction<Partial<UserData>>) => {
       state.userData = { ...state.userData, ...action.payload };
-    },
-    setOddsFormat: (state, action: PayloadAction<DisplayOddsEnum>) => {
-      state.oddsFormat = action.payload;
     },
     setCurrentGame: (state, action: PayloadAction<string | undefined>) => {
       state.currentGame = action.payload;
@@ -104,9 +76,8 @@ const settingsSlice = createSlice({
     },
     clearSettings: (state) => {
       state.userData = {};
-      state.oddsFormat = DisplayOddsEnum.DECIMAL;
       state.currentGame = undefined;
-      state.language = 'en';
+      state.language = "en";
       state.isUserDataLoading = false;
       state.isGeocomplyRequired = false;
       state.isGeocomplyLocationFailed = false;
@@ -118,7 +89,6 @@ const settingsSlice = createSlice({
 export const {
   setUserData,
   updateUserData,
-  setOddsFormat,
   setCurrentGame,
   setLanguage,
   setIsUserDataLoading,
@@ -130,30 +100,45 @@ export const {
 
 // Selectors
 export const selectUserData = (state: RootState) => state.settings.userData;
-export const selectOddsFormat = (state: RootState) => state.settings.oddsFormat;
-export const selectCurrentGame = (state: RootState) => state.settings.currentGame;
+export const selectCurrentGame = (state: RootState) =>
+  state.settings.currentGame;
 export const selectLanguage = (state: RootState) => state.settings.language;
-export const selectIsUserDataLoading = (state: RootState) => state.settings.isUserDataLoading;
-export const selectIsGeocomplyRequired = (state: RootState) => state.settings.isGeocomplyRequired;
-export const selectIsGeocomplyLocationFailed = (state: RootState) => state.settings.isGeocomplyLocationFailed;
-export const selectIsAccountDataUpdateNeeded = (state: RootState) => state.settings.isAccountDataUpdateNeeded;
-export const selectUserPhoneNumber = (state: RootState) => state.settings.userData.phoneNumber;
-export const selectUserId = (state: RootState) => state.settings.userData.userId;
-export const selectUsername = (state: RootState) => state.settings.userData.username;
-export const selectUserEmail = (state: RootState) => state.settings.userData.email;
-export const selectUserName = (state: RootState) => state.settings.userData.name;
-export const selectUserAddress = (state: RootState) => state.settings.userData.address;
-export const selectUserDateOfBirth = (state: RootState) => state.settings.userData.dateOfBirth;
-export const selectDepositLimits = (state: RootState) => state.settings.userData.depositLimits;
-export const selectStakeLimits = (state: RootState) => state.settings.userData.stakeLimits;
-export const selectSessionLimits = (state: RootState) => state.settings.userData.sessionLimits;
-export const selectCommunicationPreferences = (state: RootState) => state.settings.userData.communicationPreferences;
-export const selectBettingPreferences = (state: RootState) => state.settings.userData.bettingPreferences;
-export const selectUserStatus = (state: RootState) => state.settings.userData.status;
-export const selectCoolOff = (state: RootState) => state.settings.userData.coolOff;
+export const selectIsUserDataLoading = (state: RootState) =>
+  state.settings.isUserDataLoading;
+export const selectIsGeocomplyRequired = (state: RootState) =>
+  state.settings.isGeocomplyRequired;
+export const selectIsGeocomplyLocationFailed = (state: RootState) =>
+  state.settings.isGeocomplyLocationFailed;
+export const selectIsAccountDataUpdateNeeded = (state: RootState) =>
+  state.settings.isAccountDataUpdateNeeded;
+export const selectUserPhoneNumber = (state: RootState) =>
+  state.settings.userData.phoneNumber;
+export const selectUserId = (state: RootState) =>
+  state.settings.userData.userId;
+export const selectUsername = (state: RootState) =>
+  state.settings.userData.username;
+export const selectUserEmail = (state: RootState) =>
+  state.settings.userData.email;
+export const selectUserName = (state: RootState) =>
+  state.settings.userData.name;
+export const selectUserAddress = (state: RootState) =>
+  state.settings.userData.address;
+export const selectUserDateOfBirth = (state: RootState) =>
+  state.settings.userData.dateOfBirth;
+export const selectSessionLimits = (state: RootState) =>
+  state.settings.userData.sessionLimits;
+export const selectCommunicationPreferences = (state: RootState) =>
+  state.settings.userData.communicationPreferences;
+export const selectUserStatus = (state: RootState) =>
+  state.settings.userData.status;
+export const selectCoolOff = (state: RootState) =>
+  state.settings.userData.coolOff;
 export const selectTerms = (state: RootState) => state.settings.userData.terms;
-export const selectHasToAcceptTerms = (state: RootState) => state.settings.userData.hasToAcceptTerms;
-export const selectSignUpDate = (state: RootState) => state.settings.userData.signUpDate;
-export const selectHasToAcceptResponsibilityCheck = (state: RootState) => state.settings.userData.hasToAcceptResponsibilityCheck;
+export const selectHasToAcceptTerms = (state: RootState) =>
+  state.settings.userData.hasToAcceptTerms;
+export const selectSignUpDate = (state: RootState) =>
+  state.settings.userData.signUpDate;
+export const selectHasToAcceptResponsibilityCheck = (state: RootState) =>
+  state.settings.userData.hasToAcceptResponsibilityCheck;
 
 export default settingsSlice.reducer;
