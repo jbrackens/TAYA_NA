@@ -152,24 +152,19 @@ jobs:
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
               'cat > /opt/phoenix/.env && chmod 600 /opt/phoenix/.env && echo ".env written ($(wc -c < /opt/phoenix/.env) bytes)"'
 
-      - name: Build auth image on the box
+      - name: Build auth image and load on the box
         # Auth service owns signup/login/session behavior. Rebuild it before
         # gateway so auth changes ship with the same push as frontend/gateway
         # changes.
         run: |
-          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
-            set -eu
-            cd /opt/phoenix
-            for attempt in 1 2 3; do
-              echo "auth image build attempt ${attempt}/3"
-              if timeout -k 1m 10m env JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
-                build --build-arg "GOPROXY=https://goproxy.io|https://proxy.golang.org|direct" auth; then
-                exit 0
-              fi
-              echo "auth image build attempt ${attempt} failed"
-              sleep $((attempt * 20))
-            done
-            exit 1'
+          docker build \
+            --build-arg "GOPROXY=https://goproxy.io|https://proxy.golang.org|direct" \
+            -f apps/Phoenix-Predict-Combined/go-platform/services/auth/Dockerfile \
+            -t phoenix-auth:latest \
+            apps/Phoenix-Predict-Combined/go-platform
+          docker save phoenix-auth:latest | gzip -1 | \
+            ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+              'gunzip | docker load'
 
       - name: Recreate auth container
         run: |
@@ -192,27 +187,19 @@ jobs:
             docker compose -f docker-compose.yml -f docker-compose.demo.yml logs --tail 50 auth || true
             exit 1'
 
-      - name: Build gateway image on the box
-        # The Go gateway uses compose's `build:` directive (context
-        # ./go-platform, dockerfile services/gateway/Dockerfile) rather than
-        # a pre-tagged image like the frontends, so `docker compose build`
-        # is the right call. Built FIRST so the player/office health checks
-        # downstream validate against the new backend; a gateway compile
-        # failure aborts the whole run before any frontend is recreated.
+      - name: Build gateway image and load on the box
+        # Build on the GitHub runner and load the image onto the box. The box
+        # has repeatedly timed out fetching Go modules; keeping compilation on
+        # the runner makes the deploy depend only on SSH + docker load there.
         run: |
-          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
-            set -eu
-            cd /opt/phoenix
-            for attempt in 1 2 3; do
-              echo "gateway image build attempt ${attempt}/3"
-              if timeout -k 1m 10m env JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
-                build --build-arg "GOPROXY=https://goproxy.io|https://proxy.golang.org|direct" gateway; then
-                exit 0
-              fi
-              echo "gateway image build attempt ${attempt} failed"
-              sleep $((attempt * 20))
-            done
-            exit 1'
+          docker build \
+            --build-arg "GOPROXY=https://goproxy.io|https://proxy.golang.org|direct" \
+            -f apps/Phoenix-Predict-Combined/go-platform/services/gateway/Dockerfile \
+            -t phoenix-gateway:latest \
+            apps/Phoenix-Predict-Combined/go-platform
+          docker save phoenix-gateway:latest | gzip -1 | \
+            ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+              'gunzip | docker load'
 
       - name: Apply gateway migrations
         # Keep DB schema ahead of the recreated gateway. The gateway image
