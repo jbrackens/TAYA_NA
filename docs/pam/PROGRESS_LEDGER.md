@@ -1,5 +1,81 @@
 # PAM Modernization — Progress Ledger
 
+## FINAL SESSION SUMMARY (2026-07-02)
+
+The autonomous loop drove the prediction-market back office through the entire
+P0, P1, and P2 backlog and every discovered gap item, reaching the point where
+every backlog item is either completed with test evidence or formally blocked
+on a human decision; the loop cannot declare full termination only because the
+PAM specification file it must reconcile against was never committed to the
+repository.
+
+Outcome in one sentence: all of the buildable compliance-and-security work is
+done, committed, and verified, and everything that remains is a decision the
+human must make (documented in `docs/pam/DECISIONS_NEEDED.md`) or the missing
+specification file (item BOOT-1).
+
+Items completed with evidence. In the P0 tier the loop delivered enforced
+administrator multi-factor authentication with single-use time-based codes and
+denial of administrator sign-in through the social-login path (backlog item
+P0-1), fail-closed Know-Your-Customer behavior outside development (item P0-2),
+and a Know-Your-Customer review user interface with real document-file storage
+plus a customer-profile Know-Your-Customer tab (item P0-3). In the P1 tier it
+delivered a manual balance-adjustment user interface (item P1-2), a responsible-
+gambling limits and self-exclusion profile tab (item P1-3), a market-integrity
+surveillance subsystem covering wash-trading, spoofing, collusion, and
+duplicate-account detection with an alerts-and-cases workflow (items P1-4 and
+P1-5), and a bonus administration user interface with a database-backed
+notification-template store and comma-separated-value export reports (item
+P1-6). In the P2 tier it delivered a database-backed feature-flag and
+configuration store, a tenant and brand directory administration surface, and a
+segmentation and customer-relationship-management subsystem with tags, a query
+builder, and campaigns that keep their dispatch action fail-closed for launch
+mode (items P2-1 peripherals and P2-2). It then hardened five discovered gap
+items: fail-closed Know-Your-Customer, responsible-gambling, and geolocation
+compliance fallbacks (item GAP-1), single-use replay protection for time-based
+one-time codes (item GAP-2), fail-closed handling of unrecognized deployment
+environments (item GAP-4), a durable database-backed authentication audit trail
+(item GAP-5), and role-based access control with audit logging on the bonus and
+campaign administration routes (item GAP-7).
+
+Commits and tests. The work is forty-three commits on the branch named
+`pam/p0-modernization`, of which thirty are feature or fix commits, ending at
+commit `24ea88b3`; nothing has been pushed to any remote. Six database
+migrations were added, numbered fifty through fifty-five. The gateway service
+builds cleanly and its full race-enabled test suite passes across twenty-nine
+packages; the authentication service builds cleanly and its race-enabled test
+suite passes; the back-office web application's unit-test suite passes at one
+hundred thirty-one of one hundred thirty-one, and the back-office end-to-end
+Playwright specifications pass for authentication, Know-Your-Customer review,
+balance adjustment, surveillance, bonuses, reports, and tenants.
+
+Coverage of new logic. Every new store has table-driven unit tests plus an
+opt-in live-Postgres test guarded by a dedicated data-source-name environment
+variable; every new administrative route has a test asserting that a non-
+privileged caller is refused; every database migration was applied up and then
+down and then up again on a disposable scratch database; and five independent
+fresh-context verification passes reviewed the accumulated changes, each with a
+guardrail lens, a claim-audit lens, and an adversarial lens, with every
+resulting finding either fixed in a follow-up commit or recorded as a gap item.
+
+Exact command and state needed to resume. The single action that unblocks the
+loop's formal termination is to place the PAM specification documents into the
+repository at `REPO_ROOT/docs/pam/` and commit them; the precise copy command is
+written at the top of `docs/pam/DECISIONS_NEEDED.md`. Once the file
+`docs/pam/spec.md` exists and opens with the heading
+`# Enterprise Prediction Market PAM / Back Office Spec`, the next scheduled loop
+firing will run termination reconciliation pass B, add specification-section
+citations to the record, and either terminate or append new gap items for any
+specification scenario not yet satisfied. The remaining blocked items — the
+sanctions and anti-money-laundering vendor and regime choices, the maker-checker
+approval thresholds, the double-entry ledger migration, the launch-mode cashier
+decision, the tenant query-scoping activation, the data-retention policy, the
+on-chain settlement decision, and the three smaller flagged gap items — are each
+consolidated with options and a recommendation in `docs/pam/DECISIONS_NEEDED.md`
+and require only a human answer to proceed.
+
+---
+
 ## Bootstrap (session 2026-07-02)
 
 ### REPO_ROOT
@@ -28,13 +104,14 @@
 - date: 2026-07-02
 - Worktree setup gotcha: a fresh checkout needs `yarn install --frozen-lockfile` at `talon-backoffice/` AND `yarn lerna run build --scope @phoenix-ui/utils --scope @phoenix-ui/api-client --include-dependencies` before any package build — `@phoenix-ui/utils` resolves to `dist/index.js`, which only exists after tsc (same order CI uses in `.github/workflows/frontend-build.yml`).
 
-## Status summary (as of 2026-07-02, 30 commits since main, branch pam/p0-modernization)
-- **P0: 3/7 DONE** (P0-1 admin MFA, P0-2 KYC fail-closed, P0-3 KYC review+docs) · P0-4/5/6/7 BLOCKED (briefs; P0-7 design note).
-- **P1: 5/6 DONE** (P1-2 balance-adjust UI, P1-3 Limits tab, P1-4 surveillance, P1-5 dup-account, P1-6 bonus UI+templates+exports) · P1-1 BLOCKED (launch-safe brief).
-- **P2: P2-1 core BLOCKED (design note) + peripherals DONE (feature-flag store, tenant admin); jurisdiction editor design-blocked GAP-8. P2-2 slices 1-2 DONE (tags + query builder), slice 3 (campaigns) PENDING. P2-3, P2-4 BLOCKED.**
-- Verifications #1/#2/#3 all done; every finding fixed or filed (GAP-1 RG-half fixed; GAP-2..8 pending disposition).
-- Baseline green at HEAD: gateway `go build` + `go test` 29 packages ok; auth builds; office vitest 131/131; Playwright backoffice specs green (auth/kyc-review/balance-adjustment/surveillance/bonuses/reports/tenants).
-- **Termination status: pass A (backlog exhausted) NOT yet — P2-2 slice 3 + GAP-2..8 dispositions remain. Pass B (spec reconciliation) is BLOCKED on BOOT-1 (the PAM spec `docs/pam/spec.md` is absent), so final termination cannot complete until the human supplies the spec regardless.**
+## Status summary (FINAL, 2026-07-02 — HEAD 24ea88b3, 43 commits since main)
+- **P0: 3/7 DONE** (P0-1, P0-2, P0-3) · P0-4/5/6/7 BLOCKED (briefs; P0-7 design note).
+- **P1: 5/6 DONE** (P1-2..P1-6) · P1-1 BLOCKED (launch-safe brief).
+- **P2: DONE where buildable** — P2-1 peripherals DONE (feature-flag store, tenant admin), P2-1 core BLOCKED (design note), P2-2 DONE (tags + query builder + campaigns); P2-3/P2-4 BLOCKED.
+- **GAP-1..8: all DONE or BLOCKED** — GAP-1 (KYC/RG/geo fail-closed) DONE, GAP-2 (TOTP single-use) DONE, GAP-4 (env fail-closed) DONE, GAP-5 (durable auth audit) DONE, GAP-7 (bonus RBAC) DONE; GAP-3/6/8 BLOCKED with briefs.
+- Verifications #1-#5 all done; every finding fixed (last: verification #5 major geo/KYC/RG exact-match → `24ea88b3`).
+- Green at HEAD: gateway `go build` + `go test -race` 29 pkgs; auth build + `go test -race`; office vitest 131/131; Playwright backoffice specs green.
+- **TERMINATION: pass A (backlog + GAP exhausted) TRUE. Pass B (spec reconciliation) BLOCKED on BOOT-1 — `docs/pam/spec.md` absent. The loop holds here until the human supplies the spec (see DECISIONS_NEEDED.md).**
 
 ### Resume plan (next scheduled firing picks up here)
 1. P2-2 slice 3 — campaigns: a campaign targets a saved segment query and dispatches an action (notification via the template store, or a bonus grant via the bonus engine); RBAC `segments:write`, audited, launch-safe (no user-facing send in launch mode). Then an office CRM page for tags/query/campaigns.
@@ -45,6 +122,9 @@
 
 ### P1-1 note
 - **P1-1 (Cashier/deposits/withdrawals) is ⚑ launch-safe-blocked**: PAM §22 requires it but Tiangge §2/§19 forbid user money exposure. The crypto rail (`internal/alphacashier`) is already flag-gated OFF and boot-refused in prod; what remains (withdrawals queue + AWA rules engine back office) awaits the human's build-now-vs-defer call (brief below).
+
+## Fresh-context verification #5 (2026-07-02, after the GAP hardening)
+3 lenses over `1c79bea8..HEAD` (GAP-7 already in-range as of its own commit; GAP-2, GAP-5, GAP-4, GAP-1-geo). Guardrail+build+test lens: PASS (no protected-core; gateway + auth build; suites green). TOTP lens: single-use is SOUND — no replay path; concurrent replay closed by the atomic `UPDATE ... WHERE last_used_step < step` (DB) and the mutex on the stored in-memory record; all error paths fail closed; MFAActivate/MFADisable cannot be leveraged to replay a login code. One accepted minor: a client whose clock LEADS by one step burns the next window's code — correct single-use behavior, ~30s wait, not weakenable. Boot/geo/audit lens: found **[major]** the KYC/RG/geo fallback selectors used exact `production||staging` match while GAP-4 boots non-canonical deployed values (`prod`, `preprod`, ...) as deployed — those would get APPROVING mocks. FIXED commit `24ea88b3` (all three selectors now use the GAP-4 known-dev allowlist via `deployedEnvironment`; tests assert prod/preprod/prd/live/production2 fail closed across KYC, RG, geo). Range note: GAP-7's migration 055 is one commit before the chosen range start — it is committed (`dd529cf6`) and tested, not missing.
 
 ## Fresh-context verification #2 (2026-07-02, after P1-2/P1-3/P1-4)
 3 lenses over `618b39fa..HEAD`. Guardrail/RBAC/audit/migration/launch-safety all PASS (no prediction/wallet/settlement file touched; every admin route RBAC-gated; every mutation audited; migration 051 goose-splittable with working down; office pages back-office only). Claim audit PASS (all 6 commits + files + tests verified, `go build` + `go test -race` green). Findings fixed in commit `e7302348`:
