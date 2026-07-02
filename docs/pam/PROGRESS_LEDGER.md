@@ -76,6 +76,33 @@ and require only a human answer to proceed.
 
 ---
 
+## DECISION ROUND (2026-07-02 evening — human present, all blocked questions answered)
+
+The human answered every open decision interactively (AskUserQuestion round,
+one item at a time). This supersedes the BLOCKED state of each item below;
+the briefs remain for the record. Evidence: BOOT-1 docs landed at commit
+`54139c24`.
+
+| Item | Decision (2026-07-02) | New state |
+|---|---|---|
+| BOOT-1 | Human authorized copying the five PAM docs from the outer tree; landed + committed `54139c24`. spec.md verified: correct title, §36 @786, §37 @825. | **DONE** |
+| P0-4 | OpenSanctions/yente, self-hosted; enforcement at onboarding now (money paths when they open); seam shaped like `alphacashier/screening.go`. Upgrade to commercial when rails open. | **DECIDED → buildable** |
+| P0-5 | Regime-agnostic AML plumbing: wallet/ledger event stream → `aml_alerts` → `aml_cases` → disposition/SAR-export workflow; rules load as data when counsel names the regime. | **DECIDED → buildable** |
+| P0-6 | Threshold-based maker-checker: manual adjustments ≥ 10,000 cents ($100) need a second approver; settlement always four-eyes. Settlement half = protected core → build under human diff review. | **DECIDED → buildable (adjustments half autonomous; settlement half review-gated)** |
+| P0-7 | Double-entry ledger design APPROVED as written (`designs/p0-7-design.md`). Build phase-by-phase; every phase diff gets human review before merge (protected core). Phase 1 = shadow-write (old path stays authoritative). | **APPROVED → review-gated phased build** |
+| P1-1 | Build the cashier back office now: withdrawals queue + AWA rules engine, flag-gated OFF, zero launch nav, unreachability test. AWA thresholds default to the P0-6 class ($100), runtime-configurable data. | **DECIDED → buildable** |
+| P2-1 core | DEFERRED — single-tenant at launch; dormant `tenant_id` column stays. Revisit when a second brand/tenant is planned. | **DEFERRED (recorded, not buildable)** |
+| P2-3 | Build DSAR export + pseudonymization pass now (PII redacted, audit/ledger rows intact under legal-obligation basis); retention periods ship as config placeholders pending counsel. | **DECIDED → buildable** |
+| P2-4 | FORMALLY DESCOPED — settlement stays off-chain; money via custodial USDT rail. Write a descope note citing PAM §22/on-chain sections + Tiangge §2/§19; gates ADR-0003/0004. | **DESCOPED (needs descope note commit)** |
+| GAP-3 | App-layer AES-GCM via `AUTH_MFA_ENC_KEY` now; fail-closed if key absent in deployed envs; KMS-ready key-source seam for later. | **DECIDED → buildable** |
+| GAP-6 | Capture IP + user-agent at auth events into a new `punter_signals` table; NO client-side fingerprint SDK. Feeds P1-5 dup-detection. | **DECIDED → buildable** |
+| GAP-8 | Runtime TIGHTENING only: admins can remove countries from the geo allowlist at runtime (audited); adding a country stays env+redeploy+boot-validation. | **DECIDED → buildable** |
+
+**New build queue (P0→P1→P2 order):** pass B spec reconciliation first (now
+unblocked), then P0-4 → P0-5 → P0-6 → P0-7 phase 1 → P1-1 → GAP-3 → P2-3 →
+GAP-6 → GAP-8 → P2-4 descope note. Termination pass A is FALSE again (items
+moved from BLOCKED to buildable); the loop resumes normal iterations.
+
 ## Bootstrap (session 2026-07-02)
 
 ### REPO_ROOT
@@ -88,11 +115,12 @@ and require only a human answer to proceed.
   - `main` was merged into `pam/p0-modernization` this session to bring the branch current (main had moved: Tiangge RC spec, auth P1-05 hardening, deploy fixes). Two conflicts in `services/auth/internal/http/handlers.go` resolved by keeping BOTH sides: main's per-IP login limiter + helpers AND P0-1's 3-arg `Login(username, password, otp)`. Auth module `go build` clean, `go test -race ./...` **ok (125.7s)** after resolution.
 
 ### Source-of-truth docs (Phase 0.2)
-- `docs/pam/spec.md` — **MISSING** from REPO_ROOT (BLOCKED, see BOOT-1)
-- `docs/pam/taya-gap-analysis.md` — **MISSING** (BOOT-1)
-- `docs/pam/pam-implementation-plan.md` — **MISSING** (BOOT-1)
-- `docs/pam/pam-domain-model.md` — **MISSING** (BOOT-1)
-- `docs/pam/pam-open-questions.md` — **MISSING** (BOOT-1)
+- **UPDATE 2026-07-02 evening: BOOT-1 RESOLVED** — all five docs landed at commit `54139c24` under human authorization (see DECISION ROUND). `spec.md` verified: opens `# Enterprise Prediction Market PAM / Back Office Spec`, `## 36. Progress Matrix` at line 786, `## 37. Reconciliation` at line 825. Historical state below kept for the record.
+- `docs/pam/spec.md` — ~~MISSING~~ **PRESENT** (`54139c24`)
+- `docs/pam/taya-gap-analysis.md` — ~~MISSING~~ **PRESENT**
+- `docs/pam/pam-implementation-plan.md` — ~~MISSING~~ **PRESENT**
+- `docs/pam/pam-domain-model.md` — ~~MISSING~~ **PRESENT**
+- `docs/pam/pam-open-questions.md` — ~~MISSING~~ **PRESENT**
 - Evidence: `docs/pam/` does not exist in the main checkout, the pam-worktree, or **anywhere in git history on any branch** (`git log --all --oneline -- docs/pam` is empty).
 - Tiangge launch spec — **VERIFIED** at `REPO_ROOT/spec.md` (512,084 bytes; first line `# Tiangge Spec`; tracked, last touched by commit `7069c7c9` "feat: prepare Tiangge parity RC release"). Note: it entered main *after* the pam branch point, which is one reason the merge above was needed.
 - Consequence while BOOT-1 is open: backlog items are implemented from their self-contained inline descriptions + the code itself; PAM-spec §-citations are recorded as "citation pending BOOT-1 unblock"; Termination pass B (spec reconciliation) cannot run and is BLOCKED on BOOT-1.
@@ -111,7 +139,7 @@ and require only a human answer to proceed.
 - **GAP-1..8: all DONE or BLOCKED** — GAP-1 (KYC/RG/geo fail-closed) DONE, GAP-2 (TOTP single-use) DONE, GAP-4 (env fail-closed) DONE, GAP-5 (durable auth audit) DONE, GAP-7 (bonus RBAC) DONE; GAP-3/6/8 BLOCKED with briefs.
 - Verifications #1-#5 all done; every finding fixed (last: verification #5 major geo/KYC/RG exact-match → `24ea88b3`).
 - Green at HEAD: gateway `go build` + `go test -race` 29 pkgs; auth build + `go test -race`; office vitest 131/131; Playwright backoffice specs green.
-- **TERMINATION: pass A (backlog + GAP exhausted) TRUE. Pass B (spec reconciliation) BLOCKED on BOOT-1 — `docs/pam/spec.md` absent. The loop holds here until the human supplies the spec (see DECISIONS_NEEDED.md).**
+- ~~TERMINATION: pass A TRUE, pass B BLOCKED on BOOT-1.~~ **SUPERSEDED 2026-07-02 evening (see DECISION ROUND):** BOOT-1 resolved (`54139c24`); all ⚑ decisions answered. Pass A is FALSE again — P0-4, P0-5, P0-6, P0-7 (review-gated), P1-1, P2-3, GAP-3, GAP-6, GAP-8 are now buildable; P2-1 deferred; P2-4 descoped (note pending). Pass B spec reconciliation runs NOW, then the loop works the new queue.
 
 ### Resume plan (next scheduled firing picks up here)
 1. P2-2 slice 3 — campaigns: a campaign targets a saved segment query and dispatches an action (notification via the template store, or a bonus grant via the bonus engine); RBAC `segments:write`, audited, launch-safe (no user-facing send in launch mode). Then an office CRM page for tags/query/campaigns.
@@ -145,9 +173,8 @@ Adversarial lens confirmed the detector SQL is sound (wash excludes AMM/issuance
 - [minor] the ledger had verification #2/#3 + In-progress sections triplicated by copy-append → FIXED (deduplicated to one each).
 
 ## In progress
-- **TERMINATION PASS A IS TRUE**: every backlog item (P0-1..P2-4) and every GAP item (GAP-1..8) is now DONE (with evidence) or BLOCKED (with a brief/design note). GAP builds landed this session: GAP-7 `dd529cf6`, GAP-2 `789e26b6`, GAP-5 `cc79bb82`, GAP-4 `73247052`, GAP-1-geo `df14051b`. GAP-3/6/8 BLOCKED with briefs.
-- **TERMINATION PASS B IS BLOCKED on BOOT-1**: pass B walks `docs/pam/spec.md`'s acceptance scenarios / progress matrix, but that file is absent (never committed — see Bootstrap). Pass B cannot run, so the loop cannot formally terminate (produce zero new GAP items) until the human supplies the PAM spec. This is the genuine terminal state achievable without the spec.
-- Verification #5 (over `df14051b`-range GAP work, incl. the auth login path) dispatched. Then: DECISIONS_NEEDED.md + final summary; loop holds at pass-B-blocked-on-BOOT-1.
+- **PASS B — spec reconciliation (2026-07-02 evening, first run with the spec on disk):** walking `docs/pam/spec.md` §36 Progress Matrix + §37 Reconciliation + per-section requirements against the Done/Blocked/Decided record; any unaccounted requirement becomes GAP-n. Also back-filling `spec §` citations that read "pending BOOT-1".
+- Historical (superseded): pass A first became TRUE earlier today with GAP builds GAP-7 `dd529cf6`, GAP-2 `789e26b6`, GAP-5 `cc79bb82`, GAP-4 `73247052`, GAP-1-geo `df14051b`; pass B was blocked on BOOT-1 until the DECISION ROUND resolved it (`54139c24`).
 
 ## Done
 - [P0-1] Real admin MFA — commits `6914421c` (slice 1, prior session: TOTP machinery — enroll/activate/disable/status endpoints, `auth_mfa` table via ensureUserSchema, login OTP verification for active factors) and `268157b8` (slice 2, this session: forced enrollment for admins + OAuth admin denial) — files: `services/auth/internal/http/{handlers,mfa,totp,oauth}.go` + `{handlers,totp,mfa_admin}_test.go` — tests: full auth suite `go test -race` ok (174.3s) incl. new `TestMFAAdminRequiredFromEnv`, `TestAdminLoginRequiresEnrollmentWhenFlagOn` (9-step end-to-end journey), `TestAdminLoginLegacyWhenFlagOff`, `TestEnrollTokenExpiryAndRotation`, `TestOAuthSessionGateDeniesAdmins` — spec §: citation pending BOOT-1.
