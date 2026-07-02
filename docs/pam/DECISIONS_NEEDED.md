@@ -90,6 +90,43 @@ Revisit only if the venue decision changes.
 
 ---
 
+## NEW decisions surfaced by pass B spec reconciliation (2026-07-03) — ⚑ OPEN
+
+Pass B (`docs/pam/pass-b-findings-2026-07-03.md`) confirmed 67 gaps; three
+need a human call before their items can build:
+
+### GAP-19 — Production KYC IDV vendor (⚑ vendor)
+**Question.** Which identity-verification vendor goes behind the existing
+`internal/compliance/idv.go` seam? Today `KYC_IDV_PROVIDER=''/manual` means
+back-office manual review is the only real path.
+**Options.** (a) Sumsub — crypto-friendly, doc+liveness, bundles some
+screening; (b) Onfido/Persona — strong docs+biometrics, US-centric pricing;
+(c) stay manual-review until money rails open (current posture, zero cost).
+**Recommendation.** (c) for the points-only launch, pick (a) when rails open —
+consistent with the P0-4 sanctions decision (open-source now, commercial later).
+**Unblock.** Vendor name + API key provisioning, or an explicit "stay manual
+until <milestone>".
+
+### GAP-28 — Secrets management beyond the MFA key (⚑ infra)
+**Question.** All service secrets are env-vars; GAP-3's decided AES-GCM
+covers TOTP secrets only. Where do platform secrets live long-term?
+**Options.** (a) stay env-vars with deploy-host hygiene (status quo); (b)
+cloud KMS/secrets-manager when infra lands (extends GAP-3's KMS-later seam);
+(c) self-hosted Vault.
+**Recommendation.** (a) now, (b) at production-infra buildout — matches the
+GAP-3 posture. Escalates if ops ever stores credentials in the DB config
+store (see GAP-31).
+**Unblock.** Confirm (a)-now/(b)-later, or name the target.
+
+### GAP-29 — ISO 27001-grade organizational posture (⚑ org, not code)
+**Question.** §27 expects ISMS-class organizational controls (policies,
+vendor management, incident process). This is outside what the code loop can
+build. Who owns it, and to what timeline (licensing dependency)?
+**Unblock.** Named owner + target framework/timeline; the loop records the
+answer and closes the item as org-owned.
+
+---
+
 ## What was already DONE before this round (no decision needed)
 
 P0-1 admin MFA (enforced TOTP, single-use, OAuth admin denial), P0-2 KYC

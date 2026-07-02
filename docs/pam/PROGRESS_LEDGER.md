@@ -93,7 +93,7 @@ the briefs remain for the record. Evidence: BOOT-1 docs landed at commit
 | P1-1 | Build the cashier back office now: withdrawals queue + AWA rules engine, flag-gated OFF, zero launch nav, unreachability test. AWA thresholds default to the P0-6 class ($100), runtime-configurable data. | **DECIDED → buildable** |
 | P2-1 core | DEFERRED — single-tenant at launch; dormant `tenant_id` column stays. Revisit when a second brand/tenant is planned. | **DEFERRED (recorded, not buildable)** |
 | P2-3 | Build DSAR export + pseudonymization pass now (PII redacted, audit/ledger rows intact under legal-obligation basis); retention periods ship as config placeholders pending counsel. | **DECIDED → buildable** |
-| P2-4 | FORMALLY DESCOPED — settlement stays off-chain; money via custodial USDT rail. Write a descope note citing PAM §22/on-chain sections + Tiangge §2/§19; gates ADR-0003/0004. | **DESCOPED (needs descope note commit)** |
+| P2-4 | FORMALLY DESCOPED — settlement stays off-chain; money via custodial USDT rail. Descope note committed: `docs/pam/designs/p2-4-descope.md` (`1cced309`) citing PAM §17/§26 + Tiangge §2/§19; resolves ADR-0003/0004. | **DESCOPED — DONE** |
 | GAP-3 | App-layer AES-GCM via `AUTH_MFA_ENC_KEY` now; fail-closed if key absent in deployed envs; KMS-ready key-source seam for later. | **DECIDED → buildable** |
 | GAP-6 | Capture IP + user-agent at auth events into a new `punter_signals` table; NO client-side fingerprint SDK. Feeds P1-5 dup-detection. | **DECIDED → buildable** |
 | GAP-8 | Runtime TIGHTENING only: admins can remove countries from the geo allowlist at runtime (audited); adding a country stays env+redeploy+boot-validation. | **DECIDED → buildable** |
@@ -173,8 +173,26 @@ Adversarial lens confirmed the detector SQL is sound (wash excludes AMM/issuance
 - [minor] the ledger had verification #2/#3 + In-progress sections triplicated by copy-append → FIXED (deduplicated to one each).
 
 ## In progress
-- **PASS B — spec reconciliation (2026-07-02 evening, first run with the spec on disk):** walking `docs/pam/spec.md` §36 Progress Matrix + §37 Reconciliation + per-section requirements against the Done/Blocked/Decided record; any unaccounted requirement becomes GAP-n. Also back-filling `spec §` citations that read "pending BOOT-1".
-- Historical (superseded): pass A first became TRUE earlier today with GAP builds GAP-7 `dd529cf6`, GAP-2 `789e26b6`, GAP-5 `cc79bb82`, GAP-4 `73247052`, GAP-1-geo `df14051b`; pass B was blocked on BOOT-1 until the DECISION ROUND resolved it (`54139c24`).
+- (none — next iteration selects from the Pass B build queue below)
+
+## PASS B — spec reconciliation COMPLETE (2026-07-03)
+- Run as a fresh-context multi-agent workflow: 7 section readers over the full spec (§1-§37 incl. all 20 §32 acceptance scenarios) against the ledger + decisions, then one adversarial verifier per candidate gap instructed to REFUTE against code, ledger, and spec text. First run's verify stage was wiped by a session limit (recorded honestly, not counted); the resumed run completed clean.
+- **Counts: 105 requirements satisfied · 50 accounted (decided/deferred/descoped) · 67 candidate gaps CONFIRMED · 3 refuted.** Full per-finding evidence: `docs/pam/pass-b-findings-2026-07-03.md`. Refuted for the record: staff failed-login lockout (already built — per-IP limiter + account lockout on main), pam-traceability-matrix.md absence (not a requirement — header reference only), implementation-plan reframing (already recorded via §37 itself).
+- The 67 confirmed findings dedupe/merge into **GAP-9..GAP-56** below (semantic duplicates across section- and scenario-readers merged; each entry cites the § and the findings file carries the evidence).
+- Spec citations back-filled on all DONE items (`1ddf7c53`). Pass B verdict: **NOT zero-gap → the loop returns to the Loop per the Termination Condition.** Pass A is also false (decision round unblocked 9 items). Termination re-check happens when the queue is exhausted again.
+
+### Pass B build queue (P0→P1→P2; one item/slice per iteration)
+1. **GAP-9** (P0) suspension enforcement + reason/audit — small, live compliance hole
+2. **GAP-10** (P0) self-exclusion/suspension blocks login — pairs with GAP-9
+3. **P0-4** sanctions screening via OpenSanctions/yente (decided)
+4. **P0-5** AML plumbing, rules-as-data (decided; design must express risk-point accrual → case-at-threshold, Scenario 5)
+5. **GAP-12** (P0) customer risk-profile rating — sequence right after P0-5 (shares the risk-scoring substrate)
+6. **GAP-11** (P0) RG limit-type breadth (loss/position/session)
+7. **P0-6** maker-checker (adjustments half autonomous; settlement half review-gated)
+8. **GAP-13** (P0) audit hash-chaining
+9. **P0-7 phase 1** shadow-write double-entry (review-gated, protected core)
+10. **P1-1** cashier back office (decided, flag-OFF + unreachability test)
+11. **GAP-3** TOTP secret encryption (decided) → then P1 gaps GAP-14..27 (roster below), P2-3 DSAR, GAP-6, GAP-8, then P2 gaps GAP-30..56.
 
 ## Done
 - [P0-1] Real admin MFA — commits `6914421c` (slice 1, prior session: TOTP machinery — enroll/activate/disable/status endpoints, `auth_mfa` table via ensureUserSchema, login OTP verification for active factors) and `268157b8` (slice 2, this session: forced enrollment for admins + OAuth admin denial) — files: `services/auth/internal/http/{handlers,mfa,totp,oauth}.go` + `{handlers,totp,mfa_admin}_test.go` — tests: full auth suite `go test -race` ok (174.3s) incl. new `TestMFAAdminRequiredFromEnv`, `TestAdminLoginRequiresEnrollmentWhenFlagOn` (9-step end-to-end journey), `TestAdminLoginLegacyWhenFlagOff`, `TestEnrollTokenExpiryAndRotation`, `TestOAuthSessionGateDeniesAdmins` — spec §: §11 Identity, Account Lifecycle, and Authentication + §27 Security Requirements (§32 Scenario 1).
@@ -256,6 +274,63 @@ Three independent lenses (compliance posture / ledger-claim audit / adversarial 
 - [GAP-5] (P1) Durable auth-service audit: route `auth.*` events (MFA lifecycle, OAuth denials, logins) to the append-only DB-backed audit store; consider deny-on-audit-failure for identity-document serving. Justification: process logs are mutable/per-instance — the property the gateway's own boot check rejects.
 - [GAP-7] (P1) Retrofit the bonus/campaign admin routes (`internal/http/bonus_handlers.go`: list/grant/forfeit/campaigns, all on the coarse `role==admin` gate) to the fine-grained RBAC permission model + audit sensitive actions — the same class as SECURITY-REVIEW #5 that migration 040 closed for wallet/settlement/KYC routes. Whole-surface change (all bonus admin routes), so not partially patched during P1-6. Justification: consistent RBAC + audit posture across admin money-adjacent routes.
 - [GAP-6] (P2) Device/IP fingerprint capture for stronger fraud/duplicate-account detection: `punters` stores no signup/last-login IP, user-agent, or device id, so P1-5 can only match on email-normalization collision. Capturing these (auth-service login + registration ingestion → a `punter_signals` table) would enable IP/device-cluster and velocity detectors. Schema + ingestion change; spec §: §18 Market Integrity, Fraud, and Abuse Monitoring.
+
+## Backlog additions — PASS B confirmed gaps (2026-07-03, GAP-9..GAP-56)
+Evidence for every entry: `docs/pam/pass-b-findings-2026-07-03.md`. Merged from 67 verifier-confirmed findings. ⚑ = Blocked-Item Protocol (brief in DECISIONS_NEEDED.md); (doc) = documentation deliverable.
+
+**P0 — compliance/security:**
+- [GAP-9] (P0) Admin suspension is a dead flag — `punters.status` written by `UpdatePunterStatus` (sql_admin_repository.go:193) but never read on the trading path; status route accepts no reason and writes no audit — §11 Identity, Account Lifecycle, and Authentication + §32 Scenario 3. Fix at the http/compliance gate layer, NOT protected core (verify at build).
+- [GAP-10] (P0) Self-exclusion/suspension does not block LOGIN — auth service has zero restriction awareness (§13 Responsible Gaming / Responsible Trading + §32 Scenario 6, "login and trading blocked"). Needs an auth→restrictions lookup or status mirror; design with GAP-9.
+- [GAP-11] (P0) RG limit-type breadth — only deposit + stake limits exist; spec requires loss, position/exposure, and session limits — §13 + Scenario 6.
+- [GAP-12] (P0) Persistent per-customer risk-profile rating (low→high) feeding gating — §12 KYC, AML, Risk, and Compliance. Sequence immediately after P0-5 (shares risk-scoring substrate).
+- [GAP-13] (P0) Audit-log hash-chaining — tamper evidence today rests solely on the DB trigger; a superuser can drop it without in-band evidence — §24 Audit Logs and Compliance Evidence + Scenario 17.
+
+**P1 — money/ops:**
+- [GAP-14] (P1) Seed the §6 role personas — only 3 of 9 roles exist (027 seeds super-admin/ops/support); needs a seed migration + role-permission matrix data pass — §6 User Roles / §7 Permission Model.
+- [GAP-15] (P1) MFA management surface — factor status/admin reset (lost-device recovery), WebAuthn option — §11/§25/§27.
+- [GAP-16] (P1) Admin session revocation + concurrent-session steal-lock — §11.
+- [GAP-17] (P1) Automated KYC re-trigger rules (volume/registration-driven) — §12.
+- [GAP-18] (P1) KYC review "request more documents" action/state — §12.
+- [GAP-19] (P1 ⚑) Production KYC IDV vendor — seam exists (`idv.go`), vendor choice is human — §12. Brief in DECISIONS_NEEDED.md.
+- [GAP-20] (P1) Tag-gated market eligibility + Profile-360 eligibility view — §15 Prediction Market Account Functions.
+- [GAP-21] (P1) Admin order view/cancel, audited — only a player-scoped cancel exists — §16. (Calls the existing service cancel; no protected-core edit — verify at build.)
+- [GAP-22] (P1) Insider/abnormal-pattern surveillance detector — P1-4 ships wash/spoof/collusion only — §18.
+- [GAP-23] (P1) Bonus-abuse detection rules — §18.
+- [GAP-24] (P1 ⏳) Statutory/regulatory report suite — rides the same counsel regime input as P0-5 — §23.
+- [GAP-25] (P1) Audit RBAC permission DENIALS — `requireRBACPermission` 403s with no audit write; small bounded fix at the chokepoint — §24/§27 + Scenario 1.
+- [GAP-26] (P1) §32 scenario-evidence pass — script + capture each runnable scenario's Required Evidence and flip §36 statuses (per-capability tests exist; formal scenario evidence does not) — §36.
+- [GAP-27] (P1) Reconcile shipped schema against `pam-domain-model.md` entities/state-machines (doc only landed at `54139c24`) — §30.
+- [GAP-28] (P1 ⚑) Secrets-management approach beyond the MFA key (env-vars today) — §27. Brief in DECISIONS_NEEDED.md.
+- [GAP-29] (org ⚑) ISO 27001-grade ISMS posture — organizational, outside the code loop's remit; needs an owner — §27. Recorded in DECISIONS_NEEDED.md.
+
+**P2 — breadth:**
+- [GAP-30] (P2) Per-country jurisdiction switch matrix (signup/login toggles, signup age, per-country deposit limits, per-country KYC/geo/AWA selection; incl. per-country KYC matrix) — §8/§12. Note: signup-not-gated is a deliberate code decision (gate_surface.go) never ledger-recorded — this entry records it.
+- [GAP-31] (P2) Config registry scope dimensions (country/currency) + encryptable values — flat KV today; escalates to P1 the moment ops stores credentials in it — §8/§27.
+- [GAP-32] (P2) Unified case management — shared case model (six §19 types incl. general support; assignee/SLA/notes) + cross-domain case center; build the shared model alongside P0-5's aml_cases to avoid a third divergent schema — §9/§19 + Scenario 19.
+- [GAP-33] (P2) Office UIs for CRM (segments/tags/query builder/campaigns) + notification-template editor — backend APIs are DONE, UI absent; /campaigns is a guarded redirect stub (use fresh routes) — §9/§21/§29 + Scenario 13.
+- [GAP-34] (P2) Player-search predicates: phone, national-ID, tag, trading-attribute — §10.
+- [GAP-35] (P2) Profile-360 missing tabs: Bonuses/Rewards, Notes & Timeline, Cases — §10.
+- [GAP-36] (P2) Registration: persist affiliate tag + signup country — §11.
+- [GAP-37] (P2) Configurable password policy (players + staff) — §11/§25. (Account-level lockout exists per verifier refutation; policy configurability does not.)
+- [GAP-38] (P2) Reality-check session reminders — §13.
+- [GAP-39] (P2) Problem-trading flag on profile/RG state — §13.
+- [GAP-40] (P2) National/third-party exclusion-register integration seam + admin screen — §13/§9.
+- [GAP-41] (P2 ⚑ PROTECTED) Currency dimension on wallets/ledger — financial-table schema change; fold into the P0-7 design (multi-currency accounts in the postings schema), never standalone — §14.
+- [GAP-42] (P2) Communication channel abstraction (SMS/push/in-app; email-only today) — §20.
+- [GAP-43] (P2) Per-player sent-communication history + agent-initiated templated send (launch-safe: dispatch fail-closed) — §20 + Scenario 12.
+- [GAP-44] (P2) Tag groups + segment-query export — §21.
+- [GAP-45] (P2) Event-triggered lifecycle journeys (campaigns are one-shot) — §21.
+- [GAP-46] (P2) Payment-methods registry/config screen — build launch-safe with P1-1 or descope-note — §22/§25.
+- [GAP-47] (P2 doc) Fiat multi-PSP connectors formal descope note (crypto-native launch policy; P2-4-style) — §22/§26.
+- [GAP-48] (P2) Finance/payments dashboards + daily balance/trading-volume report + wallet-ledger CSV export — §23 + Scenario 15.
+- [GAP-49] (P2) PDF export (CSV exists) — §23 + Scenario 15.
+- [GAP-50] (P2) Structured before/after per-field change tracking in audit details (incl. config old-value; platform_config_handlers.go:85 audits new value only) — §24 + Scenarios 17/20.
+- [GAP-51] (P2) Consent capture/versioning — §25/§28.
+- [GAP-52] (P2 doc) §29 UI-stack divergence note — spec prescribes React 18/MUI/Idefix Nx; shipped is Next.js+AntD/P8; record the amendment — §29.
+- [GAP-53] (P2) Office-wide list-detail / filter+export-grid pattern rollout — §29.
+- [GAP-54] (P2) A11y + responsive verification for the back office — §29.
+- [GAP-55] (P2) Seed/demo compliance breadth: KYC/risk/RG-state trader variety, brands/jurisdictions, payment methods, pending withdrawals — §31.
+- [GAP-56] (P2 doc) Annotate `pam-open-questions.md` with the 2026-07-02 decision-round answers (doc is stale, pre-decisions) — §34.
 
 ## Done (P1 continued)
 - [P1-5] Fraud / duplicate-account detection — commit `0d752967` — files: `internal/surveillance/fraud.go` (+`fraud_test.go`), engine default-set update, live test — tests: `NormalizeEmail` unit table + live Postgres duplicate-account test green; surveillance+http `go test -race` ok — spec §: §18 Market Integrity, Fraud, and Abuse Monitoring (§32 Scenario 10, linked-accounts leg). Email-normalization collision detector (plus-addressing, gmail dot/googlemail aliasing) reusing the P1-4 alert/case pipeline + UI; no new tables/migration/permission. Device/IP fingerprinting deferred as GAP-6 (schema lacks the signals).
