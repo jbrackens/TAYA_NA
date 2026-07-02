@@ -270,6 +270,7 @@ func NewEngine(store *Store, db *sql.DB, detectors ...Detector) *Engine {
 			WashSelfTradeDetector{},
 			SpoofingDetector{},
 			CollusionDetector{},
+			DuplicateAccountDetector{},
 		}
 	}
 	return &Engine{store: store, db: db, detectors: detectors}

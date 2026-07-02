@@ -10,6 +10,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -210,6 +211,42 @@ VALUES ($1, $2, 'yes', 'buy', 'limit', 50, 200, 0, 200, 10000, 'cancelled',
 	}
 	if !found {
 		t.Fatalf("expected a spoofing alert for %s/%s, got %+v", userID, marketID, results)
+	}
+}
+
+func TestDuplicateAccountDetectorLive(t *testing.T) {
+	db := liveDB(t)
+	defer db.Close()
+	ctx := context.Background()
+
+	// Seed two alias accounts for one real gmail inbox plus a distinct one.
+	stamp := time.Now().UnixNano()
+	base := fmt.Sprintf("dupring%d", stamp)
+	seed := func(id, email string) {
+		if _, err := db.ExecContext(ctx, `
+INSERT INTO punters (id, email, status, created_at)
+VALUES ($1, $2, 'active', NOW())`, id, email); err != nil {
+			t.Fatalf("seed punter %s: %v", id, err)
+		}
+	}
+	seed(fmt.Sprintf("dup-a-%d", stamp), base+"@gmail.com")
+	seed(fmt.Sprintf("dup-b-%d", stamp), strings.Join(strings.Split(base, ""), ".")+"+alt@gmail.com")
+
+	results, err := DuplicateAccountDetector{}.Scan(ctx, db, time.Time{})
+	if err != nil {
+		t.Fatalf("dup scan: %v", err)
+	}
+	found := false
+	for _, a := range results {
+		if nm, _ := a.Detail["normalizedEmail"].(string); nm == base+"@gmail.com" {
+			found = true
+			if a.Detail["accountCount"] != 2 {
+				t.Fatalf("expected 2 in the ring, got %v", a.Detail["accountCount"])
+			}
+		}
+	}
+	if !found {
+		t.Fatalf("expected a duplicate_account alert for %s@gmail.com", base)
 	}
 }
 
