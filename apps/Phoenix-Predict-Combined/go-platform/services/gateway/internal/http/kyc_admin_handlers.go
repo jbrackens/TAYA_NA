@@ -120,6 +120,13 @@ func registerKYCAdminRoutes(mux *stdhttp.ServeMux, kyc kycAdminStore) {
 		if err != nil {
 			return serviceBadRequestError(err, nil)
 		}
+		// Reading a specific person's KYC state is a per-subject compliance
+		// access — audited like the decision itself (the aggregate queue is
+		// not, to avoid an audit row per dashboard refresh).
+		recordProviderOpsAuditAction(userIDFromRequest(r), "kyc.subject_viewed", userID, map[string]any{
+			"status":        status.Status,
+			"documentCount": len(docs),
+		})
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 			"status":    status,
 			"documents": docs,
@@ -157,6 +164,7 @@ func registerKYCAdminRoutes(mux *stdhttp.ServeMux, kyc kycAdminStore) {
 		w.Header().Set("Content-Length", strconv.FormatInt(file.SizeBytes, 10))
 		w.Header().Set("Content-Disposition", "inline")
 		w.Header().Set("Cache-Control", "no-store")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.WriteHeader(stdhttp.StatusOK)
 		_, _ = w.Write(file.Content)
 		return nil

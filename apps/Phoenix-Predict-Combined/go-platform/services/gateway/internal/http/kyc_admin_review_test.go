@@ -153,6 +153,9 @@ func TestKYCAdminDocumentContentServesBinaryAndAudits(t *testing.T) {
 	if res.Header().Get("Cache-Control") != "no-store" {
 		t.Fatal("identity documents must not be cacheable")
 	}
+	if res.Header().Get("X-Content-Type-Options") != "nosniff" {
+		t.Fatal("identity documents must be served with nosniff")
+	}
 	if res.Body.String() != "%PDF-1.7 fake" {
 		t.Fatalf("unexpected body %q", res.Body.String())
 	}

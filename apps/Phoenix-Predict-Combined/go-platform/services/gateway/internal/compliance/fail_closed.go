@@ -11,6 +11,7 @@ import (
 var (
 	ErrGeoProviderNotConfigured = errors.New("geo compliance provider not configured")
 	ErrKYCProviderNotConfigured = errors.New("KYC provider not configured")
+	ErrRGProviderNotConfigured  = errors.New("responsible-gambling store not available")
 )
 
 // KYCFallbackForEnv picks what stands in when the Postgres KYC store is
@@ -24,6 +25,76 @@ func KYCFallbackForEnv(env string) KYCService {
 		return NewFailClosedKYCService()
 	}
 	return NewMockKYCService()
+}
+
+// RGFallbackForEnv is the responsible-gambling twin of KYCFallbackForEnv:
+// limits and self-exclusions that vanish on restart must never gate real
+// stakes, so deployed environments degrade to denial.
+func RGFallbackForEnv(env string) ResponsibleGamblingService {
+	switch strings.ToLower(strings.TrimSpace(env)) {
+	case "production", "staging":
+		return NewFailClosedResponsibleGamblingService()
+	}
+	return NewMockResponsibleGamblingService()
+}
+
+// FailClosedResponsibleGamblingService denies all stake/deposit checks and
+// refuses limit mutations. Used in production/staging when the Postgres RG
+// store is unavailable: with limits and self-exclusions unreadable, the only
+// compliant answer to "may this user bet?" is no.
+type FailClosedResponsibleGamblingService struct{}
+
+func NewFailClosedResponsibleGamblingService() *FailClosedResponsibleGamblingService {
+	slog.Warn("compliance: responsible-gambling service running in FAIL-CLOSED mode — all stake and deposit checks will be denied until the store is available")
+	return &FailClosedResponsibleGamblingService{}
+}
+
+func (s *FailClosedResponsibleGamblingService) SetDepositLimit(context.Context, string, string, int64) error {
+	return ErrRGProviderNotConfigured
+}
+
+func (s *FailClosedResponsibleGamblingService) GetDepositLimits(context.Context, string) ([]DepositLimit, error) {
+	return nil, ErrRGProviderNotConfigured
+}
+
+func (s *FailClosedResponsibleGamblingService) SetBetLimit(context.Context, string, string, int64) error {
+	return ErrRGProviderNotConfigured
+}
+
+func (s *FailClosedResponsibleGamblingService) GetBetLimits(context.Context, string) ([]BetLimit, error) {
+	return nil, ErrRGProviderNotConfigured
+}
+
+func (s *FailClosedResponsibleGamblingService) CheckDepositAllowed(context.Context, string, int64) (bool, string, error) {
+	return false, "responsible-gambling service unavailable", nil
+}
+
+func (s *FailClosedResponsibleGamblingService) CheckBetAllowed(context.Context, string, int64) (bool, string, error) {
+	return false, "responsible-gambling service unavailable", nil
+}
+
+func (s *FailClosedResponsibleGamblingService) SetCoolOff(context.Context, string, int) error {
+	return ErrRGProviderNotConfigured
+}
+
+func (s *FailClosedResponsibleGamblingService) SetSelfExclusion(context.Context, string, bool) error {
+	return ErrRGProviderNotConfigured
+}
+
+func (s *FailClosedResponsibleGamblingService) GetPlayerRestrictions(context.Context, string) (*PlayerRestrictions, error) {
+	return nil, ErrRGProviderNotConfigured
+}
+
+func (s *FailClosedResponsibleGamblingService) RecordDeposit(context.Context, string, int64) error {
+	return ErrRGProviderNotConfigured
+}
+
+func (s *FailClosedResponsibleGamblingService) RecordBet(context.Context, string, int64) error {
+	return ErrRGProviderNotConfigured
+}
+
+func (s *FailClosedResponsibleGamblingService) ReleaseBet(context.Context, string, int64, time.Time) error {
+	return ErrRGProviderNotConfigured
 }
 
 // FailClosedGeoComplianceService rejects all geo-verification requests.

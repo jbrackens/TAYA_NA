@@ -502,15 +502,15 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 			slog.Info("compliance: Postgres KYC service initialized", "idv_provider", svc.ProviderName())
 		}
 		if svc, err := compliance.NewPostgresResponsibleGamblingService(complianceDB); err != nil {
-			slog.Warn("compliance: Postgres RG init failed, falling back to mock", "error", err)
-			rgService = compliance.NewMockResponsibleGamblingService()
+			slog.Error("compliance: Postgres RG init failed; using environment fallback (fail-closed outside dev)", "error", err)
+			rgService = compliance.RGFallbackForEnv(complianceEnv)
 		} else {
 			rgService = svc
 			slog.Info("compliance: Postgres responsible-gambling service initialized")
 		}
 	} else {
 		kycService = compliance.KYCFallbackForEnv(complianceEnv)
-		rgService = compliance.NewMockResponsibleGamblingService()
+		rgService = compliance.RGFallbackForEnv(complianceEnv)
 	}
 	profileKYCProvider = kycService // UAT D-8: profile reports real KYC status
 	if pgKYC != nil {
