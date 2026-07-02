@@ -1,6 +1,7 @@
 package compliance
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"io"
@@ -161,6 +162,9 @@ func registerKYCRoutes(mux *stdhttp.ServeMux, service KYCService) {
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
+		// Metadata plus an optional base64 file; 8 MiB of decoded content
+		// fits comfortably in a 12 MiB body.
+		r.Body = stdhttp.MaxBytesReader(w, r.Body, 12<<20)
 
 		var req struct {
 			UserID         string `json:"userId"`
@@ -168,6 +172,8 @@ func registerKYCRoutes(mux *stdhttp.ServeMux, service KYCService) {
 			DocumentID     string `json:"documentId"`
 			IssuingCountry string `json:"issuingCountry"`
 			ExpiryDate     string `json:"expiryDate"`
+			ContentBase64  string `json:"contentBase64"`
+			ContentType    string `json:"contentType"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
@@ -180,6 +186,24 @@ func registerKYCRoutes(mux *stdhttp.ServeMux, service KYCService) {
 		uid, err := sessionBoundUserID(r, req.UserID)
 		if err != nil {
 			return err
+		}
+
+		// Validate the file BEFORE creating the metadata row so a rejected
+		// upload leaves nothing half-submitted behind.
+		var content []byte
+		if req.ContentBase64 != "" {
+			content, err = base64.StdEncoding.DecodeString(req.ContentBase64)
+			if err != nil {
+				return httpx.BadRequest("contentBase64 is not valid base64", map[string]any{"field": "contentBase64"})
+			}
+			if err := validateDocumentFile(content, req.ContentType); err != nil {
+				return mapComplianceError(err)
+			}
+			if _, ok := service.(DocumentFileStore); !ok {
+				// Fail closed: never accept a document the store cannot hold.
+				return httpx.NewError(stdhttp.StatusServiceUnavailable, httpx.CodeInternalError,
+					"document file storage is not available", nil, nil)
+			}
 		}
 
 		doc := VerificationDocument{
@@ -195,8 +219,18 @@ func registerKYCRoutes(mux *stdhttp.ServeMux, service KYCService) {
 			return mapComplianceError(err)
 		}
 
+		var file *DocumentFile
+		if len(content) > 0 {
+			file, err = service.(DocumentFileStore).AttachDocumentFile(r.Context(), uid, result.ID, content, req.ContentType)
+			if err != nil {
+				return mapComplianceError(err)
+			}
+			file.Content = nil // response carries the receipt, not the bytes
+		}
+
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{
 			"document": result,
+			"file":     file,
 		})
 	}))
 
@@ -848,6 +882,15 @@ func mapComplianceError(err error) error {
 	}
 	if errors.Is(err, ErrInvalidDocument) {
 		return httpx.BadRequest("invalid document", map[string]any{"field": "document"})
+	}
+	if errors.Is(err, ErrInvalidDocumentFile) {
+		return httpx.BadRequest(err.Error(), map[string]any{"field": "contentBase64"})
+	}
+	if errors.Is(err, ErrDocumentNotFound) {
+		return httpx.NotFound("document not found")
+	}
+	if errors.Is(err, ErrDocumentFileNotFound) {
+		return httpx.NotFound("document file not found")
 	}
 	if errors.Is(err, ErrUserNotVerified) {
 		return httpx.Forbidden("user identity not verified")

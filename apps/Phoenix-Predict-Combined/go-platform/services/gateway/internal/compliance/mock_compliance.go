@@ -2,6 +2,8 @@ package compliance
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"strings"
@@ -199,6 +201,7 @@ type MockKYCService struct {
 	mu        sync.RWMutex
 	statuses  map[string]*KYCStatus
 	documents map[string][]VerificationDocument
+	files     map[string]*DocumentFile // documentID -> stored binary (mirrors kyc_document_files)
 	docSeq    int64
 }
 
@@ -207,7 +210,67 @@ func NewMockKYCService() *MockKYCService {
 	return &MockKYCService{
 		statuses:  make(map[string]*KYCStatus),
 		documents: make(map[string][]VerificationDocument),
+		files:     make(map[string]*DocumentFile),
 	}
+}
+
+// AttachDocumentFile implements DocumentFileStore so dev exercises the same
+// upload path prod does.
+func (m *MockKYCService) AttachDocumentFile(_ context.Context, userID, documentID string, content []byte, contentType string) (*DocumentFile, error) {
+	if userID == "" {
+		return nil, ErrInvalidUserID
+	}
+	if err := validateDocumentFile(content, contentType); err != nil {
+		return nil, err
+	}
+	rowID, err := parseDocumentRowID(documentID)
+	if err != nil {
+		return nil, err
+	}
+	key := fmt.Sprintf("doc:%d", rowID)
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	owned := false
+	for _, d := range m.documents[userID] {
+		if d.ID == key {
+			owned = true
+			break
+		}
+	}
+	if !owned {
+		return nil, ErrDocumentNotFound
+	}
+	sum := sha256.Sum256(content)
+	file := &DocumentFile{
+		DocumentID:  key,
+		UserID:      userID,
+		Content:     append([]byte(nil), content...),
+		ContentType: strings.ToLower(strings.TrimSpace(contentType)),
+		SHA256:      hex.EncodeToString(sum[:]),
+		SizeBytes:   int64(len(content)),
+	}
+	m.files[key] = file
+	cp := *file
+	cp.Content = nil
+	return &cp, nil
+}
+
+// GetDocumentFile implements DocumentFileStore.
+func (m *MockKYCService) GetDocumentFile(_ context.Context, documentID string) (*DocumentFile, error) {
+	rowID, err := parseDocumentRowID(documentID)
+	if err != nil {
+		return nil, err
+	}
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	file, ok := m.files[fmt.Sprintf("doc:%d", rowID)]
+	if !ok {
+		return nil, ErrDocumentFileNotFound
+	}
+	cp := *file
+	cp.Content = append([]byte(nil), file.Content...)
+	return &cp, nil
 }
 
 func (m *MockKYCService) VerifyIdentity(ctx context.Context, userID string, docs []VerificationDocument) (*KYCResult, error) {

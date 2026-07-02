@@ -68,6 +68,17 @@ func (s *PostgresKYCService) ensureSchema() error {
   verified_at TIMESTAMPTZ
 )`,
 		`CREATE INDEX IF NOT EXISTS idx_kyc_documents_user ON kyc_documents (user_id, submitted_at DESC)`,
+		// P0-3: actual document binaries, 1:1 with the metadata row and
+		// removed with it. Separate table so document listings never drag
+		// megabytes of BYTEA through queries that only need metadata.
+		`CREATE TABLE IF NOT EXISTS kyc_document_files (
+  document_id BIGINT PRIMARY KEY REFERENCES kyc_documents(id) ON DELETE CASCADE,
+  content BYTEA NOT NULL,
+  content_type TEXT NOT NULL,
+  sha256 TEXT NOT NULL,
+  size_bytes BIGINT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`,
 	}
 	for _, stmt := range statements {
 		if _, err := s.db.ExecContext(ctx, stmt); err != nil {
