@@ -196,6 +196,8 @@ func playerBonusResponse(pb bonus.PlayerBonus, campaignName string) map[string]a
 
 		"bonus_id":      pb.ID,
 		"bonusId":       pb.ID,
+		"user_id":       pb.UserID,
+		"userId":        pb.UserID,
 		"campaign_name": safeCampaignName,
 		"campaignName":  safeCampaignName,
 		"bonus_type":    bonusType,
