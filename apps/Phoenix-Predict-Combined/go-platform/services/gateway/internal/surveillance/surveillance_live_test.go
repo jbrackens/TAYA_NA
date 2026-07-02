@@ -116,7 +116,9 @@ VALUES ($1, $2, $2, 'yes', 50, 10, false, NOW(),
 		t.Fatalf("seed self-trade: %v", err)
 	}
 
-	engine := NewEngine(store, db)
+	// Isolate the wash detector so seeded spoof/collusion rows from other
+	// live tests don't perturb this assertion.
+	engine := NewEngine(store, db, WashSelfTradeDetector{})
 	results, err := engine.Scan(ctx, time.Hour)
 	if err != nil {
 		t.Fatalf("scan: %v", err)
@@ -133,7 +135,106 @@ VALUES ($1, $2, $2, 'yes', 50, 10, false, NOW(),
 	if err != nil {
 		t.Fatalf("re-scan: %v", err)
 	}
-	if results2[0].Inserted != 0 {
-		t.Fatalf("re-scan should insert nothing new, got %d", results2[0].Inserted)
+	for _, r := range results2 {
+		if r.Inserted != 0 {
+			t.Fatalf("re-scan should insert nothing new for %s, got %d", r.Detector, r.Inserted)
+		}
+	}
+}
+
+func twoSeededPunters(t *testing.T, ctx context.Context, db *sql.DB) (string, string, string) {
+	t.Helper()
+	var marketID string
+	if err := db.QueryRowContext(ctx, `SELECT id FROM prediction_markets LIMIT 1`).Scan(&marketID); err != nil {
+		t.Skipf("no seeded market: %v", err)
+	}
+	rows, err := db.QueryContext(ctx, `SELECT id FROM punters LIMIT 2`)
+	if err != nil {
+		t.Skipf("punters query: %v", err)
+	}
+	defer rows.Close()
+	ids := []string{}
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			t.Fatalf("scan punter: %v", err)
+		}
+		ids = append(ids, id)
+	}
+	if len(ids) < 2 {
+		t.Skip("need at least two seeded punters")
+	}
+	return marketID, ids[0], ids[1]
+}
+
+func TestSpoofingDetectorLive(t *testing.T) {
+	db := liveDB(t)
+	defer db.Close()
+	ctx := context.Background()
+	if _, err := NewStore(db); err != nil {
+		t.Fatalf("store: %v", err)
+	}
+	marketID, userID, _ := twoSeededPunters(t, ctx, db)
+
+	// Seed 3 quick, unfilled, sizeable limit-order cancels.
+	for i := 0; i < 3; i++ {
+		if _, err := db.ExecContext(ctx, `
+INSERT INTO prediction_orders
+  (user_id, market_id, side, action, order_type, price_cents, quantity,
+   filled_quantity, remaining_quantity, total_cost_cents, status,
+   created_at, cancelled_at)
+VALUES ($1, $2, 'yes', 'buy', 'limit', 50, 200, 0, 200, 10000, 'cancelled',
+   NOW() - interval '30 seconds', NOW())`, userID, marketID); err != nil {
+			t.Fatalf("seed spoof order: %v", err)
+		}
+	}
+
+	results, err := SpoofingDetector{}.Scan(ctx, db, time.Now().Add(-time.Hour))
+	if err != nil {
+		t.Fatalf("spoof scan: %v", err)
+	}
+	found := false
+	for _, a := range results {
+		if a.SubjectID == userID && a.MarketID == marketID {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("expected a spoofing alert for %s/%s, got %+v", userID, marketID, results)
+	}
+}
+
+func TestCollusionDetectorLive(t *testing.T) {
+	db := liveDB(t)
+	defer db.Close()
+	ctx := context.Background()
+	_, err := NewStore(db)
+	if err != nil {
+		t.Fatalf("store: %v", err)
+	}
+	marketID, a, b := twoSeededPunters(t, ctx, db)
+
+	insertTrade := func(buyer, seller string) {
+		if _, err := db.ExecContext(ctx, `
+INSERT INTO prediction_trades
+  (market_id, buyer_id, seller_id, side, price_cents, quantity, is_amm_trade, traded_at,
+   match_id, trade_kind, engine_kind)
+VALUES ($1, $2, $3, 'yes', 50, 10, false, NOW(),
+   gen_random_uuid(), 'secondary', 'clob')`, marketID, buyer, seller); err != nil {
+			t.Fatalf("seed collusion trade: %v", err)
+		}
+	}
+	// Two reversal pairs: a↔b then b↔a, twice.
+	insertTrade(a, b)
+	insertTrade(b, a)
+	insertTrade(a, b)
+	insertTrade(b, a)
+
+	results, err := CollusionDetector{}.Scan(ctx, db, time.Now().Add(-time.Hour))
+	if err != nil {
+		t.Fatalf("collusion scan: %v", err)
+	}
+	if len(results) == 0 {
+		t.Fatalf("expected a collusion alert for the %s/%s pair, got none", a, b)
 	}
 }
