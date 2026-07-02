@@ -150,7 +150,11 @@ FROM notification_templates ORDER BY template_key`)
 
 // RenderOrFallback fetches a template and renders it; if the store is nil, the
 // template is missing, or a read fails, it returns the caller's fallback copy
-// unchanged. A notification is never blocked on template availability.
+// unchanged. A notification is never blocked on template availability. As a
+// final guard, if rendering produces an empty subject or body (e.g. an
+// operator authored a template whose only content is a placeholder that
+// resolves empty for this event), the fallback is used instead — a
+// notification is never shipped blank.
 func RenderOrFallback(ctx context.Context, store *TemplateStore, key string, data map[string]string, fbSubject, fbBody string) (string, string) {
 	if store == nil {
 		return fbSubject, fbBody
@@ -159,7 +163,11 @@ func RenderOrFallback(ctx context.Context, store *TemplateStore, key string, dat
 	if err != nil || t == nil {
 		return fbSubject, fbBody
 	}
-	return t.Render(data)
+	subject, body := t.Render(data)
+	if strings.TrimSpace(subject) == "" || strings.TrimSpace(body) == "" {
+		return fbSubject, fbBody
+	}
+	return subject, body
 }
 
 func nullString(s string) any {

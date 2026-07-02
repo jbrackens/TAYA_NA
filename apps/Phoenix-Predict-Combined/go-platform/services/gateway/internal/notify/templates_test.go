@@ -21,6 +21,16 @@ func TestTemplateRender(t *testing.T) {
 	}
 }
 
+func TestTemplateRenderEmptyPlaceholder(t *testing.T) {
+	// Precondition for the RenderOrFallback empty-guard: a subject that is only
+	// a placeholder resolving to "" renders empty. The guard (exercised in the
+	// live store test) turns this into a fallback rather than a blank subject.
+	tmpl := Template{Subject: "{{result}}", Body: "ok"}
+	if subject, _ := tmpl.Render(map[string]string{"result": ""}); subject != "" {
+		t.Fatalf("expected empty rendered subject, got %q", subject)
+	}
+}
+
 func TestRenderOrFallbackNilStore(t *testing.T) {
 	// A nil store must return the caller's fallback unchanged — a missing
 	// template store never blocks or blanks a notification.
