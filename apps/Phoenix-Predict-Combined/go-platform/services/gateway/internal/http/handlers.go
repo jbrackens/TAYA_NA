@@ -16,6 +16,7 @@ import (
 	"phoenix-revival/gateway/internal/alphacashier"
 	"phoenix-revival/gateway/internal/bonus"
 	"phoenix-revival/gateway/internal/compliance"
+	"phoenix-revival/gateway/internal/surveillance"
 	"phoenix-revival/gateway/internal/content"
 	"phoenix-revival/gateway/internal/discover"
 	"phoenix-revival/gateway/internal/events"
@@ -522,6 +523,19 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// Limits/self-exclusion tab). Distinct path from the /admin/punters/
 	// subtree, which is a prefix handler owned by the prediction admin routes.
 	registerRGAdminRoutes(mux, rgService)
+
+	// Market-integrity surveillance (P1-4): detectors read the trade log
+	// read-only and write alerts; analysts triage alerts into cases. Only
+	// wired when DB-backed (a real trade log + persistent alert store).
+	if survDB := walletService.DB(); survDB != nil {
+		if survStore, err := surveillance.NewStore(survDB); err != nil {
+			slog.Error("surveillance: store init failed; market-integrity routes disabled", "error", err)
+		} else {
+			survEngine := surveillance.NewEngine(survStore, survDB)
+			registerSurveillanceAdminRoutes(mux, survStore, surveillanceScannerAdapter{survEngine})
+			slog.Info("surveillance: market-integrity subsystem initialized")
+		}
+	}
 	// Pre-trade jurisdiction + KYC gates. Both default OFF — wired here so a
 	// single env flag activates them without a code change. See
 	// internal/http/pretrade_gate.go and docs/compliance/geofencing-kyc.md
