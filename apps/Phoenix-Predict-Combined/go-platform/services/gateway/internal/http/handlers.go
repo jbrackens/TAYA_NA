@@ -504,7 +504,10 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	registerUserRoutes(mux)
 
 	// --- Compliance Routes ---
-	geoComplianceService := compliance.NewMockGeoComplianceServiceFromEnv()
+	// GAP-1 (geo half): production/staging get the fail-closed geo service (all
+	// location checks decline) instead of the approving sandbox mock; dev keeps
+	// the mock. Mirrors the KYC/RG fallbacks below.
+	geoComplianceService := compliance.GeoFallbackForEnv(os.Getenv("ENVIRONMENT"))
 	// KYC + responsible-gambling are DB-backed (persistent across restarts) when
 	// a database is wired; in-memory mock otherwise (tests / local dev without a
 	// DB). DB-backed KYC routes identity decisions through a pluggable IDV

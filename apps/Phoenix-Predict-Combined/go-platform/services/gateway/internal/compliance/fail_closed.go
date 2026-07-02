@@ -27,6 +27,19 @@ func KYCFallbackForEnv(env string) KYCService {
 	return NewMockKYCService()
 }
 
+// GeoFallbackForEnv picks the geo-compliance service. Production and staging
+// get the fail-closed service (every location check declines) rather than the
+// sandbox mock that would approve; dev/test get the mock. The gateway boot
+// check (GAP-4) rejects a typo'd deployed ENVIRONMENT before this runs, so the
+// exact-match here only ever sees a validated value.
+func GeoFallbackForEnv(env string) GeoComplianceService {
+	switch strings.ToLower(strings.TrimSpace(env)) {
+	case "production", "staging":
+		return NewFailClosedGeoComplianceService()
+	}
+	return NewMockGeoComplianceServiceFromEnv()
+}
+
 // RGFallbackForEnv is the responsible-gambling twin of KYCFallbackForEnv:
 // limits and self-exclusions that vanish on restart must never gate real
 // stakes, so deployed environments degrade to denial.

@@ -30,6 +30,41 @@ func TestKYCFallbackForEnv(t *testing.T) {
 	}
 }
 
+// GAP-1 geo half: production/staging get the fail-closed geo service; dev the
+// mock.
+func TestGeoFallbackForEnv(t *testing.T) {
+	for _, tc := range []struct {
+		env        string
+		failClosed bool
+	}{
+		{"production", true},
+		{"staging", true},
+		{"development", false},
+		{"", false},
+	} {
+		t.Run("env="+tc.env, func(t *testing.T) {
+			svc := GeoFallbackForEnv(tc.env)
+			_, isFailClosed := svc.(*FailClosedGeoComplianceService)
+			if isFailClosed != tc.failClosed {
+				t.Fatalf("env %q: fail-closed=%v, want %v (got %T)", tc.env, isFailClosed, tc.failClosed, svc)
+			}
+		})
+	}
+}
+
+// The fail-closed geo service must decline every location check.
+func TestFailClosedGeoDeclinesEverything(t *testing.T) {
+	svc := NewFailClosedGeoComplianceService()
+	ctx := context.Background()
+	res, err := svc.VerifyLocation(ctx, "u-1", 40.0, -74.0)
+	if err != nil || res == nil || res.Status == "approved" {
+		t.Fatalf("VerifyLocation should decline, got status=%v err=%v", res, err)
+	}
+	if ok, _ := svc.IsLocationApproved(ctx, "US", ""); ok {
+		t.Fatal("IsLocationApproved must be false when fail-closed")
+	}
+}
+
 // RG twin of TestKYCFallbackForEnv (verification finding: only the KYC
 // branch was routed through an env-aware fallback at first).
 func TestRGFallbackForEnv(t *testing.T) {
