@@ -120,9 +120,11 @@ func (d SpoofingDetector) Scan(ctx context.Context, db *sql.DB, since time.Time)
 	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
 	defer cancel()
 
-	// Quick, (near-)unfilled limit-order cancels per user+market. dwell uses
-	// cancelled_at - created_at; filled_quantity gates out orders that
-	// actually traded.
+	// Quick, LITTLE-OR-NO-fill limit-order cancels per user+market. dwell uses
+	// cancelled_at - created_at. The fill gate is <10% of size, not strictly
+	// zero: a spoofer who lets a token lot fill to look legitimate should not
+	// escape, and a genuinely-working order that mostly executed before a
+	// cancel is not spoofing.
 	rows, err := db.QueryContext(ctx, `
 SELECT user_id, market_id, COUNT(*) AS cancels, COALESCE(SUM(quantity),0) AS total_qty,
        CAST(MAX(cancelled_at) AS TEXT) AS last_at
@@ -131,7 +133,7 @@ WHERE order_type = 'limit'
   AND status = 'cancelled'
   AND cancelled_at IS NOT NULL
   AND created_at >= $1
-  AND filled_quantity = 0
+  AND filled_quantity * 10 < quantity
   AND quantity >= $2
   AND cancelled_at - created_at <= ($3 || ' seconds')::interval
 GROUP BY user_id, market_id

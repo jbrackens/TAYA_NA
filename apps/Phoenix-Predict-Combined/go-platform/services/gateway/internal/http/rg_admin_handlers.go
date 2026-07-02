@@ -42,6 +42,13 @@ func registerRGAdminRoutes(mux *stdhttp.ServeMux, rg rgAdminReader) {
 		if err != nil {
 			return serviceBadRequestError(err, nil)
 		}
+		// Reading another user's responsible-gambling state (self-exclusion,
+		// limits) is a per-subject compliance access — audited like the KYC
+		// per-subject read.
+		recordProviderOpsAuditAction(userIDFromRequest(r), "rg.subject_viewed", userID, map[string]any{
+			"isExcluded":  restrictions.IsExcluded,
+			"isOnCoolOff": restrictions.IsOnCoolOff,
+		})
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 			"restrictions": restrictions,
 		})

@@ -82,6 +82,15 @@ func TestSurveillanceStoreLive(t *testing.T) {
 	if err != nil || closed.Status != "closed_action" {
 		t.Fatalf("close case: status=%v err=%v", closed.Status, err)
 	}
+
+	// A closed case is terminal: re-opening or re-closing must be refused so
+	// the disposition of record can't be overwritten.
+	if _, err := store.UpdateCaseStatus(ctx, c.ID, "open", ""); err != ErrCaseClosed {
+		t.Fatalf("expected ErrCaseClosed re-opening a closed case, got %v", err)
+	}
+	if _, err := store.UpdateCaseStatus(ctx, c.ID, "closed_no_action", "changed my mind"); err != ErrCaseClosed {
+		t.Fatalf("expected ErrCaseClosed re-closing, got %v", err)
+	}
 }
 
 func TestWashDetectorLive(t *testing.T) {

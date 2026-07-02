@@ -218,6 +218,8 @@ func mapSurveillanceError(err error) error {
 		return httpx.BadRequest("invalid surveillance request (need a title and at least one open alert)", nil)
 	case surveillance.ErrResolutionRequired:
 		return httpx.BadRequest("a resolution is required to close a case", map[string]any{"field": "resolution"})
+	case surveillance.ErrCaseClosed:
+		return httpx.Conflict("case is already closed and cannot be changed", nil)
 	default:
 		return httpx.Internal("surveillance operation failed", err)
 	}

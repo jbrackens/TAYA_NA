@@ -18,17 +18,17 @@ const dbTimeout = 10 * time.Second
 
 // Alert is one detector finding about one subject over one window.
 type Alert struct {
-	ID          int64          `json:"id"`
-	Kind        string         `json:"kind"` // wash_self_trade, spoofing, collusion
-	Severity    string         `json:"severity"`
-	SubjectID   string         `json:"subjectId"`   // primary user under suspicion
-	MarketID    string         `json:"marketId"`    // "" if cross-market
-	Summary     string         `json:"summary"`
-	Detail      map[string]any `json:"detail"`
-	DedupeKey   string         `json:"dedupeKey"`
-	Status      string         `json:"status"` // open, linked, dismissed
-	CaseID      *int64         `json:"caseId,omitempty"`
-	DetectedAt  string         `json:"detectedAt"`
+	ID         int64          `json:"id"`
+	Kind       string         `json:"kind"` // wash_self_trade, spoofing, collusion
+	Severity   string         `json:"severity"`
+	SubjectID  string         `json:"subjectId"` // primary user under suspicion
+	MarketID   string         `json:"marketId"`  // "" if cross-market
+	Summary    string         `json:"summary"`
+	Detail     map[string]any `json:"detail"`
+	DedupeKey  string         `json:"dedupeKey"`
+	Status     string         `json:"status"` // open, linked, dismissed
+	CaseID     *int64         `json:"caseId,omitempty"`
+	DetectedAt string         `json:"detectedAt"`
 }
 
 // Case groups alerts for investigation and disposition.
@@ -261,7 +261,9 @@ FROM surveillance_cases c WHERE c.id = $1`, caseID).
 }
 
 // UpdateCaseStatus transitions a case and records a resolution note. Closing
-// requires a resolution so a disposition is never silent.
+// requires a resolution so a disposition is never silent. A closed case is
+// terminal: it cannot be re-opened or re-closed, so a disposition of record
+// can't be silently overwritten.
 func (s *Store) UpdateCaseStatus(ctx context.Context, caseID int64, status, resolution string) (*Case, error) {
 	if !validCaseStatus[status] {
 		return nil, ErrInvalidInput
@@ -271,14 +273,21 @@ func (s *Store) UpdateCaseStatus(ctx context.Context, caseID int64, status, reso
 	}
 	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
 	defer cancel()
+	// Guard the transition in SQL: only act on a not-yet-closed case.
 	res, err := s.db.ExecContext(ctx, `
-UPDATE surveillance_cases SET status = $2, resolution = $3, updated_at = NOW() WHERE id = $1`,
+UPDATE surveillance_cases SET status = $2, resolution = $3, updated_at = NOW()
+WHERE id = $1 AND status NOT IN ('closed_action','closed_no_action')`,
 		caseID, status, nullIfEmpty(resolution))
 	if err != nil {
 		return nil, err
 	}
 	if n, _ := res.RowsAffected(); n == 0 {
-		return nil, ErrNotFound
+		// Either the case does not exist, or it is already closed. Distinguish
+		// so the caller returns 404 vs a conflict rather than a silent no-op.
+		if _, gErr := s.GetCase(ctx, caseID); gErr == ErrNotFound {
+			return nil, ErrNotFound
+		}
+		return nil, ErrCaseClosed
 	}
 	return s.GetCase(ctx, caseID)
 }

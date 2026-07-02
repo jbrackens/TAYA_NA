@@ -9,6 +9,7 @@ var (
 	ErrNotFound           = errors.New("not found")
 	ErrInvalidInput       = errors.New("invalid input")
 	ErrResolutionRequired = errors.New("a resolution is required to close a case")
+	ErrCaseClosed         = errors.New("case is already closed and cannot be changed")
 )
 
 var validCaseStatus = map[string]bool{
