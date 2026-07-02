@@ -29,6 +29,7 @@ import (
 	"phoenix-revival/gateway/internal/prediction/feed"
 	"phoenix-revival/gateway/internal/prediction/workers"
 	"phoenix-revival/gateway/internal/rbac"
+	"phoenix-revival/gateway/internal/segmentation"
 	"phoenix-revival/gateway/internal/surveillance"
 	"phoenix-revival/gateway/internal/wallet"
 	"phoenix-revival/gateway/internal/webhooks"
@@ -682,6 +683,13 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		// Tenant/brand directory admin (P2-1 peripheral) — CRUD over the
 		// tenants table only; does not scope the trading/wallet core.
 		registerTenantAdminRoutes(mux, cfgDB)
+		// Back-office user segmentation / CRM tags (P2-2).
+		if segStore, err := segmentation.NewStore(cfgDB); err != nil {
+			slog.Error("segmentation: store init failed; CRM routes disabled", "error", err)
+		} else {
+			registerSegmentationAdminRoutes(mux, segStore)
+			slog.Info("segmentation: store initialized")
+		}
 	}
 
 	// --- Auth Proxy (kept from sportsbook) ---

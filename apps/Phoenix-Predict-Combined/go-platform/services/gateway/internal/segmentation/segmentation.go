@@ -1,0 +1,226 @@
+// Package segmentation implements back-office user segmentation / CRM (PAM
+// P2-2): admin-defined tags applied to users, so operators can group customers
+// for review, targeting, and reporting. It owns only its own tables
+// (crm_tags, crm_user_tags) and reads punters read-only for validation — it
+// does not touch the trading/wallet core.
+package segmentation
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"fmt"
+	"strings"
+	"time"
+)
+
+const dbTimeout = 10 * time.Second
+
+var (
+	ErrNotFound   = errors.New("tag not found")
+	ErrInvalidTag = errors.New("tag name is required")
+	ErrDuplicate  = errors.New("a tag with that name already exists")
+)
+
+// Tag is an admin-defined segment label.
+type Tag struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	MemberCount int    `json:"memberCount"`
+	CreatedAt   string `json:"createdAt"`
+}
+
+// Store persists tags and their user assignments.
+type Store struct {
+	db *sql.DB
+}
+
+func NewStore(db *sql.DB) (*Store, error) {
+	s := &Store{db: db}
+	if err := s.ensureSchema(); err != nil {
+		return nil, fmt.Errorf("segmentation schema init: %w", err)
+	}
+	return s, nil
+}
+
+func (s *Store) ensureSchema() error {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+	statements := []string{
+		`CREATE TABLE IF NOT EXISTS crm_tags (
+  id BIGSERIAL PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  description TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`,
+		`CREATE TABLE IF NOT EXISTS crm_user_tags (
+  tag_id BIGINT NOT NULL REFERENCES crm_tags(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
+  assigned_by TEXT,
+  assigned_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (tag_id, user_id)
+)`,
+		`CREATE INDEX IF NOT EXISTS idx_crm_user_tags_user ON crm_user_tags (user_id)`,
+	}
+	for _, stmt := range statements {
+		if _, err := s.db.ExecContext(ctx, stmt); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// CreateTag creates a new tag.
+func (s *Store) CreateTag(ctx context.Context, name, description string) (*Tag, error) {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return nil, ErrInvalidTag
+	}
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	var id int64
+	var createdAt string
+	err := s.db.QueryRowContext(ctx, `
+INSERT INTO crm_tags (name, description) VALUES ($1, $2)
+ON CONFLICT (name) DO NOTHING
+RETURNING id, CAST(created_at AS TEXT)`, name, nullStr(description)).Scan(&id, &createdAt)
+	if err == sql.ErrNoRows {
+		return nil, ErrDuplicate
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &Tag{ID: id, Name: name, Description: description, CreatedAt: createdAt}, nil
+}
+
+// ListTags returns all tags with their member counts.
+func (s *Store) ListTags(ctx context.Context) ([]Tag, error) {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	rows, err := s.db.QueryContext(ctx, `
+SELECT t.id, t.name, COALESCE(t.description,''), CAST(t.created_at AS TEXT),
+       (SELECT COUNT(*) FROM crm_user_tags ut WHERE ut.tag_id = t.id)
+FROM crm_tags t ORDER BY t.name`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []Tag{}
+	for rows.Next() {
+		var t Tag
+		if err := rows.Scan(&t.ID, &t.Name, &t.Description, &t.CreatedAt, &t.MemberCount); err != nil {
+			return nil, err
+		}
+		out = append(out, t)
+	}
+	return out, rows.Err()
+}
+
+// DeleteTag removes a tag and (via cascade) its assignments.
+func (s *Store) DeleteTag(ctx context.Context, tagID int64) error {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	res, err := s.db.ExecContext(ctx, `DELETE FROM crm_tags WHERE id = $1`, tagID)
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+// AssignTag applies a tag to a user. Idempotent: re-assigning is a no-op.
+func (s *Store) AssignTag(ctx context.Context, tagID int64, userID, assignedBy string) error {
+	if strings.TrimSpace(userID) == "" {
+		return ErrInvalidTag
+	}
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	_, err := s.db.ExecContext(ctx, `
+INSERT INTO crm_user_tags (tag_id, user_id, assigned_by)
+VALUES ($1, $2, $3) ON CONFLICT (tag_id, user_id) DO NOTHING`,
+		tagID, userID, nullStr(assignedBy))
+	// A bad tag_id surfaces as an FK violation; report as not-found.
+	if err != nil {
+		if strings.Contains(err.Error(), "crm_user_tags_tag_id_fkey") {
+			return ErrNotFound
+		}
+		return err
+	}
+	return nil
+}
+
+// UnassignTag removes a tag from a user.
+func (s *Store) UnassignTag(ctx context.Context, tagID int64, userID string) error {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	res, err := s.db.ExecContext(ctx,
+		`DELETE FROM crm_user_tags WHERE tag_id = $1 AND user_id = $2`, tagID, userID)
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+// UsersForTag lists the user ids assigned a tag (newest assignment first).
+func (s *Store) UsersForTag(ctx context.Context, tagID int64, limit, offset int) ([]string, error) {
+	if limit <= 0 || limit > 500 {
+		limit = 100
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	rows, err := s.db.QueryContext(ctx, `
+SELECT user_id FROM crm_user_tags WHERE tag_id = $1
+ORDER BY assigned_at DESC LIMIT $2 OFFSET $3`, tagID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []string{}
+	for rows.Next() {
+		var uid string
+		if err := rows.Scan(&uid); err != nil {
+			return nil, err
+		}
+		out = append(out, uid)
+	}
+	return out, rows.Err()
+}
+
+// TagsForUser lists the tag names assigned to a user.
+func (s *Store) TagsForUser(ctx context.Context, userID string) ([]Tag, error) {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	rows, err := s.db.QueryContext(ctx, `
+SELECT t.id, t.name, COALESCE(t.description,''), CAST(t.created_at AS TEXT)
+FROM crm_tags t JOIN crm_user_tags ut ON ut.tag_id = t.id
+WHERE ut.user_id = $1 ORDER BY t.name`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []Tag{}
+	for rows.Next() {
+		var t Tag
+		if err := rows.Scan(&t.ID, &t.Name, &t.Description, &t.CreatedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, t)
+	}
+	return out, rows.Err()
+}
+
+func nullStr(s string) any {
+	if strings.TrimSpace(s) == "" {
+		return nil
+	}
+	return s
+}
