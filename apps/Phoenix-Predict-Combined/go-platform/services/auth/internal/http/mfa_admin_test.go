@@ -161,6 +161,15 @@ func TestAdminLoginRequiresEnrollmentWhenFlagOn(t *testing.T) {
 		t.Fatalf("expected 200 with OTP, got %d, body=%s", okRes.Code, okRes.Body.String())
 	}
 
+	// 8b. GAP-2: replaying the SAME OTP is rejected (single-use), even though
+	// it is still within its validity window.
+	replayRes := postJSON(t, handler, "/api/v1/auth/login", map[string]string{
+		"username": "admin@test.local", "password": "AdminPass123!", "otp": loginCode,
+	}, nil)
+	if replayRes.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 replaying a used OTP, got %d, body=%s", replayRes.Code, replayRes.Body.String())
+	}
+
 	// 9. Players are untouched by admin enforcement.
 	playerRes := postJSON(t, handler, "/api/v1/auth/login", map[string]string{"username": "demo@test.local", "password": "PlayerPass123!"}, nil)
 	if playerRes.Code != http.StatusOK {

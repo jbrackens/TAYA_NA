@@ -19,9 +19,12 @@ import (
 
 // mfaRecord is a user's TOTP enrollment. ActivatedAt == nil means the secret is
 // pending (enrolled but not yet confirmed) and is NOT enforced at login.
+// LastUsedStep is the most recent TOTP timestep consumed at login (GAP-2
+// replay protection); a login OTP whose step is <= this is a reuse and denied.
 type mfaRecord struct {
-	Secret      string
-	ActivatedAt *time.Time
+	Secret       string
+	ActivatedAt  *time.Time
+	LastUsedStep int64
 }
 
 // mfaGet returns the user's enrollment, or (nil, nil) when none exists.
@@ -31,8 +34,9 @@ func (a *AuthService) mfaGet(userID string) (*mfaRecord, error) {
 		defer cancel()
 		var secret string
 		var activated sql.NullTime
+		var lastStep sql.NullInt64
 		err := a.db.QueryRowContext(ctx, `
-SELECT secret, activated_at FROM auth_mfa WHERE user_id = $1`, userID).Scan(&secret, &activated)
+SELECT secret, activated_at, last_used_step FROM auth_mfa WHERE user_id = $1`, userID).Scan(&secret, &activated, &lastStep)
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
@@ -43,6 +47,9 @@ SELECT secret, activated_at FROM auth_mfa WHERE user_id = $1`, userID).Scan(&sec
 		if activated.Valid {
 			t := activated.Time
 			rec.ActivatedAt = &t
+		}
+		if lastStep.Valid {
+			rec.LastUsedStep = lastStep.Int64
 		}
 		return rec, nil
 	}
@@ -205,19 +212,52 @@ func (a *AuthService) mfaStatus(userID string) (enrolled, active bool, err error
 	return true, rec.ActivatedAt != nil, nil
 }
 
-// mfaActiveSecret returns the active TOTP secret for a user, used by the login
-// gate. The error is propagated so the caller can FAIL CLOSED: a lookup failure
-// must deny login rather than silently skip the second factor.
-func (a *AuthService) mfaActiveSecret(userID string) (secret string, active bool, err error) {
+// mfaActiveSecret returns the active TOTP secret and the last-consumed timestep
+// for a user, used by the login gate. The error is propagated so the caller can
+// FAIL CLOSED: a lookup failure must deny login rather than silently skip the
+// second factor.
+func (a *AuthService) mfaActiveSecret(userID string) (secret string, lastStep int64, active bool, err error) {
 	rec, gErr := a.mfaGet(userID)
 	if gErr != nil {
 		log.Printf("warning: mfa lookup failed for %s: %v", userID, gErr)
-		return "", false, gErr
+		return "", 0, false, gErr
 	}
 	if rec == nil || rec.ActivatedAt == nil {
-		return "", false, nil
+		return "", 0, false, nil
 	}
-	return rec.Secret, true, nil
+	return rec.Secret, rec.LastUsedStep, true, nil
+}
+
+// mfaConsumeStep atomically records that a login TOTP timestep has been used
+// and reports whether THIS call advanced the stored step. It only advances
+// (the WHERE / compare guards against lowering), so a concurrent login racing
+// on the same code sees consumed=false and is denied — closing the replay
+// window even under concurrency. The DB UPDATE's row count is the atomic
+// arbiter; the in-memory path holds the mutex.
+func (a *AuthService) mfaConsumeStep(userID string, step int64) (consumed bool, err error) {
+	if a.db != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), userDBTimeout)
+		defer cancel()
+		res, execErr := a.db.ExecContext(ctx, `
+UPDATE auth_mfa SET last_used_step = $2, updated_at = NOW()
+WHERE user_id = $1 AND last_used_step < $2`, userID, step)
+		if execErr != nil {
+			return false, execErr
+		}
+		n, _ := res.RowsAffected()
+		return n > 0, nil
+	}
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	rec, ok := a.mfaMem[userID]
+	if !ok {
+		return false, nil
+	}
+	if step <= rec.LastUsedStep {
+		return false, nil
+	}
+	rec.LastUsedStep = step
+	return true, nil
 }
 
 // ─── Admin enforcement ───────────────────────────────────────────────────────

@@ -36,11 +36,11 @@ type AuthService struct {
 	mu sync.RWMutex
 
 	usersByUsername  map[string]user
-	oauthIdentities  map[string]string // "provider:subject" -> userID (in-memory fallback when db == nil)
-	mfaMem           map[string]*mfaRecord // TOTP enrollments when db == nil (mirrors auth_mfa)
+	oauthIdentities  map[string]string         // "provider:subject" -> userID (in-memory fallback when db == nil)
+	mfaMem           map[string]*mfaRecord     // TOTP enrollments when db == nil (mirrors auth_mfa)
 	mfaEnrollTokens  map[string]mfaEnrollToken // single-use tokens for admins forced to enroll at login
-	mfaAdminRequired bool // admins must have an ACTIVE factor to log in
-	db               *sql.DB // nil = in-memory mode
+	mfaAdminRequired bool                      // admins must have an ACTIVE factor to log in
+	db               *sql.DB                   // nil = in-memory mode
 	store            SessionStore
 	audit            AuditLogger
 	metrics          authMetrics
@@ -412,6 +412,13 @@ CREATE TABLE IF NOT EXISTS auth_mfa (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )`)
+	if err != nil {
+		return err
+	}
+	// GAP-2: single-use TOTP. last_used_step records the most recent login
+	// timestep so a captured code cannot be replayed within the skew window.
+	_, err = db.ExecContext(ctx,
+		`ALTER TABLE auth_mfa ADD COLUMN IF NOT EXISTS last_used_step BIGINT NOT NULL DEFAULT 0`)
 	return err
 }
 
@@ -1011,7 +1018,7 @@ func (a *AuthService) Login(username string, password string, otp string) (token
 	// Second-factor gate: an account with ACTIVE MFA cannot complete login on
 	// password alone. Fail closed — a lookup error denies the login rather than
 	// silently skipping the factor.
-	secret, mfaActive, mfaErr := a.mfaActiveSecret(account.ID)
+	secret, mfaLastStep, mfaActive, mfaErr := a.mfaActiveSecret(account.ID)
 	if mfaErr != nil {
 		a.recordAuthMetric("login_failure")
 		a.audit.Event("auth.login.failed", map[string]any{"username": username, "reason": "mfa_lookup_failed"})
@@ -1039,11 +1046,34 @@ func (a *AuthService) Login(username string, password string, otp string) (token
 			a.audit.Event("auth.login.mfa_required", map[string]any{"username": username, "userId": account.ID})
 			return tokenResponse{}, httpx.Unauthorized("multi-factor authentication code required")
 		}
-		if !totpVerify(secret, otp, time.Now()) {
+		step, ok := totpVerifyStep(secret, otp, time.Now())
+		if !ok {
 			a.lockout.RecordFailure(username)
 			a.recordAuthMetric("login_failure")
 			a.audit.Event("auth.login.mfa_invalid", map[string]any{"username": username, "userId": account.ID})
 			return tokenResponse{}, httpx.Unauthorized("invalid multi-factor authentication code")
+		}
+		// GAP-2: single-use. Fast-path reject for an obviously-stale step, then
+		// atomically consume — mfaConsumeStep reports consumed=false when this
+		// step was already used (including a concurrent login racing the same
+		// code), which is a replay. A persist error fails the login closed.
+		if step <= mfaLastStep {
+			a.lockout.RecordFailure(username)
+			a.recordAuthMetric("login_failure")
+			a.audit.Event("auth.login.mfa_replayed", map[string]any{"username": username, "userId": account.ID})
+			return tokenResponse{}, httpx.Unauthorized("multi-factor authentication code already used")
+		}
+		consumed, consumeErr := a.mfaConsumeStep(account.ID, step)
+		if consumeErr != nil {
+			a.recordAuthMetric("login_failure")
+			a.audit.Event("auth.login.failed", map[string]any{"username": username, "reason": "mfa_step_persist_failed"})
+			return tokenResponse{}, httpx.Internal("failed to record multi-factor state", consumeErr)
+		}
+		if !consumed {
+			a.lockout.RecordFailure(username)
+			a.recordAuthMetric("login_failure")
+			a.audit.Event("auth.login.mfa_replayed", map[string]any{"username": username, "userId": account.ID})
+			return tokenResponse{}, httpx.Unauthorized("multi-factor authentication code already used")
 		}
 		a.audit.Event("auth.login.mfa_verified", map[string]any{"username": username, "userId": account.ID})
 	}

@@ -82,26 +82,39 @@ func totpCode(secretB32 string, t time.Time) (string, error) {
 	return totpCodeAt(secretB32, t, totpPeriodSeconds, totpDigits)
 }
 
-// totpVerify reports whether code is valid for secret at time t, accepting the
-// adjacent step on each side to tolerate clock skew. Comparison is
-// constant-time. A malformed secret or wrong-length code returns false.
-func totpVerify(secretB32, code string, t time.Time) bool {
+// totpVerifyStep reports whether code is valid for secret at time t and, when
+// valid, the timestep counter that matched. It accepts the adjacent step on
+// each side to tolerate clock skew; comparison is constant-time. Callers use
+// the returned step to enforce single-use (GAP-2): a code whose step has
+// already been consumed must be rejected, so a captured code cannot be
+// replayed within the ~90s skew window. A malformed secret or wrong-length
+// code returns (0, false).
+func totpVerifyStep(secretB32, code string, t time.Time) (int64, bool) {
 	code = strings.TrimSpace(code)
 	if len(code) != totpDigits {
-		return false
+		return 0, false
 	}
 	key, err := decodeTOTPSecret(secretB32)
 	if err != nil || len(key) == 0 {
-		return false
+		return 0, false
 	}
 	counter := int64(t.Unix() / int64(totpPeriodSeconds))
 	for d := -totpSkewSteps; d <= totpSkewSteps; d++ {
-		expected := hotpCode(key, uint64(counter+int64(d)), totpDigits)
+		step := counter + int64(d)
+		expected := hotpCode(key, uint64(step), totpDigits)
 		if subtle.ConstantTimeCompare([]byte(expected), []byte(code)) == 1 {
-			return true
+			return step, true
 		}
 	}
-	return false
+	return 0, false
+}
+
+// totpVerify reports whether code is valid for secret at time t, with no
+// single-use enforcement. Used where replay is naturally bounded (enrollment
+// activation flips state, disable deletes the record). Constant-time.
+func totpVerify(secretB32, code string, t time.Time) bool {
+	_, ok := totpVerifyStep(secretB32, code, t)
+	return ok
 }
 
 // otpauthURI builds the otpauth:// provisioning URI an authenticator app scans.
