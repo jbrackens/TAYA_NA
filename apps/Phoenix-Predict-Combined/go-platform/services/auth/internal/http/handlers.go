@@ -51,6 +51,10 @@ type AuthService struct {
 	loginLimiter    RateLimiterBackend
 	registerLimiter RateLimiterBackend
 	lockout         LockoutBackend
+
+	// restrictionLookup overrides playerLoginRestriction in tests (GAP-10).
+	// nil = use the SQL-backed lookup.
+	restrictionLookup func(userID string) (string, error)
 }
 
 type registerRequest struct {
@@ -1126,6 +1130,34 @@ func (a *AuthService) Login(username string, password string, otp string) (token
 			return tokenResponse{}, httpx.Unauthorized("multi-factor authentication code already used")
 		}
 		a.audit.Event("auth.login.mfa_verified", map[string]any{"username": username, "userId": account.ID})
+	}
+
+	// GAP-10 (§13 Responsible Gaming / Responsible Trading, §32 Scenario 6):
+	// self-excluded, RG-blocked, and admin-suspended players are refused a
+	// session. Runs AFTER credential+MFA verification so it leaks nothing to
+	// unauthenticated callers, and only for player accounts — staff
+	// suspension is already enforced by lookupAdminUser's status filter.
+	// Lookup errors fail CLOSED in deployed environments (an outage must not
+	// silently disable an exclusion) and open in dev, mirroring the gateway's
+	// compliance-gate contract.
+	if account.Role != roleAdmin {
+		lookup := a.restrictionLookup
+		if lookup == nil {
+			lookup = a.playerLoginRestriction
+		}
+		if reason, rerr := lookup(account.ID); rerr != nil {
+			if deployedAuthEnvironment() {
+				a.recordAuthMetric("login_failure")
+				a.audit.Event("auth.login.failed", map[string]any{"username": username, "reason": "restriction_lookup_failed"})
+				return tokenResponse{}, httpx.Internal("failed to verify account standing", rerr)
+			}
+			log.Printf("warning: player restriction lookup failed for %s (allowed in dev only): %v", username, rerr)
+		} else if reason != "" {
+			// Correct credentials — not a lockout-counted failure.
+			a.recordAuthMetric("login_failure")
+			a.audit.Event("auth.login.restricted", map[string]any{"username": username, "userId": account.ID, "reason": reason})
+			return tokenResponse{}, httpx.Forbidden("account access is restricted")
+		}
 	}
 
 	// Successful login clears lockout state
