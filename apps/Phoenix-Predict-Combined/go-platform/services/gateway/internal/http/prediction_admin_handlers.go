@@ -154,8 +154,16 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 			if r.Method != stdhttp.MethodPut {
 				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPut)
 			}
+			// GAP-9 (§11 Identity, Account Lifecycle, and Authentication):
+			// status changes are sensitive account-lifecycle actions —
+			// fine-grained permission, mandatory reason, audited with
+			// before/after.
+			if err := requireAdminPermission(r, "users:write"); err != nil {
+				return err
+			}
 			var body struct {
 				Status string `json:"status"`
+				Reason string `json:"reason"`
 			}
 			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 				return httpx.BadRequest("invalid request body", nil)
@@ -167,6 +175,21 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 					map[string]any{"field": "status", "value": body.Status},
 				)
 			}
+			reason := strings.TrimSpace(body.Reason)
+			if reason == "" {
+				return httpx.BadRequest("reason is required",
+					map[string]any{"field": "reason"})
+			}
+			if err := validateLaunchFacingReason("reason", reason); err != nil {
+				return err
+			}
+			prev, err := repo.GetAdminPunter(r.Context(), id)
+			if err != nil {
+				return httpx.Internal("failed to load punter", err)
+			}
+			if prev == nil {
+				return httpx.NotFound("punter not found")
+			}
 			p, err := repo.UpdatePunterStatus(r.Context(), id, status)
 			if err != nil {
 				return httpx.Internal("failed to update punter status", err)
@@ -174,6 +197,11 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 			if p == nil {
 				return httpx.NotFound("punter not found")
 			}
+			recordProviderOpsAuditAction(userIDFromRequest(r), "punter.status_changed", id, map[string]any{
+				"previous": prev.Status,
+				"status":   status,
+				"reason":   reason,
+			})
 			return httpx.WriteJSON(w, stdhttp.StatusOK, p)
 		case "notes":
 			// Admin CRM notes — prediction-native (no sportsbook semantics).

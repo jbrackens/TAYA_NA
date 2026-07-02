@@ -265,7 +265,12 @@ function UserDetailPageContent() {
             {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ status: nextStatus }),
+              // GAP-9: the gateway requires an audited reason for every
+              // status change.
+              body: JSON.stringify({
+                status: nextStatus,
+                reason: data?.reason ?? "",
+              }),
             },
           );
           if (!response.ok) throw new Error(`Failed to ${action} account`);

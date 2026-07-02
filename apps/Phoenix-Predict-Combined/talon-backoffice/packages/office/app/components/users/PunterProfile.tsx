@@ -250,11 +250,19 @@ export function PunterProfile({
           <div className="mt-5 flex flex-col gap-2">
             <Button
               variant="secondary"
-              onClick={() =>
-                onAction?.(
-                  punter.status === "suspended" ? "activate" : "suspend",
-                )
-              }
+              onClick={() => {
+                const action =
+                  punter.status === "suspended" ? "activate" : "suspend";
+                // GAP-9: status changes require an audited reason.
+                const reason = window.prompt(
+                  action === "suspend"
+                    ? "Reason for suspending this account (required, audited):"
+                    : "Reason for reactivating this account (required, audited):",
+                );
+                if (reason && reason.trim()) {
+                  onAction?.(action, { reason: reason.trim() });
+                }
+              }}
               disabled={!canSuspend && !canActivate}
             >
               {punter.status === "suspended"

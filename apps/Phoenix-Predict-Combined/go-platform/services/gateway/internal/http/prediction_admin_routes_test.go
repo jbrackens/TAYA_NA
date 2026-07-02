@@ -467,9 +467,13 @@ func TestAdminPunterWalletLedger(t *testing.T) {
 }
 
 func TestAdminPunterStatusUpdate(t *testing.T) {
-	repo := &fakeAdminReader{statusUpdated: &prediction.AdminPunter{ID: "u-1", Status: "suspended"}}
+	repo := &fakeAdminReader{
+		detail:        &prediction.AdminPunter{ID: "u-1", Status: "active"},
+		statusUpdated: &prediction.AdminPunter{ID: "u-1", Status: "suspended"},
+	}
 	handler := adminTestHandler(repo)
-	req := httptest.NewRequest(http.MethodPut, "/api/v1/admin/punters/u-1/status", strings.NewReader(`{"status":"suspended"}`))
+	req := httptest.NewRequest(http.MethodPut, "/api/v1/admin/punters/u-1/status",
+		strings.NewReader(`{"status":"suspended","reason":"chargeback investigation"}`))
 	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
@@ -478,6 +482,45 @@ func TestAdminPunterStatusUpdate(t *testing.T) {
 	}
 	if repo.gotStatusID != "u-1" || repo.gotStatusVal != "suspended" {
 		t.Fatalf("status not plumbed: id=%s val=%s", repo.gotStatusID, repo.gotStatusVal)
+	}
+	// GAP-9: the change must land in the ops audit stream with
+	// before/after and the reason.
+	found := false
+	for _, e := range providerOpsAuditSnapshot() {
+		if e.Action == "punter.status_changed" && e.TargetID == "u-1" &&
+			strings.Contains(e.Details, `"previous":"active"`) &&
+			strings.Contains(e.Details, `"status":"suspended"`) &&
+			strings.Contains(e.Details, "chargeback investigation") {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatal("punter.status_changed audit entry with previous/status/reason not recorded")
+	}
+}
+
+// GAP-9: a status change without a reason must be refused before any write.
+func TestAdminPunterStatusRequiresReason(t *testing.T) {
+	for _, body := range []string{
+		`{"status":"suspended"}`,
+		`{"status":"suspended","reason":"   "}`,
+	} {
+		repo := &fakeAdminReader{
+			detail:        &prediction.AdminPunter{ID: "u-1", Status: "active"},
+			statusUpdated: &prediction.AdminPunter{ID: "u-1", Status: "suspended"},
+		}
+		handler := adminTestHandler(repo)
+		req := httptest.NewRequest(http.MethodPut, "/api/v1/admin/punters/u-1/status", strings.NewReader(body))
+		req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+		res := httptest.NewRecorder()
+		handler.ServeHTTP(res, req)
+		if res.Code != http.StatusBadRequest {
+			t.Fatalf("body %s: expected 400, got %d", body, res.Code)
+		}
+		if repo.gotStatusID != "" {
+			t.Fatalf("body %s: UpdatePunterStatus must not run without a reason", body)
+		}
 	}
 }
 

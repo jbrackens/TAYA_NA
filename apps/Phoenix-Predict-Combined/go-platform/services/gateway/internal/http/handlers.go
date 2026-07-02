@@ -590,7 +590,11 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// /api/v1/compliance/rg/* routes write to, so a user-set bet limit /
 	// self-exclusion / cool-off actually blocks trades (UAT 2026-05-16 LC-17:
 	// the prediction path previously had no compliance dependency at all).
-	predictionService.SetComplianceChecker(rgService)
+	// GAP-9: the RG checker is decorated with the admin-account-status gate so
+	// a punter an admin suspended/self-excluded/deactivated cannot open new
+	// orders — previously punters.status was written but never read on the
+	// trading path (§32 Scenario 3). No-op when the wallet runs in memory mode.
+	predictionService.SetComplianceChecker(wrapOrderGateWithPunterStatus(rgService, walletService.DB()))
 
 	// --- Payments Routes ---
 	if legacyMoneyRoutesEnabled() {
