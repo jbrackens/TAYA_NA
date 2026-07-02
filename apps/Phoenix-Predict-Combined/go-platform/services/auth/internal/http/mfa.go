@@ -10,6 +10,8 @@ import (
 	"context"
 	"database/sql"
 	"log"
+	stdhttp "net/http"
+	"strings"
 	"time"
 
 	"phoenix-revival/platform/transport/httpx"
@@ -216,4 +218,95 @@ func (a *AuthService) mfaActiveSecret(userID string) (secret string, active bool
 		return "", false, nil
 	}
 	return rec.Secret, true, nil
+}
+
+// ─── Admin enforcement ───────────────────────────────────────────────────────
+
+// mfaAdminRequiredFromEnv decides whether admins must have an active factor to
+// log in. Production and staging are unconditionally enforced — an explicit
+// "false" there is a boot error, not an override. Elsewhere (dev/test) the
+// flag opts in, matching the house pattern for enforcement flags.
+func mfaAdminRequiredFromEnv(env, raw string) (required bool, fatalMsg string) {
+	raw = strings.ToLower(strings.TrimSpace(raw))
+	if env == "production" || env == "staging" {
+		if raw == "false" {
+			return false, "AUTH_MFA_REQUIRED_FOR_ADMINS=false is not permitted in " + env + "; administrator MFA is mandatory"
+		}
+		return true, ""
+	}
+	return raw == "true", ""
+}
+
+// mfaEnrollToken lets an admin who was denied login for lacking a second
+// factor bootstrap enrollment without a session: it authorizes ONLY the
+// enroll + activate endpoints, for one user, briefly, once. Tokens live in
+// memory (like loginLimiter/lockout state) — the auth service is
+// single-instance; a restart just means logging in again for a fresh token.
+type mfaEnrollToken struct {
+	UserID   string
+	Username string
+	Expires  time.Time
+}
+
+const mfaEnrollTokenTTL = 10 * time.Minute
+
+// mfaIssueEnrollToken mints a fresh token for the user, dropping any prior
+// token for the same user (and any expired leftovers) so the map stays small.
+func (a *AuthService) mfaIssueEnrollToken(userID, username string) (string, error) {
+	token, err := makeToken("mfa-enroll")
+	if err != nil {
+		return "", err
+	}
+	now := time.Now()
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	for t, rec := range a.mfaEnrollTokens {
+		if rec.UserID == userID || now.After(rec.Expires) {
+			delete(a.mfaEnrollTokens, t)
+		}
+	}
+	a.mfaEnrollTokens[token] = mfaEnrollToken{UserID: userID, Username: username, Expires: now.Add(mfaEnrollTokenTTL)}
+	return token, nil
+}
+
+// mfaLookupEnrollToken resolves a presented token, or (zero, false) if it is
+// unknown or expired.
+func (a *AuthService) mfaLookupEnrollToken(token string) (mfaEnrollToken, bool) {
+	if token == "" {
+		return mfaEnrollToken{}, false
+	}
+	a.mu.RLock()
+	rec, ok := a.mfaEnrollTokens[token]
+	a.mu.RUnlock()
+	if !ok || time.Now().After(rec.Expires) {
+		return mfaEnrollToken{}, false
+	}
+	return rec, true
+}
+
+// mfaConsumeEnrollToken deletes a token after successful activation.
+func (a *AuthService) mfaConsumeEnrollToken(token string) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	delete(a.mfaEnrollTokens, token)
+}
+
+const mfaEnrollTokenHeader = "X-MFA-Enrollment-Token"
+
+// mfaPrincipalFromRequest identifies who the enroll/activate endpoints act
+// for: a normal session, or — for admins bounced at login — a valid
+// enrollment token. enrollToken is non-empty only on the token path so the
+// caller can consume it after a successful activation. The session's error is
+// returned when neither is present, keeping the endpoints' unauthenticated
+// behavior unchanged.
+func (a *AuthService) mfaPrincipalFromRequest(r *stdhttp.Request) (userID, accountName, enrollToken string, err error) {
+	cs, sessErr := a.currentSessionFromRequest(r)
+	if sessErr == nil {
+		return cs.UserID, cs.Username, "", nil
+	}
+	token := strings.TrimSpace(r.Header.Get(mfaEnrollTokenHeader))
+	if rec, ok := a.mfaLookupEnrollToken(token); ok {
+		return rec.UserID, rec.Username, token, nil
+	}
+	return "", "", "", sessErr
 }

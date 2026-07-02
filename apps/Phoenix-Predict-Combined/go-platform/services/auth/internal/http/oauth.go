@@ -374,6 +374,10 @@ func (p *socialProvider) handleCallback(auth *AuthService, frontendURL string) f
 			return httpx.Internal("failed to resolve OAuth account", err)
 		}
 
+		if err := auth.oauthSessionGate(p.name, account); err != nil {
+			return err
+		}
+
 		s, response, err := newSession(account, auth.accessTTL, auth.refreshTTL)
 		if err != nil {
 			return httpx.Internal("failed to create session", err)
@@ -663,6 +667,19 @@ WHERE username = $1`, username).Scan(&u.ID, &u.Username, &u.PasswordHash, &u.Rol
 	defer a.mu.RUnlock()
 	u, ok := a.usersByUsername[username]
 	return u, ok, nil
+}
+
+// oauthSessionGate is the last check before an OAuth login becomes a session.
+// Administrator accounts never sign in through OAuth: the social flow has no
+// second-factor step, so a verified-email auto-link would mint a privileged
+// session on someone else's identity assertion alone. Admins use password +
+// TOTP, unconditionally.
+func (a *AuthService) oauthSessionGate(provider string, account user) error {
+	if account.Role == roleAdmin {
+		a.audit.Event("auth.oauth.admin_denied", map[string]any{"provider": provider, "userId": account.ID})
+		return httpx.Forbidden("administrator accounts must sign in with password and multi-factor code")
+	}
+	return nil
 }
 
 // createOAuthUser inserts a password-less player account. It is idempotent on

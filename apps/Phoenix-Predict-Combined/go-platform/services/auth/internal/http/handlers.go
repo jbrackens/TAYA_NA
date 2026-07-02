@@ -38,6 +38,8 @@ type AuthService struct {
 	usersByUsername  map[string]user
 	oauthIdentities  map[string]string // "provider:subject" -> userID (in-memory fallback when db == nil)
 	mfaMem           map[string]*mfaRecord // TOTP enrollments when db == nil (mirrors auth_mfa)
+	mfaEnrollTokens  map[string]mfaEnrollToken // single-use tokens for admins forced to enroll at login
+	mfaAdminRequired bool // admins must have an ACTIVE factor to log in
 	db               *sql.DB // nil = in-memory mode
 	store            SessionStore
 	audit            AuditLogger
@@ -285,10 +287,17 @@ func NewAuthService() *AuthService {
 		slog.Info("auth: rate limiting backed by in-memory (single-instance only)")
 	}
 
+	mfaAdminRequired, mfaFatal := mfaAdminRequiredFromEnv(env, os.Getenv("AUTH_MFA_REQUIRED_FOR_ADMINS"))
+	if mfaFatal != "" {
+		log.Fatalf("FATAL: %s", mfaFatal)
+	}
+
 	svc := &AuthService{
 		usersByUsername:  users,
 		oauthIdentities:  map[string]string{},
 		mfaMem:           map[string]*mfaRecord{},
+		mfaEnrollTokens:  map[string]mfaEnrollToken{},
+		mfaAdminRequired: mfaAdminRequired,
 		store:            sessionStore,
 		audit:            &structuredAuditLogger{logger: log.Default()},
 		accessTTL:        durationFromEnvSeconds("AUTH_ACCESS_TTL_SECONDS", defaultAccessTokenTTL),
@@ -866,31 +875,34 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 	}))
 
 	// POST /api/v1/auth/2fa/enroll → generates a pending secret + otpauth URI.
+	// Authenticated by session, or by the single-use enrollment token an
+	// un-enrolled admin received at login (X-MFA-Enrollment-Token header).
 	mux.Handle("/api/v1/auth/2fa/enroll", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
-		cs, err := auth.currentSessionFromRequest(r)
+		userID, accountName, _, err := auth.mfaPrincipalFromRequest(r)
 		if err != nil {
 			return err
 		}
-		secret, uri, err := auth.MFABeginEnroll(cs.UserID, cs.Username)
+		secret, uri, err := auth.MFABeginEnroll(userID, accountName)
 		if err != nil {
 			return err
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"userId":     cs.UserID,
+			"userId":     userID,
 			"secret":     secret,
 			"otpauthUri": uri,
 		})
 	}))
 
-	// POST /api/v1/auth/2fa/activate { code } → confirms enrollment.
+	// POST /api/v1/auth/2fa/activate { code } → confirms enrollment. Accepts
+	// the same enrollment token as /enroll; the token is consumed on success.
 	mux.Handle("/api/v1/auth/2fa/activate", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
-		cs, err := auth.currentSessionFromRequest(r)
+		userID, _, enrollToken, err := auth.mfaPrincipalFromRequest(r)
 		if err != nil {
 			return err
 		}
@@ -898,10 +910,14 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
 		}
-		if err := auth.MFAActivate(cs.UserID, firstNonEmpty(body.Code, body.OTP)); err != nil {
+		if err := auth.MFAActivate(userID, firstNonEmpty(body.Code, body.OTP)); err != nil {
 			return err
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"userId": cs.UserID, "active": true})
+		if enrollToken != "" {
+			auth.mfaConsumeEnrollToken(enrollToken)
+			auth.audit.Event("auth.mfa.enroll_token_used", map[string]any{"userId": userID})
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"userId": userID, "active": true})
 	}))
 
 	// POST /api/v1/auth/2fa/disable { code } → turns off the factor (code required).
@@ -994,13 +1010,29 @@ func (a *AuthService) Login(username string, password string, otp string) (token
 
 	// Second-factor gate: an account with ACTIVE MFA cannot complete login on
 	// password alone. Fail closed — a lookup error denies the login rather than
-	// silently skipping the factor. Accounts without active MFA are unaffected,
-	// so existing (un-enrolled) admins are never locked out by this slice.
+	// silently skipping the factor.
 	secret, mfaActive, mfaErr := a.mfaActiveSecret(account.ID)
 	if mfaErr != nil {
 		a.recordAuthMetric("login_failure")
 		a.audit.Event("auth.login.failed", map[string]any{"username": username, "reason": "mfa_lookup_failed"})
 		return tokenResponse{}, httpx.Internal("failed to verify multi-factor state", mfaErr)
+	}
+	// Privileged accounts must HAVE a factor, not merely honor one when
+	// enrolled. The password checked out, so instead of a session the caller
+	// gets a single-use enrollment token valid only for /2fa/enroll +
+	// /2fa/activate — after activating, they log in again with an OTP.
+	if a.mfaAdminRequired && account.Role == roleAdmin && !mfaActive {
+		enrollToken, tokErr := a.mfaIssueEnrollToken(account.ID, account.Username)
+		if tokErr != nil {
+			return tokenResponse{}, httpx.Internal("failed to issue multi-factor enrollment token", tokErr)
+		}
+		a.audit.Event("auth.login.mfa_enrollment_required", map[string]any{"username": username, "userId": account.ID})
+		return tokenResponse{}, httpx.NewError(stdhttp.StatusForbidden, httpx.CodeForbidden,
+			"multi-factor enrollment is required for administrator accounts", map[string]any{
+				"mfaEnrollmentRequired": true,
+				"enrollmentToken":       enrollToken,
+				"expiresInSeconds":      int64(mfaEnrollTokenTTL.Seconds()),
+			}, nil)
 	}
 	if mfaActive {
 		if otp == "" {
