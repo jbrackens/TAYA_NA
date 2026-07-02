@@ -5,22 +5,22 @@ import type {
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
-export function formatCompactUsd(cents: number): string {
-  const dollars = Math.max(0, cents) / 100;
+export function formatCompactPoints(cents: number): string {
+  const points = Math.max(0, cents) / 100;
 
-  if (dollars >= 1_000_000) {
-    return trimTrailingZero(`$${(dollars / 1_000_000).toFixed(1)}M`);
+  if (points >= 1_000_000) {
+    return trimTrailingZero(`${(points / 1_000_000).toFixed(1)}M pts`);
   }
 
-  if (dollars >= 1_000) {
-    return trimTrailingZero(`$${(dollars / 1_000).toFixed(1)}K`);
+  if (points >= 1_000) {
+    return trimTrailingZero(`${(points / 1_000).toFixed(1)}K pts`);
   }
 
-  if (dollars >= 100) {
-    return `$${Math.round(dollars).toLocaleString()}`;
+  if (points >= 100) {
+    return `${Math.round(points).toLocaleString()} pts`;
   }
 
-  return `$${dollars.toFixed(2)}`;
+  return `${points.toFixed(2)} pts`;
 }
 
 export function formatTimeLeft(closeAt: string): string {
@@ -83,7 +83,7 @@ export function dedupeMarkets(markets: PredictionMarket[]): PredictionMarket[] {
 export function sortMarketsByVolume(
   markets: PredictionMarket[],
 ): PredictionMarket[] {
-  return [...markets].sort((a, b) => b.volumeCents - a.volumeCents);
+  return [...markets].sort((a, b) => b.volumePointsCents - a.volumePointsCents);
 }
 
 export function normalizePriceShares(
@@ -102,5 +102,5 @@ export function normalizePriceShares(
 }
 
 function trimTrailingZero(value: string): string {
-  return value.replace(/\.0([MK])$/, "$1");
+  return value.replace(/\.0([MK])/, "$1");
 }

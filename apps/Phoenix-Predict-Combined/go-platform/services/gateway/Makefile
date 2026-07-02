@@ -9,7 +9,7 @@ GREEN := \033[0;32m
 RESET := \033[0m
 
 help: ## Display this help message
-	@echo "$(BLUE)Phoenix Sportsbook Gateway - Make Commands$(RESET)"
+	@echo "$(BLUE)Tiangge Prediction Gateway - Make Commands$(RESET)"
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "$(GREEN)%-20s$(RESET) %s\n", $$1, $$2}'
 	@echo ""
@@ -17,10 +17,10 @@ help: ## Display this help message
 	@echo "  make createdb          Create PostgreSQL database"
 	@echo "  make migrate-up        Apply all pending migrations"
 	@echo "  make migrate-down      Rollback one migration"
-	@echo "  make seed              Load development seed data"
+	@echo "  make seed              Load Tiangge launch base seed data"
 	@echo ""
 	@echo "Environment setup:"
-	@echo "  export GATEWAY_DB_DSN=\"postgres://user:pass@localhost:5432/sportsbook\""
+	@echo "  export GATEWAY_DB_DSN=\"postgres://user:pass@localhost:5432/tiangge_predict\""
 
 build: ## Build the migration tool
 	@echo "$(BLUE)Building migration tool...$(RESET)"
@@ -28,13 +28,13 @@ build: ## Build the migration tool
 	@echo "$(GREEN)✓ Migration tool built at bin/migrate$(RESET)"
 
 createdb: ## Create PostgreSQL database
-	@echo "$(BLUE)Creating sportsbook database...$(RESET)"
-	@psql -U postgres -c "CREATE DATABASE sportsbook;" 2>/dev/null || echo "$(GREEN)Database already exists$(RESET)"
+	@echo "$(BLUE)Creating Tiangge prediction database...$(RESET)"
+	@psql -U postgres -c "CREATE DATABASE tiangge_predict;" 2>/dev/null || echo "$(GREEN)Database already exists$(RESET)"
 
 migrate-up: build ## Apply all pending migrations
 	@if [ -z "$(GATEWAY_DB_DSN)" ]; then \
 		echo "$(BLUE)Error: GATEWAY_DB_DSN environment variable not set$(RESET)"; \
-		echo "Set it with: export GATEWAY_DB_DSN=\"postgres://user:pass@localhost:5432/sportsbook\""; \
+		echo "Set it with: export GATEWAY_DB_DSN=\"postgres://user:pass@localhost:5432/tiangge_predict\""; \
 		exit 1; \
 	fi
 	@echo "$(BLUE)Applying migrations...$(RESET)"
@@ -67,14 +67,14 @@ migrate-status: build ## Check migration status
 	@echo "$(BLUE)Migration status:$(RESET)"
 	./bin/migrate status
 
-seed: ## Load development seed data
+seed: ## Load Tiangge launch base seed data
 	@if [ -z "$(GATEWAY_DB_DSN)" ]; then \
 		echo "$(BLUE)Error: GATEWAY_DB_DSN environment variable not set$(RESET)"; \
 		exit 1; \
 	fi
-	@echo "$(BLUE)Loading seed data...$(RESET)"
-	psql $(GATEWAY_DB_DSN) -f migrations/seed.sql
-	@echo "$(GREEN)✓ Seed data loaded$(RESET)"
+	@echo "$(BLUE)Loading Tiangge launch base seed...$(RESET)"
+	WALLET_DB_DSN=$(GATEWAY_DB_DSN) WALLET_STORE_MODE=db go run ./cmd/seed -mode base
+	@echo "$(GREEN)✓ Tiangge launch base seed loaded$(RESET)"
 
 demo-data: ## Load base seed + demo state (orderbooks, volume, demo user portfolio, settlements)
 	@if [ -z "$(GATEWAY_DB_DSN)" ]; then \
@@ -100,7 +100,7 @@ dev-setup: createdb migrate-up seed ## Complete development setup (create DB, mi
 	@echo "$(BLUE)Next steps:$(RESET)"
 	@echo "1. Run tests: go test ./..."
 	@echo "2. Start gateway: go run ./cmd/gateway"
-	@echo "3. Check seed data: psql -d sportsbook -c \"SELECT COUNT(*) FROM punters;\""
+	@echo "3. Check seed data: psql -d tiangge_predict -c \"SELECT COUNT(*) FROM punters;\""
 
 verify-schema: ## Verify database schema
 	@echo "$(BLUE)Verifying schema...$(RESET)"
@@ -134,14 +134,14 @@ help-env: ## Display environment variable help
 	@echo ""
 	@echo "Required:"
 	@echo "  GATEWAY_DB_DSN       PostgreSQL connection string"
-	@echo "                       Example: postgres://user:pass@localhost:5432/sportsbook"
+	@echo "                       Example: postgres://user:pass@localhost:5432/tiangge_predict"
 	@echo ""
 	@echo "Optional:"
 	@echo "  GATEWAY_DB_DRIVER    Database driver (default: postgres)"
 	@echo "  MIGRATIONS_DIR       Path to migrations (auto-detected)"
 	@echo ""
 	@echo "Setup:"
-	@echo "  export GATEWAY_DB_DSN=\"postgres://postgres:postgres@localhost:5432/sportsbook\""
+	@echo "  export GATEWAY_DB_DSN=\"postgres://postgres:postgres@localhost:5432/tiangge_predict\""
 	@echo "  make dev-setup"
 
 .SILENT: help help-env

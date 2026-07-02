@@ -3,22 +3,36 @@ import { buildTableFilterOptions } from "../../../lib/utils/filters";
 import { TalonAuditLogCategory, TalonAuditLogType } from "../../../types/logs";
 
 const resolveActionCategory = (action: string): string => {
-  if (action.startsWith("prediction.")) {
+  const normalizedAction = normalizeAuditActionForDisplay(action);
+  if (normalizedAction.startsWith("prediction.")) {
     return "CELL_TYPE_TRADING";
   }
-  if (action.startsWith("provider.")) {
+  if (normalizedAction.startsWith("provider.")) {
     return "CELL_TYPE_PROVIDER";
   }
-  if (action.startsWith("punter.")) {
+  if (normalizedAction.startsWith("punter.")) {
     return "CELL_TYPE_ACCOUNT";
   }
-  if (action.startsWith("market.")) {
+  if (normalizedAction.startsWith("market.")) {
     return "CELL_TYPE_OPERATIONS";
   }
-  if (action.startsWith("config.")) {
+  if (normalizedAction.startsWith("config.")) {
     return "CELL_TYPE_CONFIGURATION";
   }
   return "CELL_TYPE_UNKNOWN";
+};
+
+export const normalizeAuditActionForDisplay = (action?: string): string => {
+  const normalized = `${action || ""}`.trim().toLowerCase();
+  switch (normalized) {
+    case "bet.placed":
+      return "prediction.order.placed";
+    case "bet.precheck.failed":
+    case "bet.precheck_failed":
+      return "prediction.order.precheck_failed";
+    default:
+      return normalized;
+  }
 };
 
 export const resolveCategory = (
@@ -56,6 +70,9 @@ const actionTypeMap: Record<string, string> = {
   "prediction.market.cancelled": "CELL_ACTION_PREDICTION_MARKET_CANCELLED",
   "prediction.market.resolved": "CELL_ACTION_PREDICTION_MARKET_RESOLVED",
   "prediction.market.resettled": "CELL_ACTION_PREDICTION_MARKET_RESETTLED",
+  "prediction.order.placed": "CELL_ACTION_PREDICTION_ORDER_PLACED",
+  "prediction.order.precheck_failed":
+    "CELL_ACTION_PREDICTION_ORDER_PRECHECK_FAILED",
   "prediction.order.previewed": "CELL_ACTION_PREDICTION_ORDER_PREVIEWED",
 };
 
@@ -84,7 +101,8 @@ export const resolveType = (
       return "CELL_ACTION_ACCOUNT_CLOSURE";
     default:
       return (
-        actionTypeMap[`${action || ""}`.toLowerCase()] || "CELL_ACTION_UNKNOWN"
+        actionTypeMap[normalizeAuditActionForDisplay(action)] ||
+        "CELL_ACTION_UNKNOWN"
       );
   }
 };

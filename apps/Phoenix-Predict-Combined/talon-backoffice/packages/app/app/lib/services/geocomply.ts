@@ -27,7 +27,7 @@ class GeoComplianceServiceImpl implements GeoComplianceService {
 
   constructor() {
     this.bypassChecks =
-      process.env.NEXT_PUBLIC_DISABLE_GEOLOCATION_CHECK === 'true';
+      process.env.NEXT_PUBLIC_DISABLE_GEOLOCATION_CHECK === "true";
   }
 
   private getCurrentPosition(): Promise<GeolocationPosition> {
@@ -49,8 +49,8 @@ class GeoComplianceServiceImpl implements GeoComplianceService {
     if (this.bypassChecks) {
       return {
         allowed: true,
-        status: 'bypassed',
-        country: 'US',
+        status: "bypassed",
+        country: "US",
       };
     }
 
@@ -83,7 +83,8 @@ class GeoComplianceServiceImpl implements GeoComplianceService {
         errorMessage:
           response.result.status === "approved"
             ? undefined
-            : response.result.message || "Betting is not available in your current location.",
+            : response.result.message ||
+              "Predictions are not available in your current location.",
       };
     } catch (error) {
       if (typeof error === "object" && error !== null && "code" in error) {
@@ -93,14 +94,16 @@ class GeoComplianceServiceImpl implements GeoComplianceService {
           return {
             allowed: false,
             errorCode: "GEO_PERMISSION_DENIED",
-            errorMessage: "Location access was denied. Enable location services to place a bet.",
+            errorMessage:
+              "Location access was denied. Enable location services to submit a prediction order.",
           };
         }
         if (geoError.code === 2) {
           return {
             allowed: false,
             errorCode: "GEO_POSITION_UNAVAILABLE",
-            errorMessage: "Your location could not be determined. Try again in a moment.",
+            errorMessage:
+              "Your location could not be determined. Try again in a moment.",
           };
         }
         if (geoError.code === 3) {
@@ -124,7 +127,7 @@ class GeoComplianceServiceImpl implements GeoComplianceService {
     if (this.bypassChecks) {
       return true;
     }
-    return typeof window !== 'undefined' && 'geolocation' in navigator;
+    return typeof window !== "undefined" && "geolocation" in navigator;
   }
 }
 

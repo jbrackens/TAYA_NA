@@ -47,6 +47,7 @@ func TestValidateRuntimeConfigRejectsWithdrawalReviewDisabledInProduction(t *tes
 		"ALPHA_CASHIER_TOKEN_ADDRESS":              "0x0000000000000000000000000000000000000001",
 		"ALPHA_CASHIER_TREASURY_ADDRESS":           "0x0000000000000000000000000000000000000002",
 		"ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED": "false",
+		"ALPHA_CASHIER_SCREENING_ENFORCEMENT":      "true",
 	}
 	if err := ValidateRuntimeConfig(mapEnv(env)); err == nil {
 		t.Fatalf("expected production runtime validation to reject disabled withdrawal review")

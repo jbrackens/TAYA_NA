@@ -24,7 +24,7 @@
   "HOW_TITLE": "How You Earn",
   "HOW_SUBTITLE": "Points accumulate automatically from qualifying activity.",
   "HOW_BET": "Settled Trades",
-  "HOW_BET_DESC": "Earn 1 point per $1 traded on every qualifying settled trade.",
+  "HOW_BET_DESC": "Earn points from every qualifying settled prediction.",
   "HOW_REFERRAL": "Referrals",
   "HOW_REFERRAL_DESC": "Earn {{points}} bonus points when a referred friend makes their first qualifying trade.",
   "HOW_PROMO": "Promotions",

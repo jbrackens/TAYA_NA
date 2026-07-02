@@ -3,10 +3,7 @@
     "target": "esnext",
     "module": "esnext",
     "jsx": "react-jsx",
-    "lib": [
-      "dom",
-      "es2017"
-    ],
+    "lib": ["dom", "es2017"],
     "moduleResolution": "bundler",
     "allowJs": true,
     "noEmit": true,
@@ -24,9 +21,7 @@
     "isolatedModules": true,
     "baseUrl": "./",
     "paths": {
-      "i18n": [
-        "i18n.js"
-      ]
+      "i18n": ["i18n.js"]
     },
     "incremental": true,
     "plugins": [
@@ -35,14 +30,11 @@
       }
     ]
   },
-  "exclude": [
-    "node_modules"
-  ],
+  "exclude": ["node_modules"],
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "pages/_app.js",
     "next.config.js",
     "public/static/locales/en/common.js",
     "public/static/locales/en/header.js",

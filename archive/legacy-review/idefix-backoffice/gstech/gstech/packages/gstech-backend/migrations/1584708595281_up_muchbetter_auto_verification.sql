@@ -1,1 +1,0 @@
-update payment_methods set "allowAutoVerification"=true where name='MuchBetter';

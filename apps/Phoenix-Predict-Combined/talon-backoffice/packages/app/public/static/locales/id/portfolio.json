@@ -1,6 +1,6 @@
 {
   "title": "Portofolio",
-  "subtitle": "Posisi terbuka, order aktif, dan pembayaran selesai.",
+  "subtitle": "Posisi terbuka, order aktif, dan hasil selesai.",
   "state": {
     "loading": "Memuat portofolio…",
     "signIn": "Login untuk melihat portofolio Anda.",
@@ -8,7 +8,7 @@
   },
   "summary": {
     "invested": "Diinvestasikan",
-    "realizedPnl": "P&L terealisasi",
+    "realizedPnl": "Hasil poin terealisasi",
     "openPositions": "Posisi terbuka",
     "accuracy": "Akurasi",
     "correctCount": "{{correct}}/{{total}} benar",
@@ -19,12 +19,12 @@
     "notRanked": "Belum masuk peringkat",
     "qualify": "Selesaikan lebih banyak market agar memenuhi syarat",
     "metricAccuracy": "{{value}}% benar",
-    "metricSharpness": "{{value}}% ROI",
-    "metricPnl": "{{value}} P&L"
+    "metricSharpness": "{{value}}% efisiensi poin",
+    "metricPnl": "{{value}} hasil poin"
   },
   "boards": {
     "accuracy": "Akurasi",
-    "pnlWeekly": "P&L mingguan",
+    "pnlWeekly": "Hasil poin mingguan",
     "sharpness": "Sharpness"
   },
   "tabs": {
@@ -39,7 +39,7 @@
   "orders": {
     "empty": "Tidak ada order terbuka.",
     "cancelled": "Order dibatalkan",
-    "released": "Dana cadangan dilepas pada {{ticker}}",
+    "released": "Poin yang dikunci dibuka pada {{ticker}}",
     "cancelFailed": "Pembatalan gagal",
     "cancel": "Batalkan"
   },
@@ -59,7 +59,7 @@
     "placed": "Dipasang",
     "entry": "Masuk",
     "exit": "Keluar",
-    "pnl": "P&L",
+    "pnl": "Hasil poin",
     "points": "Poin",
     "settled": "Selesai"
   },

@@ -27,6 +27,9 @@ var (
 	ErrWithdrawalNotFound    = errors.New("withdrawal request not found")
 	ErrInvalidStatus         = errors.New("invalid status transition")
 	ErrReviewNoteRequired    = errors.New("review note required")
+	// ErrSecondApproverRequired is returned when two-person withdrawal control
+	// is on and the broadcaster is the same operator who approved (A2-04).
+	ErrSecondApproverRequired = errors.New("withdrawal broadcast requires a different operator than the approver")
 )
 
 type WalletChallenge struct {
@@ -123,6 +126,16 @@ type ChainTransaction struct {
 	ReceiptStatus   string
 	RawLog          string
 	CreatedAt       time.Time
+}
+
+// CreditedDeposit pairs a credited deposit intent with the on-chain evidence it
+// was credited from, so the reorg watcher (audit A2-03) can re-verify finality
+// of the exact transaction/block that backed the credit.
+type CreditedDeposit struct {
+	DepositID   string
+	UserID      string
+	AmountCents int64
+	Tx          ChainTransaction
 }
 
 type WithdrawalRequest struct {

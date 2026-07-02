@@ -1,5 +1,8 @@
 # Build context: go-platform/
-FROM golang:1.25-alpine AS builder
+FROM golang:1.25 AS builder
+
+ARG GOPROXY=https://goproxy.io|https://proxy.golang.org|direct
+ENV GOPROXY=${GOPROXY}
 
 WORKDIR /build
 

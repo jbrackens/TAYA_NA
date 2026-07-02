@@ -88,7 +88,7 @@ func (m *MockPaymentService) InitiateDeposit(ctx context.Context, userID string,
 
 	// Credit wallet immediately
 	if m.walletService != nil {
-		_, err := m.walletService.Credit(wallet.MutationRequest{
+		_, err := m.walletService.Credit(ctx, wallet.MutationRequest{
 			UserID:         userID,
 			AmountCents:    amountCents,
 			IdempotencyKey: txnID,
@@ -118,7 +118,7 @@ func (m *MockPaymentService) InitiateWithdrawal(ctx context.Context, userID stri
 	defer m.mu.Unlock()
 
 	if m.walletService != nil {
-		balance := m.walletService.Balance(userID)
+		balance := m.walletService.Balance(ctx, userID)
 		if balance < amountCents {
 			return nil, ErrInsufficientFunds
 		}
@@ -130,7 +130,7 @@ func (m *MockPaymentService) InitiateWithdrawal(ctx context.Context, userID stri
 	estimatedAt := time.Now().Add(2 * time.Hour).UTC().Format(time.RFC3339)
 
 	if m.walletService != nil {
-		_, err := m.walletService.Debit(wallet.MutationRequest{
+		_, err := m.walletService.Debit(ctx, wallet.MutationRequest{
 			UserID:         userID,
 			AmountCents:    amountCents,
 			IdempotencyKey: txnID,
@@ -320,7 +320,7 @@ func (m *MockPaymentService) HandleWebhook(ctx context.Context, payload WebhookP
 	}
 	if txn.Type == "withdrawal" && (payload.Status == "failed" || payload.Status == "declined") {
 		if m.walletService != nil {
-			if _, err := m.walletService.Credit(wallet.MutationRequest{
+			if _, err := m.walletService.Credit(ctx, wallet.MutationRequest{
 				UserID:         txn.UserID,
 				AmountCents:    txn.Amount,
 				IdempotencyKey: "withdrawal-refund:" + payload.TransactionID,

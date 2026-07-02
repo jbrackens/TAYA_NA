@@ -14,7 +14,6 @@ import phoenix.punters.KeycloakUser
 import phoenix.punters.KeycloakUserConverter
 import phoenix.punters.domain.SocialSecurityNumber.Last4DigitsOfSSN
 import phoenix.punters.domain._
-import phoenix.support.UnsafeValueObjectExtensions.UnsafeUsernameOps
 import phoenix.support.UnsafeValueObjectExtensions._
 
 final class KeycloakConversionsSpec extends AnyWordSpecLike with Matchers {

@@ -51,7 +51,6 @@ inThisBuild(
     semanticdbEnabled := true,
     semanticdbVersion := scalafixSemanticdb.revision,
     scalafixDependencies += ScalafixDependencies.organizeImports,
-    scalafixScalaBinaryVersion := CrossVersion.binaryScalaVersion(scalaVersion.value),
     // Set to "placeholder", plugin will skip this `.env`
     envFileName := sys.props.get("dotenv.file").getOrElse(".<specifier>.env"),
     // Let's exclude commons-logging globally and instead substitute it with jcl-over-slf4j in Dependencies.scala.
@@ -99,7 +98,7 @@ lazy val `phoenix-backend` = (project in file("services"))
     `phoenix-ingestion-betgenius-lib`,
     `scalafix-rules` % ScalafixConfig)
   .libraries(phoenixBackendDependencies)
-  .overrides(cloudflowLibDependencyOverrides)
+  .overrides(cloudflowLibDependencyOverrides ++ securityDependencyOverrides)
   .settings(commonSettings)
   .settings(
     ashDumpPersistenceSchema / ashDumpPersistenceSchemaOutputFilename := "akka-persistence-schema.yaml",
@@ -113,6 +112,7 @@ lazy val `phoenix-backend` = (project in file("services"))
 lazy val `phoenix-core` = (project in file("core"))
   .dependsOn(`scalafix-rules` % ScalafixConfig)
   .libraries(coreDependencies)
+  .overrides(securityDependencyOverrides)
   .settings(commonSettings)
 
 lazy val `phoenix-data-models` = (project in file("data-pipeline/models"))
@@ -125,7 +125,7 @@ lazy val `phoenix-data-models` = (project in file("data-pipeline/models"))
 lazy val `phoenix-ingestion-betgenius-lib` = (project in file("data-pipeline/betgenius/lib"))
   .dependsOn(`phoenix-core`, `phoenix-core` % "test->test", `phoenix-data-models`, `scalafix-rules` % ScalafixConfig)
   .libraries(betgeniusDependencies)
-  .overrides(cloudflowLibDependencyOverrides)
+  .overrides(cloudflowLibDependencyOverrides ++ securityDependencyOverrides)
   .settings(commonSettings)
 
 lazy val `phoenix-ingestion-betgenius` = (project in file("data-pipeline/betgenius/app"))
@@ -144,7 +144,7 @@ lazy val `phoenix-ingestion-betgenius` = (project in file("data-pipeline/betgeni
 lazy val `phoenix-ingestion-oddin-lib` = (project in file("data-pipeline/oddin/lib"))
   .dependsOn(`phoenix-core`, `phoenix-core` % "test->test", `phoenix-data-models`, `scalafix-rules` % ScalafixConfig)
   .libraries(oddinDependencies)
-  .overrides(cloudflowLibDependencyOverrides)
+  .overrides(cloudflowLibDependencyOverrides ++ securityDependencyOverrides)
   .settings(commonSettings)
 
 lazy val `phoenix-ingestion-oddin` = (project in file("data-pipeline/oddin/app"))
@@ -178,6 +178,7 @@ lazy val `phoenix-contract-tests` = (project in file("contract-tests"))
   .configs(ContractTest)
   .dependsOn(`phoenix-core` % "test->test", `scalafix-rules` % ScalafixConfig)
   .libraries(contractTestsDependencies)
+  .overrides(securityDependencyOverrides)
   .settings(commonSettings)
   .settings(contractSettings)
 

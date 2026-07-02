@@ -4,6 +4,7 @@ import akka.actor.typed.scaladsl.adapter._
 import akka.http.scaladsl.model.StatusCodes
 import akka.stream.scaladsl.Sink
 import akka.stream.testkit.scaladsl.TestSink
+import scala.concurrent.ExecutionContextExecutor
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
@@ -39,8 +40,8 @@ import phoenix.time.FakeHardcodedClock
 
 class OddinStreamsSpec extends ScalaTestWithActorTestKit with AnyWordSpecLike with Matchers with FileSupport {
 
-  implicit private val classicSystem = testKit.system.toClassic
-  implicit private val ec = system.executionContext
+  implicit private val classicSystem: akka.actor.ActorSystem = testKit.system.toClassic
+  implicit private val ec: ExecutionContextExecutor = system.executionContext
 
   private val oddinConfig = OddinConfig.of(system)
   private val clock = new FakeHardcodedClock()

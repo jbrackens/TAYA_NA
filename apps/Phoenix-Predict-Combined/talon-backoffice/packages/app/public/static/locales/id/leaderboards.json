@@ -28,12 +28,12 @@
       "description": "Trader diperingkat berdasarkan akurasi prediksi."
     },
     "pnlWeekly": {
-      "name": "P&L Mingguan",
-      "description": "Trader diperingkat berdasarkan profit terealisasi minggu ini."
+      "name": "Poin Mingguan",
+      "description": "Prediktor diperingkat berdasarkan hasil poin terealisasi minggu ini."
     },
     "sharpness": {
       "name": "Sharpness",
-      "description": "Trader diperingkat berdasarkan imbal hasil atas risiko."
+      "description": "Prediktor diperingkat berdasarkan efisiensi poin pada market selesai."
     },
     "category": {
       "name": "Juara {{category}}",
@@ -42,9 +42,9 @@
   },
   "metrics": {
     "accuracy": "Akurasi",
-    "pnl": "P&L",
+    "pnl": "Poin bersih",
     "sharpness": "Sharpness",
-    "category": "Profit"
+    "category": "Poin bersih"
   },
   "qualification": {
     "accuracy": "Selesaikan cukup banyak market untuk masuk peringkat akurasi.",
@@ -53,7 +53,7 @@
     "category": "Selesaikan market di kategori ini agar memenuhi syarat."
   },
   "categories": {
-    "crypto": "Kripto",
+    "crypto": "Esports",
     "politics": "Politik",
     "sports": "Olahraga",
     "culture": "Budaya",

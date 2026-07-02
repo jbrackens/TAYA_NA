@@ -22,22 +22,22 @@ const MOCK_CHAT_MESSAGES: ChatMessage[] = [
   {
     username: "marketmaker23",
     timestamp: "now",
-    content: "BTC above $100K just ticked to 63c.",
+    content: "MLBB finals map-one YES moved to 63 after roster news.",
   },
   {
-    username: "linewatcher",
+    username: "marketwatcher",
     timestamp: "1m",
-    content: "Lakers NO moved to 41c after Denver closed strong.",
+    content: "Valorant underdog NO moved to 41 after scrim notes.",
   },
   {
     username: "island_alpha",
     timestamp: "3m",
-    content: "Barcelona CL market moved after the injury update.",
+    content: "Local festival rain market moved after the weather update.",
   },
   {
-    username: "oddswatcher",
+    username: "pricewatcher",
     timestamp: "4m",
-    content: "Solana Q2 ticked up again with deeper NO liquidity.",
+    content: "Dota finals map-three YES ticked up with deeper NO liquidity.",
   },
   {
     username: "macro_mina",
@@ -45,9 +45,9 @@ const MOCK_CHAT_MESSAGES: ChatMessage[] = [
     content: "Fed cut by September is holding near 48c.",
   },
   {
-    username: "propdesk",
+    username: "researchdesk",
     timestamp: "7m",
-    content: "Someone swept YES side on oil above $90.",
+    content: "Someone swept YES side on the grand prix safety-car market.",
   },
   {
     username: "chalk_eater",
@@ -55,17 +55,17 @@ const MOCK_CHAT_MESSAGES: ChatMessage[] = [
     content: "Election turnout is moving faster than the polls.",
   },
   {
-    username: "arb_hunter",
+    username: "signal_hunter",
     timestamp: "11m",
     content: "NBA MVP spread widened after the injury report.",
   },
   {
     username: "quant_kai",
     timestamp: "13m",
-    content: "ETH ETF approval stayed above 70c into close.",
+    content: "Creator award finalist stayed above 70 into close.",
   },
   {
-    username: "sportsbook_sam",
+    username: "weather_sam",
     timestamp: "15m",
     content: "Rain probability jumped on the grand prix market.",
   },

@@ -56,7 +56,7 @@ import phoenix.wallets.infrastructure.http.WalletRoutes
 
 final class AuditLogBackofficeRoutesSpec extends RoutesSpecSupport {
 
-  implicit val clock = new FakeHardcodedClock()
+  implicit val clock: FakeHardcodedClock = new FakeHardcodedClock()
   implicit val jwtAuthenticator: JwtAuthenticator = JwtAuthenticatorMock.jwtAuthenticatorMock()
 
   private val auditLogRepository = new InMemoryAuditLogRepository()
@@ -155,7 +155,7 @@ final class AuditLogBackofficeRoutesSpec extends RoutesSpecSupport {
         new EmptyReportsModule()))
   }
 
-  implicit val underTest = Route.seal(routes.toAkkaHttp)
+  implicit val underTest: akka.http.scaladsl.server.Route = Route.seal(routes.toAkkaHttp)
 
   private val expectedLogEntries = {
     val now = clock.currentOffsetDateTime()

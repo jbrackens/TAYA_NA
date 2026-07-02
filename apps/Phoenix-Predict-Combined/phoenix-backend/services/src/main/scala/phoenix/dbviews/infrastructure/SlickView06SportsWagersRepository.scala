@@ -105,11 +105,16 @@ object SlickView06SportsWagersRepository extends SlickEnumSupport {
     MappedColumnType.base[OffsetDateTime, String](
       _.format(Constants.dateTimePattern),
       OffsetDateTime.parse(_, Constants.dateTimePattern))
-  implicit val americanOddsColumnMapper = MappedColumnType.base[AmericanOdds, String](_.value, AmericanOdds(_))
-  implicit val punterIdColumnMapper = MappedColumnType.base[PunterId, String](_.value, PunterId(_))
-  implicit val betIdColumnMapper = MappedColumnType.base[BetId, String](_.value, BetId(_))
-  implicit val fixtureIdColumnMapper = MappedColumnType.base[WagerEventId, String](_.value, FixtureId.unsafeParse)
-  implicit val moneyAmountColumnMapper = MappedColumnType.base[MoneyAmount, BigDecimal](_.amount, MoneyAmount(_))
+  implicit val americanOddsColumnMapper: BaseColumnType[AmericanOdds] =
+    MappedColumnType.base[AmericanOdds, String](_.value, AmericanOdds(_))
+  implicit val punterIdColumnMapper: BaseColumnType[PunterId] =
+    MappedColumnType.base[PunterId, String](_.value, PunterId(_))
+  implicit val betIdColumnMapper: BaseColumnType[BetId] =
+    MappedColumnType.base[BetId, String](_.value, BetId(_))
+  implicit val fixtureIdColumnMapper: BaseColumnType[WagerEventId] =
+    MappedColumnType.base[WagerEventId, String](_.value, FixtureId.unsafeParse)
+  implicit val moneyAmountColumnMapper: BaseColumnType[MoneyAmount] =
+    MappedColumnType.base[MoneyAmount, BigDecimal](_.amount, MoneyAmount(_))
   implicit val sportsWagerTypeMapper: BaseColumnType[WagerType] =
     mappedColumnTypeForEnum(WagerType)
   implicit val sportsWagerTransactionStyleMapper: BaseColumnType[WagerStyle] =

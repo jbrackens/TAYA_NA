@@ -1,1 +1,0 @@
-ALTER SEQUENCE ticket_line_lineid_seq RESTART WITH 1000000

@@ -3,40 +3,42 @@
  * Proxies login requests to Go backend
  */
 
-import { randomBytes } from 'node:crypto';
-import { NextRequest, NextResponse } from 'next/server';
+import { randomBytes } from "node:crypto";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const username =
-      typeof body?.username === 'string'
+      typeof body?.username === "string"
         ? body.username
-        : typeof body?.email === 'string'
+        : typeof body?.email === "string"
           ? body.email
-          : '';
-    const password = typeof body?.password === 'string' ? body.password : '';
-    const apiUrl = process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:18081';
+          : "";
+    const password = typeof body?.password === "string" ? body.password : "";
+    const apiUrl = process.env.NEXT_PUBLIC_AUTH_URL || "http://localhost:18081";
 
     if (!username || !password) {
       return NextResponse.json(
-        { message: 'username and password are required' },
-        { status: 400 }
+        { message: "username and password are required" },
+        { status: 400 },
       );
     }
 
     const response = await fetch(`${apiUrl}/api/v1/auth/login`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        "Content-Type": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify({ username, password }),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      return NextResponse.json(errorData || { message: response.statusText }, { status: response.status });
+      return NextResponse.json(errorData || { message: response.statusText }, {
+        status: response.status,
+      });
     }
 
     const data = await response.json();
@@ -48,12 +50,22 @@ export async function POST(request: NextRequest) {
     if (data.accessToken) {
       const cookieOptions = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax' as const,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax" as const,
+        path: "/",
         maxAge: data.expiresInSeconds || 3600,
       };
-      res.cookies.set({ name: 'authToken', value: data.accessToken, ...cookieOptions });
-      res.cookies.set({ name: 'access_token', value: data.accessToken, ...cookieOptions, path: '/' });
+      res.cookies.set({
+        name: "authToken",
+        value: data.accessToken,
+        ...cookieOptions,
+      });
+      res.cookies.set({
+        name: "access_token",
+        value: data.accessToken,
+        ...cookieOptions,
+        path: "/",
+      });
 
       // csrf_token: the gateway's httpx.CSRF enforces a double-submit pair
       // (cookie === X-CSRF-Token header, constant-time, no server-side
@@ -66,22 +78,22 @@ export async function POST(request: NextRequest) {
       // browser sends as the cookie (forwarded to :18080 via the
       // next.config rewrite in dev / Caddy in prod, both same-origin).
       res.cookies.set({
-        name: 'csrf_token',
-        value: randomBytes(32).toString('hex'),
+        name: "csrf_token",
+        value: randomBytes(32).toString("hex"),
         httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax' as const,
-        path: '/',
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax" as const,
+        path: "/",
         maxAge: data.expiresInSeconds || 3600,
       });
     }
 
     return res;
   } catch (error) {
-    console.error('[API] Login error:', error);
+    console.error("[API] Login error:", error);
     return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
+      { message: "Internal server error" },
+      { status: 500 },
     );
   }
 }

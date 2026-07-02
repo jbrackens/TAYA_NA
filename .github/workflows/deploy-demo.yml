@@ -3,31 +3,32 @@ name: Deploy demo (Hetzner)
 # Auto-deploy the live demo (https://demo.99rtp.io player +
 # https://office.99rtp.io office) on push.
 #
-# Mirrors the validated manual flow exactly: rsync the app dir to the box,
-# rebuild the auth, gateway, player AND office images ON the box, recreate
+# Mirrors the validated manual flow while keeping dependency-fetching builds on
+# the GitHub runner: rsync the app dir to the box, build auth/gateway/player/
+# office images on the runner, load those images onto the box, then recreate
 # each container. Auth is built+recreated before gateway because gateway
 # delegates session validation to auth and signup/login changes live there.
 # The gateway is then built+recreated so the player/office health checks below
 # validate end-to-end against the new backend; if either Go service build or
-# health check fails the run aborts before touching the frontends. Go builds
-# are layer-cache-friendly (deps cached when go.mod/go.sum are unchanged) so
-# the backend steps are typically far shorter than the two ~15-20 min Next.js
-# builds; total bounded by
-# `concurrency` and `timeout-minutes` below.
+# health check fails the run aborts before touching the frontends. Runner-side
+# builds avoid the demo box's unreliable outbound registry/module fetches; total
+# bounded by `concurrency` and `timeout-minutes` below.
 # Runs gateway migrations on every deploy. Catalog sync and market translation
 # backfills are opt-in data ops. Market thumbnails live on the `market_images`
 # Docker volume, so `rsync --delete` is safe (it can't touch the volume).
 #
-# Requires repo secret DEPLOY_SSH_KEY = the private key whose public half is
-# in the box's root authorized_keys (a DEDICATED, revocable deploy key —
-# not an admin key). Note: anyone who can run/modify this workflow or has
-# repo admin can reach root on the demo box. Acceptable for a throwaway
-# 2-6 week demo box; rotate/lock down (non-root deploy user) for anything
-# longer-lived.
+# Requires repo secrets:
+#   DEPLOY_SSH_KEY           — private key for root on the box (dedicated deploy key)
+#   BACKOFFICE_BASIC_AUTH_HASH — bcrypt hash for office.99rtp.io basic_auth
+#   EDGE_SHARED_SECRET       — anti-spoof token shared by Caddy + gateway (openssl rand -hex 32)
+#   OPENROUTER_API_KEY       — (optional) AI drafting + market translation
+# Note: anyone who can run/modify this workflow or has repo admin can reach
+# root on the demo box. Acceptable for a throwaway 2-6 week demo box;
+# rotate/lock down (non-root deploy user) for anything longer-lived.
 
 on:
   push:
-    branches: [feat/binary-exchange-engine]   # the deployed branch; change here to retarget
+    branches: [main]   # deploy branch (P2-06: consolidated onto main; feat/binary-exchange-engine retired 2026-06-14)
     paths:
       - 'apps/Phoenix-Predict-Combined/**'
       - '.github/workflows/deploy-demo.yml'
@@ -61,7 +62,7 @@ concurrency:
 env:
   BOX: 91.98.118.132
   SSH_OPTS: -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=30 -o ServerAliveCountMax=20
-  DEMO_DEPLOY_BRANCH_ALLOWLIST: feat/binary-exchange-engine
+  DEMO_DEPLOY_BRANCH_ALLOWLIST: main
 
 jobs:
   deploy:
@@ -78,7 +79,7 @@ jobs:
               ;;
             *)
               echo "::error::Refusing to deploy '$GITHUB_REF_NAME'. Live demo deploys are allowed only from: $DEMO_DEPLOY_BRANCH_ALLOWLIST"
-              echo "::error::Deploy from feat/binary-exchange-engine after merging validated changes there."
+              echo "::error::Deploy from main (the consolidated mainline)."
               exit 1
               ;;
           esac
@@ -120,20 +121,29 @@ jobs:
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
               'python3 -c "import sys; h=sys.stdin.read().strip(); p=\"/opt/phoenix/Caddyfile\"; src=open(p).read(); assert \"REPLACE_WITH_BCRYPT_HASH\" in src, \"placeholder missing in /opt/phoenix/Caddyfile — schema drift or already patched out-of-band\"; open(p,\"w\").write(src.replace(\"REPLACE_WITH_BCRYPT_HASH\", h)); print(\"Caddyfile basic_auth hash patched\")"'
 
-      - name: Inject OpenRouter key into box .env (compose substitution)
-        # The office AI-drafting route reads AI_HARD_API_KEY / AI_ROUTINE_API_KEY
-        # at runtime; docker-compose.demo.yml maps both to ${OPENROUTER_API_KEY}.
-        # Write it to /opt/phoenix/.env (compose auto-reads ./.env from the project
-        # dir) via stdin, so the secret never appears in a command line / process
-        # list — same posture as the Caddyfile step above. MUST run after the rsync
-        # (which --deletes a pre-existing .env), so it is re-written every deploy.
-        # If the secret is unset we write an empty value: drafting then fails closed
-        # (the rest of the app is unaffected), so a missing key never breaks deploy.
+      - name: Inject secrets into box .env (compose substitution)
+        # docker-compose.demo.yml reads these from /opt/phoenix/.env (compose
+        # auto-reads ./.env from the project dir). Secrets are piped via stdin
+        # so they never appear in a command line / process list. MUST run after
+        # the rsync (which --deletes a pre-existing .env), so it is re-written
+        # every deploy.
+        #   OPENROUTER_API_KEY  — office AI drafting + gateway market translation
+        #   EDGE_SHARED_SECRET  — anti-spoof header Caddy stamps → gateway validates
+        # If OPENROUTER_API_KEY is unset, drafting fails closed (app unaffected).
+        # EDGE_SHARED_SECRET is required — Caddy and gateway both use the :? guard.
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          EDGE_SHARED_SECRET: ${{ secrets.EDGE_SHARED_SECRET }}
         run: |
+          if [ -z "$EDGE_SHARED_SECRET" ]; then
+            echo "::error::EDGE_SHARED_SECRET repo secret is unset — Caddy and gateway will refuse to start."
+            echo "Generate one with:  openssl rand -hex 32"
+            echo "Then add it to repo Settings → Secrets and variables → Actions."
+            exit 1
+          fi
           {
             printf 'OPENROUTER_API_KEY=%s\n' "$OPENROUTER_API_KEY"
+            printf 'EDGE_SHARED_SECRET=%s\n' "$EDGE_SHARED_SECRET"
             printf 'ROCKETCHAT_ADMIN_PASSWORD=%s\n' "$(openssl rand -hex 24)"
             printf 'CHAT_PUBLIC_URL=https://demo.99rtp.io/chat\n'
             printf 'CHAT_PARENT_ORIGIN=https://demo.99rtp.io\n'
@@ -141,15 +151,19 @@ jobs:
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
               'cat > /opt/phoenix/.env && chmod 600 /opt/phoenix/.env && echo ".env written ($(wc -c < /opt/phoenix/.env) bytes)"'
 
-      - name: Build auth image on the box
+      - name: Build auth image and load on the box
         # Auth service owns signup/login/session behavior. Rebuild it before
         # gateway so auth changes ship with the same push as frontend/gateway
         # changes.
         run: |
-          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
-            cd /opt/phoenix &&
-            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
-              build auth'
+          docker build \
+            --build-arg "GOPROXY=https://goproxy.io|https://proxy.golang.org|direct" \
+            -f apps/Phoenix-Predict-Combined/go-platform/services/auth/Dockerfile \
+            -t phoenix-auth:latest \
+            apps/Phoenix-Predict-Combined/go-platform
+          docker save phoenix-auth:latest | gzip -1 | \
+            ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+              'gunzip | docker load'
 
       - name: Recreate auth container
         run: |
@@ -172,18 +186,19 @@ jobs:
             docker compose -f docker-compose.yml -f docker-compose.demo.yml logs --tail 50 auth || true
             exit 1'
 
-      - name: Build gateway image on the box
-        # The Go gateway uses compose's `build:` directive (context
-        # ./go-platform, dockerfile services/gateway/Dockerfile) rather than
-        # a pre-tagged image like the frontends, so `docker compose build`
-        # is the right call. Built FIRST so the player/office health checks
-        # downstream validate against the new backend; a gateway compile
-        # failure aborts the whole run before any frontend is recreated.
+      - name: Build gateway image and load on the box
+        # Build on the GitHub runner and load the image onto the box. The box
+        # has repeatedly timed out fetching Go modules; keeping compilation on
+        # the runner makes the deploy depend only on SSH + docker load there.
         run: |
-          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
-            cd /opt/phoenix &&
-            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
-              build gateway'
+          docker build \
+            --build-arg "GOPROXY=https://goproxy.io|https://proxy.golang.org|direct" \
+            -f apps/Phoenix-Predict-Combined/go-platform/services/gateway/Dockerfile \
+            -t phoenix-gateway:latest \
+            apps/Phoenix-Predict-Combined/go-platform
+          docker save phoenix-gateway:latest | gzip -1 | \
+            ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+              'gunzip | docker load'
 
       - name: Apply gateway migrations
         # Keep DB schema ahead of the recreated gateway. The gateway image
@@ -295,16 +310,23 @@ jobs:
               -d "{\"name\":\"global\"}" || true
           '
 
-      - name: Build player image on the box
+      - name: Build player image and load on the box
+        # Build on the GitHub runner and load the image onto the box. The box
+        # has timed out fetching Go modules and Yarn packages; keeping frontend
+        # dependency install/build on the runner makes the box only receive a
+        # completed Docker image before container recreation.
         run: |
-          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
-            cd /opt/phoenix/talon-backoffice &&
-            docker build -f docker/frontend.Dockerfile \
-              --build-arg module_name=app \
-              --build-arg NEXT_PUBLIC_WS_URL=wss://demo.99rtp.io/ws \
-              --build-arg NEXT_PUBLIC_FEATURE_CHAT=true \
-              --build-arg NEXT_PUBLIC_CHAT_PUBLIC_URL=https://demo.99rtp.io/chat \
-              -t predict-frontend:app-slim .'
+          docker build -f apps/Phoenix-Predict-Combined/talon-backoffice/docker/frontend.Dockerfile \
+            --build-arg module_name=app \
+            --build-arg NEXT_PUBLIC_WS_URL=wss://demo.99rtp.io/ws \
+            --build-arg NEXT_PUBLIC_FEATURE_CHAT=true \
+            --build-arg NEXT_PUBLIC_CHAT_PUBLIC_URL=https://demo.99rtp.io/chat \
+            --build-arg NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS=true \
+            -t predict-frontend:app-slim \
+            apps/Phoenix-Predict-Combined/talon-backoffice
+          docker save predict-frontend:app-slim | gzip -1 | \
+            ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+              'gunzip | docker load'
 
       - name: Recreate player container
         run: |
@@ -459,14 +481,18 @@ jobs:
           }
           NODE
 
-      - name: Build office image on the box
+      - name: Build office image and load on the box
+        # Same pattern as player: build dependencies on the runner, then load a
+        # completed image onto the box before recreating the office container.
         run: |
-          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
-            cd /opt/phoenix/talon-backoffice &&
-            docker build -f docker/frontend.Dockerfile \
-              --build-arg module_name=office \
-              --build-arg NEXT_PUBLIC_WS_URL=wss://office.99rtp.io/ws \
-              -t predict-frontend:office-slim .'
+          docker build -f apps/Phoenix-Predict-Combined/talon-backoffice/docker/frontend.Dockerfile \
+            --build-arg module_name=office \
+            --build-arg NEXT_PUBLIC_WS_URL=wss://office.99rtp.io/ws \
+            -t predict-frontend:office-slim \
+            apps/Phoenix-Predict-Combined/talon-backoffice
+          docker save predict-frontend:office-slim | gzip -1 | \
+            ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+              'gunzip | docker load'
 
       - name: Recreate office container
         run: |
@@ -520,3 +546,14 @@ jobs:
             cd /opt/phoenix &&
             JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
               up -d --no-deps --force-recreate caddy'
+
+      - name: Firewall origin to Cloudflare IPs
+        # Restrict :80/:443 to CF ranges so direct-to-origin requests can't
+        # forge CF-IPCountry. Re-runs every deploy to pick up new ranges.
+        # Non-fatal: if iptables is missing the EDGE_SHARED_SECRET check is
+        # the backstop — the deploy still succeeds.
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+            'bash /opt/phoenix/scripts/security/cf-firewall.sh' || {
+              echo "::warning::cf-firewall.sh failed — EDGE_SHARED_SECRET still protects the origin, but fix the firewall."
+            }

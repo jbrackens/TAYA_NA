@@ -1,0 +1,121 @@
+/**
+ * Chart state resolution for MarketChart, kept as pure functions so the
+ * honest-state rules are testable under node:test without a DOM.
+ *
+ * The synthetic walk (samplePath) is demo-box-only: callers must pass
+ * syntheticFallbackEnabled (wired to the NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS
+ * flag). With the flag off, the resolver never fabricates price movement —
+ * loading and error draw nothing, and a market with no trades draws a flat
+ * line at the real current price.
+ */
+
+export type ChartFetchStatus = "loading" | "success" | "error";
+
+export type ChartState = "loading" | "ready" | "empty" | "error";
+
+export interface ChartSeriesResolution {
+  state: ChartState;
+  /** Points to draw; empty when nothing should be drawn (loading/error). */
+  values: number[];
+}
+
+export function seededRandom(seed: number): () => number {
+  let s = seed | 0;
+  return () => {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    return s / 0x7fffffff;
+  };
+}
+
+export function hashTicker(ticker: string): number {
+  let h = 0;
+  for (const c of ticker) h = (h * 31 + c.charCodeAt(0)) & 0x7fffffff;
+  return h || 42;
+}
+
+export function samplePath(
+  ticker: string,
+  range: string,
+  targetCents: number,
+): number[] {
+  const rand = seededRandom(hashTicker(ticker) ^ range.charCodeAt(0));
+  const n = 41;
+  const points: number[] = [];
+  let v = targetCents + (rand() - 0.5) * 14;
+  for (let i = 0; i < n - 1; i++) {
+    v += (rand() - 0.5) * 6;
+    v = Math.max(8, Math.min(92, v));
+    points.push(v);
+  }
+  points.push(targetCents);
+  return points;
+}
+
+export function hasMovement(values: number[]): boolean {
+  if (values.length < 2) return false;
+  return values.some((v) => v !== values[0]);
+}
+
+export function resolveChartSeries(args: {
+  fetchStatus: ChartFetchStatus;
+  /** Side-adjusted series from the API; null until the fetch succeeds. */
+  realValues: number[] | null;
+  currentPriceCents: number;
+  /** Seed inputs for the synthetic walk (demo flag only). */
+  syntheticSeed: string;
+  range: string;
+  syntheticFallbackEnabled: boolean;
+}): ChartSeriesResolution {
+  const {
+    fetchStatus,
+    realValues,
+    currentPriceCents,
+    syntheticSeed,
+    range,
+    syntheticFallbackEnabled,
+  } = args;
+
+  const realIsDrawable =
+    fetchStatus === "success" &&
+    realValues !== null &&
+    realValues.length > 0 &&
+    hasMovement(realValues);
+
+  if (syntheticFallbackEnabled) {
+    // Demo behavior: identical to the pre-flag chart — synthetic walk while
+    // loading, on error, and for markets without price movement.
+    if (realIsDrawable && realValues !== null) {
+      return { state: "ready", values: realValues };
+    }
+    return {
+      state: "ready",
+      values: samplePath(syntheticSeed, range, currentPriceCents),
+    };
+  }
+
+  if (fetchStatus === "loading") return { state: "loading", values: [] };
+  if (fetchStatus === "error") return { state: "error", values: [] };
+  if (realIsDrawable && realValues !== null) {
+    return { state: "ready", values: realValues };
+  }
+  // No points, or no price movement: a flat line at the true current price
+  // is honest; a random walk is not.
+  return {
+    state: "empty",
+    values: [currentPriceCents, currentPriceCents],
+  };
+}
+
+/**
+ * 24h range stat for the chart footer. Returns null when either bound is
+ * missing — the footer renders a dash instead of inventing numbers.
+ */
+export function format24hRange(
+  lowCents?: number,
+  highCents?: number,
+): string | null {
+  if (typeof lowCents !== "number" || typeof highCents !== "number") {
+    return null;
+  }
+  return `${lowCents}¢ – ${highCents}¢`;
+}

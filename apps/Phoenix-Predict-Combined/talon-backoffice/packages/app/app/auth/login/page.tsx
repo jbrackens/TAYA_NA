@@ -14,6 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
 import { safeReturnPath, returnUrlSuffix } from "../../lib/safeReturnPath";
 import { FEATURE_SOCIAL_AUTH } from "../../lib/features";
+import { brand } from "../../lib/brand";
 import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
 
 const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
@@ -97,7 +98,7 @@ export default function LoginPage() {
       <div className={CARD_CLASS}>
         <header className={HEAD_CLASS}>
           <span className={EYEBROW_CLASS}>Player access</span>
-          <h1 className={TITLE_CLASS}>Tiangge</h1>
+          <h1 className={TITLE_CLASS}>{brand.name}</h1>
           <p className={SUBTITLE_CLASS}>
             Sign in to track your positions, follow market moves, and trade on
             real-world outcomes.
@@ -173,7 +174,7 @@ export default function LoginPage() {
         )}
 
         <footer className={FOOTER_CLASS}>
-          New to Tiangge?{" "}
+          New to {brand.name}?{" "}
           <Link
             href={registerHref}
             className={`${LINK_CLASS} ${LINK_ACCENT_CLASS}`}

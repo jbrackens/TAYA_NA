@@ -24,7 +24,7 @@
   "HOW_TITLE": "How You Earn",
   "HOW_SUBTITLE": "Points accumulate automatically from qualifying activity.",
   "HOW_BET": "已結算交易",
-  "HOW_BET_DESC": "每完成 1 美元符合條件的已結算交易，即可獲得 1 點積分。",
+  "HOW_BET_DESC": "每個符合條件的已結算預測都可以獲得積分。",
   "HOW_REFERRAL": "Referrals",
   "HOW_REFERRAL_DESC": "當你推薦的好友完成第一筆符合條件的交易時，可獲得 {{points}} 獎勵積分。",
   "HOW_PROMO": "Promotions",

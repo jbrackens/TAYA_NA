@@ -114,16 +114,11 @@ build_node_options() {
 }
 
 run_next_build() {
-  local node_opts next_bin node_major
+  local node_opts next_bin
   node_opts="$(build_node_options)"
   next_bin="$TALON_DIR/node_modules/.bin/next"
-  node_major="$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo "0")"
 
-  if [[ "$node_major" -ge 17 ]]; then
-    CI=1 NEXT_TELEMETRY_DISABLED=1 BROWSERSLIST_IGNORE_OLD_DATA=1 node $node_opts --openssl-legacy-provider "$next_bin" build
-  else
-    CI=1 NEXT_TELEMETRY_DISABLED=1 BROWSERSLIST_IGNORE_OLD_DATA=1 node $node_opts "$next_bin" build
-  fi
+  CI=1 NEXT_TELEMETRY_DISABLED=1 BROWSERSLIST_IGNORE_OLD_DATA=1 node $node_opts "$next_bin" build --webpack
 }
 
 use_node_runtime

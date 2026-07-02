@@ -3,8 +3,11 @@
 #   - Each app is ONE origin. The auth cookie is host-only + SameSite=Lax,
 #     so page + /api + /ws MUST share a hostname or auth/WS break.
 #   - Caddy upgrades /ws to the gateway (Next.js does not proxy WS).
-#   - Caddy auto-provisions Let's Encrypt TLS (needs :80/:443 reachable and
-#     the DNS A records pointing here, DNS-only / grey-cloud at Cloudflare).
+#   - Caddy auto-provisions Let's Encrypt TLS. DNS is proxied (orange-cloud)
+#     through Cloudflare; CF SSL mode must be "Full (Strict)" so CF validates
+#     the origin cert. ACME HTTP-01 challenges pass through CF to Caddy.
+#   - Firewall :80/:443 to Cloudflare IP ranges (https://cloudflare.com/ips)
+#     so requests cannot bypass the edge and forge CF-IPCountry.
 #
 # Container names match docker-compose.yml (predict_gateway:18080) and
 # docker-compose.demo.yml (predict_player:3000, predict_office:3000).
@@ -31,7 +34,27 @@ demo.99rtp.io {
 	}
 	@backend path /api/* /admin/* /ws /ws/*
 	handle @backend {
-		reverse_proxy predict_gateway:18080
+		# Geo signal trust chain (geo gate, GEO_COUNTRY_HEADER=CF-IPCountry):
+		#   - X-Geo-Country is never legitimate at this hop (only an
+		#     in-Caddy GeoIP module would set it) — strip it so a client
+		#     can't smuggle a value past a misconfigured GEO_COUNTRY_HEADER.
+		#   - CF-IPCountry is set by Cloudflare (orange-cloud proxy) and CF
+		#     overwrites any client-supplied copy, so it must be FORWARDED
+		#     here. Before enabling the geo gate, flip DNS to proxied and
+		#     firewall :80/:443 to Cloudflare IP ranges so requests cannot
+		#     bypass the edge and forge it (see
+		#     docs/compliance/geofencing-kyc.md "Edge geo signal").
+		reverse_proxy predict_gateway:18080 {
+			header_up -X-Geo-Country
+			# Anti-spoof edge-auth (audit SEC-03): strip any client copy, then
+			# stamp the shared secret the gateway checks under
+			# GEO_TRUSTED_PROXY_MODE=require + EDGE_SHARED_SECRET. Set the
+			# {$EDGE_SHARED_SECRET} env on the Caddy container to the same
+			# value as the gateway. A direct origin request lacks this header
+			# and is denied on money-path routes.
+			header_up -X-Edge-Auth
+			header_up X-Edge-Auth "{$EDGE_SHARED_SECRET}"
+		}
 	}
 	handle {
 		reverse_proxy predict_player:3000
@@ -47,7 +70,12 @@ office.99rtp.io {
 	# + handlers.go) and /admin/*, so this matcher still covers them.
 	@backend path /api/v1/* /admin/* /ws /ws/*
 	handle @backend {
-		reverse_proxy predict_gateway:18080
+		# Same geo-header hygiene as the player host (see comment there).
+		reverse_proxy predict_gateway:18080 {
+			header_up -X-Geo-Country
+			header_up -X-Edge-Auth
+			header_up X-Edge-Auth "{$EDGE_SHARED_SECRET}"
+		}
 	}
 	# Generate the hash on the box:  docker run --rm caddy:2 caddy hash-password --plaintext 'YOURPASS'
 	# then paste it below (Caddy >=2.8 uses `basic_auth`; older uses `basicauth`).

@@ -28,6 +28,7 @@ import phoenix.core.currency.MoneyAmount
 import phoenix.core.currency.PositiveAmount
 import phoenix.http.JsonMarshalling._
 import phoenix.http.routes.RoutesSpecSupport
+import phoenix.jwt.JwtAuthenticator
 import phoenix.jwt.JwtAuthenticatorMock
 import phoenix.jwt.JwtAuthenticatorMock.punterToken
 import phoenix.payments.PaymentsModule
@@ -80,10 +81,10 @@ import phoenix.wallets.support.WalletsDataGenerator
 
 final class PaymentsRoutesSpec extends RoutesSpecSupport {
 
-  private implicit val clock = Clock.utcClock
-  private implicit val jwtAuthenticator = JwtAuthenticatorMock.jwtAuthenticatorMock()
+  private implicit val clock: Clock = Clock.utcClock
+  private implicit val jwtAuthenticator: JwtAuthenticator = JwtAuthenticatorMock.jwtAuthenticatorMock()
   private val authHeader = Authorization(OAuth2BearerToken(punterToken.rawValue))
-  implicit val ec = typedSystem.executionContext
+  implicit val ec: scala.concurrent.ExecutionContextExecutor = typedSystem.executionContext
   private val validOnlineMinDeposit = DefaultCurrencyMoney(1)
   private val validOnlineMinWithdrawal = DefaultCurrencyMoney(1)
   private val validCashMinWithdrawal = DefaultCurrencyMoney(50)

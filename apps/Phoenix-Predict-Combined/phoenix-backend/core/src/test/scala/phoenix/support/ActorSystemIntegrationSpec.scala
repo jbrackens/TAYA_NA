@@ -61,7 +61,7 @@ trait SftpIntegrationSpec extends IntegrationConfig {
 
 trait DatabaseIntegrationSpec extends IntegrationConfig with BeforeAndAfterAll {
   private lazy val postgresProperties: Environment = Map(
-    "POSTGRES_HOST" -> Postgres.instance.getContainerIpAddress,
+    "POSTGRES_HOST" -> Postgres.instance.getHost,
     "POSTGRES_PORT" -> Postgres.instance.getFirstMappedPort.toString,
     "POSTGRES_USER" -> Postgres.backendUser,
     "POSTGRES_PASSWORD" -> Postgres.backendUser,

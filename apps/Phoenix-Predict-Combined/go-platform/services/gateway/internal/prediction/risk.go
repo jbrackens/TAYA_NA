@@ -11,27 +11,27 @@ import (
 // /risk-management subtree). Everything here is a read-only aggregate over the
 // prediction tables — no mocks. Three operator concerns:
 //
-//   1. Settlement aging   — closed markets still awaiting settlement (money
-//                           owed to winners is stuck until an operator settles).
-//   2. Cost-basis         — where open exposure / max payout liability
+//   1. Settlement aging   — closed markets still awaiting settlement (points
+//                           due to winners are stuck until an operator settles).
+//   2. Cost-basis         — where open point exposure / max returned points
 //      concentration       concentrates, so a single market resolving wrong
 //                           can't surprise the book.
-//   3. Money invariants   — platform-wide outstanding cost basis, worst-case
-//                           settlement liability, reserved (held) cash on
-//                           resting orders, and live collateral-drift alerts.
+//   3. Point accounting   — platform-wide outstanding point cost, worst-case
+//                           returned points, reserved points on resting
+//                           orders, and live collateral-drift alerts.
 //
 // Mounted admin-only at GET /api/v1/admin/prediction/risk.
 
-// nonTerminalMarketStatuses are the market states that still carry live
-// financial exposure (positions can still pay out / refund).
+// nonTerminalMarketStatuses are the market states that still carry live point
+// exposure (positions can still settle or return points).
 var nonTerminalMarketStatuses = []string{"open", "halted", "closed", "proposed_resolution", "disputed"}
 
 // RiskSnapshot is the full operator risk view.
 type RiskSnapshot struct {
-	GeneratedAt     string           `json:"generatedAt"`
-	SettlementAging SettlementAging  `json:"settlementAging"`
-	Concentration   []MarketExposure `json:"costBasisConcentration"`
-	MoneyInvariants MoneyInvariants  `json:"moneyInvariants"`
+	GeneratedAt     string                    `json:"generatedAt"`
+	SettlementAging SettlementAging           `json:"settlementAging"`
+	Concentration   []MarketExposure          `json:"costBasisConcentration"`
+	PointAccounting PointAccountingInvariants `json:"pointAccounting"`
 }
 
 // SettlementAging summarizes markets that have closed but are not yet settled.
@@ -51,22 +51,22 @@ type AgingMarket struct {
 
 // MarketExposure is one market's open exposure for the concentration table.
 type MarketExposure struct {
-	MarketID                string `json:"marketId"`
-	Ticker                  string `json:"ticker"`
-	Status                  string `json:"status"`
-	OpenCostCents           int64  `json:"openCostCents"`
-	MaxPayoutLiabilityCents int64  `json:"maxPayoutLiabilityCents"`
-	Holders                 int    `json:"holders"`
+	MarketID               string `json:"marketId"`
+	Ticker                 string `json:"ticker"`
+	Status                 string `json:"status"`
+	OpenPointCostCents     int64  `json:"openPointCostCents"`
+	MaxReturnedPointsCents int64  `json:"maxReturnedPointsCents"`
+	Holders                int    `json:"holders"`
 }
 
-// MoneyInvariants are the platform-wide solvency-relevant aggregates.
-type MoneyInvariants struct {
-	OpenPositionCostCents       int64 `json:"openPositionCostCents"`
-	MaxSettlementLiabilityCents int64 `json:"maxSettlementLiabilityCents"`
-	ReservedCashCents           int64 `json:"reservedCashCents"`
-	OpenOrderCount              int   `json:"openOrderCount"`
-	NonTerminalMarkets          int   `json:"nonTerminalMarkets"`
-	DriftAlerts24h              int   `json:"driftAlerts24h"`
+// PointAccountingInvariants are the platform-wide point-accounting aggregates.
+type PointAccountingInvariants struct {
+	OpenPositionPointCostCents int64 `json:"openPositionPointCostCents"`
+	MaxSettlementPointsCents   int64 `json:"maxSettlementPointsCents"`
+	ReservedPointsCents        int64 `json:"reservedPointsCents"`
+	OpenOrderCount             int   `json:"openOrderCount"`
+	NonTerminalMarkets         int   `json:"nonTerminalMarkets"`
+	DriftAlerts24h             int   `json:"driftAlerts24h"`
 }
 
 const riskConcentrationLimit = 20
@@ -127,34 +127,36 @@ func (r *SQLRepository) RiskSnapshot(ctx context.Context) (*RiskSnapshot, error)
 	for concRows.Next() {
 		var m MarketExposure
 		var yesQty, noQty int64
-		if err := concRows.Scan(&m.MarketID, &m.Ticker, &m.Status, &m.OpenCostCents, &yesQty, &noQty, &m.Holders); err != nil {
+		if err := concRows.Scan(&m.MarketID, &m.Ticker, &m.Status, &m.OpenPointCostCents, &yesQty, &noQty, &m.Holders); err != nil {
 			return nil, err
 		}
 		win := yesQty
 		if noQty > win {
 			win = noQty
 		}
-		m.MaxPayoutLiabilityCents = win * 100
+		m.MaxReturnedPointsCents = win * 100
 		snap.Concentration = append(snap.Concentration, m)
 	}
 	if err := concRows.Err(); err != nil {
 		return nil, err
 	}
 
-	// 3a. Open position cost basis across non-terminal markets.
+	// 3a. Open position point cost across non-terminal markets.
+	var openPositionPointCostCents int64
 	if err := r.db.QueryRowContext(ctx, `
 		SELECT COALESCE(SUM(p.total_cost_cents), 0)
 		FROM prediction_positions p
 		JOIN prediction_markets m ON m.id = p.market_id
 		WHERE p.quantity > 0 AND m.status = ANY($1)`,
 		pq.Array(nonTerminalMarketStatuses),
-	).Scan(&snap.MoneyInvariants.OpenPositionCostCents); err != nil {
+	).Scan(&openPositionPointCostCents); err != nil {
 		return nil, err
 	}
 
-	// 3b. Worst-case settlement liability: per market, the winning side's
-	// contracts pay 100c each; platform exposure is the sum of each market's
-	// larger side.
+	// 3b. Worst-case settlement points: per market, the winning side's
+	// shares resolve at 100 point-cents each; platform exposure is the sum of
+	// each market's larger side.
+	var maxSettlementPointsCents int64
 	if err := r.db.QueryRowContext(ctx, `
 		SELECT COALESCE(SUM(GREATEST(yes_qty, no_qty) * 100), 0) FROM (
 			SELECT m.id,
@@ -165,30 +167,43 @@ func (r *SQLRepository) RiskSnapshot(ctx context.Context) (*RiskSnapshot, error)
 			WHERE m.status = ANY($1)
 			GROUP BY m.id
 		) t`, pq.Array(nonTerminalMarketStatuses),
-	).Scan(&snap.MoneyInvariants.MaxSettlementLiabilityCents); err != nil {
+	).Scan(&maxSettlementPointsCents); err != nil {
 		return nil, err
 	}
 
-	// 3c. Reserved (held, uncaptured) cash on resting orders.
+	// 3c. Reserved (held, uncaptured) points on resting orders.
+	var reservedPointsCents int64
+	var openOrderCount int
 	if err := r.db.QueryRowContext(ctx, `
 		SELECT COALESCE(SUM(reserved_cash_cents - captured_cash_cents), 0), COUNT(*)
 		FROM prediction_orders WHERE status IN ('open', 'partial')`,
-	).Scan(&snap.MoneyInvariants.ReservedCashCents, &snap.MoneyInvariants.OpenOrderCount); err != nil {
+	).Scan(&reservedPointsCents, &openOrderCount); err != nil {
 		return nil, err
 	}
 
 	// 3d. Count of non-terminal markets.
+	var nonTerminalMarkets int
 	if err := r.db.QueryRowContext(ctx, `
 		SELECT COUNT(*) FROM prediction_markets WHERE status = ANY($1)`,
 		pq.Array(nonTerminalMarketStatuses),
-	).Scan(&snap.MoneyInvariants.NonTerminalMarkets); err != nil {
+	).Scan(&nonTerminalMarkets); err != nil {
 		return nil, err
 	}
 
+	driftAlerts24h := 0
 	// 3e. Live collateral-drift alerts (reuse the exchange repo's existing
 	// reader so the risk view and the /drift-alerts endpoint agree).
 	if alerts, derr := r.ListRecentDriftAlerts(ctx, time.Now().UTC().Add(-24*time.Hour)); derr == nil {
-		snap.MoneyInvariants.DriftAlerts24h = len(alerts)
+		driftAlerts24h = len(alerts)
+	}
+
+	snap.PointAccounting = PointAccountingInvariants{
+		OpenPositionPointCostCents:  openPositionPointCostCents,
+		MaxSettlementPointsCents:    maxSettlementPointsCents,
+		ReservedPointsCents:         reservedPointsCents,
+		OpenOrderCount:              openOrderCount,
+		NonTerminalMarkets:          nonTerminalMarkets,
+		DriftAlerts24h:              driftAlerts24h,
 	}
 
 	return snap, nil

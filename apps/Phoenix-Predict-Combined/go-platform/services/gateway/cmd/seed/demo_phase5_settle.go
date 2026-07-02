@@ -42,8 +42,8 @@ var phase5Plan = []struct {
 	{"US-RECESSION-2026", prediction.MarketResultNo, "demo: no recession in 2026"},
 	// Demo user bought UCL-REAL YES → loses (Real didn't win).
 	{"UCL-REAL", prediction.MarketResultNo, "demo: Real didn't win UCL"},
-	// Demo user bought ETH-5K NO → wins (ETH stayed below).
-	{"ETH-5K-MAY26", prediction.MarketResultNo, "demo: ETH stayed under $5K"},
+	// Demo user bought VAL-MASTERS-FINAL YES → wins.
+	{"VAL-MASTERS-FINAL", prediction.MarketResultYes, "demo: Valorant result confirmed"},
 	// Demo user bought AVATAR3-200M YES → wins.
 	{"AVATAR3-200M", prediction.MarketResultYes, "demo: Avatar 3 cleared $200M"},
 
@@ -119,16 +119,16 @@ func RunPhase5Settle(ctx context.Context, h *Harness) (*PhaseStats, error) {
 			AttestationSource: "demo",
 			Reason:            &reason,
 		}
-		_, payouts, err := h.Service.ResolveMarket(ctx, target.ID, req, &settledBy)
+		_, settlementCredits, err := h.Service.ResolveMarket(ctx, target.ID, req, &settledBy)
 		if err != nil {
 			stats.Errors++
 			fmt.Printf("    [phase5] %s resolve err: %v\n", target.Ticker, err)
 			continue
 		}
-		fmt.Printf("    [phase5] %-22s -> %s  payouts=%d\n",
-			target.Ticker, entry.result, len(payouts))
+		fmt.Printf("    [phase5] %-22s -> %s  settlementCredits=%d\n",
+			target.Ticker, entry.result, len(settlementCredits))
 		stats.MarketsTouched++
-		stats.OrdersPlaced += len(payouts)
+		stats.OrdersPlaced += len(settlementCredits)
 	}
 	return stats, nil
 }

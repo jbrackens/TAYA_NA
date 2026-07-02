@@ -213,7 +213,7 @@ body {
 }
 
 /* Mono utility for prices/volumes/tabular numbers. Use on any element
-   * displaying cents or dollar amounts — gives tabular-nums alignment so
+   * displaying point amounts — gives tabular-nums alignment so
    * "41¢" and "59¢" sit at the same visual width. */
 .mono {
   font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;

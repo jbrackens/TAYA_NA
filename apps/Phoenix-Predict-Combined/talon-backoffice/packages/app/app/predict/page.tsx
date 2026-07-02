@@ -7,7 +7,7 @@
  *   [Hero row]          ← FeaturedCarousel (1fr) + TrendingSidebar (320px)
  *   [All Markets grid]  ← paginated full market list, scoped by the filter
  *
- * The hero is a carousel of the top market from All / Sports / Crypto /
+ * The hero is a carousel of the top market from All / Sports / Entertainment /
  * Politics (see FeaturedCarousel). Trending and Closing Soon grids moved
  * to /discover. The pills sit directly above the section they scope; the
  * hero and sidebar stay visible at all filter states.
@@ -38,7 +38,11 @@ const api = createPredictionClient();
 // The Featured hero carousel shows the top market from "All" (the curated
 // discovery pick), then the highest-volume open market in each of these
 // categories, in order. Slugs match the gateway's category slugs.
-const FEATURED_CATEGORY_SLUGS = ["sports", "crypto", "politics"] as const;
+const FEATURED_CATEGORY_SLUGS = [
+  "sports",
+  "entertainment",
+  "politics",
+] as const;
 
 const ROUTE_LOADING_CLASS = "p-20 text-center text-[13px] text-[var(--t3)]";
 const DISCOVERY_GRID_CLASS =
@@ -49,7 +53,7 @@ const HERO_CELL_CLASS = "min-w-0";
 // the highest-volume market in each category that isn't already on an earlier
 // slide, so every slide shows a distinct market.
 function rankByVolume(markets: PredictionMarket[]): PredictionMarket[] {
-  return [...markets].sort((a, b) => b.volumeCents - a.volumeCents);
+  return [...markets].sort((a, b) => b.volumePointsCents - a.volumePointsCents);
 }
 
 export default function PredictDiscoveryPage() {
@@ -76,7 +80,7 @@ export default function PredictDiscoveryPage() {
 
         // Slide 1: top market from "All" — the curated discovery pick (the
         // prior single-hero market). Slides 2-4: the highest-volume open
-        // market in Sports / Crypto / Politics, fetched in parallel with the
+        // market in Sports / Entertainment / Politics, fetched in parallel with the
         // same categoryId-filtered query /category/[slug] uses.
         const allTop = disc.featured[0] ?? disc.trending[0] ?? null;
         const catLists = await Promise.all(

@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"net"
 	stdhttp "net/http"
 	"os"
 	"strconv"
@@ -51,35 +52,57 @@ type AuthService struct {
 }
 
 type registerRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Role     string `json:"role,omitempty"`
+	Username                      string `json:"username"`
+	Password                      string `json:"password"`
+	Role                          string `json:"role,omitempty"`
+	TermsAccepted                 *bool  `json:"terms_accepted,omitempty"`
+	TermsAcceptedCamel            *bool  `json:"termsAccepted,omitempty"`
+	TermsVersion                  string `json:"terms_version,omitempty"`
+	TermsVersionCamel             string `json:"termsVersion,omitempty"`
+	LaunchDisclosureAccepted      *bool  `json:"launch_disclosure_accepted,omitempty"`
+	LaunchDisclosureAcceptedCamel *bool  `json:"launchDisclosureAccepted,omitempty"`
+	LaunchDisclosureVersion       string `json:"launch_disclosure_version,omitempty"`
+	LaunchDisclosureVersionCamel  string `json:"launchDisclosureVersion,omitempty"`
 }
 
 const (
-	bcryptCost    = 12
-	userDBTimeout = 5 * time.Second
-	rolePlayer    = "player"
-	roleAdmin     = "admin"
+	bcryptCost                = 12
+	userDBTimeout             = 5 * time.Second
+	rolePlayer                = "player"
+	roleAdmin                 = "admin"
+	tianggeLaunchTermsVersion = "tiangge-launch-v1"
+	tianggeDisclosureVersion  = "points-no-cashout-v1"
 )
 
 type user struct {
-	ID           string
-	Username     string
-	Password     string // plaintext (dev mode only, deprecated)
-	PasswordHash string // bcrypt hash (production mode)
-	Role         string // "player" or "admin"
+	ID                         string
+	Username                   string
+	Password                   string // plaintext (dev mode only, deprecated)
+	PasswordHash               string // bcrypt hash (production mode)
+	Role                       string // "player" or "admin"
+	TermsAccepted              bool
+	TermsVersion               string
+	TermsAcceptedAt            string
+	LaunchDisclosureAccepted   bool
+	LaunchDisclosureVersion    string
+	LaunchDisclosureAcceptedAt string
 }
 
 type session struct {
-	UserID             string    `json:"userId"`
-	Username           string    `json:"username"`
-	Role               string    `json:"role"`
-	AccessTokenDigest  string    `json:"accessTokenDigest"`
-	RefreshTokenDigest string    `json:"refreshTokenDigest"`
-	AccessUntil        time.Time `json:"accessUntil"`
-	RefreshUntil       time.Time `json:"refreshUntil"`
-	IssuedAt           time.Time `json:"issuedAt"`
+	UserID                     string    `json:"userId"`
+	Username                   string    `json:"username"`
+	Role                       string    `json:"role"`
+	AccessTokenDigest          string    `json:"accessTokenDigest"`
+	RefreshTokenDigest         string    `json:"refreshTokenDigest"`
+	AccessUntil                time.Time `json:"accessUntil"`
+	RefreshUntil               time.Time `json:"refreshUntil"`
+	IssuedAt                   time.Time `json:"issuedAt"`
+	TermsAccepted              bool      `json:"termsAccepted"`
+	TermsVersion               string    `json:"termsVersion,omitempty"`
+	TermsAcceptedAt            string    `json:"termsAcceptedAt,omitempty"`
+	LaunchDisclosureAccepted   bool      `json:"launchDisclosureAccepted"`
+	LaunchDisclosureVersion    string    `json:"launchDisclosureVersion,omitempty"`
+	LaunchDisclosureAcceptedAt string    `json:"launchDisclosureAcceptedAt,omitempty"`
 }
 
 type loginRequest struct {
@@ -119,11 +142,17 @@ type tokenResponse struct {
 }
 
 type sessionResponse struct {
-	Authenticated bool   `json:"authenticated"`
-	UserID        string `json:"userId"`
-	Username      string `json:"username"`
-	Role          string `json:"role"`
-	ExpiresAt     string `json:"expiresAt"`
+	Authenticated              bool   `json:"authenticated"`
+	UserID                     string `json:"userId"`
+	Username                   string `json:"username"`
+	Role                       string `json:"role"`
+	ExpiresAt                  string `json:"expiresAt"`
+	TermsAccepted              bool   `json:"termsAccepted"`
+	TermsVersion               string `json:"termsVersion,omitempty"`
+	TermsAcceptedAt            string `json:"termsAcceptedAt,omitempty"`
+	LaunchDisclosureAccepted   bool   `json:"launchDisclosureAccepted"`
+	LaunchDisclosureVersion    string `json:"launchDisclosureVersion,omitempty"`
+	LaunchDisclosureAcceptedAt string `json:"launchDisclosureAcceptedAt,omitempty"`
 }
 
 type metricsResponse struct {
@@ -320,11 +349,26 @@ CREATE TABLE IF NOT EXISTS auth_users (
   username VARCHAR(255) UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
   role VARCHAR(50) NOT NULL DEFAULT 'player',
+  terms_accepted BOOLEAN NOT NULL DEFAULT FALSE,
+  terms_version TEXT NOT NULL DEFAULT '',
+  terms_accepted_at TIMESTAMPTZ NULL,
+  launch_disclosure_accepted BOOLEAN NOT NULL DEFAULT FALSE,
+  launch_disclosure_version TEXT NOT NULL DEFAULT '',
+  launch_disclosure_accepted_at TIMESTAMPTZ NULL,
   oauth_provider VARCHAR(50),
   oauth_subject VARCHAR(255),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )`); err != nil {
+		return err
+	}
+	if _, err := db.ExecContext(ctx, `
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS terms_accepted BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS terms_version TEXT NOT NULL DEFAULT '';
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMPTZ NULL;
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS launch_disclosure_accepted BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS launch_disclosure_version TEXT NOT NULL DEFAULT '';
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS launch_disclosure_accepted_at TIMESTAMPTZ NULL;`); err != nil {
 		return err
 	}
 
@@ -425,6 +469,15 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 			return httpx.BadRequest("username and password are required", nil)
 		}
 
+		// Per-IP limit alongside the per-username one inside Login: a
+		// password spray (one password across many usernames) never trips a
+		// per-username counter, so it needs its own bucket (audit SEC-05).
+		// 30/min = 3x the per-username budget, low enough to blunt sprays.
+		if ip := extractIP(r); ip != "" && !auth.loginLimiter.Allow("login-ip:"+ip, 30, time.Minute) {
+			auth.audit.Event("auth.login.rate_limited_ip", map[string]any{"ip": ip})
+			return httpx.TooManyRequests("too many login attempts, try again later")
+		}
+
 		response, err := auth.Login(body.Username, body.Password, firstNonEmpty(body.OTP, body.Code))
 		if err != nil {
 			return err
@@ -472,15 +525,30 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
 		}
 
-		newUser, err := auth.Register(body.Username, body.Password, body.Role)
+		if !acceptedBool(body.TermsAccepted, body.TermsAcceptedCamel) {
+			return httpx.BadRequest("terms acceptance is required", map[string]any{"field": "terms_accepted"})
+		}
+		if !acceptedBool(body.LaunchDisclosureAccepted, body.LaunchDisclosureAcceptedCamel) {
+			return httpx.BadRequest("points-only no-cashout disclosure acceptance is required", map[string]any{"field": "launch_disclosure_accepted"})
+		}
+		termsVersion := firstNonEmpty(body.TermsVersion, body.TermsVersionCamel, tianggeLaunchTermsVersion)
+		disclosureVersion := firstNonEmpty(body.LaunchDisclosureVersion, body.LaunchDisclosureVersionCamel, tianggeDisclosureVersion)
+
+		newUser, err := auth.RegisterWithAcceptance(body.Username, body.Password, body.Role, termsVersion, disclosureVersion)
 		if err != nil {
 			return err
 		}
 
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{
-			"userId":   newUser.ID,
-			"username": newUser.Username,
-			"role":     newUser.Role,
+			"userId":                     newUser.ID,
+			"username":                   newUser.Username,
+			"role":                       newUser.Role,
+			"termsAccepted":              newUser.TermsAccepted,
+			"termsVersion":               newUser.TermsVersion,
+			"termsAcceptedAt":            newUser.TermsAcceptedAt,
+			"launchDisclosureAccepted":   newUser.LaunchDisclosureAccepted,
+			"launchDisclosureVersion":    newUser.LaunchDisclosureVersion,
+			"launchDisclosureAcceptedAt": newUser.LaunchDisclosureAcceptedAt,
 		})
 	}))
 
@@ -560,11 +628,17 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		}
 
 		return httpx.WriteJSON(w, stdhttp.StatusOK, sessionResponse{
-			Authenticated: true,
-			UserID:        currentSession.UserID,
-			Username:      currentSession.Username,
-			Role:          currentSession.Role,
-			ExpiresAt:     currentSession.AccessUntil.UTC().Format(time.RFC3339),
+			Authenticated:              true,
+			UserID:                     currentSession.UserID,
+			Username:                   currentSession.Username,
+			Role:                       currentSession.Role,
+			ExpiresAt:                  currentSession.AccessUntil.UTC().Format(time.RFC3339),
+			TermsAccepted:              currentSession.TermsAccepted,
+			TermsVersion:               currentSession.TermsVersion,
+			TermsAcceptedAt:            currentSession.TermsAcceptedAt,
+			LaunchDisclosureAccepted:   currentSession.LaunchDisclosureAccepted,
+			LaunchDisclosureVersion:    currentSession.LaunchDisclosureVersion,
+			LaunchDisclosureAcceptedAt: currentSession.LaunchDisclosureAcceptedAt,
 		})
 	}))
 
@@ -616,7 +690,12 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 			}
 		}
 		if tokenToInvalidate != "" {
-			_ = auth.store.DeleteByAccessToken(digestToken(tokenToInvalidate))
+			// Pass the RAW token: the store digests internally. Digesting here
+			// double-hashed the key, so logout never actually revoked the
+			// session server-side (audit SEC-01).
+			if err := auth.store.DeleteByAccessToken(tokenToInvalidate); err != nil {
+				slog.Warn("auth: logout session revocation failed", "error", err)
+			}
 		}
 
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{"status": "logged_out"})
@@ -633,6 +712,39 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		sessionID = strings.TrimSuffix(sessionID, "/")
 		if sessionID == "" {
 			return httpx.BadRequest("session ID required", nil)
+		}
+
+		// Authenticate the caller and scope revocation to their own sessions
+		// (this endpoint previously required no auth at all — audit SEC-05).
+		var token string
+		if cookie, err := r.Cookie("access_token"); err == nil && cookie.Value != "" {
+			token = cookie.Value
+		} else {
+			var parseErr error
+			token, parseErr = parseBearerToken(r.Header.Get("Authorization"))
+			if parseErr != nil {
+				return parseErr
+			}
+		}
+		currentSession, err := auth.ValidateAccessToken(token)
+		if err != nil {
+			return err
+		}
+		owned, err := auth.store.ListByUserID(currentSession.UserID)
+		if err != nil {
+			return httpx.Internal("failed to list sessions", err)
+		}
+		owns := false
+		for _, s := range owned {
+			if s.AccessTokenDigest == sessionID || s.RefreshTokenDigest == sessionID {
+				owns = true
+				break
+			}
+		}
+		if !owns {
+			// Same response for "someone else's session" and "no such
+			// session" — don't leak which digests exist.
+			return httpx.NotFound("session not found")
 		}
 
 		if err := auth.store.DeleteBySessionID(sessionID); err != nil {
@@ -829,6 +941,24 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 	registerSocialOAuthRoutes(mux, auth, frontendURL)
 }
 
+func acceptedBool(values ...*bool) bool {
+	for _, value := range values {
+		if value != nil {
+			return *value
+		}
+	}
+	return false
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, value := range values {
+		if trimmed := strings.TrimSpace(value); trimmed != "" {
+			return trimmed
+		}
+	}
+	return ""
+}
+
 func (a *AuthService) Login(username string, password string, otp string) (tokenResponse, error) {
 	a.PruneExpiredSessions()
 
@@ -957,6 +1087,14 @@ func (a *AuthService) ChangePassword(username string, currentPassword string, ne
 		a.mu.Unlock()
 	}
 
+	// Revoke every live session for this user: a hijacked session must not
+	// outlive the password rotation that was meant to evict it (SEC-01
+	// sibling, audit P1-05). The user re-authenticates with the new password.
+	if err := a.store.DeleteByUserID(account.ID); err != nil {
+		slog.Warn("auth: failed to revoke sessions after password change",
+			"userId", account.ID, "error", err)
+	}
+
 	a.audit.Event("auth.password_change.success", map[string]any{"username": username, "userId": account.ID})
 	return nil
 }
@@ -971,6 +1109,14 @@ func (a *AuthService) verifyPassword(account user, password string) bool {
 }
 
 func (a *AuthService) Register(username, password, _ string) (user, error) {
+	return a.registerUser(username, password, rolePlayer, "", "")
+}
+
+func (a *AuthService) RegisterWithAcceptance(username, password, _ string, termsVersion, disclosureVersion string) (user, error) {
+	return a.registerUser(username, password, rolePlayer, termsVersion, disclosureVersion)
+}
+
+func (a *AuthService) registerUser(username, password, _ string, termsVersion, disclosureVersion string) (user, error) {
 	username = strings.TrimSpace(username)
 	password = strings.TrimSpace(password)
 	if username == "" {
@@ -989,6 +1135,18 @@ func (a *AuthService) Register(username, password, _ string) (user, error) {
 	// Registration always creates player accounts. Admin accounts must be
 	// created through a separate protected admin endpoint or seeded via env.
 	role := rolePlayer
+	termsVersion = strings.TrimSpace(termsVersion)
+	disclosureVersion = strings.TrimSpace(disclosureVersion)
+	acceptedAt := ""
+	if termsVersion != "" || disclosureVersion != "" {
+		acceptedAt = time.Now().UTC().Format(time.RFC3339)
+		if termsVersion == "" {
+			termsVersion = tianggeLaunchTermsVersion
+		}
+		if disclosureVersion == "" {
+			disclosureVersion = tianggeDisclosureVersion
+		}
+	}
 
 	// Check if user already exists
 	if _, exists := a.lookupUser(username); exists {
@@ -1003,18 +1161,32 @@ func (a *AuthService) Register(username, password, _ string) (user, error) {
 	userIDSuffix := sha256.Sum256([]byte(strings.ToLower(username)))
 	newID := fmt.Sprintf("u-%s", hex.EncodeToString(userIDSuffix[:])[:12])
 	newUser := user{
-		ID:           newID,
-		Username:     username,
-		PasswordHash: string(hash),
-		Role:         role,
+		ID:                         newID,
+		Username:                   username,
+		PasswordHash:               string(hash),
+		Role:                       role,
+		TermsAccepted:              termsVersion != "",
+		TermsVersion:               termsVersion,
+		TermsAcceptedAt:            acceptedAt,
+		LaunchDisclosureAccepted:   disclosureVersion != "",
+		LaunchDisclosureVersion:    disclosureVersion,
+		LaunchDisclosureAcceptedAt: acceptedAt,
 	}
 
 	if a.db != nil {
 		ctx, cancel := context.WithTimeout(context.Background(), userDBTimeout)
 		defer cancel()
 		_, err := a.db.ExecContext(ctx, `
-INSERT INTO auth_users (id, username, password_hash, role)
-VALUES ($1, $2, $3, $4)`, newUser.ID, newUser.Username, newUser.PasswordHash, newUser.Role)
+INSERT INTO auth_users (
+  id, username, password_hash, role,
+  terms_accepted, terms_version, terms_accepted_at,
+  launch_disclosure_accepted, launch_disclosure_version, launch_disclosure_accepted_at
+)
+VALUES ($1, $2, $3, $4, $5, $6, NULLIF($7, '')::timestamptz, $8, $9, NULLIF($10, '')::timestamptz)`,
+			newUser.ID, newUser.Username, newUser.PasswordHash, newUser.Role,
+			newUser.TermsAccepted, newUser.TermsVersion, newUser.TermsAcceptedAt,
+			newUser.LaunchDisclosureAccepted, newUser.LaunchDisclosureVersion, newUser.LaunchDisclosureAcceptedAt,
+		)
 		if err != nil {
 			if strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "unique constraint") {
 				return user{}, httpx.Conflict("username already registered", nil)
@@ -1161,11 +1333,25 @@ func (a *AuthService) lookupUser(username string) (user, bool) {
 		ctx, cancel := context.WithTimeout(context.Background(), userDBTimeout)
 		defer cancel()
 		var u user
+		var termsAcceptedAt sql.NullTime
+		var disclosureAcceptedAt sql.NullTime
 		err := a.db.QueryRowContext(ctx, `
-SELECT id, username, password_hash, COALESCE(role, 'player')
+SELECT id, username, password_hash, COALESCE(role, 'player'),
+       COALESCE(terms_accepted, false), COALESCE(terms_version, ''), terms_accepted_at,
+       COALESCE(launch_disclosure_accepted, false), COALESCE(launch_disclosure_version, ''), launch_disclosure_accepted_at
 FROM auth_users
-WHERE username = $1`, username).Scan(&u.ID, &u.Username, &u.PasswordHash, &u.Role)
+WHERE username = $1`, username).Scan(
+			&u.ID, &u.Username, &u.PasswordHash, &u.Role,
+			&u.TermsAccepted, &u.TermsVersion, &termsAcceptedAt,
+			&u.LaunchDisclosureAccepted, &u.LaunchDisclosureVersion, &disclosureAcceptedAt,
+		)
 		if err == nil {
+			if termsAcceptedAt.Valid {
+				u.TermsAcceptedAt = termsAcceptedAt.Time.UTC().Format(time.RFC3339)
+			}
+			if disclosureAcceptedAt.Valid {
+				u.LaunchDisclosureAcceptedAt = disclosureAcceptedAt.Time.UTC().Format(time.RFC3339)
+			}
 			return u, true
 		}
 		if err != sql.ErrNoRows {
@@ -1225,14 +1411,20 @@ func newSession(account user, accessTTL, refreshTTL time.Duration) (session, tok
 
 	now := time.Now().UTC()
 	return session{
-			UserID:             account.ID,
-			Username:           account.Username,
-			Role:               role,
-			AccessTokenDigest:  digestToken(accessToken),
-			RefreshTokenDigest: digestToken(refreshToken),
-			AccessUntil:        now.Add(accessTTL),
-			RefreshUntil:       now.Add(refreshTTL),
-			IssuedAt:           now,
+			UserID:                     account.ID,
+			Username:                   account.Username,
+			Role:                       role,
+			AccessTokenDigest:          digestToken(accessToken),
+			RefreshTokenDigest:         digestToken(refreshToken),
+			AccessUntil:                now.Add(accessTTL),
+			RefreshUntil:               now.Add(refreshTTL),
+			IssuedAt:                   now,
+			TermsAccepted:              account.TermsAccepted,
+			TermsVersion:               account.TermsVersion,
+			TermsAcceptedAt:            account.TermsAcceptedAt,
+			LaunchDisclosureAccepted:   account.LaunchDisclosureAccepted,
+			LaunchDisclosureVersion:    account.LaunchDisclosureVersion,
+			LaunchDisclosureAcceptedAt: account.LaunchDisclosureAcceptedAt,
 		}, tokenResponse{
 			TokenType:       "Bearer",
 			AccessToken:     accessToken,
@@ -1255,15 +1447,6 @@ func parseBearerToken(header string) (string, error) {
 		return "", httpx.Unauthorized("missing or invalid Authorization bearer token")
 	}
 	return parts[1], nil
-}
-
-func firstNonEmpty(values ...string) string {
-	for _, value := range values {
-		if strings.TrimSpace(value) != "" {
-			return value
-		}
-	}
-	return ""
 }
 
 func digestToken(token string) string {
@@ -1345,20 +1528,58 @@ func (l *structuredAuditLogger) Event(name string, fields map[string]any) {
 	l.logger.Printf("event=%s fields=%s", name, string(payload))
 }
 
+// extractIP returns the client IP for rate-limiting. Forwarding headers are
+// client-controlled, so they are honored ONLY when the direct peer is inside
+// TRUSTED_PROXY_CIDRS (comma-separated; e.g. the Caddy/edge subnet) — and then
+// the RIGHTMOST X-Forwarded-For entry is used, the one appended by our proxy.
+// Previously the leftmost (attacker-chosen) entry was trusted unconditionally,
+// which let registration/login limits be bypassed by varying XFF (audit
+// SEC-05). With no trusted proxies configured the peer address is the answer.
 func extractIP(r *stdhttp.Request) string {
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		if i := strings.IndexByte(xff, ','); i > 0 {
-			return strings.TrimSpace(xff[:i])
-		}
-		return strings.TrimSpace(xff)
+	host := r.RemoteAddr
+	if h, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
+		host = h
 	}
-	if xri := r.Header.Get("X-Real-Ip"); xri != "" {
+	peer := net.ParseIP(host)
+	if peer == nil || !ipInTrustedProxies(peer) {
+		return host
+	}
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		parts := strings.Split(xff, ",")
+		if ip := strings.TrimSpace(parts[len(parts)-1]); ip != "" {
+			return ip
+		}
+	}
+	if xri := strings.TrimSpace(r.Header.Get("X-Real-Ip")); xri != "" {
 		return xri
 	}
-	if i := strings.LastIndex(r.RemoteAddr, ":"); i > 0 {
-		return r.RemoteAddr[:i]
+	return host
+}
+
+// ipInTrustedProxies parses TRUSTED_PROXY_CIDRS on each call — auth endpoints
+// are low-rate, and re-parsing keeps the function trivially testable with
+// t.Setenv. Bare IPs are accepted as /32 (/128 for IPv6).
+func ipInTrustedProxies(ip net.IP) bool {
+	raw := strings.TrimSpace(os.Getenv("TRUSTED_PROXY_CIDRS"))
+	if raw == "" {
+		return false
 	}
-	return r.RemoteAddr
+	for _, part := range strings.Split(raw, ",") {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		if !strings.Contains(part, "/") {
+			if single := net.ParseIP(part); single != nil && single.Equal(ip) {
+				return true
+			}
+			continue
+		}
+		if _, network, err := net.ParseCIDR(part); err == nil && network.Contains(ip) {
+			return true
+		}
+	}
+	return false
 }
 
 func getEnvOrDefault(name string, fallback string) string {

@@ -57,6 +57,13 @@ type MatchPlan struct {
 	Taker Order
 	// MakerUpdates are the post-match versions of any makers touched.
 	MakerUpdates []Order
+	// MakerPreFill records each touched maker's filled_quantity as it was when
+	// the plan was built (before this plan's fills). The persistence layer
+	// re-asserts it under the per-market lock with a guarded UPDATE so a maker
+	// that another taker advanced between plan-build and commit is detected
+	// (ErrBookChanged) instead of being regressed to stale absolute values
+	// (audit COR-02). Keyed by maker order ID.
+	MakerPreFill map[string]int
 	// Trades are the immutable fill records to insert. For issuance fills,
 	// two rows share a match_id and trade_kind='issuance'.
 	Trades []Trade
@@ -74,11 +81,11 @@ type MatchPlan struct {
 	// snapshot, last_quote_at, etc.
 	Market Market
 	// Reservation operations the persistence layer should apply:
-	HoldReservation     *ReservationHold     // taker's cash reservation
+	HoldReservation     *ReservationHold     // taker's point reservation
 	CaptureReservations []ReservationCapture // per-fill captures from holds
 	ReleaseReservations []ReservationRef     // refund the unfilled portion
-	// SellerCredits pay the seller's cash proceeds on secondary (same-side
-	// transfer) fills. The buyer's cash is captured via CaptureReservations;
+	// SellerCredits pay the seller's point proceeds on secondary (same-side
+	// transfer) fills. The buyer's points are captured via CaptureReservations;
 	// the matching credit to the seller goes here. Issuance fills mint
 	// contracts (both sides pay) and produce no SellerCredits.
 	SellerCredits []SellerCredit
@@ -139,6 +146,22 @@ var ErrPriceBandViolation = errors.New(FailurePriceBandViolation)
 // ErrPostOnlyWouldTake is returned when a post-only limit would take any
 // quantity at submission.
 var ErrPostOnlyWouldTake = errors.New(FailurePostOnlyWouldTake)
+
+// ErrBookChanged is returned by the persistence layer when a maker's on-disk
+// fill state no longer matches what the plan was built against — another taker
+// matched it first. The caller re-loads the book and re-plans (audit COR-02).
+var ErrBookChanged = errors.New("order book changed during match; replan required")
+
+// recordMakerPreFill captures a maker's filled_quantity the first time it is
+// touched in a plan, so the persistence layer can re-assert it under the lock.
+func recordMakerPreFill(plan *MatchPlan, maker *Order) {
+	if plan.MakerPreFill == nil {
+		plan.MakerPreFill = map[string]int{}
+	}
+	if _, seen := plan.MakerPreFill[maker.ID]; !seen {
+		plan.MakerPreFill[maker.ID] = maker.FilledQuantity
+	}
+}
 
 // ErrSelfMatchRejected is returned when the taker's first crossing maker
 // belongs to the same user and self_match_action='cancel_taker'.
@@ -215,6 +238,7 @@ func (e *ExchangeEngine) BuildPlan(input MatchInput) (*MatchPlan, error) {
 		Trades:            []Trade{},
 		PositionMutations: []PositionMutation{},
 		LedgerEntries:     []CollateralLedgerEntry{},
+		MakerPreFill:      map[string]int{},
 	}
 
 	// Secondary matching (same-side transfer) runs for BOTH buy and sell
@@ -362,6 +386,7 @@ func applySelfMatch(taker, maker *Order) (bool, error) {
 // fillSecondary applies a same-side transfer fill: buyer pays seller, position
 // moves, no collateral pool change.
 func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int, now time.Time, idFactory func() string) {
+	recordMakerPreFill(plan, maker)
 	tradeID := idFactory()
 	matchID := tradeID // secondary: match_id = trade id
 
@@ -401,7 +426,7 @@ func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int,
 	}
 	plan.Trades = append(plan.Trades, trade)
 
-	// Update taker: filled, captured cash for buys.
+	// Update taker: filled, captured points for buys.
 	taker.FilledQuantity += fillQty
 	taker.RemainingQuantity -= fillQty
 	if taker.Action == OrderActionBuy {
@@ -434,7 +459,7 @@ func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int,
 	}
 	plan.MakerUpdates = append(plan.MakerUpdates, *maker)
 
-	// Capture buyer's cash from their reservation (per-fill).
+	// Capture buyer's points from their reservation (per-fill).
 	buyer := taker
 	if taker.Action != OrderActionBuy {
 		buyer = maker
@@ -447,7 +472,7 @@ func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int,
 	})
 
 	// Credit the seller's proceeds. A secondary fill is a same-side
-	// transfer: the buyer's captured cash (above) is paid to the seller.
+	// transfer: the buyer's captured points (above) are credited to the seller.
 	// Without this the seller's position decrements but they receive
 	// nothing — silent value loss (UAT 2026-05-16 D-1, second-order).
 	if sellerID != nil {
@@ -495,6 +520,7 @@ func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int,
 // taker pays (100 - maker_limit). Both sides receive a position; collateral
 // pool grows by 100¢ × fillQty.
 func fillIssuance(plan *MatchPlan, taker, maker *Order, fillQty int, now time.Time, idFactory func() string) {
+	recordMakerPreFill(plan, maker)
 	matchID := idFactory()
 	makerLimit := *maker.PriceCents
 	takerPrice := ComplementaryTakerPriceCents(makerLimit)
@@ -617,6 +643,15 @@ func applyTIF(plan *MatchPlan, taker *Order) error {
 		if filled != nil {
 			taker.FilledAt = filled
 		}
+		// Release any uncaptured surplus of the taker's point reservation. A buy
+		// holds worst-case priceCents×qty but captures at the (better) fill price,
+		// so on a full fill the difference must be freed now — otherwise it stays
+		// locked against available balance until the reservation expires at
+		// CloseAt+TTL (days). Idempotent: a no-op when capture equalled the hold,
+		// and for share-reserved sells (SECURITY-REVIEW #10).
+		plan.ReleaseReservations = append(plan.ReleaseReservations, ReservationRef{
+			Type: "prediction_order", ID: taker.ID,
+		})
 		return nil
 	}
 	switch taker.TimeInForce {

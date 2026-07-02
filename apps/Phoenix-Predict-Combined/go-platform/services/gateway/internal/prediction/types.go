@@ -5,7 +5,24 @@ import (
 	"time"
 )
 
-// Category represents a prediction market category (politics, crypto, sports, etc.)
+var maxJSONTime = time.Date(9999, time.December, 31, 23, 59, 59, 0, time.UTC)
+
+func publicJSONTime(t time.Time) time.Time {
+	if t.Year() > 9999 {
+		return maxJSONTime
+	}
+	return t
+}
+
+func publicJSONTimePtr(t *time.Time) *time.Time {
+	if t == nil {
+		return nil
+	}
+	safe := publicJSONTime(*t)
+	return &safe
+}
+
+// Category represents a prediction market category (politics, sports, entertainment, etc.)
 type Category struct {
 	ID        string    `json:"id" db:"id"`
 	Slug      string    `json:"slug" db:"slug"`
@@ -101,6 +118,9 @@ const (
 type Market struct {
 	ID                  string          `json:"id" db:"id"`
 	EventID             string          `json:"eventId" db:"event_id"`
+	CategoryID          string          `json:"categoryId,omitempty" db:"-"`
+	CategorySlug        string          `json:"categorySlug,omitempty" db:"-"`
+	CategoryName        string          `json:"categoryName,omitempty" db:"-"`
 	Ticker              string          `json:"ticker" db:"ticker"`
 	Title               string          `json:"title" db:"title"`
 	Description         string          `json:"description,omitempty" db:"description"`
@@ -143,6 +163,98 @@ type Market struct {
 	BestNoBidCents         *int          `json:"bestNoBidCents,omitempty" db:"best_no_bid_cents"`
 	BestNoAskCents         *int          `json:"bestNoAskCents,omitempty" db:"best_no_ask_cents"`
 	LastQuoteAt            *time.Time    `json:"lastQuoteAt,omitempty" db:"last_quote_at"`
+}
+
+func (m Market) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		ID                           string          `json:"id"`
+		EventID                      string          `json:"eventId"`
+		CategoryID                   string          `json:"categoryId,omitempty"`
+		CategorySlug                 string          `json:"categorySlug,omitempty"`
+		CategoryName                 string          `json:"categoryName,omitempty"`
+		Ticker                       string          `json:"ticker"`
+		Title                        string          `json:"title"`
+		Description                  string          `json:"description,omitempty"`
+		Translations                 json.RawMessage `json:"translations,omitempty"`
+		Status                       MarketStatus    `json:"status"`
+		Result                       *MarketResult   `json:"result,omitempty"`
+		YesPricePointsCents          int             `json:"yesPricePointsCents"`
+		NoPricePointsCents           int             `json:"noPricePointsCents"`
+		LastTradePricePointsCents    *int            `json:"lastTradePricePointsCents,omitempty"`
+		VolumePointsCents            int64           `json:"volumePointsCents"`
+		OpenInterestPointsCents      int64           `json:"openInterestPointsCents"`
+		LiquidityPointsCents         int64           `json:"liquidityPointsCents"`
+		AMMYesShares                 float64         `json:"ammYesShares"`
+		AMMNoShares                  float64         `json:"ammNoShares"`
+		AMMLiquidityParam            float64         `json:"ammLiquidityParam"`
+		AMMSubsidyPointsCents        int64           `json:"ammSubsidyPointsCents"`
+		SettlementSourceKey          string          `json:"settlementSourceKey"`
+		SettlementCutoffAt           *time.Time      `json:"settlementCutoffAt,omitempty"`
+		SettlementRule               string          `json:"settlementRule"`
+		SettlementParams             json.RawMessage `json:"settlementParams,omitempty"`
+		FallbackSourceKey            *string         `json:"fallbackSourceKey,omitempty"`
+		FeeRateBps                   int             `json:"feeRateBps"`
+		MakerRebateBps               int             `json:"makerRebateBps"`
+		OpenAt                       *time.Time      `json:"openAt,omitempty"`
+		CloseAt                      time.Time       `json:"closeAt"`
+		CreatedAt                    time.Time       `json:"createdAt"`
+		UpdatedAt                    time.Time       `json:"updatedAt"`
+		ImagePath                    string          `json:"imagePath,omitempty"`
+		ArticleSourceID              *string         `json:"articleSourceId,omitempty"`
+		ExecutionMode                ExecutionMode   `json:"executionMode"`
+		CollateralPoolPointsCents    int64           `json:"collateralPoolPointsCents"`
+		SettlementPoolPointsCents    int64           `json:"settlementPoolPointsCents"`
+		BestYesBidPointsCents        *int            `json:"bestYesBidPointsCents,omitempty"`
+		BestYesAskPointsCents        *int            `json:"bestYesAskPointsCents,omitempty"`
+		BestNoBidPointsCents         *int            `json:"bestNoBidPointsCents,omitempty"`
+		BestNoAskPointsCents         *int            `json:"bestNoAskPointsCents,omitempty"`
+		LastQuoteAt                  *time.Time      `json:"lastQuoteAt,omitempty"`
+		Unit                         string          `json:"unit"`
+	}{
+		ID:                           m.ID,
+		EventID:                      m.EventID,
+		CategoryID:                   m.CategoryID,
+		CategorySlug:                 m.CategorySlug,
+		CategoryName:                 m.CategoryName,
+		Ticker:                       m.Ticker,
+		Title:                        m.Title,
+		Description:                  m.Description,
+		Translations:                 m.Translations,
+		Status:                       m.Status,
+		Result:                       m.Result,
+		YesPricePointsCents:          m.YesPriceCents,
+		NoPricePointsCents:           m.NoPriceCents,
+		LastTradePricePointsCents:    m.LastTradePriceCents,
+		VolumePointsCents:            m.VolumeCents,
+		OpenInterestPointsCents:      m.OpenInterestCents,
+		LiquidityPointsCents:         m.LiquidityCents,
+		AMMYesShares:                 m.AMMYesShares,
+		AMMNoShares:                  m.AMMNoShares,
+		AMMLiquidityParam:            m.AMMLiquidityParam,
+		AMMSubsidyPointsCents:        m.AMMSubsidyCents,
+		SettlementSourceKey:          m.SettlementSourceKey,
+		SettlementCutoffAt:           publicJSONTimePtr(m.SettlementCutoffAt),
+		SettlementRule:               m.SettlementRule,
+		SettlementParams:             m.SettlementParams,
+		FallbackSourceKey:            m.FallbackSourceKey,
+		FeeRateBps:                   m.FeeRateBps,
+		MakerRebateBps:               m.MakerRebateBps,
+		OpenAt:                       publicJSONTimePtr(m.OpenAt),
+		CloseAt:                      publicJSONTime(m.CloseAt),
+		CreatedAt:                    publicJSONTime(m.CreatedAt),
+		UpdatedAt:                    publicJSONTime(m.UpdatedAt),
+		ImagePath:                    m.ImagePath,
+		ArticleSourceID:              m.ArticleSourceID,
+		ExecutionMode:                m.ExecutionMode,
+		CollateralPoolPointsCents:    m.CollateralPoolCents,
+		SettlementPoolPointsCents:    m.SettledPayoutPoolCents,
+		BestYesBidPointsCents:        m.BestYesBidCents,
+		BestYesAskPointsCents:        m.BestYesAskCents,
+		BestNoBidPointsCents:         m.BestNoBidCents,
+		BestNoAskPointsCents:         m.BestNoAskCents,
+		LastQuoteAt:                  publicJSONTimePtr(m.LastQuoteAt),
+		Unit:                         "PTS",
+	})
 }
 
 // OrderSide is the side of a prediction (YES or NO).
@@ -221,13 +333,13 @@ type Order struct {
 	Side                OrderSide   `json:"side" db:"side"`
 	Action              OrderAction `json:"action" db:"action"`
 	OrderType           OrderType   `json:"orderType" db:"order_type"`
-	PriceCents          *int        `json:"priceCents,omitempty" db:"price_cents"`
+	PriceCents          *int        `json:"-" db:"price_cents"`
 	Quantity            int         `json:"quantity" db:"quantity"`
 	FilledQuantity      int         `json:"filledQuantity" db:"filled_quantity"`
 	RemainingQuantity   int         `json:"remainingQuantity" db:"remaining_quantity"`
 	TotalCostCents      int64       `json:"totalCostCents" db:"total_cost_cents"`
 	Status              OrderStatus `json:"status" db:"status"`
-	WalletReservationID *string     `json:"walletReservationId,omitempty" db:"wallet_reservation_id"`
+	WalletReservationID *string     `json:"-" db:"wallet_reservation_id"`
 	IdempotencyKey      *string     `json:"idempotencyKey,omitempty" db:"idempotency_key"`
 	ExpiresAt           *time.Time  `json:"expiresAt,omitempty" db:"expires_at"`
 	FilledAt            *time.Time  `json:"filledAt,omitempty" db:"filled_at"`
@@ -237,17 +349,85 @@ type Order struct {
 
 	// Exchange engine fields (migration 019).
 	TimeInForce           TimeInForce     `json:"timeInForce" db:"time_in_force"`
-	ReservedCashCents     int64           `json:"reservedCashCents" db:"reserved_cash_cents"`
-	CapturedCashCents     int64           `json:"capturedCashCents" db:"captured_cash_cents"`
-	ReleasedCashCents     int64           `json:"releasedCashCents" db:"released_cash_cents"`
+	ReservedCashCents     int64           `json:"-" db:"reserved_cash_cents"`
+	CapturedCashCents     int64           `json:"-" db:"captured_cash_cents"`
+	ReleasedCashCents     int64           `json:"-" db:"released_cash_cents"`
 	ReservedQuantity      int             `json:"reservedQuantity" db:"reserved_quantity"`
-	AverageFillPriceCents *int            `json:"averageFillPriceCents,omitempty" db:"average_fill_price_cents"`
+	AverageFillPriceCents *int            `json:"-" db:"average_fill_price_cents"`
 	FilledCostCents       int64           `json:"filledCostCents" db:"filled_cost_cents"`
 	FailureReason         *string         `json:"failureReason,omitempty" db:"failure_reason"`
 	PostOnly              bool            `json:"postOnly" db:"post_only"`
 	ClientOrderID         *string         `json:"clientOrderId,omitempty" db:"client_order_id"`
 	SelfMatchAction       SelfMatchAction `json:"selfMatchAction" db:"self_match_action"`
 	NotionalCapCents      *int64          `json:"notionalCapCents,omitempty" db:"notional_cap_cents"`
+}
+
+func (o Order) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		ID                          string          `json:"id"`
+		UserID                      string          `json:"userId"`
+		MarketID                    string          `json:"marketId"`
+		Side                        OrderSide       `json:"side"`
+		Action                      OrderAction     `json:"action"`
+		OrderType                   OrderType       `json:"orderType"`
+		PricePointsCents            *int            `json:"pricePointsCents,omitempty"`
+		Quantity                    int             `json:"quantity"`
+		FilledQuantity              int             `json:"filledQuantity"`
+		RemainingQuantity           int             `json:"remainingQuantity"`
+		Status                      OrderStatus     `json:"status"`
+		IdempotencyKey              *string         `json:"idempotencyKey,omitempty"`
+		ExpiresAt                   *time.Time      `json:"expiresAt,omitempty"`
+		FilledAt                    *time.Time      `json:"filledAt,omitempty"`
+		CancelledAt                 *time.Time      `json:"cancelledAt,omitempty"`
+		CreatedAt                   time.Time       `json:"createdAt"`
+		UpdatedAt                   time.Time       `json:"updatedAt"`
+		TimeInForce                 TimeInForce     `json:"timeInForce"`
+		ReservedQuantity            int             `json:"reservedQuantity"`
+		AverageFillPricePointsCents *int            `json:"averageFillPricePointsCents,omitempty"`
+		FailureReason               *string         `json:"failureReason,omitempty"`
+		PostOnly                    bool            `json:"postOnly"`
+		ClientOrderID               *string         `json:"clientOrderId,omitempty"`
+		SelfMatchAction             SelfMatchAction `json:"selfMatchAction"`
+		TotalCostPointsCents        int64           `json:"totalCostPointsCents"`
+		ReservedPointsCents         int64           `json:"reservedPointsCents"`
+		CapturedPointsCents         int64           `json:"capturedPointsCents"`
+		ReleasedPointsCents         int64           `json:"releasedPointsCents"`
+		FilledCostPointsCents       int64           `json:"filledCostPointsCents"`
+		NotionalCapPointsCents      *int64          `json:"notionalCapPointsCents,omitempty"`
+		Unit                        string          `json:"unit"`
+	}{
+		ID:                          o.ID,
+		UserID:                      o.UserID,
+		MarketID:                    o.MarketID,
+		Side:                        o.Side,
+		Action:                      o.Action,
+		OrderType:                   o.OrderType,
+		PricePointsCents:            o.PriceCents,
+		Quantity:                    o.Quantity,
+		FilledQuantity:              o.FilledQuantity,
+		RemainingQuantity:           o.RemainingQuantity,
+		Status:                      o.Status,
+		IdempotencyKey:              o.IdempotencyKey,
+		ExpiresAt:                   o.ExpiresAt,
+		FilledAt:                    o.FilledAt,
+		CancelledAt:                 o.CancelledAt,
+		CreatedAt:                   o.CreatedAt,
+		UpdatedAt:                   o.UpdatedAt,
+		TimeInForce:                 o.TimeInForce,
+		ReservedQuantity:            o.ReservedQuantity,
+		AverageFillPricePointsCents: o.AverageFillPriceCents,
+		FailureReason:               o.FailureReason,
+		PostOnly:                    o.PostOnly,
+		ClientOrderID:               o.ClientOrderID,
+		SelfMatchAction:             o.SelfMatchAction,
+		TotalCostPointsCents:        o.TotalCostCents,
+		ReservedPointsCents:         o.ReservedCashCents,
+		CapturedPointsCents:         o.CapturedCashCents,
+		ReleasedPointsCents:         o.ReleasedCashCents,
+		FilledCostPointsCents:       o.FilledCostCents,
+		NotionalCapPointsCents:      o.NotionalCapCents,
+		Unit:                        "PTS",
+	})
 }
 
 // Position represents a user's net holding in a market on one side.
@@ -266,6 +446,36 @@ type Position struct {
 	// Exchange engine fields (migration 019). reserved_quantity is the count
 	// of shares locked by resting sell orders. available = quantity - reserved.
 	ReservedQuantity int `json:"reservedQuantity" db:"reserved_quantity"`
+}
+
+func (p Position) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		TotalCostPointsCents int64     `json:"totalCostPointsCents"`
+		RealizedPointsCents  int64     `json:"realizedPointsCents"`
+		ID                   string    `json:"id"`
+		UserID               string    `json:"userId"`
+		MarketID             string    `json:"marketId"`
+		Side                 OrderSide `json:"side"`
+		Quantity             int       `json:"quantity"`
+		AvgPricePointsCents  int       `json:"avgPricePointsCents"`
+		CreatedAt            time.Time `json:"createdAt"`
+		UpdatedAt            time.Time `json:"updatedAt"`
+		ReservedQuantity     int       `json:"reservedQuantity"`
+		Unit                 string    `json:"unit"`
+	}{
+		TotalCostPointsCents: p.TotalCostCents,
+		RealizedPointsCents:  p.RealizedPnlCents,
+		ID:                   p.ID,
+		UserID:               p.UserID,
+		MarketID:             p.MarketID,
+		Side:                 p.Side,
+		Quantity:             p.Quantity,
+		AvgPricePointsCents:  p.AvgPriceCents,
+		CreatedAt:            p.CreatedAt,
+		UpdatedAt:            p.UpdatedAt,
+		ReservedQuantity:     p.ReservedQuantity,
+		Unit:                 "PTS",
+	})
 }
 
 // TradeKind distinguishes secondary transfers from complementary issuance.
@@ -306,6 +516,46 @@ type Trade struct {
 	EngineKind EngineKind `json:"engineKind" db:"engine_kind"`
 }
 
+func (t Trade) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		PricePointsCents    int        `json:"pricePointsCents"`
+		FeePointsCents      int        `json:"feePointsCents"`
+		NotionalPointsCents int64      `json:"notionalPointsCents"`
+		Unit                string     `json:"unit"`
+		ID                  string     `json:"id"`
+		MarketID            string     `json:"marketId"`
+		BuyOrderID          *string    `json:"buyOrderId,omitempty"`
+		SellOrderID         *string    `json:"sellOrderId,omitempty"`
+		BuyerID             string     `json:"buyerId"`
+		SellerID            *string    `json:"sellerId,omitempty"`
+		Side                OrderSide  `json:"side"`
+		Quantity            int        `json:"quantity"`
+		IsAMMTrade          bool       `json:"isAmmTrade"`
+		TradedAt            time.Time  `json:"tradedAt"`
+		MatchID             string     `json:"matchId"`
+		TradeKind           TradeKind  `json:"tradeKind"`
+		EngineKind          EngineKind `json:"engineKind"`
+	}{
+		PricePointsCents:    t.PriceCents,
+		FeePointsCents:      t.FeeCents,
+		NotionalPointsCents: int64(t.PriceCents) * int64(t.Quantity),
+		Unit:                "PTS",
+		ID:                  t.ID,
+		MarketID:            t.MarketID,
+		BuyOrderID:          t.BuyOrderID,
+		SellOrderID:         t.SellOrderID,
+		BuyerID:             t.BuyerID,
+		SellerID:            t.SellerID,
+		Side:                t.Side,
+		Quantity:            t.Quantity,
+		IsAMMTrade:          t.IsAMMTrade,
+		TradedAt:            t.TradedAt,
+		MatchID:             t.MatchID,
+		TradeKind:           t.TradeKind,
+		EngineKind:          t.EngineKind,
+	})
+}
+
 // CollateralEntryType identifies a row in prediction_collateral_ledger.
 type CollateralEntryType string
 
@@ -331,6 +581,28 @@ type CollateralDriftAlert struct {
 	LatestReason     string    `json:"latestReason"`
 }
 
+func (a CollateralDriftAlert) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		MarketID              string    `json:"marketId"`
+		Ticker                string    `json:"ticker"`
+		AdjustmentCount       int       `json:"adjustmentCount"`
+		MaxDriftPointsCents   int64     `json:"maxDriftPointsCents"`
+		TotalDriftPointsCents int64     `json:"totalDriftPointsCents"`
+		LatestAdjustedAt      time.Time `json:"latestAdjustedAt"`
+		LatestReason          string    `json:"latestReason"`
+		Unit                  string    `json:"unit"`
+	}{
+		MarketID:              a.MarketID,
+		Ticker:                a.Ticker,
+		AdjustmentCount:       a.AdjustmentCount,
+		MaxDriftPointsCents:   a.MaxDriftCents,
+		TotalDriftPointsCents: a.TotalDriftCents,
+		LatestAdjustedAt:      a.LatestAdjustedAt,
+		LatestReason:          a.LatestReason,
+		Unit:                  "PTS",
+	})
+}
+
 // CollateralLedgerEntry is an append-only collateral movement on a market.
 type CollateralLedgerEntry struct {
 	ID                string              `json:"id" db:"id"`
@@ -350,6 +622,24 @@ type OrderBookLevel struct {
 	PriceCents int `json:"priceCents"`
 	Quantity   int `json:"quantity"`
 	Total      int `json:"total"`
+}
+
+func (l OrderBookLevel) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		PricePointsCents         int    `json:"pricePointsCents"`
+		Shares                   int    `json:"shares"`
+		CumulativeShares         int    `json:"cumulativeShares"`
+		NotionalPointsCents      int64  `json:"notionalPointsCents"`
+		TotalNotionalPointsCents int64  `json:"totalNotionalPointsCents"`
+		Unit                     string `json:"unit"`
+	}{
+		PricePointsCents:         l.PriceCents,
+		Shares:                   l.Quantity,
+		CumulativeShares:         l.Total,
+		NotionalPointsCents:      int64(l.PriceCents) * int64(l.Quantity),
+		TotalNotionalPointsCents: int64(l.PriceCents) * int64(l.Total),
+		Unit:                     "PTS",
+	})
 }
 
 // OrderBookSide is one side (yes or no) with bids and asks.
@@ -378,6 +668,13 @@ type Settlement struct {
 	SettledAt         time.Time       `json:"settledAt" db:"settled_at"`
 	TotalPayoutCents  int64           `json:"totalPayoutCents" db:"total_payout_cents"`
 	PositionsSettled  int             `json:"positionsSettled" db:"positions_settled"`
+
+	// Disbursement progress (migration 034, P3-12). PayoutsTotal is the number
+	// of positions to pay, snapshotted when the header commits; PayoutsCompleted
+	// advances as each payout batch commits. Completed < Total means a resume
+	// pass must finish disbursing this settlement.
+	PayoutsTotal     int `json:"payoutsTotal" db:"payouts_total"`
+	PayoutsCompleted int `json:"payoutsCompleted" db:"payouts_completed"`
 
 	// Admin override audit (migration 019). Either all three are null or all
 	// three are set together; enforced by a CHECK constraint.
@@ -436,7 +733,7 @@ type PlaceOrderRequest struct {
 	Side           OrderSide   `json:"side" validate:"required,oneof=yes no"`
 	Action         OrderAction `json:"action" validate:"required,oneof=buy sell"`
 	OrderType      OrderType   `json:"orderType" validate:"required,oneof=market limit"`
-	PriceCents     *int        `json:"priceCents,omitempty"`
+	PriceCents     *int        `json:"-"`
 	Quantity       int         `json:"quantity" validate:"required,gt=0"`
 	IdempotencyKey *string     `json:"idempotencyKey,omitempty"`
 
@@ -446,6 +743,29 @@ type PlaceOrderRequest struct {
 	ClientOrderID    *string         `json:"clientOrderId,omitempty"`
 	SelfMatchAction  SelfMatchAction `json:"selfMatchAction,omitempty"`
 	NotionalCapCents *int64          `json:"notionalCapCents,omitempty"`
+}
+
+func (r *PlaceOrderRequest) UnmarshalJSON(data []byte) error {
+	type alias PlaceOrderRequest
+	aux := struct {
+		alias
+		PricePointsCents       *int   `json:"pricePointsCents,omitempty"`
+		LegacyPriceCents       *int   `json:"priceCents,omitempty"`
+		NotionalCapPointsCents *int64 `json:"notionalCapPointsCents,omitempty"`
+	}{}
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	*r = PlaceOrderRequest(aux.alias)
+	if aux.PricePointsCents != nil {
+		r.PriceCents = aux.PricePointsCents
+	} else if aux.LegacyPriceCents != nil {
+		r.PriceCents = aux.LegacyPriceCents
+	}
+	if r.NotionalCapCents == nil && aux.NotionalCapPointsCents != nil {
+		r.NotionalCapCents = aux.NotionalCapPointsCents
+	}
+	return nil
 }
 
 // OrderPreview is the response from previewing an order cost.
@@ -471,6 +791,52 @@ type OrderPreview struct {
 	QuoteGeneratedAtUnixSec int64         `json:"quoteGeneratedAtUnixSec,omitempty"`
 }
 
+func (p OrderPreview) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Side                         OrderSide     `json:"side"`
+		Action                       OrderAction   `json:"action"`
+		Quantity                     int           `json:"quantity"`
+		PricePointsCents             int           `json:"pricePointsCents"`
+		TotalCostPointsCents         int64         `json:"totalCostPointsCents"`
+		FeePointsCents               int64         `json:"feePointsCents"`
+		MaxResultPointsCents         int64         `json:"maxResultPointsCents"`
+		MaxLossPointsCents           int64         `json:"maxLossPointsCents"`
+		NewYesPricePointsCents       int           `json:"newYesPricePointsCents"`
+		NewNoPricePointsCents        int           `json:"newNoPricePointsCents"`
+		ExecutionMode                ExecutionMode `json:"executionMode,omitempty"`
+		FilledQuantity               int           `json:"filledQuantity"`
+		UnfilledQuantity             int           `json:"unfilledQuantity"`
+		AverageFillPricePointsCents  int           `json:"averageFillPricePointsCents"`
+		TotalCostWithFeesPointsCents int64         `json:"totalCostWithFeesPointsCents"`
+		EstimatedSlippagePointsCents int           `json:"estimatedSlippagePointsCents"`
+		QuoteStatus                  OrderStatus   `json:"quoteStatus,omitempty"`
+		QuoteStaleAfterMillis        int64         `json:"quoteStaleAfterMillis,omitempty"`
+		QuoteGeneratedAtUnixSec      int64         `json:"quoteGeneratedAtUnixSec,omitempty"`
+		Unit                         string        `json:"unit"`
+	}{
+		Side:                         p.Side,
+		Action:                       p.Action,
+		Quantity:                     p.Quantity,
+		PricePointsCents:             p.PriceCents,
+		TotalCostPointsCents:         p.TotalCost,
+		FeePointsCents:               p.FeeCents,
+		MaxResultPointsCents:         p.MaxProfit,
+		MaxLossPointsCents:           p.MaxLoss,
+		NewYesPricePointsCents:       p.NewYesPrice,
+		NewNoPricePointsCents:        p.NewNoPrice,
+		ExecutionMode:                p.ExecutionMode,
+		FilledQuantity:               p.FilledQuantity,
+		UnfilledQuantity:             p.UnfilledQuantity,
+		AverageFillPricePointsCents:  p.AverageFillPriceCents,
+		TotalCostWithFeesPointsCents: p.TotalCostWithFeesCents,
+		EstimatedSlippagePointsCents: p.EstimatedSlippageCents,
+		QuoteStatus:                  p.QuoteStatus,
+		QuoteStaleAfterMillis:        p.QuoteStaleAfterMillis,
+		QuoteGeneratedAtUnixSec:      p.QuoteGeneratedAtUnixSec,
+		Unit:                         "PTS",
+	})
+}
+
 // PortfolioSummary provides a user's aggregate prediction stats.
 type PortfolioSummary struct {
 	TotalValueCents    int64   `json:"totalValueCents"`
@@ -480,6 +846,32 @@ type PortfolioSummary struct {
 	TotalPredictions   int     `json:"totalPredictions"`
 	CorrectPredictions int     `json:"correctPredictions"`
 	AccuracyPct        float64 `json:"accuracyPct"`
+}
+
+func (s PortfolioSummary) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		TotalValuePointsCents     int64   `json:"totalValuePointsCents"`
+		UnrealizedPointsCents     int64   `json:"unrealizedPointsCents"`
+		RealizedPointsCents       int64   `json:"realizedPointsCents"`
+		InvestedPointsCents       int64   `json:"investedPointsCents"`
+		PortfolioValuePointsCents int64   `json:"portfolioValuePointsCents"`
+		OpenPositions             int     `json:"openPositions"`
+		TotalPredictions          int     `json:"totalPredictions"`
+		CorrectPredictions        int     `json:"correctPredictions"`
+		AccuracyPct               float64 `json:"accuracyPct"`
+		Unit                      string  `json:"unit"`
+	}{
+		TotalValuePointsCents:     s.TotalValueCents,
+		UnrealizedPointsCents:     s.UnrealizedPnlCents,
+		RealizedPointsCents:       s.RealizedPnlCents,
+		InvestedPointsCents:       s.TotalValueCents,
+		PortfolioValuePointsCents: s.TotalValueCents,
+		OpenPositions:             s.OpenPositions,
+		TotalPredictions:          s.TotalPredictions,
+		CorrectPredictions:        s.CorrectPredictions,
+		AccuracyPct:               s.AccuracyPct,
+		Unit:                      "PTS",
+	})
 }
 
 // DiscoveryResponse groups markets for the discovery page.
@@ -519,7 +911,7 @@ type CreateMarketRequest struct {
 	SettlementCutoffAt  *time.Time      `json:"settlementCutoffAt,omitempty"`
 	FeeRateBps          int             `json:"feeRateBps"`
 	AMMLiquidityParam   float64         `json:"ammLiquidityParam"`
-	AMMSubsidyCents     int64           `json:"ammSubsidyCents"`
+	AMMSubsidyCents     int64           `json:"ammSubsidyPointsCents"`
 	ArticleSourceID     *string         `json:"articleSourceId,omitempty"`
 	AIGenerationLogIDs  []string        `json:"aiGenerationLogIds,omitempty"`
 	CreatedBy           *string         `json:"-"`
@@ -643,6 +1035,26 @@ type DashboardMover struct {
 	VolumeCents        int64  `json:"volumeCents"`
 }
 
+func (m DashboardMover) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		MarketID                 string `json:"marketId"`
+		Ticker                   string `json:"ticker"`
+		Title                    string `json:"title"`
+		YesPricePointsCentsStart int    `json:"yesPricePointsCentsStart"`
+		YesPricePointsCentsNow   int    `json:"yesPricePointsCentsNow"`
+		VolumePointsCents        int64  `json:"volumePointsCents"`
+		Unit                     string `json:"unit"`
+	}{
+		MarketID:                 m.MarketID,
+		Ticker:                   m.Ticker,
+		Title:                    m.Title,
+		YesPricePointsCentsStart: m.YesPriceCentsStart,
+		YesPricePointsCentsNow:   m.YesPriceCentsNow,
+		VolumePointsCents:        m.VolumeCents,
+		Unit:                     "PTS",
+	})
+}
+
 // DashboardVolumeStats aggregates trade activity over a time window for the
 // admin dashboard. Computed from prediction_trades; window is open-bounded
 // at Since (exclusive) and the present.
@@ -652,6 +1064,24 @@ type DashboardVolumeStats struct {
 	TotalVolumeCents int64            `json:"totalVolumeCents"`
 	TradeCount       int              `json:"tradeCount"`
 	TopMovers        []DashboardMover `json:"topMovers"`
+}
+
+func (s DashboardVolumeStats) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Since                  time.Time        `json:"since"`
+		WindowSeconds          int              `json:"windowSeconds"`
+		TotalVolumePointsCents int64            `json:"totalVolumePointsCents"`
+		TradeCount             int              `json:"tradeCount"`
+		TopMovers              []DashboardMover `json:"topMovers"`
+		Unit                   string           `json:"unit"`
+	}{
+		Since:                  s.Since,
+		WindowSeconds:          s.WindowSeconds,
+		TotalVolumePointsCents: s.TotalVolumeCents,
+		TradeCount:             s.TradeCount,
+		TopMovers:              s.TopMovers,
+		Unit:                   "PTS",
+	})
 }
 
 // PricePoint is a single bucket in a market's price-history series.
@@ -664,6 +1094,22 @@ type PricePoint struct {
 	YesPriceCents int       `json:"yesPriceCents"`
 	TradeCount    int       `json:"tradeCount"`
 	VolumeCents   int64     `json:"volumeCents"`
+}
+
+func (p PricePoint) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		BucketStart         time.Time `json:"bucketStart"`
+		YesPricePointsCents int       `json:"yesPricePointsCents"`
+		TradeCount          int       `json:"tradeCount"`
+		VolumePointsCents   int64     `json:"volumePointsCents"`
+		Unit                string    `json:"unit"`
+	}{
+		BucketStart:         p.BucketStart,
+		YesPricePointsCents: p.YesPriceCents,
+		TradeCount:          p.TradeCount,
+		VolumePointsCents:   p.VolumeCents,
+		Unit:                "PTS",
+	})
 }
 
 // PriceHistoryRange is the set of time windows the

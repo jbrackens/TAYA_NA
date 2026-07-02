@@ -1,3 +1,0 @@
-"TASK:POST":
-  shell: ./start.sh post
-  cwd: <CONFIG_DIR>

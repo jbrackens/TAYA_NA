@@ -14,7 +14,11 @@
 #   1. Build the slim images first (on the box, on corp VPN NOT required):
 #        cd talon-backoffice
 #        docker build -f docker/frontend.Dockerfile --build-arg module_name=app \
-#          --build-arg NEXT_PUBLIC_WS_URL=wss://demo.99rtp.io/ws   -t predict-frontend:app-slim .
+#          --build-arg NEXT_PUBLIC_WS_URL=wss://demo.99rtp.io/ws \
+#          --build-arg NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS=true \
+#          -t predict-frontend:app-slim .
+#        (NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS keeps the seeded demo charts on the
+#        legacy synthetic-walk fallback; never set it for a real-money deploy.)
 #        docker build -f docker/frontend.Dockerfile --build-arg module_name=office \
 #          --build-arg NEXT_PUBLIC_WS_URL=wss://office.99rtp.io/ws -t predict-frontend:office-slim .
 #   2. export JWT_SECRET=$(openssl rand -hex 32)
@@ -152,23 +156,59 @@ services:
       # ALPHA_CASHIER_WITHDRAWALS_ENABLED: "false"
       # ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED: "true"
       # ALPHA_CASHIER_WITHDRAWAL_BROADCAST_ACK: "false"
+      # Two-person control on the custodial payout: the broadcaster must differ
+      # from the approver (P1-13/A2-04). Required true in prod/staging when
+      # withdrawals are enabled, unless explicitly acked off.
+      # ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL: "true"
+      # ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL_ACK_DISABLED: "false"
+      # Sanctions/AML address screening on deposit (from) + withdrawal (to)
+      # addresses (P1-12/CMP-01). With enforcement on, a non-clear verdict
+      # blocks pending a real provider or review; a sanctions hit always blocks.
+      # ALPHA_CASHIER_SCREENING_ENFORCEMENT: "false"
+      # Deposit reorg watch: finality depth at which a credited deposit is
+      # considered final (P1-14/A2-03). 0 = default (64 blocks).
+      # ALPHA_CASHIER_FINALITY_CONFIRMATIONS: "0"
+      # Bot/partner API keys: self-serve key creation is OFF by default in
+      # prod/staging (partners get operator-issued keys); ON in dev/demo (P1-06).
+      # BOT_KEYS_SELF_SERVE: "false"
       # Automated KYC vendor (manual back-office review works without these).
       # KYC_IDV_PROVIDER: "sumsub"   # or onfido / persona
       # KYC_IDV_API_KEY: ""
       # Beta policy: open Asia/Africa/LATAM with trading KYC + geo gates off.
+      # NOTE deny-by-default boot policy: when ENVIRONMENT=production the
+      # gateway REFUSES to boot in permissive mode (ack or no ack), and when
+      # ENVIRONMENT is production/staging WITHOUT acked-permissive mode it
+      # requires GEO_GATE_ENABLED=true + non-empty GEO_ALLOWED_COUNTRIES and
+      # an explicit KYC posture (each KYC flag 'true' or its _ACK_DISABLED
+      # set). This demo box leaves ENVIRONMENT unset, so none of that bites
+      # here. See cmd/gateway/main.go validateGatewayRuntimeConfig.
       BETA_COMPLIANCE_MODE: "permissive"
       COMPLIANCE_STARTUP_ACK: "true"
       # KYC just-in-time gates (manual review + admin approval already enforce).
       # KYC_ENFORCEMENT: "true"            # gate withdrawals above threshold
       # KYC_REQUIRED_FOR_TRADING: "true"   # require verified identity to trade
-      # KYC_WITHDRAWAL_THRESHOLD_CENTS: "250000"
-      # Jurisdiction gate. Leave off for permissive beta. When enabled, it needs
-      # an edge that sets
-      # the country header (e.g. Cloudflare CF-IPCountry) or the gate fails
-      # closed for everyone. See internal/compliance/geo_gate.go.
+      # KYC_ENFORCEMENT_ACK_DISABLED: "true"          # prod/staging only: explicit off
+      # KYC_REQUIRED_FOR_TRADING_ACK_DISABLED: "true" # prod/staging only: explicit off
+      # Beta launch default: $0 threshold — EVERY withdrawal requires verified
+      # identity once KYC_ENFORCEMENT=true. Raise deliberately, not by accident.
+      KYC_WITHDRAWAL_THRESHOLD_CENTS: "0"
+      # Jurisdiction gate. Leave off for permissive beta. When enabled, it
+      # covers trading AND cashier deposits/withdrawals, and it needs an edge
+      # that sets the country header (e.g. Cloudflare CF-IPCountry) or the
+      # gate fails closed for everyone. Allowlist mode (GEO_ALLOWED_COUNTRIES
+      # non-empty) is mandatory in prod/staging. See
+      # internal/compliance/geo_gate.go and docs/compliance/geofencing-kyc.md.
       # GEO_GATE_ENABLED: "true"
       # GEO_ALLOWED_COUNTRIES: "PH,ID,TH,VN,MY,SG"
       # GEO_COUNTRY_HEADER: "CF-IPCountry"
+      # GEO_TRUSTED_PROXY_MODE: "require"  # loud Error+counter on missing edge signal
+      # Anti-spoof edge-auth (audit SEC-03): with require-mode on, the gateway
+      # rejects money-path requests lacking this shared secret, so a request
+      # that skips Caddy and hits the origin directly with a forged
+      # CF-IPCountry is denied. Set the SAME value on the Caddy container
+      # ({$EDGE_SHARED_SECRET} in Caddyfile). REQUIRED in prod/staging when
+      # GEO_TRUSTED_PROXY_MODE=require (boot fails otherwise).
+      EDGE_SHARED_SECRET: "${EDGE_SHARED_SECRET:?export EDGE_SHARED_SECRET before up}"
       # Email notifications (resolution/payout). Logs until SMTP_HOST is set.
       # SMTP_HOST: ""
       # SMTP_PORT: "587"
@@ -250,6 +290,10 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      # Shared with the gateway — Caddy stamps this as X-Edge-Auth so the
+      # gateway can verify requests arrived through the edge, not direct-to-origin.
+      EDGE_SHARED_SECRET: "${EDGE_SHARED_SECRET:?export EDGE_SHARED_SECRET before up}"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data                         # persists Let's Encrypt certs across restarts

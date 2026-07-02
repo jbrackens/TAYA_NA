@@ -38,7 +38,8 @@ import phoenix.support.FutureSupport
 
 class AkkaHttpOddinRestApiSpec extends AnyWordSpecLike with Matchers with FutureSupport with FileSupport {
 
-  implicit val system = ActorSystem(Behaviors.ignore, classOf[AkkaHttpOddinRestApiSpec].getSimpleName)
+  implicit val system: ActorSystem[Any] =
+    ActorSystem(Behaviors.ignore, classOf[AkkaHttpOddinRestApiSpec].getSimpleName)
   val apiConfig = OddinConfig.of(system).apiConfig
 
   s"${classOf[AkkaHttpOddinRestApi].getSimpleName}" when {

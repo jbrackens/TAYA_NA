@@ -154,7 +154,7 @@ object DomainMappers extends SlickEnumSupport {
 
   implicit val marketVisibilityMapper: BaseColumnType[MarketVisibility] = mappedColumnTypeForEnum(MarketVisibility)
 
-  implicit val paymentMethodTypeMapper = MappedColumnType.base[PaymentMethod, Json](
+  implicit val paymentMethodTypeMapper: BaseColumnType[PaymentMethod] = MappedColumnType.base[PaymentMethod, Json](
     {
       case CreditCardPaymentMethod       => Json.obj("type" -> Json.fromString("CREDIT_CARD_PAYMENT_METHOD"))
       case BankTransferPaymentMethod     => Json.obj("type" -> Json.fromString("BANK_TRANSFER_PAYMENT_METHOD"))

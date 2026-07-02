@@ -337,3 +337,50 @@ func TestRegisterPaymentRoutes_WebhookRejectsExpiredTimestamp(t *testing.T) {
 		t.Fatalf("expected webhook service not to run for expired timestamp, got %d calls", service.webhookCalls)
 	}
 }
+
+// The jurisdiction compliance gate (geo) must run on the legacy deposit and
+// withdraw routes before any payment service logic, mirroring the alpha
+// cashier coverage. Wired via the ComplianceGate package var.
+func TestRegisterPaymentRoutes_ComplianceGateDeniesMoneyMovement(t *testing.T) {
+	var surfaces []compliance.Surface
+	ComplianceGate = func(_ *http.Request, _ string, surface compliance.Surface) error {
+		surfaces = append(surfaces, surface)
+		return httpx.Forbidden("service not available in your jurisdiction")
+	}
+	t.Cleanup(func() { ComplianceGate = nil })
+
+	service := &stubPaymentService{}
+	mux := http.NewServeMux()
+	RegisterPaymentRoutes(mux, service)
+
+	cases := []struct {
+		name    string
+		path    string
+		body    string
+		surface compliance.Surface
+	}{
+		{"deposit", "/api/v1/payments/deposit", `{"amountCents":1000,"paymentMethod":"card"}`, compliance.SurfaceDeposit},
+		{"withdraw", "/api/v1/payments/withdraw", `{"userId":"u-gate","amountCents":1000,"paymentMethod":"card"}`, compliance.SurfaceWithdraw},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			surfaces = nil
+			req := httptest.NewRequest(http.MethodPost, tc.path, strings.NewReader(tc.body))
+			req.Header.Set("Content-Type", "application/json")
+			req = req.WithContext(httpx.WithTestUser(req.Context(), "u-gate", "u-gate", "player"))
+			rec := httptest.NewRecorder()
+
+			mux.ServeHTTP(rec, req)
+
+			if rec.Code != http.StatusForbidden {
+				t.Fatalf("expected 403 when the compliance gate denies, got %d body=%s", rec.Code, rec.Body.String())
+			}
+			if service.depositCalls != 0 || service.withdrawalCalls != 0 {
+				t.Fatalf("expected payment service not to run when the gate denies")
+			}
+			if len(surfaces) != 1 || surfaces[0] != tc.surface {
+				t.Fatalf("expected gate to see surface %q once, got %v", tc.surface, surfaces)
+			}
+		})
+	}
+}

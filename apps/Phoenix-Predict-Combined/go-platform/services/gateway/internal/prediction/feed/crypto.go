@@ -11,15 +11,15 @@ import (
 	"time"
 )
 
-// CryptoFeedAdapter resolves markets based on cryptocurrency price data.
-// Supports rules: "price_above", "price_below"
-// Params: {"asset": "bitcoin", "threshold": 100000}
+// CryptoFeedAdapter is a legacy, non-launch adapter for asset price markets.
+// It is not registered unless TIANGGE_LEGACY_ASSET_PRICE_FEEDS_ENABLED=true.
+// Supports rules: "price_above", "price_below".
 type CryptoFeedAdapter struct {
 	client  *http.Client
 	baseURL string // CoinGecko API base
 }
 
-// NewCryptoFeedAdapter creates a new crypto price feed adapter.
+// NewCryptoFeedAdapter creates a legacy asset price feed adapter.
 func NewCryptoFeedAdapter() *CryptoFeedAdapter {
 	return &CryptoFeedAdapter{
 		client:  &http.Client{Timeout: 10 * time.Second},
@@ -118,11 +118,11 @@ func (a *CryptoFeedAdapter) FetchResult(ctx context.Context, rule string, params
 
 	// Build attestation
 	sourceData, _ := json.Marshal(map[string]interface{}{
-		"asset":     p.Asset,
-		"price_usd": price,
-		"threshold": p.Threshold,
-		"rule":      rule,
-		"source":    "coingecko",
+		"asset":      p.Asset,
+		"price_usd":  price,
+		"threshold":  p.Threshold,
+		"rule":       rule,
+		"source":     "coingecko",
 		"fetched_at": time.Now().UTC().Format(time.RFC3339),
 	})
 

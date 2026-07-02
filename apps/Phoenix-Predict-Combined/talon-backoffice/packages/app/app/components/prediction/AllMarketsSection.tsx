@@ -2,10 +2,8 @@
 
 /**
  * AllMarketsSection — paginated grid of open prediction markets, owning
- * its own filter state. The section header is a single row of category
- * underline tabs (All / Politics / Crypto / ...) on the left, closing-
- * window pills (All / 1D / 1W / 1M) on the right. No title — the layout
- * is self-evident.
+ * its own filter state. The section header exposes category tabs, search,
+ * sort, and closing-window filters. No title — the layout is self-evident.
  *
  * Both filters scope only this section (NOT the hero, Top Movers, or
  * Featured). They compose: pick "Politics" + "1D" = political markets
@@ -16,9 +14,15 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { MarketGrid } from "./MarketGrid";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import {
+  addMarketToWatchlist,
+  getMarketWatchlist,
+  removeMarketFromWatchlist,
+} from "../../lib/api/market-watchlist-client";
 import { categoryName } from "./market-content";
 import {
   extractMarketSubcategories,
@@ -27,6 +31,7 @@ import {
 import type {
   Category,
   PredictionMarket,
+  Series,
 } from "@phoenix-ui/api-client/src/prediction-types";
 
 const api = createPredictionClient();
@@ -35,13 +40,13 @@ const PAGE_SIZE = 12;
 const SUBCATEGORY_CORPUS_SIZE = 120;
 
 type DateWindow = "all" | "24h" | "7d" | "30d";
+type MarketSort = "activity" | "closing_soon" | "newest";
 
 const CATEGORY_ORDER = [
   "entertainment",
   "politics",
   "sports",
   "tech",
-  "crypto",
   "economics",
   "general",
 ] as const;
@@ -67,6 +72,26 @@ const TIME_PILLS_CLASS =
 
 const TIME_PILL_BASE_CLASS =
   "min-w-11 cursor-pointer appearance-none rounded-md border-0 px-[14px] py-1.5 [font-family:inherit] text-xs font-semibold transition-colors duration-[120ms] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
+
+const DISCOVERY_CONTROLS_CLASS =
+  "flex w-full flex-wrap items-center justify-between gap-3 max-[768px]:items-stretch";
+const SEARCH_INPUT_CLASS =
+  "min-h-10 min-w-[260px] flex-1 rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 text-sm text-[var(--t1)] outline-none transition-colors duration-[120ms] placeholder:text-[var(--t3)] focus:border-[var(--accent)] max-[768px]:min-w-0";
+const SORT_SELECT_CLASS =
+  "min-h-10 rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 text-sm font-semibold text-[var(--t1)] outline-none transition-colors duration-[120ms] focus:border-[var(--accent)]";
+const WATCHLIST_FILTER_CLASS =
+  "min-h-10 rounded-md border px-3 text-sm font-semibold transition-colors duration-[120ms]";
+const TAXONOMY_PANEL_CLASS =
+  "grid w-full grid-cols-2 gap-3 max-[900px]:grid-cols-1";
+const TAXONOMY_GROUP_CLASS =
+  "rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3";
+const TAXONOMY_LABEL_CLASS =
+  "mb-2 font-['IBM_Plex_Mono',_monospace] text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
+const TAXONOMY_LIST_CLASS = "flex flex-wrap items-center gap-2";
+const TAXONOMY_LINK_CLASS =
+  "rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-2.5 py-1.5 text-[12px] font-semibold text-[var(--t2)] no-underline transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]";
+const TAG_BUTTON_BASE_CLASS =
+  "cursor-pointer appearance-none rounded-md border px-2.5 py-1.5 text-[12px] font-semibold transition-colors";
 
 const LOAD_MORE_CLASS = "mt-6 mb-0 flex justify-center";
 
@@ -115,6 +140,14 @@ function subcategoryButtonClass(active: boolean): string {
   }`;
 }
 
+function tagButtonClass(active: boolean): string {
+  return `${TAG_BUTTON_BASE_CLASS} ${
+    active
+      ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+      : "border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+  }`;
+}
+
 function dateWindowToCloseBefore(w: DateWindow): string | undefined {
   if (w === "all") return undefined;
   const ms = w === "24h" ? 24 : w === "7d" ? 24 * 7 : 24 * 30;
@@ -139,12 +172,14 @@ function orderCategories(categories: Category[]): Category[] {
   const rank = new Map<string, number>(
     CATEGORY_ORDER.map((slug, index) => [slug, index]),
   );
-  return [...categories].sort((a, b) => {
-    const aRank = rank.get(a.slug.toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
-    const bRank = rank.get(b.slug.toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
-    if (aRank !== bRank) return aRank - bRank;
-    return categories.indexOf(a) - categories.indexOf(b);
-  });
+  return categories
+    .filter((category) => category.slug.toLowerCase() !== "crypto")
+    .sort((a, b) => {
+      const aRank = rank.get(a.slug.toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
+      const bRank = rank.get(b.slug.toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
+      if (aRank !== bRank) return aRank - bRank;
+      return categories.indexOf(a) - categories.indexOf(b);
+    });
 }
 
 interface Props {
@@ -165,7 +200,16 @@ export function AllMarketsSection({ categories }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [categorySlug, setCategorySlug] = useState<string>("all");
   const [subcategory, setSubcategory] = useState<string | null>(null);
+  const [series, setSeries] = useState<Series[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [dateWindow, setDateWindow] = useState<DateWindow>("all");
+  const [query, setQuery] = useState("");
+  const [sortBy, setSortBy] = useState<MarketSort>("activity");
+  const [watchedMarketIds, setWatchedMarketIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
   const orderedCategories = useMemo(
     () => orderCategories(categories),
     [categories],
@@ -190,30 +234,77 @@ export function AllMarketsSection({ categories }: Props) {
         : [],
     [activeCategory, categorySlug, showSubnavCategory, subcategorySource],
   );
-  const visibleMarkets = useMemo(
-    () =>
-      subcategory
-        ? subcategorySource.filter((market) =>
-            marketMatchesSubcategory(
-              market,
-              subcategory,
-              activeCategory ?? categorySlug,
-            ),
-          )
-        : markets,
-    [activeCategory, categorySlug, markets, subcategory, subcategorySource],
-  );
+  const visibleSeries = series.slice(0, 8);
+  const visibleTags = tags.slice(0, 12);
+  const visibleMarkets = useMemo(() => {
+    const base = subcategory
+      ? subcategorySource.filter((market) =>
+          marketMatchesSubcategory(
+            market,
+            subcategory,
+            activeCategory ?? categorySlug,
+          ),
+        )
+      : markets;
+    return showWatchlistOnly
+      ? base.filter((market) => watchedMarketIds.has(market.id))
+      : base;
+  }, [
+    activeCategory,
+    categorySlug,
+    markets,
+    showWatchlistOnly,
+    subcategory,
+    subcategorySource,
+    watchedMarketIds,
+  ]);
   const hasSecondaryNav = showSubnavCategory && subcategories.length > 0;
 
   useEffect(() => {
+    let cancelled = false;
+    getMarketWatchlist()
+      .then((ids) => {
+        if (!cancelled) setWatchedMarketIds(new Set(ids));
+      })
+      .catch(() => {
+        if (!cancelled) setWatchedMarketIds(new Set());
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
     setSubcategory(null);
+    setSelectedTag(null);
   }, [categorySlug, dateWindow]);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      api.getSeries({ categoryId }).catch(() => [] as Series[]),
+      api.getTags({ categoryId }).catch(() => [] as string[]),
+    ]).then(([nextSeries, nextTags]) => {
+      if (cancelled) return;
+      setSeries(nextSeries);
+      setTags(nextTags);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryId]);
 
   useEffect(() => {
     if (subcategory && !subcategories.includes(subcategory)) {
       setSubcategory(null);
     }
   }, [subcategory, subcategories]);
+
+  useEffect(() => {
+    if (selectedTag && tags.length > 0 && !tags.includes(selectedTag)) {
+      setSelectedTag(null);
+    }
+  }, [selectedTag, tags]);
 
   // Initial load + refetch when either filter changes.
   // closeBefore is computed inside the effect (NOT outside) because it
@@ -225,10 +316,14 @@ export function AllMarketsSection({ categories }: Props) {
     setMarkets([]);
     setSubcategoryCorpus([]);
     setPage(1);
+    const search = query.trim();
     const baseParams = {
       status: "open",
       categoryId,
       closeBefore: dateWindowToCloseBefore(dateWindow),
+      q: search || undefined,
+      tag: selectedTag || undefined,
+      sort: sortBy,
     };
     const pageRequest = api.getMarkets({
       ...baseParams,
@@ -264,7 +359,15 @@ export function AllMarketsSection({ categories }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [categoryId, categorySlug, dateWindow, showSubnavCategory]);
+  }, [
+    categoryId,
+    categorySlug,
+    dateWindow,
+    query,
+    selectedTag,
+    showSubnavCategory,
+    sortBy,
+  ]);
 
   function loadMore() {
     if (loadingMore || !hasNext) return;
@@ -276,6 +379,9 @@ export function AllMarketsSection({ categories }: Props) {
         pageSize: PAGE_SIZE,
         categoryId,
         closeBefore: dateWindowToCloseBefore(dateWindow),
+        q: query.trim() || undefined,
+        tag: selectedTag || undefined,
+        sort: sortBy,
       })
       .then((res) => {
         const next = res.data || [];
@@ -293,8 +399,42 @@ export function AllMarketsSection({ categories }: Props) {
       });
   }
 
+  function toggleWatchlist(marketId: string) {
+    const currentlyWatched = watchedMarketIds.has(marketId);
+    setWatchedMarketIds((prev) => {
+      const next = new Set(prev);
+      if (currentlyWatched) {
+        next.delete(marketId);
+      } else {
+        next.add(marketId);
+      }
+      return next;
+    });
+    const request = currentlyWatched
+      ? removeMarketFromWatchlist(marketId)
+      : addMarketToWatchlist(marketId);
+    request.catch((err: unknown) => {
+      setWatchedMarketIds((prev) => {
+        const next = new Set(prev);
+        if (currentlyWatched) {
+          next.add(marketId);
+        } else {
+          next.delete(marketId);
+        }
+        return next;
+      });
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg);
+    });
+  }
+
   const filtered =
-    categorySlug !== "all" || dateWindow !== "all" || subcategory !== null;
+    categorySlug !== "all" ||
+    dateWindow !== "all" ||
+    subcategory !== null ||
+    selectedTag !== null ||
+    query.trim() !== "" ||
+    showWatchlistOnly;
   const emptyState = (
     <div className={EMPTY_CLASS}>
       <h3 className={EMPTY_TITLE_CLASS}>
@@ -345,27 +485,116 @@ export function AllMarketsSection({ categories }: Props) {
             );
           })}
         </nav>
-        <div
-          className={TIME_PILLS_CLASS}
-          role="tablist"
-          aria-label={t("FILTER_BY_CLOSING_WINDOW")}
-        >
-          {TIME_PILLS.map((pill) => {
-            const isActive = dateWindow === pill.value;
-            return (
-              <button
-                key={pill.value}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                className={timePillClass(isActive)}
-                onClick={() => setDateWindow(pill.value)}
-              >
-                {pill.labelKey ? t(pill.labelKey) : pill.label}
-              </button>
-            );
-          })}
+        <div className={DISCOVERY_CONTROLS_CLASS}>
+          <input
+            type="search"
+            className={SEARCH_INPUT_CLASS}
+            placeholder={t("SEARCH_MARKETS_PLACEHOLDER")}
+            aria-label={t("SEARCH_MARKETS")}
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+          <select
+            className={SORT_SELECT_CLASS}
+            aria-label={t("SORT_MARKETS", "Sort markets")}
+            value={sortBy}
+            onChange={(event) => setSortBy(event.target.value as MarketSort)}
+          >
+            <option value="activity">
+              {t("SORT_ACTIVITY", "Trending / activity")}
+            </option>
+            <option value="closing_soon">
+              {t("SORT_CLOSING_SOON", "Closing soon")}
+            </option>
+            <option value="newest">{t("SORT_NEWEST", "Newest")}</option>
+          </select>
+          <button
+            type="button"
+            className={`${WATCHLIST_FILTER_CLASS} ${
+              showWatchlistOnly
+                ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+                : "border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+            }`}
+            aria-pressed={showWatchlistOnly}
+            onClick={() => setShowWatchlistOnly((value) => !value)}
+          >
+            {t("WATCHLIST", "Watchlist")}
+          </button>
+          <div
+            className={TIME_PILLS_CLASS}
+            role="tablist"
+            aria-label={t("FILTER_BY_CLOSING_WINDOW")}
+          >
+            {TIME_PILLS.map((pill) => {
+              const isActive = dateWindow === pill.value;
+              return (
+                <button
+                  key={pill.value}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  className={timePillClass(isActive)}
+                  onClick={() => setDateWindow(pill.value)}
+                >
+                  {pill.labelKey ? t(pill.labelKey) : pill.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
+        {(visibleSeries.length > 0 || visibleTags.length > 0) && (
+          <div className={TAXONOMY_PANEL_CLASS}>
+            {visibleSeries.length > 0 && (
+              <section className={TAXONOMY_GROUP_CLASS}>
+                <div className={TAXONOMY_LABEL_CLASS}>
+                  {t("SERIES", "Series")}
+                </div>
+                <div className={TAXONOMY_LIST_CLASS}>
+                  {visibleSeries.map((item) => (
+                    <Link
+                      key={item.id}
+                      className={TAXONOMY_LINK_CLASS}
+                      href={`/series/${item.slug}`}
+                    >
+                      {item.title}
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+            {visibleTags.length > 0 && (
+              <section className={TAXONOMY_GROUP_CLASS}>
+                <div className={TAXONOMY_LABEL_CLASS}>{t("TAGS", "Tags")}</div>
+                <div className={TAXONOMY_LIST_CLASS}>
+                  {selectedTag && (
+                    <button
+                      type="button"
+                      className={tagButtonClass(false)}
+                      onClick={() => setSelectedTag(null)}
+                    >
+                      {t("ALL")}
+                    </button>
+                  )}
+                  {visibleTags.map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      aria-pressed={selectedTag === tag}
+                      className={tagButtonClass(selectedTag === tag)}
+                      onClick={() =>
+                        setSelectedTag((current) =>
+                          current === tag ? null : tag,
+                        )
+                      }
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+        )}
       </header>
 
       {loading && markets.length === 0 ? (
@@ -386,7 +615,12 @@ export function AllMarketsSection({ categories }: Props) {
             <div className={FEED_WITH_SUBNAV_CLASS}>
               <div className={FEED_MARKETS_CLASS}>
                 {visibleMarkets.length > 0 ? (
-                  <MarketGrid markets={visibleMarkets} columns={3} />
+                  <MarketGrid
+                    markets={visibleMarkets}
+                    columns={3}
+                    watchedMarketIds={watchedMarketIds}
+                    onToggleWatchlist={toggleWatchlist}
+                  />
                 ) : (
                   emptyState
                 )}
@@ -419,7 +653,12 @@ export function AllMarketsSection({ categories }: Props) {
               </aside>
             </div>
           ) : visibleMarkets.length > 0 ? (
-            <MarketGrid markets={visibleMarkets} columns={4} />
+            <MarketGrid
+              markets={visibleMarkets}
+              columns={4}
+              watchedMarketIds={watchedMarketIds}
+              onToggleWatchlist={toggleWatchlist}
+            />
           ) : (
             emptyState
           )}

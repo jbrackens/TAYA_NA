@@ -19,6 +19,13 @@ type Hub struct {
 	disconnect  chan *Client
 	broadcast   chan *broadcastCmd
 
+	// Cross-instance backbone (P2-07). Default LocalBackbone is a no-op
+	// (single instance). `outbound` queues locally-originated broadcasts for
+	// async publish so a request-path caller never blocks on a (possibly
+	// Redis) Publish — local fan-out has already happened via `broadcast`.
+	backbone Backbone
+	outbound chan *broadcastCmd
+
 	ctx    context.Context
 	cancel context.CancelFunc
 	done   chan struct{}
@@ -48,15 +55,55 @@ func NewHub() *Hub {
 		unsubscribe: make(chan *unsubscribeCmd, 100),
 		disconnect:  make(chan *Client, 100),
 		broadcast:   make(chan *broadcastCmd, 100),
+		backbone:    NewLocalBackbone(),
+		outbound:    make(chan *broadcastCmd, 256),
 		ctx:         ctx,
 		cancel:      cancel,
 		done:        make(chan struct{}),
 	}
 }
 
+// SetBackbone swaps the cross-instance event backbone (P2-07). Call before Run.
+// Default is LocalBackbone (single-instance, no-op); pass a RedisBackbone to fan
+// broadcasts across instances. A nil argument is ignored.
+func (h *Hub) SetBackbone(b Backbone) {
+	if b != nil {
+		h.backbone = b
+	}
+}
+
 // Run starts the hub's event loop. Must be called in a separate goroutine.
 func (h *Hub) Run(ctx context.Context) {
 	defer close(h.done)
+
+	// Subscribe to broadcasts that originated on OTHER instances and fan them
+	// out to local subscribers (P2-07). LocalBackbone never delivers; a nil
+	// channel (subscribe failure) simply means cross-instance is disabled —
+	// local delivery via h.broadcast is unaffected.
+	backboneCh, err := h.backbone.Subscribe(ctx)
+	if err != nil {
+		slog.Error("ws hub: backbone subscribe failed; cross-instance delivery disabled (local-only)", "error", err)
+		backboneCh = nil
+	}
+
+	// Drain locally-originated broadcasts to the backbone for other instances.
+	// Async so a (possibly Redis) Publish never blocks the request-path caller;
+	// the local fan-out already happened via h.broadcast.
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-h.ctx.Done():
+				return
+			case cmd := <-h.outbound:
+				if perr := h.backbone.Publish(ctx, BackboneMessage{Channel: cmd.channel, Payload: cmd.message}); perr != nil {
+					slog.Warn("ws hub: backbone publish failed (cross-instance degraded; local delivery unaffected)",
+						"channel", cmd.channel, "error", perr)
+				}
+			}
+		}
+	}()
 
 	for {
 		select {
@@ -78,6 +125,10 @@ func (h *Hub) Run(ctx context.Context) {
 
 		case cmd := <-h.broadcast:
 			h.handleBroadcast(cmd)
+
+		case bmsg := <-backboneCh:
+			// A broadcast from another instance — fan out to local subscribers.
+			h.handleBroadcast(&broadcastCmd{channel: bmsg.Channel, message: bmsg.Payload})
 		}
 	}
 }
@@ -163,11 +214,29 @@ func (h *Hub) Disconnect(client *Client) {
 	}
 }
 
-// Broadcast sends a message to all clients subscribed to a channel
+// Broadcast sends a message to all clients subscribed to a channel. It never
+// blocks the caller: the HTTP order/settlement handlers publish through here
+// on the request path, so a full hub queue must not stall them (audit
+// PERF-03). On a full queue the broadcast is dropped and counted — subscribers
+// resync on the next event or reconnect.
 func (h *Hub) Broadcast(channel string, message []byte) {
+	cmd := &broadcastCmd{channel: channel, message: message}
+	// Local fan-out (unchanged): the sole delivery path for this instance's
+	// own clients, independent of the backbone — so a Redis outage degrades to
+	// local-only, it does not stop local delivery.
 	select {
-	case h.broadcast <- &broadcastCmd{channel: channel, message: message}:
+	case h.broadcast <- cmd:
 	case <-h.ctx.Done():
+	default:
+		broadcastsDroppedTotal.Add(1)
+	}
+	// Cross-instance fan-out via the backbone (async drain, non-blocking). On a
+	// full queue other instances may miss this event and resync on the next one
+	// — same backpressure policy as the local drop above.
+	select {
+	case h.outbound <- cmd:
+	case <-h.ctx.Done():
+	default:
 	}
 }
 
@@ -225,10 +294,15 @@ func (h *Hub) GetChannelSubscribers(channel string) []*Client {
 	return result
 }
 
+// BackboneHealthy reports whether cross-instance delivery is working (for the
+// /readyz detail). Always true for the in-process default.
+func (h *Hub) BackboneHealthy() bool { return h.backbone.Healthy() }
+
 // Close gracefully shuts down the hub
 func (h *Hub) Close() error {
 	h.cancel()
 	<-h.done
+	_ = h.backbone.Close()
 	return nil
 }
 

@@ -2,9 +2,9 @@ name: Tests
 
 on:
   push:
-    branches: [main, feat/binary-exchange-engine]
+    branches: [main]
   pull_request:
-    branches: [main, feat/binary-exchange-engine]
+    branches: [main]
 
 jobs:
   cashier-guards:
@@ -12,6 +12,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check for external symlinks
+        run: scripts/check-no-external-symlinks.sh
 
       - uses: actions/setup-node@v4
         with:

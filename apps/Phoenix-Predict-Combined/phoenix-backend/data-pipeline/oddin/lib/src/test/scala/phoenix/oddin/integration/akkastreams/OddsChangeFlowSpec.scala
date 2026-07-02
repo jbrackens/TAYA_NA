@@ -4,6 +4,7 @@ import akka.actor.typed.scaladsl.adapter._
 import akka.stream.scaladsl.Source
 import akka.stream.testkit.TestSubscriber.Probe
 import akka.stream.testkit.scaladsl.TestSink
+import scala.concurrent.ExecutionContextExecutor
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
@@ -36,8 +37,8 @@ import phoenix.time.FakeHardcodedClock
 
 class OddsChangeFlowSpec extends ScalaTestWithActorTestKit with AnyWordSpecLike with Matchers with FileSupport {
 
-  private implicit val typedSystem = system
-  private implicit val ec = system.executionContext
+  private implicit val typedSystem: akka.actor.typed.ActorSystem[Nothing] = system
+  private implicit val ec: ExecutionContextExecutor = system.executionContext
 
   private val clock = new FakeHardcodedClock()
 

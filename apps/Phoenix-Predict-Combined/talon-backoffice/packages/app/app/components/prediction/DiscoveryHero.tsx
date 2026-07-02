@@ -16,10 +16,10 @@ import { useHeroPriceHistory } from "./utils/useHeroPriceHistory";
 import { categoryLabel, localizedMarket } from "./market-content";
 
 function formatHeroVolume(cents: number): string {
-  const dollars = cents / 100;
-  if (dollars >= 1_000_000) return `$${(dollars / 1_000_000).toFixed(1)}M`;
-  if (dollars >= 1_000) return `$${(dollars / 1_000).toFixed(1)}K`;
-  return `$${dollars.toFixed(0)}`;
+  const points = cents / 100;
+  if (points >= 1_000_000) return `${(points / 1_000_000).toFixed(1)}M pts`;
+  if (points >= 1_000) return `${(points / 1_000).toFixed(1)}K pts`;
+  return `${points.toFixed(0)} pts`;
 }
 
 function formatHeroCloseLeft(iso: string): string {
@@ -61,8 +61,8 @@ export function DiscoveryHero({
   const displayCategory = categoryName
     ? categoryLabel(contentT, categoryName)
     : "";
-  const yes = displayMarket.yesPriceCents;
-  const no = displayMarket.noPriceCents;
+  const yes = displayMarket.yesPricePointsCents;
+  const no = displayMarket.noPricePointsCents;
   const { delta, pct } = deterministicDelta(displayMarket.ticker, yes);
   const isUp = delta >= 0;
   // Real backend-fetched series when available; falls back to the
@@ -76,10 +76,10 @@ export function DiscoveryHero({
     140,
     heroPoints ?? undefined,
   );
-  const volumeLabel = formatHeroVolume(displayMarket.volumeCents);
+  const volumeLabel = formatHeroVolume(displayMarket.volumePointsCents);
   const oiLabel =
-    displayMarket.openInterestCents != null
-      ? formatHeroVolume(displayMarket.openInterestCents)
+    displayMarket.openInterestPointsCents != null
+      ? formatHeroVolume(displayMarket.openInterestPointsCents)
       : "—";
   const closesLabel = formatHeroCloseLeft(displayMarket.closeAt);
   const changeClass = isUp ? "text-[var(--yes-text)]" : "text-[var(--no-text)]";

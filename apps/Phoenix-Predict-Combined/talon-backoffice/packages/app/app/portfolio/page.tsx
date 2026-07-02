@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * PortfolioPage — positions, orders, settled history.
+ * PortfolioPage — positions, orders, settled results.
  *
  * Layout (matches DESIGN.md tokens):
  *   [summary strip — 4 stat cards]
@@ -26,11 +26,10 @@ import type {
   PortfolioSummary,
   PredictionOrder,
   PredictionMarket,
-  SettledPayout,
+  SettledPositionResult,
   OrderStatus,
 } from "@phoenix-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
-import { getLoyaltyLedger } from "../lib/api/loyalty-client";
 import {
   getUserStanding,
   type LeaderboardEntry,
@@ -65,7 +64,7 @@ export default function PortfolioPage() {
   const { t } = useTranslation("portfolio");
   const [positions, setPositions] = useState<Position[]>([]);
   const [orders, setOrders] = useState<PredictionOrder[]>([]);
-  const [history, setHistory] = useState<SettledPayout[]>([]);
+  const [history, setHistory] = useState<SettledPositionResult[]>([]);
   const [marketsById, setMarketsById] = useState<Map<string, PredictionMarket>>(
     () => new Map(),
   );
@@ -73,14 +72,9 @@ export default function PortfolioPage() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<TabKey>("positions");
   const [authError, setAuthError] = useState(false);
-  // Loyalty surfaces: bestRank drives the rank chip; pointsByMarketId maps
-  // settled-trade rows to their ledger accrual for the +X pts suffix.
-  // Plan §1 + §8 — the two APIs are fetched in parallel with the portfolio
-  // calls and joined client-side by marketId.
+  // Loyalty surfaces: bestRank drives the rank chip. Settlement-history point
+  // totals come from the portfolio history settlement row itself.
   const [bestRank, setBestRank] = useState<LeaderboardEntry | null>(null);
-  const [pointsByMarketId, setPointsByMarketId] = useState<Map<string, number>>(
-    () => new Map(),
-  );
 
   useEffect(() => {
     let cancelled = false;
@@ -92,12 +86,11 @@ export default function PortfolioPage() {
         api.getSettledPositions(1, 20),
         // Loyalty surfaces are ambient: failures never block the portfolio.
         getUserStanding().catch(() => [] as LeaderboardEntry[]),
-        getLoyaltyLedger(50).catch(() => []),
       ]);
       if (cancelled) return;
 
       let sawAuthError = false;
-      const [posRes, sumRes, ordRes, histRes, standingRes, ledgerRes] = results;
+      const [posRes, sumRes, ordRes, histRes, standingRes] = results;
 
       if (posRes.status === "fulfilled") setPositions(posRes.value);
       else if (is401(posRes.reason)) sawAuthError = true;
@@ -119,18 +112,6 @@ export default function PortfolioPage() {
       // already sorted rank-ascending by the server.
       if (standingRes.status === "fulfilled" && standingRes.value.length > 0) {
         setBestRank(standingRes.value[0]);
-      }
-
-      // Points suffix: ledger entries are keyed by marketId (settlement is
-      // per-position, one position per market per user). Join on marketId.
-      if (ledgerRes.status === "fulfilled") {
-        const map = new Map<string, number>();
-        for (const entry of ledgerRes.value) {
-          if (entry.eventType === "accrual" && entry.marketId) {
-            map.set(entry.marketId, entry.deltaPoints);
-          }
-        }
-        setPointsByMarketId(map);
       }
 
       if (sawAuthError) setAuthError(true);
@@ -207,7 +188,7 @@ export default function PortfolioPage() {
           {t("title", "Portfolio")}
         </h1>
         <p className="m-0 text-[13px] text-[var(--t3)]">
-          {t("subtitle", "Open positions, active orders, settled payouts.")}
+          {t("subtitle", "Open positions, active orders, settled results.")}
         </p>
       </header>
 
@@ -234,11 +215,7 @@ export default function PortfolioPage() {
         />
       )}
       {tab === "history" && (
-        <HistoryTable
-          history={history}
-          marketsById={marketsById}
-          pointsByMarketId={pointsByMarketId}
-        />
+        <HistoryTable history={history} marketsById={marketsById} />
       )}
     </div>
   );
@@ -265,17 +242,21 @@ function SummaryStrip({
 }) {
   const { t } = useTranslation("portfolio");
   const s = summary;
-  const pnl = s?.realizedPnlCents ?? 0;
+  const pnl = s?.realizedPointsCents ?? 0;
   const pnlUp = pnl >= 0;
   return (
     <section className="mb-6 grid grid-cols-5 gap-[14px] max-lg:grid-cols-3 max-[720px]:grid-cols-2">
       <StatCard
         label={t("summary.invested", "Invested")}
-        value={s ? formatUSD(s.totalValueCents) : "—"}
+        value={s ? formatPointsFromCents(s.totalValuePointsCents) : "—"}
       />
       <StatCard
-        label={t("summary.realizedPnl", "Realized P&L")}
-        value={s ? `${pnlUp ? "+" : "−"}${formatUSD(Math.abs(pnl))}` : "—"}
+        label={t("summary.realizedPnl", "Realized point result")}
+        value={
+          s
+            ? `${pnlUp ? "+" : "−"}${formatPointsFromCents(Math.abs(pnl))}`
+            : "—"
+        }
         tone={s ? (pnlUp ? "gain" : "no") : undefined}
       />
       <StatCard
@@ -352,7 +333,7 @@ function formatBoardLabel(
     case "accuracy":
       return t("boards.accuracy", "Accuracy");
     case "pnl_weekly":
-      return t("boards.pnlWeekly", "Weekly P&L");
+      return t("boards.pnlWeekly", "Weekly point result");
     case "sharpness":
       return t("boards.sharpness", "Sharpness");
     default:
@@ -370,14 +351,14 @@ function formatBoardMetric(
         value: entry.metricValue.toFixed(1),
       });
     case "sharpness":
-      return t("rank.metricSharpness", "{{value}}% ROI", {
+      return t("rank.metricSharpness", "{{value}}% point efficiency", {
         value: (entry.metricValue * 100).toFixed(2),
       });
     case "pnl_weekly":
     default: {
       const sign = entry.metricValue < 0 ? "−" : "+";
-      return t("rank.metricPnl", "{{value}} P&L", {
-        value: `${sign}${formatUSD(Math.abs(entry.metricValue))}`,
+      return t("rank.metricPnl", "{{value}} point result", {
+        value: `${sign}${formatPointsFromCents(Math.abs(entry.metricValue))}`,
       });
     }
   }
@@ -541,10 +522,10 @@ function PositionsTable({
               {available}
             </span>,
             <span key="p" className={MONO}>
-              {p.avgPriceCents}¢
+              {formatPointsFromCents(p.avgPricePointsCents)}
             </span>,
             <span key="c" className={MONO}>
-              {formatUSD(p.totalCostCents)}
+              {formatPointsFromCents(p.totalCostPointsCents)}
             </span>,
           ],
         };
@@ -579,7 +560,7 @@ function OrdersTable({
       onCancelled(orderID);
       toast.success(
         t("orders.cancelled", "Order cancelled"),
-        t("orders.released", "Reserved cash released on {{ticker}}", {
+        t("orders.released", "Reserved points unlocked on {{ticker}}", {
           ticker: marketTicker,
         }),
       );
@@ -621,7 +602,7 @@ function OrdersTable({
               {o.quantity}
             </span>,
             <span key="c" className={MONO}>
-              {formatUSD(o.totalCostCents)}
+              {formatPointsFromCents(o.totalCostPointsCents)}
             </span>,
             <StatusChip
               key="st"
@@ -661,11 +642,9 @@ function OrdersTable({
 function HistoryTable({
   history,
   marketsById,
-  pointsByMarketId,
 }: {
-  history: SettledPayout[];
+  history: SettledPositionResult[];
   marketsById: Map<string, PredictionMarket>;
-  pointsByMarketId: Map<string, number>;
 }) {
   const { t } = useTranslation("portfolio");
   if (history.length === 0) {
@@ -687,19 +666,18 @@ function HistoryTable({
         { label: t("table.qty", "Qty"), align: "right" },
         { label: t("table.entry", "Entry"), align: "right" },
         { label: t("table.exit", "Exit"), align: "right" },
-        { label: t("table.pnl", "P&L"), align: "right" },
+        { label: t("table.pnl", "Point result"), align: "right" },
         { label: t("table.points", "Points"), align: "right" },
         { label: t("table.settled", "Settled"), align: "right" },
       ]}
       rows={history.map((h) => {
         const m = marketsById.get(h.marketId);
-        const up = h.pnlCents >= 0;
-        // Plan §1: trailing "+X pts" column. Hidden when earned == 0; never
-        // shown as "+0 pts". Ledger stores cents-equivalent so we divide by
-        // 100 for display, matching the /rewards page convention.
-        const rawPoints = pointsByMarketId.get(h.marketId);
+        const up = h.realizedPointsCents >= 0;
+        // Settlement points are the actual point disbursement for this settled
+        // position. Show the exact settlement credit, not loyalty/XP accrual.
+        const rawPoints = h.settlementPointsCents;
         const pointsDisplay =
-          rawPoints && rawPoints > 0 ? Math.round(rawPoints / 100) : null;
+          rawPoints && rawPoints > 0 ? formatPointsFromCents(rawPoints) : null;
         return {
           key: h.id,
           href: m ? `/market/${m.ticker}` : undefined,
@@ -710,10 +688,10 @@ function HistoryTable({
               {h.quantity}
             </span>,
             <span key="e" className={MONO}>
-              {h.entryPriceCents}¢
+              {formatPointsFromCents(h.entryPricePointsCents)}
             </span>,
             <span key="x" className={MONO}>
-              {h.exitPriceCents}¢
+              {formatPointsFromCents(h.exitPricePointsCents)}
             </span>,
             <span
               key="p"
@@ -726,21 +704,21 @@ function HistoryTable({
               )}
             >
               {up ? "+" : "−"}
-              {formatUSD(Math.abs(h.pnlCents))}
+              {formatPointsFromCents(Math.abs(h.realizedPointsCents))}
             </span>,
             <span
               key="pts"
               className={cx(MONO, "whitespace-nowrap text-xs text-[var(--t3)]")}
               aria-label={
                 pointsDisplay !== null
-                  ? t("history.earnedPoints", "Earned {{points}} points", {
+                  ? t("history.earnedPoints", "Settlement {{points}}", {
                       points: pointsDisplay,
                     })
                   : undefined
               }
             >
               {pointsDisplay !== null
-                ? t("history.pointsShort", "+{{points}} pts", {
+                ? t("history.pointsShort", "+{{points}}", {
                     points: pointsDisplay,
                   })
                 : ""}
@@ -972,11 +950,12 @@ function is401(err: unknown): boolean {
   );
 }
 
-function formatUSD(cents: number): string {
+function formatPointsFromCents(cents: number): string {
   if (Math.abs(cents) >= 1_000_000_00)
-    return `$${(cents / 1_000_000_00).toFixed(1)}M`;
-  if (Math.abs(cents) >= 10_000_00) return `$${(cents / 1_000_00).toFixed(1)}K`;
-  return `$${(cents / 100).toFixed(2)}`;
+    return `${(cents / 1_000_000_00).toFixed(1)}M pts`;
+  if (Math.abs(cents) >= 10_000_00)
+    return `${(cents / 1_000_00).toFixed(1)}K pts`;
+  return `${(cents / 100).toFixed(2)} pts`;
 }
 
 function formatDate(iso: string): string {

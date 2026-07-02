@@ -1,6 +1,7 @@
 import React from "react";
 import "./globals.css";
 import AppShell from "./components/AppShell";
+import { brand } from "./lib/brand";
 
 export default function RootLayout({
   children,
@@ -10,10 +11,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <title>Tiangge</title>
+        <title>{brand.name}</title>
         <meta
           name="description"
-          content="Trade Yes or No on politics, basketball, pageants, crypto, gaming, and the moments Filipinos are watching."
+          content="Trade Yes or No on politics, basketball, pageants, esports, gaming, and the moments Filipinos are watching."
         />
         {/* Predict design system: Inter (Robinhood-direction primary, added
          * 2026-04-26 per DESIGN.md §2). Outfit kept loaded for components

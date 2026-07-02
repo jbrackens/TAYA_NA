@@ -23,20 +23,23 @@ type adminAccountReader interface {
 }
 
 // AdminAccountSummary is the per-account view the office /loyalty list +
-// /loyalty/[id] detail render. Tier names + points-to-next are derived here
+// /loyalty/[id] detail render. Rank names + next-rank XP are derived here
 // from PointsBalance via the tiers.go helpers (the stored `tier` column can
 // lag a balance change; deriving keeps the display authoritative).
 type AdminAccountSummary struct {
 	AccountID                string     `json:"accountId"`
 	PlayerID                 string     `json:"playerId"`
-	CurrentTier              string     `json:"currentTier"`
-	NextTier                 string     `json:"nextTier"`
+	Rank                     int        `json:"rank"`
+	RankName                 string     `json:"rankName"`
+	NextRank                 int        `json:"nextRank,omitempty"`
+	NextRankName             string     `json:"nextRankName,omitempty"`
 	PointsBalance            int64      `json:"pointsBalance"`
 	PointsEarnedLifetime     int64      `json:"pointsEarnedLifetime"`
 	PointsEarned7D           int64      `json:"pointsEarned7D"`
 	PointsEarned30D          int64      `json:"pointsEarned30D"`
 	PointsEarnedCurrentMonth int64      `json:"pointsEarnedCurrentMonth"`
-	PointsToNextTier         int64      `json:"pointsToNextTier"`
+	XPToNextRank             int64      `json:"xpToNextRank"`
+	Unit                     string     `json:"unit"`
 	LastAccrualAt            *time.Time `json:"lastAccrualAt,omitempty"`
 	CreatedAt                time.Time  `json:"createdAt"`
 	UpdatedAt                time.Time  `json:"updatedAt"`
@@ -45,25 +48,32 @@ type AdminAccountSummary struct {
 // AdminTierView is the office's LoyaltyTier shape (tierCode/displayName/
 // minLifetimePoints). The Hidden tier (empty name) is omitted.
 type AdminTierView struct {
-	TierCode         string `json:"tierCode"`
-	DisplayName      string `json:"displayName"`
-	MinLifetimePoints int64 `json:"minLifetimePoints"`
+	TierCode          string `json:"tierCode"`
+	DisplayName       string `json:"displayName"`
+	MinLifetimePoints int64  `json:"minLifetimePoints"`
 }
 
 func summaryFromRow(row PredictAdminAccountRow) AdminAccountSummary {
 	tier := PredictTierForPoints(row.PointsBalance)
 	pointsToNext, nextName := PredictPointsToNextTier(row.PointsBalance)
+	nextRank := PredictTier(0)
+	if tier < PredictTierLegend {
+		nextRank = tier + 1
+	}
 	return AdminAccountSummary{
 		AccountID:                row.UserID,
 		PlayerID:                 row.UserID,
-		CurrentTier:              PredictTierName(tier),
-		NextTier:                 nextName,
+		Rank:                     int(tier),
+		RankName:                 PredictTierName(tier),
+		NextRank:                 int(nextRank),
+		NextRankName:             nextName,
 		PointsBalance:            row.PointsBalance,
 		PointsEarnedLifetime:     row.EarnedLifetime,
 		PointsEarned7D:           row.Earned7D,
 		PointsEarned30D:          row.Earned30D,
 		PointsEarnedCurrentMonth: row.EarnedMonth,
-		PointsToNextTier:         pointsToNext,
+		XPToNextRank:             pointsToNext,
+		Unit:                     "PTS",
 		LastAccrualAt:            row.LastAccrualAt,
 		CreatedAt:                row.CreatedAt,
 		UpdatedAt:                row.UpdatedAt,
@@ -118,11 +128,12 @@ func normalizeTierCode(s string) string {
 }
 
 // ListAdminAccounts returns a filtered, paginated account list plus the total
-// count. search matches the user id; tierCode (a tier display name) narrows to
-// that tier's points band.
+// count. search matches the user id; rankName narrows to that rank's points
+// band. Older callers may still pass the same value through the tierCode query
+// fallback at the HTTP boundary.
 func (s *PredictService) ListAdminAccounts(
 	ctx context.Context,
-	search, tierCode string,
+	search, rankName string,
 	page, pageSize int,
 ) ([]AdminAccountSummary, int, error) {
 	reader, ok := s.repo.(adminAccountReader)
@@ -140,7 +151,7 @@ func (s *PredictService) ListAdminAccounts(
 	}
 
 	filter := PredictAdminAccountFilter{Search: search}
-	if min, max, ok := tierBand(tierCode); ok {
+	if min, max, ok := tierBand(rankName); ok {
 		filter.MinPoints = min
 		filter.MaxPoints = max
 	}

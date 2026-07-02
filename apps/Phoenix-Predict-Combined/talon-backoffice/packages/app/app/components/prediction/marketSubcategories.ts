@@ -55,18 +55,14 @@ const TAXONOMY: Record<string, TaxonomyEntry[]> = {
       ],
     },
   ],
-  crypto: [
-    { label: "Bitcoin", aliases: ["bitcoin", "btc"] },
-    { label: "Ethereum", aliases: ["ethereum", "eth"] },
-    { label: "Solana", aliases: ["solana", "sol"] },
+  esports: [
+    { label: "MLBB", aliases: ["mlbb", "mobile legends"] },
+    { label: "Valorant", aliases: ["valorant", "vct"] },
     {
-      label: "Layer 2s",
-      aliases: ["layer 2", "layer 2s", "l2", "arbitrum", "optimism", "base"],
+      label: "League of Legends",
+      aliases: ["league of legends", "lol", "worlds"],
     },
-    {
-      label: "Memecoins",
-      aliases: ["memecoin", "memecoins", "doge", "pepe", "shib"],
-    },
+    { label: "Dota 2", aliases: ["dota", "dota 2", "the international"] },
   ],
   sports: [
     { label: "NFL", aliases: ["nfl", "american football"] },
@@ -173,10 +169,6 @@ const TAXONOMY: Record<string, TaxonomyEntry[]> = {
       label: "Stock Market",
       aliases: ["stock market", "stocks", "s&p", "nasdaq", "dow"],
     },
-    {
-      label: "Crypto Markets",
-      aliases: ["crypto markets", "crypto market", "bitcoin etf"],
-    },
     { label: "GDP/Growth", aliases: ["gdp", "real gdp", "economic growth"] },
     {
       label: "Labor Market",
@@ -190,7 +182,7 @@ const CATEGORY_ALIASES: Record<string, string> = {
   economics: "economics",
   entertainment: "entertainment",
   politics: "politics",
-  crypto: "crypto",
+  esports: "esports",
   sports: "sports",
   tech: "technology",
   technology: "technology",
@@ -220,7 +212,6 @@ const DIRECT_FIELDS = [
   "series_title",
   "sport",
   "sportKey",
-  "sport_key",
   "tag",
   "tags",
   "topic",
@@ -351,7 +342,10 @@ function knownLabelForText(category: string, value: string): string | null {
   return null;
 }
 
-function cleanDynamicCandidate(value: string, activeCategory: string): string | null {
+function cleanDynamicCandidate(
+  value: string,
+  activeCategory: string,
+): string | null {
   const normalized = normalizePhrase(value);
   if (
     normalized.length < 3 ||

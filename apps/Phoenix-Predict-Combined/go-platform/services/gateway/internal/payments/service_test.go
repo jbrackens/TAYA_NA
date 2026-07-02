@@ -13,7 +13,7 @@ import (
 
 func seedWallet(t *testing.T, ws *wallet.Service, userID string, cents int64) {
 	t.Helper()
-	_, err := ws.Credit(wallet.MutationRequest{
+	_, err := ws.Credit(context.Background(), wallet.MutationRequest{
 		UserID:         userID,
 		AmountCents:    cents,
 		IdempotencyKey: "seed:" + userID,
@@ -54,7 +54,7 @@ func TestDepositFlowCreditsWalletAndCreatesTransaction(t *testing.T) {
 	}
 
 	// Verify wallet was credited
-	balance := ws.Balance("u-dep-1")
+	balance := ws.Balance(context.Background(), "u-dep-1")
 	if balance != 2500 {
 		t.Fatalf("expected wallet balance 2500, got %d", balance)
 	}
@@ -100,11 +100,11 @@ func TestWithdrawalFlowDebitsWallet(t *testing.T) {
 	}
 
 	// In-memory mock mode has no reservation table, so pending withdrawals debit immediately.
-	balance := ws.Balance("u-wdr-1")
+	balance := ws.Balance(context.Background(), "u-wdr-1")
 	if balance != 3000 {
 		t.Fatalf("expected wallet balance 3000 after pending withdrawal debit, got %d", balance)
 	}
-	available := ws.AvailableBalance("u-wdr-1")
+	available := ws.AvailableBalance(context.Background(), "u-wdr-1")
 	if available != 3000 {
 		t.Fatalf("expected available balance 3000 after pending withdrawal debit, got %d", available)
 	}
@@ -138,7 +138,7 @@ func TestWithdrawalInsufficientFundsReturnsError(t *testing.T) {
 	}
 
 	// Verify balance unchanged
-	balance := ws.Balance("u-wdr-2")
+	balance := ws.Balance(context.Background(), "u-wdr-2")
 	if balance != 1000 {
 		t.Fatalf("expected wallet balance unchanged at 1000, got %d", balance)
 	}
@@ -156,7 +156,7 @@ func TestIdempotentWebhookNoDoubleCredit(t *testing.T) {
 		t.Fatalf("initiate deposit: %v", err)
 	}
 
-	balanceAfterDeposit := ws.Balance("u-idempotent-1")
+	balanceAfterDeposit := ws.Balance(context.Background(), "u-idempotent-1")
 	if balanceAfterDeposit != 3000 {
 		t.Fatalf("expected balance 3000, got %d", balanceAfterDeposit)
 	}
@@ -182,7 +182,7 @@ func TestIdempotentWebhookNoDoubleCredit(t *testing.T) {
 
 	// Wallet balance should still be 3000 — mock credits only on InitiateDeposit,
 	// webhook just updates status without re-crediting
-	balanceAfterWebhooks := ws.Balance("u-idempotent-1")
+	balanceAfterWebhooks := ws.Balance(context.Background(), "u-idempotent-1")
 	if balanceAfterWebhooks != 3000 {
 		t.Fatalf("expected balance 3000 after duplicate webhooks, got %d", balanceAfterWebhooks)
 	}
@@ -218,10 +218,10 @@ func TestWithdrawalStatusTransitionPendingToFailed(t *testing.T) {
 	if txn.Status != "failed" {
 		t.Fatalf("expected status failed, got %s", txn.Status)
 	}
-	if balance := ws.Balance("u-status-1"); balance != 1500 {
+	if balance := ws.Balance(context.Background(), "u-status-1"); balance != 1500 {
 		t.Fatalf("expected failed withdrawal to leave balance 1500, got %d", balance)
 	}
-	if available := ws.AvailableBalance("u-status-1"); available != 1500 {
+	if available := ws.AvailableBalance(context.Background(), "u-status-1"); available != 1500 {
 		t.Fatalf("expected failed withdrawal to release available balance to 1500, got %d", available)
 	}
 }
@@ -502,10 +502,10 @@ func TestWithdrawalWebhookProcessedSetsProcessedAt(t *testing.T) {
 	if txn.ProcessedAt == "" {
 		t.Fatal("expected non-empty processedAt after processed webhook")
 	}
-	if balance := ws.Balance("u-wdr-webhook-1"); balance != 3000 {
+	if balance := ws.Balance(context.Background(), "u-wdr-webhook-1"); balance != 3000 {
 		t.Fatalf("expected processed withdrawal to leave debited balance 3000, got %d", balance)
 	}
-	if available := ws.AvailableBalance("u-wdr-webhook-1"); available != 3000 {
+	if available := ws.AvailableBalance(context.Background(), "u-wdr-webhook-1"); available != 3000 {
 		t.Fatalf("expected processed withdrawal to leave available balance 3000, got %d", available)
 	}
 }

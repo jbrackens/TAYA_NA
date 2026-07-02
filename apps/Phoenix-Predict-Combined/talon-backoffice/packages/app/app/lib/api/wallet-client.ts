@@ -5,41 +5,6 @@ interface TimedCacheEntry<T> {
   ts: number;
 }
 
-/**
- * Permissive shape used when normalizing payment responses. The gateway
- * may return fields either at the top level or nested under `.transaction`,
- * and either in camelCase or snake_case. The deposit/withdraw/status
- * functions normalize across both layouts via `||` chains; this type
- * names the camelCase superset so the union narrowing problem in TS goes
- * away.
- */
-type PaymentTxFields = {
-  transactionId?: string;
-  userId?: string;
-  amountCents?: number;
-  status?: string;
-  paymentMethod?: string;
-  currency?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  processedAt?: string;
-  redirectUrl?: string;
-  requiresRedirect?: boolean;
-};
-
-// Request types
-export interface DepositRequest {
-  amount: number;
-  payment_method: string;
-  currency?: string;
-}
-
-export interface WithdrawRequest {
-  amount: number;
-  payment_method: string;
-  currency?: string;
-}
-
 export interface GetTransactionsParams {
   page?: number;
   limit?: number;
@@ -55,66 +20,16 @@ interface BalanceRaw {
   currency: string;
 }
 
-interface DepositResponseRaw {
-  transaction?: {
-    transactionId?: string;
-    userId?: string;
-    amountCents?: number;
-    status?: string;
-    paymentMethod?: string;
-    createdAt?: string;
-    updatedAt?: string;
-    processedAt?: string;
-    redirectUrl?: string;
-    requiresRedirect?: boolean;
-  };
-  transaction_id?: string;
-  user_id?: string;
-  amount?: number;
-  amountCents?: number;
-  status?: string;
-  payment_method?: string;
-  paymentMethod?: string;
-  currency?: string;
-  created_at?: string;
-  createdAt?: string;
-  updated_at?: string;
-  updatedAt?: string;
-  redirect_url?: string;
-  requires_redirect?: boolean;
-}
-
-interface WithdrawResponseRaw {
-  transaction?: {
-    transactionId?: string;
-    userId?: string;
-    amountCents?: number;
-    status?: string;
-    paymentMethod?: string;
-    createdAt?: string;
-    updatedAt?: string;
-    processedAt?: string;
-  };
-  transaction_id?: string;
-  user_id?: string;
-  amount?: number;
-  amountCents?: number;
-  status?: string;
-  payment_method?: string;
-  paymentMethod?: string;
-  currency?: string;
-  created_at?: string;
-  createdAt?: string;
-  updated_at?: string;
-  updatedAt?: string;
-}
-
 interface WalletBalanceRaw {
   userId: string;
-  balanceCents: number;
-  // Added with F-3: available = balance - held reservations, reserved =
-  // the held delta (e.g. a pending withdrawal). Optional so older
-  // gateway builds that only send balanceCents still work.
+  unit?: string;
+  balancePointsCents: number;
+  availablePointsCents?: number;
+  reservedPointsCents?: number;
+}
+
+interface LegacyWalletBalanceRaw extends Partial<WalletBalanceRaw> {
+  balanceCents?: number;
   availableCents?: number;
   reservedCents?: number;
 }
@@ -123,16 +38,22 @@ interface WalletLedgerEntryRaw {
   entryId: string;
   userId: string;
   type: string;
-  amountCents: number;
-  balanceCents: number;
+  unit?: string;
+  amountPointsCents: number;
+  balancePointsCents: number;
   idempotencyKey: string;
   reason?: string;
   transactionTime: string;
 }
 
+interface LegacyWalletLedgerEntryRaw extends Partial<WalletLedgerEntryRaw> {
+  amountCents?: number;
+  balanceCents?: number;
+}
+
 interface WalletLedgerResponseRaw {
   userId: string;
-  items: WalletLedgerEntryRaw[];
+  items: LegacyWalletLedgerEntryRaw[];
   total: number;
 }
 
@@ -142,31 +63,7 @@ export interface Balance {
   availableBalance: number;
   reservedBalance: number;
   totalBalance: number;
-  currency: string;
-}
-
-export interface DepositResponse {
-  transactionId: string;
-  userId: string;
-  amount: number;
-  status: string;
-  paymentMethod: string;
-  currency: string;
-  createdAt: string;
-  updatedAt: string;
-  redirectUrl?: string;
-  requiresRedirect?: boolean;
-}
-
-export interface WithdrawResponse {
-  transactionId: string;
-  userId: string;
-  amount: number;
-  status: string;
-  paymentMethod: string;
-  currency: string;
-  createdAt: string;
-  updatedAt: string;
+  unit: string;
 }
 
 export interface Transaction {
@@ -176,7 +73,8 @@ export interface Transaction {
   amount: number;
   balanceBefore: number;
   balanceAfter: number;
-  currency: string;
+  unit: string;
+  idempotencyKey?: string;
   description?: string;
   createdAt: string;
 }
@@ -189,58 +87,10 @@ export interface GetTransactionsPaginatedResponse {
   totalPages: number;
 }
 
-function centsToDollars(value?: number): number {
+const POINT_UNIT = "PTS";
+
+function centsToPoints(value?: number): number {
   return typeof value === "number" ? value / 100 : 0;
-}
-
-function dollarsToCents(value?: number): number {
-  return typeof value === "number" ? Math.round(value * 100) : 0;
-}
-
-function normalizePaymentStatus(status?: string): string {
-  switch ((status || "").toLowerCase()) {
-    case "approved":
-    case "processed":
-    case "completed":
-      return "COMPLETED";
-    case "pending":
-    case "processing":
-      return "PENDING";
-    case "failed":
-    case "declined":
-      return "FAILED";
-    default:
-      return status?.toUpperCase() || "";
-  }
-}
-
-function mapLedgerType(type: string): string {
-  if (type === "credit") return "deposit";
-  if (type === "debit") return "withdrawal";
-  return type;
-}
-
-// Transaction status types (for polling pending deposits)
-interface TransactionStatusRaw {
-  transaction?: {
-    transactionId?: string;
-    status?: string;
-    amountCents?: number;
-    updatedAt?: string;
-  };
-  transaction_id?: string;
-  status?: string;
-  amount?: number;
-  amountCents?: number;
-  updated_at?: string;
-  updatedAt?: string;
-}
-
-export interface TransactionStatus {
-  transactionId: string;
-  status: string;
-  amount: number;
-  updatedAt: string;
 }
 
 const BALANCE_CACHE_TTL_MS = 15_000;
@@ -254,14 +104,6 @@ function isFresh<T>(
   ttlMs: number,
 ): entry is TimedCacheEntry<T> {
   return !!entry && Date.now() - entry.ts < ttlMs;
-}
-
-// Drop the cached balance so the next getBalance() refetches. Must run
-// after any mutation that changes funds (deposit/withdraw) — otherwise
-// the post-action getBalance is served the 15s-stale cached value and
-// the BAL pill never moves (F-3).
-function invalidateBalance(userId: string): void {
-  balanceCache.delete(userId);
 }
 
 // Utility function to normalize snake_case to camelCase
@@ -304,20 +146,21 @@ export async function getBalance(userId: string): Promise<Balance> {
       const raw = await apiClient.get<WalletBalanceRaw>(
         `/api/v1/wallet/${userId}`,
       );
-      // availableBalance must reflect held reservations (e.g. a pending
-      // withdrawal) — previously hardcoded to balanceCents with
-      // reservedBalance:0, which made withdrawals invisible (F-3). Fall
-      // back to balanceCents when the gateway doesn't send the new
-      // fields (back-compat).
-      const availableBalance = centsToDollars(
-        raw.availableCents ?? raw.balanceCents,
-      );
+      const legacyRaw = raw as LegacyWalletBalanceRaw;
+      const availablePointsCents =
+        raw.availablePointsCents ??
+        legacyRaw.availableCents ??
+        raw.balancePointsCents;
       const result: Balance = {
         userId: raw.userId,
-        availableBalance,
-        reservedBalance: centsToDollars(raw.reservedCents ?? 0),
-        totalBalance: centsToDollars(raw.balanceCents),
-        currency: "USD",
+        availableBalance: centsToPoints(availablePointsCents),
+        reservedBalance: centsToPoints(
+          raw.reservedPointsCents ?? legacyRaw.reservedCents ?? 0,
+        ),
+        totalBalance: centsToPoints(
+          raw.balancePointsCents ?? legacyRaw.balanceCents,
+        ),
+        unit: raw.unit || POINT_UNIT,
       };
       balanceCache.set(userId, {
         entry: { data: result, ts: Date.now() },
@@ -326,7 +169,19 @@ export async function getBalance(userId: string): Promise<Balance> {
       return result;
     } catch {
       const raw = await apiClient.get<BalanceRaw>(`/api/v1/wallets/${userId}`);
-      const result = normalizeSnakeCase(raw) as unknown as Balance;
+      const normalized = normalizeSnakeCase(raw) as {
+        userId: string;
+        availableBalance: number;
+        reservedBalance: number;
+        totalBalance: number;
+      };
+      const result: Balance = {
+        userId: normalized.userId,
+        availableBalance: normalized.availableBalance,
+        reservedBalance: normalized.reservedBalance,
+        totalBalance: normalized.totalBalance,
+        unit: POINT_UNIT,
+      };
       balanceCache.set(userId, {
         entry: { data: result, ts: Date.now() },
         promise: null,
@@ -341,112 +196,6 @@ export async function getBalance(userId: string): Promise<Balance> {
   });
 
   return promise;
-}
-
-/**
- * Deposit funds to wallet
- */
-export async function deposit(
-  userId: string,
-  request: DepositRequest,
-): Promise<DepositResponse> {
-  const raw = await apiClient.post<DepositResponseRaw>(
-    "/api/v1/payments/deposit",
-    {
-      userId,
-      amountCents: dollarsToCents(request.amount),
-      paymentMethod: request.payment_method,
-      currency: request.currency,
-    },
-  );
-  invalidateBalance(userId);
-  const transaction = (raw.transaction || raw) as PaymentTxFields;
-  return {
-    transactionId: transaction.transactionId || raw.transaction_id || "",
-    userId: transaction.userId || raw.user_id || userId,
-    amount: centsToDollars(
-      transaction.amountCents ?? raw.amountCents ?? raw.amount,
-    ),
-    status: normalizePaymentStatus(transaction.status || raw.status),
-    paymentMethod:
-      transaction.paymentMethod ||
-      raw.paymentMethod ||
-      raw.payment_method ||
-      request.payment_method,
-    currency: raw.currency || request.currency || "USD",
-    createdAt: transaction.createdAt || raw.createdAt || raw.created_at || "",
-    updatedAt:
-      transaction.updatedAt ||
-      raw.updatedAt ||
-      raw.updated_at ||
-      transaction.processedAt ||
-      "",
-    redirectUrl: transaction.redirectUrl || raw.redirect_url,
-    requiresRedirect: transaction.requiresRedirect || raw.requires_redirect,
-  };
-}
-
-/**
- * Withdraw funds from wallet
- */
-export async function withdraw(
-  userId: string,
-  request: WithdrawRequest,
-): Promise<WithdrawResponse> {
-  const raw = await apiClient.post<WithdrawResponseRaw>(
-    "/api/v1/payments/withdraw",
-    {
-      userId,
-      amountCents: dollarsToCents(request.amount),
-      paymentMethod: request.payment_method,
-      currency: request.currency,
-    },
-  );
-  invalidateBalance(userId);
-  const transaction = (raw.transaction || raw) as PaymentTxFields;
-  return {
-    transactionId: transaction.transactionId || raw.transaction_id || "",
-    userId: transaction.userId || raw.user_id || userId,
-    amount: centsToDollars(
-      transaction.amountCents ?? raw.amountCents ?? raw.amount,
-    ),
-    status: normalizePaymentStatus(transaction.status || raw.status),
-    paymentMethod:
-      transaction.paymentMethod ||
-      raw.paymentMethod ||
-      raw.payment_method ||
-      request.payment_method,
-    currency: raw.currency || request.currency || "USD",
-    createdAt: transaction.createdAt || raw.createdAt || raw.created_at || "",
-    updatedAt:
-      transaction.updatedAt ||
-      raw.updatedAt ||
-      raw.updated_at ||
-      transaction.processedAt ||
-      "",
-  };
-}
-
-/**
- * Get transaction status by transaction ID (used for polling pending deposits)
- */
-export async function getTransactionStatus(
-  transactionId: string,
-): Promise<TransactionStatus> {
-  const raw = await apiClient.get<TransactionStatusRaw>(
-    "/api/v1/payments/status",
-    { transactionId },
-  );
-  const transaction = (raw.transaction || raw) as PaymentTxFields;
-  return {
-    transactionId:
-      transaction.transactionId || raw.transaction_id || transactionId,
-    status: normalizePaymentStatus(transaction.status || raw.status),
-    amount: centsToDollars(
-      transaction.amountCents ?? raw.amountCents ?? raw.amount,
-    ),
-    updatedAt: transaction.updatedAt || raw.updatedAt || raw.updated_at || "",
-  };
 }
 
 /**
@@ -468,31 +217,34 @@ export async function getTransactions(
 
   // The gateway's wallet.Service.ledgerFromDB queries ORDER BY id DESC
   // (newest first) but then reverses the slice before returning, so the
-  // wire response is oldest-first chronological. Consumers (cashier
-  // "Recent transactions", profile transaction list) want newest-first
-  // — most recent ledger entry at the top. Reverse here so callers get
+  // wire response is oldest-first chronological. Account ledger consumers
+  // want newest-first — most recent ledger entry at the top. Reverse here so callers get
   // a consistent newest-first ordering regardless of the gateway's
   // build-then-reverse implementation choice.
   const page = params?.page || 1;
   const limit = params?.limit || raw.items.length || 10;
   const newestFirst = [...raw.items].reverse();
   const filtered = newestFirst.filter((item) =>
-    params?.transaction_type
-      ? mapLedgerType(item.type) === params.transaction_type
-      : true,
+    params?.transaction_type ? item.type === params.transaction_type : true,
   );
   const start = (page - 1) * limit;
-  const transactions = filtered.slice(start, start + limit).map((item) => ({
-    transactionId: item.entryId,
-    userId: item.userId,
-    type: mapLedgerType(item.type),
-    amount: centsToDollars(item.amountCents),
-    balanceBefore: centsToDollars(item.balanceCents - item.amountCents),
-    balanceAfter: centsToDollars(item.balanceCents),
-    currency: "USD",
-    description: item.reason,
-    createdAt: item.transactionTime,
-  }));
+  const transactions = filtered.slice(start, start + limit).map((item) => {
+    const amountPointsCents = item.amountPointsCents ?? item.amountCents ?? 0;
+    const balancePointsCents =
+      item.balancePointsCents ?? item.balanceCents ?? amountPointsCents;
+    return {
+      transactionId: item.entryId || "",
+      userId: item.userId || userId,
+      type: item.type || "ledger",
+      amount: centsToPoints(amountPointsCents),
+      balanceBefore: centsToPoints(balancePointsCents - amountPointsCents),
+      balanceAfter: centsToPoints(balancePointsCents),
+      unit: item.unit || POINT_UNIT,
+      idempotencyKey: item.idempotencyKey,
+      description: item.reason,
+      createdAt: item.transactionTime || "",
+    };
+  });
 
   return {
     transactions,
@@ -505,12 +257,282 @@ export async function getTransactions(
 
 interface StarterGrantResult {
   enabled: boolean;
+  unit?: string;
+  grantPointsCents?: number;
+  balancePointsCents?: number;
+}
+
+interface StarterGrantResultRaw extends StarterGrantResult {
   grantCents?: number;
   balanceCents?: number;
 }
 
+export interface DailyClaimResult {
+  enabled: boolean;
+  unit?: string;
+  claimPointsCents?: number;
+  balancePointsCents?: number;
+  claimedForDate?: string;
+  nextClaimAt?: string;
+  rewardLimit?: RewardLimitStatus;
+}
+
+interface DailyClaimResultRaw extends Omit<DailyClaimResult, "rewardLimit"> {
+  claimCents?: number;
+  balanceCents?: number;
+  rewardLimit?: RewardLimitStatusRaw;
+}
+
+export interface PointPack {
+  id: string;
+  name: string;
+  description: string;
+  unit?: string;
+  amountPointsCents: number;
+  enabled: boolean;
+  claimableOnce: boolean;
+  claimed?: boolean;
+}
+
+interface PointPackRaw extends Omit<PointPack, "amountPointsCents"> {
+  amountPointsCents?: number;
+  amountCents?: number;
+}
+
+interface PointPacksResponse {
+  items: PointPackRaw[];
+  total: number;
+}
+
+export interface PointPackClaimResult {
+  enabled: boolean;
+  pack?: PointPack;
+  unit?: string;
+  claimPointsCents?: number;
+  balancePointsCents?: number;
+  rewardLimit?: RewardLimitStatus;
+}
+
+interface PointPackClaimResultRaw extends Omit<
+  PointPackClaimResult,
+  "pack" | "rewardLimit"
+> {
+  pack?: PointPackRaw;
+  claimCents?: number;
+  balanceCents?: number;
+  rewardLimit?: RewardLimitStatusRaw;
+}
+
+export interface Mission {
+  id: string;
+  name: string;
+  description: string;
+  unit?: string;
+  rewardPointsCents: number;
+  progress: number;
+  target: number;
+  completed: boolean;
+  claimed: boolean;
+  enabled: boolean;
+}
+
+interface MissionRaw extends Omit<Mission, "rewardPointsCents"> {
+  rewardPointsCents?: number;
+  rewardCents?: number;
+}
+
+interface MissionsResponse {
+  items: MissionRaw[];
+  total: number;
+}
+
+export interface MissionClaimResult {
+  enabled: boolean;
+  mission?: Mission;
+  unit?: string;
+  claimPointsCents?: number;
+  balancePointsCents?: number;
+  rewardLimit?: RewardLimitStatus;
+}
+
+interface MissionClaimResultRaw extends Omit<
+  MissionClaimResult,
+  "mission" | "rewardLimit"
+> {
+  mission?: MissionRaw;
+  claimCents?: number;
+  balanceCents?: number;
+  rewardLimit?: RewardLimitStatusRaw;
+}
+
+export interface Streak {
+  id: string;
+  name: string;
+  description: string;
+  unit?: string;
+  rewardPointsCents: number;
+  currentStreak: number;
+  target: number;
+  completed: boolean;
+  claimed: boolean;
+  enabled: boolean;
+}
+
+interface StreakRaw extends Omit<Streak, "rewardPointsCents"> {
+  rewardPointsCents?: number;
+  rewardCents?: number;
+}
+
+interface StreaksResponse {
+  items: StreakRaw[];
+  total: number;
+}
+
+export interface StreakClaimResult {
+  enabled: boolean;
+  streak?: Streak;
+  unit?: string;
+  claimPointsCents?: number;
+  balancePointsCents?: number;
+  rewardLimit?: RewardLimitStatus;
+}
+
+interface StreakClaimResultRaw extends Omit<
+  StreakClaimResult,
+  "streak" | "rewardLimit"
+> {
+  streak?: StreakRaw;
+  claimCents?: number;
+  balanceCents?: number;
+  rewardLimit?: RewardLimitStatusRaw;
+}
+
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  cosmeticId: string;
+  earned: boolean;
+  source: string;
+}
+
+interface BadgesResponse {
+  items: Badge[];
+  total: number;
+}
+
+export interface RewardLimitStatus {
+  enabled: boolean;
+  unit?: string;
+  limitPointsCents: number;
+  grantedPointsCents: number;
+  remainingPointsCents: number;
+  windowDate: string;
+  nextResetAt: string;
+}
+
+interface RewardLimitStatusRaw extends Omit<
+  RewardLimitStatus,
+  "limitPointsCents" | "grantedPointsCents" | "remainingPointsCents"
+> {
+  limitPointsCents?: number;
+  grantedPointsCents?: number;
+  remainingPointsCents?: number;
+  limitCents?: number;
+  grantedCents?: number;
+  remainingCents?: number;
+}
+
+function normalizeRewardLimit(
+  status?: RewardLimitStatusRaw,
+): RewardLimitStatus | undefined {
+  if (!status) return status;
+  return {
+    enabled: status.enabled,
+    unit: status.unit || POINT_UNIT,
+    limitPointsCents: status.limitPointsCents ?? status.limitCents ?? 0,
+    grantedPointsCents: status.grantedPointsCents ?? status.grantedCents ?? 0,
+    remainingPointsCents:
+      status.remainingPointsCents ?? status.remainingCents ?? 0,
+    windowDate: status.windowDate,
+    nextResetAt: status.nextResetAt,
+  };
+}
+
+function normalizePointPack(pack: PointPackRaw): PointPack {
+  return {
+    id: pack.id,
+    name: pack.name,
+    description: pack.description,
+    unit: pack.unit || POINT_UNIT,
+    amountPointsCents: pack.amountPointsCents ?? pack.amountCents ?? 0,
+    enabled: pack.enabled,
+    claimableOnce: pack.claimableOnce,
+    claimed: pack.claimed,
+  };
+}
+
+function normalizeMission(mission: MissionRaw): Mission {
+  return {
+    id: mission.id,
+    name: mission.name,
+    description: mission.description,
+    unit: mission.unit || POINT_UNIT,
+    rewardPointsCents: mission.rewardPointsCents ?? mission.rewardCents ?? 0,
+    progress: mission.progress,
+    target: mission.target,
+    completed: mission.completed,
+    claimed: mission.claimed,
+    enabled: mission.enabled,
+  };
+}
+
+function normalizeStreak(streak: StreakRaw): Streak {
+  return {
+    id: streak.id,
+    name: streak.name,
+    description: streak.description,
+    unit: streak.unit || POINT_UNIT,
+    rewardPointsCents: streak.rewardPointsCents ?? streak.rewardCents ?? 0,
+    currentStreak: streak.currentStreak,
+    target: streak.target,
+    completed: streak.completed,
+    claimed: streak.claimed,
+    enabled: streak.enabled,
+  };
+}
+
+function normalizeRewardClaimBase(result: {
+  enabled: boolean;
+  unit?: string;
+  claimPointsCents?: number;
+  balancePointsCents?: number;
+  claimCents?: number;
+  balanceCents?: number;
+  rewardLimit?: RewardLimitStatusRaw;
+}) {
+  return {
+    enabled: result.enabled,
+    unit: result.unit || POINT_UNIT,
+    claimPointsCents: result.claimPointsCents ?? result.claimCents,
+    balancePointsCents: result.balancePointsCents ?? result.balanceCents,
+    rewardLimit: normalizeRewardLimit(result.rewardLimit),
+  };
+}
+
+function normalizeStarterGrant(
+  result: StarterGrantResultRaw,
+): StarterGrantResult {
+  return {
+    enabled: result.enabled,
+    unit: result.unit || POINT_UNIT,
+    grantPointsCents: result.grantPointsCents ?? result.grantCents,
+    balancePointsCents: result.balancePointsCents ?? result.balanceCents,
+  };
+}
+
 /**
- * Claims the one-time play-money starter grant for the session user. The
+ * Claims the one-time gameplay-point starter grant for the session user. The
  * gateway is idempotent (one grant per user) and the endpoint is a no-op when
  * the faucet is disabled (STARTER_GRANT_CENTS=0), so this is safe to call on
  * every login/restore. On a real grant the user's balance cache is cleared so
@@ -520,14 +542,149 @@ export async function claimStarterGrant(
   userId: string,
 ): Promise<StarterGrantResult | null> {
   try {
-    const res = await apiClient.post<StarterGrantResult>(
+    const res = await apiClient.post<StarterGrantResultRaw>(
       "/api/v1/wallet/starter-grant",
     );
     if (res?.enabled) {
       balanceCache.delete(userId);
     }
-    return res;
+    return res ? normalizeStarterGrant(res) : res;
   } catch {
     return null;
   }
+}
+
+/**
+ * Claims today's non-redeemable gameplay points for the session user. The
+ * gateway enforces one claim per UTC day with a per-user idempotency key and
+ * writes the point-ledger entry. Best-effort: returns null on failure.
+ */
+export async function claimDailyPoints(
+  userId: string,
+): Promise<DailyClaimResult | null> {
+  try {
+    const res = await apiClient.post<DailyClaimResultRaw>(
+      "/api/v1/wallet/daily-claim",
+    );
+    if (res?.enabled) {
+      balanceCache.delete(userId);
+    }
+    return res
+      ? {
+          ...normalizeRewardClaimBase(res),
+          claimedForDate: res.claimedForDate,
+          nextClaimAt: res.nextClaimAt,
+        }
+      : res;
+  } catch {
+    return null;
+  }
+}
+
+export async function getPointPacks(): Promise<PointPack[]> {
+  const raw = await apiClient.get<PointPacksResponse>(
+    "/api/v1/wallet/point-packs",
+  );
+  return (raw.items ?? []).map(normalizePointPack);
+}
+
+export async function claimPointPack(
+  userId: string,
+  packId: string,
+): Promise<PointPackClaimResult | null> {
+  try {
+    const res = await apiClient.post<PointPackClaimResultRaw>(
+      "/api/v1/wallet/point-packs/claim",
+      { packId },
+    );
+    if (res?.enabled) {
+      balanceCache.delete(userId);
+    }
+    return res
+      ? {
+          ...normalizeRewardClaimBase(res),
+          pack: res.pack ? normalizePointPack(res.pack) : res.pack,
+        }
+      : res;
+  } catch {
+    return null;
+  }
+}
+
+export async function getMissions(): Promise<Mission[]> {
+  const raw = await apiClient.get<MissionsResponse>("/api/v1/wallet/missions");
+  return (raw.items ?? []).map(normalizeMission);
+}
+
+export async function claimMission(
+  userId: string,
+  missionId: string,
+): Promise<MissionClaimResult | null> {
+  try {
+    const res = await apiClient.post<MissionClaimResultRaw>(
+      "/api/v1/wallet/missions/claim",
+      { missionId },
+    );
+    if (res?.enabled) {
+      balanceCache.delete(userId);
+    }
+    return res
+      ? {
+          ...normalizeRewardClaimBase(res),
+          mission: res.mission ? normalizeMission(res.mission) : res.mission,
+        }
+      : res;
+  } catch {
+    return null;
+  }
+}
+
+export async function getStreaks(): Promise<Streak[]> {
+  const raw = await apiClient.get<StreaksResponse>("/api/v1/wallet/streaks");
+  return (raw.items ?? []).map(normalizeStreak);
+}
+
+export async function claimStreak(
+  userId: string,
+  streakId: string,
+): Promise<StreakClaimResult | null> {
+  try {
+    const res = await apiClient.post<StreakClaimResultRaw>(
+      "/api/v1/wallet/streaks/claim",
+      { streakId },
+    );
+    if (res?.enabled) {
+      balanceCache.delete(userId);
+    }
+    return res
+      ? {
+          ...normalizeRewardClaimBase(res),
+          streak: res.streak ? normalizeStreak(res.streak) : res.streak,
+        }
+      : res;
+  } catch {
+    return null;
+  }
+}
+
+export async function getBadges(): Promise<Badge[]> {
+  const raw = await apiClient.get<BadgesResponse>("/api/v1/wallet/badges");
+  return raw.items ?? [];
+}
+
+export async function getRewardLimitStatus(): Promise<RewardLimitStatus> {
+  const raw = await apiClient.get<RewardLimitStatusRaw>(
+    "/api/v1/wallet/reward-limits",
+  );
+  return (
+    normalizeRewardLimit(raw) ?? {
+      enabled: false,
+      unit: POINT_UNIT,
+      limitPointsCents: 0,
+      grantedPointsCents: 0,
+      remainingPointsCents: 0,
+      windowDate: "",
+      nextResetAt: "",
+    }
+  );
 }

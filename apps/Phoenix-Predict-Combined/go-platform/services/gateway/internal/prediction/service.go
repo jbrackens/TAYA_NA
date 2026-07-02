@@ -2,8 +2,11 @@ package prediction
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log/slog"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -13,9 +16,12 @@ import (
 
 // Service is the primary business logic layer for the prediction platform.
 type Service struct {
-	repo              Repository
-	wallet            WalletAdapter
-	amm               *AMMEngine
+	repo   Repository
+	wallet WalletAdapter
+	// AMM execution is retired (P2-09): PlaceOrder rejects lingering
+	// execution_mode='amm' markets. PreviewOrder may still produce read-only
+	// curve quotes from AMMEngine so legacy AMM market detail can show honest
+	// impact without moving points.
 	settlement        *SettlementEngine
 	onMarketLifecycle MarketLifecycleHandler // optional; fired post-commit
 	// Optional Prometheus-format counter registry. nil is safe — Record*
@@ -26,6 +32,43 @@ type Service struct {
 	// any deployment that has not wired RG). Wired in internal/http.
 	compliance ComplianceChecker
 }
+
+// ErrLaunchProhibitedCategory blocks inherited real-money/crypto taxonomy from
+// Tiangge launch category management while deeper import compatibility is
+// retired incrementally.
+var ErrLaunchProhibitedCategory = errors.New("category is not allowed in Tiangge launch taxonomy")
+
+var launchHiddenCategorySlugs = map[string]struct{}{
+	"crypto": {},
+}
+
+var launchProhibitedCategoryTerms = map[string]struct{}{
+	"bitcoin":    {},
+	"btc":        {},
+	"cash":       {},
+	"cashout":    {},
+	"crypto":     {},
+	"eth":        {},
+	"ethereum":   {},
+	"fiat":       {},
+	"payout":     {},
+	"solana":     {},
+	"usdc":       {},
+	"withdraw":   {},
+	"withdrawal": {},
+}
+
+var launchAllowedSettlementSources = map[string]struct{}{
+	"admin-manual": {},
+	"manual":       {},
+}
+
+var launchProhibitedSettlementRules = map[string]struct{}{
+	"price_above": {},
+	"price_below": {},
+}
+
+var ErrLaunchProhibitedMarket = errors.New("market is not allowed in Tiangge launch mode")
 
 // ComplianceChecker gates order placement against responsible-gambling
 // controls (self-exclusion, cool-off, deposit/bet stake limits). It is an
@@ -71,7 +114,7 @@ func (s *Service) SetComplianceChecker(c ComplianceChecker) {
 }
 
 // checkComplianceForOrder blocks an order before any market-state mutation or
-// wallet debit if responsible-gambling controls disallow it. Mirrors the
+// wallet debit if responsible-play controls disallow it. Mirrors the
 // legacy bets.Service.checkComplianceForPlacement contract: fail-closed in
 // production/staging when the RG service errors, fail-open in development so
 // local testing isn't blocked by a misconfigured checker. nil checker = no-op.
@@ -102,7 +145,7 @@ func (s *Service) checkComplianceForOrder(ctx context.Context, userID string, st
 	} else {
 		allowed, reason, err = s.compliance.CheckBetAllowed(cctx, userID, stakeCents)
 	}
-	// `allowed == false` is an authoritative RG denial (bet limit /
+	// `allowed == false` is an authoritative RG denial (prediction limit /
 	// self-exclusion / cool-off). The wired RG service returns a sentinel
 	// error *alongside* allowed=false on a deliberate block — that is a
 	// decision, not an outage, so it MUST block regardless of environment.
@@ -110,7 +153,9 @@ func (s *Service) checkComplianceForOrder(ctx context.Context, userID string, st
 	// exactly what let an over-limit order through (UAT 2026-05-16 LC-17).
 	if !allowed {
 		if strings.TrimSpace(reason) == "" {
-			reason = "order blocked by responsible-gambling controls"
+			reason = "order blocked by responsible-play controls"
+		} else {
+			reason = predictionComplianceReason(reason)
 		}
 		return false, fmt.Errorf("%s", reason)
 	}
@@ -176,6 +221,12 @@ func (s *Service) releaseComplianceOrder(ctx context.Context, userID string, amo
 	cctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 	_ = s.compliance.ReleaseBet(cctx, userID, amountCents, committedAt)
+}
+
+func predictionComplianceReason(reason string) string {
+	reason = strings.Replace(reason, "Bet limit", "Prediction limit", 1)
+	reason = strings.Replace(reason, "bet limit", "prediction limit", 1)
+	return reason
 }
 
 // isTerminalReservedStatus reports whether an order-book order has reached a
@@ -267,7 +318,6 @@ func NewService(repo Repository, wallet WalletAdapter) *Service {
 	return &Service{
 		repo:       repo,
 		wallet:     wallet,
-		amm:        &AMMEngine{},
 		settlement: NewSettlementEngine(repo, wallet),
 	}
 }
@@ -306,11 +356,112 @@ func (s *Service) SetSettlementAuditor(a SettlementAuditor) {
 // --- Categories ---
 
 func (s *Service) ListCategories(ctx context.Context, activeOnly bool) ([]Category, error) {
-	return s.repo.ListCategories(ctx, activeOnly)
+	categories, err := s.repo.ListCategories(ctx, activeOnly)
+	if err != nil {
+		return nil, err
+	}
+	return filterLaunchCategories(categories), nil
 }
 
 func (s *Service) GetCategory(ctx context.Context, slug string) (*Category, error) {
-	return s.repo.GetCategory(ctx, slug)
+	if isLaunchHiddenCategorySlug(slug) {
+		return nil, ErrLaunchProhibitedCategory
+	}
+	category, err := s.repo.GetCategory(ctx, slug)
+	if err != nil {
+		return nil, err
+	}
+	if categoryHasLaunchProhibitedTerm(category) {
+		return nil, ErrLaunchProhibitedCategory
+	}
+	return category, nil
+}
+
+func (s *Service) CreateCategory(ctx context.Context, cat *Category) error {
+	if categoryHasLaunchProhibitedTerm(cat) {
+		return ErrLaunchProhibitedCategory
+	}
+	return s.repo.CreateCategory(ctx, cat)
+}
+
+func filterLaunchCategories(categories []Category) []Category {
+	if len(categories) == 0 {
+		return categories
+	}
+	out := categories[:0]
+	for _, category := range categories {
+		if categoryHasLaunchProhibitedTerm(&category) {
+			continue
+		}
+		out = append(out, category)
+	}
+	return out
+}
+
+func isLaunchHiddenCategorySlug(slug string) bool {
+	_, ok := launchHiddenCategorySlugs[strings.ToLower(strings.TrimSpace(slug))]
+	return ok
+}
+
+func categoryHasLaunchProhibitedTerm(category *Category) bool {
+	if category == nil {
+		return false
+	}
+	for _, field := range []string{category.Slug, category.Name, category.Icon} {
+		if textHasLaunchProhibitedCategoryTerm(field) {
+			return true
+		}
+	}
+	return false
+}
+
+func textHasLaunchProhibitedCategoryTerm(value string) bool {
+	tokens := strings.FieldsFunc(strings.ToLower(value), func(r rune) bool {
+		return (r < 'a' || r > 'z') && (r < '0' || r > '9')
+	})
+	for _, token := range tokens {
+		if _, ok := launchProhibitedCategoryTerms[token]; ok {
+			return true
+		}
+	}
+	return false
+}
+
+// --- Series ---
+
+func (s *Service) ListSeries(ctx context.Context, categoryID *string) ([]Series, error) {
+	return s.repo.ListSeries(ctx, categoryID)
+}
+
+func (s *Service) CreateSeries(ctx context.Context, series *Series) error {
+	return s.repo.CreateSeries(ctx, series)
+}
+
+func (s *Service) ListTags(ctx context.Context, categoryID *string) ([]string, error) {
+	series, err := s.repo.ListSeries(ctx, categoryID)
+	if err != nil {
+		return nil, err
+	}
+	seen := map[string]struct{}{}
+	tags := []string{}
+	for _, item := range series {
+		for _, tag := range item.Tags {
+			trimmed := strings.TrimSpace(tag)
+			if trimmed == "" {
+				continue
+			}
+			key := strings.ToLower(trimmed)
+			if _, ok := seen[key]; ok {
+				continue
+			}
+			seen[key] = struct{}{}
+			tags = append(tags, trimmed)
+		}
+	}
+	sort.Slice(tags, func(i, j int) bool {
+		return strings.ToLower(tags[i]) < strings.ToLower(tags[j])
+	})
+	return tags, nil
 }
 
 // --- Events ---
@@ -361,11 +512,11 @@ func (s *Service) DashboardVolumeStats(ctx context.Context, since time.Time, top
 // or -1 if the wallet adapter is unavailable / errors. Used by the HTTP
 // layer to populate wallet:<uid> WS broadcasts after order fills without
 // having to import the wallet package directly.
-func (s *Service) WalletBalance(userID string) int64 {
+func (s *Service) WalletBalance(ctx context.Context, userID string) int64 {
 	if s == nil || s.wallet == nil {
 		return -1
 	}
-	return s.wallet.Balance(userID)
+	return s.wallet.Balance(ctx, userID)
 }
 
 // GetOrderBook returns the L2 order book for a market. Requires the
@@ -410,18 +561,49 @@ func (s *Service) PreviewOrderForUser(ctx context.Context, req PlaceOrderRequest
 	if market.ExecutionMode == ExecutionModeOrderBook {
 		return s.previewExchangeOrder(ctx, req, userID, market)
 	}
-	preview, err := s.amm.PreviewTrade(market, req.Side, req.Action, req.Quantity)
+	return s.previewAMMOrder(req, market)
+}
+
+func (s *Service) previewAMMOrder(req PlaceOrderRequest, market *Market) (*OrderPreview, error) {
+	if market.Status != MarketStatusOpen {
+		return nil, ErrClosedMarket
+	}
+	if req.Action != OrderActionBuy {
+		return nil, fmt.Errorf("sell against AMM is unavailable; legacy AMM markets are quote-only")
+	}
+	if req.OrderType != OrderTypeMarket {
+		return nil, fmt.Errorf("AMM preview supports market buys only")
+	}
+	if req.Quantity <= 0 {
+		return nil, fmt.Errorf("quantity must be positive")
+	}
+
+	now := time.Now().UTC()
+	preview, err := (&AMMEngine{}).PreviewTrade(market, req.Side, req.Action, req.Quantity)
 	if err != nil {
 		return nil, err
+	}
+	avg := 0
+	if req.Quantity > 0 {
+		avg = int(preview.TotalCost / int64(req.Quantity))
+	}
+	newSidePrice := preview.NewYesPrice
+	if req.Side == OrderSideNo {
+		newSidePrice = preview.NewNoPrice
+	}
+	slippage := newSidePrice - preview.PriceCents
+	if slippage < 0 {
+		slippage = -slippage
 	}
 	preview.ExecutionMode = ExecutionModeAMM
 	preview.FilledQuantity = req.Quantity
 	preview.UnfilledQuantity = 0
-	preview.AverageFillPriceCents = preview.PriceCents
+	preview.AverageFillPriceCents = avg
 	preview.TotalCostWithFeesCents = preview.TotalCost + preview.FeeCents
+	preview.EstimatedSlippageCents = slippage
 	preview.QuoteStatus = OrderStatusFilled
-	preview.QuoteStaleAfterMillis = int64((5 * time.Second) / time.Millisecond)
-	preview.QuoteGeneratedAtUnixSec = time.Now().UTC().Unix()
+	preview.QuoteStaleAfterMillis = int64((3 * time.Second) / time.Millisecond)
+	preview.QuoteGeneratedAtUnixSec = now.Unix()
 	return preview, nil
 }
 
@@ -618,6 +800,8 @@ func orderBookPreviewFromPlan(req PlaceOrderRequest, market *Market, plan *Match
 // the created order and trade fill. Broadcasts the trade via WebSocket is the
 // caller's responsibility.
 func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID string) (*Order, *Trade, error) {
+	defer func(start time.Time) { s.metrics.RecordLatency("place_order", time.Since(start)) }(time.Now())
+
 	idempotencyKey := ensureOrderIdempotencyKey(req, userID)
 
 	// Idempotency check
@@ -685,213 +869,17 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 		return o, t, perr
 	}
 
-	// AMM path. The shared RG gate above already recorded the committed
-	// worst-case stake atomically (codex-#4) when gateRecorded is true. AMM
-	// is buy-only and fills immediately (no resting), so reconcile the
-	// gate-recorded amount on EVERY exit via defer: release it entirely on
-	// any failure before the fill (no realized spend), or release
-	// committed−realized on success. rgRecorded accumulates the atomically
-	// recorded amount; the bound==0 capless re-gate below adds the actual
-	// cost it records. A non-atomic checker recorded nothing here
-	// (rgRecorded==0) and the legacy record-realized-on-success calls below
-	// are kept untouched.
-	rgRecorded := int64(0)
+	// AMM execution is RETIRED (audit strategy §4 / P2-09). New markets are
+	// always order_book — P1-03 gates creation — but a pre-019 market could
+	// still carry execution_mode='amm'. New trades on such a market are refused;
+	// existing positions stay fully settleable and voidable because settlement is
+	// engine-agnostic (it pays 100c/contract from prediction_positions, never
+	// touching AMM state). Release any RG stake the gate atomically recorded,
+	// since no order is placed.
 	if gateRecorded {
-		rgRecorded = committed
+		s.releaseComplianceOrder(ctx, userID, committed, time.Now().UTC())
 	}
-	ammFilled := false
-	var ammRealized int64
-	defer func() {
-		if rgRecorded <= 0 {
-			return
-		}
-		rel := rgRecorded
-		if ammFilled {
-			if rel = rgRecorded - ammRealized; rel < 0 {
-				rel = 0
-			}
-		}
-		if rel > 0 {
-			s.releaseComplianceOrder(context.Background(), userID, rel, time.Now().UTC())
-		}
-	}()
-
-	if req.Action == OrderActionSell {
-		return nil, nil, fmt.Errorf("sell orders not yet supported (requires existing position)")
-	}
-
-	// Preview cost without mutating market state, so we can check balance first.
-	preview, err := s.amm.PreviewTrade(market, req.Side, req.Action, req.Quantity)
-	if err != nil {
-		return nil, nil, fmt.Errorf("AMM preview failed: %w", err)
-	}
-
-	totalCost := preview.TotalCost + preview.FeeCents
-
-	// Notional-cap ceiling. The order-book path clamps fills to
-	// notionalCapCents (capFillQtyByNotionalCap); the AMM path historically
-	// did not, so an LMSR cost above the bound both fat-fingered the wallet
-	// AND slipped the RG gate, which evaluated worstCaseSpend — not the real
-	// cost. This is an AMM *buy* here (sells were rejected above). The gate
-	// already ran on worstCaseSpend(req); enforce that the actual cost does
-	// not exceed it. worstCaseSpend is 0 for a buy with neither a notional
-	// cap (market) nor a limit price — an unbounded order the gate could not
-	// meaningfully evaluate (stake 0). The HTTP handler rejects capless
-	// market buys, but the bot path calls PlaceOrder directly and bypasses
-	// that, so enforce it here at the service layer for every caller.
-	// (UAT 2026-05-16 D-5 codex review P1 #1 + re-review.)
-	bound := worstCaseSpend(req)
-	if bound > 0 && totalCost > bound {
-		// An explicit cap (market) or limit price was given and the real
-		// LMSR cost exceeds it — honor the user's bound (fat-finger / cap).
-		return nil, nil, fmt.Errorf("order cost %d cents exceeds notional cap %d cents", totalCost, bound)
-	}
-	if totalCost > bound {
-		// bound == 0: a capless market buy (or limit buy without price) the
-		// RG gate could only evaluate at stake 0 — i.e. it under-gated. The
-		// HTTP handler rejects capless market buys, but the bot path calls
-		// PlaceOrder directly and bypasses that. Re-run the RG gate against
-		// the *actual* cost before executing so the limit can't be slipped.
-		// No-op when no RG checker is wired (nil compliance), so legitimate
-		// unbounded AMM buys on the non-RG path are unaffected.
-		rec2, gerr := s.checkComplianceForOrder(ctx, userID, totalCost)
-		if gerr != nil {
-			return nil, nil, gerr
-		}
-		// If this capless re-gate recorded atomically, the deferred
-		// reconcile must also account for that actual-cost record.
-		if rec2 {
-			rgRecorded += totalCost
-		}
-	}
-
-	// Balance check — reject early before mutating anything. NoopWallet returns
-	// math.MaxInt64 so test paths that don't care about wallet state pass
-	// through; real wallets return actual balances and will reject correctly.
-	if balance := s.wallet.Balance(userID); balance < totalCost {
-		return nil, nil, fmt.Errorf("insufficient balance: have %d cents, need %d cents", balance, totalCost)
-	}
-
-	// Execute against AMM (mutates market.AMMYesShares / AMMNoShares / prices)
-	costCents, feeCents, err := s.amm.ExecuteTrade(market, req.Side, req.Quantity)
-	if err != nil {
-		return nil, nil, fmt.Errorf("AMM execution failed: %w", err)
-	}
-
-	// Use the actual executed cost (should match preview, but trust the engine).
-	totalCost = costCents + feeCents
-	debitKey := "prediction_order:" + *idempotencyKey
-	debitReason := fmt.Sprintf("prediction order: %s %s x%d", req.Side, market.Ticker, req.Quantity)
-	now := time.Now().UTC()
-	priceCents := market.YesPriceCents
-	if req.Side == OrderSideNo {
-		priceCents = market.NoPriceCents
-	}
-
-	// Create order
-	order := &Order{
-		UserID:            userID,
-		MarketID:          req.MarketID,
-		Side:              req.Side,
-		Action:            req.Action,
-		OrderType:         req.OrderType,
-		PriceCents:        &priceCents,
-		Quantity:          req.Quantity,
-		FilledQuantity:    req.Quantity,
-		RemainingQuantity: 0,
-		TotalCostCents:    totalCost,
-		Status:            OrderStatusFilled,
-		IdempotencyKey:    idempotencyKey,
-		FilledAt:          &now,
-		CreatedAt:         now,
-		UpdatedAt:         now,
-	}
-
-	trade := &Trade{
-		MarketID:   req.MarketID,
-		BuyOrderID: &order.ID,
-		BuyerID:    userID,
-		Side:       req.Side,
-		PriceCents: priceCents,
-		Quantity:   req.Quantity,
-		FeeCents:   int(feeCents),
-		IsAMMTrade: true,
-		TradedAt:   now,
-	}
-
-	// Build the final position snapshot before persisting so the repository can
-	// commit the fill as one prediction-side unit.
-	var position *Position
-	existing, _ := s.repo.GetPosition(ctx, userID, req.MarketID, req.Side)
-	if existing != nil {
-		totalQty := existing.Quantity + req.Quantity
-		totalCostAll := existing.TotalCostCents + totalCost
-		existing.AvgPriceCents = int(totalCostAll / int64(totalQty))
-		existing.Quantity = totalQty
-		existing.TotalCostCents = totalCostAll
-		existing.UpdatedAt = now
-		position = existing
-	} else {
-		position = &Position{
-			UserID:         userID,
-			MarketID:       req.MarketID,
-			Side:           req.Side,
-			Quantity:       req.Quantity,
-			AvgPriceCents:  int(totalCost / int64(req.Quantity)),
-			TotalCostCents: totalCost,
-			CreatedAt:      now,
-			UpdatedAt:      now,
-		}
-	}
-
-	if atomicRepo, ok := s.repo.(AtomicFilledOrderPersister); ok {
-		if _, walletIsTxCapable := s.wallet.(TxWalletAdapter); walletIsTxCapable {
-			if err := atomicRepo.PersistFilledOrderAtomic(
-				ctx,
-				s.wallet,
-				userID,
-				totalCost,
-				debitKey,
-				debitReason,
-				order,
-				trade,
-				position,
-				market,
-			); err != nil {
-				return nil, nil, fmt.Errorf("persist filled order atomically: %w", err)
-			}
-			if rgRecorded > 0 {
-				// codex-#4 atomic path: committed was recorded at the gate;
-				// mark filled so the deferred reconcile releases
-				// committed−realized. Do NOT record again here.
-				ammFilled = true
-				ammRealized = realizedStakeCents(order)
-			} else {
-				s.recordComplianceOrder(ctx, userID, realizedStakeCents(order))
-			}
-			return order, trade, nil
-		}
-	}
-
-	// Fallback path for memory-mode/local tests where wallet and prediction
-	// state cannot share one SQL transaction.
-	if err := s.wallet.Debit(userID, totalCost, debitKey, debitReason); err != nil {
-		return nil, nil, fmt.Errorf("wallet debit failed: %w", err)
-	}
-
-	if err := s.repo.PersistFilledOrder(ctx, order, trade, position, market); err != nil {
-		_ = s.wallet.Credit(userID, totalCost, debitKey+":refund",
-			fmt.Sprintf("refund: filled order persistence failed for %s", market.Ticker))
-		return nil, nil, fmt.Errorf("persist filled order: %w", err)
-	}
-
-	if rgRecorded > 0 {
-		ammFilled = true
-		ammRealized = realizedStakeCents(order)
-	} else {
-		s.recordComplianceOrder(ctx, userID, realizedStakeCents(order))
-	}
-	return order, trade, nil
+	return nil, nil, fmt.Errorf("market %s uses the retired AMM engine and is no longer tradeable; existing positions can still be settled", market.Ticker)
 }
 
 // placeExchangeOrder is the order-book execution path. Validates, loads the
@@ -982,120 +970,137 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 		return nil, nil, false, fmt.Errorf("create pending order: %w", err)
 	}
 
-	// Load candidate makers for both match modes. The engine will pick which
-	// fills to execute based on price-time priority and feasibility.
-	makersSec, err := exchangeRepo.LoadMakersForSecondary(ctx, market.ID, req.Side, req.Action, req.PriceCents, MaxOrderBookDepth)
-	if err != nil {
-		return nil, nil, false, fmt.Errorf("load secondary makers: %w", err)
-	}
-	var makersIss []Order
-	if req.Action == OrderActionBuy {
-		otherSide := OrderSideNo
-		if req.Side == OrderSideNo {
-			otherSide = OrderSideYes
-		}
-		// For market buys the taker has no explicit price; treat it as
-		// willing to pay up to the highest in-band price (MaxTickPriceCents)
-		// for issuance feasibility. That makes every Buy-NO maker eligible
-		// because `taker_limit + maker_limit >= par` reduces to
-		// `99 + maker_limit >= 100`, which is true for any maker_limit >= 1.
-		// The notional cap on the request bounds the dollar exposure
-		// upstream of the match loop.
-		//
-		// Before this change, market buys returned "cancelled — no matching
-		// liquidity" on every order_book market even when SMM-provided Buy-NO
-		// quotes were sitting on the book — flagged in SMM Phase 1's runbook
-		// known-constraint section. With this fix, the default trade ticket
-		// (market buy) fills against issuance makers correctly.
-		takerLimit := MaxTickPriceCents
-		if req.PriceCents != nil {
-			takerLimit = *req.PriceCents
-		}
-		makersIss, err = exchangeRepo.LoadMakersForIssuance(ctx, market.ID, otherSide, takerLimit, MaxOrderBookDepth)
-		if err != nil {
-			return nil, nil, false, fmt.Errorf("load issuance makers: %w", err)
-		}
-	}
-
+	// Match attempt loop. The plan is built from a snapshot of the book read
+	// OUTSIDE the per-market lock, then PersistMatchAtomic re-asserts each
+	// touched maker's fill state under the lock. If a concurrent taker moved a
+	// maker between our read and the commit, PersistMatchAtomic returns
+	// ErrBookChanged and we re-load the book and re-plan rather than writing
+	// stale absolute fill values that would regress the maker (audit COR-02).
+	// Bounded so a pathologically hot market can't spin forever; the taker
+	// order row is pristine across attempts (BuildPlan copies it).
 	engine := NewExchangeEngine()
-	plan, err := engine.BuildPlan(MatchInput{
-		Market:          *market,
-		Taker:           *taker,
-		MakersSecondary: makersSec,
-		MakersIssuance:  makersIss,
-		TakerPosition:   position,
-		Now:             now,
-		IDFactory:       newUUIDString,
-	})
-	if err != nil {
-		// Engine sentinel rejection (FOK / post-only / self-match). Mark the
-		// already-persisted pending order as rejected and surface the reason.
-		reason := err.Error()
-		taker.Status = OrderStatusRejected
-		taker.FailureReason = &reason
-		_ = s.repo.UpdateOrder(ctx, taker)
-		s.metrics.RecordOrder(market.ID, req.Side, req.Action, req.OrderType, OrderStatusRejected)
-		return taker, nil, false, nil
-	}
-
-	// Wallet hold for buys: reserve worst-case spend up front. The match
-	// captures incrementally; any unfilled remainder is released by
-	// applyTIF or the caller's cancel flow.
-	if req.Action == OrderActionBuy && totalCost > 0 {
-		plan.HoldReservation = &ReservationHold{
-			UserID:      userID,
-			AmountCents: totalCost,
-			Type:        "prediction_order",
-			ID:          taker.ID,
-			ExpiresIn:   reservationTTL(tif, market.CloseAt, now),
+	const maxMatchAttempts = 3
+	for attempt := 1; attempt <= maxMatchAttempts; attempt++ {
+		// Load candidate makers for both match modes. The engine will pick which
+		// fills to execute based on price-time priority and feasibility.
+		makersSec, err := exchangeRepo.LoadMakersForSecondary(ctx, market.ID, req.Side, req.Action, req.PriceCents, MaxOrderBookDepth)
+		if err != nil {
+			return nil, nil, false, fmt.Errorf("load secondary makers: %w", err)
 		}
-	}
+		var makersIss []Order
+		if req.Action == OrderActionBuy {
+			otherSide := OrderSideNo
+			if req.Side == OrderSideNo {
+				otherSide = OrderSideYes
+			}
+			// For market buys the taker has no explicit price; treat it as
+			// willing to pay up to the highest in-band price (MaxTickPriceCents)
+			// for issuance feasibility. That makes every Buy-NO maker eligible
+			// because `taker_limit + maker_limit >= par` reduces to
+			// `99 + maker_limit >= 100`, which is true for any maker_limit >= 1.
+			// The notional cap on the request bounds the dollar exposure
+			// upstream of the match loop.
+			takerLimit := MaxTickPriceCents
+			if req.PriceCents != nil {
+				takerLimit = *req.PriceCents
+			}
+			makersIss, err = exchangeRepo.LoadMakersForIssuance(ctx, market.ID, otherSide, takerLimit, MaxOrderBookDepth)
+			if err != nil {
+				return nil, nil, false, fmt.Errorf("load issuance makers: %w", err)
+			}
+		}
 
-	if err := exchangeRepo.PersistMatchAtomic(ctx, exchangeWallet, plan); err != nil {
-		// The pending order row is already committed (the INSERT at the
-		// top of this function happens outside the match tx so the trade
-		// FKs can resolve). PersistMatchAtomic's tx rolls back its own
-		// inserts on error, but the pending order survives. Without
-		// cleanup it sits as a status='pending' orphan with no fills,
-		// no reservations, and no cancelled_at — users see "Order failed"
-		// in the toast but /portfolio/ keeps showing it as pending until
-		// the next demo-seed Phase 0 sweep cancels stale-pendings >1h.
-		// Mirror the engine-error path (line ~470 above): mark the order
-		// rejected with the rollback reason. The taker pointer is still
-		// the latest in-memory state, so failed-fill counters / failure
-		// reasons propagate to the response.
-		reason := err.Error()
+		plan, err := engine.BuildPlan(MatchInput{
+			Market:          *market,
+			Taker:           *taker,
+			MakersSecondary: makersSec,
+			MakersIssuance:  makersIss,
+			TakerPosition:   position,
+			Now:             now,
+			IDFactory:       newUUIDString,
+		})
+		if err != nil {
+			// Engine sentinel rejection (FOK / post-only / self-match). Mark the
+			// already-persisted pending order as rejected and surface the reason.
+			reason := err.Error()
+			taker.Status = OrderStatusRejected
+			taker.FailureReason = &reason
+			if uerr := s.repo.UpdateOrder(ctx, taker); uerr != nil {
+				// A failed mark leaves a phantom 'pending' order the demo sweep
+				// only clears after >1h; log so it's visible (audit COR-04).
+				slog.WarnContext(ctx, "failed to mark rejected order after engine rejection",
+					"order_id", taker.ID, "market_id", market.ID, "error", uerr)
+			}
+			s.metrics.RecordOrder(market.ID, req.Side, req.Action, req.OrderType, OrderStatusRejected)
+			return taker, nil, false, nil
+		}
+
+		// Wallet hold for buys: reserve worst-case spend up front. The match
+		// captures incrementally; any unfilled remainder is released by
+		// applyTIF or the caller's cancel flow. HoldWithTx is idempotent by
+		// (type,id), so a retry re-holds harmlessly after the prior attempt's
+		// tx rolled back.
+		if req.Action == OrderActionBuy && totalCost > 0 {
+			plan.HoldReservation = &ReservationHold{
+				UserID:      userID,
+				AmountCents: totalCost,
+				Type:        "prediction_order",
+				ID:          taker.ID,
+				ExpiresIn:   reservationTTL(tif, market.CloseAt, now),
+			}
+		}
+
+		perr := exchangeRepo.PersistMatchAtomic(ctx, exchangeWallet, plan)
+		if perr == nil {
+			// Success. Domain metrics: one order observation by final status,
+			// one trade observation per fill.
+			s.metrics.RecordOrder(market.ID, req.Side, req.Action, req.OrderType, plan.Taker.Status)
+			for _, t := range plan.Trades {
+				s.metrics.RecordTrade(market.ID, t.TradeKind, t.EngineKind)
+			}
+			// Post-commit: refresh top-of-book snapshot. Best-effort — derived
+			// columns self-heal on the next match (audit COR-04).
+			if rerr := exchangeRepo.RefreshMarketBestQuotes(ctx, market.ID); rerr != nil {
+				slog.WarnContext(ctx, "refresh best quotes after match failed",
+					"market_id", market.ID, "error", rerr)
+			}
+			var firstTrade *Trade
+			if len(plan.Trades) > 0 {
+				t := plan.Trades[0]
+				firstTrade = &t
+			}
+			return &plan.Taker, firstTrade, false, nil
+		}
+
+		// A maker moved under the lock: re-load the book and re-plan, up to the
+		// attempt bound. The failed attempt's tx already rolled back (no fills,
+		// no captures), so nothing to undo.
+		if errors.Is(perr, ErrBookChanged) && attempt < maxMatchAttempts {
+			slog.InfoContext(ctx, "match replan: book changed under lock",
+				"order_id", taker.ID, "market_id", market.ID, "attempt", attempt)
+			continue
+		}
+
+		// Terminal persist failure (or retries exhausted). The pending order
+		// row committed before the match tx (so trade FKs resolve); mark it
+		// rejected so it isn't a phantom 'pending' until the stale sweep.
+		reason := perr.Error()
+		if errors.Is(perr, ErrBookChanged) {
+			reason = "order book is moving too fast; please retry"
+		}
 		taker.Status = OrderStatusRejected
 		taker.FailureReason = &reason
-		_ = s.repo.UpdateOrder(ctx, taker)
+		if uerr := s.repo.UpdateOrder(ctx, taker); uerr != nil {
+			slog.WarnContext(ctx, "failed to mark rejected order after persist-match failure",
+				"order_id", taker.ID, "market_id", market.ID, "error", uerr)
+		}
 		s.metrics.RecordOrder(market.ID, req.Side, req.Action, req.OrderType, OrderStatusRejected)
-		return taker, nil, false, fmt.Errorf("persist match: %w", err)
+		return taker, nil, false, fmt.Errorf("persist match: %w", perr)
 	}
 
-	// Domain metrics: one order observation by final status, one trade
-	// observation per fill. Cheap (a few map ops under a mutex). Failure
-	// to record is silent — see Metrics docstring.
-	s.metrics.RecordOrder(market.ID, req.Side, req.Action, req.OrderType, plan.Taker.Status)
-	for _, t := range plan.Trades {
-		s.metrics.RecordTrade(market.ID, t.TradeKind, t.EngineKind)
-	}
-
-	// Post-commit: refresh top-of-book snapshot on the market row so
-	// market:<id> subscribers see the new best bid/ask. Best-effort —
-	// failures here don't roll back the match (the columns are derived
-	// data; a missed refresh self-heals on the next match).
-	if err := exchangeRepo.RefreshMarketBestQuotes(ctx, market.ID); err != nil {
-		// Log via existing pattern; don't propagate. The next match — or
-		// a periodic background refresher — will fix the staleness.
-		_ = err
-	}
-
-	var firstTrade *Trade
-	if len(plan.Trades) > 0 {
-		t := plan.Trades[0]
-		firstTrade = &t
-	}
-	return &plan.Taker, firstTrade, false, nil
+	// Unreachable: the loop returns on success, engine rejection, or terminal
+	// failure. Present so the function has a terminal statement.
+	return taker, nil, false, fmt.Errorf("match exhausted %d attempts", maxMatchAttempts)
 }
 
 // worstCaseSpend computes the maximum cents a buy order could spend. For
@@ -1183,8 +1188,8 @@ func ensureOrderIdempotencyKey(req PlaceOrderRequest, userID string) *string {
 // no-op (returns the current state via the repo's update path).
 //
 // For exchange-mode orders the cancellation runs in a tx that releases the
-// uncaptured cash reservation alongside the order status update, so the two
-// commit together (no window where cash is held but the order is gone).
+// uncaptured point reservation alongside the order status update, so the two
+// commit together (no window where points are held but the order is gone).
 // For AMM orders we just update the order row.
 func (s *Service) CancelOrder(ctx context.Context, orderID, userID string) error {
 	order, err := s.repo.GetOrder(ctx, orderID)
@@ -1235,59 +1240,16 @@ func (s *Service) cancelExchangeOrder(ctx context.Context, exchangeWallet Exchan
 // the order's original commit period — D-5). Buy orders had cash held; sell
 // orders had shares reserved and those share locks are released here.
 func (s *Service) finalizeRestingExchangeOrder(ctx context.Context, exchangeWallet ExchangeWalletAdapter, order *Order, terminal OrderStatus) error {
-	tx, err := exchangeWallet.BeginExchangeTx(ctx)
+	finalizer, ok := s.repo.(RestingOrderFinalizer)
+	if !ok {
+		return fmt.Errorf("exchange order finalizer unavailable")
+	}
+	reservedCents, capturedCents, placedAt, err := finalizer.FinalizeRestingOrderAtomic(ctx, exchangeWallet, order, terminal)
 	if err != nil {
-		return fmt.Errorf("begin %s tx: %w", terminal, err)
-	}
-	defer func() { _ = tx.Rollback() }()
-
-	// Release the uncaptured cash reservation. Idempotent: if the order
-	// never had a reservation (e.g., a sell), this is a no-op at the wallet.
-	if err := exchangeWallet.ReleaseReservationWithTx(ctx, tx, "prediction_order", order.ID); err != nil {
-		return fmt.Errorf("release reservation: %w", err)
-	}
-	if order.Action == OrderActionSell && order.RemainingQuantity > 0 {
-		if _, err := tx.ExecContext(ctx,
-			`UPDATE prediction_positions
-			    SET reserved_quantity = GREATEST(reserved_quantity - $4, 0),
-			        updated_at = NOW()
-			  WHERE user_id = $1 AND market_id = $2 AND side = $3`,
-			order.UserID, order.MarketID, string(order.Side), order.RemainingQuantity,
-		); err != nil {
-			return fmt.Errorf("release reserved shares: %w", err)
-		}
+		return err
 	}
 
-	// Update order row inside the same tx via direct SQL — we don't have a
-	// "withTx" repo method for this, so we run it here. SQL kept narrow.
-	// RETURNING the reservation columns (GetOrder's narrower scan does not
-	// load them) gives the exact committed-vs-captured split for the RG
-	// release below, without widening the shared order scan path.
-	// cancelled_at is only meaningful for a user cancel; an expiry leaves
-	// it NULL (the order was not cancelled — its market closed under it).
 	now := time.Now().UTC()
-	var cancelledAt interface{}
-	if terminal == OrderStatusCancelled {
-		cancelledAt = now
-	}
-	var reservedCents, capturedCents int64
-	var placedAt time.Time
-	if err := tx.QueryRowContext(ctx,
-		`UPDATE prediction_orders
-		   SET status = $2,
-		       reserved_quantity = 0,
-		       cancelled_at = $3,
-		       updated_at = NOW()
-		 WHERE id = $1
-		 RETURNING reserved_cash_cents, captured_cash_cents, created_at`,
-		order.ID, string(terminal), cancelledAt,
-	).Scan(&reservedCents, &capturedCents, &placedAt); err != nil {
-		return fmt.Errorf("update order to %s: %w", terminal, err)
-	}
-
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("commit %s tx: %w", terminal, err)
-	}
 	order.Status = terminal
 	if terminal == OrderStatusCancelled {
 		order.CancelledAt = &now
@@ -1312,7 +1274,7 @@ func (s *Service) finalizeRestingExchangeOrder(ctx context.Context, exchangeWall
 // transition path (admin TransitionMarketStatus, the MarketCloser worker,
 // or SettlementEngine void) finalizes resting orders, so without this sweep
 // the order's RG committed stake stays counted toward the user's period
-// bet-limit and its wallet cash reservation stays held — indefinitely
+// risk limit and its wallet point reservation stays held — indefinitely
 // (expired-order residual). Each order is finalized to OrderStatusExpired
 // via the same tx + RG-reconcile path as a user cancel. Best-effort: a
 // per-order failure is counted and retried on the next tick; returns
@@ -1372,6 +1334,31 @@ func (s *Service) VoidMarket(ctx context.Context, marketID, reason string, actor
 	return s.settlement.VoidMarket(ctx, marketID, reason, actorID)
 }
 
+// ResumeIncompleteSettlements finishes disbursing any settlement whose batched
+// payouts did not complete (P3-12 / COR-05). Delegates to the settlement engine
+// so resume reuses the same loyalty/tier wiring as the live settle path.
+func (s *Service) ResumeIncompleteSettlements(ctx context.Context) (int, error) {
+	return s.settlement.ResumeIncompleteSettlements(ctx)
+}
+
+// GetMarketJurisdictionPolicy returns a market's per-market jurisdiction overlay
+// (P3-07), or (nil, nil) when none is set or the repo doesn't support overlays.
+func (s *Service) GetMarketJurisdictionPolicy(ctx context.Context, marketID string) (*MarketJurisdictionPolicy, error) {
+	if store, ok := s.repo.(MarketJurisdictionStore); ok {
+		return store.GetMarketJurisdictionPolicy(ctx, marketID)
+	}
+	return nil, nil
+}
+
+// SetMarketJurisdictionPolicy writes or clears a market's jurisdiction overlay.
+// Returns ErrJurisdictionUnsupported when the repo has no overlay storage.
+func (s *Service) SetMarketJurisdictionPolicy(ctx context.Context, marketID string, policy *MarketJurisdictionPolicy) error {
+	if store, ok := s.repo.(MarketJurisdictionStore); ok {
+		return store.SetMarketJurisdictionPolicy(ctx, marketID, policy)
+	}
+	return ErrJurisdictionUnsupported
+}
+
 // SetResolutionStore wires the propose -> finalize resolution store onto the
 // settlement engine. Pass nil to disable the windowed path.
 func (s *Service) SetResolutionStore(store ResolutionStore) {
@@ -1427,11 +1414,12 @@ func (s *Service) TransitionMarketStatus(ctx context.Context, marketID string, t
 		return fmt.Errorf("market not found: %w", err)
 	}
 
+	prev := market.Status
 	if err := TransitionMarket(market, to); err != nil {
 		return err
 	}
 
-	if err := s.repo.UpdateMarketStatus(ctx, marketID, to); err != nil {
+	if err := s.repo.UpdateMarketStatus(ctx, marketID, to, prev); err != nil {
 		return fmt.Errorf("update market status: %w", err)
 	}
 
@@ -1491,31 +1479,25 @@ func (s *Service) CreateEvent(ctx context.Context, req CreateEventRequest) (*Eve
 }
 
 func (s *Service) CreateMarket(ctx context.Context, req CreateMarketRequest) (*Market, error) {
-	b := req.AMMLiquidityParam
-	if b <= 0 {
-		b = 100
+	if marketHasLaunchProhibitedContent(req) {
+		return nil, ErrLaunchProhibitedMarket
 	}
-
-	// Fee policy: req.FeeRateBps == 0 means "use the platform default"
-	// rather than "this market is fee-free." The 2026-04-24 fee-model
-	// design call settled on DefaultTakerFeeBps (100 bps). To set a
-	// market to true zero fees, callers can pass a negative value and
-	// we clamp to zero — keeps the explicit-fee-free path available
-	// without making it the silent default.
-	feeBps := req.FeeRateBps
-	if feeBps == 0 {
-		feeBps = DefaultTakerFeeBps
-	} else if feeBps < 0 {
-		feeBps = 0
-	}
+	b := defaultAMMLiquidityParam(req.AMMLiquidityParam)
+	feeBps := defaultMarketFeeRateBps(req.FeeRateBps)
 
 	market := &Market{
-		EventID:             req.EventID,
-		Ticker:              req.Ticker,
-		Title:               req.Title,
-		Description:         req.Description,
-		Translations:        defaultJSONObject(req.Translations),
-		Status:              MarketStatusUnopened,
+		EventID:      req.EventID,
+		Ticker:       req.Ticker,
+		Title:        req.Title,
+		Description:  req.Description,
+		Translations: defaultJSONObject(req.Translations),
+		Status:       MarketStatusUnopened,
+		// New markets are always order-book; the AMM is a legacy mode kept
+		// only for pre-019 markets and is slated for removal (audit COR-03 /
+		// P2-09). Setting it explicitly (the DB default agrees) documents the
+		// intent and guards against a future INSERT that starts writing the
+		// column.
+		ExecutionMode:       ExecutionModeOrderBook,
 		YesPriceCents:       50,
 		NoPriceCents:        50,
 		AMMLiquidityParam:   b,
@@ -1553,6 +1535,107 @@ func (s *Service) CreateMarket(ctx context.Context, req CreateMarketRequest) (*M
 	})
 
 	return market, nil
+}
+
+// UpdateMarket lets admins edit market metadata and settlement controls without
+// bypassing the lifecycle FSM. Status/result changes still go through the
+// lifecycle and resolution APIs.
+func (s *Service) UpdateMarket(ctx context.Context, marketID string, req CreateMarketRequest) (*Market, error) {
+	if strings.TrimSpace(marketID) == "" {
+		return nil, fmt.Errorf("market id is required")
+	}
+	if marketHasLaunchProhibitedContent(req) {
+		return nil, ErrLaunchProhibitedMarket
+	}
+	market, err := s.repo.GetMarket(ctx, marketID)
+	if err != nil {
+		return nil, fmt.Errorf("get market: %w", err)
+	}
+	if market.Status == MarketStatusSettled || market.Status == MarketStatusVoided {
+		return nil, fmt.Errorf("terminal markets cannot be edited")
+	}
+
+	market.EventID = req.EventID
+	market.Ticker = req.Ticker
+	market.Title = req.Title
+	market.Description = req.Description
+	market.Translations = defaultJSONObject(req.Translations)
+	market.AMMLiquidityParam = defaultAMMLiquidityParam(req.AMMLiquidityParam)
+	market.AMMSubsidyCents = req.AMMSubsidyCents
+	market.SettlementSourceKey = req.SettlementSourceKey
+	market.SettlementRule = req.SettlementRule
+	market.SettlementParams = defaultJSONObject(req.SettlementParams)
+	market.SettlementCutoffAt = req.SettlementCutoffAt
+	market.FallbackSourceKey = req.FallbackSourceKey
+	market.FeeRateBps = defaultMarketFeeRateBps(req.FeeRateBps)
+	market.CloseAt = req.CloseAt
+	market.ArticleSourceID = req.ArticleSourceID
+	market.UpdatedAt = time.Now().UTC()
+
+	if err := s.repo.UpdateMarket(ctx, market); err != nil {
+		return nil, fmt.Errorf("update market: %w", err)
+	}
+	reason := "market edited by admin"
+	s.repo.CreateLifecycleEvent(ctx, &LifecycleEvent{
+		MarketID:   market.ID,
+		EventType:  "edited",
+		ActorID:    req.CreatedBy,
+		ActorType:  "admin",
+		Reason:     &reason,
+		OccurredAt: market.UpdatedAt,
+	})
+	return market, nil
+}
+
+func defaultAMMLiquidityParam(value float64) float64 {
+	if value <= 0 {
+		return 100
+	}
+	return value
+}
+
+func defaultMarketFeeRateBps(value int) int {
+	// Fee policy: value == 0 means "use the platform default" rather than
+	// "this market is fee-free." To set a market to true zero fees, callers can
+	// pass a negative value and we clamp to zero.
+	if value == 0 {
+		return DefaultTakerFeeBps
+	}
+	if value < 0 {
+		return 0
+	}
+	return value
+}
+
+func marketHasLaunchProhibitedContent(req CreateMarketRequest) bool {
+	source := strings.ToLower(strings.TrimSpace(req.SettlementSourceKey))
+	if _, ok := launchAllowedSettlementSources[source]; !ok {
+		return true
+	}
+	if req.FallbackSourceKey != nil {
+		fallback := strings.ToLower(strings.TrimSpace(*req.FallbackSourceKey))
+		if fallback != "" {
+			if _, ok := launchAllowedSettlementSources[fallback]; !ok {
+				return true
+			}
+		}
+	}
+	rule := strings.ToLower(strings.TrimSpace(req.SettlementRule))
+	if _, ok := launchProhibitedSettlementRules[rule]; ok {
+		return true
+	}
+	for _, field := range []string{
+		req.Ticker,
+		req.Title,
+		req.Description,
+		string(req.SettlementParams),
+		string(req.Translations),
+	} {
+		if textHasLaunchProhibitedCategoryTerm(field) {
+			return true
+		}
+	}
+	return false
 }
 
 // CreateArticleSource persists (deduped on TextHash) the provenance record for

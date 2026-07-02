@@ -120,7 +120,11 @@ func (a *AMMEngine) PreviewTrade(market *Market, side OrderSide, action OrderAct
 		return nil, err
 	}
 
-	feeCents := a.CalculateFee(market.YesPriceCents, qty, market.FeeRateBps)
+	currentPrice := market.YesPriceCents
+	if side == OrderSideNo {
+		currentPrice = market.NoPriceCents
+	}
+	feeCents := a.CalculateFee(currentPrice, qty, market.FeeRateBps)
 
 	// Compute new prices after trade
 	newQYes, newQNo := market.AMMYesShares, market.AMMNoShares
@@ -140,7 +144,7 @@ func (a *AMMEngine) PreviewTrade(market *Market, side OrderSide, action OrderAct
 		Side:        side,
 		Action:      action,
 		Quantity:    qty,
-		PriceCents:  a.PriceCentsYes(market.AMMYesShares, market.AMMNoShares, b),
+		PriceCents:  currentPrice,
 		TotalCost:   costCents,
 		FeeCents:    feeCents,
 		MaxProfit:   maxProfit,

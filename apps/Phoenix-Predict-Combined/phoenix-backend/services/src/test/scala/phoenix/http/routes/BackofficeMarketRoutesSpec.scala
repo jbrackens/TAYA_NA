@@ -176,7 +176,7 @@ final class BackofficeMarketRoutesSpec extends RoutesSpecSupport {
         new EmptyReportsModule()))
   }
 
-  implicit val underTest = Route.seal(routes.toAkkaHttp)
+  implicit val underTest: akka.http.scaladsl.server.Route = Route.seal(routes.toAkkaHttp)
 
   "Backoffice market routes" when {
     "GET /admin/trading/markets" should {

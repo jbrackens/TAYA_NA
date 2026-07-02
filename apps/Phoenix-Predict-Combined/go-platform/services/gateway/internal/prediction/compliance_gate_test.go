@@ -19,11 +19,11 @@ type fakeCompliance struct {
 	reason        string
 	denyErr       error // returned alongside allowed=false on a deliberate deny
 	infraErr      error // returned alongside allowed=true (could not evaluate)
-	checkCalls   []int64
-	recordErr    error
-	recordCalls  []int64
-	releaseErr   error
-	releaseCalls []int64
+	checkCalls    []int64
+	recordErr     error
+	recordCalls   []int64
+	releaseErr    error
+	releaseCalls  []int64
 }
 
 func (f *fakeCompliance) CheckBetAllowed(_ context.Context, _ string, stakeCents int64) (bool, string, error) {
@@ -74,8 +74,11 @@ func TestPlaceOrder_BlockedByComplianceGate(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected PlaceOrder to be blocked by the compliance gate, got nil error")
 	}
-	if got := err.Error(); got != "Bet limit exceeded for daily period" {
-		t.Fatalf("expected RG reason surfaced verbatim, got %q", got)
+	if got := err.Error(); got != "Prediction limit exceeded for daily period" {
+		t.Fatalf("expected launch-safe RG reason surfaced, got %q", got)
+	}
+	if strings.Contains(err.Error(), "Bet limit") || strings.Contains(err.Error(), "bet limit") {
+		t.Fatalf("order error must not expose inherited bet-limit wording, got %q", err.Error())
 	}
 	if len(rg.checkCalls) != 1 {
 		t.Fatalf("expected exactly 1 CheckBetAllowed call, got %d", len(rg.checkCalls))
@@ -126,8 +129,11 @@ func TestPlaceOrder_DenyWithSentinelError_BlocksEvenInDev(t *testing.T) {
 	if err == nil {
 		t.Fatal("deny carrying a sentinel error must still block in dev, got nil (LC-17 regression)")
 	}
-	if got := err.Error(); got != "Bet limit exceeded for daily period" {
-		t.Fatalf("expected the RG reason, not the sentinel, surfaced; got %q", got)
+	if got := err.Error(); got != "Prediction limit exceeded for daily period" {
+		t.Fatalf("expected the launch-safe RG reason, not the sentinel, surfaced; got %q", got)
+	}
+	if strings.Contains(err.Error(), "Bet limit") || strings.Contains(err.Error(), "bet limit") {
+		t.Fatalf("order error must not expose inherited bet-limit wording, got %q", err.Error())
 	}
 	if len(wallet.debitCalls) != 0 {
 		t.Errorf("blocked order must not debit wallet; got %d", len(wallet.debitCalls))
@@ -136,72 +142,8 @@ func TestPlaceOrder_DenyWithSentinelError_BlocksEvenInDev(t *testing.T) {
 
 // An allowed gate must let the order through and record realized stake for
 // cumulative period-limit tracking.
-func TestPlaceOrder_RecordsRealizedStakeOnComplianceSuccess(t *testing.T) {
-	repo := newMemRepo()
-	seedMarket(t, repo)
-	wallet := newFakeWallet(10000)
-	svc := NewService(repo, wallet)
-
-	rg := &fakeCompliance{deny: false}
-	svc.SetComplianceChecker(rg)
-
-	// A real RG-gated market buy carries a notional cap (the HTTP handler
-	// requires one). With a cap that bounds the cost, the gate evaluates
-	// worstCaseSpend once and the AMM cost stays within it — no actual-cost
-	// re-gate (that path only fires for a capless/under-bounded AMM buy).
-	cap := int64(100000)
-	order, trade, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:         "mkt-1",
-		Side:             OrderSideYes,
-		Action:           OrderActionBuy,
-		OrderType:        OrderTypeMarket,
-		Quantity:         10,
-		NotionalCapCents: &cap,
-	}, "user1")
-	if err != nil {
-		t.Fatalf("PlaceOrder failed: %v", err)
-	}
-	if order == nil || trade == nil {
-		t.Fatal("expected order and trade to be non-nil")
-	}
-	if len(rg.checkCalls) != 1 {
-		t.Fatalf("expected exactly 1 CheckBetAllowed call, got %d", len(rg.checkCalls))
-	}
-	if len(rg.recordCalls) != 1 {
-		t.Fatalf("expected exactly 1 RecordBet call on success, got %d", len(rg.recordCalls))
-	}
-	if rg.recordCalls[0] != order.TotalCostCents {
-		t.Errorf("RecordBet stake mismatch: want realized cost %d, got %d",
-			order.TotalCostCents, rg.recordCalls[0])
-	}
-}
-
 // No checker wired = no behavior change (regression guard for the pre-LC-17
 // path used by tests and any deployment that has not enabled RG).
-func TestPlaceOrder_NilComplianceChecker_NoOp(t *testing.T) {
-	repo := newMemRepo()
-	seedMarket(t, repo)
-	wallet := newFakeWallet(10000)
-	svc := NewService(repo, wallet) // no SetComplianceChecker
-
-	order, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:  "mkt-1",
-		Side:      OrderSideYes,
-		Action:    OrderActionBuy,
-		OrderType: OrderTypeMarket,
-		Quantity:  10,
-	}, "user1")
-	if err != nil {
-		t.Fatalf("PlaceOrder with nil compliance checker must behave as before: %v", err)
-	}
-	if order == nil {
-		t.Fatal("expected order to be placed")
-	}
-	if len(wallet.debitCalls) != 1 {
-		t.Errorf("expected normal debit with nil checker, got %d", len(wallet.debitCalls))
-	}
-}
-
 // realizedStakeCents must report cash actually staked, never the reserved
 // notional — over-counting a thin/partial fill would wrongly lock a user out
 // for the rest of the RG period (UAT 2026-05-16 LC-17).
@@ -236,123 +178,14 @@ func TestRealizedStakeCents(t *testing.T) {
 // a large LMSR spend both fat-finger the wallet and slip the RG gate (the gate
 // saw the small cap, the wallet was debited the real cost). Fails on pre-fix
 // code (order filled, wallet debited > cap, stake recorded > cap).
-func TestPlaceOrder_AMMMarketBuy_RejectedWhenCostExceedsNotionalCap(t *testing.T) {
-	repo := newMemRepo()
-	seedMarket(t, repo) // mkt-1: ExecutionMode unset → AMM path
-	wallet := newFakeWallet(1_000_000) // ample balance, so balance is not the blocker
-	svc := NewService(repo, wallet)
-
-	rg := &fakeCompliance{deny: false}
-	svc.SetComplianceChecker(rg)
-
-	tinyCap := int64(1) // 1 cent — far below the LMSR cost of qty 50
-	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:         "mkt-1",
-		Side:             OrderSideYes,
-		Action:           OrderActionBuy,
-		OrderType:        OrderTypeMarket,
-		Quantity:         50,
-		NotionalCapCents: &tinyCap,
-	}, "user1")
-
-	if err == nil {
-		t.Fatal("AMM market buy whose cost exceeds notionalCapCents must be rejected (D-5 P1 #1)")
-	}
-	if got := err.Error(); !strings.Contains(got, "exceeds notional cap") {
-		t.Fatalf("expected a notional-cap rejection, got %q", got)
-	}
-	if len(wallet.debitCalls) != 0 {
-		t.Errorf("rejected over-cap order must not debit the wallet; got %d", len(wallet.debitCalls))
-	}
-	if repo.persistCalls != 0 {
-		t.Errorf("rejected over-cap order must not persist; got %d", repo.persistCalls)
-	}
-	// The RG-soundness crux: the gate was evaluated on the under-estimated cap,
-	// but the order is now stopped before any debit, so the under-estimate can
-	// no longer be a vector to slip a large AMM spend past RG accounting.
-	if len(rg.checkCalls) != 1 || rg.checkCalls[0] != tinyCap {
-		t.Fatalf("expected gate evaluated once on the cap (%d); got %v", tinyCap, rg.checkCalls)
-	}
-	if len(rg.recordCalls) != 0 {
-		t.Errorf("rejected order must not record stake; got %v", rg.recordCalls)
-	}
-}
-
 // D-5 codex re-review P1 #1: a capless AMM buy has worstCaseSpend == 0, so
 // the initial RG gate evaluates stake 0 and a per-bet/period limit cannot
 // block it. The HTTP handler rejects capless market buys but the bot path
 // calls PlaceOrder directly and bypasses that. The fix re-gates on the
 // actual LMSR cost before executing. Stake-aware checker: allows 0, denies
 // at/above 100c. Pre-fix (no re-gate) the order filled (under-gated).
-func TestPlaceOrder_AMMCaplessBuy_ReGatedOnActualCost(t *testing.T) {
-	repo := newMemRepo()
-	seedMarket(t, repo) // AMM (ExecutionMode unset)
-	wallet := newFakeWallet(1_000_000)
-	svc := NewService(repo, wallet)
-
-	rg := &fakeCompliance{denyAtOrAbove: 100, reason: "Bet limit exceeded for daily period"}
-	svc.SetComplianceChecker(rg)
-
-	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:  "mkt-1",
-		Side:      OrderSideYes,
-		Action:    OrderActionBuy,
-		OrderType: OrderTypeMarket,
-		Quantity:  10, // no NotionalCapCents → worstCaseSpend == 0
-	}, "user1")
-
-	if err == nil {
-		t.Fatal("capless AMM buy must be re-gated on actual cost and blocked (D-5 P1 #1)")
-	}
-	if got := err.Error(); got != "Bet limit exceeded for daily period" {
-		t.Fatalf("expected the RG reason surfaced, got %q", got)
-	}
-	if len(rg.checkCalls) != 2 {
-		t.Fatalf("expected 2 gate calls (initial stake 0, then re-gate on actual cost), got %v", rg.checkCalls)
-	}
-	if rg.checkCalls[0] != 0 {
-		t.Errorf("initial gate must see worstCaseSpend 0 for a capless buy, got %d", rg.checkCalls[0])
-	}
-	if rg.checkCalls[1] <= 0 {
-		t.Errorf("re-gate must see the actual (positive) LMSR cost, got %d", rg.checkCalls[1])
-	}
-	if len(wallet.debitCalls) != 0 {
-		t.Errorf("re-gated-blocked order must not debit; got %d", len(wallet.debitCalls))
-	}
-	if len(rg.recordCalls) != 0 {
-		t.Errorf("blocked order must not record stake; got %v", rg.recordCalls)
-	}
-}
-
 // Guard: a legitimate AMM market buy whose cost is within the cap still fills
 // (the fix must not block valid orders — only those that exceed their cap).
-func TestPlaceOrder_AMMMarketBuy_WithinNotionalCap_StillFills(t *testing.T) {
-	repo := newMemRepo()
-	seedMarket(t, repo)
-	wallet := newFakeWallet(1_000_000)
-	svc := NewService(repo, wallet)
-	svc.SetComplianceChecker(&fakeCompliance{deny: false})
-
-	bigCap := int64(1_000_000) // generously above the LMSR cost of qty 10
-	order, trade, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:         "mkt-1",
-		Side:             OrderSideYes,
-		Action:           OrderActionBuy,
-		OrderType:        OrderTypeMarket,
-		Quantity:         10,
-		NotionalCapCents: &bigCap,
-	}, "user1")
-	if err != nil {
-		t.Fatalf("AMM market buy within the notional cap must still fill, got %v", err)
-	}
-	if order == nil || trade == nil {
-		t.Fatal("expected a filled order and trade")
-	}
-	if order.TotalCostCents > bigCap {
-		t.Fatalf("filled cost %d must not exceed cap %d", order.TotalCostCents, bigCap)
-	}
-}
-
 // D-5 codex review P1 #2: the reserve+reconcile decision. The bypass was that
 // recording only realizedStakeCents let a resting limit order (realized 0)
 // pass the gate without ever counting toward the period, and a maker fill was
@@ -381,7 +214,7 @@ func TestRGPlacementAccounting(t *testing.T) {
 			&Order{Status: OrderStatusPartial, FilledQuantity: 3, CapturedCashCents: 1500}, 5000, 0},
 
 		// Terminal taker: record committed, release the uncaptured remainder
-		// so the net equals realized captured cash.
+		// so the net equals realized captured points.
 		{"filled taker nets to realized (5000 committed, 4994 captured)", 5000,
 			&Order{Status: OrderStatusFilled, FilledQuantity: 136, CapturedCashCents: 4994}, 5000, 6},
 		{"market IOC cancelled remainder nets to realized (2500 cap, 190 captured)", 2500,

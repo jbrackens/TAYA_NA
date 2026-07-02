@@ -3,8 +3,10 @@ package compliance
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	stdhttp "net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"phoenix-revival/platform/transport/httpx"
@@ -151,7 +153,7 @@ func registerKYCRoutes(mux *stdhttp.ServeMux, service KYCService) {
 		}
 
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"status": status,
+			"status": kycStatusPayload(status),
 		})
 	}))
 
@@ -221,7 +223,7 @@ func registerKYCRoutes(mux *stdhttp.ServeMux, service KYCService) {
 
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 			"userId":    userID,
-			"documents": documents,
+			"documents": kycDocumentPayloads(documents),
 			"total":     len(documents),
 		})
 	}))
@@ -249,24 +251,53 @@ func sessionBoundUserID(r *stdhttp.Request, bodyUserID string) (string, error) {
 	return sessionUID, nil
 }
 
+type responsibleLimitRequest struct {
+	UserID            string `json:"userId"`
+	Period            string `json:"period"`
+	AmountPointsCents int64  `json:"amountPointsCents"`
+	AmountCents       int64  `json:"amountCents"`
+}
+
+func decodeResponsibleLimitRequest(body io.Reader, launchRoute bool) (responsibleLimitRequest, error) {
+	var raw map[string]json.RawMessage
+	if err := json.NewDecoder(body).Decode(&raw); err != nil {
+		return responsibleLimitRequest{}, httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+	}
+	if launchRoute {
+		if _, ok := raw["amountCents"]; ok {
+			return responsibleLimitRequest{}, httpx.BadRequest("responsible-play limits require amountPointsCents", map[string]any{"field": "amountPointsCents"})
+		}
+	}
+	data, err := json.Marshal(raw)
+	if err != nil {
+		return responsibleLimitRequest{}, httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+	}
+	var req responsibleLimitRequest
+	if err := json.Unmarshal(data, &req); err != nil {
+		return responsibleLimitRequest{}, httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+	}
+	return req, nil
+}
+
 // Responsible Gambling handlers
 func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service ResponsibleGamblingService) {
-	mux.Handle("/api/v1/compliance/rg/deposit-limit", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+	setPointUseLimitHandler := httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
 
-		var req struct {
-			UserID      string `json:"userId"`
-			Period      string `json:"period"`
-			AmountCents int64  `json:"amountCents"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+		req, err := decodeResponsibleLimitRequest(r.Body, r.URL.Path == "/api/v1/compliance/rg/point-use-limit")
+		if err != nil {
+			return err
 		}
 
-		if req.UserID == "" || req.Period == "" || req.AmountCents <= 0 {
-			return httpx.BadRequest("userId, period, and amountCents are required", map[string]any{"field": "body"})
+		amountCents := req.AmountPointsCents
+		if amountCents <= 0 {
+			amountCents = req.AmountCents
+		}
+
+		if req.UserID == "" || req.Period == "" || amountCents <= 0 {
+			return httpx.BadRequest("userId, period, and amountPointsCents are required", map[string]any{"field": "body"})
 		}
 
 		uid, err := sessionBoundUserID(r, req.UserID)
@@ -274,23 +305,36 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return err
 		}
 
-		if err := service.SetDepositLimit(r.Context(), uid, req.Period, req.AmountCents); err != nil {
+		if err := service.SetDepositLimit(r.Context(), uid, req.Period, amountCents); err != nil {
 			return mapComplianceError(err)
 		}
 
 		// Honest response (LC-19/D-11): confirmed effective + pending; never
 		// optimistically echo the requested amount as effective (codex
 		// D-11 P2).
-		resp := map[string]any{"userId": uid, "period": req.Period, "requestedAmountCents": req.AmountCents}
+		resp := map[string]any{
+			"userId":                     uid,
+			"period":                     req.Period,
+			"unit":                       "PTS",
+			"requestedPointsCents":       amountCents,
+			"requestedAmountCents":       amountCents,
+			"requestedAmountPointsCents": amountCents,
+		}
 		confirmed := false
 		if limits, gerr := service.GetDepositLimits(r.Context(), uid); gerr == nil {
 			for _, l := range limits {
 				if l.Period == req.Period {
 					confirmed = true
+					resp["amountPointsCents"] = l.LimitCents
 					resp["amountCents"] = l.LimitCents
+					resp["limitPointsCents"] = l.LimitCents
+					resp["remainingPointsCents"] = l.RemainingCents
+					resp["usedPointsCents"] = l.UsedCents
 					resp["deferred"] = l.PendingLimitCents > 0
 					if l.PendingLimitCents > 0 {
+						resp["pendingAmountPointsCents"] = l.PendingLimitCents
 						resp["pendingAmountCents"] = l.PendingLimitCents
+						resp["pendingLimitPointsCents"] = l.PendingLimitCents
 						resp["pendingActivatesAt"] = l.PendingActivatesAt
 					}
 					break
@@ -298,12 +342,12 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			}
 		}
 		if !confirmed {
-			resp["effectiveState"] = "unknown — re-query /api/v1/compliance/rg/deposit-limits"
+			resp["effectiveState"] = "unknown — re-query /api/v1/compliance/rg/point-use-limits"
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, resp)
-	}))
+	})
 
-	mux.Handle("/api/v1/compliance/rg/deposit-limits", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+	listPointUseLimitsHandler := httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
@@ -324,29 +368,41 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return mapComplianceError(err)
 		}
 
+		pointLimits := make([]map[string]any, 0, len(limits))
+		for _, limit := range limits {
+			pointLimits = append(pointLimits, pointUseLimitResponse(limit))
+		}
+
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 			"userId": userID,
-			"limits": limits,
+			"unit":   "PTS",
+			"limits": pointLimits,
 			"total":  len(limits),
 		})
-	}))
+	})
 
-	mux.Handle("/api/v1/compliance/rg/bet-limit", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+	mux.Handle("/api/v1/compliance/rg/point-use-limit", setPointUseLimitHandler)
+	mux.Handle("/api/v1/compliance/rg/point-use-limits", listPointUseLimitsHandler)
+	mux.Handle("/api/v1/compliance/rg/deposit-limit", setPointUseLimitHandler)
+	mux.Handle("/api/v1/compliance/rg/deposit-limits", listPointUseLimitsHandler)
+
+	setPredictionLimitHandler := httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
 
-		var req struct {
-			UserID      string `json:"userId"`
-			Period      string `json:"period"`
-			AmountCents int64  `json:"amountCents"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+		req, err := decodeResponsibleLimitRequest(r.Body, r.URL.Path == "/api/v1/compliance/rg/prediction-limit")
+		if err != nil {
+			return err
 		}
 
-		if req.UserID == "" || req.Period == "" || req.AmountCents <= 0 {
-			return httpx.BadRequest("userId, period, and amountCents are required", map[string]any{"field": "body"})
+		amountCents := req.AmountPointsCents
+		if amountCents <= 0 {
+			amountCents = req.AmountCents
+		}
+
+		if req.UserID == "" || req.Period == "" || amountCents <= 0 {
+			return httpx.BadRequest("userId, period, and amountPointsCents are required", map[string]any{"field": "body"})
 		}
 
 		uid, err := sessionBoundUserID(r, req.UserID)
@@ -354,7 +410,7 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return err
 		}
 
-		if err := service.SetBetLimit(r.Context(), uid, req.Period, req.AmountCents); err != nil {
+		if err := service.SetBetLimit(r.Context(), uid, req.Period, amountCents); err != nil {
 			return mapComplianceError(err)
 		}
 
@@ -363,16 +419,29 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 		// change. Never optimistically echo the requested amount as
 		// effective — if the read-back can't confirm it, say so (codex
 		// D-11 P2) rather than implying the looser limit is live.
-		resp := map[string]any{"userId": uid, "period": req.Period, "requestedAmountCents": req.AmountCents}
+		resp := map[string]any{
+			"userId":                     uid,
+			"period":                     req.Period,
+			"unit":                       "PTS",
+			"requestedPointsCents":       amountCents,
+			"requestedAmountCents":       amountCents,
+			"requestedAmountPointsCents": amountCents,
+		}
 		confirmed := false
 		if limits, gerr := service.GetBetLimits(r.Context(), uid); gerr == nil {
 			for _, l := range limits {
 				if l.Period == req.Period {
 					confirmed = true
+					resp["amountPointsCents"] = l.LimitCents
 					resp["amountCents"] = l.LimitCents
+					resp["limitPointsCents"] = l.LimitCents
+					resp["remainingPointsCents"] = l.RemainingCents
+					resp["usedPointsCents"] = l.UsedCents
 					resp["deferred"] = l.PendingLimitCents > 0
 					if l.PendingLimitCents > 0 {
+						resp["pendingAmountPointsCents"] = l.PendingLimitCents
 						resp["pendingAmountCents"] = l.PendingLimitCents
+						resp["pendingLimitPointsCents"] = l.PendingLimitCents
 						resp["pendingActivatesAt"] = l.PendingActivatesAt
 					}
 					break
@@ -380,12 +449,12 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			}
 		}
 		if !confirmed {
-			resp["effectiveState"] = "unknown — re-query /api/v1/compliance/rg/bet-limits"
+			resp["effectiveState"] = "unknown — re-query /api/v1/compliance/rg/prediction-limits"
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, resp)
-	}))
+	})
 
-	mux.Handle("/api/v1/compliance/rg/bet-limits", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+	listPredictionLimitsHandler := httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
@@ -406,14 +475,25 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return mapComplianceError(err)
 		}
 
+		predictionLimits := make([]map[string]any, 0, len(limits))
+		for _, limit := range limits {
+			predictionLimits = append(predictionLimits, predictionLimitResponse(limit))
+		}
+
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 			"userId": userID,
-			"limits": limits,
+			"unit":   "PTS",
+			"limits": predictionLimits,
 			"total":  len(limits),
 		})
-	}))
+	})
 
-	mux.Handle("/api/v1/compliance/rg/check-deposit", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+	mux.Handle("/api/v1/compliance/rg/prediction-limit", setPredictionLimitHandler)
+	mux.Handle("/api/v1/compliance/rg/prediction-limits", listPredictionLimitsHandler)
+	mux.Handle("/api/v1/compliance/rg/bet-limit", setPredictionLimitHandler)
+	mux.Handle("/api/v1/compliance/rg/bet-limits", listPredictionLimitsHandler)
+
+	checkPointUseHandler := httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
@@ -425,14 +505,21 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 		if err != nil {
 			return err
 		}
-		amountStr := r.URL.Query().Get("amountCents")
+		launchRoute := r.URL.Path == "/api/v1/compliance/rg/check-point-use"
+		if launchRoute && r.URL.Query().Has("amountCents") {
+			return httpx.BadRequest("check-point-use requires amountPointsCents", map[string]any{"field": "amountPointsCents"})
+		}
+		amountStr := r.URL.Query().Get("amountPointsCents")
 		if amountStr == "" {
-			return httpx.BadRequest("amountCents query parameter is required", map[string]any{"field": "amountCents"})
+			amountStr = r.URL.Query().Get("amountCents")
+		}
+		if amountStr == "" {
+			return httpx.BadRequest("amountPointsCents query parameter is required", map[string]any{"field": "amountPointsCents"})
 		}
 
 		amountCents, err := strconv.ParseInt(amountStr, 10, 64)
 		if err != nil || amountCents <= 0 {
-			return httpx.BadRequest("amountCents must be a positive integer", map[string]any{"field": "amountCents"})
+			return httpx.BadRequest("amountPointsCents must be a positive integer", map[string]any{"field": "amountPointsCents"})
 		}
 
 		allowed, reason, err := service.CheckDepositAllowed(r.Context(), userID, amountCents)
@@ -440,15 +527,22 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return mapComplianceError(err)
 		}
 
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"userId":      userID,
-			"amountCents": amountCents,
-			"allowed":     allowed,
-			"reason":      reason,
-		})
-	}))
+		resp := map[string]any{
+			"userId":            userID,
+			"unit":              "PTS",
+			"amountPointsCents": amountCents,
+			"amountCents":       amountCents,
+			"allowed":           allowed,
+			"reason":            pointUseCheckReason(reason, err),
+		}
+		if errors.Is(err, ErrDepositLimitExceeded) {
+			resp["reasonCode"] = "point_use_limit_exceeded"
+		}
 
-	mux.Handle("/api/v1/compliance/rg/check-bet", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		return httpx.WriteJSON(w, stdhttp.StatusOK, resp)
+	})
+
+	checkPredictionHandler := httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
@@ -460,28 +554,49 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 		if err != nil {
 			return err
 		}
-		stakeStr := r.URL.Query().Get("stakeCents")
-		if stakeStr == "" {
-			return httpx.BadRequest("stakeCents query parameter is required", map[string]any{"field": "stakeCents"})
+		launchRoute := r.URL.Path == "/api/v1/compliance/rg/check-prediction"
+		if launchRoute && (r.URL.Query().Has("stakePointsCents") || r.URL.Query().Has("stakeCents")) {
+			return httpx.BadRequest("check-prediction requires amountPointsCents", map[string]any{"field": "amountPointsCents"})
+		}
+		predictionAmountStr := r.URL.Query().Get("amountPointsCents")
+		if predictionAmountStr == "" {
+			predictionAmountStr = r.URL.Query().Get("stakePointsCents")
+		}
+		if predictionAmountStr == "" {
+			predictionAmountStr = r.URL.Query().Get("stakeCents")
+		}
+		if predictionAmountStr == "" {
+			return httpx.BadRequest("amountPointsCents query parameter is required", map[string]any{"field": "amountPointsCents"})
 		}
 
-		stakeCents, err := strconv.ParseInt(stakeStr, 10, 64)
-		if err != nil || stakeCents <= 0 {
-			return httpx.BadRequest("stakeCents must be a positive integer", map[string]any{"field": "stakeCents"})
+		predictionAmountCents, err := strconv.ParseInt(predictionAmountStr, 10, 64)
+		if err != nil || predictionAmountCents <= 0 {
+			return httpx.BadRequest("amountPointsCents must be a positive integer", map[string]any{"field": "amountPointsCents"})
 		}
 
-		allowed, reason, err := service.CheckBetAllowed(r.Context(), userID, stakeCents)
+		allowed, reason, err := service.CheckBetAllowed(r.Context(), userID, predictionAmountCents)
 		if err != nil && !errors.Is(err, ErrBetLimitExceeded) && !errors.Is(err, ErrUserExcluded) && !errors.Is(err, ErrUserBlocked) {
 			return mapComplianceError(err)
 		}
 
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"userId":     userID,
-			"stakeCents": stakeCents,
-			"allowed":    allowed,
-			"reason":     reason,
-		})
-	}))
+		resp := map[string]any{
+			"userId":            userID,
+			"unit":              "PTS",
+			"amountPointsCents": predictionAmountCents,
+			"allowed":           allowed,
+			"reason":            predictionCheckReason(reason, err),
+		}
+		if errors.Is(err, ErrBetLimitExceeded) {
+			resp["reasonCode"] = "prediction_limit_exceeded"
+		}
+
+		return httpx.WriteJSON(w, stdhttp.StatusOK, resp)
+	})
+
+	mux.Handle("/api/v1/compliance/rg/check-point-use", checkPointUseHandler)
+	mux.Handle("/api/v1/compliance/rg/check-deposit", checkPointUseHandler)
+	mux.Handle("/api/v1/compliance/rg/check-prediction", checkPredictionHandler)
+	mux.Handle("/api/v1/compliance/rg/check-bet", checkPredictionHandler)
 
 	// Session limits — restrict how long a user can play per session
 	mux.Handle("/api/v1/compliance/rg/session-limit", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -620,9 +735,105 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 		}
 
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"restrictions": restrictions,
+			"restrictions": restrictionsResponse(restrictions),
 		})
 	}))
+}
+
+func pointUseLimitResponse(limit DepositLimit) map[string]any {
+	resp := map[string]any{
+		"userId":                  limit.UserID,
+		"period":                  limit.Period,
+		"unit":                    "PTS",
+		"limitPointsCents":        limit.LimitCents,
+		"remainingPointsCents":    limit.RemainingCents,
+		"usedPointsCents":         limit.UsedCents,
+		"limitCents":              limit.LimitCents,
+		"remainingCents":          limit.RemainingCents,
+		"usedCents":               limit.UsedCents,
+		"resetsAt":                limit.ResetsAt,
+		"createdAt":               limit.CreatedAt,
+		"pendingActivatesAt":      limit.PendingActivatesAt,
+		"pendingLimitCents":       limit.PendingLimitCents,
+		"pendingLimitPointsCents": limit.PendingLimitCents,
+	}
+	if limit.PendingLimitCents == 0 {
+		delete(resp, "pendingLimitCents")
+		delete(resp, "pendingLimitPointsCents")
+	}
+	if limit.PendingActivatesAt == "" {
+		delete(resp, "pendingActivatesAt")
+	}
+	return resp
+}
+
+func predictionLimitResponse(limit BetLimit) map[string]any {
+	resp := map[string]any{
+		"userId":                  limit.UserID,
+		"period":                  limit.Period,
+		"unit":                    "PTS",
+		"limitPointsCents":        limit.LimitCents,
+		"remainingPointsCents":    limit.RemainingCents,
+		"usedPointsCents":         limit.UsedCents,
+		"limitCents":              limit.LimitCents,
+		"remainingCents":          limit.RemainingCents,
+		"usedCents":               limit.UsedCents,
+		"resetsAt":                limit.ResetsAt,
+		"createdAt":               limit.CreatedAt,
+		"pendingActivatesAt":      limit.PendingActivatesAt,
+		"pendingLimitCents":       limit.PendingLimitCents,
+		"pendingLimitPointsCents": limit.PendingLimitCents,
+	}
+	if limit.PendingLimitCents == 0 {
+		delete(resp, "pendingLimitCents")
+		delete(resp, "pendingLimitPointsCents")
+	}
+	if limit.PendingActivatesAt == "" {
+		delete(resp, "pendingActivatesAt")
+	}
+	return resp
+}
+
+func restrictionsResponse(restrictions *PlayerRestrictions) map[string]any {
+	pointUseLimits := make([]map[string]any, 0, len(restrictions.DepositLimits))
+	for _, limit := range restrictions.DepositLimits {
+		pointUseLimits = append(pointUseLimits, pointUseLimitResponse(limit))
+	}
+
+	predictionLimits := make([]map[string]any, 0, len(restrictions.BetLimits))
+	for _, limit := range restrictions.BetLimits {
+		predictionLimits = append(predictionLimits, predictionLimitResponse(limit))
+	}
+
+	return map[string]any{
+		"userId":           restrictions.UserID,
+		"unit":             "PTS",
+		"isBlocked":        restrictions.IsBlocked,
+		"isOnCoolOff":      restrictions.IsOnCoolOff,
+		"coolOffUntil":     restrictions.CoolOffUntil,
+		"isExcluded":       restrictions.IsExcluded,
+		"exclusionType":    restrictions.ExclusionType,
+		"excludedUntil":    restrictions.ExcludedUntil,
+		"pointUseLimits":   pointUseLimits,
+		"predictionLimits": predictionLimits,
+		"depositLimits":    restrictions.DepositLimits,
+		"betLimits":        restrictions.BetLimits,
+		"lastUpdated":      restrictions.LastUpdated,
+	}
+}
+
+func pointUseCheckReason(reason string, err error) string {
+	if errors.Is(err, ErrDepositLimitExceeded) {
+		return strings.Replace(reason, "Deposit limit", "Point-use limit", 1)
+	}
+	return reason
+}
+
+func predictionCheckReason(reason string, err error) string {
+	if errors.Is(err, ErrBetLimitExceeded) {
+		return strings.Replace(reason, "Bet limit", "Prediction limit", 1)
+	}
+	return reason
 }
 
 func mapComplianceError(err error) error {
@@ -645,10 +856,10 @@ func mapComplianceError(err error) error {
 		return httpx.BadRequest("invalid limit period", map[string]any{"field": "period"})
 	}
 	if errors.Is(err, ErrDepositLimitExceeded) {
-		return httpx.Forbidden("deposit limit exceeded")
+		return httpx.Forbidden("point-use limit exceeded")
 	}
 	if errors.Is(err, ErrBetLimitExceeded) {
-		return httpx.Forbidden("bet limit exceeded")
+		return httpx.Forbidden("prediction limit exceeded")
 	}
 	if errors.Is(err, ErrUserBlocked) {
 		return httpx.Forbidden("user account is blocked")

@@ -1,2 +1,0 @@
-0 */3 * * * * /exec cron/update-leaderboard
-0 */15 * * * * /exec cron/update-jackpots

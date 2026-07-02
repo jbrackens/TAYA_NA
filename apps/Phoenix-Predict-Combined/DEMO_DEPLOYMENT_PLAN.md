@@ -78,7 +78,7 @@ Run on the operator's Mac against the already-running local backend (`docker-com
 
 ### Verdict
 
-**Path A is fully validated locally, frontend included, and the A0 fixes + deploy artifacts are committed.** Original A0 was off by six independent build defects — all fixed, proven, and committed (`chore(deploy): Path A demo …`, branch `feat/binary-exchange-engine`, **not pushed**). Both images build at 437 MB; single-origin page+REST+cookie+WS all green through real Caddy. Deploy is now mechanical: on the chosen substrate (~$5 Hetzner / ~$0 Oracle per Cost section) build the two slim images, `export JWT_SECRET`, `docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d`, run one-shot migrate + `seed -mode demo` (Phase A2), set the office `basic_auth` hash, point DNS (grey-cloud) at the box. No code prerequisites remain.
+**Path A is fully validated locally, frontend included, and the A0 fixes + deploy artifacts are committed.** Original A0 was off by six independent build defects — all fixed, proven, and committed (`chore(deploy): Path A demo …`, branch `feat/binary-exchange-engine`, **not pushed**). Both images build at 437 MB; single-origin page+REST+cookie+WS all green through real Caddy. Deploy is now mechanical: on the chosen substrate (~$5 Hetzner / ~$0 Oracle per Cost section) build the two slim images, `export JWT_SECRET`, `docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d`, run one-shot migrate + `seed -mode demo` (Phase A2), set the office `basic_auth` hash, point DNS (proxied/orange-cloud via Cloudflare, Full Strict TLS) at the box. No code prerequisites remain.
 
 ### Deliverables (committed, in `apps/Phoenix-Predict-Combined/`)
 
@@ -213,7 +213,7 @@ docker compose exec gateway sh -lc './seed -mode demo'   # or: make demo-data
 
 ### A3 — DNS + TLS
 
-**USER step** (no Cloudflare DNS tool exists — see "DNS + verify" below): add A records `demo.99rtp.io` and `office.99rtp.io` → the box's public IP, **DNS-only / grey-cloud**. Caddy then auto-issues Let's-Encrypt on first hit (TLS-ALPN/HTTP-01; grey-cloud required so the challenge reaches Caddy).
+**USER step** (no Cloudflare DNS tool exists — see "DNS + verify" below): add A records `demo.99rtp.io` and `office.99rtp.io` → the box's public IP, **proxied (orange-cloud)**. Set CF SSL/TLS to **Full (Strict)** so CF validates the origin LE cert. Caddy auto-issues Let's Encrypt via HTTP-01 (challenges pass through CF). The deploy pipeline automatically firewalls `:80/:443` to CF IP ranges and injects `EDGE_SHARED_SECRET` for anti-spoof edge auth. *(Updated 2026-06-23: switched from grey-cloud DNS-only to proxied.)*
 
 ### A4 — Smoke tests (each gates the next)
 
@@ -245,7 +245,7 @@ open https://demo.99rtp.io ; open https://office.99rtp.io
 
 Use only to dry-run production-shaped infra. Full rationale/diagram unchanged from v4.1; the deltas vs v4.1 are the fixes below — apply them or it fails identically.
 
-**Topology:** 1 Caddy app (2 site blocks `play.`/`office.99rtp.io`, `/ws*`→gateway, `*`→Next), 2 Next Fly apps (1 GB), gateway+auth internal (`.internal` 6PN), Supabase session pooler :5432 `sslmode=require`, Upstash optional, Cloudflare DNS-only. `predict-router-demo` + `predict-gateway-demo`: `min_machines_running=1` (WS path).
+**Topology:** 1 Caddy app (2 site blocks `play.`/`office.99rtp.io`, `/ws*`→gateway, `*`→Next), 2 Next Fly apps (1 GB), gateway+auth internal (`.internal` 6PN), Supabase session pooler :5432 `sslmode=require`, Upstash optional, Cloudflare proxied (orange-cloud). `predict-router-demo` + `predict-gateway-demo`: `min_machines_running=1` (WS path).
 
 **Gateway secrets (corrected):**
 ```bash
@@ -397,7 +397,7 @@ docker restart predict_player'   # pick up fresh files cleanly
 
 ### DNS + verify
 
-- **DNS is a USER step** (corrected 2026-05-17): there is **no Cloudflare DNS tool** in the connected integration — it exposes only D1/KV/R2/Workers. Earlier drafts wrongly claimed "I drive DNS via the Cloudflare MCP"; that capability does not exist. The operator adds, in whatever manages `<DOM>`'s DNS: two **A** records — `demo` → `<IP>` and `office` → `<IP>`, **DNS-only / grey-cloud** if Cloudflare (proxied/orange-cloud breaks Caddy's ACME challenge). This is the second irreducible user-gated step (the first was provisioning).
+- **DNS is a USER step** (corrected 2026-05-17): there is **no Cloudflare DNS tool** in the connected integration — it exposes only D1/KV/R2/Workers. Earlier drafts wrongly claimed "I drive DNS via the Cloudflare MCP"; that capability does not exist. The operator adds, in whatever manages `<DOM>`'s DNS: two **A** records — `demo` → `<IP>` and `office` → `<IP>`, **proxied (orange-cloud)** through Cloudflare with SSL/TLS set to **Full (Strict)**. ACME HTTP-01 challenges pass through CF to Caddy. *(Updated 2026-06-23: the original grey-cloud note was wrong — proxied mode works with Caddy LE certs under Full Strict, and is required for CF-IPCountry geo gating.)*
 - Public smoke (after DNS propagates + Caddy issues certs, ~1–2 min): `curl -sI https://demo.<DOM>/api/v1/markets?limit=1` → 200+rows; `POST /api/v1/auth/login` demo@phoenix.local/demo123 → `Set-Cookie: access_token`; `curl -b … /api/v1/portfolio/summary` → `accuracyPct:70`; `wscat -c wss://demo.<DOM>/ws` (+cookie) → `101`; open `https://demo.<DOM>` and `https://office.<DOM>` (basic-auth).
 
 ## Risks still live (both paths)

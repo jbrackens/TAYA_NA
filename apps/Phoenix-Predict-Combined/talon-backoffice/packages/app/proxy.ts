@@ -30,12 +30,14 @@ const PUBLIC_ROUTES = [
 
 const PROTECTED_ROUTES = [
   "/account",
-  "/cashier",
   "/leaderboards",
   "/portfolio",
   "/profile",
   "/rewards",
 ];
+
+const RETIRED_MONEY_ROUTE_PATTERN =
+  /^\/(?:cashier|cashout|crypto|deposit|deposits|fiat|payment|payments|prize|prizes|redeem|redemption|withdraw|withdrawal|withdrawals)(?:\/|$)/i;
 
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some(
@@ -47,6 +49,10 @@ function isProtectedRoute(pathname: string): boolean {
   return PROTECTED_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),
   );
+}
+
+function isRetiredMoneyRoute(pathname: string): boolean {
+  return RETIRED_MONEY_ROUTE_PATTERN.test(pathname);
 }
 
 function getAuthToken(request: NextRequest): string | null {
@@ -71,6 +77,10 @@ function getAuthToken(request: NextRequest): string | null {
 
 export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+
+  if (isRetiredMoneyRoute(pathname)) {
+    return new NextResponse("Not found", { status: 404 });
+  }
 
   // Skip auth for static assets served from public/ — the config.matcher exclusions
   // are not applied by Next.js 16's proxy loader, so we guard here directly

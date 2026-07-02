@@ -4,8 +4,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
 import bonusReducer from "./bonusSlice";
 import settingsReducer from "./settingsSlice";
-import cashierReducer from "./cashierSlice";
-import predictionReducer from "./predictionSlice";
+import pointBalanceReducer from "./pointBalanceSlice";
 import channelSubscriptionReducer from "./channelSubscriptionSlice";
 import navigationReducer from "./navigationSlice";
 import profileReducer from "./profileSlice";
@@ -22,8 +21,7 @@ export const makeStore = () => {
       auth: authReducer,
       bonus: bonusReducer,
       settings: settingsReducer,
-      cashier: cashierReducer,
-      prediction: predictionReducer,
+      pointBalance: pointBalanceReducer,
       channelSubscriptions: channelSubscriptionReducer,
       navigation: navigationReducer,
       profile: profileReducer,

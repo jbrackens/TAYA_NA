@@ -96,7 +96,7 @@ object Build {
           "-Wconf:src=target/scala-2.13/src_managed/main/compiled_avro/.*:silent",
           "-Wdead-code",
           "-Xfatal-warnings",
-          "-Xlint:-byname-implicit,-multiarg-infix,_",
+          "-Xlint:-byname-implicit,_",
           "-Xlog-reflective-calls",
           "-Ybackend-parallelism",
           "8",

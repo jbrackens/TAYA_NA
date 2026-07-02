@@ -1,11 +1,11 @@
 {
   "TITLE": "Account Status:",
-  "SELF_EXCLUDED": "Account is in a suspended mode, the patron can not deposit, withdraw, wager, or make any changes to their account",
-  "SUSPENDED": "Account is in a suspended mode, the patron can not deposit, wager, or make any changes to their account",
-  "COOLING_OFF": "Account is in cool off. the patron can not deposit, wager, or make any changes to their account",
+  "SELF_EXCLUDED": "Account is suspended; the player cannot place predictions or make account changes.",
+  "SUSPENDED": "Account is suspended; the player cannot place predictions or make account changes.",
+  "COOLING_OFF": "Account is in cool-off; the player cannot place predictions or make account changes.",
   "SESSION_LIMIT_BREACH": "Session time limit has been reached",
   "UNVERIFIED": "Account is unverified, please verify it to have full access",
   "VERIFY": "Verify Now",
-  "NEGATIVE_BALANCE": "Your account has a negative balance. Please deposit.",
-  "DEPOSIT": "Deposit"
+  "NEGATIVE_BALANCE": "Your point balance needs attention. Please contact support.",
+  "DEPOSIT": "Mga Patakaran sa Points"
 }

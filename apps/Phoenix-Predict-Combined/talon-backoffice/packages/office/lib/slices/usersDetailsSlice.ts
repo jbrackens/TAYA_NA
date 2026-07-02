@@ -16,12 +16,10 @@ import {
   TableMeta,
   TablePaginationResponse,
 } from "../../types/filters";
-import { TalonBets } from "../../types/bets";
 
 export type UsersDetailsSliceState = {
   basic: TalonPunter;
   recentActivities: any[];
-  betsHistory: UsersDetailsBetsHistory;
   walletHistory: UsersDetailsWalletHistory;
   auditLogs: UsersDetailsAuditLogs;
   sessionHistory: UsersDetailsSessionHistory;
@@ -30,15 +28,6 @@ export type UsersDetailsSliceState = {
   limitsHistory: UsersLimitsHistory;
   coolOffsHistory: UsersCoolOffsHistory;
 };
-
-export type UsersDetailsBetsHistory = {
-  data: TalonBets;
-  paginationResponse: TablePagination | {};
-} & TableMeta;
-
-export type UsersDetailsBetsHistoryResponse = {
-  data: TalonBets;
-} & TablePaginationResponse;
 
 export type UsersDetailsWalletHistory = {
   data: TalonPunterWallet;
@@ -145,13 +134,6 @@ const normalizeGoAuditPagination = (
 const initialState: UsersDetailsSliceState = {
   basic: {} as TalonPunter,
   recentActivities: [],
-  betsHistory: {
-    data: [],
-    pagination: {},
-    paginationResponse: {},
-    filters: {},
-    sorting: {},
-  },
   walletHistory: {
     data: [],
     pagination: {},
@@ -224,19 +206,6 @@ const usersDetailsSlice = createSlice({
     ) => {
       if (action?.payload) {
         state.recentActivities = normalizeRecentActivities(action.payload);
-      }
-    },
-
-    getUserBets: () => {},
-
-    getUserBetsSucceeded: (
-      state: UsersDetailsSliceState,
-      action: PayloadAction<UsersDetailsBetsHistoryResponse>,
-    ) => {
-      if (action?.payload) {
-        const { data, ...rest } = action.payload;
-        state.betsHistory.data = [...data];
-        state.betsHistory.paginationResponse = parseTableMetaPagination(rest);
       }
     },
 
@@ -353,14 +322,6 @@ export const selectBasicData = (state: UsersDetailsSlice) =>
 export const selectRecentActivities = (state: UsersDetailsSlice) =>
   state.usersDetails.recentActivities;
 
-export const selectBetsData = (state: UsersDetailsSlice) =>
-  state.usersDetails.betsHistory.data;
-export const selectBetsTableMeta = (state: UsersDetailsSlice) => {
-  const { pagination, paginationResponse, filters, sorting } =
-    state.usersDetails.betsHistory;
-  return { pagination, paginationResponse, filters, sorting };
-};
-
 export const selectWalletData = (state: UsersDetailsSlice) =>
   state.usersDetails.walletHistory.data;
 export const selectWalletTableMeta = (state: UsersDetailsSlice) => {
@@ -416,8 +377,6 @@ export const {
   getUserDetailsSucceeded,
   getUserRecentActivities,
   getUserRecentActivitiesSucceeded,
-  getUserBets,
-  getUserBetsSucceeded,
   getUserWallet,
   getUserWalletSucceeded,
   getUserAuditLogs,

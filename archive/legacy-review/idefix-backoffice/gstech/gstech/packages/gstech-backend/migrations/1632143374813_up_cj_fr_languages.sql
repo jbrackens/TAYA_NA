@@ -1,1 +1,0 @@
-insert into languages (id, "brandId") values ('fr', 'CJ');

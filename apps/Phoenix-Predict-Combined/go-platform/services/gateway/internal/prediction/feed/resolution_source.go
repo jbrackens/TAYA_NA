@@ -9,14 +9,14 @@ import (
 
 // ADR-0003: resolution-source health + the corroboration seam.
 //
-// The launch policy is crypto-native and single-source (CoinGecko), with the
-// propose -> 1h challenge window + user disputes as the safety net rather than
-// mandatory multi-source corroboration. A single source is also a single point
-// of failure, so the AutoSettler tracks per-source health: this makes a
-// degraded source VISIBLE (consecutive failures, last error) and gives ops an
-// alert hook, instead of markets silently stalling in "closed". When a source
-// is failing the worker simply does not propose — the market stays closed for
-// manual admin resolution, which is the intended fallback (ADR-0003 #4).
+// The Tiangge launch policy is admin/manual attestation only. Automated
+// adapters are compatibility seams for legacy or future non-launch markets and
+// must be explicitly enabled before registration. When a source is enabled,
+// the AutoSettler tracks per-source health: this makes a degraded source
+// VISIBLE (consecutive failures, last error) and gives ops an alert hook,
+// instead of markets silently stalling in "closed". When a source is failing
+// the worker simply does not propose — the market stays closed for manual
+// admin resolution, which is the intended fallback (ADR-0003 #4).
 
 // Corroborator is the OPTIONAL future seam for >=2-source agreement (ADR-0003
 // #3). No adapter implements it yet: the confirmed design fork is single-source

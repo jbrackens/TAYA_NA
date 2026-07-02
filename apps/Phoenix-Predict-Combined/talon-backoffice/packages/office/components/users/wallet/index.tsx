@@ -1,4 +1,3 @@
-import { useCallback, useState } from "react";
 import { Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import { useTranslation } from "i18n";
@@ -22,17 +21,19 @@ import {
   WalletActionType,
   Id,
   WalletActionTypeEnum,
-  WalletHistoryStatusEnum,
-  PaymentMethodTypeEnum,
   WalletProductEnum,
   useTimezone,
 } from "@phoenix-ui/utils";
 import UserDetailsWalletExport from "./export";
 import { useRouter } from "next/router";
-import { TableActions } from "./table-actions";
 import { addQueryParam } from "../../../utils/queryParams";
 
 const { Text } = Typography;
+
+const formatLedgerPoints = (amount?: { amount?: number }) =>
+  `${Number(amount?.amount ?? 0).toLocaleString(undefined, {
+    maximumFractionDigits: 2,
+  })} pts`;
 
 type UsersDetailsWalletsListProps = {
   data: TalonPunterWallet;
@@ -59,16 +60,10 @@ const UsersDetailsWalletsList = ({
   isLoading,
   handleTableChange,
   punterId,
-  triggerWalletApi,
 }: UsersDetailsWalletsListProps) => {
   const { t } = useTranslation(["common", "page-transactions"]);
   const refs = new RefsCollection();
   const router = useRouter();
-
-  const [actionedIds, setActionedIds] = useState<Set<string>>(new Set());
-  const handleActioned = useCallback((transactionId: string) => {
-    setActionedIds((prev) => new Set(prev).add(transactionId));
-  }, []);
 
   const { since, until, category, product } = router.query as {
     since?: string;
@@ -101,10 +96,6 @@ const UsersDetailsWalletsList = ({
     until,
   );
 
-  const isActionColExists = data.some(
-    (transaction) => transaction.status === WalletHistoryStatusEnum.PENDING,
-  );
-
   const { getTimeWithTimezone } = useTimezone();
 
   const columns = [
@@ -124,39 +115,21 @@ const UsersDetailsWalletsList = ({
       render: (value: TalonPunterWalletItem) => (
         <Typography>
           <Text strong={true}>
-            {t("page-transactions:HEADER_TRANSACTION_ID")}:{" "}
+            {t("page-transactions:HEADER_POINT_LEDGER_ID")}:{" "}
           </Text>
           <Text>{value.transactionId}</Text>
           {value?.externalId && (
             <Text strong={true}>
-              {t("page-transactions:HEADER_TRANSACTION_EXTERNAL_ID")}:{" "}
+              {t("page-transactions:HEADER_EXTERNAL_REFERENCE_ID")}:{" "}
             </Text>
           )}
           {value?.externalId && (
             <>
               <br />
               <Text strong={true}>
-                {t("page-transactions:HEADER_TRANSACTION_EXTERNAL")}:{" "}
+                {t("page-transactions:HEADER_EXTERNAL_REFERENCE")}:{" "}
               </Text>{" "}
               <Text>{value?.externalId}</Text>
-            </>
-          )}
-          {value?.paymentMethod?.details && (
-            <>
-              <br />
-              <Text strong={true}>
-                {t("page-transactions:HEADER_DETAILS")}:{" "}
-              </Text>{" "}
-              <Text>{value?.paymentMethod.details}</Text>
-            </>
-          )}
-          {value?.paymentMethod?.adminPunterId && (
-            <>
-              <br />
-              <Text strong={true}>
-                {t("page-transactions:HEADER_TRANSACTION_ADMIN_ID")}:{" "}
-              </Text>{" "}
-              <Text>{value?.paymentMethod.adminPunterId}</Text>
             </>
           )}
           {value?.product === WalletProductEnum.PREDICTION &&
@@ -246,19 +219,6 @@ const UsersDetailsWalletsList = ({
       },
     },
     {
-      title: t("page-transactions:HEADER_TRANSACTION_METHOD"),
-      ellipsis: true,
-      render: (value: TalonPunterWalletItem) => (
-        <Typography>
-          {value?.paymentMethod?.type && (
-            <>
-              <Text>{t(`page-transactions:${value?.paymentMethod.type}`)}</Text>
-            </>
-          )}
-        </Typography>
-      ),
-    },
-    {
       title: t("page-transactions:HEADER_PRODUCT"),
       dataIndex: "product",
       filters: composeProductOptions(t, "page-transactions:CELL_PRODUCT"),
@@ -293,9 +253,7 @@ const UsersDetailsWalletsList = ({
       //   a.transactionAmount.amount - b.transactionAmount.amount,
       dataIndex: "transactionAmount",
       render: (transactionAmount: any) => (
-        <span>
-          {transactionAmount.amount} {transactionAmount.currency}
-        </span>
+        <span>{formatLedgerPoints(transactionAmount)}</span>
       ),
       // ...TableFilterText.getColumnSearchProps(
       //   "amount",
@@ -309,9 +267,7 @@ const UsersDetailsWalletsList = ({
       //   a.postTransactionBalance.amount - b.postTransactionBalance.amount,
       dataIndex: "postTransactionBalance",
       render: (postTransactionBalance: any) => (
-        <span>
-          {postTransactionBalance.amount} {postTransactionBalance.currency}
-        </span>
+        <span>{formatLedgerPoints(postTransactionBalance)}</span>
       ),
       // ...TableFilterText.getColumnSearchProps(
       //   "balanceAfter",
@@ -319,31 +275,6 @@ const UsersDetailsWalletsList = ({
       //   t("page-transactions:HEADER_BALANCE_AFTER"),
       // ),
     },
-    ...(isActionColExists
-      ? [
-          {
-            title: t("page-transactions:HEADER_ACTION"),
-            dataIndex: "",
-            render: (value: TalonPunterWalletItem) => {
-              if (
-                value.status === WalletHistoryStatusEnum.PENDING &&
-                value?.paymentMethod?.type === PaymentMethodTypeEnum.CHEQUE &&
-                !actionedIds.has(String(value.transactionId))
-              ) {
-                return (
-                  <TableActions
-                    transactionId={String(value.transactionId)}
-                    punterId={punterId}
-                    triggerWalletApi={triggerWalletApi}
-                    onActioned={handleActioned}
-                  />
-                );
-              }
-              return <></>;
-            },
-          },
-        ]
-      : []),
   ];
 
   const footer = () => {

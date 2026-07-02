@@ -17,6 +17,7 @@ type fakePredictLBRepo struct {
 	getEntryResult       *PredictEntry
 	listUserRanksResult  []PredictEntry
 	recomputeCalls       map[string]int
+	recomputeRows        map[string]int
 	recomputeCategoryArg string
 }
 
@@ -40,23 +41,23 @@ func (f *fakePredictLBRepo) ListUserRanks(_ context.Context, _ string) ([]Predic
 
 func (f *fakePredictLBRepo) RecomputeAccuracy(_ context.Context, _, _ time.Time) (int, error) {
 	f.recomputeCalls["accuracy"]++
-	return 0, nil
+	return f.recomputeRows["accuracy"], nil
 }
 
 func (f *fakePredictLBRepo) RecomputeWeeklyPnL(_ context.Context, _, _ time.Time) (int, error) {
 	f.recomputeCalls["pnl_weekly"]++
-	return 0, nil
+	return f.recomputeRows["pnl_weekly"], nil
 }
 
 func (f *fakePredictLBRepo) RecomputeSharpness(_ context.Context, _, _ time.Time, _ int64) (int, error) {
 	f.recomputeCalls["sharpness"]++
-	return 0, nil
+	return f.recomputeRows["sharpness"], nil
 }
 
 func (f *fakePredictLBRepo) RecomputeCategoryChampions(_ context.Context, categorySlug string, _, _ time.Time) (int, error) {
 	f.recomputeCalls["category:"+categorySlug]++
 	f.recomputeCategoryArg = categorySlug
-	return 0, nil
+	return f.recomputeRows["category:"+categorySlug], nil
 }
 
 // ── ListBoards ────────────────────────────────────────────────────────────
@@ -207,5 +208,42 @@ func TestUserStanding_ReturnsRanksFromRepo(t *testing.T) {
 	}
 	if len(ranks) != 2 {
 		t.Fatalf("expected 2 rank rows, got %d", len(ranks))
+	}
+}
+
+func TestRecomputeNow_RefreshesStaticAndCategoryBoards(t *testing.T) {
+	repo := newFakePredictLBRepo()
+	repo.recomputeRows = map[string]int{
+		"accuracy":          1,
+		"pnl_weekly":        2,
+		"sharpness":         3,
+		"category:politics": 4,
+	}
+	catFn := func(_ context.Context) ([]CategoryInfo, error) {
+		return []CategoryInfo{
+			{Slug: "politics", Name: "Politics"},
+			{Slug: " ", Name: "Skipped"},
+		}, nil
+	}
+	svc := NewPredictService(repo, catFn)
+
+	results, err := svc.RecomputeNow(context.Background())
+	if err != nil {
+		t.Fatalf("RecomputeNow: %v", err)
+	}
+	wantCalls := []string{"accuracy", "pnl_weekly", "sharpness", "category:politics"}
+	for _, boardID := range wantCalls {
+		if repo.recomputeCalls[boardID] != 1 {
+			t.Fatalf("expected one recompute for %s, got %d", boardID, repo.recomputeCalls[boardID])
+		}
+	}
+	if repo.recomputeCalls["category: "] != 0 {
+		t.Fatalf("blank category slug should not recompute: %#v", repo.recomputeCalls)
+	}
+	if len(results) != 4 {
+		t.Fatalf("expected four recompute results, got %#v", results)
+	}
+	if results[1].BoardID != PredictBoardPnLWeekly || results[1].Rows != 2 {
+		t.Fatalf("weekly PTS result not returned: %#v", results)
 	}
 }

@@ -3,6 +3,7 @@ package phoenix.punters.infrastructure.http
 import java.nio.charset.StandardCharsets
 
 import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
@@ -165,9 +166,9 @@ final class PunterBackofficeRoutes(
   import phoenix.punters.infrastructure.http.PunterTapirSchemas._
   import phoenix.wallets.infrastructure.http.WalletTapirSchemas._
 
-  implicit val ec = system.executionContext
-  implicit val timeout = Timeout(2.seconds)
-  implicit val c = clock
+  implicit val ec: ExecutionContextExecutor = system.executionContext
+  implicit val timeout: Timeout = Timeout(2.seconds)
+  implicit val c: Clock = clock
 
   private val createBackofficeUserUseCase =
     new CreateUserUseCase(

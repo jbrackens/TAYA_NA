@@ -103,7 +103,7 @@ func IssuanceFillFeasible(takerLimit, makerLimit int) bool {
 
 // ComplementaryTakerPriceCents returns the price the taker actually pays in
 // a complementary issuance fill: 100 - makerLimit. The taker may have set a
-// higher limit; the surplus is released from their cash reservation at
+// higher limit; the surplus is released from their point reservation at
 // commit (no separate refund).
 func ComplementaryTakerPriceCents(makerLimit int) int {
 	return ParPriceCents - makerLimit

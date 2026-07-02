@@ -38,7 +38,7 @@ type PredictBoardDef struct {
 	MetricLabel      string             `json:"metricLabel"`
 	Window           PredictBoardWindow `json:"window"`
 	MinSettled       int                `json:"minSettled"`
-	MinVolumeCents   int64              `json:"minVolumeCents,omitempty"`
+	MinVolumeCents   int64              `json:"minVolumePointsCents,omitempty"`
 	CategorySlug     string             `json:"categorySlug,omitempty"`
 	QualificationMsg string             `json:"qualificationMsg"`
 }
@@ -60,8 +60,8 @@ func PredictBoards() []PredictBoardDef {
 		{
 			ID:               PredictBoardPnLWeekly,
 			Name:             "Weekly P&L",
-			Description:      "Realized profit and loss this calendar week.",
-			MetricLabel:      "P&L",
+			Description:      "Realized point result this calendar week.",
+			MetricLabel:      "Net points",
 			Window:           PredictBoardWindowWeekly,
 			MinSettled:       1,
 			QualificationMsg: "Settle at least one market this week to qualify.",
@@ -69,12 +69,12 @@ func PredictBoards() []PredictBoardDef {
 		{
 			ID:               PredictBoardSharpness,
 			Name:             "Sharpness",
-			Description:      "Realized P&L divided by total volume traded, rolling 30 days.",
+			Description:      "Realized point result divided by total prediction volume, rolling 30 days.",
 			MetricLabel:      "ROI",
 			Window:           PredictBoardWindowRolling30D,
 			MinSettled:       5,
-			MinVolumeCents:   50_000, // $500 floor keeps tiny-sample noise off the board
-			QualificationMsg: "Settle 5 markets with $500+ total volume in the last 30 days.",
+			MinVolumeCents:   50_000,
+			QualificationMsg: "Settle 5 markets with 500+ pts total prediction volume in the last 30 days.",
 		},
 	}
 }
@@ -90,8 +90,8 @@ func PredictCategoryBoardDef(categorySlug, categoryName string) PredictBoardDef 
 	return PredictBoardDef{
 		ID:               PredictCategoryBoardID(categorySlug),
 		Name:             categoryName + " Champions",
-		Description:      "Top traders in " + categoryName + " this calendar week.",
-		MetricLabel:      "P&L",
+		Description:      "Top predictors in " + categoryName + " this calendar week.",
+		MetricLabel:      "Net points",
 		Window:           PredictBoardWindowWeekly,
 		MinSettled:       3,
 		CategorySlug:     categorySlug,

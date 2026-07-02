@@ -10,14 +10,6 @@ interface WageringProgressProps {
   expiresAt: string;
 }
 
-function formatCents(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-  }).format(cents / 100);
-}
-
 function daysUntil(dateStr: string): number {
   const target = new Date(dateStr).getTime();
   const now = Date.now();
@@ -47,15 +39,15 @@ export const WageringProgress: React.FC<WageringProgressProps> = ({
         }`}
         value={clampedPct}
         max={100}
-        aria-label="Wagering progress"
+        aria-label="Play progress"
       />
 
       {/* Labels */}
       <div className="flex items-center justify-between text-xs">
         <span className="text-gray-400">
-          {t("wageringRequired", {
-            completed: formatCents(completedCents),
-            required: formatCents(requiredCents),
+          {t("playProgressRequired", {
+            completed: formatPointsFromCents(completedCents),
+            required: formatPointsFromCents(requiredCents),
           })}
         </span>
         <span className={isExpired ? "text-red-400" : "text-gray-400"}>
@@ -65,3 +57,7 @@ export const WageringProgress: React.FC<WageringProgressProps> = ({
     </div>
   );
 };
+
+function formatPointsFromCents(cents: number): string {
+  return `${Math.round(cents / 100).toLocaleString()} pts`;
+}

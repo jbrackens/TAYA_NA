@@ -24,7 +24,8 @@ func NewSQLResolutionStore(db *sql.DB) *SQLResolutionStore {
 // matcher uses). fn's own queries run on pooled connections; the lock provides
 // mutual exclusion against other WithMarketLock holders for the same market,
 // which is exactly the finalize-vs-finalize and dispute-vs-finalize
-// serialization needed to make the windowed-resolution money path race-free.
+// serialization needed to make the windowed-resolution point-settlement path
+// race-free.
 func (s *SQLResolutionStore) WithMarketLock(ctx context.Context, marketID string, fn func() error) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {

@@ -1,2 +1,0 @@
-FROM liquibase/liquibase:4.9.0
-COPY ./achievement/conf/liquibase /liquibase/changelog

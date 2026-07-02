@@ -1,0 +1,511 @@
+{
+  "totals": {
+    "packages": 114,
+    "major": 79,
+    "minor": 16,
+    "patch": 19,
+    "unknown": 0
+  },
+  "entries": [
+    {
+      "package": "@ai-sdk/anthropic",
+      "current": "3.0.79",
+      "wanted": "3.0.89",
+      "latest": "4.0.1",
+      "workspace": "@phoenix-ui/office",
+      "packageType": "dependencies",
+      "url": "https://ai-sdk.dev/docs",
+      "updateClass": "major"
+    },
+    {
+      "package": "@ai-sdk/openai-compatible",
+      "current": "2.0.48",
+      "wanted": "2.0.54",
+      "latest": "3.0.1",
+      "workspace": "@phoenix-ui/office",
+      "packageType": "dependencies",
+      "url": "https://ai-sdk.dev/docs",
+      "updateClass": "major"
+    },
+    {
+      "package": "@ant-design/icons",
+      "current": "5.6.1",
+      "wanted": "5.6.1",
+      "latest": "6.3.2",
+      "workspace": "@phoenix-ui/office",
+      "packageType": "dependencies",
+      "url": "https://github.com/ant-design/ant-design-icons/tree/master#readme",
+      "updateClass": "major"
+    },
+    {
+      "package": "@babel/runtime",
+      "current": "7.28.6",
+      "wanted": "7.28.6",
+      "latest": "8.0.0",
+      "workspace": "",
+      "packageType": "resolutionDependencies",
+      "url": "https://babel.dev/docs/en/next/babel-runtime",
+      "updateClass": "major"
+    },
+    {
+      "package": "@babel/runtime",
+      "current": "7.28.6",
+      "wanted": "7.28.6",
+      "latest": "8.0.0",
+      "workspace": "phoenix-ui",
+      "packageType": "dependencies",
+      "url": "https://babel.dev/docs/en/next/babel-runtime",
+      "updateClass": "major"
+    },
+    {
+      "package": "@babel/runtime",
+      "current": "7.28.6",
+      "wanted": "7.28.6",
+      "latest": "8.0.0",
+      "workspace": "@phoenix-ui/design-system",
+      "packageType": "dependencies",
+      "url": "https://babel.dev/docs/en/next/babel-runtime",
+      "updateClass": "major"
+    },
+    {
+      "package": "@commitlint/cli",
+      "current": "8.3.6",
+      "wanted": "8.3.6",
+      "latest": "21.1.0",
+      "workspace": "phoenix-ui",
+      "packageType": "devDependencies",
+      "url": "https://commitlint.js.org/",
+      "updateClass": "major"
+    },
+    {
+      "package": "@commitlint/config-conventional",
+      "current": "8.3.6",
+      "wanted": "8.3.6",
+      "latest": "21.1.0",
+      "workspace": "phoenix-ui",
+      "packageType": "devDependencies",
+      "url": "https://commitlint.js.org/",
+      "updateClass": "major"
+    },
+    {
+      "package": "@fingerprintjs/fingerprintjs",
+      "current": "3.4.2",
+      "wanted": "3.4.2",
+      "latest": "5.2.0",
+      "workspace": "@phoenix-ui/utils",
+      "packageType": "dependencies",
+      "url": "https://github.com/fingerprintjs/fingerprintjs",
+      "updateClass": "major"
+    },
+    {
+      "package": "@playwright/test",
+      "current": "1.59.1",
+      "wanted": "1.61.1",
+      "latest": "1.61.1",
+      "workspace": "phoenix-ui",
+      "packageType": "devDependencies",
+      "url": "https://playwright.dev",
+      "updateClass": "minor"
+    },
+    {
+      "package": "@playwright/test",
+      "current": "1.59.1",
+      "wanted": "1.61.1",
+      "latest": "1.61.1",
+      "workspace": "@phoenix-ui/app",
+      "packageType": "devDependencies",
+      "url": "https://playwright.dev",
+      "updateClass": "minor"
+    },
+    {
+      "package": "@reduxjs/toolkit",
+      "current": "1.9.7",
+      "wanted": "1.9.7",
+      "latest": "2.12.0",
+      "workspace": "@phoenix-ui/app",
+      "packageType": "devDependencies",
+      "url": "https://redux-toolkit.js.org",
+      "updateClass": "major"
+    },
+    {
+      "package": "@reduxjs/toolkit",
+      "current": "1.9.7",
+      "wanted": "1.9.7",
+      "latest": "2.12.0",
+      "workspace": "@phoenix-ui/office",
+      "packageType": "devDependencies",
+      "url": "https://redux-toolkit.js.org",
+      "updateClass": "major"
+    },
+    {
+      "package": "@tailwindcss/postcss",
+      "current": "4.2.2",
+      "wanted": "4.3.1",
+      "latest": "4.3.1",
+      "workspace": "@phoenix-ui/app",
+      "packageType": "devDependencies",
+      "url": "https://tailwindcss.com",
+      "updateClass": "minor"
+    },
+    {
+      "package": "@tailwindcss/postcss",
+      "current": "4.2.2",
+      "wanted": "4.3.1",
+      "latest": "4.3.1",
+      "workspace": "@phoenix-ui/office",
+      "packageType": "devDependencies",
+      "url": "https://tailwindcss.com",
+      "updateClass": "minor"
+    },
+    {
+      "package": "@tanstack/react-query",
+      "current": "5.96.2",
+      "wanted": "5.101.2",
+      "latest": "5.101.2",
+      "workspace": "phoenix-ui",
+      "packageType": "dependencies",
+      "url": "https://tanstack.com/query",
+      "updateClass": "minor"
+    },
+    {
+      "package": "@testing-library/jest-dom",
+      "current": "5.17.0",
+      "wanted": "5.17.0",
+      "latest": "6.9.1",
+      "workspace": "phoenix-ui",
+      "packageType": "devDependencies",
+      "url": "https://github.com/testing-library/jest-dom#readme",
+      "updateClass": "major"
+    },
+    {
+      "package": "@testing-library/react",
+      "current": "11.2.7",
+      "wanted": "11.2.7",
+      "latest": "16.3.2",
+      "workspace": "phoenix-ui",
+      "packageType": "devDependencies",
+      "url": "https://github.com/testing-library/react-testing-library#readme",
+      "updateClass": "major"
+    },
+    {
+      "package": "@testing-library/react-hooks",
+      "current": "3.7.0",
+      "wanted": "3.7.0",
+      "latest": "8.0.1",
+      "workspace": "phoenix-ui",
+      "packageType": "devDependencies",
+      "url": "https://github.com/testing-library/react-hooks-testing-library#readme",
+      "updateClass": "major"
+    },
+    {
+      "package": "@testing-library/react-hooks",
+      "current": "3.7.0",
+      "wanted": "3.7.0",
+      "latest": "8.0.1",
+      "workspace": "@phoenix-ui/office",
+      "packageType": "devDependencies",
+      "url": "https://github.com/testing-library/react-hooks-testing-library#readme",
+      "updateClass": "major"
+    },
+    {
+      "package": "@testing-library/user-event",
+      "current": "7.2.1",
+      "wanted": "7.2.1",
+      "latest": "14.6.1",
+      "workspace": "phoenix-ui",
+      "packageType": "devDependencies",
+      "url": "https://github.com/testing-library/user-event#readme",
+      "updateClass": "major"
+    },
+    {
+      "package": "@testing-library/user-event",
+      "current": "7.2.1",
+      "wanted": "7.2.1",
+      "latest": "14.6.1",
+      "workspace": "@phoenix-ui/office",
+      "packageType": "devDependencies",
+      "url": "https://github.com/testing-library/user-event#readme",
+      "updateClass": "major"
+    },
+    {
+      "package": "@types/babel__traverse",
+      "current": "7.20.6",
+      "wanted": "7.20.6",
+      "latest": "7.28.0",
+      "workspace": "",
+      "packageType": "resolutionDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/babel__traverse",
+      "updateClass": "minor"
+    },
+    {
+      "package": "@types/express",
+      "current": "4.17.25",
+      "wanted": "4.17.25",
+      "latest": "5.0.6",
+      "workspace": "@phoenix-ui/mock-server",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/express",
+      "updateClass": "major"
+    },
+    {
+      "package": "@types/jest",
+      "current": "24.0.23",
+      "wanted": "24.0.23",
+      "latest": "30.0.0",
+      "workspace": "phoenix-ui",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/jest",
+      "updateClass": "major"
+    },
+    {
+      "package": "@types/jest",
+      "current": "24.0.23",
+      "wanted": "24.0.23",
+      "latest": "30.0.0",
+      "workspace": "@phoenix-ui/app",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/jest",
+      "updateClass": "major"
+    },
+    {
+      "package": "@types/jest",
+      "current": "24.0.23",
+      "wanted": "24.0.23",
+      "latest": "30.0.0",
+      "workspace": "@phoenix-ui/office",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/jest",
+      "updateClass": "major"
+    },
+    {
+      "package": "@types/js-cookie",
+      "current": "2.2.7",
+      "wanted": "2.2.7",
+      "latest": "3.0.6",
+      "workspace": "@phoenix-ui/office",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/js-cookie",
+      "updateClass": "major"
+    },
+    {
+      "package": "@types/jsonwebtoken",
+      "current": "7.2.8",
+      "wanted": "7.2.8",
+      "latest": "9.0.10",
+      "workspace": "@phoenix-ui/app",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/jsonwebtoken",
+      "updateClass": "major"
+    },
+    {
+      "package": "@types/jsonwebtoken",
+      "current": "7.2.8",
+      "wanted": "7.2.8",
+      "latest": "9.0.10",
+      "workspace": "@phoenix-ui/mock-server",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/jsonwebtoken",
+      "updateClass": "major"
+    },
+    {
+      "package": "@types/jsonwebtoken",
+      "current": "7.2.8",
+      "wanted": "7.2.8",
+      "latest": "9.0.10",
+      "workspace": "@phoenix-ui/office",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/jsonwebtoken",
+      "updateClass": "major"
+    },
+    {
+      "package": "@types/lodash",
+      "current": "4.14.161",
+      "wanted": "4.14.161",
+      "latest": "4.17.24",
+      "workspace": "phoenix-ui",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/lodash",
+      "updateClass": "minor"
+    },
+    {
+      "package": "@types/minimatch",
+      "current": "3.0.5",
+      "wanted": "3.0.5",
+      "latest": "6.0.0",
+      "workspace": "",
+      "packageType": "resolutionDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/minimatch",
+      "updateClass": "major"
+    },
+    {
+      "package": "@types/node",
+      "current": "10.12.18",
+      "wanted": "10.12.18",
+      "latest": "26.0.1",
+      "workspace": "phoenix-ui",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/node",
+      "updateClass": "major"
+    },
+    {
+      "package": "@types/node",
+      "current": "20.19.39",
+      "wanted": "20.19.43",
+      "latest": "26.0.1",
+      "workspace": "@phoenix-ui/api-client",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/node",
+      "updateClass": "major"
+    },
+    {
+      "package": "@types/node",
+      "current": "14.18.63",
+      "wanted": "14.18.63",
+      "latest": "26.0.1",
+      "workspace": "@phoenix-ui/app",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/node",
+      "updateClass": "major"
+    },
+    {
+      "package": "@types/node",
+      "current": "14.18.63",
+      "wanted": "14.18.63",
+      "latest": "26.0.1",
+      "workspace": "@phoenix-ui/mock-server",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/node",
+      "updateClass": "major"
+    },
+    {
+      "package": "@types/node",
+      "current": "14.18.63",
+      "wanted": "14.18.63",
+      "latest": "26.0.1",
+      "workspace": "@phoenix-ui/office",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/node",
+      "updateClass": "major"
+    },
+    {
+      "package": "@types/react",
+      "current": "19.2.2",
+      "wanted": "19.2.2",
+      "latest": "19.2.17",
+      "workspace": "",
+      "packageType": "resolutionDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react",
+      "updateClass": "patch"
+    },
+    {
+      "package": "@types/react",
+      "current": "19.2.2",
+      "wanted": "19.2.2",
+      "latest": "19.2.17",
+      "workspace": "@phoenix-ui/app",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react",
+      "updateClass": "patch"
+    },
+    {
+      "package": "@types/react",
+      "current": "19.2.2",
+      "wanted": "18.2.0",
+      "latest": "19.2.17",
+      "workspace": "@phoenix-ui/design-system",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react",
+      "updateClass": "patch"
+    },
+    {
+      "package": "@types/react",
+      "current": "19.2.2",
+      "wanted": "19.2.2",
+      "latest": "19.2.17",
+      "workspace": "@phoenix-ui/office",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react",
+      "updateClass": "patch"
+    },
+    {
+      "package": "@types/react-dom",
+      "current": "19.2.2",
+      "wanted": "19.2.2",
+      "latest": "19.2.3",
+      "workspace": "",
+      "packageType": "resolutionDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react-dom",
+      "updateClass": "patch"
+    },
+    {
+      "package": "@types/react-dom",
+      "current": "19.2.2",
+      "wanted": "19.2.2",
+      "latest": "19.2.3",
+      "workspace": "@phoenix-ui/app",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react-dom",
+      "updateClass": "patch"
+    },
+    {
+      "package": "@types/react-dom",
+      "current": "19.2.2",
+      "wanted": "18.2.0",
+      "latest": "19.2.3",
+      "workspace": "@phoenix-ui/design-system",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react-dom",
+      "updateClass": "patch"
+    },
+    {
+      "package": "@types/react-dom",
+      "current": "19.2.2",
+      "wanted": "19.2.2",
+      "latest": "19.2.3",
+      "workspace": "@phoenix-ui/office",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react-dom",
+      "updateClass": "patch"
+    },
+    {
+      "package": "@types/uuid",
+      "current": "8.3.4",
+      "wanted": "8.3.4",
+      "latest": "11.0.0",
+      "workspace": "@phoenix-ui/app",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/uuid",
+      "updateClass": "major"
+    },
+    {
+      "package": "@types/ws",
+      "current": "7.4.7",
+      "wanted": "7.4.7",
+      "latest": "8.18.1",
+      "workspace": "@phoenix-ui/mock-server",
+      "packageType": "devDependencies",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/ws",
+      "updateClass": "major"
+    },
+    {
+      "package": "@typescript-eslint/eslint-plugin",
+      "current": "5.23.0",
+      "wanted": "5.23.0",
+      "latest": "8.62.0",
+      "workspace": "phoenix-ui",
+      "packageType": "devDependencies",
+      "url": "https://typescript-eslint.io/packages/eslint-plugin",
+      "updateClass": "major"
+    },
+    {
+      "package": "@typescript-eslint/parser",
+      "current": "5.23.0",
+      "wanted": "5.23.0",
+      "latest": "8.62.0",
+      "workspace": "phoenix-ui",
+      "packageType": "devDependencies",
+      "url": "https://typescript-eslint.io/packages/parser",
+      "updateClass": "major"
+    }
+  ]
+}

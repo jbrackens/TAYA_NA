@@ -17,11 +17,19 @@ function readCookie(name: string) {
 
 function syncAuthCookie(token?: string) {
   if (typeof document === "undefined") return;
+  // The login route already sets an HttpOnly+Secure `authToken` cookie and all
+  // gateway calls use credentials:"include", so the browser sends it
+  // automatically. We deliberately no longer mint a JS-readable mirror cookie
+  // (it would be exfiltratable by any XSS). The write path is therefore a
+  // no-op; only the clear path runs, to tear down any legacy mirror cookie a
+  // returning session may still carry.
   if (token) {
-    document.cookie = `authToken=${encodeURIComponent(token)}; path=/; SameSite=Lax`;
     return;
   }
-  document.cookie = "authToken=; path=/; Max-Age=0; SameSite=Lax";
+  const secure =
+    typeof location !== "undefined" && location.protocol === "https:";
+  document.cookie =
+    "authToken=; path=/; Max-Age=0; SameSite=Lax" + (secure ? "; Secure" : "");
 }
 
 class ApiClient {

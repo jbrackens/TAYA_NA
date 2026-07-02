@@ -49,9 +49,9 @@ function formatCountdown(
 }
 
 function formatVolume(cents: number): string {
-  const dollars = cents / 100;
-  if (dollars >= 1000) return `$${(dollars / 1000).toFixed(1)}K`;
-  return `$${dollars.toFixed(0)}`;
+  const points = cents / 100;
+  if (points >= 1000) return `${(points / 1000).toFixed(1)}K pts`;
+  return `${points.toFixed(0)} pts`;
 }
 
 function formatCloseDate(iso: string): string {
@@ -147,7 +147,7 @@ export default function MarketHead({
           )}
           <span className={MARKET_HEAD_PILL_CLASS}>
             {t("VOLUME_VALUE", {
-              value: formatVolume(displayMarket.volumeCents),
+              value: formatVolume(displayMarket.volumePointsCents),
             })}
           </span>
           {typeof tradersCount === "number" && (

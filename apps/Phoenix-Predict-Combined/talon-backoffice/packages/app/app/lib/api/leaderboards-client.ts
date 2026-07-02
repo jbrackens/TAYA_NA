@@ -10,12 +10,14 @@ export interface LeaderboardDefinition {
   id: string;
   name: string;
   description: string;
-  metricLabel: string;
+  metricKey: string;
+  pointMetricKey: string;
   window: PredictBoardWindow;
   minSettled: number;
-  minVolumeCents?: number;
+  minVolumePointsCents?: number;
+  unit: "PTS";
   categorySlug?: string;
-  qualificationMsg: string;
+  rewardSummary: string;
 }
 
 export interface LeaderboardEntry {

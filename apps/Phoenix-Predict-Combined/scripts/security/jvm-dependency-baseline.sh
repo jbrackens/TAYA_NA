@@ -38,14 +38,24 @@ else
     echo "## command checks"
     if command -v java >/dev/null 2>&1; then
       echo "java=$(command -v java)"
+      set +e
       java -version
+      java_version_rc=$?
+      set -e
+      echo "java_version_exit_code=$java_version_rc"
     else
       echo "java=not_found"
     fi
     if command -v sbt >/dev/null 2>&1; then
       echo "sbt=$(command -v sbt)"
+      set +e
       sbt --script-version
+      sbt_script_version_rc=$?
       sbt --version
+      sbt_version_rc=$?
+      set -e
+      echo "sbt_script_version_exit_code=$sbt_script_version_rc"
+      echo "sbt_version_exit_code=$sbt_version_rc"
     else
       echo "sbt=not_found"
     fi
@@ -153,3 +163,9 @@ fi
 
 echo "Wrote report: $REPORT"
 echo "Wrote log:    $SBT_LOG"
+
+if [[ "${JVM_DEPENDENCY_BASELINE_STRICT:-0}" == "1" || "${JVM_DEPENDENCY_BASELINE_STRICT:-0}" == "true" ]]; then
+  if [[ "$STATUS" != "success" ]]; then
+    exit "$EXIT_CODE"
+  fi
+fi

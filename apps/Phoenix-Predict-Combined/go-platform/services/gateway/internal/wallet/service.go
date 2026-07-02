@@ -3,6 +3,7 @@ package wallet
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -35,7 +36,7 @@ type Reservation struct {
 	ID            string `json:"id"`
 	UserID        string `json:"userId"`
 	AmountCents   int64  `json:"amountCents"`
-	ReferenceType string `json:"referenceType"` // "bet", "withdrawal"
+	ReferenceType string `json:"referenceType"` // e.g. "prediction_order"
 	ReferenceID   string `json:"referenceId"`
 	Status        string `json:"status"` // "held", "captured", "released", "expired"
 	CreatedAt     string `json:"createdAt"`
@@ -82,6 +83,20 @@ type ReconciliationSummary struct {
 	DistinctUserIDs int64  `json:"distinctUserCount"`
 }
 
+type RewardClusterSignal struct {
+	Kind     string
+	Signal   string
+	MaxUsers int
+}
+
+type RewardClusterSummary struct {
+	WindowDate        string   `json:"windowDate"`
+	SignalType        string   `json:"signalType"`
+	SignalHash        string   `json:"signalHash"`
+	DistinctUserCount int      `json:"distinctUserCount"`
+	UserIDs           []string `json:"userIds,omitempty"`
+}
+
 type CorrectionTask struct {
 	TaskID                    string `json:"taskId"`
 	UserID                    string `json:"userId"`
@@ -102,26 +117,27 @@ type CorrectionTask struct {
 }
 
 type persistedWalletState struct {
-	Balances        map[string]int64          `json:"balances"`
-	Ledger          map[string][]LedgerEntry  `json:"ledger"`
-	IdempotencyMap  map[string]LedgerEntry    `json:"idempotencyMap"`
-	Sequence        int64                     `json:"sequence"`
-	CorrectionTasks map[string]CorrectionTask `json:"correctionTasks"`
-	CorrectionSeq   int64                     `json:"correctionSeq"`
+	Balances        map[string]int64               `json:"balances"`
+	Ledger          map[string][]LedgerEntry       `json:"ledger"`
+	IdempotencyMap  map[string]LedgerEntry         `json:"idempotencyMap"`
+	RewardClusters  map[string]map[string]struct{} `json:"rewardClusters"`
+	Sequence        int64                          `json:"sequence"`
+	CorrectionTasks map[string]CorrectionTask      `json:"correctionTasks"`
+	CorrectionSeq   int64                          `json:"correctionSeq"`
 }
 
 const idempotencyTTL = 24 * time.Hour
 
 // WalletMetrics tracks operational counters for monitoring.
 type WalletMetrics struct {
-	CreditCount     int64 `json:"creditCount"`
-	DebitCount      int64 `json:"debitCount"`
+	CreditCount      int64 `json:"creditCount"`
+	DebitCount       int64 `json:"debitCount"`
 	CreditTotalCents int64 `json:"creditTotalCents"`
 	DebitTotalCents  int64 `json:"debitTotalCents"`
-	ErrorCount      int64 `json:"errorCount"`
-	HoldCount       int64 `json:"holdCount"`
-	CaptureCount    int64 `json:"captureCount"`
-	ReleaseCount    int64 `json:"releaseCount"`
+	ErrorCount       int64 `json:"errorCount"`
+	HoldCount        int64 `json:"holdCount"`
+	CaptureCount     int64 `json:"captureCount"`
+	ReleaseCount     int64 `json:"releaseCount"`
 }
 
 type Service struct {
@@ -130,6 +146,7 @@ type Service struct {
 	balances        map[string]int64
 	ledger          map[string][]LedgerEntry
 	idempotencyMap  map[string]LedgerEntry
+	rewardClusters  map[string]map[string]struct{}
 	sequence        int64
 	correctionSeq   int64
 	correctionTasks map[string]CorrectionTask
@@ -172,7 +189,7 @@ func NewServiceFromEnv() *Service {
 			}
 		}
 	} else if isProduction {
-		log.Fatalf("FATAL: WALLET_STORE_MODE must be 'db' in production (currently %q); file-backed mode is not safe for real money", mode)
+		log.Fatalf("FATAL: WALLET_STORE_MODE must be 'db' in production (currently %q); file-backed mode is not safe for production point ledgers", mode)
 	}
 
 	return NewServiceWithPath(os.Getenv("WALLET_LEDGER_FILE"))
@@ -257,6 +274,7 @@ func NewServiceWithPath(statePath string) *Service {
 		balances:        map[string]int64{},
 		ledger:          map[string][]LedgerEntry{},
 		idempotencyMap:  map[string]LedgerEntry{},
+		rewardClusters:  map[string]map[string]struct{}{},
 		correctionTasks: map[string]CorrectionTask{},
 		now:             time.Now,
 		statePath:       statePath,
@@ -292,23 +310,23 @@ func (s *Service) evictStaleIdempotencyKeys() {
 	}
 }
 
-func (s *Service) Credit(request MutationRequest) (LedgerEntry, error) {
+func (s *Service) Credit(ctx context.Context, request MutationRequest) (LedgerEntry, error) {
 	if s.db != nil {
-		return s.applyMutationDB("credit", request)
+		return s.applyMutationDB(ctx, "credit", request)
 	}
 	return s.applyMutationMemory("credit", request)
 }
 
-func (s *Service) Debit(request MutationRequest) (LedgerEntry, error) {
+func (s *Service) Debit(ctx context.Context, request MutationRequest) (LedgerEntry, error) {
 	if s.db != nil {
-		return s.applyMutationDB("debit", request)
+		return s.applyMutationDB(ctx, "debit", request)
 	}
 	return s.applyMutationMemory("debit", request)
 }
 
-func (s *Service) Balance(userID string) int64 {
+func (s *Service) Balance(ctx context.Context, userID string) int64 {
 	if s.db != nil {
-		ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+		ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 		defer cancel()
 		var balance int64
 		err := s.db.QueryRowContext(ctx, "SELECT balance_cents FROM wallet_balances WHERE user_id = $1", userID).Scan(&balance)
@@ -326,15 +344,280 @@ func (s *Service) Balance(userID string) int64 {
 	return s.balances[userID]
 }
 
-// Balances returns the cash balance for each user ID in a single query, for
+// TryRecordRewardClusters records non-ledger abuse-control evidence for a
+// reward grant. It returns false without recording anything when any active
+// signal has already reached its distinct-user cap for the day.
+func (s *Service) TryRecordRewardClusters(ctx context.Context, windowDate string, userID string, signals []RewardClusterSignal) (bool, string, error) {
+	active := normalizeRewardClusterSignals(windowDate, signals)
+	if userID == "" || len(active.signals) == 0 {
+		return true, "", nil
+	}
+	if s.db != nil {
+		return s.tryRecordRewardClustersDB(ctx, active.date, userID, active.signals)
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.pruneRewardClustersLocked(active.date)
+
+	for _, signal := range active.signals {
+		key := rewardClusterStorageKey(active.date, signal.kind, signal.hash)
+		users := s.rewardClusters[key]
+		if _, ok := users[userID]; ok {
+			continue
+		}
+		if len(users) >= signal.maxUsers {
+			return false, signal.kind, nil
+		}
+	}
+	for _, signal := range active.signals {
+		key := rewardClusterStorageKey(active.date, signal.kind, signal.hash)
+		users := s.rewardClusters[key]
+		if users == nil {
+			users = map[string]struct{}{}
+			s.rewardClusters[key] = users
+		}
+		users[userID] = struct{}{}
+	}
+	if err := s.persistLocked(); err != nil {
+		return false, "", err
+	}
+	return true, "", nil
+}
+
+func (s *Service) tryRecordRewardClustersDB(ctx context.Context, windowDate string, userID string, signals []rewardClusterSignalRecord) (bool, string, error) {
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
+	defer cancel()
+
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		return false, "", err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	for _, signal := range signals {
+		var existing bool
+		if err := tx.QueryRowContext(ctx, `
+SELECT EXISTS (
+  SELECT 1 FROM wallet_reward_clusters
+  WHERE window_date = $1 AND signal_type = $2 AND signal_hash = $3 AND user_id = $4
+)`, windowDate, signal.kind, signal.hash, userID).Scan(&existing); err != nil {
+			return false, "", err
+		}
+		if existing {
+			continue
+		}
+
+		var users int
+		if err := tx.QueryRowContext(ctx, `
+SELECT COUNT(DISTINCT user_id)
+FROM wallet_reward_clusters
+WHERE window_date = $1 AND signal_type = $2 AND signal_hash = $3`,
+			windowDate, signal.kind, signal.hash).Scan(&users); err != nil {
+			return false, "", err
+		}
+		if users >= signal.maxUsers {
+			return false, signal.kind, nil
+		}
+	}
+
+	for _, signal := range signals {
+		if _, err := tx.ExecContext(ctx, `
+INSERT INTO wallet_reward_clusters (window_date, signal_type, signal_hash, user_id)
+VALUES ($1, $2, $3, $4)
+ON CONFLICT DO NOTHING`,
+			windowDate, signal.kind, signal.hash, userID); err != nil {
+			return false, "", err
+		}
+	}
+	if err := tx.Commit(); err != nil {
+		return false, "", err
+	}
+	return true, "", nil
+}
+
+// RewardClusterSummaries returns reviewable, non-ledger abuse-control evidence
+// for admins. Signal values are hashed before storage and are never returned.
+func (s *Service) RewardClusterSummaries(ctx context.Context, windowDate string, limit int) ([]RewardClusterSummary, error) {
+	windowDate = normalizeRewardClusterWindowDate(windowDate)
+	limit = normalizeRewardClusterSummaryLimit(limit)
+	if s.db != nil {
+		return s.rewardClusterSummariesDB(ctx, windowDate, limit)
+	}
+
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	items := make([]RewardClusterSummary, 0, len(s.rewardClusters))
+	for key, users := range s.rewardClusters {
+		date, kind, hash, ok := parseRewardClusterStorageKey(key)
+		if !ok || date != windowDate {
+			continue
+		}
+		userIDs := make([]string, 0, len(users))
+		for userID := range users {
+			userIDs = append(userIDs, userID)
+		}
+		sort.Strings(userIDs)
+		items = append(items, RewardClusterSummary{
+			WindowDate:        date,
+			SignalType:        kind,
+			SignalHash:        hash,
+			DistinctUserCount: len(userIDs),
+			UserIDs:           userIDs,
+		})
+	}
+	sortRewardClusterSummaries(items)
+	if len(items) > limit {
+		items = items[:limit]
+	}
+	return items, nil
+}
+
+func (s *Service) rewardClusterSummariesDB(ctx context.Context, windowDate string, limit int) ([]RewardClusterSummary, error) {
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
+	defer cancel()
+
+	rows, err := s.db.QueryContext(ctx, `
+SELECT window_date, signal_type, signal_hash, COUNT(DISTINCT user_id) AS distinct_user_count,
+       ARRAY_AGG(DISTINCT user_id ORDER BY user_id) AS user_ids
+FROM wallet_reward_clusters
+WHERE window_date = $1
+GROUP BY window_date, signal_type, signal_hash
+ORDER BY distinct_user_count DESC, signal_type ASC, signal_hash ASC
+LIMIT $2`, windowDate, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := []RewardClusterSummary{}
+	for rows.Next() {
+		var item RewardClusterSummary
+		if err := rows.Scan(
+			&item.WindowDate,
+			&item.SignalType,
+			&item.SignalHash,
+			&item.DistinctUserCount,
+			pq.Array(&item.UserIDs),
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+type normalizedRewardClusterSignals struct {
+	date    string
+	signals []rewardClusterSignalRecord
+}
+
+type rewardClusterSignalRecord struct {
+	kind     string
+	hash     string
+	maxUsers int
+}
+
+func normalizeRewardClusterSignals(windowDate string, signals []RewardClusterSignal) normalizedRewardClusterSignals {
+	date := normalizeRewardClusterWindowDate(windowDate)
+	out := normalizedRewardClusterSignals{date: date}
+	seen := map[string]struct{}{}
+	for _, signal := range signals {
+		if signal.MaxUsers <= 0 {
+			continue
+		}
+		kind := strings.ToLower(strings.TrimSpace(signal.Kind))
+		raw := strings.ToLower(strings.TrimSpace(signal.Signal))
+		if kind == "" || raw == "" {
+			continue
+		}
+		hash := rewardClusterSignalHash(raw)
+		key := kind + "|" + hash
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		out.signals = append(out.signals, rewardClusterSignalRecord{
+			kind:     kind,
+			hash:     hash,
+			maxUsers: signal.MaxUsers,
+		})
+	}
+	return out
+}
+
+func (s *Service) pruneRewardClustersLocked(date string) {
+	prefix := date + "|"
+	for key := range s.rewardClusters {
+		if !strings.HasPrefix(key, prefix) {
+			delete(s.rewardClusters, key)
+		}
+	}
+}
+
+func rewardClusterStorageKey(date string, kind string, hash string) string {
+	return date + "|" + kind + "|" + hash
+}
+
+func parseRewardClusterStorageKey(key string) (string, string, string, bool) {
+	parts := strings.SplitN(key, "|", 3)
+	if len(parts) != 3 || parts[0] == "" || parts[1] == "" || parts[2] == "" {
+		return "", "", "", false
+	}
+	return parts[0], parts[1], parts[2], true
+}
+
+func normalizeRewardClusterWindowDate(windowDate string) string {
+	date := strings.TrimSpace(windowDate)
+	if len(date) >= len("2006-01-02") {
+		date = date[:len("2006-01-02")]
+	}
+	if date == "" {
+		date = time.Now().UTC().Format("2006-01-02")
+	}
+	return date
+}
+
+func normalizeRewardClusterSummaryLimit(limit int) int {
+	if limit <= 0 {
+		return 50
+	}
+	if limit > 200 {
+		return 200
+	}
+	return limit
+}
+
+func sortRewardClusterSummaries(items []RewardClusterSummary) {
+	sort.Slice(items, func(i, j int) bool {
+		if items[i].DistinctUserCount != items[j].DistinctUserCount {
+			return items[i].DistinctUserCount > items[j].DistinctUserCount
+		}
+		if items[i].SignalType != items[j].SignalType {
+			return items[i].SignalType < items[j].SignalType
+		}
+		return items[i].SignalHash < items[j].SignalHash
+	})
+}
+
+func rewardClusterSignalHash(signal string) string {
+	sum := sha256.Sum256([]byte(strings.ToLower(strings.TrimSpace(signal))))
+	return fmt.Sprintf("%x", sum[:])
+}
+
+// Balances returns the point balance for each user ID in a single query, for
 // admin list views. Users with no wallet row default to 0.
-func (s *Service) Balances(userIDs []string) map[string]int64 {
+func (s *Service) Balances(ctx context.Context, userIDs []string) map[string]int64 {
 	out := make(map[string]int64, len(userIDs))
 	if len(userIDs) == 0 {
 		return out
 	}
 	if s.db != nil {
-		ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+		ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 		defer cancel()
 		rows, err := s.db.QueryContext(ctx,
 			"SELECT user_id, balance_cents FROM wallet_balances WHERE user_id = ANY($1)",
@@ -362,17 +645,17 @@ func (s *Service) Balances(userIDs []string) map[string]int64 {
 	return out
 }
 
-// BalanceBreakdown returns the real money and bonus fund balances separately.
-// This is required for regulatory compliance (bonus funds have different rules).
+// BalanceBreakdown returns the regular point and bonus point balances separately.
+// Bonus point balances follow different campaign and expiry rules.
 type BalanceBreakdown struct {
 	RealMoneyCents int64 `json:"realMoneyCents"`
 	BonusFundCents int64 `json:"bonusFundCents"`
 	TotalCents     int64 `json:"totalCents"`
 }
 
-func (s *Service) BalanceWithBreakdown(userID string) BalanceBreakdown {
+func (s *Service) BalanceWithBreakdown(ctx context.Context, userID string) BalanceBreakdown {
 	if s.db != nil {
-		ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+		ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 		defer cancel()
 		var real, bonus int64
 		err := s.db.QueryRowContext(ctx,
@@ -395,20 +678,20 @@ func (s *Service) BalanceWithBreakdown(userID string) BalanceBreakdown {
 }
 
 // CreditBonus adds bonus funds to a user's bonus balance.
-func (s *Service) CreditBonus(request MutationRequest) (LedgerEntry, error) {
+func (s *Service) CreditBonus(ctx context.Context, request MutationRequest) (LedgerEntry, error) {
 	if s.db == nil {
 		// In memory mode, bonus funds go to regular balance
 		return s.applyMutationMemory("credit", request)
 	}
-	return s.applyBonusMutationDB("credit", request)
+	return s.applyBonusMutationDB(ctx, "credit", request)
 }
 
-func (s *Service) applyBonusMutationDB(kind string, request MutationRequest) (LedgerEntry, error) {
+func (s *Service) applyBonusMutationDB(ctx context.Context, kind string, request MutationRequest) (LedgerEntry, error) {
 	if request.UserID == "" || request.AmountCents <= 0 || request.IdempotencyKey == "" {
 		return LedgerEntry{}, ErrInvalidMutationRequest
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
@@ -507,15 +790,15 @@ func (s *Service) recordMetric(kind string, amountCents int64) {
 	}
 }
 
-// AvailableBalance returns the balance minus all active (held) reservations.
-// This is the amount actually available for new bets/withdrawals.
-func (s *Service) AvailableBalance(userID string) int64 {
-	balance := s.Balance(userID)
+// AvailableBalance returns the point balance minus all active held reservations.
+// This is the amount available for new prediction orders.
+func (s *Service) AvailableBalance(ctx context.Context, userID string) int64 {
+	balance := s.Balance(ctx, userID)
 	if s.db == nil {
 		return balance // no reservations in memory mode
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	var heldTotal int64
@@ -534,15 +817,15 @@ WHERE user_id = $1 AND status = 'held' AND expires_at > NOW()`,
 	return available
 }
 
-// Hold creates a fund reservation that reduces available balance without
-// actually debiting. The hold can later be Captured (converting to a real
+// Hold creates a point reservation that reduces available balance without
+// actually debiting. The hold can later be Captured (converting to a ledger
 // debit) or Released (restoring availability).
-func (s *Service) Hold(request HoldRequest) (Reservation, error) {
+func (s *Service) Hold(ctx context.Context, request HoldRequest) (Reservation, error) {
 	if request.UserID == "" || request.AmountCents <= 0 || request.ReferenceID == "" {
 		return Reservation{}, ErrInvalidMutationRequest
 	}
 	if request.ReferenceType == "" {
-		request.ReferenceType = "bet"
+		request.ReferenceType = "prediction_order"
 	}
 	if request.ExpiresIn <= 0 {
 		request.ExpiresIn = 24 * time.Hour // Default 24h; callers can override for shorter holds
@@ -553,7 +836,7 @@ func (s *Service) Hold(request HoldRequest) (Reservation, error) {
 		return Reservation{}, fmt.Errorf("reservations require DB mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
@@ -595,11 +878,16 @@ SELECT balance_cents FROM wallet_balances WHERE user_id = $1 FOR UPDATE`,
 	}
 
 	var heldTotal int64
-	_ = tx.QueryRowContext(ctx, `
+	// Must not swallow this error: on failure heldTotal stays 0 and the
+	// available-funds check below degrades to balance-only, weakening the
+	// insufficient-funds guard (audit COR-04). Fail closed instead.
+	if err := tx.QueryRowContext(ctx, `
 SELECT COALESCE(SUM(amount_cents), 0)
 FROM wallet_reservations
 WHERE user_id = $1 AND status = 'held' AND expires_at > NOW()`,
-		request.UserID).Scan(&heldTotal)
+		request.UserID).Scan(&heldTotal); err != nil {
+		return Reservation{}, fmt.Errorf("sum held reservations: %w", err)
+	}
 
 	available := balance - heldTotal
 	if available < request.AmountCents {
@@ -615,6 +903,11 @@ RETURNING id`,
 		request.UserID, request.AmountCents, request.ReferenceType,
 		request.ReferenceID, expiresAt).Scan(&reservationID)
 	if err != nil {
+		return Reservation{}, err
+	}
+	if _, err := insertLedgerMarkerTx(ctx, tx, request.UserID, "reservation", request.AmountCents,
+		reservationLedgerKey("reservation", request.ReferenceType, request.ReferenceID),
+		reservationLedgerReason("reservation", request.ReferenceType, request.ReferenceID)); err != nil {
 		return Reservation{}, err
 	}
 
@@ -636,13 +929,13 @@ RETURNING id`,
 
 // Capture converts a held reservation into an actual debit + ledger entry.
 // This is called when the operation the hold was created for succeeds
-// (e.g., bet is confirmed, withdrawal is approved).
-func (s *Service) Capture(referenceType, referenceID string) (LedgerEntry, error) {
+// (for example, a prediction order is confirmed).
+func (s *Service) Capture(ctx context.Context, referenceType, referenceID string) (LedgerEntry, error) {
 	if s.db == nil {
 		return LedgerEntry{}, fmt.Errorf("reservations require DB mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
@@ -673,10 +966,15 @@ FOR UPDATE`,
 		return LedgerEntry{}, ErrReservationNotHeld
 	}
 	if time.Now().UTC().After(expiresAt) {
-		// Auto-expire
-		_, _ = tx.ExecContext(ctx, `
-UPDATE wallet_reservations SET status = 'expired', resolved_at = NOW() WHERE id = $1`, resID)
-		_ = tx.Commit()
+		// Auto-expire. Surface a marking/commit failure rather than reporting
+		// "expired" while the row is still 'held' (audit COR-04).
+		if _, err := tx.ExecContext(ctx, `
+UPDATE wallet_reservations SET status = 'expired', resolved_at = NOW() WHERE id = $1`, resID); err != nil {
+			return LedgerEntry{}, fmt.Errorf("mark reservation expired: %w", err)
+		}
+		if err := tx.Commit(); err != nil {
+			return LedgerEntry{}, fmt.Errorf("commit reservation expiry: %w", err)
+		}
 		return LedgerEntry{}, ErrReservationExpired
 	}
 
@@ -704,18 +1002,37 @@ UPDATE wallet_reservations SET status = 'captured', resolved_at = NOW() WHERE id
 	return entry, nil
 }
 
-// Release cancels a held reservation, making the funds available again.
-// This is called when the operation is cancelled (e.g., bet placement fails,
-// withdrawal is declined).
-func (s *Service) Release(referenceType, referenceID string) error {
+// Release cancels a held reservation, making the points available again.
+// This is called when the point operation is cancelled or rejected.
+func (s *Service) Release(ctx context.Context, referenceType, referenceID string) error {
 	if s.db == nil {
 		return fmt.Errorf("reservations require DB mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
-	result, err := s.db.ExecContext(ctx, `
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	var userID string
+	var amountCents, capturedCents int64
+	err = tx.QueryRowContext(ctx, `
+SELECT user_id, amount_cents, captured_amount_cents
+FROM wallet_reservations
+WHERE reference_type = $1 AND reference_id = $2 AND status = 'held'
+FOR UPDATE`, referenceType, referenceID).Scan(&userID, &amountCents, &capturedCents)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrReservationNotFound
+		}
+		return err
+	}
+
+	result, err := tx.ExecContext(ctx, `
 UPDATE wallet_reservations
 SET status = 'released', resolved_at = NOW()
 WHERE reference_type = $1 AND reference_id = $2 AND status = 'held'`,
@@ -727,7 +1044,15 @@ WHERE reference_type = $1 AND reference_id = $2 AND status = 'held'`,
 	if rows == 0 {
 		return ErrReservationNotFound
 	}
-	return nil
+	releasedCents := amountCents - capturedCents
+	if releasedCents > 0 {
+		if _, err := insertLedgerMarkerTx(ctx, tx, userID, "release", releasedCents,
+			reservationLedgerKey("release", referenceType, referenceID),
+			reservationLedgerReason("release", referenceType, referenceID)); err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
 }
 
 // ============================================================================
@@ -750,7 +1075,7 @@ func (s *Service) HoldWithTx(ctx context.Context, tx *sql.Tx, request HoldReques
 		return Reservation{}, ErrInvalidMutationRequest
 	}
 	if request.ReferenceType == "" {
-		request.ReferenceType = "bet"
+		request.ReferenceType = "prediction_order"
 	}
 	if request.ExpiresIn <= 0 {
 		request.ExpiresIn = 24 * time.Hour
@@ -810,6 +1135,11 @@ VALUES ($1, $2, $3, $4, 'held', $5)
 RETURNING id`,
 		request.UserID, request.AmountCents, request.ReferenceType,
 		request.ReferenceID, expiresAt).Scan(&reservationID); err != nil {
+		return Reservation{}, err
+	}
+	if _, err := insertLedgerMarkerTx(ctx, tx, request.UserID, "reservation", request.AmountCents,
+		reservationLedgerKey("reservation", request.ReferenceType, request.ReferenceID),
+		reservationLedgerReason("reservation", request.ReferenceType, request.ReferenceID)); err != nil {
 		return Reservation{}, err
 	}
 
@@ -913,6 +1243,20 @@ UPDATE wallet_reservations SET captured_amount_cents = $2 WHERE id = $1`,
 // already-released or already-captured reservation is a no-op (returns nil).
 // Any captured portion remains debited; only the uncaptured remainder is freed.
 func (s *Service) ReleaseReservationWithTx(ctx context.Context, tx *sql.Tx, referenceType, referenceID string) error {
+	var userID string
+	var amountCents, capturedCents int64
+	err := tx.QueryRowContext(ctx, `
+SELECT user_id, amount_cents, captured_amount_cents
+FROM wallet_reservations
+WHERE reference_type = $1 AND reference_id = $2 AND status = 'held'
+FOR UPDATE`, referenceType, referenceID).Scan(&userID, &amountCents, &capturedCents)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+		return err
+	}
+
 	if _, err := tx.ExecContext(ctx, `
 UPDATE wallet_reservations
 SET status = 'released', resolved_at = NOW()
@@ -920,17 +1264,25 @@ WHERE reference_type = $1 AND reference_id = $2 AND status = 'held'`,
 		referenceType, referenceID); err != nil {
 		return err
 	}
+	releasedCents := amountCents - capturedCents
+	if releasedCents > 0 {
+		if _, err := insertLedgerMarkerTx(ctx, tx, userID, "release", releasedCents,
+			reservationLedgerKey("release", referenceType, referenceID),
+			reservationLedgerReason("release", referenceType, referenceID)); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
 // ExpireStaleReservations marks overdue held reservations as expired.
 // Should be called periodically (e.g., every minute) as a background job.
-func (s *Service) ExpireStaleReservations() (int64, error) {
+func (s *Service) ExpireStaleReservations(ctx context.Context) (int64, error) {
 	if s.db == nil {
 		return 0, nil
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	result, err := s.db.ExecContext(ctx, `
@@ -943,9 +1295,9 @@ WHERE status = 'held' AND expires_at < NOW()`)
 	return result.RowsAffected()
 }
 
-func (s *Service) Ledger(userID string, limit int) []LedgerEntry {
+func (s *Service) Ledger(ctx context.Context, userID string, limit int) []LedgerEntry {
 	if s.db != nil {
-		return s.ledgerFromDB(userID, limit)
+		return s.ledgerFromDB(ctx, userID, limit)
 	}
 
 	s.mu.RLock()
@@ -968,9 +1320,9 @@ func (s *Service) Ledger(userID string, limit int) []LedgerEntry {
 	return out
 }
 
-func (s *Service) ReconciliationSummary(from *time.Time, to *time.Time) (ReconciliationSummary, error) {
+func (s *Service) ReconciliationSummary(ctx context.Context, from *time.Time, to *time.Time) (ReconciliationSummary, error) {
 	if s.db != nil {
-		return s.reconciliationSummaryFromDB(from, to)
+		return s.reconciliationSummaryFromDB(ctx, from, to)
 	}
 
 	s.mu.RLock()
@@ -1013,8 +1365,8 @@ func (s *Service) ReconciliationSummary(from *time.Time, to *time.Time) (Reconci
 	return summary, nil
 }
 
-func (s *Service) ScanCorrectionTasks() ([]CorrectionTask, error) {
-	issues, err := s.collectCorrectionIssues()
+func (s *Service) ScanCorrectionTasks(ctx context.Context) ([]CorrectionTask, error) {
+	issues, err := s.collectCorrectionIssues(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1066,7 +1418,7 @@ func (s *Service) ListCorrectionTasks(status string, userID string, limit int) [
 	return s.listCorrectionTasksLocked(status, userID, limit)
 }
 
-func (s *Service) CreateManualCorrectionTask(userID string, reason string, details string, suggestedAdjustmentCents int64) (CorrectionTask, error) {
+func (s *Service) CreateManualCorrectionTask(ctx context.Context, userID string, reason string, details string, suggestedAdjustmentCents int64) (CorrectionTask, error) {
 	trimmedUserID := strings.TrimSpace(userID)
 	trimmedReason := strings.TrimSpace(reason)
 	if trimmedUserID == "" || trimmedReason == "" {
@@ -1074,7 +1426,7 @@ func (s *Service) CreateManualCorrectionTask(userID string, reason string, detai
 	}
 
 	now := s.now().UTC().Format(time.RFC3339)
-	currentBalance := s.Balance(trimmedUserID)
+	currentBalance := s.Balance(ctx, trimmedUserID)
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -1143,7 +1495,7 @@ func (s *Service) applyMutationMemory(kind string, request MutationRequest) (Led
 	defer s.mu.Unlock()
 
 	if existing, found := s.idempotencyMap[idempotencyIndex]; found {
-		if existing.AmountCents != request.AmountCents || strings.TrimSpace(existing.Reason) != strings.TrimSpace(request.Reason) {
+		if !sameMutationReplay(existing, request) {
 			return LedgerEntry{}, ErrIdempotencyConflict
 		}
 		return existing, nil
@@ -1197,12 +1549,12 @@ func (s *Service) applyMutationMemory(kind string, request MutationRequest) (Led
 	return entry, nil
 }
 
-func (s *Service) applyMutationDB(kind string, request MutationRequest) (LedgerEntry, error) {
+func (s *Service) applyMutationDB(ctx context.Context, kind string, request MutationRequest) (LedgerEntry, error) {
 	if request.UserID == "" || request.AmountCents <= 0 || request.IdempotencyKey == "" {
 		return LedgerEntry{}, ErrInvalidMutationRequest
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
@@ -1215,10 +1567,35 @@ func (s *Service) applyMutationDB(kind string, request MutationRequest) (LedgerE
 
 	entry, err := applyMutationTx(ctx, tx, kind, request)
 	if err != nil {
+		_ = tx.Rollback()
+		if isMutationReplayRace(err) {
+			existing, found, lookupErr := s.findExistingMutationDB(ctx, kind, request.UserID, request.IdempotencyKey)
+			if lookupErr != nil {
+				return LedgerEntry{}, lookupErr
+			}
+			if found {
+				if !sameMutationReplay(existing, request) {
+					return LedgerEntry{}, ErrIdempotencyConflict
+				}
+				return existing, nil
+			}
+		}
 		return LedgerEntry{}, err
 	}
 
 	if err := tx.Commit(); err != nil {
+		if isMutationReplayRace(err) {
+			existing, found, lookupErr := s.findExistingMutationDB(ctx, kind, request.UserID, request.IdempotencyKey)
+			if lookupErr != nil {
+				return LedgerEntry{}, lookupErr
+			}
+			if found {
+				if !sameMutationReplay(existing, request) {
+					return LedgerEntry{}, ErrIdempotencyConflict
+				}
+				return existing, nil
+			}
+		}
 		return LedgerEntry{}, err
 	}
 
@@ -1257,7 +1634,7 @@ func applyMutationTx(ctx context.Context, tx *sql.Tx, kind string, request Mutat
 		return LedgerEntry{}, err
 	}
 	if found {
-		if existing.AmountCents != request.AmountCents || strings.TrimSpace(existing.Reason) != strings.TrimSpace(request.Reason) {
+		if !sameMutationReplay(existing, request) {
 			return LedgerEntry{}, ErrIdempotencyConflict
 		}
 		return existing, nil
@@ -1327,8 +1704,79 @@ RETURNING id, CAST(transaction_time AS TEXT)`,
 	}, nil
 }
 
-func (s *Service) ledgerFromDB(userID string, limit int) []LedgerEntry {
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+func insertLedgerMarkerTx(ctx context.Context, tx *sql.Tx, userID, kind string, amountCents int64, idempotencyKey, reason string) (LedgerEntry, error) {
+	if userID == "" || amountCents <= 0 || idempotencyKey == "" {
+		return LedgerEntry{}, ErrInvalidMutationRequest
+	}
+
+	existing, found, err := findExistingMutation(ctx, tx, kind, userID, idempotencyKey)
+	if err != nil {
+		return LedgerEntry{}, err
+	}
+	if found {
+		if existing.AmountCents != amountCents || strings.TrimSpace(existing.Reason) != strings.TrimSpace(reason) {
+			return LedgerEntry{}, ErrIdempotencyConflict
+		}
+		return existing, nil
+	}
+
+	if _, err := tx.ExecContext(ctx, `
+INSERT INTO wallet_balances (user_id, balance_cents, updated_at)
+VALUES ($1, 0, NOW())
+ON CONFLICT (user_id) DO NOTHING`, userID); err != nil {
+		return LedgerEntry{}, err
+	}
+
+	var balance int64
+	if err := tx.QueryRowContext(ctx, `
+SELECT balance_cents
+FROM wallet_balances
+WHERE user_id = $1
+FOR UPDATE`, userID).Scan(&balance); err != nil {
+		return LedgerEntry{}, err
+	}
+
+	var (
+		id              int64
+		transactionTime string
+	)
+	err = tx.QueryRowContext(ctx, `
+INSERT INTO wallet_ledger (user_id, entry_type, amount_cents, balance_cents, idempotency_key, reason, transaction_time)
+VALUES ($1, $2, $3, $4, $5, $6, NOW())
+RETURNING id, CAST(transaction_time AS TEXT)`,
+		userID,
+		kind,
+		amountCents,
+		balance,
+		idempotencyKey,
+		normalizeReason(reason),
+	).Scan(&id, &transactionTime)
+	if err != nil {
+		return LedgerEntry{}, err
+	}
+
+	return LedgerEntry{
+		EntryID:         fmt.Sprintf("le:%d", id),
+		UserID:          userID,
+		Type:            kind,
+		AmountCents:     amountCents,
+		BalanceCents:    balance,
+		IdempotencyKey:  idempotencyKey,
+		Reason:          reason,
+		TransactionTime: transactionTime,
+	}, nil
+}
+
+func reservationLedgerKey(kind, referenceType, referenceID string) string {
+	return strings.Join([]string{kind, referenceType, referenceID}, ":")
+}
+
+func reservationLedgerReason(kind, referenceType, referenceID string) string {
+	return strings.Join([]string{kind, referenceType, referenceID}, ":")
+}
+
+func (s *Service) ledgerFromDB(ctx context.Context, userID string, limit int) []LedgerEntry {
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	query := `
@@ -1373,8 +1821,8 @@ ORDER BY id DESC`
 	return descending
 }
 
-func (s *Service) reconciliationSummaryFromDB(from *time.Time, to *time.Time) (ReconciliationSummary, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+func (s *Service) reconciliationSummaryFromDB(ctx context.Context, from *time.Time, to *time.Time) (ReconciliationSummary, error) {
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	conditions := make([]string, 0, 2)
@@ -1450,8 +1898,56 @@ LIMIT 1`, kind, userID, idempotencyKey).Scan(
 	return entry, true, nil
 }
 
+func (s *Service) findExistingMutationDB(ctx context.Context, kind string, userID string, idempotencyKey string) (LedgerEntry, bool, error) {
+	var (
+		id              int64
+		entry           LedgerEntry
+		transactionTime string
+	)
+	err := s.db.QueryRowContext(ctx, `
+SELECT id, user_id, entry_type, amount_cents, balance_cents, idempotency_key, COALESCE(reason, ''), CAST(transaction_time AS TEXT)
+FROM wallet_ledger
+WHERE entry_type = $1 AND user_id = $2 AND idempotency_key = $3
+LIMIT 1`, kind, userID, idempotencyKey).Scan(
+		&id,
+		&entry.UserID,
+		&entry.Type,
+		&entry.AmountCents,
+		&entry.BalanceCents,
+		&entry.IdempotencyKey,
+		&entry.Reason,
+		&transactionTime,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return LedgerEntry{}, false, nil
+		}
+		return LedgerEntry{}, false, err
+	}
+	entry.EntryID = fmt.Sprintf("le:%d", id)
+	entry.TransactionTime = transactionTime
+	return entry, true, nil
+}
+
+func sameMutationReplay(existing LedgerEntry, request MutationRequest) bool {
+	return existing.AmountCents == request.AmountCents &&
+		normalizedReasonString(existing.Reason) == normalizedReasonString(request.Reason)
+}
+
+func normalizedReasonString(reason string) string {
+	return strings.TrimSpace(reason)
+}
+
+func isMutationReplayRace(err error) bool {
+	var pqErr *pq.Error
+	if errors.As(err, &pqErr) {
+		return pqErr.Code == "23505" || pqErr.Code == "40001"
+	}
+	return false
+}
+
 func normalizeReason(reason string) any {
-	trimmed := strings.TrimSpace(reason)
+	trimmed := normalizedReasonString(reason)
 	if trimmed == "" {
 		return nil
 	}
@@ -1483,9 +1979,9 @@ type correctionIssue struct {
 	AutomationSource         string
 }
 
-func (s *Service) collectCorrectionIssues() ([]correctionIssue, error) {
+func (s *Service) collectCorrectionIssues(ctx context.Context) ([]correctionIssue, error) {
 	if s.db != nil {
-		return s.collectCorrectionIssuesDB()
+		return s.collectCorrectionIssuesDB(ctx)
 	}
 	return s.collectCorrectionIssuesMemory(), nil
 }
@@ -1537,8 +2033,8 @@ func (s *Service) collectCorrectionIssuesMemory() []correctionIssue {
 	return out
 }
 
-func (s *Service) collectCorrectionIssuesDB() ([]correctionIssue, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+func (s *Service) collectCorrectionIssuesDB(ctx context.Context) ([]correctionIssue, error) {
+	ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
 	defer cancel()
 
 	rows, err := s.db.QueryContext(ctx, `
@@ -1665,6 +2161,7 @@ func (s *Service) ensureSchema() error {
   user_id TEXT PRIMARY KEY,
   balance_cents BIGINT NOT NULL DEFAULT 0,
   bonus_balance_cents BIGINT NOT NULL DEFAULT 0,
+  tenant_id TEXT NOT NULL DEFAULT 'hula',
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )`,
 		`CREATE TABLE IF NOT EXISTS wallet_ledger (
@@ -1691,7 +2188,27 @@ func (s *Service) ensureSchema() error {
   resolved_at TIMESTAMPTZ,
   UNIQUE (reference_type, reference_id)
 )`,
+		`CREATE TABLE IF NOT EXISTS wallet_reward_clusters (
+  window_date TEXT NOT NULL,
+  signal_type TEXT NOT NULL,
+  signal_hash TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (window_date, signal_type, signal_hash, user_id)
+)`,
+		`CREATE INDEX IF NOT EXISTS idx_wallet_reward_clusters_signal ON wallet_reward_clusters (window_date, signal_type, signal_hash)`,
 		`CREATE INDEX IF NOT EXISTS idx_reservations_user_status ON wallet_reservations (user_id, status)`,
+		// Serves the per-user ledger read (WHERE user_id ORDER BY id DESC);
+		// kept in sync with migration 032 so code-bootstrapped schemas match
+		// goose-migrated ones (audit PERF-02).
+		`CREATE INDEX IF NOT EXISTS idx_wallet_ledger_user_id ON wallet_ledger (user_id, id DESC)`,
+		// tenant_id discriminator (ADR-0005 / P3-01). wallet_balances is
+		// app-created here (not by a goose migration), so its tenant column
+		// lives here too — migration 037 deliberately does NOT touch it, since
+		// the table doesn't exist when goose runs on a fresh DB. ADD COLUMN
+		// IF NOT EXISTS covers DBs whose wallet_balances predates this.
+		`ALTER TABLE wallet_balances ADD COLUMN IF NOT EXISTS tenant_id TEXT NOT NULL DEFAULT 'hula'`,
+		`CREATE INDEX IF NOT EXISTS idx_wallet_balances_tenant ON wallet_balances (tenant_id)`,
 	}
 
 	for _, statement := range statements {
@@ -1738,6 +2255,9 @@ func (s *Service) loadFromDisk() error {
 	if state.IdempotencyMap != nil {
 		s.idempotencyMap = state.IdempotencyMap
 	}
+	if state.RewardClusters != nil {
+		s.rewardClusters = state.RewardClusters
+	}
 	s.sequence = state.Sequence
 	if state.CorrectionTasks != nil {
 		s.correctionTasks = state.CorrectionTasks
@@ -1755,6 +2275,7 @@ func (s *Service) persistLocked() error {
 		Balances:        s.balances,
 		Ledger:          s.ledger,
 		IdempotencyMap:  s.idempotencyMap,
+		RewardClusters:  s.rewardClusters,
 		Sequence:        s.sequence,
 		CorrectionTasks: s.correctionTasks,
 		CorrectionSeq:   s.correctionSeq,

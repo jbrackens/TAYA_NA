@@ -1,16 +1,16 @@
 {
   "TITLE": "Profile ng User",
   "PERSONAL_DETAILS": "Personal na detalye",
-  "WALLET_AND_INVENTORY": "Wallet at imbentaryo",
+  "WALLET_AND_INVENTORY": "Points and Inventory",
   "SECURITY": "Seguridad",
   "LANGUAGE_AND_TIME_ZONE": "Wika at time zone",
   "SELF_EXCLUSION": "Self-exclusion",
   "EMAIL_SETTINGS": "Mga setting ng email",
-  "DEPOSIT_LIMITS": "Mga limitasyon sa deposito",
+  "DEPOSIT_LIMITS": "Point-Use Limits",
   "hub": {
     "title": "Account mo",
-    "subtitle": "Mga preference sa profile, wallet, seguridad, at notification.",
-    "availableBalance": "Available na balanse"
+    "subtitle": "Profile, points, security, and notification preferences.",
+    "availableBalance": "Available points"
   },
   "actions": {
     "profile": {
@@ -21,13 +21,9 @@
       "title": "Portfolio mo",
       "desc": "Open positions, orders, at settled history"
     },
-    "cashier": {
-      "title": "Cashier mo",
-      "desc": "Mga deposito at withdrawal"
-    },
     "walletActivity": {
-      "title": "Aktibidad ng wallet",
-      "desc": "Ledger entries at history ng transaksyon"
+      "title": "Point ledger",
+      "desc": "Starter grants, predictions, and rewards"
     },
     "security": {
       "title": "Seguridad",
@@ -39,7 +35,7 @@
     },
     "responsible": {
       "title": "Maglaro nang responsable",
-      "desc": "Deposit limits, cool-offs, at self-exclusion"
+      "desc": "Point-use limits, cool-offs, and self-exclusion"
     }
   },
   "privacy": {
@@ -58,7 +54,7 @@
   },
   "stats": {
     "invested": "Naka-invest",
-    "realizedPnl": "Na-realize na P&L",
+    "realizedPnl": "Na-realize na resulta ng puntos",
     "openPositions": "Bukas na posisyon",
     "accuracy": "Katumpakan",
     "noSettledMarkets": "Wala pang settled markets"

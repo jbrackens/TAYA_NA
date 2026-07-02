@@ -28,12 +28,12 @@
       "description": "Trader disenaraikan mengikut ketepatan ramalan."
     },
     "pnlWeekly": {
-      "name": "P&L Mingguan",
-      "description": "Trader disenaraikan mengikut keuntungan direalisasi minggu ini."
+      "name": "Mata Mingguan",
+      "description": "Peramal disenaraikan mengikut hasil mata direalisasi minggu ini."
     },
     "sharpness": {
       "name": "Sharpness",
-      "description": "Trader disenaraikan mengikut pulangan atas risiko."
+      "description": "Peramal disenaraikan mengikut kecekapan mata dalam pasaran selesai."
     },
     "category": {
       "name": "Juara {{category}}",
@@ -42,9 +42,9 @@
   },
   "metrics": {
     "accuracy": "Ketepatan",
-    "pnl": "P&L",
+    "pnl": "Mata bersih",
     "sharpness": "Sharpness",
-    "category": "Keuntungan"
+    "category": "Mata bersih"
   },
   "qualification": {
     "accuracy": "Selesaikan cukup pasaran untuk layak dalam ranking ketepatan.",
@@ -53,7 +53,7 @@
     "category": "Selesaikan pasaran dalam kategori ini untuk layak."
   },
   "categories": {
-    "crypto": "Kripto",
+    "crypto": "Esports",
     "politics": "Politik",
     "sports": "Sukan",
     "culture": "Budaya",

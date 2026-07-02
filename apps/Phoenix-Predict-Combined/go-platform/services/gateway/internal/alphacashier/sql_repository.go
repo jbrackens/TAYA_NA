@@ -176,10 +176,28 @@ RETURNING id::text, user_id, wallet_connection_id::text, chain_id, chain_name, t
 	return intent, err
 }
 
+// queryRower is the read-write surface shared by *sql.DB and *sql.Tx, so a
+// single statement body can run either standalone or inside a caller-managed
+// transaction (audit A2/HIGH #9).
+type queryRower interface {
+	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
+}
+
 func (r *SQLRepository) MarkDepositCredited(ctx context.Context, id string, walletEntryID string, confirmedAt time.Time, creditedAt time.Time) (*DepositIntent, error) {
 	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
 	defer cancel()
-	row := r.db.QueryRowContext(ctx, `
+	return markDepositCreditedExec(ctx, r.db, id, walletEntryID, confirmedAt, creditedAt)
+}
+
+// MarkDepositCreditedTx runs the credited-status update inside the caller's
+// transaction so it commits atomically with the wallet credit (HIGH #9). The
+// caller manages ctx, commit, and rollback.
+func (r *SQLRepository) MarkDepositCreditedTx(ctx context.Context, tx *sql.Tx, id string, walletEntryID string, confirmedAt time.Time, creditedAt time.Time) (*DepositIntent, error) {
+	return markDepositCreditedExec(ctx, tx, id, walletEntryID, confirmedAt, creditedAt)
+}
+
+func markDepositCreditedExec(ctx context.Context, q queryRower, id string, walletEntryID string, confirmedAt time.Time, creditedAt time.Time) (*DepositIntent, error) {
+	row := q.QueryRowContext(ctx, `
 UPDATE alpha_deposit_intents
 SET status = 'credited',
     credited_wallet_entry_id = $2,
@@ -283,6 +301,50 @@ func (r *SQLRepository) ListAdminDepositIntents(ctx context.Context, filter Depo
 			return nil, err
 		}
 		out = append(out, *intent)
+	}
+	return out, rows.Err()
+}
+
+// ListCreditedDepositsForFinality joins credited deposit intents to the chain
+// evidence they were credited from (DISTINCT ON one evidence row per deposit),
+// so the reorg watcher can re-verify the exact tx/block that backed the credit
+// (audit A2-03). Only deposits with recorded evidence are returned.
+func (r *SQLRepository) ListCreditedDepositsForFinality(ctx context.Context, limit int) ([]CreditedDeposit, error) {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	if limit <= 0 {
+		limit = defaultAdminListLimit
+	}
+	rows, err := r.db.QueryContext(ctx, `
+SELECT DISTINCT ON (di.id)
+       di.id::text, di.user_id, di.amount_cents,
+       ct.chain_id, ct.tx_hash, ct.log_index, ct.block_number, ct.block_hash,
+       ct.token_address, ct.from_address, ct.to_address, ct.amount_units::text,
+       ct.confirmations, ct.receipt_status
+FROM alpha_deposit_intents di
+JOIN alpha_chain_transactions ct ON ct.deposit_intent_id = di.id
+WHERE di.status = 'credited'
+ORDER BY di.id, ct.block_number DESC, ct.log_index DESC
+LIMIT $1`, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []CreditedDeposit{}
+	for rows.Next() {
+		var cd CreditedDeposit
+		var logIndex int64
+		if err := rows.Scan(
+			&cd.DepositID, &cd.UserID, &cd.AmountCents,
+			&cd.Tx.ChainID, &cd.Tx.TxHash, &logIndex, &cd.Tx.BlockNumber, &cd.Tx.BlockHash,
+			&cd.Tx.TokenAddress, &cd.Tx.FromAddress, &cd.Tx.ToAddress, &cd.Tx.AmountUnits,
+			&cd.Tx.Confirmations, &cd.Tx.ReceiptStatus,
+		); err != nil {
+			return nil, err
+		}
+		cd.Tx.DepositIntentID = cd.DepositID
+		cd.Tx.LogIndex = uint(logIndex)
+		out = append(out, cd)
 	}
 	return out, rows.Err()
 }

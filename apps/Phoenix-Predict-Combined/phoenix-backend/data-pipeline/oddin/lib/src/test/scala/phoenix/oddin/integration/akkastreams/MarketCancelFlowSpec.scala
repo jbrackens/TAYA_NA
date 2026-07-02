@@ -22,7 +22,7 @@ import phoenix.time.FakeHardcodedClock
 
 class MarketCancelFlowSpec extends ScalaTestWithActorTestKit with AnyWordSpecLike with Matchers with FileSupport {
 
-  private implicit val typedSystem = system
+  private implicit val typedSystem: akka.actor.typed.ActorSystem[Nothing] = system
 
   private val clock = new FakeHardcodedClock()
 

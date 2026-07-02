@@ -177,7 +177,7 @@ final class BackofficeTournamentRoutesSpec extends RoutesSpecSupport with Future
         new EmptyReportsModule()))
   }
 
-  implicit val underTest = Route.seal(routes.toAkkaHttp)
+  implicit val underTest: akka.http.scaladsl.server.Route = Route.seal(routes.toAkkaHttp)
 
   "Backoffice tournament routes" when {
     "POST /admin/trading/tournaments/:tournamentId/make-displayable" should {

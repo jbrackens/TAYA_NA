@@ -26,8 +26,8 @@ func NewPredictionWalletAdapter(svc *wallet.Service) prediction.WalletAdapter {
 	return &PredictionWalletAdapter{svc: svc}
 }
 
-func (a *PredictionWalletAdapter) Debit(userID string, amountCents int64, idempotencyKey, reason string) error {
-	_, err := a.svc.Debit(wallet.MutationRequest{
+func (a *PredictionWalletAdapter) Debit(ctx context.Context, userID string, amountCents int64, idempotencyKey, reason string) error {
+	_, err := a.svc.Debit(ctx, wallet.MutationRequest{
 		UserID:         userID,
 		AmountCents:    amountCents,
 		IdempotencyKey: idempotencyKey,
@@ -36,8 +36,8 @@ func (a *PredictionWalletAdapter) Debit(userID string, amountCents int64, idempo
 	return err
 }
 
-func (a *PredictionWalletAdapter) Credit(userID string, amountCents int64, idempotencyKey, reason string) error {
-	_, err := a.svc.Credit(wallet.MutationRequest{
+func (a *PredictionWalletAdapter) Credit(ctx context.Context, userID string, amountCents int64, idempotencyKey, reason string) error {
+	_, err := a.svc.Credit(ctx, wallet.MutationRequest{
 		UserID:         userID,
 		AmountCents:    amountCents,
 		IdempotencyKey: idempotencyKey,
@@ -46,8 +46,8 @@ func (a *PredictionWalletAdapter) Credit(userID string, amountCents int64, idemp
 	return err
 }
 
-func (a *PredictionWalletAdapter) Balance(userID string) int64 {
-	return a.svc.Balance(userID)
+func (a *PredictionWalletAdapter) Balance(ctx context.Context, userID string) int64 {
+	return a.svc.Balance(ctx, userID)
 }
 
 func (a *PredictionWalletAdapter) BeginTx(ctx context.Context) (*sql.Tx, error) {

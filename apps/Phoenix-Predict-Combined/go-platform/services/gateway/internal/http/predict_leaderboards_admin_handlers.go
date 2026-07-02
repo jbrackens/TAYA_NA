@@ -14,16 +14,15 @@ import (
 //
 //	GET  /api/v1/admin/leaderboards               (list)
 //	GET  /api/v1/admin/leaderboards/{id}          (board + entries)
-//	POST /api/v1/admin/leaderboards/{id}/recompute (acknowledge)
+//	POST /api/v1/admin/leaderboards/{id}/recompute (refresh snapshots)
 //
-// Predict leaderboards are COMPUTED boards (Accuracy / Weekly P&L / Sharpness
+// Predict leaderboards are COMPUTED boards (Accuracy / Weekly Points / Sharpness
 // + per-category Champions), not admin-CRUD rows like the sportsbook model the
 // office page was originally written against. So this is read-mapped: the
 // static board catalog renders as the list, entries come from the recomputed
-// snapshot, and recompute is a no-op acknowledgement (a background recomputer
-// refreshes every ~5 min — see leaderboards.NewPredictRecomputer in
-// handlers.go). Board create/edit/delete are intentionally unsupported (405);
-// the boards are code-defined.
+// snapshot, and recompute triggers an immediate point-native refresh. Board
+// create/edit/delete are intentionally unsupported (405); the boards are
+// code-defined.
 func registerPredictLeaderboardAdminRoutes(mux *stdhttp.ServeMux, svc *leaderboards.PredictService) {
 	if svc == nil {
 		return
@@ -36,18 +35,20 @@ func registerPredictLeaderboardAdminRoutes(mux *stdhttp.ServeMux, svc *leaderboa
 
 // boardRow maps a computed PredictBoardDef to the office's LeaderboardRow shape.
 // status is always "active" (computed boards are always live); slug mirrors the
-// id; prizeSummary reuses the qualification message.
+// id. rewardSummary/unit are the launch aliases.
 func boardRow(b leaderboards.PredictBoardDef) map[string]any {
 	return map[string]any{
-		"leaderboardId": b.ID,
-		"slug":          b.ID,
-		"name":          b.Name,
-		"description":   b.Description,
-		"metricKey":     b.MetricLabel,
-		"rankingMode":   "metric",
-		"order":         "desc",
-		"status":        "active",
-		"prizeSummary":  b.QualificationMsg,
+		"leaderboardId":  b.ID,
+		"slug":           b.ID,
+		"name":           redactLaunchProhibitedUserText(b.Name),
+		"description":    redactLaunchProhibitedUserText(b.Description),
+		"metricKey":      b.MetricLabel,
+		"pointMetricKey": b.MetricLabel,
+		"rankingMode":    "metric",
+		"order":          "desc",
+		"status":         "active",
+		"unit":           "PTS",
+		"rewardSummary":  redactLaunchProhibitedUserText(b.QualificationMsg),
 	}
 }
 
@@ -64,7 +65,7 @@ func entryRows(entries []leaderboards.PredictEntry) []map[string]any {
 		out = append(out, map[string]any{
 			"rank":        e.Rank,
 			"playerId":    e.UserID,
-			"displayName": e.DisplayName,
+			"displayName": redactLaunchProhibitedUserText(e.DisplayName),
 			"score":       e.MetricValue,
 			"eventCount":  eventCount,
 		})
@@ -108,9 +109,14 @@ func registerLeaderboardAdminDetail(mux *stdhttp.ServeMux, prefix string, svc *l
 			if r.Method != stdhttp.MethodPost {
 				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 			}
+			results, err := svc.RecomputeNow(r.Context())
+			if err != nil {
+				return httpx.Internal("failed to recompute leaderboard snapshots", err)
+			}
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-				"status":  "scheduled",
-				"message": "Predict leaderboards recompute automatically on a background tick (~5 min).",
+				"status":  "recomputed",
+				"message": "Predict leaderboard snapshots refreshed.",
+				"items":   results,
 			})
 		}
 

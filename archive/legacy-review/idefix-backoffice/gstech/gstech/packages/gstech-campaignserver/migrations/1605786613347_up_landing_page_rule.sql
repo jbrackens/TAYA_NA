@@ -1,1 +1,0 @@
-alter table players add column "registrationLandingPage" varchar(255) null;

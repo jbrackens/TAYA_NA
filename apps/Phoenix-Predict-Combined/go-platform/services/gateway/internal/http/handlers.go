@@ -29,9 +29,14 @@ import (
 	"phoenix-revival/gateway/internal/prediction/workers"
 	"phoenix-revival/gateway/internal/rbac"
 	"phoenix-revival/gateway/internal/wallet"
+	"phoenix-revival/gateway/internal/webhooks"
 	"phoenix-revival/gateway/internal/ws"
 	"phoenix-revival/platform/transport/httpx"
+
+	"github.com/redis/go-redis/v9"
 )
+
+const legacyAssetPriceFeedsEnv = "TIANGGE_LEGACY_ASSET_PRICE_FEEDS_ENABLED"
 
 func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	walletService := wallet.NewServiceFromEnv()
@@ -41,7 +46,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		ticker := time.NewTicker(60 * time.Second)
 		defer ticker.Stop()
 		for range ticker.C {
-			expired, err := walletService.ExpireStaleReservations()
+			expired, err := walletService.ExpireStaleReservations(context.Background())
 			if err != nil {
 				slog.Warn("reservation expiry failed", "error", err)
 			} else if expired > 0 {
@@ -50,8 +55,23 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		}
 	}()
 
-	// Initialize WebSocket hub
+	// Initialize WebSocket hub. P2-07: cross-instance event backbone is
+	// flag-gated (WS_BACKBONE=redis|local, default local). Redis fans
+	// broadcasts across gateway instances; an invalid/missing config or a
+	// later Redis outage degrades to local-only (never crashes).
 	wsHub := ws.NewHub()
+	if strings.EqualFold(strings.TrimSpace(os.Getenv("WS_BACKBONE")), "redis") {
+		if redisURL := strings.TrimSpace(os.Getenv("REDIS_URL")); redisURL != "" {
+			if opt, perr := redis.ParseURL(redisURL); perr == nil {
+				wsHub.SetBackbone(ws.NewRedisBackbone(redis.NewClient(opt)))
+				slog.Info("ws: redis backbone enabled (cross-instance fan-out)", "addr", opt.Addr)
+			} else {
+				slog.Error("ws: WS_BACKBONE=redis but REDIS_URL invalid; using local backbone", "error", perr)
+			}
+		} else {
+			slog.Warn("ws: WS_BACKBONE=redis but REDIS_URL unset; using local backbone")
+		}
+	}
 	go wsHub.Run(context.Background())
 	registerWebSocketRoutes(mux, wsHub)
 	liveMarketService := livemarkets.NewServiceFromEnv()
@@ -111,6 +131,13 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		}
 
 		checks["service"] = service
+		// P2-07: cross-instance WS backbone health (informational — a degraded
+		// backbone is local-only, not a readiness failure).
+		if wsHub.BackboneHealthy() {
+			checks["ws_backbone"] = "ok"
+		} else {
+			checks["ws_backbone"] = "degraded"
+		}
 		if allReady {
 			checks["status"] = "ready"
 			return httpx.WriteJSON(w, stdhttp.StatusOK, checks)
@@ -124,9 +151,16 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{
-			"service": service,
-			"status":  "up",
+		legacyMoneyStatus := "disabled"
+		if legacyMoneyRoutesEnabled() {
+			legacyMoneyStatus = "enabled"
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"service":            service,
+			"status":             "up",
+			"pointMode":          "non_redeemable_points",
+			"legacyMoneyRoutes":  legacyMoneyStatus,
+			"launchRouteDomains": gatewayLaunchStatusDomains(),
 		})
 	}))
 
@@ -159,11 +193,19 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// when a DB is available (the windowed path requires persistence). Hoisted
 	// out of the if so the AutoSettler (below) can share the same store.
 	var predResolutionStore prediction.ResolutionStore
+	// Outbound webhooks (P3-03): the SQL store (concrete, for the dispatch
+	// worker below) + a nil-safe enqueuer interface for the HTTP hooks. Both
+	// stay nil without a DB, so the order/lifecycle hooks no-op and a
+	// webhook-less deploy is unchanged.
+	var webhookStore *webhooks.SQLStore
+	var webhookEnq webhookEnqueuer
 	if predDB := walletService.DB(); predDB != nil {
 		predResolutionStore = prediction.NewSQLResolutionStore(predDB)
 		predictionService.SetResolutionStore(predResolutionStore)
 		registerDisputeRoutes(mux, predictionService, predResolutionStore, wsHub)
 		registerAdminDisputeRoutes(mux, predictionService, predResolutionStore)
+		webhookStore = webhooks.NewSQLStore(predDB)
+		webhookEnq = webhookStore
 	}
 	// Prediction-domain counters: orders placed (by status + side + action +
 	// type), trades produced, reconciler runs (clean/drift/error), drift
@@ -226,14 +268,23 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 					slog.Warn("notify: resolution notification failed", "market_id", m.ID, "error", err)
 				}
 			}(*market)
+			// Outbound webhook (P3-03): emit market.settled / market.voided to
+			// subscribed partner endpoints. Same fire-and-forget seam; nil-safe
+			// without a DB. Background context — this handler also fires from the
+			// auto-settler/closer workers, which have no request context.
+			enqueueMarketResolution(context.Background(), webhookEnq, market)
 		}
 	})
 	registerPredictionRoutes(mux, predictionService)
-	registerOrderRoutes(mux, predictionService, wsHub)
+	registerOrderRoutes(mux, predictionService, wsHub, webhookEnq)
 	registerPortfolioRoutes(mux, predictionService)
 	registerSettlementRoutes(mux, predictionService)
 	registerDashboardRoutes(mux, predictionService)
 	registerDiscoverRoutes(mux, walletService.DB())
+	marketSocialStore := newMarketSocialStore(walletService.DB())
+	registerMarketSocialRoutes(mux, marketSocialStore, socialWriteUserLimiter(walletService.DB()), socialWriteIPLimiter(walletService.DB()))
+	registerMarketSocialAdminRoutes(mux, marketSocialStore)
+	registerMarketWatchlistRoutes(mux, newMarketWatchlistStore(walletService.DB()))
 	// Prediction-native admin read APIs (office /users + /audit-logs). Only
 	// registered when the SQL repo is live (DB present); the legacy
 	// sportsbook registerAdminRoutes in admin_handlers.go stays unwired.
@@ -252,16 +303,25 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		rbacService = rbac.NewService(rbac.NewSQLRepository(rbacDB))
 		registerRBACAdminRoutes(mux, rbacService)
 	}
+	// Expose the RBAC service to the admin money/market route guards
+	// (requireAdminPermission). Set once at boot, read per-request; nil in
+	// memory mode / tests, where the admin-role gate alone applies.
+	adminRBAC = rbacService
+
+	// Outbound webhook dispatcher (P3-03): drains the delivery outbox —
+	// claim due rows, POST the HMAC-signed event, retry with backoff or
+	// dead-letter. Started whenever the store is wired (DB present),
+	// independent of the prediction worker set below.
+	if webhookStore != nil {
+		dispatcher := webhooks.NewDispatcher(webhookStore, webhooks.DefaultDispatcherConfig())
+		go dispatcher.Run(context.Background())
+		slog.Info("webhooks: dispatch worker started")
+	}
 
 	// --- Feed Adapters & Background Workers ---
 	if predRepo != nil {
 		feedRegistry := feed.NewRegistry()
-		// Register both 'admin-manual' (canonical) and 'manual' (legacy
-		// seed-data key) so auto-settler doesn't WARN every tick on
-		// either set. Both route to the same CanSettle=false behavior.
-		feedRegistry.Register(feed.NewManualAdapter("admin-manual"))
-		feedRegistry.Register(feed.NewManualAdapter("manual"))
-		feedRegistry.Register(feed.NewCryptoFeedAdapter())
+		registerPredictionFeedAdapters(feedRegistry)
 
 		// Market closer: check every 30 seconds for markets past close_at
 		closer := workers.NewMarketCloser(predRepo, 30*time.Second)
@@ -288,6 +348,28 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		expirer := workers.NewRestingOrderExpirer(predictionService, 60*time.Second)
 		go expirer.Run(context.Background())
 
+		// Settlement resumer (P3-12 / COR-05): batched settlement commits the
+		// header fast, then disburses payouts in idempotent batches. If the
+		// process died — or a batch errored — after the header committed, this
+		// finishes the remaining payouts. Runs once on boot to recover anything
+		// a prior crash left mid-disbursement, then every 60s. Idempotent.
+		go func() {
+			rctx := context.Background()
+			resume := func() {
+				if done, err := predictionService.ResumeIncompleteSettlements(rctx); err != nil {
+					slog.Warn("settlement resumer: pass failed", "error", err)
+				} else if done > 0 {
+					slog.Info("settlement resumer: finished disbursing settlements", "count", done)
+				}
+			}
+			resume()
+			ticker := time.NewTicker(60 * time.Second)
+			defer ticker.Stop()
+			for range ticker.C {
+				resume()
+			}
+		}()
+
 		// Reconciler: 15-minute two-phase collateral check across all open
 		// order-book markets per the engine plan. Phase 1 reads without
 		// taking the per-market advisory lock so healthy markets see zero
@@ -311,7 +393,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		smm.SetMetrics(predictionMetrics)
 		go smm.Run(context.Background())
 
-		slog.Info("prediction: background workers started (closer, settler, reconciler, smm)")
+		slog.Info("prediction: background workers started (closer, settler, resumer, reconciler, smm)")
 
 		// Leaderboards recomputer: 5-minute tick per PLAN §8. First tick runs
 		// immediately so the boards populate at startup.
@@ -327,38 +409,68 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 
 		// --- Bot API Routes ---
 		registerBotRoutes(mux, predictionService, predRepo, wsHub)
+
+		// Partner API admin (P3-02): operator-issued partner keys, gated by the
+		// partners:write RBAC permission. Needs both the RBAC service (permission
+		// check) and the prediction repo (key persistence), so it mounts here
+		// where both are in scope — only when the RBAC service is wired.
+		if rbacService != nil {
+			registerPartnerAdminRoutes(mux, rbacService, predRepo)
+			// Partner webhook endpoints (P3-03): operator registers/lists/toggles
+			// a partner's receivers, gated by the same partners:write/read perms.
+			// Only when the webhooks store is wired (DB present).
+			if webhookStore != nil {
+				registerWebhookAdminRoutes(mux, rbacService, webhookStore)
+			}
+		}
 	}
 
 	// --- Wallet Routes (kept from sportsbook — adapt for prediction stakes) ---
-	registerWalletRoutes(mux, walletService)
+	registerWalletRoutes(mux, walletService, predictLBService)
 	// Admin-gated wallet adjustments (requireAdminRole). The ungated public
 	// credit/debit routes were removed per ADR-0002; this admin-only route is
 	// the sole HTTP money-mutation surface.
 	registerAdminWalletMutationRoutes(mux, "/api/v1/admin", walletService)
 
-	alphaCashierConfig, err := alphacashier.LoadConfigFromEnv(os.Getenv)
-	if err != nil {
-		slog.Error("alpha cashier: invalid configuration", "error", err)
-		alphaCashierConfig = alphacashier.Config{Enabled: false}
-	}
-	var alphaCashierRepo alphacashier.Repository
-	if walletDB := walletService.DB(); walletDB != nil {
-		alphaCashierRepo = alphacashier.NewSQLRepository(walletDB)
-	} else {
-		alphaCashierRepo = alphacashier.NewMemoryRepository()
-	}
-	alphaCashierService := alphacashier.NewService(alphaCashierConfig, alphaCashierRepo)
-	alphaCashierService.SetWalletLedger(walletService)
-	if alphaCashierConfig.Enabled {
-		if evmClient, err := alphacashier.NewJSONRPCEVMClient(context.Background(), alphaCashierConfig.RPCURL); err != nil {
-			slog.Warn("alpha cashier: EVM RPC client unavailable; tx submission will fail closed", "error", err)
-		} else {
-			alphaCashierService.SetEVMClient(evmClient)
+	if legacyMoneyRoutesEnabled() {
+		alphaCashierConfig, err := alphacashier.LoadConfigFromEnv(os.Getenv)
+		if err != nil {
+			slog.Error("alpha cashier: invalid configuration", "error", err)
+			alphaCashierConfig = alphacashier.Config{Enabled: false}
 		}
+		var alphaCashierRepo alphacashier.Repository
+		if walletDB := walletService.DB(); walletDB != nil {
+			alphaCashierRepo = alphacashier.NewSQLRepository(walletDB)
+		} else {
+			alphaCashierRepo = alphacashier.NewMemoryRepository()
+		}
+		alphaCashierService := alphacashier.NewService(alphaCashierConfig, alphaCashierRepo)
+		alphaCashierService.SetWalletLedger(walletService)
+		// Default address-screening seam (audit CMP-01). The manual-review screener
+		// never auto-clears, so with ALPHA_CASHIER_SCREENING_ENFORCEMENT=true the
+		// deposit/withdrawal addresses are blocked pending a real provider or human
+		// review; with enforcement off it is observe-only (a sanctions hit still
+		// blocks). A vendor screener is wired in place of the default here.
+		alphaCashierService.SetScreener(alphacashier.DefaultScreener())
+		if alphaCashierConfig.Enabled {
+			if evmClient, err := alphacashier.NewJSONRPCEVMClient(context.Background(), alphaCashierConfig.RPCURL); err != nil {
+				slog.Warn("alpha cashier: EVM RPC client unavailable; tx submission will fail closed", "error", err)
+			} else {
+				alphaCashierService.SetEVMClient(evmClient)
+			}
+			// Reorg finality watcher (audit A2-03): re-verify credited deposits every
+			// 5 minutes and freeze any whose backing tx was orphaned by a reorg. The
+			// tick self-guards on the EVM client + ledger being present, so it is a
+			// no-op until the RPC client above connects.
+			reorgWatcher := alphacashier.NewReorgWatcher(alphaCashierService, 5*time.Minute)
+			go reorgWatcher.Run(context.Background())
+		}
+		alphacashier.RegisterRoutes(mux, alphaCashierService)
+		registerAlphaCashierAdminRoutes(mux, alphaCashierService, rbacService)
+		slog.Info("alpha cashier: routes registered", "enabled", alphaCashierConfig.Enabled, "chain", alphaCashierConfig.ChainName)
+	} else {
+		slog.Info("legacy money routes disabled for Tiangge launch", "env", legacyMoneyRoutesEnv)
 	}
-	alphacashier.RegisterRoutes(mux, alphaCashierService)
-	registerAlphaCashierAdminRoutes(mux, alphaCashierService, rbacService)
-	slog.Info("alpha cashier: routes registered", "enabled", alphaCashierConfig.Enabled, "chain", alphaCashierConfig.ChainName)
 
 	// --- Account/User Routes ---
 	registerUserRoutes(mux)
@@ -400,12 +512,17 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		registerKYCAdminRoutes(mux, pgKYC)
 	}
 	compliance.RegisterComplianceRoutes(mux, geoComplianceService, kycService, rgService)
-	// Pre-trade jurisdiction + KYC gates (launch policy: crypto-native, outside
-	// US). Both default OFF — wired here so a single env flag activates them
-	// without a code change. See internal/http/pretrade_gate.go and
-	// docs/compliance/geofencing-kyc.md (depth pending legal sign-off).
+	// Pre-trade jurisdiction + KYC gates. Both default OFF — wired here so a
+	// single env flag activates them without a code change. See
+	// internal/http/pretrade_gate.go and docs/compliance/geofencing-kyc.md
+	// (depth pending legal sign-off).
 	tradeGeoGate = compliance.NewGeoGateFromEnv()
 	tradeKYCGate = kycService
+	// Legacy guarded routes run through the same geo gate as trading. Their
+	// registration is still controlled by the Tiangge legacy-route opt-in; see
+	// docs/compliance/geofencing-kyc.md for the compliance posture.
+	alphacashier.ComplianceGate = checkComplianceGates
+	payments.ComplianceGate = checkComplianceGates
 	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
 	logPreTradeComplianceMode(env, tradeGeoGate)
 	// The geo gate is intentionally default-off (depth pending legal), so a
@@ -422,34 +539,34 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	predictionService.SetComplianceChecker(rgService)
 
 	// --- Payments Routes ---
-	var paymentService payments.PaymentService
-	if walletDB := walletService.DB(); walletDB != nil {
-		dbPaymentService, err := payments.NewDBPaymentService(walletDB, walletService)
-		if err != nil {
-			slog.Warn("payments: failed to initialize DB payment service, falling back to mock", "error", err)
-			paymentService = payments.NewMockPaymentService(walletService)
+	if legacyMoneyRoutesEnabled() {
+		var paymentService payments.PaymentService
+		if walletDB := walletService.DB(); walletDB != nil {
+			dbPaymentService, err := payments.NewDBPaymentService(walletDB, walletService)
+			if err != nil {
+				slog.Warn("payments: failed to initialize DB payment service, falling back to mock", "error", err)
+				paymentService = payments.NewMockPaymentService(walletService)
+			} else {
+				paymentService = dbPaymentService
+			}
 		} else {
-			paymentService = dbPaymentService
+			paymentService = payments.NewMockPaymentService(walletService)
+		}
+		payments.DepositComplianceChecker = rgService
+		payments.KYCGate = kycService // LC-22/D-8 KYC just-in-time withdrawal gate
+		payments.RegisterPaymentRoutes(mux, paymentService)
+		// Legacy on-chain rail. This branch is only registered when legacy money
+		// routes are explicitly enabled; launch mode leaves these routes absent.
+		if walletDB := walletService.DB(); walletDB != nil {
+			if err := payments.EnsureCryptoSchema(walletDB); err != nil {
+				slog.Warn("payments: crypto schema init failed", "error", err)
+			}
+			cryptoRail := payments.NewCryptoRailFromEnv(walletDB)
+			payments.RegisterCryptoRoutes(mux, cryptoRail)
+			slog.Info("payments: crypto rail registered", "network", cryptoRail.Network(), "asset", cryptoRail.Asset(), "configured", cryptoRail.Configured())
 		}
 	} else {
-		paymentService = payments.NewMockPaymentService(walletService)
-	}
-	payments.DepositComplianceChecker = rgService
-	payments.KYCGate = kycService // LC-22/D-8 KYC just-in-time withdrawal gate
-	payments.RegisterPaymentRoutes(mux, paymentService)
-	// Crypto (USDC) on-chain rail — launch policy is crypto-native. Wired behind
-	// a clean adapter that fails CLOSED until CRYPTO_RPC_URL +
-	// CRYPTO_ASSET_CONTRACT + CRYPTO_DEPOSIT_ADDRESS_SOURCE are configured
-	// (no faked addresses). Exposes /api/v1/payments/crypto/{config,deposit-address};
-	// on-chain deposit detection drives the existing payments webhook to credit
-	// the wallet after N confirmations.
-	if walletDB := walletService.DB(); walletDB != nil {
-		if err := payments.EnsureCryptoSchema(walletDB); err != nil {
-			slog.Warn("payments: crypto schema init failed", "error", err)
-		}
-		cryptoRail := payments.NewCryptoRailFromEnv(walletDB)
-		payments.RegisterCryptoRoutes(mux, cryptoRail)
-		slog.Info("payments: crypto rail registered", "network", cryptoRail.Network(), "asset", cryptoRail.Asset(), "configured", cryptoRail.Configured())
+		slog.Info("legacy payment routes disabled for Tiangge launch", "env", legacyMoneyRoutesEnv)
 	}
 
 	// --- Loyalty / Rewards ---
@@ -486,8 +603,8 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// already cover the office /content + /campaigns admin pages — they just
 	// were never wired into RegisterRoutes. Public delivery routes
 	// (/api/v1/content/, /api/v1/banners) come along for the player app.
-	// The bonus service's optional FreebetGranter is deliberately NOT set:
-	// freebet/odds-boost issuance is a sportsbook concept (CLAUDE.md rule #2);
+	// The bonus service's optional legacy promo granter is deliberately not set:
+	// sportsbook-style promo issuance is outside the Tiangge launch economy;
 	// campaigns/bonuses CRUD works without it.
 	if walletDB := walletService.DB(); walletDB != nil {
 		registerContentRoutes(mux, content.NewService(walletDB))
@@ -507,8 +624,51 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 
 	slog.Info("Taya NA Predict gateway initialized",
 		"service", service,
-		"routes", "prediction, orders, portfolio, settlement, wallet, users, compliance, payments, loyalty, leaderboards, auth",
+		"routes", strings.Join(gatewayRouteDomains(legacyMoneyRoutesEnabled()), ", "),
 	)
+}
+
+func gatewayRouteDomains(legacyMoneyEnabled bool) []string {
+	routes := []string{
+		"prediction",
+		"orders",
+		"portfolio",
+		"settlement",
+		"wallet",
+		"users",
+		"compliance",
+	}
+	if legacyMoneyEnabled {
+		routes = append(routes, "alpha_cashier", "payments", "crypto_payments")
+	}
+	routes = append(routes, "loyalty", "leaderboards", "auth")
+	return routes
+}
+
+func gatewayLaunchStatusDomains() []string {
+	return []string{
+		"prediction",
+		"orders",
+		"portfolio",
+		"settlement",
+		"point_wallet",
+		"users",
+		"responsible_play",
+		"loyalty",
+		"leaderboards",
+		"auth",
+	}
+}
+
+func registerPredictionFeedAdapters(feedRegistry *feed.Registry) {
+	// Register both 'admin-manual' (canonical) and 'manual' (legacy seed-data
+	// key) so auto-settler doesn't WARN every tick on either set. Both route to
+	// the same CanSettle=false behavior.
+	feedRegistry.Register(feed.NewManualAdapter("admin-manual"))
+	feedRegistry.Register(feed.NewManualAdapter("manual"))
+	if strings.EqualFold(strings.TrimSpace(os.Getenv(legacyAssetPriceFeedsEnv)), "true") {
+		feedRegistry.Register(feed.NewCryptoFeedAdapter())
+	}
 }
 
 func registerWebSocketRoutes(mux *stdhttp.ServeMux, hub *ws.Hub) {
@@ -661,12 +821,12 @@ func registerAuthProxy(mux *stdhttp.ServeMux) {
 func resolutionMessage(m *prediction.Market) (subject, body string) {
 	if m.Status == prediction.MarketStatusVoided {
 		return fmt.Sprintf("Market voided: %s", m.Ticker),
-			fmt.Sprintf("Market %q (%s) was voided. Stakes are refunded at entry cost.", m.Title, m.Ticker)
+			fmt.Sprintf("Market %q (%s) was voided. Locked points are returned at entry cost.", m.Title, m.Ticker)
 	}
 	result := "—"
 	if m.Result != nil {
 		result = strings.ToUpper(string(*m.Result))
 	}
 	return fmt.Sprintf("Market resolved %s: %s", result, m.Ticker),
-		fmt.Sprintf("Market %q (%s) resolved %s. Winning positions pay 100¢/contract.", m.Title, m.Ticker, result)
+		fmt.Sprintf("Market %q (%s) resolved %s. Winning positions settle at 100 points per share.", m.Title, m.Ticker, result)
 }

@@ -9,7 +9,6 @@ import (
 	stdhttp "net/http"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
 	"phoenix-revival/gateway/internal/compliance"
@@ -45,23 +44,21 @@ func registerUserRoutes(mux *stdhttp.ServeMux) {
 		authURL = "http://localhost:18081"
 	}
 
-	// In-memory profile store for updates (production would use DB)
-	profileStore := &sync.Map{}
-
 	// POST /api/v1/punters/delete — player-initiated account deletion
 	mux.Handle("/api/v1/punters/delete", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
-		var body struct {
-			UserID string `json:"user_id"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.UserID == "" {
-			return httpx.BadRequest("user_id is required", nil)
+		// Self-service deletion: the subject is the authenticated session user,
+		// never a client-supplied user_id (which would let any authenticated user
+		// schedule deletion for any account — SECURITY-REVIEW #13, IDOR).
+		userID := httpx.UserIDFromContext(r.Context())
+		if userID == "" {
+			return httpx.Unauthorized("authentication required")
 		}
 		deletionDate := time.Now().AddDate(0, 0, 30).UTC().Format(time.RFC3339)
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{
-			"user_id":                 body.UserID,
+			"user_id":                 userID,
 			"status":                  "pending_deletion",
 			"scheduled_deletion_date": deletionDate,
 		})
@@ -92,9 +89,12 @@ func registerUserRoutes(mux *stdhttp.ServeMux) {
 			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 				return httpx.BadRequest("invalid JSON payload", nil)
 			}
-			storeKey := requestedUserID + ":" + subRoute
-			profileStore.Store(storeKey, body)
-			return httpx.WriteJSON(w, stdhttp.StatusOK, body)
+			// NOTE: profile updates are not yet persisted. The prior in-memory
+			// store (removed, P3-06) was write-only — the GET path derives the
+			// profile from the auth session and never read it back, so it held
+			// nothing across requests/instances. Echo the accepted fields;
+			// durable per-user profile storage is a DB-backed follow-up.
+			return httpx.WriteJSON(w, stdhttp.StatusOK, userProfileUpdatePayload(body))
 		}
 
 		if r.Method != stdhttp.MethodGet {
@@ -182,6 +182,40 @@ func registerUserRoutes(mux *stdhttp.ServeMux) {
 			UpdatedAt: now,
 		}
 
-		return httpx.WriteJSON(w, stdhttp.StatusOK, profile)
+		return httpx.WriteJSON(w, stdhttp.StatusOK, userProfilePayload(profile))
 	}))
+}
+
+func userProfilePayload(profile userProfileResponse) userProfileResponse {
+	profile.Username = redactLaunchProhibitedUserText(profile.Username)
+	return profile
+}
+
+func userProfileUpdatePayload(body map[string]interface{}) map[string]interface{} {
+	out := make(map[string]interface{}, len(body))
+	for key, value := range body {
+		out[key] = redactProfileUpdateValue(value)
+	}
+	return out
+}
+
+func redactProfileUpdateValue(value interface{}) interface{} {
+	switch typed := value.(type) {
+	case string:
+		return redactLaunchProhibitedUserText(typed)
+	case []interface{}:
+		out := make([]interface{}, len(typed))
+		for i, item := range typed {
+			out[i] = redactProfileUpdateValue(item)
+		}
+		return out
+	case map[string]interface{}:
+		out := make(map[string]interface{}, len(typed))
+		for key, item := range typed {
+			out[key] = redactProfileUpdateValue(item)
+		}
+		return out
+	default:
+		return value
+	}
 }

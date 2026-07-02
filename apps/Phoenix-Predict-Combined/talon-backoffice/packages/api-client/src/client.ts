@@ -1,9 +1,9 @@
 /**
- * Phoenix Sportsbook API Client
+ * Taya NA Predict API Client
  * Type-safe API client with automatic auth token management and 401 refresh
  */
 
-import { AuthManager, createAuthManager } from './auth';
+import { AuthManager, createAuthManager } from "./auth";
 import {
   ApiClientConfig,
   ApiError,
@@ -12,38 +12,42 @@ import {
   ErrorResponse,
   LoginRequest,
   RefreshRequest,
-  ListResponse,
-  SimpleListResponse,
-  Fixture,
-  Market,
-  Bet,
-  BetPrecheckResult,
-  CashoutQuote,
   WalletBalance,
   WalletLedgerEntry,
   WalletMutationResponse,
   WalletMutationRequest,
-  Freebet,
-  OddsBoost,
-  MatchTrackerTimeline,
-  AdminPunter,
-  AdminMarketView,
   AuditLogEntry,
-  SportCatalogItem,
-  SportLeagueItem,
-  SportEventItem,
   PaginationOptions,
-  PlaceBetRequest,
-  PrecheckBetRequest,
-  CashoutQuoteRequest,
-  CashoutAcceptRequest,
-  OddsBoostAcceptRequest,
-  ProviderCancelRequest,
-} from './types';
+} from "./types";
 
 const DEFAULT_TIMEOUT = 30000;
 const DEFAULT_RETRY_ATTEMPTS = 3;
 const DEFAULT_RETRY_DELAY = 100;
+const POINT_UNIT = "PTS";
+
+interface LegacyWalletBalancePayload extends Partial<WalletBalance> {
+  balanceCents?: number;
+  availableCents?: number;
+  reservedCents?: number;
+}
+
+interface LegacyWalletLedgerEntryPayload extends Partial<WalletLedgerEntry> {
+  amountCents?: number;
+  balanceCents?: number;
+}
+
+interface LegacyWalletMutationPayload {
+  entry?: LegacyWalletLedgerEntryPayload;
+  balancePointsCents?: number;
+  balanceCents?: number;
+  unit?: string;
+}
+
+interface LegacyAuditLogEntryPayload extends Partial<AuditLogEntry> {
+  freebetId?: string;
+  oddsBoostId?: string;
+  freebetAppliedCents?: number;
+}
 
 export class PhoenixApiClient {
   private baseUrl: string;
@@ -54,7 +58,7 @@ export class PhoenixApiClient {
   private refreshInProgress: Promise<boolean> | null = null;
 
   constructor(config: ApiClientConfig, authManager?: AuthManager) {
-    this.baseUrl = config.baseUrl.replace(/\/$/, ''); // Remove trailing slash
+    this.baseUrl = config.baseUrl.replace(/\/$/, ""); // Remove trailing slash
     this.timeout = config.timeout ?? DEFAULT_TIMEOUT;
     this.retryAttempts = config.retryAttempts ?? DEFAULT_RETRY_ATTEMPTS;
     this.retryDelay = config.retryDelay ?? DEFAULT_RETRY_DELAY;
@@ -95,10 +99,17 @@ export class PhoenixApiClient {
    * Login with username and password
    */
   async login(request: LoginRequest): Promise<TokenResponse> {
-    const response = await this.post<TokenResponse>('/api/v1/auth/login', request);
+    const response = await this.post<TokenResponse>(
+      "/api/v1/auth/login",
+      request,
+    );
     // Store tokens if refreshToken is returned
     if (response.accessToken) {
-      this.authManager.setTokens(response.accessToken, response.refreshToken, response.expiresInSeconds);
+      this.authManager.setTokens(
+        response.accessToken,
+        response.refreshToken,
+        response.expiresInSeconds,
+      );
     }
     return response;
   }
@@ -107,9 +118,16 @@ export class PhoenixApiClient {
    * Refresh access token using refresh token
    */
   async refresh(request: RefreshRequest): Promise<TokenResponse> {
-    const response = await this.post<TokenResponse>('/api/v1/auth/refresh', request);
+    const response = await this.post<TokenResponse>(
+      "/api/v1/auth/refresh",
+      request,
+    );
     if (response.accessToken) {
-      this.authManager.setTokens(response.accessToken, response.refreshToken, response.expiresInSeconds);
+      this.authManager.setTokens(
+        response.accessToken,
+        response.refreshToken,
+        response.expiresInSeconds,
+      );
     }
     return response;
   }
@@ -118,117 +136,7 @@ export class PhoenixApiClient {
    * Get current session info (requires auth)
    */
   async getSession(): Promise<SessionResponse> {
-    return this.get<SessionResponse>('/api/v1/auth/session');
-  }
-
-  // ===== Fixtures & Markets =====
-
-  /**
-   * List fixtures with pagination
-   */
-  async listFixtures(options?: PaginationOptions & { tournament?: string }): Promise<ListResponse<Fixture>> {
-    const params = this.buildQueryParams(options);
-    return this.get<ListResponse<Fixture>>('/api/v1/fixtures', params);
-  }
-
-  /**
-   * Get fixture detail with markets
-   */
-  async getFixture(fixtureId: string): Promise<Fixture> {
-    return this.get<Fixture>(`/api/v1/fixtures/${fixtureId}`);
-  }
-
-  /**
-   * List markets with pagination
-   */
-  async listMarkets(
-    options?: PaginationOptions & { status?: string; fixtureId?: string }
-  ): Promise<ListResponse<Market>> {
-    const params = this.buildQueryParams(options);
-    return this.get<ListResponse<Market>>('/api/v1/markets', params);
-  }
-
-  /**
-   * Get market detail with selections
-   */
-  async getMarket(marketId: string): Promise<Market> {
-    return this.get<Market>(`/api/v1/markets/${marketId}`);
-  }
-
-  // ===== Sports =====
-
-  /**
-   * List all sports catalog
-   */
-  async listSports(): Promise<{ items: SportCatalogItem[] }> {
-    return this.get<{ items: SportCatalogItem[] }>('/api/v1/sports');
-  }
-
-  /**
-   * Get sport detail with leagues
-   */
-  async getSportLeagues(sportKey: string): Promise<{ sportKey: string; items: SportLeagueItem[] }> {
-    return this.get<{ sportKey: string; items: SportLeagueItem[] }>(`/api/v1/sports/${sportKey}`);
-  }
-
-  /**
-   * List sport events
-   */
-  async listSportEvents(
-    sportKey: string,
-    options?: PaginationOptions & { status?: string; leagueKey?: string }
-  ): Promise<{ sportKey: string; items: SportEventItem[]; pagination: any }> {
-    const params = this.buildQueryParams(options);
-    return this.get(`/api/v1/sports/${sportKey}/events`, params);
-  }
-
-  /**
-   * List markets for a sport event
-   */
-  async listSportEventMarkets(
-    sportKey: string,
-    eventKey: string,
-    options?: PaginationOptions
-  ): Promise<{ sportKey: string; eventKey: string; fixtureId: string; items: Market[]; pagination: any }> {
-    const params = this.buildQueryParams(options);
-    return this.get(`/api/v1/sports/${sportKey}/events/${eventKey}/markets`, params);
-  }
-
-  // ===== Betting =====
-
-  /**
-   * Precheck bet before placement
-   */
-  async precheckBet(request: PrecheckBetRequest): Promise<BetPrecheckResult> {
-    return this.post<BetPrecheckResult>('/api/v1/bets/precheck', request);
-  }
-
-  /**
-   * Place a single bet
-   */
-  async placeBet(request: PlaceBetRequest): Promise<Bet> {
-    return this.post<Bet>('/api/v1/bets/place', request);
-  }
-
-  /**
-   * Get bet by ID
-   */
-  async getBet(betId: string): Promise<Bet> {
-    return this.get<Bet>(`/api/v1/bets/${betId}`);
-  }
-
-  /**
-   * Get cashout quote for a bet
-   */
-  async getCashoutQuote(request: CashoutQuoteRequest): Promise<CashoutQuote> {
-    return this.post<CashoutQuote>('/api/v1/bets/cashout/quote', request);
-  }
-
-  /**
-   * Accept cashout quote
-   */
-  async acceptCashout(request: CashoutAcceptRequest): Promise<{ bet: Bet; quote: CashoutQuote }> {
-    return this.post<{ bet: Bet; quote: CashoutQuote }>('/api/v1/bets/cashout/accept', request);
+    return this.get<SessionResponse>("/api/v1/auth/session");
   }
 
   // ===== Wallet =====
@@ -237,153 +145,153 @@ export class PhoenixApiClient {
    * Get wallet balance
    */
   async getWalletBalance(userId: string): Promise<WalletBalance> {
-    return this.get<WalletBalance>(`/api/v1/wallet/${userId}`);
+    const payload = await this.get<LegacyWalletBalancePayload>(
+      `/api/v1/wallet/${userId}`,
+    );
+    return this.normalizeWalletBalance(payload, userId);
   }
 
   /**
    * Get wallet ledger
    */
-  async getWalletLedger(userId: string, limit?: number): Promise<{ userId: string; items: WalletLedgerEntry[]; total: number }> {
+  async getWalletLedger(
+    userId: string,
+    limit?: number,
+  ): Promise<{ userId: string; items: WalletLedgerEntry[]; total: number }> {
     const params = new URLSearchParams();
-    if (limit) params.append('limit', limit.toString());
-    return this.get(`/api/v1/wallet/${userId}/ledger`, params);
+    if (limit) params.append("limit", limit.toString());
+    const payload = await this.get<{
+      userId: string;
+      items: LegacyWalletLedgerEntryPayload[];
+      total: number;
+    }>(`/api/v1/wallet/${userId}/ledger`, params);
+    return {
+      userId: payload.userId,
+      items: payload.items.map((item) =>
+        this.normalizeWalletLedgerEntry(item, userId),
+      ),
+      total: payload.total,
+    };
   }
 
   /**
    * Credit wallet
    */
-  async creditWallet(request: WalletMutationRequest): Promise<WalletMutationResponse> {
-    return this.post<WalletMutationResponse>('/api/v1/wallet/credit', request);
+  async creditWallet(
+    request: WalletMutationRequest,
+  ): Promise<WalletMutationResponse> {
+    const payload = await this.post<LegacyWalletMutationPayload>(
+      "/api/v1/wallet/credit",
+      request,
+    );
+    return this.normalizeWalletMutation(payload, request.userId);
   }
 
   /**
    * Debit wallet
    */
-  async debitWallet(request: WalletMutationRequest): Promise<WalletMutationResponse> {
-    return this.post<WalletMutationResponse>('/api/v1/wallet/debit', request);
-  }
-
-  // ===== Promotions =====
-
-  /**
-   * List freebets for user
-   */
-  async listFreebets(userId: string, status?: string): Promise<SimpleListResponse<Freebet>> {
-    const params = new URLSearchParams();
-    params.append('userId', userId);
-    if (status) params.append('status', status);
-    return this.get<SimpleListResponse<Freebet>>('/api/v1/freebets', params);
-  }
-
-  /**
-   * Get freebet detail
-   */
-  async getFreebet(freebetId: string): Promise<Freebet> {
-    return this.get<Freebet>(`/api/v1/freebets/${freebetId}`);
-  }
-
-  /**
-   * List odds boosts for user
-   */
-  async listOddsBoosts(userId: string, status?: string): Promise<SimpleListResponse<OddsBoost>> {
-    const params = new URLSearchParams();
-    params.append('userId', userId);
-    if (status) params.append('status', status);
-    return this.get<SimpleListResponse<OddsBoost>>('/api/v1/odds-boosts', params);
-  }
-
-  /**
-   * Get odds boost detail
-   */
-  async getOddsBoost(oddsBoostId: string): Promise<OddsBoost> {
-    return this.get<OddsBoost>(`/api/v1/odds-boosts/${oddsBoostId}`);
-  }
-
-  /**
-   * Accept odds boost
-   */
-  async acceptOddsBoost(oddsBoostId: string, request: OddsBoostAcceptRequest): Promise<OddsBoost> {
-    return this.post<OddsBoost>(`/api/v1/odds-boosts/${oddsBoostId}/accept`, request);
-  }
-
-  // ===== Match Tracking =====
-
-  /**
-   * Get match tracker timeline for fixture
-   */
-  async getMatchTracker(fixtureId: string): Promise<MatchTrackerTimeline> {
-    return this.get<MatchTrackerTimeline>(`/api/v1/match-tracker/fixtures/${fixtureId}`);
+  async debitWallet(
+    request: WalletMutationRequest,
+  ): Promise<WalletMutationResponse> {
+    const payload = await this.post<LegacyWalletMutationPayload>(
+      "/api/v1/wallet/debit",
+      request,
+    );
+    return this.normalizeWalletMutation(payload, request.userId);
   }
 
   // ===== Admin =====
 
   /**
-   * List fixtures (admin only)
-   */
-  async adminListFixtures(options?: PaginationOptions & { tournament?: string }): Promise<{ items: Fixture[]; pagination: any }> {
-    const params = this.buildQueryParams(options);
-    return this.get('/admin/fixtures', params);
-  }
-
-  /**
-   * List markets (admin only)
-   */
-  async adminListMarkets(
-    options?: PaginationOptions & { status?: string; fixtureId?: string }
-  ): Promise<{ items: AdminMarketView[]; pagination: any }> {
-    const params = this.buildQueryParams(options);
-    return this.get('/admin/markets', params);
-  }
-
-  /**
-   * List punters (admin only)
-   */
-  async adminListPunters(options?: PaginationOptions & { status?: string }): Promise<{ items: AdminPunter[]; pagination: any }> {
-    const params = this.buildQueryParams(options);
-    return this.get('/admin/punters', params);
-  }
-
-  /**
    * List audit logs (admin only)
    */
-  async adminListAuditLogs(options?: PaginationOptions): Promise<{ items: AuditLogEntry[]; pagination: any }> {
+  async adminListAuditLogs(
+    options?: PaginationOptions,
+  ): Promise<{ items: AuditLogEntry[]; pagination: any }> {
     const params = this.buildQueryParams(options);
-    return this.get('/admin/audit-logs', params);
+    const payload = await this.get<{
+      items: LegacyAuditLogEntryPayload[];
+      pagination: any;
+    }>("/admin/audit-logs", params);
+    return {
+      items: payload.items.map((item) => this.normalizeAuditLogEntry(item)),
+      pagination: payload.pagination,
+    };
   }
 
-  /**
-   * Cancel provider operation (admin only)
-   */
-  async adminCancelProvider(request: ProviderCancelRequest): Promise<{ status: string }> {
-    return this.post('/admin/provider/cancel', request);
+  private normalizeWalletBalance(
+    payload: LegacyWalletBalancePayload,
+    fallbackUserId: string,
+  ): WalletBalance {
+    const balancePointsCents =
+      payload.balancePointsCents ?? payload.balanceCents ?? 0;
+    return {
+      userId: payload.userId ?? fallbackUserId,
+      balancePointsCents,
+      availablePointsCents:
+        payload.availablePointsCents ??
+        payload.availableCents ??
+        balancePointsCents,
+      reservedPointsCents:
+        payload.reservedPointsCents ?? payload.reservedCents ?? 0,
+      unit: POINT_UNIT,
+    };
   }
 
-  /**
-   * Get risk rankings (admin only)
-   */
-  async adminGetRiskRankings(limit?: number): Promise<{ items: any[] }> {
-    const params = new URLSearchParams();
-    if (limit) params.append('limit', limit.toString());
-    return this.get('/admin/risk/rankings', params);
+  private normalizeWalletLedgerEntry(
+    payload: LegacyWalletLedgerEntryPayload,
+    fallbackUserId: string,
+  ): WalletLedgerEntry {
+    const amountPointsCents =
+      payload.amountPointsCents ?? payload.amountCents ?? 0;
+    return {
+      entryId: payload.entryId ?? "",
+      userId: payload.userId ?? fallbackUserId,
+      type: payload.type ?? "credit",
+      amountPointsCents,
+      balancePointsCents:
+        payload.balancePointsCents ?? payload.balanceCents ?? amountPointsCents,
+      unit: POINT_UNIT,
+      reason: payload.reason ?? "",
+      idempotencyKey: payload.idempotencyKey,
+      createdAt: payload.createdAt ?? "",
+    };
   }
 
-  /**
-   * Get player risk score (admin only)
-   */
-  async adminGetPlayerScore(userId: string): Promise<any> {
-    const params = new URLSearchParams();
-    params.append('userId', userId);
-    return this.get('/admin/risk/player-scores', params);
+  private normalizeWalletMutation(
+    payload: LegacyWalletMutationPayload,
+    fallbackUserId: string,
+  ): WalletMutationResponse {
+    const entry = this.normalizeWalletLedgerEntry(
+      payload.entry ?? {},
+      fallbackUserId,
+    );
+    return {
+      entry,
+      balancePointsCents:
+        payload.balancePointsCents ??
+        payload.balanceCents ??
+        entry.balancePointsCents,
+      unit: POINT_UNIT,
+    };
   }
 
-  /**
-   * Get risk segments (admin only)
-   */
-  async adminGetRiskSegments(userId?: string, limit?: number): Promise<{ items: any[]; total: number }> {
-    const params = new URLSearchParams();
-    if (userId) params.append('userId', userId);
-    if (limit) params.append('limit', limit.toString());
-    return this.get('/admin/risk/segments', params);
+  private normalizeAuditLogEntry(
+    payload: LegacyAuditLogEntryPayload,
+  ): AuditLogEntry {
+    return {
+      id: payload.id ?? "",
+      action: payload.action ?? "",
+      actorId: payload.actorId ?? "",
+      userId: payload.userId,
+      targetId: payload.targetId ?? "",
+      pointGrantId: payload.pointGrantId ?? payload.freebetId,
+      pointRuleId: payload.pointRuleId ?? payload.oddsBoostId,
+      pointGrantAppliedPointsCents:
+        payload.pointGrantAppliedPointsCents ?? payload.freebetAppliedCents,
+      occurredAt: payload.occurredAt ?? "",
+      details: payload.details ?? "",
+    };
   }
 
   // ===== Internal HTTP Methods =====
@@ -393,10 +301,10 @@ export class PhoenixApiClient {
    */
   private async get<T>(
     path: string,
-    params?: URLSearchParams | Record<string, string>
+    params?: URLSearchParams | Record<string, string>,
   ): Promise<T> {
     const url = this.buildUrl(path, params);
-    return this.request<T>('GET', url);
+    return this.request<T>("GET", url);
   }
 
   /**
@@ -404,7 +312,7 @@ export class PhoenixApiClient {
    */
   private async post<T>(path: string, body?: any): Promise<T> {
     const url = this.buildUrl(path);
-    return this.request<T>('POST', url, body);
+    return this.request<T>("POST", url, body);
   }
 
   /**
@@ -414,7 +322,7 @@ export class PhoenixApiClient {
     method: string,
     url: string,
     body?: any,
-    retryCount: number = 0
+    retryCount: number = 0,
   ): Promise<T> {
     try {
       const response = await this.fetchWithTimeout(url, {
@@ -433,7 +341,7 @@ export class PhoenixApiClient {
         }
         // Refresh failed or max retries exceeded - logout
         this.authManager.clearTokens();
-        throw this.createApiError('Unauthorized', response, false, retryCount);
+        throw this.createApiError("Unauthorized", response, false, retryCount);
       }
 
       if (!response.ok) {
@@ -450,7 +358,9 @@ export class PhoenixApiClient {
       return response.json() as Promise<T>;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      throw new Error(`Network request failed: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Network request failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -470,10 +380,17 @@ export class PhoenixApiClient {
 
     this.refreshInProgress = (async () => {
       try {
-        const response = await this.post<TokenResponse>('/api/v1/auth/refresh', {
-          refreshToken,
-        });
-        this.authManager.setTokens(response.accessToken, response.refreshToken, response.expiresInSeconds);
+        const response = await this.post<TokenResponse>(
+          "/api/v1/auth/refresh",
+          {
+            refreshToken,
+          },
+        );
+        this.authManager.setTokens(
+          response.accessToken,
+          response.refreshToken,
+          response.expiresInSeconds,
+        );
         return true;
       } catch {
         return false;
@@ -488,7 +405,10 @@ export class PhoenixApiClient {
   /**
    * Fetch with timeout
    */
-  private fetchWithTimeout(url: string, options: RequestInit): Promise<Response> {
+  private fetchWithTimeout(
+    url: string,
+    options: RequestInit,
+  ): Promise<Response> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
@@ -503,8 +423,8 @@ export class PhoenixApiClient {
    */
   private buildHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
+      "Content-Type": "application/json",
+      Accept: "application/json",
     };
 
     const authHeader = this.authManager.getAuthHeader();
@@ -518,7 +438,10 @@ export class PhoenixApiClient {
   /**
    * Build full URL with query params
    */
-  private buildUrl(path: string, params?: URLSearchParams | Record<string, string>): string {
+  private buildUrl(
+    path: string,
+    params?: URLSearchParams | Record<string, string>,
+  ): string {
     const url = new URL(path, this.baseUrl);
 
     if (params) {
@@ -526,7 +449,7 @@ export class PhoenixApiClient {
         url.search = params.toString();
       } else {
         Object.entries(params).forEach(([key, value]) => {
-          if (value !== undefined && value !== null && value !== '') {
+          if (value !== undefined && value !== null && value !== "") {
             url.searchParams.append(key, String(value));
           }
         });
@@ -539,12 +462,14 @@ export class PhoenixApiClient {
   /**
    * Build query params from options
    */
-  private buildQueryParams(options?: Record<string, any>): Record<string, string> {
+  private buildQueryParams(
+    options?: Record<string, any>,
+  ): Record<string, string> {
     const params: Record<string, string> = {};
     if (!options) return params;
 
     Object.entries(options).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
+      if (value !== undefined && value !== null && value !== "") {
         params[key] = String(value);
       }
     });
@@ -564,7 +489,12 @@ export class PhoenixApiClient {
       // Response is not JSON
     }
 
-    return this.createApiError(errorData?.message || response.statusText, response, false, 0);
+    return this.createApiError(
+      errorData?.message || response.statusText,
+      response,
+      false,
+      0,
+    );
   }
 
   /**
@@ -574,10 +504,10 @@ export class PhoenixApiClient {
     message: string,
     response: Response,
     retryable: boolean,
-    retryCount: number
+    retryCount: number,
   ): ApiError {
     const error = new Error(message) as ApiError;
-    error.name = 'ApiError';
+    error.name = "ApiError";
     error.status = response.status;
     error.retryable = retryable;
     error.retryCount = retryCount;
@@ -588,6 +518,9 @@ export class PhoenixApiClient {
    * Delay helper
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
+
+export const TianggeApiClient = PhoenixApiClient;
+export type TianggeApiClient = PhoenixApiClient;

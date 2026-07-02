@@ -41,14 +41,6 @@ export default function CurrentBalance({
     fetchBalance();
   }, [user?.id]);
 
-  const formatCurrency = (amount: number): string => {
-    // wallet-client already converts cents→dollars, so amount is in dollars
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
-
   if (!user) {
     return null;
   }
@@ -71,13 +63,13 @@ export default function CurrentBalance({
     return null;
   }
 
-  const availableAmount = formatCurrency(balance.availableBalance);
-  const pendingAmount = formatCurrency(balance.reservedBalance);
+  const availableAmount = formatPoints(balance.availableBalance);
+  const pendingAmount = formatPoints(balance.reservedBalance);
 
   if (compact) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-xs text-slate-500">Balance:</span>
+        <span className="text-xs text-slate-500">Points:</span>
         <span className="text-[13px] font-semibold text-slate-200">
           {availableAmount}
         </span>
@@ -89,18 +81,22 @@ export default function CurrentBalance({
     <div className="rounded border border-[#1a1f3a] bg-[#0a0e18] px-4 py-3">
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <span className="text-xs text-slate-500">Available Balance</span>
+          <span className="text-xs text-slate-500">Available Points</span>
           <span className="text-base font-semibold text-slate-200">
             {availableAmount}
           </span>
         </div>
         {balance.reservedBalance > 0 && (
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500">Pending Balance</span>
+            <span className="text-xs text-slate-500">Locked Points</span>
             <span className="text-sm text-slate-300">{pendingAmount}</span>
           </div>
         )}
       </div>
     </div>
   );
+}
+
+function formatPoints(points: number): string {
+  return `${points.toFixed(2)} pts`;
 }

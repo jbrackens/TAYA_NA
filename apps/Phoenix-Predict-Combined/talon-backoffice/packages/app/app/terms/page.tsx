@@ -13,28 +13,26 @@ const FALLBACK_CONTENT = `
 <p>You must be at least the minimum legal age to participate in event-contract markets in your jurisdiction and must have the legal capacity to enter into this agreement. The Platform is not offered where its use would be unlawful. You are solely responsible for determining whether your use of the Platform is permitted under the laws applicable to you, and for compliance with those laws.</p>
 
 <h2>3. The Service</h2>
-<p>The Platform allows eligible users to trade binary event contracts that resolve based on the outcome of real-world events. Contracts are priced between 0 and 100 cents, reflecting the market-implied probability of an outcome. The Platform provides market access and information only; it does not provide gambling services and nothing on the Platform constitutes financial, investment, legal, or tax advice.</p>
+<p>The Platform allows eligible users to make binary YES/NO predictions that resolve based on the outcome of real-world events. Markets use non-redeemable gameplay points and probability-style prices. The Platform provides entertainment, rankings, and information only; it does not provide financial, investment, legal, or tax advice.</p>
 
-<h2>4. Accounts and Security</h2>
+<h2>4. Points, Accounts, and Security</h2>
 <p>You may hold only one account. You agree to provide accurate, current information and to keep it updated. You are responsible for safeguarding your credentials and for all activity under your account. Notify us promptly of any unauthorized use.</p>
-
-<h2>5. Funds, Deposits, and Withdrawals</h2>
-<p>Deposits and withdrawals are processed through supported payment methods. Withdrawals are subject to identity verification and may be delayed pending compliance review. We may request documentation to satisfy applicable anti-money-laundering ("AML") and know-your-customer ("KYC") obligations and may decline or reverse transactions where required by law or to protect platform integrity. Account balances do not earn interest.</p>
+<p>Tiangge points are non-redeemable gameplay points. They are not money, stored value, cryptocurrency, a prize, or a claim on anything redeemable. Tiangge does not support adding money, removing money, cashing out, or exchanging points for money, goods, services, or prizes.</p>
 
 <h2>6. Market Rules and Settlement</h2>
-<p>Each market specifies its resolution criteria and settlement source. Quoted prices update continuously with order flow until a trade is confirmed. At settlement, the winning side pays 100 cents per contract and the losing side pays zero. We may void, correct, or re-settle a market in cases of manifest error, source failure, or ambiguity in the resolution criteria, acting reasonably and in good faith.</p>
+<p>Each market specifies its resolution criteria and settlement source. Quoted probabilities update with activity until a prediction is confirmed. At settlement, the winning side receives gameplay points according to the market rules and the losing side receives no settlement points for that position. We may void, correct, or re-settle a market in cases of manifest error, source failure, or ambiguity in the resolution criteria, acting reasonably and in good faith.</p>
 
 <h2>7. Prohibited Conduct and Market Integrity</h2>
-<p>You agree not to: maintain multiple accounts; engage in wash trading, spoofing, collusion, or any conduct intended to manipulate prices or settlement; use bots or automated means except via officially provided interfaces; circumvent geographic or eligibility restrictions; or use the Platform for unlawful purposes. We may suspend accounts, reverse trades, and withhold funds associated with prohibited conduct.</p>
+<p>You agree not to: maintain multiple accounts; engage in wash activity, spoofing, collusion, or any conduct intended to manipulate probabilities or settlement; use bots or automated means except via officially provided interfaces; circumvent geographic or eligibility restrictions; or use the Platform for unlawful purposes. We may suspend accounts, reverse point movements, and restrict access associated with prohibited conduct.</p>
 
 <h2>8. No Advice; Assumption of Risk</h2>
-<p>All trading decisions are your own. Event contracts involve risk, including the risk of losing the full amount paid for a position. The Platform and its content are provided for general information and do not constitute advice or a recommendation to enter into any transaction.</p>
+<p>All predictions are your own. Markets involve gameplay risk, including the risk of losing the points used for a position. The Platform and its content are provided for general information and entertainment and do not constitute advice.</p>
 
 <h2>9. Intellectual Property</h2>
 <p>The Platform, including its software, design, text, and marks, is owned by DORA Research, Inc. or its licensors and is protected by intellectual-property laws. You receive a limited, revocable, non-exclusive license to use the Platform for its intended purpose. No other rights are granted.</p>
 
 <h2>10. Disclaimers and Limitation of Liability</h2>
-<p>The Platform is provided "as is" and "as available" without warranties of any kind, express or implied. To the maximum extent permitted by law, DORA Research, Inc. and its affiliates are not liable for any indirect, incidental, or consequential damages, or for losses arising from technical failures, interrupted service, inaccurate price display, or settlement decisions. Our aggregate liability is limited to the amounts you held with us in the thirty days preceding the event giving rise to the claim.</p>
+<p>The Platform is provided "as is" and "as available" without warranties of any kind, express or implied. To the maximum extent permitted by law, DORA Research, Inc. and its affiliates are not liable for any indirect, incidental, or consequential damages, or for losses arising from technical failures, interrupted service, inaccurate probability display, or settlement decisions. Points have no monetary or redemption value.</p>
 
 <h2>11. Indemnification</h2>
 <p>You agree to indemnify and hold harmless DORA Research, Inc., its affiliates, and personnel from claims and expenses arising out of your use of the Platform, your breach of these Terms, or your violation of any law or third-party right.</p>

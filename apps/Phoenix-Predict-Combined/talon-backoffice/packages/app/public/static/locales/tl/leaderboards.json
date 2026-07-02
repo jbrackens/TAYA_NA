@@ -28,12 +28,12 @@
       "description": "Mga trader na niraranggo ayon sa prediction accuracy."
     },
     "pnlWeekly": {
-      "name": "Lingguhang P&L",
-      "description": "Mga trader na niraranggo ayon sa realized profit ngayong linggo."
+      "name": "Lingguhang Puntos",
+      "description": "Mga predictor na niraranggo ayon sa realized point result ngayong linggo."
     },
     "sharpness": {
       "name": "Sharpness score",
-      "description": "Mga trader na niraranggo ayon sa return on risk."
+      "description": "Mga predictor na niraranggo ayon sa point efficiency sa settled markets."
     },
     "category": {
       "name": "{{category}} Champions",
@@ -42,9 +42,9 @@
   },
   "metrics": {
     "accuracy": "Katumpakan",
-    "pnl": "P&L score",
+    "pnl": "Net points",
     "sharpness": "Sharpness score",
-    "category": "Kita"
+    "category": "Net points"
   },
   "qualification": {
     "accuracy": "Mag-settle ng sapat na markets para mag-qualify sa accuracy rankings.",
@@ -53,7 +53,7 @@
     "category": "Mag-settle ng markets sa category na ito para mag-qualify."
   },
   "categories": {
-    "crypto": "Crypto markets",
+    "crypto": "Esports markets",
     "politics": "Pulitika",
     "sports": "Sports markets",
     "culture": "Kultura",

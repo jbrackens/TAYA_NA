@@ -31,8 +31,45 @@ func registerRBACAdminRoutes(mux *stdhttp.ServeMux, svc *rbac.Service) {
 		registerRBACUserSubtree(mux, base+"/users/", svc)
 		registerRBACRolesCollection(mux, base+"/roles", svc)
 		registerRBACRoleSubtree(mux, base+"/roles/", svc)
+		registerRBACMe(mux, base+"/me", svc)
 	}
-	slog.Info("rbac: admin access-control routes registered (users, roles)")
+	slog.Info("rbac: admin access-control routes registered (users, roles, me)")
+}
+
+// GET /api/v1/admin/me — the caller's own identity + effective permissions.
+// Any authenticated admin may read their OWN permissions, so this gates on the
+// coarse admin-session check only (requiring a specific permission here would
+// be circular — the menu that drives access needs this to render). The
+// back-office uses the result to show a permission-aware sidebar; it is a UX
+// hint, never the authorization boundary — every route still enforces its own
+// permission server-side. Under the dev anonymous bypass it reports
+// unconstrained so the menu shows everything, matching requireRBACPermission.
+func registerRBACMe(mux *stdhttp.ServeMux, path string, svc *rbac.Service) {
+	mux.Handle(path, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+		if adminAnonBypassEnabled() {
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+				"email":         rbacActor(r),
+				"permissions":   []string{},
+				"unconstrained": true,
+			})
+		}
+		email := strings.TrimSpace(httpx.UsernameFromContext(r.Context()))
+		perms, err := svc.EffectivePermissions(r.Context(), email)
+		if err != nil {
+			return writeRBACError(err)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"email":         email,
+			"permissions":   perms,
+			"unconstrained": false,
+		})
+	}))
 }
 
 // GET (list) + POST (create) on the users collection.
@@ -47,7 +84,7 @@ func registerRBACUsersCollection(mux *stdhttp.ServeMux, path string, svc *rbac.S
 			if err != nil {
 				return writeRBACError(err)
 			}
-			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"users": users})
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"users": rbacUserPayloads(users)})
 
 		case stdhttp.MethodPost:
 			if err := requireRBACPermission(r, svc, "users:write"); err != nil {
@@ -71,11 +108,11 @@ func registerRBACUsersCollection(mux *stdhttp.ServeMux, path string, svc *rbac.S
 			if err != nil {
 				return writeRBACError(err)
 			}
-			recordMoneyAuditEntry(rbacActor(r), "rbac.user.create", user.Email, map[string]any{
+			recordProviderOpsAuditAction(rbacActor(r), "rbac.user.create", user.Email, map[string]any{
 				"userId": user.ID,
 				"roles":  roleIDList(user.Roles),
 			})
-			return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{"user": user})
+			return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{"user": rbacUserPayload(*user)})
 
 		default:
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPost)
@@ -112,7 +149,7 @@ func registerRBACUserSubtree(mux *stdhttp.ServeMux, prefix string, svc *rbac.Ser
 			if err := svc.DeleteUser(r.Context(), id, rbacActorObj(r)); err != nil {
 				return writeRBACError(err)
 			}
-			recordMoneyAuditEntry(rbacActor(r), "rbac.user.delete", id, nil)
+			recordProviderOpsAuditAction(rbacActor(r), "rbac.user.delete", id, nil)
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"deleted": true})
 		}
 
@@ -139,10 +176,10 @@ func registerRBACUserSubtree(mux *stdhttp.ServeMux, prefix string, svc *rbac.Ser
 			if err != nil {
 				return writeRBACError(err)
 			}
-			recordMoneyAuditEntry(rbacActor(r), "rbac.user.roles", user.ID, map[string]any{
+			recordProviderOpsAuditAction(rbacActor(r), "rbac.user.roles", user.ID, map[string]any{
 				"roles": roleIDList(user.Roles),
 			})
-			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"user": user})
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"user": rbacUserPayload(*user)})
 
 		case "status":
 			var body struct {
@@ -155,7 +192,7 @@ func registerRBACUserSubtree(mux *stdhttp.ServeMux, prefix string, svc *rbac.Ser
 			if err != nil {
 				return writeRBACError(err)
 			}
-			recordMoneyAuditEntry(rbacActor(r), "rbac.user.status", id, map[string]any{
+			recordProviderOpsAuditAction(rbacActor(r), "rbac.user.status", id, map[string]any{
 				"status": user.Status,
 			})
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"user": user})
@@ -171,7 +208,7 @@ func registerRBACUserSubtree(mux *stdhttp.ServeMux, prefix string, svc *rbac.Ser
 				return writeRBACError(err)
 			}
 			// Never log the password itself.
-			recordMoneyAuditEntry(rbacActor(r), "rbac.user.password", id, nil)
+			recordProviderOpsAuditAction(rbacActor(r), "rbac.user.password", id, nil)
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"reset": true})
 
 		default:
@@ -199,7 +236,7 @@ func registerRBACRolesCollection(mux *stdhttp.ServeMux, path string, svc *rbac.S
 			// The permission catalog rides along so the Role Matrix can render
 			// its columns without a second request.
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-				"roles":       roles,
+				"roles":       rbacRolePayloads(roles),
 				"permissions": permissions,
 			})
 
@@ -214,6 +251,9 @@ func registerRBACRolesCollection(mux *stdhttp.ServeMux, path string, svc *rbac.S
 			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 				return httpx.BadRequest("invalid request body", nil)
 			}
+			if err := validateRBACRoleLaunchCopy(body.Name, body.Description); err != nil {
+				return err
+			}
 			role, err := svc.CreateRole(r.Context(), rbac.CreateRoleInput{
 				Name:        body.Name,
 				Description: body.Description,
@@ -221,15 +261,25 @@ func registerRBACRolesCollection(mux *stdhttp.ServeMux, path string, svc *rbac.S
 			if err != nil {
 				return writeRBACError(err)
 			}
-			recordMoneyAuditEntry(rbacActor(r), "rbac.role.create", role.ID, map[string]any{
+			recordProviderOpsAuditAction(rbacActor(r), "rbac.role.create", role.ID, map[string]any{
 				"name": role.Name,
 			})
-			return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{"role": role})
+			return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{"role": rbacRolePayload(*role)})
 
 		default:
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPost)
 		}
 	}))
+}
+
+func validateRBACRoleLaunchCopy(name, description string) error {
+	if err := validateLaunchFacingReason("name", strings.TrimSpace(name)); err != nil {
+		return err
+	}
+	if err := validateLaunchFacingReason("description", strings.TrimSpace(description)); err != nil {
+		return err
+	}
+	return nil
 }
 
 // The /roles/{id} subtree (roles:write):
@@ -259,7 +309,7 @@ func registerRBACRoleSubtree(mux *stdhttp.ServeMux, prefix string, svc *rbac.Ser
 			if err := svc.DeleteRole(r.Context(), id); err != nil {
 				return writeRBACError(err)
 			}
-			recordMoneyAuditEntry(rbacActor(r), "rbac.role.delete", id, nil)
+			recordProviderOpsAuditAction(rbacActor(r), "rbac.role.delete", id, nil)
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"deleted": true})
 		}
 
@@ -283,11 +333,53 @@ func registerRBACRoleSubtree(mux *stdhttp.ServeMux, prefix string, svc *rbac.Ser
 		if err != nil {
 			return writeRBACError(err)
 		}
-		recordMoneyAuditEntry(rbacActor(r), "rbac.role.permissions", role.ID, map[string]any{
+		recordProviderOpsAuditAction(rbacActor(r), "rbac.role.permissions", role.ID, map[string]any{
 			"permissions": role.Permissions,
 		})
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"role": role})
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"role": rbacRolePayload(*role)})
 	}))
+}
+
+func rbacUserPayload(user rbac.UserWithRoles) rbac.UserWithRoles {
+	if user.Roles == nil {
+		return user
+	}
+	roles := make([]rbac.RoleRef, 0, len(user.Roles))
+	for i := range user.Roles {
+		role := user.Roles[i]
+		role.Name = redactLaunchProhibitedUserText(role.Name)
+		roles = append(roles, role)
+	}
+	user.Roles = roles
+	return user
+}
+
+func rbacUserPayloads(users []rbac.UserWithRoles) []rbac.UserWithRoles {
+	if users == nil {
+		return nil
+	}
+	out := make([]rbac.UserWithRoles, 0, len(users))
+	for _, user := range users {
+		out = append(out, rbacUserPayload(user))
+	}
+	return out
+}
+
+func rbacRolePayload(role rbac.RoleWithPermissions) rbac.RoleWithPermissions {
+	role.Name = redactLaunchProhibitedUserText(role.Name)
+	role.Description = redactLaunchProhibitedUserText(role.Description)
+	return role
+}
+
+func rbacRolePayloads(roles []rbac.RoleWithPermissions) []rbac.RoleWithPermissions {
+	if roles == nil {
+		return nil
+	}
+	out := make([]rbac.RoleWithPermissions, 0, len(roles))
+	for _, role := range roles {
+		out = append(out, rbacRolePayload(role))
+	}
+	return out
 }
 
 // requireRBACPermission enforces the coarse admin-session gate, then the
@@ -312,19 +404,37 @@ func requireRBACPermission(r *stdhttp.Request, svc *rbac.Service, permission str
 	return nil
 }
 
+// adminRBAC is the process-wide RBAC service used by requireAdminPermission. It
+// is set once by RegisterRoutes (read per-request from handler closures, so
+// registration order does not matter) and is nil in memory mode / tests, where
+// requireAdminPermission degrades to the admin-role gate alone — preserving
+// prior behavior.
+var adminRBAC *rbac.Service
+
+// requireAdminPermission gates an admin route on the session admin role and,
+// when the RBAC service is wired, the given fine-grained permission. It closes
+// the escalation where any admin_users staffer could reach money/market routes
+// that previously checked only requireAdminRole (SECURITY-REVIEW #5).
+func requireAdminPermission(r *stdhttp.Request, permission string) error {
+	if adminRBAC == nil {
+		return requireAdminRole(r)
+	}
+	return requireRBACPermission(r, adminRBAC, permission)
+}
+
 // writeRBACError maps domain errors to HTTP responses.
 func writeRBACError(err error) error {
 	switch {
 	case errors.Is(err, rbac.ErrDuplicateEmail), errors.Is(err, rbac.ErrLastSuperAdmin), errors.Is(err, rbac.ErrCannotTargetSelf), errors.Is(err, rbac.ErrSystemRoleProtected):
-		return httpx.Conflict(err.Error(), nil)
+		return httpx.Conflict(redactLaunchProhibitedUserText(err.Error()), nil)
 	case errors.Is(err, rbac.ErrUserNotFound), errors.Is(err, rbac.ErrRoleNotFound):
-		return httpx.NotFound(err.Error())
+		return httpx.NotFound(redactLaunchProhibitedUserText(err.Error()))
 	case errors.Is(err, rbac.ErrInsufficientPrivilege), errors.Is(err, rbac.ErrImmutableRole):
-		return httpx.Forbidden(err.Error())
+		return httpx.Forbidden(redactLaunchProhibitedUserText(err.Error()))
 	}
 	var ve rbac.ValidationError
 	if errors.As(err, &ve) {
-		return httpx.BadRequest(ve.Msg, nil)
+		return httpx.BadRequest(redactLaunchProhibitedUserText(ve.Msg), nil)
 	}
 	return httpx.Internal("rbac operation failed", err)
 }

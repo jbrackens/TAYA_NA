@@ -262,7 +262,7 @@ final class PhoenixRestRoutesSpec
       ConfigFactory.parseString("""akka-http-cors.allowed-origins = "http://example.com http://*.example.com""""))
 
   private val dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss")
-  implicit val clock = new FakeHardcodedClock()
+  implicit val clock: FakeHardcodedClock = new FakeHardcodedClock()
   val clockFixedTime = clock.fixedTime
 
   implicit val jwtAuthenticator: JwtAuthenticator =
@@ -3092,7 +3092,8 @@ final class PhoenixRestRoutesSpec
         val authenticationRepository = new MemorizingTestAuthenticationRepository() {
           override def findUser(userId: UserLookupId): Future[Option[RegisteredUserKeycloak]] = {
             userId match {
-              case UserLookupId.ByPunterId(value) if value == PunterId(registeredUser.userId.value.toString) =>
+              case UserLookupId.ByPunterId(punterIdValue)
+                  if punterIdValue == PunterId(registeredUser.userId.value.toString) =>
                 Future.successful(Some(registeredUser))
               case _ =>
                 Future.successful(None)

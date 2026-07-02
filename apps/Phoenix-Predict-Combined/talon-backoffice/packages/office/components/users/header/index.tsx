@@ -2,8 +2,8 @@ import { useRouter } from "next/router";
 import { FC } from "react";
 import defaultMenuStructure from "../../../providers/menu/structure";
 import PageHeader from "../../layout/page-header";
-import { EditOutlined, DollarCircleOutlined } from "@ant-design/icons";
-import { Avatar, Button, Popover, Tag } from "antd";
+import { EditOutlined } from "@ant-design/icons";
+import { Avatar, Popover, Tag } from "antd";
 import { resolveStatus } from "../utils/resolvers";
 import Spinner from "../../../components/layout/spinner";
 import { first } from "lodash";
@@ -16,7 +16,6 @@ import {
   PunterRichStatus,
   PunterStatus,
   PunterStatusEnum,
-  Button as ButtonEnum,
 } from "@phoenix-ui/utils";
 import UserAddNote from "../notes/add";
 import UserLifecycleSuspend from "../lifecycle/suspend";
@@ -34,7 +33,6 @@ type Props = {
   isTestAccount: boolean;
   loading: boolean;
   onLifecycleChange: () => void;
-  showTransactionModal: () => void;
 };
 
 export const UsersPageHeader: FC<Props> = ({
@@ -47,7 +45,6 @@ export const UsersPageHeader: FC<Props> = ({
   isTestAccount,
   loading,
   onLifecycleChange,
-  showTransactionModal,
 }) => {
   const { t } = useTranslation("page-users-details");
   const { push } = useRouter();
@@ -109,15 +106,6 @@ export const UsersPageHeader: FC<Props> = ({
 
   const extraButtons = [
     <UserAddNote key="action-add-note" id={id} />,
-    <Button
-      key="action-debit"
-      shape="round"
-      icon={<DollarCircleOutlined />}
-      type={ButtonEnum.Type.PRIMARY}
-      onClick={showTransactionModal}
-    >
-      {t("ACTION_TRANSACTION")}
-    </Button>,
     <UserLifecycleSuspend
       key="action-suspend"
       id={id}

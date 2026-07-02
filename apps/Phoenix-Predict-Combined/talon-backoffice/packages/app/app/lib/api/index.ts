@@ -37,33 +37,12 @@ export {
 // Wallet client
 export {
   getBalance,
-  deposit,
-  withdraw,
   getTransactions,
-  type DepositRequest,
-  type WithdrawRequest,
   type GetTransactionsParams,
   type Balance,
-  type DepositResponse,
-  type WithdrawResponse,
   type Transaction,
   type GetTransactionsPaginatedResponse,
 } from "./wallet-client";
-
-// Non-custodial cashier client
-export {
-  getCashierWallet,
-  createCashierDepositIntent,
-  getCashierDepositIntent,
-  createCashierWithdrawalIntent,
-  type CashierDepositIntent,
-  type CashierDepositStatus,
-  type CashierSettlementChain,
-  type CashierWallet,
-  type CashierWithdrawalIntent,
-  type CreateCashierDepositIntentRequest,
-  type CreateCashierWithdrawalIntentRequest,
-} from "./noncustodial-cashier-client";
 
 // User client
 export {
@@ -101,19 +80,19 @@ export {
 
 // Compliance client
 export {
-  setDepositLimits,
-  setStakeLimits,
+  setPointUseLimits,
+  setPredictionLimits,
   setSessionLimits,
   coolOff,
   selfExclude,
   getLimitsHistory,
-  type SetDepositLimitsRequest,
-  type SetStakeLimitsRequest,
+  type SetPointUseLimitsRequest,
+  type SetPredictionLimitsRequest,
   type SetSessionLimitsRequest,
   type CoolOffRequest,
   type SelfExcludeRequest,
-  type DepositLimits,
-  type StakeLimits,
+  type PointUseLimits,
+  type PredictionLimits,
   type SessionLimits,
   type CoolOffResponse,
   type SelfExcludeResponse,

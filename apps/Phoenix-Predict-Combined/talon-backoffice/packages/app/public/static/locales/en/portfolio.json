@@ -1,6 +1,6 @@
 {
   "title": "Portfolio",
-  "subtitle": "Open positions, active orders, settled payouts.",
+  "subtitle": "Open positions, active orders, settled results.",
   "state": {
     "loading": "Loading portfolio…",
     "signIn": "Sign in to see your portfolio.",
@@ -8,7 +8,7 @@
   },
   "summary": {
     "invested": "Invested",
-    "realizedPnl": "Realized P&L",
+    "realizedPnl": "Realized point result",
     "openPositions": "Open positions",
     "accuracy": "Accuracy",
     "correctCount": "{{correct}}/{{total}} correct",
@@ -19,12 +19,12 @@
     "notRanked": "Not ranked yet",
     "qualify": "Settle more markets to qualify",
     "metricAccuracy": "{{value}}% correct",
-    "metricSharpness": "{{value}}% ROI",
-    "metricPnl": "{{value}} P&L"
+    "metricSharpness": "{{value}}% point efficiency",
+    "metricPnl": "{{value}} point result"
   },
   "boards": {
     "accuracy": "Accuracy",
-    "pnlWeekly": "Weekly P&L",
+    "pnlWeekly": "Weekly point result",
     "sharpness": "Sharpness"
   },
   "tabs": {
@@ -39,14 +39,14 @@
   "orders": {
     "empty": "No open orders.",
     "cancelled": "Order cancelled",
-    "released": "Reserved cash released on {{ticker}}",
+    "released": "Reserved points unlocked on {{ticker}}",
     "cancelFailed": "Cancel failed",
     "cancel": "Cancel"
   },
   "history": {
     "empty": "Settled positions will appear here after markets resolve.",
-    "earnedPoints": "Earned {{points}} points",
-    "pointsShort": "+{{points}} pts"
+    "earnedPoints": "Settlement {{points}}",
+    "pointsShort": "+{{points}}"
   },
   "table": {
     "market": "Market",
@@ -59,7 +59,7 @@
     "placed": "Placed",
     "entry": "Entry",
     "exit": "Exit",
-    "pnl": "P&L",
+    "pnl": "Point result",
     "points": "Points",
     "settled": "Settled"
   },

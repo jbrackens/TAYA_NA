@@ -42,11 +42,11 @@ export default function NotificationsPage() {
 
   // Notification categories
   const [categories, setCategories] = useState({
-    bet_results: true,
+    market_results: true,
     promotions: true,
     account_updates: true,
     new_markets: false,
-    odds_alerts: false,
+    price_alerts: false,
   });
 
   const handleCategoryToggle = (key: keyof typeof categories) => {
@@ -261,27 +261,27 @@ export default function NotificationsPage() {
           <div className="flex flex-col gap-2">
             {[
               {
-                key: "bet_results" as const,
+                key: "market_results" as const,
                 label: "Market Results",
                 desc: "Get notified when your positions are settled",
               },
               {
                 key: "promotions" as const,
                 label: "Promotions",
-                desc: "Special offers, bonuses, and promotional events",
+                desc: "Point bonus updates, missions, and community events",
               },
               {
                 key: "account_updates" as const,
                 label: "Account Updates",
-                desc: "Deposit confirmations, withdrawal status, and security alerts",
+                desc: "Point ledger activity, profile changes, and security alerts",
               },
               {
                 key: "new_markets" as const,
                 label: "New Markets",
-                desc: "Be notified when new sports or leagues are added",
+                desc: "Be notified when new topics or series are added",
               },
               {
-                key: "odds_alerts" as const,
+                key: "price_alerts" as const,
                 label: "Price Alerts",
                 desc: "Get alerted when prices change significantly on your favorites",
               },
@@ -328,12 +328,12 @@ export default function NotificationsPage() {
           <InfoItem
             icon="🎁"
             title="Promotions"
-            desc="Special offers and bonus opportunities"
+            desc="Point bonus updates and community events"
           />
           <InfoItem
             icon="📅"
-            title="Subscription Updates"
-            desc="Renewal reminders and billing notifications"
+            title="Market Updates"
+            desc="Reminders for followed markets and closing windows"
           />
           <InfoItem
             icon="🔐"

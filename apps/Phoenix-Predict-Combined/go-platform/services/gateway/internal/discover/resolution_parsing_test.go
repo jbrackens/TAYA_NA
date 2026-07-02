@@ -14,9 +14,9 @@ import "testing"
 // strict ==1.0 misses real resolutions.
 func TestPolymarketWinningOutcome(t *testing.T) {
 	cases := []struct {
-		name     string
-		prices   []float64
-		want     string
+		name   string
+		prices []float64
+		want   string
 	}{
 		{"clean_yes", []float64{1.0, 0.0}, "yes"},
 		{"clean_no", []float64{0.0, 1.0}, "no"},
@@ -46,9 +46,10 @@ func TestNormalizeUpstreamCategory(t *testing.T) {
 	}{
 		// exact matches
 		{"politics", CatPolitics},
-		{"crypto", CatCrypto},
 		{"sports", CatSports},
 		{"entertainment", CatEntertainment},
+		{"esports", CatEsports},
+		{"gaming", CatEsports},
 		{"tech", CatTech},
 		{"economics", CatEconomics},
 		// case + whitespace
@@ -56,9 +57,11 @@ func TestNormalizeUpstreamCategory(t *testing.T) {
 		{"BUSINESS", CatEconomics},
 		// compound (substring)
 		{"us-politics-2028", CatPolitics},
-		{"crypto-alt-coins", CatCrypto},
+		{"crypto-alt-coins", ""},
 		{"sports-betting", CatSports},
+		{"mobile-esports-finals", CatEsports},
 		// no match
+		{"crypto", ""},
 		{"recipes", ""},
 		{"", ""},
 		{"  ", ""},

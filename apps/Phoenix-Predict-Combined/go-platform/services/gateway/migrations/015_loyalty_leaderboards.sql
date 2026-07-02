@@ -51,7 +51,7 @@ CREATE INDEX idx_loyalty_ledger_user_time
 -- Examples:
 --   'accuracy'           (rolling 30d)
 --   'pnl_weekly'         (calendar week)
---   'category:crypto'    (calendar week, per category)
+--   'category:esports'   (calendar week, per category)
 --   'sharpness'          (rolling 30d)
 CREATE TABLE leaderboard_snapshots (
     board_id        TEXT NOT NULL,

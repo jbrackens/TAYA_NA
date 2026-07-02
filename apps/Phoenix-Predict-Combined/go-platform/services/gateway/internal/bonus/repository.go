@@ -137,6 +137,74 @@ WHERE id = $1`, campaignID, spentCents)
 	return err
 }
 
+// ErrCampaignLimitReached indicates an atomic claim-count/budget reservation
+// was rejected because the campaign is at its claim cap or would exceed budget.
+var ErrCampaignLimitReached = errors.New("campaign claim or budget limit reached")
+
+// ReserveClaim atomically increments claim_count and spent_cents only if the
+// campaign still has claim and budget headroom. It is the race-safe replacement
+// for the read-then-IncrementClaimCount pattern: concurrent claims can no
+// longer push claim_count past max_claims or spent_cents past budget_cents.
+// Returns ErrCampaignLimitReached if no row qualified.
+func (r *Repository) ReserveClaim(ctx context.Context, campaignID int64, amountCents int64) error {
+	res, err := r.db.ExecContext(ctx, `
+UPDATE campaigns
+SET claim_count = claim_count + 1,
+    spent_cents = spent_cents + $2,
+    updated_at = NOW()
+WHERE id = $1
+  AND status = 'active'
+  AND (max_claims IS NULL OR claim_count < max_claims)
+  AND (budget_cents IS NULL OR spent_cents + $2 <= budget_cents)`,
+		campaignID, amountCents)
+	if err != nil {
+		return err
+	}
+	n, _ := res.RowsAffected()
+	if n == 0 {
+		return ErrCampaignLimitReached
+	}
+	return nil
+}
+
+// ReleaseClaim reverses a ReserveClaim reservation. Used to compensate when a
+// downstream step (e.g. creating the player_bonus row) fails after the claim
+// slot was reserved, so the campaign counters do not drift.
+func (r *Repository) ReleaseClaim(ctx context.Context, campaignID int64, amountCents int64) error {
+	_, err := r.db.ExecContext(ctx, `
+UPDATE campaigns
+SET claim_count = GREATEST(claim_count - 1, 0),
+    spent_cents = GREATEST(spent_cents - $2, 0),
+    updated_at = NOW()
+WHERE id = $1`,
+		campaignID, amountCents)
+	return err
+}
+
+// PunterRegistration holds the eligibility-relevant fields for a punter.
+type PunterRegistration struct {
+	Found     bool
+	Status    string
+	CreatedAt time.Time
+}
+
+// GetPunterRegistration returns the punter's status and registration time for
+// eligibility checks. Found is false (no error) when the punter row is absent,
+// so callers can decide how to treat unknown users.
+func (r *Repository) GetPunterRegistration(ctx context.Context, userID string) (PunterRegistration, error) {
+	var pr PunterRegistration
+	err := r.db.QueryRowContext(ctx, `
+SELECT status, created_at FROM punters WHERE id = $1`, userID).Scan(&pr.Status, &pr.CreatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return PunterRegistration{Found: false}, nil
+		}
+		return PunterRegistration{}, err
+	}
+	pr.Found = true
+	return pr, nil
+}
+
 // GetCampaignRules returns all rules for a campaign, keyed by rule_type.
 func (r *Repository) GetCampaignRules(ctx context.Context, campaignID int64) ([]CampaignRule, error) {
 	rows, err := r.db.QueryContext(ctx, `
@@ -348,12 +416,29 @@ SELECT COUNT(1) FROM player_bonuses WHERE user_id = $1 AND campaign_id = $2`,
 }
 
 // CloseExpiredCampaigns transitions active campaigns past their end_at to closed.
-func (r *Repository) CloseExpiredCampaigns(ctx context.Context) (int64, error) {
-	result, err := r.db.ExecContext(ctx, `
+func (r *Repository) CloseExpiredCampaigns(ctx context.Context) ([]Campaign, error) {
+	rows, err := r.db.QueryContext(ctx, `
 UPDATE campaigns SET status = 'closed', updated_at = NOW()
-WHERE status = 'active' AND end_at < NOW()`)
+WHERE status = 'active' AND end_at < NOW()
+RETURNING id, name, description, campaign_type, status, start_at, end_at,
+          budget_cents, spent_cents, max_claims, claim_count, rules, created_by, created_at, updated_at`)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return result.RowsAffected()
+	defer rows.Close()
+
+	var campaigns []Campaign
+	for rows.Next() {
+		var c Campaign
+		if err := rows.Scan(
+			&c.ID, &c.Name, &c.Description, &c.CampaignType, &c.Status,
+			&c.StartAt, &c.EndAt, &c.BudgetCents, &c.SpentCents,
+			&c.MaxClaims, &c.ClaimCount, &c.Rules, &c.CreatedBy,
+			&c.CreatedAt, &c.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		campaigns = append(campaigns, c)
+	}
+	return campaigns, rows.Err()
 }

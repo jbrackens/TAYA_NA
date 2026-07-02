@@ -3,6 +3,7 @@ import java.nio.charset.StandardCharsets
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
+import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.util.Failure
@@ -57,8 +58,8 @@ trait MarketsMigrator {
 }
 
 class MarketsMigratorImpl(db: Database)(implicit system: ActorSystem[_]) extends MarketsMigrator with PhoenixCodecs {
-  implicit val ec = system.executionContext
-  implicit val materializer = Materializer(system)
+  implicit val ec: ExecutionContextExecutor = system.executionContext
+  implicit val materializer: Materializer = Materializer(system)
 
   val logger = LoggerFactory.getLogger(getClass)
   val pageSize = 50000
@@ -101,8 +102,9 @@ class MarketsMigratorImpl(db: Database)(implicit system: ActorSystem[_]) extends
 }
 
 sealed trait Migration[PK, Row] {
-  implicit val getByteArr = GetResult(r => r.nextBytes())
-  implicit val setByteArr = SetParameter((arr: Array[Byte], pp: PositionedParameters) => pp.setBytes(arr))
+  implicit val getByteArr: GetResult[Array[Byte]] = GetResult(r => r.nextBytes())
+  implicit val setByteArr: SetParameter[Array[Byte]] =
+    SetParameter((arr: Array[Byte], pp: PositionedParameters) => pp.setBytes(arr))
 
   def getMaxLoadedPayloads(): Int
   def getPKs(): Pagination => DBIO[Option[Seq[PK]]]

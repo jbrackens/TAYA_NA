@@ -9,7 +9,6 @@ import scala.util.Random
 
 import com.github.javafaker.Faker
 import io.scalaland.chimney.dsl._
-import org.apache.commons.lang3.RandomUtils
 
 import phoenix.punters.PunterDataGenerator
 import phoenix.punters.PunterEntity.PunterId
@@ -79,7 +78,7 @@ object RegistrationDataGenerator {
     PhoneNumber(faker.phoneNumber().phoneNumber())
 
   def generateDateOfBirth(): (DateOfBirthDay, DateOfBirthMonth, DateOfBirthYear) = {
-    val ms = RandomUtils.nextLong(0, 70L * 365 * 24 * 60 * 60 * 1000)
+    val ms = Random.nextLong(70L * 365 * 24 * 60 * 60 * 1000)
     val odt = OffsetDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneOffset.UTC)
     (DateOfBirthDay(odt.getDayOfMonth), DateOfBirthMonth(odt.getMonthValue), DateOfBirthYear(odt.getYear))
   }
@@ -87,7 +86,7 @@ object RegistrationDataGenerator {
   def generateDeviceFingerprint(): DeviceFingerprint = {
     DeviceFingerprint(
       VisitorId.unsafe(faker.regexify("[a-zA-Z0-9]{20}")),
-      Confidence.unsafe(RandomUtils.nextFloat(0.0f, 1.0f)))
+      Confidence.unsafe(Random.nextFloat()))
   }
 
   def generateLastFourDigitsOfSocialSecurityNumber(): LastFourDigitsOfSocialSecurityNumber =

@@ -3,8 +3,7 @@
 /**
  * RegisterPage — 2-step wizard on Predict design tokens.
  *
- * Keeps signup lightweight (account, terms) and leaves identity details for
- * withdrawal-time verification flows.
+ * Keeps signup lightweight: account, points-only disclosure, starter points.
  */
 
 import { useCallback, useState } from "react";
@@ -12,6 +11,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
 import { register as registerUser } from "../../lib/api";
+import { claimStarterGrant } from "../../lib/api/wallet-client";
 import { safeReturnPath, returnUrlSuffix } from "../../lib/safeReturnPath";
 import { FEATURE_SOCIAL_AUTH } from "../../lib/features";
 import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
@@ -36,6 +36,8 @@ const EMPTY_FORM: FormData = {
 
 const TOTAL_STEPS = 2;
 const STEP_TITLES = ["Account", "Terms"];
+const TERMS_VERSION = "tiangge-launch-v1";
+const LAUNCH_DISCLOSURE_VERSION = "points-no-cashout-v1";
 
 const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
 const CARD_CLASS =
@@ -54,7 +56,8 @@ const DIVIDER_CLASS =
   "my-0.5 flex items-center gap-3 before:h-px before:flex-1 before:bg-[var(--border-1)] before:content-[''] after:h-px after:flex-1 after:bg-[var(--border-1)] after:content-['']";
 const DIVIDER_TEXT_CLASS =
   "text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
-const BANNER_BASE_CLASS = "mb-3.5 rounded-[var(--r-rh-md)] px-3 py-2.5 text-[13px]";
+const BANNER_BASE_CLASS =
+  "mb-3.5 rounded-[var(--r-rh-md)] px-3 py-2.5 text-[13px]";
 const BANNER_ERROR_CLASS =
   "border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.1)] text-[var(--no-text)]";
 const BANNER_SUCCESS_CLASS =
@@ -176,13 +179,22 @@ export default function RegisterPage() {
         username: form.username,
         email: form.email,
         password: form.password,
+        terms_accepted: true,
+        terms_version: TERMS_VERSION,
+        launch_disclosure_accepted: true,
+        launch_disclosure_version: LAUNCH_DISCLOSURE_VERSION,
       });
       accountCreated = true;
-      setSuccessMessage("Account created. Signing you in…");
-      await login(form.username, form.password);
+      setSuccessMessage("Account created. Signing you in...");
+      const newUser = await login(form.username, form.password);
+      const grant = await claimStarterGrant(newUser.id);
+      if (grant?.enabled) {
+        setSuccessMessage("Starter points added. Opening markets...");
+      }
       router.replace(safeReturnPath(searchParams.get("returnUrl")));
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Registration failed";
+      const message =
+        err instanceof Error ? err.message : "Registration failed";
       setErrorMessage(
         accountCreated
           ? `Account created, but automatic sign-in failed: ${message}`
@@ -276,14 +288,14 @@ export default function RegisterPage() {
             <div className={TERMS_CLASS}>
               <h3 className={TERMS_TITLE_CLASS}>Terms and conditions</h3>
               <p className={TERMS_COPY_CLASS}>
-                By creating a Predict account you agree to our Terms of Service
-                and Privacy Policy. You must be 18 or older to trade binary
-                contracts on this platform.
+                By creating a Tiangge account you agree to our Terms of Service
+                and Privacy Policy. You must be 18 or older to make predictions
+                on this platform.
               </p>
               <p className="m-0 text-xs leading-[1.55] text-[var(--t2)]">
-                You agree to keep your account information accurate and to trade
-                responsibly. Predict is committed to providing tools and
-                resources for responsible participation.
+                Tiangge uses non-redeemable gameplay points. Starter points are
+                for predictions only; they are not money and cannot be cashed
+                out, withdrawn, transferred, or redeemed for prizes.
               </p>
             </div>
 
@@ -294,7 +306,10 @@ export default function RegisterPage() {
                 checked={form.acceptTerms}
                 onChange={(e) => update("acceptTerms", e.target.checked)}
               />
-              <span>I agree to the Terms of Service and Privacy Policy</span>
+              <span>
+                I agree to the Terms of Service, Privacy Policy, and points-only
+                no-cashout disclosure
+              </span>
             </label>
             {errors.acceptTerms && (
               <div className={FIELD_ERROR_CLASS}>{errors.acceptTerms}</div>
@@ -343,7 +358,10 @@ export default function RegisterPage() {
 
         <footer className={FOOTER_CLASS}>
           Already have an account?{" "}
-          <Link href={"/auth/login" + returnSuffix} className={LINK_ACCENT_CLASS}>
+          <Link
+            href={"/auth/login" + returnSuffix}
+            className={LINK_ACCENT_CLASS}
+          >
             Sign in
           </Link>
         </footer>

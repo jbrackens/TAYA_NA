@@ -1,7 +1,10 @@
 package http
 
 import (
+	"bytes"
+	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	stdhttp "net/http"
@@ -9,12 +12,116 @@ import (
 	"strings"
 	"time"
 
+	"phoenix-revival/gateway/internal/compliance"
 	"phoenix-revival/gateway/internal/prediction"
 	"phoenix-revival/platform/transport/httpx"
 )
 
 type marketLifecycleRequest struct {
 	Reason string `json:"reason"`
+}
+
+func decodeCreateMarketRequest(r *stdhttp.Request) (prediction.CreateMarketRequest, error) {
+	var req prediction.CreateMarketRequest
+	raw, err := io.ReadAll(r.Body)
+	if err != nil {
+		return req, httpx.BadRequest("invalid request body", nil)
+	}
+	if len(bytes.TrimSpace(raw)) == 0 {
+		return req, httpx.BadRequest("invalid request body", nil)
+	}
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &fields); err != nil {
+		return req, httpx.BadRequest("invalid request body", nil)
+	}
+	if _, ok := fields["ammSubsidyCents"]; ok {
+		return req, httpx.BadRequest("ammSubsidyCents is retired; use ammSubsidyPointsCents", map[string]any{"field": "ammSubsidyPointsCents"})
+	}
+	if err := json.Unmarshal(raw, &req); err != nil {
+		return req, httpx.BadRequest("invalid request body", nil)
+	}
+	return req, nil
+}
+
+type marketLifecycleEventResponse struct {
+	prediction.LifecycleEvent
+	TianggeLifecycle prediction.TianggeMarketLifecycle `json:"tianggeLifecycle"`
+}
+
+type portfolioHistoryItem struct {
+	ID                    string               `json:"id"`
+	SettlementID          string               `json:"settlementId"`
+	PositionID            string               `json:"positionId"`
+	UserID                string               `json:"userId"`
+	MarketID              string               `json:"marketId"`
+	Side                  prediction.OrderSide `json:"side"`
+	Quantity              int                  `json:"quantity"`
+	EntryPriceCents       int                  `json:"entryPricePointsCents"`
+	ExitPriceCents        int                  `json:"exitPricePointsCents"`
+	RealizedPointsCents   int64                `json:"realizedPointsCents"`
+	SettlementPointsCents int64                `json:"settlementPointsCents"`
+	PaidAt                time.Time            `json:"paidAt"`
+	Unit                  string               `json:"unit"`
+}
+
+type settlementRecordResponse struct {
+	ID                         string                  `json:"id"`
+	MarketID                   string                  `json:"marketId"`
+	Result                     prediction.MarketResult `json:"result"`
+	AttestationSource          string                  `json:"attestationSource"`
+	AttestationID              *string                 `json:"attestationId,omitempty"`
+	AttestationDigest          *string                 `json:"attestationDigest,omitempty"`
+	AttestationData            json.RawMessage         `json:"attestationData,omitempty"`
+	SettledBy                  *string                 `json:"settledBy,omitempty"`
+	SettledAt                  time.Time               `json:"settledAt"`
+	PositionsSettled           int                     `json:"positionsSettled"`
+	OverrideReason             *string                 `json:"overrideReason,omitempty"`
+	OverriddenByUserID         *string                 `json:"overriddenByUserId,omitempty"`
+	OverriddenAt               *time.Time              `json:"overriddenAt,omitempty"`
+	TotalSettlementPointsCents int64                   `json:"totalSettlementPointsCents"`
+	Unit                       string                  `json:"unit"`
+}
+
+type settlementPointDisbursement struct {
+	ID                    string               `json:"id"`
+	SettlementID          string               `json:"settlementId"`
+	PositionID            string               `json:"positionId"`
+	UserID                string               `json:"userId"`
+	MarketID              string               `json:"marketId"`
+	Side                  prediction.OrderSide `json:"side"`
+	Quantity              int                  `json:"quantity"`
+	EntryPriceCents       int                  `json:"entryPricePointsCents"`
+	ExitPriceCents        int                  `json:"exitPricePointsCents"`
+	RealizedPointsCents   int64                `json:"realizedPointsCents"`
+	SettlementPointsCents int64                `json:"settlementPointsCents"`
+	PaidAt                time.Time            `json:"paidAt"`
+	Unit                  string               `json:"unit"`
+}
+
+type settlementOperationResponse struct {
+	Settlement                 settlementRecordResponse          `json:"settlement"`
+	PointDisbursements         []settlementPointDisbursement     `json:"pointDisbursements"`
+	TotalSettlementPointsCents int64                             `json:"totalSettlementPointsCents"`
+	Unit                       string                            `json:"unit"`
+	TianggeLifecycle           prediction.TianggeMarketLifecycle `json:"tianggeLifecycle"`
+}
+
+type adminCategoryRequest struct {
+	Slug      string `json:"slug"`
+	Name      string `json:"name"`
+	Icon      string `json:"icon"`
+	SortOrder int    `json:"sortOrder"`
+	Active    *bool  `json:"active"`
+}
+
+type adminSeriesRequest struct {
+	Slug        string   `json:"slug"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	CategoryID  string   `json:"categoryId"`
+	Frequency   string   `json:"frequency"`
+	Tags        []string `json:"tags"`
+	Active      *bool    `json:"active"`
 }
 
 func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
@@ -27,7 +134,7 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if err != nil {
 			return httpx.Internal("failed to fetch data", err)
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, result)
+		return httpx.WriteJSON(w, stdhttp.StatusOK, predictionDiscoveryPayload(result))
 	}))
 
 	// --- Public: Categories ---
@@ -39,7 +146,7 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if err != nil {
 			return httpx.Internal("failed to fetch data", err)
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, cats)
+		return httpx.WriteJSON(w, stdhttp.StatusOK, predictionCategoryPayloads(cats))
 	}))
 
 	mux.Handle("/api/v1/categories/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -54,7 +161,44 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if err != nil {
 			return httpx.NotFound("category not found")
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, cat)
+		return httpx.WriteJSON(w, stdhttp.StatusOK, predictionCategoryPayload(*cat))
+	}))
+
+	// --- Public: Series and tags ---
+	mux.Handle("/api/v1/series", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		var categoryID *string
+		if cid := r.URL.Query().Get("categoryId"); cid != "" {
+			categoryID = &cid
+		}
+		series, err := svc.ListSeries(r.Context(), categoryID)
+		if err != nil {
+			return httpx.Internal("failed to fetch series", err)
+		}
+		if series == nil {
+			series = []prediction.Series{}
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, predictionSeriesPayloads(series))
+	}))
+
+	mux.Handle("/api/v1/tags", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		var categoryID *string
+		if cid := r.URL.Query().Get("categoryId"); cid != "" {
+			categoryID = &cid
+		}
+		tags, err := svc.ListTags(r.Context(), categoryID)
+		if err != nil {
+			return httpx.Internal("failed to fetch tags", err)
+		}
+		if tags == nil {
+			tags = []string{}
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"tags": redactLaunchProhibitedStrings(tags)})
 	}))
 
 	// --- Public: Events ---
@@ -63,11 +207,14 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
 		filter := prediction.EventFilter{
-			Page:     intQueryParam(r, "page", 1),
-			PageSize: intQueryParam(r, "pageSize", 20),
+			Page:     clampedQueryParam(r, "page", 1, 100000),
+			PageSize: clampedQueryParam(r, "pageSize", 20, 100),
 		}
 		if cat := r.URL.Query().Get("categoryId"); cat != "" {
 			filter.CategoryID = &cat
+		}
+		if seriesID := r.URL.Query().Get("seriesId"); seriesID != "" {
+			filter.SeriesID = &seriesID
 		}
 		if status := r.URL.Query().Get("status"); status != "" {
 			s := prediction.EventStatus(status)
@@ -82,7 +229,7 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			return httpx.Internal("failed to fetch data", err)
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]interface{}{
-			"data": events,
+			"data": predictionEventPayloads(events),
 			"meta": prediction.PageMeta{
 				Page:     filter.Page,
 				PageSize: filter.PageSize,
@@ -104,7 +251,7 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if err != nil {
 			return httpx.NotFound("event not found")
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, event)
+		return httpx.WriteJSON(w, stdhttp.StatusOK, predictionEventPayload(*event))
 	}))
 
 	// --- Public: Markets ---
@@ -113,11 +260,14 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
 		filter := prediction.MarketFilter{
-			Page:     intQueryParam(r, "page", 1),
-			PageSize: intQueryParam(r, "pageSize", 20),
+			Page:     clampedQueryParam(r, "page", 1, 100000),
+			PageSize: clampedQueryParam(r, "pageSize", 20, 100),
 		}
 		if eid := r.URL.Query().Get("eventId"); eid != "" {
 			filter.EventID = &eid
+		}
+		if sid := r.URL.Query().Get("seriesId"); sid != "" {
+			filter.SeriesID = &sid
 		}
 		if cid := r.URL.Query().Get("categoryId"); cid != "" {
 			filter.CategoryID = &cid
@@ -129,6 +279,20 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if ticker := r.URL.Query().Get("ticker"); ticker != "" {
 			filter.Ticker = &ticker
 		}
+		if q := strings.TrimSpace(r.URL.Query().Get("q")); q != "" {
+			filter.Search = &q
+		}
+		if tag := strings.TrimSpace(r.URL.Query().Get("tag")); tag != "" {
+			filter.Tag = &tag
+		}
+		switch sort := strings.TrimSpace(r.URL.Query().Get("sort")); sort {
+		case "", "activity":
+			filter.Sort = "activity"
+		case "closing_soon", "newest":
+			filter.Sort = sort
+		default:
+			return httpx.BadRequest("invalid market sort", map[string]any{"field": "sort"})
+		}
 		if cb := r.URL.Query().Get("closeBefore"); cb != "" {
 			if t, err := time.Parse(time.RFC3339, cb); err == nil {
 				filter.CloseBefore = &t
@@ -139,7 +303,7 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			return httpx.Internal("failed to fetch data", err)
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]interface{}{
-			"data": markets,
+			"data": predictionMarketPayloads(markets),
 			"meta": prediction.PageMeta{
 				Page:     filter.Page,
 				PageSize: filter.PageSize,
@@ -179,7 +343,7 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		}
 		switch sub {
 		case "":
-			return httpx.WriteJSON(w, stdhttp.StatusOK, market)
+			return httpx.WriteJSON(w, stdhttp.StatusOK, predictionMarketPayload(*market))
 		case "trades":
 			limit := intQueryParam(r, "limit", 50)
 			// Clamp limit to a sane range; the trade tape ships with the
@@ -231,6 +395,118 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 	slog.Info("prediction routes registered")
 }
 
+func predictionDiscoveryPayload(result *prediction.DiscoveryResponse) *prediction.DiscoveryResponse {
+	if result == nil {
+		return nil
+	}
+	out := *result
+	out.Featured = predictionMarketPayloads(result.Featured)
+	out.Trending = predictionMarketPayloads(result.Trending)
+	out.ClosingSoon = predictionMarketPayloads(result.ClosingSoon)
+	out.Recent = predictionMarketPayloads(result.Recent)
+	return &out
+}
+
+func predictionCategoryPayload(category prediction.Category) prediction.Category {
+	category.Name = redactLaunchProhibitedUserText(category.Name)
+	category.Icon = redactLaunchProhibitedUserText(category.Icon)
+	return category
+}
+
+func predictionCategoryPayloads(categories []prediction.Category) []prediction.Category {
+	if len(categories) == 0 {
+		return categories
+	}
+	out := make([]prediction.Category, 0, len(categories))
+	for _, category := range categories {
+		out = append(out, predictionCategoryPayload(category))
+	}
+	return out
+}
+
+func predictionSeriesPayload(series prediction.Series) prediction.Series {
+	series.Title = redactLaunchProhibitedUserText(series.Title)
+	series.Description = redactLaunchProhibitedUserText(series.Description)
+	series.Tags = redactLaunchProhibitedStrings(series.Tags)
+	return series
+}
+
+func predictionSeriesPayloads(series []prediction.Series) []prediction.Series {
+	if len(series) == 0 {
+		return series
+	}
+	out := make([]prediction.Series, 0, len(series))
+	for _, item := range series {
+		out = append(out, predictionSeriesPayload(item))
+	}
+	return out
+}
+
+func predictionEventPayload(event prediction.Event) prediction.Event {
+	event.Title = redactLaunchProhibitedUserText(event.Title)
+	event.Description = redactLaunchProhibitedUserText(event.Description)
+	event.Metadata = redactPredictionRawJSONStrings(event.Metadata)
+	event.Markets = predictionMarketPayloads(event.Markets)
+	return event
+}
+
+func predictionEventPayloads(events []prediction.Event) []prediction.Event {
+	if len(events) == 0 {
+		return events
+	}
+	out := make([]prediction.Event, 0, len(events))
+	for _, event := range events {
+		out = append(out, predictionEventPayload(event))
+	}
+	return out
+}
+
+func predictionMarketPayload(market prediction.Market) prediction.Market {
+	market.CategoryName = redactLaunchProhibitedUserText(market.CategoryName)
+	market.Title = redactLaunchProhibitedUserText(market.Title)
+	market.Description = redactLaunchProhibitedUserText(market.Description)
+	market.Translations = redactPredictionRawJSONStrings(market.Translations)
+	market.SettlementParams = redactPredictionRawJSONStrings(market.SettlementParams)
+	market.SettlementRule = redactLaunchProhibitedUserText(market.SettlementRule)
+	market.SettlementSourceKey = redactLaunchProhibitedUserText(market.SettlementSourceKey)
+	market.FallbackSourceKey = redactStringPointer(market.FallbackSourceKey)
+	return market
+}
+
+func predictionMarketPayloads(markets []prediction.Market) []prediction.Market {
+	if len(markets) == 0 {
+		return markets
+	}
+	out := make([]prediction.Market, 0, len(markets))
+	for _, market := range markets {
+		out = append(out, predictionMarketPayload(market))
+	}
+	return out
+}
+
+func redactStringPointer(value *string) *string {
+	if value == nil {
+		return nil
+	}
+	redacted := redactLaunchProhibitedUserText(*value)
+	return &redacted
+}
+
+func redactPredictionRawJSONStrings(raw json.RawMessage) json.RawMessage {
+	if len(bytes.TrimSpace(raw)) == 0 {
+		return raw
+	}
+	var value any
+	if err := json.Unmarshal(raw, &value); err != nil {
+		return raw
+	}
+	encoded, err := json.Marshal(redactLaunchProhibitedJSONStrings(value))
+	if err != nil {
+		return raw
+	}
+	return json.RawMessage(encoded)
+}
+
 // marketUpdateBroadcaster is the slice of ws.Notifier the order
 // handlers need. Defined here (not imported from internal/ws) so the
 // prediction HTTP layer stays loosely coupled — any test or future
@@ -264,16 +540,17 @@ type marketUpdateBroadcaster interface {
 // Order-fill paths also include them — those don't change on a fill, but
 // sending them is harmless and keeps the payload schema uniform.
 type marketUpdatePayload struct {
-	MarketID            string                   `json:"marketId"`
-	Ticker              string                   `json:"ticker"`
-	Status              prediction.MarketStatus  `json:"status"`
-	Result              *prediction.MarketResult `json:"result,omitempty"`
-	YesPriceCents       int                      `json:"yesPriceCents"`
-	NoPriceCents        int                      `json:"noPriceCents"`
-	LastTradePriceCents *int                     `json:"lastTradePriceCents,omitempty"`
-	VolumeCents         int64                    `json:"volumeCents"`
-	OpenInterestCents   int64                    `json:"openInterestCents"`
-	Ts                  string                   `json:"ts"`
+	MarketID                  string                   `json:"marketId"`
+	Ticker                    string                   `json:"ticker"`
+	Status                    prediction.MarketStatus  `json:"status"`
+	Result                    *prediction.MarketResult `json:"result,omitempty"`
+	YesPricePointsCents       int                      `json:"yesPricePointsCents"`
+	NoPricePointsCents        int                      `json:"noPricePointsCents"`
+	LastTradePricePointsCents *int                     `json:"lastTradePricePointsCents,omitempty"`
+	VolumePointsCents         int64                    `json:"volumePointsCents"`
+	OpenInterestPointsCents   int64                    `json:"openInterestPointsCents"`
+	Unit                      string                   `json:"unit"`
+	Ts                        string                   `json:"ts"`
 }
 
 // buildOrderBookHintPayload is the wire shape published on `orderbook:<id>`
@@ -281,28 +558,30 @@ type marketUpdatePayload struct {
 // update; clients refetch GET /markets/{id}/orderbook for full depth.
 func buildOrderBookHintPayload(m *prediction.Market) map[string]any {
 	return map[string]any{
-		"marketId":        m.ID,
-		"bestYesBidCents": m.BestYesBidCents,
-		"bestYesAskCents": m.BestYesAskCents,
-		"bestNoBidCents":  m.BestNoBidCents,
-		"bestNoAskCents":  m.BestNoAskCents,
-		"lastQuoteAt":     m.LastQuoteAt,
-		"ts":              time.Now().UTC().Format(time.RFC3339),
+		"marketId":              m.ID,
+		"bestYesBidPointsCents": m.BestYesBidCents,
+		"bestYesAskPointsCents": m.BestYesAskCents,
+		"bestNoBidPointsCents":  m.BestNoBidCents,
+		"bestNoAskPointsCents":  m.BestNoAskCents,
+		"lastQuoteAt":           m.LastQuoteAt,
+		"unit":                  "PTS",
+		"ts":                    time.Now().UTC().Format(time.RFC3339),
 	}
 }
 
 func buildMarketUpdatePayload(m *prediction.Market) marketUpdatePayload {
 	return marketUpdatePayload{
-		MarketID:            m.ID,
-		Ticker:              m.Ticker,
-		Status:              m.Status,
-		Result:              m.Result,
-		YesPriceCents:       m.YesPriceCents,
-		NoPriceCents:        m.NoPriceCents,
-		LastTradePriceCents: m.LastTradePriceCents,
-		VolumeCents:         m.VolumeCents,
-		OpenInterestCents:   m.OpenInterestCents,
-		Ts:                  time.Now().UTC().Format(time.RFC3339),
+		MarketID:                  m.ID,
+		Ticker:                    m.Ticker,
+		Status:                    m.Status,
+		Result:                    m.Result,
+		YesPricePointsCents:       m.YesPriceCents,
+		NoPricePointsCents:        m.NoPriceCents,
+		LastTradePricePointsCents: m.LastTradePriceCents,
+		VolumePointsCents:         m.VolumeCents,
+		OpenInterestPointsCents:   m.OpenInterestCents,
+		Unit:                      "PTS",
+		Ts:                        time.Now().UTC().Format(time.RFC3339),
 	}
 }
 
@@ -311,15 +590,17 @@ func buildMarketUpdatePayload(m *prediction.Market) marketUpdatePayload {
 // consumes this to render the live tape.
 func buildTradeFillPayload(t *prediction.Trade) map[string]any {
 	return map[string]any{
-		"tradeId":    t.ID,
-		"marketId":   t.MarketID,
-		"side":       t.Side,
-		"priceCents": t.PriceCents,
-		"quantity":   t.Quantity,
-		"feeCents":   t.FeeCents,
-		"isAmmTrade": t.IsAMMTrade,
-		"tradedAt":   t.TradedAt.UTC().Format(time.RFC3339),
-		"ts":         time.Now().UTC().Format(time.RFC3339),
+		"tradeId":             t.ID,
+		"marketId":            t.MarketID,
+		"side":                t.Side,
+		"pricePointsCents":    t.PriceCents,
+		"quantity":            t.Quantity,
+		"feePointsCents":      t.FeeCents,
+		"notionalPointsCents": int64(t.PriceCents) * int64(t.Quantity),
+		"unit":                "PTS",
+		"isAmmTrade":          t.IsAMMTrade,
+		"tradedAt":            t.TradedAt.UTC().Format(time.RFC3339),
+		"ts":                  time.Now().UTC().Format(time.RFC3339),
 	}
 }
 
@@ -342,12 +623,26 @@ func buildPortfolioUpdatePayload(o *prediction.Order, t *prediction.Trade) map[s
 	if t != nil {
 		out["tradeId"] = t.ID
 		out["filledQuantity"] = t.Quantity
-		out["filledPriceCents"] = t.PriceCents
+		out["filledPricePointsCents"] = t.PriceCents
+		out["unit"] = "PTS"
 	}
 	return out
 }
 
-func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifier marketUpdateBroadcaster) {
+// buildWalletUpdatePayload is the wire shape published on `wallet:<userID>`
+// after a fill. It mirrors the point-native wallet read contract rather than
+// exposing the old cash-balance alias.
+func buildWalletUpdatePayload(userID string, balancePointsCents int64, orderID string) map[string]any {
+	return map[string]any{
+		"userId":             userID,
+		"balancePointsCents": balancePointsCents,
+		"unit":               "PTS",
+		"reason":             "order_fill",
+		"orderId":            orderID,
+	}
+}
+
+func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifier marketUpdateBroadcaster, webhookEnq webhookEnqueuer) {
 	// --- Authenticated: Orders ---
 	mux.Handle("/api/v1/orders", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		switch r.Method {
@@ -358,8 +653,8 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 			}
 			filter := prediction.OrderFilter{
 				UserID:   userID,
-				Page:     intQueryParam(r, "page", 1),
-				PageSize: intQueryParam(r, "pageSize", 20),
+				Page:     clampedQueryParam(r, "page", 1, 100000),
+				PageSize: clampedQueryParam(r, "pageSize", 20, 200),
 			}
 			if mid := r.URL.Query().Get("marketId"); mid != "" {
 				filter.MarketID = &mid
@@ -390,81 +685,32 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 			if userID == "" {
 				return httpx.Unauthorized("authentication required")
 			}
-			// Jurisdiction + KYC gates (launch policy: crypto-native, outside
-			// US). Both default-off; no-op until configured (see pretrade_gate.go).
-			if err := checkPreTradeCompliance(r, userID); err != nil {
+			// Jurisdiction + KYC gates. Both default-off; no-op until configured
+			// (see pretrade_gate.go).
+			if err := checkComplianceGates(r, userID, compliance.SurfaceTrade); err != nil {
 				return err
 			}
-			var req prediction.PlaceOrderRequest
-			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-				return httpx.BadRequest("invalid request body", nil)
+			req, err := decodePlaceOrderHTTPRequest(r.Body)
+			if err != nil {
+				return err
 			}
-			// Explicit field validation. The struct already carries
-			// `validate:"required,oneof=..."` tags, but no validator
-			// is wired into the handler chain — without these checks,
-			// invalid requests (e.g. missing `action`) reach the
-			// repository INSERT and trigger a Postgres CHECK constraint
-			// error like
-			//   pq: new row for relation "prediction_orders" violates
-			//   check constraint "prediction_orders_action_check"
-			// which surfaces as a confusing 400 to the client. These
-			// checks turn that into a clean, actionable error.
-			if strings.TrimSpace(req.MarketID) == "" {
-				return httpx.BadRequest("marketId is required", map[string]any{"field": "marketId"})
+			if err := validatePlaceOrderHTTPRequest(req); err != nil {
+				return err
 			}
-			switch req.Side {
-			case prediction.OrderSideYes, prediction.OrderSideNo:
-			default:
-				return httpx.BadRequest("side must be \"yes\" or \"no\"", map[string]any{"field": "side", "got": string(req.Side)})
+			// Per-market jurisdiction overlay (P3-07): once the global gate has
+			// passed, a market may further restrict by country. Fail closed if
+			// the policy lookup errors.
+			jpolicy, jerr := svc.GetMarketJurisdictionPolicy(r.Context(), req.MarketID)
+			if jerr != nil {
+				slog.ErrorContext(r.Context(), "order: jurisdiction policy lookup failed", "market_id", req.MarketID, "error", jerr)
+				return httpx.Forbidden("jurisdiction check unavailable")
 			}
-			switch req.Action {
-			case prediction.OrderActionBuy, prediction.OrderActionSell:
-			default:
-				return httpx.BadRequest("action must be \"buy\" or \"sell\"", map[string]any{"field": "action", "got": string(req.Action)})
-			}
-			switch req.OrderType {
-			case prediction.OrderTypeMarket, prediction.OrderTypeLimit:
-			default:
-				return httpx.BadRequest("orderType must be \"market\" or \"limit\"", map[string]any{"field": "orderType", "got": string(req.OrderType)})
-			}
-			if req.Quantity <= 0 {
-				return httpx.BadRequest("quantity must be > 0", map[string]any{"field": "quantity", "got": req.Quantity})
-			}
-			if req.OrderType == prediction.OrderTypeLimit {
-				if req.PriceCents == nil || *req.PriceCents < 1 || *req.PriceCents > 99 {
-					return httpx.BadRequest("limit orders require priceCents in 1..99", map[string]any{"field": "priceCents"})
-				}
-			}
-			// Exchange-engine field validation. These map 1:1 to schema
-			// CHECK constraints from migration 019 — without validation here,
-			// invalid values (e.g. timeInForce="abc") surface as Postgres
-			// constraint violations downstream. Empty/zero values are fine;
-			// the service applies defaults (gtc + cancel_taker).
-			if req.TimeInForce != "" {
-				switch req.TimeInForce {
-				case prediction.TIFGTC, prediction.TIFIOC, prediction.TIFFOK:
-				default:
-					return httpx.BadRequest("timeInForce must be one of gtc, ioc, fok", map[string]any{"field": "timeInForce", "got": string(req.TimeInForce)})
-				}
-			}
-			if req.SelfMatchAction != "" {
-				switch req.SelfMatchAction {
-				case prediction.SelfMatchCancelTaker, prediction.SelfMatchCancelMaker, prediction.SelfMatchCancelBoth:
-				default:
-					return httpx.BadRequest("selfMatchAction must be one of cancel_taker, cancel_maker, cancel_both", map[string]any{"field": "selfMatchAction", "got": string(req.SelfMatchAction)})
-				}
-			}
-			// Market orders MUST carry a notional cap so accidental fat-finger
-			// market orders can't drain a wallet. Polymarket enforces this by
-			// requiring quote-denominated quantities; we use an explicit field.
-			if req.OrderType == prediction.OrderTypeMarket && req.Action == prediction.OrderActionBuy {
-				if req.NotionalCapCents == nil || *req.NotionalCapCents <= 0 {
-					return httpx.BadRequest("market buy orders require notionalCapCents > 0", map[string]any{"field": "notionalCapCents"})
-				}
+			if cerr := checkMarketJurisdiction(r, userID, req.MarketID, jpolicy); cerr != nil {
+				return cerr
 			}
 			order, trade, err := svc.PlaceOrder(r.Context(), req, userID)
 			if err != nil {
-				return httpx.BadRequest(err.Error(), nil)
+				return orderPlacementError(err)
 			}
 
 			// Broadcast the post-trade state on four channels.
@@ -495,14 +741,17 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 					notifier.NotifyPredictionTrade(req.MarketID, buildTradeFillPayload(trade))
 				}
 				notifier.NotifyPortfolioUpdate(userID, buildPortfolioUpdatePayload(order, trade))
-				if balance := svc.WalletBalance(userID); balance >= 0 {
-					notifier.NotifyWalletUpdate(userID, map[string]any{
-						"userId":       userID,
-						"balanceCents": balance,
-						"reason":       "order_fill",
-						"orderId":      order.ID,
-					})
+				if balance := svc.WalletBalance(r.Context(), userID); balance >= 0 {
+					notifier.NotifyWalletUpdate(userID, buildWalletUpdatePayload(userID, balance, order.ID))
 				}
+			}
+
+			// Outbound webhook (P3-03): a fill enqueues an order.filled event
+			// for subscribed partner endpoints. Independent of the WS notifier
+			// (separate sink) and post-commit fire-and-forget — the dispatch
+			// worker signs, delivers, and retries.
+			if trade != nil {
+				enqueueOrderFilled(r.Context(), webhookEnq, trade)
 			}
 
 			return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]interface{}{
@@ -519,13 +768,13 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
-		var req prediction.PlaceOrderRequest
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			return httpx.BadRequest("invalid request body", nil)
+		req, err := decodePlaceOrderHTTPRequest(r.Body)
+		if err != nil {
+			return err
 		}
 		preview, err := svc.PreviewOrderForUser(r.Context(), req, userIDFromRequest(r))
 		if err != nil {
-			return httpx.BadRequest(err.Error(), nil)
+			return serviceBadRequestError(err, nil)
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, preview)
 	}))
@@ -575,6 +824,105 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 	slog.Info("order routes registered")
 }
 
+func orderPlacementError(err error) error {
+	if err == nil {
+		return nil
+	}
+	message := err.Error()
+	if strings.Contains(message, "Prediction limit exceeded") || strings.Contains(message, "prediction limit exceeded") {
+		return serviceBadRequestError(err, map[string]any{"reasonCode": "prediction_limit_exceeded"})
+	}
+	if strings.Contains(message, "responsible-play controls") {
+		return serviceBadRequestError(err, map[string]any{"reasonCode": "responsible_play_blocked"})
+	}
+	return serviceBadRequestError(err, nil)
+}
+
+func serviceBadRequestError(err error, details any) error {
+	if err == nil {
+		return nil
+	}
+	return httpx.BadRequest(redactLaunchProhibitedUserText(err.Error()), details)
+}
+
+func decodePlaceOrderHTTPRequest(r io.Reader) (prediction.PlaceOrderRequest, error) {
+	var raw map[string]json.RawMessage
+	if err := json.NewDecoder(r).Decode(&raw); err != nil {
+		return prediction.PlaceOrderRequest{}, httpx.BadRequest("invalid request body", nil)
+	}
+	if _, ok := raw["priceCents"]; ok {
+		return prediction.PlaceOrderRequest{}, httpx.BadRequest("use pricePointsCents for limit order prices", map[string]any{"field": "pricePointsCents"})
+	}
+	if _, ok := raw["notionalCapCents"]; ok {
+		return prediction.PlaceOrderRequest{}, httpx.BadRequest("use notionalCapPointsCents for market buy caps", map[string]any{"field": "notionalCapPointsCents"})
+	}
+	data, err := json.Marshal(raw)
+	if err != nil {
+		return prediction.PlaceOrderRequest{}, httpx.BadRequest("invalid request body", nil)
+	}
+	var req prediction.PlaceOrderRequest
+	if err := json.Unmarshal(data, &req); err != nil {
+		return prediction.PlaceOrderRequest{}, httpx.BadRequest("invalid request body", nil)
+	}
+	return req, nil
+}
+
+func validatePlaceOrderHTTPRequest(req prediction.PlaceOrderRequest) error {
+	// Explicit field validation. The struct already carries
+	// `validate:"required,oneof=..."` tags, but no validator is wired into
+	// the handler chain. Without these checks, invalid requests can reach the
+	// repository INSERT and surface as confusing schema constraint errors.
+	if strings.TrimSpace(req.MarketID) == "" {
+		return httpx.BadRequest("marketId is required", map[string]any{"field": "marketId"})
+	}
+	switch req.Side {
+	case prediction.OrderSideYes, prediction.OrderSideNo:
+	default:
+		return httpx.BadRequest("side must be \"yes\" or \"no\"", map[string]any{"field": "side", "got": string(req.Side)})
+	}
+	switch req.Action {
+	case prediction.OrderActionBuy, prediction.OrderActionSell:
+	default:
+		return httpx.BadRequest("action must be \"buy\" or \"sell\"", map[string]any{"field": "action", "got": string(req.Action)})
+	}
+	switch req.OrderType {
+	case prediction.OrderTypeMarket, prediction.OrderTypeLimit:
+	default:
+		return httpx.BadRequest("orderType must be \"market\" or \"limit\"", map[string]any{"field": "orderType", "got": string(req.OrderType)})
+	}
+	if req.Quantity <= 0 {
+		return httpx.BadRequest("quantity must be > 0", map[string]any{"field": "quantity", "got": req.Quantity})
+	}
+	if req.OrderType == prediction.OrderTypeLimit {
+		if req.PriceCents == nil || *req.PriceCents < 1 || *req.PriceCents > 99 {
+			return httpx.BadRequest("limit orders require pricePointsCents in 1..99", map[string]any{"field": "pricePointsCents"})
+		}
+	}
+	// Exchange-engine field validation. These map 1:1 to schema CHECK
+	// constraints from migration 019. Empty/zero values are fine; the service
+	// applies defaults (gtc + cancel_taker).
+	if req.TimeInForce != "" {
+		switch req.TimeInForce {
+		case prediction.TIFGTC, prediction.TIFIOC, prediction.TIFFOK:
+		default:
+			return httpx.BadRequest("timeInForce must be one of gtc, ioc, fok", map[string]any{"field": "timeInForce", "got": string(req.TimeInForce)})
+		}
+	}
+	if req.SelfMatchAction != "" {
+		switch req.SelfMatchAction {
+		case prediction.SelfMatchCancelTaker, prediction.SelfMatchCancelMaker, prediction.SelfMatchCancelBoth:
+		default:
+			return httpx.BadRequest("selfMatchAction must be one of cancel_taker, cancel_maker, cancel_both", map[string]any{"field": "selfMatchAction", "got": string(req.SelfMatchAction)})
+		}
+	}
+	if req.OrderType == prediction.OrderTypeMarket && req.Action == prediction.OrderActionBuy {
+		if req.NotionalCapCents == nil || *req.NotionalCapCents <= 0 {
+			return httpx.BadRequest("market buy orders require notionalCapPointsCents > 0", map[string]any{"field": "notionalCapPointsCents"})
+		}
+	}
+	return nil
+}
+
 func registerPortfolioRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 	mux.Handle("/api/v1/portfolio", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
@@ -609,7 +957,7 @@ func registerPortfolioRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		return httpx.WriteJSON(w, stdhttp.StatusOK, summary)
 	}))
 
-	// Portfolio history — paginated settled payouts (winning + losing positions).
+	// Portfolio history — paginated settled prediction results.
 	mux.Handle("/api/v1/portfolio/history", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
@@ -618,8 +966,8 @@ func registerPortfolioRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if userID == "" {
 			return httpx.Unauthorized("authentication required")
 		}
-		page := intQueryParam(r, "page", 1)
-		pageSize := intQueryParam(r, "pageSize", 20)
+		page := clampedQueryParam(r, "page", 1, 100000)
+		pageSize := clampedQueryParam(r, "pageSize", 20, 200)
 		payouts, total, err := svc.ListSettledPositions(r.Context(), userID, page, pageSize)
 		if err != nil {
 			return httpx.Internal("failed to fetch data", err)
@@ -628,7 +976,7 @@ func registerPortfolioRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			payouts = []prediction.Payout{}
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]interface{}{
-			"data": payouts,
+			"data": portfolioHistoryItems(payouts),
 			"meta": prediction.PageMeta{
 				Page:     page,
 				PageSize: pageSize,
@@ -641,10 +989,108 @@ func registerPortfolioRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 	slog.Info("portfolio routes registered")
 }
 
+func portfolioHistoryItems(payouts []prediction.Payout) []portfolioHistoryItem {
+	if payouts == nil {
+		return []portfolioHistoryItem{}
+	}
+	items := make([]portfolioHistoryItem, 0, len(payouts))
+	for _, payout := range payouts {
+		items = append(items, portfolioHistoryItem{
+			ID:                    payout.ID,
+			SettlementID:          payout.SettlementID,
+			PositionID:            payout.PositionID,
+			UserID:                payout.UserID,
+			MarketID:              payout.MarketID,
+			Side:                  payout.Side,
+			Quantity:              payout.Quantity,
+			EntryPriceCents:       payout.EntryPriceCents,
+			ExitPriceCents:        payout.ExitPriceCents,
+			RealizedPointsCents:   payout.PnlCents,
+			SettlementPointsCents: payout.PayoutCents,
+			PaidAt:                payout.PaidAt,
+			Unit:                  "PTS",
+		})
+	}
+	return items
+}
+
+func settlementOperationPayload(settlement *prediction.Settlement, payouts []prediction.Payout) settlementOperationResponse {
+	disbursements := settlementPointDisbursements(payouts)
+	settlementPayload := settlementRecordPayload(settlement)
+	return settlementOperationResponse{
+		Settlement:                 settlementPayload,
+		PointDisbursements:         disbursements,
+		TotalSettlementPointsCents: settlementPayload.TotalSettlementPointsCents,
+		Unit:                       "PTS",
+		TianggeLifecycle:           prediction.DescribeTianggeMarketLifecycle(prediction.MarketStatusSettled),
+	}
+}
+
+func settlementRecordPayload(settlement *prediction.Settlement) settlementRecordResponse {
+	if settlement == nil {
+		return settlementRecordResponse{Unit: "PTS"}
+	}
+	overrideReason := settlement.OverrideReason
+	if overrideReason != nil {
+		redacted := redactLaunchProhibitedUserText(*overrideReason)
+		overrideReason = &redacted
+	}
+	return settlementRecordResponse{
+		ID:                         settlement.ID,
+		MarketID:                   settlement.MarketID,
+		Result:                     settlement.Result,
+		AttestationSource:          settlement.AttestationSource,
+		AttestationID:              settlement.AttestationID,
+		AttestationDigest:          settlement.AttestationDigest,
+		AttestationData:            settlement.AttestationData,
+		SettledBy:                  settlement.SettledBy,
+		SettledAt:                  settlement.SettledAt,
+		PositionsSettled:           settlement.PositionsSettled,
+		OverrideReason:             overrideReason,
+		OverriddenByUserID:         settlement.OverriddenByUserID,
+		OverriddenAt:               settlement.OverriddenAt,
+		TotalSettlementPointsCents: settlement.TotalPayoutCents,
+		Unit:                       "PTS",
+	}
+}
+
+func settlementPointDisbursements(payouts []prediction.Payout) []settlementPointDisbursement {
+	if payouts == nil {
+		return []settlementPointDisbursement{}
+	}
+	disbursements := make([]settlementPointDisbursement, 0, len(payouts))
+	for _, payout := range payouts {
+		disbursements = append(disbursements, settlementPointDisbursement{
+			ID:                    payout.ID,
+			SettlementID:          payout.SettlementID,
+			PositionID:            payout.PositionID,
+			UserID:                payout.UserID,
+			MarketID:              payout.MarketID,
+			Side:                  payout.Side,
+			Quantity:              payout.Quantity,
+			EntryPriceCents:       payout.EntryPriceCents,
+			ExitPriceCents:        payout.ExitPriceCents,
+			RealizedPointsCents:   payout.PnlCents,
+			SettlementPointsCents: payout.PayoutCents,
+			PaidAt:                payout.PaidAt,
+			Unit:                  "PTS",
+		})
+	}
+	return disbursements
+}
+
+func totalSettlementPointsCents(payouts []prediction.Payout) int64 {
+	var total int64
+	for _, payout := range payouts {
+		total += payout.PayoutCents
+	}
+	return total
+}
+
 func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 	// Admin: list markets (GET — includes unopened drafts) + create market (POST)
 	mux.Handle("/api/v1/admin/markets", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if err := requireAdminRole(r); err != nil {
+		if err := requireAdminPermission(r, "markets:edit"); err != nil {
 			return err
 		}
 
@@ -652,8 +1098,8 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		// pre-launch `unopened` drafts so the backoffice can review and open them.
 		if r.Method == stdhttp.MethodGet {
 			filter := prediction.MarketFilter{
-				Page:            intQueryParam(r, "page", 1),
-				PageSize:        intQueryParam(r, "pageSize", 20),
+				Page:            clampedQueryParam(r, "page", 1, 100000),
+				PageSize:        clampedQueryParam(r, "pageSize", 20, 500),
 				IncludeUnopened: true,
 			}
 			if eid := r.URL.Query().Get("eventId"); eid != "" {
@@ -673,8 +1119,11 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			if err != nil {
 				return httpx.Internal("failed to fetch data", err)
 			}
+			if strings.EqualFold(r.URL.Query().Get("format"), "csv") {
+				return writeAdminMarketsCSV(w, markets)
+			}
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]interface{}{
-				"data": markets,
+				"data": predictionMarketPayloads(markets),
 				"meta": prediction.PageMeta{
 					Page:     filter.Page,
 					PageSize: filter.PageSize,
@@ -688,14 +1137,14 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPost)
 		}
 
-		var req prediction.CreateMarketRequest
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			return httpx.BadRequest("invalid request body", nil)
+		req, err := decodeCreateMarketRequest(r)
+		if err != nil {
+			return err
 		}
 		req.CreatedBy = actorIDPointer(userIDFromRequest(r))
 		market, err := svc.CreateMarket(r.Context(), req)
 		if err != nil {
-			return httpx.BadRequest(err.Error(), nil)
+			return serviceBadRequestError(err, nil)
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, market)
 	}))
@@ -723,7 +1172,7 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 
 		src, err := svc.CreateArticleSource(r.Context(), &req.Source)
 		if err != nil {
-			return httpx.BadRequest(err.Error(), nil)
+			return serviceBadRequestError(err, nil)
 		}
 
 		logIDs := make([]string, 0, len(req.GenerationLogs))
@@ -770,7 +1219,7 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 
 	// Admin: Create event (the parent an AI-drafted or hand-made market attaches to).
 	mux.Handle("/api/v1/admin/events", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if err := requireAdminRole(r); err != nil {
+		if err := requireAdminPermission(r, "markets:edit"); err != nil {
 			return err
 		}
 		if r.Method != stdhttp.MethodPost {
@@ -780,10 +1229,13 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			return httpx.BadRequest("invalid request body", nil)
 		}
+		if err := validateAdminEventLaunchCopy(req); err != nil {
+			return err
+		}
 		req.CreatedBy = actorIDPointer(userIDFromRequest(r))
 		event, err := svc.CreateEvent(r.Context(), req)
 		if err != nil {
-			return httpx.BadRequest(err.Error(), nil)
+			return serviceBadRequestError(err, nil)
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, event)
 	}))
@@ -803,23 +1255,224 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		return httpx.WriteJSON(w, stdhttp.StatusOK, status)
 	}))
 
-	// Admin: Market lifecycle transitions
-	mux.Handle("/api/v1/admin/markets/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if err := requireAdminRole(r); err != nil {
+	// Admin: discovery taxonomy. Categories, series, and their tags are
+	// metadata-only discovery controls: they never move points or change market
+	// settlement state.
+	mux.Handle("/api/v1/admin/categories", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminPermission(r, "markets:edit"); err != nil {
 			return err
 		}
-		if r.Method != stdhttp.MethodPost {
-			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		switch r.Method {
+		case stdhttp.MethodGet:
+			categories, err := svc.ListCategories(r.Context(), false)
+			if err != nil {
+				return httpx.Internal("failed to fetch categories", err)
+			}
+			if categories == nil {
+				categories = []prediction.Category{}
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, predictionCategoryPayloads(categories))
+		case stdhttp.MethodPost:
+			var req adminCategoryRequest
+			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+				return httpx.BadRequest("invalid request body", nil)
+			}
+			name := strings.TrimSpace(req.Name)
+			slug := normalizeTaxonomySlug(req.Slug)
+			if name == "" {
+				return httpx.BadRequest("category name required", map[string]any{"field": "name"})
+			}
+			if slug == "" {
+				slug = normalizeTaxonomySlug(name)
+			}
+			if slug == "" {
+				return httpx.BadRequest("category slug required", map[string]any{"field": "slug"})
+			}
+			if err := validateLaunchFacingReason("name", name); err != nil {
+				return err
+			}
+			category := &prediction.Category{
+				Slug:      slug,
+				Name:      name,
+				Icon:      strings.TrimSpace(req.Icon),
+				SortOrder: req.SortOrder,
+				Active:    boolDefault(req.Active, true),
+			}
+			if err := svc.CreateCategory(r.Context(), category); err != nil {
+				return serviceBadRequestError(err, nil)
+			}
+			recordProviderOpsAuditAction(userIDFromRequest(r), "taxonomy.category_created", category.ID, map[string]any{
+				"slug":   category.Slug,
+				"active": category.Active,
+			})
+			return httpx.WriteJSON(w, stdhttp.StatusCreated, predictionCategoryPayload(*category))
+		default:
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPost)
 		}
+	}))
 
+	mux.Handle("/api/v1/admin/series", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminPermission(r, "markets:edit"); err != nil {
+			return err
+		}
+		var categoryID *string
+		if cid := strings.TrimSpace(r.URL.Query().Get("categoryId")); cid != "" {
+			categoryID = &cid
+		}
+		switch r.Method {
+		case stdhttp.MethodGet:
+			series, err := svc.ListSeries(r.Context(), categoryID)
+			if err != nil {
+				return httpx.Internal("failed to fetch series", err)
+			}
+			if series == nil {
+				series = []prediction.Series{}
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, predictionSeriesPayloads(series))
+		case stdhttp.MethodPost:
+			var req adminSeriesRequest
+			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+				return httpx.BadRequest("invalid request body", nil)
+			}
+			title := strings.TrimSpace(req.Title)
+			slug := normalizeTaxonomySlug(req.Slug)
+			if title == "" {
+				return httpx.BadRequest("series title required", map[string]any{"field": "title"})
+			}
+			if slug == "" {
+				slug = normalizeTaxonomySlug(title)
+			}
+			if slug == "" {
+				return httpx.BadRequest("series slug required", map[string]any{"field": "slug"})
+			}
+			categoryID := strings.TrimSpace(req.CategoryID)
+			if categoryID == "" {
+				return httpx.BadRequest("category id required", map[string]any{"field": "categoryId"})
+			}
+			if err := validateAdminSeriesLaunchCopy(title, req.Description, req.Tags); err != nil {
+				return err
+			}
+			series := &prediction.Series{
+				Slug:        slug,
+				Title:       title,
+				Description: strings.TrimSpace(req.Description),
+				CategoryID:  categoryID,
+				Frequency:   strings.TrimSpace(req.Frequency),
+				Tags:        normalizeTags(req.Tags),
+				Active:      boolDefault(req.Active, true),
+			}
+			if err := svc.CreateSeries(r.Context(), series); err != nil {
+				return serviceBadRequestError(err, nil)
+			}
+			recordProviderOpsAuditAction(userIDFromRequest(r), "taxonomy.series_created", series.ID, map[string]any{
+				"slug":       series.Slug,
+				"categoryId": series.CategoryID,
+				"tags":       series.Tags,
+				"active":     series.Active,
+			})
+			return httpx.WriteJSON(w, stdhttp.StatusCreated, predictionSeriesPayload(*series))
+		default:
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPost)
+		}
+	}))
+
+	mux.Handle("/api/v1/admin/tags", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminPermission(r, "markets:edit"); err != nil {
+			return err
+		}
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		var categoryID *string
+		if cid := strings.TrimSpace(r.URL.Query().Get("categoryId")); cid != "" {
+			categoryID = &cid
+		}
+		tags, err := svc.ListTags(r.Context(), categoryID)
+		if err != nil {
+			return httpx.Internal("failed to fetch tags", err)
+		}
+		if tags == nil {
+			tags = []string{}
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"tags": redactLaunchProhibitedStrings(tags)})
+	}))
+
+	// Admin: Market lifecycle transitions
+	mux.Handle("/api/v1/admin/markets/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminPermission(r, "markets:edit"); err != nil {
+			return err
+		}
 		path := strings.TrimPrefix(r.URL.Path, "/api/v1/admin/markets/")
 		parts := strings.Split(path, "/")
 		if len(parts) == 0 || parts[0] == "" {
 			return httpx.NotFound("route not found")
 		}
 
+		// P3-07: read-only GET of the per-market jurisdiction overlay so the
+		// back-office form can pre-fill its control. Handled before the
+		// POST-only gate and the dual-control identity guard below — reading an
+		// overlay is neither a write nor a dual-control action. Every other
+		// verb/route on this handler stays POST-only.
+		if len(parts) == 2 &&
+			strings.EqualFold(strings.TrimSpace(parts[1]), "jurisdiction") &&
+			r.Method == stdhttp.MethodGet {
+			policy, err := svc.GetMarketJurisdictionPolicy(r.Context(), parts[0])
+			if err != nil {
+				return httpx.Internal("failed to read jurisdiction policy", err)
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"marketId": parts[0], "policy": policy})
+		}
+		if len(parts) == 2 &&
+			strings.EqualFold(strings.TrimSpace(parts[1]), "lifecycle") &&
+			r.Method == stdhttp.MethodGet {
+			events, err := svc.ListLifecycleEvents(r.Context(), parts[0])
+			if err != nil {
+				return httpx.Internal("failed to read lifecycle audit", err)
+			}
+			rows := lifecycleAuditEventResponses(events)
+			if strings.EqualFold(r.URL.Query().Get("format"), "csv") {
+				return writeLifecycleAuditCSV(w, parts[0], rows)
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+				"marketId": parts[0],
+				"data":     rows,
+			})
+		}
+
 		adminID := userIDFromRequest(r)
 		actorID := actorIDPointer(adminID)
+
+		if len(parts) == 1 {
+			switch r.Method {
+			case stdhttp.MethodGet:
+				market, err := svc.GetMarket(r.Context(), parts[0])
+				if err != nil {
+					return httpx.NotFound("market not found")
+				}
+				return httpx.WriteJSON(w, stdhttp.StatusOK, predictionMarketPayload(*market))
+			case stdhttp.MethodPut:
+				req, err := decodeCreateMarketRequest(r)
+				if err != nil {
+					return err
+				}
+				req.CreatedBy = actorID
+				market, err := svc.UpdateMarket(r.Context(), parts[0], req)
+				if err != nil {
+					return serviceBadRequestError(err, nil)
+				}
+				recordProviderOpsAuditAction(adminID, "market.edited", parts[0], map[string]any{
+					"ticker": market.Ticker,
+					"title":  market.Title,
+				})
+				return httpx.WriteJSON(w, stdhttp.StatusOK, predictionMarketPayload(*market))
+			default:
+				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPut)
+			}
+		}
+
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
 
 		// ADR-0003/0004 windowed resolution (two-part {id}/{action}). Dual-
 		// control is enforced in the engine: the finalizing admin must differ
@@ -838,15 +1491,22 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 				if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 					return httpx.BadRequest("invalid request body", nil)
 				}
+				if err := sanitizeResolveMarketRequest(&req); err != nil {
+					return err
+				}
 				window := prediction.DefaultChallengeWindow
-				if h := intQueryParam(r, "windowHours", 0); h > 0 {
+				if raw, ok := r.URL.Query()["windowHours"]; ok {
+					h, err := strconv.Atoi(strings.TrimSpace(raw[0]))
+					if err != nil || h < 0 {
+						return httpx.BadRequest("windowHours must be a non-negative integer", map[string]any{"field": "windowHours"})
+					}
 					window = time.Duration(h) * time.Hour
 				}
 				proposal, err := svc.ProposeResolution(r.Context(), parts[0], req, actorID, window)
 				if err != nil {
-					return httpx.BadRequest(err.Error(), nil)
+					return serviceBadRequestError(err, nil)
 				}
-				recordMoneyAuditEntry(adminID, "market.resolution_proposed", parts[0], map[string]any{
+				recordProviderOpsAuditAction(adminID, "market.resolution_proposed", parts[0], map[string]any{
 					"result":          proposal.Result,
 					"challengeEndsAt": proposal.ChallengeEndsAt,
 				})
@@ -854,17 +1514,47 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			case "finalize":
 				settlement, payouts, err := svc.FinalizeResolution(r.Context(), parts[0], actorID)
 				if err != nil {
-					return httpx.BadRequest(err.Error(), nil)
+					if errors.Is(err, prediction.ErrStaleMarketStatus) {
+						return httpx.Conflict("market was settled or voided by a concurrent operation", nil)
+					}
+					return serviceBadRequestError(err, nil)
 				}
-				recordMoneyAuditEntry(adminID, "market.finalized", parts[0], map[string]any{
-					"settlementId":     settlement.ID,
-					"totalPayoutCents": settlement.TotalPayoutCents,
-					"payoutCount":      len(payouts),
+				recordProviderOpsAuditAction(adminID, "market.finalized", parts[0], map[string]any{
+					"settlementId":               settlement.ID,
+					"totalSettlementPointsCents": settlement.TotalPayoutCents,
+					"pointDisbursementCount":     len(payouts),
+					"unit":                       "PTS",
 				})
-				return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-					"settlement": settlement,
-					"payouts":    payouts,
+				return httpx.WriteJSON(w, stdhttp.StatusOK, settlementOperationPayload(settlement, payouts))
+			case "jurisdiction":
+				// Set or clear the per-market jurisdiction overlay (P3-07).
+				// Strict validation here (unlike the lenient read-path parser):
+				// a malformed body is rejected, not silently treated as "clear".
+				var in prediction.MarketJurisdictionPolicy
+				if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+					return httpx.BadRequest("invalid request body", nil)
+				}
+				in.Mode = prediction.JurisdictionMode(strings.ToLower(strings.TrimSpace(string(in.Mode))))
+				var policy *prediction.MarketJurisdictionPolicy
+				if in.Mode != "" || len(in.Countries) > 0 { // empty body = clear
+					if in.Mode != prediction.JurisdictionAllow && in.Mode != prediction.JurisdictionDeny {
+						return httpx.BadRequest(`jurisdiction mode must be "allow" or "deny"`, map[string]any{"field": "mode"})
+					}
+					if len(in.Countries) == 0 {
+						return httpx.BadRequest("jurisdiction policy requires a non-empty countries list", map[string]any{"field": "countries"})
+					}
+					policy = &in
+				}
+				if err := svc.SetMarketJurisdictionPolicy(r.Context(), parts[0], policy); err != nil {
+					if errors.Is(err, prediction.ErrJurisdictionUnsupported) {
+						return httpx.BadRequest("per-market jurisdiction is not supported by this deployment", nil)
+					}
+					return serviceBadRequestError(err, nil)
+				}
+				recordProviderOpsAuditAction(adminID, "market.jurisdiction_set", parts[0], map[string]any{
+					"cleared": policy == nil,
 				})
+				return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"marketId": parts[0], "policy": policy})
 			default:
 				return httpx.NotFound("route not found")
 			}
@@ -884,55 +1574,47 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 				reason = "market opened by admin"
 			}
 			if err := svc.TransitionMarketStatus(r.Context(), parts[0], prediction.MarketStatusOpen, reason, actorID); err != nil {
-				return httpx.BadRequest(err.Error(), nil)
+				return serviceBadRequestError(err, nil)
 			}
-			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-				"marketId": parts[0],
-				"status":   prediction.MarketStatusOpen,
-				"reason":   reason,
-			})
+			return httpx.WriteJSON(w, stdhttp.StatusOK, marketLifecycleResponse(parts[0], prediction.MarketStatusOpen, reason))
 		case "halt", "halted":
 			if reason == "" {
 				reason = "market halted by admin"
 			}
 			if err := svc.TransitionMarketStatus(r.Context(), parts[0], prediction.MarketStatusHalted, reason, actorID); err != nil {
-				return httpx.BadRequest(err.Error(), nil)
+				return serviceBadRequestError(err, nil)
 			}
-			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-				"marketId": parts[0],
-				"status":   prediction.MarketStatusHalted,
-				"reason":   reason,
-			})
+			return httpx.WriteJSON(w, stdhttp.StatusOK, marketLifecycleResponse(parts[0], prediction.MarketStatusHalted, reason))
 		case "close", "closed":
 			if reason == "" {
 				reason = "market closed by admin"
 			}
 			if err := svc.TransitionMarketStatus(r.Context(), parts[0], prediction.MarketStatusClosed, reason, actorID); err != nil {
-				return httpx.BadRequest(err.Error(), nil)
+				return serviceBadRequestError(err, nil)
 			}
-			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-				"marketId": parts[0],
-				"status":   prediction.MarketStatusClosed,
-				"reason":   reason,
-			})
+			return httpx.WriteJSON(w, stdhttp.StatusOK, marketLifecycleResponse(parts[0], prediction.MarketStatusClosed, reason))
 		case "void", "voided":
 			if reason == "" {
 				reason = "market voided by admin"
 			}
 			payouts, err := svc.VoidMarket(r.Context(), parts[0], reason, actorID)
 			if err != nil {
-				return httpx.BadRequest(err.Error(), nil)
+				if errors.Is(err, prediction.ErrStaleMarketStatus) {
+					return httpx.Conflict("market was settled or voided by a concurrent operation", nil)
+				}
+				return serviceBadRequestError(err, nil)
 			}
-			recordMoneyAuditEntry(adminID, "market.voided", parts[0], map[string]any{
-				"reason":      reason,
-				"payoutCount": len(payouts),
+			recordProviderOpsAuditAction(adminID, "market.voided", parts[0], map[string]any{
+				"reason":                 reason,
+				"pointDisbursementCount": len(payouts),
+				"unit":                   "PTS",
 			})
-			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-				"marketId": parts[0],
-				"status":   prediction.MarketStatusVoided,
-				"reason":   reason,
-				"payouts":  payouts,
-			})
+			payload := marketLifecycleResponse(parts[0], prediction.MarketStatusVoided, reason)
+			disbursements := settlementPointDisbursements(payouts)
+			payload["pointDisbursements"] = disbursements
+			payload["totalSettlementPointsCents"] = totalSettlementPointsCents(payouts)
+			payload["unit"] = "PTS"
+			return httpx.WriteJSON(w, stdhttp.StatusOK, payload)
 		default:
 			return httpx.BadRequest("unsupported lifecycle action", map[string]any{"action": parts[2]})
 		}
@@ -940,7 +1622,7 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 
 	// Admin: Settle market
 	mux.Handle("/api/v1/admin/settlements/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if err := requireAdminRole(r); err != nil {
+		if err := requireAdminPermission(r, "settlements:resolve"); err != nil {
 			return err
 		}
 		if r.Method != stdhttp.MethodPost {
@@ -951,18 +1633,34 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			return httpx.BadRequest("market id required", nil)
 		}
 		adminID := userIDFromRequest(r)
+		if strings.EqualFold(strings.TrimSpace(marketID), "replay") {
+			completed, err := svc.ResumeIncompleteSettlements(r.Context())
+			if err != nil {
+				return httpx.Internal("failed to replay settlement disbursements", err)
+			}
+			recordProviderOpsAuditAction(adminID, "settlements.replay", "settlements", map[string]any{
+				"completedSettlements": completed,
+			})
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+				"completedSettlements": completed,
+				"summary":              "Replayed incomplete settlement point disbursements",
+			})
+		}
 		var req prediction.ResolveMarketRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			return httpx.BadRequest("invalid request body", nil)
 		}
+		if err := sanitizeResolveMarketRequest(&req); err != nil {
+			return err
+		}
 		settlement, payouts, err := svc.ResolveMarket(r.Context(), marketID, req, actorIDPointer(adminID))
 		if err != nil {
-			return httpx.BadRequest(err.Error(), nil)
+			if errors.Is(err, prediction.ErrStaleMarketStatus) {
+				return httpx.Conflict("market was settled or voided by a concurrent operation", nil)
+			}
+			return serviceBadRequestError(err, nil)
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]interface{}{
-			"settlement": settlement,
-			"payouts":    payouts,
-		})
+		return httpx.WriteJSON(w, stdhttp.StatusOK, settlementOperationPayload(settlement, payouts))
 	}))
 
 	slog.Info("settlement routes registered")
@@ -1079,7 +1777,274 @@ func decodeLifecycleReason(r *stdhttp.Request) (string, error) {
 		}
 		return "", httpx.BadRequest("invalid request body", nil)
 	}
-	return strings.TrimSpace(req.Reason), nil
+	reason := strings.TrimSpace(req.Reason)
+	if err := validateLaunchFacingReason("reason", reason); err != nil {
+		return "", err
+	}
+	return reason, nil
+}
+
+func sanitizeResolveMarketRequest(req *prediction.ResolveMarketRequest) error {
+	req.Reason = trimStringPointer(req.Reason)
+	if req.Reason != nil {
+		if err := validateLaunchFacingReason("reason", *req.Reason); err != nil {
+			return err
+		}
+	}
+	req.OverrideReason = trimStringPointer(req.OverrideReason)
+	if req.OverrideReason != nil {
+		if err := validateLaunchFacingReason("overrideReason", *req.OverrideReason); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func boolDefault(value *bool, fallback bool) bool {
+	if value == nil {
+		return fallback
+	}
+	return *value
+}
+
+func validateAdminEventLaunchCopy(req prediction.CreateEventRequest) error {
+	if err := validateLaunchFacingReason("title", strings.TrimSpace(req.Title)); err != nil {
+		return err
+	}
+	if err := validateLaunchFacingReason("description", strings.TrimSpace(req.Description)); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateAdminSeriesLaunchCopy(title string, description string, tags []string) error {
+	if err := validateLaunchFacingReason("title", strings.TrimSpace(title)); err != nil {
+		return err
+	}
+	if err := validateLaunchFacingReason("description", strings.TrimSpace(description)); err != nil {
+		return err
+	}
+	for _, tag := range tags {
+		if err := validateLaunchFacingReason("tags", strings.TrimSpace(tag)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func normalizeTaxonomySlug(value string) string {
+	value = strings.ToLower(strings.TrimSpace(value))
+	if value == "" {
+		return ""
+	}
+	var b strings.Builder
+	lastDash := false
+	for _, r := range value {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			b.WriteRune(r)
+			lastDash = false
+			continue
+		}
+		if !lastDash {
+			b.WriteByte('-')
+			lastDash = true
+		}
+	}
+	return strings.Trim(b.String(), "-")
+}
+
+func normalizeTags(tags []string) []string {
+	out := make([]string, 0, len(tags))
+	seen := map[string]struct{}{}
+	for _, tag := range tags {
+		trimmed := strings.TrimSpace(tag)
+		if trimmed == "" {
+			continue
+		}
+		key := strings.ToLower(trimmed)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		out = append(out, trimmed)
+	}
+	return out
+}
+
+func marketLifecycleResponse(marketID string, status prediction.MarketStatus, reason string) map[string]any {
+	return map[string]any{
+		"marketId":         marketID,
+		"status":           status,
+		"reason":           reason,
+		"tianggeLifecycle": prediction.DescribeTianggeMarketLifecycle(status),
+	}
+}
+
+func lifecycleAuditEventResponses(events []prediction.LifecycleEvent) []marketLifecycleEventResponse {
+	if events == nil {
+		return []marketLifecycleEventResponse{}
+	}
+	out := make([]marketLifecycleEventResponse, 0, len(events))
+	for _, event := range events {
+		event = redactLifecycleEventResponse(event)
+		out = append(out, marketLifecycleEventResponse{
+			LifecycleEvent:   event,
+			TianggeLifecycle: prediction.DescribeTianggeMarketLifecycle(prediction.MarketStatus(event.EventType)),
+		})
+	}
+	return out
+}
+
+func redactLifecycleEventResponse(event prediction.LifecycleEvent) prediction.LifecycleEvent {
+	if event.Reason != nil {
+		reason := redactLaunchProhibitedUserText(*event.Reason)
+		event.Reason = &reason
+	}
+	event.Metadata = redactPredictionRawJSONStrings(event.Metadata)
+	return event
+}
+
+func writeAdminMarketsCSV(w stdhttp.ResponseWriter, markets []prediction.Market) error {
+	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+	w.Header().Set("Content-Disposition", `attachment; filename="prediction-markets.csv"`)
+
+	writer := csv.NewWriter(w)
+	if err := writer.Write([]string{
+		"market_id",
+		"event_id",
+		"ticker",
+		"title",
+		"status",
+		"tiangge_stage",
+		"result",
+		"execution_mode",
+		"yes_price_cents",
+		"no_price_cents",
+		"volume_points_cents",
+		"open_interest_points_cents",
+		"liquidity_points_cents",
+		"settlement_source",
+		"settlement_rule",
+		"close_at",
+		"created_at",
+		"updated_at",
+	}); err != nil {
+		return httpx.Internal("failed to write admin markets csv", err)
+	}
+	for _, market := range markets {
+		market = predictionMarketPayload(market)
+		result := ""
+		if market.Result != nil {
+			result = string(*market.Result)
+		}
+		lifecycle := prediction.DescribeTianggeMarketLifecycle(market.Status)
+		if err := writer.Write([]string{
+			csvSafeCell(market.ID),
+			csvSafeCell(market.EventID),
+			csvSafeCell(market.Ticker),
+			csvSafeCell(market.Title),
+			csvSafeCell(string(market.Status)),
+			csvSafeCell(string(lifecycle.Stage)),
+			csvSafeCell(result),
+			csvSafeCell(string(market.ExecutionMode)),
+			strconv.Itoa(market.YesPriceCents),
+			strconv.Itoa(market.NoPriceCents),
+			strconv.FormatInt(market.VolumeCents, 10),
+			strconv.FormatInt(market.OpenInterestCents, 10),
+			strconv.FormatInt(market.LiquidityCents, 10),
+			csvSafeCell(market.SettlementSourceKey),
+			csvSafeCell(market.SettlementRule),
+			csvSafeCell(market.CloseAt.UTC().Format(time.RFC3339)),
+			csvSafeCell(market.CreatedAt.UTC().Format(time.RFC3339)),
+			csvSafeCell(market.UpdatedAt.UTC().Format(time.RFC3339)),
+		}); err != nil {
+			return httpx.Internal("failed to write admin markets csv", err)
+		}
+	}
+	writer.Flush()
+	if err := writer.Error(); err != nil {
+		return httpx.Internal("failed to flush admin markets csv", err)
+	}
+	return nil
+}
+
+func writeLifecycleAuditCSV(w stdhttp.ResponseWriter, marketID string, events []marketLifecycleEventResponse) error {
+	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+	w.Header().Set("Content-Disposition", `attachment; filename="market-lifecycle-`+csvSafeFilename(marketID)+`.csv"`)
+
+	writer := csv.NewWriter(w)
+	if err := writer.Write([]string{
+		"id",
+		"market_id",
+		"event_type",
+		"tiangge_stage",
+		"tiangge_label",
+		"actor_id",
+		"actor_type",
+		"reason",
+		"metadata",
+		"occurred_at",
+	}); err != nil {
+		return httpx.Internal("failed to write lifecycle audit csv", err)
+	}
+	for _, event := range events {
+		if err := writer.Write([]string{
+			csvSafeCell(event.ID),
+			csvSafeCell(event.MarketID),
+			csvSafeCell(event.EventType),
+			csvSafeCell(string(event.TianggeLifecycle.Stage)),
+			csvSafeCell(event.TianggeLifecycle.Label),
+			csvSafeCell(stringPtrValue(event.ActorID)),
+			csvSafeCell(event.ActorType),
+			csvSafeCell(stringPtrValue(event.Reason)),
+			csvSafeCell(string(event.Metadata)),
+			event.OccurredAt.UTC().Format(time.RFC3339Nano),
+		}); err != nil {
+			return httpx.Internal("failed to write lifecycle audit csv", err)
+		}
+	}
+	writer.Flush()
+	if err := writer.Error(); err != nil {
+		return httpx.Internal("failed to flush lifecycle audit csv", err)
+	}
+	return nil
+}
+
+func stringPtrValue(value *string) string {
+	if value == nil {
+		return ""
+	}
+	return *value
+}
+
+func csvSafeCell(value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return ""
+	}
+	switch value[0] {
+	case '=', '+', '-', '@':
+		return "'" + value
+	default:
+		return value
+	}
+}
+
+func csvSafeFilename(value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return "audit"
+	}
+	var b strings.Builder
+	for _, r := range value {
+		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '-' || r == '_' {
+			b.WriteRune(r)
+		}
+	}
+	if b.Len() == 0 {
+		return "audit"
+	}
+	return b.String()
 }
 
 func actorIDPointer(actorID string) *string {
@@ -1097,6 +2062,18 @@ func intQueryParam(r *stdhttp.Request, key string, defaultVal int) int {
 	n, err := strconv.Atoi(val)
 	if err != nil || n < 1 {
 		return defaultVal
+	}
+	return n
+}
+
+// clampedQueryParam is intQueryParam with an upper bound. Every list/pagination
+// endpoint MUST use this: the unclamped variant let a caller pass
+// ?pageSize=1000000 on a public, unauthenticated route, turning one request
+// into a full-table scan (audit PERF-01). max is an inclusive ceiling.
+func clampedQueryParam(r *stdhttp.Request, key string, defaultVal, max int) int {
+	n := intQueryParam(r, key, defaultVal)
+	if n > max {
+		return max
 	}
 	return n
 }

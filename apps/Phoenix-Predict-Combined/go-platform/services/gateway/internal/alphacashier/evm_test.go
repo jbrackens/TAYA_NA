@@ -2,6 +2,7 @@ package alphacashier
 
 import (
 	"context"
+	"database/sql"
 	"math/big"
 	"strings"
 	"testing"
@@ -182,7 +183,7 @@ type fakeLedger struct {
 	captured []string
 }
 
-func (l *fakeLedger) Credit(req wallet.MutationRequest) (wallet.LedgerEntry, error) {
+func (l *fakeLedger) Credit(_ context.Context, req wallet.MutationRequest) (wallet.LedgerEntry, error) {
 	l.calls++
 	return wallet.LedgerEntry{
 		EntryID:        "le:test",
@@ -192,7 +193,16 @@ func (l *fakeLedger) Credit(req wallet.MutationRequest) (wallet.LedgerEntry, err
 	}, nil
 }
 
-func (l *fakeLedger) Hold(req wallet.HoldRequest) (wallet.Reservation, error) {
+// CreditWithTx delegates to Credit in the fake: the memory-mode path never
+// reaches it (DB() returns nil), but it satisfies the WalletLedger interface.
+func (l *fakeLedger) CreditWithTx(ctx context.Context, _ *sql.Tx, req wallet.MutationRequest) (wallet.LedgerEntry, error) {
+	return l.Credit(ctx, req)
+}
+
+// DB returns nil so SubmitDepositTx takes the non-tx (memory-mode) path.
+func (l *fakeLedger) DB() *sql.DB { return nil }
+
+func (l *fakeLedger) Hold(_ context.Context, req wallet.HoldRequest) (wallet.Reservation, error) {
 	if l.holds == nil {
 		l.holds = map[string]wallet.Reservation{}
 	}
@@ -208,12 +218,12 @@ func (l *fakeLedger) Hold(req wallet.HoldRequest) (wallet.Reservation, error) {
 	return reservation, nil
 }
 
-func (l *fakeLedger) Release(referenceType, referenceID string) error {
+func (l *fakeLedger) Release(_ context.Context, referenceType, referenceID string) error {
 	l.released = append(l.released, referenceType+":"+referenceID)
 	return nil
 }
 
-func (l *fakeLedger) Capture(referenceType, referenceID string) (wallet.LedgerEntry, error) {
+func (l *fakeLedger) Capture(_ context.Context, referenceType, referenceID string) (wallet.LedgerEntry, error) {
 	l.captured = append(l.captured, referenceType+":"+referenceID)
 	return wallet.LedgerEntry{
 		EntryID:     "le:capture:" + referenceID,

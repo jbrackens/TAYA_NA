@@ -9,6 +9,7 @@ import org.scalatest.time.Seconds
 import org.scalatest.time.Span
 import org.scalatest.wordspec.AnyWordSpecLike
 
+import phoenix.core.Clock
 import phoenix.core.emailing.EmailSenderStub
 import phoenix.core.emailing.EmailingModule
 import phoenix.punters.domain.Email
@@ -37,8 +38,8 @@ final class AMLReportsGenerationAcceptanceSpec
   val eventuallyTimeout: Timeout = Timeout(Span(30, Seconds))
   val eventuallyInterval: Interval = Interval(Span(10, Millis))
 
-  val environment = new ProductionLikeEnvironment(system, keycloakRealm.config, dbConfig)
-  implicit val clock = environment.clock
+  val environment = new ProductionLikeEnvironment(system, keycloakRealm.config, dbConfig)(Clock.utcClock)
+  implicit val clock: Clock = environment.clock
   val reportingBets = new SlickBetEventsRepository(dbConfig)
   val dailySummaries = new SlickWalletSummaryRepository(dbConfig, environment.clock)
   val stubbedEmailSender = new EmailSenderStub()

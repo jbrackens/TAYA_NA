@@ -193,7 +193,6 @@ class InMemoryMarkets(
   override def getMarketCategories(sportId: SportId, pagination: Pagination)(implicit
       ec: ExecutionContext): Future[PaginatedResult[MarketCategoryVisibility]] = {
 
-    @annotation.nowarn
     val allCategories = (for {
       market <- markets
       marketCategory <- market.marketCategory.toList

@@ -1,0 +1,26 @@
+name: Guard — conventions (G-01)
+
+# Improvement-plan guardrail G-01: the CLAUDE.md convention bans as a required
+# CI check. Runs scripts/check-conventions.sh — no @ts-nocheck/@ts-ignore, no
+# @phoenix-ui/design-system import in app/, no console.* in app/ production, no
+# `any` type, and no reintroduced sportsbook concepts in the prediction Go
+# domain. (The external-symlink guard runs in the Tests workflow; the "no raw
+# fetch outside api-client" ban is added once P2-08 removes the raw fetches.)
+#
+# Verify: introduce one violation on a branch -> this job goes red.
+#
+# NOTE: workflow_dispatch-only while being proven green — the `pull_request`
+# trigger is added in a follow-up commit once confirmed, so the iteration never
+# emails failures. After that it becomes a required check on main.
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+
+jobs:
+  conventions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run convention gate
+        run: bash scripts/check-conventions.sh

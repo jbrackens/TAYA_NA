@@ -27,7 +27,7 @@ func newFakeWallet(initialBalance int64) *fakeWallet {
 	return &fakeWallet{balances: map[string]int64{"user1": initialBalance}}
 }
 
-func (f *fakeWallet) Debit(userID string, amountCents int64, idempotencyKey, reason string) error {
+func (f *fakeWallet) Debit(_ context.Context, userID string, amountCents int64, idempotencyKey, reason string) error {
 	if f.debitErr != nil {
 		return f.debitErr
 	}
@@ -39,13 +39,13 @@ func (f *fakeWallet) Debit(userID string, amountCents int64, idempotencyKey, rea
 	return nil
 }
 
-func (f *fakeWallet) Credit(userID string, amountCents int64, idempotencyKey, reason string) error {
+func (f *fakeWallet) Credit(_ context.Context, userID string, amountCents int64, idempotencyKey, reason string) error {
 	f.balances[userID] += amountCents
 	f.creditCalls = append(f.creditCalls, walletCall{userID, amountCents, idempotencyKey, reason})
 	return nil
 }
 
-func (f *fakeWallet) Balance(userID string) int64 { return f.balances[userID] }
+func (f *fakeWallet) Balance(_ context.Context, userID string) int64 { return f.balances[userID] }
 
 // memRepo is a minimal in-memory Repository for wiring tests. It only supports
 // the subset of methods exercised by the tests below.
@@ -110,7 +110,7 @@ func (r *memRepo) GetPosition(ctx context.Context, userID, marketID string, side
 	if p, ok := r.positions[key]; ok {
 		return clonePosition(p), nil
 	}
-	return nil, fmt.Errorf("not found")
+	return nil, ErrPositionNotFound
 }
 func (r *memRepo) UpsertPosition(ctx context.Context, p *Position) error {
 	if r.upsertPositionErr != nil {
@@ -210,7 +210,7 @@ func (r *atomicMemRepo) PersistFilledOrderAtomic(
 	if r.atomicErr != nil {
 		return r.atomicErr
 	}
-	if err := wallet.Debit(userID, totalCost, debitKey, debitReason); err != nil {
+	if err := wallet.Debit(context.Background(), userID, totalCost, debitKey, debitReason); err != nil {
 		return err
 	}
 	return r.memRepo.PersistFilledOrder(ctx, order, trade, position, market)
@@ -220,6 +220,7 @@ func (r *atomicMemRepo) PersistResolvedMarketAtomic(
 	ctx context.Context,
 	wallet WalletAdapter,
 	market *Market,
+	prevStatus MarketStatus,
 	settlement *Settlement,
 	payouts []Payout,
 	credits []WalletCreditRequest,
@@ -230,6 +231,11 @@ func (r *atomicMemRepo) PersistResolvedMarketAtomic(
 	r.atomicSettlementCalls++
 	if r.atomicErr != nil {
 		return nil, r.atomicErr
+	}
+	// Mirror the SQL persister's status guard (COR-01): the stored market
+	// must still be in the status the engine validated.
+	if stored, err := r.memRepo.GetMarket(ctx, market.ID); err == nil && stored.Status != prevStatus {
+		return nil, ErrStaleMarketStatus
 	}
 	if err := r.memRepo.CreateSettlement(ctx, settlement); err != nil {
 		return nil, err
@@ -248,7 +254,7 @@ func (r *atomicMemRepo) PersistResolvedMarketAtomic(
 		}
 	}
 	for _, credit := range credits {
-		if err := wallet.Credit(credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
+		if err := wallet.Credit(context.Background(), credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
 			return nil, err
 		}
 	}
@@ -273,6 +279,7 @@ func (r *atomicMemRepo) PersistVoidedMarketAtomic(
 	ctx context.Context,
 	wallet WalletAdapter,
 	market *Market,
+	prevStatus MarketStatus,
 	payouts []Payout,
 	credits []WalletCreditRequest,
 	lifecycle *LifecycleEvent,
@@ -281,11 +288,15 @@ func (r *atomicMemRepo) PersistVoidedMarketAtomic(
 	if r.atomicErr != nil {
 		return r.atomicErr
 	}
+	// Mirror the SQL persister's status guard (COR-01).
+	if stored, err := r.memRepo.GetMarket(ctx, market.ID); err == nil && stored.Status != prevStatus {
+		return ErrStaleMarketStatus
+	}
 	if err := r.memRepo.UpdateMarket(ctx, market); err != nil {
 		return err
 	}
 	for _, credit := range credits {
-		if err := wallet.Credit(credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
+		if err := wallet.Credit(context.Background(), credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
 			return err
 		}
 	}
@@ -345,11 +356,13 @@ func (r *memRepo) LogAIGeneration(context.Context, *AIGenerationLog) error   { r
 func (r *memRepo) LinkAIGenerationLogsToMarket(context.Context, string, []string, *string) error {
 	return nil
 }
-func (r *memRepo) GetMarketByTicker(context.Context, string) (*Market, error)     { return nil, nil }
-func (r *memRepo) CreateMarket(context.Context, *Market) error                    { return nil }
-func (r *memRepo) UpdateMarketStatus(context.Context, string, MarketStatus) error { return nil }
-func (r *memRepo) ListMarketsToClose(context.Context) ([]Market, error)           { return nil, nil }
-func (r *memRepo) ListMarketsToSettle(context.Context) ([]Market, error)          { return nil, nil }
+func (r *memRepo) GetMarketByTicker(context.Context, string) (*Market, error) { return nil, nil }
+func (r *memRepo) CreateMarket(context.Context, *Market) error                { return nil }
+func (r *memRepo) UpdateMarketStatus(context.Context, string, MarketStatus, MarketStatus) error {
+	return nil
+}
+func (r *memRepo) ListMarketsToClose(context.Context) ([]Market, error)  { return nil, nil }
+func (r *memRepo) ListMarketsToSettle(context.Context) ([]Market, error) { return nil, nil }
 func (r *memRepo) ListRestingOrdersOnInactiveMarkets(context.Context, int) ([]Order, error) {
 	return nil, nil
 }
@@ -486,243 +499,24 @@ func seedMarket(t *testing.T, repo *memRepo) *Market {
 	return m
 }
 
-func TestPlaceOrder_DebitsWallet(t *testing.T) {
-	repo := newMemRepo()
-	seedMarket(t, repo)
-	wallet := newFakeWallet(10000) // $100.00
-	svc := NewService(repo, wallet)
-
-	order, trade, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:  "mkt-1",
-		Side:      OrderSideYes,
-		Action:    OrderActionBuy,
-		OrderType: OrderTypeMarket,
-		Quantity:  10,
-	}, "user1")
-	if err != nil {
-		t.Fatalf("PlaceOrder failed: %v", err)
-	}
-	if order == nil || trade == nil {
-		t.Fatal("expected order and trade to be non-nil")
-	}
-	if len(wallet.debitCalls) != 1 {
-		t.Fatalf("expected 1 debit call, got %d", len(wallet.debitCalls))
-	}
-	if wallet.debitCalls[0].userID != "user1" {
-		t.Errorf("wrong user: %s", wallet.debitCalls[0].userID)
-	}
-	if wallet.debitCalls[0].amountCents != order.TotalCostCents {
-		t.Errorf("debit amount mismatch: wallet=%d order=%d",
-			wallet.debitCalls[0].amountCents, order.TotalCostCents)
-	}
-	if wallet.debitCalls[0].idempKey == "" {
-		t.Fatal("expected wallet debit idempotency key to be auto-generated")
-	}
-	if order.IdempotencyKey == nil || *order.IdempotencyKey == "" {
-		t.Fatal("expected stored order to carry a non-empty idempotency key")
-	}
-	if wallet.debitCalls[0].idempKey != "prediction_order:"+*order.IdempotencyKey {
-		t.Fatalf("wallet debit key %q did not match stored order key %q", wallet.debitCalls[0].idempKey, *order.IdempotencyKey)
-	}
-	if wallet.balances["user1"] != 10000-order.TotalCostCents {
-		t.Errorf("balance not reduced: %d", wallet.balances["user1"])
-	}
-	if repo.persistCalls != 1 {
-		t.Fatalf("expected one persist call, got %d", repo.persistCalls)
-	}
-}
-
 type fakeTxWallet struct {
 	*fakeWallet
 }
 
 func (f *fakeTxWallet) BeginTx(context.Context) (*sql.Tx, error) { return nil, nil }
 func (f *fakeTxWallet) DebitWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, idempotencyKey, reason string) error {
-	return f.Debit(userID, amountCents, idempotencyKey, reason)
+	return f.Debit(ctx, userID, amountCents, idempotencyKey, reason)
 }
 func (f *fakeTxWallet) CreditWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, idempotencyKey, reason string) error {
-	return f.Credit(userID, amountCents, idempotencyKey, reason)
-}
-
-func TestPlaceOrder_UsesAtomicFillWhenRepoAndWalletSupportIt(t *testing.T) {
-	repo := &atomicMemRepo{memRepo: newMemRepo()}
-	seedMarket(t, repo.memRepo)
-	wallet := &fakeTxWallet{fakeWallet: newFakeWallet(10000)}
-	svc := NewService(repo, wallet)
-
-	order, trade, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:  "mkt-1",
-		Side:      OrderSideYes,
-		Action:    OrderActionBuy,
-		OrderType: OrderTypeMarket,
-		Quantity:  10,
-	}, "user1")
-	if err != nil {
-		t.Fatalf("PlaceOrder failed: %v", err)
-	}
-	if order == nil || trade == nil {
-		t.Fatal("expected order and trade from atomic fill path")
-	}
-	if repo.atomicOrderCalls != 1 {
-		t.Fatalf("expected one atomic fill call, got %d", repo.atomicOrderCalls)
-	}
-	if repo.persistCalls != 1 {
-		t.Fatalf("expected one persisted fill from atomic path, got %d", repo.persistCalls)
-	}
-	if len(wallet.debitCalls) != 1 {
-		t.Fatalf("expected one wallet debit from atomic path, got %d", len(wallet.debitCalls))
-	}
-}
-
-func TestPlaceOrder_InsufficientBalance_Rejected(t *testing.T) {
-	repo := newMemRepo()
-	seedMarket(t, repo)
-	wallet := newFakeWallet(10) // $0.10 — too little
-	svc := NewService(repo, wallet)
-
-	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:  "mkt-1",
-		Side:      OrderSideYes,
-		Action:    OrderActionBuy,
-		OrderType: OrderTypeMarket,
-		Quantity:  10,
-	}, "user1")
-	if err == nil {
-		t.Fatal("expected insufficient balance error")
-	}
-	if len(wallet.debitCalls) != 0 {
-		t.Errorf("expected 0 debit calls on rejection, got %d", len(wallet.debitCalls))
-	}
-	if len(repo.orders) != 0 {
-		t.Errorf("no order should have been created on rejection")
-	}
-}
-
-func TestPlaceOrder_CreateOrderFailure_RefundsWallet(t *testing.T) {
-	repo := newMemRepo()
-	seedMarket(t, repo)
-	repo.createOrderErr = fmt.Errorf("db unavailable")
-	wallet := newFakeWallet(10000)
-	svc := NewService(repo, wallet)
-
-	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:  "mkt-1",
-		Side:      OrderSideYes,
-		Action:    OrderActionBuy,
-		OrderType: OrderTypeMarket,
-		Quantity:  10,
-	}, "user1")
-	if err == nil {
-		t.Fatal("expected create order failure")
-	}
-	if len(wallet.debitCalls) != 1 {
-		t.Fatalf("expected one debit before refund, got %d", len(wallet.debitCalls))
-	}
-	if len(wallet.creditCalls) != 1 {
-		t.Fatalf("expected one compensating refund, got %d", len(wallet.creditCalls))
-	}
-	if wallet.creditCalls[0].amountCents != wallet.debitCalls[0].amountCents {
-		t.Fatalf("refund amount %d should match debit amount %d", wallet.creditCalls[0].amountCents, wallet.debitCalls[0].amountCents)
-	}
-	if wallet.balances["user1"] != 10000 {
-		t.Fatalf("expected balance restored to 10000, got %d", wallet.balances["user1"])
-	}
-	if len(repo.orders) != 0 {
-		t.Fatalf("expected no persisted order on create failure, got %d", len(repo.orders))
-	}
-}
-
-func TestPlaceOrder_UpdateMarketFailure_RefundsWalletAndRollsBackFill(t *testing.T) {
-	repo := newMemRepo()
-	seedMarket(t, repo)
-	repo.updateMarketErr = fmt.Errorf("market write failed")
-	wallet := newFakeWallet(10000)
-	svc := NewService(repo, wallet)
-
-	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:  "mkt-1",
-		Side:      OrderSideYes,
-		Action:    OrderActionBuy,
-		OrderType: OrderTypeMarket,
-		Quantity:  10,
-	}, "user1")
-	if err == nil {
-		t.Fatal("expected update market failure")
-	}
-	if len(wallet.debitCalls) != 1 {
-		t.Fatalf("expected one debit before refund, got %d", len(wallet.debitCalls))
-	}
-	if len(wallet.creditCalls) != 1 {
-		t.Fatalf("expected one compensating refund, got %d", len(wallet.creditCalls))
-	}
-	if wallet.balances["user1"] != 10000 {
-		t.Fatalf("expected balance restored to 10000, got %d", wallet.balances["user1"])
-	}
-	if len(repo.orders) != 0 {
-		t.Fatalf("expected no persisted orders after rollback, got %d", len(repo.orders))
-	}
-	if len(repo.trades) != 0 {
-		t.Fatalf("expected no persisted trades after rollback, got %d", len(repo.trades))
-	}
-	if len(repo.positions) != 0 {
-		t.Fatalf("expected no persisted positions after rollback, got %d", len(repo.positions))
-	}
-	stored := repo.markets["mkt-1"]
-	if stored.YesPriceCents != 50 || stored.NoPriceCents != 50 || stored.VolumeCents != 0 {
-		t.Fatalf("expected original market snapshot to remain unchanged, got yes=%d no=%d volume=%d", stored.YesPriceCents, stored.NoPriceCents, stored.VolumeCents)
-	}
+	return f.Credit(ctx, userID, amountCents, idempotencyKey, reason)
 }
 
 // TestPlaceOrder_ZeroBalance_Rejected guards against a regression where the
 // balance check was skipped when balance == 0, letting users with empty
 // wallets place orders that would only fail later at debit time.
-func TestPlaceOrder_ZeroBalance_Rejected(t *testing.T) {
-	repo := newMemRepo()
-	seedMarket(t, repo)
-	wallet := &fakeWallet{balances: map[string]int64{"user1": 0}}
-	svc := NewService(repo, wallet)
-
-	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:  "mkt-1",
-		Side:      OrderSideYes,
-		Action:    OrderActionBuy,
-		OrderType: OrderTypeMarket,
-		Quantity:  10,
-	}, "user1")
-	if err == nil {
-		t.Fatal("expected rejection for zero balance")
-	}
-	if len(wallet.debitCalls) != 0 {
-		t.Errorf("wallet.Debit must not be called when pre-check rejects; got %d calls", len(wallet.debitCalls))
-	}
-	if len(repo.orders) != 0 {
-		t.Errorf("no order should be created on rejection")
-	}
-}
-
 // TestPlaceOrder_NoopWallet_AllowsAnyBalance ensures the NoopWallet sentinel
 // (math.MaxInt64 from Balance) short-circuits the pre-check, so tests that
 // don't care about wallet behavior can still exercise trading paths.
-func TestPlaceOrder_NoopWallet_AllowsAnyBalance(t *testing.T) {
-	repo := newMemRepo()
-	seedMarket(t, repo)
-	svc := NewService(repo, nil) // nil → NoopWallet
-
-	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:  "mkt-1",
-		Side:      OrderSideYes,
-		Action:    OrderActionBuy,
-		OrderType: OrderTypeMarket,
-		Quantity:  10,
-	}, "anyone")
-	if err != nil {
-		t.Fatalf("NoopWallet should allow order; got error: %v", err)
-	}
-	if len(repo.orders) != 1 {
-		t.Errorf("expected 1 order created under NoopWallet, got %d", len(repo.orders))
-	}
-}
-
 func TestResolveMarket_CreditsWinnersOnly(t *testing.T) {
 	repo := newMemRepo()
 	m := seedMarket(t, repo)
@@ -916,5 +710,546 @@ func TestVoidMarket_UsesAtomicVoidWhenAvailable(t *testing.T) {
 	}
 	if len(wallet.creditCalls) != 2 {
 		t.Fatalf("expected 2 refund credits from atomic void path, got %d", len(wallet.creditCalls))
+	}
+}
+
+// TestPlaceOrder_AMMMarketRetired_Rejected guards the P2-09 AMM retirement: a
+// non-order_book market refuses new orders with no wallet debit. Read-only
+// previews remain available for honest liquidity/impact display.
+func TestPlaceOrder_AMMMarketRetired_Rejected(t *testing.T) {
+	repo := newMemRepo()
+	seedMarket(t, repo) // ExecutionMode defaults to "" (not order_book)
+	wallet := newFakeWallet(10000)
+	svc := NewService(repo, wallet)
+
+	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
+		MarketID:  "mkt-1",
+		Side:      OrderSideYes,
+		Action:    OrderActionBuy,
+		OrderType: OrderTypeMarket,
+		Quantity:  10,
+	}, "user1")
+	if err == nil {
+		t.Fatal("expected a retired AMM market to reject new orders")
+	}
+	if len(wallet.debitCalls) != 0 {
+		t.Fatalf("no wallet debit should occur on a retired AMM market, got %d", len(wallet.debitCalls))
+	}
+
+	preview, perr := svc.PreviewOrder(context.Background(), PlaceOrderRequest{
+		MarketID:  "mkt-1",
+		Side:      OrderSideYes,
+		Action:    OrderActionBuy,
+		OrderType: OrderTypeMarket,
+		Quantity:  10,
+	})
+	if perr != nil {
+		t.Fatalf("expected retired AMM preview to stay read-only, got %v", perr)
+	}
+	if preview.ExecutionMode != ExecutionModeAMM || preview.FilledQuantity != 10 {
+		t.Fatalf("preview = mode %q filled %d, want AMM filled 10", preview.ExecutionMode, preview.FilledQuantity)
+	}
+}
+
+type exchangeMemRepo struct {
+	*memRepo
+	secondaryMakers []Order
+	issuanceMakers  []Order
+	persistPlans    []*MatchPlan
+	refreshCalls    int
+}
+
+func newExchangeMemRepo() *exchangeMemRepo {
+	return &exchangeMemRepo{memRepo: newMemRepo()}
+}
+
+func (r *exchangeMemRepo) GetOrder(_ context.Context, id string) (*Order, error) {
+	order := r.orders[id]
+	if order == nil {
+		return nil, fmt.Errorf("order not found")
+	}
+	return cloneOrder(order), nil
+}
+
+func (r *exchangeMemRepo) GetOrderBook(context.Context, string, int) (*OrderBook, error) {
+	return &OrderBook{}, nil
+}
+
+func (r *exchangeMemRepo) PersistMatchAtomic(ctx context.Context, wallet ExchangeWalletAdapter, plan *MatchPlan) error {
+	if plan.HoldReservation != nil {
+		h := plan.HoldReservation
+		if err := wallet.HoldWithTx(ctx, nil, h.UserID, h.AmountCents, h.Type, h.ID, h.ExpiresIn); err != nil {
+			return err
+		}
+	}
+	for _, capture := range plan.CaptureReservations {
+		if err := wallet.CaptureReservationWithTx(ctx, nil, capture.Type, capture.ID, capture.AmountCents, capture.CaptureKey); err != nil {
+			return err
+		}
+	}
+	for _, release := range plan.ReleaseReservations {
+		if err := wallet.ReleaseReservationWithTx(ctx, nil, release.Type, release.ID); err != nil {
+			return err
+		}
+	}
+	for _, credit := range plan.SellerCredits {
+		if err := wallet.CreditWithTx(ctx, nil, credit.UserID, credit.AmountCents, credit.CreditKey, "secondary fill proceeds"); err != nil {
+			return err
+		}
+	}
+
+	r.persistPlans = append(r.persistPlans, plan)
+	r.orders[plan.Taker.ID] = cloneOrder(&plan.Taker)
+	for i := range plan.MakerUpdates {
+		r.orders[plan.MakerUpdates[i].ID] = cloneOrder(&plan.MakerUpdates[i])
+	}
+	for i := range plan.Trades {
+		r.trades = append(r.trades, *cloneTrade(&plan.Trades[i]))
+	}
+	for _, mutation := range plan.PositionMutations {
+		key := mutation.UserID + ":" + mutation.MarketID + ":" + string(mutation.Side)
+		position := r.positions[key]
+		if position == nil {
+			position = &Position{
+				ID:       fmt.Sprintf("pos-%d", len(r.positions)+1),
+				UserID:   mutation.UserID,
+				MarketID: mutation.MarketID,
+				Side:     mutation.Side,
+			}
+			r.positions[key] = position
+		}
+		ApplyPositionMutation(position, mutation)
+	}
+	for _, delta := range plan.PositionReservationDeltas {
+		key := delta.UserID + ":" + delta.MarketID + ":" + string(delta.Side)
+		position := r.positions[key]
+		if position == nil {
+			position = &Position{
+				ID:       fmt.Sprintf("pos-%d", len(r.positions)+1),
+				UserID:   delta.UserID,
+				MarketID: delta.MarketID,
+				Side:     delta.Side,
+			}
+			r.positions[key] = position
+		}
+		position.ReservedQuantity += delta.Delta
+		if position.ReservedQuantity < 0 {
+			position.ReservedQuantity = 0
+		}
+	}
+	r.markets[plan.Market.ID] = cloneMarket(&plan.Market)
+	return nil
+}
+
+func (r *exchangeMemRepo) FinalizeRestingOrderAtomic(
+	ctx context.Context,
+	wallet ExchangeWalletAdapter,
+	order *Order,
+	terminal OrderStatus,
+) (int64, int64, time.Time, error) {
+	if err := wallet.ReleaseReservationWithTx(ctx, nil, "prediction_order", order.ID); err != nil {
+		return 0, 0, time.Time{}, err
+	}
+	if order.Action == OrderActionSell && order.RemainingQuantity > 0 {
+		key := order.UserID + ":" + order.MarketID + ":" + string(order.Side)
+		if position := r.positions[key]; position != nil {
+			position.ReservedQuantity -= order.RemainingQuantity
+			if position.ReservedQuantity < 0 {
+				position.ReservedQuantity = 0
+			}
+		}
+	}
+
+	stored := r.orders[order.ID]
+	if stored == nil {
+		return 0, 0, time.Time{}, fmt.Errorf("order not found")
+	}
+	stored.Status = terminal
+	stored.ReservedQuantity = 0
+	now := time.Now().UTC()
+	if terminal == OrderStatusCancelled {
+		stored.CancelledAt = &now
+	}
+	stored.UpdatedAt = now
+	r.orders[stored.ID] = cloneOrder(stored)
+	return stored.ReservedCashCents, stored.CapturedCashCents, stored.CreatedAt, nil
+}
+
+func (r *exchangeMemRepo) LoadMakersForSecondary(context.Context, string, OrderSide, OrderAction, *int, int) ([]Order, error) {
+	return append([]Order(nil), r.secondaryMakers...), nil
+}
+
+func (r *exchangeMemRepo) LoadMakersForIssuance(context.Context, string, OrderSide, int, int) ([]Order, error) {
+	return append([]Order(nil), r.issuanceMakers...), nil
+}
+
+func (r *exchangeMemRepo) RefreshMarketBestQuotes(context.Context, string) error {
+	r.refreshCalls++
+	return nil
+}
+
+func (r *exchangeMemRepo) ReconcileMarket(context.Context, string) (*CollateralDriftReport, error) {
+	return nil, nil
+}
+
+func (r *exchangeMemRepo) ListRecentDriftAlerts(context.Context, time.Time) ([]CollateralDriftAlert, error) {
+	return nil, nil
+}
+
+type reservationCall struct {
+	userID      string
+	amountCents int64
+	refType     string
+	refID       string
+}
+
+type captureCall struct {
+	amountCents int64
+	refType     string
+	refID       string
+	captureKey  string
+}
+
+type exchangeFakeWallet struct {
+	*fakeWallet
+	holds        []reservationCall
+	captures     []captureCall
+	releases     []ReservationRef
+	reservations map[string]int64
+	captured     map[string]int64
+}
+
+func newExchangeFakeWallet(initialBalance int64) *exchangeFakeWallet {
+	return &exchangeFakeWallet{
+		fakeWallet:   newFakeWallet(initialBalance),
+		reservations: make(map[string]int64),
+		captured:     make(map[string]int64),
+	}
+}
+
+func (f *exchangeFakeWallet) BeginTx(context.Context) (*sql.Tx, error)         { return nil, nil }
+func (f *exchangeFakeWallet) BeginExchangeTx(context.Context) (*sql.Tx, error) { return nil, nil }
+
+func (f *exchangeFakeWallet) DebitWithTx(ctx context.Context, _ *sql.Tx, userID string, amountCents int64, idempotencyKey, reason string) error {
+	return f.Debit(ctx, userID, amountCents, idempotencyKey, reason)
+}
+
+func (f *exchangeFakeWallet) CreditWithTx(ctx context.Context, _ *sql.Tx, userID string, amountCents int64, idempotencyKey, reason string) error {
+	return f.Credit(ctx, userID, amountCents, idempotencyKey, reason)
+}
+
+func (f *exchangeFakeWallet) HoldWithTx(_ context.Context, _ *sql.Tx, userID string, amountCents int64, refType, refID string, _ time.Duration) error {
+	if f.balances[userID] < amountCents {
+		return fmt.Errorf("insufficient balance")
+	}
+	f.holds = append(f.holds, reservationCall{userID: userID, amountCents: amountCents, refType: refType, refID: refID})
+	f.reservations[refType+":"+refID] = amountCents
+	return nil
+}
+
+func (f *exchangeFakeWallet) CaptureReservationWithTx(_ context.Context, _ *sql.Tx, refType, refID string, amountCents int64, captureKey string) error {
+	key := refType + ":" + refID
+	remaining := f.reservations[key] - f.captured[key]
+	if amountCents > remaining {
+		return fmt.Errorf("capture %d exceeds remaining %d", amountCents, remaining)
+	}
+	f.captured[key] += amountCents
+	f.captures = append(f.captures, captureCall{amountCents: amountCents, refType: refType, refID: refID, captureKey: captureKey})
+	return nil
+}
+
+func (f *exchangeFakeWallet) ReleaseReservationWithTx(_ context.Context, _ *sql.Tx, refType, refID string) error {
+	f.releases = append(f.releases, ReservationRef{Type: refType, ID: refID})
+	return nil
+}
+
+func seedOrderBookMarket(t *testing.T, repo *exchangeMemRepo) *Market {
+	t.Helper()
+	m := seedMarket(t, repo.memRepo)
+	m.ExecutionMode = ExecutionModeOrderBook
+	m.FeeRateBps = 500
+	repo.markets[m.ID] = m
+	return m
+}
+
+func TestPlaceOrder_OrderBookBuyYes_WalletPlanCapturesAndCreditsSeller(t *testing.T) {
+	repo := newExchangeMemRepo()
+	seedOrderBookMarket(t, repo)
+	maker := makeOrder("maker-sell-yes", "bob", OrderSideYes, OrderActionSell, OrderTypeLimit, intPtr(55), 10)
+	maker.Status = OrderStatusOpen
+	maker.ReservedQuantity = 10
+	repo.secondaryMakers = []Order{maker}
+	repo.orders[maker.ID] = cloneOrder(&maker)
+	repo.positions["bob:mkt-1:yes"] = &Position{
+		ID: "pos-bob", UserID: "bob", MarketID: "mkt-1", Side: OrderSideYes,
+		Quantity: 10, ReservedQuantity: 10, AvgPriceCents: 40, TotalCostCents: 400,
+	}
+	wallet := newExchangeFakeWallet(1000)
+	svc := NewService(repo, wallet)
+
+	order, trade, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
+		MarketID:   "mkt-1",
+		Side:       OrderSideYes,
+		Action:     OrderActionBuy,
+		OrderType:  OrderTypeLimit,
+		PriceCents: intPtr(60),
+		Quantity:   10,
+	}, "user1")
+	if err != nil {
+		t.Fatalf("PlaceOrder failed: %v", err)
+	}
+	if order.Status != OrderStatusFilled || trade == nil || trade.PriceCents != 55 {
+		t.Fatalf("expected filled buy at 55, got order=%+v trade=%+v", order, trade)
+	}
+	if len(wallet.holds) != 1 || wallet.holds[0].amountCents != 600 || wallet.holds[0].refID != order.ID {
+		t.Fatalf("expected one 600-point hold for taker order, got %+v", wallet.holds)
+	}
+	if len(wallet.captures) != 1 || wallet.captures[0].amountCents != 550 || wallet.captures[0].refID != order.ID {
+		t.Fatalf("expected one 550-point capture from taker reservation, got %+v", wallet.captures)
+	}
+	if len(wallet.releases) != 1 || wallet.releases[0].ID != order.ID {
+		t.Fatalf("expected taker reservation release, got %+v", wallet.releases)
+	}
+	if len(wallet.creditCalls) != 1 || wallet.creditCalls[0].userID != "bob" || wallet.creditCalls[0].amountCents != 550 {
+		t.Fatalf("expected seller bob credited 550 points, got %+v", wallet.creditCalls)
+	}
+	if got := repo.positions["user1:mkt-1:yes"]; got == nil || got.Quantity != 10 || got.TotalCostCents != 550 {
+		t.Fatalf("expected buyer YES position quantity=10 cost=550, got %+v", got)
+	}
+	if got := repo.positions["bob:mkt-1:yes"]; got == nil || got.Quantity != 0 || got.ReservedQuantity != 0 {
+		t.Fatalf("expected seller position closed and reservation released, got %+v", got)
+	}
+	if len(repo.persistPlans) != 1 || len(repo.persistPlans[0].LedgerEntries) == 0 {
+		t.Fatalf("expected persisted match plan with collateral ledger entries, got %+v", repo.persistPlans)
+	}
+}
+
+func TestPlaceOrder_OrderBookBuyNo_IssuanceCapturesBothReservations(t *testing.T) {
+	repo := newExchangeMemRepo()
+	seedOrderBookMarket(t, repo)
+	maker := makeOrder("maker-buy-yes", "bob", OrderSideYes, OrderActionBuy, OrderTypeLimit, intPtr(40), 10)
+	maker.Status = OrderStatusOpen
+	repo.issuanceMakers = []Order{maker}
+	repo.orders[maker.ID] = cloneOrder(&maker)
+	wallet := newExchangeFakeWallet(1000)
+	wallet.balances["bob"] = 1000
+	wallet.reservations["prediction_order:"+maker.ID] = 400
+	svc := NewService(repo, wallet)
+
+	order, trade, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
+		MarketID:   "mkt-1",
+		Side:       OrderSideNo,
+		Action:     OrderActionBuy,
+		OrderType:  OrderTypeLimit,
+		PriceCents: intPtr(65),
+		Quantity:   10,
+	}, "user1")
+	if err != nil {
+		t.Fatalf("PlaceOrder failed: %v", err)
+	}
+	if order.Status != OrderStatusFilled || trade == nil || trade.TradeKind != TradeKindIssuance {
+		t.Fatalf("expected filled buy NO issuance, got order=%+v trade=%+v", order, trade)
+	}
+	if len(wallet.holds) != 1 || wallet.holds[0].amountCents != 650 || wallet.holds[0].refID != order.ID {
+		t.Fatalf("expected one 650-point taker hold, got %+v", wallet.holds)
+	}
+	if len(wallet.captures) != 2 {
+		t.Fatalf("expected taker and maker captures, got %+v", wallet.captures)
+	}
+	if wallet.captures[0].refID != order.ID || wallet.captures[0].amountCents != 600 {
+		t.Fatalf("expected taker capture of 600 points, got %+v", wallet.captures[0])
+	}
+	if wallet.captures[1].refID != maker.ID || wallet.captures[1].amountCents != 400 {
+		t.Fatalf("expected maker capture of 400 points, got %+v", wallet.captures[1])
+	}
+	if len(wallet.releases) != 1 || wallet.releases[0].ID != order.ID {
+		t.Fatalf("expected taker reservation release, got %+v", wallet.releases)
+	}
+	if len(wallet.creditCalls) != 0 {
+		t.Fatalf("issuance should not credit a seller, got %+v", wallet.creditCalls)
+	}
+	if got := repo.positions["user1:mkt-1:no"]; got == nil || got.Quantity != 10 || got.TotalCostCents != 600 {
+		t.Fatalf("expected buyer NO position quantity=10 cost=600, got %+v", got)
+	}
+	if got := repo.positions["bob:mkt-1:yes"]; got == nil || got.Quantity != 10 || got.TotalCostCents != 400 {
+		t.Fatalf("expected maker YES position quantity=10 cost=400, got %+v", got)
+	}
+	if len(repo.persistPlans) != 1 {
+		t.Fatalf("expected one persisted match plan, got %+v", repo.persistPlans)
+	}
+	if repo.persistPlans[0].Market.CollateralPoolCents != 1000 {
+		t.Fatalf("expected collateral pool to grow by 1000, got %d", repo.persistPlans[0].Market.CollateralPoolCents)
+	}
+	if len(repo.persistPlans[0].LedgerEntries) == 0 {
+		t.Fatalf("expected issuance collateral ledger entries, got %+v", repo.persistPlans[0].LedgerEntries)
+	}
+}
+
+func TestPlaceOrder_OrderBookSellYes_CreditsSellerWithoutCashHold(t *testing.T) {
+	repo := newExchangeMemRepo()
+	seedOrderBookMarket(t, repo)
+	maker := makeOrder("maker-buy-yes", "bob", OrderSideYes, OrderActionBuy, OrderTypeLimit, intPtr(55), 10)
+	maker.Status = OrderStatusOpen
+	repo.secondaryMakers = []Order{maker}
+	repo.orders[maker.ID] = cloneOrder(&maker)
+	repo.positions["user1:mkt-1:yes"] = &Position{
+		ID: "pos-alice", UserID: "user1", MarketID: "mkt-1", Side: OrderSideYes,
+		Quantity: 10, AvgPriceCents: 40, TotalCostCents: 400,
+	}
+	wallet := newExchangeFakeWallet(0)
+	wallet.balances["bob"] = 1000
+	wallet.reservations["prediction_order:"+maker.ID] = 550
+	svc := NewService(repo, wallet)
+
+	order, trade, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
+		MarketID:  "mkt-1",
+		Side:      OrderSideYes,
+		Action:    OrderActionSell,
+		OrderType: OrderTypeMarket,
+		Quantity:  10,
+	}, "user1")
+	if err != nil {
+		t.Fatalf("PlaceOrder failed: %v", err)
+	}
+	if order.Status != OrderStatusFilled || trade == nil || trade.PriceCents != 55 {
+		t.Fatalf("expected filled sell at 55, got order=%+v trade=%+v", order, trade)
+	}
+	if len(wallet.holds) != 0 {
+		t.Fatalf("sell taker should not create a cash hold, got %+v", wallet.holds)
+	}
+	if len(wallet.captures) != 1 || wallet.captures[0].refID != maker.ID || wallet.captures[0].amountCents != 550 {
+		t.Fatalf("expected capture from resting buyer reservation, got %+v", wallet.captures)
+	}
+	if len(wallet.creditCalls) != 1 || wallet.creditCalls[0].userID != "user1" || wallet.creditCalls[0].amountCents != 550 {
+		t.Fatalf("expected seller user1 credited 550 points, got %+v", wallet.creditCalls)
+	}
+	if got := repo.positions["user1:mkt-1:yes"]; got == nil || got.Quantity != 0 || got.RealizedPnlCents != 150 {
+		t.Fatalf("expected seller position closed with 150-point realized pnl, got %+v", got)
+	}
+}
+
+func TestPlaceOrder_OrderBookBuyYes_InsufficientPointsRejectsBeforeCapture(t *testing.T) {
+	repo := newExchangeMemRepo()
+	seedOrderBookMarket(t, repo)
+	maker := makeOrder("maker-sell-yes", "bob", OrderSideYes, OrderActionSell, OrderTypeLimit, intPtr(55), 10)
+	maker.Status = OrderStatusOpen
+	maker.ReservedQuantity = 10
+	repo.secondaryMakers = []Order{maker}
+	repo.orders[maker.ID] = cloneOrder(&maker)
+	repo.positions["bob:mkt-1:yes"] = &Position{
+		ID: "pos-bob", UserID: "bob", MarketID: "mkt-1", Side: OrderSideYes,
+		Quantity: 10, ReservedQuantity: 10, AvgPriceCents: 40, TotalCostCents: 400,
+	}
+	wallet := newExchangeFakeWallet(599)
+	svc := NewService(repo, wallet)
+
+	order, trade, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
+		MarketID:   "mkt-1",
+		Side:       OrderSideYes,
+		Action:     OrderActionBuy,
+		OrderType:  OrderTypeLimit,
+		PriceCents: intPtr(60),
+		Quantity:   10,
+	}, "user1")
+	if err == nil {
+		t.Fatal("expected insufficient points error")
+	}
+	if trade != nil {
+		t.Fatalf("expected no trade on rejected order, got %+v", trade)
+	}
+	if order == nil || order.Status != OrderStatusRejected {
+		t.Fatalf("expected rejected order returned, got %+v", order)
+	}
+	if len(wallet.holds) != 0 || len(wallet.captures) != 0 || len(wallet.creditCalls) != 0 {
+		t.Fatalf("insufficient points must not capture or credit, holds=%+v captures=%+v credits=%+v", wallet.holds, wallet.captures, wallet.creditCalls)
+	}
+	if len(repo.persistPlans) != 0 {
+		t.Fatalf("failed wallet hold should roll back match persistence, got %+v", repo.persistPlans)
+	}
+}
+
+func TestCancelOrder_OrderBookRestingBuy_ReleasesHeldPointsAndRGCommit(t *testing.T) {
+	repo := newExchangeMemRepo()
+	seedOrderBookMarket(t, repo)
+	placedAt := time.Now().UTC().Add(-time.Minute)
+	order := &Order{
+		ID:                "resting-buy-yes",
+		UserID:            "user1",
+		MarketID:          "mkt-1",
+		Side:              OrderSideYes,
+		Action:            OrderActionBuy,
+		OrderType:         OrderTypeLimit,
+		PriceCents:        intPtr(60),
+		Quantity:          10,
+		RemainingQuantity: 10,
+		Status:            OrderStatusOpen,
+		TimeInForce:       TIFGTC,
+		ReservedCashCents: 600,
+		CapturedCashCents: 0,
+		CreatedAt:         placedAt,
+		UpdatedAt:         placedAt,
+	}
+	repo.orders[order.ID] = cloneOrder(order)
+	wallet := newExchangeFakeWallet(0)
+	rg := &fakeCompliance{}
+	svc := NewService(repo, wallet)
+	svc.SetComplianceChecker(rg)
+
+	if err := svc.CancelOrder(context.Background(), order.ID, "user1"); err != nil {
+		t.Fatalf("CancelOrder failed: %v", err)
+	}
+	stored := repo.orders[order.ID]
+	if stored.Status != OrderStatusCancelled || stored.CancelledAt == nil {
+		t.Fatalf("expected cancelled resting order with cancelledAt, got %+v", stored)
+	}
+	if len(wallet.releases) != 1 || wallet.releases[0].ID != order.ID {
+		t.Fatalf("expected wallet reservation release for cancelled order, got %+v", wallet.releases)
+	}
+	if len(rg.releaseCalls) != 1 || rg.releaseCalls[0] != 600 {
+		t.Fatalf("expected responsible-play release of 600 points, got %+v", rg.releaseCalls)
+	}
+}
+
+func TestCancelOrder_OrderBookRestingSell_ReleasesReservedShares(t *testing.T) {
+	repo := newExchangeMemRepo()
+	seedOrderBookMarket(t, repo)
+	placedAt := time.Now().UTC().Add(-time.Minute)
+	order := &Order{
+		ID:                "resting-sell-yes",
+		UserID:            "user1",
+		MarketID:          "mkt-1",
+		Side:              OrderSideYes,
+		Action:            OrderActionSell,
+		OrderType:         OrderTypeLimit,
+		PriceCents:        intPtr(55),
+		Quantity:          6,
+		RemainingQuantity: 6,
+		Status:            OrderStatusOpen,
+		TimeInForce:       TIFGTC,
+		ReservedQuantity:  6,
+		CreatedAt:         placedAt,
+		UpdatedAt:         placedAt,
+	}
+	repo.orders[order.ID] = cloneOrder(order)
+	repo.positions["user1:mkt-1:yes"] = &Position{
+		ID: "pos-user1", UserID: "user1", MarketID: "mkt-1", Side: OrderSideYes,
+		Quantity: 10, ReservedQuantity: 6, AvgPriceCents: 40, TotalCostCents: 400,
+	}
+	wallet := newExchangeFakeWallet(0)
+	svc := NewService(repo, wallet)
+
+	if err := svc.CancelOrder(context.Background(), order.ID, "user1"); err != nil {
+		t.Fatalf("CancelOrder failed: %v", err)
+	}
+	stored := repo.orders[order.ID]
+	if stored.Status != OrderStatusCancelled || stored.ReservedQuantity != 0 {
+		t.Fatalf("expected cancelled sell order with released order reservation, got %+v", stored)
+	}
+	position := repo.positions["user1:mkt-1:yes"]
+	if position.ReservedQuantity != 0 || position.Quantity != 10 {
+		t.Fatalf("expected sell cancellation to release reserved shares without changing owned quantity, got %+v", position)
+	}
+	if len(wallet.releases) != 1 || wallet.releases[0].ID != order.ID {
+		t.Fatalf("expected idempotent wallet reservation release call, got %+v", wallet.releases)
 	}
 }

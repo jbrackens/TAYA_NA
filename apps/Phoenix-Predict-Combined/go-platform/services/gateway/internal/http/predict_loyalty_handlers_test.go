@@ -63,11 +63,16 @@ func TestPredictLoyaltyStanding_ReturnsZeroStateForUnknownUser(t *testing.T) {
 	if payload["userId"] != "u-fresh" {
 		t.Errorf("userId: want u-fresh, got %v", payload["userId"])
 	}
-	if tier, _ := payload["tier"].(float64); int(tier) != int(loyalty.PredictTierHidden) {
-		t.Errorf("expected Hidden tier for never-accrued user, got %v", payload["tier"])
+	if rank, _ := payload["rank"].(float64); int(rank) != int(loyalty.PredictTierHidden) {
+		t.Errorf("expected Hidden rank for never-accrued user, got %v", payload["rank"])
 	}
 	if bal, _ := payload["pointsBalance"].(float64); bal != 0 {
 		t.Errorf("expected 0 balance, got %v", payload["pointsBalance"])
+	}
+	for _, retired := range []string{"tier", "tierName", "nextTier", "nextTierName", "pointsToNextTier"} {
+		if _, ok := payload[retired]; ok {
+			t.Errorf("zero-state standing response must not emit retired alias %q", retired)
+		}
 	}
 }
 
@@ -116,6 +121,58 @@ func TestPredictLoyaltyStanding_AllowsSelfUserIDParam(t *testing.T) {
 	_ = json.Unmarshal(res.Body.Bytes(), &p)
 	if bal, _ := p["pointsBalance"].(float64); bal != 5175 {
 		t.Errorf("pointsBalance: want 5175, got %v", p["pointsBalance"])
+	}
+	if p["unit"] != "PTS" {
+		t.Errorf("unit: want PTS, got %v", p["unit"])
+	}
+	if xp, _ := p["xp"].(float64); xp != 5175 {
+		t.Errorf("xp: want 5175, got %v", p["xp"])
+	}
+	if xp, _ := p["xpPoints"].(float64); xp != 5175 {
+		t.Errorf("xpPoints: want 5175, got %v", p["xpPoints"])
+	}
+	if rank, _ := p["rank"].(float64); int(rank) != int(loyalty.PredictTierSharp) {
+		t.Errorf("rank: want Sharp, got %v", p["rank"])
+	}
+	if p["rankName"] != "Sharp" {
+		t.Errorf("rankName: want Sharp, got %v", p["rankName"])
+	}
+	if nextRank, _ := p["nextRank"].(float64); int(nextRank) != int(loyalty.PredictTierWhale) {
+		t.Errorf("nextRank: want Whale, got %v", p["nextRank"])
+	}
+	if p["nextRankName"] != "Whale" {
+		t.Errorf("nextRankName: want Whale, got %v", p["nextRankName"])
+	}
+	if xpToNext, _ := p["xpToNextRank"].(float64); xpToNext <= 0 {
+		t.Errorf("xpToNextRank should be positive, got %v", p["xpToNextRank"])
+	}
+	for _, retired := range []string{"tier", "tierName", "nextTier", "nextTierName", "pointsToNextTier"} {
+		if _, ok := p[retired]; ok {
+			t.Errorf("standing response must not emit retired alias %q", retired)
+		}
+	}
+}
+
+func TestPredictLoyaltyStanding_RedactsLegacyUnsafeRankNames(t *testing.T) {
+	standing := loyalty.PredictStanding{
+		UserID:           "u-legacy-rank",
+		PointsBalance:    1000,
+		Tier:             loyalty.PredictTierNewcomer,
+		TierName:         "Cash prize newcomer",
+		NextTier:         loyalty.PredictTierSharp,
+		NextTierName:     "Crypto payout sharp",
+		PointsToNextTier: 4000,
+	}
+	payload := predictStandingPayload(standing)
+
+	if payload["rankName"] != launchRedactedUserText {
+		t.Fatalf("rankName should be redacted, got %#v", payload["rankName"])
+	}
+	if payload["nextRankName"] != launchRedactedUserText {
+		t.Fatalf("nextRankName should be redacted, got %#v", payload["nextRankName"])
+	}
+	if payload["unit"] != "PTS" {
+		t.Fatalf("unit should remain PTS, got %#v", payload["unit"])
 	}
 }
 
@@ -185,6 +242,23 @@ func TestPredictLoyaltyLedger_ReturnsEntriesForSelf(t *testing.T) {
 	}
 }
 
+func TestPredictLoyaltyLedger_RedactsLegacyUnsafeReason(t *testing.T) {
+	entry := loyalty.PredictLedgerEntry{
+		ID: 1, UserID: "u-legacy-ledger", EventType: "adjustment",
+		DeltaPoints: 100, BalanceAfter: 100, Reason: "cash payout loyalty bonus",
+		IdempotencyKey: "legacy-unsafe-reason",
+		CreatedAt:      time.Date(2026, 4, 23, 14, 58, 0, 0, time.UTC),
+	}
+	payload := predictLedgerEntryPayload(entry)
+
+	if payload["reason"] != launchRedactedUserText {
+		t.Fatalf("unsafe reason should be redacted, got %#v", payload["reason"])
+	}
+	if payload["eventType"] != "adjustment" || payload["deltaPoints"] != int64(100) {
+		t.Fatalf("stable ledger fields should remain intact, got %+v", payload)
+	}
+}
+
 func TestPredictLoyaltyLedger_RejectsInvalidLimit(t *testing.T) {
 	h := buildPredictLoyaltyHandler(t, &fakeLoyaltyRepo{})
 
@@ -217,9 +291,49 @@ func TestPredictLoyaltyTiers_IsPublicAndStable(t *testing.T) {
 	if p.TotalCount == 0 || len(p.Items) != p.TotalCount {
 		t.Errorf("tier count mismatch: total=%d, items=%d", p.TotalCount, len(p.Items))
 	}
-	// First tier should be Hidden (tier 0).
-	if tier, _ := p.Items[0]["tier"].(float64); int(tier) != int(loyalty.PredictTierHidden) {
-		t.Errorf("first tier: expected Hidden (0), got %v", p.Items[0]["tier"])
+	// First rank should be Hidden (rank 0).
+	if rank, _ := p.Items[0]["rank"].(float64); int(rank) != int(loyalty.PredictTierHidden) {
+		t.Errorf("first rank: expected Hidden (0), got %v", p.Items[0]["rank"])
+	}
+	if p.Items[0]["unit"] != "PTS" {
+		t.Errorf("first rank unit: want PTS, got %v", p.Items[0]["unit"])
+	}
+	if p.Items[0]["rankName"] != "" {
+		t.Errorf("first rankName: want empty hidden rank label, got %v", p.Items[0]["rankName"])
+	}
+	if minXP, _ := p.Items[0]["minXpPoints"].(float64); minXP != 0 {
+		t.Errorf("first minXpPoints: want 0, got %v", p.Items[0]["minXpPoints"])
+	}
+	for _, retired := range []string{"tier", "name", "pointsThreshold"} {
+		if _, ok := p.Items[0][retired]; ok {
+			t.Errorf("tier response must not emit retired alias %q", retired)
+		}
+	}
+}
+
+func TestPredictTierPayloadRedactsLegacyUnsafeBenefits(t *testing.T) {
+	payload := predictTierPayload(loyalty.PredictTierDefinition{
+		Tier:            loyalty.PredictTierSharp,
+		Name:            "Cash prize elite",
+		PointsThreshold: 10_000,
+		Benefits: []string{
+			"early market access",
+			"crypto payout priority",
+		},
+	})
+
+	if payload["rankName"] != launchRedactedUserText {
+		t.Fatalf("expected unsafe rankName redaction, got %+v", payload)
+	}
+	benefits, ok := payload["benefits"].([]string)
+	if !ok || len(benefits) != 2 {
+		t.Fatalf("expected benefit slice, got %#v", payload["benefits"])
+	}
+	if benefits[0] != "early market access" {
+		t.Fatalf("safe benefit should be preserved, got %+v", benefits)
+	}
+	if benefits[1] != launchRedactedUserText {
+		t.Fatalf("unsafe benefit should be redacted, got %+v", benefits)
 	}
 }
 

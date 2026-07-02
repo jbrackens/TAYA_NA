@@ -25,8 +25,9 @@ describe("scoped-copy telemetry utils", () => {
 
   test("resolves scoped query key count", () => {
     expect(resolveScopedQueryKeyCount("/logs")).toBe(0);
-    expect(resolveScopedQueryKeyCount("/logs?p=1&limit=20&preset=provider"))
-      .toBe(3);
+    expect(
+      resolveScopedQueryKeyCount("/logs?p=1&limit=20&preset=provider"),
+    ).toBe(3);
     expect(resolveScopedQueryKeyCount("/logs?p=1&&limit=20#frag")).toBe(2);
   });
 
@@ -38,7 +39,9 @@ describe("scoped-copy telemetry utils", () => {
 
   test("resolves scoped query key count with empty-key and empty-value params", () => {
     expect(
-      resolveScopedQueryKeyCount("/logs?=anon&action=bet.placed&novalue=&targetId"),
+      resolveScopedQueryKeyCount(
+        "/logs?=anon&action=bet.placed&novalue=&targetId",
+      ),
     ).toBe(4);
     expect(resolveScopedQueryKeyCount("/logs?=anon&&")).toBe(1);
   });
@@ -76,9 +79,9 @@ describe("scoped-copy telemetry utils", () => {
         "/logs?target%49d=1&%61ction=2&target%49d=3",
       ),
     ).toBe("action|targetId");
-    expect(
-      resolveScopedQueryKeySignature("/logs?%20=ignored&%61ction=2"),
-    ).toBe("action");
+    expect(resolveScopedQueryKeySignature("/logs?%20=ignored&%61ction=2")).toBe(
+      "action",
+    );
   });
 
   test("resolves scoped query key signature safely for invalid percent-encoding", () => {
@@ -214,7 +217,7 @@ describe("scoped-copy telemetry utils", () => {
           freebetId: "fb-1",
           oddsBoostId: "ob-1",
         },
-        expected: "action|actorId|freebetId|oddsBoostId|targetId|userId",
+        expected: "action|actorId|targetId|userId",
       },
     ];
 
@@ -237,16 +240,16 @@ describe("scoped-copy telemetry utils", () => {
         actorId: "",
         targetId: "odds88:settlement",
         userId: "",
-        freebetId: "",
-        oddsBoostId: "",
+        freebetId: "fb-77",
+        oddsBoostId: "ob-42",
       },
       appliedFilters: {
         action: "provider.stream.reassigned",
         actorId: "",
         targetId: "odds88:settlement",
         userId: "",
-        freebetId: "",
-        oddsBoostId: "",
+        freebetId: "fb-77",
+        oddsBoostId: "ob-42",
       },
       page: 1,
       pageSize: 20,
@@ -465,7 +468,9 @@ describe("scoped-copy telemetry utils", () => {
 
     cases.forEach(({ input, expected }) => {
       const context = buildScopedCopyTelemetryContext(input);
-      expect(context.explicitOverrideCount).toBe(expected.explicitOverrideCount);
+      expect(context.explicitOverrideCount).toBe(
+        expected.explicitOverrideCount,
+      );
       expect(context.explicitOverrideKeySignature).toBe(
         expected.explicitOverrideKeySignature,
       );

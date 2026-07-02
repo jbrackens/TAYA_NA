@@ -26,11 +26,15 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
-jest.mock("next/config", () => ({
-  default: () => ({
-    publicRuntimeConfig: {},
+jest.mock(
+  "next/config",
+  () => ({
+    default: () => ({
+      publicRuntimeConfig: {},
+    }),
   }),
-}));
+  { virtual: true },
+);
 
 jest.mock("i18n", () => ({
   useTranslation: () => ({
@@ -39,7 +43,7 @@ jest.mock("i18n", () => ({
 }));
 
 describe("user limits test", () => {
-  test("UsersDetailsLimits deposit: should display proper daily deposit value", async () => {
+  test("UsersDetailsLimits point-add: should display proper daily point value", async () => {
     render(
       <UsersDetailsLimits
         data={{
@@ -54,17 +58,19 @@ describe("user limits test", () => {
           },
         }}
         label={"testLabel"}
-        unit="$"
+        unit="pts"
+        separator=" "
+        prefixed={false}
       />,
       {
         wrapper: AllTheProviders,
       },
     );
     const dailyLimit = await screen.getByRole("daily");
-    expect(dailyLimit.textContent).toBe("$1.00");
+    expect(dailyLimit.textContent).toBe("1.00 pts");
   });
 
-  test("UsersDetailsLimits deposit: should display proper weekly deposit value", async () => {
+  test("UsersDetailsLimits point-add: should display proper weekly point value", async () => {
     render(
       <UsersDetailsLimits
         data={{
@@ -79,17 +85,19 @@ describe("user limits test", () => {
           },
         }}
         label={"testLabel"}
-        unit="$"
+        unit="pts"
+        separator=" "
+        prefixed={false}
       />,
       {
         wrapper: AllTheProviders,
       },
     );
     const weeklyLimit = await screen.getByRole("weekly");
-    expect(weeklyLimit.textContent).toBe("$2.00");
+    expect(weeklyLimit.textContent).toBe("2.00 pts");
   });
 
-  test("UsersDetailsLimits deposit: should display proper monthly deposit value", async () => {
+  test("UsersDetailsLimits point-add: should display proper monthly point value", async () => {
     render(
       <UsersDetailsLimits
         data={{
@@ -104,13 +112,15 @@ describe("user limits test", () => {
           },
         }}
         label={"testLabel"}
-        unit="$"
+        unit="pts"
+        separator=" "
+        prefixed={false}
       />,
       {
         wrapper: AllTheProviders,
       },
     );
     const monthlyLimit = await screen.getByRole("monthly");
-    expect(monthlyLimit.textContent).toBe("$3.00");
+    expect(monthlyLimit.textContent).toBe("3.00 pts");
   });
 });

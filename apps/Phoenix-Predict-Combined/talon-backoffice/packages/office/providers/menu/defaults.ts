@@ -14,8 +14,7 @@ const OfficeRole = {
 //
 // Pruned 2026-05-03: removed USERS (admin/punters endpoint not wired
 // for predict — page errors on every visit) and the entire
-// RISK_MANAGEMENT submenu (sportsbook subtree — fixtures, markets,
-// fixed-exotics, market-categories, provider-ops, summary — already
+// RISK_MANAGEMENT submenu (retired pre-Tiangge operations pages already
 // redirected to /dashboard via next.config.js redirects()). The
 // PREDICTION risk leaf was the only useful entry under RISK_MANAGEMENT
 // but PR #48 (feat/risk-dashboard-v1) supersedes it with a proper

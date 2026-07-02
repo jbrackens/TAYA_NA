@@ -20,10 +20,11 @@ type RequestMetric struct {
 }
 
 type MetricsRegistry struct {
-	mu       sync.RWMutex
-	metrics  map[string]RequestMetric
-	started  time.Time
-	hostname string
+	mu         sync.RWMutex
+	metrics    map[string]RequestMetric
+	collectors []func() string
+	started    time.Time
+	hostname   string
 }
 
 func NewMetricsRegistry() *MetricsRegistry {
@@ -76,6 +77,34 @@ func (r *MetricsRegistry) Snapshot() []RequestMetric {
 	return out
 }
 
+// RegisterCollector adds an auxiliary metrics source whose Prometheus text
+// output is appended to the /metrics body after the built-in HTTP request
+// metrics. Use it to surface domain or infrastructure counters that live
+// outside this registry — WebSocket drop counts, geo-gate denials, etc. —
+// without coupling those packages to the HTTP layer. Each collector must
+// return valid Prometheus text (its own # HELP/# TYPE lines included), or
+// "" to contribute nothing. Collectors are invoked at scrape time, not at
+// registration time. Safe for concurrent use; a nil collector is ignored.
+func (r *MetricsRegistry) RegisterCollector(c func() string) {
+	if c == nil {
+		return
+	}
+	r.mu.Lock()
+	r.collectors = append(r.collectors, c)
+	r.mu.Unlock()
+}
+
+// collectorSnapshot returns a copy of the registered collectors so they can
+// be invoked without holding the registry lock (a collector must never block
+// HTTP metric observation).
+func (r *MetricsRegistry) collectorSnapshot() []func() string {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	out := make([]func() string, len(r.collectors))
+	copy(out, r.collectors)
+	return out
+}
+
 func Metrics(registry *MetricsRegistry) Middleware {
 	if registry == nil {
 		registry = NewMetricsRegistry()
@@ -121,6 +150,13 @@ func MetricsHandler(registry *MetricsRegistry, service string) http.Handler {
 			)
 			_, _ = w.Write([]byte(fmt.Sprintf("phoenix_http_requests_total{%s} %d\n", labels, metric.Count)))
 			_, _ = w.Write([]byte(fmt.Sprintf("phoenix_http_request_duration_ms_sum{%s} %d\n", labels, metric.DurationMsSum)))
+		}
+
+		// Append any registered domain/infrastructure collectors.
+		for _, collect := range registry.collectorSnapshot() {
+			if text := collect(); text != "" {
+				_, _ = w.Write([]byte(text))
+			}
 		}
 	})
 }

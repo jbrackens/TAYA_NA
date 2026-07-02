@@ -22,15 +22,14 @@ RUNTIME_GATE_AUTO_STOP_STACK="${RUNTIME_GATE_AUTO_STOP_STACK:-1}"
 RUNTIME_GATE_BOOTSTRAP="${RUNTIME_GATE_BOOTSTRAP:-0}"
 RUNTIME_GATE_WAIT_TIMEOUT_SECONDS="${RUNTIME_GATE_WAIT_TIMEOUT_SECONDS:-300}"
 RUNTIME_GATE_PICK_FREE_PORTS="${RUNTIME_GATE_PICK_FREE_PORTS:-0}"
+RUNTIME_GATE_RUN_LIVE_NO_MONEY_BOUNDARY="${RUNTIME_GATE_RUN_LIVE_NO_MONEY_BOUNDARY:-1}"
 
 JAVA_PROFILE_VERSION="${JAVA_PROFILE_VERSION:-21}"
 TALON_PORT="${TALON_PORT:-3000}"
-SPORTSBOOK_PORT="${SPORTSBOOK_PORT:-3002}"
+PLAYER_PORT="${PLAYER_PORT:-${SPORTSBOOK_PORT:-3002}}"
 GO_GATEWAY_PORT="${GO_GATEWAY_PORT:-18080}"
 
-MULTI_SPORT_ITERATIONS="${MULTI_SPORT_ITERATIONS:-5}"
-MULTI_SPORT_SPORTS_CSV="${MULTI_SPORT_SPORTS_CSV:-mlb,nfl,nba,ufc,ncaa_baseball}"
-MULTI_SPORT_CHECK_ESPORTS_COMPAT="${MULTI_SPORT_CHECK_ESPORTS_COMPAT:-1}"
+TIANGGE_DISCOVERY_CONTRACT_ITERATIONS="${TIANGGE_DISCOVERY_CONTRACT_ITERATIONS:-${MULTI_SPORT_ITERATIONS:-1}}"
 
 is_truthy() {
   local value="${1:-0}"
@@ -50,17 +49,14 @@ pick_free_port() {
 
 if is_truthy "$RUNTIME_GATE_PICK_FREE_PORTS"; then
   TALON_PORT="$(pick_free_port "$TALON_PORT")"
-  SPORTSBOOK_PORT="$(pick_free_port "$SPORTSBOOK_PORT")"
+  PLAYER_PORT="$(pick_free_port "$PLAYER_PORT")"
   GO_GATEWAY_PORT="$(pick_free_port "$GO_GATEWAY_PORT")"
 fi
 
 BACKEND_STATUS_URL="${BACKEND_STATUS_URL:-http://127.0.0.1:13551/api/v1/status}"
 TALON_STATUS_URL="${TALON_STATUS_URL:-http://127.0.0.1:${TALON_PORT}}"
-SPORTSBOOK_STATUS_URL="${SPORTSBOOK_STATUS_URL:-http://127.0.0.1:${SPORTSBOOK_PORT}}"
+PLAYER_STATUS_URL="${PLAYER_STATUS_URL:-http://127.0.0.1:${PLAYER_PORT}}"
 GO_GATEWAY_STATUS_URL="${GO_GATEWAY_STATUS_URL:-http://127.0.0.1:${GO_GATEWAY_PORT}/api/v1/status}"
-
-MULTI_SPORT_FRONTEND_BASE_URL="${MULTI_SPORT_FRONTEND_BASE_URL:-http://127.0.0.1:${SPORTSBOOK_PORT}}"
-MULTI_SPORT_GATEWAY_BASE_URL="${MULTI_SPORT_GATEWAY_BASE_URL:-http://127.0.0.1:${GO_GATEWAY_PORT}}"
 
 mkdir -p "$ARTIFACT_DIR"
 
@@ -114,7 +110,7 @@ cleanup() {
   if env \
       JAVA_PROFILE_VERSION="$JAVA_PROFILE_VERSION" \
       TALON_PORT="$TALON_PORT" \
-      SPORTSBOOK_PORT="$SPORTSBOOK_PORT" \
+      PLAYER_PORT="$PLAYER_PORT" \
       GO_GATEWAY_PORT="$GO_GATEWAY_PORT" \
       bash "$STACK_SCRIPT" stop >"$log_file" 2>&1; then
     echo "| stack stop | pass | \`$log_file\` |" >>"$RESULT_FILE"
@@ -128,12 +124,9 @@ trap cleanup EXIT
   echo "# Runtime Gate Profile Checklist ($DATE_TAG)"
   echo
   echo "- Profile file: \`$PROFILE_FILE\`"
-  echo "- Ports: talon=\`$TALON_PORT\`, sportsbook=\`$SPORTSBOOK_PORT\`, go-gateway=\`$GO_GATEWAY_PORT\`"
-  echo "- Runtime gate frontend base: \`$MULTI_SPORT_FRONTEND_BASE_URL\`"
-  echo "- Runtime gate gateway base: \`$MULTI_SPORT_GATEWAY_BASE_URL\`"
-  echo "- Runtime gate sports: \`$MULTI_SPORT_SPORTS_CSV\`"
-  echo "- Runtime gate iterations: \`$MULTI_SPORT_ITERATIONS\`"
-  echo "- Runtime gate esports compatibility: \`$MULTI_SPORT_CHECK_ESPORTS_COMPAT\`"
+  echo "- Ports: talon=\`$TALON_PORT\`, tiangge-player=\`$PLAYER_PORT\`, go-gateway=\`$GO_GATEWAY_PORT\`"
+  echo "- Discovery/API contract iterations: \`$TIANGGE_DISCOVERY_CONTRACT_ITERATIONS\`"
+  echo "- Live no-money boundary probe: \`$RUNTIME_GATE_RUN_LIVE_NO_MONEY_BOUNDARY\`"
   echo
   echo "| Step | Result | Log |"
   echo "|---|---|---|"
@@ -147,7 +140,7 @@ if is_truthy "$RUNTIME_GATE_BOOTSTRAP"; then
     env \
     JAVA_PROFILE_VERSION="$JAVA_PROFILE_VERSION" \
     TALON_PORT="$TALON_PORT" \
-    SPORTSBOOK_PORT="$SPORTSBOOK_PORT" \
+    PLAYER_PORT="$PLAYER_PORT" \
     GO_GATEWAY_PORT="$GO_GATEWAY_PORT" \
     bash "$STACK_SCRIPT" bootstrap || overall=1
 fi
@@ -158,7 +151,7 @@ if is_truthy "$RUNTIME_GATE_AUTOSTART_STACK"; then
     env \
     JAVA_PROFILE_VERSION="$JAVA_PROFILE_VERSION" \
     TALON_PORT="$TALON_PORT" \
-    SPORTSBOOK_PORT="$SPORTSBOOK_PORT" \
+    PLAYER_PORT="$PLAYER_PORT" \
     GO_GATEWAY_PORT="$GO_GATEWAY_PORT" \
     bash "$STACK_SCRIPT" start || overall=1
   if [[ "$overall" -eq 0 ]]; then
@@ -168,19 +161,25 @@ fi
 
 run_step "wait backend status" wait_for_http_200 "$BACKEND_STATUS_URL" "backend status" || overall=1
 run_step "wait go-gateway status" wait_for_http_200 "$GO_GATEWAY_STATUS_URL" "go-gateway status" || overall=1
-run_step "wait sportsbook status" wait_for_http_200 "$SPORTSBOOK_STATUS_URL" "sportsbook status" || overall=1
+run_step "wait Tiangge player status" wait_for_http_200 "$PLAYER_STATUS_URL" "Tiangge player status" || overall=1
 run_step "wait talon status" wait_for_http_200 "$TALON_STATUS_URL" "talon status" || overall=1
+
+if [[ "$overall" -eq 0 ]] && is_truthy "$RUNTIME_GATE_RUN_LIVE_NO_MONEY_BOUNDARY"; then
+  run_step \
+    "live no-money boundary probe" \
+    env \
+    PLAYER_BASE_URL="http://127.0.0.1:${PLAYER_PORT}" \
+    OFFICE_BASE_URL="http://127.0.0.1:${TALON_PORT}" \
+    GATEWAY_BASE_URL="http://127.0.0.1:${GO_GATEWAY_PORT}" \
+    make -C "$ROOT_DIR" qa-live-no-money-boundary || overall=1
+fi
 
 if [[ "$overall" -eq 0 ]]; then
   run_step \
     "launch readiness runtime gate" \
     env \
-    RUN_MULTI_SPORT_RUNTIME_GATE=1 \
-    MULTI_SPORT_FRONTEND_BASE_URL="$MULTI_SPORT_FRONTEND_BASE_URL" \
-    MULTI_SPORT_GATEWAY_BASE_URL="$MULTI_SPORT_GATEWAY_BASE_URL" \
-    MULTI_SPORT_ITERATIONS="$MULTI_SPORT_ITERATIONS" \
-    MULTI_SPORT_SPORTS_CSV="$MULTI_SPORT_SPORTS_CSV" \
-    MULTI_SPORT_CHECK_ESPORTS_COMPAT="$MULTI_SPORT_CHECK_ESPORTS_COMPAT" \
+    RUN_TIANGGE_DISCOVERY_CONTRACT_GATE=1 \
+    TIANGGE_DISCOVERY_CONTRACT_ITERATIONS="$TIANGGE_DISCOVERY_CONTRACT_ITERATIONS" \
     make -C "$ROOT_DIR" release-launch-readiness || overall=1
 fi
 
@@ -200,7 +199,8 @@ fi
   echo "- Decision: **$go_no_go**"
   echo "- Runtime profile artifact: \`$RESULT_FILE\`"
   echo "- Runtime profile file: \`$PROFILE_FILE\`"
-  echo "- Multi-sport runtime gate enabled: \`1\`"
+  echo "- Tiangge discovery/API compatibility gate enabled: \`1\`"
+  echo "- Live no-money boundary probe enabled: \`$RUNTIME_GATE_RUN_LIVE_NO_MONEY_BOUNDARY\`"
   echo
   echo "## Decision Notes"
   echo

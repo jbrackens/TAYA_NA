@@ -5,13 +5,13 @@ import { useAuth } from "../hooks/useAuth";
 import { getProfile, updateProfile } from "../lib/api/user-client";
 import { UserProfile, UpdateProfileRequest } from "../lib/api/user-client";
 import {
-  setDepositLimits,
-  setStakeLimits,
+  setPredictionLimits,
+  setPointUseLimits,
   verifyIdentity,
 } from "../lib/api/compliance-client";
 import {
-  SetDepositLimitsRequest,
-  SetStakeLimitsRequest,
+  SetPredictionLimitsRequest,
+  SetPointUseLimitsRequest,
 } from "../lib/api/compliance-client";
 import { useToast } from "../components/ToastProvider";
 import { useTranslation } from "react-i18next";
@@ -179,7 +179,7 @@ export default function ProfilePage() {
   const [dailyLimit, setDailyLimit] = useState("");
   const [weeklyLimit, setWeeklyLimit] = useState("");
   const [monthlyLimit, setMonthlyLimit] = useState("");
-  const [maxStake, setMaxStake] = useState("");
+  const [maxOrderPoints, setMaxOrderPoints] = useState("");
   const [savingLimits, setSavingLimits] = useState(false);
 
   // Security state
@@ -250,24 +250,24 @@ export default function ProfilePage() {
     setSavingLimits(true);
     try {
       if (dailyLimit || weeklyLimit || monthlyLimit) {
-        const depositReq: SetDepositLimitsRequest = {
+        const pointUseReq: SetPointUseLimitsRequest = {
           user_id: user.id,
-          daily_limit: dailyLimit ? Number(dailyLimit) : undefined,
-          weekly_limit: weeklyLimit ? Number(weeklyLimit) : undefined,
-          monthly_limit: monthlyLimit ? Number(monthlyLimit) : undefined,
+          dailyLimitPoints: dailyLimit ? Number(dailyLimit) : undefined,
+          weeklyLimitPoints: weeklyLimit ? Number(weeklyLimit) : undefined,
+          monthlyLimitPoints: monthlyLimit ? Number(monthlyLimit) : undefined,
         };
-        await setDepositLimits(depositReq);
+        await setPointUseLimits(pointUseReq);
       }
-      if (maxStake) {
-        const stakeReq: SetStakeLimitsRequest = {
+      if (maxOrderPoints) {
+        const predictionReq: SetPredictionLimitsRequest = {
           user_id: user.id,
-          max_stake: Number(maxStake),
+          maxOrderPoints: Number(maxOrderPoints),
         };
-        await setStakeLimits(stakeReq);
+        await setPredictionLimits(predictionReq);
       }
       toast.success(
         "Limits Updated",
-        "Your responsible gaming limits have been saved.",
+        "Your responsible-play limits have been saved.",
       );
     } catch (err) {
       const msg =
@@ -276,7 +276,7 @@ export default function ProfilePage() {
     } finally {
       setSavingLimits(false);
     }
-  }, [user?.id, dailyLimit, weeklyLimit, monthlyLimit, maxStake, toast]);
+  }, [user?.id, dailyLimit, weeklyLimit, monthlyLimit, maxOrderPoints, toast]);
 
   // Save preferences
   const handleSavePreferences = useCallback(() => {
@@ -508,10 +508,10 @@ export default function ProfilePage() {
         {activeTab === "limits" && (
           <>
             <div className={sectionClass}>
-              <h2 className={sectionTitleClass}>Deposit Limits</h2>
+              <h2 className={sectionTitleClass}>Point-Use Limits</h2>
               <div className={twoColumnGridClass}>
                 <div>
-                  <label className={labelClass}>Daily Limit ($)</label>
+                  <label className={labelClass}>Daily Limit (pts)</label>
                   <input
                     type="number"
                     value={dailyLimit}
@@ -521,7 +521,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>Weekly Limit ($)</label>
+                  <label className={labelClass}>Weekly Limit (pts)</label>
                   <input
                     type="number"
                     value={weeklyLimit}
@@ -531,7 +531,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>Monthly Limit ($)</label>
+                  <label className={labelClass}>Monthly Limit (pts)</label>
                   <input
                     type="number"
                     value={monthlyLimit}
@@ -544,14 +544,14 @@ export default function ProfilePage() {
             </div>
 
             <div className={sectionClass}>
-              <h2 className={sectionTitleClass}>Betting Limits</h2>
+              <h2 className={sectionTitleClass}>Prediction Limits</h2>
               <div className={twoColumnGridClass}>
                 <div>
-                  <label className={labelClass}>Max Bet Amount ($)</label>
+                  <label className={labelClass}>Max Order Size (pts)</label>
                   <input
                     type="number"
-                    value={maxStake}
-                    onChange={(e) => setMaxStake(e.target.value)}
+                    value={maxOrderPoints}
+                    onChange={(e) => setMaxOrderPoints(e.target.value)}
                     placeholder="500"
                     className={inputClass}
                   />

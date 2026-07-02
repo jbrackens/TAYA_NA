@@ -13,8 +13,8 @@ import { adminFetch } from "../../lib/admin-fetch";
 // Admins review user-filed disputes against prediction-market resolutions
 // and resolve each one of two ways:
 //   - "uphold": the dispute is valid → the gateway VOIDS the market and
-//     refunds all stakes. Money-moving and effectively irreversible, so the
-//     UI gates it behind an explicit confirm step (ConfirmModal, danger).
+//     returns locked points. The point disbursement is irreversible, so the UI
+//     gates it behind an explicit confirm step (ConfirmModal, danger).
 //   - "reject": the dispute is without merit → it is closed, and a later
 //     finalize settles the market. Lower-risk, no confirm gate.
 //
@@ -28,7 +28,8 @@ interface Dispute {
   reason: string;
   status: string;
   resolutionNote?: string;
-  bondCents: number;
+  bondPointsCents: number;
+  unit: "PTS";
   createdAt: string;
   resolvedAt?: string;
   resolvedBy?: string;
@@ -64,7 +65,9 @@ function isDispute(value: unknown): value is Dispute {
     typeof record.id === "string" &&
     typeof record.marketId === "string" &&
     typeof record.userId === "string" &&
-    typeof record.reason === "string"
+    typeof record.reason === "string" &&
+    typeof record.bondPointsCents === "number" &&
+    record.unit === "PTS"
   );
 }
 
@@ -235,8 +238,8 @@ function DisputesPageContent() {
       <h1 className={pageTitleClassName}>Disputes</h1>
       <p className="m-0 mb-6 text-sm leading-[1.5] text-[var(--t2,#4a4a4a)]">
         Review user-filed disputes against market resolutions. Upholding a
-        dispute voids the market and refunds all stakes; rejecting closes it so
-        the resolution can be finalized.
+        dispute voids the market and returns locked points; rejecting closes it
+        so the resolution can be finalized.
       </p>
 
       {sources.length > 0 && (
@@ -347,7 +350,7 @@ function DisputesPageContent() {
                           disabled={isRowBusy}
                           onClick={() => setPendingUphold(dispute)}
                         >
-                          Uphold (void &amp; refund)
+                          Uphold (void &amp; return points)
                         </button>
                       </div>
                     </td>
@@ -364,11 +367,11 @@ function DisputesPageContent() {
         title="Uphold dispute?"
         message={
           pendingUphold
-            ? `Upholding this dispute will VOID market ${pendingUphold.marketId} and refund all stakes. This cannot be undone.`
+            ? `Upholding this dispute will VOID market ${pendingUphold.marketId} and return locked points. This cannot be undone.`
             : ""
         }
-        impactSummary="The market is voided and every stake is refunded."
-        confirmText="Uphold, void & refund"
+        impactSummary="The market is voided and locked points are returned."
+        confirmText="Uphold, void & return points"
         cancelText="Cancel"
         variant="danger"
         isLoading={resolvingId !== null}

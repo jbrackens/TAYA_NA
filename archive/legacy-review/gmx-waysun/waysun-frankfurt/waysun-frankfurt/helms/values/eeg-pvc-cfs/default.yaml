@@ -1,5 +1,0 @@
-capacity:
-host:
-persistentVolumeName: streaming-pv
-persistentVolumeClaimName: streaming-pvc
-storageClassName: cfs-streaming

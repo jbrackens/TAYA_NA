@@ -26,7 +26,7 @@ export type MarketImageProps =
 
 const CATEGORY_HUE: Record<string, string> = {
   politics: "bg-blue",
-  crypto: "bg-orange",
+  esports: "bg-purple",
   sports: "bg-emerald",
   entertainment: "bg-purple",
   tech: "bg-cyan",

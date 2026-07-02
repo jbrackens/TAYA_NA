@@ -48,6 +48,13 @@ func (r *PredictRecomputer) Run(ctx context.Context) {
 	}
 }
 
+// RecomputeNow runs one snapshot refresh synchronously. The gateway uses Run
+// for background refreshes; one-shot callers such as demo seeding use this so
+// they can leave leaderboard_snapshots populated before the process exits.
+func (r *PredictRecomputer) RecomputeNow(ctx context.Context) {
+	r.tick(ctx)
+}
+
 func (r *PredictRecomputer) tick(ctx context.Context) {
 	now := r.now()
 	rolling30Start := now.Add(-30 * 24 * time.Hour)

@@ -52,8 +52,8 @@ function RGHistoryPageContent() {
         const grouped: GroupedHistory = {
           limits: history.history.filter(
             (h) =>
-              h.limitType.includes("deposit") ||
-              h.limitType.includes("stake") ||
+              h.limitType.includes("point_use") ||
+              h.limitType.includes("prediction") ||
               h.limitType.includes("session"),
           ),
           coolOffs: history.history.filter((h) => h.limitType === "cool_off"),
@@ -101,10 +101,10 @@ function RGHistoryPageContent() {
                 <tr className="hover:bg-[var(--surface-2)]" key={idx}>
                   <td className={tableCellClass}>
                     <span className="inline-block rounded-[var(--r-rh-sm)] bg-[var(--accent-soft)] px-2 py-1 text-xs font-semibold text-[var(--accent)]">
-                      {item.limitType === "deposit_limit"
-                        ? "Deposit Limit"
-                        : item.limitType === "stake_limit"
-                          ? "Stake Limit"
+                      {item.limitType === "point_use_limit"
+                        ? "Point-Use Limit"
+                        : item.limitType === "prediction_limit"
+                          ? "Prediction Limit"
                           : item.limitType === "session_limit"
                             ? "Session Limit"
                             : item.limitType === "cool_off"
@@ -120,7 +120,7 @@ function RGHistoryPageContent() {
                         ? item.oldValue
                           ? "Enabled"
                           : "Disabled"
-                        : `$${item.oldValue}`
+                        : `${item.oldValue} pts`
                       : "—"}
                   </td>
                   <td className={tableCellClass}>
@@ -129,7 +129,7 @@ function RGHistoryPageContent() {
                         ? item.newValue
                           ? "Enabled"
                           : "Disabled"
-                        : `$${item.newValue}`
+                        : `${item.newValue} pts`
                       : "—"}
                   </td>
                   <td className={tableCellClass}>
@@ -152,10 +152,10 @@ function RGHistoryPageContent() {
       <div className={headerClass}>
         <div>
           <h1 className="mb-1 text-[28px] font-extrabold text-[var(--t1)]">
-            Responsible Gaming History
+            Responsible Play History
           </h1>
           <p className="text-sm text-[var(--t3)]">
-            Track all your responsible gaming limits and actions
+            Track all your responsible-play limits and actions
           </p>
         </div>
         <Link href="/account" className={backClass}>
@@ -182,14 +182,14 @@ function RGHistoryPageContent() {
                   No History Yet
                 </div>
                 <div className="mb-5 max-w-[400px] text-[13px] leading-normal text-[var(--t3)]">
-                  You haven't set any responsible gaming limits yet. Visit the
-                  responsible gaming page to get started.
+                  You haven't set any responsible-play limits yet. Visit the
+                  responsible play page to get started.
                 </div>
                 <Link
                   href="/responsible-gaming"
                   className="inline-block rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-5 py-2.5 text-[13px] font-bold text-white no-underline transition-all duration-150 hover:-translate-y-px hover:brightness-105"
                 >
-                  Go to Responsible Gaming
+                  Go to Responsible Play
                 </Link>
               </div>
             )}

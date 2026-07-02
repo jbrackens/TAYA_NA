@@ -75,7 +75,7 @@ final class PuntersRepositorySpec
     new SlickPuntersRepository(dbConfig, EncryptionPassword("secret"), additionalSSNLookup)
   }
 
-  private implicit val clock = new FakeHardcodedClock
+  private implicit val clock: FakeHardcodedClock = new FakeHardcodedClock
 
   private val inMemoryRepository = () => new InMemoryPuntersRepository(additionalSSNLookup)
 

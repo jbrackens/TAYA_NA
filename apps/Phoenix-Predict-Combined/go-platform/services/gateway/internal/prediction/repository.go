@@ -2,8 +2,16 @@ package prediction
 
 import (
 	"context"
+	"errors"
 	"time"
 )
+
+// ErrPositionNotFound is the domain sentinel for "no position row" so callers
+// can distinguish a legitimate absence from a real read failure regardless of
+// the backing store (SQL returns it in place of sql.ErrNoRows; fakes return it
+// directly). Critical on the AMM write path, which upserts absolute values
+// (audit COR-03).
+var ErrPositionNotFound = errors.New("position not found")
 
 // Repository defines the data access interface for the prediction platform.
 // Implementations: sql_repository.go (PostgreSQL), inmemory_repository.go (testing).
@@ -30,7 +38,7 @@ type Repository interface {
 	GetMarketByTicker(ctx context.Context, ticker string) (*Market, error)
 	CreateMarket(ctx context.Context, m *Market) error
 	UpdateMarket(ctx context.Context, m *Market) error
-	UpdateMarketStatus(ctx context.Context, id string, status MarketStatus) error
+	UpdateMarketStatus(ctx context.Context, id string, status, expectedPrev MarketStatus) error
 	ListMarketsToClose(ctx context.Context) ([]Market, error)
 	ListMarketsToSettle(ctx context.Context) ([]Market, error)
 
@@ -167,6 +175,18 @@ type ExchangeRepository interface {
 	ListRecentDriftAlerts(ctx context.Context, since time.Time) ([]CollateralDriftAlert, error)
 }
 
+// RestingOrderFinalizer is the repository capability for atomically moving a
+// resting exchange order to a terminal state while releasing its wallet point
+// reservation and any sell-side share reservation in the same transaction.
+type RestingOrderFinalizer interface {
+	FinalizeRestingOrderAtomic(
+		ctx context.Context,
+		walletAdapter ExchangeWalletAdapter,
+		order *Order,
+		terminal OrderStatus,
+	) (reservedCents int64, capturedCents int64, placedAt time.Time, err error)
+}
+
 // AtomicMarketSettlementPersister is an optional repository capability for
 // market settlement/void flows that need wallet credits and prediction writes
 // to commit together.
@@ -176,10 +196,16 @@ type ExchangeRepository interface {
 // The persister returns per-accrual results so the caller can fire
 // post-commit WebSocket events (e.g. TierPromoted) after a successful tx.
 type AtomicMarketSettlementPersister interface {
+	// prevStatus is the market status the engine validated before computing
+	// payouts/refunds. Implementations MUST re-assert it atomically inside
+	// the transaction (status-guarded UPDATE) and return ErrStaleMarketStatus
+	// — rolling back everything — when it no longer holds, so concurrent
+	// settle/void flows can never both commit (audit COR-01).
 	PersistResolvedMarketAtomic(
 		ctx context.Context,
 		wallet WalletAdapter,
 		market *Market,
+		prevStatus MarketStatus,
 		settlement *Settlement,
 		payouts []Payout,
 		credits []WalletCreditRequest,
@@ -191,10 +217,61 @@ type AtomicMarketSettlementPersister interface {
 		ctx context.Context,
 		wallet WalletAdapter,
 		market *Market,
+		prevStatus MarketStatus,
 		payouts []Payout,
 		credits []WalletCreditRequest,
 		lifecycle *LifecycleEvent,
 	) error
+}
+
+// BatchedMarketSettlementPersister is an optional repository capability that
+// settles a market WITHOUT holding every wallet row lock in one transaction
+// (audit COR-05). Settlement is split into a fast header commit plus N
+// idempotent payout batches, tracked by a resume cursor (migration 034), so a
+// crash or error mid-settlement is finished by ResumeIncompleteSettlements
+// rather than leaving winners unpaid or the whole settlement rolled back.
+//
+// Every batch is idempotent — uq_payout_settlement_position + ON CONFLICT, the
+// `quantity > 0` close guard, and the wallet/loyalty idempotency keys — so a
+// re-applied batch can never double-pay. A repository that does not implement
+// this interface falls back to the single-transaction atomic persister.
+type BatchedMarketSettlementPersister interface {
+	// PersistSettlementHeader commits the status-guarded transition (COR-01),
+	// the settlement row (with the payouts_total snapshot), and the lifecycle
+	// event in one fast transaction. prevStatus is re-asserted atomically; a
+	// stale value returns ErrStaleMarketStatus and writes nothing. After it
+	// returns the market is `settled`.
+	PersistSettlementHeader(ctx context.Context, market *Market, prevStatus MarketStatus, settlement *Settlement, lifecycle *LifecycleEvent) error
+
+	// CommitPayoutBatch writes one chunk of positions' payouts, position
+	// closes, wallet credits, and loyalty accruals, then advances
+	// payouts_completed by len(payouts) — all in one transaction.
+	// payouts[i]/credits[i]/accruals[i] describe the same position; credits[i]
+	// is nil for losers and accruals[i] is nil when loyalty is disabled.
+	CommitPayoutBatch(ctx context.Context, wallet WalletAdapter, settlementID string, payouts []Payout, credits []*WalletCreditRequest, loyalty LoyaltyAdapter, accruals []*LoyaltyAccrualRequest) ([]LoyaltyAccrualResult, error)
+
+	// ListUnpaidSettlementPositions returns up to `limit` positions for the
+	// market that still have no payout row for this settlement and a positive
+	// quantity, in a stable id order. Drives the resume scanner.
+	ListUnpaidSettlementPositions(ctx context.Context, settlementID, marketID string, limit int) ([]Position, error)
+
+	// ListIncompleteSettlements returns up to `limit` settlements whose
+	// disbursement did not finish (payouts_completed < payouts_total), oldest
+	// first, for the resume scanner.
+	ListIncompleteSettlements(ctx context.Context, limit int) ([]Settlement, error)
+}
+
+// MarketJurisdictionStore is an optional repository capability for the
+// per-market jurisdiction overlay (P3-07). Repositories that don't implement it
+// (in-memory fakes) simply have no overlay — the global geo gate still applies.
+type MarketJurisdictionStore interface {
+	// GetMarketJurisdictionPolicy returns the market's parsed overlay, or
+	// (nil, nil) when the market has no policy or does not exist (the caller's
+	// downstream market load produces the canonical not-found error).
+	GetMarketJurisdictionPolicy(ctx context.Context, marketID string) (*MarketJurisdictionPolicy, error)
+	// SetMarketJurisdictionPolicy writes (or clears, when policy is nil) the
+	// overlay for a market.
+	SetMarketJurisdictionPolicy(ctx context.Context, marketID string, policy *MarketJurisdictionPolicy) error
 }
 
 // AtomicProposalPersister is an optional repository capability (ADR-0003/0004)
@@ -223,10 +300,14 @@ type EventFilter struct {
 // MarketFilter provides filtering options for listing markets.
 type MarketFilter struct {
 	EventID     *string
+	SeriesID    *string
 	CategoryID  *string
 	Status      *MarketStatus
 	Ticker      *string
+	Search      *string
+	Tag         *string
 	CloseBefore *time.Time
+	Sort        string
 	Page        int
 	PageSize    int
 	// IncludeUnopened opts IN to returning markets in the pre-publication

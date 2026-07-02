@@ -1,1 +1,0 @@
-create index "ledgers_events_ledgerId_idx" on ledgers_events("ledgerId");

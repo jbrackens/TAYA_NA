@@ -1,0 +1,94 @@
+{
+  "cases": [
+    {
+      "name": "yes-buyer-wins-settlement",
+      "userId": "u-recon-yes",
+      "marketId": "m-recon-esports-final",
+      "ledger": [
+        {
+          "userId": "u-recon-yes",
+          "direction": "credit",
+          "sourceType": "starter_points",
+          "sourceId": "starter:u-recon-yes",
+          "amountPointsCents": 100000,
+          "unit": "PTS"
+        },
+        {
+          "userId": "u-recon-yes",
+          "direction": "debit",
+          "sourceType": "prediction_order",
+          "sourceId": "order:yes-buy-1",
+          "amountPointsCents": 4200,
+          "unit": "PTS"
+        },
+        {
+          "userId": "u-recon-yes",
+          "direction": "credit",
+          "sourceType": "prediction_settlement",
+          "sourceId": "settlement:m-recon-esports-final:yes",
+          "amountPointsCents": 10000,
+          "unit": "PTS"
+        }
+      ],
+      "expected": {
+        "totalCreditsPointsCents": 110000,
+        "totalDebitsPointsCents": 4200,
+        "netMovementPointsCents": 105800,
+        "entryCount": 3,
+        "distinctUserCount": 1,
+        "finalBalancesPointsCents": {
+          "u-recon-yes": 105800
+        }
+      }
+    },
+    {
+      "name": "sell-close-then-mission-reward",
+      "userId": "u-recon-close",
+      "marketId": "m-recon-map-one",
+      "ledger": [
+        {
+          "userId": "u-recon-close",
+          "direction": "credit",
+          "sourceType": "starter_points",
+          "sourceId": "starter:u-recon-close",
+          "amountPointsCents": 50000,
+          "unit": "PTS"
+        },
+        {
+          "userId": "u-recon-close",
+          "direction": "debit",
+          "sourceType": "prediction_order",
+          "sourceId": "order:no-buy-1",
+          "amountPointsCents": 3600,
+          "unit": "PTS"
+        },
+        {
+          "userId": "u-recon-close",
+          "direction": "credit",
+          "sourceType": "prediction_order",
+          "sourceId": "order:no-close-1",
+          "amountPointsCents": 2800,
+          "unit": "PTS"
+        },
+        {
+          "userId": "u-recon-close",
+          "direction": "credit",
+          "sourceType": "mission_reward",
+          "sourceId": "mission:settled-result",
+          "amountPointsCents": 550,
+          "unit": "PTS"
+        }
+      ],
+      "expected": {
+        "totalCreditsPointsCents": 53350,
+        "totalDebitsPointsCents": 3600,
+        "netMovementPointsCents": 49750,
+        "entryCount": 4,
+        "distinctUserCount": 1,
+        "finalBalancesPointsCents": {
+          "u-recon-close": 49750
+        }
+      }
+    }
+  ]
+}

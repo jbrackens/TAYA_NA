@@ -1,4 +1,0 @@
-import os
-
-LOCK_TIMEOUT = 60
-MAX_TIME_VALID_ORDER = int(os.getenv('MAX_TIME_VALID_ORDER', 15 * 60))

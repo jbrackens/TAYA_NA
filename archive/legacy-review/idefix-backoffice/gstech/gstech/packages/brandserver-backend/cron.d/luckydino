@@ -1,3 +1,0 @@
-0 */3 * * * * /exec cron/update-leaderboard
-0 */15 * * * * /exec cron/update-jackpots
-0 0 0 * * * /exec cron/microgaming-update

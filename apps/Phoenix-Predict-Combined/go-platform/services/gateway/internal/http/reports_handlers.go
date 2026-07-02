@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	stdhttp "net/http"
 
 	"phoenix-revival/gateway/internal/wallet"
@@ -8,14 +9,12 @@ import (
 )
 
 // registerReportsRoutes wires the four aggregate endpoints the office /reports
-// page fetches (alongside /admin/leaderboards, handled elsewhere). The page was
-// authored against the sportsbook backend and reads bets / freebet / odds-boost
-// metrics that have no prediction-domain equivalent — those are reported as
-// honest zeros rather than fabricated (CLAUDE.md rule #7). The wallet
-// reconciliation summary IS real (aggregated from ledger_entries).
+// page fetches (alongside /admin/leaderboards, handled elsewhere). Legacy promo
+// metrics have no prediction-domain equivalent, so the promotion usage report
+// returns honest point-campaign zeros rather than fabricated activity.
 //
 //	GET /api/v1/admin/wallet/reconciliation  → real ledger aggregate
-//	GET /api/v1/admin/promotions/usage       → zeros (sportsbook promos N/A)
+//	GET /api/v1/admin/promotions/usage       → zeros (point campaign placeholder)
 //	GET /api/v1/admin/feed-health            → minimal health (gateway up)
 //	GET /api/v1/admin/config                 → minimal platform config
 func registerReportsRoutes(mux *stdhttp.ServeMux, walletSvc *wallet.Service) {
@@ -37,27 +36,18 @@ func registerReportsRoutes(mux *stdhttp.ServeMux, walletSvc *wallet.Service) {
 
 	for _, base := range []string{"/api/v1/admin", "/admin"} {
 		get(base+"/wallet/reconciliation", func(r *stdhttp.Request) (any, error) {
-			if walletSvc == nil {
-				return map[string]any{"netMovementCents": 0, "entryCount": 0, "distinctUserCount": 0}, nil
-			}
-			summary, err := walletSvc.ReconciliationSummary(nil, nil)
-			if err != nil {
-				return nil, err
-			}
-			return summary, nil
+			return pointWalletReconciliationReport(r.Context(), walletSvc)
 		})
 
-		// Sportsbook promo metrics (bets / freebet / odds-boost) don't exist in
-		// the prediction domain — honest zeros so the page renders without
-		// fabricating activity.
+		// Point-campaign usage has no active aggregate yet. Return honest zeros
+		// without preserving sportsbook promo metric names.
 		get(base+"/promotions/usage", func(_ *stdhttp.Request) (any, error) {
 			return map[string]any{
 				"summary": map[string]any{
-					"totalBets":        0,
-					"uniqueUsers":      0,
-					"totalStakeCents":  0,
-					"betsWithFreebet":  0,
-					"betsWithOddsBoost": 0,
+					"unit":                   "PTS",
+					"pointRewardCampaigns":   0,
+					"usersWithPointRewards":  0,
+					"totalRewardPointsCents": 0,
 				},
 			}, nil
 		})
@@ -72,4 +62,35 @@ func registerReportsRoutes(mux *stdhttp.ServeMux, walletSvc *wallet.Service) {
 			return map[string]any{"platform": "prediction"}, nil
 		})
 	}
+}
+
+type walletReconciliationReport struct {
+	From                   string `json:"from,omitempty"`
+	To                     string `json:"to,omitempty"`
+	TotalCreditPointsCents int64  `json:"totalCreditPointsCents"`
+	TotalDebitPointsCents  int64  `json:"totalDebitPointsCents"`
+	NetMovementPointsCents int64  `json:"netMovementPointsCents"`
+	EntryCount             int64  `json:"entryCount"`
+	DistinctUserCount      int64  `json:"distinctUserCount"`
+	Unit                   string `json:"unit"`
+}
+
+func pointWalletReconciliationReport(ctx context.Context, walletSvc *wallet.Service) (walletReconciliationReport, error) {
+	if walletSvc == nil {
+		return walletReconciliationReport{Unit: "PTS"}, nil
+	}
+	summary, err := walletSvc.ReconciliationSummary(ctx, nil, nil)
+	if err != nil {
+		return walletReconciliationReport{}, err
+	}
+	return walletReconciliationReport{
+		From:                   summary.From,
+		To:                     summary.To,
+		TotalCreditPointsCents: summary.TotalCredits,
+		TotalDebitPointsCents:  summary.TotalDebits,
+		NetMovementPointsCents: summary.NetMovement,
+		EntryCount:             summary.EntryCount,
+		DistinctUserCount:      summary.DistinctUserIDs,
+		Unit:                   "PTS",
+	}, nil
 }

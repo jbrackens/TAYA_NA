@@ -1,4 +1,6 @@
 package phoenix.http.routes.backoffice
+import scala.concurrent.ExecutionContextExecutor
+
 import akka.actor.typed.ActorSystem
 import sttp.tapir.EndpointInput
 import sttp.tapir.stringToPath
@@ -59,7 +61,7 @@ final class BackofficeRoutes(
     clock: Clock)
     extends Routes {
 
-  implicit val ec = system.executionContext
+  implicit val ec: ExecutionContextExecutor = system.executionContext
   val tradingMountPoint = mountPoint / stringToPath("trading")
 
   private val marketsBackoffice = new MarketBackofficeRoutes(tradingMountPoint, markets, marketsMigrator)

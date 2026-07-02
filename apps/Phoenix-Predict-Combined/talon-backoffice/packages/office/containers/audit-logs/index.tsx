@@ -47,6 +47,17 @@ type AuditLogPreset = {
   filters: Partial<AuditLogFilters>;
 };
 
+const scopedAuditUrlQueryKeys = new Set([
+  "preset",
+  "action",
+  "actorId",
+  "targetId",
+  "userId",
+  "product",
+  "p",
+  "limit",
+]);
+
 const buildFilterQuery = (
   filters: AuditLogFilters,
 ): Record<string, string | number> => ({
@@ -121,6 +132,9 @@ const buildScopedAuditUrl = (
 ): string => {
   const queryParams = new URLSearchParams();
   Object.entries(query || {}).forEach(([key, value]) => {
+    if (!scopedAuditUrlQueryKeys.has(key)) {
+      return;
+    }
     const normalizedValue = resolveQueryValue(value).trim();
     if (normalizedValue) {
       queryParams.set(key, normalizedValue);
@@ -143,25 +157,17 @@ const AuditLogsContainer = () => {
 
   const router = useRouter();
 
-  const {
-    p,
-    limit,
-    preset,
-    action,
-    actorId,
-    targetId,
-    userId,
-    product,
-  } = router.query as {
-    p?: string | string[];
-    limit?: string | string[];
-    preset?: string | string[];
-    action?: string | string[];
-    actorId?: string | string[];
-    targetId?: string | string[];
-    userId?: string | string[];
-    product?: string | string[];
-  };
+  const { p, limit, preset, action, actorId, targetId, userId, product } =
+    router.query as {
+      p?: string | string[];
+      limit?: string | string[];
+      preset?: string | string[];
+      action?: string | string[];
+      actorId?: string | string[];
+      targetId?: string | string[];
+      userId?: string | string[];
+      product?: string | string[];
+    };
   const currentPage = resolveQueryPositiveInt(p, 1);
   const pageSize = resolveQueryPositiveInt(limit, 20);
   const presetKey = resolveQueryValue(preset).trim();
@@ -565,20 +571,13 @@ const AuditLogsContainer = () => {
             />
           </Col>
           <Col span={24}>
-            <Button
-              type="primary"
-              onClick={applyFilters}
-              className="mr-2"
-            >
+            <Button type="primary" onClick={applyFilters} className="mr-2">
               {t("FILTER_APPLY")}
             </Button>
             <Button onClick={resetFilters}>{t("FILTER_RESET")}</Button>
           </Col>
           <Col span={24}>
-            <Typography.Text
-              type="secondary"
-              className="mb-2 block"
-            >
+            <Typography.Text type="secondary" className="mb-2 block">
               {t("FILTER_PRESETS_LABEL")}
             </Typography.Text>
             <Space size={[8, 8]} wrap>

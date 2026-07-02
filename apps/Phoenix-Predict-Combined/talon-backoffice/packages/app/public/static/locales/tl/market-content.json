@@ -1,7 +1,7 @@
 {
   "categories": {
     "politics": "Pulitika",
-    "crypto": "Crypto",
+    "crypto": "Esports",
     "sports": "Sports",
     "entertainment": "Aliwan",
     "tech": "Tech",
@@ -87,7 +87,7 @@
       "title": "Mananalo ba ang Hope (dir. Na Hong-jin) ng 2026 Cannes Palme d'Or?"
     },
     "IMP-B6E6D4BE": {
-      "title": "Magsasara ba ang SPY below $720 sa Friday, May 29, 2026?"
+      "title": "Mapipigilan ba ng Ginebra ang kalaban nito sa ilalim ng 90 points sa Friday, May 29, 2026?"
     },
     "UCL-BARCA-2526": {
       "title": "Mananalo ba ang Barcelona sa Champions League 2025/26?",
@@ -104,14 +104,14 @@
       "title": "May bagong LLM release ba bago matapos ang May?"
     },
     "BTC-100K-APR26": {
-      "title": "Aakyat ba ang Bitcoin sa higit $100K bago April 30?",
-      "description": "Magre-resolve sa YES kung ang BTC/USD ay mag-trade sa $100,000 o mas mataas sa kahit anong major exchange bago ang April 30, 2026 23:59 UTC."
+      "title": "Mananalo ba ang MLBB team na ito sa April 30 series?",
+      "description": "Magre-resolve sa YES kung mananalo ang nakalistang MLBB team sa opisyal na best-of series na naka-schedule sa April 30, 2026."
     },
     "IMP-CFD8F644": {
       "title": "Makakapag-gym ba ako nang hindi bababa sa 2 beses kada linggo sa natitirang May?"
     },
     "IMP-5CFF0A78": {
-      "title": "Magsasara ba ang NVDA above $250 sa Friday, June 5, 2026?"
+      "title": "Mananalo ba ang MLBB finalist sa game one sa Friday, June 5, 2026?"
     },
     "IMP-23AD5D16": {
       "title": "Tatapusin ba ng Euphoria Season 3 ang Metacritic score na 70 o mas mataas?"
@@ -123,7 +123,7 @@
       "title": "Matatapos ba ang 2026 French Open men's singles final sa straight sets?"
     },
     "IMP-F4C02A8F": {
-      "title": "Magpe-price ba ang SpaceX IPO (ticker SPCX) sa o bago June 11, 2026?"
+      "title": "May ia-announce bang Philippine space-tech partnership bago June 11, 2026?"
     },
     "IMP-6570BEFD": {
       "title": "Mananalo ba si Julia Letlow sa Louisiana Republican primary para sa Senado?"
@@ -135,11 +135,11 @@
       "title": "Makakakuha ba ang Restore Britain ng hindi bababa sa 4% sa Makerfield by-election?"
     },
     "IMP-7AC91349": {
-      "title": "Magsasara ba ang SPCX nang higit 30% above sa IPO price nito sa unang trading day?"
+      "title": "Matatapos ba ang announced launch window sa unang scheduled day nito?"
     },
     "SOL-300-Q2": {
-      "title": "Aakyat ba ang Solana above $300 bago matapos ang Q2?",
-      "description": "Magre-resolve sa YES kung ang SOL/USD ay mag-trade sa $300 o mas mataas bago ang July 1, 2026."
+      "title": "Matatapos ba ng PVL team na ito ang Q2 na may three-match win streak?",
+      "description": "Magre-resolve sa YES kung ang nakalistang PVL team ay magtala ng tatlong sunod-sunod na opisyal na panalo bago July 1, 2026."
     },
     "UCL-REAL-2526": {
       "title": "Mananalo ba ang Real Madrid sa Champions League 2025/26?",

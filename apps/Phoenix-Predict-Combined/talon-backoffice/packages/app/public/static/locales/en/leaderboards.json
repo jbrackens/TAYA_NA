@@ -28,12 +28,12 @@
       "description": "Traders ranked by prediction accuracy."
     },
     "pnlWeekly": {
-      "name": "Weekly P&L",
-      "description": "Traders ranked by realized profit this week."
+      "name": "Weekly Points",
+      "description": "Predictors ranked by realized point result this week."
     },
     "sharpness": {
       "name": "Sharpness",
-      "description": "Traders ranked by return on risk."
+      "description": "Predictors ranked by point efficiency on settled markets."
     },
     "category": {
       "name": "{{category}} Champions",
@@ -42,9 +42,9 @@
   },
   "metrics": {
     "accuracy": "Accuracy",
-    "pnl": "P&L",
+    "pnl": "Net points",
     "sharpness": "Sharpness",
-    "category": "Profit"
+    "category": "Net points"
   },
   "qualification": {
     "accuracy": "Settle enough markets to qualify for accuracy rankings.",
@@ -53,7 +53,7 @@
     "category": "Settle markets in this category to qualify."
   },
   "categories": {
-    "crypto": "Crypto",
+    "crypto": "Esports",
     "politics": "Politics",
     "sports": "Sports",
     "culture": "Culture",

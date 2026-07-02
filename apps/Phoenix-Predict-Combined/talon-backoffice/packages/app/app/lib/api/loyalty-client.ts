@@ -7,11 +7,14 @@ import { apiClient } from "./client";
 export interface LoyaltyStanding {
   userId: string;
   pointsBalance: number;
-  tier: number; // 0..5; 0 is "hidden" (no pill)
-  tierName: string;
-  nextTier: number;
-  nextTierName: string;
-  pointsToNextTier: number;
+  xp: number;
+  xpPoints: number;
+  rank: number; // 0..5; 0 is "hidden" (no pill)
+  rankName: string;
+  nextRank: number;
+  nextRankName: string;
+  xpToNextRank: number;
+  unit: "PTS";
   lastActivity?: string;
 }
 
@@ -29,11 +32,26 @@ export interface LoyaltyLedgerEntry {
 }
 
 export interface LoyaltyTier {
-  tier: number;
-  name: string;
-  pointsThreshold: number;
+  rank: number;
+  rankName: string;
+  minXpPoints: number;
+  unit: "PTS";
   benefits: string[] | null;
 }
+
+type RawLoyaltyStanding = Partial<LoyaltyStanding> & {
+  tier?: number;
+  tierName?: string;
+  nextTier?: number;
+  nextTierName?: string;
+  pointsToNextTier?: number;
+};
+
+type RawLoyaltyTier = Partial<LoyaltyTier> & {
+  tier?: number;
+  name?: string;
+  pointsThreshold?: number;
+};
 
 interface LedgerResponse {
   userId: string;
@@ -42,7 +60,7 @@ interface LedgerResponse {
 }
 
 interface TiersResponse {
-  items: LoyaltyTier[];
+  items: RawLoyaltyTier[];
   totalCount: number;
 }
 
@@ -73,10 +91,11 @@ export async function getLoyaltyStanding(): Promise<LoyaltyStanding> {
   if (standingCache?.promise) return standingCache.promise;
 
   const promise = apiClient
-    .get<LoyaltyStanding>("/api/v1/loyalty")
+    .get<RawLoyaltyStanding>("/api/v1/loyalty")
     .then((data) => {
-      standingCache = { data, ts: Date.now(), promise: null };
-      return data;
+      const normalized = normalizeLoyaltyStanding(data);
+      standingCache = { data: normalized, ts: Date.now(), promise: null };
+      return normalized;
     });
   standingCache = {
     data: standingCache?.data as LoyaltyStanding,
@@ -116,7 +135,7 @@ export async function getLoyaltyTiers(): Promise<LoyaltyTier[]> {
   const promise = apiClient
     .get<TiersResponse>("/api/v1/loyalty/tiers")
     .then((raw) => {
-      const items = raw.items ?? [];
+      const items = (raw.items ?? []).map(normalizeLoyaltyTier);
       tiersCache = { data: items, ts: Date.now(), promise: null };
       return items;
     });
@@ -134,4 +153,36 @@ export function resetLoyaltyCaches(): void {
   standingCache = null;
   tiersCache = null;
   ledgerCache.clear();
+}
+
+function normalizeLoyaltyStanding(raw: RawLoyaltyStanding): LoyaltyStanding {
+  const rank = raw.rank ?? raw.tier ?? 0;
+  const rankName = raw.rankName ?? raw.tierName ?? "Hidden";
+  const nextRank = raw.nextRank ?? raw.nextTier ?? 0;
+  const nextRankName = raw.nextRankName ?? raw.nextTierName ?? "";
+  const xpToNextRank = raw.xpToNextRank ?? raw.pointsToNextTier ?? 0;
+  const pointsBalance = raw.pointsBalance ?? raw.xpPoints ?? raw.xp ?? 0;
+  return {
+    userId: raw.userId ?? "",
+    pointsBalance,
+    xp: raw.xp ?? pointsBalance,
+    xpPoints: raw.xpPoints ?? pointsBalance,
+    rank,
+    rankName,
+    nextRank,
+    nextRankName,
+    xpToNextRank,
+    unit: "PTS",
+    lastActivity: raw.lastActivity,
+  };
+}
+
+function normalizeLoyaltyTier(raw: RawLoyaltyTier): LoyaltyTier {
+  return {
+    rank: raw.rank ?? raw.tier ?? 0,
+    rankName: raw.rankName ?? raw.name ?? "Hidden",
+    minXpPoints: raw.minXpPoints ?? raw.pointsThreshold ?? 0,
+    unit: "PTS",
+    benefits: raw.benefits ?? null,
+  };
 }

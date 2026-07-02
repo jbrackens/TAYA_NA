@@ -13,21 +13,22 @@ import phoenix.punters.domain.ResponsibleGamblingLimitType
 
 object SoftPlaySetParameters {
 
-  implicit val setRegistrationOutcome = new SetParameter[RegistrationOutcome] {
+  implicit val setRegistrationOutcome: SetParameter[RegistrationOutcome] = new SetParameter[RegistrationOutcome] {
     def apply(v: RegistrationOutcome, pp: PositionedParameters): Unit = { pp.setString(v.entryName) }
   }
 
-  implicit val setOffsetDateTime = new SetParameter[OffsetDateTime] {
+  implicit val setOffsetDateTime: SetParameter[OffsetDateTime] = new SetParameter[OffsetDateTime] {
     def apply(v: OffsetDateTime, pp: PositionedParameters): Unit = {
       pp.setTimestamp(Timestamp.valueOf(v.atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()))
     }
   }
 
-  implicit val setResponsibleGamblingLimitType = new SetParameter[ResponsibleGamblingLimitType] {
+  implicit val setResponsibleGamblingLimitType: SetParameter[ResponsibleGamblingLimitType] =
+    new SetParameter[ResponsibleGamblingLimitType] {
     def apply(v: ResponsibleGamblingLimitType, pp: PositionedParameters): Unit = { pp.setString(v.entryName) }
   }
 
-  implicit val setCoolOffCause = new SetParameter[CoolOffCause] {
+  implicit val setCoolOffCause: SetParameter[CoolOffCause] = new SetParameter[CoolOffCause] {
     def apply(v: CoolOffCause, pp: PositionedParameters): Unit = { pp.setString(v.entryName) }
   }
 }

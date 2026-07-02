@@ -1,0 +1,55 @@
+name: Guard — money-path tests (G-02)
+
+# Improvement-plan guardrail G-02: the money-bearing packages must pass the
+# race detector twice over, against a REAL Postgres so the DB-backed race and
+# settlement tests actually run (with no DSN they self-skip — a hollow gate).
+# Required for merge to the mainline. Verify: revert P1-01's settle/void guard
+# on a branch → this job red.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  money-path:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: predict
+          POSTGRES_PASSWORD: localdev
+          POSTGRES_DB: predict
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U predict"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      GATEWAY_DB_DSN: postgres://predict:localdev@localhost:5432/predict?sslmode=disable
+    defaults:
+      run:
+        working-directory: apps/Phoenix-Predict-Combined/go-platform/services/gateway
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Apply schema (so DB-backed tests run, not skip)
+        run: |
+          export MIGRATIONS_DIR="$(pwd)/migrations"
+          go run ./cmd/migrate up
+
+      - name: Money-path race suite (x2)
+        run: go test -race -count=2 ./internal/prediction/... ./internal/wallet/... ./internal/alphacashier/...
+
+      - name: Vulnerability scan (non-blocking)
+        continue-on-error: true
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          "$(go env GOPATH)/bin/govulncheck" ./...

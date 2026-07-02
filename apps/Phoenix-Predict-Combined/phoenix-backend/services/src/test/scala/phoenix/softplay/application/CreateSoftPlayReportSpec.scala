@@ -37,7 +37,7 @@ class CreateSoftPlayReportSpec
     with DatabaseIntegrationSpec
     with KeycloakIntegrationSpec {
 
-  private implicit val clock = new FakeHardcodedClock()
+  private implicit val clock: FakeHardcodedClock = new FakeHardcodedClock()
 
   private val punterDataRepository =
     new SlickPuntersRepository(dbConfig, EncryptionPassword("foobar"), _ => Future.successful(None))

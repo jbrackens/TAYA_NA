@@ -34,8 +34,8 @@ function moverDeltaClassName(delta: number) {
   return mutedTextClassName;
 }
 
-function formatUsd(cents: number) {
-  return `$${(cents / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+function formatPoints(cents: number) {
+  return `${(cents / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} pts`;
 }
 
 function formatDate(iso: string) {
@@ -193,7 +193,7 @@ function DashboardPageContent() {
         <section className={cardClassName}>
           <div className={cardLabelClassName}>24h Volume</div>
           <div className={cardValueClassName}>
-            {formatUsd(volume.totalVolumeCents)}
+            {formatPoints(volume.totalVolumePointsCents)}
           </div>
           <div className={cardSubClassName}>
             {volume.tradeCount} trade{volume.tradeCount === 1 ? "" : "s"}
@@ -205,7 +205,8 @@ function DashboardPageContent() {
           <div className={cardLabelClassName}>Top Movers (24h)</div>
           <ul className={listClassName}>
             {volume.topMovers.map((mv) => {
-              const delta = mv.yesPriceCentsNow - mv.yesPriceCentsStart;
+              const delta =
+                mv.yesPricePointsCentsNow - mv.yesPricePointsCentsStart;
               const sign = delta > 0 ? "+" : delta < 0 ? "−" : "";
               return (
                 <li key={mv.marketId} className={listItemClassName}>
@@ -213,7 +214,8 @@ function DashboardPageContent() {
                   <span
                     className={`${monoValueClassName} ${moverDeltaClassName(delta)}`}
                   >
-                    {mv.yesPriceCentsStart}% → {mv.yesPriceCentsNow}% ({sign}
+                    {mv.yesPricePointsCentsStart}% → {mv.yesPricePointsCentsNow}
+                    % ({sign}
                     {Math.abs(delta)})
                   </span>
                 </li>

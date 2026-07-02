@@ -369,6 +369,13 @@ func (m *mockConn) LastMessage() ([]byte, bool) {
 	return m.messages[len(m.messages)-1], true
 }
 
+// messageCount returns how many messages have been written to this mock.
+func (m *mockConn) messageCount() int {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return len(m.messages)
+}
+
 type mockCloseError struct{}
 
 func (e *mockCloseError) Error() string { return "mock connection closed" }

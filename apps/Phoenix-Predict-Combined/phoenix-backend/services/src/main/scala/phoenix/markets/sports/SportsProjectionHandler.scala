@@ -1,5 +1,6 @@
 package phoenix.markets.sports
 
+import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.Future
 
 import akka.Done
@@ -21,7 +22,7 @@ class SportsProjectionHandler(system: ActorSystem[_], repository: MarketsReposit
     extends ProjectionEventHandler[SportEvent] {
   private val log = LoggerFactory.getLogger(getClass)
 
-  implicit val ec = system.executionContext
+  implicit val ec: ExecutionContextExecutor = system.executionContext
 
   override def process(envelope: EventEnvelope[SportEvent]): Future[Done] = {
     log.info("handling SportEvent (sport & tournament) - {}", envelope.event)

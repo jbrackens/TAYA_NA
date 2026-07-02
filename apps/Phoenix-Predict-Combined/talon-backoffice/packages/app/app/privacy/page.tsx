@@ -25,10 +25,9 @@ export default function PrivacyPage() {
         </h2>
         <p className="text-sm leading-[1.7] text-[var(--t2)]">
           We collect information you provide when creating an account, such as
-          username and email, plus identity, payment, and address information
-          when needed for withdrawals, verification, or compliance. We also
-          collect usage data including trading history, device information, and
-          IP address.
+          username and email, plus information needed for eligibility, safety,
+          verification, or compliance. We also collect usage data including
+          prediction history, device information, and IP address.
         </p>
       </section>
 
@@ -37,10 +36,9 @@ export default function PrivacyPage() {
           2. How We Use Your Information
         </h2>
         <p className="text-sm leading-[1.7] text-[var(--t2)]">
-          Your data is used to operate your account, process transactions,
-          comply with regulatory obligations (KYC/AML), provide customer
-          support, improve our services, and communicate important account
-          updates.
+          Your data is used to operate your account, maintain the point ledger,
+          support responsible-play controls, provide customer support, improve
+          our services, and communicate important account updates.
         </p>
       </section>
 
@@ -50,9 +48,8 @@ export default function PrivacyPage() {
         </h2>
         <p className="text-sm leading-[1.7] text-[var(--t2)]">
           We do not sell your personal information. We may share data with
-          payment processors, identity verification providers, regulatory
-          authorities as required by law, and service providers who assist in
-          operating the platform.
+          eligibility and safety providers, regulatory authorities as required
+          by law, and service providers who assist in operating the platform.
         </p>
       </section>
 
@@ -62,9 +59,9 @@ export default function PrivacyPage() {
         </h2>
         <p className="text-sm leading-[1.7] text-[var(--t2)]">
           We use industry-standard encryption and security measures to protect
-          your data. All financial transactions are encrypted in transit and at
-          rest. Access to personal data is restricted to authorized personnel
-          only.
+          your data. Point-ledger and account activity records are protected in
+          transit and at rest. Access to personal data is restricted to
+          authorized personnel only.
         </p>
       </section>
 
@@ -97,8 +94,8 @@ export default function PrivacyPage() {
         </h2>
         <p className="text-sm leading-[1.7] text-[var(--t2)]">
           We retain account data for the duration of your account and for a
-          period thereafter as required by regulatory obligations. Transaction
-          records are retained for a minimum of 5 years.
+          period thereafter as required by regulatory obligations. Point-ledger
+          records are retained for audit and integrity purposes.
         </p>
       </section>
 
@@ -108,10 +105,9 @@ export default function PrivacyPage() {
         </h2>
         <p className="text-sm leading-[1.7] text-[var(--t2)]">
           Where applicable law requires a legal basis, we process personal data
-          to perform our contract with you (operating your account and
-          transactions), to comply with legal and regulatory obligations
-          (including KYC/AML), and for our legitimate interests in securing,
-          improving, and operating the Platform, balanced against your rights.
+          to perform our contract with you, to comply with legal and regulatory
+          obligations, and for our legitimate interests in securing, improving,
+          and operating the Platform, balanced against your rights.
         </p>
       </section>
 

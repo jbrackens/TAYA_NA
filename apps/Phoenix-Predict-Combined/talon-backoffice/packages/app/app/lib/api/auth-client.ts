@@ -22,6 +22,10 @@ export interface RegisterRequest {
     zip: string;
     country: string;
   };
+  terms_accepted?: boolean;
+  terms_version?: string;
+  launch_disclosure_accepted?: boolean;
+  launch_disclosure_version?: string;
 }
 
 export interface ForgotPasswordRequest {
@@ -78,6 +82,18 @@ interface RegisterResponseRaw {
   username: string;
   email?: string;
   role?: string;
+  terms_accepted?: boolean;
+  termsAccepted?: boolean;
+  terms_version?: string;
+  termsVersion?: string;
+  terms_accepted_at?: string;
+  termsAcceptedAt?: string;
+  launch_disclosure_accepted?: boolean;
+  launchDisclosureAccepted?: boolean;
+  launch_disclosure_version?: string;
+  launchDisclosureVersion?: string;
+  launch_disclosure_accepted_at?: string;
+  launchDisclosureAcceptedAt?: string;
   requires_email_verification?: boolean;
   requires_mfa?: boolean;
 }
@@ -133,6 +149,12 @@ interface SessionResponseRaw {
   userId: string;
   username: string;
   expiresAt: string;
+  termsAccepted?: boolean;
+  termsVersion?: string;
+  termsAcceptedAt?: string;
+  launchDisclosureAccepted?: boolean;
+  launchDisclosureVersion?: string;
+  launchDisclosureAcceptedAt?: string;
 }
 
 export interface SessionResponse {
@@ -140,6 +162,12 @@ export interface SessionResponse {
   userId: string;
   username: string;
   expiresAt: string;
+  termsAccepted?: boolean;
+  termsVersion?: string;
+  termsAcceptedAt?: string;
+  launchDisclosureAccepted?: boolean;
+  launchDisclosureVersion?: string;
+  launchDisclosureAcceptedAt?: string;
 }
 
 export interface RegisterResponse {
@@ -147,6 +175,12 @@ export interface RegisterResponse {
   username: string;
   email?: string;
   role?: string;
+  termsAccepted?: boolean;
+  termsVersion?: string;
+  termsAcceptedAt?: string;
+  launchDisclosureAccepted?: boolean;
+  launchDisclosureVersion?: string;
+  launchDisclosureAcceptedAt?: string;
   requiresEmailVerification?: boolean;
   requiresMfa?: boolean;
 }

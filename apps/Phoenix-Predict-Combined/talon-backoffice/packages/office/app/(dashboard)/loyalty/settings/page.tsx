@@ -32,17 +32,48 @@ interface LoyaltyRule {
   ruleId: string;
   name: string;
   sourceType: string;
+  predictionSourceType?: string;
   active: boolean;
   multiplier: number;
   minQualifiedStakeCents: number;
+  minQualifiedPointsCents?: number;
   eligibleSportIds?: string[];
   eligibleBetTypes?: string[];
+  eligiblePredictionTypes?: string[];
   maxPointsPerEvent?: number;
   effectiveFrom?: string;
   effectiveTo?: string;
 }
 
 type CssVars = CSSProperties & Record<`--${string}`, string | number>;
+
+function toLaunchLoyaltySourceType(value: string): string {
+  return value === "bet_settlement" ? "prediction_settlement" : value;
+}
+
+function toLegacyLoyaltySourceType(value: string): string {
+  const trimmed = value.trim();
+  return trimmed === "prediction_settlement" ? "bet_settlement" : trimmed;
+}
+
+function normalizeLoyaltyRule(rule: LoyaltyRule): LoyaltyRule {
+  const sourceType =
+    rule.predictionSourceType || toLaunchLoyaltySourceType(rule.sourceType);
+  const minQualifiedPointsCents =
+    rule.minQualifiedPointsCents ?? rule.minQualifiedStakeCents ?? 0;
+  const eligiblePredictionTypes =
+    rule.eligiblePredictionTypes ?? rule.eligibleBetTypes ?? [];
+
+  return {
+    ...rule,
+    sourceType,
+    predictionSourceType: sourceType,
+    minQualifiedStakeCents: minQualifiedPointsCents,
+    minQualifiedPointsCents,
+    eligibleBetTypes: eligiblePredictionTypes,
+    eligiblePredictionTypes,
+  };
+}
 
 /** Convert an RFC3339 string to a datetime-local input value (YYYY-MM-DDTHH:mm). */
 function rfc3339ToLocal(rfc: string | undefined): string {
@@ -85,7 +116,7 @@ function LoyaltySettingsPageContent() {
   const [newRuleDraft, setNewRuleDraft] = useState<Omit<LoyaltyRule, "ruleId">>(
     {
       name: "",
-      sourceType: "bet_settlement",
+      sourceType: "prediction_settlement",
       active: true,
       multiplier: 1.0,
       minQualifiedStakeCents: 0,
@@ -110,7 +141,9 @@ function LoyaltySettingsPageContent() {
       }
       const data = await response.json();
       const nextTiers = Array.isArray(data?.tiers) ? data.tiers : [];
-      const nextRules = Array.isArray(data?.rules) ? data.rules : [];
+      const nextRules = Array.isArray(data?.rules)
+        ? data.rules.map(normalizeLoyaltyRule)
+        : [];
       setTiers(nextTiers);
       setRules(nextRules);
       setReferralBonusPoints(Number(data?.referralBonusPoints || 0));
@@ -229,6 +262,10 @@ function LoyaltySettingsPageContent() {
     try {
       const payload = {
         ...ruleDraft,
+        predictionSourceType: ruleDraft.sourceType,
+        sourceType: toLegacyLoyaltySourceType(ruleDraft.sourceType),
+        minQualifiedPointsCents: ruleDraft.minQualifiedStakeCents,
+        eligiblePredictionTypes: ruleDraft.eligibleBetTypes || [],
         effectiveFrom:
           localToRfc3339(rfc3339ToLocal(ruleDraft.effectiveFrom)) || undefined,
         effectiveTo:
@@ -248,7 +285,9 @@ function LoyaltySettingsPageContent() {
         throw new Error("Failed to save accrual rule");
       }
       const data = await response.json();
-      const nextRules = Array.isArray(data?.rules) ? data.rules : [];
+      const nextRules = Array.isArray(data?.rules)
+        ? data.rules.map(normalizeLoyaltyRule)
+        : [];
       setRules(nextRules);
       setFeedback("Accrual rule updated.");
     } catch (err: unknown) {
@@ -268,6 +307,10 @@ function LoyaltySettingsPageContent() {
     try {
       const payload = {
         ...newRuleDraft,
+        predictionSourceType: newRuleDraft.sourceType,
+        sourceType: toLegacyLoyaltySourceType(newRuleDraft.sourceType),
+        minQualifiedPointsCents: newRuleDraft.minQualifiedStakeCents,
+        eligiblePredictionTypes: newRuleDraft.eligibleBetTypes || [],
         maxPointsPerEvent: newRuleDraft.maxPointsPerEvent || undefined,
       };
       const response = await adminFetch("/api/v1/admin/loyalty/rules", {
@@ -281,7 +324,9 @@ function LoyaltySettingsPageContent() {
         throw new Error("Failed to create accrual rule");
       }
       const data = await response.json();
-      const nextRules = Array.isArray(data?.rules) ? data.rules : [];
+      const nextRules = Array.isArray(data?.rules)
+        ? data.rules.map(normalizeLoyaltyRule)
+        : [];
       setRules(nextRules);
       const created = nextRules[nextRules.length - 1];
       if (created) {
@@ -291,7 +336,7 @@ function LoyaltySettingsPageContent() {
       setRuleMode("edit");
       setNewRuleDraft({
         name: "",
-        sourceType: "bet_settlement",
+        sourceType: "prediction_settlement",
         active: true,
         multiplier: 1.0,
         minQualifiedStakeCents: 0,
@@ -352,8 +397,8 @@ function LoyaltySettingsPageContent() {
         <div>
           <h1 className={pageTitleClassName}>Loyalty Settings</h1>
           <p className={subtitleClassName}>
-            Tune tier thresholds and settled-bet accrual rules without leaving
-            the backoffice.
+            Tune tier thresholds and prediction-settlement accrual rules without
+            leaving the backoffice.
           </p>
         </div>
         <div className="flex flex-wrap gap-2.5">
@@ -561,7 +606,7 @@ function LoyaltySettingsPageContent() {
                           onChange={(event: ChangeEvent<HTMLInputElement>) =>
                             updateBenefitRow(idx, "key", event.target.value)
                           }
-                          placeholder="e.g. cashback_rate"
+                          placeholder="e.g. point_bonus_rate"
                         />
                         <input
                           className={`${inputClassName} flex-[1_1_40%]`}
@@ -656,7 +701,7 @@ function LoyaltySettingsPageContent() {
                       Source Type
                       <input
                         className={inputClassName}
-                        value={ruleDraft.sourceType}
+                        value={toLaunchLoyaltySourceType(ruleDraft.sourceType)}
                         onChange={(event: ChangeEvent<HTMLInputElement>) =>
                           setRuleDraft((current) =>
                             current
@@ -688,7 +733,7 @@ function LoyaltySettingsPageContent() {
                   </div>
                   <div className={formColumnsClassName}>
                     <label className={labelClassName}>
-                      Min Qualified Stake (cents)
+                      Min Qualified Points (point units)
                       <input
                         className={inputClassName}
                         type="number"
@@ -786,9 +831,9 @@ function LoyaltySettingsPageContent() {
                     Rule is active
                   </label>
                   <div className={helperTextClassName}>
-                    This MVP applies the first active settled-bet rule. Use one
-                    active default rule at a time until multi-rule evaluation is
-                    expanded.
+                    This MVP applies the first active prediction-settlement
+                    rule. Use one active default rule at a time until multi-rule
+                    evaluation is expanded.
                   </div>
                   <button
                     type="submit"
@@ -824,7 +869,7 @@ function LoyaltySettingsPageContent() {
                   Source Type
                   <input
                     className={inputClassName}
-                    value={newRuleDraft.sourceType}
+                    value={toLaunchLoyaltySourceType(newRuleDraft.sourceType)}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
                       setNewRuleDraft((current) => ({
                         ...current,
@@ -852,7 +897,7 @@ function LoyaltySettingsPageContent() {
               </div>
               <div className={formColumnsClassName}>
                 <label className={labelClassName}>
-                  Min Qualified Stake (cents)
+                  Min Qualified Points (point units)
                   <input
                     className={inputClassName}
                     type="number"

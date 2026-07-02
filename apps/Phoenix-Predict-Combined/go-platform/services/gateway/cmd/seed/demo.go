@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 )
 
 // RunDemo orchestrates the demo seed phases on top of base data. Each
@@ -13,8 +14,8 @@ import (
 // clear failure pointing at the offending phase.
 //
 // Phase 0 runs unconditionally because it both unblocks subsequent
-// phases (stuck pending orders pin user cash) and is the only step
-// shared with wipe mode.
+// phases (stuck pending orders pin reserved points) and is the only
+// step shared with wipe mode.
 func RunDemo(db *sql.DB, driver, dsn string) error {
 	ctx := context.Background()
 
@@ -30,6 +31,8 @@ func RunDemo(db *sql.DB, driver, dsn string) error {
 	fmt.Printf("  demo ledger deleted:     %d\n", cleanup.DemoLedgerDeleted)
 	fmt.Printf("  demo settlements deleted: %d\n", cleanup.DemoSettlementsDeleted)
 	fmt.Printf("  demo positions deleted:  %d\n", cleanup.DemoPositionsDeleted)
+	fmt.Printf("  demo bonuses deleted:    %d\n", cleanup.DemoBonusesDeleted)
+	fmt.Printf("  demo campaigns deleted:  %d\n", cleanup.DemoCampaignsDeleted)
 	fmt.Printf("  orphan order reservations deleted: %d\n", cleanup.OrphanOrderReservationsDeleted)
 
 	// Harness construction is deferred to the first phase that actually
@@ -48,6 +51,20 @@ func RunDemo(db *sql.DB, driver, dsn string) error {
 	if err := runWalletTopUp(harness.Wallet); err != nil {
 		return fmt.Errorf("wallet topup: %w", err)
 	}
+
+	fmt.Println("\n--- Demo Seed: Reward History ---")
+	rewardRows, err := RunPhase5RewardHistory(ctx, db, harness.Wallet, time.Now())
+	if err != nil {
+		return fmt.Errorf("reward history: %w", err)
+	}
+	fmt.Printf("  historical daily claims seeded: %d\n", rewardRows)
+
+	fmt.Println("\n--- Demo Seed: Active Bonus ---")
+	bonusRows, err := RunPhase5BonusDemo(ctx, db)
+	if err != nil {
+		return fmt.Errorf("active bonus: %w", err)
+	}
+	fmt.Printf("  active demo bonuses seeded: %d\n", bonusRows)
 
 	fmt.Println("\n--- Demo Seed: Phase 1 (market-maker book) ---")
 	p1, err := RunPhase1MarketMaker(ctx, harness)
@@ -86,8 +103,12 @@ func RunDemo(db *sql.DB, driver, dsn string) error {
 	if err != nil {
 		return fmt.Errorf("phase 5: %w", err)
 	}
-	fmt.Printf("  markets settled: %d  |  payouts created: %d  |  errors: %d\n",
+	fmt.Printf("  markets settled: %d  |  settlement credits created: %d  |  errors: %d\n",
 		p5.MarketsTouched, p5.OrdersPlaced, p5.Errors)
+
+	fmt.Println("\n--- Demo Seed: Phase 5b (leaderboard snapshots) ---")
+	RunPhase5Leaderboards(ctx, db)
+	fmt.Println("  leaderboard snapshots recomputed")
 
 	fmt.Println("\n--- Demo Seed: Phase 6 (backoffice audit_logs + loyalty_accounts) ---")
 	p6, err := RunPhase6Backoffice(db)
@@ -117,6 +138,8 @@ func RunWipe(db *sql.DB) error {
 	fmt.Printf("  demo ledger deleted:     %d\n", cleanup.DemoLedgerDeleted)
 	fmt.Printf("  demo settlements deleted: %d\n", cleanup.DemoSettlementsDeleted)
 	fmt.Printf("  demo positions deleted:  %d\n", cleanup.DemoPositionsDeleted)
+	fmt.Printf("  demo bonuses deleted:    %d\n", cleanup.DemoBonusesDeleted)
+	fmt.Printf("  demo campaigns deleted:  %d\n", cleanup.DemoCampaignsDeleted)
 	fmt.Printf("  orphan order reservations deleted: %d\n", cleanup.OrphanOrderReservationsDeleted)
 
 	fmt.Println("\n--- Wipe: removing demo backoffice rows ---")

@@ -51,11 +51,11 @@ export function TierPill({ refreshMs = 60_000 }: TierPillProps) {
         // Detect tier-up relative to the last observed state. Ignore the
         // first render (prev === null) — we only bloom on an *increase*.
         const prevTier = previousTierRef.current;
-        if (prevTier !== null && result.tier > prevTier) {
+        if (prevTier !== null && result.rank > prevTier) {
           setBloom(true);
           window.setTimeout(() => setBloom(false), 400);
         }
-        previousTierRef.current = result.tier;
+        previousTierRef.current = result.rank;
         setStanding(result);
       } catch (err) {
         // Silent failure per plan §3 — loyalty is ambient, never blocks the UI.
@@ -85,11 +85,11 @@ export function TierPill({ refreshMs = 60_000 }: TierPillProps) {
         try {
           const result = await getLoyaltyStanding();
           const prevTier = previousTierRef.current;
-          if (prevTier !== null && result.tier > prevTier) {
+          if (prevTier !== null && result.rank > prevTier) {
             setBloom(true);
             window.setTimeout(() => setBloom(false), 400);
           }
-          previousTierRef.current = result.tier;
+          previousTierRef.current = result.rank;
           setStanding(result);
         } catch (err) {
           logger.warn("TierPill", "WS-triggered refetch failed", err);
@@ -99,21 +99,21 @@ export function TierPill({ refreshMs = 60_000 }: TierPillProps) {
     return unsubscribe;
   }, [user?.id]);
 
-  if (!standing || standing.tier < 1) return null;
+  if (!standing || standing.rank < 1) return null;
 
   const points = Math.round(standing.pointsBalance / 100);
-  const ariaLabel = standing.nextTierName
-    ? `Tier: ${standing.tierName}, ${points} points. ${Math.round(standing.pointsToNextTier / 100)} points to ${standing.nextTierName}.`
-    : `Tier: ${standing.tierName}, ${points} points. Top tier.`;
+  const ariaLabel = standing.nextRankName
+    ? `Rank: ${standing.rankName}, ${points} points. ${Math.round(standing.xpToNextRank / 100)} points to ${standing.nextRankName}.`
+    : `Rank: ${standing.rankName}, ${points} points. Top rank.`;
 
   return (
     <Link
       href="/rewards"
       aria-label={ariaLabel}
       className={`${TIER_PILL_BASE_CLASS} ${bloom ? TIER_PILL_BLOOM_CLASS : ""}`}
-      style={{ ["--tp-color" as string]: `var(--tier-${standing.tier})` }}
+      style={{ ["--tp-color" as string]: `var(--tier-${standing.rank})` }}
     >
-      <span>{standing.tierName}</span>
+      <span>{standing.rankName}</span>
       <span className={TIER_SEPARATOR_CLASS} aria-hidden="true">
         ·
       </span>

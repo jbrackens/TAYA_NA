@@ -1,11 +1,53 @@
 -- Prediction Platform — Development Seed Data
--- Run after 014_prediction_schema.sql creates the schema (which also seeds categories).
+-- Run after 014_prediction_schema.sql and 046_tiangge_launch_taxonomy.sql create
+-- the schema and Tiangge launch categories.
 -- This script is idempotent via ON CONFLICT clauses.
 --
 -- Deterministic UUIDs are generated via md5(slug)::uuid so seeds can be re-run
 -- and the same slug always maps to the same UUID — great for integration tests.
 
 BEGIN;
+
+-- Remove deterministic pre-launch asset-price seed rows on re-run so dev data
+-- cannot keep exposing legacy settlement sources after launch-safe reseeding.
+DELETE FROM prediction_positions
+WHERE market_id IN (
+  'ba2bfb6b-f527-455a-2830-324284402679',
+  '1c82e51b-63ff-e700-7c3b-0a2822fcd5da',
+  '903ac604-d8e0-2e42-470f-f7e46285024f'
+);
+DELETE FROM prediction_trades
+WHERE market_id IN (
+  'ba2bfb6b-f527-455a-2830-324284402679',
+  '1c82e51b-63ff-e700-7c3b-0a2822fcd5da',
+  '903ac604-d8e0-2e42-470f-f7e46285024f'
+);
+DELETE FROM prediction_orders
+WHERE market_id IN (
+  'ba2bfb6b-f527-455a-2830-324284402679',
+  '1c82e51b-63ff-e700-7c3b-0a2822fcd5da',
+  '903ac604-d8e0-2e42-470f-f7e46285024f'
+);
+DELETE FROM prediction_lifecycle_events
+WHERE market_id IN (
+  'ba2bfb6b-f527-455a-2830-324284402679',
+  '1c82e51b-63ff-e700-7c3b-0a2822fcd5da',
+  '903ac604-d8e0-2e42-470f-f7e46285024f'
+);
+DELETE FROM prediction_markets
+WHERE id IN (
+  'ba2bfb6b-f527-455a-2830-324284402679',
+  '1c82e51b-63ff-e700-7c3b-0a2822fcd5da',
+  '903ac604-d8e0-2e42-470f-f7e46285024f'
+);
+DELETE FROM prediction_events
+WHERE id IN (
+  '232f5027-946d-098e-ad4f-2459f22a5113',
+  '73e4e9e4-4740-9ce0-c1ef-7ab2f748bf27',
+  '139c4272-a0e4-a9b4-03e6-0f1dd9ea1d34'
+);
+DELETE FROM prediction_series
+WHERE id = '61514c81-4582-6c8c-81a3-d1aa34daf35c';
 
 -- ============================================================
 -- TEST USERS (punters table uses VARCHAR ids, matching sportsbook schema)
@@ -20,24 +62,28 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Wallets for test users
 INSERT INTO wallets (id, punter_id, balance_cents, bonus_balance_cents, currency_code) VALUES
-  ('wallet-001', 'user-001', 100000, 0, 'USD'),
-  ('wallet-002', 'user-002', 50000, 0, 'USD'),
-  ('wallet-003', 'user-003', 250000, 0, 'USD'),
-  ('wallet-bot', 'user-bot', 1000000, 0, 'USD')
+  ('wallet-001', 'user-001', 100000, 0, 'PTS'),
+  ('wallet-002', 'user-002', 50000, 0, 'PTS'),
+  ('wallet-003', 'user-003', 250000, 0, 'PTS'),
+  ('wallet-bot', 'user-bot', 1000000, 0, 'PTS')
 ON CONFLICT (id) DO NOTHING;
+
+UPDATE wallets
+SET currency_code = 'PTS'
+WHERE id IN ('wallet-001', 'wallet-002', 'wallet-003', 'wallet-bot');
 
 -- ============================================================
 -- SERIES (recurring event templates)
 -- Category lookup inlined via SELECT to avoid hardcoding UUIDs.
 -- ============================================================
 INSERT INTO prediction_series (id, slug, title, description, category_id, frequency, tags) VALUES
-  (md5('series-btc-daily')::uuid,
-   'btc-daily-close',
-   'Bitcoin Daily Close',
-   'Daily markets on whether BTC closes above key price levels',
-   (SELECT id FROM prediction_categories WHERE slug = 'crypto'),
-   'daily',
-   ARRAY['bitcoin', 'crypto', 'daily']),
+  (md5('series-mlbb-esports')::uuid,
+   'mlbb-esports-series',
+   'MLBB Esports Series',
+   'Markets on official MLBB match outcomes and series results',
+   (SELECT id FROM prediction_categories WHERE slug = 'esports'),
+   'weekly',
+   ARRAY['mlbb', 'esports', 'series']),
 
   (md5('series-fed-rates')::uuid,
    'fed-rate-decisions',
@@ -84,28 +130,28 @@ ON CONFLICT (id) DO NOTHING;
 -- EVENTS
 -- ============================================================
 
--- Crypto events
+-- Esports events
 INSERT INTO prediction_events (id, series_id, title, description, category_id, status, featured, open_at, close_at, metadata) VALUES
-  (md5('evt-btc-100k')::uuid, md5('series-btc-daily')::uuid,
-   'Bitcoin Above $100K — April 30',
-   'Will Bitcoin (BTC/USD) trade above $100,000 at any point before April 30, 2026 midnight UTC?',
-   (SELECT id FROM prediction_categories WHERE slug = 'crypto'),
+  (md5('evt-mlbb-final-game1')::uuid, md5('series-mlbb-esports')::uuid,
+   'MLBB Finals Game One',
+   'Will the listed MLBB team win game one of the finals?',
+   (SELECT id FROM prediction_categories WHERE slug = 'esports'),
    'open', true, NOW(), NOW() + INTERVAL '14 days',
-   '{"asset": "bitcoin", "threshold": 100000}'),
+   '{"competition": "mlbb", "stage": "final", "map": 1}'),
 
-  (md5('evt-eth-5k')::uuid, md5('series-btc-daily')::uuid,
-   'Ethereum Above $5K — May 2026',
-   'Will Ethereum (ETH/USD) exceed $5,000 before June 1, 2026?',
-   (SELECT id FROM prediction_categories WHERE slug = 'crypto'),
+  (md5('evt-valorant-masters-final')::uuid, md5('series-mlbb-esports')::uuid,
+   'Valorant Masters Final',
+   'Will the listed Valorant team win the Masters final?',
+   (SELECT id FROM prediction_categories WHERE slug = 'esports'),
    'open', false, NOW(), NOW() + INTERVAL '45 days',
-   '{"asset": "ethereum", "threshold": 5000}'),
+   '{"competition": "valorant", "stage": "masters-final"}'),
 
-  (md5('evt-sol-300')::uuid, md5('series-btc-daily')::uuid,
-   'Solana Above $300 — Q2 2026',
-   'Will Solana (SOL/USD) trade above $300 before July 1, 2026?',
-   (SELECT id FROM prediction_categories WHERE slug = 'crypto'),
+  (md5('evt-dota-grand-final-map1')::uuid, md5('series-mlbb-esports')::uuid,
+   'Dota Grand Final Map One',
+   'Will the listed Dota team win the opening map of the grand final?',
+   (SELECT id FROM prediction_categories WHERE slug = 'esports'),
    'open', false, NOW(), NOW() + INTERVAL '75 days',
-   '{"asset": "solana", "threshold": 300}')
+   '{"competition": "dota", "stage": "grand-final", "map": 1}')
 ON CONFLICT (id) DO NOTHING;
 
 -- Economics events
@@ -183,31 +229,31 @@ ON CONFLICT (id) DO NOTHING;
 -- MARKETS (binary contracts within events)
 -- ============================================================
 
--- Crypto
+-- Esports
 INSERT INTO prediction_markets (id, event_id, ticker, title, description, status,
   yes_price_cents, no_price_cents, amm_liquidity_param, amm_subsidy_cents,
   settlement_source_key, settlement_rule, settlement_params, close_at,
   volume_cents, open_interest_cents) VALUES
 
-  (md5('mkt-btc-100k-yes')::uuid, md5('evt-btc-100k')::uuid,
-   'BTC-100K-APR26', 'Bitcoin above $100K by April 30',
-   'Resolves YES if BTC/USD trades at or above $100,000 on any major exchange before April 30, 2026 23:59 UTC.',
+  (md5('mkt-mlbb-final-game1')::uuid, md5('evt-mlbb-final-game1')::uuid,
+   'MLBB-FINAL-G1', 'Listed MLBB team wins game one',
+   'Resolves YES if the listed MLBB team wins game one under the official match result.',
    'open', 62, 38, 200, 50000,
-   'api-feed-crypto', 'price_above', '{"asset": "bitcoin", "threshold": 100000}',
+   'admin-manual', 'binary_outcome', '{"source": "official match result", "criteria": "listed team wins game one"}',
    NOW() + INTERVAL '14 days', 1245000, 890000),
 
-  (md5('mkt-eth-5k-yes')::uuid, md5('evt-eth-5k')::uuid,
-   'ETH-5K-MAY26', 'Ethereum above $5K by June 1',
-   'Resolves YES if ETH/USD trades at or above $5,000 before June 1, 2026.',
+  (md5('mkt-valorant-masters-final')::uuid, md5('evt-valorant-masters-final')::uuid,
+   'VAL-MASTERS-FINAL', 'Listed Valorant team wins Masters final',
+   'Resolves YES if the listed Valorant team wins the Masters final under the official match result.',
    'open', 28, 72, 150, 30000,
-   'api-feed-crypto', 'price_above', '{"asset": "ethereum", "threshold": 5000}',
+   'admin-manual', 'binary_outcome', '{"source": "official match result", "criteria": "listed team wins the final"}',
    NOW() + INTERVAL '45 days', 567000, 340000),
 
-  (md5('mkt-sol-300-yes')::uuid, md5('evt-sol-300')::uuid,
-   'SOL-300-Q2', 'Solana above $300 by Q2 end',
-   'Resolves YES if SOL/USD trades at or above $300 before July 1, 2026.',
+  (md5('mkt-dota-grand-final-map1')::uuid, md5('evt-dota-grand-final-map1')::uuid,
+   'DOTA-GF-MAP1', 'Listed Dota team wins map one',
+   'Resolves YES if the listed Dota team wins map one of the grand final under the official match result.',
    'open', 15, 85, 100, 20000,
-   'api-feed-crypto', 'price_above', '{"asset": "solana", "threshold": 300}',
+   'admin-manual', 'binary_outcome', '{"source": "official match result", "criteria": "listed team wins map one"}',
    NOW() + INTERVAL '75 days', 234000, 156000)
 ON CONFLICT (id) DO NOTHING;
 
@@ -330,6 +376,17 @@ INSERT INTO prediction_markets (id, event_id, ticker, title, description, status
    '2026-12-19 23:59:59+00', 340000, 210000)
 ON CONFLICT (id) DO NOTHING;
 
+-- Keep one launch-safe legacy AMM market in demo seed so reviewers can verify
+-- the quote-only AMM detail UI and preview-backed curve impact. New market
+-- creation still defaults to order_book and runtime order placement rejects
+-- AMM execution.
+UPDATE prediction_markets
+   SET execution_mode = 'amm',
+       amm_yes_shares = 18.50000000,
+       amm_no_shares = 42.00000000,
+       liquidity_cents = GREATEST(liquidity_cents, 20000)
+ WHERE ticker = 'DOTA-GF-MAP1';
+
 -- ============================================================
 -- LIFECYCLE EVENTS (audit trail for seed markets)
 -- ============================================================
@@ -356,8 +413,8 @@ AND NOT EXISTS (
 INSERT INTO prediction_orders (id, user_id, market_id, side, action, order_type,
   price_cents, quantity, filled_quantity, remaining_quantity, total_cost_cents,
   status, filled_at, created_at, updated_at) VALUES
-  (md5('ord-001')::uuid, 'user-001', md5('mkt-btc-100k-yes')::uuid, 'yes', 'buy', 'market', 60, 20, 20, 0, 1200, 'filled', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '2 hours'),
-  (md5('ord-002')::uuid, 'user-002', md5('mkt-btc-100k-yes')::uuid, 'no', 'buy', 'market', 40, 15, 15, 0, 600, 'filled', NOW() - INTERVAL '90 minutes', NOW() - INTERVAL '90 minutes', NOW() - INTERVAL '90 minutes'),
+  (md5('ord-001')::uuid, 'user-001', md5('mkt-mlbb-final-game1')::uuid, 'yes', 'buy', 'market', 60, 20, 20, 0, 1200, 'filled', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '2 hours'),
+  (md5('ord-002')::uuid, 'user-002', md5('mkt-mlbb-final-game1')::uuid, 'no', 'buy', 'market', 40, 15, 15, 0, 600, 'filled', NOW() - INTERVAL '90 minutes', NOW() - INTERVAL '90 minutes', NOW() - INTERVAL '90 minutes'),
   (md5('ord-003')::uuid, 'user-001', md5('mkt-fed-cut-may')::uuid, 'yes', 'buy', 'market', 45, 50, 50, 0, 2250, 'filled', NOW() - INTERVAL '1 hour', NOW() - INTERVAL '1 hour', NOW() - INTERVAL '1 hour'),
   (md5('ord-004')::uuid, 'user-003', md5('mkt-senate-dem')::uuid, 'yes', 'buy', 'market', 41, 100, 100, 0, 4100, 'filled', NOW() - INTERVAL '45 minutes', NOW() - INTERVAL '45 minutes', NOW() - INTERVAL '45 minutes'),
   (md5('ord-005')::uuid, 'user-002', md5('mkt-gpt5-jul')::uuid, 'no', 'buy', 'market', 65, 30, 30, 0, 1950, 'filled', NOW() - INTERVAL '30 minutes', NOW() - INTERVAL '30 minutes', NOW() - INTERVAL '30 minutes'),
@@ -369,8 +426,8 @@ ON CONFLICT (id) DO NOTHING;
 -- trade_kind='secondary', engine_kind='amm' — match that convention so a
 -- fresh DB can run this seed too.
 INSERT INTO prediction_trades (id, market_id, buy_order_id, buyer_id, side, price_cents, quantity, fee_cents, is_amm_trade, traded_at, match_id, trade_kind, engine_kind) VALUES
-  (md5('trd-001')::uuid, md5('mkt-btc-100k-yes')::uuid, md5('ord-001')::uuid, 'user-001', 'yes', 60, 20, 0, true, NOW() - INTERVAL '2 hours',     md5('trd-001')::uuid, 'secondary', 'amm'),
-  (md5('trd-002')::uuid, md5('mkt-btc-100k-yes')::uuid, md5('ord-002')::uuid, 'user-002', 'no',  40, 15, 0, true, NOW() - INTERVAL '90 minutes', md5('trd-002')::uuid, 'secondary', 'amm'),
+  (md5('trd-001')::uuid, md5('mkt-mlbb-final-game1')::uuid, md5('ord-001')::uuid, 'user-001', 'yes', 60, 20, 0, true, NOW() - INTERVAL '2 hours',     md5('trd-001')::uuid, 'secondary', 'amm'),
+  (md5('trd-002')::uuid, md5('mkt-mlbb-final-game1')::uuid, md5('ord-002')::uuid, 'user-002', 'no',  40, 15, 0, true, NOW() - INTERVAL '90 minutes', md5('trd-002')::uuid, 'secondary', 'amm'),
   (md5('trd-003')::uuid, md5('mkt-fed-cut-may')::uuid,  md5('ord-003')::uuid, 'user-001', 'yes', 45, 50, 0, true, NOW() - INTERVAL '1 hour',     md5('trd-003')::uuid, 'secondary', 'amm'),
   (md5('trd-004')::uuid, md5('mkt-senate-dem')::uuid,   md5('ord-004')::uuid, 'user-003', 'yes', 41, 100, 0, true, NOW() - INTERVAL '45 minutes', md5('trd-004')::uuid, 'secondary', 'amm'),
   (md5('trd-005')::uuid, md5('mkt-gpt5-jul')::uuid,     md5('ord-005')::uuid, 'user-002', 'no',  65, 30, 0, true, NOW() - INTERVAL '30 minutes', md5('trd-005')::uuid, 'secondary', 'amm'),
@@ -378,8 +435,8 @@ INSERT INTO prediction_trades (id, market_id, buy_order_id, buyer_id, side, pric
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO prediction_positions (user_id, market_id, side, quantity, avg_price_cents, total_cost_cents) VALUES
-  ('user-001', md5('mkt-btc-100k-yes')::uuid, 'yes', 20, 60, 1200),
-  ('user-002', md5('mkt-btc-100k-yes')::uuid, 'no', 15, 40, 600),
+  ('user-001', md5('mkt-mlbb-final-game1')::uuid, 'yes', 20, 60, 1200),
+  ('user-002', md5('mkt-mlbb-final-game1')::uuid, 'no', 15, 40, 600),
   ('user-001', md5('mkt-fed-cut-may')::uuid, 'yes', 50, 45, 2250),
   ('user-003', md5('mkt-senate-dem')::uuid, 'yes', 100, 41, 4100),
   ('user-002', md5('mkt-gpt5-jul')::uuid, 'no', 30, 65, 1950),
@@ -395,11 +452,11 @@ ON CONFLICT (user_id, market_id, side) DO NOTHING;
 -- Production provisions its first super-admin out-of-band (see migration 027).
 INSERT INTO admin_users (id, email, name, password_hash, status) VALUES
   (md5('admin@phoenix.local')::uuid,   'admin@phoenix.local',   'Platform Admin',
-      '$2a$10$HsFKQhoiO8FANifxE56Q.el8owaaBqOLBrZ5SeUw9w4RaYL3A1RzK', 'active'),
+      '$2a$10$FGr0eZ3dqJ88pqav/26NaO1HdYAOFFj4ZuVBZeysTkloW27vOvKYa', 'active'),
   (md5('ops@phoenix.local')::uuid,     'ops@phoenix.local',     'Operations Manager',
-      '$2a$10$HsFKQhoiO8FANifxE56Q.el8owaaBqOLBrZ5SeUw9w4RaYL3A1RzK', 'active'),
+      '$2a$10$FGr0eZ3dqJ88pqav/26NaO1HdYAOFFj4ZuVBZeysTkloW27vOvKYa', 'active'),
   (md5('support@phoenix.local')::uuid, 'support@phoenix.local', 'Customer Support',
-      '$2a$10$HsFKQhoiO8FANifxE56Q.el8owaaBqOLBrZ5SeUw9w4RaYL3A1RzK', 'active')
+      '$2a$10$FGr0eZ3dqJ88pqav/26NaO1HdYAOFFj4ZuVBZeysTkloW27vOvKYa', 'active')
 ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO user_roles (user_id, role_id, granted_by) VALUES

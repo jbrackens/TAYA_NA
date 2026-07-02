@@ -12,6 +12,7 @@ import (
 // Compile-time check: SQLRepository implements ExchangeRepository. If the
 // interface or a method signature drifts, the build fails here.
 var _ ExchangeRepository = (*SQLRepository)(nil)
+var _ RestingOrderFinalizer = (*SQLRepository)(nil)
 
 type positionKey struct {
 	UserID string
@@ -128,7 +129,7 @@ func (r *SQLRepository) PersistMatchAtomic(ctx context.Context, walletAdapter Ex
 		}
 	}
 
-	// Seller proceeds on secondary fills: the buyer's captured cash (above)
+	// Seller proceeds on secondary fills: the buyer's captured point reservation
 	// is credited to the seller. CreditKey is unique per trade so a retried
 	// persist is idempotent.
 	for _, sc := range plan.SellerCredits {
@@ -144,8 +145,23 @@ func (r *SQLRepository) PersistMatchAtomic(ctx context.Context, walletAdapter Ex
 	}
 
 	for i := range plan.MakerUpdates {
-		if err := r.updateOrderFillStateWithTx(ctx, tx, &plan.MakerUpdates[i]); err != nil {
-			return fmt.Errorf("update maker %s: %w", plan.MakerUpdates[i].ID, err)
+		maker := &plan.MakerUpdates[i]
+		// Guard on the fill state the plan was built against (audit COR-02):
+		// if another taker advanced this maker between plan-build and now, the
+		// guarded UPDATE matches 0 rows and we abort to re-plan rather than
+		// writing stale absolute fill values that would regress the maker.
+		prev, ok := plan.MakerPreFill[maker.ID]
+		if !ok {
+			// No recorded pre-fill — fall back to the unguarded write to stay
+			// safe for any maker the engine touched without recording (should
+			// not happen; fillSecondary/fillIssuance always record).
+			if err := r.updateOrderFillStateWithTx(ctx, tx, maker); err != nil {
+				return fmt.Errorf("update maker %s: %w", maker.ID, err)
+			}
+			continue
+		}
+		if err := r.updateMakerFillStateGuardedWithTx(ctx, tx, maker, prev); err != nil {
+			return err
 		}
 	}
 	if err := r.updateOrderFillStateWithTx(ctx, tx, &plan.Taker); err != nil {
@@ -165,6 +181,64 @@ func (r *SQLRepository) PersistMatchAtomic(ctx context.Context, walletAdapter Ex
 	}
 
 	return tx.Commit()
+}
+
+// FinalizeRestingOrderAtomic cancels or expires a resting exchange order in
+// the same transaction that releases wallet point reservations and sell-side
+// share reservations.
+func (r *SQLRepository) FinalizeRestingOrderAtomic(
+	ctx context.Context,
+	walletAdapter ExchangeWalletAdapter,
+	order *Order,
+	terminal OrderStatus,
+) (reservedCents int64, capturedCents int64, placedAt time.Time, err error) {
+	tx, err := walletAdapter.BeginExchangeTx(ctx)
+	if err != nil {
+		return 0, 0, time.Time{}, fmt.Errorf("begin %s tx: %w", terminal, err)
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	// Release the uncaptured point reservation. Idempotent: if the order
+	// never had a reservation (e.g., a sell), this is a no-op at the wallet.
+	if err := walletAdapter.ReleaseReservationWithTx(ctx, tx, "prediction_order", order.ID); err != nil {
+		return 0, 0, time.Time{}, fmt.Errorf("release reservation: %w", err)
+	}
+	if order.Action == OrderActionSell && order.RemainingQuantity > 0 {
+		if _, err := tx.ExecContext(ctx,
+			`UPDATE prediction_positions
+			    SET reserved_quantity = GREATEST(reserved_quantity - $4, 0),
+			        updated_at = NOW()
+			  WHERE user_id = $1 AND market_id = $2 AND side = $3`,
+			order.UserID, order.MarketID, string(order.Side), order.RemainingQuantity,
+		); err != nil {
+			return 0, 0, time.Time{}, fmt.Errorf("release reserved shares: %w", err)
+		}
+	}
+
+	// cancelled_at is only meaningful for a user cancel; an expiry leaves it
+	// NULL (the order was not cancelled — its market closed under it).
+	now := time.Now().UTC()
+	var cancelledAt interface{}
+	if terminal == OrderStatusCancelled {
+		cancelledAt = now
+	}
+	if err := tx.QueryRowContext(ctx,
+		`UPDATE prediction_orders
+		   SET status = $2,
+		       reserved_quantity = 0,
+		       cancelled_at = $3,
+		       updated_at = NOW()
+		 WHERE id = $1
+		 RETURNING reserved_cash_cents, captured_cash_cents, created_at`,
+		order.ID, string(terminal), cancelledAt,
+	).Scan(&reservedCents, &capturedCents, &placedAt); err != nil {
+		return 0, 0, time.Time{}, fmt.Errorf("update order to %s: %w", terminal, err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, 0, time.Time{}, fmt.Errorf("commit %s tx: %w", terminal, err)
+	}
+	return reservedCents, capturedCents, placedAt, nil
 }
 
 // insertExchangeTradeWithTx inserts a trade row with the engine-supplied ID
@@ -190,6 +264,45 @@ func (r *SQLRepository) insertExchangeTradeWithTx(ctx context.Context, tx *sql.T
 		t.MatchID, string(t.TradeKind), string(t.EngineKind), t.TradedAt,
 	)
 	return err
+}
+
+// updateMakerFillStateGuardedWithTx writes a maker's post-match fill state but
+// only if its current filled_quantity still equals expectedPrev — the value
+// the plan was built against. Zero rows updated means a concurrent taker moved
+// this maker first, so we return ErrBookChanged and the caller re-plans
+// (audit COR-02). Runs under the per-market advisory lock, so the check and
+// the write are atomic with respect to other matches on this market.
+func (r *SQLRepository) updateMakerFillStateGuardedWithTx(ctx context.Context, tx *sql.Tx, o *Order, expectedPrev int) error {
+	res, err := tx.ExecContext(ctx,
+		`UPDATE prediction_orders SET
+		   filled_quantity = $2,
+		   remaining_quantity = $3,
+		   status = $4,
+		   captured_cash_cents = $5,
+		   released_cash_cents = $6,
+		   filled_cost_cents = $7,
+		   average_fill_price_cents = $8,
+		   reserved_quantity = $9,
+		   failure_reason = $10,
+		   filled_at = $11,
+		   cancelled_at = $12,
+		   updated_at = NOW()
+		 WHERE id = $1 AND filled_quantity = $13`,
+		o.ID, o.FilledQuantity, o.RemainingQuantity, string(o.Status),
+		o.CapturedCashCents, o.ReleasedCashCents, o.FilledCostCents,
+		o.AverageFillPriceCents, o.ReservedQuantity, o.FailureReason, o.FilledAt, o.CancelledAt,
+		expectedPrev)
+	if err != nil {
+		return fmt.Errorf("update maker %s: %w", o.ID, err)
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("update maker %s rows: %w", o.ID, err)
+	}
+	if n != 1 {
+		return ErrBookChanged
+	}
+	return nil
 }
 
 // updateOrderFillStateWithTx writes the post-match fill state for an order.

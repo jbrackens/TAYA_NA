@@ -1,6 +1,9 @@
 package http
 
 import (
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -43,5 +46,25 @@ func TestDisputeRateLimitDefault(t *testing.T) {
 	t.Setenv("DISPUTE_RATE_LIMIT_PER_MIN", "12")
 	if got := disputeRateLimitPerMin(); got != 12 {
 		t.Fatalf("env override: got %d, want 12", got)
+	}
+}
+
+func TestSocialWriteLimiterMigrationOwnsPersistentStore(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Join("..", "..", "migrations", "049_prediction_social_write_limits.sql"))
+	if err != nil {
+		t.Fatalf("read social write limiter migration: %v", err)
+	}
+	body := string(raw)
+	for _, want := range []string{
+		"CREATE TABLE IF NOT EXISTS prediction_social_write_limits",
+		"limiter_key TEXT PRIMARY KEY",
+		"tokens DOUBLE PRECISION NOT NULL",
+		"last_seen TIMESTAMPTZ NOT NULL",
+		"idx_prediction_social_write_limits_updated",
+		"DROP TABLE IF EXISTS prediction_social_write_limits",
+	} {
+		if !strings.Contains(body, want) {
+			t.Fatalf("social write limiter migration missing %q", want)
+		}
 	}
 }

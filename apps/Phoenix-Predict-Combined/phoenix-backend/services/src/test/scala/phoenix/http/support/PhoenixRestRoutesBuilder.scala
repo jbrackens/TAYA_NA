@@ -71,8 +71,8 @@ import phoenix.wallets.infrastructure.http.WalletRoutes
 
 final class PhoenixRestRoutesBuilder(clock: Clock, jwtAuthenticator: JwtAuthenticator)(implicit
     system: ActorSystem[_]) {
-  implicit val ec = system.executionContext
-  implicit val c = clock
+  implicit val ec: scala.concurrent.ExecutionContextExecutor = system.executionContext
+  implicit val c: Clock = clock
 
   def buildRoutes(
       punters: PuntersBoundedContext = new PuntersContextProviderSuccess()(clock),

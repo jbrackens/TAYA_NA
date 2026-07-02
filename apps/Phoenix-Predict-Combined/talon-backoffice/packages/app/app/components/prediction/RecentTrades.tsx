@@ -112,6 +112,10 @@ function tradePriceClass(side?: "yes" | "no"): string {
   return `font-semibold ${color}`;
 }
 
+function formatTradePoints(points: number): string {
+  return `${points.toFixed(2)} pts`;
+}
+
 export default function RecentTrades({
   trades,
   limit = 12,
@@ -121,7 +125,10 @@ export default function RecentTrades({
   const visible = collapsed.slice(0, limit);
 
   return (
-    <section className={RECENT_TRADES_CARD_CLASS} aria-label={t("RECENT_TRADES")}>
+    <section
+      className={RECENT_TRADES_CARD_CLASS}
+      aria-label={t("RECENT_TRADES")}
+    >
       <div className={RECENT_TRADES_HEAD_CLASS}>
         <span className={RECENT_TRADES_TITLE_CLASS}>{t("RECENT_TRADES")}</span>
         <span className={RECENT_TRADES_SUB_CLASS}>
@@ -139,14 +146,17 @@ export default function RecentTrades({
           {visible.map((row) => {
             if (row.kind === "issuance") {
               // Both sides minted in one match. Show a "MINT" pill and
-              // both prices side-by-side. Notional = qty * 100¢ ($1/contract).
-              const yPx = row.yesTrade.priceCents;
-              const nPx = row.noTrade.priceCents;
+              // both prices side-by-side. Contract size is displayed in points.
+              const yPx = row.yesTrade.pricePointsCents;
+              const nPx = row.noTrade.pricePointsCents;
               const qty = row.yesTrade.quantity;
-              const size = qty; // $1/contract on issuance
+              const size = qty;
               return (
                 <div key={row.matchId} className={RECENT_TRADES_ROW_CLASS}>
-                  <span className={tradeSideClass("mint")} title={t("MINT_TITLE")}>
+                  <span
+                    className={tradeSideClass("mint")}
+                    title={t("MINT_TITLE")}
+                  >
                     {t("MINT")}
                   </span>
                   <span className={tradePriceClass()}>
@@ -154,7 +164,9 @@ export default function RecentTrades({
                     <span className="mx-1 text-[var(--t3)]">/</span>
                     <span className={tradePriceClass("no")}>{nPx}¢</span>
                   </span>
-                  <span className={RECENT_TRADES_SIZE_CLASS}>${size.toFixed(2)}</span>
+                  <span className={RECENT_TRADES_SIZE_CLASS}>
+                    {formatTradePoints(size)}
+                  </span>
                   <span className={RECENT_TRADES_TIME_CLASS}>
                     {timeAgo(row.yesTrade.tradedAt)}
                   </span>
@@ -164,7 +176,9 @@ export default function RecentTrades({
             const trade = row.trade;
             const sideKey = trade.side === "yes" ? "yes" : "no";
             const px =
-              trade.side === "yes" ? trade.priceCents : 100 - trade.priceCents;
+              trade.side === "yes"
+                ? trade.pricePointsCents
+                : 100 - trade.pricePointsCents;
             const size = (trade.quantity * px) / 100;
             return (
               <div key={trade.id} className={RECENT_TRADES_ROW_CLASS}>
@@ -172,7 +186,9 @@ export default function RecentTrades({
                   {t(trade.side === "yes" ? "YES" : "NO")}
                 </span>
                 <span className={tradePriceClass(sideKey)}>{px}¢</span>
-                <span className={RECENT_TRADES_SIZE_CLASS}>${size.toFixed(2)}</span>
+                <span className={RECENT_TRADES_SIZE_CLASS}>
+                  {formatTradePoints(size)}
+                </span>
                 <span className={RECENT_TRADES_TIME_CLASS}>
                   {timeAgo(trade.tradedAt)}
                 </span>

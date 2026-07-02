@@ -1,6 +1,7 @@
 package http
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	stdhttp "net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -26,16 +28,13 @@ var (
 )
 
 type auditLogEntry struct {
-	ID                  string `json:"id"`
-	Action              string `json:"action"`
-	ActorID             string `json:"actorId"`
-	UserID              string `json:"userId,omitempty"`
-	TargetID            string `json:"targetId"`
-	FreebetID           string `json:"freebetId,omitempty"`
-	OddsBoostID         string `json:"oddsBoostId,omitempty"`
-	FreebetAppliedCents int64  `json:"freebetAppliedCents,omitempty"`
-	OccurredAt          string `json:"occurredAt"`
-	Details             string `json:"details"`
+	ID         string `json:"id"`
+	Action     string `json:"action"`
+	ActorID    string `json:"actorId"`
+	UserID     string `json:"userId,omitempty"`
+	TargetID   string `json:"targetId"`
+	OccurredAt string `json:"occurredAt"`
+	Details    string `json:"details"`
 }
 
 func providerOpsAuditSnapshot() []auditLogEntry {
@@ -63,11 +62,13 @@ func recordProviderOpsAuditEntry(entry auditLogEntry) {
 	providerOpsAuditEntries = trimAuditEntries(providerOpsAuditEntries, providerOpsAuditLimit)
 	if providerOpsAuditStore != nil {
 		if err := providerOpsAuditStore.Append(entry, providerOpsAuditLimit); err != nil {
+			auditWriteFailures.Add(1)
 			slog.Warn("failed to persist provider ops audit entry", "store_mode", providerOpsAuditStoreMode, "error", err)
 		}
 		return
 	}
 	if err := persistProviderOpsAuditEntriesLocked(); err != nil {
+		auditWriteFailures.Add(1)
 		slog.Warn("failed to persist provider ops audit entries", "error", err)
 	}
 }
@@ -141,10 +142,10 @@ func persistProviderOpsAuditEntriesLocked() error {
 	return os.Rename(tempPath, providerOpsAuditStorePath)
 }
 
-// recordMoneyAuditEntry appends an audit-log entry for a privileged,
-// money-moving action (wallet adjustment, settlement, void). actorID is the
-// admin from the validated session; details are JSON-encoded into the log.
-func recordMoneyAuditEntry(actorID, action, targetID string, details map[string]any) {
+// recordProviderOpsAuditAction appends an audit-log entry for a privileged
+// point/accounting or operator action. actorID is the admin from the validated
+// session; details are JSON-encoded into the log.
+func recordProviderOpsAuditAction(actorID, action, targetID string, details map[string]any) {
 	if actorID == "" {
 		actorID = "unknown"
 	}
@@ -163,23 +164,24 @@ func recordMoneyAuditEntry(actorID, action, targetID string, details map[string]
 }
 
 // settlementAuditRecorder bridges prediction.SettlementAuditor to the shared
-// money audit log, so settlements (admin-triggered or AutoSettler) land in the
-// same audit stream as wallet adjustments.
+// provider-ops audit log, so settlements (admin-triggered or AutoSettler) land
+// in the same audit stream as point-wallet adjustments.
 type settlementAuditRecorder struct{}
 
 func (settlementAuditRecorder) RecordSettlement(actorID, marketID string, details map[string]any) {
-	recordMoneyAuditEntry(actorID, "market.settled", marketID, details)
+	recordProviderOpsAuditAction(actorID, "market.settled", marketID, details)
 }
 
 func registerAdminWalletMutationRoutes(mux *stdhttp.ServeMux, basePath string, walletService *wallet.Service) {
 	adminCreditPath := fmt.Sprintf("%s/wallet/credit", basePath)
 	adminDebitPath := fmt.Sprintf("%s/wallet/debit", basePath)
+	adminRewardClustersPath := fmt.Sprintf("%s/wallet/reward-clusters", basePath)
 
 	mux.Handle(adminCreditPath, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
-		if err := requireAdminRole(r); err != nil {
+		if err := requireAdminPermission(r, "finances:write"); err != nil {
 			return err
 		}
 
@@ -187,7 +189,7 @@ func registerAdminWalletMutationRoutes(mux *stdhttp.ServeMux, basePath string, w
 		if err != nil {
 			return err
 		}
-		entry, err := walletService.Credit(wallet.MutationRequest{
+		entry, err := walletService.Credit(r.Context(), wallet.MutationRequest{
 			UserID:         request.UserID,
 			AmountCents:    request.AmountCents,
 			IdempotencyKey: request.IdempotencyKey,
@@ -196,15 +198,17 @@ func registerAdminWalletMutationRoutes(mux *stdhttp.ServeMux, basePath string, w
 		if err != nil {
 			return mapWalletError(err)
 		}
-		recordMoneyAuditEntry(userIDFromRequest(r), "wallet.credit", request.UserID, map[string]any{
-			"amountCents":    request.AmountCents,
-			"idempotencyKey": request.IdempotencyKey,
-			"reason":         request.Reason,
-			"balanceCents":   entry.BalanceCents,
+		recordProviderOpsAuditAction(userIDFromRequest(r), "wallet.credit", request.UserID, map[string]any{
+			"amountPointsCents":  request.AmountCents,
+			"idempotencyKey":     request.IdempotencyKey,
+			"reason":             request.Reason,
+			"balancePointsCents": entry.BalanceCents,
+			"unit":               "PTS",
 		})
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"entry":        entry,
-			"balanceCents": entry.BalanceCents,
+			"entry":              walletLedgerEntryPayload(entry),
+			"balancePointsCents": entry.BalanceCents,
+			"unit":               "PTS",
 		})
 	}))
 
@@ -212,7 +216,7 @@ func registerAdminWalletMutationRoutes(mux *stdhttp.ServeMux, basePath string, w
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
-		if err := requireAdminRole(r); err != nil {
+		if err := requireAdminPermission(r, "finances:write"); err != nil {
 			return err
 		}
 
@@ -220,7 +224,7 @@ func registerAdminWalletMutationRoutes(mux *stdhttp.ServeMux, basePath string, w
 		if err != nil {
 			return err
 		}
-		entry, err := walletService.Debit(wallet.MutationRequest{
+		entry, err := walletService.Debit(r.Context(), wallet.MutationRequest{
 			UserID:         request.UserID,
 			AmountCents:    request.AmountCents,
 			IdempotencyKey: request.IdempotencyKey,
@@ -229,17 +233,93 @@ func registerAdminWalletMutationRoutes(mux *stdhttp.ServeMux, basePath string, w
 		if err != nil {
 			return mapWalletError(err)
 		}
-		recordMoneyAuditEntry(userIDFromRequest(r), "wallet.debit", request.UserID, map[string]any{
-			"amountCents":    request.AmountCents,
-			"idempotencyKey": request.IdempotencyKey,
-			"reason":         request.Reason,
-			"balanceCents":   entry.BalanceCents,
+		recordProviderOpsAuditAction(userIDFromRequest(r), "wallet.debit", request.UserID, map[string]any{
+			"amountPointsCents":  request.AmountCents,
+			"idempotencyKey":     request.IdempotencyKey,
+			"reason":             request.Reason,
+			"balancePointsCents": entry.BalanceCents,
+			"unit":               "PTS",
 		})
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"entry":        entry,
-			"balanceCents": entry.BalanceCents,
+			"entry":              walletLedgerEntryPayload(entry),
+			"balancePointsCents": entry.BalanceCents,
+			"unit":               "PTS",
 		})
 	}))
+
+	mux.Handle(adminRewardClustersPath, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+
+		windowDate := strings.TrimSpace(r.URL.Query().Get("windowDate"))
+		limit := 0
+		if rawLimit := strings.TrimSpace(r.URL.Query().Get("limit")); rawLimit != "" {
+			parsed, err := strconv.Atoi(rawLimit)
+			if err != nil || parsed <= 0 {
+				return httpx.BadRequest("limit must be a positive integer", map[string]any{"field": "limit"})
+			}
+			limit = parsed
+		}
+		items, err := walletService.RewardClusterSummaries(r.Context(), windowDate, limit)
+		if err != nil {
+			return err
+		}
+		if len(items) > 0 {
+			windowDate = items[0].WindowDate
+		} else if len(windowDate) >= len("2006-01-02") {
+			windowDate = windowDate[:len("2006-01-02")]
+		} else if windowDate == "" {
+			windowDate = time.Now().UTC().Format("2006-01-02")
+		}
+		if strings.EqualFold(r.URL.Query().Get("format"), "csv") {
+			return writeRewardClusterSummariesCSV(w, windowDate, items)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"items":      items,
+			"notes":      []string{"Signals are hashed; raw device and IP values are not returned.", "Reward cluster evidence is not point ledger movement."},
+			"total":      len(items),
+			"unit":       "PTS",
+			"windowDate": windowDate,
+		})
+	}))
+}
+
+func writeRewardClusterSummariesCSV(w stdhttp.ResponseWriter, windowDate string, items []wallet.RewardClusterSummary) error {
+	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+	w.Header().Set("Content-Disposition", `attachment; filename="wallet-reward-clusters-`+csvSafeFilename(windowDate)+`.csv"`)
+
+	writer := csv.NewWriter(w)
+	if err := writer.Write([]string{
+		"window_date",
+		"signal_type",
+		"signal_hash",
+		"distinct_user_count",
+		"user_ids",
+		"unit",
+	}); err != nil {
+		return httpx.Internal("failed to write reward cluster csv", err)
+	}
+	for _, item := range items {
+		if err := writer.Write([]string{
+			csvSafeCell(item.WindowDate),
+			csvSafeCell(item.SignalType),
+			csvSafeCell(item.SignalHash),
+			strconv.Itoa(item.DistinctUserCount),
+			csvSafeCell(strings.Join(item.UserIDs, ";")),
+			"PTS",
+		}); err != nil {
+			return httpx.Internal("failed to write reward cluster csv", err)
+		}
+	}
+	writer.Flush()
+	if err := writer.Error(); err != nil {
+		return httpx.Internal("failed to flush reward cluster csv", err)
+	}
+	return nil
 }
 
 func parseAdminRFC3339(raw string, field string) (time.Time, error) {
@@ -257,19 +337,18 @@ func parseAdminRFC3339(raw string, field string) (time.Time, error) {
 	})
 }
 
-// adminActorFromRequest returns the actor id for audit attribution on admin
-// routes, from the X-Admin-Actor / X-Admin-User / X-Actor-Id headers, defaulting
-// to "admin". Only consulted after requireAdminRole has authorized the caller.
+// adminActorFromRequest returns the actor id for audit attribution + two-person
+// controls on admin routes. It is taken from the AUTHENTICATED session identity
+// (username/email, then user id) — never a client-supplied header, which would
+// be spoofable and could defeat the withdrawal broadcaster≠approver check and
+// forge the audit trail (SECURITY-REVIEW #7). Only consulted after
+// requireAdminRole has authorized the caller.
 func adminActorFromRequest(r *stdhttp.Request) string {
-	candidates := []string{
-		strings.TrimSpace(r.Header.Get("X-Admin-Actor")),
-		strings.TrimSpace(r.Header.Get("X-Admin-User")),
-		strings.TrimSpace(r.Header.Get("X-Actor-Id")),
+	if email := strings.TrimSpace(httpx.UsernameFromContext(r.Context())); email != "" {
+		return email
 	}
-	for _, candidate := range candidates {
-		if candidate != "" {
-			return candidate
-		}
+	if uid := strings.TrimSpace(httpx.UserIDFromContext(r.Context())); uid != "" {
+		return uid
 	}
 	return "admin"
 }

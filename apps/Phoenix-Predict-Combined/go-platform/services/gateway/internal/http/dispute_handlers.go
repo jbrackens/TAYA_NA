@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	stdhttp "net/http"
 	"strings"
+	"time"
 
 	"phoenix-revival/gateway/internal/prediction"
 	"phoenix-revival/platform/transport/httpx"
@@ -16,6 +17,49 @@ import (
 // notifier disables the live push (the dispute is still persisted).
 type disputeNotifier interface {
 	NotifyDisputeFiled(marketID string, data interface{})
+}
+
+type disputeResponse struct {
+	ID              string     `json:"id"`
+	MarketID        string     `json:"marketId"`
+	UserID          string     `json:"userId"`
+	Reason          string     `json:"reason"`
+	Status          string     `json:"status"`
+	ResolutionNote  *string    `json:"resolutionNote,omitempty"`
+	BondPointsCents int64      `json:"bondPointsCents"`
+	Unit            string     `json:"unit"`
+	CreatedAt       time.Time  `json:"createdAt"`
+	ResolvedAt      *time.Time `json:"resolvedAt,omitempty"`
+	ResolvedBy      *string    `json:"resolvedBy,omitempty"`
+}
+
+func disputePayload(d prediction.Dispute) disputeResponse {
+	resolutionNote := d.ResolutionNote
+	if resolutionNote != nil {
+		redacted := redactLaunchProhibitedUserText(*resolutionNote)
+		resolutionNote = &redacted
+	}
+	return disputeResponse{
+		ID:              d.ID,
+		MarketID:        d.MarketID,
+		UserID:          d.UserID,
+		Reason:          redactLaunchProhibitedUserText(d.Reason),
+		Status:          d.Status,
+		ResolutionNote:  resolutionNote,
+		BondPointsCents: d.BondCents,
+		Unit:            "PTS",
+		CreatedAt:       d.CreatedAt,
+		ResolvedAt:      d.ResolvedAt,
+		ResolvedBy:      d.ResolvedBy,
+	}
+}
+
+func disputePayloads(disputes []prediction.Dispute) []disputeResponse {
+	out := make([]disputeResponse, 0, len(disputes))
+	for _, dispute := range disputes {
+		out = append(out, disputePayload(dispute))
+	}
+	return out
 }
 
 // registerDisputeRoutes wires the user-facing dispute API (ADR-0004). A dispute
@@ -43,7 +87,7 @@ func registerDisputeRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, store
 			if err != nil {
 				return httpx.Internal("failed to list disputes", err)
 			}
-			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"items": disputes})
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"items": disputePayloads(disputes)})
 
 		case stdhttp.MethodPost:
 			// Throttle dispute creation per user before any DB work.
@@ -64,6 +108,9 @@ func registerDisputeRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, store
 			}
 			if req.Reason == "" {
 				return httpx.BadRequest("reason is required", map[string]any{"field": "reason"})
+			}
+			if err := validateLaunchFacingReason("reason", req.Reason); err != nil {
+				return err
 			}
 
 			// Only a proposed (not-yet-finalized) resolution is disputable.
@@ -113,7 +160,7 @@ func registerDisputeRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, store
 					"createdAt": dispute.CreatedAt,
 				})
 			}
-			return httpx.WriteJSON(w, stdhttp.StatusCreated, dispute)
+			return httpx.WriteJSON(w, stdhttp.StatusCreated, disputePayload(*dispute))
 
 		default:
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPost)

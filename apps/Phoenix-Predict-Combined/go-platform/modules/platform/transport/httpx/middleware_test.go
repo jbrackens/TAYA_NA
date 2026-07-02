@@ -205,6 +205,42 @@ func TestMetricsHandlerOutputsPrometheusFormat(t *testing.T) {
 	}
 }
 
+func TestMetricsHandlerAppendsRegisteredCollectors(t *testing.T) {
+	registry := NewMetricsRegistry()
+	registry.Observe(http.MethodGet, "/readyz", http.StatusOK, 5)
+	registry.RegisterCollector(func() string {
+		return "# HELP gateway_demo_total A demo collector counter.\n" +
+			"# TYPE gateway_demo_total counter\n" +
+			"gateway_demo_total 42\n"
+	})
+	// A collector returning "" must contribute nothing (and not panic).
+	registry.RegisterCollector(func() string { return "" })
+	// A nil collector is ignored at registration.
+	registry.RegisterCollector(nil)
+
+	req := httptest.NewRequest(http.MethodGet, "/metrics", nil)
+	rec := httptest.NewRecorder()
+	MetricsHandler(registry, "gateway").ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", rec.Code)
+	}
+
+	body := rec.Body.String()
+	// HTTP metrics still present.
+	if !strings.Contains(body, "phoenix_http_requests_total") {
+		t.Fatalf("expected built-in HTTP metrics, got: %s", body)
+	}
+	// Collector output appended.
+	if !strings.Contains(body, "gateway_demo_total 42") {
+		t.Fatalf("expected collector output in body, got: %s", body)
+	}
+	// Collector text must come AFTER the HTTP metrics block.
+	if strings.Index(body, "gateway_demo_total") < strings.Index(body, "phoenix_http_requests_total") {
+		t.Fatalf("expected collector output after HTTP metrics, got: %s", body)
+	}
+}
+
 func TestMaxBodySizeRejectsOversized(t *testing.T) {
 	handler := MaxBodySize(100)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)

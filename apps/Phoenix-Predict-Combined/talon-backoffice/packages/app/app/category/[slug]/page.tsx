@@ -96,14 +96,18 @@ export default function CategoryPage() {
             return (
               <MarketCard
                 key={m.id}
+                marketId={m.id}
                 ticker={m.ticker}
                 title={m.title}
-                yesPriceCents={m.yesPriceCents}
-                noPriceCents={m.noPriceCents}
-                volumeCents={m.volumeCents}
-                liquidityCents={m.liquidityCents}
+                yesPriceCents={m.yesPricePointsCents}
+                noPriceCents={m.noPricePointsCents}
+                volumePointsCents={m.volumePointsCents}
+                liquidityPointsCents={m.liquidityPointsCents}
                 closeAt={m.closeAt}
                 status={m.status}
+                categoryLabel={
+                  category ? categoryName(contentT, category) : undefined
+                }
                 imagePath={m.imagePath}
                 imageUrl={m.imageUrl}
                 image_url={m.image_url}

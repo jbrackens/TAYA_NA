@@ -47,7 +47,12 @@ services:
       redis:
         condition: service_healthy
     ports:
-      - "18080:18080"
+      # Bind to loopback only: the gateway origin must not be reachable from
+      # off-box. In a deployed topology the only ingress is the edge/Caddy over
+      # the compose network; a host-published :18080 lets a direct request
+      # supply its own CF-IPCountry and bypass geo-fencing (audit SEC-03).
+      # Local dev keeps localhost access.
+      - "127.0.0.1:18080:18080"
     environment:
       GATEWAY_PORT: "18080"
       GATEWAY_DB_DSN: "postgres://predict:localdev@postgres:5432/predict?sslmode=disable"
@@ -55,6 +60,10 @@ services:
       WALLET_STORE_MODE: "db"
       GATEWAY_READ_REPO_MODE: "db"
       REDIS_URL: "redis://redis:6379/0"
+      # P2-07 cross-instance WS backbone. Default (unset) = local in-process,
+      # correct for this single-instance demo. Set WS_BACKBONE=redis to fan
+      # WebSocket broadcasts across multiple gateway replicas over REDIS_URL.
+      # WS_BACKBONE: "redis"
       AUTH_SERVICE_URL: "http://auth:18081"
       PAYMENTS_WEBHOOK_SECRET: "whsec_local"
       LOG_LEVEL: "debug"

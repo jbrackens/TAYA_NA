@@ -73,3 +73,6 @@ outputs/
 apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/tests/.auth/
 apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/test-results/
 apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/playwright-report/
+
+# Workspace-local downloaded toolchains for launch evidence reruns
+apps/Phoenix-Predict-Combined/.tools/

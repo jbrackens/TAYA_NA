@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -149,7 +150,8 @@ func (r *SQLRepository) ListEvents(ctx context.Context, filter EventFilter) ([]E
 	q := `SELECT id, series_id, title, description, category_id, status, featured,
 	             open_at, close_at, settle_at, settled_at, metadata, created_by, created_at, updated_at
 	      FROM prediction_events` + where + ` ORDER BY close_at ASC`
-	q += fmt.Sprintf(` LIMIT %d OFFSET %d`, filter.PageSize, (filter.Page-1)*filter.PageSize)
+	q += fmt.Sprintf(` LIMIT $%d OFFSET $%d`, len(args)+1, len(args)+2)
+	args = append(args, filter.PageSize, (filter.Page-1)*filter.PageSize)
 
 	rows, err := r.db.QueryContext(ctx, q, args...)
 	if err != nil {
@@ -246,8 +248,9 @@ func (r *SQLRepository) ListMarkets(ctx context.Context, filter MarketFilter) ([
 	          FROM prediction_trades t
 	          WHERE t.market_id = rm.id
 	            AND t.traded_at >= NOW() - INTERVAL '24 hours'
-	      ) v24 ON true` + marketRankingOrderClause()
-	q += fmt.Sprintf(` LIMIT %d OFFSET %d`, filter.PageSize, (filter.Page-1)*filter.PageSize)
+	      ) v24 ON true` + marketOrderClause(filter.Sort)
+	q += fmt.Sprintf(` LIMIT $%d OFFSET $%d`, len(args)+1, len(args)+2)
+	args = append(args, filter.PageSize, (filter.Page-1)*filter.PageSize)
 
 	rows, err := r.db.QueryContext(ctx, q, args...)
 	if err != nil {
@@ -270,12 +273,12 @@ func (r *SQLRepository) ListMarkets(ctx context.Context, filter MarketFilter) ([
 }
 
 func (r *SQLRepository) GetMarket(ctx context.Context, id string) (*Market, error) {
-	row := r.db.QueryRowContext(ctx, marketSelectQuery()+` WHERE id = $1`, id)
+	row := r.db.QueryRowContext(ctx, marketSelectQuery()+` WHERE m.id = $1`, id)
 	return scanMarketRow(row)
 }
 
 func (r *SQLRepository) GetMarketByTicker(ctx context.Context, ticker string) (*Market, error) {
-	row := r.db.QueryRowContext(ctx, marketSelectQuery()+` WHERE ticker = $1`, ticker)
+	row := r.db.QueryRowContext(ctx, marketSelectQuery()+` WHERE m.ticker = $1`, ticker)
 	return scanMarketRow(row)
 }
 
@@ -462,28 +465,85 @@ func (r *SQLRepository) UpdateMarket(ctx context.Context, m *Market) error {
 func (r *SQLRepository) updateMarketWithExec(ctx context.Context, execer sqlRowExecer, m *Market) error {
 	_, err := execer.ExecContext(ctx,
 		`UPDATE prediction_markets SET
+		  event_id=$1, ticker=$2, title=$3, description=$4, translations=$5,
+		  status=$6, result=$7, yes_price_cents=$8, no_price_cents=$9,
+		  last_trade_price_cents=$10, volume_cents=$11, open_interest_cents=$12,
+		  liquidity_cents=$13, amm_yes_shares=$14, amm_no_shares=$15,
+		  amm_liquidity_param=$16, amm_subsidy_cents=$17,
+		  settlement_source_key=$18, settlement_cutoff_at=$19,
+		  settlement_rule=$20, settlement_params=$21, fallback_source_key=$22,
+		  fee_rate_bps=$23, maker_rebate_bps=$24, open_at=$25, close_at=$26,
+		  image_path=$27, article_source_id=$28, updated_at=NOW()
+		 WHERE id=$29`,
+		m.EventID, m.Ticker, m.Title, nullStr(m.Description), nullJSONArg(defaultJSONObject(m.Translations)),
+		m.Status, m.Result, m.YesPriceCents, m.NoPriceCents,
+		m.LastTradePriceCents, m.VolumeCents, m.OpenInterestCents,
+		m.LiquidityCents, m.AMMYesShares, m.AMMNoShares,
+		m.AMMLiquidityParam, m.AMMSubsidyCents,
+		m.SettlementSourceKey, m.SettlementCutoffAt,
+		m.SettlementRule, nullJSONArg(defaultJSONObject(m.SettlementParams)), m.FallbackSourceKey,
+		m.FeeRateBps, m.MakerRebateBps, m.OpenAt, m.CloseAt,
+		nullStr(m.ImagePath), m.ArticleSourceID, m.ID)
+	return err
+}
+
+// transitionMarketStatusWithExec persists the same fields as
+// updateMarketWithExec but guards the write on the status the caller
+// validated (optimistic concurrency on the lifecycle FSM). Zero rows updated
+// means a concurrent settle/void/lifecycle transition won the race; the
+// caller's transaction must abort so none of its money side-effects commit.
+// Mirrors the guard PersistProposalAtomic has used since ADR-0003/0004.
+func (r *SQLRepository) transitionMarketStatusWithExec(ctx context.Context, execer sqlRowExecer, m *Market, expectedPrev MarketStatus) error {
+	res, err := execer.ExecContext(ctx,
+		`UPDATE prediction_markets SET
 		  status=$1, result=$2, yes_price_cents=$3, no_price_cents=$4,
 		  last_trade_price_cents=$5, volume_cents=$6, open_interest_cents=$7,
 		  liquidity_cents=$8, amm_yes_shares=$9, amm_no_shares=$10,
 		  updated_at=NOW()
-		 WHERE id=$11`,
+		 WHERE id=$11 AND status=$12`,
 		m.Status, m.Result, m.YesPriceCents, m.NoPriceCents,
 		m.LastTradePriceCents, m.VolumeCents, m.OpenInterestCents,
 		m.LiquidityCents, m.AMMYesShares, m.AMMNoShares,
-		m.ID)
-	return err
+		m.ID, string(expectedPrev))
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return fmt.Errorf("market %s: expected status %q: %w", m.ID, expectedPrev, ErrStaleMarketStatus)
+	}
+	return nil
 }
 
-func (r *SQLRepository) UpdateMarketStatus(ctx context.Context, id string, status MarketStatus) error {
-	_, err := r.db.ExecContext(ctx,
-		`UPDATE prediction_markets SET status = $1, updated_at = NOW() WHERE id = $2`,
-		status, id)
-	return err
+// UpdateMarketStatus performs a guarded compare-and-set: the row is updated
+// only while its current status still equals expectedPrev (mirroring
+// transitionMarketStatusWithExec). This stops the closer or an admin
+// transition from silently clobbering a concurrent settle/void — which would
+// resurrect a terminal market into a settleable state and double-pay.
+// Returns ErrStaleMarketStatus when the precondition no longer holds.
+func (r *SQLRepository) UpdateMarketStatus(ctx context.Context, id string, status, expectedPrev MarketStatus) error {
+	res, err := r.db.ExecContext(ctx,
+		`UPDATE prediction_markets SET status = $1, updated_at = NOW() WHERE id = $2 AND status = $3`,
+		status, id, string(expectedPrev))
+	if err != nil {
+		return err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affected != 1 {
+		return fmt.Errorf("market %s: expected status %q: %w", id, expectedPrev, ErrStaleMarketStatus)
+	}
+	return nil
 }
 
 func (r *SQLRepository) ListMarketsToClose(ctx context.Context) ([]Market, error) {
 	rows, err := r.db.QueryContext(ctx,
-		marketSelectQuery()+` WHERE status = 'open' AND close_at <= $1`, time.Now().UTC())
+		marketSelectQuery()+` WHERE m.status = 'open' AND m.close_at <= $1`, time.Now().UTC())
 	if err != nil {
 		return nil, err
 	}
@@ -493,8 +553,8 @@ func (r *SQLRepository) ListMarketsToClose(ctx context.Context) ([]Market, error
 
 func (r *SQLRepository) ListMarketsToSettle(ctx context.Context) ([]Market, error) {
 	rows, err := r.db.QueryContext(ctx,
-		marketSelectQuery()+` WHERE status = 'closed' AND settlement_cutoff_at <= $1
-		  AND id NOT IN (SELECT market_id FROM prediction_settlements)`,
+		marketSelectQuery()+` WHERE m.status = 'closed' AND m.settlement_cutoff_at <= $1
+		  AND m.id NOT IN (SELECT market_id FROM prediction_settlements)`,
 		time.Now().UTC())
 	if err != nil {
 		return nil, err
@@ -530,7 +590,8 @@ func (r *SQLRepository) ListOrders(ctx context.Context, filter OrderFilter) ([]O
 	             status, wallet_reservation_id, idempotency_key,
 	             expires_at, filled_at, cancelled_at, created_at, updated_at
 	      FROM prediction_orders` + where + ` ORDER BY created_at DESC`
-	q += fmt.Sprintf(` LIMIT %d OFFSET %d`, filter.PageSize, (filter.Page-1)*filter.PageSize)
+	q += fmt.Sprintf(` LIMIT $%d OFFSET $%d`, len(args)+1, len(args)+2)
+	args = append(args, filter.PageSize, (filter.Page-1)*filter.PageSize)
 
 	rows, err := r.db.QueryContext(ctx, q, args...)
 	if err != nil {
@@ -673,6 +734,9 @@ func (r *SQLRepository) GetPosition(ctx context.Context, userID, marketID string
 	).Scan(&p.ID, &p.UserID, &p.MarketID, &p.Side, &p.Quantity,
 		&p.AvgPriceCents, &p.TotalCostCents, &p.RealizedPnlCents, &p.ReservedQuantity,
 		&p.CreatedAt, &p.UpdatedAt)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrPositionNotFound
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -887,6 +951,7 @@ func (r *SQLRepository) PersistResolvedMarketAtomic(
 	ctx context.Context,
 	wallet WalletAdapter,
 	market *Market,
+	prevStatus MarketStatus,
 	settlement *Settlement,
 	payouts []Payout,
 	credits []WalletCreditRequest,
@@ -904,6 +969,13 @@ func (r *SQLRepository) PersistResolvedMarketAtomic(
 		return nil, err
 	}
 	defer func() { _ = tx.Rollback() }()
+
+	// Status-guarded transition FIRST: it takes the market row lock and
+	// fails fast with ErrStaleMarketStatus if a concurrent settle/void won,
+	// before any payout or credit is written (COR-01).
+	if err := r.transitionMarketStatusWithExec(ctx, tx, market, prevStatus); err != nil {
+		return nil, err
+	}
 
 	if err := r.createSettlementWithExec(ctx, tx, settlement); err != nil {
 		return nil, err
@@ -934,9 +1006,6 @@ func (r *SQLRepository) PersistResolvedMarketAtomic(
 			}
 		}
 	}
-	if err := r.updateMarketWithExec(ctx, tx, market); err != nil {
-		return nil, err
-	}
 	if lifecycle != nil {
 		if err := r.createLifecycleEventWithExec(ctx, tx, lifecycle); err != nil {
 			return nil, err
@@ -947,6 +1016,186 @@ func (r *SQLRepository) PersistResolvedMarketAtomic(
 		return nil, err
 	}
 	return loyaltyResults, nil
+}
+
+// PersistSettlementHeader commits the settlement header — the status-guarded
+// transition (COR-01), the settlement row with its payouts_total snapshot, and
+// the lifecycle event — in one fast transaction, releasing the market lock
+// before the payout batches run (P3-12 / COR-05).
+func (r *SQLRepository) PersistSettlementHeader(ctx context.Context, market *Market, prevStatus MarketStatus, settlement *Settlement, lifecycle *LifecycleEvent) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	if err := r.transitionMarketStatusWithExec(ctx, tx, market, prevStatus); err != nil {
+		return err
+	}
+	if err := tx.QueryRowContext(ctx,
+		`INSERT INTO prediction_settlements
+		 (market_id, result, attestation_source, attestation_id, attestation_digest,
+		  attestation_data, settled_by, total_payout_cents, positions_settled,
+		  payouts_total, payouts_completed)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,0)
+		 RETURNING id, settled_at`,
+		settlement.MarketID, settlement.Result, settlement.AttestationSource,
+		settlement.AttestationID, settlement.AttestationDigest, settlement.AttestationData,
+		settlement.SettledBy, settlement.TotalPayoutCents, settlement.PositionsSettled,
+		settlement.PayoutsTotal,
+	).Scan(&settlement.ID, &settlement.SettledAt); err != nil {
+		return fmt.Errorf("insert settlement header: %w", err)
+	}
+	if lifecycle != nil {
+		if err := r.createLifecycleEventWithExec(ctx, tx, lifecycle); err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
+// CommitPayoutBatch writes one chunk of positions' payouts, position closes,
+// wallet credits, and loyalty accruals, then re-derives payouts_completed from
+// the actual payout-row count — all in one transaction (P3-12). Every write is
+// idempotent and the cursor is recomputed (not incremented), so a re-applied
+// batch after a crash, or a duplicate batch from two concurrent resume passes,
+// can neither double-pay nor over-count (audit COR-05 resume safety).
+func (r *SQLRepository) CommitPayoutBatch(ctx context.Context, wallet WalletAdapter, settlementID string, payouts []Payout, credits []*WalletCreditRequest, loyalty LoyaltyAdapter, accruals []*LoyaltyAccrualRequest) ([]LoyaltyAccrualResult, error) {
+	if len(payouts) == 0 {
+		return nil, nil
+	}
+	txWallet, ok := wallet.(TxWalletAdapter)
+	if !ok {
+		return nil, fmt.Errorf("wallet does not support shared transactions")
+	}
+	tx, err := txWallet.BeginTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	var loyaltyResults []LoyaltyAccrualResult
+	for i := range payouts {
+		payouts[i].SettlementID = settlementID
+		if err := r.createPayoutWithExec(ctx, tx, &payouts[i]); err != nil {
+			return nil, fmt.Errorf("create payout for position %s: %w", payouts[i].PositionID, err)
+		}
+		if err := r.closeSettledPositionWithExec(ctx, tx, payouts[i].PositionID, payouts[i].PnlCents); err != nil {
+			return nil, fmt.Errorf("close settled position %s: %w", payouts[i].PositionID, err)
+		}
+		if i < len(credits) && credits[i] != nil {
+			if err := txWallet.CreditWithTx(ctx, tx, credits[i].UserID, credits[i].AmountCents, credits[i].IdempotencyKey, credits[i].Reason); err != nil {
+				return nil, fmt.Errorf("wallet credit for user %s: %w", credits[i].UserID, err)
+			}
+		}
+		if loyalty != nil && i < len(accruals) && accruals[i] != nil {
+			res, err := loyalty.AccrueSettledWithTx(ctx, tx, *accruals[i])
+			if err != nil {
+				return nil, fmt.Errorf("loyalty accrual for user %s: %w", accruals[i].UserID, err)
+			}
+			if res != nil {
+				loyaltyResults = append(loyaltyResults, *res)
+			}
+		}
+	}
+	// Recompute the cursor from the source of truth (payout rows) rather than
+	// incrementing, so a re-run or concurrent batch is self-correcting.
+	if _, err := tx.ExecContext(ctx,
+		`UPDATE prediction_settlements
+		   SET payouts_completed = (SELECT COUNT(*) FROM prediction_payouts WHERE settlement_id = $1)
+		 WHERE id = $1`,
+		settlementID,
+	); err != nil {
+		return nil, fmt.Errorf("advance payout cursor: %w", err)
+	}
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+	return loyaltyResults, nil
+}
+
+// ListUnpaidSettlementPositions returns up to `limit` positions for the market
+// that still have no payout row for this settlement and a positive quantity, in
+// stable id order. Already-paid positions are excluded (they carry a payout row
+// and quantity 0), so recomputing their payout from the live row — which has
+// been zeroed — is never attempted. Drives the resume scanner.
+func (r *SQLRepository) ListUnpaidSettlementPositions(ctx context.Context, settlementID, marketID string, limit int) ([]Position, error) {
+	if limit <= 0 {
+		limit = 500
+	}
+	rows, err := r.db.QueryContext(ctx,
+		`SELECT p.id, p.user_id, p.market_id, p.side, p.quantity, p.avg_price_cents,
+		        p.total_cost_cents, p.realized_pnl_cents, p.reserved_quantity,
+		        p.created_at, p.updated_at
+		 FROM prediction_positions p
+		 WHERE p.market_id = $1 AND p.quantity > 0
+		   AND NOT EXISTS (
+		     SELECT 1 FROM prediction_payouts pay
+		     WHERE pay.settlement_id = $2 AND pay.position_id = p.id)
+		 ORDER BY p.id
+		 LIMIT $3`, marketID, settlementID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var positions []Position
+	for rows.Next() {
+		var p Position
+		if err := rows.Scan(&p.ID, &p.UserID, &p.MarketID, &p.Side, &p.Quantity,
+			&p.AvgPriceCents, &p.TotalCostCents, &p.RealizedPnlCents, &p.ReservedQuantity, &p.CreatedAt, &p.UpdatedAt); err != nil {
+			return nil, err
+		}
+		positions = append(positions, p)
+	}
+	return positions, rows.Err()
+}
+
+// ListIncompleteSettlements returns up to `limit` settlements whose
+// disbursement did not finish (payouts_completed < payouts_total), oldest
+// first. Drives the resume scanner (P3-12).
+func (r *SQLRepository) ListIncompleteSettlements(ctx context.Context, limit int) ([]Settlement, error) {
+	if limit <= 0 {
+		limit = 100
+	}
+	rows, err := r.db.QueryContext(ctx,
+		`SELECT id, market_id, result, attestation_source, attestation_id,
+		        attestation_digest, attestation_data, settled_by, settled_at,
+		        total_payout_cents, positions_settled, payouts_total, payouts_completed
+		 FROM prediction_settlements
+		 WHERE payouts_completed < payouts_total
+		 ORDER BY settled_at
+		 LIMIT $1`, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []Settlement
+	for rows.Next() {
+		var s Settlement
+		var attID, attDigest, settledBy sql.NullString
+		var attData []byte // attestation_data may be NULL
+		if err := rows.Scan(&s.ID, &s.MarketID, &s.Result, &s.AttestationSource, &attID,
+			&attDigest, &attData, &settledBy, &s.SettledAt,
+			&s.TotalPayoutCents, &s.PositionsSettled, &s.PayoutsTotal, &s.PayoutsCompleted); err != nil {
+			return nil, err
+		}
+		if attData != nil {
+			s.AttestationData = attData
+		}
+		if attID.Valid {
+			s.AttestationID = &attID.String
+		}
+		if attDigest.Valid {
+			s.AttestationDigest = &attDigest.String
+		}
+		if settledBy.Valid {
+			s.SettledBy = &settledBy.String
+		}
+		out = append(out, s)
+	}
+	return out, rows.Err()
 }
 
 // PersistProposalAtomic records a resolution proposal and the closed ->
@@ -1005,6 +1254,7 @@ func (r *SQLRepository) PersistVoidedMarketAtomic(
 	ctx context.Context,
 	wallet WalletAdapter,
 	market *Market,
+	prevStatus MarketStatus,
 	payouts []Payout,
 	credits []WalletCreditRequest,
 	lifecycle *LifecycleEvent,
@@ -1020,7 +1270,10 @@ func (r *SQLRepository) PersistVoidedMarketAtomic(
 	}
 	defer func() { _ = tx.Rollback() }()
 
-	if err := r.updateMarketWithExec(ctx, tx, market); err != nil {
+	// Status-guarded transition FIRST — a void must never land on top of a
+	// concurrent settle (or another void): if the status moved since the
+	// engine validated it, abort before any refund is written (COR-01).
+	if err := r.transitionMarketStatusWithExec(ctx, tx, market, prevStatus); err != nil {
 		return err
 	}
 	for _, credit := range credits {
@@ -1069,6 +1322,51 @@ func (r *SQLRepository) CreateSettlement(ctx context.Context, s *Settlement) err
 	return r.createSettlementWithExec(ctx, r.db, s)
 }
 
+// GetMarketJurisdictionPolicy returns the parsed per-market jurisdiction overlay
+// (P3-07), or (nil, nil) when the market carries no policy or does not exist
+// (the order path's own market load produces the canonical not-found error).
+func (r *SQLRepository) GetMarketJurisdictionPolicy(ctx context.Context, marketID string) (*MarketJurisdictionPolicy, error) {
+	var raw []byte
+	err := r.db.QueryRowContext(ctx,
+		`SELECT jurisdiction_policy FROM prediction_markets WHERE id=$1`, marketID,
+	).Scan(&raw)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return ParseMarketJurisdictionPolicy(raw)
+}
+
+// SetMarketJurisdictionPolicy writes (policy != nil) or clears (policy == nil)
+// the per-market jurisdiction overlay. Errors if the market does not exist.
+func (r *SQLRepository) SetMarketJurisdictionPolicy(ctx context.Context, marketID string, policy *MarketJurisdictionPolicy) error {
+	var raw interface{} // nil → SQL NULL (clears the overlay)
+	if policy != nil {
+		b, err := json.Marshal(policy)
+		if err != nil {
+			return err
+		}
+		raw = b
+	}
+	res, err := r.db.ExecContext(ctx,
+		`UPDATE prediction_markets SET jurisdiction_policy=$1, updated_at=NOW() WHERE id=$2`,
+		raw, marketID,
+	)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return fmt.Errorf("market %s not found", marketID)
+	}
+	return nil
+}
+
 func (r *SQLRepository) createSettlementWithExec(ctx context.Context, execer sqlRowExecer, s *Settlement) error {
 	return execer.QueryRowContext(ctx,
 		`INSERT INTO prediction_settlements
@@ -1090,15 +1388,27 @@ func (r *SQLRepository) createPayoutWithExec(ctx context.Context, execer sqlRowE
 	if err := r.ensurePunterExistsWithExec(ctx, execer, p.UserID); err != nil {
 		return err
 	}
-	return execer.QueryRowContext(ctx,
+	// ON CONFLICT makes this idempotent against uq_payout_settlement_position
+	// (migration 034): a resumed/retried settlement batch that re-inserts the
+	// payout for a (settlement, position) already paid is a no-op rather than a
+	// duplicate row. In the single-tx path no conflict ever fires, so the
+	// RETURNING populates p.ID/p.PaidAt exactly as before. On conflict the
+	// RETURNING yields no row (sql.ErrNoRows) — that is the success signal for
+	// the resume path, so we swallow it.
+	err := execer.QueryRowContext(ctx,
 		`INSERT INTO prediction_payouts
 		 (settlement_id, position_id, user_id, market_id, side,
 		  quantity, entry_price_cents, exit_price_cents, pnl_cents, payout_cents)
 		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+		 ON CONFLICT (settlement_id, position_id) DO NOTHING
 		 RETURNING id, paid_at`,
 		p.SettlementID, p.PositionID, p.UserID, p.MarketID, p.Side,
 		p.Quantity, p.EntryPriceCents, p.ExitPriceCents, p.PnlCents, p.PayoutCents,
 	).Scan(&p.ID, &p.PaidAt)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil
+	}
+	return err
 }
 
 // closeSettledPositionWithExec zeroes a settled position's quantity AND its
@@ -1113,6 +1423,12 @@ func (r *SQLRepository) createPayoutWithExec(ctx context.Context, execer sqlRowE
 // built before this call (settlement.go), so its recorded entry price / pnl
 // are unaffected. realized_pnl_cents accumulates and is preserved.
 func (r *SQLRepository) closeSettledPositionWithExec(ctx context.Context, execer sqlRowExecer, positionID string, pnlCents int64) error {
+	// The `AND quantity > 0` guard makes this idempotent: realized_pnl_cents is
+	// accumulated (+= $2), so re-running a settlement batch on a position that
+	// was already closed (quantity == 0) would otherwise double-count its PnL.
+	// With the guard a re-close matches zero rows and is a no-op. Required by
+	// the resumable batched settler (P3-12); harmless in the single-tx path
+	// where each position is closed exactly once.
 	_, err := execer.ExecContext(ctx,
 		`UPDATE prediction_positions
 		   SET quantity = 0,
@@ -1120,7 +1436,7 @@ func (r *SQLRepository) closeSettledPositionWithExec(ctx context.Context, execer
 		       avg_price_cents = 0,
 		       realized_pnl_cents = realized_pnl_cents + $2,
 		       updated_at = NOW()
-		 WHERE id = $1`,
+		 WHERE id = $1 AND quantity > 0`,
 		positionID, pnlCents,
 	)
 	return err
@@ -1140,8 +1456,8 @@ func (r *SQLRepository) ListLifecycleEvents(ctx context.Context, marketID string
 	var events []LifecycleEvent
 	for rows.Next() {
 		var e LifecycleEvent
-		var actorID, reason sql.NullString
-		if err := rows.Scan(&e.ID, &e.MarketID, &e.EventType, &actorID, &e.ActorType, &reason, &e.Metadata, &e.OccurredAt); err != nil {
+		var actorID, reason, metadata sql.NullString
+		if err := rows.Scan(&e.ID, &e.MarketID, &e.EventType, &actorID, &e.ActorType, &reason, &metadata, &e.OccurredAt); err != nil {
 			return nil, err
 		}
 		if actorID.Valid {
@@ -1149,6 +1465,9 @@ func (r *SQLRepository) ListLifecycleEvents(ctx context.Context, marketID string
 		}
 		if reason.Valid {
 			e.Reason = &reason.String
+		}
+		if metadata.Valid {
+			e.Metadata = json.RawMessage(metadata.String)
 		}
 		events = append(events, e)
 	}
@@ -1395,7 +1714,7 @@ func (r *SQLRepository) GetDiscovery(ctx context.Context) (*DiscoveryResponse, e
 // --- Helpers ---
 
 func marketSelectQuery() string {
-	return `SELECT m.id, m.event_id, m.ticker, m.title, m.description,
+	return `SELECT m.id, m.event_id, pe.category_id, pc.slug, pc.name, m.ticker, m.title, m.description,
 		               COALESCE(m.translations, '{}'::jsonb) AS translations,
 	               m.status, m.result,
 	               m.yes_price_cents, m.no_price_cents, m.last_trade_price_cents,
@@ -1411,6 +1730,8 @@ func marketSelectQuery() string {
 	               m.best_no_bid_cents, m.best_no_ask_cents, m.last_quote_at,
 	               m.article_source_id
 	        FROM prediction_markets m
+	        LEFT JOIN prediction_events pe ON pe.id = m.event_id
+	        LEFT JOIN prediction_categories pc ON pc.id = pe.category_id
 	        LEFT JOIN LATERAL (
 	            SELECT volume, liquidity, image_path
 	            FROM imported_markets im
@@ -1419,6 +1740,17 @@ func marketSelectQuery() string {
 	            ORDER BY im.volume DESC
 	            LIMIT 1
 		        ) im ON true`
+}
+
+func marketOrderClause(sort string) string {
+	switch strings.TrimSpace(sort) {
+	case "closing_soon":
+		return ` ORDER BY rm.close_at ASC, rm.volume_cents DESC, rm.id DESC`
+	case "newest":
+		return ` ORDER BY rm.created_at DESC, rm.volume_cents DESC, rm.id DESC`
+	default:
+		return marketRankingOrderClause()
+	}
 }
 
 func marketRankingOrderClause() string {
@@ -1492,6 +1824,7 @@ func scanMarketRow(row scannable) (*Market, error) {
 	var desc sql.NullString
 	var translations []byte
 	var result, fallback, imagePath sql.NullString
+	var categoryID, categorySlug, categoryName sql.NullString
 	var lastTradePrice sql.NullInt64
 	var settleCutoff, openAt sql.NullTime
 	// Exchange engine fields (migration 019). Best-quote columns are
@@ -1500,7 +1833,7 @@ func scanMarketRow(row scannable) (*Market, error) {
 	var lastQuoteAt sql.NullTime
 	var articleSourceID sql.NullString
 
-	err := row.Scan(&m.ID, &m.EventID, &m.Ticker, &m.Title, &desc, &translations, &m.Status, &result,
+	err := row.Scan(&m.ID, &m.EventID, &categoryID, &categorySlug, &categoryName, &m.Ticker, &m.Title, &desc, &translations, &m.Status, &result,
 		&m.YesPriceCents, &m.NoPriceCents, &lastTradePrice,
 		&m.VolumeCents, &m.OpenInterestCents, &m.LiquidityCents,
 		&m.AMMYesShares, &m.AMMNoShares, &m.AMMLiquidityParam, &m.AMMSubsidyCents,
@@ -1512,6 +1845,15 @@ func scanMarketRow(row scannable) (*Market, error) {
 		&articleSourceID)
 	if err != nil {
 		return nil, err
+	}
+	if categoryID.Valid {
+		m.CategoryID = categoryID.String
+	}
+	if categorySlug.Valid {
+		m.CategorySlug = categorySlug.String
+	}
+	if categoryName.Valid {
+		m.CategoryName = categoryName.String
 	}
 	m.Description = desc.String
 	m.Translations = defaultJSONObject(json.RawMessage(translations))
@@ -1691,12 +2033,18 @@ func buildMarketWhere(f MarketFilter) (string, []interface{}) {
 	// (status='unopened' AND status<>'unopened' yields nothing). Literal
 	// condition — no bound parameter, so idx is unaffected.
 	if !f.IncludeUnopened {
-		conds = append(conds, "status <> 'unopened'")
+		conds = append(conds, "m.status <> 'unopened'")
 	}
 
 	if f.EventID != nil {
-		conds = append(conds, fmt.Sprintf("event_id = $%d", idx))
+		conds = append(conds, fmt.Sprintf("m.event_id = $%d", idx))
 		args = append(args, *f.EventID)
+		idx++
+	}
+	if f.SeriesID != nil {
+		conds = append(conds,
+			fmt.Sprintf("m.event_id IN (SELECT id FROM prediction_events WHERE series_id = $%d)", idx))
+		args = append(args, *f.SeriesID)
 		idx++
 	}
 	if f.CategoryID != nil {
@@ -1706,25 +2054,42 @@ func buildMarketWhere(f MarketFilter) (string, []interface{}) {
 		// Only the event-listing endpoint hides synthetic events; the markets
 		// they host still surface flat under each category.
 		conds = append(conds,
-			fmt.Sprintf("event_id IN (SELECT id FROM prediction_events WHERE category_id = $%d)", idx))
+			fmt.Sprintf("m.event_id IN (SELECT id FROM prediction_events WHERE category_id = $%d)", idx))
 		args = append(args, *f.CategoryID)
 		idx++
 	}
 	if f.Status != nil {
-		conds = append(conds, fmt.Sprintf("status = $%d", idx))
+		conds = append(conds, fmt.Sprintf("m.status = $%d", idx))
 		args = append(args, *f.Status)
 		idx++
 	}
 	if f.Ticker != nil {
-		conds = append(conds, fmt.Sprintf("ticker = $%d", idx))
+		conds = append(conds, fmt.Sprintf("m.ticker = $%d", idx))
 		args = append(args, *f.Ticker)
+		idx++
+	}
+	if f.Search != nil && strings.TrimSpace(*f.Search) != "" {
+		conds = append(conds,
+			fmt.Sprintf("(m.ticker ILIKE $%d OR m.title ILIKE $%d OR COALESCE(m.description, '') ILIKE $%d)", idx, idx, idx))
+		args = append(args, "%"+strings.TrimSpace(*f.Search)+"%")
+		idx++
+	}
+	if f.Tag != nil && strings.TrimSpace(*f.Tag) != "" {
+		conds = append(conds,
+			fmt.Sprintf(`m.event_id IN (
+				SELECT e.id
+				FROM prediction_events e
+				JOIN prediction_series s ON s.id = e.series_id
+				WHERE lower($%d) IN (SELECT lower(unnest(s.tags)))
+			)`, idx))
+		args = append(args, strings.TrimSpace(*f.Tag))
 		idx++
 	}
 	if f.CloseBefore != nil {
 		// Players use this to ask "what's about to settle?". The bound is
 		// inclusive on the upper edge so a market closing exactly at the
 		// requested instant still appears in the result.
-		conds = append(conds, fmt.Sprintf("close_at <= $%d", idx))
+		conds = append(conds, fmt.Sprintf("m.close_at <= $%d", idx))
 		args = append(args, *f.CloseBefore)
 		idx++
 	}

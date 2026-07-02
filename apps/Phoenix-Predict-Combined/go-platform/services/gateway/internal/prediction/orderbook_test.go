@@ -2,6 +2,7 @@ package prediction
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -82,6 +83,40 @@ func TestAssembleOrderBook_StableJSONShape(t *testing.T) {
 	want := `{"marketId":"m-x","yes":{"bids":[],"asks":[]},"no":{"bids":[],"asks":[]}}`
 	if got != want {
 		t.Errorf("json shape mismatch:\n got: %s\nwant: %s", got, want)
+	}
+}
+
+func TestOrderBookLevelJSONExposesPointAliases(t *testing.T) {
+	level := OrderBookLevel{
+		PriceCents: 64,
+		Quantity:   12,
+		Total:      20,
+	}
+	b, err := json.Marshal(level)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	got := string(b)
+	for _, needle := range []string{
+		`"pricePointsCents":64`,
+		`"shares":12`,
+		`"cumulativeShares":20`,
+		`"notionalPointsCents":768`,
+		`"totalNotionalPointsCents":1280`,
+		`"unit":"PTS"`,
+	} {
+		if !strings.Contains(got, needle) {
+			t.Fatalf("order book level missing %s in %s", needle, got)
+		}
+	}
+	for _, retired := range []string{
+		`"priceCents"`,
+		`"quantity"`,
+		`"total"`,
+	} {
+		if strings.Contains(got, retired) {
+			t.Fatalf("order book level should not emit retired alias %s in %s", retired, got)
+		}
 	}
 }
 

@@ -13,6 +13,7 @@ import (
 
 	"phoenix-revival/gateway/internal/alphacashier"
 	gatewayhttp "phoenix-revival/gateway/internal/http"
+	"phoenix-revival/gateway/internal/tenant"
 	"phoenix-revival/gateway/internal/tracing"
 	"phoenix-revival/platform/logging"
 	"phoenix-revival/platform/runtime"
@@ -20,6 +21,8 @@ import (
 
 	_ "github.com/lib/pq" // Register PostgreSQL driver for database/sql
 )
+
+const legacyMoneyRoutesEnv = "TIANGGE_LEGACY_MONEY_ROUTES_ENABLED"
 
 func main() {
 	// Subcommand dispatch runs before any server bootstrap. Keep this list
@@ -58,6 +61,9 @@ func main() {
 
 	mux := stdhttp.NewServeMux()
 	metricsRegistry := httpx.NewMetricsRegistry()
+	// Fold gateway infrastructure counters (geo-gate denials, WS fan-out drops)
+	// into the canonical /metrics scrape alongside HTTP request metrics (P3-05).
+	metricsRegistry.RegisterCollector(gatewayhttp.GatewayInfraMetrics)
 	mux.Handle("/metrics", httpx.MetricsHandler(metricsRegistry, cfg.Name))
 	gatewayhttp.RegisterRoutes(mux, cfg.Name)
 
@@ -90,6 +96,10 @@ func main() {
 	authEnabled := strings.ToLower(strings.TrimSpace(os.Getenv("GATEWAY_AUTH_ENABLED"))) != "false"
 
 	middlewares := []httpx.Middleware{
+		// Auth-disabled (dev/demo) chain has no httpx.Auth to strip client-set
+		// identity headers, so do it explicitly here (SECURITY-REVIEW #24).
+		stripClientIdentityHeaders,
+		tenant.Middleware, // innermost: resolves the active tenant after auth (ADR-0005 step 2)
 		httpx.RequestID(),
 		httpx.NormalizeTrailingSlash("/api/", "/admin/", "/auth/"),
 		tracing.Middleware(),
@@ -134,8 +144,21 @@ func main() {
 	slog.Info("service stopped gracefully", "service", cfg.Name)
 }
 
+// stripClientIdentityHeaders removes client-supplied identity headers at ingress.
+// httpx.Auth performs this in the auth-enabled chain; the auth-disabled (dev/demo)
+// chain has none, so we strip explicitly to stop a handler's header fallback from
+// honoring an attacker-set identity (SECURITY-REVIEW #24, defense-in-depth).
+func stripClientIdentityHeaders(next stdhttp.Handler) stdhttp.Handler {
+	return stdhttp.HandlerFunc(func(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+		for _, h := range []string{"X-User-ID", "X-Admin-Role", "X-Bot-Scopes", "X-Bot-Key-ID", "X-Admin-Actor", "X-Admin-User", "X-Actor-Id"} {
+			r.Header.Del(h)
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 func gatewayPublicPrefixes() []string {
-	return []string{
+	prefixes := []string{
 		"/healthz",
 		"/readyz",
 		"/metrics",
@@ -151,10 +174,10 @@ func gatewayPublicPrefixes() []string {
 		"/api/v1/discovery",
 		"/api/v1/live-markets",
 		"/api/v1/categories",
+		"/api/v1/series",
+		"/api/v1/tags",
 		"/api/v1/events",
 		"/api/v1/markets",
-		"/api/v1/payments/webhook",
-		"/v1/provider-callbacks/", // Non-custodial cashier provider callbacks verify raw-body signatures in-handler.
 
 		// Leaderboards — board list + per-board entries are public; the
 		// per-user /api/v1/me/leaderboards endpoint sits outside this prefix
@@ -164,28 +187,49 @@ func gatewayPublicPrefixes() []string {
 		// Bot API uses its own API-key auth middleware, not the session auth
 		"/api/v1/bot/",
 	}
+	if legacyMoneyRoutesEnabledFromOS() {
+		prefixes = append(prefixes,
+			"/api/v1/payments/webhook",
+			"/v1/provider-callbacks/", // Legacy cashier provider callbacks verify raw-body signatures in-handler.
+		)
+	}
+	return prefixes
 }
 
 func gatewayCSRFSkipPrefixes() []string {
-	return []string{
+	prefixes := []string{
 		"/api/v1/auth/",
 		"/auth/",
 		"/healthz",
 		"/readyz",
 		"/metrics",
 		"/api/v1/status",
-		"/api/v1/payments/webhook",
-		"/v1/provider-callbacks/",
 	}
+	if legacyMoneyRoutesEnabledFromOS() {
+		prefixes = append(prefixes,
+			"/api/v1/payments/webhook",
+			"/v1/provider-callbacks/",
+		)
+	}
+	return prefixes
 }
 
 func validateGatewayRuntimeConfig(getenv func(string) string) error {
+	env := strings.ToLower(strings.TrimSpace(getenv("ENVIRONMENT")))
+	realEnv := env == "production" || env == "staging"
+	if legacyMoneyRoutesEnabled(getenv) && realEnv {
+		return fmt.Errorf("%s=true is not permitted when ENVIRONMENT=%s; Tiangge launch must not expose deposit, withdrawal, cashier, crypto, or provider-callback routes", legacyMoneyRoutesEnv, env)
+	}
+	alphaCashierEnabled := strings.EqualFold(strings.TrimSpace(getenv("ALPHA_CASHIER_ENABLED")), "true")
+	if alphaCashierEnabled && realEnv {
+		return fmt.Errorf("ALPHA_CASHIER_ENABLED=true is not permitted when ENVIRONMENT=%s; Tiangge launch is points-only with no crypto cashier rail", env)
+	}
+	if alphaCashierEnabled && !legacyMoneyRoutesEnabled(getenv) {
+		return fmt.Errorf("ALPHA_CASHIER_ENABLED=true requires %s=true; Tiangge launch keeps the legacy cashier route tree disabled", legacyMoneyRoutesEnv)
+	}
 	if err := alphacashier.ValidateRuntimeConfig(getenv); err != nil {
 		return err
 	}
-
-	env := strings.ToLower(strings.TrimSpace(getenv("ENVIRONMENT")))
-	realEnv := env == "production" || env == "staging"
 
 	// The auth kill switch is a local-dev convenience only. Refuse to boot with
 	// it disabled in any deployed environment.
@@ -202,20 +246,22 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 		return fmt.Errorf("GATEWAY_ALLOW_ADMIN_ANON=true is not permitted when ENVIRONMENT=%s", env)
 	}
 
+	// Payment webhooks are not launch routes. Validate their HMAC secret only
+	// when the legacy money-route tree is explicitly enabled, so Tiangge launch
+	// does not require a dormant payment secret to boot.
+	if legacyMoneyRoutesEnabled(getenv) {
+		switch strings.TrimSpace(getenv("PAYMENTS_WEBHOOK_SECRET")) {
+		case "":
+			return fmt.Errorf("PAYMENTS_WEBHOOK_SECRET must be set when %s=true and ENVIRONMENT=%s", legacyMoneyRoutesEnv, env)
+		case "whsec_local":
+			return fmt.Errorf("PAYMENTS_WEBHOOK_SECRET is the dev placeholder 'whsec_local'; set a real secret when %s=true and ENVIRONMENT=%s", legacyMoneyRoutesEnv, env)
+		}
+	}
+
 	// Everything below applies only to deployed environments. Local dev and the
 	// demo box (ENVIRONMENT unset) keep the convenient docker-compose defaults.
 	if !realEnv {
 		return nil
-	}
-
-	// Payments webhook secret must be set, and must not be the dev placeholder
-	// baked into docker-compose. Reaching a deployed environment with it is a
-	// deploy mistake we fail fast on rather than run with a guessable HMAC key.
-	switch strings.TrimSpace(getenv("PAYMENTS_WEBHOOK_SECRET")) {
-	case "":
-		return fmt.Errorf("PAYMENTS_WEBHOOK_SECRET must be set when ENVIRONMENT=%s", env)
-	case "whsec_local":
-		return fmt.Errorf("PAYMENTS_WEBHOOK_SECRET is the dev placeholder 'whsec_local'; set a real secret when ENVIRONMENT=%s", env)
 	}
 
 	// Refuse the dev database password in a deployed environment. The local
@@ -225,6 +271,21 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 		if strings.Contains(getenv(dsnVar), ":localdev@") {
 			return fmt.Errorf("%s uses the dev database password 'localdev'; use real credentials when ENVIRONMENT=%s", dsnVar, env)
 		}
+	}
+
+	// P3-06: the provider-ops audit trail is append-only (migration 036) and is
+	// the system of record for compliance actions, so in a deployed environment
+	// it must be DB-backed. The JSON-file fallback is mutable and per-instance —
+	// it cannot be authoritative — so fail closed rather than silently degrade.
+	// (Mirrors buildProviderOpsAuditStoreFromEnv's DB-selection branch.)
+	auditMode := strings.ToLower(strings.TrimSpace(getenv("PROVIDER_OPS_AUDIT_STORE_MODE")))
+	auditDSN := strings.TrimSpace(getenv("PROVIDER_OPS_AUDIT_DB_DSN"))
+	if auditDSN == "" {
+		auditDSN = strings.TrimSpace(getenv("GATEWAY_DB_DSN"))
+	}
+	auditDB := auditMode == "db" || auditMode == "sql" || auditMode == "postgres" || auditMode == "shared" || (auditMode == "" && auditDSN != "")
+	if !auditDB {
+		return fmt.Errorf("provider-ops audit store must be DB-backed when ENVIRONMENT=%s: set PROVIDER_OPS_AUDIT_STORE_MODE=db (or leave it unset with a valid GATEWAY_DB_DSN); the JSON-file fallback is mutable and per-instance and cannot be the audit system of record", env)
 	}
 
 	for _, key := range []string{"CRYPTO_RPC_URL", "CRYPTO_ASSET_CONTRACT", "CRYPTO_DEPOSIT_ADDRESS_SOURCE"} {
@@ -237,13 +298,71 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 	if complianceMode == "" {
 		complianceMode = strings.ToLower(strings.TrimSpace(getenv("COMPLIANCE_MODE")))
 	}
+	ackedPermissive := false
 	switch complianceMode {
 	case "permissive", "permissive_beta", "beta_permissive":
+		// The permissive bypass disables the jurisdiction and trading-KYC
+		// gates entirely. That is a staging/demo posture only — production
+		// must never run ungated, ack or no ack.
+		if env == "production" {
+			return fmt.Errorf("BETA_COMPLIANCE_MODE=%s is not permitted when ENVIRONMENT=production; permissive mode is for staging/demo only", complianceMode)
+		}
 		if !strings.EqualFold(strings.TrimSpace(getenv("COMPLIANCE_STARTUP_ACK")), "true") {
 			return fmt.Errorf("permissive beta compliance mode disables KYC/geofence gates; set COMPLIANCE_STARTUP_ACK=true when ENVIRONMENT=%s to acknowledge this beta policy", env)
 		}
+		ackedPermissive = true
+	}
+
+	// Deny-by-default jurisdiction + KYC posture: a deployed environment that
+	// is not in acked-permissive mode must enforce the geo gate in allowlist
+	// mode and state its KYC posture explicitly. The boot checks demand the
+	// canonical value "true" (stricter than the runtime parsers, which also
+	// accept 1/yes) so a deploy can never pass validation with a value the
+	// runtime might not honor.
+	if !ackedPermissive {
+		if !strings.EqualFold(strings.TrimSpace(getenv("GEO_GATE_ENABLED")), "true") {
+			return fmt.Errorf("GEO_GATE_ENABLED=true is required when ENVIRONMENT=%s (deny-by-default jurisdiction posture); use BETA_COMPLIANCE_MODE=permissive + COMPLIANCE_STARTUP_ACK=true on staging if the bypass is intended", env)
+		}
+		if !hasCountryEntries(getenv("GEO_ALLOWED_COUNTRIES")) {
+			return fmt.Errorf("GEO_ALLOWED_COUNTRIES must list the permitted ISO-3166 countries when ENVIRONMENT=%s — allowlist mode is mandatory for launch (a blocklist is too easy to under-specify)", env)
+		}
+		for _, kycVar := range []string{"KYC_ENFORCEMENT", "KYC_REQUIRED_FOR_TRADING"} {
+			v := strings.TrimSpace(getenv(kycVar))
+			ack := strings.EqualFold(strings.TrimSpace(getenv(kycVar+"_ACK_DISABLED")), "true")
+			if !strings.EqualFold(v, "true") && !ack {
+				return fmt.Errorf("%s must be explicitly 'true' or explicitly acknowledged off via %s_ACK_DISABLED=true when ENVIRONMENT=%s — KYC posture must not default off silently", kycVar, kycVar, env)
+			}
+		}
+		// Anti-spoof edge-auth (audit SEC-03): in a trusted-edge deploy the
+		// gateway origin must not be reachable with a forged country header.
+		// If GEO_TRUSTED_PROXY_MODE=require, EDGE_SHARED_SECRET must be set so
+		// the gate can prove a request transited the edge — otherwise
+		// require-mode is a no-op and the bypass stays open.
+		if strings.EqualFold(strings.TrimSpace(getenv("GEO_TRUSTED_PROXY_MODE")), "require") &&
+			strings.TrimSpace(getenv("EDGE_SHARED_SECRET")) == "" {
+			return fmt.Errorf("EDGE_SHARED_SECRET must be set when GEO_TRUSTED_PROXY_MODE=require and ENVIRONMENT=%s — without it the origin can be hit directly with a spoofed country header (audit SEC-03); set it here and stamp it at the edge (Caddy: header_up X-Edge-Auth)", env)
+		}
 	}
 	return nil
+}
+
+func legacyMoneyRoutesEnabledFromOS() bool {
+	return legacyMoneyRoutesEnabled(os.Getenv)
+}
+
+func legacyMoneyRoutesEnabled(getenv func(string) string) bool {
+	return strings.EqualFold(strings.TrimSpace(getenv(legacyMoneyRoutesEnv)), "true")
+}
+
+// hasCountryEntries reports whether a comma-separated country list contains at
+// least one non-empty entry (mirrors compliance.parseCountrySet's tokenizing).
+func hasCountryEntries(raw string) bool {
+	for _, tok := range strings.Split(raw, ",") {
+		if strings.TrimSpace(tok) != "" {
+			return true
+		}
+	}
+	return false
 }
 
 // CORS configuration moved to platform/transport/httpx as httpx.CORS — see

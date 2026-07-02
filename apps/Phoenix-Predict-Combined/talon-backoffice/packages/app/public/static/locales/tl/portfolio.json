@@ -1,6 +1,6 @@
 {
   "title": "Portfolio mo",
-  "subtitle": "Bukas na posisyon, aktibong order, at settled payouts.",
+  "subtitle": "Bukas na posisyon, aktibong order, at settled results.",
   "state": {
     "loading": "Nilo-load ang portfolio…",
     "signIn": "Mag-sign in para makita ang portfolio mo.",
@@ -8,7 +8,7 @@
   },
   "summary": {
     "invested": "Naka-invest",
-    "realizedPnl": "Na-realize na P&L",
+    "realizedPnl": "Na-realize na resulta ng puntos",
     "openPositions": "Bukas na posisyon",
     "accuracy": "Katumpakan",
     "correctCount": "{{correct}}/{{total}} tama",
@@ -19,12 +19,12 @@
     "notRanked": "Wala pang rank",
     "qualify": "Mag-settle ng mas maraming markets para mag-qualify",
     "metricAccuracy": "{{value}}% tama",
-    "metricSharpness": "{{value}}% ROI",
-    "metricPnl": "{{value}} P&L"
+    "metricSharpness": "{{value}}% point efficiency",
+    "metricPnl": "{{value}} resulta ng puntos"
   },
   "boards": {
     "accuracy": "Katumpakan",
-    "pnlWeekly": "Lingguhang P&L",
+    "pnlWeekly": "Lingguhang resulta ng puntos",
     "sharpness": "Sharpness score"
   },
   "tabs": {
@@ -39,7 +39,7 @@
   "orders": {
     "empty": "Walang open orders.",
     "cancelled": "Nakansela ang order",
-    "released": "Na-release ang reserved cash sa {{ticker}}",
+    "released": "Na-unlock ang naka-lock na points sa {{ticker}}",
     "cancelFailed": "Hindi nakansela",
     "cancel": "Kanselahin"
   },
@@ -59,7 +59,7 @@
     "placed": "Nailagay",
     "entry": "Pasok",
     "exit": "Labas",
-    "pnl": "P&L",
+    "pnl": "Resulta ng puntos",
     "points": "Puntos",
     "settled": "Settled na"
   },

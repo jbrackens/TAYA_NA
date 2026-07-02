@@ -52,7 +52,8 @@ module.exports = {
   LIFECYCLE_DISABLED_STATE_ROLE: "Trader or admin role required",
   LIFECYCLE_DISABLED_OVERRIDE_ADMIN_ONLY:
     "Admin role required for destructive override actions",
-  LIFECYCLE_DISABLED_SETTLEMENT_ADMIN_ONLY: "Admin role required for settlement actions",
+  LIFECYCLE_DISABLED_SETTLEMENT_ADMIN_ONLY:
+    "Admin role required for settlement actions",
   AUDIT_LINK_ADMIN_ONLY:
     "Prediction audit pivots require trader or admin prediction-ops access.",
   LIFECYCLE_MODAL_TITLE: "Update prediction market",
@@ -63,9 +64,11 @@ module.exports = {
   LIFECYCLE_HISTORY_REASON: "Reason",
   LIFECYCLE_HISTORY_EMPTY: "No lifecycle events recorded",
   LIFECYCLE_INFO_TITLE: "Operator impact preview",
-  LIFECYCLE_INFO_DESCRIPTION_PREFIX: "Orders currently affected on this market:",
+  LIFECYCLE_INFO_DESCRIPTION_PREFIX:
+    "Orders currently affected on this market:",
   LIFECYCLE_WARNING_TITLE: "Destructive lifecycle action",
-  LIFECYCLE_WARNING_DESCRIPTION_PREFIX: "This action will affect orders on this market:",
+  LIFECYCLE_WARNING_DESCRIPTION_PREFIX:
+    "This action will affect orders on this market:",
   LIFECYCLE_WARNING_DESCRIPTION_SUFFIX:
     "Type {{action}} to confirm before continuing.",
   LIFECYCLE_LOADING_ORDERS: "Loading current order impact...",
@@ -82,7 +85,7 @@ module.exports = {
   ORDERS_TABLE_OUTCOME: "Outcome",
   ORDERS_TABLE_STATUS: "Status",
   ORDERS_TABLE_SETTLEMENT: "Settlement",
-  ORDERS_TABLE_STAKE: "Stake",
+  ORDERS_TABLE_STAKE: "Points used",
   ORDERS_TABLE_CREATED: "Created",
   EXPORT_SUCCESS: "Prediction order export successful.",
   EXPORT_FAILURE: "Failed to export prediction orders.",
@@ -100,7 +103,7 @@ module.exports = {
   EXPORT_MARKET_COLUMN_RESOLVES_AT: "Resolves at",
   EXPORT_MARKET_COLUMN_TAGS: "Tags",
   EXPORT_COLUMN_MARKET_STATUS: "Market status",
-  EXPORT_COLUMN_MAX_PAYOUT: "Max payout",
+  EXPORT_COLUMN_MAX_PAYOUT: "Max returned points",
   EXPORT_COLUMN_WINNING_OUTCOME: "Winning outcome",
   EXPORT_COLUMN_SETTLED_AT: "Settled at",
   EXPORT_COLUMN_SETTLEMENT_REASON: "Settlement reason",

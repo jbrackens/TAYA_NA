@@ -2,13 +2,55 @@ package ws
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
+
+// Hub fan-out health counters (audit PERF-03). Exported via accessors for the
+// metrics surface; full Prometheus wiring is P3-05.
+var (
+	droppedMessagesTotal         atomic.Int64
+	slowClientsDisconnectedTotal atomic.Int64
+	broadcastsDroppedTotal       atomic.Int64
+)
+
+// WSDroppedMessages returns the count of messages dropped because a client's
+// send buffer was full.
+func WSDroppedMessages() int64 { return droppedMessagesTotal.Load() }
+
+// WSSlowClientsDisconnected returns how many clients were disconnected for
+// failing to drain their send buffer.
+func WSSlowClientsDisconnected() int64 { return slowClientsDisconnectedTotal.Load() }
+
+// WSBroadcastsDropped returns how many broadcasts were dropped because the
+// hub's command queue was full (producer-side backpressure).
+func WSBroadcastsDropped() int64 { return broadcastsDroppedTotal.Load() }
+
+// RenderMetrics returns the hub fan-out health counters in Prometheus text
+// format. It is folded into the gateway /metrics endpoint via the collector
+// registered in cmd/gateway/main.go (see internal/http.GatewayInfraMetrics).
+// Each metric carries its own # HELP/# TYPE lines. Safe for concurrent use.
+func RenderMetrics() string {
+	var b strings.Builder
+	b.WriteString("# HELP gateway_ws_messages_dropped_total Messages dropped because a client's send buffer was full.\n")
+	b.WriteString("# TYPE gateway_ws_messages_dropped_total counter\n")
+	fmt.Fprintf(&b, "gateway_ws_messages_dropped_total %d\n", droppedMessagesTotal.Load())
+
+	b.WriteString("# HELP gateway_ws_slow_clients_disconnected_total Clients force-disconnected for failing to drain their send buffer.\n")
+	b.WriteString("# TYPE gateway_ws_slow_clients_disconnected_total counter\n")
+	fmt.Fprintf(&b, "gateway_ws_slow_clients_disconnected_total %d\n", slowClientsDisconnectedTotal.Load())
+
+	b.WriteString("# HELP gateway_ws_broadcasts_dropped_total Broadcasts dropped because the hub's command queue was full.\n")
+	b.WriteString("# TYPE gateway_ws_broadcasts_dropped_total counter\n")
+	fmt.Fprintf(&b, "gateway_ws_broadcasts_dropped_total %d\n", broadcastsDroppedTotal.Load())
+	return b.String()
+}
 
 // Conn abstracts the WebSocket connection for testing
 type Conn interface {
@@ -36,16 +78,17 @@ func (w *wsConn) SetPongHandler(h func(string) error) {
 
 // Client represents a single WebSocket connection
 type Client struct {
-	hub       *Hub
-	conn      Conn
-	userID    string
-	channels  map[string]bool
-	send      chan []byte
-	ctx       context.Context
-	cancel    context.CancelFunc
-	readDone  chan struct{}
-	writeDone chan struct{}
-	closeOnce sync.Once
+	hub             *Hub
+	conn            Conn
+	userID          string
+	channels        map[string]bool
+	send            chan []byte
+	ctx             context.Context
+	cancel          context.CancelFunc
+	readDone        chan struct{}
+	writeDone       chan struct{}
+	closeOnce       sync.Once
+	slowDisconnected atomic.Bool
 }
 
 const (
@@ -229,11 +272,34 @@ func (c *Client) handleUnsubscribe(channels []string) {
 	}
 }
 
-// SendMessage sends a message to the client
+// SendMessage queues a message to the client without ever blocking the caller.
+// The hub fans out from a single goroutine, so a blocking send to one slow
+// client used to freeze the entire realtime plane — and, once the hub's
+// broadcast queue filled, the HTTP order handlers that publish through it
+// (audit PERF-03). On a full per-client buffer we drop the message and
+// disconnect the client: WebSocket is a cache-invalidation channel, and the
+// client resyncs on reconnect (portfolio also polls), so a dropped frame is
+// recoverable but a wedged hub is not.
 func (c *Client) SendMessage(data []byte) {
 	select {
 	case c.send <- data:
 	case <-c.ctx.Done():
+	default:
+		droppedMessagesTotal.Add(1)
+		c.disconnectSlow()
+	}
+}
+
+// disconnectSlow tears down a client that can't keep up. Idempotent and
+// safe to call from the hub goroutine: it cancels the client's context
+// (stopping its write pump via the ctx.Done branch — no send-channel close
+// race) and schedules hub-side cleanup through the non-blocking disconnect
+// channel.
+func (c *Client) disconnectSlow() {
+	if c.slowDisconnected.CompareAndSwap(false, true) {
+		slowClientsDisconnectedTotal.Add(1)
+		c.cancel()
+		c.hub.Disconnect(c)
 	}
 }
 

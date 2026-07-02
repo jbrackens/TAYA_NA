@@ -6,8 +6,9 @@
 // this page is an honest notice rather than a form that POSTs to a 404
 // and tells the user "check your email" when nothing was sent.
 import Link from "next/link";
+import { brand } from "../../lib/brand";
 
-const SUPPORT_EMAIL = "support@tiangge.com";
+const SUPPORT_EMAIL = brand.supportEmail;
 const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
 const CARD_CLASS =
   "relative w-full max-w-[440px] rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[34px] pb-[30px] pt-9 text-[var(--t1)]";

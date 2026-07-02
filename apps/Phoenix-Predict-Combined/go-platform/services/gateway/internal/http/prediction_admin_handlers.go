@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"phoenix-revival/gateway/internal/prediction"
 	"phoenix-revival/gateway/internal/wallet"
@@ -30,13 +31,39 @@ type predictionAdminReader interface {
 	ListSettledPositions(ctx context.Context, userID string, page, pageSize int) ([]prediction.Payout, int, error)
 }
 
-// adminWalletBalanceReader is the wallet access the admin punter routes need:
-// a single cash balance (detail) and a batched lookup (list). Satisfied by
-// *wallet.Service — kept behind an interface so the http layer stays testable.
+// adminWalletBalanceReader is the point-account access the admin punter routes
+// need: a single balance (detail), a batched lookup (list), and ledger rows.
+// Satisfied by *wallet.Service — kept behind an interface so the http layer
+// stays testable.
 type adminWalletBalanceReader interface {
-	Balance(userID string) int64
-	Balances(userIDs []string) map[string]int64
-	Ledger(userID string, limit int) []wallet.LedgerEntry
+	Balance(ctx context.Context, userID string) int64
+	Balances(ctx context.Context, userIDs []string) map[string]int64
+	Ledger(ctx context.Context, userID string, limit int) []wallet.LedgerEntry
+}
+
+type adminPunterSettlementItem struct {
+	ID                    string               `json:"id"`
+	SettlementID          string               `json:"settlementId"`
+	PositionID            string               `json:"positionId"`
+	UserID                string               `json:"userId"`
+	MarketID              string               `json:"marketId"`
+	Side                  prediction.OrderSide `json:"side"`
+	Quantity              int                  `json:"quantity"`
+	EntryPriceCents       int                  `json:"entryPricePointsCents"`
+	ExitPriceCents        int                  `json:"exitPricePointsCents"`
+	RealizedPointsCents   int64                `json:"realizedPointsCents"`
+	SettlementPointsCents int64                `json:"settlementPointsCents"`
+	PaidAt                time.Time            `json:"paidAt"`
+	Unit                  string               `json:"unit"`
+}
+
+type adminPunterNotePayload struct {
+	ID        int64   `json:"id"`
+	PunterID  string  `json:"punterId"`
+	AuthorID  *string `json:"authorId,omitempty"`
+	Category  string  `json:"category"`
+	Content   string  `json:"content"`
+	CreatedAt string  `json:"createdAt"`
 }
 
 // allowedPunterAdminStatuses gates the status values the office can set.
@@ -103,17 +130,19 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 			if p == nil {
 				return httpx.NotFound("punter not found")
 			}
-			// Enrich with the player's financials: wallet cash balance + the
-			// prediction portfolio summary (value, realized P&L, positions,
-			// accuracy). Reuses the same GetPortfolioSummary the player app uses.
+			// Enrich with the player's point-account balance and prediction
+			// portfolio summary. Reuses the same GetPortfolioSummary the player
+			// app uses.
 			ps, err := repo.GetPortfolioSummary(r.Context(), id)
 			if err != nil {
 				return httpx.Internal("failed to load portfolio", err)
 			}
+			balance := wallet.Balance(r.Context(), id)
 			detail := prediction.AdminPunterDetail{
-				AdminPunter:        *p,
-				WalletBalanceCents: wallet.Balance(id),
-				Portfolio:          *ps,
+				AdminPunter:              *p,
+				PointAccountBalanceCents: balance,
+				Portfolio:                *ps,
+				Unit:                     "PTS",
 			}
 			return httpx.WriteJSON(w, stdhttp.StatusOK, detail)
 		}
@@ -154,7 +183,7 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 				if err != nil {
 					return httpx.Internal("failed to list notes", err)
 				}
-				return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"items": notes})
+				return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"items": adminPunterNotePayloads(notes)})
 			case stdhttp.MethodPost:
 				var body struct {
 					Content  string `json:"content"`
@@ -168,7 +197,13 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 					return httpx.BadRequest("content is required",
 						map[string]any{"field": "content"})
 				}
+				if err := validateLaunchFacingReason("content", content); err != nil {
+					return err
+				}
 				category := strings.TrimSpace(body.Category)
+				if err := validateLaunchFacingReason("category", category); err != nil {
+					return err
+				}
 				authorID := httpx.UserIDFromContext(r.Context())
 				if _, err := repo.AddPunterNote(r.Context(), id, authorID, category, content); err != nil {
 					return httpx.Internal("failed to add note", err)
@@ -177,7 +212,7 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 				if err != nil {
 					return httpx.Internal("failed to list notes", err)
 				}
-				return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{"items": notes})
+				return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{"items": adminPunterNotePayloads(notes)})
 			default:
 				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPost)
 			}
@@ -195,11 +230,11 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 				payouts = []prediction.Payout{}
 			}
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-				"items": payouts,
+				"items": adminPunterSettlementItems(payouts),
 				"total": total,
 			})
 		case "wallet":
-			// Wallet transaction ledger for the Wallet tab.
+			// Point-account ledger for the account review tab.
 			if r.Method != stdhttp.MethodGet {
 				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 			}
@@ -210,7 +245,7 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 				}
 			}
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-				"items": wallet.Ledger(id, limit),
+				"items": walletLedgerEntryPayloads(wallet.Ledger(r.Context(), id, limit)),
 			})
 		case "reset-password", "risk-segment", "limits":
 			// reset-password: deferred (spans the auth service — needs a flow
@@ -245,23 +280,26 @@ func registerAdminPuntersList(mux *stdhttp.ServeMux, path string, repo predictio
 			return httpx.Internal("failed to list punters", err)
 		}
 
-		// Enrich the page with the two financials the roster shows — wallet
-		// balance + realized P&L — batch-fetched for all rows (not per-row).
+		// Enrich the page with point-account balance and realized prediction
+		// result, batch-fetched for all rows (not per-row).
 		ids := make([]string, 0, len(items))
 		for _, it := range items {
 			ids = append(ids, it.ID)
 		}
-		balances := wallet.Balances(ids)
+		balances := wallet.Balances(r.Context(), ids)
 		pnls, err := repo.ListPuntersRealizedPnl(r.Context(), ids)
 		if err != nil {
-			return httpx.Internal("failed to load punter financials", err)
+			return httpx.Internal("failed to load punter point summaries", err)
 		}
 		enriched := make([]prediction.AdminPunterListItem, 0, len(items))
 		for _, it := range items {
+			balance := balances[it.ID]
+			realized := pnls[it.ID]
 			enriched = append(enriched, prediction.AdminPunterListItem{
-				AdminPunter:        it,
-				WalletBalanceCents: balances[it.ID],
-				RealizedPnlCents:   pnls[it.ID],
+				AdminPunter:              it,
+				PointAccountBalanceCents: balance,
+				RealizedPointsCents:      realized,
+				Unit:                     "PTS",
 			})
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
@@ -269,6 +307,43 @@ func registerAdminPuntersList(mux *stdhttp.ServeMux, path string, repo predictio
 			"pagination": meta,
 		})
 	}))
+}
+
+func adminPunterNotePayloads(notes []prediction.AdminPunterNote) []adminPunterNotePayload {
+	items := make([]adminPunterNotePayload, 0, len(notes))
+	for _, note := range notes {
+		items = append(items, adminPunterNotePayload{
+			ID:        note.ID,
+			PunterID:  note.PunterID,
+			AuthorID:  note.AuthorID,
+			Category:  redactLaunchProhibitedUserText(note.Category),
+			Content:   redactLaunchProhibitedUserText(note.Content),
+			CreatedAt: note.CreatedAt,
+		})
+	}
+	return items
+}
+
+func adminPunterSettlementItems(payouts []prediction.Payout) []adminPunterSettlementItem {
+	items := make([]adminPunterSettlementItem, 0, len(payouts))
+	for _, payout := range payouts {
+		items = append(items, adminPunterSettlementItem{
+			ID:                    payout.ID,
+			SettlementID:          payout.SettlementID,
+			PositionID:            payout.PositionID,
+			UserID:                payout.UserID,
+			MarketID:              payout.MarketID,
+			Side:                  payout.Side,
+			Quantity:              payout.Quantity,
+			EntryPriceCents:       payout.EntryPriceCents,
+			ExitPriceCents:        payout.ExitPriceCents,
+			RealizedPointsCents:   payout.PnlCents,
+			SettlementPointsCents: payout.PayoutCents,
+			PaidAt:                payout.PaidAt,
+			Unit:                  "PTS",
+		})
+	}
+	return items
 }
 
 func registerAdminAuditLogsList(mux *stdhttp.ServeMux, path string, repo predictionAdminReader) {
@@ -289,14 +364,14 @@ func registerAdminAuditLogsList(mux *stdhttp.ServeMux, path string, repo predict
 
 		// Audit entries live in two stores: the audit_logs table (admin + demo
 		// rows) and the in-process provider-ops store, where privileged
-		// money-moving actions (wallet adjustments, settlements) are recorded.
-		// Merge both so money/settlement audit surfaces in the office view, then
-		// sort + paginate the combined set.
+		// point-accounting/operator actions are recorded. Merge both so
+		// point-wallet/settlement audit surfaces in the office view, then sort
+		// and paginate the combined set.
 		dbItems, _, err := repo.ListAuditLogsAdmin(r.Context(), filter, 1, mergedAuditFetchCap)
 		if err != nil {
 			return httpx.Internal("failed to list audit logs", err)
 		}
-		merged := append(dbItems, providerOpsAuditAsAdminLogs(filter)...)
+		merged := append(redactedAdminAuditLogDetails(dbItems), providerOpsAuditAsAdminLogs(filter)...)
 		sort.SliceStable(merged, func(i, j int) bool {
 			return merged[i].OccurredAt > merged[j].OccurredAt
 		})
@@ -313,8 +388,21 @@ func registerAdminAuditLogsList(mux *stdhttp.ServeMux, path string, repo predict
 // demo rows); the provider-ops store is itself capped at providerOpsAuditLimit.
 const mergedAuditFetchCap = 1000
 
+func redactedAdminAuditLogDetails(items []prediction.AdminAuditLog) []prediction.AdminAuditLog {
+	out := make([]prediction.AdminAuditLog, 0, len(items))
+	for _, item := range items {
+		if len(item.Details) > 0 {
+			if details, ok := redactedAuditDetails(string(item.Details)); ok {
+				item.Details = details
+			}
+		}
+		out = append(out, item)
+	}
+	return out
+}
+
 // providerOpsAuditAsAdminLogs converts the in-process provider-ops audit store
-// (where money-moving actions are recorded) into the admin audit-log shape,
+// (where point-accounting/operator actions are recorded) into the admin audit-log shape,
 // applying the same filter as the SQL query. resourceType is derived from the
 // action prefix (e.g. "wallet.credit" -> "wallet") so the resourceType filter
 // works for these entries too.
@@ -354,15 +442,54 @@ func providerOpsAuditAsAdminLogs(filter prediction.AdminAuditLogFilter) []predic
 			item.TargetID = &target
 		}
 		if d := strings.TrimSpace(e.Details); d != "" {
-			if json.Valid([]byte(d)) {
-				item.Details = json.RawMessage(d)
-			} else if encoded, err := json.Marshal(d); err == nil {
-				item.Details = encoded
+			if details, ok := redactedAuditDetails(d); ok {
+				item.Details = details
 			}
 		}
 		out = append(out, item)
 	}
 	return out
+}
+
+func redactedAuditDetails(raw string) (json.RawMessage, bool) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return nil, false
+	}
+	var parsed any
+	if err := json.Unmarshal([]byte(raw), &parsed); err != nil {
+		encoded, marshalErr := json.Marshal(redactLaunchProhibitedUserText(raw))
+		if marshalErr != nil {
+			return nil, false
+		}
+		return encoded, true
+	}
+	encoded, err := json.Marshal(redactAuditDetailValue(parsed))
+	if err != nil {
+		return nil, false
+	}
+	return encoded, true
+}
+
+func redactAuditDetailValue(value any) any {
+	switch typed := value.(type) {
+	case string:
+		return redactLaunchProhibitedUserText(typed)
+	case []any:
+		out := make([]any, len(typed))
+		for i, item := range typed {
+			out[i] = redactAuditDetailValue(item)
+		}
+		return out
+	case map[string]any:
+		out := make(map[string]any, len(typed))
+		for key, item := range typed {
+			out[key] = redactAuditDetailValue(item)
+		}
+		return out
+	default:
+		return value
+	}
 }
 
 // paginateAdminAuditLogs slices the merged audit list to the requested page.

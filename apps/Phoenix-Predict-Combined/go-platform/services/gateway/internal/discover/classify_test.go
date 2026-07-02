@@ -14,9 +14,10 @@ func TestClassify_UpstreamCategoryWins(t *testing.T) {
 		{"politics", CatPolitics},
 		{"  POLITICS  ", CatPolitics},
 		{"US Politics", CatPolitics},
-		{"Crypto", CatCrypto},
 		{"Sports", CatSports},
 		{"Entertainment", CatEntertainment},
+		{"Esports", CatEsports},
+		{"Gaming", CatEsports},
 		{"Tech", CatTech},
 		{"Technology", CatTech},
 		{"Economics", CatEconomics},
@@ -42,11 +43,11 @@ func TestClassify_KeywordFallback(t *testing.T) {
 	}{
 		{"Will Trump win the 2028 election?", CatPolitics},
 		{"Will the Senate flip in 2026?", CatPolitics},
-		{"BTC above 100k by year end?", CatCrypto},
-		{"Will Bitcoin hit 200k by 2028?", CatCrypto},
 		{"Knicks win the NBA championship?", CatSports},
 		{"Will the Lakers make the playoffs?", CatSports},
 		{"Best Picture Oscar 2027?", CatEntertainment},
+		{"Will MLBB grand finals go to five games?", CatEsports},
+		{"Will Valorant Champions set a viewership record?", CatEsports},
 		{"GPT-5 released before July 2026?", CatTech},
 		{"Will Apple ship iPhone 17 by Sept 2026?", CatTech},
 		{"US recession in 2026?", CatEconomics},
@@ -57,6 +58,25 @@ func TestClassify_KeywordFallback(t *testing.T) {
 			got := Classify(Market{Title: c.title})
 			if got != c.want {
 				t.Errorf("Classify(title=%q) = %q, want %q", c.title, got, c.want)
+			}
+		})
+	}
+}
+
+func TestClassify_LaunchProhibitedCryptoMarketsAreNotCategorized(t *testing.T) {
+	cases := []Market{
+		{Category: "Crypto", Title: "irrelevant"},
+		{Category: "crypto-alt-coins", Title: "irrelevant"},
+		{Title: "BTC above 100k by year end?"},
+		{Title: "Will Bitcoin hit 200k by 2028?"},
+	}
+	for _, market := range cases {
+		t.Run(market.Category+" "+market.Title, func(t *testing.T) {
+			if !IsLaunchProhibitedMarket(market) {
+				t.Fatalf("expected market to be launch-prohibited: %+v", market)
+			}
+			if got := Classify(market); got != CatGeneral {
+				t.Fatalf("Classify launch-prohibited market = %q, want %q", got, CatGeneral)
 			}
 		})
 	}
@@ -100,15 +120,14 @@ func TestClassify_GeneralFallback(t *testing.T) {
 }
 
 // TestClassify_PriorityOrder documents the cascade. When a title has
-// keywords from multiple categories, politics > crypto > sports >
-// entertainment > tech > economics > general. This is mostly stable
-// (politics wins over crypto on "Bitcoin presidential candidate"), but
-// the order matters for any change to the keyword lists.
+// keywords from multiple launch-safe categories, politics > sports >
+// entertainment > esports > tech > economics > general. The order matters
+// for any change to the keyword lists.
 func TestClassify_PriorityOrder(t *testing.T) {
-	// "election" hits politics. "btc" hits crypto. Politics wins.
-	m := Market{Title: "Will BTC be a campaign issue in the 2028 election?"}
+	// "election" hits politics. "nba" hits sports. Politics wins.
+	m := Market{Title: "Will the NBA be a campaign issue in the 2028 election?"}
 	if got := Classify(m); got != CatPolitics {
-		t.Errorf("politics > crypto cascade broken: got %q for %q", got, m.Title)
+		t.Errorf("politics > sports cascade broken: got %q for %q", got, m.Title)
 	}
 
 	// "nba" hits sports. "movie" hits entertainment. Sports wins.

@@ -261,7 +261,7 @@ payments package.
 - [Cashier guard checks](../../scripts/check-cashier-all.sh)
 - [Provider scenario manifest](../../services/bridge-watcher/fixtures/provider-scenarios.manifest.json)
 - [Gateway cashier domain package](../../apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/cashier/README.md)
-- [Frontend non-custodial cashier client](../../apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app/lib/api/noncustodial-cashier-client.ts)
+- [Alpha cashier gateway package](../../apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/alphacashier)
 
 Primary local check:
 

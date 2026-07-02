@@ -1,1 +1,0 @@
-ALTER TABLE players ADD COLUMN IF NOT EXISTS "realityCheckMinutes" int NOT NULL DEFAULT 60;

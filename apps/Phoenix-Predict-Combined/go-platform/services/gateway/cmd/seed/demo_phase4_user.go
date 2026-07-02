@@ -9,10 +9,10 @@ import (
 )
 
 // Phase 4 places 12 market BUY orders for the demo user (u-1) across
-// open markets, mixing YES and NO sides and spreading across categories.
-// Orders match against the resting bot bids (Phase 1) on order_book
-// markets or directly against the AMM on AMM markets, so each one
-// produces a fill and a position row.
+// open order-book markets, mixing YES and NO sides and spreading across
+// categories. Orders match against the resting bot bids (Phase 1), so each one
+// produces a fill and a position row. Legacy AMM markets remain quote-only and
+// are intentionally skipped.
 //
 // PnL diversity comes for free: Phase 2 has already moved order_book
 // prices via 870+ taker fills, so by the time Phase 4 runs the demo
@@ -30,9 +30,9 @@ const (
 // IDs are stable but their tickers may be regenerated; matching the prefix
 // lets the seed survive minor seed-data edits.
 //
-// Mix: 8 YES, 4 NO. Spread across politics (SENATE, HOUSE), crypto
-// (ETH-5K, BTC-100K), sports (UCL), entertainment (AVATAR3), tech (GPT5,
-// APPLE-LLM), economics (FED, US-RECESSION).
+// Mix: 8 YES, 4 NO. Spread across politics (SENATE, HOUSE), esports
+// (VAL), sports (UCL), entertainment (AVATAR3), tech (GPT5, APPLE-LLM),
+// and economics (FED, US-RECESSION).
 var phase4Plan = []struct {
 	tickerPrefix string
 	side         prediction.OrderSide
@@ -42,10 +42,11 @@ var phase4Plan = []struct {
 	{"SENATE-GOP-2026", prediction.OrderSideNo},
 	{"GPT5-JUL26", prediction.OrderSideYes},
 	{"APPLE-LLM-2026", prediction.OrderSideYes},
-	{"ETH-5K-MAY26", prediction.OrderSideNo},
-	{"BTC-100K", prediction.OrderSideYes},
+	{"VAL-MASTERS-FINAL", prediction.OrderSideYes},
+	{"FED-HOLD-MAY26", prediction.OrderSideNo},
 	{"UCL-REAL", prediction.OrderSideYes},
 	{"UCL-CITY", prediction.OrderSideNo},
+	{"UCL-BARCA", prediction.OrderSideYes},
 	{"AVATAR3-200M", prediction.OrderSideYes},
 	{"FED-CUT-MAY", prediction.OrderSideYes},
 	{"US-RECESSION-2026", prediction.OrderSideNo},
@@ -71,6 +72,9 @@ func RunPhase4DemoUser(ctx context.Context, h *Harness) (*PhaseStats, error) {
 	byPrefix := make(map[string]*prediction.Market)
 	for i := range markets {
 		m := &markets[i]
+		if m.ExecutionMode != prediction.ExecutionModeOrderBook {
+			continue
+		}
 		for _, p := range phase4Plan {
 			if _, ok := byPrefix[p.tickerPrefix]; ok {
 				continue

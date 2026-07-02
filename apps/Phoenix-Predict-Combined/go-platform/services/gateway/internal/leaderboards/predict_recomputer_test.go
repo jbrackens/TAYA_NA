@@ -135,6 +135,23 @@ func TestRecomputerTick_FiresOneRecomputePerCategory(t *testing.T) {
 	}
 }
 
+func TestRecomputeNow_FiresSynchronousSnapshotRefresh(t *testing.T) {
+	repo := newFakePredictLBRepo()
+	catFn := func(_ context.Context) ([]CategoryInfo, error) {
+		return []CategoryInfo{{Slug: "politics", Name: "Politics"}}, nil
+	}
+	r := NewPredictRecomputer(repo, catFn, time.Hour)
+	r.now = func() time.Time { return time.Date(2026, 4, 22, 10, 0, 0, 0, time.UTC) }
+
+	r.RecomputeNow(context.Background())
+
+	for _, want := range []string{"accuracy", "pnl_weekly", "sharpness", "category:politics"} {
+		if repo.recomputeCalls[want] != 1 {
+			t.Errorf("expected %s recompute to fire once, got %d", want, repo.recomputeCalls[want])
+		}
+	}
+}
+
 func TestRecomputerTick_CategoryListerErrorDoesNotPanicOrLeakToStatic(t *testing.T) {
 	repo := newFakePredictLBRepo()
 	catFn := func(_ context.Context) ([]CategoryInfo, error) {

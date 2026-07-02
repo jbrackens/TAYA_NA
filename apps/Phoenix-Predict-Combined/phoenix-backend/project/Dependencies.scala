@@ -7,7 +7,7 @@ object Dependencies {
   // @formatter:off
   object Versions {
 
-    val scala                   = "2.13.8"
+    val scala                   = "2.13.16"
 
     val advxml                  = "2.4.2"
     val akka                    = "2.6.19"
@@ -22,10 +22,10 @@ object Dependencies {
     val alpakkaCsv              = "3.0.4"
     val alpakkaFtp              = "2.0.2"
     val alpakkaXml              = "3.0.4"
-    val apacheCommonsText       = "1.9"
+    val apacheCommonsText       = "1.10.0"
     val apacheCommonsValidator  = "1.7"
     val archUnit                = "0.18.0"
-    val amqp                    = "5.8.0"
+    val amqp                    = "5.26.0"
     val cats                    = "2.8.0"
     val chimney                 = "0.6.1"
     val circe                   = "0.14.1"
@@ -43,8 +43,8 @@ object Dependencies {
     val kittens                 = "2.3.2"
     val kotlin                  = "1.6.0"
     val kotlinLoging            = "2.1.16"
-    val logback                 = "1.2.11"
-    val logstashLogbackEncoder  = "7.2"
+    val logback                 = "1.5.37"
+    val logstashLogbackEncoder  = "8.1"
     val monocle                 = "3.1.0"
     val oddinSdk                = "0.0.27"
     val passay                  = "1.6.1"
@@ -62,17 +62,38 @@ object Dependencies {
     val sendgrid                = "4.9.2"
     val scalacheckShapeless     = "1.3.0"
     val silhouette              = "6.1.1"
-    val slf4jApi                = "1.7.36"
+    val slf4jApi                = "2.0.17"
     val slick                   = "3.3.3"
     val slickMigrationApi       = "0.8.1"
     val slickPostgres           = "0.20.3"
     val spoiwo                  = "1.8.0"
-    // Let's stick to 4.1.2 since higher versions always display the sample Petstore docs instead of the provided docs for some reason
-    val swaggerUi               = "4.1.2"
+    // 4.1.3 keeps the same index.html behavior as 4.1.2 while fixing GHSA-cr3q-pqgq-m8c2.
+    val swaggerUi               = "4.1.3"
     val tapir                   = "0.20.2"
-    val testContainers          = "1.16.3"
+    val testContainers          = "1.21.4"
     val testContainersKeycloak  = "1.10.0"
-    val wiremock                = "2.33.2"
+    val wiremock                = "2.35.1"
+
+    val avro                    = "1.12.1"
+    val commonsBeanutils        = "1.11.0"
+    val commonsCompress         = "1.28.0"
+    val commonsIo               = "2.22.0"
+    val commonsLang             = "3.20.0"
+    val commonsNet              = "3.13.0"
+    val guava                   = "33.6.0-jre"
+    val jackson                 = "2.22.0"
+    val jakartaMail             = "2.0.2"
+    val jawn                    = "1.3.2"
+    val kafkaClients            = "4.3.1"
+    val okhttp                  = "4.12.0"
+    val okio                    = "3.9.0"
+    val apacheMime4j            = "0.8.10"
+    val apachePoi               = "5.4.1"
+    val postgresql              = "42.7.12"
+    val resteasy                = "3.15.6.Final"
+    val bouncyCastleJdk18on     = "1.84"
+    val sshj                    = "0.40.0"
+    val snappyJava              = "1.1.10.8"
   }
 
   private val akkaDeps = Seq(
@@ -398,6 +419,32 @@ object Dependencies {
       "com.typesafe.akka" %% "akka-http-jackson" % Versions.akkaHttp,
       "com.typesafe.akka" %% "akka-http2-support" % Versions.akkaHttp) ++ cloudflowLibDependencyOverrides
 
+  val securityDependencyOverrides: Seq[ModuleID] = Seq(
+    "commons-beanutils"           % "commons-beanutils"              % Versions.commonsBeanutils,
+    "commons-io"                  % "commons-io"                     % Versions.commonsIo,
+    "commons-net"                 % "commons-net"                    % Versions.commonsNet,
+    "com.fasterxml.jackson.core"  % "jackson-core"                   % Versions.jackson,
+    "com.fasterxml.jackson.core"  % "jackson-databind"               % Versions.jackson,
+    "com.google.guava"            % "guava"                          % Versions.guava,
+    "org.apache.kafka"            % "kafka-clients"                  % Versions.kafkaClients,
+    "com.squareup.okhttp3"        % "okhttp"                         % Versions.okhttp,
+    "com.squareup.okio"           % "okio"                           % Versions.okio,
+    "com.sun.mail"                % "jakarta.mail"                   % Versions.jakartaMail,
+    "org.apache.james"            % "apache-mime4j-core"             % Versions.apacheMime4j,
+    "org.apache.poi"              % "poi-ooxml"                      % Versions.apachePoi,
+    "org.apache.avro"             % "avro"                           % Versions.avro,
+    "org.apache.commons"          % "commons-compress"               % Versions.commonsCompress,
+    "org.apache.commons"          % "commons-lang3"                  % Versions.commonsLang,
+    "com.hierynomus"              % "sshj"                           % Versions.sshj,
+    "org.bouncycastle"            % "bcpkix-jdk18on"                 % Versions.bouncyCastleJdk18on,
+    "org.bouncycastle"            % "bcprov-jdk18on"                 % Versions.bouncyCastleJdk18on,
+    "org.bouncycastle"            % "bcutil-jdk18on"                 % Versions.bouncyCastleJdk18on,
+    "org.jboss.resteasy"          % "resteasy-multipart-provider"    % Versions.resteasy,
+    "org.postgresql"              % "postgresql"                     % Versions.postgresql,
+    "org.typelevel"              %% "jawn-parser"                    % Versions.jawn,
+    "org.xerial.snappy"           % "snappy-java"                    % Versions.snappyJava
+  )
+
   val betgeniusIngestionDependencies: Seq[ModuleID] = akkaHttpDeps
 
   val oddinDependencies: Seq[ModuleID] =
@@ -417,7 +464,6 @@ object Dependencies {
   val scalafixRulesDependencies: Seq[ModuleID] = Seq(
     "com.beachape" %% "enumeratum" % Versions.enumeratum,
     "ch.epfl.scala" %% "scalafix-core" % _root_.scalafix.sbt.BuildInfo.scalafixVersion,
-    "ch.epfl.scala" %% "scalafix-rules" % _root_.scalafix.sbt.BuildInfo.scalafixVersion,
     ("ch.epfl.scala" % "scalafix-testkit" % _root_.scalafix.sbt.BuildInfo.scalafixVersion % Test)
       .cross(CrossVersion.full))
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
@@ -233,6 +234,27 @@ func (s *Service) HasPermission(ctx context.Context, email, permission string) (
 	}
 	_, ok := perms[permission]
 	return ok, nil
+}
+
+// EffectivePermissions returns the sorted set of permission ids the active admin
+// user with the given email holds via their roles. An empty email yields an
+// empty set. This drives the back-office permission-aware menu (GET
+// /api/v1/admin/me); the menu is a UX hint only — every route still enforces
+// its own permission server-side via requireRBACPermission.
+func (s *Service) EffectivePermissions(ctx context.Context, email string) ([]string, error) {
+	if strings.TrimSpace(email) == "" {
+		return []string{}, nil
+	}
+	perms, err := s.repo.EffectivePermissions(ctx, email)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]string, 0, len(perms))
+	for p := range perms {
+		out = append(out, p)
+	}
+	sort.Strings(out)
+	return out, nil
 }
 
 // SetUserStatus activates or suspends a staff account. Refuses self-targeting;

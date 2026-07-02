@@ -16,7 +16,7 @@ func TestVerifyPersonalSignature(t *testing.T) {
 	}
 	address := crypto.PubkeyToAddress(key.PublicKey).Hex()
 	issuedAt := time.Date(2026, 5, 27, 12, 0, 0, 0, time.UTC)
-	message := BuildWalletChallengeMessage("u-1", address, 8453, "nonce-1", issuedAt, issuedAt.Add(10*time.Minute))
+	message := BuildWalletChallengeMessage("hula-na", "u-1", address, 8453, "nonce-1", issuedAt, issuedAt.Add(10*time.Minute))
 
 	sig, err := crypto.Sign(accounts.TextHash([]byte(message)), key)
 	if err != nil {
@@ -34,7 +34,7 @@ func TestVerifyPersonalSignatureRejectsWrongAddress(t *testing.T) {
 	}
 	address := crypto.PubkeyToAddress(key.PublicKey).Hex()
 	issuedAt := time.Date(2026, 5, 27, 12, 0, 0, 0, time.UTC)
-	message := BuildWalletChallengeMessage("u-1", address, 8453, "nonce-1", issuedAt, issuedAt.Add(10*time.Minute))
+	message := BuildWalletChallengeMessage("hula-na", "u-1", address, 8453, "nonce-1", issuedAt, issuedAt.Add(10*time.Minute))
 
 	sig, err := crypto.Sign(accounts.TextHash([]byte(message)), key)
 	if err != nil {

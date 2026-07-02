@@ -1,1 +1,0 @@
-alter table games add column promoted boolean not null default false;

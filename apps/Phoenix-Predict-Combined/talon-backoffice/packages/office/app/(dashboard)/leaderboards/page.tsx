@@ -25,16 +25,31 @@ interface LeaderboardRow {
   name: string;
   description?: string;
   metricKey: string;
+  pointMetricKey?: string;
   rankingMode: string;
   order: string;
   status: string;
-  currency?: string;
-  prizeSummary?: string;
+  unit?: string;
+  rewardSummary?: string;
   windowStartsAt?: string;
   windowEndsAt?: string;
   createdAt: string;
   updatedAt: string;
   lastComputedAt?: string;
+}
+
+function toLaunchMetricKey(value: string): string {
+  return value === "net_profit_cents" ? "net_points" : value;
+}
+
+function toLegacyMetricKey(value: string): string {
+  const trimmed = value.trim();
+  return trimmed === "net_points" ? "net_profit_cents" : trimmed;
+}
+
+function normalizePointUnit(value?: string): string {
+  const trimmed = value?.trim().toUpperCase();
+  return !trimmed || trimmed === "USD" ? "PTS" : trimmed;
 }
 
 /** Format a window date pair into a short display string */
@@ -72,12 +87,12 @@ function LeaderboardsPageContent() {
     slug: "",
     name: "",
     description: "",
-    metricKey: "net_profit_cents",
+    metricKey: "net_points",
     rankingMode: "sum",
     order: "desc",
     status: "active",
-    currency: "USD",
-    prizeSummary: "",
+    unit: "PTS",
+    rewardSummary: "",
     windowStartsAt: "",
     windowEndsAt: "",
   });
@@ -182,7 +197,7 @@ function LeaderboardsPageContent() {
         <div>
           <div className="font-semibold">{String(value)}</div>
           <div className="text-xs text-[var(--t3,#8b8378)]">
-            {row.slug || row.metricKey}
+            {row.slug || row.pointMetricKey || toLaunchMetricKey(row.metricKey)}
           </div>
         </div>
       ),
@@ -208,6 +223,7 @@ function LeaderboardsPageContent() {
       key: "metricKey",
       label: "Metric",
       sortable: true,
+      render: (value) => toLaunchMetricKey(String(value)),
     },
     {
       key: "windowStartsAt" as keyof LeaderboardRow,
@@ -324,8 +340,9 @@ function LeaderboardsPageContent() {
           slug: form.slug.trim(),
           name: form.name.trim(),
           description: form.description.trim(),
-          metricKey: form.metricKey.trim(),
-          prizeSummary: form.prizeSummary.trim(),
+          metricKey: toLegacyMetricKey(form.metricKey),
+          unit: normalizePointUnit(form.unit),
+          rewardSummary: form.rewardSummary.trim(),
           windowStartsAt: toRFC3339(form.windowStartsAt) || undefined,
           windowEndsAt: toRFC3339(form.windowEndsAt) || undefined,
           createdBy: "office-admin",
@@ -340,12 +357,12 @@ function LeaderboardsPageContent() {
         slug: "",
         name: "",
         description: "",
-        metricKey: "net_profit_cents",
+        metricKey: "net_points",
         rankingMode: "sum",
         order: "desc",
         status: "active",
-        currency: "USD",
-        prizeSummary: "",
+        unit: "PTS",
+        rewardSummary: "",
         windowStartsAt: "",
         windowEndsAt: "",
       });
@@ -423,7 +440,7 @@ function LeaderboardsPageContent() {
                       slug: event.target.value,
                     }))
                   }
-                  placeholder="weekly-profit-race"
+                  placeholder="weekly-points-race"
                 />
               </label>
             </div>
@@ -455,14 +472,14 @@ function LeaderboardsPageContent() {
                 />
               </label>
               <label className={labelClassName}>
-                Currency
+                Unit
                 <input
                   className={inputClassName}
-                  value={form.currency}
+                  value={form.unit}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setForm((current) => ({
                       ...current,
-                      currency: event.target.value,
+                      unit: normalizePointUnit(event.target.value),
                     }))
                   }
                 />
@@ -551,14 +568,14 @@ function LeaderboardsPageContent() {
               </label>
             </div>
             <label className={labelClassName}>
-              Prize Summary
+              Reward Summary
               <input
                 className={inputClassName}
-                value={form.prizeSummary}
+                value={form.rewardSummary}
                 onChange={(event: ChangeEvent<HTMLInputElement>) =>
                   setForm((current) => ({
                     ...current,
-                    prizeSummary: event.target.value,
+                    rewardSummary: event.target.value,
                   }))
                 }
               />

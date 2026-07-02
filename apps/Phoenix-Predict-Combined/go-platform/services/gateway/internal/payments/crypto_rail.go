@@ -24,16 +24,15 @@ var ErrRailNotConfigured = errors.New("crypto rail not configured")
 // BSC rail seam. It remains fail-closed for local/reference use and must not be
 // configured for production funds. See docs/cashier/README.md.
 //
-// CryptoRail abstracts an on-chain deposit/withdrawal rail (e.g. USDC on an EVM
-// chain). The launch policy is crypto-native; this seam keeps the internal
-// ledger + payment state machine (DBPaymentService) unchanged while a real
-// chain integration is plugged in via configuration. Until ops supply the chain
-// inputs, every operation fails closed with ErrRailNotConfigured — wired, not
-// faked. The two integration points a real deployment must provide:
+// CryptoRail abstracts a legacy on-chain deposit/withdrawal rail (e.g. USDC on
+// an EVM chain). Tiangge launch mode keeps this surface unregistered unless
+// legacy money routes are explicitly enabled. Until ops supply the chain inputs,
+// every operation fails closed with ErrRailNotConfigured — wired, not faked.
+// The two integration points a real deployment must provide:
 //
-//	1. Deposit-address derivation (an HD-wallet xpub / KMS keyring / custody
-//	   provider) — used by DepositAddress to assign a stable per-user address.
-//	2. A signer + RPC client — used by PrepareWithdrawal to broadcast payouts.
+//  1. Deposit-address derivation (an HD-wallet xpub / KMS keyring / custody
+//     provider) — used by DepositAddress to assign a stable per-user address.
+//  2. A signer + RPC client — used by PrepareWithdrawal to broadcast payouts.
 //
 // On-chain deposit detection then drives the existing payment webhook
 // (DBPaymentService.HandleWebhook) to credit the wallet after N confirmations.
