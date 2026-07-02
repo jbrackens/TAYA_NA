@@ -68,6 +68,12 @@ func registerTenantAdminRoutes(mux *stdhttp.ServeMux, db *sql.DB) {
 			}
 			id := strings.TrimSpace(strings.ToLower(body.ID))
 			name := strings.TrimSpace(body.DisplayName)
+			// Both the slug and the display name are checked against
+			// launch-prohibited copy — a slug like "cashout-brand" is as
+			// undesirable as a display name would be.
+			if err := validateLaunchFacingReason("id", id); err != nil {
+				return err
+			}
 			if err := validateLaunchFacingReason("displayName", name); err != nil {
 				return err
 			}
