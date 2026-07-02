@@ -273,6 +273,19 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 		}
 	}
 
+	// P0-2: KYC and responsible-gambling stores ride the wallet DB. If the
+	// wallet store is not DB-backed, the compliance wiring has no database and
+	// would fall back to in-memory state — identity decisions and limits that
+	// vanish on restart. The wallet service enforces DB mode for production
+	// only; staging must not run on mocks either, so both are checked here.
+	walletMode := strings.ToLower(strings.TrimSpace(getenv("WALLET_STORE_MODE")))
+	if walletMode != "db" && walletMode != "sql" && walletMode != "postgres" {
+		return fmt.Errorf("WALLET_STORE_MODE must be 'db' when ENVIRONMENT=%s (currently %q): the KYC and responsible-gambling stores are Postgres-backed through the wallet DB, and their in-memory fallback is dev-only", env, walletMode)
+	}
+	if strings.TrimSpace(getenv("WALLET_DB_DSN")) == "" {
+		return fmt.Errorf("WALLET_DB_DSN must be set when ENVIRONMENT=%s: the KYC and responsible-gambling stores are Postgres-backed through the wallet DB", env)
+	}
+
 	// P3-06: the provider-ops audit trail is append-only (migration 036) and is
 	// the system of record for compliance actions, so in a deployed environment
 	// it must be DB-backed. The JSON-file fallback is mutable and per-instance —

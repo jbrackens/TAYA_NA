@@ -486,10 +486,16 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	var kycService compliance.KYCService
 	var rgService compliance.ResponsibleGamblingService
 	var pgKYC *compliance.PostgresKYCService
+	// Outside dev the mock stand-in is forbidden: KYCFallbackForEnv degrades
+	// production/staging to the fail-closed service instead (P0-2). The boot
+	// check in cmd/gateway (WALLET_STORE_MODE=db) makes the nil-DB branch
+	// unreachable in deployed environments; the error branch stays reachable
+	// (schema init can fail against a live DB) and must not hand out a mock.
+	complianceEnv := os.Getenv("ENVIRONMENT")
 	if complianceDB := walletService.DB(); complianceDB != nil {
 		if svc, err := compliance.NewPostgresKYCService(complianceDB, compliance.NewIDVProviderFromEnv()); err != nil {
-			slog.Warn("compliance: Postgres KYC init failed, falling back to mock", "error", err)
-			kycService = compliance.NewMockKYCService()
+			slog.Error("compliance: Postgres KYC init failed; using environment fallback (fail-closed outside dev)", "error", err)
+			kycService = compliance.KYCFallbackForEnv(complianceEnv)
 		} else {
 			pgKYC = svc
 			kycService = svc
@@ -503,7 +509,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 			slog.Info("compliance: Postgres responsible-gambling service initialized")
 		}
 	} else {
-		kycService = compliance.NewMockKYCService()
+		kycService = compliance.KYCFallbackForEnv(complianceEnv)
 		rgService = compliance.NewMockResponsibleGamblingService()
 	}
 	profileKYCProvider = kycService // UAT D-8: profile reports real KYC status

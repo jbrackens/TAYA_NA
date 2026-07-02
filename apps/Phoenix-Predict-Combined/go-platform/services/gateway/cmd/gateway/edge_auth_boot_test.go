@@ -11,7 +11,11 @@ func baseProdEnv(overrides map[string]string) func(string) string {
 		"PAYMENTS_WEBHOOK_SECRET": "whsec_present",
 		// A real prod DSN — required for the DB-backed provider-ops audit store
 		// (P3-06) and carrying a non-dev password so the localdev guard is happy.
-		"GATEWAY_DB_DSN":           "postgres://predict:S3cure-Prod-Pass@db.internal:5432/predict?sslmode=require",
+		"GATEWAY_DB_DSN": "postgres://predict:S3cure-Prod-Pass@db.internal:5432/predict?sslmode=require",
+		// DB-backed compliance store (P0-2): deployed envs must not fall back
+		// to in-memory KYC/RG state.
+		"WALLET_STORE_MODE":        "db",
+		"WALLET_DB_DSN":            "postgres://predict:S3cure-Prod-Pass@db.internal:5432/predict?sslmode=require",
 		"GEO_GATE_ENABLED":         "true",
 		"GEO_ALLOWED_COUNTRIES":    "PH,TH,VN",
 		"KYC_ENFORCEMENT":          "true",

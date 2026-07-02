@@ -446,9 +446,12 @@ func TestValidateGatewayRuntimeConfigRejectsDevDBPasswordInProduction(t *testing
 // requirement.
 func prodBaseEnv(overrides map[string]string) func(string) string {
 	base := map[string]string{
-		"ENVIRONMENT":              "production",
-		"PAYMENTS_WEBHOOK_SECRET":  "whsec_a-real-and-strong-secret",
-		"GATEWAY_DB_DSN":           "postgres://predict:S3cure-Prod-Pass@db.internal:5432/predict?sslmode=require",
+		"ENVIRONMENT":             "production",
+		"PAYMENTS_WEBHOOK_SECRET": "whsec_a-real-and-strong-secret",
+		"GATEWAY_DB_DSN":          "postgres://predict:S3cure-Prod-Pass@db.internal:5432/predict?sslmode=require",
+		// DB-backed compliance store (P0-2): deployed envs must not fall back
+		// to in-memory KYC/RG state.
+		"WALLET_STORE_MODE":        "db",
 		"WALLET_DB_DSN":            "postgres://predict:S3cure-Prod-Pass@db.internal:5432/predict?sslmode=require",
 		"GEO_GATE_ENABLED":         "true",
 		"GEO_ALLOWED_COUNTRIES":    "PH,TH,VN",
@@ -579,6 +582,8 @@ func TestValidateGatewayRuntimeConfigRequiresAckForPermissiveBetaComplianceInDep
 			return "whsec_a-real-and-strong-secret"
 		case "GATEWAY_DB_DSN", "WALLET_DB_DSN":
 			return "postgres://predict:S3cure-Prod-Pass@db.internal:5432/predict?sslmode=require"
+		case "WALLET_STORE_MODE":
+			return "db"
 		case "BETA_COMPLIANCE_MODE":
 			return "permissive"
 		default:
@@ -599,6 +604,8 @@ func TestValidateGatewayRuntimeConfigAllowsAckedPermissiveBetaComplianceInDeploy
 			return "whsec_a-real-and-strong-secret"
 		case "GATEWAY_DB_DSN", "WALLET_DB_DSN":
 			return "postgres://predict:S3cure-Prod-Pass@db.internal:5432/predict?sslmode=require"
+		case "WALLET_STORE_MODE":
+			return "db"
 		case "BETA_COMPLIANCE_MODE":
 			return "permissive"
 		case "COMPLIANCE_STARTUP_ACK":
@@ -609,5 +616,47 @@ func TestValidateGatewayRuntimeConfigAllowsAckedPermissiveBetaComplianceInDeploy
 	})
 	if err != nil {
 		t.Fatalf("expected acknowledged permissive beta compliance mode to validate, got %v", err)
+	}
+}
+
+// P0-2: a deployed environment must not be able to boot onto the in-memory
+// KYC/RG fallback — the compliance store rides the wallet DB, so DB mode and
+// a DSN are hard requirements in production and staging.
+func TestValidateGatewayRuntimeConfigRequiresDBBackedComplianceStore(t *testing.T) {
+	for _, env := range []string{"production", "staging"} {
+		t.Run(env+" refuses memory store mode", func(t *testing.T) {
+			if err := validateGatewayRuntimeConfig(prodBaseEnv(map[string]string{
+				"ENVIRONMENT":       env,
+				"WALLET_STORE_MODE": "memory",
+			})); err == nil {
+				t.Fatalf("expected %s boot refusal for WALLET_STORE_MODE=memory", env)
+			}
+		})
+		t.Run(env+" refuses unset store mode", func(t *testing.T) {
+			if err := validateGatewayRuntimeConfig(prodBaseEnv(map[string]string{
+				"ENVIRONMENT":       env,
+				"WALLET_STORE_MODE": "",
+			})); err == nil {
+				t.Fatalf("expected %s boot refusal for unset WALLET_STORE_MODE", env)
+			}
+		})
+		t.Run(env+" refuses empty wallet DSN", func(t *testing.T) {
+			if err := validateGatewayRuntimeConfig(prodBaseEnv(map[string]string{
+				"ENVIRONMENT":   env,
+				"WALLET_DB_DSN": "",
+			})); err == nil {
+				t.Fatalf("expected %s boot refusal for empty WALLET_DB_DSN", env)
+			}
+		})
+	}
+	// The sql/postgres aliases the wallet service accepts must validate too.
+	for _, mode := range []string{"db", "sql", "postgres"} {
+		t.Run("accepts mode "+mode, func(t *testing.T) {
+			if err := validateGatewayRuntimeConfig(prodBaseEnv(map[string]string{
+				"WALLET_STORE_MODE": mode,
+			})); err != nil {
+				t.Fatalf("expected WALLET_STORE_MODE=%s to validate, got %v", mode, err)
+			}
+		})
 	}
 }

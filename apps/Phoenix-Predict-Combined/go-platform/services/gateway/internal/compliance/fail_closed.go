@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"strings"
 	"time"
 )
 
@@ -11,6 +12,19 @@ var (
 	ErrGeoProviderNotConfigured = errors.New("geo compliance provider not configured")
 	ErrKYCProviderNotConfigured = errors.New("KYC provider not configured")
 )
+
+// KYCFallbackForEnv picks what stands in when the Postgres KYC store is
+// unavailable. Dev and tests get the in-memory mock; production and staging
+// get the fail-closed service — identity state that vanishes on restart must
+// never back real compliance decisions, so a deployed environment degrades to
+// denial, not to a mock that approves.
+func KYCFallbackForEnv(env string) KYCService {
+	switch strings.ToLower(strings.TrimSpace(env)) {
+	case "production", "staging":
+		return NewFailClosedKYCService()
+	}
+	return NewMockKYCService()
+}
 
 // FailClosedGeoComplianceService rejects all geo-verification requests.
 // Used in production when no real GeoComply/similar provider is configured.
