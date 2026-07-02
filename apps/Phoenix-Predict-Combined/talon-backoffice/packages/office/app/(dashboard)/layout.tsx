@@ -98,6 +98,7 @@ const navItems: NavItem[] = [
   { href: "/bonuses", label: "Bonuses", icon: "ticket" },
   { href: "/loyalty", label: "Loyalty", icon: "gift" },
   { href: "/leaderboards", label: "Leaderboards", icon: "trophy" },
+  { href: "/exports", label: "Reports", icon: "file-text" },
   { href: "/audit-logs", label: "Audit Logs", icon: "scroll-text" },
 ];
 

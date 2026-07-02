@@ -667,6 +667,8 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// for the prediction domain (the page is sportsbook-shaped). Leaderboard
 	// analytics on the same page use the admin leaderboard routes above.
 	registerReportsRoutes(mux, walletService)
+	// CSV exports of compliance/surveillance datasets for auditors (P1-6).
+	registerReportExportRoutes(mux, walletService.DB())
 
 	// --- Auth Proxy (kept from sportsbook) ---
 	registerAuthProxy(mux)
