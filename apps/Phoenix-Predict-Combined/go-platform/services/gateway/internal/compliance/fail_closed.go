@@ -14,27 +14,45 @@ var (
 	ErrRGProviderNotConfigured  = errors.New("responsible-gambling store not available")
 )
 
+// knownDevEnvironments mirrors the gateway boot check's allowlist (GAP-4): the
+// ONLY ENVIRONMENT values that get the approving in-memory mocks. Everything
+// else — including a non-canonical deployed value like "prod", "preprod", or a
+// typo — is a deployed environment and MUST fail closed. Keeping this as an
+// allowlist (rather than an exact production/staging match) means a mistyped
+// ENVIRONMENT can never silently hand out approving compliance mocks.
+var knownDevEnvironments = map[string]bool{
+	"":            true,
+	"development": true,
+	"dev":         true,
+	"test":        true,
+	"testing":     true,
+	"local":       true,
+	"ci":          true,
+}
+
+// deployedEnvironment reports whether env should run with the fail-closed
+// compliance services (true for anything not in the dev allowlist).
+func deployedEnvironment(env string) bool {
+	return !knownDevEnvironments[strings.ToLower(strings.TrimSpace(env))]
+}
+
 // KYCFallbackForEnv picks what stands in when the Postgres KYC store is
-// unavailable. Dev and tests get the in-memory mock; production and staging
-// get the fail-closed service — identity state that vanishes on restart must
-// never back real compliance decisions, so a deployed environment degrades to
+// unavailable. Dev/test get the in-memory mock; any deployed environment gets
+// the fail-closed service — identity state that vanishes on restart must never
+// back real compliance decisions, so a deployed environment degrades to
 // denial, not to a mock that approves.
 func KYCFallbackForEnv(env string) KYCService {
-	switch strings.ToLower(strings.TrimSpace(env)) {
-	case "production", "staging":
+	if deployedEnvironment(env) {
 		return NewFailClosedKYCService()
 	}
 	return NewMockKYCService()
 }
 
-// GeoFallbackForEnv picks the geo-compliance service. Production and staging
-// get the fail-closed service (every location check declines) rather than the
-// sandbox mock that would approve; dev/test get the mock. The gateway boot
-// check (GAP-4) rejects a typo'd deployed ENVIRONMENT before this runs, so the
-// exact-match here only ever sees a validated value.
+// GeoFallbackForEnv picks the geo-compliance service. Any deployed environment
+// gets the fail-closed service (every location check declines) rather than the
+// sandbox mock that would approve; dev/test get the mock.
 func GeoFallbackForEnv(env string) GeoComplianceService {
-	switch strings.ToLower(strings.TrimSpace(env)) {
-	case "production", "staging":
+	if deployedEnvironment(env) {
 		return NewFailClosedGeoComplianceService()
 	}
 	return NewMockGeoComplianceServiceFromEnv()
@@ -42,10 +60,9 @@ func GeoFallbackForEnv(env string) GeoComplianceService {
 
 // RGFallbackForEnv is the responsible-gambling twin of KYCFallbackForEnv:
 // limits and self-exclusions that vanish on restart must never gate real
-// stakes, so deployed environments degrade to denial.
+// stakes, so any deployed environment degrades to denial.
 func RGFallbackForEnv(env string) ResponsibleGamblingService {
-	switch strings.ToLower(strings.TrimSpace(env)) {
-	case "production", "staging":
+	if deployedEnvironment(env) {
 		return NewFailClosedResponsibleGamblingService()
 	}
 	return NewMockResponsibleGamblingService()

@@ -39,7 +39,16 @@ func TestGeoFallbackForEnv(t *testing.T) {
 	}{
 		{"production", true},
 		{"staging", true},
+		// GAP-4 parity (verification #5): non-canonical deployed values must
+		// also fail closed — they are NOT in the dev allowlist.
+		{"prod", true},
+		{"preprod", true},
+		{"prd", true},
+		{"production2", true},
 		{"development", false},
+		{"dev", false},
+		{"test", false},
+		{"ci", false},
 		{"", false},
 	} {
 		t.Run("env="+tc.env, func(t *testing.T) {
@@ -47,6 +56,24 @@ func TestGeoFallbackForEnv(t *testing.T) {
 			_, isFailClosed := svc.(*FailClosedGeoComplianceService)
 			if isFailClosed != tc.failClosed {
 				t.Fatalf("env %q: fail-closed=%v, want %v (got %T)", tc.env, isFailClosed, tc.failClosed, svc)
+			}
+		})
+	}
+}
+
+// KYC and RG selectors must fail closed on the same non-canonical deployed
+// values (verification #5 — the exact-match let "prod" get an approving mock).
+func TestFallbacksFailClosedOnNonCanonicalDeployedEnv(t *testing.T) {
+	for _, env := range []string{"prod", "preprod", "prd", "live", "production2"} {
+		t.Run(env, func(t *testing.T) {
+			if _, ok := KYCFallbackForEnv(env).(*FailClosedKYCService); !ok {
+				t.Fatalf("KYC: env %q should be fail-closed", env)
+			}
+			if _, ok := RGFallbackForEnv(env).(*FailClosedResponsibleGamblingService); !ok {
+				t.Fatalf("RG: env %q should be fail-closed", env)
+			}
+			if _, ok := GeoFallbackForEnv(env).(*FailClosedGeoComplianceService); !ok {
+				t.Fatalf("Geo: env %q should be fail-closed", env)
 			}
 		})
 	}
