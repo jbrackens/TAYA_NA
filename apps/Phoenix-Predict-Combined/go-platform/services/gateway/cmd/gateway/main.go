@@ -214,9 +214,28 @@ func gatewayCSRFSkipPrefixes() []string {
 	return prefixes
 }
 
+// knownDevEnvironments is the allowlist of ENVIRONMENT values that run WITHOUT
+// the deny-by-default deployed-environment gates. Everything else — including a
+// typo like "prod" or "produciton" — is treated as deployed (fail-closed) so a
+// mistyped ENVIRONMENT can never silently downgrade the security posture (GAP-4).
+// An empty value is dev (local docker-compose default).
+var knownDevEnvironments = map[string]bool{
+	"":            true,
+	"development": true,
+	"dev":         true,
+	"test":        true,
+	"testing":     true,
+	"local":       true,
+	"ci":          true,
+}
+
 func validateGatewayRuntimeConfig(getenv func(string) string) error {
 	env := strings.ToLower(strings.TrimSpace(getenv("ENVIRONMENT")))
-	realEnv := env == "production" || env == "staging"
+	// Fail closed: any ENVIRONMENT not in the known-dev allowlist is a deployed
+	// environment and gets the full deny-by-default posture. This inverts the
+	// prior exact-match ("production"||"staging") logic, under which a typo
+	// silently fell through to dev.
+	realEnv := !knownDevEnvironments[env]
 	if legacyMoneyRoutesEnabled(getenv) && realEnv {
 		return fmt.Errorf("%s=true is not permitted when ENVIRONMENT=%s; Tiangge launch must not expose deposit, withdrawal, cashier, crypto, or provider-callback routes", legacyMoneyRoutesEnv, env)
 	}
@@ -315,10 +334,12 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 	switch complianceMode {
 	case "permissive", "permissive_beta", "beta_permissive":
 		// The permissive bypass disables the jurisdiction and trading-KYC
-		// gates entirely. That is a staging/demo posture only — production
-		// must never run ungated, ack or no ack.
-		if env == "production" {
-			return fmt.Errorf("BETA_COMPLIANCE_MODE=%s is not permitted when ENVIRONMENT=production; permissive mode is for staging/demo only", complianceMode)
+		// gates entirely. That is a STAGING/demo posture only — production (or
+		// any deployed env that is not exactly "staging", including a typo)
+		// must never run ungated, ack or no ack. GAP-4: fail closed on the
+		// escape hatch — only canonical "staging" may take it.
+		if env != "staging" {
+			return fmt.Errorf("BETA_COMPLIANCE_MODE=%s is only permitted when ENVIRONMENT=staging (got %q); permissive mode is for staging/demo only", complianceMode, env)
 		}
 		if !strings.EqualFold(strings.TrimSpace(getenv("COMPLIANCE_STARTUP_ACK")), "true") {
 			return fmt.Errorf("permissive beta compliance mode disables KYC/geofence gates; set COMPLIANCE_STARTUP_ACK=true when ENVIRONMENT=%s to acknowledge this beta policy", env)

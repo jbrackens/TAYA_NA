@@ -660,3 +660,64 @@ func TestValidateGatewayRuntimeConfigRequiresDBBackedComplianceStore(t *testing.
 		})
 	}
 }
+
+// GAP-4: a mistyped ENVIRONMENT must fail closed — treated as a deployed
+// environment (strict gates), not silently as dev.
+func TestValidateFailsClosedOnTypoedEnvironment(t *testing.T) {
+	for _, typo := range []string{"prod", "produciton", "stage", "prd", "live"} {
+		t.Run(typo, func(t *testing.T) {
+			// Minimal config: only the typo'd ENVIRONMENT, nothing else. Under
+			// the old exact-match logic this passed (treated as dev); now it
+			// must be rejected as a deployed env missing its required gates.
+			err := validateGatewayRuntimeConfig(func(key string) string {
+				if key == "ENVIRONMENT" {
+					return typo
+				}
+				return ""
+			})
+			if err == nil {
+				t.Fatalf("expected boot refusal for typo ENVIRONMENT=%q (fail-closed), got nil", typo)
+			}
+		})
+	}
+}
+
+// A genuinely known dev value still boots without the deployed gates.
+func TestValidateAllowsKnownDevEnvironments(t *testing.T) {
+	for _, dev := range []string{"", "development", "dev", "test", "local", "ci"} {
+		t.Run("env="+dev, func(t *testing.T) {
+			err := validateGatewayRuntimeConfig(func(key string) string {
+				if key == "ENVIRONMENT" {
+					return dev
+				}
+				return ""
+			})
+			if err != nil {
+				t.Fatalf("expected dev env %q to boot without deployed gates, got %v", dev, err)
+			}
+		})
+	}
+}
+
+// GAP-4: the permissive escape hatch is staging-only — a typo cannot take it.
+func TestValidatePermissiveOnlyForCanonicalStaging(t *testing.T) {
+	err := validateGatewayRuntimeConfig(func(key string) string {
+		switch key {
+		case "ENVIRONMENT":
+			return "prod" // typo intending production
+		case "GATEWAY_DB_DSN", "WALLET_DB_DSN":
+			return "postgres://predict:S3cure-Prod-Pass@db.internal:5432/predict?sslmode=require"
+		case "WALLET_STORE_MODE":
+			return "db"
+		case "BETA_COMPLIANCE_MODE":
+			return "permissive"
+		case "COMPLIANCE_STARTUP_ACK":
+			return "true"
+		default:
+			return ""
+		}
+	})
+	if err == nil {
+		t.Fatal("expected permissive mode to be refused for a non-staging (typo'd) deployed env")
+	}
+}
