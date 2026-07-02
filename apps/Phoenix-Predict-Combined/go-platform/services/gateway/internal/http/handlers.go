@@ -243,6 +243,18 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	resolutionNotifier := notify.NewFromEnv()
 	resolutionRecipients := notify.ResolutionRecipients()
 	slog.Info("notifications: resolution channel ready", "transport", resolutionNotifier.Name(), "recipients", len(resolutionRecipients))
+	// DB-backed notification templates (P1-6): operator-editable subject/body
+	// for transactional messages, replacing hardcoded copy. Stays nil without
+	// a DB, in which case senders use their built-in fallback text.
+	if tmplDB := walletService.DB(); tmplDB != nil {
+		if ts, err := notify.NewTemplateStore(tmplDB); err != nil {
+			slog.Error("notify: template store init failed; using built-in copy", "error", err)
+		} else {
+			notificationTemplateStore = ts
+			registerNotificationTemplateAdminRoutes(mux, ts)
+			slog.Info("notify: template store initialized")
+		}
+	}
 	predictionService.SetMarketLifecycleHandler(func(market *prediction.Market, _ prediction.LifecycleEvent) {
 		payload := buildMarketUpdatePayload(market)
 		wsHub.NotifyPredictionMarketUpdate(market.ID, payload)
@@ -264,7 +276,20 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 			go func(m prediction.Market) {
 				nctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 				defer cancel()
-				subject, body := resolutionMessage(&m)
+				fbSubject, fbBody := resolutionMessage(&m)
+				// Prefer the operator-editable template; fall back to the
+				// built-in copy if the store has none (never blocks the send).
+				templateKey := "resolution.settled"
+				if m.Status == prediction.MarketStatusVoided {
+					templateKey = "resolution.voided"
+				}
+				result := ""
+				if m.Result != nil {
+					result = strings.ToUpper(string(*m.Result))
+				}
+				subject, body := notify.RenderOrFallback(nctx, notificationTemplateStore, templateKey,
+					map[string]string{"ticker": m.Ticker, "title": m.Title, "result": result},
+					fbSubject, fbBody)
 				if err := resolutionNotifier.Notify(nctx, resolutionRecipients, subject, body); err != nil {
 					slog.Warn("notify: resolution notification failed", "market_id", m.ID, "error", err)
 				}
