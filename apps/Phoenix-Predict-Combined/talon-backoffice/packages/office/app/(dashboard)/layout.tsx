@@ -99,6 +99,7 @@ const navItems: NavItem[] = [
   { href: "/loyalty", label: "Loyalty", icon: "gift" },
   { href: "/leaderboards", label: "Leaderboards", icon: "trophy" },
   { href: "/exports", label: "Reports", icon: "file-text" },
+  { href: "/tenants", label: "Tenants", icon: "layout-dashboard" },
   { href: "/audit-logs", label: "Audit Logs", icon: "scroll-text" },
 ];
 

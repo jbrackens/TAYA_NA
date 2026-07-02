@@ -679,6 +679,9 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 			registerPlatformConfigAdminRoutes(mux, cfgStore)
 			slog.Info("platform-config: store initialized")
 		}
+		// Tenant/brand directory admin (P2-1 peripheral) — CRUD over the
+		// tenants table only; does not scope the trading/wallet core.
+		registerTenantAdminRoutes(mux, cfgDB)
 	}
 
 	// --- Auth Proxy (kept from sportsbook) ---
