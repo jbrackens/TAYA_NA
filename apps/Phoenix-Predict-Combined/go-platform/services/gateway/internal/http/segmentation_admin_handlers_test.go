@@ -18,7 +18,8 @@ type stubSegStore struct {
 		tagID  int64
 		userID string
 	}
-	lastQuery segmentation.Query
+	lastQuery   segmentation.Query
+	campaignErr error
 }
 
 func (s *stubSegStore) CreateTag(_ context.Context, name, _ string) (*segmentation.Tag, error) {
@@ -50,10 +51,37 @@ func (s *stubSegStore) RunQuery(_ context.Context, q segmentation.Query) (*segme
 	s.lastQuery = q
 	return &segmentation.QueryResult{UserIDs: []string{"user-001"}, Total: 1}, nil
 }
+func (s *stubSegStore) CreateCampaign(_ context.Context, name string, tagID int64, actionType, _, _ string) (*segmentation.Campaign, error) {
+	if s.campaignErr != nil {
+		return nil, s.campaignErr
+	}
+	return &segmentation.Campaign{ID: 5, Name: name, TagID: tagID, ActionType: actionType, Status: "draft"}, nil
+}
+func (s *stubSegStore) ListCampaigns(_ context.Context) ([]segmentation.Campaign, error) {
+	return []segmentation.Campaign{{ID: 5, Name: "welcome", Status: "draft"}}, nil
+}
+func (s *stubSegStore) GetCampaign(_ context.Context, id int64) (*segmentation.Campaign, error) {
+	return &segmentation.Campaign{ID: id, Name: "welcome", TagID: 1, ActionType: "notification", Status: "draft"}, nil
+}
+func (s *stubSegStore) UpdateCampaignStatus(_ context.Context, id int64, status string) (*segmentation.Campaign, error) {
+	return &segmentation.Campaign{ID: id, Status: status}, nil
+}
+func (s *stubSegStore) PreviewCampaign(_ context.Context, _ int64) (int, error) {
+	return 42, nil
+}
+
+// stubGate is a campaignDispatchGate whose answer is fixed.
+type stubGate struct{ enabled bool }
+
+func (g stubGate) GetBool(_ context.Context, _ string, _ bool) bool { return g.enabled }
 
 func newSegHarness(store segmentationStore) http.Handler {
+	return newSegHarnessGate(store, stubGate{enabled: false})
+}
+
+func newSegHarnessGate(store segmentationStore, gate campaignDispatchGate) http.Handler {
 	mux := http.NewServeMux()
-	registerSegmentationAdminRoutes(mux, store)
+	registerSegmentationAdminRoutes(mux, store, gate)
 	return httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 }
 
@@ -144,5 +172,59 @@ func TestSegmentationAssignUnknownTagIs404(t *testing.T) {
 	res := segReq(h, http.MethodPost, "/api/v1/admin/segments/tags/999/assign", `{"userId":"u-1"}`, "admin")
 	if res.Code != http.StatusNotFound {
 		t.Fatalf("expected 404, got %d", res.Code)
+	}
+}
+
+func TestSegmentationCampaignCRUDAndPreview(t *testing.T) {
+	h := newSegHarness(&stubSegStore{})
+	if res := segReq(h, http.MethodPost, "/api/v1/admin/segments/campaigns",
+		`{"name":"welcome","tagId":1,"actionType":"notification"}`, "admin"); res.Code != http.StatusCreated {
+		t.Fatalf("create: expected 201, got %d body=%s", res.Code, res.Body.String())
+	}
+	if res := segReq(h, http.MethodGet, "/api/v1/admin/segments/campaigns", "", "admin"); res.Code != http.StatusOK {
+		t.Fatalf("list: expected 200, got %d", res.Code)
+	}
+	if res := segReq(h, http.MethodGet, "/api/v1/admin/segments/campaigns/5/preview", "", "admin"); res.Code != http.StatusOK {
+		t.Fatalf("preview: expected 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	if res := segReq(h, http.MethodPut, "/api/v1/admin/segments/campaigns/5", `{"status":"active"}`, "admin"); res.Code != http.StatusOK {
+		t.Fatalf("update: expected 200, got %d", res.Code)
+	}
+}
+
+func TestSegmentationCampaignCreateInvalidAction(t *testing.T) {
+	h := newSegHarness(&stubSegStore{campaignErr: segmentation.ErrCampaignInvalid})
+	res := segReq(h, http.MethodPost, "/api/v1/admin/segments/campaigns",
+		`{"name":"x","tagId":1,"actionType":"telepathy"}`, "admin")
+	if res.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d body=%s", res.Code, res.Body.String())
+	}
+}
+
+// Launch-safety: with dispatch disabled (default), execute is unreachable.
+func TestSegmentationCampaignExecuteFailsClosedWhenDisabled(t *testing.T) {
+	h := newSegHarnessGate(&stubSegStore{}, stubGate{enabled: false})
+	res := segReq(h, http.MethodPost, "/api/v1/admin/segments/campaigns/5/execute", "", "admin")
+	if res.Code != http.StatusForbidden {
+		t.Fatalf("expected 403 with dispatch disabled, got %d body=%s", res.Code, res.Body.String())
+	}
+}
+
+// When enabled (non-launch), execute is 501 — the dispatch worker is an
+// explicit follow-up, never a fake success.
+func TestSegmentationCampaignExecuteNotImplementedWhenEnabled(t *testing.T) {
+	h := newSegHarnessGate(&stubSegStore{}, stubGate{enabled: true})
+	res := segReq(h, http.MethodPost, "/api/v1/admin/segments/campaigns/5/execute", "", "admin")
+	if res.Code != http.StatusNotImplemented {
+		t.Fatalf("expected 501 with dispatch enabled, got %d body=%s", res.Code, res.Body.String())
+	}
+}
+
+func TestSegmentationCampaignExecuteRejectsNonAdmin(t *testing.T) {
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "")
+	h := newSegHarnessGate(&stubSegStore{}, stubGate{enabled: true})
+	res := segReq(h, http.MethodPost, "/api/v1/admin/segments/campaigns/5/execute", "", "player")
+	if res.Code != http.StatusForbidden && res.Code != http.StatusUnauthorized {
+		t.Fatalf("expected rejection, got %d", res.Code)
 	}
 }

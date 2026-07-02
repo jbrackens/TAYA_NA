@@ -17,10 +17,18 @@ import (
 const dbTimeout = 10 * time.Second
 
 var (
-	ErrNotFound   = errors.New("tag not found")
-	ErrInvalidTag = errors.New("tag name is required")
-	ErrDuplicate  = errors.New("a tag with that name already exists")
+	ErrNotFound        = errors.New("tag not found")
+	ErrInvalidTag      = errors.New("tag name is required")
+	ErrDuplicate       = errors.New("a tag with that name already exists")
+	ErrCampaignInvalid = errors.New("campaign name, target tag, and a valid action type are required")
+	ErrCampaignMissing = errors.New("campaign not found")
 )
+
+// validCampaignActions is the closed set of dispatch actions a campaign may
+// carry. notification = send a templated message; bonus = grant a bonus.
+var validCampaignActions = map[string]bool{"notification": true, "bonus": true}
+
+var validCampaignStatuses = map[string]bool{"draft": true, "active": true, "archived": true}
 
 // Tag is an admin-defined segment label.
 type Tag struct {
@@ -62,6 +70,18 @@ func (s *Store) ensureSchema() error {
   PRIMARY KEY (tag_id, user_id)
 )`,
 		`CREATE INDEX IF NOT EXISTS idx_crm_user_tags_user ON crm_user_tags (user_id)`,
+		`CREATE TABLE IF NOT EXISTS crm_campaigns (
+  id BIGSERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  tag_id BIGINT NOT NULL REFERENCES crm_tags(id) ON DELETE CASCADE,
+  action_type TEXT NOT NULL CHECK (action_type IN ('notification','bonus')),
+  action_ref TEXT,
+  status TEXT NOT NULL DEFAULT 'draft'
+    CHECK (status IN ('draft','active','archived')),
+  created_by TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`,
 	}
 	for _, stmt := range statements {
 		if _, err := s.db.ExecContext(ctx, stmt); err != nil {
@@ -299,6 +319,128 @@ func (s *Store) RunQuery(ctx context.Context, q Query) (*QueryResult, error) {
 		return nil, err
 	}
 	return &QueryResult{UserIDs: ids, Total: total}, nil
+}
+
+// Campaign targets a segment (tag) with a dispatch action. The definition and
+// its preview are back-office data; actual dispatch is gated at the handler by
+// a launch-safety flag.
+type Campaign struct {
+	ID         int64  `json:"id"`
+	Name       string `json:"name"`
+	TagID      int64  `json:"tagId"`
+	ActionType string `json:"actionType"`
+	ActionRef  string `json:"actionRef,omitempty"`
+	Status     string `json:"status"`
+	CreatedBy  string `json:"createdBy,omitempty"`
+	CreatedAt  string `json:"createdAt"`
+	UpdatedAt  string `json:"updatedAt"`
+}
+
+// CreateCampaign stores a new draft campaign. The target tag must exist (FK).
+func (s *Store) CreateCampaign(ctx context.Context, name string, tagID int64, actionType, actionRef, createdBy string) (*Campaign, error) {
+	name = strings.TrimSpace(name)
+	if name == "" || tagID <= 0 || !validCampaignActions[actionType] {
+		return nil, ErrCampaignInvalid
+	}
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	var id int64
+	var createdAt, updatedAt string
+	err := s.db.QueryRowContext(ctx, `
+INSERT INTO crm_campaigns (name, tag_id, action_type, action_ref, created_by)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, CAST(created_at AS TEXT), CAST(updated_at AS TEXT)`,
+		name, tagID, actionType, nullStr(actionRef), nullStr(createdBy)).Scan(&id, &createdAt, &updatedAt)
+	if err != nil {
+		if strings.Contains(err.Error(), "crm_campaigns_tag_id_fkey") {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	return &Campaign{ID: id, Name: name, TagID: tagID, ActionType: actionType, ActionRef: actionRef,
+		Status: "draft", CreatedBy: createdBy, CreatedAt: createdAt, UpdatedAt: updatedAt}, nil
+}
+
+// ListCampaigns returns all campaigns newest first.
+func (s *Store) ListCampaigns(ctx context.Context) ([]Campaign, error) {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	rows, err := s.db.QueryContext(ctx, `
+SELECT id, name, tag_id, action_type, COALESCE(action_ref,''), status, COALESCE(created_by,''),
+       CAST(created_at AS TEXT), CAST(updated_at AS TEXT)
+FROM crm_campaigns ORDER BY created_at DESC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []Campaign{}
+	for rows.Next() {
+		var c Campaign
+		if err := rows.Scan(&c.ID, &c.Name, &c.TagID, &c.ActionType, &c.ActionRef, &c.Status,
+			&c.CreatedBy, &c.CreatedAt, &c.UpdatedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, c)
+	}
+	return out, rows.Err()
+}
+
+// GetCampaign returns one campaign or ErrCampaignMissing.
+func (s *Store) GetCampaign(ctx context.Context, id int64) (*Campaign, error) {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	c := &Campaign{}
+	var ref, createdBy sql.NullString
+	err := s.db.QueryRowContext(ctx, `
+SELECT id, name, tag_id, action_type, action_ref, status, created_by,
+       CAST(created_at AS TEXT), CAST(updated_at AS TEXT)
+FROM crm_campaigns WHERE id = $1`, id).
+		Scan(&c.ID, &c.Name, &c.TagID, &c.ActionType, &ref, &c.Status, &createdBy, &c.CreatedAt, &c.UpdatedAt)
+	if err == sql.ErrNoRows {
+		return nil, ErrCampaignMissing
+	}
+	if err != nil {
+		return nil, err
+	}
+	if ref.Valid {
+		c.ActionRef = ref.String
+	}
+	if createdBy.Valid {
+		c.CreatedBy = createdBy.String
+	}
+	return c, nil
+}
+
+// UpdateCampaignStatus transitions a campaign's status.
+func (s *Store) UpdateCampaignStatus(ctx context.Context, id int64, status string) (*Campaign, error) {
+	if !validCampaignStatuses[status] {
+		return nil, ErrCampaignInvalid
+	}
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	res, err := s.db.ExecContext(ctx,
+		`UPDATE crm_campaigns SET status = $2, updated_at = NOW() WHERE id = $1`, id, status)
+	if err != nil {
+		return nil, err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return nil, ErrCampaignMissing
+	}
+	return s.GetCampaign(ctx, id)
+}
+
+// PreviewCampaign resolves a campaign's target segment to a matching user
+// count (read-only) — what a dispatch WOULD reach, without dispatching.
+func (s *Store) PreviewCampaign(ctx context.Context, id int64) (int, error) {
+	c, err := s.GetCampaign(ctx, id)
+	if err != nil {
+		return 0, err
+	}
+	res, err := s.RunQuery(ctx, Query{TagID: c.TagID, Limit: 1})
+	if err != nil {
+		return 0, err
+	}
+	return res.Total, nil
 }
 
 func nullStr(s string) any {

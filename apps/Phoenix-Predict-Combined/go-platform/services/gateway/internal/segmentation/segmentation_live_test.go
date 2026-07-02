@@ -146,6 +146,72 @@ func TestSegmentationQueryLive(t *testing.T) {
 	}
 }
 
+func TestSegmentationCampaignLive(t *testing.T) {
+	dsn := os.Getenv("SEG_LIVE_DSN")
+	if dsn == "" {
+		t.Skip("SEG_LIVE_DSN not set; skipping live campaign test")
+	}
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatalf("open: %v", err)
+	}
+	defer db.Close()
+	store, err := NewStore(db)
+	if err != nil {
+		t.Fatalf("store init: %v", err)
+	}
+	ctx := context.Background()
+
+	tag, err := store.CreateTag(ctx, fmt.Sprintf("camp-%d", time.Now().UnixNano()), "")
+	if err != nil {
+		t.Fatalf("tag: %v", err)
+	}
+	defer func() { _ = store.DeleteTag(ctx, tag.ID) }()
+
+	// Invalid action rejected.
+	if _, err := store.CreateCampaign(ctx, "bad", tag.ID, "telepathy", "", "admin"); err != ErrCampaignInvalid {
+		t.Fatalf("expected ErrCampaignInvalid, got %v", err)
+	}
+	// Unknown tag → not-found (FK).
+	if _, err := store.CreateCampaign(ctx, "orphan", 999999999, "notification", "", "admin"); err != ErrNotFound {
+		t.Fatalf("expected ErrNotFound for bad tag, got %v", err)
+	}
+
+	c, err := store.CreateCampaign(ctx, "welcome", tag.ID, "notification", "resolution.settled", "admin")
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+	if c.Status != "draft" {
+		t.Fatalf("new campaign should be draft, got %q", c.Status)
+	}
+
+	// Preview resolves the (empty) target to zero.
+	if n, err := store.PreviewCampaign(ctx, c.ID); err != nil || n != 0 {
+		t.Fatalf("preview empty target: n=%d err=%v", n, err)
+	}
+	// Assign a member, preview reflects it.
+	var seededUser string
+	if err := db.QueryRowContext(ctx, `SELECT id FROM punters LIMIT 1`).Scan(&seededUser); err == nil {
+		if err := store.AssignTag(ctx, tag.ID, seededUser, "admin"); err != nil {
+			t.Fatalf("assign: %v", err)
+		}
+		if n, err := store.PreviewCampaign(ctx, c.ID); err != nil || n != 1 {
+			t.Fatalf("preview one member: n=%d err=%v", n, err)
+		}
+	}
+
+	// Status transition + bad status.
+	if _, err := store.UpdateCampaignStatus(ctx, c.ID, "active"); err != nil {
+		t.Fatalf("activate: %v", err)
+	}
+	if _, err := store.UpdateCampaignStatus(ctx, c.ID, "bogus"); err != ErrCampaignInvalid {
+		t.Fatalf("expected ErrCampaignInvalid, got %v", err)
+	}
+	if _, err := store.UpdateCampaignStatus(ctx, 999999999, "active"); err != ErrCampaignMissing {
+		t.Fatalf("expected ErrCampaignMissing, got %v", err)
+	}
+}
+
 func seededUserStatusIsActive(t *testing.T, ctx context.Context, db *sql.DB, id string) bool {
 	t.Helper()
 	var status string

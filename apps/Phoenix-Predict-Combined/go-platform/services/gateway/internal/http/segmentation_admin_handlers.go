@@ -23,6 +23,19 @@ type segmentationStore interface {
 	UsersForTag(ctx context.Context, tagID int64, limit, offset int) ([]string, error)
 	TagsForUser(ctx context.Context, userID string) ([]segmentation.Tag, error)
 	RunQuery(ctx context.Context, q segmentation.Query) (*segmentation.QueryResult, error)
+	CreateCampaign(ctx context.Context, name string, tagID int64, actionType, actionRef, createdBy string) (*segmentation.Campaign, error)
+	ListCampaigns(ctx context.Context) ([]segmentation.Campaign, error)
+	GetCampaign(ctx context.Context, id int64) (*segmentation.Campaign, error)
+	UpdateCampaignStatus(ctx context.Context, id int64, status string) (*segmentation.Campaign, error)
+	PreviewCampaign(ctx context.Context, id int64) (int, error)
+}
+
+// campaignDispatchGate reports whether campaign dispatch is enabled in this
+// environment. Backed by the platform-config flag crm.campaign_dispatch_enabled
+// (default FALSE) so launch mode — where user-facing sends are prohibited —
+// keeps dispatch fail-closed and unreachable.
+type campaignDispatchGate interface {
+	GetBool(ctx context.Context, key string, fallback bool) bool
 }
 
 // registerSegmentationAdminRoutes wires the CRM tag surface:
@@ -34,7 +47,8 @@ type segmentationStore interface {
 //	POST   /api/v1/admin/segments/tags/{id}/assign     -> {userId} assign  (segments:write)
 //	POST   /api/v1/admin/segments/tags/{id}/unassign   -> {userId}         (segments:write)
 //	GET    /api/v1/admin/segments/users/{userId}/tags  -> tags for user    (segments:read)
-func registerSegmentationAdminRoutes(mux *stdhttp.ServeMux, store segmentationStore) {
+func registerSegmentationAdminRoutes(mux *stdhttp.ServeMux, store segmentationStore, dispatchGate campaignDispatchGate) {
+	registerSegmentationCampaignRoutes(mux, store, dispatchGate)
 	mux.Handle("/api/v1/admin/segments/tags", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		switch r.Method {
 		case stdhttp.MethodGet:
@@ -224,7 +238,136 @@ func mapSegmentationError(err error) error {
 		return httpx.BadRequest("tag name (and, for assignment, userId) is required", nil)
 	case segmentation.ErrDuplicate:
 		return httpx.Conflict("a tag with that name already exists", nil)
+	case segmentation.ErrCampaignInvalid:
+		return httpx.BadRequest("campaign name, a valid target tag, and action type (notification|bonus) are required", nil)
+	case segmentation.ErrCampaignMissing:
+		return httpx.NotFound("campaign not found")
 	default:
 		return httpx.Internal("segmentation operation failed", err)
 	}
+}
+
+// campaignDispatchFlag is the platform-config key that must be true (in a
+// non-launch environment) before a campaign can dispatch. Default fail-closed.
+const campaignDispatchFlag = "crm.campaign_dispatch_enabled"
+
+func registerSegmentationCampaignRoutes(mux *stdhttp.ServeMux, store segmentationStore, gate campaignDispatchGate) {
+	mux.Handle("/api/v1/admin/segments/campaigns", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		switch r.Method {
+		case stdhttp.MethodGet:
+			if err := requireAdminPermission(r, "segments:read"); err != nil {
+				return err
+			}
+			campaigns, err := store.ListCampaigns(r.Context())
+			if err != nil {
+				return httpx.Internal("failed to list campaigns", err)
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"campaigns": campaigns})
+		case stdhttp.MethodPost:
+			if err := requireAdminPermission(r, "segments:write"); err != nil {
+				return err
+			}
+			var body struct {
+				Name       string `json:"name"`
+				TagID      int64  `json:"tagId"`
+				ActionType string `json:"actionType"`
+				ActionRef  string `json:"actionRef"`
+			}
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				return httpx.BadRequest("invalid request body", nil)
+			}
+			if err := validateLaunchFacingReason("name", strings.TrimSpace(body.Name)); err != nil {
+				return err
+			}
+			c, err := store.CreateCampaign(r.Context(), body.Name, body.TagID, strings.TrimSpace(body.ActionType), strings.TrimSpace(body.ActionRef), userIDFromRequest(r))
+			if err != nil {
+				return mapSegmentationError(err)
+			}
+			recordProviderOpsAuditAction(userIDFromRequest(r), "segment.campaign_created", strconv.FormatInt(c.ID, 10),
+				map[string]any{"name": c.Name, "actionType": c.ActionType})
+			return httpx.WriteJSON(w, stdhttp.StatusCreated, c)
+		default:
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPost)
+		}
+	}))
+
+	const prefix = "/api/v1/admin/segments/campaigns/"
+	mux.Handle(prefix, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		rest := strings.Trim(strings.TrimPrefix(r.URL.Path, prefix), "/")
+		parts := strings.Split(rest, "/")
+		id, err := strconv.ParseInt(parts[0], 10, 64)
+		if err != nil {
+			return httpx.BadRequest("invalid campaign id", nil)
+		}
+
+		// /campaigns/{id}  (GET | PUT status)
+		if len(parts) == 1 {
+			switch r.Method {
+			case stdhttp.MethodGet:
+				if err := requireAdminPermission(r, "segments:read"); err != nil {
+					return err
+				}
+				c, err := store.GetCampaign(r.Context(), id)
+				if err != nil {
+					return mapSegmentationError(err)
+				}
+				return httpx.WriteJSON(w, stdhttp.StatusOK, c)
+			case stdhttp.MethodPut:
+				if err := requireAdminPermission(r, "segments:write"); err != nil {
+					return err
+				}
+				var body struct {
+					Status string `json:"status"`
+				}
+				if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+					return httpx.BadRequest("invalid request body", nil)
+				}
+				c, err := store.UpdateCampaignStatus(r.Context(), id, strings.TrimSpace(body.Status))
+				if err != nil {
+					return mapSegmentationError(err)
+				}
+				recordProviderOpsAuditAction(userIDFromRequest(r), "segment.campaign_updated", strconv.FormatInt(id, 10),
+					map[string]any{"status": c.Status})
+				return httpx.WriteJSON(w, stdhttp.StatusOK, c)
+			default:
+				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPut)
+			}
+		}
+		if len(parts) != 2 {
+			return httpx.NotFound("unknown campaign path")
+		}
+		switch parts[1] {
+		case "preview":
+			if r.Method != stdhttp.MethodGet {
+				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+			}
+			if err := requireAdminPermission(r, "segments:read"); err != nil {
+				return err
+			}
+			count, err := store.PreviewCampaign(r.Context(), id)
+			if err != nil {
+				return mapSegmentationError(err)
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"campaignId": id, "targetUserCount": count})
+		case "execute":
+			if r.Method != stdhttp.MethodPost {
+				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+			}
+			if err := requireAdminPermission(r, "segments:write"); err != nil {
+				return err
+			}
+			// Launch-safety boundary: dispatch is fail-closed. In launch mode
+			// (flag default false) mass user-facing sends are prohibited, so
+			// execute is inert — a 403 the unreachability test asserts.
+			if !gate.GetBool(r.Context(), campaignDispatchFlag, false) {
+				return httpx.Forbidden("campaign dispatch is disabled in this environment")
+			}
+			// Enabled (non-launch): the dispatch worker is a deliberate
+			// follow-up — return 501 rather than fake a send.
+			return httpx.NewError(stdhttp.StatusNotImplemented, "not_implemented",
+				"campaign dispatch worker is not yet wired", nil, nil)
+		default:
+			return httpx.NotFound("unknown campaign path")
+		}
+	}))
 }

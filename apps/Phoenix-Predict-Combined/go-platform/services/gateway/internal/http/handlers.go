@@ -674,20 +674,24 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// DB-backed feature-flag / config store (P2-1 peripheral). Editing flags
 	// can change compliance posture, so writes are super-admin only.
 	if cfgDB := walletService.DB(); cfgDB != nil {
+		var configStore *platformconfig.Store
 		if cfgStore, err := platformconfig.NewStore(cfgDB); err != nil {
 			slog.Error("platform-config: store init failed; config editor disabled", "error", err)
 		} else {
+			configStore = cfgStore
 			registerPlatformConfigAdminRoutes(mux, cfgStore)
 			slog.Info("platform-config: store initialized")
 		}
 		// Tenant/brand directory admin (P2-1 peripheral) — CRUD over the
 		// tenants table only; does not scope the trading/wallet core.
 		registerTenantAdminRoutes(mux, cfgDB)
-		// Back-office user segmentation / CRM tags (P2-2).
+		// Back-office user segmentation / CRM (P2-2). Campaign dispatch is
+		// gated on the platform-config flag (fail-closed / launch-safe); a nil
+		// config store degrades to the always-false gate.
 		if segStore, err := segmentation.NewStore(cfgDB); err != nil {
 			slog.Error("segmentation: store init failed; CRM routes disabled", "error", err)
 		} else {
-			registerSegmentationAdminRoutes(mux, segStore)
+			registerSegmentationAdminRoutes(mux, segStore, configStore)
 			slog.Info("segmentation: store initialized")
 		}
 	}
