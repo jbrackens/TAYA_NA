@@ -2,7 +2,11 @@
 
 export const dynamic = "force-dynamic";
 
-import { PunterProfile, AccountActions } from "../../../components/users";
+import {
+  PunterProfile,
+  AccountActions,
+  BalanceAdjustment,
+} from "../../../components/users";
 import type {
   KYCTabData,
   SettlementRow,
@@ -314,6 +318,13 @@ function UserDetailPageContent() {
           <AccountActions
             currentStatus={punter.status}
             onAction={handleAction}
+          />
+          <BalanceAdjustment
+            userId={punter.id}
+            onAdjusted={async () => {
+              await loadPunter();
+              await loadHistory();
+            }}
           />
           <div className={notesCardClassName}>
             <h3 className="m-0 mb-4 text-base font-semibold text-[var(--t1,#1a1a1a)]">
