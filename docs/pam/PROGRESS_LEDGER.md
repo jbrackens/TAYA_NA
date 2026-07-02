@@ -60,6 +60,42 @@ Adversarial lens confirmed the detector SQL is sound (wash excludes AMM/issuance
 - [minor] bonus admin routes use coarse `role==admin` gate, not RBAC, and are unaudited; my userId addition marginally widened the read → GAP-7 (pre-existing whole-surface gap; not partially patched).
 
 ## In progress
+- **Entire P0-P2 backlog now DONE or BLOCKED.** P2-2 slice 3 (campaigns) DONE `4e189af8` -> P2-2 DONE. Remaining for termination pass A: the buildable GAP items (GAP-2 TOTP replay, GAP-4 env-allowlist inversion, GAP-5 durable auth audit, GAP-7 bonus-admin RBAC; GAP-1 geo-mock half). GAP-3/6/8 already BLOCKED with briefs.
+- Verification #4 due (5 items since #3: RenderOrFallback fix, feature-flag store, tenant admin, P2-2 slices 1/2/3) — dispatching over `e8c6614d..HEAD`.
+- Next builds: GAP-7 (bonus/campaign admin RBAC+audit retrofit), GAP-2 (TOTP replay protection), GAP-5 (durable auth audit), GAP-4 (env-allowlist inversion).
+
+## Fresh-context verification #2 (2026-07-02, after P1-2/P1-3/P1-4)
+3 lenses over `618b39fa..HEAD`. Guardrail/RBAC/audit/migration/launch-safety all PASS (no prediction/wallet/settlement file touched; every admin route RBAC-gated; every mutation audited; migration 051 goose-splittable with working down; office pages back-office only). Claim audit PASS (all 6 commits + files + tests verified, `go build` + `go test -race` green). Findings fixed in commit `e7302348`:
+- [minor] RG per-subject read unaudited → added `rg.subject_viewed` audit (parity with KYC).
+- [minor] SpoofingDetector required strictly zero fill → relaxed to <10% filled so a token-fill spoof is still caught.
+- [minor] UpdateCaseStatus had no transition guard → closed cases are now terminal (409 ErrCaseClosed); live test added.
+- [minor x2] gofmt hygiene (import order, struct alignment) → fixed.
+Adversarial lens confirmed the detector SQL is sound (wash excludes AMM/issuance via NULL seller_id; collusion excludes self-trades and de-dupes the pair; InsertAlert idempotent; OpenCase can't create empty/relink dismissed).
+
+## Fresh-context verification #3 (2026-07-02, after P1-5/P1-6)
+3 lenses over `e7302348..HEAD`. Guardrails/RBAC/audit/migration/launch-safety all PASS (no protected-core touched; new routes RBAC-gated + audited; migration 052 splittable; /reports still a redirect; CSV cells injection-safe). Claim audit PASS (all commits/files/tests verified, build + `go test -race` green). Two minor findings:
+- [minor] RenderOrFallback could emit an empty subject if an operator authored a template whose placeholder resolves empty → FIXED commit `e8c6614d` (empty-render → fallback; live test added).
+- [minor] bonus admin routes use coarse `role==admin` gate, not RBAC, and are unaudited; my userId addition marginally widened the read → GAP-7 (pre-existing whole-surface gap; not partially patched).
+
+## In progress
+- [P2-2] Segmentation/CRM — slice 3/3 (campaigns). Gap re-verified this session: no campaign infra in `internal/segmentation` (grep empty); `platformconfig.Store.GetBool(ctx,key,fallback)` exists for the launch-safe gate. Slices 1 (tags) `2a8a761d` + 2 (query builder) `06f80dd7` DONE.
+  - Plan: `crm_campaigns` table (store-owned schema: id, name, tag_id target, action_type notification|bonus, action_ref, status draft|active|archived, created_by, timestamps). Store CRUD + `PreviewCampaign` (target tag -> matching user count via RunQuery). Admin API under `/api/v1/admin/segments/campaigns` (reads segments:read, writes segments:write, audited). **Launch-safe execute gate**: `POST /campaigns/{id}/execute` gated on platformconfig flag `crm.campaign_dispatch_enabled` (default FALSE, fail-closed): disabled (launch) -> 403 (the required unreachability boundary, TESTED); enabled -> 501 (dispatch worker is an explicit follow-up, no fake success). No new migration (reuses segments perms); no protected-core.
+  - DoD: campaign CRUD + preview RBAC-gated + audited; execute fail-closed with a test proving unreachability when the flag is off; handler + live tests; gateway build + `go test -race` green; then P2-2 DONE.
+
+## Fresh-context verification #2 (2026-07-02, after P1-2/P1-3/P1-4)
+3 lenses over `618b39fa..HEAD`. Guardrail/RBAC/audit/migration/launch-safety all PASS (no prediction/wallet/settlement file touched; every admin route RBAC-gated; every mutation audited; migration 051 goose-splittable with working down; office pages back-office only). Claim audit PASS (all 6 commits + files + tests verified, `go build` + `go test -race` green). Findings fixed in commit `e7302348`:
+- [minor] RG per-subject read unaudited → added `rg.subject_viewed` audit (parity with KYC).
+- [minor] SpoofingDetector required strictly zero fill → relaxed to <10% filled so a token-fill spoof is still caught.
+- [minor] UpdateCaseStatus had no transition guard → closed cases are now terminal (409 ErrCaseClosed); live test added.
+- [minor x2] gofmt hygiene (import order, struct alignment) → fixed.
+Adversarial lens confirmed the detector SQL is sound (wash excludes AMM/issuance via NULL seller_id; collusion excludes self-trades and de-dupes the pair; InsertAlert idempotent; OpenCase can't create empty/relink dismissed).
+
+## Fresh-context verification #3 (2026-07-02, after P1-5/P1-6)
+3 lenses over `e7302348..HEAD`. Guardrails/RBAC/audit/migration/launch-safety all PASS (no protected-core touched; new routes RBAC-gated + audited; migration 052 splittable; /reports still a redirect; CSV cells injection-safe). Claim audit PASS (all commits/files/tests verified, build + `go test -race` green). Two minor findings:
+- [minor] RenderOrFallback could emit an empty subject if an operator authored a template whose placeholder resolves empty → FIXED commit `e8c6614d` (empty-render → fallback; live test added).
+- [minor] bonus admin routes use coarse `role==admin` gate, not RBAC, and are unaudited; my userId addition marginally widened the read → GAP-7 (pre-existing whole-surface gap; not partially patched).
+
+## In progress
 - P2 tier: P2-1 core BLOCKED (protected, design note); **P2-1 peripherals: feature-flag store `fc6497b7` + tenant/brand admin `67a024cb` DONE**. Remaining P2-1 peripheral: global jurisdiction admin UI (surfaces existing geo config; smaller). Then P2-2 (segmentation/CRM — larger new subsystem). P2-3/P2-4 BLOCKED.
 - Note on P2-1 status: the item's CORE deliverable (activate tenant scoping) is protected-core and blocked with a design note; its buildable admin surfaces (feature-flag store, tenant/brand admin) are DONE. The global-jurisdiction admin UI is **design-blocked**: jurisdiction config (`GEO_ALLOWED_COUNTRIES`, `GEO_GATE_ENABLED`) is env-driven and fail-closed by boot validation (`cmd/gateway/main.go`); a runtime editor would weaken that fail-closed control (guardrail #8). A read-only status view is low-value polish; runtime-editable jurisdiction belongs to a larger fail-closed-config design (relate to the feature-flag store). Recorded as GAP-8. P2-1 is therefore fully accounted-for per termination: core BLOCKED (design note), peripherals DONE, jurisdiction editor design-blocked (GAP-8).
 - [P2-2] Segmentation/CRM — slice 1/3 (tags + tag-groups + assignment) in progress. Verified: no user-segmentation infra exists (the repo's "tags" are market/prediction tags). Plan: `internal/segmentation` package + `crm_tags`/`crm_user_tags` tables (store-owned schema), admin API (CRUD tags, assign/unassign to users, list-users-by-tag, list-tags-for-user) gated on new `segments:read`/`segments:write` (migration 054), audited. Slice 2: query builder (filter users by tag/status/created). Slice 3: campaigns (reuse the bonus/notification engines). Office page follows.
