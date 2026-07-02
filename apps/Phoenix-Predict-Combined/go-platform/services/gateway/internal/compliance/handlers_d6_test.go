@@ -452,7 +452,7 @@ func TestRGCheckAndRestrictionsPointAliases(t *testing.T) {
 func TestKYCMutations_SessionBound(t *testing.T) {
 	newStack := func() *http.ServeMux {
 		mux := http.NewServeMux()
-		registerKYCRoutes(mux, NewMockKYCService())
+		registerKYCRoutes(mux, NewMockKYCService(), nil)
 		return mux
 	}
 	post := func(mux *http.ServeMux, path, body, sessionUID string) *httptest.ResponseRecorder {
@@ -546,7 +546,7 @@ func TestRGKYCReads_SessionBound(t *testing.T) {
 	}
 	kycMux := func() *http.ServeMux {
 		mux := http.NewServeMux()
-		registerKYCRoutes(mux, NewMockKYCService())
+		registerKYCRoutes(mux, NewMockKYCService(), nil)
 		return mux
 	}
 
@@ -638,7 +638,7 @@ func TestKYCReads_RedactLegacyUnsafeReasonsOnRead(t *testing.T) {
 	}
 
 	mux := http.NewServeMux()
-	registerKYCRoutes(mux, service)
+	registerKYCRoutes(mux, service, nil)
 	get := func(path string) *httptest.ResponseRecorder {
 		req := httptest.NewRequest(http.MethodGet, path, nil)
 		req = req.WithContext(httpx.WithTestUser(context.Background(), "u-self", "u-self", "player"))

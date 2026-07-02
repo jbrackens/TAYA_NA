@@ -548,7 +548,10 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		// Back-office KYC approve/reject (the operable half of manual review).
 		registerKYCAdminRoutes(mux, pgKYC)
 	}
-	compliance.RegisterComplianceRoutes(mux, geoComplianceService, kycService, rgService)
+	// P0-4: person sanctions/PEP screening runs at KYC identity intake. The
+	// env-selected screener fails closed on misconfiguration (manual review,
+	// which never auto-clears).
+	compliance.RegisterComplianceRoutes(mux, geoComplianceService, kycService, rgService, compliance.PersonScreenerFromEnv())
 	// Back-office read of a punter's responsible-gambling state (Profile-360
 	// Limits/self-exclusion tab). Distinct path from the /admin/punters/
 	// subtree, which is a prefix handler owned by the prediction admin routes.

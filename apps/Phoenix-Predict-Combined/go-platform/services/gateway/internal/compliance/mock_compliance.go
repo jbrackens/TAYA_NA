@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -198,20 +199,47 @@ func (m *MockGeoComplianceService) getCountryFromCoords(lat float64, lng float64
 
 // MockKYCService is an in-memory mock KYC service
 type MockKYCService struct {
-	mu        sync.RWMutex
-	statuses  map[string]*KYCStatus
-	documents map[string][]VerificationDocument
-	files     map[string]*DocumentFile // documentID -> stored binary (mirrors kyc_document_files)
-	docSeq    int64
+	mu         sync.RWMutex
+	statuses   map[string]*KYCStatus
+	documents  map[string][]VerificationDocument
+	files      map[string]*DocumentFile // documentID -> stored binary (mirrors kyc_document_files)
+	identities map[string]*KYCIdentity  // P0-4: structured identity + screening verdict (mirrors kyc_identity)
+	docSeq     int64
 }
 
 // NewMockKYCService creates a new mock KYC service
 func NewMockKYCService() *MockKYCService {
 	return &MockKYCService{
-		statuses:  make(map[string]*KYCStatus),
-		documents: make(map[string][]VerificationDocument),
-		files:     make(map[string]*DocumentFile),
+		statuses:   make(map[string]*KYCStatus),
+		documents:  make(map[string][]VerificationDocument),
+		files:      make(map[string]*DocumentFile),
+		identities: make(map[string]*KYCIdentity),
 	}
+}
+
+// UpsertIdentity implements KYCIdentityStore so dev exercises the same
+// identity-intake path prod does (P0-4 slice 2).
+func (m *MockKYCService) UpsertIdentity(_ context.Context, identity KYCIdentity) error {
+	if identity.UserID == "" || identity.FullName == "" {
+		return errors.New("kyc identity: userID and fullName are required")
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	cp := identity
+	cp.UpdatedAt = time.Now().UTC()
+	m.identities[identity.UserID] = &cp
+	return nil
+}
+
+// GetIdentity implements KYCIdentityStore. (nil, nil) when absent.
+func (m *MockKYCService) GetIdentity(_ context.Context, userID string) (*KYCIdentity, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	if id, ok := m.identities[userID]; ok {
+		cp := *id
+		return &cp, nil
+	}
+	return nil, nil
 }
 
 // AttachDocumentFile implements DocumentFileStore so dev exercises the same

@@ -42,6 +42,20 @@ func (s *PostgresKYCService) ensureSchema() error {
 	defer cancel()
 
 	statements := []string{
+		// P0-4 slice 2: structured identity + latest screening verdict.
+		`CREATE TABLE IF NOT EXISTS kyc_identity (
+  user_id TEXT PRIMARY KEY,
+  full_name TEXT NOT NULL,
+  date_of_birth TEXT,
+  country TEXT,
+  screening_status TEXT NOT NULL DEFAULT 'unscreened',
+  screening_score DOUBLE PRECISION NOT NULL DEFAULT 0,
+  screening_match_ids JSONB NOT NULL DEFAULT '[]',
+  screening_provider TEXT,
+  screened_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`,
 		`CREATE TABLE IF NOT EXISTS kyc_status (
   user_id TEXT PRIMARY KEY,
   status TEXT NOT NULL DEFAULT 'unverified'

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log/slog"
 	stdhttp "net/http"
 	"strconv"
 	"strings"
@@ -19,9 +20,10 @@ func RegisterComplianceRoutes(
 	geoService GeoComplianceService,
 	kycService KYCService,
 	rgService ResponsibleGamblingService,
+	personScreener PersonScreener,
 ) {
 	registerGeoComplianceRoutes(mux, geoService)
-	registerKYCRoutes(mux, kycService)
+	registerKYCRoutes(mux, kycService, personScreener)
 	registerResponsibleGamblingRoutes(mux, rgService)
 }
 
@@ -96,7 +98,83 @@ func registerGeoComplianceRoutes(mux *stdhttp.ServeMux, service GeoComplianceSer
 }
 
 // KYC handlers
-func registerKYCRoutes(mux *stdhttp.ServeMux, service KYCService) {
+func registerKYCRoutes(mux *stdhttp.ServeMux, service KYCService, personScreener PersonScreener) {
+	// P0-4 slice 2 (§12 KYC, AML, Risk, and Compliance): structured identity
+	// intake. The subject's name/DOB/country is screened at submission and
+	// the verdict persisted as compliance evidence. The response NEVER
+	// discloses the screening verdict — telling a subject they matched a
+	// sanctions list is tipping-off; reviewers see verdicts in the back
+	// office (slice 3). With the KYC store unavailable (fail-closed service)
+	// intake refuses (503) rather than accepting data it cannot persist.
+	mux.Handle("/api/v1/compliance/kyc/identity", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+		var req struct {
+			UserID      string `json:"userId"`
+			FullName    string `json:"fullName"`
+			DateOfBirth string `json:"dateOfBirth"`
+			Country     string `json:"country"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+		}
+		uid, err := sessionBoundUserID(r, req.UserID)
+		if err != nil {
+			return err
+		}
+		fullName := strings.TrimSpace(req.FullName)
+		if fullName == "" || len(fullName) > 200 {
+			return httpx.BadRequest("fullName is required (max 200 chars)", map[string]any{"field": "fullName"})
+		}
+		dob := strings.TrimSpace(req.DateOfBirth)
+		if dob != "" {
+			if _, perr := time.Parse("2006-01-02", dob); perr != nil {
+				return httpx.BadRequest("dateOfBirth must be YYYY-MM-DD", map[string]any{"field": "dateOfBirth"})
+			}
+		}
+		country := strings.ToUpper(strings.TrimSpace(req.Country))
+		if country != "" && (len(country) != 2 || !isASCIIAlpha(country)) {
+			return httpx.BadRequest("country must be a 2-letter ISO code", map[string]any{"field": "country"})
+		}
+
+		store, ok := service.(KYCIdentityStore)
+		if !ok {
+			return httpx.NewError(stdhttp.StatusServiceUnavailable, "service_unavailable",
+				"identity intake is unavailable", nil, nil)
+		}
+
+		identity := KYCIdentity{
+			UserID:          uid,
+			FullName:        fullName,
+			DateOfBirth:     dob,
+			Country:         country,
+			ScreeningStatus: "unscreened",
+		}
+		if personScreener != nil {
+			// The screener's fail-closed contract: an error carries status
+			// unavailable, never clear. The identity is persisted either way —
+			// enforcement (slice 3) blocks approval on anything but clear.
+			res, serr := personScreener.ScreenPerson(r.Context(), SanctionsSubject{
+				FullName: fullName, DateOfBirth: dob, Country: country,
+			})
+			identity.ScreeningStatus = string(res.Status)
+			identity.ScreeningScore = res.Score
+			identity.ScreeningMatchIDs = res.MatchIDs
+			identity.ScreeningProvider = res.Provider
+			identity.ScreenedAt = time.Now().UTC()
+			if serr != nil {
+				slog.Warn("kyc identity: screening unavailable; stored fail-closed verdict",
+					"userId", uid, "error", serr)
+			}
+		}
+		if err := store.UpsertIdentity(r.Context(), identity); err != nil {
+			return httpx.Internal("failed to store identity", err)
+		}
+		// Tipping-off guard: acceptance only, no verdict.
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"accepted": true})
+	}))
+
 	mux.Handle("/api/v1/compliance/kyc/verify", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
