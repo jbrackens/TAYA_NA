@@ -518,6 +518,10 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		registerKYCAdminRoutes(mux, pgKYC)
 	}
 	compliance.RegisterComplianceRoutes(mux, geoComplianceService, kycService, rgService)
+	// Back-office read of a punter's responsible-gambling state (Profile-360
+	// Limits/self-exclusion tab). Distinct path from the /admin/punters/
+	// subtree, which is a prefix handler owned by the prediction admin routes.
+	registerRGAdminRoutes(mux, rgService)
 	// Pre-trade jurisdiction + KYC gates. Both default OFF — wired here so a
 	// single env flag activates them without a code change. See
 	// internal/http/pretrade_gate.go and docs/compliance/geofencing-kyc.md

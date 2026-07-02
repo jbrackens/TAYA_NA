@@ -3,7 +3,7 @@
 import { Badge, Button, Card } from "../shared";
 import { useState } from "react";
 
-type PunterProfileTab = "overview" | "trades" | "wallet" | "kyc";
+type PunterProfileTab = "overview" | "trades" | "wallet" | "kyc" | "limits";
 
 export interface PunterProfileData {
   id: string;
@@ -57,6 +57,24 @@ export interface KYCTabData {
   documents: KYCTabDocument[];
 }
 
+export interface RGLimitRow {
+  period: string;
+  limitCents: number;
+  usedCents: number;
+  remainingCents: number;
+}
+
+export interface RGTabData {
+  isBlocked: boolean;
+  isOnCoolOff: boolean;
+  coolOffUntil?: string;
+  isExcluded: boolean;
+  exclusionType?: string;
+  excludedUntil?: string;
+  depositLimits: RGLimitRow[];
+  betLimits: RGLimitRow[];
+}
+
 interface PunterProfileProps {
   punter?: PunterProfileData;
   onAction?: (action: string, data?: Record<string, unknown>) => void;
@@ -65,6 +83,8 @@ interface PunterProfileProps {
   walletLedger?: WalletLedgerRow[];
   /** KYC state from /api/v1/admin/kyc/users/{id}; undefined = unavailable */
   kyc?: KYCTabData;
+  /** RG state from /api/v1/admin/rg/restrictions; undefined = unavailable */
+  rg?: RGTabData;
 }
 
 const pointAmount = (n: number) =>
@@ -110,6 +130,7 @@ export function PunterProfile({
   settlements = [],
   walletLedger = [],
   kyc,
+  rg,
 }: PunterProfileProps) {
   const [activeTab, setActiveTab] = useState<PunterProfileTab>("overview");
 
@@ -291,6 +312,13 @@ export function PunterProfile({
               data-testid="profile-kyc-tab"
             >
               KYC
+            </button>
+            <button
+              className={tabButtonClassName(activeTab === "limits")}
+              onClick={() => setActiveTab("limits")}
+              data-testid="profile-limits-tab"
+            >
+              Limits
             </button>
           </div>
         </Card>
@@ -500,8 +528,97 @@ export function PunterProfile({
               )}
             </div>
           )}
+          {activeTab === "limits" && (
+            <div
+              className={tabContentClassName}
+              data-testid="profile-limits-content"
+            >
+              <h4 className="mt-0 text-[var(--t1,#1a1a1a)]">
+                Responsible-Play Limits &amp; Self-Exclusion
+              </h4>
+              {!rg ? (
+                <p>
+                  Responsible-gambling state unavailable (requires the
+                  compliance store).
+                </p>
+              ) : (
+                <>
+                  <div className={infoRowClassName}>
+                    <span className={infoLabelClassName}>Account blocked</span>
+                    <Badge $variant={rg.isBlocked ? "danger" : "success"}>
+                      {rg.isBlocked ? "BLOCKED" : "NO"}
+                    </Badge>
+                  </div>
+                  <div className={infoRowClassName}>
+                    <span className={infoLabelClassName}>Self-exclusion</span>
+                    <Badge $variant={rg.isExcluded ? "danger" : "success"}>
+                      {rg.isExcluded
+                        ? `${(rg.exclusionType || "excluded").toUpperCase()}${
+                            rg.excludedUntil
+                              ? ` until ${fmtDate(rg.excludedUntil)}`
+                              : ""
+                          }`
+                        : "NONE"}
+                    </Badge>
+                  </div>
+                  <div className={infoRowClassName}>
+                    <span className={infoLabelClassName}>Cool-off</span>
+                    <Badge $variant={rg.isOnCoolOff ? "warning" : "success"}>
+                      {rg.isOnCoolOff
+                        ? `ACTIVE${rg.coolOffUntil ? ` until ${fmtDate(rg.coolOffUntil)}` : ""}`
+                        : "NONE"}
+                    </Badge>
+                  </div>
+
+                  <h4 className="mt-5 text-[var(--t1,#1a1a1a)]">
+                    Point-Use Limits
+                  </h4>
+                  {rgLimitTable(rg.depositLimits)}
+
+                  <h4 className="mt-5 text-[var(--t1,#1a1a1a)]">
+                    Prediction Limits
+                  </h4>
+                  {rgLimitTable(rg.betLimits)}
+                </>
+              )}
+            </div>
+          )}
         </Card>
       </div>
     </div>
   );
+
+  function rgLimitTable(rows: RGLimitRow[]) {
+    if (rows.length === 0) {
+      return <p>No limits set.</p>;
+    }
+    return (
+      <table className="w-full border-collapse text-[13px]">
+        <thead>
+          <tr>
+            <th className={histThClassName}>Period</th>
+            <th className={histThClassName}>Limit</th>
+            <th className={histThClassName}>Used</th>
+            <th className={histThClassName}>Remaining</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.period}>
+              <td className={histTdClassName}>{row.period}</td>
+              <td className={histTdClassName}>
+                {pointsFromCents(row.limitCents)}
+              </td>
+              <td className={histTdClassName}>
+                {pointsFromCents(row.usedCents)}
+              </td>
+              <td className={histTdClassName}>
+                {pointsFromCents(row.remainingCents)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  }
 }

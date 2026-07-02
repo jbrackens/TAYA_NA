@@ -49,4 +49,26 @@ test.describe("Talon Backoffice - Balance adjustment", () => {
     await expect(notice).toBeVisible({ timeout: 10_000 });
     await expect(notice).toContainText(/Credited 1 pts — new balance/);
   });
+
+  test("Limits tab renders RG state (P1-3)", async ({ page }) => {
+    await loginAsAdmin(page);
+    await page.goto("/users");
+    await page.waitForLoadState("networkidle", { timeout: 10_000 });
+
+    const firstRow = page.locator("table tbody tr").first();
+    const hasRows = await firstRow
+      .isVisible({ timeout: 5000 })
+      .catch(() => false);
+    test.skip(!hasRows, "no punters listed in this environment");
+
+    await firstRow.click();
+    await page.waitForURL(/\/users\/.+/, { timeout: 10_000 });
+
+    const limitsTab = page.locator('[data-testid="profile-limits-tab"]');
+    await expect(limitsTab).toBeVisible({ timeout: 15_000 });
+    await limitsTab.click();
+    await expect(
+      page.locator('[data-testid="profile-limits-content"]'),
+    ).toBeVisible({ timeout: 5000 });
+  });
 });

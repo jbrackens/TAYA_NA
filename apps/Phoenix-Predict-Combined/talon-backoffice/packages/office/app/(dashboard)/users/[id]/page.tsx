@@ -9,6 +9,7 @@ import {
 } from "../../../components/users";
 import type {
   KYCTabData,
+  RGTabData,
   SettlementRow,
   WalletLedgerRow,
 } from "../../../components/users/PunterProfile";
@@ -108,6 +109,7 @@ function UserDetailPageContent() {
   const [settlements, setSettlements] = useState<SettlementRow[]>([]);
   const [walletLedger, setWalletLedger] = useState<WalletLedgerRow[]>([]);
   const [kyc, setKyc] = useState<KYCTabData | undefined>(undefined);
+  const [rg, setRg] = useState<RGTabData | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -189,6 +191,43 @@ function UserDetailPageContent() {
     }
   };
 
+  // RG state for the Limits/self-exclusion tab — secondary, tab reports
+  // "unavailable" on failure.
+  const loadRG = async () => {
+    try {
+      const res = await adminFetch(
+        `/api/v1/admin/rg/restrictions?userId=${encodeURIComponent(punterId)}`,
+      );
+      if (!res.ok) return;
+      const d = await res.json();
+      const r = d?.restrictions;
+      if (!r) return;
+      const mapLimit = (l: Record<string, unknown>) => ({
+        period: String(l.period ?? ""),
+        limitCents: Number(l.limitCents ?? 0),
+        usedCents: Number(l.usedCents ?? 0),
+        remainingCents: Number(l.remainingCents ?? 0),
+      });
+      setRg({
+        isBlocked: Boolean(r.isBlocked),
+        isOnCoolOff: Boolean(r.isOnCoolOff),
+        coolOffUntil:
+          typeof r.coolOffUntil === "string" ? r.coolOffUntil : undefined,
+        isExcluded: Boolean(r.isExcluded),
+        exclusionType:
+          typeof r.exclusionType === "string" ? r.exclusionType : undefined,
+        excludedUntil:
+          typeof r.excludedUntil === "string" ? r.excludedUntil : undefined,
+        depositLimits: Array.isArray(r.depositLimits)
+          ? r.depositLimits.map(mapLimit)
+          : [],
+        betLimits: Array.isArray(r.betLimits) ? r.betLimits.map(mapLimit) : [],
+      });
+    } catch {
+      // ignore — Limits tab reports unavailable
+    }
+  };
+
   useEffect(() => {
     const fetchPunter = async () => {
       try {
@@ -198,6 +237,7 @@ function UserDetailPageContent() {
         await loadNotes();
         await loadHistory();
         await loadKYC();
+        await loadRG();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load user");
       } finally {
@@ -311,6 +351,7 @@ function UserDetailPageContent() {
             settlements={settlements}
             walletLedger={walletLedger}
             kyc={kyc}
+            rg={rg}
           />
         </div>
 
