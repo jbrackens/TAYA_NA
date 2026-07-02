@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { PunterProfile, AccountActions } from "../../../components/users";
 import type {
+  KYCTabData,
   SettlementRow,
   WalletLedgerRow,
 } from "../../../components/users/PunterProfile";
@@ -102,6 +103,7 @@ function UserDetailPageContent() {
   const [notes, setNotes] = useState<PunterNote[]>([]);
   const [settlements, setSettlements] = useState<SettlementRow[]>([]);
   const [walletLedger, setWalletLedger] = useState<WalletLedgerRow[]>([]);
+  const [kyc, setKyc] = useState<KYCTabData | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -147,6 +149,42 @@ function UserDetailPageContent() {
     }
   };
 
+  // KYC is secondary data too — the tab reports "unavailable" on failure.
+  const loadKYC = async () => {
+    try {
+      const res = await adminFetch(
+        `/api/v1/admin/kyc/users/${encodeURIComponent(punterId)}`,
+      );
+      if (!res.ok) return;
+      const d = await res.json();
+      if (!d?.status) return;
+      setKyc({
+        status: d.status.status ?? "unknown",
+        riskLevel: d.status.riskLevel,
+        rejectionReason: d.status.rejectionReason,
+        lastVerifiedAt: d.status.lastVerifiedAt,
+        documents: Array.isArray(d.documents)
+          ? d.documents.map((doc: Record<string, unknown>) => ({
+              id: String(doc.id ?? ""),
+              type: String(doc.type ?? ""),
+              issuingCountry:
+                typeof doc.issuingCountry === "string"
+                  ? doc.issuingCountry
+                  : undefined,
+              status: String(doc.status ?? ""),
+              rejectReason:
+                typeof doc.rejectReason === "string"
+                  ? doc.rejectReason
+                  : undefined,
+              submittedAt: String(doc.submittedAt ?? ""),
+            }))
+          : [],
+      });
+    } catch {
+      // ignore — KYC tab reports unavailable
+    }
+  };
+
   useEffect(() => {
     const fetchPunter = async () => {
       try {
@@ -155,6 +193,7 @@ function UserDetailPageContent() {
         await loadPunter();
         await loadNotes();
         await loadHistory();
+        await loadKYC();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load user");
       } finally {
@@ -267,6 +306,7 @@ function UserDetailPageContent() {
             actionsAvailable={!isUpdatingStatus}
             settlements={settlements}
             walletLedger={walletLedger}
+            kyc={kyc}
           />
         </div>
 

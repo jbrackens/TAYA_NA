@@ -3,7 +3,7 @@
 import { Badge, Button, Card } from "../shared";
 import { useState } from "react";
 
-type PunterProfileTab = "overview" | "trades" | "wallet";
+type PunterProfileTab = "overview" | "trades" | "wallet" | "kyc";
 
 export interface PunterProfileData {
   id: string;
@@ -40,12 +40,31 @@ export interface WalletLedgerRow {
   transactionTime: string;
 }
 
+export interface KYCTabDocument {
+  id: string;
+  type: string;
+  issuingCountry?: string;
+  status: string;
+  rejectReason?: string;
+  submittedAt: string;
+}
+
+export interface KYCTabData {
+  status: string;
+  riskLevel?: string;
+  rejectionReason?: string;
+  lastVerifiedAt?: string;
+  documents: KYCTabDocument[];
+}
+
 interface PunterProfileProps {
   punter?: PunterProfileData;
   onAction?: (action: string, data?: Record<string, unknown>) => void;
   actionsAvailable?: boolean;
   settlements?: SettlementRow[];
   walletLedger?: WalletLedgerRow[];
+  /** KYC state from /api/v1/admin/kyc/users/{id}; undefined = unavailable */
+  kyc?: KYCTabData;
 }
 
 const pointAmount = (n: number) =>
@@ -90,6 +109,7 @@ export function PunterProfile({
   actionsAvailable = true,
   settlements = [],
   walletLedger = [],
+  kyc,
 }: PunterProfileProps) {
   const [activeTab, setActiveTab] = useState<PunterProfileTab>("overview");
 
@@ -265,6 +285,13 @@ export function PunterProfile({
             >
               Point Ledger
             </button>
+            <button
+              className={tabButtonClassName(activeTab === "kyc")}
+              onClick={() => setActiveTab("kyc")}
+              data-testid="profile-kyc-tab"
+            >
+              KYC
+            </button>
           </div>
         </Card>
 
@@ -370,6 +397,106 @@ export function PunterProfile({
                     ))}
                   </tbody>
                 </table>
+              )}
+            </div>
+          )}
+          {activeTab === "kyc" && (
+            <div
+              className={tabContentClassName}
+              data-testid="profile-kyc-content"
+            >
+              <h4 className="mt-0 text-[var(--t1,#1a1a1a)]">
+                Identity Verification
+              </h4>
+              {!kyc ? (
+                <p>KYC state unavailable (requires the compliance store).</p>
+              ) : (
+                <>
+                  <div className={infoRowClassName}>
+                    <span className={infoLabelClassName}>KYC status</span>
+                    <Badge
+                      variant={
+                        kyc.status === "approved"
+                          ? "success"
+                          : kyc.status === "pending"
+                            ? "warning"
+                            : kyc.status === "declined" ||
+                                kyc.status === "blocked"
+                              ? "danger"
+                              : "default"
+                      }
+                    >
+                      {kyc.status}
+                    </Badge>
+                  </div>
+                  <div className={infoRowClassName}>
+                    <span className={infoLabelClassName}>Risk level</span>
+                    <span className={infoValueClassName}>
+                      {kyc.riskLevel || "unknown"}
+                    </span>
+                  </div>
+                  {kyc.rejectionReason && (
+                    <div className={infoRowClassName}>
+                      <span className={infoLabelClassName}>
+                        Rejection reason
+                      </span>
+                      <span className={infoValueClassName}>
+                        {kyc.rejectionReason}
+                      </span>
+                    </div>
+                  )}
+                  {kyc.lastVerifiedAt && (
+                    <div className={infoRowClassName}>
+                      <span className={infoLabelClassName}>Last verified</span>
+                      <span className={infoValueClassName}>
+                        {fmtDate(kyc.lastVerifiedAt)}
+                      </span>
+                    </div>
+                  )}
+                  <h4 className="mt-5 text-[var(--t1,#1a1a1a)]">Documents</h4>
+                  {kyc.documents.length === 0 ? (
+                    <p>No documents submitted.</p>
+                  ) : (
+                    <table className="w-full border-collapse text-[13px]">
+                      <thead>
+                        <tr>
+                          <th className={histThClassName}>Type</th>
+                          <th className={histThClassName}>Country</th>
+                          <th className={histThClassName}>Status</th>
+                          <th className={histThClassName}>Submitted</th>
+                          <th className={histThClassName}>Reject reason</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {kyc.documents.map((d) => (
+                          <tr key={d.id}>
+                            <td className={histTdClassName}>{d.type}</td>
+                            <td className={histTdClassName}>
+                              {d.issuingCountry || "—"}
+                            </td>
+                            <td className={histTdClassName}>{d.status}</td>
+                            <td className={histTdClassName}>
+                              {fmtDate(d.submittedAt)}
+                            </td>
+                            <td className={histTdClassName}>
+                              {d.rejectReason || "—"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                  <p className="mt-4 text-xs text-[var(--t3,#8b8378)]">
+                    Approve or decline from the{" "}
+                    <a
+                      href="/compliance/kyc"
+                      className="font-medium text-[var(--focus-ring,#0e7a53)]"
+                    >
+                      KYC Review
+                    </a>{" "}
+                    queue.
+                  </p>
+                </>
               )}
             </div>
           )}
