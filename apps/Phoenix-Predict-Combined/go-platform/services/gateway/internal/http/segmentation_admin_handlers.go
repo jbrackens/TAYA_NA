@@ -22,6 +22,7 @@ type segmentationStore interface {
 	UnassignTag(ctx context.Context, tagID int64, userID string) error
 	UsersForTag(ctx context.Context, tagID int64, limit, offset int) ([]string, error)
 	TagsForUser(ctx context.Context, userID string) ([]segmentation.Tag, error)
+	RunQuery(ctx context.Context, q segmentation.Query) (*segmentation.QueryResult, error)
 }
 
 // registerSegmentationAdminRoutes wires the CRM tag surface:
@@ -150,6 +151,46 @@ func registerSegmentationAdminRoutes(mux *stdhttp.ServeMux, store segmentationSt
 		default:
 			return httpx.NotFound("unknown segmentation path")
 		}
+	}))
+
+	// Query builder (P2-2 slice 2): POST a filter, get matching user ids.
+	mux.Handle("/api/v1/admin/segments/query", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminPermission(r, "segments:read"); err != nil {
+			return err
+		}
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+		var body struct {
+			TagID        int64  `json:"tagId"`
+			Status       string `json:"status"`
+			CreatedAfter string `json:"createdAfter"`
+			Limit        int    `json:"limit"`
+			Offset       int    `json:"offset"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			return httpx.BadRequest("invalid request body", nil)
+		}
+		if s := strings.TrimSpace(body.Status); s != "" {
+			// Bound the status filter to the known punter states so a caller
+			// cannot probe arbitrary values.
+			switch s {
+			case "active", "suspended", "self_excluded", "deactivated", "inactive":
+			default:
+				return httpx.BadRequest("unknown status filter", map[string]any{"field": "status"})
+			}
+		}
+		res, err := store.RunQuery(r.Context(), segmentation.Query{
+			TagID:        body.TagID,
+			Status:       body.Status,
+			CreatedAfter: body.CreatedAfter,
+			Limit:        body.Limit,
+			Offset:       body.Offset,
+		})
+		if err != nil {
+			return httpx.Internal("failed to run segment query", err)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, res)
 	}))
 
 	const usersPrefix = "/api/v1/admin/segments/users/"

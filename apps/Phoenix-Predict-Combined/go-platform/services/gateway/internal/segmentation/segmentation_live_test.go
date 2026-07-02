@@ -96,3 +96,61 @@ func TestSegmentationStoreLive(t *testing.T) {
 		t.Fatalf("second delete should be ErrNotFound, got %v", err)
 	}
 }
+
+func TestSegmentationQueryLive(t *testing.T) {
+	dsn := os.Getenv("SEG_LIVE_DSN")
+	if dsn == "" {
+		t.Skip("SEG_LIVE_DSN not set; skipping live segmentation query test")
+	}
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatalf("open: %v", err)
+	}
+	defer db.Close()
+	store, err := NewStore(db)
+	if err != nil {
+		t.Fatalf("store init: %v", err)
+	}
+	ctx := context.Background()
+
+	// A tag with one known member; query by that tag should return exactly it.
+	tag, err := store.CreateTag(ctx, fmt.Sprintf("q-%d", time.Now().UnixNano()), "")
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+	defer func() { _ = store.DeleteTag(ctx, tag.ID) }()
+
+	var seededUser string
+	if err := db.QueryRowContext(ctx, `SELECT id FROM punters LIMIT 1`).Scan(&seededUser); err != nil {
+		t.Skipf("no seeded punter: %v", err)
+	}
+	if err := store.AssignTag(ctx, tag.ID, seededUser, "admin"); err != nil {
+		t.Fatalf("assign: %v", err)
+	}
+
+	res, err := store.RunQuery(ctx, Query{TagID: tag.ID})
+	if err != nil {
+		t.Fatalf("query: %v", err)
+	}
+	if res.Total != 1 || len(res.UserIDs) != 1 || res.UserIDs[0] != seededUser {
+		t.Fatalf("tag query mismatch: %+v", res)
+	}
+
+	// Adding an impossible status filter yields zero.
+	res2, err := store.RunQuery(ctx, Query{TagID: tag.ID, Status: "deactivated"})
+	if err != nil {
+		t.Fatalf("query2: %v", err)
+	}
+	if res2.Total != 0 && seededUserStatusIsActive(t, ctx, db, seededUser) {
+		t.Fatalf("expected 0 for a status the member doesn't have, got %d", res2.Total)
+	}
+}
+
+func seededUserStatusIsActive(t *testing.T, ctx context.Context, db *sql.DB, id string) bool {
+	t.Helper()
+	var status string
+	if err := db.QueryRowContext(ctx, `SELECT status FROM punters WHERE id = $1`, id).Scan(&status); err != nil {
+		return false
+	}
+	return status != "deactivated"
+}

@@ -218,6 +218,89 @@ WHERE ut.user_id = $1 ORDER BY t.name`, userID)
 	return out, rows.Err()
 }
 
+// Query is a segment query-builder filter: users matching ALL supplied
+// criteria (AND semantics). Zero-value fields are ignored. Read-only over
+// punters + crm_user_tags.
+type Query struct {
+	TagID        int64  // 0 = any tag
+	Status       string // "" = any punter status
+	CreatedAfter string // RFC3339/date; "" = no lower bound
+	Limit        int
+	Offset       int
+}
+
+// QueryResult is a page of matching user ids plus the total match count.
+type QueryResult struct {
+	UserIDs []string `json:"userIds"`
+	Total   int      `json:"total"`
+}
+
+// RunQuery evaluates a segment query. It builds a parameterized WHERE from the
+// supplied criteria — never string interpolation — and reads punters
+// read-only (joining crm_user_tags only when a tag filter is set).
+func (s *Store) RunQuery(ctx context.Context, q Query) (*QueryResult, error) {
+	limit := q.Limit
+	if limit <= 0 || limit > 500 {
+		limit = 100
+	}
+	offset := q.Offset
+	if offset < 0 {
+		offset = 0
+	}
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+
+	from := "punters p"
+	where := []string{}
+	args := []any{}
+	add := func(cond string, val any) {
+		args = append(args, val)
+		where = append(where, fmt.Sprintf(cond, len(args)))
+	}
+	if q.TagID > 0 {
+		from = "punters p JOIN crm_user_tags ut ON ut.user_id = p.id"
+		add("ut.tag_id = $%d", q.TagID)
+	}
+	if strings.TrimSpace(q.Status) != "" {
+		add("p.status = $%d", strings.TrimSpace(q.Status))
+	}
+	if strings.TrimSpace(q.CreatedAfter) != "" {
+		add("p.created_at >= $%d", strings.TrimSpace(q.CreatedAfter))
+	}
+	whereSQL := ""
+	if len(where) > 0 {
+		whereSQL = " WHERE " + strings.Join(where, " AND ")
+	}
+
+	// Total count first (same predicate, no paging).
+	var total int
+	countQ := "SELECT COUNT(DISTINCT p.id) FROM " + from + whereSQL
+	if err := s.db.QueryRowContext(ctx, countQ, args...).Scan(&total); err != nil {
+		return nil, err
+	}
+
+	pageArgs := append(append([]any{}, args...), limit, offset)
+	pageQ := "SELECT DISTINCT p.id FROM " + from + whereSQL +
+		fmt.Sprintf(" ORDER BY p.id LIMIT $%d OFFSET $%d", len(args)+1, len(args)+2)
+	rows, err := s.db.QueryContext(ctx, pageQ, pageArgs...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	ids := []string{}
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return &QueryResult{UserIDs: ids, Total: total}, nil
+}
+
 func nullStr(s string) any {
 	if strings.TrimSpace(s) == "" {
 		return nil

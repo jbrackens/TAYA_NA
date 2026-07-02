@@ -18,6 +18,7 @@ type stubSegStore struct {
 		tagID  int64
 		userID string
 	}
+	lastQuery segmentation.Query
 }
 
 func (s *stubSegStore) CreateTag(_ context.Context, name, _ string) (*segmentation.Tag, error) {
@@ -44,6 +45,10 @@ func (s *stubSegStore) UsersForTag(_ context.Context, _ int64, _, _ int) ([]stri
 }
 func (s *stubSegStore) TagsForUser(_ context.Context, _ string) ([]segmentation.Tag, error) {
 	return []segmentation.Tag{{ID: 1, Name: "vip"}}, nil
+}
+func (s *stubSegStore) RunQuery(_ context.Context, q segmentation.Query) (*segmentation.QueryResult, error) {
+	s.lastQuery = q
+	return &segmentation.QueryResult{UserIDs: []string{"user-001"}, Total: 1}, nil
 }
 
 func newSegHarness(store segmentationStore) http.Handler {
@@ -96,6 +101,33 @@ func TestSegmentationCreateAndAssign(t *testing.T) {
 	}
 	if store.lastAssign.tagID != 7 || store.lastAssign.userID != "user-001" {
 		t.Fatalf("assign not forwarded: %+v", store.lastAssign)
+	}
+}
+
+func TestSegmentationQueryBuilder(t *testing.T) {
+	store := &stubSegStore{}
+	h := newSegHarness(store)
+
+	res := segReq(h, http.MethodPost, "/api/v1/admin/segments/query",
+		`{"tagId":3,"status":"active","limit":50}`, "admin")
+	if res.Code != http.StatusOK {
+		t.Fatalf("query: expected 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	if store.lastQuery.TagID != 3 || store.lastQuery.Status != "active" || store.lastQuery.Limit != 50 {
+		t.Fatalf("query not forwarded: %+v", store.lastQuery)
+	}
+
+	// Unknown status is rejected before hitting the store.
+	bad := segReq(h, http.MethodPost, "/api/v1/admin/segments/query", `{"status":"bogus"}`, "admin")
+	if bad.Code != http.StatusBadRequest {
+		t.Fatalf("bad status: expected 400, got %d", bad.Code)
+	}
+
+	// Read permission required.
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "")
+	player := segReq(h, http.MethodPost, "/api/v1/admin/segments/query", `{}`, "player")
+	if player.Code != http.StatusForbidden && player.Code != http.StatusUnauthorized {
+		t.Fatalf("player query: expected rejection, got %d", player.Code)
 	}
 }
 
