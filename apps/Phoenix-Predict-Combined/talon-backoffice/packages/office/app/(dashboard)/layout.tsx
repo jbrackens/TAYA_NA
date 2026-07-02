@@ -84,6 +84,11 @@ const navItems: NavItem[] = [
     label: "Social Reports",
     icon: "message-square-warning",
   },
+  {
+    href: "/compliance/kyc",
+    label: "KYC Review",
+    icon: "shield-check",
+  },
   { href: "/content", label: "Content", icon: "file-text" },
   { href: "/loyalty", label: "Loyalty", icon: "gift" },
   { href: "/leaderboards", label: "Leaderboards", icon: "trophy" },

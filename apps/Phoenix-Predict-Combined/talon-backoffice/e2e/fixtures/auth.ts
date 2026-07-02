@@ -7,7 +7,11 @@ import { Page, expect } from "@playwright/test";
  * Login to player app
  * Assumes fresh session (not logged in)
  */
-export async function loginAsPlayer(page: Page, username = "player@example.com", password = "test123") {
+export async function loginAsPlayer(
+  page: Page,
+  username = "player@example.com",
+  password = "test123",
+) {
   await page.goto("/auth/login");
 
   // Wait for login form to be visible
@@ -39,51 +43,49 @@ export async function loginAsPlayer(page: Page, username = "player@example.com",
   await submitButton.click();
 
   // Wait for redirect away from login
-  await page.waitForURL((url) => !url.pathname.includes("/auth") && !url.pathname.includes("/login"), {
-    timeout: 15_000,
-  });
+  await page.waitForURL(
+    (url) =>
+      !url.pathname.includes("/auth") && !url.pathname.includes("/login"),
+    {
+      timeout: 15_000,
+    },
+  );
 }
 
 /**
- * Login to backoffice (admin)
- * Assumes fresh session (not logged in)
+ * Login to backoffice (admin) via the App Router login (/auth/login), which
+ * proxies to the real Go auth service. The old /auth mock login died with
+ * the Pages Router. Defaults are the auth service's dev-seeded admin.
  */
-export async function loginAsAdmin(page: Page, username = "admin@chucknorris.com", password = "test") {
-  await page.goto("/auth");
+export async function loginAsAdmin(
+  page: Page,
+  username = process.env.E2E_ADMIN_USERNAME || "admin@phoenix.local",
+  password = process.env.E2E_ADMIN_PASSWORD || "admin123",
+) {
+  await page.goto("/auth/login");
 
-  // Wait for login form to be visible
-  const usernameInput = page
-    .locator('input[data-testid="auth-username"]')
-    .or(page.locator('input[id="username"]'))
+  const emailInput = page
+    .locator('input[type="email"]')
     .or(page.locator('input[name="username"]'))
-    .or(page.locator('input[placeholder*="user" i]'))
     .first();
+  const passwordInput = page.locator('input[type="password"]').first();
 
-  const passwordInput = page
-    .locator('input[data-testid="auth-password"]')
-    .or(page.locator('input[type="password"]'))
-    .first();
+  // Dev-mode first hit compiles the page; give it room.
+  await emailInput.waitFor({ state: "visible", timeout: 45_000 });
 
-  await usernameInput.waitFor({ state: "visible", timeout: 15_000 });
-
-  // Fill credentials
-  await usernameInput.fill(username);
+  await emailInput.fill(username);
   await passwordInput.fill(password);
 
-  // Submit form
   const submitButton = page
-    .locator('button[data-testid="auth-submit"]')
-    .or(page.locator('button[type="submit"]'))
-    .or(page.locator('button[htmlType="submit"]'))
-    .or(page.locator("button:has-text('Login')"))
-    .or(page.locator("button:has-text('Sign in')"))
+    .locator('button[type="submit"]')
+    .or(page.locator("button:has-text('Sign In')"))
     .first();
 
   await submitButton.click();
 
-  // Wait for redirect away from /auth
-  await page.waitForURL((url) => !url.pathname.includes("/auth"), {
-    timeout: 15_000,
+  // Redirect away from the login route signals success.
+  await page.waitForURL((url) => !url.pathname.startsWith("/auth"), {
+    timeout: 20_000,
   });
 }
 
@@ -112,9 +114,12 @@ export async function logoutPlayer(page: Page) {
   await logoutButton.click();
 
   // Wait for redirect to login
-  await page.waitForURL((url) => url.pathname.includes("/auth") || url.pathname.includes("/login"), {
-    timeout: 10_000,
-  });
+  await page.waitForURL(
+    (url) => url.pathname.includes("/auth") || url.pathname.includes("/login"),
+    {
+      timeout: 10_000,
+    },
+  );
 }
 
 /**

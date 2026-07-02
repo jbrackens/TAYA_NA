@@ -1,49 +1,42 @@
-import { test as setup, expect } from "@playwright/test";
+import { test as setup } from "@playwright/test";
 
 /**
- * Auth setup — logs in via the mock-server and saves session state.
- * Other tests load this state to skip the login flow.
+ * Auth setup — signs in through the office App Router login (/auth/login),
+ * which proxies to the real Go auth service (NEXT_PUBLIC_AUTH_URL, default
+ * :18081). The old mock-server login died with the Pages Router; running
+ * this suite requires the local auth service + gateway (see e2e/README.md).
+ * Credentials default to the auth service's dev-seeded admin.
  */
-const MOCK_ADMIN = {
-  username: "admin@chucknorris.com",
-  password: "test",
+const ADMIN = {
+  username: process.env.E2E_ADMIN_USERNAME || "admin@phoenix.local",
+  password: process.env.E2E_ADMIN_PASSWORD || "admin123",
 };
 
 setup("authenticate as admin", async ({ page }) => {
-  // Navigate to auth page
-  await page.goto("/auth");
+  await page.goto("/auth/login");
 
-  // Wait for login form to be visible
-  const usernameInput = page.locator('input[id="username"]').or(
-    page.locator('input[name="username"]')
-  ).or(
-    page.locator('input[placeholder*="user" i]')
-  ).first();
-
+  const emailInput = page
+    .locator('input[type="email"]')
+    .or(page.locator('input[name="username"]'))
+    .first();
   const passwordInput = page.locator('input[type="password"]').first();
 
-  await usernameInput.waitFor({ state: "visible", timeout: 15_000 });
+  // Dev-mode first hit compiles the page; give it room.
+  await emailInput.waitFor({ state: "visible", timeout: 45_000 });
 
-  // Fill in credentials
-  await usernameInput.fill(MOCK_ADMIN.username);
-  await passwordInput.fill(MOCK_ADMIN.password);
+  await emailInput.fill(ADMIN.username);
+  await passwordInput.fill(ADMIN.password);
 
-  // Submit the form
-  const submitButton = page.locator('button[type="submit"]').or(
-    page.locator('button[htmlType="submit"]')
-  ).or(
-    page.locator("button:has-text('Login')").or(
-      page.locator("button:has-text('Sign in')")
-    )
-  ).first();
+  await page
+    .locator('button[type="submit"]')
+    .or(page.locator("button:has-text('Sign In')"))
+    .first()
+    .click();
 
-  await submitButton.click();
-
-  // Wait for redirect away from /auth — indicates successful login
-  await page.waitForURL((url) => !url.pathname.includes("/auth"), {
-    timeout: 15_000,
+  // Redirect away from the login route signals success.
+  await page.waitForURL((url) => !url.pathname.startsWith("/auth"), {
+    timeout: 20_000,
   });
 
-  // Save signed-in state for reuse
   await page.context().storageState({ path: "e2e/.auth/admin.json" });
 });

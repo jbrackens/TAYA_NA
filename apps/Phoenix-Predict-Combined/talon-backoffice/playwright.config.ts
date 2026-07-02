@@ -11,7 +11,12 @@ import path from "path";
  * Run backoffice:    npx playwright test --project=backoffice
  * Run with UI:       npx playwright test --ui
  * Debug mode:        npx playwright test --debug
+ *
+ * E2E_OFFICE_PORT overrides the backoffice port (default 3000) so the suite
+ * can run on machines where another dev server already holds 3000.
  */
+const officePort = Number(process.env.E2E_OFFICE_PORT || 3000);
+const officeBaseURL = `http://localhost:${officePort}`;
 export default defineConfig({
   testDir: "./e2e",
   testMatch: ["**/*.spec.ts"],
@@ -45,7 +50,7 @@ export default defineConfig({
       testMatch: "**/*.spec.ts",
       use: {
         ...devices["Desktop Chrome"],
-        baseURL: "http://localhost:3000",
+        baseURL: officeBaseURL,
         viewport: { width: 1920, height: 1080 },
       },
       dependencies: ["backoffice-auth"],
@@ -53,10 +58,13 @@ export default defineConfig({
 
     {
       name: "backoffice-auth",
-      testMatch: "auth.setup.ts",
+      // Only the backoffice admin setup: the bare "auth.setup.ts" pattern
+      // also matched e2e/prediction/auth.setup.ts, whose player login needs
+      // the Go auth service and failed the whole backoffice run without it.
+      testMatch: /e2e[\\/]auth\.setup\.ts/,
       use: {
         ...devices["Desktop Chrome"],
-        baseURL: "http://localhost:3000",
+        baseURL: officeBaseURL,
       },
     },
 
@@ -112,9 +120,11 @@ export default defineConfig({
       },
     },
     {
-      command: "cd packages/office && yarn run-local:dev",
-      port: 3000,
-      timeout: 60_000,
+      // run-local:dev inlined so the port is controllable: the translations
+      // watcher it backgrounds is replaced by a one-shot locale bootstrap.
+      command: `cd packages/office && yarn bootstrap:locales && npx next dev --webpack -p ${officePort}`,
+      port: officePort,
+      timeout: 120_000,
       reuseExistingServer: true,
       env: {
         API_GLOBAL_ENDPOINT: "http://localhost:3010",
@@ -123,9 +133,12 @@ export default defineConfig({
       },
     },
     {
-      command: "cd packages/app && yarn run-local:dev",
+      // Port pinned explicitly: run-local:dev's bare `next dev` defaults to
+      // 3000 and drifts when that port is busy, so the 3002 wait never
+      // resolved. Same inlining as the office entry above.
+      command: "cd packages/app && npx next dev --webpack -p 3002",
       port: 3002,
-      timeout: 60_000,
+      timeout: 120_000,
       reuseExistingServer: true,
       env: {
         NEXT_PUBLIC_API_ENDPOINT: "http://localhost:18080",
