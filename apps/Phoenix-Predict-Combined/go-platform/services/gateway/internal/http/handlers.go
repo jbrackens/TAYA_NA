@@ -24,6 +24,7 @@ import (
 	"phoenix-revival/gateway/internal/loyalty"
 	"phoenix-revival/gateway/internal/notify"
 	"phoenix-revival/gateway/internal/payments"
+	"phoenix-revival/gateway/internal/platformconfig"
 	"phoenix-revival/gateway/internal/prediction"
 	"phoenix-revival/gateway/internal/prediction/feed"
 	"phoenix-revival/gateway/internal/prediction/workers"
@@ -669,6 +670,16 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	registerReportsRoutes(mux, walletService)
 	// CSV exports of compliance/surveillance datasets for auditors (P1-6).
 	registerReportExportRoutes(mux, walletService.DB())
+	// DB-backed feature-flag / config store (P2-1 peripheral). Editing flags
+	// can change compliance posture, so writes are super-admin only.
+	if cfgDB := walletService.DB(); cfgDB != nil {
+		if cfgStore, err := platformconfig.NewStore(cfgDB); err != nil {
+			slog.Error("platform-config: store init failed; config editor disabled", "error", err)
+		} else {
+			registerPlatformConfigAdminRoutes(mux, cfgStore)
+			slog.Info("platform-config: store initialized")
+		}
+	}
 
 	// --- Auth Proxy (kept from sportsbook) ---
 	registerAuthProxy(mux)
