@@ -15,6 +15,12 @@ export interface ColumnDef<T> {
   width?: string;
   sortable?: boolean;
   render?: (value: any, row: T) => React.ReactNode;
+  /**
+   * Optional unique React key for this column. Provide it when several
+   * render-only columns share the same data `key` (e.g. two action columns
+   * both keyed on "id"), so React keys stay unique.
+   */
+  id?: string;
 }
 
 interface DataTableProps<T extends Record<string, any>> {
@@ -83,7 +89,7 @@ export function DataTable<T extends Record<string, any>>({
               {columns.map((col) => (
                 <th
                   className={headerCellClass}
-                  key={String(col.key)}
+                  key={col.id ?? String(col.key)}
                   onClick={() => col.sortable && handleSort(col.key)}
                   style={{ width: col.width }}
                 >
@@ -108,7 +114,10 @@ export function DataTable<T extends Record<string, any>>({
                   onClick={() => onRowClick?.(row)}
                 >
                   {columns.map((col) => (
-                    <td className={bodyCellClass} key={String(col.key)}>
+                    <td
+                      className={bodyCellClass}
+                      key={col.id ?? String(col.key)}
+                    >
                       {col.render
                         ? col.render(row[col.key], row)
                         : row[col.key]}
