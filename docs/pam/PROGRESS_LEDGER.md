@@ -65,8 +65,9 @@ Adversarial lens confirmed the detector SQL is sound (wash excludes AMM/issuance
 - [minor] the ledger had verification #2/#3 + In-progress sections triplicated by copy-append → FIXED (deduplicated to one each).
 
 ## In progress
-- **Entire P0-P2 backlog DONE or BLOCKED; verifications #1-#4 done.** GAP-7 DONE `dd529cf6`. Remaining buildable GAP for termination pass A: GAP-2 (TOTP replay protection), GAP-5 (durable auth audit sink), GAP-4 (env-allowlist inversion), GAP-1 geo-mock half. GAP-3/6/8 BLOCKED with briefs.
-- Next: GAP-2 (TOTP replay), then GAP-5, GAP-4, GAP-1-geo. Then DECISIONS_NEEDED.md + final summary. Termination pass B stays BLOCKED on BOOT-1 (PAM spec absent).
+- **TERMINATION PASS A IS TRUE**: every backlog item (P0-1..P2-4) and every GAP item (GAP-1..8) is now DONE (with evidence) or BLOCKED (with a brief/design note). GAP builds landed this session: GAP-7 `dd529cf6`, GAP-2 `789e26b6`, GAP-5 `cc79bb82`, GAP-4 `73247052`, GAP-1-geo `df14051b`. GAP-3/6/8 BLOCKED with briefs.
+- **TERMINATION PASS B IS BLOCKED on BOOT-1**: pass B walks `docs/pam/spec.md`'s acceptance scenarios / progress matrix, but that file is absent (never committed — see Bootstrap). Pass B cannot run, so the loop cannot formally terminate (produce zero new GAP items) until the human supplies the PAM spec. This is the genuine terminal state achievable without the spec.
+- Verification #5 (over `df14051b`-range GAP work, incl. the auth login path) dispatched. Then: DECISIONS_NEEDED.md + final summary; loop holds at pass-B-blocked-on-BOOT-1.
 
 ## Done
 - [P0-1] Real admin MFA — commits `6914421c` (slice 1, prior session: TOTP machinery — enroll/activate/disable/status endpoints, `auth_mfa` table via ensureUserSchema, login OTP verification for active factors) and `268157b8` (slice 2, this session: forced enrollment for admins + OAuth admin denial) — files: `services/auth/internal/http/{handlers,mfa,totp,oauth}.go` + `{handlers,totp,mfa_admin}_test.go` — tests: full auth suite `go test -race` ok (174.3s) incl. new `TestMFAAdminRequiredFromEnv`, `TestAdminLoginRequiresEnrollmentWhenFlagOn` (9-step end-to-end journey), `TestAdminLoginLegacyWhenFlagOff`, `TestEnrollTokenExpiryAndRotation`, `TestOAuthSessionGateDeniesAdmins` — spec §: citation pending BOOT-1.
