@@ -28,10 +28,23 @@
 - date: 2026-07-02
 - Worktree setup gotcha: a fresh checkout needs `yarn install --frozen-lockfile` at `talon-backoffice/` AND `yarn lerna run build --scope @phoenix-ui/utils --scope @phoenix-ui/api-client --include-dependencies` before any package build — `@phoenix-ui/utils` resolves to `dist/index.js`, which only exists after tsc (same order CI uses in `.github/workflows/frontend-build.yml`).
 
-## Status summary
-- P0: 3/7 done · P0-4/5/6/7 BLOCKED with briefs/design · **P1: 5/6 done (P1-2..P1-6); P1-1 BLOCKED per Two-Spec rule** · P2: 0/4 · Blocked: 6 (BOOT-1, P0-4, P0-5, P0-6, P0-7, P1-1) · GAP: GAP-1 (RG fixed, geo remaining), GAP-2..6 pending
-- Completed items: 8 (P0-1,2,3 + P1-2,3,4,5,6). Verifications #1 and #2 done. Verification #3 due (after P1-5 + P1-6, i.e. 3 items since #2) — dispatch after P1-1 disposition / before P2.
-- **P1-1 (Cashier/deposits/withdrawals) is ⚑ launch-safe-blocked**: PAM §22 requires it but Tiangge §2/§19 forbid user money exposure. Needs the launch-safe build (flag-gated OFF, no launch nav, unreachability test) — recorded as its own BLOCKED brief below.
+## Status summary (as of 2026-07-02, 30 commits since main, branch pam/p0-modernization)
+- **P0: 3/7 DONE** (P0-1 admin MFA, P0-2 KYC fail-closed, P0-3 KYC review+docs) · P0-4/5/6/7 BLOCKED (briefs; P0-7 design note).
+- **P1: 5/6 DONE** (P1-2 balance-adjust UI, P1-3 Limits tab, P1-4 surveillance, P1-5 dup-account, P1-6 bonus UI+templates+exports) · P1-1 BLOCKED (launch-safe brief).
+- **P2: P2-1 core BLOCKED (design note) + peripherals DONE (feature-flag store, tenant admin); jurisdiction editor design-blocked GAP-8. P2-2 slices 1-2 DONE (tags + query builder), slice 3 (campaigns) PENDING. P2-3, P2-4 BLOCKED.**
+- Verifications #1/#2/#3 all done; every finding fixed or filed (GAP-1 RG-half fixed; GAP-2..8 pending disposition).
+- Baseline green at HEAD: gateway `go build` + `go test` 29 packages ok; auth builds; office vitest 131/131; Playwright backoffice specs green (auth/kyc-review/balance-adjustment/surveillance/bonuses/reports/tenants).
+- **Termination status: pass A (backlog exhausted) NOT yet — P2-2 slice 3 + GAP-2..8 dispositions remain. Pass B (spec reconciliation) is BLOCKED on BOOT-1 (the PAM spec `docs/pam/spec.md` is absent), so final termination cannot complete until the human supplies the spec regardless.**
+
+### Resume plan (next scheduled firing picks up here)
+1. P2-2 slice 3 — campaigns: a campaign targets a saved segment query and dispatches an action (notification via the template store, or a bonus grant via the bonus engine); RBAC `segments:write`, audited, launch-safe (no user-facing send in launch mode). Then an office CRM page for tags/query/campaigns.
+2. GAP-2..8 disposition — each becomes a small build or a full BLOCKED brief:
+   GAP-2 TOTP replay protection (build: last-used-timestep column, auth module), GAP-3 TOTP secret encryption at rest (⚑ needs KMS key decision → brief), GAP-4 env-allowlist inversion (build, repo-wide, careful), GAP-5 durable auth audit sink (build), GAP-6 device/IP capture (⚑ schema+ingestion → brief), GAP-7 bonus-admin RBAC retrofit (build), GAP-8 jurisdiction runtime editor (⚑ fail-closed-config design → brief).
+3. Fresh-context verification #4 after 3 more completed items.
+4. When buildable backlog is exhausted, write DECISIONS_NEEDED.md and the final summary; termination pass B stays BLOCKED on BOOT-1.
+
+### P1-1 note
+- **P1-1 (Cashier/deposits/withdrawals) is ⚑ launch-safe-blocked**: PAM §22 requires it but Tiangge §2/§19 forbid user money exposure. The crypto rail (`internal/alphacashier`) is already flag-gated OFF and boot-refused in prod; what remains (withdrawals queue + AWA rules engine back office) awaits the human's build-now-vs-defer call (brief below).
 
 ## Fresh-context verification #2 (2026-07-02, after P1-2/P1-3/P1-4)
 3 lenses over `618b39fa..HEAD`. Guardrail/RBAC/audit/migration/launch-safety all PASS (no prediction/wallet/settlement file touched; every admin route RBAC-gated; every mutation audited; migration 051 goose-splittable with working down; office pages back-office only). Claim audit PASS (all 6 commits + files + tests verified, `go build` + `go test -race` green). Findings fixed in commit `e7302348`:
