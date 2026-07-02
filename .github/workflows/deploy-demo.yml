@@ -3,17 +3,16 @@ name: Deploy demo (Hetzner)
 # Auto-deploy the live demo (https://demo.99rtp.io player +
 # https://office.99rtp.io office) on push.
 #
-# Mirrors the validated manual flow exactly: rsync the app dir to the box,
-# rebuild the auth, gateway, player AND office images ON the box, recreate
+# Mirrors the validated manual flow while keeping dependency-fetching builds on
+# the GitHub runner: rsync the app dir to the box, build auth/gateway/player/
+# office images on the runner, load those images onto the box, then recreate
 # each container. Auth is built+recreated before gateway because gateway
 # delegates session validation to auth and signup/login changes live there.
 # The gateway is then built+recreated so the player/office health checks below
 # validate end-to-end against the new backend; if either Go service build or
-# health check fails the run aborts before touching the frontends. Go builds
-# are layer-cache-friendly (deps cached when go.mod/go.sum are unchanged) so
-# the backend steps are typically far shorter than the two ~15-20 min Next.js
-# builds; total bounded by
-# `concurrency` and `timeout-minutes` below.
+# health check fails the run aborts before touching the frontends. Runner-side
+# builds avoid the demo box's unreliable outbound registry/module fetches; total
+# bounded by `concurrency` and `timeout-minutes` below.
 # Runs gateway migrations on every deploy. Catalog sync and market translation
 # backfills are opt-in data ops. Market thumbnails live on the `market_images`
 # Docker volume, so `rsync --delete` is safe (it can't touch the volume).
@@ -311,17 +310,23 @@ jobs:
               -d "{\"name\":\"global\"}" || true
           '
 
-      - name: Build player image on the box
+      - name: Build player image and load on the box
+        # Build on the GitHub runner and load the image onto the box. The box
+        # has timed out fetching Go modules and Yarn packages; keeping frontend
+        # dependency install/build on the runner makes the box only receive a
+        # completed Docker image before container recreation.
         run: |
-          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
-            cd /opt/phoenix/talon-backoffice &&
-            docker build -f docker/frontend.Dockerfile \
-              --build-arg module_name=app \
-              --build-arg NEXT_PUBLIC_WS_URL=wss://demo.99rtp.io/ws \
-              --build-arg NEXT_PUBLIC_FEATURE_CHAT=true \
-              --build-arg NEXT_PUBLIC_CHAT_PUBLIC_URL=https://demo.99rtp.io/chat \
-              --build-arg NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS=true \
-              -t predict-frontend:app-slim .'
+          docker build -f apps/Phoenix-Predict-Combined/talon-backoffice/docker/frontend.Dockerfile \
+            --build-arg module_name=app \
+            --build-arg NEXT_PUBLIC_WS_URL=wss://demo.99rtp.io/ws \
+            --build-arg NEXT_PUBLIC_FEATURE_CHAT=true \
+            --build-arg NEXT_PUBLIC_CHAT_PUBLIC_URL=https://demo.99rtp.io/chat \
+            --build-arg NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS=true \
+            -t predict-frontend:app-slim \
+            apps/Phoenix-Predict-Combined/talon-backoffice
+          docker save predict-frontend:app-slim | gzip -1 | \
+            ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+              'gunzip | docker load'
 
       - name: Recreate player container
         run: |
@@ -476,14 +481,18 @@ jobs:
           }
           NODE
 
-      - name: Build office image on the box
+      - name: Build office image and load on the box
+        # Same pattern as player: build dependencies on the runner, then load a
+        # completed image onto the box before recreating the office container.
         run: |
-          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
-            cd /opt/phoenix/talon-backoffice &&
-            docker build -f docker/frontend.Dockerfile \
-              --build-arg module_name=office \
-              --build-arg NEXT_PUBLIC_WS_URL=wss://office.99rtp.io/ws \
-              -t predict-frontend:office-slim .'
+          docker build -f apps/Phoenix-Predict-Combined/talon-backoffice/docker/frontend.Dockerfile \
+            --build-arg module_name=office \
+            --build-arg NEXT_PUBLIC_WS_URL=wss://office.99rtp.io/ws \
+            -t predict-frontend:office-slim \
+            apps/Phoenix-Predict-Combined/talon-backoffice
+          docker save predict-frontend:office-slim | gzip -1 | \
+            ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+              'gunzip | docker load'
 
       - name: Recreate office container
         run: |
