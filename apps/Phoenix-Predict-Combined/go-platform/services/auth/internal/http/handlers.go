@@ -183,6 +183,40 @@ type structuredAuditLogger struct {
 	logger *log.Logger
 }
 
+// dbAuditLogger (GAP-5) durably persists auth events to the append-only
+// auth_audit table, and tees to the process log so a DB failure never loses
+// the event or breaks the request path. The DB insert is bounded and
+// best-effort: on error it logs and returns, exactly as the process-log-only
+// logger did before — auth is never blocked on the audit store.
+type dbAuditLogger struct {
+	db     *sql.DB
+	logger *log.Logger
+}
+
+func (l *dbAuditLogger) Event(name string, fields map[string]any) {
+	// Always tee to the process log first — this cannot fail.
+	if l.logger != nil {
+		if payload, err := json.Marshal(fields); err == nil {
+			l.logger.Printf("event=%s fields=%s", name, string(payload))
+		} else {
+			l.logger.Printf("event=%s fields=\"{}\"", name)
+		}
+	}
+	if l.db == nil {
+		return
+	}
+	payload, err := json.Marshal(fields)
+	if err != nil {
+		payload = []byte("{}")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), userDBTimeout)
+	defer cancel()
+	if _, err := l.db.ExecContext(ctx,
+		`INSERT INTO auth_audit (event, fields) VALUES ($1, $2)`, name, string(payload)); err != nil && l.logger != nil {
+		l.logger.Printf("warning: auth audit persist failed for event=%s: %v", name, err)
+	}
+}
+
 func NewAuthService() *AuthService {
 	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
 
@@ -326,6 +360,10 @@ func NewAuthService() *AuthService {
 					_ = db.Close()
 				} else {
 					svc.db = db
+					// GAP-5: with a DB available, upgrade the audit sink from
+					// process-log-only to the durable append-only auth_audit
+					// table (still teed to the log).
+					svc.audit = &dbAuditLogger{db: db, logger: log.Default()}
 					svc.seedDBUsers(demoUsername, demoPassword, demoUserID, rolePlayer)
 					svc.seedDBUsers(adminUsername, adminPassword, adminUserID, roleAdmin)
 					// Seed the four Predict punters from seed_prediction.sql into
@@ -417,8 +455,20 @@ CREATE TABLE IF NOT EXISTS auth_mfa (
 	}
 	// GAP-2: single-use TOTP. last_used_step records the most recent login
 	// timestep so a captured code cannot be replayed within the skew window.
-	_, err = db.ExecContext(ctx,
-		`ALTER TABLE auth_mfa ADD COLUMN IF NOT EXISTS last_used_step BIGINT NOT NULL DEFAULT 0`)
+	if _, err = db.ExecContext(ctx,
+		`ALTER TABLE auth_mfa ADD COLUMN IF NOT EXISTS last_used_step BIGINT NOT NULL DEFAULT 0`); err != nil {
+		return err
+	}
+	// GAP-5: durable auth audit. Auth events (login, MFA lifecycle, OAuth
+	// denials) land in this append-only table instead of only the process log,
+	// which is mutable and per-instance. No UPDATE/DELETE grants are issued.
+	_, err = db.ExecContext(ctx, `
+CREATE TABLE IF NOT EXISTS auth_audit (
+  id BIGSERIAL PRIMARY KEY,
+  event TEXT NOT NULL,
+  fields JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`)
 	return err
 }
 
