@@ -1379,3 +1379,34 @@ func TestCampaignRuleResponseKeepsPreferredPointRuleAlias(t *testing.T) {
 		t.Fatalf("retired point-stake contribution cap leaked in %+v", pointConfig)
 	}
 }
+
+// GAP-7: the bonus/campaign admin routes are RBAC-gated (finances:read for
+// reads, finances:write for mutations) instead of the old coarse role==admin
+// check. With the dev anon bypass off, a non-admin principal is refused.
+func TestBonusAdminRoutesAreRBACGated(t *testing.T) {
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "")
+	svc := bonus.NewService(bonus.NewRepository(nil), nil, nil)
+
+	cases := []struct {
+		name    string
+		method  string
+		path    string
+		handler func(stdhttp.ResponseWriter, *stdhttp.Request) error
+	}{
+		{"campaigns list", stdhttp.MethodGet, "/api/v1/admin/campaigns", adminCampaignsHandler(svc)},
+		{"campaign create", stdhttp.MethodPost, "/api/v1/admin/campaigns", adminCampaignsHandler(svc)},
+		{"bonuses list", stdhttp.MethodGet, "/api/v1/admin/bonuses", adminBonusesListHandler(svc)},
+		{"bonus grant", stdhttp.MethodPost, "/api/v1/admin/bonuses/grant", adminGrantBonusHandler(svc)},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequest(tc.method, tc.path, bytes.NewBufferString("{}"))
+			req = req.WithContext(httpx.WithTestUser(req.Context(), "u-p", "player@test.local", "player"))
+			rec := httptest.NewRecorder()
+			httpx.Handle(tc.handler).ServeHTTP(rec, req)
+			if rec.Code != stdhttp.StatusForbidden && rec.Code != stdhttp.StatusUnauthorized {
+				t.Fatalf("%s: expected non-admin rejection, got %d", tc.name, rec.Code)
+			}
+		})
+	}
+}

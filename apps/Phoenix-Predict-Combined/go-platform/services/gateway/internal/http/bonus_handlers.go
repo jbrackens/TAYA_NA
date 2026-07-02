@@ -235,9 +235,15 @@ func playerBonusProgressResponse(pb bonus.PlayerBonus) map[string]any {
 
 func adminCampaignsHandler(svc *bonus.Service) func(stdhttp.ResponseWriter, *stdhttp.Request) error {
 	return func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		role := httpx.RoleFromContext(r.Context())
-		if role != "admin" {
-			return httpx.Forbidden("admin role required")
+		// GAP-7: bonus/campaign admin is RBAC-gated (not the coarse role check).
+		// Reads need finances:read, mutations finances:write — bonuses move
+		// points. Falls back to requireAdminRole only when RBAC is unwired.
+		bonusPerm := "finances:read"
+		if r.Method != stdhttp.MethodGet {
+			bonusPerm = "finances:write"
+		}
+		if err := requireAdminPermission(r, bonusPerm); err != nil {
+			return err
 		}
 
 		switch r.Method {
@@ -264,6 +270,8 @@ func adminCampaignsHandler(svc *bonus.Service) func(stdhttp.ResponseWriter, *std
 			if err != nil {
 				return pointAliasBadRequest(err)
 			}
+			recordProviderOpsAuditAction(userIDFromRequest(r), "bonus.campaign_created", strconv.FormatInt(c.ID, 10),
+				map[string]any{"name": c.Name})
 			return httpx.WriteJSON(w, stdhttp.StatusCreated, campaignResponse(c))
 
 		default:
@@ -274,9 +282,15 @@ func adminCampaignsHandler(svc *bonus.Service) func(stdhttp.ResponseWriter, *std
 
 func adminCampaignDetailHandler(svc *bonus.Service) func(stdhttp.ResponseWriter, *stdhttp.Request) error {
 	return func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		role := httpx.RoleFromContext(r.Context())
-		if role != "admin" {
-			return httpx.Forbidden("admin role required")
+		// GAP-7: bonus/campaign admin is RBAC-gated (not the coarse role check).
+		// Reads need finances:read, mutations finances:write — bonuses move
+		// points. Falls back to requireAdminRole only when RBAC is unwired.
+		bonusPerm := "finances:read"
+		if r.Method != stdhttp.MethodGet {
+			bonusPerm = "finances:write"
+		}
+		if err := requireAdminPermission(r, bonusPerm); err != nil {
+			return err
 		}
 
 		// Parse /api/v1/admin/campaigns/{id}[/action]
@@ -294,16 +308,19 @@ func adminCampaignDetailHandler(svc *bonus.Service) func(stdhttp.ResponseWriter,
 				if err := svc.ActivateCampaign(r.Context(), id); err != nil {
 					return serviceBadRequestError(err, nil)
 				}
+				recordProviderOpsAuditAction(userIDFromRequest(r), "bonus.campaign_activated", strconv.FormatInt(id, 10), nil)
 				return httpx.WriteJSON(w, stdhttp.StatusOK, campaignActionResponse("active"))
 			case "pause":
 				if err := svc.PauseCampaign(r.Context(), id); err != nil {
 					return serviceBadRequestError(err, nil)
 				}
+				recordProviderOpsAuditAction(userIDFromRequest(r), "bonus.campaign_paused", strconv.FormatInt(id, 10), nil)
 				return httpx.WriteJSON(w, stdhttp.StatusOK, campaignActionResponse("paused"))
 			case "close":
 				if err := svc.CloseCampaign(r.Context(), id); err != nil {
 					return serviceBadRequestError(err, nil)
 				}
+				recordProviderOpsAuditAction(userIDFromRequest(r), "bonus.campaign_closed", strconv.FormatInt(id, 10), nil)
 				return httpx.WriteJSON(w, stdhttp.StatusOK, campaignActionResponse("closed"))
 			default:
 				return httpx.BadRequest("unknown action: "+parts[1], nil)
@@ -331,9 +348,15 @@ func adminBonusesListHandler(svc *bonus.Service) func(stdhttp.ResponseWriter, *s
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
-		role := httpx.RoleFromContext(r.Context())
-		if role != "admin" {
-			return httpx.Forbidden("admin role required")
+		// GAP-7: bonus/campaign admin is RBAC-gated (not the coarse role check).
+		// Reads need finances:read, mutations finances:write — bonuses move
+		// points. Falls back to requireAdminRole only when RBAC is unwired.
+		bonusPerm := "finances:read"
+		if r.Method != stdhttp.MethodGet {
+			bonusPerm = "finances:write"
+		}
+		if err := requireAdminPermission(r, bonusPerm); err != nil {
+			return err
 		}
 
 		userID := r.URL.Query().Get("user_id")
@@ -355,9 +378,15 @@ func adminGrantBonusHandler(svc adminBonusGranter) func(stdhttp.ResponseWriter, 
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
-		role := httpx.RoleFromContext(r.Context())
-		if role != "admin" {
-			return httpx.Forbidden("admin role required")
+		// GAP-7: bonus/campaign admin is RBAC-gated (not the coarse role check).
+		// Reads need finances:read, mutations finances:write — bonuses move
+		// points. Falls back to requireAdminRole only when RBAC is unwired.
+		bonusPerm := "finances:read"
+		if r.Method != stdhttp.MethodGet {
+			bonusPerm = "finances:write"
+		}
+		if err := requireAdminPermission(r, bonusPerm); err != nil {
+			return err
 		}
 
 		req, err := decodeAdminBonusGrantRequest(r)
@@ -370,6 +399,9 @@ func adminGrantBonusHandler(svc adminBonusGranter) func(stdhttp.ResponseWriter, 
 		if err != nil {
 			return pointAliasBadRequest(err)
 		}
+		recordProviderOpsAuditAction(userIDFromRequest(r), "bonus.granted", req.UserID, map[string]any{
+			"campaignId": req.CampaignID, "bonusId": pb.ID,
+		})
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, playerBonusResponse(pb, campaignNameFromBonus(pb)))
 	}
 }
@@ -476,9 +508,15 @@ func isRetiredCampaignType(value string) bool {
 
 func adminBonusDetailHandler(svc adminBonusDetailService) func(stdhttp.ResponseWriter, *stdhttp.Request) error {
 	return func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		role := httpx.RoleFromContext(r.Context())
-		if role != "admin" {
-			return httpx.Forbidden("admin role required")
+		// GAP-7: bonus/campaign admin is RBAC-gated (not the coarse role check).
+		// Reads need finances:read, mutations finances:write — bonuses move
+		// points. Falls back to requireAdminRole only when RBAC is unwired.
+		bonusPerm := "finances:read"
+		if r.Method != stdhttp.MethodGet {
+			bonusPerm = "finances:write"
+		}
+		if err := requireAdminPermission(r, bonusPerm); err != nil {
+			return err
 		}
 
 		// Parse /api/v1/admin/bonuses/{id}[/forfeit]
@@ -503,6 +541,7 @@ func adminBonusDetailHandler(svc adminBonusDetailService) func(stdhttp.ResponseW
 			if err := svc.ForfeitPlayerBonus(r.Context(), id, req); err != nil {
 				return serviceBadRequestError(err, nil)
 			}
+			recordProviderOpsAuditAction(userIDFromRequest(r), "bonus.forfeited", strconv.FormatInt(id, 10), nil)
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{
 				"status": "forfeited",
 				"unit":   "PTS",
