@@ -100,6 +100,7 @@ type PlayerRestrictions struct {
 	ExcludedUntil   string `json:"excludedUntil,omitempty"`
 	DepositLimits   []DepositLimit `json:"depositLimits"`
 	BetLimits       []BetLimit     `json:"betLimits"`
+	LossLimits      []LossLimit    `json:"lossLimits"`
 	LastUpdated     string `json:"lastUpdated"`
 }
 

@@ -608,6 +608,8 @@ WHERE user_id = $1`, userID).Scan(
 	result.BetLimits = betLimits
 	depositLimits, _ := s.GetDepositLimits(ctx, userID)
 	result.DepositLimits = depositLimits
+	lossLimits, _ := s.GetLossLimits(ctx, userID)
+	result.LossLimits = lossLimits
 
 	return result, nil
 }

@@ -888,6 +888,11 @@ func (m *MockResponsibleGamblingService) GetPlayerRestrictions(ctx context.Conte
 		}
 		restrictions.BetLimits = out
 	}
+	if limits, found := m.lossLimits[userID]; found {
+		out := make([]LossLimit, len(limits))
+		copy(out, limits)
+		restrictions.LossLimits = out
+	}
 
 	return restrictions, nil
 }

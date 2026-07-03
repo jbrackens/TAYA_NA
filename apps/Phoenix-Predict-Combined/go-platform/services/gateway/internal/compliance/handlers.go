@@ -605,6 +605,61 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 	mux.Handle("/api/v1/compliance/rg/bet-limit", setPredictionLimitHandler)
 	mux.Handle("/api/v1/compliance/rg/bet-limits", listPredictionLimitsHandler)
 
+	// GAP-11 (§13 Responsible Gaming): loss limits — a net-realized-loss cap.
+	// Same session-bound self-service shape as the bet/deposit limits (a
+	// mismatched ?userId / body userId is rejected; absent defaults to the
+	// session user). Plain set (no loosen-cooldown yet — tracked separately).
+	setLossLimitHandler := httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+		req, err := decodeResponsibleLimitRequest(r.Body, false)
+		if err != nil {
+			return err
+		}
+		amountCents := req.AmountPointsCents
+		if amountCents <= 0 {
+			amountCents = req.AmountCents
+		}
+		if req.UserID == "" || req.Period == "" || amountCents <= 0 {
+			return httpx.BadRequest("userId, period, and amountPointsCents are required", map[string]any{"field": "body"})
+		}
+		uid, err := sessionBoundUserID(r, req.UserID)
+		if err != nil {
+			return err
+		}
+		if err := service.SetLossLimit(r.Context(), uid, req.Period, amountCents); err != nil {
+			return mapComplianceError(err)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"userId":           uid,
+			"period":           req.Period,
+			"unit":             "PTS",
+			"limitPointsCents": amountCents,
+		})
+	})
+	listLossLimitsHandler := httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		userID, err := sessionBoundUserID(r, r.URL.Query().Get("userId"))
+		if err != nil {
+			return err
+		}
+		limits, err := service.GetLossLimits(r.Context(), userID)
+		if err != nil {
+			return mapComplianceError(err)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"userId": userID,
+			"unit":   "PTS",
+			"limits": limits,
+			"total":  len(limits),
+		})
+	})
+	mux.Handle("/api/v1/compliance/rg/loss-limit", setLossLimitHandler)
+	mux.Handle("/api/v1/compliance/rg/loss-limits", listLossLimitsHandler)
+
 	checkPointUseHandler := httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
@@ -930,6 +985,7 @@ func restrictionsResponse(restrictions *PlayerRestrictions) map[string]any {
 		"predictionLimits": predictionLimits,
 		"depositLimits":    restrictions.DepositLimits,
 		"betLimits":        restrictions.BetLimits,
+		"lossLimits":       restrictions.LossLimits,
 		"lastUpdated":      restrictions.LastUpdated,
 	}
 }
