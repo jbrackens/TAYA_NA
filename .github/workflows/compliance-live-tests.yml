@@ -1,0 +1,92 @@
+name: Compliance live tests (GAP-62)
+
+# The compliance / security controls that make this product licensable — AML
+# transaction monitoring, KYC, responsible-gambling loss & stake limits, per-
+# customer risk rating, market-integrity surveillance, customer segmentation,
+# maker-checker dual control, notification templates, platform config, and the
+# append-only audit hash-chain — each ship with a live-Postgres test suite that
+# self-skips when its *_LIVE_DSN is unset (the `t.Skip` guards in *_live_test.go).
+# test.yml runs `go test ./...` with NO database, so those suites NEVER execute
+# in CI: a regression in a compliance SQL path would merge green. This workflow
+# points each *_LIVE_DSN at a real Postgres so the controls are gated on every
+# push / PR to main.
+#
+# Two provisioning contracts, so two databases on one server:
+#   * Self-provisioning suites (AML, KYC, responsible-gambling, maker-checker,
+#     notifications, platform config, risk, audit hash-chain) create their own
+#     tables via ensureSchema and run against a BARE database (`predict`).
+#   * Surveillance + segmentation query real `punters` / `prediction_markets`
+#     rows, so they run against a MIGRATED database (`predictmig`). Detector /
+#     query cases that additionally need SEEDED rows self-skip (they are covered
+#     by their store-level live tests and by table-driven unit tests).
+# Both command groups were reproduced locally against postgres:16 before this
+# workflow was committed.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  compliance-live:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: predict
+          POSTGRES_PASSWORD: localdev
+          POSTGRES_DB: predict
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U predict"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    defaults:
+      run:
+        working-directory: apps/Phoenix-Predict-Combined/go-platform/services/gateway
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Self-provisioning compliance suites (bare DB)
+        env:
+          AML_LIVE_DSN: postgres://predict:localdev@localhost:5432/predict?sslmode=disable
+          KYC_LIVE_DSN: postgres://predict:localdev@localhost:5432/predict?sslmode=disable
+          RG_LIVE_DSN: postgres://predict:localdev@localhost:5432/predict?sslmode=disable
+          MAKERCHECKER_LIVE_DSN: postgres://predict:localdev@localhost:5432/predict?sslmode=disable
+          NOTIFY_LIVE_DSN: postgres://predict:localdev@localhost:5432/predict?sslmode=disable
+          CONFIG_LIVE_DSN: postgres://predict:localdev@localhost:5432/predict?sslmode=disable
+          RISK_LIVE_DSN: postgres://predict:localdev@localhost:5432/predict?sslmode=disable
+          AUDIT_LIVE_DSN: postgres://predict:localdev@localhost:5432/predict?sslmode=disable
+        run: |
+          go test -race -count=1 \
+            ./internal/aml/... \
+            ./internal/compliance/... \
+            ./internal/makerchecker/... \
+            ./internal/notify/... \
+            ./internal/platformconfig/... \
+            ./internal/risk/...
+          go test -race -count=1 -run 'AuditChain|AuditVerifyChain' ./internal/http/
+
+      - name: Create + migrate the punters-dependent database
+        run: |
+          PGPASSWORD=localdev psql -h localhost -U predict -d predict \
+            -c "CREATE DATABASE predictmig;"
+          export GATEWAY_DB_DSN="postgres://predict:localdev@localhost:5432/predictmig?sslmode=disable"
+          export MIGRATIONS_DIR="$(pwd)/migrations"
+          go run ./cmd/migrate up
+
+      - name: Punters-dependent compliance suites (migrated DB)
+        env:
+          SEG_LIVE_DSN: postgres://predict:localdev@localhost:5432/predictmig?sslmode=disable
+          SURV_LIVE_DSN: postgres://predict:localdev@localhost:5432/predictmig?sslmode=disable
+        run: |
+          go test -race -count=1 \
+            ./internal/segmentation/... \
+            ./internal/surveillance/...
