@@ -808,7 +808,7 @@ sign-off — that attestation remains a separate human step.
 | Positions & exposure | 15, 16 | 9 | **Built** | Pass | Positions, exposure/P&L, risk dashboard + per-market eligibility (GAP-20) + admin order view/cancel (GAP-21 `d94e53b0`) |
 | Market integrity | 18 | 10 | **Built** | Pass | Surveillance: wash/spoof/collusion (P1-4 `7761823b`,`8936142a`,`e33045c4`) + insider (GAP-22 `11d1fc1b`) + bonus-abuse (GAP-23 `c46b166f`) + duplicate-account; alerts→cases UI |
 | Settlement | 17 | 11 | **Built** | Pass | Idempotent propose→challenge→finalize + disputes + dual-control finalize |
-| Notes & comms | 20 | 12 | **Built** | Pass | Notes Built + DB-backed notification-template store + admin editor (P1-6 `a2cf341f`) |
+| Notes & comms | 20 | 12 | **Partial** | Partial | Notes + notification-template store + admin editor built (P1-6 `a2cf341f`); **sent-communication history unpersisted** (GAP-43, confirmed by the GAP-27 reconciliation) |
 | Segmentation & CRM | 21 | 13 | **Built** | Pass | Tags/segments/campaigns/query (P2-2, `internal/segmentation`); dispatch fail-closed in launch mode |
 | Bonus / rewards | 21 | 14 | **Built** | Pass | Bonus/wagering + loyalty + **admin bonus UI** (P1-6 `dae22915`) + abuse detection (GAP-23) |
 | Reporting & export | 23 | 15 | **Partial** | Partial | Operational CSV exports (P1-6 `a95f6e5a`, risk/KYC/surveillance CSVs); **statutory suite pending regime** (GAP-24 ⏳) |
@@ -821,12 +821,14 @@ sign-off — that attestation remains a separate human step.
 | Integrations / webhooks | 26 | — | **Built** | — | HMAC webhooks + scoped partner API |
 | Custody / on-chain settlement | 17, 26 | 11 | **Partial / design-seed** | Partial | Custodial off-chain today; **non-custodial BLOCKED** (P2-4 ⚑ founder decision) |
 
-Summary: as of the 2026-07-03 evidence pass, **~14 areas Built, ~8 Partial, 0 Missing**;
-acceptance scenarios are **12 Pass / 7 Partial / 1 Fail** (Scenario 18, DSAR). Every non-Pass
-scenario is attributable to a tracked BLOCKED item with a decision brief (P0-5/6/7, P2-1/3/4,
-GAP-17b/19/24/30) — the residual gaps are human-decision-gated (regime/legal/threshold/vendor/
-protected-core), not un-started engineering. Full per-scenario evidence, with the honest
-"automated-evidence ≠ manual-acceptance-sign-off" caveat, is in `docs/pam/scenario-evidence.md`.
+Summary: as of the 2026-07-03 evidence pass (refined by the GAP-27 schema-domain
+reconciliation), **~13 areas Built, ~9 Partial, 0 Missing**; acceptance scenarios are
+**11 Pass / 8 Partial / 1 Fail** (Scenario 18, DSAR). Every non-Pass scenario is attributable
+to a tracked BLOCKED/open item with a brief (P0-5/6/7, P2-1/3/4, GAP-17b/19/24/30/43/70) — the
+residual gaps are human-decision-gated (regime/legal/threshold/vendor/protected-core) or filed
+breadth items, not un-started surprises. Full per-scenario evidence (with the honest
+"automated-evidence ≠ manual-acceptance-sign-off" caveat) is in `docs/pam/scenario-evidence.md`;
+the entity/FSM-level reconciliation is in `docs/pam/schema-domain-reconciliation.md`.
 
 ## 37. Reconciliation with the Implemented System (Taya_NA_Predict, June 2026)
 

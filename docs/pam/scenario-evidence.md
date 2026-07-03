@@ -27,7 +27,7 @@ Every commit hash and test name below traces to a `✅ DONE` entry in `docs/pam/
 | 9 | Position Review / Orders (CLOB) | **Pass (automated)** | Positions, exposure/P&L, risk dashboard Built; real CLOB (TIF/post-only); per-market eligibility gate — GAP-20 `c1f0f593`; admin order view/cancel — GAP-21 `d94e53b0` (audited `order.admin_cancelled`). | — |
 | 10 | Market Manipulation / Integrity Review | **Pass (automated)** | Surveillance engine: wash/spoof/collusion — P1-4 `7761823b`,`8936142a`,`e33045c4`; insider pattern — GAP-22 `11d1fc1b`; bonus-abuse — GAP-23 `c46b166f`; duplicate-account — `fraud.go`. Alerts→cases office UI; per-detector live tests (`SURV_LIVE_DSN`). | — (the §36 "Missing — no wash/spoof/collusion" note is badly stale). |
 | 11 | Settlement Operations | **Pass (automated)** | Idempotent propose→challenge→finalize + disputes; dual-control on finalize (finalizer ≠ proposer, enforced in the engine). | — |
-| 12 | Player Communication & Notes | **Pass (automated)** | Notes Built; DB-backed notification-template store + admin editor + resolution sender — P1-6 `a2cf341f` (`internal/notify`, mig 052). | — (the "no templates" note is stale). |
+| 12 | Player Communication & Notes | **Partial** | Notes Built; DB-backed notification-template store + admin editor + resolution sender — P1-6 `a2cf341f` (`internal/notify`, mig 052). | Sent-communication HISTORY (Scenario 12 step 3 "view communication history") not persisted — tracked GAP-43; confirmed by the GAP-27 reconciliation. |
 | 13 | Segmentation & CRM | **Pass (automated)** | Tags/segments/campaigns/query — P2-2 (`internal/segmentation`, `registerSegmentationAdminRoutes`), campaign dispatch fail-closed in launch mode; live tests (`SEG_LIVE_DSN`). | — (the "Missing" note is stale). |
 | 14 | Bonus / Reward Controls | **Pass (automated)** | Bonus engine + wagering + loyalty Built; bonus admin UI — P1-6 `dae22915`; abuse detection — GAP-23 `c46b166f`. | — (the "no admin bonus UI" note is stale). |
 | 15 | Reporting & Export | **Partial** | Operational CSV exports — P1-6 `a95f6e5a` (`report_exports_handlers.go`, `/exports` office page); risk CSV, `reports/kyc-statuses.csv`, `reports/surveillance-alerts.csv`. Playwright reports 4/4. | Full statutory/regulatory report suite pending regime input (GAP-24 ⏳, rides P0-5's regime). |
@@ -39,9 +39,11 @@ Every commit hash and test name below traces to a `✅ DONE` entry in `docs/pam/
 
 ## Summary
 
-- **Pass (automated): 12** — Scenarios 1, 2, 3, 4, 6, 9, 10, 11, 12, 13, 14, 17.
-- **Partial: 7** — Scenarios 5, 7, 8, 15, 16, 19, 20.
+- **Pass (automated): 11** — Scenarios 1, 2, 3, 4, 6, 9, 10, 11, 13, 14, 17.
+- **Partial: 8** — Scenarios 5, 7, 8, 12, 15, 16, 19, 20.
 - **Fail: 1** — Scenario 18 (privacy/DSAR, BLOCKED on legal).
+
+*(2026-07-03 update: Scenario 12 downgraded Pass→Partial by the GAP-27 schema-domain reconciliation, which confirmed sent-communication history is unpersisted — open GAP-43. Notes + templates remain built.)*
 
 Every **Partial** and **Fail** is attributable to a tracked BLOCKED item with a decision brief (P0-5, P0-6, P0-7, P2-1, P2-3, GAP-17b, GAP-19, GAP-24, GAP-30) — i.e. the remaining gaps are human-decision-gated (regime/legal/threshold/vendor/protected-core), not un-started engineering. Compared with the §36 "June 2026" baseline, this pass moves **8 areas off stale Missing/Partial statuses** (Scenarios 4, 5, 6, 10, 12, 13, 14, 20) on the strength of work landed since.
 
