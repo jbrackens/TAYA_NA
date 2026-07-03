@@ -27,6 +27,21 @@ type kycAdminStore interface {
 	ReviewScreening(ctx context.Context, userID, outcome string) (previousStatus string, err error)
 }
 
+// kycScreeningConflictMessage maps the P0-4 approval-gate sentinels to a
+// deliberate, reviewer-facing 409 message — never the raw service error
+// (guard: TestGatewayHTTPHandlersDoNotEchoRawServiceErrors). Returns "" for
+// any other error so the caller falls through to the normal mapping.
+func kycScreeningConflictMessage(err error) string {
+	switch {
+	case errors.Is(err, compliance.ErrScreeningUnresolved):
+		return "sanctions screening must be resolved before this identity can be approved"
+	case errors.Is(err, compliance.ErrIdentityRequired):
+		return "structured identity must be submitted before this identity can be approved"
+	default:
+		return ""
+	}
+}
+
 type kycAdminDecisionRequest struct {
 	UserID  string `json:"userId"`
 	Approve bool   `json:"approve"`
@@ -77,8 +92,8 @@ func registerKYCAdminRoutes(mux *stdhttp.ServeMux, kyc kycAdminStore) {
 			// P0-4 slice 3: an approval blocked by unresolved sanctions
 			// screening is a state conflict the reviewer must resolve first
 			// (screening review or identity submission), not a bad request.
-			if errors.Is(err, compliance.ErrScreeningUnresolved) || errors.Is(err, compliance.ErrIdentityRequired) {
-				return httpx.Conflict(err.Error(), nil)
+			if msg := kycScreeningConflictMessage(err); msg != "" {
+				return httpx.Conflict(msg, nil)
 			}
 			return serviceBadRequestError(err, nil)
 		}
@@ -126,8 +141,8 @@ func registerKYCAdminRoutes(mux *stdhttp.ServeMux, kyc kycAdminStore) {
 		}
 		previous, err := kyc.ReviewScreening(r.Context(), req.UserID, req.Outcome)
 		if err != nil {
-			if errors.Is(err, compliance.ErrIdentityRequired) {
-				return httpx.Conflict(err.Error(), nil)
+			if msg := kycScreeningConflictMessage(err); msg != "" {
+				return httpx.Conflict(msg, nil)
 			}
 			return serviceBadRequestError(err, nil)
 		}
