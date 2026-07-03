@@ -16,6 +16,15 @@ interface AuditLogEntry {
   dataAfter?: Record<string, any>;
 }
 
+// GAP-13 audit hash-chain integrity result (GET /api/v1/admin/audit-logs/verify).
+interface ChainResult {
+  ok: boolean;
+  checked?: number;
+  brokenAtId?: string;
+  brokenAtSeq?: number;
+  reason?: string;
+}
+
 const entityPrefixMap: Record<string, string> = {
   p: "user",
   m: "market",
@@ -59,6 +68,24 @@ function AuditLogsPageContent() {
   const [actionFilter, setActionFilter] = useState("");
   const [resourceFilter, setResourceFilter] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
+  const [chain, setChain] = useState<ChainResult | null>(null);
+  const [verifying, setVerifying] = useState(false);
+
+  const verifyChain = async () => {
+    setVerifying(true);
+    try {
+      const res = await adminFetch("/api/v1/admin/audit-logs/verify");
+      if (!res.ok) throw new Error(`verify failed (${res.status})`);
+      setChain((await res.json()) as ChainResult);
+    } catch (err: unknown) {
+      setChain({
+        ok: false,
+        reason: err instanceof Error ? err.message : String(err),
+      });
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   useEffect(() => {
     const loadLogs = async () => {
@@ -130,9 +157,38 @@ function AuditLogsPageContent() {
 
   return (
     <div>
-      <h1 className="mb-6 text-[28px] font-bold text-[var(--t1,#1a1a1a)]">
+      <h1 className="mb-2 text-[28px] font-bold text-[var(--t1,#1a1a1a)]">
         Audit Logs
       </h1>
+
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <button
+          className="cursor-pointer rounded border-0 bg-[var(--focus-ring,#0e7a53)] px-4 py-2 text-sm font-semibold text-[var(--bg-deep,#f7f3ed)] disabled:opacity-60"
+          onClick={verifyChain}
+          disabled={verifying}
+          data-testid="audit-verify-chain"
+        >
+          {verifying ? "Verifying…" : "Verify chain integrity"}
+        </button>
+        {chain && (
+          <span
+            className={`rounded px-3 py-1.5 text-sm font-semibold ${
+              chain.ok
+                ? "bg-[rgba(31,166,94,0.15)] text-[var(--accent-lo,#1fa65e)]"
+                : "bg-[rgba(168,71,45,0.15)] text-[var(--no-text,#a8472d)]"
+            }`}
+            data-testid="audit-chain-status"
+          >
+            {chain.ok
+              ? chain.reason
+                ? `Not chained — ${chain.reason}`
+                : `✓ Chain intact (${chain.checked ?? 0} entries verified)`
+              : `✗ Tamper detected${
+                  chain.brokenAtId ? ` at ${chain.brokenAtId}` : ""
+                }${chain.reason ? ` — ${chain.reason}` : ""}`}
+          </span>
+        )}
+      </div>
 
       <div className="mb-6 flex flex-wrap gap-3 max-[768px]:flex-col">
         <input
