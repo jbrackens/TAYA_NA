@@ -257,6 +257,86 @@ HAVING COUNT(*) >= $2`, since, d.MinReversals)
 	return alerts, rows.Err()
 }
 
+// InsiderPatternDetector flags the "insider / abnormal pattern" case required by
+// PAM spec §18 (Market Integrity, Fraud, and Abuse Monitoring), the one market-
+// integrity pattern the wash/spoof/collusion detectors do not cover. Heuristic:
+// a distinct (non-AMM) account that ACCUMULATES a large buy position in a single
+// market within the final window before the market's close_at — heavy late
+// positioning right before resolution is the classic informed/insider-trading
+// signal. Read-only over prediction_trades JOIN prediction_markets; the alert
+// goes to a human analyst for case review (never an automated sanction).
+type InsiderPatternDetector struct {
+	// MinQty is the accumulated buy quantity in the pre-close window that trips
+	// an alert. WindowMins is how many minutes before close_at count as pre-close.
+	MinQty     int64
+	WindowMins int
+}
+
+func (d InsiderPatternDetector) withDefaults() InsiderPatternDetector {
+	if d.MinQty <= 0 {
+		d.MinQty = 500
+	}
+	if d.WindowMins <= 0 {
+		d.WindowMins = 60
+	}
+	return d
+}
+
+func (InsiderPatternDetector) Name() string { return "insider_pattern" }
+
+func (d InsiderPatternDetector) Scan(ctx context.Context, db *sql.DB, since time.Time) ([]Alert, error) {
+	d = d.withDefaults()
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+
+	// Sum each buyer's non-AMM buy quantity per market, restricted to fills in
+	// the final WindowMins before that market's close_at. traded_at < close_at
+	// keeps it to pre-resolution trades; make_interval bounds the late window.
+	rows, err := db.QueryContext(ctx, `
+SELECT t.buyer_id, t.market_id, SUM(t.quantity) AS qty,
+       CAST(MAX(t.traded_at) AS TEXT) AS last_at
+FROM prediction_trades t
+JOIN prediction_markets m ON m.id = t.market_id
+WHERE t.is_amm_trade = false
+  AND t.traded_at >= $1
+  AND t.traded_at >= m.close_at - make_interval(mins => $2)
+  AND t.traded_at < m.close_at
+GROUP BY t.buyer_id, t.market_id
+HAVING SUM(t.quantity) >= $3`, since, d.WindowMins, d.MinQty)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	alerts := []Alert{}
+	for rows.Next() {
+		var buyerID, marketID, lastAt string
+		var qty int64
+		if err := rows.Scan(&buyerID, &marketID, &qty, &lastAt); err != nil {
+			return nil, err
+		}
+		sev := "medium"
+		if qty >= d.MinQty*3 {
+			sev = "high"
+		}
+		alerts = append(alerts, Alert{
+			Kind:      "insider_pattern",
+			Severity:  sev,
+			SubjectID: buyerID,
+			MarketID:  marketID,
+			Summary: fmt.Sprintf("%d contracts accumulated by %s within %dm before market close — possible informed/insider trading",
+				qty, buyerID, d.WindowMins),
+			Detail: map[string]any{
+				"quantity":   qty,
+				"windowMins": d.WindowMins,
+				"lastAt":     lastAt,
+			},
+			DedupeKey: fmt.Sprintf("insider_pattern:%s:%s:%s", marketID, buyerID, dayOf(lastAt)),
+		})
+	}
+	return alerts, rows.Err()
+}
+
 // Engine runs a set of detectors and persists their alerts.
 type Engine struct {
 	store     *Store
@@ -270,6 +350,7 @@ func NewEngine(store *Store, db *sql.DB, detectors ...Detector) *Engine {
 			WashSelfTradeDetector{},
 			SpoofingDetector{},
 			CollusionDetector{},
+			InsiderPatternDetector{},
 			DuplicateAccountDetector{},
 		}
 	}
