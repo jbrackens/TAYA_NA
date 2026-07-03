@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
+	"crypto/subtle"
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
@@ -1005,6 +1006,38 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 			return err
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"userId": cs.UserID, "active": false})
+	}))
+
+	// GAP-15 (PAM §25 Admin Operations / §11 Authentication): admin-initiated
+	// MFA reset for lost-device recovery. Unlike self-service /2fa/disable this
+	// does NOT require the current OTP (a locked-out user cannot produce one), so
+	// it is fail-closed behind the internal shared secret: the endpoint is INERT
+	// unless AUTH_INTERNAL_SECRET is set, and then requires a matching
+	// X-Internal-Auth header. It is reachable only server-to-server from the
+	// gateway, which adds the RBAC gate + the compliance audit entry (slice 2).
+	mux.Handle("/api/v1/auth/internal/mfa/reset", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+		secret := strings.TrimSpace(os.Getenv("AUTH_INTERNAL_SECRET"))
+		if secret == "" {
+			// No internal secret configured -> endpoint disabled entirely.
+			return httpx.NotFound("not found")
+		}
+		if subtle.ConstantTimeCompare([]byte(secret), []byte(r.Header.Get("X-Internal-Auth"))) != 1 {
+			return httpx.Forbidden("invalid internal credentials")
+		}
+		var body struct {
+			UserID  string `json:"userId"`
+			ResetBy string `json:"resetBy"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+		}
+		if err := auth.MFAAdminReset(body.UserID, body.ResetBy); err != nil {
+			return err
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"userId": body.UserID, "reset": true})
 	}))
 
 	mux.Handle("/api/v1/auth/metrics", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {

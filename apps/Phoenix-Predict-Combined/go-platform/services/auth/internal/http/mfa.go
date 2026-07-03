@@ -210,6 +210,24 @@ func (a *AuthService) MFADisable(userID, code string) error {
 	return nil
 }
 
+// MFAAdminReset clears a user's MFA enrollment entirely so that a locked-out
+// user (e.g. a lost authenticator device) can re-enroll. Unlike MFADisable it
+// does NOT require the current OTP — a locked-out user cannot produce one — so
+// it is an administrative recovery action, gated at the transport layer by the
+// internal shared secret and, at the gateway, by RBAC + a compliance audit
+// entry. Idempotent: resetting a user with no factor is a no-op success.
+func (a *AuthService) MFAAdminReset(targetUserID, resetBy string) error {
+	targetUserID = strings.TrimSpace(targetUserID)
+	if targetUserID == "" {
+		return httpx.BadRequest("userId is required", map[string]any{"field": "userId"})
+	}
+	if err := a.mfaDelete(targetUserID); err != nil {
+		return httpx.Internal("failed to reset multi-factor authentication", err)
+	}
+	a.audit.Event("auth.mfa.admin_reset", map[string]any{"userId": targetUserID, "resetBy": resetBy})
+	return nil
+}
+
 // mfaStatus reports whether the user is enrolled (has any secret) and whether
 // MFA is active (enforced at login).
 func (a *AuthService) mfaStatus(userID string) (enrolled, active bool, err error) {
