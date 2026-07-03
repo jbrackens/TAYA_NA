@@ -70,6 +70,9 @@ type registerRequest struct {
 	LaunchDisclosureAcceptedCamel *bool  `json:"launchDisclosureAccepted,omitempty"`
 	LaunchDisclosureVersion       string `json:"launch_disclosure_version,omitempty"`
 	LaunchDisclosureVersionCamel  string `json:"launchDisclosureVersion,omitempty"`
+	Affiliate                     string `json:"affiliate,omitempty"`
+	SignupCountry                 string `json:"signup_country,omitempty"`
+	SignupCountryCamel            string `json:"signupCountry,omitempty"`
 }
 
 const (
@@ -93,6 +96,11 @@ type user struct {
 	LaunchDisclosureAccepted   bool
 	LaunchDisclosureVersion    string
 	LaunchDisclosureAcceptedAt string
+	// GAP-36 (§11): registration attribution — client-attested affiliate tag and
+	// signup country. Captured for marketing/jurisdiction-at-signup evidence;
+	// NOT an enforcement signal (the geo gate enforces jurisdiction).
+	AffiliateTag  string
+	SignupCountry string
 }
 
 type session struct {
@@ -427,7 +435,9 @@ ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS terms_version TEXT NOT NULL DEFA
 ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMPTZ NULL;
 ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS launch_disclosure_accepted BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS launch_disclosure_version TEXT NOT NULL DEFAULT '';
-ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS launch_disclosure_accepted_at TIMESTAMPTZ NULL;`); err != nil {
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS launch_disclosure_accepted_at TIMESTAMPTZ NULL;
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS affiliate_tag TEXT NOT NULL DEFAULT '';
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS signup_country TEXT NOT NULL DEFAULT '';`); err != nil {
 		return err
 	}
 
@@ -611,8 +621,9 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		}
 		termsVersion := firstNonEmpty(body.TermsVersion, body.TermsVersionCamel, tianggeLaunchTermsVersion)
 		disclosureVersion := firstNonEmpty(body.LaunchDisclosureVersion, body.LaunchDisclosureVersionCamel, tianggeDisclosureVersion)
+		signupCountry := firstNonEmpty(body.SignupCountry, body.SignupCountryCamel)
 
-		newUser, err := auth.RegisterWithAcceptance(body.Username, body.Password, body.Role, termsVersion, disclosureVersion)
+		newUser, err := auth.RegisterWithAcceptance(body.Username, body.Password, body.Role, termsVersion, disclosureVersion, body.Affiliate, signupCountry)
 		if err != nil {
 			return err
 		}
@@ -1285,14 +1296,14 @@ func (a *AuthService) verifyPassword(account user, password string) bool {
 }
 
 func (a *AuthService) Register(username, password, _ string) (user, error) {
-	return a.registerUser(username, password, rolePlayer, "", "")
+	return a.registerUser(username, password, rolePlayer, "", "", "", "")
 }
 
-func (a *AuthService) RegisterWithAcceptance(username, password, _ string, termsVersion, disclosureVersion string) (user, error) {
-	return a.registerUser(username, password, rolePlayer, termsVersion, disclosureVersion)
+func (a *AuthService) RegisterWithAcceptance(username, password, _ string, termsVersion, disclosureVersion, affiliate, signupCountry string) (user, error) {
+	return a.registerUser(username, password, rolePlayer, termsVersion, disclosureVersion, affiliate, signupCountry)
 }
 
-func (a *AuthService) registerUser(username, password, _ string, termsVersion, disclosureVersion string) (user, error) {
+func (a *AuthService) registerUser(username, password, _ string, termsVersion, disclosureVersion, affiliate, signupCountry string) (user, error) {
 	username = strings.TrimSpace(username)
 	password = strings.TrimSpace(password)
 	if username == "" {
@@ -1347,6 +1358,8 @@ func (a *AuthService) registerUser(username, password, _ string, termsVersion, d
 		LaunchDisclosureAccepted:   disclosureVersion != "",
 		LaunchDisclosureVersion:    disclosureVersion,
 		LaunchDisclosureAcceptedAt: acceptedAt,
+		AffiliateTag:               strings.TrimSpace(affiliate),
+		SignupCountry:              strings.ToUpper(strings.TrimSpace(signupCountry)),
 	}
 
 	if a.db != nil {
@@ -1356,12 +1369,14 @@ func (a *AuthService) registerUser(username, password, _ string, termsVersion, d
 INSERT INTO auth_users (
   id, username, password_hash, role,
   terms_accepted, terms_version, terms_accepted_at,
-  launch_disclosure_accepted, launch_disclosure_version, launch_disclosure_accepted_at
+  launch_disclosure_accepted, launch_disclosure_version, launch_disclosure_accepted_at,
+  affiliate_tag, signup_country
 )
-VALUES ($1, $2, $3, $4, $5, $6, NULLIF($7, '')::timestamptz, $8, $9, NULLIF($10, '')::timestamptz)`,
+VALUES ($1, $2, $3, $4, $5, $6, NULLIF($7, '')::timestamptz, $8, $9, NULLIF($10, '')::timestamptz, $11, $12)`,
 			newUser.ID, newUser.Username, newUser.PasswordHash, newUser.Role,
 			newUser.TermsAccepted, newUser.TermsVersion, newUser.TermsAcceptedAt,
 			newUser.LaunchDisclosureAccepted, newUser.LaunchDisclosureVersion, newUser.LaunchDisclosureAcceptedAt,
+			newUser.AffiliateTag, newUser.SignupCountry,
 		)
 		if err != nil {
 			if strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "unique constraint") {

@@ -25,7 +25,7 @@ func TestRegistrationEmitsVersionedConsentEvents(t *testing.T) {
 	rec := &captureAuditLogger{}
 	auth.audit = rec
 
-	if _, err := auth.RegisterWithAcceptance("gap51player", "StrongPass123!", "", "terms-v3", "disclosure-v2"); err != nil {
+	if _, err := auth.RegisterWithAcceptance("gap51player", "StrongPass123!", "", "terms-v3", "disclosure-v2", "", ""); err != nil {
 		t.Fatalf("register: %v", err)
 	}
 
@@ -60,7 +60,7 @@ func TestRegistrationWithoutConsentEmitsNoConsentEvent(t *testing.T) {
 	rec := &captureAuditLogger{}
 	auth.audit = rec
 
-	if _, err := auth.RegisterWithAcceptance("gap51noconsent", "StrongPass123!", "", "", ""); err != nil {
+	if _, err := auth.RegisterWithAcceptance("gap51noconsent", "StrongPass123!", "", "", "", "", ""); err != nil {
 		t.Fatalf("register: %v", err)
 	}
 	for _, e := range rec.events {
