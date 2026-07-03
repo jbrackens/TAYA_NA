@@ -94,6 +94,11 @@ const navItems: NavItem[] = [
     label: "Surveillance",
     icon: "radar",
   },
+  {
+    href: "/aml",
+    label: "AML Monitoring",
+    icon: "shield-alert",
+  },
   { href: "/content", label: "Content", icon: "file-text" },
   { href: "/bonuses", label: "Bonuses", icon: "ticket" },
   { href: "/loyalty", label: "Loyalty", icon: "gift" },

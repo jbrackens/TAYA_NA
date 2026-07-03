@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	stdhttp "net/http"
@@ -140,6 +141,37 @@ func registerAMLAdminRoutes(mux *stdhttp.ServeMux, store amlAdminStore, scanner 
 		recordProviderOpsAuditAction(userIDFromRequest(r), "aml.alert_dismissed",
 			strconv.FormatInt(alertID, 10), nil)
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"id": alertID, "status": "dismissed"})
+	}))
+
+	// SAR/case CSV export — the auditor/FIU evidence extract (§23 Reporting /
+	// §24 Audit). compliance:read, audited as a sensitive extraction.
+	mux.Handle("/api/v1/admin/aml/export/cases.csv", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminPermission(r, "compliance:read"); err != nil {
+			return err
+		}
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		cases, err := store.ListCases(r.Context(), strings.TrimSpace(r.URL.Query().Get("status")), 1000, 0)
+		if err != nil {
+			return httpx.Internal("failed to list AML cases", err)
+		}
+		recordProviderOpsAuditAction(userIDFromRequest(r), "report.exported", "aml-cases", nil)
+		w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+		w.Header().Set("Content-Disposition", `attachment; filename="aml-cases.csv"`)
+		w.Header().Set("Cache-Control", "no-store")
+		cw := csv.NewWriter(w)
+		_ = cw.Write([]string{"id", "subject_id", "title", "status", "priority", "risk_points", "alert_count", "sar_reference", "resolution", "opened_by", "created_at", "updated_at"})
+		for _, c := range cases {
+			_ = cw.Write([]string{
+				strconv.FormatInt(c.ID, 10), csvSafeCell(c.SubjectID), csvSafeCell(c.Title),
+				csvSafeCell(c.Status), csvSafeCell(c.Priority), strconv.Itoa(c.RiskPoints),
+				strconv.Itoa(c.AlertCount), csvSafeCell(c.SARReference), csvSafeCell(c.Resolution),
+				csvSafeCell(c.OpenedBy), csvSafeCell(c.CreatedAt), csvSafeCell(c.UpdatedAt),
+			})
+		}
+		cw.Flush()
+		return cw.Error()
 	}))
 
 	mux.Handle("/api/v1/admin/aml/scan", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {

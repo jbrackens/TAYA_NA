@@ -156,6 +156,27 @@ func TestAMLCaseCloseRequiresResolution(t *testing.T) {
 	}
 }
 
+func TestAMLCaseCSVExportAudited(t *testing.T) {
+	store := &stubAMLStore{cases: []aml.Case{
+		{ID: 9, SubjectID: "u-1", Title: "Structuring review", Status: "closed_sar_filed",
+			Priority: "high", RiskPoints: 110, AlertCount: 2, SARReference: "SAR-2026-007", OpenedBy: "aml-scanner"},
+	}}
+	handler := newAMLHarness(store, &stubAMLScanner{})
+	res := amlAdminReq(handler, http.MethodGet, "/api/v1/admin/aml/export/cases.csv", "")
+	if res.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	if ct := res.Header().Get("Content-Type"); !strings.HasPrefix(ct, "text/csv") {
+		t.Fatalf("expected text/csv, got %q", ct)
+	}
+	body := res.Body.String()
+	if !strings.Contains(body, "SAR-2026-007") || !strings.Contains(body, "Structuring review") ||
+		!strings.Contains(body, "id,subject_id,title,status") {
+		t.Fatalf("CSV missing expected content: %s", body)
+	}
+	assertAMLAudit(t, "report.exported", "aml-cases")
+}
+
 func assertAMLAudit(t *testing.T, action, targetID string) {
 	t.Helper()
 	for _, e := range providerOpsAuditSnapshot() {
