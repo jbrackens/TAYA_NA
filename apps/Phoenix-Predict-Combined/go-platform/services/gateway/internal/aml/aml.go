@@ -137,6 +137,15 @@ func (s *Store) ensureSchema() error {
 )`,
 		`CREATE INDEX IF NOT EXISTS idx_aml_alerts_status ON aml_alerts (status, detected_at DESC)`,
 		`CREATE INDEX IF NOT EXISTS idx_aml_alerts_subject ON aml_alerts (subject_id, detected_at DESC)`,
+		// Single-row watermark for the incremental wallet_ledger scanner
+		// (slice 2). The scanner only READS wallet_ledger; this table is the
+		// only place it writes its cursor.
+		`CREATE TABLE IF NOT EXISTS aml_scan_state (
+  id INT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+  last_ledger_id BIGINT NOT NULL DEFAULT 0,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`,
+		`INSERT INTO aml_scan_state (id, last_ledger_id) VALUES (1, 0) ON CONFLICT (id) DO NOTHING`,
 	}
 	for _, stmt := range statements {
 		if _, err := s.db.ExecContext(ctx, stmt); err != nil {
@@ -452,6 +461,28 @@ FROM aml_cases c`
 		cases = append(cases, c)
 	}
 	return cases, rows.Err()
+}
+
+// Watermark returns the last wallet_ledger id the scanner processed.
+func (s *Store) Watermark(ctx context.Context) (int64, error) {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	var id int64
+	err := s.db.QueryRowContext(ctx, `SELECT last_ledger_id FROM aml_scan_state WHERE id = 1`).Scan(&id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, nil
+	}
+	return id, err
+}
+
+// SetWatermark advances the scanner cursor. Monotonic: never moves backward.
+func (s *Store) SetWatermark(ctx context.Context, ledgerID int64) error {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	_, err := s.db.ExecContext(ctx, `
+UPDATE aml_scan_state SET last_ledger_id = $1, updated_at = NOW()
+WHERE id = 1 AND $1 > last_ledger_id`, ledgerID)
+	return err
 }
 
 // --- helpers ---
