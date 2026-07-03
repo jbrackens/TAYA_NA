@@ -23,7 +23,9 @@ func botKeySelfServeEnabled() bool {
 		return v == "true" || v == "1"
 	}
 	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
-	return env != "production" && env != "staging"
+	// GAP-69: default-off in ANY deployed env (dev-allowlist), so a non-canonical
+	// value like "prod"/"preprod" does not leave self-serve bot-key issuance on.
+	return !compliance.IsDeployedEnvironment(env)
 }
 
 func normalizeBotKeyScopes(scopes []string) ([]string, error) {

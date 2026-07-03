@@ -301,6 +301,17 @@ func TestBotKeySelfServeGate(t *testing.T) {
 			t.Fatal("self-serve should be on in dev/demo by default")
 		}
 	})
+	// GAP-69: a non-canonical deployed env ("prod", "preprod", a typo) must be
+	// treated as deployed — self-serve off by default, not left on.
+	t.Run("non-canonical deployed env blocks self-serve by default", func(t *testing.T) {
+		for _, env := range []string{"prod", "preprod", "Production", "produciton"} {
+			t.Setenv("ENVIRONMENT", env)
+			t.Setenv("BOT_KEYS_SELF_SERVE", "")
+			if botKeySelfServeEnabled() {
+				t.Fatalf("self-serve must be off by default in deployed env %q", env)
+			}
+		}
+	})
 }
 
 func TestBotKeySelfServeRejectsPrivilegedOrUnknownScopes(t *testing.T) {

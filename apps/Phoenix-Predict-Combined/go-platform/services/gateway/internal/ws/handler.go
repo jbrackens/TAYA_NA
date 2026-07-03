@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+
+	"phoenix-revival/gateway/internal/compliance"
 )
 
 var allowedOrigins []string
@@ -37,7 +39,10 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *stdhttp.Request) bool {
 		if len(allowedOrigins) == 0 {
-			if wsEnvironment == "production" || wsEnvironment == "staging" {
+			// GAP-69: reject unconfigured-origin connections in ANY deployed env
+			// (dev-allowlist), not just exact "production"/"staging" — otherwise
+			// a non-canonical deployed env ("prod"/typo) would allow all origins.
+			if compliance.IsDeployedEnvironment(wsEnvironment) {
 				slog.Warn("ws connection rejected: WS_ALLOWED_ORIGINS not configured", "environment", wsEnvironment)
 				return false
 			}
