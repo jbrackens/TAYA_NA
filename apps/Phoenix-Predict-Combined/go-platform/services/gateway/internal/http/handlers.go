@@ -322,6 +322,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	if predSQLRepo != nil {
 		registerPredictionAdminRoutes(mux, predSQLRepo, walletService)
 		registerPredictionRiskRoutes(mux, predSQLRepo)
+		registerAdminOrderRoutes(mux, predictionService, predSQLRepo) // GAP-21: admin order view/cancel
 		slog.Info("prediction: admin read routes registered (punters, audit-logs, risk)")
 	}
 
