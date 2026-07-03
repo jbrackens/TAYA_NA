@@ -162,7 +162,13 @@ moved from BLOCKED to buildable); the loop resumes normal iterations.
   **EXPOSURE/POSITION LIMIT — BLOCKED** (design note `docs/pam/designs/gap-11-exposure-limit.md`, ⚑ PROTECTED CORE). Gap re-verified: exposure math lives in protected `internal/prediction/risk.go`; the CheckBetAllowed seam sees only stakeCents, so a correct PRE-TRADE cap (current + order delta ≤ limit) needs a hook in the protected order path (review-gated, like P0-7). A read-only lagging current-exposure approximation is possible but would re-implement the protected exposure semantics — human chooses Option A (approx) / B (protected hook) / C (descope).
   **⇒ GAP-11 disposition COMPLETE:** loss limit DONE (4 slices); session + exposure BLOCKED with design notes. Counts as the 2nd completed item since verification #7 (GAP-12 was #1). Next: **GAP-13 (P0)** audit hash-chaining → then verification #8 (3rd item).
 
-### GAP-13 plan (next build, gap re-verified 2026-07-03)
+### GAP-13 — DONE (3 slices, 2026-07-03) — tamper-evident audit hash chain
+- Slice 1 `413ab84e`: `provider_ops_audit_log` gains seq/prev_hash/entry_hash (Postgres, idempotent ensureSchema); `Append` chains under `pg_advisory_xact_lock` (serialized, no forks); `entry_hash = sha256(prev_hash || length-prefixed fields)`; non-Postgres keeps plain insert; append-only trigger untouched. Live linkage + tamper + `-race` concurrency (96 concurrent appends → one linear chain).
+- Slice 2 `5d990f91`: `VerifyChain` walks by seq, reports first break (altered/deleted/reordered); GET `/api/v1/admin/audit-logs/verify` (compliance:read, audited `audit.chain_verified`). Route tests + live (clean/altered/deleted).
+- Slice 3 `3c238f43`: office Audit Logs page "Verify chain integrity" button + status badge. Office build green.
+- Full gateway `go test -race` exit 0 throughout; protected-core-clean; no goose migration (app-managed ensureSchema). **3rd completed item since verification #7 → verification #8 dispatched.**
+
+### GAP-13 plan (SUPERSEDED — see DONE block above)
 **GAP-13 (P0) — Audit-log hash-chaining (PAM §24 Audit Logs and Compliance Evidence; §32 Scenario 17).**
 - Gap re-verification (DONE): the audit log is `provider_ops_audit_log` (lazily created by `internal/http/provider_ops_audit_store.go` ensureSchema; also migration 036). Append-only rests SOLELY on the DB trigger `audit_log_append_only()` (raises on UPDATE/DELETE/TRUNCATE). NO hash-chaining today — columns are id/action/actor_id/target_id/occurred_at/details (009 + 036). A superuser who drops the trigger can tamper with no in-band evidence → gap open. Non-protected (audit subsystem in `internal/http`); buildable.
 - Write path: `recordProviderOpsAuditAction` → `recordProviderOpsAuditEntry` → `providerOpsAuditDBStore.Append` (INSERT at `provider_ops_audit_store.go:177`).
