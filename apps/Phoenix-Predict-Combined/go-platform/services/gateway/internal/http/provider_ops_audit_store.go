@@ -2,7 +2,9 @@ package http
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,6 +14,29 @@ import (
 	"strings"
 	"time"
 )
+
+// auditChainLockKey serializes hash-chain appends cluster-wide (GAP-13). It is
+// passed to pg_advisory_xact_lock(hashtext(...)) so concurrent appenders cannot
+// read the same predecessor hash and fork the chain.
+const auditChainLockKey = "provider_ops_audit_chain"
+
+// computeAuditEntryHash returns the tamper-evidence hash for one audit row:
+// sha256 over the predecessor's hash plus every identifying field, each
+// length-prefixed so no field boundary is forgeable (a value containing a
+// separator cannot masquerade as a different record). The chain is broken by
+// any post-hoc edit or deletion, independent of the append-only DB trigger.
+func computeAuditEntryHash(prevHash string, e auditLogEntry) string {
+	h := sha256.New()
+	for _, f := range []string{prevHash, e.ID, e.Action, e.ActorID, e.TargetID, e.OccurredAt, e.Details} {
+		fmt.Fprintf(h, "%d:", len(f))
+		_, _ = h.Write([]byte(f))
+	}
+	return hex.EncodeToString(h.Sum(nil))
+}
+
+func (s *providerOpsAuditDBStore) isPostgres() bool {
+	return s.driver == "postgres" || s.driver == "pgx"
+}
 
 const (
 	defaultProviderOpsAuditPath = ".runtime/provider_ops_audit.json"
@@ -173,6 +198,49 @@ func (s *providerOpsAuditDBStore) Append(entry auditLogEntry, _ int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), providerOpsAuditDBTimeout)
 	defer cancel()
 
+	// Hash-chaining is a Postgres (production) tamper-evidence control. Other
+	// drivers (e.g. a dev sqlite) keep the plain insert without a chain.
+	if !s.isPostgres() {
+		return s.appendPlain(ctx, entry)
+	}
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	// Serialize appends cluster-wide so the chain stays strictly linear — a
+	// concurrent appender cannot read the same predecessor hash and fork the
+	// chain. Auto-released on commit/rollback (same idiom as the wallet path).
+	if _, err := tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(hashtext($1))`, auditChainLockKey); err != nil {
+		return err
+	}
+
+	// The predecessor is the highest-seq chained row (entry_hash IS NOT NULL);
+	// its hash is empty for the genesis entry.
+	var prevHash sql.NullString
+	err = tx.QueryRowContext(ctx, `
+SELECT entry_hash FROM provider_ops_audit_log
+WHERE entry_hash IS NOT NULL
+ORDER BY seq DESC LIMIT 1`).Scan(&prevHash)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return err
+	}
+	prev := prevHash.String
+	entryHash := computeAuditEntryHash(prev, entry)
+
+	if _, err := tx.ExecContext(ctx, `
+INSERT INTO provider_ops_audit_log (id, action, actor_id, target_id, occurred_at, details, prev_hash, entry_hash)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+		entry.ID, entry.Action, entry.ActorID, entry.TargetID, entry.OccurredAt, entry.Details, prev, entryHash); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+// appendPlain is the pre-hash-chain insert, retained for non-Postgres drivers.
+func (s *providerOpsAuditDBStore) appendPlain(ctx context.Context, entry auditLogEntry) error {
 	query := fmt.Sprintf(`
 INSERT INTO provider_ops_audit_log (
   id,
@@ -200,7 +268,7 @@ func (s *providerOpsAuditDBStore) ensureSchema() error {
 	ctx, cancel := context.WithTimeout(context.Background(), providerOpsAuditDBTimeout)
 	defer cancel()
 
-	_, err := s.db.ExecContext(ctx, `
+	if _, err := s.db.ExecContext(ctx, `
 CREATE TABLE IF NOT EXISTS provider_ops_audit_log (
   id TEXT PRIMARY KEY,
   action TEXT NOT NULL,
@@ -212,8 +280,25 @@ CREATE TABLE IF NOT EXISTS provider_ops_audit_log (
 
 CREATE INDEX IF NOT EXISTS idx_provider_ops_audit_occurred_at ON provider_ops_audit_log(occurred_at DESC);
 CREATE INDEX IF NOT EXISTS idx_provider_ops_audit_action ON provider_ops_audit_log(action);
-CREATE INDEX IF NOT EXISTS idx_provider_ops_audit_actor_id ON provider_ops_audit_log(actor_id);`)
-	return err
+CREATE INDEX IF NOT EXISTS idx_provider_ops_audit_actor_id ON provider_ops_audit_log(actor_id);`); err != nil {
+		return err
+	}
+
+	// GAP-13 (PAM §24 Audit Logs and Compliance Evidence): tamper-evidence
+	// hash chain. seq gives a monotonic append order (the id/occurred_at
+	// columns are not insert-ordered); prev_hash/entry_hash link each row to
+	// its predecessor so any post-hoc edit or deletion breaks the chain,
+	// independent of the append-only trigger. Postgres-only (production); added
+	// idempotently so existing deployments gain the columns on boot.
+	if s.isPostgres() {
+		if _, err := s.db.ExecContext(ctx, `
+ALTER TABLE provider_ops_audit_log ADD COLUMN IF NOT EXISTS seq BIGSERIAL;
+ALTER TABLE provider_ops_audit_log ADD COLUMN IF NOT EXISTS prev_hash TEXT;
+ALTER TABLE provider_ops_audit_log ADD COLUMN IF NOT EXISTS entry_hash TEXT;`); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *providerOpsAuditDBStore) placeholder(index int) string {
