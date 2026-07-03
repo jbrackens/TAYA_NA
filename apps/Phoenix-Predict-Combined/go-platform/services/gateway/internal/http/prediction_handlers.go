@@ -1444,6 +1444,22 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			})
 		}
 
+		// GAP-20 slice 2: read the market's required eligibility tags so the
+		// back-office form can pre-fill. A read, so it sits with the other GET
+		// carve-outs above the POST-only gate; writes go through the POST switch.
+		if len(parts) == 2 &&
+			strings.EqualFold(strings.TrimSpace(parts[1]), "eligibility-tags") &&
+			r.Method == stdhttp.MethodGet {
+			if marketEligibilityAdmin == nil {
+				return httpx.NotFound("market eligibility configuration is unavailable")
+			}
+			tags, err := marketEligibilityAdmin.ListRequiredTags(r.Context(), parts[0])
+			if err != nil {
+				return mapMarketEligibilityError(err)
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"marketId": parts[0], "tagIds": tags})
+		}
+
 		adminID := userIDFromRequest(r)
 		actorID := actorIDPointer(adminID)
 
@@ -1560,6 +1576,45 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 					"cleared": policy == nil,
 				})
 				return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"marketId": parts[0], "policy": policy})
+			case "eligibility-tags":
+				// GAP-20 slice 2: add/remove a tag requirement on a market. A
+				// single POST with {tagId, op} — the shared handler is POST-only
+				// for multi-part paths, so remove rides here rather than DELETE.
+				// Audited market.eligibility_tags_changed; markets:edit (top gate);
+				// identified admin required (checked above) so the audit has an actor.
+				if marketEligibilityAdmin == nil {
+					return httpx.NotFound("market eligibility configuration is unavailable")
+				}
+				var body struct {
+					TagID int64  `json:"tagId"`
+					Op    string `json:"op"`
+				}
+				if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+					return httpx.BadRequest("invalid request body", nil)
+				}
+				if body.TagID <= 0 {
+					return httpx.BadRequest("tagId is required", map[string]any{"field": "tagId"})
+				}
+				switch strings.ToLower(strings.TrimSpace(body.Op)) {
+				case "", "add":
+					if err := marketEligibilityAdmin.AddRequiredTag(r.Context(), parts[0], body.TagID); err != nil {
+						return mapMarketEligibilityError(err)
+					}
+					recordProviderOpsAuditAction(adminID, "market.eligibility_tags_changed", parts[0], map[string]any{
+						"op": "add", "tagId": body.TagID,
+					})
+					return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"marketId": parts[0], "tagId": body.TagID, "added": true})
+				case "remove":
+					if err := marketEligibilityAdmin.RemoveRequiredTag(r.Context(), parts[0], body.TagID); err != nil {
+						return mapMarketEligibilityError(err)
+					}
+					recordProviderOpsAuditAction(adminID, "market.eligibility_tags_changed", parts[0], map[string]any{
+						"op": "remove", "tagId": body.TagID,
+					})
+					return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"marketId": parts[0], "tagId": body.TagID, "removed": true})
+				default:
+					return httpx.BadRequest(`op must be "add" or "remove"`, map[string]any{"field": "op"})
+				}
 			default:
 				return httpx.NotFound("route not found")
 			}

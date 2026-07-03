@@ -632,7 +632,9 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// GAP-20: per-market eligibility (tag-gate). Wired only with a DB present;
 	// nil in memory mode makes checkMarketEligibility a no-op.
 	if edb := walletService.DB(); edb != nil {
-		marketEligibility = sqlMarketEligibility{db: edb}
+		elig := sqlMarketEligibility{db: edb}
+		marketEligibility = elig
+		marketEligibilityAdmin = elig
 	}
 	// Legacy guarded routes run through the same geo gate as trading. Their
 	// registration is still controlled by the Tiangge legacy-route opt-in; see
