@@ -3,6 +3,8 @@ package http
 import (
 	"context"
 	stdhttp "net/http"
+	"strings"
+	"time"
 
 	"phoenix-revival/gateway/internal/wallet"
 	"phoenix-revival/platform/transport/httpx"
@@ -35,9 +37,25 @@ func registerReportsRoutes(mux *stdhttp.ServeMux, walletSvc *wallet.Service) {
 	}
 
 	for _, base := range []string{"/api/v1/admin", "/admin"} {
-		get(base+"/wallet/reconciliation", func(r *stdhttp.Request) (any, error) {
-			return pointWalletReconciliationReport(r.Context(), walletSvc)
-		})
+		// Registered directly (not via get) so a malformed ?from=/?to= is a 400,
+		// not the 500 the get wrapper turns every fn error into (GAP-72, §23).
+		mux.Handle(base+"/wallet/reconciliation", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+			if r.Method != stdhttp.MethodGet {
+				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+			}
+			if err := requireAdminRole(r); err != nil {
+				return err
+			}
+			from, to, err := parseOptionalDateRange(r)
+			if err != nil {
+				return err
+			}
+			payload, err := pointWalletReconciliationReport(r.Context(), walletSvc, from, to)
+			if err != nil {
+				return httpx.Internal("failed to build report", err)
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, payload)
+		}))
 
 		// Point-campaign usage has no active aggregate yet. Return honest zeros
 		// without preserving sportsbook promo metric names.
@@ -75,11 +93,37 @@ type walletReconciliationReport struct {
 	Unit                   string `json:"unit"`
 }
 
-func pointWalletReconciliationReport(ctx context.Context, walletSvc *wallet.Service) (walletReconciliationReport, error) {
+// parseOptionalDateRange reads optional ?from= & ?to= (YYYY-MM-DD) query params
+// into an inclusive [from, to] window for wallet.ReconciliationSummary (which
+// filters transaction_time >= from AND <= to). 'to' is expanded to the last
+// instant of that day so the whole 'to' day is included — matching the
+// inclusive-'to' semantics of the ledger CSV export and daily-balance report. A
+// malformed date is a client error (400), never a silent full-range fallback.
+func parseOptionalDateRange(r *stdhttp.Request) (*time.Time, *time.Time, error) {
+	var from, to *time.Time
+	if s := strings.TrimSpace(r.URL.Query().Get("from")); s != "" {
+		t, err := time.Parse("2006-01-02", s)
+		if err != nil {
+			return nil, nil, httpx.BadRequest("invalid 'from' date; expected YYYY-MM-DD", nil)
+		}
+		from = &t
+	}
+	if s := strings.TrimSpace(r.URL.Query().Get("to")); s != "" {
+		t, err := time.Parse("2006-01-02", s)
+		if err != nil {
+			return nil, nil, httpx.BadRequest("invalid 'to' date; expected YYYY-MM-DD", nil)
+		}
+		end := t.AddDate(0, 0, 1).Add(-time.Nanosecond)
+		to = &end
+	}
+	return from, to, nil
+}
+
+func pointWalletReconciliationReport(ctx context.Context, walletSvc *wallet.Service, from, to *time.Time) (walletReconciliationReport, error) {
 	if walletSvc == nil {
 		return walletReconciliationReport{Unit: "PTS"}, nil
 	}
-	summary, err := walletSvc.ReconciliationSummary(ctx, nil, nil)
+	summary, err := walletSvc.ReconciliationSummary(ctx, from, to)
 	if err != nil {
 		return walletReconciliationReport{}, err
 	}
