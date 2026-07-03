@@ -226,6 +226,16 @@ func (m *MockKYCService) UpsertIdentity(_ context.Context, identity KYCIdentity)
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	cp := identity
+	// GAP-59: a reviewer-confirmed hit is terminal — a re-submission updates the
+	// identity fields but cannot clear or re-screen away the confirmed verdict
+	// (mirrors the Postgres reviewer-lock). Non-confirmed verdicts re-screen.
+	if prev, ok := m.identities[identity.UserID]; ok && prev.ScreeningStatus == ScreeningHitConfirmed {
+		cp.ScreeningStatus = prev.ScreeningStatus
+		cp.ScreeningScore = prev.ScreeningScore
+		cp.ScreeningMatchIDs = prev.ScreeningMatchIDs
+		cp.ScreeningProvider = prev.ScreeningProvider
+		cp.ScreenedAt = prev.ScreenedAt
+	}
 	cp.UpdatedAt = time.Now().UTC()
 	m.identities[identity.UserID] = &cp
 	return nil

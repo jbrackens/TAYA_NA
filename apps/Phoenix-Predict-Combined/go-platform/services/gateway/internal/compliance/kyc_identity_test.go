@@ -171,3 +171,53 @@ func TestKYCIdentityResponseShape(t *testing.T) {
 		t.Fatalf("response must be exactly {accepted:true}, got %v", parsed)
 	}
 }
+
+// TestHitConfirmedIsStickyOnResubmit (GAP-59) proves the reviewer-lock in the
+// mock store: once a screening verdict is hit_confirmed, a re-submitted identity
+// updates the identity fields but cannot clear or re-screen away the confirmed
+// verdict; a non-confirmed verdict re-screens normally.
+func TestHitConfirmedIsStickyOnResubmit(t *testing.T) {
+	svc := NewMockKYCService()
+	ctx := context.Background()
+
+	// A reviewer-confirmed hit (as ReviewScreening would set), with evidence.
+	if err := svc.UpsertIdentity(ctx, KYCIdentity{
+		UserID: "u-hit", FullName: "Original Name",
+		ScreeningStatus: ScreeningHitConfirmed, ScreeningScore: 0.97,
+		ScreeningMatchIDs: []string{"OFAC-123"}, ScreeningProvider: "yente",
+	}); err != nil {
+		t.Fatalf("seed confirmed hit: %v", err)
+	}
+	// Re-submit with a corrected name and a fresh CLEAN automated screen.
+	if err := svc.UpsertIdentity(ctx, KYCIdentity{
+		UserID: "u-hit", FullName: "Altered Name",
+		ScreeningStatus: string(PersonScreeningClear), ScreeningScore: 0.0,
+	}); err != nil {
+		t.Fatalf("resubmit: %v", err)
+	}
+	got, _ := svc.GetIdentity(ctx, "u-hit")
+	if got == nil || got.ScreeningStatus != ScreeningHitConfirmed {
+		t.Fatalf("hit_confirmed must be sticky, got %+v", got)
+	}
+	if got.FullName != "Altered Name" {
+		t.Fatalf("identity fields must still update, got name %q", got.FullName)
+	}
+	if got.ScreeningScore != 0.97 || len(got.ScreeningMatchIDs) != 1 {
+		t.Fatalf("confirmed-hit evidence must be preserved, got score=%v matches=%v", got.ScreeningScore, got.ScreeningMatchIDs)
+	}
+	if ScreeningPermitsApproval(got.ScreeningStatus) {
+		t.Fatal("a confirmed hit must never permit approval")
+	}
+
+	// A NON-confirmed verdict re-screens on re-submit.
+	if err := svc.UpsertIdentity(ctx, KYCIdentity{UserID: "u-pot", FullName: "X", ScreeningStatus: string(PersonScreeningPotentialMatch)}); err != nil {
+		t.Fatalf("seed potential: %v", err)
+	}
+	if err := svc.UpsertIdentity(ctx, KYCIdentity{UserID: "u-pot", FullName: "X", ScreeningStatus: string(PersonScreeningClear)}); err != nil {
+		t.Fatalf("resubmit potential: %v", err)
+	}
+	got2, _ := svc.GetIdentity(ctx, "u-pot")
+	if got2 == nil || got2.ScreeningStatus != string(PersonScreeningClear) {
+		t.Fatalf("a non-confirmed verdict must re-screen, got %+v", got2)
+	}
+}

@@ -96,9 +96,12 @@ type KYCIdentityStore interface {
 	GetIdentity(ctx context.Context, userID string) (*KYCIdentity, error) // (nil, nil) when absent
 }
 
-// UpsertIdentity stores/refreshes the subject's identity and screening
-// verdict. Re-submission overwrites and re-screens by design: a corrected
-// name must produce a fresh verdict, never inherit the old one.
+// UpsertIdentity stores/refreshes the subject's identity and screening verdict.
+// Re-submission re-screens by design — a corrected name must produce a fresh
+// verdict — EXCEPT for a reviewer-confirmed hit (GAP-59): once a reviewer sets
+// hit_confirmed, that verdict is terminal and a re-submission cannot clear or
+// re-screen it away (an evasion guard against altering the name to dodge a list
+// match). The identity fields still update; only the confirmed verdict is locked.
 func (s *PostgresKYCService) UpsertIdentity(ctx context.Context, identity KYCIdentity) error {
 	if identity.UserID == "" || identity.FullName == "" {
 		return errors.New("kyc identity: userID and fullName are required")
@@ -111,6 +114,9 @@ func (s *PostgresKYCService) UpsertIdentity(ctx context.Context, identity KYCIde
 	if !identity.ScreenedAt.IsZero() {
 		screenedAt = identity.ScreenedAt
 	}
+	// $10 = ScreeningHitConfirmed: when the EXISTING row is a reviewer-confirmed
+	// hit, preserve the whole screening verdict block; otherwise take the fresh
+	// screen (EXCLUDED). All CASE arms read the pre-update kyc_identity.* values.
 	_, err = s.db.ExecContext(ctx, `
 INSERT INTO kyc_identity
   (user_id, full_name, date_of_birth, country,
@@ -120,14 +126,20 @@ ON CONFLICT (user_id) DO UPDATE SET
   full_name = EXCLUDED.full_name,
   date_of_birth = EXCLUDED.date_of_birth,
   country = EXCLUDED.country,
-  screening_status = EXCLUDED.screening_status,
-  screening_score = EXCLUDED.screening_score,
-  screening_match_ids = EXCLUDED.screening_match_ids,
-  screening_provider = EXCLUDED.screening_provider,
-  screened_at = EXCLUDED.screened_at,
+  screening_status = CASE WHEN kyc_identity.screening_status = $10
+    THEN kyc_identity.screening_status ELSE EXCLUDED.screening_status END,
+  screening_score = CASE WHEN kyc_identity.screening_status = $10
+    THEN kyc_identity.screening_score ELSE EXCLUDED.screening_score END,
+  screening_match_ids = CASE WHEN kyc_identity.screening_status = $10
+    THEN kyc_identity.screening_match_ids ELSE EXCLUDED.screening_match_ids END,
+  screening_provider = CASE WHEN kyc_identity.screening_status = $10
+    THEN kyc_identity.screening_provider ELSE EXCLUDED.screening_provider END,
+  screened_at = CASE WHEN kyc_identity.screening_status = $10
+    THEN kyc_identity.screened_at ELSE EXCLUDED.screened_at END,
   updated_at = NOW()`,
 		identity.UserID, identity.FullName, identity.DateOfBirth, identity.Country,
-		identity.ScreeningStatus, identity.ScreeningScore, matchIDs, identity.ScreeningProvider, screenedAt)
+		identity.ScreeningStatus, identity.ScreeningScore, matchIDs, identity.ScreeningProvider, screenedAt,
+		ScreeningHitConfirmed)
 	return err
 }
 

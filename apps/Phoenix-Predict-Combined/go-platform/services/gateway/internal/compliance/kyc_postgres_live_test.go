@@ -195,6 +195,67 @@ func TestPostgresKYCIdentityLive(t *testing.T) {
 	}
 }
 
+// TestPostgresKYCHitConfirmedStickyLive (GAP-59) proves the reviewer-lock on the
+// real Postgres path: once a reviewer confirms a hit, a re-submitted identity
+// (even with a fresh CLEAN automated screen and an altered name) cannot clear or
+// re-screen away the confirmed verdict — the identity fields update but the
+// screening verdict + evidence are preserved.
+func TestPostgresKYCHitConfirmedStickyLive(t *testing.T) {
+	dsn := os.Getenv("KYC_LIVE_DSN")
+	if dsn == "" {
+		t.Skip("KYC_LIVE_DSN not set; skipping live Postgres KYC test")
+	}
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatalf("open: %v", err)
+	}
+	defer db.Close()
+	svc, err := NewPostgresKYCService(db, NewIDVProviderFromEnv())
+	if err != nil {
+		t.Fatalf("init: %v", err)
+	}
+	ctx := context.Background()
+	userID := fmt.Sprintf("u-sticky-%d", time.Now().UnixNano())
+
+	// Intake screen flags a potential match, then a reviewer CONFIRMS the hit.
+	if err := svc.UpsertIdentity(ctx, KYCIdentity{
+		UserID: userID, FullName: "Sanctioned Person", Country: "IR",
+		ScreeningStatus: string(PersonScreeningPotentialMatch), ScreeningScore: 0.88,
+		ScreeningMatchIDs: []string{"OFAC-777"}, ScreeningProvider: "yente", ScreenedAt: time.Now().UTC(),
+	}); err != nil {
+		t.Fatalf("intake upsert: %v", err)
+	}
+	if _, err := svc.ReviewScreening(ctx, userID, "confirmed"); err != nil {
+		t.Fatalf("review confirm: %v", err)
+	}
+
+	// Re-submit with an altered name and a fresh CLEAN screen — the evasion attempt.
+	if err := svc.UpsertIdentity(ctx, KYCIdentity{
+		UserID: userID, FullName: "Totally Different Name",
+		ScreeningStatus: string(PersonScreeningClear), ScreeningScore: 0.0,
+		ScreeningProvider: "yente", ScreenedAt: time.Now().UTC(),
+	}); err != nil {
+		t.Fatalf("resubmit: %v", err)
+	}
+
+	got, err := svc.GetIdentity(ctx, userID)
+	if err != nil || got == nil {
+		t.Fatalf("get: %+v %v", got, err)
+	}
+	if got.ScreeningStatus != ScreeningHitConfirmed {
+		t.Fatalf("hit_confirmed must be sticky, got %q", got.ScreeningStatus)
+	}
+	if got.FullName != "Totally Different Name" {
+		t.Fatalf("identity fields must still update, got %q", got.FullName)
+	}
+	if got.ScreeningScore != 0.88 || len(got.ScreeningMatchIDs) != 1 {
+		t.Fatalf("confirmed-hit evidence must be preserved, got score=%v matches=%v", got.ScreeningScore, got.ScreeningMatchIDs)
+	}
+	if ScreeningPermitsApproval(got.ScreeningStatus) {
+		t.Fatal("a confirmed hit must never permit KYC approval")
+	}
+}
+
 func TestPostgresKYCDocumentFileLive(t *testing.T) {
 	dsn := os.Getenv("KYC_LIVE_DSN")
 	if dsn == "" {
