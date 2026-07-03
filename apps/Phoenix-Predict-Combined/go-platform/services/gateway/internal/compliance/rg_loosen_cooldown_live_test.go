@@ -218,6 +218,8 @@ func TestPostgresLossLimitLoosenCooldownLive(t *testing.T) {
 	ctx := context.Background()
 	const u = "u-losscool-1"
 
+	skipIfMigratedPayouts(t, db)
+
 	// Minimal prediction_payouts (matches TestPostgresLossLimitEnforcementLive;
 	// realizedLossInPeriod reads user_id/pnl_cents/paid_at). Bare-DB contract.
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS prediction_payouts (

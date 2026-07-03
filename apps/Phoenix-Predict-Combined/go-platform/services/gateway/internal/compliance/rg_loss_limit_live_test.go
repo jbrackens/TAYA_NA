@@ -10,6 +10,28 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// skipIfMigratedPayouts skips a self-provisioning RG loss-limit live test when
+// prediction_payouts already carries the full migration-014 schema — which has a
+// NOT NULL settlement_id the tests' minimal 3-column INSERT cannot satisfy. These
+// tests seed a minimal payouts shell and belong to the bare-DB compliance CI
+// group (GAP-62); on a migrated DB they would fail on the settlement_id
+// constraint, so skip gracefully. The loss-cooldown control itself is proven
+// correct against the real schema by the migrated-DB suites. GAP-66.
+func skipIfMigratedPayouts(t *testing.T, db *sql.DB) {
+	t.Helper()
+	var present bool
+	if err := db.QueryRow(`
+SELECT EXISTS (
+  SELECT 1 FROM information_schema.columns
+  WHERE table_name = 'prediction_payouts' AND column_name = 'settlement_id'
+)`).Scan(&present); err != nil {
+		t.Fatalf("payouts schema probe: %v", err)
+	}
+	if present {
+		t.Skip("prediction_payouts carries the migrated schema (settlement_id NOT NULL); this self-provisioning test runs on the bare-DB compliance group")
+	}
+}
+
 // Opt-in live test for the Postgres RG loss-limit storage (GAP-11): set
 // RG_LIVE_DSN to a scratch database. Skipped when unset (CI, plain go test).
 func TestPostgresLossLimitLive(t *testing.T) {
@@ -85,6 +107,8 @@ func TestPostgresLossLimitEnforcementLive(t *testing.T) {
 		t.Fatalf("init: %v", err)
 	}
 	ctx := context.Background()
+
+	skipIfMigratedPayouts(t, db)
 
 	// Minimal prediction_payouts (the reader only needs user_id/pnl_cents/paid_at;
 	// the real table — migration 014 — is richer, with FKs to settlement etc.).
