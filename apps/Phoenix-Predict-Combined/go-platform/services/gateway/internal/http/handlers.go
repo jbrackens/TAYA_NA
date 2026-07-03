@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"phoenix-revival/gateway/internal/alphacashier"
+	"phoenix-revival/gateway/internal/aml"
 	"phoenix-revival/gateway/internal/bonus"
 	"phoenix-revival/gateway/internal/compliance"
 	"phoenix-revival/gateway/internal/content"
@@ -567,6 +568,22 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 			survEngine := surveillance.NewEngine(survStore, survDB)
 			registerSurveillanceAdminRoutes(mux, survStore, surveillanceScannerAdapter{survEngine})
 			slog.Info("surveillance: market-integrity subsystem initialized")
+		}
+	}
+
+	// Money-flow AML monitoring (P0-5): the scanner reads wallet_ledger
+	// READ-ONLY and drives the data-driven rule engine into aml_alerts/cases.
+	// Always-on when DB-backed — harmless with zero rules loaded (the
+	// fail-safe default), and it is a back-office compliance control, not a
+	// user-facing money path, so it does not violate the launch prohibitions.
+	if amlDB := walletService.DB(); amlDB != nil {
+		if amlStore, err := aml.NewStore(amlDB); err != nil {
+			slog.Error("aml: store init failed; AML routes disabled", "error", err)
+		} else {
+			amlScan := aml.NewScanner(amlStore, amlDB, 60*time.Second, 0)
+			registerAMLAdminRoutes(mux, amlStore, amlScan)
+			go amlScan.Run(context.Background())
+			slog.Info("aml: money-flow monitoring subsystem initialized")
 		}
 	}
 	// Pre-trade jurisdiction + KYC gates. Both default OFF — wired here so a

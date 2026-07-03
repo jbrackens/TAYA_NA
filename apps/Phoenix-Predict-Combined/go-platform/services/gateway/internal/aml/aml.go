@@ -187,6 +187,30 @@ WHERE id=$1`, r.ID, r.Name, r.Kind, params, r.RiskPoints, severityOrDefault(r.Se
 	return r.ID, nil
 }
 
+// ListRules returns every rule (enabled and disabled) for the admin editor.
+func (s *Store) ListRules(ctx context.Context) ([]Rule, error) {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	rows, err := s.db.QueryContext(ctx, `
+SELECT id, name, kind, COALESCE(params::text,'{}'), risk_points, severity, enabled
+FROM aml_rules ORDER BY id`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []Rule{}
+	for rows.Next() {
+		var r Rule
+		var params string
+		if err := rows.Scan(&r.ID, &r.Name, &r.Kind, &params, &r.RiskPoints, &r.Severity, &r.Enabled); err != nil {
+			return nil, err
+		}
+		r.Params = unmarshalJSON(params)
+		out = append(out, r)
+	}
+	return out, rows.Err()
+}
+
 // EnabledRules loads the currently-active rules. Empty until counsel supplies a
 // threshold sheet — the fail-safe default is "monitor nothing" rather than
 // "monitor with a guessed regime".
