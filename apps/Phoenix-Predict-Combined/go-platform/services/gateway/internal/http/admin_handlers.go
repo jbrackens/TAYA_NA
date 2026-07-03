@@ -189,6 +189,13 @@ func registerAdminWalletMutationRoutes(mux *stdhttp.ServeMux, basePath string, w
 		if err != nil {
 			return err
 		}
+		// P0-6 (§7 Permission Model, §25 Admin Operations): a manual
+		// adjustment at or above the dual-approval threshold must go through
+		// maker-checker — this direct route would otherwise be a four-eyes
+		// bypass. Refuse and point to the maker-checker submission endpoint.
+		if err := requireDualApproval(request.AmountCents); err != nil {
+			return err
+		}
 		entry, err := walletService.Credit(r.Context(), wallet.MutationRequest{
 			UserID:         request.UserID,
 			AmountCents:    request.AmountCents,
@@ -222,6 +229,10 @@ func registerAdminWalletMutationRoutes(mux *stdhttp.ServeMux, basePath string, w
 
 		request, err := decodeWalletMutationRequest(r)
 		if err != nil {
+			return err
+		}
+		// P0-6: same dual-approval gate on the debit path.
+		if err := requireDualApproval(request.AmountCents); err != nil {
 			return err
 		}
 		entry, err := walletService.Debit(r.Context(), wallet.MutationRequest{

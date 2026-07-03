@@ -23,6 +23,7 @@ import (
 	"phoenix-revival/gateway/internal/leaderboards"
 	"phoenix-revival/gateway/internal/livemarkets"
 	"phoenix-revival/gateway/internal/loyalty"
+	"phoenix-revival/gateway/internal/makerchecker"
 	"phoenix-revival/gateway/internal/notify"
 	"phoenix-revival/gateway/internal/payments"
 	"phoenix-revival/gateway/internal/platformconfig"
@@ -584,6 +585,19 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 			registerAMLAdminRoutes(mux, amlStore, amlScan)
 			go amlScan.Run(context.Background())
 			slog.Info("aml: money-flow monitoring subsystem initialized")
+		}
+	}
+
+	// Maker-checker for high-value manual adjustments (P0-6): amounts at or
+	// above the dual-approval threshold are queued for a second approver
+	// (maker != checker). The direct credit/debit routes already refuse such
+	// amounts (requireDualApproval); these routes are the approval surface.
+	if mcDB := walletService.DB(); mcDB != nil {
+		if mcStore, err := makerchecker.NewStore(mcDB); err != nil {
+			slog.Error("makerchecker: store init failed; dual-approval routes disabled", "error", err)
+		} else {
+			registerMakerCheckerRoutes(mux, mcStore, walletService)
+			slog.Info("makerchecker: dual-approval subsystem initialized")
 		}
 	}
 	// Pre-trade jurisdiction + KYC gates. Both default OFF — wired here so a
