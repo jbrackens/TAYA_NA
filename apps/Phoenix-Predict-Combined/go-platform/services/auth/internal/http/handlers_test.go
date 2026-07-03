@@ -53,6 +53,43 @@ func TestRegisterAcceptsShortUsernameAndSevenCharacterPassword(t *testing.T) {
 	}
 }
 
+// TestRegisterResponseEchoesAttribution (GAP-36) confirms the register response
+// body echoes the captured affiliate tag + normalized signup country (also
+// exercises the camelCase signupCountry request alias).
+func TestRegisterResponseEchoesAttribution(t *testing.T) {
+	auth := NewAuthService()
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, "auth", auth)
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	payload, _ := json.Marshal(map[string]any{
+		"username":                   "gap36httpuser",
+		"password":                   "StrongPass123!",
+		"terms_accepted":             true,
+		"terms_version":              "tiangge-launch-v1",
+		"launch_disclosure_accepted": true,
+		"launch_disclosure_version":  "points-no-cashout-v1",
+		"affiliate":                  "aff-http-3",
+		"signupCountry":              "ph",
+	})
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/register", bytes.NewBuffer(payload))
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+	if res.Code != http.StatusCreated {
+		t.Fatalf("register: want 201, got %d body=%s", res.Code, res.Body.String())
+	}
+	var out map[string]any
+	if err := json.Unmarshal(res.Body.Bytes(), &out); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if out["affiliateTag"] != "aff-http-3" {
+		t.Fatalf("response must echo affiliateTag, got %#v", out["affiliateTag"])
+	}
+	if out["signupCountry"] != "PH" {
+		t.Fatalf("response must echo normalized signupCountry, got %#v", out["signupCountry"])
+	}
+}
+
 func TestRegisterRequiresTianggeDisclosureAcceptance(t *testing.T) {
 	auth := NewAuthService()
 	mux := http.NewServeMux()

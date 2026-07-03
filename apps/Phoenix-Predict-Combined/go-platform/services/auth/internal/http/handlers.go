@@ -638,6 +638,8 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 			"launchDisclosureAccepted":   newUser.LaunchDisclosureAccepted,
 			"launchDisclosureVersion":    newUser.LaunchDisclosureVersion,
 			"launchDisclosureAcceptedAt": newUser.LaunchDisclosureAcceptedAt,
+			"affiliateTag":               newUser.AffiliateTag,
+			"signupCountry":              newUser.SignupCountry,
 		})
 	}))
 
