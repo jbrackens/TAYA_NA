@@ -100,6 +100,77 @@ WHERE subject_id=$1`, subject); err != nil {
 	}
 }
 
+// TestRiskStoreOverrideLive exercises the real SetOverride/ClearOverride SQL
+// (the route tests use a stub, so this is the only coverage of the upsert +
+// clear paths and their validation).
+func TestRiskStoreOverrideLive(t *testing.T) {
+	dsn := os.Getenv("RISK_LIVE_DSN")
+	if dsn == "" {
+		t.Skip("RISK_LIVE_DSN not set; skipping live Postgres risk override test")
+	}
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatalf("open: %v", err)
+	}
+	defer db.Close()
+	store, err := NewStore(db)
+	if err != nil {
+		t.Fatalf("init: %v", err)
+	}
+	ctx := context.Background()
+	if _, err := db.Exec("DELETE FROM customer_risk_ratings"); err != nil {
+		t.Fatalf("reset: %v", err)
+	}
+
+	// SetOverride upserts even with NO prior computed rating (officer forces a
+	// tier, e.g. after filing a SAR, before any recompute).
+	fresh := fmt.Sprintf("u-ovr-%d", time.Now().UnixNano())
+	if err := store.SetOverride(ctx, fresh, TierProhibited, "officer-1", "SAR filed"); err != nil {
+		t.Fatalf("set override on fresh subject: %v", err)
+	}
+	got, err := store.Get(ctx, fresh)
+	if err != nil {
+		t.Fatalf("get after override: %v", err)
+	}
+	if got.EffectiveTier() != TierProhibited || got.OverrideBy != "officer-1" || got.OverrideReason != "SAR filed" {
+		t.Fatalf("override not persisted: eff=%s by=%s reason=%q", got.EffectiveTier(), got.OverrideBy, got.OverrideReason)
+	}
+	// The computed tier still defaults low underneath the override.
+	if got.Tier != TierLow {
+		t.Fatalf("computed tier should default low, got %s", got.Tier)
+	}
+
+	// ClearOverride restores the computed tier as effective.
+	if err := store.ClearOverride(ctx, fresh); err != nil {
+		t.Fatalf("clear override: %v", err)
+	}
+	cleared, err := store.Get(ctx, fresh)
+	if err != nil {
+		t.Fatalf("get after clear: %v", err)
+	}
+	if ValidTier(cleared.OverrideTier) || cleared.EffectiveTier() != TierLow {
+		t.Fatalf("override should be cleared, got override=%q eff=%s", cleared.OverrideTier, cleared.EffectiveTier())
+	}
+
+	// Clearing a subject with no rating → ErrNotFound.
+	if err := store.ClearOverride(ctx, "nobody-here"); err != ErrNotFound {
+		t.Fatalf("clear unknown: want ErrNotFound, got %v", err)
+	}
+	// Validation: bad tier, empty actor, empty reason all rejected.
+	for _, bad := range []struct {
+		tier         Tier
+		by, reason   string
+	}{
+		{Tier("bogus"), "o", "r"},
+		{TierHigh, "", "r"},
+		{TierHigh, "o", "   "},
+	} {
+		if err := store.SetOverride(ctx, fresh, bad.tier, bad.by, bad.reason); err != ErrInvalidInput {
+			t.Fatalf("SetOverride(%q,%q,%q): want ErrInvalidInput, got %v", bad.tier, bad.by, bad.reason, err)
+		}
+	}
+}
+
 func containsSubject(rs []Rating, subject string) bool {
 	for _, r := range rs {
 		if r.SubjectID == subject {

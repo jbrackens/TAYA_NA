@@ -31,6 +31,7 @@ import (
 	"phoenix-revival/gateway/internal/prediction/feed"
 	"phoenix-revival/gateway/internal/prediction/workers"
 	"phoenix-revival/gateway/internal/rbac"
+	"phoenix-revival/gateway/internal/risk"
 	"phoenix-revival/gateway/internal/segmentation"
 	"phoenix-revival/gateway/internal/surveillance"
 	"phoenix-revival/gateway/internal/wallet"
@@ -585,6 +586,23 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 			registerAMLAdminRoutes(mux, amlStore, amlScan)
 			go amlScan.Run(context.Background())
 			slog.Info("aml: money-flow monitoring subsystem initialized")
+
+			// Per-customer risk rating (GAP-12): aggregates the subject's AML
+			// open-alert risk points + KYC sanctions/PEP screening verdict into a
+			// tier feeding gating. Store-owned table; reads AML/KYC READ-ONLY.
+			if riskStore, err := risk.NewStore(amlDB); err != nil {
+				slog.Error("risk: store init failed; risk-rating routes disabled", "error", err)
+			} else {
+				// pgKYC may be nil (screening absent → neutral). Assign through a
+				// nil interface to avoid the typed-nil trap.
+				var screening screeningReader
+				if pgKYC != nil {
+					screening = pgKYC
+				}
+				riskEngine := risk.NewEngine(riskStore, newRiskFactorSource(amlStore, screening), risk.Bands{})
+				registerRiskAdminRoutes(mux, riskStore, riskEngine)
+				slog.Info("risk: customer risk-rating subsystem initialized")
+			}
 		}
 	}
 

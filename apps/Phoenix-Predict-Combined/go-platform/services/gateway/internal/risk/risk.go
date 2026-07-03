@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"phoenix-revival/gateway/internal/compliance"
@@ -188,6 +189,51 @@ ON CONFLICT (subject_id) DO UPDATE SET
   updated_at = NOW()`,
 		subjectID, string(tier), score, fj)
 	return err
+}
+
+// SetOverride records a manual override of the effective tier (the audited
+// admin action; the route layer writes the audit entry and enforces RBAC). It
+// upserts, so an officer can force a tier (e.g. prohibited after filing a SAR)
+// even before a rating has been computed — the computed fields default and are
+// filled by the next Recompute. Requires a valid tier, an actor, and a reason.
+func (s *Store) SetOverride(ctx context.Context, subjectID string, tier Tier, by, reason string) error {
+	if subjectID == "" || !ValidTier(tier) || by == "" || strings.TrimSpace(reason) == "" {
+		return ErrInvalidInput
+	}
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	_, err := s.db.ExecContext(ctx, `
+INSERT INTO customer_risk_ratings (subject_id, override_tier, override_by, override_reason, overridden_at, updated_at)
+VALUES ($1,$2,$3,$4,NOW(),NOW())
+ON CONFLICT (subject_id) DO UPDATE SET
+  override_tier = EXCLUDED.override_tier,
+  override_by = EXCLUDED.override_by,
+  override_reason = EXCLUDED.override_reason,
+  overridden_at = NOW(),
+  updated_at = NOW()`,
+		subjectID, string(tier), by, strings.TrimSpace(reason))
+	return err
+}
+
+// ClearOverride removes a manual override, restoring the computed tier as
+// effective. ErrNotFound if the subject has no rating row.
+func (s *Store) ClearOverride(ctx context.Context, subjectID string) error {
+	if subjectID == "" {
+		return ErrInvalidInput
+	}
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	res, err := s.db.ExecContext(ctx, `
+UPDATE customer_risk_ratings
+SET override_tier = NULL, override_by = NULL, override_reason = NULL, overridden_at = NULL, updated_at = NOW()
+WHERE subject_id = $1`, subjectID)
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return ErrNotFound
+	}
+	return nil
 }
 
 // Get returns a subject's rating, or ErrNotFound if none has been computed.
