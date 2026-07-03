@@ -1820,11 +1820,40 @@ func getEnvOrDefault(name string, fallback string) string {
 
 const minPasswordLength = 7
 
-func validatePasswordStrength(password string) error {
-	if len(password) < minPasswordLength {
-		return httpx.BadRequest(fmt.Sprintf("password must be at least %d characters", minPasswordLength), nil)
+// passwordPolicy is the configurable password-strength policy (GAP-37, PAM §11
+// Identity/Authentication + §27 Security). minClasses counts distinct character
+// classes among {uppercase, lowercase, digit, symbol}.
+type passwordPolicy struct {
+	minLength  int
+	minClasses int
+}
+
+// passwordPolicyFromEnv reads the operator-set policy, falling back to the
+// shipped defaults (length 7, 2 classes) — an unset OR invalid/out-of-range env
+// value keeps the default, so a bad config can never SILENTLY weaken the policy
+// below the shipped baseline (an operator can still deliberately loosen it, the
+// same operator-owned model as the geo allowlist).
+func passwordPolicyFromEnv() passwordPolicy {
+	p := passwordPolicy{minLength: minPasswordLength, minClasses: 2}
+	if v := strings.TrimSpace(os.Getenv("AUTH_PASSWORD_MIN_LENGTH")); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			p.minLength = n
+		}
 	}
-	var hasUpper, hasLower, hasDigit bool
+	if v := strings.TrimSpace(os.Getenv("AUTH_PASSWORD_MIN_CLASSES")); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n >= 1 && n <= 4 {
+			p.minClasses = n
+		}
+	}
+	return p
+}
+
+func validatePasswordStrength(password string) error {
+	pol := passwordPolicyFromEnv()
+	if len(password) < pol.minLength {
+		return httpx.BadRequest(fmt.Sprintf("password must be at least %d characters", pol.minLength), nil)
+	}
+	var hasUpper, hasLower, hasDigit, hasSymbol bool
 	for _, ch := range password {
 		switch {
 		case ch >= 'A' && ch <= 'Z':
@@ -1833,20 +1862,18 @@ func validatePasswordStrength(password string) error {
 			hasLower = true
 		case ch >= '0' && ch <= '9':
 			hasDigit = true
+		default:
+			hasSymbol = true
 		}
 	}
 	classes := 0
-	if hasUpper {
-		classes++
+	for _, has := range []bool{hasUpper, hasLower, hasDigit, hasSymbol} {
+		if has {
+			classes++
+		}
 	}
-	if hasLower {
-		classes++
-	}
-	if hasDigit {
-		classes++
-	}
-	if classes < 2 {
-		return httpx.BadRequest("password must contain at least two of: uppercase, lowercase, digits", nil)
+	if classes < pol.minClasses {
+		return httpx.BadRequest(fmt.Sprintf("password must contain at least %d of: uppercase, lowercase, digits, symbols", pol.minClasses), nil)
 	}
 	return nil
 }
