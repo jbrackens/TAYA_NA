@@ -257,36 +257,13 @@ WHERE user_id = $1`, userID)
 	}
 
 	// Loss limits (GAP-11, §13 Responsible Gaming): deny NEW orders once the
-	// player's NET realized loss this period has reached the cap. Unlike the bet
-	// (stake) limit, a loss cap is about already-realized losses, so a fresh
-	// order is blocked while the cap is met — the player must let the period roll
-	// over (or raise the cap) first. Reads are READ-ONLY over prediction_payouts.
-	// A read error returns (true, "", err): genuine infra ambiguity that
-	// checkComplianceForOrder fails CLOSED on in production/staging.
-	lossRows, err := s.db.QueryContext(ctx2, `
-SELECT period, limit_cents
-FROM player_loss_limits
-WHERE user_id = $1`, userID)
-	if err != nil {
+	// player's NET realized loss this period has reached the cap. Shared with the
+	// atomic path (see lossLimitDenial). A read error → (true, "", err): infra
+	// ambiguity that checkComplianceForOrder fails CLOSED on in prod/staging.
+	if reason, err := s.lossLimitDenial(ctx, userID); err != nil {
 		return true, "", err
-	}
-	defer lossRows.Close()
-	for lossRows.Next() {
-		var period string
-		var limitCents int64
-		if err := lossRows.Scan(&period, &limitCents); err != nil {
-			return true, "", err
-		}
-		loss, lerr := s.realizedLossInPeriod(ctx, userID, period)
-		if lerr != nil {
-			return true, "", lerr
-		}
-		if loss >= limitCents {
-			return false, fmt.Sprintf("%s_loss_limit_reached", period), nil
-		}
-	}
-	if err := lossRows.Err(); err != nil {
-		return true, "", err
+	} else if reason != "" {
+		return false, reason, nil
 	}
 
 	return true, "", nil
@@ -321,6 +298,18 @@ func (s *PostgresResponsibleGamblingService) CheckAndRecordBet(ctx context.Conte
 	}
 	if restrictions.IsOnCoolOff {
 		return false, "cool_off_active", nil
+	}
+
+	// Loss limits (GAP-11): enforced HERE on the live order path — the order
+	// flow prefers this atomic method over CheckBetAllowed, so a loss check in
+	// only that method was dead in production (verification #8 CRITICAL).
+	// Independent of the bet-gate tx (realized loss is settlement-derived), so
+	// checked before the lock. A read error → (true, "", err): fail closed by
+	// env policy (nothing recorded — no tx started yet).
+	if reason, err := s.lossLimitDenial(ctx, userID); err != nil {
+		return true, "", err
+	} else if reason != "" {
+		return false, reason, nil
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, rgDBTimeout)
@@ -712,6 +701,50 @@ WHERE user_id = $1 AND paid_at >= $2`, userID, periodStart(period)).Scan(&net)
 		return -net.Int64, nil
 	}
 	return 0, nil
+}
+
+// lossLimitDenial returns a non-empty denial reason when the user's NET realized
+// loss this period has reached any configured loss cap, or an error (which the
+// caller maps to fail-closed via env policy). Reads are READ-ONLY over
+// player_loss_limits + prediction_payouts. SHARED by both order-gate entry
+// points — CheckBetAllowed AND the atomic CheckAndRecordBet — because the live
+// order path prefers the atomic method; enforcing in only one left the cap dead
+// in production (verification #8 CRITICAL). The check is independent of the
+// bet-gate tx (realized loss is settlement-derived, not affected by this order).
+func (s *PostgresResponsibleGamblingService) lossLimitDenial(ctx context.Context, userID string) (string, error) {
+	dctx, cancel := context.WithTimeout(ctx, rgDBTimeout)
+	defer cancel()
+	rows, err := s.db.QueryContext(dctx, `SELECT period, limit_cents FROM player_loss_limits WHERE user_id = $1`, userID)
+	if err != nil {
+		return "", err
+	}
+	type lossCap struct {
+		period string
+		limit  int64
+	}
+	var caps []lossCap
+	for rows.Next() {
+		var c lossCap
+		if err := rows.Scan(&c.period, &c.limit); err != nil {
+			rows.Close()
+			return "", err
+		}
+		caps = append(caps, c)
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return "", err
+	}
+	for _, c := range caps {
+		loss, err := s.realizedLossInPeriod(ctx, userID, c.period)
+		if err != nil {
+			return "", err
+		}
+		if loss >= c.limit {
+			return fmt.Sprintf("%s_loss_limit_reached", c.period), nil
+		}
+	}
+	return "", nil
 }
 
 func isValidLimitPeriod(period string) bool {

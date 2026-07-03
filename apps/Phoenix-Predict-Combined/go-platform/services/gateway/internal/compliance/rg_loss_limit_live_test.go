@@ -135,10 +135,20 @@ func TestPostgresLossLimitEnforcementLive(t *testing.T) {
 		t.Fatalf("loss at/over cap must deny: ok=%v reason=%q", ok, reason)
 	}
 
-	// A +2500 win today → net loss 3500 < 5000 → allowed again.
+	// CRITICAL regression guard (verification #8): the LIVE order path prefers
+	// the atomic CheckAndRecordBet, so the loss cap MUST deny there too — not
+	// only in CheckBetAllowed. Before the fix this incorrectly returned allowed.
+	if okA, reasonA, errA := svc.CheckAndRecordBet(ctx, user, 100); errA != nil || okA || reasonA != "daily_loss_limit_reached" {
+		t.Fatalf("atomic path must also deny at the loss cap: ok=%v reason=%q err=%v", okA, reasonA, errA)
+	}
+
+	// A +2500 win today → net loss 3500 < 5000 → allowed again (both paths).
 	seedPayout(2500, 0)
 	if ok, reason, err := svc.CheckBetAllowed(ctx, user, 100); err != nil || !ok {
 		t.Fatalf("net loss under cap should allow: ok=%v reason=%q err=%v", ok, reason, err)
+	}
+	if okA, _, errA := svc.CheckAndRecordBet(ctx, user, 100); errA != nil || !okA {
+		t.Fatalf("atomic path should allow under the cap: ok=%v err=%v", okA, errA)
 	}
 
 	// An old -9000 loss from 3 days ago is OUTSIDE the daily period → ignored.
