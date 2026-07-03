@@ -43,7 +43,13 @@ SELECT secret, activated_at, last_used_step FROM auth_mfa WHERE user_id = $1`, u
 		if err != nil {
 			return nil, err
 		}
-		rec := &mfaRecord{Secret: secret}
+		// GAP-3: secrets are encrypted at rest; legacy plaintext rows read
+		// through unchanged. Fail closed if an encrypted secret can't be read.
+		plaintext, derr := decryptMFASecret(secret)
+		if derr != nil {
+			return nil, derr
+		}
+		rec := &mfaRecord{Secret: plaintext}
 		if activated.Valid {
 			t := activated.Time
 			rec.ActivatedAt = &t
@@ -71,11 +77,16 @@ func (a *AuthService) mfaUpsertPending(userID, secret string) error {
 	if a.db != nil {
 		ctx, cancel := context.WithTimeout(context.Background(), userDBTimeout)
 		defer cancel()
+		// GAP-3: encrypt the TOTP secret at rest (fail-closed in deployed envs).
+		encrypted, eerr := encryptMFASecret(secret)
+		if eerr != nil {
+			return eerr
+		}
 		_, err := a.db.ExecContext(ctx, `
 INSERT INTO auth_mfa (user_id, secret, activated_at, created_at, updated_at)
 VALUES ($1, $2, NULL, NOW(), NOW())
 ON CONFLICT (user_id) DO UPDATE SET secret = EXCLUDED.secret, activated_at = NULL, updated_at = NOW()`,
-			userID, secret)
+			userID, encrypted)
 		return err
 	}
 
