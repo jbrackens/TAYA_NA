@@ -236,6 +236,9 @@ function UserDetailPageContent() {
           ? r.depositLimits.map(mapLimit)
           : [],
         betLimits: Array.isArray(r.betLimits) ? r.betLimits.map(mapLimit) : [],
+        lossLimits: Array.isArray(r.lossLimits)
+          ? r.lossLimits.map(mapLimit)
+          : [],
       });
     } catch {
       // ignore — Limits tab reports unavailable

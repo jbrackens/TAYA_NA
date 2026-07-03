@@ -79,6 +79,7 @@ export interface RGTabData {
   excludedUntil?: string;
   depositLimits: RGLimitRow[];
   betLimits: RGLimitRow[];
+  lossLimits: RGLimitRow[];
 }
 
 export interface RiskTabData {
@@ -635,6 +636,9 @@ export function PunterProfile({
                     Prediction Limits
                   </h4>
                   {rgLimitTable(rg.betLimits)}
+
+                  <h4 className="mt-5 text-[var(--t1,#1a1a1a)]">Loss Limits</h4>
+                  {rgLimitTable(rg.lossLimits)}
                 </>
               )}
             </div>
