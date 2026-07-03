@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"log/slog"
 	stdhttp "net/http"
@@ -203,6 +204,26 @@ func registerSegmentationAdminRoutes(mux *stdhttp.ServeMux, store segmentationSt
 		})
 		if err != nil {
 			return httpx.Internal("failed to run segment query", err)
+		}
+		// GAP-44 (PAM §21 Segmentation, CRM): export the matched membership as a
+		// CSV file. A bulk member extract leaving the system as a download is a
+		// sensitive action, so it is audited (unlike the paginated JSON read).
+		if strings.EqualFold(r.URL.Query().Get("format"), "csv") {
+			w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+			w.Header().Set("Content-Disposition", `attachment; filename="segment-query.csv"`)
+			cw := csv.NewWriter(w)
+			_ = cw.Write([]string{"userId"})
+			for _, id := range res.UserIDs {
+				_ = cw.Write([]string{id})
+			}
+			cw.Flush()
+			recordProviderOpsAuditAction(userIDFromRequest(r), "segment.query_exported", "", map[string]any{
+				"count":  len(res.UserIDs),
+				"total":  res.Total,
+				"tagId":  body.TagID,
+				"status": body.Status,
+			})
+			return nil
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, res)
 	}))

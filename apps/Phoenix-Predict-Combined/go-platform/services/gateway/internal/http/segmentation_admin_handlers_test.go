@@ -228,3 +228,37 @@ func TestSegmentationCampaignExecuteRejectsNonAdmin(t *testing.T) {
 		t.Fatalf("expected rejection, got %d", res.Code)
 	}
 }
+
+// TestSegmentationQueryCSVExport (GAP-44) covers ?format=csv on the segment
+// query: a text/csv attachment of the matched user ids, and an audit entry
+// (bulk member extract is a sensitive action).
+func TestSegmentationQueryCSVExport(t *testing.T) {
+	store := &stubSegStore{}
+	h := newSegHarness(store)
+
+	res := segReq(h, http.MethodPost, "/api/v1/admin/segments/query?format=csv",
+		`{"tagId":3,"status":"active"}`, "admin")
+	if res.Code != http.StatusOK {
+		t.Fatalf("csv export: expected 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	if ct := res.Header().Get("Content-Type"); !strings.Contains(ct, "text/csv") {
+		t.Fatalf("expected text/csv, got %q", ct)
+	}
+	if cd := res.Header().Get("Content-Disposition"); !strings.Contains(cd, "attachment") {
+		t.Fatalf("expected attachment disposition, got %q", cd)
+	}
+	body := res.Body.String()
+	if !strings.Contains(body, "userId") || !strings.Contains(body, "user-001") {
+		t.Fatalf("csv body missing header/rows: %q", body)
+	}
+
+	found := false
+	for _, e := range providerOpsAuditSnapshot() {
+		if e.Action == "segment.query_exported" {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("segment.query_exported audit entry not found")
+	}
+}
