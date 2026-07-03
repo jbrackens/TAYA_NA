@@ -785,42 +785,48 @@ jurisdiction/config/integrations/hardening.
 
 ## 36. Progress Matrix
 
-Status reflects the **June 2026 reconciliation** against the implemented `Taya_NA_Predict`
-system (`/docs/taya-gap-analysis.md`, independently cross-checked in
-`/docs/codex-vs-claude-comparison.md`). Legend: **Built** / **Partial** / **Missing**. The
-"Scenario Status" column is the acceptance-test state (scenarios remain `Fail` until each is
-explicitly exercised and evidenced against the running system).
+Status reflects the **2026-07-03 scenario-evidence reconciliation** (GAP-26) against the
+implemented system on branch `pam/p0-modernization`, superseding the June 2026 baseline
+(`/docs/taya-gap-analysis.md`, cross-checked in `/docs/codex-vs-claude-comparison.md`).
+Legend: **Built** / **Partial** / **Missing**. The "Scenario Status" column is now the
+acceptance-evidence state: **Pass** = the scenario's steps + expected result are covered by
+green automated tests (unit/race/live-Postgres/Playwright) per `docs/pam/scenario-evidence.md`;
+**Partial** = core evidenced but a named sub-part is BLOCKED; **Fail** = missing/blocked with
+no runnable surface. "Pass" here is evidence of correctness, not a witnessed manual acceptance
+sign-off — that attestation remains a separate human step.
 
 | Area | Spec Section | Scenario | Implemented Status | Scenario Status | Note |
 |---|---|---|---|---|---|
-| Admin auth & RBAC | 6, 7, 11, 27 | 1 | **Partial** | Fail | RBAC Built (mig 027/038/040); **MFA now real** — DB-backed TOTP (RFC 6238) with a fail-closed login gate for active-MFA accounts (P0-1 slice 1, commit `6914421c`). Still Partial: not yet mandatory for admin roles, no back-office MFA UI, no WebAuthn |
-| Player search & 360 | 10 | 2 | **Partial** | Fail | Search + profile Built; **missing KYC & Limits/self-exclusion tabs** |
-| Account lifecycle | 11 | 3 | **Built** | Fail | Suspend/activate/self-exclude wired |
-| KYC | 12 | 4 | **Partial** | Fail | Enforced + fail-closed, but **no admin UI, no vendor wired, document *metadata only* (no file storage), mock fallback if no DB** |
-| AML / Risk | 12, 18 | 5 | **Missing** | Fail | **No AML monitoring/SAR** in live product (biggest compliance gap) |
-| Responsible trading | 13 | 6 | **Partial** | Fail | Backend enforced **before order placement**; admin UI is dead legacy |
-| Wallet & ledger | 14 | 7 | **Partial** | Fail | Wallet/balances Built; ledger is **single-entry, not double-entry** |
-| Manual adjustment | 14, 25 | 8 | **Partial** | Fail | Backend route Built (`finances:write`); **no UI, no dual-approval** |
-| Positions & exposure | 15, 16 | 9 | **Built** | Fail | Positions, exposure/P&L, risk dashboard all present |
-| Market integrity | 18 | 10 | **Missing** | Fail | Drift reconciler only; **no wash/spoof/collusion surveillance** |
-| Settlement | 17 | 11 | **Built** | Fail | Idempotent, propose→challenge→finalize + disputes |
-| Notes & comms | 20 | 12 | **Partial** | Fail | Notes Built; **communications = SMTP/log stub, no templates** |
-| Segmentation & CRM | 21 | 13 | **Missing** | Fail | Admin notes only; no segments/journeys |
-| Bonus / rewards | 21 | 14 | **Partial** | Fail | Backend bonus/wagering + loyalty Built; **no admin bonus UI** |
-| Reporting & export | 23 | 15 | **Partial** | Fail | A few aggregate reports + risk CSV; no full reporting/export module |
-| Tenant / jurisdiction | 8, 25 | 16 | **Partial** | Fail | Geofencing + per-market jurisdiction Built; **tenant_id dormant (single-brand), no global config UI** |
-| Audit integrity | 24 | 17 | **Built** | Fail | DB-trigger append-only on money-path tables; filterable/exportable viewer |
-| Privacy & retention | 28 | 18 | **Partial** | Fail | Loyalty opt-out only; **no DSAR/retention/erasure** |
-| Support / disputes | 19 | 19 | **Built (markets)** | Fail | Market-resolution disputes Built; general support cases Missing |
-| Operational config | 25 | 20 | **Missing** | Fail | Config is env-vars; **no ops-settings screens, no DB flag store** |
-| Orders / trades (CLOB) | 16 | 9 | **Built** | Fail | Real central limit order book, complementary issuance, TIF/post-only |
+| Admin auth & RBAC | 6, 7, 11, 27 | 1 | **Built** | Pass | MFA now **mandatory for admin roles** (P0-1 `6914421c`,`268157b8`), RBAC (mig 027/038/040) + permission-denial audit (GAP-25 `d719804f`), least-privilege personas (GAP-14 `bd0634db`). Residual: WebAuthn option (GAP-15) |
+| Player search & 360 | 10 | 2 | **Built** | Pass | Search + profile + **KYC tab** (P0-3 `ad6e84c4`) + **Limits/self-exclusion tab** (P1-3 `d610ecdf`) |
+| Account lifecycle | 11 | 3 | **Built** | Pass | Suspension read on trading+login with reason+audit (GAP-9/10) |
+| KYC | 12 | 4 | **Built** | Pass | Fail-closed (P0-2 `5adf223c`) + admin review UI + document BYTEA storage (P0-3) + expiry re-trigger (GAP-17 `59f7eb6d`) + request-more-docs (GAP-18 `d0d314f6`). Residual: IDV vendor (GAP-19 ⚑) |
+| AML / Risk | 12, 18 | 5 | **Partial** | Partial | Alert→case→disposition plumbing (`registerAMLAdminRoutes`) + risk-profile rating (GAP-12) built; **rule set / SAR BLOCKED on regime** (P0-5 ⚑) |
+| Responsible trading | 13 | 6 | **Built** | Pass | Loss/position/session limits (GAP-11), fail-closed (GAP-1), loosen-cooldown (GAP-63), Profile-360 Limits tab (P1-3); enforced before order placement |
+| Wallet & ledger | 14 | 7 | **Partial** | Partial | Wallet/balances Built; **double-entry ledger BLOCKED** (P0-7 ⚑ protected core) |
+| Manual adjustment | 14, 25 | 8 | **Partial** | Partial | UI + audited `finances:write` route (P1-2 `bb710f52`); **dual-approval BLOCKED** (P0-6 ⚑) |
+| Positions & exposure | 15, 16 | 9 | **Built** | Pass | Positions, exposure/P&L, risk dashboard + per-market eligibility (GAP-20) + admin order view/cancel (GAP-21 `d94e53b0`) |
+| Market integrity | 18 | 10 | **Built** | Pass | Surveillance: wash/spoof/collusion (P1-4 `7761823b`,`8936142a`,`e33045c4`) + insider (GAP-22 `11d1fc1b`) + bonus-abuse (GAP-23 `c46b166f`) + duplicate-account; alerts→cases UI |
+| Settlement | 17 | 11 | **Built** | Pass | Idempotent propose→challenge→finalize + disputes + dual-control finalize |
+| Notes & comms | 20 | 12 | **Built** | Pass | Notes Built + DB-backed notification-template store + admin editor (P1-6 `a2cf341f`) |
+| Segmentation & CRM | 21 | 13 | **Built** | Pass | Tags/segments/campaigns/query (P2-2, `internal/segmentation`); dispatch fail-closed in launch mode |
+| Bonus / rewards | 21 | 14 | **Built** | Pass | Bonus/wagering + loyalty + **admin bonus UI** (P1-6 `dae22915`) + abuse detection (GAP-23) |
+| Reporting & export | 23 | 15 | **Partial** | Partial | Operational CSV exports (P1-6 `a95f6e5a`, risk/KYC/surveillance CSVs); **statutory suite pending regime** (GAP-24 ⏳) |
+| Tenant / jurisdiction | 8, 25 | 16 | **Partial** | Partial | Geofencing + per-market jurisdiction Built; **multitenancy dormant, BLOCKED** (P2-1 ⚑ protected core) |
+| Audit integrity | 24 | 17 | **Built** | Pass | Append-only + hash-chain + verify route (GAP-13) + durable auth audit (GAP-5) + permission-denial audit (GAP-25) |
+| Privacy & retention | 28 | 18 | **Partial** | Fail | Loyalty opt-out only; **DSAR/retention/erasure BLOCKED** (P2-3 ⚑ legal) |
+| Support / disputes | 19 | 19 | **Built (markets)** | Partial | Market-resolution disputes Built; **general support-case workflow Missing** |
+| Operational config | 25 | 20 | **Partial** | Partial | DB-backed flag store + admin route (`internal/platformconfig`, `/api/v1/admin/config/flags`); **full ops-settings screens pending** |
+| Orders / trades (CLOB) | 16 | 9 | **Built** | Pass | Real central limit order book, complementary issuance, TIF/post-only |
 | Integrations / webhooks | 26 | — | **Built** | — | HMAC webhooks + scoped partner API |
-| Custody / on-chain settlement | 17, 26 | 11 | **Partial / design-seed** | Fail | Custodial off-chain today; non-custodial contracts/relayer not runnable |
+| Custody / on-chain settlement | 17, 26 | 11 | **Partial / design-seed** | Partial | Custodial off-chain today; **non-custodial BLOCKED** (P2-4 ⚑ founder decision) |
 
-Summary: ~7 areas **Built**, ~10 **Partial**, ~5 **Missing**. The trading/settlement core and
-governance primitives (RBAC, audit, geofencing) are the strongest; compliance depth and
-back-office breadth are the weakest. All acceptance scenarios remain `Fail` pending explicit
-verification against the running system.
+Summary: as of the 2026-07-03 evidence pass, **~14 areas Built, ~8 Partial, 0 Missing**;
+acceptance scenarios are **12 Pass / 7 Partial / 1 Fail** (Scenario 18, DSAR). Every non-Pass
+scenario is attributable to a tracked BLOCKED item with a decision brief (P0-5/6/7, P2-1/3/4,
+GAP-17b/19/24/30) — the residual gaps are human-decision-gated (regime/legal/threshold/vendor/
+protected-core), not un-started engineering. Full per-scenario evidence, with the honest
+"automated-evidence ≠ manual-acceptance-sign-off" caveat, is in `docs/pam/scenario-evidence.md`.
 
 ## 37. Reconciliation with the Implemented System (Taya_NA_Predict, June 2026)
 
