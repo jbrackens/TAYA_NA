@@ -35,6 +35,7 @@ type Tag struct {
 	ID          int64  `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description,omitempty"`
+	Group       string `json:"group,omitempty"` // GAP-44: optional grouping/category
 	MemberCount int    `json:"memberCount"`
 	CreatedAt   string `json:"createdAt"`
 }
@@ -82,6 +83,9 @@ func (s *Store) ensureSchema() error {
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )`,
+		// GAP-44 slice 2: optional tag grouping/category. Idempotent additive
+		// ALTER on the store-owned table (existing rows default to '').
+		`ALTER TABLE crm_tags ADD COLUMN IF NOT EXISTS tag_group TEXT NOT NULL DEFAULT ''`,
 	}
 	for _, stmt := range statements {
 		if _, err := s.db.ExecContext(ctx, stmt); err != nil {
@@ -91,27 +95,28 @@ func (s *Store) ensureSchema() error {
 	return nil
 }
 
-// CreateTag creates a new tag.
-func (s *Store) CreateTag(ctx context.Context, name, description string) (*Tag, error) {
+// CreateTag creates a new tag, optionally in a group/category.
+func (s *Store) CreateTag(ctx context.Context, name, description, group string) (*Tag, error) {
 	name = strings.TrimSpace(name)
 	if name == "" {
 		return nil, ErrInvalidTag
 	}
+	group = strings.TrimSpace(group)
 	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
 	defer cancel()
 	var id int64
 	var createdAt string
 	err := s.db.QueryRowContext(ctx, `
-INSERT INTO crm_tags (name, description) VALUES ($1, $2)
+INSERT INTO crm_tags (name, description, tag_group) VALUES ($1, $2, $3)
 ON CONFLICT (name) DO NOTHING
-RETURNING id, CAST(created_at AS TEXT)`, name, nullStr(description)).Scan(&id, &createdAt)
+RETURNING id, CAST(created_at AS TEXT)`, name, nullStr(description), group).Scan(&id, &createdAt)
 	if err == sql.ErrNoRows {
 		return nil, ErrDuplicate
 	}
 	if err != nil {
 		return nil, err
 	}
-	return &Tag{ID: id, Name: name, Description: description, CreatedAt: createdAt}, nil
+	return &Tag{ID: id, Name: name, Description: description, Group: group, CreatedAt: createdAt}, nil
 }
 
 // ListTags returns all tags with their member counts.
@@ -119,9 +124,9 @@ func (s *Store) ListTags(ctx context.Context) ([]Tag, error) {
 	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
 	defer cancel()
 	rows, err := s.db.QueryContext(ctx, `
-SELECT t.id, t.name, COALESCE(t.description,''), CAST(t.created_at AS TEXT),
+SELECT t.id, t.name, COALESCE(t.description,''), COALESCE(t.tag_group,''), CAST(t.created_at AS TEXT),
        (SELECT COUNT(*) FROM crm_user_tags ut WHERE ut.tag_id = t.id)
-FROM crm_tags t ORDER BY t.name`)
+FROM crm_tags t ORDER BY t.tag_group, t.name`)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +134,7 @@ FROM crm_tags t ORDER BY t.name`)
 	out := []Tag{}
 	for rows.Next() {
 		var t Tag
-		if err := rows.Scan(&t.ID, &t.Name, &t.Description, &t.CreatedAt, &t.MemberCount); err != nil {
+		if err := rows.Scan(&t.ID, &t.Name, &t.Description, &t.Group, &t.CreatedAt, &t.MemberCount); err != nil {
 			return nil, err
 		}
 		out = append(out, t)

@@ -19,14 +19,16 @@ type stubSegStore struct {
 		userID string
 	}
 	lastQuery   segmentation.Query
+	lastGroup   string
 	campaignErr error
 }
 
-func (s *stubSegStore) CreateTag(_ context.Context, name, _ string) (*segmentation.Tag, error) {
+func (s *stubSegStore) CreateTag(_ context.Context, name, _, group string) (*segmentation.Tag, error) {
 	if s.createErr != nil {
 		return nil, s.createErr
 	}
-	return &segmentation.Tag{ID: 1, Name: name}, nil
+	s.lastGroup = group
+	return &segmentation.Tag{ID: 1, Name: name, Group: group}, nil
 }
 func (s *stubSegStore) ListTags(_ context.Context) ([]segmentation.Tag, error) {
 	return []segmentation.Tag{{ID: 1, Name: "vip"}}, nil
@@ -260,5 +262,23 @@ func TestSegmentationQueryCSVExport(t *testing.T) {
 	}
 	if !found {
 		t.Fatal("segment.query_exported audit entry not found")
+	}
+}
+
+// TestSegmentationCreateTagWithGroup (GAP-44 slice 2) confirms the create-tag
+// route forwards the optional group and echoes it in the response.
+func TestSegmentationCreateTagWithGroup(t *testing.T) {
+	store := &stubSegStore{}
+	h := newSegHarness(store)
+	res := segReq(h, http.MethodPost, "/api/v1/admin/segments/tags",
+		`{"name":"gold","description":"VIP gold","group":"vip-tiers"}`, "admin")
+	if res.Code != http.StatusCreated {
+		t.Fatalf("create tag: expected 201, got %d body=%s", res.Code, res.Body.String())
+	}
+	if store.lastGroup != "vip-tiers" {
+		t.Fatalf("group not forwarded to store, got %q", store.lastGroup)
+	}
+	if !strings.Contains(res.Body.String(), `"group":"vip-tiers"`) {
+		t.Fatalf("response must echo the group, got %s", res.Body.String())
 	}
 }

@@ -16,7 +16,7 @@ import (
 // segmentationStore is the consumer-side slice the admin routes need so
 // handler tests can stub it. *segmentation.Store satisfies it.
 type segmentationStore interface {
-	CreateTag(ctx context.Context, name, description string) (*segmentation.Tag, error)
+	CreateTag(ctx context.Context, name, description, group string) (*segmentation.Tag, error)
 	ListTags(ctx context.Context) ([]segmentation.Tag, error)
 	DeleteTag(ctx context.Context, tagID int64) error
 	AssignTag(ctx context.Context, tagID int64, userID, assignedBy string) error
@@ -68,6 +68,7 @@ func registerSegmentationAdminRoutes(mux *stdhttp.ServeMux, store segmentationSt
 			var body struct {
 				Name        string `json:"name"`
 				Description string `json:"description"`
+				Group       string `json:"group"`
 			}
 			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 				return httpx.BadRequest("invalid request body", nil)
@@ -78,12 +79,15 @@ func registerSegmentationAdminRoutes(mux *stdhttp.ServeMux, store segmentationSt
 			if err := validateLaunchFacingReason("description", strings.TrimSpace(body.Description)); err != nil {
 				return err
 			}
-			tag, err := store.CreateTag(r.Context(), body.Name, body.Description)
+			if err := validateLaunchFacingReason("group", strings.TrimSpace(body.Group)); err != nil {
+				return err
+			}
+			tag, err := store.CreateTag(r.Context(), body.Name, body.Description, body.Group)
 			if err != nil {
 				return mapSegmentationError(err)
 			}
 			recordProviderOpsAuditAction(userIDFromRequest(r), "segment.tag_created", strconv.FormatInt(tag.ID, 10),
-				map[string]any{"name": tag.Name})
+				map[string]any{"name": tag.Name, "group": tag.Group})
 			return httpx.WriteJSON(w, stdhttp.StatusCreated, tag)
 		default:
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPost)

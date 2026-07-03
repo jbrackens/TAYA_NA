@@ -32,12 +32,29 @@ func TestSegmentationStoreLive(t *testing.T) {
 	ctx := context.Background()
 	name := fmt.Sprintf("seg-%d", time.Now().UnixNano())
 
-	tag, err := store.CreateTag(ctx, name, "test segment")
+	tag, err := store.CreateTag(ctx, name, "test segment", "vip-tiers")
 	if err != nil {
 		t.Fatalf("create: %v", err)
 	}
+	if tag.Group != "vip-tiers" {
+		t.Fatalf("GAP-44: tag group not persisted on create, got %q", tag.Group)
+	}
+	// GAP-44: the group round-trips through ListTags.
+	tags, err := store.ListTags(ctx)
+	if err != nil {
+		t.Fatalf("list: %v", err)
+	}
+	var grouped bool
+	for _, tg := range tags {
+		if tg.ID == tag.ID && tg.Group == "vip-tiers" {
+			grouped = true
+		}
+	}
+	if !grouped {
+		t.Fatalf("GAP-44: ListTags did not surface the tag group")
+	}
 	// Duplicate name → ErrDuplicate.
-	if _, err := store.CreateTag(ctx, name, ""); err != ErrDuplicate {
+	if _, err := store.CreateTag(ctx, name, "", ""); err != ErrDuplicate {
 		t.Fatalf("expected ErrDuplicate, got %v", err)
 	}
 
@@ -57,7 +74,7 @@ func TestSegmentationStoreLive(t *testing.T) {
 	if err != nil || len(users) != 1 || users[0] != "user-001" {
 		t.Fatalf("UsersForTag mismatch: %v err=%v", users, err)
 	}
-	tags, err := store.TagsForUser(ctx, "user-001")
+	tags, err = store.TagsForUser(ctx, "user-001")
 	if err != nil {
 		t.Fatalf("TagsForUser: %v", err)
 	}
@@ -114,7 +131,7 @@ func TestSegmentationQueryLive(t *testing.T) {
 	ctx := context.Background()
 
 	// A tag with one known member; query by that tag should return exactly it.
-	tag, err := store.CreateTag(ctx, fmt.Sprintf("q-%d", time.Now().UnixNano()), "")
+	tag, err := store.CreateTag(ctx, fmt.Sprintf("q-%d", time.Now().UnixNano()), "", "")
 	if err != nil {
 		t.Fatalf("create: %v", err)
 	}
@@ -162,7 +179,7 @@ func TestSegmentationCampaignLive(t *testing.T) {
 	}
 	ctx := context.Background()
 
-	tag, err := store.CreateTag(ctx, fmt.Sprintf("camp-%d", time.Now().UnixNano()), "")
+	tag, err := store.CreateTag(ctx, fmt.Sprintf("camp-%d", time.Now().UnixNano()), "", "")
 	if err != nil {
 		t.Fatalf("tag: %v", err)
 	}
