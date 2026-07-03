@@ -11,6 +11,14 @@ import (
 
 const rgDBTimeout = 5 * time.Second
 
+// pgLoosenCooldown is the regulatory delay (PAM §13 Responsible Gaming, LC-19 /
+// D-11) before a requested INCREASE of a self-protection limit takes effect.
+// Tightening a limit applies immediately; loosening is staged and only becomes
+// the active limit after this window, so a player cannot instantly undo their
+// own protection. Mirrors the mock service's limitLoosenCooldown (24h) so the
+// db-mode and mock backends enforce the same rule.
+const pgLoosenCooldown = 24 * time.Hour
+
 // PostgresResponsibleGamblingService implements ResponsibleGamblingService
 // with PostgreSQL-backed persistence for limits, restrictions, and activity.
 type PostgresResponsibleGamblingService struct {
@@ -78,6 +86,13 @@ func (s *PostgresResponsibleGamblingService) ensureSchema() error {
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )`,
 		`CREATE INDEX IF NOT EXISTS idx_activity_user_type_time ON player_activity_log (user_id, activity_type, created_at)`,
+		// GAP-63 (PAM §13): loosen-limit cooldown. A requested INCREASE is staged
+		// in pending_* and only becomes the active limit_cents after
+		// pgLoosenCooldown; a decrease applies immediately. Idempotent ALTERs on
+		// the store-owned tables above (mirrors GAP-13's audit-column pattern).
+		// Slice 1 covers bet limits; deposit/loss limits follow in later slices.
+		`ALTER TABLE player_bet_limits ADD COLUMN IF NOT EXISTS pending_limit_cents BIGINT`,
+		`ALTER TABLE player_bet_limits ADD COLUMN IF NOT EXISTS pending_activates_at TIMESTAMPTZ`,
 	}
 
 	for _, stmt := range statements {
@@ -100,13 +115,64 @@ func (s *PostgresResponsibleGamblingService) SetBetLimit(ctx context.Context, us
 	ctx, cancel := context.WithTimeout(ctx, rgDBTimeout)
 	defer cancel()
 
-	_, err := s.db.ExecContext(ctx, `
-INSERT INTO player_bet_limits (user_id, period, limit_cents, updated_at)
-VALUES ($1, $2, $3, NOW())
-ON CONFLICT (user_id, period) DO UPDATE
-SET limit_cents = EXCLUDED.limit_cents, updated_at = NOW()`,
-		userID, period, amountCents)
-	return err
+	return s.setLimitWithLoosenCooldown(ctx, "player_bet_limits", userID, period, amountCents)
+}
+
+// setLimitWithLoosenCooldown writes a self-protection limit with the GAP-63
+// loosen cooldown (PAM §13). A decrease (tighten) applies immediately and drops
+// any staged increase; an increase (loosen) keeps the current effective limit
+// active and stages the new value to activate after pgLoosenCooldown. A matured
+// staged increase is promoted before the decision so "effective" is current.
+// The row lock serializes concurrent limit changes for the same (user, period).
+// `table` is always a hardcoded caller constant (never user input).
+func (s *PostgresResponsibleGamblingService) setLimitWithLoosenCooldown(ctx context.Context, table, userID, period string, newLimit int64) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	var effective sql.NullInt64
+	err = tx.QueryRowContext(ctx, `
+SELECT CASE WHEN pending_activates_at IS NOT NULL AND pending_activates_at <= NOW()
+            THEN pending_limit_cents ELSE limit_cents END
+FROM `+table+`
+WHERE user_id = $1 AND period = $2
+FOR UPDATE`, userID, period).Scan(&effective)
+	switch {
+	case err == sql.ErrNoRows:
+		// First time this (user, period) limit is set: nothing to protect yet,
+		// so no cooldown — the initial value takes effect immediately.
+		if _, err = tx.ExecContext(ctx, `
+INSERT INTO `+table+` (user_id, period, limit_cents, updated_at)
+VALUES ($1, $2, $3, NOW())`, userID, period, newLimit); err != nil {
+			return err
+		}
+		return tx.Commit()
+	case err != nil:
+		return err
+	}
+
+	if newLimit <= effective.Int64 {
+		// Tighten (or unchanged): apply now and discard any staged increase.
+		_, err = tx.ExecContext(ctx, `
+UPDATE `+table+`
+SET limit_cents = $3, pending_limit_cents = NULL, pending_activates_at = NULL, updated_at = NOW()
+WHERE user_id = $1 AND period = $2`, userID, period, newLimit)
+	} else {
+		// Loosen: promote any matured pending into the active limit (so the
+		// active value is current), keep that active, and stage the new looser
+		// value behind the cooldown. Re-requesting re-arms the window.
+		_, err = tx.ExecContext(ctx, `
+UPDATE `+table+`
+SET limit_cents = $3, pending_limit_cents = $4,
+    pending_activates_at = NOW() + make_interval(secs => $5), updated_at = NOW()
+WHERE user_id = $1 AND period = $2`, userID, period, effective.Int64, newLimit, int(pgLoosenCooldown.Seconds()))
+	}
+	if err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 func (s *PostgresResponsibleGamblingService) GetBetLimits(ctx context.Context, userID string) ([]BetLimit, error) {
@@ -116,8 +182,20 @@ func (s *PostgresResponsibleGamblingService) GetBetLimits(ctx context.Context, u
 	ctx, cancel := context.WithTimeout(ctx, rgDBTimeout)
 	defer cancel()
 
+	// GAP-63: opportunistically promote any staged loosening whose cooldown has
+	// matured into the active limit, so reads (and the numbers an operator sees)
+	// reflect the now-effective limit. A still-future pending is surfaced below.
+	if _, err := s.db.ExecContext(ctx, `
+UPDATE player_bet_limits
+SET limit_cents = pending_limit_cents, pending_limit_cents = NULL,
+    pending_activates_at = NULL, updated_at = NOW()
+WHERE user_id = $1 AND pending_activates_at IS NOT NULL AND pending_activates_at <= NOW()`, userID); err != nil {
+		return nil, err
+	}
+
 	rows, err := s.db.QueryContext(ctx, `
-SELECT user_id, period, limit_cents, CAST(created_at AS TEXT)
+SELECT user_id, period, limit_cents, CAST(created_at AS TEXT),
+       COALESCE(pending_limit_cents, 0), COALESCE(CAST(pending_activates_at AS TEXT), '')
 FROM player_bet_limits
 WHERE user_id = $1
 ORDER BY period`, userID)
@@ -129,7 +207,7 @@ ORDER BY period`, userID)
 	var limits []BetLimit
 	for rows.Next() {
 		var l BetLimit
-		if err := rows.Scan(&l.UserID, &l.Period, &l.LimitCents, &l.CreatedAt); err != nil {
+		if err := rows.Scan(&l.UserID, &l.Period, &l.LimitCents, &l.CreatedAt, &l.PendingLimitCents, &l.PendingActivatesAt); err != nil {
 			return nil, err
 		}
 		// Calculate usage within the current period
@@ -232,8 +310,13 @@ func (s *PostgresResponsibleGamblingService) CheckBetAllowed(ctx context.Context
 	ctx2, cancel := context.WithTimeout(ctx, rgDBTimeout)
 	defer cancel()
 
+	// Enforce the EFFECTIVE limit (GAP-63): a staged loosening that has not yet
+	// matured must NOT apply, so the active limit_cents governs during the
+	// cooldown; a matured-but-not-yet-promoted pending is the effective limit.
 	rows, err := s.db.QueryContext(ctx2, `
-SELECT period, limit_cents
+SELECT period,
+       CASE WHEN pending_activates_at IS NOT NULL AND pending_activates_at <= NOW()
+            THEN pending_limit_cents ELSE limit_cents END
 FROM player_bet_limits
 WHERE user_id = $1`, userID)
 	if err != nil {
@@ -334,7 +417,11 @@ func (s *PostgresResponsibleGamblingService) CheckAndRecordBet(ctx context.Conte
 
 	// Read every configured bet limit, then evaluate committed usage under the
 	// lock so a concurrent insert cannot slip a second order past the limit.
-	rows, err := tx.QueryContext(ctx, `SELECT period, limit_cents FROM player_bet_limits WHERE user_id = $1`, userID)
+	// Effective limit (GAP-63): staged loosening does not apply until matured.
+	rows, err := tx.QueryContext(ctx, `SELECT period,
+       CASE WHEN pending_activates_at IS NOT NULL AND pending_activates_at <= NOW()
+            THEN pending_limit_cents ELSE limit_cents END
+FROM player_bet_limits WHERE user_id = $1`, userID)
 	if err != nil {
 		return false, "", err
 	}
