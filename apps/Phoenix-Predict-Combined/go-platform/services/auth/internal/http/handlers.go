@@ -1377,6 +1377,22 @@ VALUES ($1, $2, $3, $4, $5, $6, NULLIF($7, '')::timestamptz, $8, $9, NULLIF($10,
 	a.mu.Unlock()
 
 	a.audit.Event("auth.register.success", map[string]any{"username": username, "userId": newID, "role": role})
+	// GAP-51 (PAM §28 Privacy, Data Protection, and Retention: consent capture
+	// and versioning): record each accepted document as a durable, append-only,
+	// versioned consent event in auth_audit — an immutable audit trail of the
+	// consent ACT, not only the latest version overwritten on the user row. When
+	// a versioned document changes and the user re-accepts, a new event appends,
+	// giving per-version consent evidence.
+	if newUser.TermsAccepted {
+		a.audit.Event("auth.consent.accepted", map[string]any{
+			"userId": newID, "document": "terms_of_service", "version": newUser.TermsVersion, "acceptedAt": acceptedAt,
+		})
+	}
+	if newUser.LaunchDisclosureAccepted {
+		a.audit.Event("auth.consent.accepted", map[string]any{
+			"userId": newID, "document": "launch_disclosure", "version": newUser.LaunchDisclosureVersion, "acceptedAt": acceptedAt,
+		})
+	}
 	return newUser, nil
 }
 
