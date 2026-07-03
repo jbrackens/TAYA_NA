@@ -550,7 +550,7 @@ Evidence for every entry: `docs/pam/pass-b-findings-2026-07-03.md`. Merged from 
 - [GAP-49] (P2) PDF export (CSV exists) — §23 + Scenario 15.
 - [GAP-50] (P2) ✅ DONE `4bfeda53` — the `config.flag_updated` audit now records `{oldValue, value}` (reads the prior value before the upsert) instead of new-value-only; not-yet-existing flag audits `oldValue:null`, a non-not-found read error is surfaced. Scoped to the cited config instance; broader per-entity per-field tracking remains the general GAP-50 shape (revisit if a specific entity needs it). Test asserts before→after in the audit details. §24 + Scenarios 17/20. **⇒ completed item #3 since verification #15.**
 - [GAP-51] (P2) Consent capture/versioning — §25/§28.
-- [GAP-52] (P2 doc) §29 UI-stack divergence note — spec prescribes React 18/MUI/Idefix Nx; shipped is Next.js+AntD/P8; record the amendment — §29.
+- [GAP-52] (P2 doc) ✅ DONE `<this commit>` — recorded the §29 UI-stack amendment in spec §37 "Architecture deltas": §29 prescribes React 18/MUI v5/Idefix Nx; shipped (VERIFIED via `office/package.json`) is React 19.2.4 + Next.js 16.2.9 App Router + AntD 5.29/P8, a yarn-workspaces monorepo (not Nx, not MUI). Code wins → stack clause amended, no rebuild; the §29 *capability* requirements (list-detail patterns, permission-scoped reads) stay in force (GAP-53/54). §29. **⇒ completed item #2 since verification #16.**
 - [GAP-53] (P2) Office-wide list-detail / filter+export-grid pattern rollout — §29.
 - [GAP-54] (P2) A11y + responsive verification for the back office — §29.
 - [GAP-55] (P2) Seed/demo compliance breadth: KYC/risk/RG-state trader variety, brands/jurisdictions, payment methods, pending withdrawals — §31.

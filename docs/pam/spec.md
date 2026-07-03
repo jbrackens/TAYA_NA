@@ -867,3 +867,14 @@ including a dedicated compliance service with AML, was collapsed into the gatewa
 AML fell out of scope). Custody is **custodial off-chain**; the non-custodial on-chain stack is
 a design seed. These do not change the requirements but reframe Sections 26 and the
 implementation plan.
+
+**§29 UI-stack amendment (GAP-52, verified 2026-07-04).** §29 prescribes **React 18 / MUI v5 in
+the Idefix Nx librarized structure**. The shipped back office is **React 19.2.4 + Next.js 16.2.9
+(App Router) + Ant Design 5.29**, themed with the P8 design tokens (`talon-backoffice/packages/
+office/package.json`; player app under `packages/app`). It is a Next.js yarn-workspaces monorepo,
+not an Nx workspace, and uses AntD, not MUI. Per the Verification Doctrine (code wins on current
+state) the shipped stack STANDS — no rebuild to MUI/Nx is warranted; §29's stack clause is
+amended to the shipped stack. The §29 *capability* requirements (consistent list-detail-drawer +
+filter/run/exportable-grid patterns, permission-scoped read-only states) remain in force and are
+tracked separately (GAP-53 pattern rollout, GAP-54 a11y/responsive). Only the framework/library
+prescription is superseded.
