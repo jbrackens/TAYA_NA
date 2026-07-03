@@ -186,8 +186,8 @@ func checkComplianceGates(r *stdhttp.Request, userID string, surface compliance.
 			slog.Warn("trade KYC gate check failed, allowing in dev mode", "user_id", userID, "error", err)
 			return nil
 		}
-		if st == nil || !strings.EqualFold(strings.TrimSpace(st.Status), "approved") {
-			slog.Info("trade blocked: KYC required", "user_id", userID)
+		if st == nil || !strings.EqualFold(strings.TrimSpace(st.Status), "approved") || st.Expired(time.Now()) {
+			slog.Info("trade blocked: KYC required", "user_id", userID, "kyc_expired", st != nil && st.Expired(time.Now()))
 			return httpx.Forbidden("identity verification required to trade — complete verification under Profile → Verification")
 		}
 	}

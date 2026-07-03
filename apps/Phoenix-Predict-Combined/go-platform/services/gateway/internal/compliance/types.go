@@ -41,6 +41,23 @@ type KYCStatus struct {
 	Metadata            map[string]string `json:"metadata,omitempty"`
 }
 
+// Expired reports whether an approved KYC verification has passed its expiry
+// (GAP-17, PAM §12 KYC/AML/Risk: registration/time-driven re-verification). An
+// empty or unparseable ExpiresAt is treated as NOT expired — only a real, past
+// expiry re-triggers verification, so a legacy or pending record without an
+// expiry is never spuriously blocked. Callers combine this with the status
+// check: an expired approval no longer passes the KYC gate and must re-verify.
+func (s *KYCStatus) Expired(now time.Time) bool {
+	if s == nil || s.ExpiresAt == "" {
+		return false
+	}
+	exp, err := time.Parse(time.RFC3339, s.ExpiresAt)
+	if err != nil {
+		return false
+	}
+	return now.After(exp)
+}
+
 // DepositLimit represents a deposit limit configuration
 type DepositLimit struct {
 	UserID    string `json:"userId"`

@@ -5,16 +5,18 @@ import (
 	stdhttp "net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"phoenix-revival/gateway/internal/compliance"
 )
 
 type pretradeFakeKYC struct {
-	status string
+	status    string
+	expiresAt string
 }
 
 func (f *pretradeFakeKYC) GetVerificationStatus(_ context.Context, userID string) (*compliance.KYCStatus, error) {
-	return &compliance.KYCStatus{UserID: userID, Status: f.status}, nil
+	return &compliance.KYCStatus{UserID: userID, Status: f.status, ExpiresAt: f.expiresAt}, nil
 }
 
 func (f *pretradeFakeKYC) VerifyIdentity(context.Context, string, []compliance.VerificationDocument) (*compliance.KYCResult, error) {
@@ -167,5 +169,38 @@ func TestComplianceGates_TrustedProxyModeCountsMissingSignalDenials(t *testing.T
 	}
 	if got := geoMissingSignalDenials.Load(); got != before+1 {
 		t.Fatalf("country-present denial must not bump the missing-signal counter, got %d", got)
+	}
+}
+
+// GAP-17 (§12): an APPROVED KYC whose expiry has lapsed must NOT pass the trade
+// gate — a registration/time-driven re-verification trigger.
+func TestComplianceGates_TradingKYCBlocksExpiredApproval(t *testing.T) {
+	t.Setenv("BETA_COMPLIANCE_MODE", "")
+	t.Setenv("GEO_GATE_ENABLED", "true")
+	t.Setenv("GEO_ALLOWED_COUNTRIES", "PH")
+	t.Setenv("KYC_REQUIRED_FOR_TRADING", "true")
+
+	prevGeo := tradeGeoGate
+	prevKYC := tradeKYCGate
+	kyc := &pretradeFakeKYC{status: "approved", expiresAt: time.Now().Add(-24 * time.Hour).Format(time.RFC3339)}
+	tradeGeoGate = compliance.NewGeoGateFromEnv()
+	tradeKYCGate = kyc
+	t.Cleanup(func() {
+		tradeGeoGate = prevGeo
+		tradeKYCGate = prevKYC
+	})
+
+	req := httptest.NewRequest(stdhttp.MethodPost, "/api/v1/orders", nil)
+	req.Header.Set("CF-IPCountry", "PH")
+	if err := checkComplianceGates(req, "u-expired", compliance.SurfaceTrade); err == nil {
+		t.Fatal("an expired KYC approval must be blocked from trading (re-verification required)")
+	}
+
+	// A future (non-lapsed) expiry still passes.
+	kyc.expiresAt = time.Now().Add(24 * time.Hour).Format(time.RFC3339)
+	req = httptest.NewRequest(stdhttp.MethodPost, "/api/v1/orders", nil)
+	req.Header.Set("CF-IPCountry", "PH")
+	if err := checkComplianceGates(req, "u-fresh", compliance.SurfaceTrade); err != nil {
+		t.Fatalf("a non-expired KYC approval should pass, got %v", err)
 	}
 }

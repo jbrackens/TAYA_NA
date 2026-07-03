@@ -226,9 +226,9 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 				slog.Warn("kyc gate check failed, allowing withdrawal in dev mode", "user_id", userID, "error", kerr)
 				return nil
 			}
-			if st == nil || !kycStatusPasses(st.Status) {
+			if st == nil || !kycStatusPasses(st.Status) || st.Expired(time.Now()) {
 				slog.Info("withdrawal blocked: KYC required above threshold",
-					"user_id", userID, "cumulative_cents", cumulative, "amount_cents", req.Amount, "threshold_cents", threshold)
+					"user_id", userID, "cumulative_cents", cumulative, "amount_cents", req.Amount, "threshold_cents", threshold, "kyc_expired", st != nil && st.Expired(time.Now()))
 				gateErr = httpx.Forbidden("identity verification required to withdraw above this amount — complete verification under Profile → Verification")
 				return gateErr
 			}
