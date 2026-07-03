@@ -147,6 +147,34 @@ LIMIT $2`, watermark, scanBatch)
 	return len(batch), nil
 }
 
+// maxRescanBatches bounds a single Rescan so an HTTP-triggered rescan cannot run
+// unbounded; beyond it the background worker continues from the advanced cursor.
+const maxRescanBatches = 100
+
+// Rescan re-evaluates money-flow rows from fromLedgerID onward against the
+// CURRENTLY loaded rules (GAP-60). Deposits/withdrawals that were scanned while
+// the rule set was empty (or narrower) had the watermark advanced past them and
+// were never evaluated; this reopens them. It resets the cursor then drains the
+// backlog in bounded batches (if the backlog exceeds the bound, the 60s worker
+// continues). Idempotent — alerts dedupe on (rule, subject, ledger ref).
+func (sc *Scanner) Rescan(ctx context.Context, fromLedgerID int64) (int, error) {
+	if err := sc.store.ResetWatermark(ctx, fromLedgerID); err != nil {
+		return 0, fmt.Errorf("reset watermark: %w", err)
+	}
+	total := 0
+	for i := 0; i < maxRescanBatches; i++ {
+		n, err := sc.ScanOnce(ctx)
+		if err != nil {
+			return total, err
+		}
+		total += n
+		if n < scanBatch {
+			break // caught up (last partial batch)
+		}
+	}
+	return total, nil
+}
+
 // maybeOpenCase opens a case for a subject once accrued open risk points reach
 // the threshold, linking that subject's currently-open alerts (§32 Scenario 5).
 func (sc *Scanner) maybeOpenCase(ctx context.Context, subjectID string) error {

@@ -28,9 +28,10 @@ type amlAdminStore interface {
 }
 
 // amlScanner triggers a manual money-flow scan (the same ScanOnce the
-// background worker runs). *aml.Scanner satisfies it.
+// background worker runs) or a backfill rescan. *aml.Scanner satisfies it.
 type amlScanner interface {
 	ScanOnce(ctx context.Context) (int, error)
+	Rescan(ctx context.Context, fromLedgerID int64) (int, error)
 }
 
 func mapAMLError(err error) error {
@@ -187,6 +188,36 @@ func registerAMLAdminRoutes(mux *stdhttp.ServeMux, store amlAdminStore, scanner 
 		}
 		recordProviderOpsAuditAction(userIDFromRequest(r), "aml.scan_run", "", map[string]any{"rowsExamined": n})
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"rowsExamined": n})
+	}))
+
+	// GAP-60: backfill rescan — re-evaluate money-flow rows from fromLedgerId
+	// (default 0 = full) against the CURRENT rules, for rows the watermark
+	// advanced past while the rule set was empty. Alerts dedupe, so it is safe
+	// to re-run.
+	mux.Handle("/api/v1/admin/aml/rescan", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminPermission(r, "compliance:write"); err != nil {
+			return err
+		}
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+		var body struct {
+			FromLedgerID int64 `json:"fromLedgerId"`
+		}
+		if r.Body != nil {
+			// An empty body defaults FromLedgerID to 0 (full rescan).
+			_ = json.NewDecoder(r.Body).Decode(&body)
+		}
+		if body.FromLedgerID < 0 {
+			return httpx.BadRequest("fromLedgerId must be >= 0", map[string]any{"field": "fromLedgerId"})
+		}
+		n, err := scanner.Rescan(r.Context(), body.FromLedgerID)
+		if err != nil {
+			return httpx.Internal("AML rescan failed", err)
+		}
+		recordProviderOpsAuditAction(userIDFromRequest(r), "aml.rescan_triggered", "",
+			map[string]any{"fromLedgerId": body.FromLedgerID, "rowsExamined": n})
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"fromLedgerId": body.FromLedgerID, "rowsExamined": n})
 	}))
 
 	mux.Handle("/api/v1/admin/aml/cases", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {

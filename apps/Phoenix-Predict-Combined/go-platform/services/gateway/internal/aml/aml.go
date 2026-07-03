@@ -509,6 +509,23 @@ WHERE id = 1 AND $1 > last_ledger_id`, ledgerID)
 	return err
 }
 
+// ResetWatermark sets the scan cursor to an arbitrary ledger id, INCLUDING a
+// LOWER value — the backfill/rescan primitive (GAP-60). Unlike SetWatermark
+// (advance-only), this re-opens already-consumed rows for re-evaluation, e.g.
+// after compliance loads a rule set that was empty when those rows first
+// scanned and the watermark advanced past them. Safe to re-run: alerts dedupe
+// on (rule, subject, ledger reference), so re-scanning never double-reports.
+func (s *Store) ResetWatermark(ctx context.Context, ledgerID int64) error {
+	if ledgerID < 0 {
+		return ErrInvalidInput
+	}
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	_, err := s.db.ExecContext(ctx, `
+UPDATE aml_scan_state SET last_ledger_id = $1, updated_at = NOW() WHERE id = 1`, ledgerID)
+	return err
+}
+
 // --- helpers ---
 
 func validRuleKind(k string) bool {

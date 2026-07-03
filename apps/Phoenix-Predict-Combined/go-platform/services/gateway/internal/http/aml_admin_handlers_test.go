@@ -53,9 +53,17 @@ func (s *stubAMLStore) UpdateCaseStatus(_ context.Context, id int64, status, res
 	return &aml.Case{ID: id, Status: status, SARReference: sar}, nil
 }
 
-type stubAMLScanner struct{ called bool }
+type stubAMLScanner struct {
+	called     bool
+	rescanFrom int64
+}
 
 func (s *stubAMLScanner) ScanOnce(context.Context) (int, error) { s.called = true; return 5, nil }
+func (s *stubAMLScanner) Rescan(_ context.Context, from int64) (int, error) {
+	s.called = true
+	s.rescanFrom = from
+	return 7, nil
+}
 
 func newAMLHarness(store amlAdminStore, scanner amlScanner) http.Handler {
 	mux := http.NewServeMux()
@@ -85,6 +93,7 @@ func TestAMLRoutesRejectNonAdmin(t *testing.T) {
 		{http.MethodGet, "/api/v1/admin/aml/alerts"},
 		{http.MethodPost, "/api/v1/admin/aml/alerts/1/dismiss"},
 		{http.MethodPost, "/api/v1/admin/aml/scan"},
+		{http.MethodPost, "/api/v1/admin/aml/rescan"},
 		{http.MethodGet, "/api/v1/admin/aml/cases"},
 		{http.MethodPut, "/api/v1/admin/aml/cases/1"},
 	} {
@@ -120,6 +129,26 @@ func TestAMLScanAudited(t *testing.T) {
 		t.Fatalf("scan not run: code=%d called=%v", res.Code, scanner.called)
 	}
 	assertAMLAudit(t, "aml.scan_run", "")
+}
+
+func TestAMLRescanAudited(t *testing.T) {
+	scanner := &stubAMLScanner{}
+	handler := newAMLHarness(&stubAMLStore{}, scanner)
+	res := amlAdminReq(handler, http.MethodPost, "/api/v1/admin/aml/rescan", `{"fromLedgerId":12}`)
+	if res.Code != http.StatusOK || !scanner.called {
+		t.Fatalf("rescan not run: code=%d called=%v body=%s", res.Code, scanner.called, res.Body.String())
+	}
+	if scanner.rescanFrom != 12 {
+		t.Fatalf("fromLedgerId not plumbed: got %d", scanner.rescanFrom)
+	}
+	assertAMLAudit(t, "aml.rescan_triggered", "")
+
+	// Empty body → full rescan from 0.
+	sc2 := &stubAMLScanner{}
+	h2 := newAMLHarness(&stubAMLStore{}, sc2)
+	if res := amlAdminReq(h2, http.MethodPost, "/api/v1/admin/aml/rescan", ""); res.Code != http.StatusOK || sc2.rescanFrom != 0 {
+		t.Fatalf("empty body should rescan from 0: code=%d from=%d", res.Code, sc2.rescanFrom)
+	}
 }
 
 func TestAMLAlertDismissAudited(t *testing.T) {

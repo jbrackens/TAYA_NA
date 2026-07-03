@@ -48,6 +48,90 @@ VALUES ($1,$2,$3,$4,0,$5,$6,$7)`, userID, entryType, fundType, amount, key, reas
 	}
 }
 
+// TestAMLScannerRescanBackfillLive proves GAP-60: a deposit scanned while NO
+// rules are loaded has the watermark advanced past it and is never evaluated —
+// until an admin Rescan reopens it against the now-loaded rules.
+func TestAMLScannerRescanBackfillLive(t *testing.T) {
+	dsn := os.Getenv("AML_LIVE_DSN")
+	if dsn == "" {
+		t.Skip("AML_LIVE_DSN not set; skipping live Postgres AML rescan test")
+	}
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatalf("open: %v", err)
+	}
+	defer db.Close()
+	ensureWalletLedgerForTest(t, db)
+	store, err := NewStore(db)
+	if err != nil {
+		t.Fatalf("store: %v", err)
+	}
+	ctx := context.Background()
+	for _, stmt := range []string{
+		"DELETE FROM aml_alerts", "DELETE FROM aml_cases", "DELETE FROM aml_rules",
+		"DELETE FROM wallet_ledger", "UPDATE aml_scan_state SET last_ledger_id = 0",
+	} {
+		if _, err := db.Exec(stmt); err != nil {
+			t.Fatalf("reset %q: %v", stmt, err)
+		}
+	}
+	subject := fmt.Sprintf("u-rescan-%d", time.Now().UnixNano())
+	now := time.Now().UTC()
+
+	countAlerts := func() int {
+		alerts, _ := store.ListAlerts(ctx, "", 50, 0)
+		n := 0
+		for _, a := range alerts {
+			if a.SubjectID == subject {
+				n++
+			}
+		}
+		return n
+	}
+
+	// A large deposit lands while NO rules are loaded.
+	seedLedger(t, db, subject, "credit", "real", "alpha USDC deposit 1/0xbig", "alpha-cashier:deposit:1:0xbig:0", 2_000_000, now)
+
+	// First scan with zero rules: the watermark advances past the deposit and
+	// nothing fires (fail-safe empty rule set).
+	if _, err := store.forTestScan(t, db).ScanOnce(ctx); err != nil {
+		t.Fatalf("scan (no rules): %v", err)
+	}
+	if countAlerts() != 0 {
+		t.Fatal("no rules → no alert expected")
+	}
+	if wm, _ := store.Watermark(ctx); wm == 0 {
+		t.Fatal("watermark should have advanced past the deposit")
+	}
+
+	// Compliance NOW loads a large-deposit rule.
+	if _, err := store.UpsertRule(ctx, Rule{Name: "large-deposit", Kind: "amount_threshold", RiskPoints: 60,
+		Severity: "high", Enabled: true, Params: map[string]any{"thresholdCents": 1_000_000, "kinds": "deposit"}}); err != nil {
+		t.Fatalf("rule: %v", err)
+	}
+
+	// A normal scan does NOTHING for the earlier deposit — the watermark is past
+	// it. THIS is the GAP-60 gap.
+	if _, err := store.forTestScan(t, db).ScanOnce(ctx); err != nil {
+		t.Fatalf("scan (rule loaded): %v", err)
+	}
+	if countAlerts() != 0 {
+		t.Fatal("without a rescan, a rule loaded after the scan never sees the earlier deposit (the gap)")
+	}
+
+	// Rescan from 0 reopens the deposit against the now-loaded rule → alert.
+	examined, err := store.forTestScan(t, db).Rescan(ctx, 0)
+	if err != nil {
+		t.Fatalf("rescan: %v", err)
+	}
+	if examined < 1 {
+		t.Fatalf("rescan should re-examine the deposit row, examined=%d", examined)
+	}
+	if countAlerts() != 1 {
+		t.Fatalf("rescan must evaluate the earlier deposit and raise the alert, got %d alerts", countAlerts())
+	}
+}
+
 func TestAMLScannerIngestionLive(t *testing.T) {
 	dsn := os.Getenv("AML_LIVE_DSN")
 	if dsn == "" {
