@@ -727,6 +727,14 @@ func (m *MockResponsibleGamblingService) CheckBetAllowed(ctx context.Context, us
 // CheckBetAllowed, CheckAndRecordBet, and RecordBet share one source of
 // truth for the limit decision (no drift).
 func (m *MockResponsibleGamblingService) checkBetAllowedLocked(userID string, stakeCents int64) (bool, string, error) {
+	// NOTE (GAP-11 / verification #8): this mock enforces self-exclusion,
+	// cool-off, and BET (stake) limits, but NOT loss limits — the mock has no
+	// settled-payout source to derive realized loss from. Loss-limit
+	// enforcement is a Postgres-path control (rg_postgres.lossLimitDenial, on
+	// BOTH CheckBetAllowed and CheckAndRecordBet). The mock is a dev/test double
+	// and is never the wired order-path checker (handlers.go selects the
+	// Postgres RG service or the fail-closed fallback, never this mock). Do NOT
+	// assume a loss cap set against this mock is enforced.
 	// Check if user is blocked
 	if _, found := m.selfExclusions[userID]; found {
 		se := m.selfExclusions[userID]
