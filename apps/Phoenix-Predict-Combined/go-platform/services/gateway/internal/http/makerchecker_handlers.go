@@ -38,6 +38,7 @@ type makerCheckerStore interface {
 	GetAction(ctx context.Context, id int64) (*makerchecker.Action, error)
 	Approve(ctx context.Context, id int64, checkerID string) (*makerchecker.Action, error)
 	Reject(ctx context.Context, id int64, checkerID, reason string) (*makerchecker.Action, error)
+	MarkExecuted(ctx context.Context, id int64) (bool, error)
 }
 
 // adjustmentExecutor is the wallet capability the approve/direct paths use.
@@ -206,17 +207,54 @@ func registerMakerCheckerRoutes(mux *stdhttp.ServeMux, store makerCheckerStore, 
 				action.Direction, action.SubjectID, action.AmountCents, action.IdempotencyKey, action.Reason)
 			if execErr != nil {
 				// The action is approved but the wallet move failed. Audit the
-				// failure; the idempotency key makes a later retry safe.
+				// failure; it stays approved-but-unexecuted (executed_at NULL) and
+				// the idempotency-keyed POST .../{id}/execute can retry it safely.
 				recordProviderOpsAuditAction(checker, "finance.adjustment_approve_failed", action.SubjectID, map[string]any{
 					"pendingId": id, "error": "wallet execution failed",
 				})
 				return mapWalletError(execErr)
+			}
+			if _, mErr := store.MarkExecuted(r.Context(), id); mErr != nil {
+				// The money moved but the executed flag did not persist; /execute
+				// will reconcile (idempotent). Record it, don't fail the approval.
+				recordProviderOpsAuditAction(checker, "finance.adjustment_mark_executed_failed", action.SubjectID, map[string]any{"pendingId": id})
 			}
 			recordProviderOpsAuditAction(checker, "finance.adjustment_approved", action.SubjectID, map[string]any{
 				"pendingId": id, "makerId": action.MakerID, "direction": action.Direction,
 				"amountPointsCents": action.AmountCents, "balancePointsCents": entry.BalanceCents,
 			})
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"approved": true, "balancePointsCents": entry.BalanceCents})
+		case "execute":
+			// GAP-61 (PAM §25 Admin Operations): re-run the wallet move for an
+			// approved adjustment whose execution failed after approval, leaving
+			// it stuck. Idempotency-keyed on the action's key, so a retry after a
+			// partial success is a safe no-op that returns the existing entry.
+			action, err := store.GetAction(r.Context(), id)
+			if err != nil {
+				return mapMakerCheckerError(err)
+			}
+			if action.Status != "approved" {
+				return httpx.Conflict("only an approved action can be executed", map[string]any{"status": action.Status})
+			}
+			if action.ExecutedAt != "" {
+				return httpx.Conflict("this action has already been executed", map[string]any{"executedAt": action.ExecutedAt})
+			}
+			entry, execErr := executeAdjustment(r.Context(), exec,
+				action.Direction, action.SubjectID, action.AmountCents, action.IdempotencyKey, action.Reason)
+			if execErr != nil {
+				recordProviderOpsAuditAction(checker, "finance.adjustment_execute_failed", action.SubjectID, map[string]any{
+					"pendingId": id, "error": "wallet execution failed",
+				})
+				return mapWalletError(execErr)
+			}
+			if _, mErr := store.MarkExecuted(r.Context(), id); mErr != nil {
+				recordProviderOpsAuditAction(checker, "finance.adjustment_mark_executed_failed", action.SubjectID, map[string]any{"pendingId": id})
+			}
+			recordProviderOpsAuditAction(checker, "finance.adjustment_executed", action.SubjectID, map[string]any{
+				"pendingId": id, "direction": action.Direction,
+				"amountPointsCents": action.AmountCents, "balancePointsCents": entry.BalanceCents,
+			})
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"executed": true, "balancePointsCents": entry.BalanceCents})
 		case "reject":
 			var body struct {
 				Reason string `json:"reason"`

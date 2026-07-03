@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,13 +14,20 @@ import (
 )
 
 // fakeAdjustExecutor records the wallet mutation the maker-checker path drives.
+// failCreditsRemaining>0 makes the next N Credit calls fail (simulating a wallet
+// outage after approval) before succeeding — for the GAP-61 retry test.
 type fakeAdjustExecutor struct {
-	credits, debits int
-	lastKey         string
-	lastAmount      int64
+	credits, debits      int
+	lastKey              string
+	lastAmount           int64
+	failCreditsRemaining int
 }
 
 func (f *fakeAdjustExecutor) Credit(_ context.Context, req wallet.MutationRequest) (wallet.LedgerEntry, error) {
+	if f.failCreditsRemaining > 0 {
+		f.failCreditsRemaining--
+		return wallet.LedgerEntry{}, errors.New("wallet temporarily unavailable")
+	}
 	f.credits++
 	f.lastKey = req.IdempotencyKey
 	f.lastAmount = req.AmountCents
@@ -83,6 +91,14 @@ func (s *stubMCStore) Approve(_ context.Context, id int64, checker string) (*mak
 	a.Status = "approved"
 	a.CheckerID = checker
 	return a, nil
+}
+func (s *stubMCStore) MarkExecuted(_ context.Context, id int64) (bool, error) {
+	a, ok := s.actions[id]
+	if !ok || a.Status != "approved" || a.ExecutedAt != "" {
+		return false, nil
+	}
+	a.ExecutedAt = "2026-07-03T00:00:00Z"
+	return true, nil
 }
 func (s *stubMCStore) Reject(_ context.Context, id int64, checker, reason string) (*makerchecker.Action, error) {
 	a, ok := s.actions[id]
@@ -219,5 +235,73 @@ func TestRequireDualApprovalThreshold(t *testing.T) {
 	}
 	if err := requireDualApproval(50000); err == nil {
 		t.Fatal("above threshold must be refused")
+	}
+}
+
+// TestMCApprovedButUnexecutedCanBeRetried proves GAP-61: when the wallet move
+// fails AFTER approval, the action is stuck approved-but-unexecuted, and the
+// idempotency-keyed /execute retry settles it — without double-moving money.
+func TestMCApprovedButUnexecutedCanBeRetried(t *testing.T) {
+	store := newStubMCStore()
+	exec := &fakeAdjustExecutor{failCreditsRemaining: 1} // the approve-time execute fails once
+	handler := newMCHarness(store, exec)
+
+	// Submit an at-threshold adjustment (queues for a second approver).
+	if res := mcReq(handler, "admin-A", http.MethodPost, "/api/v1/admin/finance/adjustments",
+		`{"userId":"u-9","direction":"credit","amountPointsCents":10000,"reason":"big fix","idempotencyKey":"kx"}`); res.Code != http.StatusAccepted {
+		t.Fatalf("submit: expected 202, got %d body=%s", res.Code, res.Body.String())
+	}
+
+	// A second approver approves, but the wallet move fails → stuck approved.
+	res := mcReq(handler, "admin-B", http.MethodPost, "/api/v1/admin/finance/adjustments/pending/1/approve", "")
+	if res.Code == http.StatusOK {
+		t.Fatalf("approve should surface the wallet failure, got 200 body=%s", res.Body.String())
+	}
+	assertAMLAudit(t, "finance.adjustment_approve_failed", "u-9")
+	if got := store.actions[1]; got.Status != "approved" || got.ExecutedAt != "" {
+		t.Fatalf("want approved-but-unexecuted, got status=%q executedAt=%q", got.Status, got.ExecutedAt)
+	}
+	if exec.credits != 0 {
+		t.Fatalf("no successful credit yet, got %d", exec.credits)
+	}
+
+	// Retry via /execute: the wallet move now succeeds and the action settles.
+	res = mcReq(handler, "admin-B", http.MethodPost, "/api/v1/admin/finance/adjustments/pending/1/execute", "")
+	if res.Code != http.StatusOK {
+		t.Fatalf("execute retry: expected 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	if exec.credits != 1 {
+		t.Fatalf("retry should execute the credit exactly once, got %d", exec.credits)
+	}
+	assertAMLAudit(t, "finance.adjustment_executed", "u-9")
+	if got := store.actions[1]; got.ExecutedAt == "" {
+		t.Fatal("action should be marked executed after the retry")
+	}
+
+	// Re-executing an already-executed action is refused (no double-move).
+	res = mcReq(handler, "admin-B", http.MethodPost, "/api/v1/admin/finance/adjustments/pending/1/execute", "")
+	if res.Code != http.StatusConflict {
+		t.Fatalf("second execute: expected 409, got %d body=%s", res.Code, res.Body.String())
+	}
+	if exec.credits != 1 {
+		t.Fatalf("no double credit on repeat execute, got %d", exec.credits)
+	}
+}
+
+// TestMCExecuteRejectsIneligible guards the /execute path: unknown id → 404,
+// a still-pending (unapproved) action → 409.
+func TestMCExecuteRejectsIneligible(t *testing.T) {
+	store := newStubMCStore()
+	handler := newMCHarness(store, &fakeAdjustExecutor{})
+
+	if res := mcReq(handler, "admin-B", http.MethodPost, "/api/v1/admin/finance/adjustments/pending/999/execute", ""); res.Code != http.StatusNotFound {
+		t.Fatalf("execute unknown id: expected 404, got %d", res.Code)
+	}
+	if res := mcReq(handler, "admin-A", http.MethodPost, "/api/v1/admin/finance/adjustments",
+		`{"userId":"u-2","direction":"debit","amountPointsCents":10000,"reason":"x","idempotencyKey":"kp"}`); res.Code != http.StatusAccepted {
+		t.Fatalf("submit: expected 202, got %d", res.Code)
+	}
+	if res := mcReq(handler, "admin-B", http.MethodPost, "/api/v1/admin/finance/adjustments/pending/1/execute", ""); res.Code != http.StatusConflict {
+		t.Fatalf("execute a pending (unapproved) action: expected 409, got %d", res.Code)
 	}
 }

@@ -120,3 +120,40 @@ func TestMakerCheckerListLive(t *testing.T) {
 		t.Fatalf("pending list should grow by 1: before=%d after=%d", len(before), len(after))
 	}
 }
+
+// TestMakerCheckerMarkExecutedLive proves GAP-61's execution-state tracking on
+// real Postgres: the executed_at column (added by ensureSchema's idempotent
+// ALTER) starts NULL, MarkExecuted flips it only for an approved action, and is
+// idempotent.
+func TestMakerCheckerMarkExecutedLive(t *testing.T) {
+	s, ctx := liveStore(t)
+
+	a := newPending(t, s, ctx, "admin-A")
+	got, err := s.GetAction(ctx, a.ID)
+	if err != nil {
+		t.Fatalf("get: %v", err)
+	}
+	if got.ExecutedAt != "" {
+		t.Fatalf("a new action must be unexecuted, got executedAt=%q", got.ExecutedAt)
+	}
+
+	// MarkExecuted on a PENDING (not-approved) action is a no-op.
+	if flipped, err := s.MarkExecuted(ctx, a.ID); err != nil || flipped {
+		t.Fatalf("mark-executed on pending: want (false,nil), got (%v,%v)", flipped, err)
+	}
+
+	// Approve, then MarkExecuted flips executed_at exactly once.
+	if _, err := s.Approve(ctx, a.ID, "admin-B"); err != nil {
+		t.Fatalf("approve: %v", err)
+	}
+	if flipped, err := s.MarkExecuted(ctx, a.ID); err != nil || !flipped {
+		t.Fatalf("first mark-executed: want (true,nil), got (%v,%v)", flipped, err)
+	}
+	if got, _ = s.GetAction(ctx, a.ID); got.ExecutedAt == "" {
+		t.Fatal("executed_at must be set after MarkExecuted")
+	}
+	// Idempotent: a second call does not flip again.
+	if flipped, err := s.MarkExecuted(ctx, a.ID); err != nil || flipped {
+		t.Fatalf("second mark-executed: want (false,nil), got (%v,%v)", flipped, err)
+	}
+}

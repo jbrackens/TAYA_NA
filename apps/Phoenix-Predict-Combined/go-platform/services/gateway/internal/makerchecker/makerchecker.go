@@ -41,6 +41,10 @@ type Action struct {
 	CheckerReason  string `json:"checkerReason,omitempty"`
 	CreatedAt      string `json:"createdAt"`
 	DecidedAt      string `json:"decidedAt,omitempty"`
+	// GAP-61: set when the approved adjustment's wallet move actually executed.
+	// An approved action with an empty ExecutedAt is approved-but-unexecuted
+	// (its execution failed) and is eligible for re-execution via /execute.
+	ExecutedAt string `json:"executedAt,omitempty"`
 }
 
 // Store persists pending actions.
@@ -79,8 +83,14 @@ CREATE TABLE IF NOT EXISTS pending_admin_actions (
 	if err != nil {
 		return err
 	}
+	if _, err = s.db.ExecContext(ctx,
+		`CREATE INDEX IF NOT EXISTS idx_pending_admin_actions_status ON pending_admin_actions (status, created_at DESC)`); err != nil {
+		return err
+	}
+	// GAP-61 (PAM §25 Admin Operations): track whether an approved adjustment's
+	// wallet move actually executed. Idempotent ALTER on the store-owned table.
 	_, err = s.db.ExecContext(ctx,
-		`CREATE INDEX IF NOT EXISTS idx_pending_admin_actions_status ON pending_admin_actions (status, created_at DESC)`)
+		`ALTER TABLE pending_admin_actions ADD COLUMN IF NOT EXISTS executed_at TIMESTAMPTZ`)
 	return err
 }
 
@@ -209,6 +219,26 @@ func (s *Store) GetAction(ctx context.Context, id int64) (*Action, error) {
 	return scanAction(s.db.QueryRowContext(ctx, selectAction+` WHERE id=$1`, id))
 }
 
+// MarkExecuted records that an approved action's wallet move has executed. It
+// flips executed_at only for an approved, not-yet-executed action, so it is
+// idempotent: a second call — or a call on a pending/rejected action — returns
+// false without error. Returns true only when THIS call performed the
+// transition. (GAP-61: lets the /execute retry path settle a stuck approval.)
+func (s *Store) MarkExecuted(ctx context.Context, id int64) (bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	res, err := s.db.ExecContext(ctx,
+		`UPDATE pending_admin_actions SET executed_at=NOW() WHERE id=$1 AND status='approved' AND executed_at IS NULL`, id)
+	if err != nil {
+		return false, err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	return n > 0, nil
+}
+
 // ListByStatus returns actions with the given status (empty = all), newest first.
 func (s *Store) ListByStatus(ctx context.Context, status string, limit, offset int) ([]Action, error) {
 	if limit <= 0 || limit > 200 {
@@ -247,7 +277,8 @@ func (s *Store) ListByStatus(ctx context.Context, status string, limit, offset i
 const selectAction = `
 SELECT id, action_type, subject_id, direction, amount_cents, reason, idempotency_key,
        maker_id, status, COALESCE(checker_id,''), COALESCE(checker_reason,''),
-       CAST(created_at AS TEXT), COALESCE(CAST(decided_at AS TEXT),'')
+       CAST(created_at AS TEXT), COALESCE(CAST(decided_at AS TEXT),''),
+       COALESCE(CAST(executed_at AS TEXT),'')
 FROM pending_admin_actions`
 
 type rowScanner interface{ Scan(dest ...any) error }
@@ -255,7 +286,8 @@ type rowScanner interface{ Scan(dest ...any) error }
 func scanAction(row rowScanner) (*Action, error) {
 	var a Action
 	err := row.Scan(&a.ID, &a.ActionType, &a.SubjectID, &a.Direction, &a.AmountCents, &a.Reason,
-		&a.IdempotencyKey, &a.MakerID, &a.Status, &a.CheckerID, &a.CheckerReason, &a.CreatedAt, &a.DecidedAt)
+		&a.IdempotencyKey, &a.MakerID, &a.Status, &a.CheckerID, &a.CheckerReason, &a.CreatedAt, &a.DecidedAt,
+		&a.ExecutedAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrNotFound
 	}
