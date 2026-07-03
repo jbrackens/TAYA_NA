@@ -128,6 +128,10 @@ func (s *FailClosedResponsibleGamblingService) SetSelfExclusion(context.Context,
 	return ErrRGProviderNotConfigured
 }
 
+func (s *FailClosedResponsibleGamblingService) SetProblemTradingFlag(context.Context, string, bool, string, string) error {
+	return ErrRGProviderNotConfigured
+}
+
 func (s *FailClosedResponsibleGamblingService) GetPlayerRestrictions(context.Context, string) (*PlayerRestrictions, error) {
 	return nil, ErrRGProviderNotConfigured
 }

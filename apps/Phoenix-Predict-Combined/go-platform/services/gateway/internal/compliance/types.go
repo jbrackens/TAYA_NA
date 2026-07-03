@@ -120,6 +120,14 @@ type PlayerRestrictions struct {
 	IsExcluded      bool   `json:"isExcluded"`
 	ExclusionType   string `json:"exclusionType,omitempty"` // temporary, permanent
 	ExcludedUntil   string `json:"excludedUntil,omitempty"`
+	// ProblemTrading* is a compliance MARKER (GAP-39, PAM §13): a reviewer flags
+	// a player as exhibiting problem-trading behaviour. It does NOT itself block
+	// trading (that is self-exclusion); it surfaces in Profile-360 for
+	// monitoring/intervention. reason/by/at are recorded for audit.
+	ProblemTradingFlag      bool   `json:"problemTradingFlag"`
+	ProblemTradingReason    string `json:"problemTradingReason,omitempty"`
+	ProblemTradingFlaggedBy string `json:"problemTradingFlaggedBy,omitempty"`
+	ProblemTradingFlaggedAt string `json:"problemTradingFlaggedAt,omitempty"`
 	DepositLimits   []DepositLimit `json:"depositLimits"`
 	BetLimits       []BetLimit     `json:"betLimits"`
 	LossLimits      []LossLimit    `json:"lossLimits"`

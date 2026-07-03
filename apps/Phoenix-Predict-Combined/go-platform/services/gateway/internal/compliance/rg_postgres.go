@@ -97,6 +97,13 @@ func (s *PostgresResponsibleGamblingService) ensureSchema() error {
 		`ALTER TABLE player_deposit_limits ADD COLUMN IF NOT EXISTS pending_activates_at TIMESTAMPTZ`,
 		`ALTER TABLE player_loss_limits ADD COLUMN IF NOT EXISTS pending_limit_cents BIGINT`,
 		`ALTER TABLE player_loss_limits ADD COLUMN IF NOT EXISTS pending_activates_at TIMESTAMPTZ`,
+		// GAP-39 (PAM §13 Responsible Gaming): problem-trading compliance marker
+		// on the RG state. Idempotent ALTERs on the store-owned table (same
+		// pattern as GAP-63 above).
+		`ALTER TABLE player_restrictions ADD COLUMN IF NOT EXISTS problem_trading_flag BOOLEAN NOT NULL DEFAULT FALSE`,
+		`ALTER TABLE player_restrictions ADD COLUMN IF NOT EXISTS problem_trading_reason TEXT`,
+		`ALTER TABLE player_restrictions ADD COLUMN IF NOT EXISTS problem_trading_flagged_by TEXT`,
+		`ALTER TABLE player_restrictions ADD COLUMN IF NOT EXISTS problem_trading_flagged_at TIMESTAMPTZ`,
 	}
 
 	for _, stmt := range statements {
@@ -620,6 +627,36 @@ SET self_excluded = TRUE,
 	return err
 }
 
+// SetProblemTradingFlag sets or clears the problem-trading compliance marker.
+// Clearing nulls the reason/who/when so a stale marker does not linger. UPSERT
+// so the row is created if the player has no other restrictions yet.
+func (s *PostgresResponsibleGamblingService) SetProblemTradingFlag(ctx context.Context, userID string, flagged bool, reason, flaggedBy string) error {
+	if userID == "" {
+		return ErrInvalidUserID
+	}
+	ctx, cancel := context.WithTimeout(ctx, rgDBTimeout)
+	defer cancel()
+
+	var reasonVal, byVal, flaggedAt any
+	if flagged {
+		reasonVal = reason
+		byVal = flaggedBy
+		flaggedAt = time.Now().UTC()
+	}
+	_, err := s.db.ExecContext(ctx, `
+INSERT INTO player_restrictions
+  (user_id, problem_trading_flag, problem_trading_reason, problem_trading_flagged_by, problem_trading_flagged_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, NOW())
+ON CONFLICT (user_id) DO UPDATE
+SET problem_trading_flag = EXCLUDED.problem_trading_flag,
+    problem_trading_reason = EXCLUDED.problem_trading_reason,
+    problem_trading_flagged_by = EXCLUDED.problem_trading_flagged_by,
+    problem_trading_flagged_at = EXCLUDED.problem_trading_flagged_at,
+    updated_at = NOW()`,
+		userID, flagged, reasonVal, byVal, flaggedAt)
+	return err
+}
+
 func (s *PostgresResponsibleGamblingService) SetCoolOff(ctx context.Context, userID string, durationHours int) error {
 	if userID == "" {
 		return ErrInvalidUserID
@@ -656,14 +693,21 @@ func (s *PostgresResponsibleGamblingService) GetPlayerRestrictions(ctx context.C
 	var selfExclusionUntil sql.NullTime
 	var coolOffUntil sql.NullTime
 	var updatedAt sql.NullString
+	var problemFlag bool
+	var problemReason sql.NullString
+	var problemBy sql.NullString
+	var problemAt sql.NullTime
 
 	err := s.db.QueryRowContext(ctx, `
 SELECT blocked, self_excluded, self_exclusion_permanent,
-       self_exclusion_until, cool_off_until, CAST(updated_at AS TEXT)
+       self_exclusion_until, cool_off_until, CAST(updated_at AS TEXT),
+       COALESCE(problem_trading_flag, FALSE), problem_trading_reason,
+       problem_trading_flagged_by, problem_trading_flagged_at
 FROM player_restrictions
 WHERE user_id = $1`, userID).Scan(
 		&blocked, &selfExcluded, &selfExclusionPermanent,
-		&selfExclusionUntil, &coolOffUntil, &updatedAt)
+		&selfExclusionUntil, &coolOffUntil, &updatedAt,
+		&problemFlag, &problemReason, &problemBy, &problemAt)
 
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
@@ -671,6 +715,15 @@ WHERE user_id = $1`, userID).Scan(
 
 	if err == nil {
 		result.IsBlocked = blocked
+
+		result.ProblemTradingFlag = problemFlag
+		if problemFlag {
+			result.ProblemTradingReason = problemReason.String
+			result.ProblemTradingFlaggedBy = problemBy.String
+			if problemAt.Valid {
+				result.ProblemTradingFlaggedAt = problemAt.Time.Format(time.RFC3339)
+			}
+		}
 
 		// Self-exclusion: permanent or not-yet-expired
 		if selfExcluded {

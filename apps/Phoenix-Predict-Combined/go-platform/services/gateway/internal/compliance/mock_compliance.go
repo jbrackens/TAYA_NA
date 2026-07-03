@@ -427,8 +427,16 @@ type MockResponsibleGamblingService struct {
 	lossLimits      map[string][]LossLimit
 	coolOffs        map[string]time.Time
 	selfExclusions  map[string]*SelfExclusionRecord
+	problemFlags    map[string]problemTradingMark
 	depositTracking map[string]*PeriodTracking
 	betTracking     map[string]*PeriodTracking
+}
+
+// problemTradingMark is the mock's in-memory problem-trading marker (GAP-39).
+type problemTradingMark struct {
+	reason    string
+	flaggedBy string
+	flaggedAt string
 }
 
 type SelfExclusionRecord struct {
@@ -452,6 +460,7 @@ func NewMockResponsibleGamblingService() *MockResponsibleGamblingService {
 		lossLimits:      make(map[string][]LossLimit),
 		coolOffs:        make(map[string]time.Time),
 		selfExclusions:  make(map[string]*SelfExclusionRecord),
+		problemFlags:    make(map[string]problemTradingMark),
 		depositTracking: make(map[string]*PeriodTracking),
 		betTracking:     make(map[string]*PeriodTracking),
 	}
@@ -841,6 +850,23 @@ func (m *MockResponsibleGamblingService) SetSelfExclusion(ctx context.Context, u
 	return nil
 }
 
+func (m *MockResponsibleGamblingService) SetProblemTradingFlag(_ context.Context, userID string, flagged bool, reason, flaggedBy string) error {
+	if userID == "" {
+		return ErrInvalidUserID
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if flagged {
+		m.problemFlags[userID] = problemTradingMark{
+			reason: reason, flaggedBy: flaggedBy,
+			flaggedAt: time.Now().UTC().Format(time.RFC3339),
+		}
+	} else {
+		delete(m.problemFlags, userID)
+	}
+	return nil
+}
+
 func (m *MockResponsibleGamblingService) GetPlayerRestrictions(ctx context.Context, userID string) (*PlayerRestrictions, error) {
 	if userID == "" {
 		return nil, ErrInvalidUserID
@@ -858,6 +884,14 @@ func (m *MockResponsibleGamblingService) GetPlayerRestrictions(ctx context.Conte
 		DepositLimits: []DepositLimit{},
 		BetLimits:     []BetLimit{},
 		LastUpdated:   now.UTC().Format(time.RFC3339),
+	}
+
+	// GAP-39: surface the problem-trading marker.
+	if mark, found := m.problemFlags[userID]; found {
+		restrictions.ProblemTradingFlag = true
+		restrictions.ProblemTradingReason = mark.reason
+		restrictions.ProblemTradingFlaggedBy = mark.flaggedBy
+		restrictions.ProblemTradingFlaggedAt = mark.flaggedAt
 	}
 
 	// Check cool-off

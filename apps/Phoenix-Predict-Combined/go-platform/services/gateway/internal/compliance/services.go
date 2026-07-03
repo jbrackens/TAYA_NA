@@ -83,6 +83,11 @@ type ResponsibleGamblingService interface {
 	// SetSelfExclusion sets a self-exclusion for a user
 	SetSelfExclusion(ctx context.Context, userID string, permanent bool) error
 
+	// SetProblemTradingFlag sets/clears the problem-trading compliance marker
+	// (GAP-39, §13). A marker only — it does not block trading (self-exclusion
+	// does). reason + flaggedBy are recorded for audit; clearing nulls them.
+	SetProblemTradingFlag(ctx context.Context, userID string, flagged bool, reason, flaggedBy string) error
+
 	// GetPlayerRestrictions returns all restrictions for a user
 	GetPlayerRestrictions(ctx context.Context, userID string) (*PlayerRestrictions, error)
 
