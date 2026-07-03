@@ -30,10 +30,11 @@ func TestRequestIDUsesIncomingHeader(t *testing.T) {
 }
 
 func TestAuthStripsClientSuppliedIdentityHeaders(t *testing.T) {
-	var sawUserID, sawAdminRole string
+	var sawUserID, sawAdminRole, sawInternal string
 	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sawUserID = r.Header.Get("X-User-ID")
 		sawAdminRole = r.Header.Get("X-Admin-Role")
+		sawInternal = r.Header.Get("X-Internal-Auth")
 		w.WriteHeader(http.StatusOK)
 	})
 
@@ -45,6 +46,7 @@ func TestAuthStripsClientSuppliedIdentityHeaders(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/public/markets", nil)
 	req.Header.Set("X-User-ID", "victim")
 	req.Header.Set("X-Admin-Role", "admin")
+	req.Header.Set("X-Internal-Auth", "leaked-secret")
 	rec := httptest.NewRecorder()
 	handler.ServeHTTP(rec, req)
 
@@ -53,6 +55,11 @@ func TestAuthStripsClientSuppliedIdentityHeaders(t *testing.T) {
 	}
 	if sawAdminRole != "" {
 		t.Fatalf("X-Admin-Role must be stripped at ingress, handler saw %q", sawAdminRole)
+	}
+	// verification #15 F1: a client-supplied X-Internal-Auth must never reach a
+	// handler/proxy — otherwise it could be replayed through the public auth proxy.
+	if sawInternal != "" {
+		t.Fatalf("X-Internal-Auth must be stripped at ingress, handler saw %q", sawInternal)
 	}
 }
 

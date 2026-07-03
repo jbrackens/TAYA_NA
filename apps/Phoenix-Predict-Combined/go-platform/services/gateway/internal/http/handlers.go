@@ -970,6 +970,17 @@ func registerAuthProxy(mux *stdhttp.ServeMux) {
 		if strings.HasPrefix(r.URL.Path, "/auth/") {
 			r.URL.Path = "/api/v1" + r.URL.Path
 		}
+		// SEC (verification #15 F1): /api/v1/auth/internal/* endpoints (e.g. the
+		// MFA-reset used for lost-device recovery) are server-to-server ONLY —
+		// the gateway calls them directly via AUTH_SERVICE_URL, not through this
+		// proxy. This proxy prefix is public + CSRF-exempt, so forwarding an
+		// /internal/ path would let anyone holding AUTH_INTERNAL_SECRET bypass the
+		// gateway's RBAC + compliance-audit hop. Refuse them here (defense in
+		// depth with the ingress strip of X-Internal-Auth).
+		if strings.HasPrefix(r.URL.Path, "/api/v1/auth/internal/") {
+			stdhttp.NotFound(w, r)
+			return
+		}
 		proxy.ServeHTTP(w, r)
 	}
 	mux.HandleFunc("/api/v1/auth/", authHandler)

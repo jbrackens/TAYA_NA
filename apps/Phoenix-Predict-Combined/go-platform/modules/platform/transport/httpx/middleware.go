@@ -244,6 +244,12 @@ func Auth(authServiceURL string, publicPrefixes []string) Middleware {
 			r.Header.Del("X-Admin-Role")
 			r.Header.Del("X-Bot-Scopes")
 			r.Header.Del("X-Bot-Key-ID")
+			// X-Internal-Auth authenticates the gateway's OWN server-to-server
+			// calls to the auth service's /internal/* endpoints; it is set on the
+			// gateway's outbound request, never legitimately supplied by a client.
+			// Strip any client-supplied copy so it cannot be replayed through the
+			// public auth proxy (verification #15 F1 defense-in-depth).
+			r.Header.Del("X-Internal-Auth")
 
 			// Check if path is public
 			path := r.URL.Path
