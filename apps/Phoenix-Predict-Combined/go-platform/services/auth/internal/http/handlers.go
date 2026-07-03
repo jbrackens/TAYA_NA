@@ -1822,7 +1822,9 @@ const minPasswordLength = 7
 
 // passwordPolicy is the configurable password-strength policy (GAP-37, PAM §11
 // Identity/Authentication + §27 Security). minClasses counts distinct character
-// classes among {uppercase, lowercase, digit, symbol}.
+// classes among {uppercase, lowercase, digit} — the SAME three classes the
+// pre-GAP-37 hardcoded rule used, so the default is unchanged; only min length
+// and min-classes are made operator-tunable.
 type passwordPolicy struct {
 	minLength  int
 	minClasses int
@@ -1841,7 +1843,9 @@ func passwordPolicyFromEnv() passwordPolicy {
 		}
 	}
 	if v := strings.TrimSpace(os.Getenv("AUTH_PASSWORD_MIN_CLASSES")); v != "" {
-		if n, err := strconv.Atoi(v); err == nil && n >= 1 && n <= 4 {
+		// Cap at 3 — the number of character classes we recognise (upper, lower,
+		// digit). Out-of-range (incl. the old buggy 4) keeps the default.
+		if n, err := strconv.Atoi(v); err == nil && n >= 1 && n <= 3 {
 			p.minClasses = n
 		}
 	}
@@ -1853,7 +1857,10 @@ func validatePasswordStrength(password string) error {
 	if len(password) < pol.minLength {
 		return httpx.BadRequest(fmt.Sprintf("password must be at least %d characters", pol.minLength), nil)
 	}
-	var hasUpper, hasLower, hasDigit, hasSymbol bool
+	// Only upper/lower/digit are counted (matching the pre-GAP-37 default
+	// exactly): any other rune — symbols AND non-ASCII letters — is ignored, so
+	// it can neither weaken the default nor inflate the class count.
+	var hasUpper, hasLower, hasDigit bool
 	for _, ch := range password {
 		switch {
 		case ch >= 'A' && ch <= 'Z':
@@ -1862,18 +1869,16 @@ func validatePasswordStrength(password string) error {
 			hasLower = true
 		case ch >= '0' && ch <= '9':
 			hasDigit = true
-		default:
-			hasSymbol = true
 		}
 	}
 	classes := 0
-	for _, has := range []bool{hasUpper, hasLower, hasDigit, hasSymbol} {
+	for _, has := range []bool{hasUpper, hasLower, hasDigit} {
 		if has {
 			classes++
 		}
 	}
 	if classes < pol.minClasses {
-		return httpx.BadRequest(fmt.Sprintf("password must contain at least %d of: uppercase, lowercase, digits, symbols", pol.minClasses), nil)
+		return httpx.BadRequest(fmt.Sprintf("password must contain at least %d of: uppercase, lowercase, digits", pol.minClasses), nil)
 	}
 	return nil
 }
