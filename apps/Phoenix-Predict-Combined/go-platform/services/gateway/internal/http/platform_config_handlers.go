@@ -73,6 +73,17 @@ func registerPlatformConfigAdminRoutes(mux *stdhttp.ServeMux, store platformConf
 			if err := validateLaunchFacingReason("description", strings.TrimSpace(body.Description)); err != nil {
 				return err
 			}
+			// GAP-50 (PAM §24 Audit Logs and Compliance Evidence): capture the
+			// prior value so the change audit records before->after, not just the
+			// new value. A not-yet-existing flag has no prior value (oldValue stays
+			// nil -> JSON null). A read error other than not-found is surfaced
+			// rather than silently auditing a blank prior value.
+			var oldValue any
+			if prev, gerr := store.Get(r.Context(), key); gerr == nil {
+				oldValue = prev.Value
+			} else if gerr != platformconfig.ErrNotFound {
+				return httpx.Internal("failed to read config flag", gerr)
+			}
 			f, err := store.Upsert(r.Context(), platformconfig.Flag{
 				Key: key, Value: body.Value, Description: body.Description,
 			}, userIDFromRequest(r))
@@ -83,7 +94,8 @@ func registerPlatformConfigAdminRoutes(mux *stdhttp.ServeMux, store platformConf
 				return httpx.Internal("failed to save config flag", err)
 			}
 			recordProviderOpsAuditAction(userIDFromRequest(r), "config.flag_updated", key, map[string]any{
-				"value": body.Value,
+				"oldValue": oldValue,
+				"value":    body.Value,
 			})
 			return httpx.WriteJSON(w, stdhttp.StatusOK, f)
 		default:

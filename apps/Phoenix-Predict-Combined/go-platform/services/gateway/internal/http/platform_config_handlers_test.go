@@ -90,3 +90,31 @@ func TestPlatformConfigGetMissingIs404(t *testing.T) {
 		t.Fatalf("expected 404, got %d", res.Code)
 	}
 }
+
+// TestPlatformConfigUpsertAuditsBeforeAfter (GAP-50) asserts the config-change
+// audit records the prior value, not just the new one — before->after evidence
+// for §24. The stub Get returns "v" as the existing value.
+func TestPlatformConfigUpsertAuditsBeforeAfter(t *testing.T) {
+	store := &stubConfigStore{}
+	h := newConfigHarness(store)
+	res := configReq(h, http.MethodPut, "/api/v1/admin/config/flags/gap50.key",
+		`{"value":"true","description":"toggle"}`, "admin")
+	if res.Code != http.StatusOK {
+		t.Fatalf("upsert: expected 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	var found bool
+	for _, e := range providerOpsAuditSnapshot() {
+		if e.Action == "config.flag_updated" && e.TargetID == "gap50.key" {
+			found = true
+			if !strings.Contains(e.Details, `"oldValue":"v"`) {
+				t.Fatalf("audit must record the prior value, got %s", e.Details)
+			}
+			if !strings.Contains(e.Details, `"value":"true"`) {
+				t.Fatalf("audit must record the new value, got %s", e.Details)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("config.flag_updated audit entry not found in the snapshot")
+	}
+}
