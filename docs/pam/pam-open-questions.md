@@ -3,6 +3,38 @@
 Unresolved questions carried out of the investigation. Each should be answered by product,
 legal, or engineering before or during the corresponding build phase.
 
+> ## RESOLUTION STATUS — SUPERSEDED (annotated 2026-07-04, GAP-56)
+>
+> This file is a **historical investigation artifact**. It predates the build and the
+> **2026-07-02 founder DECISION ROUND**; nearly every question below has since been resolved.
+> Do not treat any item here as still-open without checking the authoritative record. Where to
+> find each class of answer:
+>
+> - **Product · Technical Architecture · Data Model · Prediction-Market questions** — resolved by
+>   the **shipped system** and recorded in `spec.md` §36 (Progress Matrix) / §37 (Reconciliation)
+>   and `docs/pam/schema-domain-reconciliation.md`. Verified highlights: market microstructure =
+>   **CLOB** (central limit order book, built); outcome types = **binary** (multi-outcome
+>   decomposes into N binaries); wallet = **single/seamless** (custodial); case management =
+>   **notes+tags first** + a surveillance case model (P1-4); RBAC = **granular role/permission**
+>   (migration 027, replacing the coarse flags); audit = **hash-chained append-only** (GAP-13);
+>   market-integrity surveillance in scope = **wash/spoof/collusion (P1-4) + insider (GAP-22) +
+>   bonus-abuse (GAP-23) + duplicate-account**; frontend = **Next.js App Router + AntD/P8** (the
+>   §29 stack amendment, GAP-52), NOT the Idefix Nx/`gstech` lineage those questions ask about
+>   (that whole `gstech`/`idefix` frontend line is moot — this is a greenfield fork).
+> - **Legal/Compliance · Operational questions** — answered in the **2026-07-02 DECISION ROUND**
+>   (see the "DECISION ROUND" section of `docs/pam/PROGRESS_LEDGER.md` and the consolidated
+>   `docs/pam/DECISIONS_NEEDED.md`). Verified highlights: sanctions/PEP = **OpenSanctions/yente,
+>   self-hosted** (P0-4); AML = **regime-agnostic plumbing, rules load as data** (P0-5);
+>   dual-approval = **manual adjustments ≥ $100 need a second approver, settlement always
+>   four-eyes** (P0-6); retention vs erasure = **DSAR export + pseudonymization, audit/ledger rows
+>   retained under legal-obligation basis** (P2-3); AWA defaults = **$100 class, runtime-config**
+>   (P1-1). The regulatory-regime and statutory-report-format questions remain **counsel-gated**
+>   (P0-5 rules pack / GAP-24 report suite) — the plumbing is built regime-agnostic.
+> - **"Questions Answered During Investigation"** (bottom section) were already resolved at
+>   authoring time and stand as written.
+>
+> The original text is retained below unchanged for the historical record.
+
 ## Product Questions
 
 1. **Market microstructure:** central limit order book, AMM, or both behind
