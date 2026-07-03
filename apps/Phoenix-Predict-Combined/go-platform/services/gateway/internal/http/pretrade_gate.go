@@ -179,7 +179,7 @@ func checkComplianceGates(r *stdhttp.Request, userID string, surface compliance.
 		st, err := tradeKYCGate.GetVerificationStatus(gctx, userID)
 		if err != nil {
 			env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
-			if env == "production" || env == "staging" {
+			if compliance.IsDeployedEnvironment(env) { // GAP-69: fail closed for ANY deployed env
 				slog.Error("trade KYC gate check failed", "user_id", userID, "env", env, "error", err)
 				return httpx.Forbidden("identity verification unavailable; trading blocked")
 			}

@@ -129,7 +129,7 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 					return httpx.Forbidden("deposit not allowed: " + reason)
 				}
 				env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
-				if env == "production" || env == "staging" {
+				if compliance.IsDeployedEnvironment(env) { // GAP-69: fail closed for ANY deployed env, not just exact "production"/"staging"
 					slog.Error("deposit compliance check failed", "user_id", userID, "env", env, "error", err)
 					return httpx.Forbidden("deposit compliance check unavailable")
 				}
@@ -218,7 +218,7 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 			st, kerr := KYCGate.GetVerificationStatus(gctx, userID)
 			if kerr != nil {
 				env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
-				if env == "production" || env == "staging" {
+				if compliance.IsDeployedEnvironment(env) { // GAP-69: fail closed for ANY deployed env, not just exact "production"/"staging"
 					slog.Error("kyc gate check failed", "user_id", userID, "env", env, "error", kerr)
 					gateErr = httpx.Forbidden("identity verification unavailable; withdrawal blocked")
 					return gateErr

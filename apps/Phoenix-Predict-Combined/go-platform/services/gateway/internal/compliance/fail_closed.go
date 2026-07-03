@@ -36,6 +36,15 @@ func deployedEnvironment(env string) bool {
 	return !knownDevEnvironments[strings.ToLower(strings.TrimSpace(env))]
 }
 
+// IsDeployedEnvironment is the exported form of deployedEnvironment (GAP-69) so
+// other gateway packages (payments, http, …) share this single dev-allowlist
+// instead of re-implementing an exact `env == "production" || "staging"` match —
+// which fails OPEN for a non-canonical deployed value like "prod"/"preprod"/a
+// typo, silently taking a dev fail-open branch in a real deployment.
+func IsDeployedEnvironment(env string) bool {
+	return deployedEnvironment(env)
+}
+
 // KYCFallbackForEnv picks what stands in when the Postgres KYC store is
 // unavailable. Dev/test get the in-memory mock; any deployed environment gets
 // the fail-closed service — identity state that vanishes on restart must never
