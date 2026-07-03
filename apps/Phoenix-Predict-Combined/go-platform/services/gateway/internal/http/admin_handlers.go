@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"encoding/csv"
 	"encoding/json"
 	"errors"
@@ -52,6 +53,20 @@ func providerOpsAuditSnapshot() []auditLogEntry {
 	out := make([]auditLogEntry, len(providerOpsAuditEntries))
 	copy(out, providerOpsAuditEntries)
 	return out
+}
+
+// verifyProviderOpsAuditChain runs the hash-chain integrity check (GAP-13). The
+// store reference is taken under the mutex, but VerifyChain itself runs outside
+// the lock (it is a DB walk that must not block audit writes).
+func verifyProviderOpsAuditChain(ctx context.Context) (auditChainResult, error) {
+	initializeProviderOpsAuditStore()
+	providerOpsAuditMu.Lock()
+	store := providerOpsAuditStore
+	providerOpsAuditMu.Unlock()
+	if store == nil {
+		return auditChainResult{OK: true, Reason: "no audit store configured"}, nil
+	}
+	return store.VerifyChain(ctx)
 }
 
 func recordProviderOpsAuditEntry(entry auditLogEntry) {

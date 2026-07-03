@@ -92,6 +92,30 @@ func registerPredictionAdminRoutes(mux *stdhttp.ServeMux, repo predictionAdminRe
 	registerAdminPunterDetail(mux, "/admin/punters/", repo, wallet)
 	registerAdminAuditLogsList(mux, "/api/v1/admin/audit-logs", repo)
 	registerAdminAuditLogsList(mux, "/admin/audit-logs", repo)
+	registerAuditChainVerifyRoute(mux, "/api/v1/admin/audit-logs/verify")
+	registerAuditChainVerifyRoute(mux, "/admin/audit-logs/verify")
+}
+
+// registerAuditChainVerifyRoute wires the GAP-13 audit hash-chain integrity
+// check (PAM §24 Audit Logs and Compliance Evidence): GET returns whether the
+// tamper-evidence chain is intact and, if not, where it first breaks. Gated
+// compliance:read; the check itself is audited (audit.chain_verified).
+func registerAuditChainVerifyRoute(mux *stdhttp.ServeMux, path string) {
+	mux.Handle(path, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		if err := requireAdminPermission(r, "compliance:read"); err != nil {
+			return err
+		}
+		result, err := verifyProviderOpsAuditChain(r.Context())
+		if err != nil {
+			return httpx.Internal("audit chain verification failed", err)
+		}
+		recordProviderOpsAuditAction(userIDFromRequest(r), "audit.chain_verified", "",
+			map[string]any{"ok": result.OK, "checked": result.Checked, "brokenAtId": result.BrokenAtID})
+		return httpx.WriteJSON(w, stdhttp.StatusOK, result)
+	}))
 }
 
 // registerAdminPunterDetail handles the /punters/{id} subtree for the office

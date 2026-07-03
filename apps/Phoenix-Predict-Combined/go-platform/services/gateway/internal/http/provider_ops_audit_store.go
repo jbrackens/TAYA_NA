@@ -47,6 +47,18 @@ const (
 type providerOpsAuditStoreBackend interface {
 	Load(limit int) ([]auditLogEntry, error)
 	Append(entry auditLogEntry, limit int) error
+	// VerifyChain walks the tamper-evidence hash chain and reports the first
+	// break (GAP-13). File/non-Postgres stores report the chain as not enabled.
+	VerifyChain(ctx context.Context) (auditChainResult, error)
+}
+
+// auditChainResult is the outcome of a hash-chain integrity check.
+type auditChainResult struct {
+	OK          bool   `json:"ok"`
+	Checked     int    `json:"checked"`
+	BrokenAtID  string `json:"brokenAtId,omitempty"`
+	BrokenAtSeq int64  `json:"brokenAtSeq,omitempty"`
+	Reason      string `json:"reason,omitempty"`
 }
 
 type providerOpsAuditFileStore struct {
@@ -88,6 +100,11 @@ func (s *providerOpsAuditFileStore) Append(entry auditLogEntry, limit int) error
 	entries = append(entries, entry)
 	entries = trimAuditEntries(entries, limit)
 	return writeAuditEntriesFile(s.path, entries)
+}
+
+func (s *providerOpsAuditFileStore) VerifyChain(context.Context) (auditChainResult, error) {
+	// The file store is the dev fallback and carries no hash chain.
+	return auditChainResult{OK: true, Reason: "hash chain requires the database audit store (file-mode store is not chained)"}, nil
 }
 
 func writeAuditEntriesFile(path string, entries []auditLogEntry) error {
@@ -262,6 +279,56 @@ INSERT INTO provider_ops_audit_log (
 		entry.Details,
 	)
 	return err
+}
+
+// VerifyChain walks the chained rows in append (seq) order, recomputing each
+// row's hash and confirming each links to its predecessor. It returns the FIRST
+// break — an altered row (hash mismatch), a deleted predecessor (broken link),
+// or deleted history (non-empty genesis prev_hash) — none of which the
+// append-only trigger can detect once dropped.
+func (s *providerOpsAuditDBStore) VerifyChain(ctx context.Context) (auditChainResult, error) {
+	if !s.isPostgres() {
+		return auditChainResult{OK: true, Reason: "hash chain is a Postgres-store control; not enabled for this driver"}, nil
+	}
+	qctx, cancel := context.WithTimeout(ctx, providerOpsAuditDBTimeout)
+	defer cancel()
+
+	rows, err := s.db.QueryContext(qctx, `
+SELECT id, action, actor_id, target_id, occurred_at, details, COALESCE(prev_hash,''), COALESCE(entry_hash,''), seq
+FROM provider_ops_audit_log
+WHERE entry_hash IS NOT NULL
+ORDER BY seq ASC`)
+	if err != nil {
+		return auditChainResult{}, err
+	}
+	defer rows.Close()
+
+	prev := ""
+	checked := 0
+	for rows.Next() {
+		var e auditLogEntry
+		var prevHash, entryHash string
+		var seq int64
+		if err := rows.Scan(&e.ID, &e.Action, &e.ActorID, &e.TargetID, &e.OccurredAt, &e.Details, &prevHash, &entryHash, &seq); err != nil {
+			return auditChainResult{}, err
+		}
+		if want := computeAuditEntryHash(prevHash, e); entryHash != want {
+			return auditChainResult{OK: false, Checked: checked, BrokenAtID: e.ID, BrokenAtSeq: seq, Reason: "entry hash mismatch — row was altered"}, nil
+		}
+		if checked == 0 {
+			if prevHash != "" {
+				return auditChainResult{OK: false, Checked: checked, BrokenAtID: e.ID, BrokenAtSeq: seq, Reason: "genesis row has a non-empty prev_hash — earlier entries were deleted"}, nil
+			}
+		} else if prevHash != prev {
+			return auditChainResult{OK: false, Checked: checked, BrokenAtID: e.ID, BrokenAtSeq: seq, Reason: "prev_hash does not match the predecessor — a row was deleted or reordered"}, nil
+		}
+		prev = entryHash
+		checked++
+	}
+	if err := rows.Err(); err != nil {
+		return auditChainResult{}, err
+	}
+	return auditChainResult{OK: true, Checked: checked}, nil
 }
 
 func (s *providerOpsAuditDBStore) ensureSchema() error {

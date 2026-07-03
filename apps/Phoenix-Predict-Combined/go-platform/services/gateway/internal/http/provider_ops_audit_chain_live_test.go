@@ -145,6 +145,79 @@ func TestAuditChainDetectsTamperLive(t *testing.T) {
 	}
 }
 
+func appendN(t *testing.T, store *providerOpsAuditDBStore, prefix string, n int) []string {
+	t.Helper()
+	ids := make([]string, n)
+	for i := 0; i < n; i++ {
+		id := fmt.Sprintf("al:%s:%d", prefix, i)
+		ids[i] = id
+		if err := store.Append(auditLogEntry{
+			ID: id, Action: "finance.adjustment_executed", ActorID: "admin-v",
+			TargetID: fmt.Sprintf("u-%d", i), OccurredAt: "2026-07-03T03:00:0" + fmt.Sprint(i) + "Z",
+			Details: fmt.Sprintf(`{"n":%d}`, i),
+		}, 0); err != nil {
+			t.Fatalf("append %d: %v", i, err)
+		}
+	}
+	return ids
+}
+
+func TestAuditVerifyChainCleanLive(t *testing.T) {
+	store, db := openAuditChainStore(t)
+	defer db.Close()
+	appendN(t, store, "clean", 4)
+
+	res, err := store.VerifyChain(t.Context())
+	if err != nil {
+		t.Fatalf("verify: %v", err)
+	}
+	if !res.OK || res.Checked != 4 {
+		t.Fatalf("clean chain should verify: %+v", res)
+	}
+}
+
+func TestAuditVerifyChainDetectsAlteredLive(t *testing.T) {
+	store, db := openAuditChainStore(t)
+	defer db.Close()
+	ids := appendN(t, store, "alt", 4)
+
+	// Alter the 2nd row (index 1) — the trigger is absent in the scratch DB.
+	if _, err := db.Exec(`UPDATE provider_ops_audit_log SET details='{"n":999}' WHERE id=$1`, ids[1]); err != nil {
+		t.Fatalf("tamper: %v", err)
+	}
+	res, err := store.VerifyChain(t.Context())
+	if err != nil {
+		t.Fatalf("verify: %v", err)
+	}
+	if res.OK {
+		t.Fatal("altered row must fail verification")
+	}
+	if res.BrokenAtID != ids[1] {
+		t.Fatalf("break should be at the altered row %s, got %s", ids[1], res.BrokenAtID)
+	}
+}
+
+func TestAuditVerifyChainDetectsDeletionLive(t *testing.T) {
+	store, db := openAuditChainStore(t)
+	defer db.Close()
+	ids := appendN(t, store, "del", 4)
+
+	// Delete a middle row → the successor's prev_hash no longer links.
+	if _, err := db.Exec(`DELETE FROM provider_ops_audit_log WHERE id=$1`, ids[1]); err != nil {
+		t.Fatalf("delete: %v", err)
+	}
+	res, err := store.VerifyChain(t.Context())
+	if err != nil {
+		t.Fatalf("verify: %v", err)
+	}
+	if res.OK {
+		t.Fatal("a deleted row must break the chain link")
+	}
+	if res.BrokenAtID != ids[2] {
+		t.Fatalf("break should surface at the orphaned successor %s, got %s (%s)", ids[2], res.BrokenAtID, res.Reason)
+	}
+}
+
 func TestAuditChainConcurrentAppendsStayLinearLive(t *testing.T) {
 	store, db := openAuditChainStore(t)
 	defer db.Close()
