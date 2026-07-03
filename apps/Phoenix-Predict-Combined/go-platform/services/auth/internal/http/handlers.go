@@ -231,9 +231,13 @@ func NewAuthService() *AuthService {
 	adminPassword := os.Getenv("AUTH_ADMIN_PASSWORD")
 	adminUserID := getEnvOrDefault("AUTH_ADMIN_USER_ID", "user-admin")
 
-	// In production/staging, seed credentials MUST come from environment.
-	// In development, provide defaults so the platform works out-of-the-box.
-	if env == "production" || env == "staging" {
+	// In any DEPLOYED environment, seed credentials MUST come from the
+	// environment. Only known dev environments get out-of-the-box defaults.
+	// GAP-57: gate on the dev-allowlist (deployedAuthEnvironment) — an exact
+	// `env == "production" || "staging"` match failed OPEN for a non-canonical
+	// deployed value like "prod"/"preprod"/a typo, which would then fall into
+	// the else branch and seed hardcoded demo/admin passwords in a live env.
+	if deployedAuthEnvironment() {
 		if demoUsername == "" || demoPassword == "" || adminUsername == "" || adminPassword == "" {
 			log.Fatalf("FATAL: AUTH_DEMO_USERNAME, AUTH_DEMO_PASSWORD, AUTH_ADMIN_USERNAME, and AUTH_ADMIN_PASSWORD must be set in %s", env)
 		}
@@ -264,7 +268,7 @@ func NewAuthService() *AuthService {
 	if sessionRedisURL == "" {
 		sessionRedisURL = strings.TrimSpace(os.Getenv("AUTH_REDIS_URL"))
 	}
-	isProduction := env == "production" || env == "staging"
+	isProduction := deployedAuthEnvironment() // GAP-57: dev-allowlist, not exact-match
 	if isProduction && sessionStorePath == "" && sessionRedisURL == "" {
 		log.Fatalf("FATAL: set AUTH_SESSION_REDIS_URL (preferred — enables multi-instance) or AUTH_SESSION_STORE_FILE in %s; sessions would otherwise be lost on restart", env)
 	}
@@ -371,10 +375,13 @@ func NewAuthService() *AuthService {
 					svc.seedDBUsers(demoUsername, demoPassword, demoUserID, rolePlayer)
 					svc.seedDBUsers(adminUsername, adminPassword, adminUserID, roleAdmin)
 					// Seed the four Predict punters from seed_prediction.sql into
-					// auth_users so they can log in with matching IDs. Skipped in
-					// production/staging — those envs should manage users via the
-					// normal registration flow or an external identity provider.
-					if env != "production" && env != "staging" {
+					// auth_users so they can log in with matching IDs. Only in a
+					// known DEV environment — any deployed env manages users via
+					// the normal registration flow or an external IdP. GAP-57:
+					// dev-allowlist gate (was `env != "production" && "staging"`,
+					// which fail-OPEN seeded these known-password accounts in a
+					// non-canonical deployed env like "prod").
+					if !deployedAuthEnvironment() {
 						svc.seedDBUsers("alice@predict.dev", "predict123", "user-001", rolePlayer)
 						svc.seedDBUsers("bob@predict.dev", "predict123", "user-002", rolePlayer)
 						svc.seedDBUsers("charlie@predict.dev", "predict123", "user-003", rolePlayer)
