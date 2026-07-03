@@ -25,6 +25,8 @@ type kycAdminStore interface {
 	// P0-4 slice 3: identity + screening verdict for the review surface.
 	GetIdentity(ctx context.Context, userID string) (*compliance.KYCIdentity, error)
 	ReviewScreening(ctx context.Context, userID, outcome string) (previousStatus string, err error)
+	// GAP-18: a reviewer asks the user for more/better documents (non-terminal).
+	RequestMoreDocuments(ctx context.Context, userID, reason string) (*compliance.KYCStatus, error)
 }
 
 // kycScreeningConflictMessage maps the P0-4 approval-gate sentinels to a
@@ -101,6 +103,46 @@ func registerKYCAdminRoutes(mux *stdhttp.ServeMux, kyc kycAdminStore) {
 		recordProviderOpsAuditAction(adminID, "kyc.decision", req.UserID, map[string]any{
 			"approve": req.Approve,
 			"status":  status.Status,
+		})
+		return httpx.WriteJSON(w, stdhttp.StatusOK, status)
+	}))
+
+	// GAP-18 (§12): a reviewer asks the user for more/better documents without a
+	// hard decline — moves the identity to the non-terminal 'documents_required'
+	// state (which does NOT pass the KYC gate) so the user can re-submit.
+	// compliance:write + audited; reason mandatory.
+	mux.Handle("/api/v1/admin/kyc/request-documents", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminPermission(r, "compliance:write"); err != nil {
+			return err
+		}
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+		var req struct {
+			UserID string `json:"userId"`
+			Reason string `json:"reason"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			return httpx.BadRequest("invalid request body", nil)
+		}
+		req.UserID = strings.TrimSpace(req.UserID)
+		req.Reason = strings.TrimSpace(req.Reason)
+		if req.UserID == "" {
+			return httpx.BadRequest("userId is required", map[string]any{"field": "userId"})
+		}
+		if req.Reason == "" {
+			return httpx.BadRequest("reason is required", map[string]any{"field": "reason"})
+		}
+		if err := validateLaunchFacingReason("reason", req.Reason); err != nil {
+			return err
+		}
+		status, err := kyc.RequestMoreDocuments(r.Context(), req.UserID, req.Reason)
+		if err != nil {
+			return serviceBadRequestError(err, nil)
+		}
+		recordProviderOpsAuditAction(userIDFromRequest(r), "kyc.documents_requested", req.UserID, map[string]any{
+			"status": status.Status,
+			"reason": req.Reason,
 		})
 		return httpx.WriteJSON(w, stdhttp.StatusOK, status)
 	}))

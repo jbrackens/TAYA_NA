@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"phoenix-revival/gateway/internal/compliance"
@@ -27,6 +28,11 @@ type stubKYCAdminStore struct {
 	reviewErr    error
 	gotReviewUID string
 	gotOutcome   string
+
+	// GAP-18
+	gotDocsUID    string
+	gotDocsReason string
+	docsErr       error
 }
 
 func (s *stubKYCAdminStore) AdminDecision(_ context.Context, userID string, approve bool, _ string) (*compliance.KYCStatus, error) {
@@ -50,6 +56,14 @@ func (s *stubKYCAdminStore) ReviewScreening(_ context.Context, userID, outcome s
 		return "", s.reviewErr
 	}
 	return s.reviewPrev, nil
+}
+
+func (s *stubKYCAdminStore) RequestMoreDocuments(_ context.Context, userID, reason string) (*compliance.KYCStatus, error) {
+	s.gotDocsUID, s.gotDocsReason = userID, reason
+	if s.docsErr != nil {
+		return nil, s.docsErr
+	}
+	return &compliance.KYCStatus{UserID: userID, Status: "documents_required"}, nil
 }
 
 func (s *stubKYCAdminStore) GetVerificationStatus(_ context.Context, userID string) (*compliance.KYCStatus, error) {
@@ -205,4 +219,57 @@ func TestKYCAdminDocumentBadPathIs404(t *testing.T) {
 			t.Fatalf("expected 404 for %s, got %d", path, res.Code)
 		}
 	}
+}
+
+// TestKYCRequestMoreDocuments proves GAP-18: the reviewer can ask the user for
+// more documents (a non-terminal state) — the store is called, the response
+// carries the documents_required status, the action is audited, and a reason is
+// mandatory; a non-admin is rejected.
+func TestKYCRequestMoreDocuments(t *testing.T) {
+	post := func(store *stubKYCAdminStore, actor, role, body string) *httptest.ResponseRecorder {
+		h := newKYCReviewHarness(store)
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/kyc/request-documents", strings.NewReader(body))
+		req = req.WithContext(httpx.WithTestUser(req.Context(), actor, actor+"@test.local", role))
+		res := httptest.NewRecorder()
+		h.ServeHTTP(res, req)
+		return res
+	}
+
+	t.Run("happy path", func(t *testing.T) {
+		store := &stubKYCAdminStore{}
+		res := post(store, "admin-kyc", "admin", `{"userId":"u-42","reason":"passport photo is blurry; please re-upload"}`)
+		if res.Code != http.StatusOK {
+			t.Fatalf("expected 200, got %d body=%s", res.Code, res.Body.String())
+		}
+		if store.gotDocsUID != "u-42" || store.gotDocsReason == "" {
+			t.Fatalf("store not called correctly: uid=%q reason=%q", store.gotDocsUID, store.gotDocsReason)
+		}
+		if !strings.Contains(res.Body.String(), "documents_required") {
+			t.Fatalf("response should carry documents_required: %s", res.Body.String())
+		}
+		assertAMLAudit(t, "kyc.documents_requested", "u-42")
+	})
+
+	t.Run("reason is mandatory", func(t *testing.T) {
+		store := &stubKYCAdminStore{}
+		res := post(store, "admin-kyc", "admin", `{"userId":"u-42","reason":"  "}`)
+		if res.Code != http.StatusBadRequest {
+			t.Fatalf("missing reason should be 400, got %d", res.Code)
+		}
+		if store.gotDocsUID != "" {
+			t.Fatal("store must not be called when the reason is missing")
+		}
+	})
+
+	t.Run("non-admin rejected", func(t *testing.T) {
+		t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "")
+		store := &stubKYCAdminStore{}
+		res := post(store, "mallory", "player", `{"userId":"u-42","reason":"x"}`)
+		if res.Code != http.StatusForbidden && res.Code != http.StatusUnauthorized {
+			t.Fatalf("non-admin should be rejected, got %d", res.Code)
+		}
+		if store.gotDocsUID != "" {
+			t.Fatal("store must not be called for a non-admin")
+		}
+	})
 }

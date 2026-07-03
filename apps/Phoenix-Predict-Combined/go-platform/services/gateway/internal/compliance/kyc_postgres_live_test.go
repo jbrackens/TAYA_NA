@@ -235,3 +235,53 @@ func TestPostgresKYCDocumentFileLive(t *testing.T) {
 		t.Fatalf("queue: %v", err)
 	}
 }
+
+// TestPostgresKYCRequestMoreDocumentsLive proves GAP-18 against real Postgres:
+// ensureSchema's ALTER widens the status CHECK so 'documents_required' is
+// accepted (a wrong constraint name would leave the old 5-value CHECK and this
+// would violate it), RequestMoreDocuments sets that non-terminal state, a reason
+// is mandatory, and a subsequent identity re-submission still works.
+func TestPostgresKYCRequestMoreDocumentsLive(t *testing.T) {
+	dsn := os.Getenv("KYC_LIVE_DSN")
+	if dsn == "" {
+		t.Skip("KYC_LIVE_DSN not set; skipping live Postgres KYC test")
+	}
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatalf("open: %v", err)
+	}
+	defer db.Close()
+	svc, err := NewPostgresKYCService(db, approveAlwaysIDV{})
+	if err != nil {
+		t.Fatalf("init: %v", err)
+	}
+	ctx := context.Background()
+	userID := fmt.Sprintf("u-moredocs-%d", time.Now().UnixNano())
+
+	// Request more documents — this INSERT into kyc_status with status
+	// 'documents_required' fails the CHECK unless ensureSchema widened it.
+	st, err := svc.RequestMoreDocuments(ctx, userID, "passport photo is blurry; please re-upload")
+	if err != nil {
+		t.Fatalf("request more documents (the widened CHECK must accept documents_required): %v", err)
+	}
+	if st.Status != "documents_required" {
+		t.Fatalf("status = %q, want documents_required", st.Status)
+	}
+	// A non-terminal state must NOT pass verification.
+	got, _ := svc.GetVerificationStatus(ctx, userID)
+	if got.Status != "documents_required" {
+		t.Fatalf("persisted status = %q, want documents_required", got.Status)
+	}
+
+	// Reason is mandatory.
+	if _, err := svc.RequestMoreDocuments(ctx, userID, "   "); err == nil {
+		t.Fatal("empty reason must be rejected")
+	}
+
+	// The user can re-submit an identity after being asked for more documents.
+	if err := svc.UpsertIdentity(ctx, KYCIdentity{
+		UserID: userID, FullName: "Clear Passport", ScreeningStatus: "clear", ScreenedAt: time.Now().UTC(),
+	}); err != nil {
+		t.Fatalf("re-submit identity after documents_required: %v", err)
+	}
+}

@@ -81,6 +81,14 @@ func (s *PostgresKYCService) ensureSchema() error {
   submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   verified_at TIMESTAMPTZ
 )`,
+		// GAP-18 (§12): the 'documents_required' review state lets a reviewer ask
+		// the user for more/better documents without a hard decline (a
+		// non-terminal, re-submittable status that still does NOT pass the KYC
+		// gate). Widen the status CHECK on the store-owned table by dropping and
+		// re-adding Postgres's auto-named column constraint (idempotent).
+		`ALTER TABLE kyc_status DROP CONSTRAINT IF EXISTS kyc_status_status_check`,
+		`ALTER TABLE kyc_status ADD CONSTRAINT kyc_status_status_check
+   CHECK (status IN ('unverified','pending','approved','declined','blocked','documents_required'))`,
 		`CREATE INDEX IF NOT EXISTS idx_kyc_documents_user ON kyc_documents (user_id, submitted_at DESC)`,
 		// P0-3: actual document binaries, 1:1 with the metadata row and
 		// removed with it. Separate table so document listings never drag
@@ -187,6 +195,34 @@ func (s *PostgresKYCService) AdminDecision(ctx context.Context, userID string, a
 UPDATE kyc_documents SET status = $2, verified_at = NOW(), reject_reason = $3
 WHERE user_id = $1 AND status IN ('submitted','verifying')`,
 		userID, docStatus, nullStr(reason)); err != nil {
+		return nil, err
+	}
+	return s.GetVerificationStatus(ctx, userID)
+}
+
+// RequestMoreDocuments (GAP-18, §12 KYC/AML/Risk): a reviewer asks the user for
+// more/better documents without approving OR hard-declining. It moves the
+// user to the non-terminal 'documents_required' state (which does NOT pass the
+// KYC gate — kycStatusPasses only clears 'approved'/'pending') and rejects the
+// current pending docs with the reason so the user can re-submit. It is not an
+// approval, so it is never screening-gated; a reason is mandatory.
+func (s *PostgresKYCService) RequestMoreDocuments(ctx context.Context, userID, reason string) (*KYCStatus, error) {
+	if userID == "" {
+		return nil, ErrInvalidUserID
+	}
+	reason = strings.TrimSpace(reason)
+	if reason == "" {
+		return nil, errors.New("kyc request more documents: a reason is required")
+	}
+	if err := s.upsertStatus(ctx, userID, IDVDecision{Status: "documents_required", RiskLevel: "unknown", Reason: reason}); err != nil {
+		return nil, err
+	}
+	cctx, cancel := context.WithTimeout(ctx, kycDBTimeout)
+	defer cancel()
+	if _, err := s.db.ExecContext(cctx, `
+UPDATE kyc_documents SET status = 'rejected', verified_at = NOW(), reject_reason = $2
+WHERE user_id = $1 AND status IN ('submitted','verifying')`,
+		userID, reason); err != nil {
 		return nil, err
 	}
 	return s.GetVerificationStatus(ctx, userID)
