@@ -167,17 +167,19 @@ SET limit_cents = EXCLUDED.limit_cents, updated_at = NOW()`,
 	return err
 }
 
-// GetLossLimits returns a user's stored loss caps. UsedCents/RemainingCents are
-// left zero here; the enforcement slice populates them from settled payouts
-// (prediction_payouts) at check/display time.
+// GetLossLimits returns a user's stored loss caps with their current-period
+// usage: UsedCents is the NET realized loss so far this period (from settled
+// payouts) and RemainingCents is the headroom left before the cap. A usage-read
+// error leaves UsedCents/RemainingCents zero for that row (best-effort display —
+// enforcement is CheckBetAllowed, which fails closed independently).
 func (s *PostgresResponsibleGamblingService) GetLossLimits(ctx context.Context, userID string) ([]LossLimit, error) {
 	if userID == "" {
 		return nil, ErrInvalidUserID
 	}
-	ctx, cancel := context.WithTimeout(ctx, rgDBTimeout)
+	dctx, cancel := context.WithTimeout(ctx, rgDBTimeout)
 	defer cancel()
 
-	rows, err := s.db.QueryContext(ctx, `
+	rows, err := s.db.QueryContext(dctx, `
 SELECT user_id, period, limit_cents, CAST(created_at AS TEXT)
 FROM player_loss_limits
 WHERE user_id = $1
@@ -194,6 +196,13 @@ ORDER BY period`, userID)
 			return nil, err
 		}
 		l.ResetsAt = periodResetTime(l.Period).Format(time.RFC3339)
+		if loss, lerr := s.realizedLossInPeriod(ctx, userID, l.Period); lerr == nil {
+			l.UsedCents = loss
+			l.RemainingCents = l.LimitCents - loss
+			if l.RemainingCents < 0 {
+				l.RemainingCents = 0
+			}
+		}
 		limits = append(limits, l)
 	}
 	return limits, rows.Err()
@@ -245,6 +254,39 @@ WHERE user_id = $1`, userID)
 	}
 	if err := rows.Err(); err != nil {
 		return false, "", err
+	}
+
+	// Loss limits (GAP-11, §13 Responsible Gaming): deny NEW orders once the
+	// player's NET realized loss this period has reached the cap. Unlike the bet
+	// (stake) limit, a loss cap is about already-realized losses, so a fresh
+	// order is blocked while the cap is met — the player must let the period roll
+	// over (or raise the cap) first. Reads are READ-ONLY over prediction_payouts.
+	// A read error returns (true, "", err): genuine infra ambiguity that
+	// checkComplianceForOrder fails CLOSED on in production/staging.
+	lossRows, err := s.db.QueryContext(ctx2, `
+SELECT period, limit_cents
+FROM player_loss_limits
+WHERE user_id = $1`, userID)
+	if err != nil {
+		return true, "", err
+	}
+	defer lossRows.Close()
+	for lossRows.Next() {
+		var period string
+		var limitCents int64
+		if err := lossRows.Scan(&period, &limitCents); err != nil {
+			return true, "", err
+		}
+		loss, lerr := s.realizedLossInPeriod(ctx, userID, period)
+		if lerr != nil {
+			return true, "", lerr
+		}
+		if loss >= limitCents {
+			return false, fmt.Sprintf("%s_loss_limit_reached", period), nil
+		}
+	}
+	if err := lossRows.Err(); err != nil {
+		return true, "", err
 	}
 
 	return true, "", nil
@@ -645,6 +687,29 @@ WHERE user_id = $1 AND activity_type = $2 AND created_at >= $3`,
 		return total.Int64
 	}
 	return 0
+}
+
+// realizedLossInPeriod returns the user's NET realized loss in cents since the
+// period start (0 when net positive), from settled payouts. Read-only over
+// prediction_payouts (written by settlement) — no protected-core code is
+// touched, mirroring how the GAP-9 status gate reads the punters table. Returns
+// an error so the caller fails CLOSED (in prod) on an infra failure rather than
+// silently letting an over-limit player keep trading.
+func (s *PostgresResponsibleGamblingService) realizedLossInPeriod(ctx context.Context, userID, period string) (int64, error) {
+	ctx2, cancel := context.WithTimeout(ctx, rgDBTimeout)
+	defer cancel()
+	var net sql.NullInt64
+	err := s.db.QueryRowContext(ctx2, `
+SELECT COALESCE(SUM(pnl_cents), 0)
+FROM prediction_payouts
+WHERE user_id = $1 AND paid_at >= $2`, userID, periodStart(period)).Scan(&net)
+	if err != nil {
+		return 0, err
+	}
+	if net.Valid && net.Int64 < 0 {
+		return -net.Int64, nil
+	}
+	return 0, nil
 }
 
 func isValidLimitPeriod(period string) bool {
