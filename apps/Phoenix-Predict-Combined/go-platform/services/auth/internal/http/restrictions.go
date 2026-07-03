@@ -69,8 +69,16 @@ var authKnownDevEnvironments = map[string]bool{
 	"ci":          true,
 }
 
+// isDeployedAuthEnv reports whether the given ENVIRONMENT value is a deployed
+// (non-dev-allowlist) environment. GAP-67: callers that already hold the env
+// string (e.g. mfaAdminRequiredFromEnv) gate on this instead of an exact
+// production/staging match, which fails OPEN for "prod"/"preprod"/a typo.
+func isDeployedAuthEnv(env string) bool {
+	return !authKnownDevEnvironments[strings.ToLower(strings.TrimSpace(env))]
+}
+
 func deployedAuthEnvironment() bool {
-	return !authKnownDevEnvironments[strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))]
+	return isDeployedAuthEnv(os.Getenv("ENVIRONMENT"))
 }
 
 // playerLoginRestriction reports a non-empty machine-readable reason when the

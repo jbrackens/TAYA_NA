@@ -279,7 +279,10 @@ WHERE user_id = $1 AND last_used_step < $2`, userID, step)
 // flag opts in, matching the house pattern for enforcement flags.
 func mfaAdminRequiredFromEnv(env, raw string) (required bool, fatalMsg string) {
 	raw = strings.ToLower(strings.TrimSpace(raw))
-	if env == "production" || env == "staging" {
+	// GAP-67: gate on the dev-allowlist, not an exact production/staging match —
+	// otherwise a non-canonical deployed env ("prod"/"preprod"/a typo) fell to
+	// the opt-in branch, so admin MFA was NOT mandatory in a real deployment.
+	if isDeployedAuthEnv(env) {
 		if raw == "false" {
 			return false, "AUTH_MFA_REQUIRED_FOR_ADMINS=false is not permitted in " + env + "; administrator MFA is mandatory"
 		}

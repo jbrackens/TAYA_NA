@@ -29,6 +29,12 @@ func TestMFAAdminRequiredFromEnv(t *testing.T) {
 		{"dev explicit off", "development", "false", false, false},
 		{"empty env default off", "", "", false, false},
 		{"case/space tolerant", "production", "  FALSE ", false, true},
+		// GAP-67: a non-canonical DEPLOYED env must mandate admin MFA (was
+		// fail-open: it fell to the opt-in branch and returned not-required).
+		{"non-canonical prod default on", "prod", "", true, false},
+		{"preprod default on", "preprod", "", true, false},
+		{"typo deployed default on", "produciton", "", true, false},
+		{"prod false is fatal", "prod", "false", false, true},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
