@@ -578,6 +578,9 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// Always-on when DB-backed — harmless with zero rules loaded (the
 	// fail-safe default), and it is a back-office compliance control, not a
 	// user-facing money path, so it does not violate the launch prohibitions.
+	// riskGateStore is hoisted so the order-gate wiring (below) can apply the
+	// GAP-12 prohibited-tier gate; it stays nil unless the risk store inits.
+	var riskGateStore *risk.Store
 	if amlDB := walletService.DB(); amlDB != nil {
 		if amlStore, err := aml.NewStore(amlDB); err != nil {
 			slog.Error("aml: store init failed; AML routes disabled", "error", err)
@@ -601,6 +604,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 				}
 				riskEngine := risk.NewEngine(riskStore, newRiskFactorSource(amlStore, screening), risk.Bands{})
 				registerRiskAdminRoutes(mux, riskStore, riskEngine)
+				riskGateStore = riskStore
 				slog.Info("risk: customer risk-rating subsystem initialized")
 			}
 		}
@@ -646,7 +650,13 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// a punter an admin suspended/self-excluded/deactivated cannot open new
 	// orders — previously punters.status was written but never read on the
 	// trading path (§32 Scenario 3). No-op when the wallet runs in memory mode.
-	predictionService.SetComplianceChecker(wrapOrderGateWithPunterStatus(rgService, walletService.DB()))
+	// GAP-12: layered on top, the prohibited-risk-tier gate blocks orders from a
+	// customer whose effective risk rating is prohibited (confirmed sanctions/PEP
+	// hit or an audited override). Both decorate the same seam; no protected-core
+	// edit. Nil-safe: the risk gate is skipped when the risk store did not init.
+	orderChecker := wrapOrderGateWithPunterStatus(rgService, walletService.DB())
+	orderChecker = wrapOrderGateWithRiskTier(orderChecker, riskGateStore)
+	predictionService.SetComplianceChecker(orderChecker)
 
 	// --- Payments Routes ---
 	if legacyMoneyRoutesEnabled() {
