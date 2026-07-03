@@ -10,6 +10,7 @@ import {
 import type {
   KYCTabData,
   RGTabData,
+  RiskTabData,
   SettlementRow,
   WalletLedgerRow,
 } from "../../../components/users/PunterProfile";
@@ -101,6 +102,18 @@ const mapWalletLedgerRow = (row: any): WalletLedgerRow => ({
   transactionTime: row.transactionTime,
 });
 
+const mapRisk = (d: any): RiskTabData => ({
+  effectiveTier: d.effectiveTier ?? d.rating?.tier ?? "",
+  computedTier: d.rating?.tier ?? "",
+  score: d.rating?.score ?? 0,
+  amlOpenAlertPoints: d.rating?.factors?.amlOpenAlertPoints ?? 0,
+  screeningStatus: d.rating?.factors?.screeningStatus ?? "",
+  overrideTier: d.rating?.overrideTier || undefined,
+  overrideBy: d.rating?.overrideBy || undefined,
+  overrideReason: d.rating?.overrideReason || undefined,
+  computedAt: d.rating?.computedAt,
+});
+
 function UserDetailPageContent() {
   const params = useParams();
   const punterId = params?.id as string;
@@ -110,6 +123,7 @@ function UserDetailPageContent() {
   const [walletLedger, setWalletLedger] = useState<WalletLedgerRow[]>([]);
   const [kyc, setKyc] = useState<KYCTabData | undefined>(undefined);
   const [rg, setRg] = useState<RGTabData | undefined>(undefined);
+  const [risk, setRisk] = useState<RiskTabData | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -228,6 +242,22 @@ function UserDetailPageContent() {
     }
   };
 
+  // Risk rating (GAP-12) — secondary; a 404 means "no rating yet" and the tab
+  // prompts a recompute.
+  const loadRisk = async () => {
+    try {
+      const res = await adminFetch(
+        `/api/v1/admin/risk/ratings/${encodeURIComponent(punterId)}`,
+      );
+      if (!res.ok) return;
+      const d = await res.json();
+      if (!d?.rating) return;
+      setRisk(mapRisk(d));
+    } catch {
+      // ignore — Risk tab reports unavailable
+    }
+  };
+
   useEffect(() => {
     const fetchPunter = async () => {
       try {
@@ -238,6 +268,7 @@ function UserDetailPageContent() {
         await loadHistory();
         await loadKYC();
         await loadRG();
+        await loadRisk();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load user");
       } finally {
@@ -291,6 +322,40 @@ function UserDetailPageContent() {
             },
           );
           if (!response.ok) throw new Error("Failed to add note");
+          break;
+        }
+        case "recomputeRisk": {
+          const res = await adminFetch(
+            `/api/v1/admin/risk/ratings/${punterId}/recompute`,
+            { method: "POST" },
+          );
+          if (!res.ok) throw new Error("Failed to recompute risk rating");
+          setRisk(mapRisk(await res.json()));
+          break;
+        }
+        case "overrideRisk": {
+          const res = await adminFetch(
+            `/api/v1/admin/risk/ratings/${punterId}/override`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                tier: data?.tier,
+                reason: data?.reason,
+              }),
+            },
+          );
+          if (!res.ok) throw new Error("Failed to override risk rating");
+          setRisk(mapRisk(await res.json()));
+          break;
+        }
+        case "clearRiskOverride": {
+          const res = await adminFetch(
+            `/api/v1/admin/risk/ratings/${punterId}/override`,
+            { method: "DELETE" },
+          );
+          if (!res.ok) throw new Error("Failed to clear risk override");
+          setRisk(mapRisk(await res.json()));
           break;
         }
         default:
@@ -357,6 +422,7 @@ function UserDetailPageContent() {
             walletLedger={walletLedger}
             kyc={kyc}
             rg={rg}
+            risk={risk}
           />
         </div>
 

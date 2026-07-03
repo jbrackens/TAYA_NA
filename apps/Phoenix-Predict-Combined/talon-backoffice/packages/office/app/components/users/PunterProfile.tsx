@@ -1,9 +1,15 @@
 "use client";
 
-import { Badge, Button, Card } from "../shared";
+import { Badge, Button, Card, Input } from "../shared";
 import { useState } from "react";
 
-type PunterProfileTab = "overview" | "trades" | "wallet" | "kyc" | "limits";
+type PunterProfileTab =
+  | "overview"
+  | "trades"
+  | "wallet"
+  | "kyc"
+  | "limits"
+  | "risk";
 
 export interface PunterProfileData {
   id: string;
@@ -75,6 +81,19 @@ export interface RGTabData {
   betLimits: RGLimitRow[];
 }
 
+export interface RiskTabData {
+  /** override tier when set, else the computed tier — what gating consults */
+  effectiveTier: string;
+  computedTier: string;
+  score: number;
+  amlOpenAlertPoints: number;
+  screeningStatus: string;
+  overrideTier?: string;
+  overrideBy?: string;
+  overrideReason?: string;
+  computedAt?: string;
+}
+
 interface PunterProfileProps {
   punter?: PunterProfileData;
   onAction?: (action: string, data?: Record<string, unknown>) => void;
@@ -85,6 +104,8 @@ interface PunterProfileProps {
   kyc?: KYCTabData;
   /** RG state from /api/v1/admin/rg/restrictions; undefined = unavailable */
   rg?: RGTabData;
+  /** risk rating from /api/v1/admin/risk/ratings/{id}; undefined = unavailable */
+  risk?: RiskTabData;
 }
 
 const pointAmount = (n: number) =>
@@ -117,6 +138,23 @@ const histTdClassName = `${histTdBaseClassName} text-[var(--t1,#1a1a1a)]`;
 const positivePointClassName = "text-[var(--accent-lo,#1fa65e)]";
 const negativePointClassName = "text-[var(--no-text,#a8472d)]";
 
+function tierBadgeVariant(
+  tier: string,
+): "default" | "success" | "warning" | "danger" {
+  switch (tier) {
+    case "prohibited":
+      return "danger";
+    case "high":
+      return "danger";
+    case "medium":
+      return "warning";
+    case "low":
+      return "success";
+    default:
+      return "default";
+  }
+}
+
 function tabButtonClassName(active: boolean) {
   return active
     ? `${tabButtonBaseClassName} bg-[var(--focus-ring,#0e7a53)] text-[var(--bg-deep,#f7f3ed)] hover:bg-[var(--focus-ring,#0e7a53)]`
@@ -131,8 +169,11 @@ export function PunterProfile({
   walletLedger = [],
   kyc,
   rg,
+  risk,
 }: PunterProfileProps) {
   const [activeTab, setActiveTab] = useState<PunterProfileTab>("overview");
+  const [overrideTier, setOverrideTier] = useState("");
+  const [overrideReason, setOverrideReason] = useState("");
 
   if (!punter) {
     return (
@@ -327,6 +368,13 @@ export function PunterProfile({
               data-testid="profile-limits-tab"
             >
               Limits
+            </button>
+            <button
+              className={tabButtonClassName(activeTab === "risk")}
+              onClick={() => setActiveTab("risk")}
+              data-testid="profile-risk-tab"
+            >
+              Risk
             </button>
           </div>
         </Card>
@@ -587,6 +635,150 @@ export function PunterProfile({
                     Prediction Limits
                   </h4>
                   {rgLimitTable(rg.betLimits)}
+                </>
+              )}
+            </div>
+          )}
+          {activeTab === "risk" && (
+            <div
+              className={tabContentClassName}
+              data-testid="profile-risk-content"
+            >
+              <h4 className="mt-0 text-[var(--t1,#1a1a1a)]">
+                Customer Risk Rating
+              </h4>
+              {!risk ? (
+                <p>
+                  No risk rating yet (requires the compliance store). Use
+                  Recompute to generate one.
+                </p>
+              ) : (
+                <>
+                  <div className={infoRowClassName}>
+                    <span className={infoLabelClassName}>Effective tier</span>
+                    <Badge variant={tierBadgeVariant(risk.effectiveTier)}>
+                      {risk.effectiveTier || "unrated"}
+                    </Badge>
+                  </div>
+                  <div className={infoRowClassName}>
+                    <span className={infoLabelClassName}>Computed tier</span>
+                    <span className={infoValueClassName}>
+                      {risk.computedTier || "—"}
+                    </span>
+                  </div>
+                  <div className={infoRowClassName}>
+                    <span className={infoLabelClassName}>Risk score</span>
+                    <span className={infoValueClassName}>{risk.score}</span>
+                  </div>
+                  <div className={infoRowClassName}>
+                    <span className={infoLabelClassName}>
+                      AML open-alert points
+                    </span>
+                    <span className={infoValueClassName}>
+                      {risk.amlOpenAlertPoints}
+                    </span>
+                  </div>
+                  <div className={infoRowClassName}>
+                    <span className={infoLabelClassName}>
+                      Sanctions/PEP screening
+                    </span>
+                    <span className={infoValueClassName}>
+                      {risk.screeningStatus || "unscreened"}
+                    </span>
+                  </div>
+                  {risk.computedAt && (
+                    <div className={infoRowClassName}>
+                      <span className={infoLabelClassName}>Last computed</span>
+                      <span className={infoValueClassName}>
+                        {fmtDate(risk.computedAt)}
+                      </span>
+                    </div>
+                  )}
+                  {risk.overrideTier && (
+                    <div className={infoRowClassName}>
+                      <span className={infoLabelClassName}>
+                        Manual override
+                      </span>
+                      <span className={infoValueClassName}>
+                        {risk.overrideTier}
+                        {risk.overrideBy ? ` — by ${risk.overrideBy}` : ""}
+                        {risk.overrideReason ? ` (${risk.overrideReason})` : ""}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="mt-4 flex gap-2">
+                    <Button
+                      $variant="secondary"
+                      $size="sm"
+                      disabled={!actionsAvailable}
+                      onClick={() => onAction?.("recomputeRisk")}
+                      data-testid="risk-recompute"
+                    >
+                      Recompute
+                    </Button>
+                    {risk.overrideTier && (
+                      <Button
+                        $variant="secondary"
+                        $size="sm"
+                        disabled={!actionsAvailable}
+                        onClick={() => onAction?.("clearRiskOverride")}
+                        data-testid="risk-clear-override"
+                      >
+                        Clear override
+                      </Button>
+                    )}
+                  </div>
+
+                  <h4 className="mt-5 text-[var(--t1,#1a1a1a)]">
+                    Manual Override
+                  </h4>
+                  <p className="mb-2 text-xs text-[var(--t3,#8b8378)]">
+                    Forces the effective tier (e.g. prohibited after filing a
+                    SAR). A prohibited tier blocks new orders. Requires a
+                    reason; recorded to the audit log.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <select
+                      className="rounded border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#fff)] p-2 text-[13px] text-[var(--t1,#1a1a1a)]"
+                      value={overrideTier}
+                      onChange={(e) => setOverrideTier(e.target.value)}
+                      data-testid="risk-override-tier"
+                    >
+                      <option value="">Select tier…</option>
+                      <option value="low">low</option>
+                      <option value="medium">medium</option>
+                      <option value="high">high</option>
+                      <option value="prohibited">prohibited</option>
+                    </select>
+                    <Input
+                      className="flex-1"
+                      placeholder="Reason (required)"
+                      value={overrideReason}
+                      onChange={(e) => setOverrideReason(e.target.value)}
+                      data-testid="risk-override-reason"
+                    />
+                    <Button
+                      $variant="primary"
+                      $size="sm"
+                      disabled={
+                        !actionsAvailable ||
+                        overrideTier === "" ||
+                        overrideReason.trim() === ""
+                      }
+                      onClick={() => {
+                        onAction?.("overrideRisk", {
+                          tier: overrideTier,
+                          reason: overrideReason.trim(),
+                        });
+                        setOverrideTier("");
+                        setOverrideReason("");
+                      }}
+                      data-testid="risk-override-apply"
+                    >
+                      Apply override
+                    </Button>
+                  </div>
                 </>
               )}
             </div>
