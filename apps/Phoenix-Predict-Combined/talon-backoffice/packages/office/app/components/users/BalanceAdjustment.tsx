@@ -21,10 +21,12 @@ const directionButton = (active: boolean) =>
     : "flex-1 cursor-pointer rounded border-0 p-2.5 text-xs font-semibold bg-[var(--border-1,#e5dfd2)] text-[var(--t2,#4a4a4a)]";
 
 /**
- * Manual balance adjustment (P1-2): drives the existing audited,
- * idempotency-keyed admin wallet routes. Reason is mandatory and every
- * submission passes a confirmation step; four-eyes approval is a separate
- * blocked decision (P0-6) and intentionally not improvised here.
+ * Manual balance adjustment (P1-2): submits through the maker-checker
+ * endpoint (P0-6). Reason is mandatory and every submission passes a
+ * confirmation step. Below the dual-approval threshold the adjustment
+ * executes immediately; at or above it, the submission is queued for a
+ * second approver (maker != checker) and appears in the Finance Approvals
+ * queue — it does NOT move money until a different admin approves it.
  */
 export function BalanceAdjustment({
   userId,
@@ -45,18 +47,21 @@ export function BalanceAdjustment({
     setBusy(true);
     setNotice(null);
     try {
-      const res = await adminFetch(`/api/v1/admin/wallet/${direction}`, {
+      const res = await adminFetch(`/api/v1/admin/finance/adjustments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId,
+          direction,
           amountPointsCents: Math.round(amountPoints * 100),
           idempotencyKey: `admin-ui:${crypto.randomUUID()}`,
           reason: reason.trim(),
         }),
       });
       const payload = (await res.json()) as {
+        executed?: boolean;
         balancePointsCents?: number;
+        pending?: { id: number };
         error?: { message?: string };
       };
       if (!res.ok) {
@@ -64,15 +69,22 @@ export function BalanceAdjustment({
           payload.error?.message ?? `adjustment failed (${res.status})`,
         );
       }
-      const balance =
-        typeof payload.balancePointsCents === "number"
-          ? (payload.balancePointsCents / 100).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })
-          : "?";
-      setNotice(
-        `${direction === "credit" ? "Credited" : "Debited"} ${amountPoints.toLocaleString()} pts — new balance ${balance} pts`,
-      );
+      if (res.status === 202 && payload.pending) {
+        // At/above the dual-approval threshold — queued, not executed.
+        setNotice(
+          `Queued for a second approver (pending #${payload.pending.id}). No money moves until a different admin approves it in Finance Approvals.`,
+        );
+      } else {
+        const balance =
+          typeof payload.balancePointsCents === "number"
+            ? (payload.balancePointsCents / 100).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })
+            : "?";
+        setNotice(
+          `${direction === "credit" ? "Credited" : "Debited"} ${amountPoints.toLocaleString()} pts — new balance ${balance} pts`,
+        );
+      }
       setAmount("");
       setReason("");
       await onAdjusted();

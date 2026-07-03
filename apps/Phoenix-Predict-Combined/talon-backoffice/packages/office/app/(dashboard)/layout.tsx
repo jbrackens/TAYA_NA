@@ -99,6 +99,11 @@ const navItems: NavItem[] = [
     label: "AML Monitoring",
     icon: "shield-alert",
   },
+  {
+    href: "/finance/approvals",
+    label: "Finance Approvals",
+    icon: "check-square",
+  },
   { href: "/content", label: "Content", icon: "file-text" },
   { href: "/bonuses", label: "Bonuses", icon: "ticket" },
   { href: "/loyalty", label: "Loyalty", icon: "gift" },
