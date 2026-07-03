@@ -64,6 +64,13 @@ type ResponsibleGamblingService interface {
 	// GetBetLimits returns all bet limits for a user
 	GetBetLimits(ctx context.Context, userID string) ([]BetLimit, error)
 
+	// SetLossLimit sets a net-realized-loss cap for a user over a period
+	// (GAP-11, PAM spec §13 Responsible Gaming).
+	SetLossLimit(ctx context.Context, userID string, period string, amountCents int64) error
+
+	// GetLossLimits returns all loss limits for a user
+	GetLossLimits(ctx context.Context, userID string) ([]LossLimit, error)
+
 	// CheckDepositAllowed checks if a user can deposit the given amount
 	CheckDepositAllowed(ctx context.Context, userID string, amountCents int64) (bool, string, error)
 

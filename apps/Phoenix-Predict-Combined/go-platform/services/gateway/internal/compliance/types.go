@@ -73,6 +73,22 @@ type BetLimit struct {
 	PendingActivatesAt string `json:"pendingActivatesAt,omitempty"`
 }
 
+// LossLimit represents a net-realized-loss cap over a period (GAP-11, PAM spec
+// §13 Responsible Gaming). Unlike deposit/bet limits (which cap money IN and
+// stake), a loss limit caps how much a player may NET LOSE in the period; its
+// UsedCents is the player's realized loss (from settled payouts), populated by
+// the enforcement/display slices. Stored plain-upsert like the Postgres
+// bet/deposit limits (the loosen-cooldown gap is tracked separately).
+type LossLimit struct {
+	UserID         string `json:"userId"`
+	Period         string `json:"period"` // daily, weekly, monthly
+	LimitCents     int64  `json:"limitCents"`
+	RemainingCents int64  `json:"remainingCents"`
+	UsedCents      int64  `json:"usedCents"`
+	ResetsAt       string `json:"resetsAt"`
+	CreatedAt      string `json:"createdAt"`
+}
+
 // PlayerRestrictions represents all restrictions on a player
 type PlayerRestrictions struct {
 	UserID          string `json:"userId"`

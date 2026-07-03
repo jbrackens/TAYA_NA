@@ -414,6 +414,7 @@ type MockResponsibleGamblingService struct {
 	mu              sync.RWMutex
 	depositLimits   map[string][]DepositLimit
 	betLimits       map[string][]BetLimit
+	lossLimits      map[string][]LossLimit
 	coolOffs        map[string]time.Time
 	selfExclusions  map[string]*SelfExclusionRecord
 	depositTracking map[string]*PeriodTracking
@@ -438,6 +439,7 @@ func NewMockResponsibleGamblingService() *MockResponsibleGamblingService {
 	return &MockResponsibleGamblingService{
 		depositLimits:   make(map[string][]DepositLimit),
 		betLimits:       make(map[string][]BetLimit),
+		lossLimits:      make(map[string][]LossLimit),
 		coolOffs:        make(map[string]time.Time),
 		selfExclusions:  make(map[string]*SelfExclusionRecord),
 		depositTracking: make(map[string]*PeriodTracking),
@@ -605,6 +607,65 @@ func (m *MockResponsibleGamblingService) GetBetLimits(ctx context.Context, userI
 	m.betLimits[userID] = limits
 
 	result := make([]BetLimit, len(limits))
+	copy(result, limits)
+	return result, nil
+}
+
+// ── Loss Limits (GAP-11, PAM §13) ─────────────────────────────────
+
+func (m *MockResponsibleGamblingService) SetLossLimit(ctx context.Context, userID string, period string, amountCents int64) error {
+	if userID == "" {
+		return ErrInvalidUserID
+	}
+	if !isValidPeriod(period) {
+		return ErrInvalidLimitPeriod
+	}
+	if amountCents <= 0 {
+		return ErrInvalidLimitPeriod
+	}
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	now := time.Now().UTC()
+	limit := LossLimit{
+		UserID:     userID,
+		Period:     period,
+		LimitCents: amountCents,
+		ResetsAt:   getResetTime(now, period).Format(time.RFC3339),
+		CreatedAt:  now.Format(time.RFC3339),
+	}
+	// Plain upsert by period (loss limits carry no loosen-cooldown yet — the
+	// Postgres bet limit doesn't either; see the discovered GAP for that gap).
+	existing := m.lossLimits[userID]
+	replaced := false
+	for i := range existing {
+		if existing[i].Period == period {
+			existing[i] = limit
+			replaced = true
+			break
+		}
+	}
+	if !replaced {
+		existing = append(existing, limit)
+	}
+	m.lossLimits[userID] = existing
+	return nil
+}
+
+func (m *MockResponsibleGamblingService) GetLossLimits(ctx context.Context, userID string) ([]LossLimit, error) {
+	if userID == "" {
+		return nil, ErrInvalidUserID
+	}
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	limits, found := m.lossLimits[userID]
+	if !found {
+		return []LossLimit{}, nil
+	}
+	result := make([]LossLimit, len(limits))
 	copy(result, limits)
 	return result, nil
 }

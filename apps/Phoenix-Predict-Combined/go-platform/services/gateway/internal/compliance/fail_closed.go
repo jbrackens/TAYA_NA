@@ -95,6 +95,14 @@ func (s *FailClosedResponsibleGamblingService) GetBetLimits(context.Context, str
 	return nil, ErrRGProviderNotConfigured
 }
 
+func (s *FailClosedResponsibleGamblingService) SetLossLimit(context.Context, string, string, int64) error {
+	return ErrRGProviderNotConfigured
+}
+
+func (s *FailClosedResponsibleGamblingService) GetLossLimits(context.Context, string) ([]LossLimit, error) {
+	return nil, ErrRGProviderNotConfigured
+}
+
 func (s *FailClosedResponsibleGamblingService) CheckDepositAllowed(context.Context, string, int64) (bool, string, error) {
 	return false, "responsible-gambling service unavailable", nil
 }

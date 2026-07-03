@@ -48,6 +48,17 @@ func (s *PostgresResponsibleGamblingService) ensureSchema() error {
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (user_id, period)
 )`,
+		// GAP-11 (PAM §13): net-realized-loss cap per period. Same shape as the
+		// bet/deposit limit tables; UsedCents is derived from settled payouts at
+		// read/enforce time, not stored here.
+		`CREATE TABLE IF NOT EXISTS player_loss_limits (
+  user_id TEXT NOT NULL,
+  period TEXT NOT NULL CHECK (period IN ('daily','weekly','monthly')),
+  limit_cents BIGINT NOT NULL CHECK (limit_cents > 0),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (user_id, period)
+)`,
 		`CREATE TABLE IF NOT EXISTS player_restrictions (
   user_id TEXT PRIMARY KEY,
   blocked BOOLEAN NOT NULL DEFAULT FALSE,
@@ -126,6 +137,61 @@ ORDER BY period`, userID)
 		l.RemainingCents = l.LimitCents - l.UsedCents
 		if l.RemainingCents < 0 {
 			l.RemainingCents = 0
+		}
+		l.ResetsAt = periodResetTime(l.Period).Format(time.RFC3339)
+		limits = append(limits, l)
+	}
+	return limits, rows.Err()
+}
+
+// ── Loss Limits (GAP-11, PAM §13) ─────────────────────────────────
+
+func (s *PostgresResponsibleGamblingService) SetLossLimit(ctx context.Context, userID string, period string, amountCents int64) error {
+	if userID == "" {
+		return ErrInvalidUserID
+	}
+	if !isValidLimitPeriod(period) {
+		return ErrInvalidLimitPeriod
+	}
+	// amountCents positivity is enforced by the table CHECK (limit_cents > 0),
+	// matching SetBetLimit; the handler validates it before calling.
+	ctx, cancel := context.WithTimeout(ctx, rgDBTimeout)
+	defer cancel()
+
+	_, err := s.db.ExecContext(ctx, `
+INSERT INTO player_loss_limits (user_id, period, limit_cents, updated_at)
+VALUES ($1, $2, $3, NOW())
+ON CONFLICT (user_id, period) DO UPDATE
+SET limit_cents = EXCLUDED.limit_cents, updated_at = NOW()`,
+		userID, period, amountCents)
+	return err
+}
+
+// GetLossLimits returns a user's stored loss caps. UsedCents/RemainingCents are
+// left zero here; the enforcement slice populates them from settled payouts
+// (prediction_payouts) at check/display time.
+func (s *PostgresResponsibleGamblingService) GetLossLimits(ctx context.Context, userID string) ([]LossLimit, error) {
+	if userID == "" {
+		return nil, ErrInvalidUserID
+	}
+	ctx, cancel := context.WithTimeout(ctx, rgDBTimeout)
+	defer cancel()
+
+	rows, err := s.db.QueryContext(ctx, `
+SELECT user_id, period, limit_cents, CAST(created_at AS TEXT)
+FROM player_loss_limits
+WHERE user_id = $1
+ORDER BY period`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var limits []LossLimit
+	for rows.Next() {
+		var l LossLimit
+		if err := rows.Scan(&l.UserID, &l.Period, &l.LimitCents, &l.CreatedAt); err != nil {
+			return nil, err
 		}
 		l.ResetsAt = periodResetTime(l.Period).Format(time.RFC3339)
 		limits = append(limits, l)
