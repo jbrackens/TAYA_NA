@@ -5,6 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	stdhttp "net/http"
+	"strings"
+
+	"github.com/lib/pq"
 
 	"phoenix-revival/platform/transport/httpx"
 )
@@ -80,12 +83,24 @@ var (
 	errEligTagNotFound    = errors.New("tag not found")
 )
 
-// marketEligibilityAdminStore is the config-side slice the admin route needs so
-// handler tests can stub it. sqlMarketEligibility satisfies it.
+// marketEligibilityAdminStore is the config-side slice the admin routes need so
+// handler tests can stub it. sqlMarketEligibility satisfies it. It also carries
+// the Profile-360 read (slice 3) — a user-scoped view of restricted markets.
 type marketEligibilityAdminStore interface {
 	ListRequiredTags(ctx context.Context, marketID string) ([]int64, error)
 	AddRequiredTag(ctx context.Context, marketID string, tagID int64) error
 	RemoveRequiredTag(ctx context.Context, marketID string, tagID int64) error
+	UserMarketEligibility(ctx context.Context, userID string) ([]MarketEligibilityStatus, error)
+}
+
+// MarketEligibilityStatus is one restricted market's standing for a given user:
+// the tags it requires, which of those the user is missing, and the derived
+// eligible flag (eligible iff nothing is missing).
+type MarketEligibilityStatus struct {
+	MarketID     string  `json:"marketId"`
+	RequiredTags []int64 `json:"requiredTags"`
+	MissingTags  []int64 `json:"missingTags"`
+	Eligible     bool    `json:"eligible"`
 }
 
 // marketEligibilityAdmin is the wired admin store. Nil in memory mode (no DB):
@@ -173,4 +188,88 @@ func mapMarketEligibilityError(err error) error {
 	default:
 		return httpx.Internal("failed to update market eligibility tags", err)
 	}
+}
+
+// UserMarketEligibility returns, for every RESTRICTED market (one with at least
+// one required tag), the user's standing: the required tags, the subset the user
+// is missing, and whether they are eligible. Unrestricted markets are omitted —
+// they gate nobody. One grouped query; the missing set is the required tags the
+// user does not hold. Ascending by market id for a stable Profile-360 render.
+func (s sqlMarketEligibility) UserMarketEligibility(ctx context.Context, userID string) ([]MarketEligibilityStatus, error) {
+	rows, err := s.db.QueryContext(ctx, `
+SELECT met.market_id::text,
+       array_agg(met.tag_id ORDER BY met.tag_id) AS required,
+       COALESCE(
+         array_agg(met.tag_id ORDER BY met.tag_id) FILTER (
+           WHERE NOT EXISTS (
+             SELECT 1 FROM crm_user_tags ut
+             WHERE ut.user_id = $1 AND ut.tag_id = met.tag_id
+           )
+         ),
+         ARRAY[]::bigint[]
+       ) AS missing
+FROM market_eligibility_tags met
+GROUP BY met.market_id
+ORDER BY met.market_id`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []MarketEligibilityStatus{}
+	for rows.Next() {
+		var (
+			marketID string
+			required pq.Int64Array
+			missing  pq.Int64Array
+		)
+		if err := rows.Scan(&marketID, &required, &missing); err != nil {
+			return nil, err
+		}
+		out = append(out, MarketEligibilityStatus{
+			MarketID:     marketID,
+			RequiredTags: int64SliceOrEmpty(required),
+			MissingTags:  int64SliceOrEmpty(missing),
+			Eligible:     len(missing) == 0,
+		})
+	}
+	return out, rows.Err()
+}
+
+// int64SliceOrEmpty coerces a pq.Int64Array to a non-nil []int64 so the JSON
+// renders [] rather than null.
+func int64SliceOrEmpty(a pq.Int64Array) []int64 {
+	if a == nil {
+		return []int64{}
+	}
+	return []int64(a)
+}
+
+// registerMarketEligibilityProfileRoutes wires the Profile-360 read (GAP-20
+// slice 3, §15 account view):
+//
+//	GET /api/v1/admin/market-eligibility?userId={id} -> per-restricted-market standing (compliance:read)
+//
+// A read, so it is not audited (consistent with the KYC-queue read). Nil store
+// (memory mode / no DB) reports the surface unavailable.
+func registerMarketEligibilityProfileRoutes(mux *stdhttp.ServeMux) {
+	mux.Handle("/api/v1/admin/market-eligibility", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminPermission(r, "compliance:read"); err != nil {
+			return err
+		}
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		userID := strings.TrimSpace(r.URL.Query().Get("userId"))
+		if userID == "" {
+			return httpx.BadRequest("userId is required", map[string]any{"field": "userId"})
+		}
+		if marketEligibilityAdmin == nil {
+			return httpx.NotFound("market eligibility configuration is unavailable")
+		}
+		markets, err := marketEligibilityAdmin.UserMarketEligibility(r.Context(), userID)
+		if err != nil {
+			return httpx.Internal("failed to read market eligibility", err)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"userId": userID, "markets": markets})
+	}))
 }

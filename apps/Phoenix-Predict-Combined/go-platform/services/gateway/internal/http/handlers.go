@@ -636,6 +636,10 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		marketEligibility = elig
 		marketEligibilityAdmin = elig
 	}
+	// GAP-20 slice 3: Profile-360 per-market eligibility read (compliance:read).
+	// Registered unconditionally; the handler reports unavailable when the store
+	// is nil (memory mode).
+	registerMarketEligibilityProfileRoutes(mux)
 	// Legacy guarded routes run through the same geo gate as trading. Their
 	// registration is still controlled by the Tiangge legacy-route opt-in; see
 	// docs/compliance/geofencing-kyc.md for the compliance posture.

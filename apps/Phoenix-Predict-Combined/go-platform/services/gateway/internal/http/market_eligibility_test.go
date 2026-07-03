@@ -48,12 +48,15 @@ func TestCheckMarketEligibility(t *testing.T) {
 // fakeEligibilityAdmin records config calls and returns injectable errors so the
 // admin route can be exercised without a DB.
 type fakeEligibilityAdmin struct {
-	tags    []int64
-	addErr  error
-	rmErr   error
-	listErr error
-	added   []int64
-	removed []int64
+	tags     []int64
+	addErr   error
+	rmErr    error
+	listErr  error
+	added    []int64
+	removed  []int64
+	profile  []MarketEligibilityStatus
+	profErr  error
+	profUser string
 }
 
 func (f *fakeEligibilityAdmin) ListRequiredTags(context.Context, string) ([]int64, error) {
@@ -74,6 +77,11 @@ func (f *fakeEligibilityAdmin) RemoveRequiredTag(_ context.Context, _ string, ta
 	}
 	f.removed = append(f.removed, tagID)
 	return nil
+}
+
+func (f *fakeEligibilityAdmin) UserMarketEligibility(_ context.Context, userID string) ([]MarketEligibilityStatus, error) {
+	f.profUser = userID
+	return f.profile, f.profErr
 }
 
 // TestMarketEligibilityAdminRoutes (GAP-20 slice 2): the admin config surface on
@@ -156,5 +164,62 @@ func TestMarketEligibilityAdminRoutes(t *testing.T) {
 	fake.addErr = errEligTagNotFound
 	if w := do(stdhttp.MethodPost, `{"tagId":9003}`); w.Code != stdhttp.StatusBadRequest {
 		t.Fatalf("unknown tag: want 400, got %d", w.Code)
+	}
+}
+
+// TestMarketEligibilityProfileRoute (GAP-20 slice 3): the Profile-360 read on
+// /api/v1/admin/market-eligibility?userId= — requires userId (400 without),
+// reports the store's per-market standing, 405s non-GET, and a nil store reports
+// unavailable. RBAC via the TestMain GATEWAY_ALLOW_ADMIN_ANON bypass.
+func TestMarketEligibilityProfileRoute(t *testing.T) {
+	mux := stdhttp.NewServeMux()
+	registerMarketEligibilityProfileRoutes(mux)
+
+	prev := marketEligibilityAdmin
+	t.Cleanup(func() { marketEligibilityAdmin = prev })
+
+	const path = "/api/v1/admin/market-eligibility"
+	get := func(query string) *httptest.ResponseRecorder {
+		r := httptest.NewRequest(stdhttp.MethodGet, path+query, nil)
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, r)
+		return w
+	}
+
+	// nil store → unavailable (only after userId is validated present).
+	marketEligibilityAdmin = nil
+	if w := get("?userId=u-1"); w.Code != stdhttp.StatusNotFound {
+		t.Fatalf("nil store: want 404, got %d", w.Code)
+	}
+
+	fake := &fakeEligibilityAdmin{profile: []MarketEligibilityStatus{
+		{MarketID: "m-ok", RequiredTags: []int64{9001}, MissingTags: []int64{}, Eligible: true},
+		{MarketID: "m-no", RequiredTags: []int64{9001, 9002}, MissingTags: []int64{9002}, Eligible: false},
+	}}
+	marketEligibilityAdmin = fake
+
+	// missing userId → 400.
+	if w := get(""); w.Code != stdhttp.StatusBadRequest {
+		t.Fatalf("no userId: want 400, got %d", w.Code)
+	}
+	// non-GET → 405.
+	if r := httptest.NewRequest(stdhttp.MethodPost, path+"?userId=u-1", nil); true {
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, r)
+		if w.Code != stdhttp.StatusMethodNotAllowed {
+			t.Fatalf("POST: want 405, got %d", w.Code)
+		}
+	}
+	// happy path returns both markets and passes userId to the store.
+	w := get("?userId=u-42")
+	if w.Code != stdhttp.StatusOK {
+		t.Fatalf("GET: want 200, got %d (%s)", w.Code, w.Body.String())
+	}
+	if fake.profUser != "u-42" {
+		t.Fatalf("store got userId %q, want u-42", fake.profUser)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, "m-ok") || !strings.Contains(body, "m-no") || !strings.Contains(body, `"eligible":false`) {
+		t.Fatalf("profile body missing expected content: %s", body)
 	}
 }

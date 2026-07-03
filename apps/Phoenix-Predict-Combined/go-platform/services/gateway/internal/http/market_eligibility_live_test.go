@@ -145,3 +145,59 @@ func TestSQLMarketEligibilityAdminLive(t *testing.T) {
 		t.Fatalf("list after remove: tags=%v err=%v", tags, err)
 	}
 }
+
+// TestSQLMarketEligibilityProfileLive (GAP-20 slice 3): UserMarketEligibility
+// reports, per restricted market, the user's required/missing tags and eligible
+// flag; unrestricted markets are omitted. Opt-in: MARKET_ELIG_LIVE_DSN.
+func TestSQLMarketEligibilityProfileLive(t *testing.T) {
+	dsn := os.Getenv("MARKET_ELIG_LIVE_DSN")
+	if dsn == "" {
+		t.Skip("MARKET_ELIG_LIVE_DSN not set; skipping live market-eligibility profile test")
+	}
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatalf("open: %v", err)
+	}
+	defer db.Close()
+	ctx := context.Background()
+
+	for _, ddl := range []string{
+		`CREATE TABLE IF NOT EXISTS market_eligibility_tags (market_id UUID NOT NULL, tag_id BIGINT NOT NULL, PRIMARY KEY (market_id, tag_id))`,
+		`CREATE TABLE IF NOT EXISTS crm_user_tags (tag_id BIGINT NOT NULL, user_id TEXT NOT NULL, assigned_by TEXT, assigned_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), PRIMARY KEY (tag_id, user_id))`,
+	} {
+		if _, err := db.Exec(ddl); err != nil {
+			t.Fatalf("ddl: %v", err)
+		}
+	}
+
+	const mFull = "00000000-0000-0000-0000-0000000000d1" // user holds all required
+	const mPartial = "00000000-0000-0000-0000-0000000000d2"
+	const user = "u-profile"
+	_, _ = db.Exec(`DELETE FROM market_eligibility_tags WHERE market_id IN ($1,$2)`, mFull, mPartial)
+	_, _ = db.Exec(`DELETE FROM crm_user_tags WHERE user_id = $1`, user)
+	if _, err := db.Exec(`INSERT INTO market_eligibility_tags (market_id, tag_id) VALUES ($1,9201),($2,9201),($2,9202)`, mFull, mPartial); err != nil {
+		t.Fatalf("seed reqs: %v", err)
+	}
+	// User holds 9201 only: fully eligible for mFull, missing 9202 on mPartial.
+	if _, err := db.Exec(`INSERT INTO crm_user_tags (tag_id, user_id) VALUES (9201,$1)`, user); err != nil {
+		t.Fatalf("seed user tags: %v", err)
+	}
+
+	store := sqlMarketEligibility{db: db}
+	rows, err := store.UserMarketEligibility(ctx, user)
+	if err != nil {
+		t.Fatalf("UserMarketEligibility: %v", err)
+	}
+	byMkt := map[string]MarketEligibilityStatus{}
+	for _, r := range rows {
+		byMkt[r.MarketID] = r
+	}
+	full, ok := byMkt[mFull]
+	if !ok || !full.Eligible || len(full.MissingTags) != 0 || len(full.RequiredTags) != 1 {
+		t.Fatalf("mFull standing wrong: %+v (present=%v)", full, ok)
+	}
+	partial, ok := byMkt[mPartial]
+	if !ok || partial.Eligible || len(partial.MissingTags) != 1 || partial.MissingTags[0] != 9202 {
+		t.Fatalf("mPartial standing wrong: %+v (present=%v)", partial, ok)
+	}
+}
