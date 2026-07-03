@@ -1,15 +1,51 @@
 package http
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	stdhttp "net/http"
+	"os"
 	"strings"
+	"time"
 
 	"phoenix-revival/gateway/internal/rbac"
 	"phoenix-revival/platform/transport/httpx"
 )
+
+// resetAuthMFA asks the auth service to clear a staff login's MFA factor
+// (GAP-15 slice 2, lost-device recovery). Server-to-server, authenticated by the
+// shared AUTH_INTERNAL_SECRET. Fail-closed: if the auth URL or secret is
+// unconfigured, the capability is unavailable (error) — never a silent success
+// that would falsely tell an operator the factor was cleared.
+func resetAuthMFA(ctx context.Context, userID, resetBy string) error {
+	authURL := strings.TrimSpace(os.Getenv("AUTH_SERVICE_URL"))
+	secret := strings.TrimSpace(os.Getenv("AUTH_INTERNAL_SECRET"))
+	if authURL == "" || secret == "" {
+		return httpx.Internal("MFA reset is unavailable: auth-service integration not configured", nil)
+	}
+	payload, _ := json.Marshal(map[string]string{"userId": userID, "resetBy": resetBy})
+	req, err := stdhttp.NewRequestWithContext(ctx, stdhttp.MethodPost,
+		strings.TrimRight(authURL, "/")+"/api/v1/auth/internal/mfa/reset", bytes.NewReader(payload))
+	if err != nil {
+		return httpx.Internal("failed to build MFA reset request", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Internal-Auth", secret)
+	client := &stdhttp.Client{Timeout: 5 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return httpx.Internal("failed to reach the auth service for MFA reset", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != stdhttp.StatusOK {
+		return httpx.Internal("auth service rejected the MFA reset", fmt.Errorf("status %d", resp.StatusCode))
+	}
+	return nil
+}
 
 // registerRBACAdminRoutes wires the back-office Role-Based Access Control admin
 // API the office "Access Control" screens consume:
@@ -125,6 +161,7 @@ func registerRBACUsersCollection(mux *stdhttp.ServeMux, path string, svc *rbac.S
 //	PUT    /users/{id}/roles      -> replace role set
 //	PUT    /users/{id}/status     -> activate / suspend
 //	PUT    /users/{id}/password   -> reset temporary password
+//	PUT    /users/{id}/mfa-reset  -> clear MFA factor (lost-device recovery, GAP-15)
 //	DELETE /users/{id}            -> delete the staff account
 func registerRBACUserSubtree(mux *stdhttp.ServeMux, prefix string, svc *rbac.Service) {
 	mux.Handle(prefix, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -210,6 +247,19 @@ func registerRBACUserSubtree(mux *stdhttp.ServeMux, prefix string, svc *rbac.Ser
 			// Never log the password itself.
 			recordProviderOpsAuditAction(rbacActor(r), "rbac.user.password", id, nil)
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"reset": true})
+
+		case "mfa-reset":
+			// GAP-15 slice 2 (PAM §25 Admin Operations / §11 Authentication):
+			// lost-device recovery — clear a staff member's MFA factor so they can
+			// re-enroll. {id} is the admin_users id, which IS the auth session
+			// UserID for staff, so it keys auth_mfa directly. Proxies to the
+			// fail-closed auth-service internal endpoint; audited here as the
+			// compliance record. users:write is already enforced above.
+			if err := resetAuthMFA(r.Context(), id, rbacActor(r)); err != nil {
+				return err
+			}
+			recordProviderOpsAuditAction(rbacActor(r), "mfa.admin_reset", id, nil)
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"userId": id, "mfaReset": true})
 
 		default:
 			return httpx.NotFound("not found")
