@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"phoenix-revival/gateway/internal/compliance"
 	"phoenix-revival/gateway/internal/wallet"
 )
 
@@ -23,7 +24,7 @@ var depositAutoApprove bool
 
 func init() {
 	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
-	if env == "production" || env == "staging" {
+	if compliance.IsDeployedEnvironment(env) { // GAP-69: never auto-approve deposits in ANY deployed env
 		depositAutoApprove = false
 	} else {
 		depositAutoApprove = strings.ToLower(strings.TrimSpace(os.Getenv("DEPOSIT_AUTO_APPROVE"))) != "false"

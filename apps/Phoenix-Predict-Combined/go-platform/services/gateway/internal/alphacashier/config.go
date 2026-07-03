@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
+
+	"phoenix-revival/gateway/internal/compliance"
 )
 
 type Config struct {
@@ -87,19 +89,19 @@ func ValidateRuntimeConfig(getenv func(string) string) error {
 		return nil
 	}
 	env := strings.ToLower(strings.TrimSpace(getenv("ENVIRONMENT")))
-	if (env == "production" || env == "staging") && !cfg.WithdrawalReviewNeeded {
+	if compliance.IsDeployedEnvironment(env) && !cfg.WithdrawalReviewNeeded {
 		return fmt.Errorf("ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED=false is not allowed when ENVIRONMENT=%s", env)
 	}
 	// Sanctions/AML screening enforcement must be ON, or explicitly acked off,
 	// whenever the rail is enabled in prod/staging (audit CMP-01 / HIGH #9).
 	// Mirrors the two-person ack pattern: running a live custodial rail with
 	// observe-only screening is a deliberate, audited choice — not a default.
-	if (env == "production" || env == "staging") &&
+	if compliance.IsDeployedEnvironment(env) &&
 		!cfg.ScreeningEnforced &&
 		!envBool(getenv, "ALPHA_CASHIER_SCREENING_ENFORCEMENT_ACK_DISABLED", false) {
 		return fmt.Errorf("ALPHA_CASHIER_SCREENING_ENFORCEMENT must be true, or explicitly acked off via ALPHA_CASHIER_SCREENING_ENFORCEMENT_ACK_DISABLED=true, when the rail is enabled and ENVIRONMENT=%s", env)
 	}
-	if (env == "production" || env == "staging") && cfg.WithdrawalsEnabled {
+	if compliance.IsDeployedEnvironment(env) && cfg.WithdrawalsEnabled {
 		if !envBool(getenv, "ALPHA_CASHIER_WITHDRAWAL_BROADCAST_ACK", false) {
 			return fmt.Errorf("ALPHA_CASHIER_WITHDRAWALS_ENABLED requires ALPHA_CASHIER_WITHDRAWAL_BROADCAST_ACK=true when ENVIRONMENT=%s", env)
 		}

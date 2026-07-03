@@ -54,6 +54,25 @@ func TestValidateRuntimeConfigRejectsWithdrawalReviewDisabledInProduction(t *tes
 	}
 }
 
+// GAP-69: a non-canonical deployed ENVIRONMENT ("prod"/"preprod"/typo) must also
+// enforce the alphacashier boot acks, not skip them via an exact-match check.
+func TestValidateRuntimeConfigEnforcesAcksInNonCanonicalDeployedEnv(t *testing.T) {
+	for _, e := range []string{"prod", "preprod", "Production", "produciton"} {
+		env := map[string]string{
+			"ENVIRONMENT":                              e,
+			"ALPHA_CASHIER_ENABLED":                    "true",
+			"ALPHA_CASHIER_RPC_URL":                    "https://rpc.example",
+			"ALPHA_CASHIER_TOKEN_ADDRESS":              "0x0000000000000000000000000000000000000001",
+			"ALPHA_CASHIER_TREASURY_ADDRESS":           "0x0000000000000000000000000000000000000002",
+			"ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED": "false",
+			"ALPHA_CASHIER_SCREENING_ENFORCEMENT":      "true",
+		}
+		if err := ValidateRuntimeConfig(mapEnv(env)); err == nil {
+			t.Fatalf("deployed env %q must reject disabled withdrawal review", e)
+		}
+	}
+}
+
 func validEnv() func(string) string {
 	return mapEnv(map[string]string{
 		"ALPHA_CASHIER_ENABLED":          "true",

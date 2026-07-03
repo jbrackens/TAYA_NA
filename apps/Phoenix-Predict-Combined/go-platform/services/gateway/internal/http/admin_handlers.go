@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"phoenix-revival/gateway/internal/compliance"
 	"phoenix-revival/gateway/internal/wallet"
 	"phoenix-revival/platform/transport/httpx"
 )
@@ -384,8 +385,12 @@ func adminActorFromRequest(r *stdhttp.Request) string {
 // with it set. Shared by requireAdminRole and the RBAC permission guard so the
 // bypass condition has a single source of truth.
 func adminAnonBypassEnabled() bool {
+	// GAP-69: the dev-only admin bypass is allowed only in a known-dev env, not
+	// merely "anything except production" (which would permit it in staging and,
+	// worse, in a non-canonical deployed env like "prod"/a typo). The boot guard
+	// also refuses the flag in a deployed env; this is defense-in-depth.
 	return strings.EqualFold(os.Getenv("GATEWAY_ALLOW_ADMIN_ANON"), "true") &&
-		strings.ToLower(os.Getenv("ENVIRONMENT")) != "production"
+		!compliance.IsDeployedEnvironment(os.Getenv("ENVIRONMENT"))
 }
 
 func requireAdminRole(r *stdhttp.Request) error {
