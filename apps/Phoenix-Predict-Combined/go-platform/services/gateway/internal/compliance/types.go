@@ -87,6 +87,11 @@ type LossLimit struct {
 	UsedCents      int64  `json:"usedCents"`
 	ResetsAt       string `json:"resetsAt"`
 	CreatedAt      string `json:"createdAt"`
+	// GAP-63 loosen-limit cooldown (see DepositLimit): a requested increase is
+	// staged here and only becomes LimitCents after PendingActivatesAt; a
+	// decrease applies immediately and clears any pending. Zero/empty = none.
+	PendingLimitCents  int64  `json:"pendingLimitCents,omitempty"`
+	PendingActivatesAt string `json:"pendingActivatesAt,omitempty"`
 }
 
 // PlayerRestrictions represents all restrictions on a player

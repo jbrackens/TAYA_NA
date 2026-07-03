@@ -46,13 +46,15 @@ func TestPostgresLossLimitLive(t *testing.T) {
 		t.Fatalf("missing timestamps: %+v", limits[0])
 	}
 
-	// Upsert on (user, period): updates in place, no duplicate.
-	if err := svc.SetLossLimit(ctx, "u-loss-1", "daily", 8000); err != nil {
+	// Upsert on (user, period): a TIGHTENING updates the row in place
+	// immediately, with no duplicate. (A loosening is now deferred by the GAP-63
+	// cooldown — that path is covered by TestPostgresLossLimitLoosenCooldownLive.)
+	if err := svc.SetLossLimit(ctx, "u-loss-1", "daily", 2000); err != nil {
 		t.Fatalf("upsert: %v", err)
 	}
 	limits, _ = svc.GetLossLimits(ctx, "u-loss-1")
-	if len(limits) != 1 || limits[0].LimitCents != 8000 {
-		t.Fatalf("upsert should update in place to 8000: %+v", limits)
+	if len(limits) != 1 || limits[0].LimitCents != 2000 {
+		t.Fatalf("tighten should update in place to 2000: %+v", limits)
 	}
 
 	// Invalid period rejected at the service (before the DB).

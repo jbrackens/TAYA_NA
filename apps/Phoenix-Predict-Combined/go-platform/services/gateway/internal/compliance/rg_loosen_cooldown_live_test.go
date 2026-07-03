@@ -197,3 +197,90 @@ func TestPostgresDepositLimitLoosenCooldownLive(t *testing.T) {
 			l.LimitCents, l.PendingLimitCents, l.PendingActivatesAt)
 	}
 }
+
+// TestPostgresLossLimitLoosenCooldownLive proves GAP-63 slice 3 for LOSS limits
+// (new ground — the mock never had a loss cooldown). Enforcement is the realized
+// -loss cap via lossLimitDenial, reached through CheckBetAllowed. Opt-in: RG_LIVE_DSN.
+func TestPostgresLossLimitLoosenCooldownLive(t *testing.T) {
+	dsn := os.Getenv("RG_LIVE_DSN")
+	if dsn == "" {
+		t.Skip("RG_LIVE_DSN not set; skipping live Postgres RG loss cooldown test")
+	}
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatalf("open: %v", err)
+	}
+	defer db.Close()
+	svc, err := NewPostgresResponsibleGamblingService(db)
+	if err != nil {
+		t.Fatalf("init: %v", err)
+	}
+	ctx := context.Background()
+	const u = "u-losscool-1"
+
+	// Minimal prediction_payouts (matches TestPostgresLossLimitEnforcementLive;
+	// realizedLossInPeriod reads user_id/pnl_cents/paid_at). Bare-DB contract.
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS prediction_payouts (
+  id BIGSERIAL PRIMARY KEY, user_id TEXT NOT NULL, pnl_cents BIGINT NOT NULL,
+  paid_at TIMESTAMPTZ NOT NULL DEFAULT now())`); err != nil {
+		t.Fatalf("create payouts: %v", err)
+	}
+	for _, q := range []string{
+		"DELETE FROM player_loss_limits WHERE user_id=$1",
+		"DELETE FROM prediction_payouts WHERE user_id=$1",
+	} {
+		if _, err := db.Exec(q, u); err != nil {
+			t.Fatalf("reset: %v", err)
+		}
+	}
+	lossLimit := func() LossLimit {
+		t.Helper()
+		ls, err := svc.GetLossLimits(ctx, u)
+		if err != nil {
+			t.Fatalf("get: %v", err)
+		}
+		if len(ls) != 1 {
+			t.Fatalf("want exactly 1 limit, got %d (%+v)", len(ls), ls)
+		}
+		return ls[0]
+	}
+
+	if err := svc.SetLossLimit(ctx, u, "daily", 5000); err != nil { // initial
+		t.Fatalf("initial: %v", err)
+	}
+	if err := svc.SetLossLimit(ctx, u, "daily", 3000); err != nil { // tighten now
+		t.Fatalf("tighten: %v", err)
+	}
+	if l := lossLimit(); l.LimitCents != 3000 || l.PendingLimitCents != 0 {
+		t.Fatalf("tighten: want active=3000 pending=0, got active=%d pending=%d", l.LimitCents, l.PendingLimitCents)
+	}
+	if err := svc.SetLossLimit(ctx, u, "daily", 9000); err != nil { // loosen deferred
+		t.Fatalf("loosen: %v", err)
+	}
+	if l := lossLimit(); l.LimitCents != 3000 || l.PendingLimitCents != 9000 || l.PendingActivatesAt == "" {
+		t.Fatalf("loosen: want active=3000 pending=9000 staged, got active=%d pending=%d at=%q",
+			l.LimitCents, l.PendingLimitCents, l.PendingActivatesAt)
+	}
+
+	// Realized loss of 4000 today. During cooldown the active cap (3000) governs
+	// → 4000 >= 3000 → denied; the staged 9000 must not apply early.
+	if _, err := db.Exec(`INSERT INTO prediction_payouts (user_id, pnl_cents, paid_at) VALUES ($1, -4000, NOW())`, u); err != nil {
+		t.Fatalf("seed loss: %v", err)
+	}
+	if ok, reason, err := svc.CheckBetAllowed(ctx, u, 1); err != nil || ok || reason != "daily_loss_limit_reached" {
+		t.Fatalf("during cooldown the active 3000 loss cap must deny: ok=%v reason=%q err=%v", ok, reason, err)
+	}
+
+	// Mature → the 9000 cap applies → realized loss 4000 < 9000 → allowed.
+	if _, err := db.Exec(
+		`UPDATE player_loss_limits SET pending_activates_at = NOW() - INTERVAL '1 minute' WHERE user_id=$1 AND period='daily'`, u); err != nil {
+		t.Fatalf("mature: %v", err)
+	}
+	if ok, reason, err := svc.CheckBetAllowed(ctx, u, 1); err != nil || !ok {
+		t.Fatalf("after maturation the 9000 loss cap applies (loss 4000 allowed): ok=%v reason=%q err=%v", ok, reason, err)
+	}
+	if l := lossLimit(); l.LimitCents != 9000 || l.PendingLimitCents != 0 || l.PendingActivatesAt != "" {
+		t.Fatalf("after maturation+read: want active=9000 pending cleared, got active=%d pending=%d at=%q",
+			l.LimitCents, l.PendingLimitCents, l.PendingActivatesAt)
+	}
+}
