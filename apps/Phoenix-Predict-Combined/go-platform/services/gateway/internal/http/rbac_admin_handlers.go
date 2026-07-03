@@ -446,6 +446,17 @@ func requireRBACPermission(r *stdhttp.Request, svc *rbac.Service, permission str
 	email := httpx.UsernameFromContext(r.Context())
 	ok, err := svc.HasPermission(r.Context(), email, permission)
 	if err != nil {
+		// GAP-65 (PAM §24 Audit Logs / §27 Security): a permission-resolution
+		// FAILURE (distinct from a clean denial) is fail-closed — the request is
+		// refused with a 500 — but httpx.WriteError does not log the cause, so
+		// without this line the underlying error is swallowed and this security
+		// control fails silently. Log it loudly with actor/permission context so
+		// ops can alert on it. An append-only AUDIT write is deliberately NOT used
+		// here: the failure is almost always the very DB an audit row would target,
+		// so that write would likely also fail — a structured error log is the
+		// reliable signal for this denial class.
+		slog.Error("rbac permission resolution failed",
+			"email", email, "permission", permission, "method", r.Method, "path", r.URL.Path, "error", err)
 		return httpx.Internal("permission check failed", err)
 	}
 	if !ok {

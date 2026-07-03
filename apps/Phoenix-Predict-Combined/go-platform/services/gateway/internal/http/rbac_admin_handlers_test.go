@@ -19,12 +19,16 @@ import (
 // these tests assert routing, method dispatch, permission gating, and the
 // error -> HTTP status mapping.
 type rbacHandlerFake struct {
-	perms map[string]map[string]struct{} // email -> permission set
-	roles []rbac.RoleWithPermissions
-	users []rbac.UserWithRoles
+	perms  map[string]map[string]struct{} // email -> permission set
+	roles  []rbac.RoleWithPermissions
+	users  []rbac.UserWithRoles
+	effErr error // when set, EffectivePermissions returns it (permission-resolution failure)
 }
 
 func (f *rbacHandlerFake) EffectivePermissions(_ context.Context, email string) (map[string]struct{}, error) {
+	if f.effErr != nil {
+		return nil, f.effErr
+	}
 	if p, ok := f.perms[email]; ok {
 		return p, nil
 	}
