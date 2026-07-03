@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"phoenix-revival/gateway/internal/compliance"
 	"phoenix-revival/gateway/internal/prediction"
 )
 
@@ -139,4 +140,47 @@ func wrapOrderGateWithStatusReader(inner prediction.ComplianceChecker, reader pu
 		return punterStatusOrderGateAtomic{punterStatusOrderGate: base, atomicInner: ag}
 	}
 	return base
+}
+
+// GAP-58 (PAM spec §13 Responsible Gaming + §32 Scenario 3): the DEPOSIT path
+// must honor the same admin-set punter status as the order gate (GAP-9). Before
+// this, handlers.go wired the RAW responsible-gambling service as the deposit
+// compliance checker, so a suspended / self_excluded / deactivated punter — who
+// cannot place orders — could still DEPOSIT (a fail-open on money-in). This
+// decorator embeds the RG service (every method delegates) and adds the status
+// gate to CheckDepositAllowed only. Denial semantics mirror the order gate: a
+// non-active status is an authoritative deny; a status-read error is infra
+// ambiguity reported as (true, "", err) so the deposit handler's env policy
+// (fail-closed in production/staging) applies; an absent punter row delegates.
+type depositStatusGate struct {
+	compliance.ResponsibleGamblingService
+	status punterStatusReader
+}
+
+func (g depositStatusGate) CheckDepositAllowed(ctx context.Context, userID string, amountCents int64) (bool, string, error) {
+	status, err := g.status.PunterStatus(ctx, userID)
+	if err != nil {
+		return true, "", err
+	}
+	switch status {
+	case "", "active":
+		return g.ResponsibleGamblingService.CheckDepositAllowed(ctx, userID, amountCents)
+	default:
+		return false, "account is " + strings.ReplaceAll(status, "_", "-") + " — deposits are not permitted", nil
+	}
+}
+
+// wrapDepositCheckerWithPunterStatus decorates the deposit compliance checker
+// with the admin-status gate. A nil inner or nil db (memory wallet mode — no
+// punters table) leaves the checker untouched.
+func wrapDepositCheckerWithPunterStatus(inner compliance.ResponsibleGamblingService, db *sql.DB) compliance.ResponsibleGamblingService {
+	if inner == nil || db == nil {
+		return inner
+	}
+	return wrapDepositCheckerWithStatusReader(inner, sqlPunterStatusReader{db: db})
+}
+
+// wrapDepositCheckerWithStatusReader is the reader-injectable core, split for tests.
+func wrapDepositCheckerWithStatusReader(inner compliance.ResponsibleGamblingService, reader punterStatusReader) compliance.ResponsibleGamblingService {
+	return depositStatusGate{ResponsibleGamblingService: inner, status: reader}
 }

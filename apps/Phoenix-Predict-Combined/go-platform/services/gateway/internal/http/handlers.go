@@ -672,7 +672,10 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		} else {
 			paymentService = payments.NewMockPaymentService(walletService)
 		}
-		payments.DepositComplianceChecker = rgService
+		// GAP-58: gate deposits on admin-set punter status too (suspended /
+		// self_excluded / deactivated), matching the order path (line 657) —
+		// otherwise a suspended punter who cannot trade could still deposit.
+		payments.DepositComplianceChecker = wrapDepositCheckerWithPunterStatus(rgService, walletService.DB())
 		payments.KYCGate = kycService // LC-22/D-8 KYC just-in-time withdrawal gate
 		payments.RegisterPaymentRoutes(mux, paymentService)
 		// Legacy on-chain rail. This branch is only registered when legacy money

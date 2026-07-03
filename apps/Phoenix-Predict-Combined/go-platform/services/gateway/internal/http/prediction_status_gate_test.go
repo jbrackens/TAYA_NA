@@ -3,9 +3,11 @@ package http
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
+	"phoenix-revival/gateway/internal/compliance"
 	"phoenix-revival/gateway/internal/prediction"
 )
 
@@ -175,5 +177,48 @@ func TestWrapOrderGateNilSafety(t *testing.T) {
 	inner := &fakeChecker{}
 	if got := wrapOrderGateWithPunterStatus(inner, nil); got != prediction.ComplianceChecker(inner) {
 		t.Fatal("nil db must return the inner checker unchanged")
+	}
+}
+
+// TestDepositStatusGate proves GAP-58: the deposit compliance checker, wrapped
+// with the punter-status gate, denies deposits for a non-active punter (who
+// cannot trade) while delegating for active/absent punters; a status-read error
+// is reported as infra ambiguity so the deposit handler's env policy applies.
+func TestDepositStatusGate(t *testing.T) {
+	inner := compliance.NewMockResponsibleGamblingService()
+	ctx := context.Background()
+
+	// Non-active statuses are denied at the deposit gate even though the inner
+	// RG service (no configured limit) would allow the amount.
+	for _, status := range []string{"suspended", "self_excluded", "deactivated"} {
+		gate := wrapDepositCheckerWithStatusReader(inner, fakeStatusReader{statuses: map[string]string{"u-1": status}})
+		allowed, reason, err := gate.CheckDepositAllowed(ctx, "u-1", 100)
+		if err != nil || allowed {
+			t.Fatalf("%s: deposit must be denied, got allowed=%v reason=%q err=%v", status, allowed, reason, err)
+		}
+		if !strings.Contains(reason, "deposits are not permitted") {
+			t.Fatalf("%s: expected a deposit-not-permitted reason, got %q", status, reason)
+		}
+	}
+
+	// Active punter and an absent punter row both delegate (allow).
+	reader := fakeStatusReader{statuses: map[string]string{"active-user": "active"}}
+	for _, uid := range []string{"active-user", "unknown-user"} {
+		gate := wrapDepositCheckerWithStatusReader(inner, reader)
+		if allowed, _, err := gate.CheckDepositAllowed(ctx, uid, 100); err != nil || !allowed {
+			t.Fatalf("%s: active/absent punter should delegate (allow), got allowed=%v err=%v", uid, allowed, err)
+		}
+	}
+
+	// A status-read error is infra ambiguity: (true, "", err) so the deposit
+	// handler's env policy (fail-closed in prod/staging) decides.
+	gate := wrapDepositCheckerWithStatusReader(inner, fakeStatusReader{err: errors.New("db down")})
+	if allowed, _, err := gate.CheckDepositAllowed(ctx, "u-1", 100); err == nil || !allowed {
+		t.Fatalf("status-read error must be reported as (true, _, err), got allowed=%v err=%v", allowed, err)
+	}
+
+	// The nil-safe wrapper leaves a nil inner / nil db untouched.
+	if got := wrapDepositCheckerWithPunterStatus(nil, nil); got != nil {
+		t.Fatal("nil inner must pass through as nil")
 	}
 }
