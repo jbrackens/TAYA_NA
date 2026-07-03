@@ -133,7 +133,8 @@ moved from BLOCKED to buildable); the loop resumes normal iterations.
 - Worktree setup gotcha: a fresh checkout needs `yarn install --frozen-lockfile` at `talon-backoffice/` AND `yarn lerna run build --scope @phoenix-ui/utils --scope @phoenix-ui/api-client --include-dependencies` before any package build — `@phoenix-ui/utils` resolves to `dist/index.js`, which only exists after tsc (same order CI uses in `.github/workflows/frontend-build.yml`).
 
 ## Status summary (updated 2026-07-03 — post-decision-round build phase, branch ~72 commits since main)
-- **P0: 5/7 DONE** (P0-1, P0-2, P0-3, P0-4 `653a51d6`, P0-5 `f2019a29`) · P0-6 next (decided: threshold maker-checker) · P0-7 review-gated design (protected core, phased build under human review).
+- **P0: 6/7 buildable-DONE** (P0-1, P0-2, P0-3, P0-4 `653a51d6`, P0-5 `f2019a29`, P0-6 adjustment half `5cbecd9a`+UI `f73d3036`) · P0-6 settlement half BLOCKED (protected core, `designs/p0-6-settlement-design.md`) · P0-7 review-gated design (protected core, phased build under human review — autonomous state: BLOCKED).
+- **Verification #7** dispatched 2026-07-03 over range `653a51d6..HEAD` (P0-5 AML + P0-6 maker-checker). Mechanical guardrail lens GREEN: protected-core clean, `go build` ok, full non-live suite exit 0, AML live + makerchecker live tests pass on scratch pg (:55437). Two fresh-context judgment lenses (adversarial bypass-hunt + claims-vs-code audit) RUNNING. **Gate: GAP-12 build waits on #7 clearing** (GAP-12 sits on the AML risk-scoring substrate under review).
 - Historical snapshot (2026-07-02, HEAD 24ea88b3) retained below for the pre-decision-round state.
 - **P0 (old): 3/7 DONE** (P0-1, P0-2, P0-3) · P0-4/5/6/7 BLOCKED (briefs; P0-7 design note).
 - **P1: 5/6 DONE** (P1-2..P1-6) · P1-1 BLOCKED (launch-safe brief).
@@ -143,12 +144,18 @@ moved from BLOCKED to buildable); the loop resumes normal iterations.
 - Green at HEAD: gateway `go build` + `go test -race` 29 pkgs; auth build + `go test -race`; office vitest 131/131; Playwright backoffice specs green.
 - ~~TERMINATION: pass A TRUE, pass B BLOCKED on BOOT-1.~~ **SUPERSEDED 2026-07-02 evening (see DECISION ROUND):** BOOT-1 resolved (`54139c24`); all ⚑ decisions answered. Pass A is FALSE again — P0-4, P0-5, P0-6, P0-7 (review-gated), P1-1, P2-3, GAP-3, GAP-6, GAP-8 are now buildable; P2-1 deferred; P2-4 descoped (note pending). Pass B spec reconciliation runs NOW, then the loop works the new queue.
 
-### Resume plan (next scheduled firing picks up here)
-1. P2-2 slice 3 — campaigns: a campaign targets a saved segment query and dispatches an action (notification via the template store, or a bonus grant via the bonus engine); RBAC `segments:write`, audited, launch-safe (no user-facing send in launch mode). Then an office CRM page for tags/query/campaigns.
-2. GAP-2..8 disposition — each becomes a small build or a full BLOCKED brief:
-   Remaining GAP builds (not blocked): GAP-2 TOTP replay protection (last-used-timestep column, auth module), GAP-4 env-allowlist inversion (repo-wide, careful), GAP-5 durable auth audit sink, GAP-7 bonus-admin RBAC retrofit. GAP-3/GAP-6/GAP-8 are now BLOCKED with briefs (⚑ decisions above).
-3. Fresh-context verification #4 after 3 more completed items.
-4. When buildable backlog is exhausted, write DECISIONS_NEEDED.md and the final summary; termination pass B stays BLOCKED on BOOT-1.
+### Resume plan (next scheduled firing picks up here) — updated 2026-07-03
+**Next item: GAP-12 (P0) — persistent per-customer risk-profile rating (low→high) feeding gating (PAM §12 KYC/AML/Risk/Compliance).** GATED on verification #7 clearing (findings, if any, get fixed first).
+- Gap re-verification (DONE, 2026-07-03): no `risk_rating|risk_profile|customer_risk|risk_tier` anywhere in `internal/` or `migrations/`; the only `risk_level` is migration 024 (market-AI-drafting *stage* risk, per-article, not per-customer) → gap genuinely open. Next migration number is **056**.
+- Substrate to reuse (VERIFIED): `aml_alerts` carries `SubjectID`+`RiskPoints`+`Severity`; `aml_cases` carries `SubjectID`+`Priority`+`AlertCount` (`internal/aml/aml.go`). Rating aggregates open-alert risk_points per subject, regime-agnostic rules-as-data thresholds (same pattern as the AML engine), plus KYC status + sanctions-hit signal.
+- Plan skeleton (implement one slice/iteration):
+  1. Migration 056 `customer_risk_ratings` (subject_id PK, tier TEXT check low|medium|high|prohibited, score INT, factors JSONB, computed_at, source TEXT, override_by/override_reason/overridden_at nullable). Store with `ensureSchema` pattern. up+down clean on scratch pg.
+  2. `internal/risk` (or fold into aml) rating engine: deterministic band thresholds as rules-as-data; `Recompute(subjectID)` aggregates AML open-alert points (+ KYC/sanctions signals) → tier+score; DB-free `computeTier(factors)` for table-driven tests.
+  3. Admin API: GET rating (compliance:read), POST manual override (compliance:write, audited `risk.rating_overridden`), recompute (audited `risk.rating_recomputed`). Static error messages (mapErr), RBAC-gated, append-only audit.
+  4. Gating consumer: fail-closed read the KYC/AML gates can consult — `prohibited` tier blocks; wiring into any trade/withdraw gate must NOT touch protected core (`internal/prediction/*`,`internal/wallet/*`) → if it does, that slice becomes a design note + BLOCKED.
+  5. Office UI: risk tab on Profile-360 (read-only rating + factors + override control behind compliance:write). Playwright deferrable (disclose in ledger).
+- Then GAP-11 (P0, RG limit-type breadth: loss/position/session), GAP-13 (P0, audit hash-chaining), P0-7 phase-1 (review-gated/BLOCKED). Verification #8 after 3 more completed items.
+- When buildable backlog is exhausted, re-run Termination pass B (spec reconciliation vs `docs/pam/spec.md`); BOOT-1 is resolved so pass B can run.
 
 ### P1-1 note
 - **P1-1 (Cashier/deposits/withdrawals) is ⚑ launch-safe-blocked**: PAM §22 requires it but Tiangge §2/§19 forbid user money exposure. The crypto rail (`internal/alphacashier`) is already flag-gated OFF and boot-refused in prod; what remains (withdrawals queue + AWA rules engine back office) awaits the human's build-now-vs-defer call (brief below).
