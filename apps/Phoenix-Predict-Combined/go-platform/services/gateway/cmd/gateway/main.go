@@ -150,7 +150,10 @@ func main() {
 // honoring an attacker-set identity (SECURITY-REVIEW #24, defense-in-depth).
 func stripClientIdentityHeaders(next stdhttp.Handler) stdhttp.Handler {
 	return stdhttp.HandlerFunc(func(w stdhttp.ResponseWriter, r *stdhttp.Request) {
-		for _, h := range []string{"X-User-ID", "X-Admin-Role", "X-Bot-Scopes", "X-Bot-Key-ID", "X-Admin-Actor", "X-Admin-User", "X-Actor-Id"} {
+		// X-Internal-Auth included (verification #16): keep this dev/demo-chain
+		// strip list consistent with the main httpx ingress strip so a client can
+		// never inject the server-to-server auth header, even in auth-disabled mode.
+		for _, h := range []string{"X-User-ID", "X-Admin-Role", "X-Bot-Scopes", "X-Bot-Key-ID", "X-Admin-Actor", "X-Admin-User", "X-Actor-Id", "X-Internal-Auth"} {
 			r.Header.Del(h)
 		}
 		next.ServeHTTP(w, r)
