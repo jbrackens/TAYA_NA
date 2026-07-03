@@ -148,6 +148,21 @@ func TestMarketEligibilityAdminRoutes(t *testing.T) {
 		t.Fatalf("POST remove did not record tag: %v", fake.removed)
 	}
 
+	// Verification #14 fix: an unidentified admin (no X-User-ID) configuring tags
+	// gets a config-specific 403, NOT the resolution/dual-control message — tag
+	// config is an audited config action, not a resolution action.
+	{
+		r := httptest.NewRequest(stdhttp.MethodPost, base, strings.NewReader(`{"tagId":9003}`))
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, r)
+		if w.Code != stdhttp.StatusForbidden {
+			t.Fatalf("unidentified admin POST: want 403, got %d", w.Code)
+		}
+		if strings.Contains(w.Body.String(), "resolution") {
+			t.Fatalf("eligibility-tags 403 must not reuse the resolution dual-control message: %s", w.Body.String())
+		}
+	}
+
 	// Validation: missing tagId and an unknown op are both 400.
 	if w := do(stdhttp.MethodPost, `{}`); w.Code != stdhttp.StatusBadRequest {
 		t.Fatalf("POST no tagId: want 400, got %d", w.Code)
