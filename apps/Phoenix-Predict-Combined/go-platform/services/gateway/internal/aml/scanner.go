@@ -210,48 +210,117 @@ func (sc *Scanner) subjectWindow(ctx context.Context, subjectID, kind string, at
 	}
 }
 
-// classifyMoneyFlow decides whether a ledger row is AML money-flow and its
-// kind. Pure function — the single source of truth for the scanner and its
-// window predicates.
-//
-//   - Trading/settlement (idempotency_key prefixed prediction_) and non-real
-//     fund (bonus/promo) are NOT money-flow: they belong to surveillance /
-//     the bonus engine, not money-path AML. Excluding them keeps the domains
-//     separate (pass-B: surveillance must not be stretched into AML).
-//   - Real-fund movements classify by reason prefix: deposit / withdrawal,
-//     else "adjustment" (manual balance adjustments and any other real-fund
-//     movement).
+// Real-money rails stamp stable, machine-written idempotency-key prefixes.
+// classifyMoneyFlow keys on those, NOT on human reason text: the native crypto
+// rail writes reasons "alpha USDC deposit …" (idem key "alpha-cashier:deposit:…")
+// and, on withdrawal capture, "reservation captured alpha_withdrawal:…" (idem
+// key "capture:alpha_withdrawal:…") — neither reason begins with
+// deposit/withdrawal, so the old reason-prefix classifier mislabeled real
+// crypto cash-flow as "adjustment" and deposit/withdrawal-scoped rules never
+// fired on the actual money rail (verification #7 MAJOR). These prefixes were
+// mapped from every wallet_ledger writer in the gateway. A NEW real-money rail
+// MUST register its key prefix here (with a test) or its deposits/withdrawals
+// fall to the safe "adjustment" residual — still seen by aggregate/velocity
+// rules, but not by deposit/withdrawal-scoped rules.
+var (
+	depositKeyPrefixes    = []string{"alpha-cashier:deposit:", "payment:", "dep:"}
+	withdrawalKeyPrefixes = []string{"capture:alpha_withdrawal:", "capture:withdrawal:", "wdr:"}
+	// Play-money faucets are written to the real fund pool; exclude them so
+	// promotional grants are never monitored as customer money movement.
+	faucetKeyPrefixes = []string{"starter_grant:", "daily_claim:", "point_pack:", "mission_reward:", "streak_reward:"}
+)
+
+func hasAnyPrefix(s string, prefixes []string) bool {
+	for _, p := range prefixes {
+		if strings.HasPrefix(s, p) {
+			return true
+		}
+	}
+	return false
+}
+
+// classifyMoneyFlow decides whether a wallet_ledger row is AML money-flow and
+// its kind. Pure function — the single source of truth for the scanner and its
+// window predicates (kindLedgerPredicate mirrors it in SQL). The reason arg is
+// retained for signature/debugging stability but is intentionally not used for
+// classification (see the package doc above).
 func classifyMoneyFlow(entryType, fundType, reason, idemKey string) (string, bool) {
+	// Guard 1: trading/settlement (prediction fills, payouts, proceeds, voids).
 	if strings.HasPrefix(idemKey, "prediction_") {
 		return "", false
 	}
+	// Guard 2: non-real fund (bonus/promo) belongs to the bonus engine, not AML.
 	if strings.ToLower(strings.TrimSpace(fundType)) != "real" {
 		return "", false
 	}
-	r := strings.ToLower(strings.TrimSpace(reason))
+	// Guard 3: reservation-lifecycle markers move no settled balance. They carry
+	// entry_type reservation/release (never credit/debit) and keys
+	// reservation:… / release:… — INCLUDING reservation:prediction_order: and
+	// release:prediction_order:, which evade the prediction_ guard above and used
+	// to leak into "adjustment". entry_type is the robust signal; the key-prefix
+	// check backs it up.
+	et := strings.ToLower(strings.TrimSpace(entryType))
+	if et != "credit" && et != "debit" {
+		return "", false
+	}
+	if strings.HasPrefix(idemKey, "reservation:") || strings.HasPrefix(idemKey, "release:") {
+		return "", false
+	}
+	// Guard 4: real-pool play-money faucets.
+	if hasAnyPrefix(idemKey, faucetKeyPrefixes) {
+		return "", false
+	}
+	// Kind by stable machine key prefix.
 	switch {
-	case strings.HasPrefix(r, "deposit"):
+	case hasAnyPrefix(idemKey, depositKeyPrefixes):
 		return "deposit", true
-	case strings.HasPrefix(r, "withdrawal"):
+	case hasAnyPrefix(idemKey, withdrawalKeyPrefixes):
 		return "withdrawal", true
 	default:
+		// Manual admin adjustments (operator-supplied key, no stable prefix) and
+		// any unenumerated real credit/debit. SAFE RESIDUAL: still money-flow, so
+		// aggregate/velocity rules see it; only deposit/withdrawal-scoped rules
+		// need the precise kind.
 		return "adjustment", true
 	}
 }
 
+// likeEscape escapes the LIKE metacharacters (_ % \) in a literal key prefix so
+// it matches literally under Postgres' default backslash escape.
+func likeEscape(prefix string) string {
+	return strings.NewReplacer(`\`, `\\`, `_`, `\_`, `%`, `\%`).Replace(prefix)
+}
+
+// orKeyLike renders `(idempotency_key LIKE 'p1%' OR …)` for a set of prefixes.
+func orKeyLike(prefixes []string) string {
+	parts := make([]string, len(prefixes))
+	for i, p := range prefixes {
+		parts[i] = `idempotency_key LIKE '` + likeEscape(p) + `%'`
+	}
+	return `(` + strings.Join(parts, " OR ") + `)`
+}
+
 // kindLedgerPredicate returns the SQL WHERE fragment (binding the subject to
-// $1) selecting a subject's real-fund money-flow rows of one kind — the SQL
-// mirror of classifyMoneyFlow, so windows count exactly what the scanner would
-// classify.
+// $1) selecting a subject's real-fund money-flow rows of one kind — the exact
+// SQL mirror of classifyMoneyFlow, so windows count what the scanner classifies.
 func kindLedgerPredicate(kind string) string {
-	base := `user_id = $1 AND fund_type = 'real' AND idempotency_key NOT LIKE 'prediction\_%'`
+	// Mirror of guards 1-4: real fund, settled credit/debit only, not trading,
+	// not a reservation-lifecycle marker, not a faucet.
+	base := `user_id = $1 AND fund_type = 'real'` +
+		` AND entry_type IN ('credit','debit')` +
+		` AND idempotency_key NOT LIKE 'prediction\_%'` +
+		` AND idempotency_key NOT LIKE 'reservation:%'` +
+		` AND idempotency_key NOT LIKE 'release:%'` +
+		` AND NOT ` + orKeyLike(faucetKeyPrefixes)
 	switch kind {
 	case "deposit":
-		return base + ` AND lower(reason) LIKE 'deposit%'`
+		return base + ` AND ` + orKeyLike(depositKeyPrefixes)
 	case "withdrawal":
-		return base + ` AND lower(reason) LIKE 'withdrawal%'`
-	default: // adjustment = real-fund, non-prediction, not deposit/withdrawal
-		return base + ` AND lower(coalesce(reason,'')) NOT LIKE 'deposit%' AND lower(coalesce(reason,'')) NOT LIKE 'withdrawal%'`
+		return base + ` AND ` + orKeyLike(withdrawalKeyPrefixes)
+	default: // adjustment residual: real credit/debit that is neither deposit nor withdrawal
+		return base +
+			` AND NOT ` + orKeyLike(depositKeyPrefixes) +
+			` AND NOT ` + orKeyLike(withdrawalKeyPrefixes)
 	}
 }
 

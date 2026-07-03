@@ -30,6 +30,16 @@ func TestAMLStoreWorkflowLive(t *testing.T) {
 		t.Fatalf("init (ensureSchema): %v", err)
 	}
 	ctx := context.Background()
+	// Hermetic: aml_rules/alerts/cases are global state shared with the other
+	// live tests (and can survive container reuse). EnabledRules below reads ALL
+	// enabled rules, and Evaluate fires one alert per matching rule, so a stray
+	// deposit rule from a prior run would yield 2 alerts where this test expects
+	// exactly 1. Reset so this test controls precisely which rule is loaded.
+	for _, stmt := range []string{"DELETE FROM aml_alerts", "DELETE FROM aml_cases", "DELETE FROM aml_rules"} {
+		if _, err := db.Exec(stmt); err != nil {
+			t.Fatalf("reset %q: %v", stmt, err)
+		}
+	}
 	subject := fmt.Sprintf("u-aml-%d", time.Now().UnixNano())
 
 	// Load a rule as DATA (the regime-agnostic path).

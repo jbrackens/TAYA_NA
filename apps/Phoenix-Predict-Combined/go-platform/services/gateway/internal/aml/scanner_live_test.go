@@ -89,18 +89,24 @@ func TestAMLScannerIngestionLive(t *testing.T) {
 		t.Fatalf("rule2: %v", err)
 	}
 
-	// Seed: one over-threshold deposit, plus trading + bonus rows the scanner
-	// must ignore.
-	seedLedger(t, db, subject, "credit", "real", "deposit via card", "dep:big", 2_000_000, now)
-	seedLedger(t, db, subject, "debit", "real", "order fill", "prediction_order:x", 500_000, now)
-	seedLedger(t, db, subject, "credit", "bonus", "deposit via promo", "bonus:y", 3_000_000, now)
+	// Seed: one over-threshold NATIVE-CRYPTO deposit (verification #7 regression:
+	// reason "alpha USDC deposit …" / key "alpha-cashier:deposit:…", which the
+	// old reason-prefix classifier mislabeled as adjustment so deposit rules
+	// never fired), plus rows the scanner must ignore — a trading fill
+	// (prediction_ key), a bonus-fund row, and a release marker for a prediction
+	// order (key "release:prediction_order:…", which does NOT start with
+	// prediction_ and used to leak into "adjustment").
+	seedLedger(t, db, subject, "credit", "real", "alpha USDC deposit 1/0xbig", "alpha-cashier:deposit:1:0xbig:0", 2_000_000, now)
+	seedLedger(t, db, subject, "debit", "real", "fill", "prediction_fill:x", 500_000, now)
+	seedLedger(t, db, subject, "credit", "bonus", "bonus grant", "bonus-grant:y", 3_000_000, now)
+	seedLedger(t, db, subject, "release", "real", "reservation released prediction_order:o-1", "release:prediction_order:o-1", 400_000, now)
 
 	n, err := store.forTestScan(t, db).ScanOnce(ctx)
 	if err != nil {
 		t.Fatalf("ScanOnce: %v", err)
 	}
-	if n != 3 {
-		t.Fatalf("expected 3 ledger rows examined, got %d", n)
+	if n != 4 {
+		t.Fatalf("expected 4 ledger rows examined, got %d", n)
 	}
 
 	// Only the real deposit fires the large-deposit rule; the aggregate rule
