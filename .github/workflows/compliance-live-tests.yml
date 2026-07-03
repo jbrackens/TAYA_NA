@@ -64,6 +64,7 @@ jobs:
           CONFIG_LIVE_DSN: postgres://predict:localdev@localhost:5432/predict?sslmode=disable
           RISK_LIVE_DSN: postgres://predict:localdev@localhost:5432/predict?sslmode=disable
           AUDIT_LIVE_DSN: postgres://predict:localdev@localhost:5432/predict?sslmode=disable
+          MARKET_ELIG_LIVE_DSN: postgres://predict:localdev@localhost:5432/predict?sslmode=disable
         run: |
           go test -race -count=1 \
             ./internal/aml/... \
@@ -72,7 +73,7 @@ jobs:
             ./internal/notify/... \
             ./internal/platformconfig/... \
             ./internal/risk/...
-          go test -race -count=1 -run 'AuditChain|AuditVerifyChain' ./internal/http/
+          go test -race -count=1 -run 'AuditChain|AuditVerifyChain|SQLMarketEligibility' ./internal/http/
 
       - name: Create + migrate the punters-dependent database
         run: |
