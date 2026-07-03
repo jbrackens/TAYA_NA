@@ -118,3 +118,82 @@ func TestPostgresBetLimitLoosenCooldownLive(t *testing.T) {
 			l.LimitCents, l.PendingLimitCents)
 	}
 }
+
+// TestPostgresDepositLimitLoosenCooldownLive proves GAP-63 slice 2 for DEPOSIT
+// limits: the same loosen-cooldown semantics, enforced by CheckDepositAllowed.
+// Opt-in: set RG_LIVE_DSN.
+func TestPostgresDepositLimitLoosenCooldownLive(t *testing.T) {
+	dsn := os.Getenv("RG_LIVE_DSN")
+	if dsn == "" {
+		t.Skip("RG_LIVE_DSN not set; skipping live Postgres RG deposit cooldown test")
+	}
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatalf("open: %v", err)
+	}
+	defer db.Close()
+	svc, err := NewPostgresResponsibleGamblingService(db)
+	if err != nil {
+		t.Fatalf("init: %v", err)
+	}
+	ctx := context.Background()
+	const u = "u-depcool-1"
+	for _, q := range []string{
+		"DELETE FROM player_deposit_limits WHERE user_id=$1",
+		"DELETE FROM player_activity_log WHERE user_id=$1",
+	} {
+		if _, err := db.Exec(q, u); err != nil {
+			t.Fatalf("reset: %v", err)
+		}
+	}
+	depLimit := func() DepositLimit {
+		t.Helper()
+		ls, err := svc.GetDepositLimits(ctx, u)
+		if err != nil {
+			t.Fatalf("get: %v", err)
+		}
+		if len(ls) != 1 {
+			t.Fatalf("want exactly 1 limit, got %d (%+v)", len(ls), ls)
+		}
+		return ls[0]
+	}
+
+	if err := svc.SetDepositLimit(ctx, u, "daily", 5000); err != nil { // initial
+		t.Fatalf("initial: %v", err)
+	}
+	if err := svc.SetDepositLimit(ctx, u, "daily", 3000); err != nil { // tighten now
+		t.Fatalf("tighten: %v", err)
+	}
+	if l := depLimit(); l.LimitCents != 3000 || l.PendingLimitCents != 0 {
+		t.Fatalf("tighten: want active=3000 pending=0, got active=%d pending=%d", l.LimitCents, l.PendingLimitCents)
+	}
+	if err := svc.SetDepositLimit(ctx, u, "daily", 9000); err != nil { // loosen deferred
+		t.Fatalf("loosen: %v", err)
+	}
+	if l := depLimit(); l.LimitCents != 3000 || l.PendingLimitCents != 9000 || l.PendingActivatesAt == "" {
+		t.Fatalf("loosen: want active=3000 pending=9000 staged, got active=%d pending=%d at=%q",
+			l.LimitCents, l.PendingLimitCents, l.PendingActivatesAt)
+	}
+
+	// Enforcement uses the active (3000) limit during the cooldown.
+	if _, err := db.Exec(
+		`INSERT INTO player_activity_log (user_id, activity_type, amount_cents, created_at) VALUES ($1,'deposit',2000,NOW())`, u); err != nil {
+		t.Fatalf("seed usage: %v", err)
+	}
+	if ok, reason, err := svc.CheckDepositAllowed(ctx, u, 2000); err != nil || ok || reason != "daily_deposit_limit_exceeded" {
+		t.Fatalf("during cooldown the active 3000 limit must deny: ok=%v reason=%q err=%v", ok, reason, err)
+	}
+
+	// Mature the pending → 9000 applies, the same 4000 total is allowed, read promotes.
+	if _, err := db.Exec(
+		`UPDATE player_deposit_limits SET pending_activates_at = NOW() - INTERVAL '1 minute' WHERE user_id=$1 AND period='daily'`, u); err != nil {
+		t.Fatalf("mature: %v", err)
+	}
+	if ok, reason, err := svc.CheckDepositAllowed(ctx, u, 2000); err != nil || !ok {
+		t.Fatalf("after maturation the 9000 limit applies (4000 allowed): ok=%v reason=%q err=%v", ok, reason, err)
+	}
+	if l := depLimit(); l.LimitCents != 9000 || l.PendingLimitCents != 0 || l.PendingActivatesAt != "" {
+		t.Fatalf("after maturation+read: want active=9000 pending cleared, got active=%d pending=%d at=%q",
+			l.LimitCents, l.PendingLimitCents, l.PendingActivatesAt)
+	}
+}

@@ -90,9 +90,11 @@ func (s *PostgresResponsibleGamblingService) ensureSchema() error {
 		// in pending_* and only becomes the active limit_cents after
 		// pgLoosenCooldown; a decrease applies immediately. Idempotent ALTERs on
 		// the store-owned tables above (mirrors GAP-13's audit-column pattern).
-		// Slice 1 covers bet limits; deposit/loss limits follow in later slices.
+		// Bet limits (slice 1), deposit limits (slice 2); loss limits follow.
 		`ALTER TABLE player_bet_limits ADD COLUMN IF NOT EXISTS pending_limit_cents BIGINT`,
 		`ALTER TABLE player_bet_limits ADD COLUMN IF NOT EXISTS pending_activates_at TIMESTAMPTZ`,
+		`ALTER TABLE player_deposit_limits ADD COLUMN IF NOT EXISTS pending_limit_cents BIGINT`,
+		`ALTER TABLE player_deposit_limits ADD COLUMN IF NOT EXISTS pending_activates_at TIMESTAMPTZ`,
 	}
 
 	for _, stmt := range statements {
@@ -491,13 +493,7 @@ func (s *PostgresResponsibleGamblingService) SetDepositLimit(ctx context.Context
 	ctx, cancel := context.WithTimeout(ctx, rgDBTimeout)
 	defer cancel()
 
-	_, err := s.db.ExecContext(ctx, `
-INSERT INTO player_deposit_limits (user_id, period, limit_cents, updated_at)
-VALUES ($1, $2, $3, NOW())
-ON CONFLICT (user_id, period) DO UPDATE
-SET limit_cents = EXCLUDED.limit_cents, updated_at = NOW()`,
-		userID, period, amountCents)
-	return err
+	return s.setLimitWithLoosenCooldown(ctx, "player_deposit_limits", userID, period, amountCents)
 }
 
 func (s *PostgresResponsibleGamblingService) GetDepositLimits(ctx context.Context, userID string) ([]DepositLimit, error) {
@@ -507,8 +503,19 @@ func (s *PostgresResponsibleGamblingService) GetDepositLimits(ctx context.Contex
 	ctx, cancel := context.WithTimeout(ctx, rgDBTimeout)
 	defer cancel()
 
+	// GAP-63: promote any staged loosening whose cooldown has matured, so reads
+	// reflect the now-effective limit; a still-future pending is surfaced below.
+	if _, err := s.db.ExecContext(ctx, `
+UPDATE player_deposit_limits
+SET limit_cents = pending_limit_cents, pending_limit_cents = NULL,
+    pending_activates_at = NULL, updated_at = NOW()
+WHERE user_id = $1 AND pending_activates_at IS NOT NULL AND pending_activates_at <= NOW()`, userID); err != nil {
+		return nil, err
+	}
+
 	rows, err := s.db.QueryContext(ctx, `
-SELECT user_id, period, limit_cents, CAST(created_at AS TEXT)
+SELECT user_id, period, limit_cents, CAST(created_at AS TEXT),
+       COALESCE(pending_limit_cents, 0), COALESCE(CAST(pending_activates_at AS TEXT), '')
 FROM player_deposit_limits
 WHERE user_id = $1
 ORDER BY period`, userID)
@@ -520,7 +527,7 @@ ORDER BY period`, userID)
 	var limits []DepositLimit
 	for rows.Next() {
 		var l DepositLimit
-		if err := rows.Scan(&l.UserID, &l.Period, &l.LimitCents, &l.CreatedAt); err != nil {
+		if err := rows.Scan(&l.UserID, &l.Period, &l.LimitCents, &l.CreatedAt, &l.PendingLimitCents, &l.PendingActivatesAt); err != nil {
 			return nil, err
 		}
 		l.UsedCents = s.usageInPeriod(ctx, userID, "deposit", l.Period)
@@ -553,8 +560,11 @@ func (s *PostgresResponsibleGamblingService) CheckDepositAllowed(ctx context.Con
 	ctx2, cancel := context.WithTimeout(ctx, rgDBTimeout)
 	defer cancel()
 
+	// Effective limit (GAP-63): a staged loosening does not apply until matured.
 	rows, err := s.db.QueryContext(ctx2, `
-SELECT period, limit_cents
+SELECT period,
+       CASE WHEN pending_activates_at IS NOT NULL AND pending_activates_at <= NOW()
+            THEN pending_limit_cents ELSE limit_cents END
 FROM player_deposit_limits
 WHERE user_id = $1`, userID)
 	if err != nil {
