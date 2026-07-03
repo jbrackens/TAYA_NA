@@ -277,6 +277,13 @@ func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo pred
 				return
 			}
 
+			// GAP-20: per-market tag eligibility (same gate as the session order
+			// route) — the bot API is not a compliance bypass.
+			if eerr := checkMarketEligibility(r, userID, req.MarketID); eerr != nil {
+				httpx.WriteError(w, r, eerr)
+				return
+			}
+
 			order, trade, err := svc.PlaceOrder(r.Context(), req, userID)
 			if err != nil {
 				httpx.WriteError(w, r, orderPlacementError(err))

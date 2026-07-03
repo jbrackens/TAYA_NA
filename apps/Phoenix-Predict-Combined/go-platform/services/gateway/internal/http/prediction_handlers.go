@@ -708,6 +708,11 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 			if cerr := checkMarketJurisdiction(r, userID, req.MarketID, jpolicy); cerr != nil {
 				return cerr
 			}
+			// GAP-20: per-market tag eligibility. A restricted market requires
+			// the trader to hold its tags; fail-closed on a lookup error.
+			if eerr := checkMarketEligibility(r, userID, req.MarketID); eerr != nil {
+				return eerr
+			}
 			order, trade, err := svc.PlaceOrder(r.Context(), req, userID)
 			if err != nil {
 				return orderPlacementError(err)

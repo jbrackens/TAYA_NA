@@ -629,6 +629,11 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// (depth pending legal sign-off).
 	tradeGeoGate = compliance.NewGeoGateFromEnv()
 	tradeKYCGate = kycService
+	// GAP-20: per-market eligibility (tag-gate). Wired only with a DB present;
+	// nil in memory mode makes checkMarketEligibility a no-op.
+	if edb := walletService.DB(); edb != nil {
+		marketEligibility = sqlMarketEligibility{db: edb}
+	}
 	// Legacy guarded routes run through the same geo gate as trading. Their
 	// registration is still controlled by the Tiangge legacy-route opt-in; see
 	// docs/compliance/geofencing-kyc.md for the compliance posture.
