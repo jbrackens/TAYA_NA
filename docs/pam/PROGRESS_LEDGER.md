@@ -537,7 +537,7 @@ Evidence for every entry: `docs/pam/pass-b-findings-2026-07-03.md`. Merged from 
 - [GAP-36] (P2) Registration: persist affiliate tag + signup country — §11.
 - [GAP-37] (P2) Configurable password policy (players + staff) — §11/§25. (Account-level lockout exists per verifier refutation; policy configurability does not.)
 - [GAP-38] (P2) Reality-check session reminders — §13.
-- [GAP-39] (P2) Problem-trading flag on profile/RG state — §13.
+- [GAP-39] (P2) ✅ DONE `1b45ad92` — problem-trading compliance MARKER on the RG state: reviewer sets/clears via `POST /api/v1/admin/rg/problem-trading` (RBAC `compliance:write`, audited `rg.problem_trading_flag_set`, reason required to flag, actor recorded). 4 store-owned ALTERs on `player_restrictions` (no migration); `SetProblemTradingFlag` on the RG interface + Postgres/mock/fail-closed; surfaced in the admin restrictions read. A marker only — does NOT block trading (that's self-exclusion), per §13. Route unit + live Postgres roundtrip tests. §13. **⇒ completed item #1 since verification #16.**
 - [GAP-40] (P2) National/third-party exclusion-register integration seam + admin screen — §13/§9.
 - [GAP-41] (P2 ⚑ PROTECTED) Currency dimension on wallets/ledger — financial-table schema change; fold into the P0-7 design (multi-currency accounts in the postings schema), never standalone — §14.
 - [GAP-42] (P2) Communication channel abstraction (SMS/push/in-app; email-only today) — §20.
