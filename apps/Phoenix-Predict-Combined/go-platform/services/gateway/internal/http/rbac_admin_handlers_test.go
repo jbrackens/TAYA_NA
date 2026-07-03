@@ -253,3 +253,47 @@ func TestRBACHandlers_MethodAndErrorMapping(t *testing.T) {
 		})
 	}
 }
+
+// TestRBACPermissionDenialIsAudited proves GAP-25: when an authenticated admin
+// is denied a permissioned route (missing the specific permission), the denial
+// is written to the append-only provider-ops audit trail. noperm@test carries
+// the admin role but holds zero permissions, so GET /users (users:read) denies.
+func TestRBACPermissionDenialIsAudited(t *testing.T) {
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "") // TestMain enables the bypass; this test needs real gating
+	mux := newRBACTestMux()
+	status := rbacDo(t, mux, stdhttp.MethodGet, "/api/v1/admin/users", "admin", "noperm@test", "")
+	if status != stdhttp.StatusForbidden {
+		t.Fatalf("permissionless admin: got status %d, want %d", status, stdhttp.StatusForbidden)
+	}
+	found := false
+	for _, e := range providerOpsAuditSnapshot() {
+		if e.Action == "access.permission_denied" &&
+			strings.Contains(e.Details, "users:read") &&
+			strings.Contains(e.Details, "noperm@test") {
+			if e.TargetID != "/api/v1/admin/users" {
+				t.Fatalf("denial audit target = %q, want the request path", e.TargetID)
+			}
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatal("expected an access.permission_denied audit entry naming users:read + noperm@test")
+	}
+}
+
+// TestRBACPermittedAccessNotAuditedAsDenial guards against over-auditing: a
+// caller WITH the permission must not emit a denial entry for that path.
+func TestRBACPermittedAccessNotAuditedAsDenial(t *testing.T) {
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "") // real gating so a permitted call actually resolves permissions
+	mux := newRBACTestMux()
+	if status := rbacDo(t, mux, stdhttp.MethodGet, "/api/v1/admin/roles", "admin", "reader@test", ""); status != stdhttp.StatusOK {
+		t.Fatalf("reader@test GET /roles: got %d, want 200", status)
+	}
+	for _, e := range providerOpsAuditSnapshot() {
+		if e.Action == "access.permission_denied" && strings.Contains(e.Details, "reader@test") &&
+			strings.Contains(e.Details, "roles:read") {
+			t.Fatal("a permitted access must not produce a denial audit entry")
+		}
+	}
+}

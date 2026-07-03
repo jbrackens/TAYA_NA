@@ -399,6 +399,24 @@ func requireRBACPermission(r *stdhttp.Request, svc *rbac.Service, permission str
 		return httpx.Internal("permission check failed", err)
 	}
 	if !ok {
+		// GAP-25 (PAM spec §24 Audit Logs, §27 Security): a denied privileged
+		// access attempt is a security-relevant event and must be captured in the
+		// append-only audit trail — otherwise an authenticated admin probing for
+		// permissions they lack leaves no forensic record. This branch is only
+		// reachable after requireAdminRole succeeds, so the actor is always an
+		// identified admin (not an anonymous flood), and the write records who
+		// tried to reach what.
+		recordProviderOpsAuditAction(
+			userIDFromRequest(r),
+			"access.permission_denied",
+			r.URL.Path,
+			map[string]any{
+				"permission": permission,
+				"method":     r.Method,
+				"path":       r.URL.Path,
+				"email":      email,
+			},
+		)
 		return httpx.Forbidden("missing required permission: " + permission)
 	}
 	return nil
