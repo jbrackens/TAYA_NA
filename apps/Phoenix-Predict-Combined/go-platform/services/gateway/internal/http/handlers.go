@@ -755,6 +755,8 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	registerReportsRoutes(mux, walletService)
 	// CSV exports of compliance/surveillance datasets for auditors (P1-6).
 	registerReportExportRoutes(mux, walletService.DB())
+	// Finance aggregate reports (daily balance / transaction summary, §23).
+	registerFinanceReportRoutes(mux, walletService.DB())
 	// DB-backed feature-flag / config store (P2-1 peripheral). Editing flags
 	// can change compliance posture, so writes are super-admin only.
 	if cfgDB := walletService.DB(); cfgDB != nil {
