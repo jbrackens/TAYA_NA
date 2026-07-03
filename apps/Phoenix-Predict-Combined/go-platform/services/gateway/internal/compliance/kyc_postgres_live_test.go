@@ -16,6 +16,72 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// approveAlwaysIDV is a stub vendor that auto-approves — the exact shape of a
+// real IDV vendor dropped into the KYC_IDV_PROVIDER seam.
+type approveAlwaysIDV struct{}
+
+func (approveAlwaysIDV) Name() string { return "approve-always-stub" }
+func (approveAlwaysIDV) Review(context.Context, string, []VerificationDocument) (IDVDecision, error) {
+	return IDVDecision{Status: "approved", RiskLevel: "low"}, nil
+}
+
+// P0-4 verification #6 fix: the automated VerifyIdentity/IDV-vendor path must
+// NOT approve past an unresolved/hit screening — the gate lives at the shared
+// upsertStatus chokepoint, not only in AdminDecision.
+func TestPostgresKYCVerifyIdentityCannotBypassScreeningLive(t *testing.T) {
+	dsn := os.Getenv("KYC_LIVE_DSN")
+	if dsn == "" {
+		t.Skip("KYC_LIVE_DSN not set; skipping live Postgres KYC test")
+	}
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatalf("open: %v", err)
+	}
+	defer db.Close()
+	svc, err := NewPostgresKYCService(db, approveAlwaysIDV{})
+	if err != nil {
+		t.Fatalf("init: %v", err)
+	}
+	ctx := context.Background()
+	userID := fmt.Sprintf("u-vbypass-%d", time.Now().UnixNano())
+
+	// No identity yet: an approving vendor still cannot approve.
+	if _, err := svc.VerifyIdentity(ctx, userID, []VerificationDocument{{Type: "passport"}}); err != ErrIdentityRequired {
+		t.Fatalf("VerifyIdentity without identity: want ErrIdentityRequired, got %v", err)
+	}
+	st, _ := svc.GetVerificationStatus(ctx, userID)
+	if st.Status == "approved" {
+		t.Fatal("status must not be approved without a screened identity")
+	}
+
+	// Screened as a hit: the approving vendor still cannot approve.
+	if err := svc.UpsertIdentity(ctx, KYCIdentity{
+		UserID: userID, FullName: "Sanctioned Person",
+		ScreeningStatus: string(PersonScreeningHit), ScreeningProvider: "yente", ScreenedAt: time.Now().UTC(),
+	}); err != nil {
+		t.Fatalf("upsert: %v", err)
+	}
+	if _, err := svc.VerifyIdentity(ctx, userID, []VerificationDocument{{Type: "passport"}}); err != ErrScreeningUnresolved {
+		t.Fatalf("VerifyIdentity with a hit: want ErrScreeningUnresolved, got %v", err)
+	}
+	st, _ = svc.GetVerificationStatus(ctx, userID)
+	if st.Status == "approved" {
+		t.Fatal("a sanctioned subject must not be auto-approved via the vendor path")
+	}
+
+	// Cleared: the vendor path may now approve.
+	if _, err := svc.ReviewScreening(ctx, userID, "cleared"); err != nil {
+		t.Fatalf("review: %v", err)
+	}
+	if _, err := svc.VerifyIdentity(ctx, userID, []VerificationDocument{{Type: "passport"}}); err != nil {
+		t.Fatalf("VerifyIdentity after clearance: %v", err)
+	}
+	st, _ = svc.GetVerificationStatus(ctx, userID)
+	if st.Status != "approved" {
+		t.Fatalf("cleared subject should approve via vendor path, got %q", st.Status)
+	}
+}
+
 // P0-4 slice 3: the approval gate + reviewer resolution against real Postgres.
 func TestPostgresKYCApprovalScreeningGateLive(t *testing.T) {
 	dsn := os.Getenv("KYC_LIVE_DSN")

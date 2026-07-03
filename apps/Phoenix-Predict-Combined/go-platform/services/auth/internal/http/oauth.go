@@ -679,6 +679,18 @@ func (a *AuthService) oauthSessionGate(provider string, account user) error {
 		a.audit.Event("auth.oauth.admin_denied", map[string]any{"provider": provider, "userId": account.ID})
 		return httpx.Forbidden("administrator accounts must sign in with password and multi-factor code")
 	}
+	// GAP-10 (verification #6 fix): the OAuth callback mints a session just
+	// like Login, so it must run the same restriction gate — otherwise a
+	// self-excluded / RG-blocked / admin-suspended player bypasses the block
+	// simply by signing in with Google/Discord/etc.
+	switch outcome, reason := a.evaluatePlayerRestriction(account); outcome {
+	case restrictionUnavailable:
+		a.audit.Event("auth.oauth.failed", map[string]any{"provider": provider, "userId": account.ID, "reason": "restriction_lookup_failed"})
+		return httpx.Internal("failed to verify account standing", nil)
+	case restrictionDenied:
+		a.audit.Event("auth.oauth.restricted", map[string]any{"provider": provider, "userId": account.ID, "reason": reason})
+		return httpx.Forbidden("account access is restricted")
+	}
 	return nil
 }
 

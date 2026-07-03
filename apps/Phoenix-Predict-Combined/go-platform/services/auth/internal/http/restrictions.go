@@ -2,9 +2,48 @@ package http
 
 import (
 	"context"
+	"log"
 	"os"
 	"strings"
 )
+
+// playerRestrictionOutcome is the result of the shared restriction gate.
+type playerRestrictionOutcome int
+
+const (
+	restrictionAllowed     playerRestrictionOutcome = iota // proceed to mint/rotate a session
+	restrictionDenied                                      // player is restricted → refuse (403)
+	restrictionUnavailable                                 // lookup failed in a deployed env → fail closed (500)
+)
+
+// evaluatePlayerRestriction is the single restriction gate every
+// session-minting path shares (GAP-10 + verification #6 fix): password Login,
+// token Refresh, and the OAuth callback. Admins are always allowed here —
+// their standing is enforced by admin_users.status at lookup time, not RG
+// state. A lookup outage fails CLOSED in deployed environments (an outage must
+// not let a restricted player keep/obtain a session) and open in dev. Returns
+// the machine-readable reason when denied.
+func (a *AuthService) evaluatePlayerRestriction(account user) (playerRestrictionOutcome, string) {
+	if account.Role == roleAdmin {
+		return restrictionAllowed, ""
+	}
+	lookup := a.restrictionLookup
+	if lookup == nil {
+		lookup = a.playerLoginRestriction
+	}
+	reason, err := lookup(account.ID)
+	if err != nil {
+		if deployedAuthEnvironment() {
+			return restrictionUnavailable, ""
+		}
+		log.Printf("warning: player restriction lookup failed for %s (allowed in dev only): %v", account.Username, err)
+		return restrictionAllowed, ""
+	}
+	if reason != "" {
+		return restrictionDenied, reason
+	}
+	return restrictionAllowed, ""
+}
 
 // GAP-10 (PAM spec §13 Responsible Gaming / Responsible Trading + §32
 // Scenario 6, "login and trading blocked"): a self-excluded, RG-blocked, or

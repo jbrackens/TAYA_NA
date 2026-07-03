@@ -1,6 +1,7 @@
 package http
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"testing"
@@ -106,6 +107,103 @@ func TestLoginRestrictionNotLeakedToBadCredentials(t *testing.T) {
 	if res.Code != http.StatusUnauthorized {
 		t.Fatalf("expected 401, got %d", res.Code)
 	}
+}
+
+// GAP-10 verification #6 fix: a restriction that lands AFTER login must take
+// effect on the next refresh, and the denied refresh token is terminated.
+func TestRefreshRestrictedPlayerDenied(t *testing.T) {
+	auth, handler := setupRestrictionHarness(t)
+	// Log in while unrestricted to obtain a refresh token.
+	auth.restrictionLookup = func(string) (string, error) { return "", nil }
+	loginRes := postJSON(t, handler, "/api/v1/auth/login",
+		map[string]string{"username": "player@test.local", "password": "PlayerPass123!"}, nil)
+	if loginRes.Code != http.StatusOK {
+		t.Fatalf("login: expected 200, got %d body=%s", loginRes.Code, loginRes.Body.String())
+	}
+	var tokens tokenResponse
+	if err := json.Unmarshal(loginRes.Body.Bytes(), &tokens); err != nil {
+		t.Fatalf("decode tokens: %v", err)
+	}
+
+	// The player is now self-excluded — the next refresh must be refused.
+	auth.restrictionLookup = func(string) (string, error) { return "self_excluded", nil }
+	refreshRes := postJSON(t, handler, "/api/v1/auth/refresh",
+		map[string]string{"refreshToken": tokens.RefreshToken}, nil)
+	if refreshRes.Code != http.StatusForbidden {
+		t.Fatalf("restricted refresh: expected 403, got %d body=%s", refreshRes.Code, refreshRes.Body.String())
+	}
+	// The refresh chain is terminated: reusing the same token fails as
+	// invalid, not merely restricted.
+	reuse := postJSON(t, handler, "/api/v1/auth/refresh",
+		map[string]string{"refreshToken": tokens.RefreshToken}, nil)
+	if reuse.Code != http.StatusUnauthorized {
+		t.Fatalf("reused terminated token: expected 401, got %d body=%s", reuse.Code, reuse.Body.String())
+	}
+}
+
+func TestRefreshAllowedForUnrestrictedPlayer(t *testing.T) {
+	auth, handler := setupRestrictionHarness(t)
+	auth.restrictionLookup = func(string) (string, error) { return "", nil }
+	loginRes := postJSON(t, handler, "/api/v1/auth/login",
+		map[string]string{"username": "player@test.local", "password": "PlayerPass123!"}, nil)
+	var tokens tokenResponse
+	_ = json.Unmarshal(loginRes.Body.Bytes(), &tokens)
+	refreshRes := postJSON(t, handler, "/api/v1/auth/refresh",
+		map[string]string{"refreshToken": tokens.RefreshToken}, nil)
+	if refreshRes.Code != http.StatusOK {
+		t.Fatalf("unrestricted refresh: expected 200, got %d body=%s", refreshRes.Code, refreshRes.Body.String())
+	}
+}
+
+func TestRefreshFailsClosedByEnvOnLookupError(t *testing.T) {
+	auth, handler := setupRestrictionHarness(t)
+	auth.restrictionLookup = func(string) (string, error) { return "", nil }
+	loginRes := postJSON(t, handler, "/api/v1/auth/login",
+		map[string]string{"username": "player@test.local", "password": "PlayerPass123!"}, nil)
+	var tokens tokenResponse
+	_ = json.Unmarshal(loginRes.Body.Bytes(), &tokens)
+
+	t.Setenv("ENVIRONMENT", "production")
+	auth.restrictionLookup = func(string) (string, error) { return "", errors.New("db down") }
+	refreshRes := postJSON(t, handler, "/api/v1/auth/refresh",
+		map[string]string{"refreshToken": tokens.RefreshToken}, nil)
+	if refreshRes.Code != http.StatusInternalServerError {
+		t.Fatalf("outage refresh in prod: expected 500, got %d body=%s", refreshRes.Code, refreshRes.Body.String())
+	}
+}
+
+// GAP-10 verification #6 fix: the OAuth callback gate refuses restricted
+// players (previously it only blocked admins).
+func TestOAuthSessionGateRestriction(t *testing.T) {
+	auth, _ := setupRestrictionHarness(t)
+	player := user{ID: "u-oauth-1", Username: "p@test.local", Role: rolePlayer}
+
+	t.Run("restricted denied", func(t *testing.T) {
+		auth.restrictionLookup = func(string) (string, error) { return "self_excluded", nil }
+		if err := auth.oauthSessionGate("google", player); err == nil {
+			t.Fatal("restricted player must be refused an OAuth session")
+		}
+	})
+	t.Run("unrestricted allowed", func(t *testing.T) {
+		auth.restrictionLookup = func(string) (string, error) { return "", nil }
+		if err := auth.oauthSessionGate("google", player); err != nil {
+			t.Fatalf("unrestricted player must be allowed: %v", err)
+		}
+	})
+	t.Run("outage fails closed when deployed", func(t *testing.T) {
+		t.Setenv("ENVIRONMENT", "production")
+		auth.restrictionLookup = func(string) (string, error) { return "", errors.New("db down") }
+		if err := auth.oauthSessionGate("google", player); err == nil {
+			t.Fatal("lookup outage in prod must fail closed")
+		}
+	})
+	t.Run("admin still denied", func(t *testing.T) {
+		auth.restrictionLookup = func(string) (string, error) { t.Fatal("admin must not reach restriction lookup"); return "", nil }
+		admin := user{ID: "a-1", Username: "admin@test.local", Role: roleAdmin}
+		if err := auth.oauthSessionGate("google", admin); err == nil {
+			t.Fatal("admin must still be denied OAuth sessions")
+		}
+	})
 }
 
 func TestDeployedAuthEnvironment(t *testing.T) {

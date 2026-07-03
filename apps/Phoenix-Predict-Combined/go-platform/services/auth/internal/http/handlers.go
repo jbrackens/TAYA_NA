@@ -1136,28 +1136,20 @@ func (a *AuthService) Login(username string, password string, otp string) (token
 	// self-excluded, RG-blocked, and admin-suspended players are refused a
 	// session. Runs AFTER credential+MFA verification so it leaks nothing to
 	// unauthenticated callers, and only for player accounts — staff
-	// suspension is already enforced by lookupAdminUser's status filter.
-	// Lookup errors fail CLOSED in deployed environments (an outage must not
-	// silently disable an exclusion) and open in dev, mirroring the gateway's
-	// compliance-gate contract.
-	if account.Role != roleAdmin {
-		lookup := a.restrictionLookup
-		if lookup == nil {
-			lookup = a.playerLoginRestriction
-		}
-		if reason, rerr := lookup(account.ID); rerr != nil {
-			if deployedAuthEnvironment() {
-				a.recordAuthMetric("login_failure")
-				a.audit.Event("auth.login.failed", map[string]any{"username": username, "reason": "restriction_lookup_failed"})
-				return tokenResponse{}, httpx.Internal("failed to verify account standing", rerr)
-			}
-			log.Printf("warning: player restriction lookup failed for %s (allowed in dev only): %v", username, rerr)
-		} else if reason != "" {
-			// Correct credentials — not a lockout-counted failure.
-			a.recordAuthMetric("login_failure")
-			a.audit.Event("auth.login.restricted", map[string]any{"username": username, "userId": account.ID, "reason": reason})
-			return tokenResponse{}, httpx.Forbidden("account access is restricted")
-		}
+	// suspension is already enforced by lookupAdminUser's status filter. The
+	// same gate runs on Refresh and the OAuth callback (verification #6 fix)
+	// so a restriction that lands after login cannot be outlived by a live
+	// refresh chain, and cannot be bypassed by signing in via OAuth.
+	switch outcome, reason := a.evaluatePlayerRestriction(account); outcome {
+	case restrictionUnavailable:
+		a.recordAuthMetric("login_failure")
+		a.audit.Event("auth.login.failed", map[string]any{"username": username, "reason": "restriction_lookup_failed"})
+		return tokenResponse{}, httpx.Internal("failed to verify account standing", nil)
+	case restrictionDenied:
+		// Correct credentials — not a lockout-counted failure.
+		a.recordAuthMetric("login_failure")
+		a.audit.Event("auth.login.restricted", map[string]any{"username": username, "userId": account.ID, "reason": reason})
+		return tokenResponse{}, httpx.Forbidden("account access is restricted")
 	}
 
 	// Successful login clears lockout state
@@ -1369,6 +1361,24 @@ func (a *AuthService) Refresh(refreshToken string) (tokenResponse, error) {
 		a.recordAuthMetric("refresh_failure")
 		a.audit.Event("auth.refresh.failed", map[string]any{"username": existing.Username, "reason": "user_not_found"})
 		return tokenResponse{}, httpx.Internal("session user not found", nil)
+	}
+
+	// GAP-10 (verification #6 fix): a restriction that lands after the player
+	// logged in must take effect on the next refresh, not merely at the next
+	// fresh login — otherwise a live refresh chain outlives a self-exclusion
+	// or suspension indefinitely. A denied refresh terminates the chain (the
+	// old token is deleted below on the allowed path; here we delete it now so
+	// the restricted session cannot be reused).
+	switch outcome, reason := a.evaluatePlayerRestriction(account); outcome {
+	case restrictionUnavailable:
+		a.recordAuthMetric("refresh_failure")
+		a.audit.Event("auth.refresh.failed", map[string]any{"username": existing.Username, "reason": "restriction_lookup_failed"})
+		return tokenResponse{}, httpx.Internal("failed to verify account standing", nil)
+	case restrictionDenied:
+		_ = a.store.DeleteByRefreshToken(refreshToken)
+		a.recordAuthMetric("refresh_failure")
+		a.audit.Event("auth.refresh.restricted", map[string]any{"username": existing.Username, "userId": existing.UserID, "reason": reason})
+		return tokenResponse{}, httpx.Forbidden("account access is restricted")
 	}
 
 	if err := a.store.DeleteByRefreshToken(refreshToken); err != nil {

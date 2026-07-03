@@ -193,6 +193,25 @@ WHERE user_id = $1 AND status IN ('submitted','verifying')`,
 }
 
 func (s *PostgresKYCService) upsertStatus(ctx context.Context, userID string, d IDVDecision) error {
+	// P0-4 (verification #6 fix): the sanctions-screening gate lives at the
+	// single approval chokepoint, not only in AdminDecision — so the
+	// automated VerifyIdentity/IDV-vendor path cannot mint an "approved"
+	// status while the subject's screening is unresolved or a hit. Any write
+	// that would APPROVE requires a screened identity that clears; non-approval
+	// writes (declined/pending) are never gated.
+	if d.Status == "approved" {
+		identity, ierr := s.GetIdentity(ctx, userID)
+		if ierr != nil {
+			return fmt.Errorf("screening check failed: %w", ierr)
+		}
+		if identity == nil {
+			return ErrIdentityRequired
+		}
+		if !ScreeningPermitsApproval(identity.ScreeningStatus) {
+			return ErrScreeningUnresolved
+		}
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, kycDBTimeout)
 	defer cancel()
 
