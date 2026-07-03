@@ -17,6 +17,10 @@ var (
 	ErrBetLimitExceeded     = errors.New("bet limit exceeded")
 	ErrUserBlocked          = errors.New("user blocked")
 	ErrUserExcluded         = errors.New("user self-excluded")
+	// P0-4 slice 3: KYC approval is refused until the subject's sanctions
+	// screening resolves (fail-closed onboarding gate).
+	ErrIdentityRequired    = errors.New("structured identity required before KYC approval")
+	ErrScreeningUnresolved = errors.New("sanctions screening must be resolved before KYC approval")
 )
 
 // GeoComplianceService defines geolocation verification operations

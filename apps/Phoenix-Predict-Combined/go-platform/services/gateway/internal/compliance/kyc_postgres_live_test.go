@@ -16,6 +16,67 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// P0-4 slice 3: the approval gate + reviewer resolution against real Postgres.
+func TestPostgresKYCApprovalScreeningGateLive(t *testing.T) {
+	dsn := os.Getenv("KYC_LIVE_DSN")
+	if dsn == "" {
+		t.Skip("KYC_LIVE_DSN not set; skipping live Postgres KYC test")
+	}
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatalf("open: %v", err)
+	}
+	defer db.Close()
+	svc, err := NewPostgresKYCService(db, NewIDVProviderFromEnv())
+	if err != nil {
+		t.Fatalf("init: %v", err)
+	}
+	ctx := context.Background()
+	userID := fmt.Sprintf("u-gate-%d", time.Now().UnixNano())
+
+	// 1. No identity → approval refused, decline permitted.
+	if _, err := svc.AdminDecision(ctx, userID, true, "looks fine"); err != ErrIdentityRequired {
+		t.Fatalf("approve without identity: want ErrIdentityRequired, got %v", err)
+	}
+	if _, err := svc.AdminDecision(ctx, userID, false, "no identity"); err != nil {
+		t.Fatalf("decline must never be gated: %v", err)
+	}
+
+	// 2. Unresolved verdict → approval refused.
+	if err := svc.UpsertIdentity(ctx, KYCIdentity{
+		UserID: userID, FullName: "Jane Doe",
+		ScreeningStatus: string(PersonScreeningPotentialMatch), ScreeningProvider: "manual",
+	}); err != nil {
+		t.Fatalf("upsert: %v", err)
+	}
+	if _, err := svc.AdminDecision(ctx, userID, true, ""); err != ErrScreeningUnresolved {
+		t.Fatalf("approve with potential_match: want ErrScreeningUnresolved, got %v", err)
+	}
+
+	// 3. Reviewer clears → previous captured, approval now permitted.
+	prev, err := svc.ReviewScreening(ctx, userID, "cleared")
+	if err != nil || prev != string(PersonScreeningPotentialMatch) {
+		t.Fatalf("review cleared: prev=%q err=%v", prev, err)
+	}
+	status, err := svc.AdminDecision(ctx, userID, true, "")
+	if err != nil || status.Status != "approved" {
+		t.Fatalf("approve after clearance: %+v %v", status, err)
+	}
+
+	// 4. Reviewer confirms a hit → approval blocked again.
+	if _, err := svc.ReviewScreening(ctx, userID, "confirmed"); err != nil {
+		t.Fatalf("review confirmed: %v", err)
+	}
+	if _, err := svc.AdminDecision(ctx, userID, true, ""); err != ErrScreeningUnresolved {
+		t.Fatalf("approve with hit_confirmed: want ErrScreeningUnresolved, got %v", err)
+	}
+
+	// 5. Review without identity → ErrIdentityRequired.
+	if _, err := svc.ReviewScreening(ctx, "u-ghost", "cleared"); err != ErrIdentityRequired {
+		t.Fatalf("review without identity: want ErrIdentityRequired, got %v", err)
+	}
+}
+
 // P0-4 slice 2: identity + screening-verdict roundtrip incl. re-submission
 // overwrite (a corrected name must produce a fresh verdict, never inherit).
 func TestPostgresKYCIdentityLive(t *testing.T) {

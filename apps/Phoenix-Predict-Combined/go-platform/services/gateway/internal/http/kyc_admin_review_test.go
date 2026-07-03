@@ -19,14 +19,37 @@ type stubKYCAdminStore struct {
 	docs    []compliance.VerificationDocument
 	file    *compliance.DocumentFile
 	fileErr error
+
+	// P0-4 slice 3
+	identity     *compliance.KYCIdentity
+	decisionErr  error
+	reviewPrev   string
+	reviewErr    error
+	gotReviewUID string
+	gotOutcome   string
 }
 
 func (s *stubKYCAdminStore) AdminDecision(_ context.Context, userID string, approve bool, _ string) (*compliance.KYCStatus, error) {
+	if s.decisionErr != nil {
+		return nil, s.decisionErr
+	}
 	st := "declined"
 	if approve {
 		st = "approved"
 	}
 	return &compliance.KYCStatus{UserID: userID, Status: st}, nil
+}
+
+func (s *stubKYCAdminStore) GetIdentity(_ context.Context, _ string) (*compliance.KYCIdentity, error) {
+	return s.identity, nil
+}
+
+func (s *stubKYCAdminStore) ReviewScreening(_ context.Context, userID, outcome string) (string, error) {
+	s.gotReviewUID, s.gotOutcome = userID, outcome
+	if s.reviewErr != nil {
+		return "", s.reviewErr
+	}
+	return s.reviewPrev, nil
 }
 
 func (s *stubKYCAdminStore) GetVerificationStatus(_ context.Context, userID string) (*compliance.KYCStatus, error) {

@@ -155,6 +155,23 @@ func (s *PostgresKYCService) AdminDecision(ctx context.Context, userID string, a
 	if userID == "" {
 		return nil, ErrInvalidUserID
 	}
+	// P0-4 slice 3 (§12 KYC, AML, Risk, and Compliance): approval is the
+	// onboarding gate, and it stays shut until sanctions screening resolves.
+	// Fail-closed: no identity → no approval; any verdict other than clear /
+	// cleared_by_review → no approval; an identity-read error blocks rather
+	// than skips. Declines are never gated.
+	if approve {
+		identity, err := s.GetIdentity(ctx, userID)
+		if err != nil {
+			return nil, fmt.Errorf("screening check failed: %w", err)
+		}
+		if identity == nil {
+			return nil, ErrIdentityRequired
+		}
+		if !ScreeningPermitsApproval(identity.ScreeningStatus) {
+			return nil, ErrScreeningUnresolved
+		}
+	}
 	decision := IDVDecision{Status: "approved", RiskLevel: "low"}
 	docStatus := "approved"
 	if !approve {

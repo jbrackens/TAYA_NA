@@ -22,6 +22,9 @@ type kycAdminStore interface {
 	ListDocuments(ctx context.Context, userID string) ([]compliance.VerificationDocument, error)
 	ListPendingReviews(ctx context.Context, limit, offset int) ([]compliance.PendingReview, error)
 	GetDocumentFile(ctx context.Context, documentID string) (*compliance.DocumentFile, error)
+	// P0-4 slice 3: identity + screening verdict for the review surface.
+	GetIdentity(ctx context.Context, userID string) (*compliance.KYCIdentity, error)
+	ReviewScreening(ctx context.Context, userID, outcome string) (previousStatus string, err error)
 }
 
 type kycAdminDecisionRequest struct {
@@ -71,6 +74,12 @@ func registerKYCAdminRoutes(mux *stdhttp.ServeMux, kyc kycAdminStore) {
 		}
 		status, err := kyc.AdminDecision(r.Context(), req.UserID, req.Approve, req.Reason)
 		if err != nil {
+			// P0-4 slice 3: an approval blocked by unresolved sanctions
+			// screening is a state conflict the reviewer must resolve first
+			// (screening review or identity submission), not a bad request.
+			if errors.Is(err, compliance.ErrScreeningUnresolved) || errors.Is(err, compliance.ErrIdentityRequired) {
+				return httpx.Conflict(err.Error(), nil)
+			}
 			return serviceBadRequestError(err, nil)
 		}
 		adminID := userIDFromRequest(r)
@@ -79,6 +88,59 @@ func registerKYCAdminRoutes(mux *stdhttp.ServeMux, kyc kycAdminStore) {
 			"status":  status.Status,
 		})
 		return httpx.WriteJSON(w, stdhttp.StatusOK, status)
+	}))
+
+	// P0-4 slice 3: a reviewer resolves a screening verdict — "cleared"
+	// (false positive; approval becomes possible) or "confirmed" (real hit;
+	// approval stays blocked). Sensitive compliance action: compliance:write
+	// + audited with previous/next status and the mandatory reason.
+	mux.Handle("/api/v1/admin/kyc/screening-review", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminPermission(r, "compliance:write"); err != nil {
+			return err
+		}
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+		var req struct {
+			UserID  string `json:"userId"`
+			Outcome string `json:"outcome"`
+			Reason  string `json:"reason"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			return httpx.BadRequest("invalid request body", nil)
+		}
+		req.UserID = strings.TrimSpace(req.UserID)
+		req.Outcome = strings.ToLower(strings.TrimSpace(req.Outcome))
+		req.Reason = strings.TrimSpace(req.Reason)
+		if req.UserID == "" {
+			return httpx.BadRequest("userId is required", map[string]any{"field": "userId"})
+		}
+		if req.Outcome != "cleared" && req.Outcome != "confirmed" {
+			return httpx.BadRequest("outcome must be cleared or confirmed", map[string]any{"field": "outcome"})
+		}
+		if req.Reason == "" {
+			return httpx.BadRequest("reason is required", map[string]any{"field": "reason"})
+		}
+		if err := validateLaunchFacingReason("reason", req.Reason); err != nil {
+			return err
+		}
+		previous, err := kyc.ReviewScreening(r.Context(), req.UserID, req.Outcome)
+		if err != nil {
+			if errors.Is(err, compliance.ErrIdentityRequired) {
+				return httpx.Conflict(err.Error(), nil)
+			}
+			return serviceBadRequestError(err, nil)
+		}
+		recordProviderOpsAuditAction(userIDFromRequest(r), "kyc.screening_reviewed", req.UserID, map[string]any{
+			"outcome":  req.Outcome,
+			"previous": previous,
+			"reason":   req.Reason,
+		})
+		identity, err := kyc.GetIdentity(r.Context(), req.UserID)
+		if err != nil {
+			return httpx.Internal("failed to reload identity", err)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"identity": identity})
 	}))
 
 	mux.Handle("/api/v1/admin/kyc/queue", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -120,6 +182,12 @@ func registerKYCAdminRoutes(mux *stdhttp.ServeMux, kyc kycAdminStore) {
 		if err != nil {
 			return serviceBadRequestError(err, nil)
 		}
+		// P0-4 slice 3: reviewers see the structured identity + screening
+		// verdict (nil when the subject hasn't submitted identity yet).
+		identity, err := kyc.GetIdentity(r.Context(), userID)
+		if err != nil {
+			return httpx.Internal("failed to load identity", err)
+		}
 		// Reading a specific person's KYC state is a per-subject compliance
 		// access — audited like the decision itself (the aggregate queue is
 		// not, to avoid an audit row per dashboard refresh).
@@ -130,6 +198,7 @@ func registerKYCAdminRoutes(mux *stdhttp.ServeMux, kyc kycAdminStore) {
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 			"status":    status,
 			"documents": docs,
+			"identity":  identity,
 		})
 	}))
 

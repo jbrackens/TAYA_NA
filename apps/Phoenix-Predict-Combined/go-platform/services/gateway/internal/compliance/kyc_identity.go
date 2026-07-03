@@ -31,6 +31,52 @@ type KYCIdentity struct {
 	UpdatedAt         time.Time `json:"updatedAt,omitempty"`
 }
 
+// Reviewer-resolved screening states (P0-4 slice 3). A reviewer either clears
+// a verdict as a false positive or confirms the hit; both are audited at the
+// route layer and terminal until the identity is re-submitted (which
+// re-screens).
+const (
+	ScreeningClearedByReview = "cleared_by_review"
+	ScreeningHitConfirmed    = "hit_confirmed"
+)
+
+// ScreeningPermitsApproval reports whether a screening status allows KYC
+// approval. Default-deny: only an automated clear or an explicit reviewer
+// clearance passes — unscreened, potential_match, hit, unavailable,
+// hit_confirmed, and any unknown future status all block.
+func ScreeningPermitsApproval(status string) bool {
+	return status == string(PersonScreeningClear) || status == ScreeningClearedByReview
+}
+
+// ReviewScreening applies a reviewer's resolution of a screening verdict.
+// outcome is "cleared" (false positive — approval becomes possible) or
+// "confirmed" (real hit — approval stays blocked; the reviewer then declines
+// KYC). It refuses when no identity exists (nothing to review) and returns
+// the previous status for the caller's audit entry.
+func (s *PostgresKYCService) ReviewScreening(ctx context.Context, userID, outcome string) (previousStatus string, err error) {
+	var next string
+	switch outcome {
+	case "cleared":
+		next = ScreeningClearedByReview
+	case "confirmed":
+		next = ScreeningHitConfirmed
+	default:
+		return "", errors.New("kyc screening review: outcome must be cleared or confirmed")
+	}
+	// Self-join in FROM captures the pre-update value for the audit trail
+	// (RETURNING on the target row would see the new value).
+	err = s.db.QueryRowContext(ctx, `
+UPDATE kyc_identity SET screening_status = $2, updated_at = NOW()
+FROM (SELECT user_id, screening_status AS prev FROM kyc_identity WHERE user_id = $1 FOR UPDATE) old
+WHERE kyc_identity.user_id = old.user_id
+RETURNING old.prev`,
+		userID, next).Scan(&previousStatus)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", ErrIdentityRequired
+	}
+	return previousStatus, err
+}
+
 // isASCIIAlpha reports whether s is entirely A-Z/a-z (country-code check).
 func isASCIIAlpha(s string) bool {
 	for _, c := range s {
