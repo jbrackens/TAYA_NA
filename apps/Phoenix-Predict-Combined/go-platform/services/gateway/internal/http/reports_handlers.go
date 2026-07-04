@@ -96,9 +96,10 @@ type walletReconciliationReport struct {
 // parseOptionalDateRange reads optional ?from= & ?to= (YYYY-MM-DD) query params
 // into an inclusive [from, to] window for wallet.ReconciliationSummary (which
 // filters transaction_time >= from AND <= to). 'to' is expanded to the last
-// instant of that day so the whole 'to' day is included — matching the
-// inclusive-'to' semantics of the ledger CSV export and daily-balance report. A
-// malformed date is a client error (400), never a silent full-range fallback.
+// representable instant of that day so the whole 'to' day is included — matching
+// the exclusive `< to+1day` half-open window of the ledger CSV export and
+// daily-balance report exactly. A malformed date is a client error (400), never
+// a silent full-range fallback.
 func parseOptionalDateRange(r *stdhttp.Request) (*time.Time, *time.Time, error) {
 	var from, to *time.Time
 	if s := strings.TrimSpace(r.URL.Query().Get("from")); s != "" {
@@ -113,7 +114,14 @@ func parseOptionalDateRange(r *stdhttp.Request) (*time.Time, *time.Time, error) 
 		if err != nil {
 			return nil, nil, httpx.BadRequest("invalid 'to' date; expected YYYY-MM-DD", nil)
 		}
-		end := t.AddDate(0, 0, 1).Add(-time.Nanosecond)
+		// Subtract one MICROSECOND, not one nanosecond: transaction_time is
+		// timestamptz (microsecond precision). A nanosecond bound (…23:59:59.999999999)
+		// is rounded UP by Postgres to the next day's 00:00:00, which — against the
+		// `<=` comparator in ReconciliationSummary — would ADMIT a row stamped exactly
+		// at next-day midnight that the CSV/daily-balance `< to+1day` filters EXCLUDE,
+		// double-counting a boundary transaction across periods (verification #20 MED).
+		// …23:59:59.999999 is exact in timestamptz(6), so `<= that` == `< to+1day`.
+		end := t.AddDate(0, 0, 1).Add(-time.Microsecond)
 		to = &end
 	}
 	return from, to, nil

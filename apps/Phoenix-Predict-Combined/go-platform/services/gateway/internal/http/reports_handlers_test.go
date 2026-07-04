@@ -131,6 +131,87 @@ func TestWalletReconciliationReportDateRange(t *testing.T) {
 	}
 }
 
+// TestWalletReconciliationBoundaryLive (verification #20 MED 1) locks in that the
+// reconciliation report's inclusive-'to' bound agrees EXACTLY with the CSV
+// export / daily-balance `< to+1day` half-open window at a day boundary, through
+// the real lib/pq → Postgres round-trip. Seeds a row at the last microsecond of
+// the 'to' day (must be INCLUDED) and one at exactly next-day midnight (must be
+// EXCLUDED). Against the old nanosecond bound the next-midnight row leaked in
+// (Postgres rounds …999999999 up to 00:00:00), making reconciliation disagree
+// with daily-balance; the microsecond bound fixes it. Opt-in on REPORT_LIVE_DSN.
+func TestWalletReconciliationBoundaryLive(t *testing.T) {
+	dsn := reportExportLiveDSN(t)
+	walletSvc, err := wallet.NewServiceWithDB("postgres", dsn)
+	if err != nil {
+		t.Fatalf("db-backed wallet service: %v", err)
+	}
+	db := walletSvc.DB()
+	if db == nil {
+		t.Fatal("expected a db-backed wallet service")
+	}
+	ctx := context.Background()
+	cleanup := func() { _, _ = db.ExecContext(ctx, `DELETE FROM wallet_ledger WHERE user_id LIKE 'u-bnd-%'`) }
+	cleanup()
+	defer cleanup()
+
+	// Two boundary rows for to=2026-03-31: one at 23:59:59.999999 (in), one at
+	// exactly 2026-04-01 00:00:00 (out).
+	for _, s := range []struct {
+		user, key, ts string
+		amount        int64
+	}{
+		{"u-bnd-1", "bnd-in", "2026-03-31T23:59:59.999999Z", 1000},
+		{"u-bnd-2", "bnd-out", "2026-04-01T00:00:00Z", 500},
+	} {
+		if _, err := db.ExecContext(ctx, `
+INSERT INTO wallet_ledger (user_id, entry_type, fund_type, amount_cents, balance_cents, idempotency_key, reason, transaction_time)
+VALUES ($1,'credit','real',$2,$2,$3,'seed',$4)`, s.user, s.amount, s.key, s.ts); err != nil {
+			t.Fatalf("seed %s: %v", s.key, err)
+		}
+	}
+
+	mux := http.NewServeMux()
+	registerReportsRoutes(mux, walletSvc)
+	registerFinanceReportRoutes(mux, db)
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	get := func(path string) map[string]any {
+		req := httptest.NewRequest(http.MethodGet, path, nil)
+		req = req.WithContext(httpx.WithTestUser(req.Context(), "admin", "admin", "admin"))
+		res := httptest.NewRecorder()
+		handler.ServeHTTP(res, req)
+		if res.Code != http.StatusOK {
+			t.Fatalf("%s: expected 200, got %d body=%s", path, res.Code, res.Body.String())
+		}
+		var payload map[string]any
+		if err := json.Unmarshal(res.Body.Bytes(), &payload); err != nil {
+			t.Fatalf("%s: decode: %v", path, err)
+		}
+		return payload
+	}
+
+	// Reconciliation for to=2026-03-31 must count ONLY the 23:59:59.999999 row.
+	rec := get("/api/v1/admin/wallet/reconciliation?from=2026-03-31&to=2026-03-31")
+	if int(rec["totalCreditPointsCents"].(float64)) != 1000 || int(rec["entryCount"].(float64)) != 1 {
+		t.Fatalf("reconciliation leaked the next-midnight row (MED-1 regression): %+v", rec)
+	}
+
+	// Daily-balance for the same window must agree (the auditor tie-out property).
+	daily := get("/api/v1/admin/reports/daily-balance?from=2026-03-31&to=2026-03-31")
+	days, _ := daily["days"].([]any)
+	if len(days) != 1 {
+		t.Fatalf("expected exactly the 2026-03-31 bucket, got %+v", daily)
+	}
+	day0 := days[0].(map[string]any)
+	if day0["date"] != "2026-03-31" || int(day0["creditsCents"].(float64)) != 1000 || int(day0["entryCount"].(float64)) != 1 {
+		t.Fatalf("daily-balance boundary bucket wrong: %+v", day0)
+	}
+	// Tie-out: the two reports agree on the period's credit total.
+	if int(rec["totalCreditPointsCents"].(float64)) != int(day0["creditsCents"].(float64)) {
+		t.Fatalf("reconciliation and daily-balance disagree at the boundary: rec=%v daily=%v", rec["totalCreditPointsCents"], day0["creditsCents"])
+	}
+}
+
 func TestPromotionUsageReportUsesPointCampaignPlaceholder(t *testing.T) {
 	mux := http.NewServeMux()
 	registerReportsRoutes(mux, wallet.NewService())
