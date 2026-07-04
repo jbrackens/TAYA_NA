@@ -60,6 +60,8 @@ describe("Prediction markets permission gate", () => {
     // per-row lifecycle button for an open market
     expect(screen.getByRole("button", { name: /pause/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /edit/i })).toBeDisabled();
+    // Region opens the jurisdiction geo-policy editor — a mutation, so gated too.
+    expect(screen.getByRole("button", { name: /region/i })).toBeDisabled();
   });
 
   it("enables create + lifecycle controls for a markets:edit caller", async () => {
@@ -70,5 +72,6 @@ describe("Prediction markets permission gate", () => {
     ).not.toBeDisabled();
     expect(screen.getByRole("button", { name: /pause/i })).not.toBeDisabled();
     expect(screen.getByRole("button", { name: /edit/i })).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: /region/i })).not.toBeDisabled();
   });
 });

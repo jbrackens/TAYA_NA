@@ -92,11 +92,13 @@ function suggestTicker(title: string): string {
 
 export default function PredictionMarketsContainer() {
   // GAP-95 slice 2 (§29 read-only permission scope / §16 Market Ops): every
-  // market create / edit / lifecycle (open/pause/close/void) control mutates
-  // market state, so gate them on markets:edit (fail-closed via
-  // usePermissions().can — a read-only caller sees them disabled). The gateway
-  // re-checks server-side; this is the §29 UI-consistency layer. Read-only
-  // controls (Audit) and the separate jurisdiction editor (Region) are untouched.
+  // market create / edit / lifecycle (open/pause/close/void) control — AND the
+  // per-market jurisdiction (Region) editor, which writes geo-policy via POST
+  // /admin/markets/{id}/jurisdiction (audited market.jurisdiction_set, also
+  // markets:edit) — mutates market state, so gate them on markets:edit
+  // (fail-closed via usePermissions().can — a read-only caller sees them
+  // disabled). The gateway re-checks server-side; this is the §29 UI-consistency
+  // layer. Only the read-only Audit control is left un-gated.
   const { can } = usePermissions();
   const canEdit = can("markets:edit");
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
@@ -753,7 +755,11 @@ export default function PredictionMarketsContainer() {
           >
             Edit
           </Button>
-          <Button size="small" onClick={() => openJurisdiction(record)}>
+          <Button
+            size="small"
+            disabled={!canEdit}
+            onClick={() => openJurisdiction(record)}
+          >
             Region
           </Button>
           <Button size="small" onClick={() => openLifecycleAudit(record)}>
