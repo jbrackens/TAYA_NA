@@ -12,6 +12,20 @@ function mockFetch() {
     let body: unknown = {};
     if (url.includes("/segments/query"))
       body = { userIds: ["u-1", "u-2"], total: 2 };
+    else if (url.includes("/segments/campaigns"))
+      body = {
+        campaigns: [
+          {
+            id: 10,
+            name: "Reactivation",
+            tagId: 1,
+            actionType: "notification",
+            actionRef: "",
+            status: "draft",
+            createdAt: "2026-03-01T00:00:00Z",
+          },
+        ],
+      };
     else if (url.includes("/segments/tags"))
       body = {
         tags: [
@@ -85,5 +99,36 @@ describe("Segments page", () => {
     expect(result.textContent).toContain("2 matching players");
     expect(result.textContent).toContain("u-1");
     expect(result.textContent).toContain("u-2");
+  });
+
+  // GAP-87 slice 3: campaigns list + create (create gated on segments:write).
+  it("lists campaigns and gates Create campaign on segments:write", async () => {
+    renderSeg(["segments:read"]);
+    await screen.findByTestId("segment-tag-delete-1");
+    expect(
+      within(screen.getByTestId("segments-campaigns")).getByText(
+        "Reactivation",
+      ),
+    ).toBeTruthy();
+    // Read-only caller: Create campaign disabled even with a name + tag.
+    fireEvent.change(screen.getByTestId("segments-campaign-name"), {
+      target: { value: "Winback" },
+    });
+    fireEvent.change(screen.getByTestId("segments-campaign-tag"), {
+      target: { value: "1" },
+    });
+    expect(screen.getByTestId("segments-campaign-submit")).toBeDisabled();
+  });
+
+  it("enables Create campaign for a segments:write caller", async () => {
+    renderSeg(["segments:write", "segments:read"]);
+    await screen.findByTestId("segment-tag-delete-1");
+    fireEvent.change(screen.getByTestId("segments-campaign-name"), {
+      target: { value: "Winback" },
+    });
+    fireEvent.change(screen.getByTestId("segments-campaign-tag"), {
+      target: { value: "1" },
+    });
+    expect(screen.getByTestId("segments-campaign-submit")).not.toBeDisabled();
   });
 });

@@ -31,8 +31,19 @@ interface Tag extends Record<string, unknown> {
   createdAt: string;
 }
 
+interface Campaign extends Record<string, unknown> {
+  id: number;
+  name: string;
+  tagId: number;
+  actionType: string;
+  actionRef: string;
+  status: string;
+  createdAt: string;
+}
+
 function SegmentsPageContent() {
   const [tags, setTags] = useState<Tag[]>([]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -51,6 +62,12 @@ function SegmentsPageContent() {
     total: number;
   } | null>(null);
 
+  // GAP-87 slice 3: campaign create form state.
+  const [campName, setCampName] = useState("");
+  const [campTagId, setCampTagId] = useState("");
+  const [campActionType, setCampActionType] = useState("bonus");
+  const [campActionRef, setCampActionRef] = useState("");
+
   const { can } = usePermissions();
   const canWrite = can("segments:write");
 
@@ -58,10 +75,17 @@ function SegmentsPageContent() {
     setLoading(true);
     setError(null);
     try {
-      const res = await adminFetch("/api/v1/admin/segments/tags");
-      if (!res.ok) throw new Error(`tags request failed (${res.status})`);
-      const data = (await res.json()) as { tags: Tag[] };
-      setTags(data.tags ?? []);
+      const [tRes, cRes] = await Promise.all([
+        adminFetch("/api/v1/admin/segments/tags"),
+        adminFetch("/api/v1/admin/segments/campaigns"),
+      ]);
+      if (!tRes.ok) throw new Error(`tags request failed (${tRes.status})`);
+      const tData = (await tRes.json()) as { tags: Tag[] };
+      setTags(tData.tags ?? []);
+      if (cRes.ok) {
+        const cData = (await cRes.json()) as { campaigns: Campaign[] };
+        setCampaigns(cData.campaigns ?? []);
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -164,6 +188,45 @@ function SegmentsPageContent() {
       setQueryBusy(false);
     }
   };
+
+  const createCampaign = async () => {
+    if (campName.trim() === "" || campTagId === "") return;
+    setBusy(true);
+    setNotice(null);
+    try {
+      const res = await adminFetch("/api/v1/admin/segments/campaigns", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: campName.trim(),
+          tagId: Number(campTagId),
+          actionType: campActionType.trim(),
+          actionRef: campActionRef.trim(),
+        }),
+      });
+      if (!res.ok) throw new Error(`create failed (${res.status})`);
+      setCampName("");
+      setCampActionRef("");
+      setNotice("Campaign created.");
+      await load();
+    } catch (err: unknown) {
+      setNotice(
+        err instanceof Error ? err.message : "Failed to create campaign",
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const tagName = (id: number) =>
+    tags.find((t) => t.id === id)?.name ?? String(id);
+
+  const campaignColumns: ColumnDef<Campaign>[] = [
+    { key: "name", label: "Campaign" },
+    { key: "tagId", label: "Target tag", render: (v) => tagName(Number(v)) },
+    { key: "actionType", label: "Action" },
+    { key: "status", label: "Status" },
+  ];
 
   const columns: ColumnDef<Tag>[] = [
     { key: "name", label: "Tag" },
@@ -338,6 +401,75 @@ function SegmentsPageContent() {
               columns={columns}
               data={tags}
               emptyMessage="No tags yet"
+            />
+          </Card>
+
+          <Card className="mt-5 p-5" data-testid="segments-campaigns">
+            <h2 className="m-0 mb-3 text-lg font-semibold text-[var(--t1,#1a1a1a)]">
+              Campaigns
+            </h2>
+            <p className="mb-3 text-sm text-[var(--t2,#4a4a4a)]">
+              A campaign targets a tag with an action. Creating a campaign is a
+              draft; dispatch (sending) is a separate, gated step.
+            </p>
+            <div className="mb-4 flex flex-wrap items-end gap-3">
+              <Input
+                placeholder="Campaign name"
+                value={campName}
+                onChange={(e) => setCampName(e.target.value)}
+                data-testid="segments-campaign-name"
+              />
+              <select
+                className="rounded border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] p-2 text-[13px] text-[var(--t1,#1a1a1a)]"
+                value={campTagId}
+                onChange={(e) => setCampTagId(e.target.value)}
+                data-testid="segments-campaign-tag"
+              >
+                <option value="">Target tag…</option>
+                {tags.map((t) => (
+                  <option key={t.id} value={String(t.id)}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                className="rounded border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] p-2 text-[13px] text-[var(--t1,#1a1a1a)]"
+                value={campActionType}
+                onChange={(e) => setCampActionType(e.target.value)}
+                data-testid="segments-campaign-action"
+              >
+                <option value="bonus">Bonus</option>
+                <option value="notification">Notification</option>
+              </select>
+              <Input
+                placeholder="Action ref (optional)"
+                value={campActionRef}
+                onChange={(e) => setCampActionRef(e.target.value)}
+                data-testid="segments-campaign-ref"
+              />
+              <Button
+                variant="primary"
+                disabled={
+                  busy ||
+                  campName.trim() === "" ||
+                  campTagId === "" ||
+                  !canWrite
+                }
+                onClick={() => void createCampaign()}
+                data-testid="segments-campaign-submit"
+                title={
+                  canWrite
+                    ? undefined
+                    : "Requires the segments:write permission"
+                }
+              >
+                Create campaign
+              </Button>
+            </div>
+            <DataTable
+              columns={campaignColumns}
+              data={campaigns}
+              emptyMessage="No campaigns yet"
             />
           </Card>
         </>
