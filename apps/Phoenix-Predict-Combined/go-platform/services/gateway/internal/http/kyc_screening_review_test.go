@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -61,6 +62,47 @@ func TestKYCScreeningReviewHappyPath(t *testing.T) {
 	}
 	if !found {
 		t.Fatal("kyc.screening_reviewed audit entry with outcome/previous/reason not recorded")
+	}
+}
+
+// GAP-82 slice 1: a screening review recomputes the subject's risk rating so a
+// confirmed sanctions/PEP hit actually reaches the prohibited-tier order gate.
+// Both terminal outcomes trigger a recompute (confirmed raises risk, cleared
+// removes the factor). A failed review must NOT recompute.
+func TestKYCScreeningReviewRecomputesRisk(t *testing.T) {
+	var got []string
+	riskRecomputeHook = func(_ context.Context, subjectID string) { got = append(got, subjectID) }
+	t.Cleanup(func() { riskRecomputeHook = nil })
+
+	for _, outcome := range []string{"confirmed", "cleared"} {
+		got = nil
+		store := &stubKYCAdminStore{
+			reviewPrev: string(compliance.PersonScreeningPotentialMatch),
+			identity:   &compliance.KYCIdentity{UserID: "u-rk", FullName: "R K"},
+		}
+		handler := newKYCReviewHarness(store)
+		res := adminPost(handler, "/api/v1/admin/kyc/screening-review",
+			`{"userId":"u-rk","outcome":"`+outcome+`","reason":"documented adjudication rationale"}`)
+		if res.Code != http.StatusOK {
+			t.Fatalf("%s: expected 200, got %d body=%s", outcome, res.Code, res.Body.String())
+		}
+		if len(got) != 1 || got[0] != "u-rk" {
+			t.Fatalf("%s: expected one recompute for u-rk, got %v", outcome, got)
+		}
+	}
+
+	// A review that fails at the store must not recompute (no false clearing of
+	// a stale rating off a rejected action).
+	got = nil
+	store := &stubKYCAdminStore{reviewErr: compliance.ErrIdentityRequired}
+	handler := newKYCReviewHarness(store)
+	res := adminPost(handler, "/api/v1/admin/kyc/screening-review",
+		`{"userId":"u-rk","outcome":"cleared","reason":"n/a rationale text"}`)
+	if res.Code == http.StatusOK {
+		t.Fatalf("expected the failing review to not return 200, got %d", res.Code)
+	}
+	if len(got) != 0 {
+		t.Fatalf("a failed review must not recompute risk, got %v", got)
 	}
 }
 

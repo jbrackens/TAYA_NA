@@ -193,6 +193,13 @@ func registerKYCAdminRoutes(mux *stdhttp.ServeMux, kyc kycAdminStore) {
 			"previous": previous,
 			"reason":   req.Reason,
 		})
+		// GAP-82: a screening review changes the sanctions/PEP risk factor — a
+		// "confirmed" hit raises the tier toward prohibited, a "cleared" removes
+		// the factor — so recompute the subject's risk rating NOW. Otherwise the
+		// fail-closed prohibited-tier order gate keeps reading a stale/absent
+		// rating and a confirmed sanctions/PEP hit never blocks the trader (§12).
+		// Best-effort + nil-safe (no-op in memory mode); never fails the review.
+		triggerRiskRecompute(r.Context(), req.UserID)
 		identity, err := kyc.GetIdentity(r.Context(), req.UserID)
 		if err != nil {
 			return httpx.Internal("failed to reload identity", err)

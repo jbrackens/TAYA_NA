@@ -38,6 +38,26 @@ func newRiskFactorSource(amlR amlPointsReader, kyc screeningReader) *riskFactorS
 	return &riskFactorSource{aml: amlR, kyc: kyc}
 }
 
+// riskRecomputeHook recomputes a subject's risk rating on demand. It is set once
+// during wiring (handlers.go) after the risk engine inits, and invoked by the
+// compliance events that change a subject's risk factors — a KYC screening
+// review (GAP-82 slice 1) and, next, the AML alert scanner (GAP-82 slice 2) — so
+// the fail-closed prohibited-tier order gate reads a CURRENT rating instead of a
+// stale or absent one. Left nil in memory mode / when the risk store did not
+// init, so every call must be nil-guarded (use triggerRiskRecompute).
+var riskRecomputeHook func(ctx context.Context, subjectID string)
+
+// triggerRiskRecompute invokes the risk-recompute hook if the risk subsystem is
+// wired. Best-effort: a recompute failure is logged inside the hook and never
+// blocks the compliance action that triggered it — the screening review / AML
+// alert is already the authoritative record, and a stale rating is re-converged
+// by the next triggering event.
+func triggerRiskRecompute(ctx context.Context, subjectID string) {
+	if riskRecomputeHook != nil && strings.TrimSpace(subjectID) != "" {
+		riskRecomputeHook(ctx, subjectID)
+	}
+}
+
 func (s *riskFactorSource) Gather(ctx context.Context, subjectID string) (risk.Factors, error) {
 	pts, err := s.aml.OpenAlertRiskPoints(ctx, subjectID)
 	if err != nil {

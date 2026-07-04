@@ -615,6 +615,19 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 				riskEngine := risk.NewEngine(riskStore, newRiskFactorSource(amlStore, screening), risk.Bands{})
 				registerRiskAdminRoutes(mux, riskStore, riskEngine)
 				riskGateStore = riskStore
+				// GAP-82: recompute a subject's rating whenever a compliance event
+				// changes its inputs, so the fail-closed prohibited-tier order gate
+				// (wired below) reads a CURRENT rating rather than a stale/absent one.
+				// Without this, Recompute only ran on a manual admin button, so a
+				// confirmed sanctions/PEP hit never populated the rating the gate reads
+				// and the trader kept trading unrated (§12). The KYC screening-review
+				// handler invokes this via triggerRiskRecompute (slice 1); the AML
+				// alert scanner is slice 2.
+				riskRecomputeHook = func(ctx context.Context, subjectID string) {
+					if _, err := riskEngine.Recompute(ctx, subjectID); err != nil {
+						slog.Warn("risk: recompute on compliance event failed", "subject", subjectID, "error", err)
+					}
+				}
 				slog.Info("risk: customer risk-rating subsystem initialized")
 			}
 		}
