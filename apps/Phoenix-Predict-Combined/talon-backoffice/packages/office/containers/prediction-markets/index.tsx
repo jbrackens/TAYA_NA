@@ -18,6 +18,7 @@ import {
   Typography,
 } from "antd";
 import PageHeader from "../../components/layout/page-header";
+import { usePermissions } from "../../app/lib/permissions";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
 import { describeTianggeMarketLifecycle } from "@phoenix-ui/api-client/src/prediction-types";
 import type {
@@ -90,6 +91,14 @@ function suggestTicker(title: string): string {
 }
 
 export default function PredictionMarketsContainer() {
+  // GAP-95 slice 2 (§29 read-only permission scope / §16 Market Ops): every
+  // market create / edit / lifecycle (open/pause/close/void) control mutates
+  // market state, so gate them on markets:edit (fail-closed via
+  // usePermissions().can — a read-only caller sees them disabled). The gateway
+  // re-checks server-side; this is the §29 UI-consistency layer. Read-only
+  // controls (Audit) and the separate jurisdiction editor (Region) are untouched.
+  const { can } = usePermissions();
+  const canEdit = can("markets:edit");
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [events, setEvents] = useState<PredictionEvent[]>([]);
@@ -651,6 +660,7 @@ export default function PredictionMarketsContainer() {
               <Button
                 size="small"
                 type="primary"
+                disabled={!canEdit}
                 onClick={() => handleLifecycle(record.id, "open")}
               >
                 Open
@@ -658,6 +668,7 @@ export default function PredictionMarketsContainer() {
               <Button
                 size="small"
                 danger
+                disabled={!canEdit}
                 onClick={() => confirmLifecycle(record, "void")}
               >
                 Cancel
@@ -669,12 +680,14 @@ export default function PredictionMarketsContainer() {
               <Button
                 size="small"
                 danger
+                disabled={!canEdit}
                 onClick={() => confirmLifecycle(record, "halt")}
               >
                 Pause
               </Button>
               <Button
                 size="small"
+                disabled={!canEdit}
                 onClick={() => confirmLifecycle(record, "close")}
               >
                 Close
@@ -682,6 +695,7 @@ export default function PredictionMarketsContainer() {
               <Button
                 size="small"
                 danger
+                disabled={!canEdit}
                 onClick={() => confirmLifecycle(record, "void")}
               >
                 Invalidate
@@ -693,12 +707,14 @@ export default function PredictionMarketsContainer() {
               <Button
                 size="small"
                 type="primary"
+                disabled={!canEdit}
                 onClick={() => handleLifecycle(record.id, "open")}
               >
                 Resume
               </Button>
               <Button
                 size="small"
+                disabled={!canEdit}
                 onClick={() => confirmLifecycle(record, "close")}
               >
                 Close
@@ -706,6 +722,7 @@ export default function PredictionMarketsContainer() {
               <Button
                 size="small"
                 danger
+                disabled={!canEdit}
                 onClick={() => confirmLifecycle(record, "void")}
               >
                 Invalidate
@@ -718,6 +735,7 @@ export default function PredictionMarketsContainer() {
             <Button
               size="small"
               danger
+              disabled={!canEdit}
               onClick={() => confirmLifecycle(record, "void")}
             >
               Invalidate
@@ -726,7 +744,11 @@ export default function PredictionMarketsContainer() {
           <Button
             size="small"
             icon={<EditOutlined />}
-            disabled={record.status === "settled" || record.status === "voided"}
+            disabled={
+              !canEdit ||
+              record.status === "settled" ||
+              record.status === "voided"
+            }
             onClick={() => openEditMarket(record)}
           >
             Edit
@@ -759,11 +781,12 @@ export default function PredictionMarketsContainer() {
               >
                 Export CSV
               </Button>
-              <Button onClick={() => setDraftOpen(true)}>
+              <Button disabled={!canEdit} onClick={() => setDraftOpen(true)}>
                 Draft from article
               </Button>
               <Button
                 type="primary"
+                disabled={!canEdit}
                 onClick={() => {
                   setArticleSourceId(undefined);
                   setAiGenerationLogIds([]);
@@ -811,6 +834,7 @@ export default function PredictionMarketsContainer() {
             type="link"
             size="small"
             className="!-mt-2 !mb-2 !p-0"
+            disabled={!canEdit}
             onClick={() => setCreateEventOpen(true)}
           >
             + Create new event
