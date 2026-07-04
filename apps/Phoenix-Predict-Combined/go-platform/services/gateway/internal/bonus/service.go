@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"phoenix-revival/gateway/internal/events"
@@ -327,7 +328,7 @@ func (s *Service) ClaimBonus(ctx context.Context, req ClaimBonusRequest) (Player
 	if err := validateDirectClaimEligibility(eligibilityCfg); err != nil {
 		return PlayerBonus{}, err
 	}
-	if eligibilityCfg.NewPlayersOnly || eligibilityCfg.RegisteredAfter != "" {
+	if eligibilityCfg.hasCheckableEligibility() {
 		if err := s.checkPunterEligibility(ctx, req.UserID, eligibilityCfg, now); err != nil {
 			return PlayerBonus{}, err
 		}
@@ -477,7 +478,32 @@ func (s *Service) checkPunterEligibility(ctx context.Context, userID string, cfg
 		// recency relative to the campaign start is the cleanest available proxy.
 		_ = now
 	}
+	// GAP-83 (§21): jurisdiction scoping.
+	if err := checkCountryEligibility(reg.CountryCode, cfg.AllowedCountries); err != nil {
+		return err
+	}
 	return nil
+}
+
+// checkCountryEligibility enforces a campaign's country allowlist against a
+// punter's country (pure — no DB, so the jurisdiction rule is unit-testable).
+// Empty allowlist = no restriction. Fail-closed: an unknown/empty punter country
+// is REFUSED when a restriction is set (a promotion must not be granted into a
+// jurisdiction we cannot confirm is permitted). Case-insensitive ISO-3166.
+func checkCountryEligibility(punterCountry string, allowed []string) error {
+	if len(allowed) == 0 {
+		return nil
+	}
+	country := strings.ToUpper(strings.TrimSpace(punterCountry))
+	if country == "" {
+		return fmt.Errorf("user is not eligible: country unknown and this campaign is country-restricted")
+	}
+	for _, c := range allowed {
+		if strings.EqualFold(strings.TrimSpace(c), country) {
+			return nil
+		}
+	}
+	return fmt.Errorf("user is not eligible: country %s is not in the campaign allowlist", country)
 }
 
 // GrantBonus is the admin action to manually grant a bonus.
@@ -509,12 +535,26 @@ func (s *Service) GrantBonus(ctx context.Context, req GrantBonusRequest) (Player
 
 	var rewardCfg RewardConfig
 	var wageringCfg WageringConfig
+	var eligibilityCfg EligibilityConfig
 	for _, rule := range rules {
 		switch rule.RuleType {
 		case "reward":
 			_ = json.Unmarshal(rule.RuleConfig, &rewardCfg)
 		case "wagering":
 			_ = json.Unmarshal(rule.RuleConfig, &wageringCfg)
+		case "eligibility":
+			_ = json.Unmarshal(rule.RuleConfig, &eligibilityCfg)
+		}
+	}
+
+	// GAP-83 (§21): enforce campaign eligibility on the ADMIN grant too — an
+	// admin grant is not a license to bypass a campaign's jurisdiction / new-player
+	// / registered-after restrictions (previously only ClaimBonus checked these,
+	// so GrantBonus could grant a country-restricted promo to an out-of-jurisdiction
+	// player). Fail-closed via checkPunterEligibility.
+	if eligibilityCfg.hasCheckableEligibility() {
+		if err := s.checkPunterEligibility(ctx, req.UserID, eligibilityCfg, now); err != nil {
+			return PlayerBonus{}, err
 		}
 	}
 

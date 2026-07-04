@@ -183,18 +183,19 @@ WHERE id = $1`,
 
 // PunterRegistration holds the eligibility-relevant fields for a punter.
 type PunterRegistration struct {
-	Found     bool
-	Status    string
-	CreatedAt time.Time
+	Found       bool
+	Status      string
+	CreatedAt   time.Time
+	CountryCode string // ISO-3166 alpha-2; "" when unset (GAP-83 country eligibility)
 }
 
-// GetPunterRegistration returns the punter's status and registration time for
-// eligibility checks. Found is false (no error) when the punter row is absent,
-// so callers can decide how to treat unknown users.
+// GetPunterRegistration returns the punter's status, registration time, and
+// country for eligibility checks. Found is false (no error) when the punter row
+// is absent, so callers can decide how to treat unknown users.
 func (r *Repository) GetPunterRegistration(ctx context.Context, userID string) (PunterRegistration, error) {
 	var pr PunterRegistration
 	err := r.db.QueryRowContext(ctx, `
-SELECT status, created_at FROM punters WHERE id = $1`, userID).Scan(&pr.Status, &pr.CreatedAt)
+SELECT status, created_at, COALESCE(country_code, '') FROM punters WHERE id = $1`, userID).Scan(&pr.Status, &pr.CreatedAt, &pr.CountryCode)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return PunterRegistration{Found: false}, nil

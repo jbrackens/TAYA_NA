@@ -393,6 +393,18 @@ type EligibilityConfig struct {
 	MinDeposits     int    `json:"min_deposits"` // old storage field; not launch-facing
 	TierMin         string `json:"tier_min"`
 	RegisteredAfter string `json:"registered_after"`
+	// AllowedCountries (GAP-83, §21) restricts who may be granted/claim the bonus
+	// by jurisdiction — an ISO-3166 alpha-2 allowlist. Empty = no country
+	// restriction. A regulatory control: it prevents offering a promotion into a
+	// country where it is impermissible. Enforced fail-closed (an unknown punter
+	// country is refused when a restriction is set).
+	AllowedCountries []string `json:"allowed_countries"`
+}
+
+// hasCheckableEligibility reports whether the config carries any rule that
+// checkPunterEligibility enforces against the punter row.
+func (c EligibilityConfig) hasCheckableEligibility() bool {
+	return c.NewPlayersOnly || c.RegisteredAfter != "" || len(c.AllowedCountries) > 0
 }
 
 // TriggerConfig holds trigger rules parsed from campaign_rules JSONB.
