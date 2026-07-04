@@ -9,7 +9,22 @@ type PunterProfileTab =
   | "wallet"
   | "kyc"
   | "limits"
-  | "risk";
+  | "risk"
+  | "bonuses";
+
+// A player's bonus/reward grant as returned by
+// GET /api/v1/admin/bonuses?user_id={id} (GAP-35 Bonuses/Rewards tab, §10).
+export interface PlayerBonusRow {
+  bonusId: number;
+  campaignName: string;
+  bonusType: string;
+  status: string;
+  grantedPointsCents: number;
+  remainingPointsCents: number;
+  playProgressPct: number;
+  grantedAt: string;
+  expiresAt: string;
+}
 
 export interface PunterProfileData {
   id: string;
@@ -107,6 +122,8 @@ interface PunterProfileProps {
   rg?: RGTabData;
   /** risk rating from /api/v1/admin/risk/ratings/{id}; undefined = unavailable */
   risk?: RiskTabData;
+  /** bonus/reward grants from /api/v1/admin/bonuses?user_id={id} */
+  bonuses?: PlayerBonusRow[];
 }
 
 const pointAmount = (n: number) =>
@@ -171,6 +188,7 @@ export function PunterProfile({
   kyc,
   rg,
   risk,
+  bonuses = [],
 }: PunterProfileProps) {
   const [activeTab, setActiveTab] = useState<PunterProfileTab>("overview");
   const [overrideTier, setOverrideTier] = useState("");
@@ -376,6 +394,13 @@ export function PunterProfile({
               data-testid="profile-risk-tab"
             >
               Risk
+            </button>
+            <button
+              className={tabButtonClassName(activeTab === "bonuses")}
+              onClick={() => setActiveTab("bonuses")}
+              data-testid="profile-bonuses-tab"
+            >
+              Bonuses
             </button>
           </div>
         </Card>
@@ -784,6 +809,62 @@ export function PunterProfile({
                     </Button>
                   </div>
                 </>
+              )}
+            </div>
+          )}
+          {activeTab === "bonuses" && (
+            <div
+              className={tabContentClassName}
+              data-testid="profile-bonuses-content"
+            >
+              <h4 className="mt-0 text-[var(--t1,#1a1a1a)]">
+                Bonuses &amp; Rewards
+              </h4>
+              {bonuses.length === 0 ? (
+                <p>No bonuses or rewards for this player.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-[13px]">
+                    <thead>
+                      <tr>
+                        <th className={histThClassName}>Campaign</th>
+                        <th className={histThClassName}>Type</th>
+                        <th className={histThClassName}>Status</th>
+                        <th className={histThClassName}>Granted</th>
+                        <th className={histThClassName}>Remaining</th>
+                        <th className={histThClassName}>Wagering</th>
+                        <th className={histThClassName}>Granted at</th>
+                        <th className={histThClassName}>Expires</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bonuses.map((b) => (
+                        <tr key={b.bonusId} data-testid="bonus-row">
+                          <td className={histTdClassName}>
+                            {b.campaignName || "—"}
+                          </td>
+                          <td className={histTdClassName}>{b.bonusType}</td>
+                          <td className={histTdClassName}>{b.status}</td>
+                          <td className={histTdClassName}>
+                            {pointsFromCents(b.grantedPointsCents)}
+                          </td>
+                          <td className={histTdClassName}>
+                            {pointsFromCents(b.remainingPointsCents)}
+                          </td>
+                          <td className={histTdClassName}>
+                            {b.playProgressPct}%
+                          </td>
+                          <td className={histTdClassName}>
+                            {fmtDate(b.grantedAt)}
+                          </td>
+                          <td className={histTdClassName}>
+                            {fmtDate(b.expiresAt)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           )}
