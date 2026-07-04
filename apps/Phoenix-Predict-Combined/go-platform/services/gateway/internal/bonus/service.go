@@ -482,7 +482,38 @@ func (s *Service) checkPunterEligibility(ctx context.Context, userID string, cfg
 	if err := checkCountryEligibility(reg.CountryCode, cfg.AllowedCountries); err != nil {
 		return err
 	}
+	// GAP-83 slice 2 (§21): segmentation-tag scoping. Fail-closed — an infra error
+	// reading the punter's tags refuses the grant rather than silently passing.
+	if len(cfg.AllowedTagIDs) > 0 {
+		tagIDs, terr := s.repo.PunterTagIDs(ctx, userID)
+		if terr != nil {
+			return fmt.Errorf("eligibility tag lookup: %w", terr)
+		}
+		if err := checkTagEligibility(tagIDs, cfg.AllowedTagIDs); err != nil {
+			return err
+		}
+	}
 	return nil
+}
+
+// checkTagEligibility enforces a campaign's segmentation-tag allowlist against the
+// punter's tags (pure — no DB, so the rule is unit-testable). Empty allowlist = no
+// restriction. Any-match: the punter is eligible if they carry ANY listed tag.
+// Fail-closed: when a restriction is set, a punter with none of the tags is refused.
+func checkTagEligibility(punterTagIDs, requiredTagIDs []int64) error {
+	if len(requiredTagIDs) == 0 {
+		return nil
+	}
+	have := make(map[int64]struct{}, len(punterTagIDs))
+	for _, id := range punterTagIDs {
+		have[id] = struct{}{}
+	}
+	for _, req := range requiredTagIDs {
+		if _, ok := have[req]; ok {
+			return nil
+		}
+	}
+	return fmt.Errorf("user is not eligible: not a member of the campaign's target segment")
 }
 
 // checkCountryEligibility enforces a campaign's country allowlist against a

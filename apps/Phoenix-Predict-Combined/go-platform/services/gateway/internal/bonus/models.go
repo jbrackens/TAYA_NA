@@ -399,12 +399,18 @@ type EligibilityConfig struct {
 	// country where it is impermissible. Enforced fail-closed (an unknown punter
 	// country is refused when a restriction is set).
 	AllowedCountries []string `json:"allowed_countries"`
+	// AllowedTagIDs (GAP-83 slice 2, §21) restricts the bonus to members of one or
+	// more segmentation tags (crm_user_tags) — "eligibility by tags". Empty = no
+	// tag restriction. Fail-closed: when set, a punter carrying NONE of the listed
+	// tags is refused. Any-match (a punter in ANY listed segment is eligible).
+	AllowedTagIDs []int64 `json:"allowed_tag_ids"`
 }
 
 // hasCheckableEligibility reports whether the config carries any rule that
 // checkPunterEligibility enforces against the punter row.
 func (c EligibilityConfig) hasCheckableEligibility() bool {
-	return c.NewPlayersOnly || c.RegisteredAfter != "" || len(c.AllowedCountries) > 0
+	return c.NewPlayersOnly || c.RegisteredAfter != "" ||
+		len(c.AllowedCountries) > 0 || len(c.AllowedTagIDs) > 0
 }
 
 // TriggerConfig holds trigger rules parsed from campaign_rules JSONB.

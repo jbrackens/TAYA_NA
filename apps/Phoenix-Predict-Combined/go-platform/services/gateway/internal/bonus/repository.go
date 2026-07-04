@@ -206,6 +206,27 @@ SELECT status, created_at, COALESCE(country_code, '') FROM punters WHERE id = $1
 	return pr, nil
 }
 
+// PunterTagIDs returns the segmentation tag ids assigned to a punter (GAP-83
+// slice 2, for tag-scoped bonus eligibility). Read-only over the segmentation-
+// owned crm_user_tags table (same DB); an empty result means no tags.
+func (r *Repository) PunterTagIDs(ctx context.Context, userID string) ([]int64, error) {
+	rows, err := r.db.QueryContext(ctx,
+		`SELECT tag_id FROM crm_user_tags WHERE user_id = $1`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var ids []int64
+	for rows.Next() {
+		var id int64
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, rows.Err()
+}
+
 // GetCampaignRules returns all rules for a campaign, keyed by rule_type.
 func (r *Repository) GetCampaignRules(ctx context.Context, campaignID int64) ([]CampaignRule, error) {
 	rows, err := r.db.QueryContext(ctx, `
