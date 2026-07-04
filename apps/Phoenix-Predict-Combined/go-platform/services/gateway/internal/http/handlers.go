@@ -597,7 +597,6 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		} else {
 			amlScan := aml.NewScanner(amlStore, amlDB, 60*time.Second, 0)
 			registerAMLAdminRoutes(mux, amlStore, amlScan)
-			go amlScan.Run(context.Background())
 			slog.Info("aml: money-flow monitoring subsystem initialized")
 
 			// Per-customer risk rating (GAP-12): aggregates the subject's AML
@@ -630,6 +629,12 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 				}
 				slog.Info("risk: customer risk-rating subsystem initialized")
 			}
+			// GAP-82 slice 2: wire the AML scanner's new-alert callback to the risk
+			// recompute, THEN start the scanner — so the hook is in place before the
+			// first tick. triggerRiskRecompute is nil-safe: a no-op if the risk
+			// subsystem above did not init, so the scanner still runs either way.
+			amlScan.OnAlert = triggerRiskRecompute
+			go amlScan.Run(context.Background())
 		}
 	}
 

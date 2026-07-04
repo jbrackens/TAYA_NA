@@ -237,3 +237,63 @@ func (s *Store) forTestScan(t *testing.T, ledger *sql.DB) *Scanner {
 	t.Helper()
 	return NewScanner(s, ledger, time.Minute, 100)
 }
+
+// TestAMLScannerRecomputesRiskOnAlertLive (GAP-82 slice 2) proves the end-to-end
+// wiring: when a scan raises a NEW alert for a subject, the scanner invokes
+// OnAlert once for that subject (the gateway wires this to the risk-rating
+// recompute so AML risk-point accrual reaches the prohibited-tier order gate),
+// and a subsequent scan that raises no new alert does not re-fire it.
+func TestAMLScannerRecomputesRiskOnAlertLive(t *testing.T) {
+	dsn := os.Getenv("AML_LIVE_DSN")
+	if dsn == "" {
+		t.Skip("AML_LIVE_DSN not set; skipping live Postgres AML OnAlert test")
+	}
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatalf("open: %v", err)
+	}
+	defer db.Close()
+	ensureWalletLedgerForTest(t, db)
+	store, err := NewStore(db)
+	if err != nil {
+		t.Fatalf("store: %v", err)
+	}
+	ctx := context.Background()
+	for _, stmt := range []string{
+		"DELETE FROM aml_alerts", "DELETE FROM aml_cases", "DELETE FROM aml_rules",
+		"DELETE FROM wallet_ledger", "UPDATE aml_scan_state SET last_ledger_id = 0",
+	} {
+		if _, err := db.Exec(stmt); err != nil {
+			t.Fatalf("reset %q: %v", stmt, err)
+		}
+	}
+	subject := fmt.Sprintf("u-onalert-%d", time.Now().UnixNano())
+	now := time.Now().UTC()
+
+	if _, err := store.UpsertRule(ctx, Rule{Name: "large-deposit", Kind: "amount_threshold", RiskPoints: 60,
+		Severity: "high", Enabled: true, Params: map[string]any{"thresholdCents": 1_000_000, "kinds": "deposit"}}); err != nil {
+		t.Fatalf("rule: %v", err)
+	}
+	seedLedger(t, db, subject, "credit", "real", "alpha USDC deposit 1/0xbig", "alpha-cashier:deposit:1:0xbig:0", 2_000_000, now)
+
+	var recomputed []string
+	sc := store.forTestScan(t, db)
+	sc.OnAlert = func(_ context.Context, subjectID string) { recomputed = append(recomputed, subjectID) }
+
+	if _, err := sc.ScanOnce(ctx); err != nil {
+		t.Fatalf("scan: %v", err)
+	}
+	if len(recomputed) != 1 || recomputed[0] != subject {
+		t.Fatalf("expected one risk recompute for %s on the new alert, got %v", subject, recomputed)
+	}
+
+	// A second scan sees no new ledger rows / raises no new alert (dedup) → no
+	// further recompute.
+	recomputed = nil
+	if _, err := sc.ScanOnce(ctx); err != nil {
+		t.Fatalf("second scan: %v", err)
+	}
+	if len(recomputed) != 0 {
+		t.Fatalf("a scan with no new alert must not recompute, got %v", recomputed)
+	}
+}

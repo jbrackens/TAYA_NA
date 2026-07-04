@@ -26,6 +26,14 @@ type Scanner struct {
 	ledger       *sql.DB
 	interval     time.Duration
 	caseThreshld int
+
+	// OnAlert, if set, is invoked once per subject that received a NEW alert in a
+	// scan (GAP-82 slice 2). The gateway wires it to the risk-rating recompute so
+	// AML risk-point accrual reaches the fail-closed prohibited-tier order gate
+	// without waiting for a manual admin recompute. Best-effort: it must not
+	// return an error or block the scan meaningfully (the wired hook logs + swallows
+	// its own failures). Left nil in tests / when the risk subsystem is absent.
+	OnAlert func(ctx context.Context, subjectID string)
 }
 
 // NewScanner builds the AML ingestion scanner. threshold<=0 uses the default.
@@ -113,6 +121,9 @@ LIMIT $2`, watermark, scanBatch)
 
 	// Only rules present → evaluate; but always advance the watermark so an
 	// empty rule set still consumes the backlog rather than re-reading it.
+	// flagged collects subjects that got a NEW alert this scan, so risk is
+	// recomputed once per subject (not once per alert).
+	flagged := map[string]bool{}
 	for _, r := range batch {
 		kind, isMoneyFlow := classifyMoneyFlow(r.entryType, r.fundType, r.reason, r.idemKey)
 		if !isMoneyFlow || len(rules) == 0 {
@@ -132,6 +143,7 @@ LIMIT $2`, watermark, scanBatch)
 				return 0, fmt.Errorf("insert alert: %w", err)
 			}
 			if inserted {
+				flagged[r.userID] = true
 				if err := sc.maybeOpenCase(ctx, r.userID); err != nil {
 					return 0, fmt.Errorf("auto-open case: %w", err)
 				}
@@ -144,7 +156,23 @@ LIMIT $2`, watermark, scanBatch)
 			return 0, fmt.Errorf("advance watermark: %w", err)
 		}
 	}
+	// GAP-82 slice 2: a new AML alert changes the subject's open-risk-point
+	// factor, so recompute their risk rating — otherwise accrued AML risk never
+	// reaches the prohibited-tier order gate until a manual admin recompute.
+	sc.notifyFlagged(ctx, flagged)
 	return len(batch), nil
+}
+
+// notifyFlagged invokes OnAlert once per subject that received a new alert. Pure
+// dispatch (no DB), so the callback fan-out is unit-testable without a live scan.
+// Nil-safe: a no-op when OnAlert is unset.
+func (sc *Scanner) notifyFlagged(ctx context.Context, flagged map[string]bool) {
+	if sc.OnAlert == nil {
+		return
+	}
+	for subjectID := range flagged {
+		sc.OnAlert(ctx, subjectID)
+	}
 }
 
 // maxRescanBatches bounds a single Rescan so an HTTP-triggered rescan cannot run
