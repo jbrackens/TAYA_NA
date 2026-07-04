@@ -446,7 +446,12 @@ func registerAdminAuditLogsList(mux *stdhttp.ServeMux, path string, repo predict
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
-		if err := requireAdminRole(r); err != nil {
+		// GAP-80 (§7/§24/§27): the compliance audit trail is a least-privilege
+		// surface — gate on the dedicated audit:read permission, not the coarse
+		// role==admin check that let any back-office admin read the full trail.
+		// audit:read is held by super-admin, the compliance personas, and the
+		// read-only Auditor role (migration 058).
+		if err := requireAdminPermission(r, "audit:read"); err != nil {
 			return err
 		}
 
