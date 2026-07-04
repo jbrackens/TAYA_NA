@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { adminFetch } from "../../../lib/admin-fetch";
+import { usePermissions } from "../../../lib/permissions";
 import {
   Badge,
   Button,
@@ -34,6 +35,10 @@ function FinanceApprovalsContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // GAP-84 (§29): maker-checker approvals are finances:write server-side; disable
+  // for a read-only caller. (The backend also enforces maker≠checker.)
+  const { can } = usePermissions();
+  const canWrite = can("finances:write");
   const [notice, setNotice] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -130,7 +135,7 @@ function FinanceApprovalsContent() {
           <Button
             variant="primary"
             size="sm"
-            disabled={busy}
+            disabled={busy || !canWrite}
             onClick={() => void decide(row.id, "approve")}
             data-testid={`approve-${row.id}`}
           >
@@ -139,7 +144,7 @@ function FinanceApprovalsContent() {
           <Button
             variant="danger"
             size="sm"
-            disabled={busy}
+            disabled={busy || !canWrite}
             onClick={() => void decide(row.id, "reject")}
             data-testid={`reject-${row.id}`}
           >

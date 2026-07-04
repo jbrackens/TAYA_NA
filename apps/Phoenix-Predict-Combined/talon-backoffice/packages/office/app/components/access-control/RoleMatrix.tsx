@@ -18,6 +18,7 @@ import {
   type RbacPermission,
   type RbacRole,
 } from "../../lib/rbac-api";
+import { usePermissions } from "../../lib/permissions";
 import CreateRoleModal from "./CreateRoleModal";
 
 const { Title, Text } = Typography;
@@ -60,6 +61,12 @@ export default function RoleMatrix({
   onUsersChanged,
 }: Props) {
   const { message, modal } = App.useApp();
+  // GAP-84 (§29): role mutations are roles:write server-side; disable them for a
+  // read-only caller (e.g. the GAP-80 Auditor holding roles:read but not
+  // roles:write) so the Role Matrix tab enforces read-only scope like its
+  // User Management sibling.
+  const { can } = usePermissions();
+  const canManageRoles = can("roles:write");
   const [savingRoleId, setSavingRoleId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
 
@@ -158,6 +165,7 @@ export default function RoleMatrix({
               size="small"
               danger
               className="!pl-2"
+              disabled={!canManageRoles}
               onClick={() => confirmDeleteRole(role)}
             >
               Delete
@@ -192,7 +200,9 @@ export default function RoleMatrix({
           return (
             <Checkbox
               checked={fullAccess || role.permissions.includes(perm.id)}
-              disabled={fullAccess || savingRoleId === role.id}
+              disabled={
+                fullAccess || savingRoleId === role.id || !canManageRoles
+              }
               onChange={(event) =>
                 togglePermission(role, perm.id, event.target.checked)
               }
@@ -215,7 +225,14 @@ export default function RoleMatrix({
             immediately. Super Admin always has full access.
           </Text>
         </div>
-        <Button type="primary" onClick={() => setCreateOpen(true)}>
+        <Button
+          type="primary"
+          onClick={() => setCreateOpen(true)}
+          disabled={!canManageRoles}
+          title={
+            canManageRoles ? undefined : "Requires the roles:write permission"
+          }
+        >
           Create role
         </Button>
       </div>

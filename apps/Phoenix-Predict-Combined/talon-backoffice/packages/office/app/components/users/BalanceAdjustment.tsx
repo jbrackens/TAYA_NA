@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { adminFetch } from "../../lib/admin-fetch";
 import { Button, Card, ConfirmModal, Input } from "../shared";
+import { usePermissions } from "../../lib/permissions";
 
 interface BalanceAdjustmentProps {
   userId: string;
@@ -38,6 +39,10 @@ export function BalanceAdjustment({
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  // GAP-84 (§29): manual balance adjustments are finances:write server-side;
+  // disable the submit for a read-only caller.
+  const { can } = usePermissions();
+  const canWrite = can("finances:write");
 
   const amountPoints = Number(amount);
   const valid =
@@ -148,7 +153,7 @@ export function BalanceAdjustment({
       <Button
         variant={direction === "debit" ? "danger" : "primary"}
         className="w-full"
-        disabled={!valid || busy}
+        disabled={!valid || busy || !canWrite}
         onClick={() => setConfirming(true)}
         data-testid="adjustment-submit"
       >
