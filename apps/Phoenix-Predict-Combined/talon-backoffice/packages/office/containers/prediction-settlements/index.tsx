@@ -18,6 +18,7 @@ import {
   Typography,
 } from "antd";
 import PageHeader from "../../components/layout/page-header";
+import { usePermissions } from "../../app/lib/permissions";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
 import { describeTianggeMarketLifecycle } from "@phoenix-ui/api-client/src/prediction-types";
 import type {
@@ -34,6 +35,14 @@ const formatPoints = (points: number) =>
   `${points.toLocaleString(undefined, { maximumFractionDigits: 0 })} pts`;
 
 export default function PredictionSettlementsContainer() {
+  // GAP-95 (§29 read-only permission scope / §17 Settlement Ops): the Settle and
+  // Replay-Points controls mutate settlement state, so gate them on
+  // settlements:resolve (fail-closed via usePermissions().can — a read-only
+  // caller such as the Auditor sees them disabled). The gateway re-checks the
+  // permission regardless; this is the §29 UI consistency layer, not the only
+  // boundary.
+  const { can } = usePermissions();
+  const canResolve = can("settlements:resolve");
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
   const [loading, setLoading] = useState(true);
   // Drift alerts keyed by marketId for O(1) row lookup. A queued market
@@ -255,6 +264,12 @@ export default function PredictionSettlementsContainer() {
             size="small"
             type="primary"
             onClick={() => openSettle(record)}
+            disabled={!canResolve}
+            title={
+              canResolve
+                ? undefined
+                : "Requires the settlements:resolve permission"
+            }
           >
             Settle
           </Button>
@@ -284,6 +299,12 @@ export default function PredictionSettlementsContainer() {
                 icon={<ReloadOutlined />}
                 loading={replaying}
                 onClick={handleReplaySettlements}
+                disabled={!canResolve || replaying}
+                title={
+                  canResolve
+                    ? undefined
+                    : "Requires the settlements:resolve permission"
+                }
               >
                 Replay Points
               </Button>

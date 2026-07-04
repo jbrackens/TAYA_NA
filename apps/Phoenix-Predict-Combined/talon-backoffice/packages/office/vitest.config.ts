@@ -35,6 +35,17 @@ export default defineConfig({
   resolve: {
     alias: {
       "@phoenix-ui/utils": path.resolve(__dirname, "../utils/src"),
+      // The prediction-admin containers deep-import the api-client source WITH a
+      // `/src/` segment (e.g. `@phoenix-ui/api-client/src/prediction-client`).
+      // This more-specific key MUST precede the package-root key so it wins the
+      // prefix match — otherwise the root alias (already pointing at
+      // ../api-client/src) rewrites `.../src/prediction-client` to a double-`src`
+      // path that does not exist. Required to render prediction-client-backed
+      // components (GAP-95 settlements container gate test).
+      "@phoenix-ui/api-client/src": path.resolve(
+        __dirname,
+        "../api-client/src",
+      ),
       "@phoenix-ui/api-client": path.resolve(__dirname, "../api-client/src"),
       i18n: path.resolve(__dirname, "./i18n.ts"),
     },
