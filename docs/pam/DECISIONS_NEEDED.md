@@ -1,11 +1,15 @@
 # PAM Modernization — Decisions Needed
 
-> **STATUS 2026-07-02 evening: ALL DECISIONS ANSWERED.** The human answered
-> every item interactively (recorded in the ledger's DECISION ROUND section,
-> `docs/pam/PROGRESS_LEDGER.md`). This file now records the questions AND the
-> answers, for the audit trail. Nothing here is awaiting input anymore; the
-> only standing follow-ups for humans are marked ⏳ below (counsel inputs and
-> per-phase protected-core reviews).
+> **STATUS 2026-07-04 (loop TERMINATION): 3 NEW decisions open** (see
+> "Decisions surfaced by the Termination reconciliation" at the bottom). Every
+> other item below was answered by the human on 2026-07-02 (recorded in the
+> ledger's DECISION ROUND section, `docs/pam/PROGRESS_LEDGER.md`); this file
+> records the questions AND those answers for the audit trail. The 3 new items —
+> plus the ⏳ standing follow-ups (counsel inputs, per-phase protected-core
+> reviews) and the ⚑ vendor/infra items — are what the loop now hands back to
+> humans, because every remaining backlog item is either DONE-with-evidence or
+> BLOCKED-on-one-of-these-decisions. Nothing further is autonomously buildable
+> without a human call.
 
 ---
 
@@ -124,6 +128,65 @@ vendor management, incident process). This is outside what the code loop can
 build. Who owns it, and to what timeline (licensing dependency)?
 **Unblock.** Named owner + target framework/timeline; the loop records the
 answer and closes the item as org-owned.
+
+---
+
+## Decisions surfaced by the Termination reconciliation (2026-07-04) — ⚑ OPEN
+
+The final Termination pass B (an adversarial reconciliation hunting the
+"present-but-unwired" pattern) surfaced three items that need a human call
+before their work can proceed. Two are genuine capability gaps the earlier
+single-lens evidence pass had scored as Built/Pass; the third is a deferred
+policy sub-part. All three are now tracked BLOCKED with design notes.
+
+### D-BONUS-TURNOVER — Bonus turnover → conversion wiring (GAP-77, ⚑ protected-core + balance-path)
+**Question.** Bonus turnover accrual (`RecordWageringContribution`) and
+conversion to real balance (`ConvertBonusToReal`) exist but have zero
+production callers — a granted bonus never accrues turnover from live trading
+and never converts (§32 Scenario 14 unreachable). Where may the accrual hook,
+and what counts as turnover?
+**Options.** (a) post-trade HTTP seam calls `RecordWageringContribution` with
+matched notional (keeps the protected trade core untouched — RECOMMENDED); (b)
+accrue inside the protected settlement/trade transaction (strongest
+consistency, but edits protected core → needs explicit sign-off).
+**Also needs.** What volume counts (matched notional; taker-only vs both;
+void clawback y/n); per-trade idempotency (reuse the order key); the
+`bonus.converted` audit + launch-mode flag gating the real-balance credit.
+**Unblock.** Approve the hook point (+ if (b), authorize touching the trade
+path), the turnover definition, and the conversion audit/flag. Full design:
+`docs/pam/designs/gap-77-bonus-turnover-wiring-design.md`.
+
+### D-CAMPAIGN-DISPATCH — Segmentation campaign send (GAP-79, ⚑ channel + consent + throttle)
+**Question.** Campaign targeting/CRUD/preview + the launch-mode 403 gate are
+built, but `execute` returns `501 "not yet wired"` — there is no send worker.
+What does dispatch send, to whom, and how?
+**Options / needs.** (1) **Channel:** email-only now (SMS/push/in-app are
+GAP-42 vendor-BLOCKED) vs wait on GAP-42. (2) **Consent (compliance):** a
+per-recipient marketing consent/opt-out model that dispatch MUST honor — only
+loyalty opt-out exists today; this rides the P2-3 privacy decision. Mass-send
+without an enforced opt-out is a compliance risk, so this is the load-bearing
+blocker. (3) **Throttle:** batch size + inter-send throttle + per-recipient
+idempotency + a `campaign.dispatched` audit.
+**Recommendation.** Email-only, gated behind an explicit consent model built
+with P2-3; defer other channels to GAP-42.
+**Unblock.** Confirm (1)/(2)/(3). Full design:
+`docs/pam/designs/gap-79-campaign-dispatch-design.md`.
+
+### D-STEAL-LOCK — Guaranteed single-session enforcement (GAP-76 slice 2, ⚑ policy)
+**Question.** GAP-76 slice 1 shipped admin session-revocation ("kick session").
+Slice 2 is "steal-lock": should a new login **displace** all prior sessions
+(single-session guarantee) or **refuse** the second login? Today the
+file-backed session store's `Put` already evicts prior same-user sessions
+(de-facto single-session in file mode), but the Redis store does not — so the
+behavior is store-dependent, not a guaranteed policy.
+**Options.** (a) displace-on-login uniformly (kick the old session — matches
+the file store today); (b) refuse the second concurrent login; (c) leave
+multi-session allowed and rely on admin kick-session (slice 1) for incident
+response.
+**Recommendation.** (a) if the venue wants a single-session guarantee; make the
+Redis store match the file store and add an enforcement test. Low-risk, but a
+UX/security policy call, so not built autonomously.
+**Unblock.** Pick (a)/(b)/(c).
 
 ---
 

@@ -806,10 +806,10 @@ sign-off — that attestation remains a separate human step.
 | Wallet & ledger | 14 | 7 | **Partial** | Partial | Wallet/balances Built; **double-entry ledger BLOCKED** (P0-7 ⚑ protected core) |
 | Manual adjustment | 14, 25 | 8 | **Partial** | Partial | UI + audited `finances:write` route (P1-2 `bb710f52`); **dual-approval BLOCKED** (P0-6 ⚑) |
 | Positions & exposure | 15, 16 | 9 | **Built** | Pass | Positions, exposure/P&L, risk dashboard + per-market eligibility (GAP-20) + admin order view/cancel (GAP-21 `d94e53b0`) |
-| Market integrity | 18 | 10 | **Built** | Pass | Surveillance: wash/spoof/collusion (P1-4 `7761823b`,`8936142a`,`e33045c4`) + insider (GAP-22 `11d1fc1b`) + bonus-abuse (GAP-23 `c46b166f`) + duplicate-account; alerts→cases UI |
+| Market integrity | 18 | 10 | **Built** | Pass | Surveillance: wash/spoof/collusion (P1-4 `7761823b`,`8936142a`,`e33045c4`) + insider (GAP-22 `11d1fc1b`) + bonus-abuse (GAP-23 `c46b166f`) + duplicate-account; alerts→cases UI; **runs CONTINUOUSLY (GAP-78 `d31865d1`, `Engine.Run` 5-min sliding sweep, always-on when DB-backed)**, not just on manual scan |
 | Settlement | 17 | 11 | **Built** | Pass | Idempotent propose→challenge→finalize + disputes + dual-control finalize |
 | Notes & comms | 20 | 12 | **Built** | Pass | Notes + notification-template store + admin editor (P1-6 `a2cf341f`); **sent-communication history + agent-initiated templated send (GAP-43)** (`internal/communications`, audited `player.communication_sent`, per-actor rate limit GAP-75) |
-| Segmentation & CRM | 21 | 13 | **Built** | Pass | Tags/segments/campaigns/query (P2-2, `internal/segmentation`); dispatch fail-closed in launch mode |
+| Segmentation & CRM | 21 | 13 | **Partial** | Partial | Tags/segments/campaigns/query + preview + fail-closed launch gate Built (P2-2, `internal/segmentation`); **campaign DISPATCH (send) NOT wired (GAP-79 BLOCKED)** — `execute` returns 501 when enabled; needs a channel decision (GAP-42 blocks non-email), a marketing consent/opt-out model (rides P2-3), and a throttle/audit policy |
 | Bonus / rewards | 21 | 14 | **Partial** | Partial | Bonus engine + wagering machinery + loyalty + admin bonus UI (P1-6 `dae22915`) + abuse detection (GAP-23); **turnover→conversion NOT wired to trading (GAP-77 BLOCKED)** — `RecordWageringContribution`/`ConvertBonusToReal` have zero production callers, so bonus turnover never accrues from live trading; balance-changing + hooks protected trade path → design note |
 | Reporting & export | 23 | 15 | **Partial** | Partial | Operational CSV exports (P1-6 `a95f6e5a`, risk/KYC/surveillance CSVs) + **finance reports (GAP-48)** — wallet-ledger CSV (capped/413), daily-balance + reconciliation (`finances:read`, UTC-day buckets); **statutory suite pending regime** (GAP-24 ⏳) |
 | Tenant / jurisdiction | 8, 25 | 16 | **Partial** | Partial | Geofencing + per-market jurisdiction Built; **multitenancy dormant, BLOCKED** (P2-1 ⚑ protected core) |
@@ -822,12 +822,16 @@ sign-off — that attestation remains a separate human step.
 | Custody / on-chain settlement | 17, 26 | 11 | **Partial / design-seed** | Partial | Custodial off-chain today; **non-custodial BLOCKED** (P2-4 ⚑ founder decision) |
 
 Summary: as of the **2026-07-04 Termination-pass-B reconciliation** (refining the 2026-07-03
-evidence pass + the GAP-27 schema-domain reconciliation), **~13 areas Built, ~9 Partial, 0 Missing**;
-acceptance scenarios are **11 Pass / 8 Partial / 1 Fail** (Scenario 18, DSAR). The 07-04 pass swaps
-two rows: **Notes & comms 12 Partial→Built/Pass** (GAP-43 sent-communication history landed) and
-**Bonus / rewards 14 Built/Pass→Partial** (GAP-77 — bonus turnover→conversion is unwired from live
-trading; an overclaim correction, not a regression). Every non-Pass scenario is attributable
-to a tracked BLOCKED/open item with a brief (P0-5/6/7, P2-1/3/4, GAP-17b/19/24/30/77) — the
+evidence pass + the GAP-27 schema-domain reconciliation), **~12 areas Built, ~10 Partial, 0 Missing**;
+acceptance scenarios are **10 Pass / 9 Partial / 1 Fail** (Scenario 18, DSAR). The 07-04 pass made
+three status changes vs the 07-03 baseline: **Notes & comms 12 Partial→Built/Pass** (GAP-43
+sent-communication history landed); **Bonus / rewards 14 Built/Pass→Partial** (GAP-77 — bonus
+turnover→conversion unwired from live trading); **Segmentation & CRM 13 Built/Pass→Partial** (GAP-79
+— campaign dispatch send is a 501 stub). The latter two are overclaim corrections surfaced by the
+adversarial pass B (capability present but never called from a live path), not regressions; both are
+now tracked BLOCKED items with design notes. Market integrity (10) stays Built/Pass and was hardened
+to run continuously (GAP-78). Every non-Pass scenario is attributable
+to a tracked BLOCKED/open item with a brief (P0-5/6/7, P2-1/3/4, GAP-17b/19/24/30/77/79) — the
 residual gaps are human-decision-gated (regime/legal/threshold/vendor/protected-core) or filed
 breadth items, not un-started surprises. Full per-scenario evidence (with the honest
 "automated-evidence ≠ manual-acceptance-sign-off" caveat) is in `docs/pam/scenario-evidence.md`;
