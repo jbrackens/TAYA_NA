@@ -104,6 +104,11 @@ const navItems: NavItem[] = [
     label: "Finance Approvals",
     icon: "check-square",
   },
+  {
+    href: "/finance/reports",
+    label: "Finance Reports",
+    icon: "scroll-text",
+  },
   { href: "/content", label: "Content", icon: "file-text" },
   { href: "/bonuses", label: "Bonuses", icon: "ticket" },
   { href: "/loyalty", label: "Loyalty", icon: "gift" },
