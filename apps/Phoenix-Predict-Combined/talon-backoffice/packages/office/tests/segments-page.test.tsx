@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import SegmentsPage from "../app/(dashboard)/segments/page";
 import { PermissionsContext } from "../app/lib/permissions";
 
@@ -9,20 +9,22 @@ import { PermissionsContext } from "../app/lib/permissions";
 function mockFetch() {
   globalThis.fetch = vi.fn((input: RequestInfo | URL) => {
     const url = String(input);
-    const body = url.includes("/segments/tags")
-      ? {
-          tags: [
-            {
-              id: 1,
-              name: "VIP",
-              description: "high value",
-              group: "tier",
-              memberCount: 5,
-              createdAt: "2026-03-01T00:00:00Z",
-            },
-          ],
-        }
-      : {};
+    let body: unknown = {};
+    if (url.includes("/segments/query"))
+      body = { userIds: ["u-1", "u-2"], total: 2 };
+    else if (url.includes("/segments/tags"))
+      body = {
+        tags: [
+          {
+            id: 1,
+            name: "VIP",
+            description: "high value",
+            group: "tier",
+            memberCount: 5,
+            createdAt: "2026-03-01T00:00:00Z",
+          },
+        ],
+      };
     return Promise.resolve(new Response(JSON.stringify(body), { status: 200 }));
   }) as unknown as typeof fetch;
 }
@@ -45,12 +47,17 @@ describe("Segments page", () => {
 
   it("lists tags from the segments API", async () => {
     renderSeg(["segments:read"]);
-    expect(await screen.findByText("VIP")).toBeTruthy();
+    await screen.findByTestId("segment-tag-delete-1");
+    // "VIP" appears both in the tags table and the query-builder tag option;
+    // assert its presence within the tags card specifically.
+    expect(
+      within(screen.getByTestId("segments-tags")).getByText("VIP"),
+    ).toBeTruthy();
   });
 
   it("enables create + delete for a segments:write caller", async () => {
     renderSeg(["segments:write", "segments:read"]);
-    await screen.findByText("VIP");
+    await screen.findByTestId("segment-tag-delete-1");
     fireEvent.change(screen.getByTestId("segments-name"), {
       target: { value: "New tag" },
     });
@@ -60,11 +67,23 @@ describe("Segments page", () => {
 
   it("disables create + delete for a read-only caller (no segments:write)", async () => {
     renderSeg(["segments:read"]);
-    await screen.findByText("VIP");
+    await screen.findByTestId("segment-tag-delete-1");
     fireEvent.change(screen.getByTestId("segments-name"), {
       target: { value: "New tag" },
     });
     expect(screen.getByTestId("segments-create-submit")).toBeDisabled();
     expect(screen.getByTestId("segment-tag-delete-1")).toBeDisabled();
+  });
+
+  // GAP-87 slice 2: the query builder runs a segment query and shows the matched
+  // members (a segments:read operation — available to a read-only caller).
+  it("runs a segment query and renders the matched members", async () => {
+    renderSeg(["segments:read"]);
+    await screen.findByTestId("segment-tag-delete-1");
+    fireEvent.click(screen.getByTestId("segments-query-run"));
+    const result = await screen.findByTestId("segments-query-result");
+    expect(result.textContent).toContain("2 matching players");
+    expect(result.textContent).toContain("u-1");
+    expect(result.textContent).toContain("u-2");
   });
 });

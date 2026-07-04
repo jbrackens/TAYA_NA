@@ -41,6 +41,16 @@ function SegmentsPageContent() {
   const [group, setGroup] = useState("");
   const [description, setDescription] = useState("");
 
+  // GAP-87 slice 2: Query Builder state (POST /segments/query, a segments:read
+  // operation — no write gate needed).
+  const [queryTagId, setQueryTagId] = useState("");
+  const [queryStatus, setQueryStatus] = useState("");
+  const [queryBusy, setQueryBusy] = useState(false);
+  const [queryResult, setQueryResult] = useState<{
+    userIds: string[];
+    total: number;
+  } | null>(null);
+
   const { can } = usePermissions();
   const canWrite = can("segments:write");
 
@@ -103,6 +113,55 @@ function SegmentsPageContent() {
       setNotice(err instanceof Error ? err.message : "Failed to delete tag");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const queryBody = () => ({
+    tagId: queryTagId ? Number(queryTagId) : 0,
+    status: queryStatus,
+    limit: 100,
+  });
+
+  const runQuery = async () => {
+    setQueryBusy(true);
+    setNotice(null);
+    try {
+      const res = await adminFetch("/api/v1/admin/segments/query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(queryBody()),
+      });
+      if (!res.ok) throw new Error(`query failed (${res.status})`);
+      const data = (await res.json()) as { userIds: string[]; total: number };
+      setQueryResult({ userIds: data.userIds ?? [], total: data.total ?? 0 });
+    } catch (err: unknown) {
+      setNotice(err instanceof Error ? err.message : "Query failed");
+    } finally {
+      setQueryBusy(false);
+    }
+  };
+
+  const exportCsv = async () => {
+    setQueryBusy(true);
+    setNotice(null);
+    try {
+      const res = await adminFetch("/api/v1/admin/segments/query?format=csv", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(queryBody()),
+      });
+      if (!res.ok) throw new Error(`export failed (${res.status})`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "segment-query.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err: unknown) {
+      setNotice(err instanceof Error ? err.message : "Export failed");
+    } finally {
+      setQueryBusy(false);
     }
   };
 
@@ -195,6 +254,80 @@ function SegmentsPageContent() {
                 Create
               </Button>
             </div>
+          </Card>
+
+          <Card className="mb-5 p-5" data-testid="segments-query">
+            <h2 className="m-0 mb-3 text-lg font-semibold text-[var(--t1,#1a1a1a)]">
+              Query builder
+            </h2>
+            <p className="mb-3 text-sm text-[var(--t2,#4a4a4a)]">
+              Build an ad-hoc segment by tag and account status, then export the
+              matched members.
+            </p>
+            <div className="flex flex-wrap items-end gap-3">
+              <select
+                className="rounded border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] p-2 text-[13px] text-[var(--t1,#1a1a1a)]"
+                value={queryTagId}
+                onChange={(e) => setQueryTagId(e.target.value)}
+                data-testid="segments-query-tag"
+              >
+                <option value="">Any tag</option>
+                {tags.map((t) => (
+                  <option key={t.id} value={String(t.id)}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                className="rounded border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] p-2 text-[13px] text-[var(--t1,#1a1a1a)]"
+                value={queryStatus}
+                onChange={(e) => setQueryStatus(e.target.value)}
+                data-testid="segments-query-status"
+              >
+                <option value="">Any status</option>
+                <option value="active">Active</option>
+                <option value="suspended">Suspended</option>
+                <option value="self_excluded">Self-excluded</option>
+                <option value="deactivated">Deactivated</option>
+              </select>
+              <Button
+                variant="primary"
+                disabled={queryBusy}
+                onClick={() => void runQuery()}
+                data-testid="segments-query-run"
+              >
+                Run
+              </Button>
+              <Button
+                variant="secondary"
+                disabled={queryBusy}
+                onClick={() => void exportCsv()}
+                data-testid="segments-query-export"
+              >
+                Export CSV
+              </Button>
+            </div>
+            {queryResult && (
+              <div className="mt-4" data-testid="segments-query-result">
+                <p className="mb-2 text-sm font-semibold text-[var(--t1,#1a1a1a)]">
+                  {queryResult.total} matching{" "}
+                  {queryResult.total === 1 ? "player" : "players"}
+                  {queryResult.userIds.length < queryResult.total
+                    ? ` (showing ${queryResult.userIds.length})`
+                    : ""}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {queryResult.userIds.map((id) => (
+                    <span
+                      key={id}
+                      className="rounded bg-[var(--border-1,#e5dfd2)] px-2 py-0.5 text-[11px] text-[var(--t2,#4a4a4a)]"
+                    >
+                      {id}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </Card>
 
           <Card className="p-5" data-testid="segments-tags">
