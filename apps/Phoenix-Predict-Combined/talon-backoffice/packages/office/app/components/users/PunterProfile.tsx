@@ -13,7 +13,8 @@ type PunterProfileTab =
   | "bonuses"
   | "cases"
   | "communications"
-  | "positions";
+  | "positions"
+  | "eligibility";
 
 // A player's bonus/reward grant as returned by
 // GET /api/v1/admin/bonuses?user_id={id} (GAP-35 Bonuses/Rewards tab, §10).
@@ -87,6 +88,17 @@ export interface PlayerPositionRow {
   realizedPointsCents: number;
   reservedQuantity: number;
   createdAt: string;
+}
+
+// One restricted market's eligibility standing for this player, as returned by
+// GET /api/v1/admin/market-eligibility?userId={id} (GAP-93/§15 account view; wire
+// shape from internal/http.MarketEligibilityStatus). eligible === missingTags
+// empty; tags are catalog ids.
+export interface PlayerMarketEligibilityRow {
+  marketId: string;
+  requiredTags: number[];
+  missingTags: number[];
+  eligible: boolean;
 }
 
 export interface PunterProfileData {
@@ -201,6 +213,8 @@ interface PunterProfileProps {
   openOrders?: PlayerOpenOrderRow[];
   /** open positions from /api/v1/admin/positions?userId={id} (GAP-89, §16) */
   positions?: PlayerPositionRow[];
+  /** per-market eligibility from /api/v1/admin/market-eligibility?userId={id} (GAP-93, §15) */
+  eligibility?: PlayerMarketEligibilityRow[];
 }
 
 const pointAmount = (n: number) =>
@@ -272,6 +286,7 @@ export function PunterProfile({
   commTemplateKeys = [],
   openOrders = [],
   positions = [],
+  eligibility = [],
 }: PunterProfileProps) {
   const [activeTab, setActiveTab] = useState<PunterProfileTab>("overview");
   const [overrideTier, setOverrideTier] = useState("");
@@ -507,6 +522,13 @@ export function PunterProfile({
               data-testid="profile-positions-tab"
             >
               Positions &amp; Orders
+            </button>
+            <button
+              className={tabButtonClassName(activeTab === "eligibility")}
+              onClick={() => setActiveTab("eligibility")}
+              data-testid="profile-eligibility-tab"
+            >
+              Market Eligibility
             </button>
           </div>
         </Card>
@@ -1270,6 +1292,70 @@ export function PunterProfile({
                             }`}
                           >
                             {signedPointsFromCents(p.realizedPointsCents)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* GAP-93 (§15 per-trader account view): per-restricted-market
+              eligibility standing. Read-only view over the admin
+              market-eligibility route (compliance:read). */}
+          {activeTab === "eligibility" && (
+            <div
+              className={tabContentClassName}
+              data-testid="profile-eligibility-content"
+            >
+              <h4 className="mt-0 text-[var(--t1,#1a1a1a)]">
+                Market eligibility
+              </h4>
+              <p className="mb-3 text-xs text-[var(--t3,#8b8378)]">
+                Per restricted market: whether this player meets the required
+                eligibility tags (jurisdiction / segment gating). An ineligible
+                market blocks the player&apos;s orders server-side. Tags are
+                catalog ids.
+              </p>
+              {eligibility.length === 0 ? (
+                <p>
+                  No restricted-market eligibility rules apply to this player.
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-[13px]">
+                    <thead>
+                      <tr>
+                        <th className={histThClassName}>Market</th>
+                        <th className={histThClassName}>Eligible</th>
+                        <th className={histThClassName}>Required tags</th>
+                        <th className={histThClassName}>Missing tags</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {eligibility.map((e) => (
+                        <tr key={e.marketId} data-testid="eligibility-row">
+                          <td className={histTdClassName}>{e.marketId}</td>
+                          <td
+                            className={`${histTdBaseClassName} ${
+                              e.eligible
+                                ? positivePointClassName
+                                : negativePointClassName
+                            }`}
+                          >
+                            {e.eligible ? "Eligible" : "Ineligible"}
+                          </td>
+                          <td className={histTdClassName}>
+                            {e.requiredTags.length
+                              ? e.requiredTags.join(", ")
+                              : "—"}
+                          </td>
+                          <td className={histTdClassName}>
+                            {e.missingTags.length
+                              ? e.missingTags.join(", ")
+                              : "—"}
                           </td>
                         </tr>
                       ))}

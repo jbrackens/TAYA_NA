@@ -16,6 +16,7 @@ import type {
   PlayerCommunicationRow,
   PlayerOpenOrderRow,
   PlayerPositionRow,
+  PlayerMarketEligibilityRow,
   SettlementRow,
   WalletLedgerRow,
 } from "../../../components/users/PunterProfile";
@@ -138,6 +139,9 @@ function UserDetailPageContent() {
   const [commTemplateKeys, setCommTemplateKeys] = useState<string[]>([]);
   const [openOrders, setOpenOrders] = useState<PlayerOpenOrderRow[]>([]);
   const [positions, setPositions] = useState<PlayerPositionRow[]>([]);
+  const [eligibility, setEligibility] = useState<PlayerMarketEligibilityRow[]>(
+    [],
+  );
   // GAP-90 slice 2: the send form is gated on users:write, fail-closed — a
   // read-only caller (e.g. Auditor) sees it disabled. The gateway re-checks.
   const { can } = usePermissions();
@@ -378,6 +382,22 @@ function UserDetailPageContent() {
     }
   };
 
+  // GAP-93 (§15): per-market eligibility standing for the Market Eligibility tab.
+  // Degrade-safe — a 403 (no compliance:read) or memory-mode 404 leaves the tab
+  // empty rather than failing the whole profile load.
+  const loadEligibility = async () => {
+    try {
+      const res = await adminFetch(
+        `/api/v1/admin/market-eligibility?userId=${encodeURIComponent(punterId)}`,
+      );
+      if (!res.ok) return;
+      const d = await res.json();
+      setEligibility(Array.isArray(d?.markets) ? d.markets : []);
+    } catch {
+      // ignore — Market Eligibility tab reports none
+    }
+  };
+
   useEffect(() => {
     const fetchPunter = async () => {
       try {
@@ -395,6 +415,7 @@ function UserDetailPageContent() {
         await loadCommTemplates();
         await loadOpenOrders();
         await loadPositions();
+        await loadEligibility();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load user");
       } finally {
@@ -576,6 +597,7 @@ function UserDetailPageContent() {
             commTemplateKeys={commTemplateKeys}
             openOrders={openOrders}
             positions={positions}
+            eligibility={eligibility}
           />
         </div>
 
