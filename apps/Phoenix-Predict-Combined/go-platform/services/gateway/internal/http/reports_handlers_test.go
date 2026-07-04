@@ -212,6 +212,28 @@ VALUES ($1,'credit','real',$2,$2,$3,'seed',$4)`, s.user, s.amount, s.key, s.ts);
 	}
 }
 
+// GAP-74 (§23 + §7 RBAC): the reconciliation report exposes whole-platform
+// financial totals, so — like the CSV ledger export and daily-balance report —
+// it is permission-gated, not open to any admin session. With the dev anon
+// bypass off, a non-privileged caller is refused before the report is built.
+func TestWalletReconciliationRequiresPermission(t *testing.T) {
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "") // TestMain enables the bypass; exercise the real gate
+	walletSvc := wallet.NewService()
+	mux := http.NewServeMux()
+	registerReportsRoutes(mux, walletSvc)
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	for _, path := range []string{"/api/v1/admin/wallet/reconciliation", "/admin/wallet/reconciliation"} {
+		req := httptest.NewRequest(http.MethodGet, path, nil)
+		req = req.WithContext(httpx.WithTestUser(req.Context(), "u-p", "p@test.local", "player"))
+		res := httptest.NewRecorder()
+		handler.ServeHTTP(res, req)
+		if res.Code != http.StatusForbidden && res.Code != http.StatusUnauthorized {
+			t.Fatalf("%s: expected a non-privileged caller to be refused, got %d", path, res.Code)
+		}
+	}
+}
+
 func TestPromotionUsageReportUsesPointCampaignPlaceholder(t *testing.T) {
 	mux := http.NewServeMux()
 	registerReportsRoutes(mux, wallet.NewService())

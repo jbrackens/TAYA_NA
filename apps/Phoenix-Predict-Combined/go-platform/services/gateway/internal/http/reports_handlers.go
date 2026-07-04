@@ -39,11 +39,16 @@ func registerReportsRoutes(mux *stdhttp.ServeMux, walletSvc *wallet.Service) {
 	for _, base := range []string{"/api/v1/admin", "/admin"} {
 		// Registered directly (not via get) so a malformed ?from=/?to= is a 400,
 		// not the 500 the get wrapper turns every fn error into (GAP-72, §23).
+		// Gated on finances:read — this exposes whole-platform credit/debit/net
+		// movement totals, so it requires the same finance permission as the CSV
+		// ledger export and daily-balance report, not merely any admin role
+		// (GAP-74, §23 + §7 RBAC least-privilege). The sibling promotions/feed/
+		// config reports below stay on requireAdminRole (non-financial).
 		mux.Handle(base+"/wallet/reconciliation", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 			if r.Method != stdhttp.MethodGet {
 				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 			}
-			if err := requireAdminRole(r); err != nil {
+			if err := requireAdminPermission(r, "finances:read"); err != nil {
 				return err
 			}
 			from, to, err := parseOptionalDateRange(r)
