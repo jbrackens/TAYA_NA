@@ -14,6 +14,8 @@ import type {
   PlayerBonusRow,
   PlayerCaseRow,
   PlayerCommunicationRow,
+  PlayerOpenOrderRow,
+  PlayerPositionRow,
   SettlementRow,
   WalletLedgerRow,
 } from "../../../components/users/PunterProfile";
@@ -134,6 +136,8 @@ function UserDetailPageContent() {
     PlayerCommunicationRow[]
   >([]);
   const [commTemplateKeys, setCommTemplateKeys] = useState<string[]>([]);
+  const [openOrders, setOpenOrders] = useState<PlayerOpenOrderRow[]>([]);
+  const [positions, setPositions] = useState<PlayerPositionRow[]>([]);
   // GAP-90 slice 2: the send form is gated on users:write, fail-closed — a
   // read-only caller (e.g. Auditor) sees it disabled. The gateway re-checks.
   const { can } = usePermissions();
@@ -337,6 +341,43 @@ function UserDetailPageContent() {
     }
   };
 
+  // GAP-89 (§16): working orders for the Positions & Orders tab. Two fetches —
+  // the admin orders filter takes a single status, and BOTH `open` and `partial`
+  // are live/working states, so a single status=open would miss partially-filled
+  // resting orders. Degrade-safe (403 / failure leaves the tab empty).
+  const loadOpenOrders = async () => {
+    try {
+      const base = `/api/v1/admin/orders?userId=${encodeURIComponent(punterId)}`;
+      const [openRes, partialRes] = await Promise.all([
+        adminFetch(`${base}&status=open`),
+        adminFetch(`${base}&status=partial`),
+      ]);
+      const rows: PlayerOpenOrderRow[] = [];
+      for (const res of [openRes, partialRes]) {
+        if (!res.ok) continue;
+        const d = await res.json();
+        if (Array.isArray(d?.data)) rows.push(...d.data);
+      }
+      setOpenOrders(rows);
+    } catch {
+      // ignore — Positions tab reports no open orders
+    }
+  };
+
+  // GAP-89 (§16/§10): open positions + exposure for the same tab.
+  const loadPositions = async () => {
+    try {
+      const res = await adminFetch(
+        `/api/v1/admin/positions?userId=${encodeURIComponent(punterId)}`,
+      );
+      if (!res.ok) return;
+      const d = await res.json();
+      setPositions(Array.isArray(d?.data) ? d.data : []);
+    } catch {
+      // ignore — Positions tab reports none
+    }
+  };
+
   useEffect(() => {
     const fetchPunter = async () => {
       try {
@@ -352,6 +393,8 @@ function UserDetailPageContent() {
         await loadCases();
         await loadCommunications();
         await loadCommTemplates();
+        await loadOpenOrders();
+        await loadPositions();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load user");
       } finally {
@@ -531,6 +574,8 @@ function UserDetailPageContent() {
             communications={communications}
             canSendCommunications={canSendCommunications}
             commTemplateKeys={commTemplateKeys}
+            openOrders={openOrders}
+            positions={positions}
           />
         </div>
 

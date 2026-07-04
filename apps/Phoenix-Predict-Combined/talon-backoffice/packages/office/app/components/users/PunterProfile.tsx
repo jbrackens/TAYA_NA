@@ -12,7 +12,8 @@ type PunterProfileTab =
   | "risk"
   | "bonuses"
   | "cases"
-  | "communications";
+  | "communications"
+  | "positions";
 
 // A player's bonus/reward grant as returned by
 // GET /api/v1/admin/bonuses?user_id={id} (GAP-35 Bonuses/Rewards tab, §10).
@@ -53,6 +54,38 @@ export interface PlayerCommunicationRow {
   body?: string;
   status: string;
   actorId?: string;
+  createdAt: string;
+}
+
+// A player's working (open/partial) order as returned by
+// GET /api/v1/admin/orders?userId={id}&status=open|partial (GAP-89, §16 admin
+// order view; wire shape from prediction.Order.MarshalJSON — money in points).
+export interface PlayerOpenOrderRow {
+  id: string;
+  marketId: string;
+  side: string;
+  action: string;
+  orderType: string;
+  pricePointsCents?: number;
+  quantity: number;
+  filledQuantity: number;
+  remainingQuantity: number;
+  status: string;
+  createdAt: string;
+}
+
+// A player's open position as returned by GET /api/v1/admin/positions?userId={id}
+// (GAP-89, §16/§10; wire shape from prediction.Position.MarshalJSON). Exposure =
+// totalCostPointsCents (cost basis of the open position).
+export interface PlayerPositionRow {
+  id: string;
+  marketId: string;
+  side: string;
+  quantity: number;
+  avgPricePointsCents: number;
+  totalCostPointsCents: number;
+  realizedPointsCents: number;
+  reservedQuantity: number;
   createdAt: string;
 }
 
@@ -164,6 +197,10 @@ interface PunterProfileProps {
    * separate notifications:read grant, so this may be empty even for a sender —
    * the form then falls back to a free-text template-key field. */
   commTemplateKeys?: string[];
+  /** working orders from /api/v1/admin/orders?userId={id}&status=open|partial */
+  openOrders?: PlayerOpenOrderRow[];
+  /** open positions from /api/v1/admin/positions?userId={id} (GAP-89, §16) */
+  positions?: PlayerPositionRow[];
 }
 
 const pointAmount = (n: number) =>
@@ -233,6 +270,8 @@ export function PunterProfile({
   communications = [],
   canSendCommunications = false,
   commTemplateKeys = [],
+  openOrders = [],
+  positions = [],
 }: PunterProfileProps) {
   const [activeTab, setActiveTab] = useState<PunterProfileTab>("overview");
   const [overrideTier, setOverrideTier] = useState("");
@@ -461,6 +500,13 @@ export function PunterProfile({
               data-testid="profile-communications-tab"
             >
               Communications
+            </button>
+            <button
+              className={tabButtonClassName(activeTab === "positions")}
+              onClick={() => setActiveTab("positions")}
+              data-testid="profile-positions-tab"
+            >
+              Positions &amp; Orders
             </button>
           </div>
         </Card>
@@ -1095,6 +1141,135 @@ export function PunterProfile({
                           <td className={histTdClassName}>{c.status}</td>
                           <td className={histTdClassName}>
                             {c.actorId || "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* GAP-89 slice 2 (§16 Prediction Market Operations / §10): per-player
+              Open Orders + Positions + Exposure. Read-only view over the admin
+              orders route (GAP-21) + the admin positions route (GAP-89 slice 1);
+              both markets:read on the gateway. */}
+          {activeTab === "positions" && (
+            <div
+              className={tabContentClassName}
+              data-testid="profile-positions-content"
+            >
+              <h4 className="mt-0 text-[var(--t1,#1a1a1a)]">
+                Open orders &amp; positions
+              </h4>
+              <p className="mb-3 text-xs text-[var(--t3,#8b8378)]">
+                Total open-position exposure (cost basis):{" "}
+                <span
+                  className="font-semibold text-[var(--t1,#1a1a1a)]"
+                  data-testid="positions-exposure"
+                >
+                  {pointsFromCents(
+                    positions.reduce(
+                      (sum, p) => sum + p.totalCostPointsCents,
+                      0,
+                    ),
+                  )}
+                </span>
+              </p>
+
+              <h5 className="mb-1 mt-0 text-[var(--t2,#4a4a4a)]">
+                Working orders
+              </h5>
+              {openOrders.length === 0 ? (
+                <p>No open orders for this player.</p>
+              ) : (
+                <div className="mb-4 overflow-x-auto">
+                  <table className="w-full border-collapse text-[13px]">
+                    <thead>
+                      <tr>
+                        <th className={histThClassName}>Market</th>
+                        <th className={histThClassName}>Side</th>
+                        <th className={histThClassName}>Action</th>
+                        <th className={histThClassName}>Type</th>
+                        <th className={histThClassName}>Price</th>
+                        <th className={histThClassName}>Qty</th>
+                        <th className={histThClassName}>Filled</th>
+                        <th className={histThClassName}>Remaining</th>
+                        <th className={histThClassName}>Status</th>
+                        <th className={histThClassName}>Created</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {openOrders.map((o) => (
+                        <tr key={o.id} data-testid="open-order-row">
+                          <td className={histTdClassName}>{o.marketId}</td>
+                          <td className={histTdClassName}>{o.side}</td>
+                          <td className={histTdClassName}>{o.action}</td>
+                          <td className={histTdClassName}>{o.orderType}</td>
+                          <td className={histTdClassName}>
+                            {o.pricePointsCents == null
+                              ? "—"
+                              : pointsFromCents(o.pricePointsCents)}
+                          </td>
+                          <td className={histTdClassName}>{o.quantity}</td>
+                          <td className={histTdClassName}>
+                            {o.filledQuantity}
+                          </td>
+                          <td className={histTdClassName}>
+                            {o.remainingQuantity}
+                          </td>
+                          <td className={histTdClassName}>{o.status}</td>
+                          <td className={histTdClassName}>
+                            {fmtDate(o.createdAt)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <h5 className="mb-1 mt-0 text-[var(--t2,#4a4a4a)]">Positions</h5>
+              {positions.length === 0 ? (
+                <p>No open positions for this player.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-[13px]">
+                    <thead>
+                      <tr>
+                        <th className={histThClassName}>Market</th>
+                        <th className={histThClassName}>Side</th>
+                        <th className={histThClassName}>Qty</th>
+                        <th className={histThClassName}>Reserved</th>
+                        <th className={histThClassName}>Avg price</th>
+                        <th className={histThClassName}>Exposure</th>
+                        <th className={histThClassName}>Realized P/L</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {positions.map((p) => (
+                        <tr key={p.id} data-testid="position-row">
+                          <td className={histTdClassName}>{p.marketId}</td>
+                          <td className={histTdClassName}>{p.side}</td>
+                          <td className={histTdClassName}>{p.quantity}</td>
+                          <td className={histTdClassName}>
+                            {p.reservedQuantity}
+                          </td>
+                          <td className={histTdClassName}>
+                            {pointsFromCents(p.avgPricePointsCents)}
+                          </td>
+                          <td className={histTdClassName}>
+                            {pointsFromCents(p.totalCostPointsCents)}
+                          </td>
+                          <td
+                            className={`${histTdBaseClassName} ${
+                              p.realizedPointsCents >= 0
+                                ? positivePointClassName
+                                : negativePointClassName
+                            }`}
+                          >
+                            {signedPointsFromCents(p.realizedPointsCents)}
                           </td>
                         </tr>
                       ))}
