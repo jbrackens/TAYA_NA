@@ -16,6 +16,7 @@ import (
 	"phoenix-revival/gateway/internal/alphacashier"
 	"phoenix-revival/gateway/internal/aml"
 	"phoenix-revival/gateway/internal/bonus"
+	"phoenix-revival/gateway/internal/communications"
 	"phoenix-revival/gateway/internal/compliance"
 	"phoenix-revival/gateway/internal/content"
 	"phoenix-revival/gateway/internal/discover"
@@ -757,6 +758,15 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	registerReportExportRoutes(mux, walletService.DB())
 	// Finance aggregate reports (daily balance / transaction summary, §23).
 	registerFinanceReportRoutes(mux, walletService.DB())
+	// Per-player sent-communication history (GAP-43, §20). Own table; degrade-safe.
+	if commsDB := walletService.DB(); commsDB != nil {
+		if commStore, err := communications.NewStore(commsDB); err != nil {
+			slog.Error("communications: store init failed; history routes disabled", "error", err)
+		} else {
+			registerCommunicationsAdminRoutes(mux, commStore)
+			slog.Info("communications: store initialized")
+		}
+	}
 	// DB-backed feature-flag / config store (P2-1 peripheral). Editing flags
 	// can change compliance posture, so writes are super-admin only.
 	if cfgDB := walletService.DB(); cfgDB != nil {
