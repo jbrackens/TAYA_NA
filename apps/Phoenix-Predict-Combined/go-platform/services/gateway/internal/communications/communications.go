@@ -25,7 +25,10 @@ const (
 	maxListLimit     = 200
 )
 
-var ErrInvalid = errors.New("communication requires a user id, channel, and status")
+var (
+	ErrInvalid           = errors.New("communication requires a user id, channel, and status")
+	ErrRecipientNotFound = errors.New("no such player")
+)
 
 // Communication is a single record of a message sent (or attempted) to a player.
 // Body is retained for the full sent-content history the spec requires.
@@ -142,4 +145,26 @@ LIMIT $2 OFFSET $3`, userID, limit, offset)
 		out = append(out, c)
 	}
 	return out, rows.Err()
+}
+
+// RecipientEmail resolves a player's contact email for dispatch. Read-only over
+// the shared punters table (the same read-only-punters pattern the segmentation
+// store uses) — it never touches the prediction/wallet core. Returns
+// ErrRecipientNotFound if the player does not exist.
+func (s *Store) RecipientEmail(ctx context.Context, userID string) (string, error) {
+	userID = strings.TrimSpace(userID)
+	if userID == "" {
+		return "", ErrRecipientNotFound
+	}
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	var email string
+	err := s.db.QueryRowContext(ctx, `SELECT email FROM punters WHERE id = $1`, userID).Scan(&email)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", ErrRecipientNotFound
+	}
+	if err != nil {
+		return "", err
+	}
+	return email, nil
 }

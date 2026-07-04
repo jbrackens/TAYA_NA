@@ -758,12 +758,14 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	registerReportExportRoutes(mux, walletService.DB())
 	// Finance aggregate reports (daily balance / transaction summary, §23).
 	registerFinanceReportRoutes(mux, walletService.DB())
-	// Per-player sent-communication history (GAP-43, §20). Own table; degrade-safe.
+	// Per-player communications: sent-content history + agent-initiated templated
+	// send (GAP-43, §20). Own table; recipient resolved read-only from punters;
+	// dispatch via the fail-closed resolutionNotifier. Degrade-safe.
 	if commsDB := walletService.DB(); commsDB != nil {
 		if commStore, err := communications.NewStore(commsDB); err != nil {
-			slog.Error("communications: store init failed; history routes disabled", "error", err)
+			slog.Error("communications: store init failed; routes disabled", "error", err)
 		} else {
-			registerCommunicationsAdminRoutes(mux, commStore)
+			registerCommunicationsAdminRoutes(mux, commStore, resolutionNotifier)
 			slog.Info("communications: store initialized")
 		}
 	}
