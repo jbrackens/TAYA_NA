@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"phoenix-revival/gateway/internal/makerchecker"
+	"phoenix-revival/gateway/internal/rbac"
 	"phoenix-revival/gateway/internal/wallet"
 	"phoenix-revival/platform/transport/httpx"
 )
@@ -222,6 +223,48 @@ func TestMCRoutesRejectNonAdmin(t *testing.T) {
 		if res.Code != http.StatusForbidden && res.Code != http.StatusUnauthorized {
 			t.Fatalf("%s %s: expected rejection, got %d", tc.method, tc.path, res.Code)
 		}
+	}
+}
+
+// TestMCApproveRequiresFinancesApprove (GAP-91, §7 Permission Model / §6 Finance
+// Approver / P0-6 SoD) locks the permission-level segregation of duties: the
+// pending-queue approve action requires finances:approve (the CHECKER
+// permission), NOT the finances:write that ORIGINATES an adjustment. A maker
+// holding only finances:write is refused at the gate; a checker holding
+// finances:approve is allowed through.
+func TestMCApproveRequiresFinancesApprove(t *testing.T) {
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "") // exercise the real gate, not the dev bypass
+	store := newStubMCStore()
+	// A pending credit adjustment proposed by "maker" — so the approver is a
+	// different actor and the maker!=checker identity check passes on approval.
+	store.actions[1] = &makerchecker.Action{
+		ID: 1, Status: "pending", MakerID: "maker", Direction: "credit",
+		SubjectID: "cust-1", AmountCents: 20000, IdempotencyKey: "adj-1", Reason: "goodwill",
+	}
+	store.nextID = 2
+	handler := newMCHarness(store, &fakeAdjustExecutor{})
+
+	adminRBAC = rbac.NewService(&rbacHandlerFake{perms: map[string]map[string]struct{}{
+		"maker@test.local":    {"finances:write": {}},
+		"approver@test.local": {"finances:approve": {}, "finances:read": {}},
+	}})
+	t.Cleanup(func() { adminRBAC = nil })
+
+	approve := "/api/v1/admin/finance/adjustments/pending/1/approve"
+	// Maker (finances:write, no finances:approve) is refused at the permission gate.
+	if res := mcReq(handler, "maker", http.MethodPost, approve, "{}"); res.Code != http.StatusForbidden {
+		t.Fatalf("maker without finances:approve: want 403, got %d body=%s", res.Code, res.Body.String())
+	}
+	// The refused attempt must not have dispositioned the action.
+	if store.actions[1].Status != "pending" {
+		t.Fatalf("a gated-out approve must leave the action pending, got %q", store.actions[1].Status)
+	}
+	// Checker (finances:approve) passes the gate and approves.
+	if res := mcReq(handler, "approver", http.MethodPost, approve, "{}"); res.Code != http.StatusOK {
+		t.Fatalf("approver with finances:approve: want 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	if store.actions[1].Status != "approved" {
+		t.Fatalf("approver should have approved the action, got %q", store.actions[1].Status)
 	}
 }
 

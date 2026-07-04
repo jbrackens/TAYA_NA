@@ -82,8 +82,9 @@ func executeAdjustment(ctx context.Context, exec adjustmentExecutor, direction, 
 //	POST /api/v1/admin/finance/adjustments  {userId,direction,amountPointsCents,reason}  (finances:write)
 //	     below threshold → executed directly; at/above → queued for a second approver.
 //	GET  /api/v1/admin/finance/adjustments/pending?status=                                (finances:read)
-//	POST /api/v1/admin/finance/adjustments/pending/{id}/approve                           (finances:write, maker!=checker)
-//	POST /api/v1/admin/finance/adjustments/pending/{id}/reject  {reason}                  (finances:write, maker!=checker)
+//	POST /api/v1/admin/finance/adjustments/pending/{id}/approve                           (finances:approve, maker!=checker)
+//	POST /api/v1/admin/finance/adjustments/pending/{id}/reject  {reason}                  (finances:approve, maker!=checker)
+//	POST /api/v1/admin/finance/adjustments/pending/{id}/execute                           (finances:approve — GAP-61 retry)
 func registerMakerCheckerRoutes(mux *stdhttp.ServeMux, store makerCheckerStore, exec adjustmentExecutor) {
 	mux.Handle("/api/v1/admin/finance/adjustments", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if err := requireAdminPermission(r, "finances:write"); err != nil {
@@ -178,7 +179,16 @@ func registerMakerCheckerRoutes(mux *stdhttp.ServeMux, store makerCheckerStore, 
 
 	const pendingPrefix = "/api/v1/admin/finance/adjustments/pending/"
 	mux.Handle(pendingPrefix, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if err := requireAdminPermission(r, "finances:write"); err != nil {
+		// GAP-91 (§7 Permission Model / §6 Finance Approver / P0-6 SoD): the
+		// pending-queue actions (approve / reject / execute) are CHECKER actions
+		// and gate on finances:approve — a DISTINCT permission from the
+		// finances:write that ORIGINATES an adjustment (the propose handler
+		// above). This is the permission-level segregation of duties §7 mandates:
+		// a checker-only Finance-Approver role (migration 060) holds
+		// finances:approve without finances:write, so it can disposition the queue
+		// but not originate. The identity check (maker != checker) still forbids
+		// approving one's own proposal even for a caller holding both.
+		if err := requireAdminPermission(r, "finances:approve"); err != nil {
 			return err
 		}
 		if r.Method != stdhttp.MethodPost {
