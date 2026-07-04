@@ -1,11 +1,7 @@
 "use client";
 
 import { PunterSearch } from "../../components/users";
-import {
-  ErrorBoundary,
-  ErrorState,
-  SkeletonLoader,
-} from "../../components/shared";
+import { ErrorBoundary, ErrorState } from "../../components/shared";
 import { useState, useEffect } from "react";
 import { adminFetch } from "../../lib/admin-fetch";
 
@@ -33,23 +29,45 @@ const toUserStatus = (status: string): PunterData["status"] => {
   return "inactive";
 };
 
+// GAP-81 (§10 Player Search / §32 Scenario 2): the search runs SERVER-SIDE so
+// any punter — not just the newest page — is findable. The office previously
+// fetched a fixed pageSize=100 window and filtered it in memory, so "search by
+// email" silently missed every punter outside that window on a real book.
+const PUNTERS_PAGE_SIZE = 100;
+const SEARCH_DEBOUNCE_MS = 300;
+
+function buildPuntersURL(search: string): string {
+  const params = new URLSearchParams({
+    page: "1",
+    pageSize: String(PUNTERS_PAGE_SIZE),
+  });
+  const trimmed = search.trim();
+  if (trimmed) {
+    params.set("search", trimmed);
+  }
+  return `/api/v1/admin/punters?${params.toString()}`;
+}
+
 function UsersPageContent() {
   const [punters, setPunters] = useState<PunterData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
+  // Server-side, debounced search. Re-runs whenever the search term changes; the
+  // backend applies the email/username ILIKE filter over the full population.
   useEffect(() => {
-    const loadPunters = async () => {
+    let cancelled = false;
+    const load = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        const response = await adminFetch(
-          "/api/v1/admin/punters?page=1&pageSize=100",
-        );
+        const response = await adminFetch(buildPuntersURL(searchTerm));
         if (!response.ok) {
           throw new Error("Failed to load users");
         }
         const data = await response.json();
+        if (cancelled) return;
         const items = Array.isArray(data?.items) ? data.items : [];
         setPunters(
           items.map((item: any) => ({
@@ -63,50 +81,23 @@ function UsersPageContent() {
           })),
         );
       } catch (err) {
+        if (cancelled) return;
         setError(err instanceof Error ? err.message : "Failed to load users");
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
-    loadPunters();
-  }, []);
+    const handle = setTimeout(load, searchTerm ? SEARCH_DEBOUNCE_MS : 0);
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
+  }, [searchTerm]);
 
   const handlePunterSelect = (punter: PunterData) => {
-    console.log("Selected punter:", punter);
     // Navigate to punter detail page
     window.location.href = `/users/${punter.id}`;
-  };
-
-  const handleRetry = () => {
-    setPunters([]);
-    setIsLoading(true);
-    setError(null);
-    adminFetch("/api/v1/admin/punters?page=1&pageSize=100")
-      .then((response) => {
-        if (!response.ok) throw new Error("Failed to load users");
-        return response.json();
-      })
-      .then((data) => {
-        const items = Array.isArray(data?.items) ? data.items : [];
-        setPunters(
-          items.map((item: any) => ({
-            id: item.id,
-            name: toDisplayName(item.email),
-            email: item.email,
-            lastActivity: item.lastLoginAt || "Never",
-            balance: (item.pointAccountBalanceCents ?? 0) / 100,
-            pnl: (item.realizedPointsCents ?? 0) / 100,
-            status: toUserStatus(item.status),
-          })),
-        );
-      })
-      .catch((err) => {
-        setError(err instanceof Error ? err.message : "Failed to load users");
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
   };
 
   return (
@@ -119,16 +110,16 @@ function UsersPageContent() {
         <ErrorState
           title="Failed to load users"
           message={error}
-          onRetry={handleRetry}
+          onRetry={() => setSearchTerm((t) => t)}
           showRetryButton={true}
         />
-      ) : isLoading ? (
-        <SkeletonLoader count={3} />
       ) : (
         <PunterSearch
           punters={punters}
+          searchText={searchTerm}
+          onSearchChange={setSearchTerm}
           onPunterSelect={handlePunterSelect}
-          isLoading={false}
+          isLoading={isLoading}
         />
       )}
     </div>

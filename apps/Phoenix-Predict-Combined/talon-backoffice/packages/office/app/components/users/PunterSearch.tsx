@@ -26,6 +26,11 @@ interface PunterSearchProps {
   punters?: PunterData[];
   onPunterSelect?: (punter: PunterData) => void;
   isLoading?: boolean;
+  // GAP-81: search is CONTROLLED and applied server-side by the parent (so any
+  // punter is findable, not just the fetched page). The status filter stays a
+  // client-side refinement of the returned rows.
+  searchText?: string;
+  onSearchChange?: (value: string) => void;
 }
 
 const panelClassName =
@@ -45,19 +50,17 @@ export function PunterSearch({
   punters = [],
   onPunterSelect,
   isLoading = false,
+  searchText = "",
+  onSearchChange,
 }: PunterSearchProps) {
-  const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<PunterStatusFilter>("all");
 
+  // Search is applied server-side by the parent; here we only refine the
+  // returned rows by status (a client-side narrowing of the search results).
   const filteredPunters = useMemo(() => {
-    return punters.filter((p) => {
-      const matchesText =
-        p.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        p.email.toLowerCase().includes(searchText.toLowerCase());
-      const matchesStatus = statusFilter === "all" || p.status === statusFilter;
-      return matchesText && matchesStatus;
-    });
-  }, [punters, searchText, statusFilter]);
+    if (statusFilter === "all") return punters;
+    return punters.filter((p) => p.status === statusFilter);
+  }, [punters, statusFilter]);
 
   const columns: ColumnDef<PunterData>[] = [
     {
@@ -141,7 +144,7 @@ export function PunterSearch({
               type="text"
               placeholder="Search..."
               value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              onChange={(e) => onSearchChange?.(e.target.value)}
             />
           </div>
 
@@ -176,7 +179,7 @@ export function PunterSearch({
             <Button
               variant="primary"
               onClick={() => {
-                setSearchText("");
+                onSearchChange?.("");
                 setStatusFilter("all");
               }}
             >
@@ -195,8 +198,10 @@ export function PunterSearch({
           loading={isLoading}
           emptyMessage={
             punters.length === 0
-              ? "No punters found"
-              : "No results match your filters"
+              ? searchText.trim()
+                ? "No punters match your search"
+                : "No punters found"
+              : "No results match your status filter"
           }
         />
       </div>
