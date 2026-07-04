@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { adminFetch } from "../../lib/admin-fetch";
+import { usePermissions } from "../../lib/permissions";
 import {
   Badge,
   Button,
@@ -72,6 +73,10 @@ function AMLPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  // GAP-84 (§29): AML mutations are compliance:write server-side; disable the
+  // controls for a read-only caller so the UI enforces the same scope.
+  const { can } = usePermissions();
+  const canWrite = can("compliance:write");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -257,7 +262,7 @@ function AMLPageContent() {
         <Button
           variant="secondary"
           size="sm"
-          disabled={busy || row.status !== "open"}
+          disabled={busy || row.status !== "open" || !canWrite}
           onClick={() => void dismiss(row.id)}
           data-testid={`aml-alert-dismiss-${row.id}`}
         >
@@ -289,7 +294,7 @@ function AMLPageContent() {
           <Button
             variant="secondary"
             size="sm"
-            disabled={busy || row.status !== "open"}
+            disabled={busy || row.status !== "open" || !canWrite}
             onClick={() => void dispositionCase(row, "investigating")}
           >
             Investigate
@@ -297,7 +302,7 @@ function AMLPageContent() {
           <Button
             variant="primary"
             size="sm"
-            disabled={busy || row.status.startsWith("closed_")}
+            disabled={busy || row.status.startsWith("closed_") || !canWrite}
             onClick={() => void dispositionCase(row, "closed_sar_filed")}
             data-testid={`aml-case-sar-${row.id}`}
           >
@@ -306,7 +311,7 @@ function AMLPageContent() {
           <Button
             variant="secondary"
             size="sm"
-            disabled={busy || row.status.startsWith("closed_")}
+            disabled={busy || row.status.startsWith("closed_") || !canWrite}
             onClick={() => void dispositionCase(row, "closed_no_action")}
           >
             Close (no action)
@@ -349,7 +354,7 @@ function AMLPageContent() {
             variant="secondary"
             size="sm"
             onClick={runScan}
-            disabled={busy}
+            disabled={busy || !canWrite}
           >
             Run scan
           </Button>
@@ -408,7 +413,7 @@ function AMLPageContent() {
               />
               <Button
                 variant="primary"
-                disabled={busy}
+                disabled={busy || !canWrite}
                 onClick={openCase}
                 data-testid="aml-open-case"
               >
