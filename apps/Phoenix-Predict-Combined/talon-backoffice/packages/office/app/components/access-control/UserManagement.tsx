@@ -156,11 +156,28 @@ export default function UserManagement({ users, roles, onChanged }: Props) {
       width: 200,
       render: (_, user) => (
         <Space>
-          <Button size="small" onClick={() => setEditUser(user)}>
+          {/* GAP-84: user/role mutations are gated on users:write, so a
+              read-only admin sees them disabled (backend still enforces). */}
+          <Button
+            size="small"
+            onClick={() => setEditUser(user)}
+            disabled={!canManageUsers}
+            title={
+              canManageUsers ? undefined : "Requires the users:write permission"
+            }
+          >
             Edit roles
           </Button>
-          <Dropdown menu={rowMenu(user)} trigger={["click"]}>
-            <Button size="small" aria-label="More actions">
+          <Dropdown
+            menu={rowMenu(user)}
+            trigger={["click"]}
+            disabled={!canManageUsers}
+          >
+            <Button
+              size="small"
+              aria-label="More actions"
+              disabled={!canManageUsers}
+            >
               ⋯
             </Button>
           </Dropdown>
