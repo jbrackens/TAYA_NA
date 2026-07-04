@@ -769,6 +769,9 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 			slog.Info("communications: store initialized")
 		}
 	}
+	// Cross-domain case center (GAP-32 slice 1, §19). Read-only aggregation over
+	// the AML + surveillance case tables; no new table.
+	registerCasesAdminRoutes(mux, walletService.DB())
 	// DB-backed feature-flag / config store (P2-1 peripheral). Editing flags
 	// can change compliance posture, so writes are super-admin only.
 	if cfgDB := walletService.DB(); cfgDB != nil {
