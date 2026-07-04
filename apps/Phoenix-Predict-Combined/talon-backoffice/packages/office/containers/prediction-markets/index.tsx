@@ -31,6 +31,7 @@ import type {
 } from "@phoenix-ui/api-client/src/prediction-types";
 import DraftFromArticleModal from "./DraftFromArticleModal";
 import CreateEventModal from "./CreateEventModal";
+import EligibilityTagsModal from "./EligibilityTagsModal";
 import type { MarketCandidate } from "../../lib/ai/types";
 
 const { Text } = Typography;
@@ -124,6 +125,8 @@ export default function PredictionMarketsContainer() {
   // P3-07 per-market jurisdiction overlay editor (null market = modal closed).
   const [jurisForm] = Form.useForm();
   const [jurisMarket, setJurisMarket] = useState<PredictionMarket | null>(null);
+  // GAP-98: per-market eligibility-tag config editor (null = closed).
+  const [eligMarket, setEligMarket] = useState<PredictionMarket | null>(null);
   const [jurisLoading, setJurisLoading] = useState(false);
   const [jurisSaving, setJurisSaving] = useState(false);
   const [lifecycleAuditMarket, setLifecycleAuditMarket] =
@@ -762,6 +765,14 @@ export default function PredictionMarketsContainer() {
           >
             Region
           </Button>
+          <Button
+            size="small"
+            disabled={!canEdit}
+            onClick={() => setEligMarket(record)}
+            data-testid={`market-eligibility-${record.id}`}
+          >
+            Eligibility
+          </Button>
           <Button size="small" onClick={() => openLifecycleAudit(record)}>
             Audit
           </Button>
@@ -1057,6 +1068,12 @@ export default function PredictionMarketsContainer() {
           </Form.Item>
         </Form>
       </Modal>
+
+      <EligibilityTagsModal
+        market={eligMarket}
+        canEdit={canEdit}
+        onClose={() => setEligMarket(null)}
+      />
 
       <Modal
         title={
