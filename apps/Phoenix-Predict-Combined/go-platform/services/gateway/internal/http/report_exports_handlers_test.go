@@ -1,10 +1,12 @@
 package http
 
 import (
+	"context"
 	"database/sql"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -101,6 +103,66 @@ func TestWalletLedgerExportGates(t *testing.T) {
 				t.Fatalf("%s: expected 400 for malformed date, got %d", bad, res.Code)
 			}
 		})
+	}
+}
+
+// GAP-73 (§24 audit-evidence integrity): a row-fetch error mid-export must NOT
+// deliver a truncated CSV as a successful 200 — the buffered writeCSVReport
+// returns a clean error with nothing written to the client. This forces a real
+// mid-scan failure by scanning a NULL user_id (temporarily nullable) into a Go
+// string. Against the old direct-streaming code the header row + a 200 were
+// already committed before the scan reached the NULL row (200 + text/csv +
+// partial body); the buffered version yields a non-2xx with no CSV body. Opt-in.
+func TestWalletLedgerExportNoTruncationLive(t *testing.T) {
+	dsn := reportExportLiveDSN(t)
+	db := openLiveDB(t, dsn)
+	defer db.Close()
+	ctx := context.Background()
+
+	if _, err := db.ExecContext(ctx, `
+CREATE TABLE IF NOT EXISTS wallet_ledger (
+  id BIGSERIAL PRIMARY KEY, user_id TEXT NOT NULL, entry_type TEXT NOT NULL,
+  fund_type TEXT NOT NULL DEFAULT 'real', amount_cents BIGINT NOT NULL CHECK (amount_cents > 0),
+  balance_cents BIGINT NOT NULL, idempotency_key TEXT NOT NULL, reason TEXT,
+  transaction_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (entry_type, user_id, idempotency_key))`); err != nil {
+		t.Fatalf("ensure wallet_ledger: %v", err)
+	}
+
+	// Temporarily allow NULL user_id, then a NULL row that fails to scan into a
+	// Go string mid-export. LIFO defers: delete the NULL row FIRST, then restore
+	// the NOT NULL constraint.
+	if _, err := db.ExecContext(ctx, `ALTER TABLE wallet_ledger ALTER COLUMN user_id DROP NOT NULL`); err != nil {
+		t.Fatalf("drop not null: %v", err)
+	}
+	defer func() { _, _ = db.ExecContext(ctx, `ALTER TABLE wallet_ledger ALTER COLUMN user_id SET NOT NULL`) }()
+	defer func() {
+		_, _ = db.ExecContext(ctx, `DELETE FROM wallet_ledger WHERE idempotency_key = 'gap73-null-row'`)
+	}()
+	if _, err := db.ExecContext(ctx, `
+INSERT INTO wallet_ledger (user_id, entry_type, fund_type, amount_cents, balance_cents, idempotency_key, reason, transaction_time)
+VALUES (NULL,'credit','real',1,1,'gap73-null-row','x', NOW())`); err != nil {
+		t.Fatalf("seed null row: %v", err)
+	}
+
+	mux := http.NewServeMux()
+	registerReportExportRoutes(mux, db)
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/reports/wallet-ledger.csv", nil)
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin", "a@test.local", "admin"))
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+
+	// The failure must surface as a non-2xx with NO partial CSV delivered.
+	if res.Code >= 200 && res.Code < 300 {
+		t.Fatalf("scan failure delivered a %d (truncated success?) body=%q", res.Code, res.Body.String())
+	}
+	if ct := res.Header().Get("Content-Type"); strings.HasPrefix(ct, "text/csv") {
+		t.Fatalf("error response must not carry a text/csv content-type, got %q", ct)
+	}
+	if strings.Contains(res.Body.String(), "id,user_id,entry_type") {
+		t.Fatalf("error response leaked a partial CSV header row: %q", res.Body.String())
 	}
 }
 
