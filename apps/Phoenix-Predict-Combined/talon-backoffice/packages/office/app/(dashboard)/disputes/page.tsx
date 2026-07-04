@@ -7,6 +7,7 @@ import {
   ErrorState,
 } from "../../components/shared";
 import { adminFetch } from "../../lib/admin-fetch";
+import { usePermissions } from "../../lib/permissions";
 
 // ADR-0004 #6 — dispute-review queue.
 //
@@ -101,6 +102,10 @@ function sourceChipClassName(healthy: boolean) {
 }
 
 function DisputesPageContent() {
+  // GAP-84 (§29): dispute resolution is settlements:resolve server-side; disable
+  // the resolve controls for a read-only caller.
+  const { can } = usePermissions();
+  const canResolve = can("settlements:resolve");
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [sources, setSources] = useState<SourceHealth[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -327,7 +332,7 @@ function DisputesPageContent() {
                         className="mb-2 min-h-14 w-full min-w-[220px] resize-y rounded-lg border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-2,#fcfaf5)] px-2.5 py-2 font-[inherit] text-[13px] text-[var(--t1,#1a1a1a)] placeholder:text-[var(--t3,#8b8378)] focus:border-[var(--focus-ring,#0e7a53)] focus:outline-none"
                         placeholder="Resolution note (optional)"
                         value={notes[dispute.id] ?? ""}
-                        disabled={isRowBusy}
+                        disabled={isRowBusy || !canResolve}
                         onChange={(e) =>
                           setNotes((prev) => ({
                             ...prev,
@@ -339,7 +344,7 @@ function DisputesPageContent() {
                         <button
                           className={`${buttonBaseClassName} border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] text-[var(--t1,#1a1a1a)] hover:enabled:border-[var(--focus-ring,#0e7a53)] hover:enabled:text-[var(--focus-ring,#0e7a53)]`}
                           type="button"
-                          disabled={isRowBusy}
+                          disabled={isRowBusy || !canResolve}
                           onClick={() => resolveDispute(dispute, "reject")}
                         >
                           {isRowBusy ? "Working…" : "Reject"}
@@ -347,7 +352,7 @@ function DisputesPageContent() {
                         <button
                           className={`${buttonBaseClassName} border-[var(--no-text,#a8472d)] bg-[var(--no-text,#a8472d)] text-white hover:enabled:border-[#8b3a25] hover:enabled:bg-[#8b3a25]`}
                           type="button"
-                          disabled={isRowBusy}
+                          disabled={isRowBusy || !canResolve}
                           onClick={() => setPendingUphold(dispute)}
                         >
                           Uphold (void &amp; return points)

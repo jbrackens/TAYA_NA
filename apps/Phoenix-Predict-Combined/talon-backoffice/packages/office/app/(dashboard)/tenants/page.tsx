@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { adminFetch } from "../../lib/admin-fetch";
+import { usePermissions } from "../../lib/permissions";
 import {
   Badge,
   Button,
@@ -26,6 +27,10 @@ function TenantsPageContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // GAP-84 (§29): tenant/brand mutations are config:write server-side; disable
+  // for a read-only caller.
+  const { can } = usePermissions();
+  const canWrite = can("config:write");
   const [notice, setNotice] = useState<string | null>(null);
   const [newId, setNewId] = useState("");
   const [newName, setNewName] = useState("");
@@ -127,7 +132,7 @@ function TenantsPageContent() {
           <Button
             variant="danger"
             size="sm"
-            disabled={busy}
+            disabled={busy || !canWrite}
             onClick={() => void setStatus(row, "suspended")}
           >
             Suspend
@@ -136,7 +141,7 @@ function TenantsPageContent() {
           <Button
             variant="primary"
             size="sm"
-            disabled={busy}
+            disabled={busy || !canWrite}
             onClick={() => void setStatus(row, "active")}
           >
             Activate
@@ -209,7 +214,7 @@ function TenantsPageContent() {
               </div>
               <Button
                 variant="primary"
-                disabled={busy}
+                disabled={busy || !canWrite}
                 onClick={create}
                 data-testid="tenant-create"
               >

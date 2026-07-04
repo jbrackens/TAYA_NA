@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { adminFetch } from "../../lib/admin-fetch";
+import { usePermissions } from "../../lib/permissions";
 import {
   Badge,
   Button,
@@ -54,6 +55,10 @@ function BonusesPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  // GAP-84 (§29): bonus grants are finances:write server-side; disable for a
+  // read-only caller.
+  const { can } = usePermissions();
+  const canWrite = can("finances:write");
 
   // Grant form
   const [grantCampaignId, setGrantCampaignId] = useState("");
@@ -251,7 +256,7 @@ function BonusesPageContent() {
               </div>
               <Button
                 variant="primary"
-                disabled={busy}
+                disabled={busy || !canWrite}
                 onClick={grant}
                 data-testid="grant-submit"
               >
