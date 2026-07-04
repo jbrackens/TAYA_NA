@@ -12,6 +12,7 @@ import type {
   RGTabData,
   RiskTabData,
   PlayerBonusRow,
+  PlayerCaseRow,
   SettlementRow,
   WalletLedgerRow,
 } from "../../../components/users/PunterProfile";
@@ -126,6 +127,7 @@ function UserDetailPageContent() {
   const [rg, setRg] = useState<RGTabData | undefined>(undefined);
   const [risk, setRisk] = useState<RiskTabData | undefined>(undefined);
   const [bonuses, setBonuses] = useState<PlayerBonusRow[]>([]);
+  const [cases, setCases] = useState<PlayerCaseRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -276,6 +278,19 @@ function UserDetailPageContent() {
     }
   };
 
+  const loadCases = async () => {
+    try {
+      const res = await adminFetch(
+        `/api/v1/admin/cases?subjectId=${encodeURIComponent(punterId)}`,
+      );
+      if (!res.ok) return;
+      const d = await res.json();
+      setCases(Array.isArray(d?.cases) ? d.cases : []);
+    } catch {
+      // ignore — Cases tab reports none
+    }
+  };
+
   useEffect(() => {
     const fetchPunter = async () => {
       try {
@@ -288,6 +303,7 @@ function UserDetailPageContent() {
         await loadRG();
         await loadRisk();
         await loadBonuses();
+        await loadCases();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load user");
       } finally {
@@ -443,6 +459,7 @@ function UserDetailPageContent() {
             rg={rg}
             risk={risk}
             bonuses={bonuses}
+            cases={cases}
           />
         </div>
 

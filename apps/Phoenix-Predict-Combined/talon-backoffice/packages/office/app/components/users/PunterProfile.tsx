@@ -10,7 +10,8 @@ type PunterProfileTab =
   | "kyc"
   | "limits"
   | "risk"
-  | "bonuses";
+  | "bonuses"
+  | "cases";
 
 // A player's bonus/reward grant as returned by
 // GET /api/v1/admin/bonuses?user_id={id} (GAP-35 Bonuses/Rewards tab, §10).
@@ -24,6 +25,18 @@ export interface PlayerBonusRow {
   playProgressPct: number;
   grantedAt: string;
   expiresAt: string;
+}
+
+// A player's case as returned by GET /api/v1/admin/cases?subjectId={id}
+// (GAP-35 Cases tab over the GAP-32 cross-domain case center, §19).
+export interface PlayerCaseRow {
+  id: string;
+  type: string;
+  title: string;
+  status: string;
+  priority: string;
+  openedBy: string;
+  createdAt: string;
 }
 
 export interface PunterProfileData {
@@ -124,6 +137,8 @@ interface PunterProfileProps {
   risk?: RiskTabData;
   /** bonus/reward grants from /api/v1/admin/bonuses?user_id={id} */
   bonuses?: PlayerBonusRow[];
+  /** cases from /api/v1/admin/cases?subjectId={id} (cross-domain case center) */
+  cases?: PlayerCaseRow[];
 }
 
 const pointAmount = (n: number) =>
@@ -189,6 +204,7 @@ export function PunterProfile({
   rg,
   risk,
   bonuses = [],
+  cases = [],
 }: PunterProfileProps) {
   const [activeTab, setActiveTab] = useState<PunterProfileTab>("overview");
   const [overrideTier, setOverrideTier] = useState("");
@@ -401,6 +417,13 @@ export function PunterProfile({
               data-testid="profile-bonuses-tab"
             >
               Bonuses
+            </button>
+            <button
+              className={tabButtonClassName(activeTab === "cases")}
+              onClick={() => setActiveTab("cases")}
+              data-testid="profile-cases-tab"
+            >
+              Cases
             </button>
           </div>
         </Card>
@@ -859,6 +882,46 @@ export function PunterProfile({
                           </td>
                           <td className={histTdClassName}>
                             {fmtDate(b.expiresAt)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+          {activeTab === "cases" && (
+            <div
+              className={tabContentClassName}
+              data-testid="profile-cases-content"
+            >
+              <h4 className="mt-0 text-[var(--t1,#1a1a1a)]">Cases</h4>
+              {cases.length === 0 ? (
+                <p>No compliance cases for this player.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-[13px]">
+                    <thead>
+                      <tr>
+                        <th className={histThClassName}>Type</th>
+                        <th className={histThClassName}>Title</th>
+                        <th className={histThClassName}>Status</th>
+                        <th className={histThClassName}>Priority</th>
+                        <th className={histThClassName}>Opened by</th>
+                        <th className={histThClassName}>Opened</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cases.map((c) => (
+                        <tr key={c.id} data-testid="case-row">
+                          <td className={histTdClassName}>{c.type}</td>
+                          <td className={histTdClassName}>{c.title}</td>
+                          <td className={histTdClassName}>{c.status}</td>
+                          <td className={histTdClassName}>{c.priority}</td>
+                          <td className={histTdClassName}>{c.openedBy}</td>
+                          <td className={histTdClassName}>
+                            {fmtDate(c.createdAt)}
                           </td>
                         </tr>
                       ))}
