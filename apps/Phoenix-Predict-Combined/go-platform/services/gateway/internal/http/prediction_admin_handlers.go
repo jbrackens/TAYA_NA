@@ -132,7 +132,13 @@ func registerAuditChainVerifyRoute(mux *stdhttp.ServeMux, path string) {
 // and needs a flow decision). Returning 501 beats faking success (rule #7).
 func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predictionAdminReader, wallet adminWalletBalanceReader) {
 	mux.Handle(prefix, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if err := requireAdminRole(r); err != nil {
+		// GAP-86 (§7/§27/§29 least-privilege): the Profile-360 READ surface gates on
+		// users:read — the same permission its sibling reads use (communications
+		// users:read; KYC/RG sub-reads compliance:read) — instead of the coarse
+		// role==admin check that let any admin session read every player regardless
+		// of grant. The mutating sub-actions below layer their own stricter gate
+		// (status/revoke-sessions require users:write).
+		if err := requireAdminPermission(r, "users:read"); err != nil {
 			return err
 		}
 		rest := strings.Trim(strings.TrimPrefix(r.URL.Path, prefix), "/")
@@ -360,7 +366,9 @@ func registerAdminPuntersList(mux *stdhttp.ServeMux, path string, repo predictio
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
-		if err := requireAdminRole(r); err != nil {
+		// GAP-86 (§7/§27 least-privilege): the player-search/list READ gates on
+		// users:read, not the coarse role==admin check.
+		if err := requireAdminPermission(r, "users:read"); err != nil {
 			return err
 		}
 
