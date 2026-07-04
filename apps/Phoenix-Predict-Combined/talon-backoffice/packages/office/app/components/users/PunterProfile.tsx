@@ -11,7 +11,8 @@ type PunterProfileTab =
   | "limits"
   | "risk"
   | "bonuses"
-  | "cases";
+  | "cases"
+  | "communications";
 
 // A player's bonus/reward grant as returned by
 // GET /api/v1/admin/bonuses?user_id={id} (GAP-35 Bonuses/Rewards tab, §10).
@@ -36,6 +37,22 @@ export interface PlayerCaseRow {
   status: string;
   priority: string;
   openedBy: string;
+  createdAt: string;
+}
+
+// A sent communication as returned by GET /api/v1/admin/communications/{userId}
+// (GAP-90 Communications tab over the GAP-43 comms history, §20 / Scenario 12).
+// Mirrors internal/communications.Communication. status is one of
+// sent | recorded | failed (dispatch is fail-closed; recorded = stored but not
+// externally dispatched).
+export interface PlayerCommunicationRow {
+  id: number;
+  channel: string;
+  templateKey?: string;
+  subject?: string;
+  body?: string;
+  status: string;
+  actorId?: string;
   createdAt: string;
 }
 
@@ -139,6 +156,8 @@ interface PunterProfileProps {
   bonuses?: PlayerBonusRow[];
   /** cases from /api/v1/admin/cases?subjectId={id} (cross-domain case center) */
   cases?: PlayerCaseRow[];
+  /** sent communications from /api/v1/admin/communications/{id} (GAP-90, §20) */
+  communications?: PlayerCommunicationRow[];
 }
 
 const pointAmount = (n: number) =>
@@ -205,6 +224,7 @@ export function PunterProfile({
   risk,
   bonuses = [],
   cases = [],
+  communications = [],
 }: PunterProfileProps) {
   const [activeTab, setActiveTab] = useState<PunterProfileTab>("overview");
   const [overrideTier, setOverrideTier] = useState("");
@@ -424,6 +444,13 @@ export function PunterProfile({
               data-testid="profile-cases-tab"
             >
               Cases
+            </button>
+            <button
+              className={tabButtonClassName(activeTab === "communications")}
+              onClick={() => setActiveTab("communications")}
+              data-testid="profile-communications-tab"
+            >
+              Communications
             </button>
           </div>
         </Card>
@@ -922,6 +949,59 @@ export function PunterProfile({
                           <td className={histTdClassName}>{c.openedBy}</td>
                           <td className={histTdClassName}>
                             {fmtDate(c.createdAt)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* GAP-90 slice 1 (§20 Notes, Documents & Communication History;
+              Scenario 12): read-only sent-communication history. The
+              agent-initiated templated send (slice 2) lands as a gated form
+              here. */}
+          {activeTab === "communications" && (
+            <div
+              className={tabContentClassName}
+              data-testid="profile-communications-content"
+            >
+              <h4 className="mt-0 text-[var(--t1,#1a1a1a)]">
+                Communication history
+              </h4>
+              {communications.length === 0 ? (
+                <p>No communications sent to this player.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-[13px]">
+                    <thead>
+                      <tr>
+                        <th className={histThClassName}>Sent</th>
+                        <th className={histThClassName}>Channel</th>
+                        <th className={histThClassName}>Template</th>
+                        <th className={histThClassName}>Subject</th>
+                        <th className={histThClassName}>Status</th>
+                        <th className={histThClassName}>By</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {communications.map((c) => (
+                        <tr key={c.id} data-testid="communication-row">
+                          <td className={histTdClassName}>
+                            {fmtDate(c.createdAt)}
+                          </td>
+                          <td className={histTdClassName}>{c.channel}</td>
+                          <td className={histTdClassName}>
+                            {c.templateKey || "—"}
+                          </td>
+                          <td className={histTdClassName}>
+                            {c.subject || "—"}
+                          </td>
+                          <td className={histTdClassName}>{c.status}</td>
+                          <td className={histTdClassName}>
+                            {c.actorId || "—"}
                           </td>
                         </tr>
                       ))}

@@ -13,6 +13,7 @@ import type {
   RiskTabData,
   PlayerBonusRow,
   PlayerCaseRow,
+  PlayerCommunicationRow,
   SettlementRow,
   WalletLedgerRow,
 } from "../../../components/users/PunterProfile";
@@ -128,6 +129,9 @@ function UserDetailPageContent() {
   const [risk, setRisk] = useState<RiskTabData | undefined>(undefined);
   const [bonuses, setBonuses] = useState<PlayerBonusRow[]>([]);
   const [cases, setCases] = useState<PlayerCaseRow[]>([]);
+  const [communications, setCommunications] = useState<
+    PlayerCommunicationRow[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -291,6 +295,22 @@ function UserDetailPageContent() {
     }
   };
 
+  // GAP-90 (§20 Communication History): sent-communication history for the
+  // Communications tab. Degrade-safe — a 403 (no users:read) or any failure
+  // leaves the tab empty rather than failing the whole profile load.
+  const loadCommunications = async () => {
+    try {
+      const res = await adminFetch(
+        `/api/v1/admin/communications/${encodeURIComponent(punterId)}`,
+      );
+      if (!res.ok) return;
+      const d = await res.json();
+      setCommunications(Array.isArray(d?.items) ? d.items : []);
+    } catch {
+      // ignore — Communications tab reports none
+    }
+  };
+
   useEffect(() => {
     const fetchPunter = async () => {
       try {
@@ -304,6 +324,7 @@ function UserDetailPageContent() {
         await loadRisk();
         await loadBonuses();
         await loadCases();
+        await loadCommunications();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load user");
       } finally {
@@ -460,6 +481,7 @@ function UserDetailPageContent() {
             risk={risk}
             bonuses={bonuses}
             cases={cases}
+            communications={communications}
           />
         </div>
 
