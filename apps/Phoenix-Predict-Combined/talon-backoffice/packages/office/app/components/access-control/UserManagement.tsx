@@ -15,6 +15,7 @@ import {
 } from "antd";
 import {
   deleteUser,
+  resetUserMfa,
   setUserStatus,
   SUPER_ADMIN_ROLE_ID,
   type RbacRole,
@@ -85,12 +86,42 @@ export default function UserManagement({ users, roles, onChanged }: Props) {
     });
   };
 
+  // GAP-88 (§25 / §11): lost-device MFA recovery. Security-sensitive — clearing
+  // a staff MFA factor lets them re-enroll, so confirm before proxying to the
+  // audited mfa-reset endpoint (mfa.admin_reset). The whole row menu is already
+  // gated on users:write; the backend re-checks it regardless.
+  const confirmMfaReset = (user: RbacUser) => {
+    modal.confirm({
+      title: `Reset MFA for ${user.name}?`,
+      content: `This clears ${user.email}'s multi-factor authentication factor so they can re-enroll on next sign-in. Use only for verified lost-device recovery — the action is audited.`,
+      okText: "Reset MFA",
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          await resetUserMfa(user.id);
+          message.success(`MFA reset for ${user.email}`);
+          await onChanged();
+        } catch (err: unknown) {
+          message.error(
+            err instanceof Error ? err.message : "Failed to reset MFA",
+          );
+          throw err; // keep the dialog open on failure
+        }
+      },
+    });
+  };
+
   const rowMenu = (user: RbacUser): MenuProps => ({
     items: [
       {
         key: "reset",
         label: "Reset password",
         onClick: () => setResetUser(user),
+      },
+      {
+        key: "mfa-reset",
+        label: "Reset MFA",
+        onClick: () => confirmMfaReset(user),
       },
       {
         key: "status",

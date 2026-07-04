@@ -130,6 +130,19 @@ export async function resetUserPassword(
   );
 }
 
+// GAP-88 (PAM §25 Admin Operations / §11 Authentication): lost-device MFA
+// recovery — clear a staff member's MFA factor so they can re-enroll. Proxies
+// to the audited PUT /users/{id}/mfa-reset endpoint (mfa.admin_reset). The
+// operator control is gated on users:write in UserManagement.
+export async function resetUserMfa(userId: string): Promise<void> {
+  await parseJSON<{ userId: string; mfaReset: boolean }>(
+    await adminFetch(
+      `${BASE}/users/${encodeURIComponent(userId)}/mfa-reset`,
+      jsonInit("PUT", {}),
+    ),
+  );
+}
+
 export async function deleteUser(userId: string): Promise<void> {
   await parseJSON<{ deleted: boolean }>(
     await adminFetch(`${BASE}/users/${encodeURIComponent(userId)}`, {

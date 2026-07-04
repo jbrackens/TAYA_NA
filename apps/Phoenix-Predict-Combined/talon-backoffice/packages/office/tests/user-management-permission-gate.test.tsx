@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { App } from "antd";
 import UserManagement from "../app/components/access-control/UserManagement";
 import { PermissionsContext } from "../app/lib/permissions";
@@ -44,5 +44,48 @@ describe("UserManagement permission gate", () => {
     expect(byName(/create user/i)).toBeDisabled();
     expect(byName(/edit roles/i)).toBeDisabled();
     expect(byName(/more actions/i)).toBeDisabled();
+  });
+});
+
+// GAP-88 (§25 / §11): the row menu offers lost-device MFA recovery, which
+// proxies to the audited PUT /users/{id}/mfa-reset endpoint after a confirm.
+describe("UserManagement MFA reset", () => {
+  const realFetch = globalThis.fetch;
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+    vi.restoreAllMocks();
+  });
+
+  it("resets MFA via the audited mfa-reset endpoint after confirmation", async () => {
+    const calls: { url: string; method: string }[] = [];
+    globalThis.fetch = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      calls.push({
+        url: String(input),
+        method: (init?.method || "GET").toUpperCase(),
+      });
+      return Promise.resolve(
+        new Response(JSON.stringify({ userId: "u-1", mfaReset: true }), {
+          status: 200,
+        }),
+      );
+    }) as unknown as typeof fetch;
+
+    renderUM(["users:write", "users:read"]);
+    // Open the row action menu, then pick "Reset MFA".
+    fireEvent.click(byName(/more actions/i));
+    fireEvent.click(await screen.findByText("Reset MFA"));
+    // Confirm in the modal — the OK button carries the same label but is the
+    // only element with the button role matching it.
+    fireEvent.click(await screen.findByRole("button", { name: /reset mfa/i }));
+
+    await waitFor(() =>
+      expect(
+        calls.some(
+          (c) =>
+            c.method === "PUT" &&
+            c.url.includes("/api/v1/admin/users/u-1/mfa-reset"),
+        ),
+      ).toBe(true),
+    );
   });
 });
