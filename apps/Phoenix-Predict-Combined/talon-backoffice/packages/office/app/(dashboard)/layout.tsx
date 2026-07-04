@@ -110,6 +110,12 @@ const navItems: NavItem[] = [
   },
   { href: "/content", label: "Content", icon: "file-text" },
   {
+    href: "/notifications/templates",
+    label: "Templates",
+    icon: "file-text",
+    requiredPermission: "notifications:read",
+  },
+  {
     href: "/segments",
     label: "Segments",
     icon: "tags",
