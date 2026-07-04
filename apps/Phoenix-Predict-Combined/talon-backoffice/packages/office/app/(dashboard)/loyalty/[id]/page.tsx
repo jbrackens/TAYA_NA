@@ -10,6 +10,7 @@ import {
   LoadingSpinner,
 } from "../../../components/shared";
 import { adminFetch } from "../../../lib/admin-fetch";
+import { usePermissions } from "../../../lib/permissions";
 
 interface LoyaltyAccount {
   accountId: string;
@@ -66,6 +67,13 @@ function LoyaltyDetailPageContent() {
   const params = useParams();
   const router = useRouter();
   const playerId = params?.id as string;
+  // GAP-97 (§29 read-only permission scope): the manual points-adjustment moves
+  // balances and the backend gates it on finances:write (predict_loyalty_admin
+  // _handlers.go). Gate the Apply-Adjustment control fail-closed on the same
+  // permission so a read-only caller (e.g. the Auditor) sees it disabled instead
+  // of hitting a backend 403. Same GAP-84/GAP-95 §29 pattern.
+  const { can } = usePermissions();
+  const canAdjust = can("finances:write");
   const [account, setAccount] = useState<LoyaltyAccount | null>(null);
   const [ledger, setLedger] = useState<LoyaltyLedgerEntry[]>([]);
   const [tiers, setTiers] = useState<LoyaltyTier[]>([]);
@@ -474,7 +482,13 @@ function LoyaltyDetailPageContent() {
 
               <button
                 className={buttonClassName(false)}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !canAdjust}
+                title={
+                  canAdjust
+                    ? undefined
+                    : "Requires the finances:write permission"
+                }
+                data-testid="loyalty-adjust-submit"
               >
                 {isSubmitting ? "Saving..." : "Apply Adjustment"}
               </button>
