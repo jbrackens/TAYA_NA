@@ -798,7 +798,7 @@ sign-off — that attestation remains a separate human step.
 | Area | Spec Section | Scenario | Implemented Status | Scenario Status | Note |
 |---|---|---|---|---|---|
 | Admin auth & RBAC | 6, 7, 11, 27 | 1 | **Built** | Pass | MFA now **mandatory for admin roles** (P0-1 `6914421c`,`268157b8`), RBAC (mig 027/038/040) + permission-denial audit (GAP-25 `d719804f`), least-privilege personas (GAP-14 `bd0634db`), admin MFA-reset (GAP-15 `21743d22`), **admin session-revocation / kick-session (GAP-76 `7252cf97`)**. Residual: WebAuthn/passkey option (GAP-71); guaranteed single-session "steal-lock" deferred (GAP-76 slice 2) |
-| Player search & 360 | 10 | 2 | **Partial** | Partial | Profile-360 Built (KYC tab P0-3 `ad6e84c4`, Limits tab P1-3 `d610ecdf`, Bonuses/Cases GAP-35); **but office player SEARCH is unwired (GAP-81)** — `users/page.tsx` hardcodes `pageSize=100` + filters in-memory, never calls the backend `?search=`, so any punter outside the newest 100 is unfindable (Scenario 2 "search by email → correct trader" fails on a real book) |
+| Player search & 360 | 10 | 2 | **Built** | Pass | Profile-360 Built (KYC tab P0-3 `ad6e84c4`, Limits tab P1-3 `d610ecdf`, Bonuses/Cases GAP-35); **office player search now SERVER-SIDE (GAP-81 `409c3a04`)** — debounced `?search=` refetch over the full population, so "search by email → correct trader" holds on a real book. Residual: id/name/phone/national-ID predicate breadth = GAP-34 (BLOCKED) |
 | Account lifecycle | 11 | 3 | **Built** | Pass | Suspension read on trading+login with reason+audit (GAP-9/10) |
 | KYC | 12 | 4 | **Built** | Pass | Fail-closed (P0-2 `5adf223c`) + admin review UI + document BYTEA storage (P0-3) + expiry re-trigger (GAP-17 `59f7eb6d`) + request-more-docs (GAP-18 `d0d314f6`). Residual: IDV vendor (GAP-19 ⚑) |
 | AML / Risk | 12, 18 | 5 | **Partial** | Partial | Alert→case→disposition plumbing (`registerAMLAdminRoutes`) + risk-profile rating (GAP-12) built; **rule set / SAR BLOCKED on regime** (P0-5 ⚑) |
@@ -823,10 +823,10 @@ sign-off — that attestation remains a separate human step.
 
 Summary: as of the **2026-07-04 Termination-pass-B reconciliation** (refining the 2026-07-03
 evidence pass + the GAP-27 schema-domain reconciliation), **~12 areas Built, ~10 Partial, 0 Missing**;
-acceptance scenarios are **9 Pass / 10 Partial / 1 Fail** (Scenario 18, DSAR) — updated by the
+acceptance scenarios are **10 Pass / 9 Partial / 1 Fail** (Scenario 18, DSAR) — updated by the
 2026-07-04 pass B **round 2** (spec-section walk), which reopened the loop with 5 new gaps
-(GAP-80…84; see `PROGRESS_LEDGER.md`) and downgraded **Player search & 360 (Scenario 2)
-Pass→Partial** (GAP-81, office search unwired). The earlier 07-04 pass made
+(GAP-80…84; see `PROGRESS_LEDGER.md`). GAP-81 (office server-side search) has since landed,
+restoring **Player search & 360 (Scenario 2)** to Built/Pass; GAP-80/82/83-s1 also DONE. The earlier 07-04 pass made
 three status changes vs the 07-03 baseline: **Notes & comms 12 Partial→Built/Pass** (GAP-43
 sent-communication history landed); **Bonus / rewards 14 Built/Pass→Partial** (GAP-77 — bonus
 turnover→conversion unwired from live trading); **Segmentation & CRM 13 Built/Pass→Partial** (GAP-79
