@@ -571,7 +571,15 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		} else {
 			survEngine := surveillance.NewEngine(survStore, survDB)
 			registerSurveillanceAdminRoutes(mux, survStore, surveillanceScannerAdapter{survEngine})
-			slog.Info("surveillance: market-integrity subsystem initialized")
+			// GAP-78: run the detectors CONTINUOUSLY, not just on manual
+			// /admin/surveillance/scan. Always-on when DB-backed — a back-office
+			// compliance control (not a user-facing money path), so it does not
+			// touch the launch prohibitions, exactly like the AML scanner below.
+			// 5-min sweep over a 15-min sliding window: lookback > interval so no
+			// trade slips between scans, and InsertAlert dedup makes the overlap
+			// harmless.
+			go survEngine.Run(context.Background(), 5*time.Minute, 15*time.Minute)
+			slog.Info("surveillance: market-integrity subsystem initialized (continuous)")
 		}
 	}
 

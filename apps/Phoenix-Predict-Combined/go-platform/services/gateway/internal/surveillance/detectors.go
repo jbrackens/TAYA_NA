@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"time"
 )
 
@@ -387,4 +388,40 @@ func (e *Engine) Scan(ctx context.Context, lookback time.Duration) ([]ScanResult
 		results = append(results, ScanResult{Detector: d.Name(), Found: len(alerts), Inserted: inserted})
 	}
 	return results, nil
+}
+
+// Run drives continuous market-integrity surveillance (GAP-78): it re-runs every
+// detector over a sliding [now-lookback, now] window on each tick until ctx is
+// cancelled, mirroring the always-on AML scanner (aml.Scanner.Run). Without this
+// the detectors only fire when an operator manually POSTs /admin/surveillance/scan,
+// so nothing is monitored between manual sweeps — a real §18 control gap for a
+// licensed venue.
+//
+// Idempotent by construction: InsertAlert dedupes on (detector, dedupe-key), so
+// overlapping windows (lookback > interval) never double-report. Pick lookback >
+// interval so no trade can slip between two consecutive scans. Blocks; run in a
+// goroutine. Scan errors are logged and the loop continues (a transient DB error
+// must not kill surveillance).
+func (e *Engine) Run(ctx context.Context, interval, lookback time.Duration) {
+	slog.Info("surveillance engine started", "interval", interval, "lookback", lookback)
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			slog.Info("surveillance engine stopped")
+			return
+		case <-ticker.C:
+			results, err := e.Scan(ctx, lookback)
+			if err != nil {
+				slog.Warn("surveillance engine: scan failed", "error", err)
+				continue
+			}
+			for _, r := range results {
+				if r.Inserted > 0 {
+					slog.Info("surveillance engine: new alerts", "detector", r.Detector, "inserted", r.Inserted)
+				}
+			}
+		}
+	}
 }
