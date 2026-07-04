@@ -47,6 +47,38 @@ func resetAuthMFA(ctx context.Context, userID, resetBy string) error {
 	return nil
 }
 
+// revokeUserSessions asks the auth service to terminate every live session for a
+// target user ("kick session", GAP-76, PAM spec §11 Session Management). Same
+// server-to-server, shared-secret posture as resetAuthMFA. Fail-closed: if the
+// auth URL or secret is unconfigured the capability is unavailable (error) — never
+// a silent success that would falsely tell an operator a compromised account had
+// been cut off.
+func revokeUserSessions(ctx context.Context, userID string) error {
+	authURL := strings.TrimSpace(os.Getenv("AUTH_SERVICE_URL"))
+	secret := strings.TrimSpace(os.Getenv("AUTH_INTERNAL_SECRET"))
+	if authURL == "" || secret == "" {
+		return httpx.Internal("session revocation is unavailable: auth-service integration not configured", nil)
+	}
+	payload, _ := json.Marshal(map[string]string{"userId": userID})
+	req, err := stdhttp.NewRequestWithContext(ctx, stdhttp.MethodPost,
+		strings.TrimRight(authURL, "/")+"/api/v1/auth/internal/sessions/revoke", bytes.NewReader(payload))
+	if err != nil {
+		return httpx.Internal("failed to build session revocation request", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Internal-Auth", secret)
+	client := &stdhttp.Client{Timeout: 5 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return httpx.Internal("failed to reach the auth service for session revocation", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != stdhttp.StatusOK {
+		return httpx.Internal("auth service rejected the session revocation", fmt.Errorf("status %d", resp.StatusCode))
+	}
+	return nil
+}
+
 // registerRBACAdminRoutes wires the back-office Role-Based Access Control admin
 // API the office "Access Control" screens consume:
 //

@@ -1053,6 +1053,39 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"userId": body.UserID, "reset": true})
 	}))
 
+	// Admin session revocation ("kick session", GAP-76 / §11). Terminates ALL
+	// live sessions for a target user so an operator can cut a compromised or
+	// just-suspended account. Same fail-closed internal-secret posture as MFA
+	// reset: INERT unless AUTH_INTERNAL_SECRET is set, reachable only
+	// server-to-server from the gateway, which adds the RBAC gate + compliance
+	// audit entry.
+	mux.Handle("/api/v1/auth/internal/sessions/revoke", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+		secret := strings.TrimSpace(os.Getenv("AUTH_INTERNAL_SECRET"))
+		if secret == "" {
+			return httpx.NotFound("not found")
+		}
+		if subtle.ConstantTimeCompare([]byte(secret), []byte(r.Header.Get("X-Internal-Auth"))) != 1 {
+			return httpx.Forbidden("invalid internal credentials")
+		}
+		var body struct {
+			UserID string `json:"userId"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+		}
+		userID := strings.TrimSpace(body.UserID)
+		if userID == "" {
+			return httpx.BadRequest("userId is required", map[string]any{"field": "userId"})
+		}
+		if err := auth.store.DeleteByUserID(userID); err != nil {
+			return httpx.Internal("failed to revoke sessions", err)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"userId": userID, "revoked": true})
+	}))
+
 	mux.Handle("/api/v1/auth/metrics", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)

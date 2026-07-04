@@ -227,6 +227,49 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 				"reason":   reason,
 			})
 			return httpx.WriteJSON(w, stdhttp.StatusOK, p)
+		case "revoke-sessions":
+			// GAP-76 (§11 Identity, Account Lifecycle, and Authentication —
+			// session management): terminate every live session for the player so
+			// an operator can cut off a compromised or just-suspended account.
+			// Sibling to the status change: same fine-grained users:write
+			// permission, mandatory reason, and append-only audit. Delegates to the
+			// auth service (which owns the session store) over the shared-secret
+			// internal channel; fail-closed if that integration is unconfigured.
+			if r.Method != stdhttp.MethodPost {
+				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+			}
+			if err := requireAdminPermission(r, "users:write"); err != nil {
+				return err
+			}
+			var body struct {
+				Reason string `json:"reason"`
+			}
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				return httpx.BadRequest("invalid request body", nil)
+			}
+			reason := strings.TrimSpace(body.Reason)
+			if reason == "" {
+				return httpx.BadRequest("reason is required", map[string]any{"field": "reason"})
+			}
+			if err := validateLaunchFacingReason("reason", reason); err != nil {
+				return err
+			}
+			// Confirm the punter exists before firing at the auth service, so an
+			// unknown id gets a clear 404 rather than a silent no-op revocation.
+			prev, err := repo.GetAdminPunter(r.Context(), id)
+			if err != nil {
+				return httpx.Internal("failed to load punter", err)
+			}
+			if prev == nil {
+				return httpx.NotFound("punter not found")
+			}
+			if err := revokeUserSessions(r.Context(), id); err != nil {
+				return err
+			}
+			recordProviderOpsAuditAction(userIDFromRequest(r), "punter.sessions_revoked", id, map[string]any{
+				"reason": reason,
+			})
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"userId": id, "revoked": true})
 		case "notes":
 			// Admin CRM notes — prediction-native (no sportsbook semantics).
 			switch r.Method {
