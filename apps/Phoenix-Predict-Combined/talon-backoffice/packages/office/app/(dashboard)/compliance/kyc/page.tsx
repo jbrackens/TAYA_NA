@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { adminFetch } from "../../../lib/admin-fetch";
+import { usePermissions } from "../../../lib/permissions";
 import {
   Badge,
   Button,
@@ -108,6 +109,10 @@ function KYCReviewPageContent() {
 
   const [reason, setReason] = useState("");
   const [decisionBusy, setDecisionBusy] = useState(false);
+  // GAP-84 (§29): KYC decisions + screening reviews are compliance:write
+  // server-side; disable them for a read-only caller.
+  const { can } = usePermissions();
+  const canWrite = can("compliance:write");
   const [decisionNotice, setDecisionNotice] = useState<string | null>(null);
 
   const loadQueue = useCallback(async () => {
@@ -415,7 +420,7 @@ function KYCReviewPageContent() {
                         variant="secondary"
                         size="sm"
                         onClick={() => void submitScreeningReview("cleared")}
-                        disabled={decisionBusy}
+                        disabled={decisionBusy || !canWrite}
                         data-testid="kyc-screening-clear-button"
                       >
                         Clear as false positive
@@ -424,7 +429,7 @@ function KYCReviewPageContent() {
                         variant="danger"
                         size="sm"
                         onClick={() => void submitScreeningReview("confirmed")}
-                        disabled={decisionBusy}
+                        disabled={decisionBusy || !canWrite}
                         data-testid="kyc-screening-confirm-button"
                       >
                         Confirm hit
@@ -462,7 +467,7 @@ function KYCReviewPageContent() {
                   <Button
                     variant="primary"
                     onClick={() => void submitDecision(true)}
-                    disabled={decisionBusy}
+                    disabled={decisionBusy || !canWrite}
                     data-testid="kyc-approve-button"
                   >
                     Approve
@@ -470,7 +475,7 @@ function KYCReviewPageContent() {
                   <Button
                     variant="danger"
                     onClick={() => void submitDecision(false)}
-                    disabled={decisionBusy}
+                    disabled={decisionBusy || !canWrite}
                     data-testid="kyc-decline-button"
                   >
                     Decline

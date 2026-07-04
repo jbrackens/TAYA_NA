@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { adminFetch } from "../../lib/admin-fetch";
+import { usePermissions } from "../../lib/permissions";
 import {
   Badge,
   Button,
@@ -55,6 +56,10 @@ function SurveillancePageContent() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  // GAP-84 (§29): surveillance mutations are surveillance:write server-side;
+  // disable the controls for a read-only caller.
+  const { can } = usePermissions();
+  const canWrite = can("surveillance:write");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -221,7 +226,7 @@ function SurveillancePageContent() {
         <Button
           variant="secondary"
           size="sm"
-          disabled={busy}
+          disabled={busy || !canWrite}
           onClick={() => void dismiss(row.id)}
           data-testid={`alert-dismiss-${row.id}`}
         >
@@ -253,7 +258,7 @@ function SurveillancePageContent() {
           <Button
             variant="secondary"
             size="sm"
-            disabled={busy || row.status !== "open"}
+            disabled={busy || row.status !== "open" || !canWrite}
             onClick={() => void dispositionCase(row, "investigating")}
           >
             Investigate
@@ -261,7 +266,7 @@ function SurveillancePageContent() {
           <Button
             variant="primary"
             size="sm"
-            disabled={busy || row.status.startsWith("closed_")}
+            disabled={busy || row.status.startsWith("closed_") || !canWrite}
             onClick={() => void dispositionCase(row, "closed_action")}
           >
             Close (action)
@@ -269,7 +274,7 @@ function SurveillancePageContent() {
           <Button
             variant="secondary"
             size="sm"
-            disabled={busy || row.status.startsWith("closed_")}
+            disabled={busy || row.status.startsWith("closed_") || !canWrite}
             onClick={() => void dispositionCase(row, "closed_no_action")}
           >
             Close (no action)
@@ -290,7 +295,12 @@ function SurveillancePageContent() {
             Wash, spoofing, and collusion alerts. Triage open alerts into cases.
           </p>
         </div>
-        <Button variant="secondary" size="sm" onClick={runScan} disabled={busy}>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={runScan}
+          disabled={busy || !canWrite}
+        >
           Run scan (24h)
         </Button>
       </div>
@@ -329,7 +339,7 @@ function SurveillancePageContent() {
               />
               <Button
                 variant="primary"
-                disabled={busy}
+                disabled={busy || !canWrite}
                 onClick={openCase}
                 data-testid="open-case"
               >
