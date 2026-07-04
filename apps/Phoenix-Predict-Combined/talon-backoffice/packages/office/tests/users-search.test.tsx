@@ -76,4 +76,30 @@ describe("UsersPage server-side search", () => {
       expect(screen.getByText("zoe@predict.dev")).toBeTruthy(),
     );
   });
+
+  // verification #25 MED regression lock: the Retry button must actually refetch
+  // (a no-op state setter would be dropped by React's bail-out).
+  it("Retry issues a fresh fetch after an error", async () => {
+    let calls = 0;
+    globalThis.fetch = vi.fn(() => {
+      calls += 1;
+      if (calls === 1) {
+        return Promise.resolve(new Response("nope", { status: 500 }));
+      }
+      return Promise.resolve(
+        new Response(JSON.stringify(makeItems("alice@predict.dev")), {
+          status: 200,
+        }),
+      );
+    }) as unknown as typeof fetch;
+
+    render(<UsersPage />);
+    const retry = await screen.findByText("Try Again");
+    expect(calls).toBe(1);
+    fireEvent.click(retry);
+    await waitFor(() =>
+      expect(screen.getByText("alice@predict.dev")).toBeTruthy(),
+    );
+    expect(calls).toBeGreaterThanOrEqual(2);
+  });
 });

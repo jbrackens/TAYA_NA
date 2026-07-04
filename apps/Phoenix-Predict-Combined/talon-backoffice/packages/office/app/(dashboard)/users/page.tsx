@@ -53,6 +53,9 @@ function UsersPageContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  // reloadNonce lets the Retry button force a refetch even when the search term
+  // is unchanged (a no-op setSearchTerm would be dropped by React's bail-out).
+  const [reloadNonce, setReloadNonce] = useState(0);
 
   // Server-side, debounced search. Re-runs whenever the search term changes; the
   // backend applies the email/username ILIKE filter over the full population.
@@ -93,7 +96,7 @@ function UsersPageContent() {
       cancelled = true;
       clearTimeout(handle);
     };
-  }, [searchTerm]);
+  }, [searchTerm, reloadNonce]);
 
   const handlePunterSelect = (punter: PunterData) => {
     // Navigate to punter detail page
@@ -110,7 +113,7 @@ function UsersPageContent() {
         <ErrorState
           title="Failed to load users"
           message={error}
-          onRetry={() => setSearchTerm((t) => t)}
+          onRetry={() => setReloadNonce((n) => n + 1)}
           showRetryButton={true}
         />
       ) : (
