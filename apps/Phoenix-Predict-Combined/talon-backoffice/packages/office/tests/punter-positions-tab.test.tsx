@@ -91,4 +91,21 @@ describe("PunterProfile positions & orders tab", () => {
       "0.00",
     );
   });
+
+  // Exposure is a SUM across positions — a multi-row case guards against a
+  // summation bug the single-row case cannot catch (verifier #28 observation).
+  it("sums exposure across multiple positions", () => {
+    const multi: PlayerPositionRow[] = [
+      { ...positions[0], id: "pos-1", totalCostPointsCents: 2080 },
+      { ...positions[0], id: "pos-2", totalCostPointsCents: 1920 },
+    ];
+    render(<PunterProfile punter={punter} openOrders={[]} positions={multi} />);
+    fireEvent.click(screen.getByTestId("profile-positions-tab"));
+    const content = within(screen.getByTestId("profile-positions-content"));
+    expect(content.getAllByTestId("position-row")).toHaveLength(2);
+    // 2080c + 1920c = 4000c => 40.00 pts
+    expect(content.getByTestId("positions-exposure").textContent).toContain(
+      "40.00",
+    );
+  });
 });
