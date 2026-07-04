@@ -42,6 +42,9 @@ func registerCommunicationsAdminRoutes(mux *stdhttp.ServeMux, store communicatio
 	if store == nil {
 		return
 	}
+	// Per-actor throttle on the send (GAP-75, §27): a compromised admin session
+	// or a looping caller must not be able to spam a player / the mail relay.
+	sendLimiter := newUserRateLimiter(commsSendRateLimitPerMin(), commsSendRateLimitPerMin())
 	handler := httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		var perm string
 		switch r.Method {
@@ -68,6 +71,9 @@ func registerCommunicationsAdminRoutes(mux *stdhttp.ServeMux, store communicatio
 		}
 
 		if r.Method == stdhttp.MethodPost {
+			if !sendLimiter.Allow(userIDFromRequest(r)) {
+				return httpx.TooManyRequests("too many communications; please wait a moment and try again")
+			}
 			return sendPlayerCommunication(w, r, store, notifier, userID)
 		}
 

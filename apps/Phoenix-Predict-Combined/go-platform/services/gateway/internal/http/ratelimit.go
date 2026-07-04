@@ -105,6 +105,20 @@ func disputeRateLimitPerMin() int {
 	return 5
 }
 
+// commsSendRateLimitPerMin reads COMMS_SEND_RATE_LIMIT_PER_MIN (default 20). It
+// throttles the per-actor rate of agent-initiated player communications
+// (GAP-75, §27 Security): compliance sends are infrequent, so a generous cap
+// stops a compromised admin session or a looping caller from spamming a player /
+// the mail relay without hindering legitimate one-off sends.
+func commsSendRateLimitPerMin() int {
+	if v := strings.TrimSpace(os.Getenv("COMMS_SEND_RATE_LIMIT_PER_MIN")); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			return n
+		}
+	}
+	return 20
+}
+
 func socialWriteRateLimitPerMin() int {
 	if v := strings.TrimSpace(os.Getenv("SOCIAL_WRITE_RATE_LIMIT_PER_MIN")); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n > 0 {

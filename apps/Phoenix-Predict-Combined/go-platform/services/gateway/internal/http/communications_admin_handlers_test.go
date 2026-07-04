@@ -191,6 +191,34 @@ func TestCommunicationsSendGates(t *testing.T) {
 	})
 }
 
+// GAP-75 (§27): the send is per-actor rate-limited. With the cap set to 1/min,
+// the first send passes the throttle (then fails-closed at the nil template
+// store) and the second, same-actor send within the window is a 429.
+func TestCommunicationsSendRateLimited(t *testing.T) {
+	t.Setenv("COMMS_SEND_RATE_LIMIT_PER_MIN", "1") // limiter is built at registration
+	store := &fakeCommsStore{email: "p@example.com"}
+	handler := commsHandler(store, &fakeNotifier{})
+
+	post := func() *httptest.ResponseRecorder {
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v1/admin/communications/u-1",
+			strings.NewReader(`{"templateKey":"welcome","channel":"email"}`),
+		)
+		req = req.WithContext(httpx.WithTestUser(req.Context(), "admin", "a@test.local", "admin"))
+		res := httptest.NewRecorder()
+		handler.ServeHTTP(res, req)
+		return res
+	}
+
+	if res := post(); res.Code == http.StatusTooManyRequests {
+		t.Fatalf("first send should pass the rate limit, got 429")
+	}
+	if res := post(); res.Code != http.StatusTooManyRequests {
+		t.Fatalf("second same-actor send should be rate-limited (429), got %d", res.Code)
+	}
+}
+
 // Opt-in full-send integration: real communications store + real template store +
 // fake notifier. Proves the fail-closed dispatch semantics end to end.
 func TestCommunicationsSendLive(t *testing.T) {
