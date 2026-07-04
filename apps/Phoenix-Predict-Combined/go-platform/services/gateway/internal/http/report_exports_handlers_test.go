@@ -1,17 +1,94 @@
 package http
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
+	"encoding/csv"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 
 	_ "github.com/lib/pq"
 	"phoenix-revival/platform/transport/httpx"
 )
+
+// GAP-73 (verification #21 HIGH): the capped writer refuses to buffer past the
+// row cap, so a fill closure over an unbounded result set stops early instead of
+// OOMing the gateway. DB-free.
+func TestCappedCSVWriter(t *testing.T) {
+	var buf bytes.Buffer
+	c := &cappedCSVWriter{cw: csv.NewWriter(&buf), max: 2}
+	if err := c.write([]string{"row1"}); err != nil {
+		t.Fatalf("row 1 within cap should succeed: %v", err)
+	}
+	if err := c.write([]string{"row2"}); err != nil {
+		t.Fatalf("row 2 within cap should succeed: %v", err)
+	}
+	if err := c.write([]string{"row3"}); !errors.Is(err, errReportTooLarge) {
+		t.Fatalf("row 3 past cap should be errReportTooLarge, got %v", err)
+	}
+	// Still refuses after the cap.
+	if err := c.write([]string{"row4"}); !errors.Is(err, errReportTooLarge) {
+		t.Fatalf("row 4 past cap should stay errReportTooLarge, got %v", err)
+	}
+}
+
+// GAP-73 (verification #21 HIGH): when a wallet-ledger export would exceed the
+// row cap, the handler returns a clean 413 with NO partial CSV — never an OOM and
+// never a truncated 200. Lowers the cap so a couple seeded rows trip it. Opt-in.
+func TestWalletLedgerExportRowCapLive(t *testing.T) {
+	dsn := reportExportLiveDSN(t)
+	db := openLiveDB(t, dsn)
+	defer db.Close()
+	ctx := context.Background()
+
+	if _, err := db.ExecContext(ctx, `
+CREATE TABLE IF NOT EXISTS wallet_ledger (
+  id BIGSERIAL PRIMARY KEY, user_id TEXT NOT NULL, entry_type TEXT NOT NULL,
+  fund_type TEXT NOT NULL DEFAULT 'real', amount_cents BIGINT NOT NULL CHECK (amount_cents > 0),
+  balance_cents BIGINT NOT NULL, idempotency_key TEXT NOT NULL, reason TEXT,
+  transaction_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (entry_type, user_id, idempotency_key))`); err != nil {
+		t.Fatalf("ensure wallet_ledger: %v", err)
+	}
+	cleanup := func() { _, _ = db.ExecContext(ctx, `DELETE FROM wallet_ledger WHERE user_id LIKE 'u-cap-%'`) }
+	cleanup()
+	defer cleanup()
+	for i := 0; i < 5; i++ {
+		if _, err := db.ExecContext(ctx, `
+INSERT INTO wallet_ledger (user_id, entry_type, fund_type, amount_cents, balance_cents, idempotency_key, reason)
+VALUES ($1,'credit','real',1,1,$2,'seed')`, "u-cap-1", "cap-"+strconv.Itoa(i)); err != nil {
+			t.Fatalf("seed: %v", err)
+		}
+	}
+
+	old := maxCSVReportRows
+	maxCSVReportRows = 2 // header + 1 data row, then the next row trips the cap
+	defer func() { maxCSVReportRows = old }()
+
+	mux := http.NewServeMux()
+	registerReportExportRoutes(mux, db)
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/reports/wallet-ledger.csv", nil)
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin", "a@test.local", "admin"))
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+
+	if res.Code != http.StatusRequestEntityTooLarge {
+		t.Fatalf("expected 413 over the row cap, got %d body=%s", res.Code, res.Body.String())
+	}
+	if strings.HasPrefix(res.Header().Get("Content-Type"), "text/csv") {
+		t.Fatalf("over-cap response must not be a CSV, got %q", res.Header().Get("Content-Type"))
+	}
+	if strings.Contains(res.Body.String(), "id,user_id,entry_type") {
+		t.Fatalf("over-cap response leaked a partial CSV: %q", res.Body.String())
+	}
+}
 
 func reportExportLiveDSN(t *testing.T) string {
 	t.Helper()

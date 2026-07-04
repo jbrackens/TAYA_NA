@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"log/slog"
 	stdhttp "net/http"
@@ -65,26 +66,61 @@ func registerReportExportRoutes(mux *stdhttp.ServeMux, db *sql.DB) {
 	slog.Info("admin report-export (CSV) routes registered")
 }
 
-// writeCSVReport buffers the ENTIRE report in memory and flushes it to the
-// ResponseWriter only after fill has read the full result set successfully. This
-// closes GAP-73 (§24 audit-evidence integrity): with direct streaming, the first
-// row write commits HTTP 200, so a mid-scan failure — most realistically the 20s
-// statement timeout firing during a large sequential scan — left the client with
-// a TRUNCATED CSV delivered as a successful download, with no signal it was
-// incomplete. Now any fill error (query, scan, or rows.Err) returns BEFORE a
-// single byte reaches w, so httpx maps it to a clean 5xx with no partial body.
-// The audit entry is recorded only once the extraction has fully materialised, so
-// the audit log reflects a completed export rather than a possibly-truncated one.
-// Trade-off: the report is held in memory; for an admin audit artifact
-// (bounded by the optional date range) correctness outranks the memory cost.
-func writeCSVReport(w stdhttp.ResponseWriter, filename string, audit func(), fill func(*csv.Writer) error) error {
+// maxCSVReportRows caps how many rows a buffered CSV export may materialise. It
+// is a memory safety valve, not a normal-operation limit: a reporting-period
+// export is far under it, but it prevents an all-time full-table dump (the money
+// ledger can reach tens of millions of rows) from buffering multiple gigabytes in
+// a single request and OOMing the gateway (GAP-73 verification-#21 HIGH). A var,
+// not a const, only so a test can lower it. ~250k rows ≈ 40 MB buffered.
+var maxCSVReportRows = 250_000
+
+// errReportTooLarge is returned by cappedCSVWriter when the row cap is reached;
+// writeCSVReport translates it into a 413 with an actionable message. Nothing is
+// written to the client, so the caller gets a clean error, never a partial file.
+var errReportTooLarge = errors.New("report exceeds the export row limit")
+
+// cappedCSVWriter wraps a csv.Writer and refuses to buffer past a row cap, so a
+// fill closure that would otherwise read an unbounded result set stops early.
+type cappedCSVWriter struct {
+	cw  *csv.Writer
+	n   int
+	max int
+}
+
+func (c *cappedCSVWriter) write(record []string) error {
+	if c.n >= c.max {
+		return errReportTooLarge
+	}
+	c.n++
+	return c.cw.Write(record)
+}
+
+// writeCSVReport buffers the report in memory (up to maxCSVReportRows) and flushes
+// it to the ResponseWriter only after fill has read the full result set
+// successfully. This closes GAP-73 (§24 audit-evidence integrity): with direct
+// streaming, the first row write commits HTTP 200, so a mid-scan failure — most
+// realistically the 20s statement timeout firing during a large sequential scan —
+// left the client with a TRUNCATED CSV delivered as a successful download, with no
+// signal it was incomplete. Now any fill error (query, scan, rows.Err, or the row
+// cap) returns BEFORE a single byte reaches w, so httpx maps it to a clean error
+// with no partial body. The audit entry is recorded only once the extraction has
+// fully materialised, so the audit log reflects a completed export rather than a
+// possibly-truncated one. Memory is bounded by the row cap: a result set larger
+// than the cap is refused with a 413 (narrow the query) rather than buffered
+// unbounded — correctness AND a bounded footprint, not one at the cost of the other.
+func writeCSVReport(w stdhttp.ResponseWriter, filename string, audit func(), fill func(*cappedCSVWriter) error) error {
 	var buf bytes.Buffer
-	cw := csv.NewWriter(&buf)
-	if err := fill(cw); err != nil {
+	capped := &cappedCSVWriter{cw: csv.NewWriter(&buf), max: maxCSVReportRows}
+	if err := fill(capped); err != nil {
+		if errors.Is(err, errReportTooLarge) {
+			return httpx.NewError(stdhttp.StatusRequestEntityTooLarge, "export_too_large",
+				fmt.Sprintf("report exceeds the %d-row export limit; narrow the query (e.g. ?from= & ?to= on the wallet-ledger export)", maxCSVReportRows),
+				nil, nil)
+		}
 		return err // nothing has been written to w — httpx emits a clean error
 	}
-	cw.Flush()
-	if err := cw.Error(); err != nil {
+	capped.cw.Flush()
+	if err := capped.cw.Error(); err != nil {
 		return httpx.Internal("failed to encode CSV report", err)
 	}
 	if audit != nil {
@@ -142,13 +178,15 @@ FROM wallet_ledger`
 
 	return writeCSVReport(w, "wallet-ledger.csv",
 		func() { recordProviderOpsAuditAction(actorID, "report.exported", "wallet-ledger", details) },
-		func(cw *csv.Writer) error {
+		func(cw *cappedCSVWriter) error {
 			rows, err := db.QueryContext(ctx, query, args...)
 			if err != nil {
 				return httpx.Internal("failed to query wallet ledger", err)
 			}
 			defer rows.Close()
-			_ = cw.Write([]string{"id", "user_id", "entry_type", "fund_type", "amount_cents", "balance_cents", "idempotency_key", "reason", "transaction_time"})
+			if err := cw.write([]string{"id", "user_id", "entry_type", "fund_type", "amount_cents", "balance_cents", "idempotency_key", "reason", "transaction_time"}); err != nil {
+				return err
+			}
 			for rows.Next() {
 				var (
 					id, amount, balance                                  int64
@@ -157,11 +195,13 @@ FROM wallet_ledger`
 				if err := rows.Scan(&id, &userID, &entryType, &fundType, &amount, &balance, &idemKey, &reason, &txTime); err != nil {
 					return httpx.Internal("failed to scan wallet ledger row", err)
 				}
-				_ = cw.Write([]string{
+				if err := cw.write([]string{
 					fmt.Sprintf("%d", id), csvSafeCell(userID), csvSafeCell(entryType), csvSafeCell(fundType),
 					fmt.Sprintf("%d", amount), fmt.Sprintf("%d", balance),
 					csvSafeCell(idemKey), csvSafeCell(reason), csvSafeCell(txTime),
-				})
+				}); err != nil {
+					return err
+				}
 			}
 			if err := rows.Err(); err != nil {
 				return httpx.Internal("failed to read wallet ledger", err)
@@ -175,7 +215,7 @@ func exportKYCStatuses(ctx context.Context, w stdhttp.ResponseWriter, db *sql.DB
 	defer cancel()
 	return writeCSVReport(w, "kyc-statuses.csv",
 		func() { recordProviderOpsAuditAction(actorID, "report.exported", "kyc-statuses", nil) },
-		func(cw *csv.Writer) error {
+		func(cw *cappedCSVWriter) error {
 			rows, err := db.QueryContext(ctx, `
 SELECT user_id, status, risk_level, COALESCE(provider,''),
        COALESCE(CAST(last_verified_at AS TEXT),''), COALESCE(rejection_reason,''),
@@ -185,16 +225,20 @@ FROM kyc_status ORDER BY updated_at DESC`)
 				return httpx.Internal("failed to query kyc statuses", err)
 			}
 			defer rows.Close()
-			_ = cw.Write([]string{"user_id", "status", "risk_level", "provider", "last_verified_at", "rejection_reason", "updated_at"})
+			if err := cw.write([]string{"user_id", "status", "risk_level", "provider", "last_verified_at", "rejection_reason", "updated_at"}); err != nil {
+				return err
+			}
 			for rows.Next() {
 				var userID, status, risk, provider, lastVerified, reason, updated string
 				if err := rows.Scan(&userID, &status, &risk, &provider, &lastVerified, &reason, &updated); err != nil {
 					return httpx.Internal("failed to scan kyc status row", err)
 				}
-				_ = cw.Write([]string{
+				if err := cw.write([]string{
 					csvSafeCell(userID), csvSafeCell(status), csvSafeCell(risk), csvSafeCell(provider),
 					csvSafeCell(lastVerified), csvSafeCell(reason), csvSafeCell(updated),
-				})
+				}); err != nil {
+					return err
+				}
 			}
 			if err := rows.Err(); err != nil {
 				return httpx.Internal("failed to read kyc statuses", err)
@@ -208,7 +252,7 @@ func exportSurveillanceAlerts(ctx context.Context, w stdhttp.ResponseWriter, db 
 	defer cancel()
 	return writeCSVReport(w, "surveillance-alerts.csv",
 		func() { recordProviderOpsAuditAction(actorID, "report.exported", "surveillance-alerts", nil) },
-		func(cw *csv.Writer) error {
+		func(cw *cappedCSVWriter) error {
 			rows, err := db.QueryContext(ctx, `
 SELECT id, kind, severity, subject_id, COALESCE(market_id,''), summary, status,
        COALESCE(CAST(case_id AS TEXT),''), CAST(detected_at AS TEXT)
@@ -217,16 +261,20 @@ FROM surveillance_alerts ORDER BY detected_at DESC`)
 				return httpx.Internal("failed to query surveillance alerts", err)
 			}
 			defer rows.Close()
-			_ = cw.Write([]string{"id", "kind", "severity", "subject_id", "market_id", "summary", "status", "case_id", "detected_at"})
+			if err := cw.write([]string{"id", "kind", "severity", "subject_id", "market_id", "summary", "status", "case_id", "detected_at"}); err != nil {
+				return err
+			}
 			for rows.Next() {
 				var id, kind, sev, subject, market, summary, status, caseID, detected string
 				if err := rows.Scan(&id, &kind, &sev, &subject, &market, &summary, &status, &caseID, &detected); err != nil {
 					return httpx.Internal("failed to scan surveillance alert row", err)
 				}
-				_ = cw.Write([]string{
+				if err := cw.write([]string{
 					csvSafeCell(id), csvSafeCell(kind), csvSafeCell(sev), csvSafeCell(subject),
 					csvSafeCell(market), csvSafeCell(summary), csvSafeCell(status), csvSafeCell(caseID), csvSafeCell(detected),
-				})
+				}); err != nil {
+					return err
+				}
 			}
 			if err := rows.Err(); err != nil {
 				return httpx.Internal("failed to read surveillance alerts", err)
