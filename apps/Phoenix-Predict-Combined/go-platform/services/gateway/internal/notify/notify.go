@@ -68,11 +68,25 @@ func (s SMTPNotifier) Notify(ctx context.Context, to []string, subject, body str
 	}
 }
 
+// sanitizeHeader strips CR and LF from an email header value so untrusted input
+// (e.g. template data rendered into the Subject, or a recipient address) cannot
+// inject additional headers — SMTP header / CRLF injection. Header values are
+// single-line; any embedded newline is removed. The message body is written
+// after the header/body separator and is dot-stuffed by net/smtp, so it does not
+// need this treatment.
+func sanitizeHeader(v string) string {
+	return strings.NewReplacer("\r", "", "\n", "").Replace(v)
+}
+
 func buildMessage(from string, to []string, subject, body string) []byte {
+	sanitizedTo := make([]string, len(to))
+	for i, addr := range to {
+		sanitizedTo[i] = sanitizeHeader(addr)
+	}
 	var b strings.Builder
-	fmt.Fprintf(&b, "From: %s\r\n", from)
-	fmt.Fprintf(&b, "To: %s\r\n", strings.Join(to, ", "))
-	fmt.Fprintf(&b, "Subject: %s\r\n", subject)
+	fmt.Fprintf(&b, "From: %s\r\n", sanitizeHeader(from))
+	fmt.Fprintf(&b, "To: %s\r\n", strings.Join(sanitizedTo, ", "))
+	fmt.Fprintf(&b, "Subject: %s\r\n", sanitizeHeader(subject))
 	fmt.Fprintf(&b, "Date: %s\r\n", time.Now().UTC().Format(time.RFC1123Z))
 	b.WriteString("MIME-Version: 1.0\r\n")
 	b.WriteString("Content-Type: text/plain; charset=UTF-8\r\n\r\n")

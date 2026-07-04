@@ -166,5 +166,10 @@ func (s *Store) RecipientEmail(ctx context.Context, userID string) (string, erro
 	if err != nil {
 		return "", err
 	}
+	// punters.email is NOT NULL but the DB permits ''; treat a blank contact as
+	// "no recipient" so dispatch never targets an empty address (verification #22 LOW).
+	if strings.TrimSpace(email) == "" {
+		return "", ErrRecipientNotFound
+	}
 	return email, nil
 }
