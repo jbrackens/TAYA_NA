@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	stdhttp "net/http"
 	"strconv"
 	"strings"
@@ -55,6 +56,67 @@ var riskRecomputeHook func(ctx context.Context, subjectID string)
 func triggerRiskRecompute(ctx context.Context, subjectID string) {
 	if riskRecomputeHook != nil && strings.TrimSpace(subjectID) != "" {
 		riskRecomputeHook(ctx, subjectID)
+	}
+}
+
+// screeningOverrideActor tags the audited risk override that a KYC screening
+// review sets, so a later "cleared" review only removes ITS OWN override and
+// never clobbers a manual admin override set for a different reason.
+const screeningOverrideActor = "screening-review"
+
+// riskScreeningReviewHook applies the risk-rating consequence of a KYC screening
+// review DURABLY (verification #24 MED fix). On "confirmed" it sets an audited
+// prohibited override — which EffectiveTier honors first, so the order gate
+// blocks immediately and durably, independent of the failure-prone factor
+// recompute (a confirmed sanctions/PEP match is a hard §12 block). On "cleared"
+// it removes that screening-set override and recomputes so the rating reflects
+// the now-cleared screening. Set in wiring after the risk store inits; nil in
+// memory mode.
+var riskScreeningReviewHook func(ctx context.Context, subjectID, outcome string)
+
+// triggerRiskScreeningReview invokes the screening-review risk hook if wired.
+// Nil-safe no-op otherwise.
+func triggerRiskScreeningReview(ctx context.Context, subjectID, outcome string) {
+	if riskScreeningReviewHook != nil && strings.TrimSpace(subjectID) != "" {
+		riskScreeningReviewHook(ctx, subjectID, outcome)
+	}
+}
+
+// riskOverrideStore is the subset of *risk.Store the screening-review
+// consequence needs — kept as an interface so applyScreeningReviewToRisk is
+// unit-testable with a fake (no live DB).
+type riskOverrideStore interface {
+	SetOverride(ctx context.Context, subjectID string, tier risk.Tier, by, reason string) error
+	ClearOverride(ctx context.Context, subjectID string) error
+	Get(ctx context.Context, subjectID string) (*risk.Rating, error)
+}
+
+// applyScreeningReviewToRisk applies a KYC screening review's DURABLE risk
+// consequence (verification #24 MED fix). "confirmed" sets an audited prohibited
+// override (EffectiveTier honors it first, so the order gate blocks immediately
+// and durably even if the recompute below fails). "cleared" removes ONLY this
+// screening-set override (identified by screeningOverrideActor, so a manual admin
+// override for another reason is never clobbered). Either way it then recomputes
+// so the computed factors stay fresh. Best-effort per step: a step failure is
+// logged (ERROR for the confirmed-block set, which is compliance-critical) and
+// never fails the review that triggered it.
+func applyScreeningReviewToRisk(ctx context.Context, store riskOverrideStore, recompute func(context.Context, string) error, subjectID, outcome string) {
+	switch outcome {
+	case "confirmed":
+		if err := store.SetOverride(ctx, subjectID, risk.TierProhibited, screeningOverrideActor, "confirmed sanctions/PEP screening match"); err != nil {
+			slog.Error("risk: failed to set prohibited override on confirmed screening", "subject", subjectID, "error", err)
+		}
+	case "cleared":
+		if rating, err := store.Get(ctx, subjectID); err == nil && rating != nil && rating.OverrideBy == screeningOverrideActor {
+			if err := store.ClearOverride(ctx, subjectID); err != nil {
+				slog.Warn("risk: failed to clear screening override on cleared review", "subject", subjectID, "error", err)
+			}
+		}
+	}
+	if recompute != nil {
+		if err := recompute(ctx, subjectID); err != nil {
+			slog.Warn("risk: recompute on screening review failed", "subject", subjectID, "error", err)
+		}
 	}
 }
 

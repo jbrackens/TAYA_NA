@@ -627,6 +627,19 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 						slog.Warn("risk: recompute on compliance event failed", "subject", subjectID, "error", err)
 					}
 				}
+				// GAP-82 + verification #24 MED: a KYC screening review applies its
+				// risk consequence DURABLY. "confirmed" sets an audited prohibited
+				// override (EffectiveTier honors it first, so the order gate blocks
+				// immediately and durably even if the factor recompute below fails —
+				// a confirmed sanctions/PEP match is a hard §12 block). "cleared"
+				// removes only THIS screening-set override (never a manual admin one),
+				// then recompute reflects the cleared screening.
+				riskScreeningReviewHook = func(ctx context.Context, subjectID, outcome string) {
+					applyScreeningReviewToRisk(ctx, riskStore, func(c context.Context, s string) error {
+						_, err := riskEngine.Recompute(c, s)
+						return err
+					}, subjectID, outcome)
+				}
 				slog.Info("risk: customer risk-rating subsystem initialized")
 			}
 			// GAP-82 slice 2: wire the AML scanner's new-alert callback to the risk

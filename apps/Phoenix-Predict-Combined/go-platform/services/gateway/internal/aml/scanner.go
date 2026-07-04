@@ -122,8 +122,12 @@ LIMIT $2`, watermark, scanBatch)
 	// Only rules present → evaluate; but always advance the watermark so an
 	// empty rule set still consumes the backlog rather than re-reading it.
 	// flagged collects subjects that got a NEW alert this scan, so risk is
-	// recomputed once per subject (not once per alert).
+	// recomputed once per subject (not once per alert). Deferred so that a
+	// subject flagged before a later-row DB error still gets its recompute
+	// (verification #24 MED): the watermark does NOT advance on such an error, so
+	// the re-scan hits ON CONFLICT (inserted=false) and would never re-flag them.
 	flagged := map[string]bool{}
+	defer func() { sc.notifyFlagged(ctx, flagged) }()
 	for _, r := range batch {
 		kind, isMoneyFlow := classifyMoneyFlow(r.entryType, r.fundType, r.reason, r.idemKey)
 		if !isMoneyFlow || len(rules) == 0 {
@@ -159,7 +163,8 @@ LIMIT $2`, watermark, scanBatch)
 	// GAP-82 slice 2: a new AML alert changes the subject's open-risk-point
 	// factor, so recompute their risk rating — otherwise accrued AML risk never
 	// reaches the prohibited-tier order gate until a manual admin recompute.
-	sc.notifyFlagged(ctx, flagged)
+	// (Dispatched via the deferred notifyFlagged above so it also runs on the
+	// early-return error paths.)
 	return len(batch), nil
 }
 

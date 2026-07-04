@@ -65,14 +65,18 @@ func TestKYCScreeningReviewHappyPath(t *testing.T) {
 	}
 }
 
-// GAP-82 slice 1: a screening review recomputes the subject's risk rating so a
-// confirmed sanctions/PEP hit actually reaches the prohibited-tier order gate.
-// Both terminal outcomes trigger a recompute (confirmed raises risk, cleared
-// removes the factor). A failed review must NOT recompute.
-func TestKYCScreeningReviewRecomputesRisk(t *testing.T) {
-	var got []string
-	riskRecomputeHook = func(_ context.Context, subjectID string) { got = append(got, subjectID) }
-	t.Cleanup(func() { riskRecomputeHook = nil })
+// GAP-82 slice 1 (+ verification #24 MED): a screening review applies its risk
+// consequence via the screening-review hook, carrying BOTH the subject and the
+// outcome (confirmed → durable prohibited override; cleared → remove it), so a
+// confirmed sanctions/PEP hit reaches the prohibited-tier order gate. A failed
+// review must NOT fire the hook.
+func TestKYCScreeningReviewAppliesRiskConsequence(t *testing.T) {
+	type call struct{ subject, outcome string }
+	var got []call
+	riskScreeningReviewHook = func(_ context.Context, subjectID, outcome string) {
+		got = append(got, call{subjectID, outcome})
+	}
+	t.Cleanup(func() { riskScreeningReviewHook = nil })
 
 	for _, outcome := range []string{"confirmed", "cleared"} {
 		got = nil
@@ -86,13 +90,13 @@ func TestKYCScreeningReviewRecomputesRisk(t *testing.T) {
 		if res.Code != http.StatusOK {
 			t.Fatalf("%s: expected 200, got %d body=%s", outcome, res.Code, res.Body.String())
 		}
-		if len(got) != 1 || got[0] != "u-rk" {
-			t.Fatalf("%s: expected one recompute for u-rk, got %v", outcome, got)
+		if len(got) != 1 || got[0].subject != "u-rk" || got[0].outcome != outcome {
+			t.Fatalf("%s: expected one risk hook for u-rk/%s, got %v", outcome, outcome, got)
 		}
 	}
 
-	// A review that fails at the store must not recompute (no false clearing of
-	// a stale rating off a rejected action).
+	// A review that fails at the store must not fire the risk hook (no override
+	// change off a rejected action).
 	got = nil
 	store := &stubKYCAdminStore{reviewErr: compliance.ErrIdentityRequired}
 	handler := newKYCReviewHarness(store)
@@ -102,7 +106,7 @@ func TestKYCScreeningReviewRecomputesRisk(t *testing.T) {
 		t.Fatalf("expected the failing review to not return 200, got %d", res.Code)
 	}
 	if len(got) != 0 {
-		t.Fatalf("a failed review must not recompute risk, got %v", got)
+		t.Fatalf("a failed review must not fire the risk hook, got %v", got)
 	}
 }
 
