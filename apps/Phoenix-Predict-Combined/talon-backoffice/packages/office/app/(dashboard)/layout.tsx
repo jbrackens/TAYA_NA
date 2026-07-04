@@ -109,6 +109,12 @@ const navItems: NavItem[] = [
     icon: "scroll-text",
   },
   { href: "/content", label: "Content", icon: "file-text" },
+  {
+    href: "/segments",
+    label: "Segments",
+    icon: "tags",
+    requiredPermission: "segments:read",
+  },
   { href: "/bonuses", label: "Bonuses", icon: "ticket" },
   { href: "/loyalty", label: "Loyalty", icon: "gift" },
   { href: "/leaderboards", label: "Leaderboards", icon: "trophy" },
