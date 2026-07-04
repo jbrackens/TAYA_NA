@@ -1,9 +1,8 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 
-import { adminFetch } from "../lib/admin-fetch";
+import { PermissionsProvider, usePermissions } from "../lib/permissions";
 
 // Sidebar navigation. Only entries whose backend is wired for the
 // prediction platform are shown, and restored as each backend lands.
@@ -200,41 +199,29 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // GAP-84: the PermissionsProvider fetches GET /api/v1/admin/me once and shares
+  // the caller's effective permissions with both the sidebar (below) and every
+  // page's mutating controls (via usePermissions().can), so read-only roles see
+  // read-only UI (§29).
+  return (
+    <PermissionsProvider>
+      <DashboardShell>{children}</DashboardShell>
+    </PermissionsProvider>
+  );
+}
+
+function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  // Permission-aware menu (P2-12). `perms === null` means "not loaded yet"; the
-  // filter below treats that — plus the dev anonymous bypass — as fail-open so
-  // the full menu renders. The gateway enforces every route regardless, so an
-  // over-shown item simply 403s on click; an under-shown item would strand a
-  // legitimate admin, which is the worse failure. Hence: hide an item only once
-  // we positively know the signed-in admin lacks its permission.
-  const [perms, setPerms] = useState<string[] | null>(null);
-  const [unconstrained, setUnconstrained] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    adminFetch("/api/v1/admin/me")
-      .then((res) => (res.ok ? res.json() : null))
-      .then(
-        (data: { permissions?: string[]; unconstrained?: boolean } | null) => {
-          if (cancelled || !data) return;
-          setPerms(Array.isArray(data.permissions) ? data.permissions : []);
-          setUnconstrained(Boolean(data.unconstrained));
-        },
-      )
-      .catch(() => {
-        // Fail open: leave perms === null so the full menu renders.
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const visibleNavItems = navItems.filter((item) => {
-    if (!item.requiredPermission) return true;
-    if (perms === null || unconstrained) return true;
-    return perms.includes(item.requiredPermission);
-  });
+  // Permission-aware menu (P2-12). navVisible is FAIL-OPEN: the full menu renders
+  // while permissions load or under the dev bypass, and an item is hidden only
+  // once we positively know the admin lacks its permission. The gateway enforces
+  // every route regardless — an over-shown item just 403s on click; an
+  // under-shown item would strand a legitimate admin (the worse failure).
+  const { navVisible } = usePermissions();
+  const visibleNavItems = navItems.filter((item) =>
+    navVisible(item.requiredPermission),
+  );
 
   return (
     <div className="flex min-h-screen max-[768px]:flex-col">

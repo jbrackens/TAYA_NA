@@ -23,6 +23,7 @@ import {
 import CreateUserModal from "./CreateUserModal";
 import EditRolesModal from "./EditRolesModal";
 import ResetPasswordModal from "./ResetPasswordModal";
+import { usePermissions } from "../../lib/permissions";
 
 const { Title, Text } = Typography;
 
@@ -34,6 +35,11 @@ interface Props {
 
 export default function UserManagement({ users, roles, onChanged }: Props) {
   const { message, modal } = App.useApp();
+  // GAP-84 (§29): gate the mutating "Create user" control on the same permission
+  // the gateway enforces (users:write), so a read-only admin (e.g. the Auditor
+  // role) sees it disabled rather than clicking into a 403.
+  const { can } = usePermissions();
+  const canManageUsers = can("users:write");
   const [createOpen, setCreateOpen] = useState(false);
   const [editUser, setEditUser] = useState<RbacUser | null>(null);
   const [resetUser, setResetUser] = useState<RbacUser | null>(null);
@@ -172,7 +178,16 @@ export default function UserManagement({ users, roles, onChanged }: Props) {
           </Title>
           <Text type="secondary">Staff accounts and their assigned roles.</Text>
         </div>
-        <Button type="primary" onClick={() => setCreateOpen(true)}>
+        <Button
+          type="primary"
+          onClick={() => setCreateOpen(true)}
+          disabled={!canManageUsers}
+          title={
+            canManageUsers
+              ? undefined
+              : "You do not have permission to create users (users:write)"
+          }
+        >
           Create user
         </Button>
       </div>
