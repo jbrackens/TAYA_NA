@@ -158,6 +158,12 @@ interface PunterProfileProps {
   cases?: PlayerCaseRow[];
   /** sent communications from /api/v1/admin/communications/{id} (GAP-90, §20) */
   communications?: PlayerCommunicationRow[];
+  /** whether the caller may send communications (users:write); fail-closed */
+  canSendCommunications?: boolean;
+  /** template keys for the send-form dropdown (GET notification-templates); a
+   * separate notifications:read grant, so this may be empty even for a sender —
+   * the form then falls back to a free-text template-key field. */
+  commTemplateKeys?: string[];
 }
 
 const pointAmount = (n: number) =>
@@ -225,10 +231,14 @@ export function PunterProfile({
   bonuses = [],
   cases = [],
   communications = [],
+  canSendCommunications = false,
+  commTemplateKeys = [],
 }: PunterProfileProps) {
   const [activeTab, setActiveTab] = useState<PunterProfileTab>("overview");
   const [overrideTier, setOverrideTier] = useState("");
   const [overrideReason, setOverrideReason] = useState("");
+  const [commTemplateKey, setCommTemplateKey] = useState("");
+  const [commChannel, setCommChannel] = useState("email");
 
   if (!punter) {
     return (
@@ -971,6 +981,89 @@ export function PunterProfile({
               <h4 className="mt-0 text-[var(--t1,#1a1a1a)]">
                 Communication history
               </h4>
+
+              {/* GAP-90 slice 2 (§20 / Scenario 12): agent-initiated templated
+                  send. Gated on users:write (fail-closed default); the gateway
+                  re-checks and audits (player.communication_sent), rate-limits
+                  per actor (GAP-75), and dispatch is fail-closed (email only,
+                  LogNotifier unless SMTP configured). */}
+              <div
+                className="mb-4 rounded border border-[var(--border-1,#e5dfd2)] p-3"
+                data-testid="communication-send"
+              >
+                <p className="mb-2 text-xs text-[var(--t3,#8b8378)]">
+                  Send a registered template to this player. Recorded to the
+                  history and audit log; email is the only externally dispatched
+                  channel.
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  {commTemplateKeys.length > 0 ? (
+                    <select
+                      className="rounded border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#fff)] p-2 text-[13px] text-[var(--t1,#1a1a1a)]"
+                      value={commTemplateKey}
+                      onChange={(e) => setCommTemplateKey(e.target.value)}
+                      disabled={!canSendCommunications}
+                      data-testid="communication-template"
+                    >
+                      <option value="">Select template…</option>
+                      {commTemplateKeys.map((k) => (
+                        <option key={k} value={k}>
+                          {k}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <Input
+                      className="flex-1"
+                      placeholder="Template key"
+                      value={commTemplateKey}
+                      onChange={(e) => setCommTemplateKey(e.target.value)}
+                      disabled={!canSendCommunications}
+                      data-testid="communication-template"
+                    />
+                  )}
+                  <select
+                    className="rounded border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#fff)] p-2 text-[13px] text-[var(--t1,#1a1a1a)]"
+                    value={commChannel}
+                    onChange={(e) => setCommChannel(e.target.value)}
+                    disabled={!canSendCommunications}
+                    data-testid="communication-channel"
+                  >
+                    <option value="email">email</option>
+                    <option value="sms">sms</option>
+                    <option value="push">push</option>
+                    <option value="in_app">in_app</option>
+                  </select>
+                  <Button
+                    $variant="primary"
+                    $size="sm"
+                    disabled={
+                      !canSendCommunications ||
+                      !actionsAvailable ||
+                      commTemplateKey.trim() === ""
+                    }
+                    onClick={() => {
+                      onAction?.("sendCommunication", {
+                        templateKey: commTemplateKey.trim(),
+                        channel: commChannel,
+                      });
+                      setCommTemplateKey("");
+                    }}
+                    data-testid="communication-send-submit"
+                  >
+                    Send
+                  </Button>
+                </div>
+                {!canSendCommunications && (
+                  <p
+                    className="mt-2 text-xs text-[var(--t3,#8b8378)]"
+                    data-testid="communication-send-denied"
+                  >
+                    Requires the users:write permission.
+                  </p>
+                )}
+              </div>
+
               {communications.length === 0 ? (
                 <p>No communications sent to this player.</p>
               ) : (

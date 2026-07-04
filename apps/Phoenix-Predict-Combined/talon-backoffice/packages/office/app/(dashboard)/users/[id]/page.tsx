@@ -25,6 +25,7 @@ import {
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { adminFetch } from "../../../lib/admin-fetch";
+import { usePermissions } from "../../../lib/permissions";
 
 interface PunterProfileData {
   id: string;
@@ -132,6 +133,11 @@ function UserDetailPageContent() {
   const [communications, setCommunications] = useState<
     PlayerCommunicationRow[]
   >([]);
+  const [commTemplateKeys, setCommTemplateKeys] = useState<string[]>([]);
+  // GAP-90 slice 2: the send form is gated on users:write, fail-closed — a
+  // read-only caller (e.g. Auditor) sees it disabled. The gateway re-checks.
+  const { can } = usePermissions();
+  const canSendCommunications = can("users:write");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -311,6 +317,26 @@ function UserDetailPageContent() {
     }
   };
 
+  // GAP-90 slice 2: template keys for the send-form dropdown. A SEPARATE
+  // notifications:read grant, so a users:write-only sender legitimately gets
+  // nothing here — degrade-safe: the send form then falls back to a free-text
+  // template-key field rather than failing.
+  const loadCommTemplates = async () => {
+    try {
+      const res = await adminFetch("/api/v1/admin/notification-templates");
+      if (!res.ok) return;
+      const d = await res.json();
+      const keys = Array.isArray(d?.templates)
+        ? d.templates
+            .map((t: { key?: string }) => t?.key)
+            .filter((k: unknown): k is string => typeof k === "string")
+        : [];
+      setCommTemplateKeys(keys);
+    } catch {
+      // ignore — send form falls back to a free-text template key
+    }
+  };
+
   useEffect(() => {
     const fetchPunter = async () => {
       try {
@@ -325,6 +351,7 @@ function UserDetailPageContent() {
         await loadBonuses();
         await loadCases();
         await loadCommunications();
+        await loadCommTemplates();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load user");
       } finally {
@@ -414,6 +441,26 @@ function UserDetailPageContent() {
           setRisk(mapRisk(await res.json()));
           break;
         }
+        case "sendCommunication": {
+          // GAP-90 slice 2 (§20 / Scenario 12): agent-initiated templated send.
+          // users:write-gated server-side, audited player.communication_sent,
+          // rate-limited per actor (GAP-75), dispatch fail-closed (email only).
+          const res = await adminFetch(
+            `/api/v1/admin/communications/${encodeURIComponent(punterId)}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                templateKey: data?.templateKey ?? "",
+                channel: data?.channel ?? "email",
+                data: {},
+              }),
+            },
+          );
+          if (!res.ok) throw new Error("Failed to send communication");
+          await loadCommunications();
+          break;
+        }
         default:
           throw new Error(`Unknown action: ${action}`);
       }
@@ -482,6 +529,8 @@ function UserDetailPageContent() {
             bonuses={bonuses}
             cases={cases}
             communications={communications}
+            canSendCommunications={canSendCommunications}
+            commTemplateKeys={commTemplateKeys}
           />
         </div>
 

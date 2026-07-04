@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import {
   PunterProfile,
@@ -59,5 +59,68 @@ describe("PunterProfile communications tab", () => {
       screen.getByTestId("profile-communications-content"),
     );
     expect(content.getByText(/No communications sent/i)).toBeTruthy();
+  });
+});
+
+// GAP-90 slice 2: agent-initiated templated send. The form is gated on
+// users:write (fail-closed prop default), routes through onAction, and offers a
+// template dropdown when keys are available (else a free-text key field).
+describe("PunterProfile communications send form", () => {
+  const openTab = () => {
+    fireEvent.click(screen.getByTestId("profile-communications-tab"));
+    return within(screen.getByTestId("profile-communications-content"));
+  };
+
+  it("keeps the send form disabled with a hint when the caller lacks users:write (fail-closed default)", () => {
+    render(<PunterProfile punter={punter} communications={[]} />);
+    const content = openTab();
+    expect(content.getByTestId("communication-send-submit")).toBeDisabled();
+    expect(content.getByTestId("communication-template")).toBeDisabled();
+    expect(content.getByTestId("communication-channel")).toBeDisabled();
+    expect(content.getByTestId("communication-send-denied")).toBeTruthy();
+  });
+
+  it("sends a templated communication via onAction when the caller has users:write", () => {
+    const onAction = vi.fn();
+    render(
+      <PunterProfile
+        punter={punter}
+        communications={[]}
+        canSendCommunications
+        onAction={onAction}
+      />,
+    );
+    const content = openTab();
+    expect(content.queryByTestId("communication-send-denied")).toBeNull();
+    // Empty template key => Send stays disabled (validation).
+    expect(content.getByTestId("communication-send-submit")).toBeDisabled();
+    fireEvent.change(content.getByTestId("communication-template"), {
+      target: { value: "kyc_reminder" },
+    });
+    fireEvent.change(content.getByTestId("communication-channel"), {
+      target: { value: "email" },
+    });
+    const submit = content.getByTestId("communication-send-submit");
+    expect(submit).not.toBeDisabled();
+    fireEvent.click(submit);
+    expect(onAction).toHaveBeenCalledWith("sendCommunication", {
+      templateKey: "kyc_reminder",
+      channel: "email",
+    });
+  });
+
+  it("offers a template dropdown when template keys are available", () => {
+    render(
+      <PunterProfile
+        punter={punter}
+        communications={[]}
+        canSendCommunications
+        commTemplateKeys={["kyc_reminder", "welcome"]}
+      />,
+    );
+    const content = openTab();
+    const tmpl = content.getByTestId("communication-template");
+    expect(tmpl.tagName).toBe("SELECT");
+    expect(within(tmpl).getByText("welcome")).toBeTruthy();
   });
 });
