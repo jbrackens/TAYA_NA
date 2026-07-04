@@ -35,10 +35,15 @@ function FinanceApprovalsContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  // GAP-84 (§29): maker-checker approvals are finances:write server-side; disable
-  // for a read-only caller. (The backend also enforces maker≠checker.)
+  // GAP-96 (§7/§25/§29, completing GAP-91's SoD split): the maker-checker
+  // approve/reject actions gate on finances:approve server-side (the CHECKER
+  // permission — migration 060; distinct from the finances:write that ORIGINATES
+  // an adjustment). Gate the buttons on the SAME permission so the checker-only
+  // finance-approver role can operate the queue and an originator (finances:write
+  // only) sees them disabled rather than enabled→403. The backend also enforces
+  // maker≠checker (ErrSameActor).
   const { can } = usePermissions();
-  const canWrite = can("finances:write");
+  const canApprove = can("finances:approve");
   const [notice, setNotice] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -135,7 +140,7 @@ function FinanceApprovalsContent() {
           <Button
             variant="primary"
             size="sm"
-            disabled={busy || !canWrite}
+            disabled={busy || !canApprove}
             onClick={() => void decide(row.id, "approve")}
             data-testid={`approve-${row.id}`}
           >
@@ -144,7 +149,7 @@ function FinanceApprovalsContent() {
           <Button
             variant="danger"
             size="sm"
-            disabled={busy || !canWrite}
+            disabled={busy || !canApprove}
             onClick={() => void decide(row.id, "reject")}
             data-testid={`reject-${row.id}`}
           >
