@@ -71,7 +71,12 @@ func registerCommunicationsAdminRoutes(mux *stdhttp.ServeMux, store communicatio
 		}
 
 		if r.Method == stdhttp.MethodPost {
-			if !sendLimiter.Allow(userIDFromRequest(r)) {
+			// Key on the session-validated actor from context, NOT userIDFromRequest
+			// (which falls back to the client-supplied X-User-ID header) — otherwise
+			// a caller could rotate that header to mint a fresh bucket per request and
+			// bypass the throttle (verification #23 MED). Empty (unauthenticated /
+			// dev-anon) callers share one bucket, which is fail-closed.
+			if !sendLimiter.Allow(httpx.UserIDFromContext(r.Context())) {
 				return httpx.TooManyRequests("too many communications; please wait a moment and try again")
 			}
 			return sendPlayerCommunication(w, r, store, notifier, userID)

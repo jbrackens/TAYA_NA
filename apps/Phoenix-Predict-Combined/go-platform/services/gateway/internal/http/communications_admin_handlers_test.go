@@ -219,6 +219,36 @@ func TestCommunicationsSendRateLimited(t *testing.T) {
 	}
 }
 
+// GAP-75 / verification #23 MED: the throttle keys on the session-validated actor
+// (httpx.UserIDFromContext), NOT the client-supplied X-User-ID header, so rotating
+// that header cannot mint a fresh bucket per request. Here there is no session
+// user (anon-bypass path), so every request keys on the same empty actor and the
+// second is throttled regardless of the rotating header.
+func TestCommunicationsSendRateLimitNotBypassableByHeader(t *testing.T) {
+	t.Setenv("COMMS_SEND_RATE_LIMIT_PER_MIN", "1")
+	store := &fakeCommsStore{email: "p@example.com"}
+	handler := commsHandler(store, &fakeNotifier{})
+
+	post := func(headerUser string) *httptest.ResponseRecorder {
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v1/admin/communications/u-1",
+			strings.NewReader(`{"templateKey":"welcome","channel":"email"}`),
+		)
+		req.Header.Set("X-User-ID", headerUser) // no WithTestUser → empty context actor
+		res := httptest.NewRecorder()
+		handler.ServeHTTP(res, req)
+		return res
+	}
+
+	if res := post("attacker-1"); res.Code == http.StatusTooManyRequests {
+		t.Fatalf("first send should pass, got 429")
+	}
+	if res := post("attacker-2"); res.Code != http.StatusTooManyRequests {
+		t.Fatalf("rotating X-User-ID must not bypass the throttle; expected 429, got %d", res.Code)
+	}
+}
+
 // Opt-in full-send integration: real communications store + real template store +
 // fake notifier. Proves the fail-closed dispatch semantics end to end.
 func TestCommunicationsSendLive(t *testing.T) {

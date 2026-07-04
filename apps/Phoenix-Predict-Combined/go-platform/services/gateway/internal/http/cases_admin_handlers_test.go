@@ -92,9 +92,12 @@ CREATE TABLE IF NOT EXISTS surveillance_cases (id BIGSERIAL PRIMARY KEY, title T
 	cleanup()
 	defer cleanup()
 
+	// The first title deliberately contains a launch-prohibited word ("deposit") —
+	// case titles must NOT be run through the launch-copy redactor (verification #23
+	// HIGH), so it must survive verbatim.
 	if _, err := db.ExecContext(ctx, `
 INSERT INTO aml_cases (title, subject_id, opened_by, created_at) VALUES
- ('gap32 aml a','u-case-1','admin','2026-03-01T00:00:00Z'),
+ ('gap32 large deposit review','u-case-1','admin','2026-03-01T00:00:00Z'),
  ('gap32 aml b','u-case-2','admin','2026-03-02T00:00:00Z')`); err != nil {
 		t.Fatalf("seed aml: %v", err)
 	}
@@ -137,6 +140,40 @@ INSERT INTO surveillance_cases (title, opened_by, created_at) VALUES ('gap32 sur
 	}
 	if seededAML != 2 || seededSurv != 1 {
 		t.Fatalf("full center should include both domains, got aml=%d surv=%d", seededAML, seededSurv)
+	}
+
+	// H1: the "deposit"-containing case title is preserved verbatim, not redacted.
+	pos := map[string]int{}
+	var depositTitleOK bool
+	for i, c := range all {
+		pos[c.Type+":"+c.Title] = i
+		if c.Title == "gap32 large deposit review" {
+			depositTitleOK = true
+		}
+	}
+	if !depositTitleOK {
+		t.Fatalf("case title with a launch-prohibited word was redacted or dropped: %+v", all)
+	}
+
+	// M2: most-recent-first across domains — surveillance (03-03) before aml b
+	// (03-02) before the deposit case (03-01). Verified by returned position, not
+	// by string comparison, so it catches a mis-ordered SQL/merge.
+	iSurv, okSurv := pos["surveillance:gap32 surv"]
+	iAmlB, okAmlB := pos["aml:gap32 aml b"]
+	iDeposit, okDeposit := pos["aml:gap32 large deposit review"]
+	if !okSurv || !okAmlB || !okDeposit || !(iSurv < iAmlB && iAmlB < iDeposit) {
+		t.Fatalf("cross-domain order should be most-recent-first (surv<amlB<deposit), got surv=%d amlB=%d deposit=%d", iSurv, iAmlB, iDeposit)
+	}
+
+	// M1: with includeSurveillance=false, surveillance cases are excluded entirely.
+	amlOnly, err := listUnifiedCases(ctx, db, "", 200, false)
+	if err != nil {
+		t.Fatalf("listUnifiedCases(includeSurveillance=false): %v", err)
+	}
+	for _, c := range amlOnly {
+		if c.Type == "surveillance" {
+			t.Fatalf("surveillance case leaked with includeSurveillance=false: %+v", c)
+		}
 	}
 
 	// Subject filter: only u-case-1's AML case, no surveillance.

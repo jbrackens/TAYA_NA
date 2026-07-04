@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	stdhttp "net/http"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -64,7 +63,14 @@ func registerCasesAdminRoutes(mux *stdhttp.ServeMux, db *sql.DB) {
 				limit = n
 			}
 		}
-		cases, err := listUnifiedCases(r.Context(), db, subjectID, limit)
+		// Surveillance cases are shown only to callers who ALSO hold surveillance:read
+		// (compliance:read alone gates AML cases). compliance:read is not a superset of
+		// surveillance:read — the RBAC permissions are independently grantable — so
+		// including surveillance rows under compliance:read alone would leak them to a
+		// role denied them on the dedicated /admin/surveillance/cases route
+		// (verification #23 MED). Least-privilege: gate the surveillance branch too.
+		includeSurveillance := requireAdminPermission(r, "surveillance:read") == nil
+		cases, err := listUnifiedCases(r.Context(), db, subjectID, limit, includeSurveillance)
 		if err != nil {
 			return httpx.Internal("failed to load cases", err)
 		}
@@ -72,35 +78,60 @@ func registerCasesAdminRoutes(mux *stdhttp.ServeMux, db *sql.DB) {
 	}))
 }
 
-func listUnifiedCases(ctx context.Context, db *sql.DB, subjectID string, limit int) ([]unifiedCase, error) {
+// listUnifiedCases returns the merged, most-recent-first case list. The merge,
+// ordering, and LIMIT are all done in SQL over a UNION ALL so the sort is a real
+// timestamptz comparison (not a lexicographic string compare on a tz-dependent
+// text rendering) and the limit is applied once to the combined set, not per
+// domain. Case titles are NOT redacted: they are back-office compliance artifacts
+// that legitimately name deposits/withdrawals/payouts, exactly like AML rule
+// names and SAR resolutions (which are also un-redacted); applying the
+// launch-copy word filter would gut them.
+//
+// AML cases are subject-scoped when subjectID is set. Surveillance cases are
+// market-scoped (no subject) so they appear only in the full center AND only when
+// includeSurveillance is true (caller holds surveillance:read).
+func listUnifiedCases(ctx context.Context, db *sql.DB, subjectID string, limit int, includeSurveillance bool) ([]unifiedCase, error) {
 	ctx, cancel := context.WithTimeout(ctx, casesQueryTimeout)
 	defer cancel()
 
-	out := []unifiedCase{}
+	var parts []string
+	var args []any
 
-	// AML cases — subject-scoped when a subjectId is supplied.
-	amlQuery := `SELECT id, title, status, priority, subject_id, opened_by, CAST(created_at AS TEXT) FROM aml_cases`
-	var amlArgs []any
+	amlPart := `SELECT 'aml' AS domain, id, title, status, priority, subject_id, opened_by, created_at FROM aml_cases`
 	if subjectID != "" {
-		amlQuery += ` WHERE subject_id = $1`
-		amlArgs = append(amlArgs, subjectID)
+		args = append(args, subjectID)
+		amlPart += ` WHERE subject_id = $` + strconv.Itoa(len(args))
 	}
-	amlQuery += ` ORDER BY created_at DESC LIMIT ` + strconv.Itoa(limit)
-	amlRows, err := db.QueryContext(ctx, amlQuery, amlArgs...)
+	parts = append(parts, amlPart)
+
+	if includeSurveillance && subjectID == "" {
+		parts = append(parts, `SELECT 'surveillance' AS domain, id, title, status, priority, '' AS subject_id, opened_by, created_at FROM surveillance_cases`)
+	}
+
+	// Wrap the UNION and order/limit on the real created_at (not its text form).
+	query := `SELECT domain, id, title, status, priority, subject_id, opened_by, CAST(created_at AS TEXT)
+FROM (` + strings.Join(parts, " UNION ALL ") + `) AS c
+ORDER BY created_at DESC
+LIMIT ` + strconv.Itoa(limit)
+
+	rows, err := db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
-	for amlRows.Next() {
+	defer rows.Close()
+
+	out := []unifiedCase{}
+	for rows.Next() {
+		var domain string
 		var id int64
 		var title, status, priority, subj, openedBy, createdAt string
-		if err := amlRows.Scan(&id, &title, &status, &priority, &subj, &openedBy, &createdAt); err != nil {
-			amlRows.Close()
+		if err := rows.Scan(&domain, &id, &title, &status, &priority, &subj, &openedBy, &createdAt); err != nil {
 			return nil, err
 		}
 		out = append(out, unifiedCase{
-			ID:        "aml-" + strconv.FormatInt(id, 10),
-			Type:      "aml",
-			Title:     redactLaunchProhibitedUserText(title),
+			ID:        domain + "-" + strconv.FormatInt(id, 10),
+			Type:      domain,
+			Title:     title,
 			Status:    status,
 			Priority:  priority,
 			SubjectID: subj,
@@ -108,48 +139,5 @@ func listUnifiedCases(ctx context.Context, db *sql.DB, subjectID string, limit i
 			CreatedAt: createdAt,
 		})
 	}
-	if err := amlRows.Err(); err != nil {
-		amlRows.Close()
-		return nil, err
-	}
-	amlRows.Close()
-
-	// Surveillance cases are per-market, not per-player, so they appear only in
-	// the full center (no subject filter).
-	if subjectID == "" {
-		survRows, err := db.QueryContext(ctx,
-			`SELECT id, title, status, priority, opened_by, CAST(created_at AS TEXT) FROM surveillance_cases ORDER BY created_at DESC LIMIT `+strconv.Itoa(limit))
-		if err != nil {
-			return nil, err
-		}
-		for survRows.Next() {
-			var id int64
-			var title, status, priority, openedBy, createdAt string
-			if err := survRows.Scan(&id, &title, &status, &priority, &openedBy, &createdAt); err != nil {
-				survRows.Close()
-				return nil, err
-			}
-			out = append(out, unifiedCase{
-				ID:        "surveillance-" + strconv.FormatInt(id, 10),
-				Type:      "surveillance",
-				Title:     redactLaunchProhibitedUserText(title),
-				Status:    status,
-				Priority:  priority,
-				OpenedBy:  openedBy,
-				CreatedAt: createdAt,
-			})
-		}
-		if err := survRows.Err(); err != nil {
-			survRows.Close()
-			return nil, err
-		}
-		survRows.Close()
-	}
-
-	// Most-recent-first across both domains; cap at the requested limit.
-	sort.SliceStable(out, func(i, j int) bool { return out[i].CreatedAt > out[j].CreatedAt })
-	if len(out) > limit {
-		out = out[:limit]
-	}
-	return out, nil
+	return out, rows.Err()
 }
