@@ -797,7 +797,7 @@ sign-off — that attestation remains a separate human step.
 
 | Area | Spec Section | Scenario | Implemented Status | Scenario Status | Note |
 |---|---|---|---|---|---|
-| Admin auth & RBAC | 6, 7, 11, 27 | 1 | **Built** | Pass | MFA now **mandatory for admin roles** (P0-1 `6914421c`,`268157b8`), RBAC (mig 027/038/040) + permission-denial audit (GAP-25 `d719804f`), least-privilege personas (GAP-14 `bd0634db`). Residual: WebAuthn option (GAP-15) |
+| Admin auth & RBAC | 6, 7, 11, 27 | 1 | **Built** | Pass | MFA now **mandatory for admin roles** (P0-1 `6914421c`,`268157b8`), RBAC (mig 027/038/040) + permission-denial audit (GAP-25 `d719804f`), least-privilege personas (GAP-14 `bd0634db`), admin MFA-reset (GAP-15 `21743d22`), **admin session-revocation / kick-session (GAP-76 `7252cf97`)**. Residual: WebAuthn/passkey option (GAP-71); guaranteed single-session "steal-lock" deferred (GAP-76 slice 2) |
 | Player search & 360 | 10 | 2 | **Built** | Pass | Search + profile + **KYC tab** (P0-3 `ad6e84c4`) + **Limits/self-exclusion tab** (P1-3 `d610ecdf`) |
 | Account lifecycle | 11 | 3 | **Built** | Pass | Suspension read on trading+login with reason+audit (GAP-9/10) |
 | KYC | 12 | 4 | **Built** | Pass | Fail-closed (P0-2 `5adf223c`) + admin review UI + document BYTEA storage (P0-3) + expiry re-trigger (GAP-17 `59f7eb6d`) + request-more-docs (GAP-18 `d0d314f6`). Residual: IDV vendor (GAP-19 ⚑) |
@@ -808,23 +808,26 @@ sign-off — that attestation remains a separate human step.
 | Positions & exposure | 15, 16 | 9 | **Built** | Pass | Positions, exposure/P&L, risk dashboard + per-market eligibility (GAP-20) + admin order view/cancel (GAP-21 `d94e53b0`) |
 | Market integrity | 18 | 10 | **Built** | Pass | Surveillance: wash/spoof/collusion (P1-4 `7761823b`,`8936142a`,`e33045c4`) + insider (GAP-22 `11d1fc1b`) + bonus-abuse (GAP-23 `c46b166f`) + duplicate-account; alerts→cases UI |
 | Settlement | 17 | 11 | **Built** | Pass | Idempotent propose→challenge→finalize + disputes + dual-control finalize |
-| Notes & comms | 20 | 12 | **Partial** | Partial | Notes + notification-template store + admin editor built (P1-6 `a2cf341f`); **sent-communication history unpersisted** (GAP-43, confirmed by the GAP-27 reconciliation) |
+| Notes & comms | 20 | 12 | **Built** | Pass | Notes + notification-template store + admin editor (P1-6 `a2cf341f`); **sent-communication history + agent-initiated templated send (GAP-43)** (`internal/communications`, audited `player.communication_sent`, per-actor rate limit GAP-75) |
 | Segmentation & CRM | 21 | 13 | **Built** | Pass | Tags/segments/campaigns/query (P2-2, `internal/segmentation`); dispatch fail-closed in launch mode |
-| Bonus / rewards | 21 | 14 | **Built** | Pass | Bonus/wagering + loyalty + **admin bonus UI** (P1-6 `dae22915`) + abuse detection (GAP-23) |
-| Reporting & export | 23 | 15 | **Partial** | Partial | Operational CSV exports (P1-6 `a95f6e5a`, risk/KYC/surveillance CSVs); **statutory suite pending regime** (GAP-24 ⏳) |
+| Bonus / rewards | 21 | 14 | **Partial** | Partial | Bonus engine + wagering machinery + loyalty + admin bonus UI (P1-6 `dae22915`) + abuse detection (GAP-23); **turnover→conversion NOT wired to trading (GAP-77 BLOCKED)** — `RecordWageringContribution`/`ConvertBonusToReal` have zero production callers, so bonus turnover never accrues from live trading; balance-changing + hooks protected trade path → design note |
+| Reporting & export | 23 | 15 | **Partial** | Partial | Operational CSV exports (P1-6 `a95f6e5a`, risk/KYC/surveillance CSVs) + **finance reports (GAP-48)** — wallet-ledger CSV (capped/413), daily-balance + reconciliation (`finances:read`, UTC-day buckets); **statutory suite pending regime** (GAP-24 ⏳) |
 | Tenant / jurisdiction | 8, 25 | 16 | **Partial** | Partial | Geofencing + per-market jurisdiction Built; **multitenancy dormant, BLOCKED** (P2-1 ⚑ protected core) |
 | Audit integrity | 24 | 17 | **Built** | Pass | Append-only + hash-chain + verify route (GAP-13) + durable auth audit (GAP-5) + permission-denial audit (GAP-25) |
 | Privacy & retention | 28 | 18 | **Partial** | Fail | Loyalty opt-out only; **DSAR/retention/erasure BLOCKED** (P2-3 ⚑ legal) |
-| Support / disputes | 19 | 19 | **Built (markets)** | Partial | Market-resolution disputes Built; **general support-case workflow Missing** |
+| Support / disputes | 19 | 19 | **Built (markets)** | Partial | Market-resolution disputes Built; **cross-domain read-only case center (GAP-32 slice 1 `15bb000d`)** aggregating AML+surveillance, surfaced in Profile-360 Cases tab (GAP-35 `e482db1c`); **writable shared case model (assignee/SLA/notes/approval) — GAP-32 slice 2 design-gated** |
 | Operational config | 25 | 20 | **Partial** | Partial | DB-backed flag store + admin route (`internal/platformconfig`, `/api/v1/admin/config/flags`); **full ops-settings screens pending** |
 | Orders / trades (CLOB) | 16 | 9 | **Built** | Pass | Real central limit order book, complementary issuance, TIF/post-only |
 | Integrations / webhooks | 26 | — | **Built** | — | HMAC webhooks + scoped partner API |
 | Custody / on-chain settlement | 17, 26 | 11 | **Partial / design-seed** | Partial | Custodial off-chain today; **non-custodial BLOCKED** (P2-4 ⚑ founder decision) |
 
-Summary: as of the 2026-07-03 evidence pass (refined by the GAP-27 schema-domain
-reconciliation), **~13 areas Built, ~9 Partial, 0 Missing**; acceptance scenarios are
-**11 Pass / 8 Partial / 1 Fail** (Scenario 18, DSAR). Every non-Pass scenario is attributable
-to a tracked BLOCKED/open item with a brief (P0-5/6/7, P2-1/3/4, GAP-17b/19/24/30/43/70) — the
+Summary: as of the **2026-07-04 Termination-pass-B reconciliation** (refining the 2026-07-03
+evidence pass + the GAP-27 schema-domain reconciliation), **~13 areas Built, ~9 Partial, 0 Missing**;
+acceptance scenarios are **11 Pass / 8 Partial / 1 Fail** (Scenario 18, DSAR). The 07-04 pass swaps
+two rows: **Notes & comms 12 Partial→Built/Pass** (GAP-43 sent-communication history landed) and
+**Bonus / rewards 14 Built/Pass→Partial** (GAP-77 — bonus turnover→conversion is unwired from live
+trading; an overclaim correction, not a regression). Every non-Pass scenario is attributable
+to a tracked BLOCKED/open item with a brief (P0-5/6/7, P2-1/3/4, GAP-17b/19/24/30/77) — the
 residual gaps are human-decision-gated (regime/legal/threshold/vendor/protected-core) or filed
 breadth items, not un-started surprises. Full per-scenario evidence (with the honest
 "automated-evidence ≠ manual-acceptance-sign-off" caveat) is in `docs/pam/scenario-evidence.md`;
