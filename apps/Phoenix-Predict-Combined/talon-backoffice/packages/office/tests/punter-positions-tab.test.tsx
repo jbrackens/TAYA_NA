@@ -54,6 +54,9 @@ const positions: PlayerPositionRow[] = [
     realizedPointsCents: -125,
     reservedQuantity: 0,
     createdAt: "2026-03-01T00:00:00Z",
+    // GAP-99: mark 55c on a 40-share YES position avg 52c => (55-52)*40 = 120c
+    currentPricePointsCents: 55,
+    unrealizedPointsCents: 120,
   },
 ];
 
@@ -78,6 +81,9 @@ describe("PunterProfile positions & orders tab", () => {
     expect(content.getByTestId("positions-exposure").textContent).toContain(
       "20.80",
     );
+    // GAP-99: per-position unrealized P/L surfaced (120c => +1.20 pts)
+    const posRow = within(content.getByTestId("position-row"));
+    expect(posRow.getByText("+1.20 pts")).toBeTruthy();
   });
 
   it("shows empty states when the player has no orders or positions", () => {

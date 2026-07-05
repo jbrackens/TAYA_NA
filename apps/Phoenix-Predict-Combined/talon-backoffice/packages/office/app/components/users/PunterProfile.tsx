@@ -88,6 +88,10 @@ export interface PlayerPositionRow {
   realizedPointsCents: number;
   reservedQuantity: number;
   createdAt: string;
+  // GAP-99: current market mark + per-position unrealized (mark-to-market) P/L,
+  // added by the admin positions handler. Optional so older callers still type.
+  currentPricePointsCents?: number;
+  unrealizedPointsCents?: number;
 }
 
 // One restricted market's eligibility standing for this player, as returned by
@@ -1267,6 +1271,7 @@ export function PunterProfile({
                         <th className={histThClassName}>Avg price</th>
                         <th className={histThClassName}>Exposure</th>
                         <th className={histThClassName}>Realized P/L</th>
+                        <th className={histThClassName}>Unrealized P/L</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1292,6 +1297,17 @@ export function PunterProfile({
                             }`}
                           >
                             {signedPointsFromCents(p.realizedPointsCents)}
+                          </td>
+                          <td
+                            className={`${histTdBaseClassName} ${
+                              (p.unrealizedPointsCents ?? 0) >= 0
+                                ? positivePointClassName
+                                : negativePointClassName
+                            }`}
+                          >
+                            {p.unrealizedPointsCents === undefined
+                              ? "—"
+                              : signedPointsFromCents(p.unrealizedPointsCents)}
                           </td>
                         </tr>
                       ))}

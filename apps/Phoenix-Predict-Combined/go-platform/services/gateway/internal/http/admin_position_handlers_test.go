@@ -13,6 +13,7 @@ import (
 
 type fakeAdminPositionSvc struct {
 	positions   []prediction.Position
+	markets     map[string]*prediction.Market
 	lastUserID  string
 	listCallCnt int
 }
@@ -21,6 +22,13 @@ func (f *fakeAdminPositionSvc) ListPositions(_ context.Context, userID string) (
 	f.lastUserID = userID
 	f.listCallCnt++
 	return f.positions, nil
+}
+
+func (f *fakeAdminPositionSvc) GetMarket(_ context.Context, id string) (*prediction.Market, error) {
+	if f.markets == nil {
+		return nil, nil
+	}
+	return f.markets[id], nil
 }
 
 func newAdminPositionHarness(svc adminPositionService) http.Handler {
@@ -91,5 +99,49 @@ func TestAdminPositionsRejectNonAdmin(t *testing.T) {
 
 	if res := adminPositionReq(h, "mallory", "player", http.MethodGet, "/api/v1/admin/positions?userId=cust-1"); res.Code != http.StatusForbidden {
 		t.Fatalf("non-admin: expected 403, got %d", res.Code)
+	}
+}
+
+// GAP-99 (§16 / Scenario 9): each position is enriched with the current mark and
+// per-position unrealized (mark-to-market) P/L = (currentSidePrice - avgPrice) *
+// quantity, in points-cents. A YES position of 10 @ 50c on a market now marked
+// 55c YES => unrealized (55-50)*10 = 50; the NO side reads the NO price.
+func TestAdminPositionsIncludeUnrealizedPnl(t *testing.T) {
+	svc := &fakeAdminPositionSvc{
+		positions: []prediction.Position{
+			{ID: "pos-1", UserID: "cust-1", MarketID: "mkt-7", Side: prediction.OrderSideYes, Quantity: 10, AvgPriceCents: 50},
+			{ID: "pos-2", UserID: "cust-1", MarketID: "mkt-9", Side: prediction.OrderSideNo, Quantity: 4, AvgPriceCents: 60},
+		},
+		markets: map[string]*prediction.Market{
+			"mkt-7": {ID: "mkt-7", YesPriceCents: 55, NoPriceCents: 45},
+			"mkt-9": {ID: "mkt-9", YesPriceCents: 30, NoPriceCents: 70},
+		},
+	}
+	h := newAdminPositionHarness(svc)
+
+	res := adminPositionReq(h, "admin-A", "admin", http.MethodGet, "/api/v1/admin/positions?userId=cust-1")
+	if res.Code != http.StatusOK {
+		t.Fatalf("list: expected 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	var body struct {
+		Data []struct {
+			ID                      string `json:"id"`
+			CurrentPricePointsCents int    `json:"currentPricePointsCents"`
+			UnrealizedPointsCents   int64  `json:"unrealizedPointsCents"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(res.Body.Bytes(), &body); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if len(body.Data) != 2 {
+		t.Fatalf("expected 2 enriched positions, got %d", len(body.Data))
+	}
+	// pos-1: YES, mark 55, avg 50, qty 10 => (55-50)*10 = 50
+	if body.Data[0].CurrentPricePointsCents != 55 || body.Data[0].UnrealizedPointsCents != 50 {
+		t.Fatalf("pos-1 mark/unrealized wrong: mark=%d unreal=%d", body.Data[0].CurrentPricePointsCents, body.Data[0].UnrealizedPointsCents)
+	}
+	// pos-2: NO, mark 70, avg 60, qty 4 => (70-60)*4 = 40
+	if body.Data[1].CurrentPricePointsCents != 70 || body.Data[1].UnrealizedPointsCents != 40 {
+		t.Fatalf("pos-2 mark/unrealized wrong: mark=%d unreal=%d", body.Data[1].CurrentPricePointsCents, body.Data[1].UnrealizedPointsCents)
 	}
 }

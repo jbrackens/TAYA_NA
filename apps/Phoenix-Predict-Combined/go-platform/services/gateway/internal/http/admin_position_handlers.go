@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"encoding/json"
 	stdhttp "net/http"
 	"strings"
 
@@ -23,6 +24,26 @@ import (
 // *prediction.Service satisfies it.
 type adminPositionService interface {
 	ListPositions(ctx context.Context, userID string) ([]prediction.Position, error)
+	// GAP-99: reads a market's current price so the handler can compute
+	// per-position unrealized (mark-to-market) P/L. *prediction.Service already
+	// exports GetMarket — a call, not a protected-core edit.
+	GetMarket(ctx context.Context, id string) (*prediction.Market, error)
+}
+
+// positionWithMark re-encodes a position through its own MarshalJSON (preserving
+// the exact points-cents wire shape the office consumes) into a map so the
+// handler can add the GAP-99 mark + unrealized fields without duplicating the
+// marshaling logic.
+func positionWithMark(p prediction.Position) (map[string]any, error) {
+	b, err := json.Marshal(p)
+	if err != nil {
+		return nil, err
+	}
+	var m map[string]any
+	if err := json.Unmarshal(b, &m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func registerAdminPositionRoutes(mux *stdhttp.ServeMux, svc adminPositionService) {
@@ -51,9 +72,32 @@ func adminPositionsListHandler(svc adminPositionService) func(stdhttp.ResponseWr
 		if err != nil {
 			return httpx.Internal("failed to list positions", err)
 		}
-		if positions == nil {
-			positions = []prediction.Position{}
+		// GAP-99 (§16 / Scenario 9): enrich each position with the current mark
+		// and per-position unrealized (mark-to-market) P/L. unrealized =
+		// (currentSidePrice - avgPrice) * quantity, in points-cents (may be
+		// negative). The mark is the market's current price for the position's
+		// side. A market that can't be read (e.g. deleted) leaves mark 0 and
+		// unrealized 0 rather than failing the whole read.
+		data := make([]map[string]any, 0, len(positions))
+		for _, p := range positions {
+			row, mErr := positionWithMark(p)
+			if mErr != nil {
+				return httpx.Internal("failed to encode position", mErr)
+			}
+			mark := 0
+			var unrealized int64 = 0
+			if mk, gErr := svc.GetMarket(r.Context(), p.MarketID); gErr == nil && mk != nil {
+				if p.Side == prediction.OrderSideNo {
+					mark = mk.NoPriceCents
+				} else {
+					mark = mk.YesPriceCents
+				}
+				unrealized = int64(mark-p.AvgPriceCents) * int64(p.Quantity)
+			}
+			row["currentPricePointsCents"] = mark
+			row["unrealizedPointsCents"] = unrealized
+			data = append(data, row)
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"data": positions})
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"data": data})
 	}
 }
