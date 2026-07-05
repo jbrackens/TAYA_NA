@@ -17,6 +17,7 @@ import {
   Typography,
 } from "antd";
 import PageHeader from "../../components/layout/page-header";
+import { usePermissions } from "../../app/lib/permissions";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
 import type {
   Category,
@@ -29,6 +30,12 @@ const { TextArea } = Input;
 const predictionClient = createPredictionClient();
 
 export default function PredictionTaxonomyContainer() {
+  // GAP-100 (§29 read-only permission scope): creating a category/series mutates
+  // the market taxonomy, gated markets:edit server-side. Gate the Create controls
+  // fail-closed on can("markets:edit") — a read-only caller (Auditor) sees them
+  // disabled instead of enabled→403. Same GAP-95 §29 pattern.
+  const { can } = usePermissions();
+  const canEdit = can("markets:edit");
   const [categories, setCategories] = useState<Category[]>([]);
   const [series, setSeries] = useState<Series[]>([]);
   const [tags, setTags] = useState<string[]>([]);
@@ -127,10 +134,14 @@ export default function PredictionTaxonomyContainer() {
           </Col>
           <Col>
             <Space>
-              <Button onClick={() => setCategoryOpen(true)}>
+              <Button disabled={!canEdit} onClick={() => setCategoryOpen(true)}>
                 Create Category
               </Button>
-              <Button type="primary" onClick={() => setSeriesOpen(true)}>
+              <Button
+                type="primary"
+                disabled={!canEdit}
+                onClick={() => setSeriesOpen(true)}
+              >
                 Create Series
               </Button>
               <Button onClick={loadData}>Refresh</Button>
