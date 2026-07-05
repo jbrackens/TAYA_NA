@@ -111,6 +111,8 @@ func TestAdminPositionsIncludeUnrealizedPnl(t *testing.T) {
 		positions: []prediction.Position{
 			{ID: "pos-1", UserID: "cust-1", MarketID: "mkt-7", Side: prediction.OrderSideYes, Quantity: 10, AvgPriceCents: 50},
 			{ID: "pos-2", UserID: "cust-1", MarketID: "mkt-9", Side: prediction.OrderSideNo, Quantity: 4, AvgPriceCents: 60},
+			// pos-3's market is NOT in the map -> fail-safe: mark 0, unrealized 0.
+			{ID: "pos-3", UserID: "cust-1", MarketID: "mkt-gone", Side: prediction.OrderSideYes, Quantity: 7, AvgPriceCents: 40},
 		},
 		markets: map[string]*prediction.Market{
 			"mkt-7": {ID: "mkt-7", YesPriceCents: 55, NoPriceCents: 45},
@@ -133,8 +135,8 @@ func TestAdminPositionsIncludeUnrealizedPnl(t *testing.T) {
 	if err := json.Unmarshal(res.Body.Bytes(), &body); err != nil {
 		t.Fatalf("decode: %v", err)
 	}
-	if len(body.Data) != 2 {
-		t.Fatalf("expected 2 enriched positions, got %d", len(body.Data))
+	if len(body.Data) != 3 {
+		t.Fatalf("expected 3 enriched positions, got %d", len(body.Data))
 	}
 	// pos-1: YES, mark 55, avg 50, qty 10 => (55-50)*10 = 50
 	if body.Data[0].CurrentPricePointsCents != 55 || body.Data[0].UnrealizedPointsCents != 50 {
@@ -143,5 +145,9 @@ func TestAdminPositionsIncludeUnrealizedPnl(t *testing.T) {
 	// pos-2: NO, mark 70, avg 60, qty 4 => (70-60)*4 = 40
 	if body.Data[1].CurrentPricePointsCents != 70 || body.Data[1].UnrealizedPointsCents != 40 {
 		t.Fatalf("pos-2 mark/unrealized wrong: mark=%d unreal=%d", body.Data[1].CurrentPricePointsCents, body.Data[1].UnrealizedPointsCents)
+	}
+	// pos-3: market not found => fail-safe mark 0 / unrealized 0, still emitted.
+	if body.Data[2].CurrentPricePointsCents != 0 || body.Data[2].UnrealizedPointsCents != 0 {
+		t.Fatalf("pos-3 (missing market) must fail-safe to 0/0, got mark=%d unreal=%d", body.Data[2].CurrentPricePointsCents, body.Data[2].UnrealizedPointsCents)
 	}
 }

@@ -114,4 +114,22 @@ describe("PunterProfile positions & orders tab", () => {
       "40.00",
     );
   });
+
+  // GAP-99: the unrealized column handles a negative mark-to-market and an
+  // absent value ('—') — the two branches the positive-only case skipped
+  // (verifier #31 LOW).
+  it("renders negative and absent unrealized P/L", () => {
+    const rows: PlayerPositionRow[] = [
+      { ...positions[0], id: "pos-neg", unrealizedPointsCents: -240 },
+      { ...positions[0], id: "pos-none", unrealizedPointsCents: undefined },
+    ];
+    render(<PunterProfile punter={punter} openOrders={[]} positions={rows} />);
+    fireEvent.click(screen.getByTestId("profile-positions-tab"));
+    const content = within(screen.getByTestId("profile-positions-content"));
+    const cells = content.getAllByTestId("position-row");
+    // -240c => -2.40 pts
+    expect(within(cells[0]).getByText("-2.40 pts")).toBeTruthy();
+    // undefined => em-dash placeholder
+    expect(within(cells[1]).getByText("—")).toBeTruthy();
+  });
 });

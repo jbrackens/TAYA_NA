@@ -90,4 +90,18 @@ describe("EligibilityTagsModal (GAP-98)", () => {
       ).toBe(true),
     );
   });
+
+  // Isolates the markets:edit gate: in the raw-id branch with a VALID id filled,
+  // the only remaining disabler is !canEdit — so this fails if the gate is
+  // dropped (unlike the Select-branch case where selected===undefined also
+  // disables Add). (verifier #31 MED.)
+  it("keeps Add disabled for a read-only caller even with a valid tag id filled", async () => {
+    mockFetch([]); // empty catalog -> raw-id path
+    renderModal(false);
+    const input = await screen.findByTestId("eligibility-add-raw");
+    fireEvent.change(input, { target: { value: "11" } });
+    // rawId is non-empty and not busy, so only !canEdit can disable it
+    expect(screen.getByTestId("eligibility-add-submit")).toBeDisabled();
+    expect(input).toBeDisabled();
+  });
 });
