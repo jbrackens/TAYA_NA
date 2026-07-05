@@ -146,6 +146,9 @@ function UserDetailPageContent() {
   // read-only caller (e.g. Auditor) sees it disabled. The gateway re-checks.
   const { can } = usePermissions();
   const canSendCommunications = can("users:write");
+  // GAP-101 (§16): admin order-cancel is markets:edit-gated server-side; the
+  // Cancel control is fail-closed on the same permission.
+  const canCancelOrders = can("markets:edit");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -525,6 +528,21 @@ function UserDetailPageContent() {
           await loadCommunications();
           break;
         }
+        case "cancelOrder": {
+          // GAP-101 (§16): cancel a working order on the customer's behalf. The
+          // gateway resolves the order's real owner, delegates to the existing
+          // Service.CancelOrder (releases the wallet reservation), and audits
+          // order.admin_cancelled. markets:edit-gated server-side.
+          const orderId = String(data?.orderId ?? "");
+          if (!orderId) break;
+          const res = await adminFetch(
+            `/api/v1/admin/orders/${encodeURIComponent(orderId)}/cancel`,
+            { method: "POST" },
+          );
+          if (!res.ok) throw new Error("Failed to cancel order");
+          await loadOpenOrders();
+          break;
+        }
         default:
           throw new Error(`Unknown action: ${action}`);
       }
@@ -598,6 +616,7 @@ function UserDetailPageContent() {
             openOrders={openOrders}
             positions={positions}
             eligibility={eligibility}
+            canCancelOrders={canCancelOrders}
           />
         </div>
 

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import {
   PunterProfile,
@@ -84,6 +84,8 @@ describe("PunterProfile positions & orders tab", () => {
     // GAP-99: per-position unrealized P/L surfaced (120c => +1.20 pts)
     const posRow = within(content.getByTestId("position-row"));
     expect(posRow.getByText("+1.20 pts")).toBeTruthy();
+    // GAP-101: the order-cancel control is fail-closed (no canCancelOrders prop)
+    expect(content.getByTestId("cancel-order-ord-1")).toBeDisabled();
   });
 
   it("shows empty states when the player has no orders or positions", () => {
@@ -131,5 +133,54 @@ describe("PunterProfile positions & orders tab", () => {
     expect(within(cells[0]).getByText("-2.40 pts")).toBeTruthy();
     // undefined => em-dash placeholder
     expect(within(cells[1]).getByText("—")).toBeTruthy();
+  });
+
+  // GAP-101 (§16): a markets:edit caller can cancel a working order — after a
+  // confirm, it routes through onAction("cancelOrder", {orderId}).
+  describe("order cancel", () => {
+    const realConfirm = window.confirm;
+    afterEach(() => {
+      window.confirm = realConfirm;
+      vi.restoreAllMocks();
+    });
+
+    it("cancels a working order via onAction after confirmation (canCancelOrders)", () => {
+      window.confirm = vi.fn(() => true);
+      const onAction = vi.fn();
+      render(
+        <PunterProfile
+          punter={punter}
+          openOrders={openOrders}
+          positions={positions}
+          canCancelOrders
+          onAction={onAction}
+        />,
+      );
+      fireEvent.click(screen.getByTestId("profile-positions-tab"));
+      const cancel = screen.getByTestId("cancel-order-ord-1");
+      expect(cancel).not.toBeDisabled();
+      fireEvent.click(cancel);
+      expect(window.confirm).toHaveBeenCalled();
+      expect(onAction).toHaveBeenCalledWith("cancelOrder", {
+        orderId: "ord-1",
+      });
+    });
+
+    it("does not cancel if the operator declines the confirm", () => {
+      window.confirm = vi.fn(() => false);
+      const onAction = vi.fn();
+      render(
+        <PunterProfile
+          punter={punter}
+          openOrders={openOrders}
+          positions={positions}
+          canCancelOrders
+          onAction={onAction}
+        />,
+      );
+      fireEvent.click(screen.getByTestId("profile-positions-tab"));
+      fireEvent.click(screen.getByTestId("cancel-order-ord-1"));
+      expect(onAction).not.toHaveBeenCalled();
+    });
   });
 });

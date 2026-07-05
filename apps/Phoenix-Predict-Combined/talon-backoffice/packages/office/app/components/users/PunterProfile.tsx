@@ -219,6 +219,8 @@ interface PunterProfileProps {
   positions?: PlayerPositionRow[];
   /** per-market eligibility from /api/v1/admin/market-eligibility?userId={id} (GAP-93, §15) */
   eligibility?: PlayerMarketEligibilityRow[];
+  /** whether the caller may cancel a working order (markets:edit); fail-closed (GAP-101) */
+  canCancelOrders?: boolean;
 }
 
 const pointAmount = (n: number) =>
@@ -291,6 +293,7 @@ export function PunterProfile({
   openOrders = [],
   positions = [],
   eligibility = [],
+  canCancelOrders = false,
 }: PunterProfileProps) {
   const [activeTab, setActiveTab] = useState<PunterProfileTab>("overview");
   const [overrideTier, setOverrideTier] = useState("");
@@ -1224,6 +1227,7 @@ export function PunterProfile({
                         <th className={histThClassName}>Remaining</th>
                         <th className={histThClassName}>Status</th>
                         <th className={histThClassName}>Created</th>
+                        <th className={histThClassName}></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1248,6 +1252,36 @@ export function PunterProfile({
                           <td className={histTdClassName}>{o.status}</td>
                           <td className={histTdClassName}>
                             {fmtDate(o.createdAt)}
+                          </td>
+                          {/* GAP-101 (§16): admin cancel of a working order,
+                              gated markets:edit (fail-closed) + confirm; POSTs
+                              /admin/orders/{id}/cancel (audited order.admin
+                              _cancelled server-side). */}
+                          <td className={histTdClassName}>
+                            <Button
+                              $variant="danger"
+                              $size="sm"
+                              disabled={!canCancelOrders}
+                              title={
+                                canCancelOrders
+                                  ? undefined
+                                  : "Requires the markets:edit permission"
+                              }
+                              data-testid={`cancel-order-${o.id}`}
+                              onClick={() => {
+                                if (
+                                  typeof window !== "undefined" &&
+                                  !window.confirm(
+                                    `Cancel this working order? This unwinds it on the customer's behalf and is audited.`,
+                                  )
+                                ) {
+                                  return;
+                                }
+                                onAction?.("cancelOrder", { orderId: o.id });
+                              }}
+                            >
+                              Cancel
+                            </Button>
                           </td>
                         </tr>
                       ))}
