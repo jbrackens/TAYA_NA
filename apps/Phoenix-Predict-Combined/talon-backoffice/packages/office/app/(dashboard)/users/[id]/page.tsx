@@ -149,6 +149,11 @@ function UserDetailPageContent() {
   // GAP-101 (§16): admin order-cancel is markets:edit-gated server-side; the
   // Cancel control is fail-closed on the same permission.
   const canCancelOrders = can("markets:edit");
+  // GAP-102 (§29): account status + notes are users:write; risk recompute/
+  // override/clear are compliance:write. Gate those Profile-360 controls
+  // fail-closed on the matching granular permission.
+  const canManageStatus = can("users:write");
+  const canManageRisk = can("compliance:write");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -617,6 +622,8 @@ function UserDetailPageContent() {
             positions={positions}
             eligibility={eligibility}
             canCancelOrders={canCancelOrders}
+            canManageRisk={canManageRisk}
+            canManageStatus={canManageStatus}
           />
         </div>
 
@@ -624,6 +631,7 @@ function UserDetailPageContent() {
           <AccountActions
             currentStatus={punter.status}
             onAction={handleAction}
+            canManageStatus={canManageStatus}
           />
           <BalanceAdjustment
             userId={punter.id}

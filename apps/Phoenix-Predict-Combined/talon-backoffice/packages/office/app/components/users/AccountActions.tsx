@@ -8,15 +8,20 @@ import { useConfirm } from "../../hooks/useConfirm";
 interface AccountActionsProps {
   currentStatus?: "active" | "suspended" | "inactive";
   onAction?: (action: string, data?: any) => void | Promise<void>;
+  /** GAP-102 (§29): whether the caller may mutate account status / add notes
+   * (users:write). Fail-closed — a read-only caller sees these disabled. */
+  canManageStatus?: boolean;
 }
 
 export function AccountActions({
   currentStatus,
   onAction,
+  canManageStatus = false,
 }: AccountActionsProps) {
   const confirm = useConfirm();
   const [isLoading, setIsLoading] = useState(false);
-  const statusActionsAvailable = typeof onAction === "function";
+  const statusActionsAvailable =
+    typeof onAction === "function" && canManageStatus;
   const canSuspend = statusActionsAvailable && currentStatus !== "suspended";
   const canActivate = statusActionsAvailable && currentStatus === "suspended";
 
@@ -104,7 +109,7 @@ export function AccountActions({
                   onAction?.("addNote", { content: content.trim() });
                 }
               }}
-              disabled={isLoading}
+              disabled={isLoading || !canManageStatus}
             >
               Add Admin Note
             </Button>

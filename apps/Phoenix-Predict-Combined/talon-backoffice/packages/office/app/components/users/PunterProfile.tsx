@@ -221,6 +221,10 @@ interface PunterProfileProps {
   eligibility?: PlayerMarketEligibilityRow[];
   /** whether the caller may cancel a working order (markets:edit); fail-closed (GAP-101) */
   canCancelOrders?: boolean;
+  /** whether the caller may recompute/override the risk rating (compliance:write); fail-closed (GAP-102) */
+  canManageRisk?: boolean;
+  /** whether the caller may change status / add notes (users:write); fail-closed (GAP-102) */
+  canManageStatus?: boolean;
 }
 
 const pointAmount = (n: number) =>
@@ -294,6 +298,8 @@ export function PunterProfile({
   positions = [],
   eligibility = [],
   canCancelOrders = false,
+  canManageRisk = false,
+  canManageStatus = false,
 }: PunterProfileProps) {
   const [activeTab, setActiveTab] = useState<PunterProfileTab>("overview");
   const [overrideTier, setOverrideTier] = useState("");
@@ -326,8 +332,12 @@ export function PunterProfile({
     pending: "warning",
     failed: "danger",
   } as const;
-  const canSuspend = actionsAvailable && punter.status !== "suspended";
-  const canActivate = actionsAvailable && punter.status === "suspended";
+  // GAP-102 (§29): status change + add-note are users:write; a read-only caller
+  // (canManageStatus=false, fail-closed default) sees them disabled.
+  const canSuspend =
+    actionsAvailable && canManageStatus && punter.status !== "suspended";
+  const canActivate =
+    actionsAvailable && canManageStatus && punter.status === "suspended";
 
   return (
     <div className="grid grid-cols-[1fr_2fr] gap-5 max-[1024px]:grid-cols-1">
@@ -446,7 +456,7 @@ export function PunterProfile({
                   onAction?.("addNote", { content: content.trim() });
                 }
               }}
-              disabled={!actionsAvailable}
+              disabled={!actionsAvailable || !canManageStatus}
             >
               Add Note
             </Button>
@@ -875,7 +885,7 @@ export function PunterProfile({
                     <Button
                       $variant="secondary"
                       $size="sm"
-                      disabled={!actionsAvailable}
+                      disabled={!actionsAvailable || !canManageRisk}
                       onClick={() => onAction?.("recomputeRisk")}
                       data-testid="risk-recompute"
                     >
@@ -885,7 +895,7 @@ export function PunterProfile({
                       <Button
                         $variant="secondary"
                         $size="sm"
-                        disabled={!actionsAvailable}
+                        disabled={!actionsAvailable || !canManageRisk}
                         onClick={() => onAction?.("clearRiskOverride")}
                         data-testid="risk-clear-override"
                       >
@@ -927,6 +937,7 @@ export function PunterProfile({
                       $size="sm"
                       disabled={
                         !actionsAvailable ||
+                        !canManageRisk ||
                         overrideTier === "" ||
                         overrideReason.trim() === ""
                       }
