@@ -2368,7 +2368,7 @@ The official `verify-sportsbook` Make target is now a compatibility name for the
 
 ## Loop 339 Audit Update
 
-The official `verify-api-contract-fixtures` Make target now validates TapTrade API/client contracts instead of the inherited sportsbook response-shape fixture suite. The script no longer installs or tests `phoenix-frontend-brand-viegg`; it installs `talon-backoffice`, builds `@phoenix-ui/api-client`, and runs the focused player-app contract tests that guard prediction-client base URLs, refresh/retry behavior, point-native order validation, trade-ticket preview economics, wallet/reward endpoint paths, and point-ledger rendering.
+The official `verify-api-contract-fixtures` Make target now validates TapTrade API/client contracts instead of the inherited sportsbook response-shape fixture suite. The script no longer installs or tests `phoenix-frontend-brand-viegg`; it installs `talon-backoffice`, builds `@taptrade-ui/api-client`, and runs the focused player-app contract tests that guard prediction-client base URLs, refresh/retry behavior, point-native order validation, trade-ticket preview economics, wallet/reward endpoint paths, and point-ledger rendering.
 
 ## Loop 340 Audit Update
 
@@ -2499,7 +2499,7 @@ modified paths.
 
 The active frontend dependency baseline no longer reports the `merge`
 high-advisory cluster. A root Yarn resolution moves the inherited
-`@phoenix-ui/utils -> watch -> exec-sh` edge from `1.2.1` to `2.1.1` while
+`@taptrade-ui/utils -> watch -> exec-sh` edge from `1.2.1` to `2.1.1` while
 leaving that developer tooling chain in place. Direct merge, `exec-sh`, Lerna,
 API-client build, and `make security-deps` checks passed, lowering the official
 baseline to `critical 0, high 31`. Scenario 12 remains Partial because high
@@ -2836,7 +2836,7 @@ broader backend/API terminology cleanup remains.
 
 ## Loop 404 Audit Update
 
-The shared `@phoenix-ui/api-client` wallet exports are now point-native.
+The shared `@taptrade-ui/api-client` wallet exports are now point-native.
 `WalletBalance`, `WalletLedgerEntry`, `WalletMutationRequest`, and
 `WalletMutationResponse` no longer expose `amountCents`, `balanceCents`,
 `availableCents`, or `reservedCents`; they expose point-cent fields and `PTS`
@@ -2849,7 +2849,7 @@ and canonical-journey proof remain incomplete.
 
 ## Loop 405 Audit Update
 
-The shared `@phoenix-ui/api-client` audit-log export is now point-native.
+The shared `@taptrade-ui/api-client` audit-log export is now point-native.
 `AuditLogEntry` no longer exposes `freebetId`, `oddsBoostId`, or
 `freebetAppliedCents`; it exposes `pointGrantId`, `pointRuleId`, and
 `pointGrantAppliedPointsCents`. Older promo fields remain only inside a
@@ -2861,7 +2861,7 @@ admin/API terminology cleanup and canonical-journey proof remain incomplete.
 
 ## Loop 406 Audit Update
 
-The shared `@phoenix-ui/api-client` order-book hint export is now point-native.
+The shared `@taptrade-ui/api-client` order-book hint export is now point-native.
 `OrderBookHint` no longer exposes `bestYesBidCents`, `bestYesAskCents`,
 `bestNoBidCents`, or `bestNoAskCents`; it exposes the point-native best-quote
 fields and `PTS` unit metadata. Launch-facing shared API-client comments no
@@ -2873,7 +2873,7 @@ API/data terminology cleanup and canonical-journey proof remain incomplete.
 
 ## Loop 407 Audit Update
 
-The shared `@phoenix-ui/api-client` portfolio-history export is now
+The shared `@taptrade-ui/api-client` portfolio-history export is now
 point-native by name as well as by fields. `SettledPayout` was renamed to
 `SettledPositionResult`, and the player portfolio page now stores history rows
 with that type. Private legacy normalizers still read older `pnlCents` and
@@ -3104,7 +3104,7 @@ The active frontend dependency baseline no longer reports the inherited `tar`
 high-advisory cluster. Root Yarn resolution moves `tar` from vulnerable
 `4.4.19` to `7.5.11` under Lerna, pacote, and node-gyp tooling paths while
 leaving those tools in place. Direct tar create/extract proof and
-`yarn lerna run --scope @phoenix-ui/api-client build` passed before the audit
+`yarn lerna run --scope @taptrade-ui/api-client build` passed before the audit
 baseline was accepted. Scenario 12 remains Partial because the official
 baseline still reports `high 54`, backend JVM SCA evidence is still missing,
 and final preservation/RC audit remains incomplete. The preservation

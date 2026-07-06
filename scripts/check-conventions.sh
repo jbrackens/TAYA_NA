@@ -43,9 +43,9 @@ echo "== G-01 repo-wide convention gate =="
 report "no @ts-nocheck/@ts-ignore in app/" \
   "$(grep -rnE "@ts-(nocheck|ignore)" $TS "$APP" 2>/dev/null | grep -viE "$TEST_RE")"
 
-# 2. No @phoenix-ui/design-system imports in app/ (styled-components -> webpack hang).
-report "no @phoenix-ui/design-system import in app/" \
-  "$(grep -rn "@phoenix-ui/design-system" $TS "$APP" 2>/dev/null)"
+# 2. No @taptrade-ui/design-system imports in app/ (styled-components -> webpack hang).
+report "no @taptrade-ui/design-system import in app/" \
+  "$(grep -rn "@taptrade-ui/design-system" $TS "$APP" 2>/dev/null)"
 
 # 3. No console.* in app/ production (use the structured logger in lib/logger).
 report "no console.* in app/ production" \

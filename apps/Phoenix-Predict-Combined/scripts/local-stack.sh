@@ -119,7 +119,7 @@ function bootstrap() {
   (
     cd "$TAPTRADE_OFFICE_DIR"
     YARN_MUTEX=file:/tmp/yarn-mutex-office yarn install --frozen-lockfile
-    NODE_OPTIONS=--max-old-space-size=4096 YARN_MUTEX=file:/tmp/yarn-mutex-office yarn workspace @phoenix-ui/utils dist
+    NODE_OPTIONS=--max-old-space-size=4096 YARN_MUTEX=file:/tmp/yarn-mutex-office yarn workspace @taptrade-ui/utils dist
   )
 
   ensure_local_env_files

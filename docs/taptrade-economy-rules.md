@@ -898,7 +898,7 @@ Frontend verification targets used by release or governance automation must vali
 
 ## Loop 339 API Contract Verifier Rule
 
-API contract fixture verifiers used by release or governance automation must validate the launch TapTrade API-client and player-app contracts, not retired sportsbook response-shape fixtures. Compatibility target names may remain stable, but the verifier should build `@phoenix-ui/api-client` and run focused contract tests for prediction-client routing, auth refresh/retry, point-native order validation, preview economics, wallet/reward paths, and point-ledger presentation. It must not certify launch readiness by running sportsbook-only response fixtures, bet placement contracts, stake/cashout flows, or old cashier/payment clients.
+API contract fixture verifiers used by release or governance automation must validate the launch TapTrade API-client and player-app contracts, not retired sportsbook response-shape fixtures. Compatibility target names may remain stable, but the verifier should build `@taptrade-ui/api-client` and run focused contract tests for prediction-client routing, auth refresh/retry, point-native order validation, preview economics, wallet/reward paths, and point-ledger presentation. It must not certify launch readiness by running sportsbook-only response fixtures, bet placement contracts, stake/cashout flows, or old cashier/payment clients.
 
 ## Loop 340 Discovery Compatibility Gate Rule
 

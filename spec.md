@@ -892,7 +892,7 @@ Parity Release Candidate v1 requires Kalshi/Polymarket-style market discovery, m
 
 ## 9. Game Economy Requirements
 
-See `docs/tiangge-economy-rules.md`. All user-facing amounts are points. Starter grant, daily claim, point packs, XP, missions, streaks, leaderboards, badges/cosmetics, and admin adjustments must use idempotent ledger entries and abuse controls.
+See `docs/taptrade-economy-rules.md`. All user-facing amounts are points. Starter grant, daily claim, point packs, XP, missions, streaks, leaderboards, badges/cosmetics, and admin adjustments must use idempotent ledger entries and abuse controls.
 
 ## 10. Market Lifecycle Requirements
 
@@ -1563,7 +1563,7 @@ Loop 337 evidence note: `scripts/pre-commit-hook.sh` no longer invokes the stale
 
 Loop 338 evidence note: `make verify-sportsbook` is now a compatibility alias for the Tiangge player app verifier instead of building the inherited `phoenix-frontend-brand-viegg` sportsbook tree. `scripts/frontend/verify-sportsbook.sh` now installs the TapTrade workspace, reuses the shared utils dist guard, runs `yarn typecheck` in `talon-backoffice/packages/app`, and runs the app package's production `yarn build`, including the upstream-leak check. A live run with single retries passed: scoped typecheck reported 0 errors, Next built 35 app routes, and `check-no-upstream-leak.sh` passed. Scenario 12 remains Partial because this repairs one official frontend verification path, but broader backend terminology cleanup, account-graph proof, and the fully deployed-like authenticated canonical end-to-end proof remain incomplete.
 
-Loop 339 evidence note: `make verify-api-contract-fixtures` is now a compatibility verifier for Tiangge API/client contracts instead of the inherited sportsbook response-shape fixture suite. `scripts/frontend/verify-api-contract-fixtures.sh` now installs the TapTrade workspace, builds `@phoenix-ui/api-client` with `tsc`, and runs focused player-app contract tests for same-origin prediction-client routing, auth refresh/retry, prediction-order validation, trade-ticket preview economics, wallet/reward endpoint paths, and point-ledger presentation. A live run passed with the API-client build green and 47 focused contract tests passing. Scenario 12 remains Partial because this repairs another official verification path, but broader backend terminology cleanup, account-graph proof, and the fully deployed-like authenticated canonical end-to-end proof remain incomplete.
+Loop 339 evidence note: `make verify-api-contract-fixtures` is now a compatibility verifier for Tiangge API/client contracts instead of the inherited sportsbook response-shape fixture suite. `scripts/frontend/verify-api-contract-fixtures.sh` now installs the TapTrade workspace, builds `@taptrade-ui/api-client` with `tsc`, and runs focused player-app contract tests for same-origin prediction-client routing, auth refresh/retry, prediction-order validation, trade-ticket preview economics, wallet/reward endpoint paths, and point-ledger presentation. A live run passed with the API-client build green and 47 focused contract tests passing. Scenario 12 remains Partial because this repairs another official verification path, but broader backend terminology cleanup, account-graph proof, and the fully deployed-like authenticated canonical end-to-end proof remain incomplete.
 
 Loop 340 evidence note: The `qa-sports-route-smoke` and `qa-sports-regression` Make targets are now compatibility aliases for Tiangge discovery/API contract proof instead of runtime `/sports/<sport>` and `/api/odds-feed` probes. `scripts/qa/sports-route-smoke.sh` now installs the TapTrade workspace and runs focused discovery/market tests for search ranking, subcategory extraction, lifecycle display, honest chart states, and dynamic market copy. `scripts/qa/sports-regression-gate.sh` repeats that smoke by `ITERATIONS` and then runs the Tiangge API/client contract verifier; `release-launch-readiness-runtime` now enables the new Tiangge discovery contract gate env while the release script still accepts the old env name as compatibility input. Live runs passed with 27 discovery/market tests, the API-client build, and 47 focused API/client contract tests. Scenario 12 remains Partial because this repairs another inherited launch-readiness gate, but broader backend terminology cleanup, account-graph proof, and the fully deployed-like authenticated canonical end-to-end proof remain incomplete.
 
@@ -1611,7 +1611,7 @@ reports zero critical Yarn audit advisories. The remaining critical cluster was
 under inherited Lerna publish/version tooling, and the remediation preserves
 Lerna while resolving `parse-url` to `8.1.0` and `parse-path` to `7.1.0`.
 `yarn lerna list --all --json`, a direct CommonJS `parse-url` smoke test,
-`yarn workspace @phoenix-ui/api-client build`, and `make security-deps` passed.
+`yarn workspace @taptrade-ui/api-client build`, and `make security-deps` passed.
 Scenario 12 remains Partial because the official baseline still reports
 `high 78`, backend JVM SCA evidence is still missing, complete preservation
 review is still required, and final RC audit remains incomplete. The
@@ -1622,7 +1622,7 @@ Loop 365 evidence note: the active frontend dependency-security baseline now
 removes the inherited `undici` high-advisory cluster. A same-major root Yarn
 resolution moves `undici` to `7.28.0` under jsdom, cheerio, Enzyme-adjacent, and
 isomorphic-dompurify paths while preserving those inherited tools. Direct jsdom,
-cheerio, and undici MockAgent smokes, `yarn workspace @phoenix-ui/api-client
+cheerio, and undici MockAgent smokes, `yarn workspace @taptrade-ui/api-client
 build`, and `make security-deps` passed. Scenario 12 remains Partial because the
 official baseline still reports `high 42`, backend JVM SCA evidence is still
 missing, complete preservation review is still required, and final RC audit
@@ -1634,7 +1634,7 @@ Loop 364 evidence note: the active frontend dependency-security baseline now
 removes the inherited `ws` high-advisory cluster. A same-major root Yarn
 resolution moves `ws` to `7.5.11` under mock-server and Jest/jsdom paths while
 preserving those inherited tools. Direct WebSocket echo and jsdom smokes,
-`yarn workspace @phoenix-ui/api-client build`, and `make security-deps` passed.
+`yarn workspace @taptrade-ui/api-client build`, and `make security-deps` passed.
 Scenario 12 remains Partial because the official baseline still reports
 `high 48`, backend JVM SCA evidence is still missing, complete preservation
 review is still required, and final RC audit remains incomplete. The
@@ -1645,7 +1645,7 @@ Loop 363 evidence note: the active frontend dependency-security baseline now
 removes the inherited `tar` high-advisory cluster. A root Yarn resolution moves
 `tar` to `7.5.11` under Lerna, pacote, and node-gyp tooling paths while
 preserving those inherited tools. Direct tar create/extract proof,
-`yarn lerna run --scope @phoenix-ui/api-client build`, and `make security-deps`
+`yarn lerna run --scope @taptrade-ui/api-client build`, and `make security-deps`
 passed. Scenario 12 remains Partial because the official baseline still reports
 `high 54`, backend JVM SCA evidence is still missing, complete preservation
 review is still required, and final RC audit remains incomplete. The
@@ -1680,7 +1680,7 @@ classified 392 modified artifacts with zero unclassified modified paths.
 
 Loop 368 evidence note: the active frontend dependency-security baseline now
 removes the inherited `merge` high-advisory cluster. A root Yarn resolution
-moves the `@phoenix-ui/utils -> watch -> exec-sh` edge to `merge@2.1.1` while
+moves the `@taptrade-ui/utils -> watch -> exec-sh` edge to `merge@2.1.1` while
 preserving that inherited developer tooling chain. Direct merge, `exec-sh`,
 Lerna, API-client build, and `make security-deps` checks passed, and both TapTrade
 and Tiangge player app audit logs have zero `merge` findings. Scenario 12
@@ -2309,7 +2309,7 @@ the refreshed preservation artifact is
 scenarios 4, 6, 7, 9, 10, 11, and 12 Partial, writing
 `revival/artifacts/rc_completion_audit_gate_20260629_162255.md`.
 
-Loop 404 evidence note: the shared `@phoenix-ui/api-client` wallet exports now
+Loop 404 evidence note: the shared `@taptrade-ui/api-client` wallet exports now
 use point-native wallet fields instead of retired generic cent aliases.
 `WalletBalance`, `WalletLedgerEntry`, `WalletMutationRequest`, and
 `WalletMutationResponse` expose `balancePointsCents`, `availablePointsCents`,
@@ -2330,7 +2330,7 @@ canonical journey. The refreshed RC completion audit still failed with
 scenarios 4, 6, 7, 9, 10, 11, and 12 Partial, writing
 `revival/artifacts/rc_completion_audit_gate_20260629_162803.md`.
 
-Loop 405 evidence note: the shared `@phoenix-ui/api-client` audit-log export
+Loop 405 evidence note: the shared `@taptrade-ui/api-client` audit-log export
 now uses point-native review fields instead of retired promo fields.
 `AuditLogEntry` exposes `pointGrantId`, `pointRuleId`, and
 `pointGrantAppliedPointsCents`; old `freebetId`, `oddsBoostId`, and
@@ -2351,7 +2351,7 @@ cleanup or full canonical journey. The refreshed RC completion audit still
 failed with scenarios 4, 6, 7, 9, 10, 11, and 12 Partial, writing
 `revival/artifacts/rc_completion_audit_gate_20260629_163352.md`.
 
-Loop 406 evidence note: the shared `@phoenix-ui/api-client` order-book hint
+Loop 406 evidence note: the shared `@taptrade-ui/api-client` order-book hint
 export now uses only point-native best-quote fields. `OrderBookHint` exposes
 `bestYesBidPointsCents`, `bestYesAskPointsCents`, `bestNoBidPointsCents`,
 `bestNoAskPointsCents`, and `unit?: "PTS" | string` without exported
@@ -2373,7 +2373,7 @@ canonical journey. The refreshed RC completion audit still failed with
 scenarios 4, 6, 7, 9, 10, 11, and 12 Partial, writing
 `revival/artifacts/rc_completion_audit_gate_20260629_164053.md`.
 
-Loop 407 evidence note: the shared `@phoenix-ui/api-client` portfolio-history
+Loop 407 evidence note: the shared `@taptrade-ui/api-client` portfolio-history
 export no longer uses the payout-named `SettledPayout` type. The launch-facing
 row type is now `SettledPositionResult`, still exposing
 `entryPricePointsCents`, `exitPricePointsCents`, `realizedPointsCents`,

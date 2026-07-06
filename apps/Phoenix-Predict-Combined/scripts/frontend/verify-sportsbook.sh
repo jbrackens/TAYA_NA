@@ -129,15 +129,15 @@ if [[ "$SKIP_UTILS_DIST_IF_PRESENT" == "true" ]] && [[ -f "$utils_dist_file" ]];
 fi
 
 if [[ "$utils_skip" == "true" ]]; then
-  echo "info: skipping @phoenix-ui/utils dist (already built and up-to-date)"
+  echo "info: skipping @taptrade-ui/utils dist (already built and up-to-date)"
 else
-  if ! run_retries 2 env NODE_OPTIONS=--max-old-space-size=4096 YARN_MUTEX="$YARN_MUTEX" "$YARN_BIN" workspace @phoenix-ui/utils dist; then
+  if ! run_retries 2 env NODE_OPTIONS=--max-old-space-size=4096 YARN_MUTEX="$YARN_MUTEX" "$YARN_BIN" workspace @taptrade-ui/utils dist; then
     echo "warn: Node 20 utils dist failed; retrying under Node 16.16 compatibility bridge" >&2
     if try_node16_compat; then
-      run_retries 3 env NODE_OPTIONS=--max-old-space-size=4096 YARN_MUTEX="$YARN_MUTEX" "$YARN_BIN" workspace @phoenix-ui/utils dist
+      run_retries 3 env NODE_OPTIONS=--max-old-space-size=4096 YARN_MUTEX="$YARN_MUTEX" "$YARN_BIN" workspace @taptrade-ui/utils dist
       restore_node20
     else
-      run_retries 2 env NODE_OPTIONS=--max-old-space-size=4096 YARN_MUTEX="$YARN_MUTEX" "$YARN_BIN" workspace @phoenix-ui/utils dist
+      run_retries 2 env NODE_OPTIONS=--max-old-space-size=4096 YARN_MUTEX="$YARN_MUTEX" "$YARN_BIN" workspace @taptrade-ui/utils dist
     fi
   fi
 fi

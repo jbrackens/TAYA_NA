@@ -142,7 +142,7 @@ verify-backend:
 		sbt "phoenix-backend/compile" "phoenix-backend/test:compile"
 
 verify-office:
-	@bash "$(ROOT)/scripts/frontend/verify-talon.sh"
+	@bash "$(ROOT)/scripts/frontend/verify-office.sh"
 
 verify-sportsbook:
 	@bash "$(ROOT)/scripts/frontend/verify-sportsbook.sh"

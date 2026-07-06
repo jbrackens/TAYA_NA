@@ -74,7 +74,7 @@ ensure_yarn() {
 build_api_client_contracts() {
   (
     cd "$TAPTRADE_OFFICE_DIR"
-    YARN_MUTEX="$YARN_MUTEX" run_yarn workspace @phoenix-ui/api-client build
+    YARN_MUTEX="$YARN_MUTEX" run_yarn workspace @taptrade-ui/api-client build
   )
 }
 

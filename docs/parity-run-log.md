@@ -9441,7 +9441,7 @@ Scenario status after this loop:
 Retargeted the official API contract fixture verifier away from the inherited sportsbook response-shape suite:
 
 - `scripts/frontend/verify-api-contract-fixtures.sh` now uses `talon-backoffice` instead of `phoenix-frontend-brand-viegg`.
-- The script builds `@phoenix-ui/api-client` before running app contract tests.
+- The script builds `@taptrade-ui/api-client` before running app contract tests.
 - The focused contract set now covers prediction-client browser base URLs, refresh/retry behavior, point-native prediction-order validation, trade-ticket preview behavior, wallet/reward endpoint paths, and point-ledger presentation.
 - The `verify-api-contract-fixtures` Make target remains as a compatibility alias for automation stability.
 - The Make help text now describes the target as a TapTrade API/client contract fixture regression gate.
@@ -9451,7 +9451,7 @@ Verification:
 - `bash -n scripts/frontend/verify-api-contract-fixtures.sh` passed.
 - `make -n verify-api-contract-fixtures` points at `scripts/frontend/verify-api-contract-fixtures.sh`.
 - Targeted scan of the script and Makefile found no `phoenix-frontend-brand-viegg`, `SPORTSBOOK_DIR`, sportsbook response-shape fixture, `/api/v1/bets`, cashout quote, wallet-credit, `stakeCents`, or `amountCents` verifier wiring.
-- `make verify-api-contract-fixtures` passed: Yarn install completed, `@phoenix-ui/api-client` `tsc` passed, and 47 focused TapTrade contract tests passed.
+- `make verify-api-contract-fixtures` passed: Yarn install completed, `@taptrade-ui/api-client` `tsc` passed, and 47 focused TapTrade contract tests passed.
 - `git diff --check` passed.
 
 Scenario status after this loop:
@@ -9473,7 +9473,7 @@ Verification:
 - `bash -n scripts/qa/sports-route-smoke.sh`, `scripts/qa/sports-regression-gate.sh`, and `scripts/release/launch-readiness-gate.sh` passed.
 - `make -n qa-sports-route-smoke`, `make -n qa-sports-regression`, and `make -n release-launch-readiness-runtime` point at the retargeted scripts/env.
 - `make qa-sports-route-smoke` passed with 27 focused TapTrade discovery/market tests.
-- `make qa-sports-regression` passed with the discovery smoke, `@phoenix-ui/api-client` `tsc`, and 47 focused TapTrade API/client contract tests.
+- `make qa-sports-regression` passed with the discovery smoke, `@taptrade-ui/api-client` `tsc`, and 47 focused TapTrade API/client contract tests.
 - Targeted scan of the changed QA/release scripts and Makefile found no `/api/v1/sports`, `/api/v1/esports`, `/sports/`, `api/odds-feed`, `phoenix-frontend-brand-viegg`, `SPORTSBOOK_DIR`, `/api/v1/bets`, cashout, wallet-credit, `stakeUsd`, `stakeCents`, or `amountCents` gate wiring.
 - `git diff --check` passed.
 
@@ -9986,7 +9986,7 @@ Verification:
 - Audit-log parser check confirmed `0` `form-data` findings in both regenerated
   audit logs.
 - `make security-deps` passed.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 35 large-change files, and zero unclassified
   modified artifacts.
@@ -10024,7 +10024,7 @@ Verification:
 - `yarn why parse-path` resolved to `parse-path@7.1.0`.
 - `yarn lerna list --all --json` passed and listed 6 workspace packages.
 - Direct CommonJS `parse-url` smoke test passed for a GitHub URL.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 35 large-change files, and zero unclassified
@@ -10057,7 +10057,7 @@ Verification:
 
 - `yarn why tar` resolved inherited tooling paths to `tar@7.5.11`.
 - Direct tar create/extract smoke passed and confirmed the expected API surface.
-- `yarn lerna run --scope @phoenix-ui/api-client build` passed.
+- `yarn lerna run --scope @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 35 large-change files, and zero unclassified
@@ -10092,9 +10092,9 @@ Verification:
   `ws@7.5.11`.
 - Direct WebSocket server/client echo smoke passed.
 - Direct `jsdom` smoke passed and exposed `window.WebSocket`.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
-- `yarn workspace @phoenix-ui/mock-server dist` was attempted, but it failed on
+- `yarn workspace @taptrade-ui/mock-server dist` was attempted, but it failed on
   an existing `@types/express-serve-static-core` `TS1337` type-library issue and
   is not counted as passing evidence.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
@@ -10129,7 +10129,7 @@ Verification:
 - `yarn why undici` resolved inherited cheerio/jsdom/isomorphic-dompurify paths
   to `undici@7.28.0`.
 - Direct jsdom + cheerio + undici MockAgent smoke passed.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 35 large-change files, and zero unclassified
@@ -10167,7 +10167,7 @@ Verification:
 - `yarn commitlint` accepted a conventional commit message.
 - `yarn lerna changed --json` completed successfully and listed the expected
   changed workspace packages.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 35 large-change files, tracked line churn
@@ -10207,7 +10207,7 @@ Verification:
   passed.
 - `yarn lerna changed --json` completed successfully and listed the expected
   changed workspace packages.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 35 large-change files, tracked line churn
@@ -10229,7 +10229,7 @@ Removed another high-severity frontend dependency cluster with a focused
 resolution:
 
 - Added a TapTrade workspace root Yarn resolution for `merge@2.1.1`.
-- Regenerated `talon-backoffice/yarn.lock`; inherited `@phoenix-ui/utils`,
+- Regenerated `talon-backoffice/yarn.lock`; inherited `@taptrade-ui/utils`,
   `watch`, and `exec-sh` paths that requested `merge@^1.2.0` now resolve to
   patched `2.1.1`.
 - Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
@@ -10244,7 +10244,7 @@ Verification:
   `merge@2.1.1`.
 - Direct `merge.recursive` smoke passed.
 - `exec-sh` module-load smoke passed.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `yarn lerna changed --json` completed successfully and listed the expected
   changed workspace packages.
 - `make security-deps` passed.
@@ -10286,7 +10286,7 @@ Verification:
 - `yarn commitlint` accepted a conventional commit message.
 - `yarn lerna changed --json` completed successfully and listed the expected
   changed workspace packages.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 35 large-change files, tracked line churn
@@ -10328,7 +10328,7 @@ Verification:
 - `nodemon` plus `simple-update-notifier` module-load smoke passed.
 - `yarn lerna changed --json` completed successfully and listed the expected
   changed workspace packages.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 35 large-change files, tracked line churn
@@ -10364,7 +10364,7 @@ Verification:
 - Direct `fast-uri` parse/serialize smoke passed.
 - AJV URI-format validation smoke passed.
 - ESLint parsed and linted a simple JavaScript file successfully.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 36 large-change files, tracked line churn
@@ -10409,7 +10409,7 @@ Verification:
 - `external-editor` module-load smoke passed with expected exported API keys.
 - `yarn lerna list --all --json` completed successfully and found all six
   inherited workspace packages.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 36 large-change files, tracked line churn
@@ -10452,7 +10452,7 @@ Verification:
 - `printf 'chore: lodash security remediation\n' | yarn commitlint` passed.
 - `yarn lerna list --all --json` completed successfully and found all six
   inherited workspace packages.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 36 large-change files, tracked line churn
@@ -10501,8 +10501,8 @@ Verification:
   passed 268 tests through the supported `tsx` runner. The earlier direct root
   Jest attempt was rejected as evidence because these tests are `node:test`/ESM
   files and not run through root Jest.
-- `yarn workspace @phoenix-ui/api-client build` passed.
-- `yarn workspace @phoenix-ui/api-client test` passed with no tests found and
+- `yarn workspace @taptrade-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client test` passed with no tests found and
   exit code 0.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89

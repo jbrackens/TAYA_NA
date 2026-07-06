@@ -112,3 +112,11 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
   .github/workflows/{e2e,frontend-build}.yml (legit — CI builds the renamed workspaces;
   amended into the batch) and .codex-reviews/lc38-review-raw.txt (historical review log —
   reverted + .codex-reviews/ allowlisted).
+- CORRECTION 2 (same iteration): batch G's blanket pass corrupted the LEGACY column of
+  the ledger docs (mapping lines read taptrade→taptrade) — repaired; guardrail updated:
+  ledger docs are now always excluded from replace passes. Spillover content staged
+  (CHANGELOG, DEMO_DEPLOYMENT_PLAN, verify scripts, local-stack, docs, spec.md,
+  check-conventions.sh — the last now double-bans old+new scope like gate.sh).
+- FILE RENAMES (history-preserving git mv, referrers updated same commit):
+  scripts/frontend/verify-talon.sh → verify-office.sh (Makefile updated);
+  docs/tiangge-economy-rules.md → taptrade-economy-rules.md (spec.md updated).

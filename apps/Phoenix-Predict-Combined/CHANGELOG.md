@@ -50,7 +50,7 @@ Taya NA Predict forked from Taya NA Sportsbook and replaced the sportsbook domai
 
 - Do not edit shipped migration `014_prediction_schema.sql` in place. Add new goose migrations for schema changes.
 - Do not introduce new sportsbook naming in prediction code. Avoid `fixtures`, `selections`, `betslip`, `sport_key`, and `punter_bets`.
-- Use `@phoenix-ui/api-client` prediction exports for new client code.
+- Use `@taptrade-ui/api-client` prediction exports for new client code.
 - Use `npm run dev -- -p 3010` for the player-only development loop.
 
 ### Known Gaps
