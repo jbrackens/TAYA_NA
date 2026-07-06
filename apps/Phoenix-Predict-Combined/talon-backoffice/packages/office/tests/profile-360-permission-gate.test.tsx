@@ -74,6 +74,60 @@ describe("Profile-360 §29 permission gates (GAP-102)", () => {
     fireEvent.click(screen.getByTestId("profile-risk-tab"));
     expect(screen.getByTestId("risk-recompute")).not.toBeDisabled();
   });
+
+  // Reverse independence (verifier #32 LOW): users:write alone must NOT enable
+  // the risk controls — catches an OR-wiring regression (canManageRisk ||
+  // canManageStatus).
+  it("gates status independently of risk (users:write only)", () => {
+    render(<PunterProfile punter={punter} risk={risk} canManageStatus />);
+    expect(
+      screen.getByRole("button", { name: /suspend account/i }),
+    ).not.toBeDisabled();
+    // PunterProfile's own Add Note is users:write-gated too
+    expect(
+      screen.getByRole("button", { name: /^add note$/i }),
+    ).not.toBeDisabled();
+    fireEvent.click(screen.getByTestId("profile-risk-tab"));
+    expect(screen.getByTestId("risk-recompute")).toBeDisabled();
+  });
+
+  // All THREE risk controls carry the compliance:write gate (verifier #32 LOW:
+  // only recompute was asserted). overrideTier in the fixture makes
+  // clear-override render; filling tier+reason isolates apply-override's gate.
+  it("gates clear-override and apply-override on compliance:write", () => {
+    const withOverride: RiskTabData = {
+      ...risk,
+      overrideTier: "prohibited",
+      overrideReason: "SAR filed",
+    };
+    const { unmount } = render(
+      <PunterProfile punter={punter} risk={withOverride} />,
+    );
+    fireEvent.click(screen.getByTestId("profile-risk-tab"));
+    expect(screen.getByTestId("risk-clear-override")).toBeDisabled();
+    fireEvent.change(screen.getByTestId("risk-override-tier"), {
+      target: { value: "high" },
+    });
+    fireEvent.change(screen.getByTestId("risk-override-reason"), {
+      target: { value: "aml alert" },
+    });
+    // tier + reason filled, so only the missing canManageRisk disables Apply
+    expect(screen.getByTestId("risk-override-apply")).toBeDisabled();
+    // PunterProfile's own Add Note stays disabled without users:write
+    expect(screen.getByRole("button", { name: /^add note$/i })).toBeDisabled();
+    unmount();
+
+    render(<PunterProfile punter={punter} risk={withOverride} canManageRisk />);
+    fireEvent.click(screen.getByTestId("profile-risk-tab"));
+    expect(screen.getByTestId("risk-clear-override")).not.toBeDisabled();
+    fireEvent.change(screen.getByTestId("risk-override-tier"), {
+      target: { value: "high" },
+    });
+    fireEvent.change(screen.getByTestId("risk-override-reason"), {
+      target: { value: "aml alert" },
+    });
+    expect(screen.getByTestId("risk-override-apply")).not.toBeDisabled();
+  });
 });
 
 describe("AccountActions §29 permission gate (GAP-102)", () => {
