@@ -47,3 +47,7 @@ Cron: 0dadff9f (*/15) · Exit condition: see GOAL in WORKLOG header.
 - [ ] Phase 3: execution batches
 - [ ] Phase 4: verify (grep zero + 5 gates + rendered)
 - [ ] Phase 5: record/loop
+
+
+## Post-rebrand integration (2026-07-07)
+All unmerged branch work audited and resolved: 5 integrated (scrubbed-markets backend, gateway rate limiting, social-oauth deploy wiring, sentiment i18n, agent-policy docs), 16 superseded branches deleted local+remote with evidence in WORKLOG. Remaining branches: main, feat/hula-na-cashier (owner compliance decision pending), pam/p0-modernization (active loop).
