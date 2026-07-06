@@ -129,11 +129,26 @@ jobs:
         # every deploy.
         #   OPENROUTER_API_KEY  — office AI drafting + gateway market translation
         #   EDGE_SHARED_SECRET  — anti-spoof header Caddy stamps → gateway validates
+        #   *_OAUTH_*           — social login provider credentials (auth service);
+        #                         an unset provider stays OFF (start returns
+        #                         "not configured"), so missing secrets are safe.
         # If OPENROUTER_API_KEY is unset, drafting fails closed (app unaffected).
         # EDGE_SHARED_SECRET is required — Caddy and gateway both use the :? guard.
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           EDGE_SHARED_SECRET: ${{ secrets.EDGE_SHARED_SECRET }}
+          GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          DISCORD_OAUTH_CLIENT_ID: ${{ secrets.DISCORD_OAUTH_CLIENT_ID }}
+          DISCORD_OAUTH_CLIENT_SECRET: ${{ secrets.DISCORD_OAUTH_CLIENT_SECRET }}
+          FACEBOOK_OAUTH_CLIENT_ID: ${{ secrets.FACEBOOK_OAUTH_CLIENT_ID }}
+          FACEBOOK_OAUTH_CLIENT_SECRET: ${{ secrets.FACEBOOK_OAUTH_CLIENT_SECRET }}
+          TWITTER_OAUTH_CLIENT_ID: ${{ secrets.TWITTER_OAUTH_CLIENT_ID }}
+          TWITTER_OAUTH_CLIENT_SECRET: ${{ secrets.TWITTER_OAUTH_CLIENT_SECRET }}
+          TIKTOK_OAUTH_CLIENT_KEY: ${{ secrets.TIKTOK_OAUTH_CLIENT_KEY }}
+          TIKTOK_OAUTH_CLIENT_SECRET: ${{ secrets.TIKTOK_OAUTH_CLIENT_SECRET }}
+          REDDIT_OAUTH_CLIENT_ID: ${{ secrets.REDDIT_OAUTH_CLIENT_ID }}
+          REDDIT_OAUTH_CLIENT_SECRET: ${{ secrets.REDDIT_OAUTH_CLIENT_SECRET }}
         run: |
           if [ -z "$EDGE_SHARED_SECRET" ]; then
             echo "::error::EDGE_SHARED_SECRET repo secret is unset — Caddy and gateway will refuse to start."
@@ -147,6 +162,18 @@ jobs:
             printf 'ROCKETCHAT_ADMIN_PASSWORD=%s\n' "$(openssl rand -hex 24)"
             printf 'CHAT_PUBLIC_URL=https://demo.99rtp.io/chat\n'
             printf 'CHAT_PARENT_ORIGIN=https://demo.99rtp.io\n'
+            printf 'GOOGLE_OAUTH_CLIENT_ID=%s\n' "$GOOGLE_OAUTH_CLIENT_ID"
+            printf 'GOOGLE_OAUTH_CLIENT_SECRET=%s\n' "$GOOGLE_OAUTH_CLIENT_SECRET"
+            printf 'DISCORD_OAUTH_CLIENT_ID=%s\n' "$DISCORD_OAUTH_CLIENT_ID"
+            printf 'DISCORD_OAUTH_CLIENT_SECRET=%s\n' "$DISCORD_OAUTH_CLIENT_SECRET"
+            printf 'FACEBOOK_OAUTH_CLIENT_ID=%s\n' "$FACEBOOK_OAUTH_CLIENT_ID"
+            printf 'FACEBOOK_OAUTH_CLIENT_SECRET=%s\n' "$FACEBOOK_OAUTH_CLIENT_SECRET"
+            printf 'TWITTER_OAUTH_CLIENT_ID=%s\n' "$TWITTER_OAUTH_CLIENT_ID"
+            printf 'TWITTER_OAUTH_CLIENT_SECRET=%s\n' "$TWITTER_OAUTH_CLIENT_SECRET"
+            printf 'TIKTOK_OAUTH_CLIENT_KEY=%s\n' "$TIKTOK_OAUTH_CLIENT_KEY"
+            printf 'TIKTOK_OAUTH_CLIENT_SECRET=%s\n' "$TIKTOK_OAUTH_CLIENT_SECRET"
+            printf 'REDDIT_OAUTH_CLIENT_ID=%s\n' "$REDDIT_OAUTH_CLIENT_ID"
+            printf 'REDDIT_OAUTH_CLIENT_SECRET=%s\n' "$REDDIT_OAUTH_CLIENT_SECRET"
           } | \
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
               'cat > /opt/phoenix/.env && printf "\nCOMPOSE_PROJECT_NAME=phoenix\n" >> /opt/phoenix/.env && chmod 600 /opt/phoenix/.env && echo ".env written ($(wc -c < /opt/phoenix/.env) bytes)"'
