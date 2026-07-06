@@ -180,5 +180,6 @@
   "LIVE_RECENT": "Recent",
   "LIVE_SCORE_PENDING": "Score pending",
   "LIVE_UPDATED": "Updated {{value}}",
-  "NOT_ENOUGH_POINTS": "Not enough points"
+  "NOT_ENOUGH_POINTS": "Not enough points",
+  "SEARCH_MARKETS_PLACEHOLDER": "Search markets, candidates, teams..."
 }

@@ -107,7 +107,10 @@ export function TrendingSidebar({ markets, limit = 6 }: Props) {
             : m.noPricePointsCents;
           const { pct, up } = deterministicDelta(m.ticker, leadingPrice);
           const sparkColor = up ? "var(--yes-text)" : "var(--no-text)";
-          const cat = categoryLabel(contentT, categoryFromTicker(m.ticker));
+          const cat = categoryLabel(
+            contentT,
+            m.categoryName || categoryFromTicker(m.ticker),
+          );
           return (
             <li key={m.id}>
               <Link

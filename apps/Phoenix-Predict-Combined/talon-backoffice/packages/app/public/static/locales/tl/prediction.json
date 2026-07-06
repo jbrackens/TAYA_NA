@@ -166,5 +166,6 @@
   "DISCOVER_SUBTITLE": "Mga market na naka-rank ayon sa 24h activity at kung alin ang pinakamalapit magsara.",
   "DISCOVER_TRENDING": "Trending",
   "DISCOVER_CLOSING_SOON": "Malapit magsara",
-  "NOT_ENOUGH_POINTS": "Not enough points"
+  "NOT_ENOUGH_POINTS": "Not enough points",
+  "SEARCH_MARKETS_PLACEHOLDER": "Maghanap ng markets, kandidato, teams..."
 }

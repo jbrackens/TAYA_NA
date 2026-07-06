@@ -164,5 +164,6 @@
   "DISCOVER_SUBTITLE": "按24小時活躍度和最早結束時間排序的市場。",
   "DISCOVER_TRENDING": "熱門",
   "DISCOVER_CLOSING_SOON": "即將結束",
-  "NOT_ENOUGH_POINTS": "Not enough points"
+  "NOT_ENOUGH_POINTS": "Not enough points",
+  "SEARCH_MARKETS_PLACEHOLDER": "搜尋市場、候選人、球隊..."
 }

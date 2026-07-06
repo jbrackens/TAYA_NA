@@ -58,9 +58,19 @@ export function DiscoveryHero({
   }
 
   const displayMarket = localizedMarket(contentT, market);
-  const displayCategory = categoryName
-    ? categoryLabel(contentT, categoryName)
+  const resolvedCategoryName = categoryName || market.categoryName || "";
+  const displayCategory = resolvedCategoryName
+    ? categoryLabel(contentT, resolvedCategoryName)
     : "";
+  // Machine-generated import tickers (IMP-<hex>) are data plumbing, not
+  // content — the eyebrow shows the category alone for those markets.
+  const isMachineTicker = /^IMP-[0-9A-F]{6,}$/i.test(displayMarket.ticker);
+  const eyebrowMeta = [
+    displayCategory ? displayCategory.toUpperCase() : "",
+    isMachineTicker ? "" : displayMarket.ticker,
+  ]
+    .filter(Boolean)
+    .join(" · ");
   const yes = displayMarket.yesPricePointsCents;
   const no = displayMarket.noPricePointsCents;
   const { delta, pct } = deterministicDelta(displayMarket.ticker, yes);
@@ -99,13 +109,10 @@ export function DiscoveryHero({
               />
               {t("LIVE")}
             </span>
-            <span aria-hidden="true">·</span>
+            {eyebrowMeta ? <span aria-hidden="true">·</span> : null}
           </>
         )}
-        <span>
-          {displayCategory ? `${displayCategory.toUpperCase()} · ` : ""}
-          {displayMarket.ticker}
-        </span>
+        {eyebrowMeta ? <span>{eyebrowMeta}</span> : null}
       </header>
 
       <h1 className="m-0 mb-4 max-w-[720px] text-[28px] font-semibold leading-[1.2] text-[var(--t1)] max-[720px]:mb-[18px] max-[720px]:text-[22px]">
