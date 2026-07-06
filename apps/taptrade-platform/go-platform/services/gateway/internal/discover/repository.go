@@ -243,6 +243,81 @@ func (r *Repository) StaleImportedHashes(ctx context.Context, now time.Time) ([]
 	return out, nil
 }
 
+// ImportedImageRow is the projection the shared-cover sweep reads: every
+// imported row that currently carries a rehosted thumbnail, plus the upstream
+// event group it belongs to (empty when the source had none).
+type ImportedImageRow struct {
+	ID         string
+	ImagePath  string
+	EventGroup string
+}
+
+// ListImageRows returns all imported rows with a non-null image_path.
+func (r *Repository) ListImageRows(ctx context.Context) ([]ImportedImageRow, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id, image_path, COALESCE(event_group, '')
+		  FROM imported_markets
+		 WHERE image_path IS NOT NULL
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("list image rows: %w", err)
+	}
+	defer rows.Close()
+
+	var out []ImportedImageRow
+	for rows.Next() {
+		var row ImportedImageRow
+		if err := rows.Scan(&row.ID, &row.ImagePath, &row.EventGroup); err != nil {
+			return nil, fmt.Errorf("scan image row: %w", err)
+		}
+		out = append(out, row)
+	}
+	return out, rows.Err()
+}
+
+// ClearImagePaths nulls the thumbnail on the given imported rows. Used by the
+// shared-cover sweep when an image turns out to be venue/series branding
+// rather than market-specific art.
+func (r *Repository) ClearImagePaths(ctx context.Context, ids []string) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+	res, err := r.db.ExecContext(ctx, `
+		UPDATE imported_markets
+		   SET image_path = NULL,
+		       updated_at = now()
+		 WHERE id = ANY($1::uuid[])
+		   AND image_path IS NOT NULL
+	`, pq.Array(ids))
+	if err != nil {
+		return 0, fmt.Errorf("clear image paths: %w", err)
+	}
+	n, _ := res.RowsAffected()
+	return int(n), nil
+}
+
+// AlignPromotedMarketImages makes each promoted IMP-* market's thumbnail
+// follow its imported catalog row — correcting historical mismatches (e.g. a
+// shared game cover stamped at promote time) and dropping thumbnails the
+// shared-cover sweep cleared. Imported rows are the source of truth for
+// promoted imports only; native/admin markets have non-IMP tickers and are
+// never touched.
+func (r *Repository) AlignPromotedMarketImages(ctx context.Context) (int, error) {
+	res, err := r.db.ExecContext(ctx, `
+		UPDATE prediction_markets pm
+		   SET image_path = im.image_path,
+		       updated_at = now()
+		  FROM imported_markets im
+		 WHERE pm.ticker = 'IMP-' || upper(substr(im.external_hash, 1, 8))
+		   AND pm.image_path IS DISTINCT FROM im.image_path
+	`)
+	if err != nil {
+		return 0, fmt.Errorf("align promoted market images: %w", err)
+	}
+	n, _ := res.RowsAffected()
+	return int(n), nil
+}
+
 func (r *Repository) RecordSnapshot(ctx context.Context, id string, row Row) error {
 	prices, err := json.Marshal(row.Prices)
 	if err != nil {

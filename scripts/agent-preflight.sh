@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-required_root="/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict-cashier"
-required_branch="feat/binary-exchange-engine"
+# P2-06 consolidated development + deploy onto `main` in the primary checkout;
+# the old worktree and its deploy branch are retired. This preflight now
+# guards that consolidated flow.
+required_root="/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict"
+required_branch="main"
 remote_ref="origin/${required_branch}"
-sibling_root="/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict"
 
 root="$(git rev-parse --show-toplevel)"
 if [[ "${root}" != "${required_root}" ]]; then
-  echo "ERROR: wrong worktree."
+  echo "ERROR: wrong checkout."
   echo "Expected: ${required_root}"
   echo "Actual:   ${root}"
   exit 1
@@ -44,15 +46,6 @@ fi
 if ! git merge-base --is-ancestor HEAD "${remote_ref}"; then
   echo "ERROR: local branch has unpushed commits. Push or resolve before proceeding."
   exit 1
-fi
-
-if [[ -d "${sibling_root}/.git" || -d "${sibling_root}" ]]; then
-  if ! git -C "${sibling_root}" diff --quiet || ! git -C "${sibling_root}" diff --cached --quiet; then
-    echo "ERROR: sibling worktree has tracked changes."
-    echo "Sibling: ${sibling_root}"
-    git -C "${sibling_root}" status --short
-    exit 1
-  fi
 fi
 
 echo "OK: ${required_branch} is clean and synced in ${required_root}."

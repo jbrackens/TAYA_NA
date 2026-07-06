@@ -766,20 +766,43 @@ describe("MarketCard P8 composition", () => {
   it("renders one card-level trend sentence instead of a probability pill", () => {
     assert.ok(
       marketCardSource.includes("calculateMarketSentiment") &&
-        marketCardSource.includes("marketSentiment.displayString"),
-      "MarketCard should render the helper-provided market sentiment string",
+        marketCardSource.includes("t(marketSentiment.displayStringKey"),
+      "MarketCard should render the helper-provided market sentiment translation key",
     );
     assert.ok(
-      marketSentimentSource.includes("Split Room • 50/50 Toss-up") &&
-        marketSentimentSource.includes("Strong Doubt") &&
-        marketSentimentSource.includes("Heavy Backing"),
-      "Market sentiment helper should cover neutral and heavy leading copy",
+      marketSentimentSource.includes("MARKET_SENTIMENT_SPLIT_ROOM") &&
+        marketSentimentSource.includes("MARKET_SENTIMENT_STRONG_DOUBT") &&
+        marketSentimentSource.includes("MARKET_SENTIMENT_HEAVY_BACKING"),
+      "Market sentiment helper should cover neutral and heavy leading translation keys",
     );
     assert.ok(
       !marketCardSource.includes("PROBABILITY_CHANCE") &&
         !marketCardSource.includes("probabilityDescriptorKey"),
       "MarketCard should not render the old chance/descriptor probability pill",
     );
+  });
+
+  it("ships translated market sentiment keys in every prediction locale", () => {
+    const locales = ["en", "id", "ms", "tl", "zh-Hans", "zh-Hant"];
+    const keys = [
+      "MARKET_SENTIMENT_STRONG_DOUBT",
+      "MARKET_SENTIMENT_LEANING_NO",
+      "MARKET_SENTIMENT_SPLIT_ROOM",
+      "MARKET_SENTIMENT_LEANING_YES",
+      "MARKET_SENTIMENT_HEAVY_BACKING",
+    ];
+
+    for (const locale of locales) {
+      const predictionLocale = read(
+        `../public/static/locales/${locale}/prediction.json`,
+      );
+      for (const key of keys) {
+        assert.ok(
+          predictionLocale.includes(`"${key}"`),
+          `${locale}/prediction.json should include ${key}`,
+        );
+      }
+    }
   });
 
   it("keeps YES/NO action pills priced without losing tap size", () => {

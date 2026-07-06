@@ -90,6 +90,36 @@ func (r *ImageRehoster) Rehost(rowID, imageURL string) (string, error) {
 	return "/images/markets/" + filename, nil
 }
 
+// HashHostedImage returns the hex SHA-256 of the rehosted file backing a
+// stored image_path ("/images/markets/<file>"). ok=false when the rehoster is
+// nil, the path is not under our markets folder, or the file is unreadable —
+// callers treat those rows as unhashable and leave them alone.
+func (r *ImageRehoster) HashHostedImage(imagePath string) (string, bool) {
+	if r == nil {
+		return "", false
+	}
+	const prefix = "/images/markets/"
+	if !strings.HasPrefix(imagePath, prefix) {
+		return "", false
+	}
+	// filepath.Base strips any traversal the DB value could carry; the file
+	// must resolve inside the rehost folder.
+	name := filepath.Base(strings.TrimPrefix(imagePath, prefix))
+	if name == "." || name == "/" || name == ".." {
+		return "", false
+	}
+	f, err := os.Open(filepath.Join(r.PublicRoot, "images", "markets", name))
+	if err != nil {
+		return "", false
+	}
+	defer f.Close()
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return "", false
+	}
+	return hex.EncodeToString(h.Sum(nil)), true
+}
+
 func pickExt(contentType, srcURL string) string {
 	switch {
 	case strings.HasPrefix(contentType, "image/jpeg"):

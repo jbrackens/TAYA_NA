@@ -242,6 +242,9 @@ func (s *SMM) tick(ctx context.Context) {
 		Status:   &statusOpen,
 		Page:     1,
 		PageSize: 1000,
+		// Launch-scrubbed markets are hidden from public lists but remain
+		// tradeable by direct link, so the SMM keeps quoting them.
+		IncludeLaunchScrubbed: true,
 	})
 	if err != nil {
 		slog.Warn("smm: list markets failed", "error", err)

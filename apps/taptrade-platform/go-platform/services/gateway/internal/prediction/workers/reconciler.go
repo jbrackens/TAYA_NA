@@ -67,6 +67,9 @@ func (w *Reconciler) tick(ctx context.Context) {
 		Status:   &statusOpen,
 		Page:     1,
 		PageSize: 1000, // enough for any realistic active market count
+		// Collateral invariants must hold on every market, including ones the
+		// public list hides behind the launch-safety scrub.
+		IncludeLaunchScrubbed: true,
 	})
 	if err != nil {
 		slog.Warn("reconciler: list markets failed", "error", err)

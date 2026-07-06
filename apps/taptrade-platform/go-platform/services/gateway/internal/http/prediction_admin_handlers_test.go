@@ -1200,9 +1200,19 @@ func TestPredictionAdminTaxonomyReadsRedactUnsafeSeriesCopyWithoutMutatingSource
 				t.Fatalf("admin taxonomy read leaked unsafe copy %q: %s", unsafe, body)
 			}
 		}
-		if !strings.Contains(body, launchRedactedUserText) {
-			t.Fatalf("expected redaction marker in admin taxonomy read: %s", body)
-		}
+	}
+	// Single fields (series title/description) keep the redaction sentinel…
+	if !strings.Contains(seriesRes.Body.String(), launchRedactedUserText) {
+		t.Fatalf("expected redaction marker in admin series read: %s", seriesRes.Body.String())
+	}
+	// …but tags are list content: unsafe entries are dropped, and the
+	// sentinel never appears as a browsable tag (it isn't the stored value,
+	// so a chip built from it could never match a market).
+	if strings.Contains(tagsRes.Body.String(), launchRedactedUserText) {
+		t.Fatalf("tags list must drop unsafe tags, not redact them: %s", tagsRes.Body.String())
+	}
+	if !strings.Contains(tagsRes.Body.String(), "safe forecast") {
+		t.Fatalf("safe tag must survive the drop filter: %s", tagsRes.Body.String())
 	}
 	if repo.series[0].Title != "Cash payout calendar" ||
 		repo.series[0].Description != "Crypto prize schedule" ||

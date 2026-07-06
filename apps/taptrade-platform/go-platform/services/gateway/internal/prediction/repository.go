@@ -316,6 +316,14 @@ type MarketFilter struct {
 	// exposed on player-facing endpoints. Only admin-authenticated callers set
 	// this true. Safe-by-default — a caller that forgets it cannot leak drafts.
 	IncludeUnopened bool
+	// IncludeLaunchScrubbed opts IN to returning markets whose title trips the
+	// launch-safety scrub (the payload layer would replace it with the
+	// "Removed by points-only safety boundary." sentinel). Default false:
+	// public list queries exclude them — a market with no usable title is not
+	// listable content. Admin/back-office views, workers, and ops tooling set
+	// this true; scrubbed markets also stay fetchable by direct id/ticker for
+	// audit, which never goes through this filter.
+	IncludeLaunchScrubbed bool
 }
 
 // OrderFilter provides filtering options for listing orders.

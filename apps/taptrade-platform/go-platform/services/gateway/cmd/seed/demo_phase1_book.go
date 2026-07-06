@@ -67,6 +67,9 @@ func RunPhase1MarketMaker(ctx context.Context, h *Harness) (*PhaseStats, error) 
 		Status:   &statusOpen,
 		Page:     1,
 		PageSize: 1000,
+		// Demo seeding is ops tooling, not a public surface: keep
+		// launch-scrubbed markets visible so behavior matches pre-filter runs.
+		IncludeLaunchScrubbed: true,
 	})
 	if err != nil {
 		return stats, fmt.Errorf("list markets: %w", err)

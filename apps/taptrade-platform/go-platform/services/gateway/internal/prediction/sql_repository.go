@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/lib/pq"
+
+	"taptrade/gateway/internal/compliance"
 )
 
 // SQLRepository implements Repository backed by PostgreSQL.
@@ -1666,10 +1668,16 @@ func (r *SQLRepository) GetDiscovery(ctx context.Context) (*DiscoveryResponse, e
 		}
 	}
 
+	// Discovery is a public-only surface, so every bucket excludes markets the
+	// launch-safety scrub would strip to the sentinel — same rule as the
+	// default MarketFilter in buildMarketWhere.
+	notScrubbed := ` AND NOT ` + compliance.LaunchProhibitedCopySQLCondition("m.title")
+
 	// Featured: markets flagged in featured events
 	rows, err := r.db.QueryContext(ctx,
 		marketSelectQuery()+` WHERE m.status = 'open'
-		  AND m.event_id IN (SELECT id FROM prediction_events WHERE featured = true)
+		  AND m.event_id IN (SELECT id FROM prediction_events WHERE featured = true)`+
+			notScrubbed+`
 		  ORDER BY m.volume_cents DESC LIMIT 12`)
 	if err == nil {
 		got, _ := scanMarkets(rows)
@@ -1682,7 +1690,7 @@ func (r *SQLRepository) GetDiscovery(ctx context.Context) (*DiscoveryResponse, e
 	// imported markets pushed the AMM from 17 markets to ~170 — six rows
 	// duplicated content with Featured for the old size.
 	rows, err = r.db.QueryContext(ctx,
-		marketSelectQuery()+` WHERE m.status = 'open'
+		marketSelectQuery()+` WHERE m.status = 'open'`+notScrubbed+`
 		  ORDER BY m.volume_cents DESC LIMIT 12`)
 	if err == nil {
 		got, _ := scanMarkets(rows)
@@ -1695,7 +1703,8 @@ func (r *SQLRepository) GetDiscovery(ctx context.Context) (*DiscoveryResponse, e
 	// window left this section empty most of the time.
 	rows, err = r.db.QueryContext(ctx,
 		marketSelectQuery()+` WHERE m.status = 'open'
-		  AND m.close_at BETWEEN NOW() AND NOW() + INTERVAL '7 days'
+		  AND m.close_at BETWEEN NOW() AND NOW() + INTERVAL '7 days'`+
+			notScrubbed+`
 		  ORDER BY m.close_at ASC LIMIT 12`)
 	if err == nil {
 		got, _ := scanMarkets(rows)
@@ -2034,6 +2043,16 @@ func buildMarketWhere(f MarketFilter) (string, []interface{}) {
 	// condition — no bound parameter, so idx is unaffected.
 	if !f.IncludeUnopened {
 		conds = append(conds, "m.status <> 'unopened'")
+	}
+
+	// Safe-by-default launch-safety gate: markets whose title would be
+	// replaced with the scrub sentinel carry no listable content, so public
+	// list/by-event queries exclude them unless the caller opts in
+	// (back-office, workers, ops tooling). Direct GetMarket/GetMarketByTicker
+	// reads bypass this filter, keeping scrubbed markets auditable. Literal
+	// condition — no bound parameter, so idx is unaffected.
+	if !f.IncludeLaunchScrubbed {
+		conds = append(conds, "NOT "+compliance.LaunchProhibitedCopySQLCondition("m.title"))
 	}
 
 	if f.EventID != nil {

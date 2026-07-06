@@ -66,7 +66,10 @@ func TestPredictionPublicCatalogPayloadsRedactUnsafeCopyWithoutMutatingSource(t 
 	}
 }
 
-func TestPredictionSeriesPayloadRedactsUnsafeTagsWithoutMutatingSource(t *testing.T) {
+func TestPredictionSeriesPayloadDropsUnsafeTagsWithoutMutatingSource(t *testing.T) {
+	// Title/description are single fields and keep the redaction sentinel;
+	// tags are list content, so unsafe entries are DROPPED — emitting the
+	// sentinel as a browsable tag would ship a data artifact (P-002/003).
 	source := prediction.Series{
 		ID:          "ser-unsafe-copy",
 		Title:       "Cash prize series",
@@ -77,10 +80,9 @@ func TestPredictionSeriesPayloadRedactsUnsafeTagsWithoutMutatingSource(t *testin
 	payload := predictionSeriesPayload(source)
 	if payload.Title != launchRedactedUserText ||
 		payload.Description != launchRedactedUserText ||
-		len(payload.Tags) != 2 ||
-		payload.Tags[0] != "safe forecast" ||
-		payload.Tags[1] != launchRedactedUserText {
-		t.Fatalf("expected unsafe series copy redacted, got %+v", payload)
+		len(payload.Tags) != 1 ||
+		payload.Tags[0] != "safe forecast" {
+		t.Fatalf("expected unsafe series copy redacted and unsafe tags dropped, got %+v", payload)
 	}
 	if source.Title != "Cash prize series" ||
 		source.Description != "Crypto payout schedule" ||

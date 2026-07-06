@@ -235,3 +235,38 @@ OUT-OF-SCOPE FINDING for owner: the gateway boot banner still says "Taya NA Pred
 — a FOURTH legacy brand not in this goal's token set; recommend a follow-up decision.
 MERGE NOTES: first post-merge deploy must be watched (CI path filter + image names
 changed); wip/scrubbed-markets-backend must rebase over this branch.
+
+## UNMERGED-WORK INTEGRATION PASS (2026-07-07, branch integration/unmerged-work)
+Owner directive: "merge all of the unmerged work." All 22 remaining unmerged local +
+remote branches audited via brand-normalized blob comparison against main (raw hashes
+can't match post-rebrand); each classified INTEGRATE vs SUPERSEDED with content
+evidence, not names.
+INTEGRATED (5):
+- wip/scrubbed-markets-backend (26 files, checkpoint 5219cdd2): compliance predicate
+  centralized in internal/compliance, SQL list-exclusion of scrubbed markets, tags/
+  benefit lists drop prohibited entries, seed/sync scrub. VERIFIED: gateway internal
+  suites green.
+- feat/gateway-rate-limiting: httpx.RateLimit (memory + redis, fail-open) on public
+  read prefixes, outside auth. Adapted: redis from REDIS_URL directly (internal/cache
+  deleted on main), chain order per main's outermost-last convention. VERIFIED:
+  platform httpx tests (miniredis) + gateway build green.
+- feat/social-oauth-deploy-wiring: six providers' secrets GitHub Actions → /opt .env →
+  auth container env; unset provider stays off. Hand-ported (deploy yml was rewritten
+  for runner builds since the branch). VERIFIED: both YAMLs parse.
+- feat/binary-exchange-engine's last commit (b414f578): market-sentiment copy i18n'd
+  across 6 locales. VERIFIED: player suite 275/275, tsc green.
+- Docs: CLAUDE.md + scripts/agent-preflight.sh retired the stale -cashier worktree
+  deploy policy (pointed at a deleted worktree + retired branch).
+SUPERSEDED — deleted local+remote after verifying main already contains the work or
+deliberately removed the target (16): office-p8 series ×5 (landed via PRs #25-27;
+main office uses P8 tokens), p8-light-pivot (player P8 landed 2026-04-28),
+prediction-tables-mono, replace-skipped-marketcard-test, player-app-node-tests,
+qa-cms-feature-flag (CMS route now exists), qa-logs-remove-sportsbook-fields (main
+cleaner + URL scoping), ai-market-drafting (main impl newer), social-oauth (auth code
+on main), risk-dashboard-v1 (main has /api/v1/admin/prediction/risk + office page,
+points-native), ws-redis-pubsub (main has P2-07 WS_BACKBONE=redis), archive-design-
+sportsbook (main deleted the archived spec deliberately), backup/pre-deploy-1a6ef06f
+(rbac work landed), deploy-chat-room (0-diff), chore/rebrand-taptrade (merged).
+EXCLUDED pending owner compliance decision: feat/hula-na-cashier (22 commits — real-
+money cashier surfaces that active launch-safety gates classify launch-prohibited).
+KEPT: pam/p0-modernization (active autonomous loop, separate workstream).

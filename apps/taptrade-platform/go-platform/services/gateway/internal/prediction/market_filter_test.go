@@ -73,3 +73,40 @@ func TestMarketOrderClauseSupportsDiscoverySorts(t *testing.T) {
 		t.Fatalf("activity sort should use ranking score, got %q", clause)
 	}
 }
+
+// The launch-safety gate mirrors the publication gate: public market lists
+// must never return markets whose title the payload layer would scrub to the
+// sentinel, unless the caller (back-office, workers, ops tooling) opts in.
+
+func TestBuildMarketWhereExcludesLaunchScrubbedByDefault(t *testing.T) {
+	where, args := buildMarketWhere(MarketFilter{})
+	if !strings.Contains(where, `~* '(\$|\y(`) || !strings.Contains(where, `\yredeemable\y'`) {
+		t.Fatalf("default filter must exclude launch-scrubbed titles; got WHERE %q", where)
+	}
+	if !strings.Contains(where, "NOT (m.title") {
+		t.Fatalf("scrub exclusion must negate the prohibited-copy condition; got WHERE %q", where)
+	}
+	if len(args) != 0 {
+		t.Fatalf("scrub exclusion must be a literal condition with no bound args, got %#v", args)
+	}
+}
+
+func TestBuildMarketWhereIncludesLaunchScrubbedWhenOptedIn(t *testing.T) {
+	where, _ := buildMarketWhere(MarketFilter{IncludeUnopened: true, IncludeLaunchScrubbed: true})
+	if strings.Contains(where, `\yredeemable\y`) || strings.Contains(where, `NOT (m.title`) {
+		t.Fatalf("IncludeLaunchScrubbed=true must not add the exclusion; got WHERE %q", where)
+	}
+}
+
+func TestBuildMarketWhereScrubExclusionKeepsArgPositions(t *testing.T) {
+	// Both safe-by-default gates are literal conditions; a bound filter that
+	// follows them must still bind at $1.
+	eventID := "evt-1"
+	where, args := buildMarketWhere(MarketFilter{EventID: &eventID})
+	if !strings.Contains(where, "m.event_id = $1") {
+		t.Fatalf("event filter must bind at $1 despite literal gates; got WHERE %q", where)
+	}
+	if len(args) != 1 || args[0] != eventID {
+		t.Fatalf("expected single event arg, got %#v", args)
+	}
+}

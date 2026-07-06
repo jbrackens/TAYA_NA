@@ -1,12 +1,19 @@
 type SentimentState = "yes" | "no" | "neutral";
+type SentimentTranslationKey =
+  | "MARKET_SENTIMENT_STRONG_DOUBT"
+  | "MARKET_SENTIMENT_LEANING_NO"
+  | "MARKET_SENTIMENT_SPLIT_ROOM"
+  | "MARKET_SENTIMENT_LEANING_YES"
+  | "MARKET_SENTIMENT_HEAVY_BACKING";
 
 interface SentimentOutput {
-  displayString: string;
+  displayStringKey: SentimentTranslationKey;
+  percentage?: number;
   sentimentState: SentimentState;
 }
 
 const NEUTRAL_OUTPUT: SentimentOutput = {
-  displayString: "Split Room • 50/50 Toss-up",
+  displayStringKey: "MARKET_SENTIMENT_SPLIT_ROOM",
   sentimentState: "neutral",
 };
 
@@ -24,17 +31,23 @@ export const calculateMarketSentiment = (
   }
 
   if (clampedYes > 55) {
-    const descriptor = clampedYes >= 75 ? "Heavy Backing" : "Leaning Yes";
     return {
-      displayString: `${descriptor} • ${clampedYes}% say Yes`,
+      displayStringKey:
+        clampedYes >= 75
+          ? "MARKET_SENTIMENT_HEAVY_BACKING"
+          : "MARKET_SENTIMENT_LEANING_YES",
+      percentage: clampedYes,
       sentimentState: "yes",
     };
   }
 
   const noPercentage = 100 - clampedYes;
-  const descriptor = clampedYes <= 25 ? "Strong Doubt" : "Leaning No";
   return {
-    displayString: `${descriptor} • ${noPercentage}% say No`,
+    displayStringKey:
+      clampedYes <= 25
+        ? "MARKET_SENTIMENT_STRONG_DOUBT"
+        : "MARKET_SENTIMENT_LEANING_NO",
+    percentage: noPercentage,
     sentimentState: "no",
   };
 };
