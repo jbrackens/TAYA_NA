@@ -182,7 +182,9 @@ export function MarketCard({
               className={`h-2 w-2 rounded-full ${trendDotClassName}`}
               aria-hidden="true"
             />
-            {marketSentiment.displayString}
+            {t(marketSentiment.displayStringKey, {
+              percentage: marketSentiment.percentage,
+            })}
           </span>
         </div>
       </Link>
