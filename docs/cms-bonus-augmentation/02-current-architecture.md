@@ -240,7 +240,7 @@ Auth middleware (`modules/platform/transport/httpx/middleware.go`):
 
 ## Frontend Structure
 
-### Player App (`talon-backoffice/packages/app/`)
+### Player App (`frontend/packages/app/`)
 
 | Layer | Technology | Key Files |
 |---|---|---|
@@ -253,7 +253,7 @@ Auth middleware (`modules/platform/transport/httpx/middleware.go`):
 | i18n | react-i18next | `public/static/locales/en/` — 60+ namespace files |
 | Logging | Structured logger | `app/lib/logger.ts` — dev: console, prod: no-op |
 
-### Backoffice (`talon-backoffice/packages/office/`)
+### Backoffice (`frontend/packages/office/`)
 
 Admin dashboard with: Users, Reports, Audit Logs, Leaderboards, Loyalty, Risk Management, Trading (SettlementPanel).
 
@@ -385,10 +385,10 @@ Player accepts → POST /api/v1/bets/cashout/accept
 14. `apps/TapTrade-Sportsbook-Combined/go-platform/modules/platform/canonical/v1/types.go`
 15. `apps/TapTrade-Sportsbook-Combined/go-platform/modules/platform/canonical/v1/settlement.go`
 16. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/migrations/`
-17. `apps/TapTrade-Sportsbook-Combined/talon-backoffice/packages/app/app/lib/api/`
-18. `apps/TapTrade-Sportsbook-Combined/talon-backoffice/packages/app/app/lib/store/`
-19. `apps/TapTrade-Sportsbook-Combined/talon-backoffice/packages/app/app/lib/websocket/`
-20. `apps/TapTrade-Sportsbook-Combined/talon-backoffice/packages/app/app/components/BetslipProvider.tsx`
+17. `apps/TapTrade-Sportsbook-Combined/frontend/packages/app/app/lib/api/`
+18. `apps/TapTrade-Sportsbook-Combined/frontend/packages/app/app/lib/store/`
+19. `apps/TapTrade-Sportsbook-Combined/frontend/packages/app/app/lib/websocket/`
+20. `apps/TapTrade-Sportsbook-Combined/frontend/packages/app/app/components/BetslipProvider.tsx`
 21. `services/codex-prep/taptrade-cms/cmd/server/main.go`
 22. `services/codex-prep/taptrade-betting-engine/internal/service/service.go`
 23. `services/codex-prep/taptrade-settlement/internal/service/service.go`

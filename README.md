@@ -8,10 +8,10 @@ This repo was forked from the Taya NA sportsbook codebase on 2026-04-16. Current
 
 | Surface | Path | Local URL |
 | --- | --- | --- |
-| Player app | `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app` | `http://localhost:3010/predict` |
-| Backoffice | `apps/Phoenix-Predict-Combined/talon-backoffice/packages/office` | `http://localhost:3001` |
-| Gateway API | `apps/Phoenix-Predict-Combined/go-platform/services/gateway` | `http://localhost:18080/api/v1` |
-| Auth service | `apps/Phoenix-Predict-Combined/go-platform/services/auth` | `http://localhost:18081` |
+| Player app | `apps/taptrade-platform/frontend/packages/app` | `http://localhost:3010/predict` |
+| Backoffice | `apps/taptrade-platform/frontend/packages/office` | `http://localhost:3001` |
+| Gateway API | `apps/taptrade-platform/go-platform/services/gateway` | `http://localhost:18080/api/v1` |
+| Auth service | `apps/taptrade-platform/go-platform/services/auth` | `http://localhost:18081` |
 | PostgreSQL | Docker Compose service `postgres` | `localhost:5434` |
 | Redis | Docker Compose service `redis` | `localhost:6380` |
 
@@ -27,14 +27,14 @@ Prerequisites:
 Start the backend stack:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform
 docker compose up -d postgres redis gateway auth
 ```
 
 Start the player app:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/talon-backoffice/packages/app
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app
 NEXT_PUBLIC_API_URL=http://localhost:18080 \
 NEXT_PUBLIC_AUTH_URL=http://localhost:18081 \
 NEXT_PUBLIC_WS_URL=ws://localhost:18080/ws \
@@ -53,7 +53,7 @@ Demo player login:
 Player app:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/talon-backoffice/packages/app
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app
 npm run typecheck
 npm test
 PLAYWRIGHT_BASE_URL=http://localhost:3010 npm run test:smoke
@@ -62,21 +62,21 @@ PLAYWRIGHT_BASE_URL=http://localhost:3010 npm run test:smoke
 Gateway/auth:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/go-platform
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/go-platform
 go test ./modules/platform/... ./services/gateway/... ./services/auth/...
 ```
 
 ## Docs
 
 - [Project instructions](./CLAUDE.md)
-- [Combined app README](./apps/Phoenix-Predict-Combined/README.md)
-- [Developer setup](./apps/Phoenix-Predict-Combined/DEVELOPMENT.md)
-- [API examples](./apps/Phoenix-Predict-Combined/API_EXAMPLES.md)
-- [Error and debugging guide](./apps/Phoenix-Predict-Combined/ERRORS.md)
-- [Changelog](./apps/Phoenix-Predict-Combined/CHANGELOG.md)
-- [Migration guide](./apps/Phoenix-Predict-Combined/MIGRATION.md)
-- [Upgrade guide](./apps/Phoenix-Predict-Combined/UPGRADE.md)
-- [Developer experience scorecard](./apps/Phoenix-Predict-Combined/DX.md)
+- [Combined app README](./apps/taptrade-platform/README.md)
+- [Developer setup](./apps/taptrade-platform/DEVELOPMENT.md)
+- [API examples](./apps/taptrade-platform/API_EXAMPLES.md)
+- [Error and debugging guide](./apps/taptrade-platform/ERRORS.md)
+- [Changelog](./apps/taptrade-platform/CHANGELOG.md)
+- [Migration guide](./apps/taptrade-platform/MIGRATION.md)
+- [Upgrade guide](./apps/taptrade-platform/UPGRADE.md)
+- [Developer experience scorecard](./apps/taptrade-platform/DX.md)
 - [Contributing](./CONTRIBUTING.md)
 - [Support](./SUPPORT.md)
 - [Security](./SECURITY.md)

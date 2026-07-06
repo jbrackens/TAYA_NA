@@ -216,7 +216,7 @@ services/cashier-api/       # wallet resolution, deposit status, bridge callback
 services/relayer/           # gas sponsorship and signed tx submission
 services/bridge-watcher/    # Tron/EVM bridge tracking
 packages/cashier-sdk/       # typed SDK consumed by markets app
-apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app/cashier/
+apps/taptrade-platform/frontend/packages/app/app/cashier/
 ```
 
 The existing Go gateway can consume the SDK during V3 migration, but the V3
@@ -260,8 +260,8 @@ payments package.
 - [Cashier SDK tests](../../packages/cashier-sdk/test/cashier-sdk.test.mjs)
 - [Cashier guard checks](../../scripts/check-cashier-all.sh)
 - [Provider scenario manifest](../../services/bridge-watcher/fixtures/provider-scenarios.manifest.json)
-- [Gateway cashier domain package](../../apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/cashier/README.md)
-- [Alpha cashier gateway package](../../apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/alphacashier)
+- [Gateway cashier domain package](../../apps/taptrade-platform/go-platform/services/gateway/internal/cashier/README.md)
+- [Alpha cashier gateway package](../../apps/taptrade-platform/go-platform/services/gateway/internal/alphacashier)
 
 Primary local check:
 

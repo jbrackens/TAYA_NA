@@ -77,3 +77,5 @@ I (docker images/infra) → J (directories) → final verify sweep.
   046_tiangge_launch_taxonomy.sql → 046_taptrade_launch_taxonomy.sql (version-tracked,
   safe); @phoenix.local → @taptrade.local (30 files, atomic with seeders); go-platform
   residual strings (30 files).
+- Batch J (iteration 8): dirs apps/Phoenix-Predict-Combined→apps/taptrade-platform,
+  talon-backoffice→frontend (git mv); 123 path-reference files updated atomically.

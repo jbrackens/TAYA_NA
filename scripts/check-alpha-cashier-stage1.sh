@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-GATEWAY="$ROOT/apps/Phoenix-Predict-Combined/go-platform/services/gateway"
+GATEWAY="$ROOT/apps/taptrade-platform/go-platform/services/gateway"
 
 echo "alpha cashier: running Stage 1 backend smoke checks"
 (
@@ -14,7 +14,7 @@ echo "alpha cashier: running Stage 1 backend smoke checks"
 if [[ "${RUN_ALPHA_CASHIER_FRONTEND_CHECKS:-}" == "1" ]]; then
   echo "alpha cashier: running backoffice source-wiring check"
   (
-    cd "$ROOT/apps/Phoenix-Predict-Combined/talon-backoffice/packages/office"
+    cd "$ROOT/apps/taptrade-platform/frontend/packages/office"
     yarn test tests/alpha-cashier-review.test.ts
   )
 fi

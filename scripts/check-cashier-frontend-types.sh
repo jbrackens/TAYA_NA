@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-APP_DIR="$ROOT/apps/Phoenix-Predict-Combined/talon-backoffice/packages/app"
+APP_DIR="$ROOT/apps/taptrade-platform/frontend/packages/app"
 TMP="$(mktemp)"
 trap 'rm -f "$TMP"' EXIT
 

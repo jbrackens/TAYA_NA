@@ -17,8 +17,8 @@ Workspace root on this Mac: `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict
 
 ```
 Taya_Na_Predict/
-├── apps/Phoenix-Predict-Combined/
-│   ├── talon-backoffice/packages/
+├── apps/taptrade-platform/
+│   ├── frontend/packages/
 │   │   ├── app/                           ← Player app (Next.js 16 App Router, port 3000)
 │   │   ├── office/                        ← Admin backoffice (Next.js Pages Router, port 3001)
 │   │   └── api-client/                    ← Shared TS API client
@@ -112,7 +112,7 @@ Prices are **cents, 0–99** — always enforced by CHECK constraints and the in
 
 ## Tech Stack — Player App
 
-**Path:** `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/`
+**Path:** `apps/taptrade-platform/frontend/packages/app/`
 
 - **Framework:** Next.js 16 with App Router (`app/` directory)
 - **React:** 19 — `React.FC` does NOT include `children` prop; add explicitly
@@ -141,7 +141,7 @@ Prices are **cents, 0–99** — always enforced by CHECK constraints and the in
 
 ## Tech Stack — Backoffice
 
-**Path:** `apps/Phoenix-Predict-Combined/talon-backoffice/packages/office/`
+**Path:** `apps/taptrade-platform/frontend/packages/office/`
 
 - **Framework:** Next.js with Pages Router (NOT App Router) — but a parallel App Router tree under `app/` exists for newer admin pages (dashboard, audit-logs, trading, users). Both routers coexist.
 - **UI:** Ant Design 5.x (`^5.29`) + styled-components, both wired to the **P8 design tokens** as of 2026-04-28. Stylesheet stack: `antd/dist/antd.css` → `styles/p8-tokens.css` (declares `--bg-deep` / `--surface-1/2` / `--border-1/2` / `--t1..4` / `--yes-text` / `--no-text` / `--focus-ring` / `--accent[*]` / `--r-rh-*`) → `styles/p8-antd.css` (overrides AntD component classes against the tokens). New styling work MUST reference these CSS custom properties — DO NOT introduce hex literals.
@@ -193,7 +193,7 @@ granular permissions like `users:read/write`, `roles:read/write`,
 
 ## Tech Stack — Go Backend
 
-**Path:** `apps/Phoenix-Predict-Combined/go-platform/services/gateway/`
+**Path:** `apps/taptrade-platform/go-platform/services/gateway/`
 
 - **Language:** Go 1.25 (module `phoenix-revival/gateway`)
 - **HTTP:** stdlib `net/http` + custom `httpx` middleware
@@ -226,7 +226,7 @@ granular permissions like `users:read/write`, `roles:read/write`,
 ### One-time setup
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform
 
 # Start Postgres (port 5434 to avoid colliding with any sportsbook container)
 docker compose up -d postgres
@@ -276,7 +276,7 @@ AUTH_COOKIE_SECURE=false \
 go run ./cmd/auth
 
 # Player app (port 3000)
-cd ../../../talon-backoffice/packages/app
+cd ../../../frontend/packages/app
 NEXT_PUBLIC_API_URL=http://localhost:18080 npm run dev
 
 # Backoffice (port 3001)
@@ -322,7 +322,7 @@ On Intel Macs: check `/usr/local/lib/` instead of `/opt/homebrew/lib/`.
 
 ### Use yarn at the workspace root
 
-The `talon-backoffice/` directory is a yarn-workspaces monorepo (`workspaces: ["packages/**/*"]` in `package.json`, `engines: { yarn: ">=1.22.22 <2" }`). Run `yarn install --frozen-lockfile` from `talon-backoffice/`, not from any sub-package. CI does the same — see `.github/workflows/test.yml`.
+The `frontend/` directory is a yarn-workspaces monorepo (`workspaces: ["packages/**/*"]` in `package.json`, `engines: { yarn: ">=1.22.22 <2" }`). Run `yarn install --frozen-lockfile` from `frontend/`, not from any sub-package. CI does the same — see `.github/workflows/test.yml`.
 
 Older notes recommended `npm install --legacy-peer-deps` from the app sub-directory; that path hangs in CI for hours because npm doesn't detect the workspace declaration up-tree. Yarn install at the workspace root completes in ~6 seconds.
 

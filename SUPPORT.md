@@ -7,7 +7,7 @@ Use this file to route local development issues quickly.
 Check container health:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform
 docker compose ps
 docker compose logs --tail=100 gateway auth
 ```
@@ -17,7 +17,7 @@ docker compose logs --tail=100 gateway auth
 Start the app:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/talon-backoffice/packages/app
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app
 NEXT_PUBLIC_API_URL=http://localhost:18080 \
 NEXT_PUBLIC_AUTH_URL=http://localhost:18081 \
 NEXT_PUBLIC_WS_URL=ws://localhost:18080/ws \

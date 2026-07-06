@@ -8,15 +8,15 @@ Read:
 
 - [README.md](./README.md)
 - [CLAUDE.md](./CLAUDE.md)
-- [Developer setup](./apps/Phoenix-Predict-Combined/DEVELOPMENT.md)
-- [Migration guide](./apps/Phoenix-Predict-Combined/MIGRATION.md)
+- [Developer setup](./apps/taptrade-platform/DEVELOPMENT.md)
+- [Migration guide](./apps/taptrade-platform/MIGRATION.md)
 
 ## Local Checks
 
 Player app:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/talon-backoffice/packages/app
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app
 npm run typecheck
 npm test
 PLAYWRIGHT_BASE_URL=http://localhost:3010 npm run test:smoke
@@ -25,7 +25,7 @@ PLAYWRIGHT_BASE_URL=http://localhost:3010 npm run test:smoke
 Go services:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/go-platform
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/go-platform
 go test ./modules/platform/... ./services/gateway/... ./services/auth/...
 ```
 

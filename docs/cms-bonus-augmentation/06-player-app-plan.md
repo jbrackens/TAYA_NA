@@ -187,15 +187,15 @@ Also add corresponding `de/bonus.json` and `de/content.json` files. Register bot
 
 ## File Path References
 
-1. `talon-backoffice/packages/app/app/lib/api/client.ts` — base API client pattern
-2. `talon-backoffice/packages/app/app/lib/api/wallet-client.ts` — wallet client (extend pattern)
-3. `talon-backoffice/packages/app/app/lib/api/loyalty-client.ts` — loyalty client (similar pattern for bonus-client)
-4. `talon-backoffice/packages/app/app/components/CurrentBalance.tsx` — current single-balance display (replace with WalletBreakdown)
-5. `talon-backoffice/packages/app/app/components/BetslipProvider.tsx` — betslip state (extend)
-6. `talon-backoffice/packages/app/app/components/BetslipPanel.tsx` — betslip UI (extend)
-7. `talon-backoffice/packages/app/app/lib/store/` — Redux store (add bonusSlice)
-8. `talon-backoffice/packages/app/app/lib/websocket/channels-data-handler/wallets-channel-handler.ts` — WebSocket handler pattern
-9. `talon-backoffice/packages/app/app/lib/i18n/config.ts` — i18n namespace registration
-10. `talon-backoffice/packages/app/public/static/locales/en/` — locale files directory
-11. `talon-backoffice/packages/app/app/bets/page.tsx` — bet history page (extend)
-12. `talon-backoffice/packages/app/app/bonus-rules/page.tsx` — existing bonus rules page (replace with CMS)
+1. `frontend/packages/app/app/lib/api/client.ts` — base API client pattern
+2. `frontend/packages/app/app/lib/api/wallet-client.ts` — wallet client (extend pattern)
+3. `frontend/packages/app/app/lib/api/loyalty-client.ts` — loyalty client (similar pattern for bonus-client)
+4. `frontend/packages/app/app/components/CurrentBalance.tsx` — current single-balance display (replace with WalletBreakdown)
+5. `frontend/packages/app/app/components/BetslipProvider.tsx` — betslip state (extend)
+6. `frontend/packages/app/app/components/BetslipPanel.tsx` — betslip UI (extend)
+7. `frontend/packages/app/app/lib/store/` — Redux store (add bonusSlice)
+8. `frontend/packages/app/app/lib/websocket/channels-data-handler/wallets-channel-handler.ts` — WebSocket handler pattern
+9. `frontend/packages/app/app/lib/i18n/config.ts` — i18n namespace registration
+10. `frontend/packages/app/public/static/locales/en/` — locale files directory
+11. `frontend/packages/app/app/bets/page.tsx` — bet history page (extend)
+12. `frontend/packages/app/app/bonus-rules/page.tsx` — existing bonus rules page (replace with CMS)

@@ -12,7 +12,7 @@ The market FSM (`gateway/internal/prediction/lifecycle.go:6–14`) is `unopened 
 
 For a value-bearing market, finality without recourse is a trust and (likely) regulatory problem, and once funds are paid (and potentially withdrawn) reversal is impractical.
 
-Path shorthand: `gateway` = `apps/Phoenix-Predict-Combined/go-platform/services/gateway`.
+Path shorthand: `gateway` = `apps/taptrade-platform/go-platform/services/gateway`.
 
 ## Decision
 

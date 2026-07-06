@@ -30,7 +30,7 @@ on:
   push:
     branches: [main]   # deploy branch (P2-06: consolidated onto main; feat/binary-exchange-engine retired 2026-06-14)
     paths:
-      - 'apps/Phoenix-Predict-Combined/**'
+      - 'apps/taptrade-platform/**'
       - '.github/workflows/deploy-demo.yml'
   workflow_dispatch: # manual "Run workflow" button
     inputs:
@@ -96,7 +96,7 @@ jobs:
           rsync -az --delete -e "ssh -i ~/.ssh/deploy $SSH_OPTS" \
             --exclude node_modules --exclude .next --exclude .git --exclude '*.log' \
             --exclude test-results --exclude playwright-report --exclude coverage \
-            apps/Phoenix-Predict-Combined/ root@"$BOX":/opt/phoenix/
+            apps/taptrade-platform/ root@"$BOX":/opt/phoenix/
 
       - name: Patch Caddyfile basic_auth hash on box
         # The committed Caddyfile keeps `admin REPLACE_WITH_BCRYPT_HASH` so the
@@ -158,9 +158,9 @@ jobs:
         run: |
           docker build \
             --build-arg "GOPROXY=https://goproxy.io|https://proxy.golang.org|direct" \
-            -f apps/Phoenix-Predict-Combined/go-platform/services/auth/Dockerfile \
+            -f apps/taptrade-platform/go-platform/services/auth/Dockerfile \
             -t taptrade-auth:latest \
-            apps/Phoenix-Predict-Combined/go-platform
+            apps/taptrade-platform/go-platform
           docker save taptrade-auth:latest | gzip -1 | \
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
               'gunzip | docker load'
@@ -193,9 +193,9 @@ jobs:
         run: |
           docker build \
             --build-arg "GOPROXY=https://goproxy.io|https://proxy.golang.org|direct" \
-            -f apps/Phoenix-Predict-Combined/go-platform/services/gateway/Dockerfile \
+            -f apps/taptrade-platform/go-platform/services/gateway/Dockerfile \
             -t taptrade-gateway:latest \
-            apps/Phoenix-Predict-Combined/go-platform
+            apps/taptrade-platform/go-platform
           docker save taptrade-gateway:latest | gzip -1 | \
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
               'gunzip | docker load'
@@ -316,7 +316,7 @@ jobs:
         # dependency install/build on the runner makes the box only receive a
         # completed Docker image before container recreation.
         run: |
-          docker build -f apps/Phoenix-Predict-Combined/talon-backoffice/docker/frontend.Dockerfile \
+          docker build -f apps/taptrade-platform/frontend/docker/frontend.Dockerfile \
             --build-arg module_name=app \
             --build-arg NEXT_PUBLIC_WS_URL=wss://demo.99rtp.io/ws \
             --build-arg NEXT_PUBLIC_FEATURE_CHAT=true \
@@ -324,7 +324,7 @@ jobs:
             --build-arg NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS=true \
             --build-arg NEXT_PUBLIC_HERO_AMBIENT_VIDEO=/brand/hero-ambient.mp4 \
             -t predict-frontend:app-slim \
-            apps/Phoenix-Predict-Combined/talon-backoffice
+            apps/taptrade-platform/frontend
           docker save predict-frontend:app-slim | gzip -1 | \
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
               'gunzip | docker load'
@@ -486,11 +486,11 @@ jobs:
         # Same pattern as player: build dependencies on the runner, then load a
         # completed image onto the box before recreating the office container.
         run: |
-          docker build -f apps/Phoenix-Predict-Combined/talon-backoffice/docker/frontend.Dockerfile \
+          docker build -f apps/taptrade-platform/frontend/docker/frontend.Dockerfile \
             --build-arg module_name=office \
             --build-arg NEXT_PUBLIC_WS_URL=wss://office.99rtp.io/ws \
             -t predict-frontend:office-slim \
-            apps/Phoenix-Predict-Combined/talon-backoffice
+            apps/taptrade-platform/frontend
           docker save predict-frontend:office-slim | gzip -1 | \
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
               'gunzip | docker load'

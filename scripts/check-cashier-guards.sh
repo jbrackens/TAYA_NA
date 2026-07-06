@@ -2,9 +2,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-APP_DIR="$ROOT/apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app"
+APP_DIR="$ROOT/apps/taptrade-platform/frontend/packages/app/app"
 NONCUSTODIAL_CLIENT="$APP_DIR/lib/api/noncustodial-cashier-client.ts"
-GATEWAY_DIR="$ROOT/apps/Phoenix-Predict-Combined/go-platform/services/gateway"
+GATEWAY_DIR="$ROOT/apps/taptrade-platform/go-platform/services/gateway"
 FRONTEND_CASHIER_PATHS=("$APP_DIR/lib/api")
 [ -d "$APP_DIR/cashier" ] && FRONTEND_CASHIER_PATHS+=("$APP_DIR/cashier")
 

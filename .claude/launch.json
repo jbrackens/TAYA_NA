@@ -7,7 +7,7 @@
       "runtimeArgs": ["next", "dev", "--webpack", "-p", "3010"],
       "port": 3010,
       "autoPort": false,
-      "cwd": "apps/Phoenix-Predict-Combined/talon-backoffice/packages/app",
+      "cwd": "apps/taptrade-platform/frontend/packages/app",
       "env": {
         "PORT": "3010",
         "NEXT_PUBLIC_API_URL": "http://localhost:18080",
@@ -21,7 +21,7 @@
       "runtimeArgs": ["next", "dev", "--webpack", "-p", "3001"],
       "port": 3001,
       "autoPort": false,
-      "cwd": "apps/Phoenix-Predict-Combined/talon-backoffice/packages/office",
+      "cwd": "apps/taptrade-platform/frontend/packages/office",
       "env": {
         "NEXT_PUBLIC_API_URL": "http://localhost:18080",
         "NEXT_PUBLIC_AUTH_URL": "http://localhost:18081"
@@ -29,6 +29,6 @@
     }
   ],
   "_notes": {
-    "infra": "PostgreSQL (5434), Redis (6380), Go Gateway (18080), and Go Auth (18081) are managed by `docker compose up` in apps/Phoenix-Predict-Combined — not by Claude Preview. If any of those ports are not listening, run `cd apps/Phoenix-Predict-Combined && docker compose up -d` from the repo root. They were removed from this file because Claude Preview's pre-flight port check treats external docker binds as conflicts and refuses to start any server."
+    "infra": "PostgreSQL (5434), Redis (6380), Go Gateway (18080), and Go Auth (18081) are managed by `docker compose up` in apps/taptrade-platform — not by Claude Preview. If any of those ports are not listening, run `cd apps/taptrade-platform && docker compose up -d` from the repo root. They were removed from this file because Claude Preview's pre-flight port check treats external docker binds as conflicts and refuses to start any server."
   }
 }

@@ -65,10 +65,10 @@
       "publicBetaBlocker": true,
       "description": "Beta trading geofence policy is explicit: permissive beta mode disables trading geo/KYC gates for Asia, Africa, and LATAM while requiring startup acknowledgement in production-like environments.",
       "evidence": [
-        "apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/http/pretrade_gate.go",
-        "apps/Phoenix-Predict-Combined/go-platform/services/gateway/cmd/gateway/main.go",
-        "apps/Phoenix-Predict-Combined/DEPLOYMENT.md",
-        "apps/Phoenix-Predict-Combined/docker-compose.demo.yml"
+        "apps/taptrade-platform/go-platform/services/gateway/internal/http/pretrade_gate.go",
+        "apps/taptrade-platform/go-platform/services/gateway/cmd/gateway/main.go",
+        "apps/taptrade-platform/DEPLOYMENT.md",
+        "apps/taptrade-platform/docker-compose.demo.yml"
       ]
     },
     {

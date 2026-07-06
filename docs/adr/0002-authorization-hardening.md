@@ -16,7 +16,7 @@ Two confirmed, independently catastrophic holes plus one footgun, in a **value-b
 
 `RoleFromContext` is set from the validated session (auth service); the header fallback bypasses that source of truth.
 
-Path shorthand: `gateway` = `apps/Phoenix-Predict-Combined/go-platform/services/gateway`.
+Path shorthand: `gateway` = `apps/taptrade-platform/go-platform/services/gateway`.
 
 ## Decision
 

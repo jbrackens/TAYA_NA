@@ -194,7 +194,7 @@ sequenceDiagram
 Create a new gateway migration:
 
 ```text
-apps/Phoenix-Predict-Combined/go-platform/services/gateway/migrations/030_alpha_cashier.sql
+apps/taptrade-platform/go-platform/services/gateway/migrations/030_alpha_cashier.sql
 ```
 
 Add matching rollback if the migration convention requires it.
@@ -395,7 +395,7 @@ Implement Stage 1 inside the Go gateway, not in the standalone `services/cashier
 Recommended package:
 
 ```text
-apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/alphacashier/
+apps/taptrade-platform/go-platform/services/gateway/internal/alphacashier/
 ```
 
 Use `alphacashier` rather than `cashier` so this Alpha custodial path does not blur with the existing `internal/cashier` non-custodial helper package.
@@ -453,7 +453,7 @@ Do not write custom cryptography unless a local, reviewed helper already exists.
 Wire config validation into:
 
 ```text
-apps/Phoenix-Predict-Combined/go-platform/services/gateway/cmd/gateway/main.go
+apps/taptrade-platform/go-platform/services/gateway/cmd/gateway/main.go
 ```
 
 Keep the existing production block on legacy `CRYPTO_*` variables.
@@ -637,7 +637,7 @@ If the tx sends the wrong amount, wrong asset, wrong recipient, or wrong sender,
 Use existing wallet ledger service:
 
 ```text
-apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/wallet/service.go
+apps/taptrade-platform/go-platform/services/gateway/internal/wallet/service.go
 ```
 
 Required behavior:
@@ -725,7 +725,7 @@ Stage 1 acceptance threshold:
 Primary app area:
 
 ```text
-apps/Phoenix-Predict-Combined/phoenix-frontend-brand-viegg/packages/app-core/
+apps/taptrade-platform/phoenix-frontend-brand-viegg/packages/app-core/
 ```
 
 Likely files to add:
@@ -770,7 +770,7 @@ Do not show "instant withdrawal" language in Stage 1.
 Backoffice area:
 
 ```text
-apps/Phoenix-Predict-Combined/talon-backoffice/packages/office/
+apps/taptrade-platform/frontend/packages/office/
 ```
 
 Likely files to add or extend:
@@ -869,14 +869,14 @@ Backend integration tests:
 - Run migration validation:
 
 ```sh
-cd apps/Phoenix-Predict-Combined
+cd apps/taptrade-platform
 make validate-go-migrations
 ```
 
 - Run Go tests:
 
 ```sh
-cd apps/Phoenix-Predict-Combined/go-platform/services/gateway
+cd apps/taptrade-platform/go-platform/services/gateway
 go test ./...
 ```
 
@@ -921,11 +921,11 @@ The Stage 1 handoff is the TapTrade Predict Go gateway Alpha cashier, not the ol
 `services/cashier-api` prototype and not the legacy `internal/payments`
 `CRYPTO_*` rail. The handoff surface is:
 
-- Gateway module: `apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/alphacashier/`.
-- Gateway migration: `apps/Phoenix-Predict-Combined/go-platform/services/gateway/migrations/030_alpha_cashier.sql`.
-- Player Alpha client/UI: `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app/cashier/`.
-- Backoffice review surface: `apps/Phoenix-Predict-Combined/talon-backoffice/packages/office/app/(dashboard)/cashier/page.tsx`, backed by `apps/Phoenix-Predict-Combined/talon-backoffice/packages/office/containers/provider-ops/cashier-review.tsx`.
-- Operator docs/env samples: this plan, `docs/cashier/README.md`, `apps/Phoenix-Predict-Combined/README.md`, `apps/Phoenix-Predict-Combined/DEVELOPMENT.md`, `apps/Phoenix-Predict-Combined/DEPLOYMENT.md`, and `apps/Phoenix-Predict-Combined/docker-compose.demo.yml`.
+- Gateway module: `apps/taptrade-platform/go-platform/services/gateway/internal/alphacashier/`.
+- Gateway migration: `apps/taptrade-platform/go-platform/services/gateway/migrations/030_alpha_cashier.sql`.
+- Player Alpha client/UI: `apps/taptrade-platform/frontend/packages/app/app/cashier/`.
+- Backoffice review surface: `apps/taptrade-platform/frontend/packages/office/app/(dashboard)/cashier/page.tsx`, backed by `apps/taptrade-platform/frontend/packages/office/containers/provider-ops/cashier-review.tsx`.
+- Operator docs/env samples: this plan, `docs/cashier/README.md`, `apps/taptrade-platform/README.md`, `apps/taptrade-platform/DEVELOPMENT.md`, `apps/taptrade-platform/DEPLOYMENT.md`, and `apps/taptrade-platform/docker-compose.demo.yml`.
 
 Remaining live-chain setup before inviting Alpha users:
 

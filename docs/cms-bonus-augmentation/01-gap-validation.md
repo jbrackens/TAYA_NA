@@ -168,9 +168,9 @@ All paths relative to repo root (`/Users/john/Sandbox/TAYA_NA/`):
 20. `services/codex-prep/taptrade-settlement/internal/service/service.go`
 
 **Frontend:**
-21. `apps/TapTrade-Sportsbook-Combined/talon-backoffice/packages/app/app/lib/api/wallet-client.ts`
-22. `apps/TapTrade-Sportsbook-Combined/talon-backoffice/packages/app/app/lib/api/betting-client.ts`
-23. `apps/TapTrade-Sportsbook-Combined/talon-backoffice/packages/app/app/components/BetslipProvider.tsx`
+21. `apps/TapTrade-Sportsbook-Combined/frontend/packages/app/app/lib/api/wallet-client.ts`
+22. `apps/TapTrade-Sportsbook-Combined/frontend/packages/app/app/lib/api/betting-client.ts`
+23. `apps/TapTrade-Sportsbook-Combined/frontend/packages/app/app/components/BetslipProvider.tsx`
 
 **WebSocket:**
 24. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/ws/handler.go`

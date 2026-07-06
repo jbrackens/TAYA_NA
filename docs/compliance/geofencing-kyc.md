@@ -6,7 +6,7 @@ default. Country list pending legal sign-off.
 **Date:** 2026-05-22 (boot policy + money-surface coverage added 2026-06-10)
 **Related:** ADR-0003/0004 (resolution + disputes), launch policy (crypto-native, outside-US).
 
-Path shorthand: `gateway` = `apps/Phoenix-Predict-Combined/go-platform/services/gateway`.
+Path shorthand: `gateway` = `apps/taptrade-platform/go-platform/services/gateway`.
 
 ## What ships now
 

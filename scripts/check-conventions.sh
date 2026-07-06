@@ -19,9 +19,9 @@ set -f
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-APP="apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app"
-APIC="apps/Phoenix-Predict-Combined/talon-backoffice/packages/api-client/src"
-PRED="apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/prediction"
+APP="apps/taptrade-platform/frontend/packages/app/app"
+APIC="apps/taptrade-platform/frontend/packages/api-client/src"
+PRED="apps/taptrade-platform/go-platform/services/gateway/internal/prediction"
 TS="--include=*.ts --include=*.tsx"
 TEST_RE="\.test\.|\.spec\.|__tests__|/tests/"
 

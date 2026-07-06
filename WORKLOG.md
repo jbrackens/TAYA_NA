@@ -184,3 +184,12 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
   exclusion now baked into every future pass.
 - VERIFIED: go build all modules green; go test gateway+auth+platform ALL GREEN;
   qa script bash -n OK.
+- EXECUTED Batch J (directories, history-preserving git mv):
+  apps/Phoenix-Predict-Combined → apps/taptrade-platform;
+  talon-backoffice → frontend. 123 path-reference files rewritten in the same change
+  (deploy workflow trigger filter + rsync source, Dockerfile paths, preservation-gate
+  classification paths, CLAUDE.md, lerna/workspace docs, scripts). VERIFIED: deploy
+  YAML valid; go build all modules green; tsc green; app gate.sh ALL GATES PASSED;
+  bash -n on stack/gate scripts OK. Box path /opt/phoenix intentionally unchanged
+  (allowlisted, cutover runbook). FIRST POST-MERGE DEPLOY MUST BE WATCHED (path filter
+  changed — verify the workflow still triggers).

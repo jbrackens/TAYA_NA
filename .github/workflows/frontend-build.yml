@@ -7,14 +7,14 @@ name: Frontend Build
 on:
   pull_request:
     paths:
-      - 'apps/Phoenix-Predict-Combined/talon-backoffice/**'
+      - 'apps/taptrade-platform/frontend/**'
 
 jobs:
   clean-clone-build:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: apps/Phoenix-Predict-Combined/talon-backoffice
+        working-directory: apps/taptrade-platform/frontend
 
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'yarn'
-          cache-dependency-path: apps/Phoenix-Predict-Combined/talon-backoffice/yarn.lock
+          cache-dependency-path: apps/taptrade-platform/frontend/yarn.lock
 
       - name: Install dependencies (workspace root)
         run: yarn install --frozen-lockfile
@@ -39,9 +39,9 @@ jobs:
         run: yarn workspace @taptrade-ui/app typecheck
 
       - name: Unit tests (player app)
-        working-directory: apps/Phoenix-Predict-Combined/talon-backoffice/packages/app
+        working-directory: apps/taptrade-platform/frontend/packages/app
         run: npm test
 
       - name: Production build (player app)
-        working-directory: apps/Phoenix-Predict-Combined/talon-backoffice/packages/app
+        working-directory: apps/taptrade-platform/frontend/packages/app
         run: yarn build

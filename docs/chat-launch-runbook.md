@@ -214,7 +214,7 @@ Run:
 
 ```sh
 go test ./...
-yarn --cwd apps/Phoenix-Predict-Combined/talon-backoffice/packages/app typecheck:full
+yarn --cwd apps/taptrade-platform/frontend/packages/app typecheck:full
 docker compose --profile chat-spike \
   -f services/codex-prep/docker-compose.yml \
   -f services/codex-prep/docker-compose.demo.yml \

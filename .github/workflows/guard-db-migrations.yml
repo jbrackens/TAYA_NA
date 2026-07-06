@@ -9,15 +9,15 @@ on:
   push:
     branches: [main]
     paths:
-      - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/migrations/**'
-      - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/cmd/migrate/**'
-      - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/cmd/seed/**'
+      - 'apps/taptrade-platform/go-platform/services/gateway/migrations/**'
+      - 'apps/taptrade-platform/go-platform/services/gateway/cmd/migrate/**'
+      - 'apps/taptrade-platform/go-platform/services/gateway/cmd/seed/**'
       - '.github/workflows/guard-db-migrations.yml'
   pull_request:
     paths:
-      - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/migrations/**'
-      - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/cmd/migrate/**'
-      - 'apps/Phoenix-Predict-Combined/go-platform/services/gateway/cmd/seed/**'
+      - 'apps/taptrade-platform/go-platform/services/gateway/migrations/**'
+      - 'apps/taptrade-platform/go-platform/services/gateway/cmd/migrate/**'
+      - 'apps/taptrade-platform/go-platform/services/gateway/cmd/seed/**'
       - '.github/workflows/guard-db-migrations.yml'
 
 jobs:
@@ -41,7 +41,7 @@ jobs:
       GATEWAY_DB_DSN: postgres://predict:localdev@localhost:5432/predict?sslmode=disable
     defaults:
       run:
-        working-directory: apps/Phoenix-Predict-Combined/go-platform/services/gateway
+        working-directory: apps/taptrade-platform/go-platform/services/gateway
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5

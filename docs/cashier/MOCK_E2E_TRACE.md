@@ -128,7 +128,7 @@ Run:
 
 ```bash
 scripts/check-cashier-all.sh
-PATH="$PWD/apps/Phoenix-Predict-Combined/talon-backoffice/node_modules/.bin:$PATH" npm --prefix packages/cashier-sdk run build
+PATH="$PWD/apps/taptrade-platform/frontend/node_modules/.bin:$PATH" npm --prefix packages/cashier-sdk run build
 node scripts/replay-cashier-mock-e2e.mjs
 ```
 

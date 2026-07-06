@@ -305,8 +305,8 @@ Everything in MVP plus:
 5. `services/gateway/internal/loyalty/service.go` — existing pattern for new bonus module
 6. `services/gateway/cmd/gateway/main.go` — Phase A route registration, Phase E scheduler start
 7. `services/gateway/migrations/` — Phases A, B, C migrations
-8. `talon-backoffice/packages/app/app/components/BetslipProvider.tsx` — Phase D betslip extension
-9. `talon-backoffice/packages/app/app/components/CurrentBalance.tsx` — Phase D replace with WalletBreakdown
-10. `talon-backoffice/packages/office/app/(dashboard)/` — Phase B backoffice admin pages
-11. `talon-backoffice/packages/app/app/lib/api/` — Phase D new API clients
-12. `talon-backoffice/packages/app/public/static/locales/en/` — Phase D i18n files
+8. `frontend/packages/app/app/components/BetslipProvider.tsx` — Phase D betslip extension
+9. `frontend/packages/app/app/components/CurrentBalance.tsx` — Phase D replace with WalletBreakdown
+10. `frontend/packages/office/app/(dashboard)/` — Phase B backoffice admin pages
+11. `frontend/packages/app/app/lib/api/` — Phase D new API clients
+12. `frontend/packages/app/public/static/locales/en/` — Phase D i18n files

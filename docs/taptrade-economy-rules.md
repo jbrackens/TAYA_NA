@@ -894,7 +894,7 @@ Local commit hooks and developer governance checks must follow the TapTrade laun
 
 ## Loop 338 Player Frontend Verify Rule
 
-Frontend verification targets used by release or governance automation must validate the launch player app, not the retired sportsbook app tree. Compatibility target names may remain stable, but the verifier should run TapTrade player typecheck, production build, and upstream-leak checks against `talon-backoffice/packages/app` and must not certify launch readiness by building sportsbook-only betslip, odds-feed, cashier, or deposit/withdrawal surfaces.
+Frontend verification targets used by release or governance automation must validate the launch player app, not the retired sportsbook app tree. Compatibility target names may remain stable, but the verifier should run TapTrade player typecheck, production build, and upstream-leak checks against `frontend/packages/app` and must not certify launch readiness by building sportsbook-only betslip, odds-feed, cashier, or deposit/withdrawal surfaces.
 
 ## Loop 339 API Contract Verifier Rule
 
@@ -906,7 +906,7 @@ Sports-named QA targets may remain as compatibility aliases for inherited automa
 
 ## Loop 341 Managed Runtime Gate Rule
 
-Managed local stacks and runtime-profile release gates must start and wait for the launch TapTrade player app, not the retired sportsbook app tree. Legacy env names such as `SPORTSBOOK_PORT` may remain as compatibility aliases for old automation, and stale legacy pid files may be stopped defensively, but active start/status/log/wait steps should use TapTrade player naming, `talon-backoffice/packages/app`, `PLAYER_PORT`, and the TapTrade discovery/API compatibility gate.
+Managed local stacks and runtime-profile release gates must start and wait for the launch TapTrade player app, not the retired sportsbook app tree. Legacy env names such as `SPORTSBOOK_PORT` may remain as compatibility aliases for old automation, and stale legacy pid files may be stopped defensively, but active start/status/log/wait steps should use TapTrade player naming, `frontend/packages/app`, `PLAYER_PORT`, and the TapTrade discovery/API compatibility gate.
 
 ## Loop 342 Release Security Evidence Rule
 

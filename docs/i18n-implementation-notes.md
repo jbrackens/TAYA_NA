@@ -4,7 +4,7 @@
 
 This work applies to the Player app in:
 
-`apps/Phoenix-Predict-Combined/phoenix-frontend-brand-viegg`
+`apps/taptrade-platform/phoenix-frontend-brand-viegg`
 
 The goal is to localize static product UI copy while leaving dynamic market, user, CMS, chat, notification, and creator-submitted content in its source language.
 
@@ -106,13 +106,13 @@ Dynamic translation should be designed as a separate cached, asynchronous servic
 6. Run locale generation after dependencies are bootstrapped:
 
 ```sh
-yarn --cwd apps/Phoenix-Predict-Combined/phoenix-frontend-brand-viegg/packages/app bootstrap:locales
+yarn --cwd apps/taptrade-platform/phoenix-frontend-brand-viegg/packages/app bootstrap:locales
 ```
 
 7. Run the relevant tests after dependencies are bootstrapped:
 
 ```sh
-yarn --cwd apps/Phoenix-Predict-Combined/phoenix-frontend-brand-viegg/packages/app-core test lib/i18n/__tests__/locales.test.ts --runInBand
+yarn --cwd apps/taptrade-platform/phoenix-frontend-brand-viegg/packages/app-core test lib/i18n/__tests__/locales.test.ts --runInBand
 ```
 
 ## Implementation Shape

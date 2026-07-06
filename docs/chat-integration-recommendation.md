@@ -35,7 +35,7 @@ only embedding control.
 ## Codebase Findings
 
 - Frontend: the active player surface is the Next.js App Router app at
-  `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app`, running Next
+  `apps/taptrade-platform/frontend/packages/app`, running Next
   16 and React 19. The older React 17 branded app remains in the repo but is
   not the first v1 target.
 - Shell: the prediction app uses a top nav and centered market content inside a
