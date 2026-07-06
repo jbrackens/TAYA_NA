@@ -632,27 +632,36 @@ export default function HomePage() {
           </div>
         </section>
 
-        <footer className="border-t border-white/10 bg-[#050706] px-8 py-10 text-white/64 max-[720px]:px-5">
+        <footer className="border-t border-white/10 bg-[#050706] px-8 pb-8 pt-6 text-white/64 max-[720px]:px-5">
           <div className="mx-auto max-w-[1180px]">
-            <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2 text-sm leading-none max-[760px]:justify-start">
+            <div className="flex flex-wrap items-center justify-end gap-x-3 max-[760px]:justify-start">
               {FOOTER_LINKS.map((item, index) => (
                 <Fragment key={`${item.href}-${item.labelKey}`}>
                   {index > 0 ? (
-                    <span className="text-[var(--t3)]">·</span>
+                    <span className="text-[var(--t3)]" aria-hidden="true">
+                      ·
+                    </span>
                   ) : null}
                   <Link
                     href={item.href}
-                    className="text-white/64 hover:text-white"
+                    className="inline-flex min-h-11 items-center text-sm text-white/64 transition-colors duration-150 hover:text-white"
                   >
                     {t(item.labelKey)}
                   </Link>
                 </Fragment>
               ))}
             </div>
-            <div className="mt-8 border-t border-white/10 pt-6">
-              <p className="m-0 text-[clamp(64px,15vw,192px)] font-black leading-[0.9] tracking-normal text-[var(--accent)] [font-family:'Inter_Tight','Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
+            <div className="mt-6 border-t border-white/10 pt-8">
+              <p className="m-0 text-[clamp(56px,13vw,168px)] font-bold leading-[0.95] tracking-[-0.03em] text-[var(--brand-on-dark)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
                 {brand.name}
+                <span className="text-[var(--brand-period-dark)]">.</span>
               </p>
+              <div className="mt-6 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1.5 text-[13px] text-white/40">
+                <span>{t("footer.tagline")}</span>
+                <span>
+                  © {new Date().getFullYear()} {brand.legalEntity}
+                </span>
+              </div>
             </div>
           </div>
         </footer>
