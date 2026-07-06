@@ -152,3 +152,14 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
   green, full ./services/gateway/... suite green (exit 0).
 - Discovery: TWO Go modules carry the codename (phoenix-revival/gateway AND
   phoenix-revival/auth) — Batch H covers both.
+- RENDERED CHECK (backoffice, :3014): title "TapTrade Backoffice | Admin Panel",
+  sign-in page shows TapTrade branding, ZERO legacy strings — VERIFIED after fixing a
+  real batch-G gap the check exposed: fresh worktrees need workspace dist builds
+  (packages/utils tsc) + a clean office .next cache; office resolves @taptrade-ui/*
+  correctly once built. (gate.sh covers only the app package — office verification is
+  rendered/e2e territory; noted for the final sweep.)
+- GATE EVIDENCE: security secrets scan ran clean (baseline artifacts regenerated into
+  revival/ by the preservation tooling — reverted from MY branch: the archive updates
+  belong to governance runs on main, not the rebrand branch). Manifest/OG/meta and
+  public asset FILENAMES verified free of legacy tokens across app+office (GOAL #4
+  asset criteria).
