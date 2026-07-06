@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/platform/transport/httpx"
 )
 
 func TestKYCAdminDecisionReasonRejectsMoneyWordingBeforeService(t *testing.T) {

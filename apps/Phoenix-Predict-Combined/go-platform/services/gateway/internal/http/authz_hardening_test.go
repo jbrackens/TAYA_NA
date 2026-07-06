@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/platform/transport/httpx"
 )
 
 // These tests lock in the ADR-0002 authorization hardening: admin authority

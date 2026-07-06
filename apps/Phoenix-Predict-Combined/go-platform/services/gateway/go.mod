@@ -1,4 +1,4 @@
-module phoenix-revival/gateway
+module taptrade/gateway
 
 go 1.25.0
 
@@ -16,7 +16,7 @@ require (
 	go.opentelemetry.io/otel/sdk v1.43.0
 	go.opentelemetry.io/otel/trace v1.43.0
 	golang.org/x/crypto v0.49.0
-	phoenix-revival/platform v0.0.0
+	taptrade/platform v0.0.0
 )
 
 require (
@@ -61,4 +61,4 @@ require (
 	google.golang.org/protobuf v1.36.11 // indirect
 )
 
-replace phoenix-revival/platform => ../../modules/platform
+replace taptrade/platform => ../../modules/platform

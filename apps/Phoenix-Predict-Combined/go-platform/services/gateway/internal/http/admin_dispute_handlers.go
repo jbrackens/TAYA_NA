@@ -6,9 +6,9 @@ import (
 	stdhttp "net/http"
 	"strings"
 
-	"phoenix-revival/gateway/internal/prediction"
-	"phoenix-revival/gateway/internal/prediction/feed"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/prediction"
+	"taptrade/gateway/internal/prediction/feed"
+	"taptrade/platform/transport/httpx"
 )
 
 // resolutionSourceHealthReporter is the slice of the AutoSettler the admin

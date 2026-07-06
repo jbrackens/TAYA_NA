@@ -9,7 +9,7 @@ const AUTH_FILE = path.join(__dirname, "..", ".auth", "predict-user.json");
 
 setup("authenticate demo player", async ({ request }) => {
   const res = await request.post("/api/v1/auth/login", {
-    data: { username: "demo@phoenix.local", password: "demo123" },
+    data: { username: "demo@taptrade.local", password: "demo123" },
   });
   expect(
     res.ok(),

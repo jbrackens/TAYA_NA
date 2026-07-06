@@ -11,10 +11,10 @@ import (
 	"testing"
 	"time"
 
-	"phoenix-revival/gateway/internal/alphacashier"
-	"phoenix-revival/gateway/internal/rbac"
-	"phoenix-revival/gateway/internal/wallet"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/alphacashier"
+	"taptrade/gateway/internal/rbac"
+	"taptrade/gateway/internal/wallet"
+	"taptrade/platform/transport/httpx"
 )
 
 func TestAlphaCashierAdminRoutesExposeDepositsAndAudit(t *testing.T) {

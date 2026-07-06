@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"math"
 	"os"
-	"phoenix-revival/gateway/internal/events"
+	"taptrade/gateway/internal/events"
 	"strings"
 	"testing"
 	"time"

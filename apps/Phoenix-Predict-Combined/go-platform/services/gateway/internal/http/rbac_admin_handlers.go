@@ -7,8 +7,8 @@ import (
 	stdhttp "net/http"
 	"strings"
 
-	"phoenix-revival/gateway/internal/rbac"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/rbac"
+	"taptrade/platform/transport/httpx"
 )
 
 // registerRBACAdminRoutes wires the back-office Role-Based Access Control admin

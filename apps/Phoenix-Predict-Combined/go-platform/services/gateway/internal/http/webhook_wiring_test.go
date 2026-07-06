@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"phoenix-revival/gateway/internal/prediction"
-	"phoenix-revival/gateway/internal/webhooks"
+	"taptrade/gateway/internal/prediction"
+	"taptrade/gateway/internal/webhooks"
 )
 
 type captureEnqueuer struct {

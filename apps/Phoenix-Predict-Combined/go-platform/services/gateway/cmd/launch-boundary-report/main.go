@@ -9,8 +9,8 @@ import (
 	"slices"
 	"strings"
 
-	gatewayhttp "phoenix-revival/gateway/internal/http"
-	"phoenix-revival/platform/transport/httpx"
+	gatewayhttp "taptrade/gateway/internal/http"
+	"taptrade/platform/transport/httpx"
 )
 
 const legacyMoneyRoutesEnv = "TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED"

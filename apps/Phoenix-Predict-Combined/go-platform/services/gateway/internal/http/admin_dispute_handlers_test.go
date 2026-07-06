@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"phoenix-revival/gateway/internal/prediction/feed"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/prediction/feed"
+	"taptrade/platform/transport/httpx"
 )
 
 func TestResolutionSourceHealthRouteRedactsUnsafeLastErrorOnRead(t *testing.T) {

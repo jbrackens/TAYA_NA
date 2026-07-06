@@ -18,7 +18,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-const tracerName = "phoenix-revival/gateway"
+const tracerName = "taptrade/gateway"
 
 // Init configures the global OTel TracerProvider based on environment variables.
 //

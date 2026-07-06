@@ -11,13 +11,13 @@ import (
 	"strings"
 	"syscall"
 
-	"phoenix-revival/gateway/internal/alphacashier"
-	gatewayhttp "phoenix-revival/gateway/internal/http"
-	"phoenix-revival/gateway/internal/tenant"
-	"phoenix-revival/gateway/internal/tracing"
-	"phoenix-revival/platform/logging"
-	"phoenix-revival/platform/runtime"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/alphacashier"
+	gatewayhttp "taptrade/gateway/internal/http"
+	"taptrade/gateway/internal/tenant"
+	"taptrade/gateway/internal/tracing"
+	"taptrade/platform/logging"
+	"taptrade/platform/runtime"
+	"taptrade/platform/transport/httpx"
 
 	_ "github.com/lib/pq" // Register PostgreSQL driver for database/sql
 )

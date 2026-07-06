@@ -10,7 +10,7 @@ import (
 	stdhttp "net/http"
 	"strings"
 
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/platform/transport/httpx"
 )
 
 // registerPredictPrivacyRoutes wires the user-scoped privacy preferences

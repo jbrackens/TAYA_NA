@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"phoenix-revival/gateway/internal/compliance"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/compliance"
+	"taptrade/platform/transport/httpx"
 )
 
 type stubPaymentService struct {

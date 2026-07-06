@@ -86,7 +86,7 @@ export default function CreateUserModal({
             { type: "email", message: "Enter a valid email" },
           ]}
         >
-          <Input placeholder="jane@phoenix.local" autoComplete="off" />
+          <Input placeholder="jane@taptrade.local" autoComplete="off" />
         </Form.Item>
         <Form.Item
           label="Temporary password"

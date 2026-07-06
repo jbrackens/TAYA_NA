@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"phoenix-revival/gateway/internal/wallet"
+	"taptrade/gateway/internal/wallet"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"

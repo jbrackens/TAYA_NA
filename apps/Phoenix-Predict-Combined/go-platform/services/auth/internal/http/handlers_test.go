@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/platform/transport/httpx"
 )
 
 func TestRegisterAcceptsShortUsernameAndSevenCharacterPassword(t *testing.T) {
@@ -155,7 +155,7 @@ func TestRegisterSessionIncludesTapTradeDisclosureAcceptance(t *testing.T) {
 }
 
 func TestLoginSessionAndMetricsFlow(t *testing.T) {
-	t.Setenv("AUTH_DEMO_USERNAME", "demo@phoenix.local")
+	t.Setenv("AUTH_DEMO_USERNAME", "demo@taptrade.local")
 	t.Setenv("AUTH_DEMO_PASSWORD", "Password123!")
 
 	auth := NewAuthService()
@@ -164,7 +164,7 @@ func TestLoginSessionAndMetricsFlow(t *testing.T) {
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
 	loginPayload, _ := json.Marshal(map[string]string{
-		"username": "demo@phoenix.local",
+		"username": "demo@taptrade.local",
 		"password": "Password123!",
 	})
 	loginReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login", bytes.NewBuffer(loginPayload))
@@ -213,7 +213,7 @@ func TestLoginSessionAndMetricsFlow(t *testing.T) {
 }
 
 func TestRefreshRotatesTokensAndRevokesOldRefreshToken(t *testing.T) {
-	t.Setenv("AUTH_DEMO_USERNAME", "demo@phoenix.local")
+	t.Setenv("AUTH_DEMO_USERNAME", "demo@taptrade.local")
 	t.Setenv("AUTH_DEMO_PASSWORD", "Password123!")
 
 	auth := NewAuthService()
@@ -222,7 +222,7 @@ func TestRefreshRotatesTokensAndRevokesOldRefreshToken(t *testing.T) {
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
 	loginPayload, _ := json.Marshal(map[string]string{
-		"username": "demo@phoenix.local",
+		"username": "demo@taptrade.local",
 		"password": "Password123!",
 	})
 	loginReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login", bytes.NewBuffer(loginPayload))
@@ -265,7 +265,7 @@ func TestRefreshRotatesTokensAndRevokesOldRefreshToken(t *testing.T) {
 }
 
 func TestLoginRejectsInvalidCredentials(t *testing.T) {
-	t.Setenv("AUTH_DEMO_USERNAME", "demo@phoenix.local")
+	t.Setenv("AUTH_DEMO_USERNAME", "demo@taptrade.local")
 	t.Setenv("AUTH_DEMO_PASSWORD", "Password123!")
 
 	auth := NewAuthService()
@@ -274,7 +274,7 @@ func TestLoginRejectsInvalidCredentials(t *testing.T) {
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
 	loginPayload, _ := json.Marshal(map[string]string{
-		"username": "demo@phoenix.local",
+		"username": "demo@taptrade.local",
 		"password": "wrong-password",
 	})
 	loginReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login", bytes.NewBuffer(loginPayload))
@@ -299,7 +299,7 @@ func TestLoginRejectsInvalidCredentials(t *testing.T) {
 }
 
 func TestChangePasswordAndToggleTwoFactor(t *testing.T) {
-	t.Setenv("AUTH_DEMO_USERNAME", "demo@phoenix.local")
+	t.Setenv("AUTH_DEMO_USERNAME", "demo@taptrade.local")
 	t.Setenv("AUTH_DEMO_PASSWORD", "Password123!")
 
 	auth := NewAuthService()
@@ -308,7 +308,7 @@ func TestChangePasswordAndToggleTwoFactor(t *testing.T) {
 	handler := httpx.Chain(mux, httpx.NormalizeTrailingSlash("/api/", "/auth/"), httpx.RequestID(), httpx.Recovery(nil))
 
 	loginPayload, _ := json.Marshal(map[string]string{
-		"username": "demo@phoenix.local",
+		"username": "demo@taptrade.local",
 		"password": "Password123!",
 	})
 	loginReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login", bytes.NewBuffer(loginPayload))
@@ -344,7 +344,7 @@ func TestChangePasswordAndToggleTwoFactor(t *testing.T) {
 	}
 
 	newLoginPayload, _ := json.Marshal(map[string]string{
-		"username": "demo@phoenix.local",
+		"username": "demo@taptrade.local",
 		"password": "UpdatedPassword123",
 	})
 	newLoginReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login", bytes.NewBuffer(newLoginPayload))

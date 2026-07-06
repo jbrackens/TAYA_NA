@@ -10,14 +10,14 @@ prediction-market app that uses non-redeemable gameplay points only.
 
 ## Quick Start
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/go-platform
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/TapTrade-Predict-Combined/go-platform
 go work sync
 go test ./...
 ```
 
 ## Run Starter Services
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/go-platform
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/TapTrade-Predict-Combined/go-platform
 go run ./services/gateway/cmd/gateway
 go run ./services/auth/cmd/auth
 ```

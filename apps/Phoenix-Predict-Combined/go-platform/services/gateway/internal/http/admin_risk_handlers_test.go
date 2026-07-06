@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"phoenix-revival/gateway/internal/prediction"
+	"taptrade/gateway/internal/prediction"
 )
 
 func TestWriteRiskSnapshotCSVUsesPointAccountingLabels(t *testing.T) {

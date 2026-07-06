@@ -12,10 +12,10 @@ import (
 
 	_ "github.com/lib/pq" // Register PostgreSQL driver so AUTH_STORE_MODE=db works
 
-	authhttp "phoenix-revival/auth/internal/http"
-	"phoenix-revival/platform/logging"
-	"phoenix-revival/platform/runtime"
-	"phoenix-revival/platform/transport/httpx"
+	authhttp "taptrade/auth/internal/http"
+	"taptrade/platform/logging"
+	"taptrade/platform/runtime"
+	"taptrade/platform/transport/httpx"
 )
 
 func main() {

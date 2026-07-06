@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	canonicalv1 "phoenix-revival/platform/canonical/v1"
-	"phoenix-revival/platform/transport/httpx"
+	canonicalv1 "taptrade/platform/canonical/v1"
+	"taptrade/platform/transport/httpx"
 )
 
 func TestLoyaltyRoutesExposeAccountLedgerAndTiers(t *testing.T) {

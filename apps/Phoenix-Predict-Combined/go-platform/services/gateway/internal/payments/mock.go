@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"phoenix-revival/gateway/internal/wallet"
+	"taptrade/gateway/internal/wallet"
 )
 
 // MockPaymentService is an in-memory mock implementation for dev/demo

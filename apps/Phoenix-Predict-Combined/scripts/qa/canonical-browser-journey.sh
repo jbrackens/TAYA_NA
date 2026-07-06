@@ -48,7 +48,7 @@ write_report() {
     echo
     echo "- Requires a running seeded player stack at \`PREDICT_BASE_URL\`."
     echo "- Requires the player same-origin \`/api/v1/status\` proxy to reach the gateway."
-    echo "- Requires seeded credentials for \`demo@phoenix.local\` and \`admin@phoenix.local\`."
+    echo "- Requires seeded credentials for \`demo@taptrade.local\` and \`admin@taptrade.local\`."
     echo "- Does not start or seed the stack itself."
     echo
     echo "## Result Note"

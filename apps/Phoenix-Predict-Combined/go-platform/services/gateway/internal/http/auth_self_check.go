@@ -3,7 +3,7 @@ package http
 import (
 	stdhttp "net/http"
 
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/platform/transport/httpx"
 )
 
 // requireSelfOrAdmin enforces that a private user-scoped endpoint can only

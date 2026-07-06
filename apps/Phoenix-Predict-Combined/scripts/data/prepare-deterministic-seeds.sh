@@ -52,7 +52,7 @@ cat >"$ENV_FILE" <<EOF
 export GATEWAY_READ_MODEL_FILE="$READ_MODEL_OUT"
 export WALLET_LEDGER_FILE="$WALLET_OUT"
 export BET_STORE_FILE="$BETS_OUT"
-export AUTH_DEMO_USERNAME="seed.admin@phoenix.local"
+export AUTH_DEMO_USERNAME="seed.admin@taptrade.local"
 export AUTH_DEMO_PASSWORD="SeedPassword!2026"
 EOF
 
@@ -83,7 +83,7 @@ bets_sha="$(shasum -a 256 "$BETS_OUT" | awk '{print $1}')"
   echo
   echo "Seeded credentials:"
   echo
-  echo "- Username: \`seed.admin@phoenix.local\`"
+  echo "- Username: \`seed.admin@taptrade.local\`"
   echo "- Password: \`SeedPassword!2026\`"
   echo
   echo "Seed artifacts:"

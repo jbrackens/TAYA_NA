@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"phoenix-revival/gateway/internal/bonus"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/bonus"
+	"taptrade/platform/transport/httpx"
 )
 
 func registerBonusRoutes(mux *stdhttp.ServeMux, svc *bonus.Service) {

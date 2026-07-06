@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"phoenix-revival/gateway/internal/wallet"
+	"taptrade/gateway/internal/wallet"
 )
 
 // walletTopUp ensures every demo user has at least the configured point target

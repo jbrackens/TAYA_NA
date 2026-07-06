@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	SchemaName  = "phoenix.canonical.sportsbook"
+	SchemaName  = "taptrade.canonical.sportsbook"
 	SchemaMajor = 1
 	SchemaMinor = 0
 	SchemaPatch = 0

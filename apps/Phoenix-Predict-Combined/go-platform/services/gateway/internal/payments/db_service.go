@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"phoenix-revival/gateway/internal/wallet"
+	"taptrade/gateway/internal/wallet"
 )
 
 const paymentDBTimeout = 5 * time.Second

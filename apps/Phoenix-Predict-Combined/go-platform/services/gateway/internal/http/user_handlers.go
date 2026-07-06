@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"phoenix-revival/gateway/internal/compliance"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/compliance"
+	"taptrade/platform/transport/httpx"
 )
 
 // profileKYCProvider supplies the real KYC status for the user profile.
@@ -149,7 +149,7 @@ func registerUserRoutes(mux *stdhttp.ServeMux) {
 			return httpx.Forbidden("not authorized to view this profile")
 		}
 
-		// The username in the auth service is the email address (e.g. demo@phoenix.local)
+		// The username in the auth service is the email address (e.g. demo@taptrade.local)
 		// Derive a display username from the email prefix
 		email := session.Username
 		displayUsername := email

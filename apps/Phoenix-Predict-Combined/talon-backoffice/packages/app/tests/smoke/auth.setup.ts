@@ -18,7 +18,7 @@ import { dirname } from "node:path";
  */
 
 const AUTH_FILE = "./tests/.auth/demo.json";
-const DEMO_EMAIL = "demo@phoenix.local";
+const DEMO_EMAIL = "demo@taptrade.local";
 const DEMO_PASSWORD = "demo123";
 
 setup("authenticate demo user", async ({ page }) => {

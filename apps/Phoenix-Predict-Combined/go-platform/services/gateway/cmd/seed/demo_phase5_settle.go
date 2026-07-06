@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"phoenix-revival/gateway/internal/prediction"
+	"taptrade/gateway/internal/prediction"
 )
 
 // Phase 5 settles a sample of markets so the demo has filled History +

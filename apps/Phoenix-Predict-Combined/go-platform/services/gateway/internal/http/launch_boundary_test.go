@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"phoenix-revival/gateway/internal/prediction"
-	"phoenix-revival/gateway/internal/prediction/feed"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/prediction"
+	"taptrade/gateway/internal/prediction/feed"
+	"taptrade/platform/transport/httpx"
 )
 
 func TestLegacyMoneyRoutesAreAbsentByDefault(t *testing.T) {

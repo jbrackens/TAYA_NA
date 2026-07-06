@@ -10,7 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 
-	"phoenix-revival/gateway/internal/wallet"
+	"taptrade/gateway/internal/wallet"
 )
 
 // Audit A2-03: alphacashier credits a deposit after a fixed confirmation count

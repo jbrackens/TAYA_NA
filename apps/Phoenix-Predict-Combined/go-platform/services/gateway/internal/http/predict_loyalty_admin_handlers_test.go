@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"phoenix-revival/gateway/internal/loyalty"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/loyalty"
+	"taptrade/platform/transport/httpx"
 )
 
 // fakeAdminLoyaltyRepo implements loyalty.PredictRepo PLUS the admin-reader
@@ -67,7 +67,7 @@ func adminReq(method, path, body string) *stdhttp.Request {
 	} else {
 		r = httptest.NewRequest(method, path, strings.NewReader(body))
 	}
-	return r.WithContext(httpx.WithTestUser(r.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	return r.WithContext(httpx.WithTestUser(r.Context(), "admin-1", "admin@taptrade.local", "admin"))
 }
 
 func TestLoyaltyAdminAccountsList(t *testing.T) {

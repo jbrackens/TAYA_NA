@@ -20,7 +20,7 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/platform/transport/httpx"
 )
 
 const (
@@ -192,13 +192,13 @@ func NewAuthService() *AuthService {
 		}
 	} else {
 		if demoUsername == "" {
-			demoUsername = "demo@phoenix.local"
+			demoUsername = "demo@taptrade.local"
 		}
 		if demoPassword == "" {
 			demoPassword = "demo123"
 		}
 		if adminUsername == "" {
-			adminUsername = "admin@phoenix.local"
+			adminUsername = "admin@taptrade.local"
 		}
 		if adminPassword == "" {
 			adminPassword = "admin123"

@@ -14,7 +14,7 @@ func TestFileBackedSessionStoreRoundTrip(t *testing.T) {
 	refreshToken := "rtk_test_refresh"
 	s := session{
 		UserID:             "user-demo",
-		Username:           "demo@phoenix.local",
+		Username:           "demo@taptrade.local",
 		AccessTokenDigest:  digestToken(accessToken),
 		RefreshTokenDigest: digestToken(refreshToken),
 		AccessUntil:        time.Now().UTC().Add(15 * time.Minute),
@@ -46,7 +46,7 @@ func TestFileBackedSessionStoreDeleteByRefreshRemovesAccessEntry(t *testing.T) {
 	refreshToken := "rtk_test_refresh"
 	s := session{
 		UserID:             "user-demo",
-		Username:           "demo@phoenix.local",
+		Username:           "demo@taptrade.local",
 		AccessTokenDigest:  digestToken(accessToken),
 		RefreshTokenDigest: digestToken(refreshToken),
 		AccessUntil:        time.Now().UTC().Add(15 * time.Minute),
@@ -81,7 +81,7 @@ func TestFileBackedSessionStorePrunesExpiredAccessButKeepsRefresh(t *testing.T) 
 	refreshToken := "rtk_valid"
 	s := session{
 		UserID:             "user-demo",
-		Username:           "demo@phoenix.local",
+		Username:           "demo@taptrade.local",
 		AccessTokenDigest:  digestToken(accessToken),
 		RefreshTokenDigest: digestToken(refreshToken),
 		AccessUntil:        time.Now().UTC().Add(-1 * time.Minute),

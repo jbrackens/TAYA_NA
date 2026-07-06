@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/platform/transport/httpx"
 )
 
 type marketComment struct {

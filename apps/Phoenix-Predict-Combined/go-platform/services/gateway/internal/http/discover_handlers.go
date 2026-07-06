@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"phoenix-revival/gateway/internal/discover"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/discover"
+	"taptrade/platform/transport/httpx"
 )
 
 // registerDiscoverRoutes mounts GET /api/v1/discover. Phase-1 product feed:

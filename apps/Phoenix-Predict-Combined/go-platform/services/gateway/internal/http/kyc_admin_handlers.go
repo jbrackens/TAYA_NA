@@ -6,8 +6,8 @@ import (
 	stdhttp "net/http"
 	"strings"
 
-	"phoenix-revival/gateway/internal/compliance"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/compliance"
+	"taptrade/platform/transport/httpx"
 )
 
 type kycAdminDecisionRequest struct {

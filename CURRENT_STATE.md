@@ -37,7 +37,7 @@ Cron: 0dadff9f (*/15) · Exit condition: see GOAL in WORKLOG header.
    talon-backoffice → frontend. Both touch CI workflows, deploy rsync paths, Dockerfiles.
 3. HIGH-RISK cross-boundary list (compat shims required): docker images
    (phoenix-gateway/phoenix-auth/predict-frontend), compose service/container names,
-   Go module path, npm scope, deploy-demo.yml paths, seed emails (*@phoenix.local),
+   Go module path, npm scope, deploy-demo.yml paths, seed emails (*@taptrade.local),
    NEXT_PUBLIC_* unchanged (no legacy tokens found in env keys yet — verify).
 
 ## Phase status

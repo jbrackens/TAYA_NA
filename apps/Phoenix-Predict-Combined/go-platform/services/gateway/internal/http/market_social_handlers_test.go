@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/platform/transport/httpx"
 
 	_ "github.com/lib/pq"
 )

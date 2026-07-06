@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"log/slog"
 
-	"phoenix-revival/gateway/internal/prediction"
-	"phoenix-revival/gateway/internal/webhooks"
+	"taptrade/gateway/internal/prediction"
+	"taptrade/gateway/internal/webhooks"
 )
 
 // webhookEnqueuer is the narrow slice of the webhooks store the HTTP layer

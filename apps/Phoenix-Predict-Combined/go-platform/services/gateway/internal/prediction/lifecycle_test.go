@@ -96,7 +96,7 @@ func TestIsTerminal(t *testing.T) {
 	}
 }
 
-func TestDescribeTianggeMarketLifecycleMapsLaunchStages(t *testing.T) {
+func TestDescribeTapTradeMarketLifecycleMapsLaunchStages(t *testing.T) {
 	cases := []struct {
 		status        MarketStatus
 		stage         string
@@ -118,7 +118,7 @@ func TestDescribeTianggeMarketLifecycleMapsLaunchStages(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		got := DescribeTianggeMarketLifecycle(tc.status)
+		got := DescribeTapTradeMarketLifecycle(tc.status)
 		if got.Stage != tc.stage || got.Label != tc.label {
 			t.Fatalf("%s mapped to stage=%q label=%q, want stage=%q label=%q", tc.status, got.Stage, got.Label, tc.stage, tc.label)
 		}
@@ -147,7 +147,7 @@ func TestDescribeTianggeMarketLifecycleMapsLaunchStages(t *testing.T) {
 	}
 }
 
-func TestDescribeTianggeMarketLifecycleUsesPointNativeCopy(t *testing.T) {
+func TestDescribeTapTradeMarketLifecycleUsesPointNativeCopy(t *testing.T) {
 	prohibited := regexp.MustCompile(`(?i)\b(cash|cashout|deposit|withdraw|withdrawal|crypto|fiat|money|payout|payouts|prize|redeem|sportsbook|wager|wagering|bet)\b`)
 
 	statuses := []MarketStatus{
@@ -161,7 +161,7 @@ func TestDescribeTianggeMarketLifecycleUsesPointNativeCopy(t *testing.T) {
 		MarketStatusVoided,
 	}
 	for _, status := range statuses {
-		got := DescribeTianggeMarketLifecycle(status)
+		got := DescribeTapTradeMarketLifecycle(status)
 		if prohibited.MatchString(got.Description) {
 			t.Fatalf("%s lifecycle description uses launch-prohibited copy: %q", status, got.Description)
 		}

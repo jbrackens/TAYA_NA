@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"phoenix-revival/gateway/internal/loyalty"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/loyalty"
+	"taptrade/platform/transport/httpx"
 )
 
 // registerPredictLoyaltyRoutes wires the Predict-native loyalty HTTP surface.

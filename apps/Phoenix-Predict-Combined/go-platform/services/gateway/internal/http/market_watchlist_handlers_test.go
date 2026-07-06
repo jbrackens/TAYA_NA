@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/platform/transport/httpx"
 )
 
 func TestMarketWatchlistRequiresSessionUser(t *testing.T) {

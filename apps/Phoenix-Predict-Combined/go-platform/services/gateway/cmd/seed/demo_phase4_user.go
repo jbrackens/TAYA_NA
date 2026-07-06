@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	"phoenix-revival/gateway/internal/prediction"
+	"taptrade/gateway/internal/prediction"
 )
 
 // Phase 4 places 12 market BUY orders for the demo user (u-1) across

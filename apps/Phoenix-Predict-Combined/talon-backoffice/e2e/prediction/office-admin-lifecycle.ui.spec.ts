@@ -63,9 +63,9 @@ async function loginOffice(page: Page, officeBaseUrl: string): Promise<void> {
   await expect(page.getByRole("heading", { name: "Backoffice" })).toBeVisible();
   const email = page.locator('input[type="email"]');
   const password = page.locator('input[type="password"]');
-  await email.fill("admin@phoenix.local");
+  await email.fill("admin@taptrade.local");
   await password.fill("admin123");
-  await expect(email).toHaveValue("admin@phoenix.local");
+  await expect(email).toHaveValue("admin@taptrade.local");
   await expect(password).toHaveValue("admin123");
   await Promise.all([
     page.waitForResponse(
@@ -99,7 +99,7 @@ test("office admin opens, closes, and audits a prediction market through the bro
 
   const adminAuth = await login(
     request,
-    "admin@phoenix.local",
+    "admin@taptrade.local",
     "admin123",
     adminApiBase,
   );

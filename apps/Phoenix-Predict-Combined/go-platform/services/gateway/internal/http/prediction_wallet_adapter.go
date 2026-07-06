@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"phoenix-revival/gateway/internal/prediction"
-	"phoenix-revival/gateway/internal/wallet"
+	"taptrade/gateway/internal/prediction"
+	"taptrade/gateway/internal/wallet"
 )
 
 // PredictionWalletAdapter bridges the prediction platform's WalletAdapter

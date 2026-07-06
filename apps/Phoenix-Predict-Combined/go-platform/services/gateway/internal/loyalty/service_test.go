@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"phoenix-revival/gateway/internal/leaderboards"
-	canonicalv1 "phoenix-revival/platform/canonical/v1"
+	"taptrade/gateway/internal/leaderboards"
+	canonicalv1 "taptrade/platform/canonical/v1"
 )
 
 func TestAccrueSettledBetCreatesAccountAndLedgerEntry(t *testing.T) {

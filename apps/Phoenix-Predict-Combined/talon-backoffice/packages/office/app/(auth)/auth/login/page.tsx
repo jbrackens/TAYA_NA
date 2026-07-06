@@ -142,7 +142,7 @@ function LoginForm() {
             </label>
             <input
               type="email"
-              placeholder="admin@phoenix.local"
+              placeholder="admin@taptrade.local"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={inputClassName}

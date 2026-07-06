@@ -13,9 +13,9 @@ type TapTradeLifecycleAction struct {
 	Destructive    bool         `json:"destructive"`
 }
 
-// TianggeMarketLifecycle maps legacy engine statuses to the launch-facing
+// TapTradeMarketLifecycle maps legacy engine statuses to the launch-facing
 // lifecycle language used in the TapTrade backoffice.
-type TianggeMarketLifecycle struct {
+type TapTradeMarketLifecycle struct {
 	Stage          string                   `json:"stage"`
 	Label          string                   `json:"label"`
 	Description    string                   `json:"description"`
@@ -73,12 +73,12 @@ func IsTerminal(status MarketStatus) bool {
 	return status == MarketStatusSettled || status == MarketStatusVoided
 }
 
-// DescribeTianggeMarketLifecycle returns the status mapping the launch
+// DescribeTapTradeMarketLifecycle returns the status mapping the launch
 // backoffice should render. It does not change the persisted engine status.
-func DescribeTianggeMarketLifecycle(status MarketStatus) TianggeMarketLifecycle {
+func DescribeTapTradeMarketLifecycle(status MarketStatus) TapTradeMarketLifecycle {
 	switch status {
 	case MarketStatusUnopened:
-		return TianggeMarketLifecycle{
+		return TapTradeMarketLifecycle{
 			Stage:       "draft",
 			Label:       "Draft",
 			Description: "Not yet published. Admins can open or cancel before users can trade.",
@@ -90,7 +90,7 @@ func DescribeTianggeMarketLifecycle(status MarketStatus) TianggeMarketLifecycle 
 			},
 		}
 	case MarketStatusOpen:
-		return TianggeMarketLifecycle{
+		return TapTradeMarketLifecycle{
 			Stage:       "open",
 			Label:       "Open",
 			Description: "Published and accepting prediction orders.",
@@ -103,7 +103,7 @@ func DescribeTianggeMarketLifecycle(status MarketStatus) TianggeMarketLifecycle 
 			},
 		}
 	case MarketStatusHalted:
-		return TianggeMarketLifecycle{
+		return TapTradeMarketLifecycle{
 			Stage:       "paused",
 			Label:       "Paused",
 			Description: "Visible but not accepting new orders until resumed or closed.",
@@ -116,7 +116,7 @@ func DescribeTianggeMarketLifecycle(status MarketStatus) TianggeMarketLifecycle 
 			},
 		}
 	case MarketStatusClosed:
-		return TianggeMarketLifecycle{
+		return TapTradeMarketLifecycle{
 			Stage:       "closed",
 			Label:       "Closed",
 			Description: "Trading is closed. The market is ready for resolution or invalidation.",
@@ -129,7 +129,7 @@ func DescribeTianggeMarketLifecycle(status MarketStatus) TianggeMarketLifecycle 
 			},
 		}
 	case MarketStatusProposedResolution:
-		return TianggeMarketLifecycle{
+		return TapTradeMarketLifecycle{
 			Stage:       "resolving",
 			Label:       "Resolving",
 			Description: "A resolution has been proposed and is awaiting challenge-window finalization.",
@@ -141,7 +141,7 @@ func DescribeTianggeMarketLifecycle(status MarketStatus) TianggeMarketLifecycle 
 			},
 		}
 	case MarketStatusDisputed:
-		return TianggeMarketLifecycle{
+		return TapTradeMarketLifecycle{
 			Stage:       "resolving",
 			Label:       "Disputed",
 			Description: "Resolution is disputed and must be finalized or invalidated by admins.",
@@ -153,7 +153,7 @@ func DescribeTianggeMarketLifecycle(status MarketStatus) TianggeMarketLifecycle 
 			},
 		}
 	case MarketStatusSettled:
-		return TianggeMarketLifecycle{
+		return TapTradeMarketLifecycle{
 			Stage:       "settled",
 			Label:       "Settled",
 			Description: "Final result and point disbursements are recorded.",
@@ -161,7 +161,7 @@ func DescribeTianggeMarketLifecycle(status MarketStatus) TianggeMarketLifecycle 
 			Terminal:    true,
 		}
 	case MarketStatusVoided:
-		return TianggeMarketLifecycle{
+		return TapTradeMarketLifecycle{
 			Stage:       "invalid",
 			Label:       "Invalid",
 			Description: "Market is canceled or invalidated and no longer accepts actions.",
@@ -169,7 +169,7 @@ func DescribeTianggeMarketLifecycle(status MarketStatus) TianggeMarketLifecycle 
 			Terminal:    true,
 		}
 	default:
-		return TianggeMarketLifecycle{
+		return TapTradeMarketLifecycle{
 			Stage:       string(status),
 			Label:       string(status),
 			Description: "Unknown lifecycle state.",

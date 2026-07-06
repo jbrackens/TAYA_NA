@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"phoenix-revival/gateway/internal/rbac"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/rbac"
+	"taptrade/platform/transport/httpx"
 )
 
 // rbacHandlerFake is a minimal rbac.Repository for handler-level tests: it drives

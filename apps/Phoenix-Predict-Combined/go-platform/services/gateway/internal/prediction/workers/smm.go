@@ -91,7 +91,7 @@ import (
 	"strconv"
 	"time"
 
-	"phoenix-revival/gateway/internal/prediction"
+	"taptrade/gateway/internal/prediction"
 )
 
 // SMMConfig is the bot's per-run configuration. Loaded from env in

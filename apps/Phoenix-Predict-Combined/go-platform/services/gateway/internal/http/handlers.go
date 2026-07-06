@@ -13,30 +13,30 @@ import (
 	"strings"
 	"time"
 
-	"phoenix-revival/gateway/internal/alphacashier"
-	"phoenix-revival/gateway/internal/bonus"
-	"phoenix-revival/gateway/internal/compliance"
-	"phoenix-revival/gateway/internal/content"
-	"phoenix-revival/gateway/internal/discover"
-	"phoenix-revival/gateway/internal/events"
-	"phoenix-revival/gateway/internal/leaderboards"
-	"phoenix-revival/gateway/internal/livemarkets"
-	"phoenix-revival/gateway/internal/loyalty"
-	"phoenix-revival/gateway/internal/notify"
-	"phoenix-revival/gateway/internal/payments"
-	"phoenix-revival/gateway/internal/prediction"
-	"phoenix-revival/gateway/internal/prediction/feed"
-	"phoenix-revival/gateway/internal/prediction/workers"
-	"phoenix-revival/gateway/internal/rbac"
-	"phoenix-revival/gateway/internal/wallet"
-	"phoenix-revival/gateway/internal/webhooks"
-	"phoenix-revival/gateway/internal/ws"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/alphacashier"
+	"taptrade/gateway/internal/bonus"
+	"taptrade/gateway/internal/compliance"
+	"taptrade/gateway/internal/content"
+	"taptrade/gateway/internal/discover"
+	"taptrade/gateway/internal/events"
+	"taptrade/gateway/internal/leaderboards"
+	"taptrade/gateway/internal/livemarkets"
+	"taptrade/gateway/internal/loyalty"
+	"taptrade/gateway/internal/notify"
+	"taptrade/gateway/internal/payments"
+	"taptrade/gateway/internal/prediction"
+	"taptrade/gateway/internal/prediction/feed"
+	"taptrade/gateway/internal/prediction/workers"
+	"taptrade/gateway/internal/rbac"
+	"taptrade/gateway/internal/wallet"
+	"taptrade/gateway/internal/webhooks"
+	"taptrade/gateway/internal/ws"
+	"taptrade/platform/transport/httpx"
 
 	"github.com/redis/go-redis/v9"
 )
 
-const legacyAssetPriceFeedsEnv = "TIANGGE_LEGACY_ASSET_PRICE_FEEDS_ENABLED"
+const legacyAssetPriceFeedsEnv = "TAPTRADE_LEGACY_ASSET_PRICE_FEEDS_ENABLED"
 
 func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	walletService := wallet.NewServiceFromEnv()
@@ -469,7 +469,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		registerAlphaCashierAdminRoutes(mux, alphaCashierService, rbacService)
 		slog.Info("alpha cashier: routes registered", "enabled", alphaCashierConfig.Enabled, "chain", alphaCashierConfig.ChainName)
 	} else {
-		slog.Info("legacy money routes disabled for Tiangge launch", "env", legacyMoneyRoutesEnv)
+		slog.Info("legacy money routes disabled for TapTrade launch", "env", legacyMoneyRoutesEnv)
 	}
 
 	// --- Account/User Routes ---
@@ -519,7 +519,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	tradeGeoGate = compliance.NewGeoGateFromEnv()
 	tradeKYCGate = kycService
 	// Legacy guarded routes run through the same geo gate as trading. Their
-	// registration is still controlled by the Tiangge legacy-route opt-in; see
+	// registration is still controlled by the TapTrade legacy-route opt-in; see
 	// docs/compliance/geofencing-kyc.md for the compliance posture.
 	alphacashier.ComplianceGate = checkComplianceGates
 	payments.ComplianceGate = checkComplianceGates
@@ -566,7 +566,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 			slog.Info("payments: crypto rail registered", "network", cryptoRail.Network(), "asset", cryptoRail.Asset(), "configured", cryptoRail.Configured())
 		}
 	} else {
-		slog.Info("legacy payment routes disabled for Tiangge launch", "env", legacyMoneyRoutesEnv)
+		slog.Info("legacy payment routes disabled for TapTrade launch", "env", legacyMoneyRoutesEnv)
 	}
 
 	// --- Loyalty / Rewards ---
@@ -604,7 +604,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// were never wired into RegisterRoutes. Public delivery routes
 	// (/api/v1/content/, /api/v1/banners) come along for the player app.
 	// The bonus service's optional legacy promo granter is deliberately not set:
-	// sportsbook-style promo issuance is outside the Tiangge launch economy;
+	// sportsbook-style promo issuance is outside the TapTrade launch economy;
 	// campaigns/bonuses CRUD works without it.
 	if walletDB := walletService.DB(); walletDB != nil {
 		registerContentRoutes(mux, content.NewService(walletDB))
@@ -768,9 +768,9 @@ func marketImagePublicRoot() string {
 		return ""
 	}
 	candidates := []string{
-		filepath.Join(cwd, "talon-backoffice", "packages", "app", "public"),
-		filepath.Join(cwd, "..", "..", "..", "talon-backoffice", "packages", "app", "public"),
-		filepath.Join(cwd, "..", "..", "talon-backoffice", "packages", "app", "public"),
+		filepath.Join(cwd, "office-backoffice", "packages", "app", "public"),
+		filepath.Join(cwd, "..", "..", "..", "office-backoffice", "packages", "app", "public"),
+		filepath.Join(cwd, "..", "..", "office-backoffice", "packages", "app", "public"),
 	}
 	for _, candidate := range candidates {
 		abs, err := filepath.Abs(candidate)

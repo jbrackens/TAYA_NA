@@ -16,17 +16,17 @@ const PLAYER_PAGES = [
 async function loginPlayer(context) {
   // call auth API directly — sets cookies on this context
   const resp = await context.request.post('http://localhost:18081/api/v1/auth/login', {
-    data: { username: 'demo@phoenix.local', password: 'demo123' },
+    data: { username: 'demo@taptrade.local', password: 'demo123' },
     headers: { 'Content-Type': 'application/json' },
   });
   if (!resp.ok()) throw new Error(`player login failed ${resp.status()}`);
 }
 
 async function loginOffice(context) {
-  // backoffice should accept admin@phoenix.local / admin123 — try both shapes
+  // backoffice should accept admin@taptrade.local / admin123 — try both shapes
   const tries = [
-    { username: 'admin@phoenix.local', password: 'admin123' },
-    { email: 'admin@phoenix.local', password: 'admin123' },
+    { username: 'admin@taptrade.local', password: 'admin123' },
+    { email: 'admin@taptrade.local', password: 'admin123' },
   ];
   for (const body of tries) {
     const resp = await context.request.post('http://localhost:18081/api/v1/auth/login', {

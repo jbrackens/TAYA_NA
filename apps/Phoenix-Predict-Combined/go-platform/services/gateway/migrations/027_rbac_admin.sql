@@ -14,7 +14,7 @@
 -- This migration seeds ONLY environment-agnostic policy (roles, permissions,
 -- and their default mappings). It deliberately does NOT seed any admin_users or
 -- role assignments: those are identity/credential data, and because enforcement
--- binds by email while the auth service auto-seeds admin@phoenix.local, seeding
+-- binds by email while the auth service auto-seeds admin@taptrade.local, seeding
 -- a bootstrap super-admin here would grant full back-office control to that
 -- account in production. Dev bootstrap staff are seeded by cmd/seed (a dev-only
 -- tool); production provisions its first super-admin out-of-band (see the note
@@ -126,7 +126,7 @@ ON CONFLICT (role_id, permission_id) DO NOTHING;
 -- admin_users + role assignments are identity/credential data, not reference
 -- data, so they must not be created in a migration that runs in every
 -- environment (that was a privilege-escalation: enforcement binds by email and
--- the auth service auto-seeds admin@phoenix.local, so a super-admin seeded here
+-- the auth service auto-seeds admin@taptrade.local, so a super-admin seeded here
 -- would grant full back-office control to that account in production).
 --
 -- Dev: seeded by cmd/seed via seed-data/seed_prediction.sql (a dev-only tool).

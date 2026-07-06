@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"phoenix-revival/gateway/internal/prediction"
+	"taptrade/gateway/internal/prediction"
 )
 
 func pastTime() time.Time { return time.Now().UTC().Add(-24 * time.Hour) }

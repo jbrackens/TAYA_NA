@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"phoenix-revival/gateway/internal/prediction"
+	"taptrade/gateway/internal/prediction"
 )
 
 // TestProviderOpsAuditSurfacesInAdminLogs verifies that a provider-ops audit entry

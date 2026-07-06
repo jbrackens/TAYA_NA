@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"phoenix-revival/gateway/internal/compliance"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/compliance"
+	"taptrade/platform/transport/httpx"
 )
 
 // DepositComplianceChecker is an optional interface for deposit limit checks.

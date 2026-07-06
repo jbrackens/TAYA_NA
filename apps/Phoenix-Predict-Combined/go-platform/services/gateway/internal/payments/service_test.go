@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"phoenix-revival/gateway/internal/wallet"
+	"taptrade/gateway/internal/wallet"
 )
 
 func seedWallet(t *testing.T, ws *wallet.Service, userID string, cents int64) {

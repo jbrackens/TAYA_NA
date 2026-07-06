@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"time"
 
-	"phoenix-revival/gateway/internal/prediction"
+	"taptrade/gateway/internal/prediction"
 )
 
 // MarketCloser polls for markets past their close_at time and transitions them to 'closed'.

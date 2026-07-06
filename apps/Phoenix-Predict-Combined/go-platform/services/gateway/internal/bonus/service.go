@@ -8,8 +8,8 @@ import (
 	"log/slog"
 	"time"
 
-	"phoenix-revival/gateway/internal/events"
-	"phoenix-revival/gateway/internal/wallet"
+	"taptrade/gateway/internal/events"
+	"taptrade/gateway/internal/wallet"
 )
 
 // Bonus point / multiplier bounds. These are deliberately conservative

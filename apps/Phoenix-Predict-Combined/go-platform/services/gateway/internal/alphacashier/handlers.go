@@ -7,9 +7,9 @@ import (
 	"regexp"
 	"strings"
 
-	"phoenix-revival/gateway/internal/compliance"
-	"phoenix-revival/gateway/internal/wallet"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/compliance"
+	"taptrade/gateway/internal/wallet"
+	"taptrade/platform/transport/httpx"
 )
 
 // ComplianceGate gates money movement (deposit/withdraw surfaces) behind the

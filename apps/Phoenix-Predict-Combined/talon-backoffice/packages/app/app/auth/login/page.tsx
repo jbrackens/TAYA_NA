@@ -155,7 +155,7 @@ export default function LoginPage() {
           <aside className={DEV_CLASS}>
             <span className={DEV_EYEBROW_CLASS}>Local demo access</span>
             <p className="m-0 text-[13px] text-[var(--t2)]">
-              <span className={MONO_CLASS}>demo@phoenix.local</span> · password{" "}
+              <span className={MONO_CLASS}>demo@taptrade.local</span> · password{" "}
               <span className={MONO_CLASS}>demo123</span>
             </p>
           </aside>

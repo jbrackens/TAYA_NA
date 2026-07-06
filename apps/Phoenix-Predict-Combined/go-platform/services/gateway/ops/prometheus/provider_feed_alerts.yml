@@ -1,5 +1,5 @@
 groups:
-  - name: phoenix-provider-feed-slo
+  - name: taptrade-provider-feed-slo
     rules:
       - alert: PhoenixProviderRuntimeDown
         expr: phoenix_provider_runtime_enabled{service="gateway"} == 0
@@ -67,7 +67,7 @@ groups:
           summary: "Provider stream is in error state"
           description: "Provider runtime reports an active stream error for at least 30 seconds."
 
-  - name: phoenix-trading-quality
+  - name: taptrade-trading-quality
     rules:
       - alert: PhoenixAlternativeOfferCommitExpiryRatioLow
         expr: |

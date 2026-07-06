@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"phoenix-revival/gateway/internal/compliance"
-	"phoenix-revival/gateway/internal/prediction"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/compliance"
+	"taptrade/gateway/internal/prediction"
+	"taptrade/platform/transport/httpx"
 )
 
 type marketLifecycleRequest struct {
@@ -45,7 +45,7 @@ func decodeCreateMarketRequest(r *stdhttp.Request) (prediction.CreateMarketReque
 
 type marketLifecycleEventResponse struct {
 	prediction.LifecycleEvent
-	TianggeLifecycle prediction.TianggeMarketLifecycle `json:"tianggeLifecycle"`
+	TapTradeLifecycle prediction.TapTradeMarketLifecycle `json:"taptradeLifecycle"`
 }
 
 type portfolioHistoryItem struct {
@@ -103,7 +103,7 @@ type settlementOperationResponse struct {
 	PointDisbursements         []settlementPointDisbursement     `json:"pointDisbursements"`
 	TotalSettlementPointsCents int64                             `json:"totalSettlementPointsCents"`
 	Unit                       string                            `json:"unit"`
-	TianggeLifecycle           prediction.TianggeMarketLifecycle `json:"tianggeLifecycle"`
+	TapTradeLifecycle           prediction.TapTradeMarketLifecycle `json:"taptradeLifecycle"`
 }
 
 type adminCategoryRequest struct {
@@ -1022,7 +1022,7 @@ func settlementOperationPayload(settlement *prediction.Settlement, payouts []pre
 		PointDisbursements:         disbursements,
 		TotalSettlementPointsCents: settlementPayload.TotalSettlementPointsCents,
 		Unit:                       "PTS",
-		TianggeLifecycle:           prediction.DescribeTianggeMarketLifecycle(prediction.MarketStatusSettled),
+		TapTradeLifecycle:           prediction.DescribeTapTradeMarketLifecycle(prediction.MarketStatusSettled),
 	}
 }
 
@@ -1876,7 +1876,7 @@ func marketLifecycleResponse(marketID string, status prediction.MarketStatus, re
 		"marketId":         marketID,
 		"status":           status,
 		"reason":           reason,
-		"tianggeLifecycle": prediction.DescribeTianggeMarketLifecycle(status),
+		"taptradeLifecycle": prediction.DescribeTapTradeMarketLifecycle(status),
 	}
 }
 
@@ -1889,7 +1889,7 @@ func lifecycleAuditEventResponses(events []prediction.LifecycleEvent) []marketLi
 		event = redactLifecycleEventResponse(event)
 		out = append(out, marketLifecycleEventResponse{
 			LifecycleEvent:   event,
-			TianggeLifecycle: prediction.DescribeTianggeMarketLifecycle(prediction.MarketStatus(event.EventType)),
+			TapTradeLifecycle: prediction.DescribeTapTradeMarketLifecycle(prediction.MarketStatus(event.EventType)),
 		})
 	}
 	return out
@@ -1915,7 +1915,7 @@ func writeAdminMarketsCSV(w stdhttp.ResponseWriter, markets []prediction.Market)
 		"ticker",
 		"title",
 		"status",
-		"tiangge_stage",
+		"taptrade_stage",
 		"result",
 		"execution_mode",
 		"yes_price_cents",
@@ -1937,7 +1937,7 @@ func writeAdminMarketsCSV(w stdhttp.ResponseWriter, markets []prediction.Market)
 		if market.Result != nil {
 			result = string(*market.Result)
 		}
-		lifecycle := prediction.DescribeTianggeMarketLifecycle(market.Status)
+		lifecycle := prediction.DescribeTapTradeMarketLifecycle(market.Status)
 		if err := writer.Write([]string{
 			csvSafeCell(market.ID),
 			csvSafeCell(market.EventID),
@@ -1977,8 +1977,8 @@ func writeLifecycleAuditCSV(w stdhttp.ResponseWriter, marketID string, events []
 		"id",
 		"market_id",
 		"event_type",
-		"tiangge_stage",
-		"tiangge_label",
+		"taptrade_stage",
+		"taptrade_label",
 		"actor_id",
 		"actor_type",
 		"reason",
@@ -1992,8 +1992,8 @@ func writeLifecycleAuditCSV(w stdhttp.ResponseWriter, marketID string, events []
 			csvSafeCell(event.ID),
 			csvSafeCell(event.MarketID),
 			csvSafeCell(event.EventType),
-			csvSafeCell(string(event.TianggeLifecycle.Stage)),
-			csvSafeCell(event.TianggeLifecycle.Label),
+			csvSafeCell(string(event.TapTradeLifecycle.Stage)),
+			csvSafeCell(event.TapTradeLifecycle.Label),
 			csvSafeCell(stringPtrValue(event.ActorID)),
 			csvSafeCell(event.ActorType),
 			csvSafeCell(stringPtrValue(event.Reason)),

@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"phoenix-revival/gateway/internal/prediction"
-	"phoenix-revival/gateway/internal/prediction/feed"
+	"taptrade/gateway/internal/prediction"
+	"taptrade/gateway/internal/prediction/feed"
 )
 
 // fakeWorkerRepo embeds prediction.Repository so it satisfies the full

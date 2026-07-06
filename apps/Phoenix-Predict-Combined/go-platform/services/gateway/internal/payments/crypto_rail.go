@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/platform/transport/httpx"
 )
 
 // ErrRailNotConfigured is returned by every CryptoRail operation until the

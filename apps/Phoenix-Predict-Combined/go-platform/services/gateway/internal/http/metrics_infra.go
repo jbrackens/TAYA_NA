@@ -5,8 +5,8 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"phoenix-revival/gateway/internal/alphacashier"
-	"phoenix-revival/gateway/internal/ws"
+	"taptrade/gateway/internal/alphacashier"
+	"taptrade/gateway/internal/ws"
 )
 
 // auditWriteFailures counts provider-ops audit-log persistence failures

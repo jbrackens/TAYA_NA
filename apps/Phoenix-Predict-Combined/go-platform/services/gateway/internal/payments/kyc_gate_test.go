@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"phoenix-revival/gateway/internal/compliance"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/compliance"
+	"taptrade/platform/transport/httpx"
 )
 
 // fakeKYC is a controllable compliance.KYCService for gate tests.

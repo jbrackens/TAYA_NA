@@ -191,7 +191,7 @@ test("new user completes the canonical player browser journey through settlement
     `market lookup (got ${marketRes.status()})`,
   ).toBeTruthy();
   const market = await marketRes.json();
-  const adminCsrf = await login(request, "admin@phoenix.local", "admin123");
+  const adminCsrf = await login(request, "admin@taptrade.local", "admin123");
   const close = await request.post(
     `/api/v1/admin/markets/${market.id}/lifecycle/close`,
     {

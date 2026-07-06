@@ -1,4 +1,4 @@
--- Tiangge prediction-native social layer.
+-- TapTrade prediction-native social layer.
 -- Points-only gameplay social data: market comments, reactions, reports, and follows.
 
 -- +goose Up

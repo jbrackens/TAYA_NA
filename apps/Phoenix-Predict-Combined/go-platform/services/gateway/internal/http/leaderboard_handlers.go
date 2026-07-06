@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"phoenix-revival/gateway/internal/leaderboards"
-	canonicalv1 "phoenix-revival/platform/canonical/v1"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/leaderboards"
+	canonicalv1 "taptrade/platform/canonical/v1"
+	"taptrade/platform/transport/httpx"
 )
 
 type leaderboardDefinitionRequest struct {

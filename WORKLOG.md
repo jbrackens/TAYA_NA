@@ -86,16 +86,16 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
   go-regression-pack.sh (coupled to a frozen Go test name), and intentional compat
   shims (allowlisted). The tiangge token phase is COMPLETE-PENDING-UNFREEZE.
 - NEXT: Phase 2 concrete planning for phoenix/talon (npm scope @taptrade-ui, Go module
-  path, docker image names, seed emails @phoenix.local, PhoenixApiClient class,
+  path, docker image names, seed emails @taptrade.local, PhoenixApiClient class,
   Phoenix-Predict-Combined + talon-backoffice directory renames LAST).
 
 ## Iteration 6 — 2026-07-06 (EXECUTION MODE engaged; job b56e063b)
 - EXECUTED Batch E: phoenix/talon prose in 37 living .md docs, with masked protection
   for path/scope/module/image/class/archive tokens (each has its own later batch) —
   VERIFIED zero accidental protected-token rewrites in the diff.
-- DECISION: @phoenix.local seed emails move to Batch H (atomic with the frozen Go
+- DECISION: @taptrade.local seed emails move to Batch H (atomic with the frozen Go
   seeder) — renaming doc/test references before the seeder would break login flows
-  that use demo@phoenix.local against local auth.
+  that use demo@taptrade.local against local auth.
 - EXECUTED Batch F (identifiers): TapTradeApiClient is now the class,
   PhoenixApiClient a @deprecated alias (assertion sites — wallet-paths test +
   preservation dossier — flipped atomically); TALON_* env family →
@@ -135,7 +135,7 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
   brand tokens in summaries rather than measured data); remaining PhoenixApiClient doc
   mentions are true references to the live deprecated alias.
 - STATE: pre-unfreeze batches EXHAUSTED. Active scope is grep-clean except deferred
-  patterns (paths→J, phoenix.local+module+Go→H, allowlisted pins/shims/records).
+  patterns (paths→J, taptrade.local+module+Go→H, allowlisted pins/shims/records).
   Loop iterations until task_633e7ad3 lands: re-verify residuals only, then H→J→final.
 - RENDERED CHECK (mid-run, player app on :3013 against demo API): wordmark
   "TapTrade.", document titles "TapTrade", ZERO legacy strings
@@ -163,3 +163,24 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
   belong to governance runs on main, not the rebrand branch). Manifest/OG/meta and
   public asset FILENAMES verified free of legacy tokens across app+office (GOAL #4
   asset criteria).
+
+## Iteration 8 — 2026-07-06/07 (owner: "no visible progress" — custody + unfreeze + Batch H)
+- VISIBILITY FIX (owner-facing): pushed chore/rebrand-taptrade (15 commits) and the new
+  wip/scrubbed-markets-backend checkpoint branch to origin — work is now on GitHub.
+- CUSTODY: backend task_633e7ad3 VERIFIED stalled (newest file mtime 3.7h old, zero
+  open handles). Its 26 modified + 5 new files checkpointed VERBATIM on
+  wip/scrubbed-markets-backend (unreviewed, labeled WIP); primary checkout restored to
+  clean main. That task must rebase over the rebrand when resumed.
+- EXECUTED Batch H (go-platform unfrozen): all three Go modules renamed
+  phoenix-revival/{gateway,auth,platform} → taptrade/{gateway,auth,platform} (142 files);
+  TianggeMarketLifecycle→TapTradeMarketLifecycle identifier family (4 Go files + the
+  coupled go-regression-pack.sh + spec.md); remaining go-platform legacy strings
+  scrubbed (30 files); migration 046 renamed tiangge→taptrade (goose tracks numeric
+  versions — VERIFIED no DML carries brand strings, so NO data migration needed;
+  comments scrubbed); @phoenix.local→@taptrade.local across the whole active scope
+  atomically with the Go/auth seeders (30 files).
+- SELF-CORRECTION: the identifier pass touched the ledger docs again (map must show
+  legacy names) — repaired; root cause is any git-grep-over-repo file list; ledger
+  exclusion now baked into every future pass.
+- VERIFIED: go build all modules green; go test gateway+auth+platform ALL GREEN;
+  qa script bash -n OK.

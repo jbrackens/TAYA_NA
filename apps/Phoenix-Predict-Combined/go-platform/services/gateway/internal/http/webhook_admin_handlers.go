@@ -11,9 +11,9 @@ import (
 	"regexp"
 	"strings"
 
-	"phoenix-revival/gateway/internal/rbac"
-	"phoenix-revival/gateway/internal/webhooks"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/rbac"
+	"taptrade/gateway/internal/webhooks"
+	"taptrade/platform/transport/httpx"
 )
 
 // webhookEndpointStore is the narrow slice of webhooks.Store the admin routes

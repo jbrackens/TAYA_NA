@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"phoenix-revival/gateway/internal/prediction"
+	"taptrade/gateway/internal/prediction"
 )
 
 func TestMarketUpdatePayloadExposesPointAliases(t *testing.T) {

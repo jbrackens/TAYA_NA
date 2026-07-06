@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"time"
 
-	"phoenix-revival/gateway/internal/prediction"
+	"taptrade/gateway/internal/prediction"
 )
 
 // Reconciler runs the two-phase collateral check across all open

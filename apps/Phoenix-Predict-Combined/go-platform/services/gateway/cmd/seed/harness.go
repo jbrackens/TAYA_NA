@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	gatewayhttp "phoenix-revival/gateway/internal/http"
-	"phoenix-revival/gateway/internal/prediction"
-	"phoenix-revival/gateway/internal/wallet"
+	gatewayhttp "taptrade/gateway/internal/http"
+	"taptrade/gateway/internal/prediction"
+	"taptrade/gateway/internal/wallet"
 )
 
 // Harness wires the in-process objects the demo phases need to drive trades

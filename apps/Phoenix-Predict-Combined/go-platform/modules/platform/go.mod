@@ -1,4 +1,4 @@
-module phoenix-revival/platform
+module taptrade/platform
 
 go 1.24.0
 

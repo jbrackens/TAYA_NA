@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	canonicalv1 "phoenix-revival/platform/canonical/v1"
+	canonicalv1 "taptrade/platform/canonical/v1"
 )
 
 var (

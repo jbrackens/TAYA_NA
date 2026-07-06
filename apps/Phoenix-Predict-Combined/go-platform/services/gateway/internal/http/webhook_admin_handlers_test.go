@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"phoenix-revival/gateway/internal/webhooks"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/webhooks"
+	"taptrade/platform/transport/httpx"
 )
 
 // fakeWebhookStore implements webhookEndpointStore for handler tests.

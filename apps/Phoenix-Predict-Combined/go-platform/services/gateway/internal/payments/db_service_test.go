@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"phoenix-revival/gateway/internal/wallet"
+	"taptrade/gateway/internal/wallet"
 )
 
 // TestHandleWebhookTransactionalDeposit and TestHandleWebhookRejectsAmountMismatch

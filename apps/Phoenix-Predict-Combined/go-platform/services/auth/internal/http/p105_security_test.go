@@ -8,14 +8,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/platform/transport/httpx"
 )
 
 // Regression tests for IMPROVEMENT_PLAN.md P1-05 (audit SEC-01 / SEC-05).
 
 func newP105Harness(t *testing.T) http.Handler {
 	t.Helper()
-	t.Setenv("AUTH_DEMO_USERNAME", "demo@phoenix.local")
+	t.Setenv("AUTH_DEMO_USERNAME", "demo@taptrade.local")
 	t.Setenv("AUTH_DEMO_PASSWORD", "Password123!")
 	auth := NewAuthService()
 	mux := http.NewServeMux()
@@ -51,7 +51,7 @@ func p105SessionStatus(t *testing.T, handler http.Handler, accessToken string) i
 func TestLogoutRevokesSessionServerSide(t *testing.T) {
 	handler := newP105Harness(t)
 
-	token, loginRes := p105Login(t, handler, "demo@phoenix.local", "Password123!")
+	token, loginRes := p105Login(t, handler, "demo@taptrade.local", "Password123!")
 	if loginRes.Code != http.StatusOK || token == "" {
 		t.Fatalf("login failed: status=%d body=%s", loginRes.Code, loginRes.Body.String())
 	}
@@ -76,7 +76,7 @@ func TestLogoutRevokesSessionServerSide(t *testing.T) {
 func TestPasswordChangeRevokesSessions(t *testing.T) {
 	handler := newP105Harness(t)
 
-	token, loginRes := p105Login(t, handler, "demo@phoenix.local", "Password123!")
+	token, loginRes := p105Login(t, handler, "demo@taptrade.local", "Password123!")
 	if loginRes.Code != http.StatusOK || token == "" {
 		t.Fatalf("login failed: status=%d", loginRes.Code)
 	}
@@ -97,7 +97,7 @@ func TestPasswordChangeRevokesSessions(t *testing.T) {
 		t.Fatalf("old session still valid after password change: got %d, want 401", got)
 	}
 
-	if newToken, res := p105Login(t, handler, "demo@phoenix.local", "Password456!"); res.Code != http.StatusOK || newToken == "" {
+	if newToken, res := p105Login(t, handler, "demo@taptrade.local", "Password456!"); res.Code != http.StatusOK || newToken == "" {
 		t.Fatalf("login with new password failed: status=%d", res.Code)
 	}
 }
@@ -115,7 +115,7 @@ func TestSessionDeleteRequiresAuthAndOwnership(t *testing.T) {
 	}
 
 	// Authenticated but targeting a digest the caller doesn't own → 404.
-	token, _ := p105Login(t, handler, "demo@phoenix.local", "Password123!")
+	token, _ := p105Login(t, handler, "demo@taptrade.local", "Password123!")
 	req = httptest.NewRequest(http.MethodDelete, "/api/v1/auth/sessions/not-my-session-digest", nil)
 	req.AddCookie(&http.Cookie{Name: "access_token", Value: token})
 	rec = httptest.NewRecorder()

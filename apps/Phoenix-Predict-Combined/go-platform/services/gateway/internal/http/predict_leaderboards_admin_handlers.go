@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"phoenix-revival/gateway/internal/leaderboards"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/leaderboards"
+	"taptrade/platform/transport/httpx"
 )
 
 // registerPredictLeaderboardAdminRoutes wires the office /leaderboards admin

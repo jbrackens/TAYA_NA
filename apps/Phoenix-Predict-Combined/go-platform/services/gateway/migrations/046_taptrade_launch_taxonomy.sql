@@ -1,5 +1,5 @@
 -- +goose Up
--- Tiangge launch taxonomy: keep inherited crypto records inactive and seed a
+-- TapTrade launch taxonomy: keep inherited crypto records inactive and seed a
 -- launch-safe esports category for fresh and migrated databases.
 
 UPDATE prediction_categories

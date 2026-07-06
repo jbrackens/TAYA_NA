@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"phoenix-revival/gateway/internal/wallet"
+	"taptrade/gateway/internal/wallet"
 )
 
 const fallbackDemoDailyClaimCents int64 = 2500

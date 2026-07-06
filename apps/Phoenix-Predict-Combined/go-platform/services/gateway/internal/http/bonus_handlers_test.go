@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"phoenix-revival/gateway/internal/bonus"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/bonus"
+	"taptrade/platform/transport/httpx"
 )
 
 type fakeActiveBonusLister struct {
@@ -851,7 +851,7 @@ func TestPlayerActiveBonusesEndpointReturnsDemoPointPlayPayload(t *testing.T) {
 	}
 
 	req := httptest.NewRequest(stdhttp.MethodGet, "/api/v1/bonuses/active", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-1", "demo@phoenix.local", "player"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-1", "demo@taptrade.local", "player"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(playerActiveBonusesHandler(lister)).ServeHTTP(rec, req)
@@ -931,7 +931,7 @@ func TestClaimBonusEndpointUsesSessionUserAndPointNativePayload(t *testing.T) {
 		"/api/v1/bonuses/claim",
 		bytes.NewBufferString(`{"campaign_id":77,"trigger_reference":"demo-rewards-panel","user_id":"u-attacker"}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-1", "demo@phoenix.local", "player"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-1", "demo@taptrade.local", "player"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(claimBonusHandler(claimer)).ServeHTTP(rec, req)
@@ -993,7 +993,7 @@ func TestClaimBonusEndpointReturnsPointSafeEligibilityReviewError(t *testing.T) 
 		"/api/v1/bonuses/claim",
 		bytes.NewBufferString(`{"campaign_id":77}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-1", "demo@phoenix.local", "player"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-1", "demo@taptrade.local", "player"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(claimBonusHandler(claimer)).ServeHTTP(rec, req)
@@ -1027,7 +1027,7 @@ func TestClaimBonusEndpointRedactsUnsafeEligibilityError(t *testing.T) {
 		"/api/v1/bonuses/claim",
 		bytes.NewBufferString(`{"campaign_id":77}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-1", "demo@phoenix.local", "player"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-1", "demo@taptrade.local", "player"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(claimBonusHandler(claimer)).ServeHTTP(rec, req)
@@ -1059,7 +1059,7 @@ func TestClaimBonusEndpointReturnsPointSafeTriggerReviewError(t *testing.T) {
 		"/api/v1/bonuses/claim",
 		bytes.NewBufferString(`{"campaign_id":77}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-1", "demo@phoenix.local", "player"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-1", "demo@taptrade.local", "player"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(claimBonusHandler(claimer)).ServeHTTP(rec, req)
@@ -1102,7 +1102,7 @@ func TestPlayerBonusProgressEndpointRequiresOwnerAndPointPlayPayload(t *testing.
 	}
 
 	req := httptest.NewRequest(stdhttp.MethodGet, "/api/v1/bonuses/190/progress", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-1", "demo@phoenix.local", "player"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-1", "demo@taptrade.local", "player"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(playerBonusDetailHandler(getter)).ServeHTTP(rec, req)
@@ -1154,7 +1154,7 @@ func TestPlayerBonusDetailEndpointRejectsNonOwner(t *testing.T) {
 	}
 
 	req := httptest.NewRequest(stdhttp.MethodGet, "/api/v1/bonuses/190", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-2", "other@phoenix.local", "player"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-2", "other@taptrade.local", "player"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(playerBonusDetailHandler(getter)).ServeHTTP(rec, req)

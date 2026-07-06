@@ -1,8 +1,8 @@
-# Tiangge Gateway Migrations
+# TapTrade Gateway Migrations
 
 This directory contains database migrations for the Go gateway service using [Goose](https://github.com/pressly/goose). The early files still include sportsbook-era tables because the gateway was migrated in place; prediction-market tables start at `014_prediction_schema.sql`.
 
-From the Phoenix-Predict-Combined root, validate these migrations against a clean Postgres container with:
+From the TapTrade-Predict-Combined root, validate these migrations against a clean Postgres container with:
 
 ```bash
 make validate-go-migrations

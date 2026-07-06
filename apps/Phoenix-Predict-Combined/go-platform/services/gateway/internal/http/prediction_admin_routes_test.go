@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"phoenix-revival/gateway/internal/prediction"
-	"phoenix-revival/gateway/internal/wallet"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/prediction"
+	"taptrade/gateway/internal/wallet"
+	"taptrade/platform/transport/httpx"
 )
 
 // fakeAdminReader implements predictionAdminReader without a DB so the
@@ -133,7 +133,7 @@ func TestAdminPuntersListReturnsItemsAndPagination(t *testing.T) {
 	handler := adminTestHandler(repo)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/punters?status=active&search=alice&page=2&pageSize=25", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 
@@ -174,7 +174,7 @@ func TestAdminPuntersListIncludesFinancials(t *testing.T) {
 	}
 	handler := adminTestHandler(repo)
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/punters", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusOK {
@@ -231,7 +231,7 @@ func TestAdminPuntersListRejectsNonGet(t *testing.T) {
 	handler := adminTestHandler(repo)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/punters", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 
@@ -250,7 +250,7 @@ func TestAdminAuditLogsListReturnsItems(t *testing.T) {
 	handler := adminTestHandler(repo)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/audit-logs?action=market.settled", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 
@@ -288,7 +288,7 @@ func TestAdminAuditLogsListRedactsLegacyUnsafeDetailsOnRead(t *testing.T) {
 	handler := adminTestHandler(repo)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/audit-logs?action=punter.note", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 
@@ -327,7 +327,7 @@ func TestAdminPunterDetailReturnsPunter(t *testing.T) {
 	repo := &fakeAdminReader{detail: &prediction.AdminPunter{ID: "u-1", Email: "a@b.dev", Status: "active"}}
 	handler := adminTestHandler(repo)
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/punters/u-1", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusOK {
@@ -346,7 +346,7 @@ func TestAdminPunterDetail404ForUnknown(t *testing.T) {
 	repo := &fakeAdminReader{detail: nil}
 	handler := adminTestHandler(repo)
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/punters/nobody", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusNotFound {
@@ -369,7 +369,7 @@ func TestAdminPunterDetailIncludesFinancials(t *testing.T) {
 	}
 	handler := adminTestHandler(repo)
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/punters/u-1", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusOK {
@@ -409,7 +409,7 @@ func TestAdminPunterSettlements(t *testing.T) {
 	}}
 	handler := adminTestHandler(repo)
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/punters/u-1/settlements", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusOK {
@@ -444,7 +444,7 @@ func TestAdminPunterWalletLedger(t *testing.T) {
 	}}
 	handler := adminTestHandler(repo)
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/punters/u-1/wallet", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusOK {
@@ -470,7 +470,7 @@ func TestAdminPunterStatusUpdate(t *testing.T) {
 	repo := &fakeAdminReader{statusUpdated: &prediction.AdminPunter{ID: "u-1", Status: "suspended"}}
 	handler := adminTestHandler(repo)
 	req := httptest.NewRequest(http.MethodPut, "/api/v1/admin/punters/u-1/status", strings.NewReader(`{"status":"suspended"}`))
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusOK {
@@ -485,7 +485,7 @@ func TestAdminPunterStatusRejectsBadValue(t *testing.T) {
 	repo := &fakeAdminReader{}
 	handler := adminTestHandler(repo)
 	req := httptest.NewRequest(http.MethodPut, "/api/v1/admin/punters/u-1/status", strings.NewReader(`{"status":"banana"}`))
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusBadRequest {
@@ -499,7 +499,7 @@ func TestAdminPunterUnsupportedActionReturns501(t *testing.T) {
 	// risk-segment + limits + reset-password remain 501.
 	for _, action := range []string{"reset-password", "risk-segment", "limits"} {
 		req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/punters/u-1/"+action, nil)
-		req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+		req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 		res := httptest.NewRecorder()
 		handler.ServeHTTP(res, req)
 		if res.Code != http.StatusNotImplemented {
@@ -514,7 +514,7 @@ func TestAdminPunterNotesList(t *testing.T) {
 	}}
 	handler := adminTestHandler(repo)
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/punters/u-1/notes", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusOK {
@@ -537,7 +537,7 @@ func TestAdminPunterNotesListRedactsLegacyUnsafeTextOnRead(t *testing.T) {
 	}}
 	handler := adminTestHandler(repo)
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/punters/u-1/notes", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusOK {
@@ -570,7 +570,7 @@ func TestAdminPunterAddNote(t *testing.T) {
 	handler := adminTestHandler(repo)
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/punters/u-1/notes",
 		strings.NewReader(`{"content":"watch this user","category":"risk"}`))
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusCreated {
@@ -589,7 +589,7 @@ func TestAdminPunterAddNoteRejectsEmpty(t *testing.T) {
 	handler := adminTestHandler(repo)
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/punters/u-1/notes",
 		strings.NewReader(`{"content":"   "}`))
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusBadRequest {
@@ -602,7 +602,7 @@ func TestAdminPunterAddNoteRejectsMoneyWording(t *testing.T) {
 	handler := adminTestHandler(repo)
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/punters/u-1/notes",
 		strings.NewReader(`{"content":"cash payout review note","category":"risk"}`))
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusBadRequest {
@@ -629,7 +629,7 @@ func TestAdminPunterAddNoteRejectsMoneyWordingCategory(t *testing.T) {
 	handler := adminTestHandler(repo)
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/punters/u-1/notes",
 		strings.NewReader(`{"content":"review account status","category":"cash payout review"}`))
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusBadRequest {

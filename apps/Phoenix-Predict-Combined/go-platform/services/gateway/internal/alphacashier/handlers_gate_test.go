@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"phoenix-revival/gateway/internal/compliance"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/compliance"
+	"taptrade/platform/transport/httpx"
 )
 
 // The compliance gate must run before any cashier service logic on the

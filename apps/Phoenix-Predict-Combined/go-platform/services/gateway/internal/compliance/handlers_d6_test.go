@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/platform/transport/httpx"
 )
 
 // D-6: the RG self-service mutation handlers historically trusted a body

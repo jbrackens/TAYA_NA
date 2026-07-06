@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/platform/transport/httpx"
 )
 
 func TestLegacyMoneyPathsAreNotPublicOrCSRFSkippedByDefault(t *testing.T) {

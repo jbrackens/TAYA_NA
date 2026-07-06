@@ -4,8 +4,8 @@ import (
 	"context"
 	stdhttp "net/http"
 
-	"phoenix-revival/gateway/internal/wallet"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/wallet"
+	"taptrade/platform/transport/httpx"
 )
 
 // registerReportsRoutes wires the four aggregate endpoints the office /reports

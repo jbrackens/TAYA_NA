@@ -26,7 +26,7 @@ test("market created in backoffice is published to the player app", async ({
     process.env.PREDICT_ADMIN_API_URL || "http://localhost:18080";
   const adminCsrf = await login(
     request,
-    "admin@phoenix.local",
+    "admin@taptrade.local",
     "admin123",
     adminApiBase,
   );

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"phoenix-revival/gateway/internal/prediction"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/prediction"
+	"taptrade/platform/transport/httpx"
 )
 
 // disputeNotifier is the slice of the WebSocket hub the dispute API needs, so

@@ -234,7 +234,7 @@
   "punters": [
     {
       "id": "u:seed:3001",
-      "email": "seed.user.one@phoenix.local",
+      "email": "seed.user.one@taptrade.local",
       "status": "active",
       "countryCode": "US",
       "createdAt": "2026-03-02T00:00:00Z",
@@ -242,7 +242,7 @@
     },
     {
       "id": "u:seed:3002",
-      "email": "seed.user.two@phoenix.local",
+      "email": "seed.user.two@taptrade.local",
       "status": "active",
       "countryCode": "US",
       "createdAt": "2026-03-02T00:00:00Z",

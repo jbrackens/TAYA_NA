@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"phoenix-revival/gateway/internal/loyalty"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/loyalty"
+	"taptrade/platform/transport/httpx"
 )
 
 // registerPredictLoyaltyAdminRoutes wires the office loyalty admin pages to the

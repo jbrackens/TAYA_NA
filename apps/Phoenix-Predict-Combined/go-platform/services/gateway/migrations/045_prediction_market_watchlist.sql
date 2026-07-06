@@ -1,4 +1,4 @@
--- Tiangge prediction market watchlists.
+-- TapTrade prediction market watchlists.
 -- User-scoped favorites for discovery; no point, payout, or redemption state.
 
 -- +goose Up

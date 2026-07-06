@@ -13,10 +13,10 @@ import (
 	"testing"
 	"time"
 
-	"phoenix-revival/gateway/internal/bonus"
-	"phoenix-revival/gateway/internal/events"
-	"phoenix-revival/gateway/internal/wallet"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/bonus"
+	"taptrade/gateway/internal/events"
+	"taptrade/gateway/internal/wallet"
+	"taptrade/platform/transport/httpx"
 )
 
 func TestClaimBonusPersistsPointWalletLedgerThroughHTTP(t *testing.T) {

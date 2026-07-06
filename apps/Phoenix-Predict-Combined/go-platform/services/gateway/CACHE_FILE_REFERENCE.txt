@@ -3,7 +3,7 @@
 ================================================================================
 
 PROJECT PATH:
-/sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/
+/sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/
 
 ================================================================================
                            IMPLEMENTATION FILES
@@ -13,29 +13,29 @@ CACHE PACKAGE LOCATION:
 internal/cache/
 
 Core Implementation:
-  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/cache/redis.go
+  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/cache/redis.go
   (119 lines) - Redis client wrapper with JSON serialization
 
-  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/cache/cached_repo.go
+  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/cache/cached_repo.go
   (291 lines) - CachedReadRepository decorator implementing ReadRepository interface
 
-  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/cache/metrics.go
+  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/cache/metrics.go
   (152 lines) - CacheMetrics tracking hits/misses/errors with Prometheus export
 
-  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/cache/invalidation.go
+  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/cache/invalidation.go
   (111 lines) - InvalidationHandler for cache invalidation on write operations
 
-  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/cache/doc.go
+  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/cache/doc.go
   (32 lines) - Package documentation with examples
 
 Test Files:
-  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/cache/cached_repo_test.go
+  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/cache/cached_repo_test.go
   (306 lines) - Repository caching tests with MockReadRepository
 
-  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/cache/redis_test.go
+  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/cache/redis_test.go
   (176 lines) - Redis client operation tests
 
-  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/cache/metrics_test.go
+  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/cache/metrics_test.go
   (230 lines) - Cache metrics tests
 
 ================================================================================
@@ -43,13 +43,13 @@ Test Files:
 ================================================================================
 
 HTTP Handler Integration:
-  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/http/handlers.go
-  - Added "phoenix-revival/gateway/internal/cache" import
+  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/http/handlers.go
+  - Added "taptrade/gateway/internal/cache" import
   - Modified createReadRepository() to wrap with CachedReadRepository
   - Conditional caching based on REDIS_URL environment variable
 
 Module File:
-  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/go.mod
+  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/go.mod
   - Added: github.com/redis/go-redis/v9 v9.0.0
 
 ================================================================================
@@ -57,23 +57,23 @@ Module File:
 ================================================================================
 
 Quick Start Guide:
-  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/CACHE_QUICK_START.md
+  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/CACHE_QUICK_START.md
   (5-minute setup, verification, troubleshooting)
 
 Complete Integration Guide:
-  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/CACHE_INTEGRATION.md
+  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/CACHE_INTEGRATION.md
   (Architecture, configuration, examples, performance, troubleshooting)
 
 Implementation Summary:
-  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/CACHE_IMPLEMENTATION_SUMMARY.md
+  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/CACHE_IMPLEMENTATION_SUMMARY.md
   (Detailed implementation overview, file structure, design decisions)
 
 Main README:
-  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/CACHE_README.md
+  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/CACHE_README.md
   (Overview, getting started, feature summary, documentation map)
 
 This File:
-  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/CACHE_FILE_REFERENCE.txt
+  /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/CACHE_FILE_REFERENCE.txt
   (File locations and paths reference)
 
 ================================================================================
@@ -113,7 +113,7 @@ Modified:
 
 To use the caching layer in your code:
 
-import "phoenix-revival/gateway/internal/cache"
+import "taptrade/gateway/internal/cache"
 
 Creating a cached repository:
   redisClient, err := cache.NewRedisClientFromEnv()

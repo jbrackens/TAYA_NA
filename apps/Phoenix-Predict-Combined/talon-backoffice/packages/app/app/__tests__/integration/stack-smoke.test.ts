@@ -12,7 +12,7 @@ import assert from "node:assert/strict";
 
 const GATEWAY = process.env.GATEWAY_URL || "http://localhost:18080";
 const AUTH = process.env.AUTH_URL || "http://localhost:18081";
-const DEMO_USER = "demo@phoenix.local";
+const DEMO_USER = "demo@taptrade.local";
 const DEMO_PASS = "demo123";
 
 // Skip entire suite if SKIP_STACK_SMOKE is set or gateway is down

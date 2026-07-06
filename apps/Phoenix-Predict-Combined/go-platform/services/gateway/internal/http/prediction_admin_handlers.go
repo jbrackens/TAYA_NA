@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"phoenix-revival/gateway/internal/prediction"
-	"phoenix-revival/gateway/internal/wallet"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/prediction"
+	"taptrade/gateway/internal/wallet"
+	"taptrade/platform/transport/httpx"
 )
 
 // predictionAdminReader is the narrow slice of *prediction.SQLRepository that

@@ -27,7 +27,7 @@ import (
 	"sort"
 	"time"
 
-	"phoenix-revival/gateway/internal/loyalty"
+	"taptrade/gateway/internal/loyalty"
 )
 
 // legacyLoyaltySnapshot mirrors the shape in

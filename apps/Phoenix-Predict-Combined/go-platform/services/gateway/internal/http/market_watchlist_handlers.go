@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/platform/transport/httpx"
 )
 
 type marketWatchlistStore interface {

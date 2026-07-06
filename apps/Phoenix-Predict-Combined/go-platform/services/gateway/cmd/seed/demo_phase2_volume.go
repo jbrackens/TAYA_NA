@@ -7,7 +7,7 @@ import (
 	"math/rand"
 	"time"
 
-	"phoenix-revival/gateway/internal/prediction"
+	"taptrade/gateway/internal/prediction"
 )
 
 // Phase 2 generates historical trading volume on a sample of order_book

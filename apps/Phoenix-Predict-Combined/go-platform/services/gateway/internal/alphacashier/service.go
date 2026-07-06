@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"phoenix-revival/gateway/internal/wallet"
+	"taptrade/gateway/internal/wallet"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"

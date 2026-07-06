@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/platform/transport/httpx"
 )
 
 // RegisterComplianceRoutes registers all compliance-related HTTP handlers

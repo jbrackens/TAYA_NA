@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"time"
 
-	"phoenix-revival/gateway/internal/prediction"
-	"phoenix-revival/gateway/internal/prediction/feed"
+	"taptrade/gateway/internal/prediction"
+	"taptrade/gateway/internal/prediction/feed"
 )
 
 // AutoSettler polls for closed markets with automated settlement sources

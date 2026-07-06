@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"phoenix-revival/gateway/internal/compliance"
+	"taptrade/gateway/internal/compliance"
 )
 
 type pretradeFakeKYC struct {

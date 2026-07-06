@@ -15,7 +15,7 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"phoenix-revival/gateway/internal/markettranslate"
+	"taptrade/gateway/internal/markettranslate"
 )
 
 func main() {

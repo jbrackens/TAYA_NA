@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"phoenix-revival/gateway/internal/leaderboards"
-	"phoenix-revival/gateway/internal/wallet"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/leaderboards"
+	"taptrade/gateway/internal/wallet"
+	"taptrade/platform/transport/httpx"
 )
 
 type walletMutationRequest struct {

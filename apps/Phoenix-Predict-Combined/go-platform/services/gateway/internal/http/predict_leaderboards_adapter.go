@@ -3,8 +3,8 @@ package http
 import (
 	"context"
 
-	"phoenix-revival/gateway/internal/leaderboards"
-	"phoenix-revival/gateway/internal/prediction"
+	"taptrade/gateway/internal/leaderboards"
+	"taptrade/gateway/internal/prediction"
 )
 
 // predictionCategoryLister bridges prediction.Repository.ListCategories to

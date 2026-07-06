@@ -3,8 +3,8 @@ package http
 import (
 	stdhttp "net/http"
 
-	"phoenix-revival/gateway/internal/livemarkets"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/livemarkets"
+	"taptrade/platform/transport/httpx"
 )
 
 func registerLiveMarketRoutes(mux *stdhttp.ServeMux, svc *livemarkets.Service) {

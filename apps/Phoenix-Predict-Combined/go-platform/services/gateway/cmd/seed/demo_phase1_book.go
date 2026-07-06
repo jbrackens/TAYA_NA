@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"phoenix-revival/gateway/internal/prediction"
+	"taptrade/gateway/internal/prediction"
 )
 
 // Demo user IDs. Wired in seed_prediction.sql (base seed) + auth_users (auto-

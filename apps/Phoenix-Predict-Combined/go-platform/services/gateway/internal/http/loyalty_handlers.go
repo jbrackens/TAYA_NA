@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"phoenix-revival/gateway/internal/loyalty"
-	canonicalv1 "phoenix-revival/platform/canonical/v1"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/loyalty"
+	canonicalv1 "taptrade/platform/canonical/v1"
+	"taptrade/platform/transport/httpx"
 )
 
 type loyaltyAdjustmentRequest struct {

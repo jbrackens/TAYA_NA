@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"time"
 
-	"phoenix-revival/gateway/internal/leaderboards"
-	"phoenix-revival/gateway/internal/prediction"
+	"taptrade/gateway/internal/leaderboards"
+	"taptrade/gateway/internal/prediction"
 )
 
 // RunPhase5Leaderboards refreshes Predict leaderboard snapshots after demo

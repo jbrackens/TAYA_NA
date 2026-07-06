@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"phoenix-revival/gateway/internal/content"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/content"
+	"taptrade/platform/transport/httpx"
 )
 
 func registerContentRoutes(mux *stdhttp.ServeMux, svc *content.Service) {

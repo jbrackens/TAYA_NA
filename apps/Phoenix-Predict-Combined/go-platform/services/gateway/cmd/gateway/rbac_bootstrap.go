@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"phoenix-revival/gateway/internal/rbac"
+	"taptrade/gateway/internal/rbac"
 )
 
 // runRBACBootstrap provisions the first back-office super-admin in an

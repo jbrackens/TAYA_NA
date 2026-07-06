@@ -18,7 +18,7 @@ import (
 	"strings"
 	"time"
 
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/platform/transport/httpx"
 )
 
 // Social OAuth 2.0 (authorization-code) for multiple providers.

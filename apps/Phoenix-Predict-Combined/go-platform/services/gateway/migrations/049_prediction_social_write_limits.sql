@@ -1,4 +1,4 @@
--- Tiangge prediction-native social write limiter.
+-- TapTrade prediction-native social write limiter.
 -- Shared token buckets for social write throttles across gateway instances.
 
 -- +goose Up

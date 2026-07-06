@@ -17,7 +17,7 @@
 #
 # Usage:
 #   ./smoke-test.sh
-#   API_BASE=http://localhost:18080 SMOKE_TEST_USER=demo@phoenix.local \
+#   API_BASE=http://localhost:18080 SMOKE_TEST_USER=demo@taptrade.local \
 #     SMOKE_TEST_PASS=change-me-local ./smoke-test.sh
 ###############################################################################
 
@@ -30,7 +30,7 @@ BLUE='\033[0;34m'
 RESET='\033[0m'
 
 API_BASE="${API_BASE:-http://localhost:18080}"
-TEST_USER="${SMOKE_TEST_USER:-demo@phoenix.local}"
+TEST_USER="${SMOKE_TEST_USER:-demo@taptrade.local}"
 TEST_PASS="${SMOKE_TEST_PASS:-change-me-local}"
 ADMIN_ROLE_HEADER="${ADMIN_ROLE_HEADER:-admin}"
 

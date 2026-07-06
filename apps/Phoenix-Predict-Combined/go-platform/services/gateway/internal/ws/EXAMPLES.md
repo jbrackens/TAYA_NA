@@ -171,7 +171,7 @@ package bets
 
 import (
     "context"
-    "phoenix-revival/gateway/internal/ws"
+    "taptrade/gateway/internal/ws"
 )
 
 type Service struct {
@@ -288,7 +288,7 @@ package market
 
 import (
     "context"
-    "phoenix-revival/gateway/internal/ws"
+    "taptrade/gateway/internal/ws"
 )
 
 type Service struct {
@@ -355,7 +355,7 @@ func (s *Service) UpdateMarketStatus(ctx context.Context, fixtureID string, stat
 package wallet
 
 import (
-    "phoenix-revival/gateway/internal/ws"
+    "taptrade/gateway/internal/ws"
 )
 
 type Service struct {
@@ -417,7 +417,7 @@ package matchtracker
 
 import (
     "context"
-    "phoenix-revival/gateway/internal/ws"
+    "taptrade/gateway/internal/ws"
 )
 
 type Service struct {
@@ -487,7 +487,7 @@ package bets
 import (
     "context"
     "testing"
-    "phoenix-revival/gateway/internal/ws"
+    "taptrade/gateway/internal/ws"
 )
 
 type MockNotifier struct {

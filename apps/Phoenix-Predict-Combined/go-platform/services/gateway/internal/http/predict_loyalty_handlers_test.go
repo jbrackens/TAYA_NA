@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"phoenix-revival/gateway/internal/loyalty"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/loyalty"
+	"taptrade/platform/transport/httpx"
 )
 
 // fakeLoyaltyRepo is a deterministic in-memory PredictRepo for HTTP tests.

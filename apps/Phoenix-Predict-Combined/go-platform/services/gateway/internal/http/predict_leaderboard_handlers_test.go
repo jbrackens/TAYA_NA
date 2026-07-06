@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"phoenix-revival/gateway/internal/leaderboards"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/leaderboards"
+	"taptrade/platform/transport/httpx"
 )
 
 // fakeLBRepo is a deterministic in-memory PredictLBRepo for HTTP tests.
@@ -290,7 +290,7 @@ func TestPredictAdminRecomputeRefreshesSnapshots(t *testing.T) {
 	h := buildPredictLBAdminHandler(t, repo, catFn)
 
 	req := httptest.NewRequest(stdhttp.MethodPost, "/api/v1/admin/leaderboards/pnl_weekly/recompute", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	h.ServeHTTP(res, req)
 

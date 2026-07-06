@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"phoenix-revival/gateway/internal/prediction"
-	"phoenix-revival/gateway/internal/wallet"
+	"taptrade/gateway/internal/prediction"
+	"taptrade/gateway/internal/wallet"
 )
 
 func TestSettlementPersistsPointLedgerCreditsThroughProductionWalletAdapter(t *testing.T) {

@@ -185,8 +185,8 @@ granular permissions like `users:read/write`, `roles:read/write`,
   active super-admin cannot be role-stripped, suspended, or deleted; an actor
   cannot suspend or delete their own account.
 - **Dev bootstrap staff** (dev-only, via `cmd/seed` → `seed_prediction.sql`):
-  `admin@phoenix.local` (Super Admin), `ops@phoenix.local` (Operations Manager),
-  `support@phoenix.local` (Customer Support) — all password `admin123`.
+  `admin@taptrade.local` (Super Admin), `ops@taptrade.local` (Operations Manager),
+  `support@taptrade.local` (Customer Support) — all password `admin123`.
 - **Prod bootstrap** (prod is fail-closed: the migration seeds no staff): run
   `gateway rbac-bootstrap` once with `RBAC_BOOTSTRAP_EMAIL` +
   `RBAC_BOOTSTRAP_PASSWORD` (+ `GATEWAY_DB_DSN`) to create the first super-admin.
@@ -297,9 +297,9 @@ npm run dev
 
 ### Test credentials
 
-**Active login:** `demo@phoenix.local` / `demo123`
+**Active login:** `demo@taptrade.local` / `demo123`
 
-The auth service (port 18081) auto-seeds `demo@phoenix.local` / `demo123` (player role) and `admin@phoenix.local` / `admin123` (admin role) into the `auth_users` table on startup. These are the only credentials the player app can log in with out of the box.
+The auth service (port 18081) auto-seeds `demo@taptrade.local` / `demo123` (player role) and `admin@taptrade.local` / `admin123` (admin role) into the `auth_users` table on startup. These are the only credentials the player app can log in with out of the box.
 
 The `punters`/`wallets` test users below are seeded by `go run ./cmd/seed` for prediction-side data (positions, orders, wallet balances) but **are not yet wired into the auth service's `auth_users` table**. To log in as them, register via `POST /api/v1/auth/register` with the matching email, or add them to the auth service's seed helper (see `services/auth/internal/http/handlers.go` `seedDBUsers`).
 

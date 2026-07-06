@@ -17,9 +17,9 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"phoenix-revival/gateway/internal/discover"
-	"phoenix-revival/gateway/internal/markettranslate"
-	"phoenix-revival/gateway/internal/prediction"
+	"taptrade/gateway/internal/discover"
+	"taptrade/gateway/internal/markettranslate"
+	"taptrade/gateway/internal/prediction"
 )
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
 		polymarketLimit  = flag.Int("polymarket", 200, "max markets to pull from polymarket")
 		kalshiLimit      = flag.Int("kalshi", 200, "max markets to pull from kalshi")
 		manifoldLimit    = flag.Int("manifold", 100, "max markets to pull from manifold")
-		publicRoot       = flag.String("public-root", "", "absolute path to player-app public/ dir for image rehosting (defaults to talon-backoffice/packages/app/public)")
+		publicRoot       = flag.String("public-root", "", "absolute path to player-app public/ dir for image rehosting (defaults to office-backoffice/packages/app/public)")
 		timeoutSec       = flag.Int("timeout", 180, "overall sync timeout in seconds")
 		translate        = flag.Bool("translate", envBool("AI_MARKET_TRANSLATION_ENABLED", false), "generate cached LLM translations after promotion")
 		translateLimit   = flag.Int("translate-limit", envInt("AI_TRANSLATION_LIMIT", 50), "maximum promoted markets to scan for missing/stale translations")
@@ -152,17 +152,17 @@ func envInt(key string, fallback int) int {
 // defaultPublicRoot resolves the player-app public/ directory relative to the
 // gateway service. Layout:
 //
-//	apps/Phoenix-Predict-Combined/
+//	apps/TapTrade-Predict-Combined/
 //	  go-platform/services/gateway/      ← cwd when run via `go run ./cmd/sync-markets`
-//	  talon-backoffice/packages/app/public/  ← target
+//	  office-backoffice/packages/app/public/  ← target
 func defaultPublicRoot() string {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return ""
 	}
 	candidates := []string{
-		filepath.Join(cwd, "..", "..", "..", "talon-backoffice", "packages", "app", "public"),
-		filepath.Join(cwd, "..", "..", "talon-backoffice", "packages", "app", "public"),
+		filepath.Join(cwd, "..", "..", "..", "office-backoffice", "packages", "app", "public"),
+		filepath.Join(cwd, "..", "..", "office-backoffice", "packages", "app", "public"),
 	}
 	for _, c := range candidates {
 		abs, err := filepath.Abs(c)

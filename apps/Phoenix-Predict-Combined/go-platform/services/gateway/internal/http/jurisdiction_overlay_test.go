@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"phoenix-revival/gateway/internal/prediction"
+	"taptrade/gateway/internal/prediction"
 )
 
 // TestCheckMarketJurisdictionOverlay verifies the per-market overlay (P3-07)

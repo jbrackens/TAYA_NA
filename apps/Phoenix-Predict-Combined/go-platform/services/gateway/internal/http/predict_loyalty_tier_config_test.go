@@ -8,8 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"phoenix-revival/gateway/internal/loyalty"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/loyalty"
+	"taptrade/platform/transport/httpx"
 )
 
 // fakeTierConfigRepo implements loyalty.PredictRepo PLUS the tier-config store

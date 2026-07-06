@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	canonicalv1 "phoenix-revival/platform/canonical/v1"
+	canonicalv1 "taptrade/platform/canonical/v1"
 )
 
 // StartAutoSave begins a background goroutine that persists state every interval.

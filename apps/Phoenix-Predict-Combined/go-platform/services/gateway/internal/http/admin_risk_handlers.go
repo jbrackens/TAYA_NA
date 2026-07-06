@@ -6,8 +6,8 @@ import (
 	stdhttp "net/http"
 	"strconv"
 
-	"phoenix-revival/gateway/internal/prediction"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/prediction"
+	"taptrade/platform/transport/httpx"
 )
 
 // registerPredictionRiskRoutes wires the prediction-native operator risk

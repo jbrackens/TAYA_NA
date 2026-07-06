@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"phoenix-revival/gateway/internal/compliance"
-	"phoenix-revival/gateway/internal/prediction"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/compliance"
+	"taptrade/gateway/internal/prediction"
+	"taptrade/platform/transport/httpx"
 )
 
 type botRouteComplianceDeny struct{}

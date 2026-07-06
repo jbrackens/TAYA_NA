@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"phoenix-revival/gateway/internal/prediction"
-	"phoenix-revival/gateway/internal/rbac"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/prediction"
+	"taptrade/gateway/internal/rbac"
+	"taptrade/platform/transport/httpx"
 )
 
 // partnerKeyDefaultTTLDays bounds operator-issued partner keys when the caller

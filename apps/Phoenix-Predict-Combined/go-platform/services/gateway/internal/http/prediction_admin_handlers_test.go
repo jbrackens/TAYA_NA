@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"phoenix-revival/gateway/internal/prediction"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/prediction"
+	"taptrade/platform/transport/httpx"
 )
 
 type predictionAdminRepo struct {
@@ -655,7 +655,7 @@ func TestPredictionAdminCreateMarketWorksWithNormalizedTrailingSlash(t *testing.
 		"ammLiquidityParam":100,
 		"ammSubsidyPointsCents":1234
 	}`))
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 
@@ -690,7 +690,7 @@ func TestPredictionAdminCreateMarketWorksWithNormalizedTrailingSlash(t *testing.
 		"ammLiquidityParam":100,
 		"ammSubsidyCents":1234
 	}`))
-	retiredReq = retiredReq.WithContext(httpx.WithTestUser(retiredReq.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	retiredReq = retiredReq.WithContext(httpx.WithTestUser(retiredReq.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	retiredRes := httptest.NewRecorder()
 	handler.ServeHTTP(retiredRes, retiredReq)
 	if retiredRes.Code != http.StatusBadRequest {
@@ -726,7 +726,7 @@ func TestPredictionAdminCreateMarketRejectsLaunchProhibitedSettlementSource(t *t
 		"closeAt":"2026-04-30T12:00:00Z",
 		"ammLiquidityParam":100
 	}`))
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 
@@ -755,7 +755,7 @@ func TestPredictionAdminCreateMarketRedactsUnsafeServiceError(t *testing.T) {
 		"closeAt":"2026-04-30T12:00:00Z",
 		"ammLiquidityParam":100
 	}`))
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-error", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-error", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	mux.ServeHTTP(res, req)
 
@@ -804,7 +804,7 @@ func TestPredictionAdminUpdateMarketEditsMetadataAndAudits(t *testing.T) {
 		"closeAt":"2026-07-31T23:59:00Z",
 		"ammLiquidityParam":100
 	}`))
-	createReq = createReq.WithContext(httpx.WithTestUser(createReq.Context(), "admin-edit", "edit@phoenix.local", "admin"))
+	createReq = createReq.WithContext(httpx.WithTestUser(createReq.Context(), "admin-edit", "edit@taptrade.local", "admin"))
 	createRes := httptest.NewRecorder()
 	handler.ServeHTTP(createRes, createReq)
 	if createRes.Code != http.StatusCreated {
@@ -827,7 +827,7 @@ func TestPredictionAdminUpdateMarketEditsMetadataAndAudits(t *testing.T) {
 		"closeAt":"2026-08-31T23:59:00Z",
 		"ammLiquidityParam":125
 	}`))
-	updateReq = updateReq.WithContext(httpx.WithTestUser(updateReq.Context(), "admin-edit", "edit@phoenix.local", "admin"))
+	updateReq = updateReq.WithContext(httpx.WithTestUser(updateReq.Context(), "admin-edit", "edit@taptrade.local", "admin"))
 	updateRes := httptest.NewRecorder()
 	handler.ServeHTTP(updateRes, updateReq)
 	if updateRes.Code != http.StatusOK {
@@ -849,7 +849,7 @@ func TestPredictionAdminUpdateMarketEditsMetadataAndAudits(t *testing.T) {
 	}
 
 	auditReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/markets/"+created.ID+"/lifecycle", nil)
-	auditReq = auditReq.WithContext(httpx.WithTestUser(auditReq.Context(), "admin-edit", "edit@phoenix.local", "admin"))
+	auditReq = auditReq.WithContext(httpx.WithTestUser(auditReq.Context(), "admin-edit", "edit@taptrade.local", "admin"))
 	auditRes := httptest.NewRecorder()
 	handler.ServeHTTP(auditRes, auditReq)
 	if auditRes.Code != http.StatusOK {
@@ -898,7 +898,7 @@ func TestPredictionAdminCreateMarketSource(t *testing.T) {
 
 	// Admin happy path -> 201 with the (deduped) article source id.
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/market-sources", strings.NewReader(body))
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusCreated {
@@ -926,7 +926,7 @@ func TestPredictionAdminCreateMarketSource(t *testing.T) {
 		"aiGenerationLogIds":["` + resp.AIGenerationLogIDs[0] + `"]
 	}`
 	createReq := httptest.NewRequest(http.MethodPost, "/api/v1/admin/markets", strings.NewReader(createBody))
-	createReq = createReq.WithContext(httpx.WithTestUser(createReq.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	createReq = createReq.WithContext(httpx.WithTestUser(createReq.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	createRes := httptest.NewRecorder()
 	handler.ServeHTTP(createRes, createReq)
 	if createRes.Code != http.StatusCreated {
@@ -938,7 +938,7 @@ func TestPredictionAdminCreateMarketSource(t *testing.T) {
 
 	// Missing textHash -> 400 (service validation surfaces as bad request).
 	bad := httptest.NewRequest(http.MethodPost, "/api/v1/admin/market-sources", strings.NewReader(`{"source":{"title":"x"}}`))
-	bad = bad.WithContext(httpx.WithTestUser(bad.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	bad = bad.WithContext(httpx.WithTestUser(bad.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	badRes := httptest.NewRecorder()
 	handler.ServeHTTP(badRes, bad)
 	if badRes.Code != http.StatusBadRequest {
@@ -974,7 +974,7 @@ func TestPredictionAdminCreateEvent(t *testing.T) {
 	// Admin happy path -> 201 with an event id and default draft status.
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/events", strings.NewReader(body))
 	req = req.WithContext(
-		httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"),
+		httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"),
 	)
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
@@ -999,7 +999,7 @@ func TestPredictionAdminCreateEvent(t *testing.T) {
 		strings.NewReader(`{"categoryId":"cat-1","closeAt":"2026-07-31T23:59:00Z"}`),
 	)
 	bad = bad.WithContext(
-		httpx.WithTestUser(bad.Context(), "admin-1", "admin@phoenix.local", "admin"),
+		httpx.WithTestUser(bad.Context(), "admin-1", "admin@taptrade.local", "admin"),
 	)
 	badRes := httptest.NewRecorder()
 	handler.ServeHTTP(badRes, bad)
@@ -1043,7 +1043,7 @@ func TestPredictionAdminCreateEventRejectsMoneyWordingBeforePersistence(t *testi
 			mux := http.NewServeMux()
 			registerSettlementRoutes(mux, svc)
 			req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/events", strings.NewReader(tc.body))
-			req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+			req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 			res := httptest.NewRecorder()
 			mux.ServeHTTP(res, req)
 
@@ -1076,7 +1076,7 @@ func TestPredictionAdminTaxonomyRoutesCreateCategorySeriesAndTags(t *testing.T) 
 		"icon":"globe",
 		"sortOrder":7
 	}`))
-	catReq = catReq.WithContext(httpx.WithTestUser(catReq.Context(), "admin-taxonomy", "taxonomy@phoenix.local", "admin"))
+	catReq = catReq.WithContext(httpx.WithTestUser(catReq.Context(), "admin-taxonomy", "taxonomy@taptrade.local", "admin"))
 	catRes := httptest.NewRecorder()
 	handler.ServeHTTP(catRes, catReq)
 	if catRes.Code != http.StatusCreated {
@@ -1096,7 +1096,7 @@ func TestPredictionAdminTaxonomyRoutesCreateCategorySeriesAndTags(t *testing.T) 
 		"frequency":"recurring",
 		"tags":["Election","polls","election"," "]
 	}`))
-	seriesReq = seriesReq.WithContext(httpx.WithTestUser(seriesReq.Context(), "admin-taxonomy", "taxonomy@phoenix.local", "admin"))
+	seriesReq = seriesReq.WithContext(httpx.WithTestUser(seriesReq.Context(), "admin-taxonomy", "taxonomy@taptrade.local", "admin"))
 	seriesRes := httptest.NewRecorder()
 	handler.ServeHTTP(seriesRes, seriesReq)
 	if seriesRes.Code != http.StatusCreated {
@@ -1124,7 +1124,7 @@ func TestPredictionAdminTaxonomyRoutesCreateCategorySeriesAndTags(t *testing.T) 
 	})
 
 	tagsReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/tags?categoryId="+category.ID, nil)
-	tagsReq = tagsReq.WithContext(httpx.WithTestUser(tagsReq.Context(), "admin-taxonomy", "taxonomy@phoenix.local", "admin"))
+	tagsReq = tagsReq.WithContext(httpx.WithTestUser(tagsReq.Context(), "admin-taxonomy", "taxonomy@taptrade.local", "admin"))
 	tagsRes := httptest.NewRecorder()
 	handler.ServeHTTP(tagsRes, tagsReq)
 	if tagsRes.Code != http.StatusOK {
@@ -1141,7 +1141,7 @@ func TestPredictionAdminTaxonomyRoutesCreateCategorySeriesAndTags(t *testing.T) 
 	}
 
 	listReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/series?categoryId="+category.ID, nil)
-	listReq = listReq.WithContext(httpx.WithTestUser(listReq.Context(), "admin-taxonomy", "taxonomy@phoenix.local", "admin"))
+	listReq = listReq.WithContext(httpx.WithTestUser(listReq.Context(), "admin-taxonomy", "taxonomy@taptrade.local", "admin"))
 	listRes := httptest.NewRecorder()
 	handler.ServeHTTP(listRes, listReq)
 	if listRes.Code != http.StatusOK {
@@ -1179,7 +1179,7 @@ func TestPredictionAdminTaxonomyReadsRedactUnsafeSeriesCopyWithoutMutatingSource
 	)
 
 	seriesReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/series?categoryId=cat-admin-unsafe-read", nil)
-	seriesReq = seriesReq.WithContext(httpx.WithTestUser(seriesReq.Context(), "admin-taxonomy", "taxonomy@phoenix.local", "admin"))
+	seriesReq = seriesReq.WithContext(httpx.WithTestUser(seriesReq.Context(), "admin-taxonomy", "taxonomy@taptrade.local", "admin"))
 	seriesRes := httptest.NewRecorder()
 	handler.ServeHTTP(seriesRes, seriesReq)
 	if seriesRes.Code != http.StatusOK {
@@ -1187,7 +1187,7 @@ func TestPredictionAdminTaxonomyReadsRedactUnsafeSeriesCopyWithoutMutatingSource
 	}
 
 	tagsReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/tags?categoryId=cat-admin-unsafe-read", nil)
-	tagsReq = tagsReq.WithContext(httpx.WithTestUser(tagsReq.Context(), "admin-taxonomy", "taxonomy@phoenix.local", "admin"))
+	tagsReq = tagsReq.WithContext(httpx.WithTestUser(tagsReq.Context(), "admin-taxonomy", "taxonomy@taptrade.local", "admin"))
 	tagsRes := httptest.NewRecorder()
 	handler.ServeHTTP(tagsRes, tagsReq)
 	if tagsRes.Code != http.StatusOK {
@@ -1222,7 +1222,7 @@ func TestPredictionAdminTaxonomyRejectsMoneyWordingBeforePersistence(t *testing.
 			"name":"Cash Prize Topics",
 			"icon":"sparkles"
 		}`))
-		req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-taxonomy", "taxonomy@phoenix.local", "admin"))
+		req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-taxonomy", "taxonomy@taptrade.local", "admin"))
 		res := httptest.NewRecorder()
 		mux.ServeHTTP(res, req)
 		if res.Code != http.StatusBadRequest {
@@ -1271,7 +1271,7 @@ func TestPredictionAdminTaxonomyRejectsMoneyWordingBeforePersistence(t *testing.
 			registerSettlementRoutes(mux, svc)
 
 			req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/series", strings.NewReader(tc.body))
-			req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-taxonomy", "taxonomy@phoenix.local", "admin"))
+			req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-taxonomy", "taxonomy@taptrade.local", "admin"))
 			res := httptest.NewRecorder()
 			mux.ServeHTTP(res, req)
 			if res.Code != http.StatusBadRequest {
@@ -1354,7 +1354,7 @@ func TestPredictionCategoryRoutesApplyLaunchTaxonomyBoundary(t *testing.T) {
 	}
 
 	adminReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/categories", nil)
-	adminReq = adminReq.WithContext(httpx.WithTestUser(adminReq.Context(), "admin-taxonomy", "taxonomy@phoenix.local", "admin"))
+	adminReq = adminReq.WithContext(httpx.WithTestUser(adminReq.Context(), "admin-taxonomy", "taxonomy@taptrade.local", "admin"))
 	adminRes := httptest.NewRecorder()
 	handler.ServeHTTP(adminRes, adminReq)
 	if adminRes.Code != http.StatusOK {
@@ -1374,7 +1374,7 @@ func TestPredictionCategoryRoutesApplyLaunchTaxonomyBoundary(t *testing.T) {
 		"name":"Crypto Markets",
 		"icon":"bitcoin"
 	}`))
-	createCryptoReq = createCryptoReq.WithContext(httpx.WithTestUser(createCryptoReq.Context(), "admin-taxonomy", "taxonomy@phoenix.local", "admin"))
+	createCryptoReq = createCryptoReq.WithContext(httpx.WithTestUser(createCryptoReq.Context(), "admin-taxonomy", "taxonomy@taptrade.local", "admin"))
 	createCryptoRes := httptest.NewRecorder()
 	handler.ServeHTTP(createCryptoRes, createCryptoReq)
 	if createCryptoRes.Code != http.StatusBadRequest {
@@ -1405,7 +1405,7 @@ func TestPredictionAdminAIBudget(t *testing.T) {
 	// Admin GET -> 200 with allowed=true at zero usage.
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/ai-budget", nil)
 	req = req.WithContext(
-		httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"),
+		httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"),
 	)
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
@@ -1448,7 +1448,7 @@ func TestPredictionAdminReserveAIBudgetRecordsAttempt(t *testing.T) {
 	for i := 0; i < 2; i++ {
 		req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/ai-budget/reserve", strings.NewReader(`{"estimatedInputTokens":100}`))
 		req = req.WithContext(
-			httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"),
+			httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"),
 		)
 		res := httptest.NewRecorder()
 		handler.ServeHTTP(res, req)
@@ -1462,7 +1462,7 @@ func TestPredictionAdminReserveAIBudgetRecordsAttempt(t *testing.T) {
 
 	third := httptest.NewRequest(http.MethodPost, "/api/v1/admin/ai-budget/reserve", strings.NewReader(`{"estimatedInputTokens":100}`))
 	third = third.WithContext(
-		httpx.WithTestUser(third.Context(), "admin-1", "admin@phoenix.local", "admin"),
+		httpx.WithTestUser(third.Context(), "admin-1", "admin@taptrade.local", "admin"),
 	)
 	thirdRes := httptest.NewRecorder()
 	handler.ServeHTTP(thirdRes, third)
@@ -1494,7 +1494,7 @@ func TestPredictionAdminLifecycleRoutesSupportOpenCloseAndVoid(t *testing.T) {
 		"closeAt":"2026-04-30T12:00:00Z",
 		"ammLiquidityParam":100
 	}`))
-	createReq = createReq.WithContext(httpx.WithTestUser(createReq.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	createReq = createReq.WithContext(httpx.WithTestUser(createReq.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	createRes := httptest.NewRecorder()
 	handler.ServeHTTP(createRes, createReq)
 	if createRes.Code != http.StatusCreated {
@@ -1518,11 +1518,11 @@ func TestPredictionAdminLifecycleRoutesSupportOpenCloseAndVoid(t *testing.T) {
 
 	var closePayload struct {
 		Status           prediction.MarketStatus           `json:"status"`
-		TianggeLifecycle prediction.TianggeMarketLifecycle `json:"tianggeLifecycle"`
+		TapTradeLifecycle prediction.TapTradeMarketLifecycle `json:"taptradeLifecycle"`
 	}
 	for _, action := range []string{"open", "close"} {
 		req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/markets/"+market.ID+"/lifecycle/"+action, strings.NewReader(`{"reason":"qa lifecycle smoke"}`))
-		req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+		req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 		res := httptest.NewRecorder()
 		handler.ServeHTTP(res, req)
 		if res.Code != http.StatusOK {
@@ -1535,17 +1535,17 @@ func TestPredictionAdminLifecycleRoutesSupportOpenCloseAndVoid(t *testing.T) {
 			if closePayload.Status != prediction.MarketStatusClosed {
 				t.Fatalf("expected close response status closed, got %s", closePayload.Status)
 			}
-			if closePayload.TianggeLifecycle.Stage != "closed" {
-				t.Fatalf("expected close response Tiangge stage closed, got %+v", closePayload.TianggeLifecycle)
+			if closePayload.TapTradeLifecycle.Stage != "closed" {
+				t.Fatalf("expected close response TapTrade stage closed, got %+v", closePayload.TapTradeLifecycle)
 			}
-			if len(closePayload.TianggeLifecycle.AllowedActions) == 0 {
+			if len(closePayload.TapTradeLifecycle.AllowedActions) == 0 {
 				t.Fatalf("expected close response to include launch-facing next actions")
 			}
 		}
 	}
 
 	voidReq := httptest.NewRequest(http.MethodPost, "/api/v1/admin/markets/"+market.ID+"/lifecycle/void", strings.NewReader(`{"reason":"qa void smoke"}`))
-	voidReq = voidReq.WithContext(httpx.WithTestUser(voidReq.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	voidReq = voidReq.WithContext(httpx.WithTestUser(voidReq.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	voidRes := httptest.NewRecorder()
 	handler.ServeHTTP(voidRes, voidReq)
 	if voidRes.Code != http.StatusOK {
@@ -1562,7 +1562,7 @@ func TestPredictionAdminLifecycleRoutesSupportOpenCloseAndVoid(t *testing.T) {
 
 	var payload struct {
 		Status                     prediction.MarketStatus           `json:"status"`
-		TianggeLifecycle           prediction.TianggeMarketLifecycle `json:"tianggeLifecycle"`
+		TapTradeLifecycle           prediction.TapTradeMarketLifecycle `json:"taptradeLifecycle"`
 		PointDisbursements         []settlementPointDisbursement     `json:"pointDisbursements"`
 		TotalSettlementPointsCents int64                             `json:"totalSettlementPointsCents"`
 		Unit                       string                            `json:"unit"`
@@ -1573,8 +1573,8 @@ func TestPredictionAdminLifecycleRoutesSupportOpenCloseAndVoid(t *testing.T) {
 	if payload.Status != prediction.MarketStatusVoided {
 		t.Fatalf("expected void response status voided, got %s", payload.Status)
 	}
-	if payload.TianggeLifecycle.Stage != "invalid" || !payload.TianggeLifecycle.Terminal {
-		t.Fatalf("expected void response Tiangge lifecycle invalid terminal, got %+v", payload.TianggeLifecycle)
+	if payload.TapTradeLifecycle.Stage != "invalid" || !payload.TapTradeLifecycle.Terminal {
+		t.Fatalf("expected void response TapTrade lifecycle invalid terminal, got %+v", payload.TapTradeLifecycle)
 	}
 	if len(payload.PointDisbursements) != 1 || payload.PointDisbursements[0].SettlementPointsCents != 53 {
 		t.Fatalf("expected one point disbursement for 53 points cents, got %+v", payload.PointDisbursements)
@@ -1603,7 +1603,7 @@ func TestPredictionAdminLifecycleReasonRejectsMoneyWording(t *testing.T) {
 	)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/markets/mkt-missing/lifecycle/open", strings.NewReader(`{"reason":"cash payout review"}`))
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 
@@ -1668,7 +1668,7 @@ func TestPredictionAdminSettlementReasonsRejectMoneyWording(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodPost, tc.path, strings.NewReader(tc.body))
-			req = req.WithContext(httpx.WithTestUser(req.Context(), tc.adminID, tc.adminID+"@phoenix.local", "admin"))
+			req = req.WithContext(httpx.WithTestUser(req.Context(), tc.adminID, tc.adminID+"@taptrade.local", "admin"))
 			res := httptest.NewRecorder()
 			handler.ServeHTTP(res, req)
 
@@ -1712,7 +1712,7 @@ func TestPredictionAdminDisputeResolutionNoteRejectsMoneyWording(t *testing.T) {
 	)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/disputes/missing/resolve", strings.NewReader(`{"decision":"reject","note":"cash payout dispute note"}`))
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-dispute-unsafe", "admin-dispute@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-dispute-unsafe", "admin-dispute@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 
@@ -1785,7 +1785,7 @@ func TestPredictionAdminWindowedResolutionRoutesEnforceDualControlAndDisputeGate
 		"attestationSource":"admin-manual",
 		"reason":"qa proposed resolution"
 	}`))
-	proposeReq = proposeReq.WithContext(httpx.WithTestUser(proposeReq.Context(), "admin-window-1", "admin1@phoenix.local", "admin"))
+	proposeReq = proposeReq.WithContext(httpx.WithTestUser(proposeReq.Context(), "admin-window-1", "admin1@taptrade.local", "admin"))
 	proposeRes := httptest.NewRecorder()
 	handler.ServeHTTP(proposeRes, proposeReq)
 	if proposeRes.Code != http.StatusOK {
@@ -1814,7 +1814,7 @@ func TestPredictionAdminWindowedResolutionRoutesEnforceDualControlAndDisputeGate
 		"result":"yes",
 		"attestationSource":"admin-manual"
 	}`))
-	directSettleReq = directSettleReq.WithContext(httpx.WithTestUser(directSettleReq.Context(), "admin-window-2", "admin2@phoenix.local", "admin"))
+	directSettleReq = directSettleReq.WithContext(httpx.WithTestUser(directSettleReq.Context(), "admin-window-2", "admin2@taptrade.local", "admin"))
 	directSettleRes := httptest.NewRecorder()
 	handler.ServeHTTP(directSettleRes, directSettleReq)
 	if directSettleRes.Code != http.StatusBadRequest {
@@ -1823,7 +1823,7 @@ func TestPredictionAdminWindowedResolutionRoutesEnforceDualControlAndDisputeGate
 
 	store.proposals[market.ID].ChallengeEndsAt = time.Now().UTC().Add(-time.Minute)
 	selfFinalizeReq := httptest.NewRequest(http.MethodPost, "/api/v1/admin/markets/"+market.ID+"/finalize", nil)
-	selfFinalizeReq = selfFinalizeReq.WithContext(httpx.WithTestUser(selfFinalizeReq.Context(), "admin-window-1", "admin1@phoenix.local", "admin"))
+	selfFinalizeReq = selfFinalizeReq.WithContext(httpx.WithTestUser(selfFinalizeReq.Context(), "admin-window-1", "admin1@taptrade.local", "admin"))
 	selfFinalizeRes := httptest.NewRecorder()
 	handler.ServeHTTP(selfFinalizeRes, selfFinalizeReq)
 	if selfFinalizeRes.Code != http.StatusBadRequest {
@@ -1834,7 +1834,7 @@ func TestPredictionAdminWindowedResolutionRoutesEnforceDualControlAndDisputeGate
 		"marketId":"`+market.ID+`",
 		"reason":"source did not match the posted criteria"
 	}`))
-	disputeReq = disputeReq.WithContext(httpx.WithTestUser(disputeReq.Context(), "u-windowed-holder", "holder@tiangge.local", "player"))
+	disputeReq = disputeReq.WithContext(httpx.WithTestUser(disputeReq.Context(), "u-windowed-holder", "holder@taptrade.local", "player"))
 	disputeRes := httptest.NewRecorder()
 	handler.ServeHTTP(disputeRes, disputeReq)
 	if disputeRes.Code != http.StatusCreated {
@@ -1859,7 +1859,7 @@ func TestPredictionAdminWindowedResolutionRoutesEnforceDualControlAndDisputeGate
 	}
 
 	queueReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/disputes?status=open", nil)
-	queueReq = queueReq.WithContext(httpx.WithTestUser(queueReq.Context(), "admin-window-2", "admin2@phoenix.local", "admin"))
+	queueReq = queueReq.WithContext(httpx.WithTestUser(queueReq.Context(), "admin-window-2", "admin2@taptrade.local", "admin"))
 	queueRes := httptest.NewRecorder()
 	handler.ServeHTTP(queueRes, queueReq)
 	if queueRes.Code != http.StatusOK {
@@ -1886,7 +1886,7 @@ func TestPredictionAdminWindowedResolutionRoutesEnforceDualControlAndDisputeGate
 		"decision":"reject",
 		"note":"proposer must not review own proposed result"
 	}`))
-	proposerResolveReq = proposerResolveReq.WithContext(httpx.WithTestUser(proposerResolveReq.Context(), "admin-window-1", "admin1@phoenix.local", "admin"))
+	proposerResolveReq = proposerResolveReq.WithContext(httpx.WithTestUser(proposerResolveReq.Context(), "admin-window-1", "admin1@taptrade.local", "admin"))
 	proposerResolveRes := httptest.NewRecorder()
 	handler.ServeHTTP(proposerResolveRes, proposerResolveReq)
 	if proposerResolveRes.Code != http.StatusBadRequest {
@@ -1897,7 +1897,7 @@ func TestPredictionAdminWindowedResolutionRoutesEnforceDualControlAndDisputeGate
 	}
 
 	blockedFinalizeReq := httptest.NewRequest(http.MethodPost, "/api/v1/admin/markets/"+market.ID+"/finalize", nil)
-	blockedFinalizeReq = blockedFinalizeReq.WithContext(httpx.WithTestUser(blockedFinalizeReq.Context(), "admin-window-2", "admin2@phoenix.local", "admin"))
+	blockedFinalizeReq = blockedFinalizeReq.WithContext(httpx.WithTestUser(blockedFinalizeReq.Context(), "admin-window-2", "admin2@taptrade.local", "admin"))
 	blockedFinalizeRes := httptest.NewRecorder()
 	handler.ServeHTTP(blockedFinalizeRes, blockedFinalizeReq)
 	if blockedFinalizeRes.Code != http.StatusBadRequest {
@@ -1908,7 +1908,7 @@ func TestPredictionAdminWindowedResolutionRoutesEnforceDualControlAndDisputeGate
 		"decision":"reject",
 		"note":"challenge reviewed by second admin"
 	}`))
-	resolveReq = resolveReq.WithContext(httpx.WithTestUser(resolveReq.Context(), "admin-window-2", "admin2@phoenix.local", "admin"))
+	resolveReq = resolveReq.WithContext(httpx.WithTestUser(resolveReq.Context(), "admin-window-2", "admin2@taptrade.local", "admin"))
 	resolveRes := httptest.NewRecorder()
 	handler.ServeHTTP(resolveRes, resolveReq)
 	if resolveRes.Code != http.StatusOK {
@@ -1930,7 +1930,7 @@ func TestPredictionAdminWindowedResolutionRoutesEnforceDualControlAndDisputeGate
 	}
 
 	finalizeReq := httptest.NewRequest(http.MethodPost, "/api/v1/admin/markets/"+market.ID+"/finalize", nil)
-	finalizeReq = finalizeReq.WithContext(httpx.WithTestUser(finalizeReq.Context(), "admin-window-2", "admin2@phoenix.local", "admin"))
+	finalizeReq = finalizeReq.WithContext(httpx.WithTestUser(finalizeReq.Context(), "admin-window-2", "admin2@taptrade.local", "admin"))
 	finalizeRes := httptest.NewRecorder()
 	handler.ServeHTTP(finalizeRes, finalizeReq)
 	if finalizeRes.Code != http.StatusOK {
@@ -1946,8 +1946,8 @@ func TestPredictionAdminWindowedResolutionRoutesEnforceDualControlAndDisputeGate
 	if len(settlementPayload.PointDisbursements) != 1 || settlementPayload.PointDisbursements[0].SettlementPointsCents != 200 {
 		t.Fatalf("expected one 200 point-cent disbursement, got %+v", settlementPayload.PointDisbursements)
 	}
-	if settlementPayload.TianggeLifecycle.Stage != "settled" {
-		t.Fatalf("expected settled lifecycle metadata, got %+v", settlementPayload.TianggeLifecycle)
+	if settlementPayload.TapTradeLifecycle.Stage != "settled" {
+		t.Fatalf("expected settled lifecycle metadata, got %+v", settlementPayload.TapTradeLifecycle)
 	}
 	for _, retired := range []string{`"payouts"`, `"payoutCents"`, `"pnlCents"`, `"totalPayoutCents"`, `"payoutsTotal"`, `"payoutsCompleted"`, `"currency"`} {
 		if strings.Contains(finalizeRes.Body.String(), retired) {
@@ -2032,7 +2032,7 @@ func TestPredictionAdminWindowedResolutionAllowsExplicitZeroHourWindow(t *testin
 		"attestationSource":"admin-manual",
 		"reason":"qa immediate proposed resolution"
 	}`))
-	proposeReq = proposeReq.WithContext(httpx.WithTestUser(proposeReq.Context(), "admin-zero-1", "zero1@phoenix.local", "admin"))
+	proposeReq = proposeReq.WithContext(httpx.WithTestUser(proposeReq.Context(), "admin-zero-1", "zero1@taptrade.local", "admin"))
 	proposeRes := httptest.NewRecorder()
 	handler.ServeHTTP(proposeRes, proposeReq)
 	if proposeRes.Code != http.StatusOK {
@@ -2050,7 +2050,7 @@ func TestPredictionAdminWindowedResolutionAllowsExplicitZeroHourWindow(t *testin
 	}
 
 	selfFinalizeReq := httptest.NewRequest(http.MethodPost, "/api/v1/admin/markets/"+market.ID+"/finalize", nil)
-	selfFinalizeReq = selfFinalizeReq.WithContext(httpx.WithTestUser(selfFinalizeReq.Context(), "admin-zero-1", "zero1@phoenix.local", "admin"))
+	selfFinalizeReq = selfFinalizeReq.WithContext(httpx.WithTestUser(selfFinalizeReq.Context(), "admin-zero-1", "zero1@taptrade.local", "admin"))
 	selfFinalizeRes := httptest.NewRecorder()
 	handler.ServeHTTP(selfFinalizeRes, selfFinalizeReq)
 	if selfFinalizeRes.Code != http.StatusBadRequest {
@@ -2058,7 +2058,7 @@ func TestPredictionAdminWindowedResolutionAllowsExplicitZeroHourWindow(t *testin
 	}
 
 	finalizeReq := httptest.NewRequest(http.MethodPost, "/api/v1/admin/markets/"+market.ID+"/finalize", nil)
-	finalizeReq = finalizeReq.WithContext(httpx.WithTestUser(finalizeReq.Context(), "admin-zero-2", "zero2@phoenix.local", "admin"))
+	finalizeReq = finalizeReq.WithContext(httpx.WithTestUser(finalizeReq.Context(), "admin-zero-2", "zero2@taptrade.local", "admin"))
 	finalizeRes := httptest.NewRecorder()
 	handler.ServeHTTP(finalizeRes, finalizeReq)
 	if finalizeRes.Code != http.StatusOK {
@@ -2071,8 +2071,8 @@ func TestPredictionAdminWindowedResolutionAllowsExplicitZeroHourWindow(t *testin
 	if settlementPayload.Unit != "PTS" || settlementPayload.TotalSettlementPointsCents != 100 {
 		t.Fatalf("expected one winning share settled in PTS, got total=%d unit=%q", settlementPayload.TotalSettlementPointsCents, settlementPayload.Unit)
 	}
-	if settlementPayload.TianggeLifecycle.Stage != "settled" {
-		t.Fatalf("expected settled lifecycle metadata, got %+v", settlementPayload.TianggeLifecycle)
+	if settlementPayload.TapTradeLifecycle.Stage != "settled" {
+		t.Fatalf("expected settled lifecycle metadata, got %+v", settlementPayload.TapTradeLifecycle)
 	}
 	for _, retired := range []string{`"payouts"`, `"payoutCents"`, `"pnlCents"`, `"totalPayoutCents"`, `"currency"`} {
 		if strings.Contains(finalizeRes.Body.String(), retired) {
@@ -2176,7 +2176,7 @@ func TestPredictionAdminLifecycleAuditRouteListsMappedEvents(t *testing.T) {
 
 	for _, action := range []string{"open", "halt"} {
 		req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/markets/"+market.ID+"/lifecycle/"+action, strings.NewReader(`{"reason":"audit smoke"}`))
-		req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-audit", "audit@phoenix.local", "admin"))
+		req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-audit", "audit@taptrade.local", "admin"))
 		res := httptest.NewRecorder()
 		handler.ServeHTTP(res, req)
 		if res.Code != http.StatusOK {
@@ -2185,7 +2185,7 @@ func TestPredictionAdminLifecycleAuditRouteListsMappedEvents(t *testing.T) {
 	}
 
 	auditReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/markets/"+market.ID+"/lifecycle", nil)
-	auditReq = auditReq.WithContext(httpx.WithTestUser(auditReq.Context(), "admin-audit", "audit@phoenix.local", "admin"))
+	auditReq = auditReq.WithContext(httpx.WithTestUser(auditReq.Context(), "admin-audit", "audit@taptrade.local", "admin"))
 	auditRes := httptest.NewRecorder()
 	handler.ServeHTTP(auditRes, auditReq)
 	if auditRes.Code != http.StatusOK {
@@ -2198,7 +2198,7 @@ func TestPredictionAdminLifecycleAuditRouteListsMappedEvents(t *testing.T) {
 			EventType        string                            `json:"eventType"`
 			ActorID          *string                           `json:"actorId"`
 			Reason           *string                           `json:"reason"`
-			TianggeLifecycle prediction.TianggeMarketLifecycle `json:"tianggeLifecycle"`
+			TapTradeLifecycle prediction.TapTradeMarketLifecycle `json:"taptradeLifecycle"`
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(auditRes.Body.Bytes(), &payload); err != nil {
@@ -2207,10 +2207,10 @@ func TestPredictionAdminLifecycleAuditRouteListsMappedEvents(t *testing.T) {
 	if payload.MarketID != market.ID || len(payload.Data) != 2 {
 		t.Fatalf("expected two lifecycle audit rows for %s, got %+v", market.ID, payload)
 	}
-	if payload.Data[0].EventType != string(prediction.MarketStatusOpen) || payload.Data[0].TianggeLifecycle.Stage != "open" {
+	if payload.Data[0].EventType != string(prediction.MarketStatusOpen) || payload.Data[0].TapTradeLifecycle.Stage != "open" {
 		t.Fatalf("expected first lifecycle audit row to map open, got %+v", payload.Data[0])
 	}
-	if payload.Data[1].EventType != string(prediction.MarketStatusHalted) || payload.Data[1].TianggeLifecycle.Stage != "paused" {
+	if payload.Data[1].EventType != string(prediction.MarketStatusHalted) || payload.Data[1].TapTradeLifecycle.Stage != "paused" {
 		t.Fatalf("expected second lifecycle audit row to map paused, got %+v", payload.Data[1])
 	}
 	if payload.Data[1].ActorID == nil || *payload.Data[1].ActorID != "admin-audit" {
@@ -2248,7 +2248,7 @@ func TestPredictionAdminLifecycleAuditRouteRedactsLegacyUnsafeReason(t *testing.
 	}}
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/markets/mkt-admin-unsafe-lifecycle/lifecycle", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-audit", "audit@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-audit", "audit@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusOK {
@@ -2325,7 +2325,7 @@ func TestPredictionAdminLifecycleAuditCSVExport(t *testing.T) {
 	}
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/markets/mkt-admin-export-1/lifecycle?format=csv", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-export", "export@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-export", "export@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusOK {
@@ -2345,7 +2345,7 @@ func TestPredictionAdminLifecycleAuditCSVExport(t *testing.T) {
 	if len(rows) != 3 {
 		t.Fatalf("expected header plus two rows, got %+v", rows)
 	}
-	if got := rows[0]; got[0] != "id" || got[3] != "tiangge_stage" || got[7] != "reason" {
+	if got := rows[0]; got[0] != "id" || got[3] != "taptrade_stage" || got[7] != "reason" {
 		t.Fatalf("unexpected csv header: %+v", got)
 	}
 	if got := rows[1]; got[2] != string(prediction.MarketStatusHalted) || got[3] != "paused" || got[5] != actorID {
@@ -2411,7 +2411,7 @@ func TestPredictionAdminMarketsCSVExport(t *testing.T) {
 	}
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/markets?format=csv&pageSize=100", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-export", "export@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-export", "export@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusOK {
@@ -2431,7 +2431,7 @@ func TestPredictionAdminMarketsCSVExport(t *testing.T) {
 	if len(rows) != 2 {
 		t.Fatalf("expected header plus one row, got %+v", rows)
 	}
-	if got := rows[0]; got[0] != "market_id" || got[5] != "tiangge_stage" || got[10] != "volume_points_cents" {
+	if got := rows[0]; got[0] != "market_id" || got[5] != "taptrade_stage" || got[10] != "volume_points_cents" {
 		t.Fatalf("unexpected csv header: %+v", got)
 	}
 	got := rows[1]
@@ -2479,7 +2479,7 @@ func TestPredictionAdminMarketsReadRedactsUnsafeCopyWithoutMutatingMarket(t *tes
 	}
 
 	jsonReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/markets?pageSize=100", nil)
-	jsonReq = jsonReq.WithContext(httpx.WithTestUser(jsonReq.Context(), "admin-unsafe-read", "unsafe-read@phoenix.local", "admin"))
+	jsonReq = jsonReq.WithContext(httpx.WithTestUser(jsonReq.Context(), "admin-unsafe-read", "unsafe-read@taptrade.local", "admin"))
 	jsonRes := httptest.NewRecorder()
 	handler.ServeHTTP(jsonRes, jsonReq)
 	if jsonRes.Code != http.StatusOK {
@@ -2487,7 +2487,7 @@ func TestPredictionAdminMarketsReadRedactsUnsafeCopyWithoutMutatingMarket(t *tes
 	}
 
 	csvReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/markets?format=csv&pageSize=100", nil)
-	csvReq = csvReq.WithContext(httpx.WithTestUser(csvReq.Context(), "admin-unsafe-read", "unsafe-read@phoenix.local", "admin"))
+	csvReq = csvReq.WithContext(httpx.WithTestUser(csvReq.Context(), "admin-unsafe-read", "unsafe-read@taptrade.local", "admin"))
 	csvRes := httptest.NewRecorder()
 	handler.ServeHTTP(csvRes, csvReq)
 	if csvRes.Code != http.StatusOK {
@@ -2495,7 +2495,7 @@ func TestPredictionAdminMarketsReadRedactsUnsafeCopyWithoutMutatingMarket(t *tes
 	}
 
 	detailReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/markets/mkt-admin-unsafe-read", nil)
-	detailReq = detailReq.WithContext(httpx.WithTestUser(detailReq.Context(), "admin-unsafe-read", "unsafe-read@phoenix.local", "admin"))
+	detailReq = detailReq.WithContext(httpx.WithTestUser(detailReq.Context(), "admin-unsafe-read", "unsafe-read@taptrade.local", "admin"))
 	detailRes := httptest.NewRecorder()
 	handler.ServeHTTP(detailRes, detailReq)
 	if detailRes.Code != http.StatusOK {
@@ -2578,7 +2578,7 @@ func TestPredictionAdminSettlementReplayResumesIncompleteDisbursements(t *testin
 	)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/settlements/replay", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-replay", "replay@phoenix.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-replay", "replay@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusOK {
@@ -2606,7 +2606,7 @@ func TestPredictionAdminSettlementReplayResumesIncompleteDisbursements(t *testin
 	}
 
 	second := httptest.NewRequest(http.MethodPost, "/api/v1/admin/settlements/replay", nil)
-	second = second.WithContext(httpx.WithTestUser(second.Context(), "admin-replay", "replay@phoenix.local", "admin"))
+	second = second.WithContext(httpx.WithTestUser(second.Context(), "admin-replay", "replay@taptrade.local", "admin"))
 	secondRes := httptest.NewRecorder()
 	handler.ServeHTTP(secondRes, second)
 	if secondRes.Code != http.StatusOK {

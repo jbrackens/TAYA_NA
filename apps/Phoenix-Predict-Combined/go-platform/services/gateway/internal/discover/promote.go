@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"phoenix-revival/gateway/internal/prediction"
+	"taptrade/gateway/internal/prediction"
 )
 
 // Settlement defaults applied to every promoted market.

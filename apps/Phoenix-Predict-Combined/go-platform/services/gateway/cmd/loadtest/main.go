@@ -9,7 +9,7 @@
 //
 //	go run ./cmd/loadtest \
 //	  -gateway http://localhost:18080 \
-//	  -username demo@phoenix.local \
+//	  -username demo@taptrade.local \
 //	  -password demo123 \
 //	  -ticker IMP-5D61C3F4 \
 //	  -orders 200 \
@@ -58,7 +58,7 @@ type Config struct {
 func parseFlags() Config {
 	var c Config
 	flag.StringVar(&c.Gateway, "gateway", "http://localhost:18080", "gateway base URL")
-	flag.StringVar(&c.Username, "username", "demo@phoenix.local", "login username")
+	flag.StringVar(&c.Username, "username", "demo@taptrade.local", "login username")
 	flag.StringVar(&c.Password, "password", "demo123", "login password")
 	flag.StringVar(&c.Ticker, "ticker", "", "single market ticker (mutually exclusive with -tickers)")
 	flag.StringVar(&c.Tickers, "tickers", "", "comma-separated tickers for multi-market sweep (validates linear lock scaling)")

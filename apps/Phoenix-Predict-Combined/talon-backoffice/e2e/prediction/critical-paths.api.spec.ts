@@ -61,7 +61,7 @@ test("public market + category data is served from the database", async ({
 test("demo player can place a market order that fills against the CLOB", async ({
   request,
 }) => {
-  const csrf = await login(request, "demo@phoenix.local", "demo123");
+  const csrf = await login(request, "demo@taptrade.local", "demo123");
 
   const mres = await request.get("/api/v1/markets?status=open&pageSize=200");
   const markets = (await mres.json()).data ?? [];
@@ -91,7 +91,7 @@ test("demo player can place a market order that fills against the CLOB", async (
 });
 
 test("portfolio summary returns the accounting shape", async ({ request }) => {
-  await login(request, "demo@phoenix.local", "demo123");
+  await login(request, "demo@taptrade.local", "demo123");
   const res = await request.get("/api/v1/portfolio/summary");
   expect(res.ok()).toBeTruthy();
   const s = await res.json();
@@ -155,7 +155,7 @@ test("KYC lifecycle: submit -> pending -> admin approve -> approved", async ({
   // Admin approves: re-login on this context swaps the session to admin
   // (single-context sequential flow — sufficient since we re-login as the user
   // afterward to verify persistence).
-  const adminCsrf = await login(request, "admin@phoenix.local", "admin123");
+  const adminCsrf = await login(request, "admin@taptrade.local", "admin123");
   const decision = await request.post("/api/v1/admin/kyc/decision", {
     headers: csrfHeaders(adminCsrf),
     data: { userId, approve: true },
@@ -175,7 +175,7 @@ test("KYC lifecycle: submit -> pending -> admin approve -> approved", async ({
 });
 
 test("authz: a player cannot reach admin APIs", async ({ request }) => {
-  await login(request, "demo@phoenix.local", "demo123");
+  await login(request, "demo@taptrade.local", "demo123");
   const res = await request.get("/api/v1/admin/punters?page=1&pageSize=10");
   expect(res.status(), "player must be forbidden from admin endpoints").toBe(
     403,
@@ -183,7 +183,7 @@ test("authz: a player cannot reach admin APIs", async ({ request }) => {
 });
 
 test("launch money and crypto routes are absent", async ({ request }) => {
-  await login(request, "demo@phoenix.local", "demo123");
+  await login(request, "demo@taptrade.local", "demo123");
 
   const status = await request.get("/api/v1/status");
   expect(status.ok()).toBeTruthy();
@@ -467,7 +467,7 @@ test("admin can close and resolve a traded market, crediting the user's point le
   expect(orderBody.order.status).toBe("filled");
   expect(orderBody.order.unit).toBe("PTS");
 
-  const adminCsrf = await login(request, "admin@phoenix.local", "admin123");
+  const adminCsrf = await login(request, "admin@taptrade.local", "admin123");
   const close = await request.post(
     `/api/v1/admin/markets/${market.id}/lifecycle/close`,
     {
@@ -628,7 +628,7 @@ test("admin can close and resolve a traded market, crediting the user's point le
 test("dual-admin challenge resolution reviews disputes before point settlement", async ({
   request,
 }) => {
-  const username = "demo@phoenix.local";
+  const username = "demo@taptrade.local";
   const password = "demo123";
   const userId = "u-1";
   const userCsrf = await login(request, username, password);
@@ -671,7 +671,7 @@ test("dual-admin challenge resolution reviews disputes before point settlement",
 
   const proposingAdminCsrf = await login(
     request,
-    "admin@phoenix.local",
+    "admin@taptrade.local",
     "admin123",
   );
   const close = await request.post(
@@ -757,7 +757,7 @@ test("dual-admin challenge resolution reviews disputes before point settlement",
 
   const proposingAgainCsrf = await login(
     request,
-    "admin@phoenix.local",
+    "admin@taptrade.local",
     "admin123",
   );
   const proposerReview = await request.post(
@@ -775,7 +775,7 @@ test("dual-admin challenge resolution reviews disputes before point settlement",
     `proposer dispute review rejected body=${await proposerReview.text()}`,
   ).toBe(400);
 
-  const opsCsrf = await login(request, "ops@phoenix.local", "admin123");
+  const opsCsrf = await login(request, "ops@taptrade.local", "admin123");
   const queue = await request.get("/api/v1/admin/disputes?status=open");
   expect(
     queue.ok(),

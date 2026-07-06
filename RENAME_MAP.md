@@ -11,7 +11,7 @@ See CURRENT_STATE.md table. Entries below are CONCRETE artifacts as they are pla
 - Go module phoenix-revival/gateway → taptrade/gateway (+ all internal imports)
 - docker images phoenix-gateway → taptrade-gateway, phoenix-auth → taptrade-auth,
   predict-frontend (no legacy token — keep)
-- seed users *@phoenix.local → *@taptrade.local (auth service seeds + docs + tests)
+- seed users *@taptrade.local → *@taptrade.local (auth service seeds + docs + tests)
 - dirs (LAST): Phoenix-Predict-Combined → taptrade-platform; talon-backoffice → frontend
 
 ## Executed
@@ -40,7 +40,7 @@ Measured targets (active scope, lockfiles excluded — locks regenerate at batch
   the preservation-dossier contract; BATCH F)
 - phoenix-revival/gateway Go module: 142 files → module taptrade/gateway + goimports
   rewrite (BATCH H, AFTER task_633e7ad3 lands + branch rebased on main)
-- *@phoenix.local seed emails: 48 files (docs+tests+seeds; auth service seeds live in
+- *@taptrade.local seed emails: 48 files (docs+tests+seeds; auth service seeds live in
   frozen go-platform) → @taptrade.local, split: docs/tests now (BATCH E), go seeds in
   BATCH H
 - docker images phoenix-gateway/phoenix-auth: 4 refs (.github + compose) → taptrade-*
@@ -58,7 +58,7 @@ env shims) → G (npm scope atomic) → H (Go module + go seeds, post-unfreeze) 
 I (docker images/infra) → J (directories) → final verify sweep.
 - Batch E (iteration 6): phoenix/talon prose→TapTrade in 37 living docs (masked:
   Phoenix-Predict-Combined, talon-backoffice, @phoenix-ui, phoenix-revival,
-  phoenix-gateway/auth, PhoenixApiClient, archive dir names, phoenix.local, TALON_*).
+  phoenix-gateway/auth, PhoenixApiClient, archive dir names, taptrade.local, TALON_*).
 - Batch F (iteration 6): PhoenixApiClient⇄TapTradeApiClient flip (class↔alias);
   TALON_*→TAPTRADE_OFFICE_* (17 scripts, no shims — internal-only, verified);
   Makefile verify-talon→verify-office + legacy alias target.
@@ -71,3 +71,9 @@ I (docker images/infra) → J (directories) → final verify sweep.
   outside the backend task's file set (masked: TianggeMarketLifecycle identifier family).
   Deferred to H proper: the identifier + 3 overlapping files + migrations + both Go
   module paths (phoenix-revival/{gateway,auth}).
+- Batch H (iteration 8): Go modules phoenix-revival/{gateway,auth,platform} →
+  taptrade/{gateway,auth,platform} (142 files, imports rewritten);
+  TianggeMarketLifecycle family → TapTradeMarketLifecycle (+qa script, spec);
+  046_tiangge_launch_taxonomy.sql → 046_taptrade_launch_taxonomy.sql (version-tracked,
+  safe); @phoenix.local → @taptrade.local (30 files, atomic with seeders); go-platform
+  residual strings (30 files).

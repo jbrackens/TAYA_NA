@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"phoenix-revival/gateway/internal/content"
-	"phoenix-revival/platform/transport/httpx"
+	"taptrade/gateway/internal/content"
+	"taptrade/platform/transport/httpx"
 )
 
 func TestAdminContentPageCreateRejectsMoneyWordingBeforeService(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"phoenix-revival/gateway/internal/compliance"
+	"taptrade/gateway/internal/compliance"
 )
 
 // Audit SEC-03: with a trusted edge declared (GEO_TRUSTED_PROXY_MODE=require +

@@ -4,7 +4,7 @@ import { expect, Page, test as base } from "@playwright/test";
  * Shared test helpers for Predict player-app smoke tests.
  *
  * Authentication is handled by auth.setup.ts (runs once before the suite,
- * logs in as demo@phoenix.local, writes tests/.auth/demo.json which each
+ * logs in as demo@taptrade.local, writes tests/.auth/demo.json which each
  * test loads via storageState). Tests don't need to login themselves.
  *
  * For unauthenticated flows (/auth/login), override with:

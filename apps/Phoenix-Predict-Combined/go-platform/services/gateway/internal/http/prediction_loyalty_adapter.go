@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 
-	"phoenix-revival/gateway/internal/loyalty"
-	"phoenix-revival/gateway/internal/prediction"
+	"taptrade/gateway/internal/loyalty"
+	"taptrade/gateway/internal/prediction"
 )
 
 // predictionLoyaltyAdapter bridges loyalty.PredictService to the
