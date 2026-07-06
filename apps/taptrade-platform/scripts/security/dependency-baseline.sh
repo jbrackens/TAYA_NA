@@ -14,7 +14,7 @@ PLAYER_APP_REPO="$ROOT_DIR/frontend/packages/app"
 
 mkdir -p "$ARTIFACT_DIR"
 
-TAPTRADE_OFFICE_AUDIT_LOG="$ARTIFACT_DIR/talon_yarn_audit_${TS_TAG}.log"
+TAPTRADE_OFFICE_AUDIT_LOG="$ARTIFACT_DIR/office_yarn_audit_${TS_TAG}.log"
 PLAYER_APP_AUDIT_LOG="$ARTIFACT_DIR/taptrade_player_yarn_audit_${TS_TAG}.log"
 
 run_audit() {
@@ -84,7 +84,7 @@ audit_summary() {
   ' "$audit_log"
 }
 
-talon_exit="$(run_audit "$TAPTRADE_OFFICE_REPO" "$TAPTRADE_OFFICE_AUDIT_LOG")"
+office_exit="$(run_audit "$TAPTRADE_OFFICE_REPO" "$TAPTRADE_OFFICE_AUDIT_LOG")"
 player_app_exit="$(run_audit "$PLAYER_APP_REPO" "$PLAYER_APP_AUDIT_LOG")"
 
 tooling_gitleaks="$(command -v gitleaks || true)"
@@ -93,19 +93,19 @@ tooling_osv="$(command -v osv-scanner || true)"
 tooling_sbt="$(command -v sbt || true)"
 
 backend_stack_versions="$(rg -n "val\\s+(scala|akka|akkaHttp|flyway|keycloak|logback|slick|tapir)\\s*=\\s*\\\"[0-9][^\\\"]*\\\"" "$BACKEND_REPO/project/Dependencies.scala" | sed 's|^|  - |')"
-talon_next="$(read_pkg_version "$TAPTRADE_OFFICE_REPO/packages/office/package.json" "$TAPTRADE_OFFICE_REPO/package.json" next)"
+office_next="$(read_pkg_version "$TAPTRADE_OFFICE_REPO/packages/office/package.json" "$TAPTRADE_OFFICE_REPO/package.json" next)"
 player_app_next="$(read_pkg_version "$PLAYER_APP_REPO/package.json" "$TAPTRADE_OFFICE_REPO/package.json" next)"
-talon_react="$(read_pkg_version "$TAPTRADE_OFFICE_REPO/packages/office/package.json" "$TAPTRADE_OFFICE_REPO/package.json" react)"
+office_react="$(read_pkg_version "$TAPTRADE_OFFICE_REPO/packages/office/package.json" "$TAPTRADE_OFFICE_REPO/package.json" react)"
 player_app_react="$(read_pkg_version "$PLAYER_APP_REPO/package.json" "$TAPTRADE_OFFICE_REPO/package.json" react)"
-talon_audit_summary="$(audit_summary "$TAPTRADE_OFFICE_AUDIT_LOG")"
+office_audit_summary="$(audit_summary "$TAPTRADE_OFFICE_AUDIT_LOG")"
 player_app_audit_summary="$(audit_summary "$PLAYER_APP_AUDIT_LOG")"
 
 audit_blocker_note="none; advisory payloads captured"
 if grep -q "ENOTFOUND registry.yarnpkg.com" "$TAPTRADE_OFFICE_AUDIT_LOG" "$PLAYER_APP_AUDIT_LOG" 2>/dev/null; then
   audit_blocker_note="DNS/network unavailable for registry.yarnpkg.com in this execution environment"
-elif [[ "$talon_exit" == "137" || "$player_app_exit" == "137" ]]; then
+elif [[ "$office_exit" == "137" || "$player_app_exit" == "137" ]]; then
   audit_blocker_note="yarn audit process terminated (exit 137) in this Codex runtime"
-elif [[ "$talon_audit_summary" == "no auditSummary payload captured" || "$player_app_audit_summary" == "no auditSummary payload captured" ]]; then
+elif [[ "$office_audit_summary" == "no auditSummary payload captured" || "$player_app_audit_summary" == "no auditSummary payload captured" ]]; then
   audit_blocker_note="one or more yarn audit logs did not include a parseable auditSummary payload"
 fi
 
@@ -125,7 +125,7 @@ cat > "$REPORT_OUT" <<EOF
 
 ## Executed Audit Commands
 - TapTrade office: \`yarn audit --level high --json\` (Node 20)
-  - Exit code: **$talon_exit**
+  - Exit code: **$office_exit**
   - Log: \`revival/artifacts/$(basename "$TAPTRADE_OFFICE_AUDIT_LOG")\`
 - TapTrade player app: \`yarn audit --level high --json\` (Node 20)
   - Exit code: **$player_app_exit**
@@ -133,11 +133,11 @@ cat > "$REPORT_OUT" <<EOF
 
 ## Baseline Outcome
 - Online vulnerability audits produced advisory payloads for the launch TapTrade office workspace and TapTrade player app scopes.
-- TapTrade office audit summary: **$talon_audit_summary**.
+- TapTrade office audit summary: **$office_audit_summary**.
 - TapTrade player app audit summary: **$player_app_audit_summary**.
 - Current blocker: **$audit_blocker_note**.
 - Static dependency-risk baseline (version age / modernization pressure):
-  - TapTrade office frontend stack: Next **$talon_next**, React **$talon_react**
+  - TapTrade office frontend stack: Next **$office_next**, React **$office_react**
   - TapTrade player stack: Next **$player_app_next**, React **$player_app_react**
   - Backend core library versions (selected):
 $backend_stack_versions

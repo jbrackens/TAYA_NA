@@ -82,3 +82,6 @@ I (docker images/infra) → J (directories) → final verify sweep.
 - Final sweep (iteration 8): office Talon*→Office* identifier families (23 files);
   metric prefix phoenix_→taptrade_ (emitters+alerts, 5 files); dead viegg pipeline
   deleted (helm/Jenkinsfile/k8s scripts); spec.md + 45-file masked prose pass.
+- Final tail (iteration 8): localStorage phoenix_*→taptrade_* (+AuthProvider one-time
+  migration); PhoenixProvider* alerts→TapTradeProvider*; talon_yarn_audit→
+  office_yarn_audit pair; assorted script locals and manifest strings.

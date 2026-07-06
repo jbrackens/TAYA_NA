@@ -21,7 +21,7 @@ latest_audit_log() {
   echo "$latest"
 }
 
-TAPTRADE_OFFICE_AUDIT_LOG="${FRONTEND_RESIDUAL_TAPTRADE_OFFICE_AUDIT_LOG:-$(latest_audit_log talon_yarn_audit)}"
+TAPTRADE_OFFICE_AUDIT_LOG="${FRONTEND_RESIDUAL_TAPTRADE_OFFICE_AUDIT_LOG:-$(latest_audit_log office_yarn_audit)}"
 PLAYER_AUDIT_LOG="${FRONTEND_RESIDUAL_PLAYER_AUDIT_LOG:-$(latest_audit_log taptrade_player_yarn_audit)}"
 
 node - "$REPORT_PATH" "$ARTIFACT_PATH" "$TAPTRADE_OFFICE_AUDIT_LOG" "$PLAYER_AUDIT_LOG" <<'NODE'

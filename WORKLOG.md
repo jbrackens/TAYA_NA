@@ -201,3 +201,9 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
   prefix phoenix_ → taptrade_ renamed at emitters AND alert rules atomically (5 files;
   platform+gateway tests green); masked prose scrub over the remaining 45 unexplained
   files incl. spec.md; CACHE_FILE_REFERENCE.txt allowlisted as dated manifest.
+- FINAL TAIL (iteration 8 continued): localStorage key family phoenix_* → taptrade_*
+  across 9 files WITH a one-time in-browser migration in AuthProvider (live sessions
+  survive; old keys removed after copy); prometheus alert names PhoenixProvider* →
+  TapTradeProvider*; office_yarn_audit artifact pair renamed generator+consumer;
+  remaining script locals, office manifest/components, i18n comment, spec.md tail.
+  VERIFIED: app+office tsc green, bash -n green.

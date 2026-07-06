@@ -9,7 +9,7 @@ export const supportedLocales = [
 
 export const defaultLocale = "en";
 export const localeStorageKey = "hula_locale";
-export const legacyLocaleStorageKey = "phoenix_language";
+export const legacyLocaleStorageKey = "taptrade_language";
 
 export type SupportedLocale = (typeof supportedLocales)[number]["code"];
 

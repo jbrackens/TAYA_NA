@@ -56,7 +56,7 @@ describe("user-client preferences contract", () => {
     );
     assert.ok(
       profileSource.includes("localStorage.setItem(localeStorageKey") &&
-        profileSource.includes('localStorage.setItem("phoenix_timezone"') &&
+        profileSource.includes('localStorage.setItem("taptrade_timezone"') &&
         !profileSource.includes("currency"),
       "profile preferences should remain local language/timezone settings without currency",
     );

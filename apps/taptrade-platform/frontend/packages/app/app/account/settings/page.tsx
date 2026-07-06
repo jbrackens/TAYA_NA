@@ -8,7 +8,7 @@
  * pages router has no _app.tsx providing a Redux Provider after the App
  * Router migration. This rewrite uses the existing app i18n config
  * (app/lib/i18n/config.ts) and stores the timezone preference in
- * localStorage under `phoenix_timezone` (mirroring the language key).
+ * localStorage under `taptrade_timezone` (mirroring the language key).
  */
 
 import { useEffect, useState } from "react";
@@ -67,8 +67,8 @@ export default function SettingsPage() {
   const [savedFlash, setSavedFlash] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedLang = localStorage.getItem("phoenix_language");
-    const storedTz = localStorage.getItem("phoenix_timezone");
+    const storedLang = localStorage.getItem("taptrade_language");
+    const storedTz = localStorage.getItem("taptrade_timezone");
     if (storedLang && SUPPORTED_LANGUAGES.includes(storedLang)) {
       setLanguage(storedLang);
     } else {
@@ -79,14 +79,14 @@ export default function SettingsPage() {
 
   function handleLanguageChange(next: string) {
     setLanguage(next);
-    localStorage.setItem("phoenix_language", next);
+    localStorage.setItem("taptrade_language", next);
     void i18n.changeLanguage(next);
     flash(t("flash.languageUpdated", "Language updated"));
   }
 
   function handleTimezoneChange(next: string) {
     setTimezone(next);
-    localStorage.setItem("phoenix_timezone", next);
+    localStorage.setItem("taptrade_timezone", next);
     flash(t("flash.timezoneUpdated", "Timezone updated"));
   }
 

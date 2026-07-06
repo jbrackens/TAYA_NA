@@ -139,7 +139,7 @@ const TIMEZONES = [
 
 // Prediction markets price in cents (0–99 = implied probability), so an
 // "odds format" preference (Decimal/American/Fractional) does not apply.
-// This radio group + the phoenix_odds_format localStorage key are
+// This radio group + the taptrade_odds_format localStorage key are
 // sportsbook leftovers from the fork and were removed on 2026-05-03.
 
 export default function ProfilePage() {
@@ -161,7 +161,7 @@ export default function ProfilePage() {
   });
   const [prefTimezone, setPrefTimezone] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("phoenix_timezone") || "UTC";
+      return localStorage.getItem("taptrade_timezone") || "UTC";
     }
     return "UTC";
   });
@@ -284,7 +284,7 @@ export default function ProfilePage() {
       if (typeof window !== "undefined") {
         localStorage.setItem(localeStorageKey, prefLanguage);
         localStorage.setItem(legacyLocaleStorageKey, prefLanguage);
-        localStorage.setItem("phoenix_timezone", prefTimezone);
+        localStorage.setItem("taptrade_timezone", prefTimezone);
         document.cookie = `${localeStorageKey}=${encodeURIComponent(prefLanguage)}; Max-Age=31536000; Path=/; SameSite=Lax`;
       }
       i18n.changeLanguage(prefLanguage);

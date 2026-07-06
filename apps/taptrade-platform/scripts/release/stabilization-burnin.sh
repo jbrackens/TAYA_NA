@@ -136,10 +136,10 @@ rm -f "$auth_time_file" "$gateway_time_file" "$fixtures_time_file" /tmp/stabilit
 metrics_snapshot="$ARTIFACT_DIR/stability_metrics_${TS_TAG}.txt"
 {
   echo "# Auth metrics"
-  curl -s "$AUTH_BASE/metrics" | rg "phoenix_http_requests_total|phoenix_http_request_duration_ms_sum" || true
+  curl -s "$AUTH_BASE/metrics" | rg "taptrade_http_requests_total|taptrade_http_request_duration_ms_sum" || true
   echo
   echo "# Gateway metrics"
-  curl -s "$GATEWAY_BASE/metrics" | rg "phoenix_http_requests_total|phoenix_http_request_duration_ms_sum" || true
+  curl -s "$GATEWAY_BASE/metrics" | rg "taptrade_http_requests_total|taptrade_http_request_duration_ms_sum" || true
 } >"$metrics_snapshot"
 
 result="pass"

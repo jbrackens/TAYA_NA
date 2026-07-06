@@ -54,22 +54,31 @@ interface AuthProviderProps {
 
 function readStoredUser(): User | null {
   if (typeof window === "undefined") return null;
-  const id = localStorage.getItem("phoenix_user_id");
-  const username = localStorage.getItem("phoenix_username");
+  // One-time migration of pre-rebrand storage keys (phoenix_*) so live
+  // sessions survive the rename; runs before every read, no-ops once clean.
+  for (const key of ["access_token", "refresh_token", "user_id", "username"]) {
+    const legacy = localStorage.getItem(`phoenix_${key}`);
+    if (legacy !== null) {
+      localStorage.setItem(`taptrade_${key}`, legacy);
+      localStorage.removeItem(`phoenix_${key}`);
+    }
+  }
+  const id = localStorage.getItem("taptrade_user_id");
+  const username = localStorage.getItem("taptrade_username");
   if (!id || !username) return null;
   return { id, username };
 }
 
 function persistStoredUser(user: User) {
   if (typeof window === "undefined") return;
-  localStorage.setItem("phoenix_user_id", user.id);
-  localStorage.setItem("phoenix_username", user.username);
+  localStorage.setItem("taptrade_user_id", user.id);
+  localStorage.setItem("taptrade_username", user.username);
 }
 
 function clearStoredUser() {
   if (typeof window === "undefined") return;
-  localStorage.removeItem("phoenix_user_id");
-  localStorage.removeItem("phoenix_username");
+  localStorage.removeItem("taptrade_user_id");
+  localStorage.removeItem("taptrade_username");
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {

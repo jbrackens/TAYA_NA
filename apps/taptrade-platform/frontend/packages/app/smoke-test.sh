@@ -113,7 +113,7 @@ test_endpoint() {
   if [ "$http_code" = "200" ] || [ "$http_code" = "201" ]; then
     echo -e "${GREEN}$http_code OK${RESET}"
     ((PASS++))
-    printf "%s" "$body_content" > /tmp/phoenix_smoke_last_response.json
+    printf "%s" "$body_content" > /tmp/taptrade_smoke_last_response.json
     return 0
   fi
 
@@ -130,7 +130,7 @@ json_query() {
   node -e "
     const fs = require('fs');
     try {
-      const raw = fs.readFileSync('/tmp/phoenix_smoke_last_response.json', 'utf8');
+      const raw = fs.readFileSync('/tmp/taptrade_smoke_last_response.json', 'utf8');
       const data = JSON.parse(raw);
       const value = (function () { return ${expression}; })();
       if (value === undefined || value === null) process.exit(1);
@@ -272,6 +272,6 @@ fi
 echo -e "${BLUE}╚══════════════════════════════════════════════════════════════╝${RESET}"
 echo ""
 
-rm -f /tmp/phoenix_smoke_last_response.json
+rm -f /tmp/taptrade_smoke_last_response.json
 
 exit $FAIL

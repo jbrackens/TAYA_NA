@@ -2,9 +2,9 @@
  * Auth utilities for token management and auth header injection
  */
 
-const STORAGE_KEY_ACCESS = 'phoenix_access_token';
-const STORAGE_KEY_REFRESH = 'phoenix_refresh_token';
-const STORAGE_KEY_EXPIRES = 'phoenix_token_expires';
+const STORAGE_KEY_ACCESS = 'taptrade_access_token';
+const STORAGE_KEY_REFRESH = 'taptrade_refresh_token';
+const STORAGE_KEY_EXPIRES = 'taptrade_token_expires';
 
 export interface AuthTokens {
   accessToken: string;

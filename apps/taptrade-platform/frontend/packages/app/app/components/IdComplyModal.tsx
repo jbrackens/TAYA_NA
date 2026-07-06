@@ -102,7 +102,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080";
       const token =
         typeof window !== "undefined"
-          ? localStorage.getItem("phoenix_access_token")
+          ? localStorage.getItem("taptrade_access_token")
           : null;
       const res = await fetch(`${apiUrl}/api/v1/compliance/kba/start`, {
         method: "POST",
@@ -133,7 +133,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080";
       const token =
         typeof window !== "undefined"
-          ? localStorage.getItem("phoenix_access_token")
+          ? localStorage.getItem("taptrade_access_token")
           : null;
       const res = await fetch(`${apiUrl}/api/v1/compliance/kba/verify`, {
         method: "POST",
@@ -168,7 +168,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080";
       const token =
         typeof window !== "undefined"
-          ? localStorage.getItem("phoenix_access_token")
+          ? localStorage.getItem("taptrade_access_token")
           : null;
       const res = await fetch(`${apiUrl}/api/v1/compliance/idpv/start`, {
         method: "POST",

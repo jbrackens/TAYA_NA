@@ -1,7 +1,7 @@
 groups:
   - name: taptrade-provider-feed-slo
     rules:
-      - alert: PhoenixProviderRuntimeDown
+      - alert: TapTradeProviderRuntimeDown
         expr: taptrade_provider_runtime_enabled{service="gateway"} == 0
         for: 5m
         labels:
@@ -12,7 +12,7 @@ groups:
           summary: "Provider runtime disabled or down"
           description: "Gateway provider runtime has reported disabled/down for more than 5 minutes."
 
-      - alert: PhoenixProviderStreamUnhealthy
+      - alert: TapTradeProviderStreamUnhealthy
         expr: taptrade_provider_streams_unhealthy_total{service="gateway"} > 0
         for: 2m
         labels:
@@ -23,7 +23,7 @@ groups:
           summary: "One or more provider streams are unhealthy"
           description: "At least one provider stream is breaching lag/gap/duplicate SLO or is in error."
 
-      - alert: PhoenixProviderLagSLOBreach
+      - alert: TapTradeProviderLagSLOBreach
         expr: taptrade_provider_stream_slo_breach{service="gateway",type="lag"} > 0
         for: 2m
         labels:
@@ -34,7 +34,7 @@ groups:
           summary: "Provider stream lag SLO breach"
           description: "A provider stream is above configured lag threshold."
 
-      - alert: PhoenixProviderGapSLOBreach
+      - alert: TapTradeProviderGapSLOBreach
         expr: taptrade_provider_stream_slo_breach{service="gateway",type="gap"} > 0
         for: 1m
         labels:
@@ -45,7 +45,7 @@ groups:
           summary: "Provider stream gap detected"
           description: "A provider stream has detected a revision/sequence gap."
 
-      - alert: PhoenixProviderDuplicateSLOBreach
+      - alert: TapTradeProviderDuplicateSLOBreach
         expr: taptrade_provider_stream_slo_breach{service="gateway",type="duplicate"} > 0
         for: 2m
         labels:
@@ -56,7 +56,7 @@ groups:
           summary: "Provider stream duplicate threshold breach"
           description: "A provider stream duplicate counter exceeded configured threshold."
 
-      - alert: PhoenixProviderStreamError
+      - alert: TapTradeProviderStreamError
         expr: taptrade_provider_stream_slo_breach{service="gateway",type="error"} > 0
         for: 30s
         labels:

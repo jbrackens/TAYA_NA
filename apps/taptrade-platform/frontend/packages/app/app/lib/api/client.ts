@@ -68,7 +68,7 @@ class ApiClient {
     };
     if (typeof window !== "undefined") {
       const token =
-        localStorage.getItem("phoenix_access_token") || readCookie("authToken");
+        localStorage.getItem("taptrade_access_token") || readCookie("authToken");
       if (token) headers["Authorization"] = `Bearer ${token}`;
       if (includeCsrf) {
         const csrf = readCookie("csrf_token");
@@ -229,9 +229,9 @@ class ApiClient {
   // Token management
   setToken(accessToken: string, refreshToken?: string) {
     if (typeof window !== "undefined") {
-      localStorage.setItem("phoenix_access_token", accessToken);
+      localStorage.setItem("taptrade_access_token", accessToken);
       if (refreshToken)
-        localStorage.setItem("phoenix_refresh_token", refreshToken);
+        localStorage.setItem("taptrade_refresh_token", refreshToken);
       syncAuthCookie(accessToken);
     }
   }
@@ -239,19 +239,19 @@ class ApiClient {
   getToken(): string | null {
     if (typeof window === "undefined") return null;
     return (
-      localStorage.getItem("phoenix_access_token") || readCookie("authToken")
+      localStorage.getItem("taptrade_access_token") || readCookie("authToken")
     );
   }
 
   getRefreshToken(): string | null {
     if (typeof window === "undefined") return null;
-    return localStorage.getItem("phoenix_refresh_token");
+    return localStorage.getItem("taptrade_refresh_token");
   }
 
   clearTokens() {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("phoenix_access_token");
-      localStorage.removeItem("phoenix_refresh_token");
+      localStorage.removeItem("taptrade_access_token");
+      localStorage.removeItem("taptrade_refresh_token");
       syncAuthCookie();
     }
   }

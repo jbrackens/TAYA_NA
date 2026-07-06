@@ -85,11 +85,11 @@ function ensure_yarn() {
 }
 
 function ensure_local_env_files() {
-  local talon_env="$TAPTRADE_OFFICE_DIR/packages/office/.env.local"
+  local office_env="$TAPTRADE_OFFICE_DIR/packages/office/.env.local"
   local player_env="$PLAYER_APP_DIR/.env.local"
   local gateway_endpoint="http://localhost:${GO_GATEWAY_PORT}"
 
-  cat >"$talon_env" <<'EOF'
+  cat >"$office_env" <<'EOF'
 API_GLOBAL_ENDPOINT=http://localhost:13551
 WS_GLOBAL_ENDPOINT=ws://localhost:9551/web-socket
 EOF

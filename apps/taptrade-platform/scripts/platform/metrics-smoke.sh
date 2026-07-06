@@ -73,13 +73,13 @@ smoke_metric() {
     return 1
   fi
 
-  if [[ "$body" != *"phoenix_http_requests_total"* ]]; then
-    echo "| $service | $url | fail | missing phoenix_http_requests_total |" >>"$LOG_FILE"
+  if [[ "$body" != *"taptrade_http_requests_total"* ]]; then
+    echo "| $service | $url | fail | missing taptrade_http_requests_total |" >>"$LOG_FILE"
     return 1
   fi
 
-  if [[ "$body" != *"phoenix_http_request_duration_ms_sum"* ]]; then
-    echo "| $service | $url | fail | missing phoenix_http_request_duration_ms_sum |" >>"$LOG_FILE"
+  if [[ "$body" != *"taptrade_http_request_duration_ms_sum"* ]]; then
+    echo "| $service | $url | fail | missing taptrade_http_request_duration_ms_sum |" >>"$LOG_FILE"
     return 1
   fi
 

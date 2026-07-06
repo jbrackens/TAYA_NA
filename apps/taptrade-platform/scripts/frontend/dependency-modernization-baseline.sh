@@ -131,16 +131,16 @@ fs.writeFileSync(markdownPath, `${lines.join("\n")}\n`);
 NODE
 }
 
-run_outdated_scan "talon_backoffice" "$ROOT_DIR/frontend"
+run_outdated_scan "office_backoffice" "$ROOT_DIR/frontend"
 run_outdated_scan "taptrade_player_app" "$ROOT_DIR/frontend/packages/app"
 
-format_summary_table "talon_backoffice" "$ARTIFACT_DIR/talon_backoffice_summary.json"
+format_summary_table "office_backoffice" "$ARTIFACT_DIR/office_backoffice_summary.json"
 format_summary_table "taptrade_player_app" "$ARTIFACT_DIR/taptrade_player_app_summary.json"
 
-talon_totals="$(node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));process.stdout.write(`${p.totals.packages}|${p.totals.major}|${p.totals.minor}|${p.totals.patch}|${p.totals.unknown}`);' "$ARTIFACT_DIR/talon_backoffice_summary.json")"
+office_totals="$(node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));process.stdout.write(`${p.totals.packages}|${p.totals.major}|${p.totals.minor}|${p.totals.patch}|${p.totals.unknown}`);' "$ARTIFACT_DIR/office_backoffice_summary.json")"
 player_totals="$(node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));process.stdout.write(`${p.totals.packages}|${p.totals.major}|${p.totals.minor}|${p.totals.patch}|${p.totals.unknown}`);' "$ARTIFACT_DIR/taptrade_player_app_summary.json")"
 
-IFS='|' read -r talon_packages talon_major talon_minor talon_patch talon_unknown <<<"$talon_totals"
+IFS='|' read -r office_packages office_major office_minor office_patch office_unknown <<<"$office_totals"
 IFS='|' read -r player_packages player_major player_minor player_patch player_unknown <<<"$player_totals"
 
 {
@@ -158,13 +158,13 @@ IFS='|' read -r player_packages player_major player_minor player_patch player_un
   echo
   echo "| Surface | Packages | Major | Minor | Patch | Unknown | Raw Scan | Parsed Summary |"
   echo "|---|---:|---:|---:|---:|---:|---|---|"
-  echo "| TapTrade office Backoffice | $talon_packages | $talon_major | $talon_minor | $talon_patch | $talon_unknown | \`$ARTIFACT_DIR/talon_backoffice_yarn_outdated.jsonl\` | \`$ARTIFACT_DIR/talon_backoffice_summary.json\` |"
+  echo "| TapTrade office Backoffice | $office_packages | $office_major | $office_minor | $office_patch | $office_unknown | \`$ARTIFACT_DIR/office_backoffice_yarn_outdated.jsonl\` | \`$ARTIFACT_DIR/office_backoffice_summary.json\` |"
   echo "| TapTrade Player App | $player_packages | $player_major | $player_minor | $player_patch | $player_unknown | \`$ARTIFACT_DIR/taptrade_player_app_yarn_outdated.jsonl\` | \`$ARTIFACT_DIR/taptrade_player_app_summary.json\` |"
   echo
   echo "## Top Outdated Packages (First 25)"
   echo
   echo "### TapTrade office Backoffice"
-  cat "$ARTIFACT_DIR/talon_backoffice_top_updates.md"
+  cat "$ARTIFACT_DIR/office_backoffice_top_updates.md"
   echo
   echo "### TapTrade Player App"
   cat "$ARTIFACT_DIR/taptrade_player_app_top_updates.md"
@@ -173,7 +173,7 @@ IFS='|' read -r player_packages player_major player_minor player_patch player_un
   echo
   echo "1. Start with patch/minor upgrades in shared dev tooling (\`@types/*\`, lint/test stack) before framework majors."
   echo "2. Defer major framework jumps (\`next\`, \`react\`, \`typescript\`) to dedicated compatibility branches."
-  echo "3. Re-run \`make verify-sportsbook\` (TapTrade player compatibility alias) and \`make verify-talon\` after each batch."
+  echo "3. Re-run \`make verify-sportsbook\` (TapTrade player compatibility alias) and \`make verify-office\` after each batch."
 } >"$REPORT_FILE"
 
 echo "Dependency baseline report: $REPORT_FILE"
