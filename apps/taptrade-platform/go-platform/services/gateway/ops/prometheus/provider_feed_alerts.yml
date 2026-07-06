@@ -69,7 +69,7 @@ groups:
 
   - name: taptrade-trading-quality
     rules:
-      - alert: PhoenixAlternativeOfferCommitExpiryRatioLow
+      - alert: TapTradeAlternativeOfferCommitExpiryRatioLow
         expr: |
           (
             increase(taptrade_bet_offer_committed_total{service="gateway"}[30m])
@@ -86,7 +86,7 @@ groups:
           summary: "Alternative offer commit/expire ratio is degraded"
           description: "Commit-to-expire ratio has remained below 0.50 for 15m with at least 10 expiries in the 30m window."
 
-      - alert: PhoenixCashoutStaleRejectSpike
+      - alert: TapTradeCashoutStaleRejectSpike
         expr: increase(taptrade_cashout_quote_stale_reject_total{service="gateway"}[10m]) >= 5
         for: 5m
         labels:

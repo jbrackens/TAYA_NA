@@ -28,7 +28,7 @@ node - "$REPORT_PATH" "$ARTIFACT_PATH" "$TAPTRADE_OFFICE_AUDIT_LOG" "$PLAYER_AUD
 const fs = require("fs");
 const path = require("path");
 
-const [, , reportPath, artifactPath, talonLog, playerLog] = process.argv;
+const [, , reportPath, artifactPath, officeLog, playerLog] = process.argv;
 
 const allowedHighs = new Map([
   [
@@ -143,7 +143,7 @@ function parseAuditLog(label, file) {
 }
 
 const results = [
-  parseAuditLog("TapTrade office workspace", talonLog),
+  parseAuditLog("TapTrade office workspace", officeLog),
   parseAuditLog("TapTrade player app", playerLog),
 ];
 

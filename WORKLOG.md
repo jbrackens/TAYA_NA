@@ -207,3 +207,7 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
   TapTradeProvider*; office_yarn_audit artifact pair renamed generator+consumer;
   remaining script locals, office manifest/components, i18n comment, spec.md tail.
   VERIFIED: app+office tsc green, bash -n green.
+- ZERO-SWEEP ACHIEVED (iteration 8 close): final grep returns 0 non-allowlisted lines
+  after the last two alert names and one script variable; spec's archive-artifact
+  pointer allowlisted (points at a real file in revival/). Rendered re-check on the
+  renamed tree: /predict serves 200, title TapTrade, zero legacy strings.

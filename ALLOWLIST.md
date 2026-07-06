@@ -69,3 +69,5 @@ compose image: entries, decoupled from the project name). Cutover runbook: ops/R
 - packages/app/gate.sh MockPhoenix ban pattern — the guard must name what it bans.
 - office FEATURE_MANIFEST dated investigation entries — empirical bug-hunt records
   (identifier renamed in code; the manifest narrative is a dated record).
+- spec.md reference to revival/artifacts/talon_yarn_audit_*.log — pointer to a real
+  file inside the allowlisted archive; renaming the reference would break it.
