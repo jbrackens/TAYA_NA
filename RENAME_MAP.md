@@ -28,3 +28,5 @@ See CURRENT_STATE.md table. Entries below are CONCRETE artifacts as they are pla
   Artifact name pair tiangge_player_yarn_audit→taptrade_player_yarn_audit renamed on
   both generator (security/dependency-baseline.sh) and consumer
   (qa/frontend-residual-advisory-gate.sh) sides atomically.
+- Batch D (iteration 5): tiangge→taptrade, 9 files — talon-backoffice/{E2E summary,
+  e2e specs, scripts tooling}, packages/cashier-sdk/README.md, scripts/check-cashier-guards.sh.

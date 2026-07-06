@@ -26,3 +26,8 @@ later batches; path-coupled text rides with the directory-rename batch).
   appear ONLY as legacy fallback keys in ${TAPTRADE_X:-${TIANGGE_X:-…}} chains (the same
   pattern these scripts already used for RUN_MULTI_SPORT_RUNTIME_GATE). Operators/CI may
   still export the old keys during rollout. Remove after one release cycle.
+
+## Rebrand ledger self-references (decided iteration 5)
+- WORKLOG.md, CURRENT_STATE.md, RENAME_MAP.md, ALLOWLIST.md — these documents ARE the
+  rename record; they necessarily name the legacy tokens they map. Excluded from the
+  final grep gate by definition.

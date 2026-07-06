@@ -29,7 +29,7 @@ test("live no-money boundary probe passes absent money paths across surfaces", a
       res.writeHead(404).end("not found");
       return;
     }
-    res.writeHead(200, { "content-type": "text/plain" }).end("Tiangge points");
+    res.writeHead(200, { "content-type": "text/plain" }).end("TapTrade points");
   }, async (baseUrl) => {
     const report = await runLiveNoMoneyBoundaryProbe({
       playerBaseUrl: baseUrl,
@@ -59,7 +59,7 @@ test("live no-money boundary probe fails exposed money routes and unsafe status"
       res.writeHead(404).end("not found");
       return;
     }
-    res.writeHead(200, { "content-type": "text/plain" }).end("Tiangge points");
+    res.writeHead(200, { "content-type": "text/plain" }).end("TapTrade points");
   }, async (baseUrl) => {
     const report = await runLiveNoMoneyBoundaryProbe({
       playerBaseUrl: baseUrl,

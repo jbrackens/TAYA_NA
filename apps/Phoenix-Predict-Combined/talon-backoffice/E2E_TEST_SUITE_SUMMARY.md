@@ -1,7 +1,7 @@
 # E2E Test Suite Implementation Summary
 
 > Historical sportsbook-era note: this document describes the Phoenix sportsbook
-> test suite that predated the Tiangge prediction-market migration. It is kept
+> test suite that predated the TapTrade prediction-market migration. It is kept
 > only as migration history; it is not evidence that fixture, betslip, parlay,
 > or sportsbook bet-history flows are current production behavior.
 

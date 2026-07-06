@@ -36,7 +36,7 @@ function launchRegisterPayload(username: string, password: string) {
     username,
     password,
     terms_accepted: true,
-    terms_version: "tiangge-launch-v1",
+    terms_version: "taptrade-launch-v1",
     launch_disclosure_accepted: true,
     launch_disclosure_version: "points-no-cashout-v1",
   };
@@ -478,7 +478,7 @@ test("admin can close and resolve a traded market, crediting the user's point le
   expect(close.ok(), `admin close (got ${close.status()})`).toBeTruthy();
   const closeBody = await close.json();
   expect(closeBody.status).toBe("closed");
-  expect(closeBody.tianggeLifecycle.stage).toBe("closed");
+  expect(closeBody.taptradeLifecycle.stage).toBe("closed");
 
   const settle = await request.post(`/api/v1/admin/settlements/${market.id}`, {
     headers: csrfHeaders(adminCsrf),
@@ -493,7 +493,7 @@ test("admin can close and resolve a traded market, crediting the user's point le
   expect(settleBody.unit).toBe("PTS");
   expect(settleBody.settlement.result).toBe("yes");
   expect(settleBody.settlement.marketId).toBe(market.id);
-  expect(settleBody.tianggeLifecycle.stage).toBe("settled");
+  expect(settleBody.taptradeLifecycle.stage).toBe("settled");
   expect(settleBody.totalSettlementPointsCents).toBeGreaterThan(0);
   expect(Array.isArray(settleBody.pointDisbursements)).toBeTruthy();
   const userDisbursement = settleBody.pointDisbursements.find(
@@ -540,9 +540,12 @@ test("admin can close and resolve a traded market, crediting the user's point le
   expect(audit.ok(), `lifecycle audit (got ${audit.status()})`).toBeTruthy();
   const auditBody = await audit.json();
   const lifecycleEvents = (auditBody.data ?? []).map(
-    (entry: { eventType?: string; tianggeLifecycle?: { stage?: string } }) => ({
+    (entry: {
+      eventType?: string;
+      taptradeLifecycle?: { stage?: string };
+    }) => ({
       eventType: entry.eventType,
-      stage: entry.tianggeLifecycle?.stage,
+      stage: entry.taptradeLifecycle?.stage,
     }),
   );
   expect(lifecycleEvents).toContainEqual(
@@ -679,7 +682,7 @@ test("dual-admin challenge resolution reviews disputes before point settlement",
     },
   );
   expect(close.ok(), `admin close (got ${close.status()})`).toBeTruthy();
-  expect((await close.json()).tianggeLifecycle.stage).toBe("closed");
+  expect((await close.json()).taptradeLifecycle.stage).toBe("closed");
 
   const propose = await request.post(
     `/api/v1/admin/markets/${market.id}/propose?windowHours=0`,
@@ -819,7 +822,7 @@ test("dual-admin challenge resolution reviews disputes before point settlement",
   const finalizeBody = await finalize.json();
   expect(finalizeBody.unit).toBe("PTS");
   expect(finalizeBody.settlement.result).toBe("yes");
-  expect(finalizeBody.tianggeLifecycle.stage).toBe("settled");
+  expect(finalizeBody.taptradeLifecycle.stage).toBe("settled");
   expect(finalizeBody.totalSettlementPointsCents).toBeGreaterThan(0);
   expect(Array.isArray(finalizeBody.pointDisbursements)).toBeTruthy();
   const userDisbursement = finalizeBody.pointDisbursements.find(

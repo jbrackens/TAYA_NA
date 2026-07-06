@@ -73,3 +73,18 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
   together with the Go batch after task_633e7ad3 lands).
 - Remaining tiangge (active scope): go-platform (frozen), go-regression-pack.sh (coupled),
   migrations (forward-only phase). Frontend, docs, infra, scripts: CLEAN.
+
+## Iteration 5 — 2026-07-06 (user-triggered: "continue")
+- EXECUTED Batch D (tiangge, the Batch-A gap + tail): 9 files — talon-backoffice
+  non-packages areas (e2e specs incl. UI assertions now expecting "TapTrade", E2E
+  summary, tailwind-migration tooling, live-no-money-boundary qa script), repo-root
+  packages/cashier-sdk README, scripts/check-cashier-guards.sh.
+- ALLOWLISTED: the four loop ledger docs (they define the mapping; they must name the
+  legacy tokens).
+- STATUS: tiangge is now eliminated from every ACTIVE surface except: go-platform
+  (~31 files, FROZEN behind task_633e7ad3), 5 applied migrations (forward-only phase),
+  go-regression-pack.sh (coupled to a frozen Go test name), and intentional compat
+  shims (allowlisted). The tiangge token phase is COMPLETE-PENDING-UNFREEZE.
+- NEXT: Phase 2 concrete planning for phoenix/talon (npm scope @phoenix-ui, Go module
+  path, docker image names, seed emails @phoenix.local, PhoenixApiClient class,
+  Phoenix-Predict-Combined + talon-backoffice directory renames LAST).

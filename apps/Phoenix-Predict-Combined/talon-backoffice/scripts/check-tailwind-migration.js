@@ -733,7 +733,7 @@ function writeAllowlist(allowlistPath, findings) {
   const allowlist = {
     version: 1,
     description:
-      "Baseline for the Tiangge Tailwind migration audit. Lower or remove entries as files are migrated.",
+      "Baseline for the TapTrade Tailwind migration audit. Lower or remove entries as files are migrated.",
     targets: targetDirs,
     rules: ruleOrder.map((rule) => ({
       id: rule,
