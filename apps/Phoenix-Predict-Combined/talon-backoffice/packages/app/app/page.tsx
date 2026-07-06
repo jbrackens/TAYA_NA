@@ -398,7 +398,7 @@ export default function HomePage() {
                     key={row.titleKey}
                     className="grid grid-cols-[64px_minmax(0,1fr)] gap-5 border-b border-[var(--border-1)] py-6 max-[560px]:grid-cols-1 max-[560px]:gap-3"
                   >
-                    <span className="font-['IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace] text-[12px] font-semibold text-[var(--accent-lo)]">
+                    <span className="pt-[7px] font-['IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace] text-[12px] font-semibold text-[var(--yes-text)]">
                       {row.step}
                     </span>
                     <div>
@@ -412,8 +412,8 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
-              <div className="mt-6 border-l-4 border-[var(--accent)] bg-[var(--accent-soft)] px-5 py-4">
-                <p className="m-0 text-[16px] leading-[1.45] text-[var(--t2)]">
+              <div className="mt-6 rounded-[12px] border border-[var(--border-1)] bg-[var(--accent-soft)] px-5 py-4">
+                <p className="m-0 text-[15px] leading-[1.55] text-[var(--t2)]">
                   {t("journey.note")}
                 </p>
               </div>
@@ -449,16 +449,16 @@ export default function HomePage() {
                   {t("trust.subtitle")}
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
+              <div className="grid grid-cols-2 gap-x-12 gap-y-10 max-[640px]:grid-cols-1 max-[640px]:gap-y-8">
                 {TRUST_CARDS.map((card) => (
                   <div
                     key={card.titleKey}
-                    className="border border-white/16 bg-white/[0.04] p-6"
+                    className="border-t border-white/16 pt-5"
                   >
-                    <h3 className="m-0 text-[18px] font-semibold leading-tight">
+                    <h3 className="m-0 text-[17px] font-semibold leading-tight tracking-[-0.01em]">
                       {t(card.titleKey)}
                     </h3>
-                    <p className="m-0 mt-3 text-[15px] leading-[1.45] text-white/68">
+                    <p className="m-0 mt-2.5 max-w-[340px] text-[15px] leading-[1.55] text-white/64">
                       {t(card.bodyKey)}
                     </p>
                   </div>
