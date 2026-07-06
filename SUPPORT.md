@@ -28,8 +28,8 @@ Open `http://localhost:3010/predict`.
 
 ## Demo Accounts
 
-- Player: `demo@phoenix.local` / `demo123`
-- Admin: `admin@phoenix.local` / `admin123`
+- Player: `demo@taptrade.local` / `demo123`
+- Admin: `admin@taptrade.local` / `admin123`
 
 ## Bug Reports
 

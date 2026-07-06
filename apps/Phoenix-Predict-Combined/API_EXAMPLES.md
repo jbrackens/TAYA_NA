@@ -11,7 +11,7 @@ Use these variables for the examples:
 
 ```bash
 export API=http://localhost:18080
-export DEMO_USERNAME=demo@phoenix.local
+export DEMO_USERNAME=demo@taptrade.local
 export DEMO_PASSWORD=demo123
 ```
 

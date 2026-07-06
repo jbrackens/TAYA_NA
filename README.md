@@ -45,7 +45,7 @@ Open `http://localhost:3010/predict`.
 
 Demo player login:
 
-- Email: `demo@phoenix.local`
+- Email: `demo@taptrade.local`
 - Password: `demo123`
 
 ## Developer Checks
