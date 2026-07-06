@@ -19,3 +19,10 @@ later batches; path-coupled text rides with the directory-rename batch).
 - docs/audit/** — point-in-time audit reports (e.g. COMPONENT_DISPOSITION.md); renaming
   brand tokens inside dated records falsifies the historical account. Living docs are
   renamed; dated reports are not.
+
+## Temporary compat shims (decided iteration 4 — scheduled for removal post-rollout)
+- scripts/release/{launch-readiness-gate.sh,runtime-gate-profile.sh,profiles/runtime-gate.env}
+  and spec.md: TIANGGE_DISCOVERY_CONTRACT_ITERATIONS / RUN_TIANGGE_DISCOVERY_CONTRACT_GATE
+  appear ONLY as legacy fallback keys in ${TAPTRADE_X:-${TIANGGE_X:-…}} chains (the same
+  pattern these scripts already used for RUN_MULTI_SPORT_RUNTIME_GATE). Operators/CI may
+  still export the old keys during rollout. Remove after one release cycle.

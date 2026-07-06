@@ -57,3 +57,19 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
   preservation-gate references and cross-boundary env values).
 - Remaining tiangge (active scope): go-platform (deferred), scripts/**, migrations
   (forward-only — new migration in cross-boundary phase).
+
+## Iteration 4 — 2026-07-06 (user-triggered: "keep going")
+- EXECUTED Batch C (tiangge in scripts/**, 20 files + spec.md): banners, log/artifact
+  names (generator+consumer renamed together: tiangge_player_yarn_audit →
+  taptrade_player_yarn_audit), ephemeral docker container names, yarn mutexes,
+  local-stack service labels. bash -n syntax-verified on the shimmed release scripts.
+- FIXED regression Batch A introduced: preservation-production-dossier.sh asserted the
+  old 'TianggeApiClient' alias; expectations now match the shipped
+  'export { PhoenixApiClient, TapTradeApiClient }' (VERIFIED against api-client/src/index.ts).
+- CROSS-BOUNDARY handled with shims: TAPTRADE_* env keys with TIANGGE_* legacy fallbacks
+  (allowlisted, scheduled removal) — mirrors the scripts' existing MULTI_SPORT alias pattern.
+- DEFERRED: scripts/qa/go-regression-pack.sh (references Go test name
+  TestDescribeTianggeMarketLifecycleMapsLaunchStages inside frozen go-platform; renames
+  together with the Go batch after task_633e7ad3 lands).
+- Remaining tiangge (active scope): go-platform (frozen), go-regression-pack.sh (coupled),
+  migrations (forward-only phase). Frontend, docs, infra, scripts: CLEAN.

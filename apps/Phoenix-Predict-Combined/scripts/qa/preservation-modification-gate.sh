@@ -222,7 +222,7 @@ while IFS= read -r -d '' entry; do
 done < <(git -C "$GIT_ROOT" status --porcelain=v1 -z -- "$ROOT")
 
 if ((${#modified_paths[@]} == 0)); then
-  echo "No modified tracked artifacts in the current Tiangge diff."
+  echo "No modified tracked artifacts in the current TapTrade diff."
   exit 0
 fi
 

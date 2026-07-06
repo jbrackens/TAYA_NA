@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TALON_DIR="$ROOT_DIR/talon-backoffice"
 APP_DIR="$TALON_DIR/packages/app"
-YARN_MUTEX="file:/tmp/yarn-mutex-tiangge-api-contracts"
+YARN_MUTEX="file:/tmp/yarn-mutex-taptrade-api-contracts"
 YARN_BIN=""
 
 HAS_NVM=false

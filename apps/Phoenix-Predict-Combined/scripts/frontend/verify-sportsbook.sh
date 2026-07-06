@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TALON_DIR="$ROOT_DIR/talon-backoffice"
 APP_DIR="$TALON_DIR/packages/app"
-YARN_MUTEX="file:/tmp/yarn-mutex-tiangge-player"
+YARN_MUTEX="file:/tmp/yarn-mutex-taptrade-player"
 SKIP_UTILS_DIST_IF_PRESENT="${SKIP_UTILS_DIST_IF_PRESENT:-true}"
 BUILD_MAX_OLD_SPACE_MB="${BUILD_MAX_OLD_SPACE_MB:-4096}"
 BUILD_RETRIES_NODE20="${BUILD_RETRIES_NODE20:-2}"
@@ -155,7 +155,7 @@ build_node16() {
 }
 
 if ! run_retries "$BUILD_RETRIES_NODE20" build_node20; then
-  echo "warn: Node 20 Tiangge player build failed; retrying under Node 16.16 compatibility bridge" >&2
+  echo "warn: Node 20 TapTrade player build failed; retrying under Node 16.16 compatibility bridge" >&2
   if try_node16_compat; then
     run_retries "$BUILD_RETRIES_NODE16" build_node16
     restore_node20

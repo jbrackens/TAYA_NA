@@ -11,7 +11,7 @@ if ! [[ "$ITERATIONS" =~ ^[0-9]+$ ]] || [[ "$ITERATIONS" -lt 1 ]]; then
   exit 1
 fi
 
-echo "[gate] qa-sports-regression is a compatibility alias for Tiangge discovery/API contract regression"
+echo "[gate] qa-sports-regression is a compatibility alias for TapTrade discovery/API contract regression"
 echo "[info] ITERATIONS=$ITERATIONS"
 
 for ((i = 1; i <= ITERATIONS; i++)); do
@@ -19,7 +19,7 @@ for ((i = 1; i <= ITERATIONS; i++)); do
   bash "$SMOKE_SCRIPT"
 done
 
-echo "[gate] running Tiangge API/client contract verifier"
+echo "[gate] running TapTrade API/client contract verifier"
 bash "$API_CONTRACT_SCRIPT"
 
-echo "[ok] Tiangge discovery/API contract regression gate passed"
+echo "[ok] TapTrade discovery/API contract regression gate passed"

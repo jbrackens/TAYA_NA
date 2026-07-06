@@ -15,7 +15,7 @@ PLAYER_APP_REPO="$ROOT_DIR/talon-backoffice/packages/app"
 mkdir -p "$ARTIFACT_DIR"
 
 TALON_AUDIT_LOG="$ARTIFACT_DIR/talon_yarn_audit_${TS_TAG}.log"
-PLAYER_APP_AUDIT_LOG="$ARTIFACT_DIR/tiangge_player_yarn_audit_${TS_TAG}.log"
+PLAYER_APP_AUDIT_LOG="$ARTIFACT_DIR/taptrade_player_yarn_audit_${TS_TAG}.log"
 
 run_audit() {
   local repo="$1"
@@ -127,18 +127,18 @@ cat > "$REPORT_OUT" <<EOF
 - Talon: \`yarn audit --level high --json\` (Node 20)
   - Exit code: **$talon_exit**
   - Log: \`revival/artifacts/$(basename "$TALON_AUDIT_LOG")\`
-- Tiangge player app: \`yarn audit --level high --json\` (Node 20)
+- TapTrade player app: \`yarn audit --level high --json\` (Node 20)
   - Exit code: **$player_app_exit**
   - Log: \`revival/artifacts/$(basename "$PLAYER_APP_AUDIT_LOG")\`
 
 ## Baseline Outcome
-- Online vulnerability audits produced advisory payloads for the launch Talon workspace and Tiangge player app scopes.
+- Online vulnerability audits produced advisory payloads for the launch Talon workspace and TapTrade player app scopes.
 - Talon audit summary: **$talon_audit_summary**.
-- Tiangge player app audit summary: **$player_app_audit_summary**.
+- TapTrade player app audit summary: **$player_app_audit_summary**.
 - Current blocker: **$audit_blocker_note**.
 - Static dependency-risk baseline (version age / modernization pressure):
   - Talon frontend stack: Next **$talon_next**, React **$talon_react**
-  - Tiangge player stack: Next **$player_app_next**, React **$player_app_react**
+  - TapTrade player stack: Next **$player_app_next**, React **$player_app_react**
   - Backend core library versions (selected):
 $backend_stack_versions
 

@@ -12,13 +12,13 @@ GO_GATEWAY_READ_MODEL_FILE="$ROOT_DIR/go-platform/services/gateway/internal/http
 
 BACKEND_PID_FILE="$RUNTIME_DIR/backend.pid"
 TALON_PID_FILE="$RUNTIME_DIR/talon-office.pid"
-PLAYER_PID_FILE="$RUNTIME_DIR/tiangge-player.pid"
+PLAYER_PID_FILE="$RUNTIME_DIR/taptrade-player.pid"
 LEGACY_SPORTSBOOK_PID_FILE="$RUNTIME_DIR/sportsbook.pid"
 GO_GATEWAY_PID_FILE="$RUNTIME_DIR/go-gateway.pid"
 
 BACKEND_LOG_FILE="$RUNTIME_DIR/backend.log"
 TALON_LOG_FILE="$RUNTIME_DIR/talon-office.log"
-PLAYER_LOG_FILE="$RUNTIME_DIR/tiangge-player.log"
+PLAYER_LOG_FILE="$RUNTIME_DIR/taptrade-player.log"
 GO_GATEWAY_LOG_FILE="$RUNTIME_DIR/go-gateway.log"
 
 TALON_PORT="${TALON_PORT:-3000}"
@@ -37,7 +37,7 @@ Usage: ./scripts/local-stack.sh <command>
 
 Commands:
   bootstrap  Install/update frontend dependencies and local env files.
-  start      Start backend + go-gateway + Talon backoffice + Tiangge player as background services.
+  start      Start backend + go-gateway + Talon backoffice + TapTrade player as background services.
   stop       Stop all background services started by this script.
   restart    Stop and start all services.
   status     Print process and HTTP health status.
@@ -241,7 +241,7 @@ function start() {
 
   if service_enabled "player"; then
     start_bg \
-      "tiangge-player" \
+      "taptrade-player" \
       "$PLAYER_PID_FILE" \
       "$PLAYER_LOG_FILE" \
       "if [ -s '$HOME/.nvm/nvm.sh' ]; then source '$HOME/.nvm/nvm.sh' && nvm use >/dev/null; fi && cd '$TALON_DIR' && export NEXT_PUBLIC_API_URL='http://localhost:${GO_GATEWAY_PORT}' && cd packages/app && yarn bootstrap:locales && PORT='$PLAYER_PORT' yarn next dev --webpack"
@@ -271,7 +271,7 @@ function stop_one() {
 }
 
 function stop_all() {
-  stop_one "tiangge-player" "$PLAYER_PID_FILE"
+  stop_one "taptrade-player" "$PLAYER_PID_FILE"
   stop_one "legacy-sportsbook-frontend" "$LEGACY_SPORTSBOOK_PID_FILE"
   stop_one "talon-backoffice" "$TALON_PID_FILE"
   stop_one "go-gateway" "$GO_GATEWAY_PID_FILE"
@@ -300,7 +300,7 @@ function status() {
   status_line "phoenix-backend" "$BACKEND_PID_FILE" "$BACKEND_HTTP_URL"
   status_line "go-gateway" "$GO_GATEWAY_PID_FILE" "$GO_GATEWAY_HTTP_URL"
   status_line "talon-backoffice" "$TALON_PID_FILE" "$TALON_HTTP_URL"
-  status_line "tiangge-player" "$PLAYER_PID_FILE" "$PLAYER_HTTP_URL"
+  status_line "taptrade-player" "$PLAYER_PID_FILE" "$PLAYER_HTTP_URL"
 }
 
 function logs() {

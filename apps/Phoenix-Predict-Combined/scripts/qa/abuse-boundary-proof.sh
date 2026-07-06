@@ -34,7 +34,7 @@ run_db_reward_cluster_step() {
     return 1
   fi
 
-  local container="tiangge-abuse-boundary-pg-${TS_TAG}"
+  local container="taptrade-abuse-boundary-pg-${TS_TAG}"
   trap "docker rm -f '$container' >/dev/null 2>&1 || true" RETURN
 
   docker run -d --rm \
@@ -71,7 +71,7 @@ run_db_social_graph_step() {
     return 1
   fi
 
-  local container="tiangge-social-boundary-pg-${TS_TAG}"
+  local container="taptrade-social-boundary-pg-${TS_TAG}"
   trap "docker rm -f '$container' >/dev/null 2>&1 || true" RETURN
 
   docker run -d --rm \

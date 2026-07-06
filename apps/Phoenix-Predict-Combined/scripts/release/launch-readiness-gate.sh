@@ -7,8 +7,8 @@ REPORT_FILE="$ROOT_DIR/revival/30_LAUNCH_READINESS_GATE.md"
 DATE_TAG="$(date +%F)"
 TS_TAG="$(date +%Y%m%d_%H%M%S)"
 RESULT_FILE="$ARTIFACT_DIR/launch_readiness_${TS_TAG}.md"
-RUN_TIANGGE_DISCOVERY_CONTRACT_GATE="${RUN_TIANGGE_DISCOVERY_CONTRACT_GATE:-${RUN_MULTI_SPORT_RUNTIME_GATE:-0}}"
-TIANGGE_DISCOVERY_CONTRACT_ITERATIONS="${TIANGGE_DISCOVERY_CONTRACT_ITERATIONS:-${MULTI_SPORT_ITERATIONS:-1}}"
+RUN_TAPTRADE_DISCOVERY_CONTRACT_GATE="${RUN_TAPTRADE_DISCOVERY_CONTRACT_GATE:-${RUN_TIANGGE_DISCOVERY_CONTRACT_GATE:-${RUN_MULTI_SPORT_RUNTIME_GATE:-0}}}"
+TAPTRADE_DISCOVERY_CONTRACT_ITERATIONS="${TAPTRADE_DISCOVERY_CONTRACT_ITERATIONS:-${TIANGGE_DISCOVERY_CONTRACT_ITERATIONS:-${MULTI_SPORT_ITERATIONS:-1}}}"
 
 mkdir -p "$ARTIFACT_DIR"
 
@@ -65,16 +65,16 @@ run_step "load baseline" make -C "$ROOT_DIR" qa-load-baseline || overall=1
 run_step "capability slo gate" make -C "$ROOT_DIR" qa-capability-slo || overall=1
 run_step "cutover rehearsal" make -C "$ROOT_DIR" release-cutover-rehearsal || overall=1
 
-if [[ "$RUN_TIANGGE_DISCOVERY_CONTRACT_GATE" == "1" || "$RUN_TIANGGE_DISCOVERY_CONTRACT_GATE" == "true" ]]; then
+if [[ "$RUN_TAPTRADE_DISCOVERY_CONTRACT_GATE" == "1" || "$RUN_TAPTRADE_DISCOVERY_CONTRACT_GATE" == "true" ]]; then
   run_step \
-    "Tiangge discovery/API compatibility regression gate" \
+    "TapTrade discovery/API compatibility regression gate" \
     env \
-    ITERATIONS="$TIANGGE_DISCOVERY_CONTRACT_ITERATIONS" \
+    ITERATIONS="$TAPTRADE_DISCOVERY_CONTRACT_ITERATIONS" \
     make -C "$ROOT_DIR" qa-sports-regression || overall=1
 else
   run_skip_step \
-    "Tiangge discovery/API compatibility regression gate" \
-    "disabled (set RUN_TIANGGE_DISCOVERY_CONTRACT_GATE=1; legacy RUN_MULTI_SPORT_RUNTIME_GATE is accepted as a compatibility alias)"
+    "TapTrade discovery/API compatibility regression gate" \
+    "disabled (set RUN_TAPTRADE_DISCOVERY_CONTRACT_GATE=1; legacy RUN_TIANGGE_* and RUN_MULTI_SPORT_RUNTIME_GATE are accepted as compatibility aliases)"
 fi
 
 run_step "RC completion audit" make -C "$ROOT_DIR" qa-rc-completion-audit || overall=1
@@ -94,7 +94,7 @@ fi
   echo "- Result: **$result**"
   echo "- Decision: **$go_no_go**"
   echo "- Checklist artifact: \`$RESULT_FILE\`"
-  echo "- Tiangge discovery/API compatibility gate enabled: \`$RUN_TIANGGE_DISCOVERY_CONTRACT_GATE\`"
+  echo "- TapTrade discovery/API compatibility gate enabled: \`$RUN_TAPTRADE_DISCOVERY_CONTRACT_GATE\`"
   echo
   echo "## Decision Notes"
   echo
@@ -102,7 +102,7 @@ fi
   echo "2. Any failed step requires remediation and full gate rerun."
   echo "3. Keep this report and checklist artifact attached to release sign-off records."
   echo "4. The compatibility discovery/API gate is optional by default to keep CI deterministic."
-  echo "5. Enable the compatibility gate for local release sign-off rehearsal when the extra Tiangge contract pass is desired."
+  echo "5. Enable the compatibility gate for local release sign-off rehearsal when the extra TapTrade contract pass is desired."
   echo "6. Preservation deletion, modification, public contract-anchor, and production-dossier gates are mandatory for launch readiness; inherited artifact removals or broad rewrites must stay classified and reviewable."
   echo "7. Reward/social abuse-boundary proof is mandatory for launch readiness; blocked reward claims and social writes must remain non-persistent and reviewable."
   echo "8. Scenario 12 security residual and production-preservation signoffs are mandatory for launch readiness; unsigned packets or templates are not sufficient."

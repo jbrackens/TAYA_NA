@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 TALON_DIR="$ROOT/talon-backoffice"
 APP_DIR="$TALON_DIR/packages/app"
-YARN_MUTEX="file:/tmp/yarn-mutex-tiangge-discovery-smoke"
+YARN_MUTEX="file:/tmp/yarn-mutex-taptrade-discovery-smoke"
 YARN_BIN=""
 
 HAS_NVM=false
@@ -89,7 +89,7 @@ run_discovery_contract_tests() {
   )
 }
 
-echo "[info] qa-sports-route-smoke is a compatibility alias for Tiangge discovery route contracts"
+echo "[info] qa-sports-route-smoke is a compatibility alias for TapTrade discovery route contracts"
 
 use_node_runtime
 ensure_yarn

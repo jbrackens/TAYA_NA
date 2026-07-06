@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 WORKSPACE_ROOT="$(cd "$ROOT/../../.." && pwd)"
-SPEC_PATH="${TIANGGE_SPEC_PATH:-$WORKSPACE_ROOT/spec.md}"
+SPEC_PATH="${TAPTRADE_SPEC_PATH:-$WORKSPACE_ROOT/spec.md}"
 REVIVAL_DIR="$ROOT/revival"
 ARTIFACT_DIR="$REVIVAL_DIR/artifacts"
 REPORT_PATH="${RC_COMPLETION_AUDIT_REPORT:-$REVIVAL_DIR/67_RC_COMPLETION_AUDIT_GATE.md}"

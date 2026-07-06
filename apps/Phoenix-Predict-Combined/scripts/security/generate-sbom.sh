@@ -180,10 +180,10 @@ run_npm_sbom \
   "$OUT_DIR/talon-backoffice.cyclonedx.error.log"
 
 run_npm_sbom \
-  "tiangge-player-app" \
+  "taptrade-player-app" \
   "$ROOT_DIR/talon-backoffice/packages/app" \
-  "$OUT_DIR/tiangge-player-app.cyclonedx.json" \
-  "$OUT_DIR/tiangge-player-app.cyclonedx.error.log"
+  "$OUT_DIR/taptrade-player-app.cyclonedx.json" \
+  "$OUT_DIR/taptrade-player-app.cyclonedx.error.log"
 
 if command -v go >/dev/null 2>&1; then
   run_go_module_inventory \

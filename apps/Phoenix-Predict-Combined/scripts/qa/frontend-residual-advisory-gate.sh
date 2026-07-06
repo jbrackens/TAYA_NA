@@ -22,7 +22,7 @@ latest_audit_log() {
 }
 
 TALON_AUDIT_LOG="${FRONTEND_RESIDUAL_TALON_AUDIT_LOG:-$(latest_audit_log talon_yarn_audit)}"
-PLAYER_AUDIT_LOG="${FRONTEND_RESIDUAL_PLAYER_AUDIT_LOG:-$(latest_audit_log tiangge_player_yarn_audit)}"
+PLAYER_AUDIT_LOG="${FRONTEND_RESIDUAL_PLAYER_AUDIT_LOG:-$(latest_audit_log taptrade_player_yarn_audit)}"
 
 node - "$REPORT_PATH" "$ARTIFACT_PATH" "$TALON_AUDIT_LOG" "$PLAYER_AUDIT_LOG" <<'NODE'
 const fs = require("fs");
@@ -144,7 +144,7 @@ function parseAuditLog(label, file) {
 
 const results = [
   parseAuditLog("Talon workspace", talonLog),
-  parseAuditLog("Tiangge player app", playerLog),
+  parseAuditLog("TapTrade player app", playerLog),
 ];
 
 const allFailures = results.flatMap((result) => result.failures.map((failure) => `${result.label}: ${failure}`));

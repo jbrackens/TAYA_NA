@@ -22,3 +22,9 @@ See CURRENT_STATE.md table. Entries below are CONCRETE artifacts as they are pla
 - Batch B (iteration 3): tiangge→taptrade all case variants, CONTENT ONLY, scope = living
   docs + infra titles (40 files: root DESIGN/PRODUCT docs, docs/** minus docs/audit,
   contracts/, services/cashier-api, apps README/Makefile/docker-compose.demo.yml/ops).
+- Batch C (iteration 4): tiangge→taptrade in scripts/** (20 files) + spec.md env-key
+  mentions. Env keys TIANGGE_DISCOVERY_CONTRACT_ITERATIONS→TAPTRADE_… and
+  RUN_TIANGGE_DISCOVERY_CONTRACT_GATE→RUN_TAPTRADE_… with legacy fallbacks retained.
+  Artifact name pair tiangge_player_yarn_audit→taptrade_player_yarn_audit renamed on
+  both generator (security/dependency-baseline.sh) and consumer
+  (qa/frontend-residual-advisory-gate.sh) sides atomically.

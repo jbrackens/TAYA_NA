@@ -29,7 +29,7 @@ TALON_PORT="${TALON_PORT:-3000}"
 PLAYER_PORT="${PLAYER_PORT:-${SPORTSBOOK_PORT:-3002}}"
 GO_GATEWAY_PORT="${GO_GATEWAY_PORT:-18080}"
 
-TIANGGE_DISCOVERY_CONTRACT_ITERATIONS="${TIANGGE_DISCOVERY_CONTRACT_ITERATIONS:-${MULTI_SPORT_ITERATIONS:-1}}"
+TAPTRADE_DISCOVERY_CONTRACT_ITERATIONS="${TAPTRADE_DISCOVERY_CONTRACT_ITERATIONS:-${TIANGGE_DISCOVERY_CONTRACT_ITERATIONS:-${MULTI_SPORT_ITERATIONS:-1}}}"
 
 is_truthy() {
   local value="${1:-0}"
@@ -124,8 +124,8 @@ trap cleanup EXIT
   echo "# Runtime Gate Profile Checklist ($DATE_TAG)"
   echo
   echo "- Profile file: \`$PROFILE_FILE\`"
-  echo "- Ports: talon=\`$TALON_PORT\`, tiangge-player=\`$PLAYER_PORT\`, go-gateway=\`$GO_GATEWAY_PORT\`"
-  echo "- Discovery/API contract iterations: \`$TIANGGE_DISCOVERY_CONTRACT_ITERATIONS\`"
+  echo "- Ports: talon=\`$TALON_PORT\`, taptrade-player=\`$PLAYER_PORT\`, go-gateway=\`$GO_GATEWAY_PORT\`"
+  echo "- Discovery/API contract iterations: \`$TAPTRADE_DISCOVERY_CONTRACT_ITERATIONS\`"
   echo "- Live no-money boundary probe: \`$RUNTIME_GATE_RUN_LIVE_NO_MONEY_BOUNDARY\`"
   echo
   echo "| Step | Result | Log |"
@@ -161,7 +161,7 @@ fi
 
 run_step "wait backend status" wait_for_http_200 "$BACKEND_STATUS_URL" "backend status" || overall=1
 run_step "wait go-gateway status" wait_for_http_200 "$GO_GATEWAY_STATUS_URL" "go-gateway status" || overall=1
-run_step "wait Tiangge player status" wait_for_http_200 "$PLAYER_STATUS_URL" "Tiangge player status" || overall=1
+run_step "wait TapTrade player status" wait_for_http_200 "$PLAYER_STATUS_URL" "TapTrade player status" || overall=1
 run_step "wait talon status" wait_for_http_200 "$TALON_STATUS_URL" "talon status" || overall=1
 
 if [[ "$overall" -eq 0 ]] && is_truthy "$RUNTIME_GATE_RUN_LIVE_NO_MONEY_BOUNDARY"; then
@@ -178,8 +178,8 @@ if [[ "$overall" -eq 0 ]]; then
   run_step \
     "launch readiness runtime gate" \
     env \
-    RUN_TIANGGE_DISCOVERY_CONTRACT_GATE=1 \
-    TIANGGE_DISCOVERY_CONTRACT_ITERATIONS="$TIANGGE_DISCOVERY_CONTRACT_ITERATIONS" \
+    RUN_TAPTRADE_DISCOVERY_CONTRACT_GATE=1 \
+    TAPTRADE_DISCOVERY_CONTRACT_ITERATIONS="$TAPTRADE_DISCOVERY_CONTRACT_ITERATIONS" \
     make -C "$ROOT_DIR" release-launch-readiness || overall=1
 fi
 
@@ -199,7 +199,7 @@ fi
   echo "- Decision: **$go_no_go**"
   echo "- Runtime profile artifact: \`$RESULT_FILE\`"
   echo "- Runtime profile file: \`$PROFILE_FILE\`"
-  echo "- Tiangge discovery/API compatibility gate enabled: \`1\`"
+  echo "- TapTrade discovery/API compatibility gate enabled: \`1\`"
   echo "- Live no-money boundary probe enabled: \`$RUNTIME_GATE_RUN_LIVE_NO_MONEY_BOUNDARY\`"
   echo
   echo "## Decision Notes"

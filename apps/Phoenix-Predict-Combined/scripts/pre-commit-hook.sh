@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# PRE-COMMIT HOOK — Tiangge Launch Safety
+# PRE-COMMIT HOOK — TapTrade Launch Safety
 # ---------------------------------------
 # Install: cp scripts/pre-commit-hook.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 # Or with Husky: npx husky add .husky/pre-commit './scripts/pre-commit-hook.sh'
@@ -25,7 +25,7 @@ fi
 
 echo ""
 echo "╔══════════════════════════════════════════════════════════╗"
-echo "║         PRE-COMMIT: TIANGGE LAUNCH GATES               ║"
+echo "║         PRE-COMMIT: TAPTRADE LAUNCH GATES               ║"
 echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -71,6 +71,6 @@ if $FAILED; then
   echo "╚══════════════════════════════════════════════════════════╝"
   exit 1
 else
-  echo "All Tiangge launch gates passed. Commit allowed."
+  echo "All TapTrade launch gates passed. Commit allowed."
   exit 0
 fi

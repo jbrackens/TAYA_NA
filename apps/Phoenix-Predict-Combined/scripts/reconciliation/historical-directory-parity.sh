@@ -35,7 +35,7 @@ mkdir -p "$(dirname "$OUT_FILE")" "$(dirname "$POINT_NATIVE_REPORT")"
   echo "# Historical Parity Batch Report"
   echo
   echo "- Input directory: \`${INPUT_DIR}\`"
-  echo "- Historical bet CSV replay: retired for Tiangge launch."
+  echo "- Historical bet CSV replay: retired for TapTrade launch."
   echo "- Point-native replacement report: \`${POINT_NATIVE_REPORT#"$ROOT/"}\`"
   echo
   echo "| CSV | Status | Report | Notes |"

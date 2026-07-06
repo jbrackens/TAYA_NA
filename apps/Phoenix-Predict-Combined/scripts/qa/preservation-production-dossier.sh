@@ -188,16 +188,16 @@ check_token \
   "Inherited Phoenix API client class retained" \
   "talon-backoffice/packages/api-client/src/client.ts" \
   'export class PhoenixApiClient' \
-  "Preserves existing shared-client imports while launch code can adopt Tiangge naming." || missing=1
+  "Preserves existing shared-client imports while launch code can adopt TapTrade naming." || missing=1
 check_token \
-  "Tiangge API client alias added instead of replacing class" \
+  "TapTrade API client alias added instead of replacing class" \
   "talon-backoffice/packages/api-client/src/client.ts" \
-  'export const TianggeApiClient = PhoenixApiClient' \
+  'export const TapTradeApiClient = PhoenixApiClient' \
   "Adds launch-facing naming without deleting the inherited class." || missing=1
 check_token \
   "Shared entrypoint exports both API-client names" \
   "talon-backoffice/packages/api-client/src/index.ts" \
-  'PhoenixApiClient, TianggeApiClient' \
+  'PhoenixApiClient, TapTradeApiClient' \
   "Keeps old and new consumers on the same implementation." || missing=1
 check_token \
   "Legacy wallet payload reads remain private" \
@@ -217,7 +217,7 @@ check_token \
 check_token \
   "Discovery QA compatibility alias retained" \
   "scripts/qa/sports-regression-gate.sh" \
-  'compatibility alias for Tiangge discovery/API contract regression' \
+  'compatibility alias for TapTrade discovery/API contract regression' \
   "Legacy sports regression naming remains as a launch-safe compatibility wrapper." || missing=1
 
 review_focus_for_path() {

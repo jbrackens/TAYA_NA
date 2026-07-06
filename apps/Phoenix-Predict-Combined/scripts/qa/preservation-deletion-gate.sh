@@ -157,7 +157,7 @@ while IFS= read -r -d '' entry; do
 done < <(git -C "$GIT_ROOT" status --porcelain=v1 -z -- "$ROOT")
 
 if ((${#deleted_paths[@]} == 0)); then
-  echo "No deleted artifacts in the current Tiangge diff."
+  echo "No deleted artifacts in the current TapTrade diff."
   exit 0
 fi
 

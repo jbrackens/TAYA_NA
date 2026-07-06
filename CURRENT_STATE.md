@@ -1,6 +1,6 @@
 # TapTrade Rebrand — CURRENT_STATE
 
-Loop iteration: 3 (Batch B executed; loop isolated in Taya_Na_Predict-rebrand worktree; go-platform deferred behind task_633e7ad3) · Branch: chore/rebrand-taptrade
+Loop iteration: 4 (Batch C executed — tiangge clean everywhere except frozen go-platform, one coupled QA script, and migrations) · Branch: chore/rebrand-taptrade
 Cron: 0dadff9f (*/15) · Exit condition: see GOAL in WORKLOG header.
 
 ## Canonical naming scheme (FROZEN — do not drift)

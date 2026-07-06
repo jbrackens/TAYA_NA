@@ -44,7 +44,7 @@ fi
 AUTH_BASE="http://127.0.0.1:${AUTH_PORT}"
 GATEWAY_BASE="http://127.0.0.1:${GATEWAY_PORT}"
 PLAYER_BASE="http://127.0.0.1:${PLAYER_PORT}"
-POSTGRES_CONTAINER="tiangge-canonical-browser-pg-${TS_TAG}"
+POSTGRES_CONTAINER="taptrade-canonical-browser-pg-${TS_TAG}"
 
 PIDS=()
 
