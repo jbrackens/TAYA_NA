@@ -126,6 +126,12 @@ const navItems: NavItem[] = [
   { href: "/leaderboards", label: "Leaderboards", icon: "trophy" },
   { href: "/exports", label: "Reports", icon: "file-text" },
   { href: "/tenants", label: "Tenants", icon: "layout-dashboard" },
+  {
+    href: "/config/flags",
+    label: "Config",
+    icon: "check-square",
+    requiredPermission: "config:read",
+  },
   { href: "/audit-logs", label: "Audit Logs", icon: "scroll-text" },
 ];
 
