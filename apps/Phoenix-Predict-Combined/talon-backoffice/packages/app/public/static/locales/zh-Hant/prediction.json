@@ -165,5 +165,8 @@
   "DISCOVER_TRENDING": "熱門",
   "DISCOVER_CLOSING_SOON": "即將結束",
   "NOT_ENOUGH_POINTS": "Not enough points",
-  "SEARCH_MARKETS_PLACEHOLDER": "搜尋市場、候選人、球隊..."
+  "SEARCH_MARKETS_PLACEHOLDER": "搜尋市場、候選人、球隊...",
+  "SORT_ACTIVITY": "熱門",
+  "SORT_CLOSING_SOON": "即將截止",
+  "SORT_NEWEST": "最新"
 }

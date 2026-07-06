@@ -42,6 +42,20 @@ const SUBCATEGORY_CORPUS_SIZE = 120;
 type DateWindow = "all" | "24h" | "7d" | "30d";
 type MarketSort = "activity" | "closing_soon" | "newest";
 
+const SORT_PILLS: {
+  value: MarketSort;
+  labelKey: string;
+  fallback: string;
+}[] = [
+  { value: "activity", labelKey: "SORT_ACTIVITY", fallback: "Trending" },
+  {
+    value: "closing_soon",
+    labelKey: "SORT_CLOSING_SOON",
+    fallback: "Closing soon",
+  },
+  { value: "newest", labelKey: "SORT_NEWEST", fallback: "Newest" },
+];
+
 const CATEGORY_ORDER = [
   "entertainment",
   "politics",
@@ -68,7 +82,7 @@ const CATEGORY_PILL_BASE_CLASS =
   "relative cursor-pointer appearance-none bg-transparent pb-3 pt-2 text-sm font-medium border-b-2 transition-all duration-200 [font-family:inherit] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
 
 const TIME_PILLS_CLASS =
-  "inline-flex shrink-0 gap-1 rounded-md border border-[var(--border-1)] bg-white/[0.04] p-[3px] max-[768px]:max-w-full max-[768px]:self-start max-[768px]:overflow-x-auto max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
+  "inline-flex shrink-0 gap-1 rounded-md border border-[var(--border-1)] bg-[rgba(26,26,26,0.04)] p-[3px] max-[768px]:max-w-full max-[768px]:self-start max-[768px]:overflow-x-auto max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
 
 const TIME_PILL_BASE_CLASS =
   "min-w-11 cursor-pointer appearance-none rounded-md border-0 px-[14px] py-1.5 [font-family:inherit] text-xs font-semibold transition-colors duration-[120ms] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
@@ -77,16 +91,12 @@ const DISCOVERY_CONTROLS_CLASS =
   "flex w-full flex-wrap items-center justify-between gap-3 max-[768px]:items-stretch";
 const SEARCH_INPUT_CLASS =
   "min-h-10 min-w-[260px] flex-1 rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 text-sm text-[var(--t1)] outline-none transition-colors duration-[120ms] placeholder:text-[var(--t3)] focus:border-[var(--accent)] max-[768px]:min-w-0";
-const SORT_SELECT_CLASS =
-  "min-h-10 rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 text-sm font-semibold text-[var(--t1)] outline-none transition-colors duration-[120ms] focus:border-[var(--accent)]";
 const WATCHLIST_FILTER_CLASS =
   "min-h-10 rounded-md border px-3 text-sm font-semibold transition-colors duration-[120ms]";
-const TAXONOMY_PANEL_CLASS =
-  "grid w-full grid-cols-2 gap-3 max-[900px]:grid-cols-1";
-const TAXONOMY_GROUP_CLASS =
-  "rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3";
+const TAXONOMY_PANEL_CLASS = "grid w-full gap-2.5";
+const TAXONOMY_GROUP_CLASS = "flex flex-wrap items-center gap-x-3 gap-y-2";
 const TAXONOMY_LABEL_CLASS =
-  "mb-2 font-['IBM_Plex_Mono',_monospace] text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
+  "shrink-0 font-['IBM_Plex_Mono',_monospace] text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
 const TAXONOMY_LIST_CLASS = "flex flex-wrap items-center gap-2";
 const TAXONOMY_LINK_CLASS =
   "rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-2.5 py-1.5 text-[12px] font-semibold text-[var(--t2)] no-underline transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]";
@@ -136,7 +146,7 @@ function subcategoryButtonClass(active: boolean): string {
   return `${SUBNAV_BUTTON_BASE_CLASS} ${
     active
       ? "bg-[var(--yes)] font-semibold text-[#061a10]"
-      : "bg-transparent font-medium text-[var(--t2)] hover:bg-white/[0.06] hover:text-[var(--t1)]"
+      : "bg-transparent font-medium text-[var(--t2)] hover:bg-[rgba(26,26,26,0.05)] hover:text-[var(--t1)]"
   }`;
 }
 
@@ -494,20 +504,27 @@ export function AllMarketsSection({ categories }: Props) {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
-          <select
-            className={SORT_SELECT_CLASS}
+          <div
+            className={TIME_PILLS_CLASS}
+            role="tablist"
             aria-label={t("SORT_MARKETS", "Sort markets")}
-            value={sortBy}
-            onChange={(event) => setSortBy(event.target.value as MarketSort)}
           >
-            <option value="activity">
-              {t("SORT_ACTIVITY", "Trending / activity")}
-            </option>
-            <option value="closing_soon">
-              {t("SORT_CLOSING_SOON", "Closing soon")}
-            </option>
-            <option value="newest">{t("SORT_NEWEST", "Newest")}</option>
-          </select>
+            {SORT_PILLS.map((pill) => {
+              const isActive = sortBy === pill.value;
+              return (
+                <button
+                  key={pill.value}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  className={timePillClass(isActive)}
+                  onClick={() => setSortBy(pill.value)}
+                >
+                  {t(pill.labelKey, pill.fallback)}
+                </button>
+              );
+            })}
+          </div>
           <button
             type="button"
             className={`${WATCHLIST_FILTER_CLASS} ${

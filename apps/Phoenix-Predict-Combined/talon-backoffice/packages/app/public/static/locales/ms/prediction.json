@@ -165,5 +165,8 @@
   "DISCOVER_TRENDING": "Trending",
   "DISCOVER_CLOSING_SOON": "Hampir tutup",
   "NOT_ENOUGH_POINTS": "Not enough points",
-  "SEARCH_MARKETS_PLACEHOLDER": "Cari pasaran, calon, pasukan..."
+  "SEARCH_MARKETS_PLACEHOLDER": "Cari pasaran, calon, pasukan...",
+  "SORT_ACTIVITY": "Sohor",
+  "SORT_CLOSING_SOON": "Hampir ditutup",
+  "SORT_NEWEST": "Terbaru"
 }

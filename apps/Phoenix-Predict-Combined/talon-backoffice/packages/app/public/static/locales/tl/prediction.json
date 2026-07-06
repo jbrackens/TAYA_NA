@@ -167,5 +167,8 @@
   "DISCOVER_TRENDING": "Trending",
   "DISCOVER_CLOSING_SOON": "Malapit magsara",
   "NOT_ENOUGH_POINTS": "Not enough points",
-  "SEARCH_MARKETS_PLACEHOLDER": "Maghanap ng markets, kandidato, teams..."
+  "SEARCH_MARKETS_PLACEHOLDER": "Maghanap ng markets, kandidato, teams...",
+  "SORT_ACTIVITY": "Trending",
+  "SORT_CLOSING_SOON": "Malapit nang magsara",
+  "SORT_NEWEST": "Pinakabago"
 }
