@@ -12,8 +12,8 @@ import { logger } from "../../lib/logger";
 import type {
   PredictionMarket,
   Category,
-} from "@phoenix-ui/api-client/src/prediction-types";
-import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+} from "@taptrade-ui/api-client/src/prediction-types";
+import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 
 const api = createPredictionClient();
 

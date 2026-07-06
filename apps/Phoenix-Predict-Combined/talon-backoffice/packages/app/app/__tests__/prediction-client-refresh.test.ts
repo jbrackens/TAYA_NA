@@ -9,7 +9,7 @@
  */
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { PredictionApiClient } from "@phoenix-ui/api-client/src/prediction-client";
+import { PredictionApiClient } from "@taptrade-ui/api-client/src/prediction-client";
 
 type Step = { status: number; body?: unknown };
 

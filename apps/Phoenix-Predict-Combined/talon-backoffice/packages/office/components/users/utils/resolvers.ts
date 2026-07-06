@@ -1,6 +1,6 @@
 import { enumToObject } from "../../../lib/utils/enums";
 import { buildTableFilterOptions } from "../../../lib/utils/filters";
-import { PunterStatus, PunterStatusEnum } from "@phoenix-ui/utils";
+import { PunterStatus, PunterStatusEnum } from "@taptrade-ui/utils";
 
 export const resolveStatus = (status: PunterStatus) => {
   let color = "grey";

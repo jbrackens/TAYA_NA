@@ -4,7 +4,7 @@ import { App, Upload, Button, InputNumber, Card, Form, Spin } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import mammoth from "mammoth";
 import { useApi } from "../../services/api/api-service";
-import { Method } from "@phoenix-ui/utils";
+import { Method } from "@taptrade-ui/utils";
 import { useEffect } from "react";
 
 export const TermsAndConditionsForm = () => {

@@ -21,8 +21,8 @@ import { useAuth } from "../hooks/useAuth";
 import { logger } from "../lib/logger";
 import { getBalance } from "../lib/api/wallet-client";
 import type { Balance } from "../lib/api/wallet-client";
-import type { PortfolioSummary } from "@phoenix-ui/api-client/src/prediction-types";
-import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import type { PortfolioSummary } from "@taptrade-ui/api-client/src/prediction-types";
+import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import { getPrivacy, updatePrivacy } from "../lib/api/privacy-client";
 import { FEATURE_RG } from "../lib/features";
 

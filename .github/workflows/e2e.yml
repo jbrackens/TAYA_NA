@@ -112,7 +112,7 @@ jobs:
         working-directory: ${{ env.APP }}
         run: |
           yarn install --frozen-lockfile
-          yarn lerna run build --scope @phoenix-ui/api-client --include-dependencies
+          yarn lerna run build --scope @taptrade-ui/api-client --include-dependencies
 
       - name: Start player app (next dev :3010)
         working-directory: ${{ env.APP }}/packages/app

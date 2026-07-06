@@ -23,7 +23,7 @@ import {
   WalletActionTypeEnum,
   WalletProductEnum,
   useTimezone,
-} from "@phoenix-ui/utils";
+} from "@taptrade-ui/utils";
 import UserDetailsWalletExport from "./export";
 import { useRouter } from "next/router";
 import { addQueryParam } from "../../../utils/queryParams";

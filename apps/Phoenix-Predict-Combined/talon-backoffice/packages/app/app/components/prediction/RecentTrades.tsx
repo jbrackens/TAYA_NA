@@ -9,7 +9,7 @@
  */
 
 import { useTranslation } from "react-i18next";
-import type { Trade } from "@phoenix-ui/api-client/src/prediction-types";
+import type { Trade } from "@taptrade-ui/api-client/src/prediction-types";
 
 interface RecentTradesProps {
   trades: Trade[];

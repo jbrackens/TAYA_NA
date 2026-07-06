@@ -1,4 +1,4 @@
-import { PunterStatus, PunterStatusEnum } from "@phoenix-ui/utils";
+import { PunterStatus, PunterStatusEnum } from "@taptrade-ui/utils";
 
 const SET_TIMEOUT_STATUS_ACTION_ALLOWED: PunterStatus[] = [
   PunterStatusEnum.ACTIVE,

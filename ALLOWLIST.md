@@ -31,3 +31,6 @@ later batches; path-coupled text rides with the directory-rename batch).
 - WORKLOG.md, CURRENT_STATE.md, RENAME_MAP.md, ALLOWLIST.md — these documents ARE the
   rename record; they necessarily name the legacy tokens they map. Excluded from the
   final grep gate by definition.
+
+## Review artifacts (decided iteration 6)
+- .codex-reviews/** — raw historical review logs; same dated-record rule as docs/audit.

@@ -6,7 +6,7 @@ import {
   PunterStandardLimitsScope,
   PunterSessionLimitsScope,
   PaymentMethodTypeEnum,
-} from "@phoenix-ui/utils";
+} from "@taptrade-ui/utils";
 
 export type TalonPunterShort = Punter & {};
 

@@ -2,7 +2,7 @@ import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
 
-// Vitest config for the @phoenix-ui/office package.
+// Vitest config for the @taptrade-ui/office package.
 //
 // Replaces the broken Jest 25 + babel-jest + TS 5 setup (which hangs on
 // startup — see the deprecated `test:jest` script). Vitest works with TS 5
@@ -34,8 +34,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@phoenix-ui/utils": path.resolve(__dirname, "../utils/src"),
-      "@phoenix-ui/api-client": path.resolve(__dirname, "../api-client/src"),
+      "@taptrade-ui/utils": path.resolve(__dirname, "../utils/src"),
+      "@taptrade-ui/api-client": path.resolve(__dirname, "../api-client/src"),
       i18n: path.resolve(__dirname, "./i18n.ts"),
     },
   },

@@ -43,11 +43,11 @@ LoginForm, LiveNow, LeagueNav, MatchTimeline, OddsMovement, SportSidebar, Featur
 
 ### ISSUE-002: 22 files import `@taptrade-api/client` (wrong package name)
 **Severity:** CRITICAL
-**Impact:** Same files as above plus hooks/useApi.ts and hooks/useLiveData.ts. The correct package is `@phoenix-ui/api-client`.
+**Impact:** Same files as above plus hooks/useApi.ts and hooks/useLiveData.ts. The correct package is `@taptrade-ui/api-client`.
 
-**Fix:** Replace `@taptrade-api/client` with `@phoenix-ui/api-client` in all 22 files. Also verify the type imports (SportEventItem, MatchTrackerIncident, etc.) exist in @phoenix-ui/api-client.
+**Fix:** Replace `@taptrade-api/client` with `@taptrade-ui/api-client` in all 22 files. Also verify the type imports (SportEventItem, MatchTrackerIncident, etc.) exist in @taptrade-ui/api-client.
 
-### ISSUE-003: 3 files import `@phoenix-ui/design-system` (not available in App Router)
+### ISSUE-003: 3 files import `@taptrade-ui/design-system` (not available in App Router)
 **Severity:** CRITICAL
 **Impact:** auth/login/page.tsx, sports/[sport]/[league]/page.tsx, profile/page.tsx crash.
 

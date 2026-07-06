@@ -10,7 +10,7 @@ import {
   WalletActionTypeEnum,
   WalletProductEnum,
   useTimezone,
-} from "@phoenix-ui/utils";
+} from "@taptrade-ui/utils";
 import { useRouter } from "next/router";
 import dayjs from "dayjs";
 

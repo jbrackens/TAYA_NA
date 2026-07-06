@@ -81,7 +81,7 @@ Do not commit or push from `main`, `chore/safe-brand-text-cleanup`, or any other
 
 1. **Never give placeholder paths.** Use real, full paths. The workspace is `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/` — not `~/...` or `your-project/...`.
 2. **Never reintroduce sportsbook concepts.** No new code referencing `fixtures`, `selections`, `betslip`, `sport_key`, `punter_bets`, `freebets`, `odds_boosts`, `match_tracker`. This is a prediction market — markets have `yesPriceCents`/`noPriceCents`, not odds; users have positions, not bets.
-3. **Never use `@phoenix-ui/design-system` imports in `app/`** — it uses styled-components and causes webpack hangs. Use inline components or Tailwind.
+3. **Never use `@taptrade-ui/design-system` imports in `app/`** — it uses styled-components and causes webpack hangs. Use inline components or Tailwind.
 4. **Never introduce `console.log/warn/error` in production code.** Use the structured `logger` from `app/lib/logger.ts`.
 5. **Never use `any` type.** Use `unknown`, proper interfaces, or `Record<string, unknown>`.
 6. **Never suppress TypeScript errors** with `@ts-nocheck`, `@ts-ignore`, or `as any`.
@@ -122,7 +122,7 @@ Prices are **cents, 0–99** — always enforced by CHECK constraints and the in
 - **Styling:** Tailwind CSS + inline styles (NO styled-components in app/)
 - **Logging:** `app/lib/logger.ts` — structured logger (dev: console with `[context]` prefix, prod: no-op)
 - **WebSocket:** `app/lib/websocket/` — real-time market prices and portfolio updates (subscribe to `market:<id>`, `portfolio:<userId>`, `trades:<marketId>`)
-- **API client:** `@phoenix-ui/api-client/src/prediction-client.ts` — `PredictionApiClient`
+- **API client:** `@taptrade-ui/api-client/src/prediction-client.ts` — `PredictionApiClient`
 - **Testing:** Node.js built-in test runner (`node:test`)
 
 ### Prediction pages (active)

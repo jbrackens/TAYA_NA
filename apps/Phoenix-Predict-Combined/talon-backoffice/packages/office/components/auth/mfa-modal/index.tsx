@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Col, Alert, Modal, Form, Input, Button } from "antd";
 import { useTranslation } from "i18n";
-import { useSpy, ErrorsToBeHandledSpecially, Method } from "@phoenix-ui/utils";
+import { useSpy, ErrorsToBeHandledSpecially, Method } from "@taptrade-ui/utils";
 import { useApi } from "../../../services/api/api-service";
 import { ErrorRow } from "./index.styled";
 
@@ -33,13 +33,8 @@ const MfaModalComponent: React.FC<MfaModalComponentProps> = ({
     verificationCode && verificationCode?.length > 0
       ? `/verification/request-by-verification-code/${verificationCode}`
       : "verification/request";
-  const [
-    triggerApi,
-    isLoading,
-    response,
-    _triggerRefresh,
-    resetHookState,
-  ] = useApi(requestUrl, Method.POST);
+  const [triggerApi, isLoading, response, _triggerRefresh, resetHookState] =
+    useApi(requestUrl, Method.POST);
   const [form] = Form.useForm();
   const { spy } = useSpy();
 

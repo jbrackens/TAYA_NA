@@ -7,7 +7,7 @@ See CURRENT_STATE.md table. Entries below are CONCRETE artifacts as they are pla
 - brand.ts default: "Tiangge" → "TapTrade"; support/privacy/legal emails @tiangge.com → @taptrade.com
 - BrandMark/wordmark strings, layout titles, locale files (7 locales × ~30 namespaces)
 - public/brand/* asset filenames containing tiangge
-- @phoenix-ui/* → @taptrade-ui/* (packages: app, office, api-client, utils, design-system, mock-server)
+- @taptrade-ui/* → @taptrade-ui/* (packages: app, office, api-client, utils, design-system, mock-server)
 - Go module phoenix-revival/gateway → taptrade/gateway (+ all internal imports)
 - docker images phoenix-gateway → taptrade-gateway, phoenix-auth → taptrade-auth,
   predict-frontend (no legacy token — keep)
@@ -33,7 +33,7 @@ See CURRENT_STATE.md table. Entries below are CONCRETE artifacts as they are pla
 
 ## Phase 2 plan — phoenix/talon (recon verified, iteration 5)
 Measured targets (active scope, lockfiles excluded — locks regenerate at batch G):
-- @phoenix-ui/* npm scope: 111 import-site files → @taptrade-ui/* (workspace package.json
+- @taptrade-ui/* npm scope: 111 import-site files → @taptrade-ui/* (workspace package.json
   names + every import; lockfile regen; one atomic batch: BATCH G)
 - PhoenixApiClient class: 9 ref files → TapTradeApiClient becomes the class, keep
   PhoenixApiClient as deprecated alias export (mirror of today's arrangement, preserves
@@ -57,8 +57,10 @@ Sequenced: E (docs/comments/emails-in-active-text) → F (identifiers + make tar
 env shims) → G (npm scope atomic) → H (Go module + go seeds, post-unfreeze) →
 I (docker images/infra) → J (directories) → final verify sweep.
 - Batch E (iteration 6): phoenix/talon prose→TapTrade in 37 living docs (masked:
-  Phoenix-Predict-Combined, talon-backoffice, @phoenix-ui, phoenix-revival,
+  Phoenix-Predict-Combined, talon-backoffice, @taptrade-ui, phoenix-revival,
   phoenix-gateway/auth, PhoenixApiClient, archive dir names, phoenix.local, TALON_*).
 - Batch F (iteration 6): PhoenixApiClient⇄TapTradeApiClient flip (class↔alias);
   TALON_*→TAPTRADE_OFFICE_* (17 scripts, no shims — internal-only, verified);
   Makefile verify-talon→verify-office + legacy alias target.
+- Batch G (iteration 6): @phoenix-ui/*→@taptrade-ui/* (135 files, atomic), monorepo
+  name phoenix-ui→taptrade-ui, lockfiles regenerated, double-scope ban in gate.sh.

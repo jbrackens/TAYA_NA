@@ -1,6 +1,6 @@
 import { MenuItem, MenuItemGroupEnum, MenuItemGroupedIcons } from "types/menu";
 import { DashboardOutlined, ReconciliationOutlined } from "@ant-design/icons";
-import { PunterRoleEnum } from "@phoenix-ui/utils";
+import { PunterRoleEnum } from "@taptrade-ui/utils";
 import defaultMenuStructure from "./structure";
 import { MenuModulesPathEnum } from "./structure";
 

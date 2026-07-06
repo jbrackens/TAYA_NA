@@ -14,7 +14,7 @@ import {
 } from "../../../../providers/menu/utils/resolvers";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { useSpy, SpyCallbackProps } from "@phoenix-ui/utils";
+import { useSpy, SpyCallbackProps } from "@taptrade-ui/utils";
 
 type SidebarMenuProps = {
   menu?: MenuItem[];

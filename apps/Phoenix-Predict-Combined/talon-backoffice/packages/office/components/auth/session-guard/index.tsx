@@ -1,10 +1,10 @@
 import { ReactNode, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { isEqual, isNil } from "lodash";
-import { useSpy } from "@phoenix-ui/utils/dist/hooks/spy";
-import { useToken } from "@phoenix-ui/utils/dist/services/token-store/token-store-service";
-import { Method } from "@phoenix-ui/utils/dist/services/api/api-service";
-import type { PunterRoles } from "@phoenix-ui/utils/dist/types/punter";
+import { useSpy } from "@taptrade-ui/utils/dist/hooks/spy";
+import { useToken } from "@taptrade-ui/utils/dist/services/token-store/token-store-service";
+import { Method } from "@taptrade-ui/utils/dist/services/api/api-service";
+import type { PunterRoles } from "@taptrade-ui/utils/dist/types/punter";
 import {
   validateSession,
   buildRedirectUrl,

@@ -17,11 +17,11 @@ import {
   Typography,
 } from "antd";
 import PageHeader from "../../components/layout/page-header";
-import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import type {
   Category,
   Series,
-} from "@phoenix-ui/api-client/src/prediction-types";
+} from "@taptrade-ui/api-client/src/prediction-types";
 
 const { Text } = Typography;
 const { TextArea } = Input;

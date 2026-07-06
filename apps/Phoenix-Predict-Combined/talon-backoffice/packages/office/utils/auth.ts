@@ -2,13 +2,13 @@ const { API_GLOBAL_ENDPOINT } =
   require("next/config").default().publicRuntimeConfig;
 import Router from "next/router";
 import { NextPageContext } from "next";
-import { appendSecondsToTimestamp } from "@phoenix-ui/utils/dist/converters";
-import { Method } from "@phoenix-ui/utils/dist/services/api/api-service";
-import { useToken } from "@phoenix-ui/utils/dist/services/token-store/token-store-service";
+import { appendSecondsToTimestamp } from "@taptrade-ui/utils/dist/converters";
+import { Method } from "@taptrade-ui/utils/dist/services/api/api-service";
+import { useToken } from "@taptrade-ui/utils/dist/services/token-store/token-store-service";
 import type {
   PunterRoles,
   JSONWebToken,
-} from "@phoenix-ui/utils/dist/types/punter";
+} from "@taptrade-ui/utils/dist/types/punter";
 import jwt from "jsonwebtoken";
 import dayjs from "dayjs";
 import { isEmpty } from "lodash";

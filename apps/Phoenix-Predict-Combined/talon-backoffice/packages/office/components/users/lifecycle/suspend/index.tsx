@@ -1,4 +1,4 @@
-import { PunterStatus, PunterStatusEnum, Id } from "@phoenix-ui/utils";
+import { PunterStatus, PunterStatusEnum, Id } from "@taptrade-ui/utils";
 import { useState } from "react";
 import { ToggleLabels } from "../../../../types/utils";
 import { API_USERS_LIFECYCLE_URL } from "../constants";

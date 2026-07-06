@@ -109,10 +109,10 @@ gate_typescript() {
 ###############################################################################
 
 gate_phantom_imports() {
-    print_gate_start "2" "No Phantom Imports (@phoenix-ui/design-system)"
+    print_gate_start "2" "No Phantom Imports (@taptrade-ui/design-system|@phoenix-ui/design-system)"
 
-    # Search for @phoenix-ui/design-system imports in app/
-    local count=$(grep -r "@phoenix-ui/design-system" app/ 2>/dev/null | grep -v node_modules | wc -l)
+    # Search for @taptrade-ui/design-system imports in app/
+    local count=$(grep -r "@taptrade-ui/design-system" app/ 2>/dev/null | grep -v node_modules | wc -l)
 
     if [ "$count" -eq 0 ]; then
         print_pass
@@ -284,7 +284,7 @@ gate_next_build() {
 
     # Run next build with 5-minute timeout. --webpack keeps the bundler
     # consistent with next.config.js (which has webpack-specific config:
-    # polyfill fallbacks, externals, the @phoenix-ui/utils alias). Without
+    # polyfill fallbacks, externals, the @taptrade-ui/utils alias). Without
     # this flag, Next.js 16 defaults to Turbopack and would silently drop
     # the webpack config.
     if timeout 300 npx next build --webpack 2>&1 | tee /tmp/next_build.log; then

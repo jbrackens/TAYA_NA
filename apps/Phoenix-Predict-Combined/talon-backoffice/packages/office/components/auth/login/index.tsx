@@ -10,7 +10,7 @@ import {
   SpyCallbackProps,
   appendSecondsToTimestamp,
   useFingerprint,
-} from "@phoenix-ui/utils";
+} from "@taptrade-ui/utils";
 import { isEligibleToAccess, validateAndDecode } from "../../../utils/auth";
 import { LoginFormComponent, LoginForm, LoginWrapper } from "./index.styled";
 import { useContext } from "react";

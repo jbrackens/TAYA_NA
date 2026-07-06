@@ -3,7 +3,7 @@ import Protected from "../index";
 import { setupProcessMock } from "../../../../__mocks__/process";
 import { setupLocalStorageMock } from "../../../../__mocks__/localstorage";
 import { setupTokensMock } from "../../../../__mocks__/auth-tokens";
-import { PunterRoleEnum } from "@phoenix-ui/utils";
+import { PunterRoleEnum } from "@taptrade-ui/utils";
 
 setupLocalStorageMock();
 setupProcessMock();

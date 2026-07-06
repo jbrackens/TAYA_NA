@@ -21,12 +21,12 @@
     "isolatedModules": true,
     "baseUrl": "./",
     "paths": {
-      "@phoenix-ui/design-system": ["../design-system/src"],
-      "@phoenix-ui/design-system/*": ["../design-system/src/*"],
+      "@taptrade-ui/design-system": ["../design-system/src"],
+      "@taptrade-ui/design-system/*": ["../design-system/src/*"],
       "@phoenix-api/client": ["../api-client/src"],
       "@phoenix-api/client/*": ["../api-client/src/*"],
-      "@phoenix-ui/utils": ["../utils/src"],
-      "@phoenix-ui/utils/*": ["../utils/src/*"]
+      "@taptrade-ui/utils": ["../utils/src"],
+      "@taptrade-ui/utils/*": ["../utils/src/*"]
     },
     "incremental": true,
     "plugins": [

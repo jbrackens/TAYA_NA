@@ -17,7 +17,7 @@ import {
   Typography,
 } from "antd";
 import dayjs from "dayjs";
-import { Method, useTimezone } from "@phoenix-ui/utils";
+import { Method, useTimezone } from "@taptrade-ui/utils";
 import { useTranslation } from "i18n";
 import Table from "../../components/layout/table";
 import { useApi } from "../../services/api/api-service";

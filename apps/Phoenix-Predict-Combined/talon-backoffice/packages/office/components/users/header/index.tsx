@@ -16,7 +16,7 @@ import {
   PunterRichStatus,
   PunterStatus,
   PunterStatusEnum,
-} from "@phoenix-ui/utils";
+} from "@taptrade-ui/utils";
 import UserAddNote from "../notes/add";
 import UserLifecycleSuspend from "../lifecycle/suspend";
 

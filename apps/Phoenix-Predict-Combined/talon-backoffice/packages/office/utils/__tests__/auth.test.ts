@@ -2,7 +2,7 @@ import("jest-fetch-mock");
 import { cleanup } from "@testing-library/react";
 import dayjs from "dayjs";
 import { isString } from "lodash";
-import { appendSecondsToTimestamp, PunterRoleEnum } from "@phoenix-ui/utils";
+import { appendSecondsToTimestamp, PunterRoleEnum } from "@taptrade-ui/utils";
 import {
   resolveToken,
   validateAndDecode,

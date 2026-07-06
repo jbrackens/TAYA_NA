@@ -11,7 +11,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import { logger } from "../../../lib/logger";
 
 const api = createPredictionClient();

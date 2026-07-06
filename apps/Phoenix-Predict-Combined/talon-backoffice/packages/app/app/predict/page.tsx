@@ -26,8 +26,8 @@ import type {
   Category,
   DiscoveryResponse,
   PredictionMarket,
-} from "@phoenix-ui/api-client/src/prediction-types";
-import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+} from "@taptrade-ui/api-client/src/prediction-types";
+import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import {
   categoryName,
   localizedMarket,

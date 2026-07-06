@@ -11,7 +11,7 @@ import {
   isFieldLayoutHorizontal,
 } from "./editModalUtils";
 import { useApi } from "./../../services/api/api-service";
-import { Method } from "@phoenix-ui/utils";
+import { Method } from "@taptrade-ui/utils";
 import { useTranslation } from "i18n";
 
 type ModalProps = {

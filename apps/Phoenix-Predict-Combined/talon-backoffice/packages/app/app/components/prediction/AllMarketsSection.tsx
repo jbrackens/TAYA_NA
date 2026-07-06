@@ -17,7 +17,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { MarketGrid } from "./MarketGrid";
-import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import {
   addMarketToWatchlist,
   getMarketWatchlist,
@@ -32,7 +32,7 @@ import type {
   Category,
   PredictionMarket,
   Series,
-} from "@phoenix-ui/api-client/src/prediction-types";
+} from "@taptrade-ui/api-client/src/prediction-types";
 
 const api = createPredictionClient();
 

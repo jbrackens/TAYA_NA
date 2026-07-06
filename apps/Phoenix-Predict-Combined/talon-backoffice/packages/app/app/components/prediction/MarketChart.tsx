@@ -15,8 +15,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
-import type { MarketPriceHistory } from "@phoenix-ui/api-client/src/prediction-types";
+import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
+import type { MarketPriceHistory } from "@taptrade-ui/api-client/src/prediction-types";
 import { logger } from "../../lib/logger";
 import { DEMO_SYNTHETIC_CHARTS } from "../../lib/features";
 import {

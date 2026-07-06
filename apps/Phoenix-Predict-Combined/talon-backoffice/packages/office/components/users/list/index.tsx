@@ -10,12 +10,12 @@ import { TablePagination } from "types/filters";
 import Table from "../../layout/table";
 import TableActions from "../../layout/table/actions";
 import defaultMenuStructure from "../../../providers/menu/structure";
-// import { PunterStatus } from "@phoenix-ui/utils";
+// import { PunterStatus } from "@taptrade-ui/utils";
 import { TalonPunterShort } from "../../../types/punters";
 import { Input } from "antd";
 import { useRouter } from "next/router";
 import { addQueryParam } from "../../../utils/queryParams";
-import { useTimezone } from "@phoenix-ui/utils";
+import { useTimezone } from "@taptrade-ui/utils";
 
 type UsersListProps = {
   data: TalonPunterShort[];

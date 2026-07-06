@@ -85,7 +85,7 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
   (~31 files, FROZEN behind task_633e7ad3), 5 applied migrations (forward-only phase),
   go-regression-pack.sh (coupled to a frozen Go test name), and intentional compat
   shims (allowlisted). The tiangge token phase is COMPLETE-PENDING-UNFREEZE.
-- NEXT: Phase 2 concrete planning for phoenix/talon (npm scope @phoenix-ui, Go module
+- NEXT: Phase 2 concrete planning for phoenix/talon (npm scope @taptrade-ui, Go module
   path, docker image names, seed emails @phoenix.local, PhoenixApiClient class,
   Phoenix-Predict-Combined + talon-backoffice directory renames LAST).
 
@@ -102,3 +102,13 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
   TAPTRADE_OFFICE_* plain rename (VERIFIED internal-only: no refs outside scripts/
   except the allowlisted archive); make verify-office replaces verify-talon with a
   compat alias target. bash -n on shimmed scripts, make -n on the alias, tsc clean.
+- EXECUTED Batch G (npm scope, atomic): @phoenix-ui/* → @taptrade-ui/* across 135 files
+  (6 package names + root monorepo name phoenix-ui→taptrade-ui + imports + tsconfig/
+  jest/next configs + guards + CI workflow comment + docs); gate.sh design-system ban
+  now blocks BOTH old and new scope; yarn.lock regenerated (6.2s), package-lock
+  workspace names updated. VERIFIED: tsc clean, gate.sh ALL GATES PASSED (7/8,
+  pre-existing TODO warning).
+- CORRECTION (same iteration): batch G's blanket replace also touched
+  .github/workflows/{e2e,frontend-build}.yml (legit — CI builds the renamed workspaces;
+  amended into the batch) and .codex-reviews/lc38-review-raw.txt (historical review log —
+  reverted + .codex-reviews/ allowlisted).

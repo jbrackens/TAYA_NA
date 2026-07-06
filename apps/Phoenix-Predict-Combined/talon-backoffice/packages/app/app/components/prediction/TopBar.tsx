@@ -23,8 +23,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
-import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
+import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import { logger } from "../../lib/logger";
 import { searchMarkets } from "../../lib/marketSearch";
 import { useAuth } from "../../hooks/useAuth";

@@ -1,5 +1,5 @@
 import { Descriptions } from "antd";
-import { Layout, PunterStandardLimitsScope } from "@phoenix-ui/utils";
+import { Layout, PunterStandardLimitsScope } from "@taptrade-ui/utils";
 import { useTranslation } from "i18n";
 
 type UsersDetailsLimitsProps = {

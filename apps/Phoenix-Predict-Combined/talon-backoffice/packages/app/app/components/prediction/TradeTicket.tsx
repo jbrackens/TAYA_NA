@@ -30,7 +30,7 @@ import type {
   OrderPreview,
   PlaceOrderResponse,
   TimeInForce,
-} from "@phoenix-ui/api-client/src/prediction-types";
+} from "@taptrade-ui/api-client/src/prediction-types";
 import { useToast } from "../ToastProvider";
 import { complianceDenialKind } from "../../lib/compliance-denial";
 

@@ -1,5 +1,5 @@
 {
-  "name": "@phoenix-ui/design-system",
+  "name": "@taptrade-ui/design-system",
   "version": "0.1.0",
   "description": "Shared design system for Phoenix UI",
   "main": "dist/index.js",

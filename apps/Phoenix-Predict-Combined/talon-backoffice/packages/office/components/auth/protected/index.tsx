@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect } from "react";
 import { validateAndCheckEligibility, resolveToken } from "../../../utils/auth";
-import { PunterRoles } from "@phoenix-ui/utils";
+import { PunterRoles } from "@taptrade-ui/utils";
 
 export type ProtectedProps = {
   children: ReactNode;

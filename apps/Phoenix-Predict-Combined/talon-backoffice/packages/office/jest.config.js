@@ -7,12 +7,13 @@ module.exports = {
   roots: [path.join(__dirname)],
   setupFiles: [path.join(__dirname, "./setupTests.ts")],
   transform: {
-    "^.+\\.[jt]sx?$": ["babel-jest", {
-      configFile: path.join(__dirname, ".babelrc.jest.js"),
-    }],
+    "^.+\\.[jt]sx?$": [
+      "babel-jest",
+      {
+        configFile: path.join(__dirname, ".babelrc.jest.js"),
+      },
+    ],
   },
-  transformIgnorePatterns: [
-    "/node_modules/(?!(@phoenix-ui)/)",
-  ],
+  transformIgnorePatterns: ["/node_modules/(?!(@taptrade-ui)/)"],
   moduleDirectories: ["node_modules", __dirname],
 };

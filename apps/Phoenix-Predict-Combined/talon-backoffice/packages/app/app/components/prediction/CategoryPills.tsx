@@ -6,7 +6,7 @@
 
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
-import type { Category } from "@phoenix-ui/api-client/src/prediction-types";
+import type { Category } from "@taptrade-ui/api-client/src/prediction-types";
 import { categoryName } from "./market-content";
 
 const CATEGORY_EMOJI: Record<string, string> = {

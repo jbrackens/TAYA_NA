@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { App, Form, Input, Modal, Select } from "antd";
-import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import type {
   Category,
   PredictionEvent,
-} from "@phoenix-ui/api-client/src/prediction-types";
+} from "@taptrade-ui/api-client/src/prediction-types";
 
 const { TextArea } = Input;
 const predictionClient = createPredictionClient();

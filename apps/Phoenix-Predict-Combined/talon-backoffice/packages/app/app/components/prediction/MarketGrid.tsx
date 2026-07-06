@@ -7,7 +7,7 @@
 
 import { MarketCard } from "./MarketCard";
 import { useTranslation } from "react-i18next";
-import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
+import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
 import { categoryLabel, localizedMarket } from "./market-content";
 
 interface Props {

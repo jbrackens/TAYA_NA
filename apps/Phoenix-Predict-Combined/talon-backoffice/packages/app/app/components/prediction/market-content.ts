@@ -3,7 +3,7 @@
 import type {
   Category,
   PredictionMarket,
-} from "@phoenix-ui/api-client/src/prediction-types";
+} from "@taptrade-ui/api-client/src/prediction-types";
 import i18n from "../../lib/i18n/config";
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;

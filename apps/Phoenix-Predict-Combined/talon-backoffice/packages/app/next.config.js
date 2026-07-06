@@ -73,8 +73,8 @@ module.exports = {
   compress: true,
   allowedDevOrigins: ["127.0.0.1"],
   // Transpile workspace packages that expose raw TypeScript source
-  // NOTE: @phoenix-ui/design-system removed — all imports replaced with inline components
-  transpilePackages: ["@phoenix-ui/utils", "@phoenix-ui/api-client"],
+  // NOTE: @taptrade-ui/design-system removed — all imports replaced with inline components
+  transpilePackages: ["@taptrade-ui/utils", "@taptrade-ui/api-client"],
   outputFileTracingRoot: path.join(__dirname, "../.."),
   async headers() {
     return [
@@ -121,7 +121,7 @@ module.exports = {
         ...config.resolve,
         alias: {
           ...config.resolve.alias,
-          "@phoenix-ui/utils$": path.resolve(__dirname, "../utils/src"),
+          "@taptrade-ui/utils$": path.resolve(__dirname, "../utils/src"),
         },
       },
     };

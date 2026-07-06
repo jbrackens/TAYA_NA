@@ -6,7 +6,7 @@ import {
   WalletActionTypeEnum,
   WalletProduct,
   WalletProductEnum,
-} from "@phoenix-ui/utils";
+} from "@taptrade-ui/utils";
 import { buildTableFilterOptions } from "../../../../lib/utils/filters";
 
 export const resolveStatus = (status: WalletHistoryStatus) => {

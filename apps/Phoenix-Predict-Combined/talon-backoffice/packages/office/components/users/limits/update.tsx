@@ -10,7 +10,7 @@ import {
 import PageHeader from "../../layout/page-header";
 import UsersDetailsLimitsSectionSwitch from "./section/switch";
 import UsersDetailsLimitsSection from "./section";
-import { numberToHours, hoursToNumber, useSpy } from "@phoenix-ui/utils";
+import { numberToHours, hoursToNumber, useSpy } from "@taptrade-ui/utils";
 
 export type UsersDetailsLimitsUpdateProps = {
   data: TalonPunterLimits;

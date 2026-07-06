@@ -1,6 +1,6 @@
 import React from "react";
 import { Divider, Space } from "antd";
-import { Layout } from "@phoenix-ui/utils";
+import { Layout } from "@taptrade-ui/utils";
 
 export type TableActions = {
   children: React.ReactNode;

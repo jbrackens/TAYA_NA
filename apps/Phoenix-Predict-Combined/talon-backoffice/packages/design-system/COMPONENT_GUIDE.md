@@ -3,7 +3,7 @@
 ## Quick Start
 
 ```tsx
-import { ThemeProvider, Button, Card } from "@phoenix-ui/design-system";
+import { ThemeProvider, Button, Card } from "@taptrade-ui/design-system";
 
 function App() {
   return (
@@ -161,7 +161,7 @@ function App() {
 ### Colors
 
 ```typescript
-import { colors } from "@phoenix-ui/design-system";
+import { colors } from "@taptrade-ui/design-system";
 
 colors.background; // #1a1a2e
 colors.surface; // #2d2d44
@@ -179,7 +179,7 @@ colors.accent.blue; // #2196f3
 ### Typography
 
 ```typescript
-import { typography } from "@phoenix-ui/design-system";
+import { typography } from "@taptrade-ui/design-system";
 
 typography.fontFamily; // Barlow
 typography.sizes.xlarge; // 56px/64px, bold
@@ -195,7 +195,7 @@ typography.weights.bold; // 700
 ### Spacing
 
 ```typescript
-import { spacing } from "@phoenix-ui/design-system";
+import { spacing } from "@taptrade-ui/design-system";
 
 spacing.xs; // 4px
 spacing.sm; // 8px
@@ -207,7 +207,7 @@ spacing.xl; // 32px
 ### Breakpoints
 
 ```typescript
-import { breakpoints, media } from "@phoenix-ui/design-system";
+import { breakpoints, media } from "@taptrade-ui/design-system";
 
 breakpoints.sm; // 640px
 breakpoints.md; // 900px
@@ -223,7 +223,7 @@ media.smDown; // @media (max-width: 639px)
 ### Motion
 
 ```typescript
-import { motion } from "@phoenix-ui/design-system";
+import { motion } from "@taptrade-ui/design-system";
 
 motion.fast; // 0.2s ease
 motion.pulse; // 2s ease-in-out infinite
@@ -232,7 +232,7 @@ motion.pulse; // 2s ease-in-out infinite
 ### Radius
 
 ```typescript
-import { radius } from "@phoenix-ui/design-system";
+import { radius } from "@taptrade-ui/design-system";
 
 radius.sm; // 8px
 radius.md; // 12px
@@ -243,7 +243,7 @@ radius.full; // 9999px
 ## Tailwind Composition
 
 ```typescript
-import { Card } from '@phoenix-ui/design-system';
+import { Card } from '@taptrade-ui/design-system';
 
 <Card className="bg-[#2d2d44] p-6 max-[899px]:p-4">
   Custom content
@@ -256,7 +256,7 @@ All components are fully typed with TypeScript. Import types for prop
 interfaces:
 
 ```typescript
-import { Button } from '@phoenix-ui/design-system';
+import { Button } from '@taptrade-ui/design-system';
 
 // Component accepts ButtonHTMLAttributes plus variant/size props
 <Button variant="primary" size="lg" disabled={false} />

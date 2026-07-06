@@ -1,4 +1,4 @@
-import { Button as ButtonEnum, Method, useSpy, Id } from "@phoenix-ui/utils";
+import { Button as ButtonEnum, Method, useSpy, Id } from "@taptrade-ui/utils";
 import { useState } from "react";
 import { useApi } from "../../../services/api/api-service";
 import { Button } from "antd";

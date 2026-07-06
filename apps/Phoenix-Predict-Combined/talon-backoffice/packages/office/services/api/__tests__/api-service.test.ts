@@ -4,7 +4,7 @@ import {
   useSpy,
   Method,
   UseApiHook,
-} from "@phoenix-ui/utils";
+} from "@taptrade-ui/utils";
 import { shouldLogoutUser } from "../../../lib/slices/authSlice";
 
 jest.mock("next/config", () => ({
@@ -15,8 +15,8 @@ jest.mock("next/config", () => ({
   }),
 }));
 
-jest.mock("@phoenix-ui/utils", () => ({
-  ...jest.requireActual("@phoenix-ui/utils"),
+jest.mock("@taptrade-ui/utils", () => ({
+  ...jest.requireActual("@taptrade-ui/utils"),
   useApiHookTyped: jest.fn(),
   useSpy: jest.fn(),
   Method: {

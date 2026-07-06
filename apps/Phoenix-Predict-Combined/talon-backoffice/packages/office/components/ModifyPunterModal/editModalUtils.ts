@@ -1,5 +1,5 @@
 import { isEqual } from "lodash";
-import { getCountryList, getStateList } from "@phoenix-ui/utils";
+import { getCountryList, getStateList } from "@taptrade-ui/utils";
 
 export const formLabels = (fieldVal: string) => {
   switch (fieldVal) {

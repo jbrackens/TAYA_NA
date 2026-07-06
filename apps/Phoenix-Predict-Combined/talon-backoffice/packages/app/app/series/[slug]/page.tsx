@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import type {
   PredictionMarket,
   Series,
-} from "@phoenix-ui/api-client/src/prediction-types";
+} from "@taptrade-ui/api-client/src/prediction-types";
 import { MarketGrid } from "../../components/prediction/MarketGrid";
 import { logger } from "../../lib/logger";
 

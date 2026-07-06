@@ -10,7 +10,7 @@ import {
 // import { RefsCollection } from "../../../lib/utils/filters";
 // import TableFilterText from "../../layout/table/filter-text";
 import Table from "../../layout/table";
-import { Layout, Id, useTimezone } from "@phoenix-ui/utils";
+import { Layout, Id, useTimezone } from "@taptrade-ui/utils";
 import UserLifecycleLogout from "../lifecycle/logout";
 
 type UsersDetailsSessionHistoryListProps = {

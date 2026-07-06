@@ -1,5 +1,5 @@
 import { Omit } from "utility-types";
-import { PunterRoles } from "@phoenix-ui/utils";
+import { PunterRoles } from "@taptrade-ui/utils";
 
 // antd icon component type (e.g. DashboardOutlined), used for menu group icons.
 type AntdIcon = (typeof import("@ant-design/icons"))["DashboardOutlined"];

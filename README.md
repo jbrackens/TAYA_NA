@@ -98,6 +98,6 @@ Multi-outcome questions are represented as multiple binary markets, one market p
 
 - Do not reintroduce sportsbook concepts in prediction-market code.
 - Do not use `fixtures`, `selections`, `betslip`, `sport_key`, or `punter_bets` for new prediction features.
-- Player app UI uses Tailwind/inline styles, not `@phoenix-ui/design-system`.
+- Player app UI uses Tailwind/inline styles, not `@taptrade-ui/design-system`.
 - Production code should use structured loggers, not raw `console.*`.
 - New database tables or columns require a new goose migration.

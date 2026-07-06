@@ -1,6 +1,6 @@
 import { useTranslation } from "i18n";
 import { Button, Card, Form, Spin, Switch } from "antd";
-import { Method } from "@phoenix-ui/utils";
+import { Method } from "@taptrade-ui/utils";
 import { useEffect, useState } from "react";
 import { useApi } from "../../../services/api/api-service";
 import { MfaModalComponent } from "../../../components/auth/mfa-modal";
@@ -13,9 +13,8 @@ export const SecurityContainer = () => {
   const [isVerificationSuccess, setVerificationSuccess] = useState(false);
   const [form] = Form.useForm();
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
-  const [requestErrors, setRequestErrors] = useState<
-    Array<{ errorCode: string }>
-  >();
+  const [requestErrors, setRequestErrors] =
+    useState<Array<{ errorCode: string }>>();
   const [triggerMeApi, isMeDataLoading, meDataResponse] = useApi(
     "profile/me",
     Method.GET,

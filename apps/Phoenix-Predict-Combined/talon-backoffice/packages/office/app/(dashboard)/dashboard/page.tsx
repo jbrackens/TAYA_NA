@@ -3,12 +3,12 @@ import { DashboardLayout } from "../../components/dashboard";
 import { ErrorBoundary, ErrorState } from "../../components/shared";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import type {
   PredictionMarket,
   DashboardVolumeStats,
   PaginatedResponse,
-} from "@phoenix-ui/api-client/src/prediction-types";
+} from "@taptrade-ui/api-client/src/prediction-types";
 
 const predictionClient = createPredictionClient();
 

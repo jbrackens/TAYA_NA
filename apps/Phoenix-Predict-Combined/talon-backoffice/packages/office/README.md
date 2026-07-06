@@ -1,4 +1,4 @@
-# Next.js React Isomorphic App - `@phoenix-ui/office`
+# Next.js React Isomorphic App - `@taptrade-ui/office`
 
 ## Configuration
 

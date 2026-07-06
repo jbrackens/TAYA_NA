@@ -11,7 +11,7 @@ import {
 } from "../../lib/slices/logsSlice";
 import { emitScopedCopyEvent } from "../../lib/telemetry/scoped-copy-events";
 import { useApi } from "../../services/api/api-service";
-import { Method } from "@phoenix-ui/utils";
+import { Method } from "@taptrade-ui/utils";
 import { useRouter } from "next/router";
 import { buildScopedCopyTelemetryContext } from "./utils/scoped-copy-telemetry";
 

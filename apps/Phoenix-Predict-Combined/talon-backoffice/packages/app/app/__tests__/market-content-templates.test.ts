@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
+import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
 import {
   marketDescription,
   marketTitle,

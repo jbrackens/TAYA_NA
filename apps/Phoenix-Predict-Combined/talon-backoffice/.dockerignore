@@ -35,7 +35,7 @@
 **/.pnp/
 **/.pnp.js
 # NOTE: generated locales under public/static/locales are now the COMMITTED
-# canonical i18n artifact (the translations/ source for @phoenix-ui/app was
+# canonical i18n artifact (the translations/ source for @taptrade-ui/app was
 # deleted in #15 "bulk-delete legacy package-root carcass" and app no longer
 # regenerates them). They MUST ship in the image — do not re-exclude.
 **/__tests__/

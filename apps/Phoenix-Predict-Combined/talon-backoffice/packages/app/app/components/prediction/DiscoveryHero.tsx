@@ -10,7 +10,7 @@
 
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
-import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
+import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
 import { deterministicDelta, heroChartPath } from "./utils/spark";
 import { useHeroPriceHistory } from "./utils/useHeroPriceHistory";
 import { categoryLabel, localizedMarket } from "./market-content";

@@ -9,7 +9,7 @@ import {
 } from "../../../../types/punters";
 import Table from "../../../layout/table";
 import { Popover } from "antd";
-import { useTimezone } from "@phoenix-ui/utils";
+import { useTimezone } from "@taptrade-ui/utils";
 
 type UsersDetailsNotesListProps = {
   data: TalonPunterNotes;

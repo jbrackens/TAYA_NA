@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import { useApi } from "../../../../services/api/api-service";
 import { useTranslation } from "i18n";
 import { FileTextOutlined } from "@ant-design/icons";
-import { Method, Id, Button as ButtonEnum } from "@phoenix-ui/utils";
+import { Method, Id, Button as ButtonEnum } from "@taptrade-ui/utils";
 import { FormValues } from "../../../../components/form/modal";
 import { setUserNotesUpdate } from "../../../../lib/slices/usersDetailsSlice";
 

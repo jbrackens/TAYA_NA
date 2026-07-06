@@ -44,26 +44,26 @@ Frontend application for the TapTrade betting platform project
 
 ### Scoping build scripts
 
-Use `--scope @phoenix-ui/<package_name>` &mdash; for example if we want to build
-the staging version of back-office:
+Use `--scope @taptrade-ui/<package_name>` &mdash; for example if we want to
+build the staging version of back-office:
 
 ```
-build:export:stage --scope @phoenix-ui/office
+build:export:stage --scope @taptrade-ui/office
 ```
 
 ## Packages
 
-- **@phoenix-ui/app** - Next.js React Isomorphic App
-- **@phoenix-ui/office** - Next.js React Isomorphic Back-Office App
-- **@phoenix-ui/utils** - Shared utils, types and other fancy stuff
-- **@phoenix-ui/mock-server** - API Mock Server
+- **@taptrade-ui/app** - Next.js React Isomorphic App
+- **@taptrade-ui/office** - Next.js React Isomorphic Back-Office App
+- **@taptrade-ui/utils** - Shared utils, types and other fancy stuff
+- **@taptrade-ui/mock-server** - API Mock Server
 
 ### Dockerization
 
 - `dockerize:app` - creates a `taptrade-ui/app` Docker image of
-  `@phoenix-ui/app` package
+  `@taptrade-ui/app` package
 - `dockerize:office` - creates a `taptrade-ui/office` Docker image of
-  `@phoenix-ui/office` package with `.env.development` applied
+  `@taptrade-ui/office` package with `.env.development` applied
 - `run-docker:app:dev` - runs `taptrade-ui/app` image on `localhost` (port 3000)
   with `.env.development` applied
 - `run-docker:office:stage` - runs `taptrade-ui/office` image on `localhost`

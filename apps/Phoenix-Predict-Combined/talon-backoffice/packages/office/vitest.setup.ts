@@ -1,4 +1,4 @@
-// Vitest global setup for the @phoenix-ui/office package.
+// Vitest global setup for the @taptrade-ui/office package.
 //
 // Registers @testing-library/jest-dom v6 matchers (toBeInTheDocument,
 // toBeDisabled, toHaveTextContent, ...) onto Vitest's `expect`. v6 ships a

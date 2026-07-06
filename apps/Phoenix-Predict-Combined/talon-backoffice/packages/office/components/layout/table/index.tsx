@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { Table as TableComponent } from "antd";
 import type { TableProps as CoreTableProps } from "antd";
 import Spinner from "../spinner";
-import { useResize, useSpy } from "@phoenix-ui/utils";
+import { useResize, useSpy } from "@taptrade-ui/utils";
 
 const PADDING_SIZE = 48;
 const TABLE_WRAPPER_CLASS_NAME = [

@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { useTimezone } from "@phoenix-ui/utils";
+import { useTimezone } from "@taptrade-ui/utils";
 import { Col, Descriptions, Row } from "antd";
 import dayjs from "dayjs";
 import { useTranslation } from "i18n";

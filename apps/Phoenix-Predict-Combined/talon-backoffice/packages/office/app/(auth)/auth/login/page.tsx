@@ -47,7 +47,7 @@ function LoginForm() {
         return;
       }
 
-      // Store tokens in the legacy @phoenix-ui/utils token store (localStorage)
+      // Store tokens in the legacy @taptrade-ui/utils token store (localStorage)
       // so the Pages Router session guard can find them. The Go gateway returns
       // opaque bearer tokens (atk_...) instead of JWTs — the dev-mode bypass
       // in utils/auth.ts accepts these without JWT validation.

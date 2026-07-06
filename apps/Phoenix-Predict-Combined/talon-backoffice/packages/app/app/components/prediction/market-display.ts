@@ -1,7 +1,7 @@
 import type {
   MarketStatus,
   PredictionMarket,
-} from "@phoenix-ui/api-client/src/prediction-types";
+} from "@taptrade-ui/api-client/src/prediction-types";
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 

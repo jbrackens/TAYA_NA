@@ -1,4 +1,4 @@
-import { timezones, useLocalStorageVariables } from "@phoenix-ui/utils";
+import { timezones, useLocalStorageVariables } from "@taptrade-ui/utils";
 import {
   Button,
   Card,

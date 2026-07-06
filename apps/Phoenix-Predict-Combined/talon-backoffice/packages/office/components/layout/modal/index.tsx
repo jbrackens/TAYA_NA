@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { Button as ButtonEnum } from "@phoenix-ui/utils";
+import { Button as ButtonEnum } from "@taptrade-ui/utils";
 import { Button, Modal as ModalComponent } from "antd";
 import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { useTranslation } from "i18n";

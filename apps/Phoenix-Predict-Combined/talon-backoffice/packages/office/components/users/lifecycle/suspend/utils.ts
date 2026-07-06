@@ -1,4 +1,4 @@
-import { PunterStatus, PunterStatusEnum } from "@phoenix-ui/utils";
+import { PunterStatus, PunterStatusEnum } from "@taptrade-ui/utils";
 
 const SUSPEND_ACTION_DISALLOWED: PunterStatus[] = [PunterStatusEnum.PENDING];
 

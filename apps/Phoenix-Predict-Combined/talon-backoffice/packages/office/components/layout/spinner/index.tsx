@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Space, Spin, Typography } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import type { SpinProps } from "antd";
-import { Layout } from "@phoenix-ui/utils/dist/types/layout";
+import { Layout } from "@taptrade-ui/utils/dist/types/layout";
 
 const { Text } = Typography;
 

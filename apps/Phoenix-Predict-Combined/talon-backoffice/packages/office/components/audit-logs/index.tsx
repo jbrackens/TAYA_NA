@@ -19,7 +19,7 @@ import {
   TalonAuditLogType,
 } from "../../types/logs";
 import { TablePagination } from "../../types/filters";
-import { useTimezone } from "@phoenix-ui/utils";
+import { useTimezone } from "@taptrade-ui/utils";
 
 const { Text } = Typography;
 

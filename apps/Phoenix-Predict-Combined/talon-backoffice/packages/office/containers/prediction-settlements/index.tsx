@@ -18,12 +18,12 @@ import {
   Typography,
 } from "antd";
 import PageHeader from "../../components/layout/page-header";
-import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
-import { describeTapTradeMarketLifecycle } from "@phoenix-ui/api-client/src/prediction-types";
+import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
+import { describeTapTradeMarketLifecycle } from "@taptrade-ui/api-client/src/prediction-types";
 import type {
   CollateralDriftAlert,
   PredictionMarket,
-} from "@phoenix-ui/api-client/src/prediction-types";
+} from "@taptrade-ui/api-client/src/prediction-types";
 
 const { Text } = Typography;
 const { TextArea } = Input;

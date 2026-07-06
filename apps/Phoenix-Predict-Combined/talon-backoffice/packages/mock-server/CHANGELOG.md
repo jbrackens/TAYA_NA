@@ -3,47 +3,47 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [0.13.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.12.1-build.0...@phoenix-ui/mock-server@0.13.0) (2022-05-19)
+# [0.13.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.12.1-build.0...@taptrade-ui/mock-server@0.13.0) (2022-05-19)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.12.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.12.0...@phoenix-ui/mock-server@0.12.1-build.0) (2022-05-17)
+## [0.12.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.12.0...@taptrade-ui/mock-server@0.12.1-build.0) (2022-05-17)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-# [0.12.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.11.1-build.2...@phoenix-ui/mock-server@0.12.0) (2022-03-24)
+# [0.12.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.11.1-build.2...@taptrade-ui/mock-server@0.12.0) (2022-03-24)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.11.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.11.1-build.1...@phoenix-ui/mock-server@0.11.1-build.2) (2022-03-16)
+## [0.11.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.11.1-build.1...@taptrade-ui/mock-server@0.11.1-build.2) (2022-03-16)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.11.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.11.1-build.0...@phoenix-ui/mock-server@0.11.1-build.1) (2022-03-08)
+## [0.11.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.11.1-build.0...@taptrade-ui/mock-server@0.11.1-build.1) (2022-03-08)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.11.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.11.0...@phoenix-ui/mock-server@0.11.1-build.0) (2022-02-01)
+## [0.11.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.11.0...@taptrade-ui/mock-server@0.11.1-build.0) (2022-02-01)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-# [0.11.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.10.1-build.0...@phoenix-ui/mock-server@0.11.0) (2022-01-21)
+# [0.11.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.10.1-build.0...@taptrade-ui/mock-server@0.11.0) (2022-01-21)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.10.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.10.0...@phoenix-ui/mock-server@0.10.1-build.0) (2022-01-19)
+## [0.10.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.10.0...@taptrade-ui/mock-server@0.10.1-build.0) (2022-01-19)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-# [0.10.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.9.1-build.3...@phoenix-ui/mock-server@0.10.0) (2022-01-18)
+# [0.10.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.9.1-build.3...@taptrade-ui/mock-server@0.10.0) (2022-01-18)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.9.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.9.1-build.2...@phoenix-ui/mock-server@0.9.1-build.3) (2022-01-17)
+## [0.9.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.9.1-build.2...@taptrade-ui/mock-server@0.9.1-build.3) (2022-01-17)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.9.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.9.1-build.1...@phoenix-ui/mock-server@0.9.1-build.2) (2022-01-10)
+## [0.9.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.9.1-build.1...@taptrade-ui/mock-server@0.9.1-build.2) (2022-01-10)
 
 ### Bug Fixes
 
@@ -51,40 +51,32 @@ All notable changes to this project will be documented in this file. See
   ([#607](https://github.com/flipadmin/phoenix-frontend/issues/607))
   ([8982803](https://github.com/flipadmin/phoenix-frontend/commit/898280364f066f19d1b976f0a7f7c5d3ec453a19))
 
-## [0.9.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.9.1-build.0...@phoenix-ui/mock-server@0.9.1-build.1) (2021-12-23)
+## [0.9.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.9.1-build.0...@taptrade-ui/mock-server@0.9.1-build.1) (2021-12-23)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
 # Change Log
 
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [0.9.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.8.1-build.0...@phoenix-ui/mock-server@0.9.1-build.0) (2021-12-10)
+## [0.9.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.8.1-build.0...@taptrade-ui/mock-server@0.9.1-build.0) (2021-12-10)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-# [0.9.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.8.1-build.0...@phoenix-ui/mock-server@0.9.0) (2021-12-10)
+# [0.9.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.8.1-build.0...@taptrade-ui/mock-server@0.9.0) (2021-12-10)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.8.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.8.0...@phoenix-ui/mock-server@0.8.1-build.0) (2021-12-10)
+## [0.8.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.8.0...@taptrade-ui/mock-server@0.8.1-build.0) (2021-12-10)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-# [0.8.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.7.1-build.1...@phoenix-ui/mock-server@0.8.0) (2021-12-07)
+# [0.8.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.7.1-build.1...@taptrade-ui/mock-server@0.8.0) (2021-12-07)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.7.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.7.0...@phoenix-ui/mock-server@0.7.1-build.1) (2021-12-02)
-
-### Features
-
-- handle new marketLifecycle value on taptrade
-  ([#538](https://github.com/flipadmin/phoenix-frontend/issues/538))
-  ([45e11b1](https://github.com/flipadmin/phoenix-frontend/commit/45e11b1723b42cabb9996c81f842997e2afaa0d4))
-
-## [0.7.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.7.0...@phoenix-ui/mock-server@0.7.1-build.0) (2021-12-02)
+## [0.7.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.7.0...@taptrade-ui/mock-server@0.7.1-build.1) (2021-12-02)
 
 ### Features
 
@@ -92,19 +84,27 @@ All notable changes to this project will be documented in this file. See
   ([#538](https://github.com/flipadmin/phoenix-frontend/issues/538))
   ([45e11b1](https://github.com/flipadmin/phoenix-frontend/commit/45e11b1723b42cabb9996c81f842997e2afaa0d4))
 
-# [0.7.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.6.1-build.0...@phoenix-ui/mock-server@0.7.0) (2021-12-01)
+## [0.7.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.7.0...@taptrade-ui/mock-server@0.7.1-build.0) (2021-12-02)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+### Features
 
-## [0.6.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.6.0...@phoenix-ui/mock-server@0.6.1-build.0) (2021-11-29)
+- handle new marketLifecycle value on taptrade
+  ([#538](https://github.com/flipadmin/phoenix-frontend/issues/538))
+  ([45e11b1](https://github.com/flipadmin/phoenix-frontend/commit/45e11b1723b42cabb9996c81f842997e2afaa0d4))
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+# [0.7.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.6.1-build.0...@taptrade-ui/mock-server@0.7.0) (2021-12-01)
 
-# [0.6.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.5.1-build.1...@phoenix-ui/mock-server@0.6.0) (2021-11-23)
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+## [0.6.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.6.0...@taptrade-ui/mock-server@0.6.1-build.0) (2021-11-29)
 
-## [0.5.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.5.1-build.0...@phoenix-ui/mock-server@0.5.1-build.1) (2021-11-17)
+**Note:** Version bump only for package @taptrade-ui/mock-server
+
+# [0.6.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.5.1-build.1...@taptrade-ui/mock-server@0.6.0) (2021-11-23)
+
+**Note:** Version bump only for package @taptrade-ui/mock-server
+
+## [0.5.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.5.1-build.0...@taptrade-ui/mock-server@0.5.1-build.1) (2021-11-17)
 
 ### Features
 
@@ -112,15 +112,15 @@ All notable changes to this project will be documented in this file. See
   ([#528](https://github.com/flipadmin/phoenix-frontend/issues/528))
   ([d8eee42](https://github.com/flipadmin/phoenix-frontend/commit/d8eee42c18fc5e6ad13f91ef45048d577b504c99))
 
-## [0.5.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.5.0...@phoenix-ui/mock-server@0.5.1-build.0) (2021-11-15)
+## [0.5.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.5.0...@taptrade-ui/mock-server@0.5.1-build.0) (2021-11-15)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-# [0.5.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.4.1-build.0...@phoenix-ui/mock-server@0.5.0) (2021-11-06)
+# [0.5.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.4.1-build.0...@taptrade-ui/mock-server@0.5.0) (2021-11-06)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.4.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.4.0...@phoenix-ui/mock-server@0.4.1-build.0) (2021-11-04)
+## [0.4.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.4.0...@taptrade-ui/mock-server@0.4.1-build.0) (2021-11-04)
 
 ### Features
 
@@ -128,35 +128,35 @@ All notable changes to this project will be documented in this file. See
   ([#519](https://github.com/flipadmin/phoenix-frontend/issues/519))
   ([680fbff](https://github.com/flipadmin/phoenix-frontend/commit/680fbffd923a5de28d5100eeb25e873a7657f234))
 
-# [0.4.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.3.1-build.1...@phoenix-ui/mock-server@0.4.0) (2021-10-12)
+# [0.4.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.3.1-build.1...@taptrade-ui/mock-server@0.4.0) (2021-10-12)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.3.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.3.0...@phoenix-ui/mock-server@0.3.1-build.1) (2021-10-12)
+## [0.3.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.3.0...@taptrade-ui/mock-server@0.3.1-build.1) (2021-10-12)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.3.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.3.0...@phoenix-ui/mock-server@0.3.1-build.0) (2021-10-01)
+## [0.3.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.3.0...@taptrade-ui/mock-server@0.3.1-build.0) (2021-10-01)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-# [0.3.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.2.1-build.3...@phoenix-ui/mock-server@0.3.0) (2021-07-27)
+# [0.3.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.2.1-build.3...@taptrade-ui/mock-server@0.3.0) (2021-07-27)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.2.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.2.1-build.2...@phoenix-ui/mock-server@0.2.1-build.3) (2021-07-21)
+## [0.2.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.2.1-build.2...@taptrade-ui/mock-server@0.2.1-build.3) (2021-07-21)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.2.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.2.1-build.1...@phoenix-ui/mock-server@0.2.1-build.2) (2021-07-07)
+## [0.2.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.2.1-build.1...@taptrade-ui/mock-server@0.2.1-build.2) (2021-07-07)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.2.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.2.1-build.0...@phoenix-ui/mock-server@0.2.1-build.1) (2021-07-05)
+## [0.2.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.2.1-build.0...@taptrade-ui/mock-server@0.2.1-build.1) (2021-07-05)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.2.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.2.0...@phoenix-ui/mock-server@0.2.1-build.0) (2021-06-24)
+## [0.2.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.2.0...@taptrade-ui/mock-server@0.2.1-build.0) (2021-06-24)
 
 ### Features
 
@@ -164,15 +164,15 @@ All notable changes to this project will be documented in this file. See
   ([#355](https://github.com/flipadmin/phoenix-frontend/issues/355))
   ([d0c7dbb](https://github.com/flipadmin/phoenix-frontend/commit/d0c7dbb2fd4d74d67efa57d7cdfb3e952ad6219c))
 
-# [0.2.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.1.1-build.5...@phoenix-ui/mock-server@0.2.0) (2021-05-17)
+# [0.2.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.1.1-build.5...@taptrade-ui/mock-server@0.2.0) (2021-05-17)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.1.1-build.5](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.1.1-build.4...@phoenix-ui/mock-server@0.1.1-build.5) (2021-05-13)
+## [0.1.1-build.5](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.1.1-build.4...@taptrade-ui/mock-server@0.1.1-build.5) (2021-05-13)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.1.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.1.1-build.3...@phoenix-ui/mock-server@0.1.1-build.4) (2021-04-30)
+## [0.1.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.1.1-build.3...@taptrade-ui/mock-server@0.1.1-build.4) (2021-04-30)
 
 ### Features
 
@@ -180,35 +180,35 @@ All notable changes to this project will be documented in this file. See
   ([#282](https://github.com/flipadmin/phoenix-frontend/issues/282))
   ([f399b68](https://github.com/flipadmin/phoenix-frontend/commit/f399b68620ded77aa56acf4c0bfc5665de0cab2e))
 
-## [0.1.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.1.1-build.2...@phoenix-ui/mock-server@0.1.1-build.3) (2021-04-23)
+## [0.1.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.1.1-build.2...@taptrade-ui/mock-server@0.1.1-build.3) (2021-04-23)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.1.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.1.1-build.1...@phoenix-ui/mock-server@0.1.1-build.2) (2021-04-16)
+## [0.1.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.1.1-build.1...@taptrade-ui/mock-server@0.1.1-build.2) (2021-04-16)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.1.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.1.1-build.0...@phoenix-ui/mock-server@0.1.1-build.1) (2021-04-16)
+## [0.1.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.1.1-build.0...@taptrade-ui/mock-server@0.1.1-build.1) (2021-04-16)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.1.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.1.0...@phoenix-ui/mock-server@0.1.1-build.0) (2021-04-16)
+## [0.1.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.1.0...@taptrade-ui/mock-server@0.1.1-build.0) (2021-04-16)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-# [0.1.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.1.0-build.2...@phoenix-ui/mock-server@0.1.0) (2021-04-12)
+# [0.1.0](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.1.0-build.2...@taptrade-ui/mock-server@0.1.0) (2021-04-12)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-# [0.1.0-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.36...@phoenix-ui/mock-server@0.1.0-build.2) (2021-04-06)
+# [0.1.0-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.36...@taptrade-ui/mock-server@0.1.0-build.2) (2021-04-06)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-# [0.1.0-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.36...@phoenix-ui/mock-server@0.1.0-build.1) (2021-03-24)
+# [0.1.0-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.36...@taptrade-ui/mock-server@0.1.0-build.1) (2021-03-24)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.0.1-build.36](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.35...@phoenix-ui/mock-server@0.0.1-build.36) (2021-03-10)
+## [0.0.1-build.36](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.35...@taptrade-ui/mock-server@0.0.1-build.36) (2021-03-10)
 
 ### Features
 
@@ -216,7 +216,7 @@ All notable changes to this project will be documented in this file. See
   ([#220](https://github.com/flipadmin/phoenix-frontend/issues/220))
   ([2895de4](https://github.com/flipadmin/phoenix-frontend/commit/2895de444387f5e09d5ef5e87772cf0e78fb146f))
 
-## [0.0.1-build.35](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.34...@phoenix-ui/mock-server@0.0.1-build.35) (2021-03-04)
+## [0.0.1-build.35](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.34...@taptrade-ui/mock-server@0.0.1-build.35) (2021-03-04)
 
 ### Features
 
@@ -224,7 +224,7 @@ All notable changes to this project will be documented in this file. See
   ([#210](https://github.com/flipadmin/phoenix-frontend/issues/210))
   ([1c3625d](https://github.com/flipadmin/phoenix-frontend/commit/1c3625d6bd289cdd5766e82cc472aeb0ed22d8e9))
 
-## [0.0.1-build.34](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.33...@phoenix-ui/mock-server@0.0.1-build.34) (2021-03-04)
+## [0.0.1-build.34](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.33...@taptrade-ui/mock-server@0.0.1-build.34) (2021-03-04)
 
 ### Bug Fixes
 
@@ -232,7 +232,7 @@ All notable changes to this project will be documented in this file. See
   ([#209](https://github.com/flipadmin/phoenix-frontend/issues/209))
   ([c1d4c7f](https://github.com/flipadmin/phoenix-frontend/commit/c1d4c7fbbd6f76935648ac4d8628afa53fa85a10))
 
-## [0.0.1-build.33](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.32...@phoenix-ui/mock-server@0.0.1-build.33) (2021-03-03)
+## [0.0.1-build.33](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.32...@taptrade-ui/mock-server@0.0.1-build.33) (2021-03-03)
 
 ### Features
 
@@ -240,11 +240,11 @@ All notable changes to this project will be documented in this file. See
   ([#205](https://github.com/flipadmin/phoenix-frontend/issues/205))
   ([6924ebe](https://github.com/flipadmin/phoenix-frontend/commit/6924ebe02b6933876c43e51a0a2b1bf8ce4a1fbc))
 
-## [0.0.1-build.32](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.31...@phoenix-ui/mock-server@0.0.1-build.32) (2021-03-02)
+## [0.0.1-build.32](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.31...@taptrade-ui/mock-server@0.0.1-build.32) (2021-03-02)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.0.1-build.31](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.30...@phoenix-ui/mock-server@0.0.1-build.31) (2021-02-26)
+## [0.0.1-build.31](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.30...@taptrade-ui/mock-server@0.0.1-build.31) (2021-02-26)
 
 ### Features
 
@@ -252,7 +252,7 @@ All notable changes to this project will be documented in this file. See
   ([#195](https://github.com/flipadmin/phoenix-frontend/issues/195))
   ([5ef8fa0](https://github.com/flipadmin/phoenix-frontend/commit/5ef8fa0c7f14ed8dc452cd6fed33432d931e295b))
 
-## [0.0.1-build.30](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.29...@phoenix-ui/mock-server@0.0.1-build.30) (2021-02-24)
+## [0.0.1-build.30](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.29...@taptrade-ui/mock-server@0.0.1-build.30) (2021-02-24)
 
 ### Features
 
@@ -260,7 +260,7 @@ All notable changes to this project will be documented in this file. See
   ([#187](https://github.com/flipadmin/phoenix-frontend/issues/187))
   ([2f23bfc](https://github.com/flipadmin/phoenix-frontend/commit/2f23bfceff08463967b2facf074df8f76468f80c))
 
-## [0.0.1-build.29](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.28...@phoenix-ui/mock-server@0.0.1-build.29) (2021-02-17)
+## [0.0.1-build.29](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.28...@taptrade-ui/mock-server@0.0.1-build.29) (2021-02-17)
 
 ### Features
 
@@ -268,19 +268,19 @@ All notable changes to this project will be documented in this file. See
   ([#182](https://github.com/flipadmin/phoenix-frontend/issues/182))
   ([64c168b](https://github.com/flipadmin/phoenix-frontend/commit/64c168bd35b22fafeeff46f0c872b0d070a44e55))
 
-## [0.0.1-build.28](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.27...@phoenix-ui/mock-server@0.0.1-build.28) (2021-02-04)
+## [0.0.1-build.28](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.27...@taptrade-ui/mock-server@0.0.1-build.28) (2021-02-04)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.0.1-build.27](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.26...@phoenix-ui/mock-server@0.0.1-build.27) (2021-01-15)
+## [0.0.1-build.27](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.26...@taptrade-ui/mock-server@0.0.1-build.27) (2021-01-15)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.0.1-build.26](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.25...@phoenix-ui/mock-server@0.0.1-build.26) (2020-12-30)
+## [0.0.1-build.26](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.25...@taptrade-ui/mock-server@0.0.1-build.26) (2020-12-30)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.0.1-build.25](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.24...@phoenix-ui/mock-server@0.0.1-build.25) (2020-12-17)
+## [0.0.1-build.25](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.24...@taptrade-ui/mock-server@0.0.1-build.25) (2020-12-17)
 
 ### Features
 
@@ -288,15 +288,15 @@ All notable changes to this project will be documented in this file. See
   ([#111](https://github.com/flipadmin/phoenix-frontend/issues/111))
   ([a33f617](https://github.com/flipadmin/phoenix-frontend/commit/a33f6170adc996e897f25d548e5c0b47dfd8f47a))
 
-## [0.0.1-build.24](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.23...@phoenix-ui/mock-server@0.0.1-build.24) (2020-12-17)
+## [0.0.1-build.24](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.23...@taptrade-ui/mock-server@0.0.1-build.24) (2020-12-17)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.0.1-build.23](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.22...@phoenix-ui/mock-server@0.0.1-build.23) (2020-12-17)
+## [0.0.1-build.23](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.22...@taptrade-ui/mock-server@0.0.1-build.23) (2020-12-17)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.0.1-build.22](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.21...@phoenix-ui/mock-server@0.0.1-build.22) (2020-12-15)
+## [0.0.1-build.22](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.21...@taptrade-ui/mock-server@0.0.1-build.22) (2020-12-15)
 
 ### Bug Fixes
 
@@ -304,7 +304,7 @@ All notable changes to this project will be documented in this file. See
   ([#102](https://github.com/flipadmin/phoenix-frontend/issues/102))
   ([ba4617f](https://github.com/flipadmin/phoenix-frontend/commit/ba4617f8ee34fd61dfaec895a180f74be3894791))
 
-## [0.0.1-build.21](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.20...@phoenix-ui/mock-server@0.0.1-build.21) (2020-12-09)
+## [0.0.1-build.21](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.20...@taptrade-ui/mock-server@0.0.1-build.21) (2020-12-09)
 
 ### Features
 
@@ -312,7 +312,7 @@ All notable changes to this project will be documented in this file. See
   ([#98](https://github.com/flipadmin/phoenix-frontend/issues/98))
   ([9e1682c](https://github.com/flipadmin/phoenix-frontend/commit/9e1682c6899ae65b632f1ab1452cb1df46404775))
 
-## [0.0.1-build.20](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.19...@phoenix-ui/mock-server@0.0.1-build.20) (2020-12-08)
+## [0.0.1-build.20](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.19...@taptrade-ui/mock-server@0.0.1-build.20) (2020-12-08)
 
 ### Features
 
@@ -320,19 +320,19 @@ All notable changes to this project will be documented in this file. See
   ([#95](https://github.com/flipadmin/phoenix-frontend/issues/95))
   ([44fb454](https://github.com/flipadmin/phoenix-frontend/commit/44fb454bd4f4f72671bce3db98b577548934c000))
 
-## [0.0.1-build.19](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.18...@phoenix-ui/mock-server@0.0.1-build.19) (2020-12-02)
+## [0.0.1-build.19](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.18...@taptrade-ui/mock-server@0.0.1-build.19) (2020-12-02)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.0.1-build.18](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.17...@phoenix-ui/mock-server@0.0.1-build.18) (2020-11-30)
+## [0.0.1-build.18](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.17...@taptrade-ui/mock-server@0.0.1-build.18) (2020-11-30)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.0.1-build.17](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.16...@phoenix-ui/mock-server@0.0.1-build.17) (2020-11-26)
+## [0.0.1-build.17](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.16...@taptrade-ui/mock-server@0.0.1-build.17) (2020-11-26)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.0.1-build.16](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.15...@phoenix-ui/mock-server@0.0.1-build.16) (2020-11-26)
+## [0.0.1-build.16](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.15...@taptrade-ui/mock-server@0.0.1-build.16) (2020-11-26)
 
 ### Features
 
@@ -340,7 +340,7 @@ All notable changes to this project will be documented in this file. See
   ([#85](https://github.com/flipadmin/phoenix-frontend/issues/85))
   ([311ab99](https://github.com/flipadmin/phoenix-frontend/commit/311ab999683afc47f95b1b43265be80c22e4c357))
 
-## [0.0.1-build.15](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.14...@phoenix-ui/mock-server@0.0.1-build.15) (2020-11-24)
+## [0.0.1-build.15](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.14...@taptrade-ui/mock-server@0.0.1-build.15) (2020-11-24)
 
 ### Features
 
@@ -348,11 +348,11 @@ All notable changes to this project will be documented in this file. See
   ([#84](https://github.com/flipadmin/phoenix-frontend/issues/84))
   ([2d24a4d](https://github.com/flipadmin/phoenix-frontend/commit/2d24a4d439a9e67e1e5dfceb229537870f2e1cba))
 
-## [0.0.1-build.14](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.13...@phoenix-ui/mock-server@0.0.1-build.14) (2020-11-23)
+## [0.0.1-build.14](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.13...@taptrade-ui/mock-server@0.0.1-build.14) (2020-11-23)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.0.1-build.13](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.12...@phoenix-ui/mock-server@0.0.1-build.13) (2020-11-23)
+## [0.0.1-build.13](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.12...@taptrade-ui/mock-server@0.0.1-build.13) (2020-11-23)
 
 ### Features
 
@@ -360,7 +360,7 @@ All notable changes to this project will be documented in this file. See
   ([#82](https://github.com/flipadmin/phoenix-frontend/issues/82))
   ([51a00d3](https://github.com/flipadmin/phoenix-frontend/commit/51a00d310f0e755d9cbdb8a5e30a214f8342414e))
 
-## [0.0.1-build.12](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.11...@phoenix-ui/mock-server@0.0.1-build.12) (2020-11-19)
+## [0.0.1-build.12](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.11...@taptrade-ui/mock-server@0.0.1-build.12) (2020-11-19)
 
 ### Bug Fixes
 
@@ -368,11 +368,11 @@ All notable changes to this project will be documented in this file. See
   ([#81](https://github.com/flipadmin/phoenix-frontend/issues/81))
   ([b6f9e17](https://github.com/flipadmin/phoenix-frontend/commit/b6f9e170a56cdae0c73936e5f901870eca6ad383))
 
-## [0.0.1-build.11](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.10...@phoenix-ui/mock-server@0.0.1-build.11) (2020-11-18)
+## [0.0.1-build.11](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.10...@taptrade-ui/mock-server@0.0.1-build.11) (2020-11-18)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.0.1-build.10](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.9...@phoenix-ui/mock-server@0.0.1-build.10) (2020-11-18)
+## [0.0.1-build.10](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.9...@taptrade-ui/mock-server@0.0.1-build.10) (2020-11-18)
 
 ### Features
 
@@ -380,11 +380,11 @@ All notable changes to this project will be documented in this file. See
   ([#79](https://github.com/flipadmin/phoenix-frontend/issues/79))
   ([49c4333](https://github.com/flipadmin/phoenix-frontend/commit/49c4333988bfb208a1962fe88886be05ad38e0fc))
 
-## [0.0.1-build.9](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.8...@phoenix-ui/mock-server@0.0.1-build.9) (2020-11-16)
+## [0.0.1-build.9](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.8...@taptrade-ui/mock-server@0.0.1-build.9) (2020-11-16)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.0.1-build.8](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.7...@phoenix-ui/mock-server@0.0.1-build.8) (2020-11-10)
+## [0.0.1-build.8](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.7...@taptrade-ui/mock-server@0.0.1-build.8) (2020-11-10)
 
 ### Features
 
@@ -392,25 +392,25 @@ All notable changes to this project will be documented in this file. See
   ([#73](https://github.com/flipadmin/phoenix-frontend/issues/73))
   ([3977368](https://github.com/flipadmin/phoenix-frontend/commit/397736805c8161be948bb1f48ce0b615c25a2231))
 
-## [0.0.1-build.7](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.6...@phoenix-ui/mock-server@0.0.1-build.7) (2020-11-05)
+## [0.0.1-build.7](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.6...@taptrade-ui/mock-server@0.0.1-build.7) (2020-11-05)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.0.1-build.6](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.5...@phoenix-ui/mock-server@0.0.1-build.6) (2020-11-05)
+## [0.0.1-build.6](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.5...@taptrade-ui/mock-server@0.0.1-build.6) (2020-11-05)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.0.1-build.5](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.4...@phoenix-ui/mock-server@0.0.1-build.5) (2020-11-04)
+## [0.0.1-build.5](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.4...@taptrade-ui/mock-server@0.0.1-build.5) (2020-11-04)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.0.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.3...@phoenix-ui/mock-server@0.0.1-build.4) (2020-11-03)
+## [0.0.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.3...@taptrade-ui/mock-server@0.0.1-build.4) (2020-11-03)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
-## [0.0.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.0.1-build.2...@phoenix-ui/mock-server@0.0.1-build.3) (2020-11-03)
+## [0.0.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@taptrade-ui/mock-server@0.0.1-build.2...@taptrade-ui/mock-server@0.0.1-build.3) (2020-11-03)
 
-**Note:** Version bump only for package @phoenix-ui/mock-server
+**Note:** Version bump only for package @taptrade-ui/mock-server
 
 ## 0.0.1-build.2 (2020-11-02)
 

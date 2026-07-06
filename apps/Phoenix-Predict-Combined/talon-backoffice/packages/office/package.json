@@ -1,5 +1,5 @@
 {
-  "name": "@phoenix-ui/office",
+  "name": "@taptrade-ui/office",
   "version": "0.31.1-build.4",
   "description": "Next.js React App - Talon - The Back-Office tool",
   "scripts": {
@@ -34,8 +34,8 @@
     "@ant-design/nextjs-registry": "^1.3.0",
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@mozilla/readability": "^0.6.0",
-    "@phoenix-ui/api-client": "1.0.0",
-    "@phoenix-ui/utils": "0.23.1-build.1",
+    "@taptrade-ui/api-client": "1.0.0",
+    "@taptrade-ui/utils": "0.23.1-build.1",
     "ai": "^6.0.191",
     "antd": "^5.29.3",
     "got": "^15.0.5",

@@ -15,17 +15,17 @@
 **Evidence:** `phoenix-frontend/.npmrc`:
 
 ```
-@phoenix-ui:registry=https://lena-srv01.flipsports.net:4566/repository/npm-releases/
+@taptrade-ui:registry=https://lena-srv01.flipsports.net:4566/repository/npm-releases/
 ```
 
-`lena-srv01.flipsports.net` is an internal Nexus / private Verdaccio at the company. The Next.js apps depend on `@phoenix-ui/utils`, `@phoenix-ui/api-client`, `@phoenix-ui/design-system` — all under the `@phoenix-ui` scope, all routed to this internal registry.
+`lena-srv01.flipsports.net` is an internal Nexus / private Verdaccio at the company. The Next.js apps depend on `@taptrade-ui/utils`, `@taptrade-ui/api-client`, `@taptrade-ui/design-system` — all under the `@taptrade-ui` scope, all routed to this internal registry.
 
 **What breaks:** `fly deploy` builds on Fly's remote builder, which is on the public internet and cannot reach `lena-srv01.flipsports.net`. The build will hang on `yarn install` and fail with a registry timeout. Same issue if you try Vercel, Cloudflare Pages, or any cloud builder.
 
 **Fix options (the plan must pick one):**
 1. **Pre-build locally**, push the built image to a registry (`ghcr.io`, Fly's registry), and `fly deploy --image <pre-built-image>`. Requires the demo operator to be on the corp VPN at build time.
 2. **Self-hosted runner / Tailscale subnet router** that bridges Fly's builder to `lena-srv01`. Adds setup time.
-3. **Mirror only the `@phoenix-ui/*` packages to a public registry** (npm Pro, GitHub Packages public) — fastest one-time cost.
+3. **Mirror only the `@taptrade-ui/*` packages to a public registry** (npm Pro, GitHub Packages public) — fastest one-time cost.
 4. **Vendor the workspace packages.** Already inside the lerna monorepo under `packages/`, so this *should* mostly resolve via workspace links — but check: does `packages/api-client` itself pull from the private registry? Worth a `yarn install --frozen-lockfile` from a clean checkout to confirm.
 
 **Recommendation:** Option 1 (build locally on the operator's machine, push image). Adds one step to the deploy script but is the only path that works without network surgery. This is the single highest-impact fix in this review.
@@ -116,7 +116,7 @@ The plan says `fly deploy --dockerfile go-platform/services/gateway/Dockerfile`.
 The plan mentions this and proposes a daily warmup ping. Good. But the warmup needs to actually hit Postgres, not just `/healthz` (which may not touch the DB). Make the warmup query `SELECT 1` via the gateway's DB.
 
 ### [P3.2] The `talon-backoffice` is the *same monorepo* as `phoenix-frontend`.
-Both `package.json` say `"name": "taptrade-ui"` and the directory contents are byte-identical. Worth confirming you actually want to deploy them as two separate Fly apps vs. one app with two routes — saves money and build time. The difference between them is which lerna package starts (`@phoenix-ui/app` vs `@phoenix-ui/office`).
+Both `package.json` say `"name": "taptrade-ui"` and the directory contents are byte-identical. Worth confirming you actually want to deploy them as two separate Fly apps vs. one app with two routes — saves money and build time. The difference between them is which lerna package starts (`@taptrade-ui/app` vs `@taptrade-ui/office`).
 
 ### [P3.3] The plan promises ~$0–8/mo. The honest range is wider.
 Once you bump Next.js machines to 1 GB (P2.4), the Fly compute alone is ~$12–16/mo if running 24/7. With auto-stop and demo-hours-only usage, $5–8 is realistic. With always-on for a sales-team-on-call demo, budget $15. Update the plan's TL;DR.

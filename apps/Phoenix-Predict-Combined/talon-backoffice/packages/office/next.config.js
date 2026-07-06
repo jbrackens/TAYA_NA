@@ -11,9 +11,9 @@ module.exports = {
   // Transpile workspace packages that expose raw TypeScript source
   outputFileTracingRoot: path.join(__dirname, "../.."),
   transpilePackages: [
-    "@phoenix-ui/design-system",
-    "@phoenix-ui/utils",
-    "@phoenix-ui/api-client",
+    "@taptrade-ui/design-system",
+    "@taptrade-ui/utils",
+    "@taptrade-ui/api-client",
     "@phoenix-api/client",
   ],
   async headers() {

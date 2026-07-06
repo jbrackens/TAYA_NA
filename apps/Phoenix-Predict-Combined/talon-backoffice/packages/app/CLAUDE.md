@@ -41,7 +41,7 @@ These patterns are gate failures. Do not introduce them:
 
 1. **MockTapTrade classes in production code** — Use real API clients from
    `app/lib/api/`. Mock classes belong in test files only.
-2. **@phoenix-ui/design-system imports in app/** — This package uses
+2. **@taptrade-ui/design-system imports in app/** — This package uses
    styled-components and causes webpack hangs. Use inline components or
    Tailwind.
 3. **@ts-nocheck in app/ directory** — Fix the types. @ts-nocheck in legacy
@@ -74,7 +74,7 @@ npx next dev
 The dev server MUST boot without hanging. If it hangs, check:
 
 1. `transpilePackages` in next.config.js — do NOT include
-   @phoenix-ui/design-system
+   @taptrade-ui/design-system
 2. Circular imports in app/lib/
 
 ## Testing

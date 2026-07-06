@@ -4,7 +4,7 @@ import {
   Method,
   useSpy,
   Id,
-} from "@phoenix-ui/utils";
+} from "@taptrade-ui/utils";
 import { useState } from "react";
 import { useApi } from "../../../../services/api/api-service";
 import { Button } from "antd";

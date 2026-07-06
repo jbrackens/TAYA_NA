@@ -1,4 +1,4 @@
-# Multi-stage build for @phoenix-ui/{app,office} (parameterized by module_name).
+# Multi-stage build for @taptrade-ui/{app,office} (parameterized by module_name).
 #
 # Why this shape (validated 2026-05-17 — see DEMO_DEPLOYMENT_PLAN.md
 # "Validation status"): single-stage COPY-everything produced a ~7.7 GB image.
@@ -9,12 +9,12 @@
 # Build-debt fixes baked in (the original Dockerfile + plan A0 were off by 6):
 #  - node:14 -> node:20 -> node:22-bookworm-slim (got@15 in office needs Node >=22; Node 20 is EOL)
 #  - no private-Nexus .npmrc secret mount (deps are yarn-workspace-resolved;
-#    yarn.lock has zero @phoenix-ui / flipsports entries)
+#    yarn.lock has zero @taptrade-ui / flipsports entries)
 #  - NO `yarn bootstrap` (lerna bootstrap EEXISTs on @babel/.bin under node:20
 #    + yarn workspaces); build the target package via `yarn lerna run build`
 #  - app build uses `next build --webpack` (Next 16 defaults to Turbopack;
 #    the app needs its custom webpack alias) — set in packages/app/package.json
-#  - @phoenix-ui/api-client declared in packages/app deps; qs typing shimmed
+#  - @taptrade-ui/api-client declared in packages/app deps; qs typing shimmed
 #  - .dockerignore must NOT exclude /packages/utils or public/static/locales
 #
 # NOTE (standalone + rewrites): Next evaluates next.config rewrites() at BUILD
@@ -29,7 +29,7 @@ WORKDIR /usr/src
 COPY . .
 
 # Root package.json is private + has workspaces, so `yarn install` already
-# installs and symlinks every @phoenix-ui/* package. Do NOT run `yarn bootstrap`.
+# installs and symlinks every @taptrade-ui/* package. Do NOT run `yarn bootstrap`.
 RUN yarn install --frozen-lockfile
 
 ARG module_name
@@ -44,7 +44,7 @@ ENV NEXT_PUBLIC_CHAT_PUBLIC_URL=$NEXT_PUBLIC_CHAT_PUBLIC_URL
 ENV NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS=$NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS
 ENV NEXT_PUBLIC_HERO_AMBIENT_VIDEO=$NEXT_PUBLIC_HERO_AMBIENT_VIDEO
 # Builds workspace deps (utils, api-client) then the target package.
-RUN yarn lerna run build --scope @phoenix-ui/$module_name --include-dependencies
+RUN yarn lerna run build --scope @taptrade-ui/$module_name --include-dependencies
 
 # ---- Stage 2: runtime (standalone closure only) ----
 FROM node:22-bookworm-slim AS runtime

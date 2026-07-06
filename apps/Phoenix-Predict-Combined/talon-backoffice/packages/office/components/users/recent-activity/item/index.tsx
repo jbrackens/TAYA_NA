@@ -11,7 +11,7 @@ import {
   TalonPunterActivityEnum,
   TalonPunterRecentActivityItem,
 } from "../../../../types/punters";
-import { useTimezone } from "@phoenix-ui/utils";
+import { useTimezone } from "@taptrade-ui/utils";
 
 const { Text, Paragraph } = Typography;
 

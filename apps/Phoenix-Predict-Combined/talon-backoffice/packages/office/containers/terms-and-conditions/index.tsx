@@ -2,7 +2,7 @@ import { defaultNamespaces } from "../../providers/translations/defaults";
 import { NextPageContext } from "next";
 import { securedPage } from "../../utils/auth";
 import { TermsAndConditionsForm } from "../../components/terms-and-conditions-form";
-import { PunterRoleEnum } from "@phoenix-ui/utils";
+import { PunterRoleEnum } from "@taptrade-ui/utils";
 
 function TermsAndConditionsContainer() {
   return <TermsAndConditionsForm />;

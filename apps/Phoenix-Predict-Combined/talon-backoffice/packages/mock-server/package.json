@@ -1,5 +1,5 @@
 {
-  "name": "@phoenix-ui/mock-server",
+  "name": "@taptrade-ui/mock-server",
   "version": "0.13.0",
   "description": "An Express server delivers mocked API to the Phoenix UI",
   "main": "dist/index.js",

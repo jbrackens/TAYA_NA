@@ -1,5 +1,5 @@
 {
-  "name": "@phoenix-ui/app",
+  "name": "@taptrade-ui/app",
   "version": "0.34.1-build.4",
   "description": "Next.js React App - The Phoenix UI",
   "scripts": {
@@ -32,8 +32,8 @@
     "watch": "node ./scripts/translations/watch.js"
   },
   "dependencies": {
-    "@phoenix-ui/api-client": "1.0.0",
-    "@phoenix-ui/utils": "0.23.1-build.1",
+    "@taptrade-ui/api-client": "1.0.0",
+    "@taptrade-ui/utils": "0.23.1-build.1",
     "@types/react-infinite-scroller": "^1.2.1",
     "formik": "^2.2.9",
     "i18next": "^23.7.0",

@@ -8,7 +8,7 @@ import {
 } from "../../../types/punters";
 import Table from "../../layout/table";
 import dayjs from "dayjs";
-import { useTimezone } from "@phoenix-ui/utils";
+import { useTimezone } from "@taptrade-ui/utils";
 
 type UsersDetailsLimitsHistoryListProps = {
   data: Array<LimitsHistoryData>;
