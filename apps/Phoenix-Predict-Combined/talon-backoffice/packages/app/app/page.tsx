@@ -124,11 +124,11 @@ function MarketPreviewCard({
     activeSide === "yes" ? "bg-[var(--accent)]" : "bg-[var(--no)]";
 
   return (
-    <article className="grid gap-3 border border-[#07150d]/20 bg-[#07150d] p-5 text-white transition-colors hover:bg-[#101b14]">
-      <span className="text-[13px] font-bold uppercase tracking-[0.14em] text-[var(--accent)]">
+    <article className="grid gap-3 rounded-[16px] border border-[#07150d]/25 bg-[#07150d] p-5 text-white transition-[transform,background-color,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:bg-[#0b1a11] hover:shadow-[0_14px_32px_rgba(4,24,13,0.35)]">
+      <span className="text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--accent)]">
         {category}
       </span>
-      <span className="text-[19px] font-semibold leading-[1.25] text-white max-[520px]:text-[18px]">
+      <span className="text-[19px] font-semibold leading-[1.3] tracking-[-0.01em] text-white max-[520px]:text-[18px]">
         {question}
       </span>
       <div className="grid grid-cols-[1fr_auto] items-center gap-4 text-white max-[520px]:grid-cols-1">
@@ -144,7 +144,7 @@ function MarketPreviewCard({
           <p className="m-0 mt-2 text-[13px] font-semibold text-white/68">
             {activeConsensus}
           </p>
-          <p className="m-0 mt-1 text-[12px] font-semibold text-white/52">
+          <p className="m-0 mt-1 text-[12px] font-semibold text-white/60 [font-variant-numeric:tabular-nums]">
             {activeSideLabel} {activePercent}% · {inactiveSideLabel}{" "}
             {inactivePercent}%
           </p>
@@ -152,7 +152,7 @@ function MarketPreviewCard({
         <div className="flex gap-2">
           <button
             type="button"
-            className={`inline-flex h-9 min-w-14 cursor-pointer items-center justify-center rounded-md border px-4 text-[13px] font-bold transition-colors ${
+            className={`inline-flex h-11 min-w-16 cursor-pointer items-center justify-center rounded-[10px] border px-4 text-[13px] font-bold transition-colors duration-150 ${
               activeSide === "yes"
                 ? "border-[var(--accent)] bg-[var(--accent)] text-[#061a10]"
                 : "border-white/20 bg-transparent text-white hover:border-[var(--accent)] hover:text-[var(--accent)]"
@@ -165,7 +165,7 @@ function MarketPreviewCard({
           </button>
           <button
             type="button"
-            className={`inline-flex h-9 min-w-14 cursor-pointer items-center justify-center rounded-md border px-4 text-[13px] font-bold transition-colors ${
+            className={`inline-flex h-11 min-w-16 cursor-pointer items-center justify-center rounded-[10px] border px-4 text-[13px] font-bold transition-colors duration-150 ${
               activeSide === "no"
                 ? "border-[var(--no)] bg-[var(--no)] text-[#2a0f09]"
                 : "border-white/20 bg-transparent text-white hover:border-[var(--no)] hover:text-[var(--no-bar)]"
@@ -342,22 +342,8 @@ export default function HomePage() {
       <main>
         <section className="bg-[var(--accent)] py-24 text-[#07150d] max-[720px]:py-16">
           <div className="mx-auto max-w-[1180px] px-8 max-[720px]:px-5">
-            <div className="grid grid-cols-[minmax(0,1.05fr)_minmax(330px,0.85fr)] items-center gap-16 max-[900px]:grid-cols-1 max-[900px]:gap-10">
-              <div className="grid gap-3">
-                {EXAMPLE_MARKETS.map((market) => (
-                  <MarketPreviewCard
-                    key={market.questionKey}
-                    category={t(market.categoryKey)}
-                    question={t(market.questionKey)}
-                    consensus={t(market.consensusKey)}
-                    yesLabel={t("marketActions.yes")}
-                    noLabel={t("marketActions.no")}
-                    yesPercent={market.yesPercent}
-                  />
-                ))}
-              </div>
-
-              <div>
+            <div className="grid grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] items-start gap-16 max-[900px]:grid-cols-1 max-[900px]:gap-10">
+              <div className="pt-2">
                 <p className="m-0 text-[12px] font-bold uppercase tracking-[0.18em] text-[#0b3c25]/80">
                   {t("browse.eyebrow")}
                 </p>
@@ -370,11 +356,25 @@ export default function HomePage() {
                 <div className="mt-8">
                   <Link
                     href="/predict"
-                    className="inline-flex h-[46px] items-center justify-center rounded-[var(--r-pill)] bg-[#07150d] px-8 text-[16px] font-semibold !text-white transition-transform hover:-translate-y-px hover:bg-[#101b14]"
+                    className="inline-flex h-12 items-center justify-center rounded-[var(--r-pill)] bg-[#07150d] px-8 text-[15px] font-semibold !text-white transition-[transform,background-color] duration-150 ease-out hover:-translate-y-px hover:bg-[#12241a]"
                   >
                     {t("browse.cta")}
                   </Link>
                 </div>
+              </div>
+
+              <div className="grid gap-4 max-[720px]:gap-3">
+                {EXAMPLE_MARKETS.map((market) => (
+                  <MarketPreviewCard
+                    key={market.questionKey}
+                    category={t(market.categoryKey)}
+                    question={t(market.questionKey)}
+                    consensus={t(market.consensusKey)}
+                    yesLabel={t("marketActions.yes")}
+                    noLabel={t("marketActions.no")}
+                    yesPercent={market.yesPercent}
+                  />
+                ))}
               </div>
             </div>
           </div>
