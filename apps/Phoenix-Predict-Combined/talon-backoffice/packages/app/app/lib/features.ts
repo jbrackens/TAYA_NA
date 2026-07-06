@@ -101,3 +101,17 @@ export const FEATURE_LIVE_MARKETS =
  */
 export const DEMO_SYNTHETIC_CHARTS =
   process.env.NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS === "true";
+
+/**
+ * Optional ambient video layer behind the landing-page hero scrim.
+ * Value is a public asset path (e.g. "/brand/hero-ambient.mp4"); empty
+ * string (default) renders no video element at all — the drawn chart
+ * composition is the base hero and remains the fallback for reduced
+ * motion, no-JS, and slow connections.
+ *
+ * Asset requirements + direction brief: docs/hero-ambient-video.md.
+ * Footage must contain no readable text, signage, or screens — the
+ * product layer stays code-drawn on top.
+ */
+export const HERO_AMBIENT_VIDEO =
+  process.env.NEXT_PUBLIC_HERO_AMBIENT_VIDEO || "";
