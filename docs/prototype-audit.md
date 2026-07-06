@@ -1320,7 +1320,7 @@ unremediated and unaccepted by reviewed residual policy.
 
 ## Summary
 
-The current prototype is a migrated Phoenix/Talon prediction platform with a Next.js user app, a Next.js backoffice app, and a Go gateway. It already contains substantial real prediction-market infrastructure: categories, events, markets, orders, order-book and AMM execution modes, positions, trades, settlement records, payouts, lifecycle audit events, wallet ledger entries, loyalty points, leaderboards, admin market tooling, and seed/demo scripts.
+The current prototype is a migrated TapTrade/TapTrade prediction platform with a Next.js user app, a Next.js backoffice app, and a Go gateway. It already contains substantial real prediction-market infrastructure: categories, events, markets, orders, order-book and AMM execution modes, positions, trades, settlement records, payouts, lifecycle audit events, wallet ledger entries, loyalty points, leaderboards, admin market tooling, and seed/demo scripts.
 
 The prototype is not yet TapTrade launch-ready. The safety slices removed the user-facing cashier route, old cashier components, direct insufficient-balance cashier link, user-app cashier/crypto clients, broad launch-source route links, office cashier route/menu/container/admin-payment actions, the old office manual funds transaction modal, and many money-style displays from the launch apps. The gateway now omits legacy cashier/payment/crypto routes by default behind an explicit `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED` opt-in that deployed environments reject, Loop 137 pins those legacy paths out of the default public/CSRF bypass lists, and launch market creation now rejects asset-price settlement sources/rules plus launch-prohibited copy before persistence while default feed registration omits the legacy asset-price adapter unless explicitly enabled. Daily claim, configured point packs, daily check-in, first-prediction, three-predictions, five-predictions, ten-predictions, settled-result, three-settled-results, five-settled-results, ten-settled-results, weekly check-in, monthly check-in, seasonal check-in, quarterly check-in, and leaderboard debut missions, 3-day, 7-day, 14-day, 30-day, 60-day, and 90-day check-in streaks, non-redeemable ledger- and leaderboard-derived badges including leaderboard-debut, prediction-regular, prediction-veteran, prediction-expert, streak-champion, monthly-streak, double-monthly-streak, quarterly-streak, monthly-check-in, seasonal-check-in, quarterly-check-in, settlement-regular, settlement-veteran, and settlement-expert status, a ledger-backed daily reward grant cap, optional device/IP reward cluster caps backed by hashed wallet-service cluster evidence, and an admin-only hashed reward-cluster review/export endpoint plus office page now exist as real rewards-page/API/admin surfaces, and wallet reward payloads now expose point-native aliases with `PTS` units without retired reward response aliases. Loyalty standing and tier payloads now expose point-native XP/rank aliases with `PTS` units without retired tier/threshold response aliases. Market social now exists as prediction-native comments/replies/reactions/reports, public profiles, follows, activity feed, office report moderation, per-user/action social write rate limits, and optional per-client-IP/action social write rate limits for comments/reactions/reports/follows, with Loop 116 live browser/API/SQL proof. Admin lifecycle now has a strict launch-facing mapping from legacy engine states to TapTrade stages/actions, a per-market lifecycle audit endpoint/modal with CSV export, a real admin market edit API, an office Edit Market modal wired to that API, and Loop 119 live API proof for create/edit/open/pause/resume/close/settle/cancel/replay/audit/export; office market/settlement/dispute/risk/leaderboard/loyalty surfaces render mapped labels, point-denominated operation/exposure/void copy, `PTS` leaderboard units, non-redeemable reward summaries, and prediction-settlement loyalty copy. Leaderboard API responses now expose point-native `unit`, `rewardSummary`, and `pointMetricKey` fields without retired `currency` or `prizeSummary` response aliases, and demo seed mode now recomputes Predict leaderboard snapshots immediately after seeded settlements so demo `leaderboard_snapshots` do not depend on a later server tick. Full demo seed mode now runs on a fresh migrated gateway DB before `wallet_ledger` exists, reruns cleanly after demo ledger rows exist, and visible seed summaries use `pts` instead of dollar-style output. Loyalty admin rule and ledger responses now expose `predictionSourceType`, `predictionSourceId`, `minQualifiedPointsCents`, `eligiblePredictionTypes`, and sanitized point metadata aliases while preserving temporary compatibility fields. The risk API now exposes point-native `pointAccounting` and concentration fields for the office risk page and CSV export while preserving old money/liability field names only as temporary compatibility aliases. Portfolio summary and history APIs now expose point-native `totalValuePointsCents`, `portfolioValuePointsCents`, `investedPointsCents`, `unrealizedPointsCents`, `realizedPointsCents`, `settlementPointsCents`, and `PTS` aliases while shared clients normalize from those aliases. Office user detail and admin account-review APIs now expose point-ledger inspection, point-account summaries, `pointAccountBalanceCents`, `realizedPointsCents`, `settlementPointsCents`, `amountPointsCents`, `balancePointsCents`, and `PTS` aliases while keeping older compatibility fields non-preferred. Live gateway/auth/browser proof now shows disclosure-backed registration, login, session acceptance fields, idempotent starter grant, redirect to seeded market discovery, top-bar starter balance, and visible point-ledger rendering for the initial PTS credit. The remaining product-boundary blockers are internal legacy naming and service contracts: wallet/cents/payment terminology remains below the launch UI. Several parity surfaces are partial: dual-admin resolution variants, rewards bonus/broader abuse proof, account-graph/multi-node abuse proof, and live no-money-path safety proof remain incomplete.
 
@@ -1549,11 +1549,11 @@ Loop 160 update: admin drift-alert payloads and docs began exposing preferred po
 Loop 386 update: the active office user-limit editor no longer uses
 stake/loss-shaped active names for the point-use limit. The form field is
 `pointUse`, the translation key is `HEADER_CARD_LIMITS_POINT_USE`, and the
-enum member is `TalonPunterLimitsTypesEnum.POINT_USE`, while the inherited
+enum member is `TapTradePunterLimitsTypesEnum.POINT_USE`, while the inherited
 serialized API value remains `"stake"` for compatibility. The focused office
 route/source regression passed with 22 tests, the edited-file source scan found
 no active `values.losses`, `field="losses"`, `HEADER_CARD_LIMITS_LOSS`,
-`TalonPunterLimitsTypesEnum.STAKE`, or `STAKE =` matches, and the preservation
+`TapTradePunterLimitsTypesEnum.STAKE`, or `STAKE =` matches, and the preservation
 modification gate wrote
 `revival/artifacts/preservation_modification_map_20260629_095303.md`.
 Scenarios 10, 11, and 12 remain Partial because this is a narrow office
@@ -2320,7 +2320,7 @@ Office account-review trade history now uses point-native tab state as well as p
 
 ## Loop 327 Audit Update
 
-Office user-limit editing now separates the launch-facing form vocabulary from the inherited limit enum. The active admin form uses local `pointUse` state, renders `Point Use`, and submits the visible `losses` form field; only the final payload adapter maps that value back to `TalonPunterLimitsTypesEnum.STAKE` for the existing API contract. This preserves the production contract while moving the admin surface away from stake wording.
+Office user-limit editing now separates the launch-facing form vocabulary from the inherited limit enum. The active admin form uses local `pointUse` state, renders `Point Use`, and submits the visible `losses` form field; only the final payload adapter maps that value back to `TapTradePunterLimitsTypesEnum.STAKE` for the existing API contract. This preserves the production contract while moving the admin surface away from stake wording.
 
 ## Loop 328 Audit Update
 
@@ -2360,7 +2360,7 @@ The mandatory `qa-regression-pack` release hook no longer uses sportsbook bet li
 
 ## Loop 337 Audit Update
 
-The optional pre-commit hook no longer runs stale Phoenix Sportsbook health checks that require launch-prohibited or launch-incompatible surfaces such as cashier pages, deposit/withdrawal copy, betslips, stake inputs, betting clients, cashier review, or pending withdrawals. It now delegates to the maintained point-native regression pack and launch-boundary/reconciliation proof gate, so local governance follows the same TapTrade evidence model as the release gates.
+The optional pre-commit hook no longer runs stale TapTrade Sportsbook health checks that require launch-prohibited or launch-incompatible surfaces such as cashier pages, deposit/withdrawal copy, betslips, stake inputs, betting clients, cashier review, or pending withdrawals. It now delegates to the maintained point-native regression pack and launch-boundary/reconciliation proof gate, so local governance follows the same TapTrade evidence model as the release gates.
 
 ## Loop 338 Audit Update
 
@@ -2380,11 +2380,11 @@ The managed local runtime stack no longer starts `phoenix-frontend-brand-viegg` 
 
 ## Loop 342 Audit Update
 
-Release security evidence now follows the current TapTrade surface map instead of the retired sportsbook app tree. SBOM generation covers Talon Backoffice, TapTrade Player App, Go platform modules/services, and inherited backend dependency declarations; blocked backend classpath resolution now leaves a real error artifact when Java/SBT startup is unavailable. Secret scanning covers backend, Talon, and Go platform. Dependency vulnerability and modernization baselines now audit Talon plus `talon-backoffice/packages/app`, parse actual yarn audit advisory summaries, and publish TapTrade player outdated-dependency artifacts. The regenerated vulnerability baseline records 8 critical and 90 high yarn audit findings, making dependency triage an explicit launch follow-up rather than hiding it behind a missing-payload note.
+Release security evidence now follows the current TapTrade surface map instead of the retired sportsbook app tree. SBOM generation covers TapTrade Backoffice, TapTrade Player App, Go platform modules/services, and inherited backend dependency declarations; blocked backend classpath resolution now leaves a real error artifact when Java/SBT startup is unavailable. Secret scanning covers backend, TapTrade, and Go platform. Dependency vulnerability and modernization baselines now audit TapTrade plus `talon-backoffice/packages/app`, parse actual yarn audit advisory summaries, and publish TapTrade player outdated-dependency artifacts. The regenerated vulnerability baseline records 8 critical and 90 high yarn audit findings, making dependency triage an explicit launch follow-up rather than hiding it behind a missing-payload note.
 
 ## Loop 343 Audit Update
 
-The first launch-app dependency vulnerability cluster is remediated rather than only documented. The root Talon workspace now resolves `i18next-fs-backend` to patched version `2.6.6`, removing the `next-i18next > i18next-fs-backend` high/critical findings from both Talon and TapTrade player audit logs. The regenerated dependency baseline now reports 7 critical and 89 high findings, down from 8 critical and 90 high. During verification, the office frontend gate exposed stale build-wrapper assumptions; `verify-talon.sh` no longer passes the retired OpenSSL legacy provider flag to Node and explicitly builds with webpack under Next 16, allowing the office production verifier to pass.
+The first launch-app dependency vulnerability cluster is remediated rather than only documented. The root TapTrade workspace now resolves `i18next-fs-backend` to patched version `2.6.6`, removing the `next-i18next > i18next-fs-backend` high/critical findings from both TapTrade and TapTrade player audit logs. The regenerated dependency baseline now reports 7 critical and 89 high findings, down from 8 critical and 90 high. During verification, the office frontend gate exposed stale build-wrapper assumptions; `verify-taptrade.sh` no longer passes the retired OpenSSL legacy provider flag to Node and explicitly builds with webpack under Next 16, allowing the office production verifier to pass.
 
 ## Loop 344 Audit Update
 
@@ -2411,7 +2411,7 @@ The player browser journey now has a maintained Playwright proof. A fresh user c
 
 ## Loop 359 Audit Update
 
-The office admin lifecycle flow now has a maintained browser proof against a fresh DB-backed stack. The Playwright spec logs into Talon Office, opens a synthetic draft prediction market from the rendered admin table, closes it through the destructive confirmation modal with an audit reason, verifies the lifecycle audit modal, and confirms retired office money routes return 404. The proof also found and fixed a real office auth regression: `authToken` from `/api/auth/login` must be scoped to `path: "/"` so the dashboard proxy can see it after login. Scenario 10 and Scenario 12 are stronger, but remain Partial because final RC still needs backend terminology cleanup, full preservation review, remaining security/dependency triage, and broader final audit.
+The office admin lifecycle flow now has a maintained browser proof against a fresh DB-backed stack. The Playwright spec logs into TapTrade Office, opens a synthetic draft prediction market from the rendered admin table, closes it through the destructive confirmation modal with an audit reason, verifies the lifecycle audit modal, and confirms retired office money routes return 404. The proof also found and fixed a real office auth regression: `authToken` from `/api/auth/login` must be scoped to `path: "/"` so the dashboard proxy can see it after login. Scenario 10 and Scenario 12 are stronger, but remain Partial because final RC still needs backend terminology cleanup, full preservation review, remaining security/dependency triage, and broader final audit.
 
 ## Loop 360 Audit Update
 
@@ -2421,9 +2421,9 @@ Backend terminology cleanup moved another active source cluster to point-native 
 
 The active frontend dependency baseline now has the `form-data` high/critical
 advisory cluster removed without replacing inherited Jest/jsdom/request tooling.
-The Talon workspace root resolution pins `form-data` to `2.5.6`,
+The TapTrade workspace root resolution pins `form-data` to `2.5.6`,
 `yarn why form-data` resolves the inherited test path to that patched version,
-`make security-deps` regenerated the official baseline, and both Talon and
+`make security-deps` regenerated the official baseline, and both TapTrade and
 TapTrade player app audit logs have zero `form-data` findings. Scenario 12
 remains Partial because the official audit baseline still reports `critical 2`
 and `high 80`, backend JVM SCA evidence is still missing, and final
@@ -2608,7 +2608,7 @@ backend SCA, final preservation review, and RC audit.
 ## Loop 376 Audit Update
 
 Residual frontend advisory governance is now executable. New
-`scripts/qa/frontend-residual-advisory-gate.sh` parses the regenerated Talon and
+`scripts/qa/frontend-residual-advisory-gate.sh` parses the regenerated TapTrade and
 TapTrade player app audit logs and fails on any critical row or any high row
 outside the two reviewed inherited Lerna residual clusters. `make
 qa-frontend-residual-advisories` passed after `make security-deps`, proving the
@@ -3093,7 +3093,7 @@ journey proof, dependency/release hardening, or final RC evidence.
 The active office user-limit editor now models the point-add limit with
 point-native UI/form names. The editor uses `pointAdd` for editable state and
 form values, `HEADER_CARD_LIMITS_POINT_ADD` for copy, and
-`TalonPunterLimitsTypesEnum.POINT_ADD` for the compatibility enum member while
+`TapTradePunterLimitsTypesEnum.POINT_ADD` for the compatibility enum member while
 leaving the inherited serialized API value `"deposits"` unchanged. The focused
 office route/source regression passed with 22 tests. Scenarios 10, 11, and 12
 remain Partial because broader backend/API terminology cleanup remains.
@@ -3379,9 +3379,9 @@ evidence still remain.
 
 Dependency/release-hardening evidence was refreshed with current timestamped
 artifacts instead of stale fixed-name audit logs. `security-deps` now writes
-timestamped Talon and TapTrade player yarn-audit logs, and the frontend residual
+timestamped TapTrade and TapTrade player yarn-audit logs, and the frontend residual
 advisory gate now consumes the latest available audit logs by default. The
-fresh dependency baseline reports Talon and TapTrade player at critical 0, high
+fresh dependency baseline reports TapTrade and TapTrade player at critical 0, high
 5, moderate 76, low 14, with 2 unique advisory ids per scope; the high rows
 remain the reviewed inherited Lerna `ip` and `lodash.set` residuals. The
 frontend residual gate passed on the fresh logs and the JVM direct OSV baseline

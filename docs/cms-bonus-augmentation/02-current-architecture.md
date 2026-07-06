@@ -94,19 +94,19 @@ TAYA_NA is a real-time sports betting platform with three active components:
 
 | Service | What It Does | Why It Matters |
 |---|---|---|
-| `phoenix-cms` | Pages, promotions, banners CRUD | Has the content model we need |
-| `phoenix-betting-engine` | Bet quoting, parlays, placement | Has `PlaceParlay()` with freebet support |
-| `phoenix-settlement` | Batch settlement, reconciliation | Mature settlement orchestrator |
-| `phoenix-wallet` | Multi-currency wallet with Kafka | Alternative wallet, not used |
-| `phoenix-events` | Event ingestion, live scores | Kafka outbox pattern |
-| `phoenix-analytics` | Analytics aggregation | Not needed for augmentation |
-| `phoenix-compliance` | Advanced compliance rules | Not needed (gateway has basics) |
-| `phoenix-notification` | Email/SMS | Useful for bonus expiry alerts |
-| `phoenix-market-engine` | Market lifecycle | Not needed (gateway has domain/) |
-| `phoenix-realtime` | Real-time subscriptions | Not needed (gateway has ws/) |
-| `phoenix-user` | User management | Not needed (auth service covers this) |
-| `phoenix-audit` | Audit logging | Not needed (gateway has audit_logs migration) |
-| `phoenix-retention` | Player retention strategies | Has `CreateCampaignRequest` struct |
+| `taptrade-cms` | Pages, promotions, banners CRUD | Has the content model we need |
+| `taptrade-betting-engine` | Bet quoting, parlays, placement | Has `PlaceParlay()` with freebet support |
+| `taptrade-settlement` | Batch settlement, reconciliation | Mature settlement orchestrator |
+| `taptrade-wallet` | Multi-currency wallet with Kafka | Alternative wallet, not used |
+| `taptrade-events` | Event ingestion, live scores | Kafka outbox pattern |
+| `taptrade-analytics` | Analytics aggregation | Not needed for augmentation |
+| `taptrade-compliance` | Advanced compliance rules | Not needed (gateway has basics) |
+| `taptrade-notification` | Email/SMS | Useful for bonus expiry alerts |
+| `taptrade-market-engine` | Market lifecycle | Not needed (gateway has domain/) |
+| `taptrade-realtime` | Real-time subscriptions | Not needed (gateway has ws/) |
+| `taptrade-user` | User management | Not needed (auth service covers this) |
+| `taptrade-audit` | Audit logging | Not needed (gateway has audit_logs migration) |
+| `taptrade-retention` | Player retention strategies | Has `CreateCampaignRequest` struct |
 | `stella-engagement` | Engagement rules engine | Gamification layer concept |
 
 **Architecture difference:** These use Kafka + pgx + chi + JWT, while the primary gateway uses gorilla/mux + database/sql + session tokens + no message queue. Direct integration is NOT viable without significant adapter work.
@@ -369,26 +369,26 @@ Player accepts → POST /api/v1/bets/cashout/accept
 
 ## File Path Index
 
-1. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/cmd/gateway/main.go`
-2. `apps/Phoenix-Sportsbook-Combined/go-platform/services/auth/cmd/auth/main.go`
-3. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/wallet/service.go`
-4. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/bets/service.go`
-5. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/bets/cashout.go`
-6. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/freebets/service.go`
-7. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/oddsboosts/service.go`
-8. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/loyalty/service.go`
-9. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/compliance/`
-10. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/payments/`
-11. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/ws/handler.go`
-12. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/provider/runtime.go`
-13. `apps/Phoenix-Sportsbook-Combined/go-platform/modules/platform/transport/httpx/middleware.go`
-14. `apps/Phoenix-Sportsbook-Combined/go-platform/modules/platform/canonical/v1/types.go`
-15. `apps/Phoenix-Sportsbook-Combined/go-platform/modules/platform/canonical/v1/settlement.go`
-16. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/migrations/`
-17. `apps/Phoenix-Sportsbook-Combined/talon-backoffice/packages/app/app/lib/api/`
-18. `apps/Phoenix-Sportsbook-Combined/talon-backoffice/packages/app/app/lib/store/`
-19. `apps/Phoenix-Sportsbook-Combined/talon-backoffice/packages/app/app/lib/websocket/`
-20. `apps/Phoenix-Sportsbook-Combined/talon-backoffice/packages/app/app/components/BetslipProvider.tsx`
-21. `services/codex-prep/phoenix-cms/cmd/server/main.go`
-22. `services/codex-prep/phoenix-betting-engine/internal/service/service.go`
-23. `services/codex-prep/phoenix-settlement/internal/service/service.go`
+1. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/cmd/gateway/main.go`
+2. `apps/TapTrade-Sportsbook-Combined/go-platform/services/auth/cmd/auth/main.go`
+3. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/wallet/service.go`
+4. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/bets/service.go`
+5. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/bets/cashout.go`
+6. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/freebets/service.go`
+7. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/oddsboosts/service.go`
+8. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/loyalty/service.go`
+9. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/compliance/`
+10. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/payments/`
+11. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/ws/handler.go`
+12. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/provider/runtime.go`
+13. `apps/TapTrade-Sportsbook-Combined/go-platform/modules/platform/transport/httpx/middleware.go`
+14. `apps/TapTrade-Sportsbook-Combined/go-platform/modules/platform/canonical/v1/types.go`
+15. `apps/TapTrade-Sportsbook-Combined/go-platform/modules/platform/canonical/v1/settlement.go`
+16. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/migrations/`
+17. `apps/TapTrade-Sportsbook-Combined/talon-backoffice/packages/app/app/lib/api/`
+18. `apps/TapTrade-Sportsbook-Combined/talon-backoffice/packages/app/app/lib/store/`
+19. `apps/TapTrade-Sportsbook-Combined/talon-backoffice/packages/app/app/lib/websocket/`
+20. `apps/TapTrade-Sportsbook-Combined/talon-backoffice/packages/app/app/components/BetslipProvider.tsx`
+21. `services/codex-prep/taptrade-cms/cmd/server/main.go`
+22. `services/codex-prep/taptrade-betting-engine/internal/service/service.go`
+23. `services/codex-prep/taptrade-settlement/internal/service/service.go`

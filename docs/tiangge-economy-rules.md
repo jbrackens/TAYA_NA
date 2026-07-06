@@ -910,7 +910,7 @@ Managed local stacks and runtime-profile release gates must start and wait for t
 
 ## Loop 342 Release Security Evidence Rule
 
-Release security and dependency gates must preserve inherited coverage while scanning the actual launch surfaces. Secret, SBOM, vulnerability, and dependency-modernization baselines should include backend, Talon Backoffice, TapTrade Player App, and Go platform coverage where applicable, and must not certify readiness by scanning only a retired sportsbook frontend tree. Blocked inherited-backend scans should publish concrete error artifacts rather than dangling report paths. Vulnerability baselines must parse and report available advisory payloads, including high/critical counts, so dependency risk remains visible before launch.
+Release security and dependency gates must preserve inherited coverage while scanning the actual launch surfaces. Secret, SBOM, vulnerability, and dependency-modernization baselines should include backend, TapTrade Backoffice, TapTrade Player App, and Go platform coverage where applicable, and must not certify readiness by scanning only a retired sportsbook frontend tree. Blocked inherited-backend scans should publish concrete error artifacts rather than dangling report paths. Vulnerability baselines must parse and report available advisory payloads, including high/critical counts, so dependency risk remains visible before launch.
 
 ## Loop 343 Dependency Remediation Rule
 
@@ -1125,10 +1125,10 @@ The office user-limit editor is a launch-adjacent admin surface. Active UI,
 form, translation-key, and TypeScript enum member names for prediction point-use
 limits must use point-use language rather than inherited stake/loss wording.
 The inherited serialized API value `"stake"` may remain compatibility-only
-behind `TalonPunterLimitsTypesEnum.POINT_USE`, but active office form state must
+behind `TapTradePunterLimitsTypesEnum.POINT_USE`, but active office form state must
 use `pointUse`, rendered copy must use `HEADER_CARD_LIMITS_POINT_USE`, and the
 office route/source regression must reject `values.losses`, `field="losses"`,
-`HEADER_CARD_LIMITS_LOSS`, `TalonPunterLimitsTypesEnum.STAKE`, and `STAKE =`
+`HEADER_CARD_LIMITS_LOSS`, `TapTradePunterLimitsTypesEnum.STAKE`, and `STAKE =`
 in the active limit-editor files.
 
 ## Loop 387 Office Limit History Type Rule

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Complete WebSocket real-time transport implementation for the Phoenix Sportsbook Go backend. The implementation provides production-quality code with proper goroutine lifecycle management, thread-safe channel operations, and comprehensive tests.
+Complete WebSocket real-time transport implementation for the TapTrade Sportsbook Go backend. The implementation provides production-quality code with proper goroutine lifecycle management, thread-safe channel operations, and comprehensive tests.
 
 ## What Was Implemented
 

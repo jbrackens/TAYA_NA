@@ -1,6 +1,6 @@
 # WebSocket Module
 
-Real-time bidirectional communication for the Phoenix Sportsbook gateway service.
+Real-time bidirectional communication for the TapTrade Sportsbook gateway service.
 
 ## Overview
 

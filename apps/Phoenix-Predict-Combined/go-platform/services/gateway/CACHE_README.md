@@ -1,6 +1,6 @@
 # Redis Caching Layer - Complete Documentation
 
-Welcome! This README provides a complete overview of the Redis caching layer that has been integrated into the Phoenix Sportsbook Gateway service.
+Welcome! This README provides a complete overview of the Redis caching layer that has been integrated into the TapTrade Sportsbook Gateway service.
 
 ## Quick Links
 
@@ -330,7 +330,7 @@ See `CACHE_INTEGRATION.md` for:
 
 ## License and Attribution
 
-This caching layer is part of the Phoenix Sportsbook project and follows the same licensing as the main codebase.
+This caching layer is part of the TapTrade Sportsbook project and follows the same licensing as the main codebase.
 
 ---
 

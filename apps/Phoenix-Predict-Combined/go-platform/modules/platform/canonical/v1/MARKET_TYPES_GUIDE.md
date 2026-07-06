@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the comprehensive market type extensions added to the Phoenix Sportsbook Go backend's canonical schema. The extension provides support for market types across all major sports with settlement resolution, odds validation, and type-safe abstractions.
+This document describes the comprehensive market type extensions added to the TapTrade Sportsbook Go backend's canonical schema. The extension provides support for market types across all major sports with settlement resolution, odds validation, and type-safe abstractions.
 
 ## Files Added
 

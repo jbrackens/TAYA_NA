@@ -60,7 +60,7 @@ Taya NA Predict forked from Taya NA Sportsbook and replaced the sportsbook domai
 
 ---
 
-# Archived Phoenix Sportsbook Release Changelog
+# Archived TapTrade Sportsbook Release Changelog
 
 ## [1.2.0] - 2026-04-16
 
@@ -150,7 +150,7 @@ Complete rebrand to TAYA NA! identity with unified design system, new player fea
 
 ### Initial Production Release
 
-Phoenix Sportsbook platform reaching production-ready status. Complete sportsbook solution with real-time betting, market management, and comprehensive compliance framework.
+TapTrade Sportsbook platform reaching production-ready status. Complete sportsbook solution with real-time betting, market management, and comprehensive compliance framework.
 
 ### Major Features
 
@@ -380,18 +380,18 @@ None at this time.
 
 ### Contributors & Acknowledgments
 
-Phoenix Sportsbook was developed by the Phoenix team. Special thanks to all testers and early users who provided feedback.
+TapTrade Sportsbook was developed by the TapTrade team. Special thanks to all testers and early users who provided feedback.
 
 ### License
 
-All rights reserved. Phoenix Sportsbook Platform.
+All rights reserved. TapTrade Sportsbook Platform.
 
 ### Support
 
 For issues or questions:
-- **Technical Support** — support@phoenix-sportsbook.com
-- **Bug Reports** — bugs@phoenix-sportsbook.com
-- **Feature Requests** — features@phoenix-sportsbook.com
+- **Technical Support** — support@taptrade-sportsbook.com
+- **Bug Reports** — bugs@taptrade-sportsbook.com
+- **Feature Requests** — features@taptrade-sportsbook.com
 
 ---
 

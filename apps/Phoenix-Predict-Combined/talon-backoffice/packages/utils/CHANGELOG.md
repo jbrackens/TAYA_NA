@@ -1,222 +1,127 @@
 # Change Log
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+All notable changes to this project will be documented in this file. See
+[Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
 ## [0.23.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.23.1-build.0...@phoenix-ui/utils@0.23.1-build.1) (2022-07-08)
 
 **Note:** Version bump only for package @phoenix-ui/utils
 
-
-
-
-
 ## [0.23.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.23.0...@phoenix-ui/utils@0.23.1-build.0) (2022-06-21)
 
 **Note:** Version bump only for package @phoenix-ui/utils
-
-
-
-
 
 # [0.23.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.22.1-build.0...@phoenix-ui/utils@0.23.0) (2022-06-16)
 
 **Note:** Version bump only for package @phoenix-ui/utils
 
-
-
-
-
 ## [0.22.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.22.0...@phoenix-ui/utils@0.22.1-build.0) (2022-06-15)
 
 **Note:** Version bump only for package @phoenix-ui/utils
-
-
-
-
 
 # [0.22.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.21.1-build.2...@phoenix-ui/utils@0.22.0) (2022-05-19)
 
 **Note:** Version bump only for package @phoenix-ui/utils
 
-
-
-
-
 ## [0.21.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.21.1-build.1...@phoenix-ui/utils@0.21.1-build.2) (2022-05-17)
 
 **Note:** Version bump only for package @phoenix-ui/utils
-
-
-
-
 
 ## [0.21.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.21.1-build.0...@phoenix-ui/utils@0.21.1-build.1) (2022-05-17)
 
 **Note:** Version bump only for package @phoenix-ui/utils
 
-
-
-
-
 ## [0.21.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.21.0...@phoenix-ui/utils@0.21.1-build.0) (2022-04-20)
 
 **Note:** Version bump only for package @phoenix-ui/utils
-
-
-
-
 
 # [0.21.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.20.1-build.1...@phoenix-ui/utils@0.21.0) (2022-04-06)
 
 **Note:** Version bump only for package @phoenix-ui/utils
 
-
-
-
-
 ## [0.20.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.20.1-build.0...@phoenix-ui/utils@0.20.1-build.1) (2022-03-30)
 
 **Note:** Version bump only for package @phoenix-ui/utils
 
-
-
-
-
 ## [0.20.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.20.0...@phoenix-ui/utils@0.20.1-build.0) (2022-03-28)
-
 
 ### Features
 
-* Get sports list on page load and save in redux ([#690](https://github.com/flipadmin/phoenix-frontend/issues/690)) ([5db3b53](https://github.com/flipadmin/phoenix-frontend/commit/5db3b53312f22ebd97f901795cd369fd8ae12a51))
-
-
-
-
+- Get sports list on page load and save in redux
+  ([#690](https://github.com/flipadmin/phoenix-frontend/issues/690))
+  ([5db3b53](https://github.com/flipadmin/phoenix-frontend/commit/5db3b53312f22ebd97f901795cd369fd8ae12a51))
 
 # [0.20.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.19.1-build.4...@phoenix-ui/utils@0.20.0) (2022-03-24)
 
 **Note:** Version bump only for package @phoenix-ui/utils
 
-
-
-
-
 ## [0.19.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.19.1-build.3...@phoenix-ui/utils@0.19.1-build.4) (2022-03-16)
 
 **Note:** Version bump only for package @phoenix-ui/utils
-
-
-
-
 
 ## [0.19.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.19.1-build.2...@phoenix-ui/utils@0.19.1-build.3) (2022-03-14)
 
 **Note:** Version bump only for package @phoenix-ui/utils
 
-
-
-
-
 ## [0.19.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.19.1-build.1...@phoenix-ui/utils@0.19.1-build.2) (2022-02-21)
-
 
 ### Features
 
-* handle resettled status ([#668](https://github.com/flipadmin/phoenix-frontend/issues/668)) ([9cccbc4](https://github.com/flipadmin/phoenix-frontend/commit/9cccbc425bbd2b120f557007f31116a2fef79593))
-
-
-
-
+- handle resettled status
+  ([#668](https://github.com/flipadmin/phoenix-frontend/issues/668))
+  ([9cccbc4](https://github.com/flipadmin/phoenix-frontend/commit/9cccbc425bbd2b120f557007f31116a2fef79593))
 
 ## [0.19.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.19.1-build.0...@phoenix-ui/utils@0.19.1-build.1) (2022-02-04)
 
-
 ### Features
 
-* [gmv3-2719] Edit personal details of customer in talon ([#647](https://github.com/flipadmin/phoenix-frontend/issues/647)) ([13bba81](https://github.com/flipadmin/phoenix-frontend/commit/13bba812271078a990004e09af9549d42dbed877))
-
-
-
-
+- [gmv3-2719] Edit personal details of customer in taptrade
+  ([#647](https://github.com/flipadmin/phoenix-frontend/issues/647))
+  ([13bba81](https://github.com/flipadmin/phoenix-frontend/commit/13bba812271078a990004e09af9549d42dbed877))
 
 ## [0.19.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.19.0...@phoenix-ui/utils@0.19.1-build.0) (2022-02-01)
 
 **Note:** Version bump only for package @phoenix-ui/utils
 
-
-
-
-
 # [0.19.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.18.1-build.0...@phoenix-ui/utils@0.19.0) (2022-01-21)
 
 **Note:** Version bump only for package @phoenix-ui/utils
-
-
-
-
 
 ## [0.18.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.18.0...@phoenix-ui/utils@0.18.1-build.0) (2022-01-21)
 
 **Note:** Version bump only for package @phoenix-ui/utils
 
-
-
-
-
 # [0.18.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.17.1-build.4...@phoenix-ui/utils@0.18.0) (2022-01-18)
 
 **Note:** Version bump only for package @phoenix-ui/utils
 
-
-
-
-
 ## [0.17.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.17.1-build.3...@phoenix-ui/utils@0.17.1-build.4) (2022-01-17)
-
 
 ### Features
 
-* add session breach tag to talon ([#620](https://github.com/flipadmin/phoenix-frontend/issues/620)) ([9cc8a73](https://github.com/flipadmin/phoenix-frontend/commit/9cc8a732e5fd5237529508925030f5c989ab27ca))
-
-
-
-
+- add session breach tag to taptrade
+  ([#620](https://github.com/flipadmin/phoenix-frontend/issues/620))
+  ([9cc8a73](https://github.com/flipadmin/phoenix-frontend/commit/9cc8a732e5fd5237529508925030f5c989ab27ca))
 
 ## [0.17.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.17.1-build.2...@phoenix-ui/utils@0.17.1-build.3) (2022-01-14)
 
 **Note:** Version bump only for package @phoenix-ui/utils
 
-
-
-
-
 ## [0.17.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.17.1-build.1...@phoenix-ui/utils@0.17.1-build.2) (2022-01-11)
 
 **Note:** Version bump only for package @phoenix-ui/utils
 
-
-
-
-
 ## [0.17.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.17.1-build.0...@phoenix-ui/utils@0.17.1-build.1) (2022-01-10)
-
 
 ### Features
 
-* update session limit copy ([#610](https://github.com/flipadmin/phoenix-frontend/issues/610)) ([e823864](https://github.com/flipadmin/phoenix-frontend/commit/e8238649734b70a2d66bc843c1f425604032dbc8))
-
-
-
-
+- update session limit copy
+  ([#610](https://github.com/flipadmin/phoenix-frontend/issues/610))
+  ([e823864](https://github.com/flipadmin/phoenix-frontend/commit/e8238649734b70a2d66bc843c1f425604032dbc8))
 
 ## [0.17.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/utils@0.17.0...@phoenix-ui/utils@0.17.1-build.0) (2021-12-23)
 
 **Note:** Version bump only for package @phoenix-ui/utils
-
-
-
-
 
 # Change Log
 
@@ -242,7 +147,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- handle new marketLifecycle value on talon
+- handle new marketLifecycle value on taptrade
   ([#538](https://github.com/flipadmin/phoenix-frontend/issues/538))
   ([45e11b1](https://github.com/flipadmin/phoenix-frontend/commit/45e11b1723b42cabb9996c81f842997e2afaa0d4))
 
@@ -250,7 +155,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- handle new marketLifecycle value on talon
+- handle new marketLifecycle value on taptrade
   ([#538](https://github.com/flipadmin/phoenix-frontend/issues/538))
   ([45e11b1](https://github.com/flipadmin/phoenix-frontend/commit/45e11b1723b42cabb9996c81f842997e2afaa0d4))
 
@@ -306,7 +211,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Bug Fixes
 
-- format session limits data and display it correctly on talon user page
+- format session limits data and display it correctly on taptrade user page
   ([#489](https://github.com/flipadmin/phoenix-frontend/issues/489))
   ([257a765](https://github.com/flipadmin/phoenix-frontend/commit/257a765c4257654926b3d716c8fbeb5b7a258b7f))
 
@@ -418,7 +323,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- add cancel bet button to talon
+- add cancel bet button to taptrade
   ([#393](https://github.com/flipadmin/phoenix-frontend/issues/393))
   ([7c942aa](https://github.com/flipadmin/phoenix-frontend/commit/7c942aab504aaefc21248b1882f82ad35d244292))
 
@@ -475,7 +380,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- update talon to use new limits payload, change loss to stake limit
+- update taptrade to use new limits payload, change loss to stake limit
   ([#297](https://github.com/flipadmin/phoenix-frontend/issues/297))
   ([4bae3cc](https://github.com/flipadmin/phoenix-frontend/commit/4bae3cc399fd9109abc6f85155f5598a5b9d1d0a))
 
@@ -579,7 +484,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Bug Fixes
 
-- **talon:** settled market enum
+- **taptrade:** settled market enum
   ([#155](https://github.com/flipadmin/phoenix-frontend/issues/155))
   ([6ac3fcf](https://github.com/flipadmin/phoenix-frontend/commit/6ac3fcf4d6fd305a560faf6685327a475db112fa))
 
@@ -607,7 +512,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- **talon:** cookies expiration time based on token exp dates
+- **taptrade:** cookies expiration time based on token exp dates
   ([#132](https://github.com/flipadmin/phoenix-frontend/issues/132))
   ([faaaeda](https://github.com/flipadmin/phoenix-frontend/commit/faaaedab9c0ded5e27ea0d0a588b938d7201efb2))
 
@@ -615,7 +520,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- tokens expiration logic for app, talon and utils packages
+- tokens expiration logic for app, taptrade and utils packages
   ([#131](https://github.com/flipadmin/phoenix-frontend/issues/131))
   ([849b8a2](https://github.com/flipadmin/phoenix-frontend/commit/849b8a29ea7ae6cb489d32d0dfd8c04894143790))
 
@@ -691,7 +596,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- **talon:** fixtures and markets actions alignment
+- **taptrade:** fixtures and markets actions alignment
   ([#98](https://github.com/flipadmin/phoenix-frontend/issues/98))
   ([9e1682c](https://github.com/flipadmin/phoenix-frontend/commit/9e1682c6899ae65b632f1ab1452cb1df46404775))
 
@@ -699,7 +604,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- **talon:** user wallet history
+- **taptrade:** user wallet history
   ([#95](https://github.com/flipadmin/phoenix-frontend/issues/95))
   ([44fb454](https://github.com/flipadmin/phoenix-frontend/commit/44fb454bd4f4f72671bce3db98b577548934c000))
 
@@ -711,7 +616,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- **talon:** menu structure definitions
+- **taptrade:** menu structure definitions
   ([#92](https://github.com/flipadmin/phoenix-frontend/issues/92))
   ([516c06a](https://github.com/flipadmin/phoenix-frontend/commit/516c06a885016dcfcafa3f027c1397c4bec56bb6))
 
@@ -719,7 +624,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- **talon:** fixtures list and details pages, unification of components
+- **taptrade:** fixtures list and details pages, unification of components
   ([#85](https://github.com/flipadmin/phoenix-frontend/issues/85))
   ([311ab99](https://github.com/flipadmin/phoenix-frontend/commit/311ab999683afc47f95b1b43265be80c22e4c357))
 
@@ -775,6 +680,6 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- **talon:** package init
+- **taptrade:** package init
   ([#45](https://github.com/flipadmin/phoenix-frontend/issues/45))
   ([1a85ed5](https://github.com/flipadmin/phoenix-frontend/commit/1a85ed578b12b434a227fee837e8d43370a8bfab))

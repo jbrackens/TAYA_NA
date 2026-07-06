@@ -9202,7 +9202,7 @@ Scenario status after this loop:
 Tightened the launch-adjacent office user-limit editor while preserving the inherited API enum:
 
 - Changed the local editable state for the point-use/loss limit section from `stake` to `pointUse`.
-- Changed the form initialization to load inherited `values.stake` into the visible `losses` field, then map `values.losses` back to `TalonPunterLimitsTypesEnum.STAKE` only when submitting.
+- Changed the form initialization to load inherited `values.stake` into the visible `losses` field, then map `values.losses` back to `TapTradePunterLimitsTypesEnum.STAKE` only when submitting.
 - Changed the rendered English limit label from `Loss` to `Point Use`.
 - Expanded the office route regression to require `pointUse`, `values.losses`, the explicit enum adapter, and point units while rejecting `editables.stake`, `HEADER_CARD_LIMITS_STAKE`, and dollar units.
 
@@ -9222,7 +9222,7 @@ Scenario status after this loop:
 
 Moved active office recent-activity output contracts away from inherited bet activity names while keeping legacy payload compatibility:
 
-- Replaced exported `TalonPunterActivityEnum.BET_PLACEMENT` / `BET_WON` with `PREDICTION_ORDER` / `PREDICTION_RESULT`.
+- Replaced exported `TapTradePunterActivityEnum.BET_PLACEMENT` / `BET_WON` with `PREDICTION_ORDER` / `PREDICTION_RESULT`.
 - Updated the recent-activity renderer to switch on prediction-native enum values.
 - Added a compatibility mapper so legacy `"BET_PLACEMENT"` and `"BET_WON"` input strings normalize to prediction-native output before rendering.
 - Updated focused recent-activity and route-safety tests to require prediction-native output values and reject old bet activity names in the renderer.
@@ -9395,11 +9395,11 @@ Scenario status after this loop:
 
 ## 2026-06-28 Loop 337 - Launch-Safe Pre-Commit Hook
 
-Replaced the local pre-commit hook path that still invoked stale Phoenix Sportsbook health scripts:
+Replaced the local pre-commit hook path that still invoked stale TapTrade Sportsbook health scripts:
 
 - `scripts/pre-commit-hook.sh` no longer runs `scripts/system-health-check.sh` or `scripts/backoffice-health-check.sh`.
 - The hook now resolves the project Makefile and runs `make qa-regression-pack` plus `make qa-e2e-critical`.
-- The hook messaging now describes TapTrade launch gates rather than Phoenix Sportsbook health checks.
+- The hook messaging now describes TapTrade launch gates rather than TapTrade Sportsbook health checks.
 - The stale health scripts remain available as standalone historical tools, but are no longer the commit-blocking local governance path.
 
 Verification:
@@ -9510,18 +9510,18 @@ Scenario status after this loop:
 Retargeted and tightened release security/dependency evidence while preserving inherited coverage:
 
 - `scripts/security/generate-sbom.sh` now treats `talon-backoffice/packages/app` as `taptrade-player-app` instead of scanning the retired sportsbook frontend tree.
-- The SBOM baseline covers Talon Backoffice, TapTrade Player App, Go platform modules/services, inherited backend declared dependencies, and a backend classpath attempt.
+- The SBOM baseline covers TapTrade Backoffice, TapTrade Player App, Go platform modules/services, inherited backend declared dependencies, and a backend classpath attempt.
 - Blocked backend classpath resolution now writes `phoenix-backend_dependency-classpath.error.log` when Java/SBT startup fails before stderr is created.
-- `scripts/security/scan-secrets.sh` scopes secret scanning to backend, Talon, and Go platform.
-- `scripts/security/dependency-baseline.sh` audits Talon plus TapTrade Player App, parses yarn audit summaries, uses the current date, and reports actual advisory counts.
-- The regenerated dependency vulnerability report records `critical 8, high 90, moderate 98, low 21; 33 unique advisory ids` for both Talon and TapTrade player app scopes.
-- `scripts/frontend/dependency-modernization-baseline.sh` now publishes Talon Backoffice and TapTrade Player App outdated-dependency reports.
+- `scripts/security/scan-secrets.sh` scopes secret scanning to backend, TapTrade, and Go platform.
+- `scripts/security/dependency-baseline.sh` audits TapTrade plus TapTrade Player App, parses yarn audit summaries, uses the current date, and reports actual advisory counts.
+- The regenerated dependency vulnerability report records `critical 8, high 90, moderate 98, low 21; 33 unique advisory ids` for both TapTrade and TapTrade player app scopes.
+- `scripts/frontend/dependency-modernization-baseline.sh` now publishes TapTrade Backoffice and TapTrade Player App outdated-dependency reports.
 
 Verification:
 
 - `bash -n scripts/security/generate-sbom.sh scripts/security/dependency-baseline.sh scripts/security/scan-secrets.sh scripts/frontend/dependency-modernization-baseline.sh` passed.
 - `make -n security-secrets security-sbom security-deps frontend-deps-baseline` points at the retargeted scripts.
-- `make security-secrets` passed and regenerated `revival/05_SECRET_SCAN_BASELINE.md` plus `revival/05_secret_scan_findings.csv`; scope is backend, Talon, and Go platform.
+- `make security-secrets` passed and regenerated `revival/05_SECRET_SCAN_BASELINE.md` plus `revival/05_secret_scan_findings.csv`; scope is backend, TapTrade, and Go platform.
 - `make security-sbom` passed and regenerated `revival/21_SBOM_BASELINE.md` plus `revival/artifacts/sbom_20260628_133059`; the blocked backend classpath row points to an existing error artifact.
 - `make security-deps` passed and regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` with parsed advisory counts.
 - `make frontend-deps-baseline` passed and regenerated `revival/195_FRONTEND_DEPENDENCY_MODERNIZATION_BASELINE.md` plus `revival/artifacts/frontend_dependency_baseline_20260628_133140`.
@@ -9536,11 +9536,11 @@ Scenario status after this loop:
 
 Remediated the first launch-app high/critical frontend dependency cluster:
 
-- Added a Talon root Yarn resolution for `i18next-fs-backend` version `2.6.6`.
+- Added a TapTrade root Yarn resolution for `i18next-fs-backend` version `2.6.6`.
 - Regenerated `talon-backoffice/yarn.lock`; the lockfile now resolves `i18next-fs-backend@^2.1.5` to `2.6.6`.
 - Verified direct yarn audit output no longer contains high/critical `i18next-fs-backend` findings.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md`; Talon and TapTrade player app counts moved from `critical 8, high 90, 33 unique advisory ids` to `critical 7, high 89, 31 unique advisory ids`.
-- Repaired `scripts/frontend/verify-talon.sh` so the office verifier no longer passes the retired `--openssl-legacy-provider` Node flag and explicitly uses `next build --webpack`, matching the current Next 16/package build mode.
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md`; TapTrade and TapTrade player app counts moved from `critical 8, high 90, 33 unique advisory ids` to `critical 7, high 89, 31 unique advisory ids`.
+- Repaired `scripts/frontend/verify-taptrade.sh` so the office verifier no longer passes the retired `--openssl-legacy-provider` Node flag and explicitly uses `next build --webpack`, matching the current Next 16/package build mode.
 
 Verification:
 
@@ -9548,8 +9548,8 @@ Verification:
 - Direct `yarn audit --level high --json` after the resolution showed `critical 7`, `high 89`, and no `i18next-fs-backend` high/critical findings.
 - `make security-deps` passed and regenerated the official vulnerability baseline with the lower counts.
 - `make verify-sportsbook` passed: TapTrade player scoped typecheck, production Next build for 35 app routes, and upstream-leak check were green.
-- Initial `make verify-talon` exposed stale verifier flags; after patching the verifier, `make verify-talon` passed with office translation generation and a production Next webpack build for 31 app routes.
-- `bash -n scripts/frontend/verify-talon.sh scripts/security/dependency-baseline.sh` passed.
+- Initial `make verify-taptrade` exposed stale verifier flags; after patching the verifier, `make verify-taptrade` passed with office translation generation and a production Next webpack build for 31 app routes.
+- `bash -n scripts/frontend/verify-taptrade.sh scripts/security/dependency-baseline.sh` passed.
 - Conflict-marker scan and `git diff --check` passed.
 
 Scenario status after this loop:
@@ -9560,20 +9560,20 @@ Scenario status after this loop:
 
 Remediated the office `.docx` import XML parser advisory cluster:
 
-- Added a Talon root Yarn resolution for `@xmldom/xmldom` version `0.8.13`.
+- Added a TapTrade root Yarn resolution for `@xmldom/xmldom` version `0.8.13`.
 - Regenerated `talon-backoffice/yarn.lock`; the lockfile now resolves `@xmldom/xmldom@^0.8.6` to `0.8.13`.
 - Preserved the inherited `mammoth` terms-and-conditions `.docx` import flow while patching its transitive XML parser.
 - Verified direct yarn audit output no longer contains `@xmldom/xmldom` findings.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md`; Talon and TapTrade player app counts moved from `critical 7, high 89, 31 unique advisory ids` to `critical 7, high 85, 27 unique advisory ids`.
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md`; TapTrade and TapTrade player app counts moved from `critical 7, high 89, 31 unique advisory ids` to `critical 7, high 85, 27 unique advisory ids`.
 
 Verification:
 
 - `yarn install --ignore-engines` in `talon-backoffice` passed and saved the lockfile.
 - Direct `yarn audit --level high --json` after the resolution showed `critical 7`, `high 85`, and no `@xmldom/xmldom` findings.
 - `make security-deps` passed and regenerated the official vulnerability baseline with the lower counts.
-- `make verify-talon` passed: office translation generation and production Next webpack build for 31 app routes were green.
+- `make verify-taptrade` passed: office translation generation and production Next webpack build for 31 app routes were green.
 - `make verify-sportsbook` passed: TapTrade player scoped typecheck, production Next build for 35 app routes, and upstream-leak check were green.
-- `bash -n scripts/frontend/verify-talon.sh scripts/security/dependency-baseline.sh` passed.
+- `bash -n scripts/frontend/verify-taptrade.sh scripts/security/dependency-baseline.sh` passed.
 - Make dry-runs, conflict-marker scan, trailing-whitespace scan, and `git diff --check` passed.
 
 Scenario status after this loop:
@@ -9607,7 +9607,7 @@ Extended the live route-boundary evidence from gateway-only back to all launch r
 
 - Started a foreground gateway on `http://127.0.0.1:18180` with `GATEWAY_AUTH_ENABLED=false` and legacy money routes disabled.
 - Started the TapTrade player app on `http://127.0.0.1:3022` with `NEXT_PUBLIC_API_URL=http://127.0.0.1:18180`.
-- Started the Talon office app on `http://127.0.0.1:3020`.
+- Started the TapTrade office app on `http://127.0.0.1:3020`.
 - Ran `PLAYER_BASE_URL=http://127.0.0.1:3022 OFFICE_BASE_URL=http://127.0.0.1:3020 GATEWAY_BASE_URL=http://127.0.0.1:18180 make qa-live-no-money-boundary`.
 - The regenerated `revival/32_LIVE_NO_MONEY_BOUNDARY.md` and timestamped `revival/artifacts/live_no_money_boundary_20260628_141848.md` report 70 checks and 0 failures.
 - Player positive routes `/`, `/predict`, `/rewards`, and `/leaderboards` responded below 500, and the retired money routes `/cashier`, `/cashier/cheque`, `/cashout`, `/crypto`, `/deposit`, `/deposits`, `/fiat`, `/payment`, `/payments`, `/prize`, `/prizes`, `/redeem`, `/redemption`, `/withdraw`, `/withdrawal`, and `/withdrawals` returned 404 after same-origin redirect handling.
@@ -9889,7 +9889,7 @@ market lifecycle operations:
 
 - Added `talon-backoffice/e2e/prediction/office-admin-lifecycle.ui.spec.ts`.
 - The spec creates a synthetic draft market through API setup, logs into the
-  Talon Office UI, opens the market from `/prediction-admin/markets`, closes it
+  TapTrade Office UI, opens the market from `/prediction-admin/markets`, closes it
   through the rendered destructive confirmation modal with an explicit reason,
   opens the lifecycle audit modal, verifies Open and Closed stages plus the
   reason, and verifies retired office money routes return 404.
@@ -9969,14 +9969,14 @@ Scenario status after this loop:
 Remediated another launch frontend dependency vulnerability cluster without
 rewriting inherited test tooling:
 
-- Added a Talon workspace root Yarn resolution for `form-data@2.5.6`.
+- Added a TapTrade workspace root Yarn resolution for `form-data@2.5.6`.
 - Regenerated `talon-backoffice/yarn.lock`; the inherited
   `jest -> @jest/core -> jest-config -> jest-environment-jsdom -> jsdom -> request`
   path now resolves `form-data@~2.3.2` to patched `2.5.6`.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
   plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 2, high 80, moderate 98, low 21;
-  25 unique advisory ids` for both Talon and TapTrade player app scopes.
+  25 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `form-data` findings.
 
 Verification:
@@ -10006,15 +10006,15 @@ Scenario status after this loop:
 Cleared the remaining critical frontend dependency advisory cluster while
 preserving inherited Lerna workspace tooling:
 
-- Added Talon workspace root Yarn resolutions for `parse-url@8.1.0` and
+- Added TapTrade workspace root Yarn resolutions for `parse-url@8.1.0` and
   `parse-path@7.1.0`.
 - Regenerated `talon-backoffice/yarn.lock`; the inherited
   `lerna -> @lerna/version -> @lerna/github-client -> git-url-parse -> git-up`
   path now resolves to patched URL parser packages.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
   plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 78, moderate 94, low 21;
-  23 unique advisory ids` for both Talon and TapTrade player app scopes.
+  23 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `parse-url` and zero `parse-path`
   findings.
 
@@ -10044,13 +10044,13 @@ Scenario status after this loop:
 Removed the largest remaining high-severity frontend dependency cluster while
 preserving inherited Lerna/node-gyp tooling:
 
-- Added a Talon workspace root Yarn resolution for `tar@7.5.11`.
+- Added a TapTrade workspace root Yarn resolution for `tar@7.5.11`.
 - Regenerated `talon-backoffice/yarn.lock`; inherited Lerna, pacote, and
   node-gyp paths that requested `tar@^4.4.x` now resolve to patched `7.5.11`.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
   plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 54, moderate 90, low 21;
-  17 unique advisory ids` for both Talon and TapTrade player app scopes.
+  17 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `tar` findings.
 
 Verification:
@@ -10077,13 +10077,13 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with a same-major
 patch:
 
-- Added a Talon workspace root Yarn resolution for `ws@7.5.11`.
+- Added a TapTrade workspace root Yarn resolution for `ws@7.5.11`.
 - Regenerated `talon-backoffice/yarn.lock`; inherited mock-server and
   Jest/jsdom paths that requested `ws@^7.x` now resolve to patched `7.5.11`.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
   plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 48, moderate 90, low 21;
-  16 unique advisory ids` for both Talon and TapTrade player app scopes.
+  16 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `ws` findings.
 
 Verification:
@@ -10115,13 +10115,13 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with a same-major
 patch:
 
-- Added a Talon workspace root Yarn resolution for `undici@7.28.0`.
+- Added a TapTrade workspace root Yarn resolution for `undici@7.28.0`.
 - Regenerated `talon-backoffice/yarn.lock`; inherited cheerio/jsdom paths that
   requested `undici@^7.x` now resolve to patched `7.28.0`.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
   plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 42, moderate 86, low 17;
-  13 unique advisory ids` for both Talon and TapTrade player app scopes.
+  13 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `undici` findings.
 
 Verification:
@@ -10149,14 +10149,14 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with a focused
 resolution:
 
-- Added a Talon workspace root Yarn resolution for `trim-newlines@3.0.1`.
+- Added a TapTrade workspace root Yarn resolution for `trim-newlines@3.0.1`.
 - Regenerated `talon-backoffice/yarn.lock`; inherited commitlint, Lerna,
   conventional-changelog, get-pkg-repo, and meow paths that requested
   `trim-newlines@^1.x` or `trim-newlines@^2.x` now resolve to patched `3.0.1`.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
   plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 36, moderate 86, low 17;
-  12 unique advisory ids` for both Talon and TapTrade player app scopes.
+  12 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `trim-newlines` findings.
 
 Verification:
@@ -10188,14 +10188,14 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with a focused
 resolution:
 
-- Added a Talon workspace root Yarn resolution for `http-cache-semantics@4.2.0`.
+- Added a TapTrade workspace root Yarn resolution for `http-cache-semantics@4.2.0`.
 - Regenerated `talon-backoffice/yarn.lock`; the inherited Lerna publish path
   that requested `http-cache-semantics@^3.8.1` now resolves to patched `4.2.0`,
   matching the Office `got` cache dependency already present in the workspace.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
   plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 33, moderate 86, low 17;
-  11 unique advisory ids` for both Talon and TapTrade player app scopes.
+  11 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `http-cache-semantics` findings.
 
 Verification:
@@ -10228,14 +10228,14 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with a focused
 resolution:
 
-- Added a Talon workspace root Yarn resolution for `merge@2.1.1`.
+- Added a TapTrade workspace root Yarn resolution for `merge@2.1.1`.
 - Regenerated `talon-backoffice/yarn.lock`; inherited `@phoenix-ui/utils`,
   `watch`, and `exec-sh` paths that requested `merge@^1.2.0` now resolve to
   patched `2.1.1`.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
   plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 31, moderate 86, low 17;
-  10 unique advisory ids` for both Talon and TapTrade player app scopes.
+  10 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `merge` findings.
 
 Verification:
@@ -10266,16 +10266,16 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with targeted
 path resolutions:
 
-- Added Talon workspace root Yarn resolutions for
+- Added TapTrade workspace root Yarn resolutions for
   `@commitlint/cli/**/dot-prop` and
   `@commitlint/config-conventional/**/dot-prop` to `dot-prop@4.2.1`.
 - Regenerated `talon-backoffice/yarn.lock`; vulnerable commitlint
   `dot-prop@3.0.0` paths now resolve to patched `4.2.1`, while existing safe
   Lerna `dot-prop@5.3.0` callers remain on `5.3.0`.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
   plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 29, moderate 86, low 17;
-  9 unique advisory ids` for both Talon and TapTrade player app scopes.
+  9 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `dot-prop` findings.
 
 Verification:
@@ -10306,16 +10306,16 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with targeted
 path resolutions:
 
-- Added Talon workspace root Yarn resolutions for
+- Added TapTrade workspace root Yarn resolutions for
   `**/@commitlint/is-ignored/semver` to `semver@6.3.1` and
   `**/simple-update-notifier/semver` to `semver@7.7.3`.
 - Regenerated `talon-backoffice/yarn.lock`; vulnerable commitlint
   `semver@6.3.0` and mock-server/nodemon `semver@7.0.0` paths now resolve to
   patched versions.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
   plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 27, moderate 86, low 17;
-  7 unique advisory ids` for both Talon and TapTrade player app scopes.
+  7 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `semver` findings.
 
 Verification:
@@ -10348,14 +10348,14 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with a targeted path
 resolution:
 
-- Added a Talon workspace root Yarn resolution for `**/ajv/fast-uri` to
+- Added a TapTrade workspace root Yarn resolution for `**/ajv/fast-uri` to
   `fast-uri@3.1.2`.
 - Regenerated `talon-backoffice/yarn.lock`; the inherited
   `eslint -> table -> ajv` path now resolves to patched `fast-uri@3.1.2`.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
   plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 25, moderate 86, low 17;
-  5 unique advisory ids` for both Talon and TapTrade player app scopes.
+  5 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `fast-uri` findings.
 
 Verification:
@@ -10384,7 +10384,7 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with a targeted path
 resolution:
 
-- Added a Talon workspace root Yarn resolution for `**/external-editor/tmp` to
+- Added a TapTrade workspace root Yarn resolution for `**/external-editor/tmp` to
   `tmp@0.2.7`.
 - Regenerated `talon-backoffice/yarn.lock`; the inherited
   `lerna -> @lerna/prompt -> inquirer -> external-editor` path now resolves to
@@ -10392,10 +10392,10 @@ resolution:
 - Rejected the first candidate `tmp@0.2.6` after the current advisory database
   reported it as vulnerable to CVE-2026-49982; the accepted remediation is
   `tmp@0.2.7`.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
   plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 22, moderate 86, low 14;
-  4 unique advisory ids` for both Talon and TapTrade player app scopes.
+  4 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `tmp` findings. Remaining high clusters
   are `braces` (12), `lodash` (5), `ip` (3), and `lodash.set` (2).
 
@@ -10429,16 +10429,16 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with a targeted path
 resolution:
 
-- Added a Talon workspace root Yarn resolution for
+- Added a TapTrade workspace root Yarn resolution for
   `@commitlint/cli/**/lodash` to `lodash@4.18.1`.
 - Regenerated `talon-backoffice/yarn.lock`; the inherited commitlint nested
   lodash paths now resolve through patched `lodash@4.18.1`.
 - Confirmed current registry/advisory viability: `lodash@4.18.1` is the latest
   published version and the active advisory marks `>=4.18.0` as patched.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
   plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 17, moderate 76, low 14;
-  3 unique advisory ids` for both Talon and TapTrade player app scopes.
+  3 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `lodash` findings. Remaining high
   clusters are `braces` (12), `ip` (3), and `lodash.set` (2).
 
@@ -10472,7 +10472,7 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with a targeted path
 resolution:
 
-- Added a Talon workspace root Yarn resolution for `**/micromatch/braces` to
+- Added a TapTrade workspace root Yarn resolution for `**/micromatch/braces` to
   `braces@3.0.3`.
 - Regenerated `talon-backoffice/yarn.lock`; inherited Jest/sane and
   Lerna/globby/fast-glob micromatch paths now resolve to patched
@@ -10480,10 +10480,10 @@ resolution:
 - Because this is a major-version override for older micromatch callers, the
   loop required direct glob and supported app test evidence before accepting
   the audit improvement.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
   plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 5, moderate 76, low 14;
-  2 unique advisory ids` for both Talon and TapTrade player app scopes.
+  2 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `braces` findings. Remaining high
   clusters are `ip` (3) and `lodash.set` (2).
 
@@ -10523,7 +10523,7 @@ Scenario status after this loop:
 Scoped the remaining frontend high advisories and fixed a JVM baseline reporting
 bug:
 
-- Parsed the active Talon and TapTrade player app audit logs; both report
+- Parsed the active TapTrade and TapTrade player app audit logs; both report
   `critical 0, high 5, moderate 0, low 0; 2 unique advisory ids` at the
   high-threshold audit level.
 - The remaining high clusters are `ip` (3 findings) and `lodash.set` (2
@@ -10576,7 +10576,7 @@ Turned the reviewed no-fix frontend residuals into an executable gate:
 - Added `make qa-frontend-residual-advisories`.
 - Added the gate to `scripts/pre-commit-hook.sh`.
 - Added the gate to `scripts/release/launch-readiness-gate.sh`.
-- The gate parses the Talon and TapTrade player high-threshold Yarn audit logs,
+- The gate parses the TapTrade and TapTrade player high-threshold Yarn audit logs,
   forbids critical advisories, and allows high advisories only when they match
   the reviewed inherited Lerna residuals:
   `ip` / `GHSA-2p57-rm9w-gvfp` at most 3 rows, and `lodash.set` /
@@ -10586,7 +10586,7 @@ Turned the reviewed no-fix frontend residuals into an executable gate:
 Verification:
 
 - `make security-deps` passed and regenerated the official dependency baseline.
-- The regenerated Talon and TapTrade player audit logs still parse to
+- The regenerated TapTrade and TapTrade player audit logs still parse to
   `critical 0, high 5`, with modules `ip: 3` and `lodash.set: 2`.
 - `make qa-frontend-residual-advisories` passed and wrote
   `revival/60_FRONTEND_RESIDUAL_ADVISORY_GATE.md` plus artifact
@@ -10965,7 +10965,7 @@ Verification:
   passed with 22 tests.
 - Focused edited-file source scan found no active `values.losses`,
   `field="losses"`, `HEADER_CARD_LIMITS_LOSS`,
-  `TalonPunterLimitsTypesEnum.STAKE`, or `STAKE =` matches.
+  `TapTradePunterLimitsTypesEnum.STAKE`, or `STAKE =` matches.
 - `git diff --check` passed.
 - Edited-file trailing whitespace scan found no matches.
 - `make qa-preservation-modifications` passed with 395 modified artifacts, 90
@@ -11363,7 +11363,7 @@ Scenario status after this loop:
 
 Closed an active gateway developer-tooling documentation leak:
 
-- Changed gateway Makefile help from `Phoenix Sportsbook Gateway` to
+- Changed gateway Makefile help from `TapTrade Sportsbook Gateway` to
   `TapTrade Prediction Gateway`.
 - Changed the Makefile `createdb` target and setup examples from a
   sportsbook-named database to `taptrade_predict`.
@@ -11655,7 +11655,7 @@ Verification:
 - `go test ./services/gateway/internal/http -run TestLaunchDocsStayPointsOnly -count=1`
   passed.
 - Focused scan found no `balanceCents`, `amountCents`, `availableCents`,
-  `reservedCents`, or `Phoenix Sportsbook` in
+  `reservedCents`, or `TapTrade Sportsbook` in
   `talon-backoffice/packages/api-client/src/types.ts`.
 - `make qa-preservation-modifications` passed with 412 classified modified
   artifacts, 92 high-risk contract files, 36 large-change files, tracked line
@@ -11694,7 +11694,7 @@ Verification:
   passed.
 - Focused scan found no `freebetId`, `oddsBoostId`,
   `freebetAppliedCents`, `balanceCents`, `amountCents`, or
-  `Phoenix Sportsbook` in
+  `TapTrade Sportsbook` in
   `talon-backoffice/packages/api-client/src/types.ts`.
 - `make qa-preservation-modifications` passed with 412 classified modified
   artifacts, 92 high-risk contract files, 36 large-change files, tracked line
@@ -13022,7 +13022,7 @@ Refreshed dependency/release-hardening evidence with current artifacts:
 
 - `scripts/security/dependency-baseline.sh` now writes timestamped yarn-audit
   logs instead of overwriting fixed March filenames.
-- `scripts/qa/frontend-residual-advisory-gate.sh` now reads the latest Talon
+- `scripts/qa/frontend-residual-advisory-gate.sh` now reads the latest TapTrade
   and TapTrade player audit logs by default, while still allowing explicit log
   overrides.
 - The generated dependency baseline now distinguishes reviewed frontend high
@@ -15974,7 +15974,7 @@ Verification:
 
 - `make qa-frontend-residual-advisories` passed. Artifact:
   `revival/artifacts/frontend_residual_advisory_gate_20260701_082427.md`.
-  Talon and TapTrade player audit logs each have `0` critical rows and `5` high
+  TapTrade and TapTrade player audit logs each have `0` critical rows and `5` high
   rows, all confined to reviewed `ip` and `lodash.set` inherited Lerna paths.
 - `make security-jvm-direct-residual-advisories` passed. Artifact:
   `revival/artifacts/jvm_direct_residual_advisory_gate_20260701_082427.md`.

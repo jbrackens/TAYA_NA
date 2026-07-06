@@ -88,3 +88,11 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
 - NEXT: Phase 2 concrete planning for phoenix/talon (npm scope @phoenix-ui, Go module
   path, docker image names, seed emails @phoenix.local, PhoenixApiClient class,
   Phoenix-Predict-Combined + talon-backoffice directory renames LAST).
+
+## Iteration 6 — 2026-07-06 (EXECUTION MODE engaged; job b56e063b)
+- EXECUTED Batch E: phoenix/talon prose in 37 living .md docs, with masked protection
+  for path/scope/module/image/class/archive tokens (each has its own later batch) —
+  VERIFIED zero accidental protected-token rewrites in the diff.
+- DECISION: @phoenix.local seed emails move to Batch H (atomic with the frozen Go
+  seeder) — renaming doc/test references before the seeder would break login flows
+  that use demo@phoenix.local against local auth.

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide covers the database migration framework for the Phoenix Sportsbook Gateway service. We use [Goose](https://github.com/pressly/goose) as our migration tool, which provides:
+This guide covers the database migration framework for the TapTrade Sportsbook Gateway service. We use [Goose](https://github.com/pressly/goose) as our migration tool, which provides:
 
 - Version-controlled SQL migrations with up/down support
 - Automatic migration tracking via schema_migrations table

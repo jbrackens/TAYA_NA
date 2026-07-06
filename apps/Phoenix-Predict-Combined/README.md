@@ -1,4 +1,4 @@
-# Phoenix Predict Combined
+# TapTrade Predict Combined
 
 Full local stack for Taya NA Predict: a player prediction-market app, admin backoffice, Go gateway, Go auth service, PostgreSQL, and Redis.
 

@@ -1,12 +1,12 @@
-# Phoenix Sportsbook E2E Test Suites
+# TapTrade Sportsbook E2E Test Suites
 
 > Historical sportsbook-era note: these suites and selectors document the
 > pre-migration sportsbook app. They are not the current prediction-market QA
 > contract unless a spec has been explicitly rewritten against TapTrade routes,
 > prediction orders, and portfolio/accounting APIs.
 
-Comprehensive Playwright E2E tests for both the Phoenix Sportsbook Player App
-and Talon Backoffice admin interface.
+Comprehensive Playwright E2E tests for both the TapTrade Sportsbook Player App
+and TapTrade Backoffice admin interface.
 
 ## Quick Start
 
@@ -54,7 +54,7 @@ e2e/
 │   ├── bet-history.spec.ts        # Bet history & filtering
 │   └── responsive.spec.ts         # Mobile/tablet responsiveness
 │
-├── backoffice/                     # Talon Backoffice E2E Tests
+├── backoffice/                     # TapTrade Backoffice E2E Tests
 │   ├── auth.spec.ts              # Admin authentication
 │   ├── dashboard.spec.ts          # Dashboard & widgets
 │   ├── trading.spec.ts            # Trading & market management

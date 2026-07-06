@@ -2,7 +2,7 @@
 
 ## Overview
 
-A comprehensive Redis caching layer has been successfully integrated into the Phoenix Sportsbook Gateway service. The implementation follows repository patterns, maintains full interface compatibility, and provides transparent caching with minimal code changes.
+A comprehensive Redis caching layer has been successfully integrated into the TapTrade Sportsbook Gateway service. The implementation follows repository patterns, maintains full interface compatibility, and provides transparent caching with minimal code changes.
 
 ## Files Created
 

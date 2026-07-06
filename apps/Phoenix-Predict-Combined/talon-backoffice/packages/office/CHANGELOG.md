@@ -1,1335 +1,712 @@
 # Change Log
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+All notable changes to this project will be documented in this file. See
+[Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
 ## [0.31.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.31.1-build.3...@phoenix-ui/office@0.31.1-build.4) (2022-10-26)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.31.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.31.1-build.2...@phoenix-ui/office@0.31.1-build.3) (2022-10-25)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.31.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.31.1-build.1...@phoenix-ui/office@0.31.1-build.2) (2022-07-08)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.31.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.31.1-build.0...@phoenix-ui/office@0.31.1-build.1) (2022-06-23)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.31.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.31.0...@phoenix-ui/office@0.31.1-build.0) (2022-06-21)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 # [0.31.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.30.1-build.9...@phoenix-ui/office@0.31.0) (2022-06-16)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.30.1-build.9](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.30.1-build.8...@phoenix-ui/office@0.30.1-build.9) (2022-06-16)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.30.1-build.8](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.30.1-build.7...@phoenix-ui/office@0.30.1-build.8) (2022-06-16)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.30.1-build.7](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.30.1-build.6...@phoenix-ui/office@0.30.1-build.7) (2022-06-16)
-
 
 ### Bug Fixes
 
-* change frame-ancestors value from none to self ([#743](https://github.com/flipadmin/phoenix-frontend/issues/743)) ([4d5acc0](https://github.com/flipadmin/phoenix-frontend/commit/4d5acc0f9d99d5ffc5e372242e8f5cfae4b5726e))
-
-
-
-
+- change frame-ancestors value from none to self
+  ([#743](https://github.com/flipadmin/phoenix-frontend/issues/743))
+  ([4d5acc0](https://github.com/flipadmin/phoenix-frontend/commit/4d5acc0f9d99d5ffc5e372242e8f5cfae4b5726e))
 
 ## [0.30.1-build.6](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.30.1-build.5...@phoenix-ui/office@0.30.1-build.6) (2022-06-15)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.30.1-build.5](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.30.1-build.4...@phoenix-ui/office@0.30.1-build.5) (2022-06-15)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.30.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.30.1-build.3...@phoenix-ui/office@0.30.1-build.4) (2022-06-07)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.30.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.30.1-build.2...@phoenix-ui/office@0.30.1-build.3) (2022-06-06)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.30.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.30.1-build.1...@phoenix-ui/office@0.30.1-build.2) (2022-06-02)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.30.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.30.1-build.0...@phoenix-ui/office@0.30.1-build.1) (2022-05-26)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.30.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.30.0...@phoenix-ui/office@0.30.1-build.0) (2022-05-19)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 # [0.30.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.23...@phoenix-ui/office@0.30.0) (2022-05-19)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.29.1-build.23](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.22...@phoenix-ui/office@0.29.1-build.23) (2022-05-19)
-
 
 ### Features
 
-* add frame-ancestors security header ([#739](https://github.com/flipadmin/phoenix-frontend/issues/739)) ([f75b5a4](https://github.com/flipadmin/phoenix-frontend/commit/f75b5a4dcb8340c29f04ca36013ac779ceecca2d))
-
-
-
-
+- add frame-ancestors security header
+  ([#739](https://github.com/flipadmin/phoenix-frontend/issues/739))
+  ([f75b5a4](https://github.com/flipadmin/phoenix-frontend/commit/f75b5a4dcb8340c29f04ca36013ac779ceecca2d))
 
 ## [0.29.1-build.22](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.21...@phoenix-ui/office@0.29.1-build.22) (2022-05-18)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.29.1-build.21](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.20...@phoenix-ui/office@0.29.1-build.21) (2022-05-17)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.29.1-build.20](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.19...@phoenix-ui/office@0.29.1-build.20) (2022-05-17)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.29.1-build.19](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.18...@phoenix-ui/office@0.29.1-build.19) (2022-05-17)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.29.1-build.18](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.17...@phoenix-ui/office@0.29.1-build.18) (2022-05-17)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.29.1-build.17](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.16...@phoenix-ui/office@0.29.1-build.17) (2022-05-17)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.29.1-build.16](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.15...@phoenix-ui/office@0.29.1-build.16) (2022-05-17)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.29.1-build.15](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.14...@phoenix-ui/office@0.29.1-build.15) (2022-05-13)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.29.1-build.14](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.13...@phoenix-ui/office@0.29.1-build.14) (2022-05-13)
-
 
 ### Bug Fixes
 
-* use spy hook instead of useEffect to refresh wallet data ([#728](https://github.com/flipadmin/phoenix-frontend/issues/728)) ([0d08ab0](https://github.com/flipadmin/phoenix-frontend/commit/0d08ab06ff698beb07299bfe5243c30d9760e9f9))
-
-
-
-
+- use spy hook instead of useEffect to refresh wallet data
+  ([#728](https://github.com/flipadmin/phoenix-frontend/issues/728))
+  ([0d08ab0](https://github.com/flipadmin/phoenix-frontend/commit/0d08ab06ff698beb07299bfe5243c30d9760e9f9))
 
 ## [0.29.1-build.13](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.12...@phoenix-ui/office@0.29.1-build.13) (2022-05-11)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.29.1-build.12](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.11...@phoenix-ui/office@0.29.1-build.12) (2022-05-10)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.29.1-build.11](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.10...@phoenix-ui/office@0.29.1-build.11) (2022-05-09)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.29.1-build.10](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.9...@phoenix-ui/office@0.29.1-build.10) (2022-05-06)
-
 
 ### Features
 
-* update cdn url and add missing translation ([#726](https://github.com/flipadmin/phoenix-frontend/issues/726)) ([390c6d2](https://github.com/flipadmin/phoenix-frontend/commit/390c6d235ba39fb9c16011c2b5dce494ebb4492a))
-
-
-
-
+- update cdn url and add missing translation
+  ([#726](https://github.com/flipadmin/phoenix-frontend/issues/726))
+  ([390c6d2](https://github.com/flipadmin/phoenix-frontend/commit/390c6d235ba39fb9c16011c2b5dce494ebb4492a))
 
 ## [0.29.1-build.9](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.8...@phoenix-ui/office@0.29.1-build.9) (2022-05-06)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.29.1-build.8](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.7...@phoenix-ui/office@0.29.1-build.8) (2022-05-04)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.29.1-build.7](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.6...@phoenix-ui/office@0.29.1-build.7) (2022-05-02)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.29.1-build.6](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.5...@phoenix-ui/office@0.29.1-build.6) (2022-04-28)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.29.1-build.5](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.4...@phoenix-ui/office@0.29.1-build.5) (2022-04-27)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.29.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.3...@phoenix-ui/office@0.29.1-build.4) (2022-04-27)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.29.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.2...@phoenix-ui/office@0.29.1-build.3) (2022-04-26)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.29.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.1...@phoenix-ui/office@0.29.1-build.2) (2022-04-25)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.29.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.1-build.0...@phoenix-ui/office@0.29.1-build.1) (2022-04-20)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.29.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.29.0...@phoenix-ui/office@0.29.1-build.0) (2022-04-14)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 # [0.29.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.28.1-build.1...@phoenix-ui/office@0.29.0) (2022-04-07)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.28.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.28.1-build.0...@phoenix-ui/office@0.28.1-build.1) (2022-04-07)
-
 
 ### Bug Fixes
 
-* comment cancel button on fixture page ([#696](https://github.com/flipadmin/phoenix-frontend/issues/696)) ([265445b](https://github.com/flipadmin/phoenix-frontend/commit/265445ba4518fb7c24eb954b4524a612a6ca7c83))
-
+- comment cancel button on fixture page
+  ([#696](https://github.com/flipadmin/phoenix-frontend/issues/696))
+  ([265445b](https://github.com/flipadmin/phoenix-frontend/commit/265445ba4518fb7c24eb954b4524a612a6ca7c83))
 
 ### Features
 
-* restore ‘add transaction’ button to talon ([#707](https://github.com/flipadmin/phoenix-frontend/issues/707)) ([c18ab1c](https://github.com/flipadmin/phoenix-frontend/commit/c18ab1c02d3720325887234ff75ab49a90c6c3c7))
-* restore timezone settings in talon ([#706](https://github.com/flipadmin/phoenix-frontend/issues/706)) ([164c8fd](https://github.com/flipadmin/phoenix-frontend/commit/164c8fdaeabe79af840e48b0b919c5c9d4b9f15f))
-
-
-
-
+- restore ‘add transaction’ button to taptrade
+  ([#707](https://github.com/flipadmin/phoenix-frontend/issues/707))
+  ([c18ab1c](https://github.com/flipadmin/phoenix-frontend/commit/c18ab1c02d3720325887234ff75ab49a90c6c3c7))
+- restore timezone settings in taptrade
+  ([#706](https://github.com/flipadmin/phoenix-frontend/issues/706))
+  ([164c8fd](https://github.com/flipadmin/phoenix-frontend/commit/164c8fdaeabe79af840e48b0b919c5c9d4b9f15f))
 
 ## [0.28.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.28.0...@phoenix-ui/office@0.28.1-build.0) (2022-04-07)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 # [0.28.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.27.1-build.2...@phoenix-ui/office@0.28.0) (2022-04-06)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.27.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.27.1-build.1...@phoenix-ui/office@0.27.1-build.2) (2022-04-06)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.27.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.27.1-build.0...@phoenix-ui/office@0.27.1-build.1) (2022-04-06)
-
 
 ### Features
 
-* hide ‘Add Transaction” button in Talon ([#702](https://github.com/flipadmin/phoenix-frontend/issues/702)) ([285f767](https://github.com/flipadmin/phoenix-frontend/commit/285f767f999685d51704f1c2b39305b57d8cc8a8))
-
-
-
-
+- hide ‘Add Transaction” button in TapTrade
+  ([#702](https://github.com/flipadmin/phoenix-frontend/issues/702))
+  ([285f767](https://github.com/flipadmin/phoenix-frontend/commit/285f767f999685d51704f1c2b39305b57d8cc8a8))
 
 ## [0.27.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.27.0...@phoenix-ui/office@0.27.1-build.0) (2022-04-04)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 # [0.27.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.26.0...@phoenix-ui/office@0.27.0) (2022-04-04)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.26.1-build.7](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.26.1-build.6...@phoenix-ui/office@0.26.1-build.7) (2022-04-04)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.26.1-build.6](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.26.1-build.5...@phoenix-ui/office@0.26.1-build.6) (2022-03-30)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.26.1-build.5](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.26.1-build.4...@phoenix-ui/office@0.26.1-build.5) (2022-03-30)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.26.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.26.1-build.3...@phoenix-ui/office@0.26.1-build.4) (2022-03-30)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.26.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.26.1-build.2...@phoenix-ui/office@0.26.1-build.3) (2022-03-30)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.26.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.26.1-build.1...@phoenix-ui/office@0.26.1-build.2) (2022-03-29)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.26.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.26.1-build.0...@phoenix-ui/office@0.26.1-build.1) (2022-03-29)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.26.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.26.0...@phoenix-ui/office@0.26.1-build.0) (2022-03-28)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 # [0.26.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.45...@phoenix-ui/office@0.26.0) (2022-03-24)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.45](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.44...@phoenix-ui/office@0.25.1-build.45) (2022-03-19)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.25.1-build.44](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.43...@phoenix-ui/office@0.25.1-build.44) (2022-03-16)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.43](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.42...@phoenix-ui/office@0.25.1-build.43) (2022-03-16)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.42](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.41...@phoenix-ui/office@0.25.1-build.42) (2022-03-16)
-
 
 ### Features
 
-* connect mfa to login page ([#687](https://github.com/flipadmin/phoenix-frontend/issues/687)) ([288a4e5](https://github.com/flipadmin/phoenix-frontend/commit/288a4e5f8bb724e3fa0dae0efda75f05b9434cd2))
-
-
-
-
+- connect mfa to login page
+  ([#687](https://github.com/flipadmin/phoenix-frontend/issues/687))
+  ([288a4e5](https://github.com/flipadmin/phoenix-frontend/commit/288a4e5f8bb724e3fa0dae0efda75f05b9434cd2))
 
 ## [0.25.1-build.41](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.40...@phoenix-ui/office@0.25.1-build.41) (2022-03-14)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.40](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.39...@phoenix-ui/office@0.25.1-build.40) (2022-03-09)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.25.1-build.39](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.38...@phoenix-ui/office@0.25.1-build.39) (2022-03-08)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.38](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.37...@phoenix-ui/office@0.25.1-build.38) (2022-03-08)
-
 
 ### Features
 
-* create header dropdown and page placeholders ([#683](https://github.com/flipadmin/phoenix-frontend/issues/683)) ([26b6dd7](https://github.com/flipadmin/phoenix-frontend/commit/26b6dd76bbc48b112885d8d3b076cb28a79a292e))
-
-
-
-
+- create header dropdown and page placeholders
+  ([#683](https://github.com/flipadmin/phoenix-frontend/issues/683))
+  ([26b6dd7](https://github.com/flipadmin/phoenix-frontend/commit/26b6dd76bbc48b112885d8d3b076cb28a79a292e))
 
 ## [0.25.1-build.37](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.36...@phoenix-ui/office@0.25.1-build.37) (2022-03-08)
 
-
 ### Bug Fixes
 
-* remove conosle ([#682](https://github.com/flipadmin/phoenix-frontend/issues/682)) ([0d107ab](https://github.com/flipadmin/phoenix-frontend/commit/0d107aba494db2d7aa8a4c9ea8553f5eae1fc0e4))
-
-
-
-
+- remove conosle
+  ([#682](https://github.com/flipadmin/phoenix-frontend/issues/682))
+  ([0d107ab](https://github.com/flipadmin/phoenix-frontend/commit/0d107aba494db2d7aa8a4c9ea8553f5eae1fc0e4))
 
 ## [0.25.1-build.36](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.35...@phoenix-ui/office@0.25.1-build.36) (2022-03-07)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.35](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.34...@phoenix-ui/office@0.25.1-build.35) (2022-03-07)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.25.1-build.34](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.33...@phoenix-ui/office@0.25.1-build.34) (2022-03-04)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.33](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.32...@phoenix-ui/office@0.25.1-build.33) (2022-03-04)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.25.1-build.32](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.31...@phoenix-ui/office@0.25.1-build.32) (2022-03-03)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.31](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.30...@phoenix-ui/office@0.25.1-build.31) (2022-03-03)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.25.1-build.30](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.29...@phoenix-ui/office@0.25.1-build.30) (2022-03-03)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.29](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.28...@phoenix-ui/office@0.25.1-build.29) (2022-03-03)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.25.1-build.28](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.27...@phoenix-ui/office@0.25.1-build.28) (2022-03-02)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.27](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.26...@phoenix-ui/office@0.25.1-build.27) (2022-03-01)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.25.1-build.26](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.25...@phoenix-ui/office@0.25.1-build.26) (2022-03-01)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.25](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.24...@phoenix-ui/office@0.25.1-build.25) (2022-03-01)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.25.1-build.24](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.23...@phoenix-ui/office@0.25.1-build.24) (2022-02-25)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.23](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.22...@phoenix-ui/office@0.25.1-build.23) (2022-02-24)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.25.1-build.22](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.21...@phoenix-ui/office@0.25.1-build.22) (2022-02-24)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.21](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.20...@phoenix-ui/office@0.25.1-build.21) (2022-02-23)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.20](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.19...@phoenix-ui/office@0.25.1-build.20) (2022-02-21)
-
 
 ### Features
 
-* handle resettled status ([#668](https://github.com/flipadmin/phoenix-frontend/issues/668)) ([9cccbc4](https://github.com/flipadmin/phoenix-frontend/commit/9cccbc425bbd2b120f557007f31116a2fef79593))
-
-
-
-
+- handle resettled status
+  ([#668](https://github.com/flipadmin/phoenix-frontend/issues/668))
+  ([9cccbc4](https://github.com/flipadmin/phoenix-frontend/commit/9cccbc425bbd2b120f557007f31116a2fef79593))
 
 ## [0.25.1-build.19](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.18...@phoenix-ui/office@0.25.1-build.19) (2022-02-21)
 
-
 ### Features
 
-*  add completed transaction status ([#666](https://github.com/flipadmin/phoenix-frontend/issues/666)) ([76d67f2](https://github.com/flipadmin/phoenix-frontend/commit/76d67f2f0be1113601da978274111ee3b5d5a1d4))
-
-
-
-
+- add completed transaction status
+  ([#666](https://github.com/flipadmin/phoenix-frontend/issues/666))
+  ([76d67f2](https://github.com/flipadmin/phoenix-frontend/commit/76d67f2f0be1113601da978274111ee3b5d5a1d4))
 
 ## [0.25.1-build.18](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.17...@phoenix-ui/office@0.25.1-build.18) (2022-02-16)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.17](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.16...@phoenix-ui/office@0.25.1-build.17) (2022-02-15)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.25.1-build.16](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.15...@phoenix-ui/office@0.25.1-build.16) (2022-02-15)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.15](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.14...@phoenix-ui/office@0.25.1-build.15) (2022-02-11)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.25.1-build.14](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.13...@phoenix-ui/office@0.25.1-build.14) (2022-02-11)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.13](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.12...@phoenix-ui/office@0.25.1-build.13) (2022-02-11)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.25.1-build.12](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.11...@phoenix-ui/office@0.25.1-build.12) (2022-02-09)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.11](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.10...@phoenix-ui/office@0.25.1-build.11) (2022-02-08)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.25.1-build.10](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.9...@phoenix-ui/office@0.25.1-build.10) (2022-02-08)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.9](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.8...@phoenix-ui/office@0.25.1-build.9) (2022-02-08)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.25.1-build.8](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.7...@phoenix-ui/office@0.25.1-build.8) (2022-02-08)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.7](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.6...@phoenix-ui/office@0.25.1-build.7) (2022-02-04)
-
 
 ### Features
 
-* [gmv3-2719] Edit personal details of customer in talon ([#647](https://github.com/flipadmin/phoenix-frontend/issues/647)) ([13bba81](https://github.com/flipadmin/phoenix-frontend/commit/13bba812271078a990004e09af9549d42dbed877))
-
-
-
-
+- [gmv3-2719] Edit personal details of customer in taptrade
+  ([#647](https://github.com/flipadmin/phoenix-frontend/issues/647))
+  ([13bba81](https://github.com/flipadmin/phoenix-frontend/commit/13bba812271078a990004e09af9549d42dbed877))
 
 ## [0.25.1-build.6](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.5...@phoenix-ui/office@0.25.1-build.6) (2022-02-04)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.5](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.4...@phoenix-ui/office@0.25.1-build.5) (2022-02-01)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.25.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.3...@phoenix-ui/office@0.25.1-build.4) (2022-01-28)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.2...@phoenix-ui/office@0.25.1-build.3) (2022-01-25)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.25.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.1...@phoenix-ui/office@0.25.1-build.2) (2022-01-25)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.25.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.1-build.0...@phoenix-ui/office@0.25.1-build.1) (2022-01-25)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.25.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.25.0...@phoenix-ui/office@0.25.1-build.0) (2022-01-24)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 # [0.25.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.24.1-build.9...@phoenix-ui/office@0.25.0) (2022-01-24)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.24.1-build.9](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.24.1-build.8...@phoenix-ui/office@0.24.1-build.9) (2022-01-24)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.24.1-build.8](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.24.1-build.7...@phoenix-ui/office@0.24.1-build.8) (2022-01-24)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.24.1-build.7](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.24.1-build.6...@phoenix-ui/office@0.24.1-build.7) (2022-01-24)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.24.1-build.6](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.24.1-build.5...@phoenix-ui/office@0.24.1-build.6) (2022-01-24)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.24.1-build.5](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.24.1-build.4...@phoenix-ui/office@0.24.1-build.5) (2022-01-24)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.24.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.24.1-build.3...@phoenix-ui/office@0.24.1-build.4) (2022-01-24)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.24.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.24.1-build.2...@phoenix-ui/office@0.24.1-build.3) (2022-01-24)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.24.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.24.1-build.1...@phoenix-ui/office@0.24.1-build.2) (2022-01-24)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.24.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.24.1-build.0...@phoenix-ui/office@0.24.1-build.1) (2022-01-24)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.24.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.24.0...@phoenix-ui/office@0.24.1-build.0) (2022-01-24)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 # [0.24.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.23.1-build.5...@phoenix-ui/office@0.24.0) (2022-01-21)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.23.1-build.5](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.23.1-build.4...@phoenix-ui/office@0.23.1-build.5) (2022-01-21)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.23.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.23.1-build.3...@phoenix-ui/office@0.23.1-build.4) (2022-01-21)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.23.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.23.1-build.2...@phoenix-ui/office@0.23.1-build.3) (2022-01-21)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.23.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.23.1-build.1...@phoenix-ui/office@0.23.1-build.2) (2022-01-19)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.23.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.23.1-build.0...@phoenix-ui/office@0.23.1-build.1) (2022-01-19)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.23.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.23.0...@phoenix-ui/office@0.23.1-build.0) (2022-01-19)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 # [0.23.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.47...@phoenix-ui/office@0.23.0) (2022-01-18)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.47](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.46...@phoenix-ui/office@0.22.1-build.47) (2022-01-17)
-
 
 ### Features
 
-* add session breach tag to talon ([#620](https://github.com/flipadmin/phoenix-frontend/issues/620)) ([9cc8a73](https://github.com/flipadmin/phoenix-frontend/commit/9cc8a732e5fd5237529508925030f5c989ab27ca))
-
-
-
-
+- add session breach tag to taptrade
+  ([#620](https://github.com/flipadmin/phoenix-frontend/issues/620))
+  ([9cc8a73](https://github.com/flipadmin/phoenix-frontend/commit/9cc8a732e5fd5237529508925030f5c989ab27ca))
 
 ## [0.22.1-build.46](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.45...@phoenix-ui/office@0.22.1-build.46) (2022-01-17)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.45](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.44...@phoenix-ui/office@0.22.1-build.45) (2022-01-16)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.22.1-build.44](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.43...@phoenix-ui/office@0.22.1-build.44) (2022-01-14)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.43](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.42...@phoenix-ui/office@0.22.1-build.43) (2022-01-14)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.22.1-build.42](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.41...@phoenix-ui/office@0.22.1-build.42) (2022-01-12)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.41](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.40...@phoenix-ui/office@0.22.1-build.41) (2022-01-11)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.22.1-build.40](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.39...@phoenix-ui/office@0.22.1-build.40) (2022-01-11)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.39](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.38...@phoenix-ui/office@0.22.1-build.39) (2022-01-11)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.22.1-build.38](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.37...@phoenix-ui/office@0.22.1-build.38) (2022-01-10)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.37](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.36...@phoenix-ui/office@0.22.1-build.37) (2022-01-10)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.22.1-build.36](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.35...@phoenix-ui/office@0.22.1-build.36) (2022-01-07)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.35](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.34...@phoenix-ui/office@0.22.1-build.35) (2022-01-06)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.22.1-build.34](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.33...@phoenix-ui/office@0.22.1-build.34) (2022-01-06)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.33](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.32...@phoenix-ui/office@0.22.1-build.33) (2022-01-06)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.22.1-build.32](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.31...@phoenix-ui/office@0.22.1-build.32) (2022-01-06)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.31](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.30...@phoenix-ui/office@0.22.1-build.31) (2022-01-05)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.22.1-build.30](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.29...@phoenix-ui/office@0.22.1-build.30) (2022-01-05)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.29](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.28...@phoenix-ui/office@0.22.1-build.29) (2022-01-05)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.22.1-build.28](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.27...@phoenix-ui/office@0.22.1-build.28) (2022-01-04)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.27](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.26...@phoenix-ui/office@0.22.1-build.27) (2022-01-04)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.22.1-build.26](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.25...@phoenix-ui/office@0.22.1-build.26) (2021-12-30)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.25](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.24...@phoenix-ui/office@0.22.1-build.25) (2021-12-29)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.22.1-build.24](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.23...@phoenix-ui/office@0.22.1-build.24) (2021-12-29)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.23](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.22...@phoenix-ui/office@0.22.1-build.23) (2021-12-23)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.22.1-build.22](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.21...@phoenix-ui/office@0.22.1-build.22) (2021-12-23)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.21](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.20...@phoenix-ui/office@0.22.1-build.21) (2021-12-23)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.22.1-build.20](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.19...@phoenix-ui/office@0.22.1-build.20) (2021-12-23)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.19](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.18...@phoenix-ui/office@0.22.1-build.19) (2021-12-22)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.22.1-build.18](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.17...@phoenix-ui/office@0.22.1-build.18) (2021-12-22)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.17](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.16...@phoenix-ui/office@0.22.1-build.17) (2021-12-21)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.22.1-build.16](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.15...@phoenix-ui/office@0.22.1-build.16) (2021-12-21)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.15](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.14...@phoenix-ui/office@0.22.1-build.15) (2021-12-20)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.22.1-build.14](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.13...@phoenix-ui/office@0.22.1-build.14) (2021-12-20)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.13](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.12...@phoenix-ui/office@0.22.1-build.13) (2021-12-17)
-
 
 ### Features
 
-* [gmv3-2574] mask ssn in talon ([#570](https://github.com/flipadmin/phoenix-frontend/issues/570)) ([3e76582](https://github.com/flipadmin/phoenix-frontend/commit/3e76582c2350bbdd678e65fc75911c2a047cd56c))
-
-
-
-
+- [gmv3-2574] mask ssn in taptrade
+  ([#570](https://github.com/flipadmin/phoenix-frontend/issues/570))
+  ([3e76582](https://github.com/flipadmin/phoenix-frontend/commit/3e76582c2350bbdd678e65fc75911c2a047cd56c))
 
 ## [0.22.1-build.12](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.11...@phoenix-ui/office@0.22.1-build.12) (2021-12-17)
 
 **Note:** Version bump only for package @phoenix-ui/office
 
-
-
-
-
 ## [0.22.1-build.11](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.10...@phoenix-ui/office@0.22.1-build.11) (2021-12-17)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 # Change Log
 
@@ -1339,10 +716,6 @@ All notable changes to this project will be documented in this file. See
 ## [0.22.1-build.10](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.9...@phoenix-ui/office@0.22.1-build.10) (2021-12-17)
 
 **Note:** Version bump only for package @phoenix-ui/office
-
-
-
-
 
 ## [0.22.1-build.9](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/office@0.22.1-build.8...@phoenix-ui/office@0.22.1-build.9) (2021-12-17)
 
@@ -1462,7 +835,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- handle new marketLifecycle value on talon
+- handle new marketLifecycle value on taptrade
   ([#538](https://github.com/flipadmin/phoenix-frontend/issues/538))
   ([45e11b1](https://github.com/flipadmin/phoenix-frontend/commit/45e11b1723b42cabb9996c81f842997e2afaa0d4))
 
@@ -1470,7 +843,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- handle new marketLifecycle value on talon
+- handle new marketLifecycle value on taptrade
   ([#538](https://github.com/flipadmin/phoenix-frontend/issues/538))
   ([45e11b1](https://github.com/flipadmin/phoenix-frontend/commit/45e11b1723b42cabb9996c81f842997e2afaa0d4))
 
@@ -1576,7 +949,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- change 'wallet' to 'transactions' in talon
+- change 'wallet' to 'transactions' in taptrade
   ([#507](https://github.com/flipadmin/phoenix-frontend/issues/507))
   ([221f369](https://github.com/flipadmin/phoenix-frontend/commit/221f36990ae2c6f482c0c098ff0211bb9788be17))
 
@@ -1608,7 +981,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Bug Fixes
 
-- format session limits data and display it correctly on talon user page
+- format session limits data and display it correctly on taptrade user page
   ([#489](https://github.com/flipadmin/phoenix-frontend/issues/489))
   ([257a765](https://github.com/flipadmin/phoenix-frontend/commit/257a765c4257654926b3d716c8fbeb5b7a258b7f))
 
@@ -1640,7 +1013,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- add withdrawals to talon, hide cool off button, fix suspend
+- add withdrawals to taptrade, hide cool off button, fix suspend
   ([#475](https://github.com/flipadmin/phoenix-frontend/issues/475))
   ([2070553](https://github.com/flipadmin/phoenix-frontend/commit/20705539cec07ceca27a1c8704b91275963301f7))
 
@@ -1752,7 +1125,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- talon hide change limits button, hide audit tab
+- taptrade hide change limits button, hide audit tab
   ([#416](https://github.com/flipadmin/phoenix-frontend/issues/416))
   ([a343053](https://github.com/flipadmin/phoenix-frontend/commit/a343053f90653e0e8910d41d262c9ce166acd166))
 
@@ -1772,7 +1145,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- add cancel bet button to talon
+- add cancel bet button to taptrade
   ([#393](https://github.com/flipadmin/phoenix-frontend/issues/393))
   ([7c942aa](https://github.com/flipadmin/phoenix-frontend/commit/7c942aab504aaefc21248b1882f82ad35d244292))
 
@@ -1804,7 +1177,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- allow talon to end active user session
+- allow taptrade to end active user session
   ([#362](https://github.com/flipadmin/phoenix-frontend/issues/362))
   ([54ff361](https://github.com/flipadmin/phoenix-frontend/commit/54ff361571c3082226691b1a217d63413d4847c0))
 
@@ -1812,7 +1185,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- update talon wallet with new format of incoming data
+- update taptrade wallet with new format of incoming data
   ([#355](https://github.com/flipadmin/phoenix-frontend/issues/355))
   ([d0c7dbb](https://github.com/flipadmin/phoenix-frontend/commit/d0c7dbb2fd4d74d67efa57d7cdfb3e952ad6219c))
 
@@ -1890,7 +1263,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- update Talon basic info rendering
+- update TapTrade basic info rendering
   ([#299](https://github.com/flipadmin/phoenix-frontend/issues/299))
   ([d3018b4](https://github.com/flipadmin/phoenix-frontend/commit/d3018b4bea293b96d02adf6a08bc6c011408cfee))
 
@@ -1898,7 +1271,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- update talon to use new limits payload, change loss to stake limit
+- update taptrade to use new limits payload, change loss to stake limit
   ([#297](https://github.com/flipadmin/phoenix-frontend/issues/297))
   ([4bae3cc](https://github.com/flipadmin/phoenix-frontend/commit/4bae3cc399fd9109abc6f85155f5598a5b9d1d0a))
 
@@ -1906,7 +1279,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- disable Talon punter recent activity
+- disable TapTrade punter recent activity
   ([#290](https://github.com/flipadmin/phoenix-frontend/issues/290))
   ([99a6a56](https://github.com/flipadmin/phoenix-frontend/commit/99a6a56e7477665de23b887cc090cb080011cf88))
 
@@ -2059,74 +1432,74 @@ All notable changes to this project will be documented in this file. See
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [0.0.1-build.38](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.37...@phoenix-ui/talon@0.0.1-build.38) (2021-01-29)
+## [0.0.1-build.38](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.37...@phoenix-ui/taptrade@0.0.1-build.38) (2021-01-29)
 
 ### Bug Fixes
 
-- **talon:** session timeout because of cookie conflict
+- **taptrade:** session timeout because of cookie conflict
   ([#167](https://github.com/flipadmin/phoenix-frontend/issues/167))
   ([0d15131](https://github.com/flipadmin/phoenix-frontend/commit/0d15131d6dbc73e5cfe10f20bbea44170b43aa69))
 
-## [0.0.1-build.37](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.36...@phoenix-ui/talon@0.0.1-build.37) (2021-01-22)
+## [0.0.1-build.37](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.36...@phoenix-ui/taptrade@0.0.1-build.37) (2021-01-22)
 
 ### Bug Fixes
 
-- **talon:** settled market enum
+- **taptrade:** settled market enum
   ([#155](https://github.com/flipadmin/phoenix-frontend/issues/155))
   ([6ac3fcf](https://github.com/flipadmin/phoenix-frontend/commit/6ac3fcf4d6fd305a560faf6685327a475db112fa))
 
-## [0.0.1-build.36](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.35...@phoenix-ui/talon@0.0.1-build.36) (2021-01-21)
+## [0.0.1-build.36](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.35...@phoenix-ui/taptrade@0.0.1-build.36) (2021-01-21)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.35](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.34...@phoenix-ui/talon@0.0.1-build.35) (2021-01-15)
+## [0.0.1-build.35](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.34...@phoenix-ui/taptrade@0.0.1-build.35) (2021-01-15)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.34](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.33...@phoenix-ui/talon@0.0.1-build.34) (2021-01-14)
+## [0.0.1-build.34](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.33...@phoenix-ui/taptrade@0.0.1-build.34) (2021-01-14)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.33](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.32...@phoenix-ui/talon@0.0.1-build.33) (2021-01-12)
+## [0.0.1-build.33](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.32...@phoenix-ui/taptrade@0.0.1-build.33) (2021-01-12)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.32](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.31...@phoenix-ui/talon@0.0.1-build.32) (2021-01-08)
+## [0.0.1-build.32](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.31...@phoenix-ui/taptrade@0.0.1-build.32) (2021-01-08)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.31](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.30...@phoenix-ui/talon@0.0.1-build.31) (2020-12-31)
+## [0.0.1-build.31](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.30...@phoenix-ui/taptrade@0.0.1-build.31) (2020-12-31)
 
 ### Features
 
-- **talon:** cookies expiration time based on token exp dates
+- **taptrade:** cookies expiration time based on token exp dates
   ([#132](https://github.com/flipadmin/phoenix-frontend/issues/132))
   ([faaaeda](https://github.com/flipadmin/phoenix-frontend/commit/faaaedab9c0ded5e27ea0d0a588b938d7201efb2))
 
-## [0.0.1-build.30](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.29...@phoenix-ui/talon@0.0.1-build.30) (2020-12-31)
+## [0.0.1-build.30](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.29...@phoenix-ui/taptrade@0.0.1-build.30) (2020-12-31)
 
 ### Features
 
-- tokens expiration logic for app, talon and utils packages
+- tokens expiration logic for app, taptrade and utils packages
   ([#131](https://github.com/flipadmin/phoenix-frontend/issues/131))
   ([849b8a2](https://github.com/flipadmin/phoenix-frontend/commit/849b8a29ea7ae6cb489d32d0dfd8c04894143790))
-- **talon:** user lifecycle actions
+- **taptrade:** user lifecycle actions
   ([#125](https://github.com/flipadmin/phoenix-frontend/issues/125))
   ([4986c5b](https://github.com/flipadmin/phoenix-frontend/commit/4986c5b7d93fd306ac6c4f40162ba165679830ba))
 
-## [0.0.1-build.29](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.28...@phoenix-ui/talon@0.0.1-build.29) (2020-12-30)
+## [0.0.1-build.29](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.28...@phoenix-ui/taptrade@0.0.1-build.29) (2020-12-30)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.28](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.27...@phoenix-ui/talon@0.0.1-build.28) (2020-12-24)
+## [0.0.1-build.28](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.27...@phoenix-ui/taptrade@0.0.1-build.28) (2020-12-24)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.27](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.26...@phoenix-ui/talon@0.0.1-build.27) (2020-12-21)
+## [0.0.1-build.27](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.26...@phoenix-ui/taptrade@0.0.1-build.27) (2020-12-21)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.26](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.25...@phoenix-ui/talon@0.0.1-build.26) (2020-12-18)
+## [0.0.1-build.26](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.25...@phoenix-ui/taptrade@0.0.1-build.26) (2020-12-18)
 
 ### Bug Fixes
 
@@ -2134,79 +1507,79 @@ All notable changes to this project will be documented in this file. See
   ([#109](https://github.com/flipadmin/phoenix-frontend/issues/109))
   ([223557f](https://github.com/flipadmin/phoenix-frontend/commit/223557fdfe2032e4a98e71a775b02c8816147ab8))
 
-## [0.0.1-build.25](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.24...@phoenix-ui/talon@0.0.1-build.25) (2020-12-17)
+## [0.0.1-build.25](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.24...@phoenix-ui/taptrade@0.0.1-build.25) (2020-12-17)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.24](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.23...@phoenix-ui/talon@0.0.1-build.24) (2020-12-16)
+## [0.0.1-build.24](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.23...@phoenix-ui/taptrade@0.0.1-build.24) (2020-12-16)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.23](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.22...@phoenix-ui/talon@0.0.1-build.23) (2020-12-15)
+## [0.0.1-build.23](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.22...@phoenix-ui/taptrade@0.0.1-build.23) (2020-12-15)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.22](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.21...@phoenix-ui/talon@0.0.1-build.22) (2020-12-15)
+## [0.0.1-build.22](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.21...@phoenix-ui/taptrade@0.0.1-build.22) (2020-12-15)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.21](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.20...@phoenix-ui/talon@0.0.1-build.21) (2020-12-14)
+## [0.0.1-build.21](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.20...@phoenix-ui/taptrade@0.0.1-build.21) (2020-12-14)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.20](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.19...@phoenix-ui/talon@0.0.1-build.20) (2020-12-09)
+## [0.0.1-build.20](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.19...@phoenix-ui/taptrade@0.0.1-build.20) (2020-12-09)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.19](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.18...@phoenix-ui/talon@0.0.1-build.19) (2020-12-09)
+## [0.0.1-build.19](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.18...@phoenix-ui/taptrade@0.0.1-build.19) (2020-12-09)
 
 ### Features
 
-- **talon:** fixtures and markets actions alignment
+- **taptrade:** fixtures and markets actions alignment
   ([#98](https://github.com/flipadmin/phoenix-frontend/issues/98))
   ([9e1682c](https://github.com/flipadmin/phoenix-frontend/commit/9e1682c6899ae65b632f1ab1452cb1df46404775))
 
-## [0.0.1-build.18](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.17...@phoenix-ui/talon@0.0.1-build.18) (2020-12-08)
+## [0.0.1-build.18](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.17...@phoenix-ui/taptrade@0.0.1-build.18) (2020-12-08)
 
 ### Features
 
-- **talon:** user wallet history
+- **taptrade:** user wallet history
   ([#95](https://github.com/flipadmin/phoenix-frontend/issues/95))
   ([44fb454](https://github.com/flipadmin/phoenix-frontend/commit/44fb454bd4f4f72671bce3db98b577548934c000))
 
-## [0.0.1-build.17](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.16...@phoenix-ui/talon@0.0.1-build.17) (2020-12-04)
+## [0.0.1-build.17](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.16...@phoenix-ui/taptrade@0.0.1-build.17) (2020-12-04)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.16](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.15...@phoenix-ui/talon@0.0.1-build.16) (2020-12-03)
+## [0.0.1-build.16](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.15...@phoenix-ui/taptrade@0.0.1-build.16) (2020-12-03)
 
 ### Features
 
-- **talon:** menu structure definitions
+- **taptrade:** menu structure definitions
   ([#92](https://github.com/flipadmin/phoenix-frontend/issues/92))
   ([516c06a](https://github.com/flipadmin/phoenix-frontend/commit/516c06a885016dcfcafa3f027c1397c4bec56bb6))
 
-## [0.0.1-build.15](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.14...@phoenix-ui/talon@0.0.1-build.15) (2020-12-03)
+## [0.0.1-build.15](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.14...@phoenix-ui/taptrade@0.0.1-build.15) (2020-12-03)
 
 ### Features
 
-- **talon:** auth improvements
+- **taptrade:** auth improvements
   ([#88](https://github.com/flipadmin/phoenix-frontend/issues/88))
   ([c06aa8b](https://github.com/flipadmin/phoenix-frontend/commit/c06aa8b73ee8417130dea6d1eb5269efbe5e5be9))
 
-## [0.0.1-build.14](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.13...@phoenix-ui/talon@0.0.1-build.14) (2020-11-26)
+## [0.0.1-build.14](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.13...@phoenix-ui/taptrade@0.0.1-build.14) (2020-11-26)
 
 ### Features
 
-- **talon:** fixtures list and details pages, unification of components
+- **taptrade:** fixtures list and details pages, unification of components
   ([#85](https://github.com/flipadmin/phoenix-frontend/issues/85))
   ([311ab99](https://github.com/flipadmin/phoenix-frontend/commit/311ab999683afc47f95b1b43265be80c22e4c357))
 
-## [0.0.1-build.13](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.12...@phoenix-ui/talon@0.0.1-build.13) (2020-11-23)
+## [0.0.1-build.13](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.12...@phoenix-ui/taptrade@0.0.1-build.13) (2020-11-23)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.12](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.11...@phoenix-ui/talon@0.0.1-build.12) (2020-11-23)
+## [0.0.1-build.12](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.11...@phoenix-ui/taptrade@0.0.1-build.12) (2020-11-23)
 
 ### Features
 
@@ -2214,46 +1587,46 @@ All notable changes to this project will be documented in this file. See
   ([#82](https://github.com/flipadmin/phoenix-frontend/issues/82))
   ([51a00d3](https://github.com/flipadmin/phoenix-frontend/commit/51a00d310f0e755d9cbdb8a5e30a214f8342414e))
 
-## [0.0.1-build.11](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.10...@phoenix-ui/talon@0.0.1-build.11) (2020-11-19)
+## [0.0.1-build.11](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.10...@phoenix-ui/taptrade@0.0.1-build.11) (2020-11-19)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.10](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.9...@phoenix-ui/talon@0.0.1-build.10) (2020-11-18)
+## [0.0.1-build.10](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.9...@phoenix-ui/taptrade@0.0.1-build.10) (2020-11-18)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.9](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.8...@phoenix-ui/talon@0.0.1-build.9) (2020-11-16)
+## [0.0.1-build.9](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.8...@phoenix-ui/taptrade@0.0.1-build.9) (2020-11-16)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.8](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.7...@phoenix-ui/talon@0.0.1-build.8) (2020-11-10)
+## [0.0.1-build.8](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.7...@phoenix-ui/taptrade@0.0.1-build.8) (2020-11-10)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.7](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.6...@phoenix-ui/talon@0.0.1-build.7) (2020-11-05)
+## [0.0.1-build.7](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.6...@phoenix-ui/taptrade@0.0.1-build.7) (2020-11-05)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.6](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.5...@phoenix-ui/talon@0.0.1-build.6) (2020-11-05)
+## [0.0.1-build.6](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.5...@phoenix-ui/taptrade@0.0.1-build.6) (2020-11-05)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.5](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.4...@phoenix-ui/talon@0.0.1-build.5) (2020-11-05)
+## [0.0.1-build.5](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.4...@phoenix-ui/taptrade@0.0.1-build.5) (2020-11-05)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.3...@phoenix-ui/talon@0.0.1-build.4) (2020-11-04)
+## [0.0.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.3...@phoenix-ui/taptrade@0.0.1-build.4) (2020-11-04)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
-## [0.0.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/talon@0.0.1-build.2...@phoenix-ui/talon@0.0.1-build.3) (2020-11-03)
+## [0.0.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/taptrade@0.0.1-build.2...@phoenix-ui/taptrade@0.0.1-build.3) (2020-11-03)
 
-**Note:** Version bump only for package @phoenix-ui/talon
+**Note:** Version bump only for package @phoenix-ui/taptrade
 
 ## 0.0.1-build.2 (2020-11-02)
 
 ### Features
 
-- **talon:** package init
+- **taptrade:** package init
   ([#45](https://github.com/flipadmin/phoenix-frontend/issues/45))
   ([1a85ed5](https://github.com/flipadmin/phoenix-frontend/commit/1a85ed578b12b434a227fee837e8d43370a8bfab))

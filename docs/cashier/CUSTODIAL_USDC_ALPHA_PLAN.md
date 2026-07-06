@@ -917,7 +917,7 @@ Smoke tests:
 
 ## Stage 1 Handoff
 
-The Stage 1 handoff is the Phoenix Predict Go gateway Alpha cashier, not the old
+The Stage 1 handoff is the TapTrade Predict Go gateway Alpha cashier, not the old
 `services/cashier-api` prototype and not the legacy `internal/payments`
 `CRYPTO_*` rail. The handoff surface is:
 

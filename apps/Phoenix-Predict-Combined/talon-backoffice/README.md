@@ -1,6 +1,6 @@
-# phoenix-ui
+# taptrade-ui
 
-Frontend application for the Phoenix betting platform project
+Frontend application for the TapTrade betting platform project
 
 ## Requirements
 
@@ -60,13 +60,13 @@ build:export:stage --scope @phoenix-ui/office
 
 ### Dockerization
 
-- `dockerize:app` - creates a `phoenix-ui/app` Docker image of `@phoenix-ui/app`
-  package
-- `dockerize:office` - creates a `phoenix-ui/office` Docker image of
+- `dockerize:app` - creates a `taptrade-ui/app` Docker image of
+  `@phoenix-ui/app` package
+- `dockerize:office` - creates a `taptrade-ui/office` Docker image of
   `@phoenix-ui/office` package with `.env.development` applied
-- `run-docker:app:dev` - runs `phoenix-ui/app` image on `localhost` (port 3000)
+- `run-docker:app:dev` - runs `taptrade-ui/app` image on `localhost` (port 3000)
   with `.env.development` applied
-- `run-docker:office:stage` - runs `phoenix-ui/office` image on `localhost`
+- `run-docker:office:stage` - runs `taptrade-ui/office` image on `localhost`
   (port 3000) with `.env.staging` applied
 
 ### Using git
@@ -126,5 +126,5 @@ mv ~/.kube/merged-config ~/.kube/config
 ```
 
 Once you have all the prerequisites installed, you should just be able to run
-`./k8s-operations/deploy_phoenix_ui.sh` script. It will print out the exact
+`./k8s-operations/deploy_taptrade_ui.sh` script. It will print out the exact
 instruction on what params should be passed in order to perform the deployment.

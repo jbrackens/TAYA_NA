@@ -1,4 +1,4 @@
-# Phoenix Predict — Demo Deployment Plan (v4.11 — LIVE, catalog + images working)
+# TapTrade Predict — Demo Deployment Plan (v4.11 — LIVE, catalog + images working)
 
 **Changelog:**
 - **v4.11 (this doc):** market-card thumbnails fixed on live. Two chained root causes: (a) the v4.10 claim "prediction market API has no image field, images moot" was **WRONG** — the discover feed carries `image_url`; the logo redeploy's `rsync -az --delete` from the Mac then clobbered the box's sync-rehosted images, desyncing DB↔files (→404); (b) after moving thumbnails to a persistent `market_images` Docker volume + re-sync, they 500'd because `sync-markets` runs as root writing mode-0600 files the `USER node` player can't read. Fixes: persistent volume isolates thumbnails from rsync/rebuild; `chmod -R a+rX` after sync; both folded into runbook step G (now with all three gotchas) + compose overlay gains `market_images` volume. Verified: all 32 referenced image_urls → 200 live. Lesson reinforced: I asserted "no image field" from a partial check (discovery summary keys) instead of tracing the card→feed path — exactly the assume-don't-verify failure this plan keeps catching.
@@ -332,11 +332,11 @@ $SSH 'test -f /swapfile || (fallocate -l 4G /swapfile && chmod 600 /swapfile && 
 # B) Code onto the box — rsync from this Mac (no GitHub token needed; skips heavy dirs)
 rsync -az --delete -e "ssh -i $KEY" \
   --exclude node_modules --exclude .next --exclude .git --exclude '*.log' \
-  ./apps/Phoenix-Predict-Combined/ root@$IP:/opt/phoenix/
+  ./apps/Phoenix-Predict-Combined/ root@$IP:/opt/taptrade/
 
 # C) Build BOTH images on the box (x86 native; sequential — never concurrent —
 #    so peak RAM stays bounded; with A2 swap this is safe on 4 GB CX22 too)
-$SSH 'cd /opt/phoenix/talon-backoffice && \
+$SSH 'cd /opt/taptrade/talon-backoffice && \
   docker build -f docker/frontend.Dockerfile --build-arg module_name=app \
     --build-arg NEXT_PUBLIC_WS_URL=wss://demo.'"$DOM"'/ws   -t predict-frontend:app-slim . && \
   docker build -f docker/frontend.Dockerfile --build-arg module_name=office \
@@ -344,26 +344,26 @@ $SSH 'cd /opt/phoenix/talon-backoffice && \
 
 # D) Caddyfile: real hostnames + ACME email + office basic-auth hash
 HASH=$($SSH "docker run --rm caddy:2 caddy hash-password --plaintext 'CHANGE-ME-OFFICE-PW'")
-$SSH "cd /opt/phoenix && sed -i \
+$SSH "cd /opt/taptrade && sed -i \
   -e 's/demo\\.99rtp\\.io/demo.$DOM/g' -e 's/office\\.99rtp\\.io/office.$DOM/g' \
   -e 's#ops@99rtp\\.io#you@$DOM#' -e 's#REPLACE_WITH_BCRYPT_HASH#${HASH//&/\\&}#' Caddyfile"
 
 # E) Up — restart:unless-stopped baked → survives reboot / Docker restart
-$SSH 'cd /opt/phoenix && export JWT_SECRET=$(openssl rand -hex 32) && \
+$SSH 'cd /opt/taptrade && export JWT_SECRET=$(openssl rand -hex 32) && \
   docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d'
 
 # F) MANDATORY demo data. gateway image ships ONLY the gateway binary (verified
 #    services/gateway/Dockerfile:23,29-30) — migrate/seed/sync-markets are
 #    `go run` in the go.work workspace → one-off golang container on the compose net.
 #    LIVE-DEPLOY CORRECTIONS (all hit + fixed 2026-05-18):
-#      • network name is DYNAMIC (project = dir basename → 'phoenix' →
-#        'phoenix_predict_network'); never hardcode it — detect it.
+#      • network name is DYNAMIC (project = dir basename → 'taptrade' →
+#        'taptrade_predict_network'); never hardcode it — detect it.
 #      • do NOT use `sh -lc`: a login shell sources /etc/profile and DROPS
 #        /usr/local/go/bin → `go: not found`. Pass env via `-e`, call go directly.
-$SSH 'cd /opt/phoenix
+$SSH 'cd /opt/taptrade
 NET=$(docker inspect predict_postgres --format "{{range \$k,\$v := .NetworkSettings.Networks}}{{\$k}}{{end}}")
 DSN="postgres://predict:localdev@postgres:5432/predict?sslmode=disable"
-GO="docker run --rm --network $NET -e GATEWAY_DB_DSN=$DSN -v /opt/phoenix/go-platform:/w -w /w/services/gateway golang:1.25"
+GO="docker run --rm --network $NET -e GATEWAY_DB_DSN=$DSN -v /opt/taptrade/go-platform:/w -w /w/services/gateway golang:1.25"
 $GO -e MIGRATIONS_DIR=/w/services/gateway/migrations go run ./cmd/migrate up
 $GO go run ./cmd/seed -mode demo'
 
@@ -376,18 +376,18 @@ $GO go run ./cmd/seed -mode demo'
 #    1. sync-markets FATALS without -public-root (it rehosts thumbnails).
 #    2. Rehosted thumbnails are RUNTIME state. They MUST live on the
 #       `market_images` Docker volume (compose overlay), NOT in the rsynced
-#       /opt/phoenix tree — a code redeploy's `rsync -az --delete` from the
+#       /opt/taptrade tree — a code redeploy's `rsync -az --delete` from the
 #       Mac will otherwise wipe them and desync DB image_url ↔ files (the
 #       discover feed DOES carry image_url; "no image field" was wrong).
 #       So mount the VOLUME at the rehost target, not the disk public/.
 #    3. sync-markets runs as root and writes mode-0600 root-owned files;
 #       the player runs as USER node → EACCES → HTTP 500 on every image.
 #       chmod the volume world-readable AFTER every sync. (re-runnable)
-$SSH 'cd /opt/phoenix
+$SSH 'cd /opt/taptrade
 NET=$(docker inspect predict_postgres --format "{{range \$k,\$v := .NetworkSettings.Networks}}{{\$k}}{{end}}")
 VOL=$(docker volume ls --format "{{.Name}}" | grep -E "market_images\$" | head -1)
 docker run --rm --network $NET -e GATEWAY_DB_DSN=postgres://predict:localdev@postgres:5432/predict?sslmode=disable \
-  -v /opt/phoenix/go-platform:/w -v "$VOL":/pub/images/markets \
+  -v /opt/taptrade/go-platform:/w -v "$VOL":/pub/images/markets \
   -w /w/services/gateway golang:1.25 \
   go run ./cmd/sync-markets -polymarket 200 -kalshi 200 -manifold 100 -timeout 240 -public-root /pub
 docker run --rm -v "$VOL":/v alpine sh -c "chmod -R a+rX /v"   # gotcha 3

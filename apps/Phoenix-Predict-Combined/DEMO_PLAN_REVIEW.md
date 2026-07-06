@@ -116,7 +116,7 @@ The plan says `fly deploy --dockerfile go-platform/services/gateway/Dockerfile`.
 The plan mentions this and proposes a daily warmup ping. Good. But the warmup needs to actually hit Postgres, not just `/healthz` (which may not touch the DB). Make the warmup query `SELECT 1` via the gateway's DB.
 
 ### [P3.2] The `talon-backoffice` is the *same monorepo* as `phoenix-frontend`.
-Both `package.json` say `"name": "phoenix-ui"` and the directory contents are byte-identical. Worth confirming you actually want to deploy them as two separate Fly apps vs. one app with two routes — saves money and build time. The difference between them is which lerna package starts (`@phoenix-ui/app` vs `@phoenix-ui/office`).
+Both `package.json` say `"name": "taptrade-ui"` and the directory contents are byte-identical. Worth confirming you actually want to deploy them as two separate Fly apps vs. one app with two routes — saves money and build time. The difference between them is which lerna package starts (`@phoenix-ui/app` vs `@phoenix-ui/office`).
 
 ### [P3.3] The plan promises ~$0–8/mo. The honest range is wider.
 Once you bump Next.js machines to 1 GB (P2.4), the Fly compute alone is ~$12–16/mo if running 24/7. With auto-stop and demo-hours-only usage, $5–8 is realistic. With always-on for a sales-team-on-call demo, budget $15. Update the plan's TL;DR.

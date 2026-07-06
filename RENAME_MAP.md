@@ -56,3 +56,6 @@ Measured targets (active scope, lockfiles excluded — locks regenerate at batch
 Sequenced: E (docs/comments/emails-in-active-text) → F (identifiers + make targets +
 env shims) → G (npm scope atomic) → H (Go module + go seeds, post-unfreeze) →
 I (docker images/infra) → J (directories) → final verify sweep.
+- Batch E (iteration 6): phoenix/talon prose→TapTrade in 37 living docs (masked:
+  Phoenix-Predict-Combined, talon-backoffice, @phoenix-ui, phoenix-revival,
+  phoenix-gateway/auth, PhoenixApiClient, archive dir names, phoenix.local, TALON_*).

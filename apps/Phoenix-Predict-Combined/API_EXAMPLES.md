@@ -146,7 +146,7 @@ curl -s -b /tmp/taya-predict.cookies \
 The package exports a prediction-specific client:
 
 ```ts
-import { createPredictionClient } from "@phoenix/api-client";
+import { createPredictionClient } from "@taptrade/api-client";
 
 const predict = createPredictionClient("http://localhost:18080");
 

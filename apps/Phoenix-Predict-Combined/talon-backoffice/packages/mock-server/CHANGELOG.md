@@ -1,106 +1,59 @@
 # Change Log
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+All notable changes to this project will be documented in this file. See
+[Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
 # [0.13.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.12.1-build.0...@phoenix-ui/mock-server@0.13.0) (2022-05-19)
 
 **Note:** Version bump only for package @phoenix-ui/mock-server
 
-
-
-
-
 ## [0.12.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.12.0...@phoenix-ui/mock-server@0.12.1-build.0) (2022-05-17)
 
 **Note:** Version bump only for package @phoenix-ui/mock-server
-
-
-
-
 
 # [0.12.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.11.1-build.2...@phoenix-ui/mock-server@0.12.0) (2022-03-24)
 
 **Note:** Version bump only for package @phoenix-ui/mock-server
 
-
-
-
-
 ## [0.11.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.11.1-build.1...@phoenix-ui/mock-server@0.11.1-build.2) (2022-03-16)
 
 **Note:** Version bump only for package @phoenix-ui/mock-server
-
-
-
-
 
 ## [0.11.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.11.1-build.0...@phoenix-ui/mock-server@0.11.1-build.1) (2022-03-08)
 
 **Note:** Version bump only for package @phoenix-ui/mock-server
 
-
-
-
-
 ## [0.11.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.11.0...@phoenix-ui/mock-server@0.11.1-build.0) (2022-02-01)
 
 **Note:** Version bump only for package @phoenix-ui/mock-server
-
-
-
-
 
 # [0.11.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.10.1-build.0...@phoenix-ui/mock-server@0.11.0) (2022-01-21)
 
 **Note:** Version bump only for package @phoenix-ui/mock-server
 
-
-
-
-
 ## [0.10.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.10.0...@phoenix-ui/mock-server@0.10.1-build.0) (2022-01-19)
 
 **Note:** Version bump only for package @phoenix-ui/mock-server
-
-
-
-
 
 # [0.10.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.9.1-build.3...@phoenix-ui/mock-server@0.10.0) (2022-01-18)
 
 **Note:** Version bump only for package @phoenix-ui/mock-server
 
-
-
-
-
 ## [0.9.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.9.1-build.2...@phoenix-ui/mock-server@0.9.1-build.3) (2022-01-17)
 
 **Note:** Version bump only for package @phoenix-ui/mock-server
 
-
-
-
-
 ## [0.9.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.9.1-build.1...@phoenix-ui/mock-server@0.9.1-build.2) (2022-01-10)
-
 
 ### Bug Fixes
 
-* check if odd value is different than null ([#607](https://github.com/flipadmin/phoenix-frontend/issues/607)) ([8982803](https://github.com/flipadmin/phoenix-frontend/commit/898280364f066f19d1b976f0a7f7c5d3ec453a19))
-
-
-
-
+- check if odd value is different than null
+  ([#607](https://github.com/flipadmin/phoenix-frontend/issues/607))
+  ([8982803](https://github.com/flipadmin/phoenix-frontend/commit/898280364f066f19d1b976f0a7f7c5d3ec453a19))
 
 ## [0.9.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/mock-server@0.9.1-build.0...@phoenix-ui/mock-server@0.9.1-build.1) (2021-12-23)
 
 **Note:** Version bump only for package @phoenix-ui/mock-server
-
-
-
-
 
 # Change Log
 
@@ -127,7 +80,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- handle new marketLifecycle value on talon
+- handle new marketLifecycle value on taptrade
   ([#538](https://github.com/flipadmin/phoenix-frontend/issues/538))
   ([45e11b1](https://github.com/flipadmin/phoenix-frontend/commit/45e11b1723b42cabb9996c81f842997e2afaa0d4))
 
@@ -135,7 +88,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- handle new marketLifecycle value on talon
+- handle new marketLifecycle value on taptrade
   ([#538](https://github.com/flipadmin/phoenix-frontend/issues/538))
   ([45e11b1](https://github.com/flipadmin/phoenix-frontend/commit/45e11b1723b42cabb9996c81f842997e2afaa0d4))
 
@@ -207,7 +160,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- update talon wallet with new format of incoming data
+- update taptrade wallet with new format of incoming data
   ([#355](https://github.com/flipadmin/phoenix-frontend/issues/355))
   ([d0c7dbb](https://github.com/flipadmin/phoenix-frontend/commit/d0c7dbb2fd4d74d67efa57d7cdfb3e952ad6219c))
 
@@ -355,7 +308,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- **talon:** fixtures and markets actions alignment
+- **taptrade:** fixtures and markets actions alignment
   ([#98](https://github.com/flipadmin/phoenix-frontend/issues/98))
   ([9e1682c](https://github.com/flipadmin/phoenix-frontend/commit/9e1682c6899ae65b632f1ab1452cb1df46404775))
 
@@ -363,7 +316,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- **talon:** user wallet history
+- **taptrade:** user wallet history
   ([#95](https://github.com/flipadmin/phoenix-frontend/issues/95))
   ([44fb454](https://github.com/flipadmin/phoenix-frontend/commit/44fb454bd4f4f72671bce3db98b577548934c000))
 
@@ -383,7 +336,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- **talon:** fixtures list and details pages, unification of components
+- **taptrade:** fixtures list and details pages, unification of components
   ([#85](https://github.com/flipadmin/phoenix-frontend/issues/85))
   ([311ab99](https://github.com/flipadmin/phoenix-frontend/commit/311ab999683afc47f95b1b43265be80c22e4c357))
 
@@ -475,7 +428,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- **talon:** package init
+- **taptrade:** package init
   ([#45](https://github.com/flipadmin/phoenix-frontend/issues/45))
   ([1a85ed5](https://github.com/flipadmin/phoenix-frontend/commit/1a85ed578b12b434a227fee837e8d43370a8bfab))
 - add sanbox component for websockets
@@ -489,5 +442,5 @@ All notable changes to this project will be documented in this file. See
 - **mock-server:** add mock server
   ([#2](https://github.com/flipadmin/phoenix-frontend/issues/2))
   ([9e6d7fd](https://github.com/flipadmin/phoenix-frontend/commit/9e6d7fdd2fa2405f4c706e10ae850e97d8e93de5))
-- **phoenix-ui:** initial commit for phoenix-ui project
+- **taptrade-ui:** initial commit for taptrade-ui project
   ([2804df5](https://github.com/flipadmin/phoenix-frontend/commit/2804df5cfd1f8f31eca4063b9f7d4f1906d09e90))

@@ -1,1497 +1,930 @@
 # Change Log
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+All notable changes to this project will be documented in this file. See
+[Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
 ## [0.34.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.34.1-build.3...@phoenix-ui/app@0.34.1-build.4) (2022-10-26)
 
-
 ### Features
 
-* remove header register button ([#761](https://github.com/flipadmin/phoenix-frontend/issues/761)) ([37a8ef3](https://github.com/flipadmin/phoenix-frontend/commit/37a8ef3bee1806bbd96e4adc3365ecdb70f06c99))
-
-
-
-
+- remove header register button
+  ([#761](https://github.com/flipadmin/phoenix-frontend/issues/761))
+  ([37a8ef3](https://github.com/flipadmin/phoenix-frontend/commit/37a8ef3bee1806bbd96e4adc3365ecdb70f06c99))
 
 ## [0.34.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.34.1-build.2...@phoenix-ui/app@0.34.1-build.3) (2022-10-25)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.34.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.34.1-build.1...@phoenix-ui/app@0.34.1-build.2) (2022-07-08)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.34.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.34.1-build.0...@phoenix-ui/app@0.34.1-build.1) (2022-06-23)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.34.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.34.0...@phoenix-ui/app@0.34.1-build.0) (2022-06-21)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 # [0.34.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.33.1-build.9...@phoenix-ui/app@0.34.0) (2022-06-16)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.33.1-build.9](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.33.1-build.8...@phoenix-ui/app@0.33.1-build.9) (2022-06-16)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.33.1-build.8](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.33.1-build.7...@phoenix-ui/app@0.33.1-build.8) (2022-06-16)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.33.1-build.7](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.33.1-build.6...@phoenix-ui/app@0.33.1-build.7) (2022-06-16)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.33.1-build.6](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.33.1-build.5...@phoenix-ui/app@0.33.1-build.6) (2022-06-15)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.33.1-build.5](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.33.1-build.4...@phoenix-ui/app@0.33.1-build.5) (2022-06-15)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.33.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.33.1-build.3...@phoenix-ui/app@0.33.1-build.4) (2022-06-07)
-
 
 ### Features
 
-* remove mfa field from signup endpoint ([#747](https://github.com/flipadmin/phoenix-frontend/issues/747)) ([1485246](https://github.com/flipadmin/phoenix-frontend/commit/14852461d6205bedc98825b239c221ed9c879612))
-
-
-
-
+- remove mfa field from signup endpoint
+  ([#747](https://github.com/flipadmin/phoenix-frontend/issues/747))
+  ([1485246](https://github.com/flipadmin/phoenix-frontend/commit/14852461d6205bedc98825b239c221ed9c879612))
 
 ## [0.33.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.33.1-build.2...@phoenix-ui/app@0.33.1-build.3) (2022-06-06)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.33.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.33.1-build.1...@phoenix-ui/app@0.33.1-build.2) (2022-06-02)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.33.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.33.1-build.0...@phoenix-ui/app@0.33.1-build.1) (2022-05-26)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.33.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.33.0...@phoenix-ui/app@0.33.1-build.0) (2022-05-19)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 # [0.33.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.23...@phoenix-ui/app@0.33.0) (2022-05-19)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.32.1-build.23](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.22...@phoenix-ui/app@0.32.1-build.23) (2022-05-19)
-
 
 ### Features
 
-* add frame-ancestors security header ([#739](https://github.com/flipadmin/phoenix-frontend/issues/739)) ([f75b5a4](https://github.com/flipadmin/phoenix-frontend/commit/f75b5a4dcb8340c29f04ca36013ac779ceecca2d))
-
-
-
-
+- add frame-ancestors security header
+  ([#739](https://github.com/flipadmin/phoenix-frontend/issues/739))
+  ([f75b5a4](https://github.com/flipadmin/phoenix-frontend/commit/f75b5a4dcb8340c29f04ca36013ac779ceecca2d))
 
 ## [0.32.1-build.22](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.21...@phoenix-ui/app@0.32.1-build.22) (2022-05-18)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.32.1-build.21](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.20...@phoenix-ui/app@0.32.1-build.21) (2022-05-17)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.32.1-build.20](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.19...@phoenix-ui/app@0.32.1-build.20) (2022-05-17)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.32.1-build.19](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.18...@phoenix-ui/app@0.32.1-build.19) (2022-05-17)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.32.1-build.18](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.17...@phoenix-ui/app@0.32.1-build.18) (2022-05-17)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.32.1-build.17](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.16...@phoenix-ui/app@0.32.1-build.17) (2022-05-17)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.32.1-build.16](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.15...@phoenix-ui/app@0.32.1-build.16) (2022-05-17)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.32.1-build.15](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.14...@phoenix-ui/app@0.32.1-build.15) (2022-05-13)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.32.1-build.14](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.13...@phoenix-ui/app@0.32.1-build.14) (2022-05-13)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.32.1-build.13](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.12...@phoenix-ui/app@0.32.1-build.13) (2022-05-11)
-
 
 ### Features
 
-* add mfaToggleVisibility variable to siteSettings reducer and hide mfaToggleCompoenent with it ([#731](https://github.com/flipadmin/phoenix-frontend/issues/731)) ([80f3d2d](https://github.com/flipadmin/phoenix-frontend/commit/80f3d2da37e7a1e4da8cf2d1922911d444cb9fe3))
-* validate if username is not an email ([#730](https://github.com/flipadmin/phoenix-frontend/issues/730)) ([f354bdc](https://github.com/flipadmin/phoenix-frontend/commit/f354bdc8b892eb7c477b4011eaae7d9b73e35da4))
-
-
-
-
+- add mfaToggleVisibility variable to siteSettings reducer and hide
+  mfaToggleCompoenent with it
+  ([#731](https://github.com/flipadmin/phoenix-frontend/issues/731))
+  ([80f3d2d](https://github.com/flipadmin/phoenix-frontend/commit/80f3d2da37e7a1e4da8cf2d1922911d444cb9fe3))
+- validate if username is not an email
+  ([#730](https://github.com/flipadmin/phoenix-frontend/issues/730))
+  ([f354bdc](https://github.com/flipadmin/phoenix-frontend/commit/f354bdc8b892eb7c477b4011eaae7d9b73e35da4))
 
 ## [0.32.1-build.12](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.11...@phoenix-ui/app@0.32.1-build.12) (2022-05-10)
 
-
 ### Bug Fixes
 
-* add preventDefault to star click function ([#729](https://github.com/flipadmin/phoenix-frontend/issues/729)) ([0e7ae4e](https://github.com/flipadmin/phoenix-frontend/commit/0e7ae4eab07057cb8b0dc5dedf3465e12b289398))
-
-
-
-
+- add preventDefault to star click function
+  ([#729](https://github.com/flipadmin/phoenix-frontend/issues/729))
+  ([0e7ae4e](https://github.com/flipadmin/phoenix-frontend/commit/0e7ae4eab07057cb8b0dc5dedf3465e12b289398))
 
 ## [0.32.1-build.11](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.10...@phoenix-ui/app@0.32.1-build.11) (2022-05-09)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.32.1-build.10](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.9...@phoenix-ui/app@0.32.1-build.10) (2022-05-06)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.32.1-build.9](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.8...@phoenix-ui/app@0.32.1-build.9) (2022-05-06)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.32.1-build.8](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.7...@phoenix-ui/app@0.32.1-build.8) (2022-05-04)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.32.1-build.7](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.6...@phoenix-ui/app@0.32.1-build.7) (2022-05-02)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.32.1-build.6](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.5...@phoenix-ui/app@0.32.1-build.6) (2022-04-28)
-
 
 ### Bug Fixes
 
-* add preventDefault to bet-button onclick func to prevent navigating to fixture page ([#721](https://github.com/flipadmin/phoenix-frontend/issues/721)) ([5999a73](https://github.com/flipadmin/phoenix-frontend/commit/5999a73fd83c9d2674880479053d76b2e030b018))
-
-
-
-
+- add preventDefault to bet-button onclick func to prevent navigating to fixture
+  page ([#721](https://github.com/flipadmin/phoenix-frontend/issues/721))
+  ([5999a73](https://github.com/flipadmin/phoenix-frontend/commit/5999a73fd83c9d2674880479053d76b2e030b018))
 
 ## [0.32.1-build.5](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.4...@phoenix-ui/app@0.32.1-build.5) (2022-04-27)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.32.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.3...@phoenix-ui/app@0.32.1-build.4) (2022-04-27)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.32.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.2...@phoenix-ui/app@0.32.1-build.3) (2022-04-26)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.32.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.1...@phoenix-ui/app@0.32.1-build.2) (2022-04-25)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.32.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.1-build.0...@phoenix-ui/app@0.32.1-build.1) (2022-04-20)
-
 
 ### Bug Fixes
 
-* close mobile sidebar on page change, fix sidebar rg link ([#714](https://github.com/flipadmin/phoenix-frontend/issues/714)) ([fe6cc14](https://github.com/flipadmin/phoenix-frontend/commit/fe6cc14c4d74f04f1459648c0bf284da6de2268f))
-
+- close mobile sidebar on page change, fix sidebar rg link
+  ([#714](https://github.com/flipadmin/phoenix-frontend/issues/714))
+  ([fe6cc14](https://github.com/flipadmin/phoenix-frontend/commit/fe6cc14c4d74f04f1459648c0bf284da6de2268f))
 
 ### Features
 
-* handle closing cashier when user is logged out ([#709](https://github.com/flipadmin/phoenix-frontend/issues/709)) ([dbf65fe](https://github.com/flipadmin/phoenix-frontend/commit/dbf65fe2053e4bb32fea1d424590c1b2de6fe221))
-* hide pagination sizeChanger on transaction hitory and bet history pages ([#711](https://github.com/flipadmin/phoenix-frontend/issues/711)) ([738b714](https://github.com/flipadmin/phoenix-frontend/commit/738b71470557e671569c9b01a7a3cfd39c660604))
-
-
-
-
+- handle closing cashier when user is logged out
+  ([#709](https://github.com/flipadmin/phoenix-frontend/issues/709))
+  ([dbf65fe](https://github.com/flipadmin/phoenix-frontend/commit/dbf65fe2053e4bb32fea1d424590c1b2de6fe221))
+- hide pagination sizeChanger on transaction hitory and bet history pages
+  ([#711](https://github.com/flipadmin/phoenix-frontend/issues/711))
+  ([738b714](https://github.com/flipadmin/phoenix-frontend/commit/738b71470557e671569c9b01a7a3cfd39c660604))
 
 ## [0.32.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.32.0...@phoenix-ui/app@0.32.1-build.0) (2022-04-14)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 # [0.32.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.31.1-build.1...@phoenix-ui/app@0.32.0) (2022-04-07)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.31.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.31.1-build.0...@phoenix-ui/app@0.31.1-build.1) (2022-04-07)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.31.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.31.0...@phoenix-ui/app@0.31.1-build.0) (2022-04-07)
-
 
 ### Features
 
-* add network change detection to geocomply ([#705](https://github.com/flipadmin/phoenix-frontend/issues/705)) ([92e2add](https://github.com/flipadmin/phoenix-frontend/commit/92e2addd2b4b836083760a16828d25b1cf9b2d76))
-
-
-
-
+- add network change detection to geocomply
+  ([#705](https://github.com/flipadmin/phoenix-frontend/issues/705))
+  ([92e2add](https://github.com/flipadmin/phoenix-frontend/commit/92e2addd2b4b836083760a16828d25b1cf9b2d76))
 
 # [0.31.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.30.1-build.2...@phoenix-ui/app@0.31.0) (2022-04-06)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.30.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.30.1-build.1...@phoenix-ui/app@0.30.1-build.2) (2022-04-06)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.30.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.30.1-build.0...@phoenix-ui/app@0.30.1-build.1) (2022-04-06)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.30.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.30.0...@phoenix-ui/app@0.30.1-build.0) (2022-04-04)
-
 
 ### Bug Fixes
 
-* remove dot from transaction id ([#694](https://github.com/flipadmin/phoenix-frontend/issues/694)) ([94707b8](https://github.com/flipadmin/phoenix-frontend/commit/94707b857d6f12825eddbc49101d75f7edc114a9))
-
+- remove dot from transaction id
+  ([#694](https://github.com/flipadmin/phoenix-frontend/issues/694))
+  ([94707b8](https://github.com/flipadmin/phoenix-frontend/commit/94707b857d6f12825eddbc49101d75f7edc114a9))
 
 ### Features
 
-* Get sports list on page load and save in redux ([#690](https://github.com/flipadmin/phoenix-frontend/issues/690)) ([5db3b53](https://github.com/flipadmin/phoenix-frontend/commit/5db3b53312f22ebd97f901795cd369fd8ae12a51))
-* remove softplay banner from landing page and esports bets page ([#698](https://github.com/flipadmin/phoenix-frontend/issues/698)) ([c43d017](https://github.com/flipadmin/phoenix-frontend/commit/c43d01728732d765ddb48ff632c78e591959f9c2))
-
-
-
-
+- Get sports list on page load and save in redux
+  ([#690](https://github.com/flipadmin/phoenix-frontend/issues/690))
+  ([5db3b53](https://github.com/flipadmin/phoenix-frontend/commit/5db3b53312f22ebd97f901795cd369fd8ae12a51))
+- remove softplay banner from landing page and esports bets page
+  ([#698](https://github.com/flipadmin/phoenix-frontend/issues/698))
+  ([c43d017](https://github.com/flipadmin/phoenix-frontend/commit/c43d01728732d765ddb48ff632c78e591959f9c2))
 
 # [0.30.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.29.0...@phoenix-ui/app@0.30.0) (2022-04-04)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
 ## [0.29.1-build.7](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.29.1-build.6...@phoenix-ui/app@0.29.1-build.7) (2022-04-04)
-
 
 ### Features
 
-* remove softplay banner from landing page and esports bets page ([#698](https://github.com/flipadmin/phoenix-frontend/issues/698)) ([c43d017](https://github.com/flipadmin/phoenix-frontend/commit/c43d01728732d765ddb48ff632c78e591959f9c2))
-
-
-
-
+- remove softplay banner from landing page and esports bets page
+  ([#698](https://github.com/flipadmin/phoenix-frontend/issues/698))
+  ([c43d017](https://github.com/flipadmin/phoenix-frontend/commit/c43d01728732d765ddb48ff632c78e591959f9c2))
 
 ## [0.29.1-build.6](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.29.1-build.5...@phoenix-ui/app@0.29.1-build.6) (2022-03-30)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.29.1-build.5](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.29.1-build.4...@phoenix-ui/app@0.29.1-build.5) (2022-03-30)
-
 
 ### Bug Fixes
 
-* remove dot from transaction id ([#694](https://github.com/flipadmin/phoenix-frontend/issues/694)) ([94707b8](https://github.com/flipadmin/phoenix-frontend/commit/94707b857d6f12825eddbc49101d75f7edc114a9))
-
-
-
-
+- remove dot from transaction id
+  ([#694](https://github.com/flipadmin/phoenix-frontend/issues/694))
+  ([94707b8](https://github.com/flipadmin/phoenix-frontend/commit/94707b857d6f12825eddbc49101d75f7edc114a9))
 
 ## [0.29.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.29.1-build.3...@phoenix-ui/app@0.29.1-build.4) (2022-03-30)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.29.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.29.1-build.2...@phoenix-ui/app@0.29.1-build.3) (2022-03-30)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.29.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.29.1-build.1...@phoenix-ui/app@0.29.1-build.2) (2022-03-29)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.29.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.29.1-build.0...@phoenix-ui/app@0.29.1-build.1) (2022-03-29)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.29.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.29.0...@phoenix-ui/app@0.29.1-build.0) (2022-03-28)
-
 
 ### Features
 
-* Get sports list on page load and save in redux ([#690](https://github.com/flipadmin/phoenix-frontend/issues/690)) ([5db3b53](https://github.com/flipadmin/phoenix-frontend/commit/5db3b53312f22ebd97f901795cd369fd8ae12a51))
-
-
-
-
+- Get sports list on page load and save in redux
+  ([#690](https://github.com/flipadmin/phoenix-frontend/issues/690))
+  ([5db3b53](https://github.com/flipadmin/phoenix-frontend/commit/5db3b53312f22ebd97f901795cd369fd8ae12a51))
 
 # [0.29.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.45...@phoenix-ui/app@0.29.0) (2022-03-24)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.45](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.44...@phoenix-ui/app@0.28.1-build.45) (2022-03-19)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.28.1-build.44](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.43...@phoenix-ui/app@0.28.1-build.44) (2022-03-16)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.43](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.42...@phoenix-ui/app@0.28.1-build.43) (2022-03-16)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.28.1-build.42](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.41...@phoenix-ui/app@0.28.1-build.42) (2022-03-16)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.41](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.40...@phoenix-ui/app@0.28.1-build.41) (2022-03-14)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.28.1-build.40](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.39...@phoenix-ui/app@0.28.1-build.40) (2022-03-09)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.39](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.38...@phoenix-ui/app@0.28.1-build.39) (2022-03-08)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.28.1-build.38](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.37...@phoenix-ui/app@0.28.1-build.38) (2022-03-08)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.37](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.36...@phoenix-ui/app@0.28.1-build.37) (2022-03-08)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.28.1-build.36](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.35...@phoenix-ui/app@0.28.1-build.36) (2022-03-07)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.35](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.34...@phoenix-ui/app@0.28.1-build.35) (2022-03-07)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.28.1-build.34](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.33...@phoenix-ui/app@0.28.1-build.34) (2022-03-04)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.33](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.32...@phoenix-ui/app@0.28.1-build.33) (2022-03-04)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.28.1-build.32](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.31...@phoenix-ui/app@0.28.1-build.32) (2022-03-03)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.31](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.30...@phoenix-ui/app@0.28.1-build.31) (2022-03-03)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.30](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.29...@phoenix-ui/app@0.28.1-build.30) (2022-03-03)
-
 
 ### Bug Fixes
 
-* styles for tc checkbox, fix position of checkbox label ([#593](https://github.com/flipadmin/phoenix-frontend/issues/593)) ([1583f5d](https://github.com/flipadmin/phoenix-frontend/commit/1583f5df35902dc3d75f365cec8e92bf4ec3719d))
-
+- styles for tc checkbox, fix position of checkbox label
+  ([#593](https://github.com/flipadmin/phoenix-frontend/issues/593))
+  ([1583f5d](https://github.com/flipadmin/phoenix-frontend/commit/1583f5df35902dc3d75f365cec8e92bf4ec3719d))
 
 ### Features
 
-* create switch component ([#594](https://github.com/flipadmin/phoenix-frontend/issues/594)) ([abcf9ab](https://github.com/flipadmin/phoenix-frontend/commit/abcf9abfec6dbd637adf55c5d09f175a5e9eca44))
-
-
-
-
+- create switch component
+  ([#594](https://github.com/flipadmin/phoenix-frontend/issues/594))
+  ([abcf9ab](https://github.com/flipadmin/phoenix-frontend/commit/abcf9abfec6dbd637adf55c5d09f175a5e9eca44))
 
 ## [0.28.1-build.29](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.28...@phoenix-ui/app@0.28.1-build.29) (2022-03-03)
 
-
 ### Features
 
-* upload pxp theme files ([#646](https://github.com/flipadmin/phoenix-frontend/issues/646)) ([6d53954](https://github.com/flipadmin/phoenix-frontend/commit/6d5395460afe8a15de2bd2b87e09c3463356a9c6))
-
-
-
-
+- upload pxp theme files
+  ([#646](https://github.com/flipadmin/phoenix-frontend/issues/646))
+  ([6d53954](https://github.com/flipadmin/phoenix-frontend/commit/6d5395460afe8a15de2bd2b87e09c3463356a9c6))
 
 ## [0.28.1-build.28](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.27...@phoenix-ui/app@0.28.1-build.28) (2022-03-02)
 
-
 ### Features
 
-* update status bar with negative balance copy ([#677](https://github.com/flipadmin/phoenix-frontend/issues/677)) ([866ba6f](https://github.com/flipadmin/phoenix-frontend/commit/866ba6f8673137182a56f983ff4f44e3c0445635))
-
-
-
-
+- update status bar with negative balance copy
+  ([#677](https://github.com/flipadmin/phoenix-frontend/issues/677))
+  ([866ba6f](https://github.com/flipadmin/phoenix-frontend/commit/866ba6f8673137182a56f983ff4f44e3c0445635))
 
 ## [0.28.1-build.27](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.26...@phoenix-ui/app@0.28.1-build.27) (2022-03-01)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.26](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.25...@phoenix-ui/app@0.28.1-build.26) (2022-03-01)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.28.1-build.25](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.24...@phoenix-ui/app@0.28.1-build.25) (2022-03-01)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.24](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.23...@phoenix-ui/app@0.28.1-build.24) (2022-02-25)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.28.1-build.23](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.22...@phoenix-ui/app@0.28.1-build.23) (2022-02-24)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.22](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.21...@phoenix-ui/app@0.28.1-build.22) (2022-02-24)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.28.1-build.21](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.20...@phoenix-ui/app@0.28.1-build.21) (2022-02-23)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.20](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.19...@phoenix-ui/app@0.28.1-build.20) (2022-02-21)
-
 
 ### Features
 
-* handle resettled status ([#668](https://github.com/flipadmin/phoenix-frontend/issues/668)) ([9cccbc4](https://github.com/flipadmin/phoenix-frontend/commit/9cccbc425bbd2b120f557007f31116a2fef79593))
-
-
-
-
+- handle resettled status
+  ([#668](https://github.com/flipadmin/phoenix-frontend/issues/668))
+  ([9cccbc4](https://github.com/flipadmin/phoenix-frontend/commit/9cccbc425bbd2b120f557007f31116a2fef79593))
 
 ## [0.28.1-build.19](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.18...@phoenix-ui/app@0.28.1-build.19) (2022-02-21)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.18](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.17...@phoenix-ui/app@0.28.1-build.18) (2022-02-16)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.17](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.16...@phoenix-ui/app@0.28.1-build.17) (2022-02-15)
-
 
 ### Features
 
-* add missing password modals to landing page ([#663](https://github.com/flipadmin/phoenix-frontend/issues/663)) ([aa1fef9](https://github.com/flipadmin/phoenix-frontend/commit/aa1fef954527b956a24cdabf51ed32f5c1182e9b))
-
-
-
-
+- add missing password modals to landing page
+  ([#663](https://github.com/flipadmin/phoenix-frontend/issues/663))
+  ([aa1fef9](https://github.com/flipadmin/phoenix-frontend/commit/aa1fef954527b956a24cdabf51ed32f5c1182e9b))
 
 ## [0.28.1-build.16](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.15...@phoenix-ui/app@0.28.1-build.16) (2022-02-15)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.15](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.14...@phoenix-ui/app@0.28.1-build.15) (2022-02-11)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.28.1-build.14](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.13...@phoenix-ui/app@0.28.1-build.14) (2022-02-11)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.13](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.12...@phoenix-ui/app@0.28.1-build.13) (2022-02-11)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.12](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.11...@phoenix-ui/app@0.28.1-build.12) (2022-02-09)
-
 
 ### Features
 
-* add new registration translations ([#658](https://github.com/flipadmin/phoenix-frontend/issues/658)) ([9e41961](https://github.com/flipadmin/phoenix-frontend/commit/9e4196137047e281d28942ad597b2a34d3c9280c))
-
-
-
-
+- add new registration translations
+  ([#658](https://github.com/flipadmin/phoenix-frontend/issues/658))
+  ([9e41961](https://github.com/flipadmin/phoenix-frontend/commit/9e4196137047e281d28942ad597b2a34d3c9280c))
 
 ## [0.28.1-build.11](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.10...@phoenix-ui/app@0.28.1-build.11) (2022-02-08)
 
-
 ### Features
 
-* updating softplay copy on landing page ([#657](https://github.com/flipadmin/phoenix-frontend/issues/657)) ([0d52869](https://github.com/flipadmin/phoenix-frontend/commit/0d528695a81d11f11e4cd59a15ff70613ad7315f))
-
-
-
-
+- updating softplay copy on landing page
+  ([#657](https://github.com/flipadmin/phoenix-frontend/issues/657))
+  ([0d52869](https://github.com/flipadmin/phoenix-frontend/commit/0d528695a81d11f11e4cd59a15ff70613ad7315f))
 
 ## [0.28.1-build.10](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.9...@phoenix-ui/app@0.28.1-build.10) (2022-02-08)
 
-
 ### Features
 
-* update coming soon color ([#656](https://github.com/flipadmin/phoenix-frontend/issues/656)) ([23a93cf](https://github.com/flipadmin/phoenix-frontend/commit/23a93cf4ef324f1d8b9aed0b289d8345cd9d1d72))
-
-
-
-
+- update coming soon color
+  ([#656](https://github.com/flipadmin/phoenix-frontend/issues/656))
+  ([23a93cf](https://github.com/flipadmin/phoenix-frontend/commit/23a93cf4ef324f1d8b9aed0b289d8345cd9d1d72))
 
 ## [0.28.1-build.9](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.8...@phoenix-ui/app@0.28.1-build.9) (2022-02-08)
 
-
 ### Features
 
-* update banner copy ([#655](https://github.com/flipadmin/phoenix-frontend/issues/655)) ([bff1b87](https://github.com/flipadmin/phoenix-frontend/commit/bff1b8741d622998283deba04921e6684328ce23))
-
-
-
-
+- update banner copy
+  ([#655](https://github.com/flipadmin/phoenix-frontend/issues/655))
+  ([bff1b87](https://github.com/flipadmin/phoenix-frontend/commit/bff1b8741d622998283deba04921e6684328ce23))
 
 ## [0.28.1-build.8](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.7...@phoenix-ui/app@0.28.1-build.8) (2022-02-08)
 
-
 ### Bug Fixes
 
-* add margin to only first select element to avoid hiding last select element ([#654](https://github.com/flipadmin/phoenix-frontend/issues/654)) ([af568b8](https://github.com/flipadmin/phoenix-frontend/commit/af568b85b0eb3e44864e14e92f03e9ece455ab13))
-
-
-
-
+- add margin to only first select element to avoid hiding last select element
+  ([#654](https://github.com/flipadmin/phoenix-frontend/issues/654))
+  ([af568b8](https://github.com/flipadmin/phoenix-frontend/commit/af568b85b0eb3e44864e14e92f03e9ece455ab13))
 
 ## [0.28.1-build.7](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.6...@phoenix-ui/app@0.28.1-build.7) (2022-02-04)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.6](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.5...@phoenix-ui/app@0.28.1-build.6) (2022-02-04)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.28.1-build.5](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.4...@phoenix-ui/app@0.28.1-build.5) (2022-02-01)
-
 
 ### Features
 
-* add coming soon ([#650](https://github.com/flipadmin/phoenix-frontend/issues/650)) ([014fb02](https://github.com/flipadmin/phoenix-frontend/commit/014fb02f3d1dd249bc5c1b8c47ef1d3e2e2b16e5))
-* remove ctas ([#651](https://github.com/flipadmin/phoenix-frontend/issues/651)) ([f5a0787](https://github.com/flipadmin/phoenix-frontend/commit/f5a07877a89cd74db258bbac9b535541c4407c8e))
-
-
-
-
+- add coming soon
+  ([#650](https://github.com/flipadmin/phoenix-frontend/issues/650))
+  ([014fb02](https://github.com/flipadmin/phoenix-frontend/commit/014fb02f3d1dd249bc5c1b8c47ef1d3e2e2b16e5))
+- remove ctas ([#651](https://github.com/flipadmin/phoenix-frontend/issues/651))
+  ([f5a0787](https://github.com/flipadmin/phoenix-frontend/commit/f5a07877a89cd74db258bbac9b535541c4407c8e))
 
 ## [0.28.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.3...@phoenix-ui/app@0.28.1-build.4) (2022-01-28)
 
-
 ### Bug Fixes
 
-* fix inputNumber on mobile view with mount state ([#648](https://github.com/flipadmin/phoenix-frontend/issues/648)) ([b60eb9d](https://github.com/flipadmin/phoenix-frontend/commit/b60eb9d420ee7c3c1fa9f648736a90422b92b546))
-
-
-
-
+- fix inputNumber on mobile view with mount state
+  ([#648](https://github.com/flipadmin/phoenix-frontend/issues/648))
+  ([b60eb9d](https://github.com/flipadmin/phoenix-frontend/commit/b60eb9d420ee7c3c1fa9f648736a90422b92b546))
 
 ## [0.28.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.2...@phoenix-ui/app@0.28.1-build.3) (2022-01-25)
 
-
 ### Features
 
-* vie landing page style change ([#645](https://github.com/flipadmin/phoenix-frontend/issues/645)) ([ed9980f](https://github.com/flipadmin/phoenix-frontend/commit/ed9980fa39a2dc76ada1a85dd09fa6e2b1a9d6f2))
-
-
-
-
+- vie landing page style change
+  ([#645](https://github.com/flipadmin/phoenix-frontend/issues/645))
+  ([ed9980f](https://github.com/flipadmin/phoenix-frontend/commit/ed9980fa39a2dc76ada1a85dd09fa6e2b1a9d6f2))
 
 ## [0.28.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.1...@phoenix-ui/app@0.28.1-build.2) (2022-01-25)
 
-
 ### Features
 
-* add favicon ([#643](https://github.com/flipadmin/phoenix-frontend/issues/643)) ([81be51f](https://github.com/flipadmin/phoenix-frontend/commit/81be51fe5adcde90214eb5c53589a38044c9c18c))
-
-
-
-
+- add favicon ([#643](https://github.com/flipadmin/phoenix-frontend/issues/643))
+  ([81be51f](https://github.com/flipadmin/phoenix-frontend/commit/81be51fe5adcde90214eb5c53589a38044c9c18c))
 
 ## [0.28.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.1-build.0...@phoenix-ui/app@0.28.1-build.1) (2022-01-25)
 
-
 ### Features
 
-* updated landing page scrollup icon url ([#642](https://github.com/flipadmin/phoenix-frontend/issues/642)) ([4fa9e47](https://github.com/flipadmin/phoenix-frontend/commit/4fa9e478e00c90bb714d6ab1f1516db03b4aa388))
-
-
-
-
+- updated landing page scrollup icon url
+  ([#642](https://github.com/flipadmin/phoenix-frontend/issues/642))
+  ([4fa9e47](https://github.com/flipadmin/phoenix-frontend/commit/4fa9e478e00c90bb714d6ab1f1516db03b4aa388))
 
 ## [0.28.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.28.0...@phoenix-ui/app@0.28.1-build.0) (2022-01-24)
 
-
 ### Features
 
-* update copy ([#641](https://github.com/flipadmin/phoenix-frontend/issues/641)) ([a506434](https://github.com/flipadmin/phoenix-frontend/commit/a50643475a69c14568f0633158ce3158e9d006fd))
-
-
-
-
+- update copy ([#641](https://github.com/flipadmin/phoenix-frontend/issues/641))
+  ([a506434](https://github.com/flipadmin/phoenix-frontend/commit/a50643475a69c14568f0633158ce3158e9d006fd))
 
 # [0.28.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.27.1-build.9...@phoenix-ui/app@0.28.0) (2022-01-24)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.27.1-build.9](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.27.1-build.8...@phoenix-ui/app@0.27.1-build.9) (2022-01-24)
-
 
 ### Bug Fixes
 
-* update copy ([#639](https://github.com/flipadmin/phoenix-frontend/issues/639)) ([1690e55](https://github.com/flipadmin/phoenix-frontend/commit/1690e558793f94695f5673aa965c76862cf699bc))
-
-
-
-
+- update copy ([#639](https://github.com/flipadmin/phoenix-frontend/issues/639))
+  ([1690e55](https://github.com/flipadmin/phoenix-frontend/commit/1690e558793f94695f5673aa965c76862cf699bc))
 
 ## [0.27.1-build.8](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.27.1-build.7...@phoenix-ui/app@0.27.1-build.8) (2022-01-24)
 
-
 ### Features
 
-* vie banner ([#637](https://github.com/flipadmin/phoenix-frontend/issues/637)) ([281803d](https://github.com/flipadmin/phoenix-frontend/commit/281803de8475e14ef5f886acdf32c5689c7044d9))
-
-
-
-
+- vie banner ([#637](https://github.com/flipadmin/phoenix-frontend/issues/637))
+  ([281803d](https://github.com/flipadmin/phoenix-frontend/commit/281803de8475e14ef5f886acdf32c5689c7044d9))
 
 ## [0.27.1-build.7](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.27.1-build.6...@phoenix-ui/app@0.27.1-build.7) (2022-01-24)
 
-
 ### Features
 
-* remove placeholder copy ([#638](https://github.com/flipadmin/phoenix-frontend/issues/638)) ([93da43b](https://github.com/flipadmin/phoenix-frontend/commit/93da43b7ab3c15e4f74808db9ac9f873bd77a95a))
-
-
-
-
+- remove placeholder copy
+  ([#638](https://github.com/flipadmin/phoenix-frontend/issues/638))
+  ([93da43b](https://github.com/flipadmin/phoenix-frontend/commit/93da43b7ab3c15e4f74808db9ac9f873bd77a95a))
 
 ## [0.27.1-build.6](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.27.1-build.5...@phoenix-ui/app@0.27.1-build.6) (2022-01-24)
 
-
 ### Features
 
-* update betting rules ([#636](https://github.com/flipadmin/phoenix-frontend/issues/636)) ([a6bc07a](https://github.com/flipadmin/phoenix-frontend/commit/a6bc07aaf3fe108da51bdc671f81182b26bce2c4))
-
-
-
-
+- update betting rules
+  ([#636](https://github.com/flipadmin/phoenix-frontend/issues/636))
+  ([a6bc07a](https://github.com/flipadmin/phoenix-frontend/commit/a6bc07aaf3fe108da51bdc671f81182b26bce2c4))
 
 ## [0.27.1-build.5](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.27.1-build.4...@phoenix-ui/app@0.27.1-build.5) (2022-01-24)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.27.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.27.1-build.3...@phoenix-ui/app@0.27.1-build.4) (2022-01-24)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.27.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.27.1-build.2...@phoenix-ui/app@0.27.1-build.3) (2022-01-24)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.27.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.27.1-build.1...@phoenix-ui/app@0.27.1-build.2) (2022-01-24)
-
 
 ### Features
 
-* trim all register form inputs ([#634](https://github.com/flipadmin/phoenix-frontend/issues/634)) ([7c29e39](https://github.com/flipadmin/phoenix-frontend/commit/7c29e3990d1517e522b7808212a459fa638e7d32))
-
-
-
-
+- trim all register form inputs
+  ([#634](https://github.com/flipadmin/phoenix-frontend/issues/634))
+  ([7c29e39](https://github.com/flipadmin/phoenix-frontend/commit/7c29e3990d1517e522b7808212a459fa638e7d32))
 
 ## [0.27.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.27.1-build.0...@phoenix-ui/app@0.27.1-build.1) (2022-01-24)
 
-
 ### Features
 
-* update landing page copy ([#633](https://github.com/flipadmin/phoenix-frontend/issues/633)) ([1521eed](https://github.com/flipadmin/phoenix-frontend/commit/1521eed8c31b39a0385cf98289c2e1f01ec35901))
-
-
-
-
+- update landing page copy
+  ([#633](https://github.com/flipadmin/phoenix-frontend/issues/633))
+  ([1521eed](https://github.com/flipadmin/phoenix-frontend/commit/1521eed8c31b39a0385cf98289c2e1f01ec35901))
 
 ## [0.27.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.27.0...@phoenix-ui/app@0.27.1-build.0) (2022-01-24)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 # [0.27.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.26.1-build.5...@phoenix-ui/app@0.27.0) (2022-01-21)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.26.1-build.5](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.26.1-build.4...@phoenix-ui/app@0.26.1-build.5) (2022-01-21)
-
 
 ### Features
 
-* add google tag manager ([#630](https://github.com/flipadmin/phoenix-frontend/issues/630)) ([59f45b3](https://github.com/flipadmin/phoenix-frontend/commit/59f45b3720e40fec23b244e5aee847cbe9dd4330))
-
-
-
-
+- add google tag manager
+  ([#630](https://github.com/flipadmin/phoenix-frontend/issues/630))
+  ([59f45b3](https://github.com/flipadmin/phoenix-frontend/commit/59f45b3720e40fec23b244e5aee847cbe9dd4330))
 
 ## [0.26.1-build.4](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.26.1-build.3...@phoenix-ui/app@0.26.1-build.4) (2022-01-21)
 
-
 ### Features
 
-* move sport id icon changes to avatar component ([#629](https://github.com/flipadmin/phoenix-frontend/issues/629)) ([a45570f](https://github.com/flipadmin/phoenix-frontend/commit/a45570f1fae12e02e0131503ad62f237ba14c145))
-
-
-
-
+- move sport id icon changes to avatar component
+  ([#629](https://github.com/flipadmin/phoenix-frontend/issues/629))
+  ([a45570f](https://github.com/flipadmin/phoenix-frontend/commit/a45570f1fae12e02e0131503ad62f237ba14c145))
 
 ## [0.26.1-build.3](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.26.1-build.2...@phoenix-ui/app@0.26.1-build.3) (2022-01-21)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.26.1-build.2](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.26.1-build.1...@phoenix-ui/app@0.26.1-build.2) (2022-01-19)
-
 
 ### Features
 
-* add register modal to showModal query param ([#624](https://github.com/flipadmin/phoenix-frontend/issues/624)) ([7b35984](https://github.com/flipadmin/phoenix-frontend/commit/7b35984fc1f7b0bdbfd546de944eb6cf01d71581))
-
-
-
-
+- add register modal to showModal query param
+  ([#624](https://github.com/flipadmin/phoenix-frontend/issues/624))
+  ([7b35984](https://github.com/flipadmin/phoenix-frontend/commit/7b35984fc1f7b0bdbfd546de944eb6cf01d71581))
 
 ## [0.26.1-build.1](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.26.1-build.0...@phoenix-ui/app@0.26.1-build.1) (2022-01-19)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.26.1-build.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.26.0...@phoenix-ui/app@0.26.1-build.0) (2022-01-19)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 # [0.26.0](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.47...@phoenix-ui/app@0.26.0) (2022-01-18)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.25.1-build.47](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.46...@phoenix-ui/app@0.25.1-build.47) (2022-01-17)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.25.1-build.46](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.45...@phoenix-ui/app@0.25.1-build.46) (2022-01-17)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.25.1-build.45](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.44...@phoenix-ui/app@0.25.1-build.45) (2022-01-16)
-
 
 ### Features
 
-* update reg form copy ([#619](https://github.com/flipadmin/phoenix-frontend/issues/619)) ([08475e0](https://github.com/flipadmin/phoenix-frontend/commit/08475e0ed1fdfc4532c48044203ca944ad488d61))
-
-
-
-
+- update reg form copy
+  ([#619](https://github.com/flipadmin/phoenix-frontend/issues/619))
+  ([08475e0](https://github.com/flipadmin/phoenix-frontend/commit/08475e0ed1fdfc4532c48044203ca944ad488d61))
 
 ## [0.25.1-build.44](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.43...@phoenix-ui/app@0.25.1-build.44) (2022-01-14)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.25.1-build.43](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.42...@phoenix-ui/app@0.25.1-build.43) (2022-01-14)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.25.1-build.42](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.41...@phoenix-ui/app@0.25.1-build.42) (2022-01-12)
-
 
 ### Features
 
-* update registration copy, add default countrycode ([#615](https://github.com/flipadmin/phoenix-frontend/issues/615)) ([7ca82b2](https://github.com/flipadmin/phoenix-frontend/commit/7ca82b2174f5a3c7b386ccb1e0f11f2ec5f31691))
-
-
-
-
+- update registration copy, add default countrycode
+  ([#615](https://github.com/flipadmin/phoenix-frontend/issues/615))
+  ([7ca82b2](https://github.com/flipadmin/phoenix-frontend/commit/7ca82b2174f5a3c7b386ccb1e0f11f2ec5f31691))
 
 ## [0.25.1-build.41](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.40...@phoenix-ui/app@0.25.1-build.41) (2022-01-11)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.25.1-build.40](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.39...@phoenix-ui/app@0.25.1-build.40) (2022-01-11)
-
 
 ### Bug Fixes
 
-* check coolOff exists ([#613](https://github.com/flipadmin/phoenix-frontend/issues/613)) ([d98fdd8](https://github.com/flipadmin/phoenix-frontend/commit/d98fdd8523269a831f231fc1238d0a3ba87502ee))
-
-
-
-
+- check coolOff exists
+  ([#613](https://github.com/flipadmin/phoenix-frontend/issues/613))
+  ([d98fdd8](https://github.com/flipadmin/phoenix-frontend/commit/d98fdd8523269a831f231fc1238d0a3ba87502ee))
 
 ## [0.25.1-build.39](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.38...@phoenix-ui/app@0.25.1-build.39) (2022-01-11)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.25.1-build.38](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.37...@phoenix-ui/app@0.25.1-build.38) (2022-01-10)
-
 
 ### Features
 
-* update session limit copy ([#610](https://github.com/flipadmin/phoenix-frontend/issues/610)) ([e823864](https://github.com/flipadmin/phoenix-frontend/commit/e8238649734b70a2d66bc843c1f425604032dbc8))
-
-
-
-
+- update session limit copy
+  ([#610](https://github.com/flipadmin/phoenix-frontend/issues/610))
+  ([e823864](https://github.com/flipadmin/phoenix-frontend/commit/e8238649734b70a2d66bc843c1f425604032dbc8))
 
 ## [0.25.1-build.37](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.36...@phoenix-ui/app@0.25.1-build.37) (2022-01-10)
 
-
 ### Bug Fixes
 
-* check if odd value is different than null ([#607](https://github.com/flipadmin/phoenix-frontend/issues/607)) ([8982803](https://github.com/flipadmin/phoenix-frontend/commit/898280364f066f19d1b976f0a7f7c5d3ec453a19))
-
+- check if odd value is different than null
+  ([#607](https://github.com/flipadmin/phoenix-frontend/issues/607))
+  ([8982803](https://github.com/flipadmin/phoenix-frontend/commit/898280364f066f19d1b976f0a7f7c5d3ec453a19))
 
 ### Features
 
-* change copy of registration form ([#608](https://github.com/flipadmin/phoenix-frontend/issues/608)) ([f7fee0f](https://github.com/flipadmin/phoenix-frontend/commit/f7fee0f13388d3af67605c15988cb03cdedd6143))
-
-
-
-
+- change copy of registration form
+  ([#608](https://github.com/flipadmin/phoenix-frontend/issues/608))
+  ([f7fee0f](https://github.com/flipadmin/phoenix-frontend/commit/f7fee0f13388d3af67605c15988cb03cdedd6143))
 
 ## [0.25.1-build.36](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.35...@phoenix-ui/app@0.25.1-build.36) (2022-01-07)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.25.1-build.35](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.34...@phoenix-ui/app@0.25.1-build.35) (2022-01-06)
-
 
 ### Features
 
-* [gmv3-2672] modal footer button style change ([#605](https://github.com/flipadmin/phoenix-frontend/issues/605)) ([e3a418b](https://github.com/flipadmin/phoenix-frontend/commit/e3a418ba3c411aafdca6144adf9b9f77beba0834))
-
-
-
-
+- [gmv3-2672] modal footer button style change
+  ([#605](https://github.com/flipadmin/phoenix-frontend/issues/605))
+  ([e3a418b](https://github.com/flipadmin/phoenix-frontend/commit/e3a418ba3c411aafdca6144adf9b9f77beba0834))
 
 ## [0.25.1-build.34](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.33...@phoenix-ui/app@0.25.1-build.34) (2022-01-06)
 
-
 ### Features
 
-* refactor ws messages event format ([#603](https://github.com/flipadmin/phoenix-frontend/issues/603)) ([eeb706e](https://github.com/flipadmin/phoenix-frontend/commit/eeb706eb075505070a0b2ecce2c48af8dd21fc11))
-
-
-
-
+- refactor ws messages event format
+  ([#603](https://github.com/flipadmin/phoenix-frontend/issues/603))
+  ([eeb706e](https://github.com/flipadmin/phoenix-frontend/commit/eeb706eb075505070a0b2ecce2c48af8dd21fc11))
 
 ## [0.25.1-build.33](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.32...@phoenix-ui/app@0.25.1-build.33) (2022-01-06)
 
-
 ### Bug Fixes
 
-* check if odds are new and take care of null odds value ([#604](https://github.com/flipadmin/phoenix-frontend/issues/604)) ([5f865fa](https://github.com/flipadmin/phoenix-frontend/commit/5f865fafdc695e2707493c59eea44b82cd1b881e))
-
-
-
-
+- check if odds are new and take care of null odds value
+  ([#604](https://github.com/flipadmin/phoenix-frontend/issues/604))
+  ([5f865fa](https://github.com/flipadmin/phoenix-frontend/commit/5f865fafdc695e2707493c59eea44b82cd1b881e))
 
 ## [0.25.1-build.32](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.31...@phoenix-ui/app@0.25.1-build.32) (2022-01-06)
 
-
 ### Bug Fixes
 
-* handle selected select item style ([#596](https://github.com/flipadmin/phoenix-frontend/issues/596)) ([a924ba1](https://github.com/flipadmin/phoenix-frontend/commit/a924ba1946c05e0724b7d59325b2cc9bfb499822))
-
-
-
-
+- handle selected select item style
+  ([#596](https://github.com/flipadmin/phoenix-frontend/issues/596))
+  ([a924ba1](https://github.com/flipadmin/phoenix-frontend/commit/a924ba1946c05e0724b7d59325b2cc9bfb499822))
 
 ## [0.25.1-build.31](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.30...@phoenix-ui/app@0.25.1-build.31) (2022-01-05)
 
-
 ### Bug Fixes
 
-* add target blank to pdf link ([#602](https://github.com/flipadmin/phoenix-frontend/issues/602)) ([e678dfa](https://github.com/flipadmin/phoenix-frontend/commit/e678dfa9a10e79c5d41129949bcd7c9b7de61c24))
-
-
-
-
+- add target blank to pdf link
+  ([#602](https://github.com/flipadmin/phoenix-frontend/issues/602))
+  ([e678dfa](https://github.com/flipadmin/phoenix-frontend/commit/e678dfa9a10e79c5d41129949bcd7c9b7de61c24))
 
 ## [0.25.1-build.30](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.29...@phoenix-ui/app@0.25.1-build.30) (2022-01-05)
 
-
 ### Features
 
-* update rg copy ([#601](https://github.com/flipadmin/phoenix-frontend/issues/601)) ([998c138](https://github.com/flipadmin/phoenix-frontend/commit/998c13805afa6c57e1e8feeb1c194566b6d841f2))
-
-
-
-
+- update rg copy
+  ([#601](https://github.com/flipadmin/phoenix-frontend/issues/601))
+  ([998c138](https://github.com/flipadmin/phoenix-frontend/commit/998c13805afa6c57e1e8feeb1c194566b6d841f2))
 
 ## [0.25.1-build.29](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.28...@phoenix-ui/app@0.25.1-build.29) (2022-01-05)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.25.1-build.28](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.27...@phoenix-ui/app@0.25.1-build.28) (2022-01-04)
-
 
 ### Features
 
-* add geocomply ENV settings ([#598](https://github.com/flipadmin/phoenix-frontend/issues/598)) ([e5dbb19](https://github.com/flipadmin/phoenix-frontend/commit/e5dbb192ce6105bfd93612a25d3f7109935efef7))
-
-
-
-
+- add geocomply ENV settings
+  ([#598](https://github.com/flipadmin/phoenix-frontend/issues/598))
+  ([e5dbb19](https://github.com/flipadmin/phoenix-frontend/commit/e5dbb192ce6105bfd93612a25d3f7109935efef7))
 
 ## [0.25.1-build.27](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.26...@phoenix-ui/app@0.25.1-build.27) (2022-01-04)
 
-
 ### Features
 
-* [gmv3-2621] core spin component ([#595](https://github.com/flipadmin/phoenix-frontend/issues/595)) ([4e13143](https://github.com/flipadmin/phoenix-frontend/commit/4e13143d22029f198abffef794cdcc0dbb8f27f2))
-
-
-
-
+- [gmv3-2621] core spin component
+  ([#595](https://github.com/flipadmin/phoenix-frontend/issues/595))
+  ([4e13143](https://github.com/flipadmin/phoenix-frontend/commit/4e13143d22029f198abffef794cdcc0dbb8f27f2))
 
 ## [0.25.1-build.26](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.25...@phoenix-ui/app@0.25.1-build.26) (2021-12-30)
 
-
 ### Features
 
-* disable settings button if values are the same as initial, show message that data is updated ([#588](https://github.com/flipadmin/phoenix-frontend/issues/588)) ([922f315](https://github.com/flipadmin/phoenix-frontend/commit/922f315876199cc93a861a5df6f3328a77318bfb))
-
-
-
-
+- disable settings button if values are the same as initial, show message that
+  data is updated
+  ([#588](https://github.com/flipadmin/phoenix-frontend/issues/588))
+  ([922f315](https://github.com/flipadmin/phoenix-frontend/commit/922f315876199cc93a861a5df6f3328a77318bfb))
 
 ## [0.25.1-build.25](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.24...@phoenix-ui/app@0.25.1-build.25) (2021-12-29)
 
-
 ### Features
 
-* update rg copy ([#590](https://github.com/flipadmin/phoenix-frontend/issues/590)) ([d7974e6](https://github.com/flipadmin/phoenix-frontend/commit/d7974e649960b1749c45facfbf11dcf53a68b858))
-
-
-
-
+- update rg copy
+  ([#590](https://github.com/flipadmin/phoenix-frontend/issues/590))
+  ([d7974e6](https://github.com/flipadmin/phoenix-frontend/commit/d7974e649960b1749c45facfbf11dcf53a68b858))
 
 ## [0.25.1-build.24](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.23...@phoenix-ui/app@0.25.1-build.24) (2021-12-29)
 
-
 ### Features
 
-* update logout modal copy ([#589](https://github.com/flipadmin/phoenix-frontend/issues/589)) ([a5e4319](https://github.com/flipadmin/phoenix-frontend/commit/a5e4319486c8b5c3fc0da06753f330dace028a1a))
-
-
-
-
+- update logout modal copy
+  ([#589](https://github.com/flipadmin/phoenix-frontend/issues/589))
+  ([a5e4319](https://github.com/flipadmin/phoenix-frontend/commit/a5e4319486c8b5c3fc0da06753f330dace028a1a))
 
 ## [0.25.1-build.23](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.22...@phoenix-ui/app@0.25.1-build.23) (2021-12-23)
 
-
 ### Features
 
-* remove . from tx id on cashier success ([#586](https://github.com/flipadmin/phoenix-frontend/issues/586)) ([15841e1](https://github.com/flipadmin/phoenix-frontend/commit/15841e1a33061611fac1c06e63cf581c0ce4709e))
-
-
-
-
+- remove . from tx id on cashier success
+  ([#586](https://github.com/flipadmin/phoenix-frontend/issues/586))
+  ([15841e1](https://github.com/flipadmin/phoenix-frontend/commit/15841e1a33061611fac1c06e63cf581c0ce4709e))
 
 ## [0.25.1-build.22](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.21...@phoenix-ui/app@0.25.1-build.22) (2021-12-23)
 
-
 ### Features
 
-* [gmv3-2611] - bet button hover style change ([#585](https://github.com/flipadmin/phoenix-frontend/issues/585)) ([f61c070](https://github.com/flipadmin/phoenix-frontend/commit/f61c07094ae8c6ca61627a10881a5eb93bdde05e))
-
-
-
-
+- [gmv3-2611] - bet button hover style change
+  ([#585](https://github.com/flipadmin/phoenix-frontend/issues/585))
+  ([f61c070](https://github.com/flipadmin/phoenix-frontend/commit/f61c07094ae8c6ca61627a10881a5eb93bdde05e))
 
 ## [0.25.1-build.21](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.20...@phoenix-ui/app@0.25.1-build.21) (2021-12-23)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.25.1-build.20](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.19...@phoenix-ui/app@0.25.1-build.20) (2021-12-23)
-
 
 ### Bug Fixes
 
-* [gmv3-2567] reset password inputs style in mobile ([#584](https://github.com/flipadmin/phoenix-frontend/issues/584)) ([ff36973](https://github.com/flipadmin/phoenix-frontend/commit/ff36973ca1f7638c8f8fa718c604936a1ee23c9d))
-
-
-
-
+- [gmv3-2567] reset password inputs style in mobile
+  ([#584](https://github.com/flipadmin/phoenix-frontend/issues/584))
+  ([ff36973](https://github.com/flipadmin/phoenix-frontend/commit/ff36973ca1f7638c8f8fa718c604936a1ee23c9d))
 
 ## [0.25.1-build.19](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.18...@phoenix-ui/app@0.25.1-build.19) (2021-12-22)
 
-
 ### Features
 
-* [gmv3-2610] removed mobile side bar menu item promotions ([#583](https://github.com/flipadmin/phoenix-frontend/issues/583)) ([c7a3d4f](https://github.com/flipadmin/phoenix-frontend/commit/c7a3d4fa1c2bc6c02cb5d0425f7a1efaac2997d0))
-
-
-
-
+- [gmv3-2610] removed mobile side bar menu item promotions
+  ([#583](https://github.com/flipadmin/phoenix-frontend/issues/583))
+  ([c7a3d4f](https://github.com/flipadmin/phoenix-frontend/commit/c7a3d4fa1c2bc6c02cb5d0425f7a1efaac2997d0))
 
 ## [0.25.1-build.18](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.17...@phoenix-ui/app@0.25.1-build.18) (2021-12-22)
 
-
 ### Bug Fixes
 
-* [gmv3-2606] spinner bug fix deposit withdrawal ([#582](https://github.com/flipadmin/phoenix-frontend/issues/582)) ([7529e33](https://github.com/flipadmin/phoenix-frontend/commit/7529e33e3f5eb2122617d142154f0d72dc391f2c))
-
-
-
-
+- [gmv3-2606] spinner bug fix deposit withdrawal
+  ([#582](https://github.com/flipadmin/phoenix-frontend/issues/582))
+  ([7529e33](https://github.com/flipadmin/phoenix-frontend/commit/7529e33e3f5eb2122617d142154f0d72dc391f2c))
 
 ## [0.25.1-build.17](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.16...@phoenix-ui/app@0.25.1-build.17) (2021-12-21)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.25.1-build.16](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.15...@phoenix-ui/app@0.25.1-build.16) (2021-12-21)
-
 
 ### Features
 
-* update copy ([#576](https://github.com/flipadmin/phoenix-frontend/issues/576)) ([5709b57](https://github.com/flipadmin/phoenix-frontend/commit/5709b57bb19ed817f05e28236ecc5040d19ee4c9))
-* update rg copy ([#578](https://github.com/flipadmin/phoenix-frontend/issues/578)) ([c6bf1e5](https://github.com/flipadmin/phoenix-frontend/commit/c6bf1e57e4e5f44085f9add96a038e0f987ee642))
-
-
-
-
+- update copy ([#576](https://github.com/flipadmin/phoenix-frontend/issues/576))
+  ([5709b57](https://github.com/flipadmin/phoenix-frontend/commit/5709b57bb19ed817f05e28236ecc5040d19ee4c9))
+- update rg copy
+  ([#578](https://github.com/flipadmin/phoenix-frontend/issues/578))
+  ([c6bf1e5](https://github.com/flipadmin/phoenix-frontend/commit/c6bf1e57e4e5f44085f9add96a038e0f987ee642))
 
 ## [0.25.1-build.15](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.14...@phoenix-ui/app@0.25.1-build.15) (2021-12-20)
 
-
 ### Features
 
-* hide promo banner ([#573](https://github.com/flipadmin/phoenix-frontend/issues/573)) ([a9aa0c6](https://github.com/flipadmin/phoenix-frontend/commit/a9aa0c6959db293f8c7d7e985d105b549c02e0d1))
-
-
-
-
+- hide promo banner
+  ([#573](https://github.com/flipadmin/phoenix-frontend/issues/573))
+  ([a9aa0c6](https://github.com/flipadmin/phoenix-frontend/commit/a9aa0c6959db293f8c7d7e985d105b549c02e0d1))
 
 ## [0.25.1-build.14](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.13...@phoenix-ui/app@0.25.1-build.14) (2021-12-20)
 
-
 ### Bug Fixes
 
-* handle autofill styles ([#572](https://github.com/flipadmin/phoenix-frontend/issues/572)) ([9573cfe](https://github.com/flipadmin/phoenix-frontend/commit/9573cfe212c72adfe6dc1058b28cfc65c9644ed6))
-
-
-
-
+- handle autofill styles
+  ([#572](https://github.com/flipadmin/phoenix-frontend/issues/572))
+  ([9573cfe](https://github.com/flipadmin/phoenix-frontend/commit/9573cfe212c72adfe6dc1058b28cfc65c9644ed6))
 
 ## [0.25.1-build.13](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.12...@phoenix-ui/app@0.25.1-build.13) (2021-12-17)
 
 **Note:** Version bump only for package @phoenix-ui/app
 
-
-
-
-
 ## [0.25.1-build.12](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.11...@phoenix-ui/app@0.25.1-build.12) (2021-12-17)
-
 
 ### Features
 
-* fix select issues ([#571](https://github.com/flipadmin/phoenix-frontend/issues/571)) ([08b318b](https://github.com/flipadmin/phoenix-frontend/commit/08b318bd90fa56f6c2af81fbb21f7e0c76b29cdc))
-
-
-
-
+- fix select issues
+  ([#571](https://github.com/flipadmin/phoenix-frontend/issues/571))
+  ([08b318b](https://github.com/flipadmin/phoenix-frontend/commit/08b318bd90fa56f6c2af81fbb21f7e0c76b29cdc))
 
 ## [0.25.1-build.11](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.10...@phoenix-ui/app@0.25.1-build.11) (2021-12-17)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 # Change Log
 
@@ -1501,10 +934,6 @@ All notable changes to this project will be documented in this file. See
 ## [0.25.1-build.10](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.9...@phoenix-ui/app@0.25.1-build.10) (2021-12-17)
 
 **Note:** Version bump only for package @phoenix-ui/app
-
-
-
-
 
 ## [0.25.1-build.9](https://github.com/flipadmin/phoenix-frontend/compare/@phoenix-ui/app@0.25.1-build.8...@phoenix-ui/app@0.25.1-build.9) (2021-12-17)
 
@@ -1629,7 +1058,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- handle new marketLifecycle value on talon
+- handle new marketLifecycle value on taptrade
   ([#538](https://github.com/flipadmin/phoenix-frontend/issues/538))
   ([45e11b1](https://github.com/flipadmin/phoenix-frontend/commit/45e11b1723b42cabb9996c81f842997e2afaa0d4))
 
@@ -1637,7 +1066,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- handle new marketLifecycle value on talon
+- handle new marketLifecycle value on taptrade
   ([#538](https://github.com/flipadmin/phoenix-frontend/issues/538))
   ([45e11b1](https://github.com/flipadmin/phoenix-frontend/commit/45e11b1723b42cabb9996c81f842997e2afaa0d4))
 
@@ -1863,7 +1292,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- add withdrawals to talon, hide cool off button, fix suspend
+- add withdrawals to taptrade, hide cool off button, fix suspend
   ([#475](https://github.com/flipadmin/phoenix-frontend/issues/475))
   ([2070553](https://github.com/flipadmin/phoenix-frontend/commit/20705539cec07ceca27a1c8704b91275963301f7))
 - update account status copy, hide close account button
@@ -3295,7 +2724,7 @@ All notable changes to this project will be documented in this file. See
 - change version of next js to 9.5.6-canary.18
   ([#130](https://github.com/flipadmin/phoenix-frontend/issues/130))
   ([059f597](https://github.com/flipadmin/phoenix-frontend/commit/059f597d3c40720835b229acd370f7bf89882978))
-- tokens expiration logic for app, talon and utils packages
+- tokens expiration logic for app, taptrade and utils packages
   ([#131](https://github.com/flipadmin/phoenix-frontend/issues/131))
   ([849b8a2](https://github.com/flipadmin/phoenix-frontend/commit/849b8a29ea7ae6cb489d32d0dfd8c04894143790))
 
@@ -3427,7 +2856,7 @@ All notable changes to this project will be documented in this file. See
 
 ### Features
 
-- **talon:** user wallet history
+- **taptrade:** user wallet history
   ([#95](https://github.com/flipadmin/phoenix-frontend/issues/95))
   ([44fb454](https://github.com/flipadmin/phoenix-frontend/commit/44fb454bd4f4f72671bce3db98b577548934c000))
 
@@ -3579,7 +3008,7 @@ All notable changes to this project will be documented in this file. See
 - connect betslip to login flow, add tests, add missing translation files
   ([#47](https://github.com/flipadmin/phoenix-frontend/issues/47))
   ([b8a530d](https://github.com/flipadmin/phoenix-frontend/commit/b8a530d77784595a8cb0524446e311b73768013f))
-- **talon:** package init
+- **taptrade:** package init
   ([#45](https://github.com/flipadmin/phoenix-frontend/issues/45))
   ([1a85ed5](https://github.com/flipadmin/phoenix-frontend/commit/1a85ed578b12b434a227fee837e8d43370a8bfab))
 - add betslip ([#46](https://github.com/flipadmin/phoenix-frontend/issues/46))

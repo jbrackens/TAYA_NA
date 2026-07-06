@@ -2,7 +2,7 @@
 
 ## Design Overview
 
-The WebSocket module implements a real-time event broadcasting system for the Phoenix Sportsbook gateway. It uses a hub-and-spoke architecture with channel-based subscriptions.
+The WebSocket module implements a real-time event broadcasting system for the TapTrade Sportsbook gateway. It uses a hub-and-spoke architecture with channel-based subscriptions.
 
 ## Architecture Diagram
 

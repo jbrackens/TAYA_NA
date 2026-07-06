@@ -6,15 +6,19 @@
 
 ## Overview
 
-This document details the enhancements made to the Phoenix Backoffice pages to improve error handling, user feedback, and overall UX through proper loading states and error boundaries.
+This document details the enhancements made to the TapTrade Backoffice pages to
+improve error handling, user feedback, and overall UX through proper loading
+states and error boundaries.
 
 ## What Was Added
 
 ### 1. New Shared Components
 
 #### ErrorBoundary Component
+
 - **Location**: `/app/components/shared/ErrorBoundary.tsx`
-- **Purpose**: Wraps page content to catch and handle JavaScript errors gracefully
+- **Purpose**: Wraps page content to catch and handle JavaScript errors
+  gracefully
 - **Features**:
   - Catches errors during rendering
   - Displays user-friendly error message
@@ -23,6 +27,7 @@ This document details the enhancements made to the Phoenix Backoffice pages to i
   - Logs errors for debugging
 
 **Usage**:
+
 ```typescript
 <ErrorBoundary>
   <PageContent />
@@ -30,6 +35,7 @@ This document details the enhancements made to the Phoenix Backoffice pages to i
 ```
 
 #### LoadingSpinner Component
+
 - **Location**: `/app/components/shared/LoadingSpinner.tsx`
 - **Purpose**: Displays loading state with animated spinner
 - **Features**:
@@ -39,11 +45,13 @@ This document details the enhancements made to the Phoenix Backoffice pages to i
   - Dark theme styling
 
 **Usage**:
+
 ```typescript
 <LoadingSpinner centered={true} text="Loading data..." />
 ```
 
 #### SkeletonLoader Component
+
 - **Location**: `/app/components/shared/LoadingSpinner.tsx`
 - **Purpose**: Displays skeleton placeholder while data loads
 - **Features**:
@@ -53,11 +61,13 @@ This document details the enhancements made to the Phoenix Backoffice pages to i
   - Simulates content layout
 
 **Usage**:
+
 ```typescript
 <SkeletonLoader count={3} />
 ```
 
 #### ErrorState Component
+
 - **Location**: `/app/components/shared/ErrorState.tsx`
 - **Purpose**: Displays error message with retry option
 - **Features**:
@@ -67,6 +77,7 @@ This document details the enhancements made to the Phoenix Backoffice pages to i
   - Dark theme styling
 
 **Usage**:
+
 ```typescript
 <ErrorState
   title="Failed to load data"
@@ -79,6 +90,7 @@ This document details the enhancements made to the Phoenix Backoffice pages to i
 ### 2. Enhanced Pages
 
 All major pages now include:
+
 - Proper error state management with `useState`
 - Loading state handling
 - Error boundary wrapping
@@ -86,6 +98,7 @@ All major pages now include:
 - Comments for API integration points
 
 #### Updated Pages:
+
 1. **Dashboard** (`/app/dashboard/page.tsx`)
    - Added loading spinner during initial load
    - Added error state with retry
@@ -144,7 +157,7 @@ function PageContent() {
   useEffect(() => {
     setIsLoading(true);
     setError(null);
-    
+
     // Fetch data
     const timer = setTimeout(() => {
       try {
@@ -166,7 +179,7 @@ function PageContent() {
 
   if (isLoading) return <LoadingSpinner />;
   if (error) return <ErrorState onRetry={handleRetry} />;
-  
+
   return <PageContent />;
 }
 
@@ -184,7 +197,7 @@ Each page includes comments marking where to integrate with actual API calls:
 ```typescript
 // Replace with actual API call:
 const { get } = useAdminApi();
-const data = await get('/api/admin/endpoint');
+const data = await get("/api/admin/endpoint");
 setData(data);
 ```
 
@@ -228,6 +241,7 @@ subscribe((update) => {
 ## Component Props Reference
 
 ### ErrorBoundary
+
 ```typescript
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -235,25 +249,28 @@ interface ErrorBoundaryProps {
 ```
 
 ### LoadingSpinner
+
 ```typescript
 interface LoadingSpinnerProps {
-  centered?: boolean;  // default: true
-  text?: string;       // default: 'Loading...'
+  centered?: boolean; // default: true
+  text?: string; // default: 'Loading...'
 }
 ```
 
 ### SkeletonLoader
+
 ```typescript
 interface SkeletonProps {
-  count?: number;  // default: 3
+  count?: number; // default: 3
 }
 ```
 
 ### ErrorState
+
 ```typescript
 interface ErrorStateProps {
-  title?: string;           // default: 'Failed to load data'
-  message?: string;         // default: 'An error occurred...'
+  title?: string; // default: 'Failed to load data'
+  message?: string; // default: 'An error occurred...'
   onRetry?: () => void;
   showRetryButton?: boolean; // default: true
 }
@@ -261,7 +278,8 @@ interface ErrorStateProps {
 
 ## Styling & Theming
 
-All components use the Phoenix dark theme:
+All components use the TapTrade dark theme:
+
 - Background: `#1a1a2e`, `#16213e`, `#0f3460`
 - Primary: `#4a7eff`
 - Text: `#ffffff`, `#a0a0a0`
@@ -286,6 +304,5 @@ Components are fully responsive and support mobile devices via media queries.
 
 ---
 
-**Last Updated**: April 2026
-**Status**: Complete - Ready for API Integration
+**Last Updated**: April 2026 **Status**: Complete - Ready for API Integration
 **Total Time Investment**: ~2 hours of development

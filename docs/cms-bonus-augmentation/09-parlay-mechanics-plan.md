@@ -294,4 +294,4 @@ Arbitrage with correlated void:
 10. `modules/platform/canonical/v1/types.go:277-295` — OddsBoost struct
 11. `talon-backoffice/packages/app/app/components/BetslipProvider.tsx` — parlay mode toggle
 12. `talon-backoffice/packages/app/app/lib/api/betting-client.ts` — placeParlay() API call
-13. `services/codex-prep/phoenix-betting-engine/internal/service/service.go:418-460` — PlaceParlay() reference
+13. `services/codex-prep/taptrade-betting-engine/internal/service/service.go:418-460` — PlaceParlay() reference

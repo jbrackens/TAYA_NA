@@ -45,8 +45,8 @@ only embedding control.
 - Auth: the web app restores sessions through HttpOnly cookies plus a readable
   CSRF cookie. The gateway validates bearer JWTs and exposes user claims to
   protected handlers.
-- Backend: Go services already include `phoenix-user`, `phoenix-social`,
-  `phoenix-realtime`, `phoenix-audit`, and Redis-backed gateway rate limiting.
+- Backend: Go services already include `taptrade-user`, `taptrade-social`,
+  `taptrade-realtime`, `taptrade-audit`, and Redis-backed gateway rate limiting.
   The realtime service is market/wallet fanout, not chat.
 - Deployment: local infrastructure is Docker Compose with Postgres, Redis, and
   Kafka. A `chat-spike` Compose profile adds Rocket.Chat and MongoDB only for
@@ -74,7 +74,7 @@ Cons and launch blockers:
   whether token lifetime, password rotation, logout, and user deactivation meet
   TapTrade's short-lived session and revocation requirements before public launch.
 - Chat report writes are durable TapTrade-owned `audit_log` rows when the gateway
-  has `DATABASE_URL`; launch must verify the rows are visible in Talon/admin
+  has `DATABASE_URL`; launch must verify the rows are visible in TapTrade/admin
   audit views with `product=prediction`.
 
 Integration notes:
