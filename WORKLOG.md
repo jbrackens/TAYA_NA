@@ -137,3 +137,7 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
 - STATE: pre-unfreeze batches EXHAUSTED. Active scope is grep-clean except deferred
   patterns (paths→J, phoenix.local+module+Go→H, allowlisted pins/shims/records).
   Loop iterations until task_633e7ad3 lands: re-verify residuals only, then H→J→final.
+- RENDERED CHECK (mid-run, player app on :3013 against demo API): wordmark
+  "TapTrade.", document titles "TapTrade", ZERO legacy strings
+  (Tiangge|Phoenix|Talon|Hula Na) in rendered text on / and /predict — VERIFIED.
+  Backoffice rendered check pending final sweep (needs office dev server).
