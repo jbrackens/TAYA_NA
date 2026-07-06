@@ -1,24 +1,23 @@
 # Hero ambient video — direction brief & activation
 
-## Current asset (shipped 2026-07-06)
+## Current asset (v2, shipped 2026-07-06)
 
-`public/brand/hero-ambient.mp4` — 1920×1080, 4.25s seamless loop, 621KB. Scene:
-silhouetted crowd from behind, arms raised, floodlit barangay basketball court,
-drifting haze. Pipeline: FLUX.1-Krea-dev still (Space
-`mcp-tools/FLUX.1-Krea-dev`) → Wan 2.2 14B image-to-video (Space
-`zerogpu-aoti/wan2-2-fp8da-aoti-faster`) → ffmpeg grade (desat 18%, crushed
-blacks, lanczos 1080p, temporal grain) → head-over-tail crossfade loop. Passed
-the frame gate below (every frame reviewed; two sibling candidates rejected:
-garbled signage in one, a hallucinated player popping in mid-clip in the other).
-Activated in the demo deploy via `NEXT_PUBLIC_HERO_AMBIENT_VIDEO` build-arg in
-deploy-demo.yml.
+`public/brand/hero-ambient.mp4` — 1920×1080@24, 7.5s seamless two-scene loop,
+1.5MB. Scene A (~4s): friends on a couch reacting to a game — salvaged from the
+ORIGINAL hero video's opening (its only text-free window, 0–4.5s; everything
+after carries garbled UI/AR/neon). Scene B (~4s): silhouetted crowd at a
+floodlit barangay court (FLUX.1-Krea-dev still → Wan 2.2 I2V). Both regraded to
+one look (desat ~20%, crushed blacks, grain), joined with 0.8s dissolves,
+head-over-tail wrap. Every frame of the final loop reviewed against the gate
+below. Known nit: scene A carries the original's faint drifting sparkle
+watermark — invisible at 26% under the scrim. Activated in the demo deploy via
+`NEXT_PUBLIC_HERO_AMBIENT_VIDEO` build-arg.
 
-**License note:** Wan 2.2 is Apache-2.0 (outputs unrestricted). The still came
-from FLUX.1-**Krea-dev**, which ships under the FLUX.1-dev Non-Commercial
-License — BFL's terms permit broad use of _outputs_, but verify the current
-Krea/BFL output terms before using this asset in real-money launch marketing
-(fine for the demo). Regenerating the still with FLUX.1-schnell (Apache-2.0) is
-the clean alternative if needed.
+**License note:** scene A inherits whatever terms the original commissioned clip
+had (verify before real-money launch marketing); scene B: Wan 2.2 is Apache-2.0,
+but its source still is FLUX.1-Krea-dev (FLUX.1-dev Non-Commercial License —
+outputs broadly usable, verify current terms). FLUX.1-schnell (Apache-2.0) is
+the clean regeneration path.
 
 The landing hero is a drawn composition (chart-paper grid + YES/NO price paths).
 An optional footage layer can sit _behind_ the scrim as atmosphere. The product
