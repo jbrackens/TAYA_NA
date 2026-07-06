@@ -1,5 +1,25 @@
 # Hero ambient video — direction brief & activation
 
+## Current asset (shipped 2026-07-06)
+
+`public/brand/hero-ambient.mp4` — 1920×1080, 4.25s seamless loop, 621KB. Scene:
+silhouetted crowd from behind, arms raised, floodlit barangay basketball court,
+drifting haze. Pipeline: FLUX.1-Krea-dev still (Space
+`mcp-tools/FLUX.1-Krea-dev`) → Wan 2.2 14B image-to-video (Space
+`zerogpu-aoti/wan2-2-fp8da-aoti-faster`) → ffmpeg grade (desat 18%, crushed
+blacks, lanczos 1080p, temporal grain) → head-over-tail crossfade loop. Passed
+the frame gate below (every frame reviewed; two sibling candidates rejected:
+garbled signage in one, a hallucinated player popping in mid-clip in the other).
+Activated in the demo deploy via `NEXT_PUBLIC_HERO_AMBIENT_VIDEO` build-arg in
+deploy-demo.yml.
+
+**License note:** Wan 2.2 is Apache-2.0 (outputs unrestricted). The still came
+from FLUX.1-**Krea-dev**, which ships under the FLUX.1-dev Non-Commercial
+License — BFL's terms permit broad use of _outputs_, but verify the current
+Krea/BFL output terms before using this asset in real-money launch marketing
+(fine for the demo). Regenerating the still with FLUX.1-schnell (Apache-2.0) is
+the clean alternative if needed.
+
 The landing hero is a drawn composition (chart-paper grid + YES/NO price paths).
 An optional footage layer can sit _behind_ the scrim as atmosphere. The product
 layer (chart, quotes, headline) always stays code-drawn on top — footage is
