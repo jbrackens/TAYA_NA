@@ -38,7 +38,6 @@ interface MarketCardProps {
   yesPriceCents: number;
   noPriceCents: number;
   volumePointsCents: number;
-  liquidityPointsCents?: number;
   closeAt: string;
   status: string;
   categoryLabel?: string;
@@ -51,10 +50,11 @@ interface MarketCardProps {
 
 function formatCloseAt(iso: string): string {
   const d = new Date(iso);
+  const sameYear = d.getFullYear() === new Date().getFullYear();
   return d.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
-    year: "numeric",
+    ...(sameYear ? {} : { year: "numeric" }),
   });
 }
 
@@ -68,7 +68,6 @@ export function MarketCard({
   yesPriceCents,
   noPriceCents,
   volumePointsCents,
-  liquidityPointsCents,
   closeAt,
   status,
   categoryLabel,
@@ -113,7 +112,7 @@ export function MarketCard({
         : "bg-[var(--no-bar)]";
 
   return (
-    <article className="relative flex h-full min-h-[286px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans text-[var(--t1)] transition-[transform,box-shadow,border-color] duration-[140ms] hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[0_12px_28px_rgba(60,50,30,0.08)] focus-within:-translate-y-0.5 focus-within:border-[var(--border-2)] focus-within:shadow-[0_12px_28px_rgba(60,50,30,0.08)] max-[640px]:min-h-[272px] max-[640px]:p-4">
+    <article className="relative flex h-full min-h-[248px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans text-[var(--t1)] transition-[transform,box-shadow,border-color] duration-[140ms] hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[0_12px_28px_rgba(60,50,30,0.08)] focus-within:-translate-y-0.5 focus-within:border-[var(--border-2)] focus-within:shadow-[0_12px_28px_rgba(60,50,30,0.08)] max-[640px]:min-h-[238px] max-[640px]:p-4">
       {onToggleWatchlist && (
         <button
           type="button"
@@ -215,43 +214,21 @@ export function MarketCard({
         </Link>
       </div>
 
-      {/* Secondary stats sit in a quiet footer below the bar + pills.
-       * Plain text, not a link — the body link above owns navigation. */}
-      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-[var(--border-1)] pt-3.5">
-        {categoryLabel && (
-          <div className="min-w-0 text-xs">
-            <span className="block text-[11px] font-medium text-[var(--t3)]">
-              {t("CATEGORY", "Category")}
-            </span>
-            <span className="mt-1 block truncate font-mono text-[12px] font-semibold text-[var(--t2)] tabular-nums">
-              {categoryLabel}
-            </span>
-          </div>
-        )}
-        <div className="min-w-0 text-xs">
-          <span className="block text-[11px] font-medium text-[var(--t3)]">
-            {t("VOLUME")}
-          </span>
-          <span className="mt-1 block truncate font-mono text-[12px] font-semibold text-[var(--t2)] tabular-nums">
+      {/* One quiet metadata line (owner decision 2026-07-06: the labeled
+       * 2x2 stat grid read as dashboard overkill on a browse card). */}
+      <div className="mt-4 flex items-baseline justify-between gap-3 border-t border-[var(--border-1)] pt-3 text-[12px] text-[var(--t3)]">
+        <span className="truncate">
+          {t("VOLUME")}{" "}
+          <span className="font-mono font-semibold text-[var(--t2)] tabular-nums">
             {formatCompactPoints(volumePointsCents)}
           </span>
-        </div>
-        <div className="min-w-0 text-xs">
-          <span className="block text-[11px] font-medium text-[var(--t3)]">
-            {t("LIQUIDITY")}
-          </span>
-          <span className="mt-1 block truncate font-mono text-[12px] font-semibold text-[var(--t2)] tabular-nums">
-            {formatCompactPoints(liquidityPointsCents ?? 0)}
-          </span>
-        </div>
-        <div className="min-w-0 text-right text-xs">
-          <span className="block text-[11px] font-medium text-[var(--t3)]">
-            {isOpen ? t("CLOSES") : t("STATUS")}
-          </span>
-          <span className="mt-1 block truncate font-mono text-[12px] font-semibold text-[var(--t2)] tabular-nums">
+        </span>
+        <span className="shrink-0">
+          {isOpen ? t("CLOSES") : t("STATUS")}{" "}
+          <span className="font-mono font-semibold text-[var(--t2)] tabular-nums">
             {isOpen ? formatCloseAt(closeAt) : marketStatusLabel(status, t)}
           </span>
-        </div>
+        </span>
       </div>
     </article>
   );

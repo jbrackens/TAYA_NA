@@ -43,7 +43,6 @@ export function MarketGrid({
             yesPriceCents={m.yesPricePointsCents}
             noPriceCents={m.noPricePointsCents}
             volumePointsCents={m.volumePointsCents}
-            liquidityPointsCents={m.liquidityPointsCents}
             closeAt={m.closeAt}
             status={m.status}
             categoryLabel={
