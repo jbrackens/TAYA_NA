@@ -164,5 +164,9 @@
   "DISCOVER_SUBTITLE": "Pasar diurutkan berdasarkan aktivitas 24 jam dan kontrak yang paling cepat tutup.",
   "DISCOVER_TRENDING": "Trending",
   "DISCOVER_CLOSING_SOON": "Segera tutup",
-  "NOT_ENOUGH_POINTS": "Not enough points"
+  "NOT_ENOUGH_POINTS": "Not enough points",
+  "SEARCH_MARKETS_PLACEHOLDER": "Cari pasar, kandidat, tim...",
+  "SORT_ACTIVITY": "Tren",
+  "SORT_CLOSING_SOON": "Segera ditutup",
+  "SORT_NEWEST": "Terbaru"
 }

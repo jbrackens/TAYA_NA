@@ -164,5 +164,9 @@
   "DISCOVER_SUBTITLE": "按24小时活跃度和最早结束时间排序的市场。",
   "DISCOVER_TRENDING": "热门",
   "DISCOVER_CLOSING_SOON": "即将结束",
-  "NOT_ENOUGH_POINTS": "Not enough points"
+  "NOT_ENOUGH_POINTS": "Not enough points",
+  "SEARCH_MARKETS_PLACEHOLDER": "搜索市场、候选人、球队...",
+  "SORT_ACTIVITY": "热门",
+  "SORT_CLOSING_SOON": "即将截止",
+  "SORT_NEWEST": "最新"
 }

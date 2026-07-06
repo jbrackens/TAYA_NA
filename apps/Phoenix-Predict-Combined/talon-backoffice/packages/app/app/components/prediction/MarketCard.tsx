@@ -20,6 +20,7 @@
  */
 
 import Link from "next/link";
+import { Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -37,7 +38,6 @@ interface MarketCardProps {
   yesPriceCents: number;
   noPriceCents: number;
   volumePointsCents: number;
-  liquidityPointsCents?: number;
   closeAt: string;
   status: string;
   categoryLabel?: string;
@@ -50,22 +50,16 @@ interface MarketCardProps {
 
 function formatCloseAt(iso: string): string {
   const d = new Date(iso);
+  const sameYear = d.getFullYear() === new Date().getFullYear();
   return d.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
-    year: "numeric",
+    ...(sameYear ? {} : { year: "numeric" }),
   });
 }
 
-const monogramBgClasses: Record<string, string> = {
-  "bg-blue": "bg-[#3b82f6]",
-  "bg-orange": "bg-[#f59e0b]",
-  "bg-emerald": "bg-[#10b981]",
-  "bg-purple": "bg-[#8b5cf6]",
-  "bg-cyan": "bg-[#06b6d4]",
-  "bg-green": "bg-[#22c55e]",
-  "bg-slate": "bg-[#64748b]",
-};
+const MONOGRAM_CLASS =
+  "border border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t3)]";
 
 export function MarketCard({
   marketId,
@@ -74,7 +68,6 @@ export function MarketCard({
   yesPriceCents,
   noPriceCents,
   volumePointsCents,
-  liquidityPointsCents,
   closeAt,
   status,
   categoryLabel,
@@ -119,14 +112,14 @@ export function MarketCard({
         : "bg-[var(--no-bar)]";
 
   return (
-    <article className="flex h-full min-h-[286px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans text-[var(--t1)] transition-[transform,box-shadow,border-color] duration-[140ms] hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[0_12px_28px_rgba(60,50,30,0.08)] focus-within:-translate-y-0.5 focus-within:border-[var(--border-2)] focus-within:shadow-[0_12px_28px_rgba(60,50,30,0.08)] max-[640px]:min-h-[272px] max-[640px]:p-4">
+    <article className="relative flex h-full min-h-[248px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans text-[var(--t1)] transition-[transform,box-shadow,border-color] duration-[140ms] hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[0_12px_28px_rgba(60,50,30,0.08)] focus-within:-translate-y-0.5 focus-within:border-[var(--border-2)] focus-within:shadow-[0_12px_28px_rgba(60,50,30,0.08)] max-[640px]:min-h-[238px] max-[640px]:p-4">
       {onToggleWatchlist && (
         <button
           type="button"
-          className={`mb-3 min-h-9 self-start rounded-md border px-3 text-[12px] font-semibold transition-colors duration-150 ${
+          className={`absolute right-2.5 top-2.5 z-10 grid h-9 w-9 cursor-pointer place-items-center rounded-full border-0 bg-transparent transition-colors duration-150 ${
             watched
-              ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
-              : "border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+              ? "text-[var(--accent)]"
+              : "text-[var(--t4)] hover:bg-[rgba(26,26,26,0.05)] hover:text-[var(--t2)]"
           }`}
           aria-pressed={watched}
           aria-label={
@@ -136,7 +129,11 @@ export function MarketCard({
           }
           onClick={() => onToggleWatchlist(marketId)}
         >
-          {watched ? t("WATCHING", "Watching") : t("WATCH", "Watch")}
+          <Star
+            size={17}
+            fill={watched ? "currentColor" : "none"}
+            aria-hidden="true"
+          />
         </button>
       )}
       {/* The card body links to the market detail page (no preselect).
@@ -148,22 +145,10 @@ export function MarketCard({
         className="flex flex-1 flex-col text-inherit no-underline"
         aria-label={title}
       >
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex min-w-0 flex-auto flex-col">
-            <h3
-              className="m-0 min-h-[44px] overflow-hidden text-[17px] font-semibold leading-[1.3] text-[var(--t1)] max-[640px]:min-h-[42px] max-[640px]:text-base"
-              style={{
-                display: "-webkit-box",
-                WebkitBoxOrient: "vertical",
-                WebkitLineClamp: 2,
-              }}
-            >
-              {title}
-            </h3>
-          </div>
+        <div className="flex items-start gap-3 pr-8">
           {visibleImage.kind === "image" ? (
             <img
-              className="inline-flex h-12 w-12 flex-none items-center justify-center rounded-[10px] object-cover text-[15px] font-bold text-white max-[640px]:h-11 max-[640px]:w-11"
+              className="h-10 w-10 flex-none rounded-full object-cover"
               src={visibleImage.src}
               alt=""
               aria-hidden="true"
@@ -171,12 +156,22 @@ export function MarketCard({
             />
           ) : (
             <span
-              className={`inline-flex h-12 w-12 flex-none items-center justify-center rounded-[10px] font-sans text-[15px] font-bold text-white max-[640px]:h-11 max-[640px]:w-11 ${monogramBgClasses[visibleImage.bgClass] ?? monogramBgClasses["bg-slate"]}`}
+              className={`inline-flex h-10 w-10 flex-none items-center justify-center rounded-full font-sans text-[12px] font-bold ${MONOGRAM_CLASS}`}
               aria-hidden="true"
             >
               {visibleImage.monogram}
             </span>
           )}
+          <h3
+            className="m-0 min-h-[44px] min-w-0 flex-auto overflow-hidden text-[17px] font-semibold leading-[1.3] text-[var(--t1)] max-[640px]:min-h-[42px] max-[640px]:text-base"
+            style={{
+              display: "-webkit-box",
+              WebkitBoxOrient: "vertical",
+              WebkitLineClamp: 2,
+            }}
+          >
+            {title}
+          </h3>
         </div>
 
         <div className="mt-5 flex min-h-[58px] items-center max-[640px]:mt-4 max-[640px]:min-h-[52px]">
@@ -219,43 +214,21 @@ export function MarketCard({
         </Link>
       </div>
 
-      {/* Secondary stats sit in a quiet footer below the bar + pills.
-       * Plain text, not a link — the body link above owns navigation. */}
-      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-[var(--border-1)] pt-3.5">
-        {categoryLabel && (
-          <div className="min-w-0 text-xs">
-            <span className="block text-[11px] font-medium text-[var(--t3)]">
-              {t("CATEGORY", "Category")}
-            </span>
-            <span className="mt-1 block truncate font-mono text-[12px] font-semibold text-[var(--t2)] tabular-nums">
-              {categoryLabel}
-            </span>
-          </div>
-        )}
-        <div className="min-w-0 text-xs">
-          <span className="block text-[11px] font-medium text-[var(--t3)]">
-            {t("VOLUME")}
-          </span>
-          <span className="mt-1 block truncate font-mono text-[12px] font-semibold text-[var(--t2)] tabular-nums">
+      {/* One quiet metadata line (owner decision 2026-07-06: the labeled
+       * 2x2 stat grid read as dashboard overkill on a browse card). */}
+      <div className="mt-4 flex items-baseline justify-between gap-3 border-t border-[var(--border-1)] pt-3 text-[12px] text-[var(--t3)]">
+        <span className="truncate">
+          {t("VOLUME")}{" "}
+          <span className="font-mono font-semibold text-[var(--t2)] tabular-nums">
             {formatCompactPoints(volumePointsCents)}
           </span>
-        </div>
-        <div className="min-w-0 text-xs">
-          <span className="block text-[11px] font-medium text-[var(--t3)]">
-            {t("LIQUIDITY")}
-          </span>
-          <span className="mt-1 block truncate font-mono text-[12px] font-semibold text-[var(--t2)] tabular-nums">
-            {formatCompactPoints(liquidityPointsCents ?? 0)}
-          </span>
-        </div>
-        <div className="min-w-0 text-right text-xs">
-          <span className="block text-[11px] font-medium text-[var(--t3)]">
-            {isOpen ? t("CLOSES") : t("STATUS")}
-          </span>
-          <span className="mt-1 block truncate font-mono text-[12px] font-semibold text-[var(--t2)] tabular-nums">
+        </span>
+        <span className="shrink-0">
+          {isOpen ? t("CLOSES") : t("STATUS")}{" "}
+          <span className="font-mono font-semibold text-[var(--t2)] tabular-nums">
             {isOpen ? formatCloseAt(closeAt) : marketStatusLabel(status, t)}
           </span>
-        </div>
+        </span>
       </div>
     </article>
   );

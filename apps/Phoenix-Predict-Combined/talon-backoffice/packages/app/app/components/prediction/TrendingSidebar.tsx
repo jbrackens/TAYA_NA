@@ -58,7 +58,7 @@ const TOP_MOVERS_CLASS =
 const TOP_MOVERS_HEADER_CLASS =
   "mb-[18px] flex items-center justify-between px-2";
 const TOP_MOVERS_TITLE_CLASS =
-  "m-0 text-[18px] font-bold tracking-[-0.01em] text-[var(--t1)]";
+  "type-display m-0 text-[19px] font-semibold text-[var(--t1)]";
 const TOP_MOVERS_LIVE_CLASS =
   "inline-flex items-center gap-1.5 font-['IBM_Plex_Mono',_monospace] text-[10px] uppercase tracking-[0.18em] text-[#0f8a4c]";
 const TOP_MOVERS_DOT_CLASS =
@@ -70,7 +70,7 @@ const TOP_MOVERS_CATEGORY_CLASS = "mb-1 text-[11px] font-medium text-[#0f8a4c]";
 const TOP_MOVERS_QUESTION_CLASS =
   "overflow-hidden [display:-webkit-box] text-[13px] font-medium leading-[1.3] text-[var(--t1)] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]";
 const TOP_MOVERS_PRICE_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] text-[15px] font-semibold leading-none text-[var(--t1)] [font-variant-numeric:tabular-nums]";
+  "type-display text-[17px] font-semibold leading-none text-[var(--t1)]";
 const TOP_MOVERS_FOOTER_CLASS =
   "mt-[14px] border-t border-[var(--border-1)] px-2 pt-2.5 text-center";
 const TOP_MOVERS_FOOTER_LINK_CLASS =
@@ -107,7 +107,10 @@ export function TrendingSidebar({ markets, limit = 6 }: Props) {
             : m.noPricePointsCents;
           const { pct, up } = deterministicDelta(m.ticker, leadingPrice);
           const sparkColor = up ? "var(--yes-text)" : "var(--no-text)";
-          const cat = categoryLabel(contentT, categoryFromTicker(m.ticker));
+          const cat = categoryLabel(
+            contentT,
+            m.categoryName || categoryFromTicker(m.ticker),
+          );
           return (
             <li key={m.id}>
               <Link

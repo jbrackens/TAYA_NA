@@ -310,29 +310,30 @@ export function ChatSidebar() {
     );
   }
 
+  // Collapsed: a floating pill (mirrors the mobile FAB) instead of a
+  // full-height empty rail — the old 52px sticky column read as a broken
+  // layout artifact and wasted a content column.
+  if (collapsed) {
+    return (
+      <button
+        className="fixed bottom-6 right-6 z-[70] inline-flex h-12 cursor-pointer items-center gap-2 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-1)] pl-3 pr-4 text-[13px] font-semibold text-[var(--t1)] shadow-[0_10px_24px_rgba(60,50,30,0.14)] transition-[transform,box-shadow,border-color] duration-150 ease-out hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[0_14px_32px_rgba(60,50,30,0.18)] max-[1099px]:hidden"
+        type="button"
+        aria-label="Open chat"
+        onClick={() => persistCollapsed(false)}
+      >
+        <MessageCircle
+          size={20}
+          className={chatClasses.railIcon}
+          aria-hidden="true"
+        />
+        <span>Chat</span>
+      </button>
+    );
+  }
+
   return (
-    <aside
-      className={`${chatClasses.sidebarBase} ${
-        collapsed ? chatClasses.sidebarCollapsed : chatClasses.sidebarOpen
-      }`}
-    >
-      {collapsed ? (
-        <button
-          className={chatClasses.railButton}
-          type="button"
-          aria-label="Open chat"
-          onClick={() => persistCollapsed(false)}
-        >
-          <MessageCircle
-            size={20}
-            className={chatClasses.railIcon}
-            aria-hidden="true"
-          />
-          <span>Chat</span>
-        </button>
-      ) : (
-        renderChatPanel()
-      )}
+    <aside className={`${chatClasses.sidebarBase} ${chatClasses.sidebarOpen}`}>
+      {renderChatPanel()}
     </aside>
   );
 }

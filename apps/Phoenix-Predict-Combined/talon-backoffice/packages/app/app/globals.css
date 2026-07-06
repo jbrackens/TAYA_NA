@@ -3,8 +3,59 @@
  * @source directives tell Tailwind where to scan for class names; defaults
  * usually pick these up, but we declare them explicitly to be safe with
  * Next.js's App Router directory layout. */
-@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap");
 @import "tailwindcss";
+
+/* Tailwind v4 theme: point the sans stack at Inter so `font-sans` (and the
+ * preflight default) match DESIGN.md §2 instead of ui-sans-serif. */
+@theme {
+  --font-sans:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Display voice — Clash Display (Fontshare, ITF Free Font License;
+ * self-hosted woff2, ~15KB/weight). Owner decision 2026-07-06: Inter alone
+ * gave the app no typographic identity — display surfaces (hero price,
+ * market questions in heroes, section headings, big stat values) speak
+ * Clash Display; body/UI stay Inter; small tabular data stays IBM Plex
+ * Mono. Use the `.type-display` utility, not raw font-family strings. */
+@font-face {
+  font-family: "Clash Display";
+  src: url("/fonts/ClashDisplay-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Clash Display";
+  src: url("/fonts/ClashDisplay-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Clash Display";
+  src: url("/fonts/ClashDisplay-Semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Clash Display";
+  src: url("/fonts/ClashDisplay-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+  font-style: normal;
+}
+
+:root {
+  --font-display:
+    "Clash Display", "Inter Tight", "Inter", -apple-system, sans-serif;
+}
+
+.type-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
 
 @source "./";
 @source "../components/";
@@ -61,14 +112,17 @@ body {
    * navy. The pattern hook is retained for legacy call sites.
    * Legacy --bg-{navy,teal,mint,azure} retained per P6 carry-forward
    * policy until each consuming surface migrates off them. */
-  --bg-deep: #f8f9fa;
+  --bg-deep: #f7f3ed;
   --bg-navy: #0c2a4a;
   --bg-teal: #0c2638;
   --bg-mint: #0d2a22;
   --bg-azure: #0e3858;
 
-  /* Pattern hook preserved for older surfaces; predict uses a flat backdrop. */
-  --bg-pattern: none;
+  /* Chart-paper grid on warm cream — DESIGN.md §4: the system's only
+   * decoration. Page-level only; cards/panels stay flat on top. */
+  --bg-pattern:
+    linear-gradient(to right, rgba(26, 26, 26, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(26, 26, 26, 0.035) 1px, transparent 1px);
   --bg-pattern-size: 32px 32px;
 
   /* Glass surfaces — translucent bodies for the .glass utility */
@@ -255,6 +309,22 @@ body {
 }
 .landing-fade {
   animation: landing-fade 0.9s ease-out 150ms both;
+}
+
+/* Discovery grid entrance: quick one-shot rise per card; MarketGrid sets a
+ * per-index animation-delay. Collapsed by the global reduced-motion rule. */
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.card-in {
+  animation: card-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Pulsing red dot used by the LIVE pill and the whale ticker. */

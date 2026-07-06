@@ -820,14 +820,20 @@ describe("MarketCard P8 composition", () => {
     );
   });
 
-  it("renders category and liquidity metadata on market cards", () => {
+  it("keeps the card footer to a single volume + closes line", () => {
+    // Owner decision 2026-07-06: the labeled Category/Volume/Liquidity/Closes
+    // 2x2 grid was dashboard overkill on a browse card. The footer is one
+    // muted line: volume on the left, closes/status on the right.
     assert.ok(
-      marketCardSource.includes('t("CATEGORY", "Category")') &&
-        marketCardSource.includes('t("LIQUIDITY")') &&
-        marketCardSource.includes(
-          "formatCompactPoints(liquidityPointsCents ?? 0)",
-        ),
-      "MarketCard should expose category and liquidity as card metadata",
+      marketCardSource.includes('t("VOLUME")') &&
+        marketCardSource.includes("formatCompactPoints(volumePointsCents)"),
+      "MarketCard footer should keep the volume figure",
+    );
+    assert.ok(
+      !marketCardSource.includes('t("CATEGORY", "Category")') &&
+        !marketCardSource.includes('t("LIQUIDITY")') &&
+        !marketCardSource.includes("liquidityPointsCents"),
+      "MarketCard should not reintroduce the labeled category/liquidity grid",
     );
     assert.ok(
       marketGridSource.includes("categoryLabel(t, m.categorySlug)") &&
@@ -839,11 +845,7 @@ describe("MarketCard P8 composition", () => {
   it("keeps card activity volume on the point-native prop contract", () => {
     assert.ok(
       marketCardSource.includes("volumePointsCents: number") &&
-        marketCardSource.includes("liquidityPointsCents?: number") &&
         marketCardSource.includes("formatCompactPoints(volumePointsCents)") &&
-        marketCardSource.includes(
-          "formatCompactPoints(liquidityPointsCents ?? 0)",
-        ) &&
         !marketCardSource.includes("volumeCents: number") &&
         !marketCardSource.includes("liquidityCents?: number") &&
         !marketCardSource.includes("formatCompactPoints(volumeCents)") &&
@@ -852,10 +854,8 @@ describe("MarketCard P8 composition", () => {
     );
     assert.ok(
       marketGridSource.includes("volumePointsCents={m.volumePointsCents}") &&
-        marketGridSource.includes(
-          "liquidityPointsCents={m.liquidityPointsCents}",
-        ),
-      "MarketGrid should pass point-native market activity and liquidity into MarketCard",
+        !marketGridSource.includes("liquidityPointsCents="),
+      "MarketGrid should pass point-native volume and no retired liquidity prop",
     );
   });
 });

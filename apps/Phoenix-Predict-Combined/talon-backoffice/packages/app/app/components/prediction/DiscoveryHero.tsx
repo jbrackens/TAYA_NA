@@ -58,13 +58,24 @@ export function DiscoveryHero({
   }
 
   const displayMarket = localizedMarket(contentT, market);
-  const displayCategory = categoryName
-    ? categoryLabel(contentT, categoryName)
+  const resolvedCategoryName = categoryName || market.categoryName || "";
+  const displayCategory = resolvedCategoryName
+    ? categoryLabel(contentT, resolvedCategoryName)
     : "";
+  // Machine-generated import tickers (IMP-<hex>) are data plumbing, not
+  // content — the eyebrow shows the category alone for those markets.
+  const isMachineTicker = /^IMP-[0-9A-F]{6,}$/i.test(displayMarket.ticker);
+  const eyebrowMeta = [
+    displayCategory ? displayCategory.toUpperCase() : "",
+    isMachineTicker ? "" : displayMarket.ticker,
+  ]
+    .filter(Boolean)
+    .join(" · ");
   const yes = displayMarket.yesPricePointsCents;
   const no = displayMarket.noPricePointsCents;
   const { delta, pct } = deterministicDelta(displayMarket.ticker, yes);
   const isUp = delta >= 0;
+  const isFlat = delta === 0;
   // Real backend-fetched series when available; falls back to the
   // deterministic walk during the fetch window or on failure (the
   // hook returns null in those cases and heroChartPath handles that).
@@ -78,11 +89,16 @@ export function DiscoveryHero({
   );
   const volumeLabel = formatHeroVolume(displayMarket.volumePointsCents);
   const oiLabel =
-    displayMarket.openInterestPointsCents != null
+    displayMarket.openInterestPointsCents != null &&
+    displayMarket.openInterestPointsCents > 0
       ? formatHeroVolume(displayMarket.openInterestPointsCents)
       : "—";
   const closesLabel = formatHeroCloseLeft(displayMarket.closeAt);
-  const changeClass = isUp ? "text-[var(--yes-text)]" : "text-[var(--no-text)]";
+  const changeClass = isFlat
+    ? "text-[var(--t3)]"
+    : isUp
+      ? "text-[var(--yes-text)]"
+      : "text-[var(--no-text)]";
 
   return (
     <section
@@ -99,21 +115,18 @@ export function DiscoveryHero({
               />
               {t("LIVE")}
             </span>
-            <span aria-hidden="true">·</span>
+            {eyebrowMeta ? <span aria-hidden="true">·</span> : null}
           </>
         )}
-        <span>
-          {displayCategory ? `${displayCategory.toUpperCase()} · ` : ""}
-          {displayMarket.ticker}
-        </span>
+        {eyebrowMeta ? <span>{eyebrowMeta}</span> : null}
       </header>
 
-      <h1 className="m-0 mb-4 max-w-[720px] text-[28px] font-semibold leading-[1.2] text-[var(--t1)] max-[720px]:mb-[18px] max-[720px]:text-[22px]">
+      <h1 className="type-display m-0 mb-4 max-w-[720px] text-[30px] font-semibold leading-[1.18] text-[var(--t1)] max-[720px]:mb-[18px] max-[720px]:text-[23px]">
         {displayMarket.title}
       </h1>
 
       <div
-        className="m-0 mb-3 font-sans text-[88px] font-semibold leading-none text-[var(--t1)] tabular-nums max-[720px]:text-[64px]"
+        className="type-display m-0 mb-3 text-[88px] font-semibold leading-none tracking-[-0.02em] text-[var(--t1)] max-[720px]:text-[64px]"
         aria-label={`Yes price ${yes} cents`}
       >
         {yes}
@@ -124,9 +137,19 @@ export function DiscoveryHero({
       <div
         className={`mb-[18px] inline-flex items-center gap-2.5 text-[17px] font-semibold tabular-nums ${changeClass}`}
       >
-        <span aria-hidden="true">{isUp ? "▲" : "▼"}</span>
-        {isUp ? "+" : ""}
-        {delta}¢ ({isUp ? "+" : ""}
+        {!isFlat && (
+          <svg
+            width="11"
+            height="11"
+            viewBox="0 0 10 10"
+            aria-hidden="true"
+            className={isUp ? "" : "rotate-180"}
+          >
+            <path d="M5 1.2 8.8 8H1.2Z" fill="currentColor" />
+          </svg>
+        )}
+        {isUp && !isFlat ? "+" : ""}
+        {delta}¢ ({isUp && !isFlat ? "+" : ""}
         {pct.toFixed(1)}%)
         <span className="text-sm font-medium text-[var(--t3)]">
           {t("TODAY")}
@@ -135,7 +158,7 @@ export function DiscoveryHero({
 
       <div className="mb-4">
         <svg
-          className="block h-[140px] w-full max-[720px]:h-[120px]"
+          className="block h-[140px] w-full overflow-visible max-[720px]:h-[120px]"
           viewBox="0 0 800 140"
           preserveAspectRatio="none"
         >
@@ -157,8 +180,26 @@ export function DiscoveryHero({
           <path
             d={chart.line}
             stroke={isUp ? "var(--yes-text)" : "var(--no-text)"}
-            strokeWidth={2.5}
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
             fill="none"
+          />
+          <circle
+            cx={chart.end.x}
+            cy={chart.end.y}
+            r={7}
+            fill={isUp ? "var(--yes)" : "var(--no)"}
+            opacity={0.35}
+            className="origin-center animate-ping [transform-box:fill-box] motion-reduce:hidden"
+          />
+          <circle
+            cx={chart.end.x}
+            cy={chart.end.y}
+            r={4}
+            fill={isUp ? "var(--yes-text)" : "var(--no-text)"}
+            stroke="var(--surface-1)"
+            strokeWidth={1.5}
           />
         </svg>
       </div>
@@ -166,24 +207,24 @@ export function DiscoveryHero({
       <div className="mt-5 flex gap-3 max-[720px]:mt-[18px]">
         <Link
           href={`/market/${displayMarket.ticker}`}
-          className="inline-flex max-w-[280px] flex-1 items-center justify-center rounded-md border-0 bg-[var(--accent)] px-6 py-4 text-[15px] font-semibold text-[#061a10] no-underline tabular-nums transition-[filter,transform] duration-150 hover:-translate-y-px hover:brightness-105"
+          className="inline-flex max-w-[280px] flex-1 items-center justify-center whitespace-nowrap rounded-md border-0 bg-[var(--accent)] px-6 py-4 text-[15px] font-semibold text-[#061a10] no-underline tabular-nums transition-[background-color,transform] duration-150 hover:-translate-y-px hover:bg-[#54ec9b] max-[720px]:px-4 max-[720px]:text-[14px]"
         >
-          {t("BUY_YES")} · {yes}%
+          {t("BUY_YES")} · {yes}¢
         </Link>
         <Link
           href={`/market/${displayMarket.ticker}`}
-          className="inline-flex max-w-[280px] flex-1 items-center justify-center rounded-md border-0 bg-[var(--no-soft)] px-6 py-4 text-[15px] font-semibold text-[var(--no-text)] no-underline tabular-nums transition-colors duration-150 hover:bg-[rgba(255,139,107,0.22)]"
+          className="inline-flex max-w-[280px] flex-1 items-center justify-center whitespace-nowrap rounded-md border-0 bg-[var(--no-soft)] px-6 py-4 text-[15px] font-semibold text-[var(--no-text)] no-underline tabular-nums transition-colors duration-150 hover:bg-[rgba(255,139,107,0.22)] max-[720px]:px-4 max-[720px]:text-[14px]"
         >
-          {t("BUY_NO")} · {no}%
+          {t("BUY_NO")} · {no}¢
         </Link>
       </div>
 
-      <div className="mt-6 grid grid-cols-4 gap-6 border-t border-[var(--border-1)] pt-6 max-[720px]:grid-cols-2 max-[720px]:gap-4">
+      <div className="mt-6 grid grid-cols-3 gap-6 border-t border-[var(--border-1)] pt-6 max-[720px]:grid-cols-3 max-[720px]:gap-4">
         <div>
           <div className="mb-1.5 text-xs text-[var(--t3)]">
             {t("24H_VOLUME")}
           </div>
-          <div className="text-lg font-semibold text-[var(--t1)] tabular-nums">
+          <div className="type-display whitespace-nowrap text-[19px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
             {volumeLabel}
           </div>
         </div>
@@ -191,19 +232,13 @@ export function DiscoveryHero({
           <div className="mb-1.5 text-xs text-[var(--t3)]">
             {t("OPEN_INTEREST")}
           </div>
-          <div className="text-lg font-semibold text-[var(--t1)] tabular-nums">
+          <div className="type-display whitespace-nowrap text-[19px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
             {oiLabel}
           </div>
         </div>
         <div>
-          <div className="mb-1.5 text-xs text-[var(--t3)]">{t("TRADERS")}</div>
-          <div className="text-lg font-semibold text-[var(--t1)] tabular-nums">
-            —
-          </div>
-        </div>
-        <div>
           <div className="mb-1.5 text-xs text-[var(--t3)]">{t("CLOSES")}</div>
-          <div className="text-lg font-semibold text-[var(--t1)] tabular-nums">
+          <div className="type-display whitespace-nowrap text-[19px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
             {closesLabel}
           </div>
         </div>

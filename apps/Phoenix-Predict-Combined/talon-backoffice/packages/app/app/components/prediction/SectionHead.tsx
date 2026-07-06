@@ -14,13 +14,13 @@ interface Props {
 export function SectionHead({ title, count, href }: Props) {
   return (
     <div className="mt-8 mb-[14px] flex items-baseline justify-between">
-      <h2 className="m-0 text-[18px] font-bold tracking-[-0.01em] text-[var(--t1)]">
+      <h2 className="type-display m-0 text-[19px] font-semibold text-[var(--t1)]">
         {title}
       </h2>
       {href && (
         <a
           href={href}
-          className="text-[13px] text-[var(--accent)] no-underline [text-shadow:0_0_6px_var(--accent-glow-color)] hover:underline"
+          className="text-[13px] font-semibold text-[var(--yes-text)] no-underline hover:underline"
         >
           {count != null ? `See all ${count} →` : "See all →"}
         </a>

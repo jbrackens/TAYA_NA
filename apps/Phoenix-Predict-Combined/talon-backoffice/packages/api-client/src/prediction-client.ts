@@ -417,7 +417,7 @@ export class PredictionApiClient {
     const raw = await this.request<{ tags: string[] }>(
       `/api/v1/tags${qs ? "?" + qs : ""}`,
     );
-    return raw.tags;
+    return raw.tags.filter((tag) => tag !== LAUNCH_REDACTED_TITLE);
   }
 
   async getAdminSeries(params?: { categoryId?: string }): Promise<Series[]> {
@@ -502,7 +502,9 @@ export class PredictionApiClient {
     >(`/api/v1/markets${qs ? "?" + qs : ""}`);
     return {
       ...response,
-      data: response.data.map(normalizePredictionMarket),
+      data: response.data
+        .map(normalizePredictionMarket)
+        .filter(isListableMarket),
     };
   }
 
@@ -868,13 +870,27 @@ function normalizeSettledPositionResult(
   };
 }
 
+/**
+ * Launch-safety scrub sentinel — mirrors launchRedactedComplianceText in the
+ * gateway (internal/compliance/launch_safety.go). Markets whose titles were
+ * redacted carry no usable content; public discovery UIs must not render the
+ * sentinel as a market question or tag, so list surfaces drop them here.
+ */
+export const LAUNCH_REDACTED_TITLE = "Removed by points-only safety boundary.";
+
+function isListableMarket(market: { title?: string }): boolean {
+  return (market.title || "").trim() !== LAUNCH_REDACTED_TITLE;
+}
+
 function normalizeDiscoveryResponse(
   response: LegacyDiscoveryResponse,
 ): DiscoveryResponse {
   const normalizeMarketBucket = (
     rows: LegacyPredictionMarket[] | undefined,
   ): PredictionMarket[] =>
-    Array.isArray(rows) ? rows.map(normalizePredictionMarket) : [];
+    Array.isArray(rows)
+      ? rows.map(normalizePredictionMarket).filter(isListableMarket)
+      : [];
   const normalized: Record<string, unknown> = { ...response };
 
   if (Array.isArray(response.featured)) {
