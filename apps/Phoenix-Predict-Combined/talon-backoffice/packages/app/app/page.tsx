@@ -358,13 +358,13 @@ export default function HomePage() {
               </div>
 
               <div>
-                <p className="m-0 text-[30px] font-medium leading-none text-[#0b3c25]/55 max-[720px]:text-[24px]">
+                <p className="m-0 text-[12px] font-bold uppercase tracking-[0.18em] text-[#0b3c25]/80">
                   {t("browse.eyebrow")}
                 </p>
-                <h2 className="m-0 mt-3 max-w-[500px] text-[34px] font-medium leading-[1.1] tracking-normal max-[720px]:text-[29px]">
+                <h2 className="m-0 mt-4 max-w-[500px] text-balance text-[clamp(34px,3.8vw,48px)] font-semibold leading-[1.06] tracking-[-0.02em] [font-family:'Inter_Tight','Inter',-apple-system,BlinkMacSystemFont,sans-serif] max-[720px]:text-[30px]">
                   {t("browse.title")}
                 </h2>
-                <p className="mt-5 max-w-[520px] text-[19px] leading-[1.38] text-[#07150d]/78">
+                <p className="mt-5 max-w-[480px] text-[17px] leading-[1.55] text-[#07150d]/78">
                   {t("browse.body")}
                 </p>
                 <div className="mt-8">
@@ -386,10 +386,10 @@ export default function HomePage() {
         >
           <div className="mx-auto grid max-w-[1180px] grid-cols-[minmax(0,0.95fr)_minmax(300px,0.72fr)] items-center gap-12 max-[900px]:grid-cols-1 max-[900px]:gap-10">
             <div>
-              <h2 className="m-0 max-w-[620px] text-[clamp(38px,4.8vw,58px)] font-normal leading-[1.04] tracking-normal [font-family:Georgia,'Times_New_Roman',serif]">
+              <h2 className="m-0 max-w-[620px] text-balance text-[clamp(34px,3.8vw,48px)] font-semibold leading-[1.06] tracking-[-0.02em] [font-family:'Inter_Tight','Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
                 {t("journey.title")}
               </h2>
-              <p className="mt-5 max-w-[620px] text-[20px] font-medium leading-[1.36] text-[var(--t2)]">
+              <p className="mt-5 max-w-[560px] text-[18px] leading-[1.55] text-[var(--t2)]">
                 {t("journey.subtitle")}
               </p>
               <div className="mt-10 grid gap-0 border-t border-[var(--border-1)]">
@@ -442,10 +442,10 @@ export default function HomePage() {
           <div className="mx-auto max-w-[1180px]">
             <div className="grid grid-cols-[0.72fr_1.28fr] gap-14 max-[900px]:grid-cols-1">
               <div>
-                <h2 className="m-0 text-[clamp(36px,4.4vw,54px)] font-normal leading-[1.05] tracking-normal [font-family:Georgia,'Times_New_Roman',serif]">
+                <h2 className="m-0 text-balance text-[clamp(34px,3.8vw,48px)] font-semibold leading-[1.06] tracking-[-0.02em] [font-family:'Inter_Tight','Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
                   {t("trust.title")}
                 </h2>
-                <p className="mt-5 text-[20px] font-medium leading-[1.36] text-white/72">
+                <p className="mt-5 max-w-[360px] text-[18px] leading-[1.55] text-white/72">
                   {t("trust.subtitle")}
                 </p>
               </div>
@@ -470,7 +470,7 @@ export default function HomePage() {
 
         <section className="bg-[var(--accent)] px-8 py-20 text-center text-[#07150d] max-[720px]:px-5 max-[720px]:py-14">
           <div className="mx-auto max-w-[760px]">
-            <h2 className="m-0 text-[clamp(46px,6vw,82px)] font-normal leading-[0.98] tracking-normal [font-family:Georgia,'Times_New_Roman',serif]">
+            <h2 className="m-0 text-balance text-[clamp(38px,4.6vw,60px)] font-semibold leading-[1.04] tracking-[-0.03em] [font-family:'Inter_Tight','Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
               {t("cta.title")}
             </h2>
             <div className="mt-8">
