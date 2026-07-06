@@ -3,7 +3,7 @@ info:
   title: Taya NA Predict API
   version: "1.0.0"
   description: >
-    Tiangge prediction-market gateway API for non-redeemable gameplay points.
+    TapTrade prediction-market gateway API for non-redeemable gameplay points.
     Binary YES/NO outcomes use point-cents subunits on a 0-100 implied
     probability scale; settled winning shares return 100 point-cents per share.
     Points are gameplay-only units with no external value path.
@@ -628,7 +628,7 @@ components:
         feeRateBps: { type: integer, minimum: 0 }
         ammLiquidityParam: { type: integer, minimum: 0 }
       required: [eventId, ticker, title, settlementSourceKey, settlementRule, closeAt]
-    TianggeLifecycleAction:
+    TapTradeLifecycleAction:
       type: object
       properties:
         action: { type: string }
@@ -637,7 +637,7 @@ components:
         targetStage: { type: string }
         requiresReason: { type: boolean }
         destructive: { type: boolean }
-    TianggeLifecycle:
+    TapTradeLifecycle:
       type: object
       properties:
         stage: { type: string, enum: [draft, open, paused, closed, resolving, settled, invalid, unknown] }
@@ -647,14 +647,14 @@ components:
         terminal: { type: boolean }
         allowedActions:
           type: array
-          items: { $ref: "#/components/schemas/TianggeLifecycleAction" }
+          items: { $ref: "#/components/schemas/TapTradeLifecycleAction" }
     MarketLifecycleResponse:
       type: object
       properties:
         marketId: { type: string }
         status: { type: string }
         reason: { type: string }
-        tianggeLifecycle: { $ref: "#/components/schemas/TianggeLifecycle" }
+        taptradeLifecycle: { $ref: "#/components/schemas/TapTradeLifecycle" }
         pointDisbursements:
           type: array
           description: Present for invalidation actions that return locked points.
@@ -670,7 +670,7 @@ components:
         actorId: { type: string, nullable: true }
         reason: { type: string, nullable: true }
         occurredAt: { type: string, format: date-time }
-        tianggeLifecycle: { $ref: "#/components/schemas/TianggeLifecycle" }
+        taptradeLifecycle: { $ref: "#/components/schemas/TapTradeLifecycle" }
     LifecycleReasonRequest:
       type: object
       properties:
@@ -737,7 +737,7 @@ components:
           items: { $ref: "#/components/schemas/AdminSettlementPointDisbursement" }
         totalSettlementPointsCents: { type: integer, format: int64 }
         unit: { type: string, enum: [PTS] }
-        tianggeLifecycle: { $ref: "#/components/schemas/TianggeLifecycle" }
+        taptradeLifecycle: { $ref: "#/components/schemas/TapTradeLifecycle" }
     ResolutionProposal:
       type: object
       description: Proposed result held through a challenge window before point disbursements can be finalized.
@@ -3431,7 +3431,7 @@ paths:
   /api/v1/admin/markets/{id}/lifecycle:
     get:
       summary: Admin lifecycle audit for one market
-      description: Returns persisted actor, reason, timestamp, and Tiangge lifecycle mapping. Use format=csv for formula-safe export rows.
+      description: Returns persisted actor, reason, timestamp, and TapTrade lifecycle mapping. Use format=csv for formula-safe export rows.
       security: [{ SessionCookie: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string } }
@@ -3474,7 +3474,7 @@ paths:
   /api/v1/admin/settlements/{marketId}:
     post:
       summary: Direct admin settlement for one market
-      description: Resolves a closed prediction market immediately and returns preferred point-disbursement aliases with Tiangge lifecycle metadata. Use the proposed-resolution routes when dual-control challenge windows are required.
+      description: Resolves a closed prediction market immediately and returns preferred point-disbursement aliases with TapTrade lifecycle metadata. Use the proposed-resolution routes when dual-control challenge windows are required.
       security: [{ SessionCookie: [] }]
       parameters:
         - { name: marketId, in: path, required: true, schema: { type: string } }

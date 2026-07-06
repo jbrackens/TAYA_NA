@@ -13,7 +13,7 @@ import (
 	"phoenix-revival/platform/transport/httpx"
 )
 
-const legacyMoneyRoutesEnv = "TIANGGE_LEGACY_MONEY_ROUTES_ENABLED"
+const legacyMoneyRoutesEnv = "TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED"
 
 type probeCase struct {
 	Method string

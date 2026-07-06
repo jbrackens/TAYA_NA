@@ -17,7 +17,7 @@ func TestAdminContentPageCreateRejectsMoneyWordingBeforeService(t *testing.T) {
 		"/api/v1/admin/content/pages",
 		strings.NewReader(`{"slug":"unsafe-page","title":"Launch info","content":"Cash payout details","meta_title":"Launch info","meta_description":"Point play only","status":"draft"}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-content", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-content", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 
 	httpx.Handle(adminPagesHandler(nil)).ServeHTTP(res, req)
@@ -44,7 +44,7 @@ func TestAdminContentPageUpdateRejectsMoneyWordingBeforeService(t *testing.T) {
 		"/api/v1/admin/content/pages/42",
 		strings.NewReader(`{"meta_description":"Crypto prize status page"}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-content", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-content", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 
 	httpx.Handle(adminPageDetailHandler(nil)).ServeHTTP(res, req)
@@ -71,7 +71,7 @@ func TestAdminContentBannerCreateRejectsMoneyWordingBeforeService(t *testing.T) 
 		"/api/v1/admin/banners",
 		strings.NewReader(`{"title":"Cash prize boost","image_url":"/images/banner.png","link_url":"/rewards","position":"hero","sort_order":1,"active":true}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-content", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-content", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 
 	httpx.Handle(adminBannersHandler(nil)).ServeHTTP(res, req)
@@ -98,7 +98,7 @@ func TestAdminContentBannerUpdateRejectsMoneyPathBeforeService(t *testing.T) {
 		"/api/v1/admin/banners/7",
 		strings.NewReader(`{"link_url":"/cashier/deposit"}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-content", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-content", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 
 	httpx.Handle(adminBannerDetailHandler(nil)).ServeHTTP(res, req)

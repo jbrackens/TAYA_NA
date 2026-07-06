@@ -31,7 +31,7 @@ func TestResolutionSourceHealthRouteRedactsUnsafeLastErrorOnRead(t *testing.T) {
 	registerResolutionSourceRoutes(mux, reporter)
 
 	req := httptest.NewRequest(stdhttp.MethodGet, "/api/v1/admin/resolution-sources", nil)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-health", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-health", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 	mux.ServeHTTP(res, req)
 

@@ -1,6 +1,6 @@
 -- Prediction Platform — Development Seed Data
--- Run after 014_prediction_schema.sql and 046_tiangge_launch_taxonomy.sql create
--- the schema and Tiangge launch categories.
+-- Run after 014_prediction_schema.sql and 046_taptrade_launch_taxonomy.sql create
+-- the schema and TapTrade launch categories.
 -- This script is idempotent via ON CONFLICT clauses.
 --
 -- Deterministic UUIDs are generated via md5(slug)::uuid so seeds can be re-run

@@ -12,7 +12,7 @@ import (
 )
 
 // CryptoFeedAdapter is a legacy, non-launch adapter for asset price markets.
-// It is not registered unless TIANGGE_LEGACY_ASSET_PRICE_FEEDS_ENABLED=true.
+// It is not registered unless TAPTRADE_LEGACY_ASSET_PRICE_FEEDS_ENABLED=true.
 // Supports rules: "price_above", "price_below".
 type CryptoFeedAdapter struct {
 	client  *http.Client

@@ -29,7 +29,7 @@ func TestPriceWithinBounds(t *testing.T) {
 }
 
 func TestCalculateTakerFeeCents(t *testing.T) {
-	// Default Tiangge rate: 500 bps (5%). Peak fee at p=50.
+	// Default TapTrade rate: 500 bps (5%). Peak fee at p=50.
 	// floor(500 * 50 * 50 * q / 1_000_000) = floor(1.25 * q)
 	cases := []struct {
 		name            string

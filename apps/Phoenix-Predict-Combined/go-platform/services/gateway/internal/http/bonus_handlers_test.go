@@ -241,7 +241,7 @@ func TestAdminCreateCampaignRejectsRetiredBudgetAliasAtHTTPBoundary(t *testing.T
 			"rules":[]
 		}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(adminCampaignsHandler(svc)).ServeHTTP(rec, req)
@@ -278,7 +278,7 @@ func TestAdminCreateCampaignRejectsRetiredRuleAmountAliasAtHTTPBoundary(t *testi
 			}]
 		}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(adminCampaignsHandler(svc)).ServeHTTP(rec, req)
@@ -360,7 +360,7 @@ func TestAdminCreateCampaignRejectsRetiredRequestContractAtHTTPBoundary(t *testi
 		t.Run(tc.name, func(t *testing.T) {
 			svc := bonus.NewService(bonus.NewRepository(nil), nil, nil)
 			req := httptest.NewRequest(stdhttp.MethodPost, "/api/v1/admin/campaigns", bytes.NewBufferString(tc.body))
-			req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@tiangge.local", "admin"))
+			req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 			rec := httptest.NewRecorder()
 
 			httpx.Handle(adminCampaignsHandler(svc)).ServeHTTP(rec, req)
@@ -396,7 +396,7 @@ func TestAdminCreateCampaignRejectsPointPlayMultiplierWithLaunchCopy(t *testing.
 			}]
 		}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(adminCampaignsHandler(svc)).ServeHTTP(rec, req)
@@ -431,7 +431,7 @@ func TestAdminCreateCampaignRejectsProhibitedNameCopyAtHTTPBoundary(t *testing.T
 			"rules":[]
 		}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(adminCampaignsHandler(svc)).ServeHTTP(rec, req)
@@ -463,7 +463,7 @@ func TestAdminCreateCampaignRejectsRedeemableDescriptionCopyAtHTTPBoundary(t *te
 			"rules":[]
 		}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(adminCampaignsHandler(svc)).ServeHTTP(rec, req)
@@ -510,7 +510,7 @@ func TestAdminCreateCampaignRejectsProhibitedTriggerEventAtHTTPBoundary(t *testi
 			}]
 		}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(adminCampaignsHandler(svc)).ServeHTTP(rec, req)
@@ -545,7 +545,7 @@ func TestAdminCreateCampaignRejectsRetiredEligibilityDepositKeyAtHTTPBoundary(t 
 			}]
 		}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(adminCampaignsHandler(svc)).ServeHTTP(rec, req)
@@ -580,7 +580,7 @@ func TestAdminCreateCampaignRejectsRetiredEligibilityRankKeyAtHTTPBoundary(t *te
 			}]
 		}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(adminCampaignsHandler(svc)).ServeHTTP(rec, req)
@@ -615,7 +615,7 @@ func TestAdminCreateCampaignRejectsRetiredPointPlayMechanicAtHTTPBoundary(t *tes
 			}]
 		}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(adminCampaignsHandler(svc)).ServeHTTP(rec, req)
@@ -661,7 +661,7 @@ func TestAdminGrantBonusEndpointUsesSessionAdminAndPointNativePayload(t *testing
 		"/api/v1/admin/bonuses/grant",
 		bytes.NewBufferString(`{"user_id":"u-1","campaign_id":77,"override_points_cents":20000,"reason":"manual launch proof"}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(adminGrantBonusHandler(granter)).ServeHTTP(rec, req)
@@ -721,7 +721,7 @@ func TestAdminGrantBonusRejectsRetiredOverrideAliasAtHTTPBoundary(t *testing.T) 
 			"reason":"manual launch proof"
 		}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(adminGrantBonusHandler(svc)).ServeHTTP(rec, req)
@@ -745,7 +745,7 @@ func TestAdminGrantBonusRejectsMoneyWordingReason(t *testing.T) {
 		"/api/v1/admin/bonuses/grant",
 		bytes.NewBufferString(`{"user_id":"u-1","campaign_id":77,"override_points_cents":20000,"reason":"cash payout grant"}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(adminGrantBonusHandler(granter)).ServeHTTP(rec, req)
@@ -773,7 +773,7 @@ func TestAdminBonusForfeitEndpointUsesSessionAdmin(t *testing.T) {
 		"/api/v1/admin/bonuses/195/forfeit",
 		bytes.NewBufferString(`{"reason":"manual review"}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(adminBonusDetailHandler(svc)).ServeHTTP(rec, req)
@@ -807,7 +807,7 @@ func TestAdminBonusForfeitRejectsMoneyWordingReason(t *testing.T) {
 		"/api/v1/admin/bonuses/195/forfeit",
 		bytes.NewBufferString(`{"reason":"redeemable prize reversal"}`),
 	)
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	rec := httptest.NewRecorder()
 
 	httpx.Handle(adminBonusDetailHandler(svc)).ServeHTTP(rec, req)

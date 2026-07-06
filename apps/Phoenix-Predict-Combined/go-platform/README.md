@@ -1,6 +1,6 @@
-# Tiangge Go Platform
+# TapTrade Go Platform
 
-This directory is the Go workspace for Tiangge backend services. Tiangge is a
+This directory is the Go workspace for TapTrade backend services. TapTrade is a
 prediction-market app that uses non-redeemable gameplay points only.
 
 ## Workspace Layout

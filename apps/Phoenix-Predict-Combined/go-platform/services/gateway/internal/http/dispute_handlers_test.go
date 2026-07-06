@@ -45,7 +45,7 @@ func TestFileDisputeReasonRejectsMoneyWordingBeforeLookup(t *testing.T) {
 		"marketId":"missing-market",
 		"reason":"cash payout challenge"
 	}`))
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-dispute-unsafe", "holder@tiangge.local", "user"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-dispute-unsafe", "holder@taptrade.local", "user"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 

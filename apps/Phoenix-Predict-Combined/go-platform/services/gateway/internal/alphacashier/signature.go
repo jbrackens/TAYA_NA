@@ -15,7 +15,7 @@ import (
 
 // defaultChallengeDomain is the origin/domain stamped into the wallet challenge
 // so a signature for one application cannot be replayed as a connect on another
-// (audit #19). Replaces the legacy literal "Tiangge".
+// (audit #19). Replaces the legacy literal "TapTrade".
 const defaultChallengeDomain = "hula-na"
 
 func NewNonce() (string, error) {

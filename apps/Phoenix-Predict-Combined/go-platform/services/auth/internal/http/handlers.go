@@ -70,8 +70,8 @@ const (
 	userDBTimeout             = 5 * time.Second
 	rolePlayer                = "player"
 	roleAdmin                 = "admin"
-	tianggeLaunchTermsVersion = "tiangge-launch-v1"
-	tianggeDisclosureVersion  = "points-no-cashout-v1"
+	taptradeLaunchTermsVersion = "taptrade-launch-v1"
+	taptradeDisclosureVersion  = "points-no-cashout-v1"
 )
 
 type user struct {
@@ -509,8 +509,8 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		if !acceptedBool(body.LaunchDisclosureAccepted, body.LaunchDisclosureAcceptedCamel) {
 			return httpx.BadRequest("points-only no-cashout disclosure acceptance is required", map[string]any{"field": "launch_disclosure_accepted"})
 		}
-		termsVersion := firstNonEmpty(body.TermsVersion, body.TermsVersionCamel, tianggeLaunchTermsVersion)
-		disclosureVersion := firstNonEmpty(body.LaunchDisclosureVersion, body.LaunchDisclosureVersionCamel, tianggeDisclosureVersion)
+		termsVersion := firstNonEmpty(body.TermsVersion, body.TermsVersionCamel, taptradeLaunchTermsVersion)
+		disclosureVersion := firstNonEmpty(body.LaunchDisclosureVersion, body.LaunchDisclosureVersionCamel, taptradeDisclosureVersion)
 
 		newUser, err := auth.RegisterWithAcceptance(body.Username, body.Password, body.Role, termsVersion, disclosureVersion)
 		if err != nil {
@@ -1045,10 +1045,10 @@ func (a *AuthService) registerUser(username, password, _ string, termsVersion, d
 	if termsVersion != "" || disclosureVersion != "" {
 		acceptedAt = time.Now().UTC().Format(time.RFC3339)
 		if termsVersion == "" {
-			termsVersion = tianggeLaunchTermsVersion
+			termsVersion = taptradeLaunchTermsVersion
 		}
 		if disclosureVersion == "" {
-			disclosureVersion = tianggeDisclosureVersion
+			disclosureVersion = taptradeDisclosureVersion
 		}
 	}
 

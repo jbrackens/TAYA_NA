@@ -2,9 +2,9 @@ package prediction
 
 import "fmt"
 
-// TianggeLifecycleAction describes a launch-facing operation an admin can take
+// TapTradeLifecycleAction describes a launch-facing operation an admin can take
 // from a market's current state.
-type TianggeLifecycleAction struct {
+type TapTradeLifecycleAction struct {
 	Action         string       `json:"action"`
 	Label          string       `json:"label"`
 	TargetStatus   MarketStatus `json:"targetStatus"`
@@ -14,14 +14,14 @@ type TianggeLifecycleAction struct {
 }
 
 // TianggeMarketLifecycle maps legacy engine statuses to the launch-facing
-// lifecycle language used in the Tiangge backoffice.
+// lifecycle language used in the TapTrade backoffice.
 type TianggeMarketLifecycle struct {
 	Stage          string                   `json:"stage"`
 	Label          string                   `json:"label"`
 	Description    string                   `json:"description"`
 	Tradeable      bool                     `json:"tradeable"`
 	Terminal       bool                     `json:"terminal"`
-	AllowedActions []TianggeLifecycleAction `json:"allowedActions"`
+	AllowedActions []TapTradeLifecycleAction `json:"allowedActions"`
 }
 
 // validTransitions defines allowed market status transitions.
@@ -84,7 +84,7 @@ func DescribeTianggeMarketLifecycle(status MarketStatus) TianggeMarketLifecycle 
 			Description: "Not yet published. Admins can open or cancel before users can trade.",
 			Tradeable:   false,
 			Terminal:    false,
-			AllowedActions: []TianggeLifecycleAction{
+			AllowedActions: []TapTradeLifecycleAction{
 				lifecycleAction("open", "Open", MarketStatusOpen, "open", false, false),
 				lifecycleAction("void", "Cancel", MarketStatusVoided, "invalid", true, true),
 			},
@@ -96,7 +96,7 @@ func DescribeTianggeMarketLifecycle(status MarketStatus) TianggeMarketLifecycle 
 			Description: "Published and accepting prediction orders.",
 			Tradeable:   true,
 			Terminal:    false,
-			AllowedActions: []TianggeLifecycleAction{
+			AllowedActions: []TapTradeLifecycleAction{
 				lifecycleAction("halt", "Pause", MarketStatusHalted, "paused", true, true),
 				lifecycleAction("close", "Close", MarketStatusClosed, "closed", true, true),
 				lifecycleAction("void", "Invalidate", MarketStatusVoided, "invalid", true, true),
@@ -109,7 +109,7 @@ func DescribeTianggeMarketLifecycle(status MarketStatus) TianggeMarketLifecycle 
 			Description: "Visible but not accepting new orders until resumed or closed.",
 			Tradeable:   false,
 			Terminal:    false,
-			AllowedActions: []TianggeLifecycleAction{
+			AllowedActions: []TapTradeLifecycleAction{
 				lifecycleAction("open", "Resume", MarketStatusOpen, "open", false, false),
 				lifecycleAction("close", "Close", MarketStatusClosed, "closed", true, true),
 				lifecycleAction("void", "Invalidate", MarketStatusVoided, "invalid", true, true),
@@ -122,7 +122,7 @@ func DescribeTianggeMarketLifecycle(status MarketStatus) TianggeMarketLifecycle 
 			Description: "Trading is closed. The market is ready for resolution or invalidation.",
 			Tradeable:   false,
 			Terminal:    false,
-			AllowedActions: []TianggeLifecycleAction{
+			AllowedActions: []TapTradeLifecycleAction{
 				lifecycleAction("propose", "Propose Resolution", MarketStatusProposedResolution, "resolving", true, true),
 				lifecycleAction("settle", "Settle Now", MarketStatusSettled, "settled", true, true),
 				lifecycleAction("void", "Invalidate", MarketStatusVoided, "invalid", true, true),
@@ -135,7 +135,7 @@ func DescribeTianggeMarketLifecycle(status MarketStatus) TianggeMarketLifecycle 
 			Description: "A resolution has been proposed and is awaiting challenge-window finalization.",
 			Tradeable:   false,
 			Terminal:    false,
-			AllowedActions: []TianggeLifecycleAction{
+			AllowedActions: []TapTradeLifecycleAction{
 				lifecycleAction("finalize", "Finalize", MarketStatusSettled, "settled", true, true),
 				lifecycleAction("void", "Invalidate", MarketStatusVoided, "invalid", true, true),
 			},
@@ -147,7 +147,7 @@ func DescribeTianggeMarketLifecycle(status MarketStatus) TianggeMarketLifecycle 
 			Description: "Resolution is disputed and must be finalized or invalidated by admins.",
 			Tradeable:   false,
 			Terminal:    false,
-			AllowedActions: []TianggeLifecycleAction{
+			AllowedActions: []TapTradeLifecycleAction{
 				lifecycleAction("finalize", "Finalize", MarketStatusSettled, "settled", true, true),
 				lifecycleAction("void", "Invalidate", MarketStatusVoided, "invalid", true, true),
 			},
@@ -179,8 +179,8 @@ func DescribeTianggeMarketLifecycle(status MarketStatus) TianggeMarketLifecycle 
 	}
 }
 
-func lifecycleAction(action, label string, targetStatus MarketStatus, targetStage string, requiresReason, destructive bool) TianggeLifecycleAction {
-	return TianggeLifecycleAction{
+func lifecycleAction(action, label string, targetStatus MarketStatus, targetStage string, requiresReason, destructive bool) TapTradeLifecycleAction {
+	return TapTradeLifecycleAction{
 		Action:         action,
 		Label:          label,
 		TargetStatus:   targetStatus,

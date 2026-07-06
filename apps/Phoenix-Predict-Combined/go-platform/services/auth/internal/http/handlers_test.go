@@ -21,7 +21,7 @@ func TestRegisterAcceptsShortUsernameAndSevenCharacterPassword(t *testing.T) {
 		"username":                   "abc",
 		"password":                   "Aa12345",
 		"terms_accepted":             true,
-		"terms_version":              "tiangge-launch-v1",
+		"terms_version":              "taptrade-launch-v1",
 		"launch_disclosure_accepted": true,
 		"launch_disclosure_version":  "points-no-cashout-v1",
 	})
@@ -41,7 +41,7 @@ func TestRegisterAcceptsShortUsernameAndSevenCharacterPassword(t *testing.T) {
 	if userID == "" || payload["username"] != "abc" || payload["role"] != rolePlayer {
 		t.Fatalf("unexpected register response: %#v", payload)
 	}
-	if payload["termsAccepted"] != true || payload["termsVersion"] != "tiangge-launch-v1" {
+	if payload["termsAccepted"] != true || payload["termsVersion"] != "taptrade-launch-v1" {
 		t.Fatalf("expected persisted terms acceptance in register response: %#v", payload)
 	}
 	if payload["launchDisclosureAccepted"] != true || payload["launchDisclosureVersion"] != "points-no-cashout-v1" {
@@ -52,7 +52,7 @@ func TestRegisterAcceptsShortUsernameAndSevenCharacterPassword(t *testing.T) {
 	}
 }
 
-func TestRegisterRequiresTianggeDisclosureAcceptance(t *testing.T) {
+func TestRegisterRequiresTapTradeDisclosureAcceptance(t *testing.T) {
 	auth := NewAuthService()
 	mux := http.NewServeMux()
 	RegisterRoutes(mux, "auth", auth)
@@ -99,7 +99,7 @@ func TestRegisterRejectsSixCharacterPassword(t *testing.T) {
 	}
 }
 
-func TestRegisterSessionIncludesTianggeDisclosureAcceptance(t *testing.T) {
+func TestRegisterSessionIncludesTapTradeDisclosureAcceptance(t *testing.T) {
 	auth := NewAuthService()
 	mux := http.NewServeMux()
 	RegisterRoutes(mux, "auth", auth)
@@ -109,7 +109,7 @@ func TestRegisterSessionIncludesTianggeDisclosureAcceptance(t *testing.T) {
 		"username":                 "accepteduser",
 		"password":                 "Aa12345",
 		"termsAccepted":            true,
-		"termsVersion":             "tiangge-launch-v1",
+		"termsVersion":             "taptrade-launch-v1",
 		"launchDisclosureAccepted": true,
 		"launchDisclosureVersion":  "points-no-cashout-v1",
 	})
@@ -146,7 +146,7 @@ func TestRegisterSessionIncludesTianggeDisclosureAcceptance(t *testing.T) {
 	if err := json.Unmarshal(sessionRes.Body.Bytes(), &sessionPayload); err != nil {
 		t.Fatalf("decode session response: %v", err)
 	}
-	if sessionPayload["termsAccepted"] != true || sessionPayload["termsVersion"] != "tiangge-launch-v1" {
+	if sessionPayload["termsAccepted"] != true || sessionPayload["termsVersion"] != "taptrade-launch-v1" {
 		t.Fatalf("expected terms acceptance in session response: %#v", sessionPayload)
 	}
 	if sessionPayload["launchDisclosureAccepted"] != true || sessionPayload["launchDisclosureVersion"] != "points-no-cashout-v1" {

@@ -131,7 +131,7 @@ func TestDescribeTianggeMarketLifecycleMapsLaunchStages(t *testing.T) {
 			}
 			continue
 		}
-		var matched *TianggeLifecycleAction
+		var matched *TapTradeLifecycleAction
 		for i := range got.AllowedActions {
 			if got.AllowedActions[i].Action == tc.action {
 				matched = &got.AllowedActions[i]

@@ -209,14 +209,14 @@ func run(ctx context.Context, cfg proofConfig) error {
 		PointDisbursements         []any  `json:"pointDisbursements"`
 		TotalSettlementPointsCents int64  `json:"totalSettlementPointsCents"`
 		Unit                       string `json:"unit"`
-		TianggeLifecycle           struct {
+		TapTradeLifecycle           struct {
 			Stage string `json:"stage"`
-		} `json:"tianggeLifecycle"`
+		} `json:"taptradeLifecycle"`
 	}
 	if err := json.Unmarshal(finalizeRaw, &finalized); err != nil {
 		return fmt.Errorf("decode finalize: %w", err)
 	}
-	if finalized.Unit != "PTS" || finalized.TotalSettlementPointsCents <= 0 || len(finalized.PointDisbursements) == 0 || finalized.TianggeLifecycle.Stage != "settled" {
+	if finalized.Unit != "PTS" || finalized.TotalSettlementPointsCents <= 0 || len(finalized.PointDisbursements) == 0 || finalized.TapTradeLifecycle.Stage != "settled" {
 		return fmt.Errorf("unexpected finalize payload: %s", finalizeRaw)
 	}
 
@@ -233,7 +233,7 @@ func ensureSecondAdmin(ctx context.Context, db *sql.DB, cfg proofConfig) error {
 	if _, err := db.ExecContext(ctx, `
 INSERT INTO auth_users
   (id, username, password_hash, role, terms_accepted, terms_version, launch_disclosure_accepted, launch_disclosure_version)
-VALUES ($1, $2, $3, 'admin', true, 'tiangge-launch-v1', true, 'points-no-cashout-v1')
+VALUES ($1, $2, $3, 'admin', true, 'taptrade-launch-v1', true, 'points-no-cashout-v1')
 ON CONFLICT (username) DO UPDATE SET id = EXCLUDED.id, password_hash = EXCLUDED.password_hash, role = 'admin'`,
 		cfg.Admin2ID, cfg.Admin2Email, hash); err != nil {
 		return fmt.Errorf("upsert second admin: %w", err)

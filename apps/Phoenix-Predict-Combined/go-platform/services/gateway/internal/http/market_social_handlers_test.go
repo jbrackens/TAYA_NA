@@ -25,7 +25,7 @@ func socialUserContext(req *http.Request, userID string) *http.Request {
 }
 
 func socialAdminContext(req *http.Request) *http.Request {
-	return req.WithContext(httpx.WithTestUser(req.Context(), "admin-social-1", "admin@tiangge.local", "admin"))
+	return req.WithContext(httpx.WithTestUser(req.Context(), "admin-social-1", "admin@taptrade.local", "admin"))
 }
 
 func TestMarketSocialSQLWriteLimiterBlocksAcrossRouteInstances(t *testing.T) {
@@ -543,7 +543,7 @@ func TestMarketSocialAdminReportsQueue(t *testing.T) {
 	if err := json.Unmarshal(allRes.Body.Bytes(), &allPayload); err != nil {
 		t.Fatalf("decode all reports payload: %v", err)
 	}
-	if allPayload.Total != 1 || allPayload.Items[0].Status != "dismissed" || allPayload.Items[0].ReviewedBy != "admin@tiangge.local" {
+	if allPayload.Total != 1 || allPayload.Items[0].Status != "dismissed" || allPayload.Items[0].ReviewedBy != "admin@taptrade.local" {
 		t.Fatalf("expected dismissed reviewed report, got %+v", allPayload)
 	}
 
@@ -570,7 +570,7 @@ func TestMarketSocialAdminReportsQueue(t *testing.T) {
 	if got := rows[0]; strings.Join(got, "|") != strings.Join(expectedHeader, "|") {
 		t.Fatalf("unexpected social reports csv header: %+v", got)
 	}
-	if got := rows[1]; got[2] != "mkt-social-admin" || got[5] != "'=low quality" || got[6] != "dismissed" || got[9] != "admin@tiangge.local" || got[10] != "Reviewed by trust queue." || got[11] != `'=HYPERLINK("https://example.invalid","review")` {
+	if got := rows[1]; got[2] != "mkt-social-admin" || got[5] != "'=low quality" || got[6] != "dismissed" || got[9] != "admin@taptrade.local" || got[10] != "Reviewed by trust queue." || got[11] != `'=HYPERLINK("https://example.invalid","review")` {
 		t.Fatalf("unexpected social reports csv row: %+v", got)
 	}
 }
@@ -599,7 +599,7 @@ func TestMarketSocialAdminReportsRedactLegacyUnsafeTextOnRead(t *testing.T) {
 		Status:         "reviewed",
 		CreatedAt:      "2026-06-30T18:41:00Z",
 		ReviewedAt:     "2026-06-30T18:42:00Z",
-		ReviewedBy:     "admin@tiangge.local",
+		ReviewedBy:     "admin@taptrade.local",
 		ReviewNote:     "cash prize moderation note",
 	}
 	store.comments = []marketComment{comment}

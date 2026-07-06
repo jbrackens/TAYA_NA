@@ -141,3 +141,14 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
   "TapTrade.", document titles "TapTrade", ZERO legacy strings
   (Tiangge|Phoenix|Talon|Hula Na) in rendered text on / and /predict — VERIFIED.
   Backoffice rendered check pending final sweep (needs office dev server).
+
+## Iteration 7 — 2026-07-06 (EXECUTION MODE continued; owner: "don't stop")
+- FREEZE BOUNDARY RECOMPUTED precisely: backend task touches 26 gateway files; 35 of
+  38 tiangge-bearing go-platform files (excl. migrations) are OUTSIDE its set.
+- EXECUTED Batch H-pre: scrubbed tiangge tokens in those 35 safe Go files with masks
+  protecting the cross-file identifier TianggeMarketLifecycle/DescribeTiangge (it spans
+  two files INSIDE the frozen set — the identifier, its test, and the coupled QA script
+  rename together after unfreeze). VERIFIED: go build clean, notify/feed/auth suites
+  green, full ./services/gateway/... suite green (exit 0).
+- Discovery: TWO Go modules carry the codename (phoenix-revival/gateway AND
+  phoenix-revival/auth) — Batch H covers both.

@@ -67,3 +67,7 @@ I (docker images/infra) → J (directories) → final verify sweep.
 - Batch I (iteration 6): phoenix-gateway/auth image tags → taptrade-*; explicit
   compose image: entries added; COMPOSE_PROJECT_NAME=phoenix pinned (allowlisted,
   runbook exit); /tmp dev binary names renamed.
+- Batch H-pre (iteration 7): tiangge→taptrade strings/comments in 35 go-platform files
+  outside the backend task's file set (masked: TianggeMarketLifecycle identifier family).
+  Deferred to H proper: the identifier + 3 overlapping files + migrations + both Go
+  module paths (phoenix-revival/{gateway,auth}).

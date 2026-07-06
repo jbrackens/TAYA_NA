@@ -1416,7 +1416,7 @@ func rewardDeviceHeader() string {
 	if h := strings.TrimSpace(os.Getenv("REWARD_DEVICE_HEADER")); h != "" {
 		return h
 	}
-	return "X-Tiangge-Device-ID"
+	return "X-TapTrade-Device-ID"
 }
 
 func rewardIPSignal(r *stdhttp.Request) string {

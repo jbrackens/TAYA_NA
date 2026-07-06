@@ -20,7 +20,7 @@ func TestKYCAdminDecisionReasonRejectsMoneyWordingBeforeService(t *testing.T) {
 		"approve": false,
 		"reason": "cash payout review"
 	}`))
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-kyc", "admin-kyc@tiangge.local", "admin"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-kyc", "admin-kyc@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req)

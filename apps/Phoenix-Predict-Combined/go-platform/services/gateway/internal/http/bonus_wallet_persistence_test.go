@@ -93,7 +93,7 @@ func TestClaimBonusPersistsPointWalletLedgerThroughHTTP(t *testing.T) {
 
 	body := fmt.Sprintf(`{"campaign_id":%d,"trigger_reference":"loop-308-live-bonus-proof","user_id":%q}`, campaign.ID, spoofedUserID)
 	req := httptest.NewRequest(stdhttp.MethodPost, "/api/v1/bonuses/claim", bytes.NewBufferString(body))
-	req = req.WithContext(httpx.WithTestUser(req.Context(), userID, "loop308@tiangge.local", "player"))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), userID, "loop308@taptrade.local", "player"))
 	rec := httptest.NewRecorder()
 
 	mux.ServeHTTP(rec, req)
@@ -128,7 +128,7 @@ func TestClaimBonusPersistsPointWalletLedgerThroughHTTP(t *testing.T) {
 	assertNoBonusWalletLedgerForUser(t, db, spoofedUserID)
 
 	duplicate := httptest.NewRequest(stdhttp.MethodPost, "/api/v1/bonuses/claim", bytes.NewBufferString(body))
-	duplicate = duplicate.WithContext(httpx.WithTestUser(duplicate.Context(), userID, "loop308@tiangge.local", "player"))
+	duplicate = duplicate.WithContext(httpx.WithTestUser(duplicate.Context(), userID, "loop308@taptrade.local", "player"))
 	dupRec := httptest.NewRecorder()
 	mux.ServeHTTP(dupRec, duplicate)
 	if dupRec.Code != stdhttp.StatusConflict {

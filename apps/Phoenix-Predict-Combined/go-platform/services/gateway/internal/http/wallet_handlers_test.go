@@ -348,7 +348,7 @@ func TestWalletDailyClaimDeviceClusterLimitBlocksSecondUser(t *testing.T) {
 	deviceID := "device-daily-claim-cluster"
 
 	firstReq := playerWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/wallet/daily-claim", nil), "u-device-claim-1")
-	firstReq.Header.Set("X-Tiangge-Device-ID", deviceID)
+	firstReq.Header.Set("X-TapTrade-Device-ID", deviceID)
 	firstRes := httptest.NewRecorder()
 	handler.ServeHTTP(firstRes, firstReq)
 	if firstRes.Code != http.StatusOK {
@@ -356,7 +356,7 @@ func TestWalletDailyClaimDeviceClusterLimitBlocksSecondUser(t *testing.T) {
 	}
 
 	secondReq := playerWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/wallet/daily-claim", nil), "u-device-claim-2")
-	secondReq.Header.Set("X-Tiangge-Device-ID", deviceID)
+	secondReq.Header.Set("X-TapTrade-Device-ID", deviceID)
 	secondRes := httptest.NewRecorder()
 	handler.ServeHTTP(secondRes, secondReq)
 	if secondRes.Code != http.StatusForbidden {
@@ -364,7 +364,7 @@ func TestWalletDailyClaimDeviceClusterLimitBlocksSecondUser(t *testing.T) {
 	}
 
 	retryReq := playerWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/wallet/daily-claim", nil), "u-device-claim-1")
-	retryReq.Header.Set("X-Tiangge-Device-ID", deviceID)
+	retryReq.Header.Set("X-TapTrade-Device-ID", deviceID)
 	retryRes := httptest.NewRecorder()
 	handler.ServeHTTP(retryRes, retryReq)
 	if retryRes.Code != http.StatusOK {
@@ -402,7 +402,7 @@ func TestWalletDailyClaimDeviceClusterLimitPersistsAcrossRouteRestart(t *testing
 	firstHandler := httpx.Chain(firstMux, httpx.RequestID(), httpx.Recovery(nil))
 
 	firstReq := playerWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/wallet/daily-claim", nil), "u-device-persist-1")
-	firstReq.Header.Set("X-Tiangge-Device-ID", deviceID)
+	firstReq.Header.Set("X-TapTrade-Device-ID", deviceID)
 	firstRes := httptest.NewRecorder()
 	firstHandler.ServeHTTP(firstRes, firstReq)
 	if firstRes.Code != http.StatusOK {
@@ -425,7 +425,7 @@ func TestWalletDailyClaimDeviceClusterLimitPersistsAcrossRouteRestart(t *testing
 	secondHandler := httpx.Chain(secondMux, httpx.RequestID(), httpx.Recovery(nil))
 
 	blockedReq := playerWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/wallet/daily-claim", nil), "u-device-persist-2")
-	blockedReq.Header.Set("X-Tiangge-Device-ID", deviceID)
+	blockedReq.Header.Set("X-TapTrade-Device-ID", deviceID)
 	blockedRes := httptest.NewRecorder()
 	secondHandler.ServeHTTP(blockedRes, blockedReq)
 	if blockedRes.Code != http.StatusForbidden {
@@ -433,7 +433,7 @@ func TestWalletDailyClaimDeviceClusterLimitPersistsAcrossRouteRestart(t *testing
 	}
 
 	retryReq := playerWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/wallet/daily-claim", nil), "u-device-persist-1")
-	retryReq.Header.Set("X-Tiangge-Device-ID", deviceID)
+	retryReq.Header.Set("X-TapTrade-Device-ID", deviceID)
 	retryRes := httptest.NewRecorder()
 	secondHandler.ServeHTTP(retryRes, retryReq)
 	if retryRes.Code != http.StatusOK {
@@ -471,7 +471,7 @@ func TestAdminWalletRewardClustersReturnsHashedReviewEvidence(t *testing.T) {
 	deviceID := "device-admin-review-cluster"
 
 	firstReq := playerWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/wallet/daily-claim", nil), "u-admin-cluster-1")
-	firstReq.Header.Set("X-Tiangge-Device-ID", deviceID)
+	firstReq.Header.Set("X-TapTrade-Device-ID", deviceID)
 	firstRes := httptest.NewRecorder()
 	handler.ServeHTTP(firstRes, firstReq)
 	if firstRes.Code != http.StatusOK {
@@ -489,7 +489,7 @@ func TestAdminWalletRewardClustersReturnsHashedReviewEvidence(t *testing.T) {
 	}
 
 	secondReq := playerWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/wallet/daily-claim", nil), "u-admin-cluster-2")
-	secondReq.Header.Set("X-Tiangge-Device-ID", deviceID)
+	secondReq.Header.Set("X-TapTrade-Device-ID", deviceID)
 	secondRes := httptest.NewRecorder()
 	handler.ServeHTTP(secondRes, secondReq)
 	if secondRes.Code != http.StatusOK {
