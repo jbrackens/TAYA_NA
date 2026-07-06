@@ -56,8 +56,6 @@ vendor/
 .data/
 
 # Compiled Go binaries (named without extension)
-apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/gateway
-apps/Phoenix-Sportsbook-Combined/go-platform/services/auth/auth
 
 # Stale runtime logs
 archive/stale-runtime/

@@ -41,3 +41,11 @@ later batches; path-coupled text rides with the directory-rename batch).
 Justification: renaming live-server state in an autonomous run risks demo data loss;
 images/tags themselves are renamed (taptrade-gateway/taptrade-auth via explicit
 compose image: entries, decoupled from the project name). Cutover runbook: ops/RUNBOOK.md.
+
+## Additional dated records + true alias references (decided iteration 6, batch I follow-up)
+- docs/parity-run-log.md, docs/prototype-audit.md — dated parity/audit ledgers (same
+  rule as docs/audit; earlier prose renames in them predate this classification and
+  are noted in WORKLOG).
+- Remaining `PhoenixApiClient` mentions in living docs (taptrade-economy-rules.md,
+  spec.md) accurately describe the REAL deprecated compatibility alias that still
+  exists in code; they retire together with the alias.

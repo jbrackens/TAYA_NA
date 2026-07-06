@@ -128,3 +128,12 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
   box .env by the workflow to preserve volumes; /opt/phoenix path + the pin
   allowlisted with a written cutover runbook (ops/RUNBOOK.md). dev-start.sh local
   binary names renamed. YAML validated. FIRST POST-MERGE DEPLOY MUST BE WATCHED.
+- BATCH I FOLLOW-UP: removed 2 stale .gitignore entries for the nonexistent
+  Phoenix-Sportsbook-Combined tree (VERIFIED absent); classified parity-run-log.md +
+  prototype-audit.md as dated records (ADMISSION: batches B/E renamed some prose inside
+  them before this classification existed — recorded, not reverted, as the renames were
+  brand tokens in summaries rather than measured data); remaining PhoenixApiClient doc
+  mentions are true references to the live deprecated alias.
+- STATE: pre-unfreeze batches EXHAUSTED. Active scope is grep-clean except deferred
+  patterns (paths→J, phoenix.local+module+Go→H, allowlisted pins/shims/records).
+  Loop iterations until task_633e7ad3 lands: re-verify residuals only, then H→J→final.
