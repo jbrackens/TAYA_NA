@@ -1,6 +1,6 @@
 import { Typography, Drawer, Timeline, Skeleton } from "antd";
 import { useTranslation } from "i18n";
-import UserTalonPunterRecentActivityItem from "./item";
+import UserOfficePunterRecentActivityItem from "./item";
 import { OfficePunterRecentActivityItem } from "../../../types/punters";
 
 export type OfficePuntersRecentActivityProps = {
@@ -25,7 +25,7 @@ export const UsersRecentActivity = ({
       <Skeleton loading={isLoading} active>
         <Timeline>
           {data.map((item: OfficePunterRecentActivityItem) => (
-            <UserTalonPunterRecentActivityItem key={item.id} {...item} />
+            <UserOfficePunterRecentActivityItem key={item.id} {...item} />
           ))}
         </Timeline>
       </Skeleton>

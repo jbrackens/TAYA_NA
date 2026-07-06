@@ -64,3 +64,8 @@ compose image: entries, decoupled from the project name). Cutover runbook: ops/R
   on-disk state of pre-rebrand dev machines.
 - go-platform/services/gateway/CACHE_FILE_REFERENCE.txt — dated cache manifest
   referencing pre-fork desktop paths (PhoenixBotRevival); historical record.
+- AuthProvider.tsx storage-key migration — reads legacy phoenix_* keys by necessity
+  (one-time browser migration shim); retires with the shim.
+- packages/app/gate.sh MockPhoenix ban pattern — the guard must name what it bans.
+- office FEATURE_MANIFEST dated investigation entries — empirical bug-hunt records
+  (identifier renamed in code; the manifest narrative is a dated record).

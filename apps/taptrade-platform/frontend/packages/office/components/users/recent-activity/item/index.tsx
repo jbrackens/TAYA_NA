@@ -35,7 +35,7 @@ const formatDataLine = (type: OfficePunterActivity, data: any) => {
   }
 };
 
-const UserTalonPunterRecentActivityItem = ({
+const UserOfficePunterRecentActivityItem = ({
   date,
   type,
   message,
@@ -78,4 +78,4 @@ const UserTalonPunterRecentActivityItem = ({
   );
 };
 
-export default UserTalonPunterRecentActivityItem;
+export default UserOfficePunterRecentActivityItem;
