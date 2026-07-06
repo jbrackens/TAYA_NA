@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import BrandMark from "./components/BrandMark";
 import { LanguageSelector } from "./components/i18n/LanguageSelector";
 import { brand } from "./lib/brand";
+import { HERO_AMBIENT_VIDEO } from "./lib/features";
 
 const EXAMPLE_MARKETS = [
   {
@@ -129,6 +130,41 @@ function Reveal({ children, className = "", delayMs = 0 }: RevealProps) {
       style={delayMs ? { transitionDelay: `${delayMs}ms` } : undefined}
     >
       {children}
+    </div>
+  );
+}
+
+/**
+ * Optional ambient footage behind the hero scrim (flag-gated by
+ * HERO_AMBIENT_VIDEO — see docs/hero-ambient-video.md). Renders nothing on
+ * the server, under prefers-reduced-motion, or when the flag is unset, so
+ * the drawn chart composition is always the base hero. Sits at -z-40:
+ * below the grid, the chart, and the scrim; ~26% opacity keeps it
+ * atmosphere, not message.
+ */
+function HeroAmbientVideo() {
+  const [canPlay, setCanPlay] = useState(false);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setCanPlay(true);
+  }, []);
+
+  if (!HERO_AMBIENT_VIDEO || !canPlay) return null;
+
+  return (
+    <div className="landing-fade absolute inset-0 -z-40" aria-hidden="true">
+      <video
+        className="h-full w-full object-cover opacity-[0.26]"
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="metadata"
+        disablePictureInPicture
+      >
+        <source src={HERO_AMBIENT_VIDEO} type="video/mp4" />
+      </video>
     </div>
   );
 }
@@ -492,6 +528,7 @@ export default function HomePage() {
       ) : null}
 
       <section className="relative isolate min-h-[calc(100svh-64px)] overflow-hidden bg-[#050706]">
+        <HeroAmbientVideo />
         {/* Chart-paper grid — the same 32px trading-grid vocabulary the app
          * uses on cream (DESIGN.md §4), inverted for the dark landing. */}
         <div
