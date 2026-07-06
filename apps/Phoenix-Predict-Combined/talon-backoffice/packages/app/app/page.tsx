@@ -1,6 +1,7 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import BrandMark from "./components/BrandMark";
@@ -80,6 +81,57 @@ const FOOTER_LINKS = [
   { href: "/contact-us", labelKey: "footer.support" },
   { href: "/terms#eligibility", labelKey: "footer.eligibility" },
 ];
+
+type RevealProps = {
+  children: ReactNode;
+  className?: string;
+  delayMs?: number;
+};
+
+/**
+ * One-shot scroll reveal (opacity + 16px rise, ease-out). Skipped entirely —
+ * content shown immediately — under prefers-reduced-motion or when
+ * IntersectionObserver is unavailable.
+ */
+function Reveal({ children, className = "", delayMs = 0 }: RevealProps) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    if (
+      typeof IntersectionObserver === "undefined" ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      setShown(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShown(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-[opacity,transform] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        shown ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+      } ${className}`}
+      style={delayMs ? { transitionDelay: `${delayMs}ms` } : undefined}
+    >
+      {children}
+    </div>
+  );
+}
 
 type MarketSide = "yes" | "no";
 
@@ -549,7 +601,7 @@ export default function HomePage() {
         <section className="bg-[var(--accent)] py-24 text-[#07150d] max-[720px]:py-16">
           <div className="mx-auto max-w-[1180px] px-8 max-[720px]:px-5">
             <div className="grid grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] items-start gap-16 max-[900px]:grid-cols-1 max-[900px]:gap-10">
-              <div className="pt-2">
+              <Reveal className="pt-2">
                 <p className="m-0 text-[12px] font-bold uppercase tracking-[0.18em] text-[#0b3c25]/80">
                   {t("browse.eyebrow")}
                 </p>
@@ -567,19 +619,20 @@ export default function HomePage() {
                     {t("browse.cta")}
                   </Link>
                 </div>
-              </div>
+              </Reveal>
 
               <div className="grid gap-4 max-[720px]:gap-3">
-                {EXAMPLE_MARKETS.map((market) => (
-                  <MarketPreviewCard
-                    key={market.questionKey}
-                    category={t(market.categoryKey)}
-                    question={t(market.questionKey)}
-                    consensus={t(market.consensusKey)}
-                    yesLabel={t("marketActions.yes")}
-                    noLabel={t("marketActions.no")}
-                    yesPercent={market.yesPercent}
-                  />
+                {EXAMPLE_MARKETS.map((market, index) => (
+                  <Reveal key={market.questionKey} delayMs={index * 70}>
+                    <MarketPreviewCard
+                      category={t(market.categoryKey)}
+                      question={t(market.questionKey)}
+                      consensus={t(market.consensusKey)}
+                      yesLabel={t("marketActions.yes")}
+                      noLabel={t("marketActions.no")}
+                      yesPercent={market.yesPercent}
+                    />
+                  </Reveal>
                 ))}
               </div>
             </div>
@@ -591,7 +644,7 @@ export default function HomePage() {
           className="bg-[var(--surface-1)] px-8 py-24 text-[var(--t1)] max-[720px]:px-5 max-[720px]:py-16"
         >
           <div className="mx-auto grid max-w-[1180px] grid-cols-[minmax(0,0.95fr)_minmax(300px,0.72fr)] items-center gap-12 max-[900px]:grid-cols-1 max-[900px]:gap-10">
-            <div>
+            <Reveal>
               <h2 className="m-0 max-w-[620px] text-balance text-[clamp(34px,3.8vw,48px)] font-semibold leading-[1.06] tracking-[-0.02em] [font-family:'Inter_Tight','Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
                 {t("journey.title")}
               </h2>
@@ -623,9 +676,9 @@ export default function HomePage() {
                   {t("journey.note")}
                 </p>
               </div>
-            </div>
+            </Reveal>
 
-            <div className="mx-auto w-full max-w-[360px]">
+            <Reveal className="mx-auto w-full max-w-[360px]" delayMs={120}>
               <TradeTicketPreview
                 ariaLabel={t("mockup.ariaLabel")}
                 category={t("markets.basketball.category")}
@@ -642,7 +695,7 @@ export default function HomePage() {
                 maxLabel={t("mockup.max")}
                 loginCta={t("mockup.loginCta")}
               />
-            </div>
+            </Reveal>
           </div>
         </section>
 
@@ -658,9 +711,10 @@ export default function HomePage() {
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-x-12 gap-y-10 max-[640px]:grid-cols-1 max-[640px]:gap-y-8">
-                {TRUST_CARDS.map((card) => (
-                  <div
+                {TRUST_CARDS.map((card, index) => (
+                  <Reveal
                     key={card.titleKey}
+                    delayMs={index * 80}
                     className="border-t border-white/16 pt-5"
                   >
                     <h3 className="m-0 text-[17px] font-semibold leading-tight tracking-[-0.01em]">
@@ -669,27 +723,27 @@ export default function HomePage() {
                     <p className="m-0 mt-2.5 max-w-[340px] text-[15px] leading-[1.55] text-white/64">
                       {t(card.bodyKey)}
                     </p>
-                  </div>
+                  </Reveal>
                 ))}
               </div>
             </div>
           </div>
         </section>
 
-        <section className="bg-[var(--accent)] px-8 py-20 text-center text-[#07150d] max-[720px]:px-5 max-[720px]:py-14">
-          <div className="mx-auto max-w-[760px]">
+        <section className="bg-[var(--accent)] px-8 py-24 text-center text-[#07150d] max-[720px]:px-5 max-[720px]:py-16">
+          <Reveal className="mx-auto max-w-[760px]">
             <h2 className="m-0 text-balance text-[clamp(38px,4.6vw,60px)] font-semibold leading-[1.04] tracking-[-0.03em] [font-family:'Inter_Tight','Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
               {t("cta.title")}
             </h2>
             <div className="mt-8">
               <Link
                 href="/predict"
-                className="inline-flex h-[46px] items-center justify-center rounded-[var(--r-pill)] bg-[#07150d] px-8 text-[16px] font-semibold !text-white transition-transform hover:-translate-y-px hover:bg-[#101b14]"
+                className="inline-flex h-12 items-center justify-center rounded-[var(--r-pill)] bg-[#07150d] px-8 text-[15px] font-semibold !text-white transition-[transform,background-color] duration-150 ease-out hover:-translate-y-px hover:bg-[#12241a]"
               >
                 {t("nav.browseMarkets")}
               </Link>
             </div>
-          </div>
+          </Reveal>
         </section>
 
         <footer className="border-t border-white/10 bg-[#050706] px-8 pb-8 pt-6 text-white/64 max-[720px]:px-5">
