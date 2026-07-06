@@ -102,6 +102,7 @@ services:
     networks: [predict_network]
 
   auth:
+    image: taptrade-auth:latest
     restart: unless-stopped
     environment:
       AUTH_COOKIE_SECURE: "true"                 # Caddy terminates TLS; cookie is HTTPS-only
@@ -109,6 +110,7 @@ services:
       LOG_LEVEL: "info"
 
   gateway:
+    image: taptrade-gateway:latest
     restart: unless-stopped
     environment:
       WALLET_DB_DRIVER: "postgres"

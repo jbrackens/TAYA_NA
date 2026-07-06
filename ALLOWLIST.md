@@ -34,3 +34,10 @@ later batches; path-coupled text rides with the directory-rename batch).
 
 ## Review artifacts (decided iteration 6)
 - .codex-reviews/** — raw historical review logs; same dated-record rule as docs/audit.
+
+## Live-box operational pins (decided iteration 6, batch I — exit via RUNBOOK cutover)
+- /opt/phoenix path in .github/workflows/deploy-demo.yml (box filesystem state)
+- COMPOSE_PROJECT_NAME=phoenix pin (preserves postgres/redis volume names = demo data)
+Justification: renaming live-server state in an autonomous run risks demo data loss;
+images/tags themselves are renamed (taptrade-gateway/taptrade-auth via explicit
+compose image: entries, decoupled from the project name). Cutover runbook: ops/RUNBOOK.md.

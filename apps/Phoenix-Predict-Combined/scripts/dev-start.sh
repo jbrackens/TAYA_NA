@@ -182,20 +182,20 @@ start_local_go_services() {
 
   cd "$GO_PLATFORM"
 
-  go build -o /tmp/phoenix-gateway ./services/gateway/cmd/gateway
+  go build -o /tmp/taptrade-gateway ./services/gateway/cmd/gateway
   log_success "Gateway built"
 
-  go build -o /tmp/phoenix-auth ./services/auth/cmd/auth
+  go build -o /tmp/taptrade-auth ./services/auth/cmd/auth
   log_success "Auth built"
 
   log_info "Starting Go services..."
 
-  /tmp/phoenix-gateway > /tmp/gateway.log 2>&1 &
+  /tmp/taptrade-gateway > /tmp/gateway.log 2>&1 &
   GATEWAY_PID=$!
   PIDS="$PIDS $GATEWAY_PID"
   log_success "Gateway started (PID: $GATEWAY_PID)"
 
-  /tmp/phoenix-auth > /tmp/auth.log 2>&1 &
+  /tmp/taptrade-auth > /tmp/auth.log 2>&1 &
   AUTH_PID=$!
   PIDS="$PIDS $AUTH_PID"
   log_success "Auth started (PID: $AUTH_PID)"

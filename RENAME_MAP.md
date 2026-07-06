@@ -64,3 +64,6 @@ I (docker images/infra) → J (directories) → final verify sweep.
   Makefile verify-talon→verify-office + legacy alias target.
 - Batch G (iteration 6): @phoenix-ui/*→@taptrade-ui/* (135 files, atomic), monorepo
   name phoenix-ui→taptrade-ui, lockfiles regenerated, double-scope ban in gate.sh.
+- Batch I (iteration 6): phoenix-gateway/auth image tags → taptrade-*; explicit
+  compose image: entries added; COMPOSE_PROJECT_NAME=phoenix pinned (allowlisted,
+  runbook exit); /tmp dev binary names renamed.

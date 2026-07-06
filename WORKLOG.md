@@ -120,3 +120,11 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
 - FILE RENAMES (history-preserving git mv, referrers updated same commit):
   scripts/frontend/verify-talon.sh → verify-office.sh (Makefile updated);
   docs/tiangge-economy-rules.md → taptrade-economy-rules.md (spec.md updated).
+- EXECUTED Batch I (docker images, cross-boundary): taptrade-gateway/taptrade-auth
+  tags in deploy workflow; compose demo overlay gains explicit image: entries
+  (decouples image names from the box's compose project name — VERIFIED that compose
+  derives default image names from the /opt/phoenix dir, which is why explicit names
+  are required before retagging); COMPOSE_PROJECT_NAME=phoenix pinned into the
+  box .env by the workflow to preserve volumes; /opt/phoenix path + the pin
+  allowlisted with a written cutover runbook (ops/RUNBOOK.md). dev-start.sh local
+  binary names renamed. YAML validated. FIRST POST-MERGE DEPLOY MUST BE WATCHED.

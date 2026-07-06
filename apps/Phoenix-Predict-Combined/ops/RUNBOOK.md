@@ -482,3 +482,13 @@ Every scenario above ends here. Don't resolve a ticket without:
 
 Stash these in the incident channel before saying "resolved." A future
 on-call will thank you when the same alert fires again.
+
+## Deferred cutover: /opt/phoenix box path + compose project name (rebrand batch I)
+The demo box keeps two pinned legacy values, allowlisted with this runbook as the exit:
+`/opt/phoenix` (rsync/deploy path) and `COMPOSE_PROJECT_NAME=phoenix` (pins container
+and volume names so postgres data survives the image renames). Cutover procedure
+(maintenance window): 1) compose down; 2) mv /opt/phoenix /opt/taptrade; 3) for each
+volume phoenix_X: docker volume create taptrade_X && docker run --rm -v phoenix_X:/from
+-v taptrade_X:/to alpine cp -a /from/. /to/; 4) set COMPOSE_PROJECT_NAME=taptrade and
+update deploy-demo.yml box paths in the same change; 5) compose up, smoke-check, then
+remove old volumes after 7 quiet days.

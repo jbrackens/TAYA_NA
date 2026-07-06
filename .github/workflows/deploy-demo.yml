@@ -149,7 +149,7 @@ jobs:
             printf 'CHAT_PARENT_ORIGIN=https://demo.99rtp.io\n'
           } | \
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
-              'cat > /opt/phoenix/.env && chmod 600 /opt/phoenix/.env && echo ".env written ($(wc -c < /opt/phoenix/.env) bytes)"'
+              'cat > /opt/phoenix/.env && printf "\nCOMPOSE_PROJECT_NAME=phoenix\n" >> /opt/phoenix/.env && chmod 600 /opt/phoenix/.env && echo ".env written ($(wc -c < /opt/phoenix/.env) bytes)"'
 
       - name: Build auth image and load on the box
         # Auth service owns signup/login/session behavior. Rebuild it before
@@ -159,9 +159,9 @@ jobs:
           docker build \
             --build-arg "GOPROXY=https://goproxy.io|https://proxy.golang.org|direct" \
             -f apps/Phoenix-Predict-Combined/go-platform/services/auth/Dockerfile \
-            -t phoenix-auth:latest \
+            -t taptrade-auth:latest \
             apps/Phoenix-Predict-Combined/go-platform
-          docker save phoenix-auth:latest | gzip -1 | \
+          docker save taptrade-auth:latest | gzip -1 | \
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
               'gunzip | docker load'
 
@@ -194,9 +194,9 @@ jobs:
           docker build \
             --build-arg "GOPROXY=https://goproxy.io|https://proxy.golang.org|direct" \
             -f apps/Phoenix-Predict-Combined/go-platform/services/gateway/Dockerfile \
-            -t phoenix-gateway:latest \
+            -t taptrade-gateway:latest \
             apps/Phoenix-Predict-Combined/go-platform
-          docker save phoenix-gateway:latest | gzip -1 | \
+          docker save taptrade-gateway:latest | gzip -1 | \
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
               'gunzip | docker load'
 
