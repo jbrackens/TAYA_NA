@@ -1,29 +1,19 @@
 package http
 
 import (
-	"regexp"
 	"strings"
 
+	"taptrade/gateway/internal/compliance"
 	"taptrade/platform/transport/httpx"
 )
 
-var (
-	launchReasonCopyProhibited       = regexp.MustCompile(`(?i)(\$|\b(cash|cashout|deposit|withdraw|withdrawal|crypto|fiat|freebets?|bets?|prizes?|payout|sportsbook|stakes?|wagers?|wagering|usdc|usd|dollars?|money|redeem)\b)`)
-	launchReasonRedeemableProhibited = regexp.MustCompile(`(?i)\bredeemable\b`)
-	launchReasonNonRedeemableAllowed = regexp.MustCompile(`(?i)\bnon-redeemable\b`)
-)
-
-const launchRedactedUserText = "Removed by points-only safety boundary."
+// The scrub predicate and sentinel live in internal/compliance
+// (launch_safety.go) so the HTTP payload scrub, the compliance payloads, and
+// the SQL list-exclusion filter all share one definition.
+const launchRedactedUserText = compliance.LaunchRedactedText
 
 func launchReasonHasProhibitedCopy(reason string) bool {
-	if reason == "" {
-		return false
-	}
-	if launchReasonCopyProhibited.MatchString(reason) {
-		return true
-	}
-	redeemableCandidate := launchReasonNonRedeemableAllowed.ReplaceAllString(reason, "")
-	return launchReasonRedeemableProhibited.MatchString(redeemableCandidate)
+	return compliance.HasLaunchProhibitedCopy(reason)
 }
 
 func validateLaunchFacingReason(field string, reason string) error {
@@ -38,6 +28,25 @@ func redactLaunchProhibitedUserText(value string) string {
 		return launchRedactedUserText
 	}
 	return value
+}
+
+// launchListableStrings drops values that trip the launch-safety scrub
+// instead of redacting them. Redaction is right for a field that must keep
+// its slot (a reason, a description); for list content (tags, benefit lines)
+// the sentinel itself becomes browsable data — an artifact, not a value — so
+// prohibited entries are removed entirely.
+func launchListableStrings(values []string) []string {
+	if len(values) == 0 {
+		return values
+	}
+	out := make([]string, 0, len(values))
+	for _, value := range values {
+		if launchReasonHasProhibitedCopy(value) {
+			continue
+		}
+		out = append(out, value)
+	}
+	return out
 }
 
 func trimStringPointer(value *string) *string {

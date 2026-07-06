@@ -328,6 +328,10 @@ func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo pred
 			filter := prediction.MarketFilter{
 				Page:     intQueryParam(r, "page", 1),
 				PageSize: clampedQueryParam(r, "pageSize", 50, 200),
+				// Bot operators are API-key-authenticated market makers, not
+				// the public catalog: launch-scrubbed markets stay tradeable
+				// (and quotable) by direct id, so keep them in the bot list.
+				IncludeLaunchScrubbed: true,
 			}
 			if status := r.URL.Query().Get("status"); status != "" {
 				s := prediction.MarketStatus(status)

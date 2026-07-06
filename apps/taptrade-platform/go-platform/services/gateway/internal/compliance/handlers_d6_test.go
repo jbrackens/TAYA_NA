@@ -657,7 +657,7 @@ func TestKYCReads_RedactLegacyUnsafeReasonsOnRead(t *testing.T) {
 	if strings.Contains(statusRec.Body.String(), "cash payout") {
 		t.Fatalf("KYC status response leaked unsafe rejection reason: %s", statusRec.Body.String())
 	}
-	if !strings.Contains(statusRec.Body.String(), launchRedactedComplianceText) {
+	if !strings.Contains(statusRec.Body.String(), LaunchRedactedText) {
 		t.Fatalf("KYC status response should include redacted reason, got %s", statusRec.Body.String())
 	}
 
@@ -671,7 +671,7 @@ func TestKYCReads_RedactLegacyUnsafeReasonsOnRead(t *testing.T) {
 	if strings.Contains(docsRec.Body.String(), "crypto payout") {
 		t.Fatalf("KYC documents response leaked unsafe reject reason: %s", docsRec.Body.String())
 	}
-	if !strings.Contains(docsRec.Body.String(), launchRedactedComplianceText) {
+	if !strings.Contains(docsRec.Body.String(), LaunchRedactedText) {
 		t.Fatalf("KYC documents response should include redacted reason, got %s", docsRec.Body.String())
 	}
 }

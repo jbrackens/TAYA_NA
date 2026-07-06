@@ -195,10 +195,11 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if err != nil {
 			return httpx.Internal("failed to fetch tags", err)
 		}
+		tags = launchListableStrings(tags)
 		if tags == nil {
 			tags = []string{}
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"tags": redactLaunchProhibitedStrings(tags)})
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"tags": tags})
 	}))
 
 	// --- Public: Events ---
@@ -427,7 +428,9 @@ func predictionCategoryPayloads(categories []prediction.Category) []prediction.C
 func predictionSeriesPayload(series prediction.Series) prediction.Series {
 	series.Title = redactLaunchProhibitedUserText(series.Title)
 	series.Description = redactLaunchProhibitedUserText(series.Description)
-	series.Tags = redactLaunchProhibitedStrings(series.Tags)
+	// Tags are list content: drop prohibited entries instead of emitting the
+	// sentinel as a browsable tag (matches /api/v1/tags).
+	series.Tags = launchListableStrings(series.Tags)
 	return series
 }
 
@@ -1095,12 +1098,14 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		}
 
 		// GET: admin market list. Unlike the public /api/v1/markets, this includes
-		// pre-launch `unopened` drafts so the backoffice can review and open them.
+		// pre-launch `unopened` drafts so the backoffice can review and open them,
+		// and launch-scrubbed markets so ops can audit what the public list hides.
 		if r.Method == stdhttp.MethodGet {
 			filter := prediction.MarketFilter{
-				Page:            clampedQueryParam(r, "page", 1, 100000),
-				PageSize:        clampedQueryParam(r, "pageSize", 20, 500),
-				IncludeUnopened: true,
+				Page:                  clampedQueryParam(r, "page", 1, 100000),
+				PageSize:              clampedQueryParam(r, "pageSize", 20, 500),
+				IncludeUnopened:       true,
+				IncludeLaunchScrubbed: true,
 			}
 			if eid := r.URL.Query().Get("eventId"); eid != "" {
 				filter.EventID = &eid
@@ -1391,10 +1396,14 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if err != nil {
 			return httpx.Internal("failed to fetch tags", err)
 		}
+		// Prohibited tags are dropped, not redacted, even for admins: the
+		// sentinel is not the stored tag value, so emitting it here would
+		// offer a filter chip that can never match anything.
+		tags = launchListableStrings(tags)
 		if tags == nil {
 			tags = []string{}
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"tags": redactLaunchProhibitedStrings(tags)})
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"tags": tags})
 	}))
 
 	// Admin: Market lifecycle transitions

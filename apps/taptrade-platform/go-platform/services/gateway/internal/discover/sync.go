@@ -31,17 +31,19 @@ func mentionsUpstream(s string) bool {
 
 // SyncResult is the per-run summary the runner prints to stderr.
 type SyncResult struct {
-	FetchedPolymarket int
-	FetchedKalshi     int
-	FetchedManifold   int
-	BeforeDedupe      int
-	AfterDedupe       int
-	Created           int
-	Updated           int
-	ImagesRehosted    int
-	ImagesFailed      int
-	RemovedExpired    int
-	FetchErrors       []error
+	FetchedPolymarket   int
+	FetchedKalshi       int
+	FetchedManifold     int
+	BeforeDedupe        int
+	AfterDedupe         int
+	Created             int
+	Updated             int
+	ImagesRehosted      int
+	ImagesFailed        int
+	ImagesDroppedShared int
+	MarketImagesAligned int
+	RemovedExpired      int
+	FetchErrors         []error
 }
 
 // Sync runs the full pipeline once: fetch all three sources, dedupe by title,
@@ -167,10 +169,83 @@ func Sync(ctx context.Context, repo *Repository, rehoster *ImageRehoster,
 		}
 	}
 
+	// Thumbnail hygiene, in two passes. First drop covers that upstream
+	// reuses across unrelated markets (needs the rehost folder to hash file
+	// content, so it's skipped when rehosting is disabled). Then align every
+	// promoted IMP-* market's image_path with its imported row, which both
+	// propagates the drops and corrects historical mismatches.
+	if rehoster != nil {
+		dropped, err := dropSharedCoverImages(ctx, repo, rehoster)
+		if err != nil {
+			slog.Warn("discover shared-cover sweep failed", "err", err)
+		} else {
+			res.ImagesDroppedShared = dropped
+		}
+	}
+	aligned, err := repo.AlignPromotedMarketImages(ctx)
+	if err != nil {
+		slog.Warn("discover promoted image align failed", "err", err)
+	} else {
+		res.MarketImagesAligned = aligned
+	}
+
 	if len(res.FetchErrors) == 3 && res.AfterDedupe == 0 {
 		return res, deduped, errors.New("all three fetchers failed")
 	}
 	return res, deduped, nil
+}
+
+// dropSharedCoverImages clears thumbnails whose file content is shared by
+// imported markets that don't belong to one upstream event. Sources reuse
+// series/venue branding this way — one game-cover image stamped on dozens of
+// unrelated questions — and a wrong cover is worse than no cover.
+func dropSharedCoverImages(ctx context.Context, repo *Repository, rehoster *ImageRehoster) (int, error) {
+	rows, err := repo.ListImageRows(ctx)
+	if err != nil {
+		return 0, err
+	}
+	ids := sharedCoverImageRowIDs(rows, rehoster.HashHostedImage)
+	return repo.ClearImagePaths(ctx, ids)
+}
+
+// sharedCoverImageRowIDs is the pure decision core of the shared-cover sweep:
+// group rows by image content hash; a hash spanning more than one upstream
+// event group is generic branding, not art for any single market, so every
+// row carrying it loses the image. Rows sharing one event group keep their
+// cover (an event's own image on that event's markets is legitimate); a row
+// without an event group counts as its own group. Rows whose file can't be
+// hashed are left untouched.
+func sharedCoverImageRowIDs(rows []ImportedImageRow, hashOf func(string) (string, bool)) []string {
+	type group struct {
+		ids       []string
+		eventKeys map[string]struct{}
+	}
+	groups := map[string]*group{}
+	for _, row := range rows {
+		hash, ok := hashOf(row.ImagePath)
+		if !ok {
+			continue
+		}
+		g := groups[hash]
+		if g == nil {
+			g = &group{eventKeys: map[string]struct{}{}}
+			groups[hash] = g
+		}
+		g.ids = append(g.ids, row.ID)
+		eventKey := strings.ToLower(strings.TrimSpace(row.EventGroup))
+		if eventKey == "" {
+			eventKey = "row:" + row.ID
+		}
+		g.eventKeys[eventKey] = struct{}{}
+	}
+
+	var out []string
+	for _, g := range groups {
+		if len(g.eventKeys) > 1 {
+			out = append(out, g.ids...)
+		}
+	}
+	return out
 }
 
 var timeNowUTC = func() time.Time { return time.Now().UTC() }
