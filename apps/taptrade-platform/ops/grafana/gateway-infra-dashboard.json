@@ -1,0 +1,113 @@
+{
+  "title": "Hula Na! — Gateway Infra & Latency",
+  "uid": "hulana-gateway-infra",
+  "schemaVersion": 38,
+  "version": 1,
+  "editable": true,
+  "tags": ["hulana", "gateway", "infra", "observability"],
+  "time": { "from": "now-6h", "to": "now" },
+  "refresh": "30s",
+  "templating": { "list": [] },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Geo edge-auth denials (5m)",
+      "description": "Money-path requests that reached the origin without a valid X-Edge-Auth secret (SEC-03). Any nonzero value is a direct-to-origin geo-bypass attempt — pages via GeoEdgeAuthDenialsPresent.",
+      "gridPos": { "h": 4, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        { "expr": "sum(increase(gateway_geo_edge_auth_denials_total[5m]))", "legendFormat": "edge-auth denials", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "red", "value": 1 }
+          ] }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Geo missing-signal denials (rate, 5m)",
+      "description": "Denials caused by an absent country header. Healthy edge = 0; a sustained rate means the edge is misconfigured or bypassed.",
+      "gridPos": { "h": 4, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        { "expr": "sum(rate(gateway_geo_missing_signal_denials_total[5m]))", "legendFormat": "missing-signal/sec", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 3,
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 0.1 }
+          ] }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "WebSocket fan-out drops (rate)",
+      "description": "Per-client dropped messages, hub broadcasts dropped, and slow clients force-disconnected (PERF-03 / P1-10). Any sustained line means real-time updates are being lost.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        { "expr": "rate(gateway_ws_messages_dropped_total[5m])", "legendFormat": "messages dropped/sec", "refId": "A" },
+        { "expr": "rate(gateway_ws_broadcasts_dropped_total[5m])", "legendFormat": "broadcasts dropped/sec", "refId": "B" },
+        { "expr": "rate(gateway_ws_slow_clients_disconnected_total[5m])", "legendFormat": "slow clients dropped/sec", "refId": "C" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps", "decimals": 3 } }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "HTTP request rate by status",
+      "description": "sum by (status) (rate(taptrade_http_requests_total[5m])). Watch for a 5xx climb correlated with deploys.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [
+        { "expr": "sum by (status) (rate(taptrade_http_requests_total[5m]))", "legendFormat": "{{status}}", "refId": "A" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps", "decimals": 2 } }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "PlaceOrder latency (p50 / p95 / p99)",
+      "description": "histogram_quantile over prediction_operation_duration_ms_bucket{op=\"place_order\"}. p95 > 500ms for 10m pages via PlaceOrderP95Slow.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum by (le) (rate(prediction_operation_duration_ms_bucket{op=\"place_order\"}[5m])))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum by (le) (rate(prediction_operation_duration_ms_bucket{op=\"place_order\"}[5m])))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum by (le) (rate(prediction_operation_duration_ms_bucket{op=\"place_order\"}[5m])))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ms", "decimals": 1 } }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Settlement latency (p50 / p95 / p99)",
+      "description": "histogram_quantile over prediction_operation_duration_ms_bucket{op=\"settlement\"}. p95 > 2s for 10m pages via SettlementP95Slow (large markets → batch payouts, P3-12).",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum by (le) (rate(prediction_operation_duration_ms_bucket{op=\"settlement\"}[5m])))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum by (le) (rate(prediction_operation_duration_ms_bucket{op=\"settlement\"}[5m])))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum by (le) (rate(prediction_operation_duration_ms_bucket{op=\"settlement\"}[5m])))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ms", "decimals": 1 } }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "HTTP mean latency by path",
+      "description": "rate(taptrade_http_request_duration_ms_sum[5m]) / rate(taptrade_http_requests_total[5m]). Mean (not p95) — the HTTP layer exports a sum, not buckets.",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 20 },
+      "targets": [
+        { "expr": "sum by (path) (rate(taptrade_http_request_duration_ms_sum[5m])) / sum by (path) (rate(taptrade_http_requests_total[5m]))", "legendFormat": "{{path}}", "refId": "A" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ms", "decimals": 1 } }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-# Tiangge Parity Run Log
+# TapTrade Parity Run Log
 
 ## 2026-07-01 Loop 499 - Loyalty Ledger Metadata Read Boundary
 
@@ -197,7 +197,7 @@ Result:
 
 - Created `docs/prototype-audit.md`.
 - Created `spec.md`.
-- Created `docs/tiangge-economy-rules.md`.
+- Created `docs/taptrade-economy-rules.md`.
 - Created this run log.
 
 Progress matrix:
@@ -217,7 +217,7 @@ Progress matrix:
 
 Highest-leverage next slice:
 
-Safety boundary. The launch app currently exposes cashier/deposit/withdrawal/crypto/dollar/cash-equivalent paths and copy, which blocks every other journey from being valid for Tiangge.
+Safety boundary. The launch app currently exposes cashier/deposit/withdrawal/crypto/dollar/cash-equivalent paths and copy, which blocks every other journey from being valid for TapTrade.
 
 ## 2026-06-23 Loop 1 - User-Facing Safety Boundary
 
@@ -262,7 +262,7 @@ Implemented onboarding slice in the user app:
 
 - Changed `AuthProvider.login()` to return the authenticated user, preserving existing callers that ignore the return value.
 - Changed the session-level starter grant fallback from a single boolean to a per-user-id guard, so switching accounts in one browser session can still attempt the idempotent grant for the new user.
-- Updated `/auth/register` copy from legacy Predict/trading language to Tiangge points-only onboarding.
+- Updated `/auth/register` copy from legacy Predict/trading language to TapTrade points-only onboarding.
 - Added explicit no-cashout disclosure text: starter points are gameplay-only, not money, and cannot be cashed out, withdrawn, transferred, or redeemed for prizes.
 - After successful registration and automatic login, `/auth/register` now calls `claimStarterGrant(newUser.id)` immediately, while `AuthProvider` remains a best-effort fallback for restored sessions.
 - Added regression tests for signup auto-login, starter point claim, points-only no-cashout disclosure, and per-user idempotent grant fallback.
@@ -558,10 +558,10 @@ Continue removing or gating gateway/backoffice cashier/provider surfaces, or run
 
 Disabled legacy money routes in the gateway launch default:
 
-- Added `TIANGGE_LEGACY_MONEY_ROUTES_ENABLED` as the explicit opt-in for legacy cashier/payment route registration.
+- Added `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED` as the explicit opt-in for legacy cashier/payment route registration.
 - Wrapped alpha cashier user/admin routes, legacy payment deposit/withdraw/method/status/webhook routes, and crypto payment routes so they are absent by default.
 - Removed payment webhook and provider-callback auth/CSRF bypasses from the default gateway public/CSRF skip lists.
-- Added deployed-environment boot validation rejecting `TIANGGE_LEGACY_MONEY_ROUTES_ENABLED=true` and `ALPHA_CASHIER_ENABLED=true`.
+- Added deployed-environment boot validation rejecting `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED=true` and `ALPHA_CASHIER_ENABLED=true`.
 - Added route-level regression tests proving `/api/v1/cashier/alpha/*`, `/api/v1/admin/cashier/alpha/*`, `/api/v1/payments/{deposit,withdraw,methods,status,webhook}`, and `/api/v1/payments/crypto/*` return 404 in launch default while health routes remain registered.
 - Updated gateway executable tests so legacy payment webhooks/provider callbacks require auth by default and bypass auth/CSRF only with the explicit legacy opt-in.
 
@@ -836,7 +836,7 @@ Moved Scenario 2 discovery closer to parity with real, per-user watchlists:
 - Wired `/predict` all-markets discovery to hydrate watched market ids, optimistically add/remove watched markets, expose Watch/Watching controls on market cards, and filter to watched markets only.
 - Updated `MarketGrid` and direct `MarketCard` usage to pass stable market ids for watchlist mutation.
 - Added user-app regression coverage for persistent watchlist endpoints, discovery filter state, grid propagation, and accessible card controls.
-- Updated `spec.md`, `prototype-audit.md`, and `tiangge-economy-rules.md` to record watchlists as discovery metadata only, with no point movement or value implication.
+- Updated `spec.md`, `prototype-audit.md`, and `taptrade-economy-rules.md` to record watchlists as discovery metadata only, with no point movement or value implication.
 
 Verification:
 
@@ -872,7 +872,7 @@ Removed the deterministic movement gap from the `/discover` sentiment board:
 - Updated sentiment rows to show a loading placeholder while history is pending and `n/a` only when a history request fails or returns no usable points.
 - Kept movement informational only: no point movement, reward, or value implication.
 - Added user-app regression coverage proving `/discover` uses price history and does not import `deterministicDelta`.
-- Updated `spec.md`, `prototype-audit.md`, and `tiangge-economy-rules.md` to remove deterministic discovery movement from the mock gap list.
+- Updated `spec.md`, `prototype-audit.md`, and `taptrade-economy-rules.md` to remove deterministic discovery movement from the mock gap list.
 
 Verification:
 
@@ -910,7 +910,7 @@ Moved Scenario 2 discovery closer to parity with real taxonomy browsing:
 - Wired `/predict` all-markets discovery to fetch backend series/tags for the selected category, render series links, and filter markets by selected tag.
 - Added `/series/[slug]`, resolving backend series metadata and listing open markets through the `seriesId` market filter.
 - Added gateway filter coverage and user-app regression coverage for taxonomy API/client/UI wiring.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` to record series/tag browsing as real discovery metadata only, not a point movement or value signal.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` to record series/tag browsing as real discovery metadata only, not a point movement or value signal.
 
 Verification:
 
@@ -1020,7 +1020,7 @@ Moved Scenario 3 market detail and Scenario 5 liquidity closer to parity:
   - YES reserve, NO reserve, AMM subsidy, and curve K metrics.
 - Kept the visualization honest: order-book markets still render only real `/orderbook` levels, and AMM markets do not invent synthetic order-book depth.
 - Added user-app regression coverage proving the AMM fields remain typed and the AMM curve/reserve UI remains wired.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` to record the new AMM evidence while keeping live proof and true price-impact quote evidence as open gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` to record the new AMM evidence while keeping live proof and true price-impact quote evidence as open gaps.
 
 Verification:
 
@@ -1058,7 +1058,7 @@ Moved Scenario 3 market detail and Scenario 5 liquidity closer to parity:
 - Wired `/market/[ticker]` AMM liquidity to fetch preview-backed YES quote sizes through `api.previewOrder` and render an impact ladder with cost, average price, and after-trade price.
 - Added gateway tests for read-only AMM previews and continued AMM placement rejection.
 - Added user-app regression coverage proving the AMM impact ladder is backed by the order preview endpoint, not local synthetic depth.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` to record the backed quote evidence and keep live browser proof as the remaining gap.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` to record the backed quote evidence and keep live browser proof as the remaining gap.
 
 Verification:
 
@@ -1097,7 +1097,7 @@ Moved Scenario 4 trading and Scenario 8 social/activity closer to parity:
 - Extended `SocialActivityItem` to include `trade`.
 - Updated `/activity` and `/users/[userId]` to render trade activity body text instead of falling through to comment labels.
 - Added regression coverage proving the backend activity query includes `prediction_trades` and the user app handles the `trade` type.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the new evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the new evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -1140,7 +1140,7 @@ Moved Scenario 4 trading and Scenario 6 portfolio/ledger closer to parity:
   - Order points unlocked.
 - Adjusted reservation/release delta presentation so locked points show as a negative/locked movement and unlocked points show as positive availability.
 - Added regression coverage for the frontend labels, preserved idempotency metadata, and gateway reservation/release marker source contract.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the new evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the new evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -1180,7 +1180,7 @@ Moved Scenario 8 social/activity closer to parity:
 - Extended `SocialActivityItem.type` to include `settlement`.
 - Updated `/activity` and `/users/[userId]` so settlement rows render their body text rather than falling through to generic comment copy.
 - Added regression coverage proving the gateway activity query includes `prediction_payouts` and `prediction_settlements`, the client type includes `settlement`, and both activity pages handle the new type.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the new evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the new evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -1217,7 +1217,7 @@ Moved Scenario 8 social/activity closer to parity:
 - Extended `SocialActivityItem.type` to include `reward` and `leaderboard`.
 - Updated `/activity` and `/users/[userId]` so reward and leaderboard rows render their body text rather than falling through to generic comment copy.
 - Added regression coverage proving the gateway activity query includes `loyalty_ledger` and `leaderboard_snapshots`, the client type includes `reward` and `leaderboard`, and both activity pages handle both new types.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the new evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the new evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -1256,7 +1256,7 @@ Moved Scenario 9 game economy and Scenario 11 API/data surface closer to parity:
 - Updated `/rewards` to load configured point packs and render point-pack claim controls beside the daily claim, including the pre-first-settle state.
 - Updated point-ledger presentation helpers so `point_pack_grant` rows display as `Point pack` / `Point pack grant`.
 - Added regression coverage for wallet-client point-pack endpoints, rewards-page point-pack wiring, gateway source contract, and point-ledger labels.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the new evidence and remaining Scenario 9 gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the new evidence and remaining Scenario 9 gaps.
 
 Verification:
 
@@ -1296,7 +1296,7 @@ Moved Scenario 9 game economy and Scenario 11 API/data surface closer to parity:
 - Updated `/rewards` to load missions and render mission progress/claim controls beside daily claim and point packs, including the pre-first-settle state.
 - Updated point-ledger presentation helpers so `mission_reward` rows display as `Mission reward`.
 - Added regression coverage for wallet-client mission endpoints, rewards-page mission wiring, gateway source contract, and point-ledger labels.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the new evidence and remaining Scenario 9 gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the new evidence and remaining Scenario 9 gaps.
 
 Verification:
 
@@ -1336,7 +1336,7 @@ Moved Scenario 9 game economy and Scenario 11 API/data surface closer to parity:
 - Updated `/rewards` to load streaks and render streak progress/claim controls beside daily claim, missions, and point packs, including the pre-first-settle state.
 - Updated point-ledger presentation helpers so `streak_reward` rows display as `Streak reward`.
 - Added regression coverage for wallet-client streak endpoints, rewards-page streak wiring, gateway source contract, and point-ledger labels.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the new evidence and remaining Scenario 9 gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the new evidence and remaining Scenario 9 gaps.
 
 Verification:
 
@@ -1376,7 +1376,7 @@ Moved Scenario 9 game economy and Scenario 11 API/data surface closer to parity:
 - Added user-app wallet helper `getBadges`.
 - Updated `/rewards` to load and render badge/cosmetic earned/locked status beside daily claim, point packs, missions, and streaks, including the pre-first-settle state.
 - Added regression coverage for wallet-client badge endpoint wiring, rewards-page badge rendering, gateway source contract, and non-redeemable badge copy.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the new evidence and remaining Scenario 9 gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the new evidence and remaining Scenario 9 gaps.
 
 Verification:
 
@@ -1421,7 +1421,7 @@ Moved Scenario 9 game economy, Scenario 11 API/data surface, and Scenario 12 saf
 - Added user-app wallet helper `getRewardLimitStatus`.
 - Updated `/rewards` to show daily reward-limit status in the full rewards view and pre-first-settle view, and to refresh the limit after successful reward claims.
 - Added regression coverage for wallet-client reward-limit endpoint wiring, rewards-page visible status, and gateway source contract.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the new evidence and remaining Scenario 9 gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the new evidence and remaining Scenario 9 gaps.
 
 Verification:
 
@@ -1451,7 +1451,7 @@ Continue reward abuse hardening with account/device/IP clustering if a suitable 
 
 Moved Scenario 7 market lifecycle, Scenario 10 admin operations, Scenario 11 API/data surface, and Scenario 12 safety/trust closer to parity:
 
-- Added a launch-facing Tiangge lifecycle mapper in the gateway:
+- Added a launch-facing TapTrade lifecycle mapper in the gateway:
   - persisted `unopened` maps to `draft`,
   - `halted` maps to `paused`,
   - `closed` stays `closed`,
@@ -1459,20 +1459,20 @@ Moved Scenario 7 market lifecycle, Scenario 10 admin operations, Scenario 11 API
   - `settled` maps to terminal `settled`,
   - `voided` maps to terminal `invalid`.
 - The mapper returns allowed actions, target status/stage, reason requirements, destructive flags, tradeable state, and terminal state without changing the persisted engine enum.
-- Added `tianggeLifecycle` metadata to admin lifecycle transition responses and admin settlement/finalize responses.
+- Added `taptradeLifecycle` metadata to admin lifecycle transition responses and admin settlement/finalize responses.
 - Added gateway tests proving the lifecycle mapper and admin close/void responses expose the launch-facing stages/actions.
-- Added shared API-client lifecycle types and `describeTianggeMarketLifecycle`.
+- Added shared API-client lifecycle types and `describeTapTradeMarketLifecycle`.
 - Updated office prediction admin:
   - market table now uses `getAdminMarkets`, so draft/unopened markets are visible for operator review,
   - status chips render launch-facing lifecycle labels,
   - actions render Open, Pause, Close, Cancel, Invalidate, and settlement controls instead of raw engine-only language,
   - market and settlement operation volume/drift copy formats as `pts`, not dollar values.
 - Added office source regression coverage proving prediction admin stays wired to the admin market list, lifecycle mapper, and points-only operation formatting.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the new evidence and remaining admin proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the new evidence and remaining admin proof gaps.
 
 Verification:
 
-- `go test ./internal/prediction -run 'Test(DescribeTianggeMarketLifecycle|ValidMarketTransitions|InvalidMarketTransitions|TransitionMarket|IsTradeable|IsTerminal)' -count=1` in the gateway: pass.
+- `go test ./internal/prediction -run 'Test(DescribeTapTradeMarketLifecycle|ValidMarketTransitions|InvalidMarketTransitions|TransitionMarket|IsTradeable|IsTerminal)' -count=1` in the gateway: pass.
 - `go test ./internal/http -run 'TestPredictionAdminLifecycleRoutesSupportOpenCloseAndVoid' -count=1` in the gateway: pass.
 - `yarn test tests/app-router-legacy-routes.test.ts` in the office app: pass, 10 tests.
 - `yarn build` in `talon-backoffice/packages/api-client`: pass.
@@ -1489,7 +1489,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live seeded admin lifecycle proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live seeded admin lifecycle proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Category/tag/liquidity/export/report workflows still need verification.
 - User ledger admin surfaces still use legacy wallet/payment data shapes.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
@@ -1506,12 +1506,12 @@ Moved Scenario 7 market lifecycle, Scenario 10 admin operations, and Scenario 11
   - `GET /api/v1/admin/markets/{marketId}/lifecycle`,
   - returns persisted `prediction_lifecycle_events`,
   - preserves actor id, actor type, reason, metadata, and occurred timestamp,
-  - adds mapped `tianggeLifecycle` metadata to each audit row.
-- Added gateway regression coverage proving lifecycle transitions write reviewable audit rows and that the read endpoint maps `open` to `open` and `halted` to Tiangge `paused`.
+  - adds mapped `taptradeLifecycle` metadata to each audit row.
+- Added gateway regression coverage proving lifecycle transitions write reviewable audit rows and that the read endpoint maps `open` to `open` and `halted` to TapTrade `paused`.
 - Added shared API-client lifecycle audit types and `getMarketLifecycleAudit`.
 - Updated the office prediction markets table with an `Audit` row action and a read-only Lifecycle Audit modal showing mapped stage, reason, actor, and timestamp.
 - Extended office source regression coverage so the market admin surface stays wired to the lifecycle audit endpoint/modal.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the new evidence and remaining live-admin proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the new evidence and remaining live-admin proof gaps.
 
 Verification:
 
@@ -1530,7 +1530,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live seeded admin lifecycle proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live seeded admin lifecycle proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Replay/export evidence for admin operations is still missing.
 - Category/tag/liquidity/export/report workflows still need verification.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
@@ -1545,14 +1545,14 @@ Moved Scenario 7 market lifecycle, Scenario 10 admin operations, and Scenario 11
 
 - Added CSV export for per-market lifecycle audit evidence:
   - `GET /api/v1/admin/markets/{marketId}/lifecycle?format=csv`,
-  - returns mapped Tiangge stage/label alongside event type, actor, reason, metadata, and timestamp,
+  - returns mapped TapTrade stage/label alongside event type, actor, reason, metadata, and timestamp,
   - sends `text/csv` plus a market-scoped attachment filename,
   - guards text cells against spreadsheet formula execution.
 - Added gateway regression coverage for lifecycle audit CSV headers, mapped `paused` stage, actor/reason content, attachment headers, and formula-safe reason output.
 - Added shared API-client `exportMarketLifecycleAudit` using the same auth-refresh behavior as JSON calls.
 - Added an office Lifecycle Audit modal `Export CSV` action that downloads the market-scoped audit file.
 - Extended office source regression coverage so the lifecycle audit modal stays wired to JSON review and CSV export.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the new export evidence and remaining replay/live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the new export evidence and remaining replay/live-proof gaps.
 
 Verification:
 
@@ -1570,7 +1570,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live seeded admin lifecycle proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live seeded admin lifecycle proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Replay evidence for admin operations is still missing.
 - Category/tag/liquidity/broader report workflows still need verification.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
@@ -1592,7 +1592,7 @@ Moved Scenario 7 market lifecycle, Scenario 10 admin operations, and Scenario 11
 - Added shared API-client `SettlementReplayResponse` and `replayIncompleteSettlements`.
 - Added a settlement-queue `Replay Payouts` office control that calls the replay endpoint and reports how many incomplete settlements were finished.
 - Extended office source regression coverage so the settlement queue stays wired to the replay helper and points-only settlement copy.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the new replay evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the new replay evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -1610,7 +1610,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live seeded admin lifecycle proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live seeded admin lifecycle proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Category/tag/liquidity/broader report workflows still need verification.
 - User ledger admin surfaces still use legacy wallet/payment data shapes.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
@@ -1636,7 +1636,7 @@ Moved Scenario 10 admin operations and Scenario 11 API/data surface closer to pa
 - Added shared API-client category/series create payloads and admin taxonomy list/create helpers.
 - Added office `/prediction-admin/taxonomy` with category and series tables plus Create Category/Create Series forms, and linked it from the dashboard sidebar under Taxonomy.
 - Extended office source regression coverage so the taxonomy page stays routed and wired to the admin category/series/tag helpers.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with taxonomy management evidence and the remaining live-proof/admin gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with taxonomy management evidence and the remaining live-proof/admin gaps.
 
 Verification:
 
@@ -1653,7 +1653,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live seeded admin lifecycle/taxonomy proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live seeded admin lifecycle/taxonomy proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Liquidity and broader report workflows still need verification.
 - User ledger admin surfaces still use legacy wallet/payment data shapes.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
@@ -1686,7 +1686,7 @@ Moved Scenario 10 admin operations and Scenario 12 safety/trust closer to parity
   - user ledger surfaces stay points-only,
   - payment-method ledger columns/details do not return,
   - user detail copy avoids the retired payment/deposit/withdrawal labels.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with point-ledger admin evidence and remaining backend/live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with point-ledger admin evidence and remaining backend/live-proof gaps.
 
 Verification:
 
@@ -1700,7 +1700,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live seeded admin user-ledger proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live seeded admin user-ledger proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Backend/admin contracts still carry legacy wallet/cents naming.
 - Liquidity and broader report workflows still need verification.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
@@ -1721,7 +1721,7 @@ Moved Scenario 10 admin operations and Scenario 12 safety/trust closer to parity
   - cost-basis concentration heading became point-cost concentration.
 - Kept the page backed by the real `/api/v1/admin/prediction/risk` snapshot for settlement aging, cost-basis concentration, open-order count, non-terminal markets, and collateral drift alerts.
 - Extended office source regression coverage so the risk page continues to expose point labels and does not reintroduce currency formatting, `Money invariants`, or `Reserved (held) cash` copy.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with point-accounting risk evidence and the remaining live-proof/report/backend-naming gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with point-accounting risk evidence and the remaining live-proof/report/backend-naming gaps.
 
 Verification:
 
@@ -1736,7 +1736,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live seeded risk/admin proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live seeded risk/admin proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader reports/export workflows still need verification.
 - Backend/admin contracts still carry legacy wallet/cents naming.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
@@ -1759,7 +1759,7 @@ Moved Scenario 10 admin operations and Scenario 11 API/data surface closer to pa
 - Added gateway coverage proving point-accounting labels, point values, CSV headers, filename/content type, and formula-safe ticker cells.
 - Added an office `Export CSV` control on `/prediction-admin/risk` that downloads `/api/v1/admin/prediction/risk?format=csv`.
 - Extended office source regression coverage so the risk page remains wired to the CSV endpoint and filename.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the risk export evidence and remaining live-proof/non-risk-report/backend-naming gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the risk export evidence and remaining live-proof/non-risk-report/backend-naming gaps.
 
 Verification:
 
@@ -1776,7 +1776,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live seeded risk/admin proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live seeded risk/admin proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader non-risk reports/export workflows still need verification.
 - Backend/admin contracts still carry legacy wallet/cents naming.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
@@ -1798,7 +1798,7 @@ Moved Scenario 10 admin operations and Scenario 11 API/data surface closer to pa
 - Updated office `/prediction-admin/risk` to prefer `snapshot.pointAccounting`, with a legacy fallback that maps `moneyInvariants` into the point-native shape.
 - Added gateway JSON contract coverage proving the point-native fields and temporary legacy alias are both present.
 - Extended office source regression coverage so the risk page continues to use `pointAccounting` and the point-native field names.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the point-accounting risk API evidence and remaining live-proof/backend-naming gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the point-accounting risk API evidence and remaining live-proof/backend-naming gaps.
 
 Verification:
 
@@ -1817,7 +1817,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live seeded risk/admin proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live seeded risk/admin proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader non-risk reports/export workflows still need verification.
 - Backend/admin contracts still carry legacy wallet/cents names outside this risk snapshot alias.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
@@ -1838,7 +1838,7 @@ Moved Scenario 10 admin operations and Scenario 11 API/data surface closer to pa
 - Updated office `/prediction-admin/risk` to prefer `openPointCostCents` and `maxReturnedPointsCents`, with a legacy fallback for old snapshots.
 - Extended gateway JSON contract coverage for both the point-native concentration fields and the temporary legacy aliases.
 - Extended office source regression coverage so the risk page continues to reference the point-native concentration fields.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the risk concentration alias evidence and remaining live-proof/backend-naming gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the risk concentration alias evidence and remaining live-proof/backend-naming gaps.
 
 Verification:
 
@@ -1857,7 +1857,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live seeded risk/admin proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live seeded risk/admin proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader non-risk reports/export workflows still need verification.
 - Backend/admin contracts still carry legacy wallet/cents names outside the risk snapshot compatibility aliases.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
@@ -1875,7 +1875,7 @@ Moved Scenario 6 portfolio/positions, Scenario 11 API/data surface, and Scenario
 - Removed old wallet-client comments that described held reservations as pending withdrawals.
 - Updated portfolio cancel-order success copy and English locale copy from `Reserved cash released on {{ticker}}` to `Reserved points unlocked on {{ticker}}`.
 - Extended `wallet-paths.test.ts` so the wallet client continues to avoid payment helpers, preserve ledger movement/idempotency metadata, and avoid USD/dollar normalization.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the user wallet unit cleanup evidence and remaining live-proof/backend-naming gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the user wallet unit cleanup evidence and remaining live-proof/backend-naming gaps.
 
 Verification:
 
@@ -1892,7 +1892,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live visible point-ledger proof across trading and settlement remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live visible point-ledger proof across trading and settlement remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Backend wallet/cents route and field names still remain below the launch UI.
 - Broader non-risk reports/export workflows still need verification.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
@@ -1918,7 +1918,7 @@ Moved Scenario 6 portfolio/positions, Scenario 11 API/data surface, and Scenario
 - Updated the user-app wallet client to prefer point-native wallet and ledger fields, falling back to legacy cents fields for older gateway builds.
 - Extended gateway wallet tests to prove balance and ledger responses include point units and point aliases.
 - Extended user-app wallet source tests to prove the client prefers point-native aliases and still avoids USD/dollar normalization.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the public wallet point-alias evidence and remaining live-proof/backend-naming gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the public wallet point-alias evidence and remaining live-proof/backend-naming gaps.
 
 Verification:
 
@@ -1937,7 +1937,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live visible point-ledger proof across trading and settlement remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live visible point-ledger proof across trading and settlement remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Backend wallet route names, storage names, and many reward payload fields still carry legacy wallet/cents naming.
 - Broader non-risk reports/export workflows still need verification.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
@@ -1961,7 +1961,7 @@ Moved Scenario 9 game economy, Scenario 11 API/data surface, and Scenario 12 saf
 - Updated the user-app wallet client to prefer point-native reward aliases, normalizing the existing rewards UI fields from point aliases first and falling back to legacy cents fields for older gateway builds.
 - Extended gateway reward tests to prove point aliases and `PTS` units on daily claims, point packs, missions, streaks, and reward limits.
 - Extended user-app wallet source tests to prove the reward client reads point-native aliases and keeps avoiding USD/dollar normalization.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the reward payload alias evidence and remaining live-proof/backend-naming gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the reward payload alias evidence and remaining live-proof/backend-naming gaps.
 
 Verification:
 
@@ -1980,7 +1980,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof across daily claim, point packs, mission, streak, badges, limit status, leaderboard movement, and activity remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof across daily claim, point packs, mission, streak, badges, limit status, leaderboard movement, and activity remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Backend wallet route names, storage names, and some non-reward wallet/breakdown payloads still carry legacy wallet/cents or money naming.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
@@ -2003,7 +2003,7 @@ Moved Scenario 6 portfolio/positions, Scenario 11 API/data surface, and Scenario
 - Added English locale keys for `basePoints` and `bonusPoints`, retaining old keys only as compatibility labels.
 - Extended gateway wallet tests to prove breakdown point aliases, `PTS` unit, and compatibility alias alignment.
 - Extended user-app wallet source tests to prove breakdown alias preference and guard against USD fallback or legacy display fields.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the wallet-breakdown alias evidence and remaining live-proof/backend-naming gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the wallet-breakdown alias evidence and remaining live-proof/backend-naming gaps.
 
 Verification:
 
@@ -2020,7 +2020,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live visible point-ledger and wallet-breakdown proof across trading, rewards, and settlement remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live visible point-ledger and wallet-breakdown proof across trading, rewards, and settlement remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Backend wallet route names, storage names, and transitional cents/legacy field names remain below the launch UI.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
@@ -2045,7 +2045,7 @@ Moved Scenario 9 game economy, Scenario 11 API/data surface, and Scenario 12 saf
 - Extended the bonus Redux state with point-native active-bonus fields and kept legacy fields synced for compatibility.
 - Updated `WageringProgress` visible/assistive copy to use point-play language (`Play progress`, `playProgressRequired`) instead of visible wagering text.
 - Added gateway helper tests for active-bonus/progress alias contracts and user-app source tests for bonus alias preference plus point-play copy.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the bonus-progress alias evidence and remaining live-proof/internal-naming gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the bonus-progress alias evidence and remaining live-proof/internal-naming gaps.
 
 Verification:
 
@@ -2062,8 +2062,8 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live bonus/reward proof across daily claim, point packs, mission, streak, badges, limit status, leaderboard movement, and activity remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
-- The legacy campaign/admin service still carries internal wagering/deposit-shaped configuration concepts and should not be counted as Tiangge point packs or missions.
+- Live bonus/reward proof across daily claim, point packs, mission, streak, badges, limit status, leaderboard movement, and activity remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
+- The legacy campaign/admin service still carries internal wagering/deposit-shaped configuration concepts and should not be counted as TapTrade point packs or missions.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2085,7 +2085,7 @@ Moved Scenario 10 admin operations, Scenario 11 API/data surface, and Scenario 1
 - Updated admin bonus list/grant/detail responses to reuse the player bonus response shape, so admin bonus payloads also carry `PTS` and point-play aliases.
 - Confirmed the office `/campaigns` page is still a redirect to `/dashboard`; this slice cleans the registered gateway admin contract rather than exposing a new office campaign UI.
 - Added gateway helper tests proving campaign budget/spent aliases and point-normalized rule-config aliases.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the admin campaign alias evidence and remaining live-proof/internal-naming gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the admin campaign alias evidence and remaining live-proof/internal-naming gaps.
 
 Verification:
 
@@ -2100,8 +2100,8 @@ Progress matrix update:
 
 Remaining blockers:
 
-- The legacy campaign/admin service still carries internal wagering/deposit-shaped configuration concepts and should not be counted as Tiangge point packs or missions.
-- Live admin and rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- The legacy campaign/admin service still carries internal wagering/deposit-shaped configuration concepts and should not be counted as TapTrade point packs or missions.
+- Live admin and rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2119,7 +2119,7 @@ Moved Scenario 11 API/data surface and Scenario 12 safety/trust closer to parity
 - Updated `/profile` limits to call `setPointUseLimits` with `SetPointUseLimitsRequest`.
 - Updated `/account/rg-history` to group and render normalized `point_use_limit` rows as `Point-Use Limit`, with legacy `deposit_limit` accepted only as a fallback.
 - Added regression coverage for the point-use wrapper, point-use profile call site, normalized history shape, and visible responsible-play history label.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the responsible-play point-use evidence and remaining backend compatibility gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the responsible-play point-use evidence and remaining backend compatibility gaps.
 
 Verification:
 
@@ -2135,7 +2135,7 @@ Progress matrix update:
 Remaining blockers:
 
 - Backend compliance route names and some responsible-play internals still carry inherited deposit/stake naming.
-- Live profile/RG-history proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live profile/RG-history proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2153,7 +2153,7 @@ Moved Scenario 11 API/data surface and Scenario 12 safety/trust closer to parity
 - Updated the user-app `setPointUseLimits` wrapper and `getLimitsHistory` to call the launch point-use routes instead of the compatibility deposit-named paths.
 - Added gateway regression coverage proving the point-use aliases set/list the same stored limit, remain session-bound, and keep the legacy list path working.
 - Updated user-app compliance source tests so the launch client must call point-use routes and must not call the legacy deposit-limit endpoint.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the point-use endpoint alias evidence and remaining internal naming gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the point-use endpoint alias evidence and remaining internal naming gaps.
 
 Verification:
 
@@ -2170,7 +2170,7 @@ Progress matrix update:
 Remaining blockers:
 
 - Backend service/type/storage names still carry inherited deposit/stake/cents terminology.
-- Live profile/RG-history proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live profile/RG-history proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2189,7 +2189,7 @@ Moved Scenario 11 API/data surface and Scenario 12 safety/trust closer to parity
 - Updated the user-app `setPointUseLimits` request body to send `amountPointsCents`.
 - Updated `getLimitsHistory` to prefer `limitPointsCents` before falling back to `limitCents`.
 - Extended gateway and user-app regression tests for point-native request/response/history behavior.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the point-use payload alias evidence and remaining internal naming gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the point-use payload alias evidence and remaining internal naming gaps.
 
 Verification:
 
@@ -2206,7 +2206,7 @@ Progress matrix update:
 Remaining blockers:
 
 - Backend service/type/storage names still carry inherited deposit/stake/cents terminology.
-- Live profile/RG-history proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live profile/RG-history proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2228,7 +2228,7 @@ Moved Scenario 11 API/data surface and Scenario 12 safety/trust closer to parity
 - Updated `getLimitsHistory` to fetch `/api/v1/compliance/rg/prediction-limits`, prefer `limitPointsCents`, and normalize entries to `prediction_limit`.
 - Updated `/account/rg-history` to render normalized prediction-limit rows as `Prediction Limit`, with legacy `stake_limit` accepted only as a fallback.
 - Extended gateway and user-app regression tests for prediction-limit aliases, point-native request/response/history fields, profile call-site naming, and visible RG-history labels.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the prediction-limit alias evidence and remaining internal naming gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the prediction-limit alias evidence and remaining internal naming gaps.
 
 Verification:
 
@@ -2245,7 +2245,7 @@ Progress matrix update:
 Remaining blockers:
 
 - Backend service/type/storage names still carry inherited deposit/stake/bet/cents terminology.
-- Live profile/RG-history proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live profile/RG-history proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2263,7 +2263,7 @@ Moved Scenario 11 API/data surface and Scenario 12 safety/trust closer to parity
 - Updated check responses to include `unit: "PTS"` plus point-native amount aliases.
 - Updated `/api/v1/compliance/rg/restrictions` to return point-native `pointUseLimits` and `predictionLimits` arrays with `PTS` unit fields while preserving legacy `depositLimits` and `betLimits`.
 - Added gateway regression coverage proving the new check aliases, restrictions aliases, compatibility fields, and cross-user access protections.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the check/restrictions alias evidence and remaining internal naming gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the check/restrictions alias evidence and remaining internal naming gaps.
 
 Verification:
 
@@ -2278,7 +2278,7 @@ Progress matrix update:
 Remaining blockers:
 
 - Backend service/type/storage names still carry inherited deposit/stake/bet/cents terminology.
-- Live profile/RG-history proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live profile/RG-history proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2295,7 +2295,7 @@ Moved Scenario 11 API/data surface and Scenario 12 safety/trust closer to parity
 - Added stable launch reason codes `point_use_limit_exceeded` and `prediction_limit_exceeded` on denied check responses.
 - Updated generic compliance error mapping for inherited limit sentinels to use point-use and prediction terminology.
 - Added gateway regression coverage proving over-limit check responses return `allowed: false`, point-native reason codes, point-native reason copy, and no deposit/bet denial wording.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the denied-reason alias evidence and remaining internal naming gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the denied-reason alias evidence and remaining internal naming gaps.
 
 Verification:
 
@@ -2311,7 +2311,7 @@ Remaining blockers:
 
 - Backend service/type/storage names still carry inherited deposit/stake/bet/cents terminology.
 - Prediction order placement still needs a separate launch-boundary review for inherited responsible-play denial copy.
-- Live profile/RG-history proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live profile/RG-history proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2327,7 +2327,7 @@ Moved Scenario 4 points-based prediction/trading and Scenario 12 safety/trust cl
 - Updated the empty-reason fallback from responsible-gambling wording to responsible-play wording.
 - Kept the inherited `CheckBetAllowed`/`CheckAndRecordBet` service contract intact for compatibility while cleaning the launch order boundary.
 - Updated prediction service regression tests to prove over-limit orders still block before wallet debit or order persistence while returning launch-safe prediction-limit copy.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the order-boundary denial-copy evidence.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the order-boundary denial-copy evidence.
 
 Verification:
 
@@ -2342,7 +2342,7 @@ Progress matrix update:
 Remaining blockers:
 
 - Backend service/type/storage names still carry inherited deposit/stake/bet/cents terminology.
-- Live trading-to-ledger proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live trading-to-ledger proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live discovery proof, live social proof, admin lifecycle proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2358,7 +2358,7 @@ Moved Scenario 4 points-based prediction/trading and Scenario 12 safety/trust cl
 - Added a structured fallback `details.reasonCode: "responsible_play_blocked"` for generic responsible-play order blocks.
 - Left generic placement errors unchanged so unrelated validation and market-state failures do not grow misleading responsible-play metadata.
 - Added HTTP regression tests for prediction-limit details, responsible-play fallback details, and generic error detail absence.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the structured order-denial evidence.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the structured order-denial evidence.
 
 Verification:
 
@@ -2373,7 +2373,7 @@ Progress matrix update:
 Remaining blockers:
 
 - Backend service/type/storage names still carry inherited deposit/stake/bet/cents terminology.
-- Live trading-to-ledger proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live trading-to-ledger proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live discovery proof, live social proof, admin lifecycle proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2390,7 +2390,7 @@ Moved Scenario 6 portfolio/positions, Scenario 11 API/data surface, and Scenario
 - Updated portfolio visible copy from settled payouts to settled results.
 - Added gateway regression coverage proving the alias fields and `PTS` unit are emitted, including an empty-slice guard.
 - Added user-app regression coverage locking the shared type aliases, client normalization, and visible portfolio copy.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the portfolio-history point-alias evidence.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the portfolio-history point-alias evidence.
 
 Verification:
 
@@ -2406,7 +2406,7 @@ Progress matrix update:
 Remaining blockers:
 
 - Backend service/type/storage names still carry inherited deposit/stake/bet/cents and payout terminology.
-- Live trading-to-ledger and settlement-to-history proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live trading-to-ledger and settlement-to-history proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live discovery proof, live social proof, admin lifecycle proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2424,11 +2424,11 @@ Moved Scenario 7 market lifecycle/resolution, Scenario 10 admin operations, Scen
 - Changed the settlement replay response summary to `Replayed incomplete settlement point disbursements`.
 - Added gateway regression coverage for the settlement alias payload, void response aliases, and point-disbursement replay copy.
 - Added user-app API-client source coverage for admin settlement alias normalization and office route coverage for point-disbursement copy.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the admin settlement point-disbursement evidence.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the admin settlement point-disbursement evidence.
 
 Verification:
 
-- `go test ./internal/http -run 'TestSettlementOperationPayload|TestPredictionAdminLifecycleResponseIncludesTianggeMetadata|TestPredictionAdminSettlementReplayResumesIncompleteDisbursements' -count=1` in the gateway: pass.
+- `go test ./internal/http -run 'TestSettlementOperationPayload|TestPredictionAdminLifecycleResponseIncludesTapTradeMetadata|TestPredictionAdminSettlementReplayResumesIncompleteDisbursements' -count=1` in the gateway: pass.
 - `npx tsx --test app/__tests__/qa-regressions-2026-04-18.test.ts` in the user app: pass, 68 tests.
 - `npx vitest run tests/app-router-legacy-routes.test.ts` in the office app: pass, 11 tests.
 
@@ -2442,7 +2442,7 @@ Progress matrix update:
 Remaining blockers:
 
 - Backend service/type/storage names still carry inherited deposit/stake/bet/cents and payout terminology.
-- Live admin lifecycle and settlement proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live admin lifecycle and settlement proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2457,7 +2457,7 @@ Moved Scenario 7 market lifecycle/resolution, Scenario 10 admin operations, and 
 - Updated the active office disputes route so dispute-uphold and void confirmation copy says locked points are returned instead of saying stakes are refunded.
 - Reworded the route comment from money-moving/refund language to irreversible point-disbursement language.
 - Added office source regression coverage for the disputes page, including positive checks for locked-point return copy and negative checks against the old refund/stake phrases.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the dispute void point-return evidence.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the dispute void point-return evidence.
 
 Verification:
 
@@ -2475,7 +2475,7 @@ Progress matrix update:
 Remaining blockers:
 
 - Backend service/type/storage names still carry inherited deposit/stake/bet/cents and payout terminology.
-- Live admin lifecycle and settlement proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live admin lifecycle and settlement proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2493,7 +2493,7 @@ Moved Scenario 9 game economy, Scenario 10 admin operations, and Scenario 12 saf
 - Updated active office loyalty settings/detail copy from settled-bet/stake/cents wording to prediction-settlement and point-unit wording.
 - Added launch-to-legacy loyalty source translation so the office UI can show `prediction_settlement` while preserving the inherited `bet_settlement` backend key in save/create payloads.
 - Added office route regression coverage for leaderboard and loyalty admin point-native copy.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the leaderboard/loyalty admin evidence.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the leaderboard/loyalty admin evidence.
 
 Verification:
 
@@ -2512,7 +2512,7 @@ Progress matrix update:
 Remaining blockers:
 
 - Backend service/type/storage names still carry inherited deposit/stake/bet/cents and payout terminology.
-- Live admin, rewards, and leaderboard proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live admin, rewards, and leaderboard proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2530,7 +2530,7 @@ Moved Scenario 9 game economy, Scenario 10 admin operations, Scenario 11 API/dat
 - Added the same `unit`, `rewardSummary`, and `pointMetricKey` aliases to computed Predict-native admin leaderboard rows.
 - Updated office leaderboard pages to prefer `pointMetricKey`, `unit`, and `rewardSummary` aliases while still sending compatibility keys for older gateway builds.
 - Added gateway and office regression coverage for seeded leaderboard copy, response aliases, request aliases, and office alias preference.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the leaderboard API alias evidence.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the leaderboard API alias evidence.
 
 Verification:
 
@@ -2553,7 +2553,7 @@ Progress matrix update:
 Remaining blockers:
 
 - Backend service/type/storage names still carry inherited deposit/stake/bet/cents and payout terminology.
-- Live admin, rewards, and leaderboard proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live admin, rewards, and leaderboard proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2571,7 +2571,7 @@ Moved Scenario 9 game economy, Scenario 10 admin operations, Scenario 11 API/dat
 - Updated office loyalty settings to normalize fetched rules from point aliases, send point aliases on save/create, and keep legacy fields only as compatibility payload fields.
 - Updated office loyalty detail ledger labels to prefer `predictionSourceType` while still accepting older `sourceType` values.
 - Removed a cashout-adjacent test fixture key from the loyalty tier update test payload.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the loyalty API alias evidence.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the loyalty API alias evidence.
 
 Verification:
 
@@ -2592,7 +2592,7 @@ Progress matrix update:
 Remaining blockers:
 
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake and payout terminology.
-- Live admin, rewards, and leaderboard proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live admin, rewards, and leaderboard proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2610,7 +2610,7 @@ Moved Scenario 9 game economy, Scenario 10 admin operations, Scenario 11 API/dat
 - Updated office loyalty detail to display `predictionSourceId` when present while retaining `sourceId` fallback for older gateway builds.
 - Added gateway regression coverage proving seeded loyalty ledger settlement entries expose point-safe aliases and do not emit the old metadata keys/reason text in the launch payload.
 - Extended office route regression coverage for the `predictionSourceId` preference.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the loyalty ledger metadata evidence.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the loyalty ledger metadata evidence.
 
 Verification:
 
@@ -2629,7 +2629,7 @@ Progress matrix update:
 Remaining blockers:
 
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake and payout terminology.
-- Live admin, rewards, and leaderboard proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live admin, rewards, and leaderboard proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2645,7 +2645,7 @@ Moved Scenario 12 safety/trust closer to parity:
 - Updated `page-home` locale bundles so the fourth teaser is esports/MLBB instead of crypto/Bitcoin across English, Indonesian, Malay, Tagalog, Simplified Chinese, and Traditional Chinese.
 - Replaced homepage trust-card payout/payment logic copy with outcome-rule wording across those same locales.
 - Added a user-app regression test that asserts the homepage source uses the esports teaser key and scans all `page-home` locale bundles for crypto and cash-value terms.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the homepage safety-copy evidence.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the homepage safety-copy evidence.
 
 Verification:
 
@@ -2659,7 +2659,7 @@ Progress matrix update:
 Remaining blockers:
 
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake and payout terminology.
-- Live canonical-flow proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live canonical-flow proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2678,7 +2678,7 @@ Moved Scenario 2 discovery and Scenario 12 safety/trust closer to parity:
 - Replaced fallback crypto subcategory taxonomy with esports niches and updated subcategory regression coverage.
 - Updated root metadata copy away from crypto.
 - Added user-app regression coverage that parses all bundled `market-content` JSON values for crypto/cash-value terms and checks launch discovery category wiring.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with this evidence.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with this evidence.
 
 Verification:
 
@@ -2694,7 +2694,7 @@ Remaining blockers:
 
 - Backend taxonomy/seed data still includes inherited crypto compatibility records.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake and payout terminology.
-- Live canonical-flow proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live canonical-flow proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
 
@@ -2707,10 +2707,10 @@ Continue backend taxonomy/seed safety cleanup, or switch to live canonical-flow 
 Moved Scenario 2 discovery and Scenario 12 safety/trust closer to parity:
 
 - Added a gateway service launch boundary for prediction categories: public/admin category lists filter inherited `crypto`, direct `/api/v1/categories/crypto` lookups return not found, and admin category creation rejects crypto/cash-like category terms.
-- Added migration `046_tiangge_launch_taxonomy.sql` to seed a launch-safe `esports` category and deactivate the inherited `crypto` category for fresh and migrated databases.
+- Added migration `046_taptrade_launch_taxonomy.sql` to seed a launch-safe `esports` category and deactivate the inherited `crypto` category for fresh and migrated databases.
 - Updated the category domain comment away from crypto examples.
 - Added gateway HTTP coverage for public category filtering, admin category filtering, direct crypto lookup rejection, and admin create rejection for crypto-like taxonomy.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the backend taxonomy launch-boundary evidence.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the backend taxonomy launch-boundary evidence.
 
 Verification:
 
@@ -2725,7 +2725,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live canonical-flow proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live canonical-flow proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Deeper import/classifier compatibility still has inherited crypto handling that must stay isolated from launch seed/demo content.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake and payout terminology.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
@@ -2744,9 +2744,9 @@ Moved Scenario 2 discovery and Scenario 12 safety/trust closer to parity:
 - Added `IsLaunchProhibitedMarket` so crypto-like upstream categories, titles, or descriptions are skipped before promotion rather than hidden under another launch category.
 - Made upstream category substring matching ordered so `esports` cannot nondeterministically fall through to `sports`.
 - Updated backend market translation migration `028_market_translations.sql` to use launch-safe GTA release copy instead of inherited asset-price copy.
-- Added migration `047_tiangge_launch_translation_cleanup.sql` to overwrite previously migrated unsafe translation payloads with the same launch-safe copy.
+- Added migration `047_taptrade_launch_translation_cleanup.sql` to overwrite previously migrated unsafe translation payloads with the same launch-safe copy.
 - Updated the old leaderboard migration example from `category:crypto` to `category:esports`.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with importer and backend translation seed evidence.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with importer and backend translation seed evidence.
 
 Verification:
 
@@ -2763,7 +2763,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live canonical-flow proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live canonical-flow proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Legacy asset-price settlement feed/source compatibility remains in backend code and must stay isolated from launch market creation/resolution.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake and payout terminology.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
@@ -2779,11 +2779,11 @@ Moved Scenario 2 discovery and Scenario 12 safety/trust closer to parity:
 
 - Added a launch market-creation boundary in `prediction.Service.CreateMarket`: non-manual settlement sources, non-manual fallback sources, price-threshold settlement rules, and launch-prohibited market copy/metadata are rejected before persistence.
 - Added gateway HTTP coverage proving a blocked admin create-market request returns `400` and does not persist the market.
-- Registered the legacy asset-price feed only when `TIANGGE_LEGACY_ASSET_PRICE_FEEDS_ENABLED=true`; default launch registration now contains only manual settlement adapters.
+- Registered the legacy asset-price feed only when `TAPTRADE_LEGACY_ASSET_PRICE_FEEDS_ENABLED=true`; default launch registration now contains only manual settlement adapters.
 - Updated feed and route comments so they describe the current points-only launch policy and legacy opt-in behavior rather than the retired asset-price/money policy.
 - Updated the office prediction market create modal to use esports outcome examples and expose only Admin Manual plus Binary Outcome.
 - Replaced development prediction seed asset-price markets with esports/manual markets, changed deterministic seed wallets to `PTS`, and added cleanup of old deterministic asset-price seed rows on re-run.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the settlement-source/feed and seed-data boundary.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the settlement-source/feed and seed-data boundary.
 
 Verification:
 
@@ -2803,7 +2803,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live canonical-flow proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live canonical-flow proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake/payment terminology.
 - Device/IP/account clustering for daily claims and reward abuse controls remains incomplete.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy clustering, and safety terminology cleanup.
@@ -2819,7 +2819,7 @@ Moved Scenario 9 game economy and Scenario 12 safety/trust closer to parity:
 - Added optional per-day distinct-user reward caps for a configured device header and for client IP signals:
   - `REWARD_DAILY_MAX_USERS_PER_DEVICE`
   - `REWARD_DAILY_MAX_USERS_PER_IP`
-  - `REWARD_DEVICE_HEADER` defaults to `X-Tiangge-Device-ID`.
+  - `REWARD_DEVICE_HEADER` defaults to `X-TapTrade-Device-ID`.
 - Applied the cluster guard to daily claim, point-pack claim, mission claim, and streak claim routes before crediting points.
 - Kept idempotent same-user retries allowed, so duplicate claims do not get blocked by the cluster guard.
 - Recorded cluster usage only after a successful or idempotent grant attempt, so blocked clustered claims do not create ledger rows or poison a cluster.
@@ -2831,7 +2831,7 @@ Moved Scenario 9 game economy and Scenario 12 safety/trust closer to parity:
   - one account can claim a point pack from an IP,
   - a second account on that IP is blocked, and
   - the same second account can claim from a different IP signal.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the cluster-guard evidence and remaining limits.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the cluster-guard evidence and remaining limits.
 
 Verification:
 
@@ -2846,7 +2846,7 @@ Progress matrix update:
 Remaining blockers:
 
 - Broader account-graph clustering and distributed/live abuse proof remain incomplete.
-- Live canonical-flow proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live canonical-flow proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake/payment terminology.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, game-economy catalog depth, and safety terminology cleanup.
 
@@ -2873,7 +2873,7 @@ Moved Scenario 8 social layer and Scenario 12 safety/trust closer to parity:
   - only the first comment persists,
   - a configured second same-user report burst returns `429`, and
   - only the first report remains in the moderation queue.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the social write-rate-limit evidence and remaining limits.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the social write-rate-limit evidence and remaining limits.
 
 Verification:
 
@@ -2886,7 +2886,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live social-flow proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live social-flow proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Distributed social spam controls and account-graph proof remain incomplete.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake/payment terminology.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live rewards proof, game-economy catalog depth, and safety terminology cleanup.
@@ -2899,7 +2899,7 @@ Continue backend terminology cleanup and broaden safety scans, deepen distribute
 
 Moved Scenario 1 new-user onboarding closer to parity:
 
-- Made `/api/v1/auth/register` require explicit Tiangge terms acceptance and points-only/no-cashout disclosure acceptance.
+- Made `/api/v1/auth/register` require explicit TapTrade terms acceptance and points-only/no-cashout disclosure acceptance.
 - Added persisted auth-user fields for accepted terms/disclosure versions and acceptance timestamps:
   - `terms_accepted`
   - `terms_version`
@@ -2909,7 +2909,7 @@ Moved Scenario 1 new-user onboarding closer to parity:
   - `launch_disclosure_accepted_at`
 - Returned the accepted versions/timestamps on successful registration and included them in `/api/v1/auth/session` after login.
 - Updated the user-app registration flow to send `terms_accepted`, `terms_version`, `launch_disclosure_accepted`, and `launch_disclosure_version` before the existing automatic login and starter-point claim.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the persisted disclosure evidence and remaining live-ledger gap.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the persisted disclosure evidence and remaining live-ledger gap.
 
 Verification:
 
@@ -2923,7 +2923,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live registration-to-visible-ledger proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live registration-to-visible-ledger proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Deployed auth DB migration proof for the new disclosure columns remains incomplete.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake/payment terminology.
 - Broader blockers remain across live trading-to-ledger proof, live discovery proof, live social proof, live rewards proof, game-economy catalog depth, and safety terminology cleanup.
@@ -2943,7 +2943,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Made the mission claim idempotent per user with `mission_reward:{user}:first_prediction_order`.
 - Added a non-redeemable first-prediction cosmetic badge derived from the same existing ledger evidence.
 - Kept the generic `/rewards` mission and badge UI unchanged; it already renders catalog items from the gateway.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the catalog evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the catalog evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -2957,7 +2957,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Seeded leaderboard proof remains incomplete.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
@@ -2975,7 +2975,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Completed the mission from seven consecutive `daily_claim:{user}:{date}` wallet-ledger entries.
 - Made the mission claim idempotent per user with `mission_reward:{user}:weekly_check_in`.
 - Kept the generic `/rewards` mission UI unchanged; it already renders catalog items from the gateway.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the weekly check-in mission evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the weekly check-in mission evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -2989,7 +2989,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake/payment terminology.
@@ -3008,7 +3008,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Made the mission claim idempotent per user with `mission_reward:{user}:settled_result`.
 - Added a non-redeemable settled-result cosmetic badge derived from the same settlement ledger evidence.
 - Kept the generic `/rewards` mission and badge UI unchanged; it already renders catalog items from the gateway.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the settlement reward evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the settlement reward evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3022,7 +3022,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Seeded leaderboard proof remains incomplete.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
@@ -3044,7 +3044,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Kept leaderboard rows derived from real seeded `prediction_payouts`; no static/mock rank rows were introduced.
 - Added regression coverage proving the synchronous recompute fires static and category boards.
 - Added seed orchestration coverage proving `RunDemo` keeps the order Phase 5 settlements -> leaderboard snapshot recompute -> Phase 6 backoffice rows.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the deterministic seeded leaderboard evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the deterministic seeded leaderboard evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3058,7 +3058,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live seeded leaderboard/rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live seeded leaderboard/rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake/payment terminology.
@@ -3076,7 +3076,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Made the 7-day streak claim idempotent per user with `streak_reward:{user}:daily_7`.
 - Added a non-redeemable weekly-streak cosmetic badge derived from the 7-day streak reward ledger evidence.
 - Kept the generic `/rewards` streak and badge UI unchanged; it already renders catalog items from the gateway.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the weekly streak evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the weekly streak evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3090,7 +3090,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake/payment terminology.
@@ -3107,7 +3107,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Completed the mission from three distinct `reservation:prediction_order:*` or `prediction_fill:*` wallet-ledger evidence keys.
 - Made the mission claim idempotent per user with `mission_reward:{user}:three_predictions`.
 - Kept the generic `/rewards` mission UI unchanged; it already renders catalog items from the gateway.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the three-predictions mission evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the three-predictions mission evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3121,7 +3121,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake/payment terminology.
@@ -3138,7 +3138,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Completed the badge from three distinct `reservation:prediction_order:*` or `prediction_fill:*` wallet-ledger evidence keys.
 - Kept badges read-only cosmetic/status metadata; earning the badge does not create point movements or any redeemable value path.
 - Kept the generic `/rewards` badge UI unchanged; it already renders catalog items from the gateway.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the prediction-regular badge evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the prediction-regular badge evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3152,7 +3152,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake/payment terminology.
@@ -3170,7 +3170,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Made the mission claim idempotent per user with `mission_reward:{user}:three_settled_results`.
 - Added a non-redeemable settlement-regular badge to `/api/v1/wallet/badges`, derived from the same three settlement payout evidence keys.
 - Kept the generic `/rewards` mission and badge UI unchanged; it already renders catalog items from the gateway.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the three-settled-results evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the three-settled-results evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3184,7 +3184,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake/payment terminology.
@@ -3201,7 +3201,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Added point-native aliases to loyalty tier rows: `rank`, `rankName`, `minXpPoints`, and `unit: "PTS"`.
 - Preserved the existing `pointsBalance`, `tier`, `tierName`, `nextTier`, `nextTierName`, `pointsToNextTier`, `name`, and `pointsThreshold` fields as temporary compatibility fields.
 - Updated the user-app loyalty client type surface and QA source regression so `/rewards` can rely on point-native XP/rank vocabulary.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the loyalty XP/rank alias evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the loyalty XP/rank alias evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3215,7 +3215,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake/payment terminology.
@@ -3233,7 +3233,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Made the mission claim idempotent per user with `mission_reward:{user}:five_predictions`.
 - Added a non-redeemable prediction-veteran cosmetic badge to `/api/v1/wallet/badges`, derived from the same five prediction-order evidence keys.
 - Kept the generic `/rewards` mission and badge UI unchanged; it already renders catalog items from the gateway.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the five-predictions mission evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the five-predictions mission evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3247,7 +3247,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake/payment terminology.
@@ -3265,7 +3265,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Made the mission claim idempotent per user with `mission_reward:{user}:five_settled_results`.
 - Added a non-redeemable settlement-veteran cosmetic badge to `/api/v1/wallet/badges`, derived from the same five settlement payout evidence keys.
 - Kept the generic `/rewards` mission and badge UI unchanged; it already renders catalog items from the gateway.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the five-settled-results mission evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the five-settled-results mission evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3279,7 +3279,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake/payment terminology.
@@ -3297,7 +3297,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Made the mission claim idempotent per user with `mission_reward:{user}:ten_predictions`.
 - Added a non-redeemable prediction-expert cosmetic badge to `/api/v1/wallet/badges`, derived from the same ten prediction-order evidence keys.
 - Kept the generic `/rewards` mission and badge UI unchanged; it already renders catalog items from the gateway.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the ten-predictions mission evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the ten-predictions mission evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3311,7 +3311,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake/payment terminology.
@@ -3329,7 +3329,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Made the mission claim idempotent per user with `mission_reward:{user}:ten_settled_results`.
 - Added a non-redeemable settlement-expert cosmetic badge to `/api/v1/wallet/badges`, derived from the same ten settlement payout evidence keys.
 - Kept the generic `/rewards` mission and badge UI unchanged; it already renders catalog items from the gateway.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the ten-settled-results mission evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the ten-settled-results mission evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3343,7 +3343,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake/payment terminology.
@@ -3361,7 +3361,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Made the streak claim idempotent per user with `streak_reward:{user}:daily_14`.
 - Added a non-redeemable streak-champion cosmetic badge to `/api/v1/wallet/badges`, derived from the same 14-day streak reward ledger evidence.
 - Kept the generic `/rewards` streak and badge UI unchanged; it already renders catalog items from the gateway.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the 14-day streak evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the 14-day streak evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3375,7 +3375,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake/payment terminology.
@@ -3393,7 +3393,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Made the streak claim idempotent per user with `streak_reward:{user}:daily_30`.
 - Added a non-redeemable monthly-streak cosmetic badge to `/api/v1/wallet/badges`, derived from the same 30-day streak reward ledger evidence.
 - Kept the generic `/rewards` streak and badge UI unchanged; it already renders catalog items from the gateway.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the 30-day streak evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the 30-day streak evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3407,7 +3407,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake/payment terminology.
@@ -3424,7 +3424,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - The copy states point packs are non-redeemable gameplay points with no cashout, withdrawal, crypto, fiat, or prize path.
 - Kept the existing `getPointPacks` and `claimPointPack` wiring unchanged; point-pack grants remain backed by wallet-ledger idempotency.
 - Updated the user-app rewards regression test to lock the disclosure beside the existing point-pack API wiring.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the disclosure evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the disclosure evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3436,7 +3436,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Live point-pack/mission/streak/badge/bonus/disclosure proof remains incomplete.
@@ -3456,7 +3456,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Added a non-redeemable monthly-check-in cosmetic badge to `/api/v1/wallet/badges`, derived from the monthly mission reward ledger evidence.
 - Kept the generic `/rewards` mission and badge UI unchanged; it already renders catalog items from the gateway.
 - Updated the user-app reward regression to lock the monthly mission and badge catalog contract.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the monthly check-in mission evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the monthly check-in mission evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3470,7 +3470,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Live point-pack/mission/streak/badge/bonus/disclosure proof remains incomplete.
@@ -3490,7 +3490,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Added a non-redeemable double-monthly-streak cosmetic badge to `/api/v1/wallet/badges`, derived from the same 60-day streak reward ledger evidence.
 - Kept the generic `/rewards` streak and badge UI unchanged; it already renders catalog items from the gateway.
 - Updated the user-app reward regression to lock the 60-day streak and badge catalog contract.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the 60-day streak evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the 60-day streak evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3504,7 +3504,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Live point-pack/mission/streak/badge/bonus/disclosure proof remains incomplete.
@@ -3524,7 +3524,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Added a non-redeemable seasonal-check-in cosmetic badge to `/api/v1/wallet/badges`, derived from the seasonal mission reward ledger evidence.
 - Kept the generic `/rewards` mission and badge UI unchanged; it already renders catalog items from the gateway.
 - Updated the user-app reward regression to lock the seasonal mission and badge catalog contract.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the seasonal check-in evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the seasonal check-in evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3539,7 +3539,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Live point-pack/mission/streak/badge/bonus/disclosure proof remains incomplete.
@@ -3559,7 +3559,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Added a non-redeemable quarterly-streak cosmetic badge to `/api/v1/wallet/badges`, derived from the same 90-day streak reward ledger evidence.
 - Kept the generic `/rewards` streak and badge UI unchanged; it already renders catalog items from the gateway.
 - Updated the user-app reward regression to lock the 90-day streak and badge catalog contract.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the 90-day streak evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the 90-day streak evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3574,7 +3574,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Live point-pack/mission/streak/badge/bonus/disclosure proof remains incomplete.
@@ -3594,7 +3594,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Added a non-redeemable quarterly-check-in cosmetic badge to `/api/v1/wallet/badges`, derived from the quarterly mission reward ledger evidence.
 - Kept the generic `/rewards` mission and badge UI unchanged; it already renders catalog items from the gateway.
 - Updated the user-app reward regression to lock the quarterly mission and badge catalog contract.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the quarterly check-in evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the quarterly check-in evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3609,7 +3609,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph/distributed abuse proof remains incomplete.
 - Live point-pack/mission/streak/badge/bonus/disclosure proof remains incomplete.
@@ -3629,7 +3629,7 @@ Moved Scenario 9 game economy and Scenario 12 safety/trust closer to parity:
 - Changed reward claims to check the per-user daily reward point cap before recording cluster evidence, so ordinary over-cap rejections do not leave cluster markers.
 - Removed the old handler-local reward cluster store and routed point packs, missions, streaks, and daily claims through the wallet service cluster check.
 - Added a gateway regression proving a same-device daily-claim cap survives route/service restart through a shared wallet state file, does not persist the raw device ID, still allows same-user idempotent retry, and leaves the blocked account ledger empty.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the persistent hashed cluster evidence and remaining multi-node/live abuse-proof gap.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the persistent hashed cluster evidence and remaining multi-node/live abuse-proof gap.
 
 Verification:
 
@@ -3643,7 +3643,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph clustering and multi-node/live abuse proof remain incomplete.
 - Live point-pack/mission/streak/badge/bonus/disclosure proof remains incomplete.
@@ -3661,7 +3661,7 @@ Moved Scenario 9 game economy and Scenario 12 safety/trust closer to parity:
 - Kept reward cluster membership outside the point ledger: the migration stores only `window_date`, `signal_type`, `signal_hash`, `user_id`, and `created_at`, with the primary key scoped to distinct users per hashed signal.
 - Added `idx_wallet_reward_clusters_signal` for the daily cap lookup path used by DB-mode reward cluster checks.
 - Added a wallet regression that reads the migration and proves it owns the `wallet_reward_clusters` table, hash column, primary key, lookup index, and down migration.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the migration-owned DB storage evidence.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the migration-owned DB storage evidence.
 
 Verification:
 
@@ -3674,7 +3674,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Broader account-graph clustering and multi-node/live abuse proof remain incomplete.
 - Live point-pack/mission/streak/badge/bonus/disclosure proof remains incomplete.
@@ -3693,7 +3693,7 @@ Moved Scenario 9 game economy, Scenario 10 admin operations, Scenario 11 API/dat
 - Added admin-only `GET /api/v1/admin/wallet/reward-clusters`, returning `PTS`, hashed signal summaries, distinct-user counts, sorted user IDs, and notes that the evidence is not point-ledger movement.
 - Kept the point-ledger boundary intact: the review endpoint is read-only and cluster evidence remains outside point movements.
 - Added a gateway regression proving non-admin denial, two same-device daily claims appear as one hashed device summary, raw device IDs are not returned, and the admin payload is point-native.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the admin suspicious-activity review evidence and remaining multi-node/live abuse-proof gap.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the admin suspicious-activity review evidence and remaining multi-node/live abuse-proof gap.
 
 Verification:
 
@@ -3709,7 +3709,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards/admin proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards/admin proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader account-graph clustering and multi-node/live abuse proof remain incomplete.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Live point-pack/mission/streak/badge/bonus/disclosure proof remains incomplete.
@@ -3728,7 +3728,7 @@ Moved Scenario 9 game economy, Scenario 10 admin operations, Scenario 11 API/dat
 - Exported the same hashed reward cluster summaries as formula-safe CSV with scoped filename, distinct-user counts, sorted user IDs, and `PTS` unit.
 - Kept the export read-only and signal-safe: raw device/IP values are still absent, and cluster evidence remains outside point-ledger movement.
 - Extended the gateway regression to prove CSV content type, filename, header, hashed signal row, sorted user IDs, point unit, and raw-device omission.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the export evidence and remaining multi-node/live abuse-proof gap.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the export evidence and remaining multi-node/live abuse-proof gap.
 
 Verification:
 
@@ -3743,7 +3743,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards/admin proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards/admin proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader account-graph clustering and multi-node/live abuse proof remain incomplete.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Live point-pack/mission/streak/badge/bonus/disclosure proof remains incomplete.
@@ -3763,7 +3763,7 @@ Moved Scenario 9 game economy, Scenario 10 admin operations, Scenario 11 API/dat
 - Rendered hashed signal summaries, distinct-user counts, sorted affected user IDs, and `PTS` unit while explaining that raw device/IP values are not returned and the evidence is not point-ledger movement.
 - Added the Reward Clusters dashboard navigation entry.
 - Extended the office App Router source regression to prove nav visibility, endpoint wiring, CSV export call, hashed-signal labels, affected user IDs, point unit, and absence of launch-prohibited cashout/deposit/withdrawal copy.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the office UI evidence and remaining live/multi-node abuse-proof gap.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the office UI evidence and remaining live/multi-node abuse-proof gap.
 
 Verification:
 
@@ -3779,7 +3779,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards/admin proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards/admin proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader account-graph clustering and multi-node/live abuse proof remain incomplete.
 - Broader mission/streak/badge catalog depth remains incomplete.
 - Live point-pack/mission/streak/badge/bonus/disclosure proof remains incomplete.
@@ -3799,7 +3799,7 @@ Moved Scenario 9 game economy and monetization closer to parity:
 - Kept the reward ledger-backed and idempotent: duplicate claims return a stable success response without a second point movement.
 - Added a non-redeemable `leaderboard_debut` cosmetic badge derived from the same leaderboard standing evidence without creating points.
 - Kept no-DB/local fallback safe: if no Predict leaderboard service is wired, the mission and badge remain incomplete rather than inventing rank evidence.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the leaderboard-derived reward evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the leaderboard-derived reward evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3816,7 +3816,7 @@ Progress matrix update:
 
 Remaining blockers:
 
-- Live rewards/leaderboard proof remains incomplete because the local Tiangge stack still conflicts with unrelated containers on required ports.
+- Live rewards/leaderboard proof remains incomplete because the local TapTrade stack still conflicts with unrelated containers on required ports.
 - Broader account-graph clustering and multi-node/live abuse proof remain incomplete.
 - Live point-pack/mission/streak/badge/bonus/disclosure proof remains incomplete.
 - Backend service/type/storage names still carry inherited wallet/cents/bet/stake/payment terminology.
@@ -3835,7 +3835,7 @@ Moved Scenario 8 social layer and Scenario 12 safety/trust closer to parity:
 - Applied the shared-IP guard to comments, reactions, reports, and follows through the existing authenticated social write path.
 - Reused the existing client-IP signal parser that honors `CF-Connecting-IP`, `X-Real-IP`, the first `X-Forwarded-For` value, and `RemoteAddr`, without writing raw IP signals to social storage or point ledgers.
 - Added a gateway regression proving that a second account writing a comment from the same IP receives `429`, the blocked comment is not persisted, and the same account can write from a different IP.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the shared-IP social throttling evidence and remaining live/multi-node proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the shared-IP social throttling evidence and remaining live/multi-node proof gaps.
 
 Verification:
 
@@ -3844,7 +3844,7 @@ Verification:
 - `go test ./internal/wallet -count=1` in the gateway: pass.
 - `go test ./... -count=1` in the gateway: pass.
 - `git diff --check` in the nested repo: pass.
-- Doc trailing-whitespace scan for `spec.md`, `prototype-audit.md`, `tiangge-economy-rules.md`, and `parity-run-log.md`: pass.
+- Doc trailing-whitespace scan for `spec.md`, `prototype-audit.md`, `taptrade-economy-rules.md`, and `parity-run-log.md`: pass.
 
 Progress matrix update:
 
@@ -3936,7 +3936,7 @@ Moved Scenario 8 social layer, Scenario 10 admin operations, Scenario 11 API/dat
 - Added an office `/social-moderation` export button that downloads `social-reports-${status}.csv` from the same moderation queue.
 - Extended gateway moderation tests to prove reviewed/dismissed report rows export as CSV and formula-like reason/comment cells are prefixed safely.
 - Extended office source tests to guard the CSV endpoint, filename, icon, and visible export action.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the social moderation export evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the social moderation export evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -3977,7 +3977,7 @@ Moved Scenario 8 social layer, Scenario 10 admin operations, Scenario 11 API/dat
 - Added the office navigation entry `Activity Export`.
 - Extended gateway tests to prove the admin activity endpoint is admin-gated, returns the same real activity rows, and exports formula-like comment activity safely.
 - Extended office source tests to guard the route, nav, endpoint wiring, CSV filename, icon usage, and visible export action.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the new admin activity export evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the new admin activity export evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -4012,15 +4012,15 @@ Continue live canonical-flow proof if local stack ports can be cleared safely, o
 Moved Scenario 10 admin operations, Scenario 11 API/data surface, and Scenario 12 safety/trust closer to parity:
 
 - Added `format=csv` support to admin-only `/api/v1/admin/markets`.
-- Exported market id, event id, ticker, title, status, launch-facing Tiangge stage, result, execution mode, point volume/open-interest/liquidity fields, settlement source/rule, and timestamps.
+- Exported market id, event id, ticker, title, status, launch-facing TapTrade stage, result, execution mode, point volume/open-interest/liquidity fields, settlement source/rule, and timestamps.
 - Reused the gateway CSV formula-safety helper for text cells, including formula-like market titles.
 - Added shared API-client `exportAdminMarkets` using the same auth-refresh text-response path as other CSV exports.
 - Added an office Prediction Markets export action that downloads `Prediction Markets.csv` from the admin market list.
-- Added missing goose `Up/Down` markers to `044_prediction_social.sql` and `045_prediction_market_watchlist.sql`, unblocking fresh Tiangge gateway DB migration through version 48.
+- Added missing goose `Up/Down` markers to `044_prediction_social.sql` and `045_prediction_market_watchlist.sql`, unblocking fresh TapTrade gateway DB migration through version 48.
 - Extended gateway tests to prove the CSV content type, filename, header, launch-facing lifecycle stage, point metrics, settlement source, and formula-safe title handling.
 - Extended office source tests to guard the export helper and visible CSV download filename.
-- Verified the market export against a temporary migrated/seeded gateway: `GET /api/v1/admin/markets?format=csv&pageSize=5` returned `200 OK`, `Content-Disposition: attachment; filename="prediction-markets.csv"`, and seeded market rows with `tiangge_stage=open` plus point-volume/open-interest/liquidity fields.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the new market export evidence and remaining live-proof gaps.
+- Verified the market export against a temporary migrated/seeded gateway: `GET /api/v1/admin/markets?format=csv&pageSize=5` returned `200 OK`, `Content-Disposition: attachment; filename="prediction-markets.csv"`, and seeded market rows with `taptrade_stage=open` plus point-volume/open-interest/liquidity fields.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the new market export evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -4066,7 +4066,7 @@ Moved Scenario 9 game economy, Scenario 10 admin operations, Scenario 11 API/dat
 - Verified a rerun over the same DB cleaned prior demo state in Phase 0: 591 demo orders, 898 demo trades, 449 demo ledger rows, 9 settlements, 118 positions, and 591 orphan reservations.
 - Verified the rerun reseeded through Phase 6 and printed wallet top-up/open-market summaries in `pts`.
 - Stopped the temporary proof database after verification.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the seed/demo evidence and remaining live-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the seed/demo evidence and remaining live-proof gaps.
 
 Verification:
 
@@ -4146,15 +4146,15 @@ Moved Scenario 1 new-user onboarding closer to parity:
 
 - Started a temporary PostgreSQL 16 proof DB on `127.0.0.1:55436`, migrated it through goose version 48, then launched the auth service in DB mode on port `18181`.
 - Launched the gateway on port `18180` with `GATEWAY_AUTH_ENABLED=true`, DB wallet mode, SQL prediction repository initialized, and legacy money routes disabled.
-- Registered disposable user `goal-proof-1782370540@tiangge.local` through gateway `POST /api/v1/auth/register` with `terms_accepted=true`, `terms_version=tiangge-launch-v1`, `launch_disclosure_accepted=true`, and `launch_disclosure_version=points-no-cashout-v1`; response status was `201`.
+- Registered disposable user `goal-proof-1782370540@taptrade.local` through gateway `POST /api/v1/auth/register` with `terms_accepted=true`, `terms_version=taptrade-launch-v1`, `launch_disclosure_accepted=true`, and `launch_disclosure_version=points-no-cashout-v1`; response status was `201`.
 - Logged in through gateway `POST /api/v1/auth/login`; response status was `200`, with session and CSRF cookies set.
-- Verified `GET /api/v1/auth/session` returned `200`, authenticated user `u-6e7e36c0e45d`, `termsAccepted=true`, `termsVersion=tiangge-launch-v1`, `launchDisclosureAccepted=true`, and `launchDisclosureVersion=points-no-cashout-v1`.
+- Verified `GET /api/v1/auth/session` returned `200`, authenticated user `u-6e7e36c0e45d`, `termsAccepted=true`, `termsVersion=taptrade-launch-v1`, `launchDisclosureAccepted=true`, and `launchDisclosureVersion=points-no-cashout-v1`.
 - Verified SQL `auth_users` persisted the same acceptance booleans and versions for the registered user.
 - Posted `POST /api/v1/wallet/starter-grant` with the authenticated cookie and CSRF token; response status was `200`, `unit: "PTS"`, `grantPointsCents: 500000`, and `balancePointsCents: 500000`.
 - Posted the same starter-grant request again; response status remained `200` and balance stayed `500000`, proving the starter grant did not add points twice.
 - Read `GET /api/v1/wallet/u-6e7e36c0e45d/ledger?limit=10` with the authenticated cookie; response status was `200`, `total: 1`, and the single item was a `credit` with `unit: "PTS"`, `amountPointsCents: 500000`, `balancePointsCents: 500000`, and idempotency key `starter_grant:u-6e7e36c0e45d`.
 - Verified SQL `wallet_balances` had `balance_cents=500000` and SQL `wallet_ledger` had exactly one matching `credit` row with amount/balance `500000`, idempotency key `starter_grant:u-6e7e36c0e45d`, and a point-native starter-grant reason.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the new session-authenticated starter-ledger evidence and remaining browser-proof gaps.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the new session-authenticated starter-ledger evidence and remaining browser-proof gaps.
 
 Verification:
 
@@ -4192,15 +4192,15 @@ Moved Scenario 1 new-user onboarding to Pass:
 - Found and fixed a local browser blocker: the app CSP blocked Next dev React Refresh `unsafe-eval`, leaving `/auth/register` blank. `packages/app/next.config.js` now allows `unsafe-eval` only outside production.
 - Found and fixed a configured-API browser blocker: `NEXT_PUBLIC_API_URL=http://localhost:18180` made prediction clients fetch the gateway directly, but app CSP `connect-src` did not include the configured API origin. `packages/app/next.config.js` now includes the parsed `NEXT_PUBLIC_API_URL` origin in `connect-src`.
 - Restarted gateway with `GATEWAY_CORS_ORIGINS=http://localhost:3000,http://localhost:3001,http://localhost:3010` for the proof app port.
-- Browser-filled `/auth/register` for disposable user `browser-proof-1782371044096@tiangge.local`.
-- Verified the rendered Step 2 disclosure says Tiangge uses non-redeemable gameplay points and that starter points are not money and cannot be cashed out, withdrawn, transferred, or redeemed for prizes.
+- Browser-filled `/auth/register` for disposable user `browser-proof-1782371044096@taptrade.local`.
+- Verified the rendered Step 2 disclosure says TapTrade uses non-redeemable gameplay points and that starter points are not money and cannot be cashed out, withdrawn, transferred, or redeemed for prizes.
 - Accepted the disclosure and created the account; the app redirected to `/predict`.
 - Verified `/predict` showed the signed-in top-bar balance `5000.00 pts`, loaded seeded discovery data, featured `MLBB-FINAL-G1`, category filters, series links, tags, sort controls, and market cards.
 - Verified `/account/transactions` rendered a visible Point ledger table with one `Starter points` row, `+5,000 pts`, `5,000 pts` after, and reason `Starter point grant`.
 - Verified sampled `/account/transactions` text did not include cashout, withdraw, crypto, USD, or `$` wording.
-- SQL checks for `u-a21706ffed67` verified persisted `tiangge-launch-v1` terms, `points-no-cashout-v1` disclosure, one `starter_grant:u-a21706ffed67` wallet ledger credit for 500000 point-cents, and a 500000 point-cent balance.
+- SQL checks for `u-a21706ffed67` verified persisted `taptrade-launch-v1` terms, `points-no-cashout-v1` disclosure, one `starter_grant:u-a21706ffed67` wallet ledger credit for 500000 point-cents, and a 500000 point-cent balance.
 - Fixed the DB wallet idempotency race path so concurrent same-payload replays recover the existing ledger row after unique/serialization races instead of surfacing an error.
-- Proved the idempotency fix with disposable user `race-proof-1782371397@tiangge.local`: two concurrent `/api/v1/wallet/starter-grant` requests both returned `200`, both responses reported `balancePointsCents: 500000`, SQL showed one starter-grant ledger row, and balance remained 500000.
+- Proved the idempotency fix with disposable user `race-proof-1782371397@taptrade.local`: two concurrent `/api/v1/wallet/starter-grant` requests both returned `200`, both responses reported `balancePointsCents: 500000`, SQL showed one starter-grant ledger row, and balance remained 500000.
 
 Verification:
 
@@ -4230,7 +4230,7 @@ Moved Scenario 4 points-based prediction/trading, Scenario 6 portfolio/positions
 
 - Started a fresh temporary PostgreSQL 16 proof DB on `127.0.0.1:55436`, migrated through goose version 48, and ran full demo seed mode through Phase 6.
 - Launched auth on `18181`, gateway on `18180` with gateway auth enabled, DB wallet mode, legacy money routes disabled, and the Next user app on `3010`.
-- Browser-registered disposable user `trading-proof-1782372060968@tiangge.local` / `u-d8e19b4204ac`, landed on `/predict`, and opened seeded order-book market `MLBB-FINAL-G1`.
+- Browser-registered disposable user `trading-proof-1782372060968@taptrade.local` / `u-d8e19b4204ac`, landed on `/predict`, and opened seeded order-book market `MLBB-FINAL-G1`.
 - Browser BUY YES proof: placed a 25 pt market order, filled 39 YES at 64c, released 0.04 pts, and top-bar balance moved from `5000.00 pts` to `4975.04 pts`.
 - Browser SELL/close proof: switched to Sell after the YES position existed, reduced the amount to 5 pts after the default amount correctly blocked as too many shares, sold 8 YES at 60c, received 4.80 pts proceeds, and balance moved to `4979.84 pts`.
 - Browser BUY NO proof: selected NO and placed a 5 pt market order, filled 12 NO at 40c, released 0.20 pts, and balance returned to `4975.04 pts`.
@@ -4285,7 +4285,7 @@ Moved Scenario 4 points-based prediction/trading, Scenario 6 portfolio/history, 
 - Browser point-ledger proof after settlement: `/account/transactions` rendered the settlement credit as `Settlement points`, `+39 pts`, `5,014.04 pts` after, and reason `Prediction settlement`.
 - Fixed a portfolio history bug exposed by the proof: history Points now uses `settlementPointsCents ?? payoutCents` from the settlement row rather than loyalty ledger accruals, and the copy no longer duplicates `pts` units.
 - Fixed a settlement notification copy blocker exposed by the proof: gateway resolution notifications now say winning positions settle at 100 points per share instead of `100c/contract` wording.
-- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/tiangge-economy-rules.md` with the new settlement-to-ledger evidence and rule clarifications.
+- Updated `spec.md`, `docs/prototype-audit.md`, and `docs/taptrade-economy-rules.md` with the new settlement-to-ledger evidence and rule clarifications.
 
 Verification:
 
@@ -4399,7 +4399,7 @@ Moved Scenario 5 liquidity model to Pass and moved Scenario 3 market detail clos
 - Browser proof for `/market/DOTA-GF-MAP1` rendered explicit `AMM liquidity`, YES 15c, NO 85c, 200 pts liquidity, price marker `YES 15c`, reserve balance `YES 19 / NO 42`, 200 pts subsidy, curve K 100, `IMPACT QUOTES` marked preview-backed, impact rows for Buy 1/10/25 YES, recent-trade empty tape, resolution metadata, discussion shell, share action, related markets, and a disabled `Quote only` ticket.
 - API proof for `DOTA-GF-MAP1` returned `executionMode=amm`, `ammYesShares=18.5`, `ammNoShares=42`, `ammLiquidityParam=100`, `ammSubsidyCents=20000`, and `liquidityCents=20000`.
 - Authenticated AMM preview API proof for 1/10/25 YES returned `executionMode=amm`, filled status, backend average prices 45c/45c/47c, total costs 45/454/1182 point-cents, new YES prices 44c/47c/50c, and estimated slippage 29c/32c/35c.
-- Browser screenshots were saved at `/tmp/tiangge-liquidity-mlbb.png` and `/tmp/tiangge-liquidity-dota.png`. The browser console log contained historical auth, price-history, websocket, and gateway-reachability warnings from the long-lived session, so service health and rendered/API evidence were used as the reliable proof.
+- Browser screenshots were saved at `/tmp/taptrade-liquidity-mlbb.png` and `/tmp/taptrade-liquidity-dota.png`. The browser console log contained historical auth, price-history, websocket, and gateway-reachability warnings from the long-lived session, so service health and rendered/API evidence were used as the reliable proof.
 
 Verification:
 
@@ -4439,7 +4439,7 @@ Moved Scenario 3 market detail and Scenario 8 social layer to Pass:
 - User activity API `/api/v1/social/users/u-1/activity?limit=30` returned proof rows for `follow:u-40f89fc127a4:u-1`, `Loop 116 proof reply 1782378515374`, and `Loop 116 proof comment 1782378484615`.
 - Admin login `admin@phoenix.local` / `admin123` listed the open social report through `/api/v1/admin/social/reports?status=open&limit=10`, exported it through `?format=csv`, resolved it with note `Loop 116 moderation proof`, and verified reviewed JSON plus reviewed CSV with `reviewedBy=admin@phoenix.local`.
 - SQL proof showed 2 `prediction_market_comments`, 1 `prediction_market_comment_reactions`, 1 reviewed `prediction_market_comment_reports`, and 1 `prediction_user_follows` row. The reply row carried `parent_id=mc_ffc05d760d0f8e66c28c25188f511f04`; the reviewed report row carried `reviewed_by=admin@phoenix.local` and `review_note=Loop 116 moderation proof`; the follow row linked target `u-1` to follower `u-40f89fc127a4`.
-- Browser screenshots were saved at `/tmp/tiangge-social-market.png` and `/tmp/tiangge-social-profile.png`.
+- Browser screenshots were saved at `/tmp/taptrade-social-market.png` and `/tmp/taptrade-social-profile.png`.
 
 Verification:
 
@@ -4474,9 +4474,9 @@ Moved Scenario 9 game economy and monetization closer to parity, but kept it Par
 - Browser proof on `/rewards` claimed daily points, starter boost point pack, first-prediction mission, and daily-check-in mission for demo user `u-1`. Reload then rendered `Claimed today` for daily claim, `Claimed` for starter boost, `Claimed` for daily-check-in and first-prediction missions, visible streak progress from `1 / 3 days` through `1 / 90 days`, earned daily/mission badges, point-pack no-cashout disclosure, and daily reward limit `9,885 of 10,000 reward pts remain for today`.
 - Browser proof on `/leaderboards` rendered `#2 You` for Weekly P&L with `27.68 pts`, confirming the seeded user appears on a real leaderboard.
 - Browser proof on `/account/transactions` rendered point-ledger rows: `Daily points +25 pts`, `Point pack +75 pts`, `Mission reward +10 pts`, and `Mission reward +5 pts`, with running point balances.
-- API proof saved at `/tmp/tiangge-rewards-proof.json` showed `pointPacks.items[starter_boost].claimed=true`, `daily_check_in` and `first_prediction_order` missions completed and claimed, `leaderboard_debut` completed, all reward payloads using `unit: "PTS"`, earned daily/mission/prediction/settlement/leaderboard badges, reward-limit aliases with `grantedPointsCents=11500`, and streak progress `currentStreak=1` for all configured streak milestones.
+- API proof saved at `/tmp/taptrade-rewards-proof.json` showed `pointPacks.items[starter_boost].claimed=true`, `daily_check_in` and `first_prediction_order` missions completed and claimed, `leaderboard_debut` completed, all reward payloads using `unit: "PTS"`, earned daily/mission/prediction/settlement/leaderboard badges, reward-limit aliases with `grantedPointsCents=11500`, and streak progress `currentStreak=1` for all configured streak milestones.
 - SQL proof confirmed four wallet ledger reward rows for `u-1`: one `daily_claim` (`daily_claim:u-1:2026-06-25`), one `point_pack_grant` (`point_pack:u-1:starter_boost`), and two `mission_reward` rows (`mission_reward:u-1:first_prediction_order` and `mission_reward:u-1:daily_check_in:2026-06-25`). SQL also confirmed leaderboard snapshots for `u-1` on `pnl_weekly` and `category:politics`, both rank 2.
-- Browser screenshots were saved at `/tmp/tiangge-rewards-loop117.png`, `/tmp/tiangge-leaderboards-loop117.png`, and `/tmp/tiangge-reward-ledger-loop117.png`.
+- Browser screenshots were saved at `/tmp/taptrade-rewards-loop117.png`, `/tmp/taptrade-leaderboards-loop117.png`, and `/tmp/taptrade-reward-ledger-loop117.png`.
 
 Verification:
 
@@ -4513,9 +4513,9 @@ Moved Scenario 9 game economy and monetization closer to parity, but kept it Par
 - Browser login used `demo@phoenix.local` / `demo123`, opened `/rewards`, and confirmed the reviewer-facing starting state: `Daily claim` was `Claim today`, daily reward limit was `10,000 of 10,000 reward pts remain for today`, and the 3-day streak still rendered `0 / 3 days` because today's live claim had not happened yet.
 - Browser clicked `Claim today`; `/rewards` refreshed from backend evidence to `Claimed today`, daily-check-in mission `1 / 1 complete`, weekly/monthly/seasonal/quarterly check-in progress `3 / ...`, and `3-day check-in streak` `3 / 3 days` with an enabled `Claim` button.
 - Browser clicked the 3-day streak `Claim` button; `/rewards` rendered the streak row as `Claimed`, reward limit as `9,965 of 10,000 reward pts remain for today`, and the `Streak builder badge` as `Earned`.
-- API proof saved at `/tmp/tiangge-streak-loop118-api-proof.json` showed `daily_3` with `currentStreak=3`, `completed=true`, `claimed=true`, `enabled=true`, `unit="PTS"`, earned `daily_check_in` and `streak_builder` badges, and reward-limit aliases `grantedPointsCents=3500`, `remainingPointsCents=996500`.
+- API proof saved at `/tmp/taptrade-streak-loop118-api-proof.json` showed `daily_3` with `currentStreak=3`, `completed=true`, `claimed=true`, `enabled=true`, `unit="PTS"`, earned `daily_check_in` and `streak_builder` badges, and reward-limit aliases `grantedPointsCents=3500`, `remainingPointsCents=996500`.
 - API and SQL proof confirmed four relevant wallet-ledger rows for `u-1`: `daily_claim:u-1:2026-06-23`, `daily_claim:u-1:2026-06-24`, live `daily_claim:u-1:2026-06-25`, and live `streak_reward:u-1:daily_3`.
-- Browser screenshot saved at `/tmp/tiangge-streak-loop118.png`.
+- Browser screenshot saved at `/tmp/taptrade-streak-loop118.png`.
 
 Verification:
 
@@ -4551,14 +4551,14 @@ Moved Scenario 7 market lifecycle, Scenario 10 admin operations, and Scenario 11
 
 Live proof:
 
-- Fresh PostgreSQL 16 container `tiangge-admin-proof-postgres` on port `55441`, migrated through goose version 48, and demo seeded.
+- Fresh PostgreSQL 16 container `taptrade-admin-proof-postgres` on port `55441`, migrated through goose version 48, and demo seeded.
 - Auth service on `18181` and gateway on `18180` ran with `GATEWAY_AUTH_ENABLED=true`, `GATEWAY_ALLOW_ADMIN_ANON=false`, DB wallet mode, and legacy money routes disabled.
 - Admin login `admin@phoenix.local` used real auth cookies plus `X-CSRF-Token`; an initial missing-CSRF attempt returned `403`, then the proof ran through the browser-equivalent CSRF path.
-- Saved JSON proof: `/tmp/tiangge-admin-loop119-proof.json`.
-- Saved CSV exports: `/tmp/tiangge-admin-lifecycle-loop119.csv`, `/tmp/tiangge-admin-markets-loop119.csv`, `/tmp/tiangge-admin-risk-loop119.csv`.
+- Saved JSON proof: `/tmp/taptrade-admin-loop119-proof.json`.
+- Saved CSV exports: `/tmp/taptrade-admin-lifecycle-loop119.csv`, `/tmp/taptrade-admin-markets-loop119.csv`, `/tmp/taptrade-admin-risk-loop119.csv`.
 - Proof created category `loop119-admin-20260625100219`, series `loop119-series-20260625100219`, tags `admin-proof` and `loop119`, event, market `L119-LIFE-20260625100219`, edited title `Loop 119 lifecycle proof market edited`, opened, paused, resumed, closed, settled YES, created and canceled `L119-CANCEL-20260625100219`, replayed incomplete settlement disbursements, inspected `/api/v1/admin/punters/u-1/wallet?limit=20`, read risk JSON, and exported market/lifecycle/risk CSV.
 - Lifecycle CSV contained seven audited rows: `created`, `edited`, `open`, `halted`, `open`, `closed`, and `settled`, all attributed to `user-admin`; the `settled` row included metadata for result `yes`, attestation source `admin-manual`, zero positions settled, and zero point payout.
-- Market CSV contained proof rows for the settled lifecycle market (`status=settled`, `tiangge_stage=settled`, `result=yes`) and the canceled market (`status=voided`, `tiangge_stage=invalid`).
+- Market CSV contained proof rows for the settled lifecycle market (`status=settled`, `taptrade_stage=settled`, `result=yes`) and the canceled market (`status=voided`, `taptrade_stage=invalid`).
 - Risk CSV exported point-accounting rows such as `open_position_point_cost`, `max_settlement_points`, `reserved_points`, `resting_orders`, and `settlement_aging`.
 
 Verification:
@@ -4596,7 +4596,7 @@ Verification:
 - `yarn --cwd packages/office test tests/app-router-legacy-routes.test.ts` passed with 14 tests.
 - `yarn --cwd packages/api-client build` passed.
 - `yarn --cwd packages/office build` passed through production compile, TypeScript, static page generation, and route trace collection.
-- Browser QA passed page identity (`http://localhost:3001/prediction-admin/markets`, `Tiangge Backoffice | Admin Panel`), nonblank 15-market table, no framework overlay text after reload, visible edited row, and interaction proof through the Edit Market modal. The browser log buffer retained stale warnings from earlier service restarts, but the post-fix save and reload succeeded.
+- Browser QA passed page identity (`http://localhost:3001/prediction-admin/markets`, `TapTrade Backoffice | Admin Panel`), nonblank 15-market table, no framework overlay text after reload, visible edited row, and interaction proof through the Edit Market modal. The browser log buffer retained stale warnings from earlier service restarts, but the post-fix save and reload succeeded.
 - `git diff --check -- packages/office/containers/prediction-markets/index.tsx packages/office/tests/app-router-legacy-routes.test.ts packages/api-client/src/prediction-client.ts` passed.
 - Source scan of the touched market admin files found no remaining `refunded in gameplay points` or `refunding positions` copy outside negative test assertions.
 
@@ -4612,7 +4612,7 @@ Progress:
 Moved Scenario 12 safety copy closer to parity, but kept it Partial:
 
 - Cleaned launch-loaded locale values across English, Indonesian, Malay, Tagalog, Simplified Chinese, and Traditional Chinese.
-- Replaced inherited footer operator/payment copy with Tiangge points-only footer values; compatibility keys remain for now, but rendered values now say point rules, market rules, responsible play, rewards, point activity, and gameplay points.
+- Replaced inherited footer operator/payment copy with TapTrade points-only footer values; compatibility keys remain for now, but rendered values now say point rules, market rules, responsible play, rewards, point activity, and gameplay points.
 - Replaced leaderboard compatibility `crypto` category values with esports labels so an old key cannot leak crypto language into launch rankings.
 - Replaced portfolio settled-payout/cash-release copy with settled-result and locked-point language.
 - Replaced reward earning descriptions that used `$1` framing with qualifying settled-prediction point language.
@@ -4704,9 +4704,9 @@ Moved Scenarios 11 and 12 closer to parity, but kept both Partial:
 - Expanded the gateway OpenAPI coverage statement from core public/trading docs to include the admin market-lifecycle surfaces already backed by handlers and tests.
 - Documented `GET/PUT /api/v1/admin/markets/{id}` for admin market read/edit without lifecycle status, result, or point movement changes.
 - Documented `GET /api/v1/admin/markets/{id}/lifecycle`, including `format=csv`, for persisted lifecycle audit rows and formula-safe export.
-- Documented `POST /api/v1/admin/markets/{id}/lifecycle/{action}` for open, halt, close, and void lifecycle transitions using Tiangge lifecycle metadata and point-disbursement aliases for invalidation.
+- Documented `POST /api/v1/admin/markets/{id}/lifecycle/{action}` for open, halt, close, and void lifecycle transitions using TapTrade lifecycle metadata and point-disbursement aliases for invalidation.
 - Documented `POST /api/v1/admin/settlements/replay` as an idempotent replay of incomplete settlement point disbursements.
-- Added OpenAPI schemas for admin market edits, Tiangge lifecycle metadata/actions, lifecycle audit rows, lifecycle transition responses, lifecycle reason requests, and settlement replay responses.
+- Added OpenAPI schemas for admin market edits, TapTrade lifecycle metadata/actions, lifecycle audit rows, lifecycle transition responses, lifecycle reason requests, and settlement replay responses.
 - Added `TestLaunchOpenAPIDocumentsAdminLifecycleSlice` so the launch OpenAPI spec must keep these admin lifecycle route docs.
 
 Verification:
@@ -4940,7 +4940,7 @@ Progress:
 
 Moved Scenario 7 market lifecycle/resolution, Scenario 10 admin operations, Scenario 11 API/data surface, and Scenario 12 safety/trust closer to parity, but kept them Partial:
 
-- Documented `POST /api/v1/admin/settlements/{marketId}` as the direct admin settlement route with preferred settlement point-disbursement aliases and Tiangge lifecycle metadata.
+- Documented `POST /api/v1/admin/settlements/{marketId}` as the direct admin settlement route with preferred settlement point-disbursement aliases and TapTrade lifecycle metadata.
 - Documented `POST /api/v1/admin/markets/{id}/propose` and `POST /api/v1/admin/markets/{id}/finalize` as the dual-control proposed-resolution flow with challenge-window handling.
 - Documented `GET/POST /api/v1/disputes` as authenticated holder dispute review/create routes that do not move points.
 - Documented `GET /api/v1/admin/disputes` and `POST /api/v1/admin/disputes/{id}/resolve` as open-dispute review and admin decision routes, including returned locked points through the settlement point-disbursement flow when a dispute is upheld.
@@ -4973,7 +4973,7 @@ Moved Scenario 7 market lifecycle/resolution, Scenario 10 admin operations, Scen
 - The route test proves the proposing admin cannot finalize their own proposal after the challenge window elapses.
 - The route test files a holder dispute through `POST /api/v1/disputes`, verifies the market becomes `disputed`, lists the dispute through `GET /api/v1/admin/disputes?status=open`, and proves open disputes block finalization.
 - The route test resolves the dispute as rejected through `POST /api/v1/admin/disputes/{id}/resolve` using a second admin, then finalizes through `POST /api/v1/admin/markets/{id}/finalize`.
-- The finalization assertion verifies `unit: "PTS"`, `pointDisbursements`, `settlementPointsCents`, `totalSettlementPointsCents`, settled Tiangge lifecycle metadata, settled market state, and finalized proposal state.
+- The finalization assertion verifies `unit: "PTS"`, `pointDisbursements`, `settlementPointsCents`, `totalSettlementPointsCents`, settled TapTrade lifecycle metadata, settled market state, and finalized proposal state.
 - The admin HTTP test fake now preserves user positions plus settlement headers and point-disbursement rows so route-level settlement assertions are meaningful.
 
 Verification:
@@ -4994,10 +4994,10 @@ Progress:
 Moved Scenario 11 API/data surface and Scenario 12 safety/trust closer to parity, but kept them Partial:
 
 - Added `TestLegacyMoneyPathsAreNotPublicOrCSRFSkippedByDefault` in `cmd/gateway/main_test.go`.
-- The test proves cashier, admin cashier, payment, crypto-payment, webhook, and provider-callback paths are not listed as public prefixes when `TIANGGE_LEGACY_MONEY_ROUTES_ENABLED` is unset.
+- The test proves cashier, admin cashier, payment, crypto-payment, webhook, and provider-callback paths are not listed as public prefixes when `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED` is unset.
 - The same test proves those legacy paths are not listed as CSRF-skip prefixes in launch mode.
 - Added `TestLegacyMoneyOptInOnlyExemptsProviderCallbacks`.
-- The opt-in test proves non-launch `TIANGGE_LEGACY_MONEY_ROUTES_ENABLED=true` only exposes provider callback/webhook bypasses, while interactive legacy routes still require auth and CSRF.
+- The opt-in test proves non-launch `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED=true` only exposes provider callback/webhook bypasses, while interactive legacy routes still require auth and CSRF.
 - Kept the existing route-level safety proof in scope: default route tests still prove legacy cashier/payment/crypto handlers are absent in launch mode, and deployed-env runtime validation still rejects legacy route opt-in and alpha cashier enablement.
 
 Verification:
@@ -5153,7 +5153,7 @@ Progress:
 
 Moved Scenario 11 API/data surface and Scenario 12 safety/trust closer to parity, but kept them Partial:
 
-- Updated `GatewayInfraMetrics()` so launch scrapes no longer emit the legacy `gateway_alpha_cashier_audit_write_failures_total` collector when `TIANGGE_LEGACY_MONEY_ROUTES_ENABLED` is unset.
+- Updated `GatewayInfraMetrics()` so launch scrapes no longer emit the legacy `gateway_alpha_cashier_audit_write_failures_total` collector when `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED` is unset.
 - Reworded geo-gate metric help text from money-path wording to guarded-request wording.
 - Added `TestLaunchInfraMetricsExcludeLegacyMoneyCollector`.
 - The launch metrics test proves the scrape body omits `gateway_alpha_cashier_audit_write_failures_total`, `alpha_cashier`, `Alpha-cashier`, `money-path`, cashier, payment, and crypto diagnostic tokens by default.
@@ -5176,7 +5176,7 @@ Progress:
 Moved Scenario 11 API/data surface and Scenario 12 safety/trust closer to parity, but kept them Partial:
 
 - Updated `validateGatewayRuntimeConfig` so deployed launch configs do not require `PAYMENTS_WEBHOOK_SECRET` while legacy payment/webhook routes are absent.
-- Kept production/staging rejection of `TIANGGE_LEGACY_MONEY_ROUTES_ENABLED=true` before boot.
+- Kept production/staging rejection of `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED=true` before boot.
 - Kept local/non-launch compatibility safety by requiring a real, non-placeholder `PAYMENTS_WEBHOOK_SECRET` when the legacy money-route tree is explicitly enabled.
 - Added `TestValidateGatewayRuntimeConfigDoesNotRequirePaymentWebhookSecretForLaunch`.
 - The launch config test proves a passing production baseline still validates with an empty `PAYMENTS_WEBHOOK_SECRET`.
@@ -5198,7 +5198,7 @@ Progress:
 
 Moved Scenario 11 API/data surface and Scenario 12 safety/trust closer to parity, but kept them Partial:
 
-- Updated `validateGatewayRuntimeConfig` so `ALPHA_CASHIER_ENABLED=true` is rejected unless `TIANGGE_LEGACY_MONEY_ROUTES_ENABLED=true` is also set.
+- Updated `validateGatewayRuntimeConfig` so `ALPHA_CASHIER_ENABLED=true` is rejected unless `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED=true` is also set.
 - Kept production/staging rejection of alpha cashier before boot.
 - Preserved the local compatibility path only when the legacy route tree is explicitly enabled, alpha-cashier config is valid, and a real non-placeholder `PAYMENTS_WEBHOOK_SECRET` is present.
 - Added `TestValidateGatewayRuntimeConfigRequiresLegacyRouteOptInForAlphaCashier`.
@@ -6827,7 +6827,7 @@ Verification:
 - `go test ./internal/http` passed from `go-platform/services/gateway`.
 - `go test ./internal/leaderboards ./internal/http` passed from `go-platform/services/gateway`.
 - `git diff --check -- apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/http/leaderboard_handlers.go apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/http/leaderboard_handlers_test.go` passed from `Taya_Na_Predict`.
-- A trailing-whitespace scan passed for `spec.md`, `docs/prototype-audit.md`, `docs/tiangge-economy-rules.md`, and `docs/parity-run-log.md`.
+- A trailing-whitespace scan passed for `spec.md`, `docs/prototype-audit.md`, `docs/taptrade-economy-rules.md`, and `docs/parity-run-log.md`.
 
 Progress:
 
@@ -6889,7 +6889,7 @@ Verification:
 - `go test ./internal/http` passed from `go-platform/services/gateway`.
 - A targeted `rg` scan found retired promo tokens under `go-platform/services/gateway/internal/http` only in negative test assertion lists.
 - `git diff --check -- apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/http/admin_handlers.go apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/http/reports_handlers.go apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/http/prediction_admin_audit_test.go apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/http/handlers.go` passed from `Taya_Na_Predict`.
-- A trailing-whitespace scan passed for the new `reports_handlers_test.go` plus `spec.md`, `docs/prototype-audit.md`, `docs/tiangge-economy-rules.md`, and `docs/parity-run-log.md`.
+- A trailing-whitespace scan passed for the new `reports_handlers_test.go` plus `spec.md`, `docs/prototype-audit.md`, `docs/taptrade-economy-rules.md`, and `docs/parity-run-log.md`.
 
 Progress:
 
@@ -7253,7 +7253,7 @@ Moved Scenarios 9, 10, 11, and 12 closer to parity, but kept them Partial:
 
 - Updated campaign-create normalization so inherited promo campaign type inputs such as `freebet_grant`, `freebet`, `cash`, and `deposit_match` are converted to point-native `point_grant` or `point_match` before persistence.
 - Updated bonus claim and admin-grant paths to normalize old persisted campaign rows before creating `PlayerBonus` records, so old promo campaign values become point campaign values at runtime.
-- Removed the dormant `FreebetGranter`/`SetFreebetGranter` hook and the freebet issuance branch from the Tiangge bonus service.
+- Removed the dormant `FreebetGranter`/`SetFreebetGranter` hook and the freebet issuance branch from the TapTrade bonus service.
 
 Verification:
 
@@ -8838,7 +8838,7 @@ Scenario status after this loop:
 Cleared the Loop 309 live rewards blocker, without changing production behavior:
 
 - Started an isolated proof stack because the documented compose ports were occupied by unrelated local containers and the existing player dev server had no gateway/auth backend behind it.
-- Created disposable Postgres container `tiangge-loop310-postgres` on `127.0.0.1:56546`, migrated gateway schema through version 48, and ran `go run ./cmd/seed -mode demo`.
+- Created disposable Postgres container `taptrade-loop310-postgres` on `127.0.0.1:56546`, migrated gateway schema through version 48, and ran `go run ./cmd/seed -mode demo`.
 - Started auth on `18081` and gateway on `18080` against the same disposable database, with gateway auth enabled and legacy money routes disabled.
 - Verified `http://127.0.0.1:3010/api/v1/status/` through the player proxy returned `pointMode: "non_redeemable_points"` and `legacyMoneyRoutes: "disabled"`.
 - Re-ran `npx playwright test tests/smoke/rewards.smoke.spec.ts --project=desktop-chromium`; setup authenticated `demo@phoenix.local`, then the desktop rewards smoke passed and proved the seeded active point-play bonus API payload plus visible `/rewards` panel.
@@ -8864,7 +8864,7 @@ Moved Scenario 7 closer to parity, but kept it Partial:
 - The proof keeps gateway auth middleware and RBAC enabled. It creates only the missing second staff identity in the disposable database and grants the existing `operations-manager` role, which already carries `markets:edit` and `settlements:resolve`.
 - On an isolated stack with Postgres `127.0.0.1:56547`, auth `18081`, and gateway `18080`, the command ran against seeded `FED-CUT-MAY26`, where `demo@phoenix.local` has a real position.
 - The live flow closed the market as `admin@phoenix.local`, proposed result `yes` with a challenge window, proved direct settlement cannot bypass the proposed-resolution flow, filed a holder dispute as `demo@phoenix.local`, expired the challenge window in SQL, proved the proposer cannot review the holder dispute, proved open disputes block finalization, resolved the dispute as `admin2@phoenix.local`, proved the proposer still cannot finalize, then finalized as the second admin.
-- The finalization response returned `unit: "PTS"`, `pointDisbursements`, `totalSettlementPointsCents=23300`, and `tianggeLifecycle.stage="settled"` without retired payout/currency aliases.
+- The finalization response returned `unit: "PTS"`, `pointDisbursements`, `totalSettlementPointsCents=23300`, and `taptradeLifecycle.stage="settled"` without retired payout/currency aliases.
 - SQL support showed `FED-CUT-MAY26` settled to `yes`, and `/api/v1/status/` still reported non-redeemable point mode with legacy money routes disabled.
 
 Verification:
@@ -9073,7 +9073,7 @@ Closed another shipped supported-locale copy leak without renaming compatibility
 
 - Replaced `Stream Bets` with `Live Predictions` in supported `header.json` bundles.
 - Replaced `Odds Format` with `Price Format` in supported `language-time-zones.json` bundles.
-- Replaced `Tiangge - Beyond the Bet` with `Tiangge - Beyond the Guess` in supported `page-about.json` bundles.
+- Replaced `TapTrade - Beyond the Bet` with `TapTrade - Beyond the Guess` in supported `page-about.json` bundles.
 - Replaced `ESPORTS BETS` with `ESPORTS PREDICTIONS` and rendered `Odds` with `Price` in supported `page-esports-bets.json` bundles.
 - Replaced rendered `Bet History` with `Prediction History` in supported `sidebar.json` and `win-loss-statistics.json` bundles.
 - Replaced `Defaults and Personal Bet Limits` with `Defaults and Personal Prediction Limits` in supported `wallet-preferences.json` bundles.
@@ -9202,7 +9202,7 @@ Scenario status after this loop:
 Tightened the launch-adjacent office user-limit editor while preserving the inherited API enum:
 
 - Changed the local editable state for the point-use/loss limit section from `stake` to `pointUse`.
-- Changed the form initialization to load inherited `values.stake` into the visible `losses` field, then map `values.losses` back to `TalonPunterLimitsTypesEnum.STAKE` only when submitting.
+- Changed the form initialization to load inherited `values.stake` into the visible `losses` field, then map `values.losses` back to `TapTradePunterLimitsTypesEnum.STAKE` only when submitting.
 - Changed the rendered English limit label from `Loss` to `Point Use`.
 - Expanded the office route regression to require `pointUse`, `values.losses`, the explicit enum adapter, and point units while rejecting `editables.stake`, `HEADER_CARD_LIMITS_STAKE`, and dollar units.
 
@@ -9222,7 +9222,7 @@ Scenario status after this loop:
 
 Moved active office recent-activity output contracts away from inherited bet activity names while keeping legacy payload compatibility:
 
-- Replaced exported `TalonPunterActivityEnum.BET_PLACEMENT` / `BET_WON` with `PREDICTION_ORDER` / `PREDICTION_RESULT`.
+- Replaced exported `TapTradePunterActivityEnum.BET_PLACEMENT` / `BET_WON` with `PREDICTION_ORDER` / `PREDICTION_RESULT`.
 - Updated the recent-activity renderer to switch on prediction-native enum values.
 - Added a compatibility mapper so legacy `"BET_PLACEMENT"` and `"BET_WON"` input strings normalize to prediction-native output before rendering.
 - Updated focused recent-activity and route-safety tests to require prediction-native output values and reject old bet activity names in the renderer.
@@ -9395,11 +9395,11 @@ Scenario status after this loop:
 
 ## 2026-06-28 Loop 337 - Launch-Safe Pre-Commit Hook
 
-Replaced the local pre-commit hook path that still invoked stale Phoenix Sportsbook health scripts:
+Replaced the local pre-commit hook path that still invoked stale TapTrade Sportsbook health scripts:
 
 - `scripts/pre-commit-hook.sh` no longer runs `scripts/system-health-check.sh` or `scripts/backoffice-health-check.sh`.
 - The hook now resolves the project Makefile and runs `make qa-regression-pack` plus `make qa-e2e-critical`.
-- The hook messaging now describes Tiangge launch gates rather than Phoenix Sportsbook health checks.
+- The hook messaging now describes TapTrade launch gates rather than TapTrade Sportsbook health checks.
 - The stale health scripts remain available as standalone historical tools, but are no longer the commit-blocking local governance path.
 
 Verification:
@@ -9415,13 +9415,13 @@ Scenario status after this loop:
 
 - Scenario 12 Safety, compliance, and trust boundary: still Partial; this repairs one local governance proof path, but broader backend terminology cleanup, account-graph/multi-node abuse proof, and the fully deployed-like authenticated canonical end-to-end proof remain incomplete.
 
-## 2026-06-28 Loop 338 - Tiangge Player Frontend Verify Target
+## 2026-06-28 Loop 338 - TapTrade Player Frontend Verify Target
 
 Retargeted the official player frontend verifier away from the inherited sportsbook app tree:
 
 - `scripts/frontend/verify-sportsbook.sh` now uses `talon-backoffice` and `talon-backoffice/packages/app`.
 - The `verify-sportsbook` Make target remains as a compatibility alias for automation stability.
-- The Make help text now describes the target as Tiangge player app typecheck plus build.
+- The Make help text now describes the target as TapTrade player app typecheck plus build.
 - The verifier runs the package's scoped typecheck and production `yarn build`, which also runs the upstream-leak check.
 - The verifier no longer references `phoenix-frontend-brand-viegg` or the old sportsbook directory variable.
 
@@ -9436,44 +9436,44 @@ Scenario status after this loop:
 
 - Scenario 12 Safety, compliance, and trust boundary: still Partial; this repairs one official frontend verification path, but broader backend terminology cleanup, account-graph/multi-node abuse proof, and the fully deployed-like authenticated canonical end-to-end proof remain incomplete.
 
-## 2026-06-28 Loop 339 - Tiangge API Contract Fixture Verify Target
+## 2026-06-28 Loop 339 - TapTrade API Contract Fixture Verify Target
 
 Retargeted the official API contract fixture verifier away from the inherited sportsbook response-shape suite:
 
 - `scripts/frontend/verify-api-contract-fixtures.sh` now uses `talon-backoffice` instead of `phoenix-frontend-brand-viegg`.
-- The script builds `@phoenix-ui/api-client` before running app contract tests.
+- The script builds `@taptrade-ui/api-client` before running app contract tests.
 - The focused contract set now covers prediction-client browser base URLs, refresh/retry behavior, point-native prediction-order validation, trade-ticket preview behavior, wallet/reward endpoint paths, and point-ledger presentation.
 - The `verify-api-contract-fixtures` Make target remains as a compatibility alias for automation stability.
-- The Make help text now describes the target as a Tiangge API/client contract fixture regression gate.
+- The Make help text now describes the target as a TapTrade API/client contract fixture regression gate.
 
 Verification:
 
 - `bash -n scripts/frontend/verify-api-contract-fixtures.sh` passed.
 - `make -n verify-api-contract-fixtures` points at `scripts/frontend/verify-api-contract-fixtures.sh`.
 - Targeted scan of the script and Makefile found no `phoenix-frontend-brand-viegg`, `SPORTSBOOK_DIR`, sportsbook response-shape fixture, `/api/v1/bets`, cashout quote, wallet-credit, `stakeCents`, or `amountCents` verifier wiring.
-- `make verify-api-contract-fixtures` passed: Yarn install completed, `@phoenix-ui/api-client` `tsc` passed, and 47 focused Tiangge contract tests passed.
+- `make verify-api-contract-fixtures` passed: Yarn install completed, `@taptrade-ui/api-client` `tsc` passed, and 47 focused TapTrade contract tests passed.
 - `git diff --check` passed.
 
 Scenario status after this loop:
 
 - Scenario 12 Safety, compliance, and trust boundary: still Partial; this repairs another official verification path, but broader backend terminology cleanup, account-graph/multi-node abuse proof, and the fully deployed-like authenticated canonical end-to-end proof remain incomplete.
 
-## 2026-06-28 Loop 340 - Tiangge Discovery Compatibility QA Gates
+## 2026-06-28 Loop 340 - TapTrade Discovery Compatibility QA Gates
 
 Retargeted the sports-named QA gates away from inherited sports/odds runtime probes:
 
-- `scripts/qa/sports-route-smoke.sh` now installs `talon-backoffice` and runs focused Tiangge discovery/market contract tests.
+- `scripts/qa/sports-route-smoke.sh` now installs `talon-backoffice` and runs focused TapTrade discovery/market contract tests.
 - The smoke coverage includes market search relevance, subcategory extraction, lifecycle status display, honest market chart states, and dynamic market copy.
-- `scripts/qa/sports-regression-gate.sh` now repeats the Tiangge discovery smoke using `ITERATIONS` and then runs `scripts/frontend/verify-api-contract-fixtures.sh`.
+- `scripts/qa/sports-regression-gate.sh` now repeats the TapTrade discovery smoke using `ITERATIONS` and then runs `scripts/frontend/verify-api-contract-fixtures.sh`.
 - `make qa-sports-route-smoke` and `make qa-sports-regression` remain compatibility target names for existing automation.
-- `release-launch-readiness-runtime` now enables `RUN_TIANGGE_DISCOVERY_CONTRACT_GATE=1`; the release script still accepts the old `RUN_MULTI_SPORT_RUNTIME_GATE` name as an external compatibility alias.
+- `release-launch-readiness-runtime` now enables `RUN_TAPTRADE_DISCOVERY_CONTRACT_GATE=1`; the release script still accepts the old `RUN_MULTI_SPORT_RUNTIME_GATE` name as an external compatibility alias.
 
 Verification:
 
 - `bash -n scripts/qa/sports-route-smoke.sh`, `scripts/qa/sports-regression-gate.sh`, and `scripts/release/launch-readiness-gate.sh` passed.
 - `make -n qa-sports-route-smoke`, `make -n qa-sports-regression`, and `make -n release-launch-readiness-runtime` point at the retargeted scripts/env.
-- `make qa-sports-route-smoke` passed with 27 focused Tiangge discovery/market tests.
-- `make qa-sports-regression` passed with the discovery smoke, `@phoenix-ui/api-client` `tsc`, and 47 focused Tiangge API/client contract tests.
+- `make qa-sports-route-smoke` passed with 27 focused TapTrade discovery/market tests.
+- `make qa-sports-regression` passed with the discovery smoke, `@taptrade-ui/api-client` `tsc`, and 47 focused TapTrade API/client contract tests.
 - Targeted scan of the changed QA/release scripts and Makefile found no `/api/v1/sports`, `/api/v1/esports`, `/sports/`, `api/odds-feed`, `phoenix-frontend-brand-viegg`, `SPORTSBOOK_DIR`, `/api/v1/bets`, cashout, wallet-credit, `stakeUsd`, `stakeCents`, or `amountCents` gate wiring.
 - `git diff --check` passed.
 
@@ -9481,23 +9481,23 @@ Scenario status after this loop:
 
 - Scenario 12 Safety, compliance, and trust boundary: still Partial; this repairs another inherited launch-readiness gate, but broader backend terminology cleanup, account-graph/multi-node abuse proof, and the fully deployed-like authenticated canonical end-to-end proof remain incomplete.
 
-## 2026-06-28 Loop 341 - Tiangge Managed Runtime Profile
+## 2026-06-28 Loop 341 - TapTrade Managed Runtime Profile
 
 Retargeted the managed local stack and runtime-profile release gate away from the inherited sportsbook player app:
 
 - `scripts/local-stack.sh` now treats `talon-backoffice/packages/app` as the launch player runtime.
-- The started player service is named `tiangge-player`, uses `PLAYER_PORT`, writes `NEXT_PUBLIC_API_URL` for the Go gateway, and preserves launch feature flags in the player `.env.local`.
+- The started player service is named `taptrade-player`, uses `PLAYER_PORT`, writes `NEXT_PUBLIC_API_URL` for the Go gateway, and preserves launch feature flags in the player `.env.local`.
 - The stack no longer installs or starts `phoenix-frontend-brand-viegg`.
 - The stop path still cleans up a stale legacy `sportsbook.pid` if one exists, but only as defensive compatibility cleanup.
-- `scripts/release/runtime-gate-profile.sh` now waits for `Tiangge player status`, passes `PLAYER_PORT` into the stack, and enables `RUN_TIANGGE_DISCOVERY_CONTRACT_GATE=1` for the launch-readiness runtime pass.
-- `scripts/release/profiles/runtime-gate.env` now uses `PLAYER_PORT` and `TIANGGE_DISCOVERY_CONTRACT_ITERATIONS`.
+- `scripts/release/runtime-gate-profile.sh` now waits for `TapTrade player status`, passes `PLAYER_PORT` into the stack, and enables `RUN_TAPTRADE_DISCOVERY_CONTRACT_GATE=1` for the launch-readiness runtime pass.
+- `scripts/release/profiles/runtime-gate.env` now uses `PLAYER_PORT` and `TAPTRADE_DISCOVERY_CONTRACT_ITERATIONS`.
 - `SPORTSBOOK_PORT` and old multi-sport iteration envs remain accepted as compatibility aliases for external callers.
 
 Verification:
 
 - `bash -n scripts/local-stack.sh`, `scripts/release/runtime-gate-profile.sh`, and `scripts/release/launch-readiness-gate.sh` passed.
 - `make -n start`, `make -n stop`, and `make -n release-launch-readiness-runtime-profile` point at the retargeted scripts.
-- `./scripts/local-stack.sh status` reported `tiangge-player: stopped` alongside backend, gateway, and office status, with no sportsbook status line.
+- `./scripts/local-stack.sh status` reported `taptrade-player: stopped` alongside backend, gateway, and office status, with no sportsbook status line.
 - Targeted scan of the changed runtime scripts/profile/Makefile found no old `phoenix-frontend-brand-viegg`, sportsbook start/wait, multi-sport frontend/gateway/sports CSV, `/sports/`, or `odds-feed` runtime wiring.
 - `git diff --check` passed.
 
@@ -9505,23 +9505,23 @@ Scenario status after this loop:
 
 - Scenario 12 Safety, compliance, and trust boundary: still Partial; this repairs another release-signoff runtime path, but broader backend terminology cleanup, account-graph/multi-node abuse proof, and the fully deployed-like authenticated canonical end-to-end proof remain incomplete.
 
-## 2026-06-28 Loop 342 - Tiangge Release Security Baselines
+## 2026-06-28 Loop 342 - TapTrade Release Security Baselines
 
 Retargeted and tightened release security/dependency evidence while preserving inherited coverage:
 
-- `scripts/security/generate-sbom.sh` now treats `talon-backoffice/packages/app` as `tiangge-player-app` instead of scanning the retired sportsbook frontend tree.
-- The SBOM baseline covers Talon Backoffice, Tiangge Player App, Go platform modules/services, inherited backend declared dependencies, and a backend classpath attempt.
+- `scripts/security/generate-sbom.sh` now treats `talon-backoffice/packages/app` as `taptrade-player-app` instead of scanning the retired sportsbook frontend tree.
+- The SBOM baseline covers TapTrade Backoffice, TapTrade Player App, Go platform modules/services, inherited backend declared dependencies, and a backend classpath attempt.
 - Blocked backend classpath resolution now writes `phoenix-backend_dependency-classpath.error.log` when Java/SBT startup fails before stderr is created.
-- `scripts/security/scan-secrets.sh` scopes secret scanning to backend, Talon, and Go platform.
-- `scripts/security/dependency-baseline.sh` audits Talon plus Tiangge Player App, parses yarn audit summaries, uses the current date, and reports actual advisory counts.
-- The regenerated dependency vulnerability report records `critical 8, high 90, moderate 98, low 21; 33 unique advisory ids` for both Talon and Tiangge player app scopes.
-- `scripts/frontend/dependency-modernization-baseline.sh` now publishes Talon Backoffice and Tiangge Player App outdated-dependency reports.
+- `scripts/security/scan-secrets.sh` scopes secret scanning to backend, TapTrade, and Go platform.
+- `scripts/security/dependency-baseline.sh` audits TapTrade plus TapTrade Player App, parses yarn audit summaries, uses the current date, and reports actual advisory counts.
+- The regenerated dependency vulnerability report records `critical 8, high 90, moderate 98, low 21; 33 unique advisory ids` for both TapTrade and TapTrade player app scopes.
+- `scripts/frontend/dependency-modernization-baseline.sh` now publishes TapTrade Backoffice and TapTrade Player App outdated-dependency reports.
 
 Verification:
 
 - `bash -n scripts/security/generate-sbom.sh scripts/security/dependency-baseline.sh scripts/security/scan-secrets.sh scripts/frontend/dependency-modernization-baseline.sh` passed.
 - `make -n security-secrets security-sbom security-deps frontend-deps-baseline` points at the retargeted scripts.
-- `make security-secrets` passed and regenerated `revival/05_SECRET_SCAN_BASELINE.md` plus `revival/05_secret_scan_findings.csv`; scope is backend, Talon, and Go platform.
+- `make security-secrets` passed and regenerated `revival/05_SECRET_SCAN_BASELINE.md` plus `revival/05_secret_scan_findings.csv`; scope is backend, TapTrade, and Go platform.
 - `make security-sbom` passed and regenerated `revival/21_SBOM_BASELINE.md` plus `revival/artifacts/sbom_20260628_133059`; the blocked backend classpath row points to an existing error artifact.
 - `make security-deps` passed and regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` with parsed advisory counts.
 - `make frontend-deps-baseline` passed and regenerated `revival/195_FRONTEND_DEPENDENCY_MODERNIZATION_BASELINE.md` plus `revival/artifacts/frontend_dependency_baseline_20260628_133140`.
@@ -9536,20 +9536,20 @@ Scenario status after this loop:
 
 Remediated the first launch-app high/critical frontend dependency cluster:
 
-- Added a Talon root Yarn resolution for `i18next-fs-backend` version `2.6.6`.
+- Added a TapTrade root Yarn resolution for `i18next-fs-backend` version `2.6.6`.
 - Regenerated `talon-backoffice/yarn.lock`; the lockfile now resolves `i18next-fs-backend@^2.1.5` to `2.6.6`.
 - Verified direct yarn audit output no longer contains high/critical `i18next-fs-backend` findings.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md`; Talon and Tiangge player app counts moved from `critical 8, high 90, 33 unique advisory ids` to `critical 7, high 89, 31 unique advisory ids`.
-- Repaired `scripts/frontend/verify-talon.sh` so the office verifier no longer passes the retired `--openssl-legacy-provider` Node flag and explicitly uses `next build --webpack`, matching the current Next 16/package build mode.
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md`; TapTrade and TapTrade player app counts moved from `critical 8, high 90, 33 unique advisory ids` to `critical 7, high 89, 31 unique advisory ids`.
+- Repaired `scripts/frontend/verify-taptrade.sh` so the office verifier no longer passes the retired `--openssl-legacy-provider` Node flag and explicitly uses `next build --webpack`, matching the current Next 16/package build mode.
 
 Verification:
 
 - `yarn install --ignore-engines` in `talon-backoffice` passed and saved the lockfile.
 - Direct `yarn audit --level high --json` after the resolution showed `critical 7`, `high 89`, and no `i18next-fs-backend` high/critical findings.
 - `make security-deps` passed and regenerated the official vulnerability baseline with the lower counts.
-- `make verify-sportsbook` passed: Tiangge player scoped typecheck, production Next build for 35 app routes, and upstream-leak check were green.
-- Initial `make verify-talon` exposed stale verifier flags; after patching the verifier, `make verify-talon` passed with office translation generation and a production Next webpack build for 31 app routes.
-- `bash -n scripts/frontend/verify-talon.sh scripts/security/dependency-baseline.sh` passed.
+- `make verify-sportsbook` passed: TapTrade player scoped typecheck, production Next build for 35 app routes, and upstream-leak check were green.
+- Initial `make verify-taptrade` exposed stale verifier flags; after patching the verifier, `make verify-taptrade` passed with office translation generation and a production Next webpack build for 31 app routes.
+- `bash -n scripts/frontend/verify-taptrade.sh scripts/security/dependency-baseline.sh` passed.
 - Conflict-marker scan and `git diff --check` passed.
 
 Scenario status after this loop:
@@ -9560,20 +9560,20 @@ Scenario status after this loop:
 
 Remediated the office `.docx` import XML parser advisory cluster:
 
-- Added a Talon root Yarn resolution for `@xmldom/xmldom` version `0.8.13`.
+- Added a TapTrade root Yarn resolution for `@xmldom/xmldom` version `0.8.13`.
 - Regenerated `talon-backoffice/yarn.lock`; the lockfile now resolves `@xmldom/xmldom@^0.8.6` to `0.8.13`.
 - Preserved the inherited `mammoth` terms-and-conditions `.docx` import flow while patching its transitive XML parser.
 - Verified direct yarn audit output no longer contains `@xmldom/xmldom` findings.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md`; Talon and Tiangge player app counts moved from `critical 7, high 89, 31 unique advisory ids` to `critical 7, high 85, 27 unique advisory ids`.
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md`; TapTrade and TapTrade player app counts moved from `critical 7, high 89, 31 unique advisory ids` to `critical 7, high 85, 27 unique advisory ids`.
 
 Verification:
 
 - `yarn install --ignore-engines` in `talon-backoffice` passed and saved the lockfile.
 - Direct `yarn audit --level high --json` after the resolution showed `critical 7`, `high 85`, and no `@xmldom/xmldom` findings.
 - `make security-deps` passed and regenerated the official vulnerability baseline with the lower counts.
-- `make verify-talon` passed: office translation generation and production Next webpack build for 31 app routes were green.
-- `make verify-sportsbook` passed: Tiangge player scoped typecheck, production Next build for 35 app routes, and upstream-leak check were green.
-- `bash -n scripts/frontend/verify-talon.sh scripts/security/dependency-baseline.sh` passed.
+- `make verify-taptrade` passed: office translation generation and production Next webpack build for 31 app routes were green.
+- `make verify-sportsbook` passed: TapTrade player scoped typecheck, production Next build for 35 app routes, and upstream-leak check were green.
+- `bash -n scripts/frontend/verify-taptrade.sh scripts/security/dependency-baseline.sh` passed.
 - Make dry-runs, conflict-marker scan, trailing-whitespace scan, and `git diff --check` passed.
 
 Scenario status after this loop:
@@ -9606,8 +9606,8 @@ Scenario status after this loop:
 Extended the live route-boundary evidence from gateway-only back to all launch runtime surfaces:
 
 - Started a foreground gateway on `http://127.0.0.1:18180` with `GATEWAY_AUTH_ENABLED=false` and legacy money routes disabled.
-- Started the Tiangge player app on `http://127.0.0.1:3022` with `NEXT_PUBLIC_API_URL=http://127.0.0.1:18180`.
-- Started the Talon office app on `http://127.0.0.1:3020`.
+- Started the TapTrade player app on `http://127.0.0.1:3022` with `NEXT_PUBLIC_API_URL=http://127.0.0.1:18180`.
+- Started the TapTrade office app on `http://127.0.0.1:3020`.
 - Ran `PLAYER_BASE_URL=http://127.0.0.1:3022 OFFICE_BASE_URL=http://127.0.0.1:3020 GATEWAY_BASE_URL=http://127.0.0.1:18180 make qa-live-no-money-boundary`.
 - The regenerated `revival/32_LIVE_NO_MONEY_BOUNDARY.md` and timestamped `revival/artifacts/live_no_money_boundary_20260628_141848.md` report 70 checks and 0 failures.
 - Player positive routes `/`, `/predict`, `/rewards`, and `/leaderboards` responded below 500, and the retired money routes `/cashier`, `/cashier/cheque`, `/cashout`, `/crypto`, `/deposit`, `/deposits`, `/fiat`, `/payment`, `/payments`, `/prize`, `/prizes`, `/redeem`, `/redemption`, `/withdraw`, `/withdrawal`, and `/withdrawals` returned 404 after same-origin redirect handling.
@@ -9663,7 +9663,7 @@ Scenario status after this loop:
 
 ## 2026-06-28 Loop 351 - Critical API Journey Live Proof
 
-Aligned the Playwright prediction critical-path API spec with the Tiangge launch boundary and proved it against a live DB-backed local stack:
+Aligned the Playwright prediction critical-path API spec with the TapTrade launch boundary and proved it against a live DB-backed local stack:
 
 - Registration requests now include terms and no-cashout disclosure acceptance, and the KYC test verifies the returned disclosure fields.
 - Portfolio summary assertions now require point-native accounting fields and reject retired `totalValueCents`, `unrealizedPnlCents`, and `realizedPnlCents` aliases.
@@ -9719,12 +9719,12 @@ Extended the DB-backed authenticated critical-path API proof toward the canonica
 
 Verification:
 
-- Started a fresh `postgres:16-alpine` container `tiangge-e2e-pg-353` on port `56548`.
+- Started a fresh `postgres:16-alpine` container `taptrade-e2e-pg-353` on port `56548`.
 - Migrated the gateway database through version 48.
 - Seeded demo data with `go run ./cmd/seed -mode demo`, including open order-book markets, reward history, and leaderboard snapshots.
 - Started auth on `18081` with `AUTH_COOKIE_SECURE=false`.
 - Started gateway on `18180` with auth enabled, DB-backed prediction/wallet storage, `STARTER_GRANT_CENTS=500000`, `MISSION_FIRST_PREDICTION_REWARD_CENTS=450`, and `MARKET_SYNC_ENABLED=false`.
-- Started the Tiangge player app on `3022` with `NEXT_PUBLIC_API_URL=http://127.0.0.1:18180`.
+- Started the TapTrade player app on `3022` with `NEXT_PUBLIC_API_URL=http://127.0.0.1:18180`.
 - Health checks passed for auth `/healthz`, gateway `/api/v1/status`, and player proxy `/api/v1/markets?pageSize=1`.
 - `npx playwright test --config playwright.prediction.config.ts e2e/prediction/critical-paths.api.spec.ts --list` listed 7 tests.
 - `git diff --check -- apps/Phoenix-Predict-Combined/talon-backoffice/e2e/prediction/critical-paths.api.spec.ts` passed.
@@ -9772,14 +9772,14 @@ Scenario status after this loop:
 Extended the live DB-backed Playwright critical-path API proof with admin close, settlement, ledger, and portfolio-history evidence:
 
 - Added an eighth API test to `talon-backoffice/e2e/prediction/critical-paths.api.spec.ts`.
-- The new test registers a fresh launch-disclosure user, claims starter points, places a real YES market order, logs in as admin, closes the traded market, resolves it YES, verifies point-native settlement response fields, checks lifecycle audit for closed and settled Tiangge stages, logs back in as the user, verifies a `prediction_payout:{marketId}:...` point-ledger credit, and verifies portfolio history contains the settled market row.
+- The new test registers a fresh launch-disclosure user, claims starter points, places a real YES market order, logs in as admin, closes the traded market, resolves it YES, verifies point-native settlement response fields, checks lifecycle audit for closed and settled TapTrade stages, logs back in as the user, verifies a `prediction_payout:{marketId}:...` point-ledger credit, and verifies portfolio history contains the settled market row.
 - The settlement proof rejects retired top-level settlement aliases such as `payouts`, `payoutCents`, `totalPayoutCents`, and `currency`, and verifies ledger rows expose `amountPointsCents`/`balancePointsCents` rather than retired cents aliases.
 
 Verification:
 
 - `npx playwright test --config playwright.prediction.config.ts e2e/prediction/critical-paths.api.spec.ts --list` listed 8 API tests.
 - `git diff --check -- apps/Phoenix-Predict-Combined/talon-backoffice/e2e/prediction/critical-paths.api.spec.ts` passed.
-- Started a fresh `postgres:16-alpine` container `tiangge-e2e-pg-355` on port `56549`.
+- Started a fresh `postgres:16-alpine` container `taptrade-e2e-pg-355` on port `56549`.
 - Migrated the gateway database through version 48.
 - Seeded demo data with `go run ./cmd/seed -mode demo`.
 - Started auth on `18081`, gateway on `18180` with DB-backed prediction/wallet stores, and player proxy on `3022`.
@@ -9809,7 +9809,7 @@ Verification:
 
 - `go test ./internal/leaderboards ./internal/http -run 'Test(RecomputeNow_RefreshesStaticAndCategoryBoards|PredictAdminRecomputeRefreshesSnapshots|PredictLeaderboards|PredictLeaderboard)'` passed.
 - `npx playwright test --config playwright.prediction.config.ts e2e/prediction/critical-paths.api.spec.ts --list` listed 8 API tests.
-- Started fresh `postgres:16-alpine` container `tiangge-e2e-pg-356` on port `56550`.
+- Started fresh `postgres:16-alpine` container `taptrade-e2e-pg-356` on port `56550`.
 - Migrated gateway DB through version 48 and seeded demo data.
 - Started auth on `18081`, gateway on `18180`, and player proxy on `3022`.
 - Health checks returned `auth=200`, `gateway=200`, and `player=200`.
@@ -9835,7 +9835,7 @@ Extended the authenticated critical-path API proof with proposed-resolution chal
 
 Verification:
 
-- Started fresh `postgres:16-alpine` container `tiangge-e2e-pg-357` on port `56551`.
+- Started fresh `postgres:16-alpine` container `taptrade-e2e-pg-357` on port `56551`.
 - Migrated gateway DB through version 48 and seeded demo data.
 - Started auth on `18081` with `AUTH_STORE_MODE=db`, gateway on `18180` with `MARKET_SYNC_ENABLED=false`, and player proxy on `3022`.
 - Gateway status returned `pointMode=non_redeemable_points` and `legacyMoneyRoutes=disabled`.
@@ -9864,7 +9864,7 @@ Added the first maintained player-browser proof for the full canonical journey:
 
 Verification:
 
-- Started fresh `postgres:16-alpine` container `tiangge-e2e-pg-358` on port `56552`.
+- Started fresh `postgres:16-alpine` container `taptrade-e2e-pg-358` on port `56552`.
 - Migrated gateway DB through version 48 and seeded demo data with open `VAL-MASTERS-FINAL`.
 - Started auth on `18081` in DB mode, gateway on `18180` with DB-backed prediction/wallet stores and `MARKET_SYNC_ENABLED=false`, and player proxy on `3022`.
 - Final clean-stack command passed:
@@ -9889,7 +9889,7 @@ market lifecycle operations:
 
 - Added `talon-backoffice/e2e/prediction/office-admin-lifecycle.ui.spec.ts`.
 - The spec creates a synthetic draft market through API setup, logs into the
-  Talon Office UI, opens the market from `/prediction-admin/markets`, closes it
+  TapTrade Office UI, opens the market from `/prediction-admin/markets`, closes it
   through the rendered destructive confirmation modal with an explicit reason,
   opens the lifecycle audit modal, verifies Open and Closed stages plus the
   reason, and verifies retired office money routes return 404.
@@ -9905,7 +9905,7 @@ market lifecycle operations:
 
 Verification:
 
-- Started fresh `postgres:16-alpine` container `tiangge-e2e-pg-360` on port
+- Started fresh `postgres:16-alpine` container `taptrade-e2e-pg-360` on port
   `56554`.
 - Migrated gateway DB through version 48 and seeded deterministic demo data.
 - Started auth on `18081` with `AUTH_STORE_MODE=db`.
@@ -9969,14 +9969,14 @@ Scenario status after this loop:
 Remediated another launch frontend dependency vulnerability cluster without
 rewriting inherited test tooling:
 
-- Added a Talon workspace root Yarn resolution for `form-data@2.5.6`.
+- Added a TapTrade workspace root Yarn resolution for `form-data@2.5.6`.
 - Regenerated `talon-backoffice/yarn.lock`; the inherited
   `jest -> @jest/core -> jest-config -> jest-environment-jsdom -> jsdom -> request`
   path now resolves `form-data@~2.3.2` to patched `2.5.6`.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
-  plus Tiangge player app Yarn audit logs.
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
+  plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 2, high 80, moderate 98, low 21;
-  25 unique advisory ids` for both Talon and Tiangge player app scopes.
+  25 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `form-data` findings.
 
 Verification:
@@ -9986,7 +9986,7 @@ Verification:
 - Audit-log parser check confirmed `0` `form-data` findings in both regenerated
   audit logs.
 - `make security-deps` passed.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 35 large-change files, and zero unclassified
   modified artifacts.
@@ -10006,15 +10006,15 @@ Scenario status after this loop:
 Cleared the remaining critical frontend dependency advisory cluster while
 preserving inherited Lerna workspace tooling:
 
-- Added Talon workspace root Yarn resolutions for `parse-url@8.1.0` and
+- Added TapTrade workspace root Yarn resolutions for `parse-url@8.1.0` and
   `parse-path@7.1.0`.
 - Regenerated `talon-backoffice/yarn.lock`; the inherited
   `lerna -> @lerna/version -> @lerna/github-client -> git-url-parse -> git-up`
   path now resolves to patched URL parser packages.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
-  plus Tiangge player app Yarn audit logs.
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
+  plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 78, moderate 94, low 21;
-  23 unique advisory ids` for both Talon and Tiangge player app scopes.
+  23 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `parse-url` and zero `parse-path`
   findings.
 
@@ -10024,7 +10024,7 @@ Verification:
 - `yarn why parse-path` resolved to `parse-path@7.1.0`.
 - `yarn lerna list --all --json` passed and listed 6 workspace packages.
 - Direct CommonJS `parse-url` smoke test passed for a GitHub URL.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 35 large-change files, and zero unclassified
@@ -10044,20 +10044,20 @@ Scenario status after this loop:
 Removed the largest remaining high-severity frontend dependency cluster while
 preserving inherited Lerna/node-gyp tooling:
 
-- Added a Talon workspace root Yarn resolution for `tar@7.5.11`.
+- Added a TapTrade workspace root Yarn resolution for `tar@7.5.11`.
 - Regenerated `talon-backoffice/yarn.lock`; inherited Lerna, pacote, and
   node-gyp paths that requested `tar@^4.4.x` now resolve to patched `7.5.11`.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
-  plus Tiangge player app Yarn audit logs.
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
+  plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 54, moderate 90, low 21;
-  17 unique advisory ids` for both Talon and Tiangge player app scopes.
+  17 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `tar` findings.
 
 Verification:
 
 - `yarn why tar` resolved inherited tooling paths to `tar@7.5.11`.
 - Direct tar create/extract smoke passed and confirmed the expected API surface.
-- `yarn lerna run --scope @phoenix-ui/api-client build` passed.
+- `yarn lerna run --scope @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 35 large-change files, and zero unclassified
@@ -10077,13 +10077,13 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with a same-major
 patch:
 
-- Added a Talon workspace root Yarn resolution for `ws@7.5.11`.
+- Added a TapTrade workspace root Yarn resolution for `ws@7.5.11`.
 - Regenerated `talon-backoffice/yarn.lock`; inherited mock-server and
   Jest/jsdom paths that requested `ws@^7.x` now resolve to patched `7.5.11`.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
-  plus Tiangge player app Yarn audit logs.
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
+  plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 48, moderate 90, low 21;
-  16 unique advisory ids` for both Talon and Tiangge player app scopes.
+  16 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `ws` findings.
 
 Verification:
@@ -10092,9 +10092,9 @@ Verification:
   `ws@7.5.11`.
 - Direct WebSocket server/client echo smoke passed.
 - Direct `jsdom` smoke passed and exposed `window.WebSocket`.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
-- `yarn workspace @phoenix-ui/mock-server dist` was attempted, but it failed on
+- `yarn workspace @taptrade-ui/mock-server dist` was attempted, but it failed on
   an existing `@types/express-serve-static-core` `TS1337` type-library issue and
   is not counted as passing evidence.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
@@ -10115,13 +10115,13 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with a same-major
 patch:
 
-- Added a Talon workspace root Yarn resolution for `undici@7.28.0`.
+- Added a TapTrade workspace root Yarn resolution for `undici@7.28.0`.
 - Regenerated `talon-backoffice/yarn.lock`; inherited cheerio/jsdom paths that
   requested `undici@^7.x` now resolve to patched `7.28.0`.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
-  plus Tiangge player app Yarn audit logs.
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
+  plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 42, moderate 86, low 17;
-  13 unique advisory ids` for both Talon and Tiangge player app scopes.
+  13 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `undici` findings.
 
 Verification:
@@ -10129,7 +10129,7 @@ Verification:
 - `yarn why undici` resolved inherited cheerio/jsdom/isomorphic-dompurify paths
   to `undici@7.28.0`.
 - Direct jsdom + cheerio + undici MockAgent smoke passed.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 35 large-change files, and zero unclassified
@@ -10149,14 +10149,14 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with a focused
 resolution:
 
-- Added a Talon workspace root Yarn resolution for `trim-newlines@3.0.1`.
+- Added a TapTrade workspace root Yarn resolution for `trim-newlines@3.0.1`.
 - Regenerated `talon-backoffice/yarn.lock`; inherited commitlint, Lerna,
   conventional-changelog, get-pkg-repo, and meow paths that requested
   `trim-newlines@^1.x` or `trim-newlines@^2.x` now resolve to patched `3.0.1`.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
-  plus Tiangge player app Yarn audit logs.
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
+  plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 36, moderate 86, low 17;
-  12 unique advisory ids` for both Talon and Tiangge player app scopes.
+  12 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `trim-newlines` findings.
 
 Verification:
@@ -10167,7 +10167,7 @@ Verification:
 - `yarn commitlint` accepted a conventional commit message.
 - `yarn lerna changed --json` completed successfully and listed the expected
   changed workspace packages.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 35 large-change files, tracked line churn
@@ -10188,14 +10188,14 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with a focused
 resolution:
 
-- Added a Talon workspace root Yarn resolution for `http-cache-semantics@4.2.0`.
+- Added a TapTrade workspace root Yarn resolution for `http-cache-semantics@4.2.0`.
 - Regenerated `talon-backoffice/yarn.lock`; the inherited Lerna publish path
   that requested `http-cache-semantics@^3.8.1` now resolves to patched `4.2.0`,
   matching the Office `got` cache dependency already present in the workspace.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
-  plus Tiangge player app Yarn audit logs.
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
+  plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 33, moderate 86, low 17;
-  11 unique advisory ids` for both Talon and Tiangge player app scopes.
+  11 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `http-cache-semantics` findings.
 
 Verification:
@@ -10207,7 +10207,7 @@ Verification:
   passed.
 - `yarn lerna changed --json` completed successfully and listed the expected
   changed workspace packages.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 35 large-change files, tracked line churn
@@ -10228,14 +10228,14 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with a focused
 resolution:
 
-- Added a Talon workspace root Yarn resolution for `merge@2.1.1`.
-- Regenerated `talon-backoffice/yarn.lock`; inherited `@phoenix-ui/utils`,
+- Added a TapTrade workspace root Yarn resolution for `merge@2.1.1`.
+- Regenerated `talon-backoffice/yarn.lock`; inherited `@taptrade-ui/utils`,
   `watch`, and `exec-sh` paths that requested `merge@^1.2.0` now resolve to
   patched `2.1.1`.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
-  plus Tiangge player app Yarn audit logs.
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
+  plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 31, moderate 86, low 17;
-  10 unique advisory ids` for both Talon and Tiangge player app scopes.
+  10 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `merge` findings.
 
 Verification:
@@ -10244,7 +10244,7 @@ Verification:
   `merge@2.1.1`.
 - Direct `merge.recursive` smoke passed.
 - `exec-sh` module-load smoke passed.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `yarn lerna changed --json` completed successfully and listed the expected
   changed workspace packages.
 - `make security-deps` passed.
@@ -10266,16 +10266,16 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with targeted
 path resolutions:
 
-- Added Talon workspace root Yarn resolutions for
+- Added TapTrade workspace root Yarn resolutions for
   `@commitlint/cli/**/dot-prop` and
   `@commitlint/config-conventional/**/dot-prop` to `dot-prop@4.2.1`.
 - Regenerated `talon-backoffice/yarn.lock`; vulnerable commitlint
   `dot-prop@3.0.0` paths now resolve to patched `4.2.1`, while existing safe
   Lerna `dot-prop@5.3.0` callers remain on `5.3.0`.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
-  plus Tiangge player app Yarn audit logs.
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
+  plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 29, moderate 86, low 17;
-  9 unique advisory ids` for both Talon and Tiangge player app scopes.
+  9 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `dot-prop` findings.
 
 Verification:
@@ -10286,7 +10286,7 @@ Verification:
 - `yarn commitlint` accepted a conventional commit message.
 - `yarn lerna changed --json` completed successfully and listed the expected
   changed workspace packages.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 35 large-change files, tracked line churn
@@ -10306,16 +10306,16 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with targeted
 path resolutions:
 
-- Added Talon workspace root Yarn resolutions for
+- Added TapTrade workspace root Yarn resolutions for
   `**/@commitlint/is-ignored/semver` to `semver@6.3.1` and
   `**/simple-update-notifier/semver` to `semver@7.7.3`.
 - Regenerated `talon-backoffice/yarn.lock`; vulnerable commitlint
   `semver@6.3.0` and mock-server/nodemon `semver@7.0.0` paths now resolve to
   patched versions.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
-  plus Tiangge player app Yarn audit logs.
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
+  plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 27, moderate 86, low 17;
-  7 unique advisory ids` for both Talon and Tiangge player app scopes.
+  7 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `semver` findings.
 
 Verification:
@@ -10328,7 +10328,7 @@ Verification:
 - `nodemon` plus `simple-update-notifier` module-load smoke passed.
 - `yarn lerna changed --json` completed successfully and listed the expected
   changed workspace packages.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 35 large-change files, tracked line churn
@@ -10348,14 +10348,14 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with a targeted path
 resolution:
 
-- Added a Talon workspace root Yarn resolution for `**/ajv/fast-uri` to
+- Added a TapTrade workspace root Yarn resolution for `**/ajv/fast-uri` to
   `fast-uri@3.1.2`.
 - Regenerated `talon-backoffice/yarn.lock`; the inherited
   `eslint -> table -> ajv` path now resolves to patched `fast-uri@3.1.2`.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
-  plus Tiangge player app Yarn audit logs.
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
+  plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 25, moderate 86, low 17;
-  5 unique advisory ids` for both Talon and Tiangge player app scopes.
+  5 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `fast-uri` findings.
 
 Verification:
@@ -10364,7 +10364,7 @@ Verification:
 - Direct `fast-uri` parse/serialize smoke passed.
 - AJV URI-format validation smoke passed.
 - ESLint parsed and linted a simple JavaScript file successfully.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 36 large-change files, tracked line churn
@@ -10384,7 +10384,7 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with a targeted path
 resolution:
 
-- Added a Talon workspace root Yarn resolution for `**/external-editor/tmp` to
+- Added a TapTrade workspace root Yarn resolution for `**/external-editor/tmp` to
   `tmp@0.2.7`.
 - Regenerated `talon-backoffice/yarn.lock`; the inherited
   `lerna -> @lerna/prompt -> inquirer -> external-editor` path now resolves to
@@ -10392,10 +10392,10 @@ resolution:
 - Rejected the first candidate `tmp@0.2.6` after the current advisory database
   reported it as vulnerable to CVE-2026-49982; the accepted remediation is
   `tmp@0.2.7`.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
-  plus Tiangge player app Yarn audit logs.
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
+  plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 22, moderate 86, low 14;
-  4 unique advisory ids` for both Talon and Tiangge player app scopes.
+  4 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `tmp` findings. Remaining high clusters
   are `braces` (12), `lodash` (5), `ip` (3), and `lodash.set` (2).
 
@@ -10409,7 +10409,7 @@ Verification:
 - `external-editor` module-load smoke passed with expected exported API keys.
 - `yarn lerna list --all --json` completed successfully and found all six
   inherited workspace packages.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 36 large-change files, tracked line churn
@@ -10429,16 +10429,16 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with a targeted path
 resolution:
 
-- Added a Talon workspace root Yarn resolution for
+- Added a TapTrade workspace root Yarn resolution for
   `@commitlint/cli/**/lodash` to `lodash@4.18.1`.
 - Regenerated `talon-backoffice/yarn.lock`; the inherited commitlint nested
   lodash paths now resolve through patched `lodash@4.18.1`.
 - Confirmed current registry/advisory viability: `lodash@4.18.1` is the latest
   published version and the active advisory marks `>=4.18.0` as patched.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
-  plus Tiangge player app Yarn audit logs.
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
+  plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 17, moderate 76, low 14;
-  3 unique advisory ids` for both Talon and Tiangge player app scopes.
+  3 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `lodash` findings. Remaining high
   clusters are `braces` (12), `ip` (3), and `lodash.set` (2).
 
@@ -10452,7 +10452,7 @@ Verification:
 - `printf 'chore: lodash security remediation\n' | yarn commitlint` passed.
 - `yarn lerna list --all --json` completed successfully and found all six
   inherited workspace packages.
-- `yarn workspace @phoenix-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client build` passed.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
   high-risk contract files, 36 large-change files, tracked line churn
@@ -10472,7 +10472,7 @@ Scenario status after this loop:
 Removed another high-severity frontend dependency cluster with a targeted path
 resolution:
 
-- Added a Talon workspace root Yarn resolution for `**/micromatch/braces` to
+- Added a TapTrade workspace root Yarn resolution for `**/micromatch/braces` to
   `braces@3.0.3`.
 - Regenerated `talon-backoffice/yarn.lock`; inherited Jest/sane and
   Lerna/globby/fast-glob micromatch paths now resolve to patched
@@ -10480,10 +10480,10 @@ resolution:
 - Because this is a major-version override for older micromatch callers, the
   loop required direct glob and supported app test evidence before accepting
   the audit improvement.
-- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the Talon
-  plus Tiangge player app Yarn audit logs.
+- Regenerated `revival/06_DEPENDENCY_VULNERABILITY_BASELINE.md` and the TapTrade
+  plus TapTrade player app Yarn audit logs.
 - The official baseline now reports `critical 0, high 5, moderate 76, low 14;
-  2 unique advisory ids` for both Talon and Tiangge player app scopes.
+  2 unique advisory ids` for both TapTrade and TapTrade player app scopes.
 - Both regenerated audit logs have zero `braces` findings. Remaining high
   clusters are `ip` (3) and `lodash.set` (2).
 
@@ -10501,8 +10501,8 @@ Verification:
   passed 268 tests through the supported `tsx` runner. The earlier direct root
   Jest attempt was rejected as evidence because these tests are `node:test`/ESM
   files and not run through root Jest.
-- `yarn workspace @phoenix-ui/api-client build` passed.
-- `yarn workspace @phoenix-ui/api-client test` passed with no tests found and
+- `yarn workspace @taptrade-ui/api-client build` passed.
+- `yarn workspace @taptrade-ui/api-client test` passed with no tests found and
   exit code 0.
 - `make security-deps` passed.
 - `make qa-preservation-modifications` passed with 392 modified artifacts, 89
@@ -10523,7 +10523,7 @@ Scenario status after this loop:
 Scoped the remaining frontend high advisories and fixed a JVM baseline reporting
 bug:
 
-- Parsed the active Talon and Tiangge player app audit logs; both report
+- Parsed the active TapTrade and TapTrade player app audit logs; both report
   `critical 0, high 5, moderate 0, low 0; 2 unique advisory ids` at the
   high-threshold audit level.
 - The remaining high clusters are `ip` (3 findings) and `lodash.set` (2
@@ -10576,7 +10576,7 @@ Turned the reviewed no-fix frontend residuals into an executable gate:
 - Added `make qa-frontend-residual-advisories`.
 - Added the gate to `scripts/pre-commit-hook.sh`.
 - Added the gate to `scripts/release/launch-readiness-gate.sh`.
-- The gate parses the Talon and Tiangge player high-threshold Yarn audit logs,
+- The gate parses the TapTrade and TapTrade player high-threshold Yarn audit logs,
   forbids critical advisories, and allows high advisories only when they match
   the reviewed inherited Lerna residuals:
   `ip` / `GHSA-2p57-rm9w-gvfp` at most 3 rows, and `lodash.set` /
@@ -10586,7 +10586,7 @@ Turned the reviewed no-fix frontend residuals into an executable gate:
 Verification:
 
 - `make security-deps` passed and regenerated the official dependency baseline.
-- The regenerated Talon and Tiangge player audit logs still parse to
+- The regenerated TapTrade and TapTrade player audit logs still parse to
   `critical 0, high 5`, with modules `ip: 3` and `lodash.set: 2`.
 - `make qa-frontend-residual-advisories` passed and wrote
   `revival/60_FRONTEND_RESIDUAL_ADVISORY_GATE.md` plus artifact
@@ -10965,7 +10965,7 @@ Verification:
   passed with 22 tests.
 - Focused edited-file source scan found no active `values.losses`,
   `field="losses"`, `HEADER_CARD_LIMITS_LOSS`,
-  `TalonPunterLimitsTypesEnum.STAKE`, or `STAKE =` matches.
+  `TapTradePunterLimitsTypesEnum.STAKE`, or `STAKE =` matches.
 - `git diff --check` passed.
 - Edited-file trailing whitespace scan found no matches.
 - `make qa-preservation-modifications` passed with 395 modified artifacts, 90
@@ -11208,7 +11208,7 @@ Moved the Office README's current admin-surface documentation away from
 inherited sportsbook wording:
 
 - Replaced `sportsbook-native` loyalty/leaderboard wording with point-native
-  Tiangge wording.
+  TapTrade wording.
 - Updated the loyalty account descriptions to mention rank filtering,
   point-ledger inspection, and XP/rank progress.
 - Added a focused Office regression that scans the current admin-surface README
@@ -11250,7 +11250,7 @@ source-comment wording while preserving behavior:
 - Reworded the prediction risk page comment to describe the redirected legacy
   risk-management subtree.
 - Reworded the `next.config.js` risk-management redirect comment to describe
-  retired pre-Tiangge operations widgets.
+  retired pre-TapTrade operations widgets.
 - Added a focused Office regression that scans those active source files for
   the retired comment phrases.
 - Classified Office provider/config files in the preservation modification gate
@@ -11363,10 +11363,10 @@ Scenario status after this loop:
 
 Closed an active gateway developer-tooling documentation leak:
 
-- Changed gateway Makefile help from `Phoenix Sportsbook Gateway` to
-  `Tiangge Prediction Gateway`.
+- Changed gateway Makefile help from `TapTrade Sportsbook Gateway` to
+  `TapTrade Prediction Gateway`.
 - Changed the Makefile `createdb` target and setup examples from a
-  sportsbook-named database to `tiangge_predict`.
+  sportsbook-named database to `taptrade_predict`.
 - Added `services/gateway/Makefile` to the launch-doc safety test, with a
   Makefile-aware scan that keeps shell/Make `$` syntax valid while rejecting
   prohibited launch-copy words.
@@ -11377,8 +11377,8 @@ Closed an active gateway developer-tooling documentation leak:
 
 Verification:
 
-- `make -C go-platform/services/gateway help` rendered Tiangge-native setup
-  text and `tiangge_predict` DSN guidance.
+- `make -C go-platform/services/gateway help` rendered TapTrade-native setup
+  text and `taptrade_predict` DSN guidance.
 - `go test ./internal/http -run TestLaunchDocsStayPointsOnly` passed.
 - `git diff --check` passed.
 - Focused scan found no `sportsbook` or old sportsbook DSN examples in
@@ -11416,7 +11416,7 @@ Closed an active gateway seed-tooling hazard:
 Verification:
 
 - `make -C go-platform/services/gateway help` rendered `make seed` as
-  `Load Tiangge launch base seed data`.
+  `Load TapTrade launch base seed data`.
 - `go test ./internal/http -run 'TestLaunchDocsStayPointsOnly|TestGatewayMakefileUsesLaunchSeedCommand'`
   passed.
 - `go test ./cmd/seed -run Test` passed.
@@ -11655,7 +11655,7 @@ Verification:
 - `go test ./services/gateway/internal/http -run TestLaunchDocsStayPointsOnly -count=1`
   passed.
 - Focused scan found no `balanceCents`, `amountCents`, `availableCents`,
-  `reservedCents`, or `Phoenix Sportsbook` in
+  `reservedCents`, or `TapTrade Sportsbook` in
   `talon-backoffice/packages/api-client/src/types.ts`.
 - `make qa-preservation-modifications` passed with 412 classified modified
   artifacts, 92 high-risk contract files, 36 large-change files, tracked line
@@ -11694,7 +11694,7 @@ Verification:
   passed.
 - Focused scan found no `freebetId`, `oddsBoostId`,
   `freebetAppliedCents`, `balanceCents`, `amountCents`, or
-  `Phoenix Sportsbook` in
+  `TapTrade Sportsbook` in
   `talon-backoffice/packages/api-client/src/types.ts`.
 - `make qa-preservation-modifications` passed with 412 classified modified
   artifacts, 92 high-risk contract files, 36 large-change files, tracked line
@@ -11853,7 +11853,7 @@ diff:
   `scripts/release/launch-readiness-gate.sh` after the deletion,
   modification, and public contract-anchor preservation gates.
 - Kept the inherited `PhoenixApiClient` shared-client class intact and added
-  `TianggeApiClient` as an alias instead of replacing the existing client
+  `TapTradeApiClient` as an alias instead of replacing the existing client
   contract.
 - Added focused regression coverage proving both shared-client names are
   exported while private legacy wallet/audit payload normalizers remain
@@ -13004,7 +13004,7 @@ Verification:
   `ok phoenix-revival/gateway/internal/wallet`, confirming the cross-service
   store test ran instead of skipping. Log:
   `revival/artifacts/abuse_boundary_20260630_090055_dbbacked_multiinstance_reward_cluster_controls.log`.
-- No `tiangge-abuse-boundary-pg-*` container remained after the gate.
+- No `taptrade-abuse-boundary-pg-*` container remained after the gate.
 - `make qa-rc-completion-audit` still failed correctly with Scenario 12 marked
   Partial. Artifact:
   `revival/artifacts/rc_completion_audit_gate_20260630_090216.md`.
@@ -13022,8 +13022,8 @@ Refreshed dependency/release-hardening evidence with current artifacts:
 
 - `scripts/security/dependency-baseline.sh` now writes timestamped yarn-audit
   logs instead of overwriting fixed March filenames.
-- `scripts/qa/frontend-residual-advisory-gate.sh` now reads the latest Talon
-  and Tiangge player audit logs by default, while still allowing explicit log
+- `scripts/qa/frontend-residual-advisory-gate.sh` now reads the latest TapTrade
+  and TapTrade player audit logs by default, while still allowing explicit log
   overrides.
 - The generated dependency baseline now distinguishes reviewed frontend high
   residuals from untriaged high/critical findings and points launch readiness
@@ -13034,7 +13034,7 @@ Verification:
 - `bash -n scripts/security/dependency-baseline.sh scripts/qa/frontend-residual-advisory-gate.sh` passed.
 - `make security-deps` passed and wrote fresh logs:
   `revival/artifacts/talon_yarn_audit_20260630_090648.log` and
-  `revival/artifacts/tiangge_player_yarn_audit_20260630_090648.log`.
+  `revival/artifacts/taptrade_player_yarn_audit_20260630_090648.log`.
 - `make qa-frontend-residual-advisories` passed on those fresh logs. Artifact:
   `revival/artifacts/frontend_residual_advisory_gate_20260630_090658.md`.
 - `make security-jvm-osv-direct` passed and wrote:
@@ -13233,7 +13233,7 @@ Verification:
 - `make -n qa-canonical-browser-journey` printed the expected wrapper
   invocation.
 - `scripts/local-stack.sh status` showed `phoenix-backend`, `go-gateway`,
-  `talon-backoffice`, and `tiangge-player` stopped, so the Playwright journey
+  `talon-backoffice`, and `taptrade-player` stopped, so the Playwright journey
   was not run in this loop.
 - `make qa-preservation-production-dossier` passed. Artifact:
   `revival/artifacts/production_preservation_dossier_20260630_095420.md`.
@@ -13258,7 +13258,7 @@ and refreshed the evidence:
 - Added `make qa-canonical-browser-stack`.
 - The runner starts a disposable `postgres:16-alpine` container, migrates the
   gateway DB, runs demo seed data, starts DB-backed auth, DB-backed gateway,
-  and the Tiangge player app, then invokes the maintained
+  and the TapTrade player app, then invokes the maintained
   `qa-canonical-browser-journey` gate.
 - Updated `canonical-browser.ui.spec.ts` to use `MLBB-FINAL-G1`, the current
   open seeded order-book market, instead of the now demo-settled
@@ -13278,7 +13278,7 @@ Verification:
 - Browser log:
   `revival/artifacts/canonical_browser_journey_20260630_100649.log`, showing
   `2 passed (33.1s)`.
-- No `tiangge-canonical-browser-pg-*` container remained after cleanup.
+- No `taptrade-canonical-browser-pg-*` container remained after cleanup.
 - `make qa-preservation-production-dossier` passed. Artifact:
   `revival/artifacts/production_preservation_dossier_20260630_101039.md`.
 - `make qa-rc-completion-audit` still failed correctly with Scenario 12 marked
@@ -15974,7 +15974,7 @@ Verification:
 
 - `make qa-frontend-residual-advisories` passed. Artifact:
   `revival/artifacts/frontend_residual_advisory_gate_20260701_082427.md`.
-  Talon and Tiangge player audit logs each have `0` critical rows and `5` high
+  TapTrade and TapTrade player audit logs each have `0` critical rows and `5` high
   rows, all confined to reviewed `ip` and `lodash.set` inherited Lerna paths.
 - `make security-jvm-direct-residual-advisories` passed. Artifact:
   `revival/artifacts/jvm_direct_residual_advisory_gate_20260701_082427.md`.

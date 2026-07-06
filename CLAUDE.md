@@ -17,8 +17,8 @@ Workspace root on this Mac: `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict
 
 ```
 Taya_Na_Predict/
-├── apps/Phoenix-Predict-Combined/
-│   ├── talon-backoffice/packages/
+├── apps/taptrade-platform/
+│   ├── frontend/packages/
 │   │   ├── app/                           ← Player app (Next.js 16 App Router, port 3000)
 │   │   ├── office/                        ← Admin backoffice (Next.js Pages Router, port 3001)
 │   │   └── api-client/                    ← Shared TS API client
@@ -81,7 +81,7 @@ Do not commit or push from `main`, `chore/safe-brand-text-cleanup`, or any other
 
 1. **Never give placeholder paths.** Use real, full paths. The workspace is `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/` — not `~/...` or `your-project/...`.
 2. **Never reintroduce sportsbook concepts.** No new code referencing `fixtures`, `selections`, `betslip`, `sport_key`, `punter_bets`, `freebets`, `odds_boosts`, `match_tracker`. This is a prediction market — markets have `yesPriceCents`/`noPriceCents`, not odds; users have positions, not bets.
-3. **Never use `@phoenix-ui/design-system` imports in `app/`** — it uses styled-components and causes webpack hangs. Use inline components or Tailwind.
+3. **Never use `@taptrade-ui/design-system` imports in `app/`** — it uses styled-components and causes webpack hangs. Use inline components or Tailwind.
 4. **Never introduce `console.log/warn/error` in production code.** Use the structured `logger` from `app/lib/logger.ts`.
 5. **Never use `any` type.** Use `unknown`, proper interfaces, or `Record<string, unknown>`.
 6. **Never suppress TypeScript errors** with `@ts-nocheck`, `@ts-ignore`, or `as any`.
@@ -112,7 +112,7 @@ Prices are **cents, 0–99** — always enforced by CHECK constraints and the in
 
 ## Tech Stack — Player App
 
-**Path:** `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/`
+**Path:** `apps/taptrade-platform/frontend/packages/app/`
 
 - **Framework:** Next.js 16 with App Router (`app/` directory)
 - **React:** 19 — `React.FC` does NOT include `children` prop; add explicitly
@@ -122,7 +122,7 @@ Prices are **cents, 0–99** — always enforced by CHECK constraints and the in
 - **Styling:** Tailwind CSS + inline styles (NO styled-components in app/)
 - **Logging:** `app/lib/logger.ts` — structured logger (dev: console with `[context]` prefix, prod: no-op)
 - **WebSocket:** `app/lib/websocket/` — real-time market prices and portfolio updates (subscribe to `market:<id>`, `portfolio:<userId>`, `trades:<marketId>`)
-- **API client:** `@phoenix-ui/api-client/src/prediction-client.ts` — `PredictionApiClient`
+- **API client:** `@taptrade-ui/api-client/src/prediction-client.ts` — `PredictionApiClient`
 - **Testing:** Node.js built-in test runner (`node:test`)
 
 ### Prediction pages (active)
@@ -141,7 +141,7 @@ Prices are **cents, 0–99** — always enforced by CHECK constraints and the in
 
 ## Tech Stack — Backoffice
 
-**Path:** `apps/Phoenix-Predict-Combined/talon-backoffice/packages/office/`
+**Path:** `apps/taptrade-platform/frontend/packages/office/`
 
 - **Framework:** Next.js with Pages Router (NOT App Router) — but a parallel App Router tree under `app/` exists for newer admin pages (dashboard, audit-logs, trading, users). Both routers coexist.
 - **UI:** Ant Design 5.x (`^5.29`) + styled-components, both wired to the **P8 design tokens** as of 2026-04-28. Stylesheet stack: `antd/dist/antd.css` → `styles/p8-tokens.css` (declares `--bg-deep` / `--surface-1/2` / `--border-1/2` / `--t1..4` / `--yes-text` / `--no-text` / `--focus-ring` / `--accent[*]` / `--r-rh-*`) → `styles/p8-antd.css` (overrides AntD component classes against the tokens). New styling work MUST reference these CSS custom properties — DO NOT introduce hex literals.
@@ -185,17 +185,17 @@ granular permissions like `users:read/write`, `roles:read/write`,
   active super-admin cannot be role-stripped, suspended, or deleted; an actor
   cannot suspend or delete their own account.
 - **Dev bootstrap staff** (dev-only, via `cmd/seed` → `seed_prediction.sql`):
-  `admin@phoenix.local` (Super Admin), `ops@phoenix.local` (Operations Manager),
-  `support@phoenix.local` (Customer Support) — all password `admin123`.
+  `admin@taptrade.local` (Super Admin), `ops@taptrade.local` (Operations Manager),
+  `support@taptrade.local` (Customer Support) — all password `admin123`.
 - **Prod bootstrap** (prod is fail-closed: the migration seeds no staff): run
   `gateway rbac-bootstrap` once with `RBAC_BOOTSTRAP_EMAIL` +
   `RBAC_BOOTSTRAP_PASSWORD` (+ `GATEWAY_DB_DSN`) to create the first super-admin.
 
 ## Tech Stack — Go Backend
 
-**Path:** `apps/Phoenix-Predict-Combined/go-platform/services/gateway/`
+**Path:** `apps/taptrade-platform/go-platform/services/gateway/`
 
-- **Language:** Go 1.25 (module `phoenix-revival/gateway`)
+- **Language:** Go 1.25 (module `taptrade/gateway`)
 - **HTTP:** stdlib `net/http` + custom `httpx` middleware
 - **DB:** PostgreSQL 16 via `lib/pq`, migrations via `pressly/goose/v3`
 - **Cache:** none in the gateway (no read cache; Redis is auth-only). The gateway's `REDIS_URL`/`Redis` references are vestigial from the sportsbook fork.
@@ -226,7 +226,7 @@ granular permissions like `users:read/write`, `roles:read/write`,
 ### One-time setup
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform
 
 # Start Postgres (port 5434 to avoid colliding with any sportsbook container)
 docker compose up -d postgres
@@ -276,7 +276,7 @@ AUTH_COOKIE_SECURE=false \
 go run ./cmd/auth
 
 # Player app (port 3000)
-cd ../../../talon-backoffice/packages/app
+cd ../../../frontend/packages/app
 NEXT_PUBLIC_API_URL=http://localhost:18080 npm run dev
 
 # Backoffice (port 3001)
@@ -297,9 +297,9 @@ npm run dev
 
 ### Test credentials
 
-**Active login:** `demo@phoenix.local` / `demo123`
+**Active login:** `demo@taptrade.local` / `demo123`
 
-The auth service (port 18081) auto-seeds `demo@phoenix.local` / `demo123` (player role) and `admin@phoenix.local` / `admin123` (admin role) into the `auth_users` table on startup. These are the only credentials the player app can log in with out of the box.
+The auth service (port 18081) auto-seeds `demo@taptrade.local` / `demo123` (player role) and `admin@taptrade.local` / `admin123` (admin role) into the `auth_users` table on startup. These are the only credentials the player app can log in with out of the box.
 
 The `punters`/`wallets` test users below are seeded by `go run ./cmd/seed` for prediction-side data (positions, orders, wallet balances) but **are not yet wired into the auth service's `auth_users` table**. To log in as them, register via `POST /api/v1/auth/register` with the matching email, or add them to the auth service's seed helper (see `services/auth/internal/http/handlers.go` `seedDBUsers`).
 
@@ -322,7 +322,7 @@ On Intel Macs: check `/usr/local/lib/` instead of `/opt/homebrew/lib/`.
 
 ### Use yarn at the workspace root
 
-The `talon-backoffice/` directory is a yarn-workspaces monorepo (`workspaces: ["packages/**/*"]` in `package.json`, `engines: { yarn: ">=1.22.22 <2" }`). Run `yarn install --frozen-lockfile` from `talon-backoffice/`, not from any sub-package. CI does the same — see `.github/workflows/test.yml`.
+The `frontend/` directory is a yarn-workspaces monorepo (`workspaces: ["packages/**/*"]` in `package.json`, `engines: { yarn: ">=1.22.22 <2" }`). Run `yarn install --frozen-lockfile` from `frontend/`, not from any sub-package. CI does the same — see `.github/workflows/test.yml`.
 
 Older notes recommended `npm install --legacy-peer-deps` from the app sub-directory; that path hangs in CI for hours because npm doesn't detect the workspace declaration up-tree. Yarn install at the workspace root completes in ~6 seconds.
 

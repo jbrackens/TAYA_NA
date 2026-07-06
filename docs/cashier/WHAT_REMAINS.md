@@ -1,4 +1,4 @@
-# Tiangge Cashier: What Remains
+# TapTrade Cashier: What Remains
 
 **Date:** 2026-05-25
 **Status:** Paused pending provider credentials and final stack decisions.
@@ -59,7 +59,7 @@ We need one provider that can support Maria's V1 flow:
 3. Provider detects the source transaction.
 4. Provider bridges/routes funds into the user's EVM settlement wallet or
    collateral account.
-5. Tiangge receives signed status callbacks and can replay status by request ID.
+5. TapTrade receives signed status callbacks and can replay status by request ID.
 
 Recommended first provider to pursue: **Relay**.
 

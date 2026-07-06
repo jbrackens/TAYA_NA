@@ -1,0 +1,23 @@
+{
+  "COMPANY": "Company",
+  "ABOUT": "About",
+  "TERMS_OF_SERVICE": "Terms of Service",
+  "PRIVACY_POLICY": "Privacy Policy",
+  "TERMS_AND_CONDITIONS": "Terms & Conditions",
+  "HELP": "Help",
+  "BONUS_RULES": "Mga Patakaran sa Points",
+  "BETTING_RULES": "Mga Patakaran sa Market",
+  "RESPONSIBLE_GAMING": "Responsableng Paglalaro",
+  "PROMOTIONS": "Rewards",
+  "CONTACT_US": "Contact Us",
+  "DESC_1": "Ang TapTrade ay points-only prediction market experience. Ang gameplay points ay nananatili sa loob ng TapTrade play at hindi naililipat.",
+  "LOWER_FOOTER_CONTENT": "© TapTrade {{year}}",
+  "HOME": "HOME",
+  "IN_PLAY": "MARKETS",
+  "MY_BETS": "PORTFOLIO",
+  "ACCOUNT": "ACCOUNT",
+  "DEPOSIT": "Mga Patakaran sa Points",
+  "DEPOSIT_MESSAGE": "Gameplay points lang",
+  "WITHDRAWALS": "Point Activity",
+  "WITHDRAWAL_MESSAGE": "Nananatili ang points sa gameplay"
+}

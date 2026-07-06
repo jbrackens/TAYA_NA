@@ -243,4 +243,4 @@ Pattern: follows existing `wallets:{userId}` channel pattern in `ws/handler.go`.
 7. `services/gateway/internal/provider/runtime.go` — event replay engine
 8. `modules/platform/canonical/v1/types.go` — existing event/entity types
 9. `services/gateway/cmd/gateway/main.go` — service initialization (where scheduler starts)
-10. `talon-backoffice/packages/app/app/lib/websocket/channels-data-handler/wallets-channel-handler.ts` — frontend WebSocket handler pattern
+10. `frontend/packages/app/app/lib/websocket/channels-data-handler/wallets-channel-handler.ts` — frontend WebSocket handler pattern

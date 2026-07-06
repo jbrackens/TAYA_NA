@@ -1,4 +1,4 @@
-# Tiangge Cashier SDK
+# TapTrade Cashier SDK
 
 Shared typed contract for cashier UI and backend services.
 

@@ -14,7 +14,7 @@ Two problems:
 1. **Coverage** — manual resolution does not scale across categories.
 2. **Trust** — crypto relies on a *single* source (CoinGecko); manual relies on a single operator with no corroboration. Settlement records a sha256 attestation (`settlement.go`) but no multi-source evidence.
 
-Path shorthand: `gateway` = `apps/Phoenix-Predict-Combined/go-platform/services/gateway`.
+Path shorthand: `gateway` = `apps/taptrade-platform/go-platform/services/gateway`.
 
 ## Decision
 

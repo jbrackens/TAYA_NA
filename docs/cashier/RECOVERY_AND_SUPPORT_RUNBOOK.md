@@ -1,4 +1,4 @@
-# Tiangge Cashier Recovery and Support Runbook
+# TapTrade Cashier Recovery and Support Runbook
 
 **Status:** Draft gate for Phase 6.
 **Date:** 2026-05-25.

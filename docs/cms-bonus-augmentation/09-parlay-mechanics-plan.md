@@ -1,7 +1,7 @@
 # 09 — Parlay Mechanics Plan
 
 > Historical sportsbook-era note: this plan describes the prior sportsbook
-> parlay/betslip domain. Tiangge prediction-market beta work should use
+> parlay/betslip domain. TapTrade prediction-market beta work should use
 > prediction orders, positions, and settlement APIs instead.
 
 **Date:** 2026-04-16
@@ -292,6 +292,6 @@ Arbitrage with correlated void:
 8. `modules/platform/canonical/v1/settlement.go:79-81` — Void/Push/Win outcome enum
 9. `modules/platform/canonical/v1/types.go:242-266` — Freebet struct
 10. `modules/platform/canonical/v1/types.go:277-295` — OddsBoost struct
-11. `talon-backoffice/packages/app/app/components/BetslipProvider.tsx` — parlay mode toggle
-12. `talon-backoffice/packages/app/app/lib/api/betting-client.ts` — placeParlay() API call
-13. `services/codex-prep/phoenix-betting-engine/internal/service/service.go:418-460` — PlaceParlay() reference
+11. `frontend/packages/app/app/components/BetslipProvider.tsx` — parlay mode toggle
+12. `frontend/packages/app/app/lib/api/betting-client.ts` — placeParlay() API call
+13. `services/codex-prep/taptrade-betting-engine/internal/service/service.go:418-460` — PlaceParlay() reference

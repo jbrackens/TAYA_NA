@@ -7,14 +7,14 @@ name: Frontend Build
 on:
   pull_request:
     paths:
-      - 'apps/Phoenix-Predict-Combined/talon-backoffice/**'
+      - 'apps/taptrade-platform/frontend/**'
 
 jobs:
   clean-clone-build:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: apps/Phoenix-Predict-Combined/talon-backoffice
+        working-directory: apps/taptrade-platform/frontend
 
     steps:
       - uses: actions/checkout@v4
@@ -23,25 +23,25 @@ jobs:
         with:
           node-version: '22'
           cache: 'yarn'
-          cache-dependency-path: apps/Phoenix-Predict-Combined/talon-backoffice/yarn.lock
+          cache-dependency-path: apps/taptrade-platform/frontend/yarn.lock
 
       - name: Install dependencies (workspace root)
         run: yarn install --frozen-lockfile
 
-      # Build workspace deps first: bare `@phoenix-ui/api-client` imports
+      # Build workspace deps first: bare `@taptrade-ui/api-client` imports
       # resolve to the package's dist/, which is gitignored — a fresh clone
       # must build it before the app can typecheck or compile. Same build
       # order as docker/frontend.Dockerfile.
       - name: Build workspace dependencies
-        run: yarn lerna run build --scope @phoenix-ui/api-client --include-dependencies
+        run: yarn lerna run build --scope @taptrade-ui/api-client --include-dependencies
 
       - name: Typecheck player app
-        run: yarn workspace @phoenix-ui/app typecheck
+        run: yarn workspace @taptrade-ui/app typecheck
 
       - name: Unit tests (player app)
-        working-directory: apps/Phoenix-Predict-Combined/talon-backoffice/packages/app
+        working-directory: apps/taptrade-platform/frontend/packages/app
         run: npm test
 
       - name: Production build (player app)
-        working-directory: apps/Phoenix-Predict-Combined/talon-backoffice/packages/app
+        working-directory: apps/taptrade-platform/frontend/packages/app
         run: yarn build

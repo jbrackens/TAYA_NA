@@ -5,17 +5,17 @@
 
 ## Context
 
-Tiangge originally explored a custodial BSC cashier because the legacy Go stack
+TapTrade originally explored a custodial BSC cashier because the legacy Go stack
 already had payments, wallet ledger, and deposit-watcher primitives. The product
 direction has changed back to a Polymarket-like posture: users should control their
-funds through an EVM wallet, while Tiangge abstracts funding, gas, and recovery.
+funds through an EVM wallet, while TapTrade abstracts funding, gas, and recovery.
 
 ## Decision
 
 The V1 cashier source of truth is non-custodial:
 
 - User funds live in user-controlled smart wallets or market/collateral contracts.
-- Tiangge services may index, route, sponsor, and recover, but they must not own
+- TapTrade services may index, route, sponsor, and recover, but they must not own
   the primary user-fund private keys.
 - The existing Go `internal/payments` crypto rail is prototype/reference code only.
 - Production must fail closed if legacy custodial crypto rail env vars are set.

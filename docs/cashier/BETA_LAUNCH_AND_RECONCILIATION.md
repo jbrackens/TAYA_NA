@@ -1,4 +1,4 @@
-# Tiangge Cashier Beta Launch and Reconciliation
+# TapTrade Cashier Beta Launch and Reconciliation
 
 **Status:** Draft gate for Phase 9-10.
 **Date:** 2026-05-25.

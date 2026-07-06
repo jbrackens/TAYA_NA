@@ -6,7 +6,7 @@
 
 ## Current Backoffice State
 
-The backoffice at `talon-backoffice/packages/office/` has these admin sections:
+The backoffice at `frontend/packages/office/` has these admin sections:
 - Dashboard, Reports, Users, Leaderboards, Loyalty (settings + accounts), Risk Management, Audit Logs, Trading (SettlementPanel)
 
 **Missing:** Content management, campaign management, bonus administration.
@@ -118,7 +118,7 @@ These are configured as `campaign_rules` with `rule_type = 'wagering'` and parla
 
 ## API Client Additions
 
-The backoffice API client at `talon-backoffice/packages/api-client/src/` needs new methods:
+The backoffice API client at `frontend/packages/api-client/src/` needs new methods:
 
 ```typescript
 // Content
@@ -167,12 +167,12 @@ Pattern: follow existing audit logging in `services/gateway/migrations/009_audit
 
 ## File Path References
 
-1. `talon-backoffice/packages/office/app/(dashboard)/` — existing admin route structure
-2. `talon-backoffice/packages/office/app/(dashboard)/users/` — user management pattern
-3. `talon-backoffice/packages/office/app/(dashboard)/loyalty/` — loyalty settings pattern
-4. `talon-backoffice/packages/office/app/(dashboard)/trading/` — SettlementPanel
-5. `talon-backoffice/packages/office/app/(dashboard)/audit-logs/` — audit log viewer
-6. `talon-backoffice/packages/api-client/src/` — backoffice API client
+1. `frontend/packages/office/app/(dashboard)/` — existing admin route structure
+2. `frontend/packages/office/app/(dashboard)/users/` — user management pattern
+3. `frontend/packages/office/app/(dashboard)/loyalty/` — loyalty settings pattern
+4. `frontend/packages/office/app/(dashboard)/trading/` — SettlementPanel
+5. `frontend/packages/office/app/(dashboard)/audit-logs/` — audit log viewer
+6. `frontend/packages/api-client/src/` — backoffice API client
 7. `services/gateway/internal/http/loyalty_handlers.go` — admin handler pattern (tier CRUD, rule CRUD)
 8. `services/gateway/migrations/009_audit_logs.sql` — audit logging schema
 9. `services/gateway/internal/wallet/service.go:791-855` — CorrectionTask pattern (admin workflow)

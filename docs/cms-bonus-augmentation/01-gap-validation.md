@@ -20,7 +20,7 @@ Every capability below is classified as:
 | **Missing** | No implementation found in any codebase path |
 
 **Two code sources are cataloged:**
-- **PRIMARY:** `apps/Phoenix-Sportsbook-Combined/go-platform/` (active gateway monolith)
+- **PRIMARY:** `apps/TapTrade-Sportsbook-Combined/go-platform/` (active gateway monolith)
 - **CODEX-PREP:** `services/codex-prep/` (disconnected microservices, different architecture)
 
 When both sources have code, the PRIMARY status takes precedence for planning.
@@ -31,15 +31,15 @@ When both sources have code, the PRIMARY status takes precedence for planning.
 
 | # | Sub-capability | Status | Primary Evidence | Codex-Prep Evidence | EEG Claim Validated? |
 |---|---|---|---|---|---|
-| 1.1 | Content authoring | Missing | No content creation UI or API in gateway | `phoenix-cms/internal/handlers/handlers.go` — POST endpoints for pages/promotions/banners | EEG claims Strapi CMS — **CONTRADICTED**, no Strapi in TAYA_NA; codex-prep has basic REST CRUD |
-| 1.2 | Typed content model | Missing | No content type definitions in gateway | `phoenix-cms/internal/models/models.go` — Page, Promotion, Banner structs; `migrations/016_create_cms.sql` — DB schema with UUID PKs, slugs, JSONB rules | EEG claims 15 Strapi content types — **CONTRADICTED**, codex-prep has 3 types only |
+| 1.1 | Content authoring | Missing | No content creation UI or API in gateway | `taptrade-cms/internal/handlers/handlers.go` — POST endpoints for pages/promotions/banners | EEG claims Strapi CMS — **CONTRADICTED**, no Strapi in TAYA_NA; codex-prep has basic REST CRUD |
+| 1.2 | Typed content model | Missing | No content type definitions in gateway | `taptrade-cms/internal/models/models.go` — Page, Promotion, Banner structs; `migrations/016_create_cms.sql` — DB schema with UUID PKs, slugs, JSONB rules | EEG claims 15 Strapi content types — **CONTRADICTED**, codex-prep has 3 types only |
 | 1.3 | Page composition (blocks) | Missing | No block/component system | Pages have flat `content TEXT` field only — no dynamic zones or block assembly | EEG claims Strapi dynamic zones — **CONTRADICTED**, not present in TAYA_NA |
 | 1.4 | Media management | Missing | No media upload/storage | Banners accept `image_url` TEXT field (external URLs only) — no S3, no upload handler | EEG claims S3 media provider — **CONTRADICTED**, codex-prep uses URL refs only |
 | 1.5 | Localization | Missing | No CMS localization | No language fields in CMS schema | EEG claims Strapi i18n plugin — **CONTRADICTED**, not present |
-| 1.6 | Draft/publish lifecycle | Missing | No draft/publish in gateway | `phoenix-cms/internal/repository/repository.go` — `published` boolean + `published_at` timestamp on pages; binary state only | EEG claims `draftAndPublish: true` — **PARTIALLY VALIDATED**, binary flag exists in codex-prep |
-| 1.7 | Scheduling | Missing | No scheduling in gateway | `phoenix-cms/internal/repository/repository.go` — `promotionStatus()` computes "scheduled" from `start_date`/`end_date` window; no cron auto-publish | EEG claims scheduling via date fields — **VALIDATED** for promotions in codex-prep |
+| 1.6 | Draft/publish lifecycle | Missing | No draft/publish in gateway | `taptrade-cms/internal/repository/repository.go` — `published` boolean + `published_at` timestamp on pages; binary state only | EEG claims `draftAndPublish: true` — **PARTIALLY VALIDATED**, binary flag exists in codex-prep |
+| 1.7 | Scheduling | Missing | No scheduling in gateway | `taptrade-cms/internal/repository/repository.go` — `promotionStatus()` computes "scheduled" from `start_date`/`end_date` window; no cron auto-publish | EEG claims scheduling via date fields — **VALIDATED** for promotions in codex-prep |
 | 1.8 | Preview | Missing | No preview API | No preview mode in codex-prep either | EEG claims Strapi draft preview — **CONTRADICTED** |
-| 1.9 | Delivery API contracts | Missing | No content delivery endpoints in gateway | `phoenix-cms/cmd/server/main.go` — public `GET /api/v1/pages/{id}`, `GET /api/v1/promotions`, `GET /api/v1/banners?position=X`; Kafka event publishing | EEG claims `GET /api/cms/{path}` — **CONTRADICTED** (that's EEG's idefix, not TAYA_NA), but codex-prep has equivalent REST |
+| 1.9 | Delivery API contracts | Missing | No content delivery endpoints in gateway | `taptrade-cms/cmd/server/main.go` — public `GET /api/v1/pages/{id}`, `GET /api/v1/promotions`, `GET /api/v1/banners?position=X`; Kafka event publishing | EEG claims `GET /api/cms/{path}` — **CONTRADICTED** (that's EEG's idefix, not TAYA_NA), but codex-prep has equivalent REST |
 | 1.10 | Backoffice/editor flows | Missing | No CMS admin pages in backoffice | No editor UI in any frontend | EEG claims Strapi admin UI — **CONTRADICTED**, no Strapi deployed |
 
 **CMS Summary:** All 10 sub-capabilities are **Missing** in the primary gateway. Codex-prep has a foundation (typed models, REST API, draft/publish, scheduling) but lacks editor UI, media management, localization, preview, and page composition. The EEG analysis claims about Strapi are from the EEG legacy repo, NOT from TAYA_NA — this is the most significant contradiction.
@@ -50,7 +50,7 @@ When both sources have code, the PRIMARY status takes precedence for planning.
 
 | # | Sub-capability | Status | Primary Evidence | Codex-Prep Evidence | EEG Claim Validated? |
 |---|---|---|---|---|---|
-| 2.1 | Campaigns | Partial | Freebet/OddsBoost structs reference `CampaignID` (`canonical/v1/types.go:253-295`); loyalty has `LoyaltyAccrualRule` with activation (`loyalty/service.go:134-143`) | `phoenix-retention/internal/models/models.go:69-83` — `CreateCampaignRequest` struct | EEG claims gstech-campaignserver — **CONTRADICTED**, no full campaign service in TAYA_NA |
+| 2.1 | Campaigns | Partial | Freebet/OddsBoost structs reference `CampaignID` (`canonical/v1/types.go:253-295`); loyalty has `LoyaltyAccrualRule` with activation (`loyalty/service.go:134-143`) | `taptrade-retention/internal/models/models.go:69-83` — `CreateCampaignRequest` struct | EEG claims gstech-campaignserver — **CONTRADICTED**, no full campaign service in TAYA_NA |
 | 2.2 | Audience/eligibility rules | Partial | Freebet filters by sport/tournament (`types.go:260-261`); OddsBoost validates market/selection match (`oddsboosts/service.go:233`); Loyalty tiers gate by `MinLifetimePoints` (`types.go:368-376`) | No general eligibility engine | EEG claims campaign audience rules — **NOT VALIDATED**, only per-bonus-type checks exist |
 | 2.3 | Reward rule definitions | Partial | Freebet: amount, min odds, expiry (`types.go:252-266`); OddsBoost: original/boosted odds (`types.go:277-295`); Loyalty accrual: multiplier + qualifiers (`types.go:378-390`) | No deposit match, no cash bonus definitions | EEG claims reward definitions (bonus, playerPromotion, reward) — **PARTIALLY VALIDATED**, freebets and odds boosts exist but no deposit-match or cash bonus |
 | 2.4 | Reward ledger | Exists | `loyalty/service.go:317-335` — full `LoyaltyLedgerEntry` with entry types (accrual, referral, adjustment), persistent storage via `loyalty/persist.go:48-79`, HTTP endpoint `GET /api/v1/loyalty/ledger` | — | EEG claims reward ledger in rewardserver — **VALIDATED** equivalent exists in loyalty service |
@@ -88,9 +88,9 @@ When both sources have code, the PRIMARY status takes precedence for planning.
 
 | # | Sub-capability | Status | Primary Evidence | Codex-Prep Evidence | EEG Claim Validated? |
 |---|---|---|---|---|---|
-| 4.1 | Parlay implementation | Partial | `bets/service.go:181-212` — Bet struct with `Legs []BetLeg` supporting multi-leg; frontend `BetslipProvider.tsx` has parlay mode toggle with odds multiplication; `betting-client.ts` `placeParlay()` sends `items[]` array | `phoenix-betting-engine/internal/service/service.go:418-460` — `PlaceParlay()` with leg validation and combined odds calculation | EEG doesn't specifically address parlays — **NEW FINDING**, partial implementation exists in both |
+| 4.1 | Parlay implementation | Partial | `bets/service.go:181-212` — Bet struct with `Legs []BetLeg` supporting multi-leg; frontend `BetslipProvider.tsx` has parlay mode toggle with odds multiplication; `betting-client.ts` `placeParlay()` sends `items[]` array | `taptrade-betting-engine/internal/service/service.go:418-460` — `PlaceParlay()` with leg validation and combined odds calculation | EEG doesn't specifically address parlays — **NEW FINDING**, partial implementation exists in both |
 | 4.2 | Parlay qualification logic | Missing | No minimum leg count, no qualifying odds thresholds, no same-game restrictions | Basic `validateSingleSelection()` per leg in codex-prep but no parlay-specific rules | N/A |
-| 4.3 | Parlay settlement flow | Partial | Settlement resolvers exist (`canonical/v1/settlement.go:14-37`) with per-market grading; `applySettlementTransition()` (`bets/service.go:2266-2402`) handles dead heat factor | `phoenix-settlement/internal/service/service.go:19-26` — batch settlement by market with `WinningOutcomes` | Parlay settlement is aggregation of per-leg outcomes — no parlay-specific settlement logic |
+| 4.3 | Parlay settlement flow | Partial | Settlement resolvers exist (`canonical/v1/settlement.go:14-37`) with per-market grading; `applySettlementTransition()` (`bets/service.go:2266-2402`) handles dead heat factor | `taptrade-settlement/internal/service/service.go:19-26` — batch settlement by market with `WinningOutcomes` | Parlay settlement is aggregation of per-leg outcomes — no parlay-specific settlement logic |
 | 4.4 | Void/push/reduced-leg handling | Partial | Void: `SettlementOutcomeVoid` enum (`settlement.go:79`), stake refund on void (`bets/service.go:2313-2321`); Push: `SettlementOutcomePush` (`settlement.go:80`), stake return (`bets/service.go:2337-2361`) | — | **GAP:** No reduced-leg logic — voiding one leg of a 4-leg parlay should recalculate as 3-leg, not void entire bet |
 | 4.5 | Bonus/free bet interaction with parlays | Partial | Freebet `ApplyToBet()` works on any bet type including parlays (`freebets/service.go:146-230`); `MinOddsDecimal` enforced on combined odds (`freebets/service.go:190-195`) | `PlaceParlayRequest` includes `FreebetID` and `OddsBoostID` (`models.go:59-66`) | No parlay-specific bonus restrictions or different treatment |
 | 4.6 | Wagering contribution (singles vs parlays) | Missing | No wagering contribution logic anywhere | — | N/A — completely absent |
@@ -103,9 +103,9 @@ When both sources have code, the PRIMARY status takes precedence for planning.
 
 | # | Sub-capability | Status | Primary Evidence | Codex-Prep Evidence |
 |---|---|---|---|---|
-| 5.1 | Message bus/queue | Missing | No Kafka, NATS, or RabbitMQ in primary gateway. No event bus. | `phoenix-events/` uses Kafka outbox pattern; `phoenix-common/pkg/outbox/` shared outbox worker |
+| 5.1 | Message bus/queue | Missing | No Kafka, NATS, or RabbitMQ in primary gateway. No event bus. | `taptrade-events/` uses Kafka outbox pattern; `taptrade-common/pkg/outbox/` shared outbox worker |
 | 5.2 | Real-time event delivery | Exists | WebSocket hub at `gateway/internal/ws/` — publish/subscribe pattern for markets, fixtures, wallets, bets. Channel-based handlers. | — |
-| 5.3 | Bet/deposit/settlement propagation | Partial | Settlement events come from provider feed adapters (`gateway/internal/provider/`); wallet credits happen synchronously in bet settlement; no async event propagation | Kafka outbox for CMS events (`phoenix.cms.page-published`), settlement events |
+| 5.3 | Bet/deposit/settlement propagation | Partial | Settlement events come from provider feed adapters (`gateway/internal/provider/`); wallet credits happen synchronously in bet settlement; no async event propagation | Kafka outbox for CMS events (`taptrade.cms.page-published`), settlement events |
 | 5.4 | Event schema patterns | Exists | `canonical/v1/types.go` — full entity types (Fixture, Market, Selection, Bet, Settlement, CashoutQuote, Freebet, OddsBoost, Leaderboard, Loyalty). `StreamDelta`, `StreamSettlement`, `StreamSnapshot` change types. | Avro schemas in `gmx-streaming-data-idefix-internal-model` (EEG legacy only) |
 | 5.5 | Background jobs/schedulers | Partial | `wallet/service.go:225-244` — idempotency key eviction (5min ticker); `wallet/service.go:650-666` — stale reservation expiry. No general scheduler. | — |
 
@@ -132,45 +132,45 @@ When both sources have code, the PRIMARY status takes precedence for planning.
 All paths relative to repo root (`/Users/john/Sandbox/TAYA_NA/`):
 
 **Gateway wallet:**
-1. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/wallet/service.go`
+1. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/wallet/service.go`
 
 **Gateway bets/settlement:**
-2. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/bets/service.go`
-3. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/bets/cashout.go`
+2. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/bets/service.go`
+3. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/bets/cashout.go`
 
 **Gateway bonus services:**
-4. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/freebets/service.go`
-5. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/oddsboosts/service.go`
-6. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/loyalty/service.go`
-7. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/loyalty/persist.go`
+4. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/freebets/service.go`
+5. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/oddsboosts/service.go`
+6. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/loyalty/service.go`
+7. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/loyalty/persist.go`
 
 **Gateway HTTP handlers:**
-8. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/http/loyalty_handlers.go`
-9. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/http/freebet_handlers.go`
-10. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/http/odds_boost_handlers.go`
+8. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/http/loyalty_handlers.go`
+9. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/http/freebet_handlers.go`
+10. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/http/odds_boost_handlers.go`
 
 **Canonical types:**
-11. `apps/Phoenix-Sportsbook-Combined/go-platform/modules/platform/canonical/v1/types.go`
-12. `apps/Phoenix-Sportsbook-Combined/go-platform/modules/platform/canonical/v1/settlement.go`
+11. `apps/TapTrade-Sportsbook-Combined/go-platform/modules/platform/canonical/v1/types.go`
+12. `apps/TapTrade-Sportsbook-Combined/go-platform/modules/platform/canonical/v1/settlement.go`
 
 **Migrations:**
-13. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/migrations/006_wallets_ledger.sql`
-14. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/migrations/007_freebets_oddsboosts.sql`
+13. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/migrations/006_wallets_ledger.sql`
+14. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/migrations/007_freebets_oddsboosts.sql`
 
 **Codex-prep CMS:**
-15. `services/codex-prep/phoenix-cms/internal/models/models.go`
-16. `services/codex-prep/phoenix-cms/internal/repository/repository.go`
-17. `services/codex-prep/phoenix-cms/cmd/server/main.go`
+15. `services/codex-prep/taptrade-cms/internal/models/models.go`
+16. `services/codex-prep/taptrade-cms/internal/repository/repository.go`
+17. `services/codex-prep/taptrade-cms/cmd/server/main.go`
 18. `services/codex-prep/migrations/016_create_cms.sql`
 
 **Codex-prep betting/settlement:**
-19. `services/codex-prep/phoenix-betting-engine/internal/service/service.go`
-20. `services/codex-prep/phoenix-settlement/internal/service/service.go`
+19. `services/codex-prep/taptrade-betting-engine/internal/service/service.go`
+20. `services/codex-prep/taptrade-settlement/internal/service/service.go`
 
 **Frontend:**
-21. `apps/Phoenix-Sportsbook-Combined/talon-backoffice/packages/app/app/lib/api/wallet-client.ts`
-22. `apps/Phoenix-Sportsbook-Combined/talon-backoffice/packages/app/app/lib/api/betting-client.ts`
-23. `apps/Phoenix-Sportsbook-Combined/talon-backoffice/packages/app/app/components/BetslipProvider.tsx`
+21. `apps/TapTrade-Sportsbook-Combined/frontend/packages/app/app/lib/api/wallet-client.ts`
+22. `apps/TapTrade-Sportsbook-Combined/frontend/packages/app/app/lib/api/betting-client.ts`
+23. `apps/TapTrade-Sportsbook-Combined/frontend/packages/app/app/components/BetslipProvider.tsx`
 
 **WebSocket:**
-24. `apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/internal/ws/handler.go`
+24. `apps/TapTrade-Sportsbook-Combined/go-platform/services/gateway/internal/ws/handler.go`

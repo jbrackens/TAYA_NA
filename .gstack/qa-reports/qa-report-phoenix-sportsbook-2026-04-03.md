@@ -1,4 +1,4 @@
-# Phoenix Sportsbook — Phase 3 QA Report
+# TapTrade Sportsbook — Phase 3 QA Report
 
 **Date:** 2026-04-03
 **Scope:** Full source-code audit, 88 files, all phases (1–3)
@@ -11,7 +11,7 @@
 | Category       | Weight | Score | Notes                                     |
 |----------------|--------|-------|-------------------------------------------|
 | Console/Build  | 15%    | 40    | 25 files with phantom styled-components   |
-| Imports        | 20%    | 35    | 22 files import non-existent @phoenix-api  |
+| Imports        | 20%    | 35    | 22 files import non-existent @taptrade-api  |
 | Functional     | 20%    | 85    | Core pages (home, cashier, legal) are solid|
 | UX Wiring      | 15%    | 75    | Toast system created but unused; i18n partial |
 | Architecture   | 10%    | 70    | 4 orphaned files, 2 duplicate component pairs |
@@ -41,13 +41,13 @@ LoginForm, LiveNow, LeagueNav, MatchTimeline, OddsMovement, SportSidebar, Featur
 
 **Fix:** Each file needs a full rewrite replacing styled-components with inline styles (same pattern used for home page, cashier, legal pages).
 
-### ISSUE-002: 22 files import `@phoenix-api/client` (wrong package name)
+### ISSUE-002: 22 files import `@taptrade-api/client` (wrong package name)
 **Severity:** CRITICAL
-**Impact:** Same files as above plus hooks/useApi.ts and hooks/useLiveData.ts. The correct package is `@phoenix-ui/api-client`.
+**Impact:** Same files as above plus hooks/useApi.ts and hooks/useLiveData.ts. The correct package is `@taptrade-ui/api-client`.
 
-**Fix:** Replace `@phoenix-api/client` with `@phoenix-ui/api-client` in all 22 files. Also verify the type imports (SportEventItem, MatchTrackerIncident, etc.) exist in @phoenix-ui/api-client.
+**Fix:** Replace `@taptrade-api/client` with `@taptrade-ui/api-client` in all 22 files. Also verify the type imports (SportEventItem, MatchTrackerIncident, etc.) exist in @taptrade-ui/api-client.
 
-### ISSUE-003: 3 files import `@phoenix-ui/design-system` (not available in App Router)
+### ISSUE-003: 3 files import `@taptrade-ui/design-system` (not available in App Router)
 **Severity:** CRITICAL
 **Impact:** auth/login/page.tsx, sports/[sport]/[league]/page.tsx, profile/page.tsx crash.
 
@@ -107,7 +107,7 @@ Plus 2 orphaned hooks: hooks/useApi.ts, hooks/useLiveData.ts
 
 ### ISSUE-010: i18n localStorage access at module scope
 **Severity:** LOW
-**Impact:** In config.ts line 53, `localStorage.getItem('phoenix_language')` runs at module load. The `typeof window !== 'undefined'` guard is present, but this pattern can cause hydration mismatches in Next.js.
+**Impact:** In config.ts line 53, `localStorage.getItem('taptrade_language')` runs at module load. The `typeof window !== 'undefined'` guard is present, but this pattern can cause hydration mismatches in Next.js.
 
 **Fix:** Move language detection into the I18nProvider effect or accept the minor hydration risk (current guard is sufficient for most cases).
 

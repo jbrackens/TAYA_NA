@@ -1,4 +1,4 @@
-# Tiangge Cashier Testnet E2E Acceptance
+# TapTrade Cashier Testnet E2E Acceptance
 
 **Status:** Stage 1 Alpha plus V3 testnet gates.
 **Date:** 2026-05-28.
@@ -20,7 +20,7 @@ Happy path:
    connection.
 5. User creates an exact-amount deposit intent with an `Idempotency-Key`.
 6. User sends the exact ERC-20 USDC transfer from the connected wallet to the
-   Tiangge treasury.
+   TapTrade treasury.
 7. User submits the tx hash.
 8. Gateway verifies receipt status, token contract, sender, recipient, amount,
    log index, and confirmations.

@@ -1,4 +1,4 @@
-# Tiangge Cashier API
+# TapTrade Cashier API
 
 API boundary for non-custodial wallet and cashier state.
 

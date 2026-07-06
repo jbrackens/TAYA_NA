@@ -346,5 +346,5 @@ List player bonuses with filters.
 7. `services/gateway/internal/freebets/service.go` — freebet lifecycle
 8. `modules/platform/transport/httpx/errors.go` — error response pattern
 9. `modules/platform/transport/httpx/handler.go` — JSON response helpers
-10. `talon-backoffice/packages/app/app/lib/api/client.ts` — base API client (snake→camel normalization)
-11. `talon-backoffice/packages/app/app/lib/api/betting-client.ts` — placeParlay() existing contract
+10. `frontend/packages/app/app/lib/api/client.ts` — base API client (snake→camel normalization)
+11. `frontend/packages/app/app/lib/api/betting-client.ts` — placeParlay() existing contract

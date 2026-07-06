@@ -1,4 +1,4 @@
-# Tiangge Cashier Phase 0-10 Execution Board
+# TapTrade Cashier Phase 0-10 Execution Board
 
 **Status:** Active.
 **Date:** 2026-05-25.
@@ -97,16 +97,16 @@ Artifact: `services/cashier-api/openapi.yaml`.
 Artifact: `services/cashier-api/observability-events.json`.
 Artifact: `scripts/check-cashier-contracts.mjs`.
 Artifact: `packages/cashier-sdk/test/cashier-sdk.test.mjs`.
-Artifact: `apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/cashier/state.go`.
-Artifact: `apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/cashier/policy.go`.
-Artifact: `apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/cashier/flags.go`.
-Artifact: `apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/cashier/bridge.go`.
-Artifact: `apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/cashier/idempotency.go`.
-Artifact: `apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/cashier/decimals.go`.
-Artifact: `apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/cashier/callback.go`.
-Artifact: `apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/cashier/approval.go`.
-Artifact: `apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/cashier/relayer_policy.go`.
-Artifact: `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app/lib/api/noncustodial-cashier-client.ts`.
+Artifact: `apps/taptrade-platform/go-platform/services/gateway/internal/cashier/state.go`.
+Artifact: `apps/taptrade-platform/go-platform/services/gateway/internal/cashier/policy.go`.
+Artifact: `apps/taptrade-platform/go-platform/services/gateway/internal/cashier/flags.go`.
+Artifact: `apps/taptrade-platform/go-platform/services/gateway/internal/cashier/bridge.go`.
+Artifact: `apps/taptrade-platform/go-platform/services/gateway/internal/cashier/idempotency.go`.
+Artifact: `apps/taptrade-platform/go-platform/services/gateway/internal/cashier/decimals.go`.
+Artifact: `apps/taptrade-platform/go-platform/services/gateway/internal/cashier/callback.go`.
+Artifact: `apps/taptrade-platform/go-platform/services/gateway/internal/cashier/approval.go`.
+Artifact: `apps/taptrade-platform/go-platform/services/gateway/internal/cashier/relayer_policy.go`.
+Artifact: `apps/taptrade-platform/frontend/packages/app/app/lib/api/noncustodial-cashier-client.ts`.
 
 ## Phase 3: Testnet Deposit Path
 

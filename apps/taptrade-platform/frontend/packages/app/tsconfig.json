@@ -1,0 +1,54 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "jsx": "react-jsx",
+    "lib": ["dom", "es2020"],
+    "moduleResolution": "bundler",
+    "allowJs": true,
+    "noEmit": true,
+    "strict": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "baseUrl": "./",
+    "paths": {
+      "@taptrade-ui/design-system": ["../design-system/src"],
+      "@taptrade-ui/design-system/*": ["../design-system/src/*"],
+      "@taptrade-api/client": ["../api-client/src"],
+      "@taptrade-api/client/*": ["../api-client/src/*"],
+      "@taptrade-ui/utils": ["../utils/src"],
+      "@taptrade-ui/utils/*": ["../utils/src/*"]
+    },
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "exclude": ["node_modules", "**/__tests__/**"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "pages/_app.js",
+    "next.config.js",
+    "public/static/locales/en/common.js",
+    "public/static/locales/en/header.js",
+    "public/static/locales/en/register.js",
+    "public/static/locales/en/login.js",
+    "public/static/locales/en/language-selector.js",
+    "scripts/generate.js",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ]
+}

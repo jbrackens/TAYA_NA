@@ -33,7 +33,7 @@ jobs:
       GATEWAY_DB_DSN: postgres://predict:localdev@localhost:5432/predict?sslmode=disable
     defaults:
       run:
-        working-directory: apps/Phoenix-Predict-Combined/go-platform/services/gateway
+        working-directory: apps/taptrade-platform/go-platform/services/gateway
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5

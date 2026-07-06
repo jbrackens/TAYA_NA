@@ -1,4 +1,4 @@
-# Tiangge Cashier Observability and Canaries
+# TapTrade Cashier Observability and Canaries
 
 **Status:** Draft gate for Phase 9.
 **Date:** 2026-05-25.

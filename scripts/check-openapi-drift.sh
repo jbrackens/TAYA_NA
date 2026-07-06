@@ -18,7 +18,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-GW="$ROOT/apps/Phoenix-Predict-Combined/go-platform/services/gateway"
+GW="$ROOT/apps/taptrade-platform/go-platform/services/gateway"
 SPEC="$GW/api/openapi.yaml"
 HTTP_DIR="$GW/internal/http"
 INTERNAL_DIR="$GW/internal"

@@ -56,8 +56,6 @@ vendor/
 .data/
 
 # Compiled Go binaries (named without extension)
-apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway/gateway
-apps/Phoenix-Sportsbook-Combined/go-platform/services/auth/auth
 
 # Stale runtime logs
 archive/stale-runtime/
@@ -70,9 +68,9 @@ next-swc.*.node
 outputs/
 
 # Playwright smoke-test artifacts (Phase 0.5 of Liquid Glass redesign)
-apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/tests/.auth/
-apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/test-results/
-apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/playwright-report/
+apps/taptrade-platform/frontend/packages/app/tests/.auth/
+apps/taptrade-platform/frontend/packages/app/test-results/
+apps/taptrade-platform/frontend/packages/app/playwright-report/
 
 # Workspace-local downloaded toolchains for launch evidence reruns
-apps/Phoenix-Predict-Combined/.tools/
+apps/taptrade-platform/.tools/

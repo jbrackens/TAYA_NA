@@ -1,10 +1,10 @@
-# Tiangge Player App i18n Implementation Notes
+# TapTrade Player App i18n Implementation Notes
 
 ## Scope
 
 This work applies to the Player app in:
 
-`apps/Phoenix-Predict-Combined/phoenix-frontend-brand-viegg`
+`apps/taptrade-platform/phoenix-frontend-brand-viegg`
 
 The goal is to localize static product UI copy while leaving dynamic market, user, CMS, chat, notification, and creator-submitted content in its source language.
 
@@ -20,7 +20,7 @@ The goal is to localize static product UI copy while leaving dynamic market, use
 - Header/top navigation component: `packages/app-core/components/layout/header/index.tsx`.
 - Existing desktop language selector: `packages/app-core/components/layout/header/language-selector/index.tsx`.
 - Existing mobile navigation: sportsbook mobile drawer uses `packages/app-core/components/layout/sidebar/SidebarMenu/index.tsx`; prediction mobile navigation uses `packages/app-core/components/redesign/prediction-layout/mobile-chrome.tsx`.
-- User profile/preferences: account profile data is fetched through `useProfile`; client preferences such as timezone, odds format, and favorite sports currently use local/session storage helpers from `@phoenix-ui/utils`.
+- User profile/preferences: account profile data is fetched through `useProfile`; client preferences such as timezone, odds format, and favorite sports currently use local/session storage helpers from `@taptrade-ui/utils`.
 - Existing persistence conventions: local storage and session storage are already used for client preferences. Locale should use `hula_locale` and be structured so profile sync can be added later.
 - Existing config conventions: runtime config is exposed through `publicRuntimeConfig` in `packages/app/next.config.js`; feature toggles are string env values such as `PREDICTION_MARKETS_ENABLED`.
 - Feature flag pattern: lightweight environment/runtime config, not a dedicated flag service.
@@ -106,13 +106,13 @@ Dynamic translation should be designed as a separate cached, asynchronous servic
 6. Run locale generation after dependencies are bootstrapped:
 
 ```sh
-yarn --cwd apps/Phoenix-Predict-Combined/phoenix-frontend-brand-viegg/packages/app bootstrap:locales
+yarn --cwd apps/taptrade-platform/phoenix-frontend-brand-viegg/packages/app bootstrap:locales
 ```
 
 7. Run the relevant tests after dependencies are bootstrapped:
 
 ```sh
-yarn --cwd apps/Phoenix-Predict-Combined/phoenix-frontend-brand-viegg/packages/app-core test lib/i18n/__tests__/locales.test.ts --runInBand
+yarn --cwd apps/taptrade-platform/phoenix-frontend-brand-viegg/packages/app-core test lib/i18n/__tests__/locales.test.ts --runInBand
 ```
 
 ## Implementation Shape

@@ -1,4 +1,4 @@
-# Tiangge Cashier — design & decision record
+# TapTrade Cashier — design & decision record
 
 **Status:** Architecture timeline updated 2026-05-27.
 **Owner:** John Brackens.
@@ -6,7 +6,7 @@
 
 > **Update 2026-05-27:** Non-custodial cashier/settlement is now deferred to
 > **V3**. The closed Alpha and Beta execution path is custodial USDC funded from
-> MetaMask into a Tiangge-controlled treasury and credited to the internal wallet
+> MetaMask into a TapTrade-controlled treasury and credited to the internal wallet
 > ledger. The non-custodial material below remains useful as the V3 strategy
 > record, but it is no longer the V1/V2 implementation target. See
 > [Closed Alpha custodial USDC cashier plan](./CUSTODIAL_USDC_ALPHA_PLAN.md).
@@ -15,9 +15,9 @@
 
 ## TL;DR
 
-Tiangge Cashier V1/V2 should launch with the simplest credible crypto-native rail:
-users fund from MetaMask, send USDC to a Tiangge-controlled treasury, and receive an
-internal Tiangge wallet balance after server-side chain verification. This lets the
+TapTrade Cashier V1/V2 should launch with the simplest credible crypto-native rail:
+users fund from MetaMask, send USDC to a TapTrade-controlled treasury, and receive an
+internal TapTrade wallet balance after server-side chain verification. This lets the
 closed Alpha and Beta test real prediction-market workflows without waiting for a
 PSP, bridge provider, smart-wallet stack, or Polymarket-style settlement layer.
 
@@ -40,7 +40,7 @@ V1/V2 implementation plan.
 ### Core shape
 
 1. User signs in with email or connects an external wallet.
-2. Tiangge creates or resolves the user's non-custodial EVM smart wallet.
+2. TapTrade creates or resolves the user's non-custodial EVM smart wallet.
 3. User deposits from one of several source rails.
 4. Bridge/onramp converts source funds into on-chain USD collateral controlled by
    the user's smart wallet.
@@ -97,7 +97,7 @@ These are V3 non-custodial requirements. The V1/V2 custodial requirements live i
 [Closed Alpha custodial USDC cashier plan](./CUSTODIAL_USDC_ALPHA_PLAN.md).
 
 1. **Non-custodial source of truth.** User funds must live in user-controlled smart
-   wallets or protocol contracts, not Tiangge treasury addresses.
+   wallets or protocol contracts, not TapTrade treasury addresses.
 2. **Tron as intake, EVM as settlement.** TRC-20 USDT deposits bridge into the user's
    EVM smart wallet or collateral onramp. Tron is not the market execution layer.
 3. **Passive deposit UX or no-go.** The Tron flow must be "show address, user sends
@@ -117,7 +117,7 @@ These are V3 non-custodial requirements. The V1/V2 custodial requirements live i
    possible. Define a freeze/recovery process for sanctioned inbound funds before
    mainnet.
 9. **Recovery tool.** Unsupported-token and wrong-chain deposits need an explicit
-   recovery path. Polymarket has one; Tiangge needs one before public launch.
+   recovery path. Polymarket has one; TapTrade needs one before public launch.
 
 ---
 
@@ -141,7 +141,7 @@ Useful pieces to keep:
 
 Pieces not suitable for Stage 1 closed Alpha:
 
-- Per-user custodial deposit addresses controlled by Tiangge.
+- Per-user custodial deposit addresses controlled by TapTrade.
 - KMS sweeper/withdrawal signer design.
 - Legacy fiat/card cashier UI mixed with crypto deposit UX.
 
@@ -153,7 +153,7 @@ The immediate build target is the custodial USDC Alpha/Beta plan:
 
 - Build the Alpha cashier in the Go gateway.
 - Use MetaMask wallet ownership proof.
-- Verify exact USDC ERC-20 transfers to the Tiangge treasury.
+- Verify exact USDC ERC-20 transfers to the TapTrade treasury.
 - Credit the existing wallet ledger idempotently.
 - Keep withdrawals manual-review only in Stage 1.
 - Add reconciliation and backoffice review before enabling real users.
@@ -176,7 +176,7 @@ and keep `ALPHA_CASHIER_WITHDRAWAL_REVIEW_REQUIRED=true`.
 
 Before turning on the rail, operators still need to choose the single live chain,
 verify the USDC token contract from chain-native sources, create and label the
-Tiangge treasury wallet, provision RPC secrets, run the `030_alpha_cashier.sql`
+TapTrade treasury wallet, provision RPC secrets, run the `030_alpha_cashier.sql`
 migration, run `GET /api/v1/admin/cashier/alpha/preflight`, and complete
 deposit/replay/reconciliation smoke tests with a fake or test RPC.
 
@@ -216,7 +216,7 @@ services/cashier-api/       # wallet resolution, deposit status, bridge callback
 services/relayer/           # gas sponsorship and signed tx submission
 services/bridge-watcher/    # Tron/EVM bridge tracking
 packages/cashier-sdk/       # typed SDK consumed by markets app
-apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app/cashier/
+apps/taptrade-platform/frontend/packages/app/app/cashier/
 ```
 
 The existing Go gateway can consume the SDK during V3 migration, but the V3
@@ -260,8 +260,8 @@ payments package.
 - [Cashier SDK tests](../../packages/cashier-sdk/test/cashier-sdk.test.mjs)
 - [Cashier guard checks](../../scripts/check-cashier-all.sh)
 - [Provider scenario manifest](../../services/bridge-watcher/fixtures/provider-scenarios.manifest.json)
-- [Gateway cashier domain package](../../apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/cashier/README.md)
-- [Alpha cashier gateway package](../../apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/alphacashier)
+- [Gateway cashier domain package](../../apps/taptrade-platform/go-platform/services/gateway/internal/cashier/README.md)
+- [Alpha cashier gateway package](../../apps/taptrade-platform/go-platform/services/gateway/internal/alphacashier)
 
 Primary local check:
 
@@ -289,8 +289,8 @@ make cashier-check
 - More up-front engineering than custodial BSC.
 - Lower custody and licensing burden than holding user funds.
 - Closer to Polymarket's trust model.
-- Better fit for users who care about getting funds back out without trusting Tiangge.
+- Better fit for users who care about getting funds back out without trusting TapTrade.
 - Requires contract audits and relayer/paymaster hardening before mainnet.
 
-This remains the right V3 shape if Tiangge wants to converge toward Polymarket's
+This remains the right V3 shape if TapTrade wants to converge toward Polymarket's
 trust model after proving the product with a custodial Alpha/Beta cashier.

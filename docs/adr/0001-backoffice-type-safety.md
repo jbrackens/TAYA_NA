@@ -8,7 +8,7 @@
 
 ## Context
 
-The office build only "passes" because `talon-backoffice/packages/office/next.config` (~line 109–112) sets `typescript: { ignoreBuildErrors: true }`. A full `tsc --noEmit` reports **247 errors** — implicit `any`, null-narrowing (`searchParams' is possibly 'null'`), unused imports, and AntD overload mismatches — concentrated in money-adjacent admin pages (`audit-logs`, `auth/login`, and by extension settlement/wallet/users views).
+The office build only "passes" because `frontend/packages/office/next.config` (~line 109–112) sets `typescript: { ignoreBuildErrors: true }`. A full `tsc --noEmit` reports **247 errors** — implicit `any`, null-narrowing (`searchParams' is possibly 'null'`), unused imports, and AntD overload mismatches — concentrated in money-adjacent admin pages (`audit-logs`, `auth/login`, and by extension settlement/wallet/users views).
 
 The player app (`packages/app`) uses the same toolchain with **0 errors and no suppression**, so the debt is office-specific and the bar is reachable. CI (`.github/workflows/verify-frontends.yml`) does **not** currently gate office types. This also violates the project's own rule (`CLAUDE.md`: "`ignoreBuildErrors: true` must be removed").
 

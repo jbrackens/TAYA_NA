@@ -14,12 +14,12 @@ node "$ROOT/scripts/check-cashier-provider-scenarios.mjs"
 node "$ROOT/scripts/check-cashier-launch-readiness.mjs"
 "$ROOT/scripts/check-cashier-frontend-types.sh"
 
-(cd "$ROOT/apps/Phoenix-Predict-Combined/go-platform/services/gateway" && go test ./internal/cashier ./cmd/gateway ./internal/payments)
+(cd "$ROOT/apps/taptrade-platform/go-platform/services/gateway" && go test ./internal/cashier ./cmd/gateway ./internal/payments)
 
-PATH="$ROOT/apps/Phoenix-Predict-Combined/talon-backoffice/node_modules/.bin:$PATH" \
+PATH="$ROOT/apps/taptrade-platform/frontend/node_modules/.bin:$PATH" \
   npm --prefix "$ROOT/packages/cashier-sdk" test
 
-PATH="$ROOT/apps/Phoenix-Predict-Combined/talon-backoffice/node_modules/.bin:$PATH" \
+PATH="$ROOT/apps/taptrade-platform/frontend/node_modules/.bin:$PATH" \
   npm --prefix "$ROOT/packages/cashier-sdk" run build >/dev/null
 node "$ROOT/scripts/check-cashier-service-stubs.mjs"
 node "$ROOT/scripts/replay-cashier-mock-e2e.mjs" >/dev/null

@@ -1,4 +1,4 @@
-# Tiangge Bridge Watcher
+# TapTrade Bridge Watcher
 
 Reconciliation worker for Tron-source deposits and EVM destination settlement.
 
