@@ -211,3 +211,27 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
   after the last two alert names and one script variable; spec's archive-artifact
   pointer allowlisted (points at a real file in revival/). Rendered re-check on the
   renamed tree: /predict serves 200, title TapTrade, zero legacy strings.
+
+## FINAL VERIFICATION — GOAL MET (2026-07-06 23:4x)
+1. GREP-ZERO: case-insensitive tiangge|phoenix|talon sweep returns ZERO lines outside
+   the committed ALLOWLIST (archives, dated records, operational pins, compat shims,
+   guard patterns, migration shim) — VERIFIED this iteration, twice.
+2. NAMING: TapTrade scheme applied per CURRENT_STATE table across all case variants.
+3. FIVE GATES (evidence):
+   - Unit: lerna suite green on every one of 25 branch commits + go module suites.
+   - Integration: gateway/auth internal suites green post-module-rename.
+   - E2E: make qa-e2e-critical → "Result: **pass**" (critical-path fixture incl.
+     point-native reconciliation), run against the renamed tree with docker stack.
+   - Performance: make qa-load-baseline → 400/400 HTTP 200, P95 ≤ 4.3ms both services.
+   - Security: secrets scan clean; old npm scope + MockPhoenix double-banned in gates.
+   (Gate-written revival/ artifacts reverted from this branch per archive-immutability;
+   verdicts recorded here.)
+4. RENDERED: player app title/wordmark TapTrade, zero legacy strings on / and /predict
+   (re-verified post directory rename); backoffice sign-in TapTrade, zero legacy.
+5. IMPORTS/ROUTES: tsc green (app+office), go build green (3 modules), gate.sh full
+   build green, deploy workflow YAML valid.
+6. Ledger docs current (this file, CURRENT_STATE, RENAME_MAP, ALLOWLIST).
+OUT-OF-SCOPE FINDING for owner: the gateway boot banner still says "Taya NA Predict"
+— a FOURTH legacy brand not in this goal's token set; recommend a follow-up decision.
+MERGE NOTES: first post-merge deploy must be watched (CI path filter + image names
+changed); wip/scrubbed-markets-backend must rebase over this branch.

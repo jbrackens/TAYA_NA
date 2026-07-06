@@ -1,6 +1,6 @@
 # TapTrade Rebrand — CURRENT_STATE
 
-Loop iteration: 6 (EXECUTION MODE: batches E,F,G,I done + spillover repairs; rendered player-app check green; WAITING on task_633e7ad3 to unfreeze go-platform for H, then J, then final sweep) · Branch: chore/rebrand-taptrade
+Loop iteration: 8 — GOAL MET; loop stopped. Branch ready for owner merge (25 commits). · Branch: chore/rebrand-taptrade
 Cron: 0dadff9f (*/15) · Exit condition: see GOAL in WORKLOG header.
 
 ## Canonical naming scheme (FROZEN — do not drift)
