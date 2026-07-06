@@ -7,7 +7,7 @@
  * into src/prediction-client directly.
  */
 
-export { PhoenixApiClient, TianggeApiClient } from "./client";
+export { PhoenixApiClient, TapTradeApiClient } from "./client";
 export {
   AuthManager,
   createAuthManager,

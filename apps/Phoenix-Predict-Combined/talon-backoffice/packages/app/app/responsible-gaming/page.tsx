@@ -42,7 +42,7 @@ const FALLBACK_CONTENT = `
 <p><strong>GamStop (UK Self-Exclusion)</strong> &mdash; Free self-exclusion service for UK-licensed online gambling. Website: <a href="https://www.gamstop.co.uk">www.gamstop.co.uk</a></p>
 
 <h2>Patron Protection</h2>
-<p>Tiangge is committed to protecting our players. We implement the following measures:</p>
+<p>TapTrade is committed to protecting our players. We implement the following measures:</p>
 <ul>
 <li>Age verification to prevent underage participation (18+ / 21+ depending on jurisdiction)</li>
 <li>Point-use, prediction, and session limits that you can set and adjust at any time</li>
@@ -55,7 +55,7 @@ const FALLBACK_CONTENT = `
 <h2>Dispute Resolution</h2>
 <p>If you have a complaint or dispute regarding your account, transactions, or trade settlement outcomes, please follow these steps:</p>
 <ol>
-<li><strong>Contact Support:</strong> Reach out to our customer support team via live chat or email at <a href="mailto:support@tiangge.com">support@tiangge.com</a>. We aim to resolve most issues within 48 hours.</li>
+<li><strong>Contact Support:</strong> Reach out to our customer support team via live chat or email at <a href="mailto:support@taptrade.com">support@taptrade.com</a>. We aim to resolve most issues within 48 hours.</li>
 <li><strong>Formal Complaint:</strong> If you are not satisfied with the initial response, submit a formal written complaint. We will acknowledge it within 24 hours and provide a final response within 8 weeks.</li>
 <li><strong>Independent Mediation:</strong> If the complaint remains unresolved, you may refer the matter to an independent dispute resolution body as specified by your local gaming authority.</li>
 <li><strong>Regulatory Authority:</strong> You may also contact the relevant gaming regulatory authority in your jurisdiction to file a formal complaint.</li>

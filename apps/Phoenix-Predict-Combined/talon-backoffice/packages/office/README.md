@@ -23,7 +23,7 @@ WS_GLOBAL_ENDPOINT=ws://localhost:3010
 
 ## Current Admin Surfaces
 
-The office app includes point-native Tiangge loyalty and leaderboard
+The office app includes point-native TapTrade loyalty and leaderboard
 administration:
 
 - `/loyalty` for rewards account operations with rank filtering

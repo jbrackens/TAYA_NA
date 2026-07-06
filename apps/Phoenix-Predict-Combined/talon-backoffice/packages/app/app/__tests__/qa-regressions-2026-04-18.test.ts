@@ -50,7 +50,7 @@ function listSourceFiles(rel: string): string[] {
   return out;
 }
 
-// ── Tiangge safety: user-facing cashier surfaces stay absent ──────
+// ── TapTrade safety: user-facing cashier surfaces stay absent ──────
 
 describe("points-only safety boundary", () => {
   it("does not ship the user-facing cashier routes", () => {
@@ -1202,7 +1202,7 @@ describe("Static informational pages", () => {
     );
     assert.ok(
       aboutSource.includes('slug="about-us"') &&
-        aboutSource.includes("About Tiangge"),
+        aboutSource.includes("About TapTrade"),
       "/about should render the About Us fallback content",
     );
   });

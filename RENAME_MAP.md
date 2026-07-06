@@ -13,3 +13,9 @@ See CURRENT_STATE.md table. Entries below are CONCRETE artifacts as they are pla
   predict-frontend (no legacy token — keep)
 - seed users *@phoenix.local → *@taptrade.local (auth service seeds + docs + tests)
 - dirs (LAST): Phoenix-Predict-Combined → taptrade-platform; talon-backoffice → frontend
+
+## Executed
+- Batch A (iteration 2): tiangge→taptrade all case variants, CONTENT ONLY, scope =
+  talon-backoffice/packages/{app,office,api-client} (76 files). Includes
+  TianggeApiClient→TapTradeApiClient identifier + test assertions; brand.ts defaults;
+  support/privacy/legal emails @tiangge.com→@taptrade.com; 7-locale display strings.

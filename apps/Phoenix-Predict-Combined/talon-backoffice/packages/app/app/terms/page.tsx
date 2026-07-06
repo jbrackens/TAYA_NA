@@ -7,7 +7,7 @@ const FALLBACK_CONTENT = `
 <p style="opacity:0.6;font-size:12px;margin-bottom:28px;">Last updated: May 2026 · Operated by DORA Research, Inc.</p>
 
 <h2>1. Agreement to These Terms</h2>
-<p>Tiangge (the "Platform") is operated by DORA Research, Inc. ("DORA Research", "we", "us", or "our"). These Terms of Use ("Terms") form a binding agreement between you and DORA Research, Inc. governing your access to and use of the Platform. By creating an account, accessing, or using the Platform, you accept these Terms in full. If you do not agree, do not use the Platform.</p>
+<p>TapTrade (the "Platform") is operated by DORA Research, Inc. ("DORA Research", "we", "us", or "our"). These Terms of Use ("Terms") form a binding agreement between you and DORA Research, Inc. governing your access to and use of the Platform. By creating an account, accessing, or using the Platform, you accept these Terms in full. If you do not agree, do not use the Platform.</p>
 
 <h2>2. Eligibility and Jurisdiction</h2>
 <p>You must be at least the minimum legal age to participate in event-contract markets in your jurisdiction and must have the legal capacity to enter into this agreement. The Platform is not offered where its use would be unlawful. You are solely responsible for determining whether your use of the Platform is permitted under the laws applicable to you, and for compliance with those laws.</p>
@@ -17,7 +17,7 @@ const FALLBACK_CONTENT = `
 
 <h2>4. Points, Accounts, and Security</h2>
 <p>You may hold only one account. You agree to provide accurate, current information and to keep it updated. You are responsible for safeguarding your credentials and for all activity under your account. Notify us promptly of any unauthorized use.</p>
-<p>Tiangge points are non-redeemable gameplay points. They are not money, stored value, cryptocurrency, a prize, or a claim on anything redeemable. Tiangge does not support adding money, removing money, cashing out, or exchanging points for money, goods, services, or prizes.</p>
+<p>TapTrade points are non-redeemable gameplay points. They are not money, stored value, cryptocurrency, a prize, or a claim on anything redeemable. TapTrade does not support adding money, removing money, cashing out, or exchanging points for money, goods, services, or prizes.</p>
 
 <h2>6. Market Rules and Settlement</h2>
 <p>Each market specifies its resolution criteria and settlement source. Quoted probabilities update with activity until a prediction is confirmed. At settlement, the winning side receives gameplay points according to the market rules and the losing side receives no settlement points for that position. We may void, correct, or re-settle a market in cases of manifest error, source failure, or ambiguity in the resolution criteria, acting reasonably and in good faith.</p>
@@ -47,7 +47,7 @@ const FALLBACK_CONTENT = `
 <p>These Terms are governed by the laws of the jurisdiction in which DORA Research, Inc. is organized, without regard to conflict-of-laws rules. Disputes will be resolved through binding individual arbitration to the extent permitted by applicable law, and you and DORA Research, Inc. waive any right to participate in a class proceeding.</p>
 
 <h2>15. Contact</h2>
-<p>Questions about these Terms may be directed to <a href="mailto:legal@tiangge.com">legal@tiangge.com</a>, DORA Research, Inc.</p>
+<p>Questions about these Terms may be directed to <a href="mailto:legal@taptrade.com">legal@taptrade.com</a>, DORA Research, Inc.</p>
 `;
 
 export default function TermsPage() {

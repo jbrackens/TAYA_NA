@@ -13,8 +13,8 @@ import AntdPatch from "./lib/antd-patch";
 import "../styles/p8-tokens.css";
 
 export const metadata: Metadata = {
-  title: "Tiangge Backoffice | Admin Panel",
-  description: "Admin and settlement dashboard for Tiangge Predict",
+  title: "TapTrade Backoffice | Admin Panel",
+  description: "Admin and settlement dashboard for TapTrade Predict",
 };
 
 export default function RootLayout({

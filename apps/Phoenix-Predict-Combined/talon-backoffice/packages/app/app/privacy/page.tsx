@@ -13,7 +13,7 @@ export default function PrivacyPage() {
       <section className="mb-6">
         <p className="text-sm leading-[1.7] text-[var(--t2)]">
           This Privacy Policy explains how DORA Research, Inc. ("DORA Research",
-          "we", "us"), operator of Tiangge, collects, uses, and protects
+          "we", "us"), operator of TapTrade, collects, uses, and protects
           personal information when you use the Platform. DORA Research, Inc. is
           the data controller for that information.
         </p>
@@ -154,10 +154,10 @@ export default function PrivacyPage() {
         <p className="text-sm leading-[1.7] text-[var(--t2)]">
           Privacy inquiries can be sent to{" "}
           <a
-            href="mailto:privacy@tiangge.com"
+            href="mailto:privacy@taptrade.com"
             className="font-semibold text-[var(--accent)] no-underline hover:brightness-110 hover:underline"
           >
-            privacy@tiangge.com
+            privacy@taptrade.com
           </a>
           , DORA Research, Inc.
         </p>

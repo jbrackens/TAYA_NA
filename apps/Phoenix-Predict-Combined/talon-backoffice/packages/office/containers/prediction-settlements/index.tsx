@@ -19,7 +19,7 @@ import {
 } from "antd";
 import PageHeader from "../../components/layout/page-header";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
-import { describeTianggeMarketLifecycle } from "@phoenix-ui/api-client/src/prediction-types";
+import { describeTapTradeMarketLifecycle } from "@phoenix-ui/api-client/src/prediction-types";
 import type {
   CollateralDriftAlert,
   PredictionMarket,
@@ -246,8 +246,8 @@ export default function PredictionSettlementsContainer() {
           <Tag color="orange">
             {
               (
-                record.tianggeLifecycle ||
-                describeTianggeMarketLifecycle(record.status)
+                record.taptradeLifecycle ||
+                describeTapTradeMarketLifecycle(record.status)
               ).label
             }
           </Tag>

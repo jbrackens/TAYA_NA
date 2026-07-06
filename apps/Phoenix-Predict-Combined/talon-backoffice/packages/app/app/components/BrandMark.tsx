@@ -1,10 +1,10 @@
 /**
- * BrandMark — Tiangge identity token.
+ * BrandMark — TapTrade identity token.
  *
  * A solid deep-forest rounded-square tile holding a split "T" (the bid/ask
  * mark) and the mint "period" signature dot. Rendered as code-native SVG so it
  * stays crisp from a 16px favicon up to large lockups, and themes off the
- * --brand-* tokens. Pairs with the "Tiangge." wordmark (Schibsted Grotesk).
+ * --brand-* tokens. Pairs with the "TapTrade." wordmark (Schibsted Grotesk).
  *
  * (Replaces the retired chart-line mark, 2026-06-06.)
  */

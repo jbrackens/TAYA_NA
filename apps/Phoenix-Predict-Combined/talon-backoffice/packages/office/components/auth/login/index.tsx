@@ -137,7 +137,7 @@ const LoginComponent: React.FC = () => {
       <LoginFormComponent>
         <Header>
           <Logo theme={theme?.logo} />
-          Tiangge Backoffice
+          TapTrade Backoffice
         </Header>
 
         <LoginForm>

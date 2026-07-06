@@ -434,18 +434,18 @@ describe("wallet-client endpoint paths", () => {
     );
   });
 
-  it("exposes a Tiangge-named shared API-client alias", () => {
+  it("exposes a TapTrade-named shared API-client alias", () => {
     assert.ok(
       sharedApiClientSource.includes(
-        "export const TianggeApiClient = PhoenixApiClient",
+        "export const TapTradeApiClient = PhoenixApiClient",
       ) &&
         sharedApiClientSource.includes(
-          "export type TianggeApiClient = PhoenixApiClient",
+          "export type TapTradeApiClient = PhoenixApiClient",
         ) &&
         sharedApiIndexSource.includes(
-          "export { PhoenixApiClient, TianggeApiClient } from",
+          "export { PhoenixApiClient, TapTradeApiClient } from",
         ),
-      "shared API client should expose a Tiangge-named alias while preserving the inherited class for compatibility",
+      "shared API client should expose a TapTrade-named alias while preserving the inherited class for compatibility",
     );
   });
 

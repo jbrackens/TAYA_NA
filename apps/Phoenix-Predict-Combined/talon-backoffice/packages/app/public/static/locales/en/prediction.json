@@ -170,7 +170,7 @@
   "LIVE_LOAD_ERROR_TITLE": "Couldn't load live moments",
   "LIVE_EYEBROW": "Live",
   "LIVE_TITLE": "In-play moments",
-  "LIVE_SUBTITLE": "Realtime sports state and market-data ticks from upstream live feeds. These updates inform this page only; Tiangge market prices remain driven by our exchange.",
+  "LIVE_SUBTITLE": "Realtime sports state and market-data ticks from upstream live feeds. These updates inform this page only; TapTrade market prices remain driven by our exchange.",
   "LIVE_REFRESH": "Refresh",
   "LIVE_PROVIDERS": "Live data providers",
   "LIVE_EMPTY_TITLE": "No in-play moments yet",

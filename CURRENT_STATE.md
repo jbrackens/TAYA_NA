@@ -1,6 +1,6 @@
 # TapTrade Rebrand — CURRENT_STATE
 
-Loop iteration: 1 (Phase 0 + Phase 1 complete) · Branch: chore/rebrand-taptrade
+Loop iteration: 2 (Batch A executed; preservation decision resolved) · Branch: chore/rebrand-taptrade
 Cron: 0dadff9f (*/15) · Exit condition: see GOAL in WORKLOG header.
 
 ## Canonical naming scheme (FROZEN — do not drift)
@@ -31,10 +31,8 @@ Cron: 0dadff9f (*/15) · Exit condition: see GOAL in WORKLOG header.
   phoenix/talon deps found yet; ALLOWLIST currently empty pending deep pass.
 
 ## Open decisions (resolve next iteration, Phase 2)
-1. DROP-VS-ARCHIVE: phoenix-backend/, phoenix-frontend/, phoenix-frontend-brand-viegg/,
-   revival/ are legacy vendored trees (not referenced by CLAUDE.md active stack; verify
-   no build/CI references) → proposal: `git rm` (history preserves them). ~4,300 files
-   of the inventory disappear if confirmed.
+1. RESOLVED (iteration 2): the four legacy trees are ALLOWLISTED preservation-contract
+   archives (see ALLOWLIST.md). Not renamed, not deleted.
 2. Dir renames (HIGH-RISK, phase last): Phoenix-Predict-Combined → taptrade-platform;
    talon-backoffice → frontend. Both touch CI workflows, deploy rsync paths, Dockerfiles.
 3. HIGH-RISK cross-boundary list (compat shims required): docker images

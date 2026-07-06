@@ -479,7 +479,7 @@ export default function DiscoverPage() {
         <h1 className={DISCOVER_TITLE_CLASS}>Market sentiment</h1>
         <p className={DISCOVER_SUB_CLASS}>
           Track the questions drawing the strongest Yes-or-No conviction,
-          movement, and closing pressure across Tiangge.
+          movement, and closing pressure across TapTrade.
         </p>
       </header>
 

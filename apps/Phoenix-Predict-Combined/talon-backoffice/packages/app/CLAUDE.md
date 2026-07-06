@@ -1,4 +1,4 @@
-# Tiangge Player App — Development Rules
+# TapTrade Player App — Development Rules
 
 ## Mandatory Quality Gates
 

@@ -316,7 +316,7 @@ function TradeTicketPreview({
         <div className="overflow-hidden rounded-[32px] bg-[#F7F3ED] bg-[linear-gradient(to_right,rgba(26,26,26,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(26,26,26,0.035)_1px,transparent_1px)] bg-[length:32px_32px] p-5 text-left">
           <div className="flex items-center justify-between">
             <span className="text-[17px] font-bold leading-none tracking-[-0.03em] text-[#0b4332] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
-              Tiangge<span className="text-[#10c8a0]">.</span>
+              TapTrade<span className="text-[#10c8a0]">.</span>
             </span>
             <span className="inline-flex h-8 items-center rounded-[var(--r-pill)] bg-[var(--accent)] px-3.5 text-[12px] font-semibold text-[#061a10]">
               {signUpLabel}

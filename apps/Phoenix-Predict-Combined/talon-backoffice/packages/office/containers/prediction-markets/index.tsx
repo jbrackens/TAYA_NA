@@ -19,7 +19,7 @@ import {
 } from "antd";
 import PageHeader from "../../components/layout/page-header";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
-import { describeTianggeMarketLifecycle } from "@phoenix-ui/api-client/src/prediction-types";
+import { describeTapTradeMarketLifecycle } from "@phoenix-ui/api-client/src/prediction-types";
 import type {
   Category,
   PredictionMarket,
@@ -564,7 +564,7 @@ export default function PredictionMarketsContainer() {
       width: 140,
       render: (status: string, record: PredictionMarket) => {
         const lifecycle =
-          record.tianggeLifecycle || describeTianggeMarketLifecycle(status);
+          record.taptradeLifecycle || describeTapTradeMarketLifecycle(status);
         return (
           <Tooltip title={lifecycle.description}>
             <Tag color={statusColors[status] || "default"}>
@@ -1077,8 +1077,8 @@ export default function PredictionMarketsContainer() {
               width: 140,
               render: (_: unknown, record: PredictionMarketLifecycleEvent) => (
                 <Tag color={statusColors[`${record.eventType}`] || "default"}>
-                  {record.tianggeLifecycle?.label ||
-                    describeTianggeMarketLifecycle(record.eventType).label}
+                  {record.taptradeLifecycle?.label ||
+                    describeTapTradeMarketLifecycle(record.eventType).label}
                 </Tag>
               ),
             },

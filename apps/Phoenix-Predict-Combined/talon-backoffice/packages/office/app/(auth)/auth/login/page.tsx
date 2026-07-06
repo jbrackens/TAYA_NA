@@ -93,7 +93,7 @@ function LoginForm() {
         <div className="mb-9 text-center">
           <div className="mb-4 inline-flex items-end justify-center gap-3 text-[var(--focus-ring,#0e7a53)]">
             <span className="text-[40px] font-black leading-none tracking-normal">
-              Tiangge
+              TapTrade
             </span>
             <svg
               aria-hidden="true"
@@ -165,7 +165,7 @@ function LoginForm() {
               <span className="text-xs font-medium text-[var(--t3,#8b8378)]">
                 Locked out?{" "}
                 <a
-                  href="mailto:admin@tiangge.com?subject=Backoffice%20password%20reset"
+                  href="mailto:admin@taptrade.com?subject=Backoffice%20password%20reset"
                   className="font-medium text-[var(--focus-ring,#0e7a53)]"
                 >
                   Email IT
@@ -192,7 +192,7 @@ function LoginForm() {
         </form>
 
         <p className="mt-7 text-center text-xs text-[var(--t3,#8b8378)]">
-          Tiangge Predict Admin
+          TapTrade Predict Admin
         </p>
       </div>
     </div>

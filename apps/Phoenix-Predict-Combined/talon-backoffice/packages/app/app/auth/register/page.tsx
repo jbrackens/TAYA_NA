@@ -36,7 +36,7 @@ const EMPTY_FORM: FormData = {
 
 const TOTAL_STEPS = 2;
 const STEP_TITLES = ["Account", "Terms"];
-const TERMS_VERSION = "tiangge-launch-v1";
+const TERMS_VERSION = "taptrade-launch-v1";
 const LAUNCH_DISCLOSURE_VERSION = "points-no-cashout-v1";
 
 const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
@@ -288,12 +288,12 @@ export default function RegisterPage() {
             <div className={TERMS_CLASS}>
               <h3 className={TERMS_TITLE_CLASS}>Terms and conditions</h3>
               <p className={TERMS_COPY_CLASS}>
-                By creating a Tiangge account you agree to our Terms of Service
+                By creating a TapTrade account you agree to our Terms of Service
                 and Privacy Policy. You must be 18 or older to make predictions
                 on this platform.
               </p>
               <p className="m-0 text-xs leading-[1.55] text-[var(--t2)]">
-                Tiangge uses non-redeemable gameplay points. Starter points are
+                TapTrade uses non-redeemable gameplay points. Starter points are
                 for predictions only; they are not money and cannot be cashed
                 out, withdrawn, transferred, or redeemed for prizes.
               </p>

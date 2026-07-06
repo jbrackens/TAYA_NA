@@ -522,5 +522,5 @@ export class PhoenixApiClient {
   }
 }
 
-export const TianggeApiClient = PhoenixApiClient;
-export type TianggeApiClient = PhoenixApiClient;
+export const TapTradeApiClient = PhoenixApiClient;
+export type TapTradeApiClient = PhoenixApiClient;

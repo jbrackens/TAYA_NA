@@ -115,7 +115,7 @@ export interface PredictionMarket {
   settlementPoolPointsCents?: number;
   unit?: "PTS" | string;
   lastQuoteAt?: string;
-  tianggeLifecycle?: TianggeMarketLifecycle;
+  taptradeLifecycle?: TapTradeMarketLifecycle;
 }
 
 // Per-market jurisdiction overlay (P3-07). An optional country allow/deny list
@@ -136,7 +136,7 @@ export type MarketStatus =
   | "settled"
   | "voided";
 
-export type TianggeMarketStage =
+export type TapTradeMarketStage =
   | "draft"
   | "open"
   | "paused"
@@ -146,22 +146,22 @@ export type TianggeMarketStage =
   | "invalid"
   | "unknown";
 
-export interface TianggeLifecycleAction {
+export interface TapTradeLifecycleAction {
   action: string;
   label: string;
   targetStatus: MarketStatus;
-  targetStage: TianggeMarketStage;
+  targetStage: TapTradeMarketStage;
   requiresReason: boolean;
   destructive: boolean;
 }
 
-export interface TianggeMarketLifecycle {
-  stage: TianggeMarketStage;
+export interface TapTradeMarketLifecycle {
+  stage: TapTradeMarketStage;
   label: string;
   description: string;
   tradeable: boolean;
   terminal: boolean;
-  allowedActions: TianggeLifecycleAction[];
+  allowedActions: TapTradeLifecycleAction[];
 }
 
 export interface PredictionMarketLifecycleEvent {
@@ -173,7 +173,7 @@ export interface PredictionMarketLifecycleEvent {
   reason?: string;
   metadata?: Record<string, unknown>;
   occurredAt: string;
-  tianggeLifecycle: TianggeMarketLifecycle;
+  taptradeLifecycle: TapTradeMarketLifecycle;
 }
 
 export interface PredictionMarketLifecycleAuditResponse {
@@ -185,10 +185,10 @@ function lifecycleAction(
   action: string,
   label: string,
   targetStatus: MarketStatus,
-  targetStage: TianggeMarketStage,
+  targetStage: TapTradeMarketStage,
   requiresReason: boolean,
   destructive: boolean,
-): TianggeLifecycleAction {
+): TapTradeLifecycleAction {
   return {
     action,
     label,
@@ -199,9 +199,9 @@ function lifecycleAction(
   };
 }
 
-export const TIANGGE_MARKET_LIFECYCLE_BY_STATUS: Record<
+export const TAPTRADE_MARKET_LIFECYCLE_BY_STATUS: Record<
   MarketStatus,
-  TianggeMarketLifecycle
+  TapTradeMarketLifecycle
 > = {
   unopened: {
     stage: "draft",
@@ -302,11 +302,11 @@ export const TIANGGE_MARKET_LIFECYCLE_BY_STATUS: Record<
   },
 };
 
-export function describeTianggeMarketLifecycle(
+export function describeTapTradeMarketLifecycle(
   status?: MarketStatus | string,
-): TianggeMarketLifecycle {
+): TapTradeMarketLifecycle {
   const mapped =
-    TIANGGE_MARKET_LIFECYCLE_BY_STATUS[status as MarketStatus] || null;
+    TAPTRADE_MARKET_LIFECYCLE_BY_STATUS[status as MarketStatus] || null;
   if (mapped) return mapped;
   return {
     stage: "unknown",
@@ -610,7 +610,7 @@ export interface MarketLifecycleTransitionResponse {
   marketId: string;
   status: MarketStatus;
   reason: string;
-  tianggeLifecycle: TianggeMarketLifecycle;
+  taptradeLifecycle: TapTradeMarketLifecycle;
 }
 
 export type MarketResult = "yes" | "no";
@@ -693,7 +693,7 @@ export interface SettleMarketResponse {
   pointDisbursements?: SettlementPointDisbursement[];
   totalSettlementPointsCents?: number;
   unit?: "PTS" | string;
-  tianggeLifecycle?: TianggeMarketLifecycle;
+  taptradeLifecycle?: TapTradeMarketLifecycle;
 }
 
 export interface SettlementReplayResponse {

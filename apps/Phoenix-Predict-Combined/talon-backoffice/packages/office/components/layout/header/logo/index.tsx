@@ -11,10 +11,10 @@ type ComponentProps = {
   theme: LogoProps | string | undefined;
 };
 
-const TianggeOfficeLogo = () => (
+const TapTradeOfficeLogo = () => (
   <div className="mr-16 inline-flex items-center gap-2 text-[var(--focus-ring,#0e7a53)]">
     <span className="text-[20px] font-black leading-none tracking-normal">
-      Tiangge
+      TapTrade
     </span>
     <svg
       aria-hidden="true"
@@ -64,7 +64,7 @@ const Logo: React.FC<ComponentProps> = ({ theme }: ComponentProps) => {
       </div>
     );
   }
-  return <TianggeOfficeLogo />;
+  return <TapTradeOfficeLogo />;
 };
 
 export { Logo };

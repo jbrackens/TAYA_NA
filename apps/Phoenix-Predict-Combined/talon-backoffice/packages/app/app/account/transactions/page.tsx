@@ -95,7 +95,7 @@ export default function PointsLedgerPage() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `tiangge_point_ledger_${new Date()
+      link.download = `taptrade_point_ledger_${new Date()
         .toISOString()
         .slice(0, 10)}.csv`;
       document.body.appendChild(link);

@@ -41,7 +41,7 @@ module.exports = {
     };
   },
   // Redirect the entire legacy /risk-management subtree to /dashboard.
-  // Those retired Pages Router screens render pre-Tiangge operations
+  // Those retired Pages Router screens render pre-TapTrade operations
   // widgets that don't exist in the prediction-market product. Visible
   // under the prediction brand they read as a credibility leak.
   //
