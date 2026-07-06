@@ -88,7 +88,8 @@ export function DiscoveryHero({
   );
   const volumeLabel = formatHeroVolume(displayMarket.volumePointsCents);
   const oiLabel =
-    displayMarket.openInterestPointsCents != null
+    displayMarket.openInterestPointsCents != null &&
+    displayMarket.openInterestPointsCents > 0
       ? formatHeroVolume(displayMarket.openInterestPointsCents)
       : "—";
   const closesLabel = formatHeroCloseLeft(displayMarket.closeAt);
@@ -120,7 +121,7 @@ export function DiscoveryHero({
       </h1>
 
       <div
-        className="m-0 mb-3 font-sans text-[88px] font-semibold leading-none text-[var(--t1)] tabular-nums max-[720px]:text-[64px]"
+        className="m-0 mb-3 font-['Inter_Tight','Inter',_-apple-system,_sans-serif] text-[88px] font-semibold leading-none tracking-[-0.04em] text-[var(--t1)] tabular-nums max-[720px]:text-[64px]"
         aria-label={`Yes price ${yes} cents`}
       >
         {yes}
@@ -173,19 +174,19 @@ export function DiscoveryHero({
       <div className="mt-5 flex gap-3 max-[720px]:mt-[18px]">
         <Link
           href={`/market/${displayMarket.ticker}`}
-          className="inline-flex max-w-[280px] flex-1 items-center justify-center rounded-md border-0 bg-[var(--accent)] px-6 py-4 text-[15px] font-semibold text-[#061a10] no-underline tabular-nums transition-[filter,transform] duration-150 hover:-translate-y-px hover:brightness-105"
+          className="inline-flex max-w-[280px] flex-1 items-center justify-center whitespace-nowrap rounded-md border-0 bg-[var(--accent)] px-6 py-4 text-[15px] font-semibold text-[#061a10] no-underline tabular-nums transition-[background-color,transform] duration-150 hover:-translate-y-px hover:bg-[#54ec9b] max-[720px]:px-4 max-[720px]:text-[14px]"
         >
-          {t("BUY_YES")} · {yes}%
+          {t("BUY_YES")} · {yes}¢
         </Link>
         <Link
           href={`/market/${displayMarket.ticker}`}
-          className="inline-flex max-w-[280px] flex-1 items-center justify-center rounded-md border-0 bg-[var(--no-soft)] px-6 py-4 text-[15px] font-semibold text-[var(--no-text)] no-underline tabular-nums transition-colors duration-150 hover:bg-[rgba(255,139,107,0.22)]"
+          className="inline-flex max-w-[280px] flex-1 items-center justify-center whitespace-nowrap rounded-md border-0 bg-[var(--no-soft)] px-6 py-4 text-[15px] font-semibold text-[var(--no-text)] no-underline tabular-nums transition-colors duration-150 hover:bg-[rgba(255,139,107,0.22)] max-[720px]:px-4 max-[720px]:text-[14px]"
         >
-          {t("BUY_NO")} · {no}%
+          {t("BUY_NO")} · {no}¢
         </Link>
       </div>
 
-      <div className="mt-6 grid grid-cols-4 gap-6 border-t border-[var(--border-1)] pt-6 max-[720px]:grid-cols-2 max-[720px]:gap-4">
+      <div className="mt-6 grid grid-cols-3 gap-6 border-t border-[var(--border-1)] pt-6 max-[720px]:grid-cols-3 max-[720px]:gap-4">
         <div>
           <div className="mb-1.5 text-xs text-[var(--t3)]">
             {t("24H_VOLUME")}
@@ -200,12 +201,6 @@ export function DiscoveryHero({
           </div>
           <div className="text-lg font-semibold text-[var(--t1)] tabular-nums">
             {oiLabel}
-          </div>
-        </div>
-        <div>
-          <div className="mb-1.5 text-xs text-[var(--t3)]">{t("TRADERS")}</div>
-          <div className="text-lg font-semibold text-[var(--t1)] tabular-nums">
-            —
           </div>
         </div>
         <div>
