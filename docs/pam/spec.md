@@ -800,7 +800,7 @@ sign-off — that attestation remains a separate human step.
 | Admin auth & RBAC | 6, 7, 11, 27 | 1 | **Built** | Pass | MFA now **mandatory for admin roles** (P0-1 `6914421c`,`268157b8`), RBAC (mig 027/038/040) + permission-denial audit (GAP-25 `d719804f`), least-privilege personas (GAP-14 `bd0634db`), admin MFA-reset backend (GAP-15 `21743d22`) **+ MFA-reset operator UI (GAP-88 `70663a00`, confirmed row action, users:write-gated, audited)**, **admin session-revocation / kick-session (GAP-76 `7252cf97`)**. Residual: WebAuthn/passkey option (GAP-71); guaranteed single-session "steal-lock" deferred (GAP-76 slice 2) |
 | Player search & 360 | 10 | 2 | **Built** | Pass | Profile-360 Built (KYC tab P0-3 `ad6e84c4`, Limits tab P1-3 `d610ecdf`, Bonuses/Cases GAP-35); **office player search now SERVER-SIDE (GAP-81 `409c3a04`)** — debounced `?search=` refetch over the full population, so "search by email → correct trader" holds on a real book. Residual: id/name/phone/national-ID predicate breadth = GAP-34 (BLOCKED) |
 | Account lifecycle | 11 | 3 | **Built** | Pass | Suspension read on trading+login with reason+audit (GAP-9/10) |
-| KYC | 12 | 4 | **Built** | Pass | Fail-closed (P0-2 `5adf223c`) + admin review UI + document BYTEA storage (P0-3) + expiry re-trigger (GAP-17 `59f7eb6d`) + request-more-docs (GAP-18 `d0d314f6`). Residual: IDV vendor (GAP-19 ⚑) |
+| KYC | 12 | 4 | **Built** | Pass | Fail-closed (P0-2 `5adf223c`) + admin review UI + document BYTEA storage (P0-3) + expiry re-trigger (GAP-17 `59f7eb6d`) + request-more-docs backend (GAP-18 `d0d314f6`) **+ request-documents operator action in the console (GAP-103 `e958d172`)**. Residual: IDV vendor (GAP-19 ⚑) |
 | AML / Risk | 12, 18 | 5 | **Partial** | Partial | Alert→case→disposition plumbing (`registerAMLAdminRoutes`) + risk-profile rating (GAP-12) built; **rule set / SAR BLOCKED on regime** (P0-5 ⚑) |
 | Responsible trading | 13 | 6 | **Built** | Pass | Loss/position/session limits (GAP-11), fail-closed (GAP-1), loosen-cooldown (GAP-63), Profile-360 Limits tab (P1-3); enforced before order placement |
 | Wallet & ledger | 14 | 7 | **Partial** | Partial | Wallet/balances Built; **double-entry ledger BLOCKED** (P0-7 ⚑ protected core) |
@@ -816,7 +816,7 @@ sign-off — that attestation remains a separate human step.
 | Audit integrity | 24 | 17 | **Built** | Pass | Append-only + hash-chain + verify route (GAP-13) + durable auth audit (GAP-5) + permission-denial audit (GAP-25) |
 | Privacy & retention | 28 | 18 | **Partial** | Fail | Loyalty opt-out only; **DSAR/retention/erasure BLOCKED** (P2-3 ⚑ legal) |
 | Support / disputes | 19 | 19 | **Built (markets)** | Partial | Market-resolution disputes Built; **cross-domain read-only case center (GAP-32 slice 1 `15bb000d`)** aggregating AML+surveillance, surfaced in Profile-360 Cases tab (GAP-35 `e482db1c`); **writable shared case model (assignee/SLA/notes/approval) — GAP-32 slice 2 design-gated** |
-| Operational config | 25 | 20 | **Partial** | Partial | DB-backed flag store + admin route (`internal/platformconfig`, `/api/v1/admin/config/flags`); **full ops-settings screens pending** |
+| Operational config | 25 | 20 | **Partial** | Partial | DB-backed flag store + admin route (`internal/platformconfig`, `/api/v1/admin/config/flags`) **+ config-flags editor screen with nav (GAP-104 `2e785ed6`, config:write-gated, change-audited)**; remaining ops-settings breadth rides tracked items (GAP-46/P0-6/GAP-30/P2-1) |
 | Orders / trades (CLOB) | 16 | 9 | **Built** | Pass | Real central limit order book, complementary issuance, TIF/post-only |
 | Integrations / webhooks | 26 | — | **Built** | — | HMAC webhooks + scoped partner API |
 | Custody / on-chain settlement | 17, 26 | 11 | **Partial / design-seed** | Partial | Custodial off-chain today; **non-custodial BLOCKED** (P2-4 ⚑ founder decision) |
@@ -868,8 +868,9 @@ screening with a real list/vendor (§12); market-integrity surveillance (§18); 
 account detection (§18); dual-approval / maker-checker (§7, §25); back-office money-movement
 and approval UIs — cashier/deposits, withdrawal queue + **AWA** rules engine, manual-adjustment
 UI (§22, §14); segmentation/CRM (§21); notification templates (§20); reporting/exports module
-(§23); tenant/brand + global jurisdiction + feature-flag admin UIs (§8, §25); data-retention/
-DSAR tooling (§28).
+(§23); tenant/brand + global jurisdiction + feature-flag admin UIs (§8, §25) *(feature-flag
+editor since built — GAP-104 `2e785ed6`; tenant UI built P2-1 peripheral; jurisdiction UI still
+gated on GAP-30)*; data-retention/DSAR tooling (§28).
 
 **Architecture deltas to note in the spec's framing:** the system is a **single Go gateway**
 (not the Idefix Nx frontend stack or a microservice fleet — Codex's original 14-service plan,

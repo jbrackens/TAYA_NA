@@ -46,8 +46,9 @@ func TestAdminPunterNoteWriteRequiresUsersWrite(t *testing.T) {
 	if code := do(http.MethodPost, "auditor@test", `{"content":"note","category":"general"}`); code != http.StatusForbidden {
 		t.Fatalf("POST note without users:write: want 403, got %d", code)
 	}
-	// A users:write holder adds the note (201 Created).
+	// A users:write holder adds the note (201 Created) — audited (§24).
 	if code := do(http.MethodPost, "support@test", `{"content":"note","category":"general"}`); code != http.StatusCreated {
 		t.Fatalf("POST note with users:write: want 201, got %d", code)
 	}
+	assertAMLAudit(t, "player.note_added", "u-1")
 }

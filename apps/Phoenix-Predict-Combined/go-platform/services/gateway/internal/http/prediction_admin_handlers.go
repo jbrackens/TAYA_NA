@@ -317,6 +317,14 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 				if _, err := repo.AddPunterNote(r.Context(), id, authorID, category, content); err != nil {
 					return httpx.Internal("failed to add note", err)
 				}
+				// §24: every sensitive admin action writes an append-only audit
+				// entry — like the sibling status/revoke-sessions mutations
+				// (verification #33 LOW; the note row itself is attributed, but
+				// the ops-audit trail is the §24 compliance artifact). Content is
+				// NOT logged (it may hold player PII); the note row keeps it.
+				recordProviderOpsAuditAction(userIDFromRequest(r), "player.note_added", id, map[string]any{
+					"category": category,
+				})
 				notes, err := repo.ListPunterNotes(r.Context(), id)
 				if err != nil {
 					return httpx.Internal("failed to list notes", err)

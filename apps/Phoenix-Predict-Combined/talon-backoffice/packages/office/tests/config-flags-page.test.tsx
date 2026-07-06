@@ -58,6 +58,7 @@ describe("Config flags page (GAP-104)", () => {
     expect(screen.getByTestId("flag-save")).toBeDisabled();
     expect(screen.getByTestId("flag-key")).toBeDisabled();
     expect(screen.getByTestId("flag-value")).toBeDisabled();
+    expect(screen.getByTestId("flag-description")).toBeDisabled();
   });
 
   it("edits a flag and PUTs the upsert for a config:write caller", async () => {
