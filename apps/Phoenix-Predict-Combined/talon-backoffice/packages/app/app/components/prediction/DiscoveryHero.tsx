@@ -75,6 +75,7 @@ export function DiscoveryHero({
   const no = displayMarket.noPricePointsCents;
   const { delta, pct } = deterministicDelta(displayMarket.ticker, yes);
   const isUp = delta >= 0;
+  const isFlat = delta === 0;
   // Real backend-fetched series when available; falls back to the
   // deterministic walk during the fetch window or on failure (the
   // hook returns null in those cases and heroChartPath handles that).
@@ -93,7 +94,11 @@ export function DiscoveryHero({
       ? formatHeroVolume(displayMarket.openInterestPointsCents)
       : "—";
   const closesLabel = formatHeroCloseLeft(displayMarket.closeAt);
-  const changeClass = isUp ? "text-[var(--yes-text)]" : "text-[var(--no-text)]";
+  const changeClass = isFlat
+    ? "text-[var(--t3)]"
+    : isUp
+      ? "text-[var(--yes-text)]"
+      : "text-[var(--no-text)]";
 
   return (
     <section
@@ -132,17 +137,19 @@ export function DiscoveryHero({
       <div
         className={`mb-[18px] inline-flex items-center gap-2.5 text-[17px] font-semibold tabular-nums ${changeClass}`}
       >
-        <svg
-          width="11"
-          height="11"
-          viewBox="0 0 10 10"
-          aria-hidden="true"
-          className={isUp ? "" : "rotate-180"}
-        >
-          <path d="M5 1.2 8.8 8H1.2Z" fill="currentColor" />
-        </svg>
-        {isUp ? "+" : ""}
-        {delta}¢ ({isUp ? "+" : ""}
+        {!isFlat && (
+          <svg
+            width="11"
+            height="11"
+            viewBox="0 0 10 10"
+            aria-hidden="true"
+            className={isUp ? "" : "rotate-180"}
+          >
+            <path d="M5 1.2 8.8 8H1.2Z" fill="currentColor" />
+          </svg>
+        )}
+        {isUp && !isFlat ? "+" : ""}
+        {delta}¢ ({isUp && !isFlat ? "+" : ""}
         {pct.toFixed(1)}%)
         <span className="text-sm font-medium text-[var(--t3)]">
           {t("TODAY")}
@@ -217,7 +224,7 @@ export function DiscoveryHero({
           <div className="mb-1.5 text-xs text-[var(--t3)]">
             {t("24H_VOLUME")}
           </div>
-          <div className="type-display text-[19px] font-semibold text-[var(--t1)] tabular-nums">
+          <div className="type-display whitespace-nowrap text-[19px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
             {volumeLabel}
           </div>
         </div>
@@ -225,13 +232,13 @@ export function DiscoveryHero({
           <div className="mb-1.5 text-xs text-[var(--t3)]">
             {t("OPEN_INTEREST")}
           </div>
-          <div className="type-display text-[19px] font-semibold text-[var(--t1)] tabular-nums">
+          <div className="type-display whitespace-nowrap text-[19px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
             {oiLabel}
           </div>
         </div>
         <div>
           <div className="mb-1.5 text-xs text-[var(--t3)]">{t("CLOSES")}</div>
-          <div className="type-display text-[19px] font-semibold text-[var(--t1)] tabular-nums">
+          <div className="type-display whitespace-nowrap text-[19px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
             {closesLabel}
           </div>
         </div>
