@@ -45,7 +45,7 @@ PREDICTION_RECONCILIATION_REPORT := ../../../revival/artifacts/prediction_reconc
 HISTORICAL_BETS_CSV ?= $(ROOT)/phoenix-backend/services/src/test/resources/data/reports/application/multiple-states-bets.csv
 HISTORICAL_BETS_DIR ?= $(ROOT)/phoenix-backend/services/src/test/resources/data/reports/application
 
-.PHONY: help bootstrap start stop restart status logs java-profile verify verify-backend verify-talon verify-sportsbook verify-go verify-api-contract-fixtures frontend-deps-baseline security-secrets security-deps security-jvm security-jvm-required security-jvm-osv-direct security-jvm-osv-resolved-classpath security-jvm-direct-residual-advisories security-jvm-resolved-residual-advisories security-sbom security-baseline validate-migrations validate-go-migrations seed-deterministic platform-health platform-metrics qa-e2e-critical qa-load-baseline qa-capability-slo qa-provider-conformance qa-regression-pack qa-provider-chaos qa-abuse-boundary qa-canonical-browser-journey qa-canonical-browser-stack qa-sports-route-smoke qa-sports-regression qa-preservation-deletions qa-preservation-modifications qa-preservation-contract-anchors qa-preservation-production-dossier qa-scenario-11-api-surface qa-live-no-money-boundary qa-scenario-12-signoff qa-frontend-residual-advisories qa-rc-completion-audit release-cutover-rehearsal release-launch-readiness release-launch-readiness-runtime release-launch-readiness-runtime-profile release-governance-private release-install-private-governance-hooks release-stability-burnin go-test go-run-gateway go-run-auth go-reconciliation-report go-reconciliation-report-historical go-reconciliation-report-historical-strict go-reconciliation-report-historical-dir
+.PHONY: help bootstrap start stop restart status logs java-profile verify verify-backend verify-office verify-talon verify-sportsbook verify-go verify-api-contract-fixtures frontend-deps-baseline security-secrets security-deps security-jvm security-jvm-required security-jvm-osv-direct security-jvm-osv-resolved-classpath security-jvm-direct-residual-advisories security-jvm-resolved-residual-advisories security-sbom security-baseline validate-migrations validate-go-migrations seed-deterministic platform-health platform-metrics qa-e2e-critical qa-load-baseline qa-capability-slo qa-provider-conformance qa-regression-pack qa-provider-chaos qa-abuse-boundary qa-canonical-browser-journey qa-canonical-browser-stack qa-sports-route-smoke qa-sports-regression qa-preservation-deletions qa-preservation-modifications qa-preservation-contract-anchors qa-preservation-production-dossier qa-scenario-11-api-surface qa-live-no-money-boundary qa-scenario-12-signoff qa-frontend-residual-advisories qa-rc-completion-audit release-cutover-rehearsal release-launch-readiness release-launch-readiness-runtime release-launch-readiness-runtime-profile release-governance-private release-install-private-governance-hooks release-stability-burnin go-test go-run-gateway go-run-auth go-reconciliation-report go-reconciliation-report-historical go-reconciliation-report-historical-strict go-reconciliation-report-historical-dir
 
 help:
 	@echo "Available targets:"
@@ -58,7 +58,7 @@ help:
 	@echo "  make java-profile      # print/export Java 21 transitional profile (fallback to Java 17)"
 	@echo "  make verify            # run the full quality gate"
 	@echo "  make verify-backend    # backend compile + test compile"
-	@echo "  make verify-talon      # Talon bootstrap + office build"
+	@echo "  make verify-office     # backoffice bootstrap + build (legacy alias: verify-talon)"
 	@echo "  make verify-sportsbook # compatibility alias for TapTrade player app typecheck + build"
 	@echo "  make verify-go         # SB-501/502/503 gates + strict historical reconciliation parity"
 	@echo "  make verify-api-contract-fixtures # TapTrade API/client contract fixture regression gate"
@@ -134,14 +134,14 @@ logs:
 java-profile:
 	@bash "$(JAVA_PROFILE_SCRIPT)" --print-env --write-env-file
 
-verify: verify-backend verify-talon verify-sportsbook verify-go
+verify: verify-backend verify-office verify-sportsbook verify-go
 
 verify-backend:
 	@cd "$(ROOT)/phoenix-backend" && \
 		export JAVA_HOME="$${JAVA_HOME:-$$(/usr/libexec/java_home -v 21 2>/dev/null || /usr/libexec/java_home -v 17)}" && \
 		sbt "phoenix-backend/compile" "phoenix-backend/test:compile"
 
-verify-talon:
+verify-office:
 	@bash "$(ROOT)/scripts/frontend/verify-talon.sh"
 
 verify-sportsbook:
@@ -309,3 +309,6 @@ go-reconciliation-report-historical-strict:
 
 go-reconciliation-report-historical-dir:
 	@bash "$(ROOT)/scripts/reconciliation/historical-directory-parity.sh" "$(HISTORICAL_BETS_DIR)"
+
+# Legacy alias retained for muscle memory / CI callers; remove after rollout.
+verify-talon: verify-office

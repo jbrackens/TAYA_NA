@@ -41,7 +41,7 @@ if [[ "$ENABLE_DB_MIGRATION_VALIDATION" == "true" ]]; then
 else
   echo "| db migration validation | skipped | \`de-scoped (ENABLE_DB_MIGRATION_VALIDATION=false)\` |" >>"$RESULT_FILE"
 fi
-run_step "frontend talon verify" make -C "$ROOT_DIR" verify-talon || overall=1
+run_step "frontend office verify" make -C "$ROOT_DIR" verify-talon || overall=1
 run_step "frontend sportsbook verify" make -C "$ROOT_DIR" verify-sportsbook || overall=1
 run_step "go critical path e2e" make -C "$ROOT_DIR" qa-e2e-critical || overall=1
 run_step "go load baseline" make -C "$ROOT_DIR" qa-load-baseline || overall=1

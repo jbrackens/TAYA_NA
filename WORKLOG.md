@@ -96,3 +96,9 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
 - DECISION: @phoenix.local seed emails move to Batch H (atomic with the frozen Go
   seeder) — renaming doc/test references before the seeder would break login flows
   that use demo@phoenix.local against local auth.
+- EXECUTED Batch F (identifiers): TapTradeApiClient is now the class,
+  PhoenixApiClient a @deprecated alias (assertion sites — wallet-paths test +
+  preservation dossier — flipped atomically); TALON_* env family →
+  TAPTRADE_OFFICE_* plain rename (VERIFIED internal-only: no refs outside scripts/
+  except the allowlisted archive); make verify-office replaces verify-talon with a
+  compat alias target. bash -n on shimmed scripts, make -n on the alias, tsc clean.

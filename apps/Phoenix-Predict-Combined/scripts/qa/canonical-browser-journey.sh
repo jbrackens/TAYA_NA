@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-TALON_DIR="$ROOT_DIR/talon-backoffice"
+TAPTRADE_OFFICE_DIR="$ROOT_DIR/talon-backoffice"
 ARTIFACT_DIR="$ROOT_DIR/revival/artifacts"
 REPORT_FILE="$ROOT_DIR/revival/42_CANONICAL_BROWSER_JOURNEY.md"
 
@@ -88,7 +88,7 @@ if ! probe_url "$PREDICT_BASE_URL/api/v1/status" "200" >>"$LOG_FILE" 2>&1; then
 fi
 
 if (
-  cd "$TALON_DIR"
+  cd "$TAPTRADE_OFFICE_DIR"
   PREDICT_BASE_URL="$PREDICT_BASE_URL" \
     npx playwright test \
       --config playwright.prediction.config.ts \

@@ -2,8 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-TALON_DIR="$ROOT_DIR/talon-backoffice"
-APP_DIR="$TALON_DIR/packages/app"
+TAPTRADE_OFFICE_DIR="$ROOT_DIR/talon-backoffice"
+APP_DIR="$TAPTRADE_OFFICE_DIR/packages/app"
 YARN_MUTEX="file:/tmp/yarn-mutex-taptrade-player"
 SKIP_UTILS_DIST_IF_PRESENT="${SKIP_UTILS_DIST_IF_PRESENT:-true}"
 BUILD_MAX_OLD_SPACE_MB="${BUILD_MAX_OLD_SPACE_MB:-4096}"
@@ -117,13 +117,13 @@ use_node_runtime
 ensure_yarn
 select_yarn_bin
 
-cd "$TALON_DIR"
+cd "$TAPTRADE_OFFICE_DIR"
 YARN_MUTEX="$YARN_MUTEX" run_yarn install --frozen-lockfile
 
-utils_dist_file="$TALON_DIR/packages/utils/dist/index.js"
+utils_dist_file="$TAPTRADE_OFFICE_DIR/packages/utils/dist/index.js"
 utils_skip=false
 if [[ "$SKIP_UTILS_DIST_IF_PRESENT" == "true" ]] && [[ -f "$utils_dist_file" ]]; then
-  if ! find "$TALON_DIR/packages/utils/src" -type f -newer "$utils_dist_file" -print -quit | grep -q .; then
+  if ! find "$TAPTRADE_OFFICE_DIR/packages/utils/src" -type f -newer "$utils_dist_file" -print -quit | grep -q .; then
     utils_skip=true
   fi
 fi

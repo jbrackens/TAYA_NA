@@ -21,10 +21,10 @@ latest_audit_log() {
   echo "$latest"
 }
 
-TALON_AUDIT_LOG="${FRONTEND_RESIDUAL_TALON_AUDIT_LOG:-$(latest_audit_log talon_yarn_audit)}"
+TAPTRADE_OFFICE_AUDIT_LOG="${FRONTEND_RESIDUAL_TAPTRADE_OFFICE_AUDIT_LOG:-$(latest_audit_log talon_yarn_audit)}"
 PLAYER_AUDIT_LOG="${FRONTEND_RESIDUAL_PLAYER_AUDIT_LOG:-$(latest_audit_log taptrade_player_yarn_audit)}"
 
-node - "$REPORT_PATH" "$ARTIFACT_PATH" "$TALON_AUDIT_LOG" "$PLAYER_AUDIT_LOG" <<'NODE'
+node - "$REPORT_PATH" "$ARTIFACT_PATH" "$TAPTRADE_OFFICE_AUDIT_LOG" "$PLAYER_AUDIT_LOG" <<'NODE'
 const fs = require("fs");
 const path = require("path");
 
@@ -143,7 +143,7 @@ function parseAuditLog(label, file) {
 }
 
 const results = [
-  parseAuditLog("Talon workspace", talonLog),
+  parseAuditLog("TapTrade office workspace", talonLog),
   parseAuditLog("TapTrade player app", playerLog),
 ];
 

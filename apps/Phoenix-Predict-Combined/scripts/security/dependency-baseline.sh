@@ -9,12 +9,12 @@ ARTIFACT_DIR="$REVIVAL_DIR/artifacts"
 REPORT_OUT="$REVIVAL_DIR/06_DEPENDENCY_VULNERABILITY_BASELINE.md"
 
 BACKEND_REPO="$ROOT_DIR/phoenix-backend"
-TALON_REPO="$ROOT_DIR/talon-backoffice"
+TAPTRADE_OFFICE_REPO="$ROOT_DIR/talon-backoffice"
 PLAYER_APP_REPO="$ROOT_DIR/talon-backoffice/packages/app"
 
 mkdir -p "$ARTIFACT_DIR"
 
-TALON_AUDIT_LOG="$ARTIFACT_DIR/talon_yarn_audit_${TS_TAG}.log"
+TAPTRADE_OFFICE_AUDIT_LOG="$ARTIFACT_DIR/talon_yarn_audit_${TS_TAG}.log"
 PLAYER_APP_AUDIT_LOG="$ARTIFACT_DIR/taptrade_player_yarn_audit_${TS_TAG}.log"
 
 run_audit() {
@@ -84,7 +84,7 @@ audit_summary() {
   ' "$audit_log"
 }
 
-talon_exit="$(run_audit "$TALON_REPO" "$TALON_AUDIT_LOG")"
+talon_exit="$(run_audit "$TAPTRADE_OFFICE_REPO" "$TAPTRADE_OFFICE_AUDIT_LOG")"
 player_app_exit="$(run_audit "$PLAYER_APP_REPO" "$PLAYER_APP_AUDIT_LOG")"
 
 tooling_gitleaks="$(command -v gitleaks || true)"
@@ -93,15 +93,15 @@ tooling_osv="$(command -v osv-scanner || true)"
 tooling_sbt="$(command -v sbt || true)"
 
 backend_stack_versions="$(rg -n "val\\s+(scala|akka|akkaHttp|flyway|keycloak|logback|slick|tapir)\\s*=\\s*\\\"[0-9][^\\\"]*\\\"" "$BACKEND_REPO/project/Dependencies.scala" | sed 's|^|  - |')"
-talon_next="$(read_pkg_version "$TALON_REPO/packages/office/package.json" "$TALON_REPO/package.json" next)"
-player_app_next="$(read_pkg_version "$PLAYER_APP_REPO/package.json" "$TALON_REPO/package.json" next)"
-talon_react="$(read_pkg_version "$TALON_REPO/packages/office/package.json" "$TALON_REPO/package.json" react)"
-player_app_react="$(read_pkg_version "$PLAYER_APP_REPO/package.json" "$TALON_REPO/package.json" react)"
-talon_audit_summary="$(audit_summary "$TALON_AUDIT_LOG")"
+talon_next="$(read_pkg_version "$TAPTRADE_OFFICE_REPO/packages/office/package.json" "$TAPTRADE_OFFICE_REPO/package.json" next)"
+player_app_next="$(read_pkg_version "$PLAYER_APP_REPO/package.json" "$TAPTRADE_OFFICE_REPO/package.json" next)"
+talon_react="$(read_pkg_version "$TAPTRADE_OFFICE_REPO/packages/office/package.json" "$TAPTRADE_OFFICE_REPO/package.json" react)"
+player_app_react="$(read_pkg_version "$PLAYER_APP_REPO/package.json" "$TAPTRADE_OFFICE_REPO/package.json" react)"
+talon_audit_summary="$(audit_summary "$TAPTRADE_OFFICE_AUDIT_LOG")"
 player_app_audit_summary="$(audit_summary "$PLAYER_APP_AUDIT_LOG")"
 
 audit_blocker_note="none; advisory payloads captured"
-if grep -q "ENOTFOUND registry.yarnpkg.com" "$TALON_AUDIT_LOG" "$PLAYER_APP_AUDIT_LOG" 2>/dev/null; then
+if grep -q "ENOTFOUND registry.yarnpkg.com" "$TAPTRADE_OFFICE_AUDIT_LOG" "$PLAYER_APP_AUDIT_LOG" 2>/dev/null; then
   audit_blocker_note="DNS/network unavailable for registry.yarnpkg.com in this execution environment"
 elif [[ "$talon_exit" == "137" || "$player_app_exit" == "137" ]]; then
   audit_blocker_note="yarn audit process terminated (exit 137) in this Codex runtime"
@@ -114,7 +114,7 @@ cat > "$REPORT_OUT" <<EOF
 
 ## Scope
 - \`$BACKEND_REPO\`
-- \`$TALON_REPO\`
+- \`$TAPTRADE_OFFICE_REPO\`
 - \`$PLAYER_APP_REPO\`
 
 ## Tooling Availability
@@ -124,20 +124,20 @@ cat > "$REPORT_OUT" <<EOF
 - \`osv-scanner\`: ${tooling_osv:-not found}
 
 ## Executed Audit Commands
-- Talon: \`yarn audit --level high --json\` (Node 20)
+- TapTrade office: \`yarn audit --level high --json\` (Node 20)
   - Exit code: **$talon_exit**
-  - Log: \`revival/artifacts/$(basename "$TALON_AUDIT_LOG")\`
+  - Log: \`revival/artifacts/$(basename "$TAPTRADE_OFFICE_AUDIT_LOG")\`
 - TapTrade player app: \`yarn audit --level high --json\` (Node 20)
   - Exit code: **$player_app_exit**
   - Log: \`revival/artifacts/$(basename "$PLAYER_APP_AUDIT_LOG")\`
 
 ## Baseline Outcome
-- Online vulnerability audits produced advisory payloads for the launch Talon workspace and TapTrade player app scopes.
-- Talon audit summary: **$talon_audit_summary**.
+- Online vulnerability audits produced advisory payloads for the launch TapTrade office workspace and TapTrade player app scopes.
+- TapTrade office audit summary: **$talon_audit_summary**.
 - TapTrade player app audit summary: **$player_app_audit_summary**.
 - Current blocker: **$audit_blocker_note**.
 - Static dependency-risk baseline (version age / modernization pressure):
-  - Talon frontend stack: Next **$talon_next**, React **$talon_react**
+  - TapTrade office frontend stack: Next **$talon_next**, React **$talon_react**
   - TapTrade player stack: Next **$player_app_next**, React **$player_app_react**
   - Backend core library versions (selected):
 $backend_stack_versions
@@ -155,5 +155,5 @@ EOF
 
 echo "Dependency vulnerability baseline written to:"
 echo "  $REPORT_OUT"
-echo "  $TALON_AUDIT_LOG"
+echo "  $TAPTRADE_OFFICE_AUDIT_LOG"
 echo "  $PLAYER_APP_AUDIT_LOG"

@@ -125,7 +125,7 @@ check_prerequisites() {
 build_workspace_packages() {
   log_info "Building workspace packages..."
 
-  # Talon Backoffice
+  # TapTrade office Backoffice
   for pkg in utils api-client design-system; do
     local pkg_dir="${ROOT_DIR}/talon-backoffice/packages/${pkg}"
     if [ ! -f "${pkg_dir}/dist/index.js" ]; then

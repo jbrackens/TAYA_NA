@@ -49,7 +49,7 @@ interface LegacyAuditLogEntryPayload extends Partial<AuditLogEntry> {
   freebetAppliedCents?: number;
 }
 
-export class PhoenixApiClient {
+export class TapTradeApiClient {
   private baseUrl: string;
   private timeout: number;
   private retryAttempts: number;
@@ -522,5 +522,7 @@ export class PhoenixApiClient {
   }
 }
 
-export const TapTradeApiClient = PhoenixApiClient;
-export type TapTradeApiClient = PhoenixApiClient;
+/** @deprecated Legacy codename alias — use TapTradeApiClient. */
+export const PhoenixApiClient = TapTradeApiClient;
+/** @deprecated Legacy codename alias — use TapTradeApiClient. */
+export type PhoenixApiClient = TapTradeApiClient;

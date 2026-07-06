@@ -2,8 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-TALON_DIR="$ROOT_DIR/talon-backoffice"
-YARN_MUTEX="file:/tmp/yarn-mutex-talon"
+TAPTRADE_OFFICE_DIR="$ROOT_DIR/talon-backoffice"
+YARN_MUTEX="file:/tmp/yarn-mutex-office"
 SKIP_UTILS_DIST_IF_PRESENT="${SKIP_UTILS_DIST_IF_PRESENT:-true}"
 YARN_BIN=""
 
@@ -116,7 +116,7 @@ build_node_options() {
 run_next_build() {
   local node_opts next_bin
   node_opts="$(build_node_options)"
-  next_bin="$TALON_DIR/node_modules/.bin/next"
+  next_bin="$TAPTRADE_OFFICE_DIR/node_modules/.bin/next"
 
   CI=1 NEXT_TELEMETRY_DISABLED=1 BROWSERSLIST_IGNORE_OLD_DATA=1 node $node_opts "$next_bin" build --webpack
 }
@@ -125,13 +125,13 @@ use_node_runtime
 ensure_yarn
 select_yarn_bin
 
-cd "$TALON_DIR"
+cd "$TAPTRADE_OFFICE_DIR"
 YARN_MUTEX="$YARN_MUTEX" run_yarn install --frozen-lockfile
 
-utils_dist_file="$TALON_DIR/packages/utils/dist/index.js"
+utils_dist_file="$TAPTRADE_OFFICE_DIR/packages/utils/dist/index.js"
 utils_skip=false
 if [[ "$SKIP_UTILS_DIST_IF_PRESENT" == "true" ]] && [[ -f "$utils_dist_file" ]]; then
-  if ! find "$TALON_DIR/packages/utils/src" -type f -newer "$utils_dist_file" -print -quit | grep -q .; then
+  if ! find "$TAPTRADE_OFFICE_DIR/packages/utils/src" -type f -newer "$utils_dist_file" -print -quit | grep -q .; then
     utils_skip=true
   fi
 fi

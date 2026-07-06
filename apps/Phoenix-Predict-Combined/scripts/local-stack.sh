@@ -5,31 +5,31 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RUNTIME_DIR="$ROOT_DIR/.runtime"
 
 BACKEND_DIR="$ROOT_DIR/phoenix-backend"
-TALON_DIR="$ROOT_DIR/talon-backoffice"
-PLAYER_APP_DIR="$TALON_DIR/packages/app"
+TAPTRADE_OFFICE_DIR="$ROOT_DIR/talon-backoffice"
+PLAYER_APP_DIR="$TAPTRADE_OFFICE_DIR/packages/app"
 GO_GATEWAY_DIR="$ROOT_DIR/go-platform/services/gateway"
 GO_GATEWAY_READ_MODEL_FILE="$ROOT_DIR/go-platform/services/gateway/internal/http/testdata/seeds/read-model.seed.json"
 
 BACKEND_PID_FILE="$RUNTIME_DIR/backend.pid"
-TALON_PID_FILE="$RUNTIME_DIR/talon-office.pid"
+TAPTRADE_OFFICE_PID_FILE="$RUNTIME_DIR/office-office.pid"
 PLAYER_PID_FILE="$RUNTIME_DIR/taptrade-player.pid"
 LEGACY_SPORTSBOOK_PID_FILE="$RUNTIME_DIR/sportsbook.pid"
 GO_GATEWAY_PID_FILE="$RUNTIME_DIR/go-gateway.pid"
 
 BACKEND_LOG_FILE="$RUNTIME_DIR/backend.log"
-TALON_LOG_FILE="$RUNTIME_DIR/talon-office.log"
+TAPTRADE_OFFICE_LOG_FILE="$RUNTIME_DIR/office-office.log"
 PLAYER_LOG_FILE="$RUNTIME_DIR/taptrade-player.log"
 GO_GATEWAY_LOG_FILE="$RUNTIME_DIR/go-gateway.log"
 
-TALON_PORT="${TALON_PORT:-3000}"
+TAPTRADE_OFFICE_PORT="${TAPTRADE_OFFICE_PORT:-3000}"
 PLAYER_PORT="${PLAYER_PORT:-${SPORTSBOOK_PORT:-3002}}"
 GO_GATEWAY_PORT="${GO_GATEWAY_PORT:-18080}"
 BACKEND_HTTP_URL="${BACKEND_HTTP_URL:-http://127.0.0.1:13551/api/v1/status}"
-TALON_HTTP_URL="${TALON_HTTP_URL:-http://127.0.0.1:${TALON_PORT}}"
+TAPTRADE_OFFICE_HTTP_URL="${TAPTRADE_OFFICE_HTTP_URL:-http://127.0.0.1:${TAPTRADE_OFFICE_PORT}}"
 PLAYER_HTTP_URL="${PLAYER_HTTP_URL:-http://127.0.0.1:${PLAYER_PORT}}"
 GO_GATEWAY_HTTP_URL="${GO_GATEWAY_HTTP_URL:-http://127.0.0.1:${GO_GATEWAY_PORT}/api/v1/status}"
 GATEWAY_AUTH_ENABLED="${GATEWAY_AUTH_ENABLED:-false}"
-LOCAL_STACK_SERVICES="${LOCAL_STACK_SERVICES:-backend,go-gateway,talon,player}"
+LOCAL_STACK_SERVICES="${LOCAL_STACK_SERVICES:-backend,go-gateway,office,player}"
 
 function usage() {
   cat <<'EOF'
@@ -37,14 +37,14 @@ Usage: ./scripts/local-stack.sh <command>
 
 Commands:
   bootstrap  Install/update frontend dependencies and local env files.
-  start      Start backend + go-gateway + Talon backoffice + TapTrade player as background services.
+  start      Start backend + go-gateway + TapTrade office backoffice + TapTrade player as background services.
   stop       Stop all background services started by this script.
   restart    Stop and start all services.
   status     Print process and HTTP health status.
   logs       Tail logs for all services.
 
 Environment:
-  LOCAL_STACK_SERVICES  Comma-separated services for start. Default: backend,go-gateway,talon,player.
+  LOCAL_STACK_SERVICES  Comma-separated services for start. Default: backend,go-gateway,office,player.
 EOF
 }
 
@@ -85,7 +85,7 @@ function ensure_yarn() {
 }
 
 function ensure_local_env_files() {
-  local talon_env="$TALON_DIR/packages/office/.env.local"
+  local talon_env="$TAPTRADE_OFFICE_DIR/packages/office/.env.local"
   local player_env="$PLAYER_APP_DIR/.env.local"
   local gateway_endpoint="http://localhost:${GO_GATEWAY_PORT}"
 
@@ -113,13 +113,13 @@ function set_env_value() {
 }
 
 function bootstrap() {
-  echo "==> Bootstrapping Talon backoffice dependencies"
-  use_repo_node "$TALON_DIR"
+  echo "==> Bootstrapping TapTrade office backoffice dependencies"
+  use_repo_node "$TAPTRADE_OFFICE_DIR"
   ensure_yarn
   (
-    cd "$TALON_DIR"
-    YARN_MUTEX=file:/tmp/yarn-mutex-talon yarn install --frozen-lockfile
-    NODE_OPTIONS=--max-old-space-size=4096 YARN_MUTEX=file:/tmp/yarn-mutex-talon yarn workspace @phoenix-ui/utils dist
+    cd "$TAPTRADE_OFFICE_DIR"
+    YARN_MUTEX=file:/tmp/yarn-mutex-office yarn install --frozen-lockfile
+    NODE_OPTIONS=--max-old-space-size=4096 YARN_MUTEX=file:/tmp/yarn-mutex-office yarn workspace @phoenix-ui/utils dist
   )
 
   ensure_local_env_files
@@ -231,12 +231,12 @@ function start() {
       "cd '$GO_GATEWAY_DIR' && PORT='$GO_GATEWAY_PORT' GATEWAY_AUTH_ENABLED='$GATEWAY_AUTH_ENABLED' GATEWAY_READ_MODEL_FILE='$GO_GATEWAY_READ_MODEL_FILE' go run ./cmd/gateway"
   fi
 
-  if service_enabled "talon"; then
+  if service_enabled "office"; then
     start_bg \
       "talon-backoffice" \
-      "$TALON_PID_FILE" \
-      "$TALON_LOG_FILE" \
-      "if [ -s '$HOME/.nvm/nvm.sh' ]; then source '$HOME/.nvm/nvm.sh' && nvm use >/dev/null; fi && cd '$TALON_DIR' && cd packages/office && yarn bootstrap:locales && PORT='$TALON_PORT' yarn next dev --webpack"
+      "$TAPTRADE_OFFICE_PID_FILE" \
+      "$TAPTRADE_OFFICE_LOG_FILE" \
+      "if [ -s '$HOME/.nvm/nvm.sh' ]; then source '$HOME/.nvm/nvm.sh' && nvm use >/dev/null; fi && cd '$TAPTRADE_OFFICE_DIR' && cd packages/office && yarn bootstrap:locales && PORT='$TAPTRADE_OFFICE_PORT' yarn next dev --webpack"
   fi
 
   if service_enabled "player"; then
@@ -244,7 +244,7 @@ function start() {
       "taptrade-player" \
       "$PLAYER_PID_FILE" \
       "$PLAYER_LOG_FILE" \
-      "if [ -s '$HOME/.nvm/nvm.sh' ]; then source '$HOME/.nvm/nvm.sh' && nvm use >/dev/null; fi && cd '$TALON_DIR' && export NEXT_PUBLIC_API_URL='http://localhost:${GO_GATEWAY_PORT}' && cd packages/app && yarn bootstrap:locales && PORT='$PLAYER_PORT' yarn next dev --webpack"
+      "if [ -s '$HOME/.nvm/nvm.sh' ]; then source '$HOME/.nvm/nvm.sh' && nvm use >/dev/null; fi && cd '$TAPTRADE_OFFICE_DIR' && export NEXT_PUBLIC_API_URL='http://localhost:${GO_GATEWAY_PORT}' && cd packages/app && yarn bootstrap:locales && PORT='$PLAYER_PORT' yarn next dev --webpack"
   fi
 
   echo "Use './scripts/local-stack.sh status' to check health."
@@ -273,7 +273,7 @@ function stop_one() {
 function stop_all() {
   stop_one "taptrade-player" "$PLAYER_PID_FILE"
   stop_one "legacy-sportsbook-frontend" "$LEGACY_SPORTSBOOK_PID_FILE"
-  stop_one "talon-backoffice" "$TALON_PID_FILE"
+  stop_one "talon-backoffice" "$TAPTRADE_OFFICE_PID_FILE"
   stop_one "go-gateway" "$GO_GATEWAY_PID_FILE"
   stop_one "phoenix-backend" "$BACKEND_PID_FILE"
 }
@@ -299,14 +299,14 @@ function status_line() {
 function status() {
   status_line "phoenix-backend" "$BACKEND_PID_FILE" "$BACKEND_HTTP_URL"
   status_line "go-gateway" "$GO_GATEWAY_PID_FILE" "$GO_GATEWAY_HTTP_URL"
-  status_line "talon-backoffice" "$TALON_PID_FILE" "$TALON_HTTP_URL"
+  status_line "talon-backoffice" "$TAPTRADE_OFFICE_PID_FILE" "$TAPTRADE_OFFICE_HTTP_URL"
   status_line "taptrade-player" "$PLAYER_PID_FILE" "$PLAYER_HTTP_URL"
 }
 
 function logs() {
   ensure_runtime_dir
-  touch "$BACKEND_LOG_FILE" "$GO_GATEWAY_LOG_FILE" "$TALON_LOG_FILE" "$PLAYER_LOG_FILE"
-  tail -n 120 -f "$BACKEND_LOG_FILE" "$GO_GATEWAY_LOG_FILE" "$TALON_LOG_FILE" "$PLAYER_LOG_FILE"
+  touch "$BACKEND_LOG_FILE" "$GO_GATEWAY_LOG_FILE" "$TAPTRADE_OFFICE_LOG_FILE" "$PLAYER_LOG_FILE"
+  tail -n 120 -f "$BACKEND_LOG_FILE" "$GO_GATEWAY_LOG_FILE" "$TAPTRADE_OFFICE_LOG_FILE" "$PLAYER_LOG_FILE"
 }
 
 command="${1:-}"

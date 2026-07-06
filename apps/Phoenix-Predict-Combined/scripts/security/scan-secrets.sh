@@ -7,12 +7,12 @@ CSV_OUT="$REVIVAL_DIR/05_secret_scan_findings.csv"
 REPORT_OUT="$REVIVAL_DIR/05_SECRET_SCAN_BASELINE.md"
 
 BACKEND_REPO="$ROOT_DIR/phoenix-backend"
-TALON_REPO="$ROOT_DIR/talon-backoffice"
+TAPTRADE_OFFICE_REPO="$ROOT_DIR/talon-backoffice"
 GO_PLATFORM_REPO="$ROOT_DIR/go-platform"
 
 declare -a REPOS=(
   "$BACKEND_REPO"
-  "$TALON_REPO"
+  "$TAPTRADE_OFFICE_REPO"
   "$GO_PLATFORM_REPO"
 )
 
@@ -130,7 +130,7 @@ cat > "$REPORT_OUT" <<EOF
 
 ## Scope
 - \`$BACKEND_REPO\`
-- \`$TALON_REPO\`
+- \`$TAPTRADE_OFFICE_REPO\`
 - \`$GO_PLATFORM_REPO\`
 
 ## Method

@@ -59,3 +59,6 @@ I (docker images/infra) → J (directories) → final verify sweep.
 - Batch E (iteration 6): phoenix/talon prose→TapTrade in 37 living docs (masked:
   Phoenix-Predict-Combined, talon-backoffice, @phoenix-ui, phoenix-revival,
   phoenix-gateway/auth, PhoenixApiClient, archive dir names, phoenix.local, TALON_*).
+- Batch F (iteration 6): PhoenixApiClient⇄TapTradeApiClient flip (class↔alias);
+  TALON_*→TAPTRADE_OFFICE_* (17 scripts, no shims — internal-only, verified);
+  Makefile verify-talon→verify-office + legacy alias target.

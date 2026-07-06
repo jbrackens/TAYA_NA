@@ -2,8 +2,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-TALON_DIR="$ROOT/talon-backoffice"
-APP_DIR="$TALON_DIR/packages/app"
+TAPTRADE_OFFICE_DIR="$ROOT/talon-backoffice"
+APP_DIR="$TAPTRADE_OFFICE_DIR/packages/app"
 YARN_MUTEX="file:/tmp/yarn-mutex-taptrade-discovery-smoke"
 YARN_BIN=""
 
@@ -72,7 +72,7 @@ ensure_yarn() {
 }
 
 run_discovery_contract_tests() {
-  local tsx_bin="$TALON_DIR/node_modules/.bin/tsx"
+  local tsx_bin="$TAPTRADE_OFFICE_DIR/node_modules/.bin/tsx"
   if [[ ! -x "$tsx_bin" ]]; then
     echo "error: tsx test runner not found at $tsx_bin" >&2
     return 1
@@ -95,7 +95,7 @@ use_node_runtime
 ensure_yarn
 select_yarn_bin
 
-cd "$TALON_DIR"
+cd "$TAPTRADE_OFFICE_DIR"
 YARN_MUTEX="$YARN_MUTEX" run_yarn install --frozen-lockfile
 
 run_discovery_contract_tests

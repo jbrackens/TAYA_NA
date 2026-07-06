@@ -158,12 +158,12 @@ IFS='|' read -r player_packages player_major player_minor player_patch player_un
   echo
   echo "| Surface | Packages | Major | Minor | Patch | Unknown | Raw Scan | Parsed Summary |"
   echo "|---|---:|---:|---:|---:|---:|---|---|"
-  echo "| Talon Backoffice | $talon_packages | $talon_major | $talon_minor | $talon_patch | $talon_unknown | \`$ARTIFACT_DIR/talon_backoffice_yarn_outdated.jsonl\` | \`$ARTIFACT_DIR/talon_backoffice_summary.json\` |"
+  echo "| TapTrade office Backoffice | $talon_packages | $talon_major | $talon_minor | $talon_patch | $talon_unknown | \`$ARTIFACT_DIR/talon_backoffice_yarn_outdated.jsonl\` | \`$ARTIFACT_DIR/talon_backoffice_summary.json\` |"
   echo "| TapTrade Player App | $player_packages | $player_major | $player_minor | $player_patch | $player_unknown | \`$ARTIFACT_DIR/taptrade_player_app_yarn_outdated.jsonl\` | \`$ARTIFACT_DIR/taptrade_player_app_summary.json\` |"
   echo
   echo "## Top Outdated Packages (First 25)"
   echo
-  echo "### Talon Backoffice"
+  echo "### TapTrade office Backoffice"
   cat "$ARTIFACT_DIR/talon_backoffice_top_updates.md"
   echo
   echo "### TapTrade Player App"

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# SYSTEM HEALTH CHECK — Talon Backoffice (Admin Panel)
+# SYSTEM HEALTH CHECK — TapTrade office Backoffice (Admin Panel)
 # =====================================================
 # This script verifies that all core backoffice systems are wired into the frontend.
 # Run before EVERY commit, EVERY PR, EVERY deploy. No exceptions.

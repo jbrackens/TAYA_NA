@@ -187,12 +187,12 @@ missing=0
 check_token \
   "Inherited Phoenix API client class retained" \
   "talon-backoffice/packages/api-client/src/client.ts" \
-  'export class PhoenixApiClient' \
+  'export class TapTradeApiClient' \
   "Preserves existing shared-client imports while launch code can adopt TapTrade naming." || missing=1
 check_token \
   "TapTrade API client alias added instead of replacing class" \
   "talon-backoffice/packages/api-client/src/client.ts" \
-  'export const TapTradeApiClient = PhoenixApiClient' \
+  'export const PhoenixApiClient = TapTradeApiClient' \
   "Adds launch-facing naming without deleting the inherited class." || missing=1
 check_token \
   "Shared entrypoint exports both API-client names" \

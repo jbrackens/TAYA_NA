@@ -25,7 +25,7 @@ RUNTIME_GATE_PICK_FREE_PORTS="${RUNTIME_GATE_PICK_FREE_PORTS:-0}"
 RUNTIME_GATE_RUN_LIVE_NO_MONEY_BOUNDARY="${RUNTIME_GATE_RUN_LIVE_NO_MONEY_BOUNDARY:-1}"
 
 JAVA_PROFILE_VERSION="${JAVA_PROFILE_VERSION:-21}"
-TALON_PORT="${TALON_PORT:-3000}"
+TAPTRADE_OFFICE_PORT="${TAPTRADE_OFFICE_PORT:-3000}"
 PLAYER_PORT="${PLAYER_PORT:-${SPORTSBOOK_PORT:-3002}}"
 GO_GATEWAY_PORT="${GO_GATEWAY_PORT:-18080}"
 
@@ -48,13 +48,13 @@ pick_free_port() {
 }
 
 if is_truthy "$RUNTIME_GATE_PICK_FREE_PORTS"; then
-  TALON_PORT="$(pick_free_port "$TALON_PORT")"
+  TAPTRADE_OFFICE_PORT="$(pick_free_port "$TAPTRADE_OFFICE_PORT")"
   PLAYER_PORT="$(pick_free_port "$PLAYER_PORT")"
   GO_GATEWAY_PORT="$(pick_free_port "$GO_GATEWAY_PORT")"
 fi
 
 BACKEND_STATUS_URL="${BACKEND_STATUS_URL:-http://127.0.0.1:13551/api/v1/status}"
-TALON_STATUS_URL="${TALON_STATUS_URL:-http://127.0.0.1:${TALON_PORT}}"
+TAPTRADE_OFFICE_STATUS_URL="${TAPTRADE_OFFICE_STATUS_URL:-http://127.0.0.1:${TAPTRADE_OFFICE_PORT}}"
 PLAYER_STATUS_URL="${PLAYER_STATUS_URL:-http://127.0.0.1:${PLAYER_PORT}}"
 GO_GATEWAY_STATUS_URL="${GO_GATEWAY_STATUS_URL:-http://127.0.0.1:${GO_GATEWAY_PORT}/api/v1/status}"
 
@@ -109,7 +109,7 @@ cleanup() {
   local log_file="$ARTIFACT_DIR/runtime_profile_${TS_TAG}_stack_stop.log"
   if env \
       JAVA_PROFILE_VERSION="$JAVA_PROFILE_VERSION" \
-      TALON_PORT="$TALON_PORT" \
+      TAPTRADE_OFFICE_PORT="$TAPTRADE_OFFICE_PORT" \
       PLAYER_PORT="$PLAYER_PORT" \
       GO_GATEWAY_PORT="$GO_GATEWAY_PORT" \
       bash "$STACK_SCRIPT" stop >"$log_file" 2>&1; then
@@ -124,7 +124,7 @@ trap cleanup EXIT
   echo "# Runtime Gate Profile Checklist ($DATE_TAG)"
   echo
   echo "- Profile file: \`$PROFILE_FILE\`"
-  echo "- Ports: talon=\`$TALON_PORT\`, taptrade-player=\`$PLAYER_PORT\`, go-gateway=\`$GO_GATEWAY_PORT\`"
+  echo "- Ports: office=\`$TAPTRADE_OFFICE_PORT\`, taptrade-player=\`$PLAYER_PORT\`, go-gateway=\`$GO_GATEWAY_PORT\`"
   echo "- Discovery/API contract iterations: \`$TAPTRADE_DISCOVERY_CONTRACT_ITERATIONS\`"
   echo "- Live no-money boundary probe: \`$RUNTIME_GATE_RUN_LIVE_NO_MONEY_BOUNDARY\`"
   echo
@@ -139,7 +139,7 @@ if is_truthy "$RUNTIME_GATE_BOOTSTRAP"; then
     "stack bootstrap" \
     env \
     JAVA_PROFILE_VERSION="$JAVA_PROFILE_VERSION" \
-    TALON_PORT="$TALON_PORT" \
+    TAPTRADE_OFFICE_PORT="$TAPTRADE_OFFICE_PORT" \
     PLAYER_PORT="$PLAYER_PORT" \
     GO_GATEWAY_PORT="$GO_GATEWAY_PORT" \
     bash "$STACK_SCRIPT" bootstrap || overall=1
@@ -150,7 +150,7 @@ if is_truthy "$RUNTIME_GATE_AUTOSTART_STACK"; then
     "stack start" \
     env \
     JAVA_PROFILE_VERSION="$JAVA_PROFILE_VERSION" \
-    TALON_PORT="$TALON_PORT" \
+    TAPTRADE_OFFICE_PORT="$TAPTRADE_OFFICE_PORT" \
     PLAYER_PORT="$PLAYER_PORT" \
     GO_GATEWAY_PORT="$GO_GATEWAY_PORT" \
     bash "$STACK_SCRIPT" start || overall=1
@@ -162,14 +162,14 @@ fi
 run_step "wait backend status" wait_for_http_200 "$BACKEND_STATUS_URL" "backend status" || overall=1
 run_step "wait go-gateway status" wait_for_http_200 "$GO_GATEWAY_STATUS_URL" "go-gateway status" || overall=1
 run_step "wait TapTrade player status" wait_for_http_200 "$PLAYER_STATUS_URL" "TapTrade player status" || overall=1
-run_step "wait talon status" wait_for_http_200 "$TALON_STATUS_URL" "talon status" || overall=1
+run_step "wait office status" wait_for_http_200 "$TAPTRADE_OFFICE_STATUS_URL" "office status" || overall=1
 
 if [[ "$overall" -eq 0 ]] && is_truthy "$RUNTIME_GATE_RUN_LIVE_NO_MONEY_BOUNDARY"; then
   run_step \
     "live no-money boundary probe" \
     env \
     PLAYER_BASE_URL="http://127.0.0.1:${PLAYER_PORT}" \
-    OFFICE_BASE_URL="http://127.0.0.1:${TALON_PORT}" \
+    OFFICE_BASE_URL="http://127.0.0.1:${TAPTRADE_OFFICE_PORT}" \
     GATEWAY_BASE_URL="http://127.0.0.1:${GO_GATEWAY_PORT}" \
     make -C "$ROOT_DIR" qa-live-no-money-boundary || overall=1
 fi
