@@ -1,6 +1,6 @@
 #!/bin/bash
 ###############################################################################
-# Phoenix Sportsbook Stack — Smoke Test
+# TapTrade Sportsbook Stack — Smoke Test
 #
 # Tests the currently wired local stack:
 #   1. Sports listing
@@ -45,7 +45,7 @@ LAST_BODY=""
 
 echo ""
 echo -e "${BLUE}╔══════════════════════════════════════════════════════════════╗${RESET}"
-echo -e "${BLUE}║       Phoenix Smoke Test — $(date '+%Y-%m-%d %H:%M:%S')        ║${RESET}"
+echo -e "${BLUE}║       TapTrade Smoke Test — $(date '+%Y-%m-%d %H:%M:%S')        ║${RESET}"
 echo -e "${BLUE}║       API: ${API_BASE}${RESET}"
 echo -e "${BLUE}╚══════════════════════════════════════════════════════════════╝${RESET}"
 echo ""

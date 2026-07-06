@@ -1,6 +1,6 @@
 import { enumToObject } from "../../../lib/utils/enums";
 import { buildTableFilterOptions } from "../../../lib/utils/filters";
-import { TalonAuditLogCategory, TalonAuditLogType } from "../../../types/logs";
+import { OfficeAuditLogCategory, OfficeAuditLogType } from "../../../types/logs";
 
 const resolveActionCategory = (action: string): string => {
   const normalizedAction = normalizeAuditActionForDisplay(action);
@@ -36,13 +36,13 @@ export const normalizeAuditActionForDisplay = (action?: string): string => {
 };
 
 export const resolveCategory = (
-  type?: TalonAuditLogCategory | string,
+  type?: OfficeAuditLogCategory | string,
   action?: string,
 ) => {
   switch (`${type || ""}`) {
-    case TalonAuditLogCategory.CREATION:
+    case OfficeAuditLogCategory.CREATION:
       return "CELL_TYPE_CREATION";
-    case TalonAuditLogCategory.ADJUSTMENT:
+    case OfficeAuditLogCategory.ADJUSTMENT:
       return "CELL_TYPE_ADJUSTMENT";
     default:
       return resolveActionCategory(`${action || ""}`.toLowerCase());
@@ -91,13 +91,13 @@ export const resolveProductLabel = (
 };
 
 export const resolveType = (
-  type?: TalonAuditLogType | string,
+  type?: OfficeAuditLogType | string,
   action?: string,
 ) => {
   switch (`${type || ""}`) {
-    case TalonAuditLogType.ACCOUNT_CREATION:
+    case OfficeAuditLogType.ACCOUNT_CREATION:
       return "CELL_ACTION_ACCOUNT_CREATION";
-    case TalonAuditLogType.ACCOUNT_CLOSURE:
+    case OfficeAuditLogType.ACCOUNT_CLOSURE:
       return "CELL_ACTION_ACCOUNT_CLOSURE";
     default:
       return (
@@ -108,4 +108,4 @@ export const resolveType = (
 };
 
 export const composeOptions = (t: any, prefix?: string) =>
-  buildTableFilterOptions(enumToObject(TalonAuditLogCategory), t, prefix);
+  buildTableFilterOptions(enumToObject(OfficeAuditLogCategory), t, prefix);

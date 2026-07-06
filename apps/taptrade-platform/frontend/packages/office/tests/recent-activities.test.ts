@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { normalizeRecentActivities } from "../lib/utils/recent-activities";
-import { TalonPunterActivityEnum } from "../types/punters";
+import { OfficePunterActivityEnum } from "../types/punters";
 
 describe("recent activity normalization", () => {
   it("coerces legacy currency timeline amounts to point units", () => {
@@ -32,7 +32,7 @@ describe("recent activity normalization", () => {
       {
         id: "wallet-1",
         date: "2026-03-14T10:00:00Z",
-        type: TalonPunterActivityEnum.PREDICTION_RESULT,
+        type: OfficePunterActivityEnum.PREDICTION_RESULT,
         message: "Point adjustment - Admin grant",
         data: {
           unit: "PTS",
@@ -42,7 +42,7 @@ describe("recent activity normalization", () => {
       {
         id: "prediction-1",
         date: "2026-03-14T12:00:00Z",
-        type: TalonPunterActivityEnum.PREDICTION_ORDER,
+        type: OfficePunterActivityEnum.PREDICTION_ORDER,
         message: "Prediction placed - MLBB final",
         data: {
           unit: "PTS",

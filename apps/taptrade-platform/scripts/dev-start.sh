@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###############################################################################
-# Phoenix Sportsbook Development Start Script
+# TapTrade Sportsbook Development Start Script
 # Starts all services needed for local development
 #
 # Usage:
@@ -135,7 +135,7 @@ build_workspace_packages() {
     fi
   done
 
-  # Phoenix Frontend
+  # TapTrade Frontend
   for pkg in utils api-client design-system; do
     local pkg_dir="${ROOT_DIR}/phoenix-frontend/packages/${pkg}"
     if [ ! -f "${pkg_dir}/dist/index.js" ]; then
@@ -352,7 +352,7 @@ start_backoffice_app() {
 display_summary() {
   echo ""
   echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
-  echo -e "${GREEN}  Phoenix Sportsbook Development Environment Started${NC}"
+  echo -e "${GREEN}  TapTrade Sportsbook Development Environment Started${NC}"
   echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
   echo ""
   echo "  Backend:"
@@ -422,7 +422,7 @@ for arg in "$@"; do
 done
 
 main() {
-  log_info "Starting Phoenix Sportsbook (mode: ${MODE})"
+  log_info "Starting TapTrade Sportsbook (mode: ${MODE})"
   log_info "Root: ${ROOT_DIR}"
   echo ""
 

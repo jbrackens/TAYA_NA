@@ -309,8 +309,8 @@ describe("retired App Router sportsbook and prototype surfaces", () => {
     expect(limitsUpdate).toContain('"pointUse"');
     expect(limitsUpdate).toContain("values.pointAdd");
     expect(limitsUpdate).toContain("values.pointUse");
-    expect(limitsUpdate).toContain("[TalonPunterLimitsTypesEnum.POINT_ADD]");
-    expect(limitsUpdate).toContain("[TalonPunterLimitsTypesEnum.POINT_USE]");
+    expect(limitsUpdate).toContain("[OfficePunterLimitsTypesEnum.POINT_ADD]");
+    expect(limitsUpdate).toContain("[OfficePunterLimitsTypesEnum.POINT_USE]");
     expect(limitsUpdate).not.toContain('unit="$"');
     expect(limitsUpdate).not.toContain("editables.deposits");
     expect(limitsUpdate).not.toContain("values.deposits");
@@ -318,7 +318,7 @@ describe("retired App Router sportsbook and prototype surfaces", () => {
     expect(limitsUpdate).not.toContain("editables.stake");
     expect(limitsUpdate).not.toContain("values.losses");
     expect(limitsUpdate).not.toContain('field="losses"');
-    expect(limitsUpdate).not.toContain("TalonPunterLimitsTypesEnum.STAKE");
+    expect(limitsUpdate).not.toContain("OfficePunterLimitsTypesEnum.STAKE");
     expect(limitsUpdate).not.toContain("HEADER_CARD_LIMITS_STAKE");
     expect(limitsUpdate).not.toContain("HEADER_CARD_LIMITS_LOSS");
     expect(punterTypes).toContain('POINT_ADD = "deposits"');
@@ -329,7 +329,7 @@ describe("retired App Router sportsbook and prototype surfaces", () => {
     expect(punterTypes).not.toContain("STAKE =");
     expect(punterTypes).not.toContain("DEPOSIT_AMOUNT =");
     expect(punterTypes).not.toContain("STAKE_AMOUNT =");
-    expect(punterTypes).not.toContain("TalonPunterLimitsTypesEnum.STAKE");
+    expect(punterTypes).not.toContain("OfficePunterLimitsTypesEnum.STAKE");
     expect(limitsHistory).toContain("limitTypeTranslationKey");
     expect(limitsHistory).toContain("LIMIT_TYPE_POINT_ADD_AMOUNT");
     expect(limitsHistory).toContain("LIMIT_TYPE_PREDICTION_POINT_AMOUNT");

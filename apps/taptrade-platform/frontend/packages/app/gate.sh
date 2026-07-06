@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###############################################################################
-# Phoenix Sportsbook Frontend - Automated Quality Gates
+# TapTrade Sportsbook Frontend - Automated Quality Gates
 # Runs comprehensive checks on TypeScript, imports, mocks, TODOs, and build
 ###############################################################################
 
@@ -34,7 +34,7 @@ cd "$SCRIPT_DIR"
 print_header() {
     echo ""
     echo -e "${BLUE}╔════════════════════════════════════════════════════════════════╗${RESET}"
-    echo -e "${BLUE}║         Phoenix Quality Gates - $(date '+%Y-%m-%d %H:%M:%S')         ║${RESET}"
+    echo -e "${BLUE}║         TapTrade Quality Gates - $(date '+%Y-%m-%d %H:%M:%S')         ║${RESET}"
     echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${RESET}"
     echo ""
 }
@@ -109,7 +109,7 @@ gate_typescript() {
 ###############################################################################
 
 gate_phantom_imports() {
-    print_gate_start "2" "No Phantom Imports (@taptrade-ui/design-system|@phoenix-ui/design-system)"
+    print_gate_start "2" "No Phantom Imports (@taptrade-ui/design-system|@taptrade-ui/design-system)"
 
     # Search for @taptrade-ui/design-system imports in app/
     local count=$(grep -r "@taptrade-ui/design-system" app/ 2>/dev/null | grep -v node_modules | wc -l)

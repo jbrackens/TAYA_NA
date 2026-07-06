@@ -1,15 +1,15 @@
 import { Typography, Drawer, Timeline, Skeleton } from "antd";
 import { useTranslation } from "i18n";
 import UserTalonPunterRecentActivityItem from "./item";
-import { TalonPunterRecentActivityItem } from "../../../types/punters";
+import { OfficePunterRecentActivityItem } from "../../../types/punters";
 
-export type TalonPuntersRecentActivityProps = {
-  data?: TalonPunterRecentActivityItem[];
+export type OfficePuntersRecentActivityProps = {
+  data?: OfficePunterRecentActivityItem[];
   isLoading: boolean | undefined;
 };
 
-export type TalonPuntersRecentActivityDrawerProps = {
-  data?: TalonPunterRecentActivityItem[];
+export type OfficePuntersRecentActivityDrawerProps = {
+  data?: OfficePunterRecentActivityItem[];
   horizontal?: boolean;
   visible: boolean | undefined;
   isLoading: boolean | undefined;
@@ -19,12 +19,12 @@ export type TalonPuntersRecentActivityDrawerProps = {
 export const UsersRecentActivity = ({
   data = [],
   isLoading,
-}: TalonPuntersRecentActivityProps) => {
+}: OfficePuntersRecentActivityProps) => {
   return (
     <Typography>
       <Skeleton loading={isLoading} active>
         <Timeline>
-          {data.map((item: TalonPunterRecentActivityItem) => (
+          {data.map((item: OfficePunterRecentActivityItem) => (
             <UserTalonPunterRecentActivityItem key={item.id} {...item} />
           ))}
         </Timeline>
@@ -38,7 +38,7 @@ const UsersRecentActivityDrawer = ({
   visible,
   isLoading,
   onClose,
-}: TalonPuntersRecentActivityDrawerProps) => {
+}: OfficePuntersRecentActivityDrawerProps) => {
   const { t } = useTranslation("page-users");
 
   return (

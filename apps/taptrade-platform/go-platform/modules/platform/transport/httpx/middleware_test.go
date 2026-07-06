@@ -195,9 +195,9 @@ func TestMetricsHandlerOutputsPrometheusFormat(t *testing.T) {
 
 	body := rec.Body.String()
 	for _, expected := range []string{
-		"phoenix_http_requests_total",
+		"taptrade_http_requests_total",
 		`service="gateway",method="GET",path="/readyz",status="200"`,
-		"phoenix_http_request_duration_ms_sum",
+		"taptrade_http_request_duration_ms_sum",
 	} {
 		if !strings.Contains(body, expected) {
 			t.Fatalf("expected metrics output to contain %q, got: %s", expected, body)
@@ -228,7 +228,7 @@ func TestMetricsHandlerAppendsRegisteredCollectors(t *testing.T) {
 
 	body := rec.Body.String()
 	// HTTP metrics still present.
-	if !strings.Contains(body, "phoenix_http_requests_total") {
+	if !strings.Contains(body, "taptrade_http_requests_total") {
 		t.Fatalf("expected built-in HTTP metrics, got: %s", body)
 	}
 	// Collector output appended.
@@ -236,7 +236,7 @@ func TestMetricsHandlerAppendsRegisteredCollectors(t *testing.T) {
 		t.Fatalf("expected collector output in body, got: %s", body)
 	}
 	// Collector text must come AFTER the HTTP metrics block.
-	if strings.Index(body, "gateway_demo_total") < strings.Index(body, "phoenix_http_requests_total") {
+	if strings.Index(body, "gateway_demo_total") < strings.Index(body, "taptrade_http_requests_total") {
 		t.Fatalf("expected collector output after HTTP metrics, got: %s", body)
 	}
 }

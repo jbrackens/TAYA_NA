@@ -13,10 +13,10 @@ import { sanitizeAuditDetailsForDisplay } from "./utils/display-sanitizer";
 import Table from "../layout/table";
 // import TableFilterText from "../layout/table/filter-text";
 import {
-  TalonAuditLog,
-  TalonAuditLogs,
-  TalonAuditLogCategory,
-  TalonAuditLogType,
+  OfficeAuditLog,
+  OfficeAuditLogs,
+  OfficeAuditLogCategory,
+  OfficeAuditLogType,
 } from "../../types/logs";
 import { TablePagination } from "../../types/filters";
 import { useTimezone } from "@taptrade-ui/utils";
@@ -29,7 +29,7 @@ type ColumnDef = {
 };
 
 type AuditLogsListProps = {
-  data: TalonAuditLogs;
+  data: OfficeAuditLogs;
   pagination: {} | TablePagination;
   isLoading: boolean | undefined;
   handleTableChange: any;
@@ -51,14 +51,14 @@ const AuditLogsList = ({
   const formatJSON = (value: unknown) =>
     JSON.stringify(sanitizeAuditDetailsForDisplay(value || {}), null, "  ");
 
-  const renderLog = (value: TalonAuditLog) => {
+  const renderLog = (value: OfficeAuditLog) => {
     const category = value?.category;
     const details = `${value?.details || ""}`.trim();
     const hasDifference =
       Boolean(value?.dataBefore && Object.keys(value.dataBefore).length) ||
       Boolean(value?.dataAfter && Object.keys(value.dataAfter).length);
     switch (category) {
-      case TalonAuditLogCategory.CREATION:
+      case OfficeAuditLogCategory.CREATION:
         return (
           <Typography>
             {t("page-audit-logs:CELL_DETAILS_LABEL_NONE")}
@@ -114,7 +114,7 @@ const AuditLogsList = ({
     {
       title: t("page-audit-logs:HEADER_DATE"),
       width: 240,
-      render: (record: TalonAuditLog) => {
+      render: (record: OfficeAuditLog) => {
         const value = record?.occurredAt || record?.createdAt;
         if (!value) {
           return "-";
@@ -134,10 +134,10 @@ const AuditLogsList = ({
       width: 160,
       // sorter: true,
       ellipsis: true,
-      render: (record: TalonAuditLog) =>
+      render: (record: OfficeAuditLog) =>
         t(
           `page-audit-logs:${resolveCategory(
-            record?.category as TalonAuditLogCategory,
+            record?.category as OfficeAuditLogCategory,
             record?.action,
           )}`,
         ),
@@ -147,10 +147,10 @@ const AuditLogsList = ({
       width: 240,
       ellipsis: true,
       // sorter: true,
-      render: (record: TalonAuditLog) =>
+      render: (record: OfficeAuditLog) =>
         t(
           `page-audit-logs:${resolveType(
-            record?.type as TalonAuditLogType,
+            record?.type as OfficeAuditLogType,
             record?.action,
           )}`,
         ),
@@ -159,7 +159,7 @@ const AuditLogsList = ({
       title: t("page-audit-logs:HEADER_PRODUCT"),
       width: 140,
       ellipsis: true,
-      render: (record: TalonAuditLog) =>
+      render: (record: OfficeAuditLog) =>
         t(
           `page-audit-logs:${resolveProductLabel(
             `${record?.product || ""}`,
@@ -188,7 +188,7 @@ const AuditLogsList = ({
   return (
     <Table
       columns={columns}
-      rowKey={(record: TalonAuditLog) =>
+      rowKey={(record: OfficeAuditLog) =>
         `${record.id || ""}${record.occurredAt || record.createdAt || ""}`
       }
       dataSource={data}

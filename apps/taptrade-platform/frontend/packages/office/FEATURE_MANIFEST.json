@@ -1,5 +1,5 @@
 {
-  "$schema": "phoenix-office-feature-manifest-v1",
+  "$schema": "taptrade-office-feature-manifest-v1",
   "generated": "2026-05-18",
   "generator": "hand-seeded from session greps; statuses carry a `verification` field — run gate.sh + per-route audit to promote `inferred`/`unverified` to `verified`",
   "intent": "Office is NOT a pages->app migration like packages/app. It is a back-office forked from a sportsbook (2026-04-16) and partially re-pointed at the prediction domain. Completeness here means: every admin surface is REAL (wired to a real gateway API), no SAMPLE_/MOCK_ data, and the sportsbook carcass (CLAUDE.md rule #2) is removed.",

@@ -79,3 +79,6 @@ I (docker images/infra) → J (directories) → final verify sweep.
   residual strings (30 files).
 - Batch J (iteration 8): dirs apps/Phoenix-Predict-Combined→apps/taptrade-platform,
   talon-backoffice→frontend (git mv); 123 path-reference files updated atomically.
+- Final sweep (iteration 8): office Talon*→Office* identifier families (23 files);
+  metric prefix phoenix_→taptrade_ (emitters+alerts, 5 files); dead viegg pipeline
+  deleted (helm/Jenkinsfile/k8s scripts); spec.md + 45-file masked prose pass.

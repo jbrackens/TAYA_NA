@@ -11,14 +11,14 @@ import Table from "../../layout/table";
 import TableActions from "../../layout/table/actions";
 import defaultMenuStructure from "../../../providers/menu/structure";
 // import { PunterStatus } from "@taptrade-ui/utils";
-import { TalonPunterShort } from "../../../types/punters";
+import { OfficePunterShort } from "../../../types/punters";
 import { Input } from "antd";
 import { useRouter } from "next/router";
 import { addQueryParam } from "../../../utils/queryParams";
 import { useTimezone } from "@taptrade-ui/utils";
 
 type UsersListProps = {
-  data: TalonPunterShort[];
+  data: OfficePunterShort[];
   pagination: TablePagination | {};
   isLoading: boolean | undefined;
   handleTableChange: any;

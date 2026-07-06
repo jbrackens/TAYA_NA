@@ -1,6 +1,6 @@
 import {
-  TalonPunterActivityEnum,
-  TalonPunterRecentActivityItem,
+  OfficePunterActivityEnum,
+  OfficePunterRecentActivityItem,
 } from "../../types/punters";
 
 type GoTimelineEntry = {
@@ -22,7 +22,7 @@ const SYSTEM_FALLBACK_LABEL = "system";
 
 const isLegacyRecentActivity = (
   item: any,
-): item is TalonPunterRecentActivityItem =>
+): item is OfficePunterRecentActivityItem =>
   typeof item?.id !== "undefined" &&
   typeof item?.date === "string" &&
   typeof item?.type === "string" &&
@@ -65,40 +65,40 @@ const normalizeAmount = (
   return undefined;
 };
 
-const normalizeActivityType = (type: string): TalonPunterActivityEnum => {
+const normalizeActivityType = (type: string): OfficePunterActivityEnum => {
   switch (type) {
     case "BET_PLACEMENT":
     case "PREDICTION_ORDER":
-      return TalonPunterActivityEnum.PREDICTION_ORDER;
+      return OfficePunterActivityEnum.PREDICTION_ORDER;
     case "BET_WON":
     case "PREDICTION_RESULT":
-      return TalonPunterActivityEnum.PREDICTION_RESULT;
+      return OfficePunterActivityEnum.PREDICTION_RESULT;
     case "SYSTEM_LOGIN":
     default:
-      return TalonPunterActivityEnum.SYSTEM_LOGIN;
+      return OfficePunterActivityEnum.SYSTEM_LOGIN;
   }
 };
 
 const resolveTimelineType = (
   entry: GoTimelineEntry,
-): TalonPunterActivityEnum => {
+): OfficePunterActivityEnum => {
   const normalizedEntryType = `${entry.entry_type || ""}`.toLowerCase();
   const normalizedStatus = `${entry.status || ""}`.toLowerCase();
   const amount = Number(entry.amount);
 
   if (normalizedEntryType === "wallet_transaction") {
     return amount > 0
-      ? TalonPunterActivityEnum.PREDICTION_RESULT
-      : TalonPunterActivityEnum.PREDICTION_ORDER;
+      ? OfficePunterActivityEnum.PREDICTION_RESULT
+      : OfficePunterActivityEnum.PREDICTION_ORDER;
   }
 
   if (normalizedEntryType === "bet") {
     return normalizedStatus === "won"
-      ? TalonPunterActivityEnum.PREDICTION_RESULT
-      : TalonPunterActivityEnum.PREDICTION_ORDER;
+      ? OfficePunterActivityEnum.PREDICTION_RESULT
+      : OfficePunterActivityEnum.PREDICTION_ORDER;
   }
 
-  return TalonPunterActivityEnum.SYSTEM_LOGIN;
+  return OfficePunterActivityEnum.SYSTEM_LOGIN;
 };
 
 const buildMessage = (entry: GoTimelineEntry): string => {
@@ -127,7 +127,7 @@ const buildSystemLabel = (entry: GoTimelineEntry): string => {
 
 const normalizeTimelineEntry = (
   entry: GoTimelineEntry,
-): TalonPunterRecentActivityItem => {
+): OfficePunterRecentActivityItem => {
   const type = resolveTimelineType(entry);
 
   return {
@@ -138,7 +138,7 @@ const normalizeTimelineEntry = (
     type,
     message: buildMessage(entry),
     data:
-      type === TalonPunterActivityEnum.SYSTEM_LOGIN
+      type === OfficePunterActivityEnum.SYSTEM_LOGIN
         ? {
             ip: buildSystemLabel(entry),
           }
@@ -151,7 +151,7 @@ const normalizeTimelineEntry = (
 
 export const normalizeRecentActivities = (
   payload: any,
-): TalonPunterRecentActivityItem[] =>
+): OfficePunterRecentActivityItem[] =>
   extractTimelineEntries(payload).map((entry) =>
     isLegacyRecentActivity(entry)
       ? {

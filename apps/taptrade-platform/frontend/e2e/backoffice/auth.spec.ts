@@ -2,11 +2,11 @@ import { test, expect } from "@playwright/test";
 import { loginAsAdmin, logoutAdmin } from "../fixtures/auth";
 
 /**
- * Talon Backoffice - Admin Authentication Tests
+ * office Backoffice - Admin Authentication Tests
  * Tests admin authentication flows
  */
 
-test.describe("Talon Backoffice - Admin Authentication", () => {
+test.describe("office Backoffice - Admin Authentication", () => {
   test("Navigate to /dashboard → redirected to login when unauthenticated", async ({
     page,
   }) => {

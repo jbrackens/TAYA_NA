@@ -134,10 +134,10 @@ func MetricsHandler(registry *MetricsRegistry, service string) http.Handler {
 		}
 
 		w.Header().Set("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
-		_, _ = w.Write([]byte("# HELP phoenix_http_requests_total Total HTTP requests processed.\n"))
-		_, _ = w.Write([]byte("# TYPE phoenix_http_requests_total counter\n"))
-		_, _ = w.Write([]byte("# HELP phoenix_http_request_duration_ms_sum Total request duration in milliseconds.\n"))
-		_, _ = w.Write([]byte("# TYPE phoenix_http_request_duration_ms_sum counter\n"))
+		_, _ = w.Write([]byte("# HELP taptrade_http_requests_total Total HTTP requests processed.\n"))
+		_, _ = w.Write([]byte("# TYPE taptrade_http_requests_total counter\n"))
+		_, _ = w.Write([]byte("# HELP taptrade_http_request_duration_ms_sum Total request duration in milliseconds.\n"))
+		_, _ = w.Write([]byte("# TYPE taptrade_http_request_duration_ms_sum counter\n"))
 
 		for _, metric := range registry.Snapshot() {
 			status := strconv.Itoa(metric.StatusCode)
@@ -148,8 +148,8 @@ func MetricsHandler(registry *MetricsRegistry, service string) http.Handler {
 				prometheusEscape(metric.Path),
 				prometheusEscape(status),
 			)
-			_, _ = w.Write([]byte(fmt.Sprintf("phoenix_http_requests_total{%s} %d\n", labels, metric.Count)))
-			_, _ = w.Write([]byte(fmt.Sprintf("phoenix_http_request_duration_ms_sum{%s} %d\n", labels, metric.DurationMsSum)))
+			_, _ = w.Write([]byte(fmt.Sprintf("taptrade_http_requests_total{%s} %d\n", labels, metric.Count)))
+			_, _ = w.Write([]byte(fmt.Sprintf("taptrade_http_request_duration_ms_sum{%s} %d\n", labels, metric.DurationMsSum)))
 		}
 
 		// Append any registered domain/infrastructure collectors.

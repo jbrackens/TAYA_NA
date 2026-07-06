@@ -1,5 +1,5 @@
 /**
- * Mock-server websocket handler — matches the Go gateway/phoenix-realtime contract.
+ * Mock-server websocket handler — matches the Go gateway/taptrade-realtime contract.
  *
  * Supported channels:
  *   market^{marketId}     — market odds/status updates

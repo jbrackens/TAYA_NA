@@ -185,7 +185,7 @@ check_token() {
 
 missing=0
 check_token \
-  "Inherited Phoenix API client class retained" \
+  "Inherited TapTrade API client class retained" \
   "frontend/packages/api-client/src/client.ts" \
   'export class TapTradeApiClient' \
   "Preserves existing shared-client imports while launch code can adopt TapTrade naming." || missing=1

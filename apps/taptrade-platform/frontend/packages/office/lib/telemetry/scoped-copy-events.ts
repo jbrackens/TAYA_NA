@@ -50,7 +50,7 @@ export const SCOPED_COPY_EVENT_DETAIL_KEYS = [
 ] as const;
 
 export const AUDIT_LOGS_SCOPED_COPY_EVENT =
-  "phoenix.office.auditLogs.scopedCopy";
+  "taptrade.office.auditLogs.scopedCopy";
 
 export const emitScopedCopyEvent = (detail: ScopedCopyEventDetail): void => {
   if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") {

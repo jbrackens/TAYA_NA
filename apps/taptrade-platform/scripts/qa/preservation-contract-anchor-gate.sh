@@ -171,7 +171,7 @@ compare_anchor_set \
 	"$tmp_dir/gateway-routes.unexpected_removed" >> "$summary_rows"
 
 compare_anchor_set \
-	"Phoenix API-client methods" \
+	"TapTrade API-client methods" \
 	"$tmp_dir/api-client-methods.head" \
 	"$tmp_dir/api-client-methods.current" \
 	"$tmp_dir/api-client-methods.removed" \
@@ -223,7 +223,7 @@ unexpected_total="$(awk -F '\t' '{ total += $5 } END { print total + 0 }' "$summ
 			openapi) label="Gateway OpenAPI paths" ;;
 			handler-routes) label="Gateway handler route strings" ;;
 			gateway-routes) label="Gateway route strings across core handlers" ;;
-			api-client-methods) label="Phoenix API-client methods" ;;
+			api-client-methods) label="TapTrade API-client methods" ;;
 			prediction-client-methods) label="Prediction API-client methods" ;;
 			app-wallet-client-exports) label="Player wallet client exports" ;;
 		esac
@@ -243,7 +243,7 @@ unexpected_total="$(awk -F '\t' '{ total += $5 } END { print total + 0 }' "$summ
 			openapi) label="Gateway OpenAPI paths" ;;
 			handler-routes) label="Gateway handler route strings" ;;
 			gateway-routes) label="Gateway route strings across core handlers" ;;
-			api-client-methods) label="Phoenix API-client methods" ;;
+			api-client-methods) label="TapTrade API-client methods" ;;
 			prediction-client-methods) label="Prediction API-client methods" ;;
 			app-wallet-client-exports) label="Player wallet client exports" ;;
 		esac
@@ -263,7 +263,7 @@ unexpected_total="$(awk -F '\t' '{ total += $5 } END { print total + 0 }' "$summ
 			openapi) label="Gateway OpenAPI paths" ;;
 			handler-routes) label="Gateway handler route strings" ;;
 			gateway-routes) label="Gateway route strings across core handlers" ;;
-			api-client-methods) label="Phoenix API-client methods" ;;
+			api-client-methods) label="TapTrade API-client methods" ;;
 			prediction-client-methods) label="Prediction API-client methods" ;;
 			app-wallet-client-exports) label="Player wallet client exports" ;;
 		esac

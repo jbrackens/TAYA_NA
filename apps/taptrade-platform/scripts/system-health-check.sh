@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# SYSTEM HEALTH CHECK — Phoenix Sportsbook Player App
+# SYSTEM HEALTH CHECK — TapTrade Sportsbook Player App
 # =====================================================
 # This script verifies that all 24 core systems are wired into the frontend.
 # Run before EVERY commit, EVERY PR, EVERY deploy. No exceptions.
@@ -104,7 +104,7 @@ check_warn() {
 
 echo ""
 echo -e "${BOLD}╔══════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BOLD}║        PHOENIX SPORTSBOOK — SYSTEM HEALTH CHECK            ║${NC}"
+echo -e "${BOLD}║        TAPTRADE SPORTSBOOK — SYSTEM HEALTH CHECK            ║${NC}"
 echo -e "${BOLD}╚══════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 echo -e "  App directory: ${CYAN}$APP_SRC${NC}"

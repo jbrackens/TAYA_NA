@@ -29,7 +29,7 @@ test.describe("/auth/login — login form", () => {
     // Demo creds hint visible — it's part of the current login layout and
     // stays through the redesign.
     await expect(
-      page.getByText(/demo@phoenix\.local|demo123/i).first(),
+      page.getByText(/demo@taptrade\.local|demo123/i).first(),
     ).toBeVisible();
 
     checkErrors();

@@ -1,6 +1,6 @@
 #!/bin/bash
 ###############################################################################
-# Phoenix Sportsbook — Full Stack Health Check
+# TapTrade Sportsbook — Full Stack Health Check
 #
 # Verifies all backend services are reachable before QA or testing.
 # Exit 0 = all services up. Exit 1 = one or more down.

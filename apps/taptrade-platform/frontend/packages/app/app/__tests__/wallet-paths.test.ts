@@ -434,7 +434,7 @@ describe("wallet-client endpoint paths", () => {
     );
   });
 
-  it("names the shared API-client class TapTrade and keeps a deprecated Phoenix alias", () => {
+  it("names the shared API-client class TapTrade and keeps a deprecated TapTrade alias", () => {
     assert.ok(
       sharedApiClientSource.includes("export class TapTradeApiClient") &&
         sharedApiClientSource.includes(
@@ -443,7 +443,7 @@ describe("wallet-client endpoint paths", () => {
         sharedApiIndexSource.includes(
           "export { PhoenixApiClient, TapTradeApiClient } from",
         ),
-      "shared API client should be TapTrade-named with a deprecated Phoenix compatibility alias",
+      "shared API client should be TapTrade-named with a deprecated TapTrade compatibility alias",
     );
   });
 

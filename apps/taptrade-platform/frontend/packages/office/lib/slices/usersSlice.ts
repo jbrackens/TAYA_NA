@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { parseTableMetaPagination } from "../utils/filters";
 import { normalizeRecentActivities } from "../utils/recent-activities";
-import { TalonPunterShort } from "../../types/punters";
+import { OfficePunterShort } from "../../types/punters";
 import {
   TablePagination,
   TableMeta,
@@ -9,13 +9,13 @@ import {
 } from "../../types/filters";
 
 export type UsersSliceState = {
-  data: TalonPunterShort[];
+  data: OfficePunterShort[];
   recentActivities: any[] | undefined;
   paginationResponse: TablePagination | {};
 } & TableMeta;
 
 export type UsersResponse = {
-  data: TalonPunterShort[];
+  data: OfficePunterShort[];
 } & TablePaginationResponse;
 
 export type UsersActivityResponse = any;
@@ -52,7 +52,7 @@ const parseDateOfBirth = (
   return { year, month, day };
 };
 
-export const normalizeGoUser = (raw: any): TalonPunterShort => {
+export const normalizeGoUser = (raw: any): OfficePunterShort => {
   if (!raw || typeof raw !== "object") {
     return raw;
   }
@@ -69,9 +69,9 @@ export const normalizeGoUser = (raw: any): TalonPunterShort => {
       dateOfBirth:
         parseDateOfBirth(raw.date_of_birth) ?? raw.dateOfBirth ?? undefined,
       createdAt: raw.created_at ?? raw.createdAt,
-    } as TalonPunterShort;
+    } as OfficePunterShort;
   }
-  return raw as TalonPunterShort;
+  return raw as OfficePunterShort;
 };
 
 const normalizeGoUsersPagination = (payload: any): any => {
@@ -128,7 +128,7 @@ const usersSlice = createSlice({
   },
 });
 
-export const selectData = (state: UsersSlice): TalonPunterShort[] =>
+export const selectData = (state: UsersSlice): OfficePunterShort[] =>
   state.users.data;
 export const selectTableMeta = (state: UsersSlice): any => {
   const { paginationResponse } = state.users;

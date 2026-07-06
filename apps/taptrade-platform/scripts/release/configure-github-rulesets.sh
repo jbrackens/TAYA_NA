@@ -244,11 +244,11 @@ upsert_ruleset() {
   echo "created ruleset: $name ($target)"
 }
 
-branch_payload="$(build_ruleset_payload "Phoenix Release Branch Gates" "branch" "$branch_includes_json" "$branch_checks_json")"
-tag_payload="$(build_ruleset_payload "Phoenix Release Tag Gates" "tag" "$tag_includes_json" "$tag_checks_json")"
+branch_payload="$(build_ruleset_payload "TapTrade Release Branch Gates" "branch" "$branch_includes_json" "$branch_checks_json")"
+tag_payload="$(build_ruleset_payload "TapTrade Release Tag Gates" "tag" "$tag_includes_json" "$tag_checks_json")"
 
-upsert_ruleset "Phoenix Release Branch Gates" "branch" "$branch_payload"
-upsert_ruleset "Phoenix Release Tag Gates" "tag" "$tag_payload"
+upsert_ruleset "TapTrade Release Branch Gates" "branch" "$branch_payload"
+upsert_ruleset "TapTrade Release Tag Gates" "tag" "$tag_payload"
 
 if [[ "$DRY_RUN" == "true" ]]; then
   echo "dry-run complete"

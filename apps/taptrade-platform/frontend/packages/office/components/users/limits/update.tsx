@@ -3,9 +3,9 @@ import { useTranslation } from "i18n";
 import FormModal from "../../form/modal";
 import { FormValues } from "../../form/modal";
 import {
-  TalonPunterLimits,
-  TalonPunterLimitsScope,
-  TalonPunterLimitsTypesEnum,
+  OfficePunterLimits,
+  OfficePunterLimitsScope,
+  OfficePunterLimitsTypesEnum,
 } from "../../../types/punters";
 import PageHeader from "../../layout/page-header";
 import UsersDetailsLimitsSectionSwitch from "./section/switch";
@@ -13,7 +13,7 @@ import UsersDetailsLimitsSection from "./section";
 import { numberToHours, hoursToNumber, useSpy } from "@taptrade-ui/utils";
 
 export type UsersDetailsLimitsUpdateProps = {
-  data: TalonPunterLimits;
+  data: OfficePunterLimits;
   visible: boolean;
   loading: boolean;
   onSubmit: Function;
@@ -36,24 +36,24 @@ const UsersDetailsLimitsUpdate: React.FC<UsersDetailsLimitsUpdateProps> = ({
   const { spy } = useSpy();
 
   const initializeValues = (
-    values: TalonPunterLimits,
-  ): Record<string, TalonPunterLimitsScope | undefined> => ({
-    pointAdd: values[TalonPunterLimitsTypesEnum.POINT_ADD] || undefined,
-    pointUse: values[TalonPunterLimitsTypesEnum.POINT_USE] || undefined,
+    values: OfficePunterLimits,
+  ): Record<string, OfficePunterLimitsScope | undefined> => ({
+    pointAdd: values[OfficePunterLimitsTypesEnum.POINT_ADD] || undefined,
+    pointUse: values[OfficePunterLimitsTypesEnum.POINT_USE] || undefined,
     session: values.session || undefined,
   });
 
   const onFinish = (values: FormValues): void => {
-    const payload: Partial<TalonPunterLimits> = {};
+    const payload: Partial<OfficePunterLimits> = {};
 
     if (editables.pointAdd) {
-      payload[TalonPunterLimitsTypesEnum.POINT_ADD] = values.pointAdd;
+      payload[OfficePunterLimitsTypesEnum.POINT_ADD] = values.pointAdd;
     }
     if (editables.pointUse) {
-      payload[TalonPunterLimitsTypesEnum.POINT_USE] = values.pointUse;
+      payload[OfficePunterLimitsTypesEnum.POINT_USE] = values.pointUse;
     }
     if (editables.session) {
-      payload[TalonPunterLimitsTypesEnum.SESSION] = values.session;
+      payload[OfficePunterLimitsTypesEnum.SESSION] = values.session;
     }
 
     onSubmit(payload);

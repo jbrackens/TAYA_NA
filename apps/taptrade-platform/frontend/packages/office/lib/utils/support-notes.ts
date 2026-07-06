@@ -1,8 +1,8 @@
 import {
-  TalonPunterNotes,
-  TalonPunterNotesAuthor,
-  TalonPunterNotesItem,
-  TalonPunterNotesTypeEnum,
+  OfficePunterNotes,
+  OfficePunterNotesAuthor,
+  OfficePunterNotesItem,
+  OfficePunterNotesTypeEnum,
 } from "../../types/punters";
 import { TablePaginationResponse } from "../../types/filters";
 
@@ -31,14 +31,14 @@ type GoSupportNotesResponse = {
 type SupportNotesPayload =
   | GoSupportNotesResponse
   | GoSupportNote[]
-  | TalonPunterNotes;
+  | OfficePunterNotes;
 
-const SYSTEM_AUTHOR: TalonPunterNotesAuthor = {
+const SYSTEM_AUTHOR: OfficePunterNotesAuthor = {
   firstName: "System",
   lastName: "",
 };
 
-const isLegacyNoteItem = (item: any): item is TalonPunterNotesItem =>
+const isLegacyNoteItem = (item: any): item is OfficePunterNotesItem =>
   typeof item?.noteId !== "undefined" &&
   typeof item?.createdAt === "string" &&
   typeof item?.noteType === "string" &&
@@ -46,7 +46,7 @@ const isLegacyNoteItem = (item: any): item is TalonPunterNotesItem =>
 
 const splitAuthorName = (
   authorName?: string | null,
-): TalonPunterNotesAuthor => {
+): OfficePunterNotesAuthor => {
   const trimmedAuthorName = `${authorName || ""}`.trim();
   if (!trimmedAuthorName) {
     return SYSTEM_AUTHOR;
@@ -59,12 +59,12 @@ const splitAuthorName = (
   };
 };
 
-const normalizeNoteType = (noteType?: string): TalonPunterNotesTypeEnum =>
-  `${noteType || ""}`.trim().toUpperCase() === TalonPunterNotesTypeEnum.MANUAL
-    ? TalonPunterNotesTypeEnum.MANUAL
-    : TalonPunterNotesTypeEnum.SYSTEM;
+const normalizeNoteType = (noteType?: string): OfficePunterNotesTypeEnum =>
+  `${noteType || ""}`.trim().toUpperCase() === OfficePunterNotesTypeEnum.MANUAL
+    ? OfficePunterNotesTypeEnum.MANUAL
+    : OfficePunterNotesTypeEnum.SYSTEM;
 
-const normalizeNoteItem = (item: GoSupportNote): TalonPunterNotesItem => ({
+const normalizeNoteItem = (item: GoSupportNote): OfficePunterNotesItem => ({
   noteId: item.note_id || "",
   createdAt: item.created_at || new Date(0).toISOString(),
   authorId: item.author_id || "",
@@ -73,7 +73,7 @@ const normalizeNoteItem = (item: GoSupportNote): TalonPunterNotesItem => ({
   text: item.text || "",
 });
 
-const extractNotes = (payload: SupportNotesPayload): TalonPunterNotes => {
+const extractNotes = (payload: SupportNotesPayload): OfficePunterNotes => {
   if (Array.isArray(payload)) {
     return payload.map((item) =>
       isLegacyNoteItem(item) ? item : normalizeNoteItem(item),
@@ -112,7 +112,7 @@ const normalizePagination = (
 
 export const normalizeSupportNotesResponse = (
   payload: SupportNotesPayload,
-): { data: TalonPunterNotes; pagination: TablePaginationResponse } => {
+): { data: OfficePunterNotes; pagination: TablePaginationResponse } => {
   const data = extractNotes(payload);
   return {
     data,

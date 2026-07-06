@@ -220,7 +220,7 @@ function start() {
       "phoenix-backend" \
       "$BACKEND_PID_FILE" \
       "$BACKEND_LOG_FILE" \
-      "cd '$BACKEND_DIR' && export JAVA_HOME='$java_home' && export PHOENIX_ODDIN_DATA_INGESTION_ENABLED='no' && sbt \"phoenix-backend/runMain phoenix.main.LocalClusterApplication\""
+      "cd '$BACKEND_DIR' && export JAVA_HOME='$java_home' && export PHOENIX_ODDIN_DATA_INGESTION_ENABLED='no' && sbt \"phoenix-backend/runMain taptrade.main.LocalClusterApplication\""
   fi
 
   if service_enabled "go-gateway"; then

@@ -4,7 +4,7 @@ import usersReducer, {
 import usersDetailsReducer, {
   getUserRecentActivitiesSucceeded as getDetailsRecentActivitiesSucceeded,
 } from "../lib/slices/usersDetailsSlice";
-import { TalonPunterActivityEnum } from "../types/punters";
+import { OfficePunterActivityEnum } from "../types/punters";
 
 describe("users recent activity normalization", () => {
   it("accepts legacy recent activity arrays and emits prediction-native types", () => {
@@ -29,12 +29,12 @@ describe("users recent activity normalization", () => {
     expect(state.recentActivities).toEqual([
       {
         ...payload[0],
-        type: TalonPunterActivityEnum.PREDICTION_ORDER,
+        type: OfficePunterActivityEnum.PREDICTION_ORDER,
       },
     ]);
   });
 
-  it("maps Go timeline payloads into Talon recent activity items", () => {
+  it("maps Go timeline payloads into office recent activity items", () => {
     const payload = {
       data: [
         {
@@ -68,7 +68,7 @@ describe("users recent activity normalization", () => {
       {
         id: "wallet-1",
         date: "2026-03-14T10:00:00Z",
-        type: TalonPunterActivityEnum.PREDICTION_RESULT,
+        type: OfficePunterActivityEnum.PREDICTION_RESULT,
         message: "Point adjustment - Admin grant",
         data: {
           unit: "PTS",
@@ -78,7 +78,7 @@ describe("users recent activity normalization", () => {
       {
         id: "verification-1",
         date: "2026-03-14T11:00:00Z",
-        type: TalonPunterActivityEnum.SYSTEM_LOGIN,
+        type: OfficePunterActivityEnum.SYSTEM_LOGIN,
         message: "Verification sent for review - Manual review pending",
         data: {
           ip: "manual_review",
@@ -110,7 +110,7 @@ describe("users recent activity normalization", () => {
       {
         id: "prediction-1",
         date: "2026-03-14T12:00:00Z",
-        type: TalonPunterActivityEnum.PREDICTION_ORDER,
+        type: OfficePunterActivityEnum.PREDICTION_ORDER,
         message: "Prediction placed - MLBB final",
         data: {
           unit: "PTS",

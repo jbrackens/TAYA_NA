@@ -12,8 +12,8 @@ import {
 import Table from "../../layout/table";
 import TableFilterDateRange from "../../layout/table/filter-date-range";
 import {
-  TalonPunterWallet,
-  TalonPunterWalletItem,
+  OfficePunterWallet,
+  OfficePunterWalletItem,
 } from "../../../types/punters";
 import { TablePagination } from "../../../types/filters";
 import {
@@ -36,7 +36,7 @@ const formatLedgerPoints = (amount?: { amount?: number }) =>
   })} pts`;
 
 type UsersDetailsWalletsListProps = {
-  data: TalonPunterWallet;
+  data: OfficePunterWallet;
   pagination: {} | TablePagination;
   isLoading: boolean | undefined;
   handleTableChange: any;
@@ -112,7 +112,7 @@ const UsersDetailsWalletsList = ({
       title: t("page-transactions:HEADER_TRANSACTION"),
       width: 450,
       ellipsis: true,
-      render: (value: TalonPunterWalletItem) => (
+      render: (value: OfficePunterWalletItem) => (
         <Typography>
           <Text strong={true}>
             {t("page-transactions:HEADER_POINT_LEDGER_ID")}:{" "}

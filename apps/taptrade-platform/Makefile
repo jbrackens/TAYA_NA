@@ -50,7 +50,7 @@ HISTORICAL_BETS_DIR ?= $(ROOT)/phoenix-backend/services/src/test/resources/data/
 help:
 	@echo "Available targets:"
 	@echo "  make bootstrap         # install deps + local env files"
-	@echo "  make start             # start backend + go-gateway + Talon + TapTrade player"
+	@echo "  make start             # start backend + go-gateway + office + TapTrade player"
 	@echo "  make stop              # stop started services"
 	@echo "  make restart           # restart all services"
 	@echo "  make status            # show service and HTTP health status"
@@ -62,7 +62,7 @@ help:
 	@echo "  make verify-sportsbook # compatibility alias for TapTrade player app typecheck + build"
 	@echo "  make verify-go         # SB-501/502/503 gates + strict historical reconciliation parity"
 	@echo "  make verify-api-contract-fixtures # TapTrade API/client contract fixture regression gate"
-	@echo "  make frontend-deps-baseline # capture Talon/TapTrade player outdated dependency baseline report"
+	@echo "  make frontend-deps-baseline # capture office/TapTrade player outdated dependency baseline report"
 	@echo "  make security-secrets  # run secret scan baseline report"
 	@echo "  make security-deps     # run dependency vulnerability baseline report"
 	@echo "  make security-jvm      # run JVM/SBT dependency baseline report"

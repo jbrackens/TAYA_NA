@@ -14,7 +14,7 @@ module.exports = {
     "@taptrade-ui/design-system",
     "@taptrade-ui/utils",
     "@taptrade-ui/api-client",
-    "@phoenix-api/client",
+    "@taptrade-api/client",
   ],
   async headers() {
     return [

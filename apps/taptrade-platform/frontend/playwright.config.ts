@@ -4,7 +4,7 @@ import path from "path";
 /**
  * Comprehensive Playwright E2E Config
  *
- * Tests both Phoenix Sportsbook Player App and Talon Backoffice
+ * Tests both TapTrade Sportsbook Player App and office Backoffice
  *
  * Run all tests:     npx playwright test
  * Run player app:    npx playwright test --project=player-app
@@ -37,7 +37,7 @@ export default defineConfig({
 
   projects: [
     // ============================================
-    // BACKOFFICE (TALON) - Admin Interface
+    // BACKOFFICE (OFFICE) - Admin Interface
     // ============================================
     {
       name: "backoffice",

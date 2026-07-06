@@ -2,7 +2,7 @@ groups:
   - name: taptrade-provider-feed-slo
     rules:
       - alert: PhoenixProviderRuntimeDown
-        expr: phoenix_provider_runtime_enabled{service="gateway"} == 0
+        expr: taptrade_provider_runtime_enabled{service="gateway"} == 0
         for: 5m
         labels:
           severity: critical
@@ -13,7 +13,7 @@ groups:
           description: "Gateway provider runtime has reported disabled/down for more than 5 minutes."
 
       - alert: PhoenixProviderStreamUnhealthy
-        expr: phoenix_provider_streams_unhealthy_total{service="gateway"} > 0
+        expr: taptrade_provider_streams_unhealthy_total{service="gateway"} > 0
         for: 2m
         labels:
           severity: warning
@@ -24,7 +24,7 @@ groups:
           description: "At least one provider stream is breaching lag/gap/duplicate SLO or is in error."
 
       - alert: PhoenixProviderLagSLOBreach
-        expr: phoenix_provider_stream_slo_breach{service="gateway",type="lag"} > 0
+        expr: taptrade_provider_stream_slo_breach{service="gateway",type="lag"} > 0
         for: 2m
         labels:
           severity: warning
@@ -35,7 +35,7 @@ groups:
           description: "A provider stream is above configured lag threshold."
 
       - alert: PhoenixProviderGapSLOBreach
-        expr: phoenix_provider_stream_slo_breach{service="gateway",type="gap"} > 0
+        expr: taptrade_provider_stream_slo_breach{service="gateway",type="gap"} > 0
         for: 1m
         labels:
           severity: critical
@@ -46,7 +46,7 @@ groups:
           description: "A provider stream has detected a revision/sequence gap."
 
       - alert: PhoenixProviderDuplicateSLOBreach
-        expr: phoenix_provider_stream_slo_breach{service="gateway",type="duplicate"} > 0
+        expr: taptrade_provider_stream_slo_breach{service="gateway",type="duplicate"} > 0
         for: 2m
         labels:
           severity: warning
@@ -57,7 +57,7 @@ groups:
           description: "A provider stream duplicate counter exceeded configured threshold."
 
       - alert: PhoenixProviderStreamError
-        expr: phoenix_provider_stream_slo_breach{service="gateway",type="error"} > 0
+        expr: taptrade_provider_stream_slo_breach{service="gateway",type="error"} > 0
         for: 30s
         labels:
           severity: critical
@@ -72,11 +72,11 @@ groups:
       - alert: PhoenixAlternativeOfferCommitExpiryRatioLow
         expr: |
           (
-            increase(phoenix_bet_offer_committed_total{service="gateway"}[30m])
+            increase(taptrade_bet_offer_committed_total{service="gateway"}[30m])
             /
-            clamp_min(increase(phoenix_bet_offer_expired_total{service="gateway"}[30m]), 1)
+            clamp_min(increase(taptrade_bet_offer_expired_total{service="gateway"}[30m]), 1)
           ) < 0.50
-          and increase(phoenix_bet_offer_expired_total{service="gateway"}[30m]) >= 10
+          and increase(taptrade_bet_offer_expired_total{service="gateway"}[30m]) >= 10
         for: 15m
         labels:
           severity: warning
@@ -87,7 +87,7 @@ groups:
           description: "Commit-to-expire ratio has remained below 0.50 for 15m with at least 10 expiries in the 30m window."
 
       - alert: PhoenixCashoutStaleRejectSpike
-        expr: increase(phoenix_cashout_quote_stale_reject_total{service="gateway"}[10m]) >= 5
+        expr: increase(taptrade_cashout_quote_stale_reject_total{service="gateway"}[10m]) >= 5
         for: 5m
         labels:
           severity: warning

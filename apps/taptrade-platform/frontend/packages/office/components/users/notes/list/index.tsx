@@ -2,17 +2,17 @@ import { useTranslation } from "i18n";
 import dayjs from "dayjs";
 import { TablePagination } from "../../../../types/filters";
 import {
-  TalonPunterNotes,
-  TalonPunterNotesItem,
-  TalonPunterNotesTypeEnum,
-  TalonPunterNotesAuthor,
+  OfficePunterNotes,
+  OfficePunterNotesItem,
+  OfficePunterNotesTypeEnum,
+  OfficePunterNotesAuthor,
 } from "../../../../types/punters";
 import Table from "../../../layout/table";
 import { Popover } from "antd";
 import { useTimezone } from "@taptrade-ui/utils";
 
 type UsersDetailsNotesListProps = {
-  data: TalonPunterNotes;
+  data: OfficePunterNotes;
   pagination: {} | TablePagination;
   isLoading: boolean | undefined;
   handleTableChange: any;
@@ -40,9 +40,9 @@ const UsersDetailsNotesList = ({
       title: t("page-users-details:HEADER_NOTE_AUTHOR"),
       width: 240,
       dataIndex: "authorName",
-      render: (value: TalonPunterNotesAuthor, record: TalonPunterNotesItem) => (
+      render: (value: OfficePunterNotesAuthor, record: OfficePunterNotesItem) => (
         <>
-          {record.noteType === TalonPunterNotesTypeEnum.MANUAL ? (
+          {record.noteType === OfficePunterNotesTypeEnum.MANUAL ? (
             <Popover
               content={
                 <>

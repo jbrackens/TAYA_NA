@@ -1,13 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
-  TalonPunter,
-  TalonPunterSessionHistory,
-  TalonPunterWallet,
-  TalonPunterNotes,
+  OfficePunter,
+  OfficePunterSessionHistory,
+  OfficePunterWallet,
+  OfficePunterNotes,
   LimitsHistoryData,
   CoolOffsHistoryData,
 } from "../../types/punters";
-import { TalonAuditLog, TalonAuditLogs } from "../../types/logs";
+import { OfficeAuditLog, OfficeAuditLogs } from "../../types/logs";
 import { parseTableMetaPagination } from "../utils/filters";
 import { normalizeRecentActivities } from "../utils/recent-activities";
 import { normalizeSupportNotesResponse } from "../utils/support-notes";
@@ -18,7 +18,7 @@ import {
 } from "../../types/filters";
 
 export type UsersDetailsSliceState = {
-  basic: TalonPunter;
+  basic: OfficePunter;
   recentActivities: any[];
   walletHistory: UsersDetailsWalletHistory;
   auditLogs: UsersDetailsAuditLogs;
@@ -30,41 +30,41 @@ export type UsersDetailsSliceState = {
 };
 
 export type UsersDetailsWalletHistory = {
-  data: TalonPunterWallet;
+  data: OfficePunterWallet;
   paginationResponse: TablePagination | {};
 } & TableMeta;
 
 export type UsersDetailsWalletHistoryResponse = {
-  data: TalonPunterWallet;
+  data: OfficePunterWallet;
 } & TablePaginationResponse;
 
 export type UsersDetailsAuditLogs = {
-  data: TalonAuditLogs;
+  data: OfficeAuditLogs;
   paginationResponse: TablePagination | {};
 } & TableMeta;
 
 export type UsersDetailsAuditLogsResponse = {
-  data: TalonAuditLogs;
-  items?: TalonAuditLogs;
+  data: OfficeAuditLogs;
+  items?: OfficeAuditLogs;
   pagination?: TablePaginationResponse;
 } & TablePaginationResponse;
 
 export type UsersDetailsSessionHistory = {
-  data: TalonPunterSessionHistory;
+  data: OfficePunterSessionHistory;
   paginationResponse: TablePagination | {};
 } & TableMeta;
 
 export type UsersDetailsSessionHistoryResponse = {
-  data: TalonPunterSessionHistory;
+  data: OfficePunterSessionHistory;
 } & TablePaginationResponse;
 
 export type UsersDetailsNotes = {
-  data: TalonPunterNotes;
+  data: OfficePunterNotes;
   paginationResponse: TablePagination | {};
 } & TableMeta;
 
 export type UsersDetailsNotesResponse = {
-  data: TalonPunterNotes;
+  data: OfficePunterNotes;
   pagination?: {
     page?: number;
     limit?: number;
@@ -82,11 +82,11 @@ export type UsersCoolOffsHistory = {
   paginationResponse: TablePagination | {};
 } & TableMeta;
 
-const normalizeGoAuditRow = (row: any): TalonAuditLog => {
+const normalizeGoAuditRow = (row: any): OfficeAuditLog => {
   if (!row || typeof row !== "object") {
     return row;
   }
-  const normalized: TalonAuditLog = { ...row };
+  const normalized: OfficeAuditLog = { ...row };
   if (row.actor_id !== undefined && normalized.actorId === undefined) {
     normalized.actorId = row.actor_id;
   }
@@ -132,7 +132,7 @@ const normalizeGoAuditPagination = (
 };
 
 const initialState: UsersDetailsSliceState = {
-  basic: {} as TalonPunter,
+  basic: {} as OfficePunter,
   recentActivities: [],
   walletHistory: {
     data: [],
@@ -191,7 +191,7 @@ const usersDetailsSlice = createSlice({
 
     getUserDetailsSucceeded: (
       state: UsersDetailsSliceState,
-      action: PayloadAction<TalonPunter>,
+      action: PayloadAction<OfficePunter>,
     ) => {
       if (action?.payload) {
         state.basic = { ...action.payload };

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Phoenix Sportsbook — Unit Test Runner
+# TapTrade Sportsbook — Unit Test Runner
 # Uses Node.js built-in test runner (node:test) with tsx for TS support.
 # Zero additional dependencies beyond tsx (which ships with the project).
 #
@@ -8,7 +8,7 @@
 set -euo pipefail
 
 echo "╔════════════════════════════════════════════════════════════════╗"
-echo "║           Phoenix Unit Tests — $(date '+%Y-%m-%d %H:%M:%S')          ║"
+echo "║           TapTrade Unit Tests — $(date '+%Y-%m-%d %H:%M:%S')          ║"
 echo "╚════════════════════════════════════════════════════════════════╝"
 echo ""
 

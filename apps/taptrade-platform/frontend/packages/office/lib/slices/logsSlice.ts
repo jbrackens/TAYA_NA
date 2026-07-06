@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { TalonAuditLog, TalonAuditLogs } from "../../types/logs";
+import { OfficeAuditLog, OfficeAuditLogs } from "../../types/logs";
 import { parseTableMetaPagination } from "../utils/filters";
 import {
   TablePagination,
@@ -8,7 +8,7 @@ import {
 } from "../../types/filters";
 
 export type AuditLogsSliceState = {
-  data: TalonAuditLogs;
+  data: OfficeAuditLogs;
   paginationResponse: TablePagination | {};
 } & TableMeta;
 
@@ -22,17 +22,17 @@ type AuditPaginationResponse = Partial<TablePaginationResponse> &
   Partial<GoAuditPagination>;
 
 export type AuditLogsAuditLogsResponse = {
-  data: TalonAuditLogs;
-  items?: TalonAuditLogs;
+  data: OfficeAuditLogs;
+  items?: OfficeAuditLogs;
   pagination?: AuditPaginationResponse;
 } & TablePaginationResponse;
 
-const normalizeGoAuditRow = (row: unknown): TalonAuditLog => {
+const normalizeGoAuditRow = (row: unknown): OfficeAuditLog => {
   if (!row || typeof row !== "object") {
     return {};
   }
   const source = row as Record<string, unknown>;
-  const normalized: TalonAuditLog = { ...source };
+  const normalized: OfficeAuditLog = { ...source };
   if (typeof source.actor_id === "string" && normalized.actorId === undefined) {
     normalized.actorId = source.actor_id;
   }

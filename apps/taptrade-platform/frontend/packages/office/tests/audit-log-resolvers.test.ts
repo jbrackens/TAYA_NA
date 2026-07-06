@@ -4,14 +4,14 @@ import {
   resolveCategory,
   resolveType,
 } from "../components/audit-logs/utils/resolvers";
-import { TalonAuditLogCategory, TalonAuditLogType } from "../types/logs";
+import { OfficeAuditLogCategory, OfficeAuditLogType } from "../types/logs";
 
 describe("audit log resolver mappings", () => {
   it("keeps enum category/type mappings", () => {
-    expect(resolveCategory(TalonAuditLogCategory.CREATION)).toBe(
+    expect(resolveCategory(OfficeAuditLogCategory.CREATION)).toBe(
       "CELL_TYPE_CREATION",
     );
-    expect(resolveType(TalonAuditLogType.ACCOUNT_CREATION)).toBe(
+    expect(resolveType(OfficeAuditLogType.ACCOUNT_CREATION)).toBe(
       "CELL_ACTION_ACCOUNT_CREATION",
     );
   });

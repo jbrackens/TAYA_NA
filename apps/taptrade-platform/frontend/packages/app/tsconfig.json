@@ -23,8 +23,8 @@
     "paths": {
       "@taptrade-ui/design-system": ["../design-system/src"],
       "@taptrade-ui/design-system/*": ["../design-system/src/*"],
-      "@phoenix-api/client": ["../api-client/src"],
-      "@phoenix-api/client/*": ["../api-client/src/*"],
+      "@taptrade-api/client": ["../api-client/src"],
+      "@taptrade-api/client/*": ["../api-client/src/*"],
       "@taptrade-ui/utils": ["../utils/src"],
       "@taptrade-ui/utils/*": ["../utils/src/*"]
     },

@@ -65,10 +65,10 @@
       "id": 4,
       "type": "timeseries",
       "title": "HTTP request rate by status",
-      "description": "sum by (status) (rate(phoenix_http_requests_total[5m])). Watch for a 5xx climb correlated with deploys.",
+      "description": "sum by (status) (rate(taptrade_http_requests_total[5m])). Watch for a 5xx climb correlated with deploys.",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
       "targets": [
-        { "expr": "sum by (status) (rate(phoenix_http_requests_total[5m]))", "legendFormat": "{{status}}", "refId": "A" }
+        { "expr": "sum by (status) (rate(taptrade_http_requests_total[5m]))", "legendFormat": "{{status}}", "refId": "A" }
       ],
       "fieldConfig": { "defaults": { "unit": "reqps", "decimals": 2 } }
     },
@@ -102,10 +102,10 @@
       "id": 7,
       "type": "timeseries",
       "title": "HTTP mean latency by path",
-      "description": "rate(phoenix_http_request_duration_ms_sum[5m]) / rate(phoenix_http_requests_total[5m]). Mean (not p95) — the HTTP layer exports a sum, not buckets.",
+      "description": "rate(taptrade_http_request_duration_ms_sum[5m]) / rate(taptrade_http_requests_total[5m]). Mean (not p95) — the HTTP layer exports a sum, not buckets.",
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 20 },
       "targets": [
-        { "expr": "sum by (path) (rate(phoenix_http_request_duration_ms_sum[5m])) / sum by (path) (rate(phoenix_http_requests_total[5m]))", "legendFormat": "{{path}}", "refId": "A" }
+        { "expr": "sum by (path) (rate(taptrade_http_request_duration_ms_sum[5m])) / sum by (path) (rate(taptrade_http_requests_total[5m]))", "legendFormat": "{{path}}", "refId": "A" }
       ],
       "fieldConfig": { "defaults": { "unit": "ms", "decimals": 1 } }
     }

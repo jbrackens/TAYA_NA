@@ -8,69 +8,69 @@ import {
   PaymentMethodTypeEnum,
 } from "@taptrade-ui/utils";
 
-export type TalonPunterShort = Punter & {};
+export type OfficePunterShort = Punter & {};
 
-export type TalonPunter = PunterDetails & {
+export type OfficePunter = PunterDetails & {
   twoFactorAuthEnabled: boolean;
   hasActiveSession: boolean;
 };
 
-export type TalonPunterLimitsScope =
+export type OfficePunterLimitsScope =
   | PunterStandardLimitsScope
   | PunterSessionLimitsScope;
 
-export type TalonPunterLimits = {
-  [key in TalonPunterLimitsTypesEnum]?: TalonPunterLimitsScope;
+export type OfficePunterLimits = {
+  [key in OfficePunterLimitsTypesEnum]?: OfficePunterLimitsScope;
 };
 
-export enum TalonPunterLimitsTypesEnum {
+export enum OfficePunterLimitsTypesEnum {
   POINT_ADD = "deposits",
   POINT_USE = "stake",
   SESSION = "session",
 }
 
-export type TalonPunterWalletPaymentMethod = {
+export type OfficePunterWalletPaymentMethod = {
   type?: PaymentMethodTypeEnum;
   details?: string;
   adminPunterId?: Id;
 };
 
-export type TalonPunterWalletItem = WalletHistoryActionElement & {
-  punter?: TalonPunter;
+export type OfficePunterWalletItem = WalletHistoryActionElement & {
+  punter?: OfficePunter;
   externalId?: string;
-  paymentMethod?: TalonPunterWalletPaymentMethod;
+  paymentMethod?: OfficePunterWalletPaymentMethod;
 };
-export type TalonPunterWallet = TalonPunterWalletItem[];
+export type OfficePunterWallet = OfficePunterWalletItem[];
 
-export enum TalonPunterActivityEnum {
+export enum OfficePunterActivityEnum {
   PREDICTION_ORDER = "PREDICTION_ORDER",
   PREDICTION_RESULT = "PREDICTION_RESULT",
   SYSTEM_LOGIN = "SYSTEM_LOGIN",
 }
 
-export type TalonPunterActivity =
-  | TalonPunterActivityEnum.SYSTEM_LOGIN
-  | TalonPunterActivityEnum.PREDICTION_ORDER
-  | TalonPunterActivityEnum.PREDICTION_RESULT;
+export type OfficePunterActivity =
+  | OfficePunterActivityEnum.SYSTEM_LOGIN
+  | OfficePunterActivityEnum.PREDICTION_ORDER
+  | OfficePunterActivityEnum.PREDICTION_RESULT;
 
-export type TalonPunterRecentActivityItem = {
+export type OfficePunterRecentActivityItem = {
   id: Id;
   date: string;
-  type: TalonPunterActivity;
+  type: OfficePunterActivity;
   message: string;
-  data: TalonPunterRecentActivityItemData;
+  data: OfficePunterRecentActivityItemData;
 };
 
-export type TalonPunterRecentActivityItemData = {
+export type OfficePunterRecentActivityItemData = {
   [key: string]: any;
 };
 
-export type TalonPunterAuditLogCore = {
+export type OfficePunterAuditLogCore = {
   id: Id;
   createdAt: string;
 };
 
-export type TalonPunterAuditLogAdjustment = TalonPunterAuditLogCore & {
+export type OfficePunterAuditLogAdjustment = OfficePunterAuditLogCore & {
   userId: Id;
   action: string;
   reason: string;
@@ -78,41 +78,41 @@ export type TalonPunterAuditLogAdjustment = TalonPunterAuditLogCore & {
   dataAfter: Object;
 };
 
-export type TalonPunterSessionHistory = TalonPunterSessionHistoryItem[];
+export type OfficePunterSessionHistory = OfficePunterSessionHistoryItem[];
 
-export type TalonPunterSessionHistoryItem = {
+export type OfficePunterSessionHistoryItem = {
   sessionId: Id;
   startTime: string;
   endTime: string;
-  details: TalonPunterSessionHistoryItemDetails;
+  details: OfficePunterSessionHistoryItemDetails;
 };
 
-export type TalonPunterSessionHistoryItemDetails = {
+export type OfficePunterSessionHistoryItemDetails = {
   [key: string]: number | string;
 };
 
-export type TalonPunterNotes = TalonPunterNotesItem[];
+export type OfficePunterNotes = OfficePunterNotesItem[];
 
-export enum TalonPunterNotesTypeEnum {
+export enum OfficePunterNotesTypeEnum {
   MANUAL = "MANUAL",
   SYSTEM = "SYSTEM",
 }
 
-export type TalonPunterNotesType =
-  | TalonPunterNotesTypeEnum.MANUAL
-  | TalonPunterNotesTypeEnum.SYSTEM;
+export type OfficePunterNotesType =
+  | OfficePunterNotesTypeEnum.MANUAL
+  | OfficePunterNotesTypeEnum.SYSTEM;
 
-export type TalonPunterNotesAuthor = {
+export type OfficePunterNotesAuthor = {
   firstName: string;
   lastName: string;
 };
 
-export type TalonPunterNotesItem = {
+export type OfficePunterNotesItem = {
   noteId: Id;
   createdAt: string;
   authorId: Id;
-  authorName: TalonPunterNotesAuthor;
-  noteType: TalonPunterNotesType;
+  authorName: OfficePunterNotesAuthor;
+  noteType: OfficePunterNotesType;
   text: string;
 };
 

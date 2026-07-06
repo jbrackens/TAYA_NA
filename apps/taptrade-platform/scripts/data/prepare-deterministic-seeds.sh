@@ -47,7 +47,7 @@ cp "$WALLET_SRC" "$WALLET_OUT"
 cp "$BETS_SRC" "$BETS_OUT"
 
 cat >"$ENV_FILE" <<EOF
-# Deterministic Phoenix local seed profile.
+# Deterministic TapTrade local seed profile.
 # BET_STORE_FILE is retained as an inherited compatibility env var; launch surfaces must treat it as prediction-order state.
 export GATEWAY_READ_MODEL_FILE="$READ_MODEL_OUT"
 export WALLET_LEDGER_FILE="$WALLET_OUT"

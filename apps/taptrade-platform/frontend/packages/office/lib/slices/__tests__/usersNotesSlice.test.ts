@@ -1,8 +1,8 @@
 import reducer, { getUserNotesSucceeded } from "../usersDetailsSlice";
-import { TalonPunterNotesTypeEnum } from "../../../types/punters";
+import { OfficePunterNotesTypeEnum } from "../../../types/punters";
 
 describe("users notes normalization", () => {
-  test("maps Go support-notes payloads into Talon note items and pagination", () => {
+  test("maps Go support-notes payloads into office note items and pagination", () => {
     const state = reducer(
       undefined,
       getUserNotesSucceeded({
@@ -33,7 +33,7 @@ describe("users notes normalization", () => {
           firstName: "Jane",
           lastName: "Operator",
         },
-        noteType: TalonPunterNotesTypeEnum.MANUAL,
+        noteType: OfficePunterNotesTypeEnum.MANUAL,
         text: "Customer requested manual review",
       },
     ]);
@@ -55,7 +55,7 @@ describe("users notes normalization", () => {
             firstName: "Legacy",
             lastName: "Admin",
           },
-          noteType: TalonPunterNotesTypeEnum.SYSTEM,
+          noteType: OfficePunterNotesTypeEnum.SYSTEM,
           text: "Legacy payload still supported",
         },
       ],

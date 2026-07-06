@@ -43,7 +43,7 @@ export const Toast = React.forwardRef<HTMLDivElement, ToastProps>(
       <div
         ref={ref}
         className={cx(
-          'flex min-w-[300px] animate-[phoenix-slide-in_0.2s_ease] items-center gap-4 rounded-[12px] border-2 bg-[#2d2d44] p-4 text-[14px] font-medium leading-[20px] text-white shadow-[0_4px_12px_rgba(0,0,0,0.3)]',
+          'flex min-w-[300px] animate-[taptrade-slide-in_0.2s_ease] items-center gap-4 rounded-[12px] border-2 bg-[#2d2d44] p-4 text-[14px] font-medium leading-[20px] text-white shadow-[0_4px_12px_rgba(0,0,0,0.3)]',
           toastVariants[variant]
         )}
       >

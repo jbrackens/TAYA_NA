@@ -32,12 +32,12 @@ export const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
 
     return (
       <div
-        className="fixed inset-0 z-[1000] flex animate-[phoenix-fade-in_0.2s_ease] items-center justify-center bg-black/50"
+        className="fixed inset-0 z-[1000] flex animate-[taptrade-fade-in_0.2s_ease] items-center justify-center bg-black/50"
         onClick={handleOverlayClick}
       >
         <div
           ref={ref}
-          className="flex max-h-[90vh] w-[90%] max-w-[500px] animate-[phoenix-slide-up_0.2s_ease] flex-col rounded-[16px] border border-[#3d3d5c] bg-[#2d2d44] shadow-[0_10px_40px_rgba(0,0,0,0.5)]"
+          className="flex max-h-[90vh] w-[90%] max-w-[500px] animate-[taptrade-slide-up_0.2s_ease] flex-col rounded-[16px] border border-[#3d3d5c] bg-[#2d2d44] shadow-[0_10px_40px_rgba(0,0,0,0.5)]"
         >
           <div className="flex items-center justify-between border-b border-[#3d3d5c] p-6">
             <h2 className="m-0 text-[28px] font-bold leading-[36px] text-white">

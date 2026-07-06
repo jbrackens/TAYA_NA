@@ -4,8 +4,8 @@ import dayjs from "dayjs";
 import { Descriptions } from "antd";
 import { TablePagination } from "../../../types/filters";
 import {
-  TalonPunterSessionHistory,
-  TalonPunterSessionHistoryItem,
+  OfficePunterSessionHistory,
+  OfficePunterSessionHistoryItem,
 } from "../../../types/punters";
 // import { RefsCollection } from "../../../lib/utils/filters";
 // import TableFilterText from "../../layout/table/filter-text";
@@ -14,7 +14,7 @@ import { Layout, Id, useTimezone } from "@taptrade-ui/utils";
 import UserLifecycleLogout from "../lifecycle/logout";
 
 type UsersDetailsSessionHistoryListProps = {
-  data: TalonPunterSessionHistory;
+  data: OfficePunterSessionHistory;
   pagination: {} | TablePagination;
   isLoading: boolean | undefined;
   handleTableChange: any;
@@ -37,7 +37,7 @@ const UsersDetailsSessionHistoryList = ({
     setRefreshDataFunc(true);
   };
 
-  const renderDetails = (value: TalonPunterSessionHistoryItem) => {
+  const renderDetails = (value: OfficePunterSessionHistoryItem) => {
     const { sessionId, details } = value;
     const keys = Object.keys(details || {});
     if (isEmpty(keys)) {

@@ -21,5 +21,5 @@ DOCKER_BUILDKIT=1 docker build \
   -f ./docker/frontend.Dockerfile \
   --progress=plain \
   --secret id=npmrc,src=$HOME/.npmrc \
-  -t phoenix-ui/$module_name:$image_tag \
+  -t taptrade-ui/$module_name:$image_tag \
   .

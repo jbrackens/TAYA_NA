@@ -18,7 +18,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  logo = 'Phoenix UI',
+  logo = 'TapTrade UI',
   logoIcon = '🏀',
   navItems = [],
   onSearch,

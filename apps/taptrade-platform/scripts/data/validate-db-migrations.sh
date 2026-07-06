@@ -11,7 +11,7 @@ REPORT_FILE="$ROOT_DIR/revival/19_DB_MIGRATION_VALIDATION.md"
 MIGRATIONS_DIR="$ROOT_DIR/phoenix-backend/services/src/main/resources/db/migration"
 PG_IMAGE="${PG_IMAGE:-postgres:13.4}"
 FLYWAY_IMAGE="${FLYWAY_IMAGE:-flyway/flyway:8.0}"
-PG_CONTAINER="phoenix-revival-migrate-pg-${TS_TAG}"
+PG_CONTAINER="taptrade-revival-migrate-pg-${TS_TAG}"
 
 mkdir -p "$ARTIFACT_DIR"
 

@@ -1,7 +1,7 @@
 {
   "name": "@taptrade-ui/office",
   "version": "0.31.1-build.4",
-  "description": "Next.js React App - Talon - The Back-Office tool",
+  "description": "Next.js React App - office - The Back-Office tool",
   "scripts": {
     "bootstrap:locales": "node ./scripts/translations/generate.js",
     "run-local:dev": "yarn watch & next dev --webpack",

@@ -61,10 +61,10 @@ check_endpoint() {
   local label="$1"
   local url="$2"
   local code
-  code="$(curl -s -o /tmp/phoenix-health.tmp -w "%{http_code}" "$url" || true)"
+  code="$(curl -s -o /tmp/taptrade-health.tmp -w "%{http_code}" "$url" || true)"
   local body
-  body="$(cat /tmp/phoenix-health.tmp 2>/dev/null || true)"
-  rm -f /tmp/phoenix-health.tmp
+  body="$(cat /tmp/taptrade-health.tmp 2>/dev/null || true)"
+  rm -f /tmp/taptrade-health.tmp
 
   if [[ "$code" != "200" ]]; then
     echo "| $label | $url | fail | $code | \`${body:0:120}\` |" >>"$LOG_FILE"

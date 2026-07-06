@@ -1,9 +1,9 @@
-import { TalonAuditLogs } from "../../../types/logs";
+import { OfficeAuditLogs } from "../../../types/logs";
 import { TablePagination } from "../../../types/filters";
 import AuditLogsList from "../../audit-logs";
 
 type PunterAuditLogsListProps = {
-  data: TalonAuditLogs;
+  data: OfficeAuditLogs;
   pagination: {} | TablePagination;
   isLoading: boolean | undefined;
   handleTableChange: any;

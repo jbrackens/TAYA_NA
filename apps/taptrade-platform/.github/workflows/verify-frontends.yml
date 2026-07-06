@@ -46,5 +46,5 @@ jobs:
       - name: Install Yarn Classic
         run: npm install -g yarn@1.22.22
 
-      - name: Run Talon verify gate
+      - name: Run office verify gate
         run: make verify-office

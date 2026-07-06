@@ -2,11 +2,11 @@ import { test, expect } from "@playwright/test";
 import { loginAsAdmin } from "../fixtures/auth";
 
 /**
- * Talon Backoffice - Audit Logs Tests
+ * office Backoffice - Audit Logs Tests
  * Tests audit trail and logging functionality
  */
 
-test.describe("Talon Backoffice - Audit Logs", () => {
+test.describe("office Backoffice - Audit Logs", () => {
   test.beforeEach(async ({ page }) => {
     // Login before each test
     await loginAsAdmin(page);

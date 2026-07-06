@@ -109,7 +109,7 @@ check_warn() {
 
 echo ""
 echo -e "${BOLD}╔══════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BOLD}║        TALON BACKOFFICE — SYSTEM HEALTH CHECK              ║${NC}"
+echo -e "${BOLD}║        OFFICE BACKOFFICE — SYSTEM HEALTH CHECK              ║${NC}"
 echo -e "${BOLD}╚══════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 echo -e "  App directory: ${CYAN}$APP_SRC${NC}"

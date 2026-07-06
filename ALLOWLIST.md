@@ -62,3 +62,5 @@ compose image: entries, decoupled from the project name). Cutover runbook: ops/R
   allowlisted archives; correct by definition.
 - Local docker volume names phoenix-predict-combined_* in DEVELOPMENT.md note — real
   on-disk state of pre-rebrand dev machines.
+- go-platform/services/gateway/CACHE_FILE_REFERENCE.txt — dated cache manifest
+  referencing pre-fork desktop paths (PhoenixBotRevival); historical record.

@@ -193,3 +193,11 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
   bash -n on stack/gate scripts OK. Box path /opt/phoenix intentionally unchanged
   (allowlisted, cutover runbook). FIRST POST-MERGE DEPLOY MUST BE WATCHED (path filter
   changed — verify the workflow still triggers).
+- FINAL-SWEEP EXECUTION (iteration 8 continued): deleted the inherited dead viegg/k8s
+  pipeline (helm chart with phoenix.viegg.net external endpoints, Jenkinsfile, k8s
+  enforcement scripts — external legacy infra that cannot be truthfully renamed;
+  archives retain pristine copies; VERIFIED unreferenced by active tooling);
+  office Talon* identifier families → Office* (23 files, tsc green); prometheus metric
+  prefix phoenix_ → taptrade_ renamed at emitters AND alert rules atomically (5 files;
+  platform+gateway tests green); masked prose scrub over the remaining 45 unexplained
+  files incl. spec.md; CACHE_FILE_REFERENCE.txt allowlisted as dated manifest.

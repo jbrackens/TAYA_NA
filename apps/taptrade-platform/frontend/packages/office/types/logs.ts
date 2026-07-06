@@ -1,16 +1,16 @@
 import { Id } from "@taptrade-ui/utils";
 
-export enum TalonAuditLogCategory {
+export enum OfficeAuditLogCategory {
   CREATION = "ACCOUNT_CREATION",
   ADJUSTMENT = "ADJUSTMENT",
 }
 
-export enum TalonAuditLogType {
+export enum OfficeAuditLogType {
   ACCOUNT_CREATION = "accountCreation",
   ACCOUNT_CLOSURE = "accountClosure",
 }
 
-export type TalonAuditLog = {
+export type OfficeAuditLog = {
   id?: string;
   action?: string;
   actorId?: string;
@@ -24,11 +24,11 @@ export type TalonAuditLog = {
   occurredAt?: string;
   createdAt?: string;
   details?: string;
-  category?: TalonAuditLogCategory | string;
-  type?: TalonAuditLogType | string;
+  category?: OfficeAuditLogCategory | string;
+  type?: OfficeAuditLogType | string;
   dataBefore?: Record<string, unknown>;
   dataAfter?: Record<string, unknown>;
   [key: string]: unknown;
 };
 
-export type TalonAuditLogs = TalonAuditLog[];
+export type OfficeAuditLogs = OfficeAuditLog[];

@@ -7,9 +7,9 @@ import {
 import dayjs from "dayjs";
 import { useTranslation } from "i18n";
 import {
-  TalonPunterActivity,
-  TalonPunterActivityEnum,
-  TalonPunterRecentActivityItem,
+  OfficePunterActivity,
+  OfficePunterActivityEnum,
+  OfficePunterRecentActivityItem,
 } from "../../../../types/punters";
 import { useTimezone } from "@taptrade-ui/utils";
 
@@ -20,13 +20,13 @@ const formatPointTag = (amount: unknown, positive = false) => {
   return `${prefix}${amount ?? 0} pts`;
 };
 
-const formatDataLine = (type: TalonPunterActivity, data: any) => {
+const formatDataLine = (type: OfficePunterActivity, data: any) => {
   switch (type) {
-    case TalonPunterActivityEnum.PREDICTION_ORDER:
+    case OfficePunterActivityEnum.PREDICTION_ORDER:
       return <Tag color="geekblue">{formatPointTag(data.amount)}</Tag>;
-    case TalonPunterActivityEnum.PREDICTION_RESULT:
+    case OfficePunterActivityEnum.PREDICTION_RESULT:
       return <Tag color="gold">{formatPointTag(data.amount, true)}</Tag>;
-    case TalonPunterActivityEnum.SYSTEM_LOGIN:
+    case OfficePunterActivityEnum.SYSTEM_LOGIN:
       return (
         <Text ellipsis style={{ fontSize: 11, color: "grey" }}>
           {data.ip}
@@ -40,21 +40,21 @@ const UserTalonPunterRecentActivityItem = ({
   type,
   message,
   data,
-}: TalonPunterRecentActivityItem) => {
+}: OfficePunterRecentActivityItem) => {
   const { t } = useTranslation("common");
 
   let IconComponent;
   let color;
   switch (type) {
-    case TalonPunterActivityEnum.PREDICTION_ORDER:
+    case OfficePunterActivityEnum.PREDICTION_ORDER:
       IconComponent = ProfileOutlined;
       color = "green";
       break;
-    case TalonPunterActivityEnum.PREDICTION_RESULT:
+    case OfficePunterActivityEnum.PREDICTION_RESULT:
       IconComponent = TrophyOutlined;
       color = "gold";
       break;
-    case TalonPunterActivityEnum.SYSTEM_LOGIN:
+    case OfficePunterActivityEnum.SYSTEM_LOGIN:
       IconComponent = CloudServerOutlined;
       color = "geekblue";
       break;
