@@ -50,30 +50,31 @@ Taya_Na_Predict/
 
 ## Agent Branch / Deploy Policy
 
-Active development and demo deployment happen from the live worktree:
+Active development and demo deployment happen from the primary checkout
+(P2-06 consolidated everything onto `main`; the old `-cashier` worktree and
+`feat/binary-exchange-engine` deploy branch are retired):
 
-- Worktree: `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict-cashier`
-- Branch: `feat/binary-exchange-engine`
+- Checkout: `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict`
+- Branch: `main` (pushing to it IS the production deploy)
 - Deploy workflow: `.github/workflows/deploy-demo.yml`
 
-Before any agent starts edits, and again before any `commit/push/deploy`, run:
-
-```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict-cashier
-scripts/agent-preflight.sh
-```
+Before any agent starts edits, and again before any `commit/push/deploy`, run
+`scripts/agent-preflight.sh` from the checkout root (verifies checkout, branch,
+clean tree, and sync with `origin/main`).
 
 Treat the user phrase `commit/push/deploy` as a strict procedure:
 
-1. Stay in `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict-cashier`.
-2. Confirm the branch is `feat/binary-exchange-engine`.
+1. Stay in `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict`.
+2. Confirm the branch is `main`.
 3. Fetch `origin` and refuse if the branch is behind or diverged.
 4. Review `git status` and commit only intended files.
 5. Run the relevant local validation before committing.
-6. Push only `feat/binary-exchange-engine`.
+6. Push only `main`.
 7. Monitor the GitHub Actions deploy run and smoke-check the demo URLs after success.
 
-Do not commit or push from `main`, `chore/safe-brand-text-cleanup`, or any other branch unless the user explicitly names that branch. Do not include unrelated untracked files from sibling worktrees without explicit user approval. The sibling cleanup worktree `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict` may contain unrelated untracked market images; ignore them unless the user asks for them.
+Feature work happens on short-lived branches merged into `main`; do not push a
+non-`main` branch for deploy purposes unless the user explicitly names that
+branch. Do not include unrelated untracked files without explicit user approval.
 
 ## Critical Rules
 
