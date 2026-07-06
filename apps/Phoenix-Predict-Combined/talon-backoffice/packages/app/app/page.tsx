@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import BrandMark from "./components/BrandMark";
@@ -330,9 +330,19 @@ function TradeTicketPreview({
 
 export default function HomePage() {
   const { t } = useTranslation("page-home");
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
 
   return (
-    <div className="min-h-screen bg-[#050706] text-[var(--t1)] [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
+    <div className="relative min-h-screen bg-[#050706] text-[var(--t1)] [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
       <header className="mx-auto flex h-16 w-full max-w-[1440px] items-center justify-between bg-[#050706] px-8 text-white max-[720px]:px-5">
         <Link
           href="/"
@@ -358,26 +368,76 @@ export default function HomePage() {
           </Link>
           <Link
             href="/predict"
-            className="inline-flex h-11 items-center justify-center rounded-[var(--r-pill)] bg-[var(--accent)] px-8 text-[15px] font-semibold !text-[#061a10] transition-transform hover:-translate-y-px hover:brightness-105 max-[420px]:px-5"
+            className="inline-flex h-11 items-center justify-center rounded-[var(--r-pill)] bg-[var(--accent)] px-8 text-[15px] font-semibold !text-[#061a10] transition-[transform,background-color] duration-150 ease-out hover:-translate-y-px hover:bg-[#54ec9b] max-[520px]:hidden"
           >
             {t("nav.browseMarkets")}
           </Link>
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center text-white"
-            aria-label={t("nav.openMenu")}
+            className="hidden h-11 w-11 items-center justify-center text-white max-[720px]:inline-flex"
+            aria-label={menuOpen ? t("nav.closeMenu") : t("nav.openMenu")}
+            aria-expanded={menuOpen}
+            aria-controls="home-menu"
+            onClick={() => setMenuOpen((open) => !open)}
           >
             <span
-              className="flex w-[22px] flex-col gap-[5px]"
+              className="relative flex h-[12px] w-[22px] flex-col justify-between"
               aria-hidden="true"
             >
-              <span className="h-[2px] w-full bg-current" />
-              <span className="h-[2px] w-full bg-current" />
-              <span className="h-[2px] w-full bg-current" />
+              <span
+                className={`h-[2px] w-full bg-current transition-transform duration-200 ease-out ${
+                  menuOpen ? "translate-y-[5px] rotate-45" : ""
+                }`}
+              />
+              <span
+                className={`h-[2px] w-full bg-current transition-opacity duration-200 ease-out ${
+                  menuOpen ? "opacity-0" : ""
+                }`}
+              />
+              <span
+                className={`h-[2px] w-full bg-current transition-transform duration-200 ease-out ${
+                  menuOpen ? "-translate-y-[5px] -rotate-45" : ""
+                }`}
+              />
             </span>
           </button>
         </div>
       </header>
+
+      {menuOpen ? (
+        <nav
+          id="home-menu"
+          className="absolute inset-x-0 top-16 z-50 hidden border-b border-white/10 bg-[#070b09] px-5 pb-6 pt-3 animate-[landing-fade_0.2s_ease-out] max-[720px]:block"
+          aria-label={t("nav.openMenu")}
+        >
+          <div className="grid gap-2 text-white">
+            <Link
+              href="/predict"
+              className="inline-flex h-12 items-center justify-center rounded-[var(--r-pill)] bg-[var(--accent)] text-[15px] font-semibold !text-[#061a10]"
+              onClick={() => setMenuOpen(false)}
+            >
+              {t("nav.browseMarkets")}
+            </Link>
+            <Link
+              href="/auth/login"
+              className="inline-flex h-12 items-center justify-center rounded-[var(--r-pill)] border border-[var(--accent)] text-[15px] font-medium !text-[var(--accent)]"
+              onClick={() => setMenuOpen(false)}
+            >
+              {t("nav.login")}
+            </Link>
+            <Link
+              href="#how-it-works"
+              className="inline-flex h-12 items-center justify-center rounded-[var(--r-pill)] border border-white/20 text-[15px] font-medium !text-white"
+              onClick={() => setMenuOpen(false)}
+            >
+              {t("hero.howItWorks")}
+            </Link>
+            <div className="mt-2 flex justify-center border-t border-white/10 pt-4 [&_.lang-current]:text-white/90 [&_.lang-select-wrap]:relative [&_.lang-select-wrap]:inline-flex [&_.lang-select-wrap]:h-11 [&_.lang-select-wrap]:items-center [&_.lang-select-wrap]:gap-1.5 [&_.lang-select-wrap]:rounded-[var(--r-pill)] [&_.lang-select-wrap]:border [&_.lang-select-wrap]:border-white/20 [&_.lang-select-wrap]:bg-white/5 [&_.lang-select-wrap]:px-4 [&_.lang-select-wrap]:text-[13px] [&_.lang-select-wrap]:font-semibold [&_.lang-select-wrap]:text-white/90 [&_.lang-select]:absolute [&_.lang-select]:inset-0 [&_.lang-select]:cursor-pointer [&_.lang-select]:opacity-0">
+              <LanguageSelector source="header" />
+            </div>
+          </div>
+        </nav>
+      ) : null}
 
       <section className="relative isolate min-h-[calc(100svh-64px)] overflow-hidden bg-[#050706]">
         {/* Chart-paper grid — the same 32px trading-grid vocabulary the app
