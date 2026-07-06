@@ -32,30 +32,35 @@ export function MarketGrid({
   if (!markets || markets.length === 0) return null;
   return (
     <div className={GRID_CLASS_BY_COLUMNS[columns]}>
-      {markets.map((market) => {
+      {markets.map((market, index) => {
         const m = localizedMarket(t, market);
         return (
-          <MarketCard
+          <div
             key={m.id}
-            marketId={m.id}
-            ticker={m.ticker}
-            title={m.title}
-            yesPriceCents={m.yesPricePointsCents}
-            noPriceCents={m.noPricePointsCents}
-            volumePointsCents={m.volumePointsCents}
-            closeAt={m.closeAt}
-            status={m.status}
-            categoryLabel={
-              m.categorySlug
-                ? categoryLabel(t, m.categorySlug)
-                : m.categoryName || undefined
-            }
-            imagePath={m.imagePath}
-            imageUrl={m.imageUrl}
-            image_url={m.image_url}
-            watched={watchedMarketIds?.has(m.id) ?? false}
-            onToggleWatchlist={onToggleWatchlist}
-          />
+            className="card-in h-full"
+            style={{ animationDelay: `${Math.min(index, 11) * 35}ms` }}
+          >
+            <MarketCard
+              marketId={m.id}
+              ticker={m.ticker}
+              title={m.title}
+              yesPriceCents={m.yesPricePointsCents}
+              noPriceCents={m.noPricePointsCents}
+              volumePointsCents={m.volumePointsCents}
+              closeAt={m.closeAt}
+              status={m.status}
+              categoryLabel={
+                m.categorySlug
+                  ? categoryLabel(t, m.categorySlug)
+                  : m.categoryName || undefined
+              }
+              imagePath={m.imagePath}
+              imageUrl={m.imageUrl}
+              image_url={m.image_url}
+              watched={watchedMarketIds?.has(m.id) ?? false}
+              onToggleWatchlist={onToggleWatchlist}
+            />
+          </div>
         );
       })}
     </div>

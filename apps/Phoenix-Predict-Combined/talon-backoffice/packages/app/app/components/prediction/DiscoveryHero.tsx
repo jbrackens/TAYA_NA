@@ -116,12 +116,12 @@ export function DiscoveryHero({
         {eyebrowMeta ? <span>{eyebrowMeta}</span> : null}
       </header>
 
-      <h1 className="m-0 mb-4 max-w-[720px] text-[28px] font-semibold leading-[1.2] text-[var(--t1)] max-[720px]:mb-[18px] max-[720px]:text-[22px]">
+      <h1 className="type-display m-0 mb-4 max-w-[720px] text-[30px] font-semibold leading-[1.18] text-[var(--t1)] max-[720px]:mb-[18px] max-[720px]:text-[23px]">
         {displayMarket.title}
       </h1>
 
       <div
-        className="m-0 mb-3 font-['Inter_Tight','Inter',_-apple-system,_sans-serif] text-[88px] font-semibold leading-none tracking-[-0.04em] text-[var(--t1)] tabular-nums max-[720px]:text-[64px]"
+        className="type-display m-0 mb-3 text-[88px] font-semibold leading-none tracking-[-0.02em] text-[var(--t1)] max-[720px]:text-[64px]"
         aria-label={`Yes price ${yes} cents`}
       >
         {yes}
@@ -132,7 +132,15 @@ export function DiscoveryHero({
       <div
         className={`mb-[18px] inline-flex items-center gap-2.5 text-[17px] font-semibold tabular-nums ${changeClass}`}
       >
-        <span aria-hidden="true">{isUp ? "▲" : "▼"}</span>
+        <svg
+          width="11"
+          height="11"
+          viewBox="0 0 10 10"
+          aria-hidden="true"
+          className={isUp ? "" : "rotate-180"}
+        >
+          <path d="M5 1.2 8.8 8H1.2Z" fill="currentColor" />
+        </svg>
         {isUp ? "+" : ""}
         {delta}¢ ({isUp ? "+" : ""}
         {pct.toFixed(1)}%)
@@ -143,7 +151,7 @@ export function DiscoveryHero({
 
       <div className="mb-4">
         <svg
-          className="block h-[140px] w-full max-[720px]:h-[120px]"
+          className="block h-[140px] w-full overflow-visible max-[720px]:h-[120px]"
           viewBox="0 0 800 140"
           preserveAspectRatio="none"
         >
@@ -165,8 +173,26 @@ export function DiscoveryHero({
           <path
             d={chart.line}
             stroke={isUp ? "var(--yes-text)" : "var(--no-text)"}
-            strokeWidth={2.5}
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
             fill="none"
+          />
+          <circle
+            cx={chart.end.x}
+            cy={chart.end.y}
+            r={7}
+            fill={isUp ? "var(--yes)" : "var(--no)"}
+            opacity={0.35}
+            className="origin-center animate-ping [transform-box:fill-box] motion-reduce:hidden"
+          />
+          <circle
+            cx={chart.end.x}
+            cy={chart.end.y}
+            r={4}
+            fill={isUp ? "var(--yes-text)" : "var(--no-text)"}
+            stroke="var(--surface-1)"
+            strokeWidth={1.5}
           />
         </svg>
       </div>
@@ -191,7 +217,7 @@ export function DiscoveryHero({
           <div className="mb-1.5 text-xs text-[var(--t3)]">
             {t("24H_VOLUME")}
           </div>
-          <div className="text-lg font-semibold text-[var(--t1)] tabular-nums">
+          <div className="type-display text-[19px] font-semibold text-[var(--t1)] tabular-nums">
             {volumeLabel}
           </div>
         </div>
@@ -199,13 +225,13 @@ export function DiscoveryHero({
           <div className="mb-1.5 text-xs text-[var(--t3)]">
             {t("OPEN_INTEREST")}
           </div>
-          <div className="text-lg font-semibold text-[var(--t1)] tabular-nums">
+          <div className="type-display text-[19px] font-semibold text-[var(--t1)] tabular-nums">
             {oiLabel}
           </div>
         </div>
         <div>
           <div className="mb-1.5 text-xs text-[var(--t3)]">{t("CLOSES")}</div>
-          <div className="text-lg font-semibold text-[var(--t1)] tabular-nums">
+          <div className="type-display text-[19px] font-semibold text-[var(--t1)] tabular-nums">
             {closesLabel}
           </div>
         </div>

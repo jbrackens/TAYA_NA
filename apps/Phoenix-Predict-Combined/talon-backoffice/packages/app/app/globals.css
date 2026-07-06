@@ -12,6 +12,51 @@
     "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+/* Display voice — Clash Display (Fontshare, ITF Free Font License;
+ * self-hosted woff2, ~15KB/weight). Owner decision 2026-07-06: Inter alone
+ * gave the app no typographic identity — display surfaces (hero price,
+ * market questions in heroes, section headings, big stat values) speak
+ * Clash Display; body/UI stay Inter; small tabular data stays IBM Plex
+ * Mono. Use the `.type-display` utility, not raw font-family strings. */
+@font-face {
+  font-family: "Clash Display";
+  src: url("/fonts/ClashDisplay-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Clash Display";
+  src: url("/fonts/ClashDisplay-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Clash Display";
+  src: url("/fonts/ClashDisplay-Semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Clash Display";
+  src: url("/fonts/ClashDisplay-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+  font-style: normal;
+}
+
+:root {
+  --font-display:
+    "Clash Display", "Inter Tight", "Inter", -apple-system, sans-serif;
+}
+
+.type-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
 @source "./";
 @source "../components/";
 
@@ -264,6 +309,22 @@ body {
 }
 .landing-fade {
   animation: landing-fade 0.9s ease-out 150ms both;
+}
+
+/* Discovery grid entrance: quick one-shot rise per card; MarketGrid sets a
+ * per-index animation-delay. Collapsed by the global reduced-motion rule. */
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.card-in {
+  animation: card-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Pulsing red dot used by the LIVE pill and the whale ticker. */

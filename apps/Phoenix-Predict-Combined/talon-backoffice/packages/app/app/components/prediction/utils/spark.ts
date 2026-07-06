@@ -59,11 +59,43 @@ function walk(
 }
 
 /**
- * Hero chart: builds the SVG line + fill paths. When `points` is
- * supplied (from the backend prices endpoint), the chart uses the real
- * volume-weighted history. Otherwise it falls back to a 24-point
- * deterministic walk anchored at currentCents so the SVG still renders
- * during the fetch or if the API fails.
+ * Catmull-Rom → cubic-bézier smoothing. Polyline charts read as
+ * synthetic; a smoothed monotone-ish curve through the same points is
+ * the single biggest perceived-quality lever on the hero chart.
+ */
+function smoothPath(coords: Array<[number, number]>): string {
+  if (coords.length < 3) {
+    return coords
+      .map(
+        ([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`,
+      )
+      .join(" ");
+  }
+  const d = [`M${coords[0][0].toFixed(1)},${coords[0][1].toFixed(1)}`];
+  for (let i = 0; i < coords.length - 1; i++) {
+    const p0 = coords[Math.max(0, i - 1)];
+    const p1 = coords[i];
+    const p2 = coords[i + 1];
+    const p3 = coords[Math.min(coords.length - 1, i + 2)];
+    const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+    const c1y = p1[1] + (p2[1] - p0[1]) / 6;
+    const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+    const c2y = p2[1] - (p3[1] - p1[1]) / 6;
+    d.push(
+      `C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`,
+    );
+  }
+  return d.join(" ");
+}
+
+/**
+ * Hero chart: builds the SVG line + fill paths plus the endpoint
+ * coordinate (for the live dot). When `points` is supplied (from the
+ * backend prices endpoint), the chart uses the real volume-weighted
+ * history. Otherwise it falls back to a 24-point deterministic walk
+ * anchored at currentCents so the SVG still renders during the fetch
+ * or if the API fails. Vertical padding keeps the stroke and endpoint
+ * dot clear of the viewBox edges.
  */
 export function heroChartPath(
   ticker: string,
@@ -71,7 +103,7 @@ export function heroChartPath(
   width = 800,
   height = 220,
   points?: number[],
-): { line: string; fill: string } {
+): { line: string; fill: string; end: { x: number; y: number } } {
   let values: number[];
   if (points && points.length >= 2 && points.some((p) => p !== points[0])) {
     values = points;
@@ -80,15 +112,15 @@ export function heroChartPath(
     values = pts.map(([, v]) => v);
   }
   const N = values.length;
-  const line = values
-    .map((v, idx) => {
-      const x = (idx / (N - 1)) * width;
-      const y = height - (v / 100) * height;
-      return `${idx === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(" ");
+  const pad = height * 0.08;
+  const coords: Array<[number, number]> = values.map((v, idx) => [
+    (idx / (N - 1)) * width,
+    pad + (1 - v / 100) * (height - pad * 2),
+  ]);
+  const line = smoothPath(coords);
   const fill = line + ` L${width},${height} L0,${height} Z`;
-  return { line, fill };
+  const [ex, ey] = coords[N - 1];
+  return { line, fill, end: { x: ex, y: ey } };
 }
 
 /** Compact sparkline path used by Top Movers rows + MarketCard footers. */
@@ -103,11 +135,11 @@ export function sparklinePath(
   const pts = walk(ticker + (up ? "↑" : "↓"), currentCents, N, {
     biasUp: up,
   });
-  return pts
-    .map(([i, v], idx) => {
-      const x = (i / (N - 1)) * width;
-      const y = height - (v / 100) * height;
-      return `${idx === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(" ");
+  const pad = height * 0.1;
+  return smoothPath(
+    pts.map(([i, v]) => [
+      (i / (N - 1)) * width,
+      pad + (1 - v / 100) * (height - pad * 2),
+    ]),
+  );
 }

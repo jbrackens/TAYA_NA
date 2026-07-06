@@ -67,7 +67,13 @@ The prior Liquid Glass spec (active 2026-04-24 → 2026-04-26) is retired. The w
 
 ## 2. Typography
 
-- **Display + body:** `Inter` (Google Fonts, weights 400/500/600/700/800). Robinhood uses a custom font (Capsule Sans) but Inter at weight 600 reads close enough; widely available, performant. Replaces Outfit.
+- **Display (owner revision 2026-07-06):** `Clash Display` (Fontshare, ITF Free
+  Font License, self-hosted woff2 400/500/600/700 in `app/public/fonts/`).
+  Speaks on: hero price, hero market question, section headings, big stat
+  values, Top-movers prices. Apply via the `.type-display` utility only.
+  Rationale: Inter-everywhere had become the generic-AI-site default; the
+  display cut gives the app an ownable voice while body/UI stay Inter.
+- **Body + UI:** `Inter` (Google Fonts, weights 400/500/600/700/800). Robinhood uses a custom font (Capsule Sans) but Inter at weight 600 reads close enough; widely available, performant. Replaces Outfit.
 - **Display sub-variant for hero numbers:** `Inter Tight` if available — slightly tighter spacing for the 88px hero price. Falls back to Inter at -0.04em letter-spacing.
 - **Numeric / tabular:** `IBM Plex Mono` with `font-variant-numeric: tabular-nums`. Used for prices in cards and price tickers. Big hero price uses Inter Tight (not mono) because the 88px size carries its own weight; mono at that scale fights the chart.
 - **Fallback stack:** `-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`.
