@@ -19,7 +19,19 @@ claim remains deterministic.
 The layer self-disables under `prefers-reduced-motion` and before hydration, so
 the drawn hero is also the no-JS / a11y / slow-connection fallback.
 
-## Generation brief (Seedance 2.0 / Kling 2.x)
+## One-command generation (Veo / Gemini API)
+
+```sh
+GEMINI_API_KEY=... ./scripts/hero-ambient-generate.sh
+```
+
+Launches the three scene candidates below on `veo-3.1-fast-generate-preview`,
+polls, downloads, and emits frame contact sheets for the QA gate. Veo has **no
+free-tier quota** — the key's Google Cloud project must have billing enabled
+(immediate 429 RESOURCE_EXHAUSTED on `predictLongRunning` while text models work
+= free tier). Never commit the key.
+
+## Generation brief (Veo 3.1 / Seedance 2.0 / Kling 2.x)
 
 **Scenes** (generate 4–6s each, pick 1 or stitch 2–3 with cross-fades):
 
