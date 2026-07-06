@@ -220,6 +220,43 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Landing-page entrance motion (marketing `/` only). Ease-out rise for the
+ * hero text stack, plain fade for the chart backdrop. The global
+ * prefers-reduced-motion block collapses these to instant. */
+@keyframes landing-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.landing-rise {
+  animation: landing-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.landing-rise-delay-1 {
+  animation-delay: 90ms;
+}
+.landing-rise-delay-2 {
+  animation-delay: 180ms;
+}
+.landing-rise-delay-3 {
+  animation-delay: 270ms;
+}
+@keyframes landing-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.landing-fade {
+  animation: landing-fade 0.9s ease-out 150ms both;
+}
+
 /* Pulsing red dot used by the LIVE pill and the whale ticker. */
 .live-dot {
   width: 7px;

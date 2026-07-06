@@ -234,42 +234,104 @@ export default function HomePage() {
       </header>
 
       <section className="relative isolate min-h-[calc(100svh-64px)] overflow-hidden bg-[#050706]">
-        <video
-          className="absolute inset-0 -z-20 h-full w-full bg-[#050706] object-cover"
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="metadata"
+        {/* Chart-paper grid — the same 32px trading-grid vocabulary the app
+         * uses on cream (DESIGN.md §4), inverted for the dark landing. */}
+        <div
+          className="absolute inset-0 -z-30 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[length:34px_34px] landing-fade"
+          aria-hidden="true"
+        />
+        {/* Market backdrop: a YES price path climbing while its NO complement
+         * decays — drawn, not filmed. vector-effect keeps strokes crisp while
+         * preserveAspectRatio=none lets the composition breathe at any width. */}
+        <div
+          className="absolute inset-x-0 bottom-0 -z-20 h-[56%] landing-fade max-[720px]:h-[42%]"
           aria-hidden="true"
         >
-          <source
-            src="/brand/tiangge-homepage-bg-clean-24s.mp4"
-            type="video/mp4"
-          />
-        </video>
+          <svg
+            className="h-full w-full"
+            viewBox="0 0 1440 560"
+            preserveAspectRatio="none"
+            fill="none"
+          >
+            <defs>
+              <linearGradient id="heroYesFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#71eeb8" stopOpacity="0.16" />
+                <stop offset="100%" stopColor="#71eeb8" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M0,388 L60,380 L110,396 L170,368 L230,376 L300,336 L360,348 L430,312 L500,326 L560,284 L640,296 L700,256 L770,272 L840,232 L900,244 L980,196 L1050,214 L1120,168 L1200,184 L1270,140 L1340,152 L1408,116 L1408,560 L0,560 Z"
+              fill="url(#heroYesFill)"
+            />
+            <path
+              d="M0,388 L60,380 L110,396 L170,368 L230,376 L300,336 L360,348 L430,312 L500,326 L560,284 L640,296 L700,256 L770,272 L840,232 L900,244 L980,196 L1050,214 L1120,168 L1200,184 L1270,140 L1340,152 L1408,116"
+              stroke="#71eeb8"
+              strokeOpacity="0.85"
+              strokeWidth="2"
+              vectorEffect="non-scaling-stroke"
+            />
+            <path
+              d="M0,180 L80,196 L150,176 L220,208 L290,196 L360,232 L430,220 L500,258 L570,246 L640,284 L710,272 L780,308 L850,296 L920,332 L990,320 L1060,352 L1130,344 L1200,376 L1270,368 L1340,396 L1408,420"
+              stroke="#ff8b6b"
+              strokeOpacity="0.3"
+              strokeWidth="1.5"
+              vectorEffect="non-scaling-stroke"
+            />
+          </svg>
+          {/* Terminal ticks: live YES/NO quotes at the line endings. */}
+          <div
+            className="absolute flex -translate-y-1/2 items-center gap-2 max-[900px]:hidden"
+            style={{ left: "97.8%", top: "20.7%" }}
+          >
+            <span className="h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-[#71eeb8] shadow-[0_0_12px_rgba(113,238,184,0.65)] animate-[predict-pulse_1.6s_ease-in-out_infinite]" />
+          </div>
+          <div
+            className="absolute flex -translate-y-1/2 items-center justify-end gap-2.5 max-[900px]:hidden"
+            style={{ right: "3.6%", top: "20.7%" }}
+          >
+            <span className="rounded-md border border-white/12 bg-[#0a120d]/85 px-2.5 py-1 font-['IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace] text-[12px] font-semibold tracking-[0.02em] text-[#71eeb8] [font-variant-numeric:tabular-nums]">
+              YES 62¢
+            </span>
+          </div>
+          <div
+            className="absolute flex -translate-y-1/2 items-center justify-end gap-2.5 max-[900px]:hidden"
+            style={{ right: "3.6%", top: "75%" }}
+          >
+            <span className="rounded-md border border-white/10 bg-[#0a120d]/85 px-2.5 py-1 font-['IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace] text-[12px] font-semibold tracking-[0.02em] text-[#ff8b6b]/80 [font-variant-numeric:tabular-nums]">
+              NO 38¢
+            </span>
+          </div>
+        </div>
+        {/* Scrim: anchors the text column left, lets the chart read right. */}
         <div
-          className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(0,0,0,0.72)_0%,rgba(0,0,0,0.66)_45%,rgba(0,0,0,0.84)_100%)]"
+          className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(5,7,6,0.88)_0%,rgba(5,7,6,0.5)_52%,rgba(5,7,6,0.12)_100%)]"
           aria-hidden="true"
         />
 
-        <div className="relative z-10 mx-auto flex min-h-[calc(100svh-64px)] max-w-[1440px] flex-col items-center justify-center px-8 pb-8 pt-8 text-center max-[720px]:min-h-[620px] max-[720px]:px-5">
-          <h1 className="m-0 max-w-[min(1320px,calc(100vw-32px))] text-balance text-[clamp(52px,5.45vw,82px)] font-normal leading-[1] tracking-normal text-white [font-family:Georgia,'Times_New_Roman',serif] max-[720px]:max-w-[620px] max-[720px]:text-[clamp(42px,12vw,58px)]">
+        <div className="relative z-10 mx-auto flex min-h-[calc(100svh-64px)] w-full max-w-[1180px] flex-col justify-center px-8 pb-24 pt-12 max-[720px]:min-h-[600px] max-[720px]:px-5 max-[720px]:pb-16">
+          <p className="landing-rise m-0 flex items-center gap-2.5 text-[12px] font-bold uppercase tracking-[0.18em] text-white/64">
+            <span
+              className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_10px_rgba(43,228,128,0.8)] animate-[predict-pulse_1.6s_ease-in-out_infinite]"
+              aria-hidden="true"
+            />
+            {t("hero.eyebrow")}
+          </p>
+          <h1 className="landing-rise landing-rise-delay-1 m-0 mt-5 max-w-[840px] text-balance text-[clamp(46px,6vw,84px)] font-semibold leading-[1.02] tracking-[-0.03em] text-white [font-family:'Inter_Tight','Inter',-apple-system,BlinkMacSystemFont,sans-serif] max-[720px]:text-[clamp(40px,10.5vw,56px)]">
             {t("hero.title")}
           </h1>
-          <p className="mx-auto mt-5 max-w-[1080px] text-balance text-[22px] font-medium leading-[1.24] text-white/90 max-[1100px]:max-w-[920px] max-[1100px]:text-[21px] max-[720px]:mt-5 max-[720px]:max-w-[560px] max-[720px]:text-[18px] max-[720px]:leading-[1.32]">
+          <p className="landing-rise landing-rise-delay-2 m-0 mt-6 max-w-[600px] text-[19px] leading-[1.55] text-white/78 max-[720px]:mt-5 max-[720px]:text-[17px]">
             {t("hero.subtitle")}
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3 max-[720px]:mt-7">
+          <div className="landing-rise landing-rise-delay-3 mt-9 flex flex-wrap gap-3 max-[720px]:mt-8">
             <Link
               href="/predict"
-              className="inline-flex h-[46px] min-w-[154px] items-center justify-center rounded-[var(--r-pill)] bg-[var(--accent)] px-8 text-[16px] font-semibold !text-[#061a10] transition-transform hover:-translate-y-px hover:brightness-105"
+              className="inline-flex h-12 min-w-[154px] items-center justify-center rounded-[var(--r-pill)] bg-[var(--accent)] px-8 text-[15px] font-semibold !text-[#061a10] transition-[transform,background-color] duration-150 ease-out hover:-translate-y-px hover:bg-[#54ec9b]"
             >
               {t("nav.browseMarkets")}
             </Link>
             <Link
               href="#how-it-works"
-              className="inline-flex h-[46px] min-w-[154px] items-center justify-center rounded-[var(--r-pill)] border border-white/50 bg-transparent px-8 text-[16px] font-semibold !text-white transition-colors hover:bg-white/12"
+              className="inline-flex h-12 min-w-[154px] items-center justify-center rounded-[var(--r-pill)] border border-white/25 bg-white/5 px-8 text-[15px] font-semibold !text-white transition-[background-color,border-color] duration-150 ease-out hover:border-white/40 hover:bg-white/10"
             >
               {t("hero.howItWorks")}
             </Link>
