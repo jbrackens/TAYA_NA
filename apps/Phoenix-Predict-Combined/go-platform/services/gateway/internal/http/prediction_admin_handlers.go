@@ -286,6 +286,14 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 				}
 				return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"items": adminPunterNotePayloads(notes)})
 			case stdhttp.MethodPost:
+				// GAP-105 (§7/§27 least-privilege): adding a note is a WRITE —
+				// layer users:write like the sibling status/revoke-sessions
+				// actions, instead of riding the handler's top-level users:read
+				// (which let a read-only Auditor write CRM notes). The office
+				// control already gates on users:write.
+				if err := requireAdminPermission(r, "users:write"); err != nil {
+					return err
+				}
 				var body struct {
 					Content  string `json:"content"`
 					Category string `json:"category"`
