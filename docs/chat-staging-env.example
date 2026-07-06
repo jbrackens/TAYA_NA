@@ -1,27 +1,27 @@
 # Gateway server env
 CHAT_ENABLED=false
 CHAT_PROVIDER=rocketchat
-CHAT_PUBLIC_URL=https://chat.staging.tiangge.com
+CHAT_PUBLIC_URL=https://chat.staging.taptrade.com
 CHAT_INTERNAL_URL=http://rocketchat:3000
 CHAT_DEFAULT_ROOM=global
 CHAT_IFRAME_PATH=/channel/%s?layout=embedded
 CHAT_SESSION_TOKEN_TTL=1h
-CHAT_PARENT_ORIGIN=https://staging.tiangge.com
-CHAT_IFRAME_X_FRAME_OPTIONS=ALLOW-FROM https://staging.tiangge.com
+CHAT_PARENT_ORIGIN=https://staging.taptrade.com
+CHAT_IFRAME_X_FRAME_OPTIONS=ALLOW-FROM https://staging.taptrade.com
 ROCKETCHAT_ADMIN_USER_ID=replace-me
 ROCKETCHAT_ADMIN_AUTH_TOKEN=replace-me
 DATABASE_URL=replace-me
 
 # Next.js frontend env
 NEXT_PUBLIC_FEATURE_CHAT=false
-NEXT_PUBLIC_CHAT_PUBLIC_URL=https://chat.staging.tiangge.com
+NEXT_PUBLIC_CHAT_PUBLIC_URL=https://chat.staging.taptrade.com
 
 # Rocket.Chat spike/deploy env
 ROCKETCHAT_VERSION=8.4.2
 ROCKETCHAT_INITIAL_USER=yes
-ROCKETCHAT_ADMIN_USERNAME=tiangge-admin
-ROCKETCHAT_ADMIN_NAME=Tiangge Admin
-ROCKETCHAT_ADMIN_EMAIL=chat-admin@tiangge.com
+ROCKETCHAT_ADMIN_USERNAME=taptrade-admin
+ROCKETCHAT_ADMIN_NAME=TapTrade Admin
+ROCKETCHAT_ADMIN_EMAIL=chat-admin@taptrade.com
 ROCKETCHAT_ADMIN_PASSWORD=replace-me
 ROCKETCHAT_FILE_UPLOAD_ENABLED=false
 ROCKETCHAT_ACCOUNTS_IFRAME_ENABLED=true

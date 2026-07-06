@@ -25,7 +25,7 @@ REST login, `#global` provisioning, `FileUpload_Enabled=false`, and
 The validator now also blocks cross-origin launch if Rocket.Chat serves
 `X-Frame-Options: sameorigin`; production must resolve that with Rocket.Chat
 settings or, preferably, an edge policy that removes legacy XFO and sets a
-tight `frame-ancestors` CSP for the Tiangge app origin.
+tight `frame-ancestors` CSP for the TapTrade app origin.
 An in-browser localhost iframe probe loaded the Rocket.Chat login screen
 successfully after the local spike set `Iframe_X_Frame_Options=ALLOW-FROM
 http://localhost:3000`. Because `ALLOW-FROM` is legacy and ignored by modern
@@ -69,11 +69,11 @@ Cons and launch blockers:
 - Rocket.Chat adds MongoDB, its own websocket footprint, and its own
   operational runbook.
 - Iframe auth is sensitive to third-party cookie behavior; production must use
-  a same-site subdomain such as `chat.tiangge.com`.
+  a same-site subdomain such as `chat.taptrade.com`.
 - Rocket.Chat REST login returns a provider auth token. Phase 0 must confirm
   whether token lifetime, password rotation, logout, and user deactivation meet
-  Tiangge's short-lived session and revocation requirements before public launch.
-- Chat report writes are durable Tiangge-owned `audit_log` rows when the gateway
+  TapTrade's short-lived session and revocation requirements before public launch.
+- Chat report writes are durable TapTrade-owned `audit_log` rows when the gateway
   has `DATABASE_URL`; launch must verify the rows are visible in Talon/admin
   audit views with `product=prediction`.
 
@@ -85,7 +85,7 @@ Integration notes:
   - `POST /api/v1/chat/report`
   - `POST /api/v1/chat/users/{userID}/deactivate` for admin/user-lifecycle
     flows that need synchronous provider-side chat deactivation.
-- Blocked Tiangge users (`suspended`, `deactivated`, `disabled`, `inactive`,
+- Blocked TapTrade users (`suspended`, `deactivated`, `disabled`, `inactive`,
   `banned`, or `closed`) are denied new chat sessions and the gateway attempts
   to deactivate the matching Rocket.Chat account when it exists.
 - Required server env:
@@ -103,7 +103,7 @@ Integration notes:
 - Required provider public-read posture:
   - `Accounts_AllowAnonymousRead=true`
   - `Accounts_AllowAnonymousWrite=false`
-  - Signed-out users use the public room URL only; Tiangge-owned session tokens are
+  - Signed-out users use the public room URL only; TapTrade-owned session tokens are
     issued only to authenticated, unrestricted users.
 
 ## Option B: Converse.js + XMPP
@@ -115,14 +115,14 @@ Pros:
 
 Cons:
 
-- Tiangge would own substantially more admin UX, abuse reporting, role sync,
+- TapTrade would own substantially more admin UX, abuse reporting, role sync,
   moderation workflow, retention, and room provisioning.
 - XMPP operational expertise becomes a production dependency.
 - V1 moderation readiness is weaker than Rocket.Chat unless scope expands.
 
 ## Duel-Style Chat Architecture Requirement
 
-Tiangge community chat should follow the persistent left-side community chat
+TapTrade community chat should follow the persistent left-side community chat
 pattern common in Duel-style sportsbook/casino interfaces, adapted to a
 prediction market surface. The chat should live in the application shell beside
 markets, portfolio, account, and wallet controls rather than as a support
@@ -152,7 +152,7 @@ Realtime and storage expectations:
   presence, rate limits, and moderation controls where possible.
 - Rocket.Chat satisfies this through its realtime and room infrastructure if
   the launch spike confirms edition, iframe, auth, and moderation behavior.
-- Converse.js/XMPP can satisfy realtime and presence through XMPP MUC, but Tiangge
+- Converse.js/XMPP can satisfy realtime and presence through XMPP MUC, but TapTrade
   would likely own more role sync, report UX, admin tooling, and audit workflow.
 - A custom WebSocket/Postgres/Redis/queue stack remains a fallback only after
   Rocket.Chat and Converse.js/XMPP are shown to be unsuitable.
@@ -172,26 +172,26 @@ Message metadata mapping:
 }
 ```
 
-Tiangge rank should map from existing user/account state where available:
+TapTrade rank should map from existing user/account state where available:
 
 - `regular`: authenticated user without elevated status.
 - `verified`: future KYC/profile verification mapping when exposed to the
   prediction app.
 - `market_creator`: future creator identity when market creation is user-owned.
-- `moderator`: Tiangge moderator role synced to the provider.
-- `admin`: Tiangge admin role synced to the provider.
+- `moderator`: TapTrade moderator role synced to the provider.
+- `admin`: TapTrade admin role synced to the provider.
 - `vip` or community tier: future loyalty, token, NFT, or community role.
 
 Moderation baseline:
 
-- Chat identity must come from Tiangge auth, not provider self-registration.
+- Chat identity must come from TapTrade auth, not provider self-registration.
 - Visitors can read public global chat before login, but the message composer
   must be disabled and display `Login to chat`.
-- Suspended, banned, muted, deactivated, disabled, inactive, or closed Tiangge
+- Suspended, banned, muted, deactivated, disabled, inactive, or closed TapTrade
   users must not be able to create new chat sessions.
 - Required workflows are client-side validation, server-side profanity/spam
   filtering hooks, rate limits, mute, ban, moderator roles, message deletion,
-  reporting, and Tiangge-owned audit records.
+  reporting, and TapTrade-owned audit records.
 - Moderation policy must account for spam, phishing and wallet-drainer links,
   market manipulation attempts, coordinated brigading, harassment, illegal
   content, active-market misinformation, and abuse of creators or moderators.
@@ -203,7 +203,7 @@ Provider fit against Duel-style requirements:
 | Persistent sidebar embed | Strong via iframe if CSP/cookie behavior passes | Strong client embed, more UI customization work |
 | App-shell integration | Strong as isolated iframe leaf panel | Strong as embedded JS client |
 | WebSocket/realtime support | Built-in realtime infrastructure | XMPP BOSH/WebSocket depending server config |
-| Tiangge auth mapping | REST user sync plus iframe/session handoff | Custom auth bridge and XMPP account sync |
+| TapTrade auth mapping | REST user sync plus iframe/session handoff | Custom auth bridge and XMPP account sync |
 | Message metadata mapping | User custom fields/roles can map rank/badges | XMPP vCard/roles/plugins likely needed |
 | Global room support | Native channels | Native MUC |
 | Market-specific room support | Native channels plus provisioning API | MUC rooms plus custom provisioning |
@@ -213,7 +213,7 @@ Provider fit against Duel-style requirements:
 | Rate limits | Built-in settings plus gateway limits | Server modules plus gateway limits |
 | Profanity/spam filtering hooks | Provider apps/settings plus gateway/reporting hooks | Server modules/plugins/custom hooks |
 | Durable message history | MongoDB-backed provider history | MAM archive with Prosody/ejabberd storage |
-| Audit logs | Provider audit plus Tiangge report audit; gaps must be documented | More custom audit work likely |
+| Audit logs | Provider audit plus TapTrade report audit; gaps must be documented | More custom audit work likely |
 | Presence | Built-in | Protocol-native |
 | Redis/pub-sub or equivalent fan-out | Provider-managed realtime fan-out | XMPP server-managed fan-out |
 | Admin tooling | Strongest v1 fit | More operational/admin build-out |
@@ -258,7 +258,7 @@ Fallback plan:
 - Verify `POST /api/v1/chat/report` writes `prediction.chat.reported` rows to
   `audit_log` and that moderators can retrieve them.
 - Define message retention, export, and deletion workflows across Rocket.Chat
-  MongoDB and Tiangge data systems.
+  MongoDB and TapTrade data systems.
 - Document provider outage rollback: turn off `CHAT_ENABLED` and
   `NEXT_PUBLIC_FEATURE_CHAT`.
 

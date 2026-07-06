@@ -1,4 +1,4 @@
-# Tiangge Cashier Phase 0-10 Execution Board
+# TapTrade Cashier Phase 0-10 Execution Board
 
 **Status:** Active.
 **Date:** 2026-05-25.

@@ -86,8 +86,8 @@ services:
       MONGO_OPLOG_URL: "mongodb://rocketchat-mongo:27017/local?replicaSet=rs0"
       DEPLOY_METHOD: "docker"
       INITIAL_USER: "yes"
-      ADMIN_USERNAME: "tiangge-admin"
-      ADMIN_NAME: "Tiangge Demo Admin"
+      ADMIN_USERNAME: "taptrade-admin"
+      ADMIN_NAME: "TapTrade Demo Admin"
       ADMIN_EMAIL: "chat-admin@99rtp.io"
       ADMIN_PASS: "${ROCKETCHAT_ADMIN_PASSWORD:-change-me-before-demo}"
       OVERWRITE_SETTING_FileUpload_Enabled: "false"
@@ -214,8 +214,8 @@ services:
       # SMTP_PORT: "587"
       # SMTP_USER: ""
       # SMTP_PASSWORD: ""
-      # SMTP_FROM: "no-reply@tiangge.app"
-      # NOTIFY_RESOLUTION_TO: "ops@tiangge.app"
+      # SMTP_FROM: "no-reply@taptrade.app"
+      # NOTIFY_RESOLUTION_TO: "ops@taptrade.app"
       # Server-side market translation backfill. The translate-markets helper
       # uses this same OpenRouter key path as office AI drafting, but writes
       # cached DB rows and prediction_markets.translations rather than calling

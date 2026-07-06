@@ -13,7 +13,7 @@ fails until sections 1-5 and rollback evidence are complete.
 - [ ] Chrome iframe smoke test passes on staging:
 - [ ] Same-site cookie/session behavior verified on staging:
 - [ ] Edge policy removes or neutralizes legacy `X-Frame-Options` conflicts:
-- [ ] Edge CSP includes a tight `frame-ancestors` allowlist for the Tiangge app:
+- [ ] Edge CSP includes a tight `frame-ancestors` allowlist for the TapTrade app:
 
 ## 2. Rocket.Chat Admin and License Review
 
@@ -56,7 +56,7 @@ Reference checks:
 - [ ] Rocket.Chat retention settings configured:
 - [ ] Export workflow tested:
 - [ ] Deletion workflow tested:
-- [ ] `prediction.chat.reported` audit rows visible in Tiangge audit/admin tools:
+- [ ] `prediction.chat.reported` audit rows visible in TapTrade audit/admin tools:
 - [ ] Report triage owner/team:
 - [ ] Legal/compliance signoff:
 

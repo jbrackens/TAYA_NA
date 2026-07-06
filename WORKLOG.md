@@ -39,3 +39,21 @@ gates green (Unit/Integration/E2E/Performance/Security); rendered UI clean; docs
   api-client, incl. brand.ts defaults, 7-locale strings, legal pages,
   TapTradeApiClient alias (was TianggeApiClient) + its test assertions.
   VERIFIED: git grep -il tiangge over the three packages = 0.
+
+## Iteration 3 — 2026-07-06 (user-triggered after "why isn't the loop firing")
+- ROOT CAUSE of both the quiet loop and the 19:01 incident VERIFIED: background task
+  task_633e7ad3 (backend scrubbed-markets fix) shares the primary checkout at
+  Taya_Na_Predict/ — its 26 uncommitted gateway files appeared on our branch. Resolution:
+  primary checkout returned to main (its edits intact, zero overlap with our diff,
+  verified via comm(status, diff main...HEAD)); loop relocated to dedicated worktree
+  Taya_Na_Predict-rebrand/; cron re-pointed (job 2d4534ec, */10).
+- CONSTRAINT recorded: go-platform/** deferred until task_633e7ad3 lands; then rebase.
+- EXECUTED Batch B (tiangge, living docs + infra titles): 40 files across DESIGN.md,
+  PRODUCT-USER-JOURNEYS.md, docs/ (cashier, adr, cms-bonus-augmentation, ...),
+  contracts/, services/cashier-api, apps README/Makefile/compose-demo/ops. VERIFIED:
+  zero case-insensitive tiangge residuals in batch scope.
+- CLASSIFIED: docs/audit/* = dated historical records → ALLOWLIST. scripts/** +
+  scripts/release/profiles/runtime-gate.env deferred to a dedicated pass (mixture of
+  preservation-gate references and cross-boundary env values).
+- Remaining tiangge (active scope): go-platform (deferred), scripts/**, migrations
+  (forward-only — new migration in cross-boundary phase).

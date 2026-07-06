@@ -50,7 +50,7 @@ HISTORICAL_BETS_DIR ?= $(ROOT)/phoenix-backend/services/src/test/resources/data/
 help:
 	@echo "Available targets:"
 	@echo "  make bootstrap         # install deps + local env files"
-	@echo "  make start             # start backend + go-gateway + Talon + Tiangge player"
+	@echo "  make start             # start backend + go-gateway + Talon + TapTrade player"
 	@echo "  make stop              # stop started services"
 	@echo "  make restart           # restart all services"
 	@echo "  make status            # show service and HTTP health status"
@@ -59,10 +59,10 @@ help:
 	@echo "  make verify            # run the full quality gate"
 	@echo "  make verify-backend    # backend compile + test compile"
 	@echo "  make verify-talon      # Talon bootstrap + office build"
-	@echo "  make verify-sportsbook # compatibility alias for Tiangge player app typecheck + build"
+	@echo "  make verify-sportsbook # compatibility alias for TapTrade player app typecheck + build"
 	@echo "  make verify-go         # SB-501/502/503 gates + strict historical reconciliation parity"
-	@echo "  make verify-api-contract-fixtures # Tiangge API/client contract fixture regression gate"
-	@echo "  make frontend-deps-baseline # capture Talon/Tiangge player outdated dependency baseline report"
+	@echo "  make verify-api-contract-fixtures # TapTrade API/client contract fixture regression gate"
+	@echo "  make frontend-deps-baseline # capture Talon/TapTrade player outdated dependency baseline report"
 	@echo "  make security-secrets  # run secret scan baseline report"
 	@echo "  make security-deps     # run dependency vulnerability baseline report"
 	@echo "  make security-jvm      # run JVM/SBT dependency baseline report"
@@ -87,8 +87,8 @@ help:
 	@echo "  make qa-abuse-boundary # prove reward/social multi-account abuse controls"
 	@echo "  make qa-canonical-browser-journey # run seeded-stack canonical browser journey proof"
 	@echo "  make qa-canonical-browser-stack # start an ephemeral seeded stack and run canonical browser proof"
-	@echo "  make qa-sports-route-smoke # compatibility alias for Tiangge discovery route contracts"
-	@echo "  make qa-sports-regression # compatibility alias for Tiangge discovery/API contract regression"
+	@echo "  make qa-sports-route-smoke # compatibility alias for TapTrade discovery route contracts"
+	@echo "  make qa-sports-regression # compatibility alias for TapTrade discovery/API contract regression"
 	@echo "  make qa-preservation-deletions # classify deleted inherited artifacts before commit/review"
 	@echo "  make qa-preservation-modifications # classify modified inherited artifacts before commit/review"
 	@echo "  make qa-preservation-contract-anchors # compare inherited public contract anchors against HEAD"
@@ -100,7 +100,7 @@ help:
 	@echo "  make qa-rc-completion-audit # fail until all 12 spec scenarios are Pass with evidence"
 	@echo "  make release-cutover-rehearsal # run cutover/rollback rehearsal checklist"
 	@echo "  make release-launch-readiness # run phase-9 launch readiness gate checklist"
-	@echo "  make release-launch-readiness-runtime # launch readiness + optional Tiangge discovery/API compatibility gate"
+	@echo "  make release-launch-readiness-runtime # launch readiness + optional TapTrade discovery/API compatibility gate"
 	@echo "  make release-launch-readiness-runtime-profile # managed runtime profile (start stack, wait, run runtime gate, teardown)"
 	@echo "  make release-governance-private # private-repo governance fallback gate bundle"
 	@echo "  make release-install-private-governance-hooks # install release-ref pre-push governance hook"
@@ -270,7 +270,7 @@ release-launch-readiness:
 	@bash "$(LAUNCH_GATE_SCRIPT)"
 
 release-launch-readiness-runtime:
-	@RUN_TIANGGE_DISCOVERY_CONTRACT_GATE=1 bash "$(LAUNCH_GATE_SCRIPT)"
+	@RUN_TAPTRADE_DISCOVERY_CONTRACT_GATE=1 bash "$(LAUNCH_GATE_SCRIPT)"
 
 release-launch-readiness-runtime-profile:
 	@bash "$(RUNTIME_GATE_PROFILE_SCRIPT)"

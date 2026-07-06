@@ -1,8 +1,8 @@
-# Tiangge Economy Rules
+# TapTrade Economy Rules
 
 ## Purpose
 
-Tiangge uses non-redeemable gameplay points for prediction-market play. Points are an entertainment accounting unit only. They are not money, stored value, crypto, prizes, credits, or a claim on anything redeemable.
+TapTrade uses non-redeemable gameplay points for prediction-market play. Points are an entertainment accounting unit only. They are not money, stored value, crypto, prizes, credits, or a claim on anything redeemable.
 
 ## Non-Negotiable Constraints
 
@@ -54,7 +54,7 @@ cash-equivalent wording.
 
 ## Account Creation Disclosure
 
-Launch registration must require and persist both general terms acceptance and the points-only/no-cashout disclosure before an account can be created. The auth service should store accepted versions and timestamps for `tiangge-launch-v1` terms and `points-no-cashout-v1` disclosure, expose that evidence on the authenticated session, and keep starter-point grants as a separate idempotent ledger-backed wallet action after login. Starter grants must credit only the authenticated session user, use an operator-configured non-redeemable point amount, expose `PTS` response/ledger fields to launch clients, and remain idempotent under `starter_grant:{userId}` so sequential or concurrent retries do not add points twice.
+Launch registration must require and persist both general terms acceptance and the points-only/no-cashout disclosure before an account can be created. The auth service should store accepted versions and timestamps for `taptrade-launch-v1` terms and `points-no-cashout-v1` disclosure, expose that evidence on the authenticated session, and keep starter-point grants as a separate idempotent ledger-backed wallet action after login. Starter grants must credit only the authenticated session user, use an operator-configured non-redeemable point amount, expose `PTS` response/ledger fields to launch clients, and remain idempotent under `starter_grant:{userId}` so sequential or concurrent retries do not add points twice.
 
 ## Allowed Point Uses
 
@@ -113,7 +113,7 @@ Market resolution must be based on the pre-declared settlement source and rule. 
 
 Launch market creation may only use manual/admin-manual settlement sources and binary outcome rules. Asset-price feeds, price-threshold rules, and market copy or metadata that references launch-prohibited asset/cashout terms must be rejected before persistence. Legacy automated feed adapters may remain in code for compatibility only when they are not registered by default, are protected by explicit non-launch opt-in, and are absent from office create-market controls and launch seed/demo data.
 
-Persisted engine statuses may use legacy names, but launch admin surfaces must present the Tiangge lifecycle mapping: draft, open, paused, closed, resolving, settled, and invalid. Admin market edits may update metadata, close/cutoff/source/rule parameters, and liquidity/fee configuration, but must not change status/result or move points; those remain lifecycle and settlement responsibilities. Lifecycle actions such as Open, Pause, Close, Cancel/Invalidate, Propose Resolution, Finalize, and Settle must not move points unless the underlying settlement/void logic writes the appropriate point ledger or settlement-disbursement records. Lifecycle audit views and exports must expose actor, reason, timestamp, metadata, and mapped stage so admin actions are reviewable. Stored lifecycle reason and metadata strings from restored/imported rows must be redacted at JSON/CSV response boundaries without mutating the raw audit row. CSV audit exports must keep text cells spreadsheet-formula-safe. Office operation copy must display points, not cash values.
+Persisted engine statuses may use legacy names, but launch admin surfaces must present the TapTrade lifecycle mapping: draft, open, paused, closed, resolving, settled, and invalid. Admin market edits may update metadata, close/cutoff/source/rule parameters, and liquidity/fee configuration, but must not change status/result or move points; those remain lifecycle and settlement responsibilities. Lifecycle actions such as Open, Pause, Close, Cancel/Invalidate, Propose Resolution, Finalize, and Settle must not move points unless the underlying settlement/void logic writes the appropriate point ledger or settlement-disbursement records. Lifecycle audit views and exports must expose actor, reason, timestamp, metadata, and mapped stage so admin actions are reviewable. Stored lifecycle reason and metadata strings from restored/imported rows must be redacted at JSON/CSV response boundaries without mutating the raw audit row. CSV audit exports must keep text cells spreadsheet-formula-safe. Office operation copy must display points, not cash values.
 
 ## Abuse Controls
 
@@ -192,7 +192,7 @@ Settlement and dispute docs must describe direct settlement, proposed-resolution
 
 Gateway route tests for proposed-resolution settlement must cover the same trust boundary as the service tests: direct settlement cannot bypass an active challenge flow, the proposer cannot finalize their own proposal, holder disputes block finalization until reviewed, and second-admin finalization must expose point-disbursement aliases rather than external-value wording.
 
-Gateway boot/middleware tests must also pin the launch no-money-path boundary before handlers run. In launch mode, legacy cashier, admin cashier, payment, crypto-payment, provider callback, and webhook paths must not be public prefixes and must not skip CSRF. Gateway runtime route-domain summaries, startup logs, and infrastructure metrics must not advertise legacy money domains or emit cashier/payment/crypto diagnostic collectors when those routes are absent; edge-auth and geo-gate diagnostics should describe guarded requests rather than money routes. Launch deployments must not require dormant payment-webhook secrets when the legacy route tree is absent; any explicit non-launch legacy opt-in may exempt only provider callback or webhook paths for signature-verified compatibility, while interactive legacy routes still require auth and CSRF, and that opt-in must require a real non-placeholder webhook secret. Alpha-cashier service enablement is part of the same legacy route boundary: `ALPHA_CASHIER_ENABLED=true` must be rejected unless `TIANGGE_LEGACY_MONEY_ROUTES_ENABLED=true` is also present, and deployed environments must reject alpha cashier before boot. The same opt-in may restore legacy diagnostics only for that non-launch compatibility mode, but opt-in metrics should use legacy-route or guarded-request wording rather than money-route wording. Deployed environments must continue to reject that legacy opt-in before boot.
+Gateway boot/middleware tests must also pin the launch no-money-path boundary before handlers run. In launch mode, legacy cashier, admin cashier, payment, crypto-payment, provider callback, and webhook paths must not be public prefixes and must not skip CSRF. Gateway runtime route-domain summaries, startup logs, and infrastructure metrics must not advertise legacy money domains or emit cashier/payment/crypto diagnostic collectors when those routes are absent; edge-auth and geo-gate diagnostics should describe guarded requests rather than money routes. Launch deployments must not require dormant payment-webhook secrets when the legacy route tree is absent; any explicit non-launch legacy opt-in may exempt only provider callback or webhook paths for signature-verified compatibility, while interactive legacy routes still require auth and CSRF, and that opt-in must require a real non-placeholder webhook secret. Alpha-cashier service enablement is part of the same legacy route boundary: `ALPHA_CASHIER_ENABLED=true` must be rejected unless `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED=true` is also present, and deployed environments must reject alpha cashier before boot. The same opt-in may restore legacy diagnostics only for that non-launch compatibility mode, but opt-in metrics should use legacy-route or guarded-request wording rather than money-route wording. Deployed environments must continue to reject that legacy opt-in before boot.
 
 Backend discovery taxonomy is also a launch surface. Public and admin category lists must not expose inherited crypto taxonomy in launch mode, direct category lookups for launch-prohibited slugs must fail safely, and admin-created categories must reject crypto, fiat, cashout, withdrawal, payout, or asset-token framing. Fresh and migrated launch databases should seed launch-safe categories such as esports and deactivate inherited crypto compatibility rows unless a non-launch compatibility path explicitly needs them outside user/admin discovery.
 
@@ -486,7 +486,7 @@ Launch-facing bonus and campaign type fields must use point-game economy vocabul
 
 ## Loop 236 Bonus Campaign Runtime Safety Rule
 
-Bonus campaign creation, claim, and admin-grant paths must normalize inherited promo campaign types to point-native campaign types before persistence or player-bonus creation. Tiangge launch bonus service code must not create freebet side effects from campaign claims; any old freebet-style campaign value may remain only as compatibility input that is converted to a non-redeemable point campaign.
+Bonus campaign creation, claim, and admin-grant paths must normalize inherited promo campaign types to point-native campaign types before persistence or player-bonus creation. TapTrade launch bonus service code must not create freebet side effects from campaign claims; any old freebet-style campaign value may remain only as compatibility input that is converted to a non-redeemable point campaign.
 
 ## Loop 237 Bonus Admin Amount Alias Conflict Rule
 
@@ -830,7 +830,7 @@ Supported launch-language locale values must not ship standalone sportsbook-era 
 
 ## Loop 322 Preservation Checkpoint Rule
 
-Deleted inherited artifacts must be classified before their related scenario can be treated as complete. Public money-path routes, UI, client exports, and locale bundles may stay absent when launch-prohibited, but deleted reconciliation, settlement, ledger, abuse-control, or admin-review proof tools require point-native replacements. Replacement evidence should name the new command, route, test, fixture, or live proof that preserves the old operational assurance under Tiangge's non-redeemable points contract.
+Deleted inherited artifacts must be classified before their related scenario can be treated as complete. Public money-path routes, UI, client exports, and locale bundles may stay absent when launch-prohibited, but deleted reconciliation, settlement, ledger, abuse-control, or admin-review proof tools require point-native replacements. Replacement evidence should name the new command, route, test, fixture, or live proof that preserves the old operational assurance under TapTrade's non-redeemable points contract.
 
 ## Loop 323 Result History Locale Rule
 
@@ -890,27 +890,27 @@ Mandatory regression packs must prove launch readiness through prediction orders
 
 ## Loop 337 Local Governance Hook Rule
 
-Local commit hooks and developer governance checks must follow the Tiangge launch model. They should run maintained launch-safe gates for prediction orders, no-money route boundaries, and PTS reconciliation, and must not block or certify commits by requiring cashier, deposit, withdrawal, cashout, betslip, stake, odds, pending-withdrawal, or sportsbook health surfaces.
+Local commit hooks and developer governance checks must follow the TapTrade launch model. They should run maintained launch-safe gates for prediction orders, no-money route boundaries, and PTS reconciliation, and must not block or certify commits by requiring cashier, deposit, withdrawal, cashout, betslip, stake, odds, pending-withdrawal, or sportsbook health surfaces.
 
 ## Loop 338 Player Frontend Verify Rule
 
-Frontend verification targets used by release or governance automation must validate the launch player app, not the retired sportsbook app tree. Compatibility target names may remain stable, but the verifier should run Tiangge player typecheck, production build, and upstream-leak checks against `talon-backoffice/packages/app` and must not certify launch readiness by building sportsbook-only betslip, odds-feed, cashier, or deposit/withdrawal surfaces.
+Frontend verification targets used by release or governance automation must validate the launch player app, not the retired sportsbook app tree. Compatibility target names may remain stable, but the verifier should run TapTrade player typecheck, production build, and upstream-leak checks against `talon-backoffice/packages/app` and must not certify launch readiness by building sportsbook-only betslip, odds-feed, cashier, or deposit/withdrawal surfaces.
 
 ## Loop 339 API Contract Verifier Rule
 
-API contract fixture verifiers used by release or governance automation must validate the launch Tiangge API-client and player-app contracts, not retired sportsbook response-shape fixtures. Compatibility target names may remain stable, but the verifier should build `@phoenix-ui/api-client` and run focused contract tests for prediction-client routing, auth refresh/retry, point-native order validation, preview economics, wallet/reward paths, and point-ledger presentation. It must not certify launch readiness by running sportsbook-only response fixtures, bet placement contracts, stake/cashout flows, or old cashier/payment clients.
+API contract fixture verifiers used by release or governance automation must validate the launch TapTrade API-client and player-app contracts, not retired sportsbook response-shape fixtures. Compatibility target names may remain stable, but the verifier should build `@phoenix-ui/api-client` and run focused contract tests for prediction-client routing, auth refresh/retry, point-native order validation, preview economics, wallet/reward paths, and point-ledger presentation. It must not certify launch readiness by running sportsbook-only response fixtures, bet placement contracts, stake/cashout flows, or old cashier/payment clients.
 
 ## Loop 340 Discovery Compatibility Gate Rule
 
-Sports-named QA targets may remain as compatibility aliases for inherited automation, but they must not certify launch readiness by probing `/sports/<sport>`, esports wrappers, odds-feed fixtures, betslips, odds, cashout, or stake flows. These gates should run Tiangge discovery, market-display, market-copy, and API/client contract tests against the launch app and shared client. Release readiness scripts should prefer Tiangge-named environment variables for these gates while accepting old variable names only as external compatibility aliases.
+Sports-named QA targets may remain as compatibility aliases for inherited automation, but they must not certify launch readiness by probing `/sports/<sport>`, esports wrappers, odds-feed fixtures, betslips, odds, cashout, or stake flows. These gates should run TapTrade discovery, market-display, market-copy, and API/client contract tests against the launch app and shared client. Release readiness scripts should prefer TapTrade-named environment variables for these gates while accepting old variable names only as external compatibility aliases.
 
 ## Loop 341 Managed Runtime Gate Rule
 
-Managed local stacks and runtime-profile release gates must start and wait for the launch Tiangge player app, not the retired sportsbook app tree. Legacy env names such as `SPORTSBOOK_PORT` may remain as compatibility aliases for old automation, and stale legacy pid files may be stopped defensively, but active start/status/log/wait steps should use Tiangge player naming, `talon-backoffice/packages/app`, `PLAYER_PORT`, and the Tiangge discovery/API compatibility gate.
+Managed local stacks and runtime-profile release gates must start and wait for the launch TapTrade player app, not the retired sportsbook app tree. Legacy env names such as `SPORTSBOOK_PORT` may remain as compatibility aliases for old automation, and stale legacy pid files may be stopped defensively, but active start/status/log/wait steps should use TapTrade player naming, `talon-backoffice/packages/app`, `PLAYER_PORT`, and the TapTrade discovery/API compatibility gate.
 
 ## Loop 342 Release Security Evidence Rule
 
-Release security and dependency gates must preserve inherited coverage while scanning the actual launch surfaces. Secret, SBOM, vulnerability, and dependency-modernization baselines should include backend, Talon Backoffice, Tiangge Player App, and Go platform coverage where applicable, and must not certify readiness by scanning only a retired sportsbook frontend tree. Blocked inherited-backend scans should publish concrete error artifacts rather than dangling report paths. Vulnerability baselines must parse and report available advisory payloads, including high/critical counts, so dependency risk remains visible before launch.
+Release security and dependency gates must preserve inherited coverage while scanning the actual launch surfaces. Secret, SBOM, vulnerability, and dependency-modernization baselines should include backend, Talon Backoffice, TapTrade Player App, and Go platform coverage where applicable, and must not certify readiness by scanning only a retired sportsbook frontend tree. Blocked inherited-backend scans should publish concrete error artifacts rather than dangling report paths. Vulnerability baselines must parse and report available advisory payloads, including high/critical counts, so dependency risk remains visible before launch.
 
 ## Loop 343 Dependency Remediation Rule
 
@@ -922,7 +922,7 @@ Office upload/import tooling is launch-adjacent when it parses administrator-sup
 
 ## Loop 345 Preservation Deletion Gate Rule
 
-Any active deletion of inherited production artifacts must be reviewable before Tiangge can approach release-candidate status. Launch-prohibited public money-path files may remain deleted only when they are classified as such and guarded by route/source regressions. Deleted operational proof tools must have point-native replacements. Deleted tests must be classified as launch-incompatible or relocated/replaced by point-native regressions. `make qa-preservation-deletions` must fail on unclassified deleted artifacts so broad rewrites or accidental loss of production contracts cannot be hidden inside the launch safety work.
+Any active deletion of inherited production artifacts must be reviewable before TapTrade can approach release-candidate status. Launch-prohibited public money-path files may remain deleted only when they are classified as such and guarded by route/source regressions. Deleted operational proof tools must have point-native replacements. Deleted tests must be classified as launch-incompatible or relocated/replaced by point-native regressions. `make qa-preservation-deletions` must fail on unclassified deleted artifacts so broad rewrites or accidental loss of production contracts cannot be hidden inside the launch safety work.
 
 ## Loop 346 Live No-Money Runtime Gate Rule
 
@@ -950,7 +950,7 @@ Authenticated critical-path API specs must use launch-native contracts from regi
 
 ## Loop 352 Modification Preservation Rule
 
-Broad modifications to inherited production artifacts must be reviewable before Tiangge can approach release-candidate status. Modified auth, gateway HTTP, prediction, wallet, economy, OpenAPI, shared-client, player, office, seed, and release-governance files should be classified by risk and surface, with line churn visible per path. `make qa-preservation-modifications` must fail on unclassified modified artifacts so accidental rewrites of production business logic, API contracts, or operational proof paths cannot be hidden inside the points-only launch migration. A clean modification map is supplemental evidence only; it does not by itself prove contract preservation or parity completion.
+Broad modifications to inherited production artifacts must be reviewable before TapTrade can approach release-candidate status. Modified auth, gateway HTTP, prediction, wallet, economy, OpenAPI, shared-client, player, office, seed, and release-governance files should be classified by risk and surface, with line churn visible per path. `make qa-preservation-modifications` must fail on unclassified modified artifacts so accidental rewrites of production business logic, API contracts, or operational proof paths cannot be hidden inside the points-only launch migration. A clean modification map is supplemental evidence only; it does not by itself prove contract preservation or parity completion.
 
 ## Loop 353 Extended API Journey Rule
 
@@ -1192,7 +1192,7 @@ modules.
 ## Loop 393 Office Admin README Rule
 
 Office launch-adjacent project documentation that describes current admin
-surfaces must use point-native Tiangge wording. Current admin documentation for
+surfaces must use point-native TapTrade wording. Current admin documentation for
 loyalty, leaderboard, account review, or point-ledger surfaces must not describe
 those surfaces as sportsbook-native and must not advertise cashier, deposit,
 withdrawal, crypto, fiat, redemption, prize, wager, stake, refund, payout,
@@ -1202,9 +1202,9 @@ terms only when clearly marked as historical or retired compatibility context.
 ## Loop 394 Office Navigation/Risk Comment Rule
 
 Active Office source comments that explain launch navigation, redirects, or
-prediction-admin risk pages must use Tiangge-native compatibility language.
+prediction-admin risk pages must use TapTrade-native compatibility language.
 They may preserve inherited enum names, paths, and redirects for compatibility,
-but they should describe retired paths as legacy or pre-Tiangge surfaces rather
+but they should describe retired paths as legacy or pre-TapTrade surfaces rather
 than using inherited sportsbook-era product terms. Any comment cleanup must not
 change route registration, redirect behavior, admin API calls, or operation
 logic unless a separate functional parity slice requires it.
@@ -1231,14 +1231,14 @@ or telemetry contracts.
 
 Active gateway setup/help tooling is launch-adjacent documentation. Makefile
 help, environment examples, development database names, and setup instructions
-must describe the Tiangge prediction gateway and use point-native Tiangge
-database naming such as `tiangge_predict`, not inherited sportsbook database or
+must describe the TapTrade prediction gateway and use point-native TapTrade
+database naming such as `taptrade_predict`, not inherited sportsbook database or
 service names. This rule does not require rewriting historical migrations or
 legacy compatibility schemas.
 
 ## Loop 398 Gateway Makefile Seed Rule
 
-Active gateway seed tooling must use the launch-safe Tiangge seed command
+Active gateway seed tooling must use the launch-safe TapTrade seed command
 family. `make seed` should invoke `go run ./cmd/seed -mode base`, which
 discovers `seed-data/seed_prediction.sql`, and `make demo-data` should invoke
 `go run ./cmd/seed -mode demo`. Active Makefile seed targets must not directly
@@ -1342,7 +1342,7 @@ the tracked rewrite magnitude, high-risk inherited contract domains, deleted
 launch-prohibited money-path files, and explicit compatibility anchors. Inherited
 public/client names should be wrapped or aliased when possible instead of being
 silently replaced; for example, `PhoenixApiClient` may remain as a compatibility
-class while `TianggeApiClient` is exposed as a launch-facing alias. Private
+class while `TapTradeApiClient` is exposed as a launch-facing alias. Private
 compatibility normalizers may read inherited payload fields, but launch-facing
 exports must stay point-native. This dossier is preservation governance and does
 not replace human review or behavioral RC proof.
@@ -1742,7 +1742,7 @@ passes against a running seeded stack.
 The canonical browser journey should remain reproducible from an empty local
 runtime. The maintained stack runner must start a disposable DB-backed stack,
 apply migrations, seed demo data, run auth and gateway in DB mode, serve the
-Tiangge player app through the same-origin API proxy, execute the canonical
+TapTrade player app through the same-origin API proxy, execute the canonical
 browser gate, and tear down the disposable database and services afterward.
 Fresh passing stack-runner evidence clears the authenticated canonical journey
 blocker, but Scenario 12 still requires preservation review, backend legacy

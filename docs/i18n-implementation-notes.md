@@ -1,4 +1,4 @@
-# Tiangge Player App i18n Implementation Notes
+# TapTrade Player App i18n Implementation Notes
 
 ## Scope
 

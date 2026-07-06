@@ -14,3 +14,8 @@ Justification: renaming/deleting an archive falsifies the preservation record; 4
 scripts (qa/security/release/reconciliation) read these paths. Their INTERNAL legacy names
 stay. Scripts' own identifiers and any ACTIVE-surface references remain LEGACY (renamed in
 later batches; path-coupled text rides with the directory-rename batch).
+
+## Dated historical records (decided iteration 3)
+- docs/audit/** — point-in-time audit reports (e.g. COMPONENT_DISPOSITION.md); renaming
+  brand tokens inside dated records falsifies the historical account. Living docs are
+  renamed; dated reports are not.

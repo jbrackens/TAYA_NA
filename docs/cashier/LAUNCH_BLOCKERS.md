@@ -1,4 +1,4 @@
-# Tiangge Cashier Launch Blockers
+# TapTrade Cashier Launch Blockers
 
 **Status:** Active.
 **Date:** 2026-05-25.

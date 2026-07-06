@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-Remediation ADRs from the production-readiness audit (2026-05-22) of the Taya NA Predict / "Tiangge" prediction exchange. Each ADR is grounded in specific files/line numbers in `apps/Phoenix-Predict-Combined`.
+Remediation ADRs from the production-readiness audit (2026-05-22) of the Taya NA Predict / "TapTrade" prediction exchange. Each ADR is grounded in specific files/line numbers in `apps/Phoenix-Predict-Combined`.
 
 | ADR | Title | Priority | Status |
 |-----|-------|----------|--------|

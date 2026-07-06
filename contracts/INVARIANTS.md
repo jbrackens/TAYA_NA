@@ -1,4 +1,4 @@
-# Tiangge Cashier Contract Invariants
+# TapTrade Cashier Contract Invariants
 
 **Status:** Draft gate for contract implementation and audit.
 **Date:** 2026-05-25.

@@ -4,7 +4,7 @@
 
 V1 is global community chat only. Rocket.Chat is isolated behind the gateway
 chat adapter and the Next.js app-shell chat leaf UI. Public visitors can read
-the global conversation in real time, but posting requires a Tiangge session.
+the global conversation in real time, but posting requires a TapTrade session.
 Market-specific rooms, embedded mobile chat, file uploads, rich previews, and
 broad provider-swapping are out of scope for v1.
 
@@ -44,13 +44,13 @@ must enforce the embed allowlist at the edge with CSP `frame-ancestors`.
 Production/staging origin validation:
 
 ```sh
-CHAT_PUBLIC_URL=https://chat.staging.tiangge.com \
-CHAT_PARENT_ORIGIN=https://staging.tiangge.com \
+CHAT_PUBLIC_URL=https://chat.staging.taptrade.com \
+CHAT_PARENT_ORIGIN=https://staging.taptrade.com \
 services/codex-prep/scripts/chat-origin-validate.sh
 ```
 
 This must pass before public enablement. It requires a CSP header with
-`frame-ancestors` that includes the Tiangge parent origin.
+`frame-ancestors` that includes the TapTrade parent origin.
 
 The local spike has been verified to boot Rocket.Chat `8.4.2`. The Compose
 profile uses MongoDB 8.0 to avoid Rocket.Chat 9's planned removal of MongoDB
@@ -64,16 +64,16 @@ Required go/no-go checks:
 - Confirm first-admin provisioning via `INITIAL_USER`, `ADMIN_USERNAME`,
   `ADMIN_NAME`, `ADMIN_EMAIL`, and `ADMIN_PASS` remains supported for the
   selected Rocket.Chat image tag.
-- Configure iframe embedding so the Tiangge app origin is allowed and no other
+- Configure iframe embedding so the TapTrade app origin is allowed and no other
   origin is allowed.
-- Confirm the Rocket.Chat response headers allow the Tiangge app origin to embed
+- Confirm the Rocket.Chat response headers allow the TapTrade app origin to embed
   chat. The local validator fails when Rocket.Chat returns
   `X-Frame-Options: sameorigin` while `CHAT_PUBLIC_URL` and
   `CHAT_PARENT_ORIGIN` are different origins. Production should prefer an edge
   header policy that removes legacy `X-Frame-Options` for the chat app and adds
-  a tight `Content-Security-Policy: frame-ancestors 'self' https://<tiangge-app-origin>`.
+  a tight `Content-Security-Policy: frame-ancestors 'self' https://<taptrade-app-origin>`.
 - Confirm a same-site deployment plan: production should use a subdomain such
-  as `chat.tiangge.com`, not a third-party origin.
+  as `chat.taptrade.com`, not a third-party origin.
 - Verify Chrome behavior with default cookie/privacy settings for the iframe
   and for the mobile external-chat flow.
 - Verify REST login returns a usable user session token and define its lifetime,
@@ -83,7 +83,7 @@ Required go/no-go checks:
 - Confirm the feature can be fully disabled with `CHAT_ENABLED=false` and
   `NEXT_PUBLIC_FEATURE_CHAT=false`.
 - Confirm anonymous visitors can read `#global`, anonymous writes are disabled,
-  and the signed-out Tiangge composer is greyed out with the exact text
+  and the signed-out TapTrade composer is greyed out with the exact text
   `Login to chat`.
 
 Do not enable public chat until all Phase 0 checks pass.
@@ -161,11 +161,11 @@ Security checks:
 
 - `POST /api/v1/chat/session` must reject unauthenticated users.
 - Unauthenticated users must still be able to view the public global room
-  through the configured public chat origin; they must not receive a Tiangge-owned
+  through the configured public chat origin; they must not receive a TapTrade-owned
   provider session token.
-- Suspended, deactivated, disabled, inactive, banned, or closed Tiangge users must
+- Suspended, deactivated, disabled, inactive, banned, or closed TapTrade users must
   be denied and the matching Rocket.Chat user must be deactivated when present.
-- Tiangge suspension/deactivation flows should call
+- TapTrade suspension/deactivation flows should call
   `POST /api/v1/chat/users/{userID}/deactivate` synchronously as part of the
   account-status transition.
 - Gateway rate limiting must apply to chat session/report endpoints.
@@ -178,12 +178,12 @@ Rocket.Chat admin configuration required before launch:
 - Provision `global`.
 - Provision `announcements` only if read-only behavior is confirmed cleanly.
 - Disable uploads, attachments, link previews, and high-risk rich content.
-- Assign Tiangge `admin` and `moderator` mapped roles and verify delete, mute,
+- Assign TapTrade `admin` and `moderator` mapped roles and verify delete, mute,
   ban, and pin capabilities.
 - Configure room slow mode or rate limiting for launch.
 - Confirm moderator actions are auditable in Rocket.Chat and document any gaps.
 
-Tiangge-owned reporting:
+TapTrade-owned reporting:
 
 - Authenticated users can submit reports from the chat sidebar.
 - Reports write `prediction.chat.reported` rows into `audit_log` with
@@ -194,7 +194,7 @@ Retention and deletion:
 
 - Define Rocket.Chat MongoDB message retention before launch.
 - Define export workflow for legal/compliance requests.
-- Define deletion workflow across Rocket.Chat data and Tiangge audit records.
+- Define deletion workflow across Rocket.Chat data and TapTrade audit records.
 
 ## Phase 4: Market-Specific Readiness
 
@@ -229,7 +229,7 @@ Manual QA:
 - Signed-in user can establish a chat session without admin credential exposure.
 - Suspended/deactivated user is denied and provider access is deactivated.
 - Iframe timeout shows a non-blocking unavailable state.
-- Chat report creates a durable Tiangge audit row.
+- Chat report creates a durable TapTrade audit row.
 - CSP allows only the configured chat origin for frame/connect traffic.
 
 Rollback:

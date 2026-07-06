@@ -19,3 +19,6 @@ See CURRENT_STATE.md table. Entries below are CONCRETE artifacts as they are pla
   talon-backoffice/packages/{app,office,api-client} (76 files). Includes
   TianggeApiClient→TapTradeApiClient identifier + test assertions; brand.ts defaults;
   support/privacy/legal emails @tiangge.com→@taptrade.com; 7-locale display strings.
+- Batch B (iteration 3): tiangge→taptrade all case variants, CONTENT ONLY, scope = living
+  docs + infra titles (40 files: root DESIGN/PRODUCT docs, docs/** minus docs/audit,
+  contracts/, services/cashier-api, apps README/Makefile/docker-compose.demo.yml/ops).

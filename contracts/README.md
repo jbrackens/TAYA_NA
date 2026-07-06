@@ -1,4 +1,4 @@
-# Tiangge Cashier Contracts
+# TapTrade Cashier Contracts
 
 Non-custodial contract boundary for the real cashier.
 

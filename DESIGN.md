@@ -1,8 +1,8 @@
-# Design System — Tiangge
+# Design System — TapTrade
 
 > Robinhood for prediction markets, **light theme**. Warm-light surfaces on a faint chart-paper grid, soft-flat cards, big confident numbers, a dominant chart, mint as the action color. Markets are treated like stocks: the question is the sub-headline, the price IS the page, two pill buttons commit you to a side.
 
-This document governs both the **Tiangge player app** at `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/` (port 3000) and the **back-office** at `apps/Phoenix-Predict-Combined/talon-backoffice/packages/office/` (port 3001). Both surfaces share the same `:root` token set, the same Inter + IBM Plex Mono fonts, and the same warm-cream + chart-paper-grid backdrop.
+This document governs both the **TapTrade player app** at `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/` (port 3000) and the **back-office** at `apps/Phoenix-Predict-Combined/talon-backoffice/packages/office/` (port 3001). Both surfaces share the same `:root` token set, the same Inter + IBM Plex Mono fonts, and the same warm-cream + chart-paper-grid backdrop.
 
 The prior Liquid Glass spec (active 2026-04-24 → 2026-04-26) is retired. The warm-dark Robinhood spec (active 2026-04-26 → 2026-04-27) is retired. Their decisions remain in §11 for context. Glass tokens, rim highlights, chromatic fringes, multi-stop backdrop scene, and the dark surface system are all out. Historical TAYA NA references remain only in the decision log and archived handoff material.
 
@@ -18,19 +18,19 @@ The prior Liquid Glass spec (active 2026-04-24 → 2026-04-26) is retired. The w
   - Pariflow (dark fintech) — prior Predict direction.
   - **Robinhood (warm dark, big numbers, dominant chart) — direction adopted 2026-04-26.**
 - **Project type:** real-time trading web app.
-- **Positioning:** Tiangge should feel familiar to anyone who has bought a stock. Calm warm-light surfaces, big confident prices, the chart owns the hero, mint pops on the action button.
+- **Positioning:** TapTrade should feel familiar to anyone who has bought a stock. Calm warm-light surfaces, big confident prices, the chart owns the hero, mint pops on the action button.
 
 ---
 
-## Active Brand: Tiangge
+## Active Brand: TapTrade
 
-**Brand name:** `Tiangge` is the visible product name in the player app. Do not render `TAYA NA Predict` in active player-app chrome, browser titles, auth cards, share surfaces, or empty states.
+**Brand name:** `TapTrade` is the visible product name in the player app. Do not render `TAYA NA Predict` in active player-app chrome, browser titles, auth cards, share surfaces, or empty states.
 
-**Wordmark (refreshed 2026-06-06):** the wordmark is **`Tiangge.`** set in **Schibsted Grotesk 700**, color `--brand-ink` (deep forest `#0b4332`), tracking `-0.03em`, with a **mint period** (`--brand-period` `#10c8a0`) as the recurring signature element. Keep the wordmark clean — no descriptor baked into the lockup. Use a restrained descriptor _outside_ the wordmark when orientation matters: `prediction markets`, `event markets`, or `trade real-world outcomes` — in document-title metadata, auth supporting copy, first-time trade-ticket trust copy, empty states, and social/share descriptions. The brand color is its own layer: never `--accent` (CTA mint) or `--yes` (signal seafoam).
+**Wordmark (refreshed 2026-06-06):** the wordmark is **`TapTrade.`** set in **Schibsted Grotesk 700**, color `--brand-ink` (deep forest `#0b4332`), tracking `-0.03em`, with a **mint period** (`--brand-period` `#10c8a0`) as the recurring signature element. Keep the wordmark clean — no descriptor baked into the lockup. Use a restrained descriptor _outside_ the wordmark when orientation matters: `prediction markets`, `event markets`, or `trade real-world outcomes` — in document-title metadata, auth supporting copy, first-time trade-ticket trust copy, empty states, and social/share descriptions. The brand color is its own layer: never `--accent` (CTA mint) or `--yes` (signal seafoam).
 
 **Brand mark (refreshed 2026-06-06):** a solid **deep-forest rounded-square token** holding a **split "T"** (two top bars over one stem — reads as the bid/ask · YES/NO binary) plus a **mint period dot** bottom-right. It must read as a product/app mark and stays crisp from a 16px favicon up to a large lockup. Source of truth: `app/components/BrandMark.tsx` (code-native SVG, themed off the `--brand-*` tokens); favicon/app-icon: `app/icon.svg` + `app/icon.png`. Use the mark in navigation, auth, launch/loading, the app icon, and approved share surfaces. The prior chart-line mark and the older "H glyph" are **retired**. Keep market and trade surfaces flat — do not spray brand color through cards, CTAs, or page backgrounds.
 
-**First-screen hierarchy:** the first viewport should answer, in order: this is Tiangge, this is a prediction-market trading app, this is a live market with a price, and these are the YES/NO actions. Do not add a marketing hero above the market hero.
+**First-screen hierarchy:** the first viewport should answer, in order: this is TapTrade, this is a prediction-market trading app, this is a live market with a price, and these are the YES/NO actions. Do not add a marketing hero above the market hero.
 
 **Trust copy:** explain mechanics at the money moment, not in a tutorial block. The trade ticket may use one compact line such as: `63¢ means a 63% implied probability. Winning contracts pay $1 each.`
 
@@ -77,7 +77,7 @@ The prior Liquid Glass spec (active 2026-04-24 → 2026-04-26) is retired. The w
 - **Display sub-variant for hero numbers:** `Inter Tight` if available — slightly tighter spacing for the 88px hero price. Falls back to Inter at -0.04em letter-spacing.
 - **Numeric / tabular:** `IBM Plex Mono` with `font-variant-numeric: tabular-nums`. Used for prices in cards and price tickers. Big hero price uses Inter Tight (not mono) because the 88px size carries its own weight; mono at that scale fights the chart.
 - **Fallback stack:** `-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`.
-- **Brand wordmark (chrome only, added 2026-06-06):** `Schibsted Grotesk` 700, used solely for the `Tiangge.` wordmark in nav / auth / landing — never for UI, body, or headlines (those stay Inter). The wordmark is the single sanctioned exception to the no-serif / no-display-font rule, because it is brand chrome, not content.
+- **Brand wordmark (chrome only, added 2026-06-06):** `Schibsted Grotesk` 700, used solely for the `TapTrade.` wordmark in nav / auth / landing — never for UI, body, or headlines (those stay Inter). The wordmark is the single sanctioned exception to the no-serif / no-display-font rule, because it is brand chrome, not content.
 
 Loaded in `app/layout.tsx` via Google Fonts `<link>` (Inter, Inter Tight, IBM Plex Mono, Schibsted Grotesk; Outfit + Space Grotesk remain as legacy loads pending removal).
 
@@ -137,7 +137,7 @@ Accent family kept: `--accent-soft: rgba(43,228,128,0.14)` for soft pill backgro
 
 ### Brand identity color (third layer — wordmark/mark only, added 2026-06-06)
 
-A separate layer from action-mint (`--accent`) and signal-seafoam (`--yes`). It appears ONLY in the `Tiangge.` wordmark and the brand mark — never in UI controls, prices, or data.
+A separate layer from action-mint (`--accent`) and signal-seafoam (`--yes`). It appears ONLY in the `TapTrade.` wordmark and the brand mark — never in UI controls, prices, or data.
 
 | Token                 | Value     | Usage                                                            |
 | --------------------- | --------- | ---------------------------------------------------------------- |

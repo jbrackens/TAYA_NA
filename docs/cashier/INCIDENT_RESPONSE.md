@@ -1,4 +1,4 @@
-# Tiangge Cashier Incident Response
+# TapTrade Cashier Incident Response
 
 **Status:** Draft gate for Phase 8-9.
 **Date:** 2026-05-25.

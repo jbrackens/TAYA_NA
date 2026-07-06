@@ -1,17 +1,17 @@
-# Tiangge Custodial USDC Cashier Plan
+# TapTrade Custodial USDC Cashier Plan
 
 **Status:** Closed Alpha and Beta execution plan.
 **Decision date:** 2026-05-27.
-**Scope:** MetaMask-funded USDC deposits into a Tiangge-controlled treasury, credited to the existing Tiangge internal wallet ledger.
+**Scope:** MetaMask-funded USDC deposits into a TapTrade-controlled treasury, credited to the existing TapTrade internal wallet ledger.
 
 This document captures the staged payment-rails plan and expands Stage 1 into an implementation plan that Codex can follow to build the service.
 
 ## Decision Summary
 
-For closed Alpha, Tiangge should not wait for a PSP, on-ramp, or Polymarket-style non-custodial settlement stack. The fastest credible real-money rail is:
+For closed Alpha, TapTrade should not wait for a PSP, on-ramp, or Polymarket-style non-custodial settlement stack. The fastest credible real-money rail is:
 
 ```text
-MetaMask -> USDC transfer -> Tiangge treasury wallet -> verified chain event -> internal Tiangge balance -> trading -> manual withdrawal review
+MetaMask -> USDC transfer -> TapTrade treasury wallet -> verified chain event -> internal TapTrade balance -> trading -> manual withdrawal review
 ```
 
 This is intentionally a custodial V1/V2 path. Non-custodial settlement is deferred to V3. The near-term goal is to create a narrow, feature-flagged way to test real USDC-funded prediction-market workflows with invited users and low limits.
@@ -23,13 +23,13 @@ Goal: get real USDC deposits working with the smallest safe surface area.
 Build a custodial MetaMask-funded wallet flow:
 
 1. User connects MetaMask.
-2. Tiangge verifies wallet ownership with a signed message.
+2. TapTrade verifies wallet ownership with a signed message.
 3. User creates a deposit intent.
-4. Frontend asks MetaMask to send USDC to one Tiangge treasury wallet.
-5. Frontend submits the transaction hash to Tiangge.
+4. Frontend asks MetaMask to send USDC to one TapTrade treasury wallet.
+5. Frontend submits the transaction hash to TapTrade.
 6. Backend verifies the on-chain ERC-20 transfer.
-7. Backend credits the user's internal Tiangge wallet.
-8. Trading uses existing Tiangge internal balances.
+7. Backend credits the user's internal TapTrade wallet.
+8. Trading uses existing TapTrade internal balances.
 9. Withdrawals are manual admin-approved only.
 
 Stage 1 is allowed to use one treasury wallet, one EVM chain, one token, and manual withdrawal operations. It is not allowed to auto-credit unverified transactions, support multiple assets, broadcast withdrawals without admin review, or pretend KYC/geofence is complete.
@@ -53,7 +53,7 @@ Stage 2 should still keep KYC/geofence/compliance enforcement behind feature fla
 
 ## Stage 3: V3 / Later
 
-Goal: revisit whether Tiangge remains custodial or evolves toward a Polymarket-style non-custodial settlement model.
+Goal: revisit whether TapTrade remains custodial or evolves toward a Polymarket-style non-custodial settlement model.
 
 Options:
 
@@ -75,12 +75,12 @@ Stage 3 is the first stage where non-custodial should become an implementation c
 - Wallet ownership proof via signed message.
 - One configured EVM chain.
 - One configured ERC-20 stablecoin, defaulting to USDC.
-- One configured Tiangge treasury address.
+- One configured TapTrade treasury address.
 - User-created deposit intent with exact amount.
 - MetaMask ERC-20 transfer to treasury.
 - User-submitted transaction hash.
 - Backend receipt/log verification.
-- Idempotent credit to the existing Tiangge wallet ledger.
+- Idempotent credit to the existing TapTrade wallet ledger.
 - Player deposit status UI.
 - Player withdrawal request UI.
 - Backoffice deposit/withdrawal review UI.
@@ -153,7 +153,7 @@ ALPHA_CASHIER_WITHDRAWAL_BROADCAST_ACK=false
 ```
 
 For a live Alpha, set `ALPHA_CASHIER_ENABLED=true` only after selecting one
-chain, funding and labeling the Tiangge treasury wallet, provisioning redundant RPC
+chain, funding and labeling the TapTrade treasury wallet, provisioning redundant RPC
 access, and confirming the production token contract address from chain-native
 sources. Manual withdrawals remain an operator process outside the app; the app
 must not hold payout private keys in Stage 1.
@@ -167,7 +167,7 @@ sequenceDiagram
     participant MetaMask
     participant Gateway
     participant EVMRPC as EVM RPC
-    participant WalletLedger as Tiangge Wallet Ledger
+    participant WalletLedger as TapTrade Wallet Ledger
     participant Backoffice
 
     User->>PlayerApp: Open deposit modal
@@ -499,7 +499,7 @@ Challenge creation:
 - Require requested wallet address.
 - Normalize address to lowercase checksum-compatible form.
 - Build message with:
-  - product name: `Tiangge`
+  - product name: `TapTrade`
   - action: `Connect wallet`
   - user ID
   - wallet address
@@ -750,7 +750,7 @@ Player UX requirements:
 - Show Alpha rail only when backend config returns enabled.
 - Keep existing cashier shell intact if Alpha rail is disabled.
 - Connect MetaMask.
-- Sign Tiangge wallet ownership message.
+- Sign TapTrade wallet ownership message.
 - Show verified wallet address.
 - Let user enter deposit amount.
 - Display exact network, token, treasury address, amount, and expiry.
@@ -836,7 +836,7 @@ Do not log:
 - RPC credentials.
 - Private keys.
 
-Stage 1 should not require Tiangge to hold private keys in code. Manual payout keys must remain outside the app until Stage 2 chooses a signing/custody approach. Non-custodial keys, smart wallets, tokenized positions, and on-chain market settlement are V3 concerns.
+Stage 1 should not require TapTrade to hold private keys in code. Manual payout keys must remain outside the app until Stage 2 chooses a signing/custody approach. Non-custodial keys, smart wallets, tokenized positions, and on-chain market settlement are V3 concerns.
 
 ## Test Plan
 
@@ -930,7 +930,7 @@ The Stage 1 handoff is the Phoenix Predict Go gateway Alpha cashier, not the old
 Remaining live-chain setup before inviting Alpha users:
 
 1. Choose the single Alpha chain and final USDC contract address.
-2. Create the Tiangge treasury wallet, record operator ownership, and keep payout
+2. Create the TapTrade treasury wallet, record operator ownership, and keep payout
    keys outside the app.
 3. Provision primary and backup RPC providers; store only the active RPC URL in
    deployment secrets.
