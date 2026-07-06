@@ -1,15 +1,24 @@
 # PAM Modernization — Decisions Needed
 
-> **STATUS 2026-07-04 (loop TERMINATION): 3 NEW decisions open** (see
-> "Decisions surfaced by the Termination reconciliation" at the bottom). Every
-> other item below was answered by the human on 2026-07-02 (recorded in the
-> ledger's DECISION ROUND section, `docs/pam/PROGRESS_LEDGER.md`); this file
-> records the questions AND those answers for the audit trail. The 3 new items —
-> plus the ⏳ standing follow-ups (counsel inputs, per-phase protected-core
-> reviews) and the ⚑ vendor/infra items — are what the loop now hands back to
-> humans, because every remaining backlog item is either DONE-with-evidence or
-> BLOCKED-on-one-of-these-decisions. Nothing further is autonomously buildable
-> without a human call.
+> **STATUS 2026-07-06 (loop FINAL TERMINATION — verified clean):** the
+> termination condition was met after pass B reconciliation rounds 5 through 10.
+> Those exhaustive rounds surfaced fifteen further buildable gaps (GAP-91
+> through GAP-105 — the dual-approval `finances:approve` permission split, the
+> Market-Operations role, the Profile-360 eligibility/positions/cancel-order/
+> status/risk/note permission gates, the per-market eligibility-tag config
+> editor, the notification-template editor, the KYC request-documents action,
+> the config-flags editor, and the notes-write backend gate) and ALL were
+> built, tested, and independently verified — **no new human decisions were
+> added by those rounds.** Verification #33 plus pass B round 10 confirmed by
+> enumeration that every office mutating control is permission-gated, every
+> operator-facing admin route has a console consumer, and every remaining
+> unmet spec requirement maps to an item in THIS file. The open decision
+> roster below is unchanged since 2026-07-04: the 3 items under "Decisions
+> surfaced by the Termination reconciliation", the ⏳ standing follow-ups
+> (counsel inputs, per-phase protected-core reviews), and the ⚑ vendor/infra
+> items. Nothing further is autonomously buildable without a human call.
+> To resume after any decision lands: re-run the loop prompt — it reads
+> `docs/pam/PROGRESS_LEDGER.md` and continues from the Loop's step 1.
 
 ---
 

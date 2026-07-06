@@ -1,5 +1,63 @@
 # PAM Modernization — Progress Ledger
 
+## ✅ FINAL TERMINATION (2026-07-06) — pass A ∧ pass B verified clean; the loop is complete
+
+**Outcome in one sentence:** the PAM modernization loop has terminated cleanly — every
+backlog and GAP item (through GAP-105) is DONE with evidence or BLOCKED with a decision
+brief, and the tenth spec-reconciliation round plus the thirty-third fresh-context
+verification produced zero new gaps and zero blocking findings, with all three recurring
+defect classes (unpermissioned mutating controls, backends without operator screens, and
+least-privilege role gaps) proven exhausted by full enumeration rather than by sampling.
+
+**How this final stretch differed from the retracted 2026-07-04 termination below:** that
+attempt passed a scenario-only reconciliation; this one survived six further adversarial
+reconciliation rounds (rounds five through ten), each a multi-agent walk of the full
+specification with second-lens verification. Those rounds surfaced fifteen additional
+buildable gaps, and every one was built, tested, and independently verified rather than
+waived: the dual-approval segregation-of-duties permission split with a checker-only
+Finance-Approver role (GAP-91, migration 060, commit 54a0fad4) and its office queue gate
+(GAP-96, commit 574a8826); the least-privilege Market-Operations role (GAP-92, migration
+061, commit 47c609f5); permission gates on every remaining office mutating control — the
+settlement queue and markets lifecycle including the jurisdiction editor (GAP-95, commits
+00365b98, dd22994d, 9ded455d), the loyalty points adjustment (GAP-97, commit 5f603d51),
+the taxonomy creators (GAP-100, commit 9f30e9a3), and the Profile-360 account-status,
+admin-note, and risk-override controls (GAP-102, commit 2f2772e6); operator screens for
+every remaining wired backend — the Profile-360 market-eligibility view (GAP-93, commit
+0be920eb), the notification-template editor (GAP-94, commit 40c5367a), the per-market
+eligibility-tag configurator (GAP-98, commit f3e64dd2), per-position unrealized
+mark-to-market profit and loss (GAP-99, commit de83047c), the admin order-cancel control
+(GAP-101, commit 5b9c675a), the KYC request-more-documents action (GAP-103, commit
+e958d172), and the feature-flag configuration editor (GAP-104, commit 2e785ed6); and two
+backend authorization tightenings — the punter-notes write now requires the users:write
+permission instead of riding the read gate (GAP-105, commit 2ef755db) and now also writes
+a player.note_added audit event (commit b1a86982).
+
+**Verification state at termination:** the back-office test suite passes 201 tests across
+45 files with a clean TypeScript build; the gateway passes its full race-detector test
+suite across all packages; migrations 060 and 061 applied and reverted cleanly on a
+scratch PostgreSQL 16 instance with segregation-of-duties assertions; and the final
+verification mutation-tested the newest authorization gate (deleting the gate made the
+test fail, restoring it made the test pass). Verifications twenty-eight through
+thirty-three each ran three independent fresh-context reviewer lenses; every finding
+they raised — including one medium and eight low-severity test-coverage gaps and one
+missing audit event — was fixed in the same session it was found.
+
+**What remains is exclusively human-decision-gated**, consolidated and ordered by
+priority in `docs/pam/DECISIONS_NEEDED.md`: vendor selections (identity-verification
+provider, sanctions data, notification transports), regulatory-regime inputs (AML rule
+set, statutory reports, dual-approval thresholds, case service-level agreements),
+protected-core reviews (the double-entry ledger migration design, settlement four-eyes),
+legal inputs (data-retention schedule and erasure carve-outs), and launch-policy calls.
+Two operational notes for the humans: the demo-box deployment of the separate cashier
+branch remains blocked on the box's outbound network to the Go module proxy (not a code
+problem), and this branch — pam/p0-modernization — was pushed through commit 99e5c817
+with roughly thirty further commits now awaiting a push.
+
+**To resume once any decision lands:** run the standard loop prompt in this worktree
+(`/Users/john/Sandbox/Taya_NA_Predict/pam-worktree`); it reads this ledger, sees the
+decision recorded in `docs/pam/DECISIONS_NEEDED.md`, and continues from step one of the
+Loop with the newly unblocked item.
+
 ## ⚠️ TERMINATION RETRACTED (2026-07-04, later firing) — pass B round 2 found 5 new gaps
 
 **The 2026-07-04 termination below was PREMATURE and is retracted.** On the next loop
