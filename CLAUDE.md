@@ -195,7 +195,7 @@ granular permissions like `users:read/write`, `roles:read/write`,
 
 **Path:** `apps/taptrade-platform/go-platform/services/gateway/`
 
-- **Language:** Go 1.25 (module `phoenix-revival/gateway`)
+- **Language:** Go 1.25 (module `taptrade/gateway`)
 - **HTTP:** stdlib `net/http` + custom `httpx` middleware
 - **DB:** PostgreSQL 16 via `lib/pq`, migrations via `pressly/goose/v3`
 - **Cache:** none in the gateway (no read cache; Redis is auth-only). The gateway's `REDIS_URL`/`Redis` references are vestigial from the sportsbook fork.

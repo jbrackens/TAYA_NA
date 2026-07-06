@@ -7,7 +7,7 @@
   },
   "plugins": ["@typescript-eslint", "react-hooks", "import"],
   "settings": {
-    "import/internal-regex": "^@phoenix-*"
+    "import/internal-regex": "^@taptrade-*"
   },
   "rules": {
     "no-console": "warn",

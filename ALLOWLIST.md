@@ -49,3 +49,16 @@ compose image: entries, decoupled from the project name). Cutover runbook: ops/R
 - Remaining `PhoenixApiClient` mentions in living docs (taptrade-economy-rules.md,
   spec.md) accurately describe the REAL deprecated compatibility alias that still
   exists in code; they retire together with the alias.
+
+## Final-sweep classifications (iteration 8)
+- apps/taptrade-platform/{DEMO_DEPLOYMENT_PLAN.md,DEMO_PLAN_REVIEW.md,README_SNAPSHOT.txt}
+  — dated validation/planning records + archive manifest (historical-record rule).
+- frontend/Jenkinsfile external references (GITHUB_REPO 'phoenix-frontend', flipadmin
+  ArgoCD repo, '#phoenix-builds' Slack) — inherited DEAD pipeline pointing at external
+  legacy systems this project cannot rename; RECOMMENDATION for owner: delete the
+  Jenkins/ArgoCD pipeline files outright in a follow-up.
+- Archive-name references (phoenix-backend/, phoenix-frontend*, revival/) from
+  Makefile, preservation gates, nested workflow path filters — pointers INTO
+  allowlisted archives; correct by definition.
+- Local docker volume names phoenix-predict-combined_* in DEVELOPMENT.md note — real
+  on-disk state of pre-rebrand dev machines.

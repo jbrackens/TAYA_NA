@@ -42,32 +42,32 @@ function ensure_all_vars_from_1_are_also_in_2() {
 
 
 # Check whether all env vars listed in app .env files
-# are actually defined in the phoenix-ui Kubernetes manifests.
+# are actually defined in the taptrade-ui Kubernetes manifests.
 
 ensure_all_vars_from_1_are_also_in_2 \
   'packages/app/\.env\.development' \
-  'deploy/helm/phoenix-ui/templates/deployment\.yaml'
+  'deploy/helm/taptrade-ui/templates/deployment\.yaml'
 
 ensure_all_vars_from_1_are_also_in_2 \
   'packages/app/\.env\.staging' \
-  'deploy/helm/phoenix-ui/templates/deployment\.yaml'
+  'deploy/helm/taptrade-ui/templates/deployment\.yaml'
 
 ensure_all_vars_from_1_are_also_in_2 \
   'packages/app/\.env\.production' \
-  'deploy/helm/phoenix-ui/templates/deployment\.yaml'
+  'deploy/helm/taptrade-ui/templates/deployment\.yaml'
 
 
 # Check whether all env vars listed in office .env files
-# are actually defined in the phoenix-ui Kubernetes manifests.
+# are actually defined in the taptrade-ui Kubernetes manifests.
 
 ensure_all_vars_from_1_are_also_in_2 \
   'packages/office/\.env\.development' \
-  'deploy/helm/phoenix-ui/templates/deployment\.yaml'
+  'deploy/helm/taptrade-ui/templates/deployment\.yaml'
 
 ensure_all_vars_from_1_are_also_in_2 \
   'packages/office/\.env\.staging' \
-  'deploy/helm/phoenix-ui/templates/deployment\.yaml'
+  'deploy/helm/taptrade-ui/templates/deployment\.yaml'
 
 ensure_all_vars_from_1_are_also_in_2 \
   'packages/office/\.env\.production' \
-  'deploy/helm/phoenix-ui/templates/deployment\.yaml'
+  'deploy/helm/taptrade-ui/templates/deployment\.yaml'

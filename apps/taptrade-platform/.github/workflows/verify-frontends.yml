@@ -27,8 +27,8 @@ jobs:
       - name: Run sportsbook verify gate
         run: make verify-sportsbook
 
-  verify-talon:
-    name: verify-talon
+  verify-office:
+    name: verify-office
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
@@ -47,4 +47,4 @@ jobs:
         run: npm install -g yarn@1.22.22
 
       - name: Run Talon verify gate
-        run: make verify-talon
+        run: make verify-office

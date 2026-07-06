@@ -57,7 +57,8 @@ Use this only for local development data.
 ```bash
 cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform
 docker compose down
-docker volume rm phoenix-predict-combined_postgres_data phoenix-predict-combined_redis_data
+docker volume rm taptrade-platform_postgres_data taptrade-platform_redis_data
+# (pre-rebrand checkouts used: phoenix-predict-combined_postgres_data / _redis_data)
 docker compose up -d postgres redis gateway auth
 ```
 

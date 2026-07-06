@@ -7,17 +7,17 @@ if [[ $# -lt 4 ]] || [[ $# -gt 5 ]]; then
   echo "$(basename $0) <local-chart-name> <local-module-name = app|office> <ecr-target-chart-repository> <docker-image-tag> [<cluster-id>]"
   echo
   echo "Example #1:"
-  echo "$(basename $0) phoenix-ui app    259420793117.dkr.ecr.eu-west-1.amazonaws.com/phoenix-ui-app-helm-chart    0.1.2-build.3"
+  echo "$(basename $0) taptrade-ui app    259420793117.dkr.ecr.eu-west-1.amazonaws.com/taptrade-ui-app-helm-chart    0.1.2-build.3"
   echo
   echo "The chart will be published withOUT any env-specific Helm values as:"
-  echo "259420793117.dkr.ecr.eu-west-1.amazonaws.com/phoenix-ui-app-helm-chart:0.1.2-build.3"
+  echo "259420793117.dkr.ecr.eu-west-1.amazonaws.com/taptrade-ui-app-helm-chart:0.1.2-build.3"
   echo
   echo
   echo "Example #2:"
-  echo "$(basename $0) phoenix-ui office 259420793117.dkr.ecr.eu-west-1.amazonaws.com/phoenix-ui-office-helm-chart 0.2.3-build.4 virginia-dev"
+  echo "$(basename $0) taptrade-ui office 259420793117.dkr.ecr.eu-west-1.amazonaws.com/taptrade-ui-office-helm-chart 0.2.3-build.4 virginia-dev"
   echo
   echo "The chart will be published WITH env-specific Helm values as:"
-  echo "259420793117.dkr.ecr.eu-west-1.amazonaws.com/phoenix-ui-office-helm-chart:0.2.3-build.4-virginia-dev"
+  echo "259420793117.dkr.ecr.eu-west-1.amazonaws.com/taptrade-ui-office-helm-chart:0.2.3-build.4-virginia-dev"
   exit 1
 fi
 

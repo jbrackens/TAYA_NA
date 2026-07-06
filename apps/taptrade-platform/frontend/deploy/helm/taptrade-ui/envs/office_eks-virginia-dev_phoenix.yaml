@@ -1,7 +1,7 @@
-# Note that there is NO phoenix-ui-app (Core App) deployment anywhere in the existing k8s clusters
+# Note that there is NO taptrade-ui-app (Core App) deployment anywhere in the existing k8s clusters
 # instead, a Brand App is deployed.
 image:
-  name: phoenix-ui-office
+  name: taptrade-ui-office
 
 apiGlobalEndpoint: "https://api.dev.phoenix.viegg.net"
 cdnUrl: "https://cdn.vie.gg/phoenix/static"

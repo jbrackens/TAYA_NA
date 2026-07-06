@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "phoenix-ui.fullname" . }}
+  name: {{ include "taptrade-ui.fullname" . }}
   labels:
-    {{- include "phoenix-ui.labels" . | nindent 4 }}
+    {{- include "taptrade-ui.labels" . | nindent 4 }}
 spec:
   replicas: 1
   # We don't use `kubectl rollout` anyway, the history of all the resources is managed by ArgoCD.
   revisionHistoryLimit: 1
   selector:
     matchLabels:
-      {{- include "phoenix-ui.selectorLabels" . | nindent 6 }}
+      {{- include "taptrade-ui.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "phoenix-ui.selectorLabels" . | nindent 8 }}
+        {{- include "taptrade-ui.selectorLabels" . | nindent 8 }}
     spec:
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:

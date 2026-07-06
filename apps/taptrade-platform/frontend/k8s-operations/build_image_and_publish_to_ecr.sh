@@ -27,8 +27,8 @@ aws_region=${image_registry_suffix%.amazonaws.com}
 # Since all builds share the same underlying Docker context, it is possible that between the execution of `dockerize.sh`
 # and tagging the local image, `latest` will already correspond to a different Docker image.
 # This is a potentially huge problem for the correctness of `remote_fixed_image_id`.
-local_image_id=phoenix-ui/$module_name:$image_tag
-remote_fixed_image_id=$image_registry/phoenix-ui-$module_name:$image_tag
+local_image_id=taptrade-ui/$module_name:$image_tag
+remote_fixed_image_id=$image_registry/taptrade-ui-$module_name:$image_tag
 
 {
   echo
