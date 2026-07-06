@@ -30,3 +30,29 @@ See CURRENT_STATE.md table. Entries below are CONCRETE artifacts as they are pla
   (qa/frontend-residual-advisory-gate.sh) sides atomically.
 - Batch D (iteration 5): tiangge→taptrade, 9 files — talon-backoffice/{E2E summary,
   e2e specs, scripts tooling}, packages/cashier-sdk/README.md, scripts/check-cashier-guards.sh.
+
+## Phase 2 plan — phoenix/talon (recon verified, iteration 5)
+Measured targets (active scope, lockfiles excluded — locks regenerate at batch G):
+- @phoenix-ui/* npm scope: 111 import-site files → @taptrade-ui/* (workspace package.json
+  names + every import; lockfile regen; one atomic batch: BATCH G)
+- PhoenixApiClient class: 9 ref files → TapTradeApiClient becomes the class, keep
+  PhoenixApiClient as deprecated alias export (mirror of today's arrangement, preserves
+  the preservation-dossier contract; BATCH F)
+- phoenix-revival/gateway Go module: 142 files → module taptrade/gateway + goimports
+  rewrite (BATCH H, AFTER task_633e7ad3 lands + branch rebased on main)
+- *@phoenix.local seed emails: 48 files (docs+tests+seeds; auth service seeds live in
+  frozen go-platform) → @taptrade.local, split: docs/tests now (BATCH E), go seeds in
+  BATCH H
+- docker images phoenix-gateway/phoenix-auth: 4 refs (.github + compose) → taptrade-*
+  with on-box image retag in deploy workflow (BATCH I, cross-boundary)
+- talon tokens: 85 files (excl. the talon-backoffice dir itself): TALON_DIR/PORT/REPO/…
+  env-key family in scripts (~86 occurrences) → TAPTRADE_OFFICE_* with legacy fallbacks
+  (same shim pattern as batch C) (BATCH E/F); make verify-talon target alias (BATCH F)
+- Directory renames LAST (BATCH J): Phoenix-Predict-Combined → taptrade-platform,
+  talon-backoffice → frontend; must update .github workflows paths/filters, deploy
+  rsync paths, Dockerfiles, compose contexts, preservation-gate hardcoded paths,
+  CLAUDE.md, and the loop's own worktree docs in the SAME commit; deploy workflow
+  path-filter change means the FIRST post-merge push must be watched manually.
+Sequenced: E (docs/comments/emails-in-active-text) → F (identifiers + make targets +
+env shims) → G (npm scope atomic) → H (Go module + go seeds, post-unfreeze) →
+I (docker images/infra) → J (directories) → final verify sweep.
