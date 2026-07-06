@@ -204,6 +204,42 @@ function KYCReviewPageContent() {
     [selectedUserId, reason, loadQueue, loadDetail],
   );
 
+  // GAP-103 (§12 "decline/request-documents" / Scenario 4): the non-terminal
+  // review outcome — ask the player for more documents (status
+  // documents_required) instead of a terminal approve/decline. compliance:write
+  // server-side, audited kyc.documents_requested. Requires the shared reason.
+  const requestDocuments = useCallback(async () => {
+    if (!selectedUserId) return;
+    if (reason.trim() === "") {
+      setDecisionNotice("A reason is required to request documents.");
+      return;
+    }
+    setDecisionBusy(true);
+    setDecisionNotice(null);
+    try {
+      const res = await adminFetch("/api/v1/admin/kyc/request-documents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: selectedUserId, reason: reason.trim() }),
+      });
+      const payload = (await res.json()) as {
+        error?: { message?: string };
+      };
+      if (!res.ok) {
+        throw new Error(
+          payload.error?.message ?? `request failed (${res.status})`,
+        );
+      }
+      setDecisionNotice("Additional documents requested from the player.");
+      await Promise.all([loadQueue(), loadDetail(selectedUserId)]);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setDecisionNotice(message);
+    } finally {
+      setDecisionBusy(false);
+    }
+  }, [selectedUserId, reason, loadQueue, loadDetail]);
+
   // P0-4: a reviewer resolves the screening verdict — cleared (false
   // positive; approval becomes possible) or confirmed (real hit; approval
   // stays blocked). Requires the shared reason field.
@@ -453,7 +489,8 @@ function KYCReviewPageContent() {
                   className="mb-1 block text-sm font-medium text-[var(--t2,#4a4a4a)]"
                   htmlFor="kyc-decision-reason"
                 >
-                  Reason (required to decline or resolve screening)
+                  Reason (required to decline, request documents, or resolve
+                  screening)
                 </label>
                 <div className="flex items-center gap-3">
                   <Input
@@ -471,6 +508,14 @@ function KYCReviewPageContent() {
                     data-testid="kyc-approve-button"
                   >
                     Approve
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => void requestDocuments()}
+                    disabled={decisionBusy || !canWrite}
+                    data-testid="kyc-request-documents-button"
+                  >
+                    Request documents
                   </Button>
                   <Button
                     variant="danger"
