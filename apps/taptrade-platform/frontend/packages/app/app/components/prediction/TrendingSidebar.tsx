@@ -60,13 +60,14 @@ const TOP_MOVERS_HEADER_CLASS =
 const TOP_MOVERS_TITLE_CLASS =
   "type-display m-0 text-[19px] font-semibold text-[var(--t1)]";
 const TOP_MOVERS_LIVE_CLASS =
-  "inline-flex items-center gap-1.5 font-['IBM_Plex_Mono',_monospace] text-[10px] uppercase tracking-[0.18em] text-[#0f8a4c]";
+  "inline-flex items-center gap-1.5 font-['IBM_Plex_Mono',_monospace] text-[10px] uppercase tracking-[0.18em] text-[var(--accent-text)]";
 const TOP_MOVERS_DOT_CLASS =
-  "h-1.5 w-1.5 animate-pulse rounded-full bg-[#0f8a4c] shadow-[0_0_8px_rgba(15,138,76,0.35)] motion-reduce:animate-none";
+  "h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent-lo)] shadow-[0_0_8px_rgba(15,138,76,0.35)] motion-reduce:animate-none";
 const TOP_MOVERS_LIST_CLASS = "m-0 list-none p-0";
 const TOP_MOVERS_ROW_CLASS =
   "grid cursor-pointer grid-cols-[1fr_60px_auto] items-center gap-[14px] rounded-[var(--r-rh-sm)] border-b border-[var(--border-1)] px-2 py-[14px] text-inherit no-underline transition-colors duration-[120ms] hover:bg-[var(--surface-2)] last:border-b-0";
-const TOP_MOVERS_CATEGORY_CLASS = "mb-1 text-[11px] font-medium text-[#0f8a4c]";
+const TOP_MOVERS_CATEGORY_CLASS =
+  "mb-1 text-[11px] font-medium text-[var(--accent-text)]";
 const TOP_MOVERS_QUESTION_CLASS =
   "overflow-hidden [display:-webkit-box] text-[13px] font-medium leading-[1.3] text-[var(--t1)] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]";
 const TOP_MOVERS_PRICE_CLASS =
@@ -74,7 +75,7 @@ const TOP_MOVERS_PRICE_CLASS =
 const TOP_MOVERS_FOOTER_CLASS =
   "mt-[14px] border-t border-[var(--border-1)] px-2 pt-2.5 text-center";
 const TOP_MOVERS_FOOTER_LINK_CLASS =
-  "text-[13px] font-semibold text-[#0f8a4c] no-underline hover:underline";
+  "text-[13px] font-semibold text-[var(--accent-text)] no-underline hover:underline";
 
 function deltaClass(up: boolean): string {
   return `mt-[5px] inline-block rounded-[var(--r-pill)] px-[7px] py-0.5 font-['IBM_Plex_Mono',_monospace] text-[11px] font-semibold [font-variant-numeric:tabular-nums] ${

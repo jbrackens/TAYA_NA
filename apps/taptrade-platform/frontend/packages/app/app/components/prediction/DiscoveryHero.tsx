@@ -131,7 +131,14 @@ export function DiscoveryHero({
             {eyebrowMeta ? <span>{eyebrowMeta}</span> : null}
           </header>
 
-          <h1 className="type-display m-0 mb-5 text-[clamp(22px,1.6vw+14px,30px)] font-semibold leading-[1.16] text-[var(--t1)] max-[720px]:mb-[18px]">
+          {/* min-h reserves exactly two title lines so carousel slides with
+              1-line and 2-line titles occupy identical vertical space — the
+              auto-advance otherwise pumps the page height and everything
+              below visibly jumps (the reported scroll-glitch). */}
+          <h1
+            className="type-display m-0 mb-5 line-clamp-2 min-h-[2.32em] text-[clamp(22px,1.6vw+14px,30px)] font-semibold leading-[1.16] text-[var(--t1)] max-[720px]:mb-[18px]"
+            title={displayMarket.title}
+          >
             {displayMarket.title}
           </h1>
 
