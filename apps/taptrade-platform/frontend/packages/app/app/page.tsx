@@ -313,7 +313,7 @@ function TradeTicketPreview({
   return (
     <div role="img" aria-label={ariaLabel}>
       <div className="rounded-[42px] border border-[rgba(26,26,26,0.16)] bg-[#151716] p-3 shadow-[0_28px_80px_rgba(0,0,0,0.18)]">
-        <div className="overflow-hidden rounded-[32px] bg-[#F7F3ED] bg-[linear-gradient(to_right,rgba(26,26,26,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(26,26,26,0.035)_1px,transparent_1px)] bg-[length:32px_32px] p-5 text-left">
+        <div className="overflow-hidden rounded-[32px] bg-white p-5 text-left">
           <div className="flex items-center justify-between">
             <span className="text-[17px] font-bold leading-none tracking-[-0.03em] text-[#0b4332] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
               TapTrade<span className="text-[#10c8a0]">.</span>
@@ -324,35 +324,35 @@ function TradeTicketPreview({
           </div>
 
           <div className="mt-5">
-            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#8B8378]">
+            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#6E7680]">
               <span
                 className="h-1 w-1 rounded-full bg-[var(--accent)] animate-[predict-pulse_1.6s_ease-in-out_infinite]"
                 aria-hidden="true"
               />
               {category} · {liveLabel}
             </span>
-            <p className="m-0 mt-1.5 text-[15px] font-semibold leading-[1.3] tracking-[-0.01em] text-[#1A1A1A]">
+            <p className="m-0 mt-1.5 text-[15px] font-semibold leading-[1.3] tracking-[-0.01em] text-[#0D1114]">
               {question}
             </p>
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-2.5">
             <div className="rounded-[12px] border border-[var(--accent)] bg-[rgba(43,228,128,0.14)] p-3">
-              <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#1A6849]">
+              <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#0E7A52]">
                 {yesLabel}
               </span>
               <p
-                className={`m-0 mt-1 text-[24px] font-semibold leading-none text-[#1A1A1A] ${mono}`}
+                className={`m-0 mt-1 text-[24px] font-semibold leading-none text-[#0D1114] ${mono}`}
               >
                 62¢
               </p>
             </div>
-            <div className="rounded-[12px] border border-[#E5DFD2] bg-white p-3">
-              <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#A8472D]">
+            <div className="rounded-[12px] border border-[#E9EBED] bg-white p-3">
+              <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#B8401F]">
                 {noLabel}
               </span>
               <p
-                className={`m-0 mt-1 text-[24px] font-semibold leading-none text-[#4A4A4A] ${mono}`}
+                className={`m-0 mt-1 text-[24px] font-semibold leading-none text-[#454C54] ${mono}`}
               >
                 38¢
               </p>
@@ -360,19 +360,19 @@ function TradeTicketPreview({
           </div>
 
           <div className="mt-4">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#8B8378]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6E7680]">
               {amountLabel}
             </span>
-            <div className="mt-1.5 flex items-baseline justify-between rounded-[12px] border border-[#E5DFD2] bg-white px-4 py-3">
+            <div className="mt-1.5 flex items-baseline justify-between rounded-[12px] border border-[#E9EBED] bg-white px-4 py-3">
               <span
-                className={`text-[22px] font-semibold leading-none text-[#1A1A1A] ${mono}`}
+                className={`text-[22px] font-semibold leading-none text-[#0D1114] ${mono}`}
               >
                 25.00{" "}
-                <span className="text-[12px] font-medium text-[#8B8378]">
+                <span className="text-[12px] font-medium text-[#6E7680]">
                   {ptsLabel}
                 </span>
               </span>
-              <span className={`text-[11px] text-[#8B8378] ${mono}`}>
+              <span className={`text-[11px] text-[#6E7680] ${mono}`}>
                 40.3 {sharesLabel}
               </span>
             </div>
@@ -383,7 +383,7 @@ function TradeTicketPreview({
                   className={`inline-flex h-8 flex-1 items-center justify-center rounded-[var(--r-pill)] text-[12px] font-semibold ${mono} ${
                     amount === "25"
                       ? "bg-[var(--accent)] text-[#061a10]"
-                      : "border border-[#E5DFD2] bg-white text-[#4A4A4A]"
+                      : "border border-[#E9EBED] bg-white text-[#454C54]"
                   }`}
                 >
                   {amount}
@@ -392,16 +392,16 @@ function TradeTicketPreview({
             </div>
           </div>
 
-          <div className="mt-4 grid gap-1.5 border-t border-[#E5DFD2] pt-3">
+          <div className="mt-4 grid gap-1.5 border-t border-[#E9EBED] pt-3">
             <div className="flex items-center justify-between text-[12px]">
-              <span className="text-[#4A4A4A]">{avgFillLabel}</span>
-              <span className={`font-semibold text-[#1A1A1A] ${mono}`}>
+              <span className="text-[#454C54]">{avgFillLabel}</span>
+              <span className={`font-semibold text-[#0D1114] ${mono}`}>
                 62¢
               </span>
             </div>
             <div className="flex items-center justify-between text-[12px]">
-              <span className="text-[#4A4A4A]">{ifCorrectLabel}</span>
-              <span className={`font-semibold text-[#1A6849] ${mono}`}>
+              <span className="text-[#454C54]">{ifCorrectLabel}</span>
+              <span className={`font-semibold text-[#0E7A52] ${mono}`}>
                 40.32 {ptsLabel}
               </span>
             </div>
