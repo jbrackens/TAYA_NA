@@ -108,21 +108,22 @@ body {
    * DESIGN.md §12 Decisions Log for rationale.
    */
 :root {
-  /* P8 (2026-04-28): light neutral page backdrop replacing the warm-dark
-   * navy. The pattern hook is retained for legacy call sites.
+  /* P9 (2026-07-07, owner-directed): gallery-white page backdrop replacing
+   * the P8 warm cream + chart-paper grid. Pure white base, cool neutral
+   * inks, hairline borders, and a quiet two-layer shadow recipe carry the
+   * hierarchy that the grid used to. The pattern hook is retained for
+   * legacy call sites but resolves to none.
    * Legacy --bg-{navy,teal,mint,azure} retained per P6 carry-forward
    * policy until each consuming surface migrates off them. */
-  --bg-deep: #f7f3ed;
+  --bg-deep: #ffffff;
   --bg-navy: #0c2a4a;
   --bg-teal: #0c2638;
   --bg-mint: #0d2a22;
   --bg-azure: #0e3858;
 
-  /* Chart-paper grid on warm cream — DESIGN.md §4: the system's only
-   * decoration. Page-level only; cards/panels stay flat on top. */
-  --bg-pattern:
-    linear-gradient(to right, rgba(26, 26, 26, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(26, 26, 26, 0.035) 1px, transparent 1px);
+  /* P9: the chart-paper grid is retired. Decoration budget moves to
+   * typography, hairlines, and shadow depth. Page stays bare white. */
+  --bg-pattern: none;
   --bg-pattern-size: 32px 32px;
 
   /* Glass surfaces — translucent bodies for the .glass utility */
@@ -151,11 +152,14 @@ body {
   --b2: #374151;
   --b3: #4b5563;
 
-  /* Text — P8 light values. AAA contrast on cream + white. (DESIGN.md §3 + §8.) */
-  --t1: #1a1a1a;
-  --t2: #4a4a4a;
-  --t3: #8b8378;
-  --t4: #b5ae9f;
+  /* Text — P9 cool neutrals on white. The P8 warm taupes (#8b8378/#b5ae9f)
+   * read muddy on pure white; these sit on the same blue-gray axis as the
+   * borders so every gray in the system shares one temperature.
+   * AAA (t1/t2) and AA-large (t3) on white. (DESIGN.md §3 + §8.) */
+  --t1: #0d1114;
+  --t2: #454c54;
+  --t3: #6e7680;
+  --t4: #a6adb5;
 
   /* Accent (mint emerald — brand channel). Replaces neon-lime #39ff14.
    * --accent-glow is kept as a COMPLETE box-shadow declaration so the
@@ -163,6 +167,7 @@ body {
    * Use --accent-glow-color if you need just the color. (D1.) */
   --accent: #2be480;
   --accent-lo: #1fa65e;
+  --accent-text: #0f8a4f; /* P9: mint as TEXT on white (AA 4.9:1); --accent stays fill-only */
   --accent-soft: rgba(43, 228, 128, 0.14);
   --accent-glow-color: rgba(43, 228, 128, 0.45);
   --accent-glow: 0 0 28px var(--accent-glow-color);
@@ -192,16 +197,17 @@ body {
    * at a glance, (b) saturated red/green caused eye fatigue at chart
    * scale, and (c) calm cool/warm complementary colors sit naturally
    * on the cool teal backdrop without fighting it. */
-  --yes: #71eeb8;
-  --yes-soft: rgba(113, 238, 184, 0.18);
-  --yes-border: rgba(113, 238, 184, 0.35);
-  --yes-text: #1a6849; /* AA on white (6.7:1), cream (6.1:1), --surface-2 (6.5:1) */
+  --yes: #5fe9ac;
+  --yes-soft: rgba(24, 176, 116, 0.1);
+  --yes-border: rgba(24, 176, 116, 0.28);
+  --yes-text: #0e7a52; /* AA on white (5.3:1) and --surface-2 (5.1:1) */
   --yes-bar: #8fe5c4; /* paler seafoam for probability bar segments */
-  --no: #ff8b6b;
-  --no-soft: rgba(255, 139, 107, 0.16);
-  --no-text: #a8472d; /* AA on white (5.8:1), cream (5.3:1), --surface-2 (5.6:1) */
+  --no: #ff8368;
+  --no-soft: rgba(226, 84, 46, 0.09);
+  --no-border: rgba(226, 84, 46, 0.26);
+  --no-text: #b8401f; /* AA on white (5.0:1) and --surface-2 (4.8:1) */
   --no-bar: #f4a990; /* paler coral for probability bar segments */
-  --focus-ring: #0e7a53; /* dark mint, AA non-text on cream (4.8:1) and white (6.0:1) */
+  --focus-ring: #0e7a53; /* dark mint, AA non-text on white (6.0:1) */
 
   /* --live is the only warm color outside --no. Distinct, redder, pulses. */
   --live: #ff6b6b;
@@ -237,9 +243,23 @@ body {
    * --glass-* tokens above until their phase migrates them.
    * ──────────────────────────────────────────────────────────────── */
   --surface-1: #ffffff;
-  --surface-2: #fcfaf5;
-  --border-1: #e5dfd2;
-  --border-2: #d9d2bf;
+  --surface-2: #f6f7f8;
+  --border-1: #e9ebed;
+  --border-2: #d8dbdf;
+
+  /* P9 elevation — white-on-white needs a shadow recipe, not tinted
+   * surfaces. Two quiet layers: a contact line + a soft ambient falloff.
+   * Cards sit on --shadow-card; interactive cards lift to -hover on
+   * pointer; menus/popovers use -pop. Never colored, never glowing. */
+  --shadow-card:
+    0 1px 2px rgba(13, 17, 20, 0.04),
+    0 12px 32px -16px rgba(13, 17, 20, 0.1);
+  --shadow-card-hover:
+    0 2px 4px rgba(13, 17, 20, 0.05),
+    0 18px 44px -16px rgba(13, 17, 20, 0.14);
+  --shadow-pop:
+    0 2px 6px rgba(13, 17, 20, 0.06),
+    0 24px 56px -20px rgba(13, 17, 20, 0.18);
 
   /* Robinhood radii (less bubbly than glass). Co-existing with the
    * glass scale above during the P2-P6 migration. New components
@@ -250,8 +270,9 @@ body {
   --r-rh-xl: 20px;
 }
 
-/* P8 page background: flat light neutral. The dark-theme radial backdrop
- * scene and chart-paper grid were retired in this swap. */
+/* P9 page background: bare gallery white. The P8 chart-paper grid is
+ * retired; --bg-pattern resolves to none but the hook stays for legacy
+ * call sites. */
 body {
   background-color: var(--bg-deep);
   background-image: var(--bg-pattern);

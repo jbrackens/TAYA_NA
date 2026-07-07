@@ -66,18 +66,18 @@ const TOP_BAR_CLASS =
   "sticky top-0 z-[100] border-b border-[var(--border-1)] bg-[var(--bg-deep)] [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
 
 const TOP_BAR_INNER_CLASS =
-  "box-border mx-auto flex h-16 w-full max-w-[1588px] items-center gap-6 px-6 max-[900px]:h-16 max-[900px]:gap-3 max-[900px]:px-4";
+  "box-border mx-auto flex h-16 w-full max-w-[1588px] items-center gap-6 px-6 max-[900px]:h-16 max-[900px]:gap-3 max-[900px]:px-4 max-[480px]:gap-2 max-[480px]:px-3";
 
 const TOP_BAR_BRAND_CLASS =
   "inline-flex min-h-11 shrink-0 items-center gap-[10px] no-underline";
 
 const TOP_BAR_WORDMARK_CLASS =
-  "whitespace-nowrap text-[26px] font-bold leading-none tracking-[-0.03em] [color:var(--brand-ink)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif] max-[900px]:text-[23px]";
+  "whitespace-nowrap text-[26px] font-bold leading-none tracking-[-0.03em] [color:var(--brand-ink)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif] max-[900px]:text-[23px] max-[480px]:text-[21px]";
 
 const TOP_BAR_PERIOD_CLASS = "[color:var(--brand-period)]";
 
 const TOP_BAR_NAV_CLASS =
-  "flex items-center gap-6 border-b border-neutral-200 w-full min-w-0 flex-1 max-[900px]:hidden";
+  "flex items-center gap-6 w-full min-w-0 flex-1 max-[900px]:hidden";
 
 const TOP_BAR_LINK_CLASS =
   "relative pb-3 pt-2 text-sm font-medium border-b-2 transition-all duration-200 no-underline whitespace-nowrap";
@@ -86,7 +86,7 @@ const TOP_BAR_LINK_INACTIVE_CLASS =
   "text-neutral-500 !text-neutral-500 border-transparent hover:text-neutral-800 hover:!text-neutral-800 hover:border-neutral-300";
 
 const TOP_BAR_LINK_ACTIVE_CLASS =
-  "text-[var(--accent)] !text-[var(--accent)] font-semibold border-[var(--accent)]";
+  "text-[var(--accent-text)] !text-[var(--accent-text)] font-semibold border-[var(--accent-lo)]";
 
 const TOP_BAR_RIGHT_CLASS = [
   "flex shrink-0 items-center gap-2.5",
@@ -100,7 +100,7 @@ const TOP_BAR_RIGHT_CLASS = [
 const TOP_BAR_SEARCH_WRAP_CLASS = "relative max-[900px]:hidden";
 const TOP_BAR_SEARCH_LABEL_CLASS = "relative inline-flex items-center";
 const TOP_BAR_SEARCH_INPUT_CLASS =
-  "h-10 w-[280px] rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-1)] py-0 pl-9 pr-3.5 text-[13px] text-[var(--t1)] outline-none transition-[border-color,box-shadow] duration-[120ms] ease-[ease] placeholder:text-[var(--t3)] focus-visible:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] [font-family:inherit]";
+  "h-10 w-[280px] rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-1)] py-0 pl-9 pr-3.5 text-[13px] text-[var(--t1)] outline-none transition-[border-color,box-shadow] duration-[120ms] ease-[ease] placeholder:text-[var(--t3)] focus-visible:border-[var(--accent-lo)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] [font-family:inherit]";
 const TOP_BAR_SEARCH_ICON_CLASS =
   "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--t3)]";
 const TOP_BAR_SEARCH_RESULTS_CLASS =
@@ -125,7 +125,7 @@ const TOP_BAR_AVATAR_CLASS =
   "grid size-11 cursor-pointer place-items-center rounded-full border border-[rgba(255,255,255,0.18)] bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.25),transparent_60%),linear-gradient(145deg,#a56bff_0%,#5b38a8_100%)] text-[15px] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_2px_6px_rgba(0,0,0,0.3)] hover:brightness-[1.08]";
 
 const TOP_BAR_BUTTON_CLASS =
-  "inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-md border-0 px-4 text-[13px] font-semibold no-underline transition-[transform,filter] duration-150 ease-[ease] [font-family:inherit]";
+  "inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-md border-0 px-4 text-[13px] font-semibold no-underline transition-[transform,filter] duration-150 ease-[ease] [font-family:inherit] max-[480px]:px-2.5";
 const TOP_BAR_BUTTON_GHOST_CLASS =
   "bg-transparent text-[var(--t1)] hover:bg-[var(--surface-2)]";
 const TOP_BAR_BUTTON_ACCENT_CLASS =

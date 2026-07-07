@@ -946,12 +946,23 @@ describe("Navigation underline treatment", () => {
         "TOP_BAR_LINK_ACTIVE_CLASS",
       ],
     ] as const) {
-      assert.ok(
-        constValue(source, container).includes(
-          "flex items-center gap-6 border-b border-neutral-200 w-full",
-        ),
-        `${label} should use the shared underline container classes`,
-      );
+      // P9 (2026-07-07): the category nav keeps its full-width underline
+      // track; the top-bar nav dropped it — as a flex sibling of the search
+      // field its track ended mid-air, reading as a rendering glitch. The
+      // top bar's own bottom hairline is the line now.
+      if (label === "category navigation") {
+        assert.ok(
+          constValue(source, container).includes(
+            "flex items-center gap-6 border-b border-neutral-200 w-full",
+          ),
+          `${label} should use the shared underline container classes`,
+        );
+      } else {
+        assert.ok(
+          !constValue(source, container).includes("border-b"),
+          `${label} should not draw a mid-air underline track`,
+        );
+      }
       const itemClass = constValue(source, item);
       for (const token of [
         "relative",
@@ -979,10 +990,13 @@ describe("Navigation underline treatment", () => {
         active === "categoryPillClass"
           ? functionBody(source, active)
           : constValue(source, active);
+      // P9 (2026-07-07): mint text/underline moved to the white-AA pair —
+      // --accent-text (4.9:1 text) + --accent-lo (3.1:1 indicator). Raw
+      // --accent (1.9:1 on white) is fill-only per DESIGN.md §8.
       assert.ok(
-        activeClass.includes("text-[var(--accent)]") &&
+        activeClass.includes("text-[var(--accent-text)]") &&
           source.includes("font-semibold") &&
-          source.includes("border-[var(--accent)]"),
+          source.includes("border-[var(--accent-lo)]"),
         `${label} should draw the selected mint underline`,
       );
     }

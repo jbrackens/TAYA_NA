@@ -82,7 +82,7 @@ const MOBILE_TAB_ITEM_INACTIVE_CLASS =
   "font-semibold text-[var(--t3)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)]";
 
 const MOBILE_TAB_ITEM_ACTIVE_CLASS =
-  "bg-[var(--accent)] font-bold text-[#061a10]";
+  "bg-[var(--accent-soft)] font-bold text-[var(--accent-text)]";
 
 function gridClassForCount(count: number): string {
   switch (count) {

@@ -2,8 +2,8 @@
  * P8 design system tokens for the office package.
  *
  * Mirrors the player app's app/globals.css token definitions so the
- * back-office shares the same warm-cream + chart-paper-grid look that
- * landed on 2026-04-28 (PR #17). See repo-root DESIGN.md §3 / §4 / §8
+ * back-office shares the same gallery-white P9 look (2026-07-07;
+ * previously the P8 warm cream + chart-paper grid from 2026-04-28). See repo-root DESIGN.md §3 / §4 / §8
  * for the canonical palette, surfaces, and focus-ring rationale.
  *
  * Phase O1 (this file): tokens only. Existing AntD components keep
@@ -21,46 +21,46 @@
 @source "../pages/";
 
 :root {
-  /* Page backdrop — warm cream + chart-paper grid. Identical values to
-   * the player app so the two surfaces feel like one product. */
-  --bg-deep: #f7f3ed;
-  --bg-pattern:
-    linear-gradient(to right, rgba(26, 26, 26, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(26, 26, 26, 0.035) 1px, transparent 1px);
+  /* Page backdrop — gallery white (P9). Identical values to the
+   * player app so the two surfaces feel like one product. The grid
+   * hook stays for legacy call sites and resolves to none. */
+  --bg-deep: #ffffff;
+  --bg-pattern: none;
   --bg-pattern-size: 32px 32px;
 
   /* Surfaces (DESIGN.md §4). White cards on cream, with --surface-2 as
    * the slightly warmer fill used inside cards (table headers, chips). */
   --surface-1: #ffffff;
-  --surface-2: #fcfaf5;
+  --surface-2: #f6f7f8;
 
   /* Borders. --border-1 is the default card edge; --border-2 is the
    * stronger divider used at section boundaries inside dense tables. */
-  --border-1: #e5dfd2;
-  --border-2: #d9d2bf;
+  --border-1: #e9ebed;
+  --border-2: #d8dbdf;
 
   /* Text. AAA on cream + white. --t1 body, --t2 secondary, --t3
    * tertiary (timestamps, table captions), --t4 disabled. */
-  --t1: #1a1a1a;
-  --t2: #4a4a4a;
-  --t3: #8b8378;
-  --t4: #b5ae9f;
+  --t1: #0d1114;
+  --t2: #454c54;
+  --t3: #6e7680;
+  --t4: #a6adb5;
 
   /* Brand accent (mint emerald) — identity / primary CTA fills. Never
    * use --accent for text on light surfaces; it fails 3:1 on cream
    * (1.6:1). Use --focus-ring or --yes-text instead for AA text. */
   --accent: #2be480;
+  --accent-text: #0f8a4f; /* P9: mint as TEXT on white (AA 4.9:1) */
   --accent-lo: #1fa65e;
   --accent-soft: rgba(43, 228, 128, 0.14);
 
   /* Trading signals (DESIGN.md §3). YES = mint, NO = coral. */
   --yes: #71eeb8;
   --yes-soft: rgba(113, 238, 184, 0.18);
-  --yes-text: #1a6849; /* AA on white (6.7:1), cream (6.1:1) */
+  --yes-text: #0e7a52; /* AA on white (5.3:1) and --surface-2 (5.1:1) */
   --yes-bar: #8fe5c4;
   --no: #ff8b6b;
   --no-soft: rgba(255, 139, 107, 0.16);
-  --no-text: #a8472d; /* AA on white (5.8:1), cream (5.3:1) */
+  --no-text: #b8401f; /* AA on white (5.0:1) and --surface-2 (4.8:1) */
   --no-bar: #f4a990;
 
   /* Focus ring. Dark mint, AA non-text on cream (4.8:1) and white

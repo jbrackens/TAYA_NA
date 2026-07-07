@@ -84,7 +84,14 @@ export function DiscoveryHero({
     displayMarket.ticker,
     yes,
     800,
-    140,
+    320,
+    heroPoints ?? undefined,
+  );
+  const chartMobile = heroChartPath(
+    displayMarket.ticker,
+    yes,
+    800,
+    150,
     heroPoints ?? undefined,
   );
   const volumeLabel = formatHeroVolume(displayMarket.volumePointsCents);
@@ -102,146 +109,223 @@ export function DiscoveryHero({
 
   return (
     <section
-      className="rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-7 font-sans max-[720px]:p-6"
+      className="rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-7 font-sans shadow-[var(--shadow-card)] max-[720px]:p-6"
       aria-label={t("FEATURED_MARKET")}
     >
-      <header className="mb-3.5 flex items-center gap-2.5 text-xs font-medium text-[var(--t3)]">
-        {displayMarket.status === "open" && (
-          <>
-            <span className="inline-flex items-center gap-1.5 font-semibold uppercase tracking-[0.08em] text-[var(--accent)]">
-              <span
-                className="h-[7px] w-[7px] animate-pulse rounded-full bg-[var(--accent)] shadow-[0_0_0_4px_rgba(43,228,128,0.18)]"
-                aria-hidden="true"
-              />
-              {t("LIVE")}
-            </span>
-            {eyebrowMeta ? <span aria-hidden="true">·</span> : null}
-          </>
-        )}
-        {eyebrowMeta ? <span>{eyebrowMeta}</span> : null}
-      </header>
+      <div className="grid grid-cols-[minmax(300px,5fr)_7fr] gap-10 max-[980px]:grid-cols-1 max-[980px]:gap-6">
+        {/* ── Left column: identity, price, actions ─────────────────── */}
+        <div className="flex min-w-0 flex-col">
+          <header className="mb-3.5 flex items-center gap-2.5 text-xs font-medium text-[var(--t3)]">
+            {displayMarket.status === "open" && (
+              <>
+                <span className="inline-flex items-center gap-1.5 font-semibold uppercase tracking-[0.08em] text-[var(--yes-text)]">
+                  <span
+                    className="h-[7px] w-[7px] animate-pulse rounded-full bg-[var(--accent)] shadow-[0_0_0_4px_rgba(43,228,128,0.18)]"
+                    aria-hidden="true"
+                  />
+                  {t("LIVE")}
+                </span>
+                {eyebrowMeta ? <span aria-hidden="true">·</span> : null}
+              </>
+            )}
+            {eyebrowMeta ? <span>{eyebrowMeta}</span> : null}
+          </header>
 
-      <h1 className="type-display m-0 mb-4 max-w-[720px] text-[30px] font-semibold leading-[1.18] text-[var(--t1)] max-[720px]:mb-[18px] max-[720px]:text-[23px]">
-        {displayMarket.title}
-      </h1>
-
-      <div
-        className="type-display m-0 mb-3 text-[88px] font-semibold leading-none tracking-[-0.02em] text-[var(--t1)] max-[720px]:text-[64px]"
-        aria-label={`Yes price ${yes} cents`}
-      >
-        {yes}
-        <span className="ml-1 text-[56px] font-medium text-[var(--t3)] max-[720px]:text-[40px]">
-          ¢
-        </span>
-      </div>
-      <div
-        className={`mb-[18px] inline-flex items-center gap-2.5 text-[17px] font-semibold tabular-nums ${changeClass}`}
-      >
-        {!isFlat && (
-          <svg
-            width="11"
-            height="11"
-            viewBox="0 0 10 10"
-            aria-hidden="true"
-            className={isUp ? "" : "rotate-180"}
+          {/* min-h reserves exactly two title lines so carousel slides with
+              1-line and 2-line titles occupy identical vertical space — the
+              auto-advance otherwise pumps the page height and everything
+              below visibly jumps (the reported scroll-glitch). */}
+          <h1
+            className="type-display m-0 mb-5 line-clamp-2 min-h-[2.32em] text-[clamp(22px,1.6vw+14px,30px)] font-semibold leading-[1.16] text-[var(--t1)] max-[720px]:mb-[18px]"
+            title={displayMarket.title}
           >
-            <path d="M5 1.2 8.8 8H1.2Z" fill="currentColor" />
+            {displayMarket.title}
+          </h1>
+
+          <div
+            className="type-display m-0 mb-2.5 text-[clamp(56px,5.5vw,84px)] font-semibold leading-none tracking-[-0.02em] text-[var(--t1)]"
+            aria-label={`Yes price ${yes} cents`}
+          >
+            {yes}
+            <span className="ml-1 text-[0.62em] font-medium text-[var(--t4)]">
+              ¢
+            </span>
+          </div>
+          <div
+            className={`mb-6 inline-flex items-center gap-2.5 text-[16px] font-semibold tabular-nums max-[980px]:mb-4 ${changeClass}`}
+          >
+            {!isFlat && (
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 10 10"
+                aria-hidden="true"
+                className={isUp ? "" : "rotate-180"}
+              >
+                <path d="M5 1.2 8.8 8H1.2Z" fill="currentColor" />
+              </svg>
+            )}
+            {isUp && !isFlat ? "+" : ""}
+            {delta}¢ ({isUp && !isFlat ? "+" : ""}
+            {pct.toFixed(1)}%)
+            <span className="text-sm font-medium text-[var(--t3)]">
+              {t("TODAY")}
+            </span>
+          </div>
+
+          {/* Mobile chart: sits between the price block and the actions */}
+          <div className="mb-5 hidden max-[980px]:block">
+            <svg
+              className="block h-[128px] w-full overflow-visible"
+              viewBox="0 0 800 150"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <defs>
+                <linearGradient
+                  id="rh-chart-fill-m"
+                  x1="0"
+                  x2="0"
+                  y1="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="0%"
+                    stopColor={isUp ? "var(--yes)" : "var(--no)"}
+                    stopOpacity="0.13"
+                  />
+                  <stop
+                    offset="72%"
+                    stopColor={isUp ? "var(--yes)" : "var(--no)"}
+                    stopOpacity="0"
+                  />
+                </linearGradient>
+              </defs>
+              <path d={chartMobile.fill} fill="url(#rh-chart-fill-m)" />
+              <path
+                d={chartMobile.line}
+                stroke={isUp ? "var(--yes-text)" : "var(--no-text)"}
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+                vectorEffect="non-scaling-stroke"
+              />
+              <circle
+                cx={chartMobile.end.x}
+                cy={chartMobile.end.y}
+                r={4}
+                fill={isUp ? "var(--yes-text)" : "var(--no-text)"}
+                stroke="var(--surface-1)"
+                strokeWidth={1.5}
+              />
+            </svg>
+          </div>
+
+          <div className="mt-auto flex gap-3">
+            <Link
+              href={`/market/${displayMarket.ticker}`}
+              className="inline-flex flex-1 items-center justify-center whitespace-nowrap rounded-md border-0 bg-[var(--accent)] px-6 py-[15px] text-[15px] font-semibold text-[#061a10] no-underline tabular-nums shadow-[0_1px_2px_rgba(13,17,20,0.08)] transition-[background-color,transform,box-shadow] duration-150 ease-out hover:-translate-y-px hover:bg-[#54ec9b] hover:shadow-[0_3px_8px_rgba(43,228,128,0.35)] active:translate-y-0 active:shadow-[0_1px_2px_rgba(13,17,20,0.08)] max-[720px]:px-4 max-[720px]:text-[14px]"
+            >
+              {t("BUY_YES")} · {yes}¢
+            </Link>
+            <Link
+              href={`/market/${displayMarket.ticker}`}
+              className="inline-flex flex-1 items-center justify-center whitespace-nowrap rounded-md border border-[var(--no-border)] bg-[var(--surface-1)] px-6 py-[15px] text-[15px] font-semibold text-[var(--no-text)] no-underline tabular-nums transition-[background-color,border-color] duration-150 ease-out hover:border-[var(--no)] hover:bg-[var(--no-soft)] max-[720px]:px-4 max-[720px]:text-[14px]"
+            >
+              {t("BUY_NO")} · {no}¢
+            </Link>
+          </div>
+
+          <div className="mt-6 grid grid-cols-3 gap-6 border-t border-[var(--border-1)] pt-5 max-[720px]:gap-4">
+            <div>
+              <div className="mb-1.5 text-xs text-[var(--t3)]">
+                {t("24H_VOLUME")}
+              </div>
+              <div className="type-display whitespace-nowrap text-[18px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
+                {volumeLabel}
+              </div>
+            </div>
+            <div>
+              <div className="mb-1.5 text-xs text-[var(--t3)]">
+                {t("OPEN_INTEREST")}
+              </div>
+              <div className="type-display whitespace-nowrap text-[18px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
+                {oiLabel}
+              </div>
+            </div>
+            <div>
+              <div className="mb-1.5 text-xs text-[var(--t3)]">
+                {t("CLOSES")}
+              </div>
+              <div className="type-display whitespace-nowrap text-[18px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
+                {closesLabel}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Right column: the chart owns it ───────────────────────── */}
+        <div className="relative min-w-0 max-[980px]:hidden">
+          <svg
+            className="block h-full min-h-[320px] w-full overflow-visible"
+            viewBox="0 0 800 320"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <defs>
+              <linearGradient id="rh-chart-fill" x1="0" x2="0" y1="0" y2="1">
+                <stop
+                  offset="0%"
+                  stopColor={isUp ? "var(--yes)" : "var(--no)"}
+                  stopOpacity="0.13"
+                />
+                <stop
+                  offset="72%"
+                  stopColor={isUp ? "var(--yes)" : "var(--no)"}
+                  stopOpacity="0"
+                />
+              </linearGradient>
+            </defs>
+            <line
+              x1="0"
+              x2="800"
+              y1={chart.baselineY}
+              y2={chart.baselineY}
+              stroke="var(--border-2)"
+              strokeWidth="1"
+              strokeDasharray="2 6"
+              vectorEffect="non-scaling-stroke"
+            />
+            <path d={chart.fill} fill="url(#rh-chart-fill)" />
+            <path
+              d={chart.line}
+              stroke={isUp ? "var(--yes-text)" : "var(--no-text)"}
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+              vectorEffect="non-scaling-stroke"
+            />
+            <circle
+              cx={chart.end.x}
+              cy={chart.end.y}
+              r={7}
+              fill={isUp ? "var(--yes)" : "var(--no)"}
+              opacity={0.35}
+              className="origin-center animate-ping [transform-box:fill-box] motion-reduce:hidden"
+            />
+            <circle
+              cx={chart.end.x}
+              cy={chart.end.y}
+              r={4}
+              fill={isUp ? "var(--yes-text)" : "var(--no-text)"}
+              stroke="var(--surface-1)"
+              strokeWidth={1.5}
+            />
           </svg>
-        )}
-        {isUp && !isFlat ? "+" : ""}
-        {delta}¢ ({isUp && !isFlat ? "+" : ""}
-        {pct.toFixed(1)}%)
-        <span className="text-sm font-medium text-[var(--t3)]">
-          {t("TODAY")}
-        </span>
-      </div>
-
-      <div className="mb-4">
-        <svg
-          className="block h-[140px] w-full overflow-visible max-[720px]:h-[120px]"
-          viewBox="0 0 800 140"
-          preserveAspectRatio="none"
-        >
-          <defs>
-            <linearGradient id="rh-chart-fill" x1="0" x2="0" y1="0" y2="1">
-              <stop
-                offset="0%"
-                stopColor={isUp ? "var(--yes)" : "var(--no)"}
-                stopOpacity="0.32"
-              />
-              <stop
-                offset="100%"
-                stopColor={isUp ? "var(--yes)" : "var(--no)"}
-                stopOpacity="0"
-              />
-            </linearGradient>
-          </defs>
-          <path d={chart.fill} fill="url(#rh-chart-fill)" />
-          <path
-            d={chart.line}
-            stroke={isUp ? "var(--yes-text)" : "var(--no-text)"}
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="none"
-          />
-          <circle
-            cx={chart.end.x}
-            cy={chart.end.y}
-            r={7}
-            fill={isUp ? "var(--yes)" : "var(--no)"}
-            opacity={0.35}
-            className="origin-center animate-ping [transform-box:fill-box] motion-reduce:hidden"
-          />
-          <circle
-            cx={chart.end.x}
-            cy={chart.end.y}
-            r={4}
-            fill={isUp ? "var(--yes-text)" : "var(--no-text)"}
-            stroke="var(--surface-1)"
-            strokeWidth={1.5}
-          />
-        </svg>
-      </div>
-
-      <div className="mt-5 flex gap-3 max-[720px]:mt-[18px]">
-        <Link
-          href={`/market/${displayMarket.ticker}`}
-          className="inline-flex max-w-[280px] flex-1 items-center justify-center whitespace-nowrap rounded-md border-0 bg-[var(--accent)] px-6 py-4 text-[15px] font-semibold text-[#061a10] no-underline tabular-nums transition-[background-color,transform] duration-150 hover:-translate-y-px hover:bg-[#54ec9b] max-[720px]:px-4 max-[720px]:text-[14px]"
-        >
-          {t("BUY_YES")} · {yes}¢
-        </Link>
-        <Link
-          href={`/market/${displayMarket.ticker}`}
-          className="inline-flex max-w-[280px] flex-1 items-center justify-center whitespace-nowrap rounded-md border-0 bg-[var(--no-soft)] px-6 py-4 text-[15px] font-semibold text-[var(--no-text)] no-underline tabular-nums transition-colors duration-150 hover:bg-[rgba(255,139,107,0.22)] max-[720px]:px-4 max-[720px]:text-[14px]"
-        >
-          {t("BUY_NO")} · {no}¢
-        </Link>
-      </div>
-
-      <div className="mt-6 grid grid-cols-3 gap-6 border-t border-[var(--border-1)] pt-6 max-[720px]:grid-cols-3 max-[720px]:gap-4">
-        <div>
-          <div className="mb-1.5 text-xs text-[var(--t3)]">
-            {t("24H_VOLUME")}
-          </div>
-          <div className="type-display whitespace-nowrap text-[19px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
-            {volumeLabel}
-          </div>
         </div>
-        <div>
-          <div className="mb-1.5 text-xs text-[var(--t3)]">
-            {t("OPEN_INTEREST")}
-          </div>
-          <div className="type-display whitespace-nowrap text-[19px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
-            {oiLabel}
-          </div>
-        </div>
-        <div>
-          <div className="mb-1.5 text-xs text-[var(--t3)]">{t("CLOSES")}</div>
-          <div className="type-display whitespace-nowrap text-[19px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
-            {closesLabel}
-          </div>
-        </div>
+
       </div>
     </section>
   );

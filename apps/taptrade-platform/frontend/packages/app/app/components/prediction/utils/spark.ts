@@ -94,8 +94,14 @@ function smoothPath(coords: Array<[number, number]>): string {
  * backend prices endpoint), the chart uses the real volume-weighted
  * history. Otherwise it falls back to a 24-point deterministic walk
  * anchored at currentCents so the SVG still renders during the fetch
- * or if the API fails. Vertical padding keeps the stroke and endpoint
- * dot clear of the viewBox edges.
+ * or if the API fails.
+ *
+ * P9: the y-domain auto-scales to the series range (with a 6¢ minimum
+ * span so quiet markets still show topology) instead of the absolute
+ * 0–100 band. An absolute domain rendered a 60–64¢ market as a flat
+ * stroke over a plot that was ~90% dead space — the single biggest
+ * "awkward layout" tell on the old hero. `baselineY` is the session
+ * open (first sample) for the dashed reference line.
  */
 export function heroChartPath(
   ticker: string,
@@ -103,7 +109,12 @@ export function heroChartPath(
   width = 800,
   height = 220,
   points?: number[],
-): { line: string; fill: string; end: { x: number; y: number } } {
+): {
+  line: string;
+  fill: string;
+  end: { x: number; y: number };
+  baselineY: number;
+} {
   let values: number[];
   if (points && points.length >= 2 && points.some((p) => p !== points[0])) {
     values = points;
@@ -112,15 +123,28 @@ export function heroChartPath(
     values = pts.map(([, v]) => v);
   }
   const N = values.length;
-  const pad = height * 0.08;
+  let lo = Math.min(...values);
+  let hi = Math.max(...values);
+  const MIN_SPAN = 6;
+  if (hi - lo < MIN_SPAN) {
+    const mid = (hi + lo) / 2;
+    lo = Math.max(0, mid - MIN_SPAN / 2);
+    hi = Math.min(100, mid + MIN_SPAN / 2);
+  }
+  const margin = (hi - lo) * 0.18;
+  lo = Math.max(0, lo - margin);
+  hi = Math.min(100, hi + margin);
+  const pad = height * 0.06;
+  const yFor = (v: number) =>
+    pad + (1 - (v - lo) / (hi - lo)) * (height - pad * 2);
   const coords: Array<[number, number]> = values.map((v, idx) => [
     (idx / (N - 1)) * width,
-    pad + (1 - v / 100) * (height - pad * 2),
+    yFor(v),
   ]);
   const line = smoothPath(coords);
   const fill = line + ` L${width},${height} L0,${height} Z`;
   const [ex, ey] = coords[N - 1];
-  return { line, fill, end: { x: ex, y: ey } };
+  return { line, fill, end: { x: ex, y: ey }, baselineY: yFor(values[0]) };
 }
 
 /** Compact sparkline path used by Top Movers rows + MarketCard footers. */

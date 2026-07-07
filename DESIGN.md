@@ -1,8 +1,8 @@
 # Design System — TapTrade
 
-> Robinhood for prediction markets, **light theme**. Warm-light surfaces on a faint chart-paper grid, soft-flat cards, big confident numbers, a dominant chart, mint as the action color. Markets are treated like stocks: the question is the sub-headline, the price IS the page, two pill buttons commit you to a side.
+> Robinhood for prediction markets, **light theme**. Gallery-white surfaces, soft-flat cards on hairline borders and quiet two-layer shadows, big confident numbers, a dominant chart, mint as the action color. Markets are treated like stocks: the question is the sub-headline, the price IS the page, two pill buttons commit you to a side.
 
-This document governs both the **TapTrade player app** at `apps/taptrade-platform/frontend/packages/app/` (port 3000) and the **back-office** at `apps/taptrade-platform/frontend/packages/office/` (port 3001). Both surfaces share the same `:root` token set, the same Inter + IBM Plex Mono fonts, and the same warm-cream + chart-paper-grid backdrop.
+This document governs both the **TapTrade player app** at `apps/taptrade-platform/frontend/packages/app/` (port 3000) and the **back-office** at `apps/taptrade-platform/frontend/packages/office/` (port 3001). Both surfaces share the same `:root` token set, the same Inter + IBM Plex Mono fonts, and the same gallery-white backdrop (P9, 2026-07-07 — the P8 warm cream + chart-paper grid is retired).
 
 The prior Liquid Glass spec (active 2026-04-24 → 2026-04-26) is retired. The warm-dark Robinhood spec (active 2026-04-26 → 2026-04-27) is retired. Their decisions remain in §11 for context. Glass tokens, rim highlights, chromatic fringes, multi-stop backdrop scene, and the dark surface system are all out. Historical TAYA NA references remain only in the decision log and archived handoff material.
 
@@ -18,7 +18,7 @@ The prior Liquid Glass spec (active 2026-04-24 → 2026-04-26) is retired. The w
   - Pariflow (dark fintech) — prior Predict direction.
   - **Robinhood (warm dark, big numbers, dominant chart) — direction adopted 2026-04-26.**
 - **Project type:** real-time trading web app.
-- **Positioning:** TapTrade should feel familiar to anyone who has bought a stock. Calm warm-light surfaces, big confident prices, the chart owns the hero, mint pops on the action button.
+- **Positioning:** TapTrade should feel familiar to anyone who has bought a stock. Calm gallery-white surfaces, big confident prices, the chart owns the hero, mint pops on the action button.
 
 ---
 
@@ -36,7 +36,7 @@ The prior Liquid Glass spec (active 2026-04-24 → 2026-04-26) is retired. The w
 
 **Auth-aware trading states:** market prices are public, money actions are not. Anonymous users see the quote and side/amount selectors, but the CTA says `Log in to trade` and preserves `side` + `amount` through `returnUrl`. Authenticated users see `Place trade`. Low-balance users see `Add funds`. Closed markets show status and settlement/resolution context.
 
-**Mobile chrome:** bottom navigation must use warm-light P8 surfaces: `--surface-1`, `--border-1`, warm shadow, no blur, no translucent dark glass, no glow. Tap targets stay at least 44px and include safe-area bottom spacing.
+**Mobile chrome:** bottom navigation must use white P9 surfaces: `--surface-1`, `--border-1`, the `--shadow-card` recipe, no blur, no translucent dark glass, no glow. Tap targets stay at least 44px and include safe-area bottom spacing.
 
 **Accessibility rules for the rebrand pass:** disabled chart period controls must either be removed or expose an accessible unavailable state beyond desktop-only tooltips. Search combobox focus should use `aria-activedescendant`. Mint remains a fill color; use `--yes-text`, `--no-text`, or `--t*` tokens for text.
 
@@ -48,14 +48,14 @@ The prior Liquid Glass spec (active 2026-04-24 → 2026-04-26) is retired. The w
 
 **Mood descriptors:** familiar, trustworthy, modern app, calm, confident. Light theme keeps the same Robinhood-stock-detail-page mood; only the surface flips from dark to light.
 
-**Decoration level:** minimal-with-grid. No glass, no blur, no chromatic fringes, no backdrop scene. Page background carries a faint chart-paper grid (3.5% opacity, 32px squares) — the only decoration. Cards stay flat on top of it; weight comes from hairline borders, density, and the bar visualization.
+**Decoration level:** bare-white minimal (P9). No glass, no blur, no chromatic fringes, no backdrop scene, no page pattern — the chart-paper grid is retired. The decoration budget moves entirely to typography, hairline borders, and the two-layer shadow recipe (`--shadow-card` / `--shadow-card-hover` / `--shadow-pop`). Weight comes from ink, density, and the chart.
 
 **Explicit rejection:**
 
 - **No glass / glassmorphism.** The Liquid Glass material is retired. Genres reset.
 - **No bubble-radius.** Rounded but not playful. Cards 14px, pills full, smaller elements 6–10px.
 - **No 3-stop accent gradient.** The mint→teal→azure brand gradient is retired. Accent is a single color now.
-- **No multi-color backdrop.** One warm-light surface (cream `#F7F3ED`) with a faint chart-paper grid. No `--bg-navy`, `--bg-teal`, `--bg-mint`, `--bg-azure` orchestra.
+- **No multi-color backdrop.** One surface: gallery white (`#FFFFFF`), bare. No `--bg-navy`, `--bg-teal`, `--bg-mint`, `--bg-azure` orchestra, no pattern.
 - **No corporate pure-white.** Polymarket and Kalshi go pure white; we go warm cream. Distinguishable in the category lane.
 - **No editorial-magazine vibe.** Considered diagonal hatch (Robin Markets) and serif headers (Cosmos / Substack); both read "newsletter" not "trading app." Rejected. Background pattern is chart-paper grid (stock-trading vocabulary), title font is sans (Inter Tight).
 - **No purple/violet anywhere.** Reads as AI slop or crypto-broker.
@@ -108,8 +108,8 @@ No letter-spacing on lowercase text. Curly quotes (`"`) and ellipsis (`…`) in 
 
 | Token          | Value                                           | Usage                                                                                                                |
 | -------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `--bg-deep`    | `#F7F3ED`                                       | The page backdrop. Warm cream — distinguishably warmer than pure white. Replaces the warm-dark `#0F1414`.            |
-| `--bg-pattern` | chart-paper grid (32px, `rgba(26,26,26,0.035)`) | Faint stock-paper grid layered on `--bg-deep`. Page-level only — cards, panels, and modals do not carry the pattern. |
+| `--bg-deep`    | `#FFFFFF`                                       | The page backdrop. Gallery white (P9, 2026-07-07). Replaces the P8 warm cream `#F7F3ED`.                             |
+| `--bg-pattern` | `none`                                          | P9: the chart-paper grid is retired. The hook stays for legacy call sites and resolves to `none`.                    |
 | `--surface-1`  | `#FFFFFF`                                       | Card and panel background. Pure white sits cleanly on the cream backdrop without competing.                          |
 | `--surface-2`  | `#FCFAF5`                                       | Hovered card / inner subsurface background. Slightly cream-tinted to match the page.                                 |
 | `--border-1`   | `#E5DFD2`                                       | Hairline beige border for cards, panels, separators. ~1px.                                                           |
@@ -168,6 +168,7 @@ A separate layer from action-mint (`--accent`) and signal-seafoam (`--yes`). It 
 
 | Tier       | Color                     | Note                                                |
 | ---------- | ------------------------- | --------------------------------------------------- |
+| 2026-07-07 | **P9 shipped: gallery-white pivot (owner-directed), hero recomposition, chart auto-domain** | Owner call: drop the P8 cream + chart-paper grid for a light/white base aimed at the Gen-Z/millennial lane, keeping brand identity. Token layer: `--bg-deep #FFFFFF`, `--bg-pattern none`, cool neutral inks (`--t1..4` moved off the warm taupes onto the blue-gray axis), `--surface-2 #F6F7F8`, borders `#E9EBED/#D8DBDF`, new two-layer shadow recipe (`--shadow-card/-hover/-pop`), yes/no recalibrated for white AA, new `--accent-text` so mint never renders as low-contrast text. Hero: 5/7 two-column grid (identity/price/actions left, chart right); the chart y-domain now auto-scales to the series range (6c min span) instead of the absolute 0-100 band that rendered quiet markets as a flat stroke over dead space; dashed session-open baseline; fill wash cut 32%->13%; buy-no is white + coral hairline instead of the washed pink slab. Hero title reserves two lines so the 7s carousel auto-advance cannot pump the page height (the below-hero jump users reported as a glitch). Top-bar nav dropped its mid-air underline track; category nav keeps its full-width one. qa-regression locks re-encoded accordingly (mint-underline pair, top-bar track split); suite 275/275. Landing phone mockup updated to depict the white product. Office follow-up: `styles/p8-tokens.css` value-swapped to the P9 palette in the same change (token names unchanged, AntD overrides inherit). Trend grounding: 2026 calm-minimalism / structural-honesty / purposeful-motion direction (index.dev, uxpilot, tubik, envato 2026 trend reports); Polymarket/Kalshi white data-first lane. |
 | 1 Newcomer | `#94a3b8` slate           |                                                     |
 | 2 Trader   | `#cbd5e1` slate-light     |                                                     |
 | 3 Sharp    | `#d4a857` warm-gold-muted |                                                     |
@@ -195,13 +196,13 @@ Mint and seafoam are visually distinguishable: mint is brighter/more saturated; 
 
 ## 4. Surfaces (replaces "Material System")
 
-Flat soft surfaces on a cream page with a chart-paper grid. No blur, no rim highlights, no chromatic edges, no backdrop refraction.
+Flat soft surfaces on a bare white page. No blur, no rim highlights, no chromatic edges, no backdrop refraction.
 
 ### Page background
 
 ```css
 body {
-  background: var(--bg-deep); /* #F7F3ED cream */
+  background: var(--bg-deep); /* #FFFFFF gallery white (P9) */
   background-image:
     linear-gradient(to right, rgba(26, 26, 26, 0.035) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(26, 26, 26, 0.035) 1px, transparent 1px);
@@ -455,6 +456,8 @@ This avoids a wave of cascading breakage on secondary surfaces that haven't been
 
 ### Contrast (light theme)
 
+**P9 amendment (2026-07-07):** the page backdrop is now pure white (`#FFFFFF`) and `--surface-2` is the cool well `#F6F7F8`; text/signal tokens were recomputed for white — `--t1 #0D1114`, `--t2 #454C54`, `--t3 #6E7680`, `--yes-text #0E7A52` (5.3:1), `--no-text #B8401F` (5.0:1), `--accent-text #0F8A4F` (4.9:1, mint-as-text), `--accent-lo #1FA65E` (3.1:1, non-text indicators). Raw `--accent` remains fill-only. The cream columns below are historical (P8).
+
 Ratios computed with the WCAG 2.x relative-luminance formula. Cream `--bg-deep` = `#F7F3ED` (Y ≈ 0.899); white `--surface-1` = `#FFFFFF` (Y = 1.000); hover surface `--surface-2` = `#FCFAF5` (Y ≈ 0.956). AA = 4.5:1 normal text / 3.0:1 large; AA non-text UI = 3.0:1 (WCAG 2.5.8). Numbers below were recomputed 2026-04-27 after a review pass caught the original spec overstating ratios by ~1.3–2.0× — the token values were darkened until both white and cream cleared AA.
 
 - `--t1` `#1A1A1A` body text: 16.6:1 on cream, 17.5:1 on white. AAA on both.
@@ -499,7 +502,7 @@ Ratios computed with the WCAG 2.x relative-luminance formula. Cream `--bg-deep` 
 - Internationalization. English only for now.
 - Custom font (Capsule-style) — using Inter as approximation. May commission a custom display face later.
 - 3D / depth effects. The Robinhood look is flat-soft, not skeuomorphic.
-- Variable / animated gradients. Backgrounds are static (cream + chart-paper grid only).
+- Variable / animated gradients. Backgrounds are static (flat white only).
 - Dense table view (Bloomberg / dexscreener style). Considered for D direction; rejected for first pass. Could be added later as `/predict?view=dense`.
 
 ---
