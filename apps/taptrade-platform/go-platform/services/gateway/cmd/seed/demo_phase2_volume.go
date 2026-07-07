@@ -121,14 +121,14 @@ func generateMarketVolume(ctx context.Context, h *Harness, db *sql.DB, m *predic
 
 		idemKey := fmt.Sprintf("demo:phase2:%s:seq%d", m.ID, seq)
 		req := prediction.PlaceOrderRequest{
-			MarketID:         m.ID,
-			Side:             side,
-			Action:           prediction.OrderActionBuy,
-			OrderType:        prediction.OrderTypeMarket,
-			Quantity:         qty,
-			IdempotencyKey:   &idemKey,
-			TimeInForce:      prediction.TIFIOC,
-			NotionalCapCents: &notionalCap,
+			MarketID:          m.ID,
+			Side:              side,
+			Action:            prediction.OrderActionBuy,
+			OrderType:         prediction.OrderTypeMarket,
+			Quantity:          qty,
+			IdempotencyKey:    &idemKey,
+			TimeInForce:       prediction.TIFIOC,
+			NotionalCapPoints: &notionalCap,
 		}
 		order, _, err := h.Service.PlaceOrder(ctx, req, taker)
 		if err != nil {

@@ -172,14 +172,14 @@ func TestLaunchOpenAPIDocumentsBonusCampaignSlice(t *testing.T) {
 		"AdminBonusForfeitResponse:",
 		"enum: [eligibility, trigger, reward, play]",
 		"enum: [signup_bonus, custom, point_grant, point_match]",
-		"budgetPointsCents",
-		"spentPointsCents",
-		"budget_points_cents",
-		"override_points_cents",
+		"budgetPoints",
+		"spentPoints",
+		"budget_points",
+		"override_points",
 		"pointRuleConfig",
 		"point_rule_config",
-		"max_play_contribution_points_cents",
-		"playRequiredPointsCents",
+		"max_play_contribution_points",
+		"playRequiredPoints",
 		"Returns only PTS unit fields and point-play progress aliases",
 	}
 	for _, needle := range required {
@@ -197,7 +197,7 @@ func TestLaunchOpenAPIDocumentsBonusCampaignSlice(t *testing.T) {
 	grantSchema := openAPISection(content, "    AdminBonusGrantRequest:", "    AdminBonusForfeitRequest:")
 	forfeitSchema := openAPISection(content, "    AdminBonusForfeitResponse:", "    ResponsiblePlayLimitRequest:")
 
-	for _, retired := range []string{"grantedAmountCents", "remainingAmountCents", "wageringRequiredCents", "wageringCompletedCents", "wageringProgressPct", "progressPct"} {
+	for _, retired := range []string{"grantedAmountPoints", "remainingAmountPoints", "wageringRequiredPoints", "wageringCompletedPoints", "wageringProgressPct", "progressPct"} {
 		if strings.Contains(bonusSchema, retired) {
 			t.Fatalf("player bonus schema should not document retired alias %q", retired)
 		}
@@ -210,7 +210,9 @@ func TestLaunchOpenAPIDocumentsBonusCampaignSlice(t *testing.T) {
 			t.Fatalf("player bonus schema should not document retired campaign type %q", retired)
 		}
 	}
-	for _, retired := range []string{"budgetCents", "spentCents", "rules:"} {
+	// Points unit-model (2026-07-07): budgetPoints/spentPoints are canonical;
+	// the retired spellings are the cents-era point-cents keys.
+	for _, retired := range []string{"budgetPointsCents", "spentPointsCents", "rules:"} {
 		if strings.Contains(campaignSchema, retired) {
 			t.Fatalf("admin campaign schema should not document retired alias %q", retired)
 		}
@@ -223,18 +225,20 @@ func TestLaunchOpenAPIDocumentsBonusCampaignSlice(t *testing.T) {
 			t.Fatalf("admin campaign create schema should not document retired campaign type %q", retired)
 		}
 	}
-	for _, retired := range []string{"ruleConfig:", "enum: [eligibility, trigger, reward, wagering]", "max_bonus_cents", "fixed_amount_cents", "max_stake_contribution_cents", "max_stake_contribution_points_cents", "min_amount_cents"} {
+	// Points unit-model (2026-07-07): the retired rule-config and budget
+	// spellings are the cents-era keys (plus the prohibited "stake" alias).
+	for _, retired := range []string{"ruleConfig:", "enum: [eligibility, trigger, reward, wagering]", "max_bonus_cents", "fixed_amount_cents", "max_stake_contribution_cents", "max_stake_contribution_points", "min_amount_cents"} {
 		if strings.Contains(ruleSchema, retired) {
 			t.Fatalf("admin campaign rule schema should not document retired alias %q", retired)
 		}
 	}
-	for _, retired := range []string{"budget_cents", "        rule_config:", "enum: [eligibility, trigger, reward, wagering]", "max_bonus_cents", "fixed_amount_cents", "max_stake_contribution_cents", "max_stake_contribution_points_cents", "min_amount_cents"} {
+	for _, retired := range []string{"budget_cents", "        rule_config:", "enum: [eligibility, trigger, reward, wagering]", "max_bonus_cents", "fixed_amount_cents", "max_stake_contribution_cents", "max_stake_contribution_points", "min_amount_cents"} {
 		if strings.Contains(campaignCreateSchema, retired) {
 			t.Fatalf("admin campaign create schema should not document retired request alias %q", retired)
 		}
 	}
-	if strings.Contains(grantSchema, "override_amount_cents") {
-		t.Fatalf("admin bonus grant schema should not document retired request alias override_amount_cents")
+	if strings.Contains(grantSchema, "override_amount_points") {
+		t.Fatalf("admin bonus grant schema should not document retired request alias override_amount_points")
 	}
 	for _, required := range []string{"status:", "unit:", "enum: [PTS]"} {
 		if !strings.Contains(actionSchema, required) {
@@ -313,16 +317,16 @@ func TestLaunchOpenAPIDocumentsAdminDashboardSlice(t *testing.T) {
 		"DashboardVolumeStats:",
 		"DashboardMover:",
 		"Read-only operator dashboard aggregate for recent point activity and top market movement, with point-native fields and no point movement",
-		"totalVolumePointsCents",
-		"yesPricePointsCentsStart",
-		"yesPricePointsCentsNow",
-		"volumePointsCents",
+		"totalVolumePoints",
+		"yesPricePointsStart",
+		"yesPricePointsNow",
+		"volumePoints",
 		"Dashboard point-activity aggregate with point-native fields and no point movement",
 		"/api/v1/admin/prediction/drift-alerts:",
 		"CollateralDriftAlert:",
 		"Read-only reconciliation alert rows with point-native drift fields and no point movement",
-		"maxDriftPointsCents",
-		"totalDriftPointsCents",
+		"maxDriftPoints",
+		"totalDriftPoints",
 		"unit: { type: string, enum: [PTS]",
 	}
 	for _, needle := range required {
@@ -331,13 +335,14 @@ func TestLaunchOpenAPIDocumentsAdminDashboardSlice(t *testing.T) {
 		}
 	}
 	dashboardSchemas := content[strings.Index(content, "DashboardVolumeStats:"):strings.Index(content, "PredictLeaderboardBoard:")]
-	for _, retired := range []string{"totalVolumeCents", "yesPriceCentsStart", "yesPriceCentsNow", "volumeCents"} {
+	// Points unit-model (2026-07-07): retired spellings are the cents-era keys.
+	for _, retired := range []string{"totalVolumePointsCents", "yesPricePointsCentsStart", "yesPricePointsCentsNow", "volumePointsCents"} {
 		if strings.Contains(dashboardSchemas, retired) {
 			t.Fatalf("openapi dashboard activity schema should not document retired alias %q", retired)
 		}
 	}
 	driftSchema := content[strings.Index(content, "CollateralDriftAlert:"):strings.Index(content, "DashboardVolumeStats:")]
-	for _, retired := range []string{"maxDriftCents", "totalDriftCents"} {
+	for _, retired := range []string{"maxDriftPointsCents", "totalDriftPointsCents"} {
 		if strings.Contains(driftSchema, retired) {
 			t.Fatalf("openapi drift alert schema should not document retired alias %q", retired)
 		}
@@ -358,12 +363,12 @@ func TestLaunchOpenAPIDocumentsAdminReportsSlice(t *testing.T) {
 		"AdminPointCampaignUsageReport:",
 		"Read-only point-accounting aggregate from wallet ledger rows with point-native fields and no point movement",
 		"Honest point-campaign usage report placeholder with point-native fields and no point movement",
-		"totalCreditPointsCents",
-		"totalDebitPointsCents",
-		"netMovementPointsCents",
+		"totalCreditPoints",
+		"totalDebitPoints",
+		"netMovementPoints",
 		"pointRewardCampaigns",
 		"usersWithPointRewards",
-		"totalRewardPointsCents",
+		"totalRewardPoints",
 		"unit: { type: string, enum: [PTS]",
 	}
 	for _, needle := range required {
@@ -372,13 +377,15 @@ func TestLaunchOpenAPIDocumentsAdminReportsSlice(t *testing.T) {
 		}
 	}
 	reconciliationSchema := content[strings.Index(content, "AdminWalletReconciliationReport:"):strings.Index(content, "AdminPointCampaignUsageReport:")]
-	for _, retired := range []string{"totalCreditsCents", "totalDebitsCents", "netMovementCents"} {
+	// Points unit-model (2026-07-07): netMovementPoints is canonical; its
+	// retired spelling is the cents-era netMovementPointsCents.
+	for _, retired := range []string{"totalCreditsPoints", "totalDebitsPoints", "netMovementPointsCents"} {
 		if strings.Contains(reconciliationSchema, retired) {
 			t.Fatalf("admin wallet reconciliation schema should not document retired alias %q", retired)
 		}
 	}
 	pointCampaignSchema := content[strings.Index(content, "AdminPointCampaignUsageReport:"):strings.Index(content, "SocialComment:")]
-	for _, retired := range []string{"totalBets", "totalStakeCents", "betsWithFreebet", "betsWithOddsBoost"} {
+	for _, retired := range []string{"totalBets", "totalStakePoints", "betsWithFreebet", "betsWithOddsBoost"} {
 		if strings.Contains(pointCampaignSchema, retired) {
 			t.Fatalf("admin point-campaign schema should not document retired metric %q", retired)
 		}
@@ -397,14 +404,14 @@ func TestLaunchOpenAPIDocumentsPortfolioSlice(t *testing.T) {
 		"/api/v1/portfolio/summary:",
 		"/api/v1/portfolio/history:",
 		"PortfolioSummary:",
-		"totalValuePointsCents",
-		"portfolioValuePointsCents",
-		"investedPointsCents",
-		"unrealizedPointsCents",
-		"realizedPointsCents",
+		"totalValuePoints",
+		"portfolioValuePoints",
+		"investedPoints",
+		"unrealizedPoints",
+		"realizedPoints",
 		"PortfolioHistoryItem:",
 		"Settled prediction-history row with point-native result fields",
-		"settlementPointsCents",
+		"settlementPoints",
 		"items: { $ref: \"#/components/schemas/PortfolioHistoryItem\" }",
 		"Returns the authenticated session user's portfolio summary with preferred point-native aliases and no point movement",
 	}
@@ -414,29 +421,31 @@ func TestLaunchOpenAPIDocumentsPortfolioSlice(t *testing.T) {
 		}
 	}
 	summarySchema := content[strings.Index(content, "PortfolioSummary:"):strings.Index(content, "PortfolioHistoryItem:")]
-	for _, retired := range []string{"totalValueCents", "unrealizedPnlCents", "realizedPnlCents"} {
+	// Points unit-model (2026-07-07): totalValuePoints is canonical; retired
+	// spellings are the cents-era key and the sportsbook Pnl aliases.
+	for _, retired := range []string{"totalValuePointsCents", "unrealizedPnlPoints", "realizedPnlPoints"} {
 		if strings.Contains(summarySchema, retired) {
 			t.Fatalf("portfolio summary schema should not document %s", retired)
 		}
 	}
 	positionSchema := content[strings.Index(content, "    Position:"):strings.Index(content, "    BotOrderResponse:")]
-	for _, required := range []string{"avgPricePointsCents", "totalCostPointsCents", "realizedPointsCents"} {
+	for _, required := range []string{"avgPricePoints", "totalCostPoints", "realizedPoints"} {
 		if !strings.Contains(positionSchema, required) {
 			t.Fatalf("portfolio position schema missing %s", required)
 		}
 	}
-	for _, retired := range []string{"avgPriceCents", "totalCostCents", "realizedPnlCents"} {
+	for _, retired := range []string{"avgPricePointsCents", "totalCostPointsCents", "realizedPnlPoints"} {
 		if strings.Contains(positionSchema, retired) {
 			t.Fatalf("portfolio position schema should not document %s", retired)
 		}
 	}
 	historySchema := content[strings.Index(content, "PortfolioHistoryItem:"):strings.Index(content, "AdminPunterDetail:")]
-	for _, required := range []string{"entryPricePointsCents", "exitPricePointsCents", "realizedPointsCents", "settlementPointsCents"} {
+	for _, required := range []string{"entryPricePoints", "exitPricePoints", "realizedPoints", "settlementPoints"} {
 		if !strings.Contains(historySchema, required) {
 			t.Fatalf("portfolio history schema missing %s", required)
 		}
 	}
-	for _, retired := range []string{"entryPriceCents", "exitPriceCents", "pnlCents", "payoutCents"} {
+	for _, retired := range []string{"entryPricePointsCents", "exitPricePointsCents", "pnlPoints", "payoutPoints"} {
 		if strings.Contains(historySchema, retired) {
 			t.Fatalf("portfolio history schema should not document %s", retired)
 		}
@@ -458,6 +467,28 @@ func TestLaunchOpenAPIDocumentsMarketPayloadSlice(t *testing.T) {
 	marketSchema := content[start:end]
 	required := []string{
 		"Market:",
+		"yesPricePoints",
+		"noPricePoints",
+		"lastTradePricePoints",
+		"volumePoints",
+		"openInterestPoints",
+		"liquidityPoints",
+		"ammSubsidyPoints",
+		"collateralPoolPoints",
+		"settlementPoolPoints",
+		"bestYesBidPoints",
+		"bestNoAskPoints",
+		"Gameplay point unit for preferred point-native fields",
+	}
+	for _, needle := range required {
+		if !strings.Contains(marketSchema, needle) {
+			t.Fatalf("openapi missing market payload launch doc marker %q", needle)
+		}
+	}
+	// Points unit-model (2026-07-07): the *Points keys above are canonical;
+	// retired spellings are the cents-era point-cents keys plus the
+	// never-canonical payout-pool alias.
+	for _, retired := range []string{
 		"yesPricePointsCents",
 		"noPricePointsCents",
 		"lastTradePricePointsCents",
@@ -466,31 +497,12 @@ func TestLaunchOpenAPIDocumentsMarketPayloadSlice(t *testing.T) {
 		"liquidityPointsCents",
 		"ammSubsidyPointsCents",
 		"collateralPoolPointsCents",
-		"settlementPoolPointsCents",
-		"bestYesBidPointsCents",
-		"bestNoAskPointsCents",
-		"Gameplay point unit for preferred point-native fields",
-	}
-	for _, needle := range required {
-		if !strings.Contains(marketSchema, needle) {
-			t.Fatalf("openapi missing market payload launch doc marker %q", needle)
-		}
-	}
-	for _, retired := range []string{
-		"yesPriceCents",
-		"noPriceCents",
-		"lastTradePriceCents",
-		"volumeCents",
-		"openInterestCents",
-		"liquidityCents",
-		"ammSubsidyCents",
-		"collateralPoolCents",
 		"settledPayoutPoolPointsCents",
-		"settledPayoutPoolCents",
-		"bestYesBidCents",
-		"bestYesAskCents",
-		"bestNoBidCents",
-		"bestNoAskCents",
+		"settledPayoutPoolPoints",
+		"bestYesBidPointsCents",
+		"bestYesAskPointsCents",
+		"bestNoBidPointsCents",
+		"bestNoAskPointsCents",
 	} {
 		if strings.Contains(marketSchema, retired) {
 			t.Fatalf("openapi Market schema should not document retired alias %q", retired)
@@ -510,16 +522,16 @@ func TestLaunchOpenAPIDocumentsTradingPreviewSlice(t *testing.T) {
 		"OrderPreview:",
 		"Non-mutating order preview",
 		"preferred point-native aliases and no point movement",
-		"pricePointsCents",
-		"totalCostPointsCents",
-		"feePointsCents",
-		"maxResultPointsCents",
-		"maxLossPointsCents",
-		"newYesPricePointsCents",
-		"newNoPricePointsCents",
-		"averageFillPricePointsCents",
-		"totalCostWithFeesPointsCents",
-		"estimatedSlippagePointsCents",
+		"pricePoints",
+		"totalCostPoints",
+		"feePoints",
+		"maxResultPoints",
+		"maxLossPoints",
+		"newYesPricePoints",
+		"newNoPricePoints",
+		"averageFillPricePoints",
+		"totalCostWithFeesPoints",
+		"estimatedSlippagePoints",
 		"unit: { type: string, enum: [PTS]",
 	}
 	for _, needle := range required {
@@ -527,36 +539,39 @@ func TestLaunchOpenAPIDocumentsTradingPreviewSlice(t *testing.T) {
 			t.Fatalf("openapi missing %q", needle)
 		}
 	}
+	// Points unit-model (2026-07-07): *Points keys are canonical; retired
+	// spellings are the cents-era point-cents keys plus the prohibited
+	// profit alias.
 	previewSchema := content[strings.Index(content, "    OrderPreview:"):strings.Index(content, "    Position:")]
-	for _, retired := range []string{"priceCents", "totalCostCents", "feeCents", "maxProfitCents", "maxProfitPointsCents", "maxLossCents", "newYesPriceCents", "newNoPriceCents", "averageFillPriceCents", "totalCostWithFeesCents", "estimatedSlippageCents"} {
+	for _, retired := range []string{"pricePointsCents", "totalCostPointsCents", "feePointsCents", "maxProfitPointsCents", "maxProfitPoints", "maxLossPointsCents", "newYesPricePointsCents", "newNoPricePointsCents", "averageFillPricePointsCents", "totalCostWithFeesPointsCents", "estimatedSlippagePointsCents"} {
 		if strings.Contains(previewSchema, retired) {
 			t.Fatalf("order preview schema should not document retired response alias %s", retired)
 		}
 	}
 	orderSchema := content[strings.Index(content, "    Order:"):strings.Index(content, "    OrderPreview:")]
-	for _, retired := range []string{"totalCostCents", "filledCostCents", "averageFillPriceCents", "notionalCapCents", "walletReservationId"} {
+	for _, retired := range []string{"totalCostPointsCents", "filledCostPointsCents", "averageFillPricePointsCents", "notionalCapPointsCents", "walletReservationId"} {
 		if strings.Contains(orderSchema, retired) {
 			t.Fatalf("order schema should not document retired response alias %s", retired)
 		}
 	}
 	requestSchema := content[strings.Index(content, "    PlaceOrderRequest:"):strings.Index(content, "    Order:")]
-	for _, required := range []string{"pricePointsCents", "notionalCapPointsCents"} {
+	for _, required := range []string{"pricePoints", "notionalCapPoints"} {
 		if !strings.Contains(requestSchema, required) {
 			t.Fatalf("place-order request schema missing %s", required)
 		}
 	}
-	for _, retired := range []string{"priceCents", "notionalCapCents"} {
+	for _, retired := range []string{"pricePointsCents", "notionalCapPointsCents"} {
 		if strings.Contains(requestSchema, retired) {
 			t.Fatalf("place-order request schema should not document retired request alias %s", retired)
 		}
 	}
-	for _, required := range []string{"pricePointsCents", "averageFillPricePointsCents"} {
+	for _, required := range []string{"pricePoints", "averageFillPricePoints"} {
 		if !strings.Contains(orderSchema, required) {
 			t.Fatalf("order schema should document point-native %s", required)
 		}
 	}
-	if strings.Contains(orderSchema, "priceCents") {
-		t.Fatal("order schema should not document retired response alias priceCents")
+	if strings.Contains(orderSchema, "pricePointsCents") {
+		t.Fatal("order schema should not document retired response alias pricePointsCents")
 	}
 }
 
@@ -572,9 +587,9 @@ func TestLaunchOpenAPIDocumentsTradeTapeSlice(t *testing.T) {
 		"Trade:",
 		"Immutable public trade-tape fill row",
 		"Recent trade-tape fills with preferred point-native aliases",
-		"pricePointsCents",
-		"feePointsCents",
-		"notionalPointsCents",
+		"pricePoints",
+		"feePoints",
+		"notionalPoints",
 		"unit: { type: string, enum: [PTS]",
 	}
 	for _, needle := range required {
@@ -582,8 +597,9 @@ func TestLaunchOpenAPIDocumentsTradeTapeSlice(t *testing.T) {
 			t.Fatalf("openapi missing trade-tape launch doc marker %q", needle)
 		}
 	}
+	// Points unit-model (2026-07-07): retired spellings are the cents-era keys.
 	tradeSchema := content[strings.Index(content, "    Trade:"):strings.Index(content, "    BotAPIKey:")]
-	for _, retired := range []string{"priceCents", "feeCents"} {
+	for _, retired := range []string{"pricePointsCents", "feePointsCents"} {
 		if strings.Contains(tradeSchema, retired) {
 			t.Fatalf("openapi Trade schema should not document retired alias %q", retired)
 		}
@@ -611,8 +627,8 @@ func TestLaunchOpenAPIDocumentsPriceHistorySlice(t *testing.T) {
 		"MarketPriceHistory:",
 		"PricePoint:",
 		"Market price-history buckets with point-native fields and no point movement",
-		"yesPricePointsCents",
-		"volumePointsCents",
+		"yesPricePoints",
+		"volumePoints",
 		"unit: { type: string, enum: [PTS]",
 	}
 	for _, needle := range required {
@@ -620,7 +636,8 @@ func TestLaunchOpenAPIDocumentsPriceHistorySlice(t *testing.T) {
 			t.Fatalf("openapi missing price-history launch doc marker %q", needle)
 		}
 	}
-	for _, retired := range []string{"yesPriceCents", "volumeCents"} {
+	// Points unit-model (2026-07-07): retired spellings are the cents-era keys.
+	for _, retired := range []string{"yesPricePointsCents", "volumePointsCents"} {
 		if strings.Contains(pricePointSchema, retired) {
 			t.Fatalf("PricePoint schema should not document retired alias %q", retired)
 		}
@@ -639,11 +656,11 @@ func TestLaunchOpenAPIDocumentsOrderBookSlice(t *testing.T) {
 		"OrderBook:",
 		"OrderBookLevel:",
 		"Order-book depth with point-native fields and no point movement",
-		"pricePointsCents",
+		"pricePoints",
 		"shares",
 		"cumulativeShares",
-		"notionalPointsCents",
-		"totalNotionalPointsCents",
+		"notionalPoints",
+		"totalNotionalPoints",
 		"Gameplay point unit for point-native fields",
 		"unit: { type: string, enum: [PTS]",
 	}
@@ -652,8 +669,10 @@ func TestLaunchOpenAPIDocumentsOrderBookSlice(t *testing.T) {
 			t.Fatalf("openapi missing order-book launch doc marker %q", needle)
 		}
 	}
+	// Points unit-model (2026-07-07): pricePoints is canonical; the retired
+	// spelling is the cents-era pricePointsCents.
 	orderBookSchema := content[strings.Index(content, "OrderBookLevel:"):strings.Index(content, "OrderBookSide:")]
-	for _, retired := range []string{"priceCents", "quantity", "total:"} {
+	for _, retired := range []string{"pricePointsCents", "quantity", "total:"} {
 		if strings.Contains(orderBookSchema, retired) {
 			t.Fatalf("openapi OrderBookLevel schema should not document retired depth alias %q", retired)
 		}
@@ -683,7 +702,7 @@ func TestLaunchOpenAPIDocumentsLeaderboardSlice(t *testing.T) {
 		"AdminLeaderboardEvent:",
 		"metricKey:",
 		"pointMetricKey:",
-		"minVolumePointsCents:",
+		"minVolumePoints:",
 		"rewardSummary:",
 		"activitySourceType:",
 		"activitySourceId:",
@@ -695,7 +714,9 @@ func TestLaunchOpenAPIDocumentsLeaderboardSlice(t *testing.T) {
 		}
 	}
 	leaderboardSchemas := openAPISection(content, "    PredictLeaderboardBoard:", "    Error:")
-	for _, blocked := range []string{"sourceType:", "sourceId:", "currency:", "prizeSummary:", "metricLabel:", "qualificationMsg:", "minVolumeCents:"} {
+	// Points unit-model (2026-07-07): minVolumePoints is canonical; the
+	// retired spelling is the cents-era minVolumePointsCents.
+	for _, blocked := range []string{"sourceType:", "sourceId:", "currency:", "prizeSummary:", "metricLabel:", "qualificationMsg:", "minVolumePointsCents:"} {
 		if strings.Contains(leaderboardSchemas, blocked) {
 			t.Fatalf("leaderboard schemas should not document retired alias %q", blocked)
 		}
@@ -729,7 +750,7 @@ func TestLaunchOpenAPIDocumentsLoyaltyAndRewardClusterSlice(t *testing.T) {
 		"AdminLoyaltyRule:",
 		"AdminLoyaltyRuleRequest:",
 		"predictionSourceType:",
-		"minQualifiedPointsCents:",
+		"minQualifiedPoints:",
 		"eligiblePredictionTypes:",
 		"AdminRewardClusterSummary:",
 		"hashed device/IP signal summaries",
@@ -777,7 +798,7 @@ func TestLaunchOpenAPIDocumentsLoyaltyAndRewardClusterSlice(t *testing.T) {
 	}
 	ruleSchema := openAPISection(content, "    AdminLoyaltyRule:", "    AdminLoyaltyRuleRequest:")
 	ruleRequestSchema := openAPISection(content, "    AdminLoyaltyRuleRequest:", "    AdminRewardClusterSummary:")
-	for _, blocked := range []string{"sourceType:", "minQualifiedStakeCents:", "eligibleSportIds:", "eligibleBetTypes:"} {
+	for _, blocked := range []string{"sourceType:", "minQualifiedStakePoints:", "eligibleSportIds:", "eligibleBetTypes:"} {
 		if strings.Contains(ruleSchema, blocked) {
 			t.Fatalf("admin loyalty rule schema should not document retired alias %q", blocked)
 		}
@@ -816,7 +837,7 @@ func TestLaunchOpenAPIDocumentsResponsiblePlaySlice(t *testing.T) {
 		}
 	}
 	checkSchema := openAPISection(content, "    ResponsiblePlayCheckResponse:", "    ResponsiblePlayRestrictions:")
-	for _, retired := range []string{"stakePointsCents", "stakeCents"} {
+	for _, retired := range []string{"stakePoints", "stakePoints"} {
 		if strings.Contains(checkSchema, retired) {
 			t.Fatalf("responsible-play check schema should not document retired stake alias %q", retired)
 		}
@@ -846,12 +867,12 @@ func TestLaunchOpenAPIDocumentsBotAPISlice(t *testing.T) {
 		"selfMatchAction",
 		"market-buy notional caps before market lookup",
 		"same point-reservation and fill path as session orders",
-		"notionalCapPointsCents",
-		"capturedPointsCents",
-		"releasedPointsCents",
-		"reservedPointsCents",
-		"totalCostPointsCents",
-		"realizedPointsCents",
+		"notionalCapPoints",
+		"capturedPoints",
+		"releasedPoints",
+		"reservedPoints",
+		"totalCostPoints",
+		"realizedPoints",
 		"prediction_limit_exceeded",
 		"Bot API key rate limit exceeded",
 		"Full keys are never returned after creation",
@@ -923,11 +944,11 @@ func TestLaunchOpenAPIDocumentsAdminAccountReviewSlice(t *testing.T) {
 		"AdminAuditLog:",
 		"point-account summary",
 		"immutable point-ledger rows",
-		"pointAccountBalanceCents",
-		"realizedPointsCents",
-		"settlementPointsCents",
-		"amountPointsCents",
-		"balancePointsCents",
+		"pointAccountBalancePoints",
+		"realizedPoints",
+		"settlementPoints",
+		"amountPoints",
+		"balancePoints",
 	}
 	for _, needle := range required {
 		if !strings.Contains(content, needle) {
@@ -936,7 +957,7 @@ func TestLaunchOpenAPIDocumentsAdminAccountReviewSlice(t *testing.T) {
 	}
 	listSchema := content[strings.Index(content, "AdminPunterListItem:"):strings.Index(content, "PortfolioSummary:")]
 	detailSchema := content[strings.Index(content, "AdminPunterDetail:"):strings.Index(content, "AdminPunterSettlement:")]
-	for _, retired := range []string{"walletBalanceCents", "realizedPnlCents"} {
+	for _, retired := range []string{"walletBalancePoints", "realizedPnlPoints"} {
 		if strings.Contains(listSchema, retired) {
 			t.Fatalf("admin account list schema should not document %s", retired)
 		}
@@ -945,18 +966,20 @@ func TestLaunchOpenAPIDocumentsAdminAccountReviewSlice(t *testing.T) {
 		}
 	}
 	settlementSchema := content[strings.Index(content, "AdminPunterSettlement:"):strings.Index(content, "AdminPointLedgerEntry:")]
-	for _, required := range []string{"entryPricePointsCents", "exitPricePointsCents", "realizedPointsCents", "settlementPointsCents"} {
+	for _, required := range []string{"entryPricePoints", "exitPricePoints", "realizedPoints", "settlementPoints"} {
 		if !strings.Contains(settlementSchema, required) {
 			t.Fatalf("admin account settlement schema missing %s", required)
 		}
 	}
-	for _, retired := range []string{"entryPriceCents", "exitPriceCents", "pnlCents", "payoutCents"} {
+	// Points unit-model (2026-07-07): *Points keys are canonical; retired
+	// spellings are the cents-era point-cents keys plus the pnl/payout aliases.
+	for _, retired := range []string{"entryPricePointsCents", "exitPricePointsCents", "pnlPoints", "payoutPoints"} {
 		if strings.Contains(settlementSchema, retired) {
 			t.Fatalf("admin account settlement schema should not document %s", retired)
 		}
 	}
 	ledgerSchema := content[strings.Index(content, "AdminPointLedgerEntry:"):strings.Index(content, "AdminPunterStatusUpdateRequest:")]
-	for _, retired := range []string{"amountCents", "balanceCents"} {
+	for _, retired := range []string{"amountPointsCents", "balancePointsCents"} {
 		if strings.Contains(ledgerSchema, retired) {
 			t.Fatalf("admin point-ledger schema should not document %s", retired)
 		}
@@ -983,16 +1006,18 @@ func TestLaunchOpenAPIDocumentsAdminMarketOperationsSlice(t *testing.T) {
 		"formula-safe market export rows",
 		"Creation records metadata only and does not move points",
 		"AI drafting rate limits are shared across server instances",
-		"ammSubsidyPointsCents",
+		"ammSubsidyPoints",
 	}
 	for _, needle := range required {
 		if !strings.Contains(content, needle) {
 			t.Fatalf("openapi missing admin market-operations launch doc marker %q", needle)
 		}
 	}
+	// Points unit-model (2026-07-07): ammSubsidyPoints is canonical; the
+	// retired spelling is the cents-era ammSubsidyPointsCents.
 	createMarketSchema := openAPISection(content, "AdminMarketCreateRequest:", "AdminArticleSource:")
-	if strings.Contains(createMarketSchema, "ammSubsidyCents") {
-		t.Fatal("admin market create schema should not document retired ammSubsidyCents")
+	if strings.Contains(createMarketSchema, "ammSubsidyPointsCents") {
+		t.Fatal("admin market create schema should not document retired ammSubsidyPointsCents")
 	}
 }
 
@@ -1015,7 +1040,7 @@ func TestLaunchOpenAPIDocumentsSettlementAndDisputeSlice(t *testing.T) {
 		"AdminSettlementPointDisbursement:",
 		"ResolutionProposal:",
 		"DisputeCreateRequest:",
-		"bondPointsCents",
+		"bondPoints",
 		"ResolutionSourceHealth:",
 		"returns locked points through settlement point disbursement flow",
 		"Filing a dispute blocks finalization until admin review and does not move points",
@@ -1026,13 +1051,15 @@ func TestLaunchOpenAPIDocumentsSettlementAndDisputeSlice(t *testing.T) {
 		}
 	}
 	settlementSchema := openAPISection(content, "AdminSettlementRecord:", "AdminSettlementPointDisbursement:")
-	for _, retired := range []string{"totalPayoutCents", "payoutsTotal", "payoutsCompleted", "currency"} {
+	for _, retired := range []string{"totalPayoutPoints", "payoutsTotal", "payoutsCompleted", "currency"} {
 		if strings.Contains(settlementSchema, retired) {
 			t.Fatalf("admin settlement record schema should not document %s", retired)
 		}
 	}
+	// Points unit-model (2026-07-07): bondPoints is canonical; the retired
+	// spelling is the cents-era bondPointsCents.
 	disputeSchema := openAPISection(content, "Dispute:", "DisputeCreateRequest:")
-	for _, retired := range []string{"bondCents"} {
+	for _, retired := range []string{"bondPointsCents"} {
 		if strings.Contains(disputeSchema, retired) {
 			t.Fatalf("dispute schema should not document %s", retired)
 		}

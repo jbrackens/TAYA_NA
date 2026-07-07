@@ -10,27 +10,27 @@ func TestDrawdownDebit_MemoryMode_FullFromReal(t *testing.T) {
 
 	// Seed balance
 	_, err := svc.Credit(context.Background(), MutationRequest{
-		UserID: "u-dd1", AmountCents: 1000, IdempotencyKey: "seed1", Reason: "deposit",
+		UserID: "u-dd1", AmountPoints: 1000, IdempotencyKey: "seed1", Reason: "deposit",
 	})
 	if err != nil {
 		t.Fatalf("credit: %v", err)
 	}
 
 	result, err := svc.DrawdownDebit(context.Background(), DrawdownRequest{
-		UserID: "u-dd1", AmountCents: 400, IdempotencyKey: "dd1", Reason: "bet",
+		UserID: "u-dd1", AmountPoints: 400, IdempotencyKey: "dd1", Reason: "bet",
 	})
 	if err != nil {
 		t.Fatalf("drawdown: %v", err)
 	}
-	if result.TotalDebitCents != 400 {
-		t.Fatalf("expected total 400, got %d", result.TotalDebitCents)
+	if result.TotalDebitPoints != 400 {
+		t.Fatalf("expected total 400, got %d", result.TotalDebitPoints)
 	}
-	if result.RealDebitCents != 400 {
-		t.Fatalf("expected real 400, got %d", result.RealDebitCents)
+	if result.RealDebitPoints != 400 {
+		t.Fatalf("expected real 400, got %d", result.RealDebitPoints)
 	}
 	// Memory mode doesn't track bonus separately
-	if result.BonusDebitCents != 0 {
-		t.Fatalf("expected bonus 0, got %d", result.BonusDebitCents)
+	if result.BonusDebitPoints != 0 {
+		t.Fatalf("expected bonus 0, got %d", result.BonusDebitPoints)
 	}
 	if len(result.LedgerEntries) != 1 {
 		t.Fatalf("expected 1 ledger entry, got %d", len(result.LedgerEntries))
@@ -41,14 +41,14 @@ func TestDrawdownDebit_InsufficientFunds(t *testing.T) {
 	svc := NewService()
 
 	_, err := svc.Credit(context.Background(), MutationRequest{
-		UserID: "u-dd2", AmountCents: 100, IdempotencyKey: "seed2", Reason: "deposit",
+		UserID: "u-dd2", AmountPoints: 100, IdempotencyKey: "seed2", Reason: "deposit",
 	})
 	if err != nil {
 		t.Fatalf("credit: %v", err)
 	}
 
 	_, err = svc.DrawdownDebit(context.Background(), DrawdownRequest{
-		UserID: "u-dd2", AmountCents: 500, IdempotencyKey: "dd2", Reason: "bet",
+		UserID: "u-dd2", AmountPoints: 500, IdempotencyKey: "dd2", Reason: "bet",
 	})
 	if err == nil {
 		t.Fatal("expected insufficient funds error")
@@ -60,7 +60,7 @@ func TestDrawdownDebit_InvalidRequest(t *testing.T) {
 
 	// Missing user
 	_, err := svc.DrawdownDebit(context.Background(), DrawdownRequest{
-		AmountCents: 100, IdempotencyKey: "dd3",
+		AmountPoints: 100, IdempotencyKey: "dd3",
 	})
 	if err == nil {
 		t.Fatal("expected error for missing user")
@@ -68,7 +68,7 @@ func TestDrawdownDebit_InvalidRequest(t *testing.T) {
 
 	// Zero amount
 	_, err = svc.DrawdownDebit(context.Background(), DrawdownRequest{
-		UserID: "u-dd3", AmountCents: 0, IdempotencyKey: "dd4",
+		UserID: "u-dd3", AmountPoints: 0, IdempotencyKey: "dd4",
 	})
 	if err == nil {
 		t.Fatal("expected error for zero amount")
@@ -76,7 +76,7 @@ func TestDrawdownDebit_InvalidRequest(t *testing.T) {
 
 	// Missing idempotency key
 	_, err = svc.DrawdownDebit(context.Background(), DrawdownRequest{
-		UserID: "u-dd3", AmountCents: 100,
+		UserID: "u-dd3", AmountPoints: 100,
 	})
 	if err == nil {
 		t.Fatal("expected error for missing idempotency key")
@@ -87,30 +87,30 @@ func TestDrawdownDebit_Idempotent(t *testing.T) {
 	svc := NewService()
 
 	_, err := svc.Credit(context.Background(), MutationRequest{
-		UserID: "u-dd4", AmountCents: 1000, IdempotencyKey: "seed4", Reason: "deposit",
+		UserID: "u-dd4", AmountPoints: 1000, IdempotencyKey: "seed4", Reason: "deposit",
 	})
 	if err != nil {
 		t.Fatalf("credit: %v", err)
 	}
 
 	first, err := svc.DrawdownDebit(context.Background(), DrawdownRequest{
-		UserID: "u-dd4", AmountCents: 300, IdempotencyKey: "dd-idemp", Reason: "bet",
+		UserID: "u-dd4", AmountPoints: 300, IdempotencyKey: "dd-idemp", Reason: "bet",
 	})
 	if err != nil {
 		t.Fatalf("first drawdown: %v", err)
 	}
 
 	second, err := svc.DrawdownDebit(context.Background(), DrawdownRequest{
-		UserID: "u-dd4", AmountCents: 300, IdempotencyKey: "dd-idemp", Reason: "bet",
+		UserID: "u-dd4", AmountPoints: 300, IdempotencyKey: "dd-idemp", Reason: "bet",
 	})
 	if err != nil {
 		t.Fatalf("second drawdown: %v", err)
 	}
 
 	// Should return same result (idempotent via underlying Debit)
-	if first.TotalDebitCents != second.TotalDebitCents {
+	if first.TotalDebitPoints != second.TotalDebitPoints {
 		t.Fatalf("idempotent drawdown returned different totals: %d vs %d",
-			first.TotalDebitCents, second.TotalDebitCents)
+			first.TotalDebitPoints, second.TotalDebitPoints)
 	}
 
 	// Balance should only be debited once
@@ -145,7 +145,7 @@ func TestDebitBonus_MemoryMode_FallsBackToRegularDebit(t *testing.T) {
 
 	// Seed balance
 	_, err := svc.Credit(context.Background(), MutationRequest{
-		UserID: "u-db1", AmountCents: 1000, IdempotencyKey: "seed-db1", Reason: "deposit",
+		UserID: "u-db1", AmountPoints: 1000, IdempotencyKey: "seed-db1", Reason: "deposit",
 	})
 	if err != nil {
 		t.Fatalf("credit: %v", err)
@@ -153,13 +153,13 @@ func TestDebitBonus_MemoryMode_FallsBackToRegularDebit(t *testing.T) {
 
 	// In memory mode, DebitBonus falls back to regular debit
 	entry, err := svc.DebitBonus(context.Background(), MutationRequest{
-		UserID: "u-db1", AmountCents: 300, IdempotencyKey: "db1", Reason: "bonus debit",
+		UserID: "u-db1", AmountPoints: 300, IdempotencyKey: "db1", Reason: "bonus debit",
 	})
 	if err != nil {
 		t.Fatalf("debit bonus: %v", err)
 	}
-	if entry.BalanceCents != 700 {
-		t.Fatalf("expected balance 700 after bonus debit, got %d", entry.BalanceCents)
+	if entry.BalancePoints != 700 {
+		t.Fatalf("expected balance 700 after bonus debit, got %d", entry.BalancePoints)
 	}
 }
 
@@ -167,21 +167,21 @@ func TestBalanceWithBreakdown_MemoryMode(t *testing.T) {
 	svc := NewService()
 
 	_, err := svc.Credit(context.Background(), MutationRequest{
-		UserID: "u-bb1", AmountCents: 500, IdempotencyKey: "seed-bb1", Reason: "deposit",
+		UserID: "u-bb1", AmountPoints: 500, IdempotencyKey: "seed-bb1", Reason: "deposit",
 	})
 	if err != nil {
 		t.Fatalf("credit: %v", err)
 	}
 
 	breakdown := svc.BalanceWithBreakdown(context.Background(), "u-bb1")
-	if breakdown.RealMoneyCents != 500 {
-		t.Fatalf("expected real 500, got %d", breakdown.RealMoneyCents)
+	if breakdown.RealMoneyPoints != 500 {
+		t.Fatalf("expected real 500, got %d", breakdown.RealMoneyPoints)
 	}
-	if breakdown.BonusFundCents != 0 {
-		t.Fatalf("expected bonus 0 in memory mode, got %d", breakdown.BonusFundCents)
+	if breakdown.BonusFundPoints != 0 {
+		t.Fatalf("expected bonus 0 in memory mode, got %d", breakdown.BonusFundPoints)
 	}
-	if breakdown.TotalCents != 500 {
-		t.Fatalf("expected total 500, got %d", breakdown.TotalCents)
+	if breakdown.TotalPoints != 500 {
+		t.Fatalf("expected total 500, got %d", breakdown.TotalPoints)
 	}
 }
 

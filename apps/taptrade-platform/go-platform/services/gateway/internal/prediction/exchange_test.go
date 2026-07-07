@@ -38,7 +38,7 @@ func makeOrder(id, userID string, side OrderSide, action OrderAction, ot OrderTy
 		Side:              side,
 		Action:            action,
 		OrderType:         ot,
-		PriceCents:        price,
+		PricePoints:       price,
 		Quantity:          qty,
 		FilledQuantity:    0,
 		RemainingQuantity: qty,
@@ -55,7 +55,7 @@ func TestValidate_ClosedMarket(t *testing.T) {
 	market := makeMarket()
 	market.Status = MarketStatusClosed
 	err := ValidatePlaceOrderRequest(PlaceOrderRequest{
-		OrderType: OrderTypeLimit, PriceCents: intPtr(50), Quantity: 10, Action: OrderActionBuy,
+		OrderType: OrderTypeLimit, PricePoints: intPtr(50), Quantity: 10, Action: OrderActionBuy,
 	}, &market, nil)
 	if !errors.Is(err, ErrClosedMarket) {
 		t.Errorf("want ErrClosedMarket, got %v", err)
@@ -66,7 +66,7 @@ func TestValidate_AMMMode(t *testing.T) {
 	market := makeMarket()
 	market.ExecutionMode = ExecutionModeAMM
 	err := ValidatePlaceOrderRequest(PlaceOrderRequest{
-		OrderType: OrderTypeLimit, PriceCents: intPtr(50), Quantity: 10, Action: OrderActionBuy,
+		OrderType: OrderTypeLimit, PricePoints: intPtr(50), Quantity: 10, Action: OrderActionBuy,
 	}, &market, nil)
 	if !errors.Is(err, ErrClosedMarket) {
 		t.Errorf("want ErrClosedMarket for AMM-mode market, got %v", err)
@@ -77,7 +77,7 @@ func TestValidate_PriceBandViolation(t *testing.T) {
 	market := makeMarket()
 	for _, p := range []int{0, 100, -1, 1000} {
 		err := ValidatePlaceOrderRequest(PlaceOrderRequest{
-			OrderType: OrderTypeLimit, PriceCents: intPtr(p), Quantity: 1, Action: OrderActionBuy,
+			OrderType: OrderTypeLimit, PricePoints: intPtr(p), Quantity: 1, Action: OrderActionBuy,
 		}, &market, nil)
 		if !errors.Is(err, ErrPriceBandViolation) {
 			t.Errorf("price=%d: want ErrPriceBandViolation, got %v", p, err)
@@ -88,7 +88,7 @@ func TestValidate_PriceBandViolation(t *testing.T) {
 func TestValidate_SellWithoutPosition(t *testing.T) {
 	market := makeMarket()
 	err := ValidatePlaceOrderRequest(PlaceOrderRequest{
-		OrderType: OrderTypeLimit, PriceCents: intPtr(50), Quantity: 10, Action: OrderActionSell,
+		OrderType: OrderTypeLimit, PricePoints: intPtr(50), Quantity: 10, Action: OrderActionSell,
 	}, &market, nil)
 	if !errors.Is(err, ErrInsufficientPosition) {
 		t.Errorf("want ErrInsufficientPosition, got %v", err)
@@ -99,7 +99,7 @@ func TestValidate_SellExceedsAvailable(t *testing.T) {
 	market := makeMarket()
 	pos := &Position{Quantity: 10, ReservedQuantity: 5} // available = 5
 	err := ValidatePlaceOrderRequest(PlaceOrderRequest{
-		OrderType: OrderTypeLimit, PriceCents: intPtr(50), Quantity: 10, Action: OrderActionSell,
+		OrderType: OrderTypeLimit, PricePoints: intPtr(50), Quantity: 10, Action: OrderActionSell,
 	}, &market, pos)
 	if !errors.Is(err, ErrInsufficientPosition) {
 		t.Errorf("want ErrInsufficientPosition, got %v", err)
@@ -150,8 +150,8 @@ func TestBuildPlan_BuyYesMatchesSellYesAtMakerPrice(t *testing.T) {
 		t.Fatalf("expected 1 trade, got %d", len(plan.Trades))
 	}
 	tr := plan.Trades[0]
-	if tr.PriceCents != 55 {
-		t.Errorf("expected fill at maker price 55, got %d", tr.PriceCents)
+	if tr.PricePoints != 55 {
+		t.Errorf("expected fill at maker price 55, got %d", tr.PricePoints)
 	}
 	if tr.TradeKind != TradeKindSecondary {
 		t.Errorf("expected secondary, got %s", tr.TradeKind)
@@ -161,12 +161,12 @@ func TestBuildPlan_BuyYesMatchesSellYesAtMakerPrice(t *testing.T) {
 	}
 	// 5% × 55 × 45 × 10 / 1_000_000 = 12 (floor of 12.375)
 	wantFee := int64(12)
-	if int64(tr.FeeCents) != wantFee {
-		t.Errorf("expected taker fee %d, got %d", wantFee, tr.FeeCents)
+	if int64(tr.FeePoints) != wantFee {
+		t.Errorf("expected taker fee %d, got %d", wantFee, tr.FeePoints)
 	}
 	// Maker is the seller here (bob) — must be credited proceeds too
 	// (10 × 55 = 550). Pre-fix, no secondary fill credited any seller.
-	if len(plan.SellerCredits) != 1 || plan.SellerCredits[0].UserID != "bob" || plan.SellerCredits[0].AmountCents != 550 {
+	if len(plan.SellerCredits) != 1 || plan.SellerCredits[0].UserID != "bob" || plan.SellerCredits[0].AmountPoints != 550 {
 		t.Errorf("expected seller credit bob/550, got %+v", plan.SellerCredits)
 	}
 	if len(plan.PositionReservationDeltas) != 1 || plan.PositionReservationDeltas[0].UserID != "bob" || plan.PositionReservationDeltas[0].Delta != -10 {
@@ -232,8 +232,8 @@ func TestBuildPlan_SellYesMatchesRestingBuyYes(t *testing.T) {
 	if tr.TradeKind != TradeKindSecondary {
 		t.Errorf("expected secondary, got %s", tr.TradeKind)
 	}
-	if tr.PriceCents != 55 {
-		t.Errorf("expected fill at maker price 55, got %d", tr.PriceCents)
+	if tr.PricePoints != 55 {
+		t.Errorf("expected fill at maker price 55, got %d", tr.PricePoints)
 	}
 	if tr.SellerID == nil || *tr.SellerID != "alice" {
 		t.Errorf("expected seller=alice (taker), got %v", tr.SellerID)
@@ -252,8 +252,8 @@ func TestBuildPlan_SellYesMatchesRestingBuyYes(t *testing.T) {
 		t.Fatalf("expected 1 seller credit, got %d", len(plan.SellerCredits))
 	}
 	sc := plan.SellerCredits[0]
-	if sc.UserID != "alice" || sc.AmountCents != 550 {
-		t.Errorf("expected seller credit alice/550, got %s/%d", sc.UserID, sc.AmountCents)
+	if sc.UserID != "alice" || sc.AmountPoints != 550 {
+		t.Errorf("expected seller credit alice/550, got %s/%d", sc.UserID, sc.AmountPoints)
 	}
 	if sc.CreditKey == "" {
 		t.Errorf("seller credit must have an idempotency key")
@@ -294,8 +294,8 @@ func TestBuildPlan_SellYesPartialFillThenIOCCancel(t *testing.T) {
 	if len(plan.SellerCredits) != 1 {
 		t.Fatalf("expected 1 seller credit, got %d", len(plan.SellerCredits))
 	}
-	if plan.SellerCredits[0].AmountCents != 260 {
-		t.Errorf("expected seller credit 260 (20×13), got %d", plan.SellerCredits[0].AmountCents)
+	if plan.SellerCredits[0].AmountPoints != 260 {
+		t.Errorf("expected seller credit 260 (20×13), got %d", plan.SellerCredits[0].AmountPoints)
 	}
 }
 
@@ -344,15 +344,15 @@ func TestBuildPlan_SellerCreditKeyIsPerTradeAndConservesCash(t *testing.T) {
 			t.Errorf("credit[%d] user = %q, want alice (taker is the seller)", i, sc.UserID)
 		}
 		// cash conservation: seller credit == buyer capture for the same fill
-		if sc.AmountCents != plan.CaptureReservations[i].AmountCents {
+		if sc.AmountPoints != plan.CaptureReservations[i].AmountPoints {
 			t.Errorf("fill %d: seller credit %d != buyer capture %d (cash not conserved)",
-				i, sc.AmountCents, plan.CaptureReservations[i].AmountCents)
+				i, sc.AmountPoints, plan.CaptureReservations[i].AmountPoints)
 		}
 	}
 	// Exact amounts: 10×55 + 10×54.
-	if plan.SellerCredits[0].AmountCents != 550 || plan.SellerCredits[1].AmountCents != 540 {
+	if plan.SellerCredits[0].AmountPoints != 550 || plan.SellerCredits[1].AmountPoints != 540 {
 		t.Errorf("amounts = %d,%d want 550,540",
-			plan.SellerCredits[0].AmountCents, plan.SellerCredits[1].AmountCents)
+			plan.SellerCredits[0].AmountPoints, plan.SellerCredits[1].AmountPoints)
 	}
 }
 
@@ -389,23 +389,23 @@ func TestBuildPlan_BuyYesMatchesBuyNoIssuance(t *testing.T) {
 			makerRow = tr
 		}
 	}
-	if takerRow.PriceCents != 60 {
-		t.Errorf("taker should pay 60 (=100-40), got %d", takerRow.PriceCents)
+	if takerRow.PricePoints != 60 {
+		t.Errorf("taker should pay 60 (=100-40), got %d", takerRow.PricePoints)
 	}
-	if makerRow.PriceCents != 40 {
-		t.Errorf("maker should pay 40, got %d", makerRow.PriceCents)
+	if makerRow.PricePoints != 40 {
+		t.Errorf("maker should pay 40, got %d", makerRow.PricePoints)
 	}
 	// Maker fee always 0 in v1.
-	if makerRow.FeeCents != 0 {
-		t.Errorf("maker fee must be 0 in v1, got %d", makerRow.FeeCents)
+	if makerRow.FeePoints != 0 {
+		t.Errorf("maker fee must be 0 in v1, got %d", makerRow.FeePoints)
 	}
 	// Taker fee = 5% × 60 × 40 × 10 / 1e6 = 12
-	if takerRow.FeeCents != 12 {
-		t.Errorf("expected taker fee 12, got %d", takerRow.FeeCents)
+	if takerRow.FeePoints != 12 {
+		t.Errorf("expected taker fee 12, got %d", takerRow.FeePoints)
 	}
 	// Collateral pool grows by 100 × 10 = 1000.
-	if plan.Market.CollateralPoolCents != 1000 {
-		t.Errorf("expected collateral pool +1000, got %d", plan.Market.CollateralPoolCents)
+	if plan.Market.CollateralPoolPoints != 1000 {
+		t.Errorf("expected collateral pool +1000, got %d", plan.Market.CollateralPoolPoints)
 	}
 }
 

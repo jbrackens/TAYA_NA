@@ -21,7 +21,7 @@ func TestDisputePayloadRedactsLegacyUnsafeReasonAndNote(t *testing.T) {
 		Reason:         "cash payout challenge",
 		Status:         "open",
 		ResolutionNote: &note,
-		BondCents:      1500,
+		BondPoints:     1500,
 		CreatedAt:      time.Date(2026, 4, 23, 14, 58, 0, 0, time.UTC),
 	})
 
@@ -31,7 +31,7 @@ func TestDisputePayloadRedactsLegacyUnsafeReasonAndNote(t *testing.T) {
 	if payload.ResolutionNote == nil || *payload.ResolutionNote != launchRedactedUserText {
 		t.Fatalf("unsafe dispute resolution note should be redacted, got %#v", payload.ResolutionNote)
 	}
-	if payload.BondPointsCents != 1500 || payload.Unit != "PTS" {
+	if payload.BondPoints != 1500 || payload.Unit != "PTS" {
 		t.Fatalf("stable dispute point fields should remain intact, got %+v", payload)
 	}
 }

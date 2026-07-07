@@ -53,7 +53,7 @@ func TestPublicWalletMutationRoutesRemoved(t *testing.T) {
 	handler := newAuthzTestHandler()
 
 	for _, path := range []string{"/api/v1/wallet/credit", "/api/v1/wallet/debit"} {
-		req := httptest.NewRequest(http.MethodPost, path, strings.NewReader(`{"userId":"u-1","amountPointsCents":100000,"idempotencyKey":"hack-1"}`))
+		req := httptest.NewRequest(http.MethodPost, path, strings.NewReader(`{"userId":"u-1","amountPoints":100000,"idempotencyKey":"hack-1"}`))
 		res := httptest.NewRecorder()
 		handler.ServeHTTP(res, req)
 
@@ -69,7 +69,7 @@ func TestPublicWalletMutationRoutesRemoved(t *testing.T) {
 func TestAdminWalletMutationRequiresValidatedAdmin(t *testing.T) {
 	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "")
 	handler := newAuthzTestHandler()
-	body := `{"userId":"u-authz-1","amountPointsCents":500,"idempotencyKey":"authz-credit-1","reason":"test point adjustment"}`
+	body := `{"userId":"u-authz-1","amountPoints":500,"idempotencyKey":"authz-credit-1","reason":"test point adjustment"}`
 
 	// No admin -> rejected at the gate, before any points could move.
 	denyReq := httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", strings.NewReader(body))
@@ -93,7 +93,7 @@ func TestAdminWalletCreditRecordsAuditEntry(t *testing.T) {
 	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "")
 	handler := newAuthzTestHandler()
 
-	body := `{"userId":"u-audit-credit-1","amountPointsCents":1234,"idempotencyKey":"audit-credit-key-1","reason":"audit point adjustment"}`
+	body := `{"userId":"u-audit-credit-1","amountPoints":1234,"idempotencyKey":"audit-credit-key-1","reason":"audit point adjustment"}`
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", strings.NewReader(body))
 	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-auditor", "admin-auditor", "admin"))
 	res := httptest.NewRecorder()

@@ -103,7 +103,7 @@ func TestStandingsRespectRankingModes(t *testing.T) {
 	}
 	maxBoard, err := svc.CreateDefinition(CreateDefinitionRequest{
 		Name:        "Biggest Win",
-		MetricKey:   "profit_cents",
+		MetricKey:   "profit_points",
 		RankingMode: canonicalv1.LeaderboardRankingModeMax,
 		Order:       canonicalv1.LeaderboardOrderDescending,
 		Status:      canonicalv1.LeaderboardStatusActive,
@@ -210,8 +210,8 @@ func TestAccrueSettledBetPopulatesStakeAndProfitBoards(t *testing.T) {
 		PlayerID:         "u-score-1",
 		BetID:            "bet:score:001",
 		SettlementStatus: "settled_won",
-		StakeCents:       1200,
-		PayoutCents:      2400,
+		StakePoints:      1200,
+		PayoutPoints:     2400,
 		SettledAt:        time.Date(2026, time.April, 8, 17, 0, 0, 0, time.UTC),
 	})
 	if err != nil {
@@ -226,9 +226,9 @@ func TestAccrueSettledBetPopulatesStakeAndProfitBoards(t *testing.T) {
 			continue
 		}
 		switch definition.MetricKey {
-		case metricNetProfitCents:
+		case metricNetProfitPoints:
 			profitBoardID = definition.LeaderboardID
-		case metricStakeCents:
+		case metricStakePoints:
 			stakeBoardID = definition.LeaderboardID
 		}
 	}
@@ -274,8 +274,8 @@ func TestAccrueSettledBetPopulatesStakeAndProfitBoards(t *testing.T) {
 		PlayerID:         "u-score-1",
 		BetID:            "bet:score:001",
 		SettlementStatus: "settled_won",
-		StakeCents:       1200,
-		PayoutCents:      2400,
+		StakePoints:      1200,
+		PayoutPoints:     2400,
 		SettledAt:        time.Date(2026, time.April, 8, 17, 0, 0, 0, time.UTC),
 	})
 	if err != nil {

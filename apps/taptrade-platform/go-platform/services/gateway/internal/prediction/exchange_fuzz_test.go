@@ -50,17 +50,17 @@ func makeFuzzRequest(data []byte) PlaceOrderRequest {
 		PostOnly: data[11]&0x01 == 1,
 	}
 
-	// Optional priceCents — bit 1 of the same byte. 0..127 covers band
+	// Optional pricePoints — bit 1 of the same byte. 0..127 covers band
 	// + edges (0, 1, 99, 100, 127).
 	if data[11]&0x02 != 0 {
 		p := int(data[0] & 0x7F)
-		req.PriceCents = &p
+		req.PricePoints = &p
 	}
 
 	// Optional notional cap — bit 2.
 	if data[11]&0x04 != 0 {
 		n := int64(data[1]) * 100 // 0..25500¢
-		req.NotionalCapCents = &n
+		req.NotionalCapPoints = &n
 	}
 
 	// Optional client_order_id — bit 3, derived from later bytes if
@@ -94,8 +94,8 @@ func FuzzValidatePlaceOrderRequest(f *testing.F) {
 		// Sell without position → ErrInsufficientPosition.
 		{'m', 'k', 't', '3', 0, 1, 0, 0, 0, 0, 5, 0x02},
 		// Price band edge cases.
-		{'m', 'k', 't', '4', 0, 0, 0, 0, 0, 0, 1, 0x02},  // priceCents from data[0]&0x7F = 'm'&0x7F = 109
-		{'\x00', 'k', 't', '5', 0, 0, 0, 0, 0, 0, 1, 0x02}, // priceCents = 0 (out of band)
+		{'m', 'k', 't', '4', 0, 0, 0, 0, 0, 0, 1, 0x02},    // pricePoints from data[0]&0x7F = 'm'&0x7F = 109
+		{'\x00', 'k', 't', '5', 0, 0, 0, 0, 0, 0, 1, 0x02}, // pricePoints = 0 (out of band)
 		// Empty + tiny inputs.
 		{},
 		{0},
@@ -112,7 +112,7 @@ func FuzzValidatePlaceOrderRequest(f *testing.F) {
 	// both branches of the available-qty check.
 	position := &Position{
 		UserID: "fuzz-user", MarketID: "market-x", Side: OrderSideYes,
-		Quantity: 100, AvgPriceCents: 50,
+		Quantity: 100, AvgPricePoints: 50,
 	}
 
 	f.Fuzz(func(t *testing.T, data []byte) {

@@ -41,7 +41,7 @@ type PredictStanding struct {
 // volume × correctness formula defined in tiers.go.
 type PredictSettlementAccrual struct {
 	UserID         string
-	VolumeCents    int64
+	VolumePoints   int64
 	IsCorrect      bool
 	MarketID       string
 	TradeID        string
@@ -137,11 +137,11 @@ func buildSettlementInput(in PredictSettlementAccrual) (PredictAccrualInput, err
 	if in.UserID == "" || in.IdempotencyKey == "" {
 		return PredictAccrualInput{}, fmt.Errorf("loyalty: settlement accrual requires user_id + idempotency_key")
 	}
-	delta := PredictAccrualPoints(in.VolumeCents, in.IsCorrect)
+	delta := PredictAccrualPoints(in.VolumePoints, in.IsCorrect)
 	if delta <= 0 {
 		// Zero-volume trades earn nothing — shouldn't happen in practice but
 		// guards against accidental zero-accrual ledger churn.
-		return PredictAccrualInput{}, fmt.Errorf("loyalty: non-positive accrual delta for volume=%d", in.VolumeCents)
+		return PredictAccrualInput{}, fmt.Errorf("loyalty: non-positive accrual delta for volume=%d", in.VolumePoints)
 	}
 	reason := "settled trade (lost)"
 	if in.IsCorrect {

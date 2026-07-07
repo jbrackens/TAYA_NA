@@ -46,7 +46,7 @@ func TestSettlementPersistsPointLedgerCreditsThroughProductionWalletAdapter(t *t
 	if err != nil {
 		t.Fatalf("resolve market: %v", err)
 	}
-	if settlement.TotalPayoutCents != 2000 || settlement.PositionsSettled != 3 {
+	if settlement.TotalPayoutPoints != 2000 || settlement.PositionsSettled != 3 {
 		t.Fatalf("unexpected settlement summary: %+v", settlement)
 	}
 	if len(payouts) != 3 {
@@ -137,7 +137,7 @@ func seedClosedPointSettlementMarket(t *testing.T, db *sql.DB) (marketID, yesUse
 	} {
 		if _, err := db.Exec(
 			`INSERT INTO prediction_positions
-			 (user_id, market_id, side, quantity, avg_price_cents, total_cost_cents)
+			 (user_id, market_id, side, quantity, avg_price_points, total_cost_points)
 			 VALUES ($1, $2, $3, 10, 50, $4)`,
 			row.userID, marketID, row.side, row.cost,
 		); err != nil {
@@ -154,7 +154,7 @@ func assertSettlementWalletLedgerCredit(t *testing.T, db *sql.DB, userID string,
 	var amount, balance int64
 	var reason, idempotencyKey string
 	if err := db.QueryRow(
-		`SELECT amount_cents, balance_cents, idempotency_key, reason
+		`SELECT amount_points, balance_points, idempotency_key, reason
 		   FROM wallet_ledger
 		  WHERE user_id = $1 AND entry_type = 'credit'
 		    AND reason LIKE 'prediction settlement:%'

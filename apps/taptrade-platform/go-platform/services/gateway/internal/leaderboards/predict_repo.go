@@ -43,7 +43,7 @@ type PredictLBRepo interface {
 
 	RecomputeAccuracy(ctx context.Context, windowStart, windowEnd time.Time) (int, error)
 	RecomputeWeeklyPnL(ctx context.Context, windowStart, windowEnd time.Time) (int, error)
-	RecomputeSharpness(ctx context.Context, windowStart, windowEnd time.Time, minVolumeCents int64) (int, error)
+	RecomputeSharpness(ctx context.Context, windowStart, windowEnd time.Time, minVolumePoints int64) (int, error)
 	RecomputeCategoryChampions(ctx context.Context, categorySlug string, windowStart, windowEnd time.Time) (int, error)
 }
 
@@ -239,8 +239,8 @@ func (r *PredictSQLRepo) RecomputeAccuracy(ctx context.Context, windowStart, win
 			  (board_id, user_id, metric_value, rank, window_start, window_end, computed_at)
 			SELECT $1 AS board_id,
 			       user_id,
-			       100.0 * SUM(CASE WHEN payout_cents > 0 THEN 1 ELSE 0 END) / COUNT(*) AS accuracy_pct,
-			       RANK() OVER (ORDER BY 100.0 * SUM(CASE WHEN payout_cents > 0 THEN 1 ELSE 0 END) / COUNT(*) DESC)::int AS rank,
+			       100.0 * SUM(CASE WHEN payout_points > 0 THEN 1 ELSE 0 END) / COUNT(*) AS accuracy_pct,
+			       RANK() OVER (ORDER BY 100.0 * SUM(CASE WHEN payout_points > 0 THEN 1 ELSE 0 END) / COUNT(*) DESC)::int AS rank,
 			       $2::timestamptz AS window_start,
 			       $3::timestamptz AS window_end,
 			       now() AS computed_at
@@ -264,8 +264,8 @@ func (r *PredictSQLRepo) RecomputeWeeklyPnL(ctx context.Context, windowStart, wi
 			  (board_id, user_id, metric_value, rank, window_start, window_end, computed_at)
 			SELECT $1 AS board_id,
 			       user_id,
-			       SUM(pnl_cents)::numeric AS pnl_cents,
-			       RANK() OVER (ORDER BY SUM(pnl_cents) DESC)::int AS rank,
+			       SUM(pnl_points)::numeric AS pnl_points,
+			       RANK() OVER (ORDER BY SUM(pnl_points) DESC)::int AS rank,
 			       $2::timestamptz AS window_start,
 			       $3::timestamptz AS window_end,
 			       now() AS computed_at
@@ -282,22 +282,22 @@ func (r *PredictSQLRepo) RecomputeWeeklyPnL(ctx context.Context, windowStart, wi
 	})
 }
 
-func (r *PredictSQLRepo) RecomputeSharpness(ctx context.Context, windowStart, windowEnd time.Time, minVolumeCents int64) (int, error) {
+func (r *PredictSQLRepo) RecomputeSharpness(ctx context.Context, windowStart, windowEnd time.Time, minVolumePoints int64) (int, error) {
 	return r.recomputeTx(ctx, PredictBoardSharpness, windowStart, windowEnd, func(tx *sql.Tx) (int, error) {
-		// Volume for a settled position = entry_price_cents × quantity.
+		// Volume for a settled position = entry_price_points × quantity.
 		// Sharpness = P&L ÷ volume. Floor on volume + count keeps small-sample
 		// noise off the board.
 		res, err := tx.ExecContext(ctx, `
 			WITH agg AS (
 				SELECT user_id,
-				       SUM(pnl_cents) AS pnl_total,
-				       SUM(entry_price_cents::bigint * quantity::bigint) AS volume_total,
+				       SUM(pnl_points) AS pnl_total,
+				       SUM(entry_price_points::bigint * quantity::bigint) AS volume_total,
 				       COUNT(*) AS settled_count
 				FROM prediction_payouts
 				WHERE paid_at >= $2 AND paid_at < $3
 				GROUP BY user_id
 				HAVING COUNT(*) >= 5
-				   AND SUM(entry_price_cents::bigint * quantity::bigint) >= $4
+				   AND SUM(entry_price_points::bigint * quantity::bigint) >= $4
 			)
 			INSERT INTO leaderboard_snapshots
 			  (board_id, user_id, metric_value, rank, window_start, window_end, computed_at)
@@ -309,7 +309,7 @@ func (r *PredictSQLRepo) RecomputeSharpness(ctx context.Context, windowStart, wi
 			       $3::timestamptz,
 			       now()
 			FROM agg`,
-			PredictBoardSharpness, windowStart, windowEnd, minVolumeCents)
+			PredictBoardSharpness, windowStart, windowEnd, minVolumePoints)
 		if err != nil {
 			return 0, err
 		}
@@ -329,8 +329,8 @@ func (r *PredictSQLRepo) RecomputeCategoryChampions(ctx context.Context, categor
 			  (board_id, user_id, metric_value, rank, window_start, window_end, computed_at)
 			SELECT $1 AS board_id,
 			       pp.user_id,
-			       SUM(pp.pnl_cents)::numeric AS pnl_cents,
-			       RANK() OVER (ORDER BY SUM(pp.pnl_cents) DESC)::int AS rank,
+			       SUM(pp.pnl_points)::numeric AS pnl_points,
+			       RANK() OVER (ORDER BY SUM(pp.pnl_points) DESC)::int AS rank,
 			       $3::timestamptz,
 			       $4::timestamptz,
 			       now()

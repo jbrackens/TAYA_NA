@@ -22,8 +22,8 @@ import (
 
 // benchOrder builds a resting limit order at the given price+qty. The ID is
 // derived from a counter so trades reference distinct makers.
-func benchOrder(id string, action OrderAction, side OrderSide, priceCents, qty int) Order {
-	p := priceCents
+func benchOrder(id string, action OrderAction, side OrderSide, pricePoints, qty int) Order {
+	p := pricePoints
 	return Order{
 		ID:                id,
 		UserID:            "maker-" + id,
@@ -31,7 +31,7 @@ func benchOrder(id string, action OrderAction, side OrderSide, priceCents, qty i
 		Side:              side,
 		Action:            action,
 		OrderType:         OrderTypeLimit,
-		PriceCents:        &p,
+		PricePoints:       &p,
 		Quantity:          qty,
 		FilledQuantity:    0,
 		RemainingQuantity: qty,
@@ -76,7 +76,7 @@ func BenchmarkBuildPlan_FullCross(b *testing.B) {
 				Side:              OrderSideYes,
 				Action:            OrderActionBuy,
 				OrderType:         OrderTypeLimit,
-				PriceCents:        &takerPrice,
+				PricePoints:       &takerPrice,
 				Quantity:          depth * 10,
 				RemainingQuantity: depth * 10,
 				Status:            OrderStatusPending,
@@ -118,7 +118,7 @@ func BenchmarkBuildPlan_NoMatch(b *testing.B) {
 		Side:              OrderSideYes,
 		Action:            OrderActionBuy,
 		OrderType:         OrderTypeLimit,
-		PriceCents:        &takerPrice,
+		PricePoints:       &takerPrice,
 		Quantity:          100,
 		RemainingQuantity: 100,
 		Status:            OrderStatusPending,
@@ -170,7 +170,7 @@ func BenchmarkBuildPlan_Issuance(b *testing.B) {
 				Side:              OrderSideYes,
 				Action:            OrderActionBuy,
 				OrderType:         OrderTypeLimit,
-				PriceCents:        &takerPrice,
+				PricePoints:       &takerPrice,
 				Quantity:          depth * 10,
 				RemainingQuantity: depth * 10,
 				Status:            OrderStatusPending,

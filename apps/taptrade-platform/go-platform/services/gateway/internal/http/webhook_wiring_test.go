@@ -28,7 +28,7 @@ func (c *captureEnqueuer) Enqueue(_ context.Context, eventType string, data json
 
 func TestEnqueueOrderFilledEmitsEvent(t *testing.T) {
 	enq := &captureEnqueuer{}
-	trade := &prediction.Trade{ID: "t1", MarketID: "m1", Side: "yes", PriceCents: 60, Quantity: 10, TradedAt: time.Now()}
+	trade := &prediction.Trade{ID: "t1", MarketID: "m1", Side: "yes", PricePoints: 60, Quantity: 10, TradedAt: time.Now()}
 
 	enqueueOrderFilled(context.Background(), enq, trade)
 

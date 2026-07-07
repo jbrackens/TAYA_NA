@@ -289,10 +289,10 @@ func validateLeaderboardEventMetadata(metadata map[string]string) error {
 		switch strings.TrimSpace(key) {
 		case "betId":
 			return httpx.BadRequest("leaderboard event metadata must use predictionId", map[string]any{"field": "metadata.predictionId"})
-		case "stakeCents":
-			return httpx.BadRequest("leaderboard event metadata must use pointVolumeCents", map[string]any{"field": "metadata.pointVolumeCents"})
-		case "payoutCents":
-			return httpx.BadRequest("leaderboard event metadata must use settlementPointsCents", map[string]any{"field": "metadata.settlementPointsCents"})
+		case "stakePoints":
+			return httpx.BadRequest("leaderboard event metadata must use pointVolumePoints", map[string]any{"field": "metadata.pointVolumePoints"})
+		case "payoutPoints":
+			return httpx.BadRequest("leaderboard event metadata must use settlementPoints", map[string]any{"field": "metadata.settlementPoints"})
 		case "sourceType":
 			return httpx.BadRequest("leaderboard event metadata must use activitySourceType", map[string]any{"field": "metadata.activitySourceType"})
 		case "sourceId":
@@ -304,7 +304,7 @@ func validateLeaderboardEventMetadata(metadata map[string]string) error {
 
 func validateLeaderboardLaunchContract(request leaderboardDefinitionRequest) error {
 	switch strings.TrimSpace(request.MetricKey) {
-	case "net_profit_cents", "stake_cents":
+	case "net_profit_points", "stake_points":
 		return httpx.BadRequest("leaderboard metricKey must use point-native metric aliases", map[string]any{"field": "metricKey"})
 	}
 	if unit := strings.TrimSpace(request.Unit); unit != "" && !strings.EqualFold(unit, "PTS") {
@@ -451,10 +451,10 @@ func leaderboardMetadataPayload(in map[string]string) map[string]string {
 		switch strings.TrimSpace(key) {
 		case "betId":
 			out["predictionId"] = leaderboardActivitySourceID(value)
-		case "stakeCents":
-			out["pointVolumeCents"] = value
-		case "payoutCents":
-			out["settlementPointsCents"] = value
+		case "stakePoints":
+			out["pointVolumePoints"] = value
+		case "payoutPoints":
+			out["settlementPoints"] = value
 		case "sourceType":
 			out["activitySourceType"] = leaderboardActivitySourceType(value)
 		case "sourceId":
@@ -496,9 +496,9 @@ func leaderboardActivitySourceID(sourceID string) string {
 
 func pointLeaderboardMetricKey(metricKey string) string {
 	switch strings.TrimSpace(metricKey) {
-	case "net_profit_cents":
+	case "net_profit_points":
 		return "net_points"
-	case "stake_cents":
+	case "stake_points":
 		return "point_volume"
 	default:
 		return strings.TrimSpace(metricKey)
@@ -508,9 +508,9 @@ func pointLeaderboardMetricKey(metricKey string) string {
 func serviceLeaderboardMetricKey(metricKey string) string {
 	switch strings.TrimSpace(metricKey) {
 	case "net_points":
-		return "net_profit_cents"
+		return "net_profit_points"
 	case "point_volume":
-		return "stake_cents"
+		return "stake_points"
 	default:
 		return strings.TrimSpace(metricKey)
 	}

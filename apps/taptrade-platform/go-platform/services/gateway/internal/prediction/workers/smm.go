@@ -1,6 +1,6 @@
 // Package workers — SMM (Synthetic Market Maker).
 //
-// PURPOSE
+// # PURPOSE
 //
 // The CLOB launches into an empty book because no external market makers
 // have signed agreements yet (HUMAN_ONLY_ITEMS.md #1). An empty book means
@@ -16,7 +16,7 @@
 // on item #1). When external MMs sign, the SMM steps back or is disabled
 // per-market.
 //
-// DESIGN
+// # DESIGN
 //
 // **Identity.** The SMM trades as `user-bot` — a seeded user with $10K
 // starting balance and a wallet/punter row already in place. No new
@@ -29,20 +29,20 @@
 // SMM bypasses the engine.
 //
 // **Quoting.** For each open order_book market on each tick:
-//   1. Read the market's current yes_price_cents as the fair-price anchor.
-//   2. Compute target bid = max(MinTick, fair - halfSpread).
-//      Compute target ask = min(MaxTick, fair + halfSpread).
-//   3. Look at the SMM's existing open orders on this market.
-//   4. Cancel any SMM order whose price has drifted > maxDriftCents from
-//      its current target. Keeps the book aligned without spamming
-//      cancel+repost on every tick.
-//   5. If no SMM order exists at the target bid, post a Buy YES limit
-//      at bid price for `depthQty` shares.
-//   6. If no SMM order exists at the target ask, post a Buy NO limit
-//      at (100 - ask) price for `depthQty` shares. (The exchange
-//      engine's complementary-issuance path then matches user Buy YES
-//      against this Buy NO, minting a YES+NO pair — the SMM ends up
-//      with NO inventory and the user gets YES.)
+//  1. Read the market's current yes_price_points as the fair-price anchor.
+//  2. Compute target bid = max(MinTick, fair - halfSpread).
+//     Compute target ask = min(MaxTick, fair + halfSpread).
+//  3. Look at the SMM's existing open orders on this market.
+//  4. Cancel any SMM order whose price has drifted > maxDriftPoints from
+//     its current target. Keeps the book aligned without spamming
+//     cancel+repost on every tick.
+//  5. If no SMM order exists at the target bid, post a Buy YES limit
+//     at bid price for `depthQty` shares.
+//  6. If no SMM order exists at the target ask, post a Buy NO limit
+//     at (100 - ask) price for `depthQty` shares. (The exchange
+//     engine's complementary-issuance path then matches user Buy YES
+//     against this Buy NO, minting a YES+NO pair — the SMM ends up
+//     with NO inventory and the user gets YES.)
 //
 // We deliberately don't post Sell YES / Sell NO orders in Phase 1: that
 // would require the SMM to hold inventory first, and the cold-start
@@ -100,9 +100,9 @@ type SMMConfig struct {
 	Enabled           bool
 	UserID            string // wallet/punter id, defaults to "user-bot"
 	TickInterval      time.Duration
-	DepthCents        int64 // max committed cash per market per side
-	HalfSpreadCents   int   // 1¢ → 2¢ spread (bid at mid-1, ask at mid+1)
-	MaxDriftCents     int   // re-quote if our resting price has drifted > this from current target
+	DepthPoints       int64 // max committed cash per market per side
+	HalfSpreadPoints  int   // 1¢ → 2¢ spread (bid at mid-1, ask at mid+1)
+	MaxDriftPoints    int   // re-quote if our resting price has drifted > this from current target
 	MaxMarketsPerTick int   // safety cap; 0 = no limit
 	// MaxPositionQty caps total accumulated YES or NO inventory the bot
 	// can hold on a single market. When the bot's existing position on a
@@ -119,9 +119,9 @@ func DefaultSMMConfig() SMMConfig {
 		Enabled:           false,
 		UserID:            "user-bot",
 		TickInterval:      30 * time.Second,
-		DepthCents:        5000,
-		HalfSpreadCents:   3,
-		MaxDriftCents:     2,
+		DepthPoints:       5000,
+		HalfSpreadPoints:  3,
+		MaxDriftPoints:    2,
 		MaxMarketsPerTick: 0,
 		// Default 500 shares per side per market. At a 50¢ mid that's
 		// $250 of one-sided exposure (worst case if the market crashes
@@ -148,17 +148,17 @@ func NewSMMFromEnv(svc *prediction.Service, repo prediction.Repository) *SMM {
 	}
 	if v := os.Getenv("SMM_DEPTH_CENTS"); v != "" {
 		if n, err := strconv.ParseInt(v, 10, 64); err == nil && n > 0 {
-			cfg.DepthCents = n
+			cfg.DepthPoints = n
 		}
 	}
 	if v := os.Getenv("SMM_HALF_SPREAD_CENTS"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n >= 1 && n <= 49 {
-			cfg.HalfSpreadCents = n
+			cfg.HalfSpreadPoints = n
 		}
 	}
 	if v := os.Getenv("SMM_MAX_DRIFT_CENTS"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n >= 1 && n <= 50 {
-			cfg.MaxDriftCents = n
+			cfg.MaxDriftPoints = n
 		}
 	}
 	if v := os.Getenv("SMM_MAX_MARKETS_PER_TICK"); v != "" {
@@ -200,9 +200,9 @@ func (s *SMM) Run(ctx context.Context) {
 	slog.Info("smm: starting",
 		"user_id", s.cfg.UserID,
 		"tick_interval", s.cfg.TickInterval,
-		"depth_cents", s.cfg.DepthCents,
-		"half_spread_cents", s.cfg.HalfSpreadCents,
-		"max_drift_cents", s.cfg.MaxDriftCents,
+		"depth_points", s.cfg.DepthPoints,
+		"half_spread_points", s.cfg.HalfSpreadPoints,
+		"max_drift_points", s.cfg.MaxDriftPoints,
 		"max_position_qty", s.cfg.MaxPositionQty,
 	)
 
@@ -272,17 +272,17 @@ func (s *SMM) tick(ctx context.Context) {
 // risk control (volatility halt, inventory skew, drawdown halt) would
 // hook in — keep the steps independent so guards can short-circuit.
 func (s *SMM) quoteMarket(ctx context.Context, m *prediction.Market) error {
-	fair := m.YesPriceCents
-	if fair < prediction.MinTickPriceCents+s.cfg.HalfSpreadCents ||
-		fair > prediction.MaxTickPriceCents-s.cfg.HalfSpreadCents {
+	fair := m.YesPricePoints
+	if fair < prediction.MinTickPricePoints+s.cfg.HalfSpreadPoints ||
+		fair > prediction.MaxTickPricePoints-s.cfg.HalfSpreadPoints {
 		// Market is at the edge of the price band. Quoting symmetrically
 		// would put one of our orders outside [1,99]. Skip for now;
 		// Phase 2 can implement asymmetric quoting at the edges.
 		return nil
 	}
 
-	bidYesPrice := fair - s.cfg.HalfSpreadCents             // Buy YES limit at this price
-	bidNoComplementary := prediction.ParPriceCents - (fair + s.cfg.HalfSpreadCents) // Buy NO price so YES+NO sum = 100+spread
+	bidYesPrice := fair - s.cfg.HalfSpreadPoints                                      // Buy YES limit at this price
+	bidNoComplementary := prediction.ParPricePoints - (fair + s.cfg.HalfSpreadPoints) // Buy NO price so YES+NO sum = 100+spread
 
 	// Look at the SMM's existing open orders on this market. The repo
 	// already supports filtering by user + market via ListOrders.
@@ -301,16 +301,16 @@ func (s *SMM) quoteMarket(ctx context.Context, m *prediction.Market) error {
 	hasGoodYesBid := false
 	hasGoodNoBid := false
 	for _, o := range open {
-		if o.PriceCents == nil {
+		if o.PricePoints == nil {
 			continue
 		}
-		drift := *o.PriceCents - bidYesPrice
+		drift := *o.PricePoints - bidYesPrice
 		if drift < 0 {
 			drift = -drift
 		}
 		switch o.Side {
 		case prediction.OrderSideYes:
-			if drift <= s.cfg.MaxDriftCents {
+			if drift <= s.cfg.MaxDriftPoints {
 				hasGoodYesBid = true
 				continue
 			}
@@ -320,11 +320,11 @@ func (s *SMM) quoteMarket(ctx context.Context, m *prediction.Market) error {
 					"order_id", o.ID, "error", cerr)
 			}
 		case prediction.OrderSideNo:
-			driftNo := *o.PriceCents - bidNoComplementary
+			driftNo := *o.PricePoints - bidNoComplementary
 			if driftNo < 0 {
 				driftNo = -driftNo
 			}
-			if driftNo <= s.cfg.MaxDriftCents {
+			if driftNo <= s.cfg.MaxDriftPoints {
 				hasGoodNoBid = true
 				continue
 			}
@@ -355,7 +355,7 @@ func (s *SMM) quoteMarket(ctx context.Context, m *prediction.Market) error {
 			slog.Info("smm: skip yes — position cap",
 				"market", m.Ticker, "position", yesPosQty, "cap", s.cfg.MaxPositionQty)
 		} else {
-			qty := int(s.cfg.DepthCents / int64(bidYesPrice))
+			qty := int(s.cfg.DepthPoints / int64(bidYesPrice))
 			if qty > 0 {
 				if err := s.placeBuyLimit(ctx, m.ID, prediction.OrderSideYes, bidYesPrice, qty); err != nil {
 					slog.Warn("smm: place yes bid failed",
@@ -370,7 +370,7 @@ func (s *SMM) quoteMarket(ctx context.Context, m *prediction.Market) error {
 			slog.Info("smm: skip no — position cap",
 				"market", m.Ticker, "position", noPosQty, "cap", s.cfg.MaxPositionQty)
 		} else {
-			qty := int(s.cfg.DepthCents / int64(bidNoComplementary))
+			qty := int(s.cfg.DepthPoints / int64(bidNoComplementary))
 			if qty > 0 {
 				if err := s.placeBuyLimit(ctx, m.ID, prediction.OrderSideNo, bidNoComplementary, qty); err != nil {
 					slog.Warn("smm: place no bid failed",
@@ -409,15 +409,15 @@ func (s *SMM) botPositionQtys(ctx context.Context, marketID string) (yes int, no
 // is deterministic per (market, side, price, tick-bucket) so a retry of
 // the same tick doesn't double-place — the bucket changes once per
 // interval, so the next tick gets a fresh key.
-func (s *SMM) placeBuyLimit(ctx context.Context, marketID string, side prediction.OrderSide, priceCents, qty int) error {
+func (s *SMM) placeBuyLimit(ctx context.Context, marketID string, side prediction.OrderSide, pricePoints, qty int) error {
 	bucket := time.Now().Unix() / int64(s.cfg.TickInterval.Seconds())
-	idem := fmt.Sprintf("smm:%s:%s:%s:%d:%d", s.cfg.UserID, marketID, side, priceCents, bucket)
+	idem := fmt.Sprintf("smm:%s:%s:%s:%d:%d", s.cfg.UserID, marketID, side, pricePoints, bucket)
 	req := prediction.PlaceOrderRequest{
 		MarketID:        marketID,
 		Side:            side,
 		Action:          prediction.OrderActionBuy,
 		OrderType:       prediction.OrderTypeLimit,
-		PriceCents:      &priceCents,
+		PricePoints:     &pricePoints,
 		Quantity:        qty,
 		TimeInForce:     prediction.TIFGTC,
 		PostOnly:        true,                            // never cross with a taker order
@@ -462,5 +462,5 @@ func (s *SMM) cancelAllBotOrders(ctx context.Context) error {
 	return nil
 }
 
-func ptrStr(s string) *string { return &s }
+func ptrStr(s string) *string                                         { return &s }
 func ptrOrderStatus(s prediction.OrderStatus) *prediction.OrderStatus { return &s }

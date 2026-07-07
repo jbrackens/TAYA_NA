@@ -20,17 +20,17 @@ type disputeNotifier interface {
 }
 
 type disputeResponse struct {
-	ID              string     `json:"id"`
-	MarketID        string     `json:"marketId"`
-	UserID          string     `json:"userId"`
-	Reason          string     `json:"reason"`
-	Status          string     `json:"status"`
-	ResolutionNote  *string    `json:"resolutionNote,omitempty"`
-	BondPointsCents int64      `json:"bondPointsCents"`
-	Unit            string     `json:"unit"`
-	CreatedAt       time.Time  `json:"createdAt"`
-	ResolvedAt      *time.Time `json:"resolvedAt,omitempty"`
-	ResolvedBy      *string    `json:"resolvedBy,omitempty"`
+	ID             string     `json:"id"`
+	MarketID       string     `json:"marketId"`
+	UserID         string     `json:"userId"`
+	Reason         string     `json:"reason"`
+	Status         string     `json:"status"`
+	ResolutionNote *string    `json:"resolutionNote,omitempty"`
+	BondPoints     int64      `json:"bondPoints"`
+	Unit           string     `json:"unit"`
+	CreatedAt      time.Time  `json:"createdAt"`
+	ResolvedAt     *time.Time `json:"resolvedAt,omitempty"`
+	ResolvedBy     *string    `json:"resolvedBy,omitempty"`
 }
 
 func disputePayload(d prediction.Dispute) disputeResponse {
@@ -40,17 +40,17 @@ func disputePayload(d prediction.Dispute) disputeResponse {
 		resolutionNote = &redacted
 	}
 	return disputeResponse{
-		ID:              d.ID,
-		MarketID:        d.MarketID,
-		UserID:          d.UserID,
-		Reason:          redactLaunchProhibitedUserText(d.Reason),
-		Status:          d.Status,
-		ResolutionNote:  resolutionNote,
-		BondPointsCents: d.BondCents,
-		Unit:            "PTS",
-		CreatedAt:       d.CreatedAt,
-		ResolvedAt:      d.ResolvedAt,
-		ResolvedBy:      d.ResolvedBy,
+		ID:             d.ID,
+		MarketID:       d.MarketID,
+		UserID:         d.UserID,
+		Reason:         redactLaunchProhibitedUserText(d.Reason),
+		Status:         d.Status,
+		ResolutionNote: resolutionNote,
+		BondPoints:     d.BondPoints,
+		Unit:           "PTS",
+		CreatedAt:      d.CreatedAt,
+		ResolvedAt:     d.ResolvedAt,
+		ResolvedBy:     d.ResolvedBy,
 	}
 }
 

@@ -14,8 +14,8 @@ import (
 // point-wallet/settlement audit is visible in the office.
 func TestProviderOpsAuditSurfacesInAdminLogs(t *testing.T) {
 	recordProviderOpsAuditAction("admin-surf-1", "wallet.credit", "u-surf-1", map[string]any{
-		"amountPointsCents": int64(999),
-		"idempotencyKey":    "surf-key-1",
+		"amountPoints":   int64(999),
+		"idempotencyKey": "surf-key-1",
 	})
 
 	find := func(items []prediction.AdminAuditLog) *prediction.AdminAuditLog {
@@ -51,7 +51,7 @@ func TestProviderOpsAuditSurfacesInAdminLogs(t *testing.T) {
 
 func TestProviderOpsAuditEntryOmitsRetiredPromoFields(t *testing.T) {
 	recordProviderOpsAuditAction("admin-promo-field-1", "wallet.credit", "u-promo-field-1", map[string]any{
-		"amountPointsCents": int64(100),
+		"amountPoints": int64(100),
 	})
 
 	entries := providerOpsAuditSnapshot()
@@ -62,7 +62,7 @@ func TestProviderOpsAuditEntryOmitsRetiredPromoFields(t *testing.T) {
 	if err != nil {
 		t.Fatalf("marshal provider-ops audit entry: %v", err)
 	}
-	for _, retired := range []string{"freebetId", "oddsBoostId", "freebetAppliedCents"} {
+	for _, retired := range []string{"freebetId", "oddsBoostId", "freebetAppliedPoints"} {
 		if strings.Contains(string(raw), retired) {
 			t.Fatalf("provider-ops audit entry leaked retired field %s in %s", retired, string(raw))
 		}

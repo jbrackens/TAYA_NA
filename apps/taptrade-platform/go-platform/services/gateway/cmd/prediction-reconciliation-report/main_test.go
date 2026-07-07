@@ -26,16 +26,16 @@ func TestDefaultFixtureReconcilesPointNativeLedger(t *testing.T) {
 func TestFixtureRejectsRetiredMoneyAndBetFields(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "retired.json")
-	body := `{"cases":[{"name":"bad","userId":"u-1","marketId":"m-1","stakeCents":100,"ledger":[]}]}`
+	body := `{"cases":[{"name":"bad","userId":"u-1","marketId":"m-1","stakePoints":100,"ledger":[]}]}`
 	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
 		t.Fatalf("write fixture: %v", err)
 	}
 	_, err := loadCases(path)
 	if err == nil {
-		t.Fatal("expected retired stakeCents field to be rejected")
+		t.Fatal("expected retired stakePoints field to be rejected")
 	}
-	if !strings.Contains(err.Error(), "stakeCents") {
-		t.Fatalf("expected stakeCents error, got %v", err)
+	if !strings.Contains(err.Error(), "stakePoints") {
+		t.Fatalf("expected stakePoints error, got %v", err)
 	}
 }
 
@@ -52,7 +52,7 @@ func TestReportUsesPointNativeVocabulary(t *testing.T) {
 	if !strings.Contains(report, "Prediction Point Reconciliation Report") {
 		t.Fatalf("expected point reconciliation title, got %s", report)
 	}
-	for _, retired := range []string{"amountCents", "stakeCents", "betId", "deposit", "withdraw", "cashier", "crypto", "USD", "$"} {
+	for _, retired := range []string{"amountPoints", "stakePoints", "betId", "deposit", "withdraw", "cashier", "crypto", "USD", "$"} {
 		if strings.Contains(report, retired) {
 			t.Fatalf("report must not include retired money vocabulary %q: %s", retired, report)
 		}
@@ -67,12 +67,12 @@ func TestReconciliationFixtureFollowsLaunchGatewayContracts(t *testing.T) {
 
 	for _, needle := range []string{
 		"PlaceOrderRequest",
-		"pricePointsCents",
-		"notionalCapPointsCents",
-		"amountPointsCents",
+		"pricePoints",
+		"notionalCapPoints",
+		"amountPoints",
 		"pointDisbursements",
-		"settlementPointsCents",
-		"totalSettlementPointsCents",
+		"settlementPoints",
+		"totalSettlementPoints",
 	} {
 		if !strings.Contains(openapi, needle) {
 			t.Fatalf("launch OpenAPI must expose %s for point reconciliation proof", needle)
@@ -81,10 +81,10 @@ func TestReconciliationFixtureFollowsLaunchGatewayContracts(t *testing.T) {
 
 	for _, needle := range []string{
 		`json:"pointDisbursements"`,
-		`json:"totalSettlementPointsCents"`,
-		`json:"settlementPointsCents"`,
-		`"pricePointsCents"`,
-		`"notionalCapPointsCents"`,
+		`json:"totalSettlementPoints"`,
+		`json:"settlementPoints"`,
+		`"pricePoints"`,
+		`"notionalCapPoints"`,
 	} {
 		if !strings.Contains(predictionHandlers, needle) {
 			t.Fatalf("prediction handlers must expose %s for point reconciliation proof", needle)
@@ -92,8 +92,8 @@ func TestReconciliationFixtureFollowsLaunchGatewayContracts(t *testing.T) {
 	}
 
 	for _, needle := range []string{
-		`json:"amountPointsCents"`,
-		`"amountPointsCents":  entry.AmountCents`,
+		`json:"amountPoints"`,
+		`"amountPoints":  entry.AmountPoints`,
 		`"prediction_order"`,
 	} {
 		if !strings.Contains(walletHandlers, needle) {
@@ -102,7 +102,7 @@ func TestReconciliationFixtureFollowsLaunchGatewayContracts(t *testing.T) {
 	}
 
 	for _, needle := range []string{
-		`"amountPointsCents"`,
+		`"amountPoints"`,
 		`"prediction_order"`,
 		`"prediction_settlement"`,
 		`"unit": "PTS"`,

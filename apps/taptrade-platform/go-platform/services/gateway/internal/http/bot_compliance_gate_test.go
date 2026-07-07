@@ -123,12 +123,12 @@ func TestBotOrderPathUsesPointSafeOrderDenialContract(t *testing.T) {
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
 	body, _ := json.Marshal(map[string]any{
-		"marketId":         "mkt-1",
-		"side":             prediction.OrderSideYes,
-		"action":           prediction.OrderActionBuy,
-		"orderType":        prediction.OrderTypeLimit,
-		"pricePointsCents": 50,
-		"quantity":         10,
+		"marketId":    "mkt-1",
+		"side":        prediction.OrderSideYes,
+		"action":      prediction.OrderActionBuy,
+		"orderType":   prediction.OrderTypeLimit,
+		"pricePoints": 50,
+		"quantity":    10,
 	})
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/bot/orders", bytes.NewReader(body))
@@ -199,24 +199,26 @@ func TestBotOrderPathUsesSessionOrderHTTPValidation(t *testing.T) {
 				"orderType": prediction.OrderTypeMarket,
 				"quantity":  1,
 			},
-			wantField: "notionalCapPointsCents",
-			wantText:  "market buy orders require notionalCapPointsCents > 0",
+			wantField: "notionalCapPoints",
+			wantText:  "market buy orders require notionalCapPoints > 0",
 		},
 		{
 			name: "invalid self match action",
 			req: map[string]any{
-				"marketId":         "missing-market",
-				"side":             prediction.OrderSideYes,
-				"action":           prediction.OrderActionBuy,
-				"orderType":        prediction.OrderTypeLimit,
-				"pricePointsCents": 50,
-				"quantity":         1,
-				"selfMatchAction":  "take_both",
+				"marketId":        "missing-market",
+				"side":            prediction.OrderSideYes,
+				"action":          prediction.OrderActionBuy,
+				"orderType":       prediction.OrderTypeLimit,
+				"pricePoints":     50,
+				"quantity":        1,
+				"selfMatchAction": "take_both",
 			},
 			wantField: "selfMatchAction",
 			wantText:  "selfMatchAction must be one of cancel_taker, cancel_maker, cancel_both",
 		},
 		{
+			// Points unit-model (2026-07-07): the retired request key is the
+			// cents-era priceCents; pricePoints is the accepted canonical key.
 			name: "retired price alias",
 			req: map[string]any{
 				"marketId":   "missing-market",
@@ -226,10 +228,12 @@ func TestBotOrderPathUsesSessionOrderHTTPValidation(t *testing.T) {
 				"priceCents": 50,
 				"quantity":   1,
 			},
-			wantField: "pricePointsCents",
-			wantText:  "use pricePointsCents for limit order prices",
+			wantField: "pricePoints",
+			wantText:  "use pricePoints for limit order prices",
 		},
 		{
+			// Points unit-model (2026-07-07): the retired request key is the
+			// cents-era notionalCapCents; notionalCapPoints is canonical.
 			name: "retired cap alias",
 			req: map[string]any{
 				"marketId":         "missing-market",
@@ -239,8 +243,8 @@ func TestBotOrderPathUsesSessionOrderHTTPValidation(t *testing.T) {
 				"notionalCapCents": 500,
 				"quantity":         1,
 			},
-			wantField: "notionalCapPointsCents",
-			wantText:  "use notionalCapPointsCents for market buy caps",
+			wantField: "notionalCapPoints",
+			wantText:  "use notionalCapPoints for market buy caps",
 		},
 	}
 

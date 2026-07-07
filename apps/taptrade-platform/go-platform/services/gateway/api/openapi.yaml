@@ -41,34 +41,34 @@ components:
         description: { type: string }
         status: { type: string, enum: [unopened, open, halted, closed, settled, voided, proposed_resolution, disputed] }
         result: { type: string, enum: [yes, no], nullable: true }
-        yesPricePointsCents: { type: integer, minimum: 1, maximum: 99, description: Preferred point-native YES price on the 0-100 point-cent probability scale. }
-        noPricePointsCents: { type: integer, minimum: 1, maximum: 99, description: Preferred point-native NO price on the 0-100 point-cent probability scale. }
-        lastTradePricePointsCents: { type: integer, nullable: true, description: Preferred point-native last fill price in point-cents. }
-        volumePointsCents: { type: integer, format: int64, description: Preferred point-native traded activity total in gameplay point-cents. }
-        openInterestPointsCents: { type: integer, format: int64, description: Preferred point-native open-interest total in gameplay point-cents. }
-        liquidityPointsCents: { type: integer, format: int64, description: Preferred point-native visible liquidity in gameplay point-cents. }
-        ammSubsidyPointsCents: { type: integer, format: int64, description: Preferred point-native AMM fixture subsidy in gameplay point-cents. }
-        collateralPoolPointsCents: { type: integer, format: int64, description: Preferred point-native collateral pool in gameplay point-cents. }
-        settlementPoolPointsCents: { type: integer, format: int64, description: Preferred point-native settlement pool in gameplay point-cents. }
-        bestYesBidPointsCents: { type: integer, nullable: true, description: Preferred point-native best YES bid in point-cents. }
-        bestYesAskPointsCents: { type: integer, nullable: true, description: Preferred point-native best YES ask in point-cents. }
-        bestNoBidPointsCents: { type: integer, nullable: true, description: Preferred point-native best NO bid in point-cents. }
-        bestNoAskPointsCents: { type: integer, nullable: true, description: Preferred point-native best NO ask in point-cents. }
+        yesPricePoints: { type: integer, minimum: 1, maximum: 99, description: Preferred point-native YES price on the 0-100 point-cent probability scale. }
+        noPricePoints: { type: integer, minimum: 1, maximum: 99, description: Preferred point-native NO price on the 0-100 point-cent probability scale. }
+        lastTradePricePoints: { type: integer, nullable: true, description: Preferred point-native last fill price in point-cents. }
+        volumePoints: { type: integer, format: int64, description: Preferred point-native traded activity total in gameplay point-cents. }
+        openInterestPoints: { type: integer, format: int64, description: Preferred point-native open-interest total in gameplay point-cents. }
+        liquidityPoints: { type: integer, format: int64, description: Preferred point-native visible liquidity in gameplay point-cents. }
+        ammSubsidyPoints: { type: integer, format: int64, description: Preferred point-native AMM fixture subsidy in gameplay point-cents. }
+        collateralPoolPoints: { type: integer, format: int64, description: Preferred point-native collateral pool in gameplay point-cents. }
+        settlementPoolPoints: { type: integer, format: int64, description: Preferred point-native settlement pool in gameplay point-cents. }
+        bestYesBidPoints: { type: integer, nullable: true, description: Preferred point-native best YES bid in point-cents. }
+        bestYesAskPoints: { type: integer, nullable: true, description: Preferred point-native best YES ask in point-cents. }
+        bestNoBidPoints: { type: integer, nullable: true, description: Preferred point-native best NO bid in point-cents. }
+        bestNoAskPoints: { type: integer, nullable: true, description: Preferred point-native best NO ask in point-cents. }
         unit: { type: string, enum: [PTS], description: Gameplay point unit for preferred point-native fields. }
         feeRateBps: { type: integer }
         executionMode: { type: string, enum: [order_book, amm] }
         closeAt: { type: string, format: date-time }
-      required: [id, eventId, ticker, title, status, yesPricePointsCents, noPricePointsCents, unit]
+      required: [id, eventId, ticker, title, status, yesPricePoints, noPricePoints, unit]
     PricePoint:
       type: object
       description: Market price-history bucket. Fields use gameplay point-cents and reading history does not move points.
       properties:
         bucketStart: { type: string, format: date-time }
-        yesPricePointsCents: { type: integer, minimum: 1, maximum: 99, description: Point-native YES price for the bucket on the 0-100 point-cent probability scale. }
+        yesPricePoints: { type: integer, minimum: 1, maximum: 99, description: Point-native YES price for the bucket on the 0-100 point-cent probability scale. }
         tradeCount: { type: integer, description: Number of fills represented in the bucket. }
-        volumePointsCents: { type: integer, format: int64, description: Point-native fill activity represented by this bucket in gameplay point-cents. }
+        volumePoints: { type: integer, format: int64, description: Point-native fill activity represented by this bucket in gameplay point-cents. }
         unit: { type: string, enum: [PTS], description: Gameplay point unit for preferred point-native fields. }
-      required: [bucketStart, yesPricePointsCents, tradeCount, volumePointsCents, unit]
+      required: [bucketStart, yesPricePoints, tradeCount, volumePoints, unit]
     MarketPriceHistory:
       type: object
       description: Market price-history buckets with point-native fields and no point movement.
@@ -86,13 +86,13 @@ components:
       type: object
       description: Order-book price level. Price/notional fields use gameplay point-cents, share-count fields use non-monetary position shares, and reading depth does not move points.
       properties:
-        pricePointsCents: { type: integer, minimum: 1, maximum: 99, description: Point-native level price on the 0-100 point-cent probability scale. }
+        pricePoints: { type: integer, minimum: 1, maximum: 99, description: Point-native level price on the 0-100 point-cent probability scale. }
         shares: { type: integer, description: Share count available at this level. }
         cumulativeShares: { type: integer, description: Cumulative share count through this level. }
-        notionalPointsCents: { type: integer, format: int64, description: Level notional in gameplay point-cents. }
-        totalNotionalPointsCents: { type: integer, format: int64, description: Cumulative level notional in gameplay point-cents. }
+        notionalPoints: { type: integer, format: int64, description: Level notional in gameplay point-cents. }
+        totalNotionalPoints: { type: integer, format: int64, description: Cumulative level notional in gameplay point-cents. }
         unit: { type: string, enum: [PTS], description: Gameplay point unit for point-native fields. }
-      required: [pricePointsCents, shares, cumulativeShares, notionalPointsCents, totalNotionalPointsCents, unit]
+      required: [pricePoints, shares, cumulativeShares, notionalPoints, totalNotionalPoints, unit]
     OrderBookSide:
       type: object
       description: L2 bids and asks for one outcome side.
@@ -181,14 +181,14 @@ components:
         side: { type: string, enum: [yes, no] }
         action: { type: string, enum: [buy, sell] }
         orderType: { type: string, enum: [market, limit] }
-        pricePointsCents: { type: integer, minimum: 1, maximum: 99, nullable: true, description: Preferred point-native limit price on the 0-100 point-cent probability scale; required for limit orders. }
+        pricePoints: { type: integer, minimum: 1, maximum: 99, nullable: true, description: Preferred point-native limit price on the 0-100 point-cent probability scale; required for limit orders. }
         quantity: { type: integer, minimum: 1 }
         idempotencyKey: { type: string, nullable: true }
         timeInForce: { type: string, enum: [gtc, ioc, fok], nullable: true }
         postOnly: { type: boolean }
         clientOrderId: { type: string, nullable: true }
         selfMatchAction: { type: string, enum: [cancel_taker, cancel_maker, cancel_both], nullable: true, description: Optional exchange self-match control validated before market lookup. }
-        notionalCapPointsCents: { type: integer, format: int64, nullable: true, description: Preferred point-native alias required for market buys (maximum point-cents reserved). }
+        notionalCapPoints: { type: integer, format: int64, nullable: true, description: Preferred point-native alias required for market buys (maximum point-cents reserved). }
       required: [marketId, side, action, orderType, quantity]
     Order:
       type: object
@@ -199,18 +199,18 @@ components:
         side: { type: string, enum: [yes, no] }
         action: { type: string, enum: [buy, sell] }
         orderType: { type: string, enum: [market, limit] }
-        pricePointsCents: { type: integer, nullable: true, description: Preferred point-native limit price on the 0-100 point-cent probability scale. }
+        pricePoints: { type: integer, nullable: true, description: Preferred point-native limit price on the 0-100 point-cent probability scale. }
         quantity: { type: integer }
         filledQuantity: { type: integer }
         remainingQuantity: { type: integer }
-        totalCostPointsCents: { type: integer, format: int64, description: Preferred point-native total order cost in gameplay point-cents. }
+        totalCostPoints: { type: integer, format: int64, description: Preferred point-native total order cost in gameplay point-cents. }
         status: { type: string, enum: [pending, open, partial, filled, cancelled, rejected, expired] }
-        reservedPointsCents: { type: integer, format: int64, description: Preferred point-native amount locked for this order in gameplay point-cents. }
-        capturedPointsCents: { type: integer, format: int64, description: Preferred point-native filled cost captured in gameplay point-cents. }
-        releasedPointsCents: { type: integer, format: int64, description: Preferred point-native amount unlocked in gameplay point-cents. }
-        filledCostPointsCents: { type: integer, format: int64, description: Preferred point-native realized filled cost in gameplay point-cents. }
-        averageFillPricePointsCents: { type: integer, nullable: true, description: Preferred point-native average fill price on the 0-100 point-cent probability scale. }
-        notionalCapPointsCents: { type: integer, format: int64, nullable: true, description: Preferred point-native market-buy cap in gameplay point-cents. }
+        reservedPoints: { type: integer, format: int64, description: Preferred point-native amount locked for this order in gameplay point-cents. }
+        capturedPoints: { type: integer, format: int64, description: Preferred point-native filled cost captured in gameplay point-cents. }
+        releasedPoints: { type: integer, format: int64, description: Preferred point-native amount unlocked in gameplay point-cents. }
+        filledCostPoints: { type: integer, format: int64, description: Preferred point-native realized filled cost in gameplay point-cents. }
+        averageFillPricePoints: { type: integer, nullable: true, description: Preferred point-native average fill price on the 0-100 point-cent probability scale. }
+        notionalCapPoints: { type: integer, format: int64, nullable: true, description: Preferred point-native market-buy cap in gameplay point-cents. }
         unit: { type: string, enum: [PTS], description: Gameplay point unit for preferred point-native fields. }
         createdAt: { type: string, format: date-time }
       required: [id, marketId, side, action, orderType, quantity, status]
@@ -221,24 +221,24 @@ components:
         side: { type: string, enum: [yes, no] }
         action: { type: string, enum: [buy, sell] }
         quantity: { type: integer }
-        pricePointsCents: { type: integer, description: Preferred point-native quoted price in point-cents. }
-        totalCostPointsCents: { type: integer, format: int64, description: Preferred point-native estimated order cost in gameplay point-cents. }
-        feePointsCents: { type: integer, format: int64, description: Preferred point-native estimated fee in gameplay point-cents. }
-        maxResultPointsCents: { type: integer, format: int64, description: Preferred point-native maximum possible point result in gameplay point-cents. }
-        maxLossPointsCents: { type: integer, format: int64, description: Preferred point-native maximum loss in gameplay point-cents. }
-        newYesPricePointsCents: { type: integer, description: Preferred point-native post-preview YES price in point-cents. }
-        newNoPricePointsCents: { type: integer, description: Preferred point-native post-preview NO price in point-cents. }
+        pricePoints: { type: integer, description: Preferred point-native quoted price in point-cents. }
+        totalCostPoints: { type: integer, format: int64, description: Preferred point-native estimated order cost in gameplay point-cents. }
+        feePoints: { type: integer, format: int64, description: Preferred point-native estimated fee in gameplay point-cents. }
+        maxResultPoints: { type: integer, format: int64, description: Preferred point-native maximum possible point result in gameplay point-cents. }
+        maxLossPoints: { type: integer, format: int64, description: Preferred point-native maximum loss in gameplay point-cents. }
+        newYesPricePoints: { type: integer, description: Preferred point-native post-preview YES price in point-cents. }
+        newNoPricePoints: { type: integer, description: Preferred point-native post-preview NO price in point-cents. }
         executionMode: { type: string, enum: [order_book, amm], nullable: true }
         filledQuantity: { type: integer }
         unfilledQuantity: { type: integer }
-        averageFillPricePointsCents: { type: integer, description: Preferred point-native average fill price in point-cents. }
-        totalCostWithFeesPointsCents: { type: integer, format: int64, description: Preferred point-native estimated cost including fees in gameplay point-cents. }
-        estimatedSlippagePointsCents: { type: integer, description: Preferred point-native estimated slippage in point-cents. }
+        averageFillPricePoints: { type: integer, description: Preferred point-native average fill price in point-cents. }
+        totalCostWithFeesPoints: { type: integer, format: int64, description: Preferred point-native estimated cost including fees in gameplay point-cents. }
+        estimatedSlippagePoints: { type: integer, description: Preferred point-native estimated slippage in point-cents. }
         quoteStatus: { type: string, enum: [pending, open, partial, filled, cancelled, rejected, expired], nullable: true }
         quoteStaleAfterMillis: { type: integer, format: int64, nullable: true }
         quoteGeneratedAtUnixSec: { type: integer, format: int64, nullable: true }
         unit: { type: string, enum: [PTS], description: Gameplay point unit for preferred point-native fields. }
-      required: [side, action, quantity, totalCostPointsCents, maxLossPointsCents, unit]
+      required: [side, action, quantity, totalCostPoints, maxLossPoints, unit]
     Position:
       type: object
       properties:
@@ -247,11 +247,11 @@ components:
         marketId: { type: string, format: uuid }
         side: { type: string, enum: [yes, no] }
         quantity: { type: integer }
-        avgPricePointsCents: { type: integer, description: Preferred point-native average entry price in gameplay point-cents. }
-        totalCostPointsCents: { type: integer, format: int64, description: Preferred point-native cost basis for the open position in gameplay point-cents. }
-        realizedPointsCents: { type: integer, format: int64, description: Preferred point-native realized result for the position in gameplay point-cents. }
+        avgPricePoints: { type: integer, description: Preferred point-native average entry price in gameplay point-cents. }
+        totalCostPoints: { type: integer, format: int64, description: Preferred point-native cost basis for the open position in gameplay point-cents. }
+        realizedPoints: { type: integer, format: int64, description: Preferred point-native realized result for the position in gameplay point-cents. }
         unit: { type: string, enum: [PTS], description: Gameplay point unit for preferred point-native fields. }
-      required: [id, marketId, side, quantity, avgPricePointsCents]
+      required: [id, marketId, side, quantity, avgPricePoints]
     BotOrderResponse:
       type: object
       description: Bot order result from the same point-reservation and fill path used by session orders.
@@ -277,17 +277,17 @@ components:
         buyOrderId: { type: string, nullable: true }
         sellOrderId: { type: string, nullable: true }
         side: { type: string, enum: [yes, no] }
-        pricePointsCents: { type: integer, description: Preferred point-native fill price in point-cents. }
+        pricePoints: { type: integer, description: Preferred point-native fill price in point-cents. }
         quantity: { type: integer }
-        feePointsCents: { type: integer, description: Preferred point-native fee in gameplay point-cents. }
-        notionalPointsCents: { type: integer, format: int64, description: Preferred point-native fill notional in gameplay point-cents. }
+        feePoints: { type: integer, description: Preferred point-native fee in gameplay point-cents. }
+        notionalPoints: { type: integer, format: int64, description: Preferred point-native fill notional in gameplay point-cents. }
         isAmmTrade: { type: boolean }
         tradedAt: { type: string, format: date-time }
         matchId: { type: string }
         tradeKind: { type: string, enum: [secondary, issuance] }
         engineKind: { type: string, enum: [order_book, amm] }
         unit: { type: string, enum: [PTS], description: Gameplay point unit for preferred point-native fields. }
-      required: [id, marketId, buyerId, side, pricePointsCents, quantity, feePointsCents, notionalPointsCents, isAmmTrade, tradedAt, unit]
+      required: [id, marketId, buyerId, side, pricePoints, quantity, feePoints, notionalPoints, isAmmTrade, tradedAt, unit]
     BotAPIKey:
       type: object
       description: Bot API key metadata. Launch-issued keys use only read/trade scopes; the stored hash is never returned.
@@ -381,18 +381,18 @@ components:
         - type: object
           description: Admin account row enriched with point-account summary fields.
           properties:
-            pointAccountBalanceCents: { type: integer, format: int64, description: Preferred available point-account subunits for review. }
-            realizedPointsCents: { type: integer, format: int64, description: Preferred settled prediction result subunits. }
+            pointAccountBalancePoints: { type: integer, format: int64, description: Preferred available point-account subunits for review. }
+            realizedPoints: { type: integer, format: int64, description: Preferred settled prediction result subunits. }
             unit: { type: string, enum: [PTS] }
     PortfolioSummary:
       type: object
       description: Portfolio summary with point-native aliases and no point movement.
       properties:
-        totalValuePointsCents: { type: integer, format: int64, description: Preferred open-position point-value subunits. }
-        portfolioValuePointsCents: { type: integer, format: int64, description: Preferred portfolio point-value subunits for launch clients. }
-        investedPointsCents: { type: integer, format: int64, description: Preferred invested point subunits for open positions. }
-        unrealizedPointsCents: { type: integer, format: int64, description: Preferred unrealized result subunits in points. }
-        realizedPointsCents: { type: integer, format: int64, description: Preferred realized settled-result subunits in points. }
+        totalValuePoints: { type: integer, format: int64, description: Preferred open-position point-value subunits. }
+        portfolioValuePoints: { type: integer, format: int64, description: Preferred portfolio point-value subunits for launch clients. }
+        investedPoints: { type: integer, format: int64, description: Preferred invested point subunits for open positions. }
+        unrealizedPoints: { type: integer, format: int64, description: Preferred unrealized result subunits in points. }
+        realizedPoints: { type: integer, format: int64, description: Preferred realized settled-result subunits in points. }
         openPositions: { type: integer }
         totalPredictions: { type: integer }
         correctPredictions: { type: integer }
@@ -409,10 +409,10 @@ components:
         marketId: { type: string }
         side: { type: string, enum: [yes, no] }
         quantity: { type: integer }
-        entryPricePointsCents: { type: integer, description: Entry price in gameplay point-cents. }
-        exitPricePointsCents: { type: integer, description: Exit price in gameplay point-cents. }
-        realizedPointsCents: { type: integer, format: int64, description: Realized prediction result in gameplay point-cents. }
-        settlementPointsCents: { type: integer, format: int64, description: Settlement point-disbursement amount in gameplay point-cents. }
+        entryPricePoints: { type: integer, description: Entry price in gameplay point-cents. }
+        exitPricePoints: { type: integer, description: Exit price in gameplay point-cents. }
+        realizedPoints: { type: integer, format: int64, description: Realized prediction result in gameplay point-cents. }
+        settlementPoints: { type: integer, format: int64, description: Settlement point-disbursement amount in gameplay point-cents. }
         paidAt: { type: string, format: date-time }
         unit: { type: string, enum: [PTS] }
     AdminPunterDetail:
@@ -421,7 +421,7 @@ components:
         - type: object
           description: Admin account detail with point-account and portfolio summary. This read does not move points.
           properties:
-            pointAccountBalanceCents: { type: integer, format: int64, description: Preferred available point-account subunits for review. }
+            pointAccountBalancePoints: { type: integer, format: int64, description: Preferred available point-account subunits for review. }
             portfolio: { $ref: "#/components/schemas/PortfolioSummary" }
             unit: { type: string, enum: [PTS] }
     AdminPunterSettlement:
@@ -435,10 +435,10 @@ components:
         marketId: { type: string }
         side: { type: string, enum: [yes, no] }
         quantity: { type: integer }
-        entryPricePointsCents: { type: integer }
-        exitPricePointsCents: { type: integer }
-        realizedPointsCents: { type: integer, format: int64, description: Preferred realized prediction result subunits. }
-        settlementPointsCents: { type: integer, format: int64, description: Preferred settlement point-disbursement subunits. }
+        entryPricePoints: { type: integer }
+        exitPricePoints: { type: integer }
+        realizedPoints: { type: integer, format: int64, description: Preferred realized prediction result subunits. }
+        settlementPoints: { type: integer, format: int64, description: Preferred settlement point-disbursement subunits. }
         paidAt: { type: string, format: date-time }
         unit: { type: string, enum: [PTS] }
     AdminPointLedgerEntry:
@@ -448,8 +448,8 @@ components:
         entryId: { type: string }
         userId: { type: string }
         type: { type: string, enum: [credit, debit, reservation, release] }
-        amountPointsCents: { type: integer, format: int64, description: Preferred point-ledger delta subunits. }
-        balancePointsCents: { type: integer, format: int64, description: Preferred point-account balance after the entry. }
+        amountPoints: { type: integer, format: int64, description: Preferred point-ledger delta subunits. }
+        balancePoints: { type: integer, format: int64, description: Preferred point-account balance after the entry. }
         idempotencyKey: { type: string }
         reason: { type: string }
         transactionTime: { type: string }
@@ -535,7 +535,7 @@ components:
         settlementCutoffAt: { type: string, format: date-time, nullable: true }
         feeRateBps: { type: integer, minimum: 0 }
         ammLiquidityParam: { type: number, minimum: 0 }
-        ammSubsidyPointsCents: { type: integer, format: int64, description: Optional AMM point subunits for quote-only launch fixtures. }
+        ammSubsidyPoints: { type: integer, format: int64, description: Optional AMM point subunits for quote-only launch fixtures. }
         articleSourceId: { type: string, nullable: true }
         aiGenerationLogIds:
           type: array
@@ -659,7 +659,7 @@ components:
           type: array
           description: Present for invalidation actions that return locked points.
           items: { type: object, additionalProperties: true }
-        totalSettlementPointsCents: { type: integer, format: int64, nullable: true }
+        totalSettlementPoints: { type: integer, format: int64, nullable: true }
         unit: { type: string, enum: [PTS], nullable: true }
     MarketLifecycleEvent:
       type: object
@@ -704,7 +704,7 @@ components:
         attestationData: { type: object, additionalProperties: true }
         settledBy: { type: string, nullable: true }
         settledAt: { type: string, format: date-time }
-        totalSettlementPointsCents: { type: integer, format: int64 }
+        totalSettlementPoints: { type: integer, format: int64 }
         positionsSettled: { type: integer }
         overrideReason: { type: string, nullable: true }
         overriddenByUserId: { type: string, nullable: true }
@@ -721,10 +721,10 @@ components:
         marketId: { type: string }
         side: { type: string, enum: [yes, no] }
         quantity: { type: integer }
-        entryPricePointsCents: { type: integer, description: Entry price in gameplay point-cents. }
-        exitPricePointsCents: { type: integer, description: Exit price in gameplay point-cents. }
-        realizedPointsCents: { type: integer, format: int64 }
-        settlementPointsCents: { type: integer, format: int64 }
+        entryPricePoints: { type: integer, description: Entry price in gameplay point-cents. }
+        exitPricePoints: { type: integer, description: Exit price in gameplay point-cents. }
+        realizedPoints: { type: integer, format: int64 }
+        settlementPoints: { type: integer, format: int64 }
         paidAt: { type: string, format: date-time }
         unit: { type: string, enum: [PTS] }
     AdminSettlementOperationResponse:
@@ -735,7 +735,7 @@ components:
         pointDisbursements:
           type: array
           items: { $ref: "#/components/schemas/AdminSettlementPointDisbursement" }
-        totalSettlementPointsCents: { type: integer, format: int64 }
+        totalSettlementPoints: { type: integer, format: int64 }
         unit: { type: string, enum: [PTS] }
         taptradeLifecycle: { $ref: "#/components/schemas/TapTradeLifecycle" }
     ResolutionProposal:
@@ -764,7 +764,7 @@ components:
         reason: { type: string }
         status: { type: string, enum: [open, upheld, rejected, withdrawn] }
         resolutionNote: { type: string, nullable: true }
-        bondPointsCents: { type: integer, format: int64, description: Reserved challenge point-cents, currently zero for launch. }
+        bondPoints: { type: integer, format: int64, description: Reserved challenge point-cents, currently zero for launch. }
         unit: { type: string, enum: [PTS] }
         createdAt: { type: string, format: date-time }
         resolvedAt: { type: string, format: date-time, nullable: true }
@@ -800,7 +800,7 @@ components:
         name: { type: string }
         description: { type: string }
         unit: { type: string, enum: [PTS] }
-        amountPointsCents: { type: integer, format: int64 }
+        amountPoints: { type: integer, format: int64 }
         enabled: { type: boolean }
         claimableOnce: { type: boolean }
         claimed: { type: boolean }
@@ -811,7 +811,7 @@ components:
         name: { type: string }
         description: { type: string }
         unit: { type: string, enum: [PTS] }
-        rewardPointsCents: { type: integer, format: int64 }
+        rewardPoints: { type: integer, format: int64 }
         progress: { type: integer }
         target: { type: integer }
         completed: { type: boolean }
@@ -824,7 +824,7 @@ components:
         name: { type: string }
         description: { type: string }
         unit: { type: string, enum: [PTS] }
-        rewardPointsCents: { type: integer, format: int64 }
+        rewardPoints: { type: integer, format: int64 }
         currentStreak: { type: integer }
         target: { type: integer }
         completed: { type: boolean }
@@ -844,9 +844,9 @@ components:
       properties:
         enabled: { type: boolean }
         unit: { type: string, enum: [PTS] }
-        limitPointsCents: { type: integer, format: int64 }
-        grantedPointsCents: { type: integer, format: int64 }
-        remainingPointsCents: { type: integer, format: int64 }
+        limitPoints: { type: integer, format: int64 }
+        grantedPoints: { type: integer, format: int64 }
+        remainingPoints: { type: integer, format: int64 }
         windowDate: { type: string, format: date }
         nextResetAt: { type: string, format: date-time }
     RewardGrantResponse:
@@ -854,8 +854,8 @@ components:
       properties:
         enabled: { type: boolean }
         unit: { type: string, enum: [PTS] }
-        claimPointsCents: { type: integer, format: int64, nullable: true }
-        balancePointsCents: { type: integer, format: int64 }
+        claimPoints: { type: integer, format: int64, nullable: true }
+        balancePoints: { type: integer, format: int64 }
         claimedForDate: { type: string, nullable: true }
         nextClaimAt: { type: string, format: date-time, nullable: true }
         pack: { $ref: "#/components/schemas/PointPack" }
@@ -868,19 +868,19 @@ components:
       properties:
         userId: { type: string }
         unit: { type: string, enum: [PTS] }
-        balancePointsCents: { type: integer, format: int64 }
-        availablePointsCents: { type: integer, format: int64 }
-        reservedPointsCents: { type: integer, format: int64 }
-      required: [userId, unit, balancePointsCents, availablePointsCents, reservedPointsCents]
+        balancePoints: { type: integer, format: int64 }
+        availablePoints: { type: integer, format: int64 }
+        reservedPoints: { type: integer, format: int64 }
+      required: [userId, unit, balancePoints, availablePoints, reservedPoints]
     WalletBreakdown:
       type: object
       description: Authenticated point-wallet bucket breakdown. Base and bonus buckets are gameplay-only point categories.
       properties:
         unit: { type: string, enum: [PTS] }
-        basePointsCents: { type: integer, format: int64 }
-        bonusPointsCents: { type: integer, format: int64 }
-        totalPointsCents: { type: integer, format: int64 }
-      required: [unit, basePointsCents, bonusPointsCents, totalPointsCents]
+        basePoints: { type: integer, format: int64 }
+        bonusPoints: { type: integer, format: int64 }
+        totalPoints: { type: integer, format: int64 }
+      required: [unit, basePoints, bonusPoints, totalPoints]
     WalletLedgerEntry:
       type: object
       description: Immutable point-ledger row for the authenticated wallet read surface.
@@ -889,12 +889,12 @@ components:
         userId: { type: string }
         type: { type: string, enum: [credit, debit, reservation, release] }
         unit: { type: string, enum: [PTS] }
-        amountPointsCents: { type: integer, format: int64 }
-        balancePointsCents: { type: integer, format: int64 }
+        amountPoints: { type: integer, format: int64 }
+        balancePoints: { type: integer, format: int64 }
         idempotencyKey: { type: string }
         reason: { type: string }
         transactionTime: { type: string }
-      required: [entryId, userId, type, unit, amountPointsCents, balancePointsCents, transactionTime]
+      required: [entryId, userId, type, unit, amountPoints, balancePoints, transactionTime]
     WalletLedgerResponse:
       type: object
       description: Authenticated point-ledger page for one wallet. Players may only read their own ledger; admins may inspect another user.
@@ -911,9 +911,9 @@ components:
       properties:
         enabled: { type: boolean }
         unit: { type: string, enum: [PTS] }
-        grantPointsCents: { type: integer, format: int64, nullable: true }
-        balancePointsCents: { type: integer, format: int64 }
-      required: [enabled, unit, balancePointsCents]
+        grantPoints: { type: integer, format: int64, nullable: true }
+        balancePoints: { type: integer, format: int64 }
+      required: [enabled, unit, balancePoints]
     RewardClaimRequest:
       type: object
       properties:
@@ -941,10 +941,10 @@ components:
         expiresAt: { type: string, format: date-time }
         granted_at: { type: string, format: date-time }
         grantedAt: { type: string, format: date-time }
-        grantedPointsCents: { type: integer, format: int64 }
-        remainingPointsCents: { type: integer, format: int64 }
-        playRequiredPointsCents: { type: integer, format: int64 }
-        playCompletedPointsCents: { type: integer, format: int64 }
+        grantedPoints: { type: integer, format: int64 }
+        remainingPoints: { type: integer, format: int64 }
+        playRequiredPoints: { type: integer, format: int64 }
+        playCompletedPoints: { type: integer, format: int64 }
         playProgressPct: { type: number, format: double }
     PlayerBonusListResponse:
       type: object
@@ -958,8 +958,8 @@ components:
         unit: { type: string, enum: [PTS] }
         bonus_id: { type: integer, format: int64 }
         bonusId: { type: integer, format: int64 }
-        playRequiredPointsCents: { type: integer, format: int64 }
-        playCompletedPointsCents: { type: integer, format: int64 }
+        playRequiredPoints: { type: integer, format: int64 }
+        playCompletedPoints: { type: integer, format: int64 }
         playProgressPct: { type: number, format: double }
         recentContributions:
           type: array
@@ -977,8 +977,8 @@ components:
         status: { type: string }
         startAt: { type: string, format: date-time }
         endAt: { type: string, format: date-time }
-        budgetPointsCents: { type: integer, format: int64, nullable: true }
-        spentPointsCents: { type: integer, format: int64 }
+        budgetPoints: { type: integer, format: int64, nullable: true }
+        spentPoints: { type: integer, format: int64 }
         maxClaims: { type: integer, nullable: true }
         claimCount: { type: integer }
         createdBy: { type: string }
@@ -1000,7 +1000,7 @@ components:
         pointRuleConfig:
           type: object
           additionalProperties: true
-          description: Sanitized point-rule config for launch docs and admin clients; play contribution caps use max_play_contribution_points_cents.
+          description: Sanitized point-rule config for launch docs and admin clients; play contribution caps use max_play_contribution_points.
         createdAt: { type: string, format: date-time }
     AdminCampaignRuleInput:
       type: object
@@ -1009,7 +1009,7 @@ components:
         point_rule_config:
           type: object
           additionalProperties: true
-          description: Point-native campaign rule config accepted by launch admin clients; play contribution caps use max_play_contribution_points_cents.
+          description: Point-native campaign rule config accepted by launch admin clients; play contribution caps use max_play_contribution_points.
       required: [rule_type, point_rule_config]
     AdminCampaignCreateRequest:
       type: object
@@ -1019,7 +1019,7 @@ components:
         campaign_type: { type: string, enum: [signup_bonus, custom, point_grant, point_match] }
         start_at: { type: string, format: date-time }
         end_at: { type: string, format: date-time }
-        budget_points_cents: { type: integer, format: int64, nullable: true }
+        budget_points: { type: integer, format: int64, nullable: true }
         max_claims: { type: integer, nullable: true }
         rules:
           type: array
@@ -1043,7 +1043,7 @@ components:
       properties:
         user_id: { type: string }
         campaign_id: { type: integer, format: int64 }
-        override_points_cents: { type: integer, format: int64, nullable: true }
+        override_points: { type: integer, format: int64, nullable: true }
         reason: { type: string }
       required: [user_id, campaign_id, reason]
     AdminBonusForfeitRequest:
@@ -1062,18 +1062,18 @@ components:
       properties:
         userId: { type: string }
         period: { type: string, enum: [daily, weekly, monthly] }
-        amountPointsCents: { type: integer, format: int64, minimum: 1 }
-      required: [userId, period, amountPointsCents]
+        amountPoints: { type: integer, format: int64, minimum: 1 }
+      required: [userId, period, amountPoints]
     ResponsiblePlayLimit:
       type: object
       properties:
         userId: { type: string }
         period: { type: string }
         unit: { type: string, enum: [PTS] }
-        limitPointsCents: { type: integer, format: int64 }
-        remainingPointsCents: { type: integer, format: int64 }
-        usedPointsCents: { type: integer, format: int64 }
-        pendingLimitPointsCents: { type: integer, format: int64, nullable: true }
+        limitPoints: { type: integer, format: int64 }
+        remainingPoints: { type: integer, format: int64 }
+        usedPoints: { type: integer, format: int64 }
+        pendingLimitPoints: { type: integer, format: int64, nullable: true }
         pendingActivatesAt: { type: string, format: date-time, nullable: true }
         resetsAt: { type: string, format: date-time, nullable: true }
         createdAt: { type: string, format: date-time, nullable: true }
@@ -1083,14 +1083,14 @@ components:
         userId: { type: string }
         period: { type: string }
         unit: { type: string, enum: [PTS] }
-        requestedPointsCents: { type: integer, format: int64 }
-        requestedAmountPointsCents: { type: integer, format: int64 }
-        amountPointsCents: { type: integer, format: int64, nullable: true }
-        limitPointsCents: { type: integer, format: int64, nullable: true }
-        remainingPointsCents: { type: integer, format: int64, nullable: true }
-        usedPointsCents: { type: integer, format: int64, nullable: true }
+        requestedPoints: { type: integer, format: int64 }
+        requestedAmountPoints: { type: integer, format: int64 }
+        amountPoints: { type: integer, format: int64, nullable: true }
+        limitPoints: { type: integer, format: int64, nullable: true }
+        remainingPoints: { type: integer, format: int64, nullable: true }
+        usedPoints: { type: integer, format: int64, nullable: true }
         deferred: { type: boolean, nullable: true }
-        pendingLimitPointsCents: { type: integer, format: int64, nullable: true }
+        pendingLimitPoints: { type: integer, format: int64, nullable: true }
         pendingActivatesAt: { type: string, format: date-time, nullable: true }
         effectiveState: { type: string, nullable: true }
     ResponsiblePlayCheckResponse:
@@ -1098,7 +1098,7 @@ components:
       properties:
         userId: { type: string }
         unit: { type: string, enum: [PTS] }
-        amountPointsCents: { type: integer, format: int64 }
+        amountPoints: { type: integer, format: int64 }
         allowed: { type: boolean }
         reason: { type: string }
         reasonCode: { type: string, enum: [point_use_limit_exceeded, prediction_limit_exceeded], nullable: true }
@@ -1248,7 +1248,7 @@ components:
         predictionSourceType: { type: string, enum: [prediction_settlement] }
         active: { type: boolean }
         multiplier: { type: number, format: double }
-        minQualifiedPointsCents: { type: integer, format: int64 }
+        minQualifiedPoints: { type: integer, format: int64 }
         eligiblePredictionTypes:
           type: array
           items: { type: string }
@@ -1256,7 +1256,7 @@ components:
         effectiveFrom: { type: string, format: date-time, nullable: true }
         effectiveTo: { type: string, format: date-time, nullable: true }
         unit: { type: string, enum: [PTS] }
-      required: [ruleId, name, predictionSourceType, active, multiplier, minQualifiedPointsCents, eligiblePredictionTypes, unit]
+      required: [ruleId, name, predictionSourceType, active, multiplier, minQualifiedPoints, eligiblePredictionTypes, unit]
     AdminLoyaltyRuleRequest:
       type: object
       description: Creates or updates a loyalty accrual rule. Older compatibility request aliases are rejected by launch routes before service normalization.
@@ -1265,14 +1265,14 @@ components:
         predictionSourceType: { type: string, enum: [prediction_settlement] }
         active: { type: boolean }
         multiplier: { type: number, format: double }
-        minQualifiedPointsCents: { type: integer, format: int64 }
+        minQualifiedPoints: { type: integer, format: int64 }
         eligiblePredictionTypes:
           type: array
           items: { type: string }
         maxPointsPerEvent: { type: integer, format: int64 }
         effectiveFrom: { type: string, format: date-time, nullable: true }
         effectiveTo: { type: string, format: date-time, nullable: true }
-      required: [name, predictionSourceType, active, multiplier, minQualifiedPointsCents]
+      required: [name, predictionSourceType, active, multiplier, minQualifiedPoints]
     AdminRewardClusterSummary:
       type: object
       properties:
@@ -1290,22 +1290,22 @@ components:
       properties:
         from: { type: string, format: date-time }
         to: { type: string, format: date-time }
-        totalCreditPointsCents:
+        totalCreditPoints:
           type: integer
           format: int64
           description: Total point ledger additions in gameplay point-cents.
-        totalDebitPointsCents:
+        totalDebitPoints:
           type: integer
           format: int64
           description: Total point ledger removals in gameplay point-cents.
-        netMovementPointsCents:
+        netMovementPoints:
           type: integer
           format: int64
           description: Net point ledger movement in gameplay point-cents.
         entryCount: { type: integer, format: int64 }
         distinctUserCount: { type: integer, format: int64 }
         unit: { type: string, enum: [PTS], description: Gameplay point unit for point-native fields. }
-      required: [totalCreditPointsCents, totalDebitPointsCents, netMovementPointsCents, entryCount, distinctUserCount, unit]
+      required: [totalCreditPoints, totalDebitPoints, netMovementPoints, entryCount, distinctUserCount, unit]
     AdminPointCampaignUsageReport:
       type: object
       description: Honest point-campaign report placeholder. Reading this surface is admin metadata only and does not move points.
@@ -1316,11 +1316,11 @@ components:
             unit: { type: string, enum: [PTS] }
             pointRewardCampaigns: { type: integer }
             usersWithPointRewards: { type: integer }
-            totalRewardPointsCents:
+            totalRewardPoints:
               type: integer
               format: int64
               description: Total point-campaign reward amount in gameplay point-cents.
-          required: [unit, pointRewardCampaigns, usersWithPointRewards, totalRewardPointsCents]
+          required: [unit, pointRewardCampaigns, usersWithPointRewards, totalRewardPoints]
       required: [summary]
     SocialComment:
       type: object
@@ -1414,15 +1414,15 @@ components:
         marketId: { type: string }
         ticker: { type: string }
         status: { type: string }
-        openPointCostCents: { type: integer, format: int64 }
-        maxReturnedPointsCents: { type: integer, format: int64 }
+        openPointCostPoints: { type: integer, format: int64 }
+        maxReturnedPoints: { type: integer, format: int64 }
         holders: { type: integer }
     PredictionRiskPointAccounting:
       type: object
       properties:
-        openPositionPointCostCents: { type: integer, format: int64 }
-        maxSettlementPointsCents: { type: integer, format: int64 }
-        reservedPointsCents: { type: integer, format: int64 }
+        openPositionPointCostPoints: { type: integer, format: int64 }
+        maxSettlementPoints: { type: integer, format: int64 }
+        reservedPoints: { type: integer, format: int64 }
         openOrderCount: { type: integer }
         nonTerminalMarkets: { type: integer }
         driftAlerts24h: { type: integer }
@@ -1433,11 +1433,11 @@ components:
         marketId: { type: string }
         ticker: { type: string }
         adjustmentCount: { type: integer }
-        maxDriftPointsCents:
+        maxDriftPoints:
           type: integer
           format: int64
           description: Maximum drift amount in gameplay point-cents.
-        totalDriftPointsCents:
+        totalDriftPoints:
           type: integer
           format: int64
           description: Total drift amount in gameplay point-cents.
@@ -1450,7 +1450,7 @@ components:
       properties:
         since: { type: string, format: date-time }
         windowSeconds: { type: integer }
-        totalVolumePointsCents:
+        totalVolumePoints:
           type: integer
           format: int64
           description: Aggregate point activity over the requested window.
@@ -1466,13 +1466,13 @@ components:
         marketId: { type: string }
         ticker: { type: string }
         title: { type: string }
-        yesPricePointsCentsStart:
+        yesPricePointsStart:
           type: integer
           description: Starting YES point price for the window.
-        yesPricePointsCentsNow:
+        yesPricePointsNow:
           type: integer
           description: Ending YES point price for the window.
-        volumePointsCents:
+        volumePoints:
           type: integer
           format: int64
           description: Point activity for this mover over the requested window.
@@ -1487,7 +1487,7 @@ components:
         pointMetricKey: { type: string, description: Point-native ranking metric alias for launch clients. }
         window: { type: string, enum: [rolling_30d, weekly] }
         minSettled: { type: integer }
-        minVolumePointsCents: { type: integer, format: int64, description: Point-volume threshold in gameplay point subunits when present. }
+        minVolumePoints: { type: integer, format: int64, description: Point-volume threshold in gameplay point subunits when present. }
         unit: { type: string, enum: [PTS] }
         categorySlug: { type: string, nullable: true }
         rewardSummary: { type: string, description: Point qualification or rank-status copy. }
@@ -2168,7 +2168,7 @@ paths:
       security: [{ SessionCookie: [] }]
       parameters:
         - { name: userId, in: query, schema: { type: string } }
-        - { name: amountPointsCents, in: query, required: true, schema: { type: integer, format: int64, minimum: 1 } }
+        - { name: amountPoints, in: query, required: true, schema: { type: integer, format: int64, minimum: 1 } }
       responses:
         "200":
           description: Point-use decision
@@ -2183,7 +2183,7 @@ paths:
       security: [{ SessionCookie: [] }]
       parameters:
         - { name: userId, in: query, schema: { type: string } }
-        - { name: amountPointsCents, in: query, required: true, schema: { type: integer, format: int64, minimum: 1 } }
+        - { name: amountPoints, in: query, required: true, schema: { type: integer, format: int64, minimum: 1 } }
       responses:
         "200":
           description: Prediction-size decision
@@ -2437,7 +2437,7 @@ paths:
   /api/v1/admin/campaigns:
     get:
       summary: Admin list of point-play campaigns
-      description: Returns campaign rows with PTS unit, budgetPointsCents, and spentPointsCents aliases only.
+      description: Returns campaign rows with PTS unit, budgetPoints, and spentPoints aliases only.
       security: [{ SessionCookie: [] }]
       parameters:
         - { name: status, in: query, schema: { type: string } }
@@ -2673,7 +2673,7 @@ paths:
   /api/v1/admin/loyalty/rules:
     post:
       summary: Admin create loyalty prediction accrual rule
-      description: Creates a point-native loyalty accrual rule for prediction activity without moving points immediately. Launch requests must use predictionSourceType, minQualifiedPointsCents, and eligiblePredictionTypes.
+      description: Creates a point-native loyalty accrual rule for prediction activity without moving points immediately. Launch requests must use predictionSourceType, minQualifiedPoints, and eligiblePredictionTypes.
       security: [{ SessionCookie: [] }]
       requestBody:
         required: true

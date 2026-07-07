@@ -19,13 +19,13 @@ func TestSettlementRecordPayloadRedactsLegacyUnsafeOverrideReason(t *testing.T) 
 		SettledAt:         settledAt,
 		PositionsSettled:  2,
 		OverrideReason:    &overrideReason,
-		TotalPayoutCents:  2500,
+		TotalPayoutPoints: 2500,
 	})
 
 	if payload.OverrideReason == nil || *payload.OverrideReason != launchRedactedUserText {
 		t.Fatalf("expected unsafe override reason redacted, got %+v", payload.OverrideReason)
 	}
-	if payload.TotalSettlementPointsCents != 2500 || payload.Unit != "PTS" {
+	if payload.TotalSettlementPoints != 2500 || payload.Unit != "PTS" {
 		t.Fatalf("expected point settlement fields preserved, got %+v", payload)
 	}
 }

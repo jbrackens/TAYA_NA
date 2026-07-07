@@ -15,7 +15,7 @@ import (
 // failure is modelled separately as (allowed=true, "", infraErr).
 type fakeCompliance struct {
 	deny          bool
-	denyAtOrAbove int64 // if >0, deny only when stakeCents >= this (stake-aware)
+	denyAtOrAbove int64 // if >0, deny only when stakePoints >= this (stake-aware)
 	reason        string
 	denyErr       error // returned alongside allowed=false on a deliberate deny
 	infraErr      error // returned alongside allowed=true (could not evaluate)
@@ -26,12 +26,12 @@ type fakeCompliance struct {
 	releaseCalls  []int64
 }
 
-func (f *fakeCompliance) CheckBetAllowed(_ context.Context, _ string, stakeCents int64) (bool, string, error) {
-	f.checkCalls = append(f.checkCalls, stakeCents)
+func (f *fakeCompliance) CheckBetAllowed(_ context.Context, _ string, stakePoints int64) (bool, string, error) {
+	f.checkCalls = append(f.checkCalls, stakePoints)
 	if f.deny {
 		return false, f.reason, f.denyErr
 	}
-	if f.denyAtOrAbove > 0 && stakeCents >= f.denyAtOrAbove {
+	if f.denyAtOrAbove > 0 && stakePoints >= f.denyAtOrAbove {
 		return false, f.reason, f.denyErr
 	}
 	if f.infraErr != nil {
@@ -40,13 +40,13 @@ func (f *fakeCompliance) CheckBetAllowed(_ context.Context, _ string, stakeCents
 	return true, "", nil
 }
 
-func (f *fakeCompliance) RecordBet(_ context.Context, _ string, stakeCents int64) error {
-	f.recordCalls = append(f.recordCalls, stakeCents)
+func (f *fakeCompliance) RecordBet(_ context.Context, _ string, stakePoints int64) error {
+	f.recordCalls = append(f.recordCalls, stakePoints)
 	return f.recordErr
 }
 
-func (f *fakeCompliance) ReleaseBet(_ context.Context, _ string, amountCents int64, _ time.Time) error {
-	f.releaseCalls = append(f.releaseCalls, amountCents)
+func (f *fakeCompliance) ReleaseBet(_ context.Context, _ string, amountPoints int64, _ time.Time) error {
+	f.releaseCalls = append(f.releaseCalls, amountPoints)
 	return f.releaseErr
 }
 
@@ -61,14 +61,14 @@ func TestPlaceOrder_BlockedByComplianceGate(t *testing.T) {
 	rg := &fakeCompliance{deny: true, reason: "Bet limit exceeded for daily period"}
 	svc.SetComplianceChecker(rg)
 
-	priceCents := 50
+	pricePoints := 50
 	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:   "mkt-1",
-		Side:       OrderSideYes,
-		Action:     OrderActionBuy,
-		OrderType:  OrderTypeLimit,
-		PriceCents: &priceCents,
-		Quantity:   10,
+		MarketID:    "mkt-1",
+		Side:        OrderSideYes,
+		Action:      OrderActionBuy,
+		OrderType:   OrderTypeLimit,
+		PricePoints: &pricePoints,
+		Quantity:    10,
 	}, "user1")
 
 	if err == nil {
@@ -83,8 +83,8 @@ func TestPlaceOrder_BlockedByComplianceGate(t *testing.T) {
 	if len(rg.checkCalls) != 1 {
 		t.Fatalf("expected exactly 1 CheckBetAllowed call, got %d", len(rg.checkCalls))
 	}
-	if rg.checkCalls[0] != int64(priceCents)*10 {
-		t.Errorf("gate stake mismatch: want %d (price×qty), got %d", priceCents*10, rg.checkCalls[0])
+	if rg.checkCalls[0] != int64(pricePoints)*10 {
+		t.Errorf("gate stake mismatch: want %d (price×qty), got %d", pricePoints*10, rg.checkCalls[0])
 	}
 	if len(wallet.debitCalls) != 0 {
 		t.Errorf("blocked order must not debit wallet; got %d debit calls", len(wallet.debitCalls))
@@ -118,12 +118,12 @@ func TestPlaceOrder_DenyWithSentinelError_BlocksEvenInDev(t *testing.T) {
 
 	notionalCap := int64(2500)
 	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:         "mkt-1",
-		Side:             OrderSideYes,
-		Action:           OrderActionBuy,
-		OrderType:        OrderTypeMarket,
-		Quantity:         200,
-		NotionalCapCents: &notionalCap,
+		MarketID:          "mkt-1",
+		Side:              OrderSideYes,
+		Action:            OrderActionBuy,
+		OrderType:         OrderTypeMarket,
+		Quantity:          200,
+		NotionalCapPoints: &notionalCap,
 	}, "user1")
 
 	if err == nil {
@@ -144,35 +144,35 @@ func TestPlaceOrder_DenyWithSentinelError_BlocksEvenInDev(t *testing.T) {
 // cumulative period-limit tracking.
 // No checker wired = no behavior change (regression guard for the pre-LC-17
 // path used by tests and any deployment that has not enabled RG).
-// realizedStakeCents must report cash actually staked, never the reserved
+// realizedStakePoints must report cash actually staked, never the reserved
 // notional — over-counting a thin/partial fill would wrongly lock a user out
 // for the rest of the RG period (UAT 2026-05-16 LC-17).
-func TestRealizedStakeCents(t *testing.T) {
+func TestRealizedStakePoints(t *testing.T) {
 	cases := []struct {
 		name string
 		o    *Order
 		want int64
 	}{
 		{"nil order", nil, 0},
-		{"nothing filled (rejected/resting)", &Order{FilledQuantity: 0, TotalCostCents: 2500}, 0},
+		{"nothing filled (rejected/resting)", &Order{FilledQuantity: 0, TotalCostPoints: 2500}, 0},
 		{"order-book partial fill uses captured, not reserved cap",
-			&Order{FilledQuantity: 136, TotalCostCents: 2500, CapturedCashCents: 2494}, 2494},
+			&Order{FilledQuantity: 136, TotalCostPoints: 2500, CapturedCashPoints: 2494}, 2494},
 		{"order-book tiny fill: $0.50 cap, $0.19 captured",
-			&Order{FilledQuantity: 1, TotalCostCents: 50, CapturedCashCents: 19}, 19},
-		{"AMM fill (no captured field) falls back to realized TotalCostCents",
-			&Order{FilledQuantity: 10, TotalCostCents: 480, CapturedCashCents: 0}, 480},
+			&Order{FilledQuantity: 1, TotalCostPoints: 50, CapturedCashPoints: 19}, 19},
+		{"AMM fill (no captured field) falls back to realized TotalCostPoints",
+			&Order{FilledQuantity: 10, TotalCostPoints: 480, CapturedCashPoints: 0}, 480},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			if got := realizedStakeCents(c.o); got != c.want {
-				t.Fatalf("realizedStakeCents = %d, want %d", got, c.want)
+			if got := realizedStakePoints(c.o); got != c.want {
+				t.Fatalf("realizedStakePoints = %d, want %d", got, c.want)
 			}
 		})
 	}
 }
 
 // D-5 codex review P1 #1: an AMM market buy whose real LMSR cost exceeds the
-// caller-supplied notionalCapCents must be rejected BEFORE execution. The RG
+// caller-supplied notionalCapPoints must be rejected BEFORE execution. The RG
 // gate evaluates worstCaseSpend (= the cap for a market buy); the order-book
 // path clamps fills to that cap, but the AMM path did not — so a tiny cap let
 // a large LMSR spend both fat-finger the wallet and slip the RG gate (the gate
@@ -187,11 +187,11 @@ func TestRealizedStakeCents(t *testing.T) {
 // Guard: a legitimate AMM market buy whose cost is within the cap still fills
 // (the fix must not block valid orders — only those that exceed their cap).
 // D-5 codex review P1 #2: the reserve+reconcile decision. The bypass was that
-// recording only realizedStakeCents let a resting limit order (realized 0)
+// recording only realizedStakePoints let a resting limit order (realized 0)
 // pass the gate without ever counting toward the period, and a maker fill was
 // never recorded. The fix records the committed worst-case at placement and
 // reconciles terminal orders to realized. The "resting order" rows below are
-// the regression: pre-fix record was realizedStakeCents(o) == 0; post-fix it
+// the regression: pre-fix record was realizedStakePoints(o) == 0; post-fix it
 // is the full committed.
 func TestRGPlacementAccounting(t *testing.T) {
 	cases := []struct {
@@ -211,18 +211,18 @@ func TestRGPlacementAccounting(t *testing.T) {
 		{"resting open limit counts committed, releases nothing", 5000,
 			&Order{Status: OrderStatusOpen, FilledQuantity: 0}, 5000, 0},
 		{"resting partial limit counts full committed, releases nothing", 5000,
-			&Order{Status: OrderStatusPartial, FilledQuantity: 3, CapturedCashCents: 1500}, 5000, 0},
+			&Order{Status: OrderStatusPartial, FilledQuantity: 3, CapturedCashPoints: 1500}, 5000, 0},
 
 		// Terminal taker: record committed, release the uncaptured remainder
 		// so the net equals realized captured points.
 		{"filled taker nets to realized (5000 committed, 4994 captured)", 5000,
-			&Order{Status: OrderStatusFilled, FilledQuantity: 136, CapturedCashCents: 4994}, 5000, 6},
+			&Order{Status: OrderStatusFilled, FilledQuantity: 136, CapturedCashPoints: 4994}, 5000, 6},
 		{"market IOC cancelled remainder nets to realized (2500 cap, 190 captured)", 2500,
-			&Order{Status: OrderStatusCancelled, FilledQuantity: 1, CapturedCashCents: 190}, 2500, 2310},
+			&Order{Status: OrderStatusCancelled, FilledQuantity: 1, CapturedCashPoints: 190}, 2500, 2310},
 		{"expired unfilled releases the whole committed (net 0)", 2500,
 			&Order{Status: OrderStatusExpired, FilledQuantity: 0}, 2500, 2500},
 		{"fully captured terminal releases nothing", 1900,
-			&Order{Status: OrderStatusFilled, FilledQuantity: 10, CapturedCashCents: 1900}, 1900, 0},
+			&Order{Status: OrderStatusFilled, FilledQuantity: 10, CapturedCashPoints: 1900}, 1900, 0},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -232,10 +232,10 @@ func TestRGPlacementAccounting(t *testing.T) {
 					c.committed, c.o, rec, rel, c.wantRecord, c.wantRelease)
 			}
 			// Regression guard: a resting order under the OLD model recorded
-			// realizedStakeCents (0 here) — i.e. the bypass. The new model
+			// realizedStakePoints (0 here) — i.e. the bypass. The new model
 			// must record the full committed for a non-terminal order.
 			if c.o != nil && c.committed > 0 && c.o.Status == OrderStatusOpen {
-				if rec == realizedStakeCents(c.o) {
+				if rec == realizedStakePoints(c.o) {
 					t.Fatalf("resting order still records realized (%d) — bypass not closed", rec)
 				}
 			}
@@ -280,22 +280,22 @@ func TestRGReleaseAfterAtomicGate(t *testing.T) {
 		{"placement error releases whole committed", 5000,
 			&Order{Status: OrderStatusOpen}, false, true, 5000},
 		{"idempotent replay releases whole committed (original counts it)", 5000,
-			&Order{Status: OrderStatusFilled, CapturedCashCents: 5000}, true, false, 5000},
+			&Order{Status: OrderStatusFilled, CapturedCashPoints: 5000}, true, false, 5000},
 		{"nil order releases whole committed", 5000, nil, false, false, 5000},
 		{"never-reserved reject releases whole committed", 5000,
 			&Order{Status: OrderStatusRejected}, false, false, 5000},
 		{"resting open releases nothing (committed stays counted)", 5000,
 			&Order{Status: OrderStatusOpen, FilledQuantity: 0}, false, false, 0},
 		{"resting partial releases nothing", 5000,
-			&Order{Status: OrderStatusPartial, FilledQuantity: 3, CapturedCashCents: 1500}, false, false, 0},
+			&Order{Status: OrderStatusPartial, FilledQuantity: 3, CapturedCashPoints: 1500}, false, false, 0},
 		{"filled taker releases committed−realized", 5000,
-			&Order{Status: OrderStatusFilled, FilledQuantity: 136, CapturedCashCents: 4994}, false, false, 6},
+			&Order{Status: OrderStatusFilled, FilledQuantity: 136, CapturedCashPoints: 4994}, false, false, 6},
 		{"IOC cancelled remainder releases committed−realized", 2500,
-			&Order{Status: OrderStatusCancelled, FilledQuantity: 1, CapturedCashCents: 190}, false, false, 2310},
+			&Order{Status: OrderStatusCancelled, FilledQuantity: 1, CapturedCashPoints: 190}, false, false, 2310},
 		{"expired unfilled releases whole committed", 2500,
 			&Order{Status: OrderStatusExpired, FilledQuantity: 0}, false, false, 2500},
 		{"fully captured terminal releases nothing", 1900,
-			&Order{Status: OrderStatusFilled, FilledQuantity: 10, CapturedCashCents: 1900}, false, false, 0},
+			&Order{Status: OrderStatusFilled, FilledQuantity: 10, CapturedCashPoints: 1900}, false, false, 0},
 		{"error wins over a resting status", 5000,
 			&Order{Status: OrderStatusOpen}, false, true, 5000},
 	}

@@ -28,7 +28,7 @@ type SettlementAccrualRequest struct {
 	PlayerID         string
 	BetID            string
 	SettlementStatus string
-	StakeCents       int64
+	StakePoints      int64
 	IdempotencyKey   string
 	Reason           string
 	SettledAt        time.Time
@@ -65,30 +65,30 @@ type TierUpdateRequest struct {
 }
 
 type RuleUpdateRequest struct {
-	RuleID                 string
-	Name                   string
-	SourceType             string
-	Active                 bool
-	Multiplier             float64
-	MinQualifiedStakeCents int64
-	EligibleSportIDs       []string
-	EligibleBetTypes       []string
-	MaxPointsPerEvent      int64
-	EffectiveFrom          *time.Time
-	EffectiveTo            *time.Time
+	RuleID                  string
+	Name                    string
+	SourceType              string
+	Active                  bool
+	Multiplier              float64
+	MinQualifiedStakePoints int64
+	EligibleSportIDs        []string
+	EligibleBetTypes        []string
+	MaxPointsPerEvent       int64
+	EffectiveFrom           *time.Time
+	EffectiveTo             *time.Time
 }
 
 type RuleCreateRequest struct {
-	Name                   string
-	SourceType             string
-	Active                 bool
-	Multiplier             float64
-	MinQualifiedStakeCents int64
-	EligibleSportIDs       []string
-	EligibleBetTypes       []string
-	MaxPointsPerEvent      int64
-	EffectiveFrom          *time.Time
-	EffectiveTo            *time.Time
+	Name                    string
+	SourceType              string
+	Active                  bool
+	Multiplier              float64
+	MinQualifiedStakePoints int64
+	EligibleSportIDs        []string
+	EligibleBetTypes        []string
+	MaxPointsPerEvent       int64
+	EffectiveFrom           *time.Time
+	EffectiveTo             *time.Time
 }
 
 type Service struct {
@@ -133,12 +133,12 @@ func NewService() *Service {
 	tiers := defaultTiers()
 	rules := []canonicalv1.LoyaltyAccrualRule{
 		{
-			RuleID:                 "rule:loyalty:default-settlement",
-			Name:                   "Default settled bet accrual",
-			SourceType:             string(canonicalv1.LoyaltyLedgerSourceBetSettlement),
-			Active:                 true,
-			Multiplier:             1.0,
-			MinQualifiedStakeCents: 100,
+			RuleID:                  "rule:loyalty:default-settlement",
+			Name:                    "Default settled bet accrual",
+			SourceType:              string(canonicalv1.LoyaltyLedgerSourceBetSettlement),
+			Active:                  true,
+			Multiplier:              1.0,
+			MinQualifiedStakePoints: 100,
 		},
 	}
 	svc := &Service{
@@ -169,9 +169,9 @@ func NewService() *Service {
 		PointsDelta:  125,
 		BalanceAfter: 4200,
 		Metadata: map[string]string{
-			"betId":      "bet:seed:1001",
-			"stakeCents": "12500",
-			"reason":     "seeded settled bet loyalty accrual",
+			"betId":       "bet:seed:1001",
+			"stakePoints": "12500",
+			"reason":      "seeded settled bet loyalty accrual",
 		},
 		CreatedBy: "system",
 		CreatedAt: now.Add(-2 * time.Hour),
@@ -198,9 +198,9 @@ func NewService() *Service {
 		PointsDelta:  50,
 		BalanceAfter: 850,
 		Metadata: map[string]string{
-			"betId":      "bet:seed:1002",
-			"stakeCents": "5000",
-			"reason":     "seeded settled bet loyalty accrual",
+			"betId":       "bet:seed:1002",
+			"stakePoints": "5000",
+			"reason":      "seeded settled bet loyalty accrual",
 		},
 		CreatedBy: "system",
 		CreatedAt: now.Add(-6 * time.Hour),
@@ -227,9 +227,9 @@ func NewService() *Service {
 		PointsDelta:  75,
 		BalanceAfter: 1800,
 		Metadata: map[string]string{
-			"betId":      "bet:seed:1004",
-			"stakeCents": "7500",
-			"reason":     "seeded settled bet loyalty accrual",
+			"betId":       "bet:seed:1004",
+			"stakePoints": "7500",
+			"reason":      "seeded settled bet loyalty accrual",
 		},
 		CreatedBy: "system",
 		CreatedAt: now.Add(-5 * time.Hour),
@@ -242,9 +242,9 @@ func NewService() *Service {
 		PointsDelta:  30,
 		BalanceAfter: 350,
 		Metadata: map[string]string{
-			"betId":      "bet:seed:1005",
-			"stakeCents": "3000",
-			"reason":     "seeded settled bet loyalty accrual",
+			"betId":       "bet:seed:1005",
+			"stakePoints": "3000",
+			"reason":      "seeded settled bet loyalty accrual",
 		},
 		CreatedBy: "system",
 		CreatedAt: now.Add(-8 * time.Hour),
@@ -417,7 +417,7 @@ func (s *Service) UpdateRule(request RuleUpdateRequest) ([]canonicalv1.LoyaltyAc
 		s.rules[i].SourceType = strings.TrimSpace(request.SourceType)
 		s.rules[i].Active = request.Active
 		s.rules[i].Multiplier = request.Multiplier
-		s.rules[i].MinQualifiedStakeCents = request.MinQualifiedStakeCents
+		s.rules[i].MinQualifiedStakePoints = request.MinQualifiedStakePoints
 		s.rules[i].EligibleSportIDs = append([]string(nil), request.EligibleSportIDs...)
 		s.rules[i].EligibleBetTypes = append([]string(nil), request.EligibleBetTypes...)
 		s.rules[i].MaxPointsPerEvent = request.MaxPointsPerEvent
@@ -446,17 +446,17 @@ func (s *Service) CreateRule(request RuleCreateRequest) ([]canonicalv1.LoyaltyAc
 	ruleID := fmt.Sprintf("rule:loyalty:%s-%d", strings.ReplaceAll(strings.ToLower(strings.TrimSpace(request.Name)), " ", "-"), time.Now().UnixMilli())
 
 	rule := canonicalv1.LoyaltyAccrualRule{
-		RuleID:                 ruleID,
-		Name:                   strings.TrimSpace(request.Name),
-		SourceType:             strings.TrimSpace(request.SourceType),
-		Active:                 request.Active,
-		Multiplier:             request.Multiplier,
-		MinQualifiedStakeCents: request.MinQualifiedStakeCents,
-		EligibleSportIDs:       append([]string(nil), request.EligibleSportIDs...),
-		EligibleBetTypes:       append([]string(nil), request.EligibleBetTypes...),
-		MaxPointsPerEvent:      request.MaxPointsPerEvent,
-		EffectiveFrom:          cloneTime(request.EffectiveFrom),
-		EffectiveTo:            cloneTime(request.EffectiveTo),
+		RuleID:                  ruleID,
+		Name:                    strings.TrimSpace(request.Name),
+		SourceType:              strings.TrimSpace(request.SourceType),
+		Active:                  request.Active,
+		Multiplier:              request.Multiplier,
+		MinQualifiedStakePoints: request.MinQualifiedStakePoints,
+		EligibleSportIDs:        append([]string(nil), request.EligibleSportIDs...),
+		EligibleBetTypes:        append([]string(nil), request.EligibleBetTypes...),
+		MaxPointsPerEvent:       request.MaxPointsPerEvent,
+		EffectiveFrom:           cloneTime(request.EffectiveFrom),
+		EffectiveTo:             cloneTime(request.EffectiveTo),
 	}
 
 	s.rules = append(s.rules, rule)
@@ -524,7 +524,7 @@ func (s *Service) AccrueSettledBet(request SettlementAccrualRequest) (canonicalv
 	playerID := strings.TrimSpace(request.PlayerID)
 	betID := strings.TrimSpace(request.BetID)
 	idempotencyKey := strings.TrimSpace(request.IdempotencyKey)
-	if playerID == "" || betID == "" || idempotencyKey == "" || request.StakeCents <= 0 {
+	if playerID == "" || betID == "" || idempotencyKey == "" || request.StakePoints <= 0 {
 		return canonicalv1.LoyaltyLedgerEntry{}, canonicalv1.LoyaltyAccount{}, ErrInvalidRequest
 	}
 	if status := strings.TrimSpace(strings.ToLower(request.SettlementStatus)); status != "settled_won" && status != "settled_lost" {
@@ -540,7 +540,7 @@ func (s *Service) AccrueSettledBet(request SettlementAccrualRequest) (canonicalv
 	}
 
 	account := s.ensureAccountLocked(playerID)
-	points := s.pointsForStakeLocked(request.StakeCents)
+	points := s.pointsForStakeLocked(request.StakePoints)
 	if points <= 0 {
 		return canonicalv1.LoyaltyLedgerEntry{}, canonicalv1.LoyaltyAccount{}, ErrInvalidRequest
 	}
@@ -560,9 +560,9 @@ func (s *Service) AccrueSettledBet(request SettlementAccrualRequest) (canonicalv
 		PointsDelta:  points,
 		BalanceAfter: account.PointsBalance + points,
 		Metadata: map[string]string{
-			"betId":      betID,
-			"stakeCents": fmt.Sprintf("%d", request.StakeCents),
-			"reason":     settlementReasonOrDefault(request.Reason, "settled bet loyalty accrual"),
+			"betId":       betID,
+			"stakePoints": fmt.Sprintf("%d", request.StakePoints),
+			"reason":      settlementReasonOrDefault(request.Reason, "settled bet loyalty accrual"),
 		},
 		CreatedBy: "system",
 		CreatedAt: timestamp,
@@ -714,7 +714,7 @@ func (s *Service) seedReferral(referrerID string, referredID string, state canon
 	s.referralIDsByReferrer[referrerID] = append(s.referralIDsByReferrer[referrerID], referral.ReferralID)
 }
 
-func (s *Service) pointsForStakeLocked(stakeCents int64) int64 {
+func (s *Service) pointsForStakeLocked(stakePoints int64) int64 {
 	multiplier := 1.0
 	for _, rule := range s.rules {
 		if !rule.Active {
@@ -723,13 +723,13 @@ func (s *Service) pointsForStakeLocked(stakeCents int64) int64 {
 		if strings.TrimSpace(rule.SourceType) != string(canonicalv1.LoyaltyLedgerSourceBetSettlement) {
 			continue
 		}
-		if stakeCents < rule.MinQualifiedStakeCents {
+		if stakePoints < rule.MinQualifiedStakePoints {
 			return 0
 		}
 		multiplier = rule.Multiplier
 		break
 	}
-	points := int64(float64(stakeCents) / 100.0 * multiplier)
+	points := int64(float64(stakePoints) / 100.0 * multiplier)
 	if points <= 0 {
 		points = 1
 	}

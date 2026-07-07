@@ -35,8 +35,8 @@ type Campaign struct {
 	Status       string          `json:"status"`
 	StartAt      time.Time       `json:"startAt"`
 	EndAt        time.Time       `json:"endAt"`
-	BudgetCents  *int64          `json:"budgetCents,omitempty"`
-	SpentCents   int64           `json:"spentCents"`
+	BudgetPoints *int64          `json:"budgetPoints,omitempty"`
+	SpentPoints  int64           `json:"spentPoints"`
 	MaxClaims    *int            `json:"maxClaims,omitempty"`
 	ClaimCount   int             `json:"claimCount"`
 	Rules        json.RawMessage `json:"rules"`
@@ -56,31 +56,31 @@ type CampaignRule struct {
 
 // PlayerBonus tracks a single bonus instance for a player.
 type PlayerBonus struct {
-	ID                     int64           `json:"id"`
-	UserID                 string          `json:"userId"`
-	CampaignID             *int64          `json:"campaignId,omitempty"`
-	BonusType              string          `json:"bonusType"`
-	Status                 string          `json:"status"` // active, completed, expired, forfeited
-	GrantedAmountCents     int64           `json:"grantedAmountCents"`
-	RemainingAmountCents   int64           `json:"remainingAmountCents"`
-	WageringRequiredCents  int64           `json:"wageringRequiredCents"`
-	WageringCompletedCents int64           `json:"wageringCompletedCents"`
-	ExpiresAt              time.Time       `json:"expiresAt"`
-	GrantedAt              time.Time       `json:"grantedAt"`
-	CompletedAt            *time.Time      `json:"completedAt,omitempty"`
-	ForfeitedAt            *time.Time      `json:"forfeitedAt,omitempty"`
-	ForfeitedBy            string          `json:"forfeitedBy,omitempty"`
-	Metadata               json.RawMessage `json:"metadata,omitempty"`
-	CreatedAt              time.Time       `json:"createdAt"`
-	UpdatedAt              time.Time       `json:"updatedAt"`
+	ID                      int64           `json:"id"`
+	UserID                  string          `json:"userId"`
+	CampaignID              *int64          `json:"campaignId,omitempty"`
+	BonusType               string          `json:"bonusType"`
+	Status                  string          `json:"status"` // active, completed, expired, forfeited
+	GrantedAmountPoints     int64           `json:"grantedAmountPoints"`
+	RemainingAmountPoints   int64           `json:"remainingAmountPoints"`
+	WageringRequiredPoints  int64           `json:"wageringRequiredPoints"`
+	WageringCompletedPoints int64           `json:"wageringCompletedPoints"`
+	ExpiresAt               time.Time       `json:"expiresAt"`
+	GrantedAt               time.Time       `json:"grantedAt"`
+	CompletedAt             *time.Time      `json:"completedAt,omitempty"`
+	ForfeitedAt             *time.Time      `json:"forfeitedAt,omitempty"`
+	ForfeitedBy             string          `json:"forfeitedBy,omitempty"`
+	Metadata                json.RawMessage `json:"metadata,omitempty"`
+	CreatedAt               time.Time       `json:"createdAt"`
+	UpdatedAt               time.Time       `json:"updatedAt"`
 }
 
 // WageringProgressPct returns the completion percentage (0–100).
 func (pb *PlayerBonus) WageringProgressPct() float64 {
-	if pb.WageringRequiredCents <= 0 {
+	if pb.WageringRequiredPoints <= 0 {
 		return 100.0
 	}
-	pct := float64(pb.WageringCompletedCents) / float64(pb.WageringRequiredCents) * 100.0
+	pct := float64(pb.WageringCompletedPoints) / float64(pb.WageringRequiredPoints) * 100.0
 	if pct > 100.0 {
 		return 100.0
 	}
@@ -89,16 +89,15 @@ func (pb *PlayerBonus) WageringProgressPct() float64 {
 
 // CreateCampaignRequest is the input for creating a new campaign.
 type CreateCampaignRequest struct {
-	Name              string      `json:"name"`
-	Description       string      `json:"description"`
-	CampaignType      string      `json:"campaign_type"`
-	StartAt           time.Time   `json:"start_at"`
-	EndAt             time.Time   `json:"end_at"`
-	BudgetCents       *int64      `json:"budget_cents"`
-	BudgetPointsCents *int64      `json:"budget_points_cents"`
-	MaxClaims         *int        `json:"max_claims"`
-	Rules             []RuleInput `json:"rules"`
-	CreatedBy         string      `json:"-"` // set from auth context
+	Name         string      `json:"name"`
+	Description  string      `json:"description"`
+	CampaignType string      `json:"campaign_type"`
+	StartAt      time.Time   `json:"start_at"`
+	EndAt        time.Time   `json:"end_at"`
+	BudgetPoints *int64      `json:"budget_points"`
+	MaxClaims    *int        `json:"max_claims"`
+	Rules        []RuleInput `json:"rules"`
+	CreatedBy    string      `json:"-"` // set from auth context
 }
 
 // RuleInput is used when creating/updating campaign rules.
@@ -110,12 +109,12 @@ type RuleInput struct {
 
 // UpdateCampaignRequest is the input for updating a campaign.
 type UpdateCampaignRequest struct {
-	Name        *string    `json:"name"`
-	Description *string    `json:"description"`
-	StartAt     *time.Time `json:"start_at"`
-	EndAt       *time.Time `json:"end_at"`
-	BudgetCents *int64     `json:"budget_cents"`
-	MaxClaims   *int       `json:"max_claims"`
+	Name         *string    `json:"name"`
+	Description  *string    `json:"description"`
+	StartAt      *time.Time `json:"start_at"`
+	EndAt        *time.Time `json:"end_at"`
+	BudgetPoints *int64     `json:"budget_points"`
+	MaxClaims    *int       `json:"max_claims"`
 }
 
 // ClaimBonusRequest is the player-facing input for claiming a bonus.
@@ -127,12 +126,11 @@ type ClaimBonusRequest struct {
 
 // GrantBonusRequest is the admin-facing input for manually granting a bonus.
 type GrantBonusRequest struct {
-	UserID              string `json:"user_id"`
-	CampaignID          int64  `json:"campaign_id"`
-	OverrideAmountCents *int64 `json:"override_amount_cents"`
-	OverridePointsCents *int64 `json:"override_points_cents"`
-	Reason              string `json:"reason"`
-	GrantedBy           string `json:"-"` // set from auth context
+	UserID         string `json:"user_id"`
+	CampaignID     int64  `json:"campaign_id"`
+	OverridePoints *int64 `json:"override_points"`
+	Reason         string `json:"reason"`
+	GrantedBy      string `json:"-"` // set from auth context
 }
 
 // ForfeitBonusRequest is the admin action to forfeit a player's bonus.
@@ -141,26 +139,18 @@ type ForfeitBonusRequest struct {
 	ForfeitedBy string `json:"-"` // set from auth context
 }
 
-// NormalizePointAliases maps preferred launch request fields into the legacy
-// internal fields still used by repository and rule evaluation code.
+// NormalizePointAliases maps launch request vocabulary into the legacy
+// engine keys (rule types, tier naming). The cents-era budget alias died
+// with the 2026-07-07 Points unit-model correction — budget_points is the
+// only field now.
 func (r *CreateCampaignRequest) NormalizePointAliases() {
 	r.CampaignType = pointCampaignType(r.CampaignType)
-	if r.BudgetCents == nil && r.BudgetPointsCents != nil {
-		r.BudgetCents = r.BudgetPointsCents
-	}
 	for i := range r.Rules {
 		r.Rules[i].NormalizePointAliases()
 	}
 }
 
-func (r CreateCampaignRequest) HasConflictingBudgetAliases() bool {
-	return r.BudgetCents != nil && r.BudgetPointsCents != nil && *r.BudgetCents != *r.BudgetPointsCents
-}
-
 func (r CreateCampaignRequest) ValidatePointAliasConflicts() error {
-	if r.HasConflictingBudgetAliases() {
-		return fmt.Errorf("budget_points_cents conflicts with budget_cents")
-	}
 	for i, rule := range r.Rules {
 		if err := rule.ValidatePointAliasConflicts(); err != nil {
 			return fmt.Errorf("rules[%d]: %w", i, err)
@@ -243,11 +233,8 @@ func (r *RuleInput) NormalizePointAliases() {
 			delete(cfg, from)
 		}
 	}
-	copyAlias("max_bonus_points_cents", "max_bonus_cents")
-	copyAlias("fixed_amount_points_cents", "fixed_amount_cents")
-	copyAlias("max_play_contribution_points_cents", "max_stake_contribution_cents")
-	copyAlias("max_stake_contribution_points_cents", "max_stake_contribution_cents")
-	copyAlias("min_points_cents", "min_amount_cents")
+	copyAlias("max_play_contribution_points", "max_stake_contribution_points")
+	copyAlias("min_points", "min_amount_points")
 	copyAlias("min_point_activity_count", "min_deposits")
 	copyAlias("rank_min", "tier_min")
 	normalized, err := json.Marshal(cfg)
@@ -308,23 +295,14 @@ func (r RuleInput) ValidatePointAliasConflicts() error {
 	if err := json.Unmarshal(raw, &cfg); err != nil {
 		return nil
 	}
-	if conflictingConfigValues(cfg, "max_bonus_points_cents", "max_bonus_cents") {
-		return fmt.Errorf("max_bonus_points_cents conflicts with max_bonus_cents")
+	if conflictingConfigValues(cfg, "min_points", "min_amount_points") {
+		return fmt.Errorf("min_points conflicts with min_amount_points")
 	}
-	if conflictingConfigValues(cfg, "fixed_amount_points_cents", "fixed_amount_cents") {
-		return fmt.Errorf("fixed_amount_points_cents conflicts with fixed_amount_cents")
+	if conflictingConfigValues(cfg, "max_play_contribution_points", "max_stake_contribution_points") {
+		return fmt.Errorf("max_play_contribution_points conflicts with max_stake_contribution_points")
 	}
-	if conflictingConfigValues(cfg, "min_points_cents", "min_amount_cents") {
-		return fmt.Errorf("min_points_cents conflicts with min_amount_cents")
-	}
-	if conflictingConfigValues(cfg, "max_play_contribution_points_cents", "max_stake_contribution_cents") {
-		return fmt.Errorf("max_play_contribution_points_cents conflicts with max_stake_contribution_cents")
-	}
-	if conflictingConfigValues(cfg, "max_stake_contribution_points_cents", "max_stake_contribution_cents") {
-		return fmt.Errorf("max_play_contribution_points_cents conflicts with max_stake_contribution_cents")
-	}
-	if conflictingConfigValues(cfg, "max_play_contribution_points_cents", "max_stake_contribution_points_cents") {
-		return fmt.Errorf("max_play_contribution_points_cents conflicts with max_stake_contribution_points_cents")
+	if conflictingConfigValues(cfg, "max_play_contribution_points", "max_stake_contribution_points") {
+		return fmt.Errorf("max_play_contribution_points conflicts with max_stake_contribution_points")
 	}
 	return nil
 }
@@ -357,17 +335,9 @@ func jsonValuesEqual(a any, b any) bool {
 	return string(aJSON) == string(bJSON)
 }
 
-// NormalizePointAliases maps the preferred launch override amount into the
-// legacy internal field used by the service.
-func (r *GrantBonusRequest) NormalizePointAliases() {
-	if r.OverrideAmountCents == nil && r.OverridePointsCents != nil {
-		r.OverrideAmountCents = r.OverridePointsCents
-	}
-}
-
-func (r GrantBonusRequest) HasConflictingOverrideAliases() bool {
-	return r.OverrideAmountCents != nil && r.OverridePointsCents != nil && *r.OverrideAmountCents != *r.OverridePointsCents
-}
+// The cents-era override alias died with the 2026-07-07 Points unit-model
+// correction — override_points is the single field; nothing to normalize.
+func (r *GrantBonusRequest) NormalizePointAliases() {}
 
 // WageringConfig holds the internal point-play requirement rules parsed from campaign_rules JSONB.
 type WageringConfig struct {
@@ -375,16 +345,16 @@ type WageringConfig struct {
 	MinOddsDecimal       float64  `json:"min_odds_decimal"`  // e.g., 1.5
 	ParlayMultiplier     float64  `json:"parlay_multiplier"` // e.g., 1.5 for 1.5x contribution
 	ExcludedSports       []string `json:"excluded_sports"`
-	MaxStakeContribution *int64   `json:"max_stake_contribution_cents"`
+	MaxStakeContribution *int64   `json:"max_stake_contribution_points"`
 }
 
 // RewardConfig holds the reward definition parsed from campaign_rules JSONB.
 type RewardConfig struct {
-	Type             string `json:"type"`               // point_grant, point_match, or old storage input normalized at boundaries
-	MatchPct         int    `json:"match_pct"`          // for point_match: percentage
-	MaxBonusCents    int64  `json:"max_bonus_cents"`    // cap on reward
-	FixedAmountCents int64  `json:"fixed_amount_cents"` // for fixed rewards
-	ExpiryDays       int    `json:"expiry_days"`        // bonus validity period
+	Type              string `json:"type"`                // point_grant, point_match, or old storage input normalized at boundaries
+	MatchPct          int    `json:"match_pct"`           // for point_match: percentage
+	MaxBonusPoints    int64  `json:"max_bonus_points"`    // cap on reward
+	FixedAmountPoints int64  `json:"fixed_amount_points"` // for fixed rewards
+	ExpiryDays        int    `json:"expiry_days"`         // bonus validity period
 }
 
 // EligibilityConfig holds eligibility rules parsed from campaign_rules JSONB.
@@ -397,6 +367,6 @@ type EligibilityConfig struct {
 
 // TriggerConfig holds trigger rules parsed from campaign_rules JSONB.
 type TriggerConfig struct {
-	Event          string `json:"event"` // manual, signup, prediction_order, or old storage input normalized at boundaries
-	MinAmountCents int64  `json:"min_amount_cents"`
+	Event           string `json:"event"` // manual, signup, prediction_order, or old storage input normalized at boundaries
+	MinAmountPoints int64  `json:"min_amount_points"`
 }

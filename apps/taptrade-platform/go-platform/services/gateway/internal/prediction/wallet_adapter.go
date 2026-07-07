@@ -12,10 +12,10 @@ import (
 type WalletAdapter interface {
 	// Debit removes funds from a user's wallet (e.g., when placing an order).
 	// Returns an error if the user has insufficient balance.
-	Debit(ctx context.Context, userID string, amountCents int64, idempotencyKey, reason string) error
+	Debit(ctx context.Context, userID string, amountPoints int64, idempotencyKey, reason string) error
 
 	// Credit adds funds to a user's wallet (e.g., when a settlement pays out).
-	Credit(ctx context.Context, userID string, amountCents int64, idempotencyKey, reason string) error
+	Credit(ctx context.Context, userID string, amountPoints int64, idempotencyKey, reason string) error
 
 	// Balance returns the user's current balance in cents. Implementations
 	// should return math.MaxInt64 to signal "unlimited" when they don't track
@@ -29,8 +29,8 @@ type WalletAdapter interface {
 type TxWalletAdapter interface {
 	WalletAdapter
 	BeginTx(ctx context.Context) (*sql.Tx, error)
-	DebitWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, idempotencyKey, reason string) error
-	CreditWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, idempotencyKey, reason string) error
+	DebitWithTx(ctx context.Context, tx *sql.Tx, userID string, amountPoints int64, idempotencyKey, reason string) error
+	CreditWithTx(ctx context.Context, tx *sql.Tx, userID string, amountPoints int64, idempotencyKey, reason string) error
 }
 
 // ExchangeWalletAdapter is the wallet capability surface required by the
@@ -52,16 +52,16 @@ type ExchangeWalletAdapter interface {
 	// on the market.
 	BeginExchangeTx(ctx context.Context) (*sql.Tx, error)
 
-	// HoldWithTx reserves amountCents from the user's available balance
+	// HoldWithTx reserves amountPoints from the user's available balance
 	// inside the caller's tx. Idempotent on (refType, refID).
-	HoldWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, refType, refID string, expiresIn time.Duration) error
+	HoldWithTx(ctx context.Context, tx *sql.Tx, userID string, amountPoints int64, refType, refID string, expiresIn time.Duration) error
 
-	// CaptureReservationWithTx debits amountCents from the user's wallet,
+	// CaptureReservationWithTx debits amountPoints from the user's wallet,
 	// drawing against the reservation identified by (refType, refID).
 	// Cumulative captures across calls cannot exceed the reservation's
 	// original amount. captureKey must be unique per call (e.g.,
 	// "prediction_fill:<trade_id>") for ledger idempotency.
-	CaptureReservationWithTx(ctx context.Context, tx *sql.Tx, refType, refID string, amountCents int64, captureKey string) error
+	CaptureReservationWithTx(ctx context.Context, tx *sql.Tx, refType, refID string, amountPoints int64, captureKey string) error
 
 	// ReleaseReservationWithTx releases the uncaptured remainder of the
 	// reservation. Idempotent: releasing an already-released or
@@ -75,11 +75,11 @@ type ExchangeWalletAdapter interface {
 // checks in the service layer always pass.
 type NoopWallet struct{}
 
-func (NoopWallet) Debit(_ context.Context, userID string, amountCents int64, idempotencyKey, reason string) error {
+func (NoopWallet) Debit(_ context.Context, userID string, amountPoints int64, idempotencyKey, reason string) error {
 	return nil
 }
 
-func (NoopWallet) Credit(_ context.Context, userID string, amountCents int64, idempotencyKey, reason string) error {
+func (NoopWallet) Credit(_ context.Context, userID string, amountPoints int64, idempotencyKey, reason string) error {
 	return nil
 }
 

@@ -31,7 +31,7 @@ INSERT INTO fixtures (id, sport_key, league_key, season_key, event_key, tourname
 ON CONFLICT (id) DO NOTHING;
 
 -- Sample Markets
-INSERT INTO markets (id, fixture_id, sport_key, league_key, event_key, name, status, starts_at, min_stake_cents, max_stake_cents) VALUES
+INSERT INTO markets (id, fixture_id, sport_key, league_key, event_key, name, status, starts_at, min_stake_points, max_stake_points) VALUES
   ('market-001', 'fixture-001', 'football', 'premier-league', 'event-001', 'Match Winner', 'open', CURRENT_TIMESTAMP + INTERVAL '2 days', 50, 100000),
   ('market-002', 'fixture-001', 'football', 'premier-league', 'event-001', 'Over/Under 2.5 Goals', 'open', CURRENT_TIMESTAMP + INTERVAL '2 days', 50, 100000),
   ('market-003', 'fixture-002', 'football', 'premier-league', 'event-002', 'Match Winner', 'open', CURRENT_TIMESTAMP + INTERVAL '3 days', 50, 100000),
@@ -54,14 +54,14 @@ INSERT INTO selections (id, market_id, name, odds, active) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- Sample Wallets
-INSERT INTO wallets (id, punter_id, balance_cents, bonus_balance_cents, currency_code) VALUES
+INSERT INTO wallets (id, punter_id, balance_points, bonus_balance_points, currency_code) VALUES
   ('wallet-001', 'punter-001', 500000, 50000, 'GBP'),
   ('wallet-002', 'punter-002', 250000, 0, 'GBP'),
   ('wallet-003', 'punter-003', 100000, 0, 'GBP')
 ON CONFLICT (id) DO NOTHING;
 
 -- Sample Bets
-INSERT INTO bets (id, punter_id, selection_id, market_id, fixture_id, stake_cents, odds_taken, status, result, potential_payout_cents, actual_payout_cents, placed_at, settled_at) VALUES
+INSERT INTO bets (id, punter_id, selection_id, market_id, fixture_id, stake_points, odds_taken, status, result, potential_payout_points, actual_payout_points, placed_at, settled_at) VALUES
   ('bet-001', 'punter-001', 'selection-001', 'market-001', 'fixture-001', 5000, 1.95, 'pending', NULL, 9750, NULL, CURRENT_TIMESTAMP - INTERVAL '1 hour', NULL),
   ('bet-002', 'punter-001', 'selection-004', 'market-002', 'fixture-001', 3000, 1.85, 'pending', NULL, 5550, NULL, CURRENT_TIMESTAMP - INTERVAL '1 hour', NULL),
   ('bet-003', 'punter-002', 'selection-006', 'market-003', 'fixture-002', 10000, 1.65, 'pending', NULL, 16500, NULL, CURRENT_TIMESTAMP - INTERVAL '30 minutes', NULL),
@@ -70,7 +70,7 @@ INSERT INTO bets (id, punter_id, selection_id, market_id, fixture_id, stake_cent
 ON CONFLICT (id) DO NOTHING;
 
 -- Sample Ledger Entries
-INSERT INTO ledger_entries (id, wallet_id, punter_id, transaction_type, amount_cents, bonus_amount_cents, balance_before_cents, balance_after_cents, reference_type, reference_id, description) VALUES
+INSERT INTO ledger_entries (id, wallet_id, punter_id, transaction_type, amount_points, bonus_amount_points, balance_before_points, balance_after_points, reference_type, reference_id, description) VALUES
   ('ledger-001', 'wallet-001', 'punter-001', 'deposit', 500000, 0, 0, 500000, 'bank_transfer', 'transfer-001', 'Initial deposit'),
   ('ledger-002', 'wallet-001', 'punter-001', 'bonus', 0, 50000, 500000, 500000, 'promotion', 'promo-001', 'Welcome bonus'),
   ('ledger-003', 'wallet-001', 'punter-001', 'bet_placed', -5000, 0, 500000, 495000, 'bet', 'bet-001', 'Bet placed on Arsenal'),
@@ -80,7 +80,7 @@ INSERT INTO ledger_entries (id, wallet_id, punter_id, transaction_type, amount_c
 ON CONFLICT (id) DO NOTHING;
 
 -- Sample Free Bets
-INSERT INTO freebets (id, punter_id, amount_cents, currency_code, status, issued_at, expires_at, used_at) VALUES
+INSERT INTO freebets (id, punter_id, amount_points, currency_code, status, issued_at, expires_at, used_at) VALUES
   ('freebet-001', 'punter-001', 50000, 'GBP', 'active', CURRENT_TIMESTAMP - INTERVAL '7 days', CURRENT_TIMESTAMP + INTERVAL '23 days', NULL),
   ('freebet-002', 'punter-002', 100000, 'GBP', 'active', CURRENT_TIMESTAMP - INTERVAL '3 days', CURRENT_TIMESTAMP + INTERVAL '27 days', NULL),
   ('freebet-003', 'punter-003', 50000, 'GBP', 'expired', CURRENT_TIMESTAMP - INTERVAL '40 days', CURRENT_TIMESTAMP - INTERVAL '10 days', NULL)

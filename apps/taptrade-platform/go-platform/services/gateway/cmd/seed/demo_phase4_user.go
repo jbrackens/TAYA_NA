@@ -102,14 +102,14 @@ func RunPhase4DemoUser(ctx context.Context, h *Harness) (*PhaseStats, error) {
 		idemKey := fmt.Sprintf("demo:phase4:slot%d:%s", i, m.ID)
 
 		req := prediction.PlaceOrderRequest{
-			MarketID:         m.ID,
-			Side:             entry.side,
-			Action:           prediction.OrderActionBuy,
-			OrderType:        prediction.OrderTypeMarket,
-			Quantity:         qty,
-			IdempotencyKey:   &idemKey,
-			TimeInForce:      prediction.TIFIOC,
-			NotionalCapCents: &notionalCap,
+			MarketID:          m.ID,
+			Side:              entry.side,
+			Action:            prediction.OrderActionBuy,
+			OrderType:         prediction.OrderTypeMarket,
+			Quantity:          qty,
+			IdempotencyKey:    &idemKey,
+			TimeInForce:       prediction.TIFIOC,
+			NotionalCapPoints: &notionalCap,
 		}
 		if _, _, err := h.Service.PlaceOrder(ctx, req, demoUserID); err != nil {
 			stats.Errors++

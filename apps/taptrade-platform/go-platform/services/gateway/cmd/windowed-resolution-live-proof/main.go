@@ -206,22 +206,22 @@ func run(ctx context.Context, cfg proofConfig) error {
 	}
 	assertNoRetired(finalizeRaw, "finalize")
 	var finalized struct {
-		PointDisbursements         []any  `json:"pointDisbursements"`
-		TotalSettlementPointsCents int64  `json:"totalSettlementPointsCents"`
-		Unit                       string `json:"unit"`
-		TapTradeLifecycle           struct {
+		PointDisbursements    []any  `json:"pointDisbursements"`
+		TotalSettlementPoints int64  `json:"totalSettlementPoints"`
+		Unit                  string `json:"unit"`
+		TapTradeLifecycle     struct {
 			Stage string `json:"stage"`
 		} `json:"taptradeLifecycle"`
 	}
 	if err := json.Unmarshal(finalizeRaw, &finalized); err != nil {
 		return fmt.Errorf("decode finalize: %w", err)
 	}
-	if finalized.Unit != "PTS" || finalized.TotalSettlementPointsCents <= 0 || len(finalized.PointDisbursements) == 0 || finalized.TapTradeLifecycle.Stage != "settled" {
+	if finalized.Unit != "PTS" || finalized.TotalSettlementPoints <= 0 || len(finalized.PointDisbursements) == 0 || finalized.TapTradeLifecycle.Stage != "settled" {
 		return fmt.Errorf("unexpected finalize payload: %s", finalizeRaw)
 	}
 
 	fmt.Println("windowed resolution live proof passed")
-	fmt.Printf("market=%s id=%s dispute=%s totalSettlementPointsCents=%d unit=%s\n", cfg.MarketTicker, market.ID, dispute.ID, finalized.TotalSettlementPointsCents, finalized.Unit)
+	fmt.Printf("market=%s id=%s dispute=%s totalSettlementPoints=%d unit=%s\n", cfg.MarketTicker, market.ID, dispute.ID, finalized.TotalSettlementPoints, finalized.Unit)
 	return nil
 }
 
@@ -356,7 +356,7 @@ func postJSONWithClient(base *url.URL, s *session, path string, body any, want i
 }
 
 func assertNoRetired(raw []byte, label string) {
-	for _, retired := range []string{"\"payouts\"", "\"payoutCents\"", "\"pnlCents\"", "\"totalPayoutCents\"", "\"payoutsTotal\"", "\"payoutsCompleted\"", "\"currency\"", "\"bondCents\""} {
+	for _, retired := range []string{"\"payouts\"", "\"payoutPoints\"", "\"pnlPoints\"", "\"totalPayoutPoints\"", "\"payoutsTotal\"", "\"payoutsCompleted\"", "\"currency\"", "\"bondPoints\""} {
 		if bytes.Contains(raw, []byte(retired)) {
 			log.Fatalf("%s response emitted retired field %s: %s", label, retired, raw)
 		}

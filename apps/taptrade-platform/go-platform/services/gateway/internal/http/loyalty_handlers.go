@@ -44,8 +44,8 @@ type loyaltyRuleRequest struct {
 	PredictionSourceType    string   `json:"predictionSourceType"`
 	Active                  bool     `json:"active"`
 	Multiplier              float64  `json:"multiplier"`
-	MinQualifiedStakeCents  int64    `json:"minQualifiedStakeCents"`
-	MinQualifiedPointsCents int64    `json:"minQualifiedPointsCents"`
+	MinQualifiedStakePoints int64    `json:"minQualifiedStakePoints"`
+	MinQualifiedPoints      int64    `json:"minQualifiedPoints"`
 	EligibleSportIDs        []string `json:"eligibleSportIds"`
 	EligibleBetTypes        []string `json:"eligibleBetTypes"`
 	EligiblePredictionTypes []string `json:"eligiblePredictionTypes"`
@@ -60,7 +60,7 @@ type loyaltyAccrualRulePayload struct {
 	Name                    string     `json:"name"`
 	Active                  bool       `json:"active"`
 	Multiplier              float64    `json:"multiplier"`
-	MinQualifiedPointsCents int64      `json:"minQualifiedPointsCents"`
+	MinQualifiedPoints      int64      `json:"minQualifiedPoints"`
 	EligiblePredictionTypes []string   `json:"eligiblePredictionTypes"`
 	MaxPointsPerEvent       int64      `json:"maxPointsPerEvent,omitempty"`
 	EffectiveFrom           *time.Time `json:"effectiveFrom,omitempty"`
@@ -379,16 +379,16 @@ func registerLoyaltyRoutes(mux *stdhttp.ServeMux, service *loyalty.Service) {
 		}
 
 		items, err := service.CreateRule(loyalty.RuleCreateRequest{
-			Name:                   strings.TrimSpace(request.Name),
-			SourceType:             loyaltyRuleSourceType(request),
-			Active:                 request.Active,
-			Multiplier:             request.Multiplier,
-			MinQualifiedStakeCents: loyaltyRuleMinQualifiedPointsCents(request),
-			EligibleSportIDs:       request.EligibleSportIDs,
-			EligibleBetTypes:       loyaltyRuleEligiblePredictionTypes(request),
-			MaxPointsPerEvent:      request.MaxPointsPerEvent,
-			EffectiveFrom:          parseOptionalRFC3339(request.EffectiveFrom),
-			EffectiveTo:            parseOptionalRFC3339(request.EffectiveTo),
+			Name:                    strings.TrimSpace(request.Name),
+			SourceType:              loyaltyRuleSourceType(request),
+			Active:                  request.Active,
+			Multiplier:              request.Multiplier,
+			MinQualifiedStakePoints: loyaltyRuleMinQualifiedPoints(request),
+			EligibleSportIDs:        request.EligibleSportIDs,
+			EligibleBetTypes:        loyaltyRuleEligiblePredictionTypes(request),
+			MaxPointsPerEvent:       request.MaxPointsPerEvent,
+			EffectiveFrom:           parseOptionalRFC3339(request.EffectiveFrom),
+			EffectiveTo:             parseOptionalRFC3339(request.EffectiveTo),
 		})
 		if err != nil {
 			return mapLoyaltyError(err)
@@ -422,17 +422,17 @@ func registerLoyaltyRoutes(mux *stdhttp.ServeMux, service *loyalty.Service) {
 		}
 
 		items, err := service.UpdateRule(loyalty.RuleUpdateRequest{
-			RuleID:                 ruleID,
-			Name:                   strings.TrimSpace(request.Name),
-			SourceType:             loyaltyRuleSourceType(request),
-			Active:                 request.Active,
-			Multiplier:             request.Multiplier,
-			MinQualifiedStakeCents: loyaltyRuleMinQualifiedPointsCents(request),
-			EligibleSportIDs:       request.EligibleSportIDs,
-			EligibleBetTypes:       loyaltyRuleEligiblePredictionTypes(request),
-			MaxPointsPerEvent:      request.MaxPointsPerEvent,
-			EffectiveFrom:          parseOptionalRFC3339(request.EffectiveFrom),
-			EffectiveTo:            parseOptionalRFC3339(request.EffectiveTo),
+			RuleID:                  ruleID,
+			Name:                    strings.TrimSpace(request.Name),
+			SourceType:              loyaltyRuleSourceType(request),
+			Active:                  request.Active,
+			Multiplier:              request.Multiplier,
+			MinQualifiedStakePoints: loyaltyRuleMinQualifiedPoints(request),
+			EligibleSportIDs:        request.EligibleSportIDs,
+			EligibleBetTypes:        loyaltyRuleEligiblePredictionTypes(request),
+			MaxPointsPerEvent:       request.MaxPointsPerEvent,
+			EffectiveFrom:           parseOptionalRFC3339(request.EffectiveFrom),
+			EffectiveTo:             parseOptionalRFC3339(request.EffectiveTo),
 		})
 		if err != nil {
 			return mapLoyaltyError(err)
@@ -448,8 +448,8 @@ func loyaltyRuleSourceType(request loyaltyRuleRequest) string {
 	return toLegacyLoyaltySourceType(strings.TrimSpace(request.PredictionSourceType))
 }
 
-func loyaltyRuleMinQualifiedPointsCents(request loyaltyRuleRequest) int64 {
-	return request.MinQualifiedPointsCents
+func loyaltyRuleMinQualifiedPoints(request loyaltyRuleRequest) int64 {
+	return request.MinQualifiedPoints
 }
 
 func loyaltyRuleEligiblePredictionTypes(request loyaltyRuleRequest) []string {
@@ -470,10 +470,10 @@ func decodeLoyaltyRuleRequest(body io.Reader) (loyaltyRuleRequest, error) {
 		return loyaltyRuleRequest{}, httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
 	}
 	retiredFields := map[string]string{
-		"sourceType":             "predictionSourceType",
-		"minQualifiedStakeCents": "minQualifiedPointsCents",
-		"eligibleSportIds":       "eligiblePredictionTypes",
-		"eligibleBetTypes":       "eligiblePredictionTypes",
+		"sourceType":              "predictionSourceType",
+		"minQualifiedStakePoints": "minQualifiedPoints",
+		"eligibleSportIds":        "eligiblePredictionTypes",
+		"eligibleBetTypes":        "eligiblePredictionTypes",
 	}
 	for retired, preferred := range retiredFields {
 		if _, ok := raw[retired]; ok {
@@ -502,7 +502,7 @@ func toLoyaltyAccrualRulePayload(rule canonicalv1.LoyaltyAccrualRule) loyaltyAcc
 		Name:                    rule.Name,
 		Active:                  rule.Active,
 		Multiplier:              rule.Multiplier,
-		MinQualifiedPointsCents: rule.MinQualifiedStakeCents,
+		MinQualifiedPoints:      rule.MinQualifiedStakePoints,
 		EligiblePredictionTypes: append([]string(nil), rule.EligibleBetTypes...),
 		MaxPointsPerEvent:       rule.MaxPointsPerEvent,
 		EffectiveFrom:           rule.EffectiveFrom,
@@ -705,8 +705,8 @@ func loyaltyLedgerMetadataPayload(entry canonicalv1.LoyaltyLedgerEntry) map[stri
 		switch strings.TrimSpace(key) {
 		case "betId":
 			metadata["predictionId"] = toLaunchLoyaltySourceID(value)
-		case "stakeCents":
-			metadata["pointVolumeCents"] = value
+		case "stakePoints":
+			metadata["pointVolumePoints"] = value
 		case "reason":
 			metadata["reason"] = toLaunchLoyaltyReason(value)
 		default:

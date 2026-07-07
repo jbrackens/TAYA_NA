@@ -289,7 +289,7 @@ func mapAlphaCashierAdminError(err error) error {
 	case errors.Is(err, alphacashier.ErrTxHashInvalid):
 		return httpx.BadRequest("txHash must be valid for this legacy route", map[string]any{"field": "txHash"})
 	case errors.Is(err, wallet.ErrInsufficientFunds):
-		return httpx.BadRequest("insufficient point account balance", map[string]any{"field": "amountCents"})
+		return httpx.BadRequest("insufficient point account balance", map[string]any{"field": "amountPoints"})
 	case errors.Is(err, wallet.ErrReservationNotFound), errors.Is(err, wallet.ErrReservationNotHeld), errors.Is(err, wallet.ErrReservationExpired):
 		return httpx.Conflict("legacy point reservation cannot be resolved", nil)
 	default:

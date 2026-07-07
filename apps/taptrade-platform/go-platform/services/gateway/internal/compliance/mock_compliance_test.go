@@ -67,11 +67,11 @@ func TestMockResponsibleGamblingServiceDepositLimitTracksUsage(t *testing.T) {
 	if len(limits) != 1 {
 		t.Fatalf("expected 1 deposit limit, got %d", len(limits))
 	}
-	if limits[0].UsedCents != 100 {
-		t.Fatalf("expected used cents 100, got %d", limits[0].UsedCents)
+	if limits[0].UsedPoints != 100 {
+		t.Fatalf("expected used cents 100, got %d", limits[0].UsedPoints)
 	}
-	if limits[0].RemainingCents != 900 {
-		t.Fatalf("expected remaining cents 900, got %d", limits[0].RemainingCents)
+	if limits[0].RemainingPoints != 900 {
+		t.Fatalf("expected remaining cents 900, got %d", limits[0].RemainingPoints)
 	}
 
 	allowed, _, err := service.CheckDepositAllowed(ctx, "u-1", 901)
@@ -101,11 +101,11 @@ func TestMockResponsibleGamblingServiceBetLimitTracksUsage(t *testing.T) {
 	if len(limits) != 1 {
 		t.Fatalf("expected 1 bet limit, got %d", len(limits))
 	}
-	if limits[0].UsedCents != 125 {
-		t.Fatalf("expected used cents 125, got %d", limits[0].UsedCents)
+	if limits[0].UsedPoints != 125 {
+		t.Fatalf("expected used cents 125, got %d", limits[0].UsedPoints)
 	}
-	if limits[0].RemainingCents != 375 {
-		t.Fatalf("expected remaining cents 375, got %d", limits[0].RemainingCents)
+	if limits[0].RemainingPoints != 375 {
+		t.Fatalf("expected remaining cents 375, got %d", limits[0].RemainingPoints)
 	}
 
 	allowed, _, err := service.CheckBetAllowed(ctx, "u-1", 376)
@@ -141,11 +141,11 @@ func TestMockResponsibleGamblingServiceReleaseBetReversesUsage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetBetLimits: %v", err)
 	}
-	if limits[0].UsedCents != 190 {
-		t.Fatalf("net used after reserve+release: want 190, got %d", limits[0].UsedCents)
+	if limits[0].UsedPoints != 190 {
+		t.Fatalf("net used after reserve+release: want 190, got %d", limits[0].UsedPoints)
 	}
-	if limits[0].RemainingCents != 4810 {
-		t.Fatalf("remaining after reserve+release: want 4810, got %d", limits[0].RemainingCents)
+	if limits[0].RemainingPoints != 4810 {
+		t.Fatalf("remaining after reserve+release: want 4810, got %d", limits[0].RemainingPoints)
 	}
 
 	// Over-release / orphan release must clamp at zero, not go negative
@@ -154,17 +154,17 @@ func TestMockResponsibleGamblingServiceReleaseBetReversesUsage(t *testing.T) {
 		t.Fatalf("ReleaseBet (over): %v", err)
 	}
 	limits, _ = service.GetBetLimits(ctx, "u-1")
-	if limits[0].UsedCents != 0 {
-		t.Fatalf("used must clamp at 0 after over-release, got %d", limits[0].UsedCents)
+	if limits[0].UsedPoints != 0 {
+		t.Fatalf("used must clamp at 0 after over-release, got %d", limits[0].UsedPoints)
 	}
-	if limits[0].RemainingCents != 5000 {
-		t.Fatalf("remaining must clamp at the limit after over-release, got %d", limits[0].RemainingCents)
+	if limits[0].RemainingPoints != 5000 {
+		t.Fatalf("remaining must clamp at the limit after over-release, got %d", limits[0].RemainingPoints)
 	}
 }
 
 // D-7 (codex round-4 P1): changing a self-set limit must NOT clear the
 // in-progress period's accumulated usage. Pre-fix, re-POSTing the same limit
-// reset UsedCents to 0, so a user could consume the limit, re-set it, and
+// reset UsedPoints to 0, so a user could consume the limit, re-set it, and
 // get fresh headroom indefinitely (the self-service reset bypass — now
 // cleanly reachable per-user after the D-6 session binding).
 func TestMockSetBetLimit_RePostDoesNotResetAccumulatedUsage(t *testing.T) {
@@ -183,11 +183,11 @@ func TestMockSetBetLimit_RePostDoesNotResetAccumulatedUsage(t *testing.T) {
 		t.Fatalf("SetBetLimit (re-post): %v", err)
 	}
 	limits, _ := service.GetBetLimits(ctx, "u-1")
-	if limits[0].UsedCents != 800 {
-		t.Fatalf("re-POST must preserve accumulated usage: want used 800, got %d (reset bypass)", limits[0].UsedCents)
+	if limits[0].UsedPoints != 800 {
+		t.Fatalf("re-POST must preserve accumulated usage: want used 800, got %d (reset bypass)", limits[0].UsedPoints)
 	}
-	if limits[0].RemainingCents != 200 {
-		t.Fatalf("want remaining 200 after re-POST, got %d", limits[0].RemainingCents)
+	if limits[0].RemainingPoints != 200 {
+		t.Fatalf("want remaining 200 after re-POST, got %d", limits[0].RemainingPoints)
 	}
 	if allowed, _, _ := service.CheckBetAllowed(ctx, "u-1", 900); allowed {
 		t.Fatal("a 900 bet must still be blocked after a same-limit re-POST (reset bypass)")
@@ -199,13 +199,13 @@ func TestMockSetBetLimit_RePostDoesNotResetAccumulatedUsage(t *testing.T) {
 		t.Fatalf("SetBetLimit (raise): %v", err)
 	}
 	limits, _ = service.GetBetLimits(ctx, "u-1")
-	if limits[0].LimitCents != 1000 || limits[0].UsedCents != 800 || limits[0].RemainingCents != 200 {
+	if limits[0].LimitPoints != 1000 || limits[0].UsedPoints != 800 || limits[0].RemainingPoints != 200 {
 		t.Fatalf("raise must be deferred (effective limit 1000 / used 800 / remaining 200), got limit=%d used=%d remaining=%d",
-			limits[0].LimitCents, limits[0].UsedCents, limits[0].RemainingCents)
+			limits[0].LimitPoints, limits[0].UsedPoints, limits[0].RemainingPoints)
 	}
-	if limits[0].PendingLimitCents != 1500 || limits[0].PendingActivatesAt == "" {
+	if limits[0].PendingLimitPoints != 1500 || limits[0].PendingActivatesAt == "" {
 		t.Fatalf("raise must queue a pending increase, got pending=%d activatesAt=%q",
-			limits[0].PendingLimitCents, limits[0].PendingActivatesAt)
+			limits[0].PendingLimitPoints, limits[0].PendingActivatesAt)
 	}
 
 	// Lowering below accumulated usage → immediate, no remaining, AND it
@@ -214,13 +214,13 @@ func TestMockSetBetLimit_RePostDoesNotResetAccumulatedUsage(t *testing.T) {
 		t.Fatalf("SetBetLimit (lower): %v", err)
 	}
 	limits, _ = service.GetBetLimits(ctx, "u-1")
-	if limits[0].LimitCents != 500 || limits[0].UsedCents != 800 || limits[0].RemainingCents != 0 {
+	if limits[0].LimitPoints != 500 || limits[0].UsedPoints != 800 || limits[0].RemainingPoints != 0 {
 		t.Fatalf("lower below usage → limit=500 used=800 remaining=0, got limit=%d used=%d remaining=%d",
-			limits[0].LimitCents, limits[0].UsedCents, limits[0].RemainingCents)
+			limits[0].LimitPoints, limits[0].UsedPoints, limits[0].RemainingPoints)
 	}
-	if limits[0].PendingLimitCents != 0 || limits[0].PendingActivatesAt != "" {
+	if limits[0].PendingLimitPoints != 0 || limits[0].PendingActivatesAt != "" {
 		t.Fatalf("lowering must cancel the pending increase, got pending=%d activatesAt=%q",
-			limits[0].PendingLimitCents, limits[0].PendingActivatesAt)
+			limits[0].PendingLimitPoints, limits[0].PendingActivatesAt)
 	}
 }
 
@@ -244,9 +244,9 @@ func TestMockSetDepositLimit_RePostDoesNotResetAccumulatedUsage(t *testing.T) {
 		t.Fatalf("SetDepositLimit (re-post): %v", err)
 	}
 	limits, _ := service.GetDepositLimits(ctx, "u-1")
-	if limits[0].UsedCents != 600 || limits[0].RemainingCents != 400 {
+	if limits[0].UsedPoints != 600 || limits[0].RemainingPoints != 400 {
 		t.Fatalf("deposit re-POST must preserve usage: want used 600 remaining 400, got used=%d remaining=%d",
-			limits[0].UsedCents, limits[0].RemainingCents)
+			limits[0].UsedPoints, limits[0].RemainingPoints)
 	}
 	if allowed, _, _ := service.CheckDepositAllowed(ctx, "u-1", 500); allowed {
 		t.Fatal("a 500 deposit must still be blocked after a same-limit re-POST")
@@ -269,12 +269,12 @@ func TestMockSetBetLimit_LoosenDeferred_TightenImmediate_D11(t *testing.T) {
 		t.Fatalf("SetBetLimit (raise): %v", err)
 	}
 	limits, _ := service.GetBetLimits(ctx, "u-1")
-	if limits[0].LimitCents != 1000 {
-		t.Fatalf("loosen must NOT apply immediately: effective limit want 1000, got %d (LC-19 defect)", limits[0].LimitCents)
+	if limits[0].LimitPoints != 1000 {
+		t.Fatalf("loosen must NOT apply immediately: effective limit want 1000, got %d (LC-19 defect)", limits[0].LimitPoints)
 	}
-	if limits[0].PendingLimitCents != 5000 || limits[0].PendingActivatesAt == "" {
+	if limits[0].PendingLimitPoints != 5000 || limits[0].PendingActivatesAt == "" {
 		t.Fatalf("loosen must queue pending 5000 with an activation time, got pending=%d at=%q",
-			limits[0].PendingLimitCents, limits[0].PendingActivatesAt)
+			limits[0].PendingLimitPoints, limits[0].PendingActivatesAt)
 	}
 	// The looser limit is not usable yet: a 2000 bet exceeds the effective
 	// 1000 and must be blocked.
@@ -301,9 +301,9 @@ func TestMockSetBetLimit_LoosenDeferred_TightenImmediate_D11(t *testing.T) {
 		t.Fatal("after the cooldown elapses the 5000 limit must be effective (2000 bet allowed)")
 	}
 	limits, _ = service.GetBetLimits(ctx, "u-1")
-	if limits[0].LimitCents != 5000 || limits[0].PendingLimitCents != 0 || limits[0].PendingActivatesAt != "" {
+	if limits[0].LimitPoints != 5000 || limits[0].PendingLimitPoints != 0 || limits[0].PendingActivatesAt != "" {
 		t.Fatalf("post-cooldown: want effective 5000 and pending cleared, got limit=%d pending=%d at=%q",
-			limits[0].LimitCents, limits[0].PendingLimitCents, limits[0].PendingActivatesAt)
+			limits[0].LimitPoints, limits[0].PendingLimitPoints, limits[0].PendingActivatesAt)
 	}
 
 	// Now queue another loosen 5000 -> 9000 (deferred), then tighten to
@@ -315,12 +315,12 @@ func TestMockSetBetLimit_LoosenDeferred_TightenImmediate_D11(t *testing.T) {
 		t.Fatalf("SetBetLimit (tighten): %v", err)
 	}
 	limits, _ = service.GetBetLimits(ctx, "u-1")
-	if limits[0].LimitCents != 2000 {
-		t.Fatalf("tighten must apply immediately: want effective 2000, got %d", limits[0].LimitCents)
+	if limits[0].LimitPoints != 2000 {
+		t.Fatalf("tighten must apply immediately: want effective 2000, got %d", limits[0].LimitPoints)
 	}
-	if limits[0].PendingLimitCents != 0 || limits[0].PendingActivatesAt != "" {
+	if limits[0].PendingLimitPoints != 0 || limits[0].PendingActivatesAt != "" {
 		t.Fatalf("tighten must cancel the pending increase, got pending=%d at=%q",
-			limits[0].PendingLimitCents, limits[0].PendingActivatesAt)
+			limits[0].PendingLimitPoints, limits[0].PendingActivatesAt)
 	}
 }
 
@@ -342,7 +342,7 @@ func TestMockGetPlayerRestrictions_RefreshesMaturedPending_D11(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetPlayerRestrictions: %v", err)
 	}
-	if len(r.BetLimits) != 1 || r.BetLimits[0].LimitCents != 1000 || r.BetLimits[0].PendingLimitCents != 5000 {
+	if len(r.BetLimits) != 1 || r.BetLimits[0].LimitPoints != 1000 || r.BetLimits[0].PendingLimitPoints != 5000 {
 		t.Fatalf("pre-cooldown: want effective 1000 + pending 5000, got %+v", r.BetLimits)
 	}
 
@@ -358,7 +358,7 @@ func TestMockGetPlayerRestrictions_RefreshesMaturedPending_D11(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetPlayerRestrictions (post): %v", err)
 	}
-	if r.BetLimits[0].LimitCents != 5000 || r.BetLimits[0].PendingLimitCents != 0 || r.BetLimits[0].PendingActivatesAt != "" {
+	if r.BetLimits[0].LimitPoints != 5000 || r.BetLimits[0].PendingLimitPoints != 0 || r.BetLimits[0].PendingActivatesAt != "" {
 		t.Fatalf("post-cooldown /rg/restrictions must show activated 5000 / no pending, got %+v", r.BetLimits[0])
 	}
 }
@@ -390,19 +390,19 @@ func TestMockResponsibleGamblingServiceReleaseBet_CrossPeriodIsNoOp(t *testing.T
 	}
 	// Must STILL be fully used — the cross-period release is a no-op. Pre-fix
 	// it subtracted 1000, dropping used to 0 and handing free headroom.
-	if limits[0].UsedCents != 1000 {
-		t.Fatalf("cross-period release must not offset current usage: want used 1000, got %d", limits[0].UsedCents)
+	if limits[0].UsedPoints != 1000 {
+		t.Fatalf("cross-period release must not offset current usage: want used 1000, got %d", limits[0].UsedPoints)
 	}
-	if limits[0].RemainingCents != 0 {
-		t.Fatalf("want remaining 0 (limit fully used), got %d", limits[0].RemainingCents)
+	if limits[0].RemainingPoints != 0 {
+		t.Fatalf("want remaining 0 (limit fully used), got %d", limits[0].RemainingPoints)
 	}
 	// Sanity: a same-period release still nets correctly.
 	if err := service.ReleaseBet(ctx, "u-1", 400, time.Now().UTC()); err != nil {
 		t.Fatalf("ReleaseBet (same period): %v", err)
 	}
 	limits, _ = service.GetBetLimits(ctx, "u-1")
-	if limits[0].UsedCents != 600 {
-		t.Fatalf("same-period release must net: want used 600, got %d", limits[0].UsedCents)
+	if limits[0].UsedPoints != 600 {
+		t.Fatalf("same-period release must net: want used 600, got %d", limits[0].UsedPoints)
 	}
 }
 
@@ -449,18 +449,18 @@ func TestCheckAndRecordBet_NoTOCTOU_ConcurrentSameUser(t *testing.T) {
 		t.Fatalf("GetBetLimits: %v (n=%d)", err, len(limits))
 	}
 	// The control's whole point: recorded usage may never exceed the limit.
-	if limits[0].UsedCents > limit {
+	if limits[0].UsedPoints > limit {
 		t.Fatalf("TOCTOU: recorded usage %d exceeds bet-limit %d (allowed=%d/%d)",
-			limits[0].UsedCents, limit, allowed, goroutines)
+			limits[0].UsedPoints, limit, allowed, goroutines)
 	}
 	// And it must be exactly saturated — precisely limit/stake winners, no
 	// over- or under-count.
 	if want := int64(limit / stake); allowed != want {
 		t.Fatalf("expected exactly %d allowed (limit/stake), got %d (used=%d)",
-			want, allowed, limits[0].UsedCents)
+			want, allowed, limits[0].UsedPoints)
 	}
-	if limits[0].UsedCents != limit {
-		t.Fatalf("expected used to saturate at %d, got %d", limit, limits[0].UsedCents)
+	if limits[0].UsedPoints != limit {
+		t.Fatalf("expected used to saturate at %d, got %d", limit, limits[0].UsedPoints)
 	}
 	// Limit fully consumed: a further bet must now be rejected.
 	if ok, _, _ := svc.CheckAndRecordBet(ctx, "u-1", stake); ok {

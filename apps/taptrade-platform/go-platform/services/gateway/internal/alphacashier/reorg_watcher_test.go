@@ -73,7 +73,7 @@ func TestReorgWatcherFreezesReorgedDeposit(t *testing.T) {
 		t.Fatalf("expected exactly one freeze hold after reorg detection, got %d", len(ledger.holds))
 	}
 	for _, h := range ledger.holds {
-		if h.AmountCents != 2500 || h.ReferenceType != "alpha_cashier_reorg_freeze" {
+		if h.AmountPoints != 2500 || h.ReferenceType != "alpha_cashier_reorg_freeze" {
 			t.Fatalf("unexpected freeze hold: %+v", h)
 		}
 	}

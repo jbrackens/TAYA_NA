@@ -97,17 +97,17 @@ func TestPlayerBonusResponseUsesPointNativeContract(t *testing.T) {
 	expiresAt := grantedAt.Add(72 * time.Hour)
 	metadata, _ := json.Marshal(map[string]any{"campaign_name": "Welcome Points"})
 	pb := bonus.PlayerBonus{
-		ID:                     42,
-		UserID:                 "u-bonus-1",
-		BonusType:              "signup_bonus",
-		Status:                 "active",
-		GrantedAmountCents:     5000,
-		RemainingAmountCents:   3500,
-		WageringRequiredCents:  10000,
-		WageringCompletedCents: 2500,
-		ExpiresAt:              expiresAt,
-		GrantedAt:              grantedAt,
-		Metadata:               metadata,
+		ID:                      42,
+		UserID:                  "u-bonus-1",
+		BonusType:               "signup_bonus",
+		Status:                  "active",
+		GrantedAmountPoints:     5000,
+		RemainingAmountPoints:   3500,
+		WageringRequiredPoints:  10000,
+		WageringCompletedPoints: 2500,
+		ExpiresAt:               expiresAt,
+		GrantedAt:               grantedAt,
+		Metadata:                metadata,
 	}
 
 	payload := playerBonusResponse(pb, campaignNameFromBonus(pb))
@@ -118,30 +118,30 @@ func TestPlayerBonusResponseUsesPointNativeContract(t *testing.T) {
 	if payload["campaignName"] != "Welcome Points" || payload["campaign_name"] != "Welcome Points" {
 		t.Fatalf("expected campaign name aliases, got %+v", payload)
 	}
-	if payload["grantedPointsCents"] != int64(5000) {
+	if payload["grantedPoints"] != int64(5000) {
 		t.Fatalf("expected granted points, got %+v", payload)
 	}
-	if payload["remainingPointsCents"] != int64(3500) {
+	if payload["remainingPoints"] != int64(3500) {
 		t.Fatalf("expected remaining points, got %+v", payload)
 	}
-	if payload["playRequiredPointsCents"] != int64(10000) {
+	if payload["playRequiredPoints"] != int64(10000) {
 		t.Fatalf("expected required play points, got %+v", payload)
 	}
-	if payload["playCompletedPointsCents"] != int64(2500) {
+	if payload["playCompletedPoints"] != int64(2500) {
 		t.Fatalf("expected completed play points, got %+v", payload)
 	}
 	if payload["playProgressPct"] != 25.0 {
 		t.Fatalf("expected play progress, got %+v", payload)
 	}
 	for _, retired := range []string{
-		"grantedAmountCents",
-		"granted_amount_cents",
-		"remainingAmountCents",
-		"remaining_amount_cents",
-		"wageringRequiredCents",
-		"wagering_required_cents",
-		"wageringCompletedCents",
-		"wagering_completed_cents",
+		"grantedAmountPoints",
+		"granted_amount_points",
+		"remainingAmountPoints",
+		"remaining_amount_points",
+		"wageringRequiredPoints",
+		"wagering_required_points",
+		"wageringCompletedPoints",
+		"wagering_completed_points",
 		"wageringProgressPct",
 		"wagering_progress_pct",
 	} {
@@ -188,9 +188,9 @@ func TestPlayerBonusResponseRedactsLegacyUnsafeCampaignNameWithoutMutatingMetada
 
 func TestPlayerBonusProgressResponseUsesPointNativeContract(t *testing.T) {
 	pb := bonus.PlayerBonus{
-		ID:                     7,
-		WageringRequiredCents:  20000,
-		WageringCompletedCents: 5000,
+		ID:                      7,
+		WageringRequiredPoints:  20000,
+		WageringCompletedPoints: 5000,
 	}
 
 	payload := playerBonusProgressResponse(pb)
@@ -201,10 +201,10 @@ func TestPlayerBonusProgressResponseUsesPointNativeContract(t *testing.T) {
 	if payload["bonusId"] != int64(7) || payload["bonus_id"] != int64(7) {
 		t.Fatalf("expected bonus id aliases, got %+v", payload)
 	}
-	if payload["playRequiredPointsCents"] != int64(20000) {
+	if payload["playRequiredPoints"] != int64(20000) {
 		t.Fatalf("expected required play points, got %+v", payload)
 	}
-	if payload["playCompletedPointsCents"] != int64(5000) {
+	if payload["playCompletedPoints"] != int64(5000) {
 		t.Fatalf("expected completed play points, got %+v", payload)
 	}
 	if payload["playProgressPct"] != 25.0 {
@@ -214,10 +214,10 @@ func TestPlayerBonusProgressResponseUsesPointNativeContract(t *testing.T) {
 		t.Fatalf("expected empty recentContributions for legacy client compatibility, got %+v", payload)
 	}
 	for _, retired := range []string{
-		"wageringRequiredCents",
-		"wagering_required_cents",
-		"wageringCompletedCents",
-		"wagering_completed_cents",
+		"wageringRequiredPoints",
+		"wagering_required_points",
+		"wageringCompletedPoints",
+		"wagering_completed_points",
 		"progressPct",
 	} {
 		if _, ok := payload[retired]; ok {
@@ -236,7 +236,7 @@ func TestAdminCreateCampaignRejectsRetiredBudgetAliasAtHTTPBoundary(t *testing.T
 			"campaign_type":"custom",
 			"start_at":"2026-06-27T00:00:00Z",
 			"end_at":"2026-06-28T00:00:00Z",
-			"budget_points_cents":1000,
+			"budget_points":1000,
 			"budget_cents":2000,
 			"rules":[]
 		}`),
@@ -250,10 +250,10 @@ func TestAdminCreateCampaignRejectsRetiredBudgetAliasAtHTTPBoundary(t *testing.T
 		t.Fatalf("expected 400, got %d: %s", rec.Code, rec.Body.String())
 	}
 	message, field := decodeErrorMessageAndField(t, rec)
-	if message != "admin campaign budget must use budget_points_cents" {
+	if message != "admin campaign budget must use budget_points" {
 		t.Fatalf("expected point-native retired-alias message, got %q", message)
 	}
-	if field != "budget_points_cents" {
+	if field != "budget_points" {
 		t.Fatalf("expected point-native alias field, got %q", field)
 	}
 }
@@ -268,12 +268,11 @@ func TestAdminCreateCampaignRejectsRetiredRuleAmountAliasAtHTTPBoundary(t *testi
 			"campaign_type":"custom",
 			"start_at":"2026-06-27T00:00:00Z",
 			"end_at":"2026-06-28T00:00:00Z",
-			"budget_points_cents":1000,
+			"budget_points":1000,
 			"rules":[{
 				"rule_type":"reward",
 				"point_rule_config":{
-					"fixed_amount_points_cents":500,
-					"fixed_amount_cents":700
+					"fixed_amount_cents":500
 				}
 			}]
 		}`),
@@ -290,7 +289,7 @@ func TestAdminCreateCampaignRejectsRetiredRuleAmountAliasAtHTTPBoundary(t *testi
 	if message != "admin campaign rule config must use point-native amount fields" {
 		t.Fatalf("expected point-native rule alias message, got %q", message)
 	}
-	if field != "rules[0].point_rule_config.fixed_amount_points_cents" {
+	if field != "rules[0].point_rule_config.fixed_amount_points" {
 		t.Fatalf("expected nested point-native field, got %q", field)
 	}
 }
@@ -309,8 +308,8 @@ func TestAdminCreateCampaignRejectsRetiredRequestContractAtHTTPBoundary(t *testi
 				"campaign_type":"custom",
 				"start_at":"2026-06-27T00:00:00Z",
 				"end_at":"2026-06-28T00:00:00Z",
-				"budget_points_cents":1000,
-				"rules":[{"rule_type":"reward","rule_config":{"fixed_amount_points_cents":500}}]
+				"budget_points":1000,
+				"rules":[{"rule_type":"reward","rule_config":{"fixed_amount_points":500}}]
 			}`,
 			wantMessage: "admin campaign rules must use point_rule_config",
 			wantField:   "rules[0].point_rule_config",
@@ -322,7 +321,7 @@ func TestAdminCreateCampaignRejectsRetiredRequestContractAtHTTPBoundary(t *testi
 				"campaign_type":"freebet_grant",
 				"start_at":"2026-06-27T00:00:00Z",
 				"end_at":"2026-06-28T00:00:00Z",
-				"budget_points_cents":1000,
+				"budget_points":1000,
 				"rules":[]
 			}`,
 			wantMessage: "admin campaign type must use point-native type",
@@ -335,8 +334,8 @@ func TestAdminCreateCampaignRejectsRetiredRequestContractAtHTTPBoundary(t *testi
 				"campaign_type":"custom",
 				"start_at":"2026-06-27T00:00:00Z",
 				"end_at":"2026-06-28T00:00:00Z",
-				"budget_points_cents":1000,
-				"rules":[{"rule_type":"reward","point_rule_config":{"type":"deposit_match","fixed_amount_points_cents":500}}]
+				"budget_points":1000,
+				"rules":[{"rule_type":"reward","point_rule_config":{"type":"deposit_match","fixed_amount_points":500}}]
 			}`,
 			wantMessage: "admin campaign reward type must use point-native type",
 			wantField:   "rules[0].point_rule_config.type",
@@ -348,11 +347,11 @@ func TestAdminCreateCampaignRejectsRetiredRequestContractAtHTTPBoundary(t *testi
 				"campaign_type":"custom",
 				"start_at":"2026-06-27T00:00:00Z",
 				"end_at":"2026-06-28T00:00:00Z",
-				"budget_points_cents":1000,
-				"rules":[{"rule_type":"play","point_rule_config":{"max_stake_contribution_points_cents":500}}]
+				"budget_points":1000,
+				"rules":[{"rule_type":"play","point_rule_config":{"max_stake_contribution_cents":500}}]
 			}`,
 			wantMessage: "admin campaign rule config must use point-native amount fields",
-			wantField:   "rules[0].point_rule_config.max_play_contribution_points_cents",
+			wantField:   "rules[0].point_rule_config.max_play_contribution_points",
 		},
 	}
 
@@ -389,7 +388,7 @@ func TestAdminCreateCampaignRejectsPointPlayMultiplierWithLaunchCopy(t *testing.
 			"campaign_type":"custom",
 			"start_at":"2026-06-27T00:00:00Z",
 			"end_at":"2026-06-28T00:00:00Z",
-			"budget_points_cents":1000,
+			"budget_points":1000,
 			"rules":[{
 				"rule_type":"play",
 				"point_rule_config":{"multiplier":1000000}
@@ -427,7 +426,7 @@ func TestAdminCreateCampaignRejectsProhibitedNameCopyAtHTTPBoundary(t *testing.T
 			"campaign_type":"custom",
 			"start_at":"2026-06-27T00:00:00Z",
 			"end_at":"2026-06-28T00:00:00Z",
-			"budget_points_cents":1000,
+			"budget_points":1000,
 			"rules":[]
 		}`),
 	)
@@ -459,7 +458,7 @@ func TestAdminCreateCampaignRejectsRedeemableDescriptionCopyAtHTTPBoundary(t *te
 			"campaign_type":"custom",
 			"start_at":"2026-06-27T00:00:00Z",
 			"end_at":"2026-06-28T00:00:00Z",
-			"budget_points_cents":1000,
+			"budget_points":1000,
 			"rules":[]
 		}`),
 	)
@@ -503,7 +502,7 @@ func TestAdminCreateCampaignRejectsProhibitedTriggerEventAtHTTPBoundary(t *testi
 			"campaign_type":"custom",
 			"start_at":"2026-06-27T00:00:00Z",
 			"end_at":"2026-06-28T00:00:00Z",
-			"budget_points_cents":1000,
+			"budget_points":1000,
 			"rules":[{
 				"rule_type":"trigger",
 				"point_rule_config":{"event":"deposit"}
@@ -538,7 +537,7 @@ func TestAdminCreateCampaignRejectsRetiredEligibilityDepositKeyAtHTTPBoundary(t 
 			"campaign_type":"custom",
 			"start_at":"2026-06-27T00:00:00Z",
 			"end_at":"2026-06-28T00:00:00Z",
-			"budget_points_cents":1000,
+			"budget_points":1000,
 			"rules":[{
 				"rule_type":"eligibility",
 				"point_rule_config":{"min_deposits":1}
@@ -573,7 +572,7 @@ func TestAdminCreateCampaignRejectsRetiredEligibilityRankKeyAtHTTPBoundary(t *te
 			"campaign_type":"custom",
 			"start_at":"2026-06-27T00:00:00Z",
 			"end_at":"2026-06-28T00:00:00Z",
-			"budget_points_cents":1000,
+			"budget_points":1000,
 			"rules":[{
 				"rule_type":"eligibility",
 				"point_rule_config":{"tier_min":"gold"}
@@ -608,7 +607,7 @@ func TestAdminCreateCampaignRejectsRetiredPointPlayMechanicAtHTTPBoundary(t *tes
 			"campaign_type":"custom",
 			"start_at":"2026-06-27T00:00:00Z",
 			"end_at":"2026-06-28T00:00:00Z",
-			"budget_points_cents":1000,
+			"budget_points":1000,
 			"rules":[{
 				"rule_type":"play",
 				"point_rule_config":{"min_odds_decimal":1.5}
@@ -642,24 +641,24 @@ func TestAdminGrantBonusEndpointUsesSessionAdminAndPointNativePayload(t *testing
 	overridePoints := int64(20000)
 	granter := &fakeAdminBonusGranter{
 		bonus: bonus.PlayerBonus{
-			ID:                     195,
-			UserID:                 "u-1",
-			BonusType:              "custom",
-			Status:                 "active",
-			GrantedAmountCents:     20000,
-			RemainingAmountCents:   20000,
-			WageringRequiredCents:  100000,
-			WageringCompletedCents: 0,
-			ExpiresAt:              grantedAt.Add(14 * 24 * time.Hour),
-			GrantedAt:              grantedAt,
-			Metadata:               metadata,
+			ID:                      195,
+			UserID:                  "u-1",
+			BonusType:               "custom",
+			Status:                  "active",
+			GrantedAmountPoints:     20000,
+			RemainingAmountPoints:   20000,
+			WageringRequiredPoints:  100000,
+			WageringCompletedPoints: 0,
+			ExpiresAt:               grantedAt.Add(14 * 24 * time.Hour),
+			GrantedAt:               grantedAt,
+			Metadata:                metadata,
 		},
 	}
 
 	req := httptest.NewRequest(
 		stdhttp.MethodPost,
 		"/api/v1/admin/bonuses/grant",
-		bytes.NewBufferString(`{"user_id":"u-1","campaign_id":77,"override_points_cents":20000,"reason":"manual launch proof"}`),
+		bytes.NewBufferString(`{"user_id":"u-1","campaign_id":77,"override_points":20000,"reason":"manual launch proof"}`),
 	)
 	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	rec := httptest.NewRecorder()
@@ -675,7 +674,7 @@ func TestAdminGrantBonusEndpointUsesSessionAdminAndPointNativePayload(t *testing
 	if granter.calledReq.UserID != "u-1" || granter.calledReq.CampaignID != 77 || granter.calledReq.Reason != "manual launch proof" {
 		t.Fatalf("expected grant request body fields to pass through, got %+v", granter.calledReq)
 	}
-	if granter.calledReq.OverridePointsCents == nil || *granter.calledReq.OverridePointsCents != overridePoints {
+	if granter.calledReq.OverridePoints == nil || *granter.calledReq.OverridePoints != overridePoints {
 		t.Fatalf("expected preferred override point alias, got %+v", granter.calledReq)
 	}
 	var got map[string]any
@@ -688,17 +687,17 @@ func TestAdminGrantBonusEndpointUsesSessionAdminAndPointNativePayload(t *testing
 	if got["campaignName"] != "Manual Point-Play Bonus" {
 		t.Fatalf("expected campaign name, got %+v", got)
 	}
-	if got["grantedPointsCents"] != float64(20000) || got["remainingPointsCents"] != float64(20000) {
+	if got["grantedPoints"] != float64(20000) || got["remainingPoints"] != float64(20000) {
 		t.Fatalf("expected point grant fields, got %+v", got)
 	}
-	if got["playRequiredPointsCents"] != float64(100000) || got["playCompletedPointsCents"] != float64(0) {
+	if got["playRequiredPoints"] != float64(100000) || got["playCompletedPoints"] != float64(0) {
 		t.Fatalf("expected point-play progress fields, got %+v", got)
 	}
 	for _, retired := range []string{
-		"grantedAmountCents",
-		"remainingAmountCents",
-		"wageringRequiredCents",
-		"wageringCompletedCents",
+		"grantedAmountPoints",
+		"remainingAmountPoints",
+		"wageringRequiredPoints",
+		"wageringCompletedPoints",
 		"wageringProgressPct",
 		"progressPct",
 	} {
@@ -716,8 +715,8 @@ func TestAdminGrantBonusRejectsRetiredOverrideAliasAtHTTPBoundary(t *testing.T) 
 		bytes.NewBufferString(`{
 			"user_id":"u-1",
 			"campaign_id":77,
-			"override_points_cents":1000,
-			"override_amount_cents":2000,
+			"override_points":1000,
+			"override_amount_points":2000,
 			"reason":"manual launch proof"
 		}`),
 	)
@@ -730,10 +729,10 @@ func TestAdminGrantBonusRejectsRetiredOverrideAliasAtHTTPBoundary(t *testing.T) 
 		t.Fatalf("expected 400, got %d: %s", rec.Code, rec.Body.String())
 	}
 	message, field := decodeErrorMessageAndField(t, rec)
-	if message != "admin bonus grant override must use override_points_cents" {
+	if message != "admin bonus grant override must use override_points" {
 		t.Fatalf("expected point-native retired-alias message, got %q", message)
 	}
-	if field != "override_points_cents" {
+	if field != "override_points" {
 		t.Fatalf("expected point-native alias field, got %q", field)
 	}
 }
@@ -743,7 +742,7 @@ func TestAdminGrantBonusRejectsMoneyWordingReason(t *testing.T) {
 	req := httptest.NewRequest(
 		stdhttp.MethodPost,
 		"/api/v1/admin/bonuses/grant",
-		bytes.NewBufferString(`{"user_id":"u-1","campaign_id":77,"override_points_cents":20000,"reason":"cash payout grant"}`),
+		bytes.NewBufferString(`{"user_id":"u-1","campaign_id":77,"override_points":20000,"reason":"cash payout grant"}`),
 	)
 	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	rec := httptest.NewRecorder()
@@ -836,17 +835,17 @@ func TestPlayerActiveBonusesEndpointReturnsDemoPointPlayPayload(t *testing.T) {
 	})
 	lister := &fakeActiveBonusLister{
 		bonuses: []bonus.PlayerBonus{{
-			ID:                     190,
-			UserID:                 "u-1",
-			BonusType:              "custom",
-			Status:                 "active",
-			GrantedAmountCents:     20000,
-			RemainingAmountCents:   15000,
-			WageringRequiredCents:  100000,
-			WageringCompletedCents: 25000,
-			ExpiresAt:              grantedAt.Add(14 * 24 * time.Hour),
-			GrantedAt:              grantedAt,
-			Metadata:               metadata,
+			ID:                      190,
+			UserID:                  "u-1",
+			BonusType:               "custom",
+			Status:                  "active",
+			GrantedAmountPoints:     20000,
+			RemainingAmountPoints:   15000,
+			WageringRequiredPoints:  100000,
+			WageringCompletedPoints: 25000,
+			ExpiresAt:               grantedAt.Add(14 * 24 * time.Hour),
+			GrantedAt:               grantedAt,
+			Metadata:                metadata,
 		}},
 	}
 
@@ -878,22 +877,22 @@ func TestPlayerActiveBonusesEndpointReturnsDemoPointPlayPayload(t *testing.T) {
 	if got["campaignName"] != "Demo Point-Play Bonus" {
 		t.Fatalf("expected demo campaign name, got %+v", got)
 	}
-	if got["remainingPointsCents"] != float64(15000) {
+	if got["remainingPoints"] != float64(15000) {
 		t.Fatalf("expected demo remaining points, got %+v", got)
 	}
-	if got["playRequiredPointsCents"] != float64(100000) {
+	if got["playRequiredPoints"] != float64(100000) {
 		t.Fatalf("expected required point-play progress, got %+v", got)
 	}
-	if got["playCompletedPointsCents"] != float64(25000) {
+	if got["playCompletedPoints"] != float64(25000) {
 		t.Fatalf("expected completed point-play progress, got %+v", got)
 	}
 	if got["playProgressPct"] != float64(25) {
 		t.Fatalf("expected 25%% point-play progress, got %+v", got)
 	}
 	for _, retired := range []string{
-		"remainingAmountCents",
-		"wageringRequiredCents",
-		"wageringCompletedCents",
+		"remainingAmountPoints",
+		"wageringRequiredPoints",
+		"wageringCompletedPoints",
 		"wageringProgressPct",
 		"progressPct",
 	} {
@@ -912,17 +911,17 @@ func TestClaimBonusEndpointUsesSessionUserAndPointNativePayload(t *testing.T) {
 	})
 	claimer := &fakeBonusClaimer{
 		bonus: bonus.PlayerBonus{
-			ID:                     191,
-			UserID:                 "u-1",
-			BonusType:              "custom",
-			Status:                 "active",
-			GrantedAmountCents:     20000,
-			RemainingAmountCents:   15000,
-			WageringRequiredCents:  100000,
-			WageringCompletedCents: 25000,
-			ExpiresAt:              grantedAt.Add(14 * 24 * time.Hour),
-			GrantedAt:              grantedAt,
-			Metadata:               metadata,
+			ID:                      191,
+			UserID:                  "u-1",
+			BonusType:               "custom",
+			Status:                  "active",
+			GrantedAmountPoints:     20000,
+			RemainingAmountPoints:   15000,
+			WageringRequiredPoints:  100000,
+			WageringCompletedPoints: 25000,
+			ExpiresAt:               grantedAt.Add(14 * 24 * time.Hour),
+			GrantedAt:               grantedAt,
+			Metadata:                metadata,
 		},
 	}
 
@@ -955,26 +954,26 @@ func TestClaimBonusEndpointUsesSessionUserAndPointNativePayload(t *testing.T) {
 	if got["campaignName"] != "Demo Point-Play Bonus" {
 		t.Fatalf("expected demo campaign name, got %+v", got)
 	}
-	if got["grantedPointsCents"] != float64(20000) {
+	if got["grantedPoints"] != float64(20000) {
 		t.Fatalf("expected granted points, got %+v", got)
 	}
-	if got["remainingPointsCents"] != float64(15000) {
+	if got["remainingPoints"] != float64(15000) {
 		t.Fatalf("expected remaining points, got %+v", got)
 	}
-	if got["playRequiredPointsCents"] != float64(100000) {
+	if got["playRequiredPoints"] != float64(100000) {
 		t.Fatalf("expected required point-play progress, got %+v", got)
 	}
-	if got["playCompletedPointsCents"] != float64(25000) {
+	if got["playCompletedPoints"] != float64(25000) {
 		t.Fatalf("expected completed point-play progress, got %+v", got)
 	}
 	if got["playProgressPct"] != float64(25) {
 		t.Fatalf("expected 25%% point-play progress, got %+v", got)
 	}
 	for _, retired := range []string{
-		"grantedAmountCents",
-		"remainingAmountCents",
-		"wageringRequiredCents",
-		"wageringCompletedCents",
+		"grantedAmountPoints",
+		"remainingAmountPoints",
+		"wageringRequiredPoints",
+		"wageringCompletedPoints",
 		"wageringProgressPct",
 		"progressPct",
 	} {
@@ -1088,16 +1087,16 @@ func TestPlayerBonusProgressEndpointRequiresOwnerAndPointPlayPayload(t *testing.
 	grantedAt := time.Date(2026, 6, 24, 9, 30, 0, 0, time.UTC)
 	getter := &fakePlayerBonusGetter{
 		bonus: bonus.PlayerBonus{
-			ID:                     190,
-			UserID:                 "u-1",
-			BonusType:              "custom",
-			Status:                 "active",
-			GrantedAmountCents:     20000,
-			RemainingAmountCents:   15000,
-			WageringRequiredCents:  100000,
-			WageringCompletedCents: 25000,
-			ExpiresAt:              grantedAt.Add(14 * 24 * time.Hour),
-			GrantedAt:              grantedAt,
+			ID:                      190,
+			UserID:                  "u-1",
+			BonusType:               "custom",
+			Status:                  "active",
+			GrantedAmountPoints:     20000,
+			RemainingAmountPoints:   15000,
+			WageringRequiredPoints:  100000,
+			WageringCompletedPoints: 25000,
+			ExpiresAt:               grantedAt.Add(14 * 24 * time.Hour),
+			GrantedAt:               grantedAt,
 		},
 	}
 
@@ -1123,18 +1122,18 @@ func TestPlayerBonusProgressEndpointRequiresOwnerAndPointPlayPayload(t *testing.
 	if got["bonusId"] != float64(190) {
 		t.Fatalf("expected bonus id, got %+v", got)
 	}
-	if got["playRequiredPointsCents"] != float64(100000) {
+	if got["playRequiredPoints"] != float64(100000) {
 		t.Fatalf("expected required point-play progress, got %+v", got)
 	}
-	if got["playCompletedPointsCents"] != float64(25000) {
+	if got["playCompletedPoints"] != float64(25000) {
 		t.Fatalf("expected completed point-play progress, got %+v", got)
 	}
 	if got["playProgressPct"] != float64(25) {
 		t.Fatalf("expected 25%% point-play progress, got %+v", got)
 	}
 	for _, retired := range []string{
-		"wageringRequiredCents",
-		"wageringCompletedCents",
+		"wageringRequiredPoints",
+		"wageringCompletedPoints",
 		"wageringProgressPct",
 		"progressPct",
 	} {
@@ -1181,17 +1180,17 @@ func TestDemoSeededBonusActiveResponseUsesPointPlayContract(t *testing.T) {
 		"demo_seed":     true,
 	})
 	pb := bonus.PlayerBonus{
-		ID:                     190,
-		UserID:                 "u-1",
-		BonusType:              "custom",
-		Status:                 "active",
-		GrantedAmountCents:     20000,
-		RemainingAmountCents:   15000,
-		WageringRequiredCents:  100000,
-		WageringCompletedCents: 25000,
-		ExpiresAt:              expiresAt,
-		GrantedAt:              grantedAt,
-		Metadata:               metadata,
+		ID:                      190,
+		UserID:                  "u-1",
+		BonusType:               "custom",
+		Status:                  "active",
+		GrantedAmountPoints:     20000,
+		RemainingAmountPoints:   15000,
+		WageringRequiredPoints:  100000,
+		WageringCompletedPoints: 25000,
+		ExpiresAt:               expiresAt,
+		GrantedAt:               grantedAt,
+		Metadata:                metadata,
 	}
 
 	payload := playerBonusResponse(pb, campaignNameFromBonus(pb))
@@ -1202,22 +1201,22 @@ func TestDemoSeededBonusActiveResponseUsesPointPlayContract(t *testing.T) {
 	if payload["campaignName"] != "Demo Point-Play Bonus" {
 		t.Fatalf("expected demo campaign name, got %+v", payload)
 	}
-	if payload["remainingPointsCents"] != int64(15000) {
+	if payload["remainingPoints"] != int64(15000) {
 		t.Fatalf("expected demo remaining points, got %+v", payload)
 	}
-	if payload["playRequiredPointsCents"] != int64(100000) {
+	if payload["playRequiredPoints"] != int64(100000) {
 		t.Fatalf("expected demo required play points, got %+v", payload)
 	}
-	if payload["playCompletedPointsCents"] != int64(25000) {
+	if payload["playCompletedPoints"] != int64(25000) {
 		t.Fatalf("expected demo completed play points, got %+v", payload)
 	}
 	if payload["playProgressPct"] != 25.0 {
 		t.Fatalf("expected demo progress percentage, got %+v", payload)
 	}
 	for _, retired := range []string{
-		"remainingAmountCents",
-		"wageringRequiredCents",
-		"wageringCompletedCents",
+		"remainingAmountPoints",
+		"wageringRequiredPoints",
+		"wageringCompletedPoints",
 		"wageringProgressPct",
 		"progressPct",
 	} {
@@ -1234,8 +1233,8 @@ func TestCampaignResponseUsesPointNativeContract(t *testing.T) {
 		Name:         "Summer Points",
 		CampaignType: "freebet_grant",
 		Status:       "active",
-		BudgetCents:  &budget,
-		SpentCents:   25000,
+		BudgetPoints: &budget,
+		SpentPoints:  25000,
 		ClaimCount:   3,
 	}
 
@@ -1244,16 +1243,18 @@ func TestCampaignResponseUsesPointNativeContract(t *testing.T) {
 	if payload["unit"] != "PTS" {
 		t.Fatalf("expected point unit, got %v", payload["unit"])
 	}
-	if payload["budgetPointsCents"] != budget {
+	if payload["budgetPoints"] != budget {
 		t.Fatalf("expected budget point alias, got %+v", payload)
 	}
-	if payload["spentPointsCents"] != int64(25000) {
+	if payload["spentPoints"] != int64(25000) {
 		t.Fatalf("expected spent points, got %+v", payload)
 	}
 	if payload["campaignType"] != "point_grant" {
 		t.Fatalf("expected retired campaign type to map to point_grant, got %+v", payload)
 	}
-	for _, retired := range []string{"budgetCents", "spentCents", "rules"} {
+	// Points unit-model (2026-07-07): budgetPoints/spentPoints are canonical;
+	// the retired spellings are the cents-era point-cents keys.
+	for _, retired := range []string{"budgetPointsCents", "spentPointsCents", "rules"} {
 		if _, ok := payload[retired]; ok {
 			t.Fatalf("retired campaign field %q leaked in %+v", retired, payload)
 		}
@@ -1283,18 +1284,21 @@ func TestCampaignResponseRedactsLegacyUnsafeCopyWithoutMutatingCampaign(t *testi
 }
 
 func TestCampaignRuleResponseUsesPointNativeRuleConfig(t *testing.T) {
+	// Points unit-model (2026-07-07): the legacy stored config carries the
+	// cents-era sportsbook keys; the payload must translate them to the
+	// point-native aliases without leaking the retired spellings.
 	raw, _ := json.Marshal(map[string]any{
-		"max_bonus_cents":                     5000,
-		"fixed_amount_cents":                  1250,
-		"max_stake_contribution_points_cents": 300,
-		"min_odds_decimal":                    1.5,
-		"parlay_multiplier":                   2,
-		"excluded_sports":                     []string{"basketball"},
-		"min_amount_cents":                    1000,
-		"type":                                "freebet",
-		"event":                               "deposit",
-		"min_deposits":                        2,
-		"tier_min":                            "gold",
+		"max_bonus_cents":              5000,
+		"fixed_amount_cents":           1250,
+		"max_stake_contribution_cents": 300,
+		"min_odds_decimal":             1.5,
+		"parlay_multiplier":            2,
+		"excluded_sports":              []string{"basketball"},
+		"min_amount_cents":             1000,
+		"type":                         "freebet",
+		"event":                        "deposit",
+		"min_deposits":                 2,
+		"tier_min":                     "gold",
 	})
 	rule := bonus.CampaignRule{
 		ID:         99,
@@ -1315,16 +1319,16 @@ func TestCampaignRuleResponseUsesPointNativeRuleConfig(t *testing.T) {
 	if _, ok := payload["ruleConfig"]; ok {
 		t.Fatalf("retired raw ruleConfig leaked in %+v", payload)
 	}
-	if pointConfig["max_bonus_points_cents"] != float64(5000) {
+	if pointConfig["max_bonus_points"] != float64(5000) {
 		t.Fatalf("expected max bonus point alias, got %+v", pointConfig)
 	}
-	if pointConfig["fixed_amount_points_cents"] != float64(1250) {
+	if pointConfig["fixed_amount_points"] != float64(1250) {
 		t.Fatalf("expected fixed amount point alias, got %+v", pointConfig)
 	}
-	if pointConfig["max_play_contribution_points_cents"] != float64(300) {
+	if pointConfig["max_play_contribution_points"] != float64(300) {
 		t.Fatalf("expected max contribution point alias, got %+v", pointConfig)
 	}
-	if pointConfig["min_points_cents"] != float64(1000) {
+	if pointConfig["min_points"] != float64(1000) {
 		t.Fatalf("expected min points alias, got %+v", pointConfig)
 	}
 	if pointConfig["type"] != "point_grant" {
@@ -1343,7 +1347,7 @@ func TestCampaignRuleResponseUsesPointNativeRuleConfig(t *testing.T) {
 		"max_bonus_cents",
 		"fixed_amount_cents",
 		"max_stake_contribution_cents",
-		"max_stake_contribution_points_cents",
+		"max_stake_contribution_points",
 		"min_odds_decimal",
 		"parlay_multiplier",
 		"excluded_sports",
@@ -1359,8 +1363,8 @@ func TestCampaignRuleResponseUsesPointNativeRuleConfig(t *testing.T) {
 
 func TestCampaignRuleResponseKeepsPreferredPointRuleAlias(t *testing.T) {
 	raw, _ := json.Marshal(map[string]any{
-		"max_play_contribution_points_cents":  425,
-		"max_stake_contribution_points_cents": 300,
+		"max_play_contribution_points":  425,
+		"max_stake_contribution_points": 300,
 	})
 	rule := bonus.CampaignRule{
 		ID:         100,
@@ -1372,10 +1376,10 @@ func TestCampaignRuleResponseKeepsPreferredPointRuleAlias(t *testing.T) {
 	payload := campaignRuleResponse(rule)
 	pointConfig := payload["pointRuleConfig"].(map[string]any)
 
-	if pointConfig["max_play_contribution_points_cents"] != float64(425) {
+	if pointConfig["max_play_contribution_points"] != float64(425) {
 		t.Fatalf("expected preferred point-play contribution cap to win, got %+v", pointConfig)
 	}
-	if _, ok := pointConfig["max_stake_contribution_points_cents"]; ok {
+	if _, ok := pointConfig["max_stake_contribution_points"]; ok {
 		t.Fatalf("retired point-stake contribution cap leaked in %+v", pointConfig)
 	}
 }

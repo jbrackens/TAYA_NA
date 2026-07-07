@@ -17,7 +17,7 @@ func TestAccrueSettledBetCreatesAccountAndLedgerEntry(t *testing.T) {
 		PlayerID:         "u-loyalty-1",
 		BetID:            "bet:local:001",
 		SettlementStatus: "settled_won",
-		StakeCents:       1250,
+		StakePoints:      1250,
 		IdempotencyKey:   "loyalty:bet_settlement:bet:local:001:v1",
 		Reason:           "bet settled",
 		SettledAt:        svc.now(),
@@ -47,7 +47,7 @@ func TestAccrueSettledBetIsIdempotent(t *testing.T) {
 		PlayerID:         "u-loyalty-2",
 		BetID:            "bet:local:002",
 		SettlementStatus: "settled_lost",
-		StakeCents:       2000,
+		StakePoints:      2000,
 		IdempotencyKey:   "loyalty:bet_settlement:bet:local:002:v1",
 		SettledAt:        time.Date(2026, 4, 8, 15, 0, 0, 0, time.UTC),
 	}
@@ -144,7 +144,7 @@ func TestReferralQualifiesOnFirstSettledBet(t *testing.T) {
 		PlayerID:         "u-referred-1",
 		BetID:            "bet:local:ref:1",
 		SettlementStatus: "settled_won",
-		StakeCents:       1000,
+		StakePoints:      1000,
 		IdempotencyKey:   "loyalty:bet_settlement:bet:local:ref:1:v1",
 		SettledAt:        svc.now(),
 	})
@@ -216,7 +216,7 @@ func TestReferralQualificationFeedsLeaderboardScore(t *testing.T) {
 		PlayerID:         "u-ref-player-1",
 		BetID:            "bet:ref:001",
 		SettlementStatus: "settled_won",
-		StakeCents:       1000,
+		StakePoints:      1000,
 		IdempotencyKey:   "loyalty:referral:001",
 		Reason:           "first qualifying bet",
 		SettledAt:        time.Date(2026, time.April, 8, 18, 30, 0, 0, time.UTC),
@@ -286,12 +286,12 @@ func TestUpdateRuleChangesFutureAccrualMultiplier(t *testing.T) {
 	svc := NewService()
 
 	_, err := svc.UpdateRule(RuleUpdateRequest{
-		RuleID:                 "rule:loyalty:default-settlement",
-		Name:                   "Default settled bet accrual",
-		SourceType:             string(canonicalv1.LoyaltyLedgerSourceBetSettlement),
-		Active:                 true,
-		Multiplier:             2.0,
-		MinQualifiedStakeCents: 100,
+		RuleID:                  "rule:loyalty:default-settlement",
+		Name:                    "Default settled bet accrual",
+		SourceType:              string(canonicalv1.LoyaltyLedgerSourceBetSettlement),
+		Active:                  true,
+		Multiplier:              2.0,
+		MinQualifiedStakePoints: 100,
 	})
 	if err != nil {
 		t.Fatalf("update rule: %v", err)
@@ -301,7 +301,7 @@ func TestUpdateRuleChangesFutureAccrualMultiplier(t *testing.T) {
 		PlayerID:         "u-rule-1",
 		BetID:            "bet:rule:001",
 		SettlementStatus: "settled_won",
-		StakeCents:       1000,
+		StakePoints:      1000,
 		IdempotencyKey:   "loyalty:bet_settlement:bet:rule:001:v1",
 		SettledAt:        time.Date(2026, 4, 8, 19, 0, 0, 0, time.UTC),
 	})

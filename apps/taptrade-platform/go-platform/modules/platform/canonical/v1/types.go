@@ -123,14 +123,14 @@ type Market struct {
 	Status        MarketStatus      `json:"status"`
 	Specifiers    map[string]string `json:"specifiers,omitempty"`
 	Selections    []Selection       `json:"selections,omitempty"`
-	MinStakeCents int64             `json:"minStakeCents,omitempty"`
-	MaxStakeCents int64             `json:"maxStakeCents,omitempty"`
+	MinStakePoints int64             `json:"minStakePoints,omitempty"`
+	MaxStakePoints int64             `json:"maxStakePoints,omitempty"`
 	UpdatedAt     time.Time         `json:"updatedAt"`
 }
 
 type Money struct {
 	Currency    string `json:"currency"`
-	AmountCents int64  `json:"amountCents"`
+	AmountPoints int64  `json:"amountPoints"`
 }
 
 type BetContext struct {
@@ -144,7 +144,7 @@ type BetLeg struct {
 	MarketID       string  `json:"marketId"`
 	SelectionID    string  `json:"selectionId"`
 	OddsDecimal    float64 `json:"oddsDecimal"`
-	StakeCents     int64   `json:"stakeCents"`
+	StakePoints     int64   `json:"stakePoints"`
 	IsInPlay       bool    `json:"isInPlay"`
 	AppliedLTDMsec int64   `json:"appliedLtdMsec,omitempty"`
 }
@@ -254,8 +254,8 @@ type Freebet struct {
 	PlayerID               string        `json:"playerId"`
 	CampaignID             string        `json:"campaignId,omitempty"`
 	Currency               string        `json:"currency"`
-	TotalAmountCents       int64         `json:"totalAmountCents"`
-	RemainingAmountCents   int64         `json:"remainingAmountCents"`
+	TotalAmountPoints       int64         `json:"totalAmountPoints"`
+	RemainingAmountPoints   int64         `json:"remainingAmountPoints"`
 	MinOddsDecimal         float64       `json:"minOddsDecimal,omitempty"`
 	AppliesToSportIDs      []string      `json:"appliesToSportIds,omitempty"`
 	AppliesToTournamentIDs []string      `json:"appliesToTournamentIds,omitempty"`
@@ -283,7 +283,7 @@ type OddsBoost struct {
 	Currency        string          `json:"currency"`
 	OriginalOdds    float64         `json:"originalOdds"`
 	BoostedOdds     float64         `json:"boostedOdds"`
-	MaxStakeCents   int64           `json:"maxStakeCents,omitempty"`
+	MaxStakePoints   int64           `json:"maxStakePoints,omitempty"`
 	MinOddsDecimal  float64         `json:"minOddsDecimal,omitempty"`
 	Status          OddsBoostStatus `json:"status"`
 	ExpiresAt       time.Time       `json:"expiresAt"`
@@ -381,7 +381,7 @@ type LoyaltyAccrualRule struct {
 	SourceType             string     `json:"sourceType"`
 	Active                 bool       `json:"active"`
 	Multiplier             float64    `json:"multiplier"`
-	MinQualifiedStakeCents int64      `json:"minQualifiedStakeCents,omitempty"`
+	MinQualifiedStakePoints int64      `json:"minQualifiedStakePoints,omitempty"`
 	EligibleSportIDs       []string   `json:"eligibleSportIds,omitempty"`
 	EligibleBetTypes       []string   `json:"eligibleBetTypes,omitempty"`
 	MaxPointsPerEvent      int64      `json:"maxPointsPerEvent,omitempty"`

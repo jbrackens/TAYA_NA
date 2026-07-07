@@ -19,9 +19,9 @@ func TestBookLevels_EmptyInput(t *testing.T) {
 
 func TestBookLevels_RunningTotal(t *testing.T) {
 	rows := []AggregatedLevel{
-		{PriceCents: 60, Quantity: 100},
-		{PriceCents: 58, Quantity: 50},
-		{PriceCents: 55, Quantity: 30},
+		{PricePoints: 60, Quantity: 100},
+		{PricePoints: 58, Quantity: 50},
+		{PricePoints: 55, Quantity: 30},
 	}
 	got := BookLevels(rows, 20)
 	if len(got) != 3 {
@@ -38,7 +38,7 @@ func TestBookLevels_RunningTotal(t *testing.T) {
 func TestBookLevels_DepthClamp(t *testing.T) {
 	rows := make([]AggregatedLevel, 150)
 	for i := range rows {
-		rows[i] = AggregatedLevel{PriceCents: 99 - i%99, Quantity: 1}
+		rows[i] = AggregatedLevel{PricePoints: 99 - i%99, Quantity: 1}
 	}
 	// Request 200, expect clamp to 100.
 	got := BookLevels(rows, 200)
@@ -59,9 +59,9 @@ func TestBookLevels_DepthClamp(t *testing.T) {
 
 func TestBookLevels_SkipsZeroQuantity(t *testing.T) {
 	rows := []AggregatedLevel{
-		{PriceCents: 60, Quantity: 100},
-		{PriceCents: 59, Quantity: 0}, // dust row, should be filtered
-		{PriceCents: 58, Quantity: 50},
+		{PricePoints: 60, Quantity: 100},
+		{PricePoints: 59, Quantity: 0}, // dust row, should be filtered
+		{PricePoints: 58, Quantity: 50},
 	}
 	got := BookLevels(rows, 20)
 	if len(got) != 2 {
@@ -88,9 +88,9 @@ func TestAssembleOrderBook_StableJSONShape(t *testing.T) {
 
 func TestOrderBookLevelJSONExposesPointAliases(t *testing.T) {
 	level := OrderBookLevel{
-		PriceCents: 64,
-		Quantity:   12,
-		Total:      20,
+		PricePoints: 64,
+		Quantity:    12,
+		Total:       20,
 	}
 	b, err := json.Marshal(level)
 	if err != nil {
@@ -98,11 +98,11 @@ func TestOrderBookLevelJSONExposesPointAliases(t *testing.T) {
 	}
 	got := string(b)
 	for _, needle := range []string{
-		`"pricePointsCents":64`,
+		`"pricePoints":64`,
 		`"shares":12`,
 		`"cumulativeShares":20`,
-		`"notionalPointsCents":768`,
-		`"totalNotionalPointsCents":1280`,
+		`"notionalPoints":768`,
+		`"totalNotionalPoints":1280`,
 		`"unit":"PTS"`,
 	} {
 		if !strings.Contains(got, needle) {
@@ -110,7 +110,7 @@ func TestOrderBookLevelJSONExposesPointAliases(t *testing.T) {
 		}
 	}
 	for _, retired := range []string{
-		`"priceCents"`,
+		`"pricePointsCents"`,
 		`"quantity"`,
 		`"total"`,
 	} {
@@ -130,8 +130,8 @@ func TestAssembleOrderBook_PopulatedSides(t *testing.T) {
 	if len(book.Yes.Bids) != 2 || len(book.Yes.Asks) != 1 {
 		t.Errorf("yes side wrong: bids=%d asks=%d", len(book.Yes.Bids), len(book.Yes.Asks))
 	}
-	if book.Yes.Bids[0].PriceCents != 60 {
-		t.Errorf("best yes bid should be 60, got %d", book.Yes.Bids[0].PriceCents)
+	if book.Yes.Bids[0].PricePoints != 60 {
+		t.Errorf("best yes bid should be 60, got %d", book.Yes.Bids[0].PricePoints)
 	}
 	if len(book.No.Bids) != 1 || len(book.No.Asks) != 1 {
 		t.Errorf("no side wrong: bids=%d asks=%d", len(book.No.Bids), len(book.No.Asks))

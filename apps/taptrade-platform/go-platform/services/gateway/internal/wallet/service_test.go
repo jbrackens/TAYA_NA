@@ -14,28 +14,28 @@ func TestCreditAndDebitFlow(t *testing.T) {
 
 	credit, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "u-1",
-		AmountCents:    1000,
+		AmountPoints:   1000,
 		IdempotencyKey: "k1",
 		Reason:         "deposit",
 	})
 	if err != nil {
 		t.Fatalf("credit: %v", err)
 	}
-	if credit.BalanceCents != 1000 {
-		t.Fatalf("expected balance 1000 after credit, got %d", credit.BalanceCents)
+	if credit.BalancePoints != 1000 {
+		t.Fatalf("expected balance 1000 after credit, got %d", credit.BalancePoints)
 	}
 
 	debit, err := svc.Debit(context.Background(), MutationRequest{
 		UserID:         "u-1",
-		AmountCents:    300,
+		AmountPoints:   300,
 		IdempotencyKey: "k2",
 		Reason:         "bet placement",
 	})
 	if err != nil {
 		t.Fatalf("debit: %v", err)
 	}
-	if debit.BalanceCents != 700 {
-		t.Fatalf("expected balance 700 after debit, got %d", debit.BalanceCents)
+	if debit.BalancePoints != 700 {
+		t.Fatalf("expected balance 700 after debit, got %d", debit.BalancePoints)
 	}
 }
 
@@ -44,7 +44,7 @@ func TestCreditIsIdempotentByKey(t *testing.T) {
 
 	first, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "u-2",
-		AmountCents:    500,
+		AmountPoints:   500,
 		IdempotencyKey: "same-key",
 	})
 	if err != nil {
@@ -53,7 +53,7 @@ func TestCreditIsIdempotentByKey(t *testing.T) {
 
 	second, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "u-2",
-		AmountCents:    500,
+		AmountPoints:   500,
 		IdempotencyKey: "same-key",
 	})
 	if err != nil {
@@ -73,7 +73,7 @@ func TestIdempotencyKeyConflictReturnsError(t *testing.T) {
 
 	_, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "u-2",
-		AmountCents:    500,
+		AmountPoints:   500,
 		IdempotencyKey: "same-key",
 		Reason:         "initial",
 	})
@@ -83,7 +83,7 @@ func TestIdempotencyKeyConflictReturnsError(t *testing.T) {
 
 	_, err = svc.Credit(context.Background(), MutationRequest{
 		UserID:         "u-2",
-		AmountCents:    700,
+		AmountPoints:   700,
 		IdempotencyKey: "same-key",
 		Reason:         "mismatch",
 	})
@@ -97,19 +97,19 @@ func TestIdempotencyKeyConflictReturnsError(t *testing.T) {
 
 func TestSameMutationReplayTrimsReason(t *testing.T) {
 	existing := LedgerEntry{
-		AmountCents: 500,
-		Reason:      "starter_grant",
+		AmountPoints: 500,
+		Reason:       "starter_grant",
 	}
 	request := MutationRequest{
-		AmountCents: 500,
-		Reason:      " starter_grant ",
+		AmountPoints: 500,
+		Reason:       " starter_grant ",
 	}
 
 	if !sameMutationReplay(existing, request) {
 		t.Fatal("expected same mutation replay when only reason whitespace differs")
 	}
 
-	request.AmountCents = 700
+	request.AmountPoints = 700
 	if sameMutationReplay(existing, request) {
 		t.Fatal("expected changed amount to remain an idempotency conflict")
 	}
@@ -120,7 +120,7 @@ func TestDebitFailsWhenInsufficientFunds(t *testing.T) {
 
 	_, err := svc.Debit(context.Background(), MutationRequest{
 		UserID:         "u-3",
-		AmountCents:    200,
+		AmountPoints:   200,
 		IdempotencyKey: "debit-insufficient",
 	})
 	if err == nil {
@@ -137,7 +137,7 @@ func TestWalletStatePersistsAcrossServiceInstances(t *testing.T) {
 	first := NewServiceWithPath(path)
 	_, err := first.Credit(context.Background(), MutationRequest{
 		UserID:         "u-4",
-		AmountCents:    250,
+		AmountPoints:   250,
 		IdempotencyKey: "credit-1",
 		Reason:         "seed",
 	})
@@ -284,7 +284,7 @@ func TestReconciliationSummaryLocalStore(t *testing.T) {
 
 	_, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "u-recon-1",
-		AmountCents:    1200,
+		AmountPoints:   1200,
 		IdempotencyKey: "credit-1",
 	})
 	if err != nil {
@@ -294,7 +294,7 @@ func TestReconciliationSummaryLocalStore(t *testing.T) {
 	svc.now = func() time.Time { return base.Add(5 * time.Minute) }
 	_, err = svc.Debit(context.Background(), MutationRequest{
 		UserID:         "u-recon-1",
-		AmountCents:    300,
+		AmountPoints:   300,
 		IdempotencyKey: "debit-1",
 	})
 	if err != nil {
@@ -320,7 +320,7 @@ func TestManualCorrectionTaskLifecycle(t *testing.T) {
 	svc := NewService()
 	_, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "u-correction-1",
-		AmountCents:    1000,
+		AmountPoints:   1000,
 		IdempotencyKey: "seed-correction-1",
 	})
 	if err != nil {

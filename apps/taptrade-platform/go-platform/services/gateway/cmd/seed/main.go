@@ -157,9 +157,9 @@ func printSummary(db *sql.DB) {
 	// List open markets
 	fmt.Println("\n--- Open Markets ---")
 	rows, err := db.Query(`
-		SELECT ticker, title, yes_price_cents, volume_cents
+		SELECT ticker, title, yes_price_points, volume_points
 		FROM prediction_markets WHERE status = 'open'
-		ORDER BY volume_cents DESC LIMIT 10`)
+		ORDER BY volume_points DESC LIMIT 10`)
 	if err != nil {
 		fmt.Printf("  error: %v\n", err)
 		return

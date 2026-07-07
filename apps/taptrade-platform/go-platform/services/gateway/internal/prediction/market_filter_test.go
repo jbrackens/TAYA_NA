@@ -69,7 +69,7 @@ func TestMarketOrderClauseSupportsDiscoverySorts(t *testing.T) {
 	if clause := marketOrderClause("newest"); !strings.Contains(clause, "rm.created_at DESC") {
 		t.Fatalf("newest sort should order by created_at DESC, got %q", clause)
 	}
-	if clause := marketOrderClause("activity"); !strings.Contains(clause, "volume_24h_cents") {
+	if clause := marketOrderClause("activity"); !strings.Contains(clause, "volume_24h_points") {
 		t.Fatalf("activity sort should use ranking score, got %q", clause)
 	}
 }

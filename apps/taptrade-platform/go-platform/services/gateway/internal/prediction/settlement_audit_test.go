@@ -53,10 +53,10 @@ func TestResolveMarket_AutoSettleAuditsAsAutoSettler(t *testing.T) {
 	if auditor.calls[0].details["unit"] != "PTS" {
 		t.Fatalf("audit details should include PTS unit, got %+v", auditor.calls[0].details)
 	}
-	if _, ok := auditor.calls[0].details["totalSettlementPointsCents"]; !ok {
+	if _, ok := auditor.calls[0].details["totalSettlementPoints"]; !ok {
 		t.Fatalf("audit details should include point-native settlement total, got %+v", auditor.calls[0].details)
 	}
-	for _, retired := range []string{"totalPayoutCents", "payoutCount", "currency"} {
+	for _, retired := range []string{"totalPayoutPoints", "payoutCount", "currency"} {
 		if _, ok := auditor.calls[0].details[retired]; ok {
 			t.Fatalf("audit details should not include retired %s: %+v", retired, auditor.calls[0].details)
 		}
@@ -97,7 +97,7 @@ func TestResolveMarket_AdminSettleAuditsActorAtomic(t *testing.T) {
 	if _, ok := auditor.calls[0].details["pointDisbursementCount"]; !ok {
 		t.Fatalf("admin settle audit should include point disbursement count, got %+v", auditor.calls[0].details)
 	}
-	if _, ok := auditor.calls[0].details["totalPayoutCents"]; ok {
-		t.Fatalf("admin settle audit should not include totalPayoutCents: %+v", auditor.calls[0].details)
+	if _, ok := auditor.calls[0].details["totalPayoutPoints"]; ok {
+		t.Fatalf("admin settle audit should not include totalPayoutPoints: %+v", auditor.calls[0].details)
 	}
 }

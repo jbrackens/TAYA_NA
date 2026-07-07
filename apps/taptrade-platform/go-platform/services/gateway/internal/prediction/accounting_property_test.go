@@ -24,7 +24,7 @@ func propConfig() *quick.Config {
 	}
 }
 
-// --- CalculateTakerFeeCents ---
+// --- CalculateTakerFeePoints ---
 
 // Property: fee is never negative.
 //
@@ -33,10 +33,10 @@ func propConfig() *quick.Config {
 // finance-team-calls-you-at-3am kind of bug.
 func TestProp_TakerFee_NonNegative(t *testing.T) {
 	f := func(bpsRaw, priceRaw, qtyRaw uint16) bool {
-		bps := int(bpsRaw % 1001)   // 0..1000
+		bps := int(bpsRaw % 1001)    // 0..1000
 		price := int(priceRaw % 200) // 0..199 (incl. out-of-band)
 		qty := int(qtyRaw % 1000)    // 0..999
-		fee := CalculateTakerFeeCents(bps, price, qty)
+		fee := CalculateTakerFeePoints(bps, price, qty)
 		return fee >= 0
 	}
 	if err := quick.Check(f, propConfig()); err != nil {
@@ -51,10 +51,10 @@ func TestProp_TakerFee_ZeroAtExtremes(t *testing.T) {
 		bps := int(bpsRaw % 1001)
 		qty := int(qtyRaw % 1000)
 		// Prices 0 and 100 are outside the [1,99] band.
-		if CalculateTakerFeeCents(bps, 0, qty) != 0 {
+		if CalculateTakerFeePoints(bps, 0, qty) != 0 {
 			return false
 		}
-		if CalculateTakerFeeCents(bps, 100, qty) != 0 {
+		if CalculateTakerFeePoints(bps, 100, qty) != 0 {
 			return false
 		}
 		return true
@@ -77,7 +77,7 @@ func TestProp_TakerFee_BoundedByMathMax(t *testing.T) {
 		bps := int(bpsRaw % 1001)
 		price := int(priceRaw%99) + 1 // 1..99 (in-band)
 		qty := int(qtyRaw%999) + 1    // 1..999
-		fee := CalculateTakerFeeCents(bps, price, qty)
+		fee := CalculateTakerFeePoints(bps, price, qty)
 		// Closed-form upper bound, rounded up by 1¢ to account for the
 		// integer division's worst-case truncation behaviour.
 		bound := int64(bps)*int64(qty)/400 + 1
@@ -98,8 +98,8 @@ func TestProp_TakerFee_MonotonicInQty(t *testing.T) {
 		bps := int(bpsRaw%1000) + 1   // 1..1000
 		price := int(priceRaw%99) + 1 // 1..99
 		qty := int(qtyRaw%500) + 1    // 1..500
-		fee1 := CalculateTakerFeeCents(bps, price, qty)
-		fee2 := CalculateTakerFeeCents(bps, price, qty*2)
+		fee1 := CalculateTakerFeePoints(bps, price, qty)
+		fee2 := CalculateTakerFeePoints(bps, price, qty*2)
 		return fee2 >= fee1
 	}
 	if err := quick.Check(f, propConfig()); err != nil {
@@ -117,10 +117,10 @@ func TestProp_TakerFee_MonotonicInQty(t *testing.T) {
 // tolerance accounts for integer-division truncation toward zero.
 func TestProp_AvgCost_LiesBetweenInputs(t *testing.T) {
 	f := func(eqRaw, eaRaw, aqRaw, apRaw uint16) bool {
-		eq := int(eqRaw%500) + 1   // 1..500 existing qty
-		ea := int(eaRaw%99) + 1    // 1..99 existing avg
-		aq := int(aqRaw%500) + 1   // 1..500 add qty
-		ap := int(apRaw%99) + 1    // 1..99 add price
+		eq := int(eqRaw%500) + 1 // 1..500 existing qty
+		ea := int(eaRaw%99) + 1  // 1..99 existing avg
+		aq := int(aqRaw%500) + 1 // 1..500 add qty
+		ap := int(apRaw%99) + 1  // 1..99 add price
 		got := AverageCostAfterBuy(eq, ea, aq, ap)
 		lo, hi := ea, ap
 		if hi < lo {
@@ -215,7 +215,7 @@ func TestProp_RealizedPnL_LinearInQty(t *testing.T) {
 	}
 }
 
-// --- IssuanceFillFeasible / ComplementaryTakerPriceCents ---
+// --- IssuanceFillFeasible / ComplementaryTakerPricePoints ---
 
 // Property: when feasible, the complementary taker price plus the maker
 // limit equals par (100). The collateral pool grows by exactly 100¢ per
@@ -227,8 +227,8 @@ func TestProp_Issuance_ComplementaryEqualsPar(t *testing.T) {
 		if !IssuanceFillFeasible(tl, ml) {
 			return true // vacuous
 		}
-		takerPx := ComplementaryTakerPriceCents(ml)
-		return takerPx+ml == ParPriceCents
+		takerPx := ComplementaryTakerPricePoints(ml)
+		return takerPx+ml == ParPricePoints
 	}
 	if err := quick.Check(f, propConfig()); err != nil {
 		t.Error(err)
@@ -237,36 +237,36 @@ func TestProp_Issuance_ComplementaryEqualsPar(t *testing.T) {
 
 // --- ApplyPositionMutation ---
 
-// Property: after a buy mutation, the TotalCostCents (authoritative cumulative
-// spend) is within one Quantity-worth of the displayed Quantity × AvgPriceCents
-// product. Exact equality is impossible because AvgPriceCents is an integer
+// Property: after a buy mutation, the TotalCostPoints (authoritative cumulative
+// spend) is within one Quantity-worth of the displayed Quantity × AvgPricePoints
+// product. Exact equality is impossible because AvgPricePoints is an integer
 // derived as TotalCost / Quantity, which truncates. The truncation residue is
 // bounded above by Quantity cents (one cent per share lost to floor()), which
 // is what this property asserts.
 //
 // The reconciler's cross-user collateral invariant doesn't care about this
-// per-position residue — it sums TotalCostCents directly. AvgPriceCents is a
+// per-position residue — it sums TotalCostPoints directly. AvgPricePoints is a
 // display-layer value.
 func TestProp_ApplyPositionMutation_BuyInvariant(t *testing.T) {
 	f := func(startQtyRaw, startAvgRaw, fillQtyRaw, fillPxRaw uint16) bool {
 		p := Position{
-			UserID:        "u",
-			MarketID:      "m",
-			Side:          OrderSideYes,
-			Quantity:      int(startQtyRaw % 1000),
-			AvgPriceCents: int(startAvgRaw%99) + 1,
+			UserID:         "u",
+			MarketID:       "m",
+			Side:           OrderSideYes,
+			Quantity:       int(startQtyRaw % 1000),
+			AvgPricePoints: int(startAvgRaw%99) + 1,
 		}
-		p.TotalCostCents = int64(p.Quantity) * int64(p.AvgPriceCents)
+		p.TotalCostPoints = int64(p.Quantity) * int64(p.AvgPricePoints)
 		fq := int(fillQtyRaw%500) + 1
 		fp := int(fillPxRaw%99) + 1
 		ApplyPositionMutation(&p, PositionMutation{
 			UserID: "u", MarketID: "m", Side: OrderSideYes,
-			DeltaQty: fq, FillPriceCents: fp, IsSell: false,
+			DeltaQty: fq, FillPricePoints: fp, IsSell: false,
 		})
 		// TotalCost is the truth. Displayed avg × qty must be within one
 		// qty-worth of it (truncation residue ≤ qty cents).
-		displayed := int64(p.Quantity) * int64(p.AvgPriceCents)
-		residue := p.TotalCostCents - displayed
+		displayed := int64(p.Quantity) * int64(p.AvgPricePoints)
+		residue := p.TotalCostPoints - displayed
 		return residue >= 0 && residue < int64(p.Quantity+1)
 	}
 	if err := quick.Check(f, propConfig()); err != nil {
@@ -280,13 +280,13 @@ func TestProp_ApplyPositionMutation_SellInvariant(t *testing.T) {
 	f := func(startQtyRaw, startAvgRaw, sellQtyRaw, sellPxRaw uint16) bool {
 		startQty := int(startQtyRaw%1000) + 1
 		p := Position{
-			UserID:        "u",
-			MarketID:      "m",
-			Side:          OrderSideYes,
-			Quantity:      startQty,
-			AvgPriceCents: int(startAvgRaw%99) + 1,
+			UserID:         "u",
+			MarketID:       "m",
+			Side:           OrderSideYes,
+			Quantity:       startQty,
+			AvgPricePoints: int(startAvgRaw%99) + 1,
 		}
-		p.TotalCostCents = int64(p.Quantity) * int64(p.AvgPriceCents)
+		p.TotalCostPoints = int64(p.Quantity) * int64(p.AvgPricePoints)
 		sq := int(sellQtyRaw % uint16(startQty+200)) // sometimes oversell
 		if sq == 0 {
 			sq = 1
@@ -294,12 +294,12 @@ func TestProp_ApplyPositionMutation_SellInvariant(t *testing.T) {
 		sp := int(sellPxRaw%99) + 1
 		ApplyPositionMutation(&p, PositionMutation{
 			UserID: "u", MarketID: "m", Side: OrderSideYes,
-			DeltaQty: -sq, FillPriceCents: sp, IsSell: true,
+			DeltaQty: -sq, FillPricePoints: sp, IsSell: true,
 		})
 		if p.Quantity < 0 {
 			return false
 		}
-		return p.TotalCostCents == int64(p.Quantity)*int64(p.AvgPriceCents)
+		return p.TotalCostPoints == int64(p.Quantity)*int64(p.AvgPricePoints)
 	}
 	if err := quick.Check(f, propConfig()); err != nil {
 		t.Error(err)
@@ -321,18 +321,18 @@ func TestProp_ApplyPositionMutation_FillFragmentationStable(t *testing.T) {
 		n := rng.Intn(10) + 2
 
 		// Path A: n separate fills of fillQty each.
-		a := Position{Quantity: startQty, AvgPriceCents: startAvg,
-			TotalCostCents: int64(startQty) * int64(startAvg)}
+		a := Position{Quantity: startQty, AvgPricePoints: startAvg,
+			TotalCostPoints: int64(startQty) * int64(startAvg)}
 		for j := 0; j < n; j++ {
 			ApplyPositionMutation(&a, PositionMutation{
-				DeltaQty: fillQty, FillPriceCents: fillPx, IsSell: false,
+				DeltaQty: fillQty, FillPricePoints: fillPx, IsSell: false,
 			})
 		}
 		// Path B: one fill of n*fillQty.
-		b := Position{Quantity: startQty, AvgPriceCents: startAvg,
-			TotalCostCents: int64(startQty) * int64(startAvg)}
+		b := Position{Quantity: startQty, AvgPricePoints: startAvg,
+			TotalCostPoints: int64(startQty) * int64(startAvg)}
 		ApplyPositionMutation(&b, PositionMutation{
-			DeltaQty: n * fillQty, FillPriceCents: fillPx, IsSell: false,
+			DeltaQty: n * fillQty, FillPricePoints: fillPx, IsSell: false,
 		})
 
 		if a.Quantity != b.Quantity {
@@ -340,13 +340,13 @@ func TestProp_ApplyPositionMutation_FillFragmentationStable(t *testing.T) {
 		}
 		// Avg may differ by 1 due to repeated integer truncation. Anything
 		// more than that is a real divergence.
-		diff := a.AvgPriceCents - b.AvgPriceCents
+		diff := a.AvgPricePoints - b.AvgPricePoints
 		if diff < 0 {
 			diff = -diff
 		}
 		if diff > 1 {
 			t.Fatalf("avg differs by %d: split=%d single=%d (startQty=%d startAvg=%d fillQty=%d n=%d fillPx=%d)",
-				diff, a.AvgPriceCents, b.AvgPriceCents, startQty, startAvg, fillQty, n, fillPx)
+				diff, a.AvgPricePoints, b.AvgPricePoints, startQty, startAvg, fillQty, n, fillPx)
 		}
 	}
 }

@@ -12,13 +12,13 @@ package prediction
 //     the user expects: down for fees (favor user), down for average cost,
 //     exact for collateral.
 
-// MinTickPriceCents and MaxTickPriceCents are the inclusive bounds of a
+// MinTickPricePoints and MaxTickPricePoints are the inclusive bounds of a
 // prediction-market price. Outside this range orders are rejected at the API
 // boundary with FailurePriceBandViolation.
 const (
-	MinTickPriceCents = 1
-	MaxTickPriceCents = 99
-	ParPriceCents     = 100 // YES + NO must always sum to par
+	MinTickPricePoints = 1
+	MaxTickPricePoints = 99
+	ParPricePoints     = 100 // YES + NO must always sum to par
 )
 
 // DefaultTakerFeeBps is the v1 flat-rate taker fee applied to every new
@@ -35,14 +35,14 @@ const (
 // captured separately so the demo-state numbers stay predictable.
 const DefaultTakerFeeBps = 100
 
-// PriceWithinBounds returns true when priceCents is in [1, 99].
-func PriceWithinBounds(priceCents int) bool {
-	return priceCents >= MinTickPriceCents && priceCents <= MaxTickPriceCents
+// PriceWithinBounds returns true when pricePoints is in [1, 99].
+func PriceWithinBounds(pricePoints int) bool {
+	return pricePoints >= MinTickPricePoints && pricePoints <= MaxTickPricePoints
 }
 
-// CalculateTakerFeeCents returns the v1 taker fee for a single fill:
+// CalculateTakerFeePoints returns the v1 taker fee for a single fill:
 //
-//	floor(takerFeeBps × priceCents × (100 - priceCents) × quantity / 1_000_000)
+//	floor(takerFeeBps × pricePoints × (100 - pricePoints) × quantity / 1_000_000)
 //
 // Bps are basis points (1bp = 0.01%). Default in TapTrade is DefaultTakerFeeBps
 // (100 = 1%), applied per the 2026-04-24 fee-model decision and peaking at
@@ -50,41 +50,41 @@ func PriceWithinBounds(priceCents int) bool {
 // fees are always 0 in v1.
 //
 // Returns 0 for non-positive inputs and for prices at the par extremes.
-func CalculateTakerFeeCents(takerFeeBps, priceCents, quantity int) int64 {
-	if takerFeeBps <= 0 || quantity <= 0 || !PriceWithinBounds(priceCents) {
+func CalculateTakerFeePoints(takerFeeBps, pricePoints, quantity int) int64 {
+	if takerFeeBps <= 0 || quantity <= 0 || !PriceWithinBounds(pricePoints) {
 		return 0
 	}
-	complement := ParPriceCents - priceCents
-	num := int64(takerFeeBps) * int64(priceCents) * int64(complement) * int64(quantity)
+	complement := ParPricePoints - pricePoints
+	num := int64(takerFeeBps) * int64(pricePoints) * int64(complement) * int64(quantity)
 	return num / 1_000_000
 }
 
 // AverageCostAfterBuy returns the new average cost after adding `addQty`
-// shares at `addPriceCents` to a position with `existingQty` at
-// `existingAvgCents`. Integer arithmetic; rounds toward zero.
+// shares at `addPricePoints` to a position with `existingQty` at
+// `existingAvgPoints`. Integer arithmetic; rounds toward zero.
 //
-// Empty positions: when existingQty <= 0, returns addPriceCents.
-// Zero-add: when addQty <= 0, returns existingAvgCents unchanged.
-func AverageCostAfterBuy(existingQty, existingAvgCents, addQty, addPriceCents int) int {
+// Empty positions: when existingQty <= 0, returns addPricePoints.
+// Zero-add: when addQty <= 0, returns existingAvgPoints unchanged.
+func AverageCostAfterBuy(existingQty, existingAvgPoints, addQty, addPricePoints int) int {
 	if addQty <= 0 {
-		return existingAvgCents
+		return existingAvgPoints
 	}
 	if existingQty <= 0 {
-		return addPriceCents
+		return addPricePoints
 	}
-	totalCost := existingQty*existingAvgCents + addQty*addPriceCents
+	totalCost := existingQty*existingAvgPoints + addQty*addPricePoints
 	totalQty := existingQty + addQty
 	return totalCost / totalQty
 }
 
 // RealizedPnLOnSell returns the realized PnL (in cents) when selling `qty`
-// shares from a position with `existingAvgCents` at `salePriceCents`.
+// shares from a position with `existingAvgPoints` at `salePricePoints`.
 // Negative when the sale is a loss.
-func RealizedPnLOnSell(qty, existingAvgCents, salePriceCents int) int64 {
+func RealizedPnLOnSell(qty, existingAvgPoints, salePricePoints int) int64 {
 	if qty <= 0 {
 		return 0
 	}
-	return int64(qty) * (int64(salePriceCents) - int64(existingAvgCents))
+	return int64(qty) * (int64(salePricePoints) - int64(existingAvgPoints))
 }
 
 // IssuanceFillFeasible reports whether two same-direction Buy orders on
@@ -93,20 +93,20 @@ func RealizedPnLOnSell(qty, existingAvgCents, salePriceCents int) int64 {
 //
 // When feasible, the maker pays makerLimit and the taker pays
 // (100 - makerLimit), with the taker reserving against takerLimit and any
-// surplus released at commit. See ComplementaryTakerPriceCents.
+// surplus released at commit. See ComplementaryTakerPricePoints.
 func IssuanceFillFeasible(takerLimit, makerLimit int) bool {
 	if !PriceWithinBounds(takerLimit) || !PriceWithinBounds(makerLimit) {
 		return false
 	}
-	return takerLimit+makerLimit >= ParPriceCents
+	return takerLimit+makerLimit >= ParPricePoints
 }
 
-// ComplementaryTakerPriceCents returns the price the taker actually pays in
+// ComplementaryTakerPricePoints returns the price the taker actually pays in
 // a complementary issuance fill: 100 - makerLimit. The taker may have set a
 // higher limit; the surplus is released from their point reservation at
 // commit (no separate refund).
-func ComplementaryTakerPriceCents(makerLimit int) int {
-	return ParPriceCents - makerLimit
+func ComplementaryTakerPricePoints(makerLimit int) int {
+	return ParPricePoints - makerLimit
 }
 
 // SecondaryTransferCanCross reports whether a secondary same-side transfer
@@ -123,7 +123,7 @@ func CollateralPoolDelta(kind TradeKind, quantity int) int64 {
 	if kind != TradeKindIssuance || quantity <= 0 {
 		return 0
 	}
-	return int64(quantity) * int64(ParPriceCents)
+	return int64(quantity) * int64(ParPricePoints)
 }
 
 // AvailableQuantity returns the count of shares a user can currently sell
@@ -187,18 +187,18 @@ func AggregateSoldQty(muts []PositionMutation) map[SellerPositionKey]int {
 // each in order to the loaded existing position via ApplyPositionMutation,
 // and upserts the final state.
 type PositionMutation struct {
-	UserID         string
-	MarketID       string
-	Side           OrderSide
-	DeltaQty       int  // positive on buy, negative on sell
-	FillPriceCents int  // the per-share price for this fill
-	IsSell         bool // explicit; redundant with sign(DeltaQty) but clearer
+	UserID          string
+	MarketID        string
+	Side            OrderSide
+	DeltaQty        int  // positive on buy, negative on sell
+	FillPricePoints int  // the per-share price for this fill
+	IsSell          bool // explicit; redundant with sign(DeltaQty) but clearer
 }
 
 // ApplyPositionMutation merges a single mutation into a Position struct.
-// On buy: adds qty and increments TotalCostCents by addQty × fillPx; AvgPriceCents
-// is then derived as TotalCostCents / Quantity. Computing avg from the cumulative
-// cost (rather than via running-average against the previous AvgPriceCents) avoids
+// On buy: adds qty and increments TotalCostPoints by addQty × fillPx; AvgPricePoints
+// is then derived as TotalCostPoints / Quantity. Computing avg from the cumulative
+// cost (rather than via running-average against the previous AvgPricePoints) avoids
 // truncation drift across partial fills: a 1000-share order that gets sliced into
 // 10 partial fills now produces the same avg-cost as the same order as one fill,
 // within the same 1¢ rounding that a single division would have. Caught by
@@ -206,7 +206,7 @@ type PositionMutation struct {
 // path drifted by up to ~5¢ for users whose orders crossed many makers.
 //
 // On sell: realises PnL against existing avg-cost, leaves avg-cost unchanged,
-// reduces qty (clamped at zero), reduces TotalCostCents proportionally to the
+// reduces qty (clamped at zero), reduces TotalCostPoints proportionally to the
 // shares removed.
 //
 // The Position struct is mutated in place. Caller is responsible for
@@ -220,7 +220,7 @@ func ApplyPositionMutation(p *Position, m PositionMutation) {
 		if soldQty < 0 {
 			soldQty = -soldQty
 		}
-		p.RealizedPnlCents += RealizedPnLOnSell(soldQty, p.AvgPriceCents, m.FillPriceCents)
+		p.RealizedPnlPoints += RealizedPnLOnSell(soldQty, p.AvgPricePoints, m.FillPricePoints)
 		p.Quantity -= soldQty
 		if p.Quantity < 0 {
 			p.Quantity = 0
@@ -228,16 +228,16 @@ func ApplyPositionMutation(p *Position, m PositionMutation) {
 		// Recompute TotalCost from quantity × avg. Sells don't change avg, so
 		// this preserves the per-share basis and shrinks the dollar basis
 		// proportionally to the shares removed.
-		p.TotalCostCents = int64(p.Quantity) * int64(p.AvgPriceCents)
+		p.TotalCostPoints = int64(p.Quantity) * int64(p.AvgPricePoints)
 		return
 	}
 	addQty := m.DeltaQty
 	if addQty < 0 {
 		addQty = -addQty
 	}
-	p.TotalCostCents += int64(addQty) * int64(m.FillPriceCents)
+	p.TotalCostPoints += int64(addQty) * int64(m.FillPricePoints)
 	p.Quantity += addQty
 	if p.Quantity > 0 {
-		p.AvgPriceCents = int(p.TotalCostCents / int64(p.Quantity))
+		p.AvgPricePoints = int(p.TotalCostPoints / int64(p.Quantity))
 	}
 }

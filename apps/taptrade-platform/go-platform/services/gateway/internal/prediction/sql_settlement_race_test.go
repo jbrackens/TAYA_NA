@@ -21,20 +21,20 @@ import (
 // share the transaction.
 type txWalletStub struct{ db *sql.DB }
 
-func (w *txWalletStub) Debit(_ context.Context, userID string, amountCents int64, idempotencyKey, reason string) error {
+func (w *txWalletStub) Debit(_ context.Context, userID string, amountPoints int64, idempotencyKey, reason string) error {
 	return nil
 }
-func (w *txWalletStub) Credit(_ context.Context, userID string, amountCents int64, idempotencyKey, reason string) error {
+func (w *txWalletStub) Credit(_ context.Context, userID string, amountPoints int64, idempotencyKey, reason string) error {
 	return nil
 }
 func (w *txWalletStub) Balance(_ context.Context, userID string) int64 { return 0 }
 func (w *txWalletStub) BeginTx(ctx context.Context) (*sql.Tx, error) {
 	return w.db.BeginTx(ctx, nil)
 }
-func (w *txWalletStub) DebitWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, idempotencyKey, reason string) error {
+func (w *txWalletStub) DebitWithTx(ctx context.Context, tx *sql.Tx, userID string, amountPoints int64, idempotencyKey, reason string) error {
 	return nil
 }
-func (w *txWalletStub) CreditWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, idempotencyKey, reason string) error {
+func (w *txWalletStub) CreditWithTx(ctx context.Context, tx *sql.Tx, userID string, amountPoints int64, idempotencyKey, reason string) error {
 	return nil
 }
 
@@ -227,7 +227,7 @@ func seedClosedMarketWithPositions(t *testing.T, db *sql.DB, tag string) string 
 		userID := fmt.Sprintf("race-%s-%s", side, suffix)
 		if _, err := db.Exec(
 			`INSERT INTO prediction_positions
-			 (user_id, market_id, side, quantity, avg_price_cents, total_cost_cents)
+			 (user_id, market_id, side, quantity, avg_price_points, total_cost_points)
 			 VALUES ($1, $2, $3, 10, 50, 500)`,
 			userID, marketID, side,
 		); err != nil {

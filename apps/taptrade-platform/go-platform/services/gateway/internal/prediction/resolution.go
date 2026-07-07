@@ -49,7 +49,7 @@ type Dispute struct {
 	Reason         string     `json:"reason"`
 	Status         string     `json:"status"` // open|upheld|rejected|withdrawn
 	ResolutionNote *string    `json:"resolutionNote,omitempty"`
-	BondCents      int64      `json:"bondCents"`
+	BondPoints     int64      `json:"bondPoints"`
 	CreatedAt      time.Time  `json:"createdAt"`
 	ResolvedAt     *time.Time `json:"resolvedAt,omitempty"`
 	ResolvedBy     *string    `json:"resolvedBy,omitempty"`

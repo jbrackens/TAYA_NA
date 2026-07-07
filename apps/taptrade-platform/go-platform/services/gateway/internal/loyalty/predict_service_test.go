@@ -12,8 +12,8 @@ import (
 // It records the last Accrue/AccrueWithTx input so assertions can inspect
 // what the service forwarded.
 type fakePredictRepo struct {
-	account      *PredictAccount
-	ledger       []PredictLedgerEntry
+	account       *PredictAccount
+	ledger        []PredictLedgerEntry
 	getAccountErr error
 	accrueResult  *PredictAccrualResult
 	accrueErr     error
@@ -134,7 +134,7 @@ func TestAccrueSettled_RejectsZeroVolume(t *testing.T) {
 
 	_, err := svc.AccrueSettled(context.Background(), PredictSettlementAccrual{
 		UserID:         "u-1",
-		VolumeCents:    0,
+		VolumePoints:   0,
 		IsCorrect:      true,
 		IdempotencyKey: "key",
 	})
@@ -151,9 +151,9 @@ func TestAccrueSettled_RejectsMissingIdempotencyKey(t *testing.T) {
 	svc := NewPredictService(repo)
 
 	_, err := svc.AccrueSettled(context.Background(), PredictSettlementAccrual{
-		UserID:      "u-1",
-		VolumeCents: 1000,
-		IsCorrect:   true,
+		UserID:       "u-1",
+		VolumePoints: 1000,
+		IsCorrect:    true,
 	})
 	if err == nil {
 		t.Fatalf("expected error for missing idempotency_key")
@@ -166,7 +166,7 @@ func TestAccrueSettled_WonEmitsWonReason(t *testing.T) {
 
 	_, err := svc.AccrueSettled(context.Background(), PredictSettlementAccrual{
 		UserID:         "u-won",
-		VolumeCents:    1000,
+		VolumePoints:   1000,
 		IsCorrect:      true,
 		MarketID:       "mkt-btc",
 		TradeID:        "trade-1",
@@ -201,7 +201,7 @@ func TestAccrueSettled_LostEmitsLostReason(t *testing.T) {
 
 	_, err := svc.AccrueSettled(context.Background(), PredictSettlementAccrual{
 		UserID:         "u-lost",
-		VolumeCents:    1000,
+		VolumePoints:   1000,
 		IsCorrect:      false,
 		IdempotencyKey: "accrual:mkt-fed:pos-2",
 	})
@@ -222,7 +222,7 @@ func TestAccrueSettledWithTx_ForwardsTx(t *testing.T) {
 	// unchanged to AccrueWithTx (not to Accrue).
 	_, err := svc.AccrueSettledWithTx(context.Background(), nil, PredictSettlementAccrual{
 		UserID:         "u-tx",
-		VolumeCents:    2500,
+		VolumePoints:   2500,
 		IsCorrect:      true,
 		IdempotencyKey: "accrual:mkt-x:pos-3",
 	})

@@ -35,7 +35,7 @@ func (s *PostgresResponsibleGamblingService) ensureSchema() error {
 		`CREATE TABLE IF NOT EXISTS player_bet_limits (
   user_id TEXT NOT NULL,
   period TEXT NOT NULL CHECK (period IN ('daily','weekly','monthly')),
-  limit_cents BIGINT NOT NULL CHECK (limit_cents > 0),
+  limit_points BIGINT NOT NULL CHECK (limit_points > 0),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (user_id, period)
@@ -43,7 +43,7 @@ func (s *PostgresResponsibleGamblingService) ensureSchema() error {
 		`CREATE TABLE IF NOT EXISTS player_deposit_limits (
   user_id TEXT NOT NULL,
   period TEXT NOT NULL CHECK (period IN ('daily','weekly','monthly')),
-  limit_cents BIGINT NOT NULL CHECK (limit_cents > 0),
+  limit_points BIGINT NOT NULL CHECK (limit_points > 0),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (user_id, period)
@@ -63,7 +63,7 @@ func (s *PostgresResponsibleGamblingService) ensureSchema() error {
   id BIGSERIAL PRIMARY KEY,
   user_id TEXT NOT NULL,
   activity_type TEXT NOT NULL,
-  amount_cents BIGINT NOT NULL DEFAULT 0,
+  amount_points BIGINT NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )`,
 		`CREATE INDEX IF NOT EXISTS idx_activity_user_type_time ON player_activity_log (user_id, activity_type, created_at)`,
@@ -79,7 +79,7 @@ func (s *PostgresResponsibleGamblingService) ensureSchema() error {
 
 // ── Bet Limits ────────────────────────────────────────────────────
 
-func (s *PostgresResponsibleGamblingService) SetBetLimit(ctx context.Context, userID string, period string, amountCents int64) error {
+func (s *PostgresResponsibleGamblingService) SetBetLimit(ctx context.Context, userID string, period string, amountPoints int64) error {
 	if userID == "" {
 		return ErrInvalidUserID
 	}
@@ -90,11 +90,11 @@ func (s *PostgresResponsibleGamblingService) SetBetLimit(ctx context.Context, us
 	defer cancel()
 
 	_, err := s.db.ExecContext(ctx, `
-INSERT INTO player_bet_limits (user_id, period, limit_cents, updated_at)
+INSERT INTO player_bet_limits (user_id, period, limit_points, updated_at)
 VALUES ($1, $2, $3, NOW())
 ON CONFLICT (user_id, period) DO UPDATE
-SET limit_cents = EXCLUDED.limit_cents, updated_at = NOW()`,
-		userID, period, amountCents)
+SET limit_points = EXCLUDED.limit_points, updated_at = NOW()`,
+		userID, period, amountPoints)
 	return err
 }
 
@@ -106,7 +106,7 @@ func (s *PostgresResponsibleGamblingService) GetBetLimits(ctx context.Context, u
 	defer cancel()
 
 	rows, err := s.db.QueryContext(ctx, `
-SELECT user_id, period, limit_cents, CAST(created_at AS TEXT)
+SELECT user_id, period, limit_points, CAST(created_at AS TEXT)
 FROM player_bet_limits
 WHERE user_id = $1
 ORDER BY period`, userID)
@@ -118,14 +118,14 @@ ORDER BY period`, userID)
 	var limits []BetLimit
 	for rows.Next() {
 		var l BetLimit
-		if err := rows.Scan(&l.UserID, &l.Period, &l.LimitCents, &l.CreatedAt); err != nil {
+		if err := rows.Scan(&l.UserID, &l.Period, &l.LimitPoints, &l.CreatedAt); err != nil {
 			return nil, err
 		}
 		// Calculate usage within the current period
-		l.UsedCents = s.usageInPeriod(ctx, userID, "bet", l.Period)
-		l.RemainingCents = l.LimitCents - l.UsedCents
-		if l.RemainingCents < 0 {
-			l.RemainingCents = 0
+		l.UsedPoints = s.usageInPeriod(ctx, userID, "bet", l.Period)
+		l.RemainingPoints = l.LimitPoints - l.UsedPoints
+		if l.RemainingPoints < 0 {
+			l.RemainingPoints = 0
 		}
 		l.ResetsAt = periodResetTime(l.Period).Format(time.RFC3339)
 		limits = append(limits, l)
@@ -133,7 +133,7 @@ ORDER BY period`, userID)
 	return limits, rows.Err()
 }
 
-func (s *PostgresResponsibleGamblingService) CheckBetAllowed(ctx context.Context, userID string, stakeCents int64) (bool, string, error) {
+func (s *PostgresResponsibleGamblingService) CheckBetAllowed(ctx context.Context, userID string, stakePoints int64) (bool, string, error) {
 	if userID == "" {
 		return false, "", ErrInvalidUserID
 	}
@@ -158,7 +158,7 @@ func (s *PostgresResponsibleGamblingService) CheckBetAllowed(ctx context.Context
 	defer cancel()
 
 	rows, err := s.db.QueryContext(ctx2, `
-SELECT period, limit_cents
+SELECT period, limit_points
 FROM player_bet_limits
 WHERE user_id = $1`, userID)
 	if err != nil {
@@ -168,12 +168,12 @@ WHERE user_id = $1`, userID)
 
 	for rows.Next() {
 		var period string
-		var limitCents int64
-		if err := rows.Scan(&period, &limitCents); err != nil {
+		var limitPoints int64
+		if err := rows.Scan(&period, &limitPoints); err != nil {
 			return false, "", err
 		}
 		used := s.usageInPeriod(ctx, userID, "bet", period)
-		if used+stakeCents > limitCents {
+		if used+stakePoints > limitPoints {
 			return false, fmt.Sprintf("%s_bet_limit_exceeded", period), nil
 		}
 	}
@@ -194,7 +194,7 @@ WHERE user_id = $1`, userID)
 // cluster-wide and auto-releases on commit/rollback, so this is correct across
 // multiple gateway instances. Mirrors the mock's semantics with DB durability,
 // and reuses the same advisory-lock pattern as payments.InitiateGatedWithdrawal.
-func (s *PostgresResponsibleGamblingService) CheckAndRecordBet(ctx context.Context, userID string, stakeCents int64) (bool, string, error) {
+func (s *PostgresResponsibleGamblingService) CheckAndRecordBet(ctx context.Context, userID string, stakePoints int64) (bool, string, error) {
 	if userID == "" {
 		return false, "", ErrInvalidUserID
 	}
@@ -237,7 +237,7 @@ func (s *PostgresResponsibleGamblingService) CheckAndRecordBet(ctx context.Conte
 
 	// Read every configured bet limit, then evaluate committed usage under the
 	// lock so a concurrent insert cannot slip a second order past the limit.
-	rows, err := tx.QueryContext(ctx, `SELECT period, limit_cents FROM player_bet_limits WHERE user_id = $1`, userID)
+	rows, err := tx.QueryContext(ctx, `SELECT period, limit_points FROM player_bet_limits WHERE user_id = $1`, userID)
 	if err != nil {
 		return false, "", err
 	}
@@ -262,7 +262,7 @@ func (s *PostgresResponsibleGamblingService) CheckAndRecordBet(ctx context.Conte
 	for _, l := range limits {
 		var used sql.NullInt64
 		if err = tx.QueryRowContext(ctx, `
-SELECT COALESCE(SUM(amount_cents), 0)
+SELECT COALESCE(SUM(amount_points), 0)
 FROM player_activity_log
 WHERE user_id = $1 AND activity_type = 'bet' AND created_at >= $2`,
 			userID, periodStart(l.period)).Scan(&used); err != nil {
@@ -272,7 +272,7 @@ WHERE user_id = $1 AND activity_type = 'bet' AND created_at >= $2`,
 		if used.Valid && used.Int64 > 0 {
 			u = used.Int64
 		}
-		if u+stakeCents > l.limit {
+		if u+stakePoints > l.limit {
 			return false, fmt.Sprintf("%s_bet_limit_exceeded", l.period), nil
 		}
 	}
@@ -280,10 +280,10 @@ WHERE user_id = $1 AND activity_type = 'bet' AND created_at >= $2`,
 	// Clean allow: record the committed stake inside the same tx so the next
 	// serialized caller observes it. Sells / zero-stake gate-only orders record
 	// nothing (matches the non-atomic RecordBet contract).
-	if stakeCents > 0 {
+	if stakePoints > 0 {
 		if _, err = tx.ExecContext(ctx, `
-INSERT INTO player_activity_log (user_id, activity_type, amount_cents)
-VALUES ($1, 'bet', $2)`, userID, stakeCents); err != nil {
+INSERT INTO player_activity_log (user_id, activity_type, amount_points)
+VALUES ($1, 'bet', $2)`, userID, stakePoints); err != nil {
 			return false, "", err
 		}
 	}
@@ -297,7 +297,7 @@ VALUES ($1, 'bet', $2)`, userID, stakeCents); err != nil {
 
 // ── Deposit Limits ────────────────────────────────────────────────
 
-func (s *PostgresResponsibleGamblingService) SetDepositLimit(ctx context.Context, userID string, period string, amountCents int64) error {
+func (s *PostgresResponsibleGamblingService) SetDepositLimit(ctx context.Context, userID string, period string, amountPoints int64) error {
 	if userID == "" {
 		return ErrInvalidUserID
 	}
@@ -308,11 +308,11 @@ func (s *PostgresResponsibleGamblingService) SetDepositLimit(ctx context.Context
 	defer cancel()
 
 	_, err := s.db.ExecContext(ctx, `
-INSERT INTO player_deposit_limits (user_id, period, limit_cents, updated_at)
+INSERT INTO player_deposit_limits (user_id, period, limit_points, updated_at)
 VALUES ($1, $2, $3, NOW())
 ON CONFLICT (user_id, period) DO UPDATE
-SET limit_cents = EXCLUDED.limit_cents, updated_at = NOW()`,
-		userID, period, amountCents)
+SET limit_points = EXCLUDED.limit_points, updated_at = NOW()`,
+		userID, period, amountPoints)
 	return err
 }
 
@@ -324,7 +324,7 @@ func (s *PostgresResponsibleGamblingService) GetDepositLimits(ctx context.Contex
 	defer cancel()
 
 	rows, err := s.db.QueryContext(ctx, `
-SELECT user_id, period, limit_cents, CAST(created_at AS TEXT)
+SELECT user_id, period, limit_points, CAST(created_at AS TEXT)
 FROM player_deposit_limits
 WHERE user_id = $1
 ORDER BY period`, userID)
@@ -336,13 +336,13 @@ ORDER BY period`, userID)
 	var limits []DepositLimit
 	for rows.Next() {
 		var l DepositLimit
-		if err := rows.Scan(&l.UserID, &l.Period, &l.LimitCents, &l.CreatedAt); err != nil {
+		if err := rows.Scan(&l.UserID, &l.Period, &l.LimitPoints, &l.CreatedAt); err != nil {
 			return nil, err
 		}
-		l.UsedCents = s.usageInPeriod(ctx, userID, "deposit", l.Period)
-		l.RemainingCents = l.LimitCents - l.UsedCents
-		if l.RemainingCents < 0 {
-			l.RemainingCents = 0
+		l.UsedPoints = s.usageInPeriod(ctx, userID, "deposit", l.Period)
+		l.RemainingPoints = l.LimitPoints - l.UsedPoints
+		if l.RemainingPoints < 0 {
+			l.RemainingPoints = 0
 		}
 		l.ResetsAt = periodResetTime(l.Period).Format(time.RFC3339)
 		limits = append(limits, l)
@@ -350,7 +350,7 @@ ORDER BY period`, userID)
 	return limits, rows.Err()
 }
 
-func (s *PostgresResponsibleGamblingService) CheckDepositAllowed(ctx context.Context, userID string, amountCents int64) (bool, string, error) {
+func (s *PostgresResponsibleGamblingService) CheckDepositAllowed(ctx context.Context, userID string, amountPoints int64) (bool, string, error) {
 	if userID == "" {
 		return false, "", ErrInvalidUserID
 	}
@@ -370,7 +370,7 @@ func (s *PostgresResponsibleGamblingService) CheckDepositAllowed(ctx context.Con
 	defer cancel()
 
 	rows, err := s.db.QueryContext(ctx2, `
-SELECT period, limit_cents
+SELECT period, limit_points
 FROM player_deposit_limits
 WHERE user_id = $1`, userID)
 	if err != nil {
@@ -380,12 +380,12 @@ WHERE user_id = $1`, userID)
 
 	for rows.Next() {
 		var period string
-		var limitCents int64
-		if err := rows.Scan(&period, &limitCents); err != nil {
+		var limitPoints int64
+		if err := rows.Scan(&period, &limitPoints); err != nil {
 			return false, "", err
 		}
 		used := s.usageInPeriod(ctx, userID, "deposit", period)
-		if used+amountCents > limitCents {
+		if used+amountPoints > limitPoints {
 			return false, fmt.Sprintf("%s_deposit_limit_exceeded", period), nil
 		}
 	}
@@ -506,8 +506,8 @@ WHERE user_id = $1`, userID).Scan(
 
 // ── Activity Recording ────────────────────────────────────────────
 
-func (s *PostgresResponsibleGamblingService) RecordBet(ctx context.Context, userID string, stakeCents int64) error {
-	return s.recordActivity(ctx, userID, "bet", stakeCents)
+func (s *PostgresResponsibleGamblingService) RecordBet(ctx context.Context, userID string, stakePoints int64) error {
+	return s.recordActivity(ctx, userID, "bet", stakePoints)
 }
 
 // ReleaseBet reverses committed stake by writing a compensating negative
@@ -517,37 +517,37 @@ func (s *PostgresResponsibleGamblingService) RecordBet(ctx context.Context, user
 // period(s) the original positive row fell into: a cross-period cancel
 // cannot offset unrelated bets in a later period (D-5 codex re-review round
 // 3). Symmetric inverse of RecordBet.
-func (s *PostgresResponsibleGamblingService) ReleaseBet(ctx context.Context, userID string, amountCents int64, committedAt time.Time) error {
-	if amountCents <= 0 {
+func (s *PostgresResponsibleGamblingService) ReleaseBet(ctx context.Context, userID string, amountPoints int64, committedAt time.Time) error {
+	if amountPoints <= 0 {
 		return nil
 	}
-	return s.recordActivityAt(ctx, userID, "bet", -amountCents, committedAt)
+	return s.recordActivityAt(ctx, userID, "bet", -amountPoints, committedAt)
 }
 
-func (s *PostgresResponsibleGamblingService) RecordDeposit(ctx context.Context, userID string, amountCents int64) error {
-	return s.recordActivity(ctx, userID, "deposit", amountCents)
+func (s *PostgresResponsibleGamblingService) RecordDeposit(ctx context.Context, userID string, amountPoints int64) error {
+	return s.recordActivity(ctx, userID, "deposit", amountPoints)
 }
 
-func (s *PostgresResponsibleGamblingService) recordActivity(ctx context.Context, userID string, activityType string, amountCents int64) error {
+func (s *PostgresResponsibleGamblingService) recordActivity(ctx context.Context, userID string, activityType string, amountPoints int64) error {
 	ctx, cancel := context.WithTimeout(ctx, rgDBTimeout)
 	defer cancel()
 
 	_, err := s.db.ExecContext(ctx, `
-INSERT INTO player_activity_log (user_id, activity_type, amount_cents)
-VALUES ($1, $2, $3)`, userID, activityType, amountCents)
+INSERT INTO player_activity_log (user_id, activity_type, amount_points)
+VALUES ($1, $2, $3)`, userID, activityType, amountPoints)
 	return err
 }
 
 // recordActivityAt writes an activity row with an explicit created_at. Used
 // by ReleaseBet so a compensating reversal is attributed to the period the
 // original commit was counted in, not the period the cancel happens in.
-func (s *PostgresResponsibleGamblingService) recordActivityAt(ctx context.Context, userID string, activityType string, amountCents int64, at time.Time) error {
+func (s *PostgresResponsibleGamblingService) recordActivityAt(ctx context.Context, userID string, activityType string, amountPoints int64, at time.Time) error {
 	ctx, cancel := context.WithTimeout(ctx, rgDBTimeout)
 	defer cancel()
 
 	_, err := s.db.ExecContext(ctx, `
-INSERT INTO player_activity_log (user_id, activity_type, amount_cents, created_at)
-VALUES ($1, $2, $3, $4)`, userID, activityType, amountCents, at.UTC())
+INSERT INTO player_activity_log (user_id, activity_type, amount_points, created_at)
+VALUES ($1, $2, $3, $4)`, userID, activityType, amountPoints, at.UTC())
 	return err
 }
 
@@ -560,7 +560,7 @@ func (s *PostgresResponsibleGamblingService) usageInPeriod(ctx context.Context, 
 
 	var total sql.NullInt64
 	err := s.db.QueryRowContext(ctx2, `
-SELECT COALESCE(SUM(amount_cents), 0)
+SELECT COALESCE(SUM(amount_points), 0)
 FROM player_activity_log
 WHERE user_id = $1 AND activity_type = $2 AND created_at >= $3`,
 		userID, activityType, start).Scan(&total)

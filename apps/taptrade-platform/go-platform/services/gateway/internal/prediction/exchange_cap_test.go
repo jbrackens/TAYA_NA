@@ -5,7 +5,7 @@ import "testing"
 // TestCapFillQtyByNotionalCap locks the budget-cap fix that prevents the
 // matching engine from issuing a capture that overshoots a market BUY's
 // notional reservation. The bug surfaced in production on a $5 market
-// BUY (notionalCapCents=500) that had captured 240 cents across earlier
+// BUY (notionalCapPoints=500) that had captured 240 cents across earlier
 // fills, then asked the wallet to capture another 275 — leaving only 260
 // remaining. CaptureReservationWithTx rejected with "capture 275 exceeds
 // remaining 260". Root cause: the issuance + secondary match loops both
@@ -18,12 +18,12 @@ func TestCapFillQtyByNotionalCap(t *testing.T) {
 	cap500 := int64(500)
 	cap0 := int64(0)
 	cases := []struct {
-		name           string
-		notionalCap    *int64
-		captured       int64
-		proposedQty    int
-		takerPriceCents int
-		want           int
+		name             string
+		notionalCap      *int64
+		captured         int64
+		proposedQty      int
+		takerPricePoints int
+		want             int
 	}{
 		// The exact production scenario: $5 cap, 240 already captured,
 		// proposed fill of 11 shares at takerPrice 25¢ (= 275 cents).
@@ -47,7 +47,7 @@ func TestCapFillQtyByNotionalCap(t *testing.T) {
 		// passes through. Zero-cap orders should be rejected upstream.
 		{"zero notional cap", &cap0, 0, 100, 25, 100},
 
-		// Zero or negative takerPriceCents (defensive): proposedQty
+		// Zero or negative takerPricePoints (defensive): proposedQty
 		// passes through so we don't divide by zero. Upstream
 		// validation should reject these.
 		{"zero takerPrice", &cap500, 0, 5, 0, 5},
@@ -62,14 +62,14 @@ func TestCapFillQtyByNotionalCap(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			taker := &Order{
-				NotionalCapCents:  c.notionalCap,
-				CapturedCashCents: c.captured,
+				NotionalCapPoints:  c.notionalCap,
+				CapturedCashPoints: c.captured,
 			}
-			got := capFillQtyByNotionalCap(taker, c.proposedQty, c.takerPriceCents)
+			got := capFillQtyByNotionalCap(taker, c.proposedQty, c.takerPricePoints)
 			if got != c.want {
 				t.Errorf(
 					"capFillQtyByNotionalCap(cap=%v, captured=%d, proposed=%d, price=%d) = %d, want %d",
-					c.notionalCap, c.captured, c.proposedQty, c.takerPriceCents, got, c.want,
+					c.notionalCap, c.captured, c.proposedQty, c.takerPricePoints, got, c.want,
 				)
 			}
 		})

@@ -15,7 +15,7 @@ func TestWalletReconciliationReportUsesPointFields(t *testing.T) {
 	walletSvc := wallet.NewService()
 	if _, err := walletSvc.Credit(context.Background(), wallet.MutationRequest{
 		UserID:         "report-user-1",
-		AmountCents:    1200,
+		AmountPoints:   1200,
 		IdempotencyKey: "reconciliation-credit-1",
 		Reason:         "admin point adjustment",
 	}); err != nil {
@@ -23,7 +23,7 @@ func TestWalletReconciliationReportUsesPointFields(t *testing.T) {
 	}
 	if _, err := walletSvc.Debit(context.Background(), wallet.MutationRequest{
 		UserID:         "report-user-1",
-		AmountCents:    350,
+		AmountPoints:   350,
 		IdempotencyKey: "reconciliation-debit-1",
 		Reason:         "prediction point use",
 	}); err != nil {
@@ -49,15 +49,17 @@ func TestWalletReconciliationReportUsesPointFields(t *testing.T) {
 	if payload["unit"] != "PTS" {
 		t.Fatalf("expected PTS point unit, got %+v", payload)
 	}
-	if int(payload["totalCreditPointsCents"].(float64)) != 1200 ||
-		int(payload["totalDebitPointsCents"].(float64)) != 350 ||
-		int(payload["netMovementPointsCents"].(float64)) != 850 {
+	if int(payload["totalCreditPoints"].(float64)) != 1200 ||
+		int(payload["totalDebitPoints"].(float64)) != 350 ||
+		int(payload["netMovementPoints"].(float64)) != 850 {
 		t.Fatalf("expected point-native reconciliation totals, got %+v", payload)
 	}
 	if int(payload["entryCount"].(float64)) != 2 || int(payload["distinctUserCount"].(float64)) != 1 {
 		t.Fatalf("expected seeded ledger counts, got %+v", payload)
 	}
-	for _, retired := range []string{"totalCreditsCents", "totalDebitsCents", "netMovementCents"} {
+	// Points unit-model (2026-07-07): netMovementPoints is canonical; its
+	// retired spelling is the cents-era netMovementPointsCents.
+	for _, retired := range []string{"totalCreditsPoints", "totalDebitsPoints", "netMovementPointsCents"} {
 		if _, ok := payload[retired]; ok {
 			t.Fatalf("wallet reconciliation report leaked retired metric %s in %+v", retired, payload)
 		}
@@ -87,10 +89,10 @@ func TestPromotionUsageReportUsesPointCampaignPlaceholder(t *testing.T) {
 	}
 	if int(summary["pointRewardCampaigns"].(float64)) != 0 ||
 		int(summary["usersWithPointRewards"].(float64)) != 0 ||
-		int(summary["totalRewardPointsCents"].(float64)) != 0 {
+		int(summary["totalRewardPoints"].(float64)) != 0 {
 		t.Fatalf("expected honest zero point-campaign summary, got %+v", summary)
 	}
-	for _, retired := range []string{"totalBets", "totalStakeCents", "betsWithFreebet", "betsWithOddsBoost"} {
+	for _, retired := range []string{"totalBets", "totalStakePoints", "betsWithFreebet", "betsWithOddsBoost"} {
 		if _, ok := summary[retired]; ok {
 			t.Fatalf("promotion usage report leaked retired metric %s in %+v", retired, summary)
 		}

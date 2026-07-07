@@ -69,7 +69,7 @@ func (s stubAdapter) CancelBet(context.Context, CancelBetRequest) (CancelBetResp
 }
 
 func (s stubAdapter) MaxStake(context.Context, MaxStakeRequest) (MaxStakeResponse, error) {
-	return MaxStakeResponse{Allowed: true, MaxStakeCents: 1000}, nil
+	return MaxStakeResponse{Allowed: true, MaxStakePoints: 1000}, nil
 }
 
 func (s stubAdapter) CashoutQuote(context.Context, CashoutQuoteRequest) (CashoutQuoteResponse, error) {

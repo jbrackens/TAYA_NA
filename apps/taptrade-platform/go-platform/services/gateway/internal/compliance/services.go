@@ -49,22 +49,22 @@ type KYCService interface {
 // ResponsibleGamblingService defines responsible gambling controls
 type ResponsibleGamblingService interface {
 	// SetDepositLimit sets a deposit limit for a user
-	SetDepositLimit(ctx context.Context, userID string, period string, amountCents int64) error
+	SetDepositLimit(ctx context.Context, userID string, period string, amountPoints int64) error
 
 	// GetDepositLimits returns all deposit limits for a user
 	GetDepositLimits(ctx context.Context, userID string) ([]DepositLimit, error)
 
 	// SetBetLimit sets a bet stake limit for a user
-	SetBetLimit(ctx context.Context, userID string, period string, amountCents int64) error
+	SetBetLimit(ctx context.Context, userID string, period string, amountPoints int64) error
 
 	// GetBetLimits returns all bet limits for a user
 	GetBetLimits(ctx context.Context, userID string) ([]BetLimit, error)
 
 	// CheckDepositAllowed checks if a user can deposit the given amount
-	CheckDepositAllowed(ctx context.Context, userID string, amountCents int64) (bool, string, error)
+	CheckDepositAllowed(ctx context.Context, userID string, amountPoints int64) (bool, string, error)
 
 	// CheckBetAllowed checks if a user can place a bet with the given stake
-	CheckBetAllowed(ctx context.Context, userID string, stakeCents int64) (bool, string, error)
+	CheckBetAllowed(ctx context.Context, userID string, stakePoints int64) (bool, string, error)
 
 	// SetCoolOff sets a temporary cool-off period for a user
 	SetCoolOff(ctx context.Context, userID string, duration int) error // duration in hours
@@ -76,10 +76,10 @@ type ResponsibleGamblingService interface {
 	GetPlayerRestrictions(ctx context.Context, userID string) (*PlayerRestrictions, error)
 
 	// RecordDeposit records a deposit for limit tracking
-	RecordDeposit(ctx context.Context, userID string, amountCents int64) error
+	RecordDeposit(ctx context.Context, userID string, amountPoints int64) error
 
 	// RecordBet records a bet for limit tracking
-	RecordBet(ctx context.Context, userID string, stakeCents int64) error
+	RecordBet(ctx context.Context, userID string, stakePoints int64) error
 
 	// ReleaseBet reverses previously-recorded committed stake when a
 	// reservation is freed without being spent (cancel / expire / the
@@ -88,5 +88,5 @@ type ResponsibleGamblingService interface {
 	// period that commit was counted in, so a cross-period cancel cannot
 	// offset unrelated bets in a later period. Symmetric inverse of
 	// RecordBet; implementations must not drive cumulative usage below zero.
-	ReleaseBet(ctx context.Context, userID string, amountCents int64, committedAt time.Time) error
+	ReleaseBet(ctx context.Context, userID string, amountPoints int64, committedAt time.Time) error
 }

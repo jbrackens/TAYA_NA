@@ -354,14 +354,14 @@ func NewMockResponsibleGamblingService() *MockResponsibleGamblingService {
 	}
 }
 
-func (m *MockResponsibleGamblingService) SetDepositLimit(ctx context.Context, userID string, period string, amountCents int64) error {
+func (m *MockResponsibleGamblingService) SetDepositLimit(ctx context.Context, userID string, period string, amountPoints int64) error {
 	if userID == "" {
 		return ErrInvalidUserID
 	}
 	if !isValidPeriod(period) {
 		return ErrInvalidLimitPeriod
 	}
-	if amountCents <= 0 {
+	if amountPoints <= 0 {
 		return ErrInvalidLimitPeriod
 	}
 
@@ -374,13 +374,13 @@ func (m *MockResponsibleGamblingService) SetDepositLimit(ctx context.Context, us
 	if existing == nil {
 		// First-ever limit: immediate + prospective (not a loosening).
 		limit := DepositLimit{
-			UserID:         userID,
-			Period:         period,
-			LimitCents:     amountCents,
-			RemainingCents: amountCents,
-			UsedCents:      0,
-			ResetsAt:       getResetTime(now, period).Format(time.RFC3339),
-			CreatedAt:      now.Format(time.RFC3339),
+			UserID:          userID,
+			Period:          period,
+			LimitPoints:     amountPoints,
+			RemainingPoints: amountPoints,
+			UsedPoints:      0,
+			ResetsAt:        getResetTime(now, period).Format(time.RFC3339),
+			CreatedAt:       now.Format(time.RFC3339),
 		}
 		m.depositLimits[userID] = upsertDepositLimit(m.depositLimits[userID], limit)
 		return nil
@@ -389,19 +389,19 @@ func (m *MockResponsibleGamblingService) SetDepositLimit(ctx context.Context, us
 	refreshDepositLimitState(existing, now)
 	limit := *existing // carry effective state (D-7: preserve accumulated usage)
 
-	if amountCents <= existing.LimitCents {
+	if amountPoints <= existing.LimitPoints {
 		// Tightening: immediate; cancels any pending increase.
-		limit.LimitCents = amountCents
-		limit.RemainingCents = amountCents - limit.UsedCents
-		if limit.RemainingCents < 0 {
-			limit.RemainingCents = 0
+		limit.LimitPoints = amountPoints
+		limit.RemainingPoints = amountPoints - limit.UsedPoints
+		if limit.RemainingPoints < 0 {
+			limit.RemainingPoints = 0
 		}
-		limit.PendingLimitCents = 0
+		limit.PendingLimitPoints = 0
 		limit.PendingActivatesAt = ""
 	} else {
 		// Loosening (LC-19/D-11): defer behind the cooldown; the tighter
 		// limit stays enforced until it activates.
-		limit.PendingLimitCents = amountCents
+		limit.PendingLimitPoints = amountPoints
 		limit.PendingActivatesAt = now.Add(limitLoosenCooldown).Format(time.RFC3339)
 	}
 
@@ -432,14 +432,14 @@ func (m *MockResponsibleGamblingService) GetDepositLimits(ctx context.Context, u
 	return result, nil
 }
 
-func (m *MockResponsibleGamblingService) SetBetLimit(ctx context.Context, userID string, period string, amountCents int64) error {
+func (m *MockResponsibleGamblingService) SetBetLimit(ctx context.Context, userID string, period string, amountPoints int64) error {
 	if userID == "" {
 		return ErrInvalidUserID
 	}
 	if !isValidPeriod(period) {
 		return ErrInvalidLimitPeriod
 	}
-	if amountCents <= 0 {
+	if amountPoints <= 0 {
 		return ErrInvalidLimitPeriod
 	}
 
@@ -453,13 +453,13 @@ func (m *MockResponsibleGamblingService) SetBetLimit(ctx context.Context, userID
 		// First-ever limit: applies immediately and prospectively (there is
 		// no prior constraint, so this is not a "loosening").
 		limit := BetLimit{
-			UserID:         userID,
-			Period:         period,
-			LimitCents:     amountCents,
-			RemainingCents: amountCents,
-			UsedCents:      0,
-			ResetsAt:       getResetTime(now, period).Format(time.RFC3339),
-			CreatedAt:      now.Format(time.RFC3339),
+			UserID:          userID,
+			Period:          period,
+			LimitPoints:     amountPoints,
+			RemainingPoints: amountPoints,
+			UsedPoints:      0,
+			ResetsAt:        getResetTime(now, period).Format(time.RFC3339),
+			CreatedAt:       now.Format(time.RFC3339),
 		}
 		m.betLimits[userID] = upsertBetLimit(m.betLimits[userID], limit)
 		return nil
@@ -468,17 +468,17 @@ func (m *MockResponsibleGamblingService) SetBetLimit(ctx context.Context, userID
 	// Apply any legitimate period rollover AND any matured pending increase
 	// before deciding raise vs. lower against the *effective* limit.
 	refreshBetLimitState(existing, now)
-	limit := *existing // carry effective LimitCents/Used/Remaining/Resets/Created (D-7)
+	limit := *existing // carry effective LimitPoints/Used/Remaining/Resets/Created (D-7)
 
-	if amountCents <= existing.LimitCents {
+	if amountPoints <= existing.LimitPoints {
 		// Tightening (or no-op): immediate, and it cancels any pending
 		// increase — the user has chosen to be more restrictive now.
-		limit.LimitCents = amountCents
-		limit.RemainingCents = amountCents - limit.UsedCents
-		if limit.RemainingCents < 0 {
-			limit.RemainingCents = 0
+		limit.LimitPoints = amountPoints
+		limit.RemainingPoints = amountPoints - limit.UsedPoints
+		if limit.RemainingPoints < 0 {
+			limit.RemainingPoints = 0
 		}
-		limit.PendingLimitCents = 0
+		limit.PendingLimitPoints = 0
 		limit.PendingActivatesAt = ""
 	} else {
 		// Loosening (LC-19/D-11): the increase is DEFERRED. The effective
@@ -487,7 +487,7 @@ func (m *MockResponsibleGamblingService) SetBetLimit(ctx context.Context, userID
 		// after the cooldown (lazily activated in refreshBetLimitState). A
 		// later loosening request replaces the pending one with a fresh
 		// cooldown (latest intent governs).
-		limit.PendingLimitCents = amountCents
+		limit.PendingLimitPoints = amountPoints
 		limit.PendingActivatesAt = now.Add(limitLoosenCooldown).Format(time.RFC3339)
 	}
 
@@ -518,7 +518,7 @@ func (m *MockResponsibleGamblingService) GetBetLimits(ctx context.Context, userI
 	return result, nil
 }
 
-func (m *MockResponsibleGamblingService) CheckDepositAllowed(ctx context.Context, userID string, amountCents int64) (bool, string, error) {
+func (m *MockResponsibleGamblingService) CheckDepositAllowed(ctx context.Context, userID string, amountPoints int64) (bool, string, error) {
 	if userID == "" {
 		return false, "Invalid user", ErrInvalidUserID
 	}
@@ -547,7 +547,7 @@ func (m *MockResponsibleGamblingService) CheckDepositAllowed(ctx context.Context
 		now := time.Now().UTC()
 		for i := range limits {
 			refreshDepositLimitState(&limits[i], now)
-			if limits[i].RemainingCents < amountCents {
+			if limits[i].RemainingPoints < amountPoints {
 				m.depositLimits[userID] = limits
 				return false, fmt.Sprintf("Deposit limit exceeded for %s period", limits[i].Period), ErrDepositLimitExceeded
 			}
@@ -558,7 +558,7 @@ func (m *MockResponsibleGamblingService) CheckDepositAllowed(ctx context.Context
 	return true, "", nil
 }
 
-func (m *MockResponsibleGamblingService) CheckBetAllowed(ctx context.Context, userID string, stakeCents int64) (bool, string, error) {
+func (m *MockResponsibleGamblingService) CheckBetAllowed(ctx context.Context, userID string, stakePoints int64) (bool, string, error) {
 	if userID == "" {
 		return false, "Invalid user", ErrInvalidUserID
 	}
@@ -566,7 +566,7 @@ func (m *MockResponsibleGamblingService) CheckBetAllowed(ctx context.Context, us
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	return m.checkBetAllowedLocked(userID, stakeCents)
+	return m.checkBetAllowedLocked(userID, stakePoints)
 }
 
 // checkBetAllowedLocked is CheckBetAllowed's decision logic with no locking.
@@ -574,7 +574,7 @@ func (m *MockResponsibleGamblingService) CheckBetAllowed(ctx context.Context, us
 // per-period bet-limit state, same as the public method). Extracted so
 // CheckBetAllowed, CheckAndRecordBet, and RecordBet share one source of
 // truth for the limit decision (no drift).
-func (m *MockResponsibleGamblingService) checkBetAllowedLocked(userID string, stakeCents int64) (bool, string, error) {
+func (m *MockResponsibleGamblingService) checkBetAllowedLocked(userID string, stakePoints int64) (bool, string, error) {
 	// Check if user is blocked
 	if _, found := m.selfExclusions[userID]; found {
 		se := m.selfExclusions[userID]
@@ -596,7 +596,7 @@ func (m *MockResponsibleGamblingService) checkBetAllowedLocked(userID string, st
 		now := time.Now().UTC()
 		for i := range limits {
 			refreshBetLimitState(&limits[i], now)
-			if limits[i].RemainingCents < stakeCents {
+			if limits[i].RemainingPoints < stakePoints {
 				m.betLimits[userID] = limits
 				return false, fmt.Sprintf("Bet limit exceeded for %s period", limits[i].Period), ErrBetLimitExceeded
 			}
@@ -613,10 +613,10 @@ func (m *MockResponsibleGamblingService) checkBetAllowedLocked(userID string, st
 // CheckBetAllowed → RecordBet calls, N concurrent same-user orders could
 // each pass the gate before any of them recorded, letting aggregate
 // committed stake exceed the period bet-limit. Records ONLY when the check
-// passes and stakeCents > 0 (a sell / zero-stake order is still gated for
+// passes and stakePoints > 0 (a sell / zero-stake order is still gated for
 // self-exclusion + cool-off but records no usage). The mock's single global
 // mutex makes the whole check+record sequence atomic per process.
-func (m *MockResponsibleGamblingService) CheckAndRecordBet(ctx context.Context, userID string, stakeCents int64) (bool, string, error) {
+func (m *MockResponsibleGamblingService) CheckAndRecordBet(ctx context.Context, userID string, stakePoints int64) (bool, string, error) {
 	if userID == "" {
 		return false, "Invalid user", ErrInvalidUserID
 	}
@@ -624,12 +624,12 @@ func (m *MockResponsibleGamblingService) CheckAndRecordBet(ctx context.Context, 
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	allowed, reason, err := m.checkBetAllowedLocked(userID, stakeCents)
+	allowed, reason, err := m.checkBetAllowedLocked(userID, stakePoints)
 	if !allowed || err != nil {
 		return allowed, reason, err
 	}
-	if stakeCents > 0 {
-		m.recordBetLocked(userID, stakeCents, time.Now().UTC())
+	if stakePoints > 0 {
+		m.recordBetLocked(userID, stakePoints, time.Now().UTC())
 	}
 	return true, "", nil
 }
@@ -740,7 +740,7 @@ func (m *MockResponsibleGamblingService) GetPlayerRestrictions(ctx context.Conte
 	return restrictions, nil
 }
 
-func (m *MockResponsibleGamblingService) RecordDeposit(ctx context.Context, userID string, amountCents int64) error {
+func (m *MockResponsibleGamblingService) RecordDeposit(ctx context.Context, userID string, amountPoints int64) error {
 	if userID == "" {
 		return ErrInvalidUserID
 	}
@@ -759,7 +759,7 @@ func (m *MockResponsibleGamblingService) RecordDeposit(ctx context.Context, user
 			ResetAt: getResetTime(now, "daily"),
 		}
 	}
-	tracking.Amount += amountCents
+	tracking.Amount += amountPoints
 	m.depositTracking[userID] = tracking
 
 	// Update limits
@@ -767,10 +767,10 @@ func (m *MockResponsibleGamblingService) RecordDeposit(ctx context.Context, user
 	if found {
 		for i := range limits {
 			refreshDepositLimitState(&limits[i], now)
-			limits[i].UsedCents += amountCents
-			limits[i].RemainingCents = limits[i].LimitCents - limits[i].UsedCents
-			if limits[i].RemainingCents < 0 {
-				limits[i].RemainingCents = 0
+			limits[i].UsedPoints += amountPoints
+			limits[i].RemainingPoints = limits[i].LimitPoints - limits[i].UsedPoints
+			if limits[i].RemainingPoints < 0 {
+				limits[i].RemainingPoints = 0
 			}
 		}
 		m.depositLimits[userID] = limits
@@ -779,7 +779,7 @@ func (m *MockResponsibleGamblingService) RecordDeposit(ctx context.Context, user
 	return nil
 }
 
-func (m *MockResponsibleGamblingService) RecordBet(ctx context.Context, userID string, stakeCents int64) error {
+func (m *MockResponsibleGamblingService) RecordBet(ctx context.Context, userID string, stakePoints int64) error {
 	if userID == "" {
 		return ErrInvalidUserID
 	}
@@ -787,7 +787,7 @@ func (m *MockResponsibleGamblingService) RecordBet(ctx context.Context, userID s
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	m.recordBetLocked(userID, stakeCents, time.Now().UTC())
+	m.recordBetLocked(userID, stakePoints, time.Now().UTC())
 	return nil
 }
 
@@ -795,7 +795,7 @@ func (m *MockResponsibleGamblingService) RecordBet(ctx context.Context, userID s
 // already hold m.mu for writing. Extracted so RecordBet and the atomic
 // CheckAndRecordBet share one source of truth (D-5/D-7/D-11 accounting
 // semantics cannot drift between the two entry points).
-func (m *MockResponsibleGamblingService) recordBetLocked(userID string, stakeCents int64, now time.Time) {
+func (m *MockResponsibleGamblingService) recordBetLocked(userID string, stakePoints int64, now time.Time) {
 	// Update tracking
 	tracking, found := m.betTracking[userID]
 	if !found || !tracking.ResetAt.After(now) {
@@ -805,7 +805,7 @@ func (m *MockResponsibleGamblingService) recordBetLocked(userID string, stakeCen
 			ResetAt: getResetTime(now, "daily"),
 		}
 	}
-	tracking.Amount += stakeCents
+	tracking.Amount += stakePoints
 	m.betTracking[userID] = tracking
 
 	// Update limits
@@ -813,10 +813,10 @@ func (m *MockResponsibleGamblingService) recordBetLocked(userID string, stakeCen
 	if found {
 		for i := range limits {
 			refreshBetLimitState(&limits[i], now)
-			limits[i].UsedCents += stakeCents
-			limits[i].RemainingCents = limits[i].LimitCents - limits[i].UsedCents
-			if limits[i].RemainingCents < 0 {
-				limits[i].RemainingCents = 0
+			limits[i].UsedPoints += stakePoints
+			limits[i].RemainingPoints = limits[i].LimitPoints - limits[i].UsedPoints
+			if limits[i].RemainingPoints < 0 {
+				limits[i].RemainingPoints = 0
 			}
 		}
 		m.betLimits[userID] = limits
@@ -829,13 +829,13 @@ func (m *MockResponsibleGamblingService) recordBetLocked(userID string, stakeCen
 // counted in: if committedAt is before a limit's current period start, that
 // commit already aged out (the period reset zeroed it), so reversing it now
 // would wrongly free headroom for unrelated bets placed in the new period
-// (D-5 codex re-review round 3). Cumulative tracking and per-period UsedCents
+// (D-5 codex re-review round 3). Cumulative tracking and per-period UsedPoints
 // are clamped at zero so an orphan release cannot drive usage negative.
-func (m *MockResponsibleGamblingService) ReleaseBet(ctx context.Context, userID string, amountCents int64, committedAt time.Time) error {
+func (m *MockResponsibleGamblingService) ReleaseBet(ctx context.Context, userID string, amountPoints int64, committedAt time.Time) error {
 	if userID == "" {
 		return ErrInvalidUserID
 	}
-	if amountCents <= 0 {
+	if amountPoints <= 0 {
 		return nil
 	}
 
@@ -847,7 +847,7 @@ func (m *MockResponsibleGamblingService) ReleaseBet(ctx context.Context, userID 
 	// Only reverse if the commit still counts in the current period.
 	if tracking, found := m.betTracking[userID]; found &&
 		tracking.ResetAt.After(now) && !committedAt.Before(periodStart(tracking.Period)) {
-		tracking.Amount -= amountCents
+		tracking.Amount -= amountPoints
 		if tracking.Amount < 0 {
 			tracking.Amount = 0
 		}
@@ -863,13 +863,13 @@ func (m *MockResponsibleGamblingService) ReleaseBet(ctx context.Context, userID 
 			if committedAt.Before(periodStart(limits[i].Period)) {
 				continue
 			}
-			limits[i].UsedCents -= amountCents
-			if limits[i].UsedCents < 0 {
-				limits[i].UsedCents = 0
+			limits[i].UsedPoints -= amountPoints
+			if limits[i].UsedPoints < 0 {
+				limits[i].UsedPoints = 0
 			}
-			limits[i].RemainingCents = limits[i].LimitCents - limits[i].UsedCents
-			if limits[i].RemainingCents < 0 {
-				limits[i].RemainingCents = 0
+			limits[i].RemainingPoints = limits[i].LimitPoints - limits[i].UsedPoints
+			if limits[i].RemainingPoints < 0 {
+				limits[i].RemainingPoints = 0
 			}
 		}
 		m.betLimits[userID] = limits
@@ -926,50 +926,50 @@ func refreshDepositLimitState(limit *DepositLimit, now time.Time) {
 	// D-11: activate a matured pending increase first, so every read /
 	// enforcement seam (GetDepositLimits, CheckDepositAllowed, RecordDeposit,
 	// ReleaseBet) honors the cooldown without a separate worker.
-	if limit.PendingLimitCents > 0 && limit.PendingActivatesAt != "" {
+	if limit.PendingLimitPoints > 0 && limit.PendingActivatesAt != "" {
 		if act, perr := time.Parse(time.RFC3339, limit.PendingActivatesAt); perr == nil && !now.Before(act) {
-			limit.LimitCents = limit.PendingLimitCents
-			limit.RemainingCents = limit.LimitCents - limit.UsedCents
-			if limit.RemainingCents < 0 {
-				limit.RemainingCents = 0
+			limit.LimitPoints = limit.PendingLimitPoints
+			limit.RemainingPoints = limit.LimitPoints - limit.UsedPoints
+			if limit.RemainingPoints < 0 {
+				limit.RemainingPoints = 0
 			}
-			limit.PendingLimitCents = 0
+			limit.PendingLimitPoints = 0
 			limit.PendingActivatesAt = ""
 		}
 	}
 	resetAt, err := time.Parse(time.RFC3339, limit.ResetsAt)
 	if err != nil || !now.Before(resetAt) {
-		limit.UsedCents = 0
-		limit.RemainingCents = limit.LimitCents
+		limit.UsedPoints = 0
+		limit.RemainingPoints = limit.LimitPoints
 		limit.ResetsAt = getResetTime(now, limit.Period).Format(time.RFC3339)
 	}
-	if limit.RemainingCents < 0 {
-		limit.RemainingCents = 0
+	if limit.RemainingPoints < 0 {
+		limit.RemainingPoints = 0
 	}
 }
 
 func refreshBetLimitState(limit *BetLimit, now time.Time) {
 	// D-11: activate a matured pending increase first (see refreshDeposit
 	// LimitState) so every read/enforcement seam honors the cooldown.
-	if limit.PendingLimitCents > 0 && limit.PendingActivatesAt != "" {
+	if limit.PendingLimitPoints > 0 && limit.PendingActivatesAt != "" {
 		if act, perr := time.Parse(time.RFC3339, limit.PendingActivatesAt); perr == nil && !now.Before(act) {
-			limit.LimitCents = limit.PendingLimitCents
-			limit.RemainingCents = limit.LimitCents - limit.UsedCents
-			if limit.RemainingCents < 0 {
-				limit.RemainingCents = 0
+			limit.LimitPoints = limit.PendingLimitPoints
+			limit.RemainingPoints = limit.LimitPoints - limit.UsedPoints
+			if limit.RemainingPoints < 0 {
+				limit.RemainingPoints = 0
 			}
-			limit.PendingLimitCents = 0
+			limit.PendingLimitPoints = 0
 			limit.PendingActivatesAt = ""
 		}
 	}
 	resetAt, err := time.Parse(time.RFC3339, limit.ResetsAt)
 	if err != nil || !now.Before(resetAt) {
-		limit.UsedCents = 0
-		limit.RemainingCents = limit.LimitCents
+		limit.UsedPoints = 0
+		limit.RemainingPoints = limit.LimitPoints
 		limit.ResetsAt = getResetTime(now, limit.Period).Format(time.RFC3339)
 	}
-	if limit.RemainingCents < 0 {
-		limit.RemainingCents = 0
+	if limit.RemainingPoints < 0 {
+		limit.RemainingPoints = 0
 	}
 }
 

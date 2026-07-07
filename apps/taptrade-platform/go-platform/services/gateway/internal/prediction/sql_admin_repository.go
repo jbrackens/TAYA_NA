@@ -43,9 +43,9 @@ type AdminPunterFilter struct {
 // identity-only.
 type AdminPunterDetail struct {
 	AdminPunter
-	PointAccountBalanceCents int64            `json:"pointAccountBalanceCents"`
-	Portfolio                PortfolioSummary `json:"portfolio"`
-	Unit                     string           `json:"unit"`
+	PointAccountBalancePoints int64            `json:"pointAccountBalancePoints"`
+	Portfolio                 PortfolioSummary `json:"portfolio"`
+	Unit                      string           `json:"unit"`
 }
 
 // AdminPunterListItem is one row of the admin punter list: identity plus the
@@ -53,9 +53,9 @@ type AdminPunterDetail struct {
 // for the whole page, not per-row.
 type AdminPunterListItem struct {
 	AdminPunter
-	PointAccountBalanceCents int64  `json:"pointAccountBalanceCents"`
-	RealizedPointsCents      int64  `json:"realizedPointsCents"`
-	Unit                     string `json:"unit"`
+	PointAccountBalancePoints int64  `json:"pointAccountBalancePoints"`
+	RealizedPoints            int64  `json:"realizedPoints"`
+	Unit                      string `json:"unit"`
 }
 
 // AdminAuditLog is the admin view of an audit_logs row. Field names match
@@ -362,7 +362,7 @@ func (r *SQLRepository) ListPuntersRealizedPnl(ctx context.Context, userIDs []st
 		return out, nil
 	}
 	rows, err := r.db.QueryContext(ctx,
-		`SELECT user_id, COALESCE(SUM(pnl_cents), 0)
+		`SELECT user_id, COALESCE(SUM(pnl_points), 0)
 		 FROM prediction_payouts WHERE user_id = ANY($1) GROUP BY user_id`,
 		pq.Array(userIDs))
 	if err != nil {

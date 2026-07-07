@@ -61,7 +61,7 @@ INSERT INTO punters (id, email, username, password_hash, status, country_code, c
 ON CONFLICT (id) DO NOTHING;
 
 -- Wallets for test users
-INSERT INTO wallets (id, punter_id, balance_cents, bonus_balance_cents, currency_code) VALUES
+INSERT INTO wallets (id, punter_id, balance_points, bonus_balance_points, currency_code) VALUES
   ('wallet-001', 'user-001', 100000, 0, 'PTS'),
   ('wallet-002', 'user-002', 50000, 0, 'PTS'),
   ('wallet-003', 'user-003', 250000, 0, 'PTS'),
@@ -231,9 +231,9 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Esports
 INSERT INTO prediction_markets (id, event_id, ticker, title, description, status,
-  yes_price_cents, no_price_cents, amm_liquidity_param, amm_subsidy_cents,
+  yes_price_points, no_price_points, amm_liquidity_param, amm_subsidy_points,
   settlement_source_key, settlement_rule, settlement_params, close_at,
-  volume_cents, open_interest_cents) VALUES
+  volume_points, open_interest_points) VALUES
 
   (md5('mkt-mlbb-final-game1')::uuid, md5('evt-mlbb-final-game1')::uuid,
    'MLBB-FINAL-G1', 'Listed MLBB team wins game one',
@@ -259,9 +259,9 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Economics
 INSERT INTO prediction_markets (id, event_id, ticker, title, description, status,
-  yes_price_cents, no_price_cents, amm_liquidity_param, amm_subsidy_cents,
+  yes_price_points, no_price_points, amm_liquidity_param, amm_subsidy_points,
   settlement_source_key, settlement_rule, settlement_params, close_at,
-  volume_cents, open_interest_cents) VALUES
+  volume_points, open_interest_points) VALUES
 
   (md5('mkt-fed-cut-may')::uuid, md5('evt-fed-may')::uuid,
    'FED-CUT-MAY26', 'Fed cuts rates at May FOMC',
@@ -287,9 +287,9 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Politics
 INSERT INTO prediction_markets (id, event_id, ticker, title, description, status,
-  yes_price_cents, no_price_cents, amm_liquidity_param, amm_subsidy_cents,
+  yes_price_points, no_price_points, amm_liquidity_param, amm_subsidy_points,
   settlement_source_key, settlement_rule, settlement_params, close_at,
-  volume_cents, open_interest_cents) VALUES
+  volume_points, open_interest_points) VALUES
 
   (md5('mkt-senate-dem')::uuid, md5('evt-senate-control')::uuid,
    'SENATE-DEM-2026', 'Democrats control Senate after 2026 midterms',
@@ -315,9 +315,9 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Tech
 INSERT INTO prediction_markets (id, event_id, ticker, title, description, status,
-  yes_price_cents, no_price_cents, amm_liquidity_param, amm_subsidy_cents,
+  yes_price_points, no_price_points, amm_liquidity_param, amm_subsidy_points,
   settlement_source_key, settlement_rule, settlement_params, close_at,
-  volume_cents, open_interest_cents) VALUES
+  volume_points, open_interest_points) VALUES
 
   (md5('mkt-gpt5-jul')::uuid, md5('evt-gpt5-release')::uuid,
    'GPT5-JUL26', 'GPT-5 released before July 2026',
@@ -336,9 +336,9 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Sports (multi-outcome decomposed to binary)
 INSERT INTO prediction_markets (id, event_id, ticker, title, description, status,
-  yes_price_cents, no_price_cents, amm_liquidity_param, amm_subsidy_cents,
+  yes_price_points, no_price_points, amm_liquidity_param, amm_subsidy_points,
   settlement_source_key, settlement_rule, settlement_params, close_at,
-  volume_cents, open_interest_cents) VALUES
+  volume_points, open_interest_points) VALUES
 
   (md5('mkt-ucl-real')::uuid, md5('evt-ucl-winner')::uuid,
    'UCL-REAL-2526', 'Real Madrid wins Champions League 2025/26',
@@ -364,9 +364,9 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Entertainment
 INSERT INTO prediction_markets (id, event_id, ticker, title, description, status,
-  yes_price_cents, no_price_cents, amm_liquidity_param, amm_subsidy_cents,
+  yes_price_points, no_price_points, amm_liquidity_param, amm_subsidy_points,
   settlement_source_key, settlement_rule, settlement_params, close_at,
-  volume_cents, open_interest_cents) VALUES
+  volume_points, open_interest_points) VALUES
 
   (md5('mkt-avatar3-200m')::uuid, md5('evt-avatar3-box-office')::uuid,
    'AVATAR3-200M', 'Avatar 3 opens above $200M domestic',
@@ -384,7 +384,7 @@ UPDATE prediction_markets
    SET execution_mode = 'amm',
        amm_yes_shares = 18.50000000,
        amm_no_shares = 42.00000000,
-       liquidity_cents = GREATEST(liquidity_cents, 20000)
+       liquidity_points = GREATEST(liquidity_points, 20000)
  WHERE ticker = 'DOTA-GF-MAP1';
 
 -- ============================================================
@@ -411,7 +411,7 @@ AND NOT EXISTS (
 -- SAMPLE TRADES (give markets some activity history)
 -- ============================================================
 INSERT INTO prediction_orders (id, user_id, market_id, side, action, order_type,
-  price_cents, quantity, filled_quantity, remaining_quantity, total_cost_cents,
+  price_points, quantity, filled_quantity, remaining_quantity, total_cost_points,
   status, filled_at, created_at, updated_at) VALUES
   (md5('ord-001')::uuid, 'user-001', md5('mkt-mlbb-final-game1')::uuid, 'yes', 'buy', 'market', 60, 20, 20, 0, 1200, 'filled', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '2 hours'),
   (md5('ord-002')::uuid, 'user-002', md5('mkt-mlbb-final-game1')::uuid, 'no', 'buy', 'market', 40, 15, 15, 0, 600, 'filled', NOW() - INTERVAL '90 minutes', NOW() - INTERVAL '90 minutes', NOW() - INTERVAL '90 minutes'),
@@ -425,7 +425,7 @@ ON CONFLICT (id) DO NOTHING;
 -- a tightening migration. Existing dev DB rows have match_id=id,
 -- trade_kind='secondary', engine_kind='amm' — match that convention so a
 -- fresh DB can run this seed too.
-INSERT INTO prediction_trades (id, market_id, buy_order_id, buyer_id, side, price_cents, quantity, fee_cents, is_amm_trade, traded_at, match_id, trade_kind, engine_kind) VALUES
+INSERT INTO prediction_trades (id, market_id, buy_order_id, buyer_id, side, price_points, quantity, fee_points, is_amm_trade, traded_at, match_id, trade_kind, engine_kind) VALUES
   (md5('trd-001')::uuid, md5('mkt-mlbb-final-game1')::uuid, md5('ord-001')::uuid, 'user-001', 'yes', 60, 20, 0, true, NOW() - INTERVAL '2 hours',     md5('trd-001')::uuid, 'secondary', 'amm'),
   (md5('trd-002')::uuid, md5('mkt-mlbb-final-game1')::uuid, md5('ord-002')::uuid, 'user-002', 'no',  40, 15, 0, true, NOW() - INTERVAL '90 minutes', md5('trd-002')::uuid, 'secondary', 'amm'),
   (md5('trd-003')::uuid, md5('mkt-fed-cut-may')::uuid,  md5('ord-003')::uuid, 'user-001', 'yes', 45, 50, 0, true, NOW() - INTERVAL '1 hour',     md5('trd-003')::uuid, 'secondary', 'amm'),
@@ -434,7 +434,7 @@ INSERT INTO prediction_trades (id, market_id, buy_order_id, buyer_id, side, pric
   (md5('trd-006')::uuid, md5('mkt-apple-llm')::uuid,    md5('ord-006')::uuid, 'user-003', 'yes', 68, 25, 0, true, NOW() - INTERVAL '15 minutes', md5('trd-006')::uuid, 'secondary', 'amm')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO prediction_positions (user_id, market_id, side, quantity, avg_price_cents, total_cost_cents) VALUES
+INSERT INTO prediction_positions (user_id, market_id, side, quantity, avg_price_points, total_cost_points) VALUES
   ('user-001', md5('mkt-mlbb-final-game1')::uuid, 'yes', 20, 60, 1200),
   ('user-002', md5('mkt-mlbb-final-game1')::uuid, 'no', 15, 40, 600),
   ('user-001', md5('mkt-fed-cut-may')::uuid, 'yes', 50, 45, 2250),

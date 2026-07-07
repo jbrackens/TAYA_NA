@@ -16,8 +16,8 @@ import (
 //   - taken pg_advisory_xact_lock on the market
 //   - locked the market row, the taker's wallet/position rows, and the
 //     candidate maker order rows FOR UPDATE
-//   - validated the request shape (priceCents in [1,99] for limits,
-//     notionalCapCents present for markets, idempotency/client_order_id
+//   - validated the request shape (pricePoints in [1,99] for limits,
+//     notionalCapPoints present for markets, idempotency/client_order_id
 //     deduped at the SQL layer)
 //
 // Within those guarantees, BuildPlan is deterministic and side-effect-free.
@@ -53,7 +53,7 @@ type MatchInput struct {
 // what should be persisted.
 type MatchPlan struct {
 	// Taker is the post-match version of the taker order (updated status,
-	// filled_quantity, remaining_quantity, captured_cash_cents, etc.).
+	// filled_quantity, remaining_quantity, captured_points, etc.).
 	Taker Order
 	// MakerUpdates are the post-match versions of any makers touched.
 	MakerUpdates []Order
@@ -74,7 +74,7 @@ type MatchPlan struct {
 	// engine pure (no DB reads needed) while still computing correct
 	// avg-cost and realised PnL against the user's prior position.
 	PositionMutations []PositionMutation
-	// LedgerEntries are collateral ledger inserts. balance_after_cents is
+	// LedgerEntries are collateral ledger inserts. balance_after_points is
 	// not yet computed here; the repository fills it in under the lock.
 	LedgerEntries []CollateralLedgerEntry
 	// Market is the post-match market with updated collateral_pool, quote
@@ -100,9 +100,9 @@ type MatchPlan struct {
 // fill. CreditKey is unique per trade for wallet idempotency (a retried
 // PersistMatchAtomic must not double-credit).
 type SellerCredit struct {
-	UserID      string
-	AmountCents int64
-	CreditKey   string
+	UserID       string
+	AmountPoints int64
+	CreditKey    string
 }
 
 // ReservationRef identifies a wallet reservation by (type, id).
@@ -113,19 +113,19 @@ type ReservationRef struct {
 
 // ReservationCapture is a partial capture against an existing reservation.
 type ReservationCapture struct {
-	Type        string
-	ID          string
-	AmountCents int64
-	CaptureKey  string
+	Type         string
+	ID           string
+	AmountPoints int64
+	CaptureKey   string
 }
 
 // ReservationHold is a new reservation to be created at plan time.
 type ReservationHold struct {
-	UserID      string
-	AmountCents int64
-	Type        string
-	ID          string
-	ExpiresIn   time.Duration
+	UserID       string
+	AmountPoints int64
+	Type         string
+	ID           string
+	ExpiresIn    time.Duration
 }
 
 // PositionReservationDelta changes prediction_positions.reserved_quantity.
@@ -140,7 +140,7 @@ type PositionReservationDelta struct {
 
 // --- Validation ---
 
-// ErrPriceBandViolation is returned when priceCents is out of [1,99].
+// ErrPriceBandViolation is returned when pricePoints is out of [1,99].
 var ErrPriceBandViolation = errors.New(FailurePriceBandViolation)
 
 // ErrPostOnlyWouldTake is returned when a post-only limit would take any
@@ -200,10 +200,10 @@ func ValidatePlaceOrderRequest(req PlaceOrderRequest, market *Market, position *
 
 	switch req.OrderType {
 	case OrderTypeLimit:
-		if req.PriceCents == nil {
-			return fmt.Errorf("limit order requires priceCents")
+		if req.PricePoints == nil {
+			return fmt.Errorf("limit order requires pricePoints")
 		}
-		if !PriceWithinBounds(*req.PriceCents) {
+		if !PriceWithinBounds(*req.PricePoints) {
 			return ErrPriceBandViolation
 		}
 	case OrderTypeMarket:
@@ -264,11 +264,11 @@ func (e *ExchangeEngine) BuildPlan(input MatchInput) (*MatchPlan, error) {
 			return nil, ErrPostOnlyWouldTake
 		}
 		fillQty := minInt(taker.RemainingQuantity, maker.RemainingQuantity)
-		fillQty = capFillQtyByNotionalCap(&taker, fillQty, *maker.PriceCents)
+		fillQty = capFillQtyByNotionalCap(&taker, fillQty, *maker.PricePoints)
 		if fillQty <= 0 {
 			continue
 		}
-		fillPrice := *maker.PriceCents // maker price wins on secondary
+		fillPrice := *maker.PricePoints // maker price wins on secondary
 		fillSecondary(plan, &taker, maker, fillQty, fillPrice, input.Now, input.IDFactory)
 	}
 
@@ -276,9 +276,9 @@ func (e *ExchangeEngine) BuildPlan(input MatchInput) (*MatchPlan, error) {
 	// against opposite-side Buy makers. A Sell taker has no issuance path
 	// (no naked shorts) — it is fully serviced by the secondary loop above.
 	//
-	// For limit orders the taker's PriceCents bounds feasibility:
+	// For limit orders the taker's PricePoints bounds feasibility:
 	// `taker_limit + maker_limit >= par`. For market orders the taker
-	// has no explicit limit, so we use par-1 (MaxTickPriceCents) as the
+	// has no explicit limit, so we use par-1 (MaxTickPricePoints) as the
 	// implied taker price. That makes every in-band maker
 	// (price >= 1) feasible — the notional cap on the request limits
 	// total dollar exposure upstream.
@@ -289,19 +289,19 @@ func (e *ExchangeEngine) BuildPlan(input MatchInput) (*MatchPlan, error) {
 	// Buy-NO quotes. Users had to switch to Limit mode to get fills.
 	// Fixed here so market buys cross issuance correctly.
 	if taker.Action == OrderActionBuy && !takerDone(&taker) {
-		takerPriceForIssuance := MaxTickPriceCents
-		if taker.PriceCents != nil {
-			takerPriceForIssuance = *taker.PriceCents
+		takerPriceForIssuance := MaxTickPricePoints
+		if taker.PricePoints != nil {
+			takerPriceForIssuance = *taker.PricePoints
 		}
 		for i := range input.MakersIssuance {
 			if takerDone(&taker) {
 				break
 			}
 			maker := &input.MakersIssuance[i]
-			if maker.PriceCents == nil {
+			if maker.PricePoints == nil {
 				continue
 			}
-			if !IssuanceFillFeasible(takerPriceForIssuance, *maker.PriceCents) {
+			if !IssuanceFillFeasible(takerPriceForIssuance, *maker.PricePoints) {
 				break // book ordered by maker price; no further matches
 			}
 			if blocked, blockErr := applySelfMatch(&taker, maker); blockErr != nil {
@@ -315,9 +315,9 @@ func (e *ExchangeEngine) BuildPlan(input MatchInput) (*MatchPlan, error) {
 			fillQty := minInt(taker.RemainingQuantity, maker.RemainingQuantity)
 			// Issuance fills cost the taker (100 - maker_limit) per share,
 			// not the maker's limit price. Cap-check at the actual taker
-			// cost so a market BUY with notionalCapCents=N can't overshoot
+			// cost so a market BUY with notionalCapPoints=N can't overshoot
 			// the reservation.
-			fillQty = capFillQtyByNotionalCap(&taker, fillQty, ComplementaryTakerPriceCents(*maker.PriceCents))
+			fillQty = capFillQtyByNotionalCap(&taker, fillQty, ComplementaryTakerPricePoints(*maker.PricePoints))
 			if fillQty <= 0 {
 				continue
 			}
@@ -332,7 +332,7 @@ func (e *ExchangeEngine) BuildPlan(input MatchInput) (*MatchPlan, error) {
 
 	plan.Taker = taker
 	// Do not overwrite plan.Market here — fillIssuance mutates it in-place
-	// (e.g., CollateralPoolCents, LastQuoteAt, VolumeCents).
+	// (e.g., CollateralPoolPoints, LastQuoteAt, VolumePoints).
 	plan.FillSummary = fmt.Sprintf("filled %d/%d of order %s",
 		taker.FilledQuantity, taker.Quantity, taker.ID)
 	return plan, nil
@@ -344,20 +344,20 @@ func (e *ExchangeEngine) BuildPlan(input MatchInput) (*MatchPlan, error) {
 func takerDone(o *Order) bool { return o.RemainingQuantity <= 0 }
 
 // canCrossSecondary reports whether a taker can cross the next maker on the
-// book in a secondary same-side transfer. For market orders (no priceCents)
+// book in a secondary same-side transfer. For market orders (no pricePoints)
 // this is always true (subject to notional cap, enforced separately).
 func canCrossSecondary(taker, maker *Order) bool {
-	if maker.PriceCents == nil {
+	if maker.PricePoints == nil {
 		return false
 	}
-	if taker.PriceCents == nil {
+	if taker.PricePoints == nil {
 		return true // market order
 	}
 	if taker.Action == OrderActionBuy && maker.Action == OrderActionSell {
-		return *taker.PriceCents >= *maker.PriceCents
+		return *taker.PricePoints >= *maker.PricePoints
 	}
 	if taker.Action == OrderActionSell && maker.Action == OrderActionBuy {
-		return *taker.PriceCents <= *maker.PriceCents
+		return *taker.PricePoints <= *maker.PricePoints
 	}
 	return false
 }
@@ -407,7 +407,7 @@ func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int,
 		sellerID = &s
 	}
 
-	takerFee := CalculateTakerFeeCents(plan.Market.FeeRateBps, fillPrice, fillQty)
+	takerFee := CalculateTakerFeePoints(plan.Market.FeeRateBps, fillPrice, fillQty)
 	trade := Trade{
 		ID:          tradeID,
 		MarketID:    plan.Market.ID,
@@ -416,9 +416,9 @@ func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int,
 		BuyerID:     buyerID,
 		SellerID:    sellerID,
 		Side:        taker.Side,
-		PriceCents:  fillPrice,
+		PricePoints: fillPrice,
 		Quantity:    fillQty,
-		FeeCents:    int(takerFee), // v1: fee_cents column carries taker fee
+		FeePoints:   int(takerFee), // v1: fee_points column carries taker fee
 		MatchID:     matchID,
 		TradeKind:   TradeKindSecondary,
 		EngineKind:  EngineKindOrderBook,
@@ -430,17 +430,17 @@ func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int,
 	taker.FilledQuantity += fillQty
 	taker.RemainingQuantity -= fillQty
 	if taker.Action == OrderActionBuy {
-		taker.CapturedCashCents += int64(fillQty) * int64(fillPrice)
+		taker.CapturedCashPoints += int64(fillQty) * int64(fillPrice)
 	}
-	taker.FilledCostCents += int64(fillQty) * int64(fillPrice)
+	taker.FilledCostPoints += int64(fillQty) * int64(fillPrice)
 
 	// Update maker: same fields, mirrored.
 	maker.FilledQuantity += fillQty
 	maker.RemainingQuantity -= fillQty
 	if maker.Action == OrderActionBuy {
-		maker.CapturedCashCents += int64(fillQty) * int64(fillPrice)
+		maker.CapturedCashPoints += int64(fillQty) * int64(fillPrice)
 	}
-	maker.FilledCostCents += int64(fillQty) * int64(fillPrice)
+	maker.FilledCostPoints += int64(fillQty) * int64(fillPrice)
 	if taker.Action == OrderActionBuy && maker.Action == OrderActionSell {
 		maker.ReservedQuantity -= fillQty
 		if maker.ReservedQuantity < 0 {
@@ -465,10 +465,10 @@ func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int,
 		buyer = maker
 	}
 	plan.CaptureReservations = append(plan.CaptureReservations, ReservationCapture{
-		Type:        "prediction_order",
-		ID:          buyer.ID,
-		AmountCents: int64(fillQty) * int64(fillPrice),
-		CaptureKey:  "prediction_fill:" + tradeID,
+		Type:         "prediction_order",
+		ID:           buyer.ID,
+		AmountPoints: int64(fillQty) * int64(fillPrice),
+		CaptureKey:   "prediction_fill:" + tradeID,
 	})
 
 	// Credit the seller's proceeds. A secondary fill is a same-side
@@ -477,9 +477,9 @@ func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int,
 	// nothing — silent value loss (UAT 2026-05-16 D-1, second-order).
 	if sellerID != nil {
 		plan.SellerCredits = append(plan.SellerCredits, SellerCredit{
-			UserID:      *sellerID,
-			AmountCents: int64(fillQty) * int64(fillPrice),
-			CreditKey:   "prediction_fill_proceeds:" + tradeID,
+			UserID:       *sellerID,
+			AmountPoints: int64(fillQty) * int64(fillPrice),
+			CreditKey:    "prediction_fill_proceeds:" + tradeID,
 		})
 	}
 
@@ -487,33 +487,33 @@ func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int,
 	if takerFee > 0 {
 		feeReason := "taker fee on secondary fill"
 		plan.LedgerEntries = append(plan.LedgerEntries, CollateralLedgerEntry{
-			MarketID:    plan.Market.ID,
-			TradeID:     &tradeID,
-			OrderID:     &taker.ID,
-			UserID:      &taker.UserID,
-			EntryType:   CollateralFee,
-			AmountCents: takerFee,
-			Reason:      feeReason,
+			MarketID:     plan.Market.ID,
+			TradeID:      &tradeID,
+			OrderID:      &taker.ID,
+			UserID:       &taker.UserID,
+			EntryType:    CollateralFee,
+			AmountPoints: takerFee,
+			Reason:       feeReason,
 		})
 	}
 
 	// Position mutations: buyer gains, seller loses.
 	plan.PositionMutations = append(plan.PositionMutations, PositionMutation{
 		UserID: buyerID, MarketID: plan.Market.ID, Side: taker.Side,
-		DeltaQty: fillQty, FillPriceCents: fillPrice, IsSell: false,
+		DeltaQty: fillQty, FillPricePoints: fillPrice, IsSell: false,
 	})
 	if sellerID != nil {
 		plan.PositionMutations = append(plan.PositionMutations, PositionMutation{
 			UserID: *sellerID, MarketID: plan.Market.ID, Side: taker.Side,
-			DeltaQty: -fillQty, FillPriceCents: fillPrice, IsSell: true,
+			DeltaQty: -fillQty, FillPricePoints: fillPrice, IsSell: true,
 		})
 	}
 
 	// Market quote snapshot: last trade price.
 	lp := fillPrice
-	plan.Market.LastTradePriceCents = &lp
+	plan.Market.LastTradePricePoints = &lp
 	plan.Market.LastQuoteAt = &now
-	plan.Market.VolumeCents += int64(fillQty) * int64(fillPrice)
+	plan.Market.VolumePoints += int64(fillQty) * int64(fillPrice)
 }
 
 // fillIssuance applies a complementary issuance fill: maker pays maker_limit,
@@ -522,42 +522,42 @@ func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int,
 func fillIssuance(plan *MatchPlan, taker, maker *Order, fillQty int, now time.Time, idFactory func() string) {
 	recordMakerPreFill(plan, maker)
 	matchID := idFactory()
-	makerLimit := *maker.PriceCents
-	takerPrice := ComplementaryTakerPriceCents(makerLimit)
+	makerLimit := *maker.PricePoints
+	takerPrice := ComplementaryTakerPricePoints(makerLimit)
 
-	takerFee := CalculateTakerFeeCents(plan.Market.FeeRateBps, takerPrice, fillQty)
+	takerFee := CalculateTakerFeePoints(plan.Market.FeeRateBps, takerPrice, fillQty)
 	takerTradeID := idFactory()
 	makerTradeID := idFactory()
 
 	// Two trade rows, one per side. Both sides "buy" — sellerID is nil for
 	// issuance because no one sells; the collateral pool is the counterparty.
 	takerTrade := Trade{
-		ID:         takerTradeID,
-		MarketID:   plan.Market.ID,
-		BuyOrderID: stringPointer(taker.ID),
-		BuyerID:    taker.UserID,
-		Side:       taker.Side,
-		PriceCents: takerPrice,
-		Quantity:   fillQty,
-		FeeCents:   int(takerFee),
-		MatchID:    matchID,
-		TradeKind:  TradeKindIssuance,
-		EngineKind: EngineKindOrderBook,
-		TradedAt:   now,
+		ID:          takerTradeID,
+		MarketID:    plan.Market.ID,
+		BuyOrderID:  stringPointer(taker.ID),
+		BuyerID:     taker.UserID,
+		Side:        taker.Side,
+		PricePoints: takerPrice,
+		Quantity:    fillQty,
+		FeePoints:   int(takerFee),
+		MatchID:     matchID,
+		TradeKind:   TradeKindIssuance,
+		EngineKind:  EngineKindOrderBook,
+		TradedAt:    now,
 	}
 	makerTrade := Trade{
-		ID:         makerTradeID,
-		MarketID:   plan.Market.ID,
-		BuyOrderID: stringPointer(maker.ID),
-		BuyerID:    maker.UserID,
-		Side:       maker.Side,
-		PriceCents: makerLimit,
-		Quantity:   fillQty,
-		FeeCents:   0, // maker fee = 0 in v1
-		MatchID:    matchID,
-		TradeKind:  TradeKindIssuance,
-		EngineKind: EngineKindOrderBook,
-		TradedAt:   now,
+		ID:          makerTradeID,
+		MarketID:    plan.Market.ID,
+		BuyOrderID:  stringPointer(maker.ID),
+		BuyerID:     maker.UserID,
+		Side:        maker.Side,
+		PricePoints: makerLimit,
+		Quantity:    fillQty,
+		FeePoints:   0, // maker fee = 0 in v1
+		MatchID:     matchID,
+		TradeKind:   TradeKindIssuance,
+		EngineKind:  EngineKindOrderBook,
+		TradedAt:    now,
 	}
 	plan.Trades = append(plan.Trades, takerTrade, makerTrade)
 
@@ -565,22 +565,22 @@ func fillIssuance(plan *MatchPlan, taker, maker *Order, fillQty int, now time.Ti
 	takerCost := int64(fillQty) * int64(takerPrice)
 	taker.FilledQuantity += fillQty
 	taker.RemainingQuantity -= fillQty
-	taker.CapturedCashCents += takerCost
-	taker.FilledCostCents += takerCost
+	taker.CapturedCashPoints += takerCost
+	taker.FilledCostPoints += takerCost
 
 	plan.CaptureReservations = append(plan.CaptureReservations, ReservationCapture{
-		Type:        "prediction_order",
-		ID:          taker.ID,
-		AmountCents: takerCost,
-		CaptureKey:  "prediction_fill:" + takerTradeID,
+		Type:         "prediction_order",
+		ID:           taker.ID,
+		AmountPoints: takerCost,
+		CaptureKey:   "prediction_fill:" + takerTradeID,
 	})
 
 	// Maker cost (maker pays makerLimit * qty).
 	makerCost := int64(fillQty) * int64(makerLimit)
 	maker.FilledQuantity += fillQty
 	maker.RemainingQuantity -= fillQty
-	maker.CapturedCashCents += makerCost
-	maker.FilledCostCents += makerCost
+	maker.CapturedCashPoints += makerCost
+	maker.FilledCostPoints += makerCost
 	if maker.RemainingQuantity == 0 {
 		maker.Status = OrderStatusFilled
 		filled := now
@@ -591,46 +591,46 @@ func fillIssuance(plan *MatchPlan, taker, maker *Order, fillQty int, now time.Ti
 	plan.MakerUpdates = append(plan.MakerUpdates, *maker)
 
 	plan.CaptureReservations = append(plan.CaptureReservations, ReservationCapture{
-		Type:        "prediction_order",
-		ID:          maker.ID,
-		AmountCents: makerCost,
-		CaptureKey:  "prediction_fill:" + makerTradeID,
+		Type:         "prediction_order",
+		ID:           maker.ID,
+		AmountPoints: makerCost,
+		CaptureKey:   "prediction_fill:" + makerTradeID,
 	})
 
 	// Issuance grows the collateral pool by 100¢ × qty.
 	delta := CollateralPoolDelta(TradeKindIssuance, fillQty)
-	plan.Market.CollateralPoolCents += delta
+	plan.Market.CollateralPoolPoints += delta
 	plan.LedgerEntries = append(plan.LedgerEntries, CollateralLedgerEntry{
-		MarketID:    plan.Market.ID,
-		TradeID:     &takerTradeID,
-		EntryType:   CollateralIssue,
-		AmountCents: delta,
-		Reason:      "complementary issuance",
+		MarketID:     plan.Market.ID,
+		TradeID:      &takerTradeID,
+		EntryType:    CollateralIssue,
+		AmountPoints: delta,
+		Reason:       "complementary issuance",
 	})
 	if takerFee > 0 {
 		plan.LedgerEntries = append(plan.LedgerEntries, CollateralLedgerEntry{
-			MarketID:    plan.Market.ID,
-			TradeID:     &takerTradeID,
-			OrderID:     &taker.ID,
-			UserID:      &taker.UserID,
-			EntryType:   CollateralFee,
-			AmountCents: takerFee,
-			Reason:      "taker fee on issuance fill",
+			MarketID:     plan.Market.ID,
+			TradeID:      &takerTradeID,
+			OrderID:      &taker.ID,
+			UserID:       &taker.UserID,
+			EntryType:    CollateralFee,
+			AmountPoints: takerFee,
+			Reason:       "taker fee on issuance fill",
 		})
 	}
 
 	// Both buyers gain a position on their respective sides.
 	plan.PositionMutations = append(plan.PositionMutations, PositionMutation{
 		UserID: taker.UserID, MarketID: plan.Market.ID, Side: taker.Side,
-		DeltaQty: fillQty, FillPriceCents: takerPrice, IsSell: false,
+		DeltaQty: fillQty, FillPricePoints: takerPrice, IsSell: false,
 	})
 	plan.PositionMutations = append(plan.PositionMutations, PositionMutation{
 		UserID: maker.UserID, MarketID: plan.Market.ID, Side: maker.Side,
-		DeltaQty: fillQty, FillPriceCents: makerLimit, IsSell: false,
+		DeltaQty: fillQty, FillPricePoints: makerLimit, IsSell: false,
 	})
 
 	plan.Market.LastQuoteAt = &now
-	plan.Market.VolumeCents += int64(fillQty) * int64(ParPriceCents)
+	plan.Market.VolumePoints += int64(fillQty) * int64(ParPricePoints)
 }
 
 // applyTIF resolves the taker's remainder per its time-in-force. Returns
@@ -644,7 +644,7 @@ func applyTIF(plan *MatchPlan, taker *Order) error {
 			taker.FilledAt = filled
 		}
 		// Release any uncaptured surplus of the taker's point reservation. A buy
-		// holds worst-case priceCents×qty but captures at the (better) fill price,
+		// holds worst-case pricePoints×qty but captures at the (better) fill price,
 		// so on a full fill the difference must be freed now — otherwise it stays
 		// locked against available balance until the reservation expires at
 		// CloseAt+TTL (days). Idempotent: a no-op when capture equalled the hold,
@@ -704,30 +704,30 @@ func minInt(a, b int) int {
 
 // capFillQtyByNotionalCap clamps a proposed fillQty so the resulting
 // capture stays within the taker's remaining cash budget. Market BUYs
-// reserve `notionalCapCents` up front; if the matching loop tries to
+// reserve `notionalCapPoints` up front; if the matching loop tries to
 // fill more than that budget allows, the wallet's CaptureReservation
 // rejects with "capture N exceeds remaining M".
 //
-// The cap is the floor of `remainingBudget / takerPriceCents`. Integer
+// The cap is the floor of `remainingBudget / takerPricePoints`. Integer
 // division rounds down which is the safe direction — fillQty never
 // causes a budget overshoot. Orders without a notional cap (regular
 // limit BUYs, sells) pass through unchanged.
 //
 // Captures already applied in this match plan are tracked in
-// taker.CapturedCashCents (mutated by each fillSecondary / fillIssuance
+// taker.CapturedCashPoints (mutated by each fillSecondary / fillIssuance
 // call), so consecutive fills correctly consume the budget.
-func capFillQtyByNotionalCap(taker *Order, proposedQty, takerPriceCents int) int {
-	if taker.NotionalCapCents == nil || *taker.NotionalCapCents <= 0 {
+func capFillQtyByNotionalCap(taker *Order, proposedQty, takerPricePoints int) int {
+	if taker.NotionalCapPoints == nil || *taker.NotionalCapPoints <= 0 {
 		return proposedQty
 	}
-	if takerPriceCents <= 0 {
+	if takerPricePoints <= 0 {
 		return proposedQty
 	}
-	remaining := *taker.NotionalCapCents - taker.CapturedCashCents
+	remaining := *taker.NotionalCapPoints - taker.CapturedCashPoints
 	if remaining <= 0 {
 		return 0
 	}
-	maxByBudget := int(remaining / int64(takerPriceCents))
+	maxByBudget := int(remaining / int64(takerPricePoints))
 	if maxByBudget < proposedQty {
 		return maxByBudget
 	}

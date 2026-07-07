@@ -10,14 +10,14 @@ func TestCreateCampaignRequestNormalizePointAliases(t *testing.T) {
 	body := []byte(`{
 		"name": "Launch Points",
 		"campaign_type": "custom",
-		"budget_points_cents": 7500,
+		"budget_points": 7500,
 		"rules": [
 			{
 				"rule_type": "reward",
 				"point_rule_config": {
-					"fixed_amount_points_cents": 500,
-					"max_bonus_points_cents": 2500,
-					"min_points_cents": 100,
+					"fixed_amount_points": 500,
+					"max_bonus_points": 2500,
+					"min_points": 100,
 					"type": "freebet"
 				}
 			},
@@ -25,8 +25,8 @@ func TestCreateCampaignRequestNormalizePointAliases(t *testing.T) {
 				"rule_type": "play",
 				"point_rule_config": {
 					"multiplier": 3,
-					"max_play_contribution_points_cents": 200,
-					"max_stake_contribution_points_cents": 999
+					"max_play_contribution_points": 200,
+					"max_stake_contribution_points": 999
 				}
 			},
 			{
@@ -47,28 +47,31 @@ func TestCreateCampaignRequestNormalizePointAliases(t *testing.T) {
 	if req.CampaignType != "custom" {
 		t.Fatalf("expected campaign type to stay custom, got %q", req.CampaignType)
 	}
-	if req.BudgetCents == nil || *req.BudgetCents != 7500 {
-		t.Fatalf("expected budget alias to normalize, got %+v", req.BudgetCents)
+	if req.BudgetPoints == nil || *req.BudgetPoints != 7500 {
+		t.Fatalf("expected budget alias to normalize, got %+v", req.BudgetPoints)
 	}
 	var reward map[string]any
 	if err := json.Unmarshal(req.Rules[0].RuleConfig, &reward); err != nil {
 		t.Fatalf("unmarshal normalized reward config: %v", err)
 	}
-	if reward["fixed_amount_cents"] != float64(500) {
+	if reward["fixed_amount_points"] != float64(500) {
 		t.Fatalf("expected fixed amount alias, got %+v", reward)
 	}
-	if reward["max_bonus_cents"] != float64(2500) {
+	if reward["max_bonus_points"] != float64(2500) {
 		t.Fatalf("expected max bonus alias, got %+v", reward)
 	}
-	if reward["min_amount_cents"] != float64(100) {
+	if reward["min_amount_points"] != float64(100) {
 		t.Fatalf("expected minimum point alias, got %+v", reward)
 	}
 	if reward["type"] != "point_grant" {
 		t.Fatalf("expected retired reward type to normalize, got %+v", reward)
 	}
-	for _, retiredInput := range []string{"fixed_amount_points_cents", "max_bonus_points_cents", "min_points_cents"} {
+	// Points unit-model (2026-07-07): fixed_amount_points / max_bonus_points
+	// ARE the canonical keys now; only genuinely retired spellings must be
+	// rewritten away before persistence.
+	for _, retiredInput := range []string{"min_points"} {
 		if _, ok := reward[retiredInput]; ok {
-			t.Fatalf("point request alias %q should be normalized before persistence: %+v", retiredInput, reward)
+			t.Fatalf("retired key %q should be normalized before persistence: %+v", retiredInput, reward)
 		}
 	}
 
@@ -76,14 +79,11 @@ func TestCreateCampaignRequestNormalizePointAliases(t *testing.T) {
 	if err := json.Unmarshal(req.Rules[1].RuleConfig, &play); err != nil {
 		t.Fatalf("unmarshal normalized play config: %v", err)
 	}
-	if play["max_stake_contribution_cents"] != float64(200) {
-		t.Fatalf("expected max contribution alias, got %+v", play)
+	if play["max_stake_contribution_points"] != float64(999) {
+		t.Fatalf("expected canonical max contribution key, got %+v", play)
 	}
-	if _, ok := play["max_play_contribution_points_cents"]; ok {
-		t.Fatalf("point-play request alias should be normalized before persistence: %+v", play)
-	}
-	if _, ok := play["max_stake_contribution_points_cents"]; ok {
-		t.Fatalf("legacy stake request alias should be normalized before persistence: %+v", play)
+	if _, ok := play["max_play_contribution_points"]; ok {
+		t.Fatalf("launch-vocab play alias should normalize to the stake key: %+v", play)
 	}
 	if req.Rules[1].RuleType != "wagering" {
 		t.Fatalf("expected public play rule type to normalize to internal wagering rule, got %q", req.Rules[1].RuleType)
@@ -168,12 +168,12 @@ func TestRuleInputPrefersPointRuleConfigOverLegacyRuleConfig(t *testing.T) {
 	rule := RuleInput{
 		RuleType: "reward",
 		RuleConfig: mustRuleConfigForModels(t, map[string]any{
-			"fixed_amount_cents": 999,
-			"type":               "cash",
+			"fixed_amount_points": 999,
+			"type":                "cash",
 		}),
 		PointRuleConfig: mustRuleConfigForModels(t, map[string]any{
-			"fixed_amount_points_cents": 500,
-			"type":                      "point_grant",
+			"fixed_amount_points": 500,
+			"type":                "point_grant",
 		}),
 	}
 
@@ -183,7 +183,7 @@ func TestRuleInputPrefersPointRuleConfigOverLegacyRuleConfig(t *testing.T) {
 	if err := json.Unmarshal(rule.RuleConfig, &cfg); err != nil {
 		t.Fatalf("unmarshal normalized config: %v", err)
 	}
-	if cfg["fixed_amount_cents"] != float64(500) {
+	if cfg["fixed_amount_points"] != float64(500) {
 		t.Fatalf("expected point_rule_config amount to win, got %+v", cfg)
 	}
 	if cfg["type"] != "point_grant" {
@@ -207,39 +207,49 @@ func TestRuleInputLaunchValidationPrefersPointRuleConfigOverLegacyRuleConfig(t *
 	}
 }
 
-func TestCreateCampaignRequestDetectsConflictingBudgetAliases(t *testing.T) {
-	legacy := int64(1000)
+func TestCreateCampaignRequestSingleBudgetField(t *testing.T) {
+	// Points unit-model correction (2026-07-07): the cents-era budget alias
+	// is retired; budget_points is the only budget field. This locks the
+	// single-field shape so a compat alias can't quietly return.
 	points := int64(2000)
-	req := CreateCampaignRequest{BudgetCents: &legacy, BudgetPointsCents: &points}
-	if !req.HasConflictingBudgetAliases() {
-		t.Fatal("expected mismatched budget aliases to conflict")
+	req := CreateCampaignRequest{BudgetPoints: &points}
+	if req.BudgetPoints == nil || *req.BudgetPoints != 2000 {
+		t.Fatal("budget_points should be the single authoritative budget field")
 	}
-
-	points = legacy
-	if req.HasConflictingBudgetAliases() {
-		t.Fatal("expected matching budget aliases to be accepted")
+	if err := req.ValidatePointAliasConflicts(); err != nil {
+		t.Fatalf("single budget field must not conflict: %v", err)
 	}
 }
 
-func TestCreateCampaignRequestDetectsConflictingRuleAmountAliases(t *testing.T) {
+func TestCreateCampaignRequestRuleAmountSingleKey(t *testing.T) {
+	// Post unit-model correction: fixed_amount_points is the single amount
+	// key; a conflicting min_points/min_amount_points pair still errors.
 	req := CreateCampaignRequest{
 		Rules: []RuleInput{
 			{
 				RuleType: "reward",
 				PointRuleConfig: mustRuleConfigForModels(t, map[string]any{
-					"fixed_amount_points_cents": 500,
-					"fixed_amount_cents":        700,
+					"fixed_amount_points": 500,
 				}),
 			},
 		},
 	}
-
-	err := req.ValidatePointAliasConflicts()
-	if err == nil {
-		t.Fatal("expected conflicting reward amount aliases")
+	if err := req.ValidatePointAliasConflicts(); err != nil {
+		t.Fatalf("single amount key must not conflict: %v", err)
 	}
-	if got := err.Error(); got != "rules[0]: fixed_amount_points_cents conflicts with fixed_amount_cents" {
-		t.Fatalf("unexpected error: %v", err)
+	conflicted := CreateCampaignRequest{
+		Rules: []RuleInput{
+			{
+				RuleType: "reward",
+				PointRuleConfig: mustRuleConfigForModels(t, map[string]any{
+					"min_points":        100,
+					"min_amount_points": 200,
+				}),
+			},
+		},
+	}
+	if err := conflicted.ValidatePointAliasConflicts(); err == nil {
+		t.Fatal("expected min_points/min_amount_points conflict to error")
 	}
 }
 
@@ -249,8 +259,8 @@ func TestCreateCampaignRequestDetectsConflictingRuleContributionAliases(t *testi
 			{
 				RuleType: "play",
 				PointRuleConfig: mustRuleConfigForModels(t, map[string]any{
-					"max_play_contribution_points_cents": 200,
-					"max_stake_contribution_cents":       300,
+					"max_play_contribution_points":  200,
+					"max_stake_contribution_points": 300,
 				}),
 			},
 		},
@@ -260,33 +270,29 @@ func TestCreateCampaignRequestDetectsConflictingRuleContributionAliases(t *testi
 	if err == nil {
 		t.Fatal("expected conflicting play contribution aliases")
 	}
-	if got := err.Error(); got != "rules[0]: max_play_contribution_points_cents conflicts with max_stake_contribution_cents" {
+	if got := err.Error(); got != "rules[0]: max_play_contribution_points conflicts with max_stake_contribution_points" {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
 func TestCreateCampaignRequestAllowsMatchingRuleAliases(t *testing.T) {
 	req := CreateCampaignRequest{
-		BudgetCents:       int64PtrForModels(7500),
-		BudgetPointsCents: int64PtrForModels(7500),
+		BudgetPoints: int64PtrForModels(7500),
 		Rules: []RuleInput{
 			{
 				RuleType: "reward",
 				PointRuleConfig: mustRuleConfigForModels(t, map[string]any{
-					"fixed_amount_points_cents": 500,
-					"fixed_amount_cents":        500,
-					"max_bonus_points_cents":    2500,
-					"max_bonus_cents":           2500,
-					"min_points_cents":          100,
-					"min_amount_cents":          100,
+					"fixed_amount_points": 500,
+					"max_bonus_points":    2500,
+					"min_points":          100,
+					"min_amount_points":   100,
 				}),
 			},
 			{
 				RuleType: "play",
 				PointRuleConfig: mustRuleConfigForModels(t, map[string]any{
-					"max_play_contribution_points_cents":  200,
-					"max_stake_contribution_points_cents": 200,
-					"max_stake_contribution_cents":        200,
+					"max_play_contribution_points":  200,
+					"max_stake_contribution_points": 200,
 				}),
 			},
 		},
@@ -459,30 +465,14 @@ func TestCreateCampaignRequestAllowsNonRedeemableDisclosureCopy(t *testing.T) {
 	}
 }
 
-func TestGrantBonusRequestNormalizePointAliases(t *testing.T) {
-	var req GrantBonusRequest
-	if err := json.Unmarshal([]byte(`{"user_id":"u-1","campaign_id":7,"override_points_cents":1234,"reason":"support adjustment"}`), &req); err != nil {
-		t.Fatalf("unmarshal request: %v", err)
-	}
-
-	req.NormalizePointAliases()
-
-	if req.OverrideAmountCents == nil || *req.OverrideAmountCents != 1234 {
-		t.Fatalf("expected override point alias to normalize, got %+v", req.OverrideAmountCents)
-	}
-}
-
-func TestGrantBonusRequestDetectsConflictingOverrideAliases(t *testing.T) {
-	legacy := int64(1000)
+func TestGrantBonusRequestSingleOverrideField(t *testing.T) {
+	// Points unit-model (2026-07-07): override_points is the single override
+	// field; the cents-era alias is retired.
 	points := int64(2000)
-	req := GrantBonusRequest{OverrideAmountCents: &legacy, OverridePointsCents: &points}
-	if !req.HasConflictingOverrideAliases() {
-		t.Fatal("expected mismatched override aliases to conflict")
-	}
-
-	points = legacy
-	if req.HasConflictingOverrideAliases() {
-		t.Fatal("expected matching override aliases to be accepted")
+	req := GrantBonusRequest{UserID: "u-1", CampaignID: 7, OverridePoints: &points}
+	req.NormalizePointAliases()
+	if req.OverridePoints == nil || *req.OverridePoints != 2000 {
+		t.Fatal("override_points should be the single authoritative override field")
 	}
 }
 

@@ -15,21 +15,21 @@ func TestCreditDebitIdempotency(t *testing.T) {
 	// Seed balance
 	entry1, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "user-1",
-		AmountCents:    10000,
+		AmountPoints:   10000,
 		IdempotencyKey: "seed-1",
 		Reason:         "initial deposit",
 	})
 	if err != nil {
 		t.Fatalf("credit failed: %v", err)
 	}
-	if entry1.BalanceCents != 10000 {
-		t.Fatalf("expected balance 10000, got %d", entry1.BalanceCents)
+	if entry1.BalancePoints != 10000 {
+		t.Fatalf("expected balance 10000, got %d", entry1.BalancePoints)
 	}
 
 	// Replay same credit — should return same entry
 	entry2, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "user-1",
-		AmountCents:    10000,
+		AmountPoints:   10000,
 		IdempotencyKey: "seed-1",
 		Reason:         "initial deposit",
 	})
@@ -53,7 +53,7 @@ func TestDebitInsufficientFunds(t *testing.T) {
 	// Seed 5000
 	_, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "user-2",
-		AmountCents:    5000,
+		AmountPoints:   5000,
 		IdempotencyKey: "seed-2",
 		Reason:         "deposit",
 	})
@@ -64,7 +64,7 @@ func TestDebitInsufficientFunds(t *testing.T) {
 	// Debit 6000 — should fail
 	_, err = svc.Debit(context.Background(), MutationRequest{
 		UserID:         "user-2",
-		AmountCents:    6000,
+		AmountPoints:   6000,
 		IdempotencyKey: "over-debit",
 		Reason:         "bet",
 	})
@@ -87,7 +87,7 @@ func TestConcurrentDebitsOnSameBalance(t *testing.T) {
 	// Seed 10000
 	_, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "user-concurrent",
-		AmountCents:    10000,
+		AmountPoints:   10000,
 		IdempotencyKey: "seed-concurrent",
 		Reason:         "deposit",
 	})
@@ -106,7 +106,7 @@ func TestConcurrentDebitsOnSameBalance(t *testing.T) {
 			defer wg.Done()
 			_, err := svc.Debit(context.Background(), MutationRequest{
 				UserID:         "user-concurrent",
-				AmountCents:    10000,
+				AmountPoints:   10000,
 				IdempotencyKey: time.Now().String() + string(rune(idx+'A')),
 				Reason:         "concurrent bet",
 			})
@@ -141,7 +141,7 @@ func TestIdempotencyConflictDetection(t *testing.T) {
 
 	_, err := svc.Credit(context.Background(), MutationRequest{
 		UserID:         "user-conflict",
-		AmountCents:    5000,
+		AmountPoints:   5000,
 		IdempotencyKey: "deposit-1",
 		Reason:         "first deposit",
 	})
@@ -152,7 +152,7 @@ func TestIdempotencyConflictDetection(t *testing.T) {
 	// Replay with different amount — should be rejected
 	_, err = svc.Credit(context.Background(), MutationRequest{
 		UserID:         "user-conflict",
-		AmountCents:    7000, // different amount!
+		AmountPoints:   7000, // different amount!
 		IdempotencyKey: "deposit-1",
 		Reason:         "first deposit",
 	})
@@ -165,9 +165,9 @@ func TestIdempotencyConflictDetection(t *testing.T) {
 func TestReconciliationSummary(t *testing.T) {
 	svc := NewService()
 
-	_, _ = svc.Credit(context.Background(), MutationRequest{UserID: "u-a", AmountCents: 10000, IdempotencyKey: "c1", Reason: "deposit"})
-	_, _ = svc.Credit(context.Background(), MutationRequest{UserID: "u-b", AmountCents: 5000, IdempotencyKey: "c2", Reason: "deposit"})
-	_, _ = svc.Debit(context.Background(), MutationRequest{UserID: "u-a", AmountCents: 3000, IdempotencyKey: "d1", Reason: "bet"})
+	_, _ = svc.Credit(context.Background(), MutationRequest{UserID: "u-a", AmountPoints: 10000, IdempotencyKey: "c1", Reason: "deposit"})
+	_, _ = svc.Credit(context.Background(), MutationRequest{UserID: "u-b", AmountPoints: 5000, IdempotencyKey: "c2", Reason: "deposit"})
+	_, _ = svc.Debit(context.Background(), MutationRequest{UserID: "u-a", AmountPoints: 3000, IdempotencyKey: "d1", Reason: "bet"})
 
 	summary, err := svc.ReconciliationSummary(context.Background(), nil, nil)
 	if err != nil {
@@ -210,8 +210,8 @@ func TestCorrectionTaskScanDetectsNegativeBalance(t *testing.T) {
 	for _, task := range tasks {
 		if task.UserID == "user-negative" && task.Type == "negative_balance" {
 			found = true
-			if task.SuggestedAdjustmentCents != 500 {
-				t.Errorf("expected suggested adjustment 500, got %d", task.SuggestedAdjustmentCents)
+			if task.SuggestedAdjustmentPoints != 500 {
+				t.Errorf("expected suggested adjustment 500, got %d", task.SuggestedAdjustmentPoints)
 			}
 		}
 	}

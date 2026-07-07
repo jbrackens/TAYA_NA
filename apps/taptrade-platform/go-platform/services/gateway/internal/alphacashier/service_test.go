@@ -84,7 +84,7 @@ func TestServiceCreateWithdrawalRequestHoldsFunds(t *testing.T) {
 	if req.Status != "requested" || req.AmountUnits != "25000000" || req.WalletReservationID == "" {
 		t.Fatalf("unexpected withdrawal request: %+v", req)
 	}
-	if got := ledger.holds[req.ID]; got.ReferenceType != withdrawalReferenceType || got.AmountCents != 2500 {
+	if got := ledger.holds[req.ID]; got.ReferenceType != withdrawalReferenceType || got.AmountPoints != 2500 {
 		t.Fatalf("hold not recorded correctly: %+v", got)
 	}
 

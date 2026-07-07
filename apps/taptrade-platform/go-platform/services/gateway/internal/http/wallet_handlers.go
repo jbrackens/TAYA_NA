@@ -17,11 +17,10 @@ import (
 )
 
 type walletMutationRequest struct {
-	UserID            string `json:"userId"`
-	AmountPointsCents int64  `json:"amountPointsCents"`
-	AmountCents       int64  `json:"-"`
-	IdempotencyKey    string `json:"idempotencyKey"`
-	Reason            string `json:"reason"`
+	UserID         string `json:"userId"`
+	AmountPoints   int64  `json:"amountPoints"`
+	IdempotencyKey string `json:"idempotencyKey"`
+	Reason         string `json:"reason"`
 }
 
 type pointPackClaimRequest struct {
@@ -29,15 +28,14 @@ type pointPackClaimRequest struct {
 }
 
 type pointPackDefinition struct {
-	ID                string `json:"id"`
-	Name              string `json:"name"`
-	Description       string `json:"description"`
-	Unit              string `json:"unit"`
-	AmountPointsCents int64  `json:"amountPointsCents"`
-	AmountCents       int64  `json:"-"`
-	Enabled           bool   `json:"enabled"`
-	ClaimableOnce     bool   `json:"claimableOnce"`
-	Claimed           bool   `json:"claimed"`
+	ID            string `json:"id"`
+	Name          string `json:"name"`
+	Description   string `json:"description"`
+	Unit          string `json:"unit"`
+	AmountPoints  int64  `json:"amountPoints"`
+	Enabled       bool   `json:"enabled"`
+	ClaimableOnce bool   `json:"claimableOnce"`
+	Claimed       bool   `json:"claimed"`
 }
 
 type missionClaimRequest struct {
@@ -45,17 +43,16 @@ type missionClaimRequest struct {
 }
 
 type missionDefinition struct {
-	ID                string `json:"id"`
-	Name              string `json:"name"`
-	Description       string `json:"description"`
-	Unit              string `json:"unit"`
-	RewardPointsCents int64  `json:"rewardPointsCents"`
-	RewardCents       int64  `json:"-"`
-	Progress          int    `json:"progress"`
-	Target            int    `json:"target"`
-	Completed         bool   `json:"completed"`
-	Claimed           bool   `json:"claimed"`
-	Enabled           bool   `json:"enabled"`
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	Unit         string `json:"unit"`
+	RewardPoints int64  `json:"rewardPoints"`
+	Progress     int    `json:"progress"`
+	Target       int    `json:"target"`
+	Completed    bool   `json:"completed"`
+	Claimed      bool   `json:"claimed"`
+	Enabled      bool   `json:"enabled"`
 }
 
 type streakClaimRequest struct {
@@ -63,17 +60,16 @@ type streakClaimRequest struct {
 }
 
 type streakDefinition struct {
-	ID                string `json:"id"`
-	Name              string `json:"name"`
-	Description       string `json:"description"`
-	Unit              string `json:"unit"`
-	RewardPointsCents int64  `json:"rewardPointsCents"`
-	RewardCents       int64  `json:"-"`
-	CurrentStreak     int    `json:"currentStreak"`
-	Target            int    `json:"target"`
-	Completed         bool   `json:"completed"`
-	Claimed           bool   `json:"claimed"`
-	Enabled           bool   `json:"enabled"`
+	ID            string `json:"id"`
+	Name          string `json:"name"`
+	Description   string `json:"description"`
+	Unit          string `json:"unit"`
+	RewardPoints  int64  `json:"rewardPoints"`
+	CurrentStreak int    `json:"currentStreak"`
+	Target        int    `json:"target"`
+	Completed     bool   `json:"completed"`
+	Claimed       bool   `json:"claimed"`
+	Enabled       bool   `json:"enabled"`
 }
 
 type badgeDefinition struct {
@@ -86,16 +82,13 @@ type badgeDefinition struct {
 }
 
 type rewardGrantLimitStatus struct {
-	Enabled              bool   `json:"enabled"`
-	Unit                 string `json:"unit"`
-	LimitPointsCents     int64  `json:"limitPointsCents"`
-	GrantedPointsCents   int64  `json:"grantedPointsCents"`
-	RemainingPointsCents int64  `json:"remainingPointsCents"`
-	LimitCents           int64  `json:"-"`
-	GrantedCents         int64  `json:"-"`
-	RemainingCents       int64  `json:"-"`
-	WindowDate           string `json:"windowDate"`
-	NextResetAt          string `json:"nextResetAt"`
+	Enabled         bool   `json:"enabled"`
+	Unit            string `json:"unit"`
+	LimitPoints     int64  `json:"limitPoints"`
+	GrantedPoints   int64  `json:"grantedPoints"`
+	RemainingPoints int64  `json:"remainingPoints"`
+	WindowDate      string `json:"windowDate"`
+	NextResetAt     string `json:"nextResetAt"`
 }
 
 func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leaderboardServices ...*leaderboards.PredictService) {
@@ -139,12 +132,12 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		if !ok {
 			return httpx.NotFound("point pack not found")
 		}
-		if !pack.Enabled || pack.AmountCents <= 0 {
+		if !pack.Enabled || pack.AmountPoints <= 0 {
 			return httpx.Forbidden("point pack is not available")
 		}
 		now := time.Now().UTC()
 		rewardKey := "point_pack:" + userID + ":" + pack.ID
-		_, allowed := checkRewardGrantLimit(r.Context(), service, userID, rewardKey, pack.AmountCents, now)
+		_, allowed := checkRewardGrantLimit(r.Context(), service, userID, rewardKey, pack.AmountPoints, now)
 		if !allowed {
 			return httpx.Forbidden("daily reward point limit reached")
 		}
@@ -153,7 +146,7 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		}
 		_, err := service.Credit(r.Context(), wallet.MutationRequest{
 			UserID:         userID,
-			AmountCents:    pack.AmountCents,
+			AmountPoints:   pack.AmountPoints,
 			IdempotencyKey: rewardKey,
 			Reason:         "point_pack_grant",
 		})
@@ -163,12 +156,12 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		pack.Claimed = true
 		balance := service.Balance(r.Context(), userID)
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"enabled":            true,
-			"unit":               "PTS",
-			"pack":               pack,
-			"claimPointsCents":   pack.AmountCents,
-			"balancePointsCents": balance,
-			"rewardLimit":        rewardLimitStatus(r.Context(), service, userID, now),
+			"enabled":       true,
+			"unit":          "PTS",
+			"pack":          pack,
+			"claimPoints":   pack.AmountPoints,
+			"balancePoints": balance,
+			"rewardLimit":   rewardLimitStatus(r.Context(), service, userID, now),
 		})
 	}))
 
@@ -204,14 +197,14 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		if !ok {
 			return httpx.NotFound("mission not found")
 		}
-		if !mission.Enabled || mission.RewardCents <= 0 {
+		if !mission.Enabled || mission.RewardPoints <= 0 {
 			return httpx.Forbidden("mission is not available")
 		}
 		if !mission.Completed {
 			return httpx.Forbidden("mission is not complete")
 		}
 		rewardKey := missionRewardKey(userID, mission.ID, now)
-		_, allowed := checkRewardGrantLimit(r.Context(), service, userID, rewardKey, mission.RewardCents, now)
+		_, allowed := checkRewardGrantLimit(r.Context(), service, userID, rewardKey, mission.RewardPoints, now)
 		if !allowed {
 			return httpx.Forbidden("daily reward point limit reached")
 		}
@@ -220,7 +213,7 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		}
 		_, err := service.Credit(r.Context(), wallet.MutationRequest{
 			UserID:         userID,
-			AmountCents:    mission.RewardCents,
+			AmountPoints:   mission.RewardPoints,
 			IdempotencyKey: rewardKey,
 			Reason:         "mission_reward",
 		})
@@ -230,12 +223,12 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		mission, _ = missionByID(r.Context(), service, leaderboardService, userID, mission.ID, now)
 		balance := service.Balance(r.Context(), userID)
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"enabled":            true,
-			"unit":               "PTS",
-			"mission":            mission,
-			"claimPointsCents":   mission.RewardCents,
-			"balancePointsCents": balance,
-			"rewardLimit":        rewardLimitStatus(r.Context(), service, userID, now),
+			"enabled":       true,
+			"unit":          "PTS",
+			"mission":       mission,
+			"claimPoints":   mission.RewardPoints,
+			"balancePoints": balance,
+			"rewardLimit":   rewardLimitStatus(r.Context(), service, userID, now),
 		})
 	}))
 
@@ -271,14 +264,14 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		if !ok {
 			return httpx.NotFound("streak not found")
 		}
-		if !streak.Enabled || streak.RewardCents <= 0 {
+		if !streak.Enabled || streak.RewardPoints <= 0 {
 			return httpx.Forbidden("streak reward is not available")
 		}
 		if !streak.Completed {
 			return httpx.Forbidden("streak is not complete")
 		}
 		rewardKey := streakRewardKey(userID, streak.ID)
-		_, allowed := checkRewardGrantLimit(r.Context(), service, userID, rewardKey, streak.RewardCents, now)
+		_, allowed := checkRewardGrantLimit(r.Context(), service, userID, rewardKey, streak.RewardPoints, now)
 		if !allowed {
 			return httpx.Forbidden("daily reward point limit reached")
 		}
@@ -287,7 +280,7 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		}
 		_, err := service.Credit(r.Context(), wallet.MutationRequest{
 			UserID:         userID,
-			AmountCents:    streak.RewardCents,
+			AmountPoints:   streak.RewardPoints,
 			IdempotencyKey: rewardKey,
 			Reason:         "streak_reward",
 		})
@@ -297,12 +290,12 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		streak, _ = streakByID(r.Context(), service, userID, streak.ID, now)
 		balance := service.Balance(r.Context(), userID)
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"enabled":            true,
-			"unit":               "PTS",
-			"streak":             streak,
-			"claimPointsCents":   streak.RewardCents,
-			"balancePointsCents": balance,
-			"rewardLimit":        rewardLimitStatus(r.Context(), service, userID, now),
+			"enabled":       true,
+			"unit":          "PTS",
+			"streak":        streak,
+			"claimPoints":   streak.RewardPoints,
+			"balancePoints": balance,
+			"rewardLimit":   rewardLimitStatus(r.Context(), service, userID, now),
 		})
 	}))
 
@@ -362,10 +355,10 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		if len(parts) == 2 && parts[1] == "breakdown" {
 			breakdown := service.BalanceWithBreakdown(r.Context(), userID)
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-				"unit":             "PTS",
-				"basePointsCents":  breakdown.RealMoneyCents,
-				"bonusPointsCents": breakdown.BonusFundCents,
-				"totalPointsCents": breakdown.TotalCents,
+				"unit":        "PTS",
+				"basePoints":  breakdown.RealMoneyPoints,
+				"bonusPoints": breakdown.BonusFundPoints,
+				"totalPoints": breakdown.TotalPoints,
 			})
 		}
 
@@ -400,11 +393,11 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 			available := service.AvailableBalance(r.Context(), userID)
 			reserved := balance - available
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-				"userId":               userID,
-				"unit":                 "PTS",
-				"balancePointsCents":   balance,
-				"availablePointsCents": available,
-				"reservedPointsCents":  reserved,
+				"userId":          userID,
+				"unit":            "PTS",
+				"balancePoints":   balance,
+				"availablePoints": available,
+				"reservedPoints":  reserved,
 			})
 		}
 
@@ -426,18 +419,18 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		if userID == "" {
 			return httpx.Forbidden("authentication required")
 		}
-		grant := starterGrantCents()
+		grant := starterGrantPoints()
 		if grant <= 0 {
 			balance := service.Balance(r.Context(), userID)
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-				"enabled":            false,
-				"unit":               "PTS",
-				"balancePointsCents": balance,
+				"enabled":       false,
+				"unit":          "PTS",
+				"balancePoints": balance,
 			})
 		}
 		_, err := service.Credit(r.Context(), wallet.MutationRequest{
 			UserID:         userID,
-			AmountCents:    grant,
+			AmountPoints:   grant,
 			IdempotencyKey: "starter_grant:" + userID,
 			Reason:         "starter point grant",
 		})
@@ -449,10 +442,10 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		}
 		balance := service.Balance(r.Context(), userID)
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"enabled":            true,
-			"unit":               "PTS",
-			"grantPointsCents":   grant,
-			"balancePointsCents": balance,
+			"enabled":       true,
+			"unit":          "PTS",
+			"grantPoints":   grant,
+			"balancePoints": balance,
 		})
 	}))
 
@@ -470,16 +463,16 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		now := time.Now().UTC()
 		claimDate := now.Format("2006-01-02")
 		nextClaimAt := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, time.UTC).Format(time.RFC3339)
-		claim := dailyClaimCents()
+		claim := dailyClaimPoints()
 		if claim <= 0 {
 			balance := service.Balance(r.Context(), userID)
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-				"enabled":            false,
-				"unit":               "PTS",
-				"claimedForDate":     claimDate,
-				"nextClaimAt":        nextClaimAt,
-				"balancePointsCents": balance,
-				"rewardLimit":        rewardLimitStatus(r.Context(), service, userID, now),
+				"enabled":        false,
+				"unit":           "PTS",
+				"claimedForDate": claimDate,
+				"nextClaimAt":    nextClaimAt,
+				"balancePoints":  balance,
+				"rewardLimit":    rewardLimitStatus(r.Context(), service, userID, now),
 			})
 		}
 		rewardKey := "daily_claim:" + userID + ":" + claimDate
@@ -492,7 +485,7 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		}
 		_, err := service.Credit(r.Context(), wallet.MutationRequest{
 			UserID:         userID,
-			AmountCents:    claim,
+			AmountPoints:   claim,
 			IdempotencyKey: rewardKey,
 			Reason:         "daily_claim",
 		})
@@ -501,13 +494,13 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		}
 		balance := service.Balance(r.Context(), userID)
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"enabled":            true,
-			"unit":               "PTS",
-			"claimPointsCents":   claim,
-			"claimedForDate":     claimDate,
-			"nextClaimAt":        nextClaimAt,
-			"balancePointsCents": balance,
-			"rewardLimit":        rewardLimitStatus(r.Context(), service, userID, now),
+			"enabled":        true,
+			"unit":           "PTS",
+			"claimPoints":    claim,
+			"claimedForDate": claimDate,
+			"nextClaimAt":    nextClaimAt,
+			"balancePoints":  balance,
+			"rewardLimit":    rewardLimitStatus(r.Context(), service, userID, now),
 		})
 	}))
 }
@@ -522,22 +515,22 @@ func walletLedgerEntryPayloads(entries []wallet.LedgerEntry) []map[string]any {
 
 func walletLedgerEntryPayload(entry wallet.LedgerEntry) map[string]any {
 	return map[string]any{
-		"entryId":            entry.EntryID,
-		"userId":             entry.UserID,
-		"type":               entry.Type,
-		"unit":               "PTS",
-		"amountPointsCents":  entry.AmountCents,
-		"balancePointsCents": entry.BalanceCents,
-		"idempotencyKey":     entry.IdempotencyKey,
-		"reason":             redactLaunchProhibitedUserText(entry.Reason),
-		"transactionTime":    entry.TransactionTime,
+		"entryId":         entry.EntryID,
+		"userId":          entry.UserID,
+		"type":            entry.Type,
+		"unit":            "PTS",
+		"amountPoints":    entry.AmountPoints,
+		"balancePoints":   entry.BalancePoints,
+		"idempotencyKey":  entry.IdempotencyKey,
+		"reason":          redactLaunchProhibitedUserText(entry.Reason),
+		"transactionTime": entry.TransactionTime,
 	}
 }
 
-// starterGrantCents reads the gameplay-point starter-grant amount from the
+// starterGrantPoints reads the gameplay-point starter-grant amount from the
 // environment. 0 (the default, and any non-numeric/negative value) disables the
 // faucet — which is the required posture for a real-value deployment.
-func starterGrantCents() int64 {
+func starterGrantPoints() int64 {
 	raw := strings.TrimSpace(os.Getenv("STARTER_GRANT_CENTS"))
 	if raw == "" {
 		return 0
@@ -549,7 +542,7 @@ func starterGrantCents() int64 {
 	return n
 }
 
-func dailyClaimCents() int64 {
+func dailyClaimPoints() int64 {
 	raw := strings.TrimSpace(os.Getenv("DAILY_CLAIM_CENTS"))
 	if raw == "" {
 		return 0
@@ -584,18 +577,17 @@ func pointPackDefinitions(ctx context.Context, service *wallet.Service, userID s
 	ledger := service.Ledger(ctx, userID, 200)
 	packs := make([]pointPackDefinition, 0, len(defs))
 	for _, def := range defs {
-		amount := pointPackAmountCents(def.env)
+		amount := pointPackAmountPoints(def.env)
 		claimed := ledgerHasIdempotencyKey(ledger, "point_pack:"+userID+":"+def.id)
 		packs = append(packs, pointPackDefinition{
-			ID:                def.id,
-			Name:              def.name,
-			Description:       def.description,
-			Unit:              "PTS",
-			AmountPointsCents: amount,
-			AmountCents:       amount,
-			Enabled:           amount > 0,
-			ClaimableOnce:     true,
-			Claimed:           claimed,
+			ID:            def.id,
+			Name:          def.name,
+			Description:   def.description,
+			Unit:          "PTS",
+			AmountPoints:  amount,
+			Enabled:       amount > 0,
+			ClaimableOnce: true,
+			Claimed:       claimed,
 		})
 	}
 	return packs
@@ -611,7 +603,7 @@ func pointPackByID(ctx context.Context, service *wallet.Service, userID string, 
 	return pointPackDefinition{}, false
 }
 
-func pointPackAmountCents(envKey string) int64 {
+func pointPackAmountPoints(envKey string) int64 {
 	raw := strings.TrimSpace(os.Getenv(envKey))
 	if raw == "" {
 		return 0
@@ -628,14 +620,14 @@ func missionDefinitions(ctx context.Context, service *wallet.Service, leaderboar
 	ledger := service.Ledger(ctx, userID, 500)
 	dailyClaimed := ledgerHasIdempotencyKey(ledger, "daily_claim:"+userID+":"+date)
 	missionClaimed := ledgerHasIdempotencyKey(ledger, missionRewardKey(userID, "daily_check_in", now))
-	reward := missionRewardCents("MISSION_DAILY_CHECK_IN_REWARD_CENTS")
+	reward := missionRewardPoints("MISSION_DAILY_CHECK_IN_REWARD_CENTS")
 	progress := 0
 	if dailyClaimed {
 		progress = 1
 	}
 	firstPredictionComplete := ledgerHasPredictionOrderEvidence(ledger)
 	firstPredictionClaimed := ledgerHasIdempotencyKey(ledger, missionRewardKey(userID, "first_prediction_order", now))
-	firstPredictionReward := missionRewardCents("MISSION_FIRST_PREDICTION_REWARD_CENTS")
+	firstPredictionReward := missionRewardPoints("MISSION_FIRST_PREDICTION_REWARD_CENTS")
 	firstPredictionProgress := 0
 	if firstPredictionComplete {
 		firstPredictionProgress = 1
@@ -643,28 +635,28 @@ func missionDefinitions(ctx context.Context, service *wallet.Service, leaderboar
 	threePredictionCount := ledgerPredictionOrderEvidenceCount(ledger)
 	threePredictionComplete := threePredictionCount >= 3
 	threePredictionClaimed := ledgerHasIdempotencyKey(ledger, missionRewardKey(userID, "three_predictions", now))
-	threePredictionReward := missionRewardCents("MISSION_THREE_PREDICTIONS_REWARD_CENTS")
+	threePredictionReward := missionRewardPoints("MISSION_THREE_PREDICTIONS_REWARD_CENTS")
 	threePredictionProgress := threePredictionCount
 	if threePredictionProgress > 3 {
 		threePredictionProgress = 3
 	}
 	fivePredictionComplete := threePredictionCount >= 5
 	fivePredictionClaimed := ledgerHasIdempotencyKey(ledger, missionRewardKey(userID, "five_predictions", now))
-	fivePredictionReward := missionRewardCents("MISSION_FIVE_PREDICTIONS_REWARD_CENTS")
+	fivePredictionReward := missionRewardPoints("MISSION_FIVE_PREDICTIONS_REWARD_CENTS")
 	fivePredictionProgress := threePredictionCount
 	if fivePredictionProgress > 5 {
 		fivePredictionProgress = 5
 	}
 	tenPredictionComplete := threePredictionCount >= 10
 	tenPredictionClaimed := ledgerHasIdempotencyKey(ledger, missionRewardKey(userID, "ten_predictions", now))
-	tenPredictionReward := missionRewardCents("MISSION_TEN_PREDICTIONS_REWARD_CENTS")
+	tenPredictionReward := missionRewardPoints("MISSION_TEN_PREDICTIONS_REWARD_CENTS")
 	tenPredictionProgress := threePredictionCount
 	if tenPredictionProgress > 10 {
 		tenPredictionProgress = 10
 	}
 	settledResultComplete := ledgerHasSettlementPayoutEvidence(ledger)
 	settledResultClaimed := ledgerHasIdempotencyKey(ledger, missionRewardKey(userID, "settled_result", now))
-	settledResultReward := missionRewardCents("MISSION_SETTLED_RESULT_REWARD_CENTS")
+	settledResultReward := missionRewardPoints("MISSION_SETTLED_RESULT_REWARD_CENTS")
 	settledResultProgress := 0
 	if settledResultComplete {
 		settledResultProgress = 1
@@ -672,21 +664,21 @@ func missionDefinitions(ctx context.Context, service *wallet.Service, leaderboar
 	threeSettledResultCount := ledgerSettlementPayoutEvidenceCount(ledger)
 	threeSettledResultComplete := threeSettledResultCount >= 3
 	threeSettledResultClaimed := ledgerHasIdempotencyKey(ledger, missionRewardKey(userID, "three_settled_results", now))
-	threeSettledResultReward := missionRewardCents("MISSION_THREE_SETTLED_RESULTS_REWARD_CENTS")
+	threeSettledResultReward := missionRewardPoints("MISSION_THREE_SETTLED_RESULTS_REWARD_CENTS")
 	threeSettledResultProgress := threeSettledResultCount
 	if threeSettledResultProgress > 3 {
 		threeSettledResultProgress = 3
 	}
 	fiveSettledResultComplete := threeSettledResultCount >= 5
 	fiveSettledResultClaimed := ledgerHasIdempotencyKey(ledger, missionRewardKey(userID, "five_settled_results", now))
-	fiveSettledResultReward := missionRewardCents("MISSION_FIVE_SETTLED_RESULTS_REWARD_CENTS")
+	fiveSettledResultReward := missionRewardPoints("MISSION_FIVE_SETTLED_RESULTS_REWARD_CENTS")
 	fiveSettledResultProgress := threeSettledResultCount
 	if fiveSettledResultProgress > 5 {
 		fiveSettledResultProgress = 5
 	}
 	tenSettledResultComplete := threeSettledResultCount >= 10
 	tenSettledResultClaimed := ledgerHasIdempotencyKey(ledger, missionRewardKey(userID, "ten_settled_results", now))
-	tenSettledResultReward := missionRewardCents("MISSION_TEN_SETTLED_RESULTS_REWARD_CENTS")
+	tenSettledResultReward := missionRewardPoints("MISSION_TEN_SETTLED_RESULTS_REWARD_CENTS")
 	tenSettledResultProgress := threeSettledResultCount
 	if tenSettledResultProgress > 10 {
 		tenSettledResultProgress = 10
@@ -694,28 +686,28 @@ func missionDefinitions(ctx context.Context, service *wallet.Service, leaderboar
 	weeklyCheckInStreak := dailyClaimStreakDays(ledger, userID, now)
 	weeklyCheckInComplete := weeklyCheckInStreak >= 7
 	weeklyCheckInClaimed := ledgerHasIdempotencyKey(ledger, missionRewardKey(userID, "weekly_check_in", now))
-	weeklyCheckInReward := missionRewardCents("MISSION_WEEKLY_CHECK_IN_REWARD_CENTS")
+	weeklyCheckInReward := missionRewardPoints("MISSION_WEEKLY_CHECK_IN_REWARD_CENTS")
 	weeklyCheckInProgress := weeklyCheckInStreak
 	if weeklyCheckInProgress > 7 {
 		weeklyCheckInProgress = 7
 	}
 	monthlyCheckInComplete := weeklyCheckInStreak >= 30
 	monthlyCheckInClaimed := ledgerHasIdempotencyKey(ledger, missionRewardKey(userID, "monthly_check_in", now))
-	monthlyCheckInReward := missionRewardCents("MISSION_MONTHLY_CHECK_IN_REWARD_CENTS")
+	monthlyCheckInReward := missionRewardPoints("MISSION_MONTHLY_CHECK_IN_REWARD_CENTS")
 	monthlyCheckInProgress := weeklyCheckInStreak
 	if monthlyCheckInProgress > 30 {
 		monthlyCheckInProgress = 30
 	}
 	seasonalCheckInComplete := weeklyCheckInStreak >= 60
 	seasonalCheckInClaimed := ledgerHasIdempotencyKey(ledger, missionRewardKey(userID, "seasonal_check_in", now))
-	seasonalCheckInReward := missionRewardCents("MISSION_SEASONAL_CHECK_IN_REWARD_CENTS")
+	seasonalCheckInReward := missionRewardPoints("MISSION_SEASONAL_CHECK_IN_REWARD_CENTS")
 	seasonalCheckInProgress := weeklyCheckInStreak
 	if seasonalCheckInProgress > 60 {
 		seasonalCheckInProgress = 60
 	}
 	quarterlyCheckInComplete := weeklyCheckInStreak >= 90
 	quarterlyCheckInClaimed := ledgerHasIdempotencyKey(ledger, missionRewardKey(userID, "quarterly_check_in", now))
-	quarterlyCheckInReward := missionRewardCents("MISSION_QUARTERLY_CHECK_IN_REWARD_CENTS")
+	quarterlyCheckInReward := missionRewardPoints("MISSION_QUARTERLY_CHECK_IN_REWARD_CENTS")
 	quarterlyCheckInProgress := weeklyCheckInStreak
 	if quarterlyCheckInProgress > 90 {
 		quarterlyCheckInProgress = 90
@@ -723,193 +715,179 @@ func missionDefinitions(ctx context.Context, service *wallet.Service, leaderboar
 	leaderboardStandingCount := leaderboardEvidenceCount(ctx, leaderboardService, userID)
 	leaderboardDebutComplete := leaderboardStandingCount > 0
 	leaderboardDebutClaimed := ledgerHasIdempotencyKey(ledger, missionRewardKey(userID, "leaderboard_debut", now))
-	leaderboardDebutReward := missionRewardCents("MISSION_LEADERBOARD_DEBUT_REWARD_CENTS")
+	leaderboardDebutReward := missionRewardPoints("MISSION_LEADERBOARD_DEBUT_REWARD_CENTS")
 	leaderboardDebutProgress := leaderboardStandingCount
 	if leaderboardDebutProgress > 1 {
 		leaderboardDebutProgress = 1
 	}
 	return []missionDefinition{
 		{
-			ID:                "daily_check_in",
-			Name:              "Daily check-in",
-			Description:       "Claim today's gameplay points to complete this mission.",
-			Unit:              "PTS",
-			RewardPointsCents: reward,
-			RewardCents:       reward,
-			Progress:          progress,
-			Target:            1,
-			Completed:         dailyClaimed,
-			Claimed:           missionClaimed,
-			Enabled:           reward > 0,
+			ID:           "daily_check_in",
+			Name:         "Daily check-in",
+			Description:  "Claim today's gameplay points to complete this mission.",
+			Unit:         "PTS",
+			RewardPoints: reward,
+			Progress:     progress,
+			Target:       1,
+			Completed:    dailyClaimed,
+			Claimed:      missionClaimed,
+			Enabled:      reward > 0,
 		},
 		{
-			ID:                "first_prediction_order",
-			Name:              "First prediction",
-			Description:       "Place a prediction order to complete this one-time mission.",
-			Unit:              "PTS",
-			RewardPointsCents: firstPredictionReward,
-			RewardCents:       firstPredictionReward,
-			Progress:          firstPredictionProgress,
-			Target:            1,
-			Completed:         firstPredictionComplete,
-			Claimed:           firstPredictionClaimed,
-			Enabled:           firstPredictionReward > 0,
+			ID:           "first_prediction_order",
+			Name:         "First prediction",
+			Description:  "Place a prediction order to complete this one-time mission.",
+			Unit:         "PTS",
+			RewardPoints: firstPredictionReward,
+			Progress:     firstPredictionProgress,
+			Target:       1,
+			Completed:    firstPredictionComplete,
+			Claimed:      firstPredictionClaimed,
+			Enabled:      firstPredictionReward > 0,
 		},
 		{
-			ID:                "three_predictions",
-			Name:              "Three predictions",
-			Description:       "Place three prediction orders to complete this one-time mission.",
-			Unit:              "PTS",
-			RewardPointsCents: threePredictionReward,
-			RewardCents:       threePredictionReward,
-			Progress:          threePredictionProgress,
-			Target:            3,
-			Completed:         threePredictionComplete,
-			Claimed:           threePredictionClaimed,
-			Enabled:           threePredictionReward > 0,
+			ID:           "three_predictions",
+			Name:         "Three predictions",
+			Description:  "Place three prediction orders to complete this one-time mission.",
+			Unit:         "PTS",
+			RewardPoints: threePredictionReward,
+			Progress:     threePredictionProgress,
+			Target:       3,
+			Completed:    threePredictionComplete,
+			Claimed:      threePredictionClaimed,
+			Enabled:      threePredictionReward > 0,
 		},
 		{
-			ID:                "five_predictions",
-			Name:              "Five predictions",
-			Description:       "Place five prediction orders to complete this one-time mission.",
-			Unit:              "PTS",
-			RewardPointsCents: fivePredictionReward,
-			RewardCents:       fivePredictionReward,
-			Progress:          fivePredictionProgress,
-			Target:            5,
-			Completed:         fivePredictionComplete,
-			Claimed:           fivePredictionClaimed,
-			Enabled:           fivePredictionReward > 0,
+			ID:           "five_predictions",
+			Name:         "Five predictions",
+			Description:  "Place five prediction orders to complete this one-time mission.",
+			Unit:         "PTS",
+			RewardPoints: fivePredictionReward,
+			Progress:     fivePredictionProgress,
+			Target:       5,
+			Completed:    fivePredictionComplete,
+			Claimed:      fivePredictionClaimed,
+			Enabled:      fivePredictionReward > 0,
 		},
 		{
-			ID:                "ten_predictions",
-			Name:              "Ten predictions",
-			Description:       "Place ten prediction orders to complete this one-time mission.",
-			Unit:              "PTS",
-			RewardPointsCents: tenPredictionReward,
-			RewardCents:       tenPredictionReward,
-			Progress:          tenPredictionProgress,
-			Target:            10,
-			Completed:         tenPredictionComplete,
-			Claimed:           tenPredictionClaimed,
-			Enabled:           tenPredictionReward > 0,
+			ID:           "ten_predictions",
+			Name:         "Ten predictions",
+			Description:  "Place ten prediction orders to complete this one-time mission.",
+			Unit:         "PTS",
+			RewardPoints: tenPredictionReward,
+			Progress:     tenPredictionProgress,
+			Target:       10,
+			Completed:    tenPredictionComplete,
+			Claimed:      tenPredictionClaimed,
+			Enabled:      tenPredictionReward > 0,
 		},
 		{
-			ID:                "settled_result",
-			Name:              "Settled result",
-			Description:       "Receive a prediction settlement result to complete this one-time mission.",
-			Unit:              "PTS",
-			RewardPointsCents: settledResultReward,
-			RewardCents:       settledResultReward,
-			Progress:          settledResultProgress,
-			Target:            1,
-			Completed:         settledResultComplete,
-			Claimed:           settledResultClaimed,
-			Enabled:           settledResultReward > 0,
+			ID:           "settled_result",
+			Name:         "Settled result",
+			Description:  "Receive a prediction settlement result to complete this one-time mission.",
+			Unit:         "PTS",
+			RewardPoints: settledResultReward,
+			Progress:     settledResultProgress,
+			Target:       1,
+			Completed:    settledResultComplete,
+			Claimed:      settledResultClaimed,
+			Enabled:      settledResultReward > 0,
 		},
 		{
-			ID:                "three_settled_results",
-			Name:              "Three settled results",
-			Description:       "Receive three prediction settlement results to complete this one-time mission.",
-			Unit:              "PTS",
-			RewardPointsCents: threeSettledResultReward,
-			RewardCents:       threeSettledResultReward,
-			Progress:          threeSettledResultProgress,
-			Target:            3,
-			Completed:         threeSettledResultComplete,
-			Claimed:           threeSettledResultClaimed,
-			Enabled:           threeSettledResultReward > 0,
+			ID:           "three_settled_results",
+			Name:         "Three settled results",
+			Description:  "Receive three prediction settlement results to complete this one-time mission.",
+			Unit:         "PTS",
+			RewardPoints: threeSettledResultReward,
+			Progress:     threeSettledResultProgress,
+			Target:       3,
+			Completed:    threeSettledResultComplete,
+			Claimed:      threeSettledResultClaimed,
+			Enabled:      threeSettledResultReward > 0,
 		},
 		{
-			ID:                "five_settled_results",
-			Name:              "Five settled results",
-			Description:       "Receive five prediction settlement results to complete this one-time mission.",
-			Unit:              "PTS",
-			RewardPointsCents: fiveSettledResultReward,
-			RewardCents:       fiveSettledResultReward,
-			Progress:          fiveSettledResultProgress,
-			Target:            5,
-			Completed:         fiveSettledResultComplete,
-			Claimed:           fiveSettledResultClaimed,
-			Enabled:           fiveSettledResultReward > 0,
+			ID:           "five_settled_results",
+			Name:         "Five settled results",
+			Description:  "Receive five prediction settlement results to complete this one-time mission.",
+			Unit:         "PTS",
+			RewardPoints: fiveSettledResultReward,
+			Progress:     fiveSettledResultProgress,
+			Target:       5,
+			Completed:    fiveSettledResultComplete,
+			Claimed:      fiveSettledResultClaimed,
+			Enabled:      fiveSettledResultReward > 0,
 		},
 		{
-			ID:                "ten_settled_results",
-			Name:              "Ten settled results",
-			Description:       "Receive ten prediction settlement results to complete this one-time mission.",
-			Unit:              "PTS",
-			RewardPointsCents: tenSettledResultReward,
-			RewardCents:       tenSettledResultReward,
-			Progress:          tenSettledResultProgress,
-			Target:            10,
-			Completed:         tenSettledResultComplete,
-			Claimed:           tenSettledResultClaimed,
-			Enabled:           tenSettledResultReward > 0,
+			ID:           "ten_settled_results",
+			Name:         "Ten settled results",
+			Description:  "Receive ten prediction settlement results to complete this one-time mission.",
+			Unit:         "PTS",
+			RewardPoints: tenSettledResultReward,
+			Progress:     tenSettledResultProgress,
+			Target:       10,
+			Completed:    tenSettledResultComplete,
+			Claimed:      tenSettledResultClaimed,
+			Enabled:      tenSettledResultReward > 0,
 		},
 		{
-			ID:                "weekly_check_in",
-			Name:              "Weekly check-in",
-			Description:       "Claim gameplay points seven days in a row to complete this one-time mission.",
-			Unit:              "PTS",
-			RewardPointsCents: weeklyCheckInReward,
-			RewardCents:       weeklyCheckInReward,
-			Progress:          weeklyCheckInProgress,
-			Target:            7,
-			Completed:         weeklyCheckInComplete,
-			Claimed:           weeklyCheckInClaimed,
-			Enabled:           weeklyCheckInReward > 0,
+			ID:           "weekly_check_in",
+			Name:         "Weekly check-in",
+			Description:  "Claim gameplay points seven days in a row to complete this one-time mission.",
+			Unit:         "PTS",
+			RewardPoints: weeklyCheckInReward,
+			Progress:     weeklyCheckInProgress,
+			Target:       7,
+			Completed:    weeklyCheckInComplete,
+			Claimed:      weeklyCheckInClaimed,
+			Enabled:      weeklyCheckInReward > 0,
 		},
 		{
-			ID:                "monthly_check_in",
-			Name:              "Monthly check-in",
-			Description:       "Claim gameplay points thirty days in a row to complete this one-time mission.",
-			Unit:              "PTS",
-			RewardPointsCents: monthlyCheckInReward,
-			RewardCents:       monthlyCheckInReward,
-			Progress:          monthlyCheckInProgress,
-			Target:            30,
-			Completed:         monthlyCheckInComplete,
-			Claimed:           monthlyCheckInClaimed,
-			Enabled:           monthlyCheckInReward > 0,
+			ID:           "monthly_check_in",
+			Name:         "Monthly check-in",
+			Description:  "Claim gameplay points thirty days in a row to complete this one-time mission.",
+			Unit:         "PTS",
+			RewardPoints: monthlyCheckInReward,
+			Progress:     monthlyCheckInProgress,
+			Target:       30,
+			Completed:    monthlyCheckInComplete,
+			Claimed:      monthlyCheckInClaimed,
+			Enabled:      monthlyCheckInReward > 0,
 		},
 		{
-			ID:                "seasonal_check_in",
-			Name:              "Seasonal check-in",
-			Description:       "Claim gameplay points sixty days in a row to complete this one-time mission.",
-			Unit:              "PTS",
-			RewardPointsCents: seasonalCheckInReward,
-			RewardCents:       seasonalCheckInReward,
-			Progress:          seasonalCheckInProgress,
-			Target:            60,
-			Completed:         seasonalCheckInComplete,
-			Claimed:           seasonalCheckInClaimed,
-			Enabled:           seasonalCheckInReward > 0,
+			ID:           "seasonal_check_in",
+			Name:         "Seasonal check-in",
+			Description:  "Claim gameplay points sixty days in a row to complete this one-time mission.",
+			Unit:         "PTS",
+			RewardPoints: seasonalCheckInReward,
+			Progress:     seasonalCheckInProgress,
+			Target:       60,
+			Completed:    seasonalCheckInComplete,
+			Claimed:      seasonalCheckInClaimed,
+			Enabled:      seasonalCheckInReward > 0,
 		},
 		{
-			ID:                "quarterly_check_in",
-			Name:              "Quarterly check-in",
-			Description:       "Claim gameplay points ninety days in a row to complete this one-time mission.",
-			Unit:              "PTS",
-			RewardPointsCents: quarterlyCheckInReward,
-			RewardCents:       quarterlyCheckInReward,
-			Progress:          quarterlyCheckInProgress,
-			Target:            90,
-			Completed:         quarterlyCheckInComplete,
-			Claimed:           quarterlyCheckInClaimed,
-			Enabled:           quarterlyCheckInReward > 0,
+			ID:           "quarterly_check_in",
+			Name:         "Quarterly check-in",
+			Description:  "Claim gameplay points ninety days in a row to complete this one-time mission.",
+			Unit:         "PTS",
+			RewardPoints: quarterlyCheckInReward,
+			Progress:     quarterlyCheckInProgress,
+			Target:       90,
+			Completed:    quarterlyCheckInComplete,
+			Claimed:      quarterlyCheckInClaimed,
+			Enabled:      quarterlyCheckInReward > 0,
 		},
 		{
-			ID:                "leaderboard_debut",
-			Name:              "Leaderboard debut",
-			Description:       "Appear on a prediction leaderboard to complete this one-time mission.",
-			Unit:              "PTS",
-			RewardPointsCents: leaderboardDebutReward,
-			RewardCents:       leaderboardDebutReward,
-			Progress:          leaderboardDebutProgress,
-			Target:            1,
-			Completed:         leaderboardDebutComplete,
-			Claimed:           leaderboardDebutClaimed,
-			Enabled:           leaderboardDebutReward > 0,
+			ID:           "leaderboard_debut",
+			Name:         "Leaderboard debut",
+			Description:  "Appear on a prediction leaderboard to complete this one-time mission.",
+			Unit:         "PTS",
+			RewardPoints: leaderboardDebutReward,
+			Progress:     leaderboardDebutProgress,
+			Target:       1,
+			Completed:    leaderboardDebutComplete,
+			Claimed:      leaderboardDebutClaimed,
+			Enabled:      leaderboardDebutReward > 0,
 		},
 	}
 }
@@ -951,7 +929,7 @@ func ledgerHasIdempotencyKey(entries []wallet.LedgerEntry, key string) bool {
 	return false
 }
 
-func missionRewardCents(envKey string) int64 {
+func missionRewardPoints(envKey string) int64 {
 	raw := strings.TrimSpace(os.Getenv(envKey))
 	if raw == "" {
 		return 0
@@ -966,90 +944,84 @@ func missionRewardCents(envKey string) int64 {
 func streakDefinitions(ctx context.Context, service *wallet.Service, userID string, now time.Time) []streakDefinition {
 	ledger := service.Ledger(ctx, userID, 500)
 	currentStreak := dailyClaimStreakDays(ledger, userID, now)
-	threeDayReward := streakRewardCents("STREAK_DAILY_3_REWARD_CENTS")
-	weeklyReward := streakRewardCents("STREAK_DAILY_7_REWARD_CENTS")
-	fortnightReward := streakRewardCents("STREAK_DAILY_14_REWARD_CENTS")
-	monthlyReward := streakRewardCents("STREAK_DAILY_30_REWARD_CENTS")
-	doubleMonthlyReward := streakRewardCents("STREAK_DAILY_60_REWARD_CENTS")
-	quarterlyReward := streakRewardCents("STREAK_DAILY_90_REWARD_CENTS")
+	threeDayReward := streakRewardPoints("STREAK_DAILY_3_REWARD_CENTS")
+	weeklyReward := streakRewardPoints("STREAK_DAILY_7_REWARD_CENTS")
+	fortnightReward := streakRewardPoints("STREAK_DAILY_14_REWARD_CENTS")
+	monthlyReward := streakRewardPoints("STREAK_DAILY_30_REWARD_CENTS")
+	doubleMonthlyReward := streakRewardPoints("STREAK_DAILY_60_REWARD_CENTS")
+	quarterlyReward := streakRewardPoints("STREAK_DAILY_90_REWARD_CENTS")
 	return []streakDefinition{
 		{
-			ID:                "daily_3",
-			Name:              "3-day check-in streak",
-			Description:       "Claim gameplay points three days in a row.",
-			Unit:              "PTS",
-			RewardPointsCents: threeDayReward,
-			RewardCents:       threeDayReward,
-			CurrentStreak:     currentStreak,
-			Target:            3,
-			Completed:         currentStreak >= 3,
-			Claimed:           ledgerHasIdempotencyKey(ledger, streakRewardKey(userID, "daily_3")),
-			Enabled:           threeDayReward > 0,
+			ID:            "daily_3",
+			Name:          "3-day check-in streak",
+			Description:   "Claim gameplay points three days in a row.",
+			Unit:          "PTS",
+			RewardPoints:  threeDayReward,
+			CurrentStreak: currentStreak,
+			Target:        3,
+			Completed:     currentStreak >= 3,
+			Claimed:       ledgerHasIdempotencyKey(ledger, streakRewardKey(userID, "daily_3")),
+			Enabled:       threeDayReward > 0,
 		},
 		{
-			ID:                "daily_7",
-			Name:              "7-day check-in streak",
-			Description:       "Claim gameplay points seven days in a row.",
-			Unit:              "PTS",
-			RewardPointsCents: weeklyReward,
-			RewardCents:       weeklyReward,
-			CurrentStreak:     currentStreak,
-			Target:            7,
-			Completed:         currentStreak >= 7,
-			Claimed:           ledgerHasIdempotencyKey(ledger, streakRewardKey(userID, "daily_7")),
-			Enabled:           weeklyReward > 0,
+			ID:            "daily_7",
+			Name:          "7-day check-in streak",
+			Description:   "Claim gameplay points seven days in a row.",
+			Unit:          "PTS",
+			RewardPoints:  weeklyReward,
+			CurrentStreak: currentStreak,
+			Target:        7,
+			Completed:     currentStreak >= 7,
+			Claimed:       ledgerHasIdempotencyKey(ledger, streakRewardKey(userID, "daily_7")),
+			Enabled:       weeklyReward > 0,
 		},
 		{
-			ID:                "daily_14",
-			Name:              "14-day check-in streak",
-			Description:       "Claim gameplay points fourteen days in a row.",
-			Unit:              "PTS",
-			RewardPointsCents: fortnightReward,
-			RewardCents:       fortnightReward,
-			CurrentStreak:     currentStreak,
-			Target:            14,
-			Completed:         currentStreak >= 14,
-			Claimed:           ledgerHasIdempotencyKey(ledger, streakRewardKey(userID, "daily_14")),
-			Enabled:           fortnightReward > 0,
+			ID:            "daily_14",
+			Name:          "14-day check-in streak",
+			Description:   "Claim gameplay points fourteen days in a row.",
+			Unit:          "PTS",
+			RewardPoints:  fortnightReward,
+			CurrentStreak: currentStreak,
+			Target:        14,
+			Completed:     currentStreak >= 14,
+			Claimed:       ledgerHasIdempotencyKey(ledger, streakRewardKey(userID, "daily_14")),
+			Enabled:       fortnightReward > 0,
 		},
 		{
-			ID:                "daily_30",
-			Name:              "30-day check-in streak",
-			Description:       "Claim gameplay points thirty days in a row.",
-			Unit:              "PTS",
-			RewardPointsCents: monthlyReward,
-			RewardCents:       monthlyReward,
-			CurrentStreak:     currentStreak,
-			Target:            30,
-			Completed:         currentStreak >= 30,
-			Claimed:           ledgerHasIdempotencyKey(ledger, streakRewardKey(userID, "daily_30")),
-			Enabled:           monthlyReward > 0,
+			ID:            "daily_30",
+			Name:          "30-day check-in streak",
+			Description:   "Claim gameplay points thirty days in a row.",
+			Unit:          "PTS",
+			RewardPoints:  monthlyReward,
+			CurrentStreak: currentStreak,
+			Target:        30,
+			Completed:     currentStreak >= 30,
+			Claimed:       ledgerHasIdempotencyKey(ledger, streakRewardKey(userID, "daily_30")),
+			Enabled:       monthlyReward > 0,
 		},
 		{
-			ID:                "daily_60",
-			Name:              "60-day check-in streak",
-			Description:       "Claim gameplay points sixty days in a row.",
-			Unit:              "PTS",
-			RewardPointsCents: doubleMonthlyReward,
-			RewardCents:       doubleMonthlyReward,
-			CurrentStreak:     currentStreak,
-			Target:            60,
-			Completed:         currentStreak >= 60,
-			Claimed:           ledgerHasIdempotencyKey(ledger, streakRewardKey(userID, "daily_60")),
-			Enabled:           doubleMonthlyReward > 0,
+			ID:            "daily_60",
+			Name:          "60-day check-in streak",
+			Description:   "Claim gameplay points sixty days in a row.",
+			Unit:          "PTS",
+			RewardPoints:  doubleMonthlyReward,
+			CurrentStreak: currentStreak,
+			Target:        60,
+			Completed:     currentStreak >= 60,
+			Claimed:       ledgerHasIdempotencyKey(ledger, streakRewardKey(userID, "daily_60")),
+			Enabled:       doubleMonthlyReward > 0,
 		},
 		{
-			ID:                "daily_90",
-			Name:              "90-day check-in streak",
-			Description:       "Claim gameplay points ninety days in a row.",
-			Unit:              "PTS",
-			RewardPointsCents: quarterlyReward,
-			RewardCents:       quarterlyReward,
-			CurrentStreak:     currentStreak,
-			Target:            90,
-			Completed:         currentStreak >= 90,
-			Claimed:           ledgerHasIdempotencyKey(ledger, streakRewardKey(userID, "daily_90")),
-			Enabled:           quarterlyReward > 0,
+			ID:            "daily_90",
+			Name:          "90-day check-in streak",
+			Description:   "Claim gameplay points ninety days in a row.",
+			Unit:          "PTS",
+			RewardPoints:  quarterlyReward,
+			CurrentStreak: currentStreak,
+			Target:        90,
+			Completed:     currentStreak >= 90,
+			Claimed:       ledgerHasIdempotencyKey(ledger, streakRewardKey(userID, "daily_90")),
+			Enabled:       quarterlyReward > 0,
 		},
 	}
 }
@@ -1089,7 +1061,7 @@ func dailyClaimStreakDays(entries []wallet.LedgerEntry, userID string, now time.
 	}
 }
 
-func streakRewardCents(envKey string) int64 {
+func streakRewardPoints(envKey string) int64 {
 	raw := strings.TrimSpace(os.Getenv(envKey))
 	if raw == "" {
 		return 0
@@ -1327,16 +1299,16 @@ func ledgerSettlementPayoutEvidenceCount(entries []wallet.LedgerEntry) int {
 	return len(seen)
 }
 
-func checkRewardGrantLimit(ctx context.Context, service *wallet.Service, userID string, idempotencyKey string, amountCents int64, now time.Time) (rewardGrantLimitStatus, bool) {
+func checkRewardGrantLimit(ctx context.Context, service *wallet.Service, userID string, idempotencyKey string, amountPoints int64, now time.Time) (rewardGrantLimitStatus, bool) {
 	entries := service.Ledger(ctx, userID, 500)
 	status := rewardLimitStatusFromLedger(entries, now)
 	if ledgerHasIdempotencyKey(entries, idempotencyKey) {
 		return status, true
 	}
-	if !status.Enabled || amountCents <= 0 {
+	if !status.Enabled || amountPoints <= 0 {
 		return status, true
 	}
-	return status, amountCents <= status.RemainingCents
+	return status, amountPoints <= status.RemainingPoints
 }
 
 func rewardLimitStatus(ctx context.Context, service *wallet.Service, userID string, now time.Time) rewardGrantLimitStatus {
@@ -1344,7 +1316,7 @@ func rewardLimitStatus(ctx context.Context, service *wallet.Service, userID stri
 }
 
 func rewardLimitStatusFromLedger(entries []wallet.LedgerEntry, now time.Time) rewardGrantLimitStatus {
-	limit := rewardDailyGrantLimitCents()
+	limit := rewardDailyGrantLimitPoints()
 	windowDate := now.UTC().Format("2006-01-02")
 	nextReset := time.Date(now.UTC().Year(), now.UTC().Month(), now.UTC().Day()+1, 0, 0, 0, 0, time.UTC).Format(time.RFC3339)
 	granted := int64(0)
@@ -1355,27 +1327,24 @@ func rewardLimitStatusFromLedger(entries []wallet.LedgerEntry, now time.Time) re
 		if ledgerEntryDate(entry.TransactionTime) != windowDate {
 			continue
 		}
-		granted += entry.AmountCents
+		granted += entry.AmountPoints
 	}
 	remaining := int64(0)
 	if limit > granted {
 		remaining = limit - granted
 	}
 	return rewardGrantLimitStatus{
-		Enabled:              limit > 0,
-		Unit:                 "PTS",
-		LimitPointsCents:     limit,
-		GrantedPointsCents:   granted,
-		RemainingPointsCents: remaining,
-		LimitCents:           limit,
-		GrantedCents:         granted,
-		RemainingCents:       remaining,
-		WindowDate:           windowDate,
-		NextResetAt:          nextReset,
+		Enabled:         limit > 0,
+		Unit:            "PTS",
+		LimitPoints:     limit,
+		GrantedPoints:   granted,
+		RemainingPoints: remaining,
+		WindowDate:      windowDate,
+		NextResetAt:     nextReset,
 	}
 }
 
-func rewardDailyGrantLimitCents() int64 {
+func rewardDailyGrantLimitPoints() int64 {
 	raw := strings.TrimSpace(os.Getenv("REWARD_DAILY_GRANT_LIMIT_CENTS"))
 	if raw == "" {
 		return 0
@@ -1487,11 +1456,13 @@ func decodeWalletMutationRequest(r *stdhttp.Request) (walletMutationRequest, err
 	if err := json.NewDecoder(r.Body).Decode(&fields); err != nil {
 		return walletMutationRequest{}, httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
 	}
+	// Launch boundary: retired money-era keys rejected outright (banned
+	// literals, not live fields).
 	if _, ok := fields["amountCents"]; ok {
-		return walletMutationRequest{}, httpx.BadRequest("admin wallet mutations require amountPointsCents", map[string]any{"field": "amountPointsCents"})
+		return walletMutationRequest{}, httpx.BadRequest("admin wallet mutations require amountPoints", map[string]any{"field": "amountPoints"})
 	}
 	if _, ok := fields["amount_cents"]; ok {
-		return walletMutationRequest{}, httpx.BadRequest("admin wallet mutations require amountPointsCents", map[string]any{"field": "amountPointsCents"})
+		return walletMutationRequest{}, httpx.BadRequest("admin wallet mutations require amountPoints", map[string]any{"field": "amountPoints"})
 	}
 	raw, err := json.Marshal(fields)
 	if err != nil {
@@ -1504,8 +1475,8 @@ func decodeWalletMutationRequest(r *stdhttp.Request) (walletMutationRequest, err
 	if request.UserID == "" {
 		return walletMutationRequest{}, httpx.BadRequest("userId is required", map[string]any{"field": "userId"})
 	}
-	if request.AmountPointsCents <= 0 {
-		return walletMutationRequest{}, httpx.BadRequest("amountPointsCents must be greater than zero", map[string]any{"field": "amountPointsCents"})
+	if request.AmountPoints <= 0 {
+		return walletMutationRequest{}, httpx.BadRequest("amountPoints must be greater than zero", map[string]any{"field": "amountPoints"})
 	}
 	if request.IdempotencyKey == "" {
 		return walletMutationRequest{}, httpx.BadRequest("idempotencyKey is required", map[string]any{"field": "idempotencyKey"})
@@ -1514,7 +1485,6 @@ func decodeWalletMutationRequest(r *stdhttp.Request) (walletMutationRequest, err
 	if err := validateLaunchFacingReason("reason", request.Reason); err != nil {
 		return walletMutationRequest{}, err
 	}
-	request.AmountCents = request.AmountPointsCents
 	return request, nil
 }
 

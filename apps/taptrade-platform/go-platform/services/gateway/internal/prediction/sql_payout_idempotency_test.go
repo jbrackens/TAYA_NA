@@ -12,7 +12,7 @@ import (
 //     is a no-op (uq_payout_settlement_position + ON CONFLICT DO NOTHING),
 //     not a duplicate row and not an error.
 //   - closeSettledPositionWithExec: a second close does NOT double-count PnL
-//     (the `quantity > 0` guard), because realized_pnl_cents is accumulated.
+//     (the `quantity > 0` guard), because realized_pnl_points is accumulated.
 //
 // Without these, a resume pass that re-touched an already-paid position would
 // mint a duplicate payout and double its realized PnL.
@@ -38,7 +38,7 @@ func TestSettlementPayoutIdempotency(t *testing.T) {
 		MarketID:          marketID,
 		Result:            MarketResultYes,
 		AttestationSource: "manual",
-		TotalPayoutCents:  1000,
+		TotalPayoutPoints: 1000,
 		PositionsSettled:  1,
 	}
 	if err := repo.createSettlementWithExec(ctx, db, settlement); err != nil {
@@ -46,16 +46,16 @@ func TestSettlementPayoutIdempotency(t *testing.T) {
 	}
 
 	payout := &Payout{
-		SettlementID:    settlement.ID,
-		PositionID:      posID,
-		UserID:          userID,
-		MarketID:        marketID,
-		Side:            OrderSideYes,
-		Quantity:        10,
-		EntryPriceCents: 50,
-		ExitPriceCents:  100,
-		PnlCents:        500,
-		PayoutCents:     1000,
+		SettlementID:     settlement.ID,
+		PositionID:       posID,
+		UserID:           userID,
+		MarketID:         marketID,
+		Side:             OrderSideYes,
+		Quantity:         10,
+		EntryPricePoints: 50,
+		ExitPricePoints:  100,
+		PnlPoints:        500,
+		PayoutPoints:     1000,
 	}
 
 	// Insert twice — the second must be an idempotent no-op.
@@ -87,7 +87,7 @@ func TestSettlementPayoutIdempotency(t *testing.T) {
 	var qty int
 	var realizedPnl int64
 	if err := db.QueryRow(
-		`SELECT quantity, realized_pnl_cents FROM prediction_positions WHERE id=$1`, posID,
+		`SELECT quantity, realized_pnl_points FROM prediction_positions WHERE id=$1`, posID,
 	).Scan(&qty, &realizedPnl); err != nil {
 		t.Fatalf("read position: %v", err)
 	}
@@ -95,6 +95,6 @@ func TestSettlementPayoutIdempotency(t *testing.T) {
 		t.Fatalf("expected quantity 0 after close, got %d", qty)
 	}
 	if realizedPnl != 500 {
-		t.Fatalf("expected realized_pnl_cents == 500 (incremented once), got %d (double-counted?)", realizedPnl)
+		t.Fatalf("expected realized_pnl_points == 500 (incremented once), got %d (double-counted?)", realizedPnl)
 	}
 }

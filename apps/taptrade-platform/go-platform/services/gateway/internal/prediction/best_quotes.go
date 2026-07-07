@@ -6,8 +6,8 @@ import (
 	"fmt"
 )
 
-// RefreshMarketBestQuotes recomputes a market's best_yes_bid_cents,
-// best_yes_ask_cents, best_no_bid_cents, best_no_ask_cents columns from the
+// RefreshMarketBestQuotes recomputes a market's best_yes_bid_points,
+// best_yes_ask_points, best_no_bid_points, best_no_ask_points columns from the
 // current open-order partial indexes. Called after a successful match
 // commits, so subscribers see the new top-of-book on `market:<id>` without
 // re-aggregating the whole book client-side.
@@ -37,10 +37,10 @@ func (r *SQLRepository) RefreshMarketBestQuotes(ctx context.Context, marketID st
 	}
 	if _, err := r.db.ExecContext(ctx,
 		`UPDATE prediction_markets SET
-		   best_yes_bid_cents = $2,
-		   best_yes_ask_cents = $3,
-		   best_no_bid_cents  = $4,
-		   best_no_ask_cents  = $5,
+		   best_yes_bid_points = $2,
+		   best_yes_ask_points = $3,
+		   best_no_bid_points  = $4,
+		   best_no_ask_points  = $5,
 		   last_quote_at = NOW(),
 		   updated_at = NOW()
 		 WHERE id = $1`,
@@ -59,12 +59,12 @@ func (r *SQLRepository) bestPrice(ctx context.Context, marketID string, side Ord
 	if action == OrderActionSell {
 		direction = "ASC"
 	}
-	q := `SELECT price_cents
+	q := `SELECT price_points
 	      FROM prediction_orders
 	      WHERE market_id = $1 AND side = $2 AND action = $3
 	        AND status IN ('open','partial')
-	        AND price_cents IS NOT NULL
-	      ORDER BY price_cents ` + direction + `
+	        AND price_points IS NOT NULL
+	      ORDER BY price_points ` + direction + `
 	      LIMIT 1`
 	var price sql.NullInt64
 	err := r.db.QueryRowContext(ctx, q, marketID, string(side), string(action)).Scan(&price)

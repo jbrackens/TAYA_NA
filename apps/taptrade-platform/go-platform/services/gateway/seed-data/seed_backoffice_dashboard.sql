@@ -54,10 +54,10 @@ CREATE TEMP TABLE bo_seed_market_specs (
   ticker text NOT NULL,
   title text NOT NULL,
   description text NOT NULL,
-  yes_price_cents integer NOT NULL
+  yes_price_points integer NOT NULL
 ) ON COMMIT DROP;
 
-INSERT INTO bo_seed_market_specs (seq, category_slug, ticker, title, description, yes_price_cents) VALUES
+INSERT INTO bo_seed_market_specs (seq, category_slug, ticker, title, description, yes_price_points) VALUES
   (1, 'crypto', 'BO-BTC-100K-Q4', 'Will Bitcoin hit $100k by Q4?', 'Resolves Yes if a reputable USD spot index records Bitcoin at or above $100,000 before the end of Q4.', 46),
   (2, 'sports', 'BO-OKC-SAS-G4', 'OKC Thunder vs San Antonio Spurs Game 4', 'Resolves Yes if Oklahoma City wins Game 4 against San Antonio.', 57),
   (3, 'crypto', 'BO-POLY-VOL-1B', 'Will Polymarket volume exceed $1B this month?', 'Resolves Yes if Polymarket reported monthly trading volume exceeds one billion US dollars.', 44),
@@ -79,7 +79,7 @@ SELECT
     WHEN n IN (3, 11, 15, 18, 24, 30) THEN 'pending'
     ELSE 'completed'
   END AS status,
-  (ARRAY[1000, 2500, 5000, 7500, 12000, 18000, 25000, 37500, 50000, 75000, 100000, 150000, 225000, 350000, 500000])[((n - 1) % 15) + 1] AS amount_cents,
+  (ARRAY[1000, 2500, 5000, 7500, 12000, 18000, 25000, 37500, 50000, 75000, 100000, 150000, 225000, 350000, 500000])[((n - 1) % 15) + 1] AS amount_points,
   date_trunc('minute', now() - interval '30 days' + (n - 1) * interval '9 hours 36 minutes') AS created_at
 FROM generate_series(1, 30) AS n;
 
@@ -91,7 +91,7 @@ SELECT
   (SELECT ticker FROM bo_seed_market_specs WHERE seq = (((n - 1) % 10) + 1)) AS market_ticker,
   CASE WHEN n % 2 = 0 THEN 'sell' ELSE 'buy' END AS action,
   CASE WHEN n % 3 = 0 THEN 'no' ELSE 'yes' END AS side,
-  (28 + ((n * 7) % 56))::integer AS price_cents,
+  (28 + ((n * 7) % 56))::integer AS price_points,
   (3 + ((n * 11) % 118))::integer AS quantity,
   date_trunc('minute', now() - interval '30 days' + (30 * interval '9 hours 36 minutes') + (n - 1) * interval '9 hours 36 minutes') AS created_at
 FROM generate_series(1, 45) AS n;
@@ -219,8 +219,8 @@ FROM bo_seed_users;
 INSERT INTO wallets (
   id,
   punter_id,
-  balance_cents,
-  bonus_balance_cents,
+  balance_points,
+  bonus_balance_points,
   currency_code,
   created_at,
   updated_at
@@ -315,16 +315,16 @@ INSERT INTO prediction_markets (
   title,
   description,
   status,
-  yes_price_cents,
-  no_price_cents,
-  last_trade_price_cents,
-  volume_cents,
-  open_interest_cents,
-  liquidity_cents,
+  yes_price_points,
+  no_price_points,
+  last_trade_price_points,
+  volume_points,
+  open_interest_points,
+  liquidity_points,
   amm_yes_shares,
   amm_no_shares,
   amm_liquidity_param,
-  amm_subsidy_cents,
+  amm_subsidy_points,
   settlement_source_key,
   settlement_cutoff_at,
   settlement_rule,
@@ -336,11 +336,11 @@ INSERT INTO prediction_markets (
   created_at,
   updated_at,
   execution_mode,
-  collateral_pool_cents,
-  best_yes_bid_cents,
-  best_yes_ask_cents,
-  best_no_bid_cents,
-  best_no_ask_cents,
+  collateral_pool_points,
+  best_yes_bid_points,
+  best_yes_ask_points,
+  best_no_bid_points,
+  best_no_ask_points,
   last_quote_at
 )
 SELECT
@@ -350,9 +350,9 @@ SELECT
   title,
   description,
   'open',
-  yes_price_cents,
-  100 - yes_price_cents,
-  yes_price_cents,
+  yes_price_points,
+  100 - yes_price_points,
+  yes_price_points,
   0,
   0,
   250000 + (seq * 50000),
@@ -372,10 +372,10 @@ SELECT
   now(),
   'order_book',
   0,
-  GREATEST(1, yes_price_cents - 2),
-  LEAST(99, yes_price_cents + 2),
-  GREATEST(1, (100 - yes_price_cents) - 2),
-  LEAST(99, (100 - yes_price_cents) + 2),
+  GREATEST(1, yes_price_points - 2),
+  LEAST(99, yes_price_points + 2),
+  GREATEST(1, (100 - yes_price_points) - 2),
+  LEAST(99, (100 - yes_price_points) + 2),
   now() - interval '10 minutes'
 FROM bo_seed_market_specs;
 
@@ -383,7 +383,7 @@ INSERT INTO payment_transactions (
   txn_id,
   user_id,
   txn_type,
-  amount_cents,
+  amount_points,
   payment_method,
   status,
   confirmation_code,
@@ -397,7 +397,7 @@ SELECT
   format('bo-seed-payment-%s', lpad(n::text, 2, '0')),
   user_id,
   txn_type,
-  amount_cents,
+  amount_points,
   CASE WHEN txn_type = 'deposit' THEN 'usdc_polygon' ELSE 'usdc_withdrawal' END,
   status,
   CASE WHEN status = 'completed' THEN upper(substr(md5('bo-seed-confirmation-' || n), 1, 10)) ELSE NULL END,
@@ -412,8 +412,8 @@ INSERT INTO wallet_ledger (
   user_id,
   entry_type,
   fund_type,
-  amount_cents,
-  balance_cents,
+  amount_points,
+  balance_points,
   idempotency_key,
   reason,
   transaction_time
@@ -422,7 +422,7 @@ SELECT
   user_id,
   CASE WHEN txn_type = 'deposit' THEN 'credit' ELSE 'debit' END,
   'real',
-  amount_cents,
+  amount_points,
   100000 + (n * 2500),
   format('bo-seed:wallet-ledger:payment:%s', lpad(n::text, 2, '0')),
   CASE
@@ -438,10 +438,10 @@ INSERT INTO ledger_entries (
   wallet_id,
   punter_id,
   transaction_type,
-  amount_cents,
-  bonus_amount_cents,
-  balance_before_cents,
-  balance_after_cents,
+  amount_points,
+  bonus_amount_points,
+  balance_before_points,
+  balance_after_points,
   reference_type,
   reference_id,
   description,
@@ -452,9 +452,9 @@ SELECT
   format('bo-seed-wallet-%s', substr(activity.user_id, length('bo-seed-user-') + 1)),
   activity.user_id,
   activity.txn_type,
-  CASE WHEN activity.txn_type = 'deposit' THEN activity.amount_cents ELSE -activity.amount_cents END,
+  CASE WHEN activity.txn_type = 'deposit' THEN activity.amount_points ELSE -activity.amount_points END,
   0,
-  (100000 + (activity.n * 2500)) - CASE WHEN activity.txn_type = 'deposit' THEN activity.amount_cents ELSE -activity.amount_cents END,
+  (100000 + (activity.n * 2500)) - CASE WHEN activity.txn_type = 'deposit' THEN activity.amount_points ELSE -activity.amount_points END,
   100000 + (activity.n * 2500),
   'payment_transaction',
   format('bo-seed-payment-%s', lpad(activity.n::text, 2, '0')),
@@ -473,11 +473,11 @@ INSERT INTO prediction_orders (
   side,
   action,
   order_type,
-  price_cents,
+  price_points,
   quantity,
   filled_quantity,
   remaining_quantity,
-  total_cost_cents,
+  total_cost_points,
   status,
   idempotency_key,
   expires_at,
@@ -486,11 +486,11 @@ INSERT INTO prediction_orders (
   created_at,
   updated_at,
   time_in_force,
-  captured_cash_cents,
-  average_fill_price_cents,
-  filled_cost_cents,
+  captured_points,
+  average_fill_price_points,
+  filled_cost_points,
   client_order_id,
-  notional_cap_cents
+  notional_cap_points
 )
 SELECT
   md5('bo-seed-order-' || n)::uuid,
@@ -499,11 +499,11 @@ SELECT
   side,
   action,
   'market',
-  price_cents,
+  price_points,
   quantity,
   quantity,
   0,
-  price_cents * quantity,
+  price_points * quantity,
   'filled',
   format('bo-seed:prediction-order:%s', lpad(n::text, 2, '0')),
   NULL,
@@ -512,11 +512,11 @@ SELECT
   created_at,
   created_at + interval '2 minutes',
   'ioc',
-  CASE WHEN action = 'buy' THEN price_cents * quantity ELSE 0 END,
-  price_cents,
-  price_cents * quantity,
+  CASE WHEN action = 'buy' THEN price_points * quantity ELSE 0 END,
+  price_points,
+  price_points * quantity,
   format('BO-SEED-%s', lpad(n::text, 2, '0')),
-  price_cents * quantity
+  price_points * quantity
 FROM bo_seed_trade_activity;
 
 INSERT INTO prediction_trades (
@@ -527,9 +527,9 @@ INSERT INTO prediction_trades (
   buyer_id,
   seller_id,
   side,
-  price_cents,
+  price_points,
   quantity,
-  fee_cents,
+  fee_points,
   is_amm_trade,
   traded_at,
   match_id,
@@ -544,9 +544,9 @@ SELECT
   CASE WHEN action = 'buy' THEN actor_user_id ELSE counterparty_user_id END,
   CASE WHEN action = 'sell' THEN actor_user_id ELSE counterparty_user_id END,
   side,
-  price_cents,
+  price_points,
   quantity,
-  GREATEST(1, round((price_cents * quantity)::numeric * 0.015))::bigint,
+  GREATEST(1, round((price_points * quantity)::numeric * 0.015))::bigint,
   false,
   created_at + interval '2 minutes',
   md5('bo-seed-match-' || n)::uuid,
@@ -558,8 +558,8 @@ INSERT INTO wallet_ledger (
   user_id,
   entry_type,
   fund_type,
-  amount_cents,
-  balance_cents,
+  amount_points,
+  balance_points,
   idempotency_key,
   reason,
   transaction_time
@@ -568,7 +568,7 @@ SELECT
   actor_user_id,
   CASE WHEN action = 'buy' THEN 'debit' ELSE 'credit' END,
   'real',
-  price_cents * quantity,
+  price_points * quantity,
   125000 + (n * 1750),
   format('bo-seed:wallet-ledger:trade:%s', lpad(n::text, 2, '0')),
   format(
@@ -576,7 +576,7 @@ SELECT
     action,
     upper(side),
     market_ticker,
-    price_cents
+    price_points
   ),
   created_at + interval '2 minutes'
 FROM bo_seed_trade_activity;
@@ -586,10 +586,10 @@ INSERT INTO ledger_entries (
   wallet_id,
   punter_id,
   transaction_type,
-  amount_cents,
-  bonus_amount_cents,
-  balance_before_cents,
-  balance_after_cents,
+  amount_points,
+  bonus_amount_points,
+  balance_before_points,
+  balance_after_points,
   reference_type,
   reference_id,
   description,
@@ -600,9 +600,9 @@ SELECT
   format('bo-seed-wallet-%s', substr(actor_user_id, length('bo-seed-user-') + 1)),
   actor_user_id,
   'prediction_trade_' || action,
-  CASE WHEN action = 'buy' THEN -(price_cents * quantity) ELSE price_cents * quantity END,
+  CASE WHEN action = 'buy' THEN -(price_points * quantity) ELSE price_points * quantity END,
   0,
-  (125000 + (n * 1750)) - CASE WHEN action = 'buy' THEN -(price_cents * quantity) ELSE price_cents * quantity END,
+  (125000 + (n * 1750)) - CASE WHEN action = 'buy' THEN -(price_points * quantity) ELSE price_points * quantity END,
   125000 + (n * 1750),
   'prediction_trade',
   md5('bo-seed-trade-' || n)::text,
@@ -612,23 +612,23 @@ SELECT
     upper(side),
     market_ticker,
     quantity,
-    price_cents
+    price_points
   ),
   created_at + interval '2 minutes'
 FROM bo_seed_trade_activity;
 
 UPDATE prediction_markets markets
 SET
-  volume_cents = COALESCE(activity.volume_cents, 0),
-  open_interest_cents = COALESCE(activity.open_interest_cents, 0),
-  last_trade_price_cents = activity.last_trade_price_cents,
+  volume_points = COALESCE(activity.volume_points, 0),
+  open_interest_points = COALESCE(activity.open_interest_points, 0),
+  last_trade_price_points = activity.last_trade_price_points,
   updated_at = now()
 FROM (
   SELECT
     market_id,
-    SUM(price_cents * quantity)::bigint AS volume_cents,
-    SUM(quantity * 100)::bigint AS open_interest_cents,
-    (ARRAY_AGG(price_cents ORDER BY traded_at DESC))[1] AS last_trade_price_cents
+    SUM(price_points * quantity)::bigint AS volume_points,
+    SUM(quantity * 100)::bigint AS open_interest_points,
+    (ARRAY_AGG(price_points ORDER BY traded_at DESC))[1] AS last_trade_price_points
   FROM prediction_trades
   WHERE market_id IN (SELECT md5('bo-seed-market-' || ticker)::uuid FROM bo_seed_market_specs)
   GROUP BY market_id
@@ -637,7 +637,7 @@ WHERE markets.id = activity.market_id;
 
 UPDATE wallets wallets
 SET
-  balance_cents = balances.balance_cents,
+  balance_points = balances.balance_points,
   updated_at = now()
 FROM (
   SELECT
@@ -645,10 +645,10 @@ FROM (
     100000
       + COALESCE(SUM(
           CASE
-            WHEN entries.amount_cents IS NULL THEN 0
-            ELSE entries.amount_cents
+            WHEN entries.amount_points IS NULL THEN 0
+            ELSE entries.amount_points
           END
-        ), 0)::bigint AS balance_cents
+        ), 0)::bigint AS balance_points
   FROM punters users
   LEFT JOIN ledger_entries entries ON entries.punter_id = users.id
   WHERE users.id LIKE 'bo-seed-user-%'
@@ -656,13 +656,13 @@ FROM (
 ) balances
 WHERE wallets.punter_id = balances.user_id;
 
-INSERT INTO wallet_balances (user_id, balance_cents, bonus_balance_cents, updated_at)
-SELECT punter_id, balance_cents, bonus_balance_cents, now()
+INSERT INTO wallet_balances (user_id, balance_points, bonus_balance_points, updated_at)
+SELECT punter_id, balance_points, bonus_balance_points, now()
 FROM wallets
 WHERE punter_id LIKE 'bo-seed-user-%'
 ON CONFLICT (user_id) DO UPDATE SET
-  balance_cents = EXCLUDED.balance_cents,
-  bonus_balance_cents = EXCLUDED.bonus_balance_cents,
+  balance_points = EXCLUDED.balance_points,
+  bonus_balance_points = EXCLUDED.bonus_balance_points,
   updated_at = EXCLUDED.updated_at;
 
 COMMIT;

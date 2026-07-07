@@ -32,10 +32,10 @@ func TestPredictTierForPoints(t *testing.T) {
 
 func TestPredictAccrualPoints(t *testing.T) {
 	cases := []struct {
-		name        string
-		volumeCents int64
-		isCorrect   bool
-		want        int64
+		name         string
+		volumePoints int64
+		isCorrect    bool
+		want         int64
 	}{
 		{"$10 winning trade", 1000, true, 1500},
 		{"$10 losing trade", 1000, false, 1000},
@@ -47,9 +47,9 @@ func TestPredictAccrualPoints(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			if got := PredictAccrualPoints(tc.volumeCents, tc.isCorrect); got != tc.want {
+			if got := PredictAccrualPoints(tc.volumePoints, tc.isCorrect); got != tc.want {
 				t.Errorf("PredictAccrualPoints(%d, %v) = %d, want %d",
-					tc.volumeCents, tc.isCorrect, got, tc.want)
+					tc.volumePoints, tc.isCorrect, got, tc.want)
 			}
 		})
 	}

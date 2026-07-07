@@ -34,8 +34,11 @@ func decodeCreateMarketRequest(r *stdhttp.Request) (prediction.CreateMarketReque
 	if err := json.Unmarshal(raw, &fields); err != nil {
 		return req, httpx.BadRequest("invalid request body", nil)
 	}
+	// Points unit-model (2026-07-07): launch boundary rejects the retired
+	// cents-era key outright ("ammSubsidyCents" kept as the banned literal,
+	// not a live field); ammSubsidyPoints is the canonical request key.
 	if _, ok := fields["ammSubsidyCents"]; ok {
-		return req, httpx.BadRequest("ammSubsidyCents is retired; use ammSubsidyPointsCents", map[string]any{"field": "ammSubsidyPointsCents"})
+		return req, httpx.BadRequest("ammSubsidyCents is retired; use ammSubsidyPoints", map[string]any{"field": "ammSubsidyPoints"})
 	}
 	if err := json.Unmarshal(raw, &req); err != nil {
 		return req, httpx.BadRequest("invalid request body", nil)
@@ -49,61 +52,61 @@ type marketLifecycleEventResponse struct {
 }
 
 type portfolioHistoryItem struct {
-	ID                    string               `json:"id"`
-	SettlementID          string               `json:"settlementId"`
-	PositionID            string               `json:"positionId"`
-	UserID                string               `json:"userId"`
-	MarketID              string               `json:"marketId"`
-	Side                  prediction.OrderSide `json:"side"`
-	Quantity              int                  `json:"quantity"`
-	EntryPriceCents       int                  `json:"entryPricePointsCents"`
-	ExitPriceCents        int                  `json:"exitPricePointsCents"`
-	RealizedPointsCents   int64                `json:"realizedPointsCents"`
-	SettlementPointsCents int64                `json:"settlementPointsCents"`
-	PaidAt                time.Time            `json:"paidAt"`
-	Unit                  string               `json:"unit"`
+	ID               string               `json:"id"`
+	SettlementID     string               `json:"settlementId"`
+	PositionID       string               `json:"positionId"`
+	UserID           string               `json:"userId"`
+	MarketID         string               `json:"marketId"`
+	Side             prediction.OrderSide `json:"side"`
+	Quantity         int                  `json:"quantity"`
+	EntryPricePoints int                  `json:"entryPricePoints"`
+	ExitPricePoints  int                  `json:"exitPricePoints"`
+	RealizedPoints   int64                `json:"realizedPoints"`
+	SettlementPoints int64                `json:"settlementPoints"`
+	PaidAt           time.Time            `json:"paidAt"`
+	Unit             string               `json:"unit"`
 }
 
 type settlementRecordResponse struct {
-	ID                         string                  `json:"id"`
-	MarketID                   string                  `json:"marketId"`
-	Result                     prediction.MarketResult `json:"result"`
-	AttestationSource          string                  `json:"attestationSource"`
-	AttestationID              *string                 `json:"attestationId,omitempty"`
-	AttestationDigest          *string                 `json:"attestationDigest,omitempty"`
-	AttestationData            json.RawMessage         `json:"attestationData,omitempty"`
-	SettledBy                  *string                 `json:"settledBy,omitempty"`
-	SettledAt                  time.Time               `json:"settledAt"`
-	PositionsSettled           int                     `json:"positionsSettled"`
-	OverrideReason             *string                 `json:"overrideReason,omitempty"`
-	OverriddenByUserID         *string                 `json:"overriddenByUserId,omitempty"`
-	OverriddenAt               *time.Time              `json:"overriddenAt,omitempty"`
-	TotalSettlementPointsCents int64                   `json:"totalSettlementPointsCents"`
-	Unit                       string                  `json:"unit"`
+	ID                    string                  `json:"id"`
+	MarketID              string                  `json:"marketId"`
+	Result                prediction.MarketResult `json:"result"`
+	AttestationSource     string                  `json:"attestationSource"`
+	AttestationID         *string                 `json:"attestationId,omitempty"`
+	AttestationDigest     *string                 `json:"attestationDigest,omitempty"`
+	AttestationData       json.RawMessage         `json:"attestationData,omitempty"`
+	SettledBy             *string                 `json:"settledBy,omitempty"`
+	SettledAt             time.Time               `json:"settledAt"`
+	PositionsSettled      int                     `json:"positionsSettled"`
+	OverrideReason        *string                 `json:"overrideReason,omitempty"`
+	OverriddenByUserID    *string                 `json:"overriddenByUserId,omitempty"`
+	OverriddenAt          *time.Time              `json:"overriddenAt,omitempty"`
+	TotalSettlementPoints int64                   `json:"totalSettlementPoints"`
+	Unit                  string                  `json:"unit"`
 }
 
 type settlementPointDisbursement struct {
-	ID                    string               `json:"id"`
-	SettlementID          string               `json:"settlementId"`
-	PositionID            string               `json:"positionId"`
-	UserID                string               `json:"userId"`
-	MarketID              string               `json:"marketId"`
-	Side                  prediction.OrderSide `json:"side"`
-	Quantity              int                  `json:"quantity"`
-	EntryPriceCents       int                  `json:"entryPricePointsCents"`
-	ExitPriceCents        int                  `json:"exitPricePointsCents"`
-	RealizedPointsCents   int64                `json:"realizedPointsCents"`
-	SettlementPointsCents int64                `json:"settlementPointsCents"`
-	PaidAt                time.Time            `json:"paidAt"`
-	Unit                  string               `json:"unit"`
+	ID               string               `json:"id"`
+	SettlementID     string               `json:"settlementId"`
+	PositionID       string               `json:"positionId"`
+	UserID           string               `json:"userId"`
+	MarketID         string               `json:"marketId"`
+	Side             prediction.OrderSide `json:"side"`
+	Quantity         int                  `json:"quantity"`
+	EntryPricePoints int                  `json:"entryPricePoints"`
+	ExitPricePoints  int                  `json:"exitPricePoints"`
+	RealizedPoints   int64                `json:"realizedPoints"`
+	SettlementPoints int64                `json:"settlementPoints"`
+	PaidAt           time.Time            `json:"paidAt"`
+	Unit             string               `json:"unit"`
 }
 
 type settlementOperationResponse struct {
-	Settlement                 settlementRecordResponse          `json:"settlement"`
-	PointDisbursements         []settlementPointDisbursement     `json:"pointDisbursements"`
-	TotalSettlementPointsCents int64                             `json:"totalSettlementPointsCents"`
-	Unit                       string                            `json:"unit"`
-	TapTradeLifecycle           prediction.TapTradeMarketLifecycle `json:"taptradeLifecycle"`
+	Settlement            settlementRecordResponse           `json:"settlement"`
+	PointDisbursements    []settlementPointDisbursement      `json:"pointDisbursements"`
+	TotalSettlementPoints int64                              `json:"totalSettlementPoints"`
+	Unit                  string                             `json:"unit"`
+	TapTradeLifecycle     prediction.TapTradeMarketLifecycle `json:"taptradeLifecycle"`
 }
 
 type adminCategoryRequest struct {
@@ -543,17 +546,17 @@ type marketUpdateBroadcaster interface {
 // Order-fill paths also include them — those don't change on a fill, but
 // sending them is harmless and keeps the payload schema uniform.
 type marketUpdatePayload struct {
-	MarketID                  string                   `json:"marketId"`
-	Ticker                    string                   `json:"ticker"`
-	Status                    prediction.MarketStatus  `json:"status"`
-	Result                    *prediction.MarketResult `json:"result,omitempty"`
-	YesPricePointsCents       int                      `json:"yesPricePointsCents"`
-	NoPricePointsCents        int                      `json:"noPricePointsCents"`
-	LastTradePricePointsCents *int                     `json:"lastTradePricePointsCents,omitempty"`
-	VolumePointsCents         int64                    `json:"volumePointsCents"`
-	OpenInterestPointsCents   int64                    `json:"openInterestPointsCents"`
-	Unit                      string                   `json:"unit"`
-	Ts                        string                   `json:"ts"`
+	MarketID             string                   `json:"marketId"`
+	Ticker               string                   `json:"ticker"`
+	Status               prediction.MarketStatus  `json:"status"`
+	Result               *prediction.MarketResult `json:"result,omitempty"`
+	YesPricePoints       int                      `json:"yesPricePoints"`
+	NoPricePoints        int                      `json:"noPricePoints"`
+	LastTradePricePoints *int                     `json:"lastTradePricePoints,omitempty"`
+	VolumePoints         int64                    `json:"volumePoints"`
+	OpenInterestPoints   int64                    `json:"openInterestPoints"`
+	Unit                 string                   `json:"unit"`
+	Ts                   string                   `json:"ts"`
 }
 
 // buildOrderBookHintPayload is the wire shape published on `orderbook:<id>`
@@ -561,30 +564,30 @@ type marketUpdatePayload struct {
 // update; clients refetch GET /markets/{id}/orderbook for full depth.
 func buildOrderBookHintPayload(m *prediction.Market) map[string]any {
 	return map[string]any{
-		"marketId":              m.ID,
-		"bestYesBidPointsCents": m.BestYesBidCents,
-		"bestYesAskPointsCents": m.BestYesAskCents,
-		"bestNoBidPointsCents":  m.BestNoBidCents,
-		"bestNoAskPointsCents":  m.BestNoAskCents,
-		"lastQuoteAt":           m.LastQuoteAt,
-		"unit":                  "PTS",
-		"ts":                    time.Now().UTC().Format(time.RFC3339),
+		"marketId":         m.ID,
+		"bestYesBidPoints": m.BestYesBidPoints,
+		"bestYesAskPoints": m.BestYesAskPoints,
+		"bestNoBidPoints":  m.BestNoBidPoints,
+		"bestNoAskPoints":  m.BestNoAskPoints,
+		"lastQuoteAt":      m.LastQuoteAt,
+		"unit":             "PTS",
+		"ts":               time.Now().UTC().Format(time.RFC3339),
 	}
 }
 
 func buildMarketUpdatePayload(m *prediction.Market) marketUpdatePayload {
 	return marketUpdatePayload{
-		MarketID:                  m.ID,
-		Ticker:                    m.Ticker,
-		Status:                    m.Status,
-		Result:                    m.Result,
-		YesPricePointsCents:       m.YesPriceCents,
-		NoPricePointsCents:        m.NoPriceCents,
-		LastTradePricePointsCents: m.LastTradePriceCents,
-		VolumePointsCents:         m.VolumeCents,
-		OpenInterestPointsCents:   m.OpenInterestCents,
-		Unit:                      "PTS",
-		Ts:                        time.Now().UTC().Format(time.RFC3339),
+		MarketID:             m.ID,
+		Ticker:               m.Ticker,
+		Status:               m.Status,
+		Result:               m.Result,
+		YesPricePoints:       m.YesPricePoints,
+		NoPricePoints:        m.NoPricePoints,
+		LastTradePricePoints: m.LastTradePricePoints,
+		VolumePoints:         m.VolumePoints,
+		OpenInterestPoints:   m.OpenInterestPoints,
+		Unit:                 "PTS",
+		Ts:                   time.Now().UTC().Format(time.RFC3339),
 	}
 }
 
@@ -593,17 +596,17 @@ func buildMarketUpdatePayload(m *prediction.Market) marketUpdatePayload {
 // consumes this to render the live tape.
 func buildTradeFillPayload(t *prediction.Trade) map[string]any {
 	return map[string]any{
-		"tradeId":             t.ID,
-		"marketId":            t.MarketID,
-		"side":                t.Side,
-		"pricePointsCents":    t.PriceCents,
-		"quantity":            t.Quantity,
-		"feePointsCents":      t.FeeCents,
-		"notionalPointsCents": int64(t.PriceCents) * int64(t.Quantity),
-		"unit":                "PTS",
-		"isAmmTrade":          t.IsAMMTrade,
-		"tradedAt":            t.TradedAt.UTC().Format(time.RFC3339),
-		"ts":                  time.Now().UTC().Format(time.RFC3339),
+		"tradeId":        t.ID,
+		"marketId":       t.MarketID,
+		"side":           t.Side,
+		"pricePoints":    t.PricePoints,
+		"quantity":       t.Quantity,
+		"feePoints":      t.FeePoints,
+		"notionalPoints": int64(t.PricePoints) * int64(t.Quantity),
+		"unit":           "PTS",
+		"isAmmTrade":     t.IsAMMTrade,
+		"tradedAt":       t.TradedAt.UTC().Format(time.RFC3339),
+		"ts":             time.Now().UTC().Format(time.RFC3339),
 	}
 }
 
@@ -626,7 +629,7 @@ func buildPortfolioUpdatePayload(o *prediction.Order, t *prediction.Trade) map[s
 	if t != nil {
 		out["tradeId"] = t.ID
 		out["filledQuantity"] = t.Quantity
-		out["filledPricePointsCents"] = t.PriceCents
+		out["filledPricePoints"] = t.PricePoints
 		out["unit"] = "PTS"
 	}
 	return out
@@ -635,13 +638,13 @@ func buildPortfolioUpdatePayload(o *prediction.Order, t *prediction.Trade) map[s
 // buildWalletUpdatePayload is the wire shape published on `wallet:<userID>`
 // after a fill. It mirrors the point-native wallet read contract rather than
 // exposing the old cash-balance alias.
-func buildWalletUpdatePayload(userID string, balancePointsCents int64, orderID string) map[string]any {
+func buildWalletUpdatePayload(userID string, balancePoints int64, orderID string) map[string]any {
 	return map[string]any{
-		"userId":             userID,
-		"balancePointsCents": balancePointsCents,
-		"unit":               "PTS",
-		"reason":             "order_fill",
-		"orderId":            orderID,
+		"userId":        userID,
+		"balancePoints": balancePoints,
+		"unit":          "PTS",
+		"reason":        "order_fill",
+		"orderId":       orderID,
 	}
 }
 
@@ -853,11 +856,14 @@ func decodePlaceOrderHTTPRequest(r io.Reader) (prediction.PlaceOrderRequest, err
 	if err := json.NewDecoder(r).Decode(&raw); err != nil {
 		return prediction.PlaceOrderRequest{}, httpx.BadRequest("invalid request body", nil)
 	}
+	// Points unit-model (2026-07-07): launch boundary rejects the retired
+	// cents-era keys outright (banned literals, not live fields); the
+	// canonical request keys are pricePoints / notionalCapPoints.
 	if _, ok := raw["priceCents"]; ok {
-		return prediction.PlaceOrderRequest{}, httpx.BadRequest("use pricePointsCents for limit order prices", map[string]any{"field": "pricePointsCents"})
+		return prediction.PlaceOrderRequest{}, httpx.BadRequest("use pricePoints for limit order prices", map[string]any{"field": "pricePoints"})
 	}
 	if _, ok := raw["notionalCapCents"]; ok {
-		return prediction.PlaceOrderRequest{}, httpx.BadRequest("use notionalCapPointsCents for market buy caps", map[string]any{"field": "notionalCapPointsCents"})
+		return prediction.PlaceOrderRequest{}, httpx.BadRequest("use notionalCapPoints for market buy caps", map[string]any{"field": "notionalCapPoints"})
 	}
 	data, err := json.Marshal(raw)
 	if err != nil {
@@ -897,8 +903,8 @@ func validatePlaceOrderHTTPRequest(req prediction.PlaceOrderRequest) error {
 		return httpx.BadRequest("quantity must be > 0", map[string]any{"field": "quantity", "got": req.Quantity})
 	}
 	if req.OrderType == prediction.OrderTypeLimit {
-		if req.PriceCents == nil || *req.PriceCents < 1 || *req.PriceCents > 99 {
-			return httpx.BadRequest("limit orders require pricePointsCents in 1..99", map[string]any{"field": "pricePointsCents"})
+		if req.PricePoints == nil || *req.PricePoints < 1 || *req.PricePoints > 99 {
+			return httpx.BadRequest("limit orders require pricePoints in 1..99", map[string]any{"field": "pricePoints"})
 		}
 	}
 	// Exchange-engine field validation. These map 1:1 to schema CHECK
@@ -919,8 +925,8 @@ func validatePlaceOrderHTTPRequest(req prediction.PlaceOrderRequest) error {
 		}
 	}
 	if req.OrderType == prediction.OrderTypeMarket && req.Action == prediction.OrderActionBuy {
-		if req.NotionalCapCents == nil || *req.NotionalCapCents <= 0 {
-			return httpx.BadRequest("market buy orders require notionalCapPointsCents > 0", map[string]any{"field": "notionalCapPointsCents"})
+		if req.NotionalCapPoints == nil || *req.NotionalCapPoints <= 0 {
+			return httpx.BadRequest("market buy orders require notionalCapPoints > 0", map[string]any{"field": "notionalCapPoints"})
 		}
 	}
 	return nil
@@ -999,19 +1005,19 @@ func portfolioHistoryItems(payouts []prediction.Payout) []portfolioHistoryItem {
 	items := make([]portfolioHistoryItem, 0, len(payouts))
 	for _, payout := range payouts {
 		items = append(items, portfolioHistoryItem{
-			ID:                    payout.ID,
-			SettlementID:          payout.SettlementID,
-			PositionID:            payout.PositionID,
-			UserID:                payout.UserID,
-			MarketID:              payout.MarketID,
-			Side:                  payout.Side,
-			Quantity:              payout.Quantity,
-			EntryPriceCents:       payout.EntryPriceCents,
-			ExitPriceCents:        payout.ExitPriceCents,
-			RealizedPointsCents:   payout.PnlCents,
-			SettlementPointsCents: payout.PayoutCents,
-			PaidAt:                payout.PaidAt,
-			Unit:                  "PTS",
+			ID:               payout.ID,
+			SettlementID:     payout.SettlementID,
+			PositionID:       payout.PositionID,
+			UserID:           payout.UserID,
+			MarketID:         payout.MarketID,
+			Side:             payout.Side,
+			Quantity:         payout.Quantity,
+			EntryPricePoints: payout.EntryPricePoints,
+			ExitPricePoints:  payout.ExitPricePoints,
+			RealizedPoints:   payout.PnlPoints,
+			SettlementPoints: payout.PayoutPoints,
+			PaidAt:           payout.PaidAt,
+			Unit:             "PTS",
 		})
 	}
 	return items
@@ -1021,11 +1027,11 @@ func settlementOperationPayload(settlement *prediction.Settlement, payouts []pre
 	disbursements := settlementPointDisbursements(payouts)
 	settlementPayload := settlementRecordPayload(settlement)
 	return settlementOperationResponse{
-		Settlement:                 settlementPayload,
-		PointDisbursements:         disbursements,
-		TotalSettlementPointsCents: settlementPayload.TotalSettlementPointsCents,
-		Unit:                       "PTS",
-		TapTradeLifecycle:           prediction.DescribeTapTradeMarketLifecycle(prediction.MarketStatusSettled),
+		Settlement:            settlementPayload,
+		PointDisbursements:    disbursements,
+		TotalSettlementPoints: settlementPayload.TotalSettlementPoints,
+		Unit:                  "PTS",
+		TapTradeLifecycle:     prediction.DescribeTapTradeMarketLifecycle(prediction.MarketStatusSettled),
 	}
 }
 
@@ -1039,21 +1045,21 @@ func settlementRecordPayload(settlement *prediction.Settlement) settlementRecord
 		overrideReason = &redacted
 	}
 	return settlementRecordResponse{
-		ID:                         settlement.ID,
-		MarketID:                   settlement.MarketID,
-		Result:                     settlement.Result,
-		AttestationSource:          settlement.AttestationSource,
-		AttestationID:              settlement.AttestationID,
-		AttestationDigest:          settlement.AttestationDigest,
-		AttestationData:            settlement.AttestationData,
-		SettledBy:                  settlement.SettledBy,
-		SettledAt:                  settlement.SettledAt,
-		PositionsSettled:           settlement.PositionsSettled,
-		OverrideReason:             overrideReason,
-		OverriddenByUserID:         settlement.OverriddenByUserID,
-		OverriddenAt:               settlement.OverriddenAt,
-		TotalSettlementPointsCents: settlement.TotalPayoutCents,
-		Unit:                       "PTS",
+		ID:                    settlement.ID,
+		MarketID:              settlement.MarketID,
+		Result:                settlement.Result,
+		AttestationSource:     settlement.AttestationSource,
+		AttestationID:         settlement.AttestationID,
+		AttestationDigest:     settlement.AttestationDigest,
+		AttestationData:       settlement.AttestationData,
+		SettledBy:             settlement.SettledBy,
+		SettledAt:             settlement.SettledAt,
+		PositionsSettled:      settlement.PositionsSettled,
+		OverrideReason:        overrideReason,
+		OverriddenByUserID:    settlement.OverriddenByUserID,
+		OverriddenAt:          settlement.OverriddenAt,
+		TotalSettlementPoints: settlement.TotalPayoutPoints,
+		Unit:                  "PTS",
 	}
 }
 
@@ -1064,28 +1070,28 @@ func settlementPointDisbursements(payouts []prediction.Payout) []settlementPoint
 	disbursements := make([]settlementPointDisbursement, 0, len(payouts))
 	for _, payout := range payouts {
 		disbursements = append(disbursements, settlementPointDisbursement{
-			ID:                    payout.ID,
-			SettlementID:          payout.SettlementID,
-			PositionID:            payout.PositionID,
-			UserID:                payout.UserID,
-			MarketID:              payout.MarketID,
-			Side:                  payout.Side,
-			Quantity:              payout.Quantity,
-			EntryPriceCents:       payout.EntryPriceCents,
-			ExitPriceCents:        payout.ExitPriceCents,
-			RealizedPointsCents:   payout.PnlCents,
-			SettlementPointsCents: payout.PayoutCents,
-			PaidAt:                payout.PaidAt,
-			Unit:                  "PTS",
+			ID:               payout.ID,
+			SettlementID:     payout.SettlementID,
+			PositionID:       payout.PositionID,
+			UserID:           payout.UserID,
+			MarketID:         payout.MarketID,
+			Side:             payout.Side,
+			Quantity:         payout.Quantity,
+			EntryPricePoints: payout.EntryPricePoints,
+			ExitPricePoints:  payout.ExitPricePoints,
+			RealizedPoints:   payout.PnlPoints,
+			SettlementPoints: payout.PayoutPoints,
+			PaidAt:           payout.PaidAt,
+			Unit:             "PTS",
 		})
 	}
 	return disbursements
 }
 
-func totalSettlementPointsCents(payouts []prediction.Payout) int64 {
+func totalSettlementPoints(payouts []prediction.Payout) int64 {
 	var total int64
 	for _, payout := range payouts {
-		total += payout.PayoutCents
+		total += payout.PayoutPoints
 	}
 	return total
 }
@@ -1529,10 +1535,10 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 					return serviceBadRequestError(err, nil)
 				}
 				recordProviderOpsAuditAction(adminID, "market.finalized", parts[0], map[string]any{
-					"settlementId":               settlement.ID,
-					"totalSettlementPointsCents": settlement.TotalPayoutCents,
-					"pointDisbursementCount":     len(payouts),
-					"unit":                       "PTS",
+					"settlementId":           settlement.ID,
+					"totalSettlementPoints":  settlement.TotalPayoutPoints,
+					"pointDisbursementCount": len(payouts),
+					"unit":                   "PTS",
 				})
 				return httpx.WriteJSON(w, stdhttp.StatusOK, settlementOperationPayload(settlement, payouts))
 			case "jurisdiction":
@@ -1621,7 +1627,7 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			payload := marketLifecycleResponse(parts[0], prediction.MarketStatusVoided, reason)
 			disbursements := settlementPointDisbursements(payouts)
 			payload["pointDisbursements"] = disbursements
-			payload["totalSettlementPointsCents"] = totalSettlementPointsCents(payouts)
+			payload["totalSettlementPoints"] = totalSettlementPoints(payouts)
 			payload["unit"] = "PTS"
 			return httpx.WriteJSON(w, stdhttp.StatusOK, payload)
 		default:
@@ -1882,9 +1888,9 @@ func normalizeTags(tags []string) []string {
 
 func marketLifecycleResponse(marketID string, status prediction.MarketStatus, reason string) map[string]any {
 	return map[string]any{
-		"marketId":         marketID,
-		"status":           status,
-		"reason":           reason,
+		"marketId":          marketID,
+		"status":            status,
+		"reason":            reason,
 		"taptradeLifecycle": prediction.DescribeTapTradeMarketLifecycle(status),
 	}
 }
@@ -1897,7 +1903,7 @@ func lifecycleAuditEventResponses(events []prediction.LifecycleEvent) []marketLi
 	for _, event := range events {
 		event = redactLifecycleEventResponse(event)
 		out = append(out, marketLifecycleEventResponse{
-			LifecycleEvent:   event,
+			LifecycleEvent:    event,
 			TapTradeLifecycle: prediction.DescribeTapTradeMarketLifecycle(prediction.MarketStatus(event.EventType)),
 		})
 	}
@@ -1927,11 +1933,11 @@ func writeAdminMarketsCSV(w stdhttp.ResponseWriter, markets []prediction.Market)
 		"taptrade_stage",
 		"result",
 		"execution_mode",
-		"yes_price_cents",
-		"no_price_cents",
-		"volume_points_cents",
-		"open_interest_points_cents",
-		"liquidity_points_cents",
+		"yes_price_points",
+		"no_price_points",
+		"volume_points",
+		"open_interest_points",
+		"liquidity_points",
 		"settlement_source",
 		"settlement_rule",
 		"close_at",
@@ -1956,11 +1962,11 @@ func writeAdminMarketsCSV(w stdhttp.ResponseWriter, markets []prediction.Market)
 			csvSafeCell(string(lifecycle.Stage)),
 			csvSafeCell(result),
 			csvSafeCell(string(market.ExecutionMode)),
-			strconv.Itoa(market.YesPriceCents),
-			strconv.Itoa(market.NoPriceCents),
-			strconv.FormatInt(market.VolumeCents, 10),
-			strconv.FormatInt(market.OpenInterestCents, 10),
-			strconv.FormatInt(market.LiquidityCents, 10),
+			strconv.Itoa(market.YesPricePoints),
+			strconv.Itoa(market.NoPricePoints),
+			strconv.FormatInt(market.VolumePoints, 10),
+			strconv.FormatInt(market.OpenInterestPoints, 10),
+			strconv.FormatInt(market.LiquidityPoints, 10),
 			csvSafeCell(market.SettlementSourceKey),
 			csvSafeCell(market.SettlementRule),
 			csvSafeCell(market.CloseAt.UTC().Format(time.RFC3339)),

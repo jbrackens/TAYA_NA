@@ -13,8 +13,8 @@ func TestFreebetJSONRoundTrip(t *testing.T) {
 		PlayerID:             "u-1",
 		CampaignID:           "campaign:welcome",
 		Currency:             "USD",
-		TotalAmountCents:     1500,
-		RemainingAmountCents: 1500,
+		TotalAmountPoints:     1500,
+		RemainingAmountPoints: 1500,
 		MinOddsDecimal:       1.5,
 		AppliesToSportIDs:    []string{"sport:football"},
 		ExpiresAt:            now.Add(24 * time.Hour),
@@ -39,11 +39,11 @@ func TestFreebetJSONRoundTrip(t *testing.T) {
 	if decoded.Status != FreebetStatusAvailable {
 		t.Fatalf("expected status=%s, got %s", FreebetStatusAvailable, decoded.Status)
 	}
-	if decoded.TotalAmountCents != 1500 || decoded.RemainingAmountCents != 1500 {
+	if decoded.TotalAmountPoints != 1500 || decoded.RemainingAmountPoints != 1500 {
 		t.Fatalf(
 			"expected total/remaining amount 1500, got total=%d remaining=%d",
-			decoded.TotalAmountCents,
-			decoded.RemainingAmountCents,
+			decoded.TotalAmountPoints,
+			decoded.RemainingAmountPoints,
 		)
 	}
 }

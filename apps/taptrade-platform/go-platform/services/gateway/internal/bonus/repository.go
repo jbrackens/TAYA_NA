@@ -28,15 +28,15 @@ func (r *Repository) CreateCampaign(ctx context.Context, req CreateCampaignReque
 
 	var c Campaign
 	err := r.db.QueryRowContext(ctx, `
-INSERT INTO campaigns (name, description, campaign_type, start_at, end_at, budget_cents, max_claims, rules, created_by)
+INSERT INTO campaigns (name, description, campaign_type, start_at, end_at, budget_points, max_claims, rules, created_by)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-RETURNING id, name, description, campaign_type, status, start_at, end_at, budget_cents, spent_cents, max_claims, claim_count, rules, created_by, created_at, updated_at`,
+RETURNING id, name, description, campaign_type, status, start_at, end_at, budget_points, spent_points, max_claims, claim_count, rules, created_by, created_at, updated_at`,
 		req.Name, req.Description, req.CampaignType,
-		req.StartAt, req.EndAt, req.BudgetCents, req.MaxClaims,
+		req.StartAt, req.EndAt, req.BudgetPoints, req.MaxClaims,
 		rulesJSON, req.CreatedBy,
 	).Scan(
 		&c.ID, &c.Name, &c.Description, &c.CampaignType, &c.Status,
-		&c.StartAt, &c.EndAt, &c.BudgetCents, &c.SpentCents,
+		&c.StartAt, &c.EndAt, &c.BudgetPoints, &c.SpentPoints,
 		&c.MaxClaims, &c.ClaimCount, &c.Rules, &c.CreatedBy,
 		&c.CreatedAt, &c.UpdatedAt,
 	)
@@ -61,10 +61,10 @@ func (r *Repository) GetCampaign(ctx context.Context, id int64) (Campaign, error
 	var c Campaign
 	err := r.db.QueryRowContext(ctx, `
 SELECT id, name, description, campaign_type, status, start_at, end_at,
-       budget_cents, spent_cents, max_claims, claim_count, rules, created_by, created_at, updated_at
+       budget_points, spent_points, max_claims, claim_count, rules, created_by, created_at, updated_at
 FROM campaigns WHERE id = $1`, id).Scan(
 		&c.ID, &c.Name, &c.Description, &c.CampaignType, &c.Status,
-		&c.StartAt, &c.EndAt, &c.BudgetCents, &c.SpentCents,
+		&c.StartAt, &c.EndAt, &c.BudgetPoints, &c.SpentPoints,
 		&c.MaxClaims, &c.ClaimCount, &c.Rules, &c.CreatedBy,
 		&c.CreatedAt, &c.UpdatedAt,
 	)
@@ -87,13 +87,13 @@ func (r *Repository) ListCampaigns(ctx context.Context, status string, limit int
 	if status != "" {
 		rows, err = r.db.QueryContext(ctx, `
 SELECT id, name, description, campaign_type, status, start_at, end_at,
-       budget_cents, spent_cents, max_claims, claim_count, rules, created_by, created_at, updated_at
+       budget_points, spent_points, max_claims, claim_count, rules, created_by, created_at, updated_at
 FROM campaigns WHERE status = $1
 ORDER BY updated_at DESC LIMIT $2`, status, limit)
 	} else {
 		rows, err = r.db.QueryContext(ctx, `
 SELECT id, name, description, campaign_type, status, start_at, end_at,
-       budget_cents, spent_cents, max_claims, claim_count, rules, created_by, created_at, updated_at
+       budget_points, spent_points, max_claims, claim_count, rules, created_by, created_at, updated_at
 FROM campaigns ORDER BY updated_at DESC LIMIT $1`, limit)
 	}
 	if err != nil {
@@ -106,7 +106,7 @@ FROM campaigns ORDER BY updated_at DESC LIMIT $1`, limit)
 		var c Campaign
 		if err := rows.Scan(
 			&c.ID, &c.Name, &c.Description, &c.CampaignType, &c.Status,
-			&c.StartAt, &c.EndAt, &c.BudgetCents, &c.SpentCents,
+			&c.StartAt, &c.EndAt, &c.BudgetPoints, &c.SpentPoints,
 			&c.MaxClaims, &c.ClaimCount, &c.Rules, &c.CreatedBy,
 			&c.CreatedAt, &c.UpdatedAt,
 		); err != nil {
@@ -130,10 +130,10 @@ UPDATE campaigns SET status = $2, updated_at = NOW() WHERE id = $1`, id, newStat
 	return nil
 }
 
-func (r *Repository) IncrementClaimCount(ctx context.Context, campaignID int64, spentCents int64) error {
+func (r *Repository) IncrementClaimCount(ctx context.Context, campaignID int64, spentPoints int64) error {
 	_, err := r.db.ExecContext(ctx, `
-UPDATE campaigns SET claim_count = claim_count + 1, spent_cents = spent_cents + $2, updated_at = NOW()
-WHERE id = $1`, campaignID, spentCents)
+UPDATE campaigns SET claim_count = claim_count + 1, spent_points = spent_points + $2, updated_at = NOW()
+WHERE id = $1`, campaignID, spentPoints)
 	return err
 }
 
@@ -141,22 +141,22 @@ WHERE id = $1`, campaignID, spentCents)
 // was rejected because the campaign is at its claim cap or would exceed budget.
 var ErrCampaignLimitReached = errors.New("campaign claim or budget limit reached")
 
-// ReserveClaim atomically increments claim_count and spent_cents only if the
+// ReserveClaim atomically increments claim_count and spent_points only if the
 // campaign still has claim and budget headroom. It is the race-safe replacement
 // for the read-then-IncrementClaimCount pattern: concurrent claims can no
-// longer push claim_count past max_claims or spent_cents past budget_cents.
+// longer push claim_count past max_claims or spent_points past budget_points.
 // Returns ErrCampaignLimitReached if no row qualified.
-func (r *Repository) ReserveClaim(ctx context.Context, campaignID int64, amountCents int64) error {
+func (r *Repository) ReserveClaim(ctx context.Context, campaignID int64, amountPoints int64) error {
 	res, err := r.db.ExecContext(ctx, `
 UPDATE campaigns
 SET claim_count = claim_count + 1,
-    spent_cents = spent_cents + $2,
+    spent_points = spent_points + $2,
     updated_at = NOW()
 WHERE id = $1
   AND status = 'active'
   AND (max_claims IS NULL OR claim_count < max_claims)
-  AND (budget_cents IS NULL OR spent_cents + $2 <= budget_cents)`,
-		campaignID, amountCents)
+  AND (budget_points IS NULL OR spent_points + $2 <= budget_points)`,
+		campaignID, amountPoints)
 	if err != nil {
 		return err
 	}
@@ -170,14 +170,14 @@ WHERE id = $1
 // ReleaseClaim reverses a ReserveClaim reservation. Used to compensate when a
 // downstream step (e.g. creating the player_bonus row) fails after the claim
 // slot was reserved, so the campaign counters do not drift.
-func (r *Repository) ReleaseClaim(ctx context.Context, campaignID int64, amountCents int64) error {
+func (r *Repository) ReleaseClaim(ctx context.Context, campaignID int64, amountPoints int64) error {
 	_, err := r.db.ExecContext(ctx, `
 UPDATE campaigns
 SET claim_count = GREATEST(claim_count - 1, 0),
-    spent_cents = GREATEST(spent_cents - $2, 0),
+    spent_points = GREATEST(spent_points - $2, 0),
     updated_at = NOW()
 WHERE id = $1`,
-		campaignID, amountCents)
+		campaignID, amountPoints)
 	return err
 }
 
@@ -231,7 +231,7 @@ ORDER BY rule_type`, campaignID)
 func (r *Repository) ListActiveCampaigns(ctx context.Context) ([]Campaign, error) {
 	rows, err := r.db.QueryContext(ctx, `
 SELECT id, name, description, campaign_type, status, start_at, end_at,
-       budget_cents, spent_cents, max_claims, claim_count, rules, created_by, created_at, updated_at
+       budget_points, spent_points, max_claims, claim_count, rules, created_by, created_at, updated_at
 FROM campaigns
 WHERE status = 'active' AND start_at <= NOW() AND end_at >= NOW()
 ORDER BY start_at`)
@@ -245,7 +245,7 @@ ORDER BY start_at`)
 		var c Campaign
 		if err := rows.Scan(
 			&c.ID, &c.Name, &c.Description, &c.CampaignType, &c.Status,
-			&c.StartAt, &c.EndAt, &c.BudgetCents, &c.SpentCents,
+			&c.StartAt, &c.EndAt, &c.BudgetPoints, &c.SpentPoints,
 			&c.MaxClaims, &c.ClaimCount, &c.Rules, &c.CreatedBy,
 			&c.CreatedAt, &c.UpdatedAt,
 		); err != nil {
@@ -261,13 +261,13 @@ ORDER BY start_at`)
 func (r *Repository) CreatePlayerBonus(ctx context.Context, pb PlayerBonus) (PlayerBonus, error) {
 	err := r.db.QueryRowContext(ctx, `
 INSERT INTO player_bonuses (user_id, campaign_id, bonus_type, status,
-    granted_amount_cents, remaining_amount_cents, wagering_required_cents,
-    wagering_completed_cents, expires_at, metadata)
+    granted_amount_points, remaining_amount_points, wagering_required_points,
+    wagering_completed_points, expires_at, metadata)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 RETURNING id, granted_at, created_at, updated_at`,
 		pb.UserID, pb.CampaignID, pb.BonusType, pb.Status,
-		pb.GrantedAmountCents, pb.RemainingAmountCents,
-		pb.WageringRequiredCents, pb.WageringCompletedCents,
+		pb.GrantedAmountPoints, pb.RemainingAmountPoints,
+		pb.WageringRequiredPoints, pb.WageringCompletedPoints,
 		pb.ExpiresAt, pb.Metadata,
 	).Scan(&pb.ID, &pb.GrantedAt, &pb.CreatedAt, &pb.UpdatedAt)
 	if err != nil {
@@ -280,14 +280,14 @@ func (r *Repository) GetPlayerBonus(ctx context.Context, id int64) (PlayerBonus,
 	var pb PlayerBonus
 	err := r.db.QueryRowContext(ctx, `
 SELECT id, user_id, campaign_id, bonus_type, status,
-       granted_amount_cents, remaining_amount_cents,
-       wagering_required_cents, wagering_completed_cents,
+       granted_amount_points, remaining_amount_points,
+       wagering_required_points, wagering_completed_points,
        expires_at, granted_at, completed_at, forfeited_at, COALESCE(forfeited_by, ''),
        COALESCE(metadata, '{}'), created_at, updated_at
 FROM player_bonuses WHERE id = $1`, id).Scan(
 		&pb.ID, &pb.UserID, &pb.CampaignID, &pb.BonusType, &pb.Status,
-		&pb.GrantedAmountCents, &pb.RemainingAmountCents,
-		&pb.WageringRequiredCents, &pb.WageringCompletedCents,
+		&pb.GrantedAmountPoints, &pb.RemainingAmountPoints,
+		&pb.WageringRequiredPoints, &pb.WageringCompletedPoints,
 		&pb.ExpiresAt, &pb.GrantedAt, &pb.CompletedAt, &pb.ForfeitedAt, &pb.ForfeitedBy,
 		&pb.Metadata, &pb.CreatedAt, &pb.UpdatedAt,
 	)
@@ -307,8 +307,8 @@ func (r *Repository) ListPlayerBonuses(ctx context.Context, userID string, statu
 
 	query := `
 SELECT id, user_id, campaign_id, bonus_type, status,
-       granted_amount_cents, remaining_amount_cents,
-       wagering_required_cents, wagering_completed_cents,
+       granted_amount_points, remaining_amount_points,
+       wagering_required_points, wagering_completed_points,
        expires_at, granted_at, completed_at, forfeited_at, COALESCE(forfeited_by, ''),
        COALESCE(metadata, '{}'), created_at, updated_at
 FROM player_bonuses WHERE 1=1`
@@ -339,8 +339,8 @@ FROM player_bonuses WHERE 1=1`
 		var pb PlayerBonus
 		if err := rows.Scan(
 			&pb.ID, &pb.UserID, &pb.CampaignID, &pb.BonusType, &pb.Status,
-			&pb.GrantedAmountCents, &pb.RemainingAmountCents,
-			&pb.WageringRequiredCents, &pb.WageringCompletedCents,
+			&pb.GrantedAmountPoints, &pb.RemainingAmountPoints,
+			&pb.WageringRequiredPoints, &pb.WageringCompletedPoints,
 			&pb.ExpiresAt, &pb.GrantedAt, &pb.CompletedAt, &pb.ForfeitedAt, &pb.ForfeitedBy,
 			&pb.Metadata, &pb.CreatedAt, &pb.UpdatedAt,
 		); err != nil {
@@ -374,8 +374,8 @@ func (r *Repository) UpdateBonusStatus(ctx context.Context, id int64, status str
 func (r *Repository) ListExpiredActiveBonuses(ctx context.Context) ([]PlayerBonus, error) {
 	rows, err := r.db.QueryContext(ctx, `
 SELECT id, user_id, campaign_id, bonus_type, status,
-       granted_amount_cents, remaining_amount_cents,
-       wagering_required_cents, wagering_completed_cents,
+       granted_amount_points, remaining_amount_points,
+       wagering_required_points, wagering_completed_points,
        expires_at, granted_at, completed_at, forfeited_at, COALESCE(forfeited_by, ''),
        COALESCE(metadata, '{}'), created_at, updated_at
 FROM player_bonuses
@@ -391,8 +391,8 @@ LIMIT 500`)
 		var pb PlayerBonus
 		if err := rows.Scan(
 			&pb.ID, &pb.UserID, &pb.CampaignID, &pb.BonusType, &pb.Status,
-			&pb.GrantedAmountCents, &pb.RemainingAmountCents,
-			&pb.WageringRequiredCents, &pb.WageringCompletedCents,
+			&pb.GrantedAmountPoints, &pb.RemainingAmountPoints,
+			&pb.WageringRequiredPoints, &pb.WageringCompletedPoints,
 			&pb.ExpiresAt, &pb.GrantedAt, &pb.CompletedAt, &pb.ForfeitedAt, &pb.ForfeitedBy,
 			&pb.Metadata, &pb.CreatedAt, &pb.UpdatedAt,
 		); err != nil {
@@ -421,7 +421,7 @@ func (r *Repository) CloseExpiredCampaigns(ctx context.Context) ([]Campaign, err
 UPDATE campaigns SET status = 'closed', updated_at = NOW()
 WHERE status = 'active' AND end_at < NOW()
 RETURNING id, name, description, campaign_type, status, start_at, end_at,
-          budget_cents, spent_cents, max_claims, claim_count, rules, created_by, created_at, updated_at`)
+          budget_points, spent_points, max_claims, claim_count, rules, created_by, created_at, updated_at`)
 	if err != nil {
 		return nil, err
 	}
@@ -432,7 +432,7 @@ RETURNING id, name, description, campaign_type, status, start_at, end_at,
 		var c Campaign
 		if err := rows.Scan(
 			&c.ID, &c.Name, &c.Description, &c.CampaignType, &c.Status,
-			&c.StartAt, &c.EndAt, &c.BudgetCents, &c.SpentCents,
+			&c.StartAt, &c.EndAt, &c.BudgetPoints, &c.SpentPoints,
 			&c.MaxClaims, &c.ClaimCount, &c.Rules, &c.CreatedBy,
 			&c.CreatedAt, &c.UpdatedAt,
 		); err != nil {

@@ -20,9 +20,9 @@ import (
 // checked the header.
 func TestUserIDFromRequest_PreferContextOverHeader(t *testing.T) {
 	tests := []struct {
-		name    string
+		name     string
 		setupReq func() *http.Request
-		want    string
+		want     string
 	}{
 		{
 			name: "cookie auth: user ID from context",

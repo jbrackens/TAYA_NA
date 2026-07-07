@@ -38,7 +38,7 @@ type PredictBoardDef struct {
 	MetricLabel      string             `json:"metricLabel"`
 	Window           PredictBoardWindow `json:"window"`
 	MinSettled       int                `json:"minSettled"`
-	MinVolumeCents   int64              `json:"minVolumePointsCents,omitempty"`
+	MinVolumePoints  int64              `json:"minVolumePoints,omitempty"`
 	CategorySlug     string             `json:"categorySlug,omitempty"`
 	QualificationMsg string             `json:"qualificationMsg"`
 }
@@ -73,7 +73,7 @@ func PredictBoards() []PredictBoardDef {
 			MetricLabel:      "ROI",
 			Window:           PredictBoardWindowRolling30D,
 			MinSettled:       5,
-			MinVolumeCents:   50_000,
+			MinVolumePoints:  50_000,
 			QualificationMsg: "Settle 5 markets with 500+ pts total prediction volume in the last 30 days.",
 		},
 	}

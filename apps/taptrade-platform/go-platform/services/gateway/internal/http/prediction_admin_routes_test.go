@@ -189,19 +189,19 @@ func TestAdminPuntersListIncludesFinancials(t *testing.T) {
 	if len(payload.Items) != 2 {
 		t.Fatalf("expected 2 items, got %d", len(payload.Items))
 	}
-	if payload.Items[0].PointAccountBalanceCents != 500000 ||
-		payload.Items[0].RealizedPointsCents != 4200 ||
+	if payload.Items[0].PointAccountBalancePoints != 500000 ||
+		payload.Items[0].RealizedPoints != 4200 ||
 		payload.Items[0].Unit != "PTS" {
 		t.Fatalf("u-1 financials wrong: %+v", payload.Items[0])
 	}
 	// u-2 has a balance but no settled payouts -> realized pnl defaults to 0.
-	if payload.Items[1].PointAccountBalanceCents != 12345 ||
-		payload.Items[1].RealizedPointsCents != 0 ||
+	if payload.Items[1].PointAccountBalancePoints != 12345 ||
+		payload.Items[1].RealizedPoints != 0 ||
 		payload.Items[1].Unit != "PTS" {
 		t.Fatalf("u-2 financials wrong: %+v", payload.Items[1])
 	}
 	body := res.Body.String()
-	for _, retired := range []string{`"walletBalanceCents"`, `"realizedPnlCents"`} {
+	for _, retired := range []string{`"walletBalancePoints"`, `"realizedPnlPoints"`} {
 		if strings.Contains(body, retired) {
 			t.Fatalf("admin punter list should not emit %s: %s", retired, body)
 		}
@@ -359,8 +359,8 @@ func TestAdminPunterDetailIncludesFinancials(t *testing.T) {
 		detail:        &prediction.AdminPunter{ID: "u-1", Email: "a@b.dev", Status: "active"},
 		walletBalance: 512300,
 		portfolio: &prediction.PortfolioSummary{
-			TotalValueCents:    100000,
-			RealizedPnlCents:   4200,
+			TotalValuePoints:   100000,
+			RealizedPnlPoints:  4200,
 			OpenPositions:      3,
 			TotalPredictions:   10,
 			CorrectPredictions: 7,
@@ -382,21 +382,23 @@ func TestAdminPunterDetailIncludesFinancials(t *testing.T) {
 	if d.ID != "u-1" {
 		t.Fatalf("identity not preserved: %+v", d.AdminPunter)
 	}
-	if d.PointAccountBalanceCents != 512300 || d.Unit != "PTS" {
+	if d.PointAccountBalancePoints != 512300 || d.Unit != "PTS" {
 		t.Fatalf("point-account balance not returned: %+v", d)
 	}
 	if d.Portfolio.OpenPositions != 3 || d.Portfolio.AccuracyPct != 70 {
 		t.Fatalf("portfolio not returned: %+v", d.Portfolio)
 	}
-	for _, needle := range []string{`"portfolioValuePointsCents":100000`, `"realizedPointsCents":4200`} {
+	for _, needle := range []string{`"portfolioValuePoints":100000`, `"realizedPoints":4200`} {
 		if !strings.Contains(res.Body.String(), needle) {
 			t.Fatalf("portfolio summary missing %s: %s", needle, res.Body.String())
 		}
 	}
-	if strings.Contains(res.Body.String(), `"walletBalanceCents"`) {
-		t.Fatalf("admin punter detail should not emit walletBalanceCents: %s", res.Body.String())
+	if strings.Contains(res.Body.String(), `"walletBalancePoints"`) {
+		t.Fatalf("admin punter detail should not emit walletBalancePoints: %s", res.Body.String())
 	}
-	for _, retired := range []string{`"totalValueCents"`, `"realizedPnlCents"`, `"unrealizedPnlCents"`} {
+	// Points unit-model (2026-07-07): totalValuePoints is canonical; retired
+	// spellings are the cents-era key and the sportsbook Pnl aliases.
+	for _, retired := range []string{`"totalValuePointsCents"`, `"realizedPnlPoints"`, `"unrealizedPnlPoints"`} {
 		if strings.Contains(res.Body.String(), retired) {
 			t.Fatalf("admin punter detail should not emit portfolio summary alias %s: %s", retired, res.Body.String())
 		}
@@ -405,7 +407,7 @@ func TestAdminPunterDetailIncludesFinancials(t *testing.T) {
 
 func TestAdminPunterSettlements(t *testing.T) {
 	repo := &fakeAdminReader{settled: []prediction.Payout{
-		{ID: "p-1", UserID: "u-1", MarketID: "m-1", Side: "yes", Quantity: 10, PnlCents: 250, PayoutCents: 1000},
+		{ID: "p-1", UserID: "u-1", MarketID: "m-1", Side: "yes", Quantity: 10, PnlPoints: 250, PayoutPoints: 1000},
 	}}
 	handler := adminTestHandler(repo)
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/punters/u-1/settlements", nil)
@@ -425,13 +427,13 @@ func TestAdminPunterSettlements(t *testing.T) {
 	if len(payload.Items) != 1 || payload.Items[0].ID != "p-1" || payload.Total != 1 {
 		t.Fatalf("unexpected settlements: %+v total=%d", payload.Items, payload.Total)
 	}
-	if payload.Items[0].RealizedPointsCents != 250 ||
-		payload.Items[0].SettlementPointsCents != 1000 ||
+	if payload.Items[0].RealizedPoints != 250 ||
+		payload.Items[0].SettlementPoints != 1000 ||
 		payload.Items[0].Unit != "PTS" {
 		t.Fatalf("settlement point aliases missing: %+v", payload.Items[0])
 	}
 	body := res.Body.String()
-	for _, retired := range []string{`"payoutCents"`, `"pnlCents"`} {
+	for _, retired := range []string{`"payoutPoints"`, `"pnlPoints"`} {
 		if strings.Contains(body, retired) {
 			t.Fatalf("admin account settlement history should not emit %s: %s", retired, body)
 		}
@@ -440,7 +442,7 @@ func TestAdminPunterSettlements(t *testing.T) {
 
 func TestAdminPunterWalletLedger(t *testing.T) {
 	repo := &fakeAdminReader{ledger: []wallet.LedgerEntry{
-		{EntryID: "e-1", UserID: "u-1", Type: "credit", AmountCents: 5000, BalanceCents: 5000},
+		{EntryID: "e-1", UserID: "u-1", Type: "credit", AmountPoints: 5000, BalancePoints: 5000},
 	}}
 	handler := adminTestHandler(repo)
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/punters/u-1/wallet", nil)
@@ -459,8 +461,8 @@ func TestAdminPunterWalletLedger(t *testing.T) {
 	if len(payload.Items) != 1 || payload.Items[0]["entryId"] != "e-1" {
 		t.Fatalf("unexpected ledger: %+v", payload.Items)
 	}
-	if payload.Items[0]["amountPointsCents"] != float64(5000) ||
-		payload.Items[0]["balancePointsCents"] != float64(5000) ||
+	if payload.Items[0]["amountPoints"] != float64(5000) ||
+		payload.Items[0]["balancePoints"] != float64(5000) ||
 		payload.Items[0]["unit"] != "PTS" {
 		t.Fatalf("ledger point aliases missing: %+v", payload.Items[0])
 	}

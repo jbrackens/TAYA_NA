@@ -12,12 +12,12 @@ package loyalty
 type PredictTier int
 
 const (
-	PredictTierHidden    PredictTier = 0 // No pill; user has earned no points
-	PredictTierNewcomer  PredictTier = 1
-	PredictTierTrader    PredictTier = 2
-	PredictTierSharp     PredictTier = 3
-	PredictTierWhale     PredictTier = 4
-	PredictTierLegend    PredictTier = 5
+	PredictTierHidden   PredictTier = 0 // No pill; user has earned no points
+	PredictTierNewcomer PredictTier = 1
+	PredictTierTrader   PredictTier = 2
+	PredictTierSharp    PredictTier = 3
+	PredictTierWhale    PredictTier = 4
+	PredictTierLegend   PredictTier = 5
 
 	// Thresholds match the plan. Tunable — revisit after 2 weeks of usage
 	// data per the "Unresolved decisions" table in the plan.
@@ -32,10 +32,10 @@ const (
 // `/api/v1/loyalty/tiers` returns a []PredictTierDefinition so the frontend
 // has a single source of truth for names, thresholds, and benefit copy.
 type PredictTierDefinition struct {
-	Tier              PredictTier `json:"tier"`
-	Name              string      `json:"name"`
-	PointsThreshold   int64       `json:"pointsThreshold"`
-	Benefits          []string    `json:"benefits"`
+	Tier            PredictTier `json:"tier"`
+	Name            string      `json:"name"`
+	PointsThreshold int64       `json:"pointsThreshold"`
+	Benefits        []string    `json:"benefits"`
 }
 
 // PredictTiers returns the ordered tier table. Stable, pure function — no
@@ -96,12 +96,12 @@ func PredictTiers() []PredictTierDefinition {
 // PredictTierForPoints maps a raw points balance to the tier the user has
 // qualified for. Always returns a tier ≥ 0.
 //
-//   points < 1            → Hidden (0)
-//   1 ≤ points < 500      → Newcomer (1)
-//   500 ≤ points < 2500   → Trader (2)
-//   2500 ≤ points < 10k   → Sharp (3)
-//   10k ≤ points < 50k    → Whale (4)
-//   50k ≤ points          → Legend (5)
+//	points < 1            → Hidden (0)
+//	1 ≤ points < 500      → Newcomer (1)
+//	500 ≤ points < 2500   → Trader (2)
+//	2500 ≤ points < 10k   → Sharp (3)
+//	10k ≤ points < 50k    → Whale (4)
+//	50k ≤ points          → Legend (5)
 func PredictTierForPoints(points int64) PredictTier {
 	switch {
 	case points >= PredictTierThresholdLegend:
@@ -148,15 +148,15 @@ func PredictPointsToNextTier(currentPoints int64) (int64, string) {
 
 // PredictAccrualPoints computes points earned from a settled trade.
 //
-//   points = round(trade_volume_cents × (1.0 + 0.5 × is_correct))
+//	points = round(trade_volume_points × (1.0 + 0.5 × is_correct))
 //
 // A $10 winning trade earns 1500 raw points.
 // A $10 losing trade earns 1000 raw points.
 // Display divides by 100 (handled by the frontend).
 //
 // See PLAN-loyalty-leaderboards.md §2.Points formula.
-func PredictAccrualPoints(volumeCents int64, isCorrect bool) int64 {
-	if volumeCents <= 0 {
+func PredictAccrualPoints(volumePoints int64, isCorrect bool) int64 {
+	if volumePoints <= 0 {
 		return 0
 	}
 	multiplier := 1.0
@@ -165,7 +165,7 @@ func PredictAccrualPoints(volumeCents int64, isCorrect bool) int64 {
 	}
 	// Round to nearest integer. Guard against negative results (shouldn't
 	// happen with positive volume + positive multiplier, but defensive).
-	result := float64(volumeCents) * multiplier
+	result := float64(volumePoints) * multiplier
 	if result < 0 {
 		return 0
 	}

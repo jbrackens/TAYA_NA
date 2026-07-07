@@ -96,7 +96,7 @@ func (s *Service) FreezeReorgedDeposit(ctx context.Context, depositID, userID st
 	holdKey := "alpha-cashier:reorg:" + strings.TrimSpace(depositID)
 	_, err := s.ledger.Hold(ctx, wallet.HoldRequest{
 		UserID:        userID,
-		AmountCents:   amountCents,
+		AmountPoints:  amountCents,
 		ReferenceType: "alpha_cashier_reorg_freeze",
 		ReferenceID:   holdKey,
 		ExpiresIn:     reorgFreezeTTL,

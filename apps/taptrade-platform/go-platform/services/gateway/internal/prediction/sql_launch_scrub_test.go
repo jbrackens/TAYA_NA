@@ -73,7 +73,7 @@ func TestSQLListMarketsExcludesLaunchScrubbedTitles(t *testing.T) {
 		if _, err := db.ExecContext(ctx,
 			`INSERT INTO prediction_markets
 			 (event_id, ticker, title, status, settlement_source_key, settlement_rule,
-			  close_at, volume_cents)
+			  close_at, volume_points)
 			 VALUES ($1, $2, $3, 'open', 'manual', 'manual-attestation',
 			         NOW() + INTERVAL '3 days', $4)`,
 			eventID, ticker, title, bigVolume,

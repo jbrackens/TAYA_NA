@@ -653,7 +653,7 @@ func TestPredictionAdminCreateMarketWorksWithNormalizedTrailingSlash(t *testing.
 		"settlementRule":"binary",
 		"closeAt":"2026-04-30T12:00:00Z",
 		"ammLiquidityParam":100,
-		"ammSubsidyPointsCents":1234
+		"ammSubsidyPoints":1234
 	}`))
 	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
 	res := httptest.NewRecorder()
@@ -673,13 +673,17 @@ func TestPredictionAdminCreateMarketWorksWithNormalizedTrailingSlash(t *testing.
 	if market.Status != prediction.MarketStatusUnopened {
 		t.Fatalf("expected new market to start unopened, got %s", market.Status)
 	}
-	if !strings.Contains(res.Body.String(), `"ammSubsidyPointsCents":1234`) {
+	if !strings.Contains(res.Body.String(), `"ammSubsidyPoints":1234`) {
 		t.Fatalf("expected point-native AMM subsidy response field, got %s", res.Body.String())
 	}
-	if strings.Contains(res.Body.String(), `"ammSubsidyCents"`) {
-		t.Fatalf("create market response should not emit retired ammSubsidyCents alias: %s", res.Body.String())
+	// Points unit-model (2026-07-07): ammSubsidyPoints is canonical; the
+	// retired spelling is the cents-era ammSubsidyPointsCents.
+	if strings.Contains(res.Body.String(), `"ammSubsidyPointsCents"`) {
+		t.Fatalf("create market response should not emit retired ammSubsidyPointsCents alias: %s", res.Body.String())
 	}
 
+	// Points unit-model (2026-07-07): the retired request key is the
+	// cents-era ammSubsidyCents; the guard must keep rejecting it.
 	retiredReq := httptest.NewRequest(http.MethodPost, "/api/v1/admin/markets", strings.NewReader(`{
 		"eventId":"evt-admin-test-1",
 		"ticker":"QA-CREATE-RETIRED-AMM",
@@ -696,8 +700,8 @@ func TestPredictionAdminCreateMarketWorksWithNormalizedTrailingSlash(t *testing.
 	if retiredRes.Code != http.StatusBadRequest {
 		t.Fatalf("retired ammSubsidyCents request should be rejected: status=%d body=%s", retiredRes.Code, retiredRes.Body.String())
 	}
-	if !strings.Contains(retiredRes.Body.String(), "ammSubsidyPointsCents") {
-		t.Fatalf("retired AMM subsidy error should point to ammSubsidyPointsCents, got %s", retiredRes.Body.String())
+	if !strings.Contains(retiredRes.Body.String(), "ammSubsidyPoints") {
+		t.Fatalf("retired AMM subsidy error should point to ammSubsidyPoints, got %s", retiredRes.Body.String())
 	}
 }
 
@@ -1517,17 +1521,17 @@ func TestPredictionAdminLifecycleRoutesSupportOpenCloseAndVoid(t *testing.T) {
 	}
 
 	repo.positions[market.ID] = []prediction.Position{{
-		ID:             "pos-admin-test-1",
-		UserID:         "u-qa-1",
-		MarketID:       market.ID,
-		Side:           prediction.OrderSideYes,
-		Quantity:       1,
-		AvgPriceCents:  53,
-		TotalCostCents: 53,
+		ID:              "pos-admin-test-1",
+		UserID:          "u-qa-1",
+		MarketID:        market.ID,
+		Side:            prediction.OrderSideYes,
+		Quantity:        1,
+		AvgPricePoints:  53,
+		TotalCostPoints: 53,
 	}}
 
 	var closePayload struct {
-		Status           prediction.MarketStatus           `json:"status"`
+		Status            prediction.MarketStatus            `json:"status"`
 		TapTradeLifecycle prediction.TapTradeMarketLifecycle `json:"taptradeLifecycle"`
 	}
 	for _, action := range []string{"open", "close"} {
@@ -1571,11 +1575,11 @@ func TestPredictionAdminLifecycleRoutesSupportOpenCloseAndVoid(t *testing.T) {
 	}
 
 	var payload struct {
-		Status                     prediction.MarketStatus           `json:"status"`
-		TapTradeLifecycle           prediction.TapTradeMarketLifecycle `json:"taptradeLifecycle"`
-		PointDisbursements         []settlementPointDisbursement     `json:"pointDisbursements"`
-		TotalSettlementPointsCents int64                             `json:"totalSettlementPointsCents"`
-		Unit                       string                            `json:"unit"`
+		Status                prediction.MarketStatus            `json:"status"`
+		TapTradeLifecycle     prediction.TapTradeMarketLifecycle `json:"taptradeLifecycle"`
+		PointDisbursements    []settlementPointDisbursement      `json:"pointDisbursements"`
+		TotalSettlementPoints int64                              `json:"totalSettlementPoints"`
+		Unit                  string                             `json:"unit"`
 	}
 	if err := json.Unmarshal(voidRes.Body.Bytes(), &payload); err != nil {
 		t.Fatalf("decode void response: %v", err)
@@ -1586,13 +1590,13 @@ func TestPredictionAdminLifecycleRoutesSupportOpenCloseAndVoid(t *testing.T) {
 	if payload.TapTradeLifecycle.Stage != "invalid" || !payload.TapTradeLifecycle.Terminal {
 		t.Fatalf("expected void response TapTrade lifecycle invalid terminal, got %+v", payload.TapTradeLifecycle)
 	}
-	if len(payload.PointDisbursements) != 1 || payload.PointDisbursements[0].SettlementPointsCents != 53 {
+	if len(payload.PointDisbursements) != 1 || payload.PointDisbursements[0].SettlementPoints != 53 {
 		t.Fatalf("expected one point disbursement for 53 points cents, got %+v", payload.PointDisbursements)
 	}
-	if payload.TotalSettlementPointsCents != 53 || payload.Unit != "PTS" {
-		t.Fatalf("expected PTS settlement point aliases, got total=%d unit=%q", payload.TotalSettlementPointsCents, payload.Unit)
+	if payload.TotalSettlementPoints != 53 || payload.Unit != "PTS" {
+		t.Fatalf("expected PTS settlement point aliases, got total=%d unit=%q", payload.TotalSettlementPoints, payload.Unit)
 	}
-	for _, retired := range []string{`"payouts"`, `"payoutCents"`, `"pnlCents"`} {
+	for _, retired := range []string{`"payouts"`, `"payoutPoints"`, `"pnlPoints"`} {
 		if strings.Contains(voidRes.Body.String(), retired) {
 			t.Fatalf("void lifecycle response should not emit %s: %s", retired, voidRes.Body.String())
 		}
@@ -1766,13 +1770,13 @@ func TestPredictionAdminWindowedResolutionRoutesEnforceDualControlAndDisputeGate
 		t.Fatalf("seed market: %v", err)
 	}
 	repo.positions[market.ID] = []prediction.Position{{
-		ID:             "pos-windowed-holder-1",
-		UserID:         "u-windowed-holder",
-		MarketID:       market.ID,
-		Side:           prediction.OrderSideYes,
-		Quantity:       2,
-		AvgPriceCents:  40,
-		TotalCostCents: 80,
+		ID:              "pos-windowed-holder-1",
+		UserID:          "u-windowed-holder",
+		MarketID:        market.ID,
+		Side:            prediction.OrderSideYes,
+		Quantity:        2,
+		AvgPricePoints:  40,
+		TotalCostPoints: 80,
 	}}
 
 	svc := prediction.NewService(repo, predictionAdminWallet{})
@@ -1811,7 +1815,7 @@ func TestPredictionAdminWindowedResolutionRoutesEnforceDualControlAndDisputeGate
 	if proposal.ChallengeEndsAt.IsZero() || !proposal.ChallengeEndsAt.After(proposal.ProposedAt) {
 		t.Fatalf("expected future challenge window on proposal, got %+v", proposal)
 	}
-	for _, retired := range []string{`"payouts"`, `"payoutCents"`, `"pnlCents"`, `"totalPayoutCents"`, `"currency"`} {
+	for _, retired := range []string{`"payouts"`, `"payoutPoints"`, `"pnlPoints"`, `"totalPayoutPoints"`, `"currency"`} {
 		if strings.Contains(proposeRes.Body.String(), retired) {
 			t.Fatalf("proposal response should not emit %s: %s", retired, proposeRes.Body.String())
 		}
@@ -1850,12 +1854,14 @@ func TestPredictionAdminWindowedResolutionRoutesEnforceDualControlAndDisputeGate
 	if disputeRes.Code != http.StatusCreated {
 		t.Fatalf("file dispute failed: status=%d body=%s", disputeRes.Code, disputeRes.Body.String())
 	}
-	if !strings.Contains(disputeRes.Body.String(), `"bondPointsCents"`) ||
+	if !strings.Contains(disputeRes.Body.String(), `"bondPoints"`) ||
 		!strings.Contains(disputeRes.Body.String(), `"unit":"PTS"`) {
 		t.Fatalf("dispute response should emit point-native bond fields, got %s", disputeRes.Body.String())
 	}
-	if strings.Contains(disputeRes.Body.String(), `"bondCents"`) {
-		t.Fatalf("dispute response should not emit retired bondCents alias: %s", disputeRes.Body.String())
+	// Points unit-model (2026-07-07): bondPoints is canonical; the retired
+	// spelling is the cents-era bondPointsCents.
+	if strings.Contains(disputeRes.Body.String(), `"bondPointsCents"`) {
+		t.Fatalf("dispute response should not emit retired bondPointsCents alias: %s", disputeRes.Body.String())
 	}
 	var dispute prediction.Dispute
 	if err := json.Unmarshal(disputeRes.Body.Bytes(), &dispute); err != nil {
@@ -1875,12 +1881,14 @@ func TestPredictionAdminWindowedResolutionRoutesEnforceDualControlAndDisputeGate
 	if queueRes.Code != http.StatusOK {
 		t.Fatalf("admin dispute queue failed: status=%d body=%s", queueRes.Code, queueRes.Body.String())
 	}
-	if !strings.Contains(queueRes.Body.String(), `"bondPointsCents"`) ||
+	if !strings.Contains(queueRes.Body.String(), `"bondPoints"`) ||
 		!strings.Contains(queueRes.Body.String(), `"unit":"PTS"`) {
 		t.Fatalf("admin dispute queue should emit point-native bond fields, got %s", queueRes.Body.String())
 	}
-	if strings.Contains(queueRes.Body.String(), `"bondCents"`) {
-		t.Fatalf("admin dispute queue should not emit retired bondCents alias: %s", queueRes.Body.String())
+	// Points unit-model (2026-07-07): bondPoints is canonical; the retired
+	// spelling is the cents-era bondPointsCents.
+	if strings.Contains(queueRes.Body.String(), `"bondPointsCents"`) {
+		t.Fatalf("admin dispute queue should not emit retired bondPointsCents alias: %s", queueRes.Body.String())
 	}
 	var queue struct {
 		Items []prediction.Dispute `json:"items"`
@@ -1924,12 +1932,14 @@ func TestPredictionAdminWindowedResolutionRoutesEnforceDualControlAndDisputeGate
 	if resolveRes.Code != http.StatusOK {
 		t.Fatalf("resolve dispute failed: status=%d body=%s", resolveRes.Code, resolveRes.Body.String())
 	}
-	if !strings.Contains(resolveRes.Body.String(), `"bondPointsCents"`) ||
+	if !strings.Contains(resolveRes.Body.String(), `"bondPoints"`) ||
 		!strings.Contains(resolveRes.Body.String(), `"unit":"PTS"`) {
 		t.Fatalf("resolved dispute response should emit point-native bond fields, got %s", resolveRes.Body.String())
 	}
-	if strings.Contains(resolveRes.Body.String(), `"bondCents"`) {
-		t.Fatalf("resolved dispute response should not emit retired bondCents alias: %s", resolveRes.Body.String())
+	// Points unit-model (2026-07-07): bondPoints is canonical; the retired
+	// spelling is the cents-era bondPointsCents.
+	if strings.Contains(resolveRes.Body.String(), `"bondPointsCents"`) {
+		t.Fatalf("resolved dispute response should not emit retired bondPointsCents alias: %s", resolveRes.Body.String())
 	}
 	var resolved prediction.Dispute
 	if err := json.Unmarshal(resolveRes.Body.Bytes(), &resolved); err != nil {
@@ -1950,16 +1960,16 @@ func TestPredictionAdminWindowedResolutionRoutesEnforceDualControlAndDisputeGate
 	if err := json.Unmarshal(finalizeRes.Body.Bytes(), &settlementPayload); err != nil {
 		t.Fatalf("decode finalize response: %v", err)
 	}
-	if settlementPayload.Unit != "PTS" || settlementPayload.TotalSettlementPointsCents != 200 {
-		t.Fatalf("expected point settlement aliases, got total=%d unit=%q", settlementPayload.TotalSettlementPointsCents, settlementPayload.Unit)
+	if settlementPayload.Unit != "PTS" || settlementPayload.TotalSettlementPoints != 200 {
+		t.Fatalf("expected point settlement aliases, got total=%d unit=%q", settlementPayload.TotalSettlementPoints, settlementPayload.Unit)
 	}
-	if len(settlementPayload.PointDisbursements) != 1 || settlementPayload.PointDisbursements[0].SettlementPointsCents != 200 {
+	if len(settlementPayload.PointDisbursements) != 1 || settlementPayload.PointDisbursements[0].SettlementPoints != 200 {
 		t.Fatalf("expected one 200 point-cent disbursement, got %+v", settlementPayload.PointDisbursements)
 	}
 	if settlementPayload.TapTradeLifecycle.Stage != "settled" {
 		t.Fatalf("expected settled lifecycle metadata, got %+v", settlementPayload.TapTradeLifecycle)
 	}
-	for _, retired := range []string{`"payouts"`, `"payoutCents"`, `"pnlCents"`, `"totalPayoutCents"`, `"payoutsTotal"`, `"payoutsCompleted"`, `"currency"`} {
+	for _, retired := range []string{`"payouts"`, `"payoutPoints"`, `"pnlPoints"`, `"totalPayoutPoints"`, `"payoutsTotal"`, `"payoutsCompleted"`, `"currency"`} {
 		if strings.Contains(finalizeRes.Body.String(), retired) {
 			t.Fatalf("finalize response should not emit %s: %s", retired, finalizeRes.Body.String())
 		}
@@ -1980,12 +1990,12 @@ func TestPredictionAdminWindowedResolutionRoutesEnforceDualControlAndDisputeGate
 	if finalizedAudit == nil {
 		t.Fatalf("expected market.finalized audit entry for %s", market.ID)
 	}
-	if !strings.Contains(finalizedAudit.Details, `"totalSettlementPointsCents"`) ||
+	if !strings.Contains(finalizedAudit.Details, `"totalSettlementPoints"`) ||
 		!strings.Contains(finalizedAudit.Details, `"pointDisbursementCount"`) ||
 		!strings.Contains(finalizedAudit.Details, `"unit":"PTS"`) {
 		t.Fatalf("finalize audit should use point-native details, got %s", finalizedAudit.Details)
 	}
-	for _, retired := range []string{`"totalPayoutCents"`, `"payoutCount"`, `"currency"`} {
+	for _, retired := range []string{`"totalPayoutPoints"`, `"payoutCount"`, `"currency"`} {
 		if strings.Contains(finalizedAudit.Details, retired) {
 			t.Fatalf("finalize audit should not emit retired %s: %s", retired, finalizedAudit.Details)
 		}
@@ -2002,8 +2012,8 @@ func TestPredictionAdminWindowedResolutionAllowsExplicitZeroHourWindow(t *testin
 		Ticker:              "QA-WINDOWED-ZERO",
 		Title:               "QA Windowed Zero",
 		Status:              prediction.MarketStatusClosed,
-		YesPriceCents:       55,
-		NoPriceCents:        45,
+		YesPricePoints:      55,
+		NoPricePoints:       45,
 		ExecutionMode:       prediction.ExecutionModeOrderBook,
 		SettlementSourceKey: "admin-manual",
 		SettlementRule:      "binary_outcome",
@@ -2015,13 +2025,13 @@ func TestPredictionAdminWindowedResolutionAllowsExplicitZeroHourWindow(t *testin
 		t.Fatalf("seed market: %v", err)
 	}
 	repo.positions[market.ID] = []prediction.Position{{
-		ID:             "pos-windowed-zero-holder",
-		UserID:         "u-windowed-zero-holder",
-		MarketID:       market.ID,
-		Side:           prediction.OrderSideYes,
-		Quantity:       1,
-		AvgPriceCents:  55,
-		TotalCostCents: 55,
+		ID:              "pos-windowed-zero-holder",
+		UserID:          "u-windowed-zero-holder",
+		MarketID:        market.ID,
+		Side:            prediction.OrderSideYes,
+		Quantity:        1,
+		AvgPricePoints:  55,
+		TotalCostPoints: 55,
 	}}
 
 	svc := prediction.NewService(repo, predictionAdminWallet{})
@@ -2078,13 +2088,13 @@ func TestPredictionAdminWindowedResolutionAllowsExplicitZeroHourWindow(t *testin
 	if err := json.Unmarshal(finalizeRes.Body.Bytes(), &settlementPayload); err != nil {
 		t.Fatalf("decode finalize response: %v", err)
 	}
-	if settlementPayload.Unit != "PTS" || settlementPayload.TotalSettlementPointsCents != 100 {
-		t.Fatalf("expected one winning share settled in PTS, got total=%d unit=%q", settlementPayload.TotalSettlementPointsCents, settlementPayload.Unit)
+	if settlementPayload.Unit != "PTS" || settlementPayload.TotalSettlementPoints != 100 {
+		t.Fatalf("expected one winning share settled in PTS, got total=%d unit=%q", settlementPayload.TotalSettlementPoints, settlementPayload.Unit)
 	}
 	if settlementPayload.TapTradeLifecycle.Stage != "settled" {
 		t.Fatalf("expected settled lifecycle metadata, got %+v", settlementPayload.TapTradeLifecycle)
 	}
-	for _, retired := range []string{`"payouts"`, `"payoutCents"`, `"pnlCents"`, `"totalPayoutCents"`, `"currency"`} {
+	for _, retired := range []string{`"payouts"`, `"payoutPoints"`, `"pnlPoints"`, `"totalPayoutPoints"`, `"currency"`} {
 		if strings.Contains(finalizeRes.Body.String(), retired) {
 			t.Fatalf("finalize response should not emit %s: %s", retired, finalizeRes.Body.String())
 		}
@@ -2205,9 +2215,9 @@ func TestPredictionAdminLifecycleAuditRouteListsMappedEvents(t *testing.T) {
 	var payload struct {
 		MarketID string `json:"marketId"`
 		Data     []struct {
-			EventType        string                            `json:"eventType"`
-			ActorID          *string                           `json:"actorId"`
-			Reason           *string                           `json:"reason"`
+			EventType         string                             `json:"eventType"`
+			ActorID           *string                            `json:"actorId"`
+			Reason            *string                            `json:"reason"`
 			TapTradeLifecycle prediction.TapTradeMarketLifecycle `json:"taptradeLifecycle"`
 		} `json:"data"`
 	}
@@ -2408,11 +2418,11 @@ func TestPredictionAdminMarketsCSVExport(t *testing.T) {
 		Status:              prediction.MarketStatusSettled,
 		Result:              &result,
 		ExecutionMode:       prediction.ExecutionModeOrderBook,
-		YesPriceCents:       63,
-		NoPriceCents:        37,
-		VolumeCents:         123400,
-		OpenInterestCents:   42000,
-		LiquidityCents:      99000,
+		YesPricePoints:      63,
+		NoPricePoints:       37,
+		VolumePoints:        123400,
+		OpenInterestPoints:  42000,
+		LiquidityPoints:     99000,
 		SettlementSourceKey: "admin-manual",
 		SettlementRule:      "binary_outcome",
 		CloseAt:             now.Add(24 * time.Hour),
@@ -2441,7 +2451,7 @@ func TestPredictionAdminMarketsCSVExport(t *testing.T) {
 	if len(rows) != 2 {
 		t.Fatalf("expected header plus one row, got %+v", rows)
 	}
-	if got := rows[0]; got[0] != "market_id" || got[5] != "taptrade_stage" || got[10] != "volume_points_cents" {
+	if got := rows[0]; got[0] != "market_id" || got[5] != "taptrade_stage" || got[10] != "volume_points" {
 		t.Fatalf("unexpected csv header: %+v", got)
 	}
 	got := rows[1]
@@ -2557,22 +2567,22 @@ func TestPredictionAdminSettlementReplayResumesIncompleteDisbursements(t *testin
 	}}
 	repo.unpaidSettlementPositions["settlement-replay-1"] = []prediction.Position{
 		{
-			ID:             "pos-replay-1",
-			UserID:         "user-replay-1",
-			MarketID:       "mkt-replay-1",
-			Side:           prediction.OrderSideYes,
-			Quantity:       1,
-			AvgPriceCents:  55,
-			TotalCostCents: 55,
+			ID:              "pos-replay-1",
+			UserID:          "user-replay-1",
+			MarketID:        "mkt-replay-1",
+			Side:            prediction.OrderSideYes,
+			Quantity:        1,
+			AvgPricePoints:  55,
+			TotalCostPoints: 55,
 		},
 		{
-			ID:             "pos-replay-2",
-			UserID:         "user-replay-2",
-			MarketID:       "mkt-replay-1",
-			Side:           prediction.OrderSideNo,
-			Quantity:       1,
-			AvgPriceCents:  45,
-			TotalCostCents: 45,
+			ID:              "pos-replay-2",
+			UserID:          "user-replay-2",
+			MarketID:        "mkt-replay-1",
+			Side:            prediction.OrderSideNo,
+			Quantity:        1,
+			AvgPricePoints:  45,
+			TotalCostPoints: 45,
 		},
 	}
 	svc := prediction.NewService(repo, predictionAdminWallet{})

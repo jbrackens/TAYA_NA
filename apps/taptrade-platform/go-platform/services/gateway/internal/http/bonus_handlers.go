@@ -52,7 +52,7 @@ func pointAliasBadRequest(err error) *httpx.AppError {
 		return httpx.BadRequest(redactLaunchProhibitedUserText(err.Error()), map[string]any{"field": fieldErr.FieldName()})
 	}
 	message := err.Error()
-	if before, _, ok := strings.Cut(message, " conflicts with "); ok && strings.Contains(before, "_points_cents") {
+	if before, _, ok := strings.Cut(message, " conflicts with "); ok && strings.Contains(before, "_points") {
 		field := before
 		if idx := strings.LastIndex(field, ": "); idx >= 0 {
 			field = field[idx+2:]
@@ -206,11 +206,11 @@ func playerBonusResponse(pb bonus.PlayerBonus, campaignName string) map[string]a
 		"granted_at":    grantedAt,
 		"grantedAt":     grantedAt,
 
-		"grantedPointsCents":       pb.GrantedAmountCents,
-		"remainingPointsCents":     pb.RemainingAmountCents,
-		"playRequiredPointsCents":  pb.WageringRequiredCents,
-		"playCompletedPointsCents": pb.WageringCompletedCents,
-		"playProgressPct":          progressPct,
+		"grantedPoints":       pb.GrantedAmountPoints,
+		"remainingPoints":     pb.RemainingAmountPoints,
+		"playRequiredPoints":  pb.WageringRequiredPoints,
+		"playCompletedPoints": pb.WageringCompletedPoints,
+		"playProgressPct":     progressPct,
 	}
 }
 
@@ -222,10 +222,10 @@ func playerBonusProgressResponse(pb bonus.PlayerBonus) map[string]any {
 		"bonus_id": pb.ID,
 		"bonusId":  pb.ID,
 
-		"playRequiredPointsCents":  pb.WageringRequiredCents,
-		"playCompletedPointsCents": pb.WageringCompletedCents,
-		"playProgressPct":          progressPct,
-		"recentContributions":      []any{},
+		"playRequiredPoints":  pb.WageringRequiredPoints,
+		"playCompletedPoints": pb.WageringCompletedPoints,
+		"playProgressPct":     progressPct,
+		"recentContributions": []any{},
 	}
 }
 
@@ -377,8 +377,10 @@ func decodeAdminCampaignCreateRequest(r *stdhttp.Request) (bonus.CreateCampaignR
 	if err := json.NewDecoder(r.Body).Decode(&fields); err != nil {
 		return bonus.CreateCampaignRequest{}, httpx.BadRequest("invalid request body", nil)
 	}
+	// Launch boundary: the retired money-era key is rejected outright
+	// ("budget_cents" kept as the banned literal, not a live field).
 	if _, ok := fields["budget_cents"]; ok {
-		return bonus.CreateCampaignRequest{}, httpx.BadRequest("admin campaign budget must use budget_points_cents", map[string]any{"field": "budget_points_cents"})
+		return bonus.CreateCampaignRequest{}, httpx.BadRequest("admin campaign budget must use budget_points", map[string]any{"field": "budget_points"})
 	}
 	if rawType, ok := fields["campaign_type"]; ok {
 		var campaignType string
@@ -420,11 +422,10 @@ func validateAdminCampaignRulesRequest(rawRules json.RawMessage) error {
 			return httpx.BadRequest("invalid request body", nil)
 		}
 		for retired, preferred := range map[string]string{
-			"max_bonus_cents":                     "max_bonus_points_cents",
-			"fixed_amount_cents":                  "fixed_amount_points_cents",
-			"max_stake_contribution_cents":        "max_play_contribution_points_cents",
-			"max_stake_contribution_points_cents": "max_play_contribution_points_cents",
-			"min_amount_cents":                    "min_points_cents",
+			"max_bonus_cents":              "max_bonus_points",
+			"fixed_amount_cents":           "fixed_amount_points",
+			"max_stake_contribution_cents": "max_play_contribution_points",
+			"min_amount_cents":             "min_amount_points",
 		} {
 			if _, ok := cfg[retired]; ok {
 				return httpx.BadRequest("admin campaign rule config must use point-native amount fields", map[string]any{"field": fmt.Sprintf("rules[%d].point_rule_config.%s", i, preferred)})
@@ -445,8 +446,8 @@ func decodeAdminBonusGrantRequest(r *stdhttp.Request) (bonus.GrantBonusRequest, 
 	if err := json.NewDecoder(r.Body).Decode(&fields); err != nil {
 		return bonus.GrantBonusRequest{}, httpx.BadRequest("invalid request body", nil)
 	}
-	if _, ok := fields["override_amount_cents"]; ok {
-		return bonus.GrantBonusRequest{}, httpx.BadRequest("admin bonus grant override must use override_points_cents", map[string]any{"field": "override_points_cents"})
+	if _, ok := fields["override_amount_points"]; ok {
+		return bonus.GrantBonusRequest{}, httpx.BadRequest("admin bonus grant override must use override_points", map[string]any{"field": "override_points"})
 	}
 	raw, err := json.Marshal(fields)
 	if err != nil {
@@ -523,24 +524,24 @@ func campaignResponse(c bonus.Campaign) map[string]any {
 	payload := map[string]any{
 		"unit": "PTS",
 
-		"id":               c.ID,
-		"name":             redactLaunchProhibitedUserText(c.Name),
-		"description":      redactLaunchProhibitedUserText(c.Description),
-		"campaignType":     launchCampaignType(c.CampaignType),
-		"status":           c.Status,
-		"startAt":          c.StartAt,
-		"endAt":            c.EndAt,
-		"spentPointsCents": c.SpentCents,
-		"maxClaims":        c.MaxClaims,
-		"claimCount":       c.ClaimCount,
-		"createdBy":        c.CreatedBy,
-		"createdAt":        c.CreatedAt,
-		"updatedAt":        c.UpdatedAt,
+		"id":           c.ID,
+		"name":         redactLaunchProhibitedUserText(c.Name),
+		"description":  redactLaunchProhibitedUserText(c.Description),
+		"campaignType": launchCampaignType(c.CampaignType),
+		"status":       c.Status,
+		"startAt":      c.StartAt,
+		"endAt":        c.EndAt,
+		"spentPoints":  c.SpentPoints,
+		"maxClaims":    c.MaxClaims,
+		"claimCount":   c.ClaimCount,
+		"createdBy":    c.CreatedBy,
+		"createdAt":    c.CreatedAt,
+		"updatedAt":    c.UpdatedAt,
 	}
-	if c.BudgetCents != nil {
-		payload["budgetPointsCents"] = *c.BudgetCents
+	if c.BudgetPoints != nil {
+		payload["budgetPoints"] = *c.BudgetPoints
 	} else {
-		payload["budgetPointsCents"] = nil
+		payload["budgetPoints"] = nil
 	}
 	return payload
 }
@@ -583,17 +584,20 @@ func pointRuleConfig(raw json.RawMessage) map[string]any {
 		return map[string]any{}
 	}
 
+	// Points unit-model (2026-07-07): retired stored-config keys are the
+	// cents-era spellings (plus the prohibited "stake" alias); they are
+	// filtered here and re-emitted via the point-native aliases below.
 	retiredKeys := map[string]bool{
-		"max_bonus_cents":                     true,
-		"fixed_amount_cents":                  true,
-		"max_stake_contribution_cents":        true,
-		"max_stake_contribution_points_cents": true,
-		"min_odds_decimal":                    true,
-		"parlay_multiplier":                   true,
-		"excluded_sports":                     true,
-		"min_amount_cents":                    true,
-		"min_deposits":                        true,
-		"tier_min":                            true,
+		"max_bonus_cents":               true,
+		"fixed_amount_cents":            true,
+		"max_stake_contribution_cents":  true,
+		"max_stake_contribution_points": true,
+		"min_odds_decimal":              true,
+		"parlay_multiplier":             true,
+		"excluded_sports":               true,
+		"min_amount_cents":              true,
+		"min_deposits":                  true,
+		"tier_min":                      true,
 	}
 	copyConfig := make(map[string]any, len(cfg)+4)
 	for key, value := range cfg {
@@ -622,11 +626,11 @@ func pointRuleConfig(raw json.RawMessage) map[string]any {
 			copyConfig[to] = value
 		}
 	}
-	copyAlias("max_bonus_cents", "max_bonus_points_cents")
-	copyAlias("fixed_amount_cents", "fixed_amount_points_cents")
-	copyAlias("max_stake_contribution_cents", "max_play_contribution_points_cents")
-	copyAlias("max_stake_contribution_points_cents", "max_play_contribution_points_cents")
-	copyAlias("min_amount_cents", "min_points_cents")
+	copyAlias("max_bonus_cents", "max_bonus_points")
+	copyAlias("fixed_amount_cents", "fixed_amount_points")
+	copyAlias("max_stake_contribution_cents", "max_play_contribution_points")
+	copyAlias("max_stake_contribution_points", "max_play_contribution_points")
+	copyAlias("min_amount_cents", "min_points")
 	copyAlias("min_deposits", "min_point_activity_count")
 	copyAlias("tier_min", "rank_min")
 	return copyConfig

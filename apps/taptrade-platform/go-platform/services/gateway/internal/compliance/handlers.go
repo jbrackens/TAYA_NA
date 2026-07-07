@@ -252,10 +252,9 @@ func sessionBoundUserID(r *stdhttp.Request, bodyUserID string) (string, error) {
 }
 
 type responsibleLimitRequest struct {
-	UserID            string `json:"userId"`
-	Period            string `json:"period"`
-	AmountPointsCents int64  `json:"amountPointsCents"`
-	AmountCents       int64  `json:"amountCents"`
+	UserID       string `json:"userId"`
+	Period       string `json:"period"`
+	AmountPoints int64  `json:"amountPoints"`
 }
 
 func decodeResponsibleLimitRequest(body io.Reader, launchRoute bool) (responsibleLimitRequest, error) {
@@ -264,8 +263,10 @@ func decodeResponsibleLimitRequest(body io.Reader, launchRoute bool) (responsibl
 		return responsibleLimitRequest{}, httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
 	}
 	if launchRoute {
+		// Launch-safety: the retired money-era key is rejected outright.
+		// ("amountCents" is kept here as the banned literal, not a field.)
 		if _, ok := raw["amountCents"]; ok {
-			return responsibleLimitRequest{}, httpx.BadRequest("responsible-play limits require amountPointsCents", map[string]any{"field": "amountPointsCents"})
+			return responsibleLimitRequest{}, httpx.BadRequest("responsible-play limits require amountPoints", map[string]any{"field": "amountPoints"})
 		}
 	}
 	data, err := json.Marshal(raw)
@@ -291,13 +292,13 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return err
 		}
 
-		amountCents := req.AmountPointsCents
-		if amountCents <= 0 {
-			amountCents = req.AmountCents
+		amountPoints := req.AmountPoints
+		if amountPoints <= 0 {
+			amountPoints = req.AmountPoints
 		}
 
-		if req.UserID == "" || req.Period == "" || amountCents <= 0 {
-			return httpx.BadRequest("userId, period, and amountPointsCents are required", map[string]any{"field": "body"})
+		if req.UserID == "" || req.Period == "" || amountPoints <= 0 {
+			return httpx.BadRequest("userId, period, and amountPoints are required", map[string]any{"field": "body"})
 		}
 
 		uid, err := sessionBoundUserID(r, req.UserID)
@@ -305,7 +306,7 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return err
 		}
 
-		if err := service.SetDepositLimit(r.Context(), uid, req.Period, amountCents); err != nil {
+		if err := service.SetDepositLimit(r.Context(), uid, req.Period, amountPoints); err != nil {
 			return mapComplianceError(err)
 		}
 
@@ -313,28 +314,26 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 		// optimistically echo the requested amount as effective (codex
 		// D-11 P2).
 		resp := map[string]any{
-			"userId":                     uid,
-			"period":                     req.Period,
-			"unit":                       "PTS",
-			"requestedPointsCents":       amountCents,
-			"requestedAmountCents":       amountCents,
-			"requestedAmountPointsCents": amountCents,
+			"userId":                uid,
+			"period":                req.Period,
+			"unit":                  "PTS",
+			"requestedPoints":       amountPoints,
+			"requestedAmountPoints": amountPoints,
 		}
 		confirmed := false
 		if limits, gerr := service.GetDepositLimits(r.Context(), uid); gerr == nil {
 			for _, l := range limits {
 				if l.Period == req.Period {
 					confirmed = true
-					resp["amountPointsCents"] = l.LimitCents
-					resp["amountCents"] = l.LimitCents
-					resp["limitPointsCents"] = l.LimitCents
-					resp["remainingPointsCents"] = l.RemainingCents
-					resp["usedPointsCents"] = l.UsedCents
-					resp["deferred"] = l.PendingLimitCents > 0
-					if l.PendingLimitCents > 0 {
-						resp["pendingAmountPointsCents"] = l.PendingLimitCents
-						resp["pendingAmountCents"] = l.PendingLimitCents
-						resp["pendingLimitPointsCents"] = l.PendingLimitCents
+					resp["amountPoints"] = l.LimitPoints
+					resp["limitPoints"] = l.LimitPoints
+					resp["remainingPoints"] = l.RemainingPoints
+					resp["usedPoints"] = l.UsedPoints
+					resp["deferred"] = l.PendingLimitPoints > 0
+					if l.PendingLimitPoints > 0 {
+						resp["pendingAmountPoints"] = l.PendingLimitPoints
+						resp["pendingAmountPoints"] = l.PendingLimitPoints
+						resp["pendingLimitPoints"] = l.PendingLimitPoints
 						resp["pendingActivatesAt"] = l.PendingActivatesAt
 					}
 					break
@@ -396,13 +395,13 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return err
 		}
 
-		amountCents := req.AmountPointsCents
-		if amountCents <= 0 {
-			amountCents = req.AmountCents
+		amountPoints := req.AmountPoints
+		if amountPoints <= 0 {
+			amountPoints = req.AmountPoints
 		}
 
-		if req.UserID == "" || req.Period == "" || amountCents <= 0 {
-			return httpx.BadRequest("userId, period, and amountPointsCents are required", map[string]any{"field": "body"})
+		if req.UserID == "" || req.Period == "" || amountPoints <= 0 {
+			return httpx.BadRequest("userId, period, and amountPoints are required", map[string]any{"field": "body"})
 		}
 
 		uid, err := sessionBoundUserID(r, req.UserID)
@@ -410,7 +409,7 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return err
 		}
 
-		if err := service.SetBetLimit(r.Context(), uid, req.Period, amountCents); err != nil {
+		if err := service.SetBetLimit(r.Context(), uid, req.Period, amountPoints); err != nil {
 			return mapComplianceError(err)
 		}
 
@@ -420,28 +419,26 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 		// effective — if the read-back can't confirm it, say so (codex
 		// D-11 P2) rather than implying the looser limit is live.
 		resp := map[string]any{
-			"userId":                     uid,
-			"period":                     req.Period,
-			"unit":                       "PTS",
-			"requestedPointsCents":       amountCents,
-			"requestedAmountCents":       amountCents,
-			"requestedAmountPointsCents": amountCents,
+			"userId":                uid,
+			"period":                req.Period,
+			"unit":                  "PTS",
+			"requestedPoints":       amountPoints,
+			"requestedAmountPoints": amountPoints,
 		}
 		confirmed := false
 		if limits, gerr := service.GetBetLimits(r.Context(), uid); gerr == nil {
 			for _, l := range limits {
 				if l.Period == req.Period {
 					confirmed = true
-					resp["amountPointsCents"] = l.LimitCents
-					resp["amountCents"] = l.LimitCents
-					resp["limitPointsCents"] = l.LimitCents
-					resp["remainingPointsCents"] = l.RemainingCents
-					resp["usedPointsCents"] = l.UsedCents
-					resp["deferred"] = l.PendingLimitCents > 0
-					if l.PendingLimitCents > 0 {
-						resp["pendingAmountPointsCents"] = l.PendingLimitCents
-						resp["pendingAmountCents"] = l.PendingLimitCents
-						resp["pendingLimitPointsCents"] = l.PendingLimitCents
+					resp["amountPoints"] = l.LimitPoints
+					resp["limitPoints"] = l.LimitPoints
+					resp["remainingPoints"] = l.RemainingPoints
+					resp["usedPoints"] = l.UsedPoints
+					resp["deferred"] = l.PendingLimitPoints > 0
+					if l.PendingLimitPoints > 0 {
+						resp["pendingAmountPoints"] = l.PendingLimitPoints
+						resp["pendingAmountPoints"] = l.PendingLimitPoints
+						resp["pendingLimitPoints"] = l.PendingLimitPoints
 						resp["pendingActivatesAt"] = l.PendingActivatesAt
 					}
 					break
@@ -506,34 +503,32 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return err
 		}
 		launchRoute := r.URL.Path == "/api/v1/compliance/rg/check-point-use"
+		// Launch-safety: the retired money-era query key is rejected outright
+		// ("amountCents" is kept as the banned literal, not a live field).
 		if launchRoute && r.URL.Query().Has("amountCents") {
-			return httpx.BadRequest("check-point-use requires amountPointsCents", map[string]any{"field": "amountPointsCents"})
+			return httpx.BadRequest("check-point-use requires amountPoints", map[string]any{"field": "amountPoints"})
 		}
-		amountStr := r.URL.Query().Get("amountPointsCents")
+		amountStr := r.URL.Query().Get("amountPoints")
 		if amountStr == "" {
-			amountStr = r.URL.Query().Get("amountCents")
-		}
-		if amountStr == "" {
-			return httpx.BadRequest("amountPointsCents query parameter is required", map[string]any{"field": "amountPointsCents"})
+			return httpx.BadRequest("amountPoints query parameter is required", map[string]any{"field": "amountPoints"})
 		}
 
-		amountCents, err := strconv.ParseInt(amountStr, 10, 64)
-		if err != nil || amountCents <= 0 {
-			return httpx.BadRequest("amountPointsCents must be a positive integer", map[string]any{"field": "amountPointsCents"})
+		amountPoints, err := strconv.ParseInt(amountStr, 10, 64)
+		if err != nil || amountPoints <= 0 {
+			return httpx.BadRequest("amountPoints must be a positive integer", map[string]any{"field": "amountPoints"})
 		}
 
-		allowed, reason, err := service.CheckDepositAllowed(r.Context(), userID, amountCents)
+		allowed, reason, err := service.CheckDepositAllowed(r.Context(), userID, amountPoints)
 		if err != nil && !errors.Is(err, ErrDepositLimitExceeded) && !errors.Is(err, ErrUserExcluded) && !errors.Is(err, ErrUserBlocked) {
 			return mapComplianceError(err)
 		}
 
 		resp := map[string]any{
-			"userId":            userID,
-			"unit":              "PTS",
-			"amountPointsCents": amountCents,
-			"amountCents":       amountCents,
-			"allowed":           allowed,
-			"reason":            pointUseCheckReason(reason, err),
+			"userId":       userID,
+			"unit":         "PTS",
+			"amountPoints": amountPoints,
+			"allowed":      allowed,
+			"reason":       pointUseCheckReason(reason, err),
 		}
 		if errors.Is(err, ErrDepositLimitExceeded) {
 			resp["reasonCode"] = "point_use_limit_exceeded"
@@ -555,36 +550,35 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return err
 		}
 		launchRoute := r.URL.Path == "/api/v1/compliance/rg/check-prediction"
-		if launchRoute && (r.URL.Query().Has("stakePointsCents") || r.URL.Query().Has("stakeCents")) {
-			return httpx.BadRequest("check-prediction requires amountPointsCents", map[string]any{"field": "amountPointsCents"})
+		// Launch-safety: retired money/stake-era query keys are rejected
+		// outright ("stakeCents"/"stakePoints" kept as banned literals).
+		if launchRoute && (r.URL.Query().Has("stakeCents") || r.URL.Query().Has("stakePoints")) {
+			return httpx.BadRequest("check-prediction requires amountPoints", map[string]any{"field": "amountPoints"})
 		}
-		predictionAmountStr := r.URL.Query().Get("amountPointsCents")
+		predictionAmountStr := r.URL.Query().Get("amountPoints")
 		if predictionAmountStr == "" {
-			predictionAmountStr = r.URL.Query().Get("stakePointsCents")
+			predictionAmountStr = r.URL.Query().Get("stakePoints")
 		}
 		if predictionAmountStr == "" {
-			predictionAmountStr = r.URL.Query().Get("stakeCents")
-		}
-		if predictionAmountStr == "" {
-			return httpx.BadRequest("amountPointsCents query parameter is required", map[string]any{"field": "amountPointsCents"})
+			return httpx.BadRequest("amountPoints query parameter is required", map[string]any{"field": "amountPoints"})
 		}
 
-		predictionAmountCents, err := strconv.ParseInt(predictionAmountStr, 10, 64)
-		if err != nil || predictionAmountCents <= 0 {
-			return httpx.BadRequest("amountPointsCents must be a positive integer", map[string]any{"field": "amountPointsCents"})
+		predictionAmountPoints, err := strconv.ParseInt(predictionAmountStr, 10, 64)
+		if err != nil || predictionAmountPoints <= 0 {
+			return httpx.BadRequest("amountPoints must be a positive integer", map[string]any{"field": "amountPoints"})
 		}
 
-		allowed, reason, err := service.CheckBetAllowed(r.Context(), userID, predictionAmountCents)
+		allowed, reason, err := service.CheckBetAllowed(r.Context(), userID, predictionAmountPoints)
 		if err != nil && !errors.Is(err, ErrBetLimitExceeded) && !errors.Is(err, ErrUserExcluded) && !errors.Is(err, ErrUserBlocked) {
 			return mapComplianceError(err)
 		}
 
 		resp := map[string]any{
-			"userId":            userID,
-			"unit":              "PTS",
-			"amountPointsCents": predictionAmountCents,
-			"allowed":           allowed,
-			"reason":            predictionCheckReason(reason, err),
+			"userId":       userID,
+			"unit":         "PTS",
+			"amountPoints": predictionAmountPoints,
+			"allowed":      allowed,
+			"reason":       predictionCheckReason(reason, err),
 		}
 		if errors.Is(err, ErrBetLimitExceeded) {
 			resp["reasonCode"] = "prediction_limit_exceeded"
@@ -742,24 +736,20 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 
 func pointUseLimitResponse(limit DepositLimit) map[string]any {
 	resp := map[string]any{
-		"userId":                  limit.UserID,
-		"period":                  limit.Period,
-		"unit":                    "PTS",
-		"limitPointsCents":        limit.LimitCents,
-		"remainingPointsCents":    limit.RemainingCents,
-		"usedPointsCents":         limit.UsedCents,
-		"limitCents":              limit.LimitCents,
-		"remainingCents":          limit.RemainingCents,
-		"usedCents":               limit.UsedCents,
-		"resetsAt":                limit.ResetsAt,
-		"createdAt":               limit.CreatedAt,
-		"pendingActivatesAt":      limit.PendingActivatesAt,
-		"pendingLimitCents":       limit.PendingLimitCents,
-		"pendingLimitPointsCents": limit.PendingLimitCents,
+		"userId":             limit.UserID,
+		"period":             limit.Period,
+		"unit":               "PTS",
+		"limitPoints":        limit.LimitPoints,
+		"remainingPoints":    limit.RemainingPoints,
+		"usedPoints":         limit.UsedPoints,
+		"resetsAt":           limit.ResetsAt,
+		"createdAt":          limit.CreatedAt,
+		"pendingActivatesAt": limit.PendingActivatesAt,
+		"pendingLimitPoints": limit.PendingLimitPoints,
 	}
-	if limit.PendingLimitCents == 0 {
-		delete(resp, "pendingLimitCents")
-		delete(resp, "pendingLimitPointsCents")
+	if limit.PendingLimitPoints == 0 {
+		delete(resp, "pendingLimitPoints")
+		delete(resp, "pendingLimitPoints")
 	}
 	if limit.PendingActivatesAt == "" {
 		delete(resp, "pendingActivatesAt")
@@ -769,24 +759,20 @@ func pointUseLimitResponse(limit DepositLimit) map[string]any {
 
 func predictionLimitResponse(limit BetLimit) map[string]any {
 	resp := map[string]any{
-		"userId":                  limit.UserID,
-		"period":                  limit.Period,
-		"unit":                    "PTS",
-		"limitPointsCents":        limit.LimitCents,
-		"remainingPointsCents":    limit.RemainingCents,
-		"usedPointsCents":         limit.UsedCents,
-		"limitCents":              limit.LimitCents,
-		"remainingCents":          limit.RemainingCents,
-		"usedCents":               limit.UsedCents,
-		"resetsAt":                limit.ResetsAt,
-		"createdAt":               limit.CreatedAt,
-		"pendingActivatesAt":      limit.PendingActivatesAt,
-		"pendingLimitCents":       limit.PendingLimitCents,
-		"pendingLimitPointsCents": limit.PendingLimitCents,
+		"userId":             limit.UserID,
+		"period":             limit.Period,
+		"unit":               "PTS",
+		"limitPoints":        limit.LimitPoints,
+		"remainingPoints":    limit.RemainingPoints,
+		"usedPoints":         limit.UsedPoints,
+		"resetsAt":           limit.ResetsAt,
+		"createdAt":          limit.CreatedAt,
+		"pendingActivatesAt": limit.PendingActivatesAt,
+		"pendingLimitPoints": limit.PendingLimitPoints,
 	}
-	if limit.PendingLimitCents == 0 {
-		delete(resp, "pendingLimitCents")
-		delete(resp, "pendingLimitPointsCents")
+	if limit.PendingLimitPoints == 0 {
+		delete(resp, "pendingLimitPoints")
+		delete(resp, "pendingLimitPoints")
 	}
 	if limit.PendingActivatesAt == "" {
 		delete(resp, "pendingActivatesAt")

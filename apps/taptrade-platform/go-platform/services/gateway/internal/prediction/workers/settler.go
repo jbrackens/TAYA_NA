@@ -88,7 +88,7 @@ func (w *AutoSettler) tick(ctx context.Context) {
 				continue
 			}
 			slog.Info("auto-settler: market finalized", "market", p.MarketID,
-				"payouts", len(payouts), "total_payout_cents", settlement.TotalPayoutCents)
+				"payouts", len(payouts), "total_payout_points", settlement.TotalPayoutPoints)
 		}
 	}
 
@@ -149,7 +149,7 @@ func (w *AutoSettler) tick(ctx context.Context) {
 			continue
 		}
 		slog.Info("auto-settler: market settled", "ticker", m.Ticker, "result", result.Outcome,
-			"payouts", len(payouts), "total_payout_cents", settlement.TotalPayoutCents)
+			"payouts", len(payouts), "total_payout_points", settlement.TotalPayoutPoints)
 	}
 }
 

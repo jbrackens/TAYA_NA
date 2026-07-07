@@ -191,7 +191,7 @@ func registerAdminWalletMutationRoutes(mux *stdhttp.ServeMux, basePath string, w
 		}
 		entry, err := walletService.Credit(r.Context(), wallet.MutationRequest{
 			UserID:         request.UserID,
-			AmountCents:    request.AmountCents,
+			AmountPoints:   request.AmountPoints,
 			IdempotencyKey: request.IdempotencyKey,
 			Reason:         request.Reason,
 		})
@@ -199,16 +199,16 @@ func registerAdminWalletMutationRoutes(mux *stdhttp.ServeMux, basePath string, w
 			return mapWalletError(err)
 		}
 		recordProviderOpsAuditAction(userIDFromRequest(r), "wallet.credit", request.UserID, map[string]any{
-			"amountPointsCents":  request.AmountCents,
-			"idempotencyKey":     request.IdempotencyKey,
-			"reason":             request.Reason,
-			"balancePointsCents": entry.BalanceCents,
-			"unit":               "PTS",
+			"amountPoints":   request.AmountPoints,
+			"idempotencyKey": request.IdempotencyKey,
+			"reason":         request.Reason,
+			"balancePoints":  entry.BalancePoints,
+			"unit":           "PTS",
 		})
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"entry":              walletLedgerEntryPayload(entry),
-			"balancePointsCents": entry.BalanceCents,
-			"unit":               "PTS",
+			"entry":         walletLedgerEntryPayload(entry),
+			"balancePoints": entry.BalancePoints,
+			"unit":          "PTS",
 		})
 	}))
 
@@ -226,7 +226,7 @@ func registerAdminWalletMutationRoutes(mux *stdhttp.ServeMux, basePath string, w
 		}
 		entry, err := walletService.Debit(r.Context(), wallet.MutationRequest{
 			UserID:         request.UserID,
-			AmountCents:    request.AmountCents,
+			AmountPoints:   request.AmountPoints,
 			IdempotencyKey: request.IdempotencyKey,
 			Reason:         request.Reason,
 		})
@@ -234,16 +234,16 @@ func registerAdminWalletMutationRoutes(mux *stdhttp.ServeMux, basePath string, w
 			return mapWalletError(err)
 		}
 		recordProviderOpsAuditAction(userIDFromRequest(r), "wallet.debit", request.UserID, map[string]any{
-			"amountPointsCents":  request.AmountCents,
-			"idempotencyKey":     request.IdempotencyKey,
-			"reason":             request.Reason,
-			"balancePointsCents": entry.BalanceCents,
-			"unit":               "PTS",
+			"amountPoints":   request.AmountPoints,
+			"idempotencyKey": request.IdempotencyKey,
+			"reason":         request.Reason,
+			"balancePoints":  entry.BalancePoints,
+			"unit":           "PTS",
 		})
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"entry":              walletLedgerEntryPayload(entry),
-			"balancePointsCents": entry.BalanceCents,
-			"unit":               "PTS",
+			"entry":         walletLedgerEntryPayload(entry),
+			"balancePoints": entry.BalancePoints,
+			"unit":          "PTS",
 		})
 	}))
 

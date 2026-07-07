@@ -18,7 +18,7 @@ func TestOddsBoostJSONRoundTrip(t *testing.T) {
 		Currency:        "USD",
 		OriginalOdds:    1.9,
 		BoostedOdds:     2.1,
-		MaxStakeCents:   2500,
+		MaxStakePoints:   2500,
 		MinOddsDecimal:  1.5,
 		Status:          OddsBoostStatusAccepted,
 		ExpiresAt:       now.Add(2 * time.Hour),

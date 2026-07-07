@@ -86,8 +86,8 @@ func TestFillPriceHistoryCarryForward(t *testing.T) {
 	// Trades land in bucket 2 (price 60) and bucket 4 (price 70).
 	// Expected fill pattern: fallback, fallback, 60, 60, 70, 70, 70
 	raw := []PricePoint{
-		{BucketStart: since.Add(2 * time.Hour), YesPriceCents: 60, TradeCount: 1},
-		{BucketStart: since.Add(4 * time.Hour), YesPriceCents: 70, TradeCount: 1},
+		{BucketStart: since.Add(2 * time.Hour), YesPricePoints: 60, TradeCount: 1},
+		{BucketStart: since.Add(4 * time.Hour), YesPricePoints: 70, TradeCount: 1},
 	}
 	got := fillPriceHistory(raw, since, until, bucketSec, 50)
 
@@ -96,8 +96,8 @@ func TestFillPriceHistoryCarryForward(t *testing.T) {
 	}
 	want := []int{50, 50, 60, 60, 70, 70, 70}
 	for i, w := range want {
-		if got[i].YesPriceCents != w {
-			t.Errorf("bucket %d price = %d, want %d", i, got[i].YesPriceCents, w)
+		if got[i].YesPricePoints != w {
+			t.Errorf("bucket %d price = %d, want %d", i, got[i].YesPricePoints, w)
 		}
 	}
 }
@@ -112,8 +112,8 @@ func TestFillPriceHistoryEmptyRaw(t *testing.T) {
 		t.Fatalf("len = %d, want 4 (3 hours + closing bucket)", len(got))
 	}
 	for i, p := range got {
-		if p.YesPriceCents != 42 {
-			t.Errorf("bucket %d = %d, want 42 (fallback)", i, p.YesPriceCents)
+		if p.YesPricePoints != 42 {
+			t.Errorf("bucket %d = %d, want 42 (fallback)", i, p.YesPricePoints)
 		}
 		if p.TradeCount != 0 {
 			t.Errorf("bucket %d trade_count = %d, want 0", i, p.TradeCount)
@@ -125,22 +125,22 @@ func TestMergePriceBucketsTradesOverrideImported(t *testing.T) {
 	since := time.Date(2026, 5, 15, 0, 0, 0, 0, time.UTC)
 	bucketSec := 3600
 	imported := []PricePoint{
-		{BucketStart: since, YesPriceCents: 40},
-		{BucketStart: since.Add(time.Hour), YesPriceCents: 45},
+		{BucketStart: since, YesPricePoints: 40},
+		{BucketStart: since.Add(time.Hour), YesPricePoints: 45},
 	}
 	trades := []PricePoint{
-		{BucketStart: since.Add(time.Hour), YesPriceCents: 60, TradeCount: 2},
+		{BucketStart: since.Add(time.Hour), YesPricePoints: 60, TradeCount: 2},
 	}
 
 	got := mergePriceBuckets(imported, trades, bucketSec)
 	if len(got) != 2 {
 		t.Fatalf("len = %d, want 2", len(got))
 	}
-	if got[0].YesPriceCents != 40 {
-		t.Errorf("first bucket = %d, want imported 40", got[0].YesPriceCents)
+	if got[0].YesPricePoints != 40 {
+		t.Errorf("first bucket = %d, want imported 40", got[0].YesPricePoints)
 	}
-	if got[1].YesPriceCents != 60 {
-		t.Errorf("second bucket = %d, want trade override 60", got[1].YesPriceCents)
+	if got[1].YesPricePoints != 60 {
+		t.Errorf("second bucket = %d, want trade override 60", got[1].YesPricePoints)
 	}
 	if got[1].TradeCount != 2 {
 		t.Errorf("second bucket trade_count = %d, want 2", got[1].TradeCount)
@@ -151,10 +151,10 @@ func TestPricePointsHaveMovement(t *testing.T) {
 	if pricePointsHaveMovement(nil) {
 		t.Fatal("nil points should not have movement")
 	}
-	if pricePointsHaveMovement([]PricePoint{{YesPriceCents: 50}, {YesPriceCents: 50}}) {
+	if pricePointsHaveMovement([]PricePoint{{YesPricePoints: 50}, {YesPricePoints: 50}}) {
 		t.Fatal("flat points should not have movement")
 	}
-	if !pricePointsHaveMovement([]PricePoint{{YesPriceCents: 50}, {YesPriceCents: 51}}) {
+	if !pricePointsHaveMovement([]PricePoint{{YesPricePoints: 50}, {YesPricePoints: 51}}) {
 		t.Fatal("changed points should have movement")
 	}
 }

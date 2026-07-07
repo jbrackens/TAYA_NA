@@ -12,7 +12,7 @@ import (
 	"taptrade/gateway/internal/wallet"
 )
 
-const fallbackDemoDailyClaimCents int64 = 2500
+const fallbackDemoDailyClaimPoints int64 = 2500
 
 func RunPhase5RewardHistory(ctx context.Context, db *sql.DB, walletSvc *wallet.Service, now time.Time) (int, error) {
 	if walletSvc == nil {
@@ -23,12 +23,12 @@ func RunPhase5RewardHistory(ctx context.Context, db *sql.DB, walletSvc *wallet.S
 		today.AddDate(0, 0, -2),
 		today.AddDate(0, 0, -1),
 	}
-	amount := demoDailyClaimCents()
+	amount := demoDailyClaimPoints()
 	for _, date := range dates {
 		key := fmt.Sprintf("daily_claim:%s:%s", demoUserID, date.Format("2006-01-02"))
 		if _, err := walletSvc.Credit(ctx, wallet.MutationRequest{
 			UserID:         demoUserID,
-			AmountCents:    amount,
+			AmountPoints:   amount,
 			IdempotencyKey: key,
 			Reason:         "daily_claim",
 		}); err != nil {
@@ -50,14 +50,14 @@ WHERE user_id = $2
 	return len(dates), nil
 }
 
-func demoDailyClaimCents() int64 {
+func demoDailyClaimPoints() int64 {
 	raw := strings.TrimSpace(os.Getenv("DAILY_CLAIM_CENTS"))
 	if raw == "" {
-		return fallbackDemoDailyClaimCents
+		return fallbackDemoDailyClaimPoints
 	}
 	n, err := strconv.ParseInt(raw, 10, 64)
 	if err != nil || n <= 0 {
-		return fallbackDemoDailyClaimCents
+		return fallbackDemoDailyClaimPoints
 	}
 	return n
 }

@@ -19,8 +19,9 @@ import (
 // shipped post-v1). Value lives on punters.display_anonymous.
 //
 // Routes:
-//   GET /api/v1/me/privacy → {displayAnonymous: bool}
-//   PUT /api/v1/me/privacy ← {displayAnonymous: bool}
+//
+//	GET /api/v1/me/privacy → {displayAnonymous: bool}
+//	PUT /api/v1/me/privacy ← {displayAnonymous: bool}
 func registerPredictPrivacyRoutes(mux *stdhttp.ServeMux, db *sql.DB) {
 	if db == nil {
 		return

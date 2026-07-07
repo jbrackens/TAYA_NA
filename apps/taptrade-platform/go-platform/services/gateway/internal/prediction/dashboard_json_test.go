@@ -9,12 +9,12 @@ import (
 
 func TestDashboardMoverJSONExposesPointAliases(t *testing.T) {
 	mover := DashboardMover{
-		MarketID:           "market-1",
-		Ticker:             "MLBB-FINAL-G1",
-		Title:              "Listed MLBB team wins game one",
-		YesPriceCentsStart: 52,
-		YesPriceCentsNow:   64,
-		VolumeCents:        12500,
+		MarketID:            "market-1",
+		Ticker:              "MLBB-FINAL-G1",
+		Title:               "Listed MLBB team wins game one",
+		YesPricePointsStart: 52,
+		YesPricePointsNow:   64,
+		VolumePoints:        12500,
 	}
 
 	data, err := json.Marshal(mover)
@@ -24,9 +24,9 @@ func TestDashboardMoverJSONExposesPointAliases(t *testing.T) {
 	body := string(data)
 
 	for _, want := range []string{
-		`"yesPricePointsCentsStart":52`,
-		`"yesPricePointsCentsNow":64`,
-		`"volumePointsCents":12500`,
+		`"yesPricePointsStart":52`,
+		`"yesPricePointsNow":64`,
+		`"volumePoints":12500`,
 		`"unit":"PTS"`,
 	} {
 		if !strings.Contains(body, want) {
@@ -34,9 +34,9 @@ func TestDashboardMoverJSONExposesPointAliases(t *testing.T) {
 		}
 	}
 	for _, retired := range []string{
-		`"yesPriceCentsStart"`,
-		`"yesPriceCentsNow"`,
-		`"volumeCents"`,
+		`"yesPricePointsCentsStart"`,
+		`"yesPricePointsCentsNow"`,
+		`"volumePointsCentsCents"`,
 	} {
 		if strings.Contains(body, retired) {
 			t.Fatalf("dashboard mover should not emit retired alias %s in %s", retired, body)
@@ -46,17 +46,17 @@ func TestDashboardMoverJSONExposesPointAliases(t *testing.T) {
 
 func TestDashboardVolumeStatsJSONExposesPointAliases(t *testing.T) {
 	stats := DashboardVolumeStats{
-		Since:            time.Date(2026, 6, 25, 12, 0, 0, 0, time.UTC),
-		WindowSeconds:    86400,
-		TotalVolumeCents: 25000,
-		TradeCount:       9,
+		Since:             time.Date(2026, 6, 25, 12, 0, 0, 0, time.UTC),
+		WindowSeconds:     86400,
+		TotalVolumePoints: 25000,
+		TradeCount:        9,
 		TopMovers: []DashboardMover{{
-			MarketID:           "market-1",
-			Ticker:             "MLBB-FINAL-G1",
-			Title:              "Listed MLBB team wins game one",
-			YesPriceCentsStart: 52,
-			YesPriceCentsNow:   64,
-			VolumeCents:        12500,
+			MarketID:            "market-1",
+			Ticker:              "MLBB-FINAL-G1",
+			Title:               "Listed MLBB team wins game one",
+			YesPricePointsStart: 52,
+			YesPricePointsNow:   64,
+			VolumePoints:        12500,
 		}},
 	}
 
@@ -67,20 +67,20 @@ func TestDashboardVolumeStatsJSONExposesPointAliases(t *testing.T) {
 	body := string(data)
 
 	for _, want := range []string{
-		`"totalVolumePointsCents":25000`,
+		`"totalVolumePoints":25000`,
 		`"unit":"PTS"`,
 		`"topMovers"`,
-		`"volumePointsCents":12500`,
+		`"volumePoints":12500`,
 	} {
 		if !strings.Contains(body, want) {
 			t.Fatalf("dashboard volume stats JSON missing %s in %s", want, body)
 		}
 	}
 	for _, retired := range []string{
-		`"totalVolumeCents"`,
-		`"yesPriceCentsStart"`,
-		`"yesPriceCentsNow"`,
-		`"volumeCents"`,
+		`"totalVolumePointsCentsCents"`,
+		`"yesPricePointsCentsStart"`,
+		`"yesPricePointsCentsNow"`,
+		`"volumePointsCentsCents"`,
 	} {
 		if strings.Contains(body, retired) {
 			t.Fatalf("dashboard volume stats should not emit retired alias %s in %s", retired, body)
@@ -93,8 +93,8 @@ func TestCollateralDriftAlertJSONExposesPointAliases(t *testing.T) {
 		MarketID:         "market-1",
 		Ticker:           "MLBB-FINAL-G1",
 		AdjustmentCount:  2,
-		MaxDriftCents:    120,
-		TotalDriftCents:  180,
+		MaxDriftPoints:   120,
+		TotalDriftPoints: 180,
 		LatestAdjustedAt: time.Date(2026, 6, 25, 12, 0, 0, 0, time.UTC),
 		LatestReason:     "reconciliation adjustment",
 	}
@@ -106,8 +106,8 @@ func TestCollateralDriftAlertJSONExposesPointAliases(t *testing.T) {
 	body := string(data)
 
 	for _, want := range []string{
-		`"maxDriftPointsCents":120`,
-		`"totalDriftPointsCents":180`,
+		`"maxDriftPoints":120`,
+		`"totalDriftPoints":180`,
 		`"unit":"PTS"`,
 	} {
 		if !strings.Contains(body, want) {
@@ -115,8 +115,8 @@ func TestCollateralDriftAlertJSONExposesPointAliases(t *testing.T) {
 		}
 	}
 	for _, retired := range []string{
-		`"maxDriftCents"`,
-		`"totalDriftCents"`,
+		`"maxDriftPointsCentsCents"`,
+		`"totalDriftPointsCentsCents"`,
 	} {
 		if strings.Contains(body, retired) {
 			t.Fatalf("drift alert should not emit retired alias %s in %s", retired, body)
