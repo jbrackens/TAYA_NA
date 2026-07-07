@@ -189,5 +189,6 @@
   "SEARCH_MARKETS_PLACEHOLDER": "Search markets, candidates, teams...",
   "SORT_ACTIVITY": "Trending",
   "SORT_CLOSING_SOON": "Closing soon",
-  "SORT_NEWEST": "Newest"
+  "SORT_NEWEST": "Newest",
+  "EST_COST": "Est. cost"
 }

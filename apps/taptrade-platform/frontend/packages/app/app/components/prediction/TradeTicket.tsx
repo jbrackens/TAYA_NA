@@ -1,14 +1,15 @@
 "use client";
 
 /**
- * TradeTicket — warm-light trade form on /market/[ticker].
+ * TradeTicket — the trade form on /market/[ticker]
+ * (P9.2, 2026-07-07 — Robinhood-structure pass).
  *
  * Layout (DESIGN.md §6 + §8):
  *   Title + mode switcher (Market / Limit)
- *   YES/NO side selector
- *   Points block + chips + balance
- *   Summary rows (avg fill, slippage, shares, points if correct)
- *   Auth-aware CTA
+ *   Buy Yes / Buy No underline tabs (side-colored)
+ *   Sparse label/value rows: Points (editable) · [Limit price] ·
+ *     Price · Est. cost · Payout if <side> is correct
+ *   Auth-aware CTA + trust copy
  *
  * Amount is in gameplay points. Quantity (shares) = amount / price * 100. The
  * PredictionApiClient interface still takes `quantity`, so we convert
@@ -87,49 +88,33 @@ interface TradeTicketProps {
   onSideChange?: (side: OrderSide) => void;
 }
 
-const QUICK_AMOUNTS = [5, 25, 100] as const;
-
 type TicketMode = "market" | "limit";
 
 const TICKET_CARD_CLASS =
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
-const TICKET_HEAD_CLASS = "mb-[14px] flex items-center justify-between";
+const TICKET_HEAD_CLASS = "mb-3 flex items-center justify-between";
 const TICKET_TITLE_CLASS =
   "text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
 const TICKET_MODE_CLASS =
-  "inline-flex gap-0.5 rounded-md border border-[var(--border-1)] bg-white/[0.04] p-[3px]";
+  "inline-flex gap-0.5 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-[3px]";
 const TICKET_MODE_BUTTON_BASE_CLASS =
   "cursor-pointer rounded-md border-0 px-3 py-[5px] [font-family:inherit] text-[11px] font-semibold transition-colors duration-[120ms] disabled:cursor-not-allowed disabled:opacity-40 disabled:text-[var(--t3)] disabled:hover:bg-transparent disabled:hover:text-[var(--t3)]";
-const TICKET_SIDES_CLASS = "mb-4 grid grid-cols-2 gap-2.5";
-const TICKET_SIDE_BASE_CLASS =
-  "relative cursor-pointer rounded-[var(--r-rh-md)] border p-[14px] [font-family:inherit] text-left text-[var(--t1)] transition-colors duration-[120ms] focus-visible:border-[var(--accent)] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)]";
-const TICKET_SIDE_LABEL_CLASS =
-  "mb-1.5 block text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--t3)]";
-const TICKET_SIDE_PRICE_CLASS =
-  "block font-['IBM_Plex_Mono',_monospace] text-[28px] font-semibold leading-none tracking-[-0.02em] text-[var(--t1)] [font-variant-numeric:tabular-nums]";
-const TICKET_SIDE_SUB_CLASS =
-  "mt-1.5 block font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
-const TICKET_AMOUNT_CLASS = "mb-[14px]";
-const TICKET_AMOUNT_HEAD_CLASS = "mb-2 flex items-baseline justify-between";
-const TICKET_AMOUNT_LABEL_CLASS = "text-xs font-medium text-[var(--t3)]";
-const TICKET_AMOUNT_BALANCE_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
-const TICKET_LIMIT_INPUT_CLASS =
-  "w-full rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2.5 font-['IBM_Plex_Mono',_monospace] text-[22px] text-[var(--t1)] outline-none [font-variant-numeric:tabular-nums]";
-const TICKET_LIMIT_HELP_CLASS =
-  "mt-1.5 font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)]";
-const TICKET_AMOUNT_DISPLAY_CLASS =
-  "mb-2.5 flex items-center justify-between rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-white/[0.02] p-[14px]";
-const TICKET_AMOUNT_VALUE_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] text-[28px] font-medium leading-none tracking-[-0.02em] text-[var(--t1)] [font-variant-numeric:tabular-nums]";
-const TICKET_AMOUNT_SUB_CLASS =
-  "text-right font-['IBM_Plex_Mono',_monospace] text-[10px] leading-[1.4] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
-const TICKET_CHIPS_CLASS = "grid grid-cols-4 gap-1.5";
-const TICKET_CHIP_BASE_CLASS =
-  "cursor-pointer rounded-md border-0 px-1 py-2 font-['IBM_Plex_Mono',_monospace] text-xs font-semibold transition-colors duration-[120ms] [font-variant-numeric:tabular-nums]";
-const TICKET_SUMMARY_CLASS =
-  "mt-[14px] flex flex-col gap-2 border-t border-[var(--border-1)] pt-[14px] font-['IBM_Plex_Mono',_monospace] text-xs [font-variant-numeric:tabular-nums]";
-const TICKET_SUMMARY_ROW_CLASS = "flex justify-between";
+// P9.2: sides are Robinhood-style underline tabs, not price boxes — the
+// price belongs to the summary rows below.
+const TICKET_SIDES_CLASS =
+  "mb-4 grid grid-cols-2 border-b border-[var(--border-1)]";
+const TICKET_SIDE_TAB_BASE_CLASS =
+  "cursor-pointer border-0 bg-transparent px-1 pb-2.5 pt-1 [font-family:inherit] text-sm font-semibold transition-colors duration-[120ms] border-b-2 -mb-px focus-visible:outline-none";
+const TICKET_ROWS_CLASS =
+  "flex flex-col gap-3 text-[13px] [font-variant-numeric:tabular-nums]";
+const TICKET_ROW_CLASS = "flex items-center justify-between gap-3";
+const TICKET_ROW_LABEL_CLASS = "text-[var(--t3)] font-medium";
+const TICKET_ROW_VALUE_CLASS =
+  "font-['IBM_Plex_Mono',_monospace] font-semibold text-[var(--t1)]";
+const TICKET_ROW_SUB_CLASS =
+  "mt-0.5 text-right font-['IBM_Plex_Mono',_monospace] text-[11px] font-normal text-[var(--t4)]";
+const TICKET_INPUT_CLASS =
+  "w-[128px] rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-2 text-right font-['IBM_Plex_Mono',_monospace] text-[14px] font-semibold text-[var(--t1)] outline-none transition-colors duration-[120ms] [font-variant-numeric:tabular-nums] focus:border-[var(--accent-lo)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
 const TICKET_CTA_CLASS =
   "mt-4 flex w-full cursor-pointer items-center justify-center rounded-md border-0 bg-[var(--accent)] px-4 py-[14px] [font-family:inherit] text-[15px] font-semibold text-[#061a10] no-underline transition-[filter,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:brightness-[1.05] disabled:cursor-not-allowed disabled:opacity-[0.45] disabled:filter-none disabled:transform-none";
 const TICKET_NOTE_CLASS =
@@ -145,34 +130,18 @@ const TICKET_CLOSED_CLASS =
 function ticketModeButtonClass(active: boolean): string {
   return `${TICKET_MODE_BUTTON_BASE_CLASS} ${
     active
-      ? "bg-[var(--accent)] text-[#061a10]"
+      ? "bg-[var(--surface-1)] text-[var(--t1)] shadow-[0_1px_2px_rgba(13,17,20,0.06)]"
       : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)]"
   }`;
 }
 
-function ticketSideClass(side: OrderSide, selected: boolean): string {
-  const selectedClass =
-    side === "yes"
-      ? "border-[rgba(113,238,184,0.4)] bg-[var(--yes-soft)]"
-      : "border-[rgba(255,139,107,0.4)] bg-[var(--no-soft)]";
-  return `${TICKET_SIDE_BASE_CLASS} ${
-    selected
-      ? selectedClass
-      : "border-[var(--border-1)] bg-white/[0.02] hover:bg-white/[0.04]"
-  }`;
-}
-
-function selectedSideTextClass(side: OrderSide, selected: boolean): string {
-  if (!selected) return "";
-  return side === "yes" ? "text-[var(--yes-text)]" : "text-[var(--no-text)]";
-}
-
-function ticketChipClass(active: boolean): string {
-  return `${TICKET_CHIP_BASE_CLASS} ${
-    active
-      ? "bg-[var(--accent)] text-[#061a10]"
-      : "bg-white/[0.04] text-[var(--t2)] hover:bg-white/[0.08] hover:text-[var(--t1)]"
-  }`;
+function ticketSideTabClass(side: OrderSide, selected: boolean): string {
+  if (!selected) {
+    return `${TICKET_SIDE_TAB_BASE_CLASS} border-transparent text-[var(--t3)] hover:text-[var(--t1)]`;
+  }
+  return side === "yes"
+    ? `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--yes)] text-[var(--yes-text)]`
+    : `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--no)] text-[var(--no-text)]`;
 }
 
 function formatPointAmount(points: number): string {
@@ -598,45 +567,17 @@ export function TradeTicket({
               role="tab"
               aria-selected={side === "yes"}
               onClick={() => setSideAndReset("yes")}
-              className={ticketSideClass("yes", side === "yes")}
+              className={ticketSideTabClass("yes", side === "yes")}
             >
-              <span
-                className={`${TICKET_SIDE_LABEL_CLASS} ${selectedSideTextClass("yes", side === "yes")}`}
-              >
-                {t("YES")}
-              </span>
-              <span
-                className={`${TICKET_SIDE_PRICE_CLASS} ${selectedSideTextClass("yes", side === "yes")}`}
-              >
-                {market.yesPricePointsCents}¢
-              </span>
-              <span className={TICKET_SIDE_SUB_CLASS}>
-                {market.yesPricePointsCents >= 50 ? "+" : "−"}
-                {Math.abs(market.yesPricePointsCents - 50)} ·{" "}
-                {market.yesPricePointsCents}% {t("PROB")}
-              </span>
+              {t("BUY_YES")}
             </button>
             <button
               role="tab"
               aria-selected={side === "no"}
               onClick={() => setSideAndReset("no")}
-              className={ticketSideClass("no", side === "no")}
+              className={ticketSideTabClass("no", side === "no")}
             >
-              <span
-                className={`${TICKET_SIDE_LABEL_CLASS} ${selectedSideTextClass("no", side === "no")}`}
-              >
-                {t("NO")}
-              </span>
-              <span
-                className={`${TICKET_SIDE_PRICE_CLASS} ${selectedSideTextClass("no", side === "no")}`}
-              >
-                {market.noPricePointsCents}¢
-              </span>
-              <span className={TICKET_SIDE_SUB_CLASS}>
-                {market.noPricePointsCents >= 50 ? "+" : "−"}
-                {Math.abs(market.noPricePointsCents - 50)} ·{" "}
-                {market.noPricePointsCents}%{t("PROB")}
-              </span>
+              {t("BUY_NO")}
             </button>
           </div>
 
@@ -644,30 +585,29 @@ export function TradeTicket({
             [1, 99] cents per the engine's price bounds (out-of-range prices
             are rejected at the API). Step is 1¢ to match tick size. */}
           {isExchange && mode === "limit" && (
-            <div className={TICKET_AMOUNT_CLASS} aria-label={t("LIMIT_PRICE")}>
-              <div className={TICKET_AMOUNT_HEAD_CLASS}>
-                <span className={TICKET_AMOUNT_LABEL_CLASS}>
+            <div className="mb-3">
+              <div className={TICKET_ROW_CLASS}>
+                <span className={TICKET_ROW_LABEL_CLASS}>
                   {t("LIMIT_PRICE_SIDE", { side: side.toUpperCase() })}
                 </span>
-                <span className={TICKET_AMOUNT_BALANCE_CLASS}>
-                  {t("MID_PRICE", { price: marketPrice })}
-                </span>
+                <input
+                  type="number"
+                  min={1}
+                  max={99}
+                  step={1}
+                  value={limitPriceCents}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10);
+                    if (Number.isFinite(v)) {
+                      setLimitPriceCents(Math.max(1, Math.min(99, v)));
+                    }
+                  }}
+                  className={TICKET_INPUT_CLASS}
+                  aria-label={t("LIMIT_PRICE")}
+                />
               </div>
-              <input
-                type="number"
-                min={1}
-                max={99}
-                step={1}
-                value={limitPriceCents}
-                onChange={(e) => {
-                  const v = parseInt(e.target.value, 10);
-                  if (Number.isFinite(v)) {
-                    setLimitPriceCents(Math.max(1, Math.min(99, v)));
-                  }
-                }}
-                className={TICKET_LIMIT_INPUT_CLASS}
-              />
-              <p className={TICKET_LIMIT_HELP_CLASS}>
+              <p className={TICKET_ROW_SUB_CLASS}>
+                {t("MID_PRICE", { price: marketPrice })} ·{" "}
                 {action === "buy"
                   ? t("LIMIT_BUY_HELP", { price: limitPriceCents })
                   : t("LIMIT_SELL_HELP", { price: limitPriceCents })}
@@ -675,96 +615,72 @@ export function TradeTicket({
             </div>
           )}
 
-          <div className={TICKET_AMOUNT_CLASS}>
-            <div className={TICKET_AMOUNT_HEAD_CLASS}>
-              <span className={TICKET_AMOUNT_LABEL_CLASS}>
-                {action === "sell" ? t("SHARES_TO_SELL") : t("AMOUNT")}
-              </span>
-              <span className={TICKET_AMOUNT_BALANCE_CLASS}>
+          <div className={TICKET_ROWS_CLASS}>
+            <div>
+              <div className={TICKET_ROW_CLASS}>
+                <label
+                  className={TICKET_ROW_LABEL_CLASS}
+                  htmlFor="ticket-amount"
+                >
+                  {action === "sell" ? t("SHARES_TO_SELL") : t("AMOUNT")}
+                </label>
+                <input
+                  id="ticket-amount"
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={Number.isFinite(amount) ? amount : ""}
+                  onChange={(e) => {
+                    const v = parseFloat(e.target.value);
+                    setAmount(Number.isFinite(v) ? Math.max(0, v) : 0);
+                  }}
+                  className={TICKET_INPUT_CLASS}
+                  aria-label={
+                    action === "sell" ? t("SHARES_TO_SELL") : t("AMOUNT")
+                  }
+                />
+              </div>
+              <p className={TICKET_ROW_SUB_CLASS}>
                 {action === "sell"
                   ? t("AVAILABLE_SHARES", { quantity: availableShares })
                   : t("BALANCE_AMOUNT", {
                       amount:
                         typeof balance === "number" ? balance.toFixed(2) : "—",
                     })}
-              </span>
+              </p>
             </div>
-            <div className={TICKET_AMOUNT_DISPLAY_CLASS}>
-              <div className={TICKET_AMOUNT_VALUE_CLASS}>
-                {formatPointAmount(amount)}
-              </div>
-              <div className={TICKET_AMOUNT_SUB_CLASS}>
-                {t("SHARES_COUNT", { quantity: Math.floor(shares) })}
-                <br />
-                {t("POTENTIAL_POINTS")}{" "}
-                <span className="font-semibold text-[var(--yes-text)]">
-                  {formatPointAmount(pointsIfCorrect)}
+
+            <div>
+              <div className={TICKET_ROW_CLASS}>
+                <span className={TICKET_ROW_LABEL_CLASS}>{t("PRICE")}</span>
+                <span className={TICKET_ROW_VALUE_CLASS}>
+                  {previewLoading ? t("LOADING") : `${summaryPrice}¢`}
                 </span>
               </div>
+              <p className={TICKET_ROW_SUB_CLASS}>
+                {t("IMPLIED_PROB")} {impliedProb}% ·{" "}
+                {t("SHARES_COUNT", { quantity: Math.floor(shares) })}
+              </p>
             </div>
-            <div
-              className={TICKET_CHIPS_CLASS}
-              role="group"
-              aria-label={t("QUICK_AMOUNT")}
-            >
-              {QUICK_AMOUNTS.map((a) => {
-                const isActive = Math.floor(amount) === a;
-                return (
-                  <button
-                    key={a}
-                    type="button"
-                    // No-op when the chip is already active. Without this guard
-                    // every click on the active chip still calls setAmount with
-                    // the same value, which React treats as an update and
-                    // triggers a re-render of the ticket. Cheap individually,
-                    // but combined with a parent that prefetches a returnUrl
-                    // bound to amount it can feel like the page hangs in dev
-                    // mode while chunks recompile. Cheap defensive change.
-                    onClick={() => {
-                      if (!isActive) setAmount(a);
-                    }}
-                    aria-pressed={isActive}
-                    className={ticketChipClass(isActive)}
-                  >
-                    {formatPointAmount(a)}
-                  </button>
-                );
-              })}
-              <button
-                type="button"
-                onClick={() => {
-                  if (typeof balance !== "number" || balance <= 0) return;
-                  const next = Math.floor(balance);
-                  if (Math.floor(amount) !== next) setAmount(next);
-                }}
-                className={ticketChipClass(false)}
-                disabled={typeof balance !== "number" || balance <= 0}
-              >
-                {t("MAX")}
-              </button>
-            </div>
-          </div>
 
-          <div className={TICKET_SUMMARY_CLASS}>
-            <div className={TICKET_SUMMARY_ROW_CLASS}>
-              <span className="text-[var(--t3)]">{t("AVG_FILL_PRICE")}</span>
-              <span className="text-[var(--t1)]">
-                {previewLoading ? t("LOADING") : `${summaryPrice}¢`}
+            <div className={TICKET_ROW_CLASS}>
+              <span className={TICKET_ROW_LABEL_CLASS}>{t("EST_COST")}</span>
+              <span className={TICKET_ROW_VALUE_CLASS}>
+                {formatPointAmount(effectiveSpend)}
               </span>
             </div>
-            <div className={TICKET_SUMMARY_ROW_CLASS}>
-              <span className="text-[var(--t3)]">{t("IMPLIED_PROB")}</span>
-              <span className="text-[var(--t1)]">{impliedProb}%</span>
-            </div>
-            <div className={TICKET_SUMMARY_ROW_CLASS}>
-              <span className="text-[var(--t3)]">{t("SHARES")}</span>
-              <span className="text-[var(--t1)]">{shares.toFixed(2)}</span>
-            </div>
-            <div className={TICKET_SUMMARY_ROW_CLASS}>
-              <span className="text-[var(--t3)]">
+
+            <div className={TICKET_ROW_CLASS}>
+              <span className={TICKET_ROW_LABEL_CLASS}>
                 {t("POINTS_IF_SIDE", { side: side.toUpperCase() })}
               </span>
-              <span className="text-[var(--yes-text)]">
+              <span
+                className={`${TICKET_ROW_VALUE_CLASS} ${
+                  side === "yes"
+                    ? "text-[var(--yes-text)]"
+                    : "text-[var(--no-text)]"
+                }`}
+              >
                 {formatPointAmount(pointsIfCorrect)}
               </span>
             </div>
