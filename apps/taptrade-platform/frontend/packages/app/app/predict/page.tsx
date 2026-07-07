@@ -15,6 +15,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import TapDot from "../components/TapDot";
 import { TrendingSidebar } from "../components/prediction/TrendingSidebar";
 import { AllMarketsSection } from "../components/prediction/AllMarketsSection";
 import {
@@ -150,7 +151,11 @@ export default function PredictDiscoveryPage() {
   const trending = discovery?.trending ?? [];
 
   if (loading) {
-    return <div className={ROUTE_LOADING_CLASS}>{t("LOADING_MARKETS")}</div>;
+    return (
+      <div className={ROUTE_LOADING_CLASS}>
+        <TapDot label={t("LOADING_MARKETS")} />
+      </div>
+    );
   }
 
   return (

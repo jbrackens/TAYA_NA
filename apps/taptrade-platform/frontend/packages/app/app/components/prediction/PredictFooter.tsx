@@ -1,11 +1,13 @@
 "use client";
 
 /**
- * PredictFooter — legal and info links.
+ * PredictFooter — the ink anchor (P9.4, 2026-07-07).
  *
- * Intentionally minimal — most of the visual weight lives in .ps-topbar and
- * .ps-sidebar. This bar just sits at the bottom of the page with the brand,
- * copyright, and legal/info links.
+ * Every page ends on one deliberate deep-forest statement: the brand
+ * surface the P9 white system otherwise never spends. Ivory wordmark
+ * with the mint period, quiet ivory links, legal line under a hairline.
+ * This is a brand-layer surface (DESIGN.md Active Brand) — market data
+ * never renders on ink.
  */
 
 import Link from "next/link";
@@ -26,20 +28,28 @@ const LINKS = [
 
 export function PredictFooter() {
   return (
-    <footer className="flex flex-col gap-2 border-t border-[var(--border-1)] px-6 py-4 text-xs text-[var(--t3)]">
-      <div className="flex flex-wrap gap-4">
-        {LINKS.map((l) => (
-          <Link
-            key={l.href}
-            href={l.href}
-            className="text-[var(--t3)] no-underline"
-          >
-            {l.label}
-          </Link>
-        ))}
+    <footer className="mt-10 rounded-[var(--r-rh-lg)] bg-[var(--brand-ink)] px-7 py-6 text-xs max-[640px]:px-5">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <span className="text-[19px] font-bold leading-none tracking-[-0.03em] text-[var(--brand-on-dark)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
+          {brand.name}
+          <span className="text-[var(--brand-period-dark)]">.</span>
+        </span>
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
+          {LINKS.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className="font-medium text-[rgba(241,236,227,0.72)] no-underline transition-colors duration-[120ms] hover:text-[var(--brand-on-dark)]"
+            >
+              {l.label}
+            </Link>
+          ))}
+        </div>
       </div>
-      <div className="opacity-70">
-        <span className="font-bold text-[var(--t1)]">{brand.name}</span>
+      <div className="mt-5 border-t border-[rgba(241,236,227,0.14)] pt-4 text-[rgba(241,236,227,0.55)]">
+        <span className="font-bold text-[rgba(241,236,227,0.85)]">
+          {brand.name}
+        </span>
         {" · "}© {YEAR} {brand.legalEntity}
         {" · "}Non-redeemable point prediction markets
       </div>

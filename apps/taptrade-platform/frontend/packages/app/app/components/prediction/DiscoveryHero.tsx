@@ -101,11 +101,6 @@ export function DiscoveryHero({
       ? formatHeroVolume(displayMarket.openInterestPointsCents)
       : "—";
   const closesLabel = formatHeroCloseLeft(displayMarket.closeAt);
-  const changeClass = isFlat
-    ? "text-[var(--t3)]"
-    : isUp
-      ? "text-[var(--yes-text)]"
-      : "text-[var(--no-text)]";
 
   return (
     <section
@@ -143,7 +138,7 @@ export function DiscoveryHero({
           </h1>
 
           <div
-            className="type-display m-0 mb-2.5 text-[clamp(56px,5.5vw,84px)] font-semibold leading-none tracking-[-0.02em] text-[var(--t1)]"
+            className="type-display m-0 mb-3 text-[clamp(64px,7vw,110px)] font-semibold leading-[0.95] tracking-[-0.03em] text-[var(--t1)]"
             aria-label={`Yes price ${yes} cents`}
           >
             {yes}
@@ -151,23 +146,31 @@ export function DiscoveryHero({
               ¢
             </span>
           </div>
-          <div
-            className={`mb-6 inline-flex items-center gap-2.5 text-[16px] font-semibold tabular-nums max-[980px]:mb-4 ${changeClass}`}
-          >
-            {!isFlat && (
-              <svg
-                width="10"
-                height="10"
-                viewBox="0 0 10 10"
-                aria-hidden="true"
-                className={isUp ? "" : "rotate-180"}
-              >
-                <path d="M5 1.2 8.8 8H1.2Z" fill="currentColor" />
-              </svg>
-            )}
-            {isUp && !isFlat ? "+" : ""}
-            {delta}¢ ({isUp && !isFlat ? "+" : ""}
-            {pct.toFixed(1)}%)
+          <div className="mb-6 flex items-center gap-2.5 max-[980px]:mb-4">
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 font-['IBM_Plex_Mono',_monospace] text-[13px] font-semibold tabular-nums ${
+                isFlat
+                  ? "bg-[var(--surface-2)] text-[var(--t3)]"
+                  : isUp
+                    ? "bg-[var(--yes-soft)] text-[var(--yes-text)]"
+                    : "bg-[var(--no-soft)] text-[var(--no-text)]"
+              }`}
+            >
+              {!isFlat && (
+                <svg
+                  width="9"
+                  height="9"
+                  viewBox="0 0 10 10"
+                  aria-hidden="true"
+                  className={isUp ? "" : "rotate-180"}
+                >
+                  <path d="M5 1.2 8.8 8H1.2Z" fill="currentColor" />
+                </svg>
+              )}
+              {isUp && !isFlat ? "+" : ""}
+              {delta}¢ ({isUp && !isFlat ? "+" : ""}
+              {pct.toFixed(1)}%)
+            </span>
             <span className="text-sm font-medium text-[var(--t3)]">
               {t("TODAY")}
             </span>

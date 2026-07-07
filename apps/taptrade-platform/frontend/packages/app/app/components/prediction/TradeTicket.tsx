@@ -102,9 +102,13 @@ const TICKET_MODE_BUTTON_BASE_CLASS =
 // P9.2: sides are Robinhood-style underline tabs, not price boxes — the
 // price belongs to the summary rows below.
 const TICKET_SIDES_CLASS =
-  "mb-4 grid grid-cols-2 border-b border-[var(--border-1)]";
+  "relative mb-4 grid grid-cols-2 border-b border-[var(--border-1)]";
 const TICKET_SIDE_TAB_BASE_CLASS =
-  "cursor-pointer border-0 bg-transparent px-1 pb-2.5 pt-1 [font-family:inherit] text-sm font-semibold transition-colors duration-[120ms] border-b-2 -mb-px focus-visible:outline-none";
+  "cursor-pointer border-0 bg-transparent px-1 pb-2.5 pt-1 [font-family:inherit] text-sm font-semibold transition-colors duration-[120ms] focus-visible:outline-none";
+// The tap-dot signature, applied to navigation: one indicator slides
+// between the two sides (180ms) instead of two static underlines.
+const TICKET_SIDE_INDICATOR_CLASS =
+  "pointer-events-none absolute bottom-[-1px] left-0 h-[2px] w-1/2 transition-[translate,background-color] duration-[180ms] ease-out";
 const TICKET_ROWS_CLASS =
   "flex flex-col gap-3 text-[13px] [font-variant-numeric:tabular-nums]";
 const TICKET_ROW_CLASS = "flex items-center justify-between gap-3";
@@ -137,11 +141,11 @@ function ticketModeButtonClass(active: boolean): string {
 
 function ticketSideTabClass(side: OrderSide, selected: boolean): string {
   if (!selected) {
-    return `${TICKET_SIDE_TAB_BASE_CLASS} border-transparent text-[var(--t3)] hover:text-[var(--t1)]`;
+    return `${TICKET_SIDE_TAB_BASE_CLASS} text-[var(--t3)] hover:text-[var(--t1)]`;
   }
   return side === "yes"
-    ? `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--yes)] text-[var(--yes-text)]`
-    : `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--no)] text-[var(--no-text)]`;
+    ? `${TICKET_SIDE_TAB_BASE_CLASS} text-[var(--yes-text)]`
+    : `${TICKET_SIDE_TAB_BASE_CLASS} text-[var(--no-text)]`;
 }
 
 function formatPointAmount(points: number): string {
@@ -579,6 +583,14 @@ export function TradeTicket({
             >
               {t("BUY_NO")}
             </button>
+            <span
+              aria-hidden="true"
+              className={`${TICKET_SIDE_INDICATOR_CLASS} ${
+                side === "yes"
+                  ? "translate-x-0 bg-[var(--yes)]"
+                  : "translate-x-full bg-[var(--no)]"
+              }`}
+            />
           </div>
 
           {/* Limit price input — appears in exchange + limit mode. Bounded
