@@ -93,8 +93,11 @@ describe("TradeTicket order-book preview UX", () => {
 
   it("labels point-result estimates without payout wording", () => {
     const enPredictionLocale = readPublic("static/locales/en/prediction.json");
+    // P9.2 (2026-07-07): the big amount display (with its POTENTIAL_POINTS
+    // sub-label) became a sparse row set; the points-result vocabulary is
+    // carried by the "Points if <side> is correct" row + trust copy. The
+    // payout-wording bans below are unchanged.
     for (const token of [
-      't("POTENTIAL_POINTS")',
       't("POINTS_IF_SIDE"',
       "pointsIfCorrect",
       "Correct contracts settle at 100 points each",

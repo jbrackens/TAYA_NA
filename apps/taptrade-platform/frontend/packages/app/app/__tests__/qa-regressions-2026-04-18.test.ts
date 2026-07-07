@@ -899,10 +899,19 @@ describe("MarketChart side colors", () => {
     );
   });
 
-  it("colors implied probability with the selected side token", () => {
+  // P9.2 (2026-07-07): the in-chart stat footer is retired — implied
+  // probability lives in the trade ticket. The chart instead draws the
+  // complement side as a muted mirrored line; lock that pairing.
+  it("draws the complement side as a muted mirror line", () => {
     assert.ok(
-      /chartStatValueClass\(side\)/.test(marketChartSource),
-      "MarketChart implied probability should use the selected side color",
+      /const\s+complementColor\s*=\s*side\s*===\s*"no"\s*\?\s*"var\(--yes-text\)"\s*:\s*"var\(--no-text\)"/.test(
+        marketChartSource,
+      ),
+      "MarketChart should color the complement line with the other side token",
+    );
+    assert.ok(
+      marketChartSource.includes('strokeOpacity="0.35"'),
+      "MarketChart complement line should render muted",
     );
   });
 });
@@ -1016,11 +1025,12 @@ describe("Navigation underline treatment", () => {
   });
 
   it("uses soft rectangular corners for active segmented controls", () => {
+    // P9.2 (2026-07-07): the market-page chart range switcher became a
+    // quiet mono text-tab row (Robinhood-structure pass) — only the
+    // discovery closing-window control remains a segmented fill.
     for (const [label, source, constant] of [
       ["closing-window shell", allMarketsSource, "TIME_PILLS_CLASS"],
       ["closing-window button", allMarketsSource, "TIME_PILL_BASE_CLASS"],
-      ["chart range shell", marketChartSource, "CHART_SWITCHER_CLASS"],
-      ["chart range button", marketChartSource, "CHART_BUTTON_BASE_CLASS"],
     ] as const) {
       const classValue = constValue(source, constant);
       assert.ok(
@@ -1072,10 +1082,6 @@ describe("Navigation pill active colors", () => {
         "closing-window active",
         functionBody(allMarketsSource, "timePillClass"),
       ],
-      [
-        "chart range active",
-        functionBody(marketChartSource, "rangeButtonClass"),
-      ],
     ] as const) {
       assert.ok(
         activeClass.includes("bg-[var(--yes)]"),
@@ -1086,6 +1092,20 @@ describe("Navigation pill active colors", () => {
         `${label} should not use bright brand green`,
       );
     }
+  });
+
+  it("renders the market chart range switcher as quiet text tabs", () => {
+    const rangeClass = functionBody(marketChartSource, "rangeButtonClass");
+    assert.ok(
+      rangeClass.includes("border-[var(--t1)]") &&
+        rangeClass.includes("border-transparent"),
+      "chart range tabs should underline the active range in ink",
+    );
+    assert.ok(
+      !rangeClass.includes("bg-[var(--yes)]") &&
+        !rangeClass.includes("bg-[var(--accent)]"),
+      "chart range tabs should not use segmented fills",
+    );
   });
 
   it("uses seafoam tokens for active category pills", () => {

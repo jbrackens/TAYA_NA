@@ -137,7 +137,11 @@ const MARKET_SIDE_CLASS = "flex min-w-0 flex-col gap-6 max-[1100px]:contents";
 const MARKET_TICKET_STICKY_CLASS =
   "sticky top-[84px] max-[1100px]:static max-[1100px]:top-auto max-[1100px]:order-2";
 const MARKET_DATA_ROW_CLASS =
-  "grid grid-cols-2 gap-6 max-[1100px]:order-3 max-[720px]:grid-cols-1";
+  "grid grid-cols-2 gap-6 pt-4 max-[720px]:grid-cols-1";
+const MARKET_DEPTH_DISCLOSURE_CLASS =
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[1100px]:order-3 max-[720px]:px-5";
+const MARKET_DEPTH_SUMMARY_CLASS =
+  "cursor-pointer list-none text-sm font-semibold text-[var(--t2)] transition-colors duration-[120ms] hover:text-[var(--t1)] [&::-webkit-details-marker]:hidden";
 const LIQUIDITY_CARD_CLASS =
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
 const LIQUIDITY_HEAD_CLASS =
@@ -201,7 +205,7 @@ const MARKET_SHARE_BUTTON_CLASS =
   "inline-flex min-h-9 items-center justify-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 text-xs font-bold text-[var(--t1)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]";
 const MARKET_SHARE_STATUS_CLASS = "text-xs text-[var(--t3)]";
 const RELATED_CARD_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[1100px]:order-5";
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[1100px]:order-6";
 const RELATED_TITLE_CLASS =
   "mb-[14px] border-b border-[var(--border-1)] pb-3 text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
 const RELATED_EMPTY_CLASS = "text-xs text-[var(--t3)]";
@@ -1049,13 +1053,6 @@ export default function MarketDetailPage() {
     );
   }
 
-  const traders = new Set<string>();
-  for (const trade of trades) {
-    if (trade.buyerId) traders.add(trade.buyerId);
-    if (trade.sellerId) traders.add(trade.sellerId);
-  }
-  const tradersCount = traders.size;
-
   return (
     <div className={MARKET_WRAP_CLASS}>
       <nav className={MARKET_CRUMB_CLASS} aria-label="Breadcrumb">
@@ -1083,33 +1080,34 @@ export default function MarketDetailPage() {
             <MarketHead
               market={displayMarket ?? market}
               categoryName={displayCategory}
-              tradersCount={tradersCount}
             />
             <MarketChart
               ticker={market.ticker}
               side={selectedSide}
               yesPriceCents={market.yesPricePointsCents}
               noPriceCents={market.noPricePointsCents}
-              previousPriceCents={market.lastTradePricePointsCents ?? undefined}
-              impliedProbability={market.yesPricePointsCents}
-              volume24hCents={market.volumePointsCents}
-              openInterestShares={Math.round(
-                market.openInterestPointsCents / 100,
-              )}
             />
           </section>
 
+          {/* Liquidity honesty (2026-06 audit locks): real depth or the
+            explicit AMM snapshot stays available, but collapsed — the P9.2
+            minimal page leads with price + trade, depth is on demand. */}
           {isAuthenticated && (
-            <div className={MARKET_DATA_ROW_CLASS}>
-              <MarketDepth
-                ammQuoteStatus={ammQuoteStatus}
-                ammQuotes={ammQuotes}
-                market={market}
-                orderBook={orderBook}
-                orderBookStatus={orderBookStatus}
-              />
-              <RecentTrades trades={trades} />
-            </div>
+            <details className={MARKET_DEPTH_DISCLOSURE_CLASS}>
+              <summary className={MARKET_DEPTH_SUMMARY_CLASS}>
+                {t("MARKET_DEPTH_AND_TRADES", "Market depth & recent trades")}
+              </summary>
+              <div className={MARKET_DATA_ROW_CLASS}>
+                <MarketDepth
+                  ammQuoteStatus={ammQuoteStatus}
+                  ammQuotes={ammQuotes}
+                  market={market}
+                  orderBook={orderBook}
+                  orderBookStatus={orderBookStatus}
+                />
+                <RecentTrades trades={trades} />
+              </div>
+            </details>
           )}
 
           <section className={MARKET_DETAILS_CLASS}>
@@ -1122,19 +1120,6 @@ export default function MarketDetailPage() {
               </p>
             )}
             <ul className={MARKET_RULES_CLASS}>
-              <li className={MARKET_RULE_CLASS}>
-                {t("SETTLEMENT_SOURCE", {
-                  source: market.settlementSourceKey,
-                })}
-              </li>
-              <li className={MARKET_RULE_CLASS}>
-                {t("RESOLUTION_RULE", { rule: market.settlementRule })}
-              </li>
-              <li className={MARKET_RULE_CLASS}>
-                {t("FEES_ON_FILLS", {
-                  fee: (market.feeRateBps / 100).toFixed(2),
-                })}
-              </li>
               <li className={MARKET_RULE_CLASS}>
                 {isOpenMarketStatus(market.status)
                   ? t("CLOSES_AT_UTC", {
@@ -1166,40 +1151,6 @@ export default function MarketDetailPage() {
             isAuthenticated={isAuthenticated}
             authLoading={authLoading}
           />
-        </div>
-
-        <aside className={MARKET_SIDE_CLASS}>
-          <div className={MARKET_TICKET_STICKY_CLASS}>
-            <TradeTicket
-              market={market}
-              balance={typeof balance === "number" ? balance : undefined}
-              defaultSide={initialSide}
-              defaultAmount={initialAmount}
-              onSideChange={setSelectedSide}
-              isAuthenticated={isAuthenticated}
-              authLoading={authLoading}
-              // Available = quantity minus reserved (already-spoken-for in
-              // open sell orders). Sum across positions on this side; in
-              // practice the gateway returns at most one row per (user,
-              // market, side) but defensively reduce in case that changes.
-              availableYesShares={positions
-                .filter((p) => p.side === "yes")
-                .reduce(
-                  (sum, p) =>
-                    sum + Math.max(0, p.quantity - (p.reservedQuantity || 0)),
-                  0,
-                )}
-              availableNoShares={positions
-                .filter((p) => p.side === "no")
-                .reduce(
-                  (sum, p) =>
-                    sum + Math.max(0, p.quantity - (p.reservedQuantity || 0)),
-                  0,
-                )}
-              onPreview={canPreviewOrders ? handlePreview : undefined}
-              onSubmit={handleSubmit}
-            />
-          </div>
 
           <aside
             className={RELATED_CARD_CLASS}
@@ -1235,6 +1186,41 @@ export default function MarketDetailPage() {
               </div>
             )}
           </aside>
+        </div>
+
+        <aside className={MARKET_SIDE_CLASS}>
+          <div className={MARKET_TICKET_STICKY_CLASS}>
+            <TradeTicket
+              market={market}
+              balance={typeof balance === "number" ? balance : undefined}
+              defaultSide={initialSide}
+              defaultAmount={initialAmount}
+              onSideChange={setSelectedSide}
+              isAuthenticated={isAuthenticated}
+              authLoading={authLoading}
+              // Available = quantity minus reserved (already-spoken-for in
+              // open sell orders). Sum across positions on this side; in
+              // practice the gateway returns at most one row per (user,
+              // market, side) but defensively reduce in case that changes.
+              availableYesShares={positions
+                .filter((p) => p.side === "yes")
+                .reduce(
+                  (sum, p) =>
+                    sum + Math.max(0, p.quantity - (p.reservedQuantity || 0)),
+                  0,
+                )}
+              availableNoShares={positions
+                .filter((p) => p.side === "no")
+                .reduce(
+                  (sum, p) =>
+                    sum + Math.max(0, p.quantity - (p.reservedQuantity || 0)),
+                  0,
+                )}
+              onPreview={canPreviewOrders ? handlePreview : undefined}
+              onSubmit={handleSubmit}
+            />
+          </div>
+
         </aside>
       </div>
     </div>

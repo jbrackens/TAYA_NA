@@ -1,13 +1,18 @@
 "use client";
 
 /**
- * MarketHead — glass card at the top of /market/[ticker].
+ * MarketHead — the identity block at the top of /market/[ticker]
+ * (P9.2, 2026-07-07 — Robinhood-structure pass).
  *
- * Contents (DESIGN.md §6 layout mapping):
- *   Row 1: LIVE pill + category pill + volume pill + traders pill +
- *          ticker pill · [right-aligned countdown]
- *   Row 2: Market question (28px bold)
- *   Row 3: Resolution blurb (14px, --t2)
+ *   Row 1: eyebrow — LIVE dot · CATEGORY · closes-in · close date
+ *   Row 2: market question (28px)
+ *   Row 3: sides strip — [● Yes · prob%]   8¢ — 92¢   [prob% · No ●]
+ *
+ * The old pill rows (volume / trader count / ticker) are gone: volume
+ * belongs to the discovery surfaces, machine tickers are plumbing, and
+ * the countdown carries the only time-critical fact. Settled markets
+ * swap the eyebrow for the outcome and keep the sides strip as a
+ * historical record.
  *
  * Live countdown to closeAt — updates every 30s for a fresh but cheap
  * "closes in …" string.
@@ -22,7 +27,6 @@ import { isOpenMarketStatus, marketStatusLabel } from "./market-display";
 interface MarketHeadProps {
   market: PredictionMarket;
   categoryName?: string;
-  tradersCount?: number;
 }
 
 function formatCountdown(
@@ -48,12 +52,6 @@ function formatCountdown(
   return t("CLOSES_IN_M", { minutes: mins });
 }
 
-function formatVolume(cents: number): string {
-  const points = cents / 100;
-  if (points >= 1000) return `${(points / 1000).toFixed(1)}K pts`;
-  return `${points.toFixed(0)} pts`;
-}
-
 function formatCloseDate(iso: string): string {
   const d = new Date(iso);
   const month = d.toLocaleString("en-US", { month: "short" });
@@ -64,33 +62,31 @@ function formatCloseDate(iso: string): string {
 }
 
 const MARKET_HEAD_CLASS =
-  "mb-5 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-6 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[720px]:p-5";
-const MARKET_HEAD_TOP_CLASS =
-  "mb-[14px] flex flex-wrap items-center justify-between gap-3";
-const MARKET_HEAD_PILLS_CLASS = "flex flex-wrap items-center gap-2";
+  "font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+const MARKET_HEAD_EYEBROW_CLASS =
+  "mb-3 flex flex-wrap items-center gap-2.5 text-xs font-medium text-[var(--t3)]";
 const MARKET_HEAD_LIVE_CLASS =
-  "inline-flex items-center gap-1.5 font-['IBM_Plex_Mono',_monospace] text-[10px] font-bold tracking-[0.16em] text-[var(--accent)]";
+  "inline-flex items-center gap-1.5 font-semibold uppercase tracking-[0.08em] text-[var(--yes-text)]";
 const MARKET_HEAD_LIVE_DOT_CLASS =
-  "h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent)] shadow-[0_0_0_4px_rgba(43,228,128,0.18)] motion-reduce:animate-none";
+  "h-[7px] w-[7px] animate-pulse rounded-full bg-[var(--accent)] shadow-[0_0_0_4px_rgba(43,228,128,0.18)] motion-reduce:animate-none";
 const MARKET_HEAD_SETTLED_CLASS =
-  "inline-flex items-center gap-1.5 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-black/[0.05] px-2.5 py-1 font-['IBM_Plex_Mono',_monospace] text-[10px] font-bold tracking-[0.16em] text-[var(--t2)]";
-const MARKET_HEAD_SETTLED_OUTCOME_CLASS = "tracking-[0.04em] text-[var(--t1)]";
-const MARKET_HEAD_PILL_CLASS =
-  "rounded-[var(--r-pill)] bg-white/[0.04] px-2.5 py-1 font-['IBM_Plex_Mono',_monospace] text-[11px] font-medium text-[var(--t3)] [font-variant-numeric:tabular-nums]";
-const MARKET_HEAD_CATEGORY_PILL_CLASS =
-  "rounded-[var(--r-pill)] bg-[var(--accent-soft)] px-2.5 py-1 font-['Inter',_sans-serif] text-[11px] font-semibold tracking-[0.04em] text-[var(--accent)] [font-variant-numeric:tabular-nums]";
+  "inline-flex items-center gap-1.5 font-['IBM_Plex_Mono',_monospace] text-[11px] font-bold tracking-[0.1em] text-[var(--t2)]";
 const MARKET_HEAD_COUNTDOWN_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] text-xs text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+  "font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
 const MARKET_HEAD_TITLE_CLASS =
-  "mb-2 text-[28px] font-semibold leading-[1.22] tracking-[-0.02em] text-[var(--t1)] max-[720px]:text-[22px]";
-const MARKET_HEAD_DESC_CLASS =
-  "mt-2 mb-0 max-w-[680px] text-sm leading-[1.5] text-[var(--t2)]";
+  "m-0 mb-5 text-[28px] font-semibold leading-[1.22] tracking-[-0.02em] text-[var(--t1)] max-[720px]:text-[22px]";
+const MARKET_HEAD_SIDES_CLASS =
+  "grid grid-cols-[1fr_auto_1fr] items-center gap-4";
+const MARKET_HEAD_SIDE_CLASS = "flex items-center gap-2.5 min-w-0";
+const MARKET_HEAD_SIDE_DOT_CLASS = "h-2.5 w-2.5 shrink-0 rounded-full";
+const MARKET_HEAD_SIDE_NAME_CLASS =
+  "text-sm font-semibold text-[var(--t1)] leading-tight";
+const MARKET_HEAD_SIDE_SUB_CLASS =
+  "whitespace-nowrap font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)] leading-tight [font-variant-numeric:tabular-nums]";
+const MARKET_HEAD_PRICES_CLASS =
+  "font-['Inter_Tight',_'Inter',_sans-serif] text-[40px] font-semibold leading-none tracking-[-0.03em] text-[var(--t1)] [font-variant-numeric:tabular-nums] max-[720px]:text-[30px]";
 
-export default function MarketHead({
-  market,
-  categoryName,
-  tradersCount,
-}: MarketHeadProps) {
+export default function MarketHead({ market, categoryName }: MarketHeadProps) {
   const { t } = useTranslation("prediction");
   const { t: contentT } = useTranslation("market-content");
   const displayMarket = localizedMarket(contentT, market);
@@ -112,8 +108,6 @@ export default function MarketHead({
   const isLive = isOpenMarketStatus(displayMarket.status);
   const isSettled = displayMarket.status === "settled";
   const lifecycleLabel = marketStatusLabel(displayMarket.status, t);
-  // Settled markets get an outcome pill; every other non-open lifecycle state
-  // surfaces its status instead of the original contractual close date.
   const settledLabel = isSettled
     ? displayMarket.result === "yes"
       ? t("SETTLED_YES_WINS")
@@ -122,46 +116,37 @@ export default function MarketHead({
         : t("SETTLED")
     : null;
 
+  const yes = displayMarket.yesPricePointsCents;
+  const no = displayMarket.noPricePointsCents;
+
   return (
     <section className={MARKET_HEAD_CLASS}>
-      <div className={MARKET_HEAD_TOP_CLASS}>
-        <div className={MARKET_HEAD_PILLS_CLASS}>
-          {isLive && (
-            <span className={MARKET_HEAD_LIVE_CLASS}>
-              <span className={MARKET_HEAD_LIVE_DOT_CLASS} aria-hidden="true" />
-              {t("LIVE")}
-            </span>
-          )}
-          {isSettled && settledLabel && (
-            <span className={MARKET_HEAD_SETTLED_CLASS}>
-              {t("SETTLED")}
-              <span className={MARKET_HEAD_SETTLED_OUTCOME_CLASS}>
-                · {settledLabel}
-              </span>
-            </span>
-          )}
-          {displayCategory && (
-            <span className={MARKET_HEAD_CATEGORY_PILL_CLASS}>
+      <div className={MARKET_HEAD_EYEBROW_CLASS}>
+        {isLive && (
+          <span className={MARKET_HEAD_LIVE_CLASS}>
+            <span className={MARKET_HEAD_LIVE_DOT_CLASS} aria-hidden="true" />
+            {t("LIVE")}
+          </span>
+        )}
+        {isSettled && settledLabel && (
+          <span className={MARKET_HEAD_SETTLED_CLASS}>
+            {t("SETTLED")} · {settledLabel}
+          </span>
+        )}
+        {displayCategory && (
+          <>
+            <span aria-hidden="true">·</span>
+            <span className="uppercase tracking-[0.06em]">
               {displayCategory}
             </span>
-          )}
-          <span className={MARKET_HEAD_PILL_CLASS}>
-            {t("VOLUME_VALUE", {
-              value: formatVolume(displayMarket.volumePointsCents),
-            })}
-          </span>
-          {typeof tradersCount === "number" && (
-            <span className={MARKET_HEAD_PILL_CLASS}>
-              {t("TRADER_COUNT", { count: tradersCount })}
-            </span>
-          )}
-          <span className={MARKET_HEAD_PILL_CLASS}>{displayMarket.ticker}</span>
-        </div>
+          </>
+        )}
+        <span aria-hidden="true">·</span>
         <span className={MARKET_HEAD_COUNTDOWN_CLASS}>
           {isLive ? (
             <>
               {countdown}
-              <span className="mx-2 text-[var(--t4)]">·</span>
+              <span className="mx-1.5 text-[var(--t4)]">·</span>
               {formatCloseDate(displayMarket.closeAt)}
             </>
           ) : (
@@ -169,10 +154,50 @@ export default function MarketHead({
           )}
         </span>
       </div>
+
       <h1 className={MARKET_HEAD_TITLE_CLASS}>{displayMarket.title}</h1>
-      {displayMarket.description && (
-        <p className={MARKET_HEAD_DESC_CLASS}>{displayMarket.description}</p>
-      )}
+
+      <div className={MARKET_HEAD_SIDES_CLASS}>
+        <div className={MARKET_HEAD_SIDE_CLASS}>
+          <span
+            className={`${MARKET_HEAD_SIDE_DOT_CLASS} bg-[var(--yes)]`}
+            aria-hidden="true"
+          />
+          <span className="min-w-0">
+            <span className={`${MARKET_HEAD_SIDE_NAME_CLASS} block`}>
+              {t("YES")}
+            </span>
+            <span className={`${MARKET_HEAD_SIDE_SUB_CLASS} block`}>
+              {yes}% {t("PROB")}
+            </span>
+          </span>
+        </div>
+        <div
+          className={MARKET_HEAD_PRICES_CLASS}
+          aria-label={t("YES_NO_PRICES", {
+            yes,
+            no,
+            defaultValue: `Yes ${yes} cents, No ${no} cents`,
+          })}
+        >
+          {yes}¢<span className="mx-2.5 text-[var(--t4)]">—</span>
+          {no}¢
+        </div>
+        <div className={`${MARKET_HEAD_SIDE_CLASS} justify-end text-right`}>
+          <span className="min-w-0">
+            <span className={`${MARKET_HEAD_SIDE_NAME_CLASS} block`}>
+              {t("NO")}
+            </span>
+            <span className={`${MARKET_HEAD_SIDE_SUB_CLASS} block`}>
+              {no}% {t("PROB")}
+            </span>
+          </span>
+          <span
+            className={`${MARKET_HEAD_SIDE_DOT_CLASS} bg-[var(--no)]`}
+            aria-hidden="true"
+          />
+        </div>
+      </div>
     </section>
   );
 }

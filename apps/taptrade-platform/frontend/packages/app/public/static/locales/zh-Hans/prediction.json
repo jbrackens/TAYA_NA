@@ -173,5 +173,6 @@
   "SEARCH_MARKETS_PLACEHOLDER": "搜索市场、候选人、球队...",
   "SORT_ACTIVITY": "热门",
   "SORT_CLOSING_SOON": "即将截止",
-  "SORT_NEWEST": "最新"
+  "SORT_NEWEST": "最新",
+  "EST_COST": "预计成本"
 }

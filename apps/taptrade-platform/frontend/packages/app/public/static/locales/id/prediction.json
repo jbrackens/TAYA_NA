@@ -173,5 +173,6 @@
   "SEARCH_MARKETS_PLACEHOLDER": "Cari pasar, kandidat, tim...",
   "SORT_ACTIVITY": "Tren",
   "SORT_CLOSING_SOON": "Segera ditutup",
-  "SORT_NEWEST": "Terbaru"
+  "SORT_NEWEST": "Terbaru",
+  "EST_COST": "Perkiraan biaya"
 }
