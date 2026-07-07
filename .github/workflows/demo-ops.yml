@@ -13,6 +13,10 @@ on:
         description: "Probe upstream catalog APIs from the box + dump recent sync logs"
         type: boolean
         default: true
+      restart_gateway:
+        description: "Restart the gateway container (fires an immediate catalog boot-sync)"
+        type: boolean
+        default: false
 
 concurrency:
   group: demo-ops
@@ -77,4 +81,27 @@ jobs:
             echo "── resolv.conf:"; cat /etc/resolv.conf | tail -3
             echo "── ufw status:"; ufw status | head -20 || true
             echo "── generic egress:"; curl -sS -o /dev/null -w "github http=%{http_code} total=%{time_total}s\n" --max-time 15 https://api.github.com/ || echo "curl failed: $?"
+          '
+
+  restart-gateway:
+    if: ${{ inputs.restart_gateway }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          ssh-keyscan -H "$BOX" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Restart gateway and wait for boot sync
+        run: |
+          ssh -i ~/.ssh/deploy -o StrictHostKeyChecking=accept-new root@"$BOX" '
+            docker restart predict_gateway
+            for i in $(seq 1 40); do
+              docker logs --since 3m predict_gateway 2>&1 | grep -qE "market sync (complete|failed)" && break
+              sleep 5
+            done
+            docker logs --since 3m predict_gateway 2>&1 | grep -E "market sync (complete|failed)|discover fetch failed" | tail -5
           '
