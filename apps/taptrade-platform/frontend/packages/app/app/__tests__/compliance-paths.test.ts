@@ -42,8 +42,8 @@ describe("compliance-client endpoint paths", () => {
       source.includes("dailyLimitPoints") &&
         source.includes("weeklyLimitPoints") &&
         source.includes("monthlyLimitPoints") &&
-        source.includes("amountPointsCents: Math.round"),
-      "point-use limit wrapper should send point-native amountPointsCents",
+        source.includes("amountPoints: Math.round"),
+      "point-use limit wrapper should send point-native amountPoints",
     );
     assert.ok(
       !source.includes("/api/v1/punters/deposit-limits"),
@@ -64,12 +64,18 @@ describe("compliance-client endpoint paths", () => {
       !source.includes("/api/v1/compliance/rg/bet-limit"),
       "launch compliance client should not call the legacy bet-limit endpoint",
     );
+    // Points unit-model (2026-07-07): whole Points on the wire — the old
+    // lock pinned a ×100 scale conversion; the ban below keeps it dead.
     assert.ok(
       source.includes("maxOrderPoints") &&
         source.includes(
-          "amountPointsCents: Math.round((request.maxOrderPoints || 0) * 100)",
+          "amountPoints: Math.round(request.maxOrderPoints || 0)",
         ),
-      "prediction-limit wrapper should send point-native amountPointsCents",
+      "prediction-limit wrapper should send whole-Points amountPoints",
+    );
+    assert.ok(
+      !source.includes("maxOrderPoints || 0) * 100"),
+      "prediction-limit wrapper must not rescale Points by 100",
     );
     assert.ok(
       !source.includes("/api/v1/punters/stake-limits"),
@@ -130,8 +136,8 @@ describe("compliance-client endpoint paths", () => {
       "getLimitsHistory should normalize the inherited deposit source to point_use_limit",
     );
     assert.ok(
-      source.includes("limit.limitPointsCents"),
-      "getLimitsHistory should prefer point-native limitPointsCents when available",
+      source.includes("limit.limitPoints"),
+      "getLimitsHistory should prefer point-native limitPoints when available",
     );
     assert.ok(
       source.includes('limitType: "prediction_limit"'),

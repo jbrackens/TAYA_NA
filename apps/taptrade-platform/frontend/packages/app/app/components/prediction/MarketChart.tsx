@@ -51,8 +51,8 @@ const RANGE_TO_API: Record<TimeRange, "1h" | "1d" | "1w" | "1m" | "all"> = {
 interface MarketChartProps {
   ticker: string;
   side?: "yes" | "no";
-  yesPriceCents: number;
-  noPriceCents?: number;
+  yesPricePoints: number;
+  noPricePoints?: number;
 }
 
 const RANGES: TimeRange[] = ["1H", "6H", "1D", "1W", "ALL"];
@@ -95,16 +95,16 @@ function endpointY(value: number, height: number): number {
 export default function MarketChart({
   ticker,
   side = "yes",
-  yesPriceCents,
-  noPriceCents,
+  yesPricePoints,
+  noPricePoints,
 }: MarketChartProps) {
   const { t } = useTranslation("prediction");
   const [range, setRange] = useState<TimeRange>("1D");
   const [history, setHistory] = useState<MarketPriceHistory | null>(null);
   const [fetchStatus, setFetchStatus] = useState<ChartFetchStatus>("loading");
   const [retryNonce, setRetryNonce] = useState(0);
-  const activePriceCents =
-    side === "no" ? (noPriceCents ?? 100 - yesPriceCents) : yesPriceCents;
+  const activePricePoints =
+    side === "no" ? (noPricePoints ?? 100 - yesPricePoints) : yesPricePoints;
 
   // Fetch real price history from /api/v1/markets/:ticker/prices?range=N
   // whenever the ticker or range changes (or the user hits Retry). The
@@ -135,18 +135,18 @@ export default function MarketChart({
   const { state: chartState, values } = useMemo(() => {
     const realValues = history
       ? history.points.map((p) =>
-          side === "no" ? 100 - p.yesPricePointsCents : p.yesPricePointsCents,
+          side === "no" ? 100 - p.yesPricePoints : p.yesPricePoints,
         )
       : null;
     return resolveChartSeries({
       fetchStatus,
       realValues,
-      currentPriceCents: activePriceCents,
+      currentPricePoints: activePricePoints,
       syntheticSeed: `${ticker}-${side}`,
       range,
       syntheticFallbackEnabled: DEMO_SYNTHETIC_CHARTS,
     });
-  }, [fetchStatus, history, ticker, side, range, activePriceCents]);
+  }, [fetchStatus, history, ticker, side, range, activePricePoints]);
   const width = 800;
   const height = 300;
   // Selected side draws at full strength; its complement draws muted so

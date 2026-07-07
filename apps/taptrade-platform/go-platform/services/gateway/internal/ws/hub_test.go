@@ -256,7 +256,7 @@ func TestNotifierInterface(t *testing.T) {
 	hub.Subscribe(client, "market:mkt1")
 	time.Sleep(100 * time.Millisecond)
 
-	marketData := map[string]interface{}{"yesPriceCents": 65}
+	marketData := map[string]interface{}{"yesPricePoints": 65}
 	hub.NotifyPredictionMarketUpdate("mkt1", marketData)
 
 	time.Sleep(200 * time.Millisecond)

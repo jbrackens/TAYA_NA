@@ -7,7 +7,7 @@ import {
 } from "../components/prediction/market-chart-state";
 
 const base = {
-  currentPriceCents: 62,
+  currentPricePoints: 62,
   syntheticSeed: "FED-CUT-MAY26-yes",
   range: "1D",
 };

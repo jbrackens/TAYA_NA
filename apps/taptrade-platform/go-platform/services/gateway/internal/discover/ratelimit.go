@@ -22,9 +22,9 @@ const (
 // budget tracks per-source request count + cached responses for a single
 // process invocation. Cleared automatically by the ttl on cache lookups.
 type budget struct {
-	mu        sync.Mutex
-	counts    map[string]int
-	cache     map[string]cachedResponse
+	mu     sync.Mutex
+	counts map[string]int
+	cache  map[string]cachedResponse
 }
 
 type cachedResponse struct {

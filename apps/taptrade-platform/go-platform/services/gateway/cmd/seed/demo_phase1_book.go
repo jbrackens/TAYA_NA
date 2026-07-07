@@ -24,7 +24,7 @@ const (
 // price P and a NO bid at price (100-P) are complementary — together
 // they offer issuance pairs to any user wanting either direction.
 //
-// Layout per market (anchored on current mid yes_price_cents = Y):
+// Layout per market (anchored on current mid yes_price_points = Y):
 //
 //	YES bids (buy YES):   Y-5, Y-4, Y-3, Y-2, Y-1   each qty=bookLevelQty
 //	NO  bids (buy NO):    N-5, N-4, N-3, N-2, N-1   where N = 100-Y
@@ -95,7 +95,7 @@ func RunPhase1MarketMaker(ctx context.Context, h *Harness) (*PhaseStats, error) 
 // are logged but do not abort the phase — one bad market should not
 // prevent the rest from getting seeded.
 func seedMarketBook(ctx context.Context, h *Harness, m *prediction.Market) (placed, skipped, errs int) {
-	yesMid := m.YesPriceCents
+	yesMid := m.YesPricePoints
 	noMid := 100 - yesMid
 
 	for level := 1; level <= bookLevels; level++ {
@@ -133,14 +133,14 @@ func seedMarketBook(ctx context.Context, h *Harness, m *prediction.Market) (plac
 // placeBookOrder submits one limit BUY through Service.PlaceOrder. Returns
 // (placed, skipped, err). placed=true on a fresh insert; skipped=true if
 // the idempotency_key already exists (re-run case); err on unexpected failure.
-func placeBookOrder(ctx context.Context, h *Harness, m *prediction.Market, side prediction.OrderSide, priceCents, level int) (placed, skipped bool, err error) {
+func placeBookOrder(ctx context.Context, h *Harness, m *prediction.Market, side prediction.OrderSide, pricePoints, level int) (placed, skipped bool, err error) {
 	idemKey := fmt.Sprintf("demo:phase1:%s:%s:lvl%d", m.ID, side, level)
 	req := prediction.PlaceOrderRequest{
 		MarketID:        m.ID,
 		Side:            side,
 		Action:          prediction.OrderActionBuy,
 		OrderType:       prediction.OrderTypeLimit,
-		PriceCents:      &priceCents,
+		PricePoints:     &pricePoints,
 		Quantity:        bookLevelQty,
 		IdempotencyKey:  &idemKey,
 		TimeInForce:     prediction.TIFGTC,

@@ -43,7 +43,7 @@ interface PointUseLimitsRaw {
 interface PredictionLimitsRaw {
   user_id: string;
   max_order_points?: number;
-  limitPointsCents?: number;
+  limitPoints?: number;
   unit?: string;
   effective_date: string;
   created_at: string;
@@ -149,8 +149,8 @@ function normalizePredictionLimits(raw: PredictionLimitsRaw): PredictionLimits {
     maxOrderPoints:
       typeof raw.max_order_points === "number"
         ? raw.max_order_points
-        : typeof raw.limitPointsCents === "number"
-          ? raw.limitPointsCents / 100
+        : typeof raw.limitPoints === "number"
+          ? raw.limitPoints / 100
           : undefined,
     unit: POINT_UNIT,
     effectiveDate: raw.effective_date,
@@ -196,11 +196,13 @@ export async function setPointUseLimits(
         : request.weeklyLimitPoints
           ? "weekly"
           : "daily",
-      amountPointsCents: Math.round(
-        ((request.monthlyLimitPoints ||
+      // Points unit-model (2026-07-07): limits are whole Points on the
+      // wire — no ×100 scale conversion.
+      amountPoints: Math.round(
+        (request.monthlyLimitPoints ||
           request.weeklyLimitPoints ||
           request.dailyLimitPoints ||
-          0) as number) * 100,
+          0) as number,
       ),
     },
   );
@@ -218,7 +220,7 @@ export async function setPredictionLimits(
     {
       userId: request.user_id,
       period: "daily",
-      amountPointsCents: Math.round((request.maxOrderPoints || 0) * 100),
+      amountPoints: Math.round(request.maxOrderPoints || 0),
     },
   );
   return normalizePredictionLimits(raw);
@@ -356,17 +358,17 @@ export async function getLimitsHistory(
       ? (pointUseLimits.limits as Array<Record<string, unknown>>)
       : [];
     for (const limit of pointUseItems) {
-      const limitPointsCents =
-        typeof limit.limitPointsCents === "number"
-          ? limit.limitPointsCents
-          : typeof limit.limitCents === "number"
-            ? limit.limitCents
+      const limitPoints =
+        typeof limit.limitPoints === "number"
+          ? limit.limitPoints
+          : typeof limit.limitPoints === "number"
+            ? limit.limitPoints
             : undefined;
       history.push({
         limitType: "point_use_limit",
         newValue:
-          typeof limitPointsCents === "number"
-            ? limitPointsCents / 100
+          typeof limitPoints === "number"
+            ? limitPoints / 100
             : undefined,
         effectiveDate: String(
           limit.resetsAt || limit.createdAt || new Date().toISOString(),
@@ -378,17 +380,17 @@ export async function getLimitsHistory(
       ? (predictionLimits.limits as Array<Record<string, unknown>>)
       : [];
     for (const limit of predictionItems) {
-      const limitPointsCents =
-        typeof limit.limitPointsCents === "number"
-          ? limit.limitPointsCents
-          : typeof limit.limitCents === "number"
-            ? limit.limitCents
+      const limitPoints =
+        typeof limit.limitPoints === "number"
+          ? limit.limitPoints
+          : typeof limit.limitPoints === "number"
+            ? limit.limitPoints
             : undefined;
       history.push({
         limitType: "prediction_limit",
         newValue:
-          typeof limitPointsCents === "number"
-            ? limitPointsCents / 100
+          typeof limitPoints === "number"
+            ? limitPoints / 100
             : undefined,
         effectiveDate: String(
           limit.resetsAt || limit.createdAt || new Date().toISOString(),

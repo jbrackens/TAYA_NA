@@ -97,16 +97,16 @@ func TestDemoActiveBonusSeedValuesArePointPlayOnly(t *testing.T) {
 	if demoActiveBonusName != "Demo Point-Play Bonus" {
 		t.Fatalf("unexpected demo active bonus name: %q", demoActiveBonusName)
 	}
-	if demoActiveBonusBudgetPointsCents <= 0 || demoActiveBonusGrantedPointsCents <= 0 {
-		t.Fatalf("demo active bonus must use positive point amounts: budget=%d granted=%d", demoActiveBonusBudgetPointsCents, demoActiveBonusGrantedPointsCents)
+	if demoActiveBonusBudgetPoints <= 0 || demoActiveBonusGrantedPoints <= 0 {
+		t.Fatalf("demo active bonus must use positive point amounts: budget=%d granted=%d", demoActiveBonusBudgetPoints, demoActiveBonusGrantedPoints)
 	}
-	if demoActiveBonusRemainingPointsCents >= demoActiveBonusGrantedPointsCents {
-		t.Fatalf("demo active bonus should show partial use: remaining=%d granted=%d", demoActiveBonusRemainingPointsCents, demoActiveBonusGrantedPointsCents)
+	if demoActiveBonusRemainingPoints >= demoActiveBonusGrantedPoints {
+		t.Fatalf("demo active bonus should show partial use: remaining=%d granted=%d", demoActiveBonusRemainingPoints, demoActiveBonusGrantedPoints)
 	}
-	if demoActiveBonusPlayRequiredCents <= 0 {
+	if demoActiveBonusPlayRequiredPoints <= 0 {
 		t.Fatal("demo active bonus must have a point-play progress target")
 	}
-	progressPct := float64(demoActiveBonusPlayCompletedCents) / float64(demoActiveBonusPlayRequiredCents) * 100
+	progressPct := float64(demoActiveBonusPlayCompletedPoints) / float64(demoActiveBonusPlayRequiredPoints) * 100
 	if progressPct != 25 {
 		t.Fatalf("demo active bonus should show 25%% point-play progress, got %.2f", progressPct)
 	}
@@ -171,7 +171,7 @@ func TestSeedCleanupVisibleCommentsStayPointNative(t *testing.T) {
 	}
 }
 
-func TestSeedMarketMakerVisibleWordingUsesPointCents(t *testing.T) {
+func TestSeedMarketMakerVisibleWordingUsesPointPoints(t *testing.T) {
 	src, err := os.ReadFile("demo_phase1_book.go")
 	if err != nil {
 		t.Fatalf("read demo_phase1_book.go: %v", err)
@@ -203,8 +203,8 @@ func TestDemoSeedLaunchVisiblePlansStayPointNative(t *testing.T) {
 		for _, forbidden := range []string{
 			"BTC",
 			"ETH",
-			"payout_pool_cents",
-			"yes_price_cents",
+			"payout_pool_points",
+			"yes_price_points",
 			"oracle_feed",
 		} {
 			if strings.Contains(body, forbidden) {
@@ -220,8 +220,8 @@ func TestDemoSeedLaunchVisiblePlansStayPointNative(t *testing.T) {
 	body := string(src)
 	for _, required := range []string{
 		"MLBB-FINAL-G1",
-		"settlementPointsCents",
-		"yesPricePointsCents",
+		"settlementPoints",
+		"yesPricePoints",
 	} {
 		if !strings.Contains(body, required) {
 			t.Fatalf("demo_phase6_backoffice.go must include point-native audit detail marker %q", required)

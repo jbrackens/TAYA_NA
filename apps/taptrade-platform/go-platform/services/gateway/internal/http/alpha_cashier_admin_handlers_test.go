@@ -47,7 +47,7 @@ func TestAlphaCashierAdminRoutesExposeDepositsAndAudit(t *testing.T) {
 		EventType:    "alpha_cashier.deposit_intent.created",
 		ActorType:    "user",
 		ActorID:      "u-alpha",
-		EventPayload: `{"amountCents":2500}`,
+		EventPayload: `{"amountPoints":2500}`,
 		CreatedAt:    now,
 	}); err != nil {
 		t.Fatalf("RecordAudit: %v", err)
@@ -548,10 +548,10 @@ type alphaHTTPFakeLedger struct {
 
 func (l *alphaHTTPFakeLedger) Credit(_ context.Context, request wallet.MutationRequest) (wallet.LedgerEntry, error) {
 	return wallet.LedgerEntry{
-		EntryID:      "entry-" + request.IdempotencyKey,
-		UserID:       request.UserID,
-		AmountCents:  request.AmountCents,
-		BalanceCents: request.AmountCents,
+		EntryID:       "entry-" + request.IdempotencyKey,
+		UserID:        request.UserID,
+		AmountPoints:  request.AmountPoints,
+		BalancePoints: request.AmountPoints,
 	}, nil
 }
 
@@ -565,7 +565,7 @@ func (l *alphaHTTPFakeLedger) Hold(_ context.Context, request wallet.HoldRequest
 	return wallet.Reservation{
 		ID:            "rsv-" + request.ReferenceID,
 		UserID:        request.UserID,
-		AmountCents:   request.AmountCents,
+		AmountPoints:  request.AmountPoints,
 		ReferenceType: request.ReferenceType,
 		ReferenceID:   request.ReferenceID,
 		Status:        "held",

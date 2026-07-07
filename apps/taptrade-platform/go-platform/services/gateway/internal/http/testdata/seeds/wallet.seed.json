@@ -9,8 +9,8 @@
         "entryId": "wl:seed:000001",
         "userId": "u:seed:3001",
         "type": "credit",
-        "amountCents": 500000,
-        "balanceCents": 500000,
+        "amountPoints": 500000,
+        "balancePoints": 500000,
         "idempotencyKey": "seed-balance-u3001",
         "reason": "deterministic seed wallet balance",
         "transactionTime": "2026-03-02T00:00:00Z"
@@ -21,8 +21,8 @@
         "entryId": "wl:seed:000002",
         "userId": "u:seed:3002",
         "type": "credit",
-        "amountCents": 350000,
-        "balanceCents": 350000,
+        "amountPoints": 350000,
+        "balancePoints": 350000,
         "idempotencyKey": "seed-balance-u3002",
         "reason": "deterministic seed wallet balance",
         "transactionTime": "2026-03-02T00:00:00Z"
@@ -34,8 +34,8 @@
       "entryId": "wl:seed:000001",
       "userId": "u:seed:3001",
       "type": "credit",
-      "amountCents": 500000,
-      "balanceCents": 500000,
+      "amountPoints": 500000,
+      "balancePoints": 500000,
       "idempotencyKey": "seed-balance-u3001",
       "reason": "deterministic seed wallet balance",
       "transactionTime": "2026-03-02T00:00:00Z"
@@ -44,8 +44,8 @@
       "entryId": "wl:seed:000002",
       "userId": "u:seed:3002",
       "type": "credit",
-      "amountCents": 350000,
-      "balanceCents": 350000,
+      "amountPoints": 350000,
+      "balancePoints": 350000,
       "idempotencyKey": "seed-balance-u3002",
       "reason": "deterministic seed wallet balance",
       "transactionTime": "2026-03-02T00:00:00Z"

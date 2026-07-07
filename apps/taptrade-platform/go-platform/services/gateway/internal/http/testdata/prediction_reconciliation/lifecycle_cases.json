@@ -10,7 +10,7 @@
           "direction": "credit",
           "sourceType": "starter_points",
           "sourceId": "starter:u-recon-yes",
-          "amountPointsCents": 100000,
+          "amountPoints": 100000,
           "unit": "PTS"
         },
         {
@@ -18,7 +18,7 @@
           "direction": "debit",
           "sourceType": "prediction_order",
           "sourceId": "order:yes-buy-1",
-          "amountPointsCents": 4200,
+          "amountPoints": 4200,
           "unit": "PTS"
         },
         {
@@ -26,17 +26,17 @@
           "direction": "credit",
           "sourceType": "prediction_settlement",
           "sourceId": "settlement:m-recon-esports-final:yes",
-          "amountPointsCents": 10000,
+          "amountPoints": 10000,
           "unit": "PTS"
         }
       ],
       "expected": {
-        "totalCreditsPointsCents": 110000,
-        "totalDebitsPointsCents": 4200,
-        "netMovementPointsCents": 105800,
+        "totalCreditsPoints": 110000,
+        "totalDebitsPoints": 4200,
+        "netMovementPoints": 105800,
         "entryCount": 3,
         "distinctUserCount": 1,
-        "finalBalancesPointsCents": {
+        "finalBalancesPoints": {
           "u-recon-yes": 105800
         }
       }
@@ -51,7 +51,7 @@
           "direction": "credit",
           "sourceType": "starter_points",
           "sourceId": "starter:u-recon-close",
-          "amountPointsCents": 50000,
+          "amountPoints": 50000,
           "unit": "PTS"
         },
         {
@@ -59,7 +59,7 @@
           "direction": "debit",
           "sourceType": "prediction_order",
           "sourceId": "order:no-buy-1",
-          "amountPointsCents": 3600,
+          "amountPoints": 3600,
           "unit": "PTS"
         },
         {
@@ -67,7 +67,7 @@
           "direction": "credit",
           "sourceType": "prediction_order",
           "sourceId": "order:no-close-1",
-          "amountPointsCents": 2800,
+          "amountPoints": 2800,
           "unit": "PTS"
         },
         {
@@ -75,17 +75,17 @@
           "direction": "credit",
           "sourceType": "mission_reward",
           "sourceId": "mission:settled-result",
-          "amountPointsCents": 550,
+          "amountPoints": 550,
           "unit": "PTS"
         }
       ],
       "expected": {
-        "totalCreditsPointsCents": 53350,
-        "totalDebitsPointsCents": 3600,
-        "netMovementPointsCents": 49750,
+        "totalCreditsPoints": 53350,
+        "totalDebitsPoints": 3600,
+        "netMovementPoints": 49750,
         "entryCount": 4,
         "distinctUserCount": 1,
-        "finalBalancesPointsCents": {
+        "finalBalancesPoints": {
           "u-recon-close": 49750
         }
       }

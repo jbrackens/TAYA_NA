@@ -20,7 +20,7 @@ import (
 // re-runs don't accumulate dead idempotency rows in the ledger).
 type topupTarget struct {
 	UserID string
-	Cents  int64
+	Points int64
 }
 
 // demoTopupTargets is the set of starting balances Phase 2/4 expect.
@@ -33,20 +33,20 @@ type topupTarget struct {
 //   - the demo user (u-1) lands at 5,000 pts visible balance per the plan's
 //     resolved decision (5k > 1k seed default).
 var demoTopupTargets = []topupTarget{
-	{UserID: demoUserID, Cents: 500_000},       // 5,000 pts
-	{UserID: demoTakerUserID1, Cents: 500_000}, // 5,000 pts
-	{UserID: demoTakerUserID2, Cents: 500_000}, // 5,000 pts
-	{UserID: demoTakerUserID3, Cents: 500_000}, // 5,000 pts
-	{UserID: demoBotUserID, Cents: 20_000_000}, // 200,000 pts
+	{UserID: demoUserID, Points: 500_000},       // 5,000 pts
+	{UserID: demoTakerUserID1, Points: 500_000}, // 5,000 pts
+	{UserID: demoTakerUserID2, Points: 500_000}, // 5,000 pts
+	{UserID: demoTakerUserID3, Points: 500_000}, // 5,000 pts
+	{UserID: demoBotUserID, Points: 20_000_000}, // 200,000 pts
 }
 
 func runWalletTopUp(walletSvc *wallet.Service) error {
 	for _, t := range demoTopupTargets {
 		current := walletSvc.Balance(context.Background(), t.UserID)
-		if current >= t.Cents {
+		if current >= t.Points {
 			continue
 		}
-		delta := t.Cents - current
+		delta := t.Points - current
 		// Idempotency key encodes the starting balance so re-runs after
 		// the user has spent some demo points in Phase 2 produce a fresh
 		// key (different delta) rather than colliding with the prior
@@ -54,10 +54,10 @@ func runWalletTopUp(walletSvc *wallet.Service) error {
 		// when the same (current, target) pair recurs exactly, which
 		// is true for re-running -mode demo against an unchanged
 		// snapshot but never after any demo activity ran.
-		idemKey := fmt.Sprintf("demo:topup:%s:from%d:to%d", t.UserID, current, t.Cents)
+		idemKey := fmt.Sprintf("demo:topup:%s:from%d:to%d", t.UserID, current, t.Points)
 		_, err := walletSvc.Credit(context.Background(), wallet.MutationRequest{
 			UserID:         t.UserID,
-			AmountCents:    delta,
+			AmountPoints:   delta,
 			IdempotencyKey: idemKey,
 			Reason:         "demo:seed wallet top-up to demo target",
 		})
@@ -65,7 +65,7 @@ func runWalletTopUp(walletSvc *wallet.Service) error {
 			return fmt.Errorf("topup %s by %d pts: %w", t.UserID, delta/100, err)
 		}
 		fmt.Printf("  topup %-10s  +%-8d pts -> %d pts\n",
-			t.UserID, delta/100, t.Cents/100)
+			t.UserID, delta/100, t.Points/100)
 	}
 	return nil
 }

@@ -66,9 +66,9 @@ func TestPortfolioUpdatePayloadExposesPointAliases(t *testing.T) {
 		Side:     prediction.OrderSideYes,
 		Action:   prediction.OrderActionBuy,
 	}, &prediction.Trade{
-		ID:         "trade-1",
-		PriceCents: 64,
-		Quantity:   12,
+		ID:          "trade-1",
+		PricePoints: 64,
+		Quantity:    12,
 	})
 
 	data, err := json.Marshal(payload)
@@ -83,14 +83,14 @@ func TestPortfolioUpdatePayloadExposesPointAliases(t *testing.T) {
 		`"orderId":"order-1"`,
 		`"tradeId":"trade-1"`,
 		`"filledQuantity":12`,
-		`"filledPricePointsCents":64`,
+		`"filledPricePoints":64`,
 		`"unit":"PTS"`,
 	} {
 		if !strings.Contains(body, want) {
 			t.Fatalf("portfolio update payload missing %s in %s", want, body)
 		}
 	}
-	for _, retired := range []string{`"filledPriceCents"`} {
+	for _, retired := range []string{`"filledPricePointsCents"`} {
 		if strings.Contains(body, retired) {
 			t.Fatalf("portfolio update payload should not emit retired alias %s in %s", retired, body)
 		}
@@ -108,7 +108,7 @@ func TestWalletUpdatePayloadExposesPointAliases(t *testing.T) {
 
 	for _, want := range []string{
 		`"userId":"user-1"`,
-		`"balancePointsCents":9876`,
+		`"balancePoints":9876`,
 		`"unit":"PTS"`,
 		`"reason":"order_fill"`,
 		`"orderId":"order-1"`,
@@ -117,7 +117,7 @@ func TestWalletUpdatePayloadExposesPointAliases(t *testing.T) {
 			t.Fatalf("wallet update payload missing %s in %s", want, body)
 		}
 	}
-	for _, retired := range []string{`"balanceCents"`} {
+	for _, retired := range []string{`"balancePointsCents"`} {
 		if strings.Contains(body, retired) {
 			t.Fatalf("wallet update payload should not emit retired alias %s in %s", retired, body)
 		}
@@ -225,7 +225,7 @@ func TestPlaceOrderRejectsZeroQuantity(t *testing.T) {
 	}
 }
 
-func TestPlaceOrderLimitRequiresPricePointsCents(t *testing.T) {
+func TestPlaceOrderLimitRequiresPricePoints(t *testing.T) {
 	rec := postOrder(t, map[string]any{
 		"marketId":  "00000000-0000-0000-0000-000000000001",
 		"side":      "yes",
@@ -236,24 +236,24 @@ func TestPlaceOrderLimitRequiresPricePointsCents(t *testing.T) {
 	if rec.Code != stdhttp.StatusBadRequest {
 		t.Fatalf("want 400, got %d body=%s", rec.Code, rec.Body.String())
 	}
-	if !strings.Contains(rec.Body.String(), "pricePointsCents") {
-		t.Fatalf("error should mention pricePointsCents; got %s", rec.Body.String())
+	if !strings.Contains(rec.Body.String(), "pricePoints") {
+		t.Fatalf("error should mention pricePoints; got %s", rec.Body.String())
 	}
 }
 
-func TestPlaceOrderLimitRejectsOutOfRangePricePointsCents(t *testing.T) {
+func TestPlaceOrderLimitRejectsOutOfRangePricePoints(t *testing.T) {
 	for _, p := range []int{0, 100, -1, 200} {
 		body := map[string]any{
-			"marketId":         "00000000-0000-0000-0000-000000000001",
-			"side":             "yes",
-			"action":           "buy",
-			"orderType":        "limit",
-			"quantity":         1,
-			"pricePointsCents": p,
+			"marketId":    "00000000-0000-0000-0000-000000000001",
+			"side":        "yes",
+			"action":      "buy",
+			"orderType":   "limit",
+			"quantity":    1,
+			"pricePoints": p,
 		}
 		rec := postOrder(t, body)
 		if rec.Code != stdhttp.StatusBadRequest {
-			t.Fatalf("pricePointsCents=%d: want 400, got %d body=%s", p, rec.Code, rec.Body.String())
+			t.Fatalf("pricePoints=%d: want 400, got %d body=%s", p, rec.Code, rec.Body.String())
 		}
 	}
 }
@@ -266,6 +266,8 @@ func TestPlaceOrderRejectsRetiredRequestAliasesAtHTTPBoundary(t *testing.T) {
 		wantText  string
 	}{
 		{
+			// Points unit-model (2026-07-07): the retired request key is the
+			// cents-era priceCents; pricePoints is the accepted canonical key.
 			name: "limit price",
 			body: map[string]any{
 				"marketId":   "00000000-0000-0000-0000-000000000001",
@@ -275,10 +277,12 @@ func TestPlaceOrderRejectsRetiredRequestAliasesAtHTTPBoundary(t *testing.T) {
 				"quantity":   1,
 				"priceCents": 50,
 			},
-			wantField: "pricePointsCents",
-			wantText:  "use pricePointsCents for limit order prices",
+			wantField: "pricePoints",
+			wantText:  "use pricePoints for limit order prices",
 		},
 		{
+			// Points unit-model (2026-07-07): the retired request key is the
+			// cents-era notionalCapCents; notionalCapPoints is canonical.
 			name: "market buy cap",
 			body: map[string]any{
 				"marketId":         "00000000-0000-0000-0000-000000000001",
@@ -288,8 +292,8 @@ func TestPlaceOrderRejectsRetiredRequestAliasesAtHTTPBoundary(t *testing.T) {
 				"quantity":         1,
 				"notionalCapCents": 500,
 			},
-			wantField: "notionalCapPointsCents",
-			wantText:  "use notionalCapPointsCents for market buy caps",
+			wantField: "notionalCapPoints",
+			wantText:  "use notionalCapPoints for market buy caps",
 		},
 	}
 
@@ -310,6 +314,8 @@ func TestPlaceOrderRejectsRetiredRequestAliasesAtHTTPBoundary(t *testing.T) {
 }
 
 func TestOrderPreviewRejectsRetiredRequestAliasesAtHTTPBoundary(t *testing.T) {
+	// Points unit-model (2026-07-07): the retired request key is the
+	// cents-era notionalCapCents; notionalCapPoints is canonical.
 	rec := postOrderPreview(t, map[string]any{
 		"marketId":         "00000000-0000-0000-0000-000000000001",
 		"side":             "yes",
@@ -321,8 +327,8 @@ func TestOrderPreviewRejectsRetiredRequestAliasesAtHTTPBoundary(t *testing.T) {
 	if rec.Code != stdhttp.StatusBadRequest {
 		t.Fatalf("want 400, got %d body=%s", rec.Code, rec.Body.String())
 	}
-	if !strings.Contains(rec.Body.String(), "notionalCapPointsCents") {
-		t.Fatalf("error should point at notionalCapPointsCents; got %s", rec.Body.String())
+	if !strings.Contains(rec.Body.String(), "notionalCapPoints") {
+		t.Fatalf("error should point at notionalCapPoints; got %s", rec.Body.String())
 	}
 }
 

@@ -15,7 +15,7 @@ func seedWallet(t *testing.T, ws *wallet.Service, userID string, cents int64) {
 	t.Helper()
 	_, err := ws.Credit(context.Background(), wallet.MutationRequest{
 		UserID:         userID,
-		AmountCents:    cents,
+		AmountPoints:   cents,
 		IdempotencyKey: "seed:" + userID,
 	})
 	if err != nil {

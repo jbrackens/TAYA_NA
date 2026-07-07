@@ -234,7 +234,7 @@ func TestAutoSettlerSettlesOnceAndIsIdempotentAcrossTicks(t *testing.T) {
 	repo.toSettle = []prediction.Market{m}
 	repo.marketStatuses["m4"] = prediction.MarketStatusClosed
 	repo.positions["m4"] = []prediction.Position{
-		{ID: "p1", UserID: "u1", MarketID: "m4", Side: prediction.OrderSideYes, Quantity: 10, AvgPriceCents: 50, TotalCostCents: 500},
+		{ID: "p1", UserID: "u1", MarketID: "m4", Side: prediction.OrderSideYes, Quantity: 10, AvgPricePoints: 50, TotalCostPoints: 500},
 	}
 
 	reg := feed.NewRegistry()

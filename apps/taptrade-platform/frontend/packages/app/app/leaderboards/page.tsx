@@ -611,18 +611,18 @@ function formatMetric(board: LeaderboardDefinition, value: number): string {
     case "accuracy":
       return `${value.toFixed(1)}%`;
     case "pnl_weekly":
-      return formatCents(value);
+      return formatPoints(value);
     case "sharpness":
       return `${(value * 100).toFixed(2)}%`;
     default:
-      if (board.id.startsWith("category:")) return formatCents(value);
+      if (board.id.startsWith("category:")) return formatPoints(value);
       return new Intl.NumberFormat("en-US", {
         maximumFractionDigits: 2,
       }).format(value);
   }
 }
 
-function formatCents(cents: number): string {
+function formatPoints(cents: number): string {
   const sign = cents < 0 ? "-" : "";
   const points = Math.abs(cents) / 100;
   const fractionDigits = points < 100 ? 2 : 0;

@@ -270,3 +270,33 @@ sportsbook (main deleted the archived spec deliberately), backup/pre-deploy-1a6e
 EXCLUDED pending owner compliance decision: feat/hula-na-cashier (22 commits — real-
 money cashier surfaces that active launch-safety gates classify launch-prohibited).
 KEPT: pam/p0-modernization (active autonomous loop, separate workstream).
+
+## POINTS UNIT-MODEL CORRECTION (2026-07-07, branch fix/points-unit-model)
+Owner directive: 1 Point = 1 cent of play value; kill the "point-cents" nested-
+unit abstraction. AUDIT FIRST (per the owner's implementation rule): traced
+grant → balance → order → fill → fee → position → settlement → ledger → UI and
+PROVED stored integers were already cent-scale (settlement credits qty×100;
+price 8 stores 8; fee floors on the same units). Therefore a NAMES-ONLY
+correction: migration 050 renames 53 active-economy columns (values untouched,
+verified: MLBB yes_price 62 before and after); dormant money-era tables
+(alpha_*, ledger_entries) deliberately keep _cents — renaming them would
+falsify cash-era history. Go/TS sweep: *PointsCents→*Points, _cents→_points,
+Cents→Points across gateway (minus alphacashier/payments/cashier internals),
+platform module, api-client, app, office. The sweep exposed and killed the
+whole legacy dual-alias layer (compat fields reading both spellings, self-
+comparing conflict validators, client-side dual-key normalizers) — single wire
+format now. Launch-boundary guards that banned retired keys were re-pointed at
+the true cents-era literals (amountCents, budget_cents, stakeCents…): the
+banned STRINGS stay as strings, never as fields. UI: /100 display conversions
+removed; ticket math is whole contracts (floor(points/price)), cost qty×price,
+settle shares×100; default stake 100 pts; trust copy per spec, reworded to
+clear the points-only vocabulary scan (the scan bans "redeem"/"withdraw" even
+in negation — the non-redeemable FACT lives in footer/terms outside locale
+files). Landing mockup economics corrected (500 pts → 8 contracts @62c →
+settles 800). FEE MODEL FLAG for owner: the implemented fee is the documented
+2026-04-24 variance fee floor(1%×p×(100−p)×qty/100²), NOT flat 1%-of-spend —
+owner's 25×8c example costs 201 under current policy, not 202; unchanged
+pending an explicit policy call. docs/taptrade-economy-rules.md gains the
+normative Unit Model section. Verified locally end-to-end: wire emits
+yesPricePoints=62; ticket shows 100 pts → 12 contracts → 96 pts cost → 1,200
+pts if correct.

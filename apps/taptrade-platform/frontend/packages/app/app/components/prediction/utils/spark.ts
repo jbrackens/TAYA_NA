@@ -27,19 +27,19 @@ export function tickerSeed(ticker: string): number {
 /** ±5¢ change biased slightly positive. Returns absolute delta and percentage. */
 export function deterministicDelta(
   ticker: string,
-  currentCents: number,
+  currentPoints: number,
 ): { delta: number; pct: number; up: boolean } {
   const seed = tickerSeed(ticker);
   const delta = (seed % 11) - 4;
-  const prev = Math.max(1, Math.min(99, currentCents - delta));
-  const pct = ((currentCents - prev) / prev) * 100;
+  const prev = Math.max(1, Math.min(99, currentPoints - delta));
+  const pct = ((currentPoints - prev) / prev) * 100;
   return { delta, pct, up: delta >= 0 };
 }
 
-/** N points of plausible price walk ending at currentCents. */
+/** N points of plausible price walk ending at currentPoints. */
 function walk(
   ticker: string,
-  currentCents: number,
+  currentPoints: number,
   N: number,
   opts?: { biasUp?: boolean },
 ): Array<[number, number]> {
@@ -54,7 +54,7 @@ function walk(
     points.push([i, val]);
   }
   // Pin the endpoint to the current price.
-  points[N - 1][1] = currentCents;
+  points[N - 1][1] = currentPoints;
   return points;
 }
 
@@ -93,7 +93,7 @@ function smoothPath(coords: Array<[number, number]>): string {
  * coordinate (for the live dot). When `points` is supplied (from the
  * backend prices endpoint), the chart uses the real volume-weighted
  * history. Otherwise it falls back to a 24-point deterministic walk
- * anchored at currentCents so the SVG still renders during the fetch
+ * anchored at currentPoints so the SVG still renders during the fetch
  * or if the API fails.
  *
  * P9: the y-domain auto-scales to the series range (with a 6¢ minimum
@@ -105,7 +105,7 @@ function smoothPath(coords: Array<[number, number]>): string {
  */
 export function heroChartPath(
   ticker: string,
-  currentCents: number,
+  currentPoints: number,
   width = 800,
   height = 220,
   points?: number[],
@@ -119,7 +119,7 @@ export function heroChartPath(
   if (points && points.length >= 2 && points.some((p) => p !== points[0])) {
     values = points;
   } else {
-    const pts = walk(ticker, currentCents, 24);
+    const pts = walk(ticker, currentPoints, 24);
     values = pts.map(([, v]) => v);
   }
   const N = values.length;
@@ -150,13 +150,13 @@ export function heroChartPath(
 /** Compact sparkline path used by Top Movers rows + MarketCard footers. */
 export function sparklinePath(
   ticker: string,
-  currentCents: number,
+  currentPoints: number,
   up: boolean,
   width = 60,
   height = 28,
 ): string {
   const N = 8;
-  const pts = walk(ticker + (up ? "↑" : "↓"), currentCents, N, {
+  const pts = walk(ticker + (up ? "↑" : "↓"), currentPoints, N, {
     biasUp: up,
   });
   const pad = height * 0.1;

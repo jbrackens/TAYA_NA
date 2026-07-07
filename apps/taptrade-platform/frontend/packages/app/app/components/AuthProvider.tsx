@@ -101,7 +101,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     starterGrantClaimedFor.current = user.id;
     void claimStarterGrant(user.id).then((res) => {
       if (res?.enabled) {
-        logger.info("Points", "starter grant applied", res.balancePointsCents);
+        logger.info("Points", "starter grant applied", res.balancePoints);
       }
     });
   }, [user]);

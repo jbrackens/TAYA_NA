@@ -367,21 +367,21 @@ function TradeTicketPreview({
               <span
                 className={`text-[22px] font-semibold leading-none text-[#0D1114] ${mono}`}
               >
-                25.00{" "}
+                500{" "}
                 <span className="text-[12px] font-medium text-[#6E7680]">
                   {ptsLabel}
                 </span>
               </span>
               <span className={`text-[11px] text-[#6E7680] ${mono}`}>
-                40.3 {sharesLabel}
+                8 {sharesLabel}
               </span>
             </div>
             <div className="mt-2.5 flex gap-2">
-              {["5", "25", "100", maxLabel].map((amount) => (
+              {["100", "500", "1000", maxLabel].map((amount) => (
                 <span
                   key={amount}
                   className={`inline-flex h-8 flex-1 items-center justify-center rounded-[var(--r-pill)] text-[12px] font-semibold ${mono} ${
-                    amount === "25"
+                    amount === "500"
                       ? "bg-[var(--accent)] text-[#061a10]"
                       : "border border-[#E9EBED] bg-white text-[#454C54]"
                   }`}
@@ -402,7 +402,7 @@ function TradeTicketPreview({
             <div className="flex items-center justify-between text-[12px]">
               <span className="text-[#454C54]">{ifCorrectLabel}</span>
               <span className={`font-semibold text-[#0E7A52] ${mono}`}>
-                40.32 {ptsLabel}
+                800 {ptsLabel}
               </span>
             </div>
           </div>

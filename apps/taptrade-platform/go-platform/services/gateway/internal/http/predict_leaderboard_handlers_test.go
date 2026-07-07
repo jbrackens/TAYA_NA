@@ -129,7 +129,9 @@ func TestPredictLeaderboardsList_ExposesLaunchBoardAliases(t *testing.T) {
 		t.Fatalf("unmarshal: %v", err)
 	}
 	for _, item := range p.Items {
-		for _, retired := range []string{"metricLabel", "qualificationMsg", "minVolumeCents"} {
+		// Points unit-model (2026-07-07): minVolumePoints is canonical; the
+		// retired spelling is the cents-era minVolumePointsCents.
+		for _, retired := range []string{"metricLabel", "qualificationMsg", "minVolumePointsCents"} {
 			if _, present := item[retired]; present {
 				t.Fatalf("public board should not emit retired %s alias: %#v", retired, item)
 			}
@@ -150,12 +152,12 @@ func TestPredictLeaderboardsList_ExposesLaunchBoardAliases(t *testing.T) {
 		if item["id"] != string(leaderboards.PredictBoardSharpness) {
 			continue
 		}
-		raw, ok := item["minVolumePointsCents"].(float64)
+		raw, ok := item["minVolumePoints"].(float64)
 		if !ok {
-			t.Fatalf("sharpness board should expose minVolumePointsCents, got %#v", item)
+			t.Fatalf("sharpness board should expose minVolumePoints, got %#v", item)
 		}
 		if int64(raw) != 50_000 {
-			t.Fatalf("sharpness minVolumePointsCents: want 50000, got %v", raw)
+			t.Fatalf("sharpness minVolumePoints: want 50000, got %v", raw)
 		}
 		return
 	}

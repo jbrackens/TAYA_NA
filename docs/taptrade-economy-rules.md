@@ -4,6 +4,16 @@
 
 TapTrade uses non-redeemable gameplay points for prediction-market play. Points are an entertainment accounting unit only. They are not money, stored value, crypto, prizes, credits, or a claim on anything redeemable.
 
+## Unit Model (corrected 2026-07-07)
+
+**1 Point = 1 cent of in-platform play value.** This is a pricing convention only — Points are not money, cash, stored value, or anything redeemable.
+
+- A market price displayed as 8¢ means **8 Points per contract** and an 8% implied probability.
+- Buying 25 YES contracts at 8¢ costs **200 Points** before fees.
+- A correct contract settles at **100 Points**; an incorrect contract settles at **0 Points**.
+- Fees are computed on the Points spent on the fill (see the fee-model decision, 2026-04-24: `floor(fee_bps × price × (100 − price) × quantity / 1,000,000)`, flat 100 bps in v1, rounding down — peaking at 0.25 Points/contract at p=50).
+- Balances, grants, rewards, and ledger entries are integer whole Points. There is **no sub-unit below the Point**; the retired "point-cents" abstraction (which treated stored integers as hundredths of a display-point) is a deprecated implementation detail and must not return.
+
 ## Non-Negotiable Constraints
 
 - No fiat deposits.
@@ -70,7 +80,7 @@ Activity-feed entries for comments, follows, trades, rewards, leaderboard moveme
 
 Badges and cosmetics are non-redeemable status metadata. They may be derived from existing source records such as `daily_claim`, `mission_reward`, `streak_reward`, first-prediction, prediction-regular, prediction-veteran, prediction-expert, streak-champion, monthly-streak, monthly-check-in, seasonal-check-in, quarterly-check-in, double-monthly-streak, and quarterly-streak wallet ledger rows, leaderboard-debut `leaderboard_snapshots` standing rows, and settled-result, settlement-regular, settlement-veteran, and settlement-expert `prediction_payout:*` settlement ledger rows, but viewing or earning badge status must not create points, imply point value, or create any redeemable prize path.
 
-Leaderboards and loyalty admin tools must present points-only rank and reward configuration. Launch-facing leaderboard copy and API responses must use `unit: "PTS"`, point metric aliases, and non-redeemable `rewardSummary` language, not USD, prizes, or cash-equivalent rewards. Public/admin leaderboard responses must not emit retired `currency` or `prizeSummary` aliases; leaderboard create/update requests must reject those retired aliases before persistence. Loyalty standing, public tier, and admin account-review APIs must expose point-native XP/rank aliases such as `xp`, `xpPoints`, `rank`, `rankName`, `nextRank`, `nextRankName`, `xpToNextRank`, `minXpPoints`, and `unit: "PTS"` and must not emit retired tier/threshold/progress aliases such as `tier`, `tierName`, `currentTier`, `nextTier`, `nextTierName`, `pointsToNextTier`, `name`, or `pointsThreshold`; old loyalty payloads may be read only by private compatibility fallback code. Demo seed mode must recompute leaderboard snapshots from seeded settlements before exit so seeded leaderboards are real derived rows rather than static mock ranks. Loyalty accrual rules may translate inherited source keys for compatibility, but visible admin copy and preferred API aliases must describe prediction-settlement rewards, point-unit thresholds, and eligible prediction types through fields such as `predictionSourceType`, `minQualifiedPointsCents`, and `eligiblePredictionTypes`, not bets, stakes, or cents as money.
+Leaderboards and loyalty admin tools must present points-only rank and reward configuration. Launch-facing leaderboard copy and API responses must use `unit: "PTS"`, point metric aliases, and non-redeemable `rewardSummary` language, not USD, prizes, or cash-equivalent rewards. Public/admin leaderboard responses must not emit retired `currency` or `prizeSummary` aliases; leaderboard create/update requests must reject those retired aliases before persistence. Loyalty standing, public tier, and admin account-review APIs must expose point-native XP/rank aliases such as `xp`, `xpPoints`, `rank`, `rankName`, `nextRank`, `nextRankName`, `xpToNextRank`, `minXpPoints`, and `unit: "PTS"` and must not emit retired tier/threshold/progress aliases such as `tier`, `tierName`, `currentTier`, `nextTier`, `nextTierName`, `pointsToNextTier`, `name`, or `pointsThreshold`; old loyalty payloads may be read only by private compatibility fallback code. Demo seed mode must recompute leaderboard snapshots from seeded settlements before exit so seeded leaderboards are real derived rows rather than static mock ranks. Loyalty accrual rules may translate inherited source keys for compatibility, but visible admin copy and preferred API aliases must describe prediction-settlement rewards, point-unit thresholds, and eligible prediction types through fields such as `predictionSourceType`, `minQualifiedPoints`, and `eligiblePredictionTypes`, not bets, stakes, or cents as money.
 
 Loyalty ledger payloads must expose point-native settlement metadata for launch clients. Settlement-accrual entries should provide aliases such as `predictionSourceId`, `predictionId`, and `pointVolumeCents`, and reason text must describe prediction settlement rewards. Inherited metadata keys such as bet IDs or stake cents may remain inside internal services or snapshots only as compatibility details and must not be the preferred launch payload shape.
 
@@ -123,17 +133,17 @@ Persisted engine statuses may use legacy names, but launch admin surfaces must p
 - Reward user interfaces must render claimed/claimable state from persisted ledger evidence rather than local click state. Daily claim controls should become claimed once today's `daily_claim:{user}:{date}` evidence exists, point-pack controls should use the backend `claimed` flag derived from `point_pack:{user}:{pack}`, and mission/streak controls should refresh from the backend after reward writes so repeated clicks are visibly idempotent and cannot imply another point grant is available.
 - If legacy bonus/campaign player endpoints remain registered during the transition, player-facing responses must expose only point-native aliases and `PTS` units for granted, remaining, required, completed, and progress amounts. Gateway JSON and exported launch-client bonus/progress/breakdown state must not emit, export, or reattach retired amount, wagering, real-money, bonus-fund, generic progress, or cash-unit aliases; old payload names may be read only by private compatibility fallback code. Launch clients must present these as point-play progress rather than wagering, cash, or redeemable value.
 - If legacy bonus/campaign admin endpoints remain registered during the transition, campaign budgets, spent amounts, reward amounts, trigger thresholds, and contribution caps must expose only point-native aliases and `PTS` units. Gateway JSON must not emit raw campaign rules, raw rule configs, retired budget/spent fields, or retired rule amount keys; old request/internal names may remain compatibility-only and must not be documented as cash-equivalent value.
-- Responsible-play point-use limits and prediction/order-size limits must use launch client helper names and launch-facing API routes. Requests, responses, check endpoints, restrictions summaries, and denied-limit reasons must expose point-native amount/limit aliases, stable point-native reason codes, and `PTS` units for launch clients. Launch responsible-play routes must reject retired request aliases such as `amountCents`, `stakePointsCents`, and `stakeCents`; those aliases may remain only on explicitly named legacy compatibility routes during the transition. Inherited deposit- or bet-named routes may remain as compatibility aliases during the transition, but compatibility endpoint names must not appear in launch copy or API documentation as player deposit or betting mechanics.
-- Trading uses idempotent order placement and balance reservations. Order-book reservations must write point-ledger lock/unlock markers keyed by the prediction order, while captures and seller proceeds write trade-fill debit/credit rows. The client trade ticket must reject over-balance buys as points-only `Not enough points` states before submission; market buys may compare against previewed fill cost, but limit buys must compare the selected point amount against balance because unfilled resting amounts still reserve points. Order placement/read responses must expose `pricePointsCents`, `averageFillPricePointsCents`, `totalCostPointsCents`, `reservedPointsCents`, `capturedPointsCents`, `releasedPointsCents`, `filledCostPointsCents`, `notionalCapPointsCents`, and `unit: "PTS"` and must not emit, document, or reattach `priceCents`, `averageFillPriceCents`, `totalCostCents`, `filledCostCents`, `notionalCapCents`, `walletReservationId`, or retired cash-named reservation/capture/release aliases in launch JSON, launch OpenAPI, exported shared-client types, normalized player-app outputs, or player order UI. Launch clients, OpenAPI docs, session order APIs, preview APIs, and bot order APIs must send and accept only `pricePointsCents` for limit-order prices and `notionalCapPointsCents` for market-buy caps; retired request price/cap fields may remain only in lower-level private compatibility structs. Portfolio position responses must expose `totalCostPointsCents`, `realizedPointsCents`, and `unit: "PTS"` and must not emit, document, or reattach `totalCostCents` or `realizedPnlCents`; old position responses may be read only by private compatibility fallback code. Portfolio summary responses must expose point-native aliases such as `totalValuePointsCents`, `portfolioValuePointsCents`, `investedPointsCents`, `unrealizedPointsCents`, `realizedPointsCents`, and `unit: "PTS"` and must not emit, document, or reattach `totalValueCents`, `unrealizedPnlCents`, or `realizedPnlCents`; old summary responses may be read only by private compatibility fallback code. Portfolio settlement-history responses must expose `realizedPointsCents`, `settlementPointsCents`, and `unit: "PTS"` and must not emit, document, or reattach `payoutCents` or `pnlCents`; old history rows may be read only by private compatibility fallback code. Responsible-play denials returned by order placement must use prediction/responsible-play wording and stable reason-code details, even when the inherited service still reports bet-limit names internally.
-- Order preview responses must expose preferred point-native aliases such as `pricePointsCents`, `totalCostPointsCents`, `feePointsCents`, `maxProfitPointsCents`, `maxLossPointsCents`, `totalCostWithFeesPointsCents`, `estimatedSlippagePointsCents`, and `unit: "PTS"` and must not emit, document, or reattach legacy preview price/cost/fee/result/slippage aliases in launch JSON, launch OpenAPI, exported shared-client types, normalized player-app outputs, or player preview UI. Old preview payloads may be read only by private compatibility fallback code. Preview endpoints are non-mutating quote surfaces and must not write point ledger, reservation, order, position, reward, or settlement rows.
-- Trade tape and live fill payloads must expose point-native fields such as `pricePointsCents`, `feePointsCents`, `notionalPointsCents`, and `unit: "PTS"` without legacy trade price/fee aliases in launch JSON, launch OpenAPI, exported shared-client types, normalized player-app outputs, live fill payloads, or player trade-tape UI. Old trade rows may be read only by private compatibility fallback code. Trade reads are activity evidence from existing fills and must not create point movement.
-- Market discovery, detail, and admin market payloads must expose point-native fields such as `yesPricePointsCents`, `noPricePointsCents`, `lastTradePricePointsCents`, `volumePointsCents`, `openInterestPointsCents`, `liquidityPointsCents`, `ammSubsidyPointsCents`, `collateralPoolPointsCents`, `settlementPoolPointsCents`, best-quote point aliases, and `unit: "PTS"` without legacy market price/activity/liquidity aliases in launch JSON, launch OpenAPI, exported shared-client types, normalized player/admin app outputs, or market UI consumers. Old market payloads may be read only by private compatibility fallback code. Reading or exporting market metadata must not create point movement.
-- Market price-history payloads must expose point-native fields such as `yesPricePointsCents`, `volumePointsCents`, and `unit: "PTS"` without legacy history price/activity aliases in launch JSON, launch OpenAPI, exported shared-client types, normalized player-app outputs, or chart/discovery UI consumers. Old history payloads may be read only by private compatibility fallback code. Reading chart history is metadata only and must not create point movement.
-- Order-book/depth payloads must expose point-native price/notional fields and explicit share-count fields through `pricePointsCents`, `shares`, `cumulativeShares`, `notionalPointsCents`, `totalNotionalPointsCents`, and `unit: "PTS"` only. Reading depth is metadata only and must not create point movement.
+- Responsible-play point-use limits and prediction/order-size limits must use launch client helper names and launch-facing API routes. Requests, responses, check endpoints, restrictions summaries, and denied-limit reasons must expose point-native amount/limit aliases, stable point-native reason codes, and `PTS` units for launch clients. Launch responsible-play routes must reject retired request aliases such as `amountCents`, `stakePoints`, and `stakeCents`; those aliases may remain only on explicitly named legacy compatibility routes during the transition. Inherited deposit- or bet-named routes may remain as compatibility aliases during the transition, but compatibility endpoint names must not appear in launch copy or API documentation as player deposit or betting mechanics.
+- Trading uses idempotent order placement and balance reservations. Order-book reservations must write point-ledger lock/unlock markers keyed by the prediction order, while captures and seller proceeds write trade-fill debit/credit rows. The client trade ticket must reject over-balance buys as points-only `Not enough points` states before submission; market buys may compare against previewed fill cost, but limit buys must compare the selected point amount against balance because unfilled resting amounts still reserve points. Order placement/read responses must expose `pricePoints`, `averageFillPricePoints`, `totalCostPoints`, `reservedPoints`, `capturedPoints`, `releasedPoints`, `filledCostPoints`, `notionalCapPoints`, and `unit: "PTS"` and must not emit, document, or reattach `priceCents`, `averageFillPriceCents`, `totalCostCents`, `filledCostCents`, `notionalCapCents`, `walletReservationId`, or retired cash-named reservation/capture/release aliases in launch JSON, launch OpenAPI, exported shared-client types, normalized player-app outputs, or player order UI. Launch clients, OpenAPI docs, session order APIs, preview APIs, and bot order APIs must send and accept only `pricePoints` for limit-order prices and `notionalCapPoints` for market-buy caps; retired request price/cap fields may remain only in lower-level private compatibility structs. Portfolio position responses must expose `totalCostPoints`, `realizedPoints`, and `unit: "PTS"` and must not emit, document, or reattach `totalCostCents` or `realizedPnlCents`; old position responses may be read only by private compatibility fallback code. Portfolio summary responses must expose point-native aliases such as `totalValuePoints`, `portfolioValuePoints`, `investedPoints`, `unrealizedPoints`, `realizedPoints`, and `unit: "PTS"` and must not emit, document, or reattach `totalValueCents`, `unrealizedPnlCents`, or `realizedPnlCents`; old summary responses may be read only by private compatibility fallback code. Portfolio settlement-history responses must expose `realizedPoints`, `settlementPoints`, and `unit: "PTS"` and must not emit, document, or reattach `payoutCents` or `pnlCents`; old history rows may be read only by private compatibility fallback code. Responsible-play denials returned by order placement must use prediction/responsible-play wording and stable reason-code details, even when the inherited service still reports bet-limit names internally.
+- Order preview responses must expose preferred point-native aliases such as `pricePoints`, `totalCostPoints`, `feePoints`, `maxProfitPoints`, `maxLossPoints`, `totalCostWithFeesPoints`, `estimatedSlippagePoints`, and `unit: "PTS"` and must not emit, document, or reattach legacy preview price/cost/fee/result/slippage aliases in launch JSON, launch OpenAPI, exported shared-client types, normalized player-app outputs, or player preview UI. Old preview payloads may be read only by private compatibility fallback code. Preview endpoints are non-mutating quote surfaces and must not write point ledger, reservation, order, position, reward, or settlement rows.
+- Trade tape and live fill payloads must expose point-native fields such as `pricePoints`, `feePoints`, `notionalPoints`, and `unit: "PTS"` without legacy trade price/fee aliases in launch JSON, launch OpenAPI, exported shared-client types, normalized player-app outputs, live fill payloads, or player trade-tape UI. Old trade rows may be read only by private compatibility fallback code. Trade reads are activity evidence from existing fills and must not create point movement.
+- Market discovery, detail, and admin market payloads must expose point-native fields such as `yesPricePoints`, `noPricePoints`, `lastTradePricePoints`, `volumePoints`, `openInterestPoints`, `liquidityPoints`, `ammSubsidyPoints`, `collateralPoolPoints`, `settlementPoolPoints`, best-quote point aliases, and `unit: "PTS"` without legacy market price/activity/liquidity aliases in launch JSON, launch OpenAPI, exported shared-client types, normalized player/admin app outputs, or market UI consumers. Old market payloads may be read only by private compatibility fallback code. Reading or exporting market metadata must not create point movement.
+- Market price-history payloads must expose point-native fields such as `yesPricePoints`, `volumePoints`, and `unit: "PTS"` without legacy history price/activity aliases in launch JSON, launch OpenAPI, exported shared-client types, normalized player-app outputs, or chart/discovery UI consumers. Old history payloads may be read only by private compatibility fallback code. Reading chart history is metadata only and must not create point movement.
+- Order-book/depth payloads must expose point-native price/notional fields and explicit share-count fields through `pricePoints`, `shares`, `cumulativeShares`, `notionalPoints`, `totalNotionalPoints`, and `unit: "PTS"` only. Reading depth is metadata only and must not create point movement.
 - Live market and order-book WebSocket payloads must expose the same preferred point-native aliases as their REST counterparts, including market price/activity aliases, best-quote point aliases, and `unit: "PTS"` without legacy live-frame price/activity or best-quote aliases. Receiving live frames is metadata only and must not create point movement.
 - Admin dashboard market-activity payloads and launch OpenAPI docs must expose movement prices, movement volume, aggregate volume, and `unit: "PTS"` through point-native fields only. Reading dashboard activity is admin metadata only and must not create point movement.
 - Admin drift-alert payloads and launch OpenAPI docs must expose maximum drift, total drift, and `unit: "PTS"` through point-native fields only. Reading drift alerts is admin reconciliation metadata only and must not create point movement.
-- Admin risk snapshots and office risk dashboards are launch admin surfaces and must use the point-native risk contract directly: `pointAccounting`, `openPositionPointCostCents`, `maxSettlementPointsCents`, `reservedPointsCents`, `openPointCostCents`, and `maxReturnedPointsCents`. The gateway risk JSON must not emit retired money/cash compatibility aliases for this snapshot, office must not translate retired aliases into visible point-accounting UI, and missing point-accounting data should fail closed rather than silently falling back to legacy fields.
+- Admin risk snapshots and office risk dashboards are launch admin surfaces and must use the point-native risk contract directly: `pointAccounting`, `openPositionPointCostCents`, `maxSettlementPoints`, `reservedPoints`, `openPointCostCents`, and `maxReturnedPoints`. The gateway risk JSON must not emit retired money/cash compatibility aliases for this snapshot, office must not translate retired aliases into visible point-accounting UI, and missing point-accounting data should fail closed rather than silently falling back to legacy fields.
 - Bot/partner trading APIs are proof and automation surfaces, not a bypass around the point economy. Bot-authenticated orders must use the same order-book reservation/capture/fill path as session orders, write the same `prediction_fill` ledger rows, update the same wallet balance and position tables, and remain subject to the same jurisdiction, responsible-play, and launch-money-route boundaries. Bot proofs do not replace the required session-authenticated browser/account-ledger proof for parity.
 - Social actions use authenticated writes for comments, follows, reactions, and reports; reactions and follows are idempotent per user. Social write bursts are rate-limited per user/action through `SOCIAL_WRITE_RATE_LIMIT_PER_MIN` and `SOCIAL_WRITE_RATE_LIMIT_BURST`, and may also be rate-limited per client IP/action through `SOCIAL_WRITE_IP_RATE_LIMIT_PER_MIN` and `SOCIAL_WRITE_IP_RATE_LIMIT_BURST` to reduce multi-account bursts from a shared network. Blocked writes must not persist comments, reactions, reports, follows, ledger rows, rewards, or any redeemable value path. Report moderation is admin-gated, keeps reviewer metadata, resolves reports to reviewed or dismissed, and may export formula-safe moderation CSVs without creating any redeemable value path.
 - Watchlists are authenticated per-user metadata and are idempotent for repeated add/remove actions.
@@ -170,7 +180,7 @@ Do not use these terms on launch user surfaces:
 - cents as money
 - balance as stored value
 
-Internal legacy database column names such as `balance_cents` may remain temporarily, but user-facing copy and API documentation for launch must present points only.
+Internal legacy database column names such as `balance_points` may remain temporarily, but user-facing copy and API documentation for launch must present points only.
 
 Public homepage and marketing-adjacent market teasers must follow the same boundary. Example markets should use launch-safe local prediction topics such as politics, basketball, pageants, esports, MLBB, culture, or entertainment, and trust copy should describe outcome rules and settlement sources rather than payout, payment, crypto, fiat, or cash-value mechanics.
 
@@ -180,15 +190,15 @@ Supported launch-language locale bundles are also launch surfaces. Parsed render
 
 Office/backoffice translation values are launch-adjacent admin surfaces. Parsed rendered values under `packages/office/translations/en` must avoid inherited deposit, withdrawal, cashier, casino, crypto, fiat, payout, payment, wager, stake, refund, freebet, wallet-as-stored-value, cents-as-money, or cash-value wording. Compatibility keys may remain temporarily only when their rendered values use point-account, point-ledger, bonus-rule, points-used, returned-points, or prediction language and are covered by parsed-value regression scans.
 
-Gateway launch docs and OpenAPI descriptions are launch-facing documentation. They must describe point-cents as gameplay subunits and must not document cashier, deposit, withdrawal, crypto, fiat, payout, dollar exposure, or sportsbook-era surfaces as launch behavior. Compatibility schema names may remain while handlers expose them, but descriptions, summaries, and README launch prose must use point/points-only language and be regression scanned. Admin market edit, lifecycle audit, lifecycle transition, and settlement replay docs must describe metadata edits, lifecycle status changes, formula-safe exports, and settlement point disbursements without implying external value. Responsible-play docs must describe session-bound point-use limits, prediction-size limits, decision checks, cool-off/self-exclusion statuses, restrictions, `PTS` aliases, and point-native reason codes without documenting inherited compatibility route names. Reward docs for daily claims, point packs, missions, streaks, badges, cosmetics, and reward limits must state that credits go only to the authenticated session user, expose `PTS` point aliases, and avoid any external-value path. Loyalty docs must describe session-scoped XP/rank standing, point-delta ledger rows, public rank tiers, admin account review, admin point adjustments, editable rank-tier config, and `PTS` aliases without documenting temporary external-value compatibility aliases. Reward-cluster admin docs must describe hashed device/IP signal summaries, distinct-user counts, formula-safe exports, raw-signal omission, and no point movement. Social API docs must describe comments, replies, reactions, reports, follows, profiles, activity, moderation, and formula-safe admin exports as metadata-only surfaces with no point movement or external value. Admin prediction risk docs must describe read-only settlement aging, point-cost concentration, point-accounting invariants, and formula-safe point-accounting exports without documenting temporary external-value compatibility aliases. Leaderboard docs must describe computed point ranking boards, authenticated self-standing lookups, `PTS` units, point metric labels, non-redeemable reward summaries, and background recompute acknowledgements without documenting temporary external-value compatibility aliases. Bot API docs must describe API-key order entry as an automation surface that shares session order validation, point-reservation and fill behavior, responsible-play reason codes, bot-key rate limits, and read-only point-backed positions. Bot-key management docs must describe user-owned key list/create/revoke and operator-issued partner-key issue/list as key metadata or audit surfaces with no point movement, one-time full-key display, owner-scoped revocation, self-serve production gating, read/trade-only scope issuance, wildcard-scope rejection before persistence, and RBAC-gated partner issuance. OpenAPI `$ref` syntax and `non-redeemable` denial phrasing are allowed.
+Gateway launch docs and OpenAPI descriptions are launch-facing documentation. They must describe points as gameplay subunits and must not document cashier, deposit, withdrawal, crypto, fiat, payout, dollar exposure, or sportsbook-era surfaces as launch behavior. Compatibility schema names may remain while handlers expose them, but descriptions, summaries, and README launch prose must use point/points-only language and be regression scanned. Admin market edit, lifecycle audit, lifecycle transition, and settlement replay docs must describe metadata edits, lifecycle status changes, formula-safe exports, and settlement point disbursements without implying external value. Responsible-play docs must describe session-bound point-use limits, prediction-size limits, decision checks, cool-off/self-exclusion statuses, restrictions, `PTS` aliases, and point-native reason codes without documenting inherited compatibility route names. Reward docs for daily claims, point packs, missions, streaks, badges, cosmetics, and reward limits must state that credits go only to the authenticated session user, expose `PTS` point aliases, and avoid any external-value path. Loyalty docs must describe session-scoped XP/rank standing, point-delta ledger rows, public rank tiers, admin account review, admin point adjustments, editable rank-tier config, and `PTS` aliases without documenting temporary external-value compatibility aliases. Reward-cluster admin docs must describe hashed device/IP signal summaries, distinct-user counts, formula-safe exports, raw-signal omission, and no point movement. Social API docs must describe comments, replies, reactions, reports, follows, profiles, activity, moderation, and formula-safe admin exports as metadata-only surfaces with no point movement or external value. Admin prediction risk docs must describe read-only settlement aging, point-cost concentration, point-accounting invariants, and formula-safe point-accounting exports without documenting temporary external-value compatibility aliases. Leaderboard docs must describe computed point ranking boards, authenticated self-standing lookups, `PTS` units, point metric labels, non-redeemable reward summaries, and background recompute acknowledgements without documenting temporary external-value compatibility aliases. Bot API docs must describe API-key order entry as an automation surface that shares session order validation, point-reservation and fill behavior, responsible-play reason codes, bot-key rate limits, and read-only point-backed positions. Bot-key management docs must describe user-owned key list/create/revoke and operator-issued partner-key issue/list as key metadata or audit surfaces with no point movement, one-time full-key display, owner-scoped revocation, self-serve production gating, read/trade-only scope issuance, wildcard-scope rejection before persistence, and RBAC-gated partner issuance. OpenAPI `$ref` syntax and `non-redeemable` denial phrasing are allowed.
 
 Discovery taxonomy docs must describe public/admin categories, recurring series, and tags as launch-safe metadata-only discovery controls, including the rule that prohibited taxonomy terms are rejected before admin category persistence and that taxonomy reads/writes do not move points.
 
-Admin account-review docs must describe account lists, account detail, point-account summaries, point-ledger inspection, settlement-history review, status updates, notes, and audit logs as admin review or metadata surfaces. Preferred launch schemas must expose `PTS`, `pointAccountBalanceCents`, `realizedPointsCents`, `settlementPointsCents`, `amountPointsCents`, and `balancePointsCents`; transitional wallet, P&L, payout, amount, or balance compatibility fields may remain only as non-preferred aliases. They must not document placeholder account actions as launch behavior, and account-review reads or notes must not imply point movement unless a separate audited admin adjustment endpoint writes an explicit ledger row.
+Admin account-review docs must describe account lists, account detail, point-account summaries, point-ledger inspection, settlement-history review, status updates, notes, and audit logs as admin review or metadata surfaces. Preferred launch schemas must expose `PTS`, `pointAccountBalanceCents`, `realizedPoints`, `settlementPoints`, `amountPoints`, and `balancePoints`; transitional wallet, P&L, payout, amount, or balance compatibility fields may remain only as non-preferred aliases. They must not document placeholder account actions as launch behavior, and account-review reads or notes must not imply point movement unless a separate audited admin adjustment endpoint writes an explicit ledger row.
 
 Admin market-operation docs must describe market list/export, event creation, market creation, source provenance, and AI drafting token-budget checks as metadata, audit, or rate-limit surfaces. Market and event creation must not imply point movement; market list exports must use point-accounting fields and formula-safe CSV wording; AI drafting docs must describe token/rate limits rather than external value.
 
-Settlement and dispute docs must describe direct settlement, proposed-resolution challenge windows, finalization, holder disputes, admin dispute review, and resolution-source health as point-disbursement, returned-locked-point, or read-only monitoring workflows. Preferred launch schemas must expose `PTS`, `pointDisbursements`, `settlementPointsCents`, `realizedPointsCents`, and `totalSettlementPointsCents`; operation-level `payouts` arrays must not be documented, and remaining field-level compatibility names may be named only as non-preferred aliases.
+Settlement and dispute docs must describe direct settlement, proposed-resolution challenge windows, finalization, holder disputes, admin dispute review, and resolution-source health as point-disbursement, returned-locked-point, or read-only monitoring workflows. Preferred launch schemas must expose `PTS`, `pointDisbursements`, `settlementPoints`, `realizedPoints`, and `totalSettlementPoints`; operation-level `payouts` arrays must not be documented, and remaining field-level compatibility names may be named only as non-preferred aliases.
 
 Gateway route tests for proposed-resolution settlement must cover the same trust boundary as the service tests: direct settlement cannot bypass an active challenge flow, the proposer cannot finalize their own proposal, holder disputes block finalization until reviewed, and second-admin finalization must expose point-disbursement aliases rather than external-value wording.
 
@@ -202,19 +212,19 @@ Prediction seed data is a launch surface. Fresh seeds and reruns must use launch
 
 ## Loop 164 Settlement Operation Rule
 
-Admin settlement, finalization, and invalidation operation responses must use `pointDisbursements` as the launch array contract. They must not emit, document, or reattach the retired operation-level `payouts` array. Point-disbursement rows in those operation responses must expose `realizedPointsCents`, `settlementPointsCents`, and `unit: "PTS"` without `payoutCents` or `pnlCents`. Public portfolio and admin account-review settlement-history rows must follow the same point-native field rule and must not emit, document, or reattach `payoutCents` or `pnlCents`. Temporary internal storage names may remain only as compatibility details until the broader storage cleanup is completed.
+Admin settlement, finalization, and invalidation operation responses must use `pointDisbursements` as the launch array contract. They must not emit, document, or reattach the retired operation-level `payouts` array. Point-disbursement rows in those operation responses must expose `realizedPoints`, `settlementPoints`, and `unit: "PTS"` without `payoutCents` or `pnlCents`. Public portfolio and admin account-review settlement-history rows must follow the same point-native field rule and must not emit, document, or reattach `payoutCents` or `pnlCents`. Temporary internal storage names may remain only as compatibility details until the broader storage cleanup is completed.
 
 ## Loop 166 Portfolio History Rule
 
-`/api/v1/portfolio/history` is a launch-facing player surface. It must expose explicit settlement metadata plus `realizedPointsCents`, `settlementPointsCents`, and `unit: "PTS"` only for settled result amounts. Gateway JSON, launch OpenAPI, exported shared-client types, and normalized player-app portfolio history objects must not emit or reattach `payoutCents` or `pnlCents`; old rows may be read only by private compatibility fallback code.
+`/api/v1/portfolio/history` is a launch-facing player surface. It must expose explicit settlement metadata plus `realizedPoints`, `settlementPoints`, and `unit: "PTS"` only for settled result amounts. Gateway JSON, launch OpenAPI, exported shared-client types, and normalized player-app portfolio history objects must not emit or reattach `payoutCents` or `pnlCents`; old rows may be read only by private compatibility fallback code.
 
 ## Loop 167 Account-Review Settlement History Rule
 
-`/api/v1/admin/punters/{id}/settlements` is a launch-adjacent account-review surface. It must expose explicit settlement metadata plus `realizedPointsCents`, `settlementPointsCents`, and `unit: "PTS"` only for settled result amounts. Gateway JSON, launch OpenAPI, and office account-review UI rows must not emit, document, or consume `payoutCents` or `pnlCents`; internal storage may keep legacy names until the broader repository cleanup.
+`/api/v1/admin/punters/{id}/settlements` is a launch-adjacent account-review surface. It must expose explicit settlement metadata plus `realizedPoints`, `settlementPoints`, and `unit: "PTS"` only for settled result amounts. Gateway JSON, launch OpenAPI, and office account-review UI rows must not emit, document, or consume `payoutCents` or `pnlCents`; internal storage may keep legacy names until the broader repository cleanup.
 
 ## Loop 168 Account-Review Summary Rule
 
-`/api/v1/admin/punters` and `/api/v1/admin/punters/{id}` are launch-adjacent account-review surfaces. They must expose point-account balance and settled-result summaries through `pointAccountBalanceCents`, `realizedPointsCents`, and `unit: "PTS"` rather than wallet/P&L compatibility aliases. Gateway JSON, launch OpenAPI, and office account-list/detail mapping must not emit, document, or consume `walletBalanceCents` or list-level `realizedPnlCents` for account-review summaries.
+`/api/v1/admin/punters` and `/api/v1/admin/punters/{id}` are launch-adjacent account-review surfaces. They must expose point-account balance and settled-result summaries through `pointAccountBalanceCents`, `realizedPoints`, and `unit: "PTS"` rather than wallet/P&L compatibility aliases. Gateway JSON, launch OpenAPI, and office account-list/detail mapping must not emit, document, or consume `walletBalanceCents` or list-level `realizedPnlCents` for account-review summaries.
 
 ## Loop 169 Portfolio Summary Rule
 
@@ -222,51 +232,51 @@ Admin settlement, finalization, and invalidation operation responses must use `p
 
 ## Loop 170 Portfolio Position Rule
 
-`/api/v1/portfolio` position rows are launch-facing player surfaces. They must expose position cost and realized result through `totalCostPointsCents`, `realizedPointsCents`, and `unit: "PTS"` only. Gateway JSON, launch OpenAPI, exported shared-client types, normalized player-app position objects, and player position UI must not emit, document, or consume `totalCostCents` or `realizedPnlCents`; old position payloads may be read only by private compatibility fallback code.
+`/api/v1/portfolio` position rows are launch-facing player surfaces. They must expose position cost and realized result through `totalCostPoints`, `realizedPoints`, and `unit: "PTS"` only. Gateway JSON, launch OpenAPI, exported shared-client types, normalized player-app position objects, and player position UI must not emit, document, or consume `totalCostCents` or `realizedPnlCents`; old position payloads may be read only by private compatibility fallback code.
 
 ## Loop 171 Order Response Rule
 
-`/api/v1/orders`, order-list reads, and bot/session order result rows are launch-facing trading surfaces. They must expose limit price, average fill price, order cost, filled cost, and market-buy cap through `pricePointsCents`, `averageFillPricePointsCents`, `totalCostPointsCents`, `filledCostPointsCents`, `notionalCapPointsCents`, and `unit: "PTS"` only. Gateway JSON, launch OpenAPI `Order`, exported shared-client `PredictionOrder`, normalized player-app order objects, and player order UI must not emit, document, or consume `priceCents`, `averageFillPriceCents`, `totalCostCents`, `filledCostCents`, `notionalCapCents`, or `walletReservationId`; old order payloads may be read only by private compatibility fallback code. Retired request price/cap inputs must be rejected by session order, preview, and bot order HTTP endpoints; launch OpenAPI, exported shared-client request types, player-app preview/place-order calls, and idempotency signatures must send and document `pricePointsCents` and `notionalCapPointsCents` only. `OrderPreview` response aliases are governed by the Loop 172 rule below.
+`/api/v1/orders`, order-list reads, and bot/session order result rows are launch-facing trading surfaces. They must expose limit price, average fill price, order cost, filled cost, and market-buy cap through `pricePoints`, `averageFillPricePoints`, `totalCostPoints`, `filledCostPoints`, `notionalCapPoints`, and `unit: "PTS"` only. Gateway JSON, launch OpenAPI `Order`, exported shared-client `PredictionOrder`, normalized player-app order objects, and player order UI must not emit, document, or consume `priceCents`, `averageFillPriceCents`, `totalCostCents`, `filledCostCents`, `notionalCapCents`, or `walletReservationId`; old order payloads may be read only by private compatibility fallback code. Retired request price/cap inputs must be rejected by session order, preview, and bot order HTTP endpoints; launch OpenAPI, exported shared-client request types, player-app preview/place-order calls, and idempotency signatures must send and document `pricePoints` and `notionalCapPoints` only. `OrderPreview` response aliases are governed by the Loop 172 rule below.
 
 ## Loop 172 Order Preview Rule
 
-`/api/v1/orders/preview` is a launch-facing quote surface. It must expose quote prices, estimated cost, fees, result bounds, post-preview prices, average fill price, total cost with fees, estimated slippage, and `unit: "PTS"` through point-native fields only. Gateway JSON, launch OpenAPI `OrderPreview`, exported shared-client `OrderPreview`, normalized player-app preview objects, AMM quote ladders, and TradeTicket preview UI must not emit, document, reattach, or consume `priceCents`, `totalCostCents`, `feeCents`, `maxProfitCents`, `maxLossCents`, `newYesPriceCents`, `newNoPriceCents`, `averageFillPriceCents`, `totalCostWithFeesCents`, or `estimatedSlippageCents`; old preview payloads may be read only by private compatibility fallback code. Request-side launch docs, exported clients, player-app calls, and the preview HTTP endpoint must use `pricePointsCents` and `notionalCapPointsCents` only; lower-level private compatibility may still parse old request structs outside the launch HTTP contract.
+`/api/v1/orders/preview` is a launch-facing quote surface. It must expose quote prices, estimated cost, fees, result bounds, post-preview prices, average fill price, total cost with fees, estimated slippage, and `unit: "PTS"` through point-native fields only. Gateway JSON, launch OpenAPI `OrderPreview`, exported shared-client `OrderPreview`, normalized player-app preview objects, AMM quote ladders, and TradeTicket preview UI must not emit, document, reattach, or consume `priceCents`, `totalCostCents`, `feeCents`, `maxProfitCents`, `maxLossCents`, `newYesPriceCents`, `newNoPriceCents`, `averageFillPriceCents`, `totalCostWithFeesCents`, or `estimatedSlippageCents`; old preview payloads may be read only by private compatibility fallback code. Request-side launch docs, exported clients, player-app calls, and the preview HTTP endpoint must use `pricePoints` and `notionalCapPoints` only; lower-level private compatibility may still parse old request structs outside the launch HTTP contract.
 
 ## Loop 173 Trade Tape Rule
 
-`/api/v1/markets/{id}/trades` and live `trades:<marketID>` fill payloads are launch-facing activity surfaces. They must expose fill price, fee, notional, and unit through `pricePointsCents`, `feePointsCents`, `notionalPointsCents`, and `unit: "PTS"` only. Gateway JSON, live fill payloads, launch OpenAPI `Trade`, exported shared-client `Trade`, normalized player-app trade objects, and `RecentTrades` UI must not emit, document, reattach, or consume `priceCents` or `feeCents`; old trade payloads may be read only by private compatibility fallback code.
+`/api/v1/markets/{id}/trades` and live `trades:<marketID>` fill payloads are launch-facing activity surfaces. They must expose fill price, fee, notional, and unit through `pricePoints`, `feePoints`, `notionalPoints`, and `unit: "PTS"` only. Gateway JSON, live fill payloads, launch OpenAPI `Trade`, exported shared-client `Trade`, normalized player-app trade objects, and `RecentTrades` UI must not emit, document, reattach, or consume `priceCents` or `feeCents`; old trade payloads may be read only by private compatibility fallback code.
 
 ## Loop 174 Market Payload Rule
 
-Central `Market` payloads from discovery, public market list/detail, admin market list/create/update, and related-market reads are launch-facing metadata surfaces. They must expose market prices, activity, liquidity, collateral pool, settlement pool, AMM subsidy, best quotes, and unit through point-native fields only. Gateway JSON, launch OpenAPI `Market`, exported shared-client `PredictionMarket`, normalized app/office market objects, live market-detail merge behavior, and market UI consumers must not emit, document, reattach, or consume `yesPriceCents`, `noPriceCents`, `lastTradePriceCents`, `volumeCents`, `openInterestCents`, `liquidityCents`, `ammSubsidyCents`, `collateralPoolCents`, `settledPayoutPoolPointsCents`, `settledPayoutPoolCents`, or best-quote `*Cents` aliases; old market payloads may be read only by private compatibility fallback code. Price-history, order-book/depth, admin dashboard activity, live frames, and request input compatibility are separate contracts.
+Central `Market` payloads from discovery, public market list/detail, admin market list/create/update, and related-market reads are launch-facing metadata surfaces. They must expose market prices, activity, liquidity, collateral pool, settlement pool, AMM subsidy, best quotes, and unit through point-native fields only. Gateway JSON, launch OpenAPI `Market`, exported shared-client `PredictionMarket`, normalized app/office market objects, live market-detail merge behavior, and market UI consumers must not emit, document, reattach, or consume `yesPriceCents`, `noPriceCents`, `lastTradePriceCents`, `volumeCents`, `openInterestCents`, `liquidityCents`, `ammSubsidyCents`, `collateralPoolCents`, `settledPayoutPoolPoints`, `settledPayoutPoolCents`, or best-quote `*Cents` aliases; old market payloads may be read only by private compatibility fallback code. Price-history, order-book/depth, admin dashboard activity, live frames, and request input compatibility are separate contracts.
 
 ## Loop 175 Price History Rule
 
-`/api/v1/markets/{id}/prices` and `PricePoint` rows are launch-facing chart metadata surfaces. They must expose bucket price, fill activity, and unit through `yesPricePointsCents`, `volumePointsCents`, and `unit: "PTS"` only. Gateway JSON, launch OpenAPI `PricePoint`, exported shared-client `PricePoint`, normalized player-app history objects, market chart, hero price-history, and discover movement consumers must not emit, document, reattach, or consume `yesPriceCents` or `volumeCents`; old history payloads may be read only by private compatibility fallback code.
+`/api/v1/markets/{id}/prices` and `PricePoint` rows are launch-facing chart metadata surfaces. They must expose bucket price, fill activity, and unit through `yesPricePoints`, `volumePoints`, and `unit: "PTS"` only. Gateway JSON, launch OpenAPI `PricePoint`, exported shared-client `PricePoint`, normalized player-app history objects, market chart, hero price-history, and discover movement consumers must not emit, document, reattach, or consume `yesPriceCents` or `volumeCents`; old history payloads may be read only by private compatibility fallback code.
 
 ## Loop 176 Order Book Depth Rule
 
-`/api/v1/markets/{id}/orderbook` and `OrderBookLevel` rows are launch-facing depth metadata surfaces. They must expose level price, share counts, notional depth, and unit through `pricePointsCents`, `shares`, `cumulativeShares`, `notionalPointsCents`, `totalNotionalPointsCents`, and `unit: "PTS"` only. Gateway JSON, launch OpenAPI `OrderBookLevel`, exported shared-client `OrderBookLevel`, normalized player-app order-book objects, and market-detail order-book UI must not emit, document, reattach, or consume `priceCents`, `quantity`, or `total` for depth rows; old depth payloads may be read only by private compatibility fallback code.
+`/api/v1/markets/{id}/orderbook` and `OrderBookLevel` rows are launch-facing depth metadata surfaces. They must expose level price, share counts, notional depth, and unit through `pricePoints`, `shares`, `cumulativeShares`, `notionalPoints`, `totalNotionalPoints`, and `unit: "PTS"` only. Gateway JSON, launch OpenAPI `OrderBookLevel`, exported shared-client `OrderBookLevel`, normalized player-app order-book objects, and market-detail order-book UI must not emit, document, reattach, or consume `priceCents`, `quantity`, or `total` for depth rows; old depth payloads may be read only by private compatibility fallback code.
 
 ## Loop 177 Admin Dashboard Activity Rule
 
-`/api/v1/admin/dashboard/volume`, `DashboardVolumeStats`, and `DashboardMover` are launch-adjacent admin metadata surfaces. They must expose aggregate activity, movement prices, mover activity, and unit through `totalVolumePointsCents`, `yesPricePointsCentsStart`, `yesPricePointsCentsNow`, `volumePointsCents`, and `unit: "PTS"` only. Gateway JSON, launch OpenAPI dashboard schemas, exported shared-client dashboard types, normalized office dashboard objects, and the office dashboard UI must not emit, document, reattach, or consume `totalVolumeCents`, `yesPriceCentsStart`, `yesPriceCentsNow`, or `volumeCents`; old dashboard payloads may be read only by private compatibility fallback code.
+`/api/v1/admin/dashboard/volume`, `DashboardVolumeStats`, and `DashboardMover` are launch-adjacent admin metadata surfaces. They must expose aggregate activity, movement prices, mover activity, and unit through `totalVolumePoints`, `yesPricePointsStart`, `yesPricePointsNow`, `volumePoints`, and `unit: "PTS"` only. Gateway JSON, launch OpenAPI dashboard schemas, exported shared-client dashboard types, normalized office dashboard objects, and the office dashboard UI must not emit, document, reattach, or consume `totalVolumeCents`, `yesPriceCentsStart`, `yesPriceCentsNow`, or `volumeCents`; old dashboard payloads may be read only by private compatibility fallback code.
 
 ## Loop 178 Admin Drift Alert Rule
 
-`/api/v1/admin/prediction/drift-alerts` and `CollateralDriftAlert` are launch-adjacent admin reconciliation metadata surfaces. They must expose maximum drift, total drift, and unit through `maxDriftPointsCents`, `totalDriftPointsCents`, and `unit: "PTS"` only. Gateway JSON, launch OpenAPI drift schemas, exported shared-client drift types, normalized office drift objects, and office market/settlement drift warnings must not emit, document, reattach, or consume `maxDriftCents` or `totalDriftCents`; old drift payloads may be read only by private compatibility fallback code.
+`/api/v1/admin/prediction/drift-alerts` and `CollateralDriftAlert` are launch-adjacent admin reconciliation metadata surfaces. They must expose maximum drift, total drift, and unit through `maxDriftPoints`, `totalDriftPoints`, and `unit: "PTS"` only. Gateway JSON, launch OpenAPI drift schemas, exported shared-client drift types, normalized office drift objects, and office market/settlement drift warnings must not emit, document, reattach, or consume `maxDriftCents` or `totalDriftCents`; old drift payloads may be read only by private compatibility fallback code.
 
 ## Loop 179 Live Market Frame Rule
 
-Live `market:<id>` update frames and `orderbook:<id>` hint frames are launch-facing metadata surfaces. They must expose market price/activity and best-quote fields through `yesPricePointsCents`, `noPricePointsCents`, `lastTradePricePointsCents`, `volumePointsCents`, `openInterestPointsCents`, best-quote point aliases, and `unit: "PTS"` only. Gateway live-frame builders and player-app source regressions must not emit or reattach `yesPriceCents`, `noPriceCents`, `lastTradePriceCents`, `volumeCents`, `openInterestCents`, `bestYesBidCents`, `bestYesAskCents`, `bestNoBidCents`, or `bestNoAskCents`; old live frames may be read only by private compatibility fallback code.
+Live `market:<id>` update frames and `orderbook:<id>` hint frames are launch-facing metadata surfaces. They must expose market price/activity and best-quote fields through `yesPricePoints`, `noPricePoints`, `lastTradePricePoints`, `volumePoints`, `openInterestPoints`, best-quote point aliases, and `unit: "PTS"` only. Gateway live-frame builders and player-app source regressions must not emit or reattach `yesPriceCents`, `noPriceCents`, `lastTradePriceCents`, `volumeCents`, `openInterestCents`, `bestYesBidCents`, `bestYesAskCents`, `bestNoBidCents`, or `bestNoAskCents`; old live frames may be read only by private compatibility fallback code.
 
 ## Loop 180 Core Wallet Read Rule
 
-`/api/v1/wallet/{userId}`, `/api/v1/wallet/{userId}/ledger`, and `/api/v1/wallet/{userId}/breakdown` are launch-facing wallet read surfaces. They must expose balances, available/reserved points, ledger deltas, and breakdown buckets through `balancePointsCents`, `availablePointsCents`, `reservedPointsCents`, `amountPointsCents`, `basePointsCents`, `bonusPointsCents`, `totalPointsCents`, and `unit: "PTS"` only. Gateway JSON, normalized player-app wallet/breakdown outputs, and source regressions must not emit, export, reattach, or consume `balanceCents`, `availableCents`, `reservedCents`, `amountCents`, `realMoneyCents`, `bonusFundCents`, `totalCents`, or `currency` for these read responses; old wallet read payloads may be read only by private compatibility fallback code. Reward response aliases are covered by the Loop 181 rule.
+`/api/v1/wallet/{userId}`, `/api/v1/wallet/{userId}/ledger`, and `/api/v1/wallet/{userId}/breakdown` are launch-facing wallet read surfaces. They must expose balances, available/reserved points, ledger deltas, and breakdown buckets through `balancePoints`, `availablePoints`, `reservedPoints`, `amountPoints`, `basePoints`, `bonusPoints`, `totalPoints`, and `unit: "PTS"` only. Gateway JSON, normalized player-app wallet/breakdown outputs, and source regressions must not emit, export, reattach, or consume `balanceCents`, `availableCents`, `reservedCents`, `amountCents`, `realMoneyCents`, `bonusFundCents`, `totalCents`, or `currency` for these read responses; old wallet read payloads may be read only by private compatibility fallback code. Reward response aliases are covered by the Loop 181 rule.
 
 ## Loop 181 Reward Response Rule
 
-`/api/v1/wallet/starter-grant`, `/api/v1/wallet/daily-claim`, `/api/v1/wallet/point-packs`, `/api/v1/wallet/point-packs/claim`, `/api/v1/wallet/missions`, `/api/v1/wallet/missions/claim`, `/api/v1/wallet/streaks`, `/api/v1/wallet/streaks/claim`, and `/api/v1/wallet/reward-limits` are launch-facing reward surfaces. They must expose reward amounts, granted/claimed points, balances, pack amounts, mission/streak rewards, and daily reward-limit totals through `grantPointsCents`, `claimPointsCents`, `balancePointsCents`, `amountPointsCents`, `rewardPointsCents`, `limitPointsCents`, `grantedPointsCents`, `remainingPointsCents`, and `unit: "PTS"` only. Gateway JSON and normalized player-app reward outputs must not emit, export, reattach, or consume `grantCents`, `claimCents`, `balanceCents`, `amountCents`, `rewardCents`, `limitCents`, `grantedCents`, or `remainingCents`; old reward payloads may be read only by private compatibility fallback code.
+`/api/v1/wallet/starter-grant`, `/api/v1/wallet/daily-claim`, `/api/v1/wallet/point-packs`, `/api/v1/wallet/point-packs/claim`, `/api/v1/wallet/missions`, `/api/v1/wallet/missions/claim`, `/api/v1/wallet/streaks`, `/api/v1/wallet/streaks/claim`, and `/api/v1/wallet/reward-limits` are launch-facing reward surfaces. They must expose reward amounts, granted/claimed points, balances, pack amounts, mission/streak rewards, and daily reward-limit totals through `grantPoints`, `claimPoints`, `balancePoints`, `amountPoints`, `rewardPoints`, `limitPoints`, `grantedPoints`, `remainingPoints`, and `unit: "PTS"` only. Gateway JSON and normalized player-app reward outputs must not emit, export, reattach, or consume `grantCents`, `claimCents`, `balanceCents`, `amountCents`, `rewardCents`, `limitCents`, `grantedCents`, or `remainingCents`; old reward payloads may be read only by private compatibility fallback code.
 
 ## Loop 182 Leaderboard Response Rule
 
@@ -282,23 +292,23 @@ Live `market:<id>` update frames and `orderbook:<id>` hint frames are launch-fac
 
 ## Loop 185 Player Bonus Point Contract Rule
 
-`/api/v1/bonuses/active`, `/api/v1/bonuses/claim`, `/api/v1/bonuses/{id}`, and `/api/v1/bonuses/{id}/progress` are launch-facing bonus compatibility surfaces while they remain registered. They must expose player bonus amounts and progress through `grantedPointsCents`, `remainingPointsCents`, `playRequiredPointsCents`, `playCompletedPointsCents`, `playProgressPct`, and `unit: "PTS"` only. Gateway JSON, exported player-app bonus/progress types, normalized outputs, Redux bonus state, and wallet-breakdown state must not emit, export, reattach, or consume retired aliases such as `grantedAmountCents`, `remainingAmountCents`, `wageringRequiredCents`, `wageringCompletedCents`, `wageringProgressPct`, snake_case equivalents, `progressPct`, `realMoneyCents`, `bonusFundCents`, or `totalCents`; old payload names may be read only by private compatibility fallback code.
+`/api/v1/bonuses/active`, `/api/v1/bonuses/claim`, `/api/v1/bonuses/{id}`, and `/api/v1/bonuses/{id}/progress` are launch-facing bonus compatibility surfaces while they remain registered. They must expose player bonus amounts and progress through `grantedPoints`, `remainingPoints`, `playRequiredPoints`, `playCompletedPoints`, `playProgressPct`, and `unit: "PTS"` only. Gateway JSON, exported player-app bonus/progress types, normalized outputs, Redux bonus state, and wallet-breakdown state must not emit, export, reattach, or consume retired aliases such as `grantedAmountCents`, `remainingAmountCents`, `wageringRequiredCents`, `wageringCompletedCents`, `wageringProgressPct`, snake_case equivalents, `progressPct`, `realMoneyCents`, `bonusFundCents`, or `totalCents`; old payload names may be read only by private compatibility fallback code.
 
 ## Loop 186 Admin Campaign Point Contract Rule
 
-`/api/v1/admin/campaigns`, `/api/v1/admin/campaigns/{id}`, and campaign create/detail responses are launch-adjacent admin bonus compatibility surfaces while they remain registered. They must expose campaign budgets, spend, and rule amount thresholds through `budgetPointsCents`, `spentPointsCents`, sanitized `pointRuleConfig`, and `unit: "PTS"` only. Gateway JSON must not emit, document, or reattach retired aliases such as `budgetCents`, `spentCents`, raw campaign `rules`, raw `ruleConfig`, `max_bonus_cents`, `fixed_amount_cents`, `max_stake_contribution_cents`, or `min_amount_cents`; old request/internal names may remain only as service/storage compatibility during the transition.
+`/api/v1/admin/campaigns`, `/api/v1/admin/campaigns/{id}`, and campaign create/detail responses are launch-adjacent admin bonus compatibility surfaces while they remain registered. They must expose campaign budgets, spend, and rule amount thresholds through `budgetPoints`, `spentPoints`, sanitized `pointRuleConfig`, and `unit: "PTS"` only. Gateway JSON must not emit, document, or reattach retired aliases such as `budgetCents`, `spentCents`, raw campaign `rules`, raw `ruleConfig`, `max_bonus_points`, `fixed_amount_points`, `max_stake_contribution_points`, or `min_amount_points`; old request/internal names may remain only as service/storage compatibility during the transition.
 
 ## Loop 187 Bonus/Campaign OpenAPI Rule
 
-Launch OpenAPI must document the registered player bonus, admin campaign, and admin bonus compatibility routes only through point-native response contracts. Player bonus schemas must expose `unit: "PTS"`, `grantedPointsCents`, `remainingPointsCents`, `playRequiredPointsCents`, `playCompletedPointsCents`, and `playProgressPct` without retired amount, wagering, or generic progress aliases. Admin campaign schemas must expose `unit: "PTS"`, `budgetPointsCents`, `spentPointsCents`, and sanitized `pointRuleConfig` without documenting raw campaign `rules`, raw `ruleConfig`, retired budget/spend aliases, or retired rule amount keys. Old request/internal names may remain compatibility-only until the service/storage cleanup reaches them, but they must not be promoted into the launch OpenAPI as preferred contracts.
+Launch OpenAPI must document the registered player bonus, admin campaign, and admin bonus compatibility routes only through point-native response contracts. Player bonus schemas must expose `unit: "PTS"`, `grantedPoints`, `remainingPoints`, `playRequiredPoints`, `playCompletedPoints`, and `playProgressPct` without retired amount, wagering, or generic progress aliases. Admin campaign schemas must expose `unit: "PTS"`, `budgetPoints`, `spentPoints`, and sanitized `pointRuleConfig` without documenting raw campaign `rules`, raw `ruleConfig`, retired budget/spend aliases, or retired rule amount keys. Old request/internal names may remain compatibility-only until the service/storage cleanup reaches them, but they must not be promoted into the launch OpenAPI as preferred contracts.
 
 ## Loop 188 Bonus/Campaign Request Alias Rule
 
-Admin campaign create and admin bonus grant requests must use point-native request fields in launch-facing clients and docs. Campaign create requests must use `budget_points_cents` and `rules[].point_rule_config`; admin bonus grant requests must use `override_points_cents`. Gateway request handling may normalize those aliases into existing internal fields after the HTTP boundary, but retired HTTP request fields must not be accepted as the launch contract. Launch OpenAPI must document the preferred point-native request schemas only, while old internal names remain private service/storage compatibility.
+Admin campaign create and admin bonus grant requests must use point-native request fields in launch-facing clients and docs. Campaign create requests must use `budget_points` and `rules[].point_rule_config`; admin bonus grant requests must use `override_points`. Gateway request handling may normalize those aliases into existing internal fields after the HTTP boundary, but retired HTTP request fields must not be accepted as the launch contract. Launch OpenAPI must document the preferred point-native request schemas only, while old internal names remain private service/storage compatibility.
 
 ## Loop 189 Active Bonus Rewards UI Rule
 
-The launch rewards page must surface active bonus progress as point-play progress, not wagering or cash-equivalent value. Active bonus UI should load through the point-native bonus client, render `remainingPointsCents`, `playRequiredPointsCents`, `playCompletedPointsCents`, `playProgressPct`, and `unit: "PTS"` semantics, and avoid consuming or displaying retired amount/wagering aliases. The active-bonus panel is informational progress state; it must not imply withdrawals, cashout, or redeemable value.
+The launch rewards page must surface active bonus progress as point-play progress, not wagering or cash-equivalent value. Active bonus UI should load through the point-native bonus client, render `remainingPoints`, `playRequiredPoints`, `playCompletedPoints`, `playProgressPct`, and `unit: "PTS"` semantics, and avoid consuming or displaying retired amount/wagering aliases. The active-bonus panel is informational progress state; it must not imply withdrawals, cashout, or redeemable value.
 
 ## Loop 190 Demo Active Bonus Seed Rule
 
@@ -306,23 +316,23 @@ Demo seed mode should include one active point-play bonus grant for the demo use
 
 ## Loop 191 Demo Active Bonus API Proof Rule
 
-The demo active-bonus seed values and `/api/v1/bonuses/active` response mapper must stay aligned around point-play semantics. The seeded demo bonus should remain a positive, partially used point-play grant with deterministic progress, and the player bonus API response must expose it through `unit: "PTS"`, `remainingPointsCents`, `playRequiredPointsCents`, `playCompletedPointsCents`, and `playProgressPct` only. Retired amount, wagering, or generic progress aliases must not reappear in the launch-facing active-bonus response.
+The demo active-bonus seed values and `/api/v1/bonuses/active` response mapper must stay aligned around point-play semantics. The seeded demo bonus should remain a positive, partially used point-play grant with deterministic progress, and the player bonus API response must expose it through `unit: "PTS"`, `remainingPoints`, `playRequiredPoints`, `playCompletedPoints`, and `playProgressPct` only. Retired amount, wagering, or generic progress aliases must not reappear in the launch-facing active-bonus response.
 
 ## Loop 192 Active Bonus Endpoint Rule
 
-`/api/v1/bonuses/active` must enforce the authenticated session boundary before returning active bonus progress. The handler must list active bonuses for the session user and return a `bonuses` array whose rows use `unit: "PTS"`, campaign copy, `remainingPointsCents`, `playRequiredPointsCents`, `playCompletedPointsCents`, and `playProgressPct` only. Endpoint-level tests should fail if retired amount, wagering, or generic progress aliases reappear in the active-bonus JSON response.
+`/api/v1/bonuses/active` must enforce the authenticated session boundary before returning active bonus progress. The handler must list active bonuses for the session user and return a `bonuses` array whose rows use `unit: "PTS"`, campaign copy, `remainingPoints`, `playRequiredPoints`, `playCompletedPoints`, and `playProgressPct` only. Endpoint-level tests should fail if retired amount, wagering, or generic progress aliases reappear in the active-bonus JSON response.
 
 ## Loop 193 Bonus Detail Ownership Rule
 
-`/api/v1/bonuses/{id}` and `/api/v1/bonuses/{id}/progress` must enforce ownership before returning player bonus details or progress. A session user may read only their own bonus rows, and progress responses must use `unit: "PTS"`, `playRequiredPointsCents`, `playCompletedPointsCents`, and `playProgressPct` only. Endpoint-level tests should fail if non-owners can read another player's bonus or if retired wagering/generic progress aliases reappear.
+`/api/v1/bonuses/{id}` and `/api/v1/bonuses/{id}/progress` must enforce ownership before returning player bonus details or progress. A session user may read only their own bonus rows, and progress responses must use `unit: "PTS"`, `playRequiredPoints`, `playCompletedPoints`, and `playProgressPct` only. Endpoint-level tests should fail if non-owners can read another player's bonus or if retired wagering/generic progress aliases reappear.
 
 ## Loop 194 Bonus Claim Session Rule
 
-`/api/v1/bonuses/claim` must bind bonus claims to the authenticated session user, not to any user identity supplied in the request body. Claim responses must use `unit: "PTS"`, `grantedPointsCents`, `remainingPointsCents`, `playRequiredPointsCents`, `playCompletedPointsCents`, and `playProgressPct` only. Endpoint-level tests should fail if body-supplied user identity can control the claim or if retired amount, wagering, or generic progress aliases reappear.
+`/api/v1/bonuses/claim` must bind bonus claims to the authenticated session user, not to any user identity supplied in the request body. Claim responses must use `unit: "PTS"`, `grantedPoints`, `remainingPoints`, `playRequiredPoints`, `playCompletedPoints`, and `playProgressPct` only. Endpoint-level tests should fail if body-supplied user identity can control the claim or if retired amount, wagering, or generic progress aliases reappear.
 
 ## Loop 195 Admin Bonus Actor Rule
 
-Admin bonus grant and forfeit actions must bind operator identity to the authenticated admin session. `/api/v1/admin/bonuses/grant` may accept preferred point-native request aliases such as `override_points_cents`, but it must set `GrantedBy` from the session and return point-play `PTS` bonus fields without retired amount/progress aliases. `/api/v1/admin/bonuses/{id}/forfeit` must set `ForfeitedBy` from the session and act on the requested bonus id. Endpoint-level tests should fail if request bodies can spoof admin actor identity or if retired bonus response aliases reappear.
+Admin bonus grant and forfeit actions must bind operator identity to the authenticated admin session. `/api/v1/admin/bonuses/grant` may accept preferred point-native request aliases such as `override_points`, but it must set `GrantedBy` from the session and return point-play `PTS` bonus fields without retired amount/progress aliases. `/api/v1/admin/bonuses/{id}/forfeit` must set `ForfeitedBy` from the session and act on the requested bonus id. Endpoint-level tests should fail if request bodies can spoof admin actor identity or if retired bonus response aliases reappear.
 
 ## Loop 196 Windowed Resolution Dual-Control Rule
 
@@ -334,15 +344,15 @@ Windowed resolution actions require an identified admin actor even in developmen
 
 ## Loop 198 Settlement Audit Metadata Rule
 
-Launch-facing settlement audit details should use point-native metadata names. Admin finalize, void, and settlement audit callbacks should record `totalSettlementPointsCents`, `pointDisbursementCount`, and `unit: "PTS"` rather than retired aliases such as `totalPayoutCents`, `payoutCount`, or `currency`. Internal database fields and Go struct names may remain compatibility details, but audit-log details exposed through admin surfaces should not promote them as launch contract fields.
+Launch-facing settlement audit details should use point-native metadata names. Admin finalize, void, and settlement audit callbacks should record `totalSettlementPoints`, `pointDisbursementCount`, and `unit: "PTS"` rather than retired aliases such as `totalPayoutCents`, `payoutCount`, or `currency`. Internal database fields and Go struct names may remain compatibility details, but audit-log details exposed through admin surfaces should not promote them as launch contract fields.
 
 ## Loop 199 Settlement Record Contract Rule
 
-Launch-facing settlement schemas and exported client types should expose settlement totals through `totalSettlementPointsCents` and `unit: "PTS"` only. `totalPayoutCents` may remain a private compatibility fallback while parsing old responses, but it must not appear in launch OpenAPI or exported TypeScript settlement record types. Source regressions should distinguish private legacy readers from exported launch contracts.
+Launch-facing settlement schemas and exported client types should expose settlement totals through `totalSettlementPoints` and `unit: "PTS"` only. `totalPayoutCents` may remain a private compatibility fallback while parsing old responses, but it must not appear in launch OpenAPI or exported TypeScript settlement record types. Source regressions should distinguish private legacy readers from exported launch contracts.
 
 ## Loop 200 Settlement Operation Runtime Rule
 
-Admin settlement operation responses should map settlement records through an explicit launch DTO rather than embedding the raw settlement model. Runtime JSON should not expose internal disbursement cursor fields such as `payoutsTotal` or `payoutsCompleted`, nor retired totals such as `totalPayoutCents`; those values may remain internal storage/replay details. Launch responses should use `totalSettlementPointsCents`, `pointDisbursements`, `positionsSettled`, and `unit: "PTS"` where relevant.
+Admin settlement operation responses should map settlement records through an explicit launch DTO rather than embedding the raw settlement model. Runtime JSON should not expose internal disbursement cursor fields such as `payoutsTotal` or `payoutsCompleted`, nor retired totals such as `totalPayoutCents`; those values may remain internal storage/replay details. Launch responses should use `totalSettlementPoints`, `pointDisbursements`, `positionsSettled`, and `unit: "PTS"` where relevant.
 
 ## Loop 201 Office Recent Activity Point-Unit Rule
 
@@ -358,7 +368,7 @@ Launch user-app responsible-play clients and profile call sites must expose poin
 
 ## Loop 204 Bonus Wallet Breakdown Unit Rule
 
-Launch user-app bonus wallet-breakdown contracts must expose point units through `unit`, not `currency`. Normalized API outputs and Redux bonus state should contain `basePointsCents`, `bonusPointsCents`, `totalPointsCents`, and `unit` only; old `currency` values may be read only as private gateway compatibility input and must not be re-exported, stored, or rendered as the public launch contract.
+Launch user-app bonus wallet-breakdown contracts must expose point units through `unit`, not `currency`. Normalized API outputs and Redux bonus state should contain `basePoints`, `bonusPoints`, `totalPoints`, and `unit` only; old `currency` values may be read only as private gateway compatibility input and must not be re-exported, stored, or rendered as the public launch contract.
 
 ## Loop 205 Wallet Balance/Ledger Unit Rule
 
@@ -394,7 +404,7 @@ Launch app tests must model prediction orders through point-native order concept
 
 ## Loop 213 Stack Smoke Prediction Order Rule
 
-Full-stack smoke tests for the launch app must exercise prediction-order and point-wallet routes, not retired sportsbook bet placement paths. Use `/api/v1/orders`, `/api/v1/orders/preview`, and `/api/v1/wallet/{userId}` with point-native fields such as `notionalCapPointsCents`, `balancePointsCents`, `availablePointsCents`, and `unit: "PTS"`. Smoke tests should reject leaked cash-balance aliases and must not keep `/api/v1/bets`, stake-cents, odds precheck, or bet-placement language as accepted launch behavior.
+Full-stack smoke tests for the launch app must exercise prediction-order and point-wallet routes, not retired sportsbook bet placement paths. Use `/api/v1/orders`, `/api/v1/orders/preview`, and `/api/v1/wallet/{userId}` with point-native fields such as `notionalCapPoints`, `balancePoints`, `availablePoints`, and `unit: "PTS"`. Smoke tests should reject leaked cash-balance aliases and must not keep `/api/v1/bets`, stake-cents, odds precheck, or bet-placement language as accepted launch behavior.
 
 ## Loop 214 Reconciliation Tool Retirement Rule
 
@@ -402,15 +412,15 @@ Gateway command-line or reconciliation tooling must not replay retired sportsboo
 
 ## Loop 215 Wallet Live Frame and Admin Mutation Rule
 
-Runtime wallet and portfolio updates must use point-native aliases. Order-fill portfolio frames should publish `filledPricePointsCents` with `unit: "PTS"`, wallet frames should publish `balancePointsCents` with `unit: "PTS"`, and admin wallet mutation responses/audit details should return point ledger payloads without raw `balanceCents` aliases.
+Runtime wallet and portfolio updates must use point-native aliases. Order-fill portfolio frames should publish `filledPricePoints` with `unit: "PTS"`, wallet frames should publish `balancePoints` with `unit: "PTS"`, and admin wallet mutation responses/audit details should return point ledger payloads without raw `balanceCents` aliases.
 
 ## Loop 216 Leaderboard Metric Alias Rule
 
-Launch-facing leaderboard definitions must not expose inherited metric keys that imply money, stake, or cash accounting. Public/admin leaderboard JSON should emit `metricKey` and `pointMetricKey` as the same point-native aliases, such as `net_points` and `point_volume`, along with `unit: "PTS"` and non-redeemable `rewardSummary` copy. Any mapping to legacy scorer keys such as `net_profit_cents` or `stake_cents` must remain private to service compatibility and must not appear in leaderboard API responses.
+Launch-facing leaderboard definitions must not expose inherited metric keys that imply money, stake, or cash accounting. Public/admin leaderboard JSON should emit `metricKey` and `pointMetricKey` as the same point-native aliases, such as `net_points` and `point_volume`, along with `unit: "PTS"` and non-redeemable `rewardSummary` copy. Any mapping to legacy scorer keys such as `net_profit_points` or `stake_points` must remain private to service compatibility and must not appear in leaderboard API responses.
 
 ## Loop 217 Admin Wallet Mutation Request Rule
 
-Admin point-ledger adjustment requests must prefer `amountPointsCents` for credit and debit amounts. Legacy `amountCents` may be accepted only as old-request compatibility, and if both aliases are supplied they must match exactly or the request must be rejected with a point-native `amountPointsCents` validation detail. Admin wallet authorization tests, idempotency tests, and audit fixtures should use point adjustment reasons and point-native request fields instead of deposit, bet, money, or cash-balance wording.
+Admin point-ledger adjustment requests must prefer `amountPoints` for credit and debit amounts. Legacy `amountCents` may be accepted only as old-request compatibility, and if both aliases are supplied they must match exactly or the request must be rejected with a point-native `amountPoints` validation detail. Admin wallet authorization tests, idempotency tests, and audit fixtures should use point adjustment reasons and point-native request fields instead of deposit, bet, money, or cash-balance wording.
 
 ## Loop 218 Provider-Ops Audit Naming Rule
 
@@ -422,11 +432,11 @@ Provider-ops audit entries and admin report placeholders must not serialize spor
 
 ## Loop 220 Admin Wallet Reconciliation Report Rule
 
-Admin wallet reconciliation reports are launch-adjacent point-accounting metadata surfaces. They may aggregate real ledger credits, debits, net movement, entry count, and distinct user count, but launch JSON must expose point-native fields such as `totalCreditPointsCents`, `totalDebitPointsCents`, `netMovementPointsCents`, and `unit: "PTS"`. Retired aggregate response names such as `totalCreditsCents`, `totalDebitsCents`, or `netMovementCents` may remain only inside the private wallet service and must not be forwarded by report handlers.
+Admin wallet reconciliation reports are launch-adjacent point-accounting metadata surfaces. They may aggregate real ledger credits, debits, net movement, entry count, and distinct user count, but launch JSON must expose point-native fields such as `totalCreditPoints`, `totalDebitPoints`, `netMovementPoints`, and `unit: "PTS"`. Retired aggregate response names such as `totalCreditsCents`, `totalDebitsCents`, or `netMovementCents` may remain only inside the private wallet service and must not be forwarded by report handlers.
 
 ## Loop 221 Admin Report OpenAPI Rule
 
-Launch OpenAPI documentation for admin report endpoints must match the point-native runtime contract. Wallet reconciliation docs must describe read-only point-accounting fields such as `totalCreditPointsCents`, `totalDebitPointsCents`, `netMovementPointsCents`, and `unit: "PTS"` without retired aggregate aliases. Point-campaign usage docs must describe the honest placeholder fields `pointRewardCampaigns`, `usersWithPointRewards`, `totalRewardPointsCents`, and `unit: "PTS"` without betting or promo-mechanic metrics.
+Launch OpenAPI documentation for admin report endpoints must match the point-native runtime contract. Wallet reconciliation docs must describe read-only point-accounting fields such as `totalCreditPoints`, `totalDebitPoints`, `netMovementPoints`, and `unit: "PTS"` without retired aggregate aliases. Point-campaign usage docs must describe the honest placeholder fields `pointRewardCampaigns`, `usersWithPointRewards`, `totalRewardPoints`, and `unit: "PTS"` without betting or promo-mechanic metrics.
 
 ## Loop 222 Bot Key Scope Documentation Rule
 
@@ -434,7 +444,7 @@ Launch bot and partner API key documentation must advertise only the scopes the 
 
 ## Loop 223 Admin Account-Review Point-Ledger Docs Rule
 
-Launch OpenAPI account-review ledger documentation must expose point-native ledger fields only. `AdminPointLedgerEntry` should document `amountPointsCents`, `balancePointsCents`, and `unit: "PTS"` for point deltas and balances, while retired `amountCents` and `balanceCents` aliases may remain only as private compatibility parsing or internal service fields and must not be documented as launch API response fields.
+Launch OpenAPI account-review ledger documentation must expose point-native ledger fields only. `AdminPointLedgerEntry` should document `amountPoints`, `balancePoints`, and `unit: "PTS"` for point deltas and balances, while retired `amountCents` and `balanceCents` aliases may remain only as private compatibility parsing or internal service fields and must not be documented as launch API response fields.
 
 ## Loop 224 Pretrade Compliance Fixture Rule
 
@@ -442,15 +452,15 @@ Launch-adjacent pretrade compliance tests and comments should exercise active pr
 
 ## Loop 225 Place-Order Request Cap Rule
 
-Launch order request surfaces must use `notionalCapPointsCents` for market-buy caps. The player trade ticket, market-detail preview/place-order handlers, idempotency signatures, exported shared-client request types, launch OpenAPI, session order API, preview API, bot order API, and launch validation error details must not send, accept, document, or require `notionalCapCents`. The old request cap may remain only as lower-level private compatibility parsing and private old-response fallback input, and must not be re-exported as the launch client contract.
+Launch order request surfaces must use `notionalCapPoints` for market-buy caps. The player trade ticket, market-detail preview/place-order handlers, idempotency signatures, exported shared-client request types, launch OpenAPI, session order API, preview API, bot order API, and launch validation error details must not send, accept, document, or require `notionalCapCents`. The old request cap may remain only as lower-level private compatibility parsing and private old-response fallback input, and must not be re-exported as the launch client contract.
 
 ## Loop 226 Place-Order Limit Price Rule
 
-Launch order limit-price surfaces must use `pricePointsCents`. The gateway order JSON mapper, launch OpenAPI `Order` and `PlaceOrderRequest` schemas, exported shared-client order/request types, player trade ticket, market-detail preview/place-order handlers, idempotency signatures, bot/session order validation fixtures, session order API, preview API, bot order API, and launch validation error details must not send, accept, document, emit, or require `priceCents`. The old request/response price alias may remain only as lower-level private compatibility parsing or private old-response fallback input, and must not be re-exported as the launch client contract.
+Launch order limit-price surfaces must use `pricePoints`. The gateway order JSON mapper, launch OpenAPI `Order` and `PlaceOrderRequest` schemas, exported shared-client order/request types, player trade ticket, market-detail preview/place-order handlers, idempotency signatures, bot/session order validation fixtures, session order API, preview API, bot order API, and launch validation error details must not send, accept, document, emit, or require `priceCents`. The old request/response price alias may remain only as lower-level private compatibility parsing or private old-response fallback input, and must not be re-exported as the launch client contract.
 
 ## Loop 227 Order Average Fill Price Rule
 
-Launch order read surfaces must use `averageFillPricePointsCents` for filled-order average price. Gateway order JSON, launch OpenAPI `Order`, exported shared-client `PredictionOrder`, normalized player-app order objects, and player order UI must not emit, document, export, reattach, or consume `averageFillPriceCents`. The old response alias may remain only as private old-response fallback input, and the older `OrderPreview` backing field remains governed by the Loop 172 order-preview rule and custom point-native JSON.
+Launch order read surfaces must use `averageFillPricePoints` for filled-order average price. Gateway order JSON, launch OpenAPI `Order`, exported shared-client `PredictionOrder`, normalized player-app order objects, and player order UI must not emit, document, export, reattach, or consume `averageFillPriceCents`. The old response alias may remain only as private old-response fallback input, and the older `OrderPreview` backing field remains governed by the Loop 172 order-preview rule and custom point-native JSON.
 
 ## Loop 228 Order Reservation Identifier Rule
 
@@ -458,19 +468,19 @@ Launch order read surfaces must not expose wallet-named reservation identifiers.
 
 ## Loop 229 Portfolio Price Alias Rule
 
-Launch portfolio, position, and settlement-history price fields must use point-native aliases. Open positions should expose `avgPricePointsCents`; settled history and settlement disbursement rows should expose `entryPricePointsCents` and `exitPricePointsCents`; launch OpenAPI, exported TypeScript client types, normalized outputs, and portfolio UI must not emit, document, export, reattach, or render retired `avgPriceCents`, `entryPriceCents`, or `exitPriceCents` aliases. Older aliases may remain only as private compatibility fallback inputs or internal storage fields.
+Launch portfolio, position, and settlement-history price fields must use point-native aliases. Open positions should expose `avgPricePoints`; settled history and settlement disbursement rows should expose `entryPricePoints` and `exitPricePoints`; launch OpenAPI, exported TypeScript client types, normalized outputs, and portfolio UI must not emit, document, export, reattach, or render retired `avgPriceCents`, `entryPriceCents`, or `exitPriceCents` aliases. Older aliases may remain only as private compatibility fallback inputs or internal storage fields.
 
 ## Loop 230 Responsible-Play Prediction Check Rule
 
-Launch responsible-play prediction checks must expose checked order size through `amountPointsCents` and `unit: "PTS"` only. `ResponsiblePlayCheckResponse`, `/api/v1/compliance/rg/check-prediction`, and launch docs must not emit or document retired `stakePointsCents` or `stakeCents` aliases. Old query aliases may remain only as private compatibility inputs for older callers.
+Launch responsible-play prediction checks must expose checked order size through `amountPoints` and `unit: "PTS"` only. `ResponsiblePlayCheckResponse`, `/api/v1/compliance/rg/check-prediction`, and launch docs must not emit or document retired `stakePoints` or `stakeCents` aliases. Old query aliases may remain only as private compatibility inputs for older callers.
 
 ## Loop 231 Bonus Contribution Amount Rule
 
-Launch player-app bonus progress contracts must describe contribution history as point play, not stake. Exported `PlayContribution` rows should use `playAmountPointsCents` plus `contributionPointsCents`; old `stakePointsCents` or `stakeCents` names may be accepted only as private legacy response inputs before normalization and must not be re-exported through app types, state, or visible progress UI.
+Launch player-app bonus progress contracts must describe contribution history as point play, not stake. Exported `PlayContribution` rows should use `playAmountPoints` plus `contributionPoints`; old `stakePoints` or `stakeCents` names may be accepted only as private legacy response inputs before normalization and must not be re-exported through app types, state, or visible progress UI.
 
 ## Loop 232 Admin Campaign Point-Play Rule Config Rule
 
-Launch admin campaign rule configs must describe contribution caps as point play. Public `pointRuleConfig` responses and OpenAPI docs should use `max_play_contribution_points_cents`; `max_stake_contribution_points_cents` and `max_stake_contribution_cents` may remain only as private compatibility inputs or internal evaluator/storage keys and must not be documented as launch admin request or response fields.
+Launch admin campaign rule configs must describe contribution caps as point play. Public `pointRuleConfig` responses and OpenAPI docs should use `max_play_contribution_points`; `max_stake_contribution_points` and `max_stake_contribution_points` may remain only as private compatibility inputs or internal evaluator/storage keys and must not be documented as launch admin request or response fields.
 
 ## Loop 233 Admin Campaign Rule Type Rule
 
@@ -478,7 +488,7 @@ Launch admin campaign rule types must use point-play vocabulary. Public request 
 
 ## Loop 234 Bonus Domain Event Amount Rule
 
-Bonus grant and expiry domain events are launch-adjacent game-economy events and must expose point-native amount keys. `bonus.granted` should publish `amount_points_cents` with `unit: "PTS"`, and `bonus.expired` should publish `forfeited_points_cents` with `unit: "PTS"`. Retired generic keys such as `amount_cents` and `forfeited_amount` may remain only in negative regression assertions or old-event compatibility adapters, not in newly published event payloads.
+Bonus grant and expiry domain events are launch-adjacent game-economy events and must expose point-native amount keys. `bonus.granted` should publish `amount_points` with `unit: "PTS"`, and `bonus.expired` should publish `forfeited_points` with `unit: "PTS"`. Retired generic keys such as `amount_points` and `forfeited_amount` may remain only in negative regression assertions or old-event compatibility adapters, not in newly published event payloads.
 
 ## Loop 235 Bonus Campaign Type Rule
 
@@ -490,15 +500,15 @@ Bonus campaign creation, claim, and admin-grant paths must normalize inherited p
 
 ## Loop 237 Bonus Admin Amount Alias Conflict Rule
 
-Admin bonus and campaign internal write paths may reject old amount aliases as compatibility input, but the launch HTTP boundary should not accept those retired fields. If a lower-level compatibility path supplies both a retired amount field and its point-native replacement, the values must match exactly or the request must be rejected before persistence, wallet mutation, campaign lookup, or bonus creation. Error details should name the point-native field such as `budget_points_cents` or `override_points_cents`.
+Admin bonus and campaign internal write paths may reject old amount aliases as compatibility input, but the launch HTTP boundary should not accept those retired fields. If a lower-level compatibility path supplies both a retired amount field and its point-native replacement, the values must match exactly or the request must be rejected before persistence, wallet mutation, campaign lookup, or bonus creation. Error details should name the point-native field such as `budget_points` or `override_points`.
 
 ## Loop 238 Bonus Rule Config Amount Alias Conflict Rule
 
-Admin campaign rule configs may accept retired nested amount keys only as compatibility input. If a rule config supplies both a retired amount key and its point-native replacement, values must match exactly or campaign creation must fail before normalization or persistence. This includes reward keys such as `fixed_amount_points_cents`, `max_bonus_points_cents`, and `min_points_cents`, plus point-play contribution keys such as `max_play_contribution_points_cents`.
+Admin campaign rule configs may accept retired nested amount keys only as compatibility input. If a rule config supplies both a retired amount key and its point-native replacement, values must match exactly or campaign creation must fail before normalization or persistence. This includes reward keys such as `fixed_amount_points`, `max_bonus_points`, and `min_points`, plus point-play contribution keys such as `max_play_contribution_points`.
 
 ## Loop 239 Bonus Admin Conflict Error Details Rule
 
-Admin bonus and campaign HTTP errors for point-alias conflicts should use the standard bad-request envelope and include `details.field` with the relevant point-native field. Top-level campaign budget conflicts should report `budget_points_cents`, admin bonus override conflicts should report `override_points_cents`, and nested campaign rule config conflicts should report the clean point-native nested key without array-prefix text.
+Admin bonus and campaign HTTP errors for point-alias conflicts should use the standard bad-request envelope and include `details.field` with the relevant point-native field. Top-level campaign budget conflicts should report `budget_points`, admin bonus override conflicts should report `override_points`, and nested campaign rule config conflicts should report the clean point-native nested key without array-prefix text.
 
 ## Loop 240 Leaderboard Reward Summary Copy Rule
 
@@ -546,7 +556,7 @@ Player-facing bonus claim errors for activity/rank eligibility review must use p
 
 ## Loop 251 Bonus Forfeit Event Amount Rule
 
-Manual bonus-forfeit domain events must use the same point-native forfeited amount contract as bonus-expiry events. New `bonus.forfeited` payloads should expose `forfeited_points_cents`, `unit: "PTS"`, and audit metadata such as reason and actor, and must not publish retired generic amount keys such as `forfeited_amount` or `amount_cents`.
+Manual bonus-forfeit domain events must use the same point-native forfeited amount contract as bonus-expiry events. New `bonus.forfeited` payloads should expose `forfeited_points`, `unit: "PTS"`, and audit metadata such as reason and actor, and must not publish retired generic amount keys such as `forfeited_amount` or `amount_points`.
 
 ## Loop 252 Bonus Forfeit Consistency Rule
 
@@ -554,7 +564,7 @@ Manual bonus forfeiture must not mark a player bonus as forfeited or publish a `
 
 ## Loop 253 Bonus Forfeit Actual Amount Rule
 
-Manual and expiry bonus-forfeit events must publish the actual point amount removed by the point-wallet ledger mutation, not merely the requested player-bonus remaining amount. If wallet forfeiture is capped by the available bonus-point bucket or removes zero points, `forfeited_points_cents` should reflect that actual ledger amount.
+Manual and expiry bonus-forfeit events must publish the actual point amount removed by the point-wallet ledger mutation, not merely the requested player-bonus remaining amount. If wallet forfeiture is capped by the available bonus-point bucket or removes zero points, `forfeited_points` should reflect that actual ledger amount.
 
 ## Loop 254 Bonus Validation Copy Rule
 
@@ -594,11 +604,11 @@ Bonus grant, manual-forfeit, and expiry event publication should use a shared ni
 
 ## Loop 263 Campaign Rule Response Alias Rule
 
-Admin campaign rule responses must not echo retired stake-named point-play contribution aliases from old stored configs. `pointRuleConfig` should map `max_stake_contribution_points_cents` to the launch-facing `max_play_contribution_points_cents` field and omit the retired key from admin JSON. Old stake-named keys may remain only as private compatibility input or storage details.
+Admin campaign rule responses must not echo retired stake-named point-play contribution aliases from old stored configs. `pointRuleConfig` should map `max_stake_contribution_points` to the launch-facing `max_play_contribution_points` field and omit the retired key from admin JSON. Old stake-named keys may remain only as private compatibility input or storage details.
 
 ## Loop 264 Campaign Rule Alias Precedence Rule
 
-When an admin campaign rule config contains both a preferred point-native field and a retired compatibility alias, launch responses must keep the preferred point-native value. Retired contribution aliases must not overwrite `max_play_contribution_points_cents` during response sanitization, and they must remain absent from admin JSON.
+When an admin campaign rule config contains both a preferred point-native field and a retired compatibility alias, launch responses must keep the preferred point-native value. Retired contribution aliases must not overwrite `max_play_contribution_points` during response sanitization, and they must remain absent from admin JSON.
 
 ## Loop 265 Campaign Rule Reward Type Write Rule
 
@@ -626,27 +636,27 @@ Bonus claim and admin-grant wallet-credit failures after player-bonus creation m
 
 ## Loop 271 Admin Wallet Mutation Request Rule
 
-Admin wallet credit/debit mutations must use the point-native `amountPointsCents` request field. Retired `amountCents` and `amount_cents` request bodies should fail before mutation execution so admin point adjustments do not preserve generic amount/cents compatibility at the launch API boundary.
+Admin wallet credit/debit mutations must use the point-native `amountPoints` request field. Retired `amountCents` and `amount_points` request bodies should fail before mutation execution so admin point adjustments do not preserve generic amount/cents compatibility at the launch API boundary.
 
 ## Loop 272 Leaderboard Write Contract Rule
 
-Admin leaderboard create/update requests must use launch-facing point-status fields. New leaderboard writes should reject retired `currency` and `prizeSummary` fields, retired storage metric keys such as `net_profit_cents` and `stake_cents`, and any unit other than `PTS`; read paths may continue mapping old stored definitions to point-native response fields.
+Admin leaderboard create/update requests must use launch-facing point-status fields. New leaderboard writes should reject retired `currency` and `prizeSummary` fields, retired storage metric keys such as `net_profit_points` and `stake_points`, and any unit other than `PTS`; read paths may continue mapping old stored definitions to point-native response fields.
 
 ## Loop 273 Bonus/Campaign Write Contract Rule
 
-Admin campaign create and admin bonus grant requests must use launch-facing point-play fields. New campaign/bonus writes should reject retired `budget_cents`, raw `rule_config`, retired rule amount keys such as `fixed_amount_cents`, `max_bonus_cents`, `min_amount_cents`, `max_stake_contribution_cents`, and `max_stake_contribution_points_cents`, retired promo campaign or reward `type` values such as `freebet_grant`, `freebet`, `cash`, `odds_boost`, and `deposit_match`, and retired admin grant `override_amount_cents`; internal model normalization may continue mapping preferred launch aliases to private evaluator/storage fields.
+Admin campaign create and admin bonus grant requests must use launch-facing point-play fields. New campaign/bonus writes should reject retired `budget_points`, raw `rule_config`, retired rule amount keys such as `fixed_amount_points`, `max_bonus_points`, `min_amount_points`, `max_stake_contribution_points`, and `max_stake_contribution_points`, retired promo campaign or reward `type` values such as `freebet_grant`, `freebet`, `cash`, `odds_boost`, and `deposit_match`, and retired admin grant `override_amount_points`; internal model normalization may continue mapping preferred launch aliases to private evaluator/storage fields.
 
 ## Loop 274 Order Request Contract Rule
 
-Launch order request endpoints must reject retired order price/cap aliases before service normalization. Session order placement, order preview, and bot order placement must require `pricePointsCents` and `notionalCapPointsCents`; `priceCents` and `notionalCapCents` may remain only in lower-level private compatibility structs or old-response fallback readers, not as accepted launch HTTP request fields.
+Launch order request endpoints must reject retired order price/cap aliases before service normalization. Session order placement, order preview, and bot order placement must require `pricePoints` and `notionalCapPoints`; `priceCents` and `notionalCapCents` may remain only in lower-level private compatibility structs or old-response fallback readers, not as accepted launch HTTP request fields.
 
 ## Loop 275 Responsible-Play Request Contract Rule
 
-Launch responsible-play mutation and decision endpoints must reject retired amount/stake request aliases before service normalization. `/api/v1/compliance/rg/point-use-limit`, `/api/v1/compliance/rg/prediction-limit`, `/api/v1/compliance/rg/check-point-use`, and `/api/v1/compliance/rg/check-prediction` must require `amountPointsCents`; `amountCents`, `stakePointsCents`, and `stakeCents` may remain only on explicitly named legacy compatibility routes such as `deposit-limit`, `bet-limit`, `check-deposit`, and `check-bet` while those routes exist.
+Launch responsible-play mutation and decision endpoints must reject retired amount/stake request aliases before service normalization. `/api/v1/compliance/rg/point-use-limit`, `/api/v1/compliance/rg/prediction-limit`, `/api/v1/compliance/rg/check-point-use`, and `/api/v1/compliance/rg/check-prediction` must require `amountPoints`; `amountCents`, `stakePoints`, and `stakeCents` may remain only on explicitly named legacy compatibility routes such as `deposit-limit`, `bet-limit`, `check-deposit`, and `check-bet` while those routes exist.
 
 ## Loop 276 Loyalty Rule Contract Rule
 
-Admin loyalty rule create/update endpoints must use launch-facing prediction and point fields. `/api/v1/admin/loyalty/rules` and `/api/v1/admin/loyalty/rules/{ruleId}` must require `predictionSourceType`, `minQualifiedPointsCents`, and `eligiblePredictionTypes`; retired rule fields such as `sourceType`, `minQualifiedStakeCents`, `eligibleSportIds`, and `eligibleBetTypes` must fail before service normalization. Admin loyalty rule responses and launch OpenAPI docs must expose point-native rule fields plus `unit: "PTS"` without echoing the retired canonical rule aliases.
+Admin loyalty rule create/update endpoints must use launch-facing prediction and point fields. `/api/v1/admin/loyalty/rules` and `/api/v1/admin/loyalty/rules/{ruleId}` must require `predictionSourceType`, `minQualifiedPoints`, and `eligiblePredictionTypes`; retired rule fields such as `sourceType`, `minQualifiedStakeCents`, `eligibleSportIds`, and `eligibleBetTypes` must fail before service normalization. Admin loyalty rule responses and launch OpenAPI docs must expose point-native rule fields plus `unit: "PTS"` without echoing the retired canonical rule aliases.
 
 ## Loop 277 Loyalty Ledger Contract Rule
 
@@ -666,11 +676,11 @@ Admin leaderboard entry recording must use launch-facing activity source metadat
 
 ## Loop 281 Leaderboard Standing Metadata Rule
 
-Leaderboard standing read payloads must sanitize event metadata before launch JSON leaves the gateway. Public entries, public detail top entries, admin detail entries, recompute entries, and viewer-entry responses should expose PTS standing payloads and map old stored `betId`, `stakeCents`, `payoutCents`, `sourceType`, and `sourceId` metadata to `predictionId`, `pointVolumeCents`, `settlementPointsCents`, `activitySourceType`, and `activitySourceId`; new admin score writes must reject those retired metadata keys before persistence.
+Leaderboard standing read payloads must sanitize event metadata before launch JSON leaves the gateway. Public entries, public detail top entries, admin detail entries, recompute entries, and viewer-entry responses should expose PTS standing payloads and map old stored `betId`, `stakeCents`, `payoutCents`, `sourceType`, and `sourceId` metadata to `predictionId`, `pointVolumeCents`, `settlementPoints`, `activitySourceType`, and `activitySourceId`; new admin score writes must reject those retired metadata keys before persistence.
 
 ## Loop 282 Predict Leaderboard Board Threshold Rule
 
-Public Predict leaderboard board definitions must expose point-volume qualification thresholds through `minVolumePointsCents` only. Gateway JSON, launch OpenAPI docs, and exported player-app leaderboard client types must not emit, document, export, or consume the retired `minVolumeCents` board field; internal recompute variables may keep private compatibility names until broader storage cleanup.
+Public Predict leaderboard board definitions must expose point-volume qualification thresholds through `minVolumePoints` only. Gateway JSON, launch OpenAPI docs, and exported player-app leaderboard client types must not emit, document, export, or consume the retired `minVolumeCents` board field; internal recompute variables may keep private compatibility names until broader storage cleanup.
 
 ## Loop 283 Predict Leaderboard Board Alias Rule
 
@@ -742,7 +752,7 @@ Inherited production internals should be preserved unless they expose a launch-f
 
 ## Loop 300 Reconciliation Proof Rule
 
-Reconciliation proof artifacts must be point-native. Fixtures and reports should use PTS ledger fields such as `amountPointsCents`, `prediction_order`, and `prediction_settlement`, and must reject retired request/ledger vocabulary such as `amountCents`, `stakeCents`, `betId`, deposit, withdrawal, cashier, crypto, fiat, USD, payout, or stake wording. Rebuilding proof tools is allowed and required, but restoring old bet-route or money-contract replay tools unchanged is not launch-compatible.
+Reconciliation proof artifacts must be point-native. Fixtures and reports should use PTS ledger fields such as `amountPoints`, `prediction_order`, and `prediction_settlement`, and must reject retired request/ledger vocabulary such as `amountCents`, `stakeCents`, `betId`, deposit, withdrawal, cashier, crypto, fiat, USD, payout, or stake wording. Rebuilding proof tools is allowed and required, but restoring old bet-route or money-contract replay tools unchanged is not launch-compatible.
 
 ## Loop 301 Contract-Bound Proof Rule
 
@@ -790,23 +800,23 @@ Admin proposed-resolution proof must preserve the real authorization model. Live
 
 ## Loop 312 Dispute Bond Contract Rule
 
-Dispute challenge-bond storage may retain inherited private `bond_cents`/`BondCents` names, but launch-facing dispute JSON, OpenAPI, office types, and live proofs must expose `bondPointsCents` plus `unit: "PTS"` and must not emit `bondCents`.
+Dispute challenge-bond storage may retain inherited private `bond_points`/`BondCents` names, but launch-facing dispute JSON, OpenAPI, office types, and live proofs must expose `bondPoints` plus `unit: "PTS"` and must not emit `bondCents`.
 
 ## Loop 313 Admin Market AMM Subsidy Request Rule
 
-Admin market create/update request payloads are launch-facing. They must use `ammSubsidyPointsCents` for optional AMM fixture subsidy point subunits and must reject retired `ammSubsidyCents` request bodies before service normalization. Private Go fields, SQL columns, and read-compatibility fallbacks may retain inherited AMM subsidy names while adapters keep launch OpenAPI, exported request types, and office request bodies point-native.
+Admin market create/update request payloads are launch-facing. They must use `ammSubsidyPoints` for optional AMM fixture subsidy point subunits and must reject retired `ammSubsidyCents` request bodies before service normalization. Private Go fields, SQL columns, and read-compatibility fallbacks may retain inherited AMM subsidy names while adapters keep launch OpenAPI, exported request types, and office request bodies point-native.
 
 ## Loop 314 Admin Account Ledger UI Rule
 
-Admin account-review point-ledger UI is launch-adjacent. Office account ledger components must consume and render `amountPointsCents`, `balancePointsCents`, and `unit: "PTS"` from `/api/v1/admin/punters/{id}/wallet`; reusable render components must not expose `amountCents` or `balanceCents` as their public row contract. Older ledger aliases may be read only in private route/client compatibility normalizers while the broader storage cleanup continues.
+Admin account-review point-ledger UI is launch-adjacent. Office account ledger components must consume and render `amountPoints`, `balancePoints`, and `unit: "PTS"` from `/api/v1/admin/punters/{id}/wallet`; reusable render components must not expose `amountCents` or `balanceCents` as their public row contract. Older ledger aliases may be read only in private route/client compatibility normalizers while the broader storage cleanup continues.
 
 ## Loop 315 Player Market Activity Prop Rule
 
-Player market-card activity is launch-facing point-volume copy. Market card components and active discovery/category callers should use `volumePointsCents` as their public prop contract and format it with point helpers; retired `volumeCents` aliases may exist only in private normalization or negative regression assertions. Next.js page modules should not export test-only UI helpers, because invalid page exports can hide otherwise-correct points-only reward surfaces behind a production build failure.
+Player market-card activity is launch-facing point-volume copy. Market card components and active discovery/category callers should use `volumePoints` as their public prop contract and format it with point helpers; retired `volumeCents` aliases may exist only in private normalization or negative regression assertions. Next.js page modules should not export test-only UI helpers, because invalid page exports can hide otherwise-correct points-only reward surfaces behind a production build failure.
 
 ## Loop 316 Player Market Liquidity Prop Rule
 
-Player market-card liquidity is launch-facing point-liquidity copy. Market card components and active discovery/category callers should use `liquidityPointsCents` as their public prop contract and format it with point helpers; retired `liquidityCents` aliases may exist only in private normalization or negative regression assertions.
+Player market-card liquidity is launch-facing point-liquidity copy. Market card components and active discovery/category callers should use `liquidityPoints` as their public prop contract and format it with point helpers; retired `liquidityCents` aliases may exist only in private normalization or negative regression assertions.
 
 ## Loop 317 Trade Ticket Point Result Copy Rule
 
@@ -814,7 +824,7 @@ The active trade ticket may show an estimated point outcome for correct contract
 
 ## Loop 318 Order Preview Result Field Rule
 
-Order preview responses are launch-facing trading review contracts. They should expose maximum correct-outcome point results as `maxResultPointsCents`, not as profit or payout fields. Private engine math and compatibility normalizers may keep inherited `MaxProfit` or `maxProfit*` reads when needed, but gateway JSON, OpenAPI, exported client types, and active UI/test contracts should use the point-result alias.
+Order preview responses are launch-facing trading review contracts. They should expose maximum correct-outcome point results as `maxResultPoints`, not as profit or payout fields. Private engine math and compatibility normalizers may keep inherited `MaxProfit` or `maxProfit*` reads when needed, but gateway JSON, OpenAPI, exported client types, and active UI/test contracts should use the point-result alias.
 
 ## Loop 319 Notification Preference Copy Rule
 
@@ -946,7 +956,7 @@ Reward and social abuse controls must have a focused maintained gate. The gate s
 
 ## Loop 351 Canonical API Journey Contract Rule
 
-Authenticated critical-path API specs must use launch-native contracts from registration through ledger inspection. New-user flows should accept the terms and no-cashout disclosure, claim starter points only through the bounded point faucet, place point-native orders with `notionalCapPointsCents`, verify `PTS` order and ledger fields, and assert retired money aliases are absent. Listing or syntax proof is useful but cannot complete the canonical journey without a live stack run against the player same-origin proxy and gateway.
+Authenticated critical-path API specs must use launch-native contracts from registration through ledger inspection. New-user flows should accept the terms and no-cashout disclosure, claim starter points only through the bounded point faucet, place point-native orders with `notionalCapPoints`, verify `PTS` order and ledger fields, and assert retired money aliases are absent. Listing or syntax proof is useful but cannot complete the canonical journey without a live stack run against the player same-origin proxy and gateway.
 
 ## Loop 352 Modification Preservation Rule
 
@@ -1105,7 +1115,7 @@ or launch money-path constraints.
 
 Office account-review user-detail surfaces are launch-adjacent ledger
 inspection tools. They must consume point-ledger rows through
-`amountPointsCents` and `balancePointsCents` only, without active fallback to
+`amountPoints` and `balancePoints` only, without active fallback to
 retired `amountCents` or `balanceCents` fields. Older aliases may remain only
 inside explicitly private compatibility readers or negative regression tests;
 they must not be used by active office ledger rendering.
@@ -1248,11 +1258,11 @@ load removed or inherited money-era seed files such as `migrations/seed.sql`.
 
 Launch-visible demo seed data for backoffice audit logs must use launch-seeded
 prediction markets and point-native detail keys. Demo audit JSON must not
-insert retired crypto tickers, oracle-feed examples, `payout_pool_cents`, or
-`yes_price_cents` into active admin rows. Compatibility schemas may still store
+insert retired crypto tickers, oracle-feed examples, `payout_pool_points`, or
+`yes_price_points` into active admin rows. Compatibility schemas may still store
 point-cent integer values internally, but rendered/seeded admin examples should
-use explicit point-native keys such as `settlementPointsCents` and
-`yesPricePointsCents`.
+use explicit point-native keys such as `settlementPoints` and
+`yesPricePoints`.
 
 ## Loop 400 Gateway Seed Operator Wording Rule
 
@@ -1267,7 +1277,7 @@ operator-facing seed wording around them must be point-native.
 ## Loop 401 Gateway Seed Market-Maker Wording Rule
 
 Active market-maker seed comments and seed error output are launch-adjacent
-operator surfaces. They must describe point balances, point-cents, and resting
+operator surfaces. They must describe point balances, points, and resting
 point bids rather than dollars, cash, stakes, funds, or cent-symbol money
 labels. This rule does not change order-book placement, matching, wallet
 reservation, or inherited storage field names.
@@ -1294,8 +1304,8 @@ runtime proof or the full authenticated canonical journey.
 
 Shared API-client wallet exports are launch-facing contracts. Exported wallet
 balance, ledger, and mutation request/response types must use point-native
-fields such as `balancePointsCents`, `availablePointsCents`,
-`reservedPointsCents`, `amountPointsCents`, and `unit: "PTS"`. Retired
+fields such as `balancePoints`, `availablePoints`,
+`reservedPoints`, `amountPoints`, and `unit: "PTS"`. Retired
 `amountCents` or `balanceCents` fields may remain only as private compatibility
 reads inside normalizers and must not be re-exported.
 
@@ -1303,7 +1313,7 @@ reads inside normalizers and must not be re-exported.
 
 Shared API-client audit-log exports are launch-facing admin contracts. Exported
 audit entries must use point-native review fields such as `pointGrantId`,
-`pointRuleId`, and `pointGrantAppliedPointsCents`. Retired promo fields such
+`pointRuleId`, and `pointGrantAppliedPoints`. Retired promo fields such
 as `freebetId`, `oddsBoostId`, or `freebetAppliedCents` may remain only as
 private compatibility reads inside normalizers and must not be re-exported.
 
@@ -1311,8 +1321,8 @@ private compatibility reads inside normalizers and must not be re-exported.
 
 Shared API-client order-book hint exports are launch-facing market contracts.
 `OrderBookHint` must expose point-native best-quote fields such as
-`bestYesBidPointsCents`, `bestYesAskPointsCents`, `bestNoBidPointsCents`,
-`bestNoAskPointsCents`, and `unit: "PTS"` metadata. Retired best-quote aliases
+`bestYesBidPoints`, `bestYesAskPoints`, `bestNoBidPoints`,
+`bestNoAskPoints`, and `unit: "PTS"` metadata. Retired best-quote aliases
 such as `bestYesBidCents`, `bestYesAskCents`, `bestNoBidCents`, or
 `bestNoAskCents` may remain only as private compatibility reads in normalizers
 and must not be re-exported.
@@ -1322,7 +1332,7 @@ and must not be re-exported.
 Shared API-client portfolio-history exports are launch-facing portfolio
 contracts. Settlement-history row types must use point-result wording such as
 `SettledPositionResult` and point-native fields such as
-`realizedPointsCents`, `settlementPointsCents`, and `unit: "PTS"` metadata.
+`realizedPoints`, `settlementPoints`, and `unit: "PTS"` metadata.
 Payout-named exported types such as `SettledPayout` must not be re-exported.
 Older `pnlCents` or `payoutCents` payload fields may remain only as private
 compatibility reads in normalizers.
@@ -1330,8 +1340,8 @@ compatibility reads in normalizers.
 ## Loop 408 Market Settlement Pool Contract Rule
 
 Public market JSON, launch OpenAPI, and shared API-client market types must use
-settlement-pool wording such as `settlementPoolPointsCents`. Payout-pool names
-such as `settledPayoutPoolPointsCents` must not be published as launch-facing
+settlement-pool wording such as `settlementPoolPoints`. Payout-pool names
+such as `settledPayoutPoolPoints` must not be published as launch-facing
 market fields. Inherited storage fields and older payout-pool payload keys may
 remain only as internal DB fields or private compatibility reads.
 

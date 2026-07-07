@@ -48,8 +48,8 @@ export function ActiveBonusesControl({ bonuses }: { bonuses: PlayerBonus[] }) {
               </p>
               <div className="mt-2">
                 <WageringProgress
-                  requiredCents={bonus.playRequiredPointsCents}
-                  completedCents={bonus.playCompletedPointsCents}
+                  requiredPoints={bonus.playRequiredPoints}
+                  completedPoints={bonus.playCompletedPoints}
                   progressPct={bonus.playProgressPct}
                   expiresAt={bonus.expiresAt}
                 />
@@ -57,7 +57,7 @@ export function ActiveBonusesControl({ bonuses }: { bonuses: PlayerBonus[] }) {
             </div>
             <div className="text-right">
               <div className={PACK_AMOUNT_CLASS}>
-                {formatPoints(bonus.remainingPointsCents)}
+                {formatPoints(bonus.remainingPoints)}
               </div>
               <div className={MISSION_PROGRESS_CLASS}>
                 {t("activeBonuses.remaining", "pts remaining")}

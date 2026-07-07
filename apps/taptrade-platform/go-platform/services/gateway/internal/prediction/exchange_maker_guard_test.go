@@ -36,8 +36,8 @@ func TestMakerFillGuardRejectsStaleWrite(t *testing.T) {
 	var makerID string
 	if err := db.QueryRow(
 		`INSERT INTO prediction_orders
-		   (user_id, market_id, side, action, order_type, price_cents,
-		    quantity, filled_quantity, remaining_quantity, total_cost_cents, status)
+		   (user_id, market_id, side, action, order_type, price_points,
+		    quantity, filled_quantity, remaining_quantity, total_cost_points, status)
 		 VALUES ($1,$2,'yes','sell','limit',60,10,0,10,0,'open')
 		 RETURNING id`,
 		userID, marketID,

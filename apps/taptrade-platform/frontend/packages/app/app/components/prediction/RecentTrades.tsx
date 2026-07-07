@@ -147,8 +147,8 @@ export default function RecentTrades({
             if (row.kind === "issuance") {
               // Both sides minted in one match. Show a "MINT" pill and
               // both prices side-by-side. Contract size is displayed in points.
-              const yPx = row.yesTrade.pricePointsCents;
-              const nPx = row.noTrade.pricePointsCents;
+              const yPx = row.yesTrade.pricePoints;
+              const nPx = row.noTrade.pricePoints;
               const qty = row.yesTrade.quantity;
               const size = qty;
               return (
@@ -177,9 +177,9 @@ export default function RecentTrades({
             const sideKey = trade.side === "yes" ? "yes" : "no";
             const px =
               trade.side === "yes"
-                ? trade.pricePointsCents
-                : 100 - trade.pricePointsCents;
-            const size = (trade.quantity * px) / 100;
+                ? trade.pricePoints
+                : 100 - trade.pricePoints;
+            const size = trade.quantity * px;
             return (
               <div key={trade.id} className={RECENT_TRADES_ROW_CLASS}>
                 <span className={tradeSideClass(sideKey)}>

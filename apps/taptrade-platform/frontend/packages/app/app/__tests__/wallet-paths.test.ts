@@ -252,15 +252,16 @@ describe("wallet-client endpoint paths", () => {
   });
 
   it("prefers point-native wallet response aliases over legacy cents fields", () => {
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     const balanceType = sliceBetween(
       source,
       "interface WalletBalanceRaw",
-      "interface LegacyWalletBalanceRaw",
+      "interface WalletLedgerEntryRaw",
     );
     const ledgerType = sliceBetween(
       source,
       "interface WalletLedgerEntryRaw",
-      "interface LegacyWalletLedgerEntryRaw",
+      "interface WalletLedgerResponseRaw",
     );
     const balanceNormalizer = sliceBetween(
       source,
@@ -273,10 +274,10 @@ describe("wallet-client endpoint paths", () => {
       "interface StarterGrantResult",
     );
     for (const token of [
-      "balancePointsCents",
-      "availablePointsCents",
-      "reservedPointsCents",
-      "amountPointsCents",
+      "balancePoints",
+      "availablePoints",
+      "reservedPoints",
+      "amountPoints",
       "raw.unit || POINT_UNIT",
       "item.unit || POINT_UNIT",
     ]) {
@@ -286,23 +287,33 @@ describe("wallet-client endpoint paths", () => {
       );
     }
     assert.ok(
-      !balanceType.includes("balanceCents") &&
-        !balanceType.includes("availableCents") &&
-        !balanceType.includes("reservedCents"),
-      "WalletBalanceRaw should not model retired balance aliases",
+      balanceType.includes("balancePoints") &&
+        balanceType.includes("availablePoints") &&
+        balanceType.includes("reservedPoints"),
+      "WalletBalanceRaw should model the canonical *Points balance keys",
     );
     assert.ok(
-      !ledgerType.includes("amountCents") &&
-        !ledgerType.includes("balanceCents"),
-      "WalletLedgerEntryRaw should not model retired ledger aliases",
+      ledgerType.includes("amountPoints") &&
+        ledgerType.includes("balancePoints"),
+      "WalletLedgerEntryRaw should model the canonical *Points ledger keys",
     );
+    for (const retired of [
+      "PointsCents",
+      "balanceCents",
+      "availableCents",
+      "reservedCents",
+      "amountCents",
+    ]) {
+      assert.ok(
+        !source.includes(retired),
+        `wallet-client should not read retired wire key spelling ${retired}`,
+      );
+    }
     assert.ok(
-      source.includes("interface LegacyWalletBalanceRaw") &&
-        source.includes("interface LegacyWalletLedgerEntryRaw") &&
-        balanceNormalizer.includes("legacyRaw.balanceCents") &&
-        transactionNormalizer.includes("item.amountCents") &&
-        transactionNormalizer.includes("item.balanceCents"),
-      "old wallet payload fields should be private compatibility fallbacks only",
+      balanceNormalizer.includes("raw.balancePoints") &&
+        transactionNormalizer.includes("item.amountPoints") &&
+        transactionNormalizer.includes("item.balancePoints"),
+      "wallet normalizers should read the canonical *Points wire keys",
     );
   });
 
@@ -328,29 +339,38 @@ describe("wallet-client endpoint paths", () => {
       "// Pagination options",
     );
 
-    for (const exportedType of [
-      sharedWalletBalanceType,
-      sharedWalletLedgerType,
-      sharedWalletMutationResponseType,
-      sharedWalletMutationRequestType,
-    ]) {
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
+    for (const [label, exportedType, expected] of [
+      [
+        "WalletBalance",
+        sharedWalletBalanceType,
+        ["balancePoints", "availablePoints", "reservedPoints"],
+      ],
+      [
+        "WalletLedgerEntry",
+        sharedWalletLedgerType,
+        ["amountPoints", "balancePoints"],
+      ],
+      [
+        "WalletMutationResponse",
+        sharedWalletMutationResponseType,
+        ["balancePoints"],
+      ],
+      ["WalletMutationRequest", sharedWalletMutationRequestType, ["amountPoints"]],
+    ] as const) {
+      for (const token of expected) {
+        assert.ok(
+          exportedType.includes(token),
+          `shared ${label} should expose canonical *Points key ${token}`,
+        );
+      }
       assert.ok(
-        !exportedType.includes("amountCents") &&
+        !exportedType.includes("PointsCents") &&
+          !exportedType.includes("amountCents") &&
           !exportedType.includes("balanceCents") &&
           !exportedType.includes("availableCents") &&
           !exportedType.includes("reservedCents"),
-        "shared API-client wallet exports should not expose retired cent aliases",
-      );
-    }
-    for (const token of [
-      "balancePointsCents",
-      "amountPointsCents",
-      "availablePointsCents",
-      "reservedPointsCents",
-    ]) {
-      assert.ok(
-        sharedApiTypesSource.includes(token),
-        `shared API-client wallet types should expose ${token}`,
+        `shared ${label} should not expose retired cent aliases`,
       );
     }
     assert.ok(
@@ -358,10 +378,12 @@ describe("wallet-client endpoint paths", () => {
       "shared API-client wallet types should expose unit: 'PTS'",
     );
     assert.ok(
-      sharedApiClientSource.includes("interface LegacyWalletBalancePayload") &&
-        sharedApiClientSource.includes("payload.balanceCents") &&
-        sharedApiClientSource.includes("payload.amountCents"),
-      "shared API client should keep retired cent fields only as private compatibility reads",
+      sharedApiClientSource.includes("payload.balancePoints") &&
+        sharedApiClientSource.includes("payload.amountPoints") &&
+        !sharedApiClientSource.includes("PointsCents") &&
+        !sharedApiClientSource.includes("payload.balanceCents") &&
+        !sharedApiClientSource.includes("payload.amountCents"),
+      "shared API client should normalize wallet payloads from the canonical *Points wire keys",
     );
   });
 
@@ -372,7 +394,7 @@ describe("wallet-client endpoint paths", () => {
       "// Request types",
     );
 
-    for (const retired of ["freebetId", "oddsBoostId", "freebetAppliedCents"]) {
+    for (const retired of ["freebetId", "oddsBoostId", "freebetAppliedPoints"]) {
       assert.ok(
         !sharedAuditLogType.includes(retired),
         `shared AuditLogEntry should not export retired promo field ${retired}`,
@@ -381,7 +403,7 @@ describe("wallet-client endpoint paths", () => {
     for (const token of [
       "pointGrantId",
       "pointRuleId",
-      "pointGrantAppliedPointsCents",
+      "pointGrantAppliedPoints",
     ]) {
       assert.ok(
         sharedAuditLogType.includes(token),
@@ -392,7 +414,7 @@ describe("wallet-client endpoint paths", () => {
       sharedApiClientSource.includes("interface LegacyAuditLogEntryPayload") &&
         sharedApiClientSource.includes("payload.freebetId") &&
         sharedApiClientSource.includes("payload.oddsBoostId") &&
-        sharedApiClientSource.includes("payload.freebetAppliedCents") &&
+        sharedApiClientSource.includes("payload.freebetAppliedPoints") &&
         sharedApiClientSource.includes("normalizeAuditLogEntry"),
       "shared API client should keep retired promo fields only as private audit-log compatibility reads",
     );
@@ -405,7 +427,9 @@ describe("wallet-client endpoint paths", () => {
       "export interface PlaceOrderResponse",
     );
 
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     for (const retired of [
+      "PointsCents",
       "bestYesBidCents",
       "bestYesAskCents",
       "bestNoBidCents",
@@ -417,10 +441,10 @@ describe("wallet-client endpoint paths", () => {
       );
     }
     for (const token of [
-      "bestYesBidPointsCents",
-      "bestYesAskPointsCents",
-      "bestNoBidPointsCents",
-      "bestNoAskPointsCents",
+      "bestYesBidPoints",
+      "bestYesAskPoints",
+      "bestNoBidPoints",
+      "bestNoAskPoints",
       'unit?: "PTS" | string',
     ]) {
       assert.ok(
@@ -494,14 +518,14 @@ describe("wallet-client endpoint paths", () => {
       "interface RewardLimitStatusRaw",
     );
     for (const token of [
-      "grantPointsCents",
-      "claimPointsCents",
-      "balancePointsCents",
-      "amountPointsCents",
-      "rewardPointsCents",
-      "limitPointsCents",
-      "grantedPointsCents",
-      "remainingPointsCents",
+      "grantPoints",
+      "claimPoints",
+      "balancePoints",
+      "amountPoints",
+      "rewardPoints",
+      "limitPoints",
+      "grantedPoints",
+      "remainingPoints",
       "normalizeRewardLimit",
       "normalizeRewardClaim",
       "normalizePointPack",
@@ -513,31 +537,48 @@ describe("wallet-client endpoint paths", () => {
         `wallet-client should read point-native reward field ${token}`,
       );
     }
-    for (const [label, typeSource, retired] of [
-      ["StarterGrantResult", starterGrantType, ["grantCents", "balanceCents"]],
-      ["DailyClaimResult", dailyClaimType, ["claimCents", "balanceCents"]],
-      ["PointPack", pointPackType, ["amountCents"]],
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
+    for (const [label, typeSource, expected] of [
+      ["StarterGrantResult", starterGrantType, ["grantPoints", "balancePoints"]],
+      ["DailyClaimResult", dailyClaimType, ["claimPoints", "balancePoints"]],
+      ["PointPack", pointPackType, ["amountPoints"]],
       [
         "PointPackClaimResult",
         pointPackClaimType,
-        ["claimCents", "balanceCents"],
+        ["claimPoints", "balancePoints"],
       ],
-      ["Mission", missionType, ["rewardCents"]],
-      ["MissionClaimResult", missionClaimType, ["claimCents", "balanceCents"]],
-      ["Streak", streakType, ["rewardCents"]],
-      ["StreakClaimResult", streakClaimType, ["claimCents", "balanceCents"]],
+      ["Mission", missionType, ["rewardPoints"]],
+      ["MissionClaimResult", missionClaimType, ["claimPoints", "balancePoints"]],
+      ["Streak", streakType, ["rewardPoints"]],
+      ["StreakClaimResult", streakClaimType, ["claimPoints", "balancePoints"]],
       [
         "RewardLimitStatus",
         rewardLimitType,
-        ["limitCents", "grantedCents", "remainingCents"],
+        ["limitPoints", "grantedPoints", "remainingPoints"],
       ],
     ] as const) {
-      for (const token of retired) {
+      for (const token of expected) {
         assert.ok(
-          !typeSource.includes(token),
-          `${label} should not expose retired reward alias ${token}`,
+          typeSource.includes(token),
+          `${label} should expose canonical reward key ${token}`,
         );
       }
+    }
+    for (const retired of [
+      "PointsCents",
+      "grantCents",
+      "claimCents",
+      "balanceCents",
+      "amountCents",
+      "rewardCents",
+      "limitCents",
+      "grantedCents",
+      "remainingCents",
+    ]) {
+      assert.ok(
+        !source.includes(retired),
+        `wallet-client should not read retired reward wire key spelling ${retired}`,
+      );
     }
     assert.ok(
       source.includes("interface StarterGrantResultRaw") &&
@@ -546,11 +587,11 @@ describe("wallet-client endpoint paths", () => {
         source.includes("interface MissionRaw") &&
         source.includes("interface StreakRaw") &&
         source.includes("interface RewardLimitStatusRaw") &&
-        source.includes("result.claimPointsCents ?? result.claimCents") &&
-        source.includes("pack.amountPointsCents ?? pack.amountCents") &&
-        source.includes("mission.rewardPointsCents ?? mission.rewardCents") &&
-        source.includes("status.limitPointsCents ?? status.limitCents"),
-      "old reward payload fields should be private compatibility fallbacks only",
+        source.includes("result.claimPoints") &&
+        source.includes("pack.amountPoints") &&
+        source.includes("mission.rewardPoints") &&
+        source.includes("status.limitPoints"),
+      "reward normalizers should read the canonical *Points wire keys",
     );
   });
 
@@ -571,9 +612,9 @@ describe("wallet-client endpoint paths", () => {
       "export function invalidateBonusCaches",
     );
     for (const token of [
-      "basePointsCents",
-      "bonusPointsCents",
-      "totalPointsCents",
+      "basePoints",
+      "bonusPoints",
+      "totalPoints",
       'unit: res.unit || res.currency || "PTS"',
     ]) {
       assert.ok(
@@ -590,34 +631,40 @@ describe("wallet-client endpoint paths", () => {
         !breakdownState.includes("currency: string"),
       "WalletBreakdown should expose unit instead of currency",
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key
+    // (totalPoints IS the canonical breakdown key now; retired spellings stay banned).
     assert.ok(
-      !breakdownType.includes("realMoneyCents") &&
-        !breakdownType.includes("bonusFundCents") &&
+      breakdownType.includes("totalPoints") &&
+        !breakdownType.includes("realMoneyPoints") &&
+        !breakdownType.includes("bonusFundPoints") &&
+        !breakdownType.includes("totalPointsCents") &&
         !breakdownType.includes("totalCents"),
       "WalletBreakdown should not export retired breakdown aliases",
     );
     assert.ok(
-      !breakdownState.includes("realMoneyCents") &&
-        !breakdownState.includes("bonusFundCents") &&
+      breakdownState.includes("totalPoints") &&
+        !breakdownState.includes("realMoneyPoints") &&
+        !breakdownState.includes("bonusFundPoints") &&
+        !breakdownState.includes("totalPointsCents") &&
         !breakdownState.includes("totalCents"),
       "bonus store breakdown state should not retain retired breakdown aliases",
     );
     assert.ok(
       bonusSource.includes("interface LegacyBreakdownResponse") &&
-        breakdownNormalizer.includes("legacyRes.realMoneyCents") &&
-        breakdownNormalizer.includes("legacyRes.bonusFundCents") &&
-        breakdownNormalizer.includes("legacyRes.totalCents") &&
-        !breakdownNormalizer.includes("realMoneyCents: basePointsCents") &&
-        !breakdownNormalizer.includes("bonusFundCents: bonusPointsCents") &&
-        !breakdownNormalizer.includes("totalCents: totalPointsCents"),
+        breakdownNormalizer.includes("legacyRes.realMoneyPoints") &&
+        breakdownNormalizer.includes("legacyRes.bonusFundPoints") &&
+        breakdownNormalizer.includes("legacyRes.totalPoints") &&
+        !breakdownNormalizer.includes("realMoneyPoints: basePoints") &&
+        !breakdownNormalizer.includes("bonusFundPoints: bonusPoints") &&
+        !breakdownNormalizer.includes("totalPoints: totalPoints"),
       "legacy breakdown fields should be read privately but not reattached",
     );
     for (const token of [
       't("basePoints", "Base Points")',
       't("bonusPoints", "Bonus Points")',
-      "breakdown.basePointsCents",
-      "breakdown.bonusPointsCents",
-      "breakdown.totalPointsCents",
+      "breakdown.basePoints",
+      "breakdown.bonusPoints",
+      "breakdown.totalPoints",
     ]) {
       assert.ok(
         walletBreakdownSource.includes(token),
@@ -627,8 +674,8 @@ describe("wallet-client endpoint paths", () => {
     assert.ok(
       !walletBreakdownSource.includes('t("realMoney")') &&
         !walletBreakdownSource.includes('t("bonusFunds")') &&
-        !walletBreakdownSource.includes("breakdown.realMoneyCents") &&
-        !walletBreakdownSource.includes("breakdown.bonusFundCents"),
+        !walletBreakdownSource.includes("breakdown.realMoneyPoints") &&
+        !walletBreakdownSource.includes("breakdown.bonusFundPoints"),
       "WalletBreakdown should not render legacy real-money/bonus-fund fields",
     );
   });
@@ -647,10 +694,10 @@ describe("wallet-client endpoint paths", () => {
 
     for (const token of [
       "normalizePlayerBonus",
-      "grantedPointsCents",
-      "remainingPointsCents",
-      "playRequiredPointsCents",
-      "playCompletedPointsCents",
+      "grantedPoints",
+      "remainingPoints",
+      "playRequiredPoints",
+      "playCompletedPoints",
       "playProgressPct",
       'raw.unit || "PTS"',
       "raw.bonusId ?? raw.bonus_id",
@@ -662,10 +709,10 @@ describe("wallet-client endpoint paths", () => {
       );
     }
     for (const retired of [
-      "grantedAmountCents",
-      "remainingAmountCents",
-      "wageringRequiredCents",
-      "wageringCompletedCents",
+      "grantedAmountPoints",
+      "remainingAmountPoints",
+      "wageringRequiredPoints",
+      "wageringCompletedPoints",
       "wageringProgressPct",
     ]) {
       assert.ok(
@@ -693,11 +740,11 @@ describe("wallet-client endpoint paths", () => {
 
     for (const token of [
       "normalizeBonusProgress",
-      "playRequiredPointsCents",
-      "playCompletedPointsCents",
+      "playRequiredPoints",
+      "playCompletedPoints",
       "playProgressPct",
       'raw.unit || "PTS"',
-      "playAmountPointsCents",
+      "playAmountPoints",
     ]) {
       assert.ok(
         bonusSource.includes(token),
@@ -705,8 +752,8 @@ describe("wallet-client endpoint paths", () => {
       );
     }
     for (const retired of [
-      "wageringRequiredCents",
-      "wageringCompletedCents",
+      "wageringRequiredPoints",
+      "wageringCompletedPoints",
       "progressPct",
     ]) {
       assert.ok(
@@ -715,11 +762,11 @@ describe("wallet-client endpoint paths", () => {
       );
     }
     assert.ok(
-      playContributionType.includes("playAmountPointsCents: number") &&
-        playContributionType.includes("contributionPointsCents: number") &&
-        !playContributionType.includes("stakePointsCents") &&
+      playContributionType.includes("playAmountPoints: number") &&
+        playContributionType.includes("contributionPoints: number") &&
+        !playContributionType.includes("stakePoints") &&
         bonusSource.includes(
-          "playAmountPointsCents: raw.stakePointsCents ?? raw.stakeCents ?? 0",
+          "playAmountPoints: raw.stakePoints ?? raw.stakePoints ?? 0",
         ),
       "PlayContribution should export point-play amount fields while keeping stake aliases private",
     );
@@ -758,10 +805,10 @@ describe("wallet-client endpoint paths", () => {
     }
     for (const token of [
       "WageringProgress",
-      "requiredCents={bonus.playRequiredPointsCents}",
-      "completedCents={bonus.playCompletedPointsCents}",
+      "requiredPoints={bonus.playRequiredPoints}",
+      "completedPoints={bonus.playCompletedPoints}",
       "progressPct={bonus.playProgressPct}",
-      "formatPoints(bonus.remainingPointsCents)",
+      "formatPoints(bonus.remainingPoints)",
       't("activeBonuses.title", "Active point-play bonuses")',
     ]) {
       assert.ok(
@@ -770,11 +817,11 @@ describe("wallet-client endpoint paths", () => {
       );
     }
     for (const retired of [
-      "bonus.wageringRequiredCents",
-      "bonus.wageringCompletedCents",
+      "bonus.wageringRequiredPoints",
+      "bonus.wageringCompletedPoints",
       "bonus.wageringProgressPct",
-      "bonus.grantedAmountCents",
-      "bonus.remainingAmountCents",
+      "bonus.grantedAmountPoints",
+      "bonus.remainingAmountPoints",
     ]) {
       assert.ok(
         !activeBonusPanel.includes(retired),

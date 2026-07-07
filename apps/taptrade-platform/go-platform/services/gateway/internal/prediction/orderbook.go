@@ -5,12 +5,12 @@ package prediction
 // silently clamped; depth < 1 returns an error at the handler.
 const MaxOrderBookDepth = 100
 
-// AggregatedLevel is one price level after GROUP BY price_cents at the SQL
+// AggregatedLevel is one price level after GROUP BY price_points at the SQL
 // layer. Quantity is the sum of `remaining_quantity` across all open/partial
 // orders at that price. Rows arrive sorted: bids (Buy) DESC, asks (Sell) ASC.
 type AggregatedLevel struct {
-	PriceCents int
-	Quantity   int
+	PricePoints int
+	Quantity    int
 }
 
 // BookLevels turns sorted AggregatedLevels into L2 OrderBookLevels with
@@ -39,9 +39,9 @@ func BookLevels(rows []AggregatedLevel, depth int) []OrderBookLevel {
 		}
 		cumulative += r.Quantity
 		out = append(out, OrderBookLevel{
-			PriceCents: r.PriceCents,
-			Quantity:   r.Quantity,
-			Total:      cumulative,
+			PricePoints: r.PricePoints,
+			Quantity:    r.Quantity,
+			Total:       cumulative,
 		})
 	}
 	return out

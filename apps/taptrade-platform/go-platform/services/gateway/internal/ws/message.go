@@ -28,9 +28,9 @@ type UnsubscribeMessage struct {
 
 // Event represents a broadcasted event sent to clients
 type Event struct {
-	Type    MessageType `json:"type"`
-	Channel string      `json:"channel"`
-	EventID string      `json:"eventId"`
+	Type    MessageType     `json:"type"`
+	Channel string          `json:"channel"`
+	EventID string          `json:"eventId"`
 	Data    json.RawMessage `json:"data"`
 }
 

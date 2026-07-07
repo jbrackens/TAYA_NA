@@ -16,7 +16,7 @@ func TestLeaderboardDefinitionJSONRoundTrip(t *testing.T) {
 		Slug:           "weekly-profit",
 		Name:           "Weekly Profit Race",
 		Description:    "Top net winners for the current week.",
-		MetricKey:      "net_profit_cents",
+		MetricKey:      "net_profit_points",
 		EventType:      "settled_bet",
 		RankingMode:    LeaderboardRankingModeSum,
 		Order:          LeaderboardOrderDescending,

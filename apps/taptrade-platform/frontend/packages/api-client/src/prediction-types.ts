@@ -82,12 +82,12 @@ export interface PredictionMarket {
   translations?: Record<string, MarketTranslation>;
   status: MarketStatus;
   result?: "yes" | "no";
-  yesPricePointsCents: number;
-  noPricePointsCents: number;
-  lastTradePricePointsCents?: number;
-  volumePointsCents: number;
-  openInterestPointsCents: number;
-  liquidityPointsCents: number;
+  yesPricePoints: number;
+  noPricePoints: number;
+  lastTradePricePoints?: number;
+  volumePoints: number;
+  openInterestPoints: number;
+  liquidityPoints: number;
   settlementSourceKey: string;
   settlementRule: string;
   settlementParams?: Record<string, unknown>;
@@ -106,13 +106,13 @@ export interface PredictionMarket {
   ammYesShares?: number;
   ammNoShares?: number;
   ammLiquidityParam?: number;
-  ammSubsidyPointsCents?: number;
-  collateralPoolPointsCents?: number;
-  bestYesBidPointsCents?: number;
-  bestYesAskPointsCents?: number;
-  bestNoBidPointsCents?: number;
-  bestNoAskPointsCents?: number;
-  settlementPoolPointsCents?: number;
+  ammSubsidyPoints?: number;
+  collateralPoolPoints?: number;
+  bestYesBidPoints?: number;
+  bestYesAskPoints?: number;
+  bestNoBidPoints?: number;
+  bestNoAskPoints?: number;
+  settlementPoolPoints?: number;
   unit?: "PTS" | string;
   lastQuoteAt?: string;
   taptradeLifecycle?: TapTradeMarketLifecycle;
@@ -363,11 +363,11 @@ export interface PredictionOrder {
   side: OrderSide;
   action: OrderAction;
   orderType: OrderType;
-  pricePointsCents?: number;
+  pricePoints?: number;
   quantity: number;
   filledQuantity: number;
   remainingQuantity: number;
-  totalCostPointsCents: number;
+  totalCostPoints: number;
   status: OrderStatus;
   filledAt?: string;
   cancelledAt?: string;
@@ -375,17 +375,17 @@ export interface PredictionOrder {
 
   // Exchange engine fields (present on order_book markets; ignored on AMM).
   timeInForce?: TimeInForce;
-  reservedPointsCents?: number;
-  capturedPointsCents?: number;
-  releasedPointsCents?: number;
+  reservedPoints?: number;
+  capturedPoints?: number;
+  releasedPoints?: number;
   reservedQuantity?: number;
-  averageFillPricePointsCents?: number;
-  filledCostPointsCents?: number;
+  averageFillPricePoints?: number;
+  filledCostPoints?: number;
   failureReason?: OrderFailureReason;
   postOnly?: boolean;
   clientOrderId?: string;
   selfMatchAction?: SelfMatchAction;
-  notionalCapPointsCents?: number;
+  notionalCapPoints?: number;
   unit?: "PTS" | string;
 }
 
@@ -395,9 +395,9 @@ export interface Position {
   marketId: string;
   side: OrderSide;
   quantity: number;
-  avgPricePointsCents: number;
-  totalCostPointsCents: number;
-  realizedPointsCents: number;
+  avgPricePoints: number;
+  totalCostPoints: number;
+  realizedPoints: number;
   reservedQuantity?: number;
   unit?: "PTS" | string;
 }
@@ -410,10 +410,10 @@ export interface Trade {
   buyOrderId?: string;
   sellOrderId?: string;
   side: OrderSide;
-  pricePointsCents: number;
+  pricePoints: number;
   quantity: number;
-  feePointsCents: number;
-  notionalPointsCents: number;
+  feePoints: number;
+  notionalPoints: number;
   isAmmTrade: boolean;
   tradedAt: string;
   unit?: "PTS" | string;
@@ -431,19 +431,19 @@ export interface OrderPreview {
   side: OrderSide;
   action: OrderAction;
   quantity: number;
-  pricePointsCents: number;
-  totalCostPointsCents: number;
-  feePointsCents: number;
-  maxResultPointsCents: number;
-  maxLossPointsCents: number;
-  newYesPricePointsCents: number;
-  newNoPricePointsCents: number;
+  pricePoints: number;
+  totalCostPoints: number;
+  feePoints: number;
+  maxResultPoints: number;
+  maxLossPoints: number;
+  newYesPricePoints: number;
+  newNoPricePoints: number;
   executionMode?: ExecutionMode;
   filledQuantity?: number;
   unfilledQuantity?: number;
-  averageFillPricePointsCents?: number;
-  totalCostWithFeesPointsCents?: number;
-  estimatedSlippagePointsCents?: number;
+  averageFillPricePoints?: number;
+  totalCostWithFeesPoints?: number;
+  estimatedSlippagePoints?: number;
   quoteStatus?: OrderStatus;
   quoteStaleAfterMillis?: number;
   quoteGeneratedAtUnixSec?: number;
@@ -451,11 +451,11 @@ export interface OrderPreview {
 }
 
 export interface PortfolioSummary {
-  totalValuePointsCents: number;
-  portfolioValuePointsCents: number;
-  investedPointsCents: number;
-  unrealizedPointsCents: number;
-  realizedPointsCents: number;
+  totalValuePoints: number;
+  portfolioValuePoints: number;
+  investedPoints: number;
+  unrealizedPoints: number;
+  realizedPoints: number;
   unit?: "PTS" | string;
   openPositions: number;
   totalPredictions: number;
@@ -471,10 +471,10 @@ export interface SettledPositionResult {
   marketId: string;
   side: OrderSide;
   quantity: number;
-  entryPricePointsCents: number;
-  exitPricePointsCents: number;
-  realizedPointsCents: number;
-  settlementPointsCents: number;
+  entryPricePoints: number;
+  exitPricePoints: number;
+  realizedPoints: number;
+  settlementPoints: number;
   unit?: "PTS" | string;
   paidAt: string;
 }
@@ -491,7 +491,7 @@ export interface PlaceOrderRequest {
   side: OrderSide;
   action: OrderAction;
   orderType: OrderType;
-  pricePointsCents?: number;
+  pricePoints?: number;
   quantity: number;
   idempotencyKey?: string;
 
@@ -500,13 +500,13 @@ export interface PlaceOrderRequest {
   // - postOnly: reject if the order would take any quantity at submission.
   // - clientOrderId: caller-supplied ID separate from idempotencyKey.
   // - selfMatchAction: how to handle same-user crossings.
-  // - pricePointsCents: preferred point-native limit price.
-  // - notionalCapPointsCents: preferred point-native market BUY slippage cap.
+  // - pricePoints: preferred point-native limit price.
+  // - notionalCapPoints: preferred point-native market BUY slippage cap.
   timeInForce?: TimeInForce;
   postOnly?: boolean;
   clientOrderId?: string;
   selfMatchAction?: SelfMatchAction;
-  notionalCapPointsCents?: number;
+  notionalCapPoints?: number;
 }
 
 /**
@@ -514,11 +514,11 @@ export interface PlaceOrderRequest {
  * share count up to and including this level (used for ladder rendering).
  */
 export interface OrderBookLevel {
-  pricePointsCents: number;
+  pricePoints: number;
   shares: number;
   cumulativeShares: number;
-  notionalPointsCents: number;
-  totalNotionalPointsCents: number;
+  notionalPoints: number;
+  totalNotionalPoints: number;
   unit: "PTS" | string;
 }
 
@@ -547,10 +547,10 @@ export interface OrderBook {
  */
 export interface OrderBookHint {
   marketId: string;
-  bestYesBidPointsCents?: number;
-  bestYesAskPointsCents?: number;
-  bestNoBidPointsCents?: number;
-  bestNoAskPointsCents?: number;
+  bestYesBidPoints?: number;
+  bestYesAskPoints?: number;
+  bestNoBidPoints?: number;
+  bestNoAskPoints?: number;
   lastQuoteAt?: string;
   unit?: "PTS" | string;
   ts: string;
@@ -588,7 +588,7 @@ export interface CreateMarketRequest {
   settlementCutoffAt?: string;
   feeRateBps?: number;
   ammLiquidityParam?: number;
-  ammSubsidyPointsCents?: number;
+  ammSubsidyPoints?: number;
   articleSourceId?: string;
   aiGenerationLogIds?: string[];
 }
@@ -625,8 +625,8 @@ export interface CollateralDriftAlert {
   marketId: string;
   ticker: string;
   adjustmentCount: number;
-  maxDriftPointsCents: number;
-  totalDriftPointsCents: number;
+  maxDriftPoints: number;
+  totalDriftPoints: number;
   latestAdjustedAt: string;
   latestReason: string;
   unit: "PTS" | string;
@@ -668,7 +668,7 @@ export interface SettlementRecord {
   attestationData?: Record<string, unknown>;
   settledBy?: string;
   settledAt: string;
-  totalSettlementPointsCents?: number;
+  totalSettlementPoints?: number;
   unit?: "PTS" | string;
 }
 
@@ -680,10 +680,10 @@ export interface SettlementPointDisbursement {
   marketId?: string;
   side?: OrderSide;
   quantity?: number;
-  entryPricePointsCents?: number;
-  exitPricePointsCents?: number;
-  settlementPointsCents?: number;
-  realizedPointsCents?: number;
+  entryPricePoints?: number;
+  exitPricePoints?: number;
+  settlementPoints?: number;
+  realizedPoints?: number;
   paidAt?: string;
   unit?: "PTS" | string;
 }
@@ -691,7 +691,7 @@ export interface SettlementPointDisbursement {
 export interface SettleMarketResponse {
   settlement: SettlementRecord;
   pointDisbursements?: SettlementPointDisbursement[];
-  totalSettlementPointsCents?: number;
+  totalSettlementPoints?: number;
   unit?: "PTS" | string;
   taptradeLifecycle?: TapTradeMarketLifecycle;
 }
@@ -707,16 +707,16 @@ export interface DashboardMover {
   marketId: string;
   ticker: string;
   title: string;
-  yesPricePointsCentsStart: number;
-  yesPricePointsCentsNow: number;
-  volumePointsCents: number;
+  yesPricePointsStart: number;
+  yesPricePointsNow: number;
+  volumePoints: number;
   unit: "PTS" | string;
 }
 
 export interface DashboardVolumeStats {
   since: string;
   windowSeconds: number;
-  totalVolumePointsCents: number;
+  totalVolumePoints: number;
   tradeCount: number;
   topMovers: DashboardMover[];
   unit: "PTS" | string;
@@ -726,9 +726,9 @@ export interface DashboardVolumeStats {
 
 export interface PricePoint {
   bucketStart: string;
-  yesPricePointsCents: number;
+  yesPricePoints: number;
   tradeCount: number;
-  volumePointsCents: number;
+  volumePoints: number;
   unit?: "PTS" | string;
 }
 

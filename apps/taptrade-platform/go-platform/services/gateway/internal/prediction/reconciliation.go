@@ -8,7 +8,7 @@ import (
 )
 
 // CollateralDriftReport summarises a single market's reconciliation pass.
-// drift_cents = ledger_sum - market.collateral_pool_cents.
+// drift_points = ledger_sum - market.collateral_pool_points.
 // Negative drift means the pool is over-funded relative to the ledger
 // (the column got incremented without a corresponding ledger row, which
 // is bad); positive means the column missed an increment a ledger row
@@ -22,9 +22,9 @@ type CollateralDriftReport struct {
 	MarketID          string
 	ExpectedYesPool   int64 // sum of YES position qty × 100 (forensic only)
 	ExpectedNoPool    int64 // sum of NO position qty × 100 (forensic only)
-	LedgerSumCents    int64 // sum of non-adjustment ledger rows; the truth
-	ActualPoolCents   int64 // market.collateral_pool_cents
-	DriftCents        int64 // 0 if invariants hold
+	LedgerSumPoints   int64 // sum of non-adjustment ledger rows; the truth
+	ActualPoolPoints  int64 // market.collateral_pool_points
+	DriftPoints       int64 // 0 if invariants hold
 	HasBookTrades     bool  // market has at least one non-AMM trade
 	YesNoMismatch     bool  // YES sum != NO sum on a market with book trades
 	AdjustmentWritten bool  // true if Phase 2 wrote a ledger row
@@ -47,7 +47,7 @@ func computeYesNoMismatch(hasBookTrades bool, yesPool, noPool int64) bool {
 // ReconcileMarket runs the two-phase collateral check for one market.
 //
 // Phase 1: REPEATABLE READ snapshot, no lock. Computes expected pool from
-// position sums and compares to collateral_pool_cents. If invariants hold,
+// position sums and compares to collateral_pool_points. If invariants hold,
 // returns a clean report and no lock is taken.
 //
 // Phase 2: only on suspected drift. Takes pg_advisory_xact_lock per market,
@@ -64,7 +64,7 @@ func (r *SQLRepository) ReconcileMarket(ctx context.Context, marketID string) (*
 	if err != nil {
 		return nil, fmt.Errorf("phase 1 snapshot: %w", err)
 	}
-	if report.DriftCents == 0 && !report.YesNoMismatch {
+	if report.DriftPoints == 0 && !report.YesNoMismatch {
 		return report, nil
 	}
 
@@ -87,7 +87,7 @@ func (r *SQLRepository) ReconcileMarket(ctx context.Context, marketID string) (*
 	if err != nil {
 		return report, fmt.Errorf("phase 2 re-check: %w", err)
 	}
-	if confirmed.DriftCents == 0 && !confirmed.YesNoMismatch {
+	if confirmed.DriftPoints == 0 && !confirmed.YesNoMismatch {
 		_ = tx.Commit()
 		return confirmed, nil
 	}
@@ -97,14 +97,14 @@ func (r *SQLRepository) ReconcileMarket(ctx context.Context, marketID string) (*
 	// Drift is ledger_sum - actual_pool; the position columns are forensic.
 	reason := fmt.Sprintf(
 		"reconciliation drift: drift=%d cents, ledger_sum=%d, actual_pool=%d, position_yes=%d, position_no=%d",
-		confirmed.DriftCents, confirmed.LedgerSumCents, confirmed.ActualPoolCents,
+		confirmed.DriftPoints, confirmed.LedgerSumPoints, confirmed.ActualPoolPoints,
 		confirmed.ExpectedYesPool, confirmed.ExpectedNoPool,
 	)
 	if _, err := tx.ExecContext(ctx,
 		`INSERT INTO prediction_collateral_ledger
-		 (market_id, entry_type, amount_cents, balance_after_cents, reason)
+		 (market_id, entry_type, amount_points, balance_after_points, reason)
 		 VALUES ($1, 'adjustment', $2, $3, $4)`,
-		marketID, confirmed.DriftCents, confirmed.ActualPoolCents, reason,
+		marketID, confirmed.DriftPoints, confirmed.ActualPoolPoints, reason,
 	); err != nil {
 		return confirmed, fmt.Errorf("write adjustment ledger: %w", err)
 	}
@@ -124,7 +124,7 @@ func (r *SQLRepository) ReconcileMarket(ctx context.Context, marketID string) (*
 // deliberately EXCLUDE entry_type='adjustment' so the reconciler's own
 // output doesn't poison the next pass. Everything else (issue_collateral,
 // settlement_payout, fee, refund, rebate) is a real movement that
-// collateral_pool_cents must reflect.
+// collateral_pool_points must reflect.
 //
 // Position quantities are tracked alongside as forensic data only — they
 // don't drive the drift calculation. A market with AMM-era positions and
@@ -146,9 +146,9 @@ func (r *SQLRepository) readDriftSnapshot(ctx context.Context, q sqlReader, mark
 	report.MarketID = marketID
 
 	if err := q.QueryRowContext(ctx,
-		"SELECT collateral_pool_cents FROM prediction_markets WHERE id = $1",
+		"SELECT collateral_pool_points FROM prediction_markets WHERE id = $1",
 		marketID,
-	).Scan(&report.ActualPoolCents); err != nil {
+	).Scan(&report.ActualPoolPoints); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("market not found: %s", marketID)
 		}
@@ -160,11 +160,11 @@ func (r *SQLRepository) readDriftSnapshot(ctx context.Context, q sqlReader, mark
 	// adjustment rows so prior reconciliation passes don't contaminate
 	// the answer.
 	if err := q.QueryRowContext(ctx,
-		`SELECT COALESCE(SUM(amount_cents), 0)
+		`SELECT COALESCE(SUM(amount_points), 0)
 		 FROM prediction_collateral_ledger
 		 WHERE market_id = $1 AND entry_type != 'adjustment'`,
 		marketID,
-	).Scan(&report.LedgerSumCents); err != nil {
+	).Scan(&report.LedgerSumPoints); err != nil {
 		return nil, err
 	}
 
@@ -205,7 +205,7 @@ func (r *SQLRepository) readDriftSnapshot(ctx context.Context, q sqlReader, mark
 	}
 
 	report.YesNoMismatch = computeYesNoMismatch(report.HasBookTrades, report.ExpectedYesPool, report.ExpectedNoPool)
-	report.DriftCents = report.LedgerSumCents - report.ActualPoolCents
+	report.DriftPoints = report.LedgerSumPoints - report.ActualPoolPoints
 	return &report, nil
 }
 

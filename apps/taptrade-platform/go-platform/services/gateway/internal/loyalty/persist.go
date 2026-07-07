@@ -24,18 +24,18 @@ func (s *Service) StartAutoSave(interval time.Duration) {
 }
 
 type loyaltySnapshot struct {
-	Accounts              map[string]canonicalv1.LoyaltyAccount        `json:"accounts"`
-	Ledger                map[string][]canonicalv1.LoyaltyLedgerEntry  `json:"ledger"`
-	AccrualByKey          map[string]canonicalv1.LoyaltyLedgerEntry    `json:"accrualByKey"`
-	AdjustByKey           map[string]canonicalv1.LoyaltyLedgerEntry    `json:"adjustByKey"`
-	ReferralsByID         map[string]canonicalv1.ReferralReward        `json:"referralsByID"`
-	ReferralByReferred    map[string]string                            `json:"referralByReferred"`
-	ReferralIDsByReferrer map[string][]string                          `json:"referralIDsByReferrer"`
-	Tiers                 []canonicalv1.LoyaltyTier                    `json:"tiers"`
-	Rules                 []canonicalv1.LoyaltyAccrualRule             `json:"rules"`
-	EntrySequence         int64                                        `json:"entrySequence"`
-	AccountSequence       int64                                        `json:"accountSequence"`
-	ReferralSequence      int64                                        `json:"referralSequence"`
+	Accounts              map[string]canonicalv1.LoyaltyAccount       `json:"accounts"`
+	Ledger                map[string][]canonicalv1.LoyaltyLedgerEntry `json:"ledger"`
+	AccrualByKey          map[string]canonicalv1.LoyaltyLedgerEntry   `json:"accrualByKey"`
+	AdjustByKey           map[string]canonicalv1.LoyaltyLedgerEntry   `json:"adjustByKey"`
+	ReferralsByID         map[string]canonicalv1.ReferralReward       `json:"referralsByID"`
+	ReferralByReferred    map[string]string                           `json:"referralByReferred"`
+	ReferralIDsByReferrer map[string][]string                         `json:"referralIDsByReferrer"`
+	Tiers                 []canonicalv1.LoyaltyTier                   `json:"tiers"`
+	Rules                 []canonicalv1.LoyaltyAccrualRule            `json:"rules"`
+	EntrySequence         int64                                       `json:"entrySequence"`
+	AccountSequence       int64                                       `json:"accountSequence"`
+	ReferralSequence      int64                                       `json:"referralSequence"`
 }
 
 // SetStatePath configures file-backed persistence. Call before any mutations.

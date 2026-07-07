@@ -42,19 +42,19 @@ type adminWalletBalanceReader interface {
 }
 
 type adminPunterSettlementItem struct {
-	ID                    string               `json:"id"`
-	SettlementID          string               `json:"settlementId"`
-	PositionID            string               `json:"positionId"`
-	UserID                string               `json:"userId"`
-	MarketID              string               `json:"marketId"`
-	Side                  prediction.OrderSide `json:"side"`
-	Quantity              int                  `json:"quantity"`
-	EntryPriceCents       int                  `json:"entryPricePointsCents"`
-	ExitPriceCents        int                  `json:"exitPricePointsCents"`
-	RealizedPointsCents   int64                `json:"realizedPointsCents"`
-	SettlementPointsCents int64                `json:"settlementPointsCents"`
-	PaidAt                time.Time            `json:"paidAt"`
-	Unit                  string               `json:"unit"`
+	ID               string               `json:"id"`
+	SettlementID     string               `json:"settlementId"`
+	PositionID       string               `json:"positionId"`
+	UserID           string               `json:"userId"`
+	MarketID         string               `json:"marketId"`
+	Side             prediction.OrderSide `json:"side"`
+	Quantity         int                  `json:"quantity"`
+	EntryPricePoints int                  `json:"entryPricePoints"`
+	ExitPricePoints  int                  `json:"exitPricePoints"`
+	RealizedPoints   int64                `json:"realizedPoints"`
+	SettlementPoints int64                `json:"settlementPoints"`
+	PaidAt           time.Time            `json:"paidAt"`
+	Unit             string               `json:"unit"`
 }
 
 type adminPunterNotePayload struct {
@@ -139,10 +139,10 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 			}
 			balance := wallet.Balance(r.Context(), id)
 			detail := prediction.AdminPunterDetail{
-				AdminPunter:              *p,
-				PointAccountBalanceCents: balance,
-				Portfolio:                *ps,
-				Unit:                     "PTS",
+				AdminPunter:               *p,
+				PointAccountBalancePoints: balance,
+				Portfolio:                 *ps,
+				Unit:                      "PTS",
 			}
 			return httpx.WriteJSON(w, stdhttp.StatusOK, detail)
 		}
@@ -296,10 +296,10 @@ func registerAdminPuntersList(mux *stdhttp.ServeMux, path string, repo predictio
 			balance := balances[it.ID]
 			realized := pnls[it.ID]
 			enriched = append(enriched, prediction.AdminPunterListItem{
-				AdminPunter:              it,
-				PointAccountBalanceCents: balance,
-				RealizedPointsCents:      realized,
-				Unit:                     "PTS",
+				AdminPunter:               it,
+				PointAccountBalancePoints: balance,
+				RealizedPoints:            realized,
+				Unit:                      "PTS",
 			})
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
@@ -328,19 +328,19 @@ func adminPunterSettlementItems(payouts []prediction.Payout) []adminPunterSettle
 	items := make([]adminPunterSettlementItem, 0, len(payouts))
 	for _, payout := range payouts {
 		items = append(items, adminPunterSettlementItem{
-			ID:                    payout.ID,
-			SettlementID:          payout.SettlementID,
-			PositionID:            payout.PositionID,
-			UserID:                payout.UserID,
-			MarketID:              payout.MarketID,
-			Side:                  payout.Side,
-			Quantity:              payout.Quantity,
-			EntryPriceCents:       payout.EntryPriceCents,
-			ExitPriceCents:        payout.ExitPriceCents,
-			RealizedPointsCents:   payout.PnlCents,
-			SettlementPointsCents: payout.PayoutCents,
-			PaidAt:                payout.PaidAt,
-			Unit:                  "PTS",
+			ID:               payout.ID,
+			SettlementID:     payout.SettlementID,
+			PositionID:       payout.PositionID,
+			UserID:           payout.UserID,
+			MarketID:         payout.MarketID,
+			Side:             payout.Side,
+			Quantity:         payout.Quantity,
+			EntryPricePoints: payout.EntryPricePoints,
+			ExitPricePoints:  payout.ExitPricePoints,
+			RealizedPoints:   payout.PnlPoints,
+			SettlementPoints: payout.PayoutPoints,
+			PaidAt:           payout.PaidAt,
+			Unit:             "PTS",
 		})
 	}
 	return items

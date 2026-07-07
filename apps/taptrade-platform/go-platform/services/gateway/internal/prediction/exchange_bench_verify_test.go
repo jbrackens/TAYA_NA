@@ -20,7 +20,7 @@ func TestBench_VerifyFullCross_Produces100Trades(t *testing.T) {
 		Side:              OrderSideYes,
 		Action:            OrderActionBuy,
 		OrderType:         OrderTypeLimit,
-		PriceCents:        &takerPrice,
+		PricePoints:       &takerPrice,
 		Quantity:          1000,
 		RemainingQuantity: 1000,
 		Status:            OrderStatusPending,

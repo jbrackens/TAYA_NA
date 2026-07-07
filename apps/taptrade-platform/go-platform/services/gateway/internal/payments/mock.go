@@ -90,7 +90,7 @@ func (m *MockPaymentService) InitiateDeposit(ctx context.Context, userID string,
 	if m.walletService != nil {
 		_, err := m.walletService.Credit(ctx, wallet.MutationRequest{
 			UserID:         userID,
-			AmountCents:    amountCents,
+			AmountPoints:   amountCents,
 			IdempotencyKey: txnID,
 			Reason:         fmt.Sprintf("deposit via %s", paymentMethod),
 		})
@@ -132,7 +132,7 @@ func (m *MockPaymentService) InitiateWithdrawal(ctx context.Context, userID stri
 	if m.walletService != nil {
 		_, err := m.walletService.Debit(ctx, wallet.MutationRequest{
 			UserID:         userID,
-			AmountCents:    amountCents,
+			AmountPoints:   amountCents,
 			IdempotencyKey: txnID,
 			Reason:         fmt.Sprintf("withdrawal via %s (pending)", paymentMethod),
 		})
@@ -322,7 +322,7 @@ func (m *MockPaymentService) HandleWebhook(ctx context.Context, payload WebhookP
 		if m.walletService != nil {
 			if _, err := m.walletService.Credit(ctx, wallet.MutationRequest{
 				UserID:         txn.UserID,
-				AmountCents:    txn.Amount,
+				AmountPoints:   txn.Amount,
 				IdempotencyKey: "withdrawal-refund:" + payload.TransactionID,
 				Reason:         "withdrawal failed; funds returned",
 			}); err != nil {

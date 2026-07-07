@@ -14,7 +14,7 @@ export interface LeaderboardDefinition {
   pointMetricKey: string;
   window: PredictBoardWindow;
   minSettled: number;
-  minVolumePointsCents?: number;
+  minVolumePoints?: number;
   unit: "PTS";
   categorySlug?: string;
   rewardSummary: string;

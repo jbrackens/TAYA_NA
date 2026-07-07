@@ -16,7 +16,7 @@ import (
 // Settlement defaults applied to every promoted market.
 const (
 	defaultAMMLiquidityParam = 100.0
-	defaultAMMSubsidyCents   = 10000 // $100/market
+	defaultAMMSubsidyPoints  = 10000 // $100/market
 	defaultSettlementRule    = "manual_attestation"
 	defaultSettlementSource  = "manual"
 	farFutureCloseAt         = "2099-12-31T23:59:59Z"
@@ -152,7 +152,7 @@ func Promote(
 			CloseAt:             closeAt,
 			SettlementCutoffAt:  &cutoff,
 			AMMLiquidityParam:   defaultAMMLiquidityParam,
-			AMMSubsidyCents:     defaultAMMSubsidyCents,
+			AMMSubsidyPoints:    defaultAMMSubsidyPoints,
 		}
 		mkt, err := svc.CreateMarket(ctx, req)
 		if err != nil {
@@ -319,8 +319,8 @@ func initAMMShares(p, b float64) (yesShares, noShares float64) {
 func writeInitialState(ctx context.Context, db *sql.DB, marketID string, yesC, noC int, yesShares, noShares float64, imagePath string) error {
 	_, err := db.ExecContext(ctx,
 		`UPDATE prediction_markets
-		   SET yes_price_cents = $1,
-		       no_price_cents  = $2,
+		   SET yes_price_points = $1,
+		       no_price_points  = $2,
 		       amm_yes_shares  = $3,
 		       amm_no_shares   = $4,
 		       image_path      = $5,

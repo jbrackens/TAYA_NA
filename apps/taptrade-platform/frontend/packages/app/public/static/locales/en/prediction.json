@@ -93,7 +93,7 @@
   "PLACING": "Placing...",
   "PLACE_TRADE_AMOUNT": "Place trade · {{amount}}",
   "SELL_AMOUNT": "Sell · {{amount}}",
-  "TRADE_TRUST_NOTE": "{{price}}c means a {{probability}}% implied probability. Correct contracts settle at 100 points each.",
+  "TRADE_TRUST_NOTE": "{{price}}c means a {{probability}}% implied probability — you spend {{price}} Points per contract. Correct contracts settle at 100 Points each. Points are in-app play value only.",
   "NO_SHARES_TO_SELL": "You don't have shares on this side to sell",
   "SELL_UP_TO_SHARES": "Sell up to {{quantity}} {{side}} shares",
   "AMOUNT_TOO_SMALL": "Amount too small - minimum 1 share per trade.",

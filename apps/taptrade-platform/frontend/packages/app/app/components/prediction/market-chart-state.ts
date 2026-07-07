@@ -36,18 +36,18 @@ export function hashTicker(ticker: string): number {
 export function samplePath(
   ticker: string,
   range: string,
-  targetCents: number,
+  targetPoints: number,
 ): number[] {
   const rand = seededRandom(hashTicker(ticker) ^ range.charCodeAt(0));
   const n = 41;
   const points: number[] = [];
-  let v = targetCents + (rand() - 0.5) * 14;
+  let v = targetPoints + (rand() - 0.5) * 14;
   for (let i = 0; i < n - 1; i++) {
     v += (rand() - 0.5) * 6;
     v = Math.max(8, Math.min(92, v));
     points.push(v);
   }
-  points.push(targetCents);
+  points.push(targetPoints);
   return points;
 }
 
@@ -60,7 +60,7 @@ export function resolveChartSeries(args: {
   fetchStatus: ChartFetchStatus;
   /** Side-adjusted series from the API; null until the fetch succeeds. */
   realValues: number[] | null;
-  currentPriceCents: number;
+  currentPricePoints: number;
   /** Seed inputs for the synthetic walk (demo flag only). */
   syntheticSeed: string;
   range: string;
@@ -69,7 +69,7 @@ export function resolveChartSeries(args: {
   const {
     fetchStatus,
     realValues,
-    currentPriceCents,
+    currentPricePoints,
     syntheticSeed,
     range,
     syntheticFallbackEnabled,
@@ -89,7 +89,7 @@ export function resolveChartSeries(args: {
     }
     return {
       state: "ready",
-      values: samplePath(syntheticSeed, range, currentPriceCents),
+      values: samplePath(syntheticSeed, range, currentPricePoints),
     };
   }
 
@@ -102,7 +102,7 @@ export function resolveChartSeries(args: {
   // is honest; a random walk is not.
   return {
     state: "empty",
-    values: [currentPriceCents, currentPriceCents],
+    values: [currentPricePoints, currentPricePoints],
   };
 }
 
@@ -111,11 +111,11 @@ export function resolveChartSeries(args: {
  * missing — the footer renders a dash instead of inventing numbers.
  */
 export function format24hRange(
-  lowCents?: number,
-  highCents?: number,
+  lowPoints?: number,
+  highPoints?: number,
 ): string | null {
-  if (typeof lowCents !== "number" || typeof highCents !== "number") {
+  if (typeof lowPoints !== "number" || typeof highPoints !== "number") {
     return null;
   }
-  return `${lowCents}¢ – ${highCents}¢`;
+  return `${lowPoints}¢ – ${highPoints}¢`;
 }

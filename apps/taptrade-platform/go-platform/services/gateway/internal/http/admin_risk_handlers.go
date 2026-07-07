@@ -87,7 +87,7 @@ func writeRiskSnapshotCSV(w stdhttp.ResponseWriter, snapshot *prediction.RiskSna
 	if err := write([]string{
 		"point_accounting",
 		"open_position_point_cost",
-		riskPoints(snapshot.PointAccounting.OpenPositionPointCostCents),
+		riskPoints(snapshot.PointAccounting.OpenPositionPointCostPoints),
 		"",
 		"",
 		"",
@@ -101,7 +101,7 @@ func writeRiskSnapshotCSV(w stdhttp.ResponseWriter, snapshot *prediction.RiskSna
 	if err := write([]string{
 		"point_accounting",
 		"max_settlement_points",
-		riskPoints(snapshot.PointAccounting.MaxSettlementPointsCents),
+		riskPoints(snapshot.PointAccounting.MaxSettlementPoints),
 		"",
 		"",
 		"",
@@ -115,7 +115,7 @@ func writeRiskSnapshotCSV(w stdhttp.ResponseWriter, snapshot *prediction.RiskSna
 	if err := write([]string{
 		"point_accounting",
 		"reserved_points",
-		riskPoints(snapshot.PointAccounting.ReservedPointsCents),
+		riskPoints(snapshot.PointAccounting.ReservedPoints),
 		"",
 		"",
 		"",
@@ -202,7 +202,7 @@ func writeRiskSnapshotCSV(w stdhttp.ResponseWriter, snapshot *prediction.RiskSna
 		if err := write([]string{
 			"point_cost_concentration",
 			"market_open_exposure",
-			riskPoints(market.OpenPointCostCents),
+			riskPoints(market.OpenPointCostPoints),
 			"",
 			csvSafeCell(market.MarketID),
 			csvSafeCell(market.Ticker),
@@ -216,7 +216,7 @@ func writeRiskSnapshotCSV(w stdhttp.ResponseWriter, snapshot *prediction.RiskSna
 		if err := write([]string{
 			"point_cost_concentration",
 			"market_max_returned_points",
-			riskPoints(market.MaxReturnedPointsCents),
+			riskPoints(market.MaxReturnedPoints),
 			"",
 			csvSafeCell(market.MarketID),
 			csvSafeCell(market.Ticker),

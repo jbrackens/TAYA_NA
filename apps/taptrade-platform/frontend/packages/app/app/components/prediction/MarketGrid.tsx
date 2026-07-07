@@ -44,9 +44,9 @@ export function MarketGrid({
               marketId={m.id}
               ticker={m.ticker}
               title={m.title}
-              yesPriceCents={m.yesPricePointsCents}
-              noPriceCents={m.noPricePointsCents}
-              volumePointsCents={m.volumePointsCents}
+              yesPricePoints={m.yesPricePoints}
+              noPricePoints={m.noPricePoints}
+              volumePoints={m.volumePoints}
               closeAt={m.closeAt}
               status={m.status}
               categoryLabel={

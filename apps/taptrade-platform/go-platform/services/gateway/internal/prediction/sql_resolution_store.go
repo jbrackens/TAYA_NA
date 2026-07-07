@@ -199,7 +199,7 @@ func (s *SQLResolutionStore) CountOpenDisputes(ctx context.Context, marketID str
 
 func (s *SQLResolutionStore) CreateDispute(ctx context.Context, d *Dispute) error {
 	const q = `
-INSERT INTO prediction_disputes (market_id, user_id, reason, status, bond_cents, created_at)
+INSERT INTO prediction_disputes (market_id, user_id, reason, status, bond_points, created_at)
 VALUES ($1,$2,$3,$4,$5,$6)
 RETURNING id`
 	if d.Status == "" {
@@ -209,12 +209,12 @@ RETURNING id`
 		d.CreatedAt = time.Now().UTC()
 	}
 	return s.db.QueryRowContext(ctx, q,
-		d.MarketID, d.UserID, d.Reason, d.Status, d.BondCents, d.CreatedAt,
+		d.MarketID, d.UserID, d.Reason, d.Status, d.BondPoints, d.CreatedAt,
 	).Scan(&d.ID)
 }
 
 const disputeSelectCols = `id, market_id, user_id, reason, status, resolution_note,
-       bond_cents, created_at, resolved_at, resolved_by`
+       bond_points, created_at, resolved_at, resolved_by`
 
 // scanDisputeRow scans one prediction_disputes row, mapping the nullable
 // columns onto the optional pointer fields.
@@ -226,7 +226,7 @@ func scanDisputeRow(sc interface{ Scan(...any) error }) (Dispute, error) {
 		resolvedBy sql.NullString
 	)
 	if err := sc.Scan(
-		&d.ID, &d.MarketID, &d.UserID, &d.Reason, &d.Status, &note, &d.BondCents,
+		&d.ID, &d.MarketID, &d.UserID, &d.Reason, &d.Status, &note, &d.BondPoints,
 		&d.CreatedAt, &resolvedAt, &resolvedBy,
 	); err != nil {
 		return Dispute{}, err

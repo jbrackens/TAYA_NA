@@ -28,7 +28,7 @@ interface Dispute {
   reason: string;
   status: string;
   resolutionNote?: string;
-  bondPointsCents: number;
+  bondPoints: number;
   unit: "PTS";
   createdAt: string;
   resolvedAt?: string;
@@ -66,7 +66,7 @@ function isDispute(value: unknown): value is Dispute {
     typeof record.marketId === "string" &&
     typeof record.userId === "string" &&
     typeof record.reason === "string" &&
-    typeof record.bondPointsCents === "number" &&
+    typeof record.bondPoints === "number" &&
     record.unit === "PTS"
   );
 }

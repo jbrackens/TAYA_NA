@@ -28,7 +28,7 @@ func TestPriceWithinBounds(t *testing.T) {
 	}
 }
 
-func TestCalculateTakerFeeCents(t *testing.T) {
+func TestCalculateTakerFeePoints(t *testing.T) {
 	// Default TapTrade rate: 500 bps (5%). Peak fee at p=50.
 	// floor(500 * 50 * 50 * q / 1_000_000) = floor(1.25 * q)
 	cases := []struct {
@@ -49,9 +49,9 @@ func TestCalculateTakerFeeCents(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			got := CalculateTakerFeeCents(c.bps, c.price, c.qty)
+			got := CalculateTakerFeePoints(c.bps, c.price, c.qty)
 			if got != c.want {
-				t.Errorf("CalculateTakerFeeCents(%d,%d,%d) = %d, want %d",
+				t.Errorf("CalculateTakerFeePoints(%d,%d,%d) = %d, want %d",
 					c.bps, c.price, c.qty, got, c.want)
 			}
 		})
@@ -84,9 +84,9 @@ func TestAverageCostAfterBuy(t *testing.T) {
 
 func TestRealizedPnLOnSell(t *testing.T) {
 	cases := []struct {
-		name                     string
-		qty, avgCents, sellPrice int
-		want                     int64
+		name                      string
+		qty, avgPoints, sellPrice int
+		want                      int64
 	}{
 		{"profit", 10, 30, 50, 200},
 		{"loss", 10, 70, 50, -200},
@@ -96,10 +96,10 @@ func TestRealizedPnLOnSell(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			got := RealizedPnLOnSell(c.qty, c.avgCents, c.sellPrice)
+			got := RealizedPnLOnSell(c.qty, c.avgPoints, c.sellPrice)
 			if got != c.want {
 				t.Errorf("RealizedPnLOnSell(%d,%d,%d) = %d, want %d",
-					c.qty, c.avgCents, c.sellPrice, got, c.want)
+					c.qty, c.avgPoints, c.sellPrice, got, c.want)
 			}
 		})
 	}
@@ -128,12 +128,12 @@ func TestIssuanceFillFeasible(t *testing.T) {
 	}
 }
 
-func TestComplementaryTakerPriceCents(t *testing.T) {
-	if got := ComplementaryTakerPriceCents(42); got != 58 {
-		t.Errorf("ComplementaryTakerPriceCents(42) = %d, want 58", got)
+func TestComplementaryTakerPricePoints(t *testing.T) {
+	if got := ComplementaryTakerPricePoints(42); got != 58 {
+		t.Errorf("ComplementaryTakerPricePoints(42) = %d, want 58", got)
 	}
-	if got := ComplementaryTakerPriceCents(30); got != 70 {
-		t.Errorf("ComplementaryTakerPriceCents(30) = %d, want 70", got)
+	if got := ComplementaryTakerPricePoints(30); got != 70 {
+		t.Errorf("ComplementaryTakerPricePoints(30) = %d, want 70", got)
 	}
 }
 
@@ -163,40 +163,40 @@ func TestCollateralPoolDelta(t *testing.T) {
 
 func TestApplyPositionMutation_BuyAccumulatesAvg(t *testing.T) {
 	// Existing 10 shares at avg 40. Buy 10 more at 60 → new avg = 50.
-	p := &Position{Quantity: 10, AvgPriceCents: 40, TotalCostCents: 400}
-	ApplyPositionMutation(p, PositionMutation{DeltaQty: 10, FillPriceCents: 60, IsSell: false})
-	if p.Quantity != 20 || p.AvgPriceCents != 50 {
-		t.Errorf("after buy: qty=%d avg=%d, want 20/50", p.Quantity, p.AvgPriceCents)
+	p := &Position{Quantity: 10, AvgPricePoints: 40, TotalCostPoints: 400}
+	ApplyPositionMutation(p, PositionMutation{DeltaQty: 10, FillPricePoints: 60, IsSell: false})
+	if p.Quantity != 20 || p.AvgPricePoints != 50 {
+		t.Errorf("after buy: qty=%d avg=%d, want 20/50", p.Quantity, p.AvgPricePoints)
 	}
-	if p.TotalCostCents != 1000 {
-		t.Errorf("total_cost = %d, want 1000", p.TotalCostCents)
+	if p.TotalCostPoints != 1000 {
+		t.Errorf("total_cost = %d, want 1000", p.TotalCostPoints)
 	}
 }
 
 func TestApplyPositionMutation_SellRealizesPnL(t *testing.T) {
 	// Existing 20 shares at avg 50. Sell 10 at 65 → +150 PnL, qty=10, avg unchanged.
-	p := &Position{Quantity: 20, AvgPriceCents: 50, TotalCostCents: 1000}
-	ApplyPositionMutation(p, PositionMutation{DeltaQty: -10, FillPriceCents: 65, IsSell: true})
-	if p.Quantity != 10 || p.AvgPriceCents != 50 {
-		t.Errorf("after sell: qty=%d avg=%d, want 10/50", p.Quantity, p.AvgPriceCents)
+	p := &Position{Quantity: 20, AvgPricePoints: 50, TotalCostPoints: 1000}
+	ApplyPositionMutation(p, PositionMutation{DeltaQty: -10, FillPricePoints: 65, IsSell: true})
+	if p.Quantity != 10 || p.AvgPricePoints != 50 {
+		t.Errorf("after sell: qty=%d avg=%d, want 10/50", p.Quantity, p.AvgPricePoints)
 	}
-	if p.RealizedPnlCents != 150 {
-		t.Errorf("realised pnl = %d, want 150", p.RealizedPnlCents)
+	if p.RealizedPnlPoints != 150 {
+		t.Errorf("realised pnl = %d, want 150", p.RealizedPnlPoints)
 	}
-	if p.TotalCostCents != 500 {
-		t.Errorf("total_cost = %d, want 500", p.TotalCostCents)
+	if p.TotalCostPoints != 500 {
+		t.Errorf("total_cost = %d, want 500", p.TotalCostPoints)
 	}
 }
 
 func TestApplyPositionMutation_SellLossPnL(t *testing.T) {
 	// Existing 10 at avg 70. Sell 10 at 50 → -200 PnL.
-	p := &Position{Quantity: 10, AvgPriceCents: 70, TotalCostCents: 700}
-	ApplyPositionMutation(p, PositionMutation{DeltaQty: -10, FillPriceCents: 50, IsSell: true})
+	p := &Position{Quantity: 10, AvgPricePoints: 70, TotalCostPoints: 700}
+	ApplyPositionMutation(p, PositionMutation{DeltaQty: -10, FillPricePoints: 50, IsSell: true})
 	if p.Quantity != 0 {
 		t.Errorf("qty after full sell = %d, want 0", p.Quantity)
 	}
-	if p.RealizedPnlCents != -200 {
-		t.Errorf("realised pnl = %d, want -200", p.RealizedPnlCents)
+	if p.RealizedPnlPoints != -200 {
+		t.Errorf("realised pnl = %d, want -200", p.RealizedPnlPoints)
 	}
 }
 
@@ -206,11 +206,11 @@ func TestApplyPositionMutation_MultipleBuysProgressive(t *testing.T) {
 	// After 2nd: qty=20, avg=45
 	// After 3rd: qty=30, avg=50
 	p := &Position{}
-	ApplyPositionMutation(p, PositionMutation{DeltaQty: 10, FillPriceCents: 40})
-	ApplyPositionMutation(p, PositionMutation{DeltaQty: 10, FillPriceCents: 50})
-	ApplyPositionMutation(p, PositionMutation{DeltaQty: 10, FillPriceCents: 60})
-	if p.Quantity != 30 || p.AvgPriceCents != 50 {
-		t.Errorf("after 3 buys: qty=%d avg=%d, want 30/50", p.Quantity, p.AvgPriceCents)
+	ApplyPositionMutation(p, PositionMutation{DeltaQty: 10, FillPricePoints: 40})
+	ApplyPositionMutation(p, PositionMutation{DeltaQty: 10, FillPricePoints: 50})
+	ApplyPositionMutation(p, PositionMutation{DeltaQty: 10, FillPricePoints: 60})
+	if p.Quantity != 30 || p.AvgPricePoints != 50 {
+		t.Errorf("after 3 buys: qty=%d avg=%d, want 30/50", p.Quantity, p.AvgPricePoints)
 	}
 }
 

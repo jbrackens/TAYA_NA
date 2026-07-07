@@ -188,7 +188,7 @@ func (l *fakeLedger) Credit(_ context.Context, req wallet.MutationRequest) (wall
 	return wallet.LedgerEntry{
 		EntryID:        "le:test",
 		UserID:         req.UserID,
-		AmountCents:    req.AmountCents,
+		AmountPoints:   req.AmountPoints,
 		IdempotencyKey: req.IdempotencyKey,
 	}, nil
 }
@@ -209,7 +209,7 @@ func (l *fakeLedger) Hold(_ context.Context, req wallet.HoldRequest) (wallet.Res
 	reservation := wallet.Reservation{
 		ID:            "rsv:test:" + req.ReferenceID,
 		UserID:        req.UserID,
-		AmountCents:   req.AmountCents,
+		AmountPoints:  req.AmountPoints,
 		ReferenceType: req.ReferenceType,
 		ReferenceID:   req.ReferenceID,
 		Status:        "held",
@@ -226,10 +226,10 @@ func (l *fakeLedger) Release(_ context.Context, referenceType, referenceID strin
 func (l *fakeLedger) Capture(_ context.Context, referenceType, referenceID string) (wallet.LedgerEntry, error) {
 	l.captured = append(l.captured, referenceType+":"+referenceID)
 	return wallet.LedgerEntry{
-		EntryID:     "le:capture:" + referenceID,
-		Type:        "debit",
-		AmountCents: 0,
-		Reason:      referenceType,
+		EntryID:      "le:capture:" + referenceID,
+		Type:         "debit",
+		AmountPoints: 0,
+		Reason:       referenceType,
 	}, nil
 }
 

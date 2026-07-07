@@ -267,7 +267,7 @@ function PrivacyCard() {
 
 function PortfolioStrip({ summary }: { summary: PortfolioSummary }) {
   const { t } = useTranslation("account");
-  const pnl = summary.realizedPointsCents;
+  const pnl = summary.realizedPoints;
   const pnlUp = pnl >= 0;
   return (
     <section className="mb-5 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[22px] py-5">
@@ -290,11 +290,11 @@ function PortfolioStrip({ summary }: { summary: PortfolioSummary }) {
       <div className="grid grid-cols-4 gap-3 max-[720px]:grid-cols-2">
         <Stat
           label={t("stats.invested", "Points in play")}
-          value={formatPointsFromCents(summary.totalValuePointsCents)}
+          value={formatPointsFromPoints(summary.totalValuePoints)}
         />
         <Stat
           label={t("stats.realizedPnl", "Settled result")}
-          value={`${pnlUp ? "+" : "-"}${formatPointsFromCents(Math.abs(pnl))}`}
+          value={`${pnlUp ? "+" : "-"}${formatPointsFromPoints(Math.abs(pnl))}`}
           tone={pnlUp ? "gain" : "no"}
         />
         <Stat
@@ -385,6 +385,6 @@ function formatPoints(value: number): string {
   return `${Math.round(value).toLocaleString()} pts`;
 }
 
-function formatPointsFromCents(cents: number): string {
+function formatPointsFromPoints(cents: number): string {
   return formatPoints(cents / 100);
 }

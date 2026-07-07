@@ -76,11 +76,11 @@ var ErrLaunchProhibitedMarket = errors.New("market is not allowed in TapTrade la
 // — same rationale as WalletAdapter (see CLAUDE.md "Keep the prediction Go
 // package decoupled from wallet"). A nil checker is a no-op.
 type ComplianceChecker interface {
-	// CheckBetAllowed reports whether userID may commit stakeCents on a new
+	// CheckBetAllowed reports whether userID may commit stakePoints on a new
 	// order. reason is a human-readable rejection message when allowed is false.
-	CheckBetAllowed(ctx context.Context, userID string, stakeCents int64) (allowed bool, reason string, err error)
+	CheckBetAllowed(ctx context.Context, userID string, stakePoints int64) (allowed bool, reason string, err error)
 	// RecordBet records committed stake for cumulative period-limit tracking.
-	RecordBet(ctx context.Context, userID string, stakeCents int64) error
+	RecordBet(ctx context.Context, userID string, stakePoints int64) error
 	// ReleaseBet reverses previously-recorded committed stake when a
 	// reservation is freed without being spent (cancel / expire / the
 	// unfilled remainder of a partial or market order). committedAt is when
@@ -89,7 +89,7 @@ type ComplianceChecker interface {
 	// offset unrelated bets in a later period (D-5 codex re-review round 3).
 	// Symmetric inverse of RecordBet; implementations must not let cumulative
 	// usage go negative. Best-effort, like RecordBet.
-	ReleaseBet(ctx context.Context, userID string, amountCents int64, committedAt time.Time) error
+	ReleaseBet(ctx context.Context, userID string, amountPoints int64, committedAt time.Time) error
 }
 
 // AtomicBetGate is an OPTIONAL ComplianceChecker capability: it performs the
@@ -103,7 +103,7 @@ type ComplianceChecker interface {
 // a checker that does NOT implement it falls back to the legacy (racy)
 // CheckBetAllowed-then-RecordBet path with no behavior change.
 type AtomicBetGate interface {
-	CheckAndRecordBet(ctx context.Context, userID string, stakeCents int64) (allowed bool, reason string, err error)
+	CheckAndRecordBet(ctx context.Context, userID string, stakePoints int64) (allowed bool, reason string, err error)
 }
 
 // SetComplianceChecker wires the responsible-gambling gate. Optional — pass
@@ -124,8 +124,8 @@ func (s *Service) SetComplianceChecker(c ComplianceChecker) {
 // calling RecordBet. recorded=false means the legacy fall-back path is in
 // effect and the caller records as before. recorded is always false when
 // the order is blocked, when the checker errored (nothing was recorded),
-// for stakeCents<=0 (sells record no usage), and for a non-atomic checker.
-func (s *Service) checkComplianceForOrder(ctx context.Context, userID string, stakeCents int64) (recorded bool, _ error) {
+// for stakePoints<=0 (sells record no usage), and for a non-atomic checker.
+func (s *Service) checkComplianceForOrder(ctx context.Context, userID string, stakePoints int64) (recorded bool, _ error) {
 	if s.compliance == nil {
 		return false, nil
 	}
@@ -141,9 +141,9 @@ func (s *Service) checkComplianceForOrder(ctx context.Context, userID string, st
 		// Atomic check+record closes the check-then-record TOCTOU: a
 		// concurrent same-user order cannot pass the gate between this
 		// decision and the usage write — they are one critical section.
-		allowed, reason, err = atomicGate.CheckAndRecordBet(cctx, userID, stakeCents)
+		allowed, reason, err = atomicGate.CheckAndRecordBet(cctx, userID, stakePoints)
 	} else {
-		allowed, reason, err = s.compliance.CheckBetAllowed(cctx, userID, stakeCents)
+		allowed, reason, err = s.compliance.CheckBetAllowed(cctx, userID, stakePoints)
 	}
 	// `allowed == false` is an authoritative RG denial (prediction limit /
 	// self-exclusion / cool-off). The wired RG service returns a sentinel
@@ -174,53 +174,53 @@ func (s *Service) checkComplianceForOrder(ctx context.Context, userID string, st
 	}
 	// Clean allow. The atomic gate recorded the committed stake iff it was
 	// positive (sells / zero-stake gate-only orders record nothing).
-	return atomic && stakeCents > 0, nil
+	return atomic && stakePoints > 0, nil
 }
 
-// realizedStakeCents is the cash actually staked by a placed order, for
+// realizedStakePoints is the cash actually staked by a placed order, for
 // cumulative RG period-limit tracking. It must be the amount that really left
 // the wallet — never the reserved notional — or a thin/partial fill would
 // over-count and wrongly lock the user out for the rest of the period.
 //   - Nothing filled (rejected / cancelled-zero-fill / still-resting limit):
 //     0 — no stake consumed yet.
-//   - Order-book fill: CapturedCashCents (realized; TotalCostCents on this
+//   - Order-book fill: CapturedCashPoints (realized; TotalCostPoints on this
 //     path is the reserved cap, not what was spent — UAT 2026-05-16 LC-17).
-//   - AMM fill: TotalCostCents (the AMM path's realized executed cost;
-//     CapturedCashCents is an exchange-engine-only field, 0 here).
-func realizedStakeCents(o *Order) int64 {
+//   - AMM fill: TotalCostPoints (the AMM path's realized executed cost;
+//     CapturedCashPoints is an exchange-engine-only field, 0 here).
+func realizedStakePoints(o *Order) int64 {
 	if o == nil || o.FilledQuantity <= 0 {
 		return 0
 	}
-	if o.CapturedCashCents > 0 {
-		return o.CapturedCashCents
+	if o.CapturedCashPoints > 0 {
+		return o.CapturedCashPoints
 	}
-	return o.TotalCostCents
+	return o.TotalCostPoints
 }
 
 // recordComplianceOrder records realized committed stake for cumulative
 // period-limit tracking. Best-effort: a tracking-write failure must not unwind
 // a committed order (the funds already moved), so the error is swallowed.
 // Skipped for zero/negative stake (sells reserve no cash) and nil checker.
-func (s *Service) recordComplianceOrder(ctx context.Context, userID string, stakeCents int64) {
-	if s.compliance == nil || stakeCents <= 0 {
+func (s *Service) recordComplianceOrder(ctx context.Context, userID string, stakePoints int64) {
+	if s.compliance == nil || stakePoints <= 0 {
 		return
 	}
 	cctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
-	_ = s.compliance.RecordBet(cctx, userID, stakeCents)
+	_ = s.compliance.RecordBet(cctx, userID, stakePoints)
 }
 
 // releaseComplianceOrder reverses committed stake when a reservation is freed
 // without being spent (cancel / expire / unfilled remainder). Best-effort and
 // symmetric with recordComplianceOrder: skipped for zero/negative amounts and
 // a nil checker; a tracking-write failure must not unwind a committed cancel.
-func (s *Service) releaseComplianceOrder(ctx context.Context, userID string, amountCents int64, committedAt time.Time) {
-	if s.compliance == nil || amountCents <= 0 {
+func (s *Service) releaseComplianceOrder(ctx context.Context, userID string, amountPoints int64, committedAt time.Time) {
+	if s.compliance == nil || amountPoints <= 0 {
 		return
 	}
 	cctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
-	_ = s.compliance.ReleaseBet(cctx, userID, amountCents, committedAt)
+	_ = s.compliance.ReleaseBet(cctx, userID, amountPoints, committedAt)
 }
 
 func predictionComplianceReason(reason string) string {
@@ -243,7 +243,7 @@ func isTerminalReservedStatus(st OrderStatus) bool {
 // placement (D-5 codex P1 #2). It always records the committed worst-case
 // stake — the value the gate evaluated and the wallet reserved — so a
 // resting limit order or a future maker fill cannot bypass the period limit
-// (the pre-fix code recorded only realizedStakeCents, which is 0 for a
+// (the pre-fix code recorded only realizedStakePoints, which is 0 for a
 // resting order). If the order is already terminal (market/IOC taker,
 // immediate fill) its unfilled remainder is freed in the same flow, so it
 // also releases committed−realized: the net equals realized. A resting
@@ -256,7 +256,7 @@ func rgPlacementAccounting(committed int64, o *Order) (record, release int64) {
 	}
 	record = committed
 	if isTerminalReservedStatus(o.Status) {
-		if rel := committed - realizedStakeCents(o); rel > 0 {
+		if rel := committed - realizedStakePoints(o); rel > 0 {
 			release = rel
 		}
 	}
@@ -282,7 +282,7 @@ func rgReleaseAfterAtomicGate(committed int64, o *Order, replayed, hadErr bool) 
 		return committed
 	}
 	if isTerminalReservedStatus(o.Status) {
-		if rel := committed - realizedStakeCents(o); rel > 0 {
+		if rel := committed - realizedStakePoints(o); rel > 0 {
 			return rel
 		}
 		return 0
@@ -591,16 +591,16 @@ func (s *Service) previewAMMOrder(req PlaceOrderRequest, market *Market) (*Order
 	if req.Side == OrderSideNo {
 		newSidePrice = preview.NewNoPrice
 	}
-	slippage := newSidePrice - preview.PriceCents
+	slippage := newSidePrice - preview.PricePoints
 	if slippage < 0 {
 		slippage = -slippage
 	}
 	preview.ExecutionMode = ExecutionModeAMM
 	preview.FilledQuantity = req.Quantity
 	preview.UnfilledQuantity = 0
-	preview.AverageFillPriceCents = avg
-	preview.TotalCostWithFeesCents = preview.TotalCost + preview.FeeCents
-	preview.EstimatedSlippageCents = slippage
+	preview.AverageFillPricePoints = avg
+	preview.TotalCostWithFeesPoints = preview.TotalCost + preview.FeePoints
+	preview.EstimatedSlippagePoints = slippage
 	preview.QuoteStatus = OrderStatusFilled
 	preview.QuoteStaleAfterMillis = int64((3 * time.Second) / time.Millisecond)
 	preview.QuoteGeneratedAtUnixSec = now.Unix()
@@ -641,27 +641,27 @@ func (s *Service) previewExchangeOrder(ctx context.Context, req PlaceOrderReques
 
 	now := time.Now().UTC()
 	taker := Order{
-		ID:                "preview-taker",
-		UserID:            strings.TrimSpace(userID),
-		MarketID:          req.MarketID,
-		Side:              req.Side,
-		Action:            req.Action,
-		OrderType:         req.OrderType,
-		PriceCents:        req.PriceCents,
-		Quantity:          req.Quantity,
-		RemainingQuantity: req.Quantity,
-		Status:            OrderStatusPending,
-		TimeInForce:       tif,
-		PostOnly:          req.PostOnly,
-		SelfMatchAction:   smAction,
-		NotionalCapCents:  req.NotionalCapCents,
-		ReservedCashCents: worstCaseSpend(req),
-		TotalCostCents:    worstCaseSpend(req),
-		CreatedAt:         now,
-		UpdatedAt:         now,
+		ID:                 "preview-taker",
+		UserID:             strings.TrimSpace(userID),
+		MarketID:           req.MarketID,
+		Side:               req.Side,
+		Action:             req.Action,
+		OrderType:          req.OrderType,
+		PricePoints:        req.PricePoints,
+		Quantity:           req.Quantity,
+		RemainingQuantity:  req.Quantity,
+		Status:             OrderStatusPending,
+		TimeInForce:        tif,
+		PostOnly:           req.PostOnly,
+		SelfMatchAction:    smAction,
+		NotionalCapPoints:  req.NotionalCapPoints,
+		ReservedCashPoints: worstCaseSpend(req),
+		TotalCostPoints:    worstCaseSpend(req),
+		CreatedAt:          now,
+		UpdatedAt:          now,
 	}
 
-	makersSec, err := exchangeRepo.LoadMakersForSecondary(ctx, market.ID, req.Side, req.Action, req.PriceCents, MaxOrderBookDepth)
+	makersSec, err := exchangeRepo.LoadMakersForSecondary(ctx, market.ID, req.Side, req.Action, req.PricePoints, MaxOrderBookDepth)
 	if err != nil {
 		return nil, fmt.Errorf("load secondary makers: %w", err)
 	}
@@ -671,9 +671,9 @@ func (s *Service) previewExchangeOrder(ctx context.Context, req PlaceOrderReques
 		if req.Side == OrderSideNo {
 			otherSide = OrderSideYes
 		}
-		takerLimit := MaxTickPriceCents
-		if req.PriceCents != nil {
-			takerLimit = *req.PriceCents
+		takerLimit := MaxTickPricePoints
+		if req.PricePoints != nil {
+			takerLimit = *req.PricePoints
 		}
 		makersIss, err = exchangeRepo.LoadMakersForIssuance(ctx, market.ID, otherSide, takerLimit, MaxOrderBookDepth)
 		if err != nil {
@@ -703,45 +703,45 @@ func (s *Service) previewExchangeOrder(ctx context.Context, req PlaceOrderReques
 func orderBookPreviewFromPlan(req PlaceOrderRequest, market *Market, plan *MatchPlan, now time.Time) *OrderPreview {
 	filledQty := plan.Taker.FilledQuantity
 	unfilledQty := plan.Taker.RemainingQuantity
-	totalCost := plan.Taker.CapturedCashCents
+	totalCost := plan.Taker.CapturedCashPoints
 	if req.Action == OrderActionSell {
 		totalCost = 0
 	}
 
-	var feeCents int64
+	var feePoints int64
 	for _, trade := range plan.Trades {
 		if trade.BuyOrderID != nil && *trade.BuyOrderID == plan.Taker.ID {
-			feeCents += int64(trade.FeeCents)
+			feePoints += int64(trade.FeePoints)
 			continue
 		}
 		if trade.SellOrderID != nil && *trade.SellOrderID == plan.Taker.ID {
-			feeCents += int64(trade.FeeCents)
+			feePoints += int64(trade.FeePoints)
 		}
 	}
 
 	avg := 0
-	if filledQty > 0 && plan.Taker.FilledCostCents > 0 {
-		avg = int((plan.Taker.FilledCostCents + int64(filledQty) - 1) / int64(filledQty))
+	if filledQty > 0 && plan.Taker.FilledCostPoints > 0 {
+		avg = int((plan.Taker.FilledCostPoints + int64(filledQty) - 1) / int64(filledQty))
 	}
 	price := avg
-	if price == 0 && req.PriceCents != nil {
-		price = *req.PriceCents
+	if price == 0 && req.PricePoints != nil {
+		price = *req.PricePoints
 	}
 	if price == 0 {
 		if req.Side == OrderSideYes {
-			price = market.YesPriceCents
+			price = market.YesPricePoints
 		} else {
-			price = market.NoPriceCents
+			price = market.NoPricePoints
 		}
 	}
 
 	referencePrice := price
-	if req.PriceCents != nil {
-		referencePrice = *req.PriceCents
+	if req.PricePoints != nil {
+		referencePrice = *req.PricePoints
 	} else if req.Side == OrderSideYes {
-		referencePrice = market.YesPriceCents
+		referencePrice = market.YesPricePoints
 	} else {
-		referencePrice = market.NoPriceCents
+		referencePrice = market.NoPricePoints
 	}
 	slippage := 0
 	if avg > 0 && req.Action == OrderActionBuy {
@@ -751,24 +751,24 @@ func orderBookPreviewFromPlan(req PlaceOrderRequest, market *Market, plan *Match
 		}
 	}
 
-	maxLoss := totalCost + feeCents
+	maxLoss := totalCost + feePoints
 	maxProfit := int64(0)
 	if req.Action == OrderActionBuy {
-		maxProfit = int64(filledQty)*int64(ParPriceCents) - maxLoss
+		maxProfit = int64(filledQty)*int64(ParPricePoints) - maxLoss
 		if maxProfit < 0 {
 			maxProfit = 0
 		}
 	}
 
-	newYesPrice := market.YesPriceCents
-	newNoPrice := market.NoPriceCents
-	if plan.Market.LastTradePriceCents != nil {
+	newYesPrice := market.YesPricePoints
+	newNoPrice := market.NoPricePoints
+	if plan.Market.LastTradePricePoints != nil {
 		if req.Side == OrderSideYes {
-			newYesPrice = *plan.Market.LastTradePriceCents
-			newNoPrice = ParPriceCents - newYesPrice
+			newYesPrice = *plan.Market.LastTradePricePoints
+			newNoPrice = ParPricePoints - newYesPrice
 		} else {
-			newNoPrice = *plan.Market.LastTradePriceCents
-			newYesPrice = ParPriceCents - newNoPrice
+			newNoPrice = *plan.Market.LastTradePricePoints
+			newYesPrice = ParPricePoints - newNoPrice
 		}
 	}
 
@@ -776,9 +776,9 @@ func orderBookPreviewFromPlan(req PlaceOrderRequest, market *Market, plan *Match
 		Side:                    req.Side,
 		Action:                  req.Action,
 		Quantity:                req.Quantity,
-		PriceCents:              price,
+		PricePoints:             price,
 		TotalCost:               totalCost,
-		FeeCents:                feeCents,
+		FeePoints:               feePoints,
 		MaxProfit:               maxProfit,
 		MaxLoss:                 maxLoss,
 		NewYesPrice:             newYesPrice,
@@ -786,9 +786,9 @@ func orderBookPreviewFromPlan(req PlaceOrderRequest, market *Market, plan *Match
 		ExecutionMode:           ExecutionModeOrderBook,
 		FilledQuantity:          filledQty,
 		UnfilledQuantity:        unfilledQty,
-		AverageFillPriceCents:   avg,
-		TotalCostWithFeesCents:  totalCost + feeCents,
-		EstimatedSlippageCents:  slippage,
+		AverageFillPricePoints:  avg,
+		TotalCostWithFeesPoints: totalCost + feePoints,
+		EstimatedSlippagePoints: slippage,
 		QuoteStatus:             plan.Taker.Status,
 		QuoteStaleAfterMillis:   int64((3 * time.Second) / time.Millisecond),
 		QuoteGeneratedAtUnixSec: now.Unix(),
@@ -936,26 +936,26 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 	now := time.Now().UTC()
 	totalCost := worstCaseSpend(req)
 	taker := &Order{
-		UserID:            userID,
-		MarketID:          req.MarketID,
-		Side:              req.Side,
-		Action:            req.Action,
-		OrderType:         req.OrderType,
-		PriceCents:        req.PriceCents,
-		Quantity:          req.Quantity,
-		FilledQuantity:    0,
-		RemainingQuantity: req.Quantity,
-		TotalCostCents:    totalCost,
-		Status:            OrderStatusPending,
-		IdempotencyKey:    idempotencyKey,
-		TimeInForce:       tif,
-		PostOnly:          req.PostOnly,
-		ClientOrderID:     req.ClientOrderID,
-		SelfMatchAction:   smAction,
-		NotionalCapCents:  req.NotionalCapCents,
-		ReservedCashCents: totalCost,
-		CreatedAt:         now,
-		UpdatedAt:         now,
+		UserID:             userID,
+		MarketID:           req.MarketID,
+		Side:               req.Side,
+		Action:             req.Action,
+		OrderType:          req.OrderType,
+		PricePoints:        req.PricePoints,
+		Quantity:           req.Quantity,
+		FilledQuantity:     0,
+		RemainingQuantity:  req.Quantity,
+		TotalCostPoints:    totalCost,
+		Status:             OrderStatusPending,
+		IdempotencyKey:     idempotencyKey,
+		TimeInForce:        tif,
+		PostOnly:           req.PostOnly,
+		ClientOrderID:      req.ClientOrderID,
+		SelfMatchAction:    smAction,
+		NotionalCapPoints:  req.NotionalCapPoints,
+		ReservedCashPoints: totalCost,
+		CreatedAt:          now,
+		UpdatedAt:          now,
 	}
 
 	// Persist the pending order so it has a stable ID for trade FKs.
@@ -983,7 +983,7 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 	for attempt := 1; attempt <= maxMatchAttempts; attempt++ {
 		// Load candidate makers for both match modes. The engine will pick which
 		// fills to execute based on price-time priority and feasibility.
-		makersSec, err := exchangeRepo.LoadMakersForSecondary(ctx, market.ID, req.Side, req.Action, req.PriceCents, MaxOrderBookDepth)
+		makersSec, err := exchangeRepo.LoadMakersForSecondary(ctx, market.ID, req.Side, req.Action, req.PricePoints, MaxOrderBookDepth)
 		if err != nil {
 			return nil, nil, false, fmt.Errorf("load secondary makers: %w", err)
 		}
@@ -994,15 +994,15 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 				otherSide = OrderSideYes
 			}
 			// For market buys the taker has no explicit price; treat it as
-			// willing to pay up to the highest in-band price (MaxTickPriceCents)
+			// willing to pay up to the highest in-band price (MaxTickPricePoints)
 			// for issuance feasibility. That makes every Buy-NO maker eligible
 			// because `taker_limit + maker_limit >= par` reduces to
 			// `99 + maker_limit >= 100`, which is true for any maker_limit >= 1.
 			// The notional cap on the request bounds the dollar exposure
 			// upstream of the match loop.
-			takerLimit := MaxTickPriceCents
-			if req.PriceCents != nil {
-				takerLimit = *req.PriceCents
+			takerLimit := MaxTickPricePoints
+			if req.PricePoints != nil {
+				takerLimit = *req.PricePoints
 			}
 			makersIss, err = exchangeRepo.LoadMakersForIssuance(ctx, market.ID, otherSide, takerLimit, MaxOrderBookDepth)
 			if err != nil {
@@ -1042,11 +1042,11 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 		// tx rolled back.
 		if req.Action == OrderActionBuy && totalCost > 0 {
 			plan.HoldReservation = &ReservationHold{
-				UserID:      userID,
-				AmountCents: totalCost,
-				Type:        "prediction_order",
-				ID:          taker.ID,
-				ExpiresIn:   reservationTTL(tif, market.CloseAt, now),
+				UserID:       userID,
+				AmountPoints: totalCost,
+				Type:         "prediction_order",
+				ID:           taker.ID,
+				ExpiresIn:    reservationTTL(tif, market.CloseAt, now),
 			}
 		}
 
@@ -1104,17 +1104,17 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 }
 
 // worstCaseSpend computes the maximum cents a buy order could spend. For
-// limit orders it's price × quantity; for market orders it's notionalCapCents
+// limit orders it's price × quantity; for market orders it's notionalCapPoints
 // (validated upstream to be non-nil). Sells reserve no cash.
 func worstCaseSpend(req PlaceOrderRequest) int64 {
 	if req.Action == OrderActionSell {
 		return 0
 	}
-	if req.OrderType == OrderTypeLimit && req.PriceCents != nil {
-		return int64(*req.PriceCents) * int64(req.Quantity)
+	if req.OrderType == OrderTypeLimit && req.PricePoints != nil {
+		return int64(*req.PricePoints) * int64(req.Quantity)
 	}
-	if req.NotionalCapCents != nil {
-		return *req.NotionalCapCents
+	if req.NotionalCapPoints != nil {
+		return *req.NotionalCapPoints
 	}
 	return 0
 }
@@ -1130,18 +1130,18 @@ func (s *Service) persistRejectedExchangeOrder(ctx context.Context, req PlaceOrd
 		Side:              req.Side,
 		Action:            req.Action,
 		OrderType:         req.OrderType,
-		PriceCents:        req.PriceCents,
+		PricePoints:       req.PricePoints,
 		Quantity:          req.Quantity,
 		FilledQuantity:    0,
 		RemainingQuantity: req.Quantity,
-		TotalCostCents:    0,
+		TotalCostPoints:   0,
 		Status:            OrderStatusRejected,
 		IdempotencyKey:    idempotencyKey,
 		TimeInForce:       req.TimeInForce,
 		PostOnly:          req.PostOnly,
 		ClientOrderID:     req.ClientOrderID,
 		SelfMatchAction:   req.SelfMatchAction,
-		NotionalCapCents:  req.NotionalCapCents,
+		NotionalCapPoints: req.NotionalCapPoints,
 		FailureReason:     &reason,
 		CreatedAt:         now,
 		UpdatedAt:         now,
@@ -1244,7 +1244,7 @@ func (s *Service) finalizeRestingExchangeOrder(ctx context.Context, exchangeWall
 	if !ok {
 		return fmt.Errorf("exchange order finalizer unavailable")
 	}
-	reservedCents, capturedCents, placedAt, err := finalizer.FinalizeRestingOrderAtomic(ctx, exchangeWallet, order, terminal)
+	reservedPoints, capturedPoints, placedAt, err := finalizer.FinalizeRestingOrderAtomic(ctx, exchangeWallet, order, terminal)
 	if err != nil {
 		return err
 	}
@@ -1265,7 +1265,7 @@ func (s *Service) finalizeRestingExchangeOrder(ctx context.Context, exchangeWall
 	// commit already aged out of the current period, so reversing it now
 	// would wrongly free headroom for unrelated current-period bets —
 	// D-5 codex re-review round 3).
-	s.releaseComplianceOrder(ctx, order.UserID, reservedCents-capturedCents, placedAt)
+	s.releaseComplianceOrder(ctx, order.UserID, reservedPoints-capturedPoints, placedAt)
 	return nil
 }
 
@@ -1498,10 +1498,10 @@ func (s *Service) CreateMarket(ctx context.Context, req CreateMarketRequest) (*M
 		// intent and guards against a future INSERT that starts writing the
 		// column.
 		ExecutionMode:       ExecutionModeOrderBook,
-		YesPriceCents:       50,
-		NoPriceCents:        50,
+		YesPricePoints:      50,
+		NoPricePoints:       50,
 		AMMLiquidityParam:   b,
-		AMMSubsidyCents:     req.AMMSubsidyCents,
+		AMMSubsidyPoints:    req.AMMSubsidyPoints,
 		SettlementSourceKey: req.SettlementSourceKey,
 		SettlementRule:      req.SettlementRule,
 		SettlementParams:    defaultJSONObject(req.SettlementParams),
@@ -1561,7 +1561,7 @@ func (s *Service) UpdateMarket(ctx context.Context, marketID string, req CreateM
 	market.Description = req.Description
 	market.Translations = defaultJSONObject(req.Translations)
 	market.AMMLiquidityParam = defaultAMMLiquidityParam(req.AMMLiquidityParam)
-	market.AMMSubsidyCents = req.AMMSubsidyCents
+	market.AMMSubsidyPoints = req.AMMSubsidyPoints
 	market.SettlementSourceKey = req.SettlementSourceKey
 	market.SettlementRule = req.SettlementRule
 	market.SettlementParams = defaultJSONObject(req.SettlementParams)

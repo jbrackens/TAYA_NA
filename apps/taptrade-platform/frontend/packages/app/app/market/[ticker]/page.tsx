@@ -70,53 +70,53 @@ import {
 const api = createPredictionClient();
 
 type LegacyMarketUpdate = Partial<PredictionMarket> & {
-  yesPriceCents?: number;
-  noPriceCents?: number;
-  lastTradePriceCents?: number;
-  volumeCents?: number;
-  openInterestCents?: number;
+  yesPricePoints?: number;
+  noPricePoints?: number;
+  lastTradePricePoints?: number;
+  volumePoints?: number;
+  openInterestPoints?: number;
 };
 
 function normalizeMarketUpdateFields(
   payload: LegacyMarketUpdate,
 ): Partial<PredictionMarket> {
-  const yesPricePointsCents =
-    typeof payload.yesPricePointsCents === "number"
-      ? payload.yesPricePointsCents
-      : payload.yesPriceCents;
-  const noPricePointsCents =
-    typeof payload.noPricePointsCents === "number"
-      ? payload.noPricePointsCents
-      : payload.noPriceCents;
-  const lastTradePricePointsCents =
-    typeof payload.lastTradePricePointsCents === "number"
-      ? payload.lastTradePricePointsCents
-      : payload.lastTradePriceCents;
-  const volumePointsCents =
-    typeof payload.volumePointsCents === "number"
-      ? payload.volumePointsCents
-      : payload.volumeCents;
-  const openInterestPointsCents =
-    typeof payload.openInterestPointsCents === "number"
-      ? payload.openInterestPointsCents
-      : payload.openInterestCents;
+  const yesPricePoints =
+    typeof payload.yesPricePoints === "number"
+      ? payload.yesPricePoints
+      : payload.yesPricePoints;
+  const noPricePoints =
+    typeof payload.noPricePoints === "number"
+      ? payload.noPricePoints
+      : payload.noPricePoints;
+  const lastTradePricePoints =
+    typeof payload.lastTradePricePoints === "number"
+      ? payload.lastTradePricePoints
+      : payload.lastTradePricePoints;
+  const volumePoints =
+    typeof payload.volumePoints === "number"
+      ? payload.volumePoints
+      : payload.volumePoints;
+  const openInterestPoints =
+    typeof payload.openInterestPoints === "number"
+      ? payload.openInterestPoints
+      : payload.openInterestPoints;
   const pointPayload = { ...payload };
-  delete pointPayload.yesPriceCents;
-  delete pointPayload.noPriceCents;
-  delete pointPayload.lastTradePriceCents;
-  delete pointPayload.volumeCents;
-  delete pointPayload.openInterestCents;
+  delete pointPayload.yesPricePoints;
+  delete pointPayload.noPricePoints;
+  delete pointPayload.lastTradePricePoints;
+  delete pointPayload.volumePoints;
+  delete pointPayload.openInterestPoints;
 
   return {
     ...pointPayload,
-    ...(typeof yesPricePointsCents === "number" ? { yesPricePointsCents } : {}),
-    ...(typeof noPricePointsCents === "number" ? { noPricePointsCents } : {}),
-    ...(typeof lastTradePricePointsCents === "number"
-      ? { lastTradePricePointsCents }
+    ...(typeof yesPricePoints === "number" ? { yesPricePoints } : {}),
+    ...(typeof noPricePoints === "number" ? { noPricePoints } : {}),
+    ...(typeof lastTradePricePoints === "number"
+      ? { lastTradePricePoints }
       : {}),
-    ...(typeof volumePointsCents === "number" ? { volumePointsCents } : {}),
-    ...(typeof openInterestPointsCents === "number"
-      ? { openInterestPointsCents }
+    ...(typeof volumePoints === "number" ? { volumePoints } : {}),
+    ...(typeof openInterestPoints === "number"
+      ? { openInterestPoints }
       : {}),
     unit: payload.unit || "PTS",
   };
@@ -249,7 +249,7 @@ function formatAMMShareCount(value?: number): string {
 /**
  * Adapt a real /orderbook response into the legacy {bids, asks} pair the
  * OrderBook presentational component expects. The visual convention is:
- *   - bids = YES buy orders (pricePointsCents = YES price ladder, descending)
+ *   - bids = YES buy orders (pricePoints = YES price ladder, descending)
  *   - asks = NO buy orders rendered as YES sells (the OrderBook component
  *     internally inverts NO bids to "ask at 100-NoBid"). For an exchange
  *     market we use the real NO bid ladder for the ask side; real YES
@@ -262,7 +262,7 @@ function adaptBookForDisplay(book: ApiOrderBook): {
   asks: BookLevel[];
 } {
   const bids: BookLevel[] = book.yes.bids.map((lvl) => ({
-    pricePointsCents: lvl.pricePointsCents,
+    pricePoints: lvl.pricePoints,
     shares: lvl.shares,
     cumulativeShares: lvl.cumulativeShares,
   }));
@@ -272,7 +272,7 @@ function adaptBookForDisplay(book: ApiOrderBook): {
     .slice()
     .reverse()
     .map((lvl) => ({
-      pricePointsCents: lvl.pricePointsCents,
+      pricePoints: lvl.pricePoints,
       shares: lvl.shares,
       cumulativeShares: lvl.cumulativeShares,
     }));
@@ -355,20 +355,20 @@ function LiquiditySnapshot({
   title,
 }: LiquiditySnapshotProps) {
   const { t } = useTranslation("prediction");
-  const collateral = market.collateralPoolPointsCents ?? 0;
+  const collateral = market.collateralPoolPoints ?? 0;
   const liquidityParam = market.ammLiquidityParam ?? 0;
   const metrics = [
     {
       label: t("YES_PRICE", "YES price"),
-      value: `${market.yesPricePointsCents}¢`,
+      value: `${market.yesPricePoints}¢`,
     },
     {
       label: t("NO_PRICE", "NO price"),
-      value: `${market.noPricePointsCents}¢`,
+      value: `${market.noPricePoints}¢`,
     },
     {
       label: t("VISIBLE_LIQUIDITY", "Liquidity"),
-      value: formatCompactPoints(market.liquidityPointsCents),
+      value: formatCompactPoints(market.liquidityPoints),
     },
     {
       label:
@@ -419,7 +419,7 @@ function AMMCurve({
   quotes: OrderPreview[];
 }) {
   const { t } = useTranslation("prediction");
-  const yesPrice = clampPercent(market.yesPricePointsCents);
+  const yesPrice = clampPercent(market.yesPricePoints);
   const noPrice = clampPercent(100 - yesPrice);
   const yesShares = market.ammYesShares ?? 0;
   const noShares = market.ammNoShares ?? 0;
@@ -430,7 +430,7 @@ function AMMCurve({
     : 50;
   const noReserveShare = 100 - yesReserveShare;
   const curveK = market.ammLiquidityParam ?? 0;
-  const subsidy = market.ammSubsidyPointsCents ?? 0;
+  const subsidy = market.ammSubsidyPoints ?? 0;
 
   return (
     <div className={AMM_CURVE_CLASS}>
@@ -548,14 +548,14 @@ function AMMCurve({
             {quotes.map((quote) => {
               const afterPrice =
                 quote.side === "no"
-                  ? quote.newNoPricePointsCents
-                  : quote.newYesPricePointsCents;
-              const impact = Math.max(0, afterPrice - quote.pricePointsCents);
+                  ? quote.newNoPricePoints
+                  : quote.newYesPricePoints;
+              const impact = Math.max(0, afterPrice - quote.pricePoints);
               const totalCost =
-                quote.totalCostWithFeesPointsCents ??
-                quote.totalCostPointsCents;
+                quote.totalCostWithFeesPoints ??
+                quote.totalCostPoints;
               const avgPrice =
-                quote.averageFillPricePointsCents || quote.pricePointsCents;
+                quote.averageFillPricePoints || quote.pricePoints;
               return (
                 <div key={quote.quantity} className={AMM_QUOTE_ROW_CLASS}>
                   <span className={AMM_QUOTE_LABEL_CLASS}>
@@ -604,7 +604,9 @@ export default function MarketDetailPage() {
   const initialSide: OrderSide = sideParam === "no" ? "no" : "yes";
   const amountParam = Number(search?.get("amount"));
   const initialAmount =
-    Number.isFinite(amountParam) && amountParam >= 1 ? amountParam : 25;
+    Number.isFinite(amountParam) && amountParam >= 1
+      ? Math.round(amountParam)
+      : 100;
 
   const [market, setMarket] = useState<PredictionMarket | null>(null);
   const [event, setEvent] = useState<PredictionEvent | null>(null);
@@ -896,10 +898,10 @@ export default function MarketDetailPage() {
           action: opts?.action ?? "buy",
           orderType: opts?.orderType ?? "market",
           quantity,
-          pricePointsCents: opts?.pricePointsCents,
+          pricePoints: opts?.pricePoints,
           timeInForce: opts?.timeInForce,
           postOnly: opts?.postOnly,
-          notionalCapPointsCents: opts?.notionalCapPointsCents,
+          notionalCapPoints: opts?.notionalCapPoints,
         });
       } catch (err: unknown) {
         logger.warn("MarketDetail", "preview failed", err);
@@ -927,10 +929,10 @@ export default function MarketDetailPage() {
         action: opts?.action ?? "buy",
         orderType: opts?.orderType ?? "market",
         quantity,
-        pricePointsCents: opts?.pricePointsCents,
+        pricePoints: opts?.pricePoints,
         timeInForce: opts?.timeInForce,
         postOnly: opts?.postOnly,
-        notionalCapPointsCents: opts?.notionalCapPointsCents,
+        notionalCapPoints: opts?.notionalCapPoints,
       };
       // LC-38: attach a stable idempotency key. A manual re-submit after a
       // dropped network response (same order params, outcome unconfirmed)
@@ -1084,8 +1086,8 @@ export default function MarketDetailPage() {
             <MarketChart
               ticker={market.ticker}
               side={selectedSide}
-              yesPriceCents={market.yesPricePointsCents}
-              noPriceCents={market.noPricePointsCents}
+              yesPricePoints={market.yesPricePoints}
+              noPricePoints={market.noPricePoints}
             />
           </section>
 
@@ -1172,11 +1174,11 @@ export default function MarketDetailPage() {
                       <div className={RELATED_QUESTION_CLASS}>{m.title}</div>
                       <div className={RELATED_LINE_CLASS}>
                         <span className={RELATED_YES_CLASS}>
-                          {t("YES")} {m.yesPricePointsCents}¢
+                          {t("YES")} {m.yesPricePoints}¢
                         </span>
                         <span>
                           {t("VOLUME_VALUE", {
-                            value: formatCompactPoints(m.volumePointsCents),
+                            value: formatCompactPoints(m.volumePoints),
                           })}
                         </span>
                       </div>

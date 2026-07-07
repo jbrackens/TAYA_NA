@@ -124,7 +124,7 @@ type AtomicFilledOrderPersister interface {
 // persisting a settlement or void transition.
 type WalletCreditRequest struct {
 	UserID         string
-	AmountCents    int64
+	AmountPoints   int64
 	IdempotencyKey string
 	Reason         string
 }
@@ -184,7 +184,7 @@ type RestingOrderFinalizer interface {
 		walletAdapter ExchangeWalletAdapter,
 		order *Order,
 		terminal OrderStatus,
-	) (reservedCents int64, capturedCents int64, placedAt time.Time, err error)
+	) (reservedPoints int64, capturedPoints int64, placedAt time.Time, err error)
 }
 
 // AtomicMarketSettlementPersister is an optional repository capability for

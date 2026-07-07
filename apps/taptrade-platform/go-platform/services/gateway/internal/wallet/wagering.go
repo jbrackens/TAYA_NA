@@ -12,23 +12,23 @@ import (
 // bonus play-through completion. Field names preserve the inherited storage
 // contract; launch-facing responses expose point-native aliases.
 type WageringContributionRecord struct {
-	PlayerBonusID     int64
-	BetID             string
-	BetType           string // "single", "parlay", "system"
-	StakeCents        int64
-	ContributionCents int64 // after multiplier; caller is responsible for calculation
-	OddsDecimal       float64
-	LegCount          int
+	PlayerBonusID      int64
+	BetID              string
+	BetType            string // "single", "parlay", "system"
+	StakePoints        int64
+	ContributionPoints int64 // after multiplier; caller is responsible for calculation
+	OddsDecimal        float64
+	LegCount           int
 }
 
 // WageringResult reports the outcome of recording a wagering contribution,
 // including whether the bonus was completed as a result.
 type WageringResult struct {
-	ContributionCents      int64 `json:"contributionCents"`
-	WageringCompletedCents int64 `json:"wageringCompletedCents"`
-	WageringRequiredCents  int64 `json:"wageringRequiredCents"`
-	BonusCompleted         bool  `json:"bonusCompleted"`
-	ConvertedAmountCents   int64 `json:"convertedAmountCents"`
+	ContributionPoints      int64 `json:"contributionPoints"`
+	WageringCompletedPoints int64 `json:"wageringCompletedPoints"`
+	WageringRequiredPoints  int64 `json:"wageringRequiredPoints"`
+	BonusCompleted          bool  `json:"bonusCompleted"`
+	ConvertedAmountPoints   int64 `json:"convertedAmountPoints"`
 }
 
 // RecordWageringContribution records a point-play contribution toward a player
@@ -39,7 +39,7 @@ func (s *Service) RecordWageringContribution(ctx context.Context, record Wagerin
 	if s.db == nil {
 		return WageringResult{}, nil
 	}
-	if record.PlayerBonusID <= 0 || record.BetID == "" || record.ContributionCents <= 0 {
+	if record.PlayerBonusID <= 0 || record.BetID == "" || record.ContributionPoints <= 0 {
 		return WageringResult{}, ErrInvalidMutationRequest
 	}
 	if record.BetType == "" {
@@ -76,7 +76,7 @@ WHERE player_bonus_id = $1 AND bet_id = $2`,
 	var userID, status string
 	var wageringRequired, wageringCompleted, remainingAmount int64
 	err = tx.QueryRowContext(ctx, `
-SELECT user_id, status, wagering_required_cents, wagering_completed_cents, remaining_amount_cents
+SELECT user_id, status, wagering_required_points, wagering_completed_points, remaining_amount_points
 FROM player_bonuses
 WHERE id = $1
 FOR UPDATE`,
@@ -94,19 +94,19 @@ FOR UPDATE`,
 
 	// Insert the contribution record
 	_, err = tx.ExecContext(ctx, `
-INSERT INTO wagering_contributions (player_bonus_id, bet_id, bet_type, stake_cents, contribution_cents, odds_decimal, leg_count)
+INSERT INTO wagering_contributions (player_bonus_id, bet_id, bet_type, stake_points, contribution_points, odds_decimal, leg_count)
 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
 		record.PlayerBonusID, record.BetID, record.BetType,
-		record.StakeCents, record.ContributionCents,
+		record.StakePoints, record.ContributionPoints,
 		record.OddsDecimal, record.LegCount)
 	if err != nil {
 		return WageringResult{}, err
 	}
 
 	// Update cumulative wagering
-	wageringCompleted += record.ContributionCents
+	wageringCompleted += record.ContributionPoints
 	_, err = tx.ExecContext(ctx, `
-UPDATE player_bonuses SET wagering_completed_cents = $2, updated_at = NOW()
+UPDATE player_bonuses SET wagering_completed_points = $2, updated_at = NOW()
 WHERE id = $1`,
 		record.PlayerBonusID, wageringCompleted)
 	if err != nil {
@@ -114,9 +114,9 @@ WHERE id = $1`,
 	}
 
 	result := WageringResult{
-		ContributionCents:      record.ContributionCents,
-		WageringCompletedCents: wageringCompleted,
-		WageringRequiredCents:  wageringRequired,
+		ContributionPoints:      record.ContributionPoints,
+		WageringCompletedPoints: wageringCompleted,
+		WageringRequiredPoints:  wageringRequired,
 	}
 
 	// Check if wagering is now complete
@@ -144,7 +144,7 @@ WHERE id = $1`,
 				"userId", userID,
 				"error", err)
 		} else {
-			result.ConvertedAmountCents = creditEntry.AmountCents
+			result.ConvertedAmountPoints = creditEntry.AmountPoints
 		}
 		result.BonusCompleted = true
 		return result, nil
@@ -161,15 +161,15 @@ func (s *Service) readWageringState(ctx context.Context, tx *sql.Tx, playerBonus
 	var wageringRequired, wageringCompleted int64
 	var status string
 	err := tx.QueryRowContext(ctx, `
-SELECT status, wagering_required_cents, wagering_completed_cents
+SELECT status, wagering_required_points, wagering_completed_points
 FROM player_bonuses WHERE id = $1`,
 		playerBonusID).Scan(&status, &wageringRequired, &wageringCompleted)
 	if err != nil {
 		return WageringResult{}, err
 	}
 	return WageringResult{
-		WageringCompletedCents: wageringCompleted,
-		WageringRequiredCents:  wageringRequired,
-		BonusCompleted:         status == "completed",
+		WageringCompletedPoints: wageringCompleted,
+		WageringRequiredPoints:  wageringRequired,
+		BonusCompleted:          status == "completed",
 	}, nil
 }

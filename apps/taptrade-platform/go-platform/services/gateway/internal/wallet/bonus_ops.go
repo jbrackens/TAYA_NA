@@ -28,7 +28,7 @@ func (s *Service) DebitBonus(ctx context.Context, request MutationRequest) (Ledg
 }
 
 func (s *Service) applyBonusDebitDB(ctx context.Context, request MutationRequest) (LedgerEntry, error) {
-	if request.UserID == "" || request.AmountCents <= 0 || request.IdempotencyKey == "" {
+	if request.UserID == "" || request.AmountPoints <= 0 || request.IdempotencyKey == "" {
 		return LedgerEntry{}, ErrInvalidMutationRequest
 	}
 
@@ -47,7 +47,7 @@ func (s *Service) applyBonusDebitDB(ctx context.Context, request MutationRequest
 		return LedgerEntry{}, err
 	}
 	if found {
-		if existing.AmountCents != request.AmountCents {
+		if existing.AmountPoints != request.AmountPoints {
 			return LedgerEntry{}, ErrIdempotencyConflict
 		}
 		return existing, nil
@@ -55,7 +55,7 @@ func (s *Service) applyBonusDebitDB(ctx context.Context, request MutationRequest
 
 	var bonusBalance int64
 	if err := tx.QueryRowContext(ctx, `
-SELECT bonus_balance_cents FROM wallet_balances WHERE user_id = $1 FOR UPDATE`,
+SELECT bonus_balance_points FROM wallet_balances WHERE user_id = $1 FOR UPDATE`,
 		request.UserID).Scan(&bonusBalance); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return LedgerEntry{}, ErrInsufficientBonusFunds
@@ -63,14 +63,14 @@ SELECT bonus_balance_cents FROM wallet_balances WHERE user_id = $1 FOR UPDATE`,
 		return LedgerEntry{}, err
 	}
 
-	if bonusBalance < request.AmountCents {
+	if bonusBalance < request.AmountPoints {
 		return LedgerEntry{}, ErrInsufficientBonusFunds
 	}
 
-	bonusBalance -= request.AmountCents
+	bonusBalance -= request.AmountPoints
 
 	if _, err := tx.ExecContext(ctx, `
-UPDATE wallet_balances SET bonus_balance_cents = $2, updated_at = NOW() WHERE user_id = $1`,
+UPDATE wallet_balances SET bonus_balance_points = $2, updated_at = NOW() WHERE user_id = $1`,
 		request.UserID, bonusBalance); err != nil {
 		return LedgerEntry{}, err
 	}
@@ -78,10 +78,10 @@ UPDATE wallet_balances SET bonus_balance_cents = $2, updated_at = NOW() WHERE us
 	var id int64
 	var transactionTime string
 	err = tx.QueryRowContext(ctx, `
-INSERT INTO wallet_ledger (user_id, entry_type, fund_type, amount_cents, balance_cents, idempotency_key, reason, transaction_time)
+INSERT INTO wallet_ledger (user_id, entry_type, fund_type, amount_points, balance_points, idempotency_key, reason, transaction_time)
 VALUES ($1, 'debit', 'bonus', $2, $3, $4, $5, NOW())
 RETURNING id, CAST(transaction_time AS TEXT)`,
-		request.UserID, request.AmountCents, bonusBalance,
+		request.UserID, request.AmountPoints, bonusBalance,
 		request.IdempotencyKey, normalizeReason(request.Reason)).Scan(&id, &transactionTime)
 	if err != nil {
 		return LedgerEntry{}, err
@@ -95,8 +95,8 @@ RETURNING id, CAST(transaction_time AS TEXT)`,
 		EntryID:         fmt.Sprintf("le:%d", id),
 		UserID:          request.UserID,
 		Type:            "debit",
-		AmountCents:     request.AmountCents,
-		BalanceCents:    bonusBalance,
+		AmountPoints:    request.AmountPoints,
+		BalancePoints:   bonusBalance,
 		IdempotencyKey:  request.IdempotencyKey,
 		Reason:          request.Reason,
 		TransactionTime: transactionTime,
@@ -106,7 +106,7 @@ RETURNING id, CAST(transaction_time AS TEXT)`,
 // DrawdownRequest specifies a debit that may span real and bonus balances.
 type DrawdownRequest struct {
 	UserID         string
-	AmountCents    int64
+	AmountPoints   int64
 	DrawdownOrder  string // "real_first" (default) or "bonus_first"
 	IdempotencyKey string
 	Reason         string
@@ -114,17 +114,17 @@ type DrawdownRequest struct {
 
 // DrawdownResult reports how the debit was split across real and bonus balances.
 type DrawdownResult struct {
-	RealDebitCents  int64         `json:"realDebitCents"`
-	BonusDebitCents int64         `json:"bonusDebitCents"`
-	TotalDebitCents int64         `json:"totalDebitCents"`
-	LedgerEntries   []LedgerEntry `json:"ledgerEntries"`
+	RealDebitPoints  int64         `json:"realDebitPoints"`
+	BonusDebitPoints int64         `json:"bonusDebitPoints"`
+	TotalDebitPoints int64         `json:"totalDebitPoints"`
+	LedgerEntries    []LedgerEntry `json:"ledgerEntries"`
 }
 
 // DrawdownDebit debits the requested amount from the correct balance(s)
 // based on drawdown order rules. Real-first is the default and recommended
 // for regulatory compliance.
 func (s *Service) DrawdownDebit(ctx context.Context, request DrawdownRequest) (DrawdownResult, error) {
-	if request.UserID == "" || request.AmountCents <= 0 || request.IdempotencyKey == "" {
+	if request.UserID == "" || request.AmountPoints <= 0 || request.IdempotencyKey == "" {
 		return DrawdownResult{}, ErrInvalidMutationRequest
 	}
 	order := strings.ToLower(strings.TrimSpace(request.DrawdownOrder))
@@ -136,7 +136,7 @@ func (s *Service) DrawdownDebit(ctx context.Context, request DrawdownRequest) (D
 		// Memory mode: debit from real only (no bonus tracking)
 		entry, err := s.applyMutationMemory("debit", MutationRequest{
 			UserID:         request.UserID,
-			AmountCents:    request.AmountCents,
+			AmountPoints:   request.AmountPoints,
 			IdempotencyKey: request.IdempotencyKey,
 			Reason:         request.Reason,
 		})
@@ -144,9 +144,9 @@ func (s *Service) DrawdownDebit(ctx context.Context, request DrawdownRequest) (D
 			return DrawdownResult{}, err
 		}
 		return DrawdownResult{
-			RealDebitCents:  request.AmountCents,
-			TotalDebitCents: request.AmountCents,
-			LedgerEntries:   []LedgerEntry{entry},
+			RealDebitPoints:  request.AmountPoints,
+			TotalDebitPoints: request.AmountPoints,
+			LedgerEntries:    []LedgerEntry{entry},
 		}, nil
 	}
 
@@ -168,13 +168,13 @@ func (s *Service) DrawdownDebit(ctx context.Context, request DrawdownRequest) (D
 		// Already applied — reconstruct result
 		existingBonus, _, _ := findExistingMutation(ctx, tx, "debit:bonus", request.UserID, request.IdempotencyKey+":bonus")
 		result := DrawdownResult{
-			RealDebitCents:  existingReal.AmountCents,
-			TotalDebitCents: existingReal.AmountCents,
-			LedgerEntries:   []LedgerEntry{existingReal},
+			RealDebitPoints:  existingReal.AmountPoints,
+			TotalDebitPoints: existingReal.AmountPoints,
+			LedgerEntries:    []LedgerEntry{existingReal},
 		}
 		if existingBonus.EntryID != "" {
-			result.BonusDebitCents = existingBonus.AmountCents
-			result.TotalDebitCents += existingBonus.AmountCents
+			result.BonusDebitPoints = existingBonus.AmountPoints
+			result.TotalDebitPoints += existingBonus.AmountPoints
 			result.LedgerEntries = append(result.LedgerEntries, existingBonus)
 		}
 		return result, nil
@@ -183,7 +183,7 @@ func (s *Service) DrawdownDebit(ctx context.Context, request DrawdownRequest) (D
 	// Lock and read both balances
 	var realBalance, bonusBalance int64
 	err = tx.QueryRowContext(ctx, `
-SELECT balance_cents, bonus_balance_cents FROM wallet_balances WHERE user_id = $1 FOR UPDATE`,
+SELECT balance_points, bonus_balance_points FROM wallet_balances WHERE user_id = $1 FOR UPDATE`,
 		request.UserID).Scan(&realBalance, &bonusBalance)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -193,13 +193,13 @@ SELECT balance_cents, bonus_balance_cents FROM wallet_balances WHERE user_id = $
 	}
 
 	totalAvailable := realBalance + bonusBalance
-	if totalAvailable < request.AmountCents {
+	if totalAvailable < request.AmountPoints {
 		return DrawdownResult{}, ErrInsufficientFunds
 	}
 
 	// Calculate split
 	var realDebit, bonusDebit int64
-	remaining := request.AmountCents
+	remaining := request.AmountPoints
 
 	if order == "bonus_first" {
 		bonusDebit = min64(remaining, bonusBalance)
@@ -218,7 +218,7 @@ SELECT balance_cents, bonus_balance_cents FROM wallet_balances WHERE user_id = $
 	if realDebit > 0 {
 		realBalance -= realDebit
 		if _, err := tx.ExecContext(ctx, `
-UPDATE wallet_balances SET balance_cents = $2, updated_at = NOW() WHERE user_id = $1`,
+UPDATE wallet_balances SET balance_points = $2, updated_at = NOW() WHERE user_id = $1`,
 			request.UserID, realBalance); err != nil {
 			return DrawdownResult{}, err
 		}
@@ -226,7 +226,7 @@ UPDATE wallet_balances SET balance_cents = $2, updated_at = NOW() WHERE user_id 
 		var id int64
 		var txTime string
 		err = tx.QueryRowContext(ctx, `
-INSERT INTO wallet_ledger (user_id, entry_type, fund_type, amount_cents, balance_cents, idempotency_key, reason, transaction_time)
+INSERT INTO wallet_ledger (user_id, entry_type, fund_type, amount_points, balance_points, idempotency_key, reason, transaction_time)
 VALUES ($1, 'debit', 'real', $2, $3, $4, $5, NOW())
 RETURNING id, CAST(transaction_time AS TEXT)`,
 			request.UserID, realDebit, realBalance,
@@ -238,8 +238,8 @@ RETURNING id, CAST(transaction_time AS TEXT)`,
 			EntryID:         fmt.Sprintf("le:%d", id),
 			UserID:          request.UserID,
 			Type:            "debit",
-			AmountCents:     realDebit,
-			BalanceCents:    realBalance,
+			AmountPoints:    realDebit,
+			BalancePoints:   realBalance,
 			IdempotencyKey:  request.IdempotencyKey + ":real",
 			Reason:          request.Reason,
 			TransactionTime: txTime,
@@ -250,7 +250,7 @@ RETURNING id, CAST(transaction_time AS TEXT)`,
 	if bonusDebit > 0 {
 		bonusBalance -= bonusDebit
 		if _, err := tx.ExecContext(ctx, `
-UPDATE wallet_balances SET bonus_balance_cents = $2, updated_at = NOW() WHERE user_id = $1`,
+UPDATE wallet_balances SET bonus_balance_points = $2, updated_at = NOW() WHERE user_id = $1`,
 			request.UserID, bonusBalance); err != nil {
 			return DrawdownResult{}, err
 		}
@@ -258,7 +258,7 @@ UPDATE wallet_balances SET bonus_balance_cents = $2, updated_at = NOW() WHERE us
 		var id int64
 		var txTime string
 		err = tx.QueryRowContext(ctx, `
-INSERT INTO wallet_ledger (user_id, entry_type, fund_type, amount_cents, balance_cents, idempotency_key, reason, transaction_time)
+INSERT INTO wallet_ledger (user_id, entry_type, fund_type, amount_points, balance_points, idempotency_key, reason, transaction_time)
 VALUES ($1, 'debit', 'bonus', $2, $3, $4, $5, NOW())
 RETURNING id, CAST(transaction_time AS TEXT)`,
 			request.UserID, bonusDebit, bonusBalance,
@@ -270,8 +270,8 @@ RETURNING id, CAST(transaction_time AS TEXT)`,
 			EntryID:         fmt.Sprintf("le:%d", id),
 			UserID:          request.UserID,
 			Type:            "debit",
-			AmountCents:     bonusDebit,
-			BalanceCents:    bonusBalance,
+			AmountPoints:    bonusDebit,
+			BalancePoints:   bonusBalance,
 			IdempotencyKey:  request.IdempotencyKey + ":bonus",
 			Reason:          request.Reason,
 			TransactionTime: txTime,
@@ -283,21 +283,21 @@ RETURNING id, CAST(transaction_time AS TEXT)`,
 	}
 
 	return DrawdownResult{
-		RealDebitCents:  realDebit,
-		BonusDebitCents: bonusDebit,
-		TotalDebitCents: realDebit + bonusDebit,
-		LedgerEntries:   entries,
+		RealDebitPoints:  realDebit,
+		BonusDebitPoints: bonusDebit,
+		TotalDebitPoints: realDebit + bonusDebit,
+		LedgerEntries:    entries,
 	}, nil
 }
 
 // ConvertBonusToReal atomically moves funds from bonus balance to real balance.
 // Called when wagering requirements are met.
-func (s *Service) ConvertBonusToReal(ctx context.Context, userID string, amountCents int64, idempotencyKey string) (LedgerEntry, error) {
+func (s *Service) ConvertBonusToReal(ctx context.Context, userID string, amountPoints int64, idempotencyKey string) (LedgerEntry, error) {
 	if s.db == nil {
 		// Memory mode: bonus and real are the same pool — no-op
 		return LedgerEntry{}, nil
 	}
-	if userID == "" || amountCents <= 0 || idempotencyKey == "" {
+	if userID == "" || amountPoints <= 0 || idempotencyKey == "" {
 		return LedgerEntry{}, ErrInvalidMutationRequest
 	}
 
@@ -321,7 +321,7 @@ func (s *Service) ConvertBonusToReal(ctx context.Context, userID string, amountC
 
 	var realBalance, bonusBalance int64
 	err = tx.QueryRowContext(ctx, `
-SELECT balance_cents, bonus_balance_cents FROM wallet_balances WHERE user_id = $1 FOR UPDATE`,
+SELECT balance_points, bonus_balance_points FROM wallet_balances WHERE user_id = $1 FOR UPDATE`,
 		userID).Scan(&realBalance, &bonusBalance)
 	if err != nil {
 		return LedgerEntry{}, err
@@ -343,7 +343,7 @@ SELECT balance_cents, bonus_balance_cents FROM wallet_balances WHERE user_id = $
 SELECT COUNT(1) FROM player_bonuses
 WHERE user_id = $1
   AND status IN ('active','completed')
-  AND wagering_completed_cents >= wagering_required_cents
+  AND wagering_completed_points >= wagering_required_points
 FOR UPDATE`,
 		userID).Scan(&eligibleWageredBonuses)
 	if err != nil {
@@ -354,7 +354,7 @@ FOR UPDATE`,
 	}
 
 	// Cap at available bonus
-	convertAmount := amountCents
+	convertAmount := amountPoints
 	if convertAmount > bonusBalance {
 		convertAmount = bonusBalance
 	}
@@ -365,12 +365,12 @@ FOR UPDATE`,
 	// Debit bonus
 	bonusBalance -= convertAmount
 	if _, err := tx.ExecContext(ctx, `
-UPDATE wallet_balances SET bonus_balance_cents = $2, updated_at = NOW() WHERE user_id = $1`,
+UPDATE wallet_balances SET bonus_balance_points = $2, updated_at = NOW() WHERE user_id = $1`,
 		userID, bonusBalance); err != nil {
 		return LedgerEntry{}, err
 	}
 	_, err = tx.ExecContext(ctx, `
-INSERT INTO wallet_ledger (user_id, entry_type, fund_type, amount_cents, balance_cents, idempotency_key, reason, transaction_time)
+INSERT INTO wallet_ledger (user_id, entry_type, fund_type, amount_points, balance_points, idempotency_key, reason, transaction_time)
 VALUES ($1, 'debit', 'bonus', $2, $3, $4, 'bonus conversion debit', NOW())`,
 		userID, convertAmount, bonusBalance, idempotencyKey+":convert:debit")
 	if err != nil {
@@ -380,7 +380,7 @@ VALUES ($1, 'debit', 'bonus', $2, $3, $4, 'bonus conversion debit', NOW())`,
 	// Credit real
 	realBalance += convertAmount
 	if _, err := tx.ExecContext(ctx, `
-UPDATE wallet_balances SET balance_cents = $2, updated_at = NOW() WHERE user_id = $1`,
+UPDATE wallet_balances SET balance_points = $2, updated_at = NOW() WHERE user_id = $1`,
 		userID, realBalance); err != nil {
 		return LedgerEntry{}, err
 	}
@@ -388,7 +388,7 @@ UPDATE wallet_balances SET balance_cents = $2, updated_at = NOW() WHERE user_id 
 	var creditID int64
 	var txTime string
 	err = tx.QueryRowContext(ctx, `
-INSERT INTO wallet_ledger (user_id, entry_type, fund_type, amount_cents, balance_cents, idempotency_key, reason, transaction_time)
+INSERT INTO wallet_ledger (user_id, entry_type, fund_type, amount_points, balance_points, idempotency_key, reason, transaction_time)
 VALUES ($1, 'credit', 'real', $2, $3, $4, 'bonus conversion credit', NOW())
 RETURNING id, CAST(transaction_time AS TEXT)`,
 		userID, convertAmount, realBalance, idempotencyKey+":convert").Scan(&creditID, &txTime)
@@ -404,8 +404,8 @@ RETURNING id, CAST(transaction_time AS TEXT)`,
 		EntryID:         fmt.Sprintf("le:%d", creditID),
 		UserID:          userID,
 		Type:            "credit",
-		AmountCents:     convertAmount,
-		BalanceCents:    realBalance,
+		AmountPoints:    convertAmount,
+		BalancePoints:   realBalance,
 		IdempotencyKey:  idempotencyKey + ":convert",
 		Reason:          "bonus conversion credit",
 		TransactionTime: txTime,
@@ -415,19 +415,19 @@ RETURNING id, CAST(transaction_time AS TEXT)`,
 // ForfeitBonus zeroes the bonus-attributable amount for a user. Called on
 // bonus expiry or admin forfeiture. The amount forfeited is capped at the
 // current bonus balance to handle partial consumption.
-func (s *Service) ForfeitBonus(ctx context.Context, userID string, amountCents int64, reason string, idempotencyKey string) (LedgerEntry, error) {
+func (s *Service) ForfeitBonus(ctx context.Context, userID string, amountPoints int64, reason string, idempotencyKey string) (LedgerEntry, error) {
 	if s.db == nil {
 		return LedgerEntry{}, nil
 	}
-	if userID == "" || amountCents <= 0 || idempotencyKey == "" {
+	if userID == "" || amountPoints <= 0 || idempotencyKey == "" {
 		return LedgerEntry{}, ErrInvalidMutationRequest
 	}
 
 	// Cap at actual bonus balance
 	breakdown := s.BalanceWithBreakdown(ctx, userID)
-	forfeitAmount := amountCents
-	if forfeitAmount > breakdown.BonusFundCents {
-		forfeitAmount = breakdown.BonusFundCents
+	forfeitAmount := amountPoints
+	if forfeitAmount > breakdown.BonusFundPoints {
+		forfeitAmount = breakdown.BonusFundPoints
 	}
 	if forfeitAmount <= 0 {
 		return LedgerEntry{}, nil
@@ -435,7 +435,7 @@ func (s *Service) ForfeitBonus(ctx context.Context, userID string, amountCents i
 
 	return s.DebitBonus(ctx, MutationRequest{
 		UserID:         userID,
-		AmountCents:    forfeitAmount,
+		AmountPoints:   forfeitAmount,
 		IdempotencyKey: idempotencyKey,
 		Reason:         reason,
 	})

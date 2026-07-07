@@ -93,7 +93,7 @@
   "PLACING": "下单中...",
   "PLACE_TRADE_AMOUNT": "Place trade · {{amount}}",
   "SELL_AMOUNT": "Sell · {{amount}}",
-  "TRADE_TRUST_NOTE": "{{price}}c 表示 {{probability}}% 的隐含概率。正确合约按每份 100 点结算。",
+  "TRADE_TRUST_NOTE": "{{price}}c 表示 {{probability}}% 的隐含概率——每份合约花费 {{price}} 积分。正确的合约以 100 积分结算。积分不可兑换，仅用于应用内游戏。",
   "NO_SHARES_TO_SELL": "你没有这个方向的份额可卖",
   "SELL_UP_TO_SHARES": "最多卖出 {{quantity}} 份 {{side}}",
   "AMOUNT_TOO_SMALL": "金额太小 - 每笔交易至少 1 份。",

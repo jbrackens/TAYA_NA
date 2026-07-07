@@ -73,12 +73,12 @@ function toRFC3339(dtLocal: string): string {
 }
 
 function toLaunchMetricKey(value: string): string {
-  return value === "net_profit_cents" ? "net_points" : value;
+  return value === "net_profit_points" ? "net_points" : value;
 }
 
 function toLegacyMetricKey(value: string): string {
   const trimmed = value.trim();
-  return trimmed === "net_points" ? "net_profit_cents" : trimmed;
+  return trimmed === "net_points" ? "net_profit_points" : trimmed;
 }
 
 function normalizePointUnit(value?: string): string {

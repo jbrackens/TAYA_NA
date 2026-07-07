@@ -19,33 +19,33 @@ const (
 	// maxWageringMultiplier caps the internal point-play multiplier an admin
 	// can configure. Existing storage still uses the old rule name.
 	maxWageringMultiplier = 100.0
-	// maxBonusAmountCents is the absolute ceiling on any single bonus/reward
+	// maxBonusAmountPoints is the absolute ceiling on any single bonus/reward
 	// amount in point-cents. It also bounds point-play required amount
 	// (<= 1e8 * 100 = 1e10) far below int64 max, so the multiply cannot overflow.
-	maxBonusAmountCents int64 = 100_000_000
+	maxBonusAmountPoints int64 = 100_000_000
 )
 
 // computeWageringRequired derives the point-play requirement from a (validated)
 // bonus amount and multiplier. The multiplier is clamped to [0, maxWageringMultiplier]
-// and the amount is assumed already bounded by maxBonusAmountCents, so the
+// and the amount is assumed already bounded by maxBonusAmountPoints, so the
 // product cannot overflow int64.
-func computeWageringRequired(amountCents int64, multiplier float64) int64 {
-	if multiplier <= 0 || amountCents <= 0 {
+func computeWageringRequired(amountPoints int64, multiplier float64) int64 {
+	if multiplier <= 0 || amountPoints <= 0 {
 		return 0
 	}
 	if multiplier > maxWageringMultiplier {
 		multiplier = maxWageringMultiplier
 	}
-	return int64(float64(amountCents) * multiplier)
+	return int64(float64(amountPoints) * multiplier)
 }
 
-func bonusGrantedEventPayload(userID string, bonusID, campaignID, amountPointsCents int64, expiresAt *time.Time, adminGrant bool) map[string]any {
+func bonusGrantedEventPayload(userID string, bonusID, campaignID, amountPoints int64, expiresAt *time.Time, adminGrant bool) map[string]any {
 	payload := map[string]any{
-		"user_id":             userID,
-		"bonus_id":            bonusID,
-		"campaign_id":         campaignID,
-		"amount_points_cents": amountPointsCents,
-		"unit":                "PTS",
+		"user_id":       userID,
+		"bonus_id":      bonusID,
+		"campaign_id":   campaignID,
+		"amount_points": amountPoints,
+		"unit":          "PTS",
 	}
 	if expiresAt != nil {
 		payload["expires_at"] = *expiresAt
@@ -56,17 +56,17 @@ func bonusGrantedEventPayload(userID string, bonusID, campaignID, amountPointsCe
 	return payload
 }
 
-func bonusExpiredEventPayload(userID string, bonusID, forfeitedPointsCents int64) map[string]any {
+func bonusExpiredEventPayload(userID string, bonusID, forfeitedPoints int64) map[string]any {
 	return map[string]any{
-		"user_id":                userID,
-		"bonus_id":               bonusID,
-		"forfeited_points_cents": forfeitedPointsCents,
-		"unit":                   "PTS",
+		"user_id":          userID,
+		"bonus_id":         bonusID,
+		"forfeited_points": forfeitedPoints,
+		"unit":             "PTS",
 	}
 }
 
-func bonusForfeitedEventPayload(userID string, bonusID, forfeitedPointsCents int64, reason, actor string) map[string]any {
-	payload := bonusExpiredEventPayload(userID, bonusID, forfeitedPointsCents)
+func bonusForfeitedEventPayload(userID string, bonusID, forfeitedPoints int64, reason, actor string) map[string]any {
+	payload := bonusExpiredEventPayload(userID, bonusID, forfeitedPoints)
 	payload["reason"] = reason
 	payload["actor"] = actor
 	return payload
@@ -116,14 +116,14 @@ func publishCampaignClosedEvents(ctx context.Context, bus *events.Bus, campaigns
 	}
 }
 
-func (s *Service) compensateFailedBonusCredit(ctx context.Context, campaignID int64, created PlayerBonus, amountPointsCents int64, actor string) {
+func (s *Service) compensateFailedBonusCredit(ctx context.Context, campaignID int64, created PlayerBonus, amountPoints int64, actor string) {
 	if s.repo == nil || created.ID == 0 {
 		return
 	}
 	if actor == "" {
 		actor = "system"
 	}
-	if err := s.repo.ReleaseClaim(ctx, campaignID, amountPointsCents); err != nil {
+	if err := s.repo.ReleaseClaim(ctx, campaignID, amountPoints); err != nil {
 		slog.Error("release campaign claim after wallet credit failure failed",
 			"campaignId", campaignID, "bonusId", created.ID, "error", err)
 	}
@@ -167,8 +167,8 @@ func (s *Service) CreateCampaign(ctx context.Context, req CreateCampaignRequest)
 	if req.EndAt.Before(req.StartAt) {
 		return Campaign{}, fmt.Errorf("end_at must be after start_at")
 	}
-	if req.BudgetCents != nil && *req.BudgetCents < 0 {
-		return Campaign{}, fmt.Errorf("budget_points_cents must be non-negative")
+	if req.BudgetPoints != nil && *req.BudgetPoints < 0 {
+		return Campaign{}, fmt.Errorf("budget_points must be non-negative")
 	}
 	if req.MaxClaims != nil && *req.MaxClaims < 0 {
 		return Campaign{}, fmt.Errorf("max_claims must be non-negative")
@@ -183,11 +183,11 @@ func (s *Service) CreateCampaign(ctx context.Context, req CreateCampaignRequest)
 			if err := json.Unmarshal(rule.RuleConfig, &rc); err != nil {
 				return Campaign{}, fmt.Errorf("invalid reward rule config: %w", err)
 			}
-			if rc.FixedAmountCents < 0 || rc.MaxBonusCents < 0 {
+			if rc.FixedAmountPoints < 0 || rc.MaxBonusPoints < 0 {
 				return Campaign{}, fmt.Errorf("reward point amounts must be non-negative")
 			}
-			if rc.FixedAmountCents > maxBonusAmountCents || rc.MaxBonusCents > maxBonusAmountCents {
-				return Campaign{}, fmt.Errorf("reward points exceed maximum point amount of %d", maxBonusAmountCents)
+			if rc.FixedAmountPoints > maxBonusAmountPoints || rc.MaxBonusPoints > maxBonusAmountPoints {
+				return Campaign{}, fmt.Errorf("reward points exceed maximum point amount of %d", maxBonusAmountPoints)
 			}
 			if rc.MatchPct < 0 || rc.MatchPct > 10000 {
 				return Campaign{}, fmt.Errorf("reward match_pct out of range")
@@ -350,14 +350,14 @@ func (s *Service) ClaimBonus(ctx context.Context, req ClaimBonusRequest) (Player
 	}
 
 	// Calculate bonus amount
-	bonusAmount := rewardCfg.FixedAmountCents
-	if bonusAmount <= 0 && rewardCfg.MaxBonusCents > 0 {
-		bonusAmount = rewardCfg.MaxBonusCents
+	bonusAmount := rewardCfg.FixedAmountPoints
+	if bonusAmount <= 0 && rewardCfg.MaxBonusPoints > 0 {
+		bonusAmount = rewardCfg.MaxBonusPoints
 	}
 	if bonusAmount <= 0 {
 		return PlayerBonus{}, fmt.Errorf("campaign has no reward points configured")
 	}
-	if bonusAmount > maxBonusAmountCents {
+	if bonusAmount > maxBonusAmountPoints {
 		return PlayerBonus{}, fmt.Errorf("campaign reward points exceed maximum point amount")
 	}
 
@@ -365,8 +365,8 @@ func (s *Service) ClaimBonus(ctx context.Context, req ClaimBonusRequest) (Player
 	wageringRequired := computeWageringRequired(bonusAmount, wageringCfg.Multiplier)
 
 	// Atomically reserve a claim slot + budget. This is the race-safe
-	// replacement for the read-then-increment of claim_count/spent_cents:
-	// concurrent claims can no longer exceed max_claims or budget_cents.
+	// replacement for the read-then-increment of claim_count/spent_points:
+	// concurrent claims can no longer exceed max_claims or budget_points.
 	if err := s.repo.ReserveClaim(ctx, req.CampaignID, bonusAmount); err != nil {
 		if errors.Is(err, ErrCampaignLimitReached) {
 			return PlayerBonus{}, fmt.Errorf("campaign has reached its claim or budget limit")
@@ -391,15 +391,15 @@ func (s *Service) ClaimBonus(ctx context.Context, req ClaimBonusRequest) (Player
 	})
 
 	pb := PlayerBonus{
-		UserID:                req.UserID,
-		CampaignID:            &req.CampaignID,
-		BonusType:             campaign.CampaignType,
-		Status:                "active",
-		GrantedAmountCents:    bonusAmount,
-		RemainingAmountCents:  bonusAmount,
-		WageringRequiredCents: wageringRequired,
-		ExpiresAt:             expiresAt,
-		Metadata:              metadata,
+		UserID:                 req.UserID,
+		CampaignID:             &req.CampaignID,
+		BonusType:              campaign.CampaignType,
+		Status:                 "active",
+		GrantedAmountPoints:    bonusAmount,
+		RemainingAmountPoints:  bonusAmount,
+		WageringRequiredPoints: wageringRequired,
+		ExpiresAt:              expiresAt,
+		Metadata:               metadata,
 	}
 
 	created, err := s.repo.CreatePlayerBonus(ctx, pb)
@@ -414,7 +414,7 @@ func (s *Service) ClaimBonus(ctx context.Context, req ClaimBonusRequest) (Player
 	idempKey := fmt.Sprintf("bonus-grant:%d", created.ID)
 	_, err = s.walletSvc.CreditBonus(ctx, wallet.MutationRequest{
 		UserID:         req.UserID,
-		AmountCents:    bonusAmount,
+		AmountPoints:   bonusAmount,
 		IdempotencyKey: idempKey,
 		Reason:         fmt.Sprintf("bonus granted: %s (campaign %d)", campaign.Name, campaign.ID),
 	})
@@ -425,7 +425,7 @@ func (s *Service) ClaimBonus(ctx context.Context, req ClaimBonusRequest) (Player
 		return PlayerBonus{}, fmt.Errorf("credit bonus to wallet: %w", err)
 	}
 
-	// NOTE: claim_count / spent_cents were already incremented atomically by
+	// NOTE: claim_count / spent_points were already incremented atomically by
 	// ReserveClaim above (the race-safe replacement for IncrementClaimCount).
 
 	publishBonusEvent(ctx, s.bus, "bonus.granted", req.UserID, bonusGrantedEventPayload(req.UserID, created.ID, req.CampaignID, bonusAmount, &expiresAt, false))
@@ -482,9 +482,6 @@ func (s *Service) checkPunterEligibility(ctx context.Context, userID string, cfg
 
 // GrantBonus is the admin action to manually grant a bonus.
 func (s *Service) GrantBonus(ctx context.Context, req GrantBonusRequest) (PlayerBonus, error) {
-	if req.HasConflictingOverrideAliases() {
-		return PlayerBonus{}, fmt.Errorf("override_points_cents conflicts with override_amount_cents")
-	}
 	req.NormalizePointAliases()
 	if req.UserID == "" || req.CampaignID <= 0 {
 		return PlayerBonus{}, fmt.Errorf("missing user_id or campaign_id")
@@ -520,20 +517,20 @@ func (s *Service) GrantBonus(ctx context.Context, req GrantBonusRequest) (Player
 
 	// Determine the campaign's configured reward, used both as the default and
 	// as the cap for an admin override.
-	campaignReward := rewardCfg.FixedAmountCents
-	if campaignReward <= 0 && rewardCfg.MaxBonusCents > 0 {
-		campaignReward = rewardCfg.MaxBonusCents
+	campaignReward := rewardCfg.FixedAmountPoints
+	if campaignReward <= 0 && rewardCfg.MaxBonusPoints > 0 {
+		campaignReward = rewardCfg.MaxBonusPoints
 	}
 
 	bonusAmount := campaignReward
-	if req.OverrideAmountCents != nil && *req.OverrideAmountCents > 0 {
-		override := *req.OverrideAmountCents
+	if req.OverridePoints != nil && *req.OverridePoints > 0 {
+		override := *req.OverridePoints
 		// Cap the override at the campaign reward when one is configured;
 		// otherwise fall back to the absolute ceiling. This prevents an
 		// unbounded admin grant from minting arbitrary point balances.
 		overrideCap := campaignReward
 		if overrideCap <= 0 {
-			overrideCap = maxBonusAmountCents
+			overrideCap = maxBonusAmountPoints
 		}
 		if override > overrideCap {
 			override = overrideCap
@@ -543,9 +540,9 @@ func (s *Service) GrantBonus(ctx context.Context, req GrantBonusRequest) (Player
 	if bonusAmount <= 0 {
 		return PlayerBonus{}, fmt.Errorf("no bonus points determined")
 	}
-	if bonusAmount > maxBonusAmountCents {
+	if bonusAmount > maxBonusAmountPoints {
 		// Absolute backstop (e.g. when campaignReward itself is somehow huge).
-		bonusAmount = maxBonusAmountCents
+		bonusAmount = maxBonusAmountPoints
 	}
 
 	// Bounded wagering requirement (cannot overflow int64).
@@ -575,15 +572,15 @@ func (s *Service) GrantBonus(ctx context.Context, req GrantBonusRequest) (Player
 	})
 
 	pb := PlayerBonus{
-		UserID:                req.UserID,
-		CampaignID:            &req.CampaignID,
-		BonusType:             campaign.CampaignType,
-		Status:                "active",
-		GrantedAmountCents:    bonusAmount,
-		RemainingAmountCents:  bonusAmount,
-		WageringRequiredCents: wageringRequired,
-		ExpiresAt:             expiresAt,
-		Metadata:              metadata,
+		UserID:                 req.UserID,
+		CampaignID:             &req.CampaignID,
+		BonusType:              campaign.CampaignType,
+		Status:                 "active",
+		GrantedAmountPoints:    bonusAmount,
+		RemainingAmountPoints:  bonusAmount,
+		WageringRequiredPoints: wageringRequired,
+		ExpiresAt:              expiresAt,
+		Metadata:               metadata,
 	}
 
 	created, err := s.repo.CreatePlayerBonus(ctx, pb)
@@ -596,7 +593,7 @@ func (s *Service) GrantBonus(ctx context.Context, req GrantBonusRequest) (Player
 	idempKey := fmt.Sprintf("admin-bonus-grant:%d", created.ID)
 	_, err = s.walletSvc.CreditBonus(ctx, wallet.MutationRequest{
 		UserID:         req.UserID,
-		AmountCents:    bonusAmount,
+		AmountPoints:   bonusAmount,
 		IdempotencyKey: idempKey,
 		Reason:         fmt.Sprintf("admin grant: %s (%s)", req.Reason, campaign.Name),
 	})
@@ -605,7 +602,7 @@ func (s *Service) GrantBonus(ctx context.Context, req GrantBonusRequest) (Player
 		return PlayerBonus{}, fmt.Errorf("credit bonus to wallet: %w", err)
 	}
 
-	// NOTE: claim_count / spent_cents were already incremented atomically by
+	// NOTE: claim_count / spent_points were already incremented atomically by
 	// ReserveClaim above.
 
 	publishBonusEvent(ctx, s.bus, "bonus.granted", req.UserID, bonusGrantedEventPayload(req.UserID, created.ID, req.CampaignID, bonusAmount, nil, true))
@@ -625,7 +622,7 @@ func (s *Service) ForfeitPlayerBonus(ctx context.Context, bonusID int64, req For
 
 	// Remove the remaining point balance for this bonus grant.
 	idempKey := fmt.Sprintf("bonus-forfeit:%d", bonusID)
-	forfeitedEntry, err := s.walletSvc.ForfeitBonus(ctx, pb.UserID, pb.RemainingAmountCents,
+	forfeitedEntry, err := s.walletSvc.ForfeitBonus(ctx, pb.UserID, pb.RemainingAmountPoints,
 		fmt.Sprintf("forfeited: %s", req.Reason), idempKey)
 	if err != nil {
 		slog.Error("wallet forfeit failed", "bonusId", bonusID, "error", err)
@@ -636,7 +633,7 @@ func (s *Service) ForfeitPlayerBonus(ctx context.Context, bonusID int64, req For
 		return err
 	}
 
-	publishBonusEvent(ctx, s.bus, "bonus.forfeited", pb.UserID, bonusForfeitedEventPayload(pb.UserID, bonusID, forfeitedEntry.AmountCents, req.Reason, req.ForfeitedBy))
+	publishBonusEvent(ctx, s.bus, "bonus.forfeited", pb.UserID, bonusForfeitedEventPayload(pb.UserID, bonusID, forfeitedEntry.AmountPoints, req.Reason, req.ForfeitedBy))
 
 	return nil
 }
@@ -667,7 +664,7 @@ func (s *Service) ExpireActiveBonuses(ctx context.Context) (int64, error) {
 	var count int64
 	for _, pb := range expired {
 		idempKey := fmt.Sprintf("bonus-expire:%d", pb.ID)
-		forfeitedEntry, err := s.walletSvc.ForfeitBonus(ctx, pb.UserID, pb.RemainingAmountCents,
+		forfeitedEntry, err := s.walletSvc.ForfeitBonus(ctx, pb.UserID, pb.RemainingAmountPoints,
 			"bonus expired", idempKey)
 		if err != nil {
 			slog.Error("wallet forfeit on expiry failed",
@@ -681,7 +678,7 @@ func (s *Service) ExpireActiveBonuses(ctx context.Context) (int64, error) {
 			continue
 		}
 
-		publishBonusEvent(ctx, s.bus, "bonus.expired", pb.UserID, bonusExpiredEventPayload(pb.UserID, pb.ID, forfeitedEntry.AmountCents))
+		publishBonusEvent(ctx, s.bus, "bonus.expired", pb.UserID, bonusExpiredEventPayload(pb.UserID, pb.ID, forfeitedEntry.AmountPoints))
 		count++
 	}
 

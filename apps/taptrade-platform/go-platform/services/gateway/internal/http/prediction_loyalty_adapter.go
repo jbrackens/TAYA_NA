@@ -31,7 +31,7 @@ func newPredictionLoyaltyAdapter(svc *loyalty.PredictService) prediction.Loyalty
 func (a *predictionLoyaltyAdapter) AccrueSettledWithTx(ctx context.Context, tx *sql.Tx, req prediction.LoyaltyAccrualRequest) (*prediction.LoyaltyAccrualResult, error) {
 	res, err := a.svc.AccrueSettledWithTx(ctx, tx, loyalty.PredictSettlementAccrual{
 		UserID:         req.UserID,
-		VolumeCents:    req.VolumeCents,
+		VolumePoints:   req.VolumePoints,
 		IsCorrect:      req.IsCorrect,
 		MarketID:       req.MarketID,
 		TradeID:        req.TradeID,

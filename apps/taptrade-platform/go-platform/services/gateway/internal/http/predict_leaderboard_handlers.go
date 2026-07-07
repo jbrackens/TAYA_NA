@@ -145,8 +145,8 @@ func predictBoardPayload(b leaderboards.PredictBoardDef) map[string]any {
 		"unit":           "PTS",
 		"rewardSummary":  redactLaunchProhibitedUserText(b.QualificationMsg),
 	}
-	if b.MinVolumeCents > 0 {
-		p["minVolumePointsCents"] = b.MinVolumeCents
+	if b.MinVolumePoints > 0 {
+		p["minVolumePoints"] = b.MinVolumePoints
 	}
 	if b.CategorySlug != "" {
 		p["categorySlug"] = b.CategorySlug

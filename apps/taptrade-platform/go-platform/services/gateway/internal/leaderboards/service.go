@@ -21,8 +21,8 @@ var (
 )
 
 const (
-	metricNetProfitCents        = "net_profit_cents"
-	metricStakeCents            = "stake_cents"
+	metricNetProfitPoints       = "net_profit_points"
+	metricStakePoints           = "stake_points"
 	metricQualifiedReferrals    = "qualified_referrals"
 	eventTypeSettledBet         = "settled_bet"
 	eventTypeReferralConversion = "referral_conversion"
@@ -64,8 +64,8 @@ type SettlementScoreRequest struct {
 	PlayerID         string
 	BetID            string
 	SettlementStatus string
-	StakeCents       int64
-	PayoutCents      int64
+	StakePoints      int64
+	PayoutPoints     int64
 	SettledAt        time.Time
 }
 
@@ -119,7 +119,7 @@ func NewService() *Service {
 		Slug:           "weekly-points-race",
 		Name:           "Weekly Points Race",
 		Description:    "Top net point results this week.",
-		MetricKey:      metricNetProfitCents,
+		MetricKey:      metricNetProfitPoints,
 		EventType:      eventTypeSettledBet,
 		RankingMode:    canonicalv1.LeaderboardRankingModeSum,
 		Order:          canonicalv1.LeaderboardOrderDescending,
@@ -134,7 +134,7 @@ func NewService() *Service {
 		Slug:           "weekly-point-volume-ladder",
 		Name:           "Weekly Point Volume Ladder",
 		Description:    "Most qualified point volume this week.",
-		MetricKey:      metricStakeCents,
+		MetricKey:      metricStakePoints,
 		EventType:      eventTypeSettledBet,
 		RankingMode:    canonicalv1.LeaderboardRankingModeSum,
 		Order:          canonicalv1.LeaderboardOrderDescending,
@@ -310,7 +310,7 @@ func NewService() *Service {
 		Slug:           "last-week-points-race",
 		Name:           "Last Week's Points Race",
 		Description:    "Top net point results from last week.",
-		MetricKey:      metricNetProfitCents,
+		MetricKey:      metricNetProfitPoints,
 		EventType:      eventTypeSettledBet,
 		RankingMode:    canonicalv1.LeaderboardRankingModeSum,
 		Order:          canonicalv1.LeaderboardOrderDescending,
@@ -344,7 +344,7 @@ func NewService() *Service {
 		Slug:           "last-week-points-race",
 		Name:           "Last Week's Points Race",
 		Description:    "Top net point results from last week.",
-		MetricKey:      metricNetProfitCents,
+		MetricKey:      metricNetProfitPoints,
 		EventType:      eventTypeSettledBet,
 		RankingMode:    canonicalv1.LeaderboardRankingModeSum,
 		Order:          canonicalv1.LeaderboardOrderDescending,
@@ -363,7 +363,7 @@ func NewService() *Service {
 		Slug:           "monthly-vip-challenge",
 		Name:           "Monthly VIP Challenge",
 		Description:    "Exclusive monthly competition for VIP-tier players.",
-		MetricKey:      metricNetProfitCents,
+		MetricKey:      metricNetProfitPoints,
 		EventType:      eventTypeSettledBet,
 		RankingMode:    canonicalv1.LeaderboardRankingModeSum,
 		Order:          canonicalv1.LeaderboardOrderDescending,
@@ -623,7 +623,7 @@ func (s *Service) Recompute(id string) (canonicalv1.LeaderboardDefinition, []can
 func (s *Service) AccrueSettledBet(request SettlementScoreRequest) error {
 	playerID := strings.TrimSpace(request.PlayerID)
 	betID := strings.TrimSpace(request.BetID)
-	if playerID == "" || betID == "" || request.StakeCents <= 0 {
+	if playerID == "" || betID == "" || request.StakePoints <= 0 {
 		return ErrInvalidRequest
 	}
 
@@ -647,23 +647,23 @@ func (s *Service) AccrueSettledBet(request SettlementScoreRequest) error {
 			continue
 		}
 		switch definition.MetricKey {
-		case metricNetProfitCents, metricStakeCents:
+		case metricNetProfitPoints, metricStakePoints:
 			definitions = append(definitions, cloneDefinition(definition))
 		}
 	}
 	s.mu.RUnlock()
 
-	netProfit := float64(-request.StakeCents)
+	netProfit := float64(-request.StakePoints)
 	if status == "settled_won" {
-		netProfit = float64(request.PayoutCents - request.StakeCents)
+		netProfit = float64(request.PayoutPoints - request.StakePoints)
 	}
 
 	for _, definition := range definitions {
 		score := 0.0
 		switch definition.MetricKey {
-		case metricStakeCents:
-			score = float64(request.StakeCents)
-		case metricNetProfitCents:
+		case metricStakePoints:
+			score = float64(request.StakePoints)
+		case metricNetProfitPoints:
 			score = netProfit
 		default:
 			continue

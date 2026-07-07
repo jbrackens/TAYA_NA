@@ -193,7 +193,7 @@ function DashboardPageContent() {
         <section className={cardClassName}>
           <div className={cardLabelClassName}>24h Volume</div>
           <div className={cardValueClassName}>
-            {formatPoints(volume.totalVolumePointsCents)}
+            {formatPoints(volume.totalVolumePoints)}
           </div>
           <div className={cardSubClassName}>
             {volume.tradeCount} trade{volume.tradeCount === 1 ? "" : "s"}
@@ -206,7 +206,7 @@ function DashboardPageContent() {
           <ul className={listClassName}>
             {volume.topMovers.map((mv) => {
               const delta =
-                mv.yesPricePointsCentsNow - mv.yesPricePointsCentsStart;
+                mv.yesPricePointsNow - mv.yesPricePointsStart;
               const sign = delta > 0 ? "+" : delta < 0 ? "−" : "";
               return (
                 <li key={mv.marketId} className={listItemClassName}>
@@ -214,7 +214,7 @@ function DashboardPageContent() {
                   <span
                     className={`${monoValueClassName} ${moverDeltaClassName(delta)}`}
                   >
-                    {mv.yesPricePointsCentsStart}% → {mv.yesPricePointsCentsNow}
+                    {mv.yesPricePointsStart}% → {mv.yesPricePointsNow}
                     % ({sign}
                     {Math.abs(delta)})
                   </span>

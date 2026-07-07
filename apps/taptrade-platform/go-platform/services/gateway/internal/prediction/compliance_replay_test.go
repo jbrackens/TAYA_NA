@@ -32,7 +32,7 @@ func (r *idemRaceExchangeRepo) CreateOrder(ctx context.Context, o *Order) error 
 		winner.ID = "winner-1"
 		winner.Status = OrderStatusFilled
 		winner.FilledQuantity = o.Quantity
-		winner.CapturedCashCents = 190
+		winner.CapturedCashPoints = 190
 		r.memRepo.orders["winner-1"] = winner
 	}
 	return fmt.Errorf(`pq: duplicate key value violates unique constraint "orders_idempotency_key_key"`)
@@ -104,13 +104,13 @@ func TestPlaceOrder_ConcurrentIdempotentReplay_DoesNotDoubleRecord(t *testing.T)
 	idem := "race-key-1"
 	cap := int64(5000)
 	order, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:         "mkt-1",
-		Side:             OrderSideYes,
-		Action:           OrderActionBuy,
-		OrderType:        OrderTypeMarket,
-		Quantity:         10,
-		NotionalCapCents: &cap,
-		IdempotencyKey:   &idem,
+		MarketID:          "mkt-1",
+		Side:              OrderSideYes,
+		Action:            OrderActionBuy,
+		OrderType:         OrderTypeMarket,
+		Quantity:          10,
+		NotionalCapPoints: &cap,
+		IdempotencyKey:    &idem,
 	}, "user1")
 
 	if err != nil {

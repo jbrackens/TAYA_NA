@@ -51,22 +51,22 @@ type AgingMarket struct {
 
 // MarketExposure is one market's open exposure for the concentration table.
 type MarketExposure struct {
-	MarketID               string `json:"marketId"`
-	Ticker                 string `json:"ticker"`
-	Status                 string `json:"status"`
-	OpenPointCostCents     int64  `json:"openPointCostCents"`
-	MaxReturnedPointsCents int64  `json:"maxReturnedPointsCents"`
-	Holders                int    `json:"holders"`
+	MarketID            string `json:"marketId"`
+	Ticker              string `json:"ticker"`
+	Status              string `json:"status"`
+	OpenPointCostPoints int64  `json:"openPointCostPoints"`
+	MaxReturnedPoints   int64  `json:"maxReturnedPoints"`
+	Holders             int    `json:"holders"`
 }
 
 // PointAccountingInvariants are the platform-wide point-accounting aggregates.
 type PointAccountingInvariants struct {
-	OpenPositionPointCostCents int64 `json:"openPositionPointCostCents"`
-	MaxSettlementPointsCents   int64 `json:"maxSettlementPointsCents"`
-	ReservedPointsCents        int64 `json:"reservedPointsCents"`
-	OpenOrderCount             int   `json:"openOrderCount"`
-	NonTerminalMarkets         int   `json:"nonTerminalMarkets"`
-	DriftAlerts24h             int   `json:"driftAlerts24h"`
+	OpenPositionPointCostPoints int64 `json:"openPositionPointCostPoints"`
+	MaxSettlementPoints         int64 `json:"maxSettlementPoints"`
+	ReservedPoints              int64 `json:"reservedPoints"`
+	OpenOrderCount              int   `json:"openOrderCount"`
+	NonTerminalMarkets          int   `json:"nonTerminalMarkets"`
+	DriftAlerts24h              int   `json:"driftAlerts24h"`
 }
 
 const riskConcentrationLimit = 20
@@ -110,7 +110,7 @@ func (r *SQLRepository) RiskSnapshot(ctx context.Context) (*RiskSnapshot, error)
 	// 2. Cost-basis concentration — top markets by open position cost.
 	concRows, err := r.db.QueryContext(ctx, `
 		SELECT m.id, m.ticker, m.status,
-		       COALESCE(SUM(p.total_cost_cents), 0) AS open_cost,
+		       COALESCE(SUM(p.total_cost_points), 0) AS open_cost,
 		       COALESCE(SUM(CASE WHEN p.side = 'yes' THEN p.quantity ELSE 0 END), 0) AS yes_qty,
 		       COALESCE(SUM(CASE WHEN p.side = 'no'  THEN p.quantity ELSE 0 END), 0) AS no_qty,
 		       COUNT(DISTINCT p.user_id) AS holders
@@ -127,14 +127,14 @@ func (r *SQLRepository) RiskSnapshot(ctx context.Context) (*RiskSnapshot, error)
 	for concRows.Next() {
 		var m MarketExposure
 		var yesQty, noQty int64
-		if err := concRows.Scan(&m.MarketID, &m.Ticker, &m.Status, &m.OpenPointCostCents, &yesQty, &noQty, &m.Holders); err != nil {
+		if err := concRows.Scan(&m.MarketID, &m.Ticker, &m.Status, &m.OpenPointCostPoints, &yesQty, &noQty, &m.Holders); err != nil {
 			return nil, err
 		}
 		win := yesQty
 		if noQty > win {
 			win = noQty
 		}
-		m.MaxReturnedPointsCents = win * 100
+		m.MaxReturnedPoints = win * 100
 		snap.Concentration = append(snap.Concentration, m)
 	}
 	if err := concRows.Err(); err != nil {
@@ -142,21 +142,21 @@ func (r *SQLRepository) RiskSnapshot(ctx context.Context) (*RiskSnapshot, error)
 	}
 
 	// 3a. Open position point cost across non-terminal markets.
-	var openPositionPointCostCents int64
+	var openPositionPointCostPoints int64
 	if err := r.db.QueryRowContext(ctx, `
-		SELECT COALESCE(SUM(p.total_cost_cents), 0)
+		SELECT COALESCE(SUM(p.total_cost_points), 0)
 		FROM prediction_positions p
 		JOIN prediction_markets m ON m.id = p.market_id
 		WHERE p.quantity > 0 AND m.status = ANY($1)`,
 		pq.Array(nonTerminalMarketStatuses),
-	).Scan(&openPositionPointCostCents); err != nil {
+	).Scan(&openPositionPointCostPoints); err != nil {
 		return nil, err
 	}
 
 	// 3b. Worst-case settlement points: per market, the winning side's
 	// shares resolve at 100 point-cents each; platform exposure is the sum of
 	// each market's larger side.
-	var maxSettlementPointsCents int64
+	var maxSettlementPoints int64
 	if err := r.db.QueryRowContext(ctx, `
 		SELECT COALESCE(SUM(GREATEST(yes_qty, no_qty) * 100), 0) FROM (
 			SELECT m.id,
@@ -167,17 +167,17 @@ func (r *SQLRepository) RiskSnapshot(ctx context.Context) (*RiskSnapshot, error)
 			WHERE m.status = ANY($1)
 			GROUP BY m.id
 		) t`, pq.Array(nonTerminalMarketStatuses),
-	).Scan(&maxSettlementPointsCents); err != nil {
+	).Scan(&maxSettlementPoints); err != nil {
 		return nil, err
 	}
 
 	// 3c. Reserved (held, uncaptured) points on resting orders.
-	var reservedPointsCents int64
+	var reservedPoints int64
 	var openOrderCount int
 	if err := r.db.QueryRowContext(ctx, `
-		SELECT COALESCE(SUM(reserved_cash_cents - captured_cash_cents), 0), COUNT(*)
+		SELECT COALESCE(SUM(reserved_points - captured_points), 0), COUNT(*)
 		FROM prediction_orders WHERE status IN ('open', 'partial')`,
-	).Scan(&reservedPointsCents, &openOrderCount); err != nil {
+	).Scan(&reservedPoints, &openOrderCount); err != nil {
 		return nil, err
 	}
 
@@ -198,9 +198,9 @@ func (r *SQLRepository) RiskSnapshot(ctx context.Context) (*RiskSnapshot, error)
 	}
 
 	snap.PointAccounting = PointAccountingInvariants{
-		OpenPositionPointCostCents:  openPositionPointCostCents,
-		MaxSettlementPointsCents:    maxSettlementPointsCents,
-		ReservedPointsCents:         reservedPointsCents,
+		OpenPositionPointCostPoints: openPositionPointCostPoints,
+		MaxSettlementPoints:         maxSettlementPoints,
+		ReservedPoints:              reservedPoints,
 		OpenOrderCount:              openOrderCount,
 		NonTerminalMarkets:          nonTerminalMarkets,
 		DriftAlerts24h:              driftAlerts24h,

@@ -58,7 +58,7 @@ func PriceHistoryWindow(rng PriceHistoryRange, now, marketCreatedAt time.Time) (
 // GetPriceHistory fetches volume-weighted price buckets for a market
 // over the requested range. Empty buckets carry forward the prior
 // known price; the first bucket falls back to the market's current
-// yes_price_cents if no trades exist in the window.
+// yes_price_points if no trades exist in the window.
 func (s *Service) GetPriceHistory(ctx context.Context, marketID string, rng PriceHistoryRange) (*PriceHistoryResponse, error) {
 	market, err := s.repo.GetMarket(ctx, marketID)
 	if err != nil {
@@ -88,7 +88,7 @@ func (s *Service) GetPriceHistory(ctx context.Context, marketID string, rng Pric
 			}
 		}
 	}
-	points := fillPriceHistory(raw, since, until, bucketSec, market.YesPriceCents)
+	points := fillPriceHistory(raw, since, until, bucketSec, market.YesPricePoints)
 	return &PriceHistoryResponse{
 		MarketID:  market.ID,
 		Range:     string(rng),
@@ -119,9 +119,9 @@ func pricePointsHaveMovement(points []PricePoint) bool {
 	if len(points) < 2 {
 		return false
 	}
-	first := points[0].YesPriceCents
+	first := points[0].YesPricePoints
 	for _, p := range points[1:] {
-		if p.YesPriceCents != first {
+		if p.YesPricePoints != first {
 			return true
 		}
 	}
@@ -186,13 +186,13 @@ func fillPriceHistory(raw []PricePoint, since, until time.Time, bucketSec int, f
 	for b := startBucket; b <= endBucket; b += int64(bucketSec) {
 		if p, ok := rawByBucket[b]; ok {
 			out = append(out, p)
-			lastPrice = p.YesPriceCents
+			lastPrice = p.YesPricePoints
 		} else {
 			out = append(out, PricePoint{
-				BucketStart:   time.Unix(b, 0).UTC(),
-				YesPriceCents: lastPrice,
-				TradeCount:    0,
-				VolumeCents:   0,
+				BucketStart:    time.Unix(b, 0).UTC(),
+				YesPricePoints: lastPrice,
+				TradeCount:     0,
+				VolumePoints:   0,
 			})
 		}
 	}
@@ -215,8 +215,8 @@ func synthesizeFlatHistory(market *Market, since, until time.Time, bucketSec int
 	points := make([]PricePoint, 0, (endBucket-startBucket)/int64(bucketSec)+1)
 	for b := startBucket; b <= endBucket; b += int64(bucketSec) {
 		points = append(points, PricePoint{
-			BucketStart:   time.Unix(b, 0).UTC(),
-			YesPriceCents: market.YesPriceCents,
+			BucketStart:    time.Unix(b, 0).UTC(),
+			YesPricePoints: market.YesPricePoints,
 		})
 	}
 	return &PriceHistoryResponse{

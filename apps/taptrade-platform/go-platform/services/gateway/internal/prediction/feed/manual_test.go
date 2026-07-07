@@ -12,9 +12,9 @@ func TestManualAdapterName(t *testing.T) {
 		in   string
 		want string
 	}{
-		{"", "admin-manual"},          // default
+		{"", "admin-manual"}, // default
 		{"admin-manual", "admin-manual"},
-		{"manual", "manual"},          // legacy seed key — must route here
+		{"manual", "manual"}, // legacy seed key — must route here
 		{"oracle-stub", "oracle-stub"},
 	}
 	for _, c := range cases {

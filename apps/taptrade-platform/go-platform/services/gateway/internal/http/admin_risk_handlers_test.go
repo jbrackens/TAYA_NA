@@ -24,20 +24,20 @@ func TestWriteRiskSnapshotCSVUsesPointAccountingLabels(t *testing.T) {
 			}},
 		},
 		Concentration: []prediction.MarketExposure{{
-			MarketID:               "mkt-risk-2",
-			Ticker:                 "RISK-YES",
-			Status:                 "open",
-			OpenPointCostCents:     12345,
-			MaxReturnedPointsCents: 50000,
-			Holders:                7,
+			MarketID:            "mkt-risk-2",
+			Ticker:              "RISK-YES",
+			Status:              "open",
+			OpenPointCostPoints: 12345,
+			MaxReturnedPoints:   50000,
+			Holders:             7,
 		}},
 		PointAccounting: prediction.PointAccountingInvariants{
-			OpenPositionPointCostCents: 12345,
-			MaxSettlementPointsCents:   50000,
-			ReservedPointsCents:        2500,
-			OpenOrderCount:             3,
-			NonTerminalMarkets:         2,
-			DriftAlerts24h:             1,
+			OpenPositionPointCostPoints: 12345,
+			MaxSettlementPoints:         50000,
+			ReservedPoints:              2500,
+			OpenOrderCount:              3,
+			NonTerminalMarkets:          2,
+			DriftAlerts24h:              1,
 		},
 	}
 
@@ -115,22 +115,22 @@ func TestRiskSnapshotPayloadRedactsUnsafeTickersWithoutMutatingSnapshot(t *testi
 
 func TestRiskSnapshotJSONUsesOnlyPointAccountingFields(t *testing.T) {
 	pointAccounting := prediction.PointAccountingInvariants{
-		OpenPositionPointCostCents: 12345,
-		MaxSettlementPointsCents:   50000,
-		ReservedPointsCents:        2500,
-		OpenOrderCount:             3,
-		NonTerminalMarkets:         2,
-		DriftAlerts24h:             1,
+		OpenPositionPointCostPoints: 12345,
+		MaxSettlementPoints:         50000,
+		ReservedPoints:              2500,
+		OpenOrderCount:              3,
+		NonTerminalMarkets:          2,
+		DriftAlerts24h:              1,
 	}
 	snapshot := &prediction.RiskSnapshot{
 		GeneratedAt: "2026-06-24T09:30:00Z",
 		Concentration: []prediction.MarketExposure{{
-			MarketID:               "mkt-risk-2",
-			Ticker:                 "RISK-YES",
-			Status:                 "open",
-			OpenPointCostCents:     12345,
-			MaxReturnedPointsCents: 50000,
-			Holders:                7,
+			MarketID:            "mkt-risk-2",
+			Ticker:              "RISK-YES",
+			Status:              "open",
+			OpenPointCostPoints: 12345,
+			MaxReturnedPoints:   50000,
+			Holders:             7,
 		}},
 		PointAccounting: pointAccounting,
 	}
@@ -142,23 +142,23 @@ func TestRiskSnapshotJSONUsesOnlyPointAccountingFields(t *testing.T) {
 	body := string(payload)
 	for _, token := range []string{
 		`"pointAccounting"`,
-		`"openPositionPointCostCents":12345`,
-		`"maxSettlementPointsCents":50000`,
-		`"reservedPointsCents":2500`,
-		`"openPointCostCents":12345`,
-		`"maxReturnedPointsCents":50000`,
+		`"openPositionPointCostPoints":12345`,
+		`"maxSettlementPoints":50000`,
+		`"reservedPoints":2500`,
+		`"openPointCostPoints":12345`,
+		`"maxReturnedPoints":50000`,
 	} {
 		if !strings.Contains(body, token) {
 			t.Fatalf("expected JSON payload to contain %s, got %s", token, body)
 		}
 	}
 	for _, token := range []string{
-		`"openCostCents"`,
-		`"maxPayoutLiabilityCents"`,
+		`"openCostPoints"`,
+		`"maxPayoutLiabilityPoints"`,
 		`"moneyInvariants"`,
-		`"openPositionCostCents"`,
-		`"maxSettlementLiabilityCents"`,
-		`"reservedCashCents"`,
+		`"openPositionCostPoints"`,
+		`"maxSettlementLiabilityPoints"`,
+		`"reservedCashPoints"`,
 	} {
 		if strings.Contains(body, token) {
 			t.Fatalf("expected JSON payload to omit retired risk alias %s, got %s", token, body)

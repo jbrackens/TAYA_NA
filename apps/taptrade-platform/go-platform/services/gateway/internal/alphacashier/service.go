@@ -362,7 +362,7 @@ func (s *Service) SubmitDepositTx(ctx context.Context, userID string, id string,
 	}
 	mutation := wallet.MutationRequest{
 		UserID:         submitted.UserID,
-		AmountCents:    submitted.AmountCents,
+		AmountPoints:   submitted.AmountCents,
 		IdempotencyKey: "alpha-cashier:deposit:" + strconv64(evidence.ChainID) + ":" + strings.ToLower(evidence.TxHash) + ":" + strconv64(int64(evidence.LogIndex)),
 		Reason:         "alpha USDC deposit " + strconv64(evidence.ChainID) + "/" + strings.ToLower(evidence.TxHash),
 	}
@@ -457,7 +457,7 @@ func (s *Service) CreateWithdrawalRequest(ctx context.Context, userID string, de
 	id := uuid.NewString()
 	reservation, err := s.ledger.Hold(ctx, wallet.HoldRequest{
 		UserID:        userID,
-		AmountCents:   amountCents,
+		AmountPoints:  amountCents,
 		ReferenceType: withdrawalReferenceType,
 		ReferenceID:   id,
 		ExpiresIn:     withdrawalReservationTTL,

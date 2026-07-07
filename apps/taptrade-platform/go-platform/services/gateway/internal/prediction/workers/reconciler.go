@@ -87,7 +87,7 @@ func (w *Reconciler) tick(ctx context.Context) {
 			w.metrics.RecordReconcilerRun("error")
 			continue
 		}
-		if report.DriftCents == 0 && !report.YesNoMismatch {
+		if report.DriftPoints == 0 && !report.YesNoMismatch {
 			w.metrics.RecordReconcilerRun("clean")
 			continue
 		}
@@ -99,10 +99,10 @@ func (w *Reconciler) tick(ctx context.Context) {
 		slog.Error("reconciler: collateral drift detected",
 			"market", m.Ticker,
 			"market_id", m.ID,
-			"drift_cents", report.DriftCents,
+			"drift_points", report.DriftPoints,
 			// Authoritative: drift = ledger_sum - actual_pool.
-			"ledger_sum", report.LedgerSumCents,
-			"actual_pool", report.ActualPoolCents,
+			"ledger_sum", report.LedgerSumPoints,
+			"actual_pool", report.ActualPoolPoints,
 			// Forensic position aggregates (don't drive drift, but help
 			// bisect ledger-vs-positions disagreements when both surface
 			// at once).

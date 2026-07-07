@@ -300,7 +300,7 @@ CREATE TABLE IF NOT EXISTS prediction_trades (
   seller_id TEXT,
   market_id TEXT NOT NULL,
   side TEXT NOT NULL,
-  price_cents INT NOT NULL,
+  price_points INT NOT NULL,
   quantity INT NOT NULL,
   traded_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

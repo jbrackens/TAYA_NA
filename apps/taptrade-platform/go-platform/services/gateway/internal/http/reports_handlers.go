@@ -44,10 +44,10 @@ func registerReportsRoutes(mux *stdhttp.ServeMux, walletSvc *wallet.Service) {
 		get(base+"/promotions/usage", func(_ *stdhttp.Request) (any, error) {
 			return map[string]any{
 				"summary": map[string]any{
-					"unit":                   "PTS",
-					"pointRewardCampaigns":   0,
-					"usersWithPointRewards":  0,
-					"totalRewardPointsCents": 0,
+					"unit":                  "PTS",
+					"pointRewardCampaigns":  0,
+					"usersWithPointRewards": 0,
+					"totalRewardPoints":     0,
 				},
 			}, nil
 		})
@@ -65,14 +65,14 @@ func registerReportsRoutes(mux *stdhttp.ServeMux, walletSvc *wallet.Service) {
 }
 
 type walletReconciliationReport struct {
-	From                   string `json:"from,omitempty"`
-	To                     string `json:"to,omitempty"`
-	TotalCreditPointsCents int64  `json:"totalCreditPointsCents"`
-	TotalDebitPointsCents  int64  `json:"totalDebitPointsCents"`
-	NetMovementPointsCents int64  `json:"netMovementPointsCents"`
-	EntryCount             int64  `json:"entryCount"`
-	DistinctUserCount      int64  `json:"distinctUserCount"`
-	Unit                   string `json:"unit"`
+	From              string `json:"from,omitempty"`
+	To                string `json:"to,omitempty"`
+	TotalCreditPoints int64  `json:"totalCreditPoints"`
+	TotalDebitPoints  int64  `json:"totalDebitPoints"`
+	NetMovementPoints int64  `json:"netMovementPoints"`
+	EntryCount        int64  `json:"entryCount"`
+	DistinctUserCount int64  `json:"distinctUserCount"`
+	Unit              string `json:"unit"`
 }
 
 func pointWalletReconciliationReport(ctx context.Context, walletSvc *wallet.Service) (walletReconciliationReport, error) {
@@ -84,13 +84,13 @@ func pointWalletReconciliationReport(ctx context.Context, walletSvc *wallet.Serv
 		return walletReconciliationReport{}, err
 	}
 	return walletReconciliationReport{
-		From:                   summary.From,
-		To:                     summary.To,
-		TotalCreditPointsCents: summary.TotalCredits,
-		TotalDebitPointsCents:  summary.TotalDebits,
-		NetMovementPointsCents: summary.NetMovement,
-		EntryCount:             summary.EntryCount,
-		DistinctUserCount:      summary.DistinctUserIDs,
-		Unit:                   "PTS",
+		From:              summary.From,
+		To:                summary.To,
+		TotalCreditPoints: summary.TotalCredits,
+		TotalDebitPoints:  summary.TotalDebits,
+		NetMovementPoints: summary.NetMovement,
+		EntryCount:        summary.EntryCount,
+		DistinctUserCount: summary.DistinctUserIDs,
+		Unit:              "PTS",
 	}, nil
 }

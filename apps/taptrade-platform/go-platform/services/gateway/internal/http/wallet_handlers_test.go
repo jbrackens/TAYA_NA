@@ -79,8 +79,8 @@ func TestWalletLedgerEntryPayloadRedactsLegacyUnsafeReason(t *testing.T) {
 		EntryID:         "legacy-entry-1",
 		UserID:          "u-legacy-wallet-reason",
 		Type:            "credit",
-		AmountCents:     2500,
-		BalanceCents:    2500,
+		AmountPoints:    2500,
+		BalancePoints:   2500,
 		IdempotencyKey:  "legacy-wallet-reason",
 		Reason:          "cash deposit payout adjustment",
 		TransactionTime: "2026-04-23T14:58:00Z",
@@ -89,7 +89,7 @@ func TestWalletLedgerEntryPayloadRedactsLegacyUnsafeReason(t *testing.T) {
 	if payload["reason"] != launchRedactedUserText {
 		t.Fatalf("unsafe wallet ledger reason should be redacted, got %#v", payload["reason"])
 	}
-	if payload["unit"] != "PTS" || payload["amountPointsCents"] != int64(2500) || payload["idempotencyKey"] != "legacy-wallet-reason" {
+	if payload["unit"] != "PTS" || payload["amountPoints"] != int64(2500) || payload["idempotencyKey"] != "legacy-wallet-reason" {
 		t.Fatalf("stable wallet ledger fields should remain intact, got %+v", payload)
 	}
 }
@@ -139,7 +139,7 @@ func TestWalletCreditDebitBalanceAndLedgerFlow(t *testing.T) {
 	RegisterRoutes(mux, "gateway")
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
-	creditPayload := []byte(`{"userId":"u-wallet-1","amountPointsCents":1000,"idempotencyKey":"credit-1","reason":"admin point grant"}`)
+	creditPayload := []byte(`{"userId":"u-wallet-1","amountPoints":1000,"idempotencyKey":"credit-1","reason":"admin point grant"}`)
 	creditReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(creditPayload)))
 	creditRes := httptest.NewRecorder()
 	handler.ServeHTTP(creditRes, creditReq)
@@ -147,7 +147,7 @@ func TestWalletCreditDebitBalanceAndLedgerFlow(t *testing.T) {
 		t.Fatalf("expected credit status 200, got %d, body=%s", creditRes.Code, creditRes.Body.String())
 	}
 
-	debitPayload := []byte(`{"userId":"u-wallet-1","amountPointsCents":400,"idempotencyKey":"debit-1","reason":"prediction point adjustment"}`)
+	debitPayload := []byte(`{"userId":"u-wallet-1","amountPoints":400,"idempotencyKey":"debit-1","reason":"prediction point adjustment"}`)
 	debitReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/debit", bytes.NewBuffer(debitPayload)))
 	debitRes := httptest.NewRecorder()
 	handler.ServeHTTP(debitRes, debitReq)
@@ -169,16 +169,17 @@ func TestWalletCreditDebitBalanceAndLedgerFlow(t *testing.T) {
 	if balancePayload["unit"] != "PTS" {
 		t.Fatalf("expected point unit, got %v", balancePayload["unit"])
 	}
-	if int(balancePayload["balancePointsCents"].(float64)) != 600 {
-		t.Fatalf("expected point balance 600, got %v", balancePayload["balancePointsCents"])
+	if int(balancePayload["balancePoints"].(float64)) != 600 {
+		t.Fatalf("expected point balance 600, got %v", balancePayload["balancePoints"])
 	}
-	if int(balancePayload["availablePointsCents"].(float64)) != 600 {
-		t.Fatalf("expected available points 600, got %v", balancePayload["availablePointsCents"])
+	if int(balancePayload["availablePoints"].(float64)) != 600 {
+		t.Fatalf("expected available points 600, got %v", balancePayload["availablePoints"])
 	}
-	if int(balancePayload["reservedPointsCents"].(float64)) != 0 {
-		t.Fatalf("expected reserved points 0, got %v", balancePayload["reservedPointsCents"])
+	if int(balancePayload["reservedPoints"].(float64)) != 0 {
+		t.Fatalf("expected reserved points 0, got %v", balancePayload["reservedPoints"])
 	}
-	for _, retired := range []string{"balanceCents", "availableCents", "reservedCents"} {
+	// Points unit-model (2026-07-07): retired spellings are the cents-era keys.
+	for _, retired := range []string{"balancePointsCents", "availablePointsCents", "reservedPointsCents"} {
 		if _, ok := balancePayload[retired]; ok {
 			t.Fatalf("balance payload should not emit retired alias %s in %+v", retired, balancePayload)
 		}
@@ -198,16 +199,18 @@ func TestWalletCreditDebitBalanceAndLedgerFlow(t *testing.T) {
 	if breakdownPayload["unit"] != "PTS" {
 		t.Fatalf("expected breakdown point unit, got %v", breakdownPayload["unit"])
 	}
-	if int(breakdownPayload["basePointsCents"].(float64)) != 600 {
-		t.Fatalf("expected base points 600, got %v", breakdownPayload["basePointsCents"])
+	if int(breakdownPayload["basePoints"].(float64)) != 600 {
+		t.Fatalf("expected base points 600, got %v", breakdownPayload["basePoints"])
 	}
-	if int(breakdownPayload["bonusPointsCents"].(float64)) != 0 {
-		t.Fatalf("expected bonus points 0, got %v", breakdownPayload["bonusPointsCents"])
+	if int(breakdownPayload["bonusPoints"].(float64)) != 0 {
+		t.Fatalf("expected bonus points 0, got %v", breakdownPayload["bonusPoints"])
 	}
-	if int(breakdownPayload["totalPointsCents"].(float64)) != 600 {
-		t.Fatalf("expected total points 600, got %v", breakdownPayload["totalPointsCents"])
+	if int(breakdownPayload["totalPoints"].(float64)) != 600 {
+		t.Fatalf("expected total points 600, got %v", breakdownPayload["totalPoints"])
 	}
-	for _, retired := range []string{"realMoneyCents", "bonusFundCents", "totalCents", "currency"} {
+	// Points unit-model (2026-07-07): totalPoints is canonical; its retired
+	// spelling is the cents-era totalPointsCents.
+	for _, retired := range []string{"realMoneyPoints", "bonusFundPoints", "totalPointsCents", "currency"} {
 		if _, ok := breakdownPayload[retired]; ok {
 			t.Fatalf("breakdown payload should not emit retired alias %s in %+v", retired, breakdownPayload)
 		}
@@ -234,13 +237,14 @@ func TestWalletCreditDebitBalanceAndLedgerFlow(t *testing.T) {
 	if firstEntry["unit"] != "PTS" {
 		t.Fatalf("expected point unit on ledger entry, got %v", firstEntry["unit"])
 	}
-	if int(firstEntry["amountPointsCents"].(float64)) != 1000 {
+	if int(firstEntry["amountPoints"].(float64)) != 1000 {
 		t.Fatalf("expected amount points 1000, got entry=%+v", firstEntry)
 	}
-	if int(firstEntry["balancePointsCents"].(float64)) != 1000 {
+	if int(firstEntry["balancePoints"].(float64)) != 1000 {
 		t.Fatalf("expected balance points 1000, got entry=%+v", firstEntry)
 	}
-	for _, retired := range []string{"amountCents", "balanceCents"} {
+	// Points unit-model (2026-07-07): retired spellings are the cents-era keys.
+	for _, retired := range []string{"amountPointsCents", "balancePointsCents"} {
 		if _, ok := firstEntry[retired]; ok {
 			t.Fatalf("ledger entry should not emit retired alias %s in %+v", retired, firstEntry)
 		}
@@ -279,13 +283,14 @@ func TestWalletDailyClaimCreditsOncePerUtcDay(t *testing.T) {
 	if claimPayload["unit"] != "PTS" {
 		t.Fatalf("expected daily claim point unit, got %v", claimPayload["unit"])
 	}
-	if int(claimPayload["claimPointsCents"].(float64)) != 1200 {
-		t.Fatalf("expected configured claim point alias 1200, got %v", claimPayload["claimPointsCents"])
+	if int(claimPayload["claimPoints"].(float64)) != 1200 {
+		t.Fatalf("expected configured claim point alias 1200, got %v", claimPayload["claimPoints"])
 	}
-	if int(claimPayload["balancePointsCents"].(float64)) != 1200 {
-		t.Fatalf("expected stable point balance 1200 after duplicate claim, got %v", claimPayload["balancePointsCents"])
+	if int(claimPayload["balancePoints"].(float64)) != 1200 {
+		t.Fatalf("expected stable point balance 1200 after duplicate claim, got %v", claimPayload["balancePoints"])
 	}
-	for _, retired := range []string{"claimCents", "balanceCents"} {
+	// Points unit-model (2026-07-07): retired spellings are the cents-era keys.
+	for _, retired := range []string{"claimPointsCents", "balancePointsCents"} {
 		if _, ok := claimPayload[retired]; ok {
 			t.Fatalf("daily claim response should not emit retired alias %s in %+v", retired, claimPayload)
 		}
@@ -318,8 +323,8 @@ func TestWalletDailyClaimCreditsOncePerUtcDay(t *testing.T) {
 	if entry["reason"] != "daily_claim" {
 		t.Fatalf("expected daily_claim reason, got %v", entry["reason"])
 	}
-	if int(entry["amountPointsCents"].(float64)) != 1200 {
-		t.Fatalf("expected amount points 1200, got %v", entry["amountPointsCents"])
+	if int(entry["amountPoints"].(float64)) != 1200 {
+		t.Fatalf("expected amount points 1200, got %v", entry["amountPoints"])
 	}
 }
 
@@ -608,10 +613,10 @@ func TestWalletPointPackClaimCreditsOncePerPack(t *testing.T) {
 	if err := json.Unmarshal(listRes.Body.Bytes(), &listPayload); err != nil {
 		t.Fatalf("decode point pack list: %v", err)
 	}
-	if listPayload.Total == 0 || !listPayload.Items[0].Enabled || listPayload.Items[0].AmountPointsCents != 2500 {
+	if listPayload.Total == 0 || !listPayload.Items[0].Enabled || listPayload.Items[0].AmountPoints != 2500 {
 		t.Fatalf("expected enabled starter boost pack, got %+v", listPayload)
 	}
-	if listPayload.Items[0].Unit != "PTS" || listPayload.Items[0].AmountPointsCents != 2500 {
+	if listPayload.Items[0].Unit != "PTS" || listPayload.Items[0].AmountPoints != 2500 {
 		t.Fatalf("expected point-native starter boost pack, got %+v", listPayload.Items[0])
 	}
 	var listMap struct {
@@ -620,8 +625,10 @@ func TestWalletPointPackClaimCreditsOncePerPack(t *testing.T) {
 	if err := json.Unmarshal(listRes.Body.Bytes(), &listMap); err != nil {
 		t.Fatalf("decode point pack list map: %v", err)
 	}
-	if _, ok := listMap.Items[0]["amountCents"]; ok {
-		t.Fatalf("point pack list should not emit retired amountCents alias in %+v", listMap.Items[0])
+	// Points unit-model (2026-07-07): amountPoints is canonical; the retired
+	// spelling is the cents-era amountPointsCents.
+	if _, ok := listMap.Items[0]["amountPointsCents"]; ok {
+		t.Fatalf("point pack list should not emit retired amountPointsCents alias in %+v", listMap.Items[0])
 	}
 
 	firstReq := playerWalletContext(
@@ -650,13 +657,14 @@ func TestWalletPointPackClaimCreditsOncePerPack(t *testing.T) {
 	if claimPayload["unit"] != "PTS" {
 		t.Fatalf("expected point pack claim point unit, got %v", claimPayload["unit"])
 	}
-	if int(claimPayload["claimPointsCents"].(float64)) != 2500 {
-		t.Fatalf("expected configured pack point alias 2500, got %v", claimPayload["claimPointsCents"])
+	if int(claimPayload["claimPoints"].(float64)) != 2500 {
+		t.Fatalf("expected configured pack point alias 2500, got %v", claimPayload["claimPoints"])
 	}
-	if int(claimPayload["balancePointsCents"].(float64)) != 2500 {
-		t.Fatalf("expected stable point balance 2500 after duplicate pack claim, got %v", claimPayload["balancePointsCents"])
+	if int(claimPayload["balancePoints"].(float64)) != 2500 {
+		t.Fatalf("expected stable point balance 2500 after duplicate pack claim, got %v", claimPayload["balancePoints"])
 	}
-	for _, retired := range []string{"claimCents", "balanceCents"} {
+	// Points unit-model (2026-07-07): retired spellings are the cents-era keys.
+	for _, retired := range []string{"claimPointsCents", "balancePointsCents"} {
 		if _, ok := claimPayload[retired]; ok {
 			t.Fatalf("point pack claim response should not emit retired alias %s in %+v", retired, claimPayload)
 		}
@@ -788,14 +796,15 @@ func TestWalletRewardDailyGrantLimitBlocksNewRewardButAllowsRetry(t *testing.T) 
 	if err := json.Unmarshal(statusRes.Body.Bytes(), &status); err != nil {
 		t.Fatalf("decode reward limit status: %v", err)
 	}
-	if status.LimitPointsCents != 1000 || status.GrantedPointsCents != 800 || status.RemainingPointsCents != 200 {
+	if status.LimitPoints != 1000 || status.GrantedPoints != 800 || status.RemainingPoints != 200 {
 		t.Fatalf("unexpected reward limit status: %+v", status)
 	}
 	var statusPayload map[string]any
 	if err := json.Unmarshal(statusRes.Body.Bytes(), &statusPayload); err != nil {
 		t.Fatalf("decode reward limit status map: %v", err)
 	}
-	for _, retired := range []string{"limitCents", "grantedCents", "remainingCents"} {
+	// Points unit-model (2026-07-07): retired spellings are the cents-era keys.
+	for _, retired := range []string{"limitPointsCents", "grantedPointsCents", "remainingPointsCents"} {
 		if _, ok := statusPayload[retired]; ok {
 			t.Fatalf("reward limit status should not emit retired alias %s in %+v", retired, statusPayload)
 		}
@@ -883,13 +892,14 @@ func TestWalletDailyMissionCompletesFromLedgerAndCreditsOnce(t *testing.T) {
 	if claimPayload["unit"] != "PTS" {
 		t.Fatalf("expected mission claim point unit, got %v", claimPayload["unit"])
 	}
-	if int(claimPayload["claimPointsCents"].(float64)) != 300 {
-		t.Fatalf("expected mission point reward 300, got %v", claimPayload["claimPointsCents"])
+	if int(claimPayload["claimPoints"].(float64)) != 300 {
+		t.Fatalf("expected mission point reward 300, got %v", claimPayload["claimPoints"])
 	}
-	if int(claimPayload["balancePointsCents"].(float64)) != 1500 {
-		t.Fatalf("expected stable point balance 1500 after duplicate mission claim, got %v", claimPayload["balancePointsCents"])
+	if int(claimPayload["balancePoints"].(float64)) != 1500 {
+		t.Fatalf("expected stable point balance 1500 after duplicate mission claim, got %v", claimPayload["balancePoints"])
 	}
-	for _, retired := range []string{"claimCents", "balanceCents"} {
+	// Points unit-model (2026-07-07): retired spellings are the cents-era keys.
+	for _, retired := range []string{"claimPointsCents", "balancePointsCents"} {
 		if _, ok := claimPayload[retired]; ok {
 			t.Fatalf("mission claim response should not emit retired alias %s in %+v", retired, claimPayload)
 		}
@@ -927,7 +937,7 @@ func TestWalletFirstPredictionMissionCompletesFromOrderLedgerEvidence(t *testing
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 	userID := "u-first-prediction-1"
 
-	seed := []byte(`{"userId":"` + userID + `","amountPointsCents":250,"idempotencyKey":"reservation:prediction_order:order-first-1","reason":"reservation:prediction_order:order-first-1"}`)
+	seed := []byte(`{"userId":"` + userID + `","amountPoints":250,"idempotencyKey":"reservation:prediction_order:order-first-1","reason":"reservation:prediction_order:order-first-1"}`)
 	seedReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(seed)))
 	seedRes := httptest.NewRecorder()
 	handler.ServeHTTP(seedRes, seedReq)
@@ -954,7 +964,7 @@ func TestWalletFirstPredictionMissionCompletesFromOrderLedgerEvidence(t *testing
 			break
 		}
 	}
-	if !firstPrediction.Completed || firstPrediction.Claimed || firstPrediction.RewardPointsCents != 450 {
+	if !firstPrediction.Completed || firstPrediction.Claimed || firstPrediction.RewardPoints != 450 {
 		t.Fatalf("expected complete unclaimed first-prediction mission, got %+v", firstPrediction)
 	}
 
@@ -978,14 +988,14 @@ func TestWalletFirstPredictionMissionCompletesFromOrderLedgerEvidence(t *testing
 	}
 
 	var claimPayload struct {
-		ClaimPointsCents   int64  `json:"claimPointsCents"`
-		BalancePointsCents int64  `json:"balancePointsCents"`
-		Unit               string `json:"unit"`
+		ClaimPoints   int64  `json:"claimPoints"`
+		BalancePoints int64  `json:"balancePoints"`
+		Unit          string `json:"unit"`
 	}
 	if err := json.Unmarshal(secondRes.Body.Bytes(), &claimPayload); err != nil {
 		t.Fatalf("decode mission claim: %v", err)
 	}
-	if claimPayload.Unit != "PTS" || claimPayload.ClaimPointsCents != 450 || claimPayload.BalancePointsCents != 700 {
+	if claimPayload.Unit != "PTS" || claimPayload.ClaimPoints != 450 || claimPayload.BalancePoints != 700 {
 		t.Fatalf("expected stable first prediction mission point response, got %+v", claimPayload)
 	}
 
@@ -1021,7 +1031,7 @@ func TestWalletThreePredictionsMissionCompletesFromOrderLedgerEvidence(t *testin
 	userID := "u-three-predictions-1"
 
 	for i := 1; i <= 3; i++ {
-		seed := []byte(`{"userId":"` + userID + `","amountPointsCents":250,"idempotencyKey":"reservation:prediction_order:order-three-` + strconv.Itoa(i) + `","reason":"reservation:prediction_order:order-three-` + strconv.Itoa(i) + `"}`)
+		seed := []byte(`{"userId":"` + userID + `","amountPoints":250,"idempotencyKey":"reservation:prediction_order:order-three-` + strconv.Itoa(i) + `","reason":"reservation:prediction_order:order-three-` + strconv.Itoa(i) + `"}`)
 		seedReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(seed)))
 		seedRes := httptest.NewRecorder()
 		handler.ServeHTTP(seedRes, seedReq)
@@ -1049,7 +1059,7 @@ func TestWalletThreePredictionsMissionCompletesFromOrderLedgerEvidence(t *testin
 			break
 		}
 	}
-	if !threePredictions.Completed || threePredictions.Claimed || threePredictions.Progress != 3 || threePredictions.Target != 3 || threePredictions.RewardPointsCents != 575 {
+	if !threePredictions.Completed || threePredictions.Claimed || threePredictions.Progress != 3 || threePredictions.Target != 3 || threePredictions.RewardPoints != 575 {
 		t.Fatalf("expected complete unclaimed three-predictions mission, got %+v", threePredictions)
 	}
 
@@ -1073,14 +1083,14 @@ func TestWalletThreePredictionsMissionCompletesFromOrderLedgerEvidence(t *testin
 	}
 
 	var claimPayload struct {
-		ClaimPointsCents   int64  `json:"claimPointsCents"`
-		BalancePointsCents int64  `json:"balancePointsCents"`
-		Unit               string `json:"unit"`
+		ClaimPoints   int64  `json:"claimPoints"`
+		BalancePoints int64  `json:"balancePoints"`
+		Unit          string `json:"unit"`
 	}
 	if err := json.Unmarshal(secondRes.Body.Bytes(), &claimPayload); err != nil {
 		t.Fatalf("decode mission claim: %v", err)
 	}
-	if claimPayload.Unit != "PTS" || claimPayload.ClaimPointsCents != 575 || claimPayload.BalancePointsCents != 1325 {
+	if claimPayload.Unit != "PTS" || claimPayload.ClaimPoints != 575 || claimPayload.BalancePoints != 1325 {
 		t.Fatalf("expected stable three-predictions mission point response, got %+v", claimPayload)
 	}
 
@@ -1116,7 +1126,7 @@ func TestWalletFivePredictionsMissionCompletesFromOrderLedgerEvidence(t *testing
 	userID := "u-five-predictions-1"
 
 	for i := 1; i <= 5; i++ {
-		seed := []byte(`{"userId":"` + userID + `","amountPointsCents":200,"idempotencyKey":"reservation:prediction_order:order-five-` + strconv.Itoa(i) + `","reason":"reservation:prediction_order:order-five-` + strconv.Itoa(i) + `"}`)
+		seed := []byte(`{"userId":"` + userID + `","amountPoints":200,"idempotencyKey":"reservation:prediction_order:order-five-` + strconv.Itoa(i) + `","reason":"reservation:prediction_order:order-five-` + strconv.Itoa(i) + `"}`)
 		seedReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(seed)))
 		seedRes := httptest.NewRecorder()
 		handler.ServeHTTP(seedRes, seedReq)
@@ -1144,7 +1154,7 @@ func TestWalletFivePredictionsMissionCompletesFromOrderLedgerEvidence(t *testing
 			break
 		}
 	}
-	if !fivePredictions.Completed || fivePredictions.Claimed || fivePredictions.Progress != 5 || fivePredictions.Target != 5 || fivePredictions.RewardPointsCents != 625 {
+	if !fivePredictions.Completed || fivePredictions.Claimed || fivePredictions.Progress != 5 || fivePredictions.Target != 5 || fivePredictions.RewardPoints != 625 {
 		t.Fatalf("expected complete unclaimed five-predictions mission, got %+v", fivePredictions)
 	}
 
@@ -1168,14 +1178,14 @@ func TestWalletFivePredictionsMissionCompletesFromOrderLedgerEvidence(t *testing
 	}
 
 	var claimPayload struct {
-		ClaimPointsCents   int64  `json:"claimPointsCents"`
-		BalancePointsCents int64  `json:"balancePointsCents"`
-		Unit               string `json:"unit"`
+		ClaimPoints   int64  `json:"claimPoints"`
+		BalancePoints int64  `json:"balancePoints"`
+		Unit          string `json:"unit"`
 	}
 	if err := json.Unmarshal(secondRes.Body.Bytes(), &claimPayload); err != nil {
 		t.Fatalf("decode mission claim: %v", err)
 	}
-	if claimPayload.Unit != "PTS" || claimPayload.ClaimPointsCents != 625 || claimPayload.BalancePointsCents != 1625 {
+	if claimPayload.Unit != "PTS" || claimPayload.ClaimPoints != 625 || claimPayload.BalancePoints != 1625 {
 		t.Fatalf("expected stable five-predictions mission point response, got %+v", claimPayload)
 	}
 
@@ -1211,7 +1221,7 @@ func TestWalletTenPredictionsMissionCompletesFromOrderLedgerEvidence(t *testing.
 	userID := "u-ten-predictions-1"
 
 	for i := 1; i <= 10; i++ {
-		seed := []byte(`{"userId":"` + userID + `","amountPointsCents":100,"idempotencyKey":"reservation:prediction_order:order-ten-` + strconv.Itoa(i) + `","reason":"reservation:prediction_order:order-ten-` + strconv.Itoa(i) + `"}`)
+		seed := []byte(`{"userId":"` + userID + `","amountPoints":100,"idempotencyKey":"reservation:prediction_order:order-ten-` + strconv.Itoa(i) + `","reason":"reservation:prediction_order:order-ten-` + strconv.Itoa(i) + `"}`)
 		seedReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(seed)))
 		seedRes := httptest.NewRecorder()
 		handler.ServeHTTP(seedRes, seedReq)
@@ -1239,7 +1249,7 @@ func TestWalletTenPredictionsMissionCompletesFromOrderLedgerEvidence(t *testing.
 			break
 		}
 	}
-	if !tenPredictions.Completed || tenPredictions.Claimed || tenPredictions.Progress != 10 || tenPredictions.Target != 10 || tenPredictions.RewardPointsCents != 825 {
+	if !tenPredictions.Completed || tenPredictions.Claimed || tenPredictions.Progress != 10 || tenPredictions.Target != 10 || tenPredictions.RewardPoints != 825 {
 		t.Fatalf("expected complete unclaimed ten-predictions mission, got %+v", tenPredictions)
 	}
 
@@ -1263,14 +1273,14 @@ func TestWalletTenPredictionsMissionCompletesFromOrderLedgerEvidence(t *testing.
 	}
 
 	var claimPayload struct {
-		ClaimPointsCents   int64  `json:"claimPointsCents"`
-		BalancePointsCents int64  `json:"balancePointsCents"`
-		Unit               string `json:"unit"`
+		ClaimPoints   int64  `json:"claimPoints"`
+		BalancePoints int64  `json:"balancePoints"`
+		Unit          string `json:"unit"`
 	}
 	if err := json.Unmarshal(secondRes.Body.Bytes(), &claimPayload); err != nil {
 		t.Fatalf("decode mission claim: %v", err)
 	}
-	if claimPayload.Unit != "PTS" || claimPayload.ClaimPointsCents != 825 || claimPayload.BalancePointsCents != 1825 {
+	if claimPayload.Unit != "PTS" || claimPayload.ClaimPoints != 825 || claimPayload.BalancePoints != 1825 {
 		t.Fatalf("expected stable ten-predictions mission point response, got %+v", claimPayload)
 	}
 
@@ -1305,7 +1315,7 @@ func TestWalletSettledResultMissionCompletesFromPayoutLedgerEvidence(t *testing.
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 	userID := "u-settled-result-1"
 
-	seed := []byte(`{"userId":"` + userID + `","amountPointsCents":800,"idempotencyKey":"prediction_payout:mkt-final:pos-win-1","reason":"prediction settlement: market final resolved YES, YES position won"}`)
+	seed := []byte(`{"userId":"` + userID + `","amountPoints":800,"idempotencyKey":"prediction_payout:mkt-final:pos-win-1","reason":"prediction settlement: market final resolved YES, YES position won"}`)
 	seedReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(seed)))
 	seedRes := httptest.NewRecorder()
 	handler.ServeHTTP(seedRes, seedReq)
@@ -1332,7 +1342,7 @@ func TestWalletSettledResultMissionCompletesFromPayoutLedgerEvidence(t *testing.
 			break
 		}
 	}
-	if !settledResult.Completed || settledResult.Claimed || settledResult.RewardPointsCents != 550 {
+	if !settledResult.Completed || settledResult.Claimed || settledResult.RewardPoints != 550 {
 		t.Fatalf("expected complete unclaimed settled-result mission, got %+v", settledResult)
 	}
 
@@ -1356,14 +1366,14 @@ func TestWalletSettledResultMissionCompletesFromPayoutLedgerEvidence(t *testing.
 	}
 
 	var claimPayload struct {
-		ClaimPointsCents   int64  `json:"claimPointsCents"`
-		BalancePointsCents int64  `json:"balancePointsCents"`
-		Unit               string `json:"unit"`
+		ClaimPoints   int64  `json:"claimPoints"`
+		BalancePoints int64  `json:"balancePoints"`
+		Unit          string `json:"unit"`
 	}
 	if err := json.Unmarshal(secondRes.Body.Bytes(), &claimPayload); err != nil {
 		t.Fatalf("decode mission claim: %v", err)
 	}
-	if claimPayload.Unit != "PTS" || claimPayload.ClaimPointsCents != 550 || claimPayload.BalancePointsCents != 1350 {
+	if claimPayload.Unit != "PTS" || claimPayload.ClaimPoints != 550 || claimPayload.BalancePoints != 1350 {
 		t.Fatalf("expected stable settled-result mission point response, got %+v", claimPayload)
 	}
 
@@ -1399,7 +1409,7 @@ func TestWalletThreeSettledResultsMissionCompletesFromPayoutLedgerEvidence(t *te
 	userID := "u-three-settled-results-1"
 
 	for i := 1; i <= 3; i++ {
-		seed := []byte(`{"userId":"` + userID + `","amountPointsCents":800,"idempotencyKey":"prediction_payout:mkt-three-` + strconv.Itoa(i) + `:pos-win-` + strconv.Itoa(i) + `","reason":"prediction settlement: market three resolved YES, YES position won"}`)
+		seed := []byte(`{"userId":"` + userID + `","amountPoints":800,"idempotencyKey":"prediction_payout:mkt-three-` + strconv.Itoa(i) + `:pos-win-` + strconv.Itoa(i) + `","reason":"prediction settlement: market three resolved YES, YES position won"}`)
 		seedReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(seed)))
 		seedRes := httptest.NewRecorder()
 		handler.ServeHTTP(seedRes, seedReq)
@@ -1427,7 +1437,7 @@ func TestWalletThreeSettledResultsMissionCompletesFromPayoutLedgerEvidence(t *te
 			break
 		}
 	}
-	if !threeSettled.Completed || threeSettled.Claimed || threeSettled.Progress != 3 || threeSettled.Target != 3 || threeSettled.RewardPointsCents != 675 {
+	if !threeSettled.Completed || threeSettled.Claimed || threeSettled.Progress != 3 || threeSettled.Target != 3 || threeSettled.RewardPoints != 675 {
 		t.Fatalf("expected complete unclaimed three-settled-results mission, got %+v", threeSettled)
 	}
 
@@ -1451,14 +1461,14 @@ func TestWalletThreeSettledResultsMissionCompletesFromPayoutLedgerEvidence(t *te
 	}
 
 	var claimPayload struct {
-		ClaimPointsCents   int64  `json:"claimPointsCents"`
-		BalancePointsCents int64  `json:"balancePointsCents"`
-		Unit               string `json:"unit"`
+		ClaimPoints   int64  `json:"claimPoints"`
+		BalancePoints int64  `json:"balancePoints"`
+		Unit          string `json:"unit"`
 	}
 	if err := json.Unmarshal(secondRes.Body.Bytes(), &claimPayload); err != nil {
 		t.Fatalf("decode mission claim: %v", err)
 	}
-	if claimPayload.Unit != "PTS" || claimPayload.ClaimPointsCents != 675 || claimPayload.BalancePointsCents != 3075 {
+	if claimPayload.Unit != "PTS" || claimPayload.ClaimPoints != 675 || claimPayload.BalancePoints != 3075 {
 		t.Fatalf("expected stable three-settled-results mission point response, got %+v", claimPayload)
 	}
 
@@ -1494,7 +1504,7 @@ func TestWalletFiveSettledResultsMissionCompletesFromPayoutLedgerEvidence(t *tes
 	userID := "u-five-settled-results-1"
 
 	for i := 1; i <= 5; i++ {
-		seed := []byte(`{"userId":"` + userID + `","amountPointsCents":700,"idempotencyKey":"prediction_payout:mkt-five-` + strconv.Itoa(i) + `:pos-win-` + strconv.Itoa(i) + `","reason":"prediction settlement: market five resolved YES, YES position won"}`)
+		seed := []byte(`{"userId":"` + userID + `","amountPoints":700,"idempotencyKey":"prediction_payout:mkt-five-` + strconv.Itoa(i) + `:pos-win-` + strconv.Itoa(i) + `","reason":"prediction settlement: market five resolved YES, YES position won"}`)
 		seedReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(seed)))
 		seedRes := httptest.NewRecorder()
 		handler.ServeHTTP(seedRes, seedReq)
@@ -1522,7 +1532,7 @@ func TestWalletFiveSettledResultsMissionCompletesFromPayoutLedgerEvidence(t *tes
 			break
 		}
 	}
-	if !fiveSettled.Completed || fiveSettled.Claimed || fiveSettled.Progress != 5 || fiveSettled.Target != 5 || fiveSettled.RewardPointsCents != 725 {
+	if !fiveSettled.Completed || fiveSettled.Claimed || fiveSettled.Progress != 5 || fiveSettled.Target != 5 || fiveSettled.RewardPoints != 725 {
 		t.Fatalf("expected complete unclaimed five-settled-results mission, got %+v", fiveSettled)
 	}
 
@@ -1546,14 +1556,14 @@ func TestWalletFiveSettledResultsMissionCompletesFromPayoutLedgerEvidence(t *tes
 	}
 
 	var claimPayload struct {
-		ClaimPointsCents   int64  `json:"claimPointsCents"`
-		BalancePointsCents int64  `json:"balancePointsCents"`
-		Unit               string `json:"unit"`
+		ClaimPoints   int64  `json:"claimPoints"`
+		BalancePoints int64  `json:"balancePoints"`
+		Unit          string `json:"unit"`
 	}
 	if err := json.Unmarshal(secondRes.Body.Bytes(), &claimPayload); err != nil {
 		t.Fatalf("decode mission claim: %v", err)
 	}
-	if claimPayload.Unit != "PTS" || claimPayload.ClaimPointsCents != 725 || claimPayload.BalancePointsCents != 4225 {
+	if claimPayload.Unit != "PTS" || claimPayload.ClaimPoints != 725 || claimPayload.BalancePoints != 4225 {
 		t.Fatalf("expected stable five-settled-results mission point response, got %+v", claimPayload)
 	}
 
@@ -1589,7 +1599,7 @@ func TestWalletTenSettledResultsMissionCompletesFromPayoutLedgerEvidence(t *test
 	userID := "u-ten-settled-results-1"
 
 	for i := 1; i <= 10; i++ {
-		seed := []byte(`{"userId":"` + userID + `","amountPointsCents":600,"idempotencyKey":"prediction_payout:mkt-ten-` + strconv.Itoa(i) + `:pos-win-` + strconv.Itoa(i) + `","reason":"prediction settlement: market ten resolved YES, YES position won"}`)
+		seed := []byte(`{"userId":"` + userID + `","amountPoints":600,"idempotencyKey":"prediction_payout:mkt-ten-` + strconv.Itoa(i) + `:pos-win-` + strconv.Itoa(i) + `","reason":"prediction settlement: market ten resolved YES, YES position won"}`)
 		seedReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(seed)))
 		seedRes := httptest.NewRecorder()
 		handler.ServeHTTP(seedRes, seedReq)
@@ -1617,7 +1627,7 @@ func TestWalletTenSettledResultsMissionCompletesFromPayoutLedgerEvidence(t *test
 			break
 		}
 	}
-	if !tenSettled.Completed || tenSettled.Claimed || tenSettled.Progress != 10 || tenSettled.Target != 10 || tenSettled.RewardPointsCents != 925 {
+	if !tenSettled.Completed || tenSettled.Claimed || tenSettled.Progress != 10 || tenSettled.Target != 10 || tenSettled.RewardPoints != 925 {
 		t.Fatalf("expected complete unclaimed ten-settled-results mission, got %+v", tenSettled)
 	}
 
@@ -1641,14 +1651,14 @@ func TestWalletTenSettledResultsMissionCompletesFromPayoutLedgerEvidence(t *test
 	}
 
 	var claimPayload struct {
-		ClaimPointsCents   int64  `json:"claimPointsCents"`
-		BalancePointsCents int64  `json:"balancePointsCents"`
-		Unit               string `json:"unit"`
+		ClaimPoints   int64  `json:"claimPoints"`
+		BalancePoints int64  `json:"balancePoints"`
+		Unit          string `json:"unit"`
 	}
 	if err := json.Unmarshal(secondRes.Body.Bytes(), &claimPayload); err != nil {
 		t.Fatalf("decode mission claim: %v", err)
 	}
-	if claimPayload.Unit != "PTS" || claimPayload.ClaimPointsCents != 925 || claimPayload.BalancePointsCents != 6925 {
+	if claimPayload.Unit != "PTS" || claimPayload.ClaimPoints != 925 || claimPayload.BalancePoints != 6925 {
 		t.Fatalf("expected stable ten-settled-results mission point response, got %+v", claimPayload)
 	}
 
@@ -1686,7 +1696,7 @@ func TestWalletWeeklyCheckInMissionCompletesFromDailyClaimStreak(t *testing.T) {
 
 	for i := 0; i < 7; i++ {
 		date := now.AddDate(0, 0, -i).Format("2006-01-02")
-		payload := []byte(`{"userId":"` + userID + `","amountPointsCents":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
+		payload := []byte(`{"userId":"` + userID + `","amountPoints":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
 		req := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(payload)))
 		res := httptest.NewRecorder()
 		handler.ServeHTTP(res, req)
@@ -1714,7 +1724,7 @@ func TestWalletWeeklyCheckInMissionCompletesFromDailyClaimStreak(t *testing.T) {
 			break
 		}
 	}
-	if !weekly.Completed || weekly.Claimed || weekly.Progress != 7 || weekly.Target != 7 || weekly.RewardPointsCents != 650 {
+	if !weekly.Completed || weekly.Claimed || weekly.Progress != 7 || weekly.Target != 7 || weekly.RewardPoints != 650 {
 		t.Fatalf("expected complete unclaimed weekly mission, got %+v", weekly)
 	}
 
@@ -1738,14 +1748,14 @@ func TestWalletWeeklyCheckInMissionCompletesFromDailyClaimStreak(t *testing.T) {
 	}
 
 	var claimPayload struct {
-		ClaimPointsCents   int64  `json:"claimPointsCents"`
-		BalancePointsCents int64  `json:"balancePointsCents"`
-		Unit               string `json:"unit"`
+		ClaimPoints   int64  `json:"claimPoints"`
+		BalancePoints int64  `json:"balancePoints"`
+		Unit          string `json:"unit"`
 	}
 	if err := json.Unmarshal(secondRes.Body.Bytes(), &claimPayload); err != nil {
 		t.Fatalf("decode weekly mission claim: %v", err)
 	}
-	if claimPayload.Unit != "PTS" || claimPayload.ClaimPointsCents != 650 || claimPayload.BalancePointsCents != 1350 {
+	if claimPayload.Unit != "PTS" || claimPayload.ClaimPoints != 650 || claimPayload.BalancePoints != 1350 {
 		t.Fatalf("expected stable weekly mission point response, got %+v", claimPayload)
 	}
 
@@ -1783,7 +1793,7 @@ func TestWalletMonthlyCheckInMissionCompletesFromDailyClaimStreak(t *testing.T) 
 
 	for i := 0; i < 30; i++ {
 		date := now.AddDate(0, 0, -i).Format("2006-01-02")
-		payload := []byte(`{"userId":"` + userID + `","amountPointsCents":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
+		payload := []byte(`{"userId":"` + userID + `","amountPoints":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
 		req := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(payload)))
 		res := httptest.NewRecorder()
 		handler.ServeHTTP(res, req)
@@ -1811,7 +1821,7 @@ func TestWalletMonthlyCheckInMissionCompletesFromDailyClaimStreak(t *testing.T) 
 			break
 		}
 	}
-	if !monthly.Completed || monthly.Claimed || monthly.Progress != 30 || monthly.Target != 30 || monthly.RewardPointsCents != 4200 {
+	if !monthly.Completed || monthly.Claimed || monthly.Progress != 30 || monthly.Target != 30 || monthly.RewardPoints != 4200 {
 		t.Fatalf("expected complete unclaimed monthly mission, got %+v", monthly)
 	}
 
@@ -1835,14 +1845,14 @@ func TestWalletMonthlyCheckInMissionCompletesFromDailyClaimStreak(t *testing.T) 
 	}
 
 	var claimPayload struct {
-		ClaimPointsCents   int64  `json:"claimPointsCents"`
-		BalancePointsCents int64  `json:"balancePointsCents"`
-		Unit               string `json:"unit"`
+		ClaimPoints   int64  `json:"claimPoints"`
+		BalancePoints int64  `json:"balancePoints"`
+		Unit          string `json:"unit"`
 	}
 	if err := json.Unmarshal(secondRes.Body.Bytes(), &claimPayload); err != nil {
 		t.Fatalf("decode monthly mission claim: %v", err)
 	}
-	if claimPayload.Unit != "PTS" || claimPayload.ClaimPointsCents != 4200 || claimPayload.BalancePointsCents != 7200 {
+	if claimPayload.Unit != "PTS" || claimPayload.ClaimPoints != 4200 || claimPayload.BalancePoints != 7200 {
 		t.Fatalf("expected stable monthly mission point response, got %+v", claimPayload)
 	}
 
@@ -1900,7 +1910,7 @@ func TestWalletSeasonalCheckInMissionCompletesFromDailyClaimStreak(t *testing.T)
 
 	for i := 0; i < 60; i++ {
 		date := now.AddDate(0, 0, -i).Format("2006-01-02")
-		payload := []byte(`{"userId":"` + userID + `","amountPointsCents":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
+		payload := []byte(`{"userId":"` + userID + `","amountPoints":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
 		req := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(payload)))
 		res := httptest.NewRecorder()
 		handler.ServeHTTP(res, req)
@@ -1928,7 +1938,7 @@ func TestWalletSeasonalCheckInMissionCompletesFromDailyClaimStreak(t *testing.T)
 			break
 		}
 	}
-	if !seasonal.Completed || seasonal.Claimed || seasonal.Progress != 60 || seasonal.Target != 60 || seasonal.RewardPointsCents != 9000 {
+	if !seasonal.Completed || seasonal.Claimed || seasonal.Progress != 60 || seasonal.Target != 60 || seasonal.RewardPoints != 9000 {
 		t.Fatalf("expected complete unclaimed seasonal mission, got %+v", seasonal)
 	}
 
@@ -1952,14 +1962,14 @@ func TestWalletSeasonalCheckInMissionCompletesFromDailyClaimStreak(t *testing.T)
 	}
 
 	var claimPayload struct {
-		ClaimPointsCents   int64  `json:"claimPointsCents"`
-		BalancePointsCents int64  `json:"balancePointsCents"`
-		Unit               string `json:"unit"`
+		ClaimPoints   int64  `json:"claimPoints"`
+		BalancePoints int64  `json:"balancePoints"`
+		Unit          string `json:"unit"`
 	}
 	if err := json.Unmarshal(secondRes.Body.Bytes(), &claimPayload); err != nil {
 		t.Fatalf("decode seasonal mission claim: %v", err)
 	}
-	if claimPayload.Unit != "PTS" || claimPayload.ClaimPointsCents != 9000 || claimPayload.BalancePointsCents != 15000 {
+	if claimPayload.Unit != "PTS" || claimPayload.ClaimPoints != 9000 || claimPayload.BalancePoints != 15000 {
 		t.Fatalf("expected stable seasonal mission point response, got %+v", claimPayload)
 	}
 
@@ -2017,7 +2027,7 @@ func TestWalletQuarterlyCheckInMissionCompletesFromDailyClaimStreak(t *testing.T
 
 	for i := 0; i < 90; i++ {
 		date := now.AddDate(0, 0, -i).Format("2006-01-02")
-		payload := []byte(`{"userId":"` + userID + `","amountPointsCents":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
+		payload := []byte(`{"userId":"` + userID + `","amountPoints":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
 		req := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(payload)))
 		res := httptest.NewRecorder()
 		handler.ServeHTTP(res, req)
@@ -2045,7 +2055,7 @@ func TestWalletQuarterlyCheckInMissionCompletesFromDailyClaimStreak(t *testing.T
 			break
 		}
 	}
-	if !quarterly.Completed || quarterly.Claimed || quarterly.Progress != 90 || quarterly.Target != 90 || quarterly.RewardPointsCents != 15000 {
+	if !quarterly.Completed || quarterly.Claimed || quarterly.Progress != 90 || quarterly.Target != 90 || quarterly.RewardPoints != 15000 {
 		t.Fatalf("expected complete unclaimed quarterly mission, got %+v", quarterly)
 	}
 
@@ -2069,14 +2079,14 @@ func TestWalletQuarterlyCheckInMissionCompletesFromDailyClaimStreak(t *testing.T
 	}
 
 	var claimPayload struct {
-		ClaimPointsCents   int64  `json:"claimPointsCents"`
-		BalancePointsCents int64  `json:"balancePointsCents"`
-		Unit               string `json:"unit"`
+		ClaimPoints   int64  `json:"claimPoints"`
+		BalancePoints int64  `json:"balancePoints"`
+		Unit          string `json:"unit"`
 	}
 	if err := json.Unmarshal(secondRes.Body.Bytes(), &claimPayload); err != nil {
 		t.Fatalf("decode quarterly mission claim: %v", err)
 	}
-	if claimPayload.Unit != "PTS" || claimPayload.ClaimPointsCents != 15000 || claimPayload.BalancePointsCents != 24000 {
+	if claimPayload.Unit != "PTS" || claimPayload.ClaimPoints != 15000 || claimPayload.BalancePoints != 24000 {
 		t.Fatalf("expected stable quarterly mission point response, got %+v", claimPayload)
 	}
 
@@ -2149,7 +2159,7 @@ func TestWalletDailyStreakCompletesFromLedgerAndCreditsOnce(t *testing.T) {
 
 	for i := 0; i < 3; i++ {
 		date := now.AddDate(0, 0, -i).Format("2006-01-02")
-		payload := []byte(`{"userId":"` + userID + `","amountPointsCents":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
+		payload := []byte(`{"userId":"` + userID + `","amountPoints":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
 		req := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(payload)))
 		res := httptest.NewRecorder()
 		handler.ServeHTTP(res, req)
@@ -2178,7 +2188,7 @@ func TestWalletDailyStreakCompletesFromLedgerAndCreditsOnce(t *testing.T) {
 			break
 		}
 	}
-	if !threeDay.Completed || threeDay.Claimed || threeDay.CurrentStreak != 3 || threeDay.Target != 3 || threeDay.RewardPointsCents != 900 {
+	if !threeDay.Completed || threeDay.Claimed || threeDay.CurrentStreak != 3 || threeDay.Target != 3 || threeDay.RewardPoints != 900 {
 		t.Fatalf("expected complete unclaimed 3-day streak, got %+v", listPayload)
 	}
 
@@ -2208,13 +2218,14 @@ func TestWalletDailyStreakCompletesFromLedgerAndCreditsOnce(t *testing.T) {
 	if claimPayload["unit"] != "PTS" {
 		t.Fatalf("expected streak claim point unit, got %v", claimPayload["unit"])
 	}
-	if int(claimPayload["claimPointsCents"].(float64)) != 900 {
-		t.Fatalf("expected streak point reward 900, got %v", claimPayload["claimPointsCents"])
+	if int(claimPayload["claimPoints"].(float64)) != 900 {
+		t.Fatalf("expected streak point reward 900, got %v", claimPayload["claimPoints"])
 	}
-	if int(claimPayload["balancePointsCents"].(float64)) != 1200 {
-		t.Fatalf("expected stable point balance 1200 after duplicate streak claim, got %v", claimPayload["balancePointsCents"])
+	if int(claimPayload["balancePoints"].(float64)) != 1200 {
+		t.Fatalf("expected stable point balance 1200 after duplicate streak claim, got %v", claimPayload["balancePoints"])
 	}
-	for _, retired := range []string{"claimCents", "balanceCents"} {
+	// Points unit-model (2026-07-07): retired spellings are the cents-era keys.
+	for _, retired := range []string{"claimPointsCents", "balancePointsCents"} {
 		if _, ok := claimPayload[retired]; ok {
 			t.Fatalf("streak claim response should not emit retired alias %s in %+v", retired, claimPayload)
 		}
@@ -2258,7 +2269,7 @@ func TestWalletWeeklyStreakCompletesFromLedgerAndCreditsOnce(t *testing.T) {
 
 	for i := 0; i < 7; i++ {
 		date := now.AddDate(0, 0, -i).Format("2006-01-02")
-		payload := []byte(`{"userId":"` + userID + `","amountPointsCents":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
+		payload := []byte(`{"userId":"` + userID + `","amountPoints":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
 		req := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(payload)))
 		res := httptest.NewRecorder()
 		handler.ServeHTTP(res, req)
@@ -2286,7 +2297,7 @@ func TestWalletWeeklyStreakCompletesFromLedgerAndCreditsOnce(t *testing.T) {
 			break
 		}
 	}
-	if !weekly.Completed || weekly.Claimed || weekly.CurrentStreak != 7 || weekly.Target != 7 || weekly.RewardPointsCents != 1700 {
+	if !weekly.Completed || weekly.Claimed || weekly.CurrentStreak != 7 || weekly.Target != 7 || weekly.RewardPoints != 1700 {
 		t.Fatalf("expected complete unclaimed weekly streak, got %+v", weekly)
 	}
 
@@ -2310,14 +2321,14 @@ func TestWalletWeeklyStreakCompletesFromLedgerAndCreditsOnce(t *testing.T) {
 	}
 
 	var claimPayload struct {
-		ClaimPointsCents   int64  `json:"claimPointsCents"`
-		BalancePointsCents int64  `json:"balancePointsCents"`
-		Unit               string `json:"unit"`
+		ClaimPoints   int64  `json:"claimPoints"`
+		BalancePoints int64  `json:"balancePoints"`
+		Unit          string `json:"unit"`
 	}
 	if err := json.Unmarshal(secondRes.Body.Bytes(), &claimPayload); err != nil {
 		t.Fatalf("decode weekly streak claim: %v", err)
 	}
-	if claimPayload.Unit != "PTS" || claimPayload.ClaimPointsCents != 1700 || claimPayload.BalancePointsCents != 2400 {
+	if claimPayload.Unit != "PTS" || claimPayload.ClaimPoints != 1700 || claimPayload.BalancePoints != 2400 {
 		t.Fatalf("expected stable weekly streak point response, got %+v", claimPayload)
 	}
 
@@ -2355,7 +2366,7 @@ func TestWalletFortnightStreakCompletesFromLedgerAndCreditsOnce(t *testing.T) {
 
 	for i := 0; i < 14; i++ {
 		date := now.AddDate(0, 0, -i).Format("2006-01-02")
-		payload := []byte(`{"userId":"` + userID + `","amountPointsCents":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
+		payload := []byte(`{"userId":"` + userID + `","amountPoints":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
 		req := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(payload)))
 		res := httptest.NewRecorder()
 		handler.ServeHTTP(res, req)
@@ -2383,7 +2394,7 @@ func TestWalletFortnightStreakCompletesFromLedgerAndCreditsOnce(t *testing.T) {
 			break
 		}
 	}
-	if !fortnight.Completed || fortnight.Claimed || fortnight.CurrentStreak != 14 || fortnight.Target != 14 || fortnight.RewardPointsCents != 3100 {
+	if !fortnight.Completed || fortnight.Claimed || fortnight.CurrentStreak != 14 || fortnight.Target != 14 || fortnight.RewardPoints != 3100 {
 		t.Fatalf("expected complete unclaimed fortnight streak, got %+v", fortnight)
 	}
 
@@ -2407,14 +2418,14 @@ func TestWalletFortnightStreakCompletesFromLedgerAndCreditsOnce(t *testing.T) {
 	}
 
 	var claimPayload struct {
-		ClaimPointsCents   int64  `json:"claimPointsCents"`
-		BalancePointsCents int64  `json:"balancePointsCents"`
-		Unit               string `json:"unit"`
+		ClaimPoints   int64  `json:"claimPoints"`
+		BalancePoints int64  `json:"balancePoints"`
+		Unit          string `json:"unit"`
 	}
 	if err := json.Unmarshal(secondRes.Body.Bytes(), &claimPayload); err != nil {
 		t.Fatalf("decode fortnight streak claim: %v", err)
 	}
-	if claimPayload.Unit != "PTS" || claimPayload.ClaimPointsCents != 3100 || claimPayload.BalancePointsCents != 4500 {
+	if claimPayload.Unit != "PTS" || claimPayload.ClaimPoints != 3100 || claimPayload.BalancePoints != 4500 {
 		t.Fatalf("expected stable fortnight streak point response, got %+v", claimPayload)
 	}
 
@@ -2452,7 +2463,7 @@ func TestWalletMonthlyStreakCompletesFromLedgerAndCreditsOnce(t *testing.T) {
 
 	for i := 0; i < 30; i++ {
 		date := now.AddDate(0, 0, -i).Format("2006-01-02")
-		payload := []byte(`{"userId":"` + userID + `","amountPointsCents":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
+		payload := []byte(`{"userId":"` + userID + `","amountPoints":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
 		req := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(payload)))
 		res := httptest.NewRecorder()
 		handler.ServeHTTP(res, req)
@@ -2480,7 +2491,7 @@ func TestWalletMonthlyStreakCompletesFromLedgerAndCreditsOnce(t *testing.T) {
 			break
 		}
 	}
-	if !monthly.Completed || monthly.Claimed || monthly.CurrentStreak != 30 || monthly.Target != 30 || monthly.RewardPointsCents != 6400 {
+	if !monthly.Completed || monthly.Claimed || monthly.CurrentStreak != 30 || monthly.Target != 30 || monthly.RewardPoints != 6400 {
 		t.Fatalf("expected complete unclaimed monthly streak, got %+v", monthly)
 	}
 
@@ -2504,14 +2515,14 @@ func TestWalletMonthlyStreakCompletesFromLedgerAndCreditsOnce(t *testing.T) {
 	}
 
 	var claimPayload struct {
-		ClaimPointsCents   int64  `json:"claimPointsCents"`
-		BalancePointsCents int64  `json:"balancePointsCents"`
-		Unit               string `json:"unit"`
+		ClaimPoints   int64  `json:"claimPoints"`
+		BalancePoints int64  `json:"balancePoints"`
+		Unit          string `json:"unit"`
 	}
 	if err := json.Unmarshal(secondRes.Body.Bytes(), &claimPayload); err != nil {
 		t.Fatalf("decode monthly streak claim: %v", err)
 	}
-	if claimPayload.Unit != "PTS" || claimPayload.ClaimPointsCents != 6400 || claimPayload.BalancePointsCents != 9400 {
+	if claimPayload.Unit != "PTS" || claimPayload.ClaimPoints != 6400 || claimPayload.BalancePoints != 9400 {
 		t.Fatalf("expected stable monthly streak point response, got %+v", claimPayload)
 	}
 
@@ -2549,7 +2560,7 @@ func TestWalletDoubleMonthlyStreakCompletesFromLedgerAndCreditsOnce(t *testing.T
 
 	for i := 0; i < 60; i++ {
 		date := now.AddDate(0, 0, -i).Format("2006-01-02")
-		payload := []byte(`{"userId":"` + userID + `","amountPointsCents":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
+		payload := []byte(`{"userId":"` + userID + `","amountPoints":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
 		req := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(payload)))
 		res := httptest.NewRecorder()
 		handler.ServeHTTP(res, req)
@@ -2577,7 +2588,7 @@ func TestWalletDoubleMonthlyStreakCompletesFromLedgerAndCreditsOnce(t *testing.T
 			break
 		}
 	}
-	if !doubleMonthly.Completed || doubleMonthly.Claimed || doubleMonthly.CurrentStreak != 60 || doubleMonthly.Target != 60 || doubleMonthly.RewardPointsCents != 12000 {
+	if !doubleMonthly.Completed || doubleMonthly.Claimed || doubleMonthly.CurrentStreak != 60 || doubleMonthly.Target != 60 || doubleMonthly.RewardPoints != 12000 {
 		t.Fatalf("expected complete unclaimed double-monthly streak, got %+v", doubleMonthly)
 	}
 
@@ -2601,14 +2612,14 @@ func TestWalletDoubleMonthlyStreakCompletesFromLedgerAndCreditsOnce(t *testing.T
 	}
 
 	var claimPayload struct {
-		ClaimPointsCents   int64  `json:"claimPointsCents"`
-		BalancePointsCents int64  `json:"balancePointsCents"`
-		Unit               string `json:"unit"`
+		ClaimPoints   int64  `json:"claimPoints"`
+		BalancePoints int64  `json:"balancePoints"`
+		Unit          string `json:"unit"`
 	}
 	if err := json.Unmarshal(secondRes.Body.Bytes(), &claimPayload); err != nil {
 		t.Fatalf("decode double-monthly streak claim: %v", err)
 	}
-	if claimPayload.Unit != "PTS" || claimPayload.ClaimPointsCents != 12000 || claimPayload.BalancePointsCents != 18000 {
+	if claimPayload.Unit != "PTS" || claimPayload.ClaimPoints != 12000 || claimPayload.BalancePoints != 18000 {
 		t.Fatalf("expected stable double-monthly streak point response, got %+v", claimPayload)
 	}
 
@@ -2646,7 +2657,7 @@ func TestWalletQuarterlyStreakCompletesFromLedgerAndCreditsOnce(t *testing.T) {
 
 	for i := 0; i < 90; i++ {
 		date := now.AddDate(0, 0, -i).Format("2006-01-02")
-		payload := []byte(`{"userId":"` + userID + `","amountPointsCents":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
+		payload := []byte(`{"userId":"` + userID + `","amountPoints":100,"idempotencyKey":"daily_claim:` + userID + `:` + date + `","reason":"daily_claim"}`)
 		req := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(payload)))
 		res := httptest.NewRecorder()
 		handler.ServeHTTP(res, req)
@@ -2674,7 +2685,7 @@ func TestWalletQuarterlyStreakCompletesFromLedgerAndCreditsOnce(t *testing.T) {
 			break
 		}
 	}
-	if !quarterly.Completed || quarterly.Claimed || quarterly.CurrentStreak != 90 || quarterly.Target != 90 || quarterly.RewardPointsCents != 18000 {
+	if !quarterly.Completed || quarterly.Claimed || quarterly.CurrentStreak != 90 || quarterly.Target != 90 || quarterly.RewardPoints != 18000 {
 		t.Fatalf("expected complete unclaimed quarterly streak, got %+v", quarterly)
 	}
 
@@ -2698,14 +2709,14 @@ func TestWalletQuarterlyStreakCompletesFromLedgerAndCreditsOnce(t *testing.T) {
 	}
 
 	var claimPayload struct {
-		ClaimPointsCents   int64  `json:"claimPointsCents"`
-		BalancePointsCents int64  `json:"balancePointsCents"`
-		Unit               string `json:"unit"`
+		ClaimPoints   int64  `json:"claimPoints"`
+		BalancePoints int64  `json:"balancePoints"`
+		Unit          string `json:"unit"`
 	}
 	if err := json.Unmarshal(secondRes.Body.Bytes(), &claimPayload); err != nil {
 		t.Fatalf("decode quarterly streak claim: %v", err)
 	}
-	if claimPayload.Unit != "PTS" || claimPayload.ClaimPointsCents != 18000 || claimPayload.BalancePointsCents != 27000 {
+	if claimPayload.Unit != "PTS" || claimPayload.ClaimPoints != 18000 || claimPayload.BalancePoints != 27000 {
 		t.Fatalf("expected stable quarterly streak point response, got %+v", claimPayload)
 	}
 
@@ -2797,15 +2808,15 @@ func TestWalletLeaderboardDebutMissionCompletesFromPredictStanding(t *testing.T)
 	}
 
 	var claimPayload struct {
-		ClaimPointsCents   int64             `json:"claimPointsCents"`
-		BalancePointsCents int64             `json:"balancePointsCents"`
-		Unit               string            `json:"unit"`
-		Mission            missionDefinition `json:"mission"`
+		ClaimPoints   int64             `json:"claimPoints"`
+		BalancePoints int64             `json:"balancePoints"`
+		Unit          string            `json:"unit"`
+		Mission       missionDefinition `json:"mission"`
 	}
 	if err := json.Unmarshal(secondRes.Body.Bytes(), &claimPayload); err != nil {
 		t.Fatalf("decode leaderboard mission claim: %v", err)
 	}
-	if claimPayload.Unit != "PTS" || claimPayload.ClaimPointsCents != 975 || claimPayload.BalancePointsCents != 975 || !claimPayload.Mission.Claimed {
+	if claimPayload.Unit != "PTS" || claimPayload.ClaimPoints != 975 || claimPayload.BalancePoints != 975 || !claimPayload.Mission.Claimed {
 		t.Fatalf("expected stable leaderboard mission point response, got %+v", claimPayload)
 	}
 
@@ -2907,7 +2918,7 @@ func TestWalletBadgesDeriveFromLedgerAchievements(t *testing.T) {
 		{key: "prediction_payout:mkt-badge:pos-win-10", reason: "prediction settlement: market badge resolved YES, YES position won"},
 	}
 	for _, seed := range seeds {
-		payload := []byte(`{"userId":"` + userID + `","amountPointsCents":100,"idempotencyKey":"` + seed.key + `","reason":"` + seed.reason + `"}`)
+		payload := []byte(`{"userId":"` + userID + `","amountPoints":100,"idempotencyKey":"` + seed.key + `","reason":"` + seed.reason + `"}`)
 		req := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(payload)))
 		res := httptest.NewRecorder()
 		handler.ServeHTTP(res, req)
@@ -2962,14 +2973,16 @@ func TestAdminWalletMutationRequestRequiresPointAmountAlias(t *testing.T) {
 	RegisterRoutes(mux, "gateway")
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
-	pointPayload := []byte(`{"userId":"u-wallet-point","amountPointsCents":250,"idempotencyKey":"point-amount","reason":"admin point adjustment"}`)
+	pointPayload := []byte(`{"userId":"u-wallet-point","amountPoints":250,"idempotencyKey":"point-amount","reason":"admin point adjustment"}`)
 	pointReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(pointPayload)))
 	pointRes := httptest.NewRecorder()
 	handler.ServeHTTP(pointRes, pointReq)
 	if pointRes.Code != http.StatusOK {
-		t.Fatalf("expected amountPointsCents request to succeed, got %d, body=%s", pointRes.Code, pointRes.Body.String())
+		t.Fatalf("expected amountPoints request to succeed, got %d, body=%s", pointRes.Code, pointRes.Body.String())
 	}
 
+	// Points unit-model (2026-07-07): the retired request key is the
+	// cents-era amountCents; amountPoints is the accepted canonical key.
 	retiredPayload := []byte(`{"userId":"u-wallet-retired","amountCents":250,"idempotencyKey":"retired-amount","reason":"admin point adjustment"}`)
 	retiredReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(retiredPayload)))
 	retiredRes := httptest.NewRecorder()
@@ -2983,7 +2996,7 @@ func TestAdminWalletMutationRequestRequiresPointAmountAlias(t *testing.T) {
 		t.Fatalf("decode retired-alias error payload: %v", err)
 	}
 	details, ok := envelope.Error.Details.(map[string]any)
-	if !ok || details["field"] != "amountPointsCents" {
+	if !ok || details["field"] != "amountPoints" {
 		t.Fatalf("expected point-native error field, got %+v", envelope.Error.Details)
 	}
 	if strings.Contains(retiredRes.Body.String(), "compatibility") {
@@ -3004,7 +3017,7 @@ func TestAdminWalletMutationReasonRejectsMoneyWording(t *testing.T) {
 	RegisterRoutes(mux, "gateway")
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
-	safePayload := []byte(`{"userId":"u-wallet-reason-safe","amountPointsCents":250,"idempotencyKey":"safe-point-reason","reason":" non-redeemable point support adjustment "}`)
+	safePayload := []byte(`{"userId":"u-wallet-reason-safe","amountPoints":250,"idempotencyKey":"safe-point-reason","reason":" non-redeemable point support adjustment "}`)
 	safeReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(safePayload)))
 	safeRes := httptest.NewRecorder()
 	handler.ServeHTTP(safeRes, safeReq)
@@ -3020,12 +3033,12 @@ func TestAdminWalletMutationReasonRejectsMoneyWording(t *testing.T) {
 		{
 			name:    "credit",
 			path:    "/api/v1/admin/wallet/credit",
-			payload: `{"userId":"u-wallet-reason-credit","amountPointsCents":250,"idempotencyKey":"unsafe-credit-reason","reason":"cash deposit adjustment"}`,
+			payload: `{"userId":"u-wallet-reason-credit","amountPoints":250,"idempotencyKey":"unsafe-credit-reason","reason":"cash deposit adjustment"}`,
 		},
 		{
 			name:    "debit",
 			path:    "/api/v1/admin/wallet/debit",
-			payload: `{"userId":"u-wallet-reason-debit","amountPointsCents":250,"idempotencyKey":"unsafe-debit-reason","reason":"redeemable prize reversal"}`,
+			payload: `{"userId":"u-wallet-reason-debit","amountPoints":250,"idempotencyKey":"unsafe-debit-reason","reason":"redeemable prize reversal"}`,
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -3072,7 +3085,7 @@ func TestWalletCreditIsIdempotentAcrossRetries(t *testing.T) {
 	RegisterRoutes(mux, "gateway")
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
-	payload := []byte(`{"userId":"u-wallet-2","amountPointsCents":750,"idempotencyKey":"credit-unique","reason":"admin point grant"}`)
+	payload := []byte(`{"userId":"u-wallet-2","amountPoints":750,"idempotencyKey":"credit-unique","reason":"admin point grant"}`)
 
 	firstReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(payload)))
 	firstRes := httptest.NewRecorder()
@@ -3102,17 +3115,19 @@ func TestWalletCreditIsIdempotentAcrossRetries(t *testing.T) {
 	if firstEntry["entryId"] != secondEntry["entryId"] {
 		t.Fatalf("expected same entryId on idempotent replay, got %v vs %v", firstEntry["entryId"], secondEntry["entryId"])
 	}
-	if int(secondPayload["balancePointsCents"].(float64)) != 750 {
-		t.Fatalf("expected stable point balance 750 after retry, got %v", secondPayload["balancePointsCents"])
+	if int(secondPayload["balancePoints"].(float64)) != 750 {
+		t.Fatalf("expected stable point balance 750 after retry, got %v", secondPayload["balancePoints"])
 	}
 	if secondPayload["unit"] != "PTS" || secondEntry["unit"] != "PTS" {
 		t.Fatalf("expected point unit in replay response, got payload=%v entry=%v", secondPayload["unit"], secondEntry["unit"])
 	}
-	if _, ok := secondPayload["balanceCents"]; ok {
-		t.Fatalf("admin wallet credit replay response leaked retired balanceCents: %v", secondPayload)
+	// Points unit-model (2026-07-07): balancePoints is canonical; the retired
+	// spelling is the cents-era balancePointsCents.
+	if _, ok := secondPayload["balancePointsCents"]; ok {
+		t.Fatalf("admin wallet credit replay response leaked retired balancePointsCents: %v", secondPayload)
 	}
-	if _, ok := secondEntry["balanceCents"]; ok {
-		t.Fatalf("admin wallet credit replay entry leaked retired balanceCents: %v", secondEntry)
+	if _, ok := secondEntry["balancePointsCents"]; ok {
+		t.Fatalf("admin wallet credit replay entry leaked retired balancePointsCents: %v", secondEntry)
 	}
 }
 
@@ -3121,7 +3136,7 @@ func TestWalletDebitInsufficientFundsReturnsForbidden(t *testing.T) {
 	RegisterRoutes(mux, "gateway")
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
-	debitPayload := []byte(`{"userId":"u-wallet-3","amountPointsCents":200,"idempotencyKey":"debit-insufficient","reason":"prediction point adjustment"}`)
+	debitPayload := []byte(`{"userId":"u-wallet-3","amountPoints":200,"idempotencyKey":"debit-insufficient","reason":"prediction point adjustment"}`)
 	debitReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/debit", bytes.NewBuffer(debitPayload)))
 	debitRes := httptest.NewRecorder()
 	handler.ServeHTTP(debitRes, debitReq)
@@ -3144,7 +3159,7 @@ func TestWalletIdempotencyReplayConflictReturnsConflict(t *testing.T) {
 	RegisterRoutes(mux, "gateway")
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
-	firstPayload := []byte(`{"userId":"u-wallet-4","amountPointsCents":500,"idempotencyKey":"dup-key","reason":"first point adjustment"}`)
+	firstPayload := []byte(`{"userId":"u-wallet-4","amountPoints":500,"idempotencyKey":"dup-key","reason":"first point adjustment"}`)
 	firstReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(firstPayload)))
 	firstRes := httptest.NewRecorder()
 	handler.ServeHTTP(firstRes, firstReq)
@@ -3152,7 +3167,7 @@ func TestWalletIdempotencyReplayConflictReturnsConflict(t *testing.T) {
 		t.Fatalf("expected first credit status 200, got %d, body=%s", firstRes.Code, firstRes.Body.String())
 	}
 
-	conflictPayload := []byte(`{"userId":"u-wallet-4","amountPointsCents":700,"idempotencyKey":"dup-key","reason":"changed point adjustment"}`)
+	conflictPayload := []byte(`{"userId":"u-wallet-4","amountPoints":700,"idempotencyKey":"dup-key","reason":"changed point adjustment"}`)
 	conflictReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(conflictPayload)))
 	conflictRes := httptest.NewRecorder()
 	handler.ServeHTTP(conflictRes, conflictReq)

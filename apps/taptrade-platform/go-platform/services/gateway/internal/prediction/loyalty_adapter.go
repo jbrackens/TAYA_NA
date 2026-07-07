@@ -20,11 +20,11 @@ type LoyaltyAdapter interface {
 }
 
 // LoyaltyAccrualRequest is the settlement-time input to the loyalty service.
-// The loyalty service computes raw points from VolumeCents + IsCorrect using
+// The loyalty service computes raw points from VolumePoints + IsCorrect using
 // its own formula — this package stays ignorant of the math.
 type LoyaltyAccrualRequest struct {
 	UserID         string
-	VolumeCents    int64
+	VolumePoints   int64
 	IsCorrect      bool
 	MarketID       string
 	TradeID        string

@@ -25,21 +25,21 @@ type fixtureCase struct {
 }
 
 type ledgerEntry struct {
-	UserID            string `json:"userId"`
-	Direction         string `json:"direction"`
-	SourceType        string `json:"sourceType"`
-	SourceID          string `json:"sourceId"`
-	AmountPointsCents int64  `json:"amountPointsCents"`
-	Unit              string `json:"unit"`
+	UserID       string `json:"userId"`
+	Direction    string `json:"direction"`
+	SourceType   string `json:"sourceType"`
+	SourceID     string `json:"sourceId"`
+	AmountPoints int64  `json:"amountPoints"`
+	Unit         string `json:"unit"`
 }
 
 type summaryValue struct {
-	TotalCreditsPointsCents int64            `json:"totalCreditsPointsCents"`
-	TotalDebitsPointsCents  int64            `json:"totalDebitsPointsCents"`
-	NetMovementPointsCents  int64            `json:"netMovementPointsCents"`
-	EntryCount              int64            `json:"entryCount"`
-	DistinctUserCount       int64            `json:"distinctUserCount"`
-	FinalBalances           map[string]int64 `json:"finalBalancesPointsCents"`
+	TotalCreditsPoints int64            `json:"totalCreditsPoints"`
+	TotalDebitsPoints  int64            `json:"totalDebitsPoints"`
+	NetMovementPoints  int64            `json:"netMovementPoints"`
+	EntryCount         int64            `json:"entryCount"`
+	DistinctUserCount  int64            `json:"distinctUserCount"`
+	FinalBalances      map[string]int64 `json:"finalBalancesPoints"`
 }
 
 type caseResult struct {
@@ -51,18 +51,18 @@ type caseResult struct {
 }
 
 var retiredKeys = map[string]struct{}{
-	"amountCents":       {},
-	"amount_cents":      {},
-	"balanceCents":      {},
-	"balance_cents":     {},
+	"amountPoints":      {},
+	"amount_points":     {},
+	"balancePoints":     {},
+	"balance_points":    {},
 	"betId":             {},
 	"depositId":         {},
 	"depositIntentId":   {},
 	"odds":              {},
-	"payoutCents":       {},
-	"priceCents":        {},
-	"seedCents":         {},
-	"stakeCents":        {},
+	"payoutPoints":      {},
+	"pricePoints":       {},
+	"seedPoints":        {},
+	"stakePoints":       {},
 	"withdrawalId":      {},
 	"withdrawalRequest": {},
 }
@@ -202,8 +202,8 @@ func runCase(tc fixtureCase) caseResult {
 			result.FailNotes = append(result.FailNotes, fmt.Sprintf("ledger[%d] missing userId", i))
 			continue
 		}
-		if entry.AmountPointsCents <= 0 {
-			result.FailNotes = append(result.FailNotes, fmt.Sprintf("ledger[%d] amountPointsCents must be positive", i))
+		if entry.AmountPoints <= 0 {
+			result.FailNotes = append(result.FailNotes, fmt.Sprintf("ledger[%d] amountPoints must be positive", i))
 			continue
 		}
 		if entry.Unit != "PTS" {
@@ -223,16 +223,16 @@ func runCase(tc fixtureCase) caseResult {
 		actual.EntryCount++
 		switch entry.Direction {
 		case "credit":
-			actual.TotalCreditsPointsCents += entry.AmountPointsCents
-			actual.FinalBalances[entry.UserID] += entry.AmountPointsCents
+			actual.TotalCreditsPoints += entry.AmountPoints
+			actual.FinalBalances[entry.UserID] += entry.AmountPoints
 		case "debit":
-			actual.TotalDebitsPointsCents += entry.AmountPointsCents
-			actual.FinalBalances[entry.UserID] -= entry.AmountPointsCents
+			actual.TotalDebitsPoints += entry.AmountPoints
+			actual.FinalBalances[entry.UserID] -= entry.AmountPoints
 		default:
 			result.FailNotes = append(result.FailNotes, fmt.Sprintf("ledger[%d] direction must be credit or debit", i))
 		}
 	}
-	actual.NetMovementPointsCents = actual.TotalCreditsPointsCents - actual.TotalDebitsPointsCents
+	actual.NetMovementPoints = actual.TotalCreditsPoints - actual.TotalDebitsPoints
 	actual.DistinctUserCount = int64(len(distinctUsers))
 	result.Actual = actual
 
@@ -246,9 +246,9 @@ func runCase(tc fixtureCase) caseResult {
 }
 
 func sameSummary(a, b summaryValue) bool {
-	if a.TotalCreditsPointsCents != b.TotalCreditsPointsCents ||
-		a.TotalDebitsPointsCents != b.TotalDebitsPointsCents ||
-		a.NetMovementPointsCents != b.NetMovementPointsCents ||
+	if a.TotalCreditsPoints != b.TotalCreditsPoints ||
+		a.TotalDebitsPoints != b.TotalDebitsPoints ||
+		a.NetMovementPoints != b.NetMovementPoints ||
 		a.EntryCount != b.EntryCount ||
 		a.DistinctUserCount != b.DistinctUserCount {
 		return false
@@ -280,9 +280,9 @@ func renderMarkdownReport(fixturePath string, results []caseResult) string {
 		fmt.Fprintf(&b, "| %s | %s | %d | %d | %d | %d | %d |\n",
 			result.CaseName,
 			status,
-			result.Actual.TotalCreditsPointsCents,
-			result.Actual.TotalDebitsPointsCents,
-			result.Actual.NetMovementPointsCents,
+			result.Actual.TotalCreditsPoints,
+			result.Actual.TotalDebitsPoints,
+			result.Actual.NetMovementPoints,
 			result.Actual.EntryCount,
 			result.Actual.DistinctUserCount,
 		)

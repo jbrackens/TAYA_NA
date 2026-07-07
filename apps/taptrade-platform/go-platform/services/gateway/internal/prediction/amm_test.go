@@ -32,7 +32,7 @@ func TestAMMPriceMovesWithShares(t *testing.T) {
 	}
 }
 
-func TestAMMPricesSumTo100Cents(t *testing.T) {
+func TestAMMPricesSumTo100Points(t *testing.T) {
 	amm := &AMMEngine{}
 	cases := []struct {
 		qYes, qNo, b float64
@@ -45,8 +45,8 @@ func TestAMMPricesSumTo100Cents(t *testing.T) {
 		{0, 0, 1},
 	}
 	for _, tc := range cases {
-		yes := amm.PriceCentsYes(tc.qYes, tc.qNo, tc.b)
-		no := amm.PriceCentsNo(tc.qYes, tc.qNo, tc.b)
+		yes := amm.PricePointsYes(tc.qYes, tc.qNo, tc.b)
+		no := amm.PricePointsNo(tc.qYes, tc.qNo, tc.b)
 		if yes+no != 100 {
 			t.Errorf("prices don't sum to 100: YES=%d NO=%d (qYes=%f qNo=%f b=%f)",
 				yes, no, tc.qYes, tc.qNo, tc.b)
@@ -167,8 +167,8 @@ func TestAMMExecuteTrade(t *testing.T) {
 	market := &Market{
 		Ticker:            "TEST-YES",
 		Status:            MarketStatusOpen,
-		YesPriceCents:     50,
-		NoPriceCents:      50,
+		YesPricePoints:    50,
+		NoPricePoints:     50,
 		AMMYesShares:      0,
 		AMMNoShares:       0,
 		AMMLiquidityParam: 100,
@@ -188,14 +188,14 @@ func TestAMMExecuteTrade(t *testing.T) {
 	if market.AMMYesShares != 10 {
 		t.Errorf("expected 10 YES shares, got %f", market.AMMYesShares)
 	}
-	if market.YesPriceCents <= 50 {
-		t.Errorf("expected YES price to increase above 50, got %d", market.YesPriceCents)
+	if market.YesPricePoints <= 50 {
+		t.Errorf("expected YES price to increase above 50, got %d", market.YesPricePoints)
 	}
-	if market.YesPriceCents+market.NoPriceCents != 100 {
-		t.Errorf("prices don't sum to 100: %d + %d", market.YesPriceCents, market.NoPriceCents)
+	if market.YesPricePoints+market.NoPricePoints != 100 {
+		t.Errorf("prices don't sum to 100: %d + %d", market.YesPricePoints, market.NoPricePoints)
 	}
-	if market.VolumeCents != cost {
-		t.Errorf("expected volume=%d, got %d", cost, market.VolumeCents)
+	if market.VolumePoints != cost {
+		t.Errorf("expected volume=%d, got %d", cost, market.VolumePoints)
 	}
 }
 
@@ -216,8 +216,8 @@ func TestAMMPreviewTrade(t *testing.T) {
 	amm := &AMMEngine{}
 	market := &Market{
 		Status:            MarketStatusOpen,
-		YesPriceCents:     50,
-		NoPriceCents:      50,
+		YesPricePoints:    50,
+		NoPricePoints:     50,
 		AMMYesShares:      0,
 		AMMNoShares:       0,
 		AMMLiquidityParam: 100,

@@ -49,7 +49,7 @@ func seedClosedMarketWithNPositions(t *testing.T, db *sql.DB, tag string, n int)
 		}
 		if _, err := db.Exec(
 			`INSERT INTO prediction_positions
-			 (user_id, market_id, side, quantity, avg_price_cents, total_cost_cents)
+			 (user_id, market_id, side, quantity, avg_price_points, total_cost_points)
 			 VALUES ($1, $2, $3, 10, 50, 500)`,
 			userID, marketID, side,
 		); err != nil {
@@ -105,7 +105,7 @@ func assertFullyDisbursed(t *testing.T, db *sql.DB, marketID string, n int) {
 	}
 	if err := db.QueryRow(
 		`SELECT COUNT(*) FROM prediction_positions
-		 WHERE market_id=$1 AND realized_pnl_cents NOT IN (500, -500)`, marketID,
+		 WHERE market_id=$1 AND realized_pnl_points NOT IN (500, -500)`, marketID,
 	).Scan(&wrongPnl); err != nil {
 		t.Fatalf("check realized pnl: %v", err)
 	}

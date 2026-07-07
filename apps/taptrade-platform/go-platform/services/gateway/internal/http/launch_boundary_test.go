@@ -28,9 +28,9 @@ func TestLegacyMoneyRoutesAreAbsentByDefault(t *testing.T) {
 		{http.MethodGet, "/api/v1/cashier/alpha/wallet/challenge", ""},
 		{http.MethodPost, "/api/v1/cashier/alpha/wallet/connect", `{}`},
 		{http.MethodGet, "/api/v1/cashier/alpha/wallets", ""},
-		{http.MethodPost, "/api/v1/cashier/alpha/deposit-intents", `{"amountCents":100}`},
+		{http.MethodPost, "/api/v1/cashier/alpha/deposit-intents", `{"amountPoints":100}`},
 		{http.MethodPost, "/api/v1/cashier/alpha/deposit-intents/intent-1/submit-tx", `{"txHash":"0xabc"}`},
-		{http.MethodPost, "/api/v1/cashier/alpha/withdrawal-requests", `{"destinationAddress":"0xabc","amountCents":100}`},
+		{http.MethodPost, "/api/v1/cashier/alpha/withdrawal-requests", `{"destinationAddress":"0xabc","amountPoints":100}`},
 		{http.MethodPost, "/api/v1/cashier/alpha/withdrawal-requests/request-1/cancel", `{}`},
 		{http.MethodGet, "/api/v1/admin/cashier/alpha/preflight", ""},
 		{http.MethodGet, "/api/v1/admin/cashier/alpha/deposits", ""},
@@ -38,8 +38,8 @@ func TestLegacyMoneyRoutesAreAbsentByDefault(t *testing.T) {
 		{http.MethodGet, "/api/v1/admin/cashier/alpha/withdrawals", ""},
 		{http.MethodGet, "/api/v1/admin/cashier/alpha/audit-events", ""},
 		{http.MethodPost, "/api/v1/admin/cashier/alpha/withdrawals/request-1/approve", `{}`},
-		{http.MethodPost, "/api/v1/payments/deposit", `{"amountCents":100,"paymentMethod":"card"}`},
-		{http.MethodPost, "/api/v1/payments/withdraw", `{"userId":"u-1","amountCents":100,"paymentMethod":"card"}`},
+		{http.MethodPost, "/api/v1/payments/deposit", `{"amountPoints":100,"paymentMethod":"card"}`},
+		{http.MethodPost, "/api/v1/payments/withdraw", `{"userId":"u-1","amountPoints":100,"paymentMethod":"card"}`},
 		{http.MethodGet, "/api/v1/payments/methods", ""},
 		{http.MethodGet, "/api/v1/payments/status?transactionId=dep-1", ""},
 		{http.MethodPost, "/api/v1/payments/webhook", `{}`},
@@ -145,7 +145,7 @@ func TestLegacyMoneyRoutesRequireExplicitOptIn(t *testing.T) {
 		t.Fatal("alpha cashier config route should register only when legacy money routes are explicitly enabled")
 	}
 
-	paymentReq := httptest.NewRequest(http.MethodPost, "/api/v1/payments/deposit", strings.NewReader(`{"amountCents":100,"paymentMethod":"card"}`))
+	paymentReq := httptest.NewRequest(http.MethodPost, "/api/v1/payments/deposit", strings.NewReader(`{"amountPoints":100,"paymentMethod":"card"}`))
 	paymentRes := httptest.NewRecorder()
 	handler.ServeHTTP(paymentRes, paymentReq)
 	if paymentRes.Code == http.StatusNotFound {

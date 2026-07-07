@@ -140,7 +140,7 @@ func (s *DBPaymentService) processDepositApproval(ctx context.Context, txnID, us
 	// Credit wallet with idempotency
 	entry, err := s.walletService.Credit(ctx, wallet.MutationRequest{
 		UserID:         userID,
-		AmountCents:    amountCents,
+		AmountPoints:   amountCents,
 		IdempotencyKey: "payment:" + txnID,
 		Reason:         fmt.Sprintf("deposit via %s", paymentMethod),
 	})
@@ -192,7 +192,7 @@ func (s *DBPaymentService) InitiateWithdrawal(ctx context.Context, userID string
 	// Use wallet reservation to hold funds (instead of direct debit)
 	reservation, err := s.walletService.Hold(ctx, wallet.HoldRequest{
 		UserID:        userID,
-		AmountCents:   amountCents,
+		AmountPoints:  amountCents,
 		ReferenceType: "withdrawal",
 		ReferenceID:   txnID,
 		ExpiresIn:     24 * time.Hour, // withdrawal holds last 24h
@@ -310,7 +310,7 @@ WHERE user_id = $1 AND txn_type = 'withdrawal' AND status NOT IN ('failed','canc
 	// caller once committed.
 	reservation, err := s.walletService.Hold(ctx, wallet.HoldRequest{
 		UserID:        userID,
-		AmountCents:   amountCents,
+		AmountPoints:  amountCents,
 		ReferenceType: "withdrawal",
 		ReferenceID:   txnID,
 		ExpiresIn:     24 * time.Hour,
@@ -485,7 +485,7 @@ WHERE txn_id = $1 FOR UPDATE`, payload.TransactionID).Scan(
 			// the same tx (idempotent by key: a replay returns the same entry).
 			entry, err := s.walletService.CreditWithTx(ctx, tx, wallet.MutationRequest{
 				UserID:         userID,
-				AmountCents:    amountCents,
+				AmountPoints:   amountCents,
 				IdempotencyKey: "payment:" + payload.TransactionID,
 				Reason:         fmt.Sprintf("deposit via %s", paymentMethod),
 			})

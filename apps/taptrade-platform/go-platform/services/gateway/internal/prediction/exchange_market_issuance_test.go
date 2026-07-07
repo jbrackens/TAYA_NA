@@ -2,14 +2,14 @@ package prediction
 
 // Regression: market buy must issuance-match against opposite-side Buy
 // makers. Before this path was opened, the engine had a
-// `taker.PriceCents != nil` guard that silently skipped the issuance
+// `taker.PricePoints != nil` guard that silently skipped the issuance
 // loop for market orders — every market buy on a market with only
 // SMM-provided Buy-NO quotes returned "cancelled — no matching
 // liquidity" even when feasible fills were sitting on the book.
 //
 // Surfaced during /qa on 2026-05-11 against an SMM-quoted local market.
 // Fix: treat a market buy as having an implied taker_limit =
-// MaxTickPriceCents (99) for the IssuanceFillFeasible check.
+// MaxTickPricePoints (99) for the IssuanceFillFeasible check.
 
 import (
 	"testing"
@@ -23,7 +23,7 @@ import (
 func TestBuildPlan_MarketBuyIssuanceCrossesBuyNoMaker(t *testing.T) {
 	e := NewExchangeEngine()
 	market := makeMarket()
-	// Taker: market Buy YES, qty 5. No PriceCents.
+	// Taker: market Buy YES, qty 5. No PricePoints.
 	taker := Order{
 		ID:                "taker-1",
 		UserID:            "alice",
@@ -31,7 +31,7 @@ func TestBuildPlan_MarketBuyIssuanceCrossesBuyNoMaker(t *testing.T) {
 		Side:              OrderSideYes,
 		Action:            OrderActionBuy,
 		OrderType:         OrderTypeMarket,
-		PriceCents:        nil, // <-- the critical input
+		PricePoints:       nil, // <-- the critical input
 		Quantity:          5,
 		RemainingQuantity: 5,
 		Status:            OrderStatusPending,
@@ -47,7 +47,7 @@ func TestBuildPlan_MarketBuyIssuanceCrossesBuyNoMaker(t *testing.T) {
 		Side:              OrderSideNo,
 		Action:            OrderActionBuy,
 		OrderType:         OrderTypeLimit,
-		PriceCents:        &makerPrice,
+		PricePoints:       &makerPrice,
 		Quantity:          100,
 		RemainingQuantity: 100,
 		Status:            OrderStatusOpen,
@@ -86,15 +86,15 @@ func TestBuildPlan_MarketBuyIssuanceCrossesBuyNoMaker(t *testing.T) {
 		t.Fatal("no taker trade row (side=yes)")
 	}
 	// Taker pays par - makerLimit = 100 - 70 = 30¢
-	if takerTrade.PriceCents != 30 {
-		t.Errorf("taker should pay 30 (=100-70), got %d", takerTrade.PriceCents)
+	if takerTrade.PricePoints != 30 {
+		t.Errorf("taker should pay 30 (=100-70), got %d", takerTrade.PricePoints)
 	}
 	if takerTrade.TradeKind != TradeKindIssuance {
 		t.Errorf("expected TradeKindIssuance, got %s", takerTrade.TradeKind)
 	}
 	// Collateral pool grows by 100 × 5 = 500.
-	if plan.Market.CollateralPoolCents != 500 {
-		t.Errorf("expected pool delta +500, got %d", plan.Market.CollateralPoolCents)
+	if plan.Market.CollateralPoolPoints != 500 {
+		t.Errorf("expected pool delta +500, got %d", plan.Market.CollateralPoolPoints)
 	}
 }
 
@@ -111,7 +111,7 @@ func TestBuildPlan_MarketBuyIssuance_NoMakers(t *testing.T) {
 		Side:              OrderSideYes,
 		Action:            OrderActionBuy,
 		OrderType:         OrderTypeMarket,
-		PriceCents:        nil,
+		PricePoints:       nil,
 		Quantity:          5,
 		RemainingQuantity: 5,
 		Status:            OrderStatusPending,
@@ -139,7 +139,7 @@ func TestBuildPlan_MarketBuyIssuance_NoMakers(t *testing.T) {
 
 // TestBuildPlan_LimitBuyIssuance_StillWorks — sanity check that the
 // existing limit-order issuance path didn't regress. The new
-// implementation reads the original PriceCents when set.
+// implementation reads the original PricePoints when set.
 func TestBuildPlan_LimitBuyIssuance_StillWorks(t *testing.T) {
 	e := NewExchangeEngine()
 	market := makeMarket()
@@ -151,7 +151,7 @@ func TestBuildPlan_LimitBuyIssuance_StillWorks(t *testing.T) {
 		Side:              OrderSideYes,
 		Action:            OrderActionBuy,
 		OrderType:         OrderTypeLimit,
-		PriceCents:        &takerPrice, // explicit, the legacy path
+		PricePoints:       &takerPrice, // explicit, the legacy path
 		Quantity:          5,
 		RemainingQuantity: 5,
 		Status:            OrderStatusPending,
@@ -166,7 +166,7 @@ func TestBuildPlan_LimitBuyIssuance_StillWorks(t *testing.T) {
 		Side:              OrderSideNo,
 		Action:            OrderActionBuy,
 		OrderType:         OrderTypeLimit,
-		PriceCents:        &makerPrice,
+		PricePoints:       &makerPrice,
 		Quantity:          100,
 		RemainingQuantity: 100,
 		Status:            OrderStatusOpen,

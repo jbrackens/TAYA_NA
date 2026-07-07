@@ -129,11 +129,11 @@ func (m *Metrics) RecordLatency(op string, d time.Duration) {
 // RecordSMMSkip increments a counter when the SMM declines to post a
 // quote on a tick. Reasons are short opaque strings, e.g.:
 //   - "position_cap"  — bot's accumulated position on this side has
-//                       hit SMM_MAX_POSITION_QTY
+//     hit SMM_MAX_POSITION_QTY
 //   - "price_band"    — market sits at the edge of [1, 99] and a
-//                       symmetric quote would fall outside
+//     symmetric quote would fall outside
 //   - "stale_price"   — market.last_quote_at is older than threshold
-//                       (Phase 2: not yet implemented)
+//     (Phase 2: not yet implemented)
 //
 // Side is the side the bot wanted to post on ("yes"|"no"), market
 // is the market_id. nil receiver is safe (no-op).

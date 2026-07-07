@@ -408,12 +408,12 @@ func (s *SettlementEngine) recordSettlementAudit(settledBy *string, settlement *
 		actor = *settledBy
 	}
 	s.auditor.RecordSettlement(actor, settlement.MarketID, map[string]any{
-		"settlementId":               settlement.ID,
-		"result":                     settlement.Result,
-		"totalSettlementPointsCents": settlement.TotalPayoutCents,
-		"pointDisbursementCount":     settlement.PositionsSettled,
-		"attestationSource":          settlement.AttestationSource,
-		"unit":                       "PTS",
+		"settlementId":           settlement.ID,
+		"result":                 settlement.Result,
+		"totalSettlementPoints":  settlement.TotalPayoutPoints,
+		"pointDisbursementCount": settlement.PositionsSettled,
+		"attestationSource":      settlement.AttestationSource,
+		"unit":                   "PTS",
 	})
 }
 
@@ -505,7 +505,7 @@ func (s *SettlementEngine) resolveMarket(ctx context.Context, req ResolveMarketR
 		}
 		u := s.buildSettlementUnit(pos, result, settlement.ID, marketID)
 		units = append(units, u)
-		totalPayout += u.payout.PayoutCents
+		totalPayout += u.payout.PayoutPoints
 	}
 
 	// Compacted slices for the atomic / in-memory persist paths (credits and
@@ -524,7 +524,7 @@ func (s *SettlementEngine) resolveMarket(ctx context.Context, req ResolveMarketR
 	}
 
 	// Update settlement totals + the disbursement target (P3-12).
-	settlement.TotalPayoutCents = totalPayout
+	settlement.TotalPayoutPoints = totalPayout
 	settlement.PositionsSettled = len(units)
 	settlement.PayoutsTotal = len(units)
 
@@ -545,10 +545,10 @@ func (s *SettlementEngine) resolveMarket(ctx context.Context, req ResolveMarketR
 		reason = *req.Reason
 	}
 	metadata, _ := json.Marshal(map[string]interface{}{
-		"result":             string(result),
-		"attestation_source": req.AttestationSource,
-		"total_payout_cents": totalPayout,
-		"positions_settled":  len(units),
+		"result":              string(result),
+		"attestation_source":  req.AttestationSource,
+		"total_payout_points": totalPayout,
+		"positions_settled":   len(units),
 	})
 	lifecycle := &LifecycleEvent{
 		MarketID:   marketID,
@@ -640,7 +640,7 @@ func (s *SettlementEngine) resolveMarket(ctx context.Context, req ResolveMarketR
 		}
 	}
 	for _, credit := range credits {
-		if err := s.wallet.Credit(ctx, credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
+		if err := s.wallet.Credit(ctx, credit.UserID, credit.AmountPoints, credit.IdempotencyKey, credit.Reason); err != nil {
 			return nil, nil, fmt.Errorf("wallet credit failed for user %s: %w", credit.UserID, err)
 		}
 	}
@@ -751,30 +751,30 @@ func (s *SettlementEngine) calculatePayout(pos Position, result MarketResult, se
 	won := (pos.Side == OrderSideYes && result == MarketResultYes) ||
 		(pos.Side == OrderSideNo && result == MarketResultNo)
 
-	var exitPriceCents int
-	var payoutCents int64
+	var exitPricePoints int
+	var payoutPoints int64
 	if won {
-		exitPriceCents = 100
-		payoutCents = int64(pos.Quantity) * 100
+		exitPricePoints = 100
+		payoutPoints = int64(pos.Quantity) * 100
 	} else {
-		exitPriceCents = 0
-		payoutCents = 0
+		exitPricePoints = 0
+		payoutPoints = 0
 	}
 
-	pnl := payoutCents - pos.TotalCostCents
+	pnl := payoutPoints - pos.TotalCostPoints
 
 	return Payout{
-		SettlementID:    settlementID,
-		PositionID:      pos.ID,
-		UserID:          pos.UserID,
-		MarketID:        pos.MarketID,
-		Side:            pos.Side,
-		Quantity:        pos.Quantity,
-		EntryPriceCents: pos.AvgPriceCents,
-		ExitPriceCents:  exitPriceCents,
-		PnlCents:        pnl,
-		PayoutCents:     payoutCents,
-		PaidAt:          time.Now().UTC(),
+		SettlementID:     settlementID,
+		PositionID:       pos.ID,
+		UserID:           pos.UserID,
+		MarketID:         pos.MarketID,
+		Side:             pos.Side,
+		Quantity:         pos.Quantity,
+		EntryPricePoints: pos.AvgPricePoints,
+		ExitPricePoints:  exitPricePoints,
+		PnlPoints:        pnl,
+		PayoutPoints:     payoutPoints,
+		PaidAt:           time.Now().UTC(),
 	}
 }
 
@@ -797,21 +797,21 @@ type settlementUnit struct {
 func (s *SettlementEngine) buildSettlementUnit(pos Position, result MarketResult, settlementID, marketID string) settlementUnit {
 	payout := s.calculatePayout(pos, result, settlementID)
 	u := settlementUnit{payout: payout}
-	if payout.PayoutCents > 0 {
+	if payout.PayoutPoints > 0 {
 		u.credit = &WalletCreditRequest{
 			UserID:         pos.UserID,
-			AmountCents:    payout.PayoutCents,
+			AmountPoints:   payout.PayoutPoints,
 			IdempotencyKey: fmt.Sprintf("prediction_payout:%s:%s", marketID, pos.ID),
 			Reason: fmt.Sprintf("prediction settlement: market %s resolved %s, %s position won",
 				marketID, result, pos.Side),
 		}
 	}
-	if s.loyalty != nil && pos.TotalCostCents > 0 {
+	if s.loyalty != nil && pos.TotalCostPoints > 0 {
 		won := (pos.Side == OrderSideYes && result == MarketResultYes) ||
 			(pos.Side == OrderSideNo && result == MarketResultNo)
 		u.accrual = &LoyaltyAccrualRequest{
 			UserID:         pos.UserID,
-			VolumeCents:    pos.TotalCostCents,
+			VolumePoints:   pos.TotalCostPoints,
 			IsCorrect:      won,
 			MarketID:       marketID,
 			IdempotencyKey: fmt.Sprintf("accrual:%s:%s", marketID, pos.ID),
@@ -851,20 +851,20 @@ func (s *SettlementEngine) VoidMarket(ctx context.Context, marketID string, reas
 			continue
 		}
 		payout := Payout{
-			PositionID:      pos.ID,
-			UserID:          pos.UserID,
-			MarketID:        pos.MarketID,
-			Side:            pos.Side,
-			Quantity:        pos.Quantity,
-			EntryPriceCents: pos.AvgPriceCents,
-			ExitPriceCents:  pos.AvgPriceCents, // refund at entry
-			PnlCents:        0,
-			PayoutCents:     pos.TotalCostCents,
-			PaidAt:          time.Now().UTC(),
+			PositionID:       pos.ID,
+			UserID:           pos.UserID,
+			MarketID:         pos.MarketID,
+			Side:             pos.Side,
+			Quantity:         pos.Quantity,
+			EntryPricePoints: pos.AvgPricePoints,
+			ExitPricePoints:  pos.AvgPricePoints, // refund at entry
+			PnlPoints:        0,
+			PayoutPoints:     pos.TotalCostPoints,
+			PaidAt:           time.Now().UTC(),
 		}
 		credits = append(credits, WalletCreditRequest{
 			UserID:         pos.UserID,
-			AmountCents:    pos.TotalCostCents,
+			AmountPoints:   pos.TotalCostPoints,
 			IdempotencyKey: fmt.Sprintf("prediction_void:%s:%s", marketID, pos.ID),
 			Reason:         fmt.Sprintf("prediction refund: market %s voided, returning locked points", market.Ticker),
 		})
@@ -900,7 +900,7 @@ func (s *SettlementEngine) VoidMarket(ctx context.Context, marketID string, reas
 		return nil, fmt.Errorf("update market: %w", err)
 	}
 	for _, credit := range credits {
-		if err := s.wallet.Credit(ctx, credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
+		if err := s.wallet.Credit(ctx, credit.UserID, credit.AmountPoints, credit.IdempotencyKey, credit.Reason); err != nil {
 			return nil, fmt.Errorf("wallet refund failed for user %s: %w", credit.UserID, err)
 		}
 	}

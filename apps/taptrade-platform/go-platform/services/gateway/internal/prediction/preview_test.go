@@ -41,7 +41,7 @@ func (r *previewExchangeRepo) ListRecentDriftAlerts(context.Context, time.Time) 
 	return []CollateralDriftAlert{}, nil
 }
 
-func previewMaker(id string, userID string, side OrderSide, action OrderAction, priceCents int, qty int) Order {
+func previewMaker(id string, userID string, side OrderSide, action OrderAction, pricePoints int, qty int) Order {
 	return Order{
 		ID:                id,
 		UserID:            userID,
@@ -49,7 +49,7 @@ func previewMaker(id string, userID string, side OrderSide, action OrderAction, 
 		Side:              side,
 		Action:            action,
 		OrderType:         OrderTypeLimit,
-		PriceCents:        &priceCents,
+		PricePoints:       &pricePoints,
 		Quantity:          qty,
 		RemainingQuantity: qty,
 		Status:            OrderStatusOpen,
@@ -92,8 +92,8 @@ func TestPreviewOrder_OrderBookUsesExchangeEngine(t *testing.T) {
 	if preview.TotalCost != 630 {
 		t.Fatalf("total cost = %d, want 630", preview.TotalCost)
 	}
-	if preview.AverageFillPriceCents != 63 || preview.PriceCents != 63 {
-		t.Fatalf("avg/price = %d/%d, want 63/63", preview.AverageFillPriceCents, preview.PriceCents)
+	if preview.AverageFillPricePoints != 63 || preview.PricePoints != 63 {
+		t.Fatalf("avg/price = %d/%d, want 63/63", preview.AverageFillPricePoints, preview.PricePoints)
 	}
 	if preview.MaxProfit != 370 || preview.MaxLoss != 630 {
 		t.Fatalf("profit/loss = %d/%d, want 370/630", preview.MaxProfit, preview.MaxLoss)
@@ -129,13 +129,13 @@ func TestPreviewOrder_AMMReturnsReadOnlyCurveQuote(t *testing.T) {
 	if preview.QuoteStatus != OrderStatusFilled {
 		t.Fatalf("quote status = %q, want filled", preview.QuoteStatus)
 	}
-	if preview.AverageFillPriceCents <= 0 || preview.TotalCostWithFeesCents <= 0 {
-		t.Fatalf("quote economics missing: avg=%d total=%d", preview.AverageFillPriceCents, preview.TotalCostWithFeesCents)
+	if preview.AverageFillPricePoints <= 0 || preview.TotalCostWithFeesPoints <= 0 {
+		t.Fatalf("quote economics missing: avg=%d total=%d", preview.AverageFillPricePoints, preview.TotalCostWithFeesPoints)
 	}
-	if preview.EstimatedSlippageCents <= 0 {
-		t.Fatalf("estimated slippage = %d, want positive AMM impact", preview.EstimatedSlippageCents)
+	if preview.EstimatedSlippagePoints <= 0 {
+		t.Fatalf("estimated slippage = %d, want positive AMM impact", preview.EstimatedSlippagePoints)
 	}
-	if preview.NewYesPrice <= m.YesPriceCents || preview.NewNoPrice >= m.NoPriceCents {
+	if preview.NewYesPrice <= m.YesPricePoints || preview.NewNoPrice >= m.NoPricePoints {
 		t.Fatalf("new prices = YES %d NO %d, want YES up and NO down", preview.NewYesPrice, preview.NewNoPrice)
 	}
 }
@@ -144,8 +144,8 @@ func TestPreviewOrder_AMMNoSideUsesNoPrice(t *testing.T) {
 	repo := newMemRepo()
 	m := seedMarket(t, repo)
 	m.ExecutionMode = ExecutionModeAMM
-	m.YesPriceCents = 40
-	m.NoPriceCents = 60
+	m.YesPricePoints = 40
+	m.NoPricePoints = 60
 	m.AMMYesShares = 0
 	m.AMMNoShares = 40.6
 
@@ -161,10 +161,10 @@ func TestPreviewOrder_AMMNoSideUsesNoPrice(t *testing.T) {
 		t.Fatalf("PreviewOrderForUser failed: %v", err)
 	}
 
-	if preview.PriceCents != m.NoPriceCents {
-		t.Fatalf("price cents = %d, want NO price %d", preview.PriceCents, m.NoPriceCents)
+	if preview.PricePoints != m.NoPricePoints {
+		t.Fatalf("price cents = %d, want NO price %d", preview.PricePoints, m.NoPricePoints)
 	}
-	if preview.NewNoPrice <= m.NoPriceCents || preview.NewYesPrice >= m.YesPriceCents {
+	if preview.NewNoPrice <= m.NoPricePoints || preview.NewYesPrice >= m.YesPricePoints {
 		t.Fatalf("new prices = YES %d NO %d, want NO up and YES down", preview.NewYesPrice, preview.NewNoPrice)
 	}
 }
@@ -189,8 +189,8 @@ func TestPreviewOrder_OrderBookNoLiquidityReturnsZeroFillQuote(t *testing.T) {
 	if preview.FilledQuantity != 0 || preview.UnfilledQuantity != 5 {
 		t.Fatalf("fill summary = %d filled / %d unfilled, want 0/5", preview.FilledQuantity, preview.UnfilledQuantity)
 	}
-	if preview.TotalCost != 0 || preview.TotalCostWithFeesCents != 0 {
-		t.Fatalf("cost = %d with fees %d, want 0/0", preview.TotalCost, preview.TotalCostWithFeesCents)
+	if preview.TotalCost != 0 || preview.TotalCostWithFeesPoints != 0 {
+		t.Fatalf("cost = %d with fees %d, want 0/0", preview.TotalCost, preview.TotalCostWithFeesPoints)
 	}
 	if preview.QuoteStatus != OrderStatusCancelled {
 		t.Fatalf("quote status = %q, want cancelled", preview.QuoteStatus)
@@ -220,8 +220,8 @@ func TestPreviewOrder_OrderBookPartialMarketBuyReportsPartialFill(t *testing.T) 
 	if preview.FilledQuantity != 3 || preview.UnfilledQuantity != 2 {
 		t.Fatalf("fill summary = %d filled / %d unfilled, want 3/2", preview.FilledQuantity, preview.UnfilledQuantity)
 	}
-	if preview.TotalCost != 180 || preview.AverageFillPriceCents != 60 {
-		t.Fatalf("cost/avg = %d/%d, want 180/60", preview.TotalCost, preview.AverageFillPriceCents)
+	if preview.TotalCost != 180 || preview.AverageFillPricePoints != 60 {
+		t.Fatalf("cost/avg = %d/%d, want 180/60", preview.TotalCost, preview.AverageFillPricePoints)
 	}
 	if preview.MaxProfit != 120 || preview.MaxLoss != 180 {
 		t.Fatalf("profit/loss = %d/%d, want 120/180", preview.MaxProfit, preview.MaxLoss)

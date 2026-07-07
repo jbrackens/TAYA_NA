@@ -54,7 +54,7 @@ const HERO_CELL_CLASS = "min-w-0";
 // the highest-volume market in each category that isn't already on an earlier
 // slide, so every slide shows a distinct market.
 function rankByVolume(markets: PredictionMarket[]): PredictionMarket[] {
-  return [...markets].sort((a, b) => b.volumePointsCents - a.volumePointsCents);
+  return [...markets].sort((a, b) => b.volumePoints - a.volumePoints);
 }
 
 export default function PredictDiscoveryPage() {

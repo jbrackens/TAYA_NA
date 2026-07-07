@@ -5,22 +5,20 @@ import type {
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
-export function formatCompactPoints(cents: number): string {
-  const points = Math.max(0, cents) / 100;
+// Points unit-model (2026-07-07): 1 Point = 1 cent of play value; API
+// integers ARE whole Points. No /100 conversion, no fractional Points.
+export function formatCompactPoints(points: number): string {
+  const value = Math.max(0, points);
 
-  if (points >= 1_000_000) {
-    return trimTrailingZero(`${(points / 1_000_000).toFixed(1)}M pts`);
+  if (value >= 1_000_000) {
+    return trimTrailingZero(`${(value / 1_000_000).toFixed(1)}M pts`);
   }
 
-  if (points >= 1_000) {
-    return trimTrailingZero(`${(points / 1_000).toFixed(1)}K pts`);
+  if (value >= 1_000) {
+    return trimTrailingZero(`${(value / 1_000).toFixed(1)}K pts`);
   }
 
-  if (points >= 100) {
-    return `${Math.round(points).toLocaleString()} pts`;
-  }
-
-  return `${points.toFixed(2)} pts`;
+  return `${Math.round(value).toLocaleString()} pts`;
 }
 
 export function formatTimeLeft(closeAt: string): string {
@@ -83,21 +81,21 @@ export function dedupeMarkets(markets: PredictionMarket[]): PredictionMarket[] {
 export function sortMarketsByVolume(
   markets: PredictionMarket[],
 ): PredictionMarket[] {
-  return [...markets].sort((a, b) => b.volumePointsCents - a.volumePointsCents);
+  return [...markets].sort((a, b) => b.volumePoints - a.volumePoints);
 }
 
 export function normalizePriceShares(
-  yesPriceCents: number,
-  noPriceCents: number,
+  yesPricePoints: number,
+  noPricePoints: number,
 ) {
-  const total = yesPriceCents + noPriceCents;
+  const total = yesPricePoints + noPricePoints;
   if (total <= 0) {
     return { yesShare: 50, noShare: 50 };
   }
 
   return {
-    yesShare: (yesPriceCents / total) * 100,
-    noShare: (noPriceCents / total) * 100,
+    yesShare: (yesPricePoints / total) * 100,
+    noShare: (noPricePoints / total) * 100,
   };
 }
 

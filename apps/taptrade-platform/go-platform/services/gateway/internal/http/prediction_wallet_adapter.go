@@ -26,20 +26,20 @@ func NewPredictionWalletAdapter(svc *wallet.Service) prediction.WalletAdapter {
 	return &PredictionWalletAdapter{svc: svc}
 }
 
-func (a *PredictionWalletAdapter) Debit(ctx context.Context, userID string, amountCents int64, idempotencyKey, reason string) error {
+func (a *PredictionWalletAdapter) Debit(ctx context.Context, userID string, amountPoints int64, idempotencyKey, reason string) error {
 	_, err := a.svc.Debit(ctx, wallet.MutationRequest{
 		UserID:         userID,
-		AmountCents:    amountCents,
+		AmountPoints:   amountPoints,
 		IdempotencyKey: idempotencyKey,
 		Reason:         reason,
 	})
 	return err
 }
 
-func (a *PredictionWalletAdapter) Credit(ctx context.Context, userID string, amountCents int64, idempotencyKey, reason string) error {
+func (a *PredictionWalletAdapter) Credit(ctx context.Context, userID string, amountPoints int64, idempotencyKey, reason string) error {
 	_, err := a.svc.Credit(ctx, wallet.MutationRequest{
 		UserID:         userID,
-		AmountCents:    amountCents,
+		AmountPoints:   amountPoints,
 		IdempotencyKey: idempotencyKey,
 		Reason:         reason,
 	})
@@ -57,20 +57,20 @@ func (a *PredictionWalletAdapter) BeginTx(ctx context.Context) (*sql.Tx, error) 
 	return a.svc.DB().BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
 }
 
-func (a *PredictionWalletAdapter) DebitWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, idempotencyKey, reason string) error {
+func (a *PredictionWalletAdapter) DebitWithTx(ctx context.Context, tx *sql.Tx, userID string, amountPoints int64, idempotencyKey, reason string) error {
 	_, err := a.svc.DebitWithTx(ctx, tx, wallet.MutationRequest{
 		UserID:         userID,
-		AmountCents:    amountCents,
+		AmountPoints:   amountPoints,
 		IdempotencyKey: idempotencyKey,
 		Reason:         reason,
 	})
 	return err
 }
 
-func (a *PredictionWalletAdapter) CreditWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, idempotencyKey, reason string) error {
+func (a *PredictionWalletAdapter) CreditWithTx(ctx context.Context, tx *sql.Tx, userID string, amountPoints int64, idempotencyKey, reason string) error {
 	_, err := a.svc.CreditWithTx(ctx, tx, wallet.MutationRequest{
 		UserID:         userID,
-		AmountCents:    amountCents,
+		AmountPoints:   amountPoints,
 		IdempotencyKey: idempotencyKey,
 		Reason:         reason,
 	})
@@ -90,10 +90,10 @@ func (a *PredictionWalletAdapter) BeginExchangeTx(ctx context.Context) (*sql.Tx,
 	return a.svc.DB().BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 }
 
-func (a *PredictionWalletAdapter) HoldWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, refType, refID string, expiresIn time.Duration) error {
+func (a *PredictionWalletAdapter) HoldWithTx(ctx context.Context, tx *sql.Tx, userID string, amountPoints int64, refType, refID string, expiresIn time.Duration) error {
 	_, err := a.svc.HoldWithTx(ctx, tx, wallet.HoldRequest{
 		UserID:        userID,
-		AmountCents:   amountCents,
+		AmountPoints:  amountPoints,
 		ReferenceType: refType,
 		ReferenceID:   refID,
 		ExpiresIn:     expiresIn,
@@ -101,8 +101,8 @@ func (a *PredictionWalletAdapter) HoldWithTx(ctx context.Context, tx *sql.Tx, us
 	return err
 }
 
-func (a *PredictionWalletAdapter) CaptureReservationWithTx(ctx context.Context, tx *sql.Tx, refType, refID string, amountCents int64, captureKey string) error {
-	_, err := a.svc.CaptureReservationWithTx(ctx, tx, refType, refID, amountCents, captureKey)
+func (a *PredictionWalletAdapter) CaptureReservationWithTx(ctx context.Context, tx *sql.Tx, refType, refID string, amountPoints int64, captureKey string) error {
+	_, err := a.svc.CaptureReservationWithTx(ctx, tx, refType, refID, amountPoints, captureKey)
 	return err
 }
 

@@ -10,7 +10,7 @@ package main
 // migration risks silently pulling demo-seed data into production.
 //
 // Leaderboard snapshots are intentionally NOT migrated. The sportsbook board
-// metrics (qualified_stake_cents, net_profit_cents over indefinite windows)
+// metrics (qualified_stake_points, net_profit_points over indefinite windows)
 // don't translate to Predict's Accuracy / Weekly P&L / Sharpness / Category
 // Champions shape. The PredictRecomputer repopulates boards from
 // prediction_payouts on its 5-minute tick — no historical import needed.

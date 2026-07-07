@@ -7,12 +7,12 @@ import (
 )
 
 const (
-	demoActiveBonusName                 = "Demo Point-Play Bonus"
-	demoActiveBonusBudgetPointsCents    = int64(1_000_000)
-	demoActiveBonusGrantedPointsCents   = int64(20_000)
-	demoActiveBonusRemainingPointsCents = int64(15_000)
-	demoActiveBonusPlayRequiredCents    = int64(100_000)
-	demoActiveBonusPlayCompletedCents   = int64(25_000)
+	demoActiveBonusName                = "Demo Point-Play Bonus"
+	demoActiveBonusBudgetPoints        = int64(1_000_000)
+	demoActiveBonusGrantedPoints       = int64(20_000)
+	demoActiveBonusRemainingPoints     = int64(15_000)
+	demoActiveBonusPlayRequiredPoints  = int64(100_000)
+	demoActiveBonusPlayCompletedPoints = int64(25_000)
 )
 
 // RunPhase5BonusDemo seeds one active point-play bonus grant for the demo user
@@ -24,7 +24,7 @@ func RunPhase5BonusDemo(ctx context.Context, db *sql.DB) (int64, error) {
 WITH campaign AS (
   INSERT INTO campaigns (
     name, description, campaign_type, status,
-    start_at, end_at, budget_cents, spent_cents, max_claims,
+    start_at, end_at, budget_points, spent_points, max_claims,
     claim_count, rules, created_by
   )
   VALUES (
@@ -47,7 +47,7 @@ reward_rule AS (
   INSERT INTO campaign_rules (campaign_id, rule_type, rule_config)
   SELECT id, 'reward', jsonb_build_object(
     'type', 'fixed',
-    'fixed_amount_cents', $2,
+    'fixed_amount_points', $2,
     'expiry_days', 14
   )
   FROM campaign
@@ -56,15 +56,15 @@ play_rule AS (
   INSERT INTO campaign_rules (campaign_id, rule_type, rule_config)
   SELECT id, 'wagering', jsonb_build_object(
     'multiplier', 5,
-    'max_stake_contribution_cents', 5000
+    'max_stake_contribution_points', 5000
   )
   FROM campaign
 ),
 grant_row AS (
   INSERT INTO player_bonuses (
     user_id, campaign_id, bonus_type, status,
-    granted_amount_cents, remaining_amount_cents,
-    wagering_required_cents, wagering_completed_cents,
+    granted_amount_points, remaining_amount_points,
+    wagering_required_points, wagering_completed_points,
     expires_at, metadata
   )
   SELECT
@@ -87,12 +87,12 @@ grant_row AS (
   RETURNING id
 )
 SELECT COUNT(*) FROM grant_row`,
-		demoActiveBonusBudgetPointsCents,
-		demoActiveBonusGrantedPointsCents,
+		demoActiveBonusBudgetPoints,
+		demoActiveBonusGrantedPoints,
 		demoUserID,
-		demoActiveBonusRemainingPointsCents,
-		demoActiveBonusPlayRequiredCents,
-		demoActiveBonusPlayCompletedCents,
+		demoActiveBonusRemainingPoints,
+		demoActiveBonusPlayRequiredPoints,
+		demoActiveBonusPlayCompletedPoints,
 		demoActiveBonusName,
 	).Scan(&count)
 	if err != nil {

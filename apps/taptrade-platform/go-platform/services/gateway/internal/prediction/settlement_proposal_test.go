@@ -221,11 +221,11 @@ func TestResolveDisputeUpheldVoidsAndRefunds(t *testing.T) {
 
 	repo.positions["alice:mkt-1:yes"] = &Position{
 		ID: "pos-alice", UserID: "alice", MarketID: "mkt-1", Side: OrderSideYes,
-		Quantity: 20, AvgPriceCents: 50, TotalCostCents: 1000,
+		Quantity: 20, AvgPricePoints: 50, TotalCostPoints: 1000,
 	}
 	repo.positions["bob:mkt-1:no"] = &Position{
 		ID: "pos-bob", UserID: "bob", MarketID: "mkt-1", Side: OrderSideNo,
-		Quantity: 15, AvgPriceCents: 50, TotalCostCents: 750,
+		Quantity: 15, AvgPricePoints: 50, TotalCostPoints: 750,
 	}
 
 	wallet := &fakeWallet{balances: map[string]int64{"alice": 0, "bob": 0}}

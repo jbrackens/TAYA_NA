@@ -76,8 +76,8 @@ function marketKey(market: PredictionMarket): string {
 
 function getSentiment(market: PredictionMarket): Sentiment {
   const { yesShare, noShare } = normalizePriceShares(
-    market.yesPricePointsCents,
-    market.noPricePointsCents,
+    market.yesPricePoints,
+    market.noPricePoints,
   );
   const roundedYes = Math.round(yesShare);
   const roundedNo = Math.round(noShare);
@@ -121,7 +121,7 @@ function rankBySignal(markets: PredictionMarket[]): PredictionMarket[] {
     const aSkew = Math.abs(aSentiment.yesShare - aSentiment.noShare);
     const bSkew = Math.abs(bSentiment.yesShare - bSentiment.noShare);
     if (bSkew !== aSkew) return bSkew - aSkew;
-    return b.volumePointsCents - a.volumePointsCents;
+    return b.volumePoints - a.volumePoints;
   });
 }
 
@@ -139,7 +139,7 @@ function filterMarkets(
       return markets.filter((market) => trendingKeys.has(marketKey(market)));
     case "active":
       return [...markets].sort(
-        (a, b) => b.volumePointsCents - a.volumePointsCents,
+        (a, b) => b.volumePoints - a.volumePoints,
       );
     case "yes":
       return markets.filter(
@@ -162,8 +162,8 @@ function averageYesShare(markets: PredictionMarket[]): number {
     return (
       sum +
       normalizePriceShares(
-        market.yesPricePointsCents,
-        market.noPricePointsCents,
+        market.yesPricePoints,
+        market.noPricePoints,
       ).yesShare
     );
   }, 0);
@@ -201,11 +201,11 @@ function movementFromHistory(
   history: MarketPriceHistory,
 ): MarketMovement | null {
   const points = history.points.filter((point) =>
-    Number.isFinite(point.yesPricePointsCents),
+    Number.isFinite(point.yesPricePoints),
   );
   if (points.length < 2) return null;
-  const first = points[0]?.yesPricePointsCents;
-  const last = points[points.length - 1]?.yesPricePointsCents;
+  const first = points[0]?.yesPricePoints;
+  const last = points[points.length - 1]?.yesPricePoints;
   if (!first || !last) return null;
   const delta = last - first;
   return {
@@ -340,7 +340,7 @@ function SentimentRow({
         <span className={changeClass}>{changeLabel}</span>
       </div>
       <div className="font-mono text-[13px] font-semibold text-[var(--t2)] tabular-nums max-[1040px]:col-start-2 max-[1040px]:mt-[-10px] max-[640px]:col-start-auto">
-        {formatCompactPoints(market.volumePointsCents)}
+        {formatCompactPoints(market.volumePoints)}
       </div>
       <div className="grid grid-cols-2 gap-2 max-[1040px]:col-start-3 max-[1040px]:row-span-2 max-[1040px]:row-start-1 max-[640px]:col-start-auto max-[640px]:row-auto">
         <Link
@@ -349,7 +349,7 @@ function SentimentRow({
         >
           <span className="text-[var(--yes-text)]">YES</span>
           <span className="font-mono text-[15px] text-[var(--yes-text)] tabular-nums">
-            {market.yesPricePointsCents}¢
+            {market.yesPricePoints}¢
           </span>
         </Link>
         <Link
@@ -358,7 +358,7 @@ function SentimentRow({
         >
           <span className="text-[var(--no-text)]">NO</span>
           <span className="font-mono text-[15px] text-[var(--no-text)] tabular-nums">
-            {market.noPricePointsCents}¢
+            {market.noPricePoints}¢
           </span>
         </Link>
       </div>
@@ -472,7 +472,7 @@ export default function DiscoverPage() {
     activeFilter,
   );
   const totalVolume = allMarkets.reduce(
-    (sum, market) => sum + market.volumePointsCents,
+    (sum, market) => sum + market.volumePoints,
     0,
   );
   const yesLeaningCount = allMarkets.filter(

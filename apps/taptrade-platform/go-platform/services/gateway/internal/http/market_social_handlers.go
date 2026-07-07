@@ -631,14 +631,14 @@ FROM (
   SELECT 'trade:buy:' || id::text AS id, 'trade' AS type, buyer_id AS user_id,
          COALESCE(seller_id, '') AS target_id, market_id::text AS market_id,
          '' AS comment_id,
-         'Bought ' || quantity::text || ' ' || upper(side) || ' at ' || price_cents::text || '/100' AS body,
+         'Bought ' || quantity::text || ' ' || upper(side) || ' at ' || price_points::text || '/100' AS body,
          traded_at AS created_at
   FROM prediction_trades
   WHERE buyer_id = $1
   UNION ALL
   SELECT 'trade:sell:' || id::text AS id, 'trade' AS type, seller_id AS user_id,
          buyer_id AS target_id, market_id::text AS market_id, '' AS comment_id,
-         'Sold ' || quantity::text || ' ' || upper(side) || ' at ' || price_cents::text || '/100' AS body,
+         'Sold ' || quantity::text || ' ' || upper(side) || ' at ' || price_points::text || '/100' AS body,
          traded_at AS created_at
   FROM prediction_trades
   WHERE seller_id = $1
@@ -699,13 +699,13 @@ FROM (
   SELECT 'trade:buy:' || id::text AS id, 'trade' AS type, buyer_id AS user_id,
          COALESCE(seller_id, '') AS target_id, market_id::text AS market_id,
          '' AS comment_id,
-         'Bought ' || quantity::text || ' ' || upper(side) || ' at ' || price_cents::text || '/100' AS body,
+         'Bought ' || quantity::text || ' ' || upper(side) || ' at ' || price_points::text || '/100' AS body,
          traded_at AS created_at
   FROM prediction_trades
   UNION ALL
   SELECT 'trade:sell:' || id::text AS id, 'trade' AS type, seller_id AS user_id,
          buyer_id AS target_id, market_id::text AS market_id, '' AS comment_id,
-         'Sold ' || quantity::text || ' ' || upper(side) || ' at ' || price_cents::text || '/100' AS body,
+         'Sold ' || quantity::text || ' ' || upper(side) || ' at ' || price_points::text || '/100' AS body,
          traded_at AS created_at
   FROM prediction_trades
   WHERE seller_id IS NOT NULL AND seller_id <> ''

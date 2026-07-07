@@ -21,7 +21,7 @@ const baseOrder: OrderIdempotencySig = {
   action: "buy",
   orderType: "market",
   quantity: 10,
-  notionalCapPointsCents: 5000,
+  notionalCapPoints: 5000,
 };
 
 // Deterministic, counting mint so we can assert when a fresh key is minted.
@@ -46,19 +46,19 @@ describe("orderSignature", () => {
       orderSignature({
         ...baseOrder,
         orderType: "limit",
-        pricePointsCents: 60,
+        pricePoints: 60,
       }),
     );
     assert.notEqual(
       sig,
-      orderSignature({ ...baseOrder, notionalCapPointsCents: 5001 }),
+      orderSignature({ ...baseOrder, notionalCapPoints: 5001 }),
     );
   });
 
   it("treats absent and explicit-undefined optionals identically", () => {
     assert.equal(
       orderSignature(baseOrder),
-      orderSignature({ ...baseOrder, pricePointsCents: undefined }),
+      orderSignature({ ...baseOrder, pricePoints: undefined }),
     );
   });
 });

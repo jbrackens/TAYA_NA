@@ -88,7 +88,7 @@ func TestRGMutations_SessionBound(t *testing.T) {
 	t.Run("unauthenticated context is forbidden", func(t *testing.T) {
 		mux := newStack()
 		rec := post(mux, "/api/v1/compliance/rg/bet-limit",
-			`{"userId":"u-x","period":"daily","amountCents":500}`, "")
+			`{"userId":"u-x","period":"daily","amountPoints":500}`, "")
 		if rec.Code != http.StatusForbidden {
 			t.Fatalf("no session must be 403, got %d (%s)", rec.Code, rec.Body.String())
 		}
@@ -97,7 +97,7 @@ func TestRGMutations_SessionBound(t *testing.T) {
 	t.Run("bet-limit cross-user is forbidden", func(t *testing.T) {
 		mux := newStack()
 		rec := post(mux, "/api/v1/compliance/rg/bet-limit",
-			`{"userId":"u-victim","period":"daily","amountCents":1}`, "u-attacker")
+			`{"userId":"u-victim","period":"daily","amountPoints":1}`, "u-attacker")
 		if rec.Code != http.StatusForbidden {
 			t.Fatalf("cross-user bet-limit must be 403, got %d (%s)", rec.Code, rec.Body.String())
 		}
@@ -125,11 +125,11 @@ func TestRGPointUseLimitAliases(t *testing.T) {
 	}
 
 	rec := post("/api/v1/compliance/rg/point-use-limit",
-		`{"userId":"u-self","period":"daily","amountPointsCents":1200}`, "u-self")
+		`{"userId":"u-self","period":"daily","amountPoints":1200}`, "u-self")
 	if rec.Code != http.StatusCreated {
 		t.Fatalf("point-use limit alias must set a limit, got %d (%s)", rec.Code, rec.Body.String())
 	}
-	if !strings.Contains(rec.Body.String(), `"amountPointsCents":1200`) ||
+	if !strings.Contains(rec.Body.String(), `"amountPoints":1200`) ||
 		!strings.Contains(rec.Body.String(), `"unit":"PTS"`) {
 		t.Fatalf("point-use response should expose effective point amount, got %s", rec.Body.String())
 	}
@@ -145,12 +145,11 @@ func TestRGPointUseLimitAliases(t *testing.T) {
 		UserID string `json:"userId"`
 		Unit   string `json:"unit"`
 		Limits []struct {
-			Period               string `json:"period"`
-			Unit                 string `json:"unit"`
-			LimitPointsCents     int64  `json:"limitPointsCents"`
-			RemainingPointsCents int64  `json:"remainingPointsCents"`
-			UsedPointsCents      int64  `json:"usedPointsCents"`
-			LimitCents           int64  `json:"limitCents"`
+			Period          string `json:"period"`
+			Unit            string `json:"unit"`
+			LimitPoints     int64  `json:"limitPoints"`
+			RemainingPoints int64  `json:"remainingPoints"`
+			UsedPoints      int64  `json:"usedPoints"`
 		} `json:"limits"`
 		Total int `json:"total"`
 	}
@@ -162,10 +161,9 @@ func TestRGPointUseLimitAliases(t *testing.T) {
 	}
 	if pointUseOut.Limits[0].Period != "daily" ||
 		pointUseOut.Limits[0].Unit != "PTS" ||
-		pointUseOut.Limits[0].LimitPointsCents != 1200 ||
-		pointUseOut.Limits[0].RemainingPointsCents != 1200 ||
-		pointUseOut.Limits[0].UsedPointsCents != 0 ||
-		pointUseOut.Limits[0].LimitCents != 1200 {
+		pointUseOut.Limits[0].LimitPoints != 1200 ||
+		pointUseOut.Limits[0].RemainingPoints != 1200 ||
+		pointUseOut.Limits[0].UsedPoints != 0 {
 		t.Fatalf("point-use limits should mirror stored limit, got %+v", pointUseOut.Limits[0])
 	}
 
@@ -177,20 +175,20 @@ func TestRGPointUseLimitAliases(t *testing.T) {
 	rec = post("/api/v1/compliance/rg/point-use-limit",
 		`{"userId":"u-self","period":"daily","amountCents":999}`, "u-self")
 	if rec.Code != http.StatusBadRequest {
-		t.Fatalf("launch point-use limit must reject retired amountCents, got %d (%s)", rec.Code, rec.Body.String())
+		t.Fatalf("launch point-use limit must reject the retired amountCents key, got %d (%s)", rec.Code, rec.Body.String())
 	}
-	if !strings.Contains(rec.Body.String(), "amountPointsCents") {
-		t.Fatalf("launch point-use limit rejection should name amountPointsCents, got %s", rec.Body.String())
+	if !strings.Contains(rec.Body.String(), "amountPoints") {
+		t.Fatalf("launch point-use limit rejection should name amountPoints, got %s", rec.Body.String())
 	}
 
 	rec = post("/api/v1/compliance/rg/deposit-limit",
-		`{"userId":"u-self","period":"weekly","amountCents":1500}`, "u-self")
+		`{"userId":"u-self","period":"weekly","amountPoints":1500}`, "u-self")
 	if rec.Code != http.StatusCreated {
-		t.Fatalf("legacy deposit-limit compatibility path must still accept amountCents, got %d (%s)", rec.Code, rec.Body.String())
+		t.Fatalf("legacy deposit-limit compatibility path must still accept amountPoints, got %d (%s)", rec.Code, rec.Body.String())
 	}
 
 	rec = post("/api/v1/compliance/rg/point-use-limit",
-		`{"userId":"u-victim","period":"daily","amountPointsCents":999}`, "u-attacker")
+		`{"userId":"u-victim","period":"daily","amountPoints":999}`, "u-attacker")
 	if rec.Code != http.StatusForbidden {
 		t.Fatalf("cross-user point-use limit must be 403, got %d (%s)", rec.Code, rec.Body.String())
 	}
@@ -217,11 +215,11 @@ func TestRGPredictionLimitAliases(t *testing.T) {
 	}
 
 	rec := post("/api/v1/compliance/rg/prediction-limit",
-		`{"userId":"u-self","period":"daily","amountPointsCents":700}`, "u-self")
+		`{"userId":"u-self","period":"daily","amountPoints":700}`, "u-self")
 	if rec.Code != http.StatusCreated {
 		t.Fatalf("prediction limit alias must set a limit, got %d (%s)", rec.Code, rec.Body.String())
 	}
-	if !strings.Contains(rec.Body.String(), `"amountPointsCents":700`) ||
+	if !strings.Contains(rec.Body.String(), `"amountPoints":700`) ||
 		!strings.Contains(rec.Body.String(), `"unit":"PTS"`) {
 		t.Fatalf("prediction-limit response should expose effective point amount, got %s", rec.Body.String())
 	}
@@ -237,12 +235,11 @@ func TestRGPredictionLimitAliases(t *testing.T) {
 		UserID string `json:"userId"`
 		Unit   string `json:"unit"`
 		Limits []struct {
-			Period               string `json:"period"`
-			Unit                 string `json:"unit"`
-			LimitPointsCents     int64  `json:"limitPointsCents"`
-			RemainingPointsCents int64  `json:"remainingPointsCents"`
-			UsedPointsCents      int64  `json:"usedPointsCents"`
-			LimitCents           int64  `json:"limitCents"`
+			Period          string `json:"period"`
+			Unit            string `json:"unit"`
+			LimitPoints     int64  `json:"limitPoints"`
+			RemainingPoints int64  `json:"remainingPoints"`
+			UsedPoints      int64  `json:"usedPoints"`
 		} `json:"limits"`
 		Total int `json:"total"`
 	}
@@ -254,10 +251,9 @@ func TestRGPredictionLimitAliases(t *testing.T) {
 	}
 	if predictionOut.Limits[0].Period != "daily" ||
 		predictionOut.Limits[0].Unit != "PTS" ||
-		predictionOut.Limits[0].LimitPointsCents != 700 ||
-		predictionOut.Limits[0].RemainingPointsCents != 700 ||
-		predictionOut.Limits[0].UsedPointsCents != 0 ||
-		predictionOut.Limits[0].LimitCents != 700 {
+		predictionOut.Limits[0].LimitPoints != 700 ||
+		predictionOut.Limits[0].RemainingPoints != 700 ||
+		predictionOut.Limits[0].UsedPoints != 0 {
 		t.Fatalf("prediction limits should mirror stored limit, got %+v", predictionOut.Limits[0])
 	}
 
@@ -269,20 +265,20 @@ func TestRGPredictionLimitAliases(t *testing.T) {
 	rec = post("/api/v1/compliance/rg/prediction-limit",
 		`{"userId":"u-self","period":"daily","amountCents":999}`, "u-self")
 	if rec.Code != http.StatusBadRequest {
-		t.Fatalf("launch prediction limit must reject retired amountCents, got %d (%s)", rec.Code, rec.Body.String())
+		t.Fatalf("launch prediction limit must reject the retired amountCents key, got %d (%s)", rec.Code, rec.Body.String())
 	}
-	if !strings.Contains(rec.Body.String(), "amountPointsCents") {
-		t.Fatalf("launch prediction limit rejection should name amountPointsCents, got %s", rec.Body.String())
+	if !strings.Contains(rec.Body.String(), "amountPoints") {
+		t.Fatalf("launch prediction limit rejection should name amountPoints, got %s", rec.Body.String())
 	}
 
 	rec = post("/api/v1/compliance/rg/bet-limit",
-		`{"userId":"u-self","period":"weekly","amountCents":900}`, "u-self")
+		`{"userId":"u-self","period":"weekly","amountPoints":900}`, "u-self")
 	if rec.Code != http.StatusCreated {
-		t.Fatalf("legacy bet-limit compatibility path must still accept amountCents, got %d (%s)", rec.Code, rec.Body.String())
+		t.Fatalf("legacy bet-limit compatibility path must still accept amountPoints, got %d (%s)", rec.Code, rec.Body.String())
 	}
 
 	rec = post("/api/v1/compliance/rg/prediction-limit",
-		`{"userId":"u-victim","period":"daily","amountPointsCents":999}`, "u-attacker")
+		`{"userId":"u-victim","period":"daily","amountPoints":999}`, "u-attacker")
 	if rec.Code != http.StatusForbidden {
 		t.Fatalf("cross-user prediction limit must be 403, got %d (%s)", rec.Code, rec.Body.String())
 	}
@@ -302,26 +298,26 @@ func TestRGCheckAndRestrictionsPointAliases(t *testing.T) {
 	}
 
 	rec := request(http.MethodPost, "/api/v1/compliance/rg/point-use-limit",
-		`{"userId":"u-self","period":"daily","amountPointsCents":1200}`, "u-self")
+		`{"userId":"u-self","period":"daily","amountPoints":1200}`, "u-self")
 	if rec.Code != http.StatusCreated {
 		t.Fatalf("point-use setup must succeed, got %d (%s)", rec.Code, rec.Body.String())
 	}
 	rec = request(http.MethodPost, "/api/v1/compliance/rg/prediction-limit",
-		`{"userId":"u-self","period":"daily","amountPointsCents":700}`, "u-self")
+		`{"userId":"u-self","period":"daily","amountPoints":700}`, "u-self")
 	if rec.Code != http.StatusCreated {
 		t.Fatalf("prediction setup must succeed, got %d (%s)", rec.Code, rec.Body.String())
 	}
 
-	rec = request(http.MethodGet, "/api/v1/compliance/rg/check-point-use?userId=u-self&amountPointsCents=500", "", "u-self")
+	rec = request(http.MethodGet, "/api/v1/compliance/rg/check-point-use?userId=u-self&amountPoints=500", "", "u-self")
 	if rec.Code != http.StatusOK {
 		t.Fatalf("check-point-use must succeed, got %d (%s)", rec.Code, rec.Body.String())
 	}
-	if !strings.Contains(rec.Body.String(), `"amountPointsCents":500`) ||
+	if !strings.Contains(rec.Body.String(), `"amountPoints":500`) ||
 		!strings.Contains(rec.Body.String(), `"unit":"PTS"`) {
 		t.Fatalf("check-point-use should expose point-native amount, got %s", rec.Body.String())
 	}
 
-	rec = request(http.MethodGet, "/api/v1/compliance/rg/check-point-use?userId=u-self&amountPointsCents=1300", "", "u-self")
+	rec = request(http.MethodGet, "/api/v1/compliance/rg/check-point-use?userId=u-self&amountPoints=1300", "", "u-self")
 	if rec.Code != http.StatusOK {
 		t.Fatalf("over-limit check-point-use must return a decision payload, got %d (%s)", rec.Code, rec.Body.String())
 	}
@@ -336,32 +332,32 @@ func TestRGCheckAndRestrictionsPointAliases(t *testing.T) {
 
 	rec = request(http.MethodGet, "/api/v1/compliance/rg/check-point-use?userId=u-self&amountCents=500", "", "u-self")
 	if rec.Code != http.StatusBadRequest {
-		t.Fatalf("launch check-point-use must reject retired amountCents query, got %d (%s)", rec.Code, rec.Body.String())
+		t.Fatalf("launch check-point-use must reject the retired amountCents query key, got %d (%s)", rec.Code, rec.Body.String())
 	}
-	if !strings.Contains(rec.Body.String(), "amountPointsCents") {
-		t.Fatalf("launch check-point-use rejection should name amountPointsCents, got %s", rec.Body.String())
+	if !strings.Contains(rec.Body.String(), "amountPoints") {
+		t.Fatalf("launch check-point-use rejection should name amountPoints, got %s", rec.Body.String())
 	}
 
-	rec = request(http.MethodGet, "/api/v1/compliance/rg/check-deposit?userId=u-self&amountCents=500", "", "u-self")
+	rec = request(http.MethodGet, "/api/v1/compliance/rg/check-deposit?userId=u-self&amountPoints=500", "", "u-self")
 	if rec.Code != http.StatusOK {
-		t.Fatalf("legacy check-deposit compatibility path must still accept amountCents, got %d (%s)", rec.Code, rec.Body.String())
+		t.Fatalf("legacy check-deposit compatibility path must still accept amountPoints, got %d (%s)", rec.Code, rec.Body.String())
 	}
 
-	rec = request(http.MethodGet, "/api/v1/compliance/rg/check-prediction?userId=u-self&amountPointsCents=500", "", "u-self")
+	rec = request(http.MethodGet, "/api/v1/compliance/rg/check-prediction?userId=u-self&amountPoints=500", "", "u-self")
 	if rec.Code != http.StatusOK {
 		t.Fatalf("check-prediction must succeed, got %d (%s)", rec.Code, rec.Body.String())
 	}
-	if !strings.Contains(rec.Body.String(), `"amountPointsCents":500`) ||
+	if !strings.Contains(rec.Body.String(), `"amountPoints":500`) ||
 		!strings.Contains(rec.Body.String(), `"unit":"PTS"`) {
 		t.Fatalf("check-prediction should expose point-native amount, got %s", rec.Body.String())
 	}
-	for _, retired := range []string{`"stakePointsCents"`, `"stakeCents"`} {
+	for _, retired := range []string{`"stakePoints"`, `"stakePoints"`} {
 		if strings.Contains(rec.Body.String(), retired) {
 			t.Fatalf("check-prediction should not expose retired stake alias %s, got %s", retired, rec.Body.String())
 		}
 	}
 
-	rec = request(http.MethodGet, "/api/v1/compliance/rg/check-prediction?userId=u-self&amountPointsCents=800", "", "u-self")
+	rec = request(http.MethodGet, "/api/v1/compliance/rg/check-prediction?userId=u-self&amountPoints=800", "", "u-self")
 	if rec.Code != http.StatusOK {
 		t.Fatalf("over-limit check-prediction must return a decision payload, got %d (%s)", rec.Code, rec.Body.String())
 	}
@@ -374,19 +370,19 @@ func TestRGCheckAndRestrictionsPointAliases(t *testing.T) {
 		t.Fatalf("check-prediction denial should not expose bet-limit copy, got %s", rec.Body.String())
 	}
 
-	for _, alias := range []string{"stakePointsCents", "stakeCents"} {
+	for _, alias := range []string{"stakePoints", "stakePoints"} {
 		rec = request(http.MethodGet, "/api/v1/compliance/rg/check-prediction?userId=u-self&"+alias+"=500", "", "u-self")
 		if rec.Code != http.StatusBadRequest {
 			t.Fatalf("launch check-prediction must reject retired %s query, got %d (%s)", alias, rec.Code, rec.Body.String())
 		}
-		if !strings.Contains(rec.Body.String(), "amountPointsCents") {
-			t.Fatalf("launch check-prediction rejection should name amountPointsCents, got %s", rec.Body.String())
+		if !strings.Contains(rec.Body.String(), "amountPoints") {
+			t.Fatalf("launch check-prediction rejection should name amountPoints, got %s", rec.Body.String())
 		}
 	}
 
-	rec = request(http.MethodGet, "/api/v1/compliance/rg/check-bet?userId=u-self&stakeCents=500", "", "u-self")
+	rec = request(http.MethodGet, "/api/v1/compliance/rg/check-bet?userId=u-self&stakePoints=500", "", "u-self")
 	if rec.Code != http.StatusOK {
-		t.Fatalf("legacy check-bet compatibility path must still accept stakeCents, got %d (%s)", rec.Code, rec.Body.String())
+		t.Fatalf("legacy check-bet compatibility path must still accept stakePoints, got %d (%s)", rec.Code, rec.Body.String())
 	}
 
 	rec = request(http.MethodGet, "/api/v1/compliance/rg/restrictions?userId=u-self", "", "u-self")
@@ -398,18 +394,18 @@ func TestRGCheckAndRestrictionsPointAliases(t *testing.T) {
 			UserID         string `json:"userId"`
 			Unit           string `json:"unit"`
 			PointUseLimits []struct {
-				Unit             string `json:"unit"`
-				LimitPointsCents int64  `json:"limitPointsCents"`
+				Unit        string `json:"unit"`
+				LimitPoints int64  `json:"limitPoints"`
 			} `json:"pointUseLimits"`
 			PredictionLimits []struct {
-				Unit             string `json:"unit"`
-				LimitPointsCents int64  `json:"limitPointsCents"`
+				Unit        string `json:"unit"`
+				LimitPoints int64  `json:"limitPoints"`
 			} `json:"predictionLimits"`
 			DepositLimits []struct {
-				LimitCents int64 `json:"limitCents"`
+				LimitPoints int64 `json:"limitPoints"`
 			} `json:"depositLimits"`
 			BetLimits []struct {
-				LimitCents int64 `json:"limitCents"`
+				LimitPoints int64 `json:"limitPoints"`
 			} `json:"betLimits"`
 		} `json:"restrictions"`
 	}
@@ -421,26 +417,26 @@ func TestRGCheckAndRestrictionsPointAliases(t *testing.T) {
 	}
 	if len(out.Restrictions.PointUseLimits) != 1 ||
 		out.Restrictions.PointUseLimits[0].Unit != "PTS" ||
-		out.Restrictions.PointUseLimits[0].LimitPointsCents != 1200 {
+		out.Restrictions.PointUseLimits[0].LimitPoints != 1200 {
 		t.Fatalf("restrictions should expose point-use aliases, got %+v", out.Restrictions.PointUseLimits)
 	}
 	if len(out.Restrictions.PredictionLimits) != 1 ||
 		out.Restrictions.PredictionLimits[0].Unit != "PTS" ||
-		out.Restrictions.PredictionLimits[0].LimitPointsCents != 700 {
+		out.Restrictions.PredictionLimits[0].LimitPoints != 700 {
 		t.Fatalf("restrictions should expose prediction aliases, got %+v", out.Restrictions.PredictionLimits)
 	}
-	if len(out.Restrictions.DepositLimits) != 1 || out.Restrictions.DepositLimits[0].LimitCents != 1200 {
+	if len(out.Restrictions.DepositLimits) != 1 || out.Restrictions.DepositLimits[0].LimitPoints != 1200 {
 		t.Fatalf("legacy depositLimits compatibility field should remain, got %+v", out.Restrictions.DepositLimits)
 	}
-	if len(out.Restrictions.BetLimits) != 1 || out.Restrictions.BetLimits[0].LimitCents != 700 {
+	if len(out.Restrictions.BetLimits) != 1 || out.Restrictions.BetLimits[0].LimitPoints != 700 {
 		t.Fatalf("legacy betLimits compatibility field should remain, got %+v", out.Restrictions.BetLimits)
 	}
 
-	rec = request(http.MethodGet, "/api/v1/compliance/rg/check-point-use?userId=u-victim&amountPointsCents=100", "", "u-attacker")
+	rec = request(http.MethodGet, "/api/v1/compliance/rg/check-point-use?userId=u-victim&amountPoints=100", "", "u-attacker")
 	if rec.Code != http.StatusForbidden {
 		t.Fatalf("cross-user check-point-use must be 403, got %d (%s)", rec.Code, rec.Body.String())
 	}
-	rec = request(http.MethodGet, "/api/v1/compliance/rg/check-prediction?userId=u-victim&amountPointsCents=100", "", "u-attacker")
+	rec = request(http.MethodGet, "/api/v1/compliance/rg/check-prediction?userId=u-victim&amountPoints=100", "", "u-attacker")
 	if rec.Code != http.StatusForbidden {
 		t.Fatalf("cross-user check-prediction must be 403, got %d (%s)", rec.Code, rec.Body.String())
 	}
@@ -563,10 +559,10 @@ func TestRGKYCReads_SessionBound(t *testing.T) {
 		{"rg/prediction-limits", rgMux, "/api/v1/compliance/rg/prediction-limits", ""},
 		{"rg/point-use-limits", rgMux, "/api/v1/compliance/rg/point-use-limits", ""},
 		{"rg/deposit-limits", rgMux, "/api/v1/compliance/rg/deposit-limits", ""},
-		{"rg/check-point-use", rgMux, "/api/v1/compliance/rg/check-point-use", "&amountPointsCents=100"},
-		{"rg/check-prediction", rgMux, "/api/v1/compliance/rg/check-prediction", "&amountPointsCents=100"},
-		{"rg/check-bet", rgMux, "/api/v1/compliance/rg/check-bet", "&stakeCents=100"},
-		{"rg/check-deposit", rgMux, "/api/v1/compliance/rg/check-deposit", "&amountCents=100"},
+		{"rg/check-point-use", rgMux, "/api/v1/compliance/rg/check-point-use", "&amountPoints=100"},
+		{"rg/check-prediction", rgMux, "/api/v1/compliance/rg/check-prediction", "&amountPoints=100"},
+		{"rg/check-bet", rgMux, "/api/v1/compliance/rg/check-bet", "&stakePoints=100"},
+		{"rg/check-deposit", rgMux, "/api/v1/compliance/rg/check-deposit", "&amountPoints=100"},
 		{"kyc/status", kycMux, "/api/v1/compliance/kyc/status", ""},
 		{"kyc/documents", kycMux, "/api/v1/compliance/kyc/documents", ""},
 	}

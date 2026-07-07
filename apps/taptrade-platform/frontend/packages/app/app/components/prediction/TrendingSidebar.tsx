@@ -102,10 +102,10 @@ export function TrendingSidebar({ markets, limit = 6 }: Props) {
       </div>
       <ul className={TOP_MOVERS_LIST_CLASS}>
         {rows.map((m) => {
-          const yesLeads = m.yesPricePointsCents >= m.noPricePointsCents;
+          const yesLeads = m.yesPricePoints >= m.noPricePoints;
           const leadingPrice = yesLeads
-            ? m.yesPricePointsCents
-            : m.noPricePointsCents;
+            ? m.yesPricePoints
+            : m.noPricePoints;
           const { pct, up } = deterministicDelta(m.ticker, leadingPrice);
           const sparkColor = up ? "var(--yes-text)" : "var(--no-text)";
           const cat = categoryLabel(

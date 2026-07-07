@@ -45,26 +45,26 @@ func TestClaimBonusPersistsPointWalletLedgerThroughHTTP(t *testing.T) {
 	suffix := fmt.Sprintf("bonus-ledger-%d", time.Now().UnixNano())
 	userID := "u-" + suffix
 	spoofedUserID := "u-spoof-" + suffix
-	grantPointsCents := int64(1500)
-	budgetPointsCents := int64(10000)
+	grantPoints := int64(1500)
+	budgetPoints := int64(10000)
 	maxClaims := 3
 
 	campaign, err := bonusSvc.CreateCampaign(ctx, bonus.CreateCampaignRequest{
-		Name:              "Loop 308 Point Bonus Proof " + suffix,
-		Description:       "Non-redeemable point-play proof.",
-		CampaignType:      "custom",
-		StartAt:           time.Now().UTC().Add(-time.Hour),
-		EndAt:             time.Now().UTC().Add(time.Hour),
-		BudgetPointsCents: &budgetPointsCents,
-		MaxClaims:         &maxClaims,
-		CreatedBy:         "loop-308-proof",
+		Name:         "Loop 308 Point Bonus Proof " + suffix,
+		Description:  "Non-redeemable point-play proof.",
+		CampaignType: "custom",
+		StartAt:      time.Now().UTC().Add(-time.Hour),
+		EndAt:        time.Now().UTC().Add(time.Hour),
+		BudgetPoints: &budgetPoints,
+		MaxClaims:    &maxClaims,
+		CreatedBy:    "loop-308-proof",
 		Rules: []bonus.RuleInput{
 			{
 				RuleType: "reward",
 				PointRuleConfig: mustJSONRaw(t, map[string]any{
-					"type":                      "point_grant",
-					"fixed_amount_points_cents": grantPointsCents,
-					"expiry_days":               7,
+					"type":                "point_grant",
+					"fixed_amount_points": grantPoints,
+					"expiry_days":         7,
 				}),
 			},
 			{
@@ -106,15 +106,15 @@ func TestClaimBonusPersistsPointWalletLedgerThroughHTTP(t *testing.T) {
 		t.Fatalf("decode claim response: %v; body=%s", err, rec.Body.String())
 	}
 	assertJSONValue(t, payload, "unit", "PTS")
-	assertJSONNumber(t, payload, "grantedPointsCents", grantPointsCents)
-	assertJSONNumber(t, payload, "remainingPointsCents", grantPointsCents)
-	assertJSONNumber(t, payload, "playRequiredPointsCents", 0)
-	assertJSONNumber(t, payload, "playCompletedPointsCents", 0)
+	assertJSONNumber(t, payload, "grantedPoints", grantPoints)
+	assertJSONNumber(t, payload, "remainingPoints", grantPoints)
+	assertJSONNumber(t, payload, "playRequiredPoints", 0)
+	assertJSONNumber(t, payload, "playCompletedPoints", 0)
 	for _, retired := range []string{
-		"grantedAmountCents",
-		"remainingAmountCents",
-		"wageringRequiredCents",
-		"wageringCompletedCents",
+		"grantedAmountPoints",
+		"remainingAmountPoints",
+		"wageringRequiredPoints",
+		"wageringCompletedPoints",
 		"wageringProgressPct",
 		"progressPct",
 	} {
@@ -124,7 +124,7 @@ func TestClaimBonusPersistsPointWalletLedgerThroughHTTP(t *testing.T) {
 	}
 
 	bonusID := int64(jsonNumber(t, payload, "bonusId"))
-	assertPersistedBonusAndWalletLedger(t, db, userID, campaign.ID, bonusID, grantPointsCents)
+	assertPersistedBonusAndWalletLedger(t, db, userID, campaign.ID, bonusID, grantPoints)
 	assertNoBonusWalletLedgerForUser(t, db, spoofedUserID)
 
 	duplicate := httptest.NewRequest(stdhttp.MethodPost, "/api/v1/bonuses/claim", bytes.NewBufferString(body))
@@ -181,8 +181,8 @@ func assertPersistedBonusAndWalletLedger(t *testing.T, db *sql.DB, userID string
 		    AND user_id = $2
 		    AND campaign_id = $3
 		    AND status = 'active'
-		    AND granted_amount_cents = $4
-		    AND remaining_amount_cents = $4`,
+		    AND granted_amount_points = $4
+		    AND remaining_amount_points = $4`,
 		bonusID, userID, campaignID, amount,
 	).Scan(&bonusCount); err != nil {
 		t.Fatalf("read persisted player bonus: %v", err)
@@ -194,7 +194,7 @@ func assertPersistedBonusAndWalletLedger(t *testing.T, db *sql.DB, userID string
 	var ledgerAmount, ledgerBalance int64
 	var fundType, idempotencyKey, reason string
 	if err := db.QueryRow(
-		`SELECT amount_cents, balance_cents, fund_type, idempotency_key, reason
+		`SELECT amount_points, balance_points, fund_type, idempotency_key, reason
 		   FROM wallet_ledger
 		  WHERE user_id = $1
 		    AND entry_type = 'credit'
@@ -219,7 +219,7 @@ func assertPersistedBonusAndWalletLedger(t *testing.T, db *sql.DB, userID string
 
 	var balance int64
 	if err := db.QueryRow(
-		`SELECT bonus_balance_cents FROM wallet_balances WHERE user_id = $1`,
+		`SELECT bonus_balance_points FROM wallet_balances WHERE user_id = $1`,
 		userID,
 	).Scan(&balance); err != nil {
 		t.Fatalf("read bonus wallet balance: %v", err)

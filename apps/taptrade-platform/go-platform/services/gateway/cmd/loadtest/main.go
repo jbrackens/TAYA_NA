@@ -50,7 +50,7 @@ type Config struct {
 	Orders      int
 	Concurrency int
 	Side        string
-	PriceCents  int
+	PricePoints int
 	Quantity    int
 	Timeout     time.Duration
 }
@@ -65,7 +65,7 @@ func parseFlags() Config {
 	flag.IntVar(&c.Orders, "orders", 200, "total number of orders to place (split across tickers)")
 	flag.IntVar(&c.Concurrency, "concurrency", 10, "concurrent workers (round-robin across tickers)")
 	flag.StringVar(&c.Side, "side", "yes", "yes or no")
-	flag.IntVar(&c.PriceCents, "price", 1, "limit price in cents (1-99)")
+	flag.IntVar(&c.PricePoints, "price", 1, "limit price in cents (1-99)")
 	flag.IntVar(&c.Quantity, "qty", 1, "quantity per order")
 	flag.DurationVar(&c.Timeout, "timeout", 10*time.Second, "per-request timeout")
 	flag.Parse()
@@ -168,12 +168,12 @@ func readCSRFCookie(client *http.Client, gateway string) (string, error) {
 // PlaceOrderRequest shape (see internal/http/prediction_handlers.go).
 func placeOrder(client *http.Client, cfg Config, token, csrf, marketID string, n int) (time.Duration, error) {
 	payload := map[string]any{
-		"marketId":   marketID,
-		"side":       cfg.Side,
-		"action":     "buy",
-		"orderType":  "limit",
-		"quantity":   cfg.Quantity,
-		"priceCents": cfg.PriceCents,
+		"marketId":    marketID,
+		"side":        cfg.Side,
+		"action":      "buy",
+		"orderType":   "limit",
+		"quantity":    cfg.Quantity,
+		"pricePoints": cfg.PricePoints,
 		// gtc so the order rests on the book; we're measuring acceptance,
 		// not cancellation. The post-test cleanup task can sweep these.
 		"timeInForce": "gtc",
@@ -250,7 +250,7 @@ func main() {
 
 	tickers := resolveTickerList(cfg)
 	fmt.Printf("loadtest: %d orders, concurrency=%d, tickers=%v, side=%s, price=%d¢, qty=%d\n",
-		cfg.Orders, cfg.Concurrency, tickers, cfg.Side, cfg.PriceCents, cfg.Quantity)
+		cfg.Orders, cfg.Concurrency, tickers, cfg.Side, cfg.PricePoints, cfg.Quantity)
 
 	token, err := login(client, cfg)
 	if err != nil {

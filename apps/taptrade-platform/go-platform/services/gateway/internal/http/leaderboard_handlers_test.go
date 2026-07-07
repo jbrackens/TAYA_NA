@@ -56,7 +56,7 @@ func TestLeaderboardPublicRoutesExposeActiveBoardsAndEntries(t *testing.T) {
 				t.Fatalf("public leaderboard should not emit retired alias %s in %#v", retired, item)
 			}
 		}
-		for _, retiredMetric := range []string{"net_profit_cents", "stake_cents"} {
+		for _, retiredMetric := range []string{"net_profit_points", "stake_points"} {
 			if metricKey == retiredMetric || pointMetricKey == retiredMetric {
 				t.Fatalf("public leaderboard should not expose retired metric %s in %#v", retiredMetric, item)
 			}
@@ -99,8 +99,8 @@ func TestLeaderboardMetricInputAcceptsPointAliases(t *testing.T) {
 		in   string
 		want string
 	}{
-		{name: "net points", in: "net_points", want: "net_profit_cents"},
-		{name: "point volume", in: "point_volume", want: "stake_cents"},
+		{name: "net points", in: "net_points", want: "net_profit_points"},
+		{name: "point volume", in: "point_volume", want: "stake_points"},
 		{name: "custom", in: "accuracy_points", want: "accuracy_points"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -203,7 +203,7 @@ func TestAdminLeaderboardRejectsRetiredRequestContract(t *testing.T) {
 		},
 		{
 			name:    "retired metric",
-			body:    `{"slug":"metric-alias","name":"Metric Alias","description":"Point-status challenge board","metricKey":"net_profit_cents","eventType":"challenge","rankingMode":"max","order":"desc","status":"active","unit":"PTS","rewardSummary":"Top ranks earn XP boosts.","createdBy":"admin-ops-1"}`,
+			body:    `{"slug":"metric-alias","name":"Metric Alias","description":"Point-status challenge board","metricKey":"net_profit_points","eventType":"challenge","rankingMode":"max","order":"desc","status":"active","unit":"PTS","rewardSummary":"Top ranks earn XP boosts.","createdBy":"admin-ops-1"}`,
 			field:   "metricKey",
 			message: "leaderboard metricKey must use point-native metric aliases",
 		},
@@ -364,10 +364,10 @@ func TestAdminLeaderboardEventRejectsRetiredRequestContract(t *testing.T) {
 			message: "leaderboard event metadata must use predictionId",
 		},
 		{
-			name:    "metadata stakeCents alias",
-			body:    `{"playerId":"u-rank-1","score":88.5,"activitySourceType":"admin_rank_seed","activitySourceId":"seed-1","idempotencyKey":"rank-entry-retired-metadata-stake","metadata":{"stakeCents":"1000"}}`,
-			field:   "metadata.pointVolumeCents",
-			message: "leaderboard event metadata must use pointVolumeCents",
+			name:    "metadata stakePoints alias",
+			body:    `{"playerId":"u-rank-1","score":88.5,"activitySourceType":"admin_rank_seed","activitySourceId":"seed-1","idempotencyKey":"rank-entry-retired-metadata-stake","metadata":{"stakePoints":"1000"}}`,
+			field:   "metadata.pointVolumePoints",
+			message: "leaderboard event metadata must use pointVolumePoints",
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -419,12 +419,12 @@ func TestLeaderboardStandingPayloadSanitizesLegacyMetadata(t *testing.T) {
 		Score:         42,
 		EventCount:    1,
 		Metadata: map[string]string{
-			"betId":       "bet:legacy:1",
-			"stakeCents":  "1000",
-			"payoutCents": "2500",
-			"sourceType":  "bet_settlement",
-			"sourceId":    "bet:legacy:1",
-			"reason":      "settled bet leaderboard proof",
+			"betId":        "bet:legacy:1",
+			"stakePoints":  "1000",
+			"payoutPoints": "2500",
+			"sourceType":   "bet_settlement",
+			"sourceId":     "bet:legacy:1",
+			"reason":       "settled bet leaderboard proof",
 		},
 	})
 	if payload["unit"] != "PTS" {
@@ -437,11 +437,11 @@ func TestLeaderboardStandingPayloadSanitizesLegacyMetadata(t *testing.T) {
 	if metadata["predictionId"] != "prediction:legacy:1" {
 		t.Fatalf("expected predictionId alias, got %#v", metadata)
 	}
-	if metadata["pointVolumeCents"] != "1000" {
-		t.Fatalf("expected pointVolumeCents alias, got %#v", metadata)
+	if metadata["pointVolumePoints"] != "1000" {
+		t.Fatalf("expected pointVolumePoints alias, got %#v", metadata)
 	}
-	if metadata["settlementPointsCents"] != "2500" {
-		t.Fatalf("expected settlementPointsCents alias, got %#v", metadata)
+	if metadata["settlementPoints"] != "2500" {
+		t.Fatalf("expected settlementPoints alias, got %#v", metadata)
 	}
 	if metadata["activitySourceType"] != "prediction_settlement" || metadata["activitySourceId"] != "prediction:legacy:1" {
 		t.Fatalf("expected activity source aliases, got %#v", metadata)
@@ -453,7 +453,7 @@ func TestLeaderboardStandingPayloadSanitizesLegacyMetadata(t *testing.T) {
 	if err != nil {
 		t.Fatalf("marshal standing payload: %v", err)
 	}
-	for _, retired := range []string{"betId", "stakeCents", "payoutCents", "sourceType", "sourceId", "bet:", "bet_settlement", "settled bet"} {
+	for _, retired := range []string{"betId", "stakePoints", "payoutPoints", "sourceType", "sourceId", "bet:", "bet_settlement", "settled bet"} {
 		if bytes.Contains(encoded, []byte(retired)) {
 			t.Fatalf("standing payload should not expose retired %q in %s", retired, string(encoded))
 		}

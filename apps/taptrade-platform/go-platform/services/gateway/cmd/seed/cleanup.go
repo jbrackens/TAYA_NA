@@ -80,7 +80,7 @@ func RunPhase0Cleanup(db *sql.DB) (*CleanupResult, error) {
 	// still 'open' or 'partial', bump status back to 'held' and push
 	// expires_at out to NOW() + 30 days. The order's continued open
 	// status is the source of truth — the wallet reservation must
-	// reflect that. captured_amount_cents stays as-is (any prior
+	// reflect that. captured_amount_points stays as-is (any prior
 	// partial fills are still captured).
 	res, err = db.Exec(`
 		UPDATE wallet_reservations r
@@ -268,7 +268,7 @@ func RunPhase0Cleanup(db *sql.DB) (*CleanupResult, error) {
 		UPDATE prediction_markets m
 		SET status = 'open',
 		    result = NULL,
-		    settled_payout_pool_cents = 0,
+		    settled_payout_pool_points = 0,
 		    updated_at = NOW()
 		WHERE
 		  (
@@ -318,10 +318,10 @@ func RunPhase0Cleanup(db *sql.DB) (*CleanupResult, error) {
 	// user-001/002/003 were previously excluded on the assumption their
 	// positions were all base-seed. They are not: Phase 2 attributes its
 	// synthetic taker volume to them, so their positions survived every
-	// wipe and Phase 2 re-stacked total_cost_cents each reseed. service.go
+	// wipe and Phase 2 re-stacked total_cost_points each reseed. service.go
 	// then computed avg = (stale_total + new_cost) / qty, inflating
-	// avg_price_cents to 561-663¢, which settlement copied verbatim into
-	// prediction_payouts.entry_price_cents → the >100¢ "Entry" values in
+	// avg_price_points to 561-663¢, which settlement copied verbatim into
+	// prediction_payouts.entry_price_points → the >100¢ "Entry" values in
 	// portfolio History (F-4). Including them here makes each reseed start
 	// their positions clean.
 	res, err = db.Exec(`

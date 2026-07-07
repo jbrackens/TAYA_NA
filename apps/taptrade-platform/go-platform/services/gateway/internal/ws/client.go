@@ -78,16 +78,16 @@ func (w *wsConn) SetPongHandler(h func(string) error) {
 
 // Client represents a single WebSocket connection
 type Client struct {
-	hub             *Hub
-	conn            Conn
-	userID          string
-	channels        map[string]bool
-	send            chan []byte
-	ctx             context.Context
-	cancel          context.CancelFunc
-	readDone        chan struct{}
-	writeDone       chan struct{}
-	closeOnce       sync.Once
+	hub              *Hub
+	conn             Conn
+	userID           string
+	channels         map[string]bool
+	send             chan []byte
+	ctx              context.Context
+	cancel           context.CancelFunc
+	readDone         chan struct{}
+	writeDone        chan struct{}
+	closeOnce        sync.Once
 	slowDisconnected atomic.Bool
 }
 

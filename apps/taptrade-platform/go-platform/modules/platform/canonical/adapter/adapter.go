@@ -11,7 +11,7 @@ type PlaceBetItem struct {
 	MarketID      string  `json:"marketId"`
 	SelectionID   string  `json:"selectionId"`
 	OddsDecimal   float64 `json:"oddsDecimal"`
-	StakeCents    int64   `json:"stakeCents"`
+	StakePoints    int64   `json:"stakePoints"`
 	IsInPlay      bool    `json:"isInPlay"`
 	RequestLineID string  `json:"requestLineId,omitempty"`
 }
@@ -55,7 +55,7 @@ type MaxStakeRequest struct {
 
 type MaxStakeResponse struct {
 	Allowed       bool   `json:"allowed"`
-	MaxStakeCents int64  `json:"maxStakeCents"`
+	MaxStakePoints int64  `json:"maxStakePoints"`
 	Reason        string `json:"reason,omitempty"`
 }
 

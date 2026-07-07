@@ -97,13 +97,13 @@ func TestLoyaltyRoutesExposeAccountLedgerAndTiers(t *testing.T) {
 	if got := metadata["predictionId"]; got != "prediction:seed:1001" {
 		t.Fatalf("expected predictionId metadata alias, got %v", got)
 	}
-	if got := metadata["pointVolumeCents"]; got != "12500" {
-		t.Fatalf("expected pointVolumeCents metadata alias, got %v", got)
+	if got := metadata["pointVolumePoints"]; got != "12500" {
+		t.Fatalf("expected pointVolumePoints metadata alias, got %v", got)
 	}
 	if got := metadata["reason"]; got != "seeded prediction settlement loyalty accrual" {
 		t.Fatalf("expected point-safe loyalty reason, got %v", got)
 	}
-	for _, blocked := range []string{"sourceType", "sourceId", "bet_settlement", "bet:", "betId", "stakeCents", "settled bet"} {
+	for _, blocked := range []string{"sourceType", "sourceId", "bet_settlement", "bet:", "betId", "stakePoints", "settled bet"} {
 		encoded, err := json.Marshal(settlementEntry)
 		if err != nil {
 			t.Fatalf("marshal settlement entry: %v", err)
@@ -492,8 +492,8 @@ func TestAdminLoyaltyConfigAndSettingsUpdateFlow(t *testing.T) {
 	if got := configPayload.Rules[0]["predictionSourceType"]; got != "prediction_settlement" {
 		t.Fatalf("expected predictionSourceType prediction_settlement, got %v", got)
 	}
-	if got := configPayload.Rules[0]["minQualifiedPointsCents"]; int(got.(float64)) != 100 {
-		t.Fatalf("expected minQualifiedPointsCents 100, got %v", got)
+	if got := configPayload.Rules[0]["minQualifiedPoints"]; int(got.(float64)) != 100 {
+		t.Fatalf("expected minQualifiedPoints 100, got %v", got)
 	}
 	if _, ok := configPayload.Rules[0]["eligiblePredictionTypes"]; !ok {
 		t.Fatal("expected eligiblePredictionTypes alias on loyalty rule payload")
@@ -501,7 +501,7 @@ func TestAdminLoyaltyConfigAndSettingsUpdateFlow(t *testing.T) {
 	if got := configPayload.Rules[0]["unit"]; got != "PTS" {
 		t.Fatalf("expected loyalty config rule unit PTS, got %v", got)
 	}
-	for _, retired := range []string{"sourceType", "minQualifiedStakeCents", "eligibleSportIds", "eligibleBetTypes"} {
+	for _, retired := range []string{"sourceType", "minQualifiedStakePoints", "eligibleSportIds", "eligibleBetTypes"} {
 		if _, ok := configPayload.Rules[0][retired]; ok {
 			t.Fatalf("loyalty config rule leaked retired field %q in %+v", retired, configPayload.Rules[0])
 		}
@@ -523,7 +523,7 @@ func TestAdminLoyaltyConfigAndSettingsUpdateFlow(t *testing.T) {
 	ruleReq := httptest.NewRequest(
 		http.MethodPut,
 		"/api/v1/admin/loyalty/rules/rule:loyalty:default-settlement",
-		bytes.NewBufferString(`{"name":"Default prediction settlement accrual","predictionSourceType":"prediction_settlement","active":true,"multiplier":2,"minQualifiedPointsCents":125,"eligiblePredictionTypes":["yes_no_prediction"],"maxPointsPerEvent":0}`),
+		bytes.NewBufferString(`{"name":"Default prediction settlement accrual","predictionSourceType":"prediction_settlement","active":true,"multiplier":2,"minQualifiedPoints":125,"eligiblePredictionTypes":["yes_no_prediction"],"maxPointsPerEvent":0}`),
 	)
 	ruleReq.Header.Set("Content-Type", "application/json")
 	ruleReq = ruleReq.WithContext(httpx.WithTestUser(ruleReq.Context(), "admin-test", "admin-test", "admin"))
@@ -542,8 +542,8 @@ func TestAdminLoyaltyConfigAndSettingsUpdateFlow(t *testing.T) {
 	if got := updated["predictionSourceType"]; got != "prediction_settlement" {
 		t.Fatalf("expected predictionSourceType prediction_settlement, got %v", got)
 	}
-	if got := updated["minQualifiedPointsCents"]; int(got.(float64)) != 125 {
-		t.Fatalf("expected minQualifiedPointsCents 125, got %v", got)
+	if got := updated["minQualifiedPoints"]; int(got.(float64)) != 125 {
+		t.Fatalf("expected minQualifiedPoints 125, got %v", got)
 	}
 	if got := updated["unit"]; got != "PTS" {
 		t.Fatalf("expected updated loyalty rule unit PTS, got %v", got)
@@ -552,7 +552,7 @@ func TestAdminLoyaltyConfigAndSettingsUpdateFlow(t *testing.T) {
 	if !ok || len(predictionTypes) != 1 || predictionTypes[0] != "yes_no_prediction" {
 		t.Fatalf("expected eligiblePredictionTypes alias, got %v", updated["eligiblePredictionTypes"])
 	}
-	for _, retired := range []string{"sourceType", "minQualifiedStakeCents", "eligibleSportIds", "eligibleBetTypes"} {
+	for _, retired := range []string{"sourceType", "minQualifiedStakePoints", "eligibleSportIds", "eligibleBetTypes"} {
 		if _, ok := updated[retired]; ok {
 			t.Fatalf("loyalty update leaked retired field %q in %+v", retired, updated)
 		}
@@ -561,7 +561,7 @@ func TestAdminLoyaltyConfigAndSettingsUpdateFlow(t *testing.T) {
 	createReq := httptest.NewRequest(
 		http.MethodPost,
 		"/api/v1/admin/loyalty/rules",
-		bytes.NewBufferString(`{"name":"Weekend prediction boost","predictionSourceType":"prediction_settlement","active":true,"multiplier":1.5,"minQualifiedPointsCents":50,"eligiblePredictionTypes":[],"maxPointsPerEvent":250}`),
+		bytes.NewBufferString(`{"name":"Weekend prediction boost","predictionSourceType":"prediction_settlement","active":true,"multiplier":1.5,"minQualifiedPoints":50,"eligiblePredictionTypes":[],"maxPointsPerEvent":250}`),
 	)
 	createReq.Header.Set("Content-Type", "application/json")
 	createReq = createReq.WithContext(httpx.WithTestUser(createReq.Context(), "admin-test", "admin-test", "admin"))
@@ -580,13 +580,13 @@ func TestAdminLoyaltyConfigAndSettingsUpdateFlow(t *testing.T) {
 	if got := created["predictionSourceType"]; got != "prediction_settlement" {
 		t.Fatalf("expected created predictionSourceType prediction_settlement, got %v", got)
 	}
-	if got := created["minQualifiedPointsCents"]; int(got.(float64)) != 50 {
-		t.Fatalf("expected created minQualifiedPointsCents 50, got %v", got)
+	if got := created["minQualifiedPoints"]; int(got.(float64)) != 50 {
+		t.Fatalf("expected created minQualifiedPoints 50, got %v", got)
 	}
 	if got := created["unit"]; got != "PTS" {
 		t.Fatalf("expected created loyalty rule unit PTS, got %v", got)
 	}
-	for _, retired := range []string{"sourceType", "minQualifiedStakeCents", "eligibleSportIds", "eligibleBetTypes"} {
+	for _, retired := range []string{"sourceType", "minQualifiedStakePoints", "eligibleSportIds", "eligibleBetTypes"} {
 		if _, ok := created[retired]; ok {
 			t.Fatalf("loyalty create leaked retired field %q in %+v", retired, created)
 		}
@@ -642,7 +642,7 @@ func TestAdminLoyaltyRuleRejectsMoneyWordingName(t *testing.T) {
 	ruleReq := httptest.NewRequest(
 		http.MethodPost,
 		"/api/v1/admin/loyalty/rules",
-		bytes.NewBufferString(`{"name":"Cash payout multiplier","predictionSourceType":"prediction_settlement","active":true,"multiplier":1,"minQualifiedPointsCents":100,"eligiblePredictionTypes":[]}`),
+		bytes.NewBufferString(`{"name":"Cash payout multiplier","predictionSourceType":"prediction_settlement","active":true,"multiplier":1,"minQualifiedPoints":100,"eligiblePredictionTypes":[]}`),
 	)
 	ruleReq.Header.Set("Content-Type", "application/json")
 	ruleReq = ruleReq.WithContext(httpx.WithTestUser(ruleReq.Context(), "admin-test", "admin-test", "admin"))
@@ -688,22 +688,22 @@ func TestAdminLoyaltyRuleRejectsRetiredRequestFields(t *testing.T) {
 	}{
 		{
 			name:      "sourceType",
-			body:      `{"name":"Retired source","sourceType":"bet_settlement","active":true,"multiplier":1,"minQualifiedPointsCents":100,"eligiblePredictionTypes":[]}`,
+			body:      `{"name":"Retired source","sourceType":"bet_settlement","active":true,"multiplier":1,"minQualifiedPoints":100,"eligiblePredictionTypes":[]}`,
 			wantField: "predictionSourceType",
 		},
 		{
-			name:      "minQualifiedStakeCents",
-			body:      `{"name":"Retired stake","predictionSourceType":"prediction_settlement","active":true,"multiplier":1,"minQualifiedStakeCents":100,"eligiblePredictionTypes":[]}`,
-			wantField: "minQualifiedPointsCents",
+			name:      "minQualifiedStakePoints",
+			body:      `{"name":"Retired stake","predictionSourceType":"prediction_settlement","active":true,"multiplier":1,"minQualifiedStakePoints":100,"eligiblePredictionTypes":[]}`,
+			wantField: "minQualifiedPoints",
 		},
 		{
 			name:      "eligibleSportIds",
-			body:      `{"name":"Retired sports","predictionSourceType":"prediction_settlement","active":true,"multiplier":1,"minQualifiedPointsCents":100,"eligibleSportIds":["football"],"eligiblePredictionTypes":[]}`,
+			body:      `{"name":"Retired sports","predictionSourceType":"prediction_settlement","active":true,"multiplier":1,"minQualifiedPoints":100,"eligibleSportIds":["football"],"eligiblePredictionTypes":[]}`,
 			wantField: "eligiblePredictionTypes",
 		},
 		{
 			name:      "eligibleBetTypes",
-			body:      `{"name":"Retired bet types","predictionSourceType":"prediction_settlement","active":true,"multiplier":1,"minQualifiedPointsCents":100,"eligibleBetTypes":["single"]}`,
+			body:      `{"name":"Retired bet types","predictionSourceType":"prediction_settlement","active":true,"multiplier":1,"minQualifiedPoints":100,"eligibleBetTypes":["single"]}`,
 			wantField: "eligiblePredictionTypes",
 		},
 	}

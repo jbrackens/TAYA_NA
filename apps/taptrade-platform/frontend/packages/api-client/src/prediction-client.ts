@@ -41,96 +41,80 @@ import type {
 } from "./prediction-types";
 
 type LegacySettlementPayout = SettlementPointDisbursement & {
-  entryPriceCents?: number;
-  exitPriceCents?: number;
-  pnlCents?: number;
-  payoutCents?: number;
+  entryPricePoints?: number;
+  exitPricePoints?: number;
+  pnlPoints?: number;
+  payoutPoints?: number;
 };
 
 type LegacySettleMarketResponse = SettleMarketResponse & {
   payouts?: LegacySettlementPayout[];
   settlement?: SettleMarketResponse["settlement"] & {
-    totalPayoutCents?: number;
+    totalPayoutPoints?: number;
   };
 };
 
 type LegacySettledPositionResult = Omit<
   SettledPositionResult,
-  | "entryPricePointsCents"
-  | "exitPricePointsCents"
-  | "realizedPointsCents"
-  | "settlementPointsCents"
+  | "entryPricePoints"
+  | "exitPricePoints"
+  | "realizedPoints"
+  | "settlementPoints"
 > & {
-  entryPriceCents?: number;
-  exitPriceCents?: number;
-  entryPricePointsCents?: number;
-  exitPricePointsCents?: number;
-  pnlCents?: number;
-  payoutCents?: number;
-  realizedPointsCents?: number;
-  settlementPointsCents?: number;
+  entryPricePoints?: number;
+  exitPricePoints?: number;
+  pnlPoints?: number;
+  payoutPoints?: number;
+  realizedPoints?: number;
+  settlementPoints?: number;
 };
 
 type LegacyOrderPreview = Partial<OrderPreview> & {
   side: OrderPreview["side"];
   action: OrderPreview["action"];
   quantity: number;
-  priceCents?: number;
-  totalCostCents?: number;
-  feeCents?: number;
-  maxProfitPointsCents?: number;
-  maxProfitCents?: number;
-  maxLossCents?: number;
-  newYesPriceCents?: number;
-  newNoPriceCents?: number;
-  averageFillPriceCents?: number;
-  totalCostWithFeesCents?: number;
-  estimatedSlippageCents?: number;
+  pricePoints?: number;
+  totalCostPoints?: number;
+  feePoints?: number;
+  maxProfitPoints?: number;
+  maxLossPoints?: number;
+  newYesPricePoints?: number;
+  newNoPricePoints?: number;
+  averageFillPricePoints?: number;
+  totalCostWithFeesPoints?: number;
+  estimatedSlippagePoints?: number;
 };
 
 type LegacyPredictionMarket = Omit<
   PredictionMarket,
-  | "yesPricePointsCents"
-  | "noPricePointsCents"
-  | "lastTradePricePointsCents"
-  | "volumePointsCents"
-  | "openInterestPointsCents"
-  | "liquidityPointsCents"
-  | "ammSubsidyPointsCents"
-  | "collateralPoolPointsCents"
-  | "settlementPoolPointsCents"
-  | "bestYesBidPointsCents"
-  | "bestYesAskPointsCents"
-  | "bestNoBidPointsCents"
-  | "bestNoAskPointsCents"
+  | "yesPricePoints"
+  | "noPricePoints"
+  | "lastTradePricePoints"
+  | "volumePoints"
+  | "openInterestPoints"
+  | "liquidityPoints"
+  | "ammSubsidyPoints"
+  | "collateralPoolPoints"
+  | "settlementPoolPoints"
+  | "bestYesBidPoints"
+  | "bestYesAskPoints"
+  | "bestNoBidPoints"
+  | "bestNoAskPoints"
 > & {
-  yesPricePointsCents?: number;
-  noPricePointsCents?: number;
-  lastTradePricePointsCents?: number;
-  volumePointsCents?: number;
-  openInterestPointsCents?: number;
-  liquidityPointsCents?: number;
-  ammSubsidyPointsCents?: number;
-  collateralPoolPointsCents?: number;
-  settlementPoolPointsCents?: number;
-  settledPayoutPoolPointsCents?: number;
-  bestYesBidPointsCents?: number;
-  bestYesAskPointsCents?: number;
-  bestNoBidPointsCents?: number;
-  bestNoAskPointsCents?: number;
-  yesPriceCents?: number;
-  noPriceCents?: number;
-  lastTradePriceCents?: number;
-  volumeCents?: number;
-  openInterestCents?: number;
-  liquidityCents?: number;
-  ammSubsidyCents?: number;
-  collateralPoolCents?: number;
-  settledPayoutPoolCents?: number;
-  bestYesBidCents?: number;
-  bestYesAskCents?: number;
-  bestNoBidCents?: number;
-  bestNoAskCents?: number;
+  yesPricePoints?: number;
+  noPricePoints?: number;
+  lastTradePricePoints?: number;
+  volumePoints?: number;
+  openInterestPoints?: number;
+  liquidityPoints?: number;
+  ammSubsidyPoints?: number;
+  collateralPoolPoints?: number;
+  settlementPoolPoints?: number;
+  settledPayoutPoolPoints?: number;
+  bestYesBidPoints?: number;
+  bestYesAskPoints?: number;
+  bestNoBidPoints?: number;
+  bestNoAskPoints?: number;
 };
 
 type LegacyDiscoveryResponse = Omit<
@@ -145,12 +129,10 @@ type LegacyDiscoveryResponse = Omit<
 
 type LegacyCollateralDriftAlert = Omit<
   CollateralDriftAlert,
-  "maxDriftPointsCents" | "totalDriftPointsCents" | "unit"
+  "maxDriftPoints" | "totalDriftPoints" | "unit"
 > & {
-  maxDriftPointsCents?: number;
-  totalDriftPointsCents?: number;
-  maxDriftCents?: number;
-  totalDriftCents?: number;
+  maxDriftPoints?: number;
+  totalDriftPoints?: number;
   unit?: "PTS" | string;
 };
 
@@ -160,38 +142,32 @@ type LegacyDriftAlertsResponse = Omit<DriftAlertsResponse, "data"> & {
 
 type LegacyDashboardMover = Omit<
   DashboardMover,
-  | "yesPricePointsCentsStart"
-  | "yesPricePointsCentsNow"
-  | "volumePointsCents"
+  | "yesPricePointsStart"
+  | "yesPricePointsNow"
+  | "volumePoints"
   | "unit"
 > & {
-  yesPricePointsCentsStart?: number;
-  yesPricePointsCentsNow?: number;
-  volumePointsCents?: number;
+  yesPricePointsStart?: number;
+  yesPricePointsNow?: number;
+  volumePoints?: number;
   unit?: "PTS" | string;
-  yesPriceCentsStart?: number;
-  yesPriceCentsNow?: number;
-  volumeCents?: number;
 };
 
 type LegacyDashboardVolumeStats = Omit<
   DashboardVolumeStats,
-  "totalVolumePointsCents" | "topMovers" | "unit"
+  "totalVolumePoints" | "topMovers" | "unit"
 > & {
-  totalVolumePointsCents?: number;
-  totalVolumeCents?: number;
+  totalVolumePoints?: number;
   topMovers: LegacyDashboardMover[];
   unit?: "PTS" | string;
 };
 
 type LegacyPricePoint = Omit<
   PricePoint,
-  "yesPricePointsCents" | "volumePointsCents"
+  "yesPricePoints" | "volumePoints"
 > & {
-  yesPricePointsCents?: number;
-  volumePointsCents?: number;
-  yesPriceCents?: number;
-  volumeCents?: number;
+  yesPricePoints?: number;
+  volumePoints?: number;
 };
 
 type LegacyMarketPriceHistory = Omit<MarketPriceHistory, "points"> & {
@@ -200,20 +176,19 @@ type LegacyMarketPriceHistory = Omit<MarketPriceHistory, "points"> & {
 
 type LegacyOrderBookLevel = Omit<
   OrderBookLevel,
-  | "pricePointsCents"
+  | "pricePoints"
   | "shares"
   | "cumulativeShares"
-  | "notionalPointsCents"
-  | "totalNotionalPointsCents"
+  | "notionalPoints"
+  | "totalNotionalPoints"
   | "unit"
 > & {
-  pricePointsCents?: number;
+  pricePoints?: number;
   shares?: number;
   cumulativeShares?: number;
-  notionalPointsCents?: number;
-  totalNotionalPointsCents?: number;
+  notionalPoints?: number;
+  totalNotionalPoints?: number;
   unit?: "PTS" | string;
-  priceCents?: number;
   quantity?: number;
   total?: number;
 };
@@ -230,13 +205,11 @@ type LegacyOrderBook = Omit<OrderBook, "yes" | "no"> & {
 
 type LegacyTrade = Omit<
   Trade,
-  "pricePointsCents" | "feePointsCents" | "notionalPointsCents"
+  "pricePoints" | "feePoints" | "notionalPoints"
 > & {
-  pricePointsCents?: number;
-  feePointsCents?: number;
-  notionalPointsCents?: number;
-  priceCents?: number;
-  feeCents?: number;
+  pricePoints?: number;
+  feePoints?: number;
+  notionalPoints?: number;
 };
 
 export class PredictionApiClient {
@@ -622,16 +595,12 @@ export class PredictionApiClient {
   }
 
   async placeOrder(req: PlaceOrderRequest): Promise<PlaceOrderResponse> {
-    const response = await this.request<
-      Omit<PlaceOrderResponse, "order"> & { order: LegacyPredictionOrder }
-    >("/api/v1/orders", {
+    // Points unit-model (2026-07-07): one wire format — the gateway emits
+    // canonical *Points keys; no legacy-order normalization remains.
+    return await this.request<PlaceOrderResponse>("/api/v1/orders", {
       method: "POST",
       body: JSON.stringify(req),
     });
-    return {
-      ...response,
-      order: normalizePredictionOrder(response.order),
-    };
   }
 
   async cancelOrder(orderId: string): Promise<void> {
@@ -818,21 +787,21 @@ export class PredictionApiClient {
 function normalizeCollateralDriftAlert(
   row: LegacyCollateralDriftAlert,
 ): CollateralDriftAlert {
-  const maxDriftPointsCents =
-    typeof row.maxDriftPointsCents === "number"
-      ? row.maxDriftPointsCents
-      : (row.maxDriftCents ?? 0);
-  const totalDriftPointsCents =
-    typeof row.totalDriftPointsCents === "number"
-      ? row.totalDriftPointsCents
-      : (row.totalDriftCents ?? 0);
+  const maxDriftPoints =
+    typeof row.maxDriftPoints === "number"
+      ? row.maxDriftPoints
+      : (row.maxDriftPoints ?? 0);
+  const totalDriftPoints =
+    typeof row.totalDriftPoints === "number"
+      ? row.totalDriftPoints
+      : (row.totalDriftPoints ?? 0);
 
   return {
     marketId: row.marketId,
     ticker: row.ticker,
     adjustmentCount: row.adjustmentCount,
-    maxDriftPointsCents,
-    totalDriftPointsCents,
+    maxDriftPoints,
+    totalDriftPoints,
     latestAdjustedAt: row.latestAdjustedAt,
     latestReason: row.latestReason,
     unit: row.unit || "PTS",
@@ -843,14 +812,14 @@ function normalizeSettledPositionResult(
   row: SettledPositionResult | LegacySettledPositionResult,
 ): SettledPositionResult {
   const legacyRow = row as LegacySettledPositionResult;
-  const realizedPointsCents =
-    typeof row.realizedPointsCents === "number"
-      ? row.realizedPointsCents
-      : (legacyRow.pnlCents ?? 0);
-  const settlementPointsCents =
-    typeof row.settlementPointsCents === "number"
-      ? row.settlementPointsCents
-      : (legacyRow.payoutCents ?? 0);
+  const realizedPoints =
+    typeof row.realizedPoints === "number"
+      ? row.realizedPoints
+      : (legacyRow.pnlPoints ?? 0);
+  const settlementPoints =
+    typeof row.settlementPoints === "number"
+      ? row.settlementPoints
+      : (legacyRow.payoutPoints ?? 0);
   return {
     id: row.id,
     settlementId: row.settlementId,
@@ -859,12 +828,12 @@ function normalizeSettledPositionResult(
     marketId: row.marketId,
     side: row.side,
     quantity: row.quantity,
-    entryPricePointsCents:
-      row.entryPricePointsCents ?? legacyRow.entryPriceCents ?? 0,
-    exitPricePointsCents:
-      row.exitPricePointsCents ?? legacyRow.exitPriceCents ?? 0,
-    realizedPointsCents,
-    settlementPointsCents,
+    entryPricePoints:
+      row.entryPricePoints ?? legacyRow.entryPricePoints ?? 0,
+    exitPricePoints:
+      row.exitPricePoints ?? legacyRow.exitPricePoints ?? 0,
+    realizedPoints,
+    settlementPoints,
     paidAt: row.paidAt,
     unit: row.unit || "PTS",
   };
@@ -911,58 +880,58 @@ function normalizeDiscoveryResponse(
 function normalizePredictionMarket(
   row: LegacyPredictionMarket,
 ): PredictionMarket {
-  const yesPricePointsCents =
-    typeof row.yesPricePointsCents === "number"
-      ? row.yesPricePointsCents
-      : (row.yesPriceCents ?? 0);
-  const noPricePointsCents =
-    typeof row.noPricePointsCents === "number"
-      ? row.noPricePointsCents
-      : (row.noPriceCents ?? 0);
-  const lastTradePricePointsCents =
-    typeof row.lastTradePricePointsCents === "number"
-      ? row.lastTradePricePointsCents
-      : row.lastTradePriceCents;
-  const volumePointsCents =
-    typeof row.volumePointsCents === "number"
-      ? row.volumePointsCents
-      : (row.volumeCents ?? 0);
-  const openInterestPointsCents =
-    typeof row.openInterestPointsCents === "number"
-      ? row.openInterestPointsCents
-      : (row.openInterestCents ?? 0);
-  const liquidityPointsCents =
-    typeof row.liquidityPointsCents === "number"
-      ? row.liquidityPointsCents
-      : (row.liquidityCents ?? 0);
-  const ammSubsidyPointsCents =
-    typeof row.ammSubsidyPointsCents === "number"
-      ? row.ammSubsidyPointsCents
-      : row.ammSubsidyCents;
-  const collateralPoolPointsCents =
-    typeof row.collateralPoolPointsCents === "number"
-      ? row.collateralPoolPointsCents
-      : row.collateralPoolCents;
-  const settlementPoolPointsCents =
-    typeof row.settlementPoolPointsCents === "number"
-      ? row.settlementPoolPointsCents
-      : (row.settledPayoutPoolPointsCents ?? row.settledPayoutPoolCents);
-  const bestYesBidPointsCents =
-    typeof row.bestYesBidPointsCents === "number"
-      ? row.bestYesBidPointsCents
-      : row.bestYesBidCents;
-  const bestYesAskPointsCents =
-    typeof row.bestYesAskPointsCents === "number"
-      ? row.bestYesAskPointsCents
-      : row.bestYesAskCents;
-  const bestNoBidPointsCents =
-    typeof row.bestNoBidPointsCents === "number"
-      ? row.bestNoBidPointsCents
-      : row.bestNoBidCents;
-  const bestNoAskPointsCents =
-    typeof row.bestNoAskPointsCents === "number"
-      ? row.bestNoAskPointsCents
-      : row.bestNoAskCents;
+  const yesPricePoints =
+    typeof row.yesPricePoints === "number"
+      ? row.yesPricePoints
+      : (row.yesPricePoints ?? 0);
+  const noPricePoints =
+    typeof row.noPricePoints === "number"
+      ? row.noPricePoints
+      : (row.noPricePoints ?? 0);
+  const lastTradePricePoints =
+    typeof row.lastTradePricePoints === "number"
+      ? row.lastTradePricePoints
+      : row.lastTradePricePoints;
+  const volumePoints =
+    typeof row.volumePoints === "number"
+      ? row.volumePoints
+      : (row.volumePoints ?? 0);
+  const openInterestPoints =
+    typeof row.openInterestPoints === "number"
+      ? row.openInterestPoints
+      : (row.openInterestPoints ?? 0);
+  const liquidityPoints =
+    typeof row.liquidityPoints === "number"
+      ? row.liquidityPoints
+      : (row.liquidityPoints ?? 0);
+  const ammSubsidyPoints =
+    typeof row.ammSubsidyPoints === "number"
+      ? row.ammSubsidyPoints
+      : row.ammSubsidyPoints;
+  const collateralPoolPoints =
+    typeof row.collateralPoolPoints === "number"
+      ? row.collateralPoolPoints
+      : row.collateralPoolPoints;
+  const settlementPoolPoints =
+    typeof row.settlementPoolPoints === "number"
+      ? row.settlementPoolPoints
+      : (row.settledPayoutPoolPoints ?? row.settledPayoutPoolPoints);
+  const bestYesBidPoints =
+    typeof row.bestYesBidPoints === "number"
+      ? row.bestYesBidPoints
+      : row.bestYesBidPoints;
+  const bestYesAskPoints =
+    typeof row.bestYesAskPoints === "number"
+      ? row.bestYesAskPoints
+      : row.bestYesAskPoints;
+  const bestNoBidPoints =
+    typeof row.bestNoBidPoints === "number"
+      ? row.bestNoBidPoints
+      : row.bestNoBidPoints;
+  const bestNoAskPoints =
+    typeof row.bestNoAskPoints === "number"
+      ? row.bestNoAskPoints
+      : row.bestNoAskPoints;
 
   return {
     id: row.id,
@@ -976,12 +945,12 @@ function normalizePredictionMarket(
     translations: row.translations,
     status: row.status,
     result: row.result,
-    yesPricePointsCents,
-    noPricePointsCents,
-    lastTradePricePointsCents,
-    volumePointsCents,
-    openInterestPointsCents,
-    liquidityPointsCents,
+    yesPricePoints,
+    noPricePoints,
+    lastTradePricePoints,
+    volumePoints,
+    openInterestPoints,
+    liquidityPoints,
     settlementSourceKey: row.settlementSourceKey,
     settlementRule: row.settlementRule,
     settlementParams: row.settlementParams,
@@ -995,13 +964,13 @@ function normalizePredictionMarket(
     ammYesShares: row.ammYesShares,
     ammNoShares: row.ammNoShares,
     ammLiquidityParam: row.ammLiquidityParam,
-    ammSubsidyPointsCents,
-    collateralPoolPointsCents,
-    settlementPoolPointsCents,
-    bestYesBidPointsCents,
-    bestYesAskPointsCents,
-    bestNoBidPointsCents,
-    bestNoAskPointsCents,
+    ammSubsidyPoints,
+    collateralPoolPoints,
+    settlementPoolPoints,
+    bestYesBidPoints,
+    bestYesAskPoints,
+    bestNoBidPoints,
+    bestNoAskPoints,
     lastQuoteAt: row.lastQuoteAt,
     unit: row.unit || "PTS",
   };
@@ -1019,15 +988,15 @@ function normalizeMarketPriceHistory(
 function normalizeDashboardVolumeStats(
   row: LegacyDashboardVolumeStats,
 ): DashboardVolumeStats {
-  const totalVolumePointsCents =
-    typeof row.totalVolumePointsCents === "number"
-      ? row.totalVolumePointsCents
-      : (row.totalVolumeCents ?? 0);
+  const totalVolumePoints =
+    typeof row.totalVolumePoints === "number"
+      ? row.totalVolumePoints
+      : (row.totalVolumePoints ?? 0);
 
   return {
     since: row.since,
     windowSeconds: row.windowSeconds,
-    totalVolumePointsCents,
+    totalVolumePoints,
     tradeCount: row.tradeCount,
     topMovers: row.topMovers.map(normalizeDashboardMover),
     unit: row.unit || "PTS",
@@ -1035,26 +1004,26 @@ function normalizeDashboardVolumeStats(
 }
 
 function normalizeDashboardMover(row: LegacyDashboardMover): DashboardMover {
-  const yesPricePointsCentsStart =
-    typeof row.yesPricePointsCentsStart === "number"
-      ? row.yesPricePointsCentsStart
-      : (row.yesPriceCentsStart ?? 0);
-  const yesPricePointsCentsNow =
-    typeof row.yesPricePointsCentsNow === "number"
-      ? row.yesPricePointsCentsNow
-      : (row.yesPriceCentsNow ?? 0);
-  const volumePointsCents =
-    typeof row.volumePointsCents === "number"
-      ? row.volumePointsCents
-      : (row.volumeCents ?? 0);
+  const yesPricePointsStart =
+    typeof row.yesPricePointsStart === "number"
+      ? row.yesPricePointsStart
+      : (row.yesPricePointsStart ?? 0);
+  const yesPricePointsNow =
+    typeof row.yesPricePointsNow === "number"
+      ? row.yesPricePointsNow
+      : (row.yesPricePointsNow ?? 0);
+  const volumePoints =
+    typeof row.volumePoints === "number"
+      ? row.volumePoints
+      : (row.volumePoints ?? 0);
 
   return {
     marketId: row.marketId,
     ticker: row.ticker,
     title: row.title,
-    yesPricePointsCentsStart,
-    yesPricePointsCentsNow,
-    volumePointsCents,
+    yesPricePointsStart,
+    yesPricePointsNow,
+    volumePoints,
     unit: row.unit || "PTS",
   };
 }
@@ -1075,105 +1044,105 @@ function normalizeOrderBookSide(side: LegacyOrderBookSide): OrderBook["yes"] {
 }
 
 function normalizeOrderBookLevel(row: LegacyOrderBookLevel): OrderBookLevel {
-  const pricePointsCents =
-    typeof row.pricePointsCents === "number"
-      ? row.pricePointsCents
-      : (row.priceCents ?? 0);
+  const pricePoints =
+    typeof row.pricePoints === "number"
+      ? row.pricePoints
+      : (row.pricePoints ?? 0);
   const shares =
     typeof row.shares === "number" ? row.shares : (row.quantity ?? 0);
   const cumulativeShares =
     typeof row.cumulativeShares === "number"
       ? row.cumulativeShares
       : (row.total ?? 0);
-  const notionalPointsCents =
-    typeof row.notionalPointsCents === "number"
-      ? row.notionalPointsCents
-      : pricePointsCents * shares;
-  const totalNotionalPointsCents =
-    typeof row.totalNotionalPointsCents === "number"
-      ? row.totalNotionalPointsCents
-      : pricePointsCents * cumulativeShares;
+  const notionalPoints =
+    typeof row.notionalPoints === "number"
+      ? row.notionalPoints
+      : pricePoints * shares;
+  const totalNotionalPoints =
+    typeof row.totalNotionalPoints === "number"
+      ? row.totalNotionalPoints
+      : pricePoints * cumulativeShares;
   return {
-    pricePointsCents,
+    pricePoints,
     shares,
     cumulativeShares,
-    notionalPointsCents,
-    totalNotionalPointsCents,
+    notionalPoints,
+    totalNotionalPoints,
     unit: row.unit || "PTS",
   };
 }
 
 function normalizePricePoint(row: LegacyPricePoint): PricePoint {
-  const yesPricePointsCents =
-    typeof row.yesPricePointsCents === "number"
-      ? row.yesPricePointsCents
-      : (row.yesPriceCents ?? 0);
-  const volumePointsCents =
-    typeof row.volumePointsCents === "number"
-      ? row.volumePointsCents
-      : (row.volumeCents ?? 0);
+  const yesPricePoints =
+    typeof row.yesPricePoints === "number"
+      ? row.yesPricePoints
+      : (row.yesPricePoints ?? 0);
+  const volumePoints =
+    typeof row.volumePoints === "number"
+      ? row.volumePoints
+      : (row.volumePoints ?? 0);
   return {
     bucketStart: row.bucketStart,
-    yesPricePointsCents,
+    yesPricePoints,
     tradeCount: row.tradeCount,
-    volumePointsCents,
+    volumePoints,
     unit: row.unit || "PTS",
   };
 }
 
 type LegacyPortfolioSummary = Partial<PortfolioSummary> & {
-  totalValueCents?: number;
-  unrealizedPnlCents?: number;
-  realizedPnlCents?: number;
+  totalValuePoints?: number;
+  unrealizedPnlPoints?: number;
+  realizedPnlPoints?: number;
 };
 
 type LegacyPosition = Partial<Position> & {
-  avgPriceCents?: number;
-  totalCostCents?: number;
-  realizedPnlCents?: number;
+  avgPricePoints?: number;
+  totalCostPoints?: number;
+  realizedPnlPoints?: number;
 };
 
 type LegacyPredictionOrder = Partial<PredictionOrder> & {
-  priceCents?: number;
-  averageFillPriceCents?: number;
-  totalCostCents?: number;
-  filledCostCents?: number;
-  notionalCapCents?: number;
-  reservedCashCents?: number;
-  capturedCashCents?: number;
-  releasedCashCents?: number;
+  pricePoints?: number;
+  averageFillPricePoints?: number;
+  totalCostPoints?: number;
+  filledCostPoints?: number;
+  notionalCapPoints?: number;
+  reservedCashPoints?: number;
+  capturedCashPoints?: number;
+  releasedCashPoints?: number;
 };
 
 function normalizePortfolioSummary(
   row: LegacyPortfolioSummary,
 ): PortfolioSummary {
-  const totalValuePointsCents =
-    typeof row.totalValuePointsCents === "number"
-      ? row.totalValuePointsCents
-      : typeof row.portfolioValuePointsCents === "number"
-        ? row.portfolioValuePointsCents
-        : (row.totalValueCents ?? 0);
-  const unrealizedPointsCents =
-    typeof row.unrealizedPointsCents === "number"
-      ? row.unrealizedPointsCents
-      : (row.unrealizedPnlCents ?? 0);
-  const realizedPointsCents =
-    typeof row.realizedPointsCents === "number"
-      ? row.realizedPointsCents
-      : (row.realizedPnlCents ?? 0);
+  const totalValuePoints =
+    typeof row.totalValuePoints === "number"
+      ? row.totalValuePoints
+      : typeof row.portfolioValuePoints === "number"
+        ? row.portfolioValuePoints
+        : (row.totalValuePoints ?? 0);
+  const unrealizedPoints =
+    typeof row.unrealizedPoints === "number"
+      ? row.unrealizedPoints
+      : (row.unrealizedPnlPoints ?? 0);
+  const realizedPoints =
+    typeof row.realizedPoints === "number"
+      ? row.realizedPoints
+      : (row.realizedPnlPoints ?? 0);
 
   return {
-    totalValuePointsCents,
-    portfolioValuePointsCents:
-      typeof row.portfolioValuePointsCents === "number"
-        ? row.portfolioValuePointsCents
-        : totalValuePointsCents,
-    investedPointsCents:
-      typeof row.investedPointsCents === "number"
-        ? row.investedPointsCents
-        : totalValuePointsCents,
-    unrealizedPointsCents,
-    realizedPointsCents,
+    totalValuePoints,
+    portfolioValuePoints:
+      typeof row.portfolioValuePoints === "number"
+        ? row.portfolioValuePoints
+        : totalValuePoints,
+    investedPoints:
+      typeof row.investedPoints === "number"
+        ? row.investedPoints
+        : totalValuePoints,
+    unrealizedPoints,
+    realizedPoints,
     openPositions: row.openPositions ?? 0,
     totalPredictions: row.totalPredictions ?? 0,
     correctPredictions: row.correctPredictions ?? 0,
@@ -1183,66 +1152,66 @@ function normalizePortfolioSummary(
 }
 
 function normalizeOrderPreview(row: LegacyOrderPreview): OrderPreview {
-  const pricePointsCents =
-    typeof row.pricePointsCents === "number"
-      ? row.pricePointsCents
-      : (row.priceCents ?? 0);
-  const totalCostPointsCents =
-    typeof row.totalCostPointsCents === "number"
-      ? row.totalCostPointsCents
-      : (row.totalCostCents ?? 0);
-  const feePointsCents =
-    typeof row.feePointsCents === "number"
-      ? row.feePointsCents
-      : (row.feeCents ?? 0);
-  const maxResultPointsCents =
-    typeof row.maxResultPointsCents === "number"
-      ? row.maxResultPointsCents
-      : typeof row.maxProfitPointsCents === "number"
-        ? row.maxProfitPointsCents
-        : (row.maxProfitCents ?? 0);
-  const maxLossPointsCents =
-    typeof row.maxLossPointsCents === "number"
-      ? row.maxLossPointsCents
-      : (row.maxLossCents ?? 0);
-  const newYesPricePointsCents =
-    typeof row.newYesPricePointsCents === "number"
-      ? row.newYesPricePointsCents
-      : (row.newYesPriceCents ?? 0);
-  const newNoPricePointsCents =
-    typeof row.newNoPricePointsCents === "number"
-      ? row.newNoPricePointsCents
-      : (row.newNoPriceCents ?? 0);
-  const averageFillPricePointsCents =
-    typeof row.averageFillPricePointsCents === "number"
-      ? row.averageFillPricePointsCents
-      : row.averageFillPriceCents;
-  const totalCostWithFeesPointsCents =
-    typeof row.totalCostWithFeesPointsCents === "number"
-      ? row.totalCostWithFeesPointsCents
-      : row.totalCostWithFeesCents;
-  const estimatedSlippagePointsCents =
-    typeof row.estimatedSlippagePointsCents === "number"
-      ? row.estimatedSlippagePointsCents
-      : row.estimatedSlippageCents;
+  const pricePoints =
+    typeof row.pricePoints === "number"
+      ? row.pricePoints
+      : (row.pricePoints ?? 0);
+  const totalCostPoints =
+    typeof row.totalCostPoints === "number"
+      ? row.totalCostPoints
+      : (row.totalCostPoints ?? 0);
+  const feePoints =
+    typeof row.feePoints === "number"
+      ? row.feePoints
+      : (row.feePoints ?? 0);
+  const maxResultPoints =
+    typeof row.maxResultPoints === "number"
+      ? row.maxResultPoints
+      : typeof row.maxProfitPoints === "number"
+        ? row.maxProfitPoints
+        : (row.maxProfitPoints ?? 0);
+  const maxLossPoints =
+    typeof row.maxLossPoints === "number"
+      ? row.maxLossPoints
+      : (row.maxLossPoints ?? 0);
+  const newYesPricePoints =
+    typeof row.newYesPricePoints === "number"
+      ? row.newYesPricePoints
+      : (row.newYesPricePoints ?? 0);
+  const newNoPricePoints =
+    typeof row.newNoPricePoints === "number"
+      ? row.newNoPricePoints
+      : (row.newNoPricePoints ?? 0);
+  const averageFillPricePoints =
+    typeof row.averageFillPricePoints === "number"
+      ? row.averageFillPricePoints
+      : row.averageFillPricePoints;
+  const totalCostWithFeesPoints =
+    typeof row.totalCostWithFeesPoints === "number"
+      ? row.totalCostWithFeesPoints
+      : row.totalCostWithFeesPoints;
+  const estimatedSlippagePoints =
+    typeof row.estimatedSlippagePoints === "number"
+      ? row.estimatedSlippagePoints
+      : row.estimatedSlippagePoints;
 
   return {
     side: row.side,
     action: row.action,
     quantity: row.quantity,
-    pricePointsCents,
-    totalCostPointsCents,
-    feePointsCents,
-    maxResultPointsCents,
-    maxLossPointsCents,
-    newYesPricePointsCents,
-    newNoPricePointsCents,
+    pricePoints,
+    totalCostPoints,
+    feePoints,
+    maxResultPoints,
+    maxLossPoints,
+    newYesPricePoints,
+    newNoPricePoints,
     executionMode: row.executionMode,
     filledQuantity: row.filledQuantity,
     unfilledQuantity: row.unfilledQuantity,
-    averageFillPricePointsCents,
-    totalCostWithFeesPointsCents,
-    estimatedSlippagePointsCents,
+    averageFillPricePoints,
+    totalCostWithFeesPoints,
+    estimatedSlippagePoints,
     quoteStatus: row.quoteStatus,
     quoteStaleAfterMillis: row.quoteStaleAfterMillis,
     quoteGeneratedAtUnixSec: row.quoteGeneratedAtUnixSec,
@@ -1251,18 +1220,18 @@ function normalizeOrderPreview(row: LegacyOrderPreview): OrderPreview {
 }
 
 function normalizeTrade(row: LegacyTrade): Trade {
-  const pricePointsCents =
-    typeof row.pricePointsCents === "number"
-      ? row.pricePointsCents
-      : (row.priceCents ?? 0);
-  const feePointsCents =
-    typeof row.feePointsCents === "number"
-      ? row.feePointsCents
-      : (row.feeCents ?? 0);
-  const notionalPointsCents =
-    typeof row.notionalPointsCents === "number"
-      ? row.notionalPointsCents
-      : pricePointsCents * row.quantity;
+  const pricePoints =
+    typeof row.pricePoints === "number"
+      ? row.pricePoints
+      : (row.pricePoints ?? 0);
+  const feePoints =
+    typeof row.feePoints === "number"
+      ? row.feePoints
+      : (row.feePoints ?? 0);
+  const notionalPoints =
+    typeof row.notionalPoints === "number"
+      ? row.notionalPoints
+      : pricePoints * row.quantity;
 
   return {
     id: row.id,
@@ -1272,10 +1241,10 @@ function normalizeTrade(row: LegacyTrade): Trade {
     buyOrderId: row.buyOrderId,
     sellOrderId: row.sellOrderId,
     side: row.side,
-    pricePointsCents,
+    pricePoints,
     quantity: row.quantity,
-    feePointsCents,
-    notionalPointsCents,
+    feePoints,
+    notionalPoints,
     isAmmTrade: row.isAmmTrade,
     tradedAt: row.tradedAt,
     unit: row.unit || "PTS",
@@ -1286,38 +1255,38 @@ function normalizeTrade(row: LegacyTrade): Trade {
 }
 
 function normalizePredictionOrder(row: LegacyPredictionOrder): PredictionOrder {
-  const totalCostPointsCents =
-    typeof row.totalCostPointsCents === "number"
-      ? row.totalCostPointsCents
-      : (row.totalCostCents ?? 0);
-  const reservedPointsCents =
-    typeof row.reservedPointsCents === "number"
-      ? row.reservedPointsCents
-      : row.reservedCashCents;
-  const capturedPointsCents =
-    typeof row.capturedPointsCents === "number"
-      ? row.capturedPointsCents
-      : row.capturedCashCents;
-  const releasedPointsCents =
-    typeof row.releasedPointsCents === "number"
-      ? row.releasedPointsCents
-      : row.releasedCashCents;
-  const filledCostPointsCents =
-    typeof row.filledCostPointsCents === "number"
-      ? row.filledCostPointsCents
-      : row.filledCostCents;
-  const notionalCapPointsCents =
-    typeof row.notionalCapPointsCents === "number"
-      ? row.notionalCapPointsCents
-      : row.notionalCapCents;
-  const pricePointsCents =
-    typeof row.pricePointsCents === "number"
-      ? row.pricePointsCents
-      : row.priceCents;
-  const averageFillPricePointsCents =
-    typeof row.averageFillPricePointsCents === "number"
-      ? row.averageFillPricePointsCents
-      : row.averageFillPriceCents;
+  const totalCostPoints =
+    typeof row.totalCostPoints === "number"
+      ? row.totalCostPoints
+      : (row.totalCostPoints ?? 0);
+  const reservedPoints =
+    typeof row.reservedPoints === "number"
+      ? row.reservedPoints
+      : row.reservedCashPoints;
+  const capturedPoints =
+    typeof row.capturedPoints === "number"
+      ? row.capturedPoints
+      : row.capturedCashPoints;
+  const releasedPoints =
+    typeof row.releasedPoints === "number"
+      ? row.releasedPoints
+      : row.releasedCashPoints;
+  const filledCostPoints =
+    typeof row.filledCostPoints === "number"
+      ? row.filledCostPoints
+      : row.filledCostPoints;
+  const notionalCapPoints =
+    typeof row.notionalCapPoints === "number"
+      ? row.notionalCapPoints
+      : row.notionalCapPoints;
+  const pricePoints =
+    typeof row.pricePoints === "number"
+      ? row.pricePoints
+      : row.pricePoints;
+  const averageFillPricePoints =
+    typeof row.averageFillPricePoints === "number"
+      ? row.averageFillPricePoints
+      : row.averageFillPricePoints;
 
   return {
     id: row.id ?? "",
@@ -1326,40 +1295,40 @@ function normalizePredictionOrder(row: LegacyPredictionOrder): PredictionOrder {
     side: row.side ?? "yes",
     action: row.action ?? "buy",
     orderType: row.orderType ?? "limit",
-    pricePointsCents,
+    pricePoints,
     quantity: row.quantity ?? 0,
     filledQuantity: row.filledQuantity ?? 0,
     remainingQuantity: row.remainingQuantity ?? 0,
-    totalCostPointsCents,
+    totalCostPoints,
     status: row.status ?? "pending",
     filledAt: row.filledAt,
     cancelledAt: row.cancelledAt,
     createdAt: row.createdAt ?? "",
     timeInForce: row.timeInForce,
-    reservedPointsCents,
-    capturedPointsCents,
-    releasedPointsCents,
+    reservedPoints,
+    capturedPoints,
+    releasedPoints,
     reservedQuantity: row.reservedQuantity,
-    averageFillPricePointsCents,
-    filledCostPointsCents,
+    averageFillPricePoints,
+    filledCostPoints,
     failureReason: row.failureReason,
     postOnly: row.postOnly,
     clientOrderId: row.clientOrderId,
     selfMatchAction: row.selfMatchAction,
-    notionalCapPointsCents,
+    notionalCapPoints,
     unit: row.unit || "PTS",
   };
 }
 
 function normalizePosition(row: LegacyPosition): Position {
-  const totalCostPointsCents =
-    typeof row.totalCostPointsCents === "number"
-      ? row.totalCostPointsCents
-      : (row.totalCostCents ?? 0);
-  const realizedPointsCents =
-    typeof row.realizedPointsCents === "number"
-      ? row.realizedPointsCents
-      : (row.realizedPnlCents ?? 0);
+  const totalCostPoints =
+    typeof row.totalCostPoints === "number"
+      ? row.totalCostPoints
+      : (row.totalCostPoints ?? 0);
+  const realizedPoints =
+    typeof row.realizedPoints === "number"
+      ? row.realizedPoints
+      : (row.realizedPnlPoints ?? 0);
 
   return {
     id: row.id ?? "",
@@ -1367,12 +1336,12 @@ function normalizePosition(row: LegacyPosition): Position {
     marketId: row.marketId ?? "",
     side: row.side ?? "yes",
     quantity: row.quantity ?? 0,
-    avgPricePointsCents:
-      typeof row.avgPricePointsCents === "number"
-        ? row.avgPricePointsCents
-        : (row.avgPriceCents ?? 0),
-    totalCostPointsCents,
-    realizedPointsCents,
+    avgPricePoints:
+      typeof row.avgPricePoints === "number"
+        ? row.avgPricePoints
+        : (row.avgPricePoints ?? 0),
+    totalCostPoints,
+    realizedPoints,
     reservedQuantity: row.reservedQuantity,
     unit: row.unit || "PTS",
   };
@@ -1387,25 +1356,25 @@ function normalizeSettleMarketResponse(
     legacyResponse.payouts ||
     []
   ).map(normalizeSettlementPointDisbursement);
-  const totalSettlementPointsCents =
-    typeof response.totalSettlementPointsCents === "number"
-      ? response.totalSettlementPointsCents
+  const totalSettlementPoints =
+    typeof response.totalSettlementPoints === "number"
+      ? response.totalSettlementPoints
       : pointDisbursements.reduce(
-          (sum, payout) => sum + (payout.settlementPointsCents || 0),
+          (sum, payout) => sum + (payout.settlementPoints || 0),
           0,
         );
   return {
     ...response,
     settlement: {
       ...response.settlement,
-      totalSettlementPointsCents:
-        typeof response.settlement?.totalSettlementPointsCents === "number"
-          ? response.settlement.totalSettlementPointsCents
-          : legacyResponse.settlement?.totalPayoutCents,
+      totalSettlementPoints:
+        typeof response.settlement?.totalSettlementPoints === "number"
+          ? response.settlement.totalSettlementPoints
+          : legacyResponse.settlement?.totalPayoutPoints,
       unit: response.settlement?.unit || "PTS",
     },
     pointDisbursements,
-    totalSettlementPointsCents,
+    totalSettlementPoints,
     unit: response.unit || "PTS",
   };
 }
@@ -1413,14 +1382,14 @@ function normalizeSettleMarketResponse(
 function normalizeSettlementPointDisbursement(
   row: SettlementPointDisbursement | LegacySettlementPayout,
 ): SettlementPointDisbursement {
-  const settlementPointsCents =
-    typeof row.settlementPointsCents === "number"
-      ? row.settlementPointsCents
-      : (row as LegacySettlementPayout).payoutCents;
-  const realizedPointsCents =
-    typeof row.realizedPointsCents === "number"
-      ? row.realizedPointsCents
-      : (row as LegacySettlementPayout).pnlCents;
+  const settlementPoints =
+    typeof row.settlementPoints === "number"
+      ? row.settlementPoints
+      : (row as LegacySettlementPayout).payoutPoints;
+  const realizedPoints =
+    typeof row.realizedPoints === "number"
+      ? row.realizedPoints
+      : (row as LegacySettlementPayout).pnlPoints;
   return {
     id: row.id,
     settlementId: row.settlementId,
@@ -1429,16 +1398,16 @@ function normalizeSettlementPointDisbursement(
     marketId: row.marketId,
     side: row.side,
     quantity: row.quantity,
-    entryPricePointsCents:
-      row.entryPricePointsCents ??
-      (row as LegacySettlementPayout).entryPriceCents ??
+    entryPricePoints:
+      row.entryPricePoints ??
+      (row as LegacySettlementPayout).entryPricePoints ??
       0,
-    exitPricePointsCents:
-      row.exitPricePointsCents ??
-      (row as LegacySettlementPayout).exitPriceCents ??
+    exitPricePoints:
+      row.exitPricePoints ??
+      (row as LegacySettlementPayout).exitPricePoints ??
       0,
-    settlementPointsCents,
-    realizedPointsCents,
+    settlementPoints,
+    realizedPoints,
     paidAt: row.paidAt,
     unit: row.unit || "PTS",
   };

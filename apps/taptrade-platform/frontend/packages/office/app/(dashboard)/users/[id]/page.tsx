@@ -76,21 +76,21 @@ const mapPunter = (data: any): PunterProfileData => ({
   createdAt: data.createdAt,
   lastLoginDate: data.lastLoginAt || "Never",
   status: toUserStatus(data.status),
-  balance: (data.pointAccountBalanceCents ?? 0) / 100,
-  portfolioValue: (data.portfolio?.portfolioValuePointsCents ?? 0) / 100,
+  balance: (data.pointAccountBalancePoints ?? 0) / 100,
+  portfolioValue: (data.portfolio?.portfolioValuePoints ?? 0) / 100,
   totalPredictions: data.portfolio?.totalPredictions ?? 0,
   openPositions: data.portfolio?.openPositions ?? 0,
   accuracyPct: data.portfolio?.accuracyPct ?? 0,
-  pnl: (data.portfolio?.realizedPointsCents ?? 0) / 100,
-  unrealizedPnl: (data.portfolio?.unrealizedPointsCents ?? 0) / 100,
+  pnl: (data.portfolio?.realizedPoints ?? 0) / 100,
+  unrealizedPnl: (data.portfolio?.unrealizedPoints ?? 0) / 100,
   verificationStatus: data.status === "active" ? "verified" : "pending",
 });
 
 const mapWalletLedgerRow = (row: any): WalletLedgerRow => ({
   entryId: row.entryId,
   type: row.type,
-  amountPointsCents: row.amountPointsCents ?? 0,
-  balancePointsCents: row.balancePointsCents ?? 0,
+  amountPoints: row.amountPoints ?? 0,
+  balancePoints: row.balancePoints ?? 0,
   reason: row.reason,
   transactionTime: row.transactionTime,
 });

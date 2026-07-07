@@ -25,10 +25,10 @@ export interface OrderIdempotencySig {
   action: string;
   orderType: string;
   quantity: number;
-  pricePointsCents?: number;
+  pricePoints?: number;
   timeInForce?: string;
   postOnly?: boolean;
-  notionalCapPointsCents?: number;
+  notionalCapPoints?: number;
 }
 
 export interface PendingIdempotency {
@@ -48,10 +48,10 @@ export function orderSignature(req: OrderIdempotencySig): string {
     req.action,
     req.orderType,
     req.quantity,
-    req.pricePointsCents ?? null,
+    req.pricePoints ?? null,
     req.timeInForce ?? null,
     req.postOnly ?? null,
-    req.notionalCapPointsCents ?? null,
+    req.notionalCapPoints ?? null,
   ]);
 }
 

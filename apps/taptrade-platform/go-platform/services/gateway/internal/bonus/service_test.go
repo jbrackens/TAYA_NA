@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"math"
 	"os"
-	"taptrade/gateway/internal/events"
 	"strings"
+	"taptrade/gateway/internal/events"
 	"testing"
 	"time"
 )
@@ -28,11 +28,11 @@ func TestComputeWageringRequired_Normal(t *testing.T) {
 
 func TestComputeWageringRequired_ClampsAbsurdMultiplier(t *testing.T) {
 	// A caller-supplied multiplier above the ceiling must clamp, not overflow.
-	got := computeWageringRequired(maxBonusAmountCents, math.MaxFloat64)
+	got := computeWageringRequired(maxBonusAmountPoints, math.MaxFloat64)
 	if got < 0 {
 		t.Fatalf("wagering requirement overflowed to negative: %d", got)
 	}
-	want := maxBonusAmountCents * int64(maxWageringMultiplier)
+	want := maxBonusAmountPoints * int64(maxWageringMultiplier)
 	if got != want {
 		t.Fatalf("expected clamp to %d, got %d", want, got)
 	}
@@ -40,7 +40,7 @@ func TestComputeWageringRequired_ClampsAbsurdMultiplier(t *testing.T) {
 
 func TestComputeWageringRequired_NoInt64Overflow(t *testing.T) {
 	// Max bounded amount * max bounded multiplier must stay well within int64.
-	got := computeWageringRequired(maxBonusAmountCents, maxWageringMultiplier)
+	got := computeWageringRequired(maxBonusAmountPoints, maxWageringMultiplier)
 	if got <= 0 {
 		t.Fatalf("expected positive bounded wagering requirement, got %d", got)
 	}
@@ -53,33 +53,31 @@ func TestBonusGrantedEventPayloadUsesPointNativeAmount(t *testing.T) {
 	expiresAt := time.Date(2026, 6, 27, 12, 0, 0, 0, time.UTC)
 	payload := bonusGrantedEventPayload("user-1", 7, 11, 5000, &expiresAt, false)
 
-	assertPayloadHasNumber(t, payload, "amount_points_cents", 5000)
+	assertPayloadHasNumber(t, payload, "amount_points", 5000)
 	if payload["unit"] != "PTS" {
 		t.Fatalf("expected PTS unit, got %#v", payload["unit"])
 	}
 	if payload["expires_at"] != expiresAt {
 		t.Fatalf("expected expires_at to be preserved, got %#v", payload["expires_at"])
 	}
-	assertPayloadMissing(t, payload, "amount_cents")
 }
 
 func TestAdminBonusGrantedEventPayloadUsesPointNativeAmount(t *testing.T) {
 	payload := bonusGrantedEventPayload("user-1", 7, 11, 5000, nil, true)
 
-	assertPayloadHasNumber(t, payload, "amount_points_cents", 5000)
+	assertPayloadHasNumber(t, payload, "amount_points", 5000)
 	if payload["admin_grant"] != true {
 		t.Fatalf("expected admin_grant marker, got %#v", payload["admin_grant"])
 	}
 	if _, ok := payload["expires_at"]; ok {
 		t.Fatal("did not expect expires_at on admin grant payload")
 	}
-	assertPayloadMissing(t, payload, "amount_cents")
 }
 
 func TestBonusExpiredEventPayloadUsesPointNativeForfeitAmount(t *testing.T) {
 	payload := bonusExpiredEventPayload("user-1", 7, 3200)
 
-	assertPayloadHasNumber(t, payload, "forfeited_points_cents", 3200)
+	assertPayloadHasNumber(t, payload, "forfeited_points", 3200)
 	if payload["unit"] != "PTS" {
 		t.Fatalf("expected PTS unit, got %#v", payload["unit"])
 	}
@@ -89,7 +87,7 @@ func TestBonusExpiredEventPayloadUsesPointNativeForfeitAmount(t *testing.T) {
 func TestBonusForfeitedEventPayloadUsesPointNativeForfeitAmountAndAuditMetadata(t *testing.T) {
 	payload := bonusForfeitedEventPayload("user-1", 7, 3200, "manual review", "admin-1")
 
-	assertPayloadHasNumber(t, payload, "forfeited_points_cents", 3200)
+	assertPayloadHasNumber(t, payload, "forfeited_points", 3200)
 	if payload["unit"] != "PTS" {
 		t.Fatalf("expected PTS unit, got %#v", payload["unit"])
 	}
@@ -100,7 +98,7 @@ func TestBonusForfeitedEventPayloadUsesPointNativeForfeitAmountAndAuditMetadata(
 		t.Fatalf("expected admin actor, got %#v", payload["actor"])
 	}
 	assertPayloadMissing(t, payload, "forfeited_amount")
-	assertPayloadMissing(t, payload, "amount_cents")
+	assertPayloadMissing(t, payload, "amount_points")
 }
 
 func TestPublishBonusEventUsesPointNativePayloadAndUserID(t *testing.T) {
@@ -132,11 +130,8 @@ func TestPublishBonusEventUsesPointNativePayloadAndUserID(t *testing.T) {
 	if payload["unit"] != "PTS" {
 		t.Fatalf("expected PTS unit, got %#v", payload)
 	}
-	if payload["amount_points_cents"] != float64(5000) {
+	if payload["amount_points"] != float64(5000) {
 		t.Fatalf("expected point amount, got %#v", payload)
-	}
-	if _, ok := payload["amount_cents"]; ok {
-		t.Fatalf("did not expect retired amount key in %#v", payload)
 	}
 }
 
@@ -176,8 +171,8 @@ func TestBonusForfeitEventsUseActualWalletForfeitedAmount(t *testing.T) {
 		t.Fatalf("read service source: %v", err)
 	}
 	text := string(source)
-	manualPublish := `bonusForfeitedEventPayload(pb.UserID, bonusID, forfeitedEntry.AmountCents, req.Reason, req.ForfeitedBy)`
-	expiryPublish := `bonusExpiredEventPayload(pb.UserID, pb.ID, forfeitedEntry.AmountCents)`
+	manualPublish := `bonusForfeitedEventPayload(pb.UserID, bonusID, forfeitedEntry.AmountPoints, req.Reason, req.ForfeitedBy)`
+	expiryPublish := `bonusExpiredEventPayload(pb.UserID, pb.ID, forfeitedEntry.AmountPoints)`
 	if !strings.Contains(text, manualPublish) {
 		t.Fatalf("manual forfeit event should use actual wallet-forfeited amount")
 	}
@@ -185,8 +180,8 @@ func TestBonusForfeitEventsUseActualWalletForfeitedAmount(t *testing.T) {
 		t.Fatalf("expiry event should use actual wallet-forfeited amount")
 	}
 	for _, retired := range []string{
-		`bonusForfeitedEventPayload(pb.UserID, bonusID, pb.RemainingAmountCents`,
-		`bonusExpiredEventPayload(pb.UserID, pb.ID, pb.RemainingAmountCents`,
+		`bonusForfeitedEventPayload(pb.UserID, bonusID, pb.RemainingAmountPoints`,
+		`bonusExpiredEventPayload(pb.UserID, pb.ID, pb.RemainingAmountPoints`,
 	} {
 		if strings.Contains(text, retired) {
 			t.Fatalf("forfeit event should not publish requested remaining amount: %s", retired)
@@ -205,7 +200,7 @@ func TestBonusCreditFailureCompensatesClaimAndBonusState(t *testing.T) {
 	for _, want := range []string{
 		directComp,
 		adminComp,
-		`s.repo.ReleaseClaim(ctx, campaignID, amountPointsCents)`,
+		`s.repo.ReleaseClaim(ctx, campaignID, amountPoints)`,
 		`s.repo.UpdateBonusStatus(ctx, created.ID, "forfeited", actor)`,
 	} {
 		if !strings.Contains(text, want) {
@@ -255,7 +250,7 @@ func TestCampaignActivatedEventPayloadMapsRetiredPromoType(t *testing.T) {
 			if err != nil {
 				t.Fatalf("marshal activated campaign payload: %v", err)
 			}
-			for _, retired := range []string{"deposit_match", "freebet", "cash", "amount_cents"} {
+			for _, retired := range []string{"deposit_match", "freebet", "cash", "amount_points"} {
 				if strings.Contains(string(raw), retired) {
 					t.Fatalf("activated campaign payload leaked retired value %q in %s", retired, raw)
 				}
@@ -286,7 +281,7 @@ func TestCampaignClosedEventPayloadUsesPointNativeLifecycleContract(t *testing.T
 	if err != nil {
 		t.Fatalf("marshal closed campaign payload: %v", err)
 	}
-	for _, retired := range []string{"deposit_match", "freebet", "cash", "amount_cents"} {
+	for _, retired := range []string{"deposit_match", "freebet", "cash", "amount_points"} {
 		if strings.Contains(string(raw), retired) {
 			t.Fatalf("closed campaign payload leaked retired value %q in %s", retired, raw)
 		}
@@ -315,7 +310,7 @@ func TestCampaignPausedEventPayloadUsesPointNativeLifecycleContract(t *testing.T
 	if err != nil {
 		t.Fatalf("marshal paused campaign payload: %v", err)
 	}
-	for _, retired := range []string{"deposit_match", "freebet", "cash", "amount_cents"} {
+	for _, retired := range []string{"deposit_match", "freebet", "cash", "amount_points"} {
 		if strings.Contains(string(raw), retired) {
 			t.Fatalf("paused campaign payload leaked retired value %q in %s", retired, raw)
 		}
@@ -359,7 +354,7 @@ func TestPublishCampaignClosedEventsUsesPointNativePayload(t *testing.T) {
 		if err != nil {
 			t.Fatalf("marshal closed campaign payload: %v", err)
 		}
-		for _, retired := range []string{"deposit_match", "freebet", "cash", "amount_cents"} {
+		for _, retired := range []string{"deposit_match", "freebet", "cash", "amount_points"} {
 			if strings.Contains(string(raw), retired) {
 				t.Fatalf("expired campaign payload leaked retired value %q in %s", retired, raw)
 			}
@@ -543,7 +538,7 @@ func TestCreateCampaign_RejectsNegativeReward(t *testing.T) {
 	svc := newValidationOnlyService()
 	req := baseCampaignReq()
 	req.Rules = []RuleInput{
-		{RuleType: "reward", RuleConfig: mustRuleConfig(t, map[string]any{"fixed_amount_cents": -100})},
+		{RuleType: "reward", RuleConfig: mustRuleConfig(t, map[string]any{"fixed_amount_points": -100})},
 	}
 	_, err := svc.CreateCampaign(context.Background(), req)
 	if err == nil {
@@ -558,7 +553,7 @@ func TestCreateCampaign_RejectsRewardOverCeiling(t *testing.T) {
 	svc := newValidationOnlyService()
 	req := baseCampaignReq()
 	req.Rules = []RuleInput{
-		{RuleType: "reward", RuleConfig: mustRuleConfig(t, map[string]any{"fixed_amount_cents": maxBonusAmountCents + 1})},
+		{RuleType: "reward", RuleConfig: mustRuleConfig(t, map[string]any{"fixed_amount_points": maxBonusAmountPoints + 1})},
 	}
 	_, err := svc.CreateCampaign(context.Background(), req)
 	if err == nil {
@@ -573,26 +568,26 @@ func TestCreateCampaign_RejectsNegativeBudget(t *testing.T) {
 	svc := newValidationOnlyService()
 	req := baseCampaignReq()
 	neg := int64(-1)
-	req.BudgetCents = &neg
+	req.BudgetPoints = &neg
 	if _, err := svc.CreateCampaign(context.Background(), req); err == nil {
 		t.Fatal("expected rejection of negative budget")
 	}
 }
 
-func TestCreateCampaign_RejectsConflictingBudgetAliases(t *testing.T) {
-	svc := newValidationOnlyService()
+func TestCreateCampaign_SingleBudgetFieldAccepted(t *testing.T) {
+	// Points unit-model (2026-07-07): the cents-era budget alias is retired.
+	// budget_points is the single authoritative field and must clear the
+	// request validators (the validation-only service has no DB, so the
+	// full create path can't run here).
 	req := baseCampaignReq()
-	legacy := int64(1000)
 	points := int64(2000)
-	req.BudgetCents = &legacy
-	req.BudgetPointsCents = &points
+	req.BudgetPoints = &points
 
-	_, err := svc.CreateCampaign(context.Background(), req)
-	if err == nil {
-		t.Fatal("expected rejection of conflicting budget aliases")
+	if err := req.ValidatePointAliasConflicts(); err != nil {
+		t.Fatalf("single budget field must not conflict, got %v", err)
 	}
-	if !strings.Contains(err.Error(), "budget_points_cents") {
-		t.Fatalf("expected point-native error field, got %v", err)
+	if err := req.ValidateLaunchCopy(); err != nil {
+		t.Fatalf("single budget field must clear launch-copy checks, got %v", err)
 	}
 }
 
@@ -603,8 +598,8 @@ func TestCreateCampaign_RejectsConflictingRuleAmountAliasesBeforePersistence(t *
 		{
 			RuleType: "reward",
 			PointRuleConfig: mustRuleConfig(t, map[string]any{
-				"fixed_amount_points_cents": 500,
-				"fixed_amount_cents":        700,
+				"min_points":        100,
+				"min_amount_points": 200,
 			}),
 		},
 	}
@@ -613,28 +608,21 @@ func TestCreateCampaign_RejectsConflictingRuleAmountAliasesBeforePersistence(t *
 	if err == nil {
 		t.Fatal("expected rejection of conflicting rule amount aliases")
 	}
-	if !strings.Contains(err.Error(), "fixed_amount_points_cents") {
+	if !strings.Contains(err.Error(), "min_amount_points") {
 		t.Fatalf("expected point-native rule field, got %v", err)
 	}
 }
 
-func TestGrantBonus_RejectsConflictingOverrideAliasesBeforeLookup(t *testing.T) {
-	svc := newValidationOnlyService()
-	legacy := int64(1000)
+func TestGrantBonus_SingleOverrideFieldNormalizes(t *testing.T) {
 	points := int64(2000)
 	req := GrantBonusRequest{
-		UserID:              "u-1",
-		CampaignID:          7,
-		OverrideAmountCents: &legacy,
-		OverridePointsCents: &points,
+		UserID:         "u-1",
+		CampaignID:     7,
+		OverridePoints: &points,
 	}
-
-	_, err := svc.GrantBonus(context.Background(), req)
-	if err == nil {
-		t.Fatal("expected rejection of conflicting override aliases")
-	}
-	if !strings.Contains(err.Error(), "override_points_cents") {
-		t.Fatalf("expected point-native error field, got %v", err)
+	req.NormalizePointAliases()
+	if req.OverridePoints == nil || *req.OverridePoints != 2000 {
+		t.Fatal("override_points must survive normalization unchanged")
 	}
 }
 

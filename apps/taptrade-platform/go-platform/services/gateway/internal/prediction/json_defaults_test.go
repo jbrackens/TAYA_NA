@@ -24,45 +24,45 @@ func TestMarketJSONExposesPointAliases(t *testing.T) {
 	bestNoBid := 36
 	bestNoAsk := 38
 	market := Market{
-		ID:                     "market-1",
-		EventID:                "event-1",
-		Ticker:                 "MLBB-FINAL-G1",
-		Title:                  "Will team A win?",
-		Status:                 MarketStatusOpen,
-		YesPriceCents:          64,
-		NoPriceCents:           36,
-		LastTradePriceCents:    &lastTrade,
-		VolumeCents:            12500,
-		OpenInterestCents:      5400,
-		LiquidityCents:         20000,
-		AMMSubsidyCents:        1500,
-		ExecutionMode:          ExecutionModeOrderBook,
-		CollateralPoolCents:    8800,
-		SettledPayoutPoolCents: 1200,
-		BestYesBidCents:        &bestYesBid,
-		BestYesAskCents:        &bestYesAsk,
-		BestNoBidCents:         &bestNoBid,
-		BestNoAskCents:         &bestNoAsk,
-		CloseAt:                time.Unix(1700000000, 0).UTC(),
-		CreatedAt:              time.Unix(1699990000, 0).UTC(),
-		UpdatedAt:              time.Unix(1699995000, 0).UTC(),
+		ID:                      "market-1",
+		EventID:                 "event-1",
+		Ticker:                  "MLBB-FINAL-G1",
+		Title:                   "Will team A win?",
+		Status:                  MarketStatusOpen,
+		YesPricePoints:          64,
+		NoPricePoints:           36,
+		LastTradePricePoints:    &lastTrade,
+		VolumePoints:            12500,
+		OpenInterestPoints:      5400,
+		LiquidityPoints:         20000,
+		AMMSubsidyPoints:        1500,
+		ExecutionMode:           ExecutionModeOrderBook,
+		CollateralPoolPoints:    8800,
+		SettledPayoutPoolPoints: 1200,
+		BestYesBidPoints:        &bestYesBid,
+		BestYesAskPoints:        &bestYesAsk,
+		BestNoBidPoints:         &bestNoBid,
+		BestNoAskPoints:         &bestNoAsk,
+		CloseAt:                 time.Unix(1700000000, 0).UTC(),
+		CreatedAt:               time.Unix(1699990000, 0).UTC(),
+		UpdatedAt:               time.Unix(1699995000, 0).UTC(),
 	}
 	body, err := json.Marshal(market)
 	if err != nil {
 		t.Fatalf("marshal market: %v", err)
 	}
 	for _, needle := range []string{
-		`"yesPricePointsCents":64`,
-		`"noPricePointsCents":36`,
-		`"lastTradePricePointsCents":63`,
-		`"volumePointsCents":12500`,
-		`"openInterestPointsCents":5400`,
-		`"liquidityPointsCents":20000`,
-		`"ammSubsidyPointsCents":1500`,
-		`"collateralPoolPointsCents":8800`,
-		`"settlementPoolPointsCents":1200`,
-		`"bestYesBidPointsCents":62`,
-		`"bestNoAskPointsCents":38`,
+		`"yesPricePoints":64`,
+		`"noPricePoints":36`,
+		`"lastTradePricePoints":63`,
+		`"volumePoints":12500`,
+		`"openInterestPoints":5400`,
+		`"liquidityPoints":20000`,
+		`"ammSubsidyPoints":1500`,
+		`"collateralPoolPoints":8800`,
+		`"settlementPoolPoints":1200`,
+		`"bestYesBidPoints":62`,
+		`"bestNoAskPoints":38`,
 		`"unit":"PTS"`,
 	} {
 		if !strings.Contains(string(body), needle) {
@@ -70,20 +70,20 @@ func TestMarketJSONExposesPointAliases(t *testing.T) {
 		}
 	}
 	for _, retired := range []string{
-		`"yesPriceCents"`,
-		`"noPriceCents"`,
-		`"lastTradePriceCents"`,
-		`"volumeCents"`,
-		`"openInterestCents"`,
-		`"liquidityCents"`,
-		`"ammSubsidyCents"`,
-		`"collateralPoolCents"`,
+		`"yesPricePointsCents"`,
+		`"noPricePointsCents"`,
+		`"lastTradePricePointsCents"`,
+		`"volumePointsCents"`,
+		`"openInterestPointsCents"`,
+		`"liquidityPointsCents"`,
+		`"ammSubsidyPointsCents"`,
+		`"collateralPoolPointsCents"`,
 		`"settledPayoutPoolPointsCents"`,
-		`"settledPayoutPoolCents"`,
-		`"bestYesBidCents"`,
-		`"bestYesAskCents"`,
-		`"bestNoBidCents"`,
-		`"bestNoAskCents"`,
+		`"settledPayoutPoolPointsCents"`,
+		`"bestYesBidPointsCents"`,
+		`"bestYesAskPointsCents"`,
+		`"bestNoBidPointsCents"`,
+		`"bestNoAskPointsCents"`,
 	} {
 		if strings.Contains(string(body), retired) {
 			t.Fatalf("market should not emit retired alias %s in %s", retired, string(body))
@@ -93,18 +93,18 @@ func TestMarketJSONExposesPointAliases(t *testing.T) {
 
 func TestPricePointJSONExposesPointAliases(t *testing.T) {
 	point := PricePoint{
-		BucketStart:   time.Unix(1700000000, 0).UTC(),
-		YesPriceCents: 64,
-		TradeCount:    7,
-		VolumeCents:   12500,
+		BucketStart:    time.Unix(1700000000, 0).UTC(),
+		YesPricePoints: 64,
+		TradeCount:     7,
+		VolumePoints:   12500,
 	}
 	body, err := json.Marshal(point)
 	if err != nil {
 		t.Fatalf("marshal price point: %v", err)
 	}
 	for _, needle := range []string{
-		`"yesPricePointsCents":64`,
-		`"volumePointsCents":12500`,
+		`"yesPricePoints":64`,
+		`"volumePoints":12500`,
 		`"unit":"PTS"`,
 	} {
 		if !strings.Contains(string(body), needle) {
@@ -112,8 +112,8 @@ func TestPricePointJSONExposesPointAliases(t *testing.T) {
 		}
 	}
 	for _, retired := range []string{
-		`"yesPriceCents"`,
-		`"volumeCents"`,
+		`"yesPricePointsCents"`,
+		`"volumePointsCents"`,
 	} {
 		if strings.Contains(string(body), retired) {
 			t.Fatalf("price point should not emit retired alias %s in %s", retired, string(body))
@@ -123,24 +123,24 @@ func TestPricePointJSONExposesPointAliases(t *testing.T) {
 
 func TestPortfolioSummaryJSONExposesPointAliases(t *testing.T) {
 	summary := PortfolioSummary{
-		TotalValueCents:    2400,
-		UnrealizedPnlCents: -125,
-		RealizedPnlCents:   375,
-		OpenPositions:      2,
-		TotalPredictions:   5,
-		CorrectPredictions: 3,
-		AccuracyPct:        60,
+		TotalValuePoints:    2400,
+		UnrealizedPnlPoints: -125,
+		RealizedPnlPoints:   375,
+		OpenPositions:       2,
+		TotalPredictions:    5,
+		CorrectPredictions:  3,
+		AccuracyPct:         60,
 	}
 	body, err := json.Marshal(summary)
 	if err != nil {
 		t.Fatalf("marshal portfolio summary: %v", err)
 	}
 	for _, needle := range []string{
-		`"totalValuePointsCents":2400`,
-		`"portfolioValuePointsCents":2400`,
-		`"investedPointsCents":2400`,
-		`"unrealizedPointsCents":-125`,
-		`"realizedPointsCents":375`,
+		`"totalValuePoints":2400`,
+		`"portfolioValuePoints":2400`,
+		`"investedPoints":2400`,
+		`"unrealizedPoints":-125`,
+		`"realizedPoints":375`,
 		`"unit":"PTS"`,
 	} {
 		if !strings.Contains(string(body), needle) {
@@ -148,9 +148,9 @@ func TestPortfolioSummaryJSONExposesPointAliases(t *testing.T) {
 		}
 	}
 	for _, retired := range []string{
-		`"totalValueCents"`,
-		`"unrealizedPnlCents"`,
-		`"realizedPnlCents"`,
+		`"totalValuePointsCents"`,
+		`"unrealizedPnlPointsCents"`,
+		`"realizedPnlPointsCents"`,
 	} {
 		if strings.Contains(string(body), retired) {
 			t.Fatalf("portfolio summary should not emit retired alias %s in %s", retired, string(body))
@@ -166,8 +166,8 @@ func TestMarketJSONClampsOutOfRangeImportedTimes(t *testing.T) {
 		Ticker:              "IMP-FUTURE",
 		Title:               "Imported far future market",
 		Status:              MarketStatusOpen,
-		YesPriceCents:       50,
-		NoPriceCents:        50,
+		YesPricePoints:      50,
+		NoPricePoints:       50,
 		SettlementSourceKey: "manual",
 		SettlementRule:      "manual_attestation",
 		SettlementCutoffAt:  &cutoff,
@@ -201,14 +201,14 @@ func TestOrderJSONExposesPointAliases(t *testing.T) {
 		Quantity:            10,
 		FilledQuantity:      8,
 		RemainingQuantity:   2,
-		TotalCostCents:      2400,
+		TotalCostPoints:     2400,
 		Status:              OrderStatusPartial,
 		WalletReservationID: &reservationID,
-		ReservedCashCents:   2500,
-		CapturedCashCents:   1920,
-		ReleasedCashCents:   580,
-		FilledCostCents:     1920,
-		NotionalCapCents:    &cap,
+		ReservedCashPoints:  2500,
+		CapturedCashPoints:  1920,
+		ReleasedCashPoints:  580,
+		FilledCostPoints:    1920,
+		NotionalCapPoints:   &cap,
 		CreatedAt:           time.Unix(1700000000, 0).UTC(),
 		UpdatedAt:           time.Unix(1700000001, 0).UTC(),
 	}
@@ -217,12 +217,12 @@ func TestOrderJSONExposesPointAliases(t *testing.T) {
 		t.Fatalf("marshal order: %v", err)
 	}
 	for _, needle := range []string{
-		`"totalCostPointsCents":2400`,
-		`"reservedPointsCents":2500`,
-		`"capturedPointsCents":1920`,
-		`"releasedPointsCents":580`,
-		`"filledCostPointsCents":1920`,
-		`"notionalCapPointsCents":2500`,
+		`"totalCostPoints":2400`,
+		`"reservedPoints":2500`,
+		`"capturedPoints":1920`,
+		`"releasedPoints":580`,
+		`"filledCostPoints":1920`,
+		`"notionalCapPoints":2500`,
 		`"unit":"PTS"`,
 	} {
 		if !strings.Contains(string(body), needle) {
@@ -230,12 +230,12 @@ func TestOrderJSONExposesPointAliases(t *testing.T) {
 		}
 	}
 	for _, needle := range []string{
-		`"totalCostCents"`,
-		`"reservedCashCents"`,
-		`"capturedCashCents"`,
-		`"releasedCashCents"`,
-		`"filledCostCents"`,
-		`"notionalCapCents"`,
+		`"totalCostPointsCents"`,
+		`"reservedCashPointsCents"`,
+		`"capturedCashPointsCents"`,
+		`"releasedCashPointsCents"`,
+		`"filledCostPointsCents"`,
+		`"notionalCapPointsCents"`,
 		`"walletReservationId"`,
 	} {
 		if strings.Contains(string(body), needle) {
@@ -252,50 +252,50 @@ func TestPlaceOrderRequestAcceptsPointNativeNotionalCapAlias(t *testing.T) {
 		"action": "buy",
 		"orderType": "market",
 		"quantity": 3,
-		"notionalCapPointsCents": 200
+		"notionalCapPoints": 200
 	}`), &req); err != nil {
 		t.Fatalf("unmarshal place order request: %v", err)
 	}
-	if req.NotionalCapCents == nil || *req.NotionalCapCents != 200 {
-		t.Fatalf("notional cap = %v, want 200 from point alias", req.NotionalCapCents)
+	if req.NotionalCapPoints == nil || *req.NotionalCapPoints != 200 {
+		t.Fatalf("notional cap = %v, want 200 from point alias", req.NotionalCapPoints)
 	}
 }
 
 func TestOrderPreviewJSONExposesPointAliases(t *testing.T) {
 	preview := OrderPreview{
-		Side:                   OrderSideYes,
-		Action:                 OrderActionBuy,
-		Quantity:               12,
-		PriceCents:             64,
-		TotalCost:              768,
-		FeeCents:               5,
-		MaxProfit:              432,
-		MaxLoss:                768,
-		NewYesPrice:            66,
-		NewNoPrice:             34,
-		ExecutionMode:          ExecutionModeOrderBook,
-		FilledQuantity:         10,
-		UnfilledQuantity:       2,
-		AverageFillPriceCents:  63,
-		TotalCostWithFeesCents: 773,
-		EstimatedSlippageCents: 2,
-		QuoteStatus:            OrderStatusPartial,
+		Side:                    OrderSideYes,
+		Action:                  OrderActionBuy,
+		Quantity:                12,
+		PricePoints:             64,
+		TotalCost:               768,
+		FeePoints:               5,
+		MaxProfit:               432,
+		MaxLoss:                 768,
+		NewYesPrice:             66,
+		NewNoPrice:              34,
+		ExecutionMode:           ExecutionModeOrderBook,
+		FilledQuantity:          10,
+		UnfilledQuantity:        2,
+		AverageFillPricePoints:  63,
+		TotalCostWithFeesPoints: 773,
+		EstimatedSlippagePoints: 2,
+		QuoteStatus:             OrderStatusPartial,
 	}
 	body, err := json.Marshal(preview)
 	if err != nil {
 		t.Fatalf("marshal order preview: %v", err)
 	}
 	for _, needle := range []string{
-		`"pricePointsCents":64`,
-		`"totalCostPointsCents":768`,
-		`"feePointsCents":5`,
-		`"maxResultPointsCents":432`,
-		`"maxLossPointsCents":768`,
-		`"newYesPricePointsCents":66`,
-		`"newNoPricePointsCents":34`,
-		`"averageFillPricePointsCents":63`,
-		`"totalCostWithFeesPointsCents":773`,
-		`"estimatedSlippagePointsCents":2`,
+		`"pricePoints":64`,
+		`"totalCostPoints":768`,
+		`"feePoints":5`,
+		`"maxResultPoints":432`,
+		`"maxLossPoints":768`,
+		`"newYesPricePoints":66`,
+		`"newNoPricePoints":34`,
+		`"averageFillPricePoints":63`,
+		`"totalCostWithFeesPoints":773`,
+		`"estimatedSlippagePoints":2`,
 		`"unit":"PTS"`,
 	} {
 		if !strings.Contains(string(body), needle) {
@@ -303,17 +303,17 @@ func TestOrderPreviewJSONExposesPointAliases(t *testing.T) {
 		}
 	}
 	for _, retired := range []string{
-		`"priceCents"`,
-		`"totalCostCents"`,
-		`"feeCents"`,
-		`"maxProfitCents"`,
+		`"pricePointsCents"`,
+		`"totalCostPointsCents"`,
+		`"feePointsCents"`,
 		`"maxProfitPointsCents"`,
-		`"maxLossCents"`,
-		`"newYesPriceCents"`,
-		`"newNoPriceCents"`,
-		`"averageFillPriceCents"`,
-		`"totalCostWithFeesCents"`,
-		`"estimatedSlippageCents"`,
+		`"maxProfitPointsCents"`,
+		`"maxLossPointsCents"`,
+		`"newYesPricePointsCents"`,
+		`"newNoPricePointsCents"`,
+		`"averageFillPricePointsCents"`,
+		`"totalCostWithFeesPointsCents"`,
+		`"estimatedSlippagePointsCents"`,
 	} {
 		if strings.Contains(string(body), retired) {
 			t.Fatalf("order preview should omit retired alias %s in %s", retired, string(body))
@@ -323,26 +323,26 @@ func TestOrderPreviewJSONExposesPointAliases(t *testing.T) {
 
 func TestPositionJSONExposesPointAliases(t *testing.T) {
 	position := Position{
-		ID:               "pos-1",
-		UserID:           "user-1",
-		MarketID:         "market-1",
-		Side:             OrderSideYes,
-		Quantity:         12,
-		AvgPriceCents:    64,
-		TotalCostCents:   768,
-		RealizedPnlCents: -125,
-		ReservedQuantity: 3,
-		CreatedAt:        time.Unix(1700000000, 0).UTC(),
-		UpdatedAt:        time.Unix(1700000001, 0).UTC(),
+		ID:                "pos-1",
+		UserID:            "user-1",
+		MarketID:          "market-1",
+		Side:              OrderSideYes,
+		Quantity:          12,
+		AvgPricePoints:    64,
+		TotalCostPoints:   768,
+		RealizedPnlPoints: -125,
+		ReservedQuantity:  3,
+		CreatedAt:         time.Unix(1700000000, 0).UTC(),
+		UpdatedAt:         time.Unix(1700000001, 0).UTC(),
 	}
 	body, err := json.Marshal(position)
 	if err != nil {
 		t.Fatalf("marshal position: %v", err)
 	}
 	for _, needle := range []string{
-		`"avgPricePointsCents":64`,
-		`"totalCostPointsCents":768`,
-		`"realizedPointsCents":-125`,
+		`"avgPricePoints":64`,
+		`"totalCostPoints":768`,
+		`"realizedPoints":-125`,
 		`"unit":"PTS"`,
 	} {
 		if !strings.Contains(string(body), needle) {
@@ -350,9 +350,9 @@ func TestPositionJSONExposesPointAliases(t *testing.T) {
 		}
 	}
 	for _, retired := range []string{
-		`"avgPriceCents"`,
-		`"totalCostCents"`,
-		`"realizedPnlCents"`,
+		`"avgPricePointsCents"`,
+		`"totalCostPointsCents"`,
+		`"realizedPnlPointsCents"`,
 	} {
 		if strings.Contains(string(body), retired) {
 			t.Fatalf("position should not emit retired alias %s in %s", retired, string(body))
@@ -362,27 +362,27 @@ func TestPositionJSONExposesPointAliases(t *testing.T) {
 
 func TestTradeJSONExposesPointAliases(t *testing.T) {
 	trade := Trade{
-		ID:         "trade-1",
-		MarketID:   "market-1",
-		BuyerID:    "buyer-1",
-		Side:       OrderSideYes,
-		PriceCents: 64,
-		Quantity:   12,
-		FeeCents:   5,
-		IsAMMTrade: false,
-		TradedAt:   time.Unix(1700000000, 0).UTC(),
-		MatchID:    "trade-1",
-		TradeKind:  TradeKindSecondary,
-		EngineKind: EngineKindOrderBook,
+		ID:          "trade-1",
+		MarketID:    "market-1",
+		BuyerID:     "buyer-1",
+		Side:        OrderSideYes,
+		PricePoints: 64,
+		Quantity:    12,
+		FeePoints:   5,
+		IsAMMTrade:  false,
+		TradedAt:    time.Unix(1700000000, 0).UTC(),
+		MatchID:     "trade-1",
+		TradeKind:   TradeKindSecondary,
+		EngineKind:  EngineKindOrderBook,
 	}
 	body, err := json.Marshal(trade)
 	if err != nil {
 		t.Fatalf("marshal trade: %v", err)
 	}
 	for _, needle := range []string{
-		`"pricePointsCents":64`,
-		`"feePointsCents":5`,
-		`"notionalPointsCents":768`,
+		`"pricePoints":64`,
+		`"feePoints":5`,
+		`"notionalPoints":768`,
 		`"unit":"PTS"`,
 	} {
 		if !strings.Contains(string(body), needle) {
@@ -390,8 +390,8 @@ func TestTradeJSONExposesPointAliases(t *testing.T) {
 		}
 	}
 	for _, retired := range []string{
-		`"priceCents"`,
-		`"feeCents"`,
+		`"pricePointsCents"`,
+		`"feePointsCents"`,
 	} {
 		if strings.Contains(string(body), retired) {
 			t.Fatalf("trade should not emit retired alias %s in %s", retired, string(body))

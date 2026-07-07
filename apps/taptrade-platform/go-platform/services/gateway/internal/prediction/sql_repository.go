@@ -246,7 +246,7 @@ func (r *SQLRepository) ListMarkets(ctx context.Context, filter MarketFilter) ([
 	      LEFT JOIN prediction_events pe ON pe.id = rm.event_id
 	      LEFT JOIN prediction_categories pc ON pc.id = pe.category_id
 	      LEFT JOIN LATERAL (
-	          SELECT COALESCE(SUM(t.price_cents::bigint * t.quantity), 0)::bigint AS volume_24h_cents
+	          SELECT COALESCE(SUM(t.price_points::bigint * t.quantity), 0)::bigint AS volume_24h_points
 	          FROM prediction_trades t
 	          WHERE t.market_id = rm.id
 	            AND t.traded_at >= NOW() - INTERVAL '24 hours'
@@ -292,20 +292,20 @@ func (r *SQLRepository) CreateMarket(ctx context.Context, m *Market) error {
 	return r.db.QueryRowContext(ctx,
 		`INSERT INTO prediction_markets
 		 (event_id, ticker, title, description, translations, status, result,
-		  yes_price_cents, no_price_cents, last_trade_price_cents,
-		  volume_cents, liquidity_cents,
+		  yes_price_points, no_price_points, last_trade_price_points,
+		  volume_points, liquidity_points,
 		  amm_yes_shares, amm_no_shares,
-		  amm_liquidity_param, amm_subsidy_cents,
+		  amm_liquidity_param, amm_subsidy_points,
 		  settlement_source_key, settlement_cutoff_at, settlement_rule, settlement_params,
 		  fallback_source_key, fee_rate_bps, maker_rebate_bps, open_at, close_at, image_path,
 		  article_source_id)
 		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27)
 		 RETURNING id, created_at, updated_at`,
 		m.EventID, m.Ticker, m.Title, nullStr(m.Description), nullJSONArg(defaultJSONObject(m.Translations)), m.Status, resultArg,
-		m.YesPriceCents, m.NoPriceCents, m.LastTradePriceCents,
-		m.VolumeCents, m.LiquidityCents,
+		m.YesPricePoints, m.NoPricePoints, m.LastTradePricePoints,
+		m.VolumePoints, m.LiquidityPoints,
 		m.AMMYesShares, m.AMMNoShares,
-		m.AMMLiquidityParam, m.AMMSubsidyCents,
+		m.AMMLiquidityParam, m.AMMSubsidyPoints,
 		m.SettlementSourceKey, m.SettlementCutoffAt, m.SettlementRule, m.SettlementParams,
 		m.FallbackSourceKey, m.FeeRateBps, m.MakerRebateBps, m.OpenAt, m.CloseAt, nullStr(m.ImagePath),
 		m.ArticleSourceID,
@@ -468,20 +468,20 @@ func (r *SQLRepository) updateMarketWithExec(ctx context.Context, execer sqlRowE
 	_, err := execer.ExecContext(ctx,
 		`UPDATE prediction_markets SET
 		  event_id=$1, ticker=$2, title=$3, description=$4, translations=$5,
-		  status=$6, result=$7, yes_price_cents=$8, no_price_cents=$9,
-		  last_trade_price_cents=$10, volume_cents=$11, open_interest_cents=$12,
-		  liquidity_cents=$13, amm_yes_shares=$14, amm_no_shares=$15,
-		  amm_liquidity_param=$16, amm_subsidy_cents=$17,
+		  status=$6, result=$7, yes_price_points=$8, no_price_points=$9,
+		  last_trade_price_points=$10, volume_points=$11, open_interest_points=$12,
+		  liquidity_points=$13, amm_yes_shares=$14, amm_no_shares=$15,
+		  amm_liquidity_param=$16, amm_subsidy_points=$17,
 		  settlement_source_key=$18, settlement_cutoff_at=$19,
 		  settlement_rule=$20, settlement_params=$21, fallback_source_key=$22,
 		  fee_rate_bps=$23, maker_rebate_bps=$24, open_at=$25, close_at=$26,
 		  image_path=$27, article_source_id=$28, updated_at=NOW()
 		 WHERE id=$29`,
 		m.EventID, m.Ticker, m.Title, nullStr(m.Description), nullJSONArg(defaultJSONObject(m.Translations)),
-		m.Status, m.Result, m.YesPriceCents, m.NoPriceCents,
-		m.LastTradePriceCents, m.VolumeCents, m.OpenInterestCents,
-		m.LiquidityCents, m.AMMYesShares, m.AMMNoShares,
-		m.AMMLiquidityParam, m.AMMSubsidyCents,
+		m.Status, m.Result, m.YesPricePoints, m.NoPricePoints,
+		m.LastTradePricePoints, m.VolumePoints, m.OpenInterestPoints,
+		m.LiquidityPoints, m.AMMYesShares, m.AMMNoShares,
+		m.AMMLiquidityParam, m.AMMSubsidyPoints,
 		m.SettlementSourceKey, m.SettlementCutoffAt,
 		m.SettlementRule, nullJSONArg(defaultJSONObject(m.SettlementParams)), m.FallbackSourceKey,
 		m.FeeRateBps, m.MakerRebateBps, m.OpenAt, m.CloseAt,
@@ -498,14 +498,14 @@ func (r *SQLRepository) updateMarketWithExec(ctx context.Context, execer sqlRowE
 func (r *SQLRepository) transitionMarketStatusWithExec(ctx context.Context, execer sqlRowExecer, m *Market, expectedPrev MarketStatus) error {
 	res, err := execer.ExecContext(ctx,
 		`UPDATE prediction_markets SET
-		  status=$1, result=$2, yes_price_cents=$3, no_price_cents=$4,
-		  last_trade_price_cents=$5, volume_cents=$6, open_interest_cents=$7,
-		  liquidity_cents=$8, amm_yes_shares=$9, amm_no_shares=$10,
+		  status=$1, result=$2, yes_price_points=$3, no_price_points=$4,
+		  last_trade_price_points=$5, volume_points=$6, open_interest_points=$7,
+		  liquidity_points=$8, amm_yes_shares=$9, amm_no_shares=$10,
 		  updated_at=NOW()
 		 WHERE id=$11 AND status=$12`,
-		m.Status, m.Result, m.YesPriceCents, m.NoPriceCents,
-		m.LastTradePriceCents, m.VolumeCents, m.OpenInterestCents,
-		m.LiquidityCents, m.AMMYesShares, m.AMMNoShares,
+		m.Status, m.Result, m.YesPricePoints, m.NoPricePoints,
+		m.LastTradePricePoints, m.VolumePoints, m.OpenInterestPoints,
+		m.LiquidityPoints, m.AMMYesShares, m.AMMNoShares,
 		m.ID, string(expectedPrev))
 	if err != nil {
 		return err
@@ -587,8 +587,8 @@ func (r *SQLRepository) ListOrders(ctx context.Context, filter OrderFilter) ([]O
 		return nil, 0, err
 	}
 
-	q := `SELECT id, user_id, market_id, side, action, order_type, price_cents,
-	             quantity, filled_quantity, remaining_quantity, total_cost_cents,
+	q := `SELECT id, user_id, market_id, side, action, order_type, price_points,
+	             quantity, filled_quantity, remaining_quantity, total_cost_points,
 	             status, wallet_reservation_id, idempotency_key,
 	             expires_at, filled_at, cancelled_at, created_at, updated_at
 	      FROM prediction_orders` + where + ` ORDER BY created_at DESC`
@@ -621,8 +621,8 @@ func (r *SQLRepository) ListRestingOrdersOnInactiveMarkets(ctx context.Context, 
 		limit = 500
 	}
 	rows, err := r.db.QueryContext(ctx,
-		`SELECT o.id, o.user_id, o.market_id, o.side, o.action, o.order_type, o.price_cents,
-		        o.quantity, o.filled_quantity, o.remaining_quantity, o.total_cost_cents,
+		`SELECT o.id, o.user_id, o.market_id, o.side, o.action, o.order_type, o.price_points,
+		        o.quantity, o.filled_quantity, o.remaining_quantity, o.total_cost_points,
 		        o.status, o.wallet_reservation_id, o.idempotency_key,
 		        o.expires_at, o.filled_at, o.cancelled_at, o.created_at, o.updated_at
 		   FROM prediction_orders o
@@ -649,8 +649,8 @@ func (r *SQLRepository) ListRestingOrdersOnInactiveMarkets(ctx context.Context, 
 
 func (r *SQLRepository) GetOrder(ctx context.Context, id string) (*Order, error) {
 	row := r.db.QueryRowContext(ctx,
-		`SELECT id, user_id, market_id, side, action, order_type, price_cents,
-		        quantity, filled_quantity, remaining_quantity, total_cost_cents,
+		`SELECT id, user_id, market_id, side, action, order_type, price_points,
+		        quantity, filled_quantity, remaining_quantity, total_cost_points,
 		        status, wallet_reservation_id, idempotency_key,
 		        expires_at, filled_at, cancelled_at, created_at, updated_at
 		 FROM prediction_orders WHERE id = $1`, id)
@@ -659,8 +659,8 @@ func (r *SQLRepository) GetOrder(ctx context.Context, id string) (*Order, error)
 
 func (r *SQLRepository) GetOrderByIdempotencyKey(ctx context.Context, key string) (*Order, error) {
 	row := r.db.QueryRowContext(ctx,
-		`SELECT id, user_id, market_id, side, action, order_type, price_cents,
-		        quantity, filled_quantity, remaining_quantity, total_cost_cents,
+		`SELECT id, user_id, market_id, side, action, order_type, price_points,
+		        quantity, filled_quantity, remaining_quantity, total_cost_points,
 		        status, wallet_reservation_id, idempotency_key,
 		        expires_at, filled_at, cancelled_at, created_at, updated_at
 		 FROM prediction_orders WHERE idempotency_key = $1`, key)
@@ -677,16 +677,16 @@ func (r *SQLRepository) createOrderWithExec(ctx context.Context, execer sqlRowEx
 	}
 	return execer.QueryRowContext(ctx,
 		`INSERT INTO prediction_orders
-		 (user_id, market_id, side, action, order_type, price_cents,
-		  quantity, filled_quantity, remaining_quantity, total_cost_cents,
+		 (user_id, market_id, side, action, order_type, price_points,
+		  quantity, filled_quantity, remaining_quantity, total_cost_points,
 		  status, wallet_reservation_id, idempotency_key, expires_at, filled_at,
-		  reserved_cash_cents, captured_cash_cents)
+		  reserved_points, captured_points)
 		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
 		 RETURNING id, created_at, updated_at`,
-		o.UserID, o.MarketID, o.Side, o.Action, o.OrderType, o.PriceCents,
-		o.Quantity, o.FilledQuantity, o.RemainingQuantity, o.TotalCostCents,
+		o.UserID, o.MarketID, o.Side, o.Action, o.OrderType, o.PricePoints,
+		o.Quantity, o.FilledQuantity, o.RemainingQuantity, o.TotalCostPoints,
 		o.Status, o.WalletReservationID, o.IdempotencyKey, o.ExpiresAt, o.FilledAt,
-		o.ReservedCashCents, o.CapturedCashCents,
+		o.ReservedCashPoints, o.CapturedCashPoints,
 	).Scan(&o.ID, &o.CreatedAt, &o.UpdatedAt)
 }
 
@@ -705,8 +705,8 @@ func (r *SQLRepository) UpdateOrder(ctx context.Context, o *Order) error {
 
 func (r *SQLRepository) ListPositions(ctx context.Context, userID string) ([]Position, error) {
 	rows, err := r.db.QueryContext(ctx,
-		`SELECT id, user_id, market_id, side, quantity, avg_price_cents, total_cost_cents,
-		        realized_pnl_cents, reserved_quantity, created_at, updated_at
+		`SELECT id, user_id, market_id, side, quantity, avg_price_points, total_cost_points,
+		        realized_pnl_points, reserved_quantity, created_at, updated_at
 		 FROM prediction_positions WHERE user_id = $1 AND quantity > 0
 		 ORDER BY updated_at DESC`, userID)
 	if err != nil {
@@ -718,7 +718,7 @@ func (r *SQLRepository) ListPositions(ctx context.Context, userID string) ([]Pos
 	for rows.Next() {
 		var p Position
 		if err := rows.Scan(&p.ID, &p.UserID, &p.MarketID, &p.Side, &p.Quantity,
-			&p.AvgPriceCents, &p.TotalCostCents, &p.RealizedPnlCents, &p.ReservedQuantity, &p.CreatedAt, &p.UpdatedAt); err != nil {
+			&p.AvgPricePoints, &p.TotalCostPoints, &p.RealizedPnlPoints, &p.ReservedQuantity, &p.CreatedAt, &p.UpdatedAt); err != nil {
 			return nil, err
 		}
 		positions = append(positions, p)
@@ -729,12 +729,12 @@ func (r *SQLRepository) ListPositions(ctx context.Context, userID string) ([]Pos
 func (r *SQLRepository) GetPosition(ctx context.Context, userID, marketID string, side OrderSide) (*Position, error) {
 	var p Position
 	err := r.db.QueryRowContext(ctx,
-		`SELECT id, user_id, market_id, side, quantity, avg_price_cents, total_cost_cents,
-		        realized_pnl_cents, reserved_quantity, created_at, updated_at
+		`SELECT id, user_id, market_id, side, quantity, avg_price_points, total_cost_points,
+		        realized_pnl_points, reserved_quantity, created_at, updated_at
 		 FROM prediction_positions WHERE user_id = $1 AND market_id = $2 AND side = $3`,
 		userID, marketID, side,
 	).Scan(&p.ID, &p.UserID, &p.MarketID, &p.Side, &p.Quantity,
-		&p.AvgPriceCents, &p.TotalCostCents, &p.RealizedPnlCents, &p.ReservedQuantity,
+		&p.AvgPricePoints, &p.TotalCostPoints, &p.RealizedPnlPoints, &p.ReservedQuantity,
 		&p.CreatedAt, &p.UpdatedAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrPositionNotFound
@@ -754,16 +754,16 @@ func (r *SQLRepository) upsertPositionWithExec(ctx context.Context, execer sqlRo
 		return err
 	}
 	return execer.QueryRowContext(ctx,
-		`INSERT INTO prediction_positions (user_id, market_id, side, quantity, avg_price_cents, total_cost_cents, realized_pnl_cents)
+		`INSERT INTO prediction_positions (user_id, market_id, side, quantity, avg_price_points, total_cost_points, realized_pnl_points)
 		 VALUES ($1, $2, $3, $4, $5, $6, $7)
 		 ON CONFLICT (user_id, market_id, side) DO UPDATE SET
 		   quantity = EXCLUDED.quantity,
-		   avg_price_cents = EXCLUDED.avg_price_cents,
-		   total_cost_cents = EXCLUDED.total_cost_cents,
-		   realized_pnl_cents = EXCLUDED.realized_pnl_cents,
+		   avg_price_points = EXCLUDED.avg_price_points,
+		   total_cost_points = EXCLUDED.total_cost_points,
+		   realized_pnl_points = EXCLUDED.realized_pnl_points,
 		   updated_at = NOW()
 		 RETURNING id, created_at, updated_at`,
-		p.UserID, p.MarketID, p.Side, p.Quantity, p.AvgPriceCents, p.TotalCostCents, p.RealizedPnlCents,
+		p.UserID, p.MarketID, p.Side, p.Quantity, p.AvgPricePoints, p.TotalCostPoints, p.RealizedPnlPoints,
 	).Scan(&p.ID, &p.CreatedAt, &p.UpdatedAt)
 }
 
@@ -773,24 +773,24 @@ func (r *SQLRepository) upsertPositionWithReservedWithExec(ctx context.Context, 
 	}
 	return execer.QueryRowContext(ctx,
 		`INSERT INTO prediction_positions
-		   (user_id, market_id, side, quantity, avg_price_cents, total_cost_cents, realized_pnl_cents, reserved_quantity)
+		   (user_id, market_id, side, quantity, avg_price_points, total_cost_points, realized_pnl_points, reserved_quantity)
 		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		 ON CONFLICT (user_id, market_id, side) DO UPDATE SET
 		   quantity = EXCLUDED.quantity,
-		   avg_price_cents = EXCLUDED.avg_price_cents,
-		   total_cost_cents = EXCLUDED.total_cost_cents,
-		   realized_pnl_cents = EXCLUDED.realized_pnl_cents,
+		   avg_price_points = EXCLUDED.avg_price_points,
+		   total_cost_points = EXCLUDED.total_cost_points,
+		   realized_pnl_points = EXCLUDED.realized_pnl_points,
 		   reserved_quantity = EXCLUDED.reserved_quantity,
 		   updated_at = NOW()
 		 RETURNING id, created_at, updated_at`,
-		p.UserID, p.MarketID, p.Side, p.Quantity, p.AvgPriceCents, p.TotalCostCents, p.RealizedPnlCents, p.ReservedQuantity,
+		p.UserID, p.MarketID, p.Side, p.Quantity, p.AvgPricePoints, p.TotalCostPoints, p.RealizedPnlPoints, p.ReservedQuantity,
 	).Scan(&p.ID, &p.CreatedAt, &p.UpdatedAt)
 }
 
 func (r *SQLRepository) ListPositionsByMarket(ctx context.Context, marketID string) ([]Position, error) {
 	rows, err := r.db.QueryContext(ctx,
-		`SELECT id, user_id, market_id, side, quantity, avg_price_cents, total_cost_cents,
-		        realized_pnl_cents, reserved_quantity, created_at, updated_at
+		`SELECT id, user_id, market_id, side, quantity, avg_price_points, total_cost_points,
+		        realized_pnl_points, reserved_quantity, created_at, updated_at
 		 FROM prediction_positions WHERE market_id = $1 AND quantity > 0`, marketID)
 	if err != nil {
 		return nil, err
@@ -801,7 +801,7 @@ func (r *SQLRepository) ListPositionsByMarket(ctx context.Context, marketID stri
 	for rows.Next() {
 		var p Position
 		if err := rows.Scan(&p.ID, &p.UserID, &p.MarketID, &p.Side, &p.Quantity,
-			&p.AvgPriceCents, &p.TotalCostCents, &p.RealizedPnlCents, &p.ReservedQuantity, &p.CreatedAt, &p.UpdatedAt); err != nil {
+			&p.AvgPricePoints, &p.TotalCostPoints, &p.RealizedPnlPoints, &p.ReservedQuantity, &p.CreatedAt, &p.UpdatedAt); err != nil {
 			return nil, err
 		}
 		positions = append(positions, p)
@@ -814,7 +814,7 @@ func (r *SQLRepository) ListPositionsByMarket(ctx context.Context, marketID stri
 func (r *SQLRepository) ListTrades(ctx context.Context, marketID string, limit int) ([]Trade, error) {
 	rows, err := r.db.QueryContext(ctx,
 		`SELECT id, market_id, buy_order_id, sell_order_id, buyer_id, seller_id,
-		        side, price_cents, quantity, fee_cents, is_amm_trade, traded_at
+		        side, price_points, quantity, fee_points, is_amm_trade, traded_at
 		 FROM prediction_trades WHERE market_id = $1 ORDER BY traded_at DESC LIMIT $2`,
 		marketID, limit)
 	if err != nil {
@@ -827,7 +827,7 @@ func (r *SQLRepository) ListTrades(ctx context.Context, marketID string, limit i
 		var t Trade
 		var buyOID, sellOID, sellerID sql.NullString
 		if err := rows.Scan(&t.ID, &t.MarketID, &buyOID, &sellOID, &t.BuyerID, &sellerID,
-			&t.Side, &t.PriceCents, &t.Quantity, &t.FeeCents, &t.IsAMMTrade, &t.TradedAt); err != nil {
+			&t.Side, &t.PricePoints, &t.Quantity, &t.FeePoints, &t.IsAMMTrade, &t.TradedAt); err != nil {
 			return nil, err
 		}
 		if buyOID.Valid {
@@ -874,14 +874,14 @@ func (r *SQLRepository) createTradeWithExec(ctx context.Context, execer sqlRowEx
 		`WITH new_id AS (SELECT gen_random_uuid() AS id)
 		 INSERT INTO prediction_trades
 		 (id, match_id, market_id, buy_order_id, sell_order_id,
-		  buyer_id, seller_id, side, price_cents, quantity, fee_cents,
+		  buyer_id, seller_id, side, price_points, quantity, fee_points,
 		  is_amm_trade, trade_kind, engine_kind)
 		 SELECT new_id.id, new_id.id, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
 		        'secondary', 'amm'
 		 FROM new_id
 		 RETURNING id, traded_at`,
 		t.MarketID, t.BuyOrderID, t.SellOrderID, t.BuyerID, t.SellerID,
-		t.Side, t.PriceCents, t.Quantity, t.FeeCents, t.IsAMMTrade,
+		t.Side, t.PricePoints, t.Quantity, t.FeePoints, t.IsAMMTrade,
 	).Scan(&t.ID, &t.TradedAt)
 }
 
@@ -987,12 +987,12 @@ func (r *SQLRepository) PersistResolvedMarketAtomic(
 		if err := r.createPayoutWithExec(ctx, tx, &payouts[i]); err != nil {
 			return nil, err
 		}
-		if err := r.closeSettledPositionWithExec(ctx, tx, payouts[i].PositionID, payouts[i].PnlCents); err != nil {
+		if err := r.closeSettledPositionWithExec(ctx, tx, payouts[i].PositionID, payouts[i].PnlPoints); err != nil {
 			return nil, fmt.Errorf("close settled position %s: %w", payouts[i].PositionID, err)
 		}
 	}
 	for _, credit := range credits {
-		if err := txWallet.CreditWithTx(ctx, tx, credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
+		if err := txWallet.CreditWithTx(ctx, tx, credit.UserID, credit.AmountPoints, credit.IdempotencyKey, credit.Reason); err != nil {
 			return nil, fmt.Errorf("wallet credit failed for user %s: %w", credit.UserID, err)
 		}
 	}
@@ -1037,13 +1037,13 @@ func (r *SQLRepository) PersistSettlementHeader(ctx context.Context, market *Mar
 	if err := tx.QueryRowContext(ctx,
 		`INSERT INTO prediction_settlements
 		 (market_id, result, attestation_source, attestation_id, attestation_digest,
-		  attestation_data, settled_by, total_payout_cents, positions_settled,
+		  attestation_data, settled_by, total_payout_points, positions_settled,
 		  payouts_total, payouts_completed)
 		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,0)
 		 RETURNING id, settled_at`,
 		settlement.MarketID, settlement.Result, settlement.AttestationSource,
 		settlement.AttestationID, settlement.AttestationDigest, settlement.AttestationData,
-		settlement.SettledBy, settlement.TotalPayoutCents, settlement.PositionsSettled,
+		settlement.SettledBy, settlement.TotalPayoutPoints, settlement.PositionsSettled,
 		settlement.PayoutsTotal,
 	).Scan(&settlement.ID, &settlement.SettledAt); err != nil {
 		return fmt.Errorf("insert settlement header: %w", err)
@@ -1082,11 +1082,11 @@ func (r *SQLRepository) CommitPayoutBatch(ctx context.Context, wallet WalletAdap
 		if err := r.createPayoutWithExec(ctx, tx, &payouts[i]); err != nil {
 			return nil, fmt.Errorf("create payout for position %s: %w", payouts[i].PositionID, err)
 		}
-		if err := r.closeSettledPositionWithExec(ctx, tx, payouts[i].PositionID, payouts[i].PnlCents); err != nil {
+		if err := r.closeSettledPositionWithExec(ctx, tx, payouts[i].PositionID, payouts[i].PnlPoints); err != nil {
 			return nil, fmt.Errorf("close settled position %s: %w", payouts[i].PositionID, err)
 		}
 		if i < len(credits) && credits[i] != nil {
-			if err := txWallet.CreditWithTx(ctx, tx, credits[i].UserID, credits[i].AmountCents, credits[i].IdempotencyKey, credits[i].Reason); err != nil {
+			if err := txWallet.CreditWithTx(ctx, tx, credits[i].UserID, credits[i].AmountPoints, credits[i].IdempotencyKey, credits[i].Reason); err != nil {
 				return nil, fmt.Errorf("wallet credit for user %s: %w", credits[i].UserID, err)
 			}
 		}
@@ -1126,8 +1126,8 @@ func (r *SQLRepository) ListUnpaidSettlementPositions(ctx context.Context, settl
 		limit = 500
 	}
 	rows, err := r.db.QueryContext(ctx,
-		`SELECT p.id, p.user_id, p.market_id, p.side, p.quantity, p.avg_price_cents,
-		        p.total_cost_cents, p.realized_pnl_cents, p.reserved_quantity,
+		`SELECT p.id, p.user_id, p.market_id, p.side, p.quantity, p.avg_price_points,
+		        p.total_cost_points, p.realized_pnl_points, p.reserved_quantity,
 		        p.created_at, p.updated_at
 		 FROM prediction_positions p
 		 WHERE p.market_id = $1 AND p.quantity > 0
@@ -1145,7 +1145,7 @@ func (r *SQLRepository) ListUnpaidSettlementPositions(ctx context.Context, settl
 	for rows.Next() {
 		var p Position
 		if err := rows.Scan(&p.ID, &p.UserID, &p.MarketID, &p.Side, &p.Quantity,
-			&p.AvgPriceCents, &p.TotalCostCents, &p.RealizedPnlCents, &p.ReservedQuantity, &p.CreatedAt, &p.UpdatedAt); err != nil {
+			&p.AvgPricePoints, &p.TotalCostPoints, &p.RealizedPnlPoints, &p.ReservedQuantity, &p.CreatedAt, &p.UpdatedAt); err != nil {
 			return nil, err
 		}
 		positions = append(positions, p)
@@ -1163,7 +1163,7 @@ func (r *SQLRepository) ListIncompleteSettlements(ctx context.Context, limit int
 	rows, err := r.db.QueryContext(ctx,
 		`SELECT id, market_id, result, attestation_source, attestation_id,
 		        attestation_digest, attestation_data, settled_by, settled_at,
-		        total_payout_cents, positions_settled, payouts_total, payouts_completed
+		        total_payout_points, positions_settled, payouts_total, payouts_completed
 		 FROM prediction_settlements
 		 WHERE payouts_completed < payouts_total
 		 ORDER BY settled_at
@@ -1180,7 +1180,7 @@ func (r *SQLRepository) ListIncompleteSettlements(ctx context.Context, limit int
 		var attData []byte // attestation_data may be NULL
 		if err := rows.Scan(&s.ID, &s.MarketID, &s.Result, &s.AttestationSource, &attID,
 			&attDigest, &attData, &settledBy, &s.SettledAt,
-			&s.TotalPayoutCents, &s.PositionsSettled, &s.PayoutsTotal, &s.PayoutsCompleted); err != nil {
+			&s.TotalPayoutPoints, &s.PositionsSettled, &s.PayoutsTotal, &s.PayoutsCompleted); err != nil {
 			return nil, err
 		}
 		if attData != nil {
@@ -1279,7 +1279,7 @@ func (r *SQLRepository) PersistVoidedMarketAtomic(
 		return err
 	}
 	for _, credit := range credits {
-		if err := txWallet.CreditWithTx(ctx, tx, credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
+		if err := txWallet.CreditWithTx(ctx, tx, credit.UserID, credit.AmountPoints, credit.IdempotencyKey, credit.Reason); err != nil {
 			return fmt.Errorf("wallet credit failed for user %s: %w", credit.UserID, err)
 		}
 	}
@@ -1300,11 +1300,11 @@ func (r *SQLRepository) GetSettlement(ctx context.Context, marketID string) (*Se
 	err := r.db.QueryRowContext(ctx,
 		`SELECT id, market_id, result, attestation_source, attestation_id,
 		        attestation_digest, attestation_data, settled_by, settled_at,
-		        total_payout_cents, positions_settled
+		        total_payout_points, positions_settled
 		 FROM prediction_settlements WHERE market_id = $1`, marketID,
 	).Scan(&s.ID, &s.MarketID, &s.Result, &s.AttestationSource, &attID,
 		&attDigest, &s.AttestationData, &settledBy, &s.SettledAt,
-		&s.TotalPayoutCents, &s.PositionsSettled)
+		&s.TotalPayoutPoints, &s.PositionsSettled)
 	if err != nil {
 		return nil, err
 	}
@@ -1373,12 +1373,12 @@ func (r *SQLRepository) createSettlementWithExec(ctx context.Context, execer sql
 	return execer.QueryRowContext(ctx,
 		`INSERT INTO prediction_settlements
 		 (market_id, result, attestation_source, attestation_id,
-		  attestation_digest, attestation_data, settled_by, total_payout_cents, positions_settled)
+		  attestation_digest, attestation_data, settled_by, total_payout_points, positions_settled)
 		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
 		 RETURNING id, settled_at`,
 		s.MarketID, s.Result, s.AttestationSource, s.AttestationID,
 		s.AttestationDigest, s.AttestationData, s.SettledBy,
-		s.TotalPayoutCents, s.PositionsSettled,
+		s.TotalPayoutPoints, s.PositionsSettled,
 	).Scan(&s.ID, &s.SettledAt)
 }
 
@@ -1400,12 +1400,12 @@ func (r *SQLRepository) createPayoutWithExec(ctx context.Context, execer sqlRowE
 	err := execer.QueryRowContext(ctx,
 		`INSERT INTO prediction_payouts
 		 (settlement_id, position_id, user_id, market_id, side,
-		  quantity, entry_price_cents, exit_price_cents, pnl_cents, payout_cents)
+		  quantity, entry_price_points, exit_price_points, pnl_points, payout_points)
 		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
 		 ON CONFLICT (settlement_id, position_id) DO NOTHING
 		 RETURNING id, paid_at`,
 		p.SettlementID, p.PositionID, p.UserID, p.MarketID, p.Side,
-		p.Quantity, p.EntryPriceCents, p.ExitPriceCents, p.PnlCents, p.PayoutCents,
+		p.Quantity, p.EntryPricePoints, p.ExitPricePoints, p.PnlPoints, p.PayoutPoints,
 	).Scan(&p.ID, &p.PaidAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil
@@ -1416,16 +1416,16 @@ func (r *SQLRepository) createPayoutWithExec(ctx context.Context, execer sqlRowE
 // closeSettledPositionWithExec zeroes a settled position's quantity AND its
 // cost basis, and writes the realized pnl from its payout. Quantity is zeroed
 // so the portfolio summary (filters `quantity > 0`) stops counting settled
-// holdings. Cost basis (total_cost_cents, avg_price_cents) must ALSO reset:
+// holdings. Cost basis (total_cost_points, avg_price_points) must ALSO reset:
 // the contracts are gone, so the next buy into this market is a fresh basis.
 // Leaving them caused F-4 — a re-buy ran avg = (stale_total + new_cost) / qty
 // in service.go, producing >100¢ avg prices (577¢, 1229¢) that settlement
-// then copied verbatim into prediction_payouts.entry_price_cents and the
+// then copied verbatim into prediction_payouts.entry_price_points and the
 // portfolio History "Entry" column. The Payout row for THIS settlement is
 // built before this call (settlement.go), so its recorded entry price / pnl
-// are unaffected. realized_pnl_cents accumulates and is preserved.
-func (r *SQLRepository) closeSettledPositionWithExec(ctx context.Context, execer sqlRowExecer, positionID string, pnlCents int64) error {
-	// The `AND quantity > 0` guard makes this idempotent: realized_pnl_cents is
+// are unaffected. realized_pnl_points accumulates and is preserved.
+func (r *SQLRepository) closeSettledPositionWithExec(ctx context.Context, execer sqlRowExecer, positionID string, pnlPoints int64) error {
+	// The `AND quantity > 0` guard makes this idempotent: realized_pnl_points is
 	// accumulated (+= $2), so re-running a settlement batch on a position that
 	// was already closed (quantity == 0) would otherwise double-count its PnL.
 	// With the guard a re-close matches zero rows and is a no-op. Required by
@@ -1434,12 +1434,12 @@ func (r *SQLRepository) closeSettledPositionWithExec(ctx context.Context, execer
 	_, err := execer.ExecContext(ctx,
 		`UPDATE prediction_positions
 		   SET quantity = 0,
-		       total_cost_cents = 0,
-		       avg_price_cents = 0,
-		       realized_pnl_cents = realized_pnl_cents + $2,
+		       total_cost_points = 0,
+		       avg_price_points = 0,
+		       realized_pnl_points = realized_pnl_points + $2,
 		       updated_at = NOW()
 		 WHERE id = $1 AND quantity > 0`,
-		positionID, pnlCents,
+		positionID, pnlPoints,
 	)
 	return err
 }
@@ -1567,32 +1567,32 @@ func (r *SQLRepository) GetPortfolioSummary(ctx context.Context, userID string) 
 
 	// Open positions count and value
 	err := r.db.QueryRowContext(ctx,
-		`SELECT COALESCE(COUNT(*), 0), COALESCE(SUM(total_cost_cents), 0)
+		`SELECT COALESCE(COUNT(*), 0), COALESCE(SUM(total_cost_points), 0)
 		 FROM prediction_positions WHERE user_id = $1 AND quantity > 0`, userID,
-	).Scan(&s.OpenPositions, &s.TotalValueCents)
+	).Scan(&s.OpenPositions, &s.TotalValuePoints)
 	if err != nil {
 		return nil, err
 	}
 
 	// Realized PnL from settled payouts
 	err = r.db.QueryRowContext(ctx,
-		`SELECT COALESCE(SUM(pnl_cents), 0) FROM prediction_payouts WHERE user_id = $1`, userID,
-	).Scan(&s.RealizedPnlCents)
+		`SELECT COALESCE(SUM(pnl_points), 0) FROM prediction_payouts WHERE user_id = $1`, userID,
+	).Scan(&s.RealizedPnlPoints)
 	if err != nil {
 		return nil, err
 	}
 
 	// Unrealized PnL: mark open positions to the current market price minus
-	// their cost basis. yes positions mark at yes_price_cents, no at no.
+	// their cost basis. yes positions mark at yes_price_points, no at no.
 	err = r.db.QueryRowContext(ctx,
 		`SELECT COALESCE(SUM(
-		        p.quantity * (CASE WHEN p.side = 'yes' THEN m.yes_price_cents ELSE m.no_price_cents END)
-		        - p.total_cost_cents
+		        p.quantity * (CASE WHEN p.side = 'yes' THEN m.yes_price_points ELSE m.no_price_points END)
+		        - p.total_cost_points
 		 ), 0)
 		 FROM prediction_positions p
 		 JOIN prediction_markets m ON m.id = p.market_id
 		 WHERE p.user_id = $1 AND p.quantity > 0`, userID,
-	).Scan(&s.UnrealizedPnlCents)
+	).Scan(&s.UnrealizedPnlPoints)
 	if err != nil {
 		return nil, err
 	}
@@ -1600,7 +1600,7 @@ func (r *SQLRepository) GetPortfolioSummary(ctx context.Context, userID string) 
 	// Accuracy: correct predictions / total predictions
 	err = r.db.QueryRowContext(ctx,
 		`SELECT COALESCE(COUNT(*), 0),
-		        COALESCE(SUM(CASE WHEN exit_price_cents = 100 THEN 1 ELSE 0 END), 0)
+		        COALESCE(SUM(CASE WHEN exit_price_points = 100 THEN 1 ELSE 0 END), 0)
 		 FROM prediction_payouts WHERE user_id = $1`, userID,
 	).Scan(&s.TotalPredictions, &s.CorrectPredictions)
 	if err != nil {
@@ -1624,7 +1624,7 @@ func (r *SQLRepository) ListSettledPositions(ctx context.Context, userID string,
 
 	rows, err := r.db.QueryContext(ctx,
 		`SELECT id, settlement_id, position_id, user_id, market_id, side,
-		        quantity, entry_price_cents, exit_price_cents, pnl_cents, payout_cents, paid_at
+		        quantity, entry_price_points, exit_price_points, pnl_points, payout_points, paid_at
 		 FROM prediction_payouts WHERE user_id = $1
 		 ORDER BY paid_at DESC LIMIT $2 OFFSET $3`,
 		userID, pageSize, (page-1)*pageSize)
@@ -1637,7 +1637,7 @@ func (r *SQLRepository) ListSettledPositions(ctx context.Context, userID string,
 	for rows.Next() {
 		var p Payout
 		if err := rows.Scan(&p.ID, &p.SettlementID, &p.PositionID, &p.UserID, &p.MarketID, &p.Side,
-			&p.Quantity, &p.EntryPriceCents, &p.ExitPriceCents, &p.PnlCents, &p.PayoutCents, &p.PaidAt); err != nil {
+			&p.Quantity, &p.EntryPricePoints, &p.ExitPricePoints, &p.PnlPoints, &p.PayoutPoints, &p.PaidAt); err != nil {
 			return nil, 0, err
 		}
 		payouts = append(payouts, p)
@@ -1678,7 +1678,7 @@ func (r *SQLRepository) GetDiscovery(ctx context.Context) (*DiscoveryResponse, e
 		marketSelectQuery()+` WHERE m.status = 'open'
 		  AND m.event_id IN (SELECT id FROM prediction_events WHERE featured = true)`+
 			notScrubbed+`
-		  ORDER BY m.volume_cents DESC LIMIT 12`)
+		  ORDER BY m.volume_points DESC LIMIT 12`)
 	if err == nil {
 		got, _ := scanMarkets(rows)
 		rows.Close()
@@ -1691,7 +1691,7 @@ func (r *SQLRepository) GetDiscovery(ctx context.Context) (*DiscoveryResponse, e
 	// duplicated content with Featured for the old size.
 	rows, err = r.db.QueryContext(ctx,
 		marketSelectQuery()+` WHERE m.status = 'open'`+notScrubbed+`
-		  ORDER BY m.volume_cents DESC LIMIT 12`)
+		  ORDER BY m.volume_points DESC LIMIT 12`)
 	if err == nil {
 		got, _ := scanMarkets(rows)
 		rows.Close()
@@ -1726,17 +1726,17 @@ func marketSelectQuery() string {
 	return `SELECT m.id, m.event_id, pe.category_id, pc.slug, pc.name, m.ticker, m.title, m.description,
 		               COALESCE(m.translations, '{}'::jsonb) AS translations,
 	               m.status, m.result,
-	               m.yes_price_cents, m.no_price_cents, m.last_trade_price_cents,
-	               GREATEST(m.volume_cents, COALESCE(ROUND(im.volume * 100), 0)::bigint) AS volume_cents,
-	               m.open_interest_cents,
-	               GREATEST(m.liquidity_cents, COALESCE(ROUND(im.liquidity * 100), 0)::bigint) AS liquidity_cents,
-	               m.amm_yes_shares, m.amm_no_shares, m.amm_liquidity_param, m.amm_subsidy_cents,
+	               m.yes_price_points, m.no_price_points, m.last_trade_price_points,
+	               GREATEST(m.volume_points, COALESCE(ROUND(im.volume * 100), 0)::bigint) AS volume_points,
+	               m.open_interest_points,
+	               GREATEST(m.liquidity_points, COALESCE(ROUND(im.liquidity * 100), 0)::bigint) AS liquidity_points,
+	               m.amm_yes_shares, m.amm_no_shares, m.amm_liquidity_param, m.amm_subsidy_points,
 	               m.settlement_source_key, m.settlement_cutoff_at, m.settlement_rule, m.settlement_params,
 	               m.fallback_source_key, m.fee_rate_bps, m.maker_rebate_bps,
 	               m.open_at, m.close_at, m.created_at, m.updated_at, COALESCE(m.image_path, im.image_path) AS image_path,
-	               m.execution_mode, m.collateral_pool_cents, m.settled_payout_pool_cents,
-	               m.best_yes_bid_cents, m.best_yes_ask_cents,
-	               m.best_no_bid_cents, m.best_no_ask_cents, m.last_quote_at,
+	               m.execution_mode, m.collateral_pool_points, m.settled_payout_pool_points,
+	               m.best_yes_bid_points, m.best_yes_ask_points,
+	               m.best_no_bid_points, m.best_no_ask_points, m.last_quote_at,
 	               m.article_source_id
 	        FROM prediction_markets m
 	        LEFT JOIN prediction_events pe ON pe.id = m.event_id
@@ -1754,9 +1754,9 @@ func marketSelectQuery() string {
 func marketOrderClause(sort string) string {
 	switch strings.TrimSpace(sort) {
 	case "closing_soon":
-		return ` ORDER BY rm.close_at ASC, rm.volume_cents DESC, rm.id DESC`
+		return ` ORDER BY rm.close_at ASC, rm.volume_points DESC, rm.id DESC`
 	case "newest":
-		return ` ORDER BY rm.created_at DESC, rm.volume_cents DESC, rm.id DESC`
+		return ` ORDER BY rm.created_at DESC, rm.volume_points DESC, rm.id DESC`
 	default:
 		return marketRankingOrderClause()
 	}
@@ -1769,23 +1769,23 @@ func marketRankingOrderClause() string {
 		-- 10% total volume, 10% freshness/trending movement,
 		-- 5% closing-soon relevance, 5% editorial/featured boost.
 		0.35 * COALESCE(
-			COALESCE(v24.volume_24h_cents, 0)::double precision /
-			NULLIF(MAX(COALESCE(v24.volume_24h_cents, 0)) OVER (), 0),
+			COALESCE(v24.volume_24h_points, 0)::double precision /
+			NULLIF(MAX(COALESCE(v24.volume_24h_points, 0)) OVER (), 0),
 			0
 		) +
 		0.20 * COALESCE(
-			rm.liquidity_cents::double precision /
-			NULLIF(MAX(rm.liquidity_cents) OVER (), 0),
+			rm.liquidity_points::double precision /
+			NULLIF(MAX(rm.liquidity_points) OVER (), 0),
 			0
 		) +
 		0.15 * COALESCE(
-			rm.open_interest_cents::double precision /
-			NULLIF(MAX(rm.open_interest_cents) OVER (), 0),
+			rm.open_interest_points::double precision /
+			NULLIF(MAX(rm.open_interest_points) OVER (), 0),
 			0
 		) +
 		0.10 * COALESCE(
-			rm.volume_cents::double precision /
-			NULLIF(MAX(rm.volume_cents) OVER (), 0),
+			rm.volume_points::double precision /
+			NULLIF(MAX(rm.volume_points) OVER (), 0),
 			0
 		) +
 		0.10 * GREATEST(
@@ -1810,8 +1810,8 @@ func marketRankingOrderClause() string {
 			ELSE 0
 		END -
 		CASE
-			WHEN rm.best_yes_bid_cents IS NOT NULL AND rm.best_yes_ask_cents IS NOT NULL
-			THEN 0.08 * LEAST(GREATEST((rm.best_yes_ask_cents - rm.best_yes_bid_cents)::double precision, 0) / 25.0, 1)
+			WHEN rm.best_yes_bid_points IS NOT NULL AND rm.best_yes_ask_points IS NOT NULL
+			THEN 0.08 * LEAST(GREATEST((rm.best_yes_ask_points - rm.best_yes_bid_points)::double precision, 0) / 25.0, 1)
 			ELSE 0
 		END -
 		CASE WHEN COALESCE(rm.image_path, '') = '' THEN 0.06 ELSE 0 END -
@@ -1843,13 +1843,13 @@ func scanMarketRow(row scannable) (*Market, error) {
 	var articleSourceID sql.NullString
 
 	err := row.Scan(&m.ID, &m.EventID, &categoryID, &categorySlug, &categoryName, &m.Ticker, &m.Title, &desc, &translations, &m.Status, &result,
-		&m.YesPriceCents, &m.NoPriceCents, &lastTradePrice,
-		&m.VolumeCents, &m.OpenInterestCents, &m.LiquidityCents,
-		&m.AMMYesShares, &m.AMMNoShares, &m.AMMLiquidityParam, &m.AMMSubsidyCents,
+		&m.YesPricePoints, &m.NoPricePoints, &lastTradePrice,
+		&m.VolumePoints, &m.OpenInterestPoints, &m.LiquidityPoints,
+		&m.AMMYesShares, &m.AMMNoShares, &m.AMMLiquidityParam, &m.AMMSubsidyPoints,
 		&m.SettlementSourceKey, &settleCutoff, &m.SettlementRule, &m.SettlementParams,
 		&fallback, &m.FeeRateBps, &m.MakerRebateBps,
 		&openAt, &m.CloseAt, &m.CreatedAt, &m.UpdatedAt, &imagePath,
-		&m.ExecutionMode, &m.CollateralPoolCents, &m.SettledPayoutPoolCents,
+		&m.ExecutionMode, &m.CollateralPoolPoints, &m.SettledPayoutPoolPoints,
 		&bestYesBid, &bestYesAsk, &bestNoBid, &bestNoAsk, &lastQuoteAt,
 		&articleSourceID)
 	if err != nil {
@@ -1872,7 +1872,7 @@ func scanMarketRow(row scannable) (*Market, error) {
 	}
 	if lastTradePrice.Valid {
 		ltp := int(lastTradePrice.Int64)
-		m.LastTradePriceCents = &ltp
+		m.LastTradePricePoints = &ltp
 	}
 	if settleCutoff.Valid {
 		m.SettlementCutoffAt = &settleCutoff.Time
@@ -1888,19 +1888,19 @@ func scanMarketRow(row scannable) (*Market, error) {
 	}
 	if bestYesBid.Valid {
 		v := int(bestYesBid.Int64)
-		m.BestYesBidCents = &v
+		m.BestYesBidPoints = &v
 	}
 	if bestYesAsk.Valid {
 		v := int(bestYesAsk.Int64)
-		m.BestYesAskCents = &v
+		m.BestYesAskPoints = &v
 	}
 	if bestNoBid.Valid {
 		v := int(bestNoBid.Int64)
-		m.BestNoBidCents = &v
+		m.BestNoBidPoints = &v
 	}
 	if bestNoAsk.Valid {
 		v := int(bestNoAsk.Int64)
-		m.BestNoAskCents = &v
+		m.BestNoAskPoints = &v
 	}
 	if lastQuoteAt.Valid {
 		m.LastQuoteAt = &lastQuoteAt.Time
@@ -1957,19 +1957,19 @@ func scanEvent(rows *sql.Rows) (*Event, error) {
 
 func scanOrderRow(row scannable) (*Order, error) {
 	var o Order
-	var priceCents sql.NullInt64
+	var pricePoints sql.NullInt64
 	var walletRes, idemp sql.NullString
 	var expiresAt, filledAt, cancelledAt sql.NullTime
 
-	err := row.Scan(&o.ID, &o.UserID, &o.MarketID, &o.Side, &o.Action, &o.OrderType, &priceCents,
-		&o.Quantity, &o.FilledQuantity, &o.RemainingQuantity, &o.TotalCostCents,
+	err := row.Scan(&o.ID, &o.UserID, &o.MarketID, &o.Side, &o.Action, &o.OrderType, &pricePoints,
+		&o.Quantity, &o.FilledQuantity, &o.RemainingQuantity, &o.TotalCostPoints,
 		&o.Status, &walletRes, &idemp, &expiresAt, &filledAt, &cancelledAt, &o.CreatedAt, &o.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
-	if priceCents.Valid {
-		pc := int(priceCents.Int64)
-		o.PriceCents = &pc
+	if pricePoints.Valid {
+		pc := int(pricePoints.Int64)
+		o.PricePoints = &pc
 	}
 	if walletRes.Valid {
 		o.WalletReservationID = &walletRes.String
@@ -2154,15 +2154,15 @@ func (r *SQLRepository) DashboardVolumeStatsSince(
 	}
 
 	// Aggregate volume + count across all trades in the window. Volume is
-	// price_cents * quantity (the dollar size of each fill).
+	// price_points * quantity (the dollar size of each fill).
 	row := r.db.QueryRowContext(ctx, `
 		SELECT
-			COALESCE(SUM(price_cents::BIGINT * quantity), 0)::BIGINT,
+			COALESCE(SUM(price_points::BIGINT * quantity), 0)::BIGINT,
 			COUNT(*)
 		FROM prediction_trades
 		WHERE traded_at > $1
 	`, since)
-	if err := row.Scan(&stats.TotalVolumeCents, &stats.TradeCount); err != nil {
+	if err := row.Scan(&stats.TotalVolumePoints, &stats.TradeCount); err != nil {
 		return nil, fmt.Errorf("dashboard volume aggregate: %w", err)
 	}
 
@@ -2175,16 +2175,16 @@ func (r *SQLRepository) DashboardVolumeStatsSince(
 	// YES contracts so the price arc is comparable across markets.
 	rows, err := r.db.QueryContext(ctx, `
 		WITH window_trades AS (
-			SELECT market_id, price_cents, quantity, traded_at
+			SELECT market_id, price_points, quantity, traded_at
 			FROM prediction_trades
 			WHERE traded_at > $1 AND side = 'yes'
 		),
 		first_last AS (
 			SELECT
 				market_id,
-				(array_agg(price_cents ORDER BY traded_at ASC))[1]  AS first_price,
-				(array_agg(price_cents ORDER BY traded_at DESC))[1] AS last_price,
-				COALESCE(SUM(price_cents::BIGINT * quantity), 0)::BIGINT AS volume_cents
+				(array_agg(price_points ORDER BY traded_at ASC))[1]  AS first_price,
+				(array_agg(price_points ORDER BY traded_at DESC))[1] AS last_price,
+				COALESCE(SUM(price_points::BIGINT * quantity), 0)::BIGINT AS volume_points
 			FROM window_trades
 			GROUP BY market_id
 		)
@@ -2194,10 +2194,10 @@ func (r *SQLRepository) DashboardVolumeStatsSince(
 			m.title,
 			fl.first_price,
 			fl.last_price,
-			fl.volume_cents
+			fl.volume_points
 		FROM first_last fl
 		JOIN prediction_markets m ON m.id = fl.market_id
-		ORDER BY ABS(fl.last_price - fl.first_price) DESC, fl.volume_cents DESC
+		ORDER BY ABS(fl.last_price - fl.first_price) DESC, fl.volume_points DESC
 		LIMIT $2
 	`, since, topMovers)
 	if err != nil {
@@ -2211,9 +2211,9 @@ func (r *SQLRepository) DashboardVolumeStatsSince(
 			&m.MarketID,
 			&m.Ticker,
 			&m.Title,
-			&m.YesPriceCentsStart,
-			&m.YesPriceCentsNow,
-			&m.VolumeCents,
+			&m.YesPricePointsStart,
+			&m.YesPricePointsNow,
+			&m.VolumePoints,
 		); err != nil {
 			return nil, fmt.Errorf("dashboard top movers scan: %w", err)
 		}
@@ -2271,9 +2271,9 @@ func (r *SQLRepository) ListPriceBuckets(ctx context.Context, marketID string, s
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT
 		  to_timestamp(floor(extract(epoch from traded_at) / $4) * $4) AS bucket_start,
-		  (SUM(price_cents::bigint * quantity) / NULLIF(SUM(quantity), 0))::int AS vwap_yes,
+		  (SUM(price_points::bigint * quantity) / NULLIF(SUM(quantity), 0))::int AS vwap_yes,
 		  COUNT(*) AS trade_count,
-		  SUM(price_cents::bigint * quantity) AS volume_cents
+		  SUM(price_points::bigint * quantity) AS volume_points
 		FROM prediction_trades
 		WHERE market_id = $1
 		  AND traded_at >= $2
@@ -2291,7 +2291,7 @@ func (r *SQLRepository) ListPriceBuckets(ctx context.Context, marketID string, s
 	for rows.Next() {
 		var p PricePoint
 		var bucketStart time.Time
-		if err := rows.Scan(&bucketStart, &p.YesPriceCents, &p.TradeCount, &p.VolumeCents); err != nil {
+		if err := rows.Scan(&bucketStart, &p.YesPricePoints, &p.TradeCount, &p.VolumePoints); err != nil {
 			return nil, fmt.Errorf("scan price bucket: %w", err)
 		}
 		p.BucketStart = bucketStart.UTC()
@@ -2321,7 +2321,7 @@ func (r *SQLRepository) ListImportedPriceBuckets(ctx context.Context, ticker str
 		  SELECT
 		    to_timestamp(floor(extract(epoch from observed_at) / $4) * $4) AS bucket_start,
 		    observed_at,
-		    LEAST(99, GREATEST(1, ROUND(((prices->>0)::numeric) * 100)))::int AS yes_price_cents
+		    LEAST(99, GREATEST(1, ROUND(((prices->>0)::numeric) * 100)))::int AS yes_price_points
 		  FROM imported_market_price_snapshots
 		  WHERE upper(substr(external_hash, 1, 8)) = $1
 		    AND observed_at >= $2
@@ -2333,11 +2333,11 @@ func (r *SQLRepository) ListImportedPriceBuckets(ctx context.Context, ticker str
 		latest_per_bucket AS (
 		  SELECT
 		    bucket_start,
-		    yes_price_cents,
+		    yes_price_points,
 		    row_number() OVER (PARTITION BY bucket_start ORDER BY observed_at DESC) AS rn
 		  FROM snapshot_prices
 		)
-		SELECT bucket_start, yes_price_cents
+		SELECT bucket_start, yes_price_points
 		FROM latest_per_bucket
 		WHERE rn = 1
 		ORDER BY bucket_start ASC
@@ -2351,7 +2351,7 @@ func (r *SQLRepository) ListImportedPriceBuckets(ctx context.Context, ticker str
 	for rows.Next() {
 		var p PricePoint
 		var bucketStart time.Time
-		if err := rows.Scan(&bucketStart, &p.YesPriceCents); err != nil {
+		if err := rows.Scan(&bucketStart, &p.YesPricePoints); err != nil {
 			return nil, fmt.Errorf("scan imported price bucket: %w", err)
 		}
 		p.BucketStart = bucketStart.UTC()
