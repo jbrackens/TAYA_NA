@@ -65,9 +65,10 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy -o StrictHostKeyChecking=accept-new root@"$BOX" '
             NET=$(docker inspect predict_gateway --format "{{range \$k,\$v := .NetworkSettings.Networks}}{{\$k}}{{end}}")
-            echo "── network: $NET"
-            docker run --rm --network "$NET" curlimages/curl:8.10.1               -sS -o /dev/null -w "container->polymarket http=%{http_code} total=%{time_total}s
-"               --max-time 20 "https://gamma-api.polymarket.com/markets?limit=1" || echo "container egress FAILED: $?"
+            echo "network: $NET"
+            docker run --rm --network "$NET" curlimages/curl:8.10.1 \
+              -sS -o /dev/null -w "container->polymarket http=%{http_code} total=%{time_total}s\n" \
+              --max-time 20 "https://gamma-api.polymarket.com/markets?limit=1" || echo "container egress FAILED: $?"
           '
 
       - name: DNS + egress sanity from the box
