@@ -1,6 +1,7 @@
 package discover
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -127,5 +128,40 @@ func TestFetchWithBudget_5xxPropagates(t *testing.T) {
 	}
 	if calls != 1 {
 		t.Errorf("expected single call, got %d", calls)
+	}
+}
+
+// TestSyncResetsBudgetPerRun is the regression lock for the 2026-07-07 demo
+// incident: Sync() ran in-process on an hourly ticker but never reset the
+// process-global request budget, so kalshi exhausted its cap at boot and
+// every source was dead within hours — each later run failed instantly with
+// "budget exhausted" and the catalog silently stopped updating. Sync() must
+// start every run with a fresh budget.
+func TestSyncResetsBudgetPerRun(t *testing.T) {
+	resetBudget()
+
+	// Exhaust a source as if a previous run had consumed the whole budget.
+	globalBudget.mu.Lock()
+	globalBudget.counts["polymarket"] = maxRequestsPerSourcePerRun
+	globalBudget.counts["kalshi"] = maxRequestsPerSourcePerRun
+	globalBudget.counts["manifold"] = maxRequestsPerSourcePerRun
+	globalBudget.mu.Unlock()
+
+	// A Sync run with all sources disabled (limit 0) must still clear the
+	// budget so the next fetch is allowed. Using zero limits keeps the test
+	// offline: no fetcher runs, no repo/network needed.
+	_, _, err := Sync(context.Background(), nil, nil, map[string]int{})
+	if err != nil {
+		t.Fatalf("zero-limit sync should not error, got: %v", err)
+	}
+
+	if got := requestCount("polymarket"); got != 0 {
+		t.Fatalf("polymarket budget not reset by Sync, count=%d", got)
+	}
+	if got := requestCount("kalshi"); got != 0 {
+		t.Fatalf("kalshi budget not reset by Sync, count=%d", got)
+	}
+	if got := requestCount("manifold"); got != 0 {
+		t.Fatalf("manifold budget not reset by Sync, count=%d", got)
 	}
 }

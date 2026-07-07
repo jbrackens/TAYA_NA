@@ -60,8 +60,24 @@ type SyncResult struct {
 func Sync(ctx context.Context, repo *Repository, rehoster *ImageRehoster,
 	limits map[string]int) (SyncResult, []Market, error) {
 
+	// The request budget is per RUN (maxRequestsPerSourcePerRun), not per
+	// process. This layer was written for the one-shot sync-markets CLI,
+	// where process exit reset it implicitly; the in-process hourly worker
+	// (startHourlyMarketSyncWorker) reuses the process-global budget, so
+	// without this reset kalshi exhausts its budget at boot and every
+	// source is dead within hours — each later run then fails in
+	// milliseconds with "budget exhausted" and the catalog silently stops
+	// updating (observed on the demo box, 2026-07-07).
+	resetBudget()
+
 	res := SyncResult{}
 	all := make([]Market, 0, 500)
+	enabledSources := 0
+	for _, src := range []string{"polymarket", "kalshi", "manifold"} {
+		if limits[src] > 0 {
+			enabledSources++
+		}
+	}
 
 	if l := limits["polymarket"]; l > 0 {
 		ms, err := FetchPolymarket(l)
@@ -89,6 +105,18 @@ func Sync(ctx context.Context, repo *Repository, rehoster *ImageRehoster,
 		}
 		res.FetchedManifold = len(ms)
 		all = append(all, ms...)
+	}
+
+	// No fresh upstream signal → no mutations. Without this, a run where
+	// every enabled fetcher failed (e.g. the 2026-07-07 budget-exhaustion
+	// incident) still executed the stale-import janitor and image sweeps
+	// against a catalog nothing refreshed — every failed hourly run kept
+	// advancing expiry blind, mass-voiding imports over time.
+	if enabledSources == 0 {
+		return res, nil, nil
+	}
+	if len(all) == 0 && len(res.FetchErrors) == enabledSources {
+		return res, nil, errors.New("all enabled fetchers failed")
 	}
 
 	// Content filter — drop any market whose title or description names a
@@ -189,9 +217,6 @@ func Sync(ctx context.Context, repo *Repository, rehoster *ImageRehoster,
 		res.MarketImagesAligned = aligned
 	}
 
-	if len(res.FetchErrors) == 3 && res.AfterDedupe == 0 {
-		return res, deduped, errors.New("all three fetchers failed")
-	}
 	return res, deduped, nil
 }
 
