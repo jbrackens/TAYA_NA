@@ -116,8 +116,8 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
         : t("SETTLED")
     : null;
 
-  const yes = displayMarket.yesPricePointsCents;
-  const no = displayMarket.noPricePointsCents;
+  const yes = displayMarket.yesPricePoints;
+  const no = displayMarket.noPricePoints;
 
   return (
     <section className={MARKET_HEAD_CLASS}>

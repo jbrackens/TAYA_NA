@@ -242,19 +242,19 @@ function SummaryStrip({
 }) {
   const { t } = useTranslation("portfolio");
   const s = summary;
-  const pnl = s?.realizedPointsCents ?? 0;
+  const pnl = s?.realizedPoints ?? 0;
   const pnlUp = pnl >= 0;
   return (
     <section className="mb-6 grid grid-cols-5 gap-[14px] max-lg:grid-cols-3 max-[720px]:grid-cols-2">
       <StatCard
         label={t("summary.invested", "Invested")}
-        value={s ? formatPointsFromCents(s.totalValuePointsCents) : "—"}
+        value={s ? formatPointsFromPoints(s.totalValuePoints) : "—"}
       />
       <StatCard
         label={t("summary.realizedPnl", "Realized point result")}
         value={
           s
-            ? `${pnlUp ? "+" : "−"}${formatPointsFromCents(Math.abs(pnl))}`
+            ? `${pnlUp ? "+" : "−"}${formatPointsFromPoints(Math.abs(pnl))}`
             : "—"
         }
         tone={s ? (pnlUp ? "gain" : "no") : undefined}
@@ -358,7 +358,7 @@ function formatBoardMetric(
     default: {
       const sign = entry.metricValue < 0 ? "−" : "+";
       return t("rank.metricPnl", "{{value}} point result", {
-        value: `${sign}${formatPointsFromCents(Math.abs(entry.metricValue))}`,
+        value: `${sign}${formatPointsFromPoints(Math.abs(entry.metricValue))}`,
       });
     }
   }
@@ -522,10 +522,10 @@ function PositionsTable({
               {available}
             </span>,
             <span key="p" className={MONO}>
-              {formatPointsFromCents(p.avgPricePointsCents)}
+              {formatPointsFromPoints(p.avgPricePoints)}
             </span>,
             <span key="c" className={MONO}>
-              {formatPointsFromCents(p.totalCostPointsCents)}
+              {formatPointsFromPoints(p.totalCostPoints)}
             </span>,
           ],
         };
@@ -602,7 +602,7 @@ function OrdersTable({
               {o.quantity}
             </span>,
             <span key="c" className={MONO}>
-              {formatPointsFromCents(o.totalCostPointsCents)}
+              {formatPointsFromPoints(o.totalCostPoints)}
             </span>,
             <StatusChip
               key="st"
@@ -672,12 +672,12 @@ function HistoryTable({
       ]}
       rows={history.map((h) => {
         const m = marketsById.get(h.marketId);
-        const up = h.realizedPointsCents >= 0;
+        const up = h.realizedPoints >= 0;
         // Settlement points are the actual point disbursement for this settled
         // position. Show the exact settlement credit, not loyalty/XP accrual.
-        const rawPoints = h.settlementPointsCents;
+        const rawPoints = h.settlementPoints;
         const pointsDisplay =
-          rawPoints && rawPoints > 0 ? formatPointsFromCents(rawPoints) : null;
+          rawPoints && rawPoints > 0 ? formatPointsFromPoints(rawPoints) : null;
         return {
           key: h.id,
           href: m ? `/market/${m.ticker}` : undefined,
@@ -688,10 +688,10 @@ function HistoryTable({
               {h.quantity}
             </span>,
             <span key="e" className={MONO}>
-              {formatPointsFromCents(h.entryPricePointsCents)}
+              {formatPointsFromPoints(h.entryPricePoints)}
             </span>,
             <span key="x" className={MONO}>
-              {formatPointsFromCents(h.exitPricePointsCents)}
+              {formatPointsFromPoints(h.exitPricePoints)}
             </span>,
             <span
               key="p"
@@ -704,7 +704,7 @@ function HistoryTable({
               )}
             >
               {up ? "+" : "−"}
-              {formatPointsFromCents(Math.abs(h.realizedPointsCents))}
+              {formatPointsFromPoints(Math.abs(h.realizedPoints))}
             </span>,
             <span
               key="pts"
@@ -950,7 +950,7 @@ function is401(err: unknown): boolean {
   );
 }
 
-function formatPointsFromCents(cents: number): string {
+function formatPointsFromPoints(cents: number): string {
   if (Math.abs(cents) >= 1_000_000_00)
     return `${(cents / 1_000_000_00).toFixed(1)}M pts`;
   if (Math.abs(cents) >= 10_000_00)

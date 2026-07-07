@@ -26,27 +26,26 @@ const DEFAULT_RETRY_DELAY = 100;
 const POINT_UNIT = "PTS";
 
 interface LegacyWalletBalancePayload extends Partial<WalletBalance> {
-  balanceCents?: number;
-  availableCents?: number;
-  reservedCents?: number;
+  balancePoints?: number;
+  availablePoints?: number;
+  reservedPoints?: number;
 }
 
 interface LegacyWalletLedgerEntryPayload extends Partial<WalletLedgerEntry> {
-  amountCents?: number;
-  balanceCents?: number;
+  amountPoints?: number;
+  balancePoints?: number;
 }
 
 interface LegacyWalletMutationPayload {
   entry?: LegacyWalletLedgerEntryPayload;
-  balancePointsCents?: number;
-  balanceCents?: number;
+  balancePoints?: number;
   unit?: string;
 }
 
 interface LegacyAuditLogEntryPayload extends Partial<AuditLogEntry> {
   freebetId?: string;
   oddsBoostId?: string;
-  freebetAppliedCents?: number;
+  freebetAppliedPoints?: number;
 }
 
 export class TapTradeApiClient {
@@ -223,17 +222,17 @@ export class TapTradeApiClient {
     payload: LegacyWalletBalancePayload,
     fallbackUserId: string,
   ): WalletBalance {
-    const balancePointsCents =
-      payload.balancePointsCents ?? payload.balanceCents ?? 0;
+    const balancePoints =
+      payload.balancePoints ?? payload.balancePoints ?? 0;
     return {
       userId: payload.userId ?? fallbackUserId,
-      balancePointsCents,
-      availablePointsCents:
-        payload.availablePointsCents ??
-        payload.availableCents ??
-        balancePointsCents,
-      reservedPointsCents:
-        payload.reservedPointsCents ?? payload.reservedCents ?? 0,
+      balancePoints,
+      availablePoints:
+        payload.availablePoints ??
+        payload.availablePoints ??
+        balancePoints,
+      reservedPoints:
+        payload.reservedPoints ?? payload.reservedPoints ?? 0,
       unit: POINT_UNIT,
     };
   }
@@ -242,15 +241,15 @@ export class TapTradeApiClient {
     payload: LegacyWalletLedgerEntryPayload,
     fallbackUserId: string,
   ): WalletLedgerEntry {
-    const amountPointsCents =
-      payload.amountPointsCents ?? payload.amountCents ?? 0;
+    const amountPoints =
+      payload.amountPoints ?? payload.amountPoints ?? 0;
     return {
       entryId: payload.entryId ?? "",
       userId: payload.userId ?? fallbackUserId,
       type: payload.type ?? "credit",
-      amountPointsCents,
-      balancePointsCents:
-        payload.balancePointsCents ?? payload.balanceCents ?? amountPointsCents,
+      amountPoints,
+      balancePoints:
+        payload.balancePoints ?? payload.balancePoints ?? amountPoints,
       unit: POINT_UNIT,
       reason: payload.reason ?? "",
       idempotencyKey: payload.idempotencyKey,
@@ -268,10 +267,10 @@ export class TapTradeApiClient {
     );
     return {
       entry,
-      balancePointsCents:
-        payload.balancePointsCents ??
-        payload.balanceCents ??
-        entry.balancePointsCents,
+      balancePoints:
+        payload.balancePoints ??
+        payload.balancePoints ??
+        entry.balancePoints,
       unit: POINT_UNIT,
     };
   }
@@ -287,8 +286,8 @@ export class TapTradeApiClient {
       targetId: payload.targetId ?? "",
       pointGrantId: payload.pointGrantId ?? payload.freebetId,
       pointRuleId: payload.pointRuleId ?? payload.oddsBoostId,
-      pointGrantAppliedPointsCents:
-        payload.pointGrantAppliedPointsCents ?? payload.freebetAppliedCents,
+      pointGrantAppliedPoints:
+        payload.pointGrantAppliedPoints ?? payload.freebetAppliedPoints,
       occurredAt: payload.occurredAt ?? "",
       details: payload.details ?? "",
     };

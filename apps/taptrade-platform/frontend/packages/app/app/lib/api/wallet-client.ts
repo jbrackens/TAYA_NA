@@ -23,15 +23,15 @@ interface BalanceRaw {
 interface WalletBalanceRaw {
   userId: string;
   unit?: string;
-  balancePointsCents: number;
-  availablePointsCents?: number;
-  reservedPointsCents?: number;
+  balancePoints: number;
+  availablePoints?: number;
+  reservedPoints?: number;
 }
 
 interface LegacyWalletBalanceRaw extends Partial<WalletBalanceRaw> {
-  balanceCents?: number;
-  availableCents?: number;
-  reservedCents?: number;
+  balancePoints?: number;
+  availablePoints?: number;
+  reservedPoints?: number;
 }
 
 interface WalletLedgerEntryRaw {
@@ -39,16 +39,16 @@ interface WalletLedgerEntryRaw {
   userId: string;
   type: string;
   unit?: string;
-  amountPointsCents: number;
-  balancePointsCents: number;
+  amountPoints: number;
+  balancePoints: number;
   idempotencyKey: string;
   reason?: string;
   transactionTime: string;
 }
 
 interface LegacyWalletLedgerEntryRaw extends Partial<WalletLedgerEntryRaw> {
-  amountCents?: number;
-  balanceCents?: number;
+  amountPoints?: number;
+  balancePoints?: number;
 }
 
 interface WalletLedgerResponseRaw {
@@ -89,8 +89,12 @@ export interface GetTransactionsPaginatedResponse {
 
 const POINT_UNIT = "PTS";
 
-function centsToPoints(value?: number): number {
-  return typeof value === "number" ? value / 100 : 0;
+// Points unit-model (2026-07-07): wire integers ARE whole Points — this
+// is now a nil-guard, not a scale conversion. (It divided by 100 under
+// the retired point-cents model; keeping the seam so every balance read
+// passes through one place.)
+function toWholePoints(value?: number): number {
+  return typeof value === "number" ? Math.round(value) : 0;
 }
 
 const BALANCE_CACHE_TTL_MS = 15_000;
@@ -147,18 +151,18 @@ export async function getBalance(userId: string): Promise<Balance> {
         `/api/v1/wallet/${userId}`,
       );
       const legacyRaw = raw as LegacyWalletBalanceRaw;
-      const availablePointsCents =
-        raw.availablePointsCents ??
-        legacyRaw.availableCents ??
-        raw.balancePointsCents;
+      const availablePoints =
+        raw.availablePoints ??
+        legacyRaw.availablePoints ??
+        raw.balancePoints;
       const result: Balance = {
         userId: raw.userId,
-        availableBalance: centsToPoints(availablePointsCents),
-        reservedBalance: centsToPoints(
-          raw.reservedPointsCents ?? legacyRaw.reservedCents ?? 0,
+        availableBalance: toWholePoints(availablePoints),
+        reservedBalance: toWholePoints(
+          raw.reservedPoints ?? legacyRaw.reservedPoints ?? 0,
         ),
-        totalBalance: centsToPoints(
-          raw.balancePointsCents ?? legacyRaw.balanceCents,
+        totalBalance: toWholePoints(
+          raw.balancePoints ?? legacyRaw.balancePoints,
         ),
         unit: raw.unit || POINT_UNIT,
       };
@@ -229,16 +233,16 @@ export async function getTransactions(
   );
   const start = (page - 1) * limit;
   const transactions = filtered.slice(start, start + limit).map((item) => {
-    const amountPointsCents = item.amountPointsCents ?? item.amountCents ?? 0;
-    const balancePointsCents =
-      item.balancePointsCents ?? item.balanceCents ?? amountPointsCents;
+    const amountPoints = item.amountPoints ?? item.amountPoints ?? 0;
+    const balancePoints =
+      item.balancePoints ?? item.balancePoints ?? amountPoints;
     return {
       transactionId: item.entryId || "",
       userId: item.userId || userId,
       type: item.type || "ledger",
-      amount: centsToPoints(amountPointsCents),
-      balanceBefore: centsToPoints(balancePointsCents - amountPointsCents),
-      balanceAfter: centsToPoints(balancePointsCents),
+      amount: toWholePoints(amountPoints),
+      balanceBefore: toWholePoints(balancePoints - amountPoints),
+      balanceAfter: toWholePoints(balancePoints),
       unit: item.unit || POINT_UNIT,
       idempotencyKey: item.idempotencyKey,
       description: item.reason,
@@ -258,28 +262,28 @@ export async function getTransactions(
 interface StarterGrantResult {
   enabled: boolean;
   unit?: string;
-  grantPointsCents?: number;
-  balancePointsCents?: number;
+  grantPoints?: number;
+  balancePoints?: number;
 }
 
 interface StarterGrantResultRaw extends StarterGrantResult {
-  grantCents?: number;
-  balanceCents?: number;
+  grantPoints?: number;
+  balancePoints?: number;
 }
 
 export interface DailyClaimResult {
   enabled: boolean;
   unit?: string;
-  claimPointsCents?: number;
-  balancePointsCents?: number;
+  claimPoints?: number;
+  balancePoints?: number;
   claimedForDate?: string;
   nextClaimAt?: string;
   rewardLimit?: RewardLimitStatus;
 }
 
 interface DailyClaimResultRaw extends Omit<DailyClaimResult, "rewardLimit"> {
-  claimCents?: number;
-  balanceCents?: number;
+  claimPoints?: number;
+  balancePoints?: number;
   rewardLimit?: RewardLimitStatusRaw;
 }
 
@@ -288,15 +292,14 @@ export interface PointPack {
   name: string;
   description: string;
   unit?: string;
-  amountPointsCents: number;
+  amountPoints: number;
   enabled: boolean;
   claimableOnce: boolean;
   claimed?: boolean;
 }
 
-interface PointPackRaw extends Omit<PointPack, "amountPointsCents"> {
-  amountPointsCents?: number;
-  amountCents?: number;
+interface PointPackRaw extends Omit<PointPack, "amountPoints"> {
+  amountPoints?: number;
 }
 
 interface PointPacksResponse {
@@ -308,8 +311,8 @@ export interface PointPackClaimResult {
   enabled: boolean;
   pack?: PointPack;
   unit?: string;
-  claimPointsCents?: number;
-  balancePointsCents?: number;
+  claimPoints?: number;
+  balancePoints?: number;
   rewardLimit?: RewardLimitStatus;
 }
 
@@ -318,8 +321,8 @@ interface PointPackClaimResultRaw extends Omit<
   "pack" | "rewardLimit"
 > {
   pack?: PointPackRaw;
-  claimCents?: number;
-  balanceCents?: number;
+  claimPoints?: number;
+  balancePoints?: number;
   rewardLimit?: RewardLimitStatusRaw;
 }
 
@@ -328,7 +331,7 @@ export interface Mission {
   name: string;
   description: string;
   unit?: string;
-  rewardPointsCents: number;
+  rewardPoints: number;
   progress: number;
   target: number;
   completed: boolean;
@@ -336,9 +339,8 @@ export interface Mission {
   enabled: boolean;
 }
 
-interface MissionRaw extends Omit<Mission, "rewardPointsCents"> {
-  rewardPointsCents?: number;
-  rewardCents?: number;
+interface MissionRaw extends Omit<Mission, "rewardPoints"> {
+  rewardPoints?: number;
 }
 
 interface MissionsResponse {
@@ -350,8 +352,8 @@ export interface MissionClaimResult {
   enabled: boolean;
   mission?: Mission;
   unit?: string;
-  claimPointsCents?: number;
-  balancePointsCents?: number;
+  claimPoints?: number;
+  balancePoints?: number;
   rewardLimit?: RewardLimitStatus;
 }
 
@@ -360,8 +362,8 @@ interface MissionClaimResultRaw extends Omit<
   "mission" | "rewardLimit"
 > {
   mission?: MissionRaw;
-  claimCents?: number;
-  balanceCents?: number;
+  claimPoints?: number;
+  balancePoints?: number;
   rewardLimit?: RewardLimitStatusRaw;
 }
 
@@ -370,7 +372,7 @@ export interface Streak {
   name: string;
   description: string;
   unit?: string;
-  rewardPointsCents: number;
+  rewardPoints: number;
   currentStreak: number;
   target: number;
   completed: boolean;
@@ -378,9 +380,8 @@ export interface Streak {
   enabled: boolean;
 }
 
-interface StreakRaw extends Omit<Streak, "rewardPointsCents"> {
-  rewardPointsCents?: number;
-  rewardCents?: number;
+interface StreakRaw extends Omit<Streak, "rewardPoints"> {
+  rewardPoints?: number;
 }
 
 interface StreaksResponse {
@@ -392,8 +393,8 @@ export interface StreakClaimResult {
   enabled: boolean;
   streak?: Streak;
   unit?: string;
-  claimPointsCents?: number;
-  balancePointsCents?: number;
+  claimPoints?: number;
+  balancePoints?: number;
   rewardLimit?: RewardLimitStatus;
 }
 
@@ -402,8 +403,8 @@ interface StreakClaimResultRaw extends Omit<
   "streak" | "rewardLimit"
 > {
   streak?: StreakRaw;
-  claimCents?: number;
-  balanceCents?: number;
+  claimPoints?: number;
+  balancePoints?: number;
   rewardLimit?: RewardLimitStatusRaw;
 }
 
@@ -424,23 +425,20 @@ interface BadgesResponse {
 export interface RewardLimitStatus {
   enabled: boolean;
   unit?: string;
-  limitPointsCents: number;
-  grantedPointsCents: number;
-  remainingPointsCents: number;
+  limitPoints: number;
+  grantedPoints: number;
+  remainingPoints: number;
   windowDate: string;
   nextResetAt: string;
 }
 
 interface RewardLimitStatusRaw extends Omit<
   RewardLimitStatus,
-  "limitPointsCents" | "grantedPointsCents" | "remainingPointsCents"
+  "limitPoints" | "grantedPoints" | "remainingPoints"
 > {
-  limitPointsCents?: number;
-  grantedPointsCents?: number;
-  remainingPointsCents?: number;
-  limitCents?: number;
-  grantedCents?: number;
-  remainingCents?: number;
+  limitPoints?: number;
+  grantedPoints?: number;
+  remainingPoints?: number;
 }
 
 function normalizeRewardLimit(
@@ -450,10 +448,10 @@ function normalizeRewardLimit(
   return {
     enabled: status.enabled,
     unit: status.unit || POINT_UNIT,
-    limitPointsCents: status.limitPointsCents ?? status.limitCents ?? 0,
-    grantedPointsCents: status.grantedPointsCents ?? status.grantedCents ?? 0,
-    remainingPointsCents:
-      status.remainingPointsCents ?? status.remainingCents ?? 0,
+    limitPoints: status.limitPoints ?? status.limitPoints ?? 0,
+    grantedPoints: status.grantedPoints ?? status.grantedPoints ?? 0,
+    remainingPoints:
+      status.remainingPoints ?? status.remainingPoints ?? 0,
     windowDate: status.windowDate,
     nextResetAt: status.nextResetAt,
   };
@@ -465,7 +463,7 @@ function normalizePointPack(pack: PointPackRaw): PointPack {
     name: pack.name,
     description: pack.description,
     unit: pack.unit || POINT_UNIT,
-    amountPointsCents: pack.amountPointsCents ?? pack.amountCents ?? 0,
+    amountPoints: pack.amountPoints ?? pack.amountPoints ?? 0,
     enabled: pack.enabled,
     claimableOnce: pack.claimableOnce,
     claimed: pack.claimed,
@@ -478,7 +476,7 @@ function normalizeMission(mission: MissionRaw): Mission {
     name: mission.name,
     description: mission.description,
     unit: mission.unit || POINT_UNIT,
-    rewardPointsCents: mission.rewardPointsCents ?? mission.rewardCents ?? 0,
+    rewardPoints: mission.rewardPoints ?? mission.rewardPoints ?? 0,
     progress: mission.progress,
     target: mission.target,
     completed: mission.completed,
@@ -493,7 +491,7 @@ function normalizeStreak(streak: StreakRaw): Streak {
     name: streak.name,
     description: streak.description,
     unit: streak.unit || POINT_UNIT,
-    rewardPointsCents: streak.rewardPointsCents ?? streak.rewardCents ?? 0,
+    rewardPoints: streak.rewardPoints ?? streak.rewardPoints ?? 0,
     currentStreak: streak.currentStreak,
     target: streak.target,
     completed: streak.completed,
@@ -505,17 +503,15 @@ function normalizeStreak(streak: StreakRaw): Streak {
 function normalizeRewardClaimBase(result: {
   enabled: boolean;
   unit?: string;
-  claimPointsCents?: number;
-  balancePointsCents?: number;
-  claimCents?: number;
-  balanceCents?: number;
+  claimPoints?: number;
+  balancePoints?: number;
   rewardLimit?: RewardLimitStatusRaw;
 }) {
   return {
     enabled: result.enabled,
     unit: result.unit || POINT_UNIT,
-    claimPointsCents: result.claimPointsCents ?? result.claimCents,
-    balancePointsCents: result.balancePointsCents ?? result.balanceCents,
+    claimPoints: result.claimPoints ?? result.claimPoints,
+    balancePoints: result.balancePoints ?? result.balancePoints,
     rewardLimit: normalizeRewardLimit(result.rewardLimit),
   };
 }
@@ -526,8 +522,8 @@ function normalizeStarterGrant(
   return {
     enabled: result.enabled,
     unit: result.unit || POINT_UNIT,
-    grantPointsCents: result.grantPointsCents ?? result.grantCents,
-    balancePointsCents: result.balancePointsCents ?? result.balanceCents,
+    grantPoints: result.grantPoints ?? result.grantPoints,
+    balancePoints: result.balancePoints ?? result.balancePoints,
   };
 }
 
@@ -680,9 +676,9 @@ export async function getRewardLimitStatus(): Promise<RewardLimitStatus> {
     normalizeRewardLimit(raw) ?? {
       enabled: false,
       unit: POINT_UNIT,
-      limitPointsCents: 0,
-      grantedPointsCents: 0,
-      remainingPointsCents: 0,
+      limitPoints: 0,
+      grantedPoints: 0,
+      remainingPoints: 0,
       windowDate: "",
       nextResetAt: "",
     }

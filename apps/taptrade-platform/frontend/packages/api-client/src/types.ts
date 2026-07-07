@@ -32,9 +32,9 @@ export interface PaginationMeta {
 
 export interface WalletBalance {
   userId: string;
-  balancePointsCents: number;
-  availablePointsCents?: number;
-  reservedPointsCents?: number;
+  balancePoints: number;
+  availablePoints?: number;
+  reservedPoints?: number;
   unit: "PTS";
 }
 
@@ -42,8 +42,8 @@ export interface WalletLedgerEntry {
   entryId: string;
   userId: string;
   type: string;
-  amountPointsCents: number;
-  balancePointsCents: number;
+  amountPoints: number;
+  balancePoints: number;
   unit: "PTS";
   reason: string;
   idempotencyKey?: string;
@@ -52,7 +52,7 @@ export interface WalletLedgerEntry {
 
 export interface WalletMutationResponse {
   entry: WalletLedgerEntry;
-  balancePointsCents: number;
+  balancePoints: number;
   unit: "PTS";
 }
 
@@ -64,7 +64,7 @@ export interface AuditLogEntry {
   targetId: string;
   pointGrantId?: string;
   pointRuleId?: string;
-  pointGrantAppliedPointsCents?: number;
+  pointGrantAppliedPoints?: number;
   occurredAt: string;
   details: string;
 }
@@ -82,7 +82,7 @@ export interface RefreshRequest {
 
 export interface WalletMutationRequest {
   userId: string;
-  amountPointsCents: number;
+  amountPoints: number;
   idempotencyKey: string;
   reason?: string;
 }

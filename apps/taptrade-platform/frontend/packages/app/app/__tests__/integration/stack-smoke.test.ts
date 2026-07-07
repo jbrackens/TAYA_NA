@@ -168,7 +168,7 @@ describe("Stack Smoke Tests", { skip: false }, () => {
         action: "buy",
         orderType: "market",
         quantity: 1,
-        notionalCapPointsCents: 100,
+        notionalCapPoints: 100,
       }),
     });
     assert.equal(res.status, 401, "Unauth order placement should be 401");
@@ -186,7 +186,7 @@ describe("Stack Smoke Tests", { skip: false }, () => {
         action: "buy",
         orderType: "market",
         quantity: 1,
-        notionalCapPointsCents: 100,
+        notionalCapPoints: 100,
       }),
     });
     assert.equal(res.status, 200, `Order preview returned ${res.status}`);
@@ -202,12 +202,12 @@ describe("Stack Smoke Tests", { skip: false }, () => {
     assert.equal(res.status, 200, `Wallet balance returned ${res.status}`);
     const body = (await res.json()) as Record<string, unknown>;
     assert.equal(body.unit, "PTS", "Expected wallet balance unit to be PTS");
-    assert.ok("balancePointsCents" in body, "Expected point balance field");
+    assert.ok("balancePoints" in body, "Expected point balance field");
     assert.ok(
-      "availablePointsCents" in body,
+      "availablePoints" in body,
       "Expected available gameplay points field",
     );
-    assert.ok(!("balanceCents" in body), "Retired cash balance field leaked");
+    assert.ok(!("balancePoints" in body), "Retired cash balance field leaked");
   });
 
   it("GET /api/v1/events returns events list", async () => {

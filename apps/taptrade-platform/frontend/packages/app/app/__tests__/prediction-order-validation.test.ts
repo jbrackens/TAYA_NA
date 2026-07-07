@@ -23,8 +23,8 @@ interface PredictionOrderDraft {
   orderType: OrderType;
   quantity: number;
   pointAmount: number;
-  limitPricePointsCents?: number;
-  notionalCapPointsCents?: number;
+  limitPricePoints?: number;
+  notionalCapPoints?: number;
 }
 
 const forbiddenOrderCopy =
@@ -47,11 +47,11 @@ function validatePointAmount(
   return null;
 }
 
-function validateLimitPrice(pricePointsCents: number): string | null {
-  if (!Number.isInteger(pricePointsCents)) {
+function validateLimitPrice(pricePoints: number): string | null {
+  if (!Number.isInteger(pricePoints)) {
     return "Limit price must be a whole point-cent value";
   }
-  if (pricePointsCents < 1 || pricePointsCents > 99) {
+  if (pricePoints < 1 || pricePoints > 99) {
     return "Limit price must be between 1 and 99 point-cents";
   }
   return null;
@@ -66,15 +66,15 @@ function checkAvailablePoints(
 
 function estimateBinaryOrderEconomics(
   quantity: number,
-  pricePointsCents: number,
+  pricePoints: number,
 ) {
-  const totalCostPointsCents = Math.ceil(quantity * pricePointsCents);
-  const maxReturnPointsCents = quantity * 100;
+  const totalCostPoints = Math.ceil(quantity * pricePoints);
+  const maxReturnPoints = quantity * 100;
   return {
-    totalCostPointsCents,
-    maxLossPointsCents: totalCostPointsCents,
-    maxReturnPointsCents,
-    maxResultPointsCents: maxReturnPointsCents - totalCostPointsCents,
+    totalCostPoints,
+    maxLossPoints: totalCostPoints,
+    maxReturnPoints,
+    maxResultPoints: maxReturnPoints - totalCostPoints,
   };
 }
 
@@ -91,8 +91,8 @@ function buildPredictionOrderKey(
     order.orderType,
     order.quantity,
     order.pointAmount,
-    order.limitPricePointsCents ?? "",
-    order.notionalCapPointsCents ?? "",
+    order.limitPricePoints ?? "",
+    order.notionalCapPoints ?? "",
     nonce,
   ].join(":");
 
@@ -146,10 +146,10 @@ describe("prediction order validation", () => {
 
   it("estimates binary order economics in point-cents", () => {
     assert.deepEqual(estimateBinaryOrderEconomics(39, 64), {
-      totalCostPointsCents: 2496,
-      maxLossPointsCents: 2496,
-      maxReturnPointsCents: 3900,
-      maxResultPointsCents: 1404,
+      totalCostPoints: 2496,
+      maxLossPoints: 2496,
+      maxReturnPoints: 3900,
+      maxResultPoints: 1404,
     });
   });
 
@@ -161,7 +161,7 @@ describe("prediction order validation", () => {
       orderType: "market",
       quantity: 39,
       pointAmount: 25,
-      notionalCapPointsCents: 2500,
+      notionalCapPoints: 2500,
     };
 
     const key = buildPredictionOrderKey("u-1", order, "retry-1");
@@ -185,7 +185,7 @@ describe("prediction order validation", () => {
   it("does not preserve retired bet-placement contract tokens", () => {
     const source = readFileSync(__filename, "utf-8");
     for (const token of [
-      "stake" + "Cents",
+      "stake" + "Points",
       "validate" + "Stake",
       "calculatePotential" + "Payout",
       "validate" + "Odds",

@@ -93,7 +93,7 @@
   "PLACING": "Memasang...",
   "PLACE_TRADE_AMOUNT": "Place trade · {{amount}}",
   "SELL_AMOUNT": "Sell · {{amount}}",
-  "TRADE_TRUST_NOTE": "{{price}}c berarti probabilitas tersirat {{probability}}%. Kontrak yang benar diselesaikan pada 100 poin per kontrak.",
+  "TRADE_TRUST_NOTE": "{{price}}c berarti probabilitas tersirat {{probability}}% — Anda menggunakan {{price}} Poin per kontrak. Kontrak yang benar diselesaikan dengan 100 Poin. Poin tidak dapat ditukar dan hanya untuk bermain di aplikasi.",
   "NO_SHARES_TO_SELL": "Kamu tidak punya share di pilihan ini untuk dijual",
   "SELL_UP_TO_SHARES": "Jual hingga {{quantity}} share {{side}}",
   "AMOUNT_TOO_SMALL": "Jumlah terlalu kecil - minimum 1 share per trade.",

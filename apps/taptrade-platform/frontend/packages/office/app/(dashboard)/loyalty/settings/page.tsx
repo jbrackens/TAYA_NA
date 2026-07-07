@@ -35,8 +35,8 @@ interface LoyaltyRule {
   predictionSourceType?: string;
   active: boolean;
   multiplier: number;
-  minQualifiedStakeCents: number;
-  minQualifiedPointsCents?: number;
+  minQualifiedStakePoints: number;
+  minQualifiedPoints?: number;
   eligibleSportIds?: string[];
   eligibleBetTypes?: string[];
   eligiblePredictionTypes?: string[];
@@ -59,8 +59,8 @@ function toLegacyLoyaltySourceType(value: string): string {
 function normalizeLoyaltyRule(rule: LoyaltyRule): LoyaltyRule {
   const sourceType =
     rule.predictionSourceType || toLaunchLoyaltySourceType(rule.sourceType);
-  const minQualifiedPointsCents =
-    rule.minQualifiedPointsCents ?? rule.minQualifiedStakeCents ?? 0;
+  const minQualifiedPoints =
+    rule.minQualifiedPoints ?? rule.minQualifiedStakePoints ?? 0;
   const eligiblePredictionTypes =
     rule.eligiblePredictionTypes ?? rule.eligibleBetTypes ?? [];
 
@@ -68,8 +68,8 @@ function normalizeLoyaltyRule(rule: LoyaltyRule): LoyaltyRule {
     ...rule,
     sourceType,
     predictionSourceType: sourceType,
-    minQualifiedStakeCents: minQualifiedPointsCents,
-    minQualifiedPointsCents,
+    minQualifiedStakePoints: minQualifiedPoints,
+    minQualifiedPoints,
     eligibleBetTypes: eligiblePredictionTypes,
     eligiblePredictionTypes,
   };
@@ -119,7 +119,7 @@ function LoyaltySettingsPageContent() {
       sourceType: "prediction_settlement",
       active: true,
       multiplier: 1.0,
-      minQualifiedStakeCents: 0,
+      minQualifiedStakePoints: 0,
       maxPointsPerEvent: 0,
     },
   );
@@ -264,7 +264,7 @@ function LoyaltySettingsPageContent() {
         ...ruleDraft,
         predictionSourceType: ruleDraft.sourceType,
         sourceType: toLegacyLoyaltySourceType(ruleDraft.sourceType),
-        minQualifiedPointsCents: ruleDraft.minQualifiedStakeCents,
+        minQualifiedPoints: ruleDraft.minQualifiedStakePoints,
         eligiblePredictionTypes: ruleDraft.eligibleBetTypes || [],
         effectiveFrom:
           localToRfc3339(rfc3339ToLocal(ruleDraft.effectiveFrom)) || undefined,
@@ -309,7 +309,7 @@ function LoyaltySettingsPageContent() {
         ...newRuleDraft,
         predictionSourceType: newRuleDraft.sourceType,
         sourceType: toLegacyLoyaltySourceType(newRuleDraft.sourceType),
-        minQualifiedPointsCents: newRuleDraft.minQualifiedStakeCents,
+        minQualifiedPoints: newRuleDraft.minQualifiedStakePoints,
         eligiblePredictionTypes: newRuleDraft.eligibleBetTypes || [],
         maxPointsPerEvent: newRuleDraft.maxPointsPerEvent || undefined,
       };
@@ -339,7 +339,7 @@ function LoyaltySettingsPageContent() {
         sourceType: "prediction_settlement",
         active: true,
         multiplier: 1.0,
-        minQualifiedStakeCents: 0,
+        minQualifiedStakePoints: 0,
         maxPointsPerEvent: 0,
       });
     } catch (err: unknown) {
@@ -737,13 +737,13 @@ function LoyaltySettingsPageContent() {
                       <input
                         className={inputClassName}
                         type="number"
-                        value={ruleDraft.minQualifiedStakeCents}
+                        value={ruleDraft.minQualifiedStakePoints}
                         onChange={(event: ChangeEvent<HTMLInputElement>) =>
                           setRuleDraft((current) =>
                             current
                               ? {
                                   ...current,
-                                  minQualifiedStakeCents: Number(
+                                  minQualifiedStakePoints: Number(
                                     event.target.value,
                                   ),
                                 }
@@ -902,11 +902,11 @@ function LoyaltySettingsPageContent() {
                     className={inputClassName}
                     type="number"
                     min="0"
-                    value={newRuleDraft.minQualifiedStakeCents}
+                    value={newRuleDraft.minQualifiedStakePoints}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
                       setNewRuleDraft((current) => ({
                         ...current,
-                        minQualifiedStakeCents: Number(event.target.value),
+                        minQualifiedStakePoints: Number(event.target.value),
                       }))
                     }
                   />

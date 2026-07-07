@@ -14,7 +14,7 @@
 import { useTranslation } from "react-i18next";
 
 interface BookLevel {
-  pricePointsCents: number;
+  pricePoints: number;
   shares: number;
   cumulativeShares: number;
 }
@@ -45,8 +45,8 @@ const ORDER_BOOK_SPREAD_CLASS =
 
 export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
   const { t } = useTranslation("prediction");
-  const bestBid = bids[0]?.pricePointsCents ?? 0;
-  const bestAsk = asks[asks.length - 1]?.pricePointsCents ?? 0;
+  const bestBid = bids[0]?.pricePoints ?? 0;
+  const bestAsk = asks[asks.length - 1]?.pricePoints ?? 0;
   const mid =
     bestBid && bestAsk ? Math.round((bestBid + (100 - bestAsk)) / 2) : 0;
   const spread = bestBid && bestAsk ? Math.abs(100 - bestAsk - bestBid) : 0;
@@ -91,7 +91,7 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
               <tbody>
                 {asks.map((l) => (
                   <tr
-                    key={`ask-${l.pricePointsCents}`}
+                    key={`ask-${l.pricePoints}`}
                     className={`${ORDER_BOOK_DEPTH_ROW_CLASS} after:bg-[linear-gradient(90deg,_transparent,_var(--no-soft))]`}
                     style={{
                       ["--depth" as string]: Math.min(
@@ -103,19 +103,19 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
                     <td
                       className={`${ORDER_BOOK_TD_CLASS} font-semibold text-[var(--no-text)]`}
                     >
-                      {t("NO")} {100 - l.pricePointsCents}¢
+                      {t("NO")} {100 - l.pricePoints}¢
                     </td>
                     <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
                       {l.shares}
                     </td>
                     <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
-                      {((l.shares * (100 - l.pricePointsCents)) / 100).toFixed(
+                      {(l.shares * (100 - l.pricePoints)).toFixed(
                         2,
                       )}
                     </td>
                     <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
                       {(
-                        (l.cumulativeShares * (100 - l.pricePointsCents)) /
+                        (l.cumulativeShares * (100 - l.pricePoints)) /
                         100
                       ).toFixed(2)}
                     </td>
@@ -136,7 +136,7 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
               <tbody>
                 {bids.map((l) => (
                   <tr
-                    key={`bid-${l.pricePointsCents}`}
+                    key={`bid-${l.pricePoints}`}
                     className={`${ORDER_BOOK_DEPTH_ROW_CLASS} after:bg-[linear-gradient(90deg,_transparent,_var(--yes-soft))]`}
                     style={{
                       ["--depth" as string]: Math.min(
@@ -148,17 +148,17 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
                     <td
                       className={`${ORDER_BOOK_TD_CLASS} font-semibold text-[var(--yes-text)]`}
                     >
-                      {t("YES")} {l.pricePointsCents}¢
+                      {t("YES")} {l.pricePoints}¢
                     </td>
                     <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
                       {l.shares}
                     </td>
                     <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
-                      {((l.shares * l.pricePointsCents) / 100).toFixed(2)}
+                      {(l.shares * l.pricePoints).toFixed(0)}
                     </td>
                     <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
                       {(
-                        (l.cumulativeShares * l.pricePointsCents) /
+                        (l.cumulativeShares * l.pricePoints) /
                         100
                       ).toFixed(2)}
                     </td>

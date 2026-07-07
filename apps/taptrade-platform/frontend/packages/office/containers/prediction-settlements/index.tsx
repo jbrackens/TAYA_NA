@@ -170,7 +170,7 @@ export default function PredictionSettlementsContainer() {
         }
         const tip = `${drift.adjustmentCount} adjustment${
           drift.adjustmentCount === 1 ? "" : "s"
-        } · max drift ${formatPoints(Math.abs(drift.maxDriftPointsCents))} · ${
+        } · max drift ${formatPoints(Math.abs(drift.maxDriftPoints))} · ${
           drift.latestReason || "see ledger"
         } — settlement needs an override reason`;
         return (
@@ -188,7 +188,7 @@ export default function PredictionSettlementsContainer() {
     { title: "Title", dataIndex: "title", key: "title", ellipsis: true },
     {
       title: "Last YES",
-      dataIndex: "yesPricePointsCents",
+      dataIndex: "yesPricePoints",
       key: "yes",
       width: 80,
       render: (v: number) => (
@@ -207,7 +207,7 @@ export default function PredictionSettlementsContainer() {
     },
     {
       title: "Volume",
-      dataIndex: "volumePointsCents",
+      dataIndex: "volumePoints",
       key: "vol",
       width: 100,
       render: (v: number) => (
@@ -320,7 +320,7 @@ export default function PredictionSettlementsContainer() {
             <Text strong>{selectedMarket.title}</Text>
             <br />
             <Text type="secondary">
-              Last YES: {selectedMarket.yesPricePointsCents}% | Source:{" "}
+              Last YES: {selectedMarket.yesPricePoints}% | Source:{" "}
               {selectedMarket.settlementSourceKey}
             </Text>
           </div>
@@ -352,7 +352,7 @@ export default function PredictionSettlementsContainer() {
             className="mb-4"
             message="Collateral drift detected on this market"
             description={`${driftOnSelected.adjustmentCount} adjustment(s), max drift ${formatPoints(
-              Math.abs(driftOnSelected.maxDriftPointsCents),
+              Math.abs(driftOnSelected.maxDriftPoints),
             )}. An override reason is required to settle.`}
           />
         )}

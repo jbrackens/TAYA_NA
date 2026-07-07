@@ -93,7 +93,7 @@
   "PLACING": "Menghantar...",
   "PLACE_TRADE_AMOUNT": "Place trade · {{amount}}",
   "SELL_AMOUNT": "Sell · {{amount}}",
-  "TRADE_TRUST_NOTE": "{{price}}c bermaksud kebarangkalian tersirat {{probability}}%. Kontrak yang betul diselesaikan pada 100 mata setiap satu.",
+  "TRADE_TRUST_NOTE": "{{price}}c bermaksud kebarangkalian tersirat {{probability}}% — anda menggunakan {{price}} Mata bagi setiap kontrak. Kontrak yang betul diselesaikan pada 100 Mata. Mata tidak boleh ditebus dan untuk permainan dalam aplikasi sahaja.",
   "NO_SHARES_TO_SELL": "Anda tiada saham pada pilihan ini untuk dijual",
   "SELL_UP_TO_SHARES": "Jual sehingga {{quantity}} saham {{side}}",
   "AMOUNT_TOO_SMALL": "Jumlah terlalu kecil - minimum 1 saham setiap dagangan.",

@@ -219,7 +219,7 @@ export default function PredictionMarketsContainer() {
       closeAt: formatDateTimeLocal(market.closeAt),
       feeRateBps: market.feeRateBps ?? 0,
       ammLiquidityParam: market.ammLiquidityParam ?? 100,
-      ammSubsidyPointsCents: market.ammSubsidyPointsCents,
+      ammSubsidyPoints: market.ammSubsidyPoints,
     });
   }
 
@@ -239,7 +239,7 @@ export default function PredictionMarketsContainer() {
         closeAt: dateTimeLocalToApi(values.closeAt),
         feeRateBps: (values.feeRateBps as number) ?? 0,
         ammLiquidityParam: (values.ammLiquidityParam as number) ?? 100,
-        ammSubsidyPointsCents: values.ammSubsidyPointsCents as
+        ammSubsidyPoints: values.ammSubsidyPoints as
           | number
           | undefined,
       });
@@ -527,7 +527,7 @@ export default function PredictionMarketsContainer() {
         // adjustmentCount and maxDrift drive the urgency message.
         const tip = `${drift.adjustmentCount} adjustment${
           drift.adjustmentCount === 1 ? "" : "s"
-        } · max drift ${formatPoints(Math.abs(drift.maxDriftPointsCents))} · ${drift.latestReason || "see ledger"}`;
+        } · max drift ${formatPoints(Math.abs(drift.maxDriftPoints))} · ${drift.latestReason || "see ledger"}`;
         return (
           <Space size={6}>
             <Text>{ticker}</Text>
@@ -592,7 +592,7 @@ export default function PredictionMarketsContainer() {
     },
     {
       title: "YES",
-      dataIndex: "yesPricePointsCents",
+      dataIndex: "yesPricePoints",
       key: "yes",
       width: 70,
       render: (v: number) => (
@@ -611,7 +611,7 @@ export default function PredictionMarketsContainer() {
     },
     {
       title: "Volume",
-      dataIndex: "volumePointsCents",
+      dataIndex: "volumePoints",
       key: "vol",
       width: 100,
       render: (v: number) => (

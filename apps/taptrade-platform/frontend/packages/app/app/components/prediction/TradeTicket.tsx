@@ -41,11 +41,11 @@ import { complianceDenialKind } from "../../lib/compliance-denial";
  */
 export interface TradeTicketSubmitOptions {
   orderType?: "market" | "limit";
-  pricePointsCents?: number;
+  pricePoints?: number;
   action?: OrderAction;
   timeInForce?: TimeInForce;
   postOnly?: boolean;
-  notionalCapPointsCents?: number;
+  notionalCapPoints?: number;
 }
 
 interface TradeTicketProps {
@@ -148,8 +148,10 @@ function ticketSideTabClass(side: OrderSide, selected: boolean): string {
     : `${TICKET_SIDE_TAB_BASE_CLASS} text-[var(--no-text)]`;
 }
 
+// Points are whole cent-equivalent units (1 Point = 1c of play value) —
+// never fractional in display.
 function formatPointAmount(points: number): string {
-  return `${points.toFixed(2)} pts`;
+  return `${Math.round(points).toLocaleString()} pts`;
 }
 
 /**
@@ -193,7 +195,7 @@ export function TradeTicket({
   market,
   balance,
   defaultSide = "yes",
-  defaultAmount = 25,
+  defaultAmount = 100,
   isAuthenticated,
   authLoading,
   availableYesShares = 0,
@@ -209,8 +211,8 @@ export function TradeTicket({
   const [action, setAction] = useState<OrderAction>("buy");
   // Limit-mode price the user wants to bid/offer. Defaults to mid; exchange
   // mode enables editing.
-  const [limitPriceCents, setLimitPriceCents] = useState<number>(
-    side === "yes" ? market.yesPricePointsCents : market.noPricePointsCents,
+  const [limitPricePoints, setLimitPricePoints] = useState<number>(
+    side === "yes" ? market.yesPricePoints : market.noPricePoints,
   );
   const [preview, setPreview] = useState<OrderPreview | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
@@ -227,18 +229,19 @@ export function TradeTicket({
   const isExchange = market.executionMode === "order_book";
   const isAmmQuoteOnly = market.executionMode === "amm";
   const marketPrice =
-    side === "yes" ? market.yesPricePointsCents : market.noPricePointsCents;
+    side === "yes" ? market.yesPricePoints : market.noPricePoints;
   // Effective price drives quantity math: limit orders use the user's price
   // (capped to [1, 99] at the API boundary); market orders use the snapshot.
-  const price = mode === "limit" && isExchange ? limitPriceCents : marketPrice;
+  const price = mode === "limit" && isExchange ? limitPricePoints : marketPrice;
   const otherPrice =
-    side === "yes" ? market.noPricePointsCents : market.yesPricePointsCents;
+    side === "yes" ? market.noPricePoints : market.yesPricePoints;
   const availableShares =
     side === "yes" ? availableYesShares : availableNoShares;
 
-  // quantity = # of contracts; cost = quantity * price / 100
+  // Points unit-model (2026-07-07): a contract priced at 8c costs 8 Points.
+  // quantity = whole contracts affordable; cost = quantity * price Points.
   const quantity = useMemo(
-    () => (price > 0 ? Math.max(0, amount / (price / 100)) : 0),
+    () => (price > 0 ? Math.max(0, Math.floor(amount / price)) : 0),
     [amount, price],
   );
   const requestedQuantity = Math.floor(quantity);
@@ -255,10 +258,10 @@ export function TradeTicket({
       action,
     };
     if (isExchange && mode === "limit") {
-      opts.pricePointsCents = limitPriceCents;
+      opts.pricePoints = limitPricePoints;
       opts.timeInForce = "gtc";
     } else if (action === "buy") {
-      opts.notionalCapPointsCents = Math.ceil(amount * 100);
+      opts.notionalCapPoints = Math.ceil(amount);
     }
     setPreviewLoading(true);
     onPreview(side, requestedQuantity, opts)
@@ -279,7 +282,7 @@ export function TradeTicket({
     amount,
     isExchange,
     isOpen,
-    limitPriceCents,
+    limitPricePoints,
     mode,
     onPreview,
     requestedQuantity,
@@ -291,16 +294,16 @@ export function TradeTicket({
     typeof previewFilledQuantity === "number" && action === "buy"
       ? previewFilledQuantity
       : quantity;
-  const pointsIfCorrect = shares * 1; // Correct contracts settle at 1 point each.
+  const pointsIfCorrect = shares * 100; // Correct contracts settle at 100 Points each.
   const summaryPrice =
-    preview?.averageFillPricePointsCents || preview?.pricePointsCents || price;
+    preview?.averageFillPricePoints || preview?.pricePoints || price;
   const impliedProb = summaryPrice; // cents are already 0-100, readable as %
   const effectiveSpend =
     action === "buy" &&
     mode === "market" &&
-    typeof preview?.totalCostWithFeesPointsCents === "number"
-      ? preview.totalCostWithFeesPointsCents / 100
-      : amount;
+    typeof preview?.totalCostWithFeesPoints === "number"
+      ? preview.totalCostWithFeesPoints
+      : quantity * price;
   const hasKnownBalance = typeof balance === "number";
   // Point-balance check applies only to buys. Sells require enough position.
   const insufficientFunds =
@@ -318,7 +321,7 @@ export function TradeTicket({
     action === "buy" &&
     preview?.quoteStatus === "cancelled" &&
     preview.filledQuantity === 0;
-  const loginReturnPath = `/market/${market.ticker}?side=${side}&amount=${amount.toFixed(2)}`;
+  const loginReturnPath = `/market/${market.ticker}?side=${side}&amount=${Math.round(amount)}`;
   const loginHref = `/auth/login?returnUrl=${encodeURIComponent(loginReturnPath)}`;
 
   const handleSubmit = useCallback(async () => {
@@ -340,11 +343,11 @@ export function TradeTicket({
         action,
       };
       if (mode === "limit") {
-        opts.pricePointsCents = limitPriceCents;
+        opts.pricePoints = limitPricePoints;
         // Default time-in-force gtc; advanced section can override later.
         opts.timeInForce = "gtc";
       } else if (action === "buy") {
-        opts.notionalCapPointsCents = Math.ceil(amount * 100);
+        opts.notionalCapPoints = Math.ceil(amount);
       }
       response = await onSubmit(side, qty, opts);
       // Truthful post-trade toast. The old version unconditionally said
@@ -421,7 +424,7 @@ export function TradeTicket({
         // Limit order rested without crossing — most common outcome on a
         // thin book. (filled=0, status=open.)
         const priceLabel =
-          mode === "limit" ? `${limitPriceCents}¢` : `${price}¢`;
+          mode === "limit" ? `${limitPricePoints}¢` : `${price}¢`;
         toast.info(
           t("ORDER_RESTING"),
           t("ORDER_RESTING_BODY", {
@@ -475,7 +478,7 @@ export function TradeTicket({
     isExchange,
     mode,
     action,
-    limitPriceCents,
+    limitPricePoints,
     amount,
     market.ticker,
     toast,
@@ -607,11 +610,11 @@ export function TradeTicket({
                   min={1}
                   max={99}
                   step={1}
-                  value={limitPriceCents}
+                  value={limitPricePoints}
                   onChange={(e) => {
                     const v = parseInt(e.target.value, 10);
                     if (Number.isFinite(v)) {
-                      setLimitPriceCents(Math.max(1, Math.min(99, v)));
+                      setLimitPricePoints(Math.max(1, Math.min(99, v)));
                     }
                   }}
                   className={TICKET_INPUT_CLASS}
@@ -621,8 +624,8 @@ export function TradeTicket({
               <p className={TICKET_ROW_SUB_CLASS}>
                 {t("MID_PRICE", { price: marketPrice })} ·{" "}
                 {action === "buy"
-                  ? t("LIMIT_BUY_HELP", { price: limitPriceCents })
-                  : t("LIMIT_SELL_HELP", { price: limitPriceCents })}
+                  ? t("LIMIT_BUY_HELP", { price: limitPricePoints })
+                  : t("LIMIT_SELL_HELP", { price: limitPricePoints })}
               </p>
             </div>
           )}

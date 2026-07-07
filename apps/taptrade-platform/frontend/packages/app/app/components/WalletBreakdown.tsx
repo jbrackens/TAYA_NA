@@ -49,7 +49,7 @@ export const WalletBreakdownDisplay: React.FC = () => {
 
   if (!breakdown) return null;
 
-  const hasBonusPoints = breakdown.bonusPointsCents > 0;
+  const hasBonusPoints = breakdown.bonusPoints > 0;
 
   return (
     <div className="flex flex-col gap-1 px-3 py-2 rounded-lg bg-[#0f1225]/60">
@@ -59,7 +59,7 @@ export const WalletBreakdownDisplay: React.FC = () => {
           {t("totalBalance")}
         </span>
         <span className="text-sm font-semibold text-white">
-          {formatPointsFromCents(breakdown.totalPointsCents)}
+          {formatPointsFromPoints(breakdown.totalPoints)}
         </span>
       </div>
 
@@ -72,7 +72,7 @@ export const WalletBreakdownDisplay: React.FC = () => {
               {t("basePoints", "Base Points")}
             </span>
             <span className="text-white font-medium">
-              {formatPointsFromCents(breakdown.basePointsCents)}
+              {formatPointsFromPoints(breakdown.basePoints)}
             </span>
           </div>
           <div className="flex items-center gap-1">
@@ -81,7 +81,7 @@ export const WalletBreakdownDisplay: React.FC = () => {
               {t("bonusPoints", "Bonus Points")}
             </span>
             <span className="text-white font-medium">
-              {formatPointsFromCents(breakdown.bonusPointsCents)}
+              {formatPointsFromPoints(breakdown.bonusPoints)}
             </span>
           </div>
         </div>
@@ -90,6 +90,6 @@ export const WalletBreakdownDisplay: React.FC = () => {
   );
 };
 
-function formatPointsFromCents(cents: number): string {
+function formatPointsFromPoints(cents: number): string {
   return `${(cents / 100).toFixed(2)} pts`;
 }

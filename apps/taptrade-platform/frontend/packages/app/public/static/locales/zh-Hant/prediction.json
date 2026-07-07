@@ -93,7 +93,7 @@
   "PLACING": "下單中...",
   "PLACE_TRADE_AMOUNT": "Place trade · {{amount}}",
   "SELL_AMOUNT": "Sell · {{amount}}",
-  "TRADE_TRUST_NOTE": "{{price}}c 表示 {{probability}}% 的隱含概率。正確合約按每份 100 點結算。",
+  "TRADE_TRUST_NOTE": "{{price}}c 表示 {{probability}}% 的隱含機率——每份合約花費 {{price}} 積分。正確的合約以 100 積分結算。積分不可兌換，僅用於應用內遊戲。",
   "NO_SHARES_TO_SELL": "你沒有這個方向的份額可賣",
   "SELL_UP_TO_SHARES": "最多賣出 {{quantity}} 份 {{side}}",
   "AMOUNT_TOO_SMALL": "金額太小 - 每筆交易至少 1 份。",

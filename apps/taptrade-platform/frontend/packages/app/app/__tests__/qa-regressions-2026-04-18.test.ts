@@ -618,13 +618,13 @@ describe("market detail liquidity honesty", () => {
   it("renders AMM curve and reserve fields without inventing order book depth", () => {
     assert.ok(predictionTypesSource.includes("ammYesShares?: number"));
     assert.ok(predictionTypesSource.includes("ammNoShares?: number"));
-    assert.ok(predictionTypesSource.includes("ammSubsidyPointsCents?: number"));
+    assert.ok(predictionTypesSource.includes("ammSubsidyPoints?: number"));
     assert.ok(marketPageSource.includes("function AMMCurve"));
     assert.ok(marketPageSource.includes("AMM_PRICE_MARKER"));
     assert.ok(marketPageSource.includes("AMM_RESERVE_BALANCE"));
     assert.ok(marketPageSource.includes("market.ammYesShares"));
     assert.ok(marketPageSource.includes("market.ammNoShares"));
-    assert.ok(marketPageSource.includes("market.ammSubsidyPointsCents"));
+    assert.ok(marketPageSource.includes("market.ammSubsidyPoints"));
     assert.ok(marketPageSource.includes("formatCompactPoints(subsidy)"));
   });
 
@@ -636,9 +636,9 @@ describe("market detail liquidity honesty", () => {
     assert.ok(marketPageSource.includes('orderType: "market"'));
     assert.ok(marketPageSource.includes("function AMMCurve"));
     assert.ok(marketPageSource.includes("AMM_IMPACT_QUOTES"));
-    assert.ok(marketPageSource.includes("quote.newYesPricePointsCents"));
-    assert.ok(marketPageSource.includes("quote.averageFillPricePointsCents"));
-    assert.ok(marketPageSource.includes("quote.totalCostWithFeesPointsCents"));
+    assert.ok(marketPageSource.includes("quote.newYesPricePoints"));
+    assert.ok(marketPageSource.includes("quote.averageFillPricePoints"));
+    assert.ok(marketPageSource.includes("quote.totalCostWithFeesPoints"));
   });
 
   it("keeps a launch-safe legacy AMM seed market for live detail proof", () => {
@@ -674,11 +674,11 @@ describe("market detail related markets", () => {
 
   it("keeps related market volume in points copy", () => {
     assert.ok(
-      marketPageSource.includes("formatCompactPoints(m.volumePointsCents)"),
+      marketPageSource.includes("formatCompactPoints(m.volumePoints)"),
     );
     assert.ok(
       !marketPageSource.includes(
-        "value: `$${(m.volumePointsCents / 100).toFixed(0)}`",
+        "value: `$${(m.volumePoints / 100).toFixed(0)}`",
       ),
     );
   });
@@ -754,7 +754,7 @@ describe("MarketCard P8 composition", () => {
   it("does not render redundant probability bars in grid cards", () => {
     assert.ok(
       !/MARKET_BAR_LABEL/.test(marketCardSource) &&
-        !/role="img"[\s\S]*?yesPriceCents/.test(marketCardSource),
+        !/role="img"[\s\S]*?yesPricePoints/.test(marketCardSource),
       "MarketCard should not render a redundant YES/NO probability bar",
     );
     assert.ok(
@@ -819,8 +819,8 @@ describe("MarketCard P8 composition", () => {
       "YES/NO pills should keep a mobile-friendly tap size on small screens",
     );
     assert.ok(
-      />\s*{yesPriceCents}¢\s*</.test(marketCardSource) &&
-        />\s*{noPriceCents}¢\s*</.test(marketCardSource),
+      />\s*{yesPricePoints}¢\s*</.test(marketCardSource) &&
+        />\s*{noPricePoints}¢\s*</.test(marketCardSource),
       "YES/NO action pills should show the side prices in cents",
     );
   });
@@ -849,13 +849,13 @@ describe("MarketCard P8 composition", () => {
     // muted line: volume on the left, closes/status on the right.
     assert.ok(
       marketCardSource.includes('t("VOLUME")') &&
-        marketCardSource.includes("formatCompactPoints(volumePointsCents)"),
+        marketCardSource.includes("formatCompactPoints(volumePoints)"),
       "MarketCard footer should keep the volume figure",
     );
     assert.ok(
       !marketCardSource.includes('t("CATEGORY", "Category")') &&
         !marketCardSource.includes('t("LIQUIDITY")') &&
-        !marketCardSource.includes("liquidityPointsCents"),
+        !marketCardSource.includes("liquidityPoints"),
       "MarketCard should not reintroduce the labeled category/liquidity grid",
     );
     assert.ok(
@@ -866,18 +866,21 @@ describe("MarketCard P8 composition", () => {
   });
 
   it("keeps card activity volume on the point-native prop contract", () => {
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
-      marketCardSource.includes("volumePointsCents: number") &&
-        marketCardSource.includes("formatCompactPoints(volumePointsCents)") &&
-        !marketCardSource.includes("volumeCents: number") &&
-        !marketCardSource.includes("liquidityCents?: number") &&
-        !marketCardSource.includes("formatCompactPoints(volumeCents)") &&
-        !marketCardSource.includes("formatCompactPoints(liquidityCents"),
-      "MarketCard should render activity from point-native props, not retired volumeCents/liquidityCents props",
+      marketCardSource.includes("volumePoints: number") &&
+        marketCardSource.includes("formatCompactPoints(volumePoints)") &&
+        !marketCardSource.includes("volumePointsCents") &&
+        !marketCardSource.includes("volumeCents") &&
+        !marketCardSource.includes("liquidityPointsCents") &&
+        !marketCardSource.includes("liquidityCents") &&
+        !marketCardSource.includes("formatCompactPoints(liquidityPoints"),
+      "MarketCard should render activity from the canonical volumePoints prop, not retired *PointsCents/*Cents props",
     );
     assert.ok(
-      marketGridSource.includes("volumePointsCents={m.volumePointsCents}") &&
-        !marketGridSource.includes("liquidityPointsCents="),
+      marketGridSource.includes("volumePoints={m.volumePoints}") &&
+        !marketGridSource.includes("volumePointsCents") &&
+        !marketGridSource.includes("liquidityPoints="),
       "MarketGrid should pass point-native volume and no retired liquidity prop",
     );
   });
@@ -1866,53 +1869,56 @@ describe("Full-page translation coverage", () => {
     );
     assert.ok(
       settledPositionResultTypeSource.includes(
-        "entryPricePointsCents: number",
+        "entryPricePoints: number",
       ) &&
         settledPositionResultTypeSource.includes(
-          "exitPricePointsCents: number",
+          "exitPricePoints: number",
         ) &&
         settledPositionResultTypeSource.includes(
-          "realizedPointsCents: number",
+          "realizedPoints: number",
         ) &&
         settledPositionResultTypeSource.includes(
-          "settlementPointsCents: number",
+          "settlementPoints: number",
         ) &&
         predictionTypesSource.includes('unit?: "PTS" | string'),
       "SettledPositionResult should expose point-native settlement-history fields",
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
       !predictionTypesSource.includes("export interface SettledPayout") &&
+        !settledPositionResultTypeSource.includes("entryPricePointsCents") &&
         !settledPositionResultTypeSource.includes("entryPriceCents") &&
+        !settledPositionResultTypeSource.includes("exitPricePointsCents") &&
         !settledPositionResultTypeSource.includes("exitPriceCents") &&
-        !settledPositionResultTypeSource.includes("pnlCents") &&
-        !settledPositionResultTypeSource.includes("payoutCents"),
+        !settledPositionResultTypeSource.includes("pnlPoints") &&
+        !settledPositionResultTypeSource.includes("payoutPoints"),
       "SettledPositionResult should not export retired price/payout/P&L aliases or payout-named history type",
     );
     assert.ok(
       predictionClientSource.includes("normalizeSettledPositionResult") &&
         settledPositionResultNormalizerSource.includes(
-          "row.entryPricePointsCents",
+          "row.entryPricePoints",
         ) &&
         settledPositionResultNormalizerSource.includes(
-          "row.exitPricePointsCents",
+          "row.exitPricePoints",
         ) &&
-        predictionClientSource.includes("row.realizedPointsCents") &&
-        predictionClientSource.includes("row.settlementPointsCents") &&
+        predictionClientSource.includes("row.realizedPoints") &&
+        predictionClientSource.includes("row.settlementPoints") &&
         predictionClientSource.includes('unit: row.unit || "PTS"'),
       "PredictionApiClient should normalize portfolio history from point-native aliases",
     );
     assert.ok(
       !settledPositionResultNormalizerSource.includes(
-        "entryPriceCents: entryPricePointsCents",
+        "entryPricePoints: entryPricePoints",
       ) &&
         !settledPositionResultNormalizerSource.includes(
-          "exitPriceCents: exitPricePointsCents",
+          "exitPricePoints: exitPricePoints",
         ) &&
         !settledPositionResultNormalizerSource.includes(
-          "pnlCents: realizedPointsCents",
+          "pnlPoints: realizedPoints",
         ) &&
         !settledPositionResultNormalizerSource.includes(
-          "payoutCents: settlementPointsCents",
+          "payoutPoints: settlementPoints",
         ),
       "PredictionApiClient should not reattach retired portfolio-history price/result aliases",
     );
@@ -1923,15 +1929,18 @@ describe("Full-page translation coverage", () => {
         !portfolioLocaleSource.includes("settled payouts"),
       "Portfolio visible copy should describe settled results, not payouts",
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
-      portfolioSource.includes("h.settlementPointsCents") &&
-        portfolioSource.includes("h.realizedPointsCents") &&
-        portfolioSource.includes("h.entryPricePointsCents") &&
-        portfolioSource.includes("h.exitPricePointsCents") &&
+      portfolioSource.includes("h.settlementPoints") &&
+        portfolioSource.includes("h.realizedPoints") &&
+        portfolioSource.includes("h.entryPricePoints") &&
+        portfolioSource.includes("h.exitPricePoints") &&
+        !portfolioSource.includes("h.entryPricePointsCents") &&
         !portfolioSource.includes("h.entryPriceCents") &&
+        !portfolioSource.includes("h.exitPricePointsCents") &&
         !portfolioSource.includes("h.exitPriceCents") &&
-        !portfolioSource.includes("h.payoutCents") &&
-        !portfolioSource.includes("h.pnlCents") &&
+        !portfolioSource.includes("h.payoutPoints") &&
+        !portfolioSource.includes("h.pnlPoints") &&
         !portfolioSource.includes("pointsByMarketId") &&
         !portfolioSource.includes("getLoyaltyLedger"),
       "Portfolio history points should render the settlement credit, not loyalty accrual",
@@ -1964,27 +1973,35 @@ describe("Full-page translation coverage", () => {
       predictionClientSource.indexOf("function normalizeMarketPriceHistory"),
     );
     assert.ok(
-      marketType.includes("yesPricePointsCents: number") &&
-        marketType.includes("noPricePointsCents: number") &&
-        marketType.includes("volumePointsCents: number") &&
-        marketType.includes("openInterestPointsCents: number") &&
-        marketType.includes("liquidityPointsCents: number") &&
-        predictionTypesSource.includes("ammSubsidyPointsCents?: number") &&
-        predictionTypesSource.includes("collateralPoolPointsCents?: number") &&
-        predictionTypesSource.includes("settlementPoolPointsCents?: number"),
+      marketType.includes("yesPricePoints: number") &&
+        marketType.includes("noPricePoints: number") &&
+        marketType.includes("volumePoints: number") &&
+        marketType.includes("openInterestPoints: number") &&
+        marketType.includes("liquidityPoints: number") &&
+        predictionTypesSource.includes("ammSubsidyPoints?: number") &&
+        predictionTypesSource.includes("collateralPoolPoints?: number") &&
+        predictionTypesSource.includes("settlementPoolPoints?: number"),
       "PredictionMarket should expose point-native market payload fields",
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
-      !marketType.includes("yesPriceCents") &&
+      !marketType.includes("yesPricePointsCents") &&
+        !marketType.includes("yesPriceCents") &&
+        !marketType.includes("noPricePointsCents") &&
         !marketType.includes("noPriceCents") &&
+        !marketType.includes("lastTradePricePointsCents") &&
         !marketType.includes("lastTradePriceCents") &&
+        !marketType.includes("volumePointsCents") &&
         !marketType.includes("volumeCents") &&
+        !marketType.includes("openInterestPointsCents") &&
         !marketType.includes("openInterestCents") &&
+        !marketType.includes("liquidityPointsCents") &&
         !marketType.includes("liquidityCents") &&
+        !marketType.includes("ammSubsidyPointsCents") &&
         !marketType.includes("ammSubsidyCents") &&
+        !marketType.includes("collateralPoolPointsCents") &&
         !marketType.includes("collateralPoolCents") &&
-        !marketType.includes("settledPayoutPoolPointsCents") &&
-        !marketType.includes("settledPayoutPoolCents"),
+        !marketType.includes("settledPayoutPoolPoints"),
       "PredictionMarket should not export retired market response aliases",
     );
     assert.ok(
@@ -1994,14 +2011,14 @@ describe("Full-page translation coverage", () => {
         predictionClientSource.includes(
           "response.data.map(normalizePredictionMarket)",
         ) &&
-        predictionClientSource.includes("row.volumePointsCents") &&
-        predictionClientSource.includes("row.liquidityPointsCents") &&
-        predictionClientSource.includes("row.bestYesBidPointsCents") &&
+        predictionClientSource.includes("row.volumePoints") &&
+        predictionClientSource.includes("row.liquidityPoints") &&
+        predictionClientSource.includes("row.bestYesBidPoints") &&
         predictionClientSource.includes('unit: row.unit || "PTS"'),
       "PredictionApiClient should normalize market payloads from point-native aliases",
     );
     assert.ok(
-      !/yesPriceCents: yesPricePointsCents|volumeCents: volumePointsCents|liquidityCents: liquidityPointsCents/.test(
+      !/yesPricePoints: yesPricePoints|volumePoints: volumePoints|liquidityPoints: liquidityPoints/.test(
         normalizeMarket,
       ),
       "normalizePredictionMarket should not reattach retired market aliases",
@@ -2025,40 +2042,48 @@ describe("Full-page translation coverage", () => {
     );
     assert.ok(
       liveMarketPageSource.includes("normalizeMarketUpdateFields") &&
-        liveMarketPageSource.includes("payload.yesPricePointsCents") &&
-        liveMarketPageSource.includes("payload.noPricePointsCents") &&
-        liveMarketPageSource.includes("payload.lastTradePricePointsCents") &&
-        liveMarketPageSource.includes("payload.volumePointsCents") &&
-        liveMarketPageSource.includes("payload.openInterestPointsCents") &&
+        liveMarketPageSource.includes("payload.yesPricePoints") &&
+        liveMarketPageSource.includes("payload.noPricePoints") &&
+        liveMarketPageSource.includes("payload.lastTradePricePoints") &&
+        liveMarketPageSource.includes("payload.volumePoints") &&
+        liveMarketPageSource.includes("payload.openInterestPoints") &&
         liveMarketPageSource.includes("normalizedMarketFields"),
       "Market detail live updates should normalize WebSocket frames from point-native aliases",
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
-      liveMarketPayloadSource.includes("YesPricePointsCents") &&
-        liveMarketPayloadSource.includes("NoPricePointsCents") &&
-        liveMarketPayloadSource.includes("LastTradePricePointsCents") &&
-        liveMarketPayloadSource.includes("VolumePointsCents") &&
-        liveMarketPayloadSource.includes("OpenInterestPointsCents") &&
+      liveMarketPayloadSource.includes("YesPricePoints") &&
+        liveMarketPayloadSource.includes("NoPricePoints") &&
+        liveMarketPayloadSource.includes("LastTradePricePoints") &&
+        liveMarketPayloadSource.includes("VolumePoints") &&
+        liveMarketPayloadSource.includes("OpenInterestPoints") &&
+        liveMarketPayloadSource.includes('json:"yesPricePoints"') &&
+        liveMarketPayloadSource.includes('json:"noPricePoints"') &&
+        liveMarketPayloadSource.includes('json:"lastTradePricePoints') &&
+        liveMarketPayloadSource.includes('json:"volumePoints"') &&
+        liveMarketPayloadSource.includes('json:"openInterestPoints"') &&
+        !liveMarketPayloadSource.includes("PointsCents") &&
         !liveMarketPayloadSource.includes('json:"yesPriceCents"') &&
         !liveMarketPayloadSource.includes('json:"noPriceCents"') &&
         !liveMarketPayloadSource.includes('json:"lastTradePriceCents') &&
         !liveMarketPayloadSource.includes('json:"volumeCents"') &&
         !liveMarketPayloadSource.includes('json:"openInterestCents"'),
-      "Gateway live market update frames should not emit retired market aliases",
+      "Gateway live market update frames should emit only canonical *Points wire keys",
     );
     assert.ok(
-      orderBookHintPayloadSource.includes('"bestYesBidPointsCents"') &&
-        orderBookHintPayloadSource.includes('"bestYesAskPointsCents"') &&
-        orderBookHintPayloadSource.includes('"bestNoBidPointsCents"') &&
-        orderBookHintPayloadSource.includes('"bestNoAskPointsCents"') &&
+      orderBookHintPayloadSource.includes('"bestYesBidPoints"') &&
+        orderBookHintPayloadSource.includes('"bestYesAskPoints"') &&
+        orderBookHintPayloadSource.includes('"bestNoBidPoints"') &&
+        orderBookHintPayloadSource.includes('"bestNoAskPoints"') &&
+        !orderBookHintPayloadSource.includes("PointsCents") &&
         !orderBookHintPayloadSource.includes('"bestYesBidCents"') &&
         !orderBookHintPayloadSource.includes('"bestYesAskCents"') &&
         !orderBookHintPayloadSource.includes('"bestNoBidCents"') &&
         !orderBookHintPayloadSource.includes('"bestNoAskCents"') &&
-        predictionTypesSource.includes("bestYesBidPointsCents?: number") &&
-        predictionTypesSource.includes("bestYesAskPointsCents?: number") &&
-        predictionTypesSource.includes("bestNoBidPointsCents?: number") &&
-        predictionTypesSource.includes("bestNoAskPointsCents?: number"),
+        predictionTypesSource.includes("bestYesBidPoints?: number") &&
+        predictionTypesSource.includes("bestYesAskPoints?: number") &&
+        predictionTypesSource.includes("bestNoBidPoints?: number") &&
+        predictionTypesSource.includes("bestNoAskPoints?: number"),
       "OrderBookHint should expose only point-native best-quote aliases",
     );
   });
@@ -2086,36 +2111,44 @@ describe("Full-page translation coverage", () => {
     );
 
     assert.ok(
-      dashboardMoverType.includes("yesPricePointsCentsStart: number") &&
-        dashboardMoverType.includes("yesPricePointsCentsNow: number") &&
-        dashboardMoverType.includes("volumePointsCents: number") &&
+      dashboardMoverType.includes("yesPricePointsStart: number") &&
+        dashboardMoverType.includes("yesPricePointsNow: number") &&
+        dashboardMoverType.includes("volumePoints: number") &&
         dashboardMoverType.includes('unit: "PTS" | string') &&
-        dashboardStatsType.includes("totalVolumePointsCents: number") &&
+        dashboardStatsType.includes("totalVolumePoints: number") &&
         dashboardStatsType.includes('unit: "PTS" | string'),
       "Dashboard stats types should expose required point-native activity fields",
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
-      !dashboardMoverType.includes("yesPriceCentsStart") &&
+      !dashboardMoverType.includes("yesPricePointsCentsStart") &&
+        !dashboardMoverType.includes("yesPriceCentsStart") &&
+        !dashboardMoverType.includes("yesPricePointsCentsNow") &&
         !dashboardMoverType.includes("yesPriceCentsNow") &&
+        !dashboardMoverType.includes("volumePointsCents") &&
         !dashboardMoverType.includes("volumeCents") &&
+        !dashboardStatsType.includes("totalVolumePointsCents") &&
         !dashboardStatsType.includes("totalVolumeCents"),
       "Exported dashboard stats types should not expose retired activity aliases",
     );
     assert.ok(
       predictionClientSource.includes("type LegacyDashboardMover") &&
         predictionClientSource.includes("type LegacyDashboardVolumeStats") &&
-        predictionClientSource.includes("row.totalVolumePointsCents") &&
-        predictionClientSource.includes("row.yesPricePointsCentsStart") &&
-        predictionClientSource.includes("row.yesPricePointsCentsNow") &&
-        predictionClientSource.includes("row.volumePointsCents"),
+        predictionClientSource.includes("row.totalVolumePoints") &&
+        predictionClientSource.includes("row.yesPricePointsStart") &&
+        predictionClientSource.includes("row.yesPricePointsNow") &&
+        predictionClientSource.includes("row.volumePoints"),
       "PredictionApiClient should normalize dashboard activity from point-native aliases",
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
       !dashboardNormalizerSource.includes("...row") &&
+        !dashboardNormalizerSource.includes("totalVolumePointsCents:") &&
         !dashboardNormalizerSource.includes("totalVolumeCents:") &&
         !dashboardMoverNormalizerSource.includes("...row") &&
         !dashboardMoverNormalizerSource.includes("yesPriceCentsStart:") &&
         !dashboardMoverNormalizerSource.includes("yesPriceCentsNow:") &&
+        !dashboardMoverNormalizerSource.includes("volumePointsCents:") &&
         !dashboardMoverNormalizerSource.includes("volumeCents:"),
       "Dashboard normalizers should not reattach retired activity aliases",
     );
@@ -2134,13 +2167,16 @@ describe("Full-page translation coverage", () => {
     );
 
     assert.ok(
-      driftAlertType.includes("maxDriftPointsCents: number") &&
-        driftAlertType.includes("totalDriftPointsCents: number") &&
+      driftAlertType.includes("maxDriftPoints: number") &&
+        driftAlertType.includes("totalDriftPoints: number") &&
         driftAlertType.includes('unit: "PTS" | string'),
       "CollateralDriftAlert should expose required point-native drift fields",
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
-      !driftAlertType.includes("maxDriftCents") &&
+      !driftAlertType.includes("maxDriftPointsCents") &&
+        !driftAlertType.includes("maxDriftCents") &&
+        !driftAlertType.includes("totalDriftPointsCents") &&
         !driftAlertType.includes("totalDriftCents"),
       "Exported CollateralDriftAlert should not expose retired drift aliases",
     );
@@ -2148,16 +2184,19 @@ describe("Full-page translation coverage", () => {
       predictionClientSource.includes("type LegacyCollateralDriftAlert") &&
         predictionClientSource.includes("type LegacyDriftAlertsResponse") &&
         predictionClientSource.includes("normalizeCollateralDriftAlert") &&
-        predictionClientSource.includes("row.maxDriftPointsCents") &&
-        predictionClientSource.includes("row.totalDriftPointsCents") &&
+        predictionClientSource.includes("row.maxDriftPoints") &&
+        predictionClientSource.includes("row.totalDriftPoints") &&
         predictionClientSource.includes(
           "data: response.data.map(normalizeCollateralDriftAlert)",
         ),
       "PredictionApiClient should normalize drift alerts from point-native aliases",
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
       !driftAlertNormalizerSource.includes("...row") &&
+        !driftAlertNormalizerSource.includes("maxDriftPointsCents:") &&
         !driftAlertNormalizerSource.includes("maxDriftCents:") &&
+        !driftAlertNormalizerSource.includes("totalDriftPointsCents:") &&
         !driftAlertNormalizerSource.includes("totalDriftCents:"),
       "Drift alert normalizer should not reattach retired drift aliases",
     );
@@ -2187,13 +2226,16 @@ describe("Full-page translation coverage", () => {
       pricePointNormalizerEnd,
     );
     assert.ok(
-      pricePointType.includes("yesPricePointsCents: number") &&
-        pricePointType.includes("volumePointsCents: number") &&
+      pricePointType.includes("yesPricePoints: number") &&
+        pricePointType.includes("volumePoints: number") &&
         pricePointType.includes('unit?: "PTS" | string'),
       "PricePoint should expose required point-native price-history fields",
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
-      !pricePointType.includes("yesPriceCents") &&
+      !pricePointType.includes("yesPricePointsCents") &&
+        !pricePointType.includes("yesPriceCents") &&
+        !pricePointType.includes("volumePointsCents") &&
         !pricePointType.includes("volumeCents"),
       "exported PricePoint should not expose retired price-history aliases",
     );
@@ -2201,21 +2243,21 @@ describe("Full-page translation coverage", () => {
       predictionClientSource.includes("normalizeMarketPriceHistory") &&
         predictionClientSource.includes("normalizePricePoint") &&
         predictionClientSource.includes("type LegacyPricePoint") &&
-        predictionClientSource.includes("row.yesPricePointsCents") &&
-        predictionClientSource.includes("row.volumePointsCents") &&
+        predictionClientSource.includes("row.yesPricePoints") &&
+        predictionClientSource.includes("row.volumePoints") &&
         predictionClientSource.includes('unit: row.unit || "PTS"'),
       "PredictionApiClient should normalize price-history buckets from point-native aliases",
     );
     assert.ok(
-      !/yesPriceCents: yesPricePointsCents|volumeCents: volumePointsCents/.test(
+      !/yesPricePoints: yesPricePoints|volumePoints: volumePoints/.test(
         pricePointNormalizer,
       ),
       "normalizePricePoint should not reattach retired price-history aliases",
     );
     assert.ok(
-      marketChartSource.includes("p.yesPricePointsCents") &&
-        discoverPageSource.includes("point.yesPricePointsCents") &&
-        heroPriceHistorySource.includes("p.yesPricePointsCents"),
+      marketChartSource.includes("p.yesPricePoints") &&
+        discoverPageSource.includes("point.yesPricePoints") &&
+        heroPriceHistorySource.includes("p.yesPricePoints"),
       "price-history UI consumers should read point-native history fields",
     );
   });
@@ -2243,13 +2285,15 @@ describe("Full-page translation coverage", () => {
       orderBookNormalizerStart,
       orderBookNormalizerEnd,
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
-      orderBookLevelType.includes("pricePointsCents: number") &&
+      orderBookLevelType.includes("pricePoints: number") &&
         orderBookLevelType.includes("shares: number") &&
         orderBookLevelType.includes("cumulativeShares: number") &&
-        orderBookLevelType.includes("notionalPointsCents: number") &&
-        orderBookLevelType.includes("totalNotionalPointsCents: number") &&
+        orderBookLevelType.includes("notionalPoints: number") &&
+        orderBookLevelType.includes("totalNotionalPoints: number") &&
         orderBookLevelType.includes('unit: "PTS" | string') &&
+        !orderBookLevelType.includes("pricePointsCents") &&
         !orderBookLevelType.includes("priceCents") &&
         !orderBookLevelType.includes("quantity") &&
         !orderBookLevelType.includes("total: number"),
@@ -2259,26 +2303,28 @@ describe("Full-page translation coverage", () => {
       predictionClientSource.includes("normalizeOrderBook") &&
         predictionClientSource.includes("normalizeOrderBookLevel") &&
         predictionClientSource.includes("type LegacyOrderBookLevel") &&
-        predictionClientSource.includes("row.pricePointsCents") &&
+        predictionClientSource.includes("row.pricePoints") &&
         predictionClientSource.includes("row.shares") &&
         predictionClientSource.includes("row.cumulativeShares") &&
-        predictionClientSource.includes("row.notionalPointsCents") &&
-        predictionClientSource.includes("row.totalNotionalPointsCents") &&
+        predictionClientSource.includes("row.notionalPoints") &&
+        predictionClientSource.includes("row.totalNotionalPoints") &&
         predictionClientSource.includes('unit: row.unit || "PTS"'),
       "PredictionApiClient should normalize order-book levels from point-native fields",
     );
     assert.ok(
-      !/priceCents: pricePointsCents|quantity: shares|total: cumulativeShares/.test(
+      !/pricePoints: pricePoints|quantity: shares|total: cumulativeShares/.test(
         orderBookNormalizer,
       ),
       "normalizeOrderBookLevel should not reattach retired order-book depth aliases",
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
-      marketPageSource.includes("lvl.pricePointsCents") &&
+      marketPageSource.includes("lvl.pricePoints") &&
         marketPageSource.includes("lvl.shares") &&
         marketPageSource.includes("lvl.cumulativeShares") &&
-        orderBookSource.includes("pricePointsCents: number") &&
+        orderBookSource.includes("pricePoints: number") &&
         orderBookSource.includes("cumulativeShares: number") &&
+        !marketPageSource.includes("lvl.pricePointsCents") &&
         !marketPageSource.includes("lvl.priceCents") &&
         !marketPageSource.includes("lvl.quantity") &&
         !marketPageSource.includes("lvl.total"),
@@ -2296,45 +2342,50 @@ describe("Full-page translation coverage", () => {
       predictionClientSource.indexOf("function normalizePortfolioSummary"),
       predictionClientSource.indexOf("function normalizeOrderPreview"),
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
-      summaryTypeSource.includes("totalValuePointsCents: number") &&
-        summaryTypeSource.includes("portfolioValuePointsCents: number") &&
-        summaryTypeSource.includes("investedPointsCents: number") &&
-        summaryTypeSource.includes("unrealizedPointsCents: number") &&
-        summaryTypeSource.includes("realizedPointsCents: number") &&
+      summaryTypeSource.includes("totalValuePoints: number") &&
+        summaryTypeSource.includes("portfolioValuePoints: number") &&
+        summaryTypeSource.includes("investedPoints: number") &&
+        summaryTypeSource.includes("unrealizedPoints: number") &&
+        summaryTypeSource.includes("realizedPoints: number") &&
+        !summaryTypeSource.includes("totalValuePointsCents") &&
         !summaryTypeSource.includes("totalValueCents") &&
-        !summaryTypeSource.includes("unrealizedPnlCents") &&
-        !summaryTypeSource.includes("realizedPnlCents"),
+        !summaryTypeSource.includes("unrealizedPnlPoints") &&
+        !summaryTypeSource.includes("realizedPnlPoints"),
       "PortfolioSummary should expose point-native summary aliases",
     );
     assert.ok(
       summaryNormalizerSource.includes("normalizePortfolioSummary") &&
-        summaryNormalizerSource.includes("row.totalValuePointsCents") &&
-        summaryNormalizerSource.includes("row.portfolioValuePointsCents") &&
-        summaryNormalizerSource.includes("row.unrealizedPointsCents") &&
-        summaryNormalizerSource.includes("row.realizedPointsCents") &&
+        summaryNormalizerSource.includes("row.totalValuePoints") &&
+        summaryNormalizerSource.includes("row.portfolioValuePoints") &&
+        summaryNormalizerSource.includes("row.unrealizedPoints") &&
+        summaryNormalizerSource.includes("row.realizedPoints") &&
         predictionClientSource.includes("type LegacyPortfolioSummary") &&
         !summaryNormalizerSource.includes(
-          "totalValueCents: totalValuePointsCents",
+          "totalValuePoints: totalValuePoints",
         ) &&
         !summaryNormalizerSource.includes(
-          "unrealizedPnlCents: unrealizedPointsCents",
+          "unrealizedPnlPoints: unrealizedPoints",
         ) &&
         !summaryNormalizerSource.includes(
-          "realizedPnlCents: realizedPointsCents",
+          "realizedPnlPoints: realizedPoints",
         ) &&
         summaryNormalizerSource.includes('unit: row.unit || "PTS"'),
       "PredictionApiClient should normalize portfolio summary from point-native aliases",
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
-      portfolioSource.includes("s.totalValuePointsCents") &&
-        portfolioSource.includes("s?.realizedPointsCents") &&
-        accountSource.includes("summary.totalValuePointsCents") &&
-        accountSource.includes("summary.realizedPointsCents") &&
+      portfolioSource.includes("s.totalValuePoints") &&
+        portfolioSource.includes("s?.realizedPoints") &&
+        accountSource.includes("summary.totalValuePoints") &&
+        accountSource.includes("summary.realizedPoints") &&
+        !portfolioSource.includes("s.totalValuePointsCents") &&
         !portfolioSource.includes("s.totalValueCents") &&
-        !portfolioSource.includes("s?.realizedPnlCents") &&
+        !portfolioSource.includes("s?.realizedPnlPoints") &&
+        !accountSource.includes("summary.totalValuePointsCents") &&
         !accountSource.includes("summary.totalValueCents") &&
-        !accountSource.includes("summary.realizedPnlCents"),
+        !accountSource.includes("summary.realizedPnlPoints"),
       "Portfolio/account pages should render summary cards from point-native fields",
     );
   });
@@ -2348,41 +2399,47 @@ describe("Full-page translation coverage", () => {
       predictionClientSource.indexOf("function normalizePosition"),
       predictionClientSource.indexOf("function normalizeSettleMarketResponse"),
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
-      positionTypeSource.includes("avgPricePointsCents: number") &&
-        positionTypeSource.includes("totalCostPointsCents: number") &&
-        positionTypeSource.includes("realizedPointsCents: number") &&
+      positionTypeSource.includes("avgPricePoints: number") &&
+        positionTypeSource.includes("totalCostPoints: number") &&
+        positionTypeSource.includes("realizedPoints: number") &&
         positionTypeSource.includes('unit?: "PTS" | string') &&
+        !positionTypeSource.includes("avgPricePointsCents") &&
         !positionTypeSource.includes("avgPriceCents") &&
+        !positionTypeSource.includes("totalCostPointsCents") &&
         !positionTypeSource.includes("totalCostCents") &&
-        !positionTypeSource.includes("realizedPnlCents"),
+        !positionTypeSource.includes("realizedPnlPoints"),
       "Position should expose point-native position price/cost/result aliases",
     );
     assert.ok(
       positionNormalizerSource.includes("normalizePosition") &&
-        positionNormalizerSource.includes("row.avgPricePointsCents") &&
-        positionNormalizerSource.includes("row.totalCostPointsCents") &&
-        positionNormalizerSource.includes("row.realizedPointsCents") &&
+        positionNormalizerSource.includes("row.avgPricePoints") &&
+        positionNormalizerSource.includes("row.totalCostPoints") &&
+        positionNormalizerSource.includes("row.realizedPoints") &&
         predictionClientSource.includes("LegacyPosition[]") &&
         predictionClientSource.includes("positions.map(normalizePosition)") &&
         !positionNormalizerSource.includes(
-          "avgPriceCents: avgPricePointsCents",
+          "avgPricePoints: avgPricePoints",
         ) &&
         !positionNormalizerSource.includes(
-          "totalCostCents: totalCostPointsCents",
+          "totalCostPoints: totalCostPoints",
         ) &&
         !positionNormalizerSource.includes(
-          "realizedPnlCents: realizedPointsCents",
+          "realizedPnlPoints: realizedPoints",
         ) &&
         positionNormalizerSource.includes('unit: row.unit || "PTS"'),
       "PredictionApiClient should normalize portfolio positions from point-native price/cost/result aliases",
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
-      portfolioSource.includes("p.avgPricePointsCents") &&
-        portfolioSource.includes("p.totalCostPointsCents") &&
+      portfolioSource.includes("p.avgPricePoints") &&
+        portfolioSource.includes("p.totalCostPoints") &&
+        !portfolioSource.includes("p.avgPricePointsCents") &&
         !portfolioSource.includes("p.avgPriceCents") &&
+        !portfolioSource.includes("p.totalCostPointsCents") &&
         !portfolioSource.includes("p.totalCostCents") &&
-        !portfolioSource.includes("p.realizedPnlCents"),
+        !portfolioSource.includes("p.realizedPnlPoints"),
       "Portfolio page should render positions from point-native fields",
     );
   });
@@ -2397,79 +2454,84 @@ describe("Full-page translation coverage", () => {
       predictionClientSource.indexOf("function normalizePosition"),
     );
     assert.ok(
-      orderTypeSource.includes("totalCostPointsCents: number") &&
-        orderTypeSource.includes("pricePointsCents?: number") &&
-        orderTypeSource.includes("reservedPointsCents?: number") &&
-        orderTypeSource.includes("capturedPointsCents?: number") &&
-        orderTypeSource.includes("releasedPointsCents?: number") &&
-        orderTypeSource.includes("averageFillPricePointsCents?: number") &&
-        orderTypeSource.includes("filledCostPointsCents?: number") &&
-        orderTypeSource.includes("notionalCapPointsCents?: number") &&
-        !orderTypeSource.includes("priceCents?: number") &&
-        !orderTypeSource.includes("averageFillPriceCents?: number") &&
+      orderTypeSource.includes("totalCostPoints: number") &&
+        orderTypeSource.includes("pricePoints?: number") &&
+        orderTypeSource.includes("reservedPoints?: number") &&
+        orderTypeSource.includes("capturedPoints?: number") &&
+        orderTypeSource.includes("releasedPoints?: number") &&
+        orderTypeSource.includes("averageFillPricePoints?: number") &&
+        orderTypeSource.includes("filledCostPoints?: number") &&
+        orderTypeSource.includes("notionalCapPoints?: number") &&
+        // Points unit-model (2026-07-07): single canonical *Points wire key.
+        !orderTypeSource.includes("PointsCents") &&
+        !orderTypeSource.includes("priceCents") &&
         !orderTypeSource.includes("walletReservationId") &&
         !orderTypeSource.includes("totalCostCents") &&
         !orderTypeSource.includes("filledCostCents") &&
         !orderTypeSource.includes("notionalCapCents"),
       "PredictionOrder should expose point-native order price/cost aliases",
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
       predictionTypesSource.includes(
-        "notionalCapPointsCents: preferred point-native",
+        "notionalCapPoints: preferred point-native",
       ) &&
         predictionTypesSource.includes(
-          "pricePointsCents: preferred point-native",
+          "pricePoints: preferred point-native",
         ) &&
         !predictionTypesSource.includes("priceCents?: number") &&
         !predictionTypesSource.includes("notionalCapCents?: number") &&
+        !predictionTypesSource.includes("PointsCents") &&
         !predictionTypesSource.includes("transitional compatibility alias"),
       "PlaceOrderRequest should expose only point-native price/cap aliases",
     );
     assert.ok(
       orderNormalizerSource.includes("normalizePredictionOrder") &&
-        orderNormalizerSource.includes("row.pricePointsCents") &&
-        orderNormalizerSource.includes("row.averageFillPricePointsCents") &&
-        orderNormalizerSource.includes("row.capturedPointsCents") &&
-        orderNormalizerSource.includes("row.reservedPointsCents") &&
-        orderNormalizerSource.includes("row.notionalCapPointsCents") &&
+        orderNormalizerSource.includes("row.pricePoints") &&
+        orderNormalizerSource.includes("row.averageFillPricePoints") &&
+        orderNormalizerSource.includes("row.capturedPoints") &&
+        orderNormalizerSource.includes("row.reservedPoints") &&
+        orderNormalizerSource.includes("row.notionalCapPoints") &&
         predictionClientSource.includes("LegacyPredictionOrder") &&
-        !orderNormalizerSource.includes("priceCents: pricePointsCents") &&
+        !orderNormalizerSource.includes("pricePoints: pricePoints") &&
         !orderNormalizerSource.includes(
-          "averageFillPriceCents: averageFillPricePointsCents",
+          "averageFillPricePoints: averageFillPricePoints",
         ) &&
         !orderNormalizerSource.includes(
-          "totalCostCents: totalCostPointsCents",
+          "totalCostPoints: totalCostPoints",
         ) &&
         !orderNormalizerSource.includes(
-          "filledCostCents: filledCostPointsCents",
+          "filledCostPoints: filledCostPoints",
         ) &&
         !orderNormalizerSource.includes(
-          "notionalCapCents: notionalCapPointsCents",
+          "notionalCapPoints: notionalCapPoints",
         ) &&
         !orderNormalizerSource.includes("walletReservationId") &&
         orderNormalizerSource.includes('unit: row.unit || "PTS"'),
       "PredictionApiClient should normalize orders from point-native aliases",
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
-      portfolioSource.includes("o.totalCostPointsCents") &&
+      portfolioSource.includes("o.totalCostPoints") &&
+        !portfolioSource.includes("o.totalCostPointsCents") &&
         !portfolioSource.includes("o.totalCostCents"),
       "Portfolio page should render orders from point-native fields",
     );
     assert.ok(
-      !predictionTypesSource.includes("reservedCashCents?: number") &&
-        !predictionTypesSource.includes("capturedCashCents?: number") &&
-        !predictionTypesSource.includes("releasedCashCents?: number"),
+      !predictionTypesSource.includes("reservedCashPoints?: number") &&
+        !predictionTypesSource.includes("capturedCashPoints?: number") &&
+        !predictionTypesSource.includes("releasedCashPoints?: number"),
       "PredictionOrder should not expose retired cash-named reservation aliases",
     );
     assert.ok(
       !predictionClientSource.includes(
-        "reservedCashCents: reservedPointsCents",
+        "reservedCashPoints: reservedPoints",
       ) &&
         !predictionClientSource.includes(
-          "capturedCashCents: capturedPointsCents",
+          "capturedCashPoints: capturedPoints",
         ) &&
         !predictionClientSource.includes(
-          "releasedCashCents: releasedPointsCents",
+          "releasedCashPoints: releasedPoints",
         ),
       "PredictionApiClient should not reattach retired cash-named order aliases",
     );
@@ -2485,24 +2547,25 @@ describe("Full-page translation coverage", () => {
       predictionClientSource.indexOf("function normalizeTrade"),
     );
     assert.ok(
-      previewTypeSource.includes("pricePointsCents: number") &&
-        previewTypeSource.includes("totalCostPointsCents: number") &&
-        previewTypeSource.includes("feePointsCents: number") &&
-        previewTypeSource.includes("maxResultPointsCents: number") &&
-        previewTypeSource.includes("maxLossPointsCents: number") &&
-        previewTypeSource.includes("newYesPricePointsCents: number") &&
-        previewTypeSource.includes("newNoPricePointsCents: number") &&
+      previewTypeSource.includes("pricePoints: number") &&
+        previewTypeSource.includes("totalCostPoints: number") &&
+        previewTypeSource.includes("feePoints: number") &&
+        previewTypeSource.includes("maxResultPoints: number") &&
+        previewTypeSource.includes("maxLossPoints: number") &&
+        previewTypeSource.includes("newYesPricePoints: number") &&
+        previewTypeSource.includes("newNoPricePoints: number") &&
         predictionTypesSource.includes(
-          "totalCostWithFeesPointsCents?: number",
+          "totalCostWithFeesPoints?: number",
         ) &&
         predictionTypesSource.includes(
-          "estimatedSlippagePointsCents?: number",
+          "estimatedSlippagePoints?: number",
         ) &&
+        // Points unit-model (2026-07-07): single canonical *Points wire key.
+        !previewTypeSource.includes("PointsCents") &&
         !previewTypeSource.includes("priceCents") &&
         !previewTypeSource.includes("totalCostCents") &&
         !previewTypeSource.includes("feeCents") &&
-        !previewTypeSource.includes("maxProfitCents") &&
-        !previewTypeSource.includes("maxProfitPointsCents") &&
+        !previewTypeSource.includes("maxProfitPoints") &&
         !previewTypeSource.includes("maxLossCents") &&
         !previewTypeSource.includes("newYesPriceCents") &&
         !previewTypeSource.includes("newNoPriceCents") &&
@@ -2513,50 +2576,54 @@ describe("Full-page translation coverage", () => {
     );
     assert.ok(
       previewNormalizerSource.includes("normalizeOrderPreview") &&
-        previewNormalizerSource.includes("row.totalCostPointsCents") &&
-        previewNormalizerSource.includes("row.maxResultPointsCents") &&
-        previewNormalizerSource.includes("row.estimatedSlippagePointsCents") &&
+        previewNormalizerSource.includes("row.totalCostPoints") &&
+        previewNormalizerSource.includes("row.maxResultPoints") &&
+        previewNormalizerSource.includes("row.estimatedSlippagePoints") &&
         predictionClientSource.includes("type LegacyOrderPreview") &&
-        !previewNormalizerSource.includes("priceCents: pricePointsCents") &&
+        !previewNormalizerSource.includes("pricePoints: pricePoints") &&
         !previewNormalizerSource.includes(
-          "totalCostCents: totalCostPointsCents",
+          "totalCostPoints: totalCostPoints",
         ) &&
-        !previewNormalizerSource.includes("feeCents: feePointsCents") &&
+        !previewNormalizerSource.includes("feePoints: feePoints") &&
         !previewNormalizerSource.includes(
-          "maxProfitCents: maxResultPointsCents",
-        ) &&
-        !previewNormalizerSource.includes(
-          "maxProfitPointsCents: maxResultPointsCents",
-        ) &&
-        !previewNormalizerSource.includes("maxLossCents: maxLossPointsCents") &&
-        !previewNormalizerSource.includes(
-          "newYesPriceCents: newYesPricePointsCents",
+          "maxProfitPoints: maxResultPoints",
         ) &&
         !previewNormalizerSource.includes(
-          "newNoPriceCents: newNoPricePointsCents",
+          "maxProfitPoints: maxResultPoints",
+        ) &&
+        !previewNormalizerSource.includes("maxLossPoints: maxLossPoints") &&
+        !previewNormalizerSource.includes(
+          "newYesPricePoints: newYesPricePoints",
         ) &&
         !previewNormalizerSource.includes(
-          "averageFillPriceCents: averageFillPricePointsCents",
+          "newNoPricePoints: newNoPricePoints",
         ) &&
         !previewNormalizerSource.includes(
-          "totalCostWithFeesCents: totalCostWithFeesPointsCents",
+          "averageFillPricePoints: averageFillPricePoints",
         ) &&
         !previewNormalizerSource.includes(
-          "estimatedSlippageCents: estimatedSlippagePointsCents",
+          "totalCostWithFeesPoints: totalCostWithFeesPoints",
+        ) &&
+        !previewNormalizerSource.includes(
+          "estimatedSlippagePoints: estimatedSlippagePoints",
         ) &&
         !predictionClientSource.includes("toPointNativeOrderRequest") &&
         !predictionClientSource.includes(
-          "notionalCapPointsCents: req.notionalCapCents",
+          "notionalCapPoints: req.notionalCapPoints",
         ) &&
         previewNormalizerSource.includes('unit: row.unit || "PTS"'),
       "PredictionApiClient should normalize order previews without preserving request cap shims",
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
-      marketPageSource.includes("quote.newYesPricePointsCents") &&
-        marketPageSource.includes("quote.averageFillPricePointsCents") &&
-        marketPageSource.includes("quote.totalCostWithFeesPointsCents") &&
+      marketPageSource.includes("quote.newYesPricePoints") &&
+        marketPageSource.includes("quote.averageFillPricePoints") &&
+        marketPageSource.includes("quote.totalCostWithFeesPoints") &&
+        !marketPageSource.includes("quote.newYesPricePointsCents") &&
         !marketPageSource.includes("quote.newYesPriceCents") &&
+        !marketPageSource.includes("quote.averageFillPricePointsCents") &&
         !marketPageSource.includes("quote.averageFillPriceCents") &&
+        !marketPageSource.includes("quote.totalCostWithFeesPointsCents") &&
         !marketPageSource.includes("quote.totalCostWithFeesCents"),
       "Market detail AMM preview quotes should render from point-native preview fields",
     );
@@ -2572,11 +2639,13 @@ describe("Full-page translation coverage", () => {
       predictionClientSource.indexOf("function normalizePredictionOrder"),
     );
     const recentTradesSource = read("components/prediction/RecentTrades.tsx");
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
-      tradeTypeSource.includes("pricePointsCents: number") &&
-        tradeTypeSource.includes("feePointsCents: number") &&
-        tradeTypeSource.includes("notionalPointsCents: number") &&
+      tradeTypeSource.includes("pricePoints: number") &&
+        tradeTypeSource.includes("feePoints: number") &&
+        tradeTypeSource.includes("notionalPoints: number") &&
         tradeTypeSource.includes('unit?: "PTS" | string') &&
+        !tradeTypeSource.includes("PointsCents") &&
         !tradeTypeSource.includes("priceCents") &&
         !tradeTypeSource.includes("feeCents"),
       "Trade should expose point-native trade-tape aliases",
@@ -2585,16 +2654,18 @@ describe("Full-page translation coverage", () => {
       tradeNormalizerSource.includes("normalizeTrade") &&
         predictionClientSource.includes("trades.map(normalizeTrade)") &&
         predictionClientSource.includes("type LegacyTrade") &&
-        tradeNormalizerSource.includes("row.pricePointsCents") &&
-        tradeNormalizerSource.includes("row.feePointsCents") &&
-        tradeNormalizerSource.includes("row.notionalPointsCents") &&
-        !tradeNormalizerSource.includes("priceCents: pricePointsCents") &&
-        !tradeNormalizerSource.includes("feeCents: feePointsCents") &&
+        tradeNormalizerSource.includes("row.pricePoints") &&
+        tradeNormalizerSource.includes("row.feePoints") &&
+        tradeNormalizerSource.includes("row.notionalPoints") &&
+        !tradeNormalizerSource.includes("pricePoints: pricePoints") &&
+        !tradeNormalizerSource.includes("feePoints: feePoints") &&
         tradeNormalizerSource.includes('unit: row.unit || "PTS"'),
       "PredictionApiClient should normalize trade tape rows from point-native aliases",
     );
+    // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
-      recentTradesSource.includes("pricePointsCents") &&
+      recentTradesSource.includes(".pricePoints") &&
+        !recentTradesSource.includes(".pricePointsCents") &&
         !recentTradesSource.includes(".priceCents"),
       "RecentTrades should render trade prices from point-native fields",
     );
@@ -2615,9 +2686,9 @@ describe("Full-page translation coverage", () => {
           "pointDisbursements?: SettlementPointDisbursement[]",
         ) &&
         !predictionTypesSource.includes("payouts?: SettlementPayout[]") &&
-        predictionTypesSource.includes("totalSettlementPointsCents?: number") &&
-        predictionTypesSource.includes("settlementPointsCents?: number") &&
-        !predictionTypesSource.includes("totalPayoutCents?: number"),
+        predictionTypesSource.includes("totalSettlementPoints?: number") &&
+        predictionTypesSource.includes("settlementPoints?: number") &&
+        !predictionTypesSource.includes("totalPayoutPoints?: number"),
       "Settlement admin response types should expose point-native disbursement aliases",
     );
     assert.ok(
@@ -2626,9 +2697,9 @@ describe("Full-page translation coverage", () => {
         predictionClientSource.includes(
           "normalizeSettlementPointDisbursement",
         ) &&
-        predictionClientSource.includes("settlementPointsCents") &&
+        predictionClientSource.includes("settlementPoints") &&
         !settlementNormalizerSource.includes(
-          "payoutCents: settlementPointsCents",
+          "payoutPoints: settlementPoints",
         ),
       "PredictionApiClient should normalize admin settlement responses from point-native aliases",
     );

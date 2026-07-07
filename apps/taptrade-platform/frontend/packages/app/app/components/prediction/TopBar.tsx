@@ -419,7 +419,7 @@ export function TopBar() {
                         <span className={TOP_BAR_SEARCH_HIT_META_CLASS}>
                           {t("SEARCH_RESULT_META", {
                             ticker: m.ticker,
-                            price: m.yesPricePointsCents,
+                            price: m.yesPricePoints,
                           })}
                         </span>
                       </li>

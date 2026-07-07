@@ -35,9 +35,9 @@ interface MarketCardProps {
   marketId: string;
   ticker: string;
   title: string;
-  yesPriceCents: number;
-  noPriceCents: number;
-  volumePointsCents: number;
+  yesPricePoints: number;
+  noPricePoints: number;
+  volumePoints: number;
   closeAt: string;
   status: string;
   categoryLabel?: string;
@@ -65,9 +65,9 @@ export function MarketCard({
   marketId,
   ticker,
   title,
-  yesPriceCents,
-  noPriceCents,
-  volumePointsCents,
+  yesPricePoints,
+  noPricePoints,
+  volumePoints,
   closeAt,
   status,
   categoryLabel,
@@ -97,7 +97,7 @@ export function MarketCard({
     image.kind === "image" && failedImageSrc !== image.src
       ? image
       : fallbackImage;
-  const marketSentiment = calculateMarketSentiment(yesPriceCents);
+  const marketSentiment = calculateMarketSentiment(yesPricePoints);
   const trendClassName =
     marketSentiment.sentimentState === "neutral"
       ? "text-[var(--t3)]"
@@ -199,7 +199,7 @@ export function MarketCard({
             {t("YES")}
           </span>
           <span className="font-mono text-[16px] font-semibold text-[var(--yes-text)] tabular-nums">
-            {yesPriceCents}¢
+            {yesPricePoints}¢
           </span>
         </Link>
         <Link
@@ -211,7 +211,7 @@ export function MarketCard({
             {t("NO")}
           </span>
           <span className="font-mono text-[16px] font-semibold text-[var(--no-text)] tabular-nums">
-            {noPriceCents}¢
+            {noPricePoints}¢
           </span>
         </Link>
       </div>
@@ -222,7 +222,7 @@ export function MarketCard({
         <span className="truncate">
           {t("VOLUME")}{" "}
           <span className="font-mono font-semibold text-[var(--t2)] tabular-nums">
-            {formatCompactPoints(volumePointsCents)}
+            {formatCompactPoints(volumePoints)}
           </span>
         </span>
         <span className="shrink-0">

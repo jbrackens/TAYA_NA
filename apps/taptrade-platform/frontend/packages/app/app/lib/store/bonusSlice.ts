@@ -3,9 +3,9 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "./store";
 
 interface WalletBreakdown {
-  basePointsCents: number;
-  bonusPointsCents: number;
-  totalPointsCents: number;
+  basePoints: number;
+  bonusPoints: number;
+  totalPoints: number;
   unit: string;
 }
 
@@ -15,10 +15,10 @@ interface ActiveBonus {
   bonusType: string;
   status: string;
   unit: string;
-  grantedPointsCents: number;
-  remainingPointsCents: number;
-  playRequiredPointsCents: number;
-  playCompletedPointsCents: number;
+  grantedPoints: number;
+  remainingPoints: number;
+  playRequiredPoints: number;
+  playCompletedPoints: number;
   playProgressPct: number;
   expiresAt: string;
   grantedAt: string;
@@ -51,7 +51,7 @@ const bonusSlice = createSlice({
       state,
       action: PayloadAction<{
         bonusId: number;
-        completedCents: number;
+        completedPoints: number;
         progressPct: number;
       }>,
     ) => {
@@ -59,7 +59,7 @@ const bonusSlice = createSlice({
         (b) => b.bonusId === action.payload.bonusId,
       );
       if (bonus) {
-        bonus.playCompletedPointsCents = action.payload.completedCents;
+        bonus.playCompletedPoints = action.payload.completedPoints;
         bonus.playProgressPct = action.payload.progressPct;
       }
     },

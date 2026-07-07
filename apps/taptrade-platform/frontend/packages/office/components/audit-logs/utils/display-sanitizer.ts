@@ -1,7 +1,7 @@
 const AUDIT_DETAIL_DISPLAY_KEY_ALIASES: Record<string, string> = {
   freebetId: "pointGrantId",
   oddsBoostId: "pointRuleId",
-  freebetAppliedCents: "pointGrantAppliedPointsCents",
+  freebetAppliedPoints: "pointGrantAppliedPoints",
 };
 
 const isPlainRecord = (value: unknown): value is Record<string, unknown> =>

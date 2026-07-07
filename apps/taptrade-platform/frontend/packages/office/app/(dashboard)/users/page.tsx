@@ -57,8 +57,8 @@ function UsersPageContent() {
             name: toDisplayName(item.email),
             email: item.email,
             lastActivity: item.lastLoginAt || "Never",
-            balance: (item.pointAccountBalanceCents ?? 0) / 100,
-            pnl: (item.realizedPointsCents ?? 0) / 100,
+            balance: (item.pointAccountBalancePoints ?? 0) / 100,
+            pnl: (item.realizedPoints ?? 0) / 100,
             status: toUserStatus(item.status),
           })),
         );
@@ -95,8 +95,8 @@ function UsersPageContent() {
             name: toDisplayName(item.email),
             email: item.email,
             lastActivity: item.lastLoginAt || "Never",
-            balance: (item.pointAccountBalanceCents ?? 0) / 100,
-            pnl: (item.realizedPointsCents ?? 0) / 100,
+            balance: (item.pointAccountBalancePoints ?? 0) / 100,
+            pnl: (item.realizedPoints ?? 0) / 100,
             status: toUserStatus(item.status),
           })),
         );

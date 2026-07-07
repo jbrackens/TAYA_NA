@@ -11,27 +11,27 @@ export interface PlayerBonus {
   bonusType: string;
   status: string;
   unit: string;
-  grantedPointsCents: number;
-  remainingPointsCents: number;
-  playRequiredPointsCents: number;
-  playCompletedPointsCents: number;
+  grantedPoints: number;
+  remainingPoints: number;
+  playRequiredPoints: number;
+  playCompletedPoints: number;
   playProgressPct: number;
   expiresAt: string;
   grantedAt: string;
 }
 
 export interface WalletBreakdown {
-  basePointsCents: number;
-  bonusPointsCents: number;
-  totalPointsCents: number;
+  basePoints: number;
+  bonusPoints: number;
+  totalPoints: number;
   unit: string;
 }
 
 export interface PlayContribution {
   betId: string;
   betType: string;
-  playAmountPointsCents: number;
-  contributionPointsCents: number;
+  playAmountPoints: number;
+  contributionPoints: number;
   oddsDecimal: number;
   legCount: number;
   contributedAt: string;
@@ -40,8 +40,8 @@ export interface PlayContribution {
 export interface BonusProgress {
   bonusId: number;
   unit: string;
-  playRequiredPointsCents: number;
-  playCompletedPointsCents: number;
+  playRequiredPoints: number;
+  playCompletedPoints: number;
   playProgressPct: number;
   recentContributions: PlayContribution[];
 }
@@ -59,18 +59,18 @@ interface PlayerBonusResponse {
   bonus_type?: string;
   bonusType?: string;
   status: string;
-  granted_amount_cents?: number;
-  grantedAmountCents?: number;
-  grantedPointsCents?: number;
-  remaining_amount_cents?: number;
-  remainingAmountCents?: number;
-  remainingPointsCents?: number;
-  wagering_required_cents?: number;
-  wageringRequiredCents?: number;
-  playRequiredPointsCents?: number;
-  wagering_completed_cents?: number;
-  wageringCompletedCents?: number;
-  playCompletedPointsCents?: number;
+  granted_amount_points?: number;
+  grantedAmountPoints?: number;
+  grantedPoints?: number;
+  remaining_amount_points?: number;
+  remainingAmountPoints?: number;
+  remainingPoints?: number;
+  wagering_required_points?: number;
+  wageringRequiredPoints?: number;
+  playRequiredPoints?: number;
+  wagering_completed_points?: number;
+  wageringCompletedPoints?: number;
+  playCompletedPoints?: number;
   wagering_progress_pct?: number;
   wageringProgressPct?: number;
   playProgressPct?: number;
@@ -84,12 +84,12 @@ interface BonusProgressResponse {
   unit?: string;
   bonus_id?: number;
   bonusId?: number;
-  wagering_required_cents?: number;
-  wageringRequiredCents?: number;
-  playRequiredPointsCents?: number;
-  wagering_completed_cents?: number;
-  wageringCompletedCents?: number;
-  playCompletedPointsCents?: number;
+  wagering_required_points?: number;
+  wageringRequiredPoints?: number;
+  playRequiredPoints?: number;
+  wagering_completed_points?: number;
+  wageringCompletedPoints?: number;
+  playCompletedPoints?: number;
   progressPct?: number;
   playProgressPct?: number;
   recentContributions?: LegacyPlayContributionResponse[];
@@ -98,10 +98,8 @@ interface BonusProgressResponse {
 interface LegacyPlayContributionResponse {
   betId: string;
   betType: string;
-  stakeCents?: number;
-  stakePointsCents?: number;
-  contributionCents?: number;
-  contributionPointsCents?: number;
+  stakePoints?: number;
+  contributionPoints?: number;
   oddsDecimal: number;
   legCount: number;
   contributedAt: string;
@@ -109,17 +107,17 @@ interface LegacyPlayContributionResponse {
 
 interface BreakdownResponse {
   unit?: string;
-  basePointsCents?: number;
-  bonusPointsCents?: number;
-  totalPointsCents?: number;
+  basePoints?: number;
+  bonusPoints?: number;
+  totalPoints?: number;
   currency?: string;
   activeBonusCount?: number;
 }
 
 interface LegacyBreakdownResponse extends BreakdownResponse {
-  realMoneyCents?: number;
-  bonusFundCents?: number;
-  totalCents?: number;
+  realMoneyPoints?: number;
+  bonusFundPoints?: number;
+  totalPoints?: number;
 }
 
 const ACTIVE_CACHE_TTL_MS = 15_000;
@@ -205,18 +203,18 @@ export async function getWalletBreakdown(
     .get<BreakdownResponse>(`/api/v1/wallet/${userId}/breakdown`)
     .then((res) => {
       const legacyRes = res as LegacyBreakdownResponse;
-      const basePointsCents =
-        res.basePointsCents ?? legacyRes.realMoneyCents ?? 0;
-      const bonusPointsCents =
-        res.bonusPointsCents ?? legacyRes.bonusFundCents ?? 0;
-      const totalPointsCents =
-        res.totalPointsCents ??
-        legacyRes.totalCents ??
-        basePointsCents + bonusPointsCents;
+      const basePoints =
+        res.basePoints ?? legacyRes.realMoneyPoints ?? 0;
+      const bonusPoints =
+        res.bonusPoints ?? legacyRes.bonusFundPoints ?? 0;
+      const totalPoints =
+        res.totalPoints ??
+        legacyRes.totalPoints ??
+        basePoints + bonusPoints;
       const data: WalletBreakdown = {
-        basePointsCents,
-        bonusPointsCents,
-        totalPointsCents,
+        basePoints,
+        bonusPoints,
+        totalPoints,
         unit: res.unit || res.currency || "PTS",
       };
       breakdownCache.set(userId, {
@@ -241,25 +239,25 @@ export function invalidateBonusCaches(): void {
 }
 
 function normalizePlayerBonus(raw: PlayerBonusResponse): PlayerBonus {
-  const grantedPointsCents =
-    raw.grantedPointsCents ??
-    raw.grantedAmountCents ??
-    raw.granted_amount_cents ??
+  const grantedPoints =
+    raw.grantedPoints ??
+    raw.grantedAmountPoints ??
+    raw.granted_amount_points ??
     0;
-  const remainingPointsCents =
-    raw.remainingPointsCents ??
-    raw.remainingAmountCents ??
-    raw.remaining_amount_cents ??
+  const remainingPoints =
+    raw.remainingPoints ??
+    raw.remainingAmountPoints ??
+    raw.remaining_amount_points ??
     0;
-  const playRequiredPointsCents =
-    raw.playRequiredPointsCents ??
-    raw.wageringRequiredCents ??
-    raw.wagering_required_cents ??
+  const playRequiredPoints =
+    raw.playRequiredPoints ??
+    raw.wageringRequiredPoints ??
+    raw.wagering_required_points ??
     0;
-  const playCompletedPointsCents =
-    raw.playCompletedPointsCents ??
-    raw.wageringCompletedCents ??
-    raw.wagering_completed_cents ??
+  const playCompletedPoints =
+    raw.playCompletedPoints ??
+    raw.wageringCompletedPoints ??
+    raw.wagering_completed_points ??
     0;
   const playProgressPct =
     raw.playProgressPct ??
@@ -273,10 +271,10 @@ function normalizePlayerBonus(raw: PlayerBonusResponse): PlayerBonus {
     bonusType: raw.bonusType ?? raw.bonus_type ?? "",
     status: raw.status,
     unit: raw.unit || "PTS",
-    grantedPointsCents,
-    remainingPointsCents,
-    playRequiredPointsCents,
-    playCompletedPointsCents,
+    grantedPoints,
+    remainingPoints,
+    playRequiredPoints,
+    playCompletedPoints,
     playProgressPct,
     expiresAt: raw.expiresAt ?? raw.expires_at ?? "",
     grantedAt: raw.grantedAt ?? raw.granted_at ?? "",
@@ -284,23 +282,23 @@ function normalizePlayerBonus(raw: PlayerBonusResponse): PlayerBonus {
 }
 
 function normalizeBonusProgress(raw: BonusProgressResponse): BonusProgress {
-  const playRequiredPointsCents =
-    raw.playRequiredPointsCents ??
-    raw.wageringRequiredCents ??
-    raw.wagering_required_cents ??
+  const playRequiredPoints =
+    raw.playRequiredPoints ??
+    raw.wageringRequiredPoints ??
+    raw.wagering_required_points ??
     0;
-  const playCompletedPointsCents =
-    raw.playCompletedPointsCents ??
-    raw.wageringCompletedCents ??
-    raw.wagering_completed_cents ??
+  const playCompletedPoints =
+    raw.playCompletedPoints ??
+    raw.wageringCompletedPoints ??
+    raw.wagering_completed_points ??
     0;
   const playProgressPct = raw.playProgressPct ?? raw.progressPct ?? 0;
 
   return {
     bonusId: raw.bonusId ?? raw.bonus_id ?? 0,
     unit: raw.unit || "PTS",
-    playRequiredPointsCents,
-    playCompletedPointsCents,
+    playRequiredPoints,
+    playCompletedPoints,
     playProgressPct,
     recentContributions: (raw.recentContributions || []).map(
       normalizePlayContribution,
@@ -314,9 +312,9 @@ function normalizePlayContribution(
   return {
     betId: raw.betId,
     betType: raw.betType,
-    playAmountPointsCents: raw.stakePointsCents ?? raw.stakeCents ?? 0,
-    contributionPointsCents:
-      raw.contributionPointsCents ?? raw.contributionCents ?? 0,
+    playAmountPoints: raw.stakePoints ?? raw.stakePoints ?? 0,
+    contributionPoints:
+      raw.contributionPoints ?? raw.contributionPoints ?? 0,
     oddsDecimal: raw.oddsDecimal,
     legCount: raw.legCount,
     contributedAt: raw.contributedAt,

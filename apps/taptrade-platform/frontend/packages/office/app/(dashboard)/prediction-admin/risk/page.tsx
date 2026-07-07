@@ -26,15 +26,15 @@ interface MarketExposure {
   marketId: string;
   ticker: string;
   status: string;
-  openPointCostCents: number;
-  maxReturnedPointsCents: number;
+  openPointCostPoints: number;
+  maxReturnedPoints: number;
   holders: number;
 }
 
 interface PointAccountingInvariants {
-  openPositionPointCostCents: number;
-  maxSettlementPointsCents: number;
-  reservedPointsCents: number;
+  openPositionPointCostPoints: number;
+  maxSettlementPoints: number;
+  reservedPoints: number;
   openOrderCount: number;
   nonTerminalMarkets: number;
   driftAlerts24h: number;
@@ -207,19 +207,19 @@ export default function PredictionRiskPage() {
         <Card className="!p-[18px]">
           <div className={statLabelClassName}>Open position point cost</div>
           <div className={statValueClassName()}>
-            {formatPoints(pointAccounting.openPositionPointCostCents)}
+            {formatPoints(pointAccounting.openPositionPointCostPoints)}
           </div>
         </Card>
         <Card className="!p-[18px]">
           <div className={statLabelClassName}>Max settlement points</div>
           <div className={statValueClassName(true)}>
-            {formatPoints(pointAccounting.maxSettlementPointsCents)}
+            {formatPoints(pointAccounting.maxSettlementPoints)}
           </div>
         </Card>
         <Card className="!p-[18px]">
           <div className={statLabelClassName}>Reserved points</div>
           <div className={statValueClassName()}>
-            {formatPoints(pointAccounting.reservedPointsCents)}
+            {formatPoints(pointAccounting.reservedPoints)}
           </div>
         </Card>
         <Card className="!p-[18px]">
@@ -301,10 +301,10 @@ export default function PredictionRiskPage() {
                 <td className={tdClassName}>{m.ticker}</td>
                 <td className={tdClassName}>{m.status}</td>
                 <td className={tdClassName}>
-                  {formatPoints(m.openPointCostCents)}
+                  {formatPoints(m.openPointCostPoints)}
                 </td>
                 <td className={tdClassName}>
-                  {formatPoints(m.maxReturnedPointsCents)}
+                  {formatPoints(m.maxReturnedPoints)}
                 </td>
                 <td className={tdClassName}>{m.holders.toLocaleString()}</td>
               </tr>

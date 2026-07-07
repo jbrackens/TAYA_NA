@@ -101,9 +101,9 @@ export function TierPill({ refreshMs = 60_000 }: TierPillProps) {
 
   if (!standing || standing.rank < 1) return null;
 
-  const points = Math.round(standing.pointsBalance / 100);
+  const points = Math.round(standing.pointsBalance);
   const ariaLabel = standing.nextRankName
-    ? `Rank: ${standing.rankName}, ${points} points. ${Math.round(standing.xpToNextRank / 100)} points to ${standing.nextRankName}.`
+    ? `Rank: ${standing.rankName}, ${points} points. ${Math.round(standing.xpToNextRank)} points to ${standing.nextRankName}.`
     : `Rank: ${standing.rankName}, ${points} points. Top rank.`;
 
   return (

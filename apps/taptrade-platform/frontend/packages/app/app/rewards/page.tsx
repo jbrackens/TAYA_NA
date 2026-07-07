@@ -359,7 +359,7 @@ export default function RewardsPage() {
           "dailyClaim.success",
           "Today's claim is recorded: {{points}} pts added to your point ledger.",
           {
-            points: formatPoints(result.claimPointsCents ?? 0),
+            points: formatPoints(result.claimPoints ?? 0),
           },
         ),
       );
@@ -389,7 +389,7 @@ export default function RewardsPage() {
       }
       setPointPackMessage(
         t("pointPacks.success", "{{points}} pts added to your point ledger.", {
-          points: formatPoints(result.claimPointsCents ?? 0),
+          points: formatPoints(result.claimPoints ?? 0),
         }),
       );
       if (result.rewardLimit) {
@@ -418,7 +418,7 @@ export default function RewardsPage() {
       }
       setMissionMessage(
         t("missions.success", "{{points}} pts added to your point ledger.", {
-          points: formatPoints(result.claimPointsCents ?? 0),
+          points: formatPoints(result.claimPoints ?? 0),
         }),
       );
       if (result.mission) {
@@ -454,7 +454,7 @@ export default function RewardsPage() {
       }
       setStreakMessage(
         t("streaks.success", "{{points}} pts added to your point ledger.", {
-          points: formatPoints(result.claimPointsCents ?? 0),
+          points: formatPoints(result.claimPoints ?? 0),
         }),
       );
       if (result.streak) {
@@ -752,8 +752,8 @@ function RewardLimitControl({ status }: { status: RewardLimitStatus | null }) {
           "rewardLimit.body",
           "{{remaining}} of {{limit}} reward pts remain for today.",
           {
-            remaining: formatPoints(status.remainingPointsCents),
-            limit: formatPoints(status.limitPointsCents),
+            remaining: formatPoints(status.remainingPoints),
+            limit: formatPoints(status.limitPoints),
           },
         )}
       </p>
@@ -835,7 +835,7 @@ function PointPacksControl({
             </div>
             <div className="flex items-center gap-3">
               <span className={PACK_AMOUNT_CLASS}>
-                {formatPoints(pack.amountPointsCents)}
+                {formatPoints(pack.amountPoints)}
               </span>
               <button
                 type="button"
@@ -896,7 +896,7 @@ function MissionsControl({
             </div>
             <div className="flex items-center gap-3">
               <span className={PACK_AMOUNT_CLASS}>
-                {formatPoints(mission.rewardPointsCents)}
+                {formatPoints(mission.rewardPoints)}
               </span>
               <button
                 type="button"
@@ -958,7 +958,7 @@ function StreaksControl({
             </div>
             <div className="flex items-center gap-3">
               <span className={PACK_AMOUNT_CLASS}>
-                {formatPoints(streak.rewardPointsCents)}
+                {formatPoints(streak.rewardPoints)}
               </span>
               <button
                 type="button"

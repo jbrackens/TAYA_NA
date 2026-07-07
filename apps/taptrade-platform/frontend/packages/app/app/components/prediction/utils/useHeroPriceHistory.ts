@@ -34,7 +34,7 @@ export function useHeroPriceHistory(ticker: string): number[] | null {
         // the chart starts at the first real movement instead of a
         // long flat tail at the fallback price. Always keep at least
         // 8 points so the line has visible shape.
-        const all = h.points.map((p) => p.yesPricePointsCents);
+        const all = h.points.map((p) => p.yesPricePoints);
         if (!hasMovement(all)) {
           setPoints(null);
           return;

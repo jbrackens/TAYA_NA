@@ -15,11 +15,10 @@ import { deterministicDelta, heroChartPath } from "./utils/spark";
 import { useHeroPriceHistory } from "./utils/useHeroPriceHistory";
 import { categoryLabel, localizedMarket } from "./market-content";
 
-function formatHeroVolume(cents: number): string {
-  const points = cents / 100;
+function formatHeroVolume(points: number): string {
   if (points >= 1_000_000) return `${(points / 1_000_000).toFixed(1)}M pts`;
   if (points >= 1_000) return `${(points / 1_000).toFixed(1)}K pts`;
-  return `${points.toFixed(0)} pts`;
+  return `${Math.round(points).toLocaleString()} pts`;
 }
 
 function formatHeroCloseLeft(iso: string): string {
@@ -71,8 +70,8 @@ export function DiscoveryHero({
   ]
     .filter(Boolean)
     .join(" · ");
-  const yes = displayMarket.yesPricePointsCents;
-  const no = displayMarket.noPricePointsCents;
+  const yes = displayMarket.yesPricePoints;
+  const no = displayMarket.noPricePoints;
   const { delta, pct } = deterministicDelta(displayMarket.ticker, yes);
   const isUp = delta >= 0;
   const isFlat = delta === 0;
@@ -94,11 +93,11 @@ export function DiscoveryHero({
     150,
     heroPoints ?? undefined,
   );
-  const volumeLabel = formatHeroVolume(displayMarket.volumePointsCents);
+  const volumeLabel = formatHeroVolume(displayMarket.volumePoints);
   const oiLabel =
-    displayMarket.openInterestPointsCents != null &&
-    displayMarket.openInterestPointsCents > 0
-      ? formatHeroVolume(displayMarket.openInterestPointsCents)
+    displayMarket.openInterestPoints != null &&
+    displayMarket.openInterestPoints > 0
+      ? formatHeroVolume(displayMarket.openInterestPoints)
       : "—";
   const closesLabel = formatHeroCloseLeft(displayMarket.closeAt);
 

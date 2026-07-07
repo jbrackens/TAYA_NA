@@ -4,8 +4,8 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 
 interface WageringProgressProps {
-  requiredCents: number;
-  completedCents: number;
+  requiredPoints: number;
+  completedPoints: number;
   progressPct: number;
   expiresAt: string;
 }
@@ -18,8 +18,8 @@ function daysUntil(dateStr: string): number {
 }
 
 export const WageringProgress: React.FC<WageringProgressProps> = ({
-  requiredCents,
-  completedCents,
+  requiredPoints,
+  completedPoints,
   progressPct,
   expiresAt,
 }) => {
@@ -46,8 +46,8 @@ export const WageringProgress: React.FC<WageringProgressProps> = ({
       <div className="flex items-center justify-between text-xs">
         <span className="text-gray-400">
           {t("playProgressRequired", {
-            completed: formatPointsFromCents(completedCents),
-            required: formatPointsFromCents(requiredCents),
+            completed: formatPointsFromPoints(completedPoints),
+            required: formatPointsFromPoints(requiredPoints),
           })}
         </span>
         <span className={isExpired ? "text-red-400" : "text-gray-400"}>
@@ -58,6 +58,6 @@ export const WageringProgress: React.FC<WageringProgressProps> = ({
   );
 };
 
-function formatPointsFromCents(cents: number): string {
+function formatPointsFromPoints(cents: number): string {
   return `${Math.round(cents / 100).toLocaleString()} pts`;
 }

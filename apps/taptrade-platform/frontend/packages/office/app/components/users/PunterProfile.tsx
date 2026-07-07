@@ -26,16 +26,16 @@ export interface SettlementRow {
   marketId: string;
   side: string;
   quantity: number;
-  realizedPointsCents: number;
-  settlementPointsCents: number;
+  realizedPoints: number;
+  settlementPoints: number;
   paidAt: string;
 }
 
 export interface WalletLedgerRow {
   entryId: string;
   type: string;
-  amountPointsCents: number;
-  balancePointsCents: number;
+  amountPoints: number;
+  balancePoints: number;
   reason?: string;
   transactionTime: string;
 }
@@ -55,11 +55,11 @@ const pointAmount = (n: number) =>
   });
 
 const points = (n: number) => `${pointAmount(n)} pts`;
-const pointsFromCents = (c: number) => points(c / 100);
+const pointsFromPoints = (c: number) => points(c / 100);
 const signedPoints = (n: number) =>
   `${n < 0 ? "-" : "+"}${points(Math.abs(n))}`;
-const signedPointsFromCents = (c: number) =>
-  `${c < 0 ? "-" : "+"}${pointsFromCents(Math.abs(c))}`;
+const signedPointsFromPoints = (c: number) =>
+  `${c < 0 ? "-" : "+"}${pointsFromPoints(Math.abs(c))}`;
 const fmtDate = (iso: string) => (iso ? new Date(iso).toLocaleString() : "—");
 
 const infoRowClassName =
@@ -311,15 +311,15 @@ export function PunterProfile({
                         </td>
                         <td
                           className={`${histTdBaseClassName} ${
-                            s.realizedPointsCents < 0
+                            s.realizedPoints < 0
                               ? negativePointClassName
                               : positivePointClassName
                           }`}
                         >
-                          {signedPointsFromCents(s.realizedPointsCents)}
+                          {signedPointsFromPoints(s.realizedPoints)}
                         </td>
                         <td className={histTdClassName}>
-                          {pointsFromCents(s.settlementPointsCents)}
+                          {pointsFromPoints(s.settlementPoints)}
                         </td>
                         <td className={histTdClassName}>{fmtDate(s.paidAt)}</td>
                       </tr>
@@ -357,10 +357,10 @@ export function PunterProfile({
                           }`}
                         >
                           {e.type.toLowerCase() === "debit" ? "-" : "+"}
-                          {pointsFromCents(Math.abs(e.amountPointsCents))}
+                          {pointsFromPoints(Math.abs(e.amountPoints))}
                         </td>
                         <td className={histTdClassName}>
-                          {pointsFromCents(e.balancePointsCents)}
+                          {pointsFromPoints(e.balancePoints)}
                         </td>
                         <td className={histTdClassName}>{e.reason || "—"}</td>
                         <td className={histTdClassName}>

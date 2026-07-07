@@ -93,7 +93,7 @@
   "PLACING": "Nilalagay...",
   "PLACE_TRADE_AMOUNT": "Place trade · {{amount}}",
   "SELL_AMOUNT": "Sell · {{amount}}",
-  "TRADE_TRUST_NOTE": "Ang {{price}}c ay {{probability}}% implied probability. Ang tamang contracts ay nase-settle sa 100 points bawat isa.",
+  "TRADE_TRUST_NOTE": "Ang {{price}}c ay nangangahulugang {{probability}}% implied probability — gumagastos ka ng {{price}} Points bawat kontrata. Ang tamang kontrata ay nagse-settle sa 100 Points. Ang Points ay panlaro lamang sa app.",
   "NO_SHARES_TO_SELL": "Wala kang shares sa side na ito para ibenta",
   "SELL_UP_TO_SHARES": "Magbenta hanggang {{quantity}} {{side}} shares",
   "AMOUNT_TOO_SMALL": "Masyadong maliit ang halaga - minimum 1 share bawat trade.",

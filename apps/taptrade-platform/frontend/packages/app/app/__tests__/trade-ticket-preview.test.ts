@@ -51,14 +51,16 @@ describe("TradeTicket order-book preview UX", () => {
       /const\s+opts:\s*TradeTicketSubmitOptions\s*=\s*\{\s*orderType:\s*mode,\s*action,\s*\}/,
       "preview options should include order type and buy/sell action",
     );
+    // Points unit-model (2026-07-07): amount is already whole Points, so the
+    // notional cap is Math.ceil(amount) — no *100 scale conversion.
     assert.match(
       source,
-      /opts\.notionalCapPointsCents\s*=\s*Math\.ceil\(amount\s*\*\s*100\)/,
+      /opts\.notionalCapPoints\s*=\s*Math\.ceil\(amount\)/,
       "market buy previews should carry the point-native notional cap used by the gateway",
     );
     assert.match(
       source,
-      /opts\.pricePointsCents\s*=\s*limitPriceCents[\s\S]*?opts\.timeInForce\s*=\s*"gtc"/,
+      /opts\.pricePoints\s*=\s*limitPricePoints[\s\S]*?opts\.timeInForce\s*=\s*"gtc"/,
       "limit previews should carry price and time-in-force options",
     );
   });
@@ -71,23 +73,53 @@ describe("TradeTicket order-book preview UX", () => {
     );
     assert.match(
       source,
-      /preview\?\.averageFillPricePointsCents\s*\|\|\s*preview\?\.pricePointsCents\s*\|\|\s*price/,
-      "averageFillPricePointsCents should take precedence over the snapshot price",
+      /preview\?\.averageFillPricePoints\s*\|\|\s*preview\?\.pricePoints\s*\|\|\s*price/,
+      "averageFillPricePoints should take precedence over the snapshot price",
     );
     assert.match(
       source,
-      /mode\s*===\s*"market"[\s\S]*?preview\?\.totalCostWithFeesPointsCents/,
+      /mode\s*===\s*"market"[\s\S]*?preview\?\.totalCostWithFeesPoints/,
       "market buy previews should be allowed to lower spend to the actual fill cost",
     );
+    // Points unit-model (2026-07-07): preview cost is whole Points — spend is
+    // used as-is (no /100), and the snapshot fallback is quantity * price.
     assert.match(
       source,
-      /\?\s*preview\.totalCostWithFeesPointsCents\s*\/\s*100\s*:\s*amount/,
-      "limit buys should still compare the selected point amount against balance",
+      /\?\s*preview\.totalCostWithFeesPoints\s*:\s*quantity\s*\*\s*price/,
+      "limit buys should still compare the selected point spend against balance",
     );
     assert.match(
       source,
       /effectiveSpend\s*>\s*balance/,
       "insufficient-funds checks should use preview-aware spend",
+    );
+    // Canonical Points trade math: quantity = floor(amount / price) whole
+    // contracts, est cost = quantity * price Points, and a winning contract
+    // settles at 100 Points (pointsIfCorrect = shares * 100). Examples that
+    // must hold: 1 contract at 8¢ costs 8 Points; 25 contracts at 8¢ cost
+    // 200 Points before fees; losing contracts settle at 0.
+    assert.match(
+      source,
+      /Math\.floor\(amount\s*\/\s*price\)/,
+      "quantity should be whole contracts affordable at the point price",
+    );
+    assert.match(
+      source,
+      /pointsIfCorrect\s*=\s*shares\s*\*\s*100/,
+      "a winning contract should settle at 100 Points per share",
+    );
+    const quantityFor = (amount: number, price: number) =>
+      price > 0 ? Math.max(0, Math.floor(amount / price)) : 0;
+    assert.equal(quantityFor(8, 8), 1, "1 contract at 8¢ costs 8 Points");
+    assert.equal(
+      quantityFor(200, 8) * 8,
+      200,
+      "25 contracts at 8¢ cost 200 Points before fees",
+    );
+    assert.equal(
+      quantityFor(200, 8) * 100,
+      2500,
+      "25 winning contracts settle at 100 Points each",
     );
   });
 
@@ -100,7 +132,7 @@ describe("TradeTicket order-book preview UX", () => {
     for (const token of [
       't("POINTS_IF_SIDE"',
       "pointsIfCorrect",
-      "Correct contracts settle at 100 points each",
+      "Correct contracts settle at 100 Points each",
     ]) {
       assert.ok(
         source.includes(token) || enPredictionLocale.includes(token),
@@ -188,8 +220,8 @@ describe("prediction API preview types", () => {
     assert.match(types, /"proposed_resolution"/);
     assert.match(types, /"disputed"/);
     assert.match(types, /filledQuantity\?:\s*number/);
-    assert.match(types, /averageFillPricePointsCents\?:\s*number/);
-    assert.match(types, /totalCostWithFeesPointsCents\?:\s*number/);
+    assert.match(types, /averageFillPricePoints\?:\s*number/);
+    assert.match(types, /totalCostWithFeesPoints\?:\s*number/);
     assert.match(types, /quoteStatus\?:\s*OrderStatus/);
   });
 });
