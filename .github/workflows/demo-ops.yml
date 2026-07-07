@@ -58,6 +58,18 @@ jobs:
             done
           '
 
+      - name: Container egress probe (docker network)
+        # The 2026-07-07 incident was container-only egress loss (cf-firewall
+        # DOCKER-USER drop) — host probes passed while containers starved.
+        # Probe from inside the compose network to catch that class.
+        run: |
+          ssh -i ~/.ssh/deploy -o StrictHostKeyChecking=accept-new root@"$BOX" '
+            NET=$(docker inspect predict_gateway --format "{{range \$k,\$v := .NetworkSettings.Networks}}{{\$k}}{{end}}")
+            echo "── network: $NET"
+            docker run --rm --network "$NET" curlimages/curl:8.10.1               -sS -o /dev/null -w "container->polymarket http=%{http_code} total=%{time_total}s
+"               --max-time 20 "https://gamma-api.polymarket.com/markets?limit=1" || echo "container egress FAILED: $?"
+          '
+
       - name: DNS + egress sanity from the box
         run: |
           ssh -i ~/.ssh/deploy -o StrictHostKeyChecking=accept-new root@"$BOX" '

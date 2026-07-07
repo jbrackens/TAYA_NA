@@ -11,6 +11,16 @@
 # end of DOCKER-USER by default; we jump to our CF-ALLOW chain before that
 # RETURN. Non-Docker traffic (if any) is also covered via INPUT.
 #
+# DIRECTIONALITY (2026-07-07 incident): DOCKER-USER carries BOTH directions
+# of forwarded container traffic. An unscoped "--dports 80,443 else DROP"
+# also matches containers''' own OUTBOUND HTTP(S) — source is a container
+# IP, never a CF range — which silently killed all container egress (the
+# market catalog sync starved for weeks; host egress was fine so nothing
+# obvious broke). The DOCKER-USER jump is therefore scoped to packets
+# ENTERING via the public interface, and CF-ALLOW passes established
+# flows first. INPUT keeps the unscoped jump (host-inbound only by
+# definition).
+#
 # Re-run periodically or on a cron to pick up new CF ranges:
 #   0 4 * * 0  /opt/phoenix/scripts/security/cf-firewall.sh 2>&1 | logger -t cf-fw
 #
@@ -50,15 +60,25 @@ done
 # --- IPv4: DOCKER-USER (published ports) + INPUT (non-Docker) ---
 echo "Creating CF-ALLOW chain (IPv4)..."
 run_cmd iptables -N CF-ALLOW
+# Replies to outbound container connections must never be dropped.
+run_cmd iptables -A CF-ALLOW -m conntrack --ctstate ESTABLISHED,RELATED -j RETURN
 for cidr in $CF_IPV4; do
   run_cmd iptables -A CF-ALLOW -p tcp -m multiport --dports 80,443 -s "$cidr" -j RETURN
 done
 run_cmd iptables -A CF-ALLOW -p tcp -m multiport --dports 80,443 -j DROP
 
 # DOCKER-USER: Docker-published ports flow through here
+PUB_IF=$(ip route show default | awk '{print $5; exit}')
+if [ -z "$PUB_IF" ]; then
+  echo "ERROR: could not determine public interface" >&2
+  exit 1
+fi
 if iptables -L DOCKER-USER -n >/dev/null 2>&1; then
-  run_cmd iptables -I DOCKER-USER -j CF-ALLOW
-  echo "  -> inserted into DOCKER-USER"
+  # Scoped to packets arriving on the public interface: inbound-to-published
+  # ports is filtered; container OUTBOUND (arrives via the docker bridge)
+  # never enters CF-ALLOW.
+  run_cmd iptables -I DOCKER-USER -i "$PUB_IF" -j CF-ALLOW
+  echo "  -> inserted into DOCKER-USER (in-iface $PUB_IF)"
 fi
 # INPUT: catch any non-Docker traffic to host ports
 run_cmd iptables -I INPUT -j CF-ALLOW
@@ -68,15 +88,17 @@ echo "  -> inserted into INPUT"
 echo "Creating CF-ALLOW chain (IPv6)..."
 if ip6tables -L DOCKER-USER -n >/dev/null 2>&1; then
   run_cmd ip6tables -N CF-ALLOW 2>/dev/null || { ip6tables -F CF-ALLOW; }
+  run_cmd ip6tables -A CF-ALLOW -m conntrack --ctstate ESTABLISHED,RELATED -j RETURN
   for cidr in $CF_IPV6; do
     run_cmd ip6tables -A CF-ALLOW -p tcp -m multiport --dports 80,443 -s "$cidr" -j RETURN
   done
   run_cmd ip6tables -A CF-ALLOW -p tcp -m multiport --dports 80,443 -j DROP
-  run_cmd ip6tables -I DOCKER-USER -j CF-ALLOW
+  run_cmd ip6tables -I DOCKER-USER -i "$PUB_IF" -j CF-ALLOW
   run_cmd ip6tables -I INPUT -j CF-ALLOW
-  echo "  -> inserted into DOCKER-USER + INPUT (IPv6)"
+  echo "  -> inserted into DOCKER-USER (in-iface $PUB_IF) + INPUT (IPv6)"
 else
   run_cmd ip6tables -N CF-ALLOW 2>/dev/null || { ip6tables -F CF-ALLOW; }
+  run_cmd ip6tables -A CF-ALLOW -m conntrack --ctstate ESTABLISHED,RELATED -j RETURN
   for cidr in $CF_IPV6; do
     run_cmd ip6tables -A CF-ALLOW -p tcp -m multiport --dports 80,443 -s "$cidr" -j RETURN
   done
