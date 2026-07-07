@@ -90,7 +90,7 @@ const TIME_PILL_BASE_CLASS =
 const DISCOVERY_CONTROLS_CLASS =
   "flex w-full flex-wrap items-center justify-between gap-3 max-[768px]:items-stretch";
 const SEARCH_INPUT_CLASS =
-  "min-h-10 min-w-[260px] flex-1 rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 text-sm text-[var(--t1)] outline-none transition-colors duration-[120ms] placeholder:text-[var(--t3)] focus:border-[var(--accent)] max-[768px]:min-w-0";
+  "min-h-10 min-w-[260px] flex-1 rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 text-sm text-[var(--t1)] outline-none transition-colors duration-[120ms] placeholder:text-[var(--t3)] focus:border-[var(--accent-lo)] max-[768px]:min-w-0";
 const WATCHLIST_FILTER_CLASS =
   "min-h-10 rounded-md border px-3 text-sm font-semibold transition-colors duration-[120ms]";
 const TAXONOMY_PANEL_CLASS = "grid w-full gap-2.5";
@@ -99,14 +99,14 @@ const TAXONOMY_LABEL_CLASS =
   "shrink-0 font-['IBM_Plex_Mono',_monospace] text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
 const TAXONOMY_LIST_CLASS = "flex flex-wrap items-center gap-2";
 const TAXONOMY_LINK_CLASS =
-  "rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-2.5 py-1.5 text-[12px] font-semibold text-[var(--t2)] no-underline transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]";
+  "rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-2.5 py-1.5 text-[12px] font-semibold text-[var(--t2)] no-underline transition-colors hover:border-[var(--accent-lo)] hover:text-[var(--accent-text)]";
 const TAG_BUTTON_BASE_CLASS =
   "cursor-pointer appearance-none rounded-md border px-2.5 py-1.5 text-[12px] font-semibold transition-colors";
 
 const LOAD_MORE_CLASS = "mt-6 mb-0 flex justify-center";
 
 const LOAD_MORE_BUTTON_CLASS =
-  "cursor-pointer appearance-none rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-3 font-['Inter',_sans-serif] text-sm font-semibold text-[var(--t1)] transition-colors duration-[120ms] [&:not(:disabled):hover]:border-[rgba(43,228,128,0.5)] [&:not(:disabled):hover]:bg-[var(--surface-2)] [&:not(:disabled):hover]:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-[0.55]";
+  "cursor-pointer appearance-none rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-3 font-['Inter',_sans-serif] text-sm font-semibold text-[var(--t1)] transition-colors duration-[120ms] [&:not(:disabled):hover]:border-[rgba(43,228,128,0.5)] [&:not(:disabled):hover]:bg-[var(--surface-2)] [&:not(:disabled):hover]:text-[var(--accent-text)] disabled:cursor-not-allowed disabled:opacity-[0.55]";
 
 const FEED_WITH_SUBNAV_CLASS =
   "grid grid-cols-4 items-start gap-4 max-[1120px]:grid-cols-1";
@@ -129,7 +129,7 @@ const EMPTY_TEXT_CLASS = "mt-2 mb-0 text-[13px] text-[var(--t3)]";
 function categoryPillClass(active: boolean): string {
   return `${CATEGORY_PILL_BASE_CLASS} ${
     active
-      ? "text-[var(--accent)] font-semibold border-[var(--accent)]"
+      ? "text-[var(--accent-text)] font-semibold border-[var(--accent-lo)]"
       : "text-neutral-500 border-transparent hover:text-neutral-800 hover:border-neutral-300"
   }`;
 }
@@ -153,8 +153,8 @@ function subcategoryButtonClass(active: boolean): string {
 function tagButtonClass(active: boolean): string {
   return `${TAG_BUTTON_BASE_CLASS} ${
     active
-      ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
-      : "border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+      ? "border-[var(--accent-lo)] bg-[var(--accent-soft)] text-[var(--accent-text)]"
+      : "border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t2)] hover:border-[var(--accent-lo)] hover:text-[var(--accent-text)]"
   }`;
 }
 
@@ -529,8 +529,8 @@ export function AllMarketsSection({ categories }: Props) {
             type="button"
             className={`${WATCHLIST_FILTER_CLASS} ${
               showWatchlistOnly
-                ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
-                : "border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                ? "border-[var(--accent-lo)] bg-[var(--accent-soft)] text-[var(--accent-text)]"
+                : "border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--accent-lo)] hover:text-[var(--accent-text)]"
             }`}
             aria-pressed={showWatchlistOnly}
             onClick={() => setShowWatchlistOnly((value) => !value)}

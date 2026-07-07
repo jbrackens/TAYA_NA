@@ -167,6 +167,7 @@ body {
    * Use --accent-glow-color if you need just the color. (D1.) */
   --accent: #2be480;
   --accent-lo: #1fa65e;
+  --accent-text: #0f8a4f; /* P9: mint as TEXT on white (AA 4.9:1); --accent stays fill-only */
   --accent-soft: rgba(43, 228, 128, 0.14);
   --accent-glow-color: rgba(43, 228, 128, 0.45);
   --accent-glow: 0 0 28px var(--accent-glow-color);
