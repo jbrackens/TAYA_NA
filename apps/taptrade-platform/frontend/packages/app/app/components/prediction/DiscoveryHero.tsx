@@ -152,7 +152,7 @@ export function DiscoveryHero({
             </span>
           </div>
           <div
-            className={`mb-6 inline-flex items-center gap-2.5 text-[16px] font-semibold tabular-nums ${changeClass}`}
+            className={`mb-6 inline-flex items-center gap-2.5 text-[16px] font-semibold tabular-nums max-[980px]:mb-4 ${changeClass}`}
           >
             {!isFlat && (
               <svg
@@ -174,9 +174,9 @@ export function DiscoveryHero({
           </div>
 
           {/* Mobile chart: sits between the price block and the actions */}
-          <div className="mb-6 hidden max-[980px]:block">
+          <div className="mb-5 hidden max-[980px]:block">
             <svg
-              className="block h-[150px] w-full overflow-visible"
+              className="block h-[128px] w-full overflow-visible"
               viewBox="0 0 800 150"
               preserveAspectRatio="none"
               aria-hidden="true"
