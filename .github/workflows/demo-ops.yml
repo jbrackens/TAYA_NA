@@ -1,0 +1,67 @@
+# Demo-box operations utility. Small SSH-driven maintenance jobs that need
+# the deploy key but not a full deploy: today that's diagnosing the market
+# catalog sync (the box's outbound HTTP is historically unreliable — builds
+# already moved runner-side for the same reason; see deploy-demo.yml).
+#
+# Dispatch-only. Keep every job read-only unless its name says otherwise.
+name: demo-ops
+
+on:
+  workflow_dispatch:
+    inputs:
+      diagnose_sync:
+        description: "Probe upstream catalog APIs from the box + dump recent sync logs"
+        type: boolean
+        default: true
+
+concurrency:
+  group: demo-ops
+  cancel-in-progress: false
+
+env:
+  BOX: 91.98.118.132
+
+jobs:
+  diagnose:
+    if: ${{ inputs.diagnose_sync }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          ssh-keyscan -H "$BOX" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Recent sync log lines (gateway container)
+        run: |
+          ssh -i ~/.ssh/deploy -o StrictHostKeyChecking=accept-new root@"$BOX" '
+            docker logs predict_gateway 2>&1 |
+              grep -E "market sync|discover fetch failed|budget exhausted" |
+              tail -30
+          '
+
+      - name: Probe upstream APIs from the box
+        # Same endpoints the fetchers hit. -sS keeps errors visible; the
+        # per-URL timeout stops a black-holed route from eating the job.
+        run: |
+          ssh -i ~/.ssh/deploy -o StrictHostKeyChecking=accept-new root@"$BOX" '
+            for url in \
+              "https://gamma-api.polymarket.com/markets?limit=1" \
+              "https://api.elections.kalshi.com/trade-api/v2/markets?limit=1" \
+              "https://api.manifold.markets/v0/markets?limit=1"; do
+              echo "── $url"
+              curl -sS -o /tmp/probe.out -w "http=%{http_code} dns=%{time_namelookup}s connect=%{time_connect}s total=%{time_total}s\n" \
+                --max-time 20 "$url" || echo "curl failed: $?"
+              head -c 200 /tmp/probe.out; echo
+            done
+          '
+
+      - name: DNS + egress sanity from the box
+        run: |
+          ssh -i ~/.ssh/deploy -o StrictHostKeyChecking=accept-new root@"$BOX" '
+            echo "── resolv.conf:"; cat /etc/resolv.conf | tail -3
+            echo "── ufw status:"; ufw status | head -20 || true
+            echo "── generic egress:"; curl -sS -o /dev/null -w "github http=%{http_code} total=%{time_total}s\n" --max-time 15 https://api.github.com/ || echo "curl failed: $?"
+          '
