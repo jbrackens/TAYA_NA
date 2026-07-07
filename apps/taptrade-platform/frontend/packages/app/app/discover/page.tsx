@@ -29,21 +29,22 @@ import { localizedMarket } from "../components/prediction/market-content";
 const api = createPredictionClient();
 
 const ROUTE_LOADING_CLASS = "p-20 text-center text-[13px] text-[var(--t3)]";
-const GLASS_SURFACE_CLASS =
-  "relative border border-white/[0.13] bg-[color:var(--glass-regular)] bg-[image:linear-gradient(180deg,_rgba(255,255,255,0.14)_0%,_rgba(255,255,255,0.05)_30%,_rgba(255,255,255,0.025)_100%)] shadow-[inset_0_1px_0_var(--rim-top),inset_0_-1px_0_var(--rim-bottom),inset_1px_0_2px_var(--chroma-1),inset_-1px_0_2px_var(--chroma-2),0_2px_6px_rgba(0,0,0,0.18),0_8px_24px_rgba(0,0,0,0.28),0_16px_48px_rgba(0,0,0,0.2)] backdrop-blur-[30px] backdrop-saturate-[180%] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-1/2 before:rounded-[inherit] before:bg-[image:linear-gradient(180deg,_rgba(255,255,255,0.06)_0%,_transparent_100%)] before:mix-blend-overlay before:content-['']";
-const DISCOVER_STATE_CARD_CLASS = `${GLASS_SURFACE_CLASS} mx-auto my-[60px] max-w-[560px] rounded-[var(--r-lg)] p-14 text-center`;
+// P9.3 (2026-07-07): the retired Liquid Glass state card (rim highlights,
+// chroma fringes, 30px backdrop blur, dark-theme shadows) is gone — it had
+// survived here since the glass era and rendered as noise on white.
+const DISCOVER_STATE_CARD_CLASS =
+  "mx-auto my-[60px] max-w-[560px] rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-14 text-center shadow-[var(--shadow-card)]";
 const DISCOVER_STATE_TITLE_CLASS = "m-0 text-[18px] font-bold text-[var(--t1)]";
 const DISCOVER_STATE_COPY_CLASS = "mt-2 mb-0 text-[13px] text-[var(--t3)]";
-const DISCOVER_INTRO_CLASS =
-  "rounded-[18px] border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-7 shadow-[0_16px_44px_rgba(60,50,30,0.06)] max-[640px]:px-5 max-[640px]:py-6";
+const DISCOVER_INTRO_CLASS = "pt-1";
 const DISCOVER_EYEBROW_CLASS =
-  "mt-0 mb-2 font-['IBM_Plex_Mono',_monospace] text-[10px] uppercase tracking-[0.16em] text-[var(--yes-text)]";
+  "mt-0 mb-2 font-['IBM_Plex_Mono',_monospace] text-[10px] uppercase tracking-[0.16em] text-[var(--t3)]";
 const DISCOVER_TITLE_CLASS =
   "mt-0 mb-2 text-[34px] font-semibold tracking-[-0.02em] text-[var(--t1)] max-[640px]:text-[28px]";
 const DISCOVER_SUB_CLASS =
   "m-0 max-w-[760px] text-[15px] leading-[1.55] text-[var(--t2)]";
 const DISCOVER_PANEL_CLASS =
-  "rounded-[18px] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[0_16px_44px_rgba(60,50,30,0.05)]";
+  "overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-card)]";
 const DISCOVER_PANEL_HEADER_CLASS =
   "flex items-end justify-between gap-4 border-b border-[var(--border-1)] px-5 py-4 max-[640px]:items-start max-[640px]:flex-col";
 const DISCOVER_PANEL_TITLE_CLASS =
@@ -168,9 +169,15 @@ function averageYesShare(markets: PredictionMarket[]): number {
   return Math.round(total / markets.length);
 }
 
-function formatTicker(ticker: string): string {
-  const parts = ticker.split("-");
-  return parts.length > 1 ? parts.slice(0, 2).join("-") : ticker;
+// Machine-generated import tickers (IMP-<hex>) are data plumbing, not
+// content — rows show the category for those (same convention as the
+// discovery hero eyebrow). Human tickers keep their first two segments.
+function formatRowEyebrow(market: PredictionMarket): string {
+  if (/^IMP-[0-9A-F]{6,}$/i.test(market.ticker)) {
+    return market.categoryName || "";
+  }
+  const parts = market.ticker.split("-");
+  return parts.length > 1 ? parts.slice(0, 2).join("-") : market.ticker;
 }
 
 function formatCloseLabel(market: PredictionMarket): string {
@@ -216,7 +223,7 @@ function SentimentStat({
   meta: string;
 }) {
   return (
-    <div className="rounded-[14px] border border-[var(--border-1)] bg-[var(--surface-1)] p-4">
+    <div className="rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] p-4">
       <p className="m-0 text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--t3)]">
         {label}
       </p>
@@ -232,17 +239,13 @@ function FilterPill({
   active,
   children,
   onClick,
-  tone = "yes",
 }: {
   active: boolean;
   children: React.ReactNode;
   onClick: () => void;
-  tone?: "yes" | "no";
 }) {
   const activeClass =
-    tone === "no"
-      ? "border-[var(--no-bar)] bg-[var(--no-soft)] text-[var(--no-text)]"
-      : "border-[var(--yes-bar)] bg-[var(--yes-soft)] text-[var(--yes-text)]";
+    "border-[var(--accent-lo)] bg-[var(--accent-soft)] text-[var(--accent-text)]";
 
   return (
     <button
@@ -269,22 +272,28 @@ function SentimentRow({
   movement?: MarketMovement | null;
 }) {
   const sentiment = getSentiment(market);
-  const toneClass =
+  const toneTextClass =
     sentiment.tone === "no"
-      ? "bg-[var(--no-soft)] text-[var(--no-text)]"
+      ? "text-[var(--no-text)]"
       : sentiment.tone === "yes"
-        ? "bg-[var(--yes-soft)] text-[var(--yes-text)]"
-        : "bg-[var(--surface-2)] text-[var(--t2)]";
+        ? "text-[var(--yes-text)]"
+        : "text-[var(--t2)]";
+  const toneDotClass =
+    sentiment.tone === "no"
+      ? "bg-[var(--no-bar)]"
+      : sentiment.tone === "yes"
+        ? "bg-[var(--yes-bar)]"
+        : "bg-[var(--border-2)]";
   const changeClass =
     movement == null || movement.direction === "flat"
       ? "text-[var(--t3)]"
       : movement.direction === "up"
         ? "text-[var(--yes-text)]"
         : "text-[var(--no-text)]";
-  let changeLabel = "n/a";
+  let changeLabel = "—";
   if (movement === undefined) {
-    changeLabel = "...";
-  } else if (movement !== null) {
+    changeLabel = "·";
+  } else if (movement !== null && movement.direction !== "flat") {
     const sign =
       movement.direction === "up"
         ? "+"
@@ -296,19 +305,23 @@ function SentimentRow({
 
   return (
     <article
-      className={`${SENTIMENT_ROW_GRID_CLASS} border-t border-[var(--border-1)] px-5 py-4 first:border-t-0`}
+      className={`${SENTIMENT_ROW_GRID_CLASS} border-t border-[var(--border-1)] px-5 py-4 transition-colors duration-[120ms] first:border-t-0 hover:bg-[var(--surface-2)]`}
     >
       <span className="font-mono text-[13px] font-semibold text-[var(--t3)] tabular-nums max-[640px]:hidden">
         {String(rank).padStart(2, "0")}
       </span>
       <div className="min-w-0">
         <div className="mb-2 flex flex-wrap items-center gap-2">
-          <span className="font-['IBM_Plex_Mono',_monospace] text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--yes-text)]">
-            {formatTicker(market.ticker)}
+          <span className="font-['IBM_Plex_Mono',_monospace] text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--t3)]">
+            {formatRowEyebrow(market)}
           </span>
           <span
-            className={`rounded-md px-2 py-1 text-[11px] font-semibold ${toneClass}`}
+            className={`inline-flex items-center gap-1.5 text-[11px] font-semibold ${toneTextClass}`}
           >
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${toneDotClass}`}
+              aria-hidden="true"
+            />
             {sentiment.label}
           </span>
           <span className="text-[11px] text-[var(--t3)]">
@@ -515,7 +528,6 @@ export default function DiscoverPage() {
             key={option.key}
             active={activeFilter === option.key}
             onClick={() => setActiveFilter(option.key)}
-            tone={option.key === "no" ? "no" : "yes"}
           >
             {option.label}
           </FilterPill>

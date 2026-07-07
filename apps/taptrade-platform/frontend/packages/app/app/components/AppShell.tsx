@@ -25,17 +25,17 @@ import MobileTabBar from "./MobileTabBar";
 import { ChatSidebar } from "./chat/ChatSidebar";
 
 const AUTH_LAYOUT_CLASS =
-  "min-h-screen overflow-y-auto bg-transparent before:content-[''] before:pointer-events-none before:fixed before:inset-0 before:z-[-1] before:bg-[radial-gradient(ellipse_at_top,rgba(43,228,128,0.1),transparent_45%),radial-gradient(ellipse_at_bottom_left,var(--yes-soft),transparent_55%)]";
+  "min-h-screen overflow-y-auto bg-transparent";
 
 const APP_SHELL_CLASS = "min-h-screen bg-transparent";
 
 const APP_SHELL_BODY_CLASS =
   "flex items-start w-full max-w-[1588px] min-h-[calc(100vh_-_66px)] mx-auto gap-4 px-6 bg-transparent";
 
-const APP_SHELL_CONTENT_CLASS = "flex-[0_1_1280px] min-w-0";
+const APP_SHELL_CONTENT_CLASS = "flex-[1_1_1280px] min-w-0";
 
 const APP_SHELL_MAIN_CLASS =
-  "max-w-[1280px] m-0 pt-7 px-0 pb-20 max-[899px]:pb-[calc(108px_+_env(safe-area-inset-bottom))]";
+  "max-w-[1280px] mx-auto my-0 pt-7 px-0 pb-20 max-[899px]:pb-[calc(108px_+_env(safe-area-inset-bottom))]";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
