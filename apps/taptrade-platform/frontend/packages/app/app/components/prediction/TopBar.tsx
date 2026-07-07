@@ -316,7 +316,7 @@ export function TopBar() {
           className={TOP_BAR_BRAND_CLASS}
           aria-label={`${brand.name} — home`}
         >
-          <BrandMark size={34} />
+          <BrandMark size={30} />
           <span className={TOP_BAR_WORDMARK_CLASS}>
             {brand.name}
             <span className={TOP_BAR_PERIOD_CLASS}>.</span>

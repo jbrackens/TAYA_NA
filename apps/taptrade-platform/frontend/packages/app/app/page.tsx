@@ -437,7 +437,7 @@ export default function HomePage() {
           className="inline-flex min-h-11 items-center gap-[10px] no-underline"
           aria-label={`${brand.name} home`}
         >
-          <BrandMark size={34} />
+          <BrandMark size={30} className="text-[var(--brand-on-dark)]" />
           <span className="text-[25px] font-bold leading-none tracking-[-0.02em] text-[var(--brand-on-dark)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif] max-[420px]:text-[22px]">
             {brand.name}
             <span className="text-[var(--brand-period-dark)]">.</span>
