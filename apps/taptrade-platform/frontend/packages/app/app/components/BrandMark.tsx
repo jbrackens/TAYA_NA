@@ -1,17 +1,19 @@
 /**
  * BrandMark — TapTrade identity glyph (P9 revision, 2026-07-07).
  *
- * A split "T": two crossbar segments (the two sides of a binary market)
- * over a single stem (the trade that commits you), with a mint "tap dot"
- * landing under the stem — the tap that places the trade. Strokes share
+ * A split "T": two ink crossbar segments (the two sides of a binary
+ * market) over a mint stem (the committed trade — the action color runs
+ * through the mark), with a mint "tap dot" landing under the stem in the
+ * solo variant — the tap that places the trade. Strokes share
  * one weight and the two channels are real negative space, so the glyph
  * stays crisp from a 16px favicon (where the channels close into a solid
  * T) up to large lockups.
  *
  * Variants — a responsive identity system, not one frozen asset:
- *   "glyph" — naked monochrome mark in currentColor (defaults to brand ink; dark surfaces set text color to --brand-on-dark). For chrome next to the wordmark,
- *             which already carries the mint period; two mint dots in one
- *             lockup read as clutter.
+ *   "glyph" — naked two-tone mark: crossbars in currentColor (brand ink on
+ *             light; dark surfaces set text color to --brand-on-dark and
+ *             remap --brand-period to its dark variant), stem in the brand
+ *             mint. For chrome next to the wordmark.
  *   "solo"  — glyph + mint tap dot. For when the mark stands alone
  *             (loading screens, auth, share surfaces).
  * The app-icon/favicon tile lives in app/icon.svg (a container is needed
@@ -60,14 +62,14 @@ export default function BrandMark({
         rx="3"
         fill="currentColor"
       />
-      {/* the stem — one committed trade; shares the cap line, never overlaps */}
+      {/* the stem — one committed trade; the brand mint runs through it */}
       <rect
         x="42"
         y="18"
         width="16"
         height="56"
         rx="3"
-        fill="currentColor"
+        fill="var(--brand-period)"
       />
       {variant === "solo" && (
         /* the tap dot — the press that lands the trade */
