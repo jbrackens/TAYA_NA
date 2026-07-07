@@ -11,6 +11,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import TapDot from "../components/TapDot";
 import type {
   DiscoveryResponse,
   MarketPriceHistory,
@@ -423,7 +424,11 @@ export default function DiscoverPage() {
   }, [discovery]);
 
   if (loading) {
-    return <div className={ROUTE_LOADING_CLASS}>{t("DISCOVER_LOADING")}</div>;
+    return (
+      <div className={ROUTE_LOADING_CLASS}>
+        <TapDot label={t("DISCOVER_LOADING")} />
+      </div>
+    );
   }
 
   if (error) {
