@@ -155,13 +155,20 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		if legacyMoneyRoutesEnabled() {
 			legacyMoneyStatus = "enabled"
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+		statusPayload := map[string]any{
 			"service":            service,
 			"status":             "up",
 			"pointMode":          "non_redeemable_points",
 			"legacyMoneyRoutes":  legacyMoneyStatus,
 			"launchRouteDomains": gatewayLaunchStatusDomains(),
-		})
+		}
+		// Sanitized catalog-sync health (counts + timestamps only — upstream
+		// venue names never surface here; see the compliance note in
+		// internal/discover/sync.go).
+		if syncStatus := discover.LastSyncStatus(); syncStatus != nil {
+			statusPayload["marketSync"] = syncStatus
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, statusPayload)
 	}))
 
 	// --- Prediction Platform Routes ---
@@ -713,13 +720,30 @@ func startHourlyMarketSyncWorker(db *sql.DB, repo discover.PredictionRepo, svc d
 		res, deduped, err := discover.Sync(ctx, repoImport, rehoster, limits)
 		if err != nil {
 			slog.Warn("market sync failed", "elapsed", time.Since(t0).Round(time.Millisecond), "error", err)
+			discover.RecordSyncStatus(discover.SyncStatus{
+				LastRunAt:   time.Now().UTC(),
+				OK:          false,
+				FetchErrors: len(res.FetchErrors),
+			})
 			return
 		}
 		promoteRes, err := discover.Promote(ctx, db, repo, svc, deduped)
 		if err != nil {
 			slog.Warn("market sync promote failed", "elapsed", time.Since(t0).Round(time.Millisecond), "error", err)
+			discover.RecordSyncStatus(discover.SyncStatus{
+				LastRunAt:   time.Now().UTC(),
+				OK:          false,
+				FetchErrors: len(res.FetchErrors),
+			})
 			return
 		}
+		discover.RecordSyncStatus(discover.SyncStatus{
+			LastRunAt:   time.Now().UTC(),
+			OK:          true,
+			Created:     promoteRes.Created,
+			Updated:     res.Updated,
+			FetchErrors: len(res.FetchErrors),
+		})
 		slog.Info("market sync complete",
 			"elapsed", time.Since(t0).Round(time.Millisecond),
 			"fetched_polymarket", res.FetchedPolymarket,
