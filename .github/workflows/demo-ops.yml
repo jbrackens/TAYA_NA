@@ -29,8 +29,8 @@ jobs:
     steps:
       - name: Set up SSH
         run: |
-          mkdir -p ~/.ssh
-          printf '%s' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy
           chmod 600 ~/.ssh/deploy
           ssh-keyscan -H "$BOX" >> ~/.ssh/known_hosts 2>/dev/null
 
