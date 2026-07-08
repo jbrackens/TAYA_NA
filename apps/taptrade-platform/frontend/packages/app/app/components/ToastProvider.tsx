@@ -47,44 +47,35 @@ const icons: Record<ToastType, React.ReactNode> = {
   warning: <AlertTriangle size={14} strokeWidth={2} />,
 };
 
-// Colors target the P8 cream theme (--bg-deep #f8f9fa). The prior values
-// were inherited from the dark sportsbook theme and rendered white-on-faint
-// on the prediction app's light backdrop — toasts fired but were invisible
-// (caught when QA placed a trade and saw no feedback despite the toast
-// existing in the DOM). Backgrounds use the existing *-soft tokens; titles
-// and messages now sit on AA-contrast text tokens.
+// P9 (2026-07-08): toasts are system cards, not tinted glass. The retired
+// treatment (colored border on a translucent *-soft fill + tinted icon
+// block) survived from the soft-tint era and read as glassmorphism on the
+// white P9 backdrop — login/logout toasts were hard to read. Now: white
+// --surface-1 card, hairline --border-1, --shadow-card, INK title, --t2
+// message, and status speaks through the dot signature (DESIGN.md "The
+// dot") plus a tinted icon glyph — never through the card surface.
 const toastClasses: Record<
   ToastType,
   {
-    root: string;
+    dot: string;
     icon: string;
-    title: string;
-    message: string;
   }
 > = {
   success: {
-    root: "border-[var(--yes-text)] bg-[var(--yes-soft)]",
-    icon: "bg-[var(--yes-soft)] text-[var(--yes-text)]",
-    title: "text-[var(--yes-text)]",
-    message: "text-[var(--t2)]",
+    dot: "bg-[var(--yes-bar)]",
+    icon: "text-[var(--yes-text)]",
   },
   error: {
-    root: "border-[var(--no-text)] bg-[var(--no-soft)]",
-    icon: "bg-[var(--no-soft)] text-[var(--no-text)]",
-    title: "text-[var(--no-text)]",
-    message: "text-[var(--t2)]",
+    dot: "bg-[var(--no-bar)]",
+    icon: "text-[var(--no-text)]",
   },
   info: {
-    root: "border-[var(--focus-ring)] bg-[var(--accent-soft)]",
-    icon: "bg-[var(--accent-soft)] text-[var(--focus-ring)]",
-    title: "text-[var(--t1)]",
-    message: "text-[var(--t2)]",
+    dot: "bg-[var(--brand-period)]",
+    icon: "text-[var(--accent-text)]",
   },
   warning: {
-    root: "border-[#b45309] bg-[rgba(251,191,36,0.18)]",
-    icon: "bg-[rgba(251,191,36,0.22)] text-[#b45309]",
-    title: "text-[#b45309]",
-    message: "text-[var(--t2)]",
+    dot: "bg-[#d97706]",
+    icon: "text-[#b45309]",
   },
 };
 
@@ -118,20 +109,27 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
 
   return (
     <div
-      className={`pointer-events-auto flex min-w-[300px] max-w-[400px] items-start gap-3 rounded-[10px] border px-4 py-3.5 shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition-all duration-300 ${exiting ? "translate-x-10 opacity-0" : "translate-x-0 opacity-100"} ${c.root}`}
+      role="status"
+      className={`pointer-events-auto flex min-w-[300px] max-w-[400px] items-start gap-3 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3.5 shadow-[var(--shadow-card)] transition-all duration-300 motion-reduce:transition-none ${exiting ? "translate-x-10 opacity-0" : "translate-x-0 opacity-100"}`}
     >
-      {/* Icon */}
-      <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${c.icon}`}>
-        {icons[toast.type]}
+      {/* Status: the dot signature + a small tinted glyph on the white card */}
+      <div className="flex shrink-0 items-center gap-2 pt-[3px]">
+        <span
+          className={`h-2.5 w-2.5 rounded-full ${c.dot}`}
+          aria-hidden="true"
+        />
+        <span className={`flex items-center ${c.icon}`}>
+          {icons[toast.type]}
+        </span>
       </div>
 
       {/* Text */}
       <div className="min-w-0 flex-1">
-        <div className={`text-[13px] font-semibold leading-[1.4] ${c.title}`}>
+        <div className="text-[13px] font-semibold leading-[1.4] text-[var(--t1)]">
           {toast.title}
         </div>
         {toast.message && (
-          <div className={`mt-0.5 text-xs leading-normal ${c.message}`}>
+          <div className="mt-0.5 text-xs leading-normal text-[var(--t2)]">
             {toast.message}
           </div>
         )}
