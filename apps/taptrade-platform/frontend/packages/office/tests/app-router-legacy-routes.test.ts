@@ -250,11 +250,11 @@ describe("retired App Router sportsbook and prototype surfaces", () => {
     expect(profile).toContain("Point Ledger");
     expect(profile).toContain('"trades"');
     expect(profile).toContain('setActiveTab("trades")');
-    expect(profile).toContain("pointsFromCents");
-    expect(profile).toContain("realizedPointsCents");
-    expect(profile).toContain("settlementPointsCents");
-    expect(profile).toContain("amountPointsCents");
-    expect(profile).toContain("balancePointsCents");
+    expect(profile).toContain("wholePoints");
+    expect(profile).toContain("realizedPoints");
+    expect(profile).toContain("settlementPoints");
+    expect(profile).toContain("amountPoints");
+    expect(profile).toContain("balancePoints");
     expect(profile).not.toContain("Wallet & Transactions");
     expect(profile).not.toContain("Wallet Balance");
     expect(profile).not.toContain("money(");
@@ -267,17 +267,17 @@ describe("retired App Router sportsbook and prototype surfaces", () => {
     expect(profile).not.toContain('activeTab === "bets"');
     expect(profile).not.toContain('setActiveTab("bets")');
 
-    expect(usersList).toContain("pointAccountBalanceCents");
-    expect(usersList).toContain("realizedPointsCents");
+    expect(usersList).toContain("pointAccountBalancePoints");
+    expect(usersList).toContain("realizedPoints");
     expect(usersList).not.toContain("walletBalanceCents");
     expect(usersList).not.toContain("realizedPnlCents");
 
-    expect(userDetail).toContain("pointAccountBalanceCents");
-    expect(userDetail).toContain("portfolioValuePointsCents");
-    expect(userDetail).toContain("realizedPointsCents");
-    expect(userDetail).toContain("unrealizedPointsCents");
-    expect(userDetail).toContain("amountPointsCents");
-    expect(userDetail).toContain("balancePointsCents");
+    expect(userDetail).toContain("pointAccountBalancePoints");
+    expect(userDetail).toContain("portfolioValuePoints");
+    expect(userDetail).toContain("realizedPoints");
+    expect(userDetail).toContain("unrealizedPoints");
+    expect(userDetail).toContain("amountPoints");
+    expect(userDetail).toContain("balancePoints");
     expect(userDetail).not.toContain("walletBalanceCents");
     expect(userDetail).not.toContain("realizedPnlCents");
     expect(userDetail).not.toContain("unrealizedPnlCents");
@@ -639,9 +639,9 @@ describe("retired App Router sportsbook and prototype surfaces", () => {
     expect(dashboardLayout).toContain('label: "Taxonomy"');
 
     expect(dashboard).toContain("formatPoints");
-    expect(dashboard).toContain("volume.totalVolumePointsCents");
-    expect(dashboard).toContain("mv.yesPricePointsCentsNow");
-    expect(dashboard).toContain("mv.yesPricePointsCentsStart");
+    expect(dashboard).toContain("volume.totalVolumePoints");
+    expect(dashboard).toContain("mv.yesPricePointsNow");
+    expect(dashboard).toContain("mv.yesPricePointsStart");
     expect(dashboard).not.toContain("formatUsd");
     expect(dashboard).not.toContain("totalVolumeCents");
     expect(dashboard).not.toContain("yesPriceCentsStart");
@@ -652,7 +652,7 @@ describe("retired App Router sportsbook and prototype surfaces", () => {
     expect(disputes).toContain("return locked points");
     expect(disputes).toContain("locked points are returned");
     expect(disputes).toContain("Uphold, void & return points");
-    expect(disputes).toContain("bondPointsCents");
+    expect(disputes).toContain("bondPoints");
     expect(disputes).toContain('unit: "PTS"');
     expect(disputes).not.toContain("refunds all stakes");
     expect(disputes).not.toContain("refund all stakes");
@@ -677,8 +677,8 @@ describe("retired App Router sportsbook and prototype surfaces", () => {
     expect(markets).toContain("Pause");
     expect(markets).toContain("Invalidate");
     expect(markets).toContain("formatPoints");
-    expect(markets).toContain("maxDriftPointsCents");
-    expect(markets).toContain("ammSubsidyPointsCents");
+    expect(markets).toContain("maxDriftPoints");
+    expect(markets).toContain("ammSubsidyPoints");
     expect(markets).toContain("Locked points are returned at entry cost");
     expect(markets).toContain("returning locked points");
     expect(markets).not.toContain("formatUsd");
@@ -694,7 +694,7 @@ describe("retired App Router sportsbook and prototype surfaces", () => {
     expect(settlements).toContain("point disbursements");
     expect(settlements).not.toContain("Replay Payouts");
     expect(settlements).toContain("formatPoints");
-    expect(settlements).toContain("maxDriftPointsCents");
+    expect(settlements).toContain("maxDriftPoints");
     expect(settlements).toContain("Settle");
     expect(settlements).not.toContain("formatUsd");
     expect(settlements).not.toContain("maxDriftCents");
@@ -715,11 +715,11 @@ describe("retired App Router sportsbook and prototype surfaces", () => {
     expect(risk).toContain("Export CSV");
     expect(risk).toContain("Reserved points");
     expect(risk).toContain("pointAccounting");
-    expect(risk).toContain("openPositionPointCostCents");
-    expect(risk).toContain("maxSettlementPointsCents");
-    expect(risk).toContain("reservedPointsCents");
-    expect(risk).toContain("openPointCostCents");
-    expect(risk).toContain("maxReturnedPointsCents");
+    expect(risk).toContain("openPositionPointCostPoints");
+    expect(risk).toContain("maxSettlementPoints");
+    expect(risk).toContain("reservedPoints");
+    expect(risk).toContain("openPointCostPoints");
+    expect(risk).toContain("maxReturnedPoints");
     expect(risk).toContain("Point-cost concentration");
     expect(risk).not.toContain("formatCents");
     expect(risk).not.toContain('style: "currency"');
@@ -771,7 +771,7 @@ describe("retired App Router sportsbook and prototype surfaces", () => {
     expect(loyaltySettings).toContain("toLegacyLoyaltySourceType");
     expect(loyaltySettings).toContain("normalizeLoyaltyRule");
     expect(loyaltySettings).toContain("predictionSourceType");
-    expect(loyaltySettings).toContain("minQualifiedPointsCents");
+    expect(loyaltySettings).toContain("minQualifiedPoints");
     expect(loyaltySettings).toContain("eligiblePredictionTypes");
     expect(loyaltySettings).toContain("Min Qualified Points (point units)");
     expect(loyaltySettings).toContain("prediction-settlement accrual rules");

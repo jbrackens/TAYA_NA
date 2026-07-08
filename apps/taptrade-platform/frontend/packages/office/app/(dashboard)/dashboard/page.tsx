@@ -34,8 +34,9 @@ function moverDeltaClassName(delta: number) {
   return mutedTextClassName;
 }
 
-function formatPoints(cents: number) {
-  return `${(cents / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} pts`;
+function formatPoints(points: number) {
+  // Points unit-model (2026-07-07): whole Points on the wire — no /100.
+  return `${points.toLocaleString(undefined, { maximumFractionDigits: 0 })} pts`;
 }
 
 function formatDate(iso: string) {

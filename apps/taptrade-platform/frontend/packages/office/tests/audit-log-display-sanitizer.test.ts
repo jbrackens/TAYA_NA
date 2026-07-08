@@ -23,14 +23,14 @@ describe("audit log display sanitizer", () => {
     expect(sanitized).toEqual({
       pointGrantId: "fb-1",
       pointRuleId: "ob-1",
-      pointGrantAppliedPointsCents: 250,
+      pointGrantAppliedPoints: 250,
       nested: {
         pointGrantId: "fb-2",
       },
       rows: [
         {
           pointRuleId: "ob-2",
-          pointGrantAppliedPointsCents: 500,
+          pointGrantAppliedPoints: 500,
         },
       ],
     });

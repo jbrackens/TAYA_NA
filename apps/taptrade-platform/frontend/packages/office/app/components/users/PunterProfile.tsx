@@ -54,12 +54,13 @@ const pointAmount = (n: number) =>
     maximumFractionDigits: 2,
   });
 
+// Points unit-model (2026-07-07): wire integers ARE whole Points — no /100.
 const points = (n: number) => `${pointAmount(n)} pts`;
-const pointsFromPoints = (c: number) => points(c / 100);
+const wholePoints = (v: number) => points(v);
 const signedPoints = (n: number) =>
   `${n < 0 ? "-" : "+"}${points(Math.abs(n))}`;
-const signedPointsFromPoints = (c: number) =>
-  `${c < 0 ? "-" : "+"}${pointsFromPoints(Math.abs(c))}`;
+const signedWholePoints = (v: number) =>
+  `${v < 0 ? "-" : "+"}${wholePoints(Math.abs(v))}`;
 const fmtDate = (iso: string) => (iso ? new Date(iso).toLocaleString() : "—");
 
 const infoRowClassName =
@@ -316,10 +317,10 @@ export function PunterProfile({
                               : positivePointClassName
                           }`}
                         >
-                          {signedPointsFromPoints(s.realizedPoints)}
+                          {signedWholePoints(s.realizedPoints)}
                         </td>
                         <td className={histTdClassName}>
-                          {pointsFromPoints(s.settlementPoints)}
+                          {wholePoints(s.settlementPoints)}
                         </td>
                         <td className={histTdClassName}>{fmtDate(s.paidAt)}</td>
                       </tr>
@@ -357,10 +358,10 @@ export function PunterProfile({
                           }`}
                         >
                           {e.type.toLowerCase() === "debit" ? "-" : "+"}
-                          {pointsFromPoints(Math.abs(e.amountPoints))}
+                          {wholePoints(Math.abs(e.amountPoints))}
                         </td>
                         <td className={histTdClassName}>
-                          {pointsFromPoints(e.balancePoints)}
+                          {wholePoints(e.balancePoints)}
                         </td>
                         <td className={histTdClassName}>{e.reason || "—"}</td>
                         <td className={histTdClassName}>
