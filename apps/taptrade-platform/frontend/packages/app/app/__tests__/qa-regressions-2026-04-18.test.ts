@@ -1302,19 +1302,36 @@ describe("Static informational pages", () => {
 describe("Social auth feature gate", () => {
   const featuresSource = read("lib/features.ts");
 
-  it("keeps social OAuth buttons hidden unless provider credentials are enabled", () => {
+  // Register split redesign (2026-07-08, owner-directed): the register page
+  // renders Google/Apple/SSO unconditionally per the reference layout. The
+  // old dead-end risk this gate prevented is handled in the component now:
+  // clicks PROBE the OAuth start route and degrade to an inline notice when
+  // a provider isn't configured, instead of navigating into raw JSON. Login
+  // keeps the flag-gated grid.
+  it("keeps social OAuth honest: login flag-gated, register probe-degraded", () => {
     assert.ok(
       featuresSource.includes("FEATURE_SOCIAL_AUTH") &&
         featuresSource.includes("NEXT_PUBLIC_FEATURE_SOCIAL_AUTH"),
       "social auth should have an explicit public feature flag",
     );
-    for (const file of ["auth/login/page.tsx", "auth/register/page.tsx"]) {
-      assert.ok(
-        read(file).includes("FEATURE_SOCIAL_AUTH") &&
-          read(file).includes("<SocialAuthButtons />"),
-        `${file} should gate social buttons behind FEATURE_SOCIAL_AUTH`,
-      );
-    }
+    assert.ok(
+      read("auth/login/page.tsx").includes("FEATURE_SOCIAL_AUTH") &&
+        read("auth/login/page.tsx").includes("<SocialAuthButtons />"),
+      "login should gate social buttons behind FEATURE_SOCIAL_AUTH",
+    );
+    const register = read("auth/register/page.tsx");
+    assert.ok(
+      register.includes('providers={["google", "apple", "sso"]}') &&
+        register.includes('variant="stacked"'),
+      "register should render the Google/Apple/SSO trio in the stacked reference layout",
+    );
+    const buttons = read("components/auth/SocialAuthButtons.tsx");
+    assert.ok(
+      buttons.includes("redirect: \"manual\"") &&
+        buttons.includes("isn't configured for this deployment yet") &&
+        buttons.includes("/start/`"),
+      "social buttons must probe the start route (trailing slash — Next's 308 masquerades as a provider redirect) and degrade to an inline notice",
+    );
   });
 });
 

@@ -1,19 +1,24 @@
 "use client";
 
 /**
- * SocialAuthButtons — provider grid for the login + sign-up flows.
+ * SocialAuthButtons — provider buttons for the login + sign-up flows.
  *
- * Each button is a full-page link to the auth service's OAuth start route
+ * Each button targets the auth service's OAuth start route
  * (`/api/v1/auth/oauth/<provider>/start`), proxied same-origin via the Next
- * rewrite of `/api/v1/*`. Layout is a 3-column grid (two rows of three) so six
- * providers never become a tall vertical stack; provider names collapse to
- * icon-only on narrow viewports.
+ * rewrite of `/api/v1/*`. Two variants:
+ *   "grid"    — compact 3-column grid (login page, six providers).
+ *   "stacked" — full-width "Continue with X" rows (register page, reference
+ *               layout order).
  *
- * Provider slugs MUST match the backend registry in
+ * Clicks probe the start route first (redirect: manual) and follow the
+ * provider redirect when it exists; a provider the deployment hasn't
+ * configured (or the backend doesn't register — e.g. Apple/SSO today)
+ * degrades to an honest inline notice instead of navigating to raw JSON.
+ * Provider slugs for the six live ones MUST match the backend registry in
  * services/auth/internal/http/oauth.go (X is slug "twitter").
  */
 
-import type { ReactNode } from "react";
+import { useState, type MouseEvent, type ReactNode } from "react";
 
 interface Provider {
   slug: string;
@@ -23,6 +28,19 @@ interface Provider {
 }
 
 const PROVIDERS: Provider[] = [
+  {
+    slug: "apple",
+    name: "Apple",
+    brandClass: "hover:border-[#000000] focus-visible:border-[#000000]",
+    icon: <AppleIcon />,
+  },
+  {
+    slug: "sso",
+    name: "SSO",
+    brandClass:
+      "hover:border-[var(--accent-lo)] focus-visible:border-[var(--accent-lo)]",
+    icon: <SSOIcon />,
+  },
   {
     slug: "google",
     name: "Google",
@@ -62,19 +80,83 @@ const PROVIDERS: Provider[] = [
 ];
 
 const GRID_CLASS = "grid grid-cols-3 gap-2.5";
+const STACK_CLASS = "flex flex-col gap-2.5";
+const STACK_BUTTON_CLASS =
+  "flex min-h-[46px] w-full items-center justify-center gap-2.5 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 text-sm font-semibold text-[var(--t1)] no-underline transition-[border-color,transform] duration-150 ease-[ease] hover:-translate-y-px active:scale-[0.99] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)]";
+const NOTICE_CLASS =
+  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2 text-xs text-[var(--t2)]";
+const DEFAULT_GRID_SLUGS = [
+  "google",
+  "twitter",
+  "facebook",
+  "tiktok",
+  "reddit",
+  "discord",
+];
 const BUTTON_BASE_CLASS =
   "flex min-h-[46px] items-center justify-center gap-2 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-2 py-0 text-[13px] font-semibold text-[var(--t2)] no-underline transition-[border-color,color,transform] duration-150 ease-[ease] hover:-translate-y-px hover:text-[var(--t1)] active:scale-[0.98] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[460px]:px-0";
 const ICON_CLASS = "inline-flex";
 const NAME_CLASS = "whitespace-nowrap max-[460px]:hidden";
 
-export default function SocialAuthButtons() {
+export interface SocialAuthButtonsProps {
+  /** Provider slugs to render, in order. Defaults to the six-provider grid set. */
+  providers?: string[];
+  variant?: "grid" | "stacked";
+}
+
+export default function SocialAuthButtons({
+  providers,
+  variant = "grid",
+}: SocialAuthButtonsProps) {
+  const [notice, setNotice] = useState<string | null>(null);
+  const slugs = providers ?? DEFAULT_GRID_SLUGS;
+  const list = slugs
+    .map((slug) => PROVIDERS.find((p) => p.slug === slug))
+    .filter((p): p is Provider => Boolean(p));
+
+  // Probe the start route before navigating: configured providers answer
+  // with a 3xx redirect to the IdP; unconfigured/unknown ones answer with
+  // an error JSON that must never be rendered as a page.
+  async function startOAuth(e: MouseEvent<HTMLAnchorElement>, p: Provider) {
+    e.preventDefault();
+    setNotice(null);
+    // Trailing slash matters: without it Next's trailingSlash 308 redirect
+    // masquerades as a provider redirect and the probe follows it into a
+    // raw 404 page.
+    const startUrl = `/api/v1/auth/oauth/${p.slug}/start/`;
+    try {
+      const res = await fetch(startUrl, { redirect: "manual" });
+      if (res.type === "opaqueredirect" || (res.status >= 300 && res.status < 400)) {
+        window.location.href = startUrl;
+        return;
+      }
+      setNotice(
+        `${p.name} sign-in isn't configured for this deployment yet. Use email below.`,
+      );
+    } catch {
+      setNotice(
+        `${p.name} sign-in isn't reachable right now. Use email below.`,
+      );
+    }
+  }
+
+  const stacked = variant === "stacked";
   return (
-    <div className={GRID_CLASS} role="group" aria-label="Social login options">
-      {PROVIDERS.map((p) => (
+    <div
+      className={stacked ? STACK_CLASS : GRID_CLASS}
+      role="group"
+      aria-label="Social login options"
+    >
+      {list.map((p) => (
         <a
           key={p.slug}
-          className={`${BUTTON_BASE_CLASS} ${p.brandClass}`}
-          href={`/api/v1/auth/oauth/${p.slug}/start`}
+          className={
+            stacked
+              ? `${STACK_BUTTON_CLASS} ${p.brandClass}`
+              : `${BUTTON_BASE_CLASS} ${p.brandClass}`
+          }
+          href={`/api/v1/auth/oauth/${p.slug}/start/`}
+          onClick={(e) => startOAuth(e, p)}
           title={`Continue with ${p.name}`}
           aria-label={`Continue with ${p.name}`}
           rel="nofollow"
@@ -82,10 +164,55 @@ export default function SocialAuthButtons() {
           <span className={ICON_CLASS} aria-hidden="true">
             {p.icon}
           </span>
-          <span className={NAME_CLASS}>{p.name}</span>
+          <span className={stacked ? "whitespace-nowrap" : NAME_CLASS}>
+            {stacked ? `Continue with ${p.name}` : p.name}
+          </span>
         </a>
       ))}
+      {notice && (
+        <p className={NOTICE_CLASS} role="status">
+          {notice}
+        </p>
+      )}
     </div>
+  );
+}
+
+function AppleIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="20"
+      height="20"
+      className="block size-5"
+      focusable="false"
+    >
+      <path
+        fill="var(--t1)"
+        d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"
+      />
+    </svg>
+  );
+}
+
+function SSOIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="20"
+      height="20"
+      className="block size-5"
+      focusable="false"
+      fill="none"
+      stroke="var(--t1)"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="11" width="18" height="10" rx="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      <circle cx="12" cy="16" r="1.6" fill="var(--t1)" stroke="none" />
+    </svg>
   );
 }
 

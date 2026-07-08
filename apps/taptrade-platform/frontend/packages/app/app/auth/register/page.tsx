@@ -1,9 +1,17 @@
 "use client";
 
 /**
- * RegisterPage — 2-step wizard on Predict design tokens.
+ * RegisterPage — split-screen signup (P9, 2026-07-08).
  *
- * Keeps signup lightweight: account, points-only disclosure, starter points.
+ * Layout mirrors the WorkOS-style reference the owner specified: a narrow
+ * centered form column (brand lockup → heading → fields → Continue → OR →
+ * Continue with Google/Apple/SSO → sign-in link → legal line) beside a
+ * full-bleed event panel built from our in-house ambient crowd footage
+ * (public/brand/hero-ambient.mp4 + auth-event-poster.jpg) under a forest
+ * scrim — no stock imagery, no external hotlinks. The 2-step wizard and the
+ * launch-compliance terms/disclosure acceptance are unchanged; only the
+ * shell moved. Social buttons render unconditionally here (owner call) and
+ * degrade honestly when a provider isn't configured.
  */
 
 import { useCallback, useState } from "react";
@@ -13,8 +21,8 @@ import { useAuth } from "../../hooks/useAuth";
 import { register as registerUser } from "../../lib/api";
 import { claimStarterGrant } from "../../lib/api/wallet-client";
 import { safeReturnPath, returnUrlSuffix } from "../../lib/safeReturnPath";
-import { FEATURE_SOCIAL_AUTH } from "../../lib/features";
 import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
+import BrandMark from "../../components/BrandMark";
 
 interface FormData {
   username: string;
@@ -39,14 +47,34 @@ const STEP_TITLES = ["Account", "Terms"];
 const TERMS_VERSION = "taptrade-launch-v1";
 const LAUNCH_DISCLOSURE_VERSION = "points-no-cashout-v1";
 
-const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
-const CARD_CLASS =
-  "relative w-full max-w-[500px] rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-8 pb-[26px] pt-8 text-[var(--t1)]";
-const HEAD_CLASS = "mb-4 text-center";
+const SHELL_CLASS =
+  "grid min-h-screen w-full bg-[var(--surface-1)] lg:grid-cols-[minmax(0,44%)_1fr]";
+const FORM_COL_CLASS =
+  "flex min-h-screen flex-col overflow-y-auto px-6 py-8 sm:px-12 lg:px-16";
+const FORM_INNER_CLASS = "mx-auto flex w-full max-w-[400px] flex-1 flex-col";
+const BRAND_ROW_CLASS =
+  "mb-10 inline-flex items-center gap-2.5 no-underline";
+const BRAND_WORDMARK_CLASS =
+  "text-[21px] font-bold leading-none tracking-[-0.03em] text-[var(--brand-ink)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
+const EVENT_PANEL_CLASS =
+  "relative hidden overflow-hidden bg-[var(--brand-ink)] lg:block";
+const EVENT_MEDIA_CLASS =
+  "absolute inset-0 h-full w-full object-cover opacity-[0.82] motion-reduce:hidden";
+const EVENT_POSTER_CLASS =
+  "absolute inset-0 h-full w-full object-cover opacity-[0.82]";
+const EVENT_SCRIM_CLASS =
+  "absolute inset-0 bg-[linear-gradient(200deg,rgba(11,67,50,0.28)_0%,rgba(11,67,50,0.55)_55%,rgba(7,42,31,0.88)_100%)]";
+const EVENT_COPY_CLASS =
+  "absolute inset-x-0 bottom-0 p-12 text-[var(--brand-on-dark)]";
+const EVENT_STATEMENT_CLASS =
+  "type-display m-0 max-w-[480px] text-[clamp(28px,3vw,44px)] font-semibold leading-[1.08] tracking-[-0.02em]";
+const EVENT_SUB_CLASS =
+  "mt-4 max-w-[420px] text-sm leading-[1.55] text-[rgba(241,236,227,0.75)]";
+const HEAD_CLASS = "mb-6";
 const EYEBROW_CLASS =
-  "mb-2.5 inline-block rounded-full border border-[rgba(43,228,128,0.3)] bg-[var(--accent-soft)] px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]";
+  "mb-3 inline-block font-['IBM_Plex_Mono',monospace] text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--t3)]";
 const TITLE_CLASS =
-  "m-0 mb-1 text-[22px] font-extrabold tracking-[-0.02em] text-[var(--t1)]";
+  "m-0 mb-1.5 text-[26px] font-bold tracking-[-0.02em] text-[var(--t1)]";
 const SUBTITLE_CLASS = "m-0 text-[13px] text-[var(--t3)]";
 const PROGRESS_CLASS =
   "relative mb-[22px] h-1 overflow-hidden rounded-full border border-[var(--border-1)] bg-[var(--surface-2)]";
@@ -207,13 +235,24 @@ export default function RegisterPage() {
 
   return (
     <div className={SHELL_CLASS}>
-      <div className={CARD_CLASS}>
+      <div className={FORM_COL_CLASS}>
+        <div className={FORM_INNER_CLASS}>
+        <Link href="/" className={BRAND_ROW_CLASS} aria-label="TapTrade home">
+          <BrandMark size={26} />
+          <span className={BRAND_WORDMARK_CLASS}>
+            TapTrade
+            <span className="text-[var(--brand-period)]">.</span>
+          </span>
+        </Link>
+
         <header className={HEAD_CLASS}>
           <span className={EYEBROW_CLASS}>
-            Step {step} of {TOTAL_STEPS}
+            Step {step} of {TOTAL_STEPS} · {STEP_TITLES[step - 1]}
           </span>
           <h1 className={TITLE_CLASS}>Create your account</h1>
-          <p className={SUBTITLE_CLASS}>{STEP_TITLES[step - 1]}</p>
+          <p className={SUBTITLE_CLASS}>
+            Track positions, follow the crowd, trade real-world outcomes.
+          </p>
         </header>
 
         <div className={PROGRESS_CLASS} aria-hidden="true">
@@ -235,16 +274,6 @@ export default function RegisterPage() {
 
         {step === 1 && (
           <div className={FORM_CLASS}>
-            {FEATURE_SOCIAL_AUTH && (
-              <>
-                <SocialAuthButtons />
-                <div className={DIVIDER_CLASS}>
-                  <span className={DIVIDER_TEXT_CLASS}>
-                    or sign up with email
-                  </span>
-                </div>
-              </>
-            )}
             <Field
               label="Username"
               value={form.username}
@@ -334,14 +363,16 @@ export default function RegisterPage() {
         )}
 
         <div className={ACTIONS_CLASS}>
-          <button
-            type="button"
-            onClick={onPrev}
-            disabled={step === 1 || submitting}
-            className={`${BUTTON_BASE_CLASS} ${BUTTON_GHOST_CLASS}`}
-          >
-            Back
-          </button>
+          {step > 1 && (
+            <button
+              type="button"
+              onClick={onPrev}
+              disabled={submitting}
+              className={`${BUTTON_BASE_CLASS} ${BUTTON_GHOST_CLASS}`}
+            >
+              Back
+            </button>
+          )}
           <button
             type="button"
             onClick={step === TOTAL_STEPS ? onSubmit : onNext}
@@ -356,6 +387,30 @@ export default function RegisterPage() {
           </button>
         </div>
 
+        {step === 1 && (
+          <>
+            <div className={`${DIVIDER_CLASS} my-5`}>
+              <span className={DIVIDER_TEXT_CLASS}>or</span>
+            </div>
+            <SocialAuthButtons
+              variant="stacked"
+              providers={["google", "apple", "sso"]}
+            />
+          </>
+        )}
+
+        <p className="mt-6 text-xs leading-[1.55] text-[var(--t3)]">
+          By creating an account you agree to the{" "}
+          <Link href="/tos" className="text-[var(--t2)] underline">
+            Terms of Use
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="text-[var(--t2)] underline">
+            Privacy Policy
+          </Link>
+          . TapTrade uses non-redeemable gameplay points.
+        </p>
+
         <footer className={FOOTER_CLASS}>
           Already have an account?{" "}
           <Link
@@ -365,7 +420,37 @@ export default function RegisterPage() {
             Sign in
           </Link>
         </footer>
+        </div>
       </div>
+
+      {/* Event panel — in-house ambient crowd footage under a forest scrim.
+          Poster renders for reduced-motion and while the loop buffers. */}
+      <aside className={EVENT_PANEL_CLASS} aria-hidden="true">
+        <img
+          src="/brand/auth-event-poster.jpg"
+          alt=""
+          className={EVENT_POSTER_CLASS}
+        />
+        <video
+          className={EVENT_MEDIA_CLASS}
+          src="/brand/hero-ambient.mp4"
+          poster="/brand/auth-event-poster.jpg"
+          autoPlay
+          muted
+          loop
+          playsInline
+        />
+        <div className={EVENT_SCRIM_CLASS} />
+        <div className={EVENT_COPY_CLASS}>
+          <p className={EVENT_STATEMENT_CLASS}>
+            Trade what the world is watching.
+          </p>
+          <p className={EVENT_SUB_CLASS}>
+            Elections, finals, premieres — every price is the crowd&apos;s live
+            probability. Pick a side and see if you read it right.
+          </p>
+        </div>
+      </aside>
     </div>
   );
 }
