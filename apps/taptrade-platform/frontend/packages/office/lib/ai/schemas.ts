@@ -64,3 +64,68 @@ export const candidatesEnvelopeSchema = z.object({
 });
 
 export type CandidatesEnvelope = z.infer<typeof candidatesEnvelopeSchema>;
+
+// ── Market Quality Pipeline v2 wire schema (2026-07-07) ─────────────────────
+// Same strict-mode contract as v1 (all properties required, optionals are
+// .nullable(), no records/min/max). resolverConfig crosses the wire as a JSON
+// STRING because strict mode forbids free-form objects; the drafter parses it
+// leniently. v1 schemas above stay exported — logs, evals, and any pinned
+// callers keep working.
+
+export const resolverTypeSchema = z.enum([
+  "manual_official_page",
+  "api_scoreboard",
+  "gov_data_release",
+  "exchange_close",
+  "organizer_announcement",
+  "sec_filing",
+  "other",
+]);
+
+export const resolutionPlanSchema = z.object({
+  primaryResolutionSource: z.string().nullable(),
+  fallbackResolutionSource: z.string().nullable(),
+  resolutionSourceUrl: z.string().nullable(),
+  resolutionMetric: z.string().nullable(),
+  objectiveResolution: z.boolean().nullable(),
+  automatableResolution: z.boolean().nullable(),
+  resolverType: resolverTypeSchema.nullable(),
+  resolverConfigJson: z.string().nullable(),
+  resolutionNotes: z.string().nullable(),
+});
+
+export const knownOutcomeSelfCheckSchema = z.object({
+  alreadyKnown: z.boolean(),
+  evidence: z.array(z.string()),
+});
+
+export const commercialHintsSchema = z.object({
+  audience: z.enum(["niche", "moderate", "broad"]),
+  timeliness: z.enum(["evergreen", "timely", "breaking"]),
+  shareability: z.enum(["low", "medium", "high"]),
+  reasons: z.array(z.string()),
+});
+
+export const draftedCandidateV2Schema = draftedCandidateSchema.extend({
+  resolutionPlan: resolutionPlanSchema.nullable(),
+  knownOutcomeSelfCheck: knownOutcomeSelfCheckSchema.nullable(),
+  commercialHints: commercialHintsSchema.nullable(),
+  templateGuess: z.string().nullable(),
+  eventGroupTitle: z.string().nullable(),
+});
+
+export type DraftedCandidateV2 = z.infer<typeof draftedCandidateV2Schema>;
+
+export const eventGroupSchema = z.object({
+  title: z.string(),
+  description: z.string().nullable(),
+  candidateTitles: z.array(z.string()),
+});
+
+export const candidatesEnvelopeV2Schema = z.object({
+  articleSummary: z.string(),
+  candidates: z.array(draftedCandidateV2Schema),
+  eventGroups: z.array(eventGroupSchema).nullable(),
+});
+
+export type CandidatesEnvelopeV2 = z.infer<typeof candidatesEnvelopeV2Schema>;

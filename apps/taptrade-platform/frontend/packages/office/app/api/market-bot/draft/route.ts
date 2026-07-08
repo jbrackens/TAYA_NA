@@ -19,8 +19,17 @@ import {
   parseDraftRequest,
   type AdminAuth,
 } from "../../../../lib/market-bot/validation";
-import { fetchAndExtractArticle } from "../../../../lib/ingest/urlFetch";
-import { draftMarketsFromArticle } from "../../../../lib/ai/marketDrafter";
+import {
+  fetchAndExtractArticle,
+  type ExtractionMeta,
+} from "../../../../lib/ingest/urlFetch";
+import {
+  draftMarketsFromArticleV2,
+  PROMPT_VERSION_V2,
+  type DraftResultV2,
+} from "../../../../lib/ai/marketDrafter";
+import { VALIDATOR_VERSION } from "../../../../lib/ai/marketQualityValidator";
+import { checkDuplicates } from "../../../../lib/ai/marketDuplicateDetector";
 import { createAISDKProvider } from "../../../../lib/ai/provider";
 import { gatewayBaseUrl } from "../../../../lib/market-bot/gatewayUrl";
 
@@ -43,19 +52,29 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   // Ingest: prefer pasted text; otherwise SSRF-guarded fetch + extraction.
+  // Extraction metadata rides along for the known-outcome checks and the
+  // modal's extraction preview — bad extraction must be visible, not silent.
   let articleText = parsed.value.articleText ?? "";
   let sourceUrl = parsed.value.sourceUrl;
+  let extraction: ExtractionMeta | undefined;
   if (!articleText && parsed.value.sourceUrl) {
     try {
       const fetched = await fetchAndExtractArticle(parsed.value.sourceUrl);
       articleText = fetched.text;
       sourceUrl = fetched.finalUrl;
+      extraction = fetched.meta;
     } catch (err) {
       return NextResponse.json(
         { error: `could not fetch article: ${errMsg(err)}` },
         { status: 400 },
       );
     }
+  } else if (articleText) {
+    extraction = {
+      charCount: articleText.length,
+      extractionConfidence: 1,
+      warnings: [],
+    };
   }
   if (articleText.length < 200) {
     return NextResponse.json(
@@ -82,13 +101,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // Draft (routine extraction + hard drafting/risk/block gate).
-  let result;
+  // Draft v2 (single hard call: summary + rich candidates + event groups).
+  let result: DraftResultV2;
   try {
-    result = await draftMarketsFromArticle(createAISDKProvider(), {
+    result = await draftMarketsFromArticleV2(createAISDKProvider(), {
       articleText,
       sourceUrl,
       userNotes: parsed.value.userNotes,
+      article: {
+        text: articleText,
+        publishedAt: extraction?.publishedAt,
+        updatedAt: extraction?.updatedAt,
+      },
     });
   } catch (err) {
     return NextResponse.json(
@@ -99,10 +123,46 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   if (result.injectionDetected) {
     return NextResponse.json(
-      { error: result.blockReason ?? "blocked", injectionDetected: true },
+      {
+        error: result.blockReason ?? "blocked",
+        injectionDetected: true,
+        injectionSignals: result.injectionSignals,
+      },
       { status: 422 },
     );
   }
+
+  // Duplicate/overlap detection against the gateway's own catalog. Fails
+  // open per-candidate (warning surfaced) — a search hiccup must not block
+  // drafting, but the admin must see the check didn't run.
+  const gatewayBase = gatewayBaseUrl();
+  await Promise.all(
+    result.drafts.map(async (draft) => {
+      const dup = await checkDuplicates(draft.candidate, gatewayBase);
+      draft.candidate.duplicateRisk = dup.duplicateRisk;
+      if (dup.eventRecommendation) {
+        // Attach-to-existing (from live catalog) beats the model's
+        // create-new grouping guess.
+        draft.candidate.eventRecommendation = dup.eventRecommendation;
+      }
+      if (dup.warnings.length > 0) {
+        draft.candidate.warnings = [
+          ...(draft.candidate.warnings ?? []),
+          ...dup.warnings,
+        ];
+      }
+      if (
+        dup.duplicateRisk &&
+        dup.duplicateRisk.recommendedAction === "reject_duplicate"
+      ) {
+        draft.validation.readiness = "reject";
+        draft.validation.warnings = [
+          ...draft.validation.warnings,
+          "near-exact duplicate of an existing market",
+        ];
+      }
+    }),
+  );
 
   // Persist provenance via the gateway (authoritative admin + CSRF gate). Never
   // send the full article body — only excerpt + summary + hash (gateway also
@@ -114,6 +174,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const persisted = await persistProvenance(auth.auth, {
       source: {
         sourceUrl,
+        sourceName: extraction?.publisher ?? extraction?.domain,
+        title: extraction?.title,
+        author: extraction?.author,
+        publishedAt: extraction?.publishedAt,
+        language: extraction?.language,
         summary: result.analysis.articleSummary,
         excerpt: articleText.slice(0, 500),
         textHash,
@@ -126,6 +191,39 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         inputTokens: g.inputTokens,
         outputTokens: g.outputTokens,
         promptVersion: g.promptVersion,
+        // Replay/audit context in the EXISTING raw-JSON columns (never the
+        // full article body — hash + metadata only).
+        inputJson: JSON.stringify({
+          inputType: parsed.value.articleText ? "pasted_text" : "url",
+          textHash,
+          canonicalUrl: extraction?.canonicalUrl,
+          domain: extraction?.domain,
+          publishedAt: extraction?.publishedAt,
+          updatedAt: extraction?.updatedAt,
+          extractionConfidence: extraction?.extractionConfidence,
+          extractionWarnings: extraction?.warnings,
+          injectionSignals: result.injectionSignals,
+          validatorVersion: VALIDATOR_VERSION,
+          promptVersion: PROMPT_VERSION_V2,
+        }),
+        outputJson: JSON.stringify({
+          candidates: result.drafts.map((d) => d.candidate),
+          eventGroups: result.eventGroups,
+        }),
+        validatorResult: JSON.stringify(
+          result.drafts.map((d) => ({
+            title: d.candidate.marketTitle,
+            readiness: d.validation.readiness,
+            blocked: d.validation.blocked,
+            errors: d.validation.errors,
+            warnings: d.validation.warnings,
+            knownOutcomeRisk: d.validation.knownOutcomeRisk.risk,
+            duplicateAction:
+              d.candidate.duplicateRisk?.recommendedAction ?? "unchecked",
+            commercialScore: d.validation.commercialScore.score,
+            templateId: d.candidate.templateId,
+          })),
+        ),
       })),
     });
     articleSourceId = persisted.articleSourceId;
@@ -141,6 +239,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     articleSourceId,
     aiGenerationLogIds,
     analysis: result.analysis,
+    extraction,
+    injectionSignals: result.injectionSignals,
+    eventGroups: result.eventGroups,
     candidates: result.drafts.map((d) => ({
       candidate: d.candidate,
       validation: d.validation,
@@ -151,6 +252,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 interface ProvenancePayload {
   source: {
     sourceUrl?: string;
+    sourceName?: string;
+    title?: string;
+    author?: string;
+    publishedAt?: string;
+    language?: string;
     summary?: string;
     excerpt?: string;
     textHash: string;
@@ -163,6 +269,9 @@ interface ProvenancePayload {
     inputTokens?: number;
     outputTokens?: number;
     promptVersion: string;
+    inputJson?: string;
+    outputJson?: string;
+    validatorResult?: string;
   }>;
 }
 

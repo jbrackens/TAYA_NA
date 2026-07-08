@@ -1,6 +1,12 @@
+// Keys here are the RAW spellings as stored in historical audit rows —
+// including the money-era "Cents" forms. They rename to point-native
+// display names; stored data is never rewritten. (Points unit-model
+// 2026-07-07: the sweep briefly renamed the raw keys themselves, which
+// let legacy rows through unsanitized.)
 const AUDIT_DETAIL_DISPLAY_KEY_ALIASES: Record<string, string> = {
   freebetId: "pointGrantId",
   oddsBoostId: "pointRuleId",
+  freebetAppliedCents: "pointGrantAppliedPoints",
   freebetAppliedPoints: "pointGrantAppliedPoints",
 };
 
