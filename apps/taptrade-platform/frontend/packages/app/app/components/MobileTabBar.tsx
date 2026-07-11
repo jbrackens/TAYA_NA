@@ -76,7 +76,12 @@ const MOBILE_TAB_BAR_CLASS =
   "fixed left-3 right-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-[90] grid rounded-[var(--r-rh-xl)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1.5 shadow-[0_10px_28px_rgba(60,50,30,0.14)]";
 
 const MOBILE_TAB_ITEM_CLASS =
-  "flex min-h-12 flex-col items-center justify-center gap-1 rounded-[var(--r-rh-md)] px-0.5 py-2 text-center text-[10px] tracking-[0.02em] no-underline transition-[color,background] duration-150 ease-[ease] [font-family:inherit]";
+  "flex min-h-12 flex-col items-center justify-center gap-1 rounded-[var(--r-rh-md)] px-0.5 py-2 text-center text-[11px] tracking-[0.02em] no-underline transition-[color,background] duration-150 ease-[ease] [font-family:inherit]";
+
+// Single-line labels: long locale strings (ms "Papan Kedudukan") must
+// truncate instead of wrapping into uneven tab heights (P10, 2026-07-12).
+const MOBILE_TAB_LABEL_CLASS =
+  "line-clamp-1 w-full overflow-hidden text-ellipsis";
 
 const MOBILE_TAB_ITEM_INACTIVE_CLASS =
   "font-semibold text-[var(--t3)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)]";
@@ -154,7 +159,7 @@ export default function MobileTabBar() {
             aria-current={active ? "page" : undefined}
           >
             <Icon size={18} className="block" aria-hidden="true" />
-            <span>{t(tab.labelKey)}</span>
+            <span className={MOBILE_TAB_LABEL_CLASS}>{t(tab.labelKey)}</span>
           </Link>
         );
       })}

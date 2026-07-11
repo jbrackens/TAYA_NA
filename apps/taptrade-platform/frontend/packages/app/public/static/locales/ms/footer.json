@@ -1,6 +1,6 @@
 {
   "COMPANY": "Company",
-  "ABOUT": "About",
+  "ABOUT": "Tentang",
   "TERMS_OF_SERVICE": "Terms of Service",
   "PRIVACY_POLICY": "Privacy Policy",
   "TERMS_AND_CONDITIONS": "Terms & Conditions",
@@ -19,5 +19,16 @@
   "DEPOSIT": "Peraturan Mata",
   "DEPOSIT_MESSAGE": "Mata permainan sahaja",
   "WITHDRAWALS": "Aktiviti Mata",
-  "WITHDRAWAL_MESSAGE": "Mata kekal dalam gameplay"
+  "WITHDRAWAL_MESSAGE": "Mata kekal dalam gameplay",
+  "PRODUCT": "Produk",
+  "FAIR_PLAY": "Permainan adil & kawalan",
+  "NOTIFICATION_SETTINGS": "Tetapan pemberitahuan",
+  "PLAY_LIMITS": "Had permainan",
+  "TAKE_A_BREAK": "Berehat / singkir diri",
+  "SUPPORT": "Sokongan",
+  "ACCOUNT_CLOSURE": "Tutup akaun",
+  "TERMS": "Terma Penggunaan",
+  "PRIVACY": "Privasi",
+  "CONTACT": "Hubungi",
+  "POINTS_DISCLOSURE": "Pasaran ramalan mata tidak boleh ditebus — mata permainan tiada nilai tunai, tidak boleh dideposit atau dikeluarkan, dan platform ini tidak berdaftar dengan mana-mana pengawal selia kewangan."
 }

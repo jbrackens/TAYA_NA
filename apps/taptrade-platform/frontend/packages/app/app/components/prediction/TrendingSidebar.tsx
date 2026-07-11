@@ -1,32 +1,38 @@
 "use client";
 
 /**
- * TrendingSidebar — "Top Movers" rail next to the DiscoveryHero on /predict.
+ * TrendingSidebar — the movers rail next to the DiscoveryHero on /predict.
+ * The component file name stays `TrendingSidebar` for import stability.
  *
- * Visual identity changed 2026-04-26 (Robinhood direction, see DESIGN.md
- * §7). Borderless flat list, mini sparkline + big price + delta pill per
- * row. The component file name stays as `TrendingSidebar` for import
- * stability while the visual identity is now "Top Movers."
+ * P10 honesty contract (2026-07-12): every delta and sparkline on this
+ * rail comes from the real 1-day price series (useMarketHistories). The
+ * former ticker-hash placeholder deltas and seeded-walk sparklines are
+ * deleted. Rows whose market has no drawable history show the price
+ * alone with a neutral "—" — no invented movement. When real movement
+ * exists, rows are ranked by |Δ| and the module honestly earns its
+ * "Top movers" name; the pulsing "24H" live dot is gone (movement is a
+ * fact, not a broadcast).
  *
- * Reuses `discovery.trending` data; each row links to /market/[ticker].
- * Sparklines and 24h delta are deterministic from the ticker (placeholder
- * until backend exposes price history).
+ * Prices are always the YES side, labeled — the previous unlabeled
+ * "leading side" price rendered Norway as 94¢ here and 6¢ in the hero
+ * (audit finding H5).
  *
- * Color discipline (DESIGN.md §3 strict two-greens):
- *   - mint --accent: actions/brand only (the live dot in the header)
- *   - seafoam --yes: up-direction (sparkline up, delta-up pill)
- *   - coral --no: down-direction
+ * Color discipline (DESIGN.md §3):
+ *   - seafoam --yes-*: up-direction (sparkline up, delta-up pill)
+ *   - coral --no-*: down-direction
  */
 
 import Link from "next/link";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
-import { deterministicDelta, sparklinePath } from "./utils/spark";
+import { seriesDelta, sparklinePathFromSeries } from "./utils/spark";
+import { useMarketHistories } from "./utils/useHeroPriceHistory";
 import { categoryLabel, localizedMarket } from "./market-content";
 
 interface Props {
   markets: PredictionMarket[];
-  /** Maximum rows to render. Default 6 (matches Top Movers height to hero). */
+  /** Maximum rows to render. Default 6 (matches rail height to hero). */
   limit?: number;
 }
 
@@ -53,95 +59,136 @@ function categoryFromTicker(ticker: string): string {
   return CATEGORY_LABEL[prefix] ?? prefix.toUpperCase();
 }
 
-const TOP_MOVERS_CLASS =
-  "px-1 pt-2 pb-1 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+const TOP_MOVERS_CLASS = "px-1 pt-2 pb-1 font-sans";
 const TOP_MOVERS_HEADER_CLASS =
   "mb-[18px] flex items-center justify-between px-2";
 const TOP_MOVERS_TITLE_CLASS =
   "type-display m-0 text-[19px] font-semibold text-[var(--t1)]";
-const TOP_MOVERS_LIVE_CLASS =
-  "inline-flex items-center gap-1.5 font-['IBM_Plex_Mono',_monospace] text-[10px] uppercase tracking-[0.18em] text-[var(--accent-text)]";
-const TOP_MOVERS_DOT_CLASS =
-  "h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent-lo)] shadow-[0_0_8px_rgba(15,138,76,0.35)] motion-reduce:animate-none";
+const TOP_MOVERS_WINDOW_CLASS =
+  "font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--t3)]";
 const TOP_MOVERS_LIST_CLASS = "m-0 list-none p-0";
 const TOP_MOVERS_ROW_CLASS =
   "grid cursor-pointer grid-cols-[1fr_60px_auto] items-center gap-[14px] rounded-[var(--r-rh-sm)] border-b border-[var(--border-1)] px-2 py-[14px] text-inherit no-underline transition-colors duration-[120ms] hover:bg-[var(--surface-2)] last:border-b-0";
 const TOP_MOVERS_CATEGORY_CLASS =
-  "mb-1 text-[11px] font-medium text-[var(--accent-text)]";
+  "mb-1 text-[11px] font-medium text-[var(--t3)]";
 const TOP_MOVERS_QUESTION_CLASS =
   "overflow-hidden [display:-webkit-box] text-[13px] font-medium leading-[1.3] text-[var(--t1)] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]";
 const TOP_MOVERS_PRICE_CLASS =
-  "type-display text-[17px] font-semibold leading-none text-[var(--t1)]";
+  "type-display text-[17px] font-semibold leading-none text-[var(--t1)] [font-variant-numeric:tabular-nums]";
+const TOP_MOVERS_PRICE_SIDE_CLASS =
+  "mr-1 text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--t3)]";
 const TOP_MOVERS_FOOTER_CLASS =
   "mt-[14px] border-t border-[var(--border-1)] px-2 pt-2.5 text-center";
 const TOP_MOVERS_FOOTER_LINK_CLASS =
   "text-[13px] font-semibold text-[var(--accent-text)] no-underline hover:underline";
 
 function deltaClass(up: boolean): string {
-  return `mt-[5px] inline-block rounded-[var(--r-pill)] px-[7px] py-0.5 font-['IBM_Plex_Mono',_monospace] text-[11px] font-semibold [font-variant-numeric:tabular-nums] ${
+  return `mt-[5px] inline-block rounded-[var(--r-pill)] px-[7px] py-0.5 font-mono text-[11px] font-semibold [font-variant-numeric:tabular-nums] ${
     up
       ? "bg-[var(--yes-soft)] text-[var(--yes-text)]"
       : "bg-[var(--no-soft)] text-[var(--no-text)]"
   }`;
 }
 
+const NEUTRAL_DELTA_CLASS =
+  "mt-[5px] inline-block rounded-[var(--r-pill)] bg-[var(--surface-2)] px-[7px] py-0.5 font-mono text-[11px] font-semibold text-[var(--t3)]";
+
 export function TrendingSidebar({ markets, limit = 6 }: Props) {
   const { t } = useTranslation("prediction");
   const { t: contentT } = useTranslation("market-content");
+  const candidates = useMemo(
+    () => (markets ?? []).slice(0, Math.max(limit, 8)),
+    [markets, limit],
+  );
+  const tickers = useMemo(() => candidates.map((m) => m.ticker), [candidates]);
+  const histories = useMarketHistories(tickers);
+
   if (!markets || markets.length === 0) return null;
-  const rows = markets.slice(0, limit).map((m) => localizedMarket(contentT, m));
+
+  // Rank by |real Δ| when we have movement; markets without drawable
+  // history sort after moving ones, in their incoming (volume) order.
+  const rows = candidates
+    .map((m, idx) => {
+      const history = histories[m.ticker];
+      const delta = seriesDelta(history?.points);
+      return { market: localizedMarket(contentT, m), delta, idx };
+    })
+    .sort((a, b) => {
+      const av = a.delta ? Math.abs(a.delta.pct) : -1;
+      const bv = b.delta ? Math.abs(b.delta.pct) : -1;
+      if (av !== bv) return bv - av;
+      return a.idx - b.idx;
+    })
+    .slice(0, limit);
+
+  const anyMovement = rows.some((r) => r.delta && !r.delta.flat);
 
   return (
-    <aside className={TOP_MOVERS_CLASS} aria-label={t("TOP_MOVERS")}>
+    <aside
+      className={TOP_MOVERS_CLASS}
+      aria-label={
+        anyMovement ? t("TOP_MOVERS") : t("MOST_TRADED", "Most traded")
+      }
+    >
       <div className={TOP_MOVERS_HEADER_CLASS}>
-        <h3 className={TOP_MOVERS_TITLE_CLASS}>{t("TOP_MOVERS")}</h3>
-        <span className={TOP_MOVERS_LIVE_CLASS}>
-          <span className={TOP_MOVERS_DOT_CLASS} aria-hidden="true" />
-          24H
+        <h3 className={TOP_MOVERS_TITLE_CLASS}>
+          {anyMovement ? t("TOP_MOVERS") : t("MOST_TRADED", "Most traded")}
+        </h3>
+        <span className={TOP_MOVERS_WINDOW_CLASS}>
+          {anyMovement ? t("TODAY") : t("BY_VOLUME", "by volume")}
         </span>
       </div>
       <ul className={TOP_MOVERS_LIST_CLASS}>
-        {rows.map((m) => {
-          const yesLeads = m.yesPricePoints >= m.noPricePoints;
-          const leadingPrice = yesLeads
-            ? m.yesPricePoints
-            : m.noPricePoints;
-          const { pct, up } = deterministicDelta(m.ticker, leadingPrice);
+        {rows.map(({ market: m, delta }) => {
+          const history = histories[m.ticker];
+          const spark = sparklinePathFromSeries(history?.points);
+          const up = delta?.up ?? false;
           const sparkColor = up ? "var(--yes-text)" : "var(--no-text)";
           const cat = categoryLabel(
             contentT,
             m.categoryName || categoryFromTicker(m.ticker),
           );
+          const deltaText = delta
+            ? `${up ? "+" : ""}${delta.pct.toFixed(1)}%`
+            : "—";
           return (
             <li key={m.id}>
               <Link
                 href={`/market/${m.ticker}`}
                 className={TOP_MOVERS_ROW_CLASS}
-                aria-label={`${m.title}, ${leadingPrice} cents, ${up ? "+" : ""}${pct.toFixed(1)}%`}
+                aria-label={`${m.title}, ${t("YES")} ${m.yesPricePoints}¢${delta ? `, ${deltaText} ${t("TODAY").toLowerCase()}` : ""}`}
               >
                 <div className="min-w-0">
                   <div className={TOP_MOVERS_CATEGORY_CLASS}>{cat}</div>
                   <div className={TOP_MOVERS_QUESTION_CLASS}>{m.title}</div>
                 </div>
                 <span className="h-7 w-[60px]" aria-hidden="true">
-                  <svg
-                    className="block h-full w-full"
-                    viewBox="0 0 60 28"
-                    preserveAspectRatio="none"
-                  >
-                    <path
-                      d={sparklinePath(m.ticker, leadingPrice, up)}
-                      stroke={sparkColor}
-                      strokeWidth="1.5"
-                      fill="none"
-                    />
-                  </svg>
+                  {spark && (
+                    <svg
+                      className="block h-full w-full"
+                      viewBox="0 0 60 28"
+                      preserveAspectRatio="none"
+                    >
+                      <path
+                        d={spark}
+                        stroke={sparkColor}
+                        strokeWidth="1.5"
+                        fill="none"
+                      />
+                    </svg>
+                  )}
                 </span>
                 <div className="min-w-14 text-right">
-                  <div className={TOP_MOVERS_PRICE_CLASS}>{leadingPrice}¢</div>
-                  <span className={deltaClass(up)}>
-                    {up ? "+" : ""}
-                    {pct.toFixed(1)}%
+                  <div className={TOP_MOVERS_PRICE_CLASS}>
+                    <span className={TOP_MOVERS_PRICE_SIDE_CLASS}>
+                      {t("YES")}
+                    </span>
+                    {m.yesPricePoints}¢
+                  </div>
+                  <span
+                    className={delta ? deltaClass(up) : NEUTRAL_DELTA_CLASS}
+                  >
+                    {deltaText}
                   </span>
                 </div>
               </Link>
@@ -150,9 +197,9 @@ export function TrendingSidebar({ markets, limit = 6 }: Props) {
         })}
       </ul>
       <div className={TOP_MOVERS_FOOTER_CLASS}>
-        <a href="/discover" className={TOP_MOVERS_FOOTER_LINK_CLASS}>
+        <Link href="/discover" className={TOP_MOVERS_FOOTER_LINK_CLASS}>
           {t("VIEW_ALL_TRENDING")} →
-        </a>
+        </Link>
       </div>
     </aside>
   );

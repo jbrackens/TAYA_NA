@@ -13,7 +13,12 @@ function emptyFallback(value: string): string {
 }
 
 function currentLocale(): string {
-  return i18n.resolvedLanguage || i18n.language || "en";
+  // The user's CHOSEN language gates template localization — not
+  // resolvedLanguage, which falls back to "en" while a locale's
+  // namespaces are still fetching (P10: en resources are bundled at
+  // init, so resolvedLanguage is briefly "en" after every language
+  // switch until the fetch backend delivers).
+  return i18n.language || i18n.resolvedLanguage || "en";
 }
 
 function usesEnglishCopy(): boolean {

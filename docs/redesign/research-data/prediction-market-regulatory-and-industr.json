@@ -1,0 +1,244 @@
+{
+ "topic": "Prediction-market regulatory and industry landscape as of 2026-07-12: CFTC rulemaking, state/court fights, US operator status, offshore/crypto-native norms, and honest-compliance guardrails for a non-US-licensed crypto-native demo product",
+ "summary": "Federal posture flipped pro-prediction-market in 2025-26 while states escalated. Under Chairman Mike Selig, the CFTC issued Staff Advisory 26-08 (Mar 12, 2026) telling designated contract markets (DCMs) how to list event contracts responsibly, an Enforcement Advisory (Feb 25, 2026) policing insider trading/manipulation on those markets, and a formal Notice of Proposed Rulemaking amending Rule 40.11 (published Jun 12, 2026; comments due Jul 27, 2026) that would bless most sports outcome contracts while banning injury/officiating/specific-play and pre-collegiate markets and contracts on terrorism/assassination/war. The CFTC and DOJ even sued Arizona, Connecticut, and Illinois (Apr 2, 2026) to assert federal preemption. Courts are split: the Third Circuit (Apr 6, 2026) held CFTC jurisdiction over Kalshi's sports contracts is likely exclusive, but Maryland (Aug 2025) and SDNY (Jul 7, 2026, Kalshi injunction denied, on appeal) went the states' way, Nevada courts ordered Kalshi geofenced out of the state and are pursuing sanctions, tribes sued under IGRA, and a Ninth Circuit panel that heard consolidated Kalshi/Robinhood/Crypto.com arguments (Apr 16, 2026) leaned toward the states \u2014 a circuit split heading toward SCOTUS. Congress's ban bills (Prediction Markets Are Gambling Act; STOP Corrupt Bets Act) have stalled. Commercially the category is enormous and legitimizing fast: Kalshi (~$17B/mo volume, ~90% US share, seeking ~$40B valuation), Polymarket (US re-entry via the CFTC-licensed QCEX/QCX acquisition, $3.5B US + record $10.8B international volume in June 2026, ICE's $2B investment), Robinhood (~5.2B event contracts in June 2026, 18+, all 50 states minus pulled sports markets in NV/NJ/MD), and league deals (NHL, MLB-Polymarket exclusive with a CFTC integrity MOU, LaLiga).\n\nFor a NON-US-licensed, crypto-native demo product (Hula Na/Tiangge's posture), the honest-claims perimeter is now well defined by enforcement patterns. Offshore operators are expected to geo-fence: Polymarket's international venue blocks 33 countries (US since its 2022 CFTC settlement, plus UK, France, Singapore, Ontario, etc.) with a tiered UX (full block \u2192 close-only \u2192 view-only/data-only), bans VPN circumvention in its ToS, actively blocks VPN IP ranges, and is expanding KYC after a May 2026 US House inquiry and Dutch KSA fine threats. Falsely claiming CFTC registration is exactly what puts platforms on the CFTC's RED List, and senators have already attacked Polymarket for \"deceptive marketing\" toward US users \u2014 so the demo may truthfully describe its mechanism (non-custodial, on-chain settlement, USDT rail, audited contracts if actually audited) and its demo/no-real-money status (the Manifold play-money precedent shows unlicensed operation is defensible only when nothing of value is cashed out), but must never display \"regulated,\" \"licensed,\" \"CFTC,\" \"legal,\" \"safe,\" or any customer-protection implication, and should affirmatively state it is not registered with the CFTC or any regulator and is not offered to US persons or other restricted jurisdictions. Category norms to mirror in UX: 18+ gating as the current exchange standard (with live pressure from the NBA/PGA/NCAA, tribes, and the Texas Medical Association to move to 21+), visible jurisdiction gates/interstitials rather than buried ToS clauses, substantial-risk-of-loss language modeled on Kalshi's member agreement and the CFTC's \"risk capital only\" advisories, and responsible-play affordances (deposit limits, cooling-off, self-exclusion, help-line references) that Kalshi adopted via its $2M National Council on Problem Gambling partnership in May 2026.",
+ "findings": [
+  {
+   "claim": "On June 10, 2026 the CFTC issued a Notice of Proposed Rulemaking ('Prediction Markets; Public Interest Determinations', published in the Federal Register June 12, 2026; comments due July 27, 2026) amending Rule 40.11 with a three-step framework for when event contracts involving gaming/terrorism/assassination/war are contrary to the public interest.",
+   "kind": "evidence",
+   "source": "https://www.federalregister.gov/documents/2026/06/12/2026-11854/prediction-markets-public-interest-determinations",
+   "sourceDate": "2026-06-12",
+   "designImplication": "The category is being formalized, not banned \u2014 a demo can credibly present prediction markets as an emerging regulated asset class, but the rules are still in flux (comment period open), so avoid any 'compliant with CFTC rules' phrasing."
+  },
+  {
+   "claim": "The proposed rule would permit sports event contracts on final scores, point differentials, win/loss, tournament advancement, and statistical performance, but disallow contracts on specific plays, in-game fights, injuries, officiating decisions, and pre-collegiate (e.g., high school) sports.",
+   "kind": "evidence",
+   "source": "https://www.covers.com/industry/prediction-market-new-rules-proposed-cftc-sports-betting-allowed-june-2026",
+   "sourceDate": "2026-06-10",
+   "designImplication": "Market catalog design: outcome-level sports markets are the emerging 'respectable' norm; injury/officiating/single-actor-manipulable markets are red-flag content even offshore \u2014 exclude them from the demo catalog."
+  },
+  {
+   "claim": "CFTC Staff Advisory Letter No. 26-08 (March 12, 2026) instructs DCMs listing event contracts on manipulation-resistance (Core Principle 3), flags injury/unsportsmanlike-conduct/single-actor contracts as high risk, and encourages collaboration with sports leagues, integrity units, and official league data.",
+   "kind": "evidence",
+   "source": "https://www.cftc.gov/csl/26-08/download",
+   "sourceDate": "2026-03-12",
+   "designImplication": "Trust signals in the category now center on market integrity: resolution-source transparency and manipulation-resistance are legitimate, honest trust claims a demo can make about its own mechanism."
+  },
+  {
+   "claim": "The CFTC Division of Enforcement issued a Prediction Markets Advisory (Feb 25, 2026) highlighting real cases of self-dealing (a candidate trading his own race) and insider trading (a YouTube employee trading on unreleased content), and listing prohibited practices: insider trading, wash/pre-arranged trades, disruptive trading, fraud and manipulation.",
+   "kind": "evidence",
+   "source": "https://www.cftc.gov/PressRoom/PressReleases/9185-26",
+   "sourceDate": "2026-02-25",
+   "designImplication": "Even a demo should surface market-integrity rules (no insider/self-resolution trading) in its UX copy \u2014 this is now table-stakes category language, and it maps directly to Hula Na's 1h dispute-window design."
+  },
+  {
+   "claim": "The CFTC and DOJ jointly sued Arizona, Connecticut, and Illinois on April 2, 2026, asserting that state enforcement actions against prediction-market platforms are preempted by the Commodity Exchange Act.",
+   "kind": "evidence",
+   "source": "https://www.hklaw.com/en/insights/publications/2026/04/federal-appeals-court-cftc-jurisdiction-over-sports-event-contracts",
+   "sourceDate": "2026-04-02",
+   "designImplication": "Federal-vs-state conflict is unresolved; a demo product should not cite 'US legal status' in either direction \u2014 the honest framing is simply 'not offered in the United States'."
+  },
+  {
+   "claim": "Brian Quintenz's nomination for CFTC chair was pulled; Mike Selig now chairs the CFTC and has embraced prediction markets (staff advisory + rulemaking); Quintenz joined the industry's Coalition for Prediction Markets as Senior Advisor in July 2026.",
+   "kind": "evidence",
+   "source": "https://bettorsinsider.com/news/2026/07/09/failed-cftc-chair-nominee-brian-quintenz-joins-coalition-for-prediction-markets-as-senior-advisor/",
+   "sourceDate": "2026-07-09",
+   "designImplication": "Industry has an organized lobbying coalition and friendly federal regulator \u2014 category branding can lean 'financial market/exchange' rather than 'betting', which is the direction incumbents are pulling."
+  },
+  {
+   "claim": "The Third Circuit (KalshiEX LLC v. Flaherty, No. 25-1922, decided April 6, 2026, 2-1) affirmed Kalshi's preliminary injunction against New Jersey, holding sports event contracts on a DCM are 'swaps' under likely-exclusive CFTC jurisdiction.",
+   "kind": "evidence",
+   "source": "https://law.justia.com/cases/federal/appellate-courts/ca3/25-1922/25-1922-2026-04-06.html",
+   "sourceDate": "2026-04-06",
+   "designImplication": "The 'event contracts are financial instruments, not bets' framing has appellate validation \u2014 a demo can use exchange/derivatives vocabulary (contracts, positions, settlement) without it being inherently deceptive."
+  },
+  {
+   "claim": "A Maryland federal court (Kalshi v. Martin, Aug 1, 2025, Judge Abelson) denied Kalshi's preliminary injunction, the first ruling that states are likely NOT preempted from regulating sports event contracts as gambling.",
+   "kind": "evidence",
+   "source": "https://www2.mdd.uscourts.gov/Opinions/Opinions/2025-08-01_Kalshiex_Deny_Mot_for_PI_(25-cv-1283).pdf",
+   "sourceDate": "2025-08-01",
+   "designImplication": "Even CFTC-licensed operators lose in some US states \u2014 reinforces that a non-US demo must treat the entire US as restricted rather than reasoning state-by-state."
+  },
+  {
+   "claim": "On July 7-8, 2026, SDNY Judge Analisa Torres denied Kalshi's preliminary injunction against the New York State Gaming Commission, finding no clear likelihood of success on CEA preemption; Kalshi filed an interlocutory appeal to the Second Circuit and continues operating meanwhile.",
+   "kind": "evidence",
+   "source": "https://sbcamericas.com/2026/07/08/kalshi-denied-injunction-in-new-york/",
+   "sourceDate": "2026-07-08",
+   "designImplication": "The legal narrative is actively moving week-to-week; any regulatory copy in the demo should be dateable and easily updatable (e.g., a 'last updated' legal page) rather than hard-coded claims."
+  },
+  {
+   "claim": "Nevada state court granted the Gaming Control Board a preliminary injunction (April 3, 2026) barring Kalshi's sports/elections/entertainment contracts and ordering geofencing of Nevada customers; by June 3, 2026 Kalshi had not complied and regulators sought daily sanctions; a Ninth Circuit panel (argued April 16, 2026) appeared to lean Nevada's way and denied operators' stay motions on May 21, 2026.",
+   "kind": "evidence",
+   "source": "https://nevadacurrent.com/2026/04/16/ninth-circuit-panel-appears-to-lean-nevadas-way-in-legal-battle-with-kalshi-crypto-com/",
+   "sourceDate": "2026-04-16",
+   "designImplication": "Court-ordered geofencing is now a real remedy; geo-blocking capability is a credibility feature worth demonstrating (even simulated) in a demo product's architecture story."
+  },
+  {
+   "claim": "Four New Mexico tribes (Pueblos of Isleta, Pojoaque, Sandia; Mescalero Apache) sued Kalshi in May 2026 alleging IGRA violations and under-21 access; tribal gaming interests call prediction markets an 'existential threat' to exclusivity compacts.",
+   "kind": "evidence",
+   "source": "https://tribalbusinessnews.com/sections/gaming/15482-tribal-gaming-exclusivity-faces-existential-threat-as-prediction-markets-expand",
+   "sourceDate": "2026-05",
+   "designImplication": "Age (18-20) access is a named legal harm in live litigation \u2014 a demo should gate at 18+ minimum and consider 21+ to be future-proof."
+  },
+  {
+   "claim": "Kalshi sued Ohio's gambling regulator in state court (June 30, 2026) to block a planned $5M fine; it also faces actions from officials in Arizona, Kentucky, Massachusetts, Nevada, and Washington, and Arizona's injunction denial is on appeal to the Ninth Circuit (July 2026).",
+   "kind": "evidence",
+   "source": "https://sbcamericas.com/2026/06/30/kalshi-sues-ohio-regulator-state-court/",
+   "sourceDate": "2026-06-30",
+   "designImplication": "State-level enforcement is broad and punitive (multi-million fines) \u2014 'we don't serve the US' must be operationally true, not just a ToS line, for any real launch."
+  },
+  {
+   "claim": "Bipartisan federal bills to ban sports/election event contracts \u2014 the Prediction Markets Are Gambling Act (S.4160, Curtis/Schiff) and STOP Corrupt Bets Act (Merkley/Raskin), both March 2026 \u2014 have stalled in committee; only a narrower measure limiting lawmakers' own trading advanced (June 24, 2026).",
+   "kind": "evidence",
+   "source": "https://www.congress.gov/bill/119th-congress/senate-bill/4160/text",
+   "sourceDate": "2026-03-26",
+   "designImplication": "No imminent US statutory ban; the category's growth story remains intact for investor-facing materials, with legislative risk as a disclosed caveat."
+  },
+  {
+   "claim": "Kalshi holds roughly 90% US prediction-market share, recently surpassed ~$17B monthly volume (3x year-over-year), raised $1B+ at a $22B valuation (March 2026, Coatue), and is seeking new funding at ~$40B (June 2026).",
+   "kind": "evidence",
+   "source": "https://www.coindesk.com/business/2026/06/24/kalshi-targets-a-massive-usd40-billion-valuation-widening-lead-over-rival-polymarket",
+   "sourceDate": "2026-06-24",
+   "designImplication": "Kalshi defines category UX conventions US-side; benchmark its market card, order book, and disclosure patterns as the 'regulated-look' reference."
+  },
+  {
+   "claim": "Polymarket acquired CFTC-licensed exchange/clearinghouse QCEX for $112M (July 2025), relaunched US trading via a mobile app in Dec 2025, removed its waitlist in May 2026, and did $3.5B US notional volume in June 2026 plus a record $10.8B on its international exchange; ICE has invested $2B total, and Polymarket seeks a ~$15B valuation.",
+   "kind": "evidence",
+   "source": "https://www.prnewswire.com/news-releases/polymarket-acquires-cftc-licensed-exchange-and-clearinghouse-qcex-for-112-million-302509626.html",
+   "sourceDate": "2025-07-21",
+   "designImplication": "The dominant crypto-native player chose to buy a US license rather than stay purely offshore \u2014 the crypto-native aesthetic and the compliance posture are converging, and a demo can credibly blend both (on-chain mechanics + compliance-forward UI)."
+  },
+  {
+   "claim": "Robinhood traded ~5.2 billion event contracts in June 2026 (12B+ in 2025), offers them to users 18+ in all 50 states, but has pulled or restricted sports contracts for Maryland, Nevada, and New Jersey residents while politics/entertainment remain available there.",
+   "kind": "evidence",
+   "source": "https://investors.robinhood.com/static-files/f56259ca-1ce7-4e79-bb66-650f7f2f8dc4",
+   "sourceDate": "2026-06",
+   "designImplication": "Per-category, per-jurisdiction market gating (not all-or-nothing) is an established UX pattern \u2014 a demo can showcase category-level geo-gating as a sophisticated compliance feature."
+  },
+  {
+   "claim": "Crypto.com stopped offering sports event contracts in Nevada after enforcement action and voluntarily withdrew them in some other states while its Ninth Circuit appeal (consolidated with Kalshi and Robinhood, argued April 16, 2026, CFTC amicus in support filed Feb 17, 2026) is pending.",
+   "kind": "evidence",
+   "source": "https://www.wilmerhale.com/en/insights/client-alerts/20260224-cftc-files-amicus-brief-urging-exclusive-federal-jurisdiction-of-event-contracts",
+   "sourceDate": "2026-02-24",
+   "designImplication": "Voluntary market withdrawal under legal pressure is normal operator behavior; a demo's market catalog should be structured so markets can be delisted per jurisdiction without breaking the UI."
+  },
+  {
+   "claim": "Sports leagues are partnering with prediction markets: NHL named Kalshi and Polymarket official partners with official-data rights (Oct 22, 2025); MLB signed an exclusive Polymarket deal plus a CFTC memorandum of understanding on integrity (March 19, 2026); MLS, UFC, and LaLiga (April 2026) followed.",
+   "kind": "evidence",
+   "source": "https://www.nhl.com/news/nhl-announces-landmark-multiyear-partnerships-with-kalshi-polymarket",
+   "sourceDate": "2025-10-22",
+   "designImplication": "Official-data provenance is becoming a trust differentiator; a demo should name its resolution/oracle data sources explicitly per market."
+  },
+  {
+   "claim": "Polymarket's 2022 CFTC settlement (Blockratize order, Jan 3, 2022) \u2014 $1.4M penalty for operating an unregistered event-contract venue \u2014 required winding down noncompliant markets and led to geoblocking US IP addresses on the international platform, which remains US-blocked today.",
+   "kind": "evidence",
+   "source": "https://www.cftc.gov/PressRoom/PressReleases/8478-22",
+   "sourceDate": "2022-01-03",
+   "designImplication": "The foundational precedent: an offshore crypto prediction venue serving US persons without registration violates the CEA regardless of decentralization claims \u2014 the demo must never onboard US persons for real value."
+  },
+  {
+   "claim": "Polymarket's international platform blocks 33 countries (incl. US, UK, France, Germany, Italy, Japan, Australia, Belgium, Poland, Singapore, Thailand, Taiwan, Brazil, sanctioned states) plus four Canadian provinces and occupied Ukrainian regions, using tiered enforcement: full block, close-only (Singapore/Poland/Thailand/Taiwan), view-only (France/Italy/Germany), and data-view-only (Ontario).",
+   "kind": "evidence",
+   "source": "https://help.polymarket.com/en/articles/13364163-geographic-restrictions",
+   "sourceDate": "2026-07 (accessed)",
+   "designImplication": "Tiered geo-gating is the category's UX norm: view-only mode (browse markets, no wallet/trade actions) is the standard graceful degradation for restricted regions and is the right pattern for a demo's 'restricted jurisdiction' state."
+  },
+  {
+   "claim": "Polymarket's ToS (Section 2.1.4) prohibits VPN use to bypass geo-restrictions; in 2026 it began blocking VPN-linked IP ranges across its 33 restricted countries, freezing flagged accounts, and expanded KYC for international traders after ISP blocks and a May 2026 US House letter demanding answers on KYC and suspicious-trading detection.",
+   "kind": "evidence",
+   "source": "https://predictionnews.com/story/polymarket-cracking-down-on-vpn-users-evading-geolocation-blocks-3bda2e71",
+   "sourceDate": "2026",
+   "designImplication": "Anti-circumvention language ('VPN use prohibited; accounts may be restricted') belongs in the demo's ToS/footer copy \u2014 it is now expected category hygiene, and its absence reads as bad faith."
+  },
+  {
+   "claim": "Geoblocking demonstrably leaks: US-linked wallets traded ~$571M on Polymarket's political markets despite the US geoblock, remaining the largest cohort \u2014 drawing regulatory and press scrutiny of enforcement gaps.",
+   "kind": "evidence",
+   "source": "https://www.cryptotimes.io/2026/07/03/us-users-pour-571m-into-polymarkets-political-markets-despite-geo-block/",
+   "sourceDate": "2026-07-03",
+   "designImplication": "Regulators judge intent and effort, not perfection; the demo narrative should describe layered controls (IP + VPN detection + KYC at withdrawal) rather than claiming geo-blocking is airtight."
+  },
+  {
+   "claim": "The UK Gambling Commission's position is that prediction-market products would fall within the 'Betting Intermediary' definition requiring a UK licence; formal UKGC guidance is expected before end of 2026; the Dutch KSA threatened Polymarket with \u20ac420,000/week fines (Feb 2026); France's ANJ forced a geo-block (late 2024) that became view-only mode.",
+   "kind": "evidence",
+   "source": "https://goodmoneyguide.com/trading/uk-prediction-markets/",
+   "sourceDate": "2026",
+   "designImplication": "'Outside-US' is not a safe harbor \u2014 major non-US markets (UK, EU states, Netherlands, France) treat these as gambling; the demo's restricted-jurisdictions list must extend well beyond the US."
+  },
+  {
+   "claim": "The on-chain prediction-market category (ex-Kalshi) runs ~$390M/month with Polymarket holding >96%; smaller crypto-native venues include Limitless (Base; passed $789M cumulative volume Jan 2026), Myriad (entertainment; $150M+ cumulative), Drift BET, and Azuro (infrastructure/liquidity layer); several operate globally without KYC but carry local-law, oracle, and platform-terms risk.",
+   "kind": "evidence",
+   "source": "https://cryptonews.com/cryptocurrency/best-crypto-prediction-markets/",
+   "sourceDate": "2026",
+   "designImplication": "Hula Na's competitive set for brand differentiation is the no-KYC on-chain tier; standing out on integrity/compliance-forward design is open whitespace since most of that tier under-invests in it."
+  },
+  {
+   "claim": "The CFTC RED List exists to name foreign entities acting in registration-required capacities without CFTC registration, including platforms falsely claiming CFTC regulation; Senators Schiff and Curtis pressed the CFTC over 'deceptive marketing' by a prediction-market operator (Polymarket) targeting US users after its enforcement order.",
+   "kind": "evidence",
+   "source": "https://www.cftc.gov/LearnAndProtect/Resources/Check/redlist.htm",
+   "sourceDate": "2026 (accessed)",
+   "designImplication": "MUST-NOT list for the demo: any use of 'CFTC', 'regulated', 'licensed', 'US-legal', or registration-implying badges; marketing that could be read as soliciting US users is itself the violation pattern."
+  },
+  {
+   "claim": "CFTC customer-education materials on prediction markets warn: trade only with registered entities ('you may have little or no protections... with unregistered entities that operate outside the United States'), use only risk capital, and note event contracts are time-limited and manipulation-susceptible.",
+   "kind": "evidence",
+   "source": "https://www.cftc.gov/LearnandProtect/PredictionMarkets",
+   "sourceDate": "2026 (accessed)",
+   "designImplication": "The demo must not imply investor protections (insurance, segregated funds, recourse); honest copy pattern: 'This is not a regulated exchange. You have no regulatory protections. Never commit funds you cannot afford to lose.'"
+  },
+  {
+   "claim": "Manifold operates US-wide with no license or geo-restrictions because its Mana currency cannot be cashed out \u2014 no cash-settlement layer means its markets are not gambling or CFTC event contracts in any operative sense; play-money status is the recognized unlicensed safe harbor.",
+   "kind": "evidence",
+   "source": "https://tech-insider.org/prediction-markets/platforms/manifold-markets-review/",
+   "sourceDate": "2026",
+   "designImplication": "While Hula Na is in demo mode, the strongest honest trust claim is 'demo environment \u2014 no real funds, nothing of value can be won or withdrawn'; that claim collapses the moment real USDT settlement goes live, at which point the offshore geo-fenced posture (Polymarket-international model) applies."
+  },
+  {
+   "claim": "A non-US-licensed crypto-native product may honestly display: demo/testnet status with no real-money settlement; non-custodial architecture; on-chain settlement transparency; named resolution sources and dispute process; smart-contract audit results (if real, with auditor named); its restricted-jurisdictions policy; and an 18+ requirement. It must not display: 'regulated', 'licensed', 'CFTC', 'legal in your jurisdiction', 'safe/guaranteed', deposit insurance, or investor-protection implications.",
+   "kind": "inference",
+   "source": "none",
+   "sourceDate": "2026-07-12",
+   "designImplication": "This is the master copy-guardrail list for Phases 2-4: build trust from verifiable mechanism claims (open contracts, audits, resolution transparency, geo-gating) instead of borrowed regulatory authority."
+  },
+  {
+   "claim": "US CFTC-regulated prediction exchanges (Kalshi, Robinhood, Polymarket US) gate at 18+ (federal age of majority), while state sportsbooks are 21+ almost everywhere; the NBA, PGA Tour, and NCAA have called for prediction markets to raise the age to 21, the Texas Medical Association proposed a 21+ minimum (July 8, 2026), and Kalshi announced minor-protection steps (May 4, 2026) while resisting blocking 18-20 year olds.",
+   "kind": "evidence",
+   "source": "https://www.nbcnews.com/news/us-news/nba-pga-ncaa-want-higher-age-limits-prediction-markets-rcna343093",
+   "sourceDate": "2026",
+   "designImplication": "Ship the demo with an explicit 18+ gate (age attestation at minimum, ID-verification story for real launch) and design the gate so the threshold is a config value \u2014 21+ pressure is real and may become the norm."
+  },
+  {
+   "claim": "Offshore Polymarket's ToS has always required users to be 18+, but without KYC there was historically no enforcement mechanism \u2014 a gap regulators and journalists now cite; Kalshi by contrast verifies age via government ID and SSN.",
+   "kind": "evidence",
+   "source": "https://deadspin.com/prediction-markets/polymarket/age/",
+   "sourceDate": "2026",
+   "designImplication": "Attestation-only age gates are viewed as fig leaves in 2026 coverage; the demo can use attestation now but the brand narrative should acknowledge verified-KYC-at-withdrawal as the real-launch design."
+  },
+  {
+   "claim": "Kalshi's member agreement risk language is the category benchmark: 'The risk of loss in trading Event Contracts on Kalshi can be substantial' and trading is 'a highly speculative activity'; the CFTC chair has argued platforms should provide risk disclosure and educational materials voluntarily.",
+   "kind": "evidence",
+   "source": "https://kalshi.com/docs/kalshi-member-agreement.pdf",
+   "sourceDate": "2026 (accessed)",
+   "designImplication": "Risk-language pattern for the demo footer/onboarding: 'Trading event contracts involves substantial risk of loss and is not appropriate for all users. Prices reflect market opinion, not certainty. Only risk what you can afford to lose.'"
+  },
+  {
+   "claim": "Kalshi made a two-year $2M investment in the National Council on Problem Gambling (May 18, 2026) and rolled out responsible-trading tools \u2014 monthly deposit caps, cooling-off trading breaks, self-exclusion from one month to lifetime, and a clinical partner (Birches Health); NCPG has called on prediction markets to display the 1-800-GAMBLER helpline, which Kalshi had not yet done; critics note its safety features are hard to find.",
+   "kind": "evidence",
+   "source": "https://www.axios.com/2026/05/18/kalshi-national-council-problem-gambling",
+   "sourceDate": "2026-05-18",
+   "designImplication": "Responsible-play UX (limits, cool-offs, self-exclusion entry points, a visible help resource) is becoming a category expectation even for 'not gambling' positioning; including discoverable versions in the demo is a cheap, honest differentiator."
+  },
+  {
+   "claim": "Media/medical scrutiny of young-adult harm is intensifying: CNN reported college-age adults 'rushing' to prediction markets with addiction experts alarmed (May 28, 2026), and lawmakers are linking prediction markets to kids' digital-safety debates.",
+   "kind": "evidence",
+   "source": "https://www.cnn.com/2026/05/28/economy/prediction-markets-kalshi-young-adults",
+   "sourceDate": "2026-05-28",
+   "designImplication": "Avoid brand aesthetics that read as youth-targeted gamification (streaks, confetti, casino visual codes) \u2014 that is the exact criticism vector aimed at the category right now."
+  },
+  {
+   "claim": "A demo product operated from outside the US that displays clear demo-only/no-real-funds status, an 18+ gate, a restricted-jurisdictions notice including the US, and no regulatory claims would sit within observed enforcement tolerance as of July 2026 \u2014 regulators' actions to date target real-money service to restricted persons and false registration claims, not demo software.",
+   "kind": "assumption",
+   "source": "none",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Reasonable operating assumption for the redesign phases, but it is an assumption, not legal advice \u2014 revisit before any real-USDT rail goes live, and have counsel review the final restricted-jurisdiction list and disclosure copy."
+  }
+ ]
+}

@@ -72,6 +72,12 @@ module.exports = {
   output: "standalone",
   compress: true,
   allowedDevOrigins: ["127.0.0.1"],
+  // P10 (2026-07-12): keep jsdom (used by isomorphic-dompurify in
+  // ContentPage) out of the server bundle. Webpack inlining broke
+  // jsdom's __dirname-relative asset loads (default-stylesheet.css)
+  // once static pages started really server-rendering (the i18n
+  // blank-shell gate that previously masked this is gone).
+  serverExternalPackages: ["jsdom", "isomorphic-dompurify"],
   // Transpile workspace packages that expose raw TypeScript source
   // NOTE: @taptrade-ui/design-system removed — all imports replaced with inline components
   transpilePackages: ["@taptrade-ui/utils", "@taptrade-ui/api-client"],

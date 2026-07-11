@@ -1,6 +1,6 @@
 {
   "COMPANY": "Company",
-  "ABOUT": "About",
+  "ABOUT": "Tungkol",
   "TERMS_OF_SERVICE": "Terms of Service",
   "PRIVACY_POLICY": "Privacy Policy",
   "TERMS_AND_CONDITIONS": "Terms & Conditions",
@@ -19,5 +19,16 @@
   "DEPOSIT": "Mga Patakaran sa Points",
   "DEPOSIT_MESSAGE": "Gameplay points lang",
   "WITHDRAWALS": "Point Activity",
-  "WITHDRAWAL_MESSAGE": "Nananatili ang points sa gameplay"
+  "WITHDRAWAL_MESSAGE": "Nananatili ang points sa gameplay",
+  "PRODUCT": "Produkto",
+  "FAIR_PLAY": "Patas na paglalaro at kontrol",
+  "NOTIFICATION_SETTINGS": "Mga setting ng notification",
+  "PLAY_LIMITS": "Mga limitasyon sa paglalaro",
+  "TAKE_A_BREAK": "Magpahinga / self-exclude",
+  "SUPPORT": "Suporta",
+  "ACCOUNT_CLOSURE": "Isara ang account",
+  "TERMS": "Mga Tuntunin ng Paggamit",
+  "PRIVACY": "Privacy",
+  "CONTACT": "Makipag-ugnayan",
+  "POINTS_DISCLOSURE": "Non-redeemable point prediction markets — ang play points ay walang cash value, hindi maide-deposito o maiwi-withdraw, at ang platform na ito ay hindi rehistrado sa anumang financial regulator."
 }

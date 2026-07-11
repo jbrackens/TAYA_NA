@@ -12,8 +12,11 @@
  * arrows. Each slide's eyebrow carries the category, so the control stays
  * category-agnostic.
  *
- * Behavior: gentle auto-advance (paused on hover/focus, disabled under
- * prefers-reduced-motion or with a single slide) and keyboard nav (← / →).
+ * Behavior: USER-CONTROLLED only — prev/next arrows and keyboard nav
+ * (← / →). The 7s auto-advance was removed 2026-07-12 (P10): an
+ * auto-rotating merchandising hero rushes users toward a trade and
+ * fails WCAG 2.2.2 without a pause control. Movement on this page is
+ * now something the user does, not something done to them.
  *
  * Presentation only — the page owns data + loading/error and passes the
  * resolved slides in. Reuses hero metadata + routing via DiscoveryHero; no
@@ -35,8 +38,6 @@ export interface FeaturedSlide {
   /** Category name for the hero eyebrow (omitted for the "All" slide). */
   categoryName?: string;
 }
-
-const AUTO_ADVANCE_MS = 7000;
 
 const CAROUSEL_MESSAGE_CLASS =
   "flex min-h-[200px] items-center justify-center rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-9 text-center text-[13px] text-[var(--t3)]";
@@ -103,7 +104,6 @@ export function FeaturedCarousel({
   const { t } = useTranslation("prediction");
   const [active, setActive] = useState(0);
   const [dir, setDir] = useState<"next" | "prev">("next");
-  const [paused, setPaused] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
   const stageRef = useRef<HTMLDivElement | null>(null);
 
@@ -113,17 +113,6 @@ export function FeaturedCarousel({
   useEffect(() => {
     setActive((a) => (count === 0 ? 0 : Math.min(a, count - 1)));
   }, [count]);
-
-  // Gentle auto-advance — disabled when paused (hover/focus), when the user
-  // prefers reduced motion, or when there is nothing to rotate.
-  useEffect(() => {
-    if (paused || reducedMotion || count < 2) return;
-    const timer = setInterval(() => {
-      setDir("next");
-      setActive((a) => (a + 1) % count);
-    }, AUTO_ADVANCE_MS);
-    return () => clearInterval(timer);
-  }, [paused, reducedMotion, count]);
 
   useEffect(() => {
     if (reducedMotion || count === 0) return;
@@ -168,10 +157,6 @@ export function FeaturedCarousel({
       role="region"
       aria-roledescription="carousel"
       aria-label={t("FEATURED_MARKETS")}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)}
-      onBlur={() => setPaused(false)}
       onKeyDown={(e) => {
         if (count < 2) return;
         if (e.key === "ArrowRight") {

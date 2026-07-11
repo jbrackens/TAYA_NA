@@ -1,0 +1,110 @@
+[
+ {
+  "lens": "Skeptical design director: anti-template, anti-derivative, but equally hostile to novelty that a small team without a foundry budget cannot execute at production quality. Judged against the 2025\u201326 AI-fintech template corpus, the named competitor set, and the actual codebase constraints.",
+  "scores": {
+   "A": {
+    "distinctiveness": 4,
+    "clarity": 3,
+    "accessibility": 3,
+    "audienceFit": 2,
+    "feasibility": 2,
+    "ownership": 2
+   },
+   "B": {
+    "distinctiveness": 3,
+    "clarity": 4,
+    "accessibility": 4,
+    "audienceFit": 4,
+    "feasibility": 5,
+    "ownership": 4
+   },
+   "C": {
+    "distinctiveness": 3,
+    "clarity": 3,
+    "accessibility": 3,
+    "audienceFit": 3,
+    "feasibility": 2,
+    "ownership": 2
+   }
+  },
+  "winner": "B",
+  "rationale": "I disagree with the document's own scorecard in both directions, and the totals compress accordingly (A 19\u219216, B 28\u219224, C 19\u219216). B still wins, but not by flattery.\n\nDirection A gets a 4, not a 5, on distinctiveness. It is maximally distinct *within the prediction-market category*, but \"editorial serif on bone paper with a press-blue accent\" is its own 2025\u201326 template genre \u2014 Newsreader-on-ivory is what every 'thoughtful calm tech' brand and half the AI-generated landing pages reach for now. Novel category collision, familiar visual surface. Worse, its core failure mode is already documented in this project's own decision log: the owner rejected serif-editorial on 2026-04-27 because it reads 'newsletter, not trading app.' Audience fit is a 2, not a 3 \u2014 the research says these users are brokerage-trained, mobile-first, and socially discovered; a broadsheet asks them to learn a new grammar, and 'nothing blinks' fights the liveness a real-time market must project. Ownership is a 2: bone + serif + blue is copyable in a weekend and it discards every existing approved asset.\n\nDirection C's distinctiveness is a 3, not a 4: the *content* strategy (receipts, provenance, platform stats) is genuinely original, but the *visual* language \u2014 engineered grotesk, prominent mono, verification green, ledger rules \u2014 is the most template-adjacent surface of the three; it's 2025 crypto-infra house style, and the research itself flags mono as claimed DeFi territory. The disqualifier is feasibility: provenance metadata doesn't exist in the API, and this product's most severe audit findings (H1/H2) are *fabricated data*. Shipping provenance chips over data the backend can't attest would fabricate the exact trust the direction sells \u2014 actively self-destructive, not just expensive. Ownership 2: provenance chips and a stats page are copyable features, not brand assets.\n\nDirection B I grade harder than the document does. Distinctiveness is a 3, not a 4: strip the wordmark and a discovery screenshot is 'clean white trading app' \u2014 which is Polymarket's lane. The distinctiveness is real but concentrated in small signatures (split-crossbar wordmark, ink primary CTAs, the dot motion system, color-reserved-for-meaning) that only register if executed at near-perfect fidelity. Bricolage Grotesque is less commodified than Clash Display but it's a free Google font on a rising curve \u2014 it is not a moat. Clarity 4 not 5 (the ink CTA is genuinely untested at the money moment) and accessibility 4 not 5 (tokens are AA-verified, but Bricolage at small optical sizes and ink-primary vs disabled-state disambiguation aren't). Feasibility, though, is the honest, rare 5: free fonts, token-and-component-level change, kills five font loads, zero regression risk to the truthful-ticket logic \u2014 the only direction a small team demonstrably ships at production quality. Ownership 4: the split-T, the tap-dot vocabulary, and a custom wordmark compound existing owner-approved equity; a 5 would require Kalshi-grade proprietary type, which needs a foundry budget this team doesn't have.\n\nB wins because it is the only direction whose distinctiveness claims are matched by executable craft, and the only one without a research-documented failure mode at its core. But it wins conditionally: B is structurally a continuation of the trajectory the owner already called 'very safe.' Its entire differentiation budget lives in three signatures. If those are diluted in implementation, B decays into Polymarket-with-a-nicer-period \u2014 the most expensive way to change nothing.",
+  "risks": [
+   "Distinctiveness decay ('safe relapse'): B's differentiation lives entirely in three small signatures \u2014 the split-crossbar wordmark, ink primary CTAs, and the tap-dot motion vocabulary \u2014 and the owner has already flagged this team's tendency to sand off edges (P9.4 log: 'you played it very safe'). Diluted 10%, the result is a generic white trading app in Polymarket's lane, and Bricolage alone won't save it since it's a free font climbing the same commodification curve Clash Display did. Mitigation: make the three signatures non-negotiable acceptance criteria with visual-regression locks (the qa-regression lock pattern already exists in this repo); gate the whole pass on owner sign-off of the wordmark FIRST; adopt a crop test \u2014 a discovery screenshot with the logo removed must still be attributable to the brand via ink CTAs + dot + color discipline, or the pass fails; budget a licensed custom cut of the display face as a named future line item.",
+   "Custom wordmark craft: hand-drawn, ink-trapped vector letterforms are foundry-level work, and small teams reliably ship custom wordmarks with optical-spacing and weight errors that read as amateur at nav size \u2014 worse than the Schibsted render it replaces. Mitigation: don't draw a skeleton from scratch \u2014 derive outlines from Bricolage's actual glyphs (OFL permits modification) and confine the intervention to the split crossbar and the period geometry; proof at 16\u201324px nav scale, favicon scale, and in the 900ms motion sequence before approving anything; if it can't be made excellent in two iterations, ship the mark + type-set wordmark and defer the custom letterform rather than shipping a mediocre one.",
+   "Ink-CTA affordance at the money moment: no competitor in the audited set uses ink primary actions; users are trained that the commit button is colored, and an ink pill sitting near seafoam/coral side indicators and dark body text risks hesitation or mis-taps exactly where conversion and trust are decided \u2014 on the trade ticket. It also collides with this audience's documented knowledge\u2013confidence gap: ambiguity at commit hurts the least-literate users most. Mitigation: keep CTA morphology unmistakable (full-width pill, elevation, weight) with measured contrast deltas separating ink-primary from ink-text and disabled states; run moderated usability tests or an A/B on the ticket CTA before full rollout, with a pre-agreed fallback (ink CTAs everywhere except the ticket commit, which may keep a filled treatment) so a conversion regression doesn't force an unplanned whole-system retreat."
+  ]
+ },
+ {
+  "lens": "WCAG 2.2 accessibility specialist for financial products \u2014 contrast headroom, color-semantics discipline, small-size mobile legibility, motion safety, and regression-survival probability under real implementation",
+  "scores": {
+   "A": {
+    "distinctiveness": 4,
+    "clarity": 2,
+    "accessibility": 3,
+    "audienceFit": 2,
+    "feasibility": 2,
+    "ownership": 3
+   },
+   "B": {
+    "distinctiveness": 4,
+    "clarity": 4,
+    "accessibility": 4,
+    "audienceFit": 4,
+    "feasibility": 5,
+    "ownership": 4
+   },
+   "C": {
+    "distinctiveness": 3,
+    "clarity": 3,
+    "accessibility": 3,
+    "audienceFit": 2,
+    "feasibility": 2,
+    "ownership": 3
+   }
+  },
+  "winner": "B",
+  "rationale": "B wins (25/30 vs 16 for A and C), but I disagree with the document's own scorecard in several places \u2014 most importantly, B does not earn a 5 on accessibility. Its ink CTAs (~17:1 on white) and pre-verified semantic text tokens (seafoam #1A6849 at 6.7:1, coral #A8472D at 5.8:1) give it the best contrast headroom of the three, its mandatory color+text-label pairing is real no-color-only-meaning discipline, and demoting mint to a non-text dot eliminates the mint-as-text failure class. But its ink ramp ends at #A8B0B8 (~2.2:1 on white) \u2014 structurally identical to the --t3/--t4 small-label failures this exact codebase has already shipped \u2014 and \"all AA tokens already computed\" is an assertion, not evidence; pure-white fields also carry a glare/halation cost for low-vision readers that nobody has addressed. That's a 4. What actually decides the contest is survival probability: B is token- and component-level over surfaces whose ARIA fixes, reduced-motion collapse, and truthful-ticket semantics already exist, so accessibility work compounds instead of being rebuilt. A requires recomposing every card and panel \u2014 each recomposition is a fresh chance to drop aria-pressed states, focus management, and label associations \u2014 on top of a serif display face and footnote-scale numbers that fight small-size mobile legibility, and its \"newsletter, not tradable\" clarity failure is documented in the project's own 2026-04-27 decision log (clarity 2, not the doc's 3). C has the best intentions on paper (labels everywhere, arrows over color, single-meaning verification green) but the worst execution surface: prominent mono at small sizes, dense sortable tables that threaten 1.4.10 reflow on 320px viewports, default-on live order books that invite aria-live storms and flicker, and provenance-chip microcopy at precisely the size class the product currently fails \u2014 and since the provenance metadata isn't in the API, teams will stub it, fabricating the trust it sells. C's accessibility is a 3 on execution risk, not the doc's 4.",
+  "risks": [
+   "Ink-ramp tertiary-text regression: the ramp's light end (#A8B0B8, ~2.2:1 on white) will leak into 11-12px eyebrows and stat labels exactly as --t3 (3.4:1) and --t4 (2.27:1) did before. Mitigate with per-token contracts (any token below 4.5:1 is restricted to decorative/disabled roles), a CI contrast gate checking every text token against --surface-1/-2, and the planned full-token AA re-audit run BEFORE component work starts, not as Phase 5 cleanup.",
+   "Monochrome CTA state and affordance ambiguity: with ink primary buttons on ink text over white, hover/disabled/focus and interactive-vs-static distinctions cannot lean on hue. Mitigate by specifying a non-color state grammar up front \u2014 >=3:1 non-text contrast for control boundaries, WCAG 2.2 focus-appearance-compliant (2.4.11/2.4.13) focus rings, disabled states carried by outline+weight+aria-disabled rather than gray alone \u2014 and validate primary-action findability with low-vision participants before rollout.",
+   "Semantic-pairing decay under feature velocity: 'seafoam/coral always with text labels' is a manual convention, and this product's history (side-ambiguous Top movers H5, the four-green ambiguity) shows conventions decay. Mitigate by shipping YES/NO as composite components with color, text label, and direction arrow baked in; lint-ban raw --yes/--no fills outside those components; and confirm the new 900ms wordmark animation is actually inside the global prefers-reduced-motion collapse with an explicit motion check in Phase 5 QA."
+  ]
+ },
+ {
+  "lens": "Brand strategist for consumer financial products aimed at culturally-current adults \u2014 weighted toward long-term ownable assets, credibility with a trust-skeptical 27-year-old who may one day fund this with real money, visual/conceptual distance from casinos, sportsbooks, and generic fintech, and name-portability (the TapTrade/Hula Na/Tiangge naming decision is still owner-gated, so the brand system must survive a rename).",
+  "scores": {
+   "A": {
+    "distinctiveness": 4,
+    "clarity": 2,
+    "accessibility": 3,
+    "audienceFit": 2,
+    "feasibility": 2,
+    "ownership": 2
+   },
+   "B": {
+    "distinctiveness": 4,
+    "clarity": 4,
+    "accessibility": 4,
+    "audienceFit": 4,
+    "feasibility": 5,
+    "ownership": 4
+   },
+   "C": {
+    "distinctiveness": 3,
+    "clarity": 3,
+    "accessibility": 3,
+    "audienceFit": 3,
+    "feasibility": 2,
+    "ownership": 2
+   }
+  },
+  "winner": "B",
+  "rationale": "B wins, but at 25/30, not the document's 28 \u2014 and my disagreements with the provisional scorecard matter more than the same-winner conclusion.\n\nDirection A is not the 5-distinctive the doc claims. Bone paper + editorial serif + press-blue is itself a 2025-26 trend cluster (the \"quiet luxury editorial\" look every premium DTC and content-fintech brand is circling), and the question-mark glyph is the single most obvious mark a prediction market could draw \u2014 conceptually generic even if visually rare in this category. Worse, its failure mode is already documented in this product's own decision log: DESIGN.md \u00a71 explicitly rejected serif-editorial on 2026-04-27 as reading \"newsletter, not trading app.\" A broadsheet metaphor is nostalgic gravitas for an audience that gets its news from TikTok; a trust-skeptical 27-year-old reads it as a content brand, not a custodian of money. Ownership is thin \u2014 paper, serif, and hairlines are fonts and tokens, copyable in a weekend.\n\nDirection C has the strongest trust *idea* and the weakest brand *asset*. Auditability is strategy, not identity: the research report itself shows resolution provenance is already becoming table stakes (Kalshi names sources per market, Polymarket ships rules-with-changelog), so the one thing \"casinos can't copy\" is exactly the thing the two real competitors are already copying. Visually it lands in claimed DeFi-mono territory \u2014 near-zero category distance from crypto dashboards. And its core mechanism is dishonest at launch: provenance chips without backend provenance data fabricate the trust they sell, which for a skeptical audience is the single most brand-fatal failure available. I cut its clarity and ownership below the doc's numbers.\n\nDirection B is the only direction built on assets that already exist and cannot be trivially cloned: the split-T binary metaphor, the tap-dot kinetic signature, ink-primary CTAs (genuinely unclaimed in the category \u2014 everyone else screams in color), and mint demoted to pure punctuation. It compounds owner-approved equity instead of restarting, and it directly attacks the documented weaknesses (four-green ambiguity, commodified display face, template card-soup). But I refuse the doc's three 5s outside feasibility: clarity drops to 4 because ink CTAs trade affordance for voice (users are trained that colored = tappable); accessibility drops to 4 because the AA story is a promised re-audit, not a delivered one (the research's own --t3 3.4:1 finding is still live); ownership drops to 4 because the hero asset is letter-locked \u2014 a split-T monogram does not survive a rename to a name without a T, and the naming decision (Hula Na vs TapTrade, with a Tiangge/rebrand loop in flight) is explicitly unresolved. The portable assets are the dot, the motion grammar, and the ink voice; the T is contingent equity the document quietly treats as permanent.",
+  "risks": [
+   "Name-locked hero asset: the split-T mark and split-crossbar wordmark intervention die if the owner-gated naming decision (P3-04; TapTrade vs Hula Na, with a live rebrand loop) lands on a name without a T. Mitigation: codify the brand system as name-agnostic rules \u2014 'one split stroke on the letterform's key vertical + one landing dot' \u2014 with the tap-dot motion signature as the primary registered/portable asset, so a rename re-derives the mark instead of restarting the brand; stress-test the grammar against the actual candidate names before committing the wordmark to production SVG.",
+   "Screenshot indistinguishability from Polymarket: B deliberately keeps the trained card grammar on gallery white, and its distinctiveness lives in micro-execution (ink CTAs, motion, drawn wordmark) that static social screenshots \u2014 this audience's discovery medium \u2014 do not carry. Mitigation: design a mandatory share/OG-image template where the signature is unmissable (ink-dominant layout, Bricolage question typography, visible dot and split crossbar), and invest the research-identified open gap \u2014 the trade-confirmation micro-interaction \u2014 as the designed, screen-recordable moment people actually post.",
+   "Ink-CTA conversion risk plus mint adjacency to Kalshi: ink primary buttons may depress ticket tap-through for users conditioned to colored CTAs, and the surviving brand mint (#10c8a0) sits in the hue family Kalshi already owns as its system color \u2014 the category is quietly converging on mint-green. Mitigation: A/B the ink ticket CTA against a mint control before full rollout with a pre-agreed conversion floor; compensate affordance through shape, position, and the dot-lands-on-press interaction; measure and document the perceptual distance between brand mint and Kalshi's green, and enforce the 'mint is punctuation, never an interactive fill' rule so the two systems cannot be confused even where hues are close."
+  ]
+ }
+]

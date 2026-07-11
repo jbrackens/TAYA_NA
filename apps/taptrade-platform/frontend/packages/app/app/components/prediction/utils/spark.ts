@@ -1,61 +1,34 @@
 /**
- * Shared price-history helpers for the Robinhood-direction components
- * (DiscoveryHero, TrendingSidebar/TopMovers, MarketCard).
+ * Shared price-history SVG helpers for the discovery surfaces
+ * (DiscoveryHero, TrendingSidebar, market cards).
  *
- * heroChartPath now accepts an optional `points` array — when the
- * caller has fetched real history from GET /markets/:id/prices, it
- * builds the SVG from that. Without points it falls back to the
- * deterministic walk so the chart still renders during the fetch
- * window or in test mode. sparklinePath remains synthetic-only:
- * sparklines are 60×28 px decorative thumbs and the per-sparkline
- * fetch cost on a page with 30+ market cards isn't worth the visual
- * improvement.
+ * P10 honesty contract (2026-07-12): these helpers draw ONLY real,
+ * caller-supplied price series. The former `deterministicDelta` (a
+ * ticker-hash fake "today" delta) and the synthetic random-walk
+ * fallbacks are deleted — fabricated movement must never render as
+ * market signal. The one sanctioned synthetic path in the app is
+ * `samplePath` in market-chart-state.ts, which is gated behind
+ * NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS and must be visibly labeled
+ * "Simulated" wherever it renders (see MarketChart / DiscoveryHero).
  *
- * useHeroPriceHistory (in this file) is the small hook hero consumers
- * call to fetch the real series. Returns null while loading or on
- * failure; pass through to heroChartPath which gracefully falls back.
+ * Callers derive deltas from the same series they chart, via
+ * `seriesDelta` below — one source of truth for line and number.
  */
 
-export function tickerSeed(ticker: string): number {
-  let s = 0;
-  for (let i = 0; i < ticker.length; i++) {
-    s = ((s << 5) - s + ticker.charCodeAt(i)) | 0;
-  }
-  return Math.abs(s);
-}
-
-/** ±5¢ change biased slightly positive. Returns absolute delta and percentage. */
-export function deterministicDelta(
-  ticker: string,
-  currentPoints: number,
-): { delta: number; pct: number; up: boolean } {
-  const seed = tickerSeed(ticker);
-  const delta = (seed % 11) - 4;
-  const prev = Math.max(1, Math.min(99, currentPoints - delta));
-  const pct = ((currentPoints - prev) / prev) * 100;
-  return { delta, pct, up: delta >= 0 };
-}
-
-/** N points of plausible price walk ending at currentPoints. */
-function walk(
-  ticker: string,
-  currentPoints: number,
-  N: number,
-  opts?: { biasUp?: boolean },
-): Array<[number, number]> {
-  let s = tickerSeed(ticker) || 1;
-  const points: Array<[number, number]> = [];
-  let val = opts?.biasUp == null ? 50 : opts.biasUp ? 25 : 75;
-  const trendBias = opts?.biasUp == null ? 0 : opts.biasUp ? -1 : 1;
-  for (let i = 0; i < N; i++) {
-    s = (s * 1103515245 + 12345) & 0x7fffffff;
-    const noise = ((s % 1000) - 500) / 70;
-    val = Math.max(8, Math.min(92, val + noise + trendBias));
-    points.push([i, val]);
-  }
-  // Pin the endpoint to the current price.
-  points[N - 1][1] = currentPoints;
-  return points;
+/**
+ * Real delta from a price series: change from the first to the last
+ * sample. Returns null when the series can't support an honest claim
+ * (fewer than 2 points).
+ */
+export function seriesDelta(
+  points: number[] | null | undefined,
+): { delta: number; pct: number; up: boolean; flat: boolean } | null {
+  if (!points || points.length < 2) return null;
+  const first = points[0];
+  const last = points[points.length - 1];
+  const delta = last - first;
+  const pct = first > 0 ? (delta / first) * 100 : 0;
+  return { delta, pct, up: delta >= 0, flat: delta === 0 };
 }
 
 /**
@@ -90,38 +63,27 @@ function smoothPath(coords: Array<[number, number]>): string {
 
 /**
  * Hero chart: builds the SVG line + fill paths plus the endpoint
- * coordinate (for the live dot). When `points` is supplied (from the
- * backend prices endpoint), the chart uses the real volume-weighted
- * history. Otherwise it falls back to a 24-point deterministic walk
- * anchored at currentPoints so the SVG still renders during the fetch
- * or if the API fails.
+ * coordinate (for the live dot) from a REAL price series. Returns null
+ * when the series has fewer than 2 points — callers render an honest
+ * loading / empty state instead of a curve.
  *
  * P9: the y-domain auto-scales to the series range (with a 6¢ minimum
  * span so quiet markets still show topology) instead of the absolute
- * 0–100 band. An absolute domain rendered a 60–64¢ market as a flat
- * stroke over a plot that was ~90% dead space — the single biggest
- * "awkward layout" tell on the old hero. `baselineY` is the session
- * open (first sample) for the dashed reference line.
+ * 0–100 band. `baselineY` is the session open (first sample) for the
+ * dashed reference line.
  */
 export function heroChartPath(
-  ticker: string,
-  currentPoints: number,
+  points: number[] | null | undefined,
   width = 800,
   height = 220,
-  points?: number[],
 ): {
   line: string;
   fill: string;
   end: { x: number; y: number };
   baselineY: number;
-} {
-  let values: number[];
-  if (points && points.length >= 2 && points.some((p) => p !== points[0])) {
-    values = points;
-  } else {
-    const pts = walk(ticker, currentPoints, 24);
-    values = pts.map(([, v]) => v);
-  }
+} | null {
+  if (!points || points.length < 2) return null;
+  const values = points;
   const N = values.length;
   let lo = Math.min(...values);
   let hi = Math.max(...values);
@@ -147,23 +109,35 @@ export function heroChartPath(
   return { line, fill, end: { x: ex, y: ey }, baselineY: yFor(values[0]) };
 }
 
-/** Compact sparkline path used by Top Movers rows + MarketCard footers. */
-export function sparklinePath(
-  ticker: string,
-  currentPoints: number,
-  up: boolean,
+/**
+ * Compact sparkline path from a REAL price series (Top Movers rows).
+ * Downsamples to at most `maxSamples` evenly-spaced points so a dense
+ * 1-day series still reads at 60×28. Returns null when the series
+ * can't support a curve.
+ */
+export function sparklinePathFromSeries(
+  points: number[] | null | undefined,
   width = 60,
   height = 28,
-): string {
-  const N = 8;
-  const pts = walk(ticker + (up ? "↑" : "↓"), currentPoints, N, {
-    biasUp: up,
-  });
+  maxSamples = 16,
+): string | null {
+  if (!points || points.length < 2) return null;
+  let series = points;
+  if (series.length > maxSamples) {
+    const step = (series.length - 1) / (maxSamples - 1);
+    series = Array.from(
+      { length: maxSamples },
+      (_, i) => points[Math.round(i * step)],
+    );
+  }
+  const lo = Math.min(...series);
+  const hi = Math.max(...series);
+  const span = Math.max(hi - lo, 2); // min 2¢ span so flat-ish reads flat, not noisy
   const pad = height * 0.1;
   return smoothPath(
-    pts.map(([i, v]) => [
-      (i / (N - 1)) * width,
-      pad + (1 - v / 100) * (height - pad * 2),
+    series.map((v, i) => [
+      (i / (series.length - 1)) * width,
+      pad + (1 - (v - lo) / span) * (height - pad * 2),
     ]),
   );
 }

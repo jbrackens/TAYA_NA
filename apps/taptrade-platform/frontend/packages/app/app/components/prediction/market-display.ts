@@ -7,6 +7,13 @@ type Translate = (key: string, options?: Record<string, unknown>) => string;
 
 // Points unit-model (2026-07-07): 1 Point = 1 cent of play value; API
 // integers ARE whole Points. No /100 conversion, no fractional Points.
+//
+// formatWholePoints is the shared balance/stat formatter (P10, 2026-07-12):
+// whole points with locale grouping, never fractional, no compaction.
+export function formatWholePoints(points: number): string {
+  return `${Math.round(points).toLocaleString()} pts`;
+}
+
 export function formatCompactPoints(points: number): string {
   const value = Math.max(0, points);
 

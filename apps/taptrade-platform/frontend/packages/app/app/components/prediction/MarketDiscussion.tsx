@@ -20,16 +20,17 @@ const TITLE_CLASS =
   "m-0 text-base font-semibold tracking-[-0.01em] text-[var(--t1)]";
 const COUNT_CLASS = "text-xs text-[var(--t3)]";
 const HEAD_LINK_CLASS =
-  "text-xs text-[var(--t2)] underline-offset-4 hover:text-[var(--accent)] hover:underline";
+  "text-xs text-[var(--t2)] underline-offset-4 hover:text-[var(--t1)] hover:underline";
 const FORM_CLASS = "mb-5 flex flex-col gap-3";
 const TEXTAREA_CLASS =
   "min-h-[92px] resize-y rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2.5 text-sm leading-[1.5] text-[var(--t1)] outline-none placeholder:text-[var(--t3)] focus:border-[var(--accent)]";
 const FORM_ROW_CLASS = "flex items-center justify-between gap-3";
 const STATUS_CLASS = "text-xs text-[var(--t3)]";
 const BUTTON_CLASS =
-  "inline-flex min-h-9 items-center justify-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 text-xs font-bold text-[var(--t1)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55";
+  "inline-flex min-h-9 items-center justify-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 text-xs font-bold text-[var(--t1)] transition-colors hover:border-[var(--border-2)] hover:bg-[var(--action-soft)] disabled:cursor-not-allowed disabled:opacity-55";
+// P10 ink action: mint is never a CTA fill (Signal Ink rule).
 const PRIMARY_BUTTON_CLASS =
-  "inline-flex min-h-9 items-center justify-center rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-4 text-xs font-bold text-[#04140a] transition-[filter] hover:brightness-[1.05] disabled:cursor-not-allowed disabled:opacity-55";
+  "inline-flex min-h-9 items-center justify-center rounded-[var(--r-rh-md)] border-0 bg-[var(--action)] px-4 text-xs font-bold text-[var(--action-fg)] transition-colors hover:bg-[var(--action-hover)] disabled:cursor-not-allowed disabled:opacity-55";
 const LIST_CLASS = "flex flex-col gap-3";
 const COMMENT_CLASS =
   "border-t border-[var(--border-1)] pt-3 first:border-t-0 first:pt-0";
@@ -59,19 +60,25 @@ export default function MarketDiscussion({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  // Load failure is its own state (P10): the old code funneled it into
+  // `message`, so an errored section simultaneously showed the composer,
+  // "0 comments", "No comments yet.", AND "Discussion could not load." —
+  // three states at once. Errored now replaces the body with a retry.
+  const [loadError, setLoadError] = useState(false);
 
   const load = useCallback(async () => {
     try {
       setLoading(true);
       setComments(await getMarketComments(marketId, 50));
       setMessage(null);
+      setLoadError(false);
     } catch (err) {
       logger.warn("MarketDiscussion", "comments fetch failed", err);
-      setMessage(t("DISCUSSION_LOAD_FAILED", "Discussion could not load."));
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
-  }, [marketId, t]);
+  }, [marketId]);
 
   useEffect(() => {
     void load();
@@ -158,115 +165,131 @@ export default function MarketDiscussion({
             {t("DISCUSSION_ACTIVITY", "Activity feed")}
           </Link>
           <span className={COUNT_CLASS}>
-            {t("DISCUSSION_COUNT", "{{count}} comments", {
-              count: comments.length,
-            })}
+            {loadError
+              ? "—"
+              : t("DISCUSSION_COUNT", "{{count}} comments", {
+                  count: comments.length,
+                })}
           </span>
         </div>
       </header>
 
-      <div className={FORM_CLASS}>
-        <textarea
-          className={TEXTAREA_CLASS}
-          value={body}
-          maxLength={500}
-          disabled={!isAuthenticated || authLoading || saving}
-          placeholder={composerHint}
-          onChange={(event) => setBody(event.target.value)}
-        />
-        <div className={FORM_ROW_CLASS}>
-          <span className={STATUS_CLASS}>{message ?? composerHint}</span>
-          <button
-            type="button"
-            className={PRIMARY_BUTTON_CLASS}
-            disabled={
-              !isAuthenticated ||
-              authLoading ||
-              saving ||
-              body.trim().length < 2
-            }
-            onClick={submitComment}
-          >
-            {saving
-              ? t("DISCUSSION_POSTING", "Posting")
-              : replyTo
-                ? t("DISCUSSION_REPLY", "Reply")
-                : t("DISCUSSION_POST", "Post")}
+      {loadError && !loading ? (
+        <div className={EMPTY_CLASS} role="status">
+          <p className="m-0 mb-3">
+            {t("DISCUSSION_LOAD_FAILED", "Discussion could not load.")}
+          </p>
+          <button type="button" className={BUTTON_CLASS} onClick={load}>
+            {t("RETRY", "Retry")}
           </button>
         </div>
-      </div>
-
-      {loading ? (
-        <div className={EMPTY_CLASS}>
-          {t("DISCUSSION_LOADING", "Loading discussion.")}
-        </div>
-      ) : comments.length === 0 ? (
-        <div className={EMPTY_CLASS}>
-          {t("DISCUSSION_EMPTY", "No comments yet.")}
-        </div>
       ) : (
-        <div className={LIST_CLASS}>
-          {comments.map((comment) => (
-            <article
-              key={comment.id}
-              className={comment.parentId ? REPLY_CLASS : COMMENT_CLASS}
-            >
-              <div className={META_CLASS}>
-                <Link
-                  href={`/users/${encodeURIComponent(comment.userId)}`}
-                  className={HEAD_LINK_CLASS}
+        <>
+          <div className={FORM_CLASS}>
+            <textarea
+              className={TEXTAREA_CLASS}
+              value={body}
+              maxLength={500}
+              disabled={!isAuthenticated || authLoading || saving}
+              placeholder={composerHint}
+              onChange={(event) => setBody(event.target.value)}
+            />
+            <div className={FORM_ROW_CLASS}>
+              <span className={STATUS_CLASS}>{message ?? composerHint}</span>
+              <button
+                type="button"
+                className={PRIMARY_BUTTON_CLASS}
+                disabled={
+                  !isAuthenticated ||
+                  authLoading ||
+                  saving ||
+                  body.trim().length < 2
+                }
+                onClick={submitComment}
+              >
+                {saving
+                  ? t("DISCUSSION_POSTING", "Posting")
+                  : replyTo
+                    ? t("DISCUSSION_REPLY", "Reply")
+                    : t("DISCUSSION_POST", "Post")}
+              </button>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className={EMPTY_CLASS}>
+              {t("DISCUSSION_LOADING", "Loading discussion.")}
+            </div>
+          ) : comments.length === 0 ? (
+            <div className={EMPTY_CLASS}>
+              {t("DISCUSSION_EMPTY", "No comments yet.")}
+            </div>
+          ) : (
+            <div className={LIST_CLASS}>
+              {comments.map((comment) => (
+                <article
+                  key={comment.id}
+                  className={comment.parentId ? REPLY_CLASS : COMMENT_CLASS}
                 >
-                  {comment.userId}
-                </Link>
-                <span>{formatDate(comment.createdAt)}</span>
-                {comment.parentId && (
-                  <span>{t("DISCUSSION_REPLY_TAG", "Reply")}</span>
-                )}
-              </div>
-              <p className={BODY_CLASS}>{comment.body}</p>
-              <div className={ACTIONS_CLASS}>
-                <button
-                  type="button"
-                  className={BUTTON_CLASS}
-                  disabled={!isAuthenticated || authLoading}
-                  onClick={() =>
-                    updateComment(comment.id, reactToMarketComment)
-                  }
-                >
-                  {t("DISCUSSION_REACT", "Upvote")} · {comment.reactionCount}
-                </button>
-                <button
-                  type="button"
-                  className={BUTTON_CLASS}
-                  disabled={!isAuthenticated || authLoading}
-                  onClick={() => followUser(comment.userId)}
-                >
-                  {t("DISCUSSION_FOLLOW", "Follow")}
-                </button>
-                <button
-                  type="button"
-                  className={BUTTON_CLASS}
-                  disabled={!isAuthenticated || authLoading}
-                  onClick={() => setReplyTo(comment.id)}
-                >
-                  {t("DISCUSSION_REPLY", "Reply")}
-                </button>
-                <button
-                  type="button"
-                  className={BUTTON_CLASS}
-                  disabled={!isAuthenticated || authLoading}
-                  onClick={() =>
-                    updateComment(comment.id, (id) =>
-                      reportMarketComment(id, "user_report"),
-                    )
-                  }
-                >
-                  {t("DISCUSSION_REPORT", "Report")} · {comment.reportCount}
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
+                  <div className={META_CLASS}>
+                    <Link
+                      href={`/users/${encodeURIComponent(comment.userId)}`}
+                      className={HEAD_LINK_CLASS}
+                    >
+                      {comment.userId}
+                    </Link>
+                    <span>{formatDate(comment.createdAt)}</span>
+                    {comment.parentId && (
+                      <span>{t("DISCUSSION_REPLY_TAG", "Reply")}</span>
+                    )}
+                  </div>
+                  <p className={BODY_CLASS}>{comment.body}</p>
+                  <div className={ACTIONS_CLASS}>
+                    <button
+                      type="button"
+                      className={BUTTON_CLASS}
+                      disabled={!isAuthenticated || authLoading}
+                      onClick={() =>
+                        updateComment(comment.id, reactToMarketComment)
+                      }
+                    >
+                      {t("DISCUSSION_REACT", "Upvote")} ·{" "}
+                      {comment.reactionCount}
+                    </button>
+                    <button
+                      type="button"
+                      className={BUTTON_CLASS}
+                      disabled={!isAuthenticated || authLoading}
+                      onClick={() => followUser(comment.userId)}
+                    >
+                      {t("DISCUSSION_FOLLOW", "Follow")}
+                    </button>
+                    <button
+                      type="button"
+                      className={BUTTON_CLASS}
+                      disabled={!isAuthenticated || authLoading}
+                      onClick={() => setReplyTo(comment.id)}
+                    >
+                      {t("DISCUSSION_REPLY", "Reply")}
+                    </button>
+                    <button
+                      type="button"
+                      className={BUTTON_CLASS}
+                      disabled={!isAuthenticated || authLoading}
+                      onClick={() =>
+                        updateComment(comment.id, (id) =>
+                          reportMarketComment(id, "user_report"),
+                        )
+                      }
+                    >
+                      {t("DISCUSSION_REPORT", "Report")} · {comment.reportCount}
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </section>
   );

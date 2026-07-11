@@ -1,0 +1,181 @@
+{
+ "findings": [
+  {
+   "claim": "Robinhood removed its confetti celebration animation in March 2021 after Massachusetts regulators filed a complaint (Dec 2020) alleging gamification strategies manipulated inexperienced investors; Robinhood later paid a $7.5M settlement (Jan 2024) covering confetti, digital scratch tickets, and free-stock reward mechanics.",
+   "kind": "evidence",
+   "source": "https://www.cnbc.com/2021/03/31/robinhood-gets-rid-of-robinhood-confetti-feature-amid-scrutiny-over-gamification.html and https://www.velaw.com/insights/game-over-robinhood-pays-7-5-million-to-resolve-gamification-securities-violations/",
+   "sourceDate": "2021-03-31 / 2024-02",
+   "designImplication": "Never attach celebratory VFX/SFX to the act of placing a trade or depositing. Reserve celebration (if any) for neutral milestones unrelated to stake size, and use a calm, informational confirmation state for order fills. This is now a documented regulatory liability, not just an ethics question."
+  },
+  {
+   "claim": "Randomized experiment (Chapkovski, Khapko, Zoican, 'Trading Gamification and Investor Behavior', Management Science) found hedonic gamification (confetti, badges, congratulatory messages) increases trading volume ~5.17%, that low-financial-literacy users self-select into gamified platforms (self-selection drives ~70% of the activity gap), and that gamified users exhibit noisier trading strategies.",
+   "kind": "evidence",
+   "source": "https://pubsonline.informs.org/doi/10.1287/mnsc.2022.02650",
+   "sourceDate": "2024 (SSRN 2021; Management Science vol. 72(1), 2026)",
+   "designImplication": "Gamified reward aesthetics disproportionately harm the least sophisticated users \u2014 exactly the cohort a mass-market prediction app acquires. Strip hedonic reward loops from the trade path; if using badges at all, award them for protective behaviors (setting limits, completing education), never for volume or frequency."
+  },
+  {
+   "claim": "The UK Gambling Commission banned 'losses disguised as wins' (celebratory audio/visual effects for returns <= total stake), autoplay, turbo/slam-stop features, and spin speeds under 2.5s, effective 31 Oct 2021; its follow-up assessment found reduced play intensity with no compensating increase in staking and no significant loss of player enjoyment. Rules were extended to all casino products and 'illusion of false wins' effects on 17 Jan 2025.",
+   "kind": "evidence",
+   "source": "https://www.gamblingcommission.gov.uk/news/article/gambling-commission-announces-package-of-changes-which-make-online-games and https://www.wiggin.co.uk/insight/remote-game-design-changes-taking-effect-17-january-2025/",
+   "sourceDate": "2021-02 (effective 2021-10-31); extension effective 2025-01-17",
+   "designImplication": "Codify a hard rule: no win-styled feedback unless net return exceeds total amount staked. For a prediction market this means partial cash-outs below cost basis, and resolutions that return less than entry, must render in neutral/loss styling. UKGC's own assessment shows safety-by-design need not hurt engagement economics."
+  },
+  {
+   "claim": "A follow-up academic audit ('Cue the sad trombone', Behavioural Public Policy) found UK operators still misuse celebratory sound effects in online slots despite the LDW ban \u2014 regulation on paper did not fully stop the pattern in practice.",
+   "kind": "evidence",
+   "source": "https://www.cambridge.org/core/journals/behavioural-public-policy/article/cue-the-sad-trombone-uk-gambling-regulations-have-not-prevented-the-misuse-of-celebratory-sound-effects-in-online-slots/5EDC0F428BC06371179A8636250BA204",
+   "sourceDate": "accessed 2026-07-12",
+   "designImplication": "Countermeasures must be enforced in the design system, not policy docs: encode 'no celebration below break-even' as a lint-able token/variant rule (e.g., a single OutcomeBanner component that computes net P&L and selects styling itself), so individual feature teams cannot re-introduce the pattern."
+  },
+  {
+   "claim": "Newall (2025) published a peer-reviewed taxonomy of online gambling deceptive design in Addiction (120(10):1916-1923), classifying features as sludge (friction against safe actions, e.g. withdrawal delays), dark patterns (UI, e.g. high suggested deposit/bet sizes), and dark nudges (bias exploitation, e.g. anchoring, fun framing).",
+   "kind": "evidence",
+   "source": "https://onlinelibrary.wiley.com/doi/10.1111/add.70085",
+   "sourceDate": "2025",
+   "designImplication": "Use this taxonomy as the audit rubric for our design review: for every flow ask (a) is there friction on protective actions? (b) do defaults favor the house? (c) does any element exploit a documented bias? It gives the redesign a citable academic backbone."
+  },
+  {
+   "claim": "Behavioural Insights Team field experiments found operator-chosen deposit-limit dropdown anchors cause materially higher limits \u2014 gamblers reduced their limits by almost half when large pre-set amounts were removed \u2014 and customers exposed to industry-standard dropdown options deposited more over 30 days.",
+   "kind": "evidence",
+   "source": "https://www.bi.team/blogs/defaulting-deposits-limiting-harm/ and https://www.bi.team/press-releases/gamblers-reduce-their-online-gambling-spending-limits-by-almost-half-once-operator-defined-options-are-removed-from-view/",
+   "sourceDate": "2020-2021 (accessed 2026-07-12)",
+   "designImplication": "Default stake escalation is our most directly actionable pattern: stake/deposit inputs should default to empty or the minimum, never to preselected ascending chips ($10/$50/$100) anchored high, and never remember-and-escalate the last stake. Limit-setting UIs must use free entry with low examples, not operator-defined dropdowns."
+  },
+  {
+   "claim": "Scientific American (Jan 23, 2025) documented nine dark patterns across sports betting apps: frictionless signup, above-minimum default bet amounts (anchoring), one-click deposit+bet, buried safety tools, minimum-balance-before-withdrawal rules, immediate re-bet prompts, no cumulative loss display, urgency language in notifications, and difficult account closure; it also cites an SSRN paper linking legalization to ~1% credit-score declines and 25-30% bankruptcy increases within four years, and Rutgers data that only 1-4% of under-25 bettors use safety tools.",
+   "kind": "evidence",
+   "source": "https://www.scientificamerican.com/article/how-sports-betting-apps-use-psychology-to-keep-users-gambling/",
+   "sourceDate": "2025-01-23",
+   "designImplication": "Treat this nine-item list as a checklist to invert: show cumulative net P&L persistently (not just unrealized 'wins'), no immediate 're-bet' prompt after resolution, safety tools one tap from the main nav, account closure as easy as signup, and no minimum-balance withdrawal gates. Because voluntary tool uptake is 1-4% among the young, protections must be default-on, not opt-in."
+  },
+  {
+   "claim": "The UKGC banned reverse withdrawals (re-gambling money already queued for cash-out) by October 2021, and its guidance requires withdrawal to be as frictionless as deposit \u2014 a direct regulatory attack on deposit/withdrawal friction asymmetry.",
+   "kind": "evidence",
+   "source": "https://www.gamblingcommission.gov.uk/consultation-response/online-games-design-and-reverse-withdrawals/ogdrw-prohibition-of-reverse-withdrawals-for-all-remote-operators",
+   "sourceDate": "2021 (accessed 2026-07-12)",
+   "designImplication": "Hard rule for our cashier (native USDT rail): withdrawal flow must have <= the number of steps of deposit, a queued withdrawal must be uncancellable-into-betting (no 'reverse withdrawal'), and no balance thresholds before cash-out. Offer an optional auto-sweep of winnings to the user's wallet as a bright-pattern default."
+  },
+  {
+   "claim": "National Consumers League four-week audit (Aug 2025) of the top three US sportsbooks found 93% of push notifications were promotional, 62% contained direct 'bet now'-style pushes, and 50% promoted bonus bets/odds boosts; NCL backs the SAFE Bet Act and state bills restricting gambling push notifications.",
+   "kind": "evidence",
+   "source": "https://nclnet.org/advertising-sports-betting-with-smartphone-notifications-what-ncl-learned-and-how-regulators-can-act/",
+   "sourceDate": "2025-08",
+   "designImplication": "Notification policy: transactional only by default (deposit confirmed, market resolved, withdrawal sent, security). Promotional/market-hype pushes require explicit granular opt-in, are frequency-capped, and never fire after a losing session. This anticipates where US regulation is heading."
+  },
+  {
+   "claim": "Sportsbook VIP/loss-chasing re-engagement is under litigation and regulatory scrutiny: lawsuits allege DraftKings/FanDuel VIP hosts texted commiseration plus 'keep betting' exhortations after major losses, timed offers to lulls and losses, and contacted self-excluded users; a Massachusetts Gaming Commission analysis found sportsbooks restrict winners while extending VIP rewards mainly to losers; FanDuel sent a personalized Bryce Harper video to a VIP with a $2M gambling problem (reported Jul 2026).",
+   "kind": "evidence",
+   "source": "https://www.wbur.org/news/2025/10/17/massachusetts-sports-bets-draftkings-fanduel-loyalty-rules and https://www.inquirer.com/news/philadelphia/bryce-harper-fanduel-vip-video-gambling-addiction-20260709.html",
+   "sourceDate": "2025-10-17 / 2026-07-09",
+   "designImplication": "Ban loss-triggered re-engagement in product and CRM: no bonuses, emails, pushes, or 'win it back' prompts conditioned on recent losses; suppress all marketing for N days after a heavy-loss session instead. If we ever build loyalty tiers, gate them on tenure/behavior, never on net losses."
+  },
+  {
+   "claim": "Countdown urgency is one of the most prevalent dark patterns generally and in betting specifically: the EU Commission's 2022 study found 97% of popular sites/apps used at least one dark pattern and the 2022 CPC sweep flagged fake countdown timers among the most common; sportsbook odds boosts and bonus credits carry short expiry clocks explicitly designed to force decisions before evaluation.",
+   "kind": "evidence",
+   "source": "https://www.europarl.europa.eu/RegData/etudes/ATAG/2025/767191/EPRS_ATA(2025)767191_EN.pdf and https://www.thelines.com/betting/guides/odds-boost/",
+   "sourceDate": "2022-2025 (EPRS brief 2025)",
+   "designImplication": "No countdown timers attached to stake decisions or promos. Where time is genuinely material in a prediction market (market close, resolution window), display it as calm metadata (date/time), not an animated ticking clock, and never pair it with a CTA. Any promotional credit should have a long (30d+) or no expiry."
+  },
+  {
+   "claim": "The EU Digital Fairness Fitness Check (staff working document, 3 Oct 2024) estimated dark patterns and related practices cost EU consumers at least EUR 7.9B/year, and the forthcoming Digital Fairness Act (proposal slated Q4 2026) explicitly targets dark patterns and 'addictive design'; the 2024 ICPEN/GPEN sweep found 75.7% of sites/apps deploy at least one dark pattern.",
+   "kind": "evidence",
+   "source": "https://www.arthurcox.com/knowledge/eu-digital-fairness-fitness-check-shines-light-on-deceptive-patterns/ and https://www.europarl.europa.eu/legislative-train/theme-protecting-our-democracy-upholding-our-values/file-digital-fairness-act",
+   "sourceDate": "2024-10-03 / proposal expected Q4 2026",
+   "designImplication": "Addictive design is moving from ethics to law in the EU. Even as a crypto-native, outside-US product, designing to DFA-anticipated standards (no fake urgency, no manipulative choice architecture, symmetric friction) future-proofs market access and is a defensible differentiator with regulators and payment/rail partners."
+  },
+  {
+   "claim": "The Dutch regulator (Kansspelautoriteit) published a behavioral audit (conducted Sep 2024-Feb 2025 by Behavioural Insights Nederland, 21 platforms, 35 games) finding dark patterns pervasive across the whole player journey on licensed sites, with protective 'bright patterns' present but visually and structurally muted relative to negative nudges; KSA is weighing stricter duty-of-care guidance.",
+   "kind": "evidence",
+   "source": "https://tribuna.com/en/casino/news/2025-09-24-study-flags-pervasive-dark-patterns-on-licensed-gambling-sites-as-dutch-regulator-weighs/",
+   "sourceDate": "2025-09-24",
+   "designImplication": "The KSA framing gives us the design principle: bright patterns must have equal or greater visual prominence than monetization CTAs. E.g., session-time and net-loss feedback rendered at the same hierarchy level as the trade button, not buried in settings."
+  },
+  {
+   "claim": "Near-miss effects: a half-century review (Journal of Gambling Studies, 2020) finds evidence for increased gambling persistence is mixed/inconclusive, but individual studies show near-misses increase speed of play and bet size on the subsequent spin; the UKGC's Jan 2025 rules prohibit effects giving the 'illusion of false wins'.",
+   "kind": "evidence",
+   "source": "https://link.springer.com/article/10.1007/s10899-019-09891-8 and https://www.wiggin.co.uk/insight/remote-game-design-changes-taking-effect-17-january-2025/",
+   "sourceDate": "2020 / 2025-01-17",
+   "designImplication": "In a prediction market the near-miss analog is 'your NO lost at 49 cents' / price charts dramatizing how close a market came. Render losing resolutions neutrally without 'so close!' framing, don't animate final-price convergence on losing positions, and never show what a user 'would have won'."
+  },
+  {
+   "claim": "Betting apps use win-biased social proof (trending bets, shared winning slips, visible win feeds while losses stay hidden) to trigger FOMO herding \u2014 users place wagers because a trend gains traction, and surges of 'public money' follow viral slips.",
+   "kind": "evidence",
+   "source": "https://kindbridge.com/sports-betting/fomo-gambling-sports-betting/ and https://luxuryfootballelite.com/blog/dark-patterns-lost-futures-how-sports-betting-apps-hook-young-minds/",
+   "sourceDate": "accessed 2026-07-12",
+   "designImplication": "If we show market activity, show symmetric, non-actionable data: total volume and both-sides pricing, not 'hot streak' trader feeds or win-only leaderboards. Never pair social-proof surfaces ('2,431 people bought YES') with a one-tap buy button; separate discovery from execution with a deliberate order screen."
+  },
+  {
+   "claim": "Streak mechanics operate on loss aversion and obligation (habit loop where the reward is streak continuity); Duolingo's own case-study data shows streak wagers boosting day-14 retention ~14%, and crypto exchanges (e.g. CoinDCX) have imported daily-streak mechanics into trading. No major peer-reviewed gambling-specific streak study surfaced; the harm inference comes from the general habit-formation literature plus regulators' interest in curbing streak-type engagement mechanics.",
+   "kind": "inference",
+   "source": "https://trophy.so/blog/streaks-gamification-case-study and https://fordhamlawreview.org/wp-content/uploads/2019/10/Langvardt_October_A_4.pdf",
+   "sourceDate": "2019-2025 (accessed 2026-07-12)",
+   "designImplication": "No consecutive-day mechanics tied to trading, depositing, or app-opening \u2014 a streak converts voluntary use into felt obligation, which in a real-money product is loss-chasing infrastructure. If streak psychology is used at all, attach it to protective actions (days within budget), and make breaks penalty-free."
+  },
+  {
+   "claim": "Microbetting/rapid-resolution wagers are the subject of 2026 lawsuits against DraftKings, FanDuel and the NFL alleging the products are defectively designed because high-speed, fast-resolving wagers 'hijack gamblers' brains and keep them immersed in ceaseless betting action', with AI-personalized promotions deepening engagement of at-risk users.",
+   "kind": "evidence",
+   "source": "https://www.sportico.com/law/analysis/2026/draftkings-fanduel-nfl-microbetting-addictions-lawsuit-1234888135/ and https://www.espn.com/espn/betting/story/_/id/48312490/lawsuit-accuses-sportsbooks-using-addictive-technology",
+   "sourceDate": "2026 (accessed 2026-07-12)",
+   "designImplication": "Resolution cadence is a product-safety variable: prefer markets with hours-to-days resolution over seconds-to-minutes 'flash' markets; if we ever list fast-resolving markets, add per-session frequency awareness (visible count of trades this session) and cooling prompts rather than an endless next-market carousel."
+  },
+  {
+   "claim": "Instant cash-out (settling a bet before the event concludes) prolongs gambling sessions and creates an illusion of control, per a 2025 study on cash-out availability and online betting behavior.",
+   "kind": "evidence",
+   "source": "https://www.researchgate.net/publication/396091168_The_impact_of_cash-out_availability_on_online_betting_behavior",
+   "sourceDate": "2025",
+   "designImplication": "Selling a position early is legitimate market functionality, but don't merchandise it: no pulsing 'cash out now' buttons with live-updating amounts on open positions. Present exit as a quote the user requests, with fees/spread disclosed, not a slot-machine-like fluctuating offer."
+  },
+  {
+   "claim": "Prediction markets are now explicitly framed as a gambling-addiction vector: Fortune (Apr 10, 2026) and Seoul Economic Daily (May 29, 2026) report young men 18-30 getting 'sucked in'; Kalshi's weekly volume hit ~$3B (Mar 2026, ~30x YoY); the Massachusetts AG sued Kalshi alleging 3.4M+ unlicensed sports bets totaling >$1B in H1 2025; and the bipartisan Prediction Market Act of 2026 (Gillibrand/McCormick) would mandate self-exclusion programs and stronger age verification.",
+   "kind": "evidence",
+   "source": "https://fortune.com/2026/04/10/prediction-markets-gambling-addiction/ and https://en.sedaily.com/finance/2026/05/29/us-prediction-markets-emerge-as-new-hub-for-youth-gambling",
+   "sourceDate": "2026-04-10 / 2026-05-29",
+   "designImplication": "Our category is the current center of the gamblification debate. Build the countermeasures the Prediction Market Act would mandate (self-exclusion, robust age gating, deposit limits) before being forced to \u2014 and avoid the 'research/investing veneer' marketing that critics call out, since the New Republic documents the industry hiring gambling-lobby veterans to fight exactly these safeguards (https://newrepublic.com/article/210370/prediction-markets-gambling-industry-coalition)."
+  },
+  {
+   "claim": "Robinhood's prediction-markets expansion (event contracts incl. NFL parlays, 24/7 trading) faces a proposed class action alleging its sports event contracts are illegal sports betting dressed as financial products, with users misled into believing they were making regulated investments; critics (Better Markets) argue 24/7 access plus gamified UX compounds retail harm.",
+   "kind": "evidence",
+   "source": "https://cdcgaming.com/brief/robinhood-faces-lawsuit-over-sports-event-contracts/ and https://bettermarkets.org/analysis/five-years-after-gamestop-crypto-prediction-markets-and-24-7-trading-make-meme-stocks-the-least-of-retail-investors-troubles/",
+   "sourceDate": "2025-2026 (accessed 2026-07-12)",
+   "designImplication": "Be honest in category framing: our UX copy should not imply 'investing' safety for what is risk-taking on event outcomes. Clear risk disclosure at first trade, plain-language market rules, and honest loss statistics build the trust moat the incumbents are burning."
+  },
+  {
+   "claim": "The SEC opened a request for comment (2021) on 'digital engagement practices' (behavioral prompts, differential marketing, game-like features) in trading apps, on concern they induce trading frequency/risk misaligned with investors' interests.",
+   "kind": "evidence",
+   "source": "https://ibsintelligence.com/ibsi-news/sec-more-concerns-around-gamification-in-trading-apps-and-sites/",
+   "sourceDate": "2021 (accessed 2026-07-12)",
+   "designImplication": "The 'DEP' lens is useful internally: for each engagement feature ask 'does this serve the user's stated goal or our volume KPI?' Institute a design-review gate where any feature whose success metric is trade frequency gets extra scrutiny."
+  },
+  {
+   "claim": "A 2024 Psychiatry Research study found adults 18-29 who sports-bet show markedly higher depression, anxiety, and at-risk gambling than non-bettors, with mobile access plus constant marketing cited as a significant contributor to mental-health decline in younger adults.",
+   "kind": "evidence",
+   "source": "https://www.aboutlawsuits.com/sports-betting-addiction-lawsuit/sports-betting-apps-compulsive-gambling-addiction/",
+   "sourceDate": "2024",
+   "designImplication": "Our likely early-adopter demographic (young, mobile-first, crypto-native men) is the highest-risk cohort in the literature. Default protections should be calibrated to this population: conservative default limits, visible net-P&L, and prominent self-exclusion \u2014 not the industry's opt-in afterthoughts."
+  },
+  {
+   "claim": "Countermeasures have positive evidence: BIT found reducing friction to reach safer-gambling tools increased deposit-limit uptake 23.2% vs standard email, while adding friction inside the limit-setting flow backfired; a deposit-limit prompt RCT reduced gambling intensity; and researcher-proposed bright patterns include bet-confirmation steps, reduced default bets, default auto-withdrawal of winnings, opt-out (rather than opt-in) of marketing notifications, and pauses that slow betting speed.",
+   "kind": "evidence",
+   "source": "https://www.bi.team/blogs/making-gambling-safer-improving-the-uptake-and-design-of-tools-to-help-people-control-their-gambling/ and https://www.frontiersin.org/journals/psychiatry/articles/10.3389/fpsyt.2020.598589/full",
+   "sourceDate": "2020-2021 (accessed 2026-07-12)",
+   "designImplication": "Asymmetry cuts both ways: make protective actions one-tap (set limit from the wallet screen, pause account from profile) and risky actions deliberate (typed stake, confirm step). Evidence says ease of reaching the tool matters more than persuasion inside it \u2014 so surface placement > copywriting."
+  },
+  {
+   "claim": "A 2025 scoping review formally classifies dark patterns in online gambling (deposit-easy/withdraw-hard friction asymmetry, misleading near-win visualizations, obscured loss displays), converging with the Newall taxonomy and the KSA audit on the same core pattern families.",
+   "kind": "evidence",
+   "source": "https://www.researchgate.net/publication/399509545_Dark_patterns_in_online_gambling_A_scoping_review_and_classification_of_deceptive_design_practices",
+   "sourceDate": "2025 (accessed 2026-07-12)",
+   "designImplication": "The literature has converged on a stable pattern list \u2014 we can publish our own 'anti-dark-pattern' design principles document mapped 1:1 against this classification, both as internal guardrail and external trust/brand asset for the rebrand."
+  },
+  {
+   "claim": "Given the 1-hour dispute window and crypto-native instant rails in our launch policy, deposit/withdrawal asymmetry and urgency patterns are the two highest-risk areas for us specifically: instant USDT deposits with any added withdrawal ceremony would reproduce the most-cited harm pattern, and short dispute/resolution clocks could unintentionally function as countdown-urgency UX.",
+   "kind": "assumption",
+   "source": "none",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Design the USDT rail so withdrawal is a single screen with no upsell interstitials, and present the 1h dispute window as procedural metadata (timestamped, calm) rather than an animated countdown. Audit every timer in the product against the urgency-pattern test: does it inform, or does it pressure?"
+  }
+ ],
+ "summary": "The research base on addictive/dark patterns in real-money apps has matured rapidly in 2024\u20132026, converging from three directions on the same pattern list. Academically, Newall's 2025 taxonomy in Addiction (sludge / dark patterns / dark nudges) and a 2025 scoping review classify the core families: celebration effects and losses-disguised-as-wins, high anchored default stakes, deposit-easy/withdraw-hard friction asymmetry, urgency and expiring offers, near-win dramatization, obscured cumulative losses, and promotional notification saturation. Regulatorily, the UK Gambling Commission has already banned the worst offenders (losses disguised as wins, autoplay, sub-2.5s spins in 2021; reverse withdrawals in 2021; illusion-of-false-wins effects across casino products in Jan 2025) and \u2014 critically for the business case \u2014 its own post-implementation assessment found reduced play intensity with no loss of staking or enjoyment. The Dutch KSA's 2025 behavioral audit of 21 licensed platforms found dark patterns pervasive and protective 'bright patterns' visually muted, and the EU's Digital Fairness Fitness Check (Oct 2024, EUR 7.9B/yr estimated consumer detriment) feeds a Digital Fairness Act proposal (Q4 2026) that explicitly targets addictive design. In trading, Robinhood's confetti removal (2021) and $7.5M Massachusetts gamification settlement, the SEC's digital-engagement-practices inquiry, and the Chapkovski/Khapko/Zoican Management Science experiment (hedonic gamification raises volume ~5%, worst for low-literacy users who self-select into it) establish that gamified reward loops in financial apps are a documented, litigated harm \u2014 not a hypothetical.\n\nTwo threads matter most for a prediction-market product. First, the loss-chasing/re-engagement machinery is the current litigation frontier: 2025\u20132026 lawsuits and the Massachusetts Gaming Commission's VIP analysis document sportsbooks timing bonuses and VIP-host contact to losses and lulls (including contacting self-excluded users, and FanDuel's personalized Bryce Harper video to a $2M-loss VIP), while the NCL's August 2025 audit found 93% of sportsbook push notifications were promotional and 62% were direct bet pushes. Second, prediction markets themselves are now the named subject of the gamblification debate: Fortune and others report 18\u201330-year-old men as the at-risk cohort, the Massachusetts AG has sued Kalshi, Robinhood faces a class action over sports event contracts, and the bipartisan Prediction Market Act of 2026 would mandate self-exclusion and age verification. Building countermeasures ahead of mandate is both an ethical position and a strategic/brand one.\n\nThe countermeasure playbook that falls out of the evidence: (1) feedback neutrality \u2014 no celebration below break-even, persistent net-P&L display, neutral rendering of losing resolutions with no near-miss framing; (2) symmetric friction \u2014 withdrawal as easy as deposit, no reverse-withdrawal, no minimum-balance gates, optional auto-sweep of winnings, while risky actions get deliberate confirmation and typed (not anchored) stakes; (3) no manufactured time pressure \u2014 timers inform, never pressure, and promos (if any) don't expire fast; (4) no loss-triggered re-engagement anywhere in product or CRM, with marketing suppression after heavy-loss sessions; (5) transactional-only notifications by default; (6) protective tools at equal visual prominence to trade CTAs (the KSA 'bright pattern' standard), since BIT evidence shows tool placement/ease drives uptake (+23.2%) far more than persuasion. These are best enforced structurally \u2014 in the component library and CRM rules \u2014 because UK experience ('sad trombone' study) shows paper policies get circumvented.",
+ "topic": "Addictive/dark patterns in gambling, sportsbook, retail-trading and prediction apps \u2014 evidence of harm and design countermeasures (for prevention)"
+}

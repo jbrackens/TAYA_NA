@@ -1,6 +1,6 @@
 {
   "COMPANY": "Company",
-  "ABOUT": "About",
+  "ABOUT": "關於",
   "TERMS_OF_SERVICE": "Terms of Service",
   "PRIVACY_POLICY": "Privacy Policy",
   "TERMS_AND_CONDITIONS": "Terms & Conditions",
@@ -19,5 +19,16 @@
   "DEPOSIT": "積分規則",
   "DEPOSIT_MESSAGE": "僅限遊戲積分",
   "WITHDRAWALS": "積分活動",
-  "WITHDRAWAL_MESSAGE": "積分留在玩法內"
+  "WITHDRAWAL_MESSAGE": "積分留在玩法內",
+  "PRODUCT": "產品",
+  "FAIR_PLAY": "公平遊戲與控制",
+  "NOTIFICATION_SETTINGS": "通知設定",
+  "PLAY_LIMITS": "遊戲限額",
+  "TAKE_A_BREAK": "暫停 / 自我排除",
+  "SUPPORT": "支援",
+  "ACCOUNT_CLOSURE": "關閉帳戶",
+  "TERMS": "使用條款",
+  "PRIVACY": "隱私",
+  "CONTACT": "聯絡我們",
+  "POINTS_DISCLOSURE": "不可兌換積分預測市場——遊戲積分無現金價值，不可存入或提取，本平台未在任何金融監管機構註冊。"
 }

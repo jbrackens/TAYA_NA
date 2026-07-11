@@ -232,18 +232,63 @@ describe("points-only safety boundary", () => {
     assert.deepEqual(offenders, []);
   });
 
-  it("keeps public homepage teasers away from crypto and cash-value framing", () => {
+  it("landing page shows real discovery markets and honest play-points copy", () => {
+    // Re-encoded 2026-07-12 (P10 Signal Ink landing): the dark marketing
+    // hero with hardcoded EXAMPLE_MARKETS teasers and the ambient-video
+    // layer were replaced by a light product-system page that fetches
+    // real markets from the public discovery API and renders them as
+    // MarketCards — or renders nothing at all on error (no fake fallback).
     const homepageSource = read("page.tsx");
-    assert.ok(homepageSource.includes("markets.esports.category"));
-    assert.ok(!homepageSource.includes("markets.crypto.category"));
+    assert.ok(
+      homepageSource.includes("getDiscovery"),
+      "landing must fetch live markets from the public discovery API",
+    );
+    assert.ok(
+      homepageSource.includes("MarketCard"),
+      "landing must render real MarketCard components",
+    );
+    for (const retired of [
+      "EXAMPLE_MARKETS",
+      "markets.esports.category",
+      "markets.crypto.category",
+      "HERO_AMBIENT_VIDEO",
+      "hero-ambient",
+      "TradeTicketPreview",
+    ]) {
+      assert.ok(
+        !homepageSource.includes(retired),
+        `landing should not carry retired dark-hero artifact ${retired}`,
+      );
+    }
 
+    // Honest, jurisdiction-neutral copy. The play-points disclosure is
+    // REQUIRED in every locale ("cash"/"deposit"/"withdraw" left the ban
+    // list 2026-07-12 P10 because the honest disclosure "no deposits, no
+    // cash value" must name them); redeemable-value and crypto framing
+    // stays banned, and the old Philippines-market positioning is out.
     const forbiddenHomepageCopy =
-      /crypto|bitcoin|btc|usd|\$|dollar|cash|deposit|withdraw|withdrawal|prize|redeem|payout|wager|stake|fiat|kripto|加密|pembayaran|赔付|賠付/i;
-    const offenders = listSourceFiles("../public/static/locales")
-      .filter((rel) => rel.endsWith("/page-home.json"))
-      .filter((rel) => forbiddenHomepageCopy.test(read(rel)));
-
+      /crypto|bitcoin|btc|usd|\$|dollar|prize|redeem|payout|wager|stake|fiat|kripto|加密|赔付|賠付|philippines|filipino|pilipinas/i;
+    const localeFiles = listSourceFiles("../public/static/locales").filter(
+      (rel) => rel.endsWith("/page-home.json"),
+    );
+    assert.ok(localeFiles.length > 0, "page-home locale files must exist");
+    const offenders = localeFiles.filter((rel) =>
+      forbiddenHomepageCopy.test(read(rel)),
+    );
     assert.deepEqual(offenders, []);
+    for (const rel of localeFiles) {
+      const parsed = JSON.parse(read(rel)) as Record<string, string>;
+      assert.ok(
+        (parsed["hero.disclaimer"] ?? "").length > 0,
+        `${rel} must carry the play-points disclosure`,
+      );
+    }
+    assert.ok(
+      read("../public/static/locales/en/page-home.json").includes(
+        "Play points only — no deposits, no cash value.",
+      ),
+      "the English disclosure must state plainly: play points, no deposits, no cash value",
+    );
   });
 });
 
@@ -673,9 +718,7 @@ describe("market detail related markets", () => {
   });
 
   it("keeps related market volume in points copy", () => {
-    assert.ok(
-      marketPageSource.includes("formatCompactPoints(m.volumePoints)"),
-    );
+    assert.ok(marketPageSource.includes("formatCompactPoints(m.volumePoints)"));
     assert.ok(
       !marketPageSource.includes(
         "value: `$${(m.volumePoints / 100).toFixed(0)}`",
@@ -912,9 +955,15 @@ describe("MarketChart side colors", () => {
       ),
       "MarketChart should color the complement line with the other side token",
     );
+    // P10 (2026-07-12): complement differentiates by dash pattern as
+    // well as mute so the two sides differ by more than hue (WCAG 1.4.1).
     assert.ok(
-      marketChartSource.includes('strokeOpacity="0.35"'),
+      marketChartSource.includes('strokeOpacity="0.5"'),
       "MarketChart complement line should render muted",
+    );
+    assert.ok(
+      marketChartSource.includes('strokeDasharray="5 5"'),
+      "MarketChart complement line should be dashed, not hue-only",
     );
   });
 });
@@ -1002,15 +1051,27 @@ describe("Navigation underline treatment", () => {
         active === "categoryPillClass"
           ? functionBody(source, active)
           : constValue(source, active);
-      // P9 (2026-07-07): mint text/underline moved to the white-AA pair —
-      // --accent-text (4.9:1 text) + --accent-lo (3.1:1 indicator). Raw
-      // --accent (1.9:1 on white) is fill-only per DESIGN.md §8.
-      assert.ok(
-        activeClass.includes("text-[var(--accent-text)]") &&
-          source.includes("font-semibold") &&
-          source.includes("border-[var(--accent-lo)]"),
-        `${label} should draw the selected mint underline`,
-      );
+      if (label === "category navigation") {
+        // P9 (2026-07-07): mint text/underline uses the white-AA pair —
+        // --accent-text (4.9:1 text) + --accent-lo (3.1:1 indicator). Raw
+        // --accent (1.9:1 on white) is fill-only per DESIGN.md §8.
+        assert.ok(
+          activeClass.includes("text-[var(--accent-text)]") &&
+            source.includes("font-semibold") &&
+            source.includes("border-[var(--accent-lo)]"),
+          `${label} should draw the selected mint underline`,
+        );
+      } else {
+        // P10 (2026-07-12, Signal Ink): the top bar's active nav link is
+        // ink, not mint — color is reserved for meaning; "where you are"
+        // is structure, carried by weight + the ink underline.
+        assert.ok(
+          activeClass.includes("text-[var(--t1)]") &&
+            activeClass.includes("font-semibold") &&
+            activeClass.includes("border-[var(--t1)]"),
+          `${label} should draw the selected ink underline`,
+        );
+      }
     }
 
     assert.ok(
@@ -1047,20 +1108,13 @@ describe("Navigation underline treatment", () => {
     }
   });
 
-  it("uses soft rectangular corners for category navigation pills", () => {
-    const categoryPillsSource = read("components/prediction/CategoryPills.tsx");
-    const categoryPillClass = constValue(
-      categoryPillsSource,
-      "PILL_BASE_CLASS",
-    );
+  it("keeps the dead CategoryPills component deleted", () => {
+    // P10 (2026-07-12): CategoryPills.tsx had zero imports and was removed
+    // in the Signal Ink hygiene sweep. This replaces the old corner-radius
+    // lock, which read the now-deleted file.
     assert.ok(
-      categoryPillClass.includes("rounded-md"),
-      "Category pills should use 6px Tailwind corners",
-    );
-    assert.ok(
-      !categoryPillClass.includes("var(--r-pill)") &&
-        !categoryPillClass.includes("999px"),
-      "Category pills should not use capsule radius",
+      !existsSync(resolve(appRoot, "components/prediction/CategoryPills.tsx")),
+      "CategoryPills.tsx should stay deleted (dead code removed in P10)",
     );
   });
 });
@@ -1069,7 +1123,7 @@ describe("Navigation pill active colors", () => {
   const allMarketsSource = read("components/prediction/AllMarketsSection.tsx");
   const marketChartSource = read("components/prediction/MarketChart.tsx");
   const globalsSource = read("globals.css");
-  const categoryPillsSource = read("components/prediction/CategoryPills.tsx");
+  // P10 (2026-07-12): CategoryPills.tsx deleted (dead code) — no longer read.
 
   function functionBody(source: string, name: string): string {
     const match = new RegExp(`function\\s+${name}\\([\\s\\S]*?^\\}`, "m").exec(
@@ -1111,26 +1165,9 @@ describe("Navigation pill active colors", () => {
     );
   });
 
-  it("uses seafoam tokens for active category pills", () => {
-    function constValue(source: string, name: string): string {
-      const match = new RegExp(
-        `const\\s+${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`,
-      ).exec(source);
-      assert.ok(match, `${name} should be declared as a class constant`);
-      return match[1] ?? match[2] ?? "";
-    }
-
-    const categoryActiveClass = constValue(
-      categoryPillsSource,
-      "PILL_ACTIVE_CLASS",
-    );
-    assert.ok(
-      categoryActiveClass.includes("bg-[var(--yes-soft)]") &&
-        categoryActiveClass.includes("border-[var(--yes-border)]") &&
-        categoryActiveClass.includes("text-[var(--yes-text)]"),
-      "Active category pills should use seafoam tokens",
-    );
-  });
+  // P10 (2026-07-12): "uses seafoam tokens for active category pills"
+  // removed — CategoryPills.tsx was dead code and is deleted; its
+  // non-existence is asserted above.
 });
 
 describe("Predict discovery controls", () => {
@@ -1268,9 +1305,13 @@ describe("Static informational pages", () => {
   });
 
   it("keeps Terms of Use linked through the public footer and auth proxy", () => {
+    // P10 (2026-07-12): footer labels moved through i18n — the Terms link
+    // is now `label: t("TERMS", "Terms of Use")` with an English fallback,
+    // so we lock the href and the fallback string rather than a literal
+    // label property.
     assert.ok(
       footerSource.includes('href: "/tos"') &&
-        footerSource.includes('label: "Terms of Use"'),
+        footerSource.includes('"Terms of Use"'),
       "Footer should link Terms of Use to /tos",
     );
     assert.ok(
@@ -1327,7 +1368,7 @@ describe("Social auth feature gate", () => {
     );
     const buttons = read("components/auth/SocialAuthButtons.tsx");
     assert.ok(
-      buttons.includes("redirect: \"manual\"") &&
+      buttons.includes('redirect: "manual"') &&
         buttons.includes("isn't configured for this deployment yet") &&
         buttons.includes("/start/`"),
       "social buttons must probe the start route (trailing slash — Next's 308 masquerades as a provider redirect) and degrade to an inline notice",
@@ -1596,7 +1637,7 @@ describe("Market copy localization", () => {
       "components/prediction/AllMarketsSection.tsx",
     );
     const trendingSource = read("components/prediction/TrendingSidebar.tsx");
-    const categoryPillsSource = read("components/prediction/CategoryPills.tsx");
+    // P10 (2026-07-12): CategoryPills.tsx deleted (dead code) — no longer read.
     const featuredCarouselSource = read(
       "components/prediction/FeaturedCarousel.tsx",
     );
@@ -1616,7 +1657,6 @@ describe("Market copy localization", () => {
     assert.ok(!trendingSource.includes('btc: "Technology"'));
     assert.ok(!trendingSource.includes('eth: "Technology"'));
     assert.ok(!trendingSource.includes('crypto: "Technology"'));
-    assert.ok(!categoryPillsSource.includes("crypto:"));
     assert.ok(!featuredCarouselSource.includes("Crypto"));
     assert.ok(!marketImageSource.includes("crypto:"));
     assert.ok(!subcategorySource.includes("Crypto Markets"));
@@ -1706,7 +1746,14 @@ describe("Full-page translation coverage", () => {
   }
 
   function isAllowedLocaleSafetyValue(key: string, value: string): boolean {
-    return key.endsWith("PASSWORD_REGEX") && value.startsWith("^");
+    if (key.endsWith("PASSWORD_REGEX") && value.startsWith("^")) return true;
+    // P10 honest disclosures (2026-07-12): the points-only disclosure has
+    // to NAME the things play points are not (deposits, cash value,
+    // withdrawals) in order to deny them — e.g. "Play points only — no
+    // deposits, no cash value." Only these exact disclosure keys may use
+    // that vocabulary; every other locale string stays inside the
+    // points-only boundary.
+    return key === "hero.disclaimer" || key.endsWith("POINTS_DISCLOSURE");
   }
 
   it("keeps supported launch locale values inside the points-only boundary", () => {
@@ -1885,18 +1932,10 @@ describe("Full-page translation coverage", () => {
       ),
     );
     assert.ok(
-      settledPositionResultTypeSource.includes(
-        "entryPricePoints: number",
-      ) &&
-        settledPositionResultTypeSource.includes(
-          "exitPricePoints: number",
-        ) &&
-        settledPositionResultTypeSource.includes(
-          "realizedPoints: number",
-        ) &&
-        settledPositionResultTypeSource.includes(
-          "settlementPoints: number",
-        ) &&
+      settledPositionResultTypeSource.includes("entryPricePoints: number") &&
+        settledPositionResultTypeSource.includes("exitPricePoints: number") &&
+        settledPositionResultTypeSource.includes("realizedPoints: number") &&
+        settledPositionResultTypeSource.includes("settlementPoints: number") &&
         predictionTypesSource.includes('unit?: "PTS" | string'),
       "SettledPositionResult should expose point-native settlement-history fields",
     );
@@ -1916,9 +1955,7 @@ describe("Full-page translation coverage", () => {
         settledPositionResultNormalizerSource.includes(
           "row.entryPricePoints",
         ) &&
-        settledPositionResultNormalizerSource.includes(
-          "row.exitPricePoints",
-        ) &&
+        settledPositionResultNormalizerSource.includes("row.exitPricePoints") &&
         predictionClientSource.includes("row.realizedPoints") &&
         predictionClientSource.includes("row.settlementPoints") &&
         predictionClientSource.includes('unit: row.unit || "PTS"'),
@@ -2436,9 +2473,7 @@ describe("Full-page translation coverage", () => {
         positionNormalizerSource.includes("row.realizedPoints") &&
         predictionClientSource.includes("LegacyPosition[]") &&
         predictionClientSource.includes("positions.map(normalizePosition)") &&
-        !positionNormalizerSource.includes(
-          "avgPricePoints: avgPricePoints",
-        ) &&
+        !positionNormalizerSource.includes("avgPricePoints: avgPricePoints") &&
         !positionNormalizerSource.includes(
           "totalCostPoints: totalCostPoints",
         ) &&
@@ -2493,9 +2528,7 @@ describe("Full-page translation coverage", () => {
       predictionTypesSource.includes(
         "notionalCapPoints: preferred point-native",
       ) &&
-        predictionTypesSource.includes(
-          "pricePoints: preferred point-native",
-        ) &&
+        predictionTypesSource.includes("pricePoints: preferred point-native") &&
         !predictionTypesSource.includes("priceCents?: number") &&
         !predictionTypesSource.includes("notionalCapCents?: number") &&
         !predictionTypesSource.includes("PointsCents") &&
@@ -2514,12 +2547,8 @@ describe("Full-page translation coverage", () => {
         !orderNormalizerSource.includes(
           "averageFillPricePoints: averageFillPricePoints",
         ) &&
-        !orderNormalizerSource.includes(
-          "totalCostPoints: totalCostPoints",
-        ) &&
-        !orderNormalizerSource.includes(
-          "filledCostPoints: filledCostPoints",
-        ) &&
+        !orderNormalizerSource.includes("totalCostPoints: totalCostPoints") &&
+        !orderNormalizerSource.includes("filledCostPoints: filledCostPoints") &&
         !orderNormalizerSource.includes(
           "notionalCapPoints: notionalCapPoints",
         ) &&
@@ -2541,15 +2570,11 @@ describe("Full-page translation coverage", () => {
       "PredictionOrder should not expose retired cash-named reservation aliases",
     );
     assert.ok(
-      !predictionClientSource.includes(
-        "reservedCashPoints: reservedPoints",
-      ) &&
+      !predictionClientSource.includes("reservedCashPoints: reservedPoints") &&
         !predictionClientSource.includes(
           "capturedCashPoints: capturedPoints",
         ) &&
-        !predictionClientSource.includes(
-          "releasedCashPoints: releasedPoints",
-        ),
+        !predictionClientSource.includes("releasedCashPoints: releasedPoints"),
       "PredictionApiClient should not reattach retired cash-named order aliases",
     );
   });
@@ -2571,12 +2596,8 @@ describe("Full-page translation coverage", () => {
         previewTypeSource.includes("maxLossPoints: number") &&
         previewTypeSource.includes("newYesPricePoints: number") &&
         previewTypeSource.includes("newNoPricePoints: number") &&
-        predictionTypesSource.includes(
-          "totalCostWithFeesPoints?: number",
-        ) &&
-        predictionTypesSource.includes(
-          "estimatedSlippagePoints?: number",
-        ) &&
+        predictionTypesSource.includes("totalCostWithFeesPoints?: number") &&
+        predictionTypesSource.includes("estimatedSlippagePoints?: number") &&
         // Points unit-model (2026-07-07): single canonical *Points wire key.
         !previewTypeSource.includes("PointsCents") &&
         !previewTypeSource.includes("priceCents") &&
@@ -2598,16 +2619,10 @@ describe("Full-page translation coverage", () => {
         previewNormalizerSource.includes("row.estimatedSlippagePoints") &&
         predictionClientSource.includes("type LegacyOrderPreview") &&
         !previewNormalizerSource.includes("pricePoints: pricePoints") &&
-        !previewNormalizerSource.includes(
-          "totalCostPoints: totalCostPoints",
-        ) &&
+        !previewNormalizerSource.includes("totalCostPoints: totalCostPoints") &&
         !previewNormalizerSource.includes("feePoints: feePoints") &&
-        !previewNormalizerSource.includes(
-          "maxProfitPoints: maxResultPoints",
-        ) &&
-        !previewNormalizerSource.includes(
-          "maxProfitPoints: maxResultPoints",
-        ) &&
+        !previewNormalizerSource.includes("maxProfitPoints: maxResultPoints") &&
+        !previewNormalizerSource.includes("maxProfitPoints: maxResultPoints") &&
         !previewNormalizerSource.includes("maxLossPoints: maxLossPoints") &&
         !previewNormalizerSource.includes(
           "newYesPricePoints: newYesPricePoints",
@@ -2715,9 +2730,7 @@ describe("Full-page translation coverage", () => {
           "normalizeSettlementPointDisbursement",
         ) &&
         predictionClientSource.includes("settlementPoints") &&
-        !settlementNormalizerSource.includes(
-          "payoutPoints: settlementPoints",
-        ),
+        !settlementNormalizerSource.includes("payoutPoints: settlementPoints"),
       "PredictionApiClient should normalize admin settlement responses from point-native aliases",
     );
     assert.ok(

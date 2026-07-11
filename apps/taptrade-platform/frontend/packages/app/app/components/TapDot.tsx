@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * TapDot — the brand's kinetic signature as a loader.
  *
@@ -9,6 +11,8 @@
  * collapse under prefers-reduced-motion via the global override.
  */
 
+import { useTranslation } from "react-i18next";
+
 export default function TapDot({
   label,
   className = "",
@@ -16,10 +20,11 @@ export default function TapDot({
   label?: string;
   className?: string;
 }) {
+  const { t } = useTranslation("common");
   return (
     <span
       role="status"
-      aria-label={label}
+      aria-label={label ?? t("LOADING", "Loading")}
       className={`inline-flex flex-col items-center gap-3.5 ${className}`}
     >
       <span className="relative inline-flex h-6 w-6 items-end justify-center">

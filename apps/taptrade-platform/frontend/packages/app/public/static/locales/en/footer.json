@@ -19,5 +19,16 @@
   "DEPOSIT": "Point Rules",
   "DEPOSIT_MESSAGE": "Gameplay points only",
   "WITHDRAWALS": "Point Activity",
-  "WITHDRAWAL_MESSAGE": "Points stay inside gameplay"
+  "WITHDRAWAL_MESSAGE": "Points stay inside gameplay",
+  "PRODUCT": "Product",
+  "FAIR_PLAY": "Fair play & controls",
+  "NOTIFICATION_SETTINGS": "Notification settings",
+  "PLAY_LIMITS": "Play limits",
+  "TAKE_A_BREAK": "Take a break / self-exclude",
+  "SUPPORT": "Support",
+  "ACCOUNT_CLOSURE": "Close account",
+  "TERMS": "Terms of Use",
+  "PRIVACY": "Privacy",
+  "CONTACT": "Contact",
+  "POINTS_DISCLOSURE": "Non-redeemable point prediction markets — play points have no cash value, cannot be deposited or withdrawn, and this platform is not registered with any financial regulator."
 }

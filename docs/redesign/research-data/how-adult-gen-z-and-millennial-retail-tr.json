@@ -1,0 +1,181 @@
+{
+ "topic": "How adult Gen Z and Millennial retail traders actually behave in trading/prediction/social apps (2024\u20132026), with design implications for a prediction-market app that does not stereotype by age",
+ "summary": "The 2024\u20132026 evidence base paints a consistent picture: young adult retail traders are mobile-first, socially-discovered, and trust-skeptical \u2014 but the stereotype of the \"degen Gen Z trader\" is empirically wrong in important ways. Robinhood's median user age rose to ~35 by March 2025, FINRA's 2024 NFCS shows new-investor entry actually slowing (8% began investing in the prior two years vs 21% in 2021), and eToro's late-2025 survey of 11,000 retail investors found Gen Z and millennials investing monthly at higher rates than older cohorts while describing themselves as increasingly disciplined and diversified. Prediction markets specifically skew young and male (roughly 60% of Kalshi users are 18\u201334; ~75% male), and most participants lose money (about 2.9 unprofitable Kalshi accounts per profitable one; ~69% of Polymarket accounts down since 2022) \u2014 a fact young users increasingly know and discuss openly.\n\nDiscovery and trust run through peers, not institutions. FINRA/CFA Institute found 48% of Gen Z investors learn about investing from social media (YouTube first, then Instagram/TikTok/Reddit); Pew found 43% of 18\u201329-year-olds regularly get news on TikTok in 2025. Edelman's 2025\u20132026 data shows relatable \"everyday creators\" (68%) beat brand messaging (50%) as credible sources, and trust now equals price and quality in purchase decisions. The most dangerous pattern is the knowledge\u2013confidence gap: FINRA's April 2026 finfluencer study found social-media-informed investors scored 42% on objective knowledge quizzes while 63% self-rated their knowledge as high, and they lost money to fraud at more than double the rate of non-users. Meanwhile TIAA-GFLEC's 2025 P-Fin Index put Gen Z at 38% correct (lowest of any generation) \u2014 but with wide internal variance, which argues for segmenting by demonstrated behavior and calibration, never by birth year. Copy-trading research (Management Science 2020; Scientific Reports 2023) shows social-comparison features and copy buttons causally increase risk-taking, so social proof needs guardrails, not amplification.\n\nDesign implications for a prediction-market app: (1) treat transparency as UI \u2014 fees, resolution rules, liquidity, and aggregate loss rates surfaced inline, because transparent fee structures and data security are the top stated trust drivers for young investors; (2) build calibration-first reputation (Brier-score-style accuracy, risk-adjusted verified track records) instead of raw-PnL leaderboards that the literature shows induce excessive risk; (3) design for behavior/literacy segments with progressive disclosure and learn-by-doing (42% say they learn by doing), not age-targeted \"youth\" aesthetics; (4) make markets natively shareable to TikTok/X/Reddit as creator-friendly cards since that is where discovery happens; and (5) ship WCAG 2.2 AA accessibility (plain language, non-color-dependent outcome encoding, reduced motion, screen-reader-safe live odds) \u2014 only ~31% of major fintechs currently meet basics, making it a differentiator as well as an EAA/ADA obligation.",
+ "findings": [
+  {
+   "claim": "Gen Z investors (US, 18\u201325) learn about investing primarily through social media (48%), internet searches (47%), and parents/family (45%); their top online resource is YouTube (60%), followed by Instagram, TikTok, Twitter/X, Reddit, and Facebook. 56% own at least some investments, 55% of those hold crypto, 50% report having made a FOMO-driven investment, and 82% started investing before age 21.",
+   "kind": "evidence",
+   "source": "https://www.finra.org/media-center/newsreleases/2023/finra-foundation-cfa-institute-research-focuses-gen-z-investors",
+   "sourceDate": "2023-05-24",
+   "designImplication": "Discovery happens on social video and forums, not app-store search or ads. Make individual markets shareable as rich cards/deep links optimized for TikTok/YouTube/Reddit embedding; expect users to arrive mid-funnel from a creator's video and land on a specific market, so every market page must work as a first-touch onboarding surface."
+  },
+  {
+   "claim": "43% of US adults aged 18\u201329 regularly got news from TikTok in 2025 (up from 39% in 2024 and 32% in 2023), surpassing YouTube and Facebook (both 41%) for that age group; 20% of all US adults regularly get news on TikTok, up from 3% in 2020.",
+   "kind": "evidence",
+   "source": "https://www.pewresearch.org/journalism/fact-sheet/social-media-and-news-fact-sheet/",
+   "sourceDate": "2025-09-25",
+   "designImplication": "News-driven prediction markets should assume the triggering news event was consumed as short vertical video. Market titles and context blurbs should be legible to someone who saw a 30-second clip, and the app should link out to primary sources to differentiate from the low-context feed they came from."
+  },
+  {
+   "claim": "FINRA Foundation's April 2026 study 'Finfluencer Followers and Social Media Scrollers' (from the 2024 NFCS Investor Survey) found social-media-informed investors answered only 42% of objective investment-knowledge questions correctly yet 63% rated their own knowledge as high; 60% of investors aged 18\u201334 use social media for investing info vs 9% of those 55+; among fraud-targeted respondents, 68\u201369% of social-media users/finfluencer followers lost money vs 26\u201329% of non-users.",
+   "kind": "evidence",
+   "source": "https://www.finra.org/media-center/newsreleases/2026/finra-foundation-research-examines-characteristics-behaviors-outcomes",
+   "sourceDate": "2026-04-02",
+   "designImplication": "The core UX risk is overconfidence, not ignorance. Build calibration feedback into the product (e.g., a personal accuracy/Brier score vs the crowd, post-resolution reviews of your reasoning) rather than gating features behind condescending quizzes. Fraud-hardening (verified market sources, impersonation-resistant creator handles) protects exactly this audience."
+  },
+  {
+   "claim": "The same FINRA 2026 study found social-media-using investors report far stronger non-monetary motivations: entertainment (59% vs 18% for non-users), social activity (59% vs 11%), and expressing personal values (66% vs 31%).",
+   "kind": "evidence",
+   "source": "https://www.finra.org/media-center/newsreleases/2026/finra-foundation-research-examines-characteristics-behaviors-outcomes",
+   "sourceDate": "2026-04-02",
+   "designImplication": "Entertainment and identity are legitimate jobs-to-be-done, not bugs. Lean into discussion, commentary, and 'take a public position' mechanics \u2014 but decouple social status from dollar stakes so the entertainment loop doesn't require escalating financial risk."
+  },
+  {
+   "claim": "FINRA's 2024 NFCS Investor Survey (published Dec 2025) found younger investors (<35) are more likely than older ones to use mobile trading apps and to hold riskier products (crypto, options, meme stocks, margin); the share of under-35s who invest declined from 32% in 2021, and only 8% of investors began investing in the prior two years vs 21% in the 2021 wave.",
+   "kind": "evidence",
+   "source": "https://www.finra.org/media-center/newsreleases/2025/new-finra-foundation-research-examines-shifting-investor-behaviors",
+   "sourceDate": "2025-12-04",
+   "designImplication": "The 2021-style flood of brand-new young investors has ebbed; the realistic 2026 target user already has app experience and product scar tissue. Onboarding should assume prior familiarity with Robinhood/Polymarket-style UX and differentiate on trust and clarity, not on teaching what a market is from scratch."
+  },
+  {
+   "claim": "Roughly 6 in 10 of Kalshi's ~4M active users are aged 18\u201334, and about 3M of 4M are male; CNBC (May 2026) reported 32% of Gen Z and 24% of millennials are currently using or considering prediction markets or sports betting vs 17% of all US adults; Kalshi acknowledged ~2.9 unprofitable users per profitable one, and ~69% of Polymarket accounts have lost money since 2022.",
+   "kind": "evidence",
+   "source": "https://www.cnbc.com/2026/05/05/gen-z-millennials-prediction-markets.html",
+   "sourceDate": "2026-05-05",
+   "designImplication": "The incumbent prediction-market audience is young-male-skewed and mostly losing money. Two openings: (a) honest loss-rate transparency and stake-limits as a trust wedge (this cohort reads the '69% lose' stat on Reddit anyway \u2014 the app that says it first wins credibility); (b) deliberately gender-inclusive visual language and market curation to expand beyond the saturated young-male segment."
+  },
+  {
+   "claim": "CBS News (2026) and CNBC (Jan 2026) reporting indicates 18\u201320-year-olds too young to gamble legally in most states are part of prediction-market growth, drawing regulatory scrutiny of the category.",
+   "kind": "evidence",
+   "source": "https://www.cnbc.com/2026/01/15/prediction-markets-college-students-teens-could-be-fueling-the-boom.html",
+   "sourceDate": "2026-01-15",
+   "designImplication": "Category-level reputational risk is rising. Visible responsible-use affordances (self-set limits, cool-downs, clear age gating) are becoming table stakes for credibility with both users and regulators, even for a crypto-native, outside-US product."
+  },
+  {
+   "claim": "Experimental research published in Management Science ('Copy Trading', Apesteguia, Huck & Oechssler) found that showing the success of others significantly increases risk-taking, that the increase is larger when subjects can directly copy others, and concluded copy trading leads to excessive risk-taking; complementary work shows more risk-averse users are the most likely to imitate.",
+   "kind": "evidence",
+   "source": "https://pubsonline.informs.org/doi/10.1287/mnsc.2019.3508",
+   "sourceDate": "2020 (Management Science)",
+   "designImplication": "One-tap 'copy this trader' plus visible win streaks is a causal risk-amplifier, hitting cautious users hardest. If you ship follow/copy features: show risk-adjusted and drawdown stats alongside returns, add friction (position-size preview in user's own bankroll terms) at the copy moment, and never auto-scale copies to the leader's stake."
+  },
+  {
+   "claim": "A 2023 Scientific Reports experiment found retail investors exposed to upward social comparison take more risk, trade more actively, and report lower satisfaction with their own performance; related work ('The higher you fly, the harder you try not to fall', 2021) shows leaderboard/status indicators increase signalers' own risk-taking on social trading platforms.",
+   "kind": "evidence",
+   "source": "https://www.nature.com/articles/s41598-023-49648-3",
+   "sourceDate": "2023-12",
+   "designImplication": "Global PnL leaderboards damage both followers and leaders. Prefer accuracy/calibration leaderboards (percent of predictions correct, Brier score, category expertise badges) \u2014 status currencies native to prediction markets that don't require anyone to over-stake to climb."
+  },
+  {
+   "claim": "Research on r/wallstreetbets (International Review of Financial Analysis, 2024) found WSB attention spurs uninformed trading, shifts investors into riskier stocks and larger positions, and positions opened at peak WSB attention realized about \u22128.5% holding-period returns; WSB has 17M+ subscribers and remains a primary retail discovery channel.",
+   "kind": "evidence",
+   "source": "https://www.sciencedirect.com/science/article/pii/S1057521924006537",
+   "sourceDate": "2024-09",
+   "designImplication": "Hype-surge moments are when users make their worst decisions. When a market's volume/attention spikes, show it \u2014 'this market is trending; price moved X% in Y hours' \u2014 as context rather than as a buy signal, and consider slippage/entry-price prominence exactly at viral moments."
+  },
+  {
+   "claim": "Edelman's 2025 Brand Trust special report found trust now equals price and quality in brand purchase decisions; personal experience (70%) and experience of others (59%) outrank what brands say about themselves (50%); Edelman's 2026 creator report found 68% of consumers name relatable everyday creators as their most credible source of brand information; Edelman's Gen Z work describes trust as 'lateral' (peer networks) rather than authority-based.",
+   "kind": "evidence",
+   "source": "https://www.edelman.com/trust/2025/trust-barometer/special-report-brands",
+   "sourceDate": "2025-06",
+   "designImplication": "Institutional marketing voice ('trusted, secure, regulated' hero copy) underperforms demonstrable experience. Let the product prove claims: public resolution histories, visible dispute outcomes, user testimonials with verifiable track records, and creator partnerships with everyday (not celebrity) forecasters."
+  },
+  {
+   "claim": "World Economic Forum / CFA-aligned 2025 research on younger retail investors found the top trust factors for financial platforms are security features and data protection, transparent fee structures, access to expert research, and recommendations from friends/family; 92% of Gen Z and 89% of millennial respondents use some form of financial guidance; 42% say they 'learn by doing'; ~40% of Gen Z have used AI chatbots for financial coaching vs 8% of boomers.",
+   "kind": "evidence",
+   "source": "https://www.weforum.org/stories/2025/07/how-younger-investors-are-leading-a-retail-investment-shift/",
+   "sourceDate": "2025-07",
+   "designImplication": "Fee/spread transparency is a stated trust driver, not a compliance chore \u2014 show effective fees and payout math before commit, per position. 'Learn by doing' argues for a low-stakes or paper-prediction mode as the default first-run experience. An in-app AI explainer for 'why is this priced at 34c?' matches how this cohort already seeks guidance."
+  },
+  {
+   "claim": "TIAA Institute-GFLEC 2025 P-Fin Index: Gen Z answered 38% of 28 financial-literacy questions correctly on average \u2014 the lowest of any generation (boomers 55%, national average 49%, stagnant for years) \u2014 and lagged across all eight functional areas including comprehending risk.",
+   "kind": "evidence",
+   "source": "https://www.tiaa.org/public/institute/about/news/2025-tiaa-institute-gflec-personal-finance-index",
+   "sourceDate": "2025-06-09",
+   "designImplication": "Assume wide literacy variance within every age band: plain-language market rules (~8th-grade reading level), probabilities shown as both percent and '1 in N', and payout previews in currency (not just odds). Layer depth behind progressive disclosure so low-literacy users aren't excluded and high-literacy users aren't patronized."
+  },
+  {
+   "claim": "eToro's Retail Investor Beat (Opinium survey of 11,000 retail investors across 13 countries, fielded Oct 30\u2013Nov 13, 2025) found 87% of Gen Z and 86% of millennial investors allocate capital to markets monthly (vs 79% Gen X, 68% boomers), with 70% actively reviewing investments and rising self-reported diversification and discipline.",
+   "kind": "evidence",
+   "source": "https://www.etoro.com/news-and-analysis/press-releases/retail-investors-come-of-age-displaying-discipline-and-diversification/",
+   "sourceDate": "2026-02 (survey Nov 2025)",
+   "designImplication": "Young traders are habitual, recurring participants \u2014 design for a weekly/monthly ritual (portfolio review screen, resolution-day recaps, streaks based on participation and calibration rather than stake size) instead of a one-shot casino loop. Note: vendor survey by a social-trading platform; directionally useful, self-interested framing."
+  },
+  {
+   "claim": "Robinhood's median customer age rose to about 35 by March 2025 (from ~31 in April 2024), and roughly three-quarters of its ~25M customers were 43 or younger in late 2024 \u2014 i.e., the flagship 'young trader' platform's typical user is a mid-30s millennial, not a college student.",
+   "kind": "evidence",
+   "source": "https://matrixbcg.com/blogs/target-market/robinhood",
+   "sourceDate": "2025 (secondary compilation of Robinhood-reported figures)",
+   "designImplication": "Directly supports the no-age-stereotyping mandate: the modal 'young trader' is a 30-something with a job and existing accounts. Neon-meme 'youth' aesthetics misread the actual user base; an age-neutral, credibility-forward design serves both the 22-year-old and the 42-year-old. (Secondary source aggregating company disclosures \u2014 verify against Robinhood IR before quoting externally.)"
+  },
+  {
+   "claim": "Legal and empirical analyses of digital engagement practices (Southern California Law Review analysis of Robinhood's DEPs, Feb 2024; SEC/FINRA scrutiny of gamification) argue that confetti-style rewards, push-notification nudges, and streak mechanics increase trading frequency and risk-taking among inexperienced users.",
+   "kind": "evidence",
+   "source": "https://southerncalifornialawreview.com/2024/02/23/the-trading-game-an-analysis-of-robinhoods-use-of-digital-engagement-practices/",
+   "sourceDate": "2024-02-23",
+   "designImplication": "Gamify learning and participation, never stake escalation: celebration moments should attach to correct predictions and completed learning, not to deposit or bet size; notifications should default to resolution events and position updates, not 'markets are moving!' urgency nudges."
+  },
+  {
+   "claim": "Sensor Tower State of Mobile reports: finance app downloads exceeded 7B in 2024 (+8% YoY) with double-digit growth in time spent, and crypto app sessions grew 37% YoY in 2024; however, the 2026 report notes investing/financial-management and crypto app downloads declined in 2025.",
+   "kind": "evidence",
+   "source": "https://sensortower.com/state-of-mobile-2025",
+   "sourceDate": "2025-01 / 2026-01",
+   "designImplication": "Mobile is unambiguously the primary surface (design mobile-first, desktop as power-user secondary), but category download growth has cooled \u2014 acquisition will depend on social distribution and retention loops rather than app-store tailwinds."
+  },
+  {
+   "claim": "Only 31% of Europe's largest fintech platforms fully meet basic web accessibility requirements (keyboard navigation, focus visibility) per a TestDevLab audit; the European Accessibility Act took effect June 28, 2025, requiring EN 301 549 / WCAG 2.1 AA for financial services, and US DOJ enforcement treats WCAG 2.1 AA as the ADA benchmark.",
+   "kind": "evidence",
+   "source": "https://www.testdevlab.com/blog/only-31-percent-of-fintech-companies-meet-digital-accessibility-requirements",
+   "sourceDate": "2025",
+   "designImplication": "Accessibility is both a legal floor (EAA/ADA) and an open competitive gap \u2014 69% of fintechs fail basics. Concretely for a prediction market: never encode YES/NO or gain/loss purely in green/red; support dynamic type without layout breakage; ARIA-live regions for changing odds that don't spam screen readers; full keyboard/switch operability of the trade ticket; prefers-reduced-motion for price animations."
+  },
+  {
+   "claim": "Surveys of users with disabilities (Click-Away Pound and subsequent industry citations) report ~71% abandon websites they find inaccessible rather than complain, and people with disabilities represent ~15% of the global population.",
+   "kind": "evidence",
+   "source": "https://accessibe.com/blog/knowledgebase/making-fintech-accessible",
+   "sourceDate": "survey 2019, cited 2024-2025",
+   "designImplication": "Inaccessibility is a silent churn channel \u2014 you will not see it in support tickets. Include assistive-tech users in usability testing rather than relying on automated audits alone."
+  },
+  {
+   "claim": "Behavior-based segmentation (confidence \u00d7 objective knowledge \u00d7 motivation) predicts outcomes better than age: the FINRA 2026 finfluencer study shows the risky profile is 'high confidence + low knowledge + social-media-informed' \u2014 a profile that exists in every generation (9% of 55+ investors also use social media), while TIAA-GFLEC shows huge within-generation literacy variance.",
+   "kind": "inference",
+   "source": "https://www.finra.org/media-center/newsreleases/2026/finra-foundation-research-examines-characteristics-behaviors-outcomes",
+   "sourceDate": "2026-04",
+   "designImplication": "Segment users by observed behavior (first-session pace, position sizing vs bankroll, response to calibration feedback), not birth year. Onboarding should ask about experience and goals \u2014 never age-gate features or switch to a 'simple mode' based on demographics."
+  },
+  {
+   "claim": "For this audience, transparency artifacts (public resolution criteria, dispute logs, fee math, aggregate win/loss stats) will convert better than brand assurances, because measured trust drivers are experiential and peer-lateral while institutional messaging sits at the bottom of the credibility stack.",
+   "kind": "inference",
+   "source": "https://www.edelman.com/trust/2025/trust-barometer/special-report-brands",
+   "sourceDate": "2025-06",
+   "designImplication": "Make every market's resolution source, deadline, dispute window, and historical resolution accuracy a first-class UI element on the market page \u2014 this is the prediction-market equivalent of the 'transparent fee structure' young investors name as a top trust factor."
+  },
+  {
+   "claim": "A calibration-based reputation system (accuracy scores, category expertise, Brier-style metrics) can deliver the social-proof and status engagement this cohort demonstrably wants (59% social motivation) while avoiding the causal risk-amplification of PnL leaderboards and one-tap copying documented in the experimental literature.",
+   "kind": "inference",
+   "source": "https://pubsonline.informs.org/doi/10.1287/mnsc.2019.3508",
+   "sourceDate": "2020/2023 literature + 2026 FINRA motivations data",
+   "designImplication": "Rank forecasters by accuracy and calibration, show sample size and category, and let users 'follow reasoning' (see someone's stated rationale and track record) as the primary social action, with stake-copying either absent or heavily frictioned."
+  },
+  {
+   "claim": "US-centric survey data (FINRA, Pew, TIAA-GFLEC) transfers only partially to a crypto-native, outside-US prediction-market audience; crypto-native users likely skew even more male, more risk-tolerant, and more distrustful of institutions than the US retail baseline, but region-specific platform mix (e.g., different social apps for discovery) will differ.",
+   "kind": "assumption",
+   "source": "none",
+   "sourceDate": "2026-07-12 (analyst judgment)",
+   "designImplication": "Treat these findings as directional for the product's actual markets; validate discovery channels and literacy levels with target-geo user interviews before hard-coding funnel assumptions (e.g., TikTok share formats vs Telegram/Discord-first distribution common in crypto communities)."
+  },
+  {
+   "claim": "The dominant young-male skew of current prediction markets reflects the category's framing (sports/politics wagering, PnL bragging) rather than an inherent ceiling; framing around forecasting skill, news, and culture topics could widen the audience.",
+   "kind": "assumption",
+   "source": "none",
+   "sourceDate": "2026-07-12 (analyst judgment, consistent with but not proven by CBS/CNBC demographic reporting)",
+   "designImplication": "Curate launch market categories beyond sports/politics (entertainment, science, local/cultural events), use skill-and-knowledge framing in copy ('what do you think happens?' vs 'bet now'), and test with mixed-gender panels \u2014 but measure rather than assume the expansion effect."
+  },
+  {
+   "claim": "Because most current prediction-market participants lose money and the audience already knows it, voluntarily surfacing honest odds-of-profit information and bankroll guardrails will build more durable trust with this cohort than growth-optimized concealment.",
+   "kind": "inference",
+   "source": "https://www.cnbc.com/2026/05/05/gen-z-millennials-prediction-markets.html",
+   "sourceDate": "2026-05",
+   "designImplication": "Ship self-set deposit/stake limits, per-market exposure warnings relative to bankroll, and a truthful 'how traders do here' stat. This aligns with the Edelman-documented preference for radical candor over institutional polish and pre-empts the regulatory narrative forming around the category."
+  }
+ ]
+}

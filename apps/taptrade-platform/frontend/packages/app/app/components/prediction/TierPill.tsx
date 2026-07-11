@@ -29,8 +29,7 @@ interface TierPillProps {
 
 const TIER_PILL_BASE_CLASS =
   "inline-flex h-9 min-w-11 items-center whitespace-nowrap rounded-full border border-[color-mix(in_srgb,var(--tp-color)_30%,transparent)] bg-[color-mix(in_srgb,var(--tp-color)_14%,transparent)] px-[14px] text-xs font-bold tracking-[0.02em] text-[var(--t1)] no-underline [transition:background_120ms_ease,border-color_120ms_ease,box-shadow_400ms_ease] hover:border-[color-mix(in_srgb,var(--tp-color)_48%,transparent)] hover:bg-[color-mix(in_srgb,var(--tp-color)_22%,transparent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] max-[480px]:min-w-0 max-[480px]:px-2.5";
-const TIER_PILL_BLOOM_CLASS =
-  "shadow-[var(--accent-glow)] motion-reduce:shadow-none motion-reduce:transition-none";
+const TIER_PILL_BLOOM_CLASS = "motion-reduce:transition-none";
 const TIER_SEPARATOR_CLASS = "mx-1.5 text-[var(--t3)] font-medium";
 const TIER_POINTS_CLASS =
   "font-['IBM_Plex_Mono',_ui-monospace,_monospace] font-semibold [font-variant-numeric:tabular-nums]";

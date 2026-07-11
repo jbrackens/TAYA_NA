@@ -152,6 +152,10 @@ export function MarketCard({
               src={visibleImage.src}
               alt=""
               aria-hidden="true"
+              loading="lazy"
+              decoding="async"
+              width={40}
+              height={40}
               onError={() => setFailedImageSrc(visibleImage.src)}
             />
           ) : (
@@ -193,7 +197,10 @@ export function MarketCard({
         <Link
           href={`/market/${ticker}?side=yes`}
           className="flex min-h-10 items-center justify-between gap-3 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-2 font-sans no-underline transition-colors duration-150 hover:border-[var(--yes-bar)] hover:bg-[var(--yes-soft)] max-[768px]:min-h-11"
-          aria-label={t("BUY_YES")}
+          aria-label={t("BUY_YES_AT", {
+            price: yesPricePoints,
+            defaultValue: "Buy Yes at {{price}}¢",
+          })}
         >
           <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--yes-text)]">
             {t("YES")}
@@ -205,7 +212,10 @@ export function MarketCard({
         <Link
           href={`/market/${ticker}?side=no`}
           className="flex min-h-10 items-center justify-between gap-3 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-2 font-sans no-underline transition-colors duration-150 hover:border-[var(--no-bar)] hover:bg-[var(--no-soft)] max-[768px]:min-h-11"
-          aria-label={t("BUY_NO")}
+          aria-label={t("BUY_NO_AT", {
+            price: noPricePoints,
+            defaultValue: "Buy No at {{price}}¢",
+          })}
         >
           <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--no-text)]">
             {t("NO")}

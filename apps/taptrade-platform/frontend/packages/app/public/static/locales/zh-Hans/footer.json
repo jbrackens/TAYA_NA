@@ -1,6 +1,6 @@
 {
   "COMPANY": "Company",
-  "ABOUT": "About",
+  "ABOUT": "关于",
   "TERMS_OF_SERVICE": "Terms of Service",
   "PRIVACY_POLICY": "Privacy Policy",
   "TERMS_AND_CONDITIONS": "Terms & Conditions",
@@ -19,5 +19,16 @@
   "DEPOSIT": "积分规则",
   "DEPOSIT_MESSAGE": "仅限游戏积分",
   "WITHDRAWALS": "积分活动",
-  "WITHDRAWAL_MESSAGE": "积分留在玩法内"
+  "WITHDRAWAL_MESSAGE": "积分留在玩法内",
+  "PRODUCT": "产品",
+  "FAIR_PLAY": "公平游戏与控制",
+  "NOTIFICATION_SETTINGS": "通知设置",
+  "PLAY_LIMITS": "游戏限额",
+  "TAKE_A_BREAK": "暂停 / 自我排除",
+  "SUPPORT": "支持",
+  "ACCOUNT_CLOSURE": "关闭账户",
+  "TERMS": "使用条款",
+  "PRIVACY": "隐私",
+  "CONTACT": "联系我们",
+  "POINTS_DISCLOSURE": "不可兑换积分预测市场——游戏积分无现金价值，不可存入或提取，本平台未在任何金融监管机构注册。"
 }

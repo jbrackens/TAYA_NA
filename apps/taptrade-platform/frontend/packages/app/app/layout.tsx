@@ -14,16 +14,24 @@ export default function RootLayout({
         <title>{brand.name}</title>
         <meta
           name="description"
-          content="Trade Yes or No on politics, basketball, pageants, esports, gaming, and the moments Filipinos are watching."
+          content="Prediction markets on real-world events. Trade Yes or No on politics, sports, crypto, tech, and entertainment with play points — prices are live probabilities."
         />
-        {/* Predict design system: Inter (Robinhood-direction primary, added
-         * 2026-04-26 per DESIGN.md §2). Outfit kept loaded for components
-         * that haven't migrated yet (will be removed at the end of the
-         * P2-P6 sweep). IBM Plex Mono for tabular numerics.
-         */}
+        {/* P10 type system (2026-07-12): all fonts are self-hosted woff2
+         * (see globals.css @font-face) — no render-blocking Google Fonts
+         * stylesheet. Preload the two files needed for first paint. */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Schibsted+Grotesk:wght@700&display=swap"
-          rel="stylesheet"
+          rel="preload"
+          href="/fonts/Inter-var.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/BricolageGrotesque-var.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
         />
         {process.env.NODE_ENV === "production" && (
           <script

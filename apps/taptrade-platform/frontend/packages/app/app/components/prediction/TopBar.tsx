@@ -29,6 +29,7 @@ import { logger } from "../../lib/logger";
 import { searchMarkets } from "../../lib/marketSearch";
 import { useAuth } from "../../hooks/useAuth";
 import BrandMark from "../BrandMark";
+import BrandWordmark from "../BrandWordmark";
 import { brand } from "../../lib/brand";
 import { useAppDispatch, useAppSelector } from "../../lib/store/hooks";
 import {
@@ -71,10 +72,9 @@ const TOP_BAR_INNER_CLASS =
 const TOP_BAR_BRAND_CLASS =
   "inline-flex min-h-11 shrink-0 items-center gap-[10px] no-underline";
 
-const TOP_BAR_WORDMARK_CLASS =
-  "whitespace-nowrap text-[26px] font-bold leading-none tracking-[-0.03em] [color:var(--brand-ink)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif] max-[900px]:text-[23px] max-[480px]:text-[21px]";
-
-const TOP_BAR_PERIOD_CLASS = "[color:var(--brand-period)]";
+// P10: the wordmark is drawn vector art (BrandWordmark), no longer a
+// font render — letters take --brand-ink via currentColor.
+const TOP_BAR_WORDMARK_CLASS = "text-[var(--brand-ink)]";
 
 const TOP_BAR_NAV_CLASS =
   "flex items-center gap-6 w-full min-w-0 flex-1 max-[900px]:hidden";
@@ -85,8 +85,10 @@ const TOP_BAR_LINK_CLASS =
 const TOP_BAR_LINK_INACTIVE_CLASS =
   "text-neutral-500 !text-neutral-500 border-transparent hover:text-neutral-800 hover:!text-neutral-800 hover:border-neutral-300";
 
+// P10: active nav is ink, not mint — color is reserved for meaning;
+// "where you are" is structure, carried by weight + underline.
 const TOP_BAR_LINK_ACTIVE_CLASS =
-  "text-[var(--accent-text)] !text-[var(--accent-text)] font-semibold border-[var(--accent-lo)]";
+  "text-[var(--t1)] !text-[var(--t1)] font-semibold border-[var(--t1)]";
 
 const TOP_BAR_RIGHT_CLASS = [
   "flex shrink-0 items-center gap-2.5",
@@ -107,8 +109,8 @@ const TOP_BAR_SEARCH_RESULTS_CLASS =
   "absolute left-0 right-0 top-[calc(100%_+_6px)] z-[110] m-0 max-h-[360px] list-none overflow-y-auto rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1 shadow-[0_20px_40px_rgba(0,0,0,0.5)]";
 const TOP_BAR_SEARCH_HIT_CLASS =
   "flex cursor-pointer flex-col gap-0.5 rounded-[var(--r-sm)] px-3 py-2";
-const TOP_BAR_SEARCH_HIT_INACTIVE_CLASS = "hover:bg-[var(--accent-soft)]";
-const TOP_BAR_SEARCH_HIT_ACTIVE_CLASS = "bg-[var(--accent-soft)]";
+const TOP_BAR_SEARCH_HIT_INACTIVE_CLASS = "hover:bg-[var(--action-soft)]";
+const TOP_BAR_SEARCH_HIT_ACTIVE_CLASS = "bg-[var(--action-soft)]";
 const TOP_BAR_SEARCH_HIT_TITLE_CLASS =
   "text-[13px] font-semibold text-[var(--t1)]";
 const TOP_BAR_SEARCH_HIT_META_CLASS =
@@ -121,15 +123,18 @@ const TOP_BAR_BALANCE_CLASS =
 const TOP_BAR_BALANCE_LABEL_CLASS =
   "text-[11px] font-medium text-[var(--t3)] [font-family:'Inter',sans-serif]";
 
+// P10: the violet avatar gradient is gone (violet is reserved for the
+// Legend tier badge, DESIGN.md §3) — the avatar is brand ink.
 const TOP_BAR_AVATAR_CLASS =
-  "grid size-11 cursor-pointer place-items-center rounded-full border border-[rgba(255,255,255,0.18)] bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.25),transparent_60%),linear-gradient(145deg,#a56bff_0%,#5b38a8_100%)] text-[15px] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_2px_6px_rgba(0,0,0,0.3)] hover:brightness-[1.08]";
+  "grid size-11 cursor-pointer place-items-center rounded-full border border-[var(--border-1)] bg-[var(--brand-ink)] text-[15px] font-bold text-[var(--brand-on-dark)] hover:brightness-[1.15]";
 
 const TOP_BAR_BUTTON_CLASS =
-  "inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-md border-0 px-4 text-[13px] font-semibold no-underline transition-[transform,filter] duration-150 ease-[ease] [font-family:inherit] max-[480px]:px-2.5";
+  "inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-md border-0 px-4 text-[13px] font-semibold no-underline transition-[transform,filter,background-color] duration-150 ease-[ease] [font-family:inherit] max-[480px]:px-2.5";
 const TOP_BAR_BUTTON_GHOST_CLASS =
   "bg-transparent text-[var(--t1)] hover:bg-[var(--surface-2)]";
+// P10 ink action (Signal Ink signature #2): primary CTA is ink, not mint.
 const TOP_BAR_BUTTON_ACCENT_CLASS =
-  "bg-[var(--accent)] text-[#061a10] hover:-translate-y-px hover:brightness-[1.05]";
+  "bg-[var(--action)] text-[var(--action-fg)] hover:-translate-y-px hover:bg-[var(--action-hover)]";
 
 const TOP_BAR_MENU_WRAP_CLASS = "relative";
 const TOP_BAR_MENU_CLASS =
@@ -317,10 +322,7 @@ export function TopBar() {
           aria-label={`${brand.name} — home`}
         >
           <BrandMark size={30} />
-          <span className={TOP_BAR_WORDMARK_CLASS}>
-            {brand.name}
-            <span className={TOP_BAR_PERIOD_CLASS}>.</span>
-          </span>
+          <BrandWordmark height={21} className={TOP_BAR_WORDMARK_CLASS} />
         </Link>
 
         {isDesktop && (
@@ -348,19 +350,11 @@ export function TopBar() {
         )}
 
         <div className={TOP_BAR_RIGHT_CLASS}>
-          <div
-            className={TOP_BAR_SEARCH_WRAP_CLASS}
-            ref={searchRef}
-            role="combobox"
-            aria-haspopup="listbox"
-            aria-expanded={searchOpen && searchResults.length > 0}
-            aria-owns="tb-search-listbox"
-            aria-activedescendant={
-              searchOpen && searchResults[cursor]
-                ? `tb-search-option-${searchResults[cursor].id}`
-                : undefined
-            }
-          >
+          {/* ARIA 1.2 combobox: role + expanded + activedescendant live ON
+              THE INPUT (screen readers resolve activedescendant relative to
+              the focused element; on a wrapper div the highlighted option
+              was never announced). */}
+          <div className={TOP_BAR_SEARCH_WRAP_CLASS} ref={searchRef}>
             <label className={TOP_BAR_SEARCH_LABEL_CLASS}>
               <Search size={14} className={TOP_BAR_SEARCH_ICON_CLASS} />
               <input
@@ -369,8 +363,15 @@ export function TopBar() {
                 className={TOP_BAR_SEARCH_INPUT_CLASS}
                 placeholder={t("SEARCH_MARKETS_PLACEHOLDER")}
                 aria-label={t("SEARCH_MARKETS")}
+                role="combobox"
+                aria-expanded={searchOpen && searchResults.length > 0}
                 aria-autocomplete="list"
                 aria-controls="tb-search-listbox"
+                aria-activedescendant={
+                  searchOpen && searchResults[cursor]
+                    ? `tb-search-option-${searchResults[cursor].id}`
+                    : undefined
+                }
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value);
@@ -447,8 +448,10 @@ export function TopBar() {
                   "your account is empty" and panic. A neutral "—"
                   reads as "loading" without claiming a value.
                 */}
+                {/* Whole Points only (unit model 2026-07-07): 1 Point =
+                    1¢ of play value; fractional display was a bug. */}
                 {typeof balance === "number"
-                  ? `${balance.toFixed(2)} pts`
+                  ? `${Math.round(balance).toLocaleString()} pts`
                   : "—"}
               </span>
             </div>
@@ -456,18 +459,20 @@ export function TopBar() {
 
           {isLoading ? null : isAuthenticated ? (
             <div className={TOP_BAR_MENU_WRAP_CLASS} ref={menuRef}>
+              {/* Disclosure pattern (not role="menu": items are plain
+                  links/buttons without menuitem+arrow-key wiring, and a
+                  half-implemented menu role misleads screen readers). */}
               <button
                 type="button"
                 className={TOP_BAR_AVATAR_CLASS}
                 onClick={() => setUserMenuOpen((o) => !o)}
-                aria-haspopup="menu"
                 aria-expanded={userMenuOpen}
                 aria-label={t("USER_MENU")}
               >
                 {initial}
               </button>
               {userMenuOpen && (
-                <div className={TOP_BAR_MENU_CLASS} role="menu">
+                <div className={TOP_BAR_MENU_CLASS}>
                   <Link
                     href="/account"
                     className={TOP_BAR_MENU_ITEM_CLASS}

@@ -36,6 +36,7 @@ import {
 } from "../lib/api/leaderboards-client";
 import { useToast } from "../components/ToastProvider";
 import { localizedMarket } from "../components/prediction/market-content";
+import { formatWholePoints } from "../components/prediction/market-display";
 
 const api = createPredictionClient();
 
@@ -248,14 +249,12 @@ function SummaryStrip({
     <section className="mb-6 grid grid-cols-5 gap-[14px] max-lg:grid-cols-3 max-[720px]:grid-cols-2">
       <StatCard
         label={t("summary.invested", "Invested")}
-        value={s ? formatPointsFromPoints(s.totalValuePoints) : "—"}
+        value={s ? formatWholePoints(s.totalValuePoints) : "—"}
       />
       <StatCard
         label={t("summary.realizedPnl", "Realized point result")}
         value={
-          s
-            ? `${pnlUp ? "+" : "−"}${formatPointsFromPoints(Math.abs(pnl))}`
-            : "—"
+          s ? `${pnlUp ? "+" : "−"}${formatWholePoints(Math.abs(pnl))}` : "—"
         }
         tone={s ? (pnlUp ? "gain" : "no") : undefined}
       />
@@ -287,6 +286,11 @@ function SummaryStrip({
 // best-board rank, linking to /leaderboards pre-opened on that board. Plan §3
 // "pre-qualified" state shows a muted "Not ranked yet" card rather than
 // omitting the slot (keeps the grid stable across users).
+//
+// P10 (2026-07-12): the card VALUE is the board metric itself (e.g. weekly
+// net point result "+51 pts") — previously it showed the rank, a label/value
+// mismatch against titles like "Weekly point result". The rank now lives on
+// a labeled sub-line ("Leaderboard rank #1").
 function RankChip({ entry }: { entry: LeaderboardEntry | null }) {
   const { t } = useTranslation("portfolio");
   const href = entry
@@ -305,11 +309,15 @@ function RankChip({ entry }: { entry: LeaderboardEntry | null }) {
         {entry ? formatBoardLabel(entry.boardId, t) : t("rank.label", "Rank")}
       </span>
       <span className={STAT_VALUE}>
-        {entry ? `#${entry.rank}` : t("rank.notRanked", "Not ranked yet")}
+        {entry
+          ? formatBoardValue(entry)
+          : t("rank.notRanked", "Not ranked yet")}
       </span>
       <span className={STAT_SUB}>
         {entry
-          ? formatBoardMetric(entry, t)
+          ? t("rank.leaderboardRank", "Leaderboard rank #{{rank}}", {
+              rank: entry.rank,
+            })
           : t("rank.qualify", "Settle more markets to qualify")}
       </span>
     </Link>
@@ -318,7 +326,7 @@ function RankChip({ entry }: { entry: LeaderboardEntry | null }) {
 
 function rankAriaLabel(entry: LeaderboardEntry | null): string {
   if (!entry) return "Not ranked yet. Settle more markets to qualify.";
-  return `Rank ${entry.rank}.`;
+  return `${formatBoardValue(entry)}. Leaderboard rank ${entry.rank}.`;
 }
 
 function formatBoardLabel(
@@ -341,25 +349,19 @@ function formatBoardLabel(
   }
 }
 
-function formatBoardMetric(
-  entry: LeaderboardEntry,
-  t: ReturnType<typeof useTranslation>["t"],
-): string {
+// Board metric rendered as the stat-card value. Point metrics are WHOLE
+// points, sign included (unit model: 1 Point = 1¢ of play value, never
+// fractional); percentage boards keep one decimal of precision.
+function formatBoardValue(entry: LeaderboardEntry): string {
   switch (entry.boardId) {
     case "accuracy":
-      return t("rank.metricAccuracy", "{{value}}% correct", {
-        value: entry.metricValue.toFixed(1),
-      });
+      return `${entry.metricValue.toFixed(1)}%`;
     case "sharpness":
-      return t("rank.metricSharpness", "{{value}}% point efficiency", {
-        value: (entry.metricValue * 100).toFixed(2),
-      });
+      return `${(entry.metricValue * 100).toFixed(1)}%`;
     case "pnl_weekly":
     default: {
       const sign = entry.metricValue < 0 ? "−" : "+";
-      return t("rank.metricPnl", "{{value}} point result", {
-        value: `${sign}${formatPointsFromPoints(Math.abs(entry.metricValue))}`,
-      });
+      return `${sign}${formatWholePoints(Math.abs(entry.metricValue))}`;
     }
   }
 }
@@ -473,9 +475,9 @@ function PositionsTable({
         action={
           <Link
             href="/predict"
-            className="font-semibold text-[var(--accent)] no-underline hover:underline"
+            className="inline-block rounded-[var(--r-rh-md)] bg-[var(--action)] px-[18px] py-[10px] text-[13px] font-semibold text-[var(--action-fg)] no-underline transition-colors duration-150 hover:bg-[var(--action-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--action-soft)]"
           >
-            {t("positions.browse", "Browse markets")} →
+            {t("positions.browse", "Browse markets")}
           </Link>
         }
       />
@@ -522,10 +524,10 @@ function PositionsTable({
               {available}
             </span>,
             <span key="p" className={MONO}>
-              {formatPointsFromPoints(p.avgPricePoints)}
+              {formatWholePoints(p.avgPricePoints)}
             </span>,
             <span key="c" className={MONO}>
-              {formatPointsFromPoints(p.totalCostPoints)}
+              {formatWholePoints(p.totalCostPoints)}
             </span>,
           ],
         };
@@ -602,7 +604,7 @@ function OrdersTable({
               {o.quantity}
             </span>,
             <span key="c" className={MONO}>
-              {formatPointsFromPoints(o.totalCostPoints)}
+              {formatWholePoints(o.totalCostPoints)}
             </span>,
             <StatusChip
               key="st"
@@ -677,7 +679,7 @@ function HistoryTable({
         // position. Show the exact settlement credit, not loyalty/XP accrual.
         const rawPoints = h.settlementPoints;
         const pointsDisplay =
-          rawPoints && rawPoints > 0 ? formatPointsFromPoints(rawPoints) : null;
+          rawPoints && rawPoints > 0 ? formatWholePoints(rawPoints) : null;
         return {
           key: h.id,
           href: m ? `/market/${m.ticker}` : undefined,
@@ -688,10 +690,10 @@ function HistoryTable({
               {h.quantity}
             </span>,
             <span key="e" className={MONO}>
-              {formatPointsFromPoints(h.entryPricePoints)}
+              {formatWholePoints(h.entryPricePoints)}
             </span>,
             <span key="x" className={MONO}>
-              {formatPointsFromPoints(h.exitPricePoints)}
+              {formatWholePoints(h.exitPricePoints)}
             </span>,
             <span
               key="p"
@@ -704,7 +706,7 @@ function HistoryTable({
               )}
             >
               {up ? "+" : "−"}
-              {formatPointsFromPoints(Math.abs(h.realizedPoints))}
+              {formatWholePoints(Math.abs(h.realizedPoints))}
             </span>,
             <span
               key="pts"
@@ -923,6 +925,8 @@ function DataTable({
   );
 }
 
+// P10 (2026-07-12): empty states are gallery-white system cards, not flat
+// gray slabs — surface-1 on border-1 with the card shadow.
 function EmptyState({
   line,
   action,
@@ -931,7 +935,7 @@ function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center gap-[10px] rounded-[var(--r-md)] border border-dashed border-white/10 bg-black/20 px-5 py-10 text-center text-[13px] text-[var(--t3)]">
+    <div className="flex flex-col items-center gap-4 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-6 py-12 text-center text-[13px] text-[var(--t2)] shadow-[var(--shadow-card)]">
       <span>{line}</span>
       {action}
     </div>
@@ -948,14 +952,6 @@ function is401(err: unknown): boolean {
     msg.includes("unauthorized") ||
     msg.includes("authentication required")
   );
-}
-
-function formatPointsFromPoints(cents: number): string {
-  if (Math.abs(cents) >= 1_000_000_00)
-    return `${(cents / 1_000_000_00).toFixed(1)}M pts`;
-  if (Math.abs(cents) >= 10_000_00)
-    return `${(cents / 1_000_00).toFixed(1)}K pts`;
-  return `${(cents / 100).toFixed(2)} pts`;
 }
 
 function formatDate(iso: string): string {

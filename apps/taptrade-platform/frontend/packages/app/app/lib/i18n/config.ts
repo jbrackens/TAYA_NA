@@ -4,6 +4,41 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
 /**
+ * P10 boot-path fix (2026-07-12): the English strings for the render-
+ * critical namespaces are BUNDLED at build time (static JSON imports,
+ * ~56KB raw / ~13KB gzipped) so i18next initialises synchronously on
+ * both server and client. Before this, the app SSR'd a blank <div/>
+ * on every route while 11 namespace fetches resolved — first paint
+ * was blocked behind JS boot + network. Non-English languages and the
+ * long-tail namespaces still lazy-load through the fetch backend.
+ */
+import enCommon from "../../../public/static/locales/en/common.json";
+import enHeader from "../../../public/static/locales/en/header.json";
+import enSidebar from "../../../public/static/locales/en/sidebar.json";
+import enFooter from "../../../public/static/locales/en/footer.json";
+import enAccount from "../../../public/static/locales/en/account.json";
+import enSettings from "../../../public/static/locales/en/settings.json";
+import enRewards from "../../../public/static/locales/en/rewards.json";
+import enPortfolio from "../../../public/static/locales/en/portfolio.json";
+import enLeaderboards from "../../../public/static/locales/en/leaderboards.json";
+import enPrediction from "../../../public/static/locales/en/prediction.json";
+import enMarketContent from "../../../public/static/locales/en/market-content.json";
+
+const EN_BUNDLED_RESOURCES = {
+  common: enCommon,
+  header: enHeader,
+  sidebar: enSidebar,
+  footer: enFooter,
+  account: enAccount,
+  settings: enSettings,
+  rewards: enRewards,
+  portfolio: enPortfolio,
+  leaderboards: enLeaderboards,
+  prediction: enPrediction,
+  "market-content": enMarketContent,
+} as const;
+
+/**
  * All available translation namespaces.
  * These correspond to JSON files under /public/static/locales/{lng}/<ns>.json
  */
@@ -96,9 +131,13 @@ const INIT_NAMESPACES = [
   "market-content",
 ];
 
-// Only initialize once
+// Only initialize once. With `resources` supplied for English, init is
+// SYNCHRONOUS — isInitialized is true before the first render on both
+// server and client (no blank-shell gate, no hydration divergence).
+// partialBundledLanguages keeps the fetch backend active for the other
+// languages and for namespaces outside the bundled set.
 if (!i18n.isInitialized) {
-  i18n
+  void i18n
     .use(fetchBackend)
     .use(initReactI18next)
     .init({
@@ -108,6 +147,7 @@ if (!i18n.isInitialized) {
       supportedLngs: SUPPORTED_LANGUAGES,
       ns: INIT_NAMESPACES,
       defaultNS: "common",
+      resources: { en: EN_BUNDLED_RESOURCES },
       partialBundledLanguages: true,
       interpolation: {
         escapeValue: false, // React handles XSS

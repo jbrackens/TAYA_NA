@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { getBalance, Balance } from "../lib/api/wallet-client";
+import { formatWholePoints } from "./prediction/market-display";
 import { Spinner } from "./Spinner";
 
 interface CurrentBalanceProps {
@@ -63,8 +64,10 @@ export default function CurrentBalance({
     return null;
   }
 
-  const availableAmount = formatPoints(balance.availableBalance);
-  const pendingAmount = formatPoints(balance.reservedBalance);
+  // Points unit-model (2026-07-07): wallet-client normalizers return WHOLE
+  // Points — render via the shared whole-point formatter (P10, 2026-07-12).
+  const availableAmount = formatWholePoints(balance.availableBalance);
+  const pendingAmount = formatWholePoints(balance.reservedBalance);
 
   if (compact) {
     return (
@@ -95,8 +98,4 @@ export default function CurrentBalance({
       </div>
     </div>
   );
-}
-
-function formatPoints(points: number): string {
-  return `${points.toFixed(2)} pts`;
 }

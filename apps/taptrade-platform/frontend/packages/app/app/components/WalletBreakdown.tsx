@@ -7,6 +7,7 @@ import {
   getWalletBreakdown,
   type WalletBreakdown as WalletBreakdownType,
 } from "../lib/api/bonus-client";
+import { formatWholePoints } from "./prediction/market-display";
 
 export const WalletBreakdownDisplay: React.FC = () => {
   const { t } = useTranslation("bonus");
@@ -59,7 +60,7 @@ export const WalletBreakdownDisplay: React.FC = () => {
           {t("totalBalance")}
         </span>
         <span className="text-sm font-semibold text-white">
-          {formatPointsFromPoints(breakdown.totalPoints)}
+          {formatWholePoints(breakdown.totalPoints)}
         </span>
       </div>
 
@@ -72,7 +73,7 @@ export const WalletBreakdownDisplay: React.FC = () => {
               {t("basePoints", "Base Points")}
             </span>
             <span className="text-white font-medium">
-              {formatPointsFromPoints(breakdown.basePoints)}
+              {formatWholePoints(breakdown.basePoints)}
             </span>
           </div>
           <div className="flex items-center gap-1">
@@ -81,7 +82,7 @@ export const WalletBreakdownDisplay: React.FC = () => {
               {t("bonusPoints", "Bonus Points")}
             </span>
             <span className="text-white font-medium">
-              {formatPointsFromPoints(breakdown.bonusPoints)}
+              {formatWholePoints(breakdown.bonusPoints)}
             </span>
           </div>
         </div>
@@ -90,6 +91,8 @@ export const WalletBreakdownDisplay: React.FC = () => {
   );
 };
 
-function formatPointsFromPoints(cents: number): string {
-  return `${(cents / 100).toFixed(2)} pts`;
-}
+// Points unit-model (2026-07-07): the /breakdown payload is WHOLE Points
+// (bonus-client passes wire integers through unchanged). The old local
+// formatter here divided by 100 — a leftover from the retired point-cents
+// model that under-displayed balances 100x. Fixed 2026-07-12 (P10) by
+// standardizing on the shared whole-point formatter.

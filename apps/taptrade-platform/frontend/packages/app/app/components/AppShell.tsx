@@ -24,8 +24,7 @@ import { BackendStatusBanner } from "./BackendStatusBanner";
 import MobileTabBar from "./MobileTabBar";
 import { ChatSidebar } from "./chat/ChatSidebar";
 
-const AUTH_LAYOUT_CLASS =
-  "min-h-screen overflow-y-auto bg-transparent";
+const AUTH_LAYOUT_CLASS = "min-h-screen overflow-y-auto bg-transparent";
 
 const APP_SHELL_CLASS = "min-h-screen bg-transparent";
 
@@ -40,7 +39,9 @@ const APP_SHELL_MAIN_CLASS =
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthRoute = pathname?.startsWith("/auth/");
-  const isLandingRoute = pathname === "/";
+  // P10 (2026-07-12): the "/" landing joined the light product system —
+  // it renders inside the standard shell (TopBar + PredictFooter) like
+  // every other route, so the old bare-landing special case is gone.
 
   return (
     <StoreProvider>
@@ -50,10 +51,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <AuthProvider>
               {isAuthRoute ? (
                 <div className={AUTH_LAYOUT_CLASS}>{children}</div>
-              ) : isLandingRoute ? (
-                <div className="min-h-screen bg-[var(--bg-deep)] text-[var(--t1)]">
-                  {children}
-                </div>
               ) : (
                 <div className={APP_SHELL_CLASS}>
                   <TopBar />

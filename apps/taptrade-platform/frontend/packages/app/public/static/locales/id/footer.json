@@ -1,6 +1,6 @@
 {
   "COMPANY": "Company",
-  "ABOUT": "About",
+  "ABOUT": "Tentang",
   "TERMS_OF_SERVICE": "Terms of Service",
   "PRIVACY_POLICY": "Privacy Policy",
   "TERMS_AND_CONDITIONS": "Terms & Conditions",
@@ -19,5 +19,16 @@
   "DEPOSIT": "Aturan Poin",
   "DEPOSIT_MESSAGE": "Hanya poin gameplay",
   "WITHDRAWALS": "Aktivitas Poin",
-  "WITHDRAWAL_MESSAGE": "Poin tetap di dalam gameplay"
+  "WITHDRAWAL_MESSAGE": "Poin tetap di dalam gameplay",
+  "PRODUCT": "Produk",
+  "FAIR_PLAY": "Permainan adil & kontrol",
+  "NOTIFICATION_SETTINGS": "Pengaturan notifikasi",
+  "PLAY_LIMITS": "Batas bermain",
+  "TAKE_A_BREAK": "Istirahat / eksklusi diri",
+  "SUPPORT": "Dukungan",
+  "ACCOUNT_CLOSURE": "Tutup akun",
+  "TERMS": "Ketentuan Penggunaan",
+  "PRIVACY": "Privasi",
+  "CONTACT": "Kontak",
+  "POINTS_DISCLOSURE": "Pasar prediksi poin yang tidak dapat ditukar — poin permainan tidak memiliki nilai tunai, tidak dapat disetor atau ditarik, dan platform ini tidak terdaftar pada regulator keuangan mana pun."
 }

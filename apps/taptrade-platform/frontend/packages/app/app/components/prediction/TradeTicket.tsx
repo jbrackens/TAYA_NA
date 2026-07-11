@@ -21,7 +21,7 @@
  * execution path.
  */
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import type {
@@ -103,8 +103,10 @@ const TICKET_MODE_BUTTON_BASE_CLASS =
 // price belongs to the summary rows below.
 const TICKET_SIDES_CLASS =
   "relative mb-4 grid grid-cols-2 border-b border-[var(--border-1)]";
+// P10: focus ring restored (the old focus-visible:outline-none left
+// keyboard focus invisible on the primary trading control — WCAG 2.4.7).
 const TICKET_SIDE_TAB_BASE_CLASS =
-  "cursor-pointer border-0 bg-transparent px-1 pb-2.5 pt-1 [font-family:inherit] text-sm font-semibold transition-colors duration-[120ms] focus-visible:outline-none";
+  "cursor-pointer border-0 bg-transparent px-1 pb-2.5 pt-1 [font-family:inherit] text-sm font-semibold transition-colors duration-[120ms] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--focus-ring)] rounded-sm";
 // The tap-dot signature, applied to navigation: one indicator slides
 // between the two sides (180ms) instead of two static underlines.
 const TICKET_SIDE_INDICATOR_CLASS =
@@ -119,8 +121,12 @@ const TICKET_ROW_SUB_CLASS =
   "mt-0.5 text-right font-['IBM_Plex_Mono',_monospace] text-[11px] font-normal text-[var(--t4)]";
 const TICKET_INPUT_CLASS =
   "w-[128px] rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-2 text-right font-['IBM_Plex_Mono',_monospace] text-[14px] font-semibold text-[var(--t1)] outline-none transition-colors duration-[120ms] [font-variant-numeric:tabular-nums] focus:border-[var(--accent-lo)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+// P10 ink action (Signal Ink signature #2): the commit button is ink,
+// not mint — unmistakably an action, never a side. Non-color state
+// grammar: hover deepens + lifts; disabled drops opacity AND its label
+// states the reason (existing pattern); focus uses the system ring.
 const TICKET_CTA_CLASS =
-  "mt-4 flex w-full cursor-pointer items-center justify-center rounded-md border-0 bg-[var(--accent)] px-4 py-[14px] [font-family:inherit] text-[15px] font-semibold text-[#061a10] no-underline transition-[filter,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:brightness-[1.05] disabled:cursor-not-allowed disabled:opacity-[0.45] disabled:filter-none disabled:transform-none";
+  "relative mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border-0 bg-[var(--action)] px-4 py-[14px] [font-family:inherit] text-[15px] font-semibold text-[var(--action-fg)] no-underline transition-[background-color,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:bg-[var(--action-hover)] disabled:cursor-not-allowed disabled:opacity-[0.45] disabled:transform-none";
 const TICKET_NOTE_CLASS =
   "mt-2.5 text-center text-xs leading-[1.45] text-[var(--t2)]";
 const TICKET_TRUST_CLASS =
@@ -218,6 +224,17 @@ export function TradeTicket({
   const [previewLoading, setPreviewLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Live-price-change guard (P10): when the quote moves ≥1¢ under the
+  // user's cursor, the CTA pauses for 800ms and the Price row states the
+  // move in text — the order is then placed deliberately, not raced.
+  const [priceMoved, setPriceMoved] = useState<{
+    from: number;
+    to: number;
+  } | null>(null);
+  const [priceGuard, setPriceGuard] = useState(false);
+  // Post-submit tap-dot confirmation (the system's kinetic signature;
+  // collapses to an instant state change under prefers-reduced-motion).
+  const [confirmed, setConfirmed] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -230,6 +247,26 @@ export function TradeTicket({
   const isAmmQuoteOnly = market.executionMode === "amm";
   const marketPrice =
     side === "yes" ? market.yesPricePoints : market.noPricePoints;
+
+  // Detect live quote movement (WebSocket price updates flow in through
+  // the `market` prop). Side switches reset the baseline silently.
+  const prevPriceRef = useRef(marketPrice);
+  const prevSideRef = useRef(side);
+  useEffect(() => {
+    const prev = prevPriceRef.current;
+    const sideChanged = prevSideRef.current !== side;
+    prevPriceRef.current = marketPrice;
+    prevSideRef.current = side;
+    if (sideChanged || !isOpen || prev === marketPrice) return;
+    setPriceMoved({ from: prev, to: marketPrice });
+    setPriceGuard(true);
+    const guard = setTimeout(() => setPriceGuard(false), 800);
+    const notice = setTimeout(() => setPriceMoved(null), 4000);
+    return () => {
+      clearTimeout(guard);
+      clearTimeout(notice);
+    };
+  }, [marketPrice, side, isOpen]);
   // Effective price drives quantity math: limit orders use the user's price
   // (capped to [1, 99] at the API boundary); market orders use the snapshot.
   const price = mode === "limit" && isExchange ? limitPricePoints : marketPrice;
@@ -304,6 +341,25 @@ export function TradeTicket({
     typeof preview?.totalCostWithFeesPoints === "number"
       ? preview.totalCostWithFeesPoints
       : quantity * price;
+  // Explicit disclosure rows (P10): the preview API already returns
+  // feePoints and maxLossPoints — render them instead of folding fees
+  // silently into Est. cost. Before a preview resolves, fees derive from
+  // the market's posted fee rate; zero renders as an explicit "0 pts"
+  // (an absent fee line reads as fee opacity, the category's worst
+  // trust pattern per the 2026-07-12 competitor audit).
+  const feePoints =
+    action === "buy"
+      ? (preview?.feePoints ??
+        Math.ceil((quantity * price * (market.feeRateBps ?? 0)) / 10_000))
+      : null;
+  const maxLossPoints =
+    action === "buy" ? (preview?.maxLossPoints ?? effectiveSpend) : null;
+  // Humanized settlement source for the money-moment one-liner
+  // ("Resolves by FIFA official results"). Machine keys stay quiet.
+  const settlementSource = (market.settlementSourceKey || "")
+    .replace(/^(feed|source|manual):/i, "")
+    .replace(/[-_]+/g, " ")
+    .trim();
   const hasKnownBalance = typeof balance === "number";
   // Point-balance check applies only to buys. Sells require enough position.
   const insufficientFunds =
@@ -459,6 +515,12 @@ export function TradeTicket({
           }),
         );
       }
+      // Tap-dot confirm — only for outcomes that actually did something
+      // (a fill or a resting order), never for rejections.
+      if (!response || filled > 0 || status === "open") {
+        setConfirmed(true);
+        setTimeout(() => setConfirmed(false), 700);
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t("ORDER_FAILED"));
     } finally {
@@ -498,22 +560,28 @@ export function TradeTicket({
         <>
           <div className={TICKET_HEAD_CLASS}>
             <span className={TICKET_TITLE_CLASS}>{t("TRADE")}</span>
+            {/* Mutually-exclusive value pickers are radiogroups, not
+                tabs — they switch a value, not a panel (misapplied
+                tablist semantics promised arrow-key panel switching
+                that never existed). */}
             <div
               className={TICKET_MODE_CLASS}
-              role="tablist"
+              role="radiogroup"
               aria-label={t("ORDER_TYPE")}
             >
               <button
-                role="tab"
-                aria-selected={mode === "market"}
+                type="button"
+                role="radio"
+                aria-checked={mode === "market"}
                 className={ticketModeButtonClass(mode === "market")}
                 onClick={() => setMode("market")}
               >
                 {t("MARKET_ORDER")}
               </button>
               <button
-                role="tab"
-                aria-selected={mode === "limit"}
+                type="button"
+                role="radio"
+                aria-checked={mode === "limit"}
                 className={ticketModeButtonClass(mode === "limit")}
                 onClick={() => isExchange && setMode("limit")}
                 disabled={!isExchange}
@@ -534,20 +602,22 @@ export function TradeTicket({
           {isExchange && isAuthenticated && (
             <div
               className={`${TICKET_MODE_CLASS} mb-[14px] self-start`}
-              role="tablist"
+              role="radiogroup"
               aria-label={t("ACTION")}
             >
               <button
-                role="tab"
-                aria-selected={action === "buy"}
+                type="button"
+                role="radio"
+                aria-checked={action === "buy"}
                 className={ticketModeButtonClass(action === "buy")}
                 onClick={() => setAction("buy")}
               >
                 {t("BUY")}
               </button>
               <button
-                role="tab"
-                aria-selected={action === "sell"}
+                type="button"
+                role="radio"
+                aria-checked={action === "sell"}
                 className={ticketModeButtonClass(action === "sell")}
                 onClick={() => setAction("sell")}
                 disabled={availableShares === 0}
@@ -567,20 +637,33 @@ export function TradeTicket({
 
           <div
             className={TICKET_SIDES_CLASS}
-            role="tablist"
+            role="radiogroup"
             aria-label={t("SIDE")}
+            onKeyDown={(e) => {
+              if (
+                e.key === "ArrowLeft" ||
+                e.key === "ArrowRight" ||
+                e.key === "ArrowUp" ||
+                e.key === "ArrowDown"
+              ) {
+                e.preventDefault();
+                setSideAndReset(side === "yes" ? "no" : "yes");
+              }
+            }}
           >
             <button
-              role="tab"
-              aria-selected={side === "yes"}
+              type="button"
+              role="radio"
+              aria-checked={side === "yes"}
               onClick={() => setSideAndReset("yes")}
               className={ticketSideTabClass("yes", side === "yes")}
             >
               {t("BUY_YES")}
             </button>
             <button
-              role="tab"
-              aria-selected={side === "no"}
+              type="button"
+              role="radio"
+              aria-checked={side === "no"}
               onClick={() => setSideAndReset("no")}
               className={ticketSideTabClass("no", side === "no")}
             >
@@ -676,6 +759,17 @@ export function TradeTicket({
                 {t("IMPLIED_PROB")} {impliedProb}% ·{" "}
                 {t("SHARES_COUNT", { quantity: Math.floor(shares) })}
               </p>
+              {priceMoved && (
+                <p
+                  className="mt-1 text-right font-['IBM_Plex_Mono',_monospace] text-[11px] font-semibold text-[var(--t2)]"
+                  role="status"
+                >
+                  {t("PRICE_MOVED", {
+                    from: priceMoved.from,
+                    to: priceMoved.to,
+                  })}
+                </p>
+              )}
             </div>
 
             <div className={TICKET_ROW_CLASS}>
@@ -684,6 +778,28 @@ export function TradeTicket({
                 {formatPointAmount(effectiveSpend)}
               </span>
             </div>
+
+            {maxLossPoints !== null && (
+              <div className={TICKET_ROW_CLASS}>
+                <span className={TICKET_ROW_LABEL_CLASS}>
+                  {t("MAX_LOSS", "Max loss")}
+                </span>
+                <span className={TICKET_ROW_VALUE_CLASS}>
+                  {formatPointAmount(maxLossPoints)}
+                </span>
+              </div>
+            )}
+
+            {feePoints !== null && (
+              <div className={TICKET_ROW_CLASS}>
+                <span className={TICKET_ROW_LABEL_CLASS}>
+                  {t("FEES", "Fees")}
+                </span>
+                <span className={TICKET_ROW_VALUE_CLASS}>
+                  {formatPointAmount(feePoints)}
+                </span>
+              </div>
+            )}
 
             <div className={TICKET_ROW_CLASS}>
               <span className={TICKET_ROW_LABEL_CLASS}>
@@ -769,7 +885,7 @@ export function TradeTicket({
               type="button"
               onClick={handleSubmit}
               className={TICKET_CTA_CLASS}
-              disabled={submitting || quantity < 1}
+              disabled={submitting || quantity < 1 || priceGuard}
             >
               {/*
                 Label says "Place trade", not "Review trade", because
@@ -778,12 +894,26 @@ export function TradeTicket({
                 points if correct — that IS the review surface. A "Review" label
                 would imply a confirm modal that does not exist and was
                 a stage gotcha during the 2026-05-03 demo dry-run.
+
+                priceGuard: an 800ms pause after a live quote move — the
+                user re-confirms a changed price deliberately.
               */}
+              {confirmed && (
+                <span
+                  aria-hidden="true"
+                  className="inline-block h-2 w-2 rounded-full bg-[var(--brand-dot)] animate-[tap-land_400ms_ease-out]"
+                />
+              )}
               {submitting
                 ? t("PLACING")
-                : t(action === "sell" ? "SELL_AMOUNT" : "PLACE_TRADE_AMOUNT", {
-                    amount: formatPointAmount(amount),
-                  })}
+                : priceGuard
+                  ? t("PRICE_UPDATED", "Price updated…")
+                  : t(
+                      action === "sell" ? "SELL_AMOUNT" : "PLACE_TRADE_AMOUNT",
+                      {
+                        amount: formatPointAmount(amount),
+                      },
+                    )}
             </button>
           )}
 
@@ -793,6 +923,18 @@ export function TradeTicket({
               probability: impliedProb,
             })}
           </p>
+
+          {/* Resolution provenance at the money moment (P10): who decides,
+              and when the market closes — one quiet line, no jargon. */}
+          {settlementSource && (
+            <p className={TICKET_TRUST_CLASS}>
+              {t("RESOLVES_BY", { source: settlementSource })} ·{" "}
+              {new Date(market.closeAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })}
+            </p>
+          )}
 
           {/* Suppress unused-warning: API surface preserved for Phase 4 */}
           <input type="hidden" value={otherPrice} readOnly />

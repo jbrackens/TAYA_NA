@@ -115,15 +115,14 @@ function normalizeMarketUpdateFields(
       ? { lastTradePricePoints }
       : {}),
     ...(typeof volumePoints === "number" ? { volumePoints } : {}),
-    ...(typeof openInterestPoints === "number"
-      ? { openInterestPoints }
-      : {}),
+    ...(typeof openInterestPoints === "number" ? { openInterestPoints } : {}),
     unit: payload.unit || "PTS",
   };
 }
 
 const GLASS_SURFACE_CLASS =
-  "relative border border-white/[0.13] bg-[color:var(--glass-regular)] bg-[image:linear-gradient(180deg,_rgba(255,255,255,0.14)_0%,_rgba(255,255,255,0.05)_30%,_rgba(255,255,255,0.025)_100%)] shadow-[inset_0_1px_0_var(--rim-top),inset_0_-1px_0_var(--rim-bottom),inset_1px_0_2px_var(--chroma-1),inset_-1px_0_2px_var(--chroma-2),0_2px_6px_rgba(0,0,0,0.18),0_8px_24px_rgba(0,0,0,0.28),0_16px_48px_rgba(0,0,0,0.2)] backdrop-blur-[30px] backdrop-saturate-[180%] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-1/2 before:rounded-[inherit] before:bg-[image:linear-gradient(180deg,_rgba(255,255,255,0.06)_0%,_transparent_100%)] before:mix-blend-overlay before:content-['']";
+  // P10 (2026-07-12): the Liquid Glass surface is retired — system card.
+  "border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-card)]";
 const MARKET_WRAP_CLASS = "text-[var(--t1)]";
 const MARKET_CRUMB_CLASS =
   "mb-[18px] flex flex-wrap items-center gap-2 text-[13px] text-[var(--t3)]";
@@ -198,11 +197,11 @@ const MARKET_DETAILS_COPY_CLASS =
 const MARKET_RULES_CLASS =
   "mt-[14px] flex list-none flex-col gap-2 border-t border-[var(--border-1)] p-0 pt-[14px]";
 const MARKET_RULE_CLASS =
-  "relative pl-[18px] text-[13px] leading-[1.5] text-[var(--t2)] before:absolute before:left-1 before:top-2 before:h-1.5 before:w-1.5 before:rounded-full before:bg-[var(--accent)] before:content-['']";
+  "relative pl-[18px] text-[13px] leading-[1.5] text-[var(--t2)] before:absolute before:left-1 before:top-2 before:h-1.5 before:w-1.5 before:rounded-full before:bg-[var(--brand-dot)] before:content-['']";
 const MARKET_SHARE_ROW_CLASS =
   "mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border-1)] pt-4";
 const MARKET_SHARE_BUTTON_CLASS =
-  "inline-flex min-h-9 items-center justify-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 text-xs font-bold text-[var(--t1)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]";
+  "inline-flex min-h-9 items-center justify-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 text-xs font-bold text-[var(--t1)] transition-colors hover:border-[var(--border-2)] hover:bg-[var(--action-soft)]";
 const MARKET_SHARE_STATUS_CLASS = "text-xs text-[var(--t3)]";
 const RELATED_CARD_CLASS =
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[1100px]:order-6";
@@ -213,20 +212,21 @@ const RELATED_LIST_CLASS = "flex flex-col";
 const RELATED_ROW_CLASS =
   "group block border-t border-[var(--border-1)] py-3 no-underline first:border-t-0 first:pt-0 last:pb-0";
 const RELATED_QUESTION_CLASS =
-  "mb-1.5 text-[13px] font-medium leading-[1.35] text-[var(--t1)] group-hover:text-[var(--accent)]";
+  "mb-1.5 text-[13px] font-medium leading-[1.35] text-[var(--t1)] group-hover:underline";
 const RELATED_LINE_CLASS =
   "flex items-center justify-between font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
 const RELATED_YES_CLASS = "font-semibold text-[var(--yes-text)]";
 const PAGE_STATE_WRAP_CLASS = "grid min-h-[60vh] place-items-center px-4 py-8";
-const PAGE_STATE_CARD_CLASS = `${GLASS_SURFACE_CLASS} w-[min(100%,440px)] rounded-[var(--r-lg)] p-7 text-center text-[var(--t1)]`;
+const PAGE_STATE_CARD_CLASS = `${GLASS_SURFACE_CLASS} w-[min(100%,440px)] rounded-[var(--r-rh-lg)] p-7 text-center text-[var(--t1)]`;
 const PAGE_STATE_EYEBROW_BASE_CLASS =
   "mb-[14px] inline-flex min-h-7 items-center justify-center rounded-[var(--r-pill)] border px-3 text-[11px] font-bold uppercase tracking-[0.12em]";
 const PAGE_STATE_TITLE_CLASS =
   "m-0 text-[22px] font-extrabold tracking-[-0.01em]";
 const PAGE_STATE_COPY_CLASS =
   "mt-2.5 mb-0 text-sm leading-[1.5] text-[var(--t2)]";
+// P10: the glass-era mint-gradient CTA is retired — ink action.
 const PAGE_STATE_ACTION_CLASS =
-  "mt-[22px] inline-flex min-h-11 items-center justify-center rounded-[var(--r-md)] border border-[rgba(43,228,128,0.6)] bg-[image:linear-gradient(180deg,_rgba(255,255,255,0.25)_0%,_rgba(255,255,255,0)_50%),linear-gradient(115deg,_#2be480_0%,_#00ffaa_100%)] px-5 text-sm font-bold text-[#04140a] no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.5),_0_10px_28px_rgba(43,228,128,0.18)] transition-[transform,filter] duration-[180ms] ease-[ease] hover:-translate-y-px hover:brightness-[1.05]";
+  "mt-[22px] inline-flex min-h-11 items-center justify-center rounded-[var(--r-rh-md)] border-0 bg-[var(--action)] px-5 text-sm font-bold text-[var(--action-fg)] no-underline transition-[transform,background-color] duration-[180ms] ease-[ease] hover:-translate-y-px hover:bg-[var(--action-hover)]";
 
 function pageStateEyebrowClass(isError: boolean): string {
   return `${PAGE_STATE_EYEBROW_BASE_CLASS} ${
@@ -552,8 +552,7 @@ function AMMCurve({
                   : quote.newYesPricePoints;
               const impact = Math.max(0, afterPrice - quote.pricePoints);
               const totalCost =
-                quote.totalCostWithFeesPoints ??
-                quote.totalCostPoints;
+                quote.totalCostWithFeesPoints ?? quote.totalCostPoints;
               const avgPrice =
                 quote.averageFillPricePoints || quote.pricePoints;
               return (
@@ -1012,6 +1011,12 @@ export default function MarketDetailPage() {
   }, [market, event, categories]);
   const displayMarket = market ? localizedMarket(contentT, market) : null;
   const displayCategory = category ? categoryName(contentT, category) : "";
+  // Humanized settlement source ("feed:fifa" → "fifa") for the rules
+  // list and the settlement timeline — same treatment the ticket uses.
+  const settlementSourceLabel = (market?.settlementSourceKey || "")
+    .replace(/^(feed|source|manual):/i, "")
+    .replace(/[-_]+/g, " ")
+    .trim();
   const canPreviewOrders = isAuthenticated && !authLoading;
 
   async function handleShareMarket() {
@@ -1131,7 +1136,67 @@ export default function MarketDetailPage() {
                       status: marketStatusLabel(market.status, t),
                     })}
               </li>
+              {settlementSourceLabel && (
+                <li className={MARKET_RULE_CLASS}>
+                  {t("RESOLVES_BY", { source: settlementSourceLabel })}
+                </li>
+              )}
             </ul>
+
+            {/* Settlement timeline (P10): when the market closes, who
+                decides, and when points move — set at the moment users
+                read the rules, not discovered after the fact. */}
+            <ol className="mt-4 grid list-none grid-cols-4 gap-2 border-t border-[var(--border-1)] p-0 pt-4 max-[640px]:grid-cols-2">
+              {[
+                {
+                  label: t("TIMELINE_TRADING", "Trading"),
+                  value: isOpenMarketStatus(market.status)
+                    ? t("TIMELINE_OPEN_NOW", "Open now")
+                    : marketStatusLabel(market.status, t),
+                },
+                {
+                  label: t("TIMELINE_CLOSES", "Closes"),
+                  value: new Date(market.closeAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                },
+                {
+                  label: t("TIMELINE_RESOLVES", "Resolves"),
+                  value:
+                    settlementSourceLabel ||
+                    t("TIMELINE_RESOLUTION_REVIEW", "By listed rules"),
+                },
+                {
+                  label: t("TIMELINE_SETTLES", "Points settle"),
+                  value:
+                    market.status === "settled"
+                      ? t("TIMELINE_SETTLED", "Settled")
+                      : t(
+                          "TIMELINE_AFTER_RESOLUTION",
+                          "Shortly after resolution",
+                        ),
+                },
+              ].map((step) => (
+                <li key={step.label} className="min-w-0">
+                  <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--t3)]">
+                    <span
+                      className="h-1.5 w-1.5 rounded-full bg-[var(--brand-dot)]"
+                      aria-hidden="true"
+                    />
+                    {step.label}
+                  </div>
+                  <div
+                    className="truncate text-[13px] font-medium text-[var(--t1)]"
+                    title={step.value}
+                  >
+                    {step.value}
+                  </div>
+                </li>
+              ))}
+            </ol>
             <div className={MARKET_SHARE_ROW_CLASS}>
               <button
                 type="button"
@@ -1222,7 +1287,6 @@ export default function MarketDetailPage() {
               onSubmit={handleSubmit}
             />
           </div>
-
         </aside>
       </div>
     </div>

@@ -1,0 +1,195 @@
+{
+ "topic": "Accessibility and performance audit \u2014 TapTrade player app (apps/taptrade-platform/frontend/packages/app), code-only review",
+ "summary": "The app's biggest risks are architectural performance problems, not component-level ones. The entire route tree is client-rendered: layout.tsx wraps every page in a \"use client\" AppShell, and I18nProvider renders an empty <div/> on the server and on the client until 11 translation namespaces finish fetching \u2014 so first paint is literally blank HTML on every route (LCP, SEO, and slow-network users all suffer). Font loading compounds this: a single render-blocking Google Fonts stylesheet pulls 6 families / ~24 weights (including legacy Outfit \u00d77 and Space Grotesk \u00d73 that DESIGN.md line 84 admits are dead), with no preconnect and no next/font, plus 4 self-hosted Clash Display woff2s \u2014 7 families total for a 3-font design system. package.json also carries at least 7 unused dependencies (recharts, formik, yup, jsonwebtoken, react-gtm-module, react-infinite-scroller, react-use-websocket), and three orphaned components (Tabs, CategoryPills, BannerCarousel) still ship with dark-theme hardcoded colors and broken a11y.\n\nOn accessibility, the foundations are better than average \u2014 a global :focus-visible ring, a global prefers-reduced-motion kill switch, reduced-motion-aware FeaturedCarousel and landing hero video, text-plus-color signal patterns (sentiment sentences, labeled YES/NO everywhere) \u2014 but there are concrete failures: Modal.tsx has no dialog semantics, no focus trap, no focus restore, and an unlabeled icon close button; TradeTicket's Buy Yes/Buy No tabs strip the focus ring with focus-visible:outline-none and no replacement; the --t4 text token measures ~2.3:1 on white yet is used for real content (ticket balance sub-rows, the hero \u00a2 subscript, placeholders); toasts announce errors as polite role=\"status\" and auto-dismiss in 4s with no hover pause; the TopBar search puts combobox ARIA on a wrapper div instead of the input; OrderBook's bids table has no header row; and the FeaturedCarousel auto-advances with no visible pause control (WCAG 2.2.2). The register page always downloads a 1.6 MB autoplay MP4 \u2014 under reduced motion it is only visually hidden, still downloading and playing.\n\nRecommended order of attack for the redesign phase: (1) fix the i18n blank-render and adopt next/font with \u22643 families; (2) Modal focus management + TradeTicket focus ring + toast semantics (small diffs, high WCAG impact); (3) darken --t4 / audit --t3-on-surface-2 at token level so every consumer inherits the fix; (4) prune dead deps and orphaned components before they get resurrected with their broken patterns; (5) add a pause control to the carousel and gate the register video on matchMedia.",
+ "findings": [
+  {
+   "claim": "app/lib/i18n/I18nProvider.tsx:63-72 renders an empty <div/> until i18next finishes fetching all INIT_NAMESPACES (11 namespaces listed in app/lib/i18n/config.ts:84-96, each a client-side fetch to /static/locales/\u2026); `ready` is hardcoded false on the server, so SSR output for every route is a blank shell.",
+   "kind": "evidence",
+   "source": "app/lib/i18n/I18nProvider.tsx:63; app/lib/i18n/config.ts:84",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: HIGH (performance + SEO). First contentful paint is deferred behind JS boot + 11 JSON fetches on every page. Fix: bundle the `en` resources at build time (import JSON into the i18next init as `resources`) so render never blocks, lazy-fetch only non-default languages; trim INIT_NAMESPACES to route-critical ones (common/header/prediction/market-content) \u2014 account/settings/rewards/portfolio/leaderboards don't belong in the boot path."
+  },
+  {
+   "claim": "The entire app is client-rendered: app/layout.tsx:51 wraps all routes in AppShell, which is `\"use client\"` (app/components/AppShell.tsx:1) and mounts Redux + React Query + i18n + Auth providers above every page; all main pages (predict, market/[ticker], portfolio, discover) are themselves client components. 86 files carry \"use client\".",
+   "kind": "evidence",
+   "source": "app/layout.tsx:51; app/components/AppShell.tsx:1",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: HIGH (performance). No server-component payload reduction, no streaming, no server data fetching anywhere. Fix during redesign: keep providers but render static/content pages (about, terms, privacy, landing hero copy) as server components; fetch market lists server-side on /predict and hydrate; move ChatSidebar and other heavy leaves behind dynamic() imports."
+  },
+  {
+   "claim": "app/layout.tsx:24-27 loads one render-blocking Google Fonts stylesheet with 6 families / ~24 weight-styles: Inter (5), Inter Tight (5), Outfit (7), IBM Plex Mono (4), Space Grotesk (3), Schibsted Grotesk (1). DESIGN.md line 84 admits 'Outfit + Space Grotesk remain as legacy loads pending removal'. There is no <link rel=\"preconnect\"> to fonts.googleapis.com/fonts.gstatic.com (grep confirms zero preconnect), despite DESIGN.md \u00a7perf claiming 'Preconnect to Google Fonts CDN'. Four Clash Display woff2s (~60KB total) are additionally self-hosted via globals.css:21-48 \u2014 7 families total.",
+   "kind": "evidence",
+   "source": "app/layout.tsx:25; DESIGN.md:84; app/globals.css:21",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: HIGH (performance). Render-blocking cross-origin CSS + double-digit font files delay text paint. Fix: migrate to next/font (self-hosted, zero layout shift, automatic preload) with at most Inter + IBM Plex Mono + the display face; delete Outfit and Space Grotesk now (legacy consumers: only content-page CSS references 'Outfit' as a fallback, globals.css:401); subset weights (Inter 400/600/700 covers the type scale)."
+  },
+  {
+   "claim": "app/components/Modal.tsx:51-75 has no role=\"dialog\", no aria-modal, no aria-labelledby, no focus trap (Tab reaches the page behind the overlay), focus is not moved into the modal on open nor restored on close; the icon-only close button (lines 65-70) has no aria-label and no type=\"button\". It also hardcodes the retired dark palette (#0f1225 card, #1a1f3a borders, text-slate-200) on the white P9 app.",
+   "kind": "evidence",
+   "source": "app/components/Modal.tsx:51",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: HIGH (a11y \u2014 used by MfaModal and AcceptTermsModal, both auth-critical flows). Fix: use native <dialog>.showModal() (free focus trap + Esc) or add role=\"dialog\" aria-modal=\"true\" aria-labelledby={titleId}, focus the dialog on open, restore focus on close, add aria-label={t(\"CLOSE\")} and type=\"button\" to the close button; retheme to --surface-1/--border-1 tokens."
+  },
+  {
+   "claim": "app/components/prediction/TradeTicket.tsx:107 (TICKET_SIDE_TAB_BASE_CLASS) applies `focus-visible:outline-none` to the Buy Yes / Buy No side tabs with no replacement indicator \u2014 keyboard focus is invisible on the primary trading control. Sibling components (AllMarketsSection.tsx:82,121; SocialAuthButtons.tsx:85) pair outline-none with a focus-visible shadow ring; TradeTicket does not.",
+   "kind": "evidence",
+   "source": "app/components/prediction/TradeTicket.tsx:107",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: HIGH (a11y, WCAG 2.4.7). Fix: append `focus-visible:shadow-[0_0_0_2px_var(--accent-soft)]` (matching AllMarketsSection) or simply delete the outline-none so the global :focus-visible ring (globals.css:285-288) applies."
+  },
+  {
+   "claim": "Token --t4 = #a6adb5 (globals.css:162) computes to \u22482.27:1 contrast on the white --bg-deep/--surface-1 \u2014 failing WCAG AA even for large text (3:1) \u2014 yet it is used for real content: TradeTicket sub-rows at 11px (TICKET_ROW_SUB_CLASS, TradeTicket.tsx:118-119 \u2014 balance line, mid-price help), the DiscoveryHero \u00a2 subscript (DiscoveryHero.tsx:144), the inactive watchlist star icon (MarketCard.tsx:122, non-text 3:1 also fails), and input placeholders (auth pages, globals.css:1203). DESIGN.md's contrast table documents --t1..t3 but never publishes a ratio for --t4.",
+   "kind": "inference",
+   "source": "app/globals.css:162; app/components/prediction/TradeTicket.tsx:119; DESIGN.md:466-476",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: HIGH (a11y, WCAG 1.4.3/1.4.11 \u2014 money-relevant microcopy like 'Balance: 412.00' is nearly invisible to low-vision users). Fix at the token level: darken --t4 to \u2248#767E87 (~4.5:1) or reclassify --t4 as decorative-only and swap these call sites to --t3; recompute and document the ratio in DESIGN.md \u00a78."
+  },
+  {
+   "claim": "Token --t3 = #6e7680 measures \u22484.6:1 on white (barely AA) but \u22484.3:1 on --surface-2 #f6f7f8 \u2014 below AA for normal text \u2014 and is used at 11-13px non-bold on surface-2 backgrounds: TradeTicket mode buttons (TradeTicket.tsx:101,138 inactive state), TICKET_ROW_LABEL rows, order-book column headers at 10px (OrderBook.tsx:39). Earlier DESIGN.md guidance (line 472) already restricted --t3 to \u226518px/14px-bold usage.",
+   "kind": "inference",
+   "source": "app/globals.css:161; app/components/prediction/TradeTicket.tsx:101; DESIGN.md:472",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: MEDIUM (a11y). Fix: darken --t3 one step (\u2248#646c76 gives ~5:1 on surface-2) or enforce the documented \u226514px-bold rule \u2014 the 10-11px uppercase labels should move to --t2 or gain font-weight 600 at \u226512px."
+  },
+  {
+   "claim": "ToastProvider announces all toast types \u2014 including errors \u2014 with role=\"status\" (polite) at ToastProvider.tsx:112; the close button (line 139-144) is a bare '\u00d7' glyph with no aria-label; toasts auto-dismiss after 4000ms (lines 93-98) with no pause on hover/focus and no user control to extend.",
+   "kind": "evidence",
+   "source": "app/components/ToastProvider.tsx:112",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: MEDIUM (a11y \u2014 order-failure toasts on the trade path can be missed entirely by screen-reader users; WCAG 2.2.1 timing). Fix: use role=\"alert\" for type=error/warning, keep role=\"status\" for success/info; aria-label={t(\"DISMISS\")} + type=\"button\" on close; clear the timer onMouseEnter/onFocus and restart onMouseLeave/onBlur; consider 6-8s default for toasts carrying a message body."
+  },
+  {
+   "claim": "TopBar search implements the ARIA combobox pattern on the wrong node: role=\"combobox\", aria-expanded, aria-owns, and aria-activedescendant sit on the wrapping <div> (TopBar.tsx:354-362) while keyboard focus lives on the <input> (lines 366-384, which only has aria-autocomplete/aria-controls). Screen readers track aria-activedescendant relative to the focused element, so the highlighted option is never announced.",
+   "kind": "evidence",
+   "source": "app/components/prediction/TopBar.tsx:354",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: MEDIUM (a11y). Fix (ARIA 1.2 pattern): move role=\"combobox\", aria-expanded, and aria-activedescendant onto the <input> itself; drop aria-owns/aria-haspopup from the div. Keyboard model (ArrowUp/Down/Enter/Escape) is already correct \u2014 only the attribute placement is wrong."
+  },
+  {
+   "claim": "OrderBook renders bids and asks as two separate <table> elements; the bids table (OrderBook.tsx:135-168) has no <thead> at all, so its four columns (side/price, size, total) are announced with no headers; neither table has a <caption> or scope attributes.",
+   "kind": "evidence",
+   "source": "app/components/prediction/OrderBook.tsx:135",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: MEDIUM (a11y). Fix: merge into one table with the spread as a full-width row, or duplicate the <thead> on the bids table (visually hidden via .sr-only if design requires); add scope=\"col\" to <th> and an sr-only <caption> naming the market."
+  },
+  {
+   "claim": "TradeTicket uses role=\"tablist\"/role=\"tab\" + aria-selected on three control groups (order type ~line 503, buy/sell ~line 536, yes/no side ~line 569) but implements none of the tabs pattern: no arrow-key navigation, no roving tabindex, no aria-controls, and no role=\"tabpanel\" anywhere in the component.",
+   "kind": "evidence",
+   "source": "app/components/prediction/TradeTicket.tsx:503",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: MEDIUM (a11y \u2014 SRs announce '1 of 2 tabs' and users expect arrow keys that do nothing; content relationship is broken). Fix: these are mutually-exclusive value pickers, not tabs \u2014 use role=\"radiogroup\" with role=\"radio\"/aria-checked, or plain buttons with aria-pressed; reserve tablist for real panel-switching UI."
+  },
+  {
+   "claim": "FeaturedCarousel auto-advances every 7s (FeaturedCarousel.tsx:39,119-126). It correctly pauses on hover/focus and disables under prefers-reduced-motion, but exposes no visible pause/stop control \u2014 hover-pause does not satisfy WCAG 2.2.2, which requires a user mechanism for auto-updating content longer than 5s.",
+   "kind": "evidence",
+   "source": "app/components/prediction/FeaturedCarousel.tsx:119",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: MEDIUM (a11y). Fix: add a small pause/play toggle beside the prev/next arrows in CAROUSEL_NAV (reuse CAROUSEL_ARROW_CLASS, aria-pressed + aria-label 'Pause auto-advance'); also add aria-live=\"off\" on the stage while auto-advancing so slide swaps don't spam SRs."
+  },
+  {
+   "claim": "BannerCarousel.tsx is orphaned (zero imports outside its own file) yet still ships with every anti-pattern: 5s auto-rotate with no hover pause and no prefers-reduced-motion check (lines 47-53), 8\u00d78px dot buttons (w-2 h-2, lines 88-97) far below any touch-target minimum, dark-theme hardcoded #0f1225 skeleton, and an href fallback of \"#\". Tabs.tsx and CategoryPills.tsx are likewise unimported (CategoryPills is referenced only by app/__tests__/qa-regressions-2026-04-18.test.ts).",
+   "kind": "evidence",
+   "source": "app/components/BannerCarousel.tsx:47; app/components/Tabs.tsx:1; app/components/prediction/CategoryPills.tsx:1",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: MEDIUM (latent risk + bundle hygiene). Dead components with broken a11y get resurrected verbatim. Fix: delete all three (updating the qa-regression test), or if CategoryPills returns in the redesign, fix its issues first: active pill is color-only (add aria-current), wrapper combines min-w-max with overflow-x-auto on the same element so it can never scroll itself (CategoryPills.tsx:22 \u2014 overflows the parent instead; move overflow-x-auto to a parent), ~40px pill height (pad to 44px), and dark-navy hardcoded colors (#0f1630/#d3d3d3) on the white app."
+  },
+  {
+   "claim": "Tabs.tsx (app/components/Tabs.tsx:16-26) \u2014 currently orphaned \u2014 has no tab semantics (plain buttons, no aria-current/aria-selected: active state is conveyed by color alone), missing type=\"button\" (submits if placed in a form), and dark-theme hover color #cbd5e1 that measures \u22481.6:1 on the white background (hover state effectively invisible).",
+   "kind": "inference",
+   "source": "app/components/Tabs.tsx:19-23",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: LOW while dead / MEDIUM if reused. Fix: delete, or rewrite against tokens with aria-current=\"true\" on the active tab, type=\"button\", and --t2/--t1 hover colors."
+  },
+  {
+   "claim": "The register page always renders a 1.6MB autoplay/loop MP4 (public/brand/hero-ambient.mp4; app/auth/register/page.tsx:434-443). Under prefers-reduced-motion the video is only hidden visually via `motion-reduce:hidden` (line 62) \u2014 the element still downloads and plays. No preload attribute means the browser default (auto for autoplay) fetches the full file. By contrast the landing page gates its ambient video correctly in JS on matchMedia and uses preload=\"metadata\" (app/page.tsx:145-170).",
+   "kind": "evidence",
+   "source": "app/auth/register/page.tsx:434; app/page.tsx:148-153",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: MEDIUM (performance + reduced-motion integrity on a conversion-critical page). Fix: copy the landing pattern \u2014 render the <video> only after a matchMedia('(prefers-reduced-motion: reduce)') check returns false, keep the poster <img> as the base layer, and consider a smaller/AV1 encode (1.6MB for ambient atmosphere is heavy on PH mobile networks, the stated target market)."
+  },
+  {
+   "claim": "No next/image anywhere in the app (zero imports); MarketCard renders remote market images via raw <img> (MarketCard.tsx:150-156) with no loading=\"lazy\", no decoding=\"async\", no srcset \u2014 discovery grids render ~20+ cards each downloading the full-size upstream image (imagePath comes from the discovery sync, arbitrary dimensions) to paint a 40\u00d740 circle.",
+   "kind": "evidence",
+   "source": "app/components/prediction/MarketCard.tsx:150; app/components/prediction/utils/marketImage.ts:47",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: MEDIUM (performance \u2014 bandwidth + main-thread decode on the highest-traffic page). Fix: add loading=\"lazy\" decoding=\"async\" width={40} height={40} immediately (one-line); longer term route through next/image or an image-resizing proxy with a 80px variant, and add remotePatterns to next.config.js."
+  },
+  {
+   "claim": "MarketChart plots two overlapping price lines distinguished only by hue \u2014 main side in --yes-text/--no-text and the complement stroke at 0.35 opacity (MarketChart.tsx:165-166, 209-211) \u2014 with no legend, labels, or pattern differentiation; the 35%-opacity complement line also lands well below 3:1 non-text contrast on white.",
+   "kind": "evidence",
+   "source": "app/components/prediction/MarketChart.tsx:165",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: MEDIUM (a11y, WCAG 1.4.1/1.4.11 \u2014 colorblind users cannot tell YES from NO trace). Fix: add a small inline legend ('YES \u2014, NO ---') and give the complement line a dash pattern; raise complement opacity to \u22650.5 or use --t3 gray for it."
+  },
+  {
+   "claim": "TopBar user menu uses role=\"menu\" on the dropdown (TopBar.tsx:470) but children are plain Links/buttons without role=\"menuitem\", there is no arrow-key navigation, and focus is not moved into the menu on open (only Escape + click-outside are handled, lines 268-284).",
+   "kind": "evidence",
+   "source": "app/components/prediction/TopBar.tsx:470",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: LOW-MEDIUM (a11y). Fix: either complete the menu pattern (menuitem roles, ArrowUp/Down, focus first item on open, return focus to the avatar on close) or \u2014 simpler and equally conformant \u2014 drop role=\"menu\"/aria-haspopup=\"menu\" and treat it as a disclosure (aria-expanded is already present)."
+  },
+  {
+   "claim": "package.json lists at least 7 dependencies with zero imports anywhere in app/ source: recharts ^3.8.1 (~450KB), formik, yup, jsonwebtoken (a Node-only crypto lib in a browser app), react-gtm-module (GTM is instead hand-inlined in layout.tsx:29-37), react-infinite-scroller, react-use-websocket (websockets are custom in app/lib/websocket/predict-ws.ts). react-code-input is also unreferenced (CodeInput.tsx is custom).",
+   "kind": "evidence",
+   "source": "package.json:34-55",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: MEDIUM (bundle risk + supply-chain surface + install time). None ship to the browser today, but one accidental import (especially recharts or jsonwebtoken) silently adds hundreds of KB or breaks the build. Fix: prune all unused deps; if charts return in the redesign, prefer the existing hand-rolled SVG approach or a lightweight lib, loaded via dynamic()."
+  },
+  {
+   "claim": "MobileTabBar labels are 10px (text-[10px], MobileTabBar.tsx:79) in a rigid 6-column grid; on a 320px viewport each cell is \u224849px wide, and supported locales have longer labels \u2014 ms 'Papan Kedudukan' (Leaderboards), id equivalents \u2014 which wrap to 2-3 lines inside cells with no truncation handling, producing uneven tab heights. Touch targets themselves are fine (min-h-12 = 48px).",
+   "kind": "evidence",
+   "source": "app/components/MobileTabBar.tsx:79; public/static/locales/ms/header.json (NAV_LEADERBOARDS)",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: LOW-MEDIUM (i18n overflow). Fix: raise labels to 11px for legibility, add `line-clamp-1` + `w-full overflow-hidden text-ellipsis` on the label span, and get locale review for \u226410-char tab labels; alternatively cap visible tabs at 5 and fold Rewards into the account menu."
+  },
+  {
+   "claim": "MobileTabBar and the TopBar nav are gated on client-side matchMedia state (MobileTabBar.tsx:122-132 returns null until the effect runs; TopBar.tsx:185-193 same for isDesktop) \u2014 the primary navigation does not exist in the SSR HTML and appears only after hydration.",
+   "kind": "evidence",
+   "source": "app/components/MobileTabBar.tsx:122; app/components/prediction/TopBar.tsx:185",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: LOW-MEDIUM (performance/CLS \u2014 late-appearing fixed bottom bar shifts perceived layout; nav unusable during long hydration on mobile). Fix: render both variants in HTML and switch via CSS media queries (the code comment cites test determinism \u2014 solve that with data-testid scoping instead of DOM removal), or at minimum reserve the bar's space via padding that already exists in APP_SHELL_MAIN_CLASS."
+  },
+  {
+   "claim": "Toast close (~20px hit area, ToastProvider.tsx:139-144) and FeaturedCarousel arrows (30px desktop / 28px mobile, FeaturedCarousel.tsx:50) sit below the 44px comfortable-touch guideline, though above the WCAG 2.5.8 24px minimum.",
+   "kind": "evidence",
+   "source": "app/components/ToastProvider.tsx:139; app/components/prediction/FeaturedCarousel.tsx:50",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: LOW. Fix: pad hit areas without changing visuals \u2014 add p-2 negative-margin technique or min-h-11/min-w-11 with centered glyphs on touch breakpoints."
+  },
+  {
+   "claim": "TapDot loader renders role=\"status\" with aria-label={label} where label is optional (TapDot.tsx:20-23) \u2014 when omitted, the status region has no accessible name and no text, announcing nothing.",
+   "kind": "evidence",
+   "source": "app/components/TapDot.tsx:20",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: LOW. Fix: default the aria-label (`aria-label={label ?? t(\"LOADING\")}`)."
+  },
+  {
+   "claim": "Reduced-motion and focus fundamentals are in good shape and should be preserved through the redesign: globals.css:1337-1349 hard-collapses all animations/transitions under prefers-reduced-motion; globals.css:285-288 provides a global AA-contrast :focus-visible ring (--focus-ring #0e7a53, documented 6.0:1); FeaturedCarousel disables auto-advance under reduced motion; DiscoveryHero's ping dot uses motion-reduce:hidden; landing hero video is flag-gated and reduced-motion-gated; color-plus-text signal patterns (sentiment sentence with dot, 'YES 7\u00a2' labeled pills, labeled order-book sides) mean YES/NO meaning is not color-only in the core surfaces.",
+   "kind": "evidence",
+   "source": "app/globals.css:1337; app/globals.css:285",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Keep these mechanisms intact in Phase 4; any new animation must rely on the global kill switch (CSS keyframes/transitions) rather than JS-driven rAF loops, which the kill switch cannot stop \u2014 the Web Animations API call in FeaturedCarousel.tsx:133-139 already correctly self-gates on reducedMotion and is the template to follow."
+  },
+  {
+   "claim": "MarketCard YES/NO pill links override their visible text with aria-label={t(\"BUY_YES\")}/t(\"BUY_NO\") (MarketCard.tsx:196,208), dropping the price from the accessible name \u2014 a screen-reader user browsing cards hears 'Buy Yes' twice per card with no price, and the label doesn't match visible text 'YES 7\u00a2' (WCAG 2.5.3 label-in-name risk for voice control).",
+   "kind": "evidence",
+   "source": "app/components/prediction/MarketCard.tsx:196",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: LOW-MEDIUM. Fix: include the price and market context: aria-label={t(\"BUY_YES_AT\", { price: yesPricePoints, title })} or simply remove the aria-label and let the visible 'YES 7\u00a2' text speak, adding an sr-only suffix for context."
+  },
+  {
+   "claim": "The de locale exists on disk (public/static/locales/de/) with full translations but 'de' is absent from SUPPORTED_LANGUAGES in app/lib/i18n/config.ts:44 (en, zh-Hans, zh-Hant, tl, ms, id) \u2014 dead locale weight in public/, and a trap if someone enables it without width testing (German 'Bestenlisten', 'Einstellungen' are the longest nav strings on disk).",
+   "kind": "evidence",
+   "source": "app/lib/i18n/config.ts:44; public/static/locales/de/header.json",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: LOW. Fix: delete the de tree (and any other unsupported locale dirs) or add de to the supported list only after the MobileTabBar/TopBar width fixes above; add a CI check that locale dirs match SUPPORTED_LANGUAGES."
+  },
+  {
+   "claim": "globals.css still ships ~700 lines of dead dark-theme sportsbook CSS (.ps-sidebar/.ps-topbar/.ps-btn-* block at lines 440-1050, hardcoded #0f1225/#39ff14 neon palette; the .glass material system at 1052-1164) alongside the P9 white system \u2014 plus legacy token sets (--glass-*, --bg-navy/teal/mint/azure, --s0..s3, --b1..b3) retained for surfaces that may no longer exist.",
+   "kind": "evidence",
+   "source": "app/globals.css:440-1164",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Severity: LOW-MEDIUM (CSS weight + design drift: new code keeps grabbing legacy hexes, e.g., Modal.tsx and CategoryPills). Fix during redesign: grep each .ps-*/.glass consumer; delete unreferenced blocks and retire legacy tokens, leaving one token set so contrast can be audited in one place."
+  }
+ ]
+}

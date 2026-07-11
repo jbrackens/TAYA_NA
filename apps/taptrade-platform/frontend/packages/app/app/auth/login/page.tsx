@@ -15,6 +15,8 @@ import { useAuth } from "../../hooks/useAuth";
 import { safeReturnPath, returnUrlSuffix } from "../../lib/safeReturnPath";
 import { FEATURE_SOCIAL_AUTH } from "../../lib/features";
 import { brand } from "../../lib/brand";
+import BrandMark from "../../components/BrandMark";
+import BrandWordmark from "../../components/BrandWordmark";
 import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
 
 const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
@@ -23,8 +25,6 @@ const CARD_CLASS =
 const HEAD_CLASS = "mb-6 text-center";
 const EYEBROW_CLASS =
   "mb-3.5 inline-block rounded-full border border-[rgba(43,228,128,0.3)] bg-[var(--accent-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]";
-const TITLE_CLASS =
-  "m-0 mb-2 text-[28px] font-extrabold tracking-[-0.02em] text-[var(--t1)]";
 const SUBTITLE_CLASS = "m-0 text-sm leading-[1.55] text-[var(--t2)]";
 const FORM_CLASS = "flex flex-col gap-3.5";
 const FIELD_CLASS = "flex flex-col gap-1.5";
@@ -98,7 +98,13 @@ export default function LoginPage() {
       <div className={CARD_CLASS}>
         <header className={HEAD_CLASS}>
           <span className={EYEBROW_CLASS}>Player access</span>
-          <h1 className={TITLE_CLASS}>{brand.name}</h1>
+          {/* P10: the auth card carries the real lockup (mark + drawn
+              wordmark), not a plain-text heading — brand-consistent with
+              the register split-screen and the nav. */}
+          <h1 className="m-0 flex items-center justify-center gap-2.5 text-[var(--brand-ink)]">
+            <BrandMark size={30} />
+            <BrandWordmark height={22} label={brand.name} />
+          </h1>
           <p className={SUBTITLE_CLASS}>
             Sign in to track your positions, follow market moves, and trade on
             real-world outcomes.

@@ -17,6 +17,13 @@ export interface ChartSeriesResolution {
   state: ChartState;
   /** Points to draw; empty when nothing should be drawn (loading/error). */
   values: number[];
+  /**
+   * True when `values` came from the demo-flag synthetic walk rather
+   * than real price history. Components MUST render a visible
+   * "Simulated" marker whenever this is set — an unlabeled synthetic
+   * chart is a P10 honesty violation, even on demo deploys.
+   */
+  synthetic?: boolean;
 }
 
 export function seededRandom(seed: number): () => number {
@@ -82,14 +89,16 @@ export function resolveChartSeries(args: {
     hasMovement(realValues);
 
   if (syntheticFallbackEnabled) {
-    // Demo behavior: identical to the pre-flag chart — synthetic walk while
-    // loading, on error, and for markets without price movement.
+    // Demo behavior: synthetic walk while loading, on error, and for
+    // markets without price movement — but flagged, so the component
+    // renders a visible "Simulated" marker over the plot.
     if (realIsDrawable && realValues !== null) {
       return { state: "ready", values: realValues };
     }
     return {
       state: "ready",
       values: samplePath(syntheticSeed, range, currentPricePoints),
+      synthetic: true,
     };
   }
 

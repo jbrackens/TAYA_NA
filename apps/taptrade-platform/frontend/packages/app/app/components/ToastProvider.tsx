@@ -9,6 +9,7 @@ import React, {
   useEffect,
 } from "react";
 import { Check, X, Info, AlertTriangle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 // ── Types ──
 export type ToastType = "success" | "error" | "info" | "warning";
@@ -84,32 +85,61 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
   toast,
   onRemove,
 }) => {
+  const { t } = useTranslation("common");
   const [exiting, setExiting] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  // A11y (2026-07-12): auto-dismiss pauses while hovered or focused so the
+  // toast doesn't disappear under the user (WCAG 2.2.1 Timing Adjustable).
+  const remainingRef = useRef(toast.duration ?? 4000);
+  const startedAtRef = useRef(0);
+  const exitingRef = useRef(false);
   const c = toastClasses[toast.type];
   const toastId = toast.id;
-  const toastDuration = toast.duration;
+
+  const startExit = useCallback(() => {
+    if (exitingRef.current) return;
+    exitingRef.current = true;
+    setExiting(true);
+    setTimeout(() => onRemove(toastId), 300);
+  }, [toastId, onRemove]);
+
+  const pauseTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = undefined;
+      remainingRef.current -= Date.now() - startedAtRef.current;
+    }
+  }, []);
+
+  const resumeTimer = useCallback(() => {
+    if (timerRef.current || exitingRef.current) return;
+    startedAtRef.current = Date.now();
+    timerRef.current = setTimeout(startExit, Math.max(0, remainingRef.current));
+  }, [startExit]);
 
   useEffect(() => {
-    const dur = toastDuration ?? 4000;
-    timerRef.current = setTimeout(() => {
-      setExiting(true);
-      setTimeout(() => onRemove(toastId), 300);
-    }, dur);
+    startedAtRef.current = Date.now();
+    timerRef.current = setTimeout(startExit, Math.max(0, remainingRef.current));
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [toastId, toastDuration, onRemove]);
+  }, [startExit]);
 
   const handleClose = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
-    setExiting(true);
-    setTimeout(() => onRemove(toast.id), 300);
-  }, [toast.id, onRemove]);
+    timerRef.current = undefined;
+    startExit();
+  }, [startExit]);
 
   return (
     <div
-      role="status"
+      role={
+        toast.type === "error" || toast.type === "warning" ? "alert" : "status"
+      }
+      onMouseEnter={pauseTimer}
+      onMouseLeave={resumeTimer}
+      onFocus={pauseTimer}
+      onBlur={resumeTimer}
       className={`pointer-events-auto flex min-w-[300px] max-w-[400px] items-start gap-3 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3.5 shadow-[var(--shadow-card)] transition-all duration-300 motion-reduce:transition-none ${exiting ? "translate-x-10 opacity-0" : "translate-x-0 opacity-100"}`}
     >
       {/* Status: the dot signature + a small tinted glyph on the white card */}
@@ -135,10 +165,12 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
         )}
       </div>
 
-      {/* Close */}
+      {/* Close — 44x44 hit area via padding + negative margin (layout stays compact) */}
       <button
+        type="button"
         onClick={handleClose}
-        className="shrink-0 cursor-pointer border-0 bg-transparent p-0.5 text-base leading-none text-[var(--t3)] transition-colors duration-150 hover:text-[var(--t1)]"
+        aria-label={t("DISMISS", "Dismiss")}
+        className="-m-2 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-base leading-none text-[var(--t3)] transition-colors duration-150 hover:text-[var(--t1)]"
       >
         ×
       </button>
@@ -191,8 +223,9 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
     >
       {children}
 
-      {/* Toast Container — fixed top-right */}
-      <div className="pointer-events-none fixed right-4 top-4 z-[9999] flex flex-col gap-2">
+      {/* Toast Container — fixed right, below the 64px sticky TopBar so
+          toasts never cover the header controls (2026-07-12) */}
+      <div className="pointer-events-none fixed right-4 top-[72px] z-[9999] flex flex-col gap-2">
         {toasts.map((t) => (
           <ToastItem key={t.id} toast={t} onRemove={removeToast} />
         ))}

@@ -74,16 +74,30 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
         <>
           {asks.length > 0 && (
             <table className={ORDER_BOOK_TABLE_CLASS}>
+              <caption className="sr-only">
+                {t("ORDER_BOOK_ASKS_CAPTION", "Order book — sell (No) side")}
+              </caption>
               <thead>
                 <tr>
-                  <th className={ORDER_BOOK_TH_CLASS}>{t("SIDE")}</th>
-                  <th className={`${ORDER_BOOK_TH_CLASS} text-right`}>
+                  <th scope="col" className={ORDER_BOOK_TH_CLASS}>
+                    {t("SIDE")}
+                  </th>
+                  <th
+                    scope="col"
+                    className={`${ORDER_BOOK_TH_CLASS} text-right`}
+                  >
                     {t("PRICE")}
                   </th>
-                  <th className={`${ORDER_BOOK_TH_CLASS} text-right`}>
+                  <th
+                    scope="col"
+                    className={`${ORDER_BOOK_TH_CLASS} text-right`}
+                  >
                     {t("SIZE")}
                   </th>
-                  <th className={`${ORDER_BOOK_TH_CLASS} text-right`}>
+                  <th
+                    scope="col"
+                    className={`${ORDER_BOOK_TH_CLASS} text-right`}
+                  >
                     {t("TOTAL")}
                   </th>
                 </tr>
@@ -109,9 +123,7 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
                       {l.shares}
                     </td>
                     <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
-                      {(l.shares * (100 - l.pricePoints)).toFixed(
-                        2,
-                      )}
+                      {(l.shares * (100 - l.pricePoints)).toFixed(2)}
                     </td>
                     <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
                       {(
@@ -133,6 +145,21 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
 
           {bids.length > 0 && (
             <table className={ORDER_BOOK_TABLE_CLASS}>
+              <caption className="sr-only">
+                {t("ORDER_BOOK_BIDS_CAPTION", "Order book — buy (Yes) side")}
+              </caption>
+              {/* A11y (2026-07-12): the bids table previously had no header
+                  row at all — cells were unlabeled for screen readers. The
+                  design shows one visible header (on the asks table) for the
+                  whole book, so this one mirrors it visually hidden. */}
+              <thead className="sr-only">
+                <tr>
+                  <th scope="col">{t("SIDE")}</th>
+                  <th scope="col">{t("PRICE")}</th>
+                  <th scope="col">{t("SIZE")}</th>
+                  <th scope="col">{t("TOTAL")}</th>
+                </tr>
+              </thead>
               <tbody>
                 {bids.map((l) => (
                   <tr
@@ -157,10 +184,7 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
                       {(l.shares * l.pricePoints).toFixed(0)}
                     </td>
                     <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
-                      {(
-                        (l.cumulativeShares * l.pricePoints) /
-                        100
-                      ).toFixed(2)}
+                      {((l.cumulativeShares * l.pricePoints) / 100).toFixed(2)}
                     </td>
                   </tr>
                 ))}

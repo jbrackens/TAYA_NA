@@ -1,6 +1,13 @@
 "use client";
 
+// The explicit React import matters: run-tests.sh executes component
+// tests via `tsx --test` from /tmp, outside the project tsconfig, where
+// JSX compiles to the classic React.createElement transform. `void`
+// marks it used for the app build's react-jsx transform (noUnusedLocals).
+import React from "react";
 import { useTranslation } from "react-i18next";
+
+void React;
 import { WageringProgress } from "../components/WageringProgress";
 import type { PlayerBonus } from "../lib/api/bonus-client";
 

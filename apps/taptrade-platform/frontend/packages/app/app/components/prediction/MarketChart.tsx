@@ -63,7 +63,7 @@ const CHART_SVG_CLASS = "block h-[300px] w-full";
 // P9.2: the range switcher is a quiet mono text-tab row under the plot
 // (Robinhood-style), not a segmented fill control. Active = ink text +
 // 2px ink underline; inactive = --t3.
-const CHART_SWITCHER_CLASS = "mt-4 flex items-center gap-5";
+const CHART_SWITCHER_CLASS = "flex items-center gap-5";
 const CHART_BUTTON_BASE_CLASS =
   "cursor-pointer border-0 bg-transparent p-0 pb-1 font-['IBM_Plex_Mono',_monospace] text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors duration-[120ms] border-b-2";
 
@@ -132,7 +132,11 @@ export default function MarketChart({
     };
   }, [ticker, range, retryNonce]);
 
-  const { state: chartState, values } = useMemo(() => {
+  const {
+    state: chartState,
+    values,
+    synthetic,
+  } = useMemo(() => {
     const realValues = history
       ? history.points.map((p) =>
           side === "no" ? 100 - p.yesPricePoints : p.yesPricePoints,
@@ -151,10 +155,7 @@ export default function MarketChart({
   const height = 300;
   // Selected side draws at full strength; its complement draws muted so
   // the binary reads as one market with two mirrored outcomes.
-  const complementValues = useMemo(
-    () => values.map((v) => 100 - v),
-    [values],
-  );
+  const complementValues = useMemo(() => values.map((v) => 100 - v), [values]);
   const line = values.length >= 2 ? buildPath(values, width, height) : "";
   const complementLine =
     complementValues.length >= 2
@@ -196,71 +197,125 @@ export default function MarketChart({
       )}
 
       {(chartState === "ready" || chartState === "empty") && (
-        <svg
-          className={CHART_SVG_CLASS}
-          viewBox={`0 0 ${width} ${height}`}
-          preserveAspectRatio="none"
-          aria-label={t(side === "no" ? "NO_PRICE_CHART" : "YES_PRICE_CHART", {
-            ticker,
-          })}
-        >
-          <path
-            d={complementLine}
-            stroke={complementColor}
-            strokeOpacity="0.35"
-            strokeWidth="1.5"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            vectorEffect="non-scaling-stroke"
-          />
-          <path
-            d={line}
-            stroke={lineColor}
-            strokeWidth="2"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            vectorEffect="non-scaling-stroke"
-          />
-          <g transform={`translate(${width},${complementEndY})`}>
-            <circle r="3" fill={complementColor} fillOpacity="0.45" />
-          </g>
-          <g transform={`translate(${width},${lineEndY})`}>
-            <circle r="4.5" fill={lineColor} stroke="var(--surface-1)" strokeWidth="1.5" />
-          </g>
-
-          {chartState === "empty" && (
-            <text
-              x={width / 2}
-              y={height / 2 - 14}
-              textAnchor="middle"
-              fontFamily="Inter, sans-serif"
-              fontSize="14"
-              fill="var(--t3)"
-            >
-              {t("NO_TRADES_IN_RANGE")}
-            </text>
+        <div className="relative">
+          {/* P10 honesty: the demo flag's synthetic walk must never be
+              mistakable for real history — visible marker, always. */}
+          {synthetic && (
+            <span className="pointer-events-none absolute right-1 top-1 z-[1] rounded-[var(--r-pill)] border border-[var(--border-2)] bg-[var(--surface-1)] px-2 py-0.5 font-['IBM_Plex_Mono',_monospace] text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
+              {t("SIMULATED", "Simulated")}
+            </span>
           )}
-        </svg>
+          <svg
+            className={CHART_SVG_CLASS}
+            viewBox={`0 0 ${width} ${height}`}
+            preserveAspectRatio="none"
+            aria-label={t(
+              side === "no" ? "NO_PRICE_CHART" : "YES_PRICE_CHART",
+              {
+                ticker,
+              },
+            )}
+          >
+            {/* Complement line is dashed as well as muted so the two
+                sides differ by more than hue (WCAG 1.4.1). */}
+            <path
+              d={complementLine}
+              stroke={complementColor}
+              strokeOpacity="0.5"
+              strokeWidth="1.5"
+              strokeDasharray="5 5"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              vectorEffect="non-scaling-stroke"
+            />
+            <path
+              d={line}
+              stroke={lineColor}
+              strokeWidth="2"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              vectorEffect="non-scaling-stroke"
+            />
+            <g transform={`translate(${width},${complementEndY})`}>
+              <circle r="3" fill={complementColor} fillOpacity="0.45" />
+            </g>
+            <g transform={`translate(${width},${lineEndY})`}>
+              <circle
+                r="4.5"
+                fill={lineColor}
+                stroke="var(--surface-1)"
+                strokeWidth="1.5"
+              />
+            </g>
+
+            {chartState === "empty" && (
+              <text
+                x={width / 2}
+                y={height / 2 - 14}
+                textAnchor="middle"
+                fontFamily="Inter, sans-serif"
+                fontSize="14"
+                fill="var(--t3)"
+              >
+                {t("NO_TRADES_IN_RANGE")}
+              </text>
+            )}
+          </svg>
+        </div>
       )}
 
-      <div
-        className={CHART_SWITCHER_CLASS}
-        role="tablist"
-        aria-label={t("TIME_RANGE")}
-      >
-        {RANGES.map((r) => (
-          <button
-            key={r}
-            role="tab"
-            aria-selected={r === range}
-            className={rangeButtonClass(r === range)}
-            onClick={() => setRange(r)}
-          >
-            {r}
-          </button>
-        ))}
+      <div className="mt-4 flex items-center justify-between gap-4">
+        <div
+          className={CHART_SWITCHER_CLASS}
+          role="group"
+          aria-label={t("TIME_RANGE")}
+        >
+          {RANGES.map((r) => (
+            <button
+              key={r}
+              type="button"
+              aria-pressed={r === range}
+              className={rangeButtonClass(r === range)}
+              onClick={() => setRange(r)}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+        {/* Inline legend: names the solid vs dashed line (a11y + first-
+            time readability). */}
+        <div className="flex items-center gap-3 font-['IBM_Plex_Mono',_monospace] text-[10px] uppercase tracking-[0.08em] text-[var(--t3)]">
+          <span className="inline-flex items-center gap-1.5">
+            <svg width="18" height="6" aria-hidden="true">
+              <line
+                x1="0"
+                y1="3"
+                x2="18"
+                y2="3"
+                stroke={lineColor}
+                strokeWidth="2"
+              />
+            </svg>
+            {side === "no" ? t("NO") : t("YES")}
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <svg width="18" height="6" aria-hidden="true">
+              <line
+                x1="0"
+                y1="3"
+                x2="18"
+                y2="3"
+                stroke={complementColor}
+                strokeOpacity="0.6"
+                strokeWidth="1.5"
+                strokeDasharray="4 3"
+              />
+            </svg>
+            {side === "no" ? t("YES") : t("NO")}
+          </span>
+        </div>
       </div>
     </section>
   );
