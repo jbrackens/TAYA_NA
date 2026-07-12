@@ -1,70 +1,71 @@
 {
-  "title": "Portfolio",
-  "subtitle": "Posisi terbuka, pesanan aktif dan keputusan selesai.",
-  "state": {
-    "loading": "Memuatkan portfolio…",
-    "signIn": "Log masuk untuk melihat portfolio anda.",
-    "login": "Log masuk"
-  },
-  "summary": {
-    "invested": "Dilaburkan",
-    "realizedPnl": "Hasil mata direalisasi",
-    "openPositions": "Posisi terbuka",
-    "accuracy": "Ketepatan",
-    "correctCount": "{{correct}}/{{total}} betul",
-    "noSettledPredictions": "Belum ada ramalan selesai"
-  },
-  "rank": {
-    "label": "Kedudukan",
-    "notRanked": "Belum disenaraikan",
-    "qualify": "Selesaikan lebih banyak pasaran untuk layak",
-    "metricAccuracy": "{{value}}% betul",
-    "metricSharpness": "{{value}}% kecekapan mata",
-    "metricPnl": "{{value}} hasil mata"
-  },
   "boards": {
     "accuracy": "Ketepatan",
     "pnlWeekly": "Hasil mata mingguan",
     "sharpness": "Sharpness"
   },
-  "tabs": {
-    "positions": "Posisi",
-    "orders": "Pesanan terbuka",
-    "history": "Sejarah"
-  },
-  "positions": {
-    "empty": "Tiada posisi terbuka.",
-    "browse": "Lihat pasaran"
-  },
-  "orders": {
-    "empty": "Tiada pesanan terbuka.",
-    "cancelled": "Pesanan dibatalkan",
-    "released": "Mata yang dikunci dibuka pada {{ticker}}",
-    "cancelFailed": "Pembatalan gagal",
-    "cancel": "Batal"
-  },
   "history": {
-    "empty": "Posisi selesai akan muncul di sini selepas pasaran diselesaikan.",
     "earnedPoints": "Mendapat {{points}} mata",
+    "empty": "Posisi selesai akan muncul di sini selepas pasaran diselesaikan.",
     "pointsShort": "+{{points}} pts"
   },
+  "orders": {
+    "cancel": "Batal",
+    "cancelFailed": "Pembatalan gagal",
+    "cancelled": "Pesanan dibatalkan",
+    "empty": "Tiada pesanan terbuka.",
+    "released": "Mata yang dikunci dibuka pada {{ticker}}"
+  },
+  "positions": {
+    "browse": "Lihat pasaran",
+    "empty": "Tiada posisi terbuka."
+  },
+  "rank": {
+    "label": "Kedudukan",
+    "metricAccuracy": "{{value}}% betul",
+    "metricPnl": "{{value}} hasil mata",
+    "metricSharpness": "{{value}}% kecekapan mata",
+    "notRanked": "Belum disenaraikan",
+    "qualify": "Selesaikan lebih banyak pasaran untuk layak"
+  },
+  "rank.standing": "Kedudukan #{{rank}}",
+  "side": {
+    "no": "NO",
+    "yes": "YES"
+  },
+  "state": {
+    "loading": "Memuatkan portfolio…",
+    "login": "Log masuk",
+    "signIn": "Log masuk untuk melihat portfolio anda."
+  },
+  "subtitle": "Posisi terbuka, pesanan aktif dan keputusan selesai.",
+  "summary": {
+    "accuracy": "Ketepatan",
+    "correctCount": "{{correct}}/{{total}} betul",
+    "invested": "Dilaburkan",
+    "noSettledPredictions": "Belum ada ramalan selesai",
+    "openPositions": "Posisi terbuka",
+    "realizedPnl": "Hasil mata direalisasi"
+  },
   "table": {
-    "market": "Pasaran",
-    "side": "Side",
-    "qty": "Qty",
     "available": "Tersedia",
     "avgPrice": "Harga purata",
     "cost": "Kos",
-    "status": "Status",
-    "placed": "Diletakkan",
     "entry": "Masuk",
     "exit": "Keluar",
+    "market": "Pasaran",
+    "placed": "Diletakkan",
     "pnl": "Hasil mata",
     "points": "Mata",
-    "settled": "Selesai"
+    "qty": "Qty",
+    "settled": "Selesai",
+    "side": "Side",
+    "status": "Status"
   },
-  "side": {
-    "yes": "YES",
-    "no": "NO"
-  }
+  "tabs": {
+    "history": "Sejarah",
+    "orders": "Pesanan terbuka",
+    "positions": "Posisi"
+  },
+  "title": "Portfolio"
 }

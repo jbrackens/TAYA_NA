@@ -1,70 +1,71 @@
 {
-  "title": "Portfolio",
-  "subtitle": "Open positions, active orders, settled results.",
-  "state": {
-    "loading": "Loading portfolio…",
-    "signIn": "Sign in to see your portfolio.",
-    "login": "Log in"
-  },
-  "summary": {
-    "invested": "Invested",
-    "realizedPnl": "Realized point result",
-    "openPositions": "Open positions",
-    "accuracy": "Accuracy",
-    "correctCount": "{{correct}}/{{total}} correct",
-    "noSettledPredictions": "No settled predictions yet"
-  },
-  "rank": {
-    "label": "Rank",
-    "notRanked": "Not ranked yet",
-    "qualify": "Settle more markets to qualify",
-    "metricAccuracy": "{{value}}% correct",
-    "metricSharpness": "{{value}}% point efficiency",
-    "metricPnl": "{{value}} point result"
-  },
   "boards": {
     "accuracy": "Accuracy",
     "pnlWeekly": "Weekly point result",
     "sharpness": "Sharpness"
   },
-  "tabs": {
-    "positions": "Positions",
-    "orders": "Open orders",
-    "history": "History"
-  },
-  "positions": {
-    "empty": "No open positions.",
-    "browse": "Browse markets"
-  },
-  "orders": {
-    "empty": "No open orders.",
-    "cancelled": "Order cancelled",
-    "released": "Reserved points unlocked on {{ticker}}",
-    "cancelFailed": "Cancel failed",
-    "cancel": "Cancel"
-  },
   "history": {
-    "empty": "Settled positions will appear here after markets resolve.",
     "earnedPoints": "Settlement {{points}}",
+    "empty": "Settled positions will appear here after markets resolve.",
     "pointsShort": "+{{points}}"
   },
+  "orders": {
+    "cancel": "Cancel",
+    "cancelFailed": "Cancel failed",
+    "cancelled": "Order cancelled",
+    "empty": "No open orders.",
+    "released": "Reserved points unlocked on {{ticker}}"
+  },
+  "positions": {
+    "browse": "Browse markets",
+    "empty": "No open positions."
+  },
+  "rank": {
+    "label": "Rank",
+    "metricAccuracy": "{{value}}% correct",
+    "metricPnl": "{{value}} point result",
+    "metricSharpness": "{{value}}% point efficiency",
+    "notRanked": "Not ranked yet",
+    "qualify": "Settle more markets to qualify"
+  },
+  "rank.standing": "Rank #{{rank}}",
+  "side": {
+    "no": "NO",
+    "yes": "YES"
+  },
+  "state": {
+    "loading": "Loading portfolio…",
+    "login": "Log in",
+    "signIn": "Sign in to see your portfolio."
+  },
+  "subtitle": "Open positions, active orders, settled results.",
+  "summary": {
+    "accuracy": "Accuracy",
+    "correctCount": "{{correct}}/{{total}} correct",
+    "invested": "Invested",
+    "noSettledPredictions": "No settled predictions yet",
+    "openPositions": "Open positions",
+    "realizedPnl": "Realized point result"
+  },
   "table": {
-    "market": "Market",
-    "side": "Side",
-    "qty": "Qty",
     "available": "Available",
     "avgPrice": "Avg price",
     "cost": "Cost",
-    "status": "Status",
-    "placed": "Placed",
     "entry": "Entry",
     "exit": "Exit",
+    "market": "Market",
+    "placed": "Placed",
     "pnl": "Point result",
     "points": "Points",
-    "settled": "Settled"
+    "qty": "Qty",
+    "settled": "Settled",
+    "side": "Side",
+    "status": "Status"
   },
-  "side": {
-    "yes": "YES",
-    "no": "NO"
-  }
+  "tabs": {
+    "history": "History",
+    "orders": "Open orders",
+    "positions": "Positions"
+  },
+  "title": "Portfolio"
 }

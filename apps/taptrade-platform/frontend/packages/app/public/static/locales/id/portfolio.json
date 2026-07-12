@@ -1,70 +1,71 @@
 {
-  "title": "Portofolio",
-  "subtitle": "Posisi terbuka, order aktif, dan hasil selesai.",
-  "state": {
-    "loading": "Memuat portofolio…",
-    "signIn": "Login untuk melihat portofolio Anda.",
-    "login": "Login"
-  },
-  "summary": {
-    "invested": "Diinvestasikan",
-    "realizedPnl": "Hasil poin terealisasi",
-    "openPositions": "Posisi terbuka",
-    "accuracy": "Akurasi",
-    "correctCount": "{{correct}}/{{total}} benar",
-    "noSettledPredictions": "Belum ada prediksi selesai"
-  },
-  "rank": {
-    "label": "Peringkat",
-    "notRanked": "Belum masuk peringkat",
-    "qualify": "Selesaikan lebih banyak market agar memenuhi syarat",
-    "metricAccuracy": "{{value}}% benar",
-    "metricSharpness": "{{value}}% efisiensi poin",
-    "metricPnl": "{{value}} hasil poin"
-  },
   "boards": {
     "accuracy": "Akurasi",
     "pnlWeekly": "Hasil poin mingguan",
     "sharpness": "Sharpness"
   },
-  "tabs": {
-    "positions": "Posisi",
-    "orders": "Order terbuka",
-    "history": "Riwayat"
-  },
-  "positions": {
-    "empty": "Tidak ada posisi terbuka.",
-    "browse": "Jelajahi market"
-  },
-  "orders": {
-    "empty": "Tidak ada order terbuka.",
-    "cancelled": "Order dibatalkan",
-    "released": "Poin yang dikunci dibuka pada {{ticker}}",
-    "cancelFailed": "Pembatalan gagal",
-    "cancel": "Batalkan"
-  },
   "history": {
-    "empty": "Posisi selesai akan muncul di sini setelah market diselesaikan.",
     "earnedPoints": "Mendapat {{points}} poin",
+    "empty": "Posisi selesai akan muncul di sini setelah market diselesaikan.",
     "pointsShort": "+{{points}} pts"
   },
+  "orders": {
+    "cancel": "Batalkan",
+    "cancelFailed": "Pembatalan gagal",
+    "cancelled": "Order dibatalkan",
+    "empty": "Tidak ada order terbuka.",
+    "released": "Poin yang dikunci dibuka pada {{ticker}}"
+  },
+  "positions": {
+    "browse": "Jelajahi market",
+    "empty": "Tidak ada posisi terbuka."
+  },
+  "rank": {
+    "label": "Peringkat",
+    "metricAccuracy": "{{value}}% benar",
+    "metricPnl": "{{value}} hasil poin",
+    "metricSharpness": "{{value}}% efisiensi poin",
+    "notRanked": "Belum masuk peringkat",
+    "qualify": "Selesaikan lebih banyak market agar memenuhi syarat"
+  },
+  "rank.standing": "Peringkat #{{rank}}",
+  "side": {
+    "no": "NO",
+    "yes": "YES"
+  },
+  "state": {
+    "loading": "Memuat portofolio…",
+    "login": "Login",
+    "signIn": "Login untuk melihat portofolio Anda."
+  },
+  "subtitle": "Posisi terbuka, order aktif, dan hasil selesai.",
+  "summary": {
+    "accuracy": "Akurasi",
+    "correctCount": "{{correct}}/{{total}} benar",
+    "invested": "Diinvestasikan",
+    "noSettledPredictions": "Belum ada prediksi selesai",
+    "openPositions": "Posisi terbuka",
+    "realizedPnl": "Hasil poin terealisasi"
+  },
   "table": {
-    "market": "Market",
-    "side": "Side",
-    "qty": "Qty",
     "available": "Tersedia",
     "avgPrice": "Harga rata-rata",
     "cost": "Biaya",
-    "status": "Status",
-    "placed": "Dipasang",
     "entry": "Masuk",
     "exit": "Keluar",
+    "market": "Market",
+    "placed": "Dipasang",
     "pnl": "Hasil poin",
     "points": "Poin",
-    "settled": "Selesai"
+    "qty": "Qty",
+    "settled": "Selesai",
+    "side": "Side",
+    "status": "Status"
   },
-  "side": {
-    "yes": "YES",
-    "no": "NO"
-  }
+  "tabs": {
+    "history": "Riwayat",
+    "orders": "Order terbuka",
+    "positions": "Posisi"
+  },
+  "title": "Portofolio"
 }

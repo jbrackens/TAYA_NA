@@ -331,12 +331,18 @@ function RankChip({ entry }: { entry: LeaderboardEntry | null }) {
       <span className={STAT_LABEL}>
         {entry ? formatBoardLabel(entry.boardId, t) : t("rank.label", "Rank")}
       </span>
+      {/* 2026-07-12: the card is titled with the board name (e.g. "Weekly
+          point result"), so the RESULT is the headline value; the rank
+          moves to the sub-line. Previously "#1" rendered as the value of
+          a card labeled "Weekly point result". */}
       <span className={STAT_VALUE}>
-        {entry ? `#${entry.rank}` : t("rank.notRanked", "Not ranked yet")}
+        {entry
+          ? formatBoardMetric(entry, t)
+          : t("rank.notRanked", "Not ranked yet")}
       </span>
       <span className={STAT_SUB}>
         {entry
-          ? formatBoardMetric(entry, t)
+          ? t("rank.standing", "Rank #{{rank}}", { rank: entry.rank })
           : t("rank.qualify", "Settle more markets to qualify")}
       </span>
     </Link>
