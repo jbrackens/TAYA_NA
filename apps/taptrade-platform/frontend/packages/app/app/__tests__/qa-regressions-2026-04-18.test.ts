@@ -1407,10 +1407,13 @@ describe("Registration auth flow", () => {
         registerSource.includes("await claimStarterGrant(newUser.id)"),
       "register page should claim starter points immediately after signup login",
     );
+    // Whitespace-normalized: prettier re-wraps JSX text across lines, which
+    // must not defeat a copy scan (the rendered string is unchanged).
+    const registerCopy = registerSource.replace(/\s+/g, " ");
     assert.ok(
-      registerSource.includes("non-redeemable gameplay points") &&
-        registerSource.includes("cannot be cashed") &&
-        registerSource.includes("no-cashout disclosure"),
+      registerCopy.includes("non-redeemable gameplay points") &&
+        registerCopy.includes("cannot be cashed") &&
+        registerCopy.includes("no-cashout disclosure"),
       "register page should require an explicit points-only no-cashout disclosure",
     );
     assert.ok(

@@ -683,9 +683,12 @@ export function TradeTicket({
                 {action === "sell"
                   ? t("AVAILABLE_SHARES", { quantity: availableShares })
                   : t("BALANCE_AMOUNT", {
+                      // Bare grouped number: the locale template appends the
+                      // unit ("Balance {{amount}} pts") — formatPointAmount
+                      // here doubled it ("1,000 pts pts").
                       amount:
                         typeof balance === "number"
-                          ? formatPointAmount(balance)
+                          ? Math.round(balance).toLocaleString()
                           : "—",
                     })}
               </p>

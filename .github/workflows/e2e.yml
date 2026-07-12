@@ -85,6 +85,9 @@ jobs:
           PAYMENTS_WEBHOOK_SECRET: whsec_local
           AUTH_SERVICE_URL: http://localhost:18081
           GATEWAY_ALLOW_ADMIN_ANON: 'true'
+          # E2E hammers public reads from one IP (journeys + smokes +
+          # per-market history fetches); the 120rpm default 429s mid-suite.
+          GATEWAY_RATELIMIT_RPM: '2400'
         run: |
           nohup go run ./cmd/gateway > /tmp/gateway.log 2>&1 &
           for i in $(seq 1 45); do curl -fsS http://localhost:18080/healthz >/dev/null && break || sleep 2; done

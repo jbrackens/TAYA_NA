@@ -251,6 +251,10 @@ test.describe("arc user provisioning", () => {
   }, testInfo) => {
     mkdirSync(AUTH_DIR, { recursive: true });
     const who = await registerAndLogin(context, testInfo.project.name);
+    // Fresh accounts start at 0 via the API — but the app auto-claims the
+    // starter grant (option B: 1,000 pts) on first UI login, so later
+    // journeys derive "insufficient" from the LIVE balance, never from an
+    // assumed zero.
     expect(await apiBalance(page.request, who.userId)).toBe(0);
     await context.storageState({ path: arcStatePath(testInfo.project.name) });
     writeFileSync(
@@ -294,15 +298,18 @@ test.describe("store + trading journeys (fresh user)", () => {
     page,
   }, testInfo) => {
     const { userId } = loadArcUser(testInfo.project.name);
-    expect(await apiBalance(page.request, userId)).toBe(0);
 
     const ticker = await openLiquidMarket(page);
     marketPath = `/market/${ticker}/`;
 
+    // The page load may auto-claim the starter grant; ask for more points
+    // than the CURRENT balance can cover so the insufficient state is
+    // guaranteed regardless of faucet configuration.
+    const bal = await apiBalance(page.request, userId);
     const amount = page
       .locator('input[inputmode="numeric"], input[type="number"]')
       .first();
-    await amount.fill("100");
+    await amount.fill(String(bal + 1000));
     await expect(page.getByText(/not enough points/i).first()).toBeVisible({
       timeout: 10_000,
     });
@@ -325,10 +332,11 @@ test.describe("store + trading journeys (fresh user)", () => {
 
     // Enter through the ticket CTA so the return context is real.
     await page.goto(marketPath);
+    const balNow = await apiBalance(page.request, userId);
     const amount = page
       .locator('input[inputmode="numeric"], input[type="number"]')
       .first();
-    await amount.fill("100");
+    await amount.fill(String(balNow + 1000));
     const cta = page.getByTestId("add-points-tradeticket");
     await expect(cta).toBeVisible({ timeout: 10_000 });
     await cta
