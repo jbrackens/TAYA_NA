@@ -17,12 +17,22 @@ export default function RootLayout({
           content="Trade Yes or No on politics, basketball, pageants, esports, gaming, and the moments Filipinos are watching."
         />
         {/* Predict design system: Inter (Robinhood-direction primary, added
-         * 2026-04-26 per DESIGN.md §2). Outfit kept loaded for components
-         * that haven't migrated yet (will be removed at the end of the
-         * P2-P6 sweep). IBM Plex Mono for tabular numerics.
+         * 2026-04-26 per DESIGN.md §2), Inter Tight for display headings,
+         * IBM Plex Mono for tabular numerics, Schibsted Grotesk (700 only)
+         * for the wordmark (BrandMark/TopBar/footer/register). P12 perf
+         * (2026-07-12): dropped Outfit (legacy — only remaining reference
+         * was an unreachable fallback behind Inter in globals.css) and
+         * Space Grotesk (zero usages); preconnects added so the blocking
+         * stylesheet + font files start their handshakes immediately.
          */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Schibsted+Grotesk:wght@700&display=swap"
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&family=Schibsted+Grotesk:wght@700&display=swap"
           rel="stylesheet"
         />
         {process.env.NODE_ENV === "production" && (

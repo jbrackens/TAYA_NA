@@ -10,11 +10,11 @@ import {
 } from "../../lib/api/wallet-client";
 import {
   formatPointDelta,
-  formatPoints,
   isPositivePointMovement,
   pointLedgerDetailLabel,
   pointLedgerTypeLabel,
 } from "../../lib/point-ledger";
+import { formatPoints } from "../../lib/points";
 import { logger } from "../../lib/logger";
 
 type DateRange = "all" | "24h" | "week" | "month" | "3m" | "6m" | "year";
@@ -38,6 +38,17 @@ function filterButtonClass(active: boolean) {
       : "border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
   }`;
 }
+
+// Bounded ledger window: the page fetches the most recent LEDGER_WINDOW
+// entries ONCE per user and paginates/filters client-side over that window
+// (wallet-client's getTransactions slices within whatever it fetched, so a
+// per-page `limit: 10` request could never reach page 2 anyway). The gateway
+// ledger endpoint clamps `limit` at EXPORT_WINDOW (500) — CSV export asks for
+// that maximum; the on-screen table keeps a lighter 200. When a window comes
+// back full, the UI says so instead of implying the full history is shown.
+const LEDGER_WINDOW = 200;
+const EXPORT_WINDOW = 500;
+const PAGE_SIZE = 10;
 
 function cutoffFor(range: DateRange): number {
   const now = Date.now();
@@ -75,7 +86,11 @@ export default function PointsLedgerPage() {
     if (!user?.id) return;
     setExporting(true);
     try {
-      const allData = await getTransactions(user.id, { limit: 1000 });
+      // EXPORT_WINDOW matches the gateway's ledger clamp — asking for more
+      // (the old limit: 1000) silently returned 500 anyway.
+      const allData = await getTransactions(user.id, { limit: EXPORT_WINDOW });
+      const exportTruncated =
+        (allData.transactions || []).length >= EXPORT_WINDOW;
       const cutoff = cutoffFor(dateRange);
       const entries = (allData.transactions || []).filter((tx) =>
         cutoff ? new Date(tx.createdAt).getTime() >= cutoff : true,
@@ -104,8 +119,14 @@ export default function PointsLedgerPage() {
       URL.revokeObjectURL(url);
       logger.info("PointsLedger", "CSV export completed", {
         count: entries.length,
+        truncated: exportTruncated,
       });
-      success("Export complete", `${entries.length} ledger entries exported`);
+      success(
+        "Export complete",
+        exportTruncated
+          ? `${entries.length} ledger entries exported (most recent ${EXPORT_WINDOW})`
+          : `${entries.length} ledger entries exported`,
+      );
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       logger.error("PointsLedger", "CSV export failed", message);
@@ -120,9 +141,10 @@ export default function PointsLedgerPage() {
       if (!user?.id) return;
       setLoading(true);
       try {
+        // One bounded window per user; page changes and date-range filters
+        // are applied client-side below, so they cost no further requests.
         const result = await getTransactions(user.id, {
-          page,
-          limit: 10,
+          limit: LEDGER_WINDOW,
         });
         setResponse(result);
         setLoadError(null);
@@ -137,13 +159,22 @@ export default function PointsLedgerPage() {
       }
     };
     load();
-  }, [user?.id, page]);
+  }, [user?.id]);
 
   const cutoff = cutoffFor(dateRange);
-  const transactions = (response?.transactions || []).filter((tx) =>
+  const windowEntries = response?.transactions || [];
+  const windowTruncated = windowEntries.length >= LEDGER_WINDOW;
+  const filtered = windowEntries.filter((tx) =>
     cutoff ? new Date(tx.createdAt).getTime() >= cutoff : true,
   );
-  const totalPages = response?.totalPages || 1;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  // Clamp so shrinking the filter while deep in the list can't strand the
+  // pager on an empty page.
+  const currentPage = Math.min(page, totalPages);
+  const transactions = filtered.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
 
   return (
     <div className={pageClass}>
@@ -272,22 +303,31 @@ export default function PointsLedgerPage() {
               </table>
             </div>
 
+            {windowTruncated && (
+              <div className="border-t border-[var(--border-1)] px-4 py-3 text-center text-xs text-[var(--t3)]">
+                Showing your most recent {LEDGER_WINDOW} point movements. Export
+                CSV covers up to the most recent {EXPORT_WINDOW}.
+              </div>
+            )}
+
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-4 border-t border-[var(--border-1)] p-4">
                 <button
                   className="cursor-pointer rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2 text-xs font-semibold text-[var(--t2)] transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
+                  onClick={() => setPage(() => Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
                 >
                   Prev
                 </button>
                 <div className="text-[13px] font-semibold text-[var(--t2)]">
-                  Page {page} of {totalPages}
+                  Page {currentPage} of {totalPages}
                 </div>
                 <button
                   className="cursor-pointer rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2 text-xs font-semibold text-[var(--t2)] transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
+                  onClick={() =>
+                    setPage(() => Math.min(totalPages, currentPage + 1))
+                  }
+                  disabled={currentPage === totalPages}
                 >
                   Next
                 </button>

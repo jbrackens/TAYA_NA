@@ -1,0 +1,241 @@
+"use client";
+
+/**
+ * PurchaseResult — the terminal/pending panels for a store purchase.
+ *
+ * success   → points credited banner + new balance + ledger link +
+ *             "Return to market" (only with a validated return context) +
+ *             "Back to store".
+ * failed    → failure reason + retry CTA. Failed is TERMINAL on the server:
+ *             retry creates a NEW checkout for the same pack (onRetry),
+ *             never a re-confirm of the dead purchase.
+ * canceled  → back to the order summary, nothing credited.
+ * pending   → delayed completion panel + "Check status" (getPurchase poll);
+ *             the page flips this to success when the server completes.
+ */
+
+import Link from "next/link";
+import { useTranslation } from "react-i18next";
+import type { StorePurchase } from "../../lib/api/store-client";
+import { formatPoints, formatPointsAmount } from "../../lib/points";
+
+const CARD_CLASS =
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 text-center";
+const DOT_BASE_CLASS = "mx-auto mb-3 block size-2.5 rounded-full";
+const TITLE_CLASS =
+  "m-0 mb-1.5 text-[17px] font-bold tracking-[-0.01em] text-[var(--t1)]";
+const BODY_CLASS = "m-0 mb-4 text-[13px] leading-[1.55] text-[var(--t2)]";
+const BALANCE_ROW_CLASS =
+  "mx-auto mb-4 flex max-w-[320px] items-center justify-between gap-3 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-3 text-[13px]";
+const BALANCE_LABEL_CLASS = "font-medium text-[var(--t3)]";
+const BALANCE_VALUE_CLASS =
+  "font-['IBM_Plex_Mono',_monospace] font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
+const ACTIONS_CLASS = "flex flex-col items-stretch gap-2";
+const PRIMARY_CLASS =
+  "flex w-full cursor-pointer items-center justify-center rounded-md border-0 bg-[var(--accent)] px-4 py-3 [font-family:inherit] text-[14px] font-semibold text-[#061a10] no-underline transition-[filter,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:brightness-[1.05] disabled:cursor-not-allowed disabled:opacity-[0.45]";
+const SECONDARY_CLASS =
+  "flex w-full cursor-pointer items-center justify-center rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3 [font-family:inherit] text-[13px] font-semibold text-[var(--t1)] no-underline transition-colors duration-[120ms] hover:border-[rgba(43,228,128,0.5)] hover:bg-[var(--surface-2)] hover:text-[var(--accent-text)] disabled:cursor-not-allowed disabled:opacity-[0.45]";
+const QUIET_LINK_CLASS =
+  "mt-1 inline-block border-b border-[var(--border-1)] pb-0.5 text-[13px] text-[var(--t2)] no-underline hover:border-[var(--accent)] hover:text-[var(--t1)]";
+
+function ResultShell({
+  testid,
+  dotClass,
+  title,
+  body,
+  children,
+}: {
+  testid: string;
+  dotClass: string;
+  title: string;
+  body: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <section className={CARD_CLASS} data-testid={testid} role="status">
+      <span className={`${DOT_BASE_CLASS} ${dotClass}`} aria-hidden="true" />
+      <h2 className={TITLE_CLASS}>{title}</h2>
+      <p className={BODY_CLASS}>{body}</p>
+      {children}
+    </section>
+  );
+}
+
+export function PurchaseSuccess({
+  purchase,
+  newBalance,
+  returnPath,
+  onBackToStore,
+}: {
+  purchase: StorePurchase;
+  newBalance: number | null;
+  returnPath: string | null;
+  onBackToStore: () => void;
+}) {
+  const { t } = useTranslation("store");
+  return (
+    <ResultShell
+      testid="purchase-success"
+      dotClass="bg-[var(--yes-bar)]"
+      title={t("result.successTitle", "Points added")}
+      body={t(
+        "result.successBody",
+        "{{points}} pts were added to your balance.",
+        {
+          points: formatPointsAmount(purchase.totalPoints),
+        },
+      )}
+    >
+      <div className={BALANCE_ROW_CLASS}>
+        <span className={BALANCE_LABEL_CLASS}>
+          {t("result.newBalance", "New balance")}
+        </span>
+        <span className={BALANCE_VALUE_CLASS}>
+          {typeof newBalance === "number" ? formatPoints(newBalance) : "—"}
+        </span>
+      </div>
+      <div className={ACTIONS_CLASS}>
+        {returnPath ? (
+          <Link
+            href={returnPath}
+            className={PRIMARY_CLASS}
+            data-testid="return-to-market"
+          >
+            {t("result.returnToMarket", "Return to market")}
+          </Link>
+        ) : null}
+        <button
+          type="button"
+          className={returnPath ? SECONDARY_CLASS : PRIMARY_CLASS}
+          onClick={onBackToStore}
+        >
+          {t("result.backToStore", "Back to store")}
+        </button>
+        <Link href="/account/transactions" className={QUIET_LINK_CLASS}>
+          {t("result.viewLedger", "View point ledger")} →
+        </Link>
+      </div>
+    </ResultShell>
+  );
+}
+
+export function PurchaseFailed({
+  purchase,
+  retrying,
+  onRetry,
+  onBackToStore,
+}: {
+  purchase: StorePurchase;
+  retrying: boolean;
+  onRetry: () => void;
+  onBackToStore: () => void;
+}) {
+  const { t } = useTranslation("store");
+  const rawReason =
+    purchase.failureReason ||
+    t(
+      "result.failedReasonFallback",
+      "The simulated checkout did not complete.",
+    );
+  // Server reasons arrive lowercase and unpunctuated ("simulated checkout
+  // declined") — sentence-case them so the composed body reads cleanly.
+  const reason = `${rawReason.charAt(0).toUpperCase()}${rawReason.slice(1)}${
+    /[.!?]$/.test(rawReason) ? "" : "."
+  }`;
+  return (
+    <ResultShell
+      testid="purchase-failed"
+      dotClass="bg-[var(--no-bar)]"
+      title={t("result.failedTitle", "Checkout did not complete")}
+      body={t(
+        "result.failedBody",
+        "{{reason}} No points were added. You can start a new checkout for the same pack.",
+        { reason },
+      )}
+    >
+      <div className={ACTIONS_CLASS}>
+        <button
+          type="button"
+          className={PRIMARY_CLASS}
+          onClick={onRetry}
+          disabled={retrying}
+        >
+          {retrying
+            ? t("checkout.processing", "Processing…")
+            : t("result.retry", "Try again")}
+        </button>
+        <button
+          type="button"
+          className={SECONDARY_CLASS}
+          onClick={onBackToStore}
+          disabled={retrying}
+        >
+          {t("result.backToStore", "Back to store")}
+        </button>
+      </div>
+    </ResultShell>
+  );
+}
+
+export function PurchaseCanceled({
+  onBackToSummary,
+}: {
+  onBackToSummary: () => void;
+}) {
+  const { t } = useTranslation("store");
+  return (
+    <ResultShell
+      testid="purchase-canceled"
+      dotClass="bg-[var(--border-2)]"
+      title={t("result.canceledTitle", "Checkout canceled")}
+      body={t(
+        "result.canceledBody",
+        "This simulated checkout was canceled. No points were added.",
+      )}
+    >
+      <div className={ACTIONS_CLASS}>
+        <button
+          type="button"
+          className={PRIMARY_CLASS}
+          onClick={onBackToSummary}
+        >
+          {t("result.backToSummary", "Back to order summary")}
+        </button>
+      </div>
+    </ResultShell>
+  );
+}
+
+export function PurchasePending({
+  checking,
+  onCheckStatus,
+}: {
+  checking: boolean;
+  onCheckStatus: () => void;
+}) {
+  const { t } = useTranslation("store");
+  return (
+    <ResultShell
+      testid="purchase-pending"
+      dotClass="bg-[var(--brand-period)]"
+      title={t("result.pendingTitle", "Completion pending")}
+      body={t(
+        "result.pendingBody",
+        "The simulated provider reported a delay. Points are added only once the checkout completes — check the status below.",
+      )}
+    >
+      <div className={ACTIONS_CLASS}>
+        <button
+          type="button"
+          className={PRIMARY_CLASS}
+          onClick={onCheckStatus}
+          disabled={checking}
+        >
+          {checking
+            ? t("result.checking", "Checking…")
+            : t("result.checkStatus", "Check status")}
+        </button>
+      </div>
+    </ResultShell>
+  );
+}

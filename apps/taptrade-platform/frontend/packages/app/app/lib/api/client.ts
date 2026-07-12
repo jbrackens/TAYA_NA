@@ -26,7 +26,8 @@ function syncAuthCookie(token?: string) {
   if (token) {
     return;
   }
-  const secure = typeof location !== "undefined" && location.protocol === "https:";
+  const secure =
+    typeof location !== "undefined" && location.protocol === "https:";
   document.cookie =
     "authToken=; path=/; Max-Age=0; SameSite=Lax" + (secure ? "; Secure" : "");
 }
@@ -68,7 +69,8 @@ class ApiClient {
     };
     if (typeof window !== "undefined") {
       const token =
-        localStorage.getItem("taptrade_access_token") || readCookie("authToken");
+        localStorage.getItem("taptrade_access_token") ||
+        readCookie("authToken");
       if (token) headers["Authorization"] = `Bearer ${token}`;
       if (includeCsrf) {
         const csrf = readCookie("csrf_token");
@@ -97,9 +99,31 @@ class ApiClient {
   // second call arrives with the now-stale token and 401s. The IdleMonitor
   // path's failure then bubbles up as "refresh token is invalid or expired"
   // even though the user's session was valid moments ago.
+  // hasSessionEvidence: true when anything suggests this browser ever held a
+  // session — the JS-readable csrf_token cookie (set alongside the HttpOnly
+  // access token on every login), a legacy localStorage token, or the stored
+  // user mirror written by AuthProvider. Anonymous visitors have none of
+  // these, so a stray 401 (e.g. from a session-only endpoint) must not
+  // trigger a doomed POST /auth/refresh that the gateway answers with 400.
+  private hasSessionEvidence(): boolean {
+    if (typeof window === "undefined") return false;
+    return Boolean(
+      readCookie("csrf_token") ||
+      localStorage.getItem("taptrade_access_token") ||
+      localStorage.getItem("taptrade_refresh_token") ||
+      localStorage.getItem("taptrade_user_id"),
+    );
+  }
+
   async refreshSession(): Promise<boolean> {
     if (typeof window === "undefined") return false;
     if (this.refreshLock) return this.refreshLock;
+    // No prior-session evidence → nothing to refresh. Returning false lets
+    // the 401 propagate exactly as if the refresh had failed, without the
+    // wasted round-trip. Logged-in users always carry the csrf_token cookie
+    // and/or the stored-user marker, so real session restore after reload
+    // still goes through the refresh path.
+    if (!this.hasSessionEvidence()) return false;
     this.refreshLock = (async () => {
       try {
         const csrf = readCookie("csrf_token");

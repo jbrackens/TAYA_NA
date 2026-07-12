@@ -23,6 +23,7 @@ import {
   getMarketWatchlist,
   removeMarketFromWatchlist,
 } from "../../lib/api/market-watchlist-client";
+import { useAuth } from "../../hooks/useAuth";
 import { categoryName } from "./market-content";
 import {
   extractMarketSubcategories,
@@ -199,6 +200,7 @@ interface Props {
 export function AllMarketsSection({ categories }: Props) {
   const { t } = useTranslation("prediction");
   const { t: contentT } = useTranslation("market-content");
+  const { isAuthenticated } = useAuth();
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
   const [subcategoryCorpus, setSubcategoryCorpus] = useState<
     PredictionMarket[]
@@ -270,7 +272,16 @@ export function AllMarketsSection({ categories }: Props) {
   ]);
   const hasSecondaryNav = showSubnavCategory && subcategories.length > 0;
 
+  // Watchlist is a session-protected endpoint: for anonymous visitors the
+  // fetch is guaranteed 401 churn (and used to drag a doomed
+  // /auth/refresh attempt behind it via the 401-retry path), so only fetch
+  // once a user is actually authenticated. Re-runs on login/logout: login
+  // loads the real list, logout resets to empty.
   useEffect(() => {
+    if (!isAuthenticated) {
+      setWatchedMarketIds(new Set());
+      return;
+    }
     let cancelled = false;
     getMarketWatchlist()
       .then((ids) => {
@@ -282,7 +293,7 @@ export function AllMarketsSection({ categories }: Props) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     setSubcategory(null);

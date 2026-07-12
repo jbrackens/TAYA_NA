@@ -56,10 +56,7 @@ type LegacySettleMarketResponse = SettleMarketResponse & {
 
 type LegacySettledPositionResult = Omit<
   SettledPositionResult,
-  | "entryPricePoints"
-  | "exitPricePoints"
-  | "realizedPoints"
-  | "settlementPoints"
+  "entryPricePoints" | "exitPricePoints" | "realizedPoints" | "settlementPoints"
 > & {
   entryPricePoints?: number;
   exitPricePoints?: number;
@@ -142,10 +139,7 @@ type LegacyDriftAlertsResponse = Omit<DriftAlertsResponse, "data"> & {
 
 type LegacyDashboardMover = Omit<
   DashboardMover,
-  | "yesPricePointsStart"
-  | "yesPricePointsNow"
-  | "volumePoints"
-  | "unit"
+  "yesPricePointsStart" | "yesPricePointsNow" | "volumePoints" | "unit"
 > & {
   yesPricePointsStart?: number;
   yesPricePointsNow?: number;
@@ -162,10 +156,7 @@ type LegacyDashboardVolumeStats = Omit<
   unit?: "PTS" | string;
 };
 
-type LegacyPricePoint = Omit<
-  PricePoint,
-  "yesPricePoints" | "volumePoints"
-> & {
+type LegacyPricePoint = Omit<PricePoint, "yesPricePoints" | "volumePoints"> & {
   yesPricePoints?: number;
   volumePoints?: number;
 };
@@ -450,6 +441,13 @@ export class PredictionApiClient {
     categoryId?: string;
     status?: string;
     ticker?: string;
+    /**
+     * Batched id lookup: joined comma-separated into the gateway's `ids`
+     * query param. The gateway caps this at 50 ids per request — chunk
+     * larger sets client-side. Composes with the other filters and the
+     * server-side unopened/launch-scrub gates like any list query.
+     */
+    ids?: string[];
     q?: string;
     tag?: string;
     sort?: "activity" | "closing_soon" | "newest";
@@ -463,6 +461,8 @@ export class PredictionApiClient {
     if (params?.categoryId) query.set("categoryId", params.categoryId);
     if (params?.status) query.set("status", params.status);
     if (params?.ticker) query.set("ticker", params.ticker);
+    if (params?.ids && params.ids.length > 0)
+      query.set("ids", params.ids.join(","));
     if (params?.q) query.set("q", params.q);
     if (params?.tag) query.set("tag", params.tag);
     if (params?.sort) query.set("sort", params.sort);
@@ -828,10 +828,8 @@ function normalizeSettledPositionResult(
     marketId: row.marketId,
     side: row.side,
     quantity: row.quantity,
-    entryPricePoints:
-      row.entryPricePoints ?? legacyRow.entryPricePoints ?? 0,
-    exitPricePoints:
-      row.exitPricePoints ?? legacyRow.exitPricePoints ?? 0,
+    entryPricePoints: row.entryPricePoints ?? legacyRow.entryPricePoints ?? 0,
+    exitPricePoints: row.exitPricePoints ?? legacyRow.exitPricePoints ?? 0,
     realizedPoints,
     settlementPoints,
     paidAt: row.paidAt,
@@ -1161,9 +1159,7 @@ function normalizeOrderPreview(row: LegacyOrderPreview): OrderPreview {
       ? row.totalCostPoints
       : (row.totalCostPoints ?? 0);
   const feePoints =
-    typeof row.feePoints === "number"
-      ? row.feePoints
-      : (row.feePoints ?? 0);
+    typeof row.feePoints === "number" ? row.feePoints : (row.feePoints ?? 0);
   const maxResultPoints =
     typeof row.maxResultPoints === "number"
       ? row.maxResultPoints
@@ -1225,9 +1221,7 @@ function normalizeTrade(row: LegacyTrade): Trade {
       ? row.pricePoints
       : (row.pricePoints ?? 0);
   const feePoints =
-    typeof row.feePoints === "number"
-      ? row.feePoints
-      : (row.feePoints ?? 0);
+    typeof row.feePoints === "number" ? row.feePoints : (row.feePoints ?? 0);
   const notionalPoints =
     typeof row.notionalPoints === "number"
       ? row.notionalPoints
@@ -1280,9 +1274,7 @@ function normalizePredictionOrder(row: LegacyPredictionOrder): PredictionOrder {
       ? row.notionalCapPoints
       : row.notionalCapPoints;
   const pricePoints =
-    typeof row.pricePoints === "number"
-      ? row.pricePoints
-      : row.pricePoints;
+    typeof row.pricePoints === "number" ? row.pricePoints : row.pricePoints;
   const averageFillPricePoints =
     typeof row.averageFillPricePoints === "number"
       ? row.averageFillPricePoints

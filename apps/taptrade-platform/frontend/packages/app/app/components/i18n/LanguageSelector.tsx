@@ -41,7 +41,12 @@ function trackLanguageEvent(event: string, properties: Record<string, string>) {
 
 export function LanguageSelector({ source }: LanguageSelectorProps) {
   const { t, i18n } = useTranslation("language-selector");
-  const [locale, setLocale] = useState<SupportedLocale>(() => getStoredLocale());
+  // Hydration safety (P12, 2026-07-12): start from defaultLocale on BOTH
+  // passes — reading localStorage in the useState initializer rendered
+  // "English" on the server but the stored locale's label on the client,
+  // a text mismatch previously masked by the i18n blank-render gate. The
+  // effect below re-syncs from storage right after mount.
+  const [locale, setLocale] = useState<SupportedLocale>(defaultLocale);
 
   useEffect(() => {
     const nextLocale = getStoredLocale();
@@ -52,7 +57,8 @@ export function LanguageSelector({ source }: LanguageSelectorProps) {
   }, [i18n]);
 
   const currentLabel = useMemo(
-    () => supportedLocales.find((item) => item.code === locale)?.label ?? "English",
+    () =>
+      supportedLocales.find((item) => item.code === locale)?.label ?? "English",
     [locale],
   );
 
@@ -64,7 +70,9 @@ export function LanguageSelector({ source }: LanguageSelectorProps) {
         className="lang-select"
         aria-label={t("SELECT_LANGUAGE")}
         value={locale}
-        onFocus={() => trackLanguageEvent("language_selector_opened", { source })}
+        onFocus={() =>
+          trackLanguageEvent("language_selector_opened", { source })
+        }
         onChange={(event) => {
           const previousLocale = locale;
           const newLocale = normalizeLocale(event.target.value);

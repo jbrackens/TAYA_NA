@@ -18,6 +18,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Search,
   LogOut,
+  Plus,
   User as UserIcon,
   Settings,
   TrendingUp,
@@ -36,6 +37,7 @@ import {
   setCurrentBalance,
 } from "../../lib/store/pointBalanceSlice";
 import { getBalance } from "../../lib/api/wallet-client";
+import { formatPoints } from "../../lib/points";
 import { TierPill } from "./TierPill";
 import { LanguageSelector } from "../i18n/LanguageSelector";
 import { localizedMarket } from "./market-content";
@@ -117,9 +119,16 @@ const TOP_BAR_SEARCH_EMPTY_CLASS =
   "px-3 py-3.5 text-center text-xs text-[var(--t3)]";
 
 const TOP_BAR_BALANCE_CLASS =
-  "inline-flex items-center gap-2 rounded-[var(--r-pill)] bg-[var(--accent-soft)] px-3 py-[7px] text-[13px] font-semibold text-[var(--yes-text)] tabular-nums [font-family:'IBM_Plex_Mono',monospace]";
+  "inline-flex min-h-11 items-center gap-2 rounded-[var(--r-pill)] bg-[var(--accent-soft)] px-3 py-[7px] text-[13px] font-semibold text-[var(--yes-text)] tabular-nums no-underline transition-[filter] duration-[120ms] hover:brightness-[0.97] [font-family:'IBM_Plex_Mono',monospace]";
 const TOP_BAR_BALANCE_LABEL_CLASS =
   "text-[11px] font-medium text-[var(--t3)] [font-family:'Inter',sans-serif]";
+// Compact "Add Points" entry to /store, always adjacent to the balance
+// chip. The top bar is already width-tight at common desktop sizes (search
+// + tier pill + balance), so the label only appears on wide desktops and
+// the control collapses to the plus glyph below 1360px (aria-label keeps
+// it accessible).
+const TOP_BAR_ADD_POINTS_CLASS =
+  "inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1 rounded-md bg-[var(--accent)] px-3 text-[13px] font-semibold text-[#061a10] no-underline transition-[transform,filter] duration-150 ease-[ease] hover:-translate-y-px hover:brightness-[1.05] max-[900px]:px-2.5";
 
 const TOP_BAR_AVATAR_CLASS =
   "grid size-11 cursor-pointer place-items-center rounded-full border border-[rgba(255,255,255,0.18)] bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.25),transparent_60%),linear-gradient(145deg,#a56bff_0%,#5b38a8_100%)] text-[15px] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_2px_6px_rgba(0,0,0,0.3)] hover:brightness-[1.08]";
@@ -433,25 +442,42 @@ export function TopBar() {
           {isAuthenticated && <TierPill />}
           <LanguageSelector source={isDesktop ? "header" : "mobile_menu"} />
           {isAuthenticated && (
-            <div className={TOP_BAR_BALANCE_CLASS}>
-              <span className={TOP_BAR_BALANCE_LABEL_CLASS}>
-                {t("BALANCE_LABEL")}
-              </span>
-              <span>
-                {/*
-                  Render a placeholder when the balance is undefined
-                  (still loading) instead of "0 pts". The literal zero
-                  was misleading: on every page navigation, between the
-                  initial render and the point-balance API resolving (~300ms-3s
-                  in dev), the user saw "BAL 0 pts" - easy to read as
-                  "your account is empty" and panic. A neutral "—"
-                  reads as "loading" without claiming a value.
-                */}
-                {typeof balance === "number"
-                  ? `${balance.toFixed(2)} pts`
-                  : "—"}
-              </span>
-            </div>
+            <>
+              {/* The balance chip deep-links into the Point Store — the
+                  pill is where users look when they want more points. */}
+              <Link
+                href="/store"
+                className={TOP_BAR_BALANCE_CLASS}
+                aria-label={t("OPEN_POINT_STORE", "Open the Point Store")}
+              >
+                <span className={TOP_BAR_BALANCE_LABEL_CLASS}>
+                  {t("BALANCE_LABEL")}
+                </span>
+                <span>
+                  {/*
+                    Render a placeholder when the balance is undefined
+                    (still loading) instead of "0 pts". The literal zero
+                    was misleading: on every page navigation, between the
+                    initial render and the point-balance API resolving (~300ms-3s
+                    in dev), the user saw "BAL 0 pts" - easy to read as
+                    "your account is empty" and panic. A neutral "—"
+                    reads as "loading" without claiming a value.
+                  */}
+                  {typeof balance === "number" ? formatPoints(balance) : "—"}
+                </span>
+              </Link>
+              <Link
+                href="/store"
+                className={TOP_BAR_ADD_POINTS_CLASS}
+                data-testid="add-points-topbar"
+                aria-label={t("ADD_POINTS", "Add Points")}
+              >
+                <Plus size={14} aria-hidden="true" />
+                <span className="max-[1359px]:hidden">
+                  {t("ADD_POINTS", "Add Points")}
+                </span>
+              </Link>
+            </>
           )}
 
           {isLoading ? null : isAuthenticated ? (

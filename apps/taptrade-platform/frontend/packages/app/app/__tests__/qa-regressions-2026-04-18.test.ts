@@ -137,27 +137,33 @@ describe("points-only safety boundary", () => {
   });
 
   it("does not keep generic money formatter or site currency settings contracts", () => {
-    const storeIndex = read("lib/store/index.ts");
-    const settings = read("lib/store/settingsSlice.ts");
-    const siteSettings = read("lib/store/siteSettingsSlice.ts");
-
-    for (const source of [storeIndex, settings, siteSettings]) {
-      assert.ok(!source.includes("Currency"));
-      assert.ok(!source.includes("setCurrency"));
-      assert.ok(!source.includes("selectCurrency"));
-      assert.ok(!source.includes("DisplayOddsEnum"));
-      assert.ok(!source.includes("oddsFormat"));
-      assert.ok(!source.includes("setOddsFormat"));
-      assert.ok(!source.includes("selectOddsFormat"));
-      assert.ok(!source.includes("BettingPreferences"));
-      assert.ok(!source.includes("bettingPreferences"));
-      assert.ok(!source.includes("minWithdrawal"));
-      assert.ok(!source.includes("maxWithdrawal"));
-      assert.ok(!source.includes("minDeposit"));
-      assert.ok(!source.includes("maxDeposit"));
-      assert.ok(!source.includes("minStake"));
-      assert.ok(!source.includes("maxStake"));
-      assert.ok(!source.includes("thresholdValue"));
+    // P12 dead-code sweep (2026-07-12): the sportsbook-era settings /
+    // siteSettings slices (and the lib/store barrel that re-exported them)
+    // were deleted outright — they had zero consumers. The currency /
+    // odds-format contracts they carried must not return as files.
+    for (const rel of [
+      "lib/store/index.ts",
+      "lib/store/settingsSlice.ts",
+      "lib/store/siteSettingsSlice.ts",
+    ]) {
+      assert.equal(
+        existsSync(resolve(appRoot, rel)),
+        false,
+        `${rel} carried retired sportsbook currency/odds contracts and should not return`,
+      );
+    }
+    const store = read("lib/store/store.ts");
+    for (const retired of [
+      "Currency",
+      "oddsFormat",
+      "BettingPreferences",
+      "settingsSlice",
+      "siteSettingsSlice",
+    ]) {
+      assert.ok(
+        !store.includes(retired),
+        `store.ts should not reference retired contract ${retired}`,
+      );
     }
     assert.equal(
       existsSync(resolve(appRoot, "lib/utils/odds.ts")),
@@ -173,10 +179,11 @@ describe("points-only safety boundary", () => {
       "unused predictionSlice.ts carried retired stakeUsd state",
     );
 
+    // lib/store/index.ts was deleted in the P12 dead-code sweep (2026-07-12)
+    // — store.ts is the only remaining store module to police.
     const storeSource = read("lib/store/store.ts");
-    const storeIndex = read("lib/store/index.ts");
 
-    for (const source of [storeSource, storeIndex]) {
+    for (const source of [storeSource]) {
       assert.ok(!source.includes("predictionReducer"));
       assert.ok(!source.includes("predictionSlice"));
       assert.ok(!source.includes("stakeUsd"));
@@ -206,7 +213,9 @@ describe("points-only safety boundary", () => {
 
   it("recent trade tape displays sizes as points, not cash", () => {
     const source = read("components/prediction/RecentTrades.tsx");
-    assert.ok(source.includes("formatTradePoints"));
+    // Sizes go through the shared whole-Points formatter (app/lib/points).
+    assert.ok(source.includes("formatPoints(size)"));
+    assert.match(source, /from ["'](?:\.\.\/)+lib\/points["']/);
     assert.ok(!source.includes(">${size.toFixed(2)}"));
     assert.ok(!source.includes("$1/contract"));
   });
@@ -657,15 +666,17 @@ describe("market detail related markets", () => {
   const marketPageSource = read("market/[ticker]/page.tsx");
 
   it("prefers event, series, and category related markets before fallback", () => {
+    // The chain now runs inside load() so it starts concurrently with the
+    // other secondary fetches (2026-07-12 waterfall fix): `m` is the fetched
+    // market and `ev` the awaited event, but the lazy preference order —
+    // event, then series, then category, then generic — is unchanged.
     assert.ok(
-      marketPageSource.includes(
-        "await addRelated({ eventId: currentEventId })",
-      ) &&
+      marketPageSource.includes("await addRelated({ eventId: m.eventId })") &&
         marketPageSource.includes(
-          "await addRelated({ seriesId: event.seriesId })",
+          "await addRelated({ seriesId: ev.seriesId })",
         ) &&
         marketPageSource.includes(
-          "await addRelated({ categoryId: event.categoryId })",
+          "await addRelated({ categoryId: ev.categoryId })",
         ) &&
         marketPageSource.includes("await addRelated({})"),
       "related markets should be selected by actual event/series/category context before generic fallback",
@@ -673,9 +684,7 @@ describe("market detail related markets", () => {
   });
 
   it("keeps related market volume in points copy", () => {
-    assert.ok(
-      marketPageSource.includes("formatCompactPoints(m.volumePoints)"),
-    );
+    assert.ok(marketPageSource.includes("formatCompactPoints(m.volumePoints)"));
     assert.ok(
       !marketPageSource.includes(
         "value: `$${(m.volumePoints / 100).toFixed(0)}`",
@@ -1327,7 +1336,7 @@ describe("Social auth feature gate", () => {
     );
     const buttons = read("components/auth/SocialAuthButtons.tsx");
     assert.ok(
-      buttons.includes("redirect: \"manual\"") &&
+      buttons.includes('redirect: "manual"') &&
         buttons.includes("isn't configured for this deployment yet") &&
         buttons.includes("/start/`"),
       "social buttons must probe the start route (trailing slash — Next's 308 masquerades as a provider redirect) and degrade to an inline notice",
@@ -1885,18 +1894,10 @@ describe("Full-page translation coverage", () => {
       ),
     );
     assert.ok(
-      settledPositionResultTypeSource.includes(
-        "entryPricePoints: number",
-      ) &&
-        settledPositionResultTypeSource.includes(
-          "exitPricePoints: number",
-        ) &&
-        settledPositionResultTypeSource.includes(
-          "realizedPoints: number",
-        ) &&
-        settledPositionResultTypeSource.includes(
-          "settlementPoints: number",
-        ) &&
+      settledPositionResultTypeSource.includes("entryPricePoints: number") &&
+        settledPositionResultTypeSource.includes("exitPricePoints: number") &&
+        settledPositionResultTypeSource.includes("realizedPoints: number") &&
+        settledPositionResultTypeSource.includes("settlementPoints: number") &&
         predictionTypesSource.includes('unit?: "PTS" | string'),
       "SettledPositionResult should expose point-native settlement-history fields",
     );
@@ -1916,9 +1917,7 @@ describe("Full-page translation coverage", () => {
         settledPositionResultNormalizerSource.includes(
           "row.entryPricePoints",
         ) &&
-        settledPositionResultNormalizerSource.includes(
-          "row.exitPricePoints",
-        ) &&
+        settledPositionResultNormalizerSource.includes("row.exitPricePoints") &&
         predictionClientSource.includes("row.realizedPoints") &&
         predictionClientSource.includes("row.settlementPoints") &&
         predictionClientSource.includes('unit: row.unit || "PTS"'),
@@ -2436,9 +2435,7 @@ describe("Full-page translation coverage", () => {
         positionNormalizerSource.includes("row.realizedPoints") &&
         predictionClientSource.includes("LegacyPosition[]") &&
         predictionClientSource.includes("positions.map(normalizePosition)") &&
-        !positionNormalizerSource.includes(
-          "avgPricePoints: avgPricePoints",
-        ) &&
+        !positionNormalizerSource.includes("avgPricePoints: avgPricePoints") &&
         !positionNormalizerSource.includes(
           "totalCostPoints: totalCostPoints",
         ) &&
@@ -2493,9 +2490,7 @@ describe("Full-page translation coverage", () => {
       predictionTypesSource.includes(
         "notionalCapPoints: preferred point-native",
       ) &&
-        predictionTypesSource.includes(
-          "pricePoints: preferred point-native",
-        ) &&
+        predictionTypesSource.includes("pricePoints: preferred point-native") &&
         !predictionTypesSource.includes("priceCents?: number") &&
         !predictionTypesSource.includes("notionalCapCents?: number") &&
         !predictionTypesSource.includes("PointsCents") &&
@@ -2514,12 +2509,8 @@ describe("Full-page translation coverage", () => {
         !orderNormalizerSource.includes(
           "averageFillPricePoints: averageFillPricePoints",
         ) &&
-        !orderNormalizerSource.includes(
-          "totalCostPoints: totalCostPoints",
-        ) &&
-        !orderNormalizerSource.includes(
-          "filledCostPoints: filledCostPoints",
-        ) &&
+        !orderNormalizerSource.includes("totalCostPoints: totalCostPoints") &&
+        !orderNormalizerSource.includes("filledCostPoints: filledCostPoints") &&
         !orderNormalizerSource.includes(
           "notionalCapPoints: notionalCapPoints",
         ) &&
@@ -2541,15 +2532,11 @@ describe("Full-page translation coverage", () => {
       "PredictionOrder should not expose retired cash-named reservation aliases",
     );
     assert.ok(
-      !predictionClientSource.includes(
-        "reservedCashPoints: reservedPoints",
-      ) &&
+      !predictionClientSource.includes("reservedCashPoints: reservedPoints") &&
         !predictionClientSource.includes(
           "capturedCashPoints: capturedPoints",
         ) &&
-        !predictionClientSource.includes(
-          "releasedCashPoints: releasedPoints",
-        ),
+        !predictionClientSource.includes("releasedCashPoints: releasedPoints"),
       "PredictionApiClient should not reattach retired cash-named order aliases",
     );
   });
@@ -2571,12 +2558,8 @@ describe("Full-page translation coverage", () => {
         previewTypeSource.includes("maxLossPoints: number") &&
         previewTypeSource.includes("newYesPricePoints: number") &&
         previewTypeSource.includes("newNoPricePoints: number") &&
-        predictionTypesSource.includes(
-          "totalCostWithFeesPoints?: number",
-        ) &&
-        predictionTypesSource.includes(
-          "estimatedSlippagePoints?: number",
-        ) &&
+        predictionTypesSource.includes("totalCostWithFeesPoints?: number") &&
+        predictionTypesSource.includes("estimatedSlippagePoints?: number") &&
         // Points unit-model (2026-07-07): single canonical *Points wire key.
         !previewTypeSource.includes("PointsCents") &&
         !previewTypeSource.includes("priceCents") &&
@@ -2598,16 +2581,10 @@ describe("Full-page translation coverage", () => {
         previewNormalizerSource.includes("row.estimatedSlippagePoints") &&
         predictionClientSource.includes("type LegacyOrderPreview") &&
         !previewNormalizerSource.includes("pricePoints: pricePoints") &&
-        !previewNormalizerSource.includes(
-          "totalCostPoints: totalCostPoints",
-        ) &&
+        !previewNormalizerSource.includes("totalCostPoints: totalCostPoints") &&
         !previewNormalizerSource.includes("feePoints: feePoints") &&
-        !previewNormalizerSource.includes(
-          "maxProfitPoints: maxResultPoints",
-        ) &&
-        !previewNormalizerSource.includes(
-          "maxProfitPoints: maxResultPoints",
-        ) &&
+        !previewNormalizerSource.includes("maxProfitPoints: maxResultPoints") &&
+        !previewNormalizerSource.includes("maxProfitPoints: maxResultPoints") &&
         !previewNormalizerSource.includes("maxLossPoints: maxLossPoints") &&
         !previewNormalizerSource.includes(
           "newYesPricePoints: newYesPricePoints",
@@ -2715,9 +2692,7 @@ describe("Full-page translation coverage", () => {
           "normalizeSettlementPointDisbursement",
         ) &&
         predictionClientSource.includes("settlementPoints") &&
-        !settlementNormalizerSource.includes(
-          "payoutPoints: settlementPoints",
-        ),
+        !settlementNormalizerSource.includes("payoutPoints: settlementPoints"),
       "PredictionApiClient should normalize admin settlement responses from point-native aliases",
     );
     assert.ok(

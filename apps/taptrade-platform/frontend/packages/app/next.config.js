@@ -72,6 +72,14 @@ module.exports = {
   output: "standalone",
   compress: true,
   allowedDevOrigins: ["127.0.0.1"],
+  // isomorphic-dompurify instantiates a JSDOM window at module load on the
+  // server. Bundling it into .next/server chunks breaks jsdom's on-disk
+  // asset lookup (ENOENT .next/browser/default-stylesheet.css) as soon as a
+  // content page actually prerenders — which they do since P12 removed the
+  // i18n blank-render gate. jsdom is already on Next's default external
+  // list; the wrapper package has to stay external with it so the require
+  // resolves from node_modules where the asset exists.
+  serverExternalPackages: ["isomorphic-dompurify"],
   // Transpile workspace packages that expose raw TypeScript source
   // NOTE: @taptrade-ui/design-system removed — all imports replaced with inline components
   transpilePackages: ["@taptrade-ui/utils", "@taptrade-ui/api-client"],

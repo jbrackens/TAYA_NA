@@ -63,9 +63,9 @@ import {
 } from "../../components/prediction/market-content";
 import {
   isOpenMarketStatus,
-  formatCompactPoints,
   marketStatusLabel,
 } from "../../components/prediction/market-display";
+import { formatCompactPoints } from "../../lib/points";
 
 const api = createPredictionClient();
 
@@ -80,26 +80,11 @@ type LegacyMarketUpdate = Partial<PredictionMarket> & {
 function normalizeMarketUpdateFields(
   payload: LegacyMarketUpdate,
 ): Partial<PredictionMarket> {
-  const yesPricePoints =
-    typeof payload.yesPricePoints === "number"
-      ? payload.yesPricePoints
-      : payload.yesPricePoints;
-  const noPricePoints =
-    typeof payload.noPricePoints === "number"
-      ? payload.noPricePoints
-      : payload.noPricePoints;
-  const lastTradePricePoints =
-    typeof payload.lastTradePricePoints === "number"
-      ? payload.lastTradePricePoints
-      : payload.lastTradePricePoints;
-  const volumePoints =
-    typeof payload.volumePoints === "number"
-      ? payload.volumePoints
-      : payload.volumePoints;
-  const openInterestPoints =
-    typeof payload.openInterestPoints === "number"
-      ? payload.openInterestPoints
-      : payload.openInterestPoints;
+  const yesPricePoints = payload.yesPricePoints;
+  const noPricePoints = payload.noPricePoints;
+  const lastTradePricePoints = payload.lastTradePricePoints;
+  const volumePoints = payload.volumePoints;
+  const openInterestPoints = payload.openInterestPoints;
   const pointPayload = { ...payload };
   delete pointPayload.yesPricePoints;
   delete pointPayload.noPricePoints;
@@ -115,9 +100,7 @@ function normalizeMarketUpdateFields(
       ? { lastTradePricePoints }
       : {}),
     ...(typeof volumePoints === "number" ? { volumePoints } : {}),
-    ...(typeof openInterestPoints === "number"
-      ? { openInterestPoints }
-      : {}),
+    ...(typeof openInterestPoints === "number" ? { openInterestPoints } : {}),
     unit: payload.unit || "PTS",
   };
 }
@@ -552,8 +535,7 @@ function AMMCurve({
                   : quote.newYesPricePoints;
               const impact = Math.max(0, afterPrice - quote.pricePoints);
               const totalCost =
-                quote.totalCostWithFeesPoints ??
-                quote.totalCostPoints;
+                quote.totalCostWithFeesPoints ?? quote.totalCostPoints;
               const avgPrice =
                 quote.averageFillPricePoints || quote.pricePoints;
               return (
@@ -645,24 +627,90 @@ export default function MarketDetailPage() {
       try {
         const m = await loadMarket();
         if (cancelled) return;
-        try {
-          const ev = await api.getEvent(m.eventId);
-          if (!cancelled) setEvent(ev);
-        } catch (err: unknown) {
-          logger.warn("MarketDetail", "event fetch failed", err);
-        }
-        try {
-          const t = await api.getMarketTrades(m.id, 20);
-          if (!cancelled) setTrades(t);
-        } catch (err: unknown) {
-          logger.warn("MarketDetail", "trades fetch failed", err);
-        }
-        try {
-          const cats = await api.getCategories();
-          if (!cancelled) setCategories(cats);
-        } catch (err: unknown) {
-          logger.warn("MarketDetail", "categories fetch failed", err);
-        }
+
+        // The secondary fetches only need ids off the market row, so they
+        // run CONCURRENTLY instead of the old await-chain (market → event →
+        // trades → categories cost one RTT each). Every branch keeps its own
+        // error handling: a failed event/trades/categories fetch degrades
+        // that section only and never rejects the batch, exactly like the
+        // per-fetch try/catch blocks it replaces.
+        const eventPromise: Promise<PredictionEvent | null> = api
+          .getEvent(m.eventId)
+          .then((ev) => {
+            if (!cancelled) setEvent(ev);
+            return ev;
+          })
+          .catch((err: unknown) => {
+            logger.warn("MarketDetail", "event fetch failed", err);
+            return null;
+          });
+        const tradesPromise = api
+          .getMarketTrades(m.id, 20)
+          .then((t) => {
+            if (!cancelled) setTrades(t);
+          })
+          .catch((err: unknown) => {
+            logger.warn("MarketDetail", "trades fetch failed", err);
+          });
+        const categoriesPromise = api
+          .getCategories()
+          .then((cats) => {
+            if (!cancelled) setCategories(cats);
+          })
+          .catch((err: unknown) => {
+            logger.warn("MarketDetail", "categories fetch failed", err);
+          });
+
+        // Related markets: prefer markets genuinely related to this one —
+        // same event first, then recurring series, then category, with a
+        // general fallback only to avoid an empty sidebar on sparse seed
+        // data. The chain is lazy (each step fires only while fewer than 4
+        // picks have accumulated) and starts alongside the other secondary
+        // fetches: the event-scoped step needs nothing but m.eventId, while
+        // the series/category steps await the event fetch already in flight
+        // above. Fire-and-forget — related never gates the page loading
+        // state, and running it once here (instead of an effect re-keyed on
+        // the event fields) means it no longer re-runs the whole chain when
+        // the event arrives.
+        void (async () => {
+          const picks: PredictionMarket[] = [];
+          const seen = new Set([m.id]);
+          async function addRelated(params: {
+            eventId?: string;
+            seriesId?: string;
+            categoryId?: string;
+          }) {
+            if (picks.length >= 4) return;
+            const res = await api.getMarkets({
+              ...params,
+              status: "open",
+              pageSize: 8,
+            });
+            for (const candidate of res.data || []) {
+              if (seen.has(candidate.id)) continue;
+              seen.add(candidate.id);
+              picks.push(candidate);
+              if (picks.length >= 4) break;
+            }
+          }
+
+          try {
+            await addRelated({ eventId: m.eventId });
+            const ev = await eventPromise;
+            if (ev?.seriesId) {
+              await addRelated({ seriesId: ev.seriesId });
+            }
+            if (ev?.categoryId) {
+              await addRelated({ categoryId: ev.categoryId });
+            }
+            await addRelated({});
+            if (!cancelled) setRelated(picks);
+          } catch (err: unknown) {
+            logger.warn("MarketDetail", "related fetch failed", err);
+          }
+        })();
+
+        await Promise.all([eventPromise, tradesPromise, categoriesPromise]);
       } catch (err: unknown) {
         if (!cancelled) {
           setError(
@@ -679,76 +727,33 @@ export default function MarketDetailPage() {
     };
   }, [loadMarket]);
 
-  // Prefer markets genuinely related to this one: same event first, then
-  // recurring series, then category, with a general fallback only to avoid an
-  // empty sidebar on sparse seed data.
-  useEffect(() => {
-    let cancelled = false;
-    if (!market) return;
-    const currentMarketId = market.id;
-    const currentEventId = market.eventId;
-
-    async function loadRelated() {
-      const picks: PredictionMarket[] = [];
-      const seen = new Set([currentMarketId]);
-      async function addRelated(params: {
-        eventId?: string;
-        seriesId?: string;
-        categoryId?: string;
-      }) {
-        if (picks.length >= 4) return;
-        const res = await api.getMarkets({
-          ...params,
-          status: "open",
-          pageSize: 8,
-        });
-        for (const candidate of res.data || []) {
-          if (seen.has(candidate.id)) continue;
-          seen.add(candidate.id);
-          picks.push(candidate);
-          if (picks.length >= 4) break;
-        }
-      }
-
-      try {
-        await addRelated({ eventId: currentEventId });
-        if (event?.seriesId) {
-          await addRelated({ seriesId: event.seriesId });
-        }
-        if (event?.categoryId) {
-          await addRelated({ categoryId: event.categoryId });
-        }
-        await addRelated({});
-        if (!cancelled) setRelated(picks);
-      } catch (err: unknown) {
-        logger.warn("MarketDetail", "related fetch failed", err);
-      }
-    }
-
-    loadRelated();
-    return () => {
-      cancelled = true;
-    };
-  }, [event?.categoryId, event?.seriesId, market?.eventId, market?.id]);
-
   // Fetch the user's positions filtered to this market so the Sell tab can
   // show actual available share counts. Refreshes when the market id or
   // auth state changes; refetched after a successful submit (see handleSubmit
   // below) so the count reflects the new fill.
+  //
+  // Keyed on the market ID, not the market object: post-trade loadMarket()
+  // and every WS `market:<id>` frame replace the market object with a fresh
+  // reference, and keying on the object re-armed the mount effect below on
+  // each of those — post-trade that meant the effect refetch AND
+  // handleSubmit's explicit loadPositions() both fired, a duplicate
+  // GET /api/v1/portfolio on every fill. With the id key, handleSubmit's
+  // call is the single post-trade refresh.
+  const marketId = market?.id;
   const loadPositions = useCallback(async () => {
-    if (!isAuthenticated || !market) {
+    if (!isAuthenticated || !marketId) {
       setPositions([]);
       return;
     }
     try {
       const all = await api.getPositions();
-      const onThisMarket = (all || []).filter((p) => p.marketId === market.id);
+      const onThisMarket = (all || []).filter((p) => p.marketId === marketId);
       setPositions(onThisMarket);
     } catch (err: unknown) {
       logger.warn("MarketDetail", "positions fetch failed", err);
       setPositions([]);
     }
-  }, [isAuthenticated, market]);
+  }, [isAuthenticated, marketId]);
 
   useEffect(() => {
     loadPositions();
@@ -1222,7 +1227,6 @@ export default function MarketDetailPage() {
               onSubmit={handleSubmit}
             />
           </div>
-
         </aside>
       </div>
     </div>

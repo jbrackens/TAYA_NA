@@ -36,6 +36,7 @@ import {
 } from "../lib/api/leaderboards-client";
 import { useToast } from "../components/ToastProvider";
 import { localizedMarket } from "../components/prediction/market-content";
+import { formatPoints } from "../lib/points";
 
 const api = createPredictionClient();
 
@@ -59,9 +60,12 @@ const TABLE_CELL = cx(MONO, "min-w-0 text-[13px] text-[var(--t1)]");
 const DIM_TEXT = "text-[var(--t3)]";
 const LOGIN_CTA =
   "inline-block rounded-[var(--r-md)] border border-[rgba(43,228,128,0.6)] bg-[linear-gradient(180deg,rgba(255,255,255,0.25)_0%,rgba(255,255,255,0)_50%),linear-gradient(115deg,#2be480_0%,#00ffaa_100%)] px-[22px] py-3 text-[13px] font-bold text-[#04140a] no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_10px_24px_rgba(43,228,128,0.18)] hover:brightness-105";
+const ADD_POINTS_BUTTON =
+  "inline-flex min-h-11 shrink-0 items-center rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-colors duration-[120ms] hover:border-[rgba(43,228,128,0.5)] hover:bg-[var(--surface-2)] hover:text-[var(--accent-text)]";
 
 export default function PortfolioPage() {
   const { t } = useTranslation("portfolio");
+  const { t: tStore } = useTranslation("store");
   const [positions, setPositions] = useState<Position[]>([]);
   const [orders, setOrders] = useState<PredictionOrder[]>([]);
   const [history, setHistory] = useState<SettledPositionResult[]>([]);
@@ -126,17 +130,35 @@ export default function PortfolioPage() {
         histRes.value.data.forEach((h) => ids.add(h.marketId));
 
       if (ids.size > 0) {
-        const markets = await Promise.all(
-          [...ids].map((id) =>
-            api.getMarket(id).catch((err: unknown) => {
-              logger.warn("Portfolio", "market hydrate failed", err);
-              return null;
-            }),
+        // Batched hydration: one GET /markets?ids= per 50 distinct ids (the
+        // gateway cap) instead of one GET /markets/{id} per market — a single
+        // request for typical portfolios. sort=newest keeps the query on the
+        // cheap non-ranking shape; no status filter so settled markets
+        // referenced by History still hydrate.
+        const idList = [...ids];
+        const chunks: string[][] = [];
+        for (let i = 0; i < idList.length; i += 50) {
+          chunks.push(idList.slice(i, i + 50));
+        }
+        const results = await Promise.all(
+          chunks.map((chunk) =>
+            api
+              .getMarkets({
+                ids: chunk,
+                pageSize: chunk.length,
+                sort: "newest",
+              })
+              .catch((err: unknown) => {
+                logger.warn("Portfolio", "market hydrate failed", err);
+                return null;
+              }),
           ),
         );
         if (cancelled) return;
         const map = new Map<string, PredictionMarket>();
-        for (const m of markets) if (m) map.set(m.id, m);
+        for (const res of results) {
+          for (const m of res?.data ?? []) map.set(m.id, m);
+        }
         setMarketsById(map);
       }
 
@@ -183,13 +205,22 @@ export default function PortfolioPage() {
 
   return (
     <div className="mx-auto max-w-[1280px] pb-[60px]">
-      <header className="mb-5">
-        <h1 className="m-0 mb-1 text-[28px] font-extrabold tracking-normal text-[var(--t1)]">
-          {t("title", "Portfolio")}
-        </h1>
-        <p className="m-0 text-[13px] text-[var(--t3)]">
-          {t("subtitle", "Open positions, active orders, settled results.")}
-        </p>
+      <header className="mb-5 flex items-end justify-between gap-4">
+        <div>
+          <h1 className="m-0 mb-1 text-[28px] font-extrabold tracking-normal text-[var(--t1)]">
+            {t("title", "Portfolio")}
+          </h1>
+          <p className="m-0 text-[13px] text-[var(--t3)]">
+            {t("subtitle", "Open positions, active orders, settled results.")}
+          </p>
+        </div>
+        <Link
+          href="/store"
+          className={ADD_POINTS_BUTTON}
+          data-testid="add-points-portfolio"
+        >
+          {tStore("entry.addPoints", "Add Points")}
+        </Link>
       </header>
 
       <SummaryStrip summary={summary} bestRank={bestRank} />
@@ -248,15 +279,11 @@ function SummaryStrip({
     <section className="mb-6 grid grid-cols-5 gap-[14px] max-lg:grid-cols-3 max-[720px]:grid-cols-2">
       <StatCard
         label={t("summary.invested", "Invested")}
-        value={s ? formatPointsFromPoints(s.totalValuePoints) : "—"}
+        value={s ? formatPoints(s.totalValuePoints) : "—"}
       />
       <StatCard
         label={t("summary.realizedPnl", "Realized point result")}
-        value={
-          s
-            ? `${pnlUp ? "+" : "−"}${formatPointsFromPoints(Math.abs(pnl))}`
-            : "—"
-        }
+        value={s ? `${pnlUp ? "+" : "−"}${formatPoints(Math.abs(pnl))}` : "—"}
         tone={s ? (pnlUp ? "gain" : "no") : undefined}
       />
       <StatCard
@@ -358,7 +385,7 @@ function formatBoardMetric(
     default: {
       const sign = entry.metricValue < 0 ? "−" : "+";
       return t("rank.metricPnl", "{{value}} point result", {
-        value: `${sign}${formatPointsFromPoints(Math.abs(entry.metricValue))}`,
+        value: `${sign}${formatPoints(Math.abs(entry.metricValue))}`,
       });
     }
   }
@@ -522,10 +549,10 @@ function PositionsTable({
               {available}
             </span>,
             <span key="p" className={MONO}>
-              {formatPointsFromPoints(p.avgPricePoints)}
+              {formatPoints(p.avgPricePoints)}
             </span>,
             <span key="c" className={MONO}>
-              {formatPointsFromPoints(p.totalCostPoints)}
+              {formatPoints(p.totalCostPoints)}
             </span>,
           ],
         };
@@ -602,7 +629,7 @@ function OrdersTable({
               {o.quantity}
             </span>,
             <span key="c" className={MONO}>
-              {formatPointsFromPoints(o.totalCostPoints)}
+              {formatPoints(o.totalCostPoints)}
             </span>,
             <StatusChip
               key="st"
@@ -677,7 +704,7 @@ function HistoryTable({
         // position. Show the exact settlement credit, not loyalty/XP accrual.
         const rawPoints = h.settlementPoints;
         const pointsDisplay =
-          rawPoints && rawPoints > 0 ? formatPointsFromPoints(rawPoints) : null;
+          rawPoints && rawPoints > 0 ? formatPoints(rawPoints) : null;
         return {
           key: h.id,
           href: m ? `/market/${m.ticker}` : undefined,
@@ -688,10 +715,10 @@ function HistoryTable({
               {h.quantity}
             </span>,
             <span key="e" className={MONO}>
-              {formatPointsFromPoints(h.entryPricePoints)}
+              {formatPoints(h.entryPricePoints)}
             </span>,
             <span key="x" className={MONO}>
-              {formatPointsFromPoints(h.exitPricePoints)}
+              {formatPoints(h.exitPricePoints)}
             </span>,
             <span
               key="p"
@@ -704,7 +731,7 @@ function HistoryTable({
               )}
             >
               {up ? "+" : "−"}
-              {formatPointsFromPoints(Math.abs(h.realizedPoints))}
+              {formatPoints(Math.abs(h.realizedPoints))}
             </span>,
             <span
               key="pts"
@@ -950,13 +977,8 @@ function is401(err: unknown): boolean {
   );
 }
 
-function formatPointsFromPoints(cents: number): string {
-  if (Math.abs(cents) >= 1_000_000_00)
-    return `${(cents / 1_000_000_00).toFixed(1)}M pts`;
-  if (Math.abs(cents) >= 10_000_00)
-    return `${(cents / 1_000_00).toFixed(1)}K pts`;
-  return `${(cents / 100).toFixed(2)} pts`;
-}
+// Points display goes through lib/points (whole-Points unit model — wire
+// integers ARE whole Points; never ÷100).
 
 function formatDate(iso: string): string {
   const d = new Date(iso);

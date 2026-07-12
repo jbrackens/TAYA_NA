@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
@@ -90,24 +90,32 @@ type RevealProps = {
 };
 
 /**
- * One-shot scroll reveal (opacity + 16px rise, ease-out). Skipped entirely —
- * content shown immediately — under prefers-reduced-motion or when
+ * One-shot scroll reveal (opacity + 16px rise, ease-out). Server-rendered
+ * VISIBLE so first paint never waits for hydration; on mount, only elements
+ * still below the viewport are hidden (before paint) and revealed on
+ * scroll. Skipped entirely under prefers-reduced-motion or when
  * IntersectionObserver is unavailable.
  */
 function Reveal({ children, className = "", delayMs = 0 }: RevealProps) {
   const ref = useRef<HTMLDivElement | null>(null);
-  const [shown, setShown] = useState(false);
+  const [shown, setShown] = useState(true);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const node = ref.current;
     if (!node) return;
     if (
       typeof IntersectionObserver === "undefined" ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
-      setShown(true);
       return;
     }
+    // Above-the-fold content stays visible (it may already be painted);
+    // only below-viewport sections get the scroll reveal.
+    const rect = node.getBoundingClientRect();
+    if (rect.top < window.innerHeight - 40) {
+      return;
+    }
+    setShown(false);
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {

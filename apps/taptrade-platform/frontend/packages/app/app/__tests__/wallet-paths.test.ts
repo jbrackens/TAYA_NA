@@ -6,11 +6,14 @@
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const clientPath = resolve(__dirname, "../lib/api/wallet-client.ts");
 const bonusClientPath = resolve(__dirname, "../lib/api/bonus-client.ts");
+// bonusSlice + WalletBreakdown were deleted in the P12 dead-code sweep
+// (2026-07-12): zero importers. The paths stay so the suite can assert the
+// retired files do not come back.
 const bonusSlicePath = resolve(__dirname, "../lib/store/bonusSlice.ts");
 const rewardsPagePath = resolve(__dirname, "../rewards/page.tsx");
 const activeBonusesControlPath = resolve(
@@ -44,13 +47,11 @@ const sharedApiIndexPath = resolve(
 );
 const source = readFileSync(clientPath, "utf-8");
 const bonusSource = readFileSync(bonusClientPath, "utf-8");
-const bonusSliceSource = readFileSync(bonusSlicePath, "utf-8");
 const rewardsPageSource = readFileSync(rewardsPagePath, "utf-8");
 const activeBonusesControlSource = readFileSync(
   activeBonusesControlPath,
   "utf-8",
 );
-const walletBreakdownSource = readFileSync(walletBreakdownPath, "utf-8");
 const wageringProgressSource = readFileSync(wageringProgressPath, "utf-8");
 const apiIndexSource = readFileSync(apiIndexPath, "utf-8");
 const sharedApiTypesSource = readFileSync(sharedApiTypesPath, "utf-8");
@@ -356,7 +357,11 @@ describe("wallet-client endpoint paths", () => {
         sharedWalletMutationResponseType,
         ["balancePoints"],
       ],
-      ["WalletMutationRequest", sharedWalletMutationRequestType, ["amountPoints"]],
+      [
+        "WalletMutationRequest",
+        sharedWalletMutationRequestType,
+        ["amountPoints"],
+      ],
     ] as const) {
       for (const token of expected) {
         assert.ok(
@@ -394,7 +399,11 @@ describe("wallet-client endpoint paths", () => {
       "// Request types",
     );
 
-    for (const retired of ["freebetId", "oddsBoostId", "freebetAppliedPoints"]) {
+    for (const retired of [
+      "freebetId",
+      "oddsBoostId",
+      "freebetAppliedPoints",
+    ]) {
       assert.ok(
         !sharedAuditLogType.includes(retired),
         `shared AuditLogEntry should not export retired promo field ${retired}`,
@@ -539,7 +548,11 @@ describe("wallet-client endpoint paths", () => {
     }
     // Points unit-model (2026-07-07): single canonical *Points wire key.
     for (const [label, typeSource, expected] of [
-      ["StarterGrantResult", starterGrantType, ["grantPoints", "balancePoints"]],
+      [
+        "StarterGrantResult",
+        starterGrantType,
+        ["grantPoints", "balancePoints"],
+      ],
       ["DailyClaimResult", dailyClaimType, ["claimPoints", "balancePoints"]],
       ["PointPack", pointPackType, ["amountPoints"]],
       [
@@ -548,7 +561,11 @@ describe("wallet-client endpoint paths", () => {
         ["claimPoints", "balancePoints"],
       ],
       ["Mission", missionType, ["rewardPoints"]],
-      ["MissionClaimResult", missionClaimType, ["claimPoints", "balancePoints"]],
+      [
+        "MissionClaimResult",
+        missionClaimType,
+        ["claimPoints", "balancePoints"],
+      ],
       ["Streak", streakType, ["rewardPoints"]],
       ["StreakClaimResult", streakClaimType, ["claimPoints", "balancePoints"]],
       [
@@ -601,11 +618,6 @@ describe("wallet-client endpoint paths", () => {
       "export interface WalletBreakdown",
       "export interface PlayContribution",
     );
-    const breakdownState = sliceBetween(
-      bonusSliceSource,
-      "interface WalletBreakdown",
-      "interface ActiveBonus",
-    );
     const breakdownNormalizer = sliceBetween(
       bonusSource,
       "export async function getWalletBreakdown",
@@ -627,8 +639,7 @@ describe("wallet-client endpoint paths", () => {
       "bonus-client should not fall back to USD for wallet breakdowns",
     );
     assert.ok(
-      !breakdownType.includes("currency: string") &&
-        !breakdownState.includes("currency: string"),
+      !breakdownType.includes("currency: string"),
       "WalletBreakdown should expose unit instead of currency",
     );
     // Points unit-model (2026-07-07): single canonical *Points wire key
@@ -642,14 +653,6 @@ describe("wallet-client endpoint paths", () => {
       "WalletBreakdown should not export retired breakdown aliases",
     );
     assert.ok(
-      breakdownState.includes("totalPoints") &&
-        !breakdownState.includes("realMoneyPoints") &&
-        !breakdownState.includes("bonusFundPoints") &&
-        !breakdownState.includes("totalPointsCents") &&
-        !breakdownState.includes("totalCents"),
-      "bonus store breakdown state should not retain retired breakdown aliases",
-    );
-    assert.ok(
       bonusSource.includes("interface LegacyBreakdownResponse") &&
         breakdownNormalizer.includes("legacyRes.realMoneyPoints") &&
         breakdownNormalizer.includes("legacyRes.bonusFundPoints") &&
@@ -659,24 +662,18 @@ describe("wallet-client endpoint paths", () => {
         !breakdownNormalizer.includes("totalPoints: totalPoints"),
       "legacy breakdown fields should be read privately but not reattached",
     );
-    for (const token of [
-      't("basePoints", "Base Points")',
-      't("bonusPoints", "Bonus Points")',
-      "breakdown.basePoints",
-      "breakdown.bonusPoints",
-      "breakdown.totalPoints",
-    ]) {
-      assert.ok(
-        walletBreakdownSource.includes(token),
-        `WalletBreakdown should render point-native field ${token}`,
-      );
-    }
-    assert.ok(
-      !walletBreakdownSource.includes('t("realMoney")') &&
-        !walletBreakdownSource.includes('t("bonusFunds")') &&
-        !walletBreakdownSource.includes("breakdown.realMoneyPoints") &&
-        !walletBreakdownSource.includes("breakdown.bonusFundPoints"),
-      "WalletBreakdown should not render legacy real-money/bonus-fund fields",
+    // The WalletBreakdown component and bonusSlice store were removed in the
+    // P12 dead-code sweep — the render-side breakdown surface must not
+    // silently return (rewards/ActiveBonusesControl is the live bonus UI).
+    assert.equal(
+      existsSync(walletBreakdownPath),
+      false,
+      "WalletBreakdown.tsx was deleted (zero importers) and should not return",
+    );
+    assert.equal(
+      existsSync(bonusSlicePath),
+      false,
+      "bonusSlice.ts was deleted (zero importers) and should not return",
     );
   });
 
@@ -685,11 +682,6 @@ describe("wallet-client endpoint paths", () => {
       bonusSource,
       "export interface PlayerBonus {",
       "export interface WalletBreakdown",
-    );
-    const activeBonusState = sliceBetween(
-      bonusSliceSource,
-      "interface ActiveBonus {",
-      "interface BonusState",
     );
 
     for (const token of [
@@ -718,10 +710,6 @@ describe("wallet-client endpoint paths", () => {
       assert.ok(
         !playerBonusType.includes(retired),
         `PlayerBonus should not export retired bonus field ${retired}`,
-      );
-      assert.ok(
-        !activeBonusState.includes(retired),
-        `ActiveBonus state should not retain retired bonus field ${retired}`,
       );
     }
   });
@@ -786,11 +774,10 @@ describe("wallet-client endpoint paths", () => {
   });
 
   it("renders active bonus progress on the rewards page with point-play fields", () => {
-    const activeBonusPanel = sliceBetween(
-      activeBonusesControlSource,
-      "function ActiveBonusesControl",
-      "function formatPoints",
-    );
+    // The local ÷100 formatPoints helper is retired (Points render whole via
+    // app/lib/points), so the retired-field scan covers the whole component
+    // source instead of slicing up to that helper.
+    const activeBonusPanel = activeBonusesControlSource;
 
     for (const token of [
       "getActiveBonuses",
@@ -808,7 +795,7 @@ describe("wallet-client endpoint paths", () => {
       "requiredPoints={bonus.playRequiredPoints}",
       "completedPoints={bonus.playCompletedPoints}",
       "progressPct={bonus.playProgressPct}",
-      "formatPoints(bonus.remainingPoints)",
+      "formatPointsAmount(bonus.remainingPoints)",
       't("activeBonuses.title", "Active point-play bonuses")',
     ]) {
       assert.ok(

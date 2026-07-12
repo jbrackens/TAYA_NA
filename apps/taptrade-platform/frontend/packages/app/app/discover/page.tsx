@@ -20,11 +20,11 @@ import type {
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import {
   dedupeMarkets,
-  formatCompactPoints,
   formatTimeLeft,
   isOpenMarketStatus,
   normalizePriceShares,
 } from "../components/prediction/market-display";
+import { formatCompactPoints } from "../lib/points";
 import { localizedMarket } from "../components/prediction/market-content";
 
 const api = createPredictionClient();
@@ -138,9 +138,7 @@ function filterMarkets(
     case "trending":
       return markets.filter((market) => trendingKeys.has(marketKey(market)));
     case "active":
-      return [...markets].sort(
-        (a, b) => b.volumePoints - a.volumePoints,
-      );
+      return [...markets].sort((a, b) => b.volumePoints - a.volumePoints);
     case "yes":
       return markets.filter(
         (market) => getSentiment(market).dominantSide === "YES",
@@ -161,10 +159,7 @@ function averageYesShare(markets: PredictionMarket[]): number {
   const total = markets.reduce((sum, market) => {
     return (
       sum +
-      normalizePriceShares(
-        market.yesPricePoints,
-        market.noPricePoints,
-      ).yesShare
+      normalizePriceShares(market.yesPricePoints, market.noPricePoints).yesShare
     );
   }, 0);
   return Math.round(total / markets.length);
@@ -195,6 +190,36 @@ function getDiscoveryMarkets(
     ...(discovery.trending ?? []),
     ...(discovery.closingSoon ?? []),
   ]);
+}
+
+// Price-history requests run through a small worker pool instead of one
+// unbounded Promise.all burst: every rendered sentiment row shows the
+// "% Change 24h" column, so all histories are still fetched, but at most
+// HISTORY_FETCH_CONCURRENCY requests are in flight at a time (the gateway
+// has no read cache — 20-40 simultaneous hits was a self-inflicted
+// thundering herd on a top-nav page). Results are identical; rows keep the
+// existing "·" placeholder until the batch completes.
+const HISTORY_FETCH_CONCURRENCY = 6;
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let nextIndex = 0;
+  const workers = Array.from(
+    { length: Math.min(limit, items.length) },
+    async () => {
+      while (nextIndex < items.length) {
+        const index = nextIndex;
+        nextIndex += 1;
+        results[index] = await fn(items[index]);
+      }
+    },
+  );
+  await Promise.all(workers);
+  return results;
 }
 
 function movementFromHistory(
@@ -405,16 +430,14 @@ export default function DiscoverPage() {
 
     let cancelled = false;
     setMarketMovements({});
-    Promise.all(
-      markets.map(async (market) => {
-        try {
-          const history = await api.getMarketPriceHistory(market.id, "1d");
-          return [marketKey(market), movementFromHistory(history)] as const;
-        } catch {
-          return [marketKey(market), null] as const;
-        }
-      }),
-    ).then((entries) => {
+    mapWithConcurrency(markets, HISTORY_FETCH_CONCURRENCY, async (market) => {
+      try {
+        const history = await api.getMarketPriceHistory(market.id, "1d");
+        return [marketKey(market), movementFromHistory(history)] as const;
+      } catch {
+        return [marketKey(market), null] as const;
+      }
+    }).then((entries) => {
       if (cancelled) return;
       setMarketMovements(Object.fromEntries(entries));
     });

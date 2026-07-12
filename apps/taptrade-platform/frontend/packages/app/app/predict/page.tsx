@@ -45,6 +45,18 @@ const FEATURED_CATEGORY_SLUGS = [
   "politics",
 ] as const;
 
+// How many activity-ranked markets to pull per featured category. The hero
+// needs the top-volume open market per category (plus fallbacks for dedupe
+// against the "All" slide and earlier categories). The gateway has no
+// sort=volume, but its default "activity" ranking is volume-dominated
+// (35% 24h volume + 10% total volume + liquidity/OI terms), so the
+// top-volume market always sits inside the first few activity results —
+// verified against the live gateway 2026-07-12: pageSize 12 and the old
+// pageSize 50 produce identical top-3-by-volume picks for sports /
+// entertainment / politics. 12 instead of 50 cuts the hero payload ~4x
+// (was 3 x 50 = 150 markets fetched to choose 3 slides).
+const FEATURED_CATEGORY_PAGE_SIZE = 12;
+
 const ROUTE_LOADING_CLASS = "p-20 text-center text-[13px] text-[var(--t3)]";
 const DISCOVERY_GRID_CLASS =
   "grid grid-cols-[1fr_320px] items-start gap-5 max-[960px]:grid-cols-1";
@@ -92,7 +104,8 @@ export default function PredictDiscoveryPage() {
               const res = await api.getMarkets({
                 categoryId: cat.id,
                 status: "open",
-                pageSize: 50,
+                sort: "activity",
+                pageSize: FEATURED_CATEGORY_PAGE_SIZE,
               });
               return { category: cat, ranked: rankByVolume(res.data ?? []) };
             } catch (err: unknown) {

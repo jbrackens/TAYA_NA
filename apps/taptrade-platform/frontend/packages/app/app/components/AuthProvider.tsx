@@ -82,9 +82,15 @@ function clearStoredUser() {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(() =>
-    apiClient.isAuthenticated() ? readStoredUser() : null,
-  );
+  // Hydration safety (P12, 2026-07-12): auth state MUST start null on both
+  // passes. The previous initializer read localStorage during the first
+  // render (server: null, client: possibly a user), a tree mismatch that was
+  // only masked because I18nProvider used to withhold children until after
+  // hydration. The stored user is re-applied in the mount effect below —
+  // synchronously before the async session validation — and TopBar already
+  // renders no auth CTA while `isLoading` is true, so there is no
+  // signed-out flash for returning users.
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
@@ -93,15 +99,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Starter point grant: when a session is established (login or restore),
   // claim the one-time faucet so a freshly-registered player is immediately
   // tradeable. The endpoint is idempotent and a no-op when the faucet is
-  // disabled server-side (STARTER_GRANT_CENTS=0), so firing once per session is
-  // safe. Best-effort — it never blocks auth.
+  // disabled server-side (STARTER_GRANT_CENTS=0). Best-effort — it never
+  // blocks auth.
+  //
+  // Once-per-user sticky: the gateway resolves the claim once and for all
+  // (granted, already granted, or faucet disabled), so after ANY definitive
+  // response we record a per-user localStorage marker and skip the POST on
+  // every later login/session restore. Brand-new users have no marker and
+  // still fire. Only a failed request (network error / non-2xx — the client
+  // resolves those to null) leaves the marker unset so the next session
+  // retries.
   const starterGrantClaimedFor = useRef<string | null>(null);
   useEffect(() => {
     if (!user || starterGrantClaimedFor.current === user.id) return;
+    const doneKey = `taptrade_starter_grant_done:${user.id}`;
+    if (typeof window !== "undefined" && localStorage.getItem(doneKey)) {
+      return;
+    }
     starterGrantClaimedFor.current = user.id;
     void claimStarterGrant(user.id).then((res) => {
-      if (res?.enabled) {
+      if (!res) return;
+      if (res.enabled) {
         logger.info("Points", "starter grant applied", res.balancePoints);
+      }
+      if (typeof window !== "undefined") {
+        localStorage.setItem(doneKey, "1");
       }
     });
   }, [user]);
@@ -109,6 +131,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Check for existing session on mount
   useEffect(() => {
     let mounted = true;
+
+    // Two-pass auth hydrate: seed the locally-stored user immediately after
+    // mount (client-only, so no SSR mismatch) while getSession() validates
+    // the cookie in the background. This mirrors the pre-P12 useState
+    // initializer's condition exactly — restoreSession() below then
+    // confirms, replaces, or clears it.
+    if (apiClient.isAuthenticated()) {
+      const seeded = readStoredUser();
+      if (seeded) setUser(seeded);
+    }
 
     const restoreSession = async () => {
       try {

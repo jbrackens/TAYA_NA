@@ -23,6 +23,7 @@
 
 import { useState, useCallback, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import type {
   PredictionMarket,
@@ -34,6 +35,7 @@ import type {
 } from "@taptrade-ui/api-client/src/prediction-types";
 import { useToast } from "../ToastProvider";
 import { complianceDenialKind } from "../../lib/compliance-denial";
+import { storeReturnSuffix } from "../../lib/storeReturnPath";
 
 /**
  * Extra fields the trade ticket can pass to the parent's submit handler
@@ -130,6 +132,14 @@ const TICKET_COMPLIANCE_CLASS =
   "mt-3 rounded-[var(--r-rh-sm)] border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.1)] p-2.5 text-center text-xs leading-[1.45] text-[var(--no-text)]";
 const TICKET_CLOSED_CLASS =
   "mt-3 rounded-[var(--r-rh-sm)] border border-dashed border-[var(--border-1)] p-2.5 text-center text-xs text-[var(--t3)]";
+// Insufficient-balance escape hatch: a secondary link-button into the Point
+// Store, below the (kept) disabled trade CTA. Carries the current market
+// path as a validated ?return= context so the store can route back.
+const TICKET_ADD_POINTS_CLASS =
+  "mt-2 flex w-full cursor-pointer items-center justify-center rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3 text-[13px] font-semibold text-[var(--t1)] no-underline transition-colors duration-[120ms] hover:border-[rgba(43,228,128,0.5)] hover:bg-[var(--surface-2)] hover:text-[var(--accent-text)]";
+// Preview requests are debounced so per-keystroke amount edits don't fire
+// an api.previewOrder round-trip each; 250ms trails typing comfortably.
+const PREVIEW_DEBOUNCE_MS = 250;
 
 function ticketModeButtonClass(active: boolean): string {
   return `${TICKET_MODE_BUTTON_BASE_CLASS} ${
@@ -205,6 +215,8 @@ export function TradeTicket({
   onSideChange,
 }: TradeTicketProps) {
   const { t } = useTranslation("prediction");
+  const { t: tStore } = useTranslation("store");
+  const pathname = usePathname();
   const [side, setSide] = useState<OrderSide>(defaultSide);
   const [amount, setAmount] = useState(defaultAmount);
   const [mode, setMode] = useState<TicketMode>("market");
@@ -264,18 +276,26 @@ export function TradeTicket({
       opts.notionalCapPoints = Math.ceil(amount);
     }
     setPreviewLoading(true);
-    onPreview(side, requestedQuantity, opts)
-      .then((quote) => {
-        if (!cancelled) setPreview(quote);
-      })
-      .catch(() => {
-        if (!cancelled) setPreview(null);
-      })
-      .finally(() => {
-        if (!cancelled) setPreviewLoading(false);
-      });
+    // Debounced: typing in the amount field used to fire one previewOrder
+    // per keystroke. The trailing timer coalesces edits; the cancelled flag
+    // doubles as the stale-response guard — any dep change cancels both the
+    // pending timer and the acceptance of an in-flight response, so an
+    // out-of-date quote can never overwrite a newer one.
+    const timer = setTimeout(() => {
+      onPreview(side, requestedQuantity, opts)
+        .then((quote) => {
+          if (!cancelled) setPreview(quote);
+        })
+        .catch(() => {
+          if (!cancelled) setPreview(null);
+        })
+        .finally(() => {
+          if (!cancelled) setPreviewLoading(false);
+        });
+    }, PREVIEW_DEBOUNCE_MS);
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, [
     action,
@@ -724,6 +744,15 @@ export function TradeTicket({
                   amount: formatPointAmount(amount),
                 })}
               </p>
+              <Link
+                href={`/store${storeReturnSuffix(
+                  pathname || `/market/${market.ticker}`,
+                )}`}
+                className={TICKET_ADD_POINTS_CLASS}
+                data-testid="add-points-tradeticket"
+              >
+                {tStore("entry.addPoints", "Add Points")}
+              </Link>
             </>
           ) : marketBuyHasNoLiquidity ? (
             <>
