@@ -14,7 +14,7 @@
  * degrade honestly when a provider isn't configured.
  */
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
@@ -52,8 +52,7 @@ const SHELL_CLASS =
 const FORM_COL_CLASS =
   "flex min-h-screen flex-col overflow-y-auto px-6 py-8 sm:px-12 lg:px-16";
 const FORM_INNER_CLASS = "mx-auto flex w-full max-w-[400px] flex-1 flex-col";
-const BRAND_ROW_CLASS =
-  "mb-10 inline-flex items-center gap-2.5 no-underline";
+const BRAND_ROW_CLASS = "mb-10 inline-flex items-center gap-2.5 no-underline";
 const BRAND_WORDMARK_CLASS =
   "text-[21px] font-bold leading-none tracking-[-0.03em] text-[var(--brand-ink)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
 const EVENT_PANEL_CLASS =
@@ -135,6 +134,14 @@ export default function RegisterPage() {
   const router = useRouter();
   const { login } = useAuth();
   const [step, setStep] = useState(1);
+  // SSR-safe reduced-motion probe: default true (poster only) so the
+  // heavy ambient loop never loads before the preference is known.
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(true);
+  useEffect(() => {
+    setPrefersReducedMotion(
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    );
+  }, []);
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [errors, setErrors] = useState<Errors>({});
   const [submitting, setSubmitting] = useState(false);
@@ -237,189 +244,189 @@ export default function RegisterPage() {
     <div className={SHELL_CLASS}>
       <div className={FORM_COL_CLASS}>
         <div className={FORM_INNER_CLASS}>
-        <Link href="/" className={BRAND_ROW_CLASS} aria-label="TapTrade home">
-          <BrandMark size={26} />
-          <span className={BRAND_WORDMARK_CLASS}>
-            TapTrade
-            <span className="text-[var(--brand-period)]">.</span>
-          </span>
-        </Link>
+          <Link href="/" className={BRAND_ROW_CLASS} aria-label="TapTrade home">
+            <BrandMark size={26} />
+            <span className={BRAND_WORDMARK_CLASS}>
+              TapTrade
+              <span className="text-[var(--brand-period)]">.</span>
+            </span>
+          </Link>
 
-        <header className={HEAD_CLASS}>
-          <span className={EYEBROW_CLASS}>
-            Step {step} of {TOTAL_STEPS} · {STEP_TITLES[step - 1]}
-          </span>
-          <h1 className={TITLE_CLASS}>Create your account</h1>
-          <p className={SUBTITLE_CLASS}>
-            Track positions, follow the crowd, trade real-world outcomes.
-          </p>
-        </header>
+          <header className={HEAD_CLASS}>
+            <span className={EYEBROW_CLASS}>
+              Step {step} of {TOTAL_STEPS} · {STEP_TITLES[step - 1]}
+            </span>
+            <h1 className={TITLE_CLASS}>Create your account</h1>
+            <p className={SUBTITLE_CLASS}>
+              Track positions, follow the crowd, trade real-world outcomes.
+            </p>
+          </header>
 
-        <div className={PROGRESS_CLASS} aria-hidden="true">
-          <div
-            className={`${PROGRESS_FILL_BASE_CLASS} ${progressWidthClass(step)}`}
-          />
-        </div>
-
-        {errorMessage && (
-          <div className={`${BANNER_BASE_CLASS} ${BANNER_ERROR_CLASS}`}>
-            {errorMessage}
-          </div>
-        )}
-        {successMessage && (
-          <div className={`${BANNER_BASE_CLASS} ${BANNER_SUCCESS_CLASS}`}>
-            {successMessage}
-          </div>
-        )}
-
-        {step === 1 && (
-          <div className={FORM_CLASS}>
-            <Field
-              label="Username"
-              value={form.username}
-              onChange={(v) => update("username", v)}
-              placeholder="your-handle"
-              error={errors.username}
-              autoComplete="username"
-            />
-            <Field
-              label="Email"
-              type="email"
-              value={form.email}
-              onChange={(v) => update("email", v)}
-              placeholder="you@example.com"
-              error={errors.email}
-              autoComplete="email"
-            />
-            <Field
-              label="Password"
-              type="password"
-              value={form.password}
-              onChange={(v) => update("password", v)}
-              placeholder="At least 7 characters"
-              error={errors.password}
-              autoComplete="new-password"
-            />
-            <Field
-              label="Confirm password"
-              type="password"
-              value={form.confirmPassword}
-              onChange={(v) => update("confirmPassword", v)}
-              placeholder="Confirm your password"
-              error={errors.confirmPassword}
-              autoComplete="new-password"
+          <div className={PROGRESS_CLASS} aria-hidden="true">
+            <div
+              className={`${PROGRESS_FILL_BASE_CLASS} ${progressWidthClass(step)}`}
             />
           </div>
-        )}
 
-        {step === 2 && (
-          <div className={FORM_CLASS}>
-            <div className={TERMS_CLASS}>
-              <h3 className={TERMS_TITLE_CLASS}>Terms and conditions</h3>
-              <p className={TERMS_COPY_CLASS}>
-                By creating a TapTrade account you agree to our Terms of Service
-                and Privacy Policy. You must be 18 or older to make predictions
-                on this platform.
-              </p>
-              <p className="m-0 text-xs leading-[1.55] text-[var(--t2)]">
-                TapTrade uses non-redeemable gameplay points. Starter points are
-                for predictions only; they are not money and cannot be cashed
-                out, withdrawn, transferred, or redeemed for prizes.
-              </p>
+          {errorMessage && (
+            <div className={`${BANNER_BASE_CLASS} ${BANNER_ERROR_CLASS}`}>
+              {errorMessage}
             </div>
+          )}
+          {successMessage && (
+            <div className={`${BANNER_BASE_CLASS} ${BANNER_SUCCESS_CLASS}`}>
+              {successMessage}
+            </div>
+          )}
 
-            <label className={CHECK_CLASS}>
-              <input
-                type="checkbox"
-                className={CHECK_INPUT_CLASS}
-                checked={form.acceptTerms}
-                onChange={(e) => update("acceptTerms", e.target.checked)}
+          {step === 1 && (
+            <div className={FORM_CLASS}>
+              <Field
+                label="Username"
+                value={form.username}
+                onChange={(v) => update("username", v)}
+                placeholder="your-handle"
+                error={errors.username}
+                autoComplete="username"
               />
-              <span>
-                I agree to the Terms of Service, Privacy Policy, and points-only
-                no-cashout disclosure
-              </span>
-            </label>
-            {errors.acceptTerms && (
-              <div className={FIELD_ERROR_CLASS}>{errors.acceptTerms}</div>
-            )}
-
-            <div className={SUMMARY_CLASS}>
-              <span className={SUMMARY_EYEBROW_CLASS}>Account summary</span>
-              <dl className={SUMMARY_LIST_CLASS}>
-                <div className={SUMMARY_ROW_CLASS}>
-                  <dt className={SUMMARY_TERM_CLASS}>Username</dt>
-                  <dd className={`${SUMMARY_DESC_CLASS} ${MONO_CLASS}`}>
-                    {form.username}
-                  </dd>
-                </div>
-                <div className={SUMMARY_ROW_CLASS}>
-                  <dt className={SUMMARY_TERM_CLASS}>Email</dt>
-                  <dd className={SUMMARY_DESC_CLASS}>{form.email}</dd>
-                </div>
-              </dl>
+              <Field
+                label="Email"
+                type="email"
+                value={form.email}
+                onChange={(v) => update("email", v)}
+                placeholder="you@example.com"
+                error={errors.email}
+                autoComplete="email"
+              />
+              <Field
+                label="Password"
+                type="password"
+                value={form.password}
+                onChange={(v) => update("password", v)}
+                placeholder="At least 7 characters"
+                error={errors.password}
+                autoComplete="new-password"
+              />
+              <Field
+                label="Confirm password"
+                type="password"
+                value={form.confirmPassword}
+                onChange={(v) => update("confirmPassword", v)}
+                placeholder="Confirm your password"
+                error={errors.confirmPassword}
+                autoComplete="new-password"
+              />
             </div>
-          </div>
-        )}
+          )}
 
-        <div className={ACTIONS_CLASS}>
-          {step > 1 && (
+          {step === 2 && (
+            <div className={FORM_CLASS}>
+              <div className={TERMS_CLASS}>
+                <h3 className={TERMS_TITLE_CLASS}>Terms and conditions</h3>
+                <p className={TERMS_COPY_CLASS}>
+                  By creating a TapTrade account you agree to our Terms of
+                  Service and Privacy Policy. You must be 18 or older to make
+                  predictions on this platform.
+                </p>
+                <p className="m-0 text-xs leading-[1.55] text-[var(--t2)]">
+                  TapTrade uses non-redeemable gameplay points. Starter points
+                  are for predictions only; they are not money and cannot be
+                  cashed out, withdrawn, transferred, or redeemed for prizes.
+                </p>
+              </div>
+
+              <label className={CHECK_CLASS}>
+                <input
+                  type="checkbox"
+                  className={CHECK_INPUT_CLASS}
+                  checked={form.acceptTerms}
+                  onChange={(e) => update("acceptTerms", e.target.checked)}
+                />
+                <span>
+                  I agree to the Terms of Service, Privacy Policy, and
+                  points-only no-cashout disclosure
+                </span>
+              </label>
+              {errors.acceptTerms && (
+                <div className={FIELD_ERROR_CLASS}>{errors.acceptTerms}</div>
+              )}
+
+              <div className={SUMMARY_CLASS}>
+                <span className={SUMMARY_EYEBROW_CLASS}>Account summary</span>
+                <dl className={SUMMARY_LIST_CLASS}>
+                  <div className={SUMMARY_ROW_CLASS}>
+                    <dt className={SUMMARY_TERM_CLASS}>Username</dt>
+                    <dd className={`${SUMMARY_DESC_CLASS} ${MONO_CLASS}`}>
+                      {form.username}
+                    </dd>
+                  </div>
+                  <div className={SUMMARY_ROW_CLASS}>
+                    <dt className={SUMMARY_TERM_CLASS}>Email</dt>
+                    <dd className={SUMMARY_DESC_CLASS}>{form.email}</dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
+          )}
+
+          <div className={ACTIONS_CLASS}>
+            {step > 1 && (
+              <button
+                type="button"
+                onClick={onPrev}
+                disabled={submitting}
+                className={`${BUTTON_BASE_CLASS} ${BUTTON_GHOST_CLASS}`}
+              >
+                Back
+              </button>
+            )}
             <button
               type="button"
-              onClick={onPrev}
+              onClick={step === TOTAL_STEPS ? onSubmit : onNext}
               disabled={submitting}
-              className={`${BUTTON_BASE_CLASS} ${BUTTON_GHOST_CLASS}`}
+              className={`${BUTTON_BASE_CLASS} ${BUTTON_PRIMARY_CLASS}`}
             >
-              Back
+              {submitting
+                ? "Processing…"
+                : step === TOTAL_STEPS
+                  ? "Create account"
+                  : "Continue"}
             </button>
+          </div>
+
+          {step === 1 && (
+            <>
+              <div className={`${DIVIDER_CLASS} my-5`}>
+                <span className={DIVIDER_TEXT_CLASS}>or</span>
+              </div>
+              <SocialAuthButtons
+                variant="stacked"
+                providers={["google", "apple", "sso"]}
+              />
+            </>
           )}
-          <button
-            type="button"
-            onClick={step === TOTAL_STEPS ? onSubmit : onNext}
-            disabled={submitting}
-            className={`${BUTTON_BASE_CLASS} ${BUTTON_PRIMARY_CLASS}`}
-          >
-            {submitting
-              ? "Processing…"
-              : step === TOTAL_STEPS
-                ? "Create account"
-                : "Continue"}
-          </button>
-        </div>
 
-        {step === 1 && (
-          <>
-            <div className={`${DIVIDER_CLASS} my-5`}>
-              <span className={DIVIDER_TEXT_CLASS}>or</span>
-            </div>
-            <SocialAuthButtons
-              variant="stacked"
-              providers={["google", "apple", "sso"]}
-            />
-          </>
-        )}
+          <p className="mt-6 text-xs leading-[1.55] text-[var(--t3)]">
+            By creating an account you agree to the{" "}
+            <Link href="/tos" className="text-[var(--t2)] underline">
+              Terms of Use
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="text-[var(--t2)] underline">
+              Privacy Policy
+            </Link>
+            . TapTrade uses non-redeemable gameplay points.
+          </p>
 
-        <p className="mt-6 text-xs leading-[1.55] text-[var(--t3)]">
-          By creating an account you agree to the{" "}
-          <Link href="/tos" className="text-[var(--t2)] underline">
-            Terms of Use
-          </Link>{" "}
-          and{" "}
-          <Link href="/privacy" className="text-[var(--t2)] underline">
-            Privacy Policy
-          </Link>
-          . TapTrade uses non-redeemable gameplay points.
-        </p>
-
-        <footer className={FOOTER_CLASS}>
-          Already have an account?{" "}
-          <Link
-            href={"/auth/login" + returnSuffix}
-            className={LINK_ACCENT_CLASS}
-          >
-            Sign in
-          </Link>
-        </footer>
+          <footer className={FOOTER_CLASS}>
+            Already have an account?{" "}
+            <Link
+              href={"/auth/login" + returnSuffix}
+              className={LINK_ACCENT_CLASS}
+            >
+              Sign in
+            </Link>
+          </footer>
         </div>
       </div>
 
@@ -431,15 +438,22 @@ export default function RegisterPage() {
           alt=""
           className={EVENT_POSTER_CLASS}
         />
-        <video
-          className={EVENT_MEDIA_CLASS}
-          src="/brand/hero-ambient.mp4"
-          poster="/brand/auth-event-poster.jpg"
-          autoPlay
-          muted
-          loop
-          playsInline
-        />
+        {/* 2026-07-12: reduced-motion users get the poster only — the
+            1.6MB ambient loop previously downloaded and auto-played
+            unconditionally (the landing hero's equivalent already gated
+            on the same media query). */}
+        {!prefersReducedMotion && (
+          <video
+            className={EVENT_MEDIA_CLASS}
+            src="/brand/hero-ambient.mp4"
+            poster="/brand/auth-event-poster.jpg"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+          />
+        )}
         <div className={EVENT_SCRIM_CLASS} />
         <div className={EVENT_COPY_CLASS}>
           <p className={EVENT_STATEMENT_CLASS}>
