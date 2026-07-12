@@ -70,6 +70,12 @@ const navItems: NavItem[] = [
     icon: "shield-alert",
   },
   {
+    href: "/prediction-admin/store-packs",
+    label: "Point Packs",
+    icon: "check-square",
+    requiredPermission: "finances:view",
+  },
+  {
     href: "/prediction-admin/activity",
     label: "Activity Export",
     icon: "scroll-text",

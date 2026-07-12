@@ -160,6 +160,17 @@ services:
       # A REAL-MONEY deployment MUST leave this at 0 (the default) — see the
       # POST /api/v1/wallet/starter-grant handler.
       STARTER_GRANT_CENTS: "1000000"
+      # Point Store (owner decision 2026-07-12): paid point packs via the
+      # DEMO provider — simulated checkout, clearly labeled, no real charges.
+      # Purchases are jurisdiction-gated like deposits and count toward
+      # responsible-play deposit limits. STORE_PROVIDER=stripe stays a
+      # reserved seam (boot-refused until implemented; no Stripe credentials
+      # exist anywhere in this deployment). The webhook secret is generated
+      # per-deploy into the box .env (deploy-demo.yml) — nothing external
+      # signs demo webhooks; it just must be real and non-placeholder.
+      STORE_ENABLED: "true"
+      STORE_PROVIDER: "demo"
+      STORE_WEBHOOK_SECRET: "${STORE_WEBHOOK_SECRET:?export STORE_WEBHOOK_SECRET before up}"
       # --- Activation knobs for wired-but-unconfigured features (off by ---
       # --- default; uncomment + supply real values to take each live). ---
       # Closed Alpha custodial USDC cashier. Fails closed until explicitly

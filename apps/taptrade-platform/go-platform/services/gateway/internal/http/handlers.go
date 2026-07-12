@@ -28,6 +28,7 @@ import (
 	"taptrade/gateway/internal/prediction/feed"
 	"taptrade/gateway/internal/prediction/workers"
 	"taptrade/gateway/internal/rbac"
+	"taptrade/gateway/internal/store"
 	"taptrade/gateway/internal/wallet"
 	"taptrade/gateway/internal/webhooks"
 	"taptrade/gateway/internal/ws"
@@ -536,6 +537,12 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// docs/compliance/geofencing-kyc.md for the compliance posture.
 	alphacashier.ComplianceGate = checkComplianceGates
 	payments.ComplianceGate = checkComplianceGates
+	// Point store (owner decision 2026-07-12): purchases are value-in —
+	// jurisdiction-gated like deposits and counted against responsible-play
+	// deposit limits. Seams are nil-safe; the store tree itself only mounts
+	// under STORE_ENABLED.
+	store.ComplianceGate = checkComplianceGates
+	store.RGLimits = rgService
 	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
 	logPreTradeComplianceMode(env, tradeGeoGate)
 	// The geo gate is intentionally default-off (depth pending legal), so a

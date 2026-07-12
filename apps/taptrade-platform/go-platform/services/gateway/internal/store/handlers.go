@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"taptrade/gateway/internal/compliance"
 	"taptrade/platform/transport/httpx"
 )
 
@@ -60,6 +61,13 @@ func RegisterRoutes(mux *stdhttp.ServeMux, svc *Service) {
 		}
 		if strings.TrimSpace(body.PackID) == "" {
 			return httpx.BadRequest("packId is required", map[string]any{"field": "packId"})
+		}
+		if ComplianceGate != nil {
+			// Purchases are value-in: guarded by the same jurisdiction gate
+			// as the legacy deposit surface (owner decision 2026-07-12).
+			if err := ComplianceGate(r, userID, compliance.SurfaceDeposit); err != nil {
+				return httpx.Forbidden("point pack checkout is not available in this region")
+			}
 		}
 		purchase, session, created, err := svc.CreateCheckout(r.Context(), userID, body.PackID, body.IdempotencyKey)
 		if err != nil {
@@ -300,6 +308,9 @@ func mapStoreError(err error) error {
 		return httpx.BadRequest("unknown checkout outcome", map[string]any{"field": "outcome"})
 	case errors.Is(err, ErrConfirmNotSupported):
 		return httpx.Forbidden("manual confirmation is only available for the demo provider")
+	case errors.Is(err, ErrPurchaseLimit):
+		return httpx.NewError(stdhttp.StatusForbidden, "purchase_limit_reached",
+			"this checkout would exceed your responsible-play limit", nil, nil)
 	default:
 		return httpx.Internal("point store operation failed", err)
 	}

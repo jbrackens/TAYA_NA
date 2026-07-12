@@ -193,6 +193,9 @@ session-authenticated except the webhook:
 | `GET /api/v1/store/purchases/{id}` | owner-or-admin status read |
 | `POST /api/v1/store/purchases/{id}/confirm` | demo provider only; owner-only; `{outcome}` |
 | `POST /api/v1/store/webhook` | HMAC-verified provider events; public + CSRF-exempt only under `STORE_ENABLED` |
+| `GET /api/v1/admin/store/packs` | full catalogue incl. inactive (RBAC `finances:view`) |
+| `POST /api/v1/admin/store/packs` | create pack (RBAC `finances:write`; validated; audit-logged) |
+| `PUT /api/v1/admin/store/packs/{id}` | update pack (RBAC `finances:write`; validated; audit-logged) |
 
 Boot rules (mirroring the legacy-flag hygiene): when `STORE_ENABLED=true` in
 `ENVIRONMENT=production|staging`, `STORE_WEBHOOK_SECRET` must be non-empty
@@ -284,3 +287,50 @@ free-grant reason set (`TestLedgerReasonsAreNotFreeGrantReasons`).
   checkout later).
 - Secrets stay server-side; nothing new enters client bundles beyond the
   public store API responses.
+
+## 12. Responsible-play + jurisdiction integration (owner decision 2026-07-12)
+
+Point-pack purchases **count toward responsible-play deposit limits** and
+checkout is guarded by the jurisdiction gate on the deposit surface:
+
+- Checkout creation checks `CheckDepositAllowed(user, priceUsdCents)` after
+  server-side pack resolution and **before any purchase row or provider
+  session exists** (in Stripe mode this is the last stop before real money
+  moves — a captured payment is never refused fulfillment for limit
+  reasons). Denials return 403 with the stable point-native reason code
+  `purchase_limit_reached`; raw checker wording (which may contain legacy
+  deposit/money vocabulary) never reaches launch clients.
+- The **first** successful fulfillment records the spend
+  (`RecordDeposit(user, priceUsdCents)`, best-effort); replays and
+  failed/canceled outcomes record nothing (proven by tests via limit math).
+- Amount semantics: the real-money price in integer cents (numerically equal
+  to base points under 1pt = 1¢); promotional bonus points consume no
+  headroom.
+- Checker outages fail **closed** in production/staging and open (warn) in
+  dev, mirroring the legacy payments posture.
+- Known small gap (accepted, demo-mode): several concurrently-open pending
+  checkouts each pass the limit check before any of them records.
+- Seams (`store.RGLimits`, `store.ComplianceGate`) are nil-safe package vars
+  wired in `internal/http/handlers.go`, matching the payments precedent.
+
+## 13. Catalogue administration (owner decision 2026-07-12)
+
+Office → **Point Packs** (`/prediction-admin/store-packs`, nav-gated on
+`finances:view`): full catalogue table + create/edit forms for price, base,
+bonus, badge, display order, active, first-checkout-only, promo window, and
+the Stripe price-id placeholder. Gateway admin API (§7 table) registers only
+with the store tree, enforces `finances:view`/`finances:write` RBAC (no new
+permission rows), validates pack config server-side (positive integers, slug
+ids, promo-window ordering, **launch-copy screening of name/badge**), and
+audit-logs every mutation as `store.pack_created`/`store.pack_updated`.
+Catalogue edits never touch purchases — completed rows keep their immutable
+snapshots.
+
+## 14. Demo deploy wiring (in-repo)
+
+`docker-compose.demo.yml` sets `STORE_ENABLED=true`, `STORE_PROVIDER=demo`,
+and `STORE_WEBHOOK_SECRET=${STORE_WEBHOOK_SECRET:?…}`;
+`deploy-demo.yml` generates a fresh random secret into the box `.env` each
+deploy (nothing external signs demo webhooks — it must merely be real and
+non-placeholder). When Stripe lands, replace the generated value with a repo
+secret carrying the provider's signing secret.

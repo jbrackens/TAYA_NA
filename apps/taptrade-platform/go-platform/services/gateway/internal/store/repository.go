@@ -37,6 +37,9 @@ type ResolveFunc func(ctx context.Context, tx *sql.Tx, current Purchase) (Resolv
 type Repository interface {
 	ListPacks(ctx context.Context) ([]PointPack, error)
 	GetPack(ctx context.Context, id string) (*PointPack, error)
+	// UpsertPack creates or replaces one catalogue row (admin surface).
+	// Purchases are unaffected: they carry immutable snapshots.
+	UpsertPack(ctx context.Context, pack PointPack) error
 	// HasCompletedPurchase reports whether the user has any completed
 	// purchase (first-purchase eligibility + intro_only packs).
 	HasCompletedPurchase(ctx context.Context, userID string) (bool, error)
@@ -140,6 +143,37 @@ WHERE id = $1`, id))
 		return nil, fmt.Errorf("store: get pack: %w", err)
 	}
 	return &pack, nil
+}
+
+func (r *SQLRepository) UpsertPack(ctx context.Context, pack PointPack) error {
+	ctx, cancel := context.WithTimeout(ctx, storeDBTimeout)
+	defer cancel()
+	_, err := r.db.ExecContext(ctx, `
+INSERT INTO store_point_packs
+  (id, name, price_usd_cents, base_points, bonus_points, display_order,
+   active, badge, intro_only, promo_starts_at, promo_ends_at,
+   stripe_price_id, created_at, updated_at)
+VALUES ($1,$2,$3,$4,$5,$6,$7,NULLIF($8,''),$9,$10,$11,NULLIF($12,''),NOW(),NOW())
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  price_usd_cents = EXCLUDED.price_usd_cents,
+  base_points = EXCLUDED.base_points,
+  bonus_points = EXCLUDED.bonus_points,
+  display_order = EXCLUDED.display_order,
+  active = EXCLUDED.active,
+  badge = EXCLUDED.badge,
+  intro_only = EXCLUDED.intro_only,
+  promo_starts_at = EXCLUDED.promo_starts_at,
+  promo_ends_at = EXCLUDED.promo_ends_at,
+  stripe_price_id = EXCLUDED.stripe_price_id,
+  updated_at = NOW()`,
+		pack.ID, pack.Name, pack.PriceUsdCents, pack.BasePoints, pack.BonusPoints,
+		pack.DisplayOrder, pack.Active, pack.Badge, pack.IntroOnly,
+		pack.PromoStartsAt, pack.PromoEndsAt, pack.StripePriceID)
+	if err != nil {
+		return fmt.Errorf("store: upsert pack %s: %w", pack.ID, err)
+	}
+	return nil
 }
 
 func (r *SQLRepository) HasCompletedPurchase(ctx context.Context, userID string) (bool, error) {
@@ -418,6 +452,13 @@ func (r *MemoryRepository) GetPack(_ context.Context, id string) (*PointPack, er
 		return nil, nil
 	}
 	return &pack, nil
+}
+
+func (r *MemoryRepository) UpsertPack(_ context.Context, pack PointPack) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.packs[pack.ID] = pack
+	return nil
 }
 
 func (r *MemoryRepository) HasCompletedPurchase(_ context.Context, userID string) (bool, error) {

@@ -439,18 +439,20 @@ bottleneck and recommended next action.
    the discovery shell (server-fetch initial market lists), which the
    build now makes feasible (SSR HTML is already real). Explicitly out of
    scope this pass per the no-broad-rewrite rule.
-2. **Store admin UI** — pack catalogue is DB-config (plain SQL updates);
-   an office CRUD surface (nav entry + DataTable + RBAC permission) is
-   documented in the api-client/office audit as the minimal path. Deferred.
-3. **RG/compliance posture for purchases** — deliberate product decision
-   left open: should point purchases count toward responsible-play
-   deposit limits? The gate seam exists (`compliance.GateFunc` pattern);
-   nothing is wired. Decide before any real-money launch.
-4. **Deploy wiring** — demo deploy needs `STORE_ENABLED=true`,
-   `STORE_PROVIDER=demo`, and a real `STORE_WEBHOOK_SECRET` in its env
-   (deploy config lives outside this repo's tree; not changed here).
-   Faucets coexisting with a paid store (STARTER_GRANT_CENTS etc.) is an
-   economy-design decision to revisit.
+2. **Store admin UI** — DONE (owner decision 2026-07-12): office "Point
+   Packs" page + RBAC-gated gateway admin API with validation, launch-copy
+   screening, and audit logging (STORE_AND_PAYMENTS.md §13). Verified live
+   (round-trip save through the office UI).
+3. **RG/compliance posture for purchases** — DONE (owner decision
+   2026-07-12: yes): purchases count toward responsible-play deposit
+   limits and are jurisdiction-gated on the deposit surface
+   (STORE_AND_PAYMENTS.md §12; six new tests incl. exactly-once recording
+   and fail-closed deployed-env behavior).
+4. **Deploy wiring** — DONE: `docker-compose.demo.yml` +
+   `deploy-demo.yml` now carry the store env with a per-deploy generated
+   webhook secret (STORE_AND_PAYMENTS.md §14). Faucets coexisting with the
+   paid store remains an open economy-design decision (brief provided
+   separately).
 5. **Deferred small items** — TopBar search loads 100 markets per focus
    (kept: needs UX decision on server-side search); rewards page refetches
    6 collections per claim (kept: correctness-first pattern);

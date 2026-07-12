@@ -66,6 +66,26 @@ export default defineConfig({
         storageState: "./tests/.auth/demo.json",
       },
     },
+    // Cross-engine coverage (J8): Safari/WebKit matters for the PH market's
+    // iOS users; Firefox for Gecko parity. Same storageState as desktop.
+    {
+      name: "desktop-webkit",
+      dependencies: ["setup"],
+      use: {
+        ...devices["Desktop Safari"],
+        viewport: { width: 1440, height: 900 },
+        storageState: "./tests/.auth/demo.json",
+      },
+    },
+    {
+      name: "desktop-firefox",
+      dependencies: ["setup"],
+      use: {
+        ...devices["Desktop Firefox"],
+        viewport: { width: 1440, height: 900 },
+        storageState: "./tests/.auth/demo.json",
+      },
+    },
     {
       name: "mobile-chromium",
       dependencies: ["setup"],

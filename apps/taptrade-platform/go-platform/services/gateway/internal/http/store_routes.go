@@ -44,5 +44,6 @@ func registerPointStoreRoutes(mux *stdhttp.ServeMux, walletService *wallet.Servi
 	provider := store.NewDemoProvider(store.DefaultDelayedCompletion, nil)
 	svc := store.NewService(cfg, repo, NewStoreWalletAdapter(walletService), provider)
 	store.RegisterRoutes(mux, svc)
+	registerStoreAdminRoutes(mux, repo)
 	slog.Info("store: point store routes registered", "provider", cfg.Provider)
 }
