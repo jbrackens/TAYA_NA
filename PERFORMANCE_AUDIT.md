@@ -466,11 +466,14 @@ bottleneck and recommended next action.
    verification is covered by the Playwright mobile project and the
    automated 320px no-overflow test. 200%-zoom review was approximated by
    the 320px reflow coverage plus the AA-audited token system (no
-   dedicated zoom pass). WebKit/Firefox E2E was not achievable in this
-   environment (pinned-version browser downloads stalled); coverage is
-   Chromium desktop + mobile via the system Chrome channel — running
-   `npx playwright install webkit firefox` on a machine with normal
-   network access and adding two config projects is the follow-up.
+   dedicated zoom pass). WebKit/Firefox E2E: the `desktop-webkit` and
+   `desktop-firefox` Playwright projects are wired and committed, but the
+   pinned browser archives (webkit-2272, firefox-1511) download at a
+   crawl on this network and had not completed by end of session.
+   Coverage today is Chromium desktop + mobile (43/43). Follow-up (one
+   command each): `npx playwright install webkit firefox` from
+   packages/app, then
+   `npx playwright test journeys --project=setup --project=desktop-webkit --project=desktop-firefox`.
 7. **Manual QA evidence (store)**: keyboard — pack cards are native
    buttons with `aria-pressed`, Tab reaches them with the visible 2px
    focus ring, and Enter/Space select (verified via trusted Playwright
