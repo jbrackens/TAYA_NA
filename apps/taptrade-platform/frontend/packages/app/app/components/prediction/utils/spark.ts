@@ -1,61 +1,57 @@
 /**
- * Shared price-history helpers for the Robinhood-direction components
- * (DiscoveryHero, TrendingSidebar/TopMovers, MarketCard).
+ * Shared price-history helpers for the discovery components
+ * (DiscoveryHero, TrendingSidebar/TopMovers).
  *
- * heroChartPath now accepts an optional `points` array — when the
- * caller has fetched real history from GET /markets/:id/prices, it
- * builds the SVG from that. Without points it falls back to the
- * deterministic walk so the chart still renders during the fetch
- * window or in test mode. sparklinePath remains synthetic-only:
- * sparklines are 60×28 px decorative thumbs and the per-sparkline
- * fetch cost on a page with 30+ market cards isn't worth the visual
- * improvement.
+ * 2026-07-12 integrity fix: movement claims (delta pills, mover
+ * percentages, sparklines) are REAL-DATA ONLY, computed from the
+ * backend /prices series via movementFromSeries / sparklineFromValues.
+ * The old deterministicDelta/walk helpers — which invented "Today"
+ * movement from a hash of the ticker string — are gone.
  *
- * useHeroPriceHistory (in this file) is the small hook hero consumers
- * call to fetch the real series. Returns null while loading or on
- * failure; pass through to heroChartPath which gracefully falls back.
+ * The one remaining synthetic generator, syntheticHeroValues, exists
+ * solely for the demo-box chart FILL while history is loading or
+ * absent. It renders only when NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS is on
+ * and the caller MUST display the "Simulated data" chip alongside it.
+ * It draws a chart shape; it never feeds a movement claim.
  */
 
-export function tickerSeed(ticker: string): number {
-  let s = 0;
-  for (let i = 0; i < ticker.length; i++) {
-    s = ((s << 5) - s + ticker.charCodeAt(i)) | 0;
-  }
-  return Math.abs(s);
+export interface SeriesMovement {
+  /** Absolute change over the fetched range, in whole points (¢). */
+  deltaPoints: number;
+  /** Percent change relative to the range's opening price. */
+  pct: number;
+  up: boolean;
 }
 
-/** ±5¢ change biased slightly positive. Returns absolute delta and percentage. */
-export function deterministicDelta(
-  ticker: string,
-  currentPoints: number,
-): { delta: number; pct: number; up: boolean } {
-  const seed = tickerSeed(ticker);
-  const delta = (seed % 11) - 4;
-  const prev = Math.max(1, Math.min(99, currentPoints - delta));
-  const pct = ((currentPoints - prev) / prev) * 100;
-  return { delta, pct, up: delta >= 0 };
+/**
+ * Movement from a real price series (range open → last). Returns null
+ * when the series can't support an honest movement claim (fewer than
+ * two samples, or a flat line). Callers hide their movement UI on null
+ * instead of inventing a number.
+ */
+export function movementFromSeries(
+  values: number[] | null | undefined,
+): SeriesMovement | null {
+  if (!values || values.length < 2) return null;
+  const first = values[0];
+  const last = values[values.length - 1];
+  if (!values.some((v) => v !== first)) return null;
+  if (first <= 0) return null;
+  const deltaPoints = last - first;
+  return {
+    deltaPoints,
+    pct: (deltaPoints / first) * 100,
+    up: deltaPoints >= 0,
+  };
 }
 
-/** N points of plausible price walk ending at currentPoints. */
-function walk(
-  ticker: string,
-  currentPoints: number,
-  N: number,
-  opts?: { biasUp?: boolean },
-): Array<[number, number]> {
-  let s = tickerSeed(ticker) || 1;
-  const points: Array<[number, number]> = [];
-  let val = opts?.biasUp == null ? 50 : opts.biasUp ? 25 : 75;
-  const trendBias = opts?.biasUp == null ? 0 : opts.biasUp ? -1 : 1;
-  for (let i = 0; i < N; i++) {
-    s = (s * 1103515245 + 12345) & 0x7fffffff;
-    const noise = ((s % 1000) - 500) / 70;
-    val = Math.max(8, Math.min(92, val + noise + trendBias));
-    points.push([i, val]);
-  }
-  // Pin the endpoint to the current price.
-  points[N - 1][1] = currentPoints;
-  return points;
+/**
+ * YES-series → NO-series (prices are complements on a binary market).
+ * Used so a NO-leading mover row shows the movement of the side it
+ * actually displays.
+ */
+export function complementSeries(values: number[]): number[] {
+  return values.map((v) => 100 - v);
 }
 
 /**
@@ -90,38 +86,24 @@ function smoothPath(coords: Array<[number, number]>): string {
 
 /**
  * Hero chart: builds the SVG line + fill paths plus the endpoint
- * coordinate (for the live dot). When `points` is supplied (from the
- * backend prices endpoint), the chart uses the real volume-weighted
- * history. Otherwise it falls back to a 24-point deterministic walk
- * anchored at currentPoints so the SVG still renders during the fetch
- * or if the API fails.
+ * coordinate (for the live dot) from a REAL price series (or, on the
+ * demo box only, the labeled synthetic fill).
  *
  * P9: the y-domain auto-scales to the series range (with a 6¢ minimum
  * span so quiet markets still show topology) instead of the absolute
- * 0–100 band. An absolute domain rendered a 60–64¢ market as a flat
- * stroke over a plot that was ~90% dead space — the single biggest
- * "awkward layout" tell on the old hero. `baselineY` is the session
- * open (first sample) for the dashed reference line.
+ * 0–100 band. `baselineY` is the session open (first sample) for the
+ * dashed reference line.
  */
 export function heroChartPath(
-  ticker: string,
-  currentPoints: number,
+  values: number[],
   width = 800,
   height = 220,
-  points?: number[],
 ): {
   line: string;
   fill: string;
   end: { x: number; y: number };
   baselineY: number;
 } {
-  let values: number[];
-  if (points && points.length >= 2 && points.some((p) => p !== points[0])) {
-    values = points;
-  } else {
-    const pts = walk(ticker, currentPoints, 24);
-    values = pts.map(([, v]) => v);
-  }
   const N = values.length;
   let lo = Math.min(...values);
   let hi = Math.max(...values);
@@ -147,23 +129,64 @@ export function heroChartPath(
   return { line, fill, end: { x: ex, y: ey }, baselineY: yFor(values[0]) };
 }
 
-/** Compact sparkline path used by Top Movers rows + MarketCard footers. */
-export function sparklinePath(
-  ticker: string,
-  currentPoints: number,
-  up: boolean,
+/**
+ * Compact sparkline path from a REAL series (Top Movers rows). The
+ * series is downsampled to at most `samples` evenly-spaced points and
+ * scaled to its own min/max band so small moves stay visible.
+ */
+export function sparklineFromValues(
+  values: number[],
   width = 60,
   height = 28,
+  samples = 12,
 ): string {
-  const N = 8;
-  const pts = walk(ticker + (up ? "↑" : "↓"), currentPoints, N, {
-    biasUp: up,
-  });
+  if (values.length < 2) return "";
+  const step = Math.max(1, Math.floor(values.length / samples));
+  const sampled: number[] = [];
+  for (let i = 0; i < values.length; i += step) sampled.push(values[i]);
+  if (sampled[sampled.length - 1] !== values[values.length - 1]) {
+    sampled.push(values[values.length - 1]);
+  }
+  let lo = Math.min(...sampled);
+  let hi = Math.max(...sampled);
+  if (hi - lo < 1) {
+    lo -= 0.5;
+    hi += 0.5;
+  }
   const pad = height * 0.1;
+  const N = sampled.length;
   return smoothPath(
-    pts.map(([i, v]) => [
+    sampled.map((v, i) => [
       (i / (N - 1)) * width,
-      pad + (1 - v / 100) * (height - pad * 2),
+      pad + (1 - (v - lo) / (hi - lo)) * (height - pad * 2),
     ]),
   );
+}
+
+/**
+ * DEMO-ONLY chart fill (see file header): a deterministic walk ending
+ * at the current price, rendered exclusively behind
+ * NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS together with the "Simulated data"
+ * chip. Never used for movement claims.
+ */
+export function syntheticHeroValues(
+  ticker: string,
+  currentPoints: number,
+  N = 24,
+): number[] {
+  let s = 0;
+  for (let i = 0; i < ticker.length; i++) {
+    s = ((s << 5) - s + ticker.charCodeAt(i)) | 0;
+  }
+  s = Math.abs(s) || 1;
+  const values: number[] = [];
+  let val = 50;
+  for (let i = 0; i < N; i++) {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const noise = ((s % 1000) - 500) / 70;
+    val = Math.max(8, Math.min(92, val + noise));
+    values.push(val);
+  }
+  values[N - 1] = currentPoints;
+  return values;
 }

@@ -9,8 +9,10 @@
  * stability while the visual identity is now "Top Movers."
  *
  * Reuses `discovery.trending` data; each row links to /market/[ticker].
- * Sparklines and 24h delta are deterministic from the ticker (placeholder
- * until backend exposes price history).
+ * 2026-07-12 integrity fix: sparklines and the 24h delta come from the
+ * real /prices series (pooled fetches via useMoversHistories). Rows are
+ * ordered by actual |movement|; rows without a usable series render
+ * without any movement claim instead of a fabricated one.
  *
  * Color discipline (DESIGN.md §3 strict two-greens):
  *   - mint --accent: actions/brand only (the live dot in the header)
@@ -21,7 +23,12 @@
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
-import { deterministicDelta, sparklinePath } from "./utils/spark";
+import {
+  complementSeries,
+  movementFromSeries,
+  sparklineFromValues,
+} from "./utils/spark";
+import { useMoversHistories } from "./utils/useMoversHistories";
 import { categoryLabel, localizedMarket } from "./market-content";
 
 interface Props {
@@ -88,8 +95,35 @@ function deltaClass(up: boolean): string {
 export function TrendingSidebar({ markets, limit = 6 }: Props) {
   const { t } = useTranslation("prediction");
   const { t: contentT } = useTranslation("market-content");
+  const candidates = (markets ?? []).slice(0, limit);
+  const { histories } = useMoversHistories(candidates.map((m) => m.ticker));
   if (!markets || markets.length === 0) return null;
-  const rows = markets.slice(0, limit).map((m) => localizedMarket(contentT, m));
+
+  // Real movement per row, computed for the side the row displays.
+  // Rows with movement sort by |pct| (they are the actual movers);
+  // rows without a usable series keep their trending order at the end
+  // and render no movement claim.
+  const rows = candidates
+    .map((raw) => {
+      const m = localizedMarket(contentT, raw);
+      const yesLeads = m.yesPricePoints >= m.noPricePoints;
+      const yesSeries = histories.get(raw.ticker) ?? null;
+      const sideSeries = yesSeries
+        ? yesLeads
+          ? yesSeries
+          : complementSeries(yesSeries)
+        : null;
+      const movement = movementFromSeries(sideSeries);
+      return { m, yesLeads, sideSeries, movement };
+    })
+    .sort((a, b) => {
+      if (a.movement && b.movement) {
+        return Math.abs(b.movement.pct) - Math.abs(a.movement.pct);
+      }
+      if (a.movement) return -1;
+      if (b.movement) return 1;
+      return 0;
+    });
 
   return (
     <aside className={TOP_MOVERS_CLASS} aria-label={t("TOP_MOVERS")}>
@@ -101,12 +135,9 @@ export function TrendingSidebar({ markets, limit = 6 }: Props) {
         </span>
       </div>
       <ul className={TOP_MOVERS_LIST_CLASS}>
-        {rows.map((m) => {
-          const yesLeads = m.yesPricePoints >= m.noPricePoints;
-          const leadingPrice = yesLeads
-            ? m.yesPricePoints
-            : m.noPricePoints;
-          const { pct, up } = deterministicDelta(m.ticker, leadingPrice);
+        {rows.map(({ m, yesLeads, sideSeries, movement }) => {
+          const leadingPrice = yesLeads ? m.yesPricePoints : m.noPricePoints;
+          const up = movement ? movement.up : true;
           const sparkColor = up ? "var(--yes-text)" : "var(--no-text)";
           const cat = categoryLabel(
             contentT,
@@ -117,32 +148,44 @@ export function TrendingSidebar({ markets, limit = 6 }: Props) {
               <Link
                 href={`/market/${m.ticker}`}
                 className={TOP_MOVERS_ROW_CLASS}
-                aria-label={`${m.title}, ${leadingPrice} cents, ${up ? "+" : ""}${pct.toFixed(1)}%`}
+                aria-label={
+                  movement
+                    ? `${m.title}, ${leadingPrice} cents, ${up ? "+" : ""}${movement.pct.toFixed(1)}%`
+                    : `${m.title}, ${leadingPrice} cents`
+                }
               >
                 <div className="min-w-0">
                   <div className={TOP_MOVERS_CATEGORY_CLASS}>{cat}</div>
                   <div className={TOP_MOVERS_QUESTION_CLASS}>{m.title}</div>
                 </div>
                 <span className="h-7 w-[60px]" aria-hidden="true">
-                  <svg
-                    className="block h-full w-full"
-                    viewBox="0 0 60 28"
-                    preserveAspectRatio="none"
-                  >
-                    <path
-                      d={sparklinePath(m.ticker, leadingPrice, up)}
-                      stroke={sparkColor}
-                      strokeWidth="1.5"
-                      fill="none"
-                    />
-                  </svg>
+                  {movement && sideSeries && (
+                    <svg
+                      className="block h-full w-full"
+                      viewBox="0 0 60 28"
+                      preserveAspectRatio="none"
+                    >
+                      <path
+                        d={sparklineFromValues(sideSeries)}
+                        stroke={sparkColor}
+                        strokeWidth="1.5"
+                        fill="none"
+                      />
+                    </svg>
+                  )}
                 </span>
                 <div className="min-w-14 text-right">
                   <div className={TOP_MOVERS_PRICE_CLASS}>{leadingPrice}¢</div>
-                  <span className={deltaClass(up)}>
-                    {up ? "+" : ""}
-                    {pct.toFixed(1)}%
-                  </span>
+                  {movement ? (
+                    <span className={deltaClass(up)}>
+                      {up ? "+" : ""}
+                      {movement.pct.toFixed(1)}%
+                    </span>
+                  ) : (
+                    <span className="mt-[5px] inline-block px-[7px] py-0.5 font-['IBM_Plex_Mono',_monospace] text-[11px] font-semibold text-[var(--t4)]">
+                      —
+                    </span>
+                  )}
                 </div>
               </Link>
             </li>

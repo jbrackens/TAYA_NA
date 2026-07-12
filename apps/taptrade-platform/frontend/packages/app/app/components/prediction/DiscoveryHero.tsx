@@ -11,10 +11,11 @@
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
-import { deterministicDelta, heroChartPath } from "./utils/spark";
+import { heroChartPath, syntheticHeroValues } from "./utils/spark";
 import { useHeroPriceHistory } from "./utils/useHeroPriceHistory";
 import { categoryLabel, localizedMarket } from "./market-content";
 import { formatCompactPoints } from "../../lib/points";
+import { DEMO_SYNTHETIC_CHARTS } from "../../lib/features";
 
 function formatHeroCloseLeft(iso: string): string {
   const ms = new Date(iso).getTime() - Date.now();
@@ -67,27 +68,26 @@ export function DiscoveryHero({
     .join(" · ");
   const yes = displayMarket.yesPricePoints;
   const no = displayMarket.noPricePoints;
-  const { delta, pct } = deterministicDelta(displayMarket.ticker, yes);
-  const isUp = delta >= 0;
-  const isFlat = delta === 0;
-  // Real backend-fetched series when available; falls back to the
-  // deterministic walk during the fetch window or on failure (the
-  // hook returns null in those cases and heroChartPath handles that).
-  const heroPoints = useHeroPriceHistory(displayMarket.ticker);
-  const chart = heroChartPath(
-    displayMarket.ticker,
-    yes,
-    800,
-    320,
-    heroPoints ?? undefined,
-  );
-  const chartMobile = heroChartPath(
-    displayMarket.ticker,
-    yes,
-    800,
-    150,
-    heroPoints ?? undefined,
-  );
+  // 2026-07-12 integrity fix: the delta pill renders ONLY from the real
+  // /prices series (movement is null while loading / when the series is
+  // flat or missing — the pill hides instead of inventing a number).
+  const {
+    points: heroPoints,
+    movement,
+    loading: historyLoading,
+  } = useHeroPriceHistory(displayMarket.ticker);
+  const isUp = movement ? movement.up : yes >= no;
+  const isFlat = movement ? movement.deltaPoints === 0 : true;
+  // Chart fill: real series when available; on the demo box only
+  // (NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS) a labeled synthetic shape keeps
+  // the hero visual while history loads or is absent; otherwise no line
+  // is drawn — loading/empty stay honest.
+  const syntheticChart = heroPoints == null && DEMO_SYNTHETIC_CHARTS;
+  const chartValues =
+    heroPoints ??
+    (syntheticChart ? syntheticHeroValues(displayMarket.ticker, yes) : null);
+  const chart = chartValues ? heroChartPath(chartValues, 800, 320) : null;
+  const chartMobile = chartValues ? heroChartPath(chartValues, 800, 150) : null;
   const volumeLabel = formatCompactPoints(displayMarket.volumePoints);
   const oiLabel =
     displayMarket.openInterestPoints != null &&
@@ -140,83 +140,101 @@ export function DiscoveryHero({
               ¢
             </span>
           </div>
-          <div className="mb-6 flex items-center gap-2.5 max-[980px]:mb-4">
-            <span
-              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 font-['IBM_Plex_Mono',_monospace] text-[13px] font-semibold tabular-nums ${
-                isFlat
-                  ? "bg-[var(--surface-2)] text-[var(--t3)]"
-                  : isUp
-                    ? "bg-[var(--yes-soft)] text-[var(--yes-text)]"
-                    : "bg-[var(--no-soft)] text-[var(--no-text)]"
-              }`}
-            >
-              {!isFlat && (
-                <svg
-                  width="9"
-                  height="9"
-                  viewBox="0 0 10 10"
-                  aria-hidden="true"
-                  className={isUp ? "" : "rotate-180"}
+          <div className="mb-6 flex min-h-[30px] items-center gap-2.5 max-[980px]:mb-4">
+            {movement ? (
+              <>
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 font-['IBM_Plex_Mono',_monospace] text-[13px] font-semibold tabular-nums ${
+                    isFlat
+                      ? "bg-[var(--surface-2)] text-[var(--t3)]"
+                      : isUp
+                        ? "bg-[var(--yes-soft)] text-[var(--yes-text)]"
+                        : "bg-[var(--no-soft)] text-[var(--no-text)]"
+                  }`}
                 >
-                  <path d="M5 1.2 8.8 8H1.2Z" fill="currentColor" />
-                </svg>
-              )}
-              {isUp && !isFlat ? "+" : ""}
-              {delta}¢ ({isUp && !isFlat ? "+" : ""}
-              {pct.toFixed(1)}%)
-            </span>
-            <span className="text-sm font-medium text-[var(--t3)]">
-              {t("TODAY")}
-            </span>
+                  {!isFlat && (
+                    <svg
+                      width="9"
+                      height="9"
+                      viewBox="0 0 10 10"
+                      aria-hidden="true"
+                      className={isUp ? "" : "rotate-180"}
+                    >
+                      <path d="M5 1.2 8.8 8H1.2Z" fill="currentColor" />
+                    </svg>
+                  )}
+                  {isUp && !isFlat ? "+" : ""}
+                  {movement.deltaPoints}¢ ({isUp && !isFlat ? "+" : ""}
+                  {movement.pct.toFixed(1)}%)
+                </span>
+                <span className="text-sm font-medium text-[var(--t3)]">
+                  {t("TODAY")}
+                </span>
+              </>
+            ) : historyLoading ? (
+              <span
+                className="inline-flex items-center rounded-md bg-[var(--surface-2)] px-2.5 py-1 font-['IBM_Plex_Mono',_monospace] text-[13px] font-semibold text-[var(--t4)]"
+                aria-hidden="true"
+              >
+                —
+              </span>
+            ) : null}
           </div>
 
           {/* Mobile chart: sits between the price block and the actions */}
-          <div className="mb-5 hidden max-[980px]:block">
-            <svg
-              className="block h-[128px] w-full overflow-visible"
-              viewBox="0 0 800 150"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            >
-              <defs>
-                <linearGradient
-                  id="rh-chart-fill-m"
-                  x1="0"
-                  x2="0"
-                  y1="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="0%"
-                    stopColor={isUp ? "var(--yes)" : "var(--no)"}
-                    stopOpacity="0.13"
-                  />
-                  <stop
-                    offset="72%"
-                    stopColor={isUp ? "var(--yes)" : "var(--no)"}
-                    stopOpacity="0"
-                  />
-                </linearGradient>
-              </defs>
-              <path d={chartMobile.fill} fill="url(#rh-chart-fill-m)" />
-              <path
-                d={chartMobile.line}
-                stroke={isUp ? "var(--yes-text)" : "var(--no-text)"}
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-                vectorEffect="non-scaling-stroke"
-              />
-              <circle
-                cx={chartMobile.end.x}
-                cy={chartMobile.end.y}
-                r={4}
-                fill={isUp ? "var(--yes-text)" : "var(--no-text)"}
-                stroke="var(--surface-1)"
-                strokeWidth={1.5}
-              />
-            </svg>
+          <div className="relative mb-5 hidden max-[980px]:block">
+            {syntheticChart && (
+              <span className="absolute right-1 top-1 z-10 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-2)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--t3)]">
+                {t("SIMULATED_DATA", "Simulated data")}
+              </span>
+            )}
+            {chartMobile && (
+              <svg
+                className="block h-[128px] w-full overflow-visible"
+                viewBox="0 0 800 150"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <defs>
+                  <linearGradient
+                    id="rh-chart-fill-m"
+                    x1="0"
+                    x2="0"
+                    y1="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="0%"
+                      stopColor={isUp ? "var(--yes)" : "var(--no)"}
+                      stopOpacity="0.13"
+                    />
+                    <stop
+                      offset="72%"
+                      stopColor={isUp ? "var(--yes)" : "var(--no)"}
+                      stopOpacity="0"
+                    />
+                  </linearGradient>
+                </defs>
+                <path d={chartMobile.fill} fill="url(#rh-chart-fill-m)" />
+                <path
+                  d={chartMobile.line}
+                  stroke={isUp ? "var(--yes-text)" : "var(--no-text)"}
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <circle
+                  cx={chartMobile.end.x}
+                  cy={chartMobile.end.y}
+                  r={4}
+                  fill={isUp ? "var(--yes-text)" : "var(--no-text)"}
+                  stroke="var(--surface-1)"
+                  strokeWidth={1.5}
+                />
+              </svg>
+            )}
           </div>
 
           <div className="mt-auto flex gap-3">
@@ -237,7 +255,7 @@ export function DiscoveryHero({
           <div className="mt-6 grid grid-cols-3 gap-6 border-t border-[var(--border-1)] pt-5 max-[720px]:gap-4">
             <div>
               <div className="mb-1.5 text-xs text-[var(--t3)]">
-                {t("24H_VOLUME")}
+                {t("TOTAL_VOLUME", "Total volume")}
               </div>
               <div className="type-display whitespace-nowrap text-[18px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
                 {volumeLabel}
@@ -264,63 +282,77 @@ export function DiscoveryHero({
 
         {/* ── Right column: the chart owns it ───────────────────────── */}
         <div className="relative min-w-0 max-[980px]:hidden">
-          <svg
-            className="block h-full min-h-[320px] w-full overflow-visible"
-            viewBox="0 0 800 320"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            <defs>
-              <linearGradient id="rh-chart-fill" x1="0" x2="0" y1="0" y2="1">
-                <stop
-                  offset="0%"
-                  stopColor={isUp ? "var(--yes)" : "var(--no)"}
-                  stopOpacity="0.13"
-                />
-                <stop
-                  offset="72%"
-                  stopColor={isUp ? "var(--yes)" : "var(--no)"}
-                  stopOpacity="0"
-                />
-              </linearGradient>
-            </defs>
-            <line
-              x1="0"
-              x2="800"
-              y1={chart.baselineY}
-              y2={chart.baselineY}
-              stroke="var(--border-2)"
-              strokeWidth="1"
-              strokeDasharray="2 6"
-              vectorEffect="non-scaling-stroke"
-            />
-            <path d={chart.fill} fill="url(#rh-chart-fill)" />
-            <path
-              d={chart.line}
-              stroke={isUp ? "var(--yes-text)" : "var(--no-text)"}
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-              vectorEffect="non-scaling-stroke"
-            />
-            <circle
-              cx={chart.end.x}
-              cy={chart.end.y}
-              r={7}
-              fill={isUp ? "var(--yes)" : "var(--no)"}
-              opacity={0.35}
-              className="origin-center animate-ping [transform-box:fill-box] motion-reduce:hidden"
-            />
-            <circle
-              cx={chart.end.x}
-              cy={chart.end.y}
-              r={4}
-              fill={isUp ? "var(--yes-text)" : "var(--no-text)"}
-              stroke="var(--surface-1)"
-              strokeWidth={1.5}
-            />
-          </svg>
+          {syntheticChart && (
+            <span className="absolute right-2 top-2 z-10 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--t3)]">
+              {t("SIMULATED_DATA", "Simulated data")}
+            </span>
+          )}
+          {!chart && (
+            <div className="flex h-full min-h-[320px] w-full items-center justify-center rounded-[var(--r-rh-md)] border border-dashed border-[var(--border-1)] text-sm text-[var(--t3)]">
+              {historyLoading
+                ? t("CHART_LOADING", "Loading price history")
+                : t("CHART_NO_HISTORY", "No price history yet")}
+            </div>
+          )}
+          {chart && (
+            <svg
+              className="block h-full min-h-[320px] w-full overflow-visible"
+              viewBox="0 0 800 320"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <defs>
+                <linearGradient id="rh-chart-fill" x1="0" x2="0" y1="0" y2="1">
+                  <stop
+                    offset="0%"
+                    stopColor={isUp ? "var(--yes)" : "var(--no)"}
+                    stopOpacity="0.13"
+                  />
+                  <stop
+                    offset="72%"
+                    stopColor={isUp ? "var(--yes)" : "var(--no)"}
+                    stopOpacity="0"
+                  />
+                </linearGradient>
+              </defs>
+              <line
+                x1="0"
+                x2="800"
+                y1={chart.baselineY}
+                y2={chart.baselineY}
+                stroke="var(--border-2)"
+                strokeWidth="1"
+                strokeDasharray="2 6"
+                vectorEffect="non-scaling-stroke"
+              />
+              <path d={chart.fill} fill="url(#rh-chart-fill)" />
+              <path
+                d={chart.line}
+                stroke={isUp ? "var(--yes-text)" : "var(--no-text)"}
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+                vectorEffect="non-scaling-stroke"
+              />
+              <circle
+                cx={chart.end.x}
+                cy={chart.end.y}
+                r={7}
+                fill={isUp ? "var(--yes)" : "var(--no)"}
+                opacity={0.35}
+                className="origin-center animate-ping [transform-box:fill-box] motion-reduce:hidden"
+              />
+              <circle
+                cx={chart.end.x}
+                cy={chart.end.y}
+                r={4}
+                fill={isUp ? "var(--yes-text)" : "var(--no-text)"}
+                stroke="var(--surface-1)"
+                strokeWidth={1.5}
+              />
+            </svg>
+          )}
         </div>
       </div>
     </section>
