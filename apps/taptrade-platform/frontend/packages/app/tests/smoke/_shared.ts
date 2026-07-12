@@ -54,6 +54,13 @@ export function captureConsoleErrors(
       text.includes("Hydration") ||
       text.includes("hydration") ||
       text.includes("failed to load font") ||
+      // Local-topology artifact: `next start` has no /ws proxy, so the WS
+      // client falls back to ws://localhost:18080/ws which the CSP
+      // (connect-src 'self') blocks. The deployed edge proxies /ws
+      // same-origin. Live frames are an enhancement layer; pages work
+      // without them. Scoped narrowly to that exact endpoint.
+      (text.includes("Content Security Policy") &&
+        text.includes("ws://localhost:18080/ws")) ||
       text.includes("/api/v1/auth/session") ||
       text.match(/\/api\/v1\/status.*\b5\d{2}\b/) !== null ||
       isAllowedConsoleError(text, options.allow)

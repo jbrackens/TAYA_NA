@@ -28,9 +28,9 @@ test.describe("/auth/login — login form", () => {
 
     // Demo creds hint visible — it's part of the current login layout and
     // stays through the redesign.
-    await expect(
-      page.getByText(/demo@taptrade\.local|demo123/i).first(),
-    ).toBeVisible();
+    // (2026-07-12) The P9 login redesign removed the on-page demo-credential
+    // hint (deployed demo shows none either); the form fields + submit above
+    // are the stable contract.
 
     checkErrors();
   });

@@ -139,6 +139,13 @@ export default function StorePage() {
   // LC-38 pattern: reuse one idempotency key per unconfirmed checkout
   // attempt for a pack; cleared once the purchase row exists server-side.
   const pendingKeyRef = useRef<PendingCheckoutKey | null>(null);
+  // True between a successful checkout POST and the router.push committing
+  // ?purchase= to the URL. The hydration effect below must not treat that
+  // window's param-less URL as a "back to clean /store" reset — doing so
+  // wipes the just-created purchase and can cancel the in-flight transition
+  // (race observed under E2E: purchase created server-side, UI stuck on the
+  // pack grid with no error).
+  const pushingPurchaseRef = useRef(false);
   // Guards the one-time credit side effects (balance refresh + toast) per
   // completed purchase, across re-renders and duplicate status reads.
   const celebratedRef = useRef<Set<string>>(new Set());
@@ -226,11 +233,17 @@ export default function StorePage() {
   useEffect(() => {
     if (authLoading || !user?.id) return;
     if (!purchaseParam) {
-      setPurchase(null);
-      setAwaitingDelayed(false);
-      setActionError(null);
+      // Back-navigation to a clean /store clears URL-hydrated state — but a
+      // just-created purchase whose ?purchase= push has not committed yet
+      // must survive (see pushingPurchaseRef above).
+      if (!pushingPurchaseRef.current) {
+        setPurchase(null);
+        setAwaitingDelayed(false);
+        setActionError(null);
+      }
       return;
     }
+    pushingPurchaseRef.current = false;
     if (purchase?.id === purchaseParam) return;
     let cancelled = false;
     setPurchaseLoading(true);
@@ -278,6 +291,7 @@ export default function StorePage() {
       // The purchase row exists server-side now — the next attempt is a new
       // order, not a replay of this one.
       pendingKeyRef.current = null;
+      pushingPurchaseRef.current = true;
       setPurchase(result.purchase);
       setAwaitingDelayed(false);
       router.push(purchaseUrl(result.purchase.id, safeReturn));

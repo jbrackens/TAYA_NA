@@ -259,7 +259,10 @@ export function TradeTicket({
   const requestedQuantity = Math.floor(quantity);
 
   useEffect(() => {
-    if (!onPreview || !isOpen || requestedQuantity < 1) {
+    // Preview is an authenticated endpoint — logged-out visitors typing an
+    // amount must not fire doomed 401 requests (they see the CTA "Log in to
+    // trade" and static market pricing instead).
+    if (!onPreview || !isOpen || requestedQuantity < 1 || !isAuthenticated) {
       setPreview(null);
       setPreviewLoading(false);
       return;
@@ -300,6 +303,7 @@ export function TradeTicket({
   }, [
     action,
     amount,
+    isAuthenticated,
     isExchange,
     isOpen,
     limitPricePoints,
@@ -680,7 +684,9 @@ export function TradeTicket({
                   ? t("AVAILABLE_SHARES", { quantity: availableShares })
                   : t("BALANCE_AMOUNT", {
                       amount:
-                        typeof balance === "number" ? balance.toFixed(2) : "—",
+                        typeof balance === "number"
+                          ? formatPointAmount(balance)
+                          : "—",
                     })}
               </p>
             </div>

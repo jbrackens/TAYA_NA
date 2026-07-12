@@ -52,14 +52,18 @@ test.describe("/rewards — loyalty ledger + tiers", () => {
     );
     expect(demoBonus, "demo active point-play bonus missing").toBeTruthy();
     expect(demoBonus.unit).toBe("PTS");
-    expect(demoBonus.remainingPointsCents).toBe(15_000);
-    expect(demoBonus.playRequiredPointsCents).toBe(100_000);
-    expect(demoBonus.playCompletedPointsCents).toBe(25_000);
+    expect(demoBonus.remainingPoints).toBe(15_000);
+    expect(demoBonus.playRequiredPoints).toBe(100_000);
+    expect(demoBonus.playCompletedPoints).toBe(25_000);
     for (const retired of [
       "remainingAmountCents",
       "wageringRequiredCents",
       "wageringCompletedCents",
       "wageringProgressPct",
+      // Cents-hybrid aliases retired by the whole-Points wire (2026-07-07):
+      "remainingPointsCents",
+      "playRequiredPointsCents",
+      "playCompletedPointsCents",
     ]) {
       expect(
         demoBonus[retired],

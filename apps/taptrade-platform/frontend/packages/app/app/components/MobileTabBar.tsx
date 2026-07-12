@@ -73,10 +73,10 @@ const TABS: TabDef[] = [
 ];
 
 const MOBILE_TAB_BAR_CLASS =
-  "fixed left-3 right-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-[90] grid rounded-[var(--r-rh-xl)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1.5 shadow-[0_10px_28px_rgba(60,50,30,0.14)]";
+  "fixed left-3 right-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-[90] grid max-w-full overflow-hidden rounded-[var(--r-rh-xl)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1.5 shadow-[0_10px_28px_rgba(60,50,30,0.14)]";
 
 const MOBILE_TAB_ITEM_CLASS =
-  "flex min-h-12 flex-col items-center justify-center gap-1 rounded-[var(--r-rh-md)] px-0.5 py-2 text-center text-[10px] tracking-[0.02em] no-underline transition-[color,background] duration-150 ease-[ease] [font-family:inherit]";
+  "flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-[var(--r-rh-md)] px-0.5 py-2 text-center text-[10px] tracking-[0.02em] no-underline transition-[color,background] duration-150 ease-[ease] [font-family:inherit]";
 
 const MOBILE_TAB_ITEM_INACTIVE_CLASS =
   "font-semibold text-[var(--t3)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)]";

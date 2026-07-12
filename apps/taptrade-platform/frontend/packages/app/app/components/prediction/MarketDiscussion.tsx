@@ -74,8 +74,13 @@ export default function MarketDiscussion({
   }, [marketId, t]);
 
   useEffect(() => {
+    // The social comments endpoint is session-authenticated — an anonymous
+    // fetch is a guaranteed 401 (console noise on every logged-out market
+    // view). Match the live-prices precedent: signed-out visitors see the
+    // sign-in hint instead of a doomed request.
+    if (authLoading || !isAuthenticated) return;
     void load();
-  }, [load]);
+  }, [load, authLoading, isAuthenticated]);
 
   async function submitComment() {
     if (!isAuthenticated || authLoading || saving) return;

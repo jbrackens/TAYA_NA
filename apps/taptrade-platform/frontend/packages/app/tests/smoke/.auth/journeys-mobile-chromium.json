@@ -1,0 +1,53 @@
+{
+  "cookies": [
+    {
+      "name": "refresh_token",
+      "value": "rtk_cbfe5fda5bf9e5e313ad41f33b0d6035d81336e570e18bb3",
+      "domain": "localhost",
+      "path": "/api/v1/auth/refresh",
+      "expires": 1783960028.52,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "access_token",
+      "value": "atk_a0f6c74c9c6214f1d286e53688342fb530fe7d2a7e56cb6f",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1783874528.52,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "csrf_token",
+      "value": "a77564b06b55323b014a2974f95056a67ec88b0fb101c414fbb2b8fe2972ed45",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1783874528.52,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3010",
+      "localStorage": [
+        {
+          "name": "taptrade_starter_grant_done:u-a4befdec19ef",
+          "value": "1"
+        },
+        {
+          "name": "taptrade_user_id",
+          "value": "u-a4befdec19ef"
+        },
+        {
+          "name": "taptrade_username",
+          "value": "e2e-mobile-chromium-1783873627881@journeys.local"
+        }
+      ]
+    }
+  ]
+}

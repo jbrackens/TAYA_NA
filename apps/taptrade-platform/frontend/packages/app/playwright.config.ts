@@ -54,12 +54,14 @@ export default defineConfig({
     {
       name: "setup",
       testMatch: /auth\.setup\.ts/,
+      use: { channel: "chrome" },
     },
     {
       name: "desktop-chromium",
       dependencies: ["setup"],
       use: {
         ...devices["Desktop Chrome"],
+        channel: "chrome",
         viewport: { width: 1440, height: 900 },
         storageState: "./tests/.auth/demo.json",
       },
@@ -69,6 +71,7 @@ export default defineConfig({
       dependencies: ["setup"],
       use: {
         ...devices["Pixel 5"],
+        channel: "chrome",
         // Force exact 375 x 812 to match the mockup reference viewport.
         viewport: { width: 375, height: 812 },
         storageState: "./tests/.auth/demo.json",

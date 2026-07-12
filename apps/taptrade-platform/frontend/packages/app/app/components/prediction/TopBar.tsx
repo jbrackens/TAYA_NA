@@ -91,12 +91,17 @@ const TOP_BAR_LINK_ACTIVE_CLASS =
   "text-[var(--accent-text)] !text-[var(--accent-text)] font-semibold border-[var(--accent-lo)]";
 
 const TOP_BAR_RIGHT_CLASS = [
-  "flex shrink-0 items-center gap-2.5",
+  // min-w-0 (not shrink-0): the cluster must compress on narrow phones —
+  // at 320px an unshrinkable cluster forces horizontal page scroll.
+  "flex min-w-0 shrink items-center gap-2.5",
   "[&_.lang-select-wrap]:relative [&_.lang-select-wrap]:inline-flex [&_.lang-select-wrap]:min-h-10 [&_.lang-select-wrap]:max-w-[190px] [&_.lang-select-wrap]:items-center [&_.lang-select-wrap]:gap-1.5 [&_.lang-select-wrap]:rounded-md [&_.lang-select-wrap]:border [&_.lang-select-wrap]:border-[var(--border-1)] [&_.lang-select-wrap]:bg-[var(--surface-1)] [&_.lang-select-wrap]:px-2.5 [&_.lang-select-wrap]:py-0 [&_.lang-select-wrap]:text-xs [&_.lang-select-wrap]:font-semibold [&_.lang-select-wrap]:text-[var(--t1)]",
   "[&_.lang-select]:absolute [&_.lang-select]:inset-0 [&_.lang-select]:cursor-pointer [&_.lang-select]:opacity-0",
   "[&_.lang-current]:block [&_.lang-current]:overflow-hidden [&_.lang-current]:text-ellipsis [&_.lang-current]:whitespace-nowrap",
   "[&_.sr-only]:absolute [&_.sr-only]:-m-px [&_.sr-only]:h-px [&_.sr-only]:w-px [&_.sr-only]:overflow-hidden [&_.sr-only]:whitespace-nowrap [&_.sr-only]:border-0 [&_.sr-only]:p-0 [&_.sr-only]:[clip:rect(0,0,0,0)]",
   "max-[900px]:[&_.lang-select-wrap]:max-w-14 max-[900px]:[&_.lang-select-wrap]:px-3 max-[900px]:[&_.lang-current]:hidden",
+  // Ultra-narrow (<360px): drop the language selector entirely; it remains
+  // reachable from Account settings, and the balance chip keeps priority.
+  "max-[359px]:[&_.lang-select-wrap]:hidden",
 ].join(" ");
 
 const TOP_BAR_SEARCH_WRAP_CLASS = "relative max-[900px]:hidden";
@@ -468,7 +473,7 @@ export function TopBar() {
               </Link>
               <Link
                 href="/store"
-                className={TOP_BAR_ADD_POINTS_CLASS}
+                className={`${TOP_BAR_ADD_POINTS_CLASS} max-[419px]:hidden`}
                 data-testid="add-points-topbar"
                 aria-label={t("ADD_POINTS", "Add Points")}
               >

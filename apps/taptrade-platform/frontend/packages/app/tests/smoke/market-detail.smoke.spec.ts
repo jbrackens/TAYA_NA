@@ -82,19 +82,19 @@ test.describe("/market/[ticker] — market detail", () => {
 
       await assertPageHealthy(page, `/market/${firstTicker}`);
 
-      // Regression: ISSUE-001 — quick amount chips displayed $0.00 when
-      // balance was zero because they clamped to the user's balance.
+      // Regression: ISSUE-001 — the amount control displayed $0.00 when
+      // balance was zero because it clamped to the user's balance.
       // Found by /qa on 2026-04-25.
       // Report: .gstack/qa-reports/qa-report-localhost-3000-2026-04-25.md
+      // (2026-07-12: the Phase-3 quick-amount chips were later replaced by a
+      // plain amount input; the regression contract is unchanged — a typed
+      // amount must survive a zero balance while logged out.)
       await expect(
         page.getByRole("link", { name: "Log in to trade" }),
       ).toBeVisible();
-      const hundredChip = page.getByRole("button", { name: "$100" });
-      await hundredChip.click();
-      // Phase 3 ticket: the active quick-amount chip is aria-pressed. A pressed
-      // $100 chip proves amount=100 stuck (ISSUE-001: chips must not clamp to a
-      // zero balance). Replaces the removed .tt-amt-display element.
-      await expect(hundredChip).toHaveAttribute("aria-pressed", "true");
+      const amountInput = page.locator("#ticket-amount");
+      await amountInput.fill("100");
+      await expect(amountInput).toHaveValue("100");
       await expect(
         page.getByRole("link", { name: "Log in to trade" }),
       ).toBeVisible();
