@@ -171,8 +171,17 @@ func registerStoreAdminRoutes(mux *stdhttp.ServeMux, repo store.Repository) {
 }
 
 func mapPackConfigError(err error) error {
+	// Serialize from the typed error's fields — never err.Error() — so no
+	// raw service error can reach a launch client (launch_reason scan).
+	var ve store.PackValidationError
+	if errors.As(err, &ve) {
+		return httpx.BadRequest(
+			"pack configuration invalid: "+ve.Field+" "+ve.Msg,
+			map[string]any{"field": ve.Field},
+		)
+	}
 	if errors.Is(err, store.ErrPackConfigInvalid) {
-		return httpx.BadRequest(err.Error(), nil)
+		return httpx.BadRequest("pack configuration invalid", nil)
 	}
 	return httpx.Internal("pack validation failed", err)
 }

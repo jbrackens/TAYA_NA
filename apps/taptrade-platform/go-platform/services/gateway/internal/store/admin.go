@@ -17,6 +17,21 @@ var packIDPattern = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]{0,63}$`)
 // ErrPackConfigInvalid wraps all catalogue validation failures.
 var ErrPackConfigInvalid = errors.New("pack configuration invalid")
 
+// PackValidationError carries the offending field and a safe, composed
+// message as STRUCT FIELDS so the HTTP layer serializes them explicitly —
+// never via err.Error() (the launch_reason source scan bans raw service
+// errors in responses).
+type PackValidationError struct {
+	Field string
+	Msg   string
+}
+
+func (e PackValidationError) Error() string {
+	return fmt.Sprintf("pack configuration invalid: %s %s", e.Field, e.Msg)
+}
+
+func (e PackValidationError) Unwrap() error { return ErrPackConfigInvalid }
+
 // LaunchCopyChecker matches compliance.HasLaunchProhibitedCopy's shape; the
 // HTTP layer injects the real predicate so this package stays decoupled.
 type LaunchCopyChecker func(text string) bool
@@ -25,7 +40,7 @@ type LaunchCopyChecker func(text string) bool
 // §2) for admin create/update. copyCheck may be nil (dev/harness).
 func ValidatePackConfig(pack PointPack, copyCheck LaunchCopyChecker) error {
 	fail := func(field, msg string) error {
-		return fmt.Errorf("%w: %s %s", ErrPackConfigInvalid, field, msg)
+		return PackValidationError{Field: field, Msg: msg}
 	}
 	if !packIDPattern.MatchString(pack.ID) {
 		return fail("id", "must be a lowercase slug (a-z, 0-9, -, _; max 64 chars)")
