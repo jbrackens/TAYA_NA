@@ -1,15 +1,16 @@
 "use client";
 
 /**
- * MarketChart — the market page price chart
- * (P9.2, 2026-07-07 — Robinhood-structure pass).
+ * MarketChart — the market page price graphic
+ * (P11 "Standing Question", 2026-07-12 — print-graphic pass).
  *
  * Draws BOTH sides of the binary from one history: the selected side's
  * line at full strength, its complement (100 − price) muted underneath —
- * the two lines mirror around 50¢ and cross exactly like the two-outcome
- * charts on Robinhood/Kalshi event pages. No gradient wash, no gridlines,
- * no in-chart price header (MarketHead owns the numbers now); a quiet
- * mono text-tab range switcher sits under the plot.
+ * the two lines mirror around 50¢ and cross. P11 annotates the plot like
+ * a newspaper graphic: a lo/hi axis-figure column in wire mono on the
+ * left and a source line underneath ("Source: TapTrade order flow · 1D").
+ * The range switcher is a row of editorial text tabs (mono small caps,
+ * active = ink underline).
  *
  * Pulls volume-weighted YES price buckets from
  * /api/v1/markets/{id}/prices for the selected range, with carry-forward
@@ -57,20 +58,24 @@ interface MarketChartProps {
 
 const RANGES: TimeRange[] = ["1H", "6H", "1D", "1W", "ALL"];
 
-const CHART_CARD_CLASS =
-  "font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+const CHART_CARD_CLASS = "font-sans";
 const CHART_SVG_CLASS = "block h-[300px] w-full";
-// P9.2: the range switcher is a quiet mono text-tab row under the plot
-// (Robinhood-style), not a segmented fill control. Active = ink text +
-// 2px ink underline; inactive = --t3.
+// P11: the axis-figure column — hi over lo, right-aligned wire mono,
+// mirroring the DiscoveryHero LeadChart print-graphic treatment.
+const CHART_AXIS_CLASS =
+  "flex w-9 shrink-0 flex-col justify-between py-0.5 text-right font-mono text-[10px] leading-none text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+const CHART_SOURCE_CLASS =
+  "mt-1.5 pl-11 font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--t4)]";
+// P11: the range switcher is a row of editorial text tabs — mono small
+// caps; active = ink text + 2px ink-rule underline; inactive = --t3.
 const CHART_SWITCHER_CLASS = "flex items-center gap-5";
 const CHART_BUTTON_BASE_CLASS =
-  "cursor-pointer border-0 bg-transparent p-0 pb-1 font-['IBM_Plex_Mono',_monospace] text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors duration-[120ms] border-b-2";
+  "cursor-pointer border-0 bg-transparent p-0 pb-1 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors duration-[120ms] border-b-2";
 
 function rangeButtonClass(active: boolean): string {
   return `${CHART_BUTTON_BASE_CLASS} ${
     active
-      ? "text-[var(--t1)] border-[var(--t1)]"
+      ? "text-[var(--t1)] border-[var(--rule-ink)]"
       : "text-[var(--t3)] border-transparent hover:text-[var(--t1)]"
   }`;
 }
@@ -171,24 +176,31 @@ export default function MarketChart({
   const complementEndY = complementValues.length
     ? endpointY(complementValues[complementValues.length - 1], height)
     : 0;
+  // P11 axis figures — lo/hi of the DRAWN selected-side series, printed
+  // as wire mono in the left column like a newspaper graphic's scale.
+  const axisLo = values.length ? Math.min(...values) : null;
+  const axisHi = values.length ? Math.max(...values) : null;
+  const sourceLine = `${t("CHART_SOURCE_LINE", "Source: TapTrade order flow")} · ${range}`;
 
   return (
     <section className={CHART_CARD_CLASS}>
       {chartState === "loading" && (
         <div
-          className="h-[300px] w-full animate-pulse rounded-[var(--r-rh-sm)] bg-[var(--surface-2)]"
+          className="flex h-[300px] w-full items-center justify-center border border-dashed border-[var(--border-1)] text-[12px] text-[var(--t3)]"
           role="status"
           aria-label={t("CHART_LOADING")}
-        />
+        >
+          {t("CHART_LOADING")}
+        </div>
       )}
 
       {chartState === "error" && (
-        <div className="flex h-[300px] w-full flex-col items-center justify-center gap-3 rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-2)]">
+        <div className="flex h-[300px] w-full flex-col items-center justify-center gap-3 border border-dashed border-[var(--border-1)]">
           <div className="text-sm font-medium text-[var(--t3)]">
             {t("PRICE_HISTORY_UNAVAILABLE")}
           </div>
           <button
-            className="cursor-pointer rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-1.5 font-['Inter',_sans-serif] text-xs font-semibold text-[var(--t1)] transition-colors duration-[120ms] hover:border-[var(--border-2)]"
+            className="cursor-pointer border border-[var(--border-2)] bg-transparent px-4 py-1.5 font-sans text-xs font-semibold text-[var(--t1)] transition-colors duration-[120ms] hover:bg-[var(--action-soft)]"
             onClick={() => setRetryNonce((n) => n + 1)}
           >
             {t("RETRY")}
@@ -197,73 +209,82 @@ export default function MarketChart({
       )}
 
       {(chartState === "ready" || chartState === "empty") && (
-        <div className="relative">
+        <figure className="relative m-0 min-w-0">
           {/* P10 honesty: the demo flag's synthetic walk must never be
               mistakable for real history — visible marker, always. */}
           {synthetic && (
-            <span className="pointer-events-none absolute right-1 top-1 z-[1] rounded-[var(--r-pill)] border border-[var(--border-2)] bg-[var(--surface-1)] px-2 py-0.5 font-['IBM_Plex_Mono',_monospace] text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
+            <span className="pointer-events-none absolute right-0 top-0 z-[1] border border-[var(--border-2)] bg-[var(--surface-1)] px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-[var(--t3)]">
               {t("SIMULATED", "Simulated")}
             </span>
           )}
-          <svg
-            className={CHART_SVG_CLASS}
-            viewBox={`0 0 ${width} ${height}`}
-            preserveAspectRatio="none"
-            aria-label={t(
-              side === "no" ? "NO_PRICE_CHART" : "YES_PRICE_CHART",
-              {
-                ticker,
-              },
-            )}
-          >
-            {/* Complement line is dashed as well as muted so the two
-                sides differ by more than hue (WCAG 1.4.1). */}
-            <path
-              d={complementLine}
-              stroke={complementColor}
-              strokeOpacity="0.5"
-              strokeWidth="1.5"
-              strokeDasharray="5 5"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              vectorEffect="non-scaling-stroke"
-            />
-            <path
-              d={line}
-              stroke={lineColor}
-              strokeWidth="2"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              vectorEffect="non-scaling-stroke"
-            />
-            <g transform={`translate(${width},${complementEndY})`}>
-              <circle r="3" fill={complementColor} fillOpacity="0.45" />
-            </g>
-            <g transform={`translate(${width},${lineEndY})`}>
-              <circle
-                r="4.5"
-                fill={lineColor}
-                stroke="var(--surface-1)"
+          <div className="flex items-stretch gap-2">
+            {/* Axis figures — hi over lo, right-aligned wire mono. */}
+            <div className={CHART_AXIS_CLASS} aria-hidden="true">
+              <span>{axisHi !== null ? `${Math.round(axisHi)}¢` : ""}</span>
+              <span>{axisLo !== null ? `${Math.round(axisLo)}¢` : ""}</span>
+            </div>
+            <svg
+              className={CHART_SVG_CLASS}
+              viewBox={`0 0 ${width} ${height}`}
+              preserveAspectRatio="none"
+              aria-label={t(
+                side === "no" ? "NO_PRICE_CHART" : "YES_PRICE_CHART",
+                {
+                  ticker,
+                },
+              )}
+            >
+              {/* Complement line is dashed as well as muted so the two
+                  sides differ by more than hue (WCAG 1.4.1). */}
+              <path
+                d={complementLine}
+                stroke={complementColor}
+                strokeOpacity="0.5"
                 strokeWidth="1.5"
+                strokeDasharray="5 5"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke"
               />
-            </g>
+              <path
+                d={line}
+                stroke={lineColor}
+                strokeWidth="2"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke"
+              />
+              <g transform={`translate(${width},${complementEndY})`}>
+                <circle r="3" fill={complementColor} fillOpacity="0.45" />
+              </g>
+              <g transform={`translate(${width},${lineEndY})`}>
+                <circle
+                  r="4.5"
+                  fill={lineColor}
+                  stroke="var(--surface-1)"
+                  strokeWidth="1.5"
+                />
+              </g>
 
-            {chartState === "empty" && (
-              <text
-                x={width / 2}
-                y={height / 2 - 14}
-                textAnchor="middle"
-                fontFamily="Inter, sans-serif"
-                fontSize="14"
-                fill="var(--t3)"
-              >
-                {t("NO_TRADES_IN_RANGE")}
-              </text>
-            )}
-          </svg>
-        </div>
+              {chartState === "empty" && (
+                <text
+                  x={width / 2}
+                  y={height / 2 - 14}
+                  textAnchor="middle"
+                  fontFamily="Inter, sans-serif"
+                  fontSize="14"
+                  fill="var(--t3)"
+                >
+                  {t("NO_TRADES_IN_RANGE")}
+                </text>
+              )}
+            </svg>
+          </div>
+          {/* Source line — the print graphic's provenance caption. */}
+          <figcaption className={CHART_SOURCE_CLASS}>{sourceLine}</figcaption>
+        </figure>
       )}
 
       <div className="mt-4 flex items-center justify-between gap-4">
@@ -286,7 +307,7 @@ export default function MarketChart({
         </div>
         {/* Inline legend: names the solid vs dashed line (a11y + first-
             time readability). */}
-        <div className="flex items-center gap-3 font-['IBM_Plex_Mono',_monospace] text-[10px] uppercase tracking-[0.08em] text-[var(--t3)]">
+        <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--t3)]">
           <span className="inline-flex items-center gap-1.5">
             <svg width="18" height="6" aria-hidden="true">
               <line

@@ -184,5 +184,8 @@
   "FEES": "Biaya",
   "PRICE_MOVED": "Harga bergerak {{from}}¢ → {{to}}¢",
   "RESOLVES_BY": "Diselesaikan berdasarkan {{source}}",
-  "SEARCH_MARKETS": "Cari pasar"
+  "SEARCH_MARKETS": "Cari pasar",
+  "LEAD_STORY": "Berita utama",
+  "CHART_SOURCE_LINE": "Sumber: arus order TapTrade · hari ini",
+  "EDITION_LINE": "Pasar prediksi langsung · hanya poin permainan"
 }

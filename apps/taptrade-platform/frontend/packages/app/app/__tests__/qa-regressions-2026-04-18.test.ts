@@ -848,23 +848,22 @@ describe("MarketCard P8 composition", () => {
     }
   });
 
+  // P11 (2026-07-12): pills became wire-line figure links on the
+  // editorial brief; the lock keeps its true subject — firm tap sizes
+  // and visible cent prices on both side links.
   it("keeps YES/NO action pills priced without losing tap size", () => {
     assert.ok(
       marketCardSource.includes("min-h-10"),
-      "YES/NO pills should keep a firm tap size",
-    );
-    assert.ok(
-      marketCardSource.includes("justify-between"),
-      "YES/NO pills should separate the side label from the side price",
+      "YES/NO side links should keep a firm tap size",
     );
     assert.ok(
       marketCardSource.includes("max-[768px]:min-h-11"),
-      "YES/NO pills should keep a mobile-friendly tap size on small screens",
+      "YES/NO side links should keep a mobile-friendly tap size on small screens",
     );
     assert.ok(
       />\s*{yesPricePoints}¢\s*</.test(marketCardSource) &&
         />\s*{noPricePoints}¢\s*</.test(marketCardSource),
-      "YES/NO action pills should show the side prices in cents",
+      "YES/NO side links should show the side prices in cents",
     );
   });
 

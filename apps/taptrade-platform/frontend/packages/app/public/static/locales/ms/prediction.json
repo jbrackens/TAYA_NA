@@ -184,5 +184,8 @@
   "FEES": "Yuran",
   "PRICE_MOVED": "Harga berubah {{from}}¢ → {{to}}¢",
   "RESOLVES_BY": "Diselesaikan oleh {{source}}",
-  "SEARCH_MARKETS": "Cari pasaran"
+  "SEARCH_MARKETS": "Cari pasaran",
+  "LEAD_STORY": "Berita utama",
+  "CHART_SOURCE_LINE": "Sumber: aliran pesanan TapTrade · hari ini",
+  "EDITION_LINE": "Pasaran ramalan langsung · mata permainan sahaja"
 }

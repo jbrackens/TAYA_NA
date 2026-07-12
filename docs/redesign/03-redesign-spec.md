@@ -132,3 +132,33 @@ next/font migration (2 families + mono, subset, preload); i18n `en` bundled at b
 ## 9. Out of scope (documented, not forgotten)
 
 Office app visuals; backend windowed-volume field; seed volume recalibration (filed); dark theme for product surfaces (roadmap — tokens structured to permit it); dispute-resolution flow UI beyond status copy; real-money cashier surfaces (owner-gated ADR-0003/0004); native apps.
+
+
+---
+
+# P11 addendum — "Standing Question" editorial reset (2026-07-12, owner-directed)
+
+Everything in §1–§4 above (IA, segments, honesty layer, states, safety invariants) **stands unchanged** — P11 replaces the *visual system and composition grammar* only.
+
+## Visual system (supersedes §5 tokens)
+
+- **Page:** bone paper `--bg-deep #FAF7F2`; surfaces `--surface-1 #FFFDF8` (slips/panels) / `--surface-2 #F2EDE2` (recessed); warm rules `--border-1 #E4DDCD`, `--border-2 #C6BDA8`, heavy editorial rule `--rule-ink #1A1712`.
+- **Ink ramp:** `--t1 #1A1712 · --t2 #474136 · --t3 #675F50 · --t4 #6F6858` (all AA on bone), decorative `--t-ghost`.
+- **Accent:** press blue `#2447D6` — the single non-semantic color (links, active states, brand period, LIVE tags, focus ring). Mint fully retired.
+- **Movement:** print-calibrated `--yes #157A52 / --no #B8481F` strokes with AA text tones; always text-labeled; deltas are plain wire figures, never pills.
+- **Type:** Newsreader (variable opsz 6–72, roman+italic; `.type-display`, `.type-standfirst`) + Inter UI + IBM Plex Mono wire figures; `.type-rubric` small-caps labels.
+- **Elevation:** none — `--shadow-card` resolves to nothing; only ephemeral overlays use `--shadow-pop`. Corners near-square (2–6px).
+- **Motion:** "nothing blinks" — `animate-pulse`/`animate-ping` globally neutered; state-communicating motion (loader, one-shot confirm, slides) kept; reduced-motion collapse unchanged.
+
+## Composition grammar (supersedes §4 surface treatments, states unchanged)
+
+- **Masthead bar:** lockup + nav over a double ink rule; drawn serif masthead wordmark (oversized press-blue terminal period); standing-question glyph mark.
+- **Front page (/predict):** dateline row → LEAD STORY (heavy rule, rubric row, serif headline ≤46px, serif display price, mono wire delta, print-graphic chart with lo/hi axis figures + "Source:" figcaption, bordered rectangle actions, wire `<dl>` stat line) → MOVERS editorial column (rubric on heavy rule, rule-separated entries, serif questions, mono figures) → browse desk (rubric headers, text-tab filters, brief grid).
+- **Brief (market card):** rule-topped, text-first — small-caps category · serif question (3-line clamp) · price-framed movement line · wire YES/NO figure links (padded 40px+ hit areas) · mono footnote (Vol · Closes).
+- **Article (market page):** heavy rule, byline rubric row, serif headline, wire figure pair, print-annotated chart (axis figures, source line, dashed complement + legend), rules block as article body, settlement timeline with press-blue square markers, related as mini-briefs, discussion as letters column.
+- **Dealing slip (ticket):** bordered paper slip with heavy ink top rule; rubric title; editorial text-toggles for mode/action/side (semantics unchanged: radiogroups, focus rings); mono label/value rows incl. Max loss/Fees; ink rectangle CTA; press-blue confirm dot.
+- **Colophon (footer):** ink block retained with double-rule top edge; fair-play block invariant unchanged.
+
+## Brand assets
+
+`BrandWordmark.tsx` — drawn `taptrade` from Newsreader outlines (wght 560/opsz 60), terminal period scaled 1.9× in press blue. `BrandMark.tsx` — Newsreader's `?` outlines, dot scaled 1.55× in press blue. Static exports in `public/brand/`; `app/icon.svg` bone tile. Regeneration: `scripts/redesign/wordmark.py` (name-portable: "serif lowercase masthead + one oversized landing period").

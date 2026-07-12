@@ -57,13 +57,14 @@ export function BackendStatusBanner() {
 
   if (status !== "down" || dismissed) return null;
 
+  // P11: a one-line wire notice on bone — mono, hairline bottom rule,
+  // NO-coral text carrying the warning (with words, not color alone).
   return (
     <div
       role="alert"
-      className="flex items-center justify-between gap-3 border-b border-[rgba(251,191,36,0.3)] bg-[linear-gradient(90deg,#92400e_0%,#78350f_100%)] px-4 py-2 text-[13px] font-medium text-amber-100"
+      className="flex items-center justify-between gap-3 border-b border-[var(--border-1)] bg-[var(--bg-deep)] px-4 py-1.5 font-mono text-[11px] font-medium text-[var(--no-text)]"
     >
       <span>
-        ⚠{" "}
         {t("BACKEND_OFFLINE", {
           defaultValue:
             "Backend services are offline — some features may not work. Check that the Go gateway is running on port 18080.",
@@ -71,7 +72,7 @@ export function BackendStatusBanner() {
       </span>
       <button
         onClick={() => setDismissed(true)}
-        className="shrink-0 cursor-pointer rounded border border-[rgba(251,191,36,0.4)] bg-transparent px-2 py-0.5 text-[11px] text-amber-100"
+        className="shrink-0 cursor-pointer border border-[var(--border-2)] bg-transparent px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--t2)] hover:border-[var(--rule-ink)] hover:text-[var(--t1)]"
       >
         {t("DISMISS", { defaultValue: "Dismiss" })}
       </button>

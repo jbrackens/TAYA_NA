@@ -1,11 +1,12 @@
 "use client";
 
 /**
- * RecentTrades — tape of side-badged rows inside a .glass card.
+ * RecentTrades — the trade tape as a wire table
+ * (P11 "Standing Question", 2026-07-12).
  *
- * Each row is YES/NO side · price · size · time-ago. Styling matches
- * the market-detail mockup: 4-col grid, side chip, seafoam YES / coral NO
- * price colors, alternating row tint for legibility at high density.
+ * Each row is YES/NO side · price · size · time-ago. Flat on the paper:
+ * rubric header over a strong rule, hairline row separators, plain
+ * labeled side text (print tables don't wear chips), mono figures.
  */
 
 import { useTranslation } from "react-i18next";
@@ -75,30 +76,31 @@ function collapseTrades(trades: Trade[]): TapeRow[] {
   return order.map((k) => seen.get(k)!).filter(Boolean);
 }
 
-const RECENT_TRADES_CARD_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+const RECENT_TRADES_CARD_CLASS = "font-sans";
 const RECENT_TRADES_HEAD_CLASS =
-  "mb-[14px] flex items-center justify-between border-b border-[var(--border-1)] pb-3";
+  "mb-2 flex items-baseline justify-between border-t border-[var(--border-2)] pt-2";
 const RECENT_TRADES_TITLE_CLASS =
-  "text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
+  "text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--t1)]";
 const RECENT_TRADES_SUB_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)]";
+  "font-mono text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
 const RECENT_TRADES_TAPE_CLASS =
-  "flex max-h-[264px] flex-col gap-0.5 overflow-hidden font-['IBM_Plex_Mono',_monospace] text-xs [font-variant-numeric:tabular-nums]";
+  "flex max-h-[264px] flex-col overflow-hidden font-mono text-xs [font-variant-numeric:tabular-nums]";
 const RECENT_TRADES_ROW_CLASS =
-  "grid grid-cols-[56px_52px_1fr_52px] items-center gap-2 rounded-[var(--r-rh-sm)] px-2 py-1.5 text-[var(--t1)] [&:nth-child(odd)]:bg-white/[0.02]";
+  "grid grid-cols-[56px_52px_1fr_52px] items-center gap-2 border-b border-[var(--border-1)] px-0.5 py-1.5 text-[var(--t1)] last:border-b-0";
+// P11: side markers are plain labeled wire text — print tables don't
+// wear chips. --yes-text/--no-text always travel WITH the text label.
 const RECENT_TRADES_SIDE_BASE_CLASS =
-  "rounded-[var(--r-pill)] px-1.5 py-0.5 text-center text-[10px] font-semibold tracking-[0.08em]";
+  "text-[10px] font-bold uppercase tracking-[0.08em]";
 const RECENT_TRADES_SIZE_CLASS = "text-[11px] text-[var(--t2)]";
 const RECENT_TRADES_TIME_CLASS = "text-right text-[10px] text-[var(--t3)]";
 
 function tradeSideClass(side: "yes" | "no" | "mint"): string {
   const color =
     side === "yes"
-      ? "bg-[var(--yes-soft)] text-[var(--yes-text)]"
+      ? "text-[var(--yes-text)]"
       : side === "no"
-        ? "bg-[var(--no-soft)] text-[var(--no-text)]"
-        : "bg-[var(--accent-soft)] text-[var(--accent)]";
+        ? "text-[var(--no-text)]"
+        : "text-[var(--accent-text)]";
   return `${RECENT_TRADES_SIDE_BASE_CLASS} ${color}`;
 }
 

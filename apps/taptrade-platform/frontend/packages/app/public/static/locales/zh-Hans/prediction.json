@@ -184,5 +184,8 @@
   "FEES": "费用",
   "PRICE_MOVED": "价格变动 {{from}}¢ → {{to}}¢",
   "RESOLVES_BY": "由 {{source}} 判定",
-  "SEARCH_MARKETS": "搜索市场"
+  "SEARCH_MARKETS": "搜索市场",
+  "LEAD_STORY": "头条市场",
+  "CHART_SOURCE_LINE": "数据来源：TapTrade 订单流 · 今日",
+  "EDITION_LINE": "实时预测市场 · 仅限游戏积分"
 }

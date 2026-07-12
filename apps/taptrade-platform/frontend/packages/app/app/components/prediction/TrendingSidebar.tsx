@@ -59,39 +59,42 @@ function categoryFromTicker(ticker: string): string {
   return CATEGORY_LABEL[prefix] ?? prefix.toUpperCase();
 }
 
-const TOP_MOVERS_CLASS = "px-1 pt-2 pb-1 font-sans";
+// P11: the movers rail is an editorial column — heavy top rule, small-
+// caps rubric, rule-separated entries, serif questions, wire-mono
+// figures. No hover fills, no card chrome.
+const TOP_MOVERS_CLASS = "font-sans";
 const TOP_MOVERS_HEADER_CLASS =
-  "mb-[18px] flex items-center justify-between px-2";
+  "mb-1 flex items-baseline justify-between border-t-[3px] border-[var(--rule-ink)] pt-2";
 const TOP_MOVERS_TITLE_CLASS =
-  "type-display m-0 text-[19px] font-semibold text-[var(--t1)]";
+  "m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--t1)]";
 const TOP_MOVERS_WINDOW_CLASS =
-  "font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--t3)]";
+  "font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--t4)]";
 const TOP_MOVERS_LIST_CLASS = "m-0 list-none p-0";
 const TOP_MOVERS_ROW_CLASS =
-  "grid cursor-pointer grid-cols-[1fr_60px_auto] items-center gap-[14px] rounded-[var(--r-rh-sm)] border-b border-[var(--border-1)] px-2 py-[14px] text-inherit no-underline transition-colors duration-[120ms] hover:bg-[var(--surface-2)] last:border-b-0";
+  "grid cursor-pointer grid-cols-[1fr_56px_auto] items-center gap-3 border-b border-[var(--border-1)] py-3 text-inherit no-underline last:border-b-0 [&:hover_h4]:underline";
 const TOP_MOVERS_CATEGORY_CLASS =
-  "mb-1 text-[11px] font-medium text-[var(--t3)]";
+  "mb-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--t4)]";
 const TOP_MOVERS_QUESTION_CLASS =
-  "overflow-hidden [display:-webkit-box] text-[13px] font-medium leading-[1.3] text-[var(--t1)] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]";
+  "type-display m-0 overflow-hidden [display:-webkit-box] text-[15px] font-medium leading-[1.25] text-[var(--t1)] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]";
 const TOP_MOVERS_PRICE_CLASS =
-  "type-display text-[17px] font-semibold leading-none text-[var(--t1)] [font-variant-numeric:tabular-nums]";
+  "font-mono text-[14px] font-semibold leading-none text-[var(--t1)] [font-variant-numeric:tabular-nums]";
 const TOP_MOVERS_PRICE_SIDE_CLASS =
-  "mr-1 text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--t3)]";
+  "mr-1 text-[9px] font-bold uppercase tracking-[0.08em] text-[var(--t4)]";
 const TOP_MOVERS_FOOTER_CLASS =
-  "mt-[14px] border-t border-[var(--border-1)] px-2 pt-2.5 text-center";
+  "mt-2 border-t border-[var(--border-2)] pt-2";
 const TOP_MOVERS_FOOTER_LINK_CLASS =
-  "text-[13px] font-semibold text-[var(--accent-text)] no-underline hover:underline";
+  "text-[12px] font-semibold text-[var(--accent-text)] no-underline hover:underline";
 
+// P11: deltas are plain wire figures, not pills — print tables don't
+// wear chips.
 function deltaClass(up: boolean): string {
-  return `mt-[5px] inline-block rounded-[var(--r-pill)] px-[7px] py-0.5 font-mono text-[11px] font-semibold [font-variant-numeric:tabular-nums] ${
-    up
-      ? "bg-[var(--yes-soft)] text-[var(--yes-text)]"
-      : "bg-[var(--no-soft)] text-[var(--no-text)]"
+  return `mt-1 inline-block font-mono text-[11px] font-semibold [font-variant-numeric:tabular-nums] ${
+    up ? "text-[var(--yes-text)]" : "text-[var(--no-text)]"
   }`;
 }
 
 const NEUTRAL_DELTA_CLASS =
-  "mt-[5px] inline-block rounded-[var(--r-pill)] bg-[var(--surface-2)] px-[7px] py-0.5 font-mono text-[11px] font-semibold text-[var(--t3)]";
+  "mt-1 inline-block font-mono text-[11px] font-semibold text-[var(--t4)]";
 
 export function TrendingSidebar({ markets, limit = 6 }: Props) {
   const { t } = useTranslation("prediction");
@@ -161,7 +164,7 @@ export function TrendingSidebar({ markets, limit = 6 }: Props) {
               >
                 <div className="min-w-0">
                   <div className={TOP_MOVERS_CATEGORY_CLASS}>{cat}</div>
-                  <div className={TOP_MOVERS_QUESTION_CLASS}>{m.title}</div>
+                  <h4 className={TOP_MOVERS_QUESTION_CLASS}>{m.title}</h4>
                 </div>
                 <span className="h-7 w-[60px]" aria-hidden="true">
                   {spark && (

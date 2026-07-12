@@ -1,11 +1,12 @@
 "use client";
 
 /**
- * OrderBook — solid-fill table inside a .glass card.
+ * OrderBook — a wire price table (P11 "Standing Question", 2026-07-12).
  *
  * Shows the top N ask levels (NO side) descending, a spread strip, then
  * the top N bid levels (YES side) descending. Depth bars render as
  * row ::after gradients (CSS lives here; data sets --depth per row).
+ * Flat on the paper: rubric header over a strong rule, mono figures.
  *
  * Callers pass real /orderbook levels only. AMM markets render a separate
  * liquidity-model snapshot.
@@ -25,23 +26,22 @@ interface OrderBookProps {
   maxDepth?: number;
 }
 
-const ORDER_BOOK_CARD_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+const ORDER_BOOK_CARD_CLASS = "font-sans";
 const ORDER_BOOK_HEAD_CLASS =
-  "mb-[14px] flex items-center justify-between border-b border-[var(--border-1)] pb-3";
+  "mb-2 flex items-baseline justify-between border-t border-[var(--border-2)] pt-2";
 const ORDER_BOOK_TITLE_CLASS =
-  "text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
+  "text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--t1)]";
 const ORDER_BOOK_SUB_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)]";
+  "font-mono text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
 const ORDER_BOOK_TABLE_CLASS =
-  "relative isolate w-full border-collapse font-['IBM_Plex_Mono',_monospace] text-[13px] [font-variant-numeric:tabular-nums]";
+  "relative isolate w-full border-collapse font-mono text-[13px] [font-variant-numeric:tabular-nums]";
 const ORDER_BOOK_TH_CLASS =
-  "border-b border-[var(--border-1)] px-2.5 py-1.5 text-left font-['Inter',_sans-serif] text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--t3)]";
+  "border-b border-[var(--border-1)] px-2.5 py-1.5 text-left font-sans text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--t3)]";
 const ORDER_BOOK_TD_CLASS = "relative px-2.5 py-[7px] text-[var(--t1)]";
 const ORDER_BOOK_DEPTH_ROW_CLASS =
-  "relative after:pointer-events-none after:absolute after:top-[3px] after:right-0 after:bottom-[3px] after:z-[-1] after:w-[calc(var(--depth,0)*1%)] after:rounded-[3px] after:content-['']";
+  "relative after:pointer-events-none after:absolute after:top-[3px] after:right-0 after:bottom-[3px] after:z-[-1] after:w-[calc(var(--depth,0)*1%)] after:content-['']";
 const ORDER_BOOK_SPREAD_CLASS =
-  "my-1 flex items-center justify-center border-y border-[var(--border-1)] py-2.5 font-['IBM_Plex_Mono',_monospace] text-[11px] uppercase tracking-[0.08em] text-[var(--t3)]";
+  "my-1 flex items-center justify-center border-y border-[var(--border-1)] py-2.5 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--t3)]";
 
 export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
   const { t } = useTranslation("prediction");

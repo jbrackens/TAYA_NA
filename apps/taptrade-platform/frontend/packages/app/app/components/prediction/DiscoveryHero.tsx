@@ -1,17 +1,18 @@
 "use client";
 
 /**
- * DiscoveryHero — the featured-market hero on /predict (DESIGN.md §7).
- * Extracted from predict/page.tsx so it can be rendered standalone or as
- * a slide inside FeaturedCarousel without any visual divergence. Pure
- * presentation: the caller supplies the market.
+ * DiscoveryHero — the LEAD STORY (P11 "Standing Question", 2026-07-12).
  *
- * P10 honesty contract (2026-07-12): the delta pill and the chart derive
- * from the SAME real price series (useMarketHistory). While the series
- * is loading, absent, or errored, the hero shows a neutral "—" and an
- * honest chart state — never a fabricated walk. The only exception is
- * the demo flag (NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS), whose synthetic
- * fallback renders under a visible "Simulated" chip.
+ * The featured market composed as a broadsheet lead: heavy ink rule on
+ * top, rubric row, the market question as a serif headline, the price
+ * as a serif display figure with a mono wire delta, the chart drawn as
+ * a print graphic (axis figures + source line), and quiet bordered
+ * actions. No card, no shadow — the story sits directly on the paper.
+ *
+ * P10 honesty contract carries over unchanged: the delta and the chart
+ * derive from the SAME real price series; loading/absent/errored states
+ * claim nothing; the demo flag's synthetic fallback wears a visible
+ * "Simulated" tag.
  */
 
 import Link from "next/link";
@@ -35,90 +36,86 @@ function formatHeroCloseLeft(iso: string): string {
   return `${Math.max(1, Math.floor(mins))}m`;
 }
 
-const SIM_CHIP_CLASS =
-  "pointer-events-none absolute right-2 top-2 z-[1] rounded-[var(--r-pill)] border border-[var(--border-2)] bg-[var(--surface-1)] px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+const SIM_TAG_CLASS =
+  "pointer-events-none absolute right-0 top-0 z-[1] border border-[var(--border-2)] bg-[var(--surface-1)] px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-[var(--t3)]";
 
-function HeroChart({
+/**
+ * Print-graphic chart: the real series with a session-open baseline,
+ * lo/hi axis figures in wire mono, and a source line underneath —
+ * annotated like a newspaper graphic, not a glowing app chart.
+ */
+function LeadChart({
   values,
   synthetic,
-  simulatedLabel,
   up,
   height,
-  className,
-  gradientId,
+  sourceLine,
+  simulatedLabel,
 }: {
   values: number[] | null;
   synthetic: boolean;
-  simulatedLabel: string;
   up: boolean;
   height: number;
-  className: string;
-  gradientId: string;
+  sourceLine: string;
+  simulatedLabel: string;
 }) {
   const chart = heroChartPath(values, 800, height);
-  if (!chart) return null;
-  const stroke = up ? "var(--yes-text)" : "var(--no-text)";
+  if (!chart || !values) return null;
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+  const stroke = up ? "var(--yes)" : "var(--no)";
   return (
-    <div className="relative min-w-0">
-      {synthetic && <span className={SIM_CHIP_CLASS}>{simulatedLabel}</span>}
-      <svg
-        className={className}
-        viewBox={`0 0 800 ${height}`}
-        preserveAspectRatio="none"
-        aria-hidden="true"
-      >
-        <defs>
-          <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
-            <stop
-              offset="0%"
-              stopColor={up ? "var(--yes)" : "var(--no)"}
-              stopOpacity="0.13"
-            />
-            <stop
-              offset="72%"
-              stopColor={up ? "var(--yes)" : "var(--no)"}
-              stopOpacity="0"
-            />
-          </linearGradient>
-        </defs>
-        <line
-          x1="0"
-          x2="800"
-          y1={chart.baselineY}
-          y2={chart.baselineY}
-          stroke="var(--border-2)"
-          strokeWidth="1"
-          strokeDasharray="2 6"
-          vectorEffect="non-scaling-stroke"
-        />
-        <path d={chart.fill} fill={`url(#${gradientId})`} />
-        <path
-          d={chart.line}
-          stroke={stroke}
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-          vectorEffect="non-scaling-stroke"
-        />
-        <circle
-          cx={chart.end.x}
-          cy={chart.end.y}
-          r={7}
-          fill={up ? "var(--yes)" : "var(--no)"}
-          opacity={0.35}
-          className="origin-center animate-ping [transform-box:fill-box] motion-reduce:hidden"
-        />
-        <circle
-          cx={chart.end.x}
-          cy={chart.end.y}
-          r={4}
-          fill={stroke}
-          stroke="var(--surface-1)"
-          strokeWidth={1.5}
-        />
-      </svg>
-    </div>
+    <figure className="relative m-0 min-w-0">
+      {synthetic && <span className={SIM_TAG_CLASS}>{simulatedLabel}</span>}
+      <div className="flex items-stretch gap-2">
+        {/* Axis figures — hi over lo, right-aligned wire mono. */}
+        <div
+          className="flex w-9 shrink-0 flex-col justify-between py-0.5 text-right font-mono text-[10px] leading-none text-[var(--t3)] [font-variant-numeric:tabular-nums]"
+          aria-hidden="true"
+        >
+          <span>{Math.round(hi)}¢</span>
+          <span>{Math.round(lo)}¢</span>
+        </div>
+        <svg
+          className="block w-full overflow-visible"
+          style={{ height }}
+          viewBox={`0 0 800 ${height}`}
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <line
+            x1="0"
+            x2="800"
+            y1={chart.baselineY}
+            y2={chart.baselineY}
+            stroke="var(--border-2)"
+            strokeWidth="1"
+            strokeDasharray="2 5"
+            vectorEffect="non-scaling-stroke"
+          />
+          <path
+            d={chart.line}
+            stroke={stroke}
+            strokeWidth={1.75}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+            vectorEffect="non-scaling-stroke"
+          />
+          <circle
+            cx={chart.end.x}
+            cy={chart.end.y}
+            r={3.5}
+            fill={stroke}
+            stroke="var(--bg-deep)"
+            strokeWidth={1.5}
+          />
+        </svg>
+      </div>
+      <figcaption className="mt-1.5 pl-11 font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--t4)]">
+        {sourceLine}
+      </figcaption>
+    </figure>
   );
 }
 
@@ -134,7 +131,7 @@ export function DiscoveryHero({
   const history = useMarketHistory(market?.ticker ?? "");
   if (!market) {
     return (
-      <section className="min-h-[480px] rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-9 text-[var(--t3)]">
+      <section className="min-h-[420px] border-t-[3px] border-[var(--rule-ink)] pt-4 text-[var(--t3)]">
         {t("LOADING_MARKETS")}
       </section>
     );
@@ -145,19 +142,9 @@ export function DiscoveryHero({
   const displayCategory = resolvedCategoryName
     ? categoryLabel(contentT, resolvedCategoryName)
     : "";
-  // Machine-generated import tickers (IMP-<hex>) are data plumbing, not
-  // content — the eyebrow shows the category alone for those markets.
-  const isMachineTicker = /^IMP-[0-9A-F]{6,}$/i.test(displayMarket.ticker);
-  // Ticker hides below 560px — it crowded the carousel control on
-  // phones (P10 QA finding, 2026-07-12).
-  const eyebrowCategory = displayCategory ? displayCategory.toUpperCase() : "";
-  const eyebrowTicker = isMachineTicker ? "" : displayMarket.ticker;
   const yes = displayMarket.yesPricePoints;
   const no = displayMarket.noPricePoints;
 
-  // One source of truth: the fetched real series drives BOTH the chart
-  // and the delta pill. The demo flag may substitute a labeled synthetic
-  // series for the chart, but never for the delta.
   const delta = seriesDelta(history.points);
   const syntheticValues =
     DEMO_SYNTHETIC_CHARTS && history.state !== "ready"
@@ -170,169 +157,156 @@ export function DiscoveryHero({
     : (delta?.up ?? true);
   const isUp = delta ? delta.up : true;
   const isFlat = delta ? delta.flat : true;
-  const volumeLabel = `${formatCompactPoints(displayMarket.volumePoints)}`;
+  const volumeLabel = formatCompactPoints(displayMarket.volumePoints);
   const oiLabel =
     displayMarket.openInterestPoints != null &&
     displayMarket.openInterestPoints > 0
-      ? `${formatCompactPoints(displayMarket.openInterestPoints)}`
+      ? formatCompactPoints(displayMarket.openInterestPoints)
       : "—";
   const closesLabel = formatHeroCloseLeft(displayMarket.closeAt);
 
   return (
     <section
-      className="rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-7 font-sans shadow-[var(--shadow-card)] max-[720px]:p-6"
+      className="border-t-[3px] border-[var(--rule-ink)] pt-3 font-sans"
       aria-label={t("FEATURED_MARKET")}
     >
-      <div className="grid grid-cols-[minmax(300px,5fr)_7fr] gap-10 max-[980px]:grid-cols-1 max-[980px]:gap-6">
-        {/* ── Left column: identity, price, actions ─────────────────── */}
+      {/* Rubric row: LEAD STORY · LIVE · category — print furniture. */}
+      <header className="rh-hero-eyebrow mb-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--t3)]">
+        <span className="text-[var(--t1)]">
+          {t("LEAD_STORY", "Lead story")}
+        </span>
+        {displayMarket.status === "open" && (
+          <>
+            <span aria-hidden="true" className="text-[var(--border-2)]">
+              |
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-[var(--accent-text)]">
+              <span
+                className="h-[6px] w-[6px] rounded-full bg-[var(--brand-dot)]"
+                aria-hidden="true"
+              />
+              {t("LIVE")}
+            </span>
+          </>
+        )}
+        {displayCategory && (
+          <>
+            <span aria-hidden="true" className="text-[var(--border-2)]">
+              |
+            </span>
+            <span>{displayCategory}</span>
+          </>
+        )}
+      </header>
+
+      {/* The question is the headline. min-h reserves two lines so pager
+          flips don't pump the page height. */}
+      <h1
+        className="type-display m-0 mb-5 min-h-[2.2em] max-w-[24ch] text-balance text-[clamp(28px,3.4vw,46px)] font-medium leading-[1.08] text-[var(--t1)]"
+        title={displayMarket.title}
+      >
+        {displayMarket.title}
+      </h1>
+
+      <div className="grid grid-cols-[minmax(280px,5fr)_7fr] gap-10 max-[980px]:grid-cols-1 max-[980px]:gap-6">
+        {/* ── Left: the figure, the actions, the wire stats ─────────── */}
         <div className="flex min-w-0 flex-col">
-          <header className="mb-3.5 flex items-center gap-2.5 text-xs font-medium text-[var(--t3)]">
-            {displayMarket.status === "open" && (
-              <>
-                <span className="inline-flex items-center gap-1.5 font-semibold uppercase tracking-[0.08em] text-[var(--yes-text)]">
-                  <span
-                    className="h-[7px] w-[7px] animate-pulse rounded-full bg-[var(--brand-period)] shadow-[0_0_0_4px_rgba(16,200,160,0.16)]"
-                    aria-hidden="true"
-                  />
-                  {t("LIVE")}
-                </span>
-                {eyebrowCategory || eyebrowTicker ? (
-                  <span aria-hidden="true">·</span>
-                ) : null}
-              </>
-            )}
-            {eyebrowCategory ? <span>{eyebrowCategory}</span> : null}
-            {eyebrowTicker ? (
-              <span className="max-[560px]:hidden">
-                {eyebrowCategory ? "· " : ""}
-                {eyebrowTicker}
-              </span>
-            ) : null}
-          </header>
-
-          {/* min-h reserves exactly two title lines so slides with 1-line
-              and 2-line titles occupy identical vertical space — otherwise
-              slide changes pump the page height and everything below
-              visibly jumps. */}
-          <h1
-            className="type-display m-0 mb-5 line-clamp-2 min-h-[2.32em] text-[clamp(22px,1.6vw+14px,30px)] font-semibold leading-[1.16] text-[var(--t1)] max-[720px]:mb-[18px]"
-            title={displayMarket.title}
-          >
-            {displayMarket.title}
-          </h1>
-
           <div
-            className="type-display m-0 mb-3 text-[clamp(64px,7vw,110px)] font-semibold leading-[0.95] tracking-[-0.03em] text-[var(--t1)]"
+            className="type-display m-0 text-[clamp(56px,6vw,92px)] font-medium leading-[0.9] text-[var(--t1)]"
             aria-label={`Yes price ${yes} cents`}
           >
             {yes}
-            <span className="ml-1 text-[0.62em] font-medium text-[var(--t3)]">
+            <span className="ml-1 text-[0.5em] font-normal text-[var(--t3)]">
               ¢
             </span>
           </div>
-          <div className="mb-6 flex items-center gap-2.5 max-[980px]:mb-4">
+          <div className="mb-6 mt-2.5 flex items-baseline gap-2.5 font-mono text-[13px] [font-variant-numeric:tabular-nums]">
             {delta && !isFlat ? (
               <span
-                className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 font-mono text-[13px] font-semibold tabular-nums ${
-                  isUp
-                    ? "bg-[var(--yes-soft)] text-[var(--yes-text)]"
-                    : "bg-[var(--no-soft)] text-[var(--no-text)]"
-                }`}
+                className={`font-semibold ${isUp ? "text-[var(--yes-text)]" : "text-[var(--no-text)]"}`}
               >
-                <svg
-                  width="9"
-                  height="9"
-                  viewBox="0 0 10 10"
-                  aria-hidden="true"
-                  className={isUp ? "" : "rotate-180"}
-                >
-                  <path d="M5 1.2 8.8 8H1.2Z" fill="currentColor" />
-                </svg>
-                {isUp ? "+" : ""}
+                {isUp ? "▲" : "▼"} {isUp ? "+" : ""}
                 {delta.delta}¢ ({isUp ? "+" : ""}
                 {delta.pct.toFixed(1)}%)
               </span>
             ) : (
-              <span className="inline-flex items-center rounded-md bg-[var(--surface-2)] px-2.5 py-1 font-mono text-[13px] font-semibold tabular-nums text-[var(--t3)]">
+              <span className="font-semibold text-[var(--t3)]">
                 {history.state === "loading" ? "…" : "—"}
               </span>
             )}
-            <span className="text-sm font-medium text-[var(--t3)]">
-              {t("TODAY")}
-            </span>
+            <span className="text-[12px] text-[var(--t3)]">{t("TODAY")}</span>
           </div>
 
-          {/* Mobile chart: sits between the price block and the actions */}
+          {/* Mobile chart between figure and actions. */}
           <div className="mb-5 hidden max-[980px]:block">
-            <HeroChart
+            <LeadChart
               values={chartValues}
               synthetic={chartSynthetic}
               simulatedLabel={t("SIMULATED", "Simulated")}
               up={chartUp}
-              height={150}
-              className="block h-[128px] w-full overflow-visible"
-              gradientId="rh-chart-fill-m"
+              height={140}
+              sourceLine={t(
+                "CHART_SOURCE_LINE",
+                "Source: TapTrade order flow · today",
+              )}
             />
           </div>
 
-          <div className="mt-auto flex gap-3">
+          <div className="mt-auto grid grid-cols-2 gap-3">
             <Link
               href={`/market/${displayMarket.ticker}?side=yes`}
-              className="inline-flex flex-1 items-center justify-center whitespace-nowrap rounded-md border border-[var(--yes-border,var(--border-1))] bg-[var(--surface-1)] px-6 py-[15px] text-[15px] font-semibold text-[var(--yes-text)] no-underline tabular-nums transition-[background-color,border-color] duration-150 ease-out hover:border-[var(--yes)] hover:bg-[var(--yes-soft)] max-[720px]:px-4 max-[720px]:text-[14px]"
+              className="flex min-h-11 items-center justify-between border border-[var(--yes-border)] bg-transparent px-4 text-[14px] font-semibold text-[var(--yes-text)] no-underline transition-colors duration-150 hover:bg-[var(--yes-soft)]"
             >
-              {t("BUY_YES")} · {yes}¢
+              <span>{t("BUY_YES")}</span>
+              <span className="font-mono [font-variant-numeric:tabular-nums]">
+                {yes}¢
+              </span>
             </Link>
             <Link
               href={`/market/${displayMarket.ticker}?side=no`}
-              className="inline-flex flex-1 items-center justify-center whitespace-nowrap rounded-md border border-[var(--no-border)] bg-[var(--surface-1)] px-6 py-[15px] text-[15px] font-semibold text-[var(--no-text)] no-underline tabular-nums transition-[background-color,border-color] duration-150 ease-out hover:border-[var(--no)] hover:bg-[var(--no-soft)] max-[720px]:px-4 max-[720px]:text-[14px]"
+              className="flex min-h-11 items-center justify-between border border-[var(--no-border)] bg-transparent px-4 text-[14px] font-semibold text-[var(--no-text)] no-underline transition-colors duration-150 hover:bg-[var(--no-soft)]"
             >
-              {t("BUY_NO")} · {no}¢
+              <span>{t("BUY_NO")}</span>
+              <span className="font-mono [font-variant-numeric:tabular-nums]">
+                {no}¢
+              </span>
             </Link>
           </div>
 
-          <div className="mt-6 grid grid-cols-3 gap-6 border-t border-[var(--border-1)] pt-5 max-[720px]:gap-4">
-            <div>
-              <div className="mb-1.5 text-xs text-[var(--t3)]">
-                {t("24H_VOLUME")}
-              </div>
-              <div className="type-display whitespace-nowrap text-[18px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
-                {volumeLabel}
-              </div>
+          {/* Wire stat line — one row of mono figures under a hairline. */}
+          <dl className="mt-5 flex flex-wrap gap-x-6 gap-y-1 border-t border-[var(--border-1)] pt-3 font-mono text-[12px] text-[var(--t2)] [font-variant-numeric:tabular-nums]">
+            <div className="flex gap-1.5">
+              <dt className="text-[var(--t4)]">{t("24H_VOLUME")}</dt>
+              <dd className="m-0 font-semibold">{volumeLabel}</dd>
             </div>
-            <div>
-              <div className="mb-1.5 text-xs text-[var(--t3)]">
-                {t("OPEN_INTEREST")}
-              </div>
-              <div className="type-display whitespace-nowrap text-[18px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
-                {oiLabel}
-              </div>
+            <div className="flex gap-1.5">
+              <dt className="text-[var(--t4)]">{t("OPEN_INTEREST")}</dt>
+              <dd className="m-0 font-semibold">{oiLabel}</dd>
             </div>
-            <div>
-              <div className="mb-1.5 text-xs text-[var(--t3)]">
-                {t("CLOSES")}
-              </div>
-              <div className="type-display whitespace-nowrap text-[18px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
-                {closesLabel}
-              </div>
+            <div className="flex gap-1.5">
+              <dt className="text-[var(--t4)]">{t("CLOSES")}</dt>
+              <dd className="m-0 font-semibold">{closesLabel}</dd>
             </div>
-          </div>
+          </dl>
         </div>
 
-        {/* ── Right column: the chart owns it ───────────────────────── */}
+        {/* ── Right: the print graphic ──────────────────────────────── */}
         <div className="relative min-w-0 max-[980px]:hidden">
           {chartValues && chartValues.length >= 2 ? (
-            <HeroChart
+            <LeadChart
               values={chartValues}
               synthetic={chartSynthetic}
               simulatedLabel={t("SIMULATED", "Simulated")}
               up={chartUp}
-              height={320}
-              className="block h-full min-h-[320px] w-full overflow-visible"
-              gradientId="rh-chart-fill"
+              height={300}
+              sourceLine={t(
+                "CHART_SOURCE_LINE",
+                "Source: TapTrade order flow · today",
+              )}
             />
           ) : (
             <div
-              className="flex h-full min-h-[320px] w-full items-center justify-center rounded-[var(--r-rh-sm)] border border-dashed border-[var(--border-1)] text-[12px] text-[var(--t3)]"
+              className="flex h-full min-h-[300px] w-full items-center justify-center border border-dashed border-[var(--border-1)] text-[12px] text-[var(--t3)]"
               role="status"
             >
               {history.state === "loading"

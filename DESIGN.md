@@ -1,21 +1,24 @@
 # Design System — TapTrade
 
-> **P10 "Signal Ink" (2026-07-12) is the active revision** — evidence base,
-> judge-panel scorecard, spec, and change log live in `docs/redesign/`.
-> Deltas over the P9 text below (which remains accurate where not
-> superseded): display face is **Bricolage Grotesque** (Clash Display
-> retired as a documented 2026 template tell; all fonts self-hosted, two
-> families + mono); the wordmark is **drawn vector art**
-> (`BrandWordmark.tsx`, split-crossbar t's + mint landing period — no
-> font render); **primary actions are INK** (`--action*` tokens; mint
-> survives only as the tap dot `--brand-dot`); the text ramp is
-> AA-at-token-level (`--t3` 5.0:1, `--t4` 4.5:1, decorative `--t-ghost`);
-> discovery surfaces render ONLY real price history (fabricated deltas/
-> sparklines deleted; demo-flag synthetic charts always wear a visible
-> SIMULATED chip); the hero carousel no longer auto-advances; the footer
-> carries a Fair-play & controls block on every deploy; `a`/`button`
-> element resets live in `@layer base` (unlayered they beat Tailwind
-> color utilities — the historic `!text-*` workarounds are obsolete).
+> **P11 "Standing Question" (2026-07-12, owner-directed) is the active
+> revision** — the full editorial reset chosen by the owner after
+> reviewing P10 ("looks like more of the same"). Evidence base, judge
+> scorecard, decision record, and change log live in `docs/redesign/`.
+> The system: **bone paper** `#FAF7F2` · warm editorial inks · **press
+> blue** `#2447D6` as the single non-semantic accent (links, actives,
+> the brand period, LIVE tags) · **Newsreader** serif display (questions
+> are headlines; `.type-display`/`.type-standfirst`) + **Inter** UI +
+> **IBM Plex Mono** wire figures · **rules, not shadows** (`--rule-ink`
+> heavy rules, hairline `--border-1/2`; `--shadow-card` resolves to
+> nothing) · near-square corners · **"nothing blinks"** (pulse/ping
+> globally neutered) · print-calibrated movement colors, always labeled
+> · drawn serif masthead wordmark with an oversized press-blue terminal
+> period + standing-question glyph mark (`BrandWordmark`/`BrandMark`).
+> Composition grammar: dateline → LEAD STORY (rubric, serif headline,
+> print-graphic chart with axis figures + source line, bordered
+> actions, wire stat line) → editorial columns and BRIEFS (rule-topped,
+> text-first) → dealing-slip ticket → ink colophon. The P9/P10 sections
+> below remain for history; where they conflict, P11 wins.
 
 > Robinhood for prediction markets, **light theme**. Gallery-white surfaces, soft-flat cards on hairline borders and quiet two-layer shadows, big confident numbers, a dominant chart, mint as the action color. Markets are treated like stocks: the question is the sub-headline, the price IS the page, two pill buttons commit you to a side.
 

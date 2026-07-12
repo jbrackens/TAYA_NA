@@ -63,8 +63,9 @@ const NAV_LINKS: {
   { href: "/rewards", labelKey: "NAV_REWARDS", requiresAuth: true },
 ];
 
+// P11 masthead: the classic double rule under the nameplate bar.
 const TOP_BAR_CLASS =
-  "sticky top-0 z-[100] border-b border-[var(--border-1)] bg-[var(--bg-deep)] [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
+  "sticky top-0 z-[100] border-b-[3px] border-double border-[var(--rule-ink)] bg-[var(--bg-deep)] [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
 
 const TOP_BAR_INNER_CLASS =
   "box-border mx-auto flex h-16 w-full max-w-[1588px] items-center gap-6 px-6 max-[900px]:h-16 max-[900px]:gap-3 max-[900px]:px-4 max-[480px]:gap-2 max-[480px]:px-3";

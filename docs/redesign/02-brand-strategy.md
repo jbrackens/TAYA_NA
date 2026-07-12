@@ -105,3 +105,21 @@ Notable judge corrections adopted: A's "bone paper + serif + press blue" is itse
 7. **Motion tokens:** 120/180/300ms scale, tap-dot vocabulary only, global reduced-motion collapse (already present) extended to the new wordmark animation.
 
 **Deliberately NOT changed:** trade-ticket logic and its truthful outcome states, API client contracts, routing, Redux/React-Query architecture, i18n keys (except honesty rewordings), the office app (out of scope this pass; tokens are shared so it inherits the palette).
+
+
+---
+
+## 5. Owner decision — 2026-07-12 (supersedes §4's recommendation)
+
+After reviewing the implemented Direction B on the branch, the owner rejected it: **"this looks like more of the same frontend UX/UI design we've been using all along."** Diagnosis (accepted): B's distinctiveness budget lived in small signatures while retaining P9's layout grammar — hero-card + rail + card grid on white — and a screenshot's identity lives in composition, not tokens. This is precisely the "safe relapse" failure mode the design-director judge warned about.
+
+**Decision: Direction A — "Standing Question" — implemented end-to-end as P11**, with the panel's documented risks mitigated rather than avoided:
+
+| Judge risk (A) | P11 mitigation |
+|---|---|
+| "Reads newsletter, not trading app" | The trading vocabulary stays data-forward: all prices/figures/tickers in wire mono with tabular numerals; real charts on every lead surface (annotated as print graphics — axis figures + source line — which *adds* data rather than removing it); the ticket is a bordered dealing slip; order book/depth retained. Serif speaks only where questions are asked. |
+| "Quiet-luxury editorial trend cluster" | The identity is not paper+serif alone but the *collision* of broadsheet furniture (rules, rubrics, datelines, briefs, colophon) with live market microstructure — a combination absent from both the content-brand cluster and the trading category. |
+| Feasibility (scored 2) | Mitigated by sequencing: P10's substrate (honest data, disclosure rows, safety chrome, a11y semantics, i18n, token architecture) carries over unchanged; P11 is a value-level token swap + composition pass on top. |
+| Ownership "copyable in a weekend" | The drawn serif masthead (Newsreader-derived outlines, oversized press-blue terminal period), the standing-question glyph mark, and the codified editorial grammar (rubric/rule/brief/slip vocabulary in DESIGN tokens and components) are the owned assets. |
+
+P11 system in brief: bone paper `#FAF7F2` · warm editorial inks · **press blue `#2447D6`** as the single non-semantic accent (links, active states, the period, LIVE tags) · Newsreader (display, roman+italic opticals) + Inter (UI) + IBM Plex Mono (wire figures) · rules-not-shadows, near-square corners · "nothing blinks" (ambient pulse/ping globally retired) · print-calibrated movement colors, always labeled. Wordmark: drawn `taptrade` serif masthead with 1.9× press-blue terminal period; mark: Newsreader's own question mark with a 1.55× press-blue dot.

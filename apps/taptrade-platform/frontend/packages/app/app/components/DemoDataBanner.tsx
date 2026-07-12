@@ -28,10 +28,12 @@ export function DemoDataBanner() {
 
   if (!DEMO_SYNTHETIC_CHARTS || dismissed) return null;
 
+  // P11: a one-line wire notice — mono figures-voice on bone under a
+  // hairline rule, not a colored banner.
   return (
     <div
       role="note"
-      className="flex items-center justify-center gap-3 border-b border-[var(--border-1)] bg-[var(--surface-2)] px-4 py-1.5 text-center text-[12px] text-[var(--t2)]"
+      className="flex items-center justify-center gap-3 border-b border-[var(--border-1)] bg-[var(--bg-deep)] px-4 py-1.5 text-center font-mono text-[11px] text-[var(--t2)]"
     >
       <span>
         {t(
@@ -41,7 +43,7 @@ export function DemoDataBanner() {
       </span>
       <button
         type="button"
-        className="grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-[14px] leading-none text-[var(--t3)] hover:bg-[var(--action-soft)] hover:text-[var(--t1)]"
+        className="grid h-8 w-8 shrink-0 cursor-pointer place-items-center border-0 bg-transparent text-[14px] leading-none text-[var(--t3)] hover:bg-[var(--action-soft)] hover:text-[var(--t1)]"
         aria-label={t("DISMISS", "Dismiss")}
         onClick={() => {
           sessionStorage.setItem(STORAGE_KEY, "1");

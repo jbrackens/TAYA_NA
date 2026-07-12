@@ -186,5 +186,8 @@
   "FEES": "Mga bayarin",
   "PRICE_MOVED": "Gumalaw ang presyo {{from}}¢ → {{to}}¢",
   "RESOLVES_BY": "Ire-resolve ayon sa {{source}}",
-  "SEARCH_MARKETS": "Maghanap ng markets"
+  "SEARCH_MARKETS": "Maghanap ng markets",
+  "LEAD_STORY": "Pangunahing balita",
+  "CHART_SOURCE_LINE": "Pinagmulan: TapTrade order flow · ngayon",
+  "EDITION_LINE": "Live prediction markets · play points lamang"
 }

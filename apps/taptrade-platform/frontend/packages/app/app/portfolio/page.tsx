@@ -47,19 +47,21 @@ const cx = (...classes: Array<string | false | null | undefined>) =>
 
 const MONO =
   "[font-family:'IBM_Plex_Mono',monospace] [font-variant-numeric:tabular-nums]";
-const STAT_CARD =
-  "relative flex flex-col gap-1 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[18px] py-4 text-[var(--t1)] no-underline [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
-const STAT_LABEL = "text-xs font-medium text-[var(--t3)]";
-const STAT_VALUE = cx(
-  MONO,
-  "text-[22px] font-semibold tracking-normal text-[var(--t1)]",
-);
+// P11 "Standing Question": the portfolio is a LEDGER. Stats are a figures
+// strip under one heavy ink rule (rubric label over a mono figure, hairline
+// rules between blocks, no boxes); tabs are editorial text tabs; tables are
+// flat ruled ledgers.
+const STAT_BLOCK =
+  "relative flex min-w-0 flex-col gap-1 text-[var(--t1)] no-underline [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
+const STAT_LABEL =
+  "text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--t3)]";
+const STAT_VALUE = cx(MONO, "text-[24px] font-semibold text-[var(--t1)]");
 const STAT_SUB = "text-[11px] text-[var(--t3)]";
-const TABLE_GRID_ROW = "grid items-center gap-[14px] px-[18px]";
+const TABLE_GRID_ROW = "grid items-center gap-[14px] px-2";
 const TABLE_CELL = cx(MONO, "min-w-0 text-[13px] text-[var(--t1)]");
 const DIM_TEXT = "text-[var(--t3)]";
 const LOGIN_CTA =
-  "inline-block rounded-[var(--r-md)] border border-[rgba(43,228,128,0.6)] bg-[linear-gradient(180deg,rgba(255,255,255,0.25)_0%,rgba(255,255,255,0)_50%),linear-gradient(115deg,#2be480_0%,#00ffaa_100%)] px-[22px] py-3 text-[13px] font-bold text-[#04140a] no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_10px_24px_rgba(43,228,128,0.18)] hover:brightness-105";
+  "inline-block bg-[var(--action)] px-[22px] py-3 text-[13px] font-bold text-[var(--action-fg)] no-underline transition-colors duration-150 hover:bg-[var(--action-hover)]";
 
 export default function PortfolioPage() {
   const { t } = useTranslation("portfolio");
@@ -185,10 +187,10 @@ export default function PortfolioPage() {
   return (
     <div className="mx-auto max-w-[1280px] pb-[60px]">
       <header className="mb-5">
-        <h1 className="m-0 mb-1 text-[28px] font-extrabold tracking-normal text-[var(--t1)]">
+        <h1 className="type-display m-0 mb-1 text-[32px] font-medium leading-[1.1] text-[var(--t1)]">
           {t("title", "Portfolio")}
         </h1>
-        <p className="m-0 text-[13px] text-[var(--t3)]">
+        <p className="type-standfirst m-0 text-[15px] text-[var(--t2)]">
           {t("subtitle", "Open positions, active orders, settled results.")}
         </p>
       </header>
@@ -245,8 +247,11 @@ function SummaryStrip({
   const s = summary;
   const pnl = s?.realizedPoints ?? 0;
   const pnlUp = pnl >= 0;
+  // Figures strip: one heavy-rule-topped row; hairline rules BETWEEN blocks.
+  // The nth-child overrides drop the leading rule on whichever block starts
+  // a wrapped row at each breakpoint (5 → 3 → 2 columns).
   return (
-    <section className="mb-6 grid grid-cols-5 gap-[14px] max-lg:grid-cols-3 max-[720px]:grid-cols-2">
+    <section className="mb-7 grid grid-cols-5 gap-x-4 gap-y-5 border-t-[3px] border-[var(--rule-ink)] pt-3 max-lg:grid-cols-3 max-[720px]:grid-cols-2 [&>*]:border-l [&>*]:border-[var(--border-1)] [&>*]:pl-4 [&>*:first-child]:border-l-0 [&>*:first-child]:pl-0 max-lg:min-[721px]:[&>*:nth-child(3n+1)]:border-l-0 max-lg:min-[721px]:[&>*:nth-child(3n+1)]:pl-0 max-[720px]:[&>*:nth-child(odd)]:border-l-0 max-[720px]:[&>*:nth-child(odd)]:pl-0">
       <StatCard
         label={t("summary.invested", "Invested")}
         value={s ? formatWholePoints(s.totalValuePoints) : "—"}

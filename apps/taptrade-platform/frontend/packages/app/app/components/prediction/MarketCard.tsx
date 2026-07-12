@@ -1,27 +1,24 @@
 "use client";
 
 /**
- * MarketCard — P8 composition (DESIGN.md §6).
+ * MarketCard — an editorial BRIEF (P11 "Standing Question", 2026-07-12).
  *
- *   ┌─────────────────────────────────────────────────────┐
- *   │ Title clamped to 2 lines               [⊙ image]    │
- *   ├─────────────────────────────────────────────────────┤
- *   │ Yes leads at 57%                                  │
- *   ├─────────────────────────────────────────────────────┤
- *   │ [ YES 7¢ ]                    [ NO 93¢ ]            │
- *   ├─────────────────────────────────────────────────────┤
- *   │ Volume  25K pts              Closes  Dec 31, 2026   │
- *   └─────────────────────────────────────────────────────┘
+ *   ────────────────────────────────  ← hairline rule
+ *   POLITICS                      ☆
+ *   Will the Senate flip in 2026?    ← serif headline
+ *   Market prices No at 62%          ← movement sentence
+ *   YES 38¢   ·   NO 62¢             ← wire line (sibling deep-links)
+ *   Vol 1.3M pts · Closes Jul 21     ← footnote
  *
- * Header is title + corner image only. A short colored trend sentence anchors
- * the middle of the card. Secondary stats (category, volume, liquidity, close
- * date/status) drop to a quiet footer below the action pills so the card reads
- * title → trend → action → metadata without redundant consensus bars.
+ * Text-first: the P9/P10 card chrome (image circle, shadow card, pill
+ * buttons) is retired — a brief is a rule, a headline, and figures.
+ * The body links to the market page; the YES/NO wire figures are
+ * SIBLING links carrying ?side= so a tap deep-links a side-preselected
+ * ticket (no nested anchors).
  */
 
 import Link from "next/link";
 import { Star } from "lucide-react";
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   formatCompactPoints,
@@ -29,7 +26,6 @@ import {
   marketStatusLabel,
 } from "./market-display";
 import { calculateMarketSentiment } from "./marketSentiment";
-import { getMarketImageProps } from "./utils/marketImage";
 
 interface MarketCardProps {
   marketId: string;
@@ -41,6 +37,7 @@ interface MarketCardProps {
   closeAt: string;
   status: string;
   categoryLabel?: string;
+  /** Image props accepted for API compatibility; briefs are text-first. */
   imagePath?: string | null;
   imageUrl?: string | null;
   image_url?: string | null;
@@ -58,9 +55,6 @@ function formatCloseAt(iso: string): string {
   });
 }
 
-const MONOGRAM_CLASS =
-  "border border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t3)]";
-
 export function MarketCard({
   marketId,
   ticker,
@@ -71,32 +65,11 @@ export function MarketCard({
   closeAt,
   status,
   categoryLabel,
-  imagePath,
-  imageUrl,
-  image_url,
   watched = false,
   onToggleWatchlist,
 }: MarketCardProps) {
   const { t } = useTranslation("prediction");
   const isOpen = isOpenMarketStatus(status);
-
-  const image = getMarketImageProps({
-    ticker,
-    imagePath,
-    imageUrl,
-    image_url,
-    categoryLabel,
-  });
-  const imageSrc = image.kind === "image" ? image.src : "";
-  const [failedImageSrc, setFailedImageSrc] = useState<string | null>(null);
-  useEffect(() => {
-    setFailedImageSrc(null);
-  }, [imageSrc]);
-  const fallbackImage = getMarketImageProps({ ticker, categoryLabel });
-  const visibleImage =
-    image.kind === "image" && failedImageSrc !== image.src
-      ? image
-      : fallbackImage;
   const marketSentiment = calculateMarketSentiment(yesPricePoints);
   const trendClassName =
     marketSentiment.sentimentState === "neutral"
@@ -104,22 +77,16 @@ export function MarketCard({
       : marketSentiment.sentimentState === "yes"
         ? "text-[var(--yes-text)]"
         : "text-[var(--no-text)]";
-  const trendDotClassName =
-    marketSentiment.sentimentState === "neutral"
-      ? "bg-[var(--border-2)]"
-      : marketSentiment.sentimentState === "yes"
-        ? "bg-[var(--yes-bar)]"
-        : "bg-[var(--no-bar)]";
 
   return (
-    <article className="relative flex h-full min-h-[248px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans text-[var(--t1)] transition-[transform,box-shadow,border-color] duration-[140ms] hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[var(--shadow-card-hover)] focus-within:-translate-y-0.5 focus-within:border-[var(--border-2)] focus-within:shadow-[var(--shadow-card-hover)] max-[640px]:min-h-[238px] max-[640px]:p-4">
+    <article className="relative flex h-full min-h-[184px] flex-col border-t border-[var(--border-2)] pt-3 font-sans text-[var(--t1)]">
       {onToggleWatchlist && (
         <button
           type="button"
-          className={`absolute right-2.5 top-2.5 z-10 grid h-9 w-9 cursor-pointer place-items-center rounded-full border-0 bg-transparent transition-colors duration-150 ${
+          className={`absolute right-0 top-2 z-10 grid h-9 w-9 cursor-pointer place-items-center border-0 bg-transparent transition-colors duration-150 ${
             watched
               ? "text-[var(--accent-text)]"
-              : "text-[var(--t4)] hover:bg-[rgba(13,17,20,0.05)] hover:text-[var(--t2)]"
+              : "text-[var(--t4)] hover:text-[var(--t1)]"
           }`}
           aria-pressed={watched}
           aria-label={
@@ -130,114 +97,86 @@ export function MarketCard({
           onClick={() => onToggleWatchlist(marketId)}
         >
           <Star
-            size={17}
+            size={15}
             fill={watched ? "currentColor" : "none"}
             aria-hidden="true"
           />
         </button>
       )}
-      {/* The card body links to the market detail page (no preselect).
-       * The YES/NO pills below are SIBLING links carrying ?side=yes|no
-       * so clicking a pill deep-links into a side-preselected ticket.
-       * Avoids invalid nested anchors. */}
+
       <Link
         href={`/market/${ticker}`}
         className="flex flex-1 flex-col text-inherit no-underline"
         aria-label={title}
       >
-        <div className="flex items-start gap-3 pr-8">
-          {visibleImage.kind === "image" ? (
-            <img
-              className="h-10 w-10 flex-none rounded-full object-cover"
-              src={visibleImage.src}
-              alt=""
-              aria-hidden="true"
-              loading="lazy"
-              decoding="async"
-              width={40}
-              height={40}
-              onError={() => setFailedImageSrc(visibleImage.src)}
-            />
-          ) : (
-            <span
-              className={`inline-flex h-10 w-10 flex-none items-center justify-center rounded-full font-sans text-[12px] font-bold ${MONOGRAM_CLASS}`}
-              aria-hidden="true"
-            >
-              {visibleImage.monogram}
-            </span>
-          )}
-          <h3
-            className="m-0 min-h-[44px] min-w-0 flex-auto overflow-hidden text-[17px] font-semibold leading-[1.3] text-[var(--t1)] max-[640px]:min-h-[42px] max-[640px]:text-base"
-            style={{
-              display: "-webkit-box",
-              WebkitBoxOrient: "vertical",
-              WebkitLineClamp: 2,
-            }}
-          >
-            {title}
-          </h3>
-        </div>
-
-        <div className="mt-5 flex min-h-[58px] items-center max-[640px]:mt-4 max-[640px]:min-h-[52px]">
-          <span
-            className={`inline-flex items-center gap-2 text-[15px] font-semibold leading-snug max-[640px]:text-sm ${trendClassName}`}
-          >
-            <span
-              className={`h-2 w-2 rounded-full ${trendDotClassName}`}
-              aria-hidden="true"
-            />
-            {t(marketSentiment.displayStringKey, {
-              percentage: marketSentiment.percentage,
-            })}
+        {categoryLabel && (
+          <span className="mb-1.5 pr-9 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--t3)]">
+            {categoryLabel}
           </span>
-        </div>
+        )}
+        <h3
+          className="type-display m-0 min-h-[2.5em] pr-9 text-[19px] font-medium leading-[1.22] text-[var(--t1)] [display:-webkit-box] [overflow:hidden] [-webkit-box-orient:vertical] [-webkit-line-clamp:3]"
+          title={title}
+        >
+          {title}
+        </h3>
+
+        <p
+          className={`m-0 mt-2 min-h-[1.4em] text-[12px] font-medium leading-snug ${trendClassName}`}
+        >
+          {t(marketSentiment.displayStringKey, {
+            percentage: marketSentiment.percentage,
+          })}
+        </p>
       </Link>
 
-      <div className="mt-4 grid grid-cols-2 gap-2.5">
+      {/* The wire line: labeled side figures, sibling deep-links. The
+          links LOOK like print figures but keep firm tap sizes via
+          padded hit areas (min-h-10, margin-compensated). */}
+      <div className="mt-1.5 flex items-center gap-6 font-mono text-[14px] font-semibold [font-variant-numeric:tabular-nums]">
         <Link
           href={`/market/${ticker}?side=yes`}
-          className="flex min-h-10 items-center justify-between gap-3 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-2 font-sans no-underline transition-colors duration-150 hover:border-[var(--yes-bar)] hover:bg-[var(--yes-soft)] max-[768px]:min-h-11"
+          className="group -mx-1 inline-flex min-h-10 items-center gap-1.5 px-1 text-[var(--yes-text)] no-underline max-[768px]:min-h-11"
           aria-label={t("BUY_YES_AT", {
             price: yesPricePoints,
             defaultValue: "Buy Yes at {{price}}¢",
           })}
         >
-          <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--yes-text)]">
+          <span className="text-[10px] font-bold uppercase tracking-[0.08em]">
             {t("YES")}
           </span>
-          <span className="font-mono text-[16px] font-semibold text-[var(--yes-text)] tabular-nums">
+          <span className="border-b border-transparent group-hover:border-[var(--yes-text)]">
             {yesPricePoints}¢
           </span>
         </Link>
         <Link
           href={`/market/${ticker}?side=no`}
-          className="flex min-h-10 items-center justify-between gap-3 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-2 font-sans no-underline transition-colors duration-150 hover:border-[var(--no-bar)] hover:bg-[var(--no-soft)] max-[768px]:min-h-11"
+          className="group -mx-1 inline-flex min-h-10 items-center gap-1.5 px-1 text-[var(--no-text)] no-underline max-[768px]:min-h-11"
           aria-label={t("BUY_NO_AT", {
             price: noPricePoints,
             defaultValue: "Buy No at {{price}}¢",
           })}
         >
-          <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--no-text)]">
+          <span className="text-[10px] font-bold uppercase tracking-[0.08em]">
             {t("NO")}
           </span>
-          <span className="font-mono text-[16px] font-semibold text-[var(--no-text)] tabular-nums">
+          <span className="border-b border-transparent group-hover:border-[var(--no-text)]">
             {noPricePoints}¢
           </span>
         </Link>
       </div>
 
-      {/* One quiet metadata line (owner decision 2026-07-06: the labeled
-       * 2x2 stat grid read as dashboard overkill on a browse card). */}
-      <div className="mt-4 flex items-baseline justify-between gap-3 border-t border-[var(--border-1)] pt-3 text-[12px] text-[var(--t3)]">
+      {/* Footnote line. */}
+      <div className="mt-2.5 flex items-baseline justify-between gap-3 font-mono text-[11px] text-[var(--t4)] [font-variant-numeric:tabular-nums]">
         <span className="truncate">
           {t("VOLUME")}{" "}
-          <span className="font-mono font-semibold text-[var(--t2)] tabular-nums">
+          <span className="text-[var(--t2)]">
             {formatCompactPoints(volumePoints)}
           </span>
         </span>
         <span className="shrink-0">
           {isOpen ? t("CLOSES") : t("STATUS")}{" "}
-          <span className="font-mono font-semibold text-[var(--t2)] tabular-nums">
+          <span className="text-[var(--t2)]">
             {isOpen ? formatCloseAt(closeAt) : marketStatusLabel(status, t)}
           </span>
         </span>

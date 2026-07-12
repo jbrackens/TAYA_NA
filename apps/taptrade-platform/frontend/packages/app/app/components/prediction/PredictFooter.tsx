@@ -1,11 +1,13 @@
 "use client";
 
 /**
- * PredictFooter — the ink anchor (P9.4) + the fair-play block (P10).
+ * PredictFooter — the COLOPHON (P11 "Standing Question") + the
+ * fair-play block (P10).
  *
- * Every page ends on one deliberate deep-forest statement: the brand
- * surface the white system otherwise never spends. Ivory wordmark with
- * the mint period, quiet ivory links, legal line under a hairline.
+ * Every page ends on one deliberate ink statement: a thin double rule
+ * closes the paper, then the square-cornered ink block carries the
+ * ivory wordmark (press-blue period via --brand-period-dark), rubric
+ * column heads, quiet ivory links, and the legal line under a hairline.
  * This is a brand-layer surface (DESIGN.md Active Brand) — market data
  * never renders on ink.
  *
@@ -28,8 +30,9 @@ const YEAR = new Date().getFullYear();
 
 const FOOTER_LINK_CLASS =
   "font-medium text-[rgba(241,236,227,0.72)] no-underline transition-colors duration-[120ms] hover:text-[var(--brand-on-dark)]";
+// Column heads are rubrics (small-caps, bold, wide tracking) in muted ivory.
 const FOOTER_HEAD_CLASS =
-  "mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[rgba(241,236,227,0.45)]";
+  "mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[rgba(241,236,227,0.55)]";
 const FOOTER_COL_CLASS = "flex min-w-[140px] flex-col gap-2";
 
 export function PredictFooter() {
@@ -72,50 +75,56 @@ export function PredictFooter() {
   ];
 
   return (
-    <footer className="mt-10 rounded-[var(--r-rh-lg)] bg-[var(--brand-ink)] px-7 py-6 text-xs max-[640px]:px-5">
-      <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-6">
-        <BrandWordmark
-          height={18}
-          label={brand.name}
-          className="mt-0.5 text-[var(--brand-on-dark)] [--brand-period:var(--brand-period-dark)]"
-        />
-        <div className="flex flex-wrap gap-x-10 gap-y-6">
-          <nav
-            className={FOOTER_COL_CLASS}
-            aria-label={t("PRODUCT", "Product")}
-          >
-            <span className={FOOTER_HEAD_CLASS}>{t("PRODUCT", "Product")}</span>
-            {productLinks.map((l) => (
-              <Link key={l.href} href={l.href} className={FOOTER_LINK_CLASS}>
-                {l.label}
-              </Link>
-            ))}
-          </nav>
-          <nav
-            className={FOOTER_COL_CLASS}
-            aria-label={t("FAIR_PLAY", "Fair play & controls")}
-          >
-            <span className={FOOTER_HEAD_CLASS}>
-              {t("FAIR_PLAY", "Fair play & controls")}
-            </span>
-            {safetyLinks.map((l) => (
-              <Link key={l.label} href={l.href} className={FOOTER_LINK_CLASS}>
-                {l.label}
-              </Link>
-            ))}
-          </nav>
+    // The colophon closes the paper: a thin double rule, a breath of
+    // bone, then the square ink block.
+    <footer className="mt-10 border-t-[3px] border-double border-[var(--rule-ink)] pt-1.5">
+      <div className="bg-[var(--brand-ink)] px-7 py-6 text-xs max-[640px]:px-5">
+        <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-6">
+          <BrandWordmark
+            height={18}
+            label={brand.name}
+            className="mt-0.5 text-[var(--brand-on-dark)] [--brand-period:var(--brand-period-dark)]"
+          />
+          <div className="flex flex-wrap gap-x-10 gap-y-6">
+            <nav
+              className={FOOTER_COL_CLASS}
+              aria-label={t("PRODUCT", "Product")}
+            >
+              <span className={FOOTER_HEAD_CLASS}>
+                {t("PRODUCT", "Product")}
+              </span>
+              {productLinks.map((l) => (
+                <Link key={l.href} href={l.href} className={FOOTER_LINK_CLASS}>
+                  {l.label}
+                </Link>
+              ))}
+            </nav>
+            <nav
+              className={FOOTER_COL_CLASS}
+              aria-label={t("FAIR_PLAY", "Fair play & controls")}
+            >
+              <span className={FOOTER_HEAD_CLASS}>
+                {t("FAIR_PLAY", "Fair play & controls")}
+              </span>
+              {safetyLinks.map((l) => (
+                <Link key={l.label} href={l.href} className={FOOTER_LINK_CLASS}>
+                  {l.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
         </div>
-      </div>
-      <div className="mt-5 border-t border-[rgba(241,236,227,0.14)] pt-4 text-[rgba(241,236,227,0.55)]">
-        <span className="font-bold text-[rgba(241,236,227,0.85)]">
-          {brand.name}
-        </span>
-        {" · "}© {YEAR} {brand.legalEntity}
-        {" · "}
-        {t(
-          "POINTS_DISCLOSURE",
-          "Non-redeemable point prediction markets — play points have no cash value, cannot be deposited or withdrawn, and this platform is not registered with any financial regulator.",
-        )}
+        <div className="mt-5 border-t border-[rgba(241,236,227,0.14)] pt-4 text-[rgba(241,236,227,0.55)]">
+          <span className="font-bold text-[rgba(241,236,227,0.85)]">
+            {brand.name}
+          </span>
+          {" · "}© {YEAR} {brand.legalEntity}
+          {" · "}
+          {t(
+            "POINTS_DISCLOSURE",
+            "Non-redeemable point prediction markets — play points have no cash value, cannot be deposited or withdrawn, and this platform is not registered with any financial regulator.",
+          )}
+        </div>
       </div>
     </footer>
   );

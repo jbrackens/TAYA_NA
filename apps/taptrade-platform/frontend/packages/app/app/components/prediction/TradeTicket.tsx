@@ -1,15 +1,17 @@
 "use client";
 
 /**
- * TradeTicket — the trade form on /market/[ticker]
- * (P9.2, 2026-07-07 — Robinhood-structure pass).
+ * TradeTicket — the DEALING SLIP on /market/[ticker]
+ * (P11 "Standing Question", 2026-07-12 — visual recomposition only).
  *
- * Layout (DESIGN.md §6 + §8):
- *   Title + mode switcher (Market / Limit)
+ * A bordered paper slip with a heavy ink top rule. Layout:
+ *   TRADE rubric + mode toggles (Market / Limit, ink-underline text)
  *   Buy Yes / Buy No underline tabs (side-colored)
  *   Sparse label/value rows: Points (editable) · [Limit price] ·
  *     Price · Est. cost · Payout if <side> is correct
- *   Auth-aware CTA + trust copy
+ *   Auth-aware ink-rectangle CTA + trust copy
+ * All logic, handlers, toasts, and radiogroup semantics are unchanged
+ * from the P9.2/P10 versions.
  *
  * Amount is in gameplay points. Quantity (shares) = amount / price * 100. The
  * PredictionApiClient interface still takes `quantity`, so we convert
@@ -90,15 +92,19 @@ interface TradeTicketProps {
 
 type TicketMode = "market" | "limit";
 
+// P11 DEALING SLIP: a bordered paper slip — square corners, hairline
+// frame, heavy 3px ink rule across the top. No shadow, nothing lifts.
 const TICKET_CARD_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+  "border border-[var(--border-2)] border-t-[3px] border-t-[var(--rule-ink)] bg-[var(--surface-1)] p-5 font-sans";
 const TICKET_HEAD_CLASS = "mb-3 flex items-center justify-between";
+// The title is a rubric — small-caps print furniture.
 const TICKET_TITLE_CLASS =
-  "text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
-const TICKET_MODE_CLASS =
-  "inline-flex gap-0.5 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-[3px]";
+  "text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--t1)]";
+// Mode pickers are editorial text toggles (active = ink underline), not
+// filled chips — semantics (radiogroup) unchanged.
+const TICKET_MODE_CLASS = "inline-flex gap-4";
 const TICKET_MODE_BUTTON_BASE_CLASS =
-  "cursor-pointer rounded-md border-0 px-3 py-[5px] [font-family:inherit] text-[11px] font-semibold transition-colors duration-[120ms] disabled:cursor-not-allowed disabled:opacity-40 disabled:text-[var(--t3)] disabled:hover:bg-transparent disabled:hover:text-[var(--t3)]";
+  "cursor-pointer border-0 border-b-2 bg-transparent p-0 pb-1 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors duration-[120ms] disabled:cursor-not-allowed disabled:opacity-40 disabled:text-[var(--t3)] disabled:hover:text-[var(--t3)]";
 // P9.2: sides are Robinhood-style underline tabs, not price boxes — the
 // price belongs to the summary rows below.
 const TICKET_SIDES_CLASS =
@@ -120,13 +126,14 @@ const TICKET_ROW_VALUE_CLASS =
 const TICKET_ROW_SUB_CLASS =
   "mt-0.5 text-right font-['IBM_Plex_Mono',_monospace] text-[11px] font-normal text-[var(--t4)]";
 const TICKET_INPUT_CLASS =
-  "w-[128px] rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-2 text-right font-['IBM_Plex_Mono',_monospace] text-[14px] font-semibold text-[var(--t1)] outline-none transition-colors duration-[120ms] [font-variant-numeric:tabular-nums] focus:border-[var(--accent-lo)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+  "w-[128px] border border-[var(--border-2)] bg-[var(--surface-1)] px-3 py-2 text-right font-['IBM_Plex_Mono',_monospace] text-[14px] font-semibold text-[var(--t1)] outline-none transition-colors duration-[120ms] [font-variant-numeric:tabular-nums] focus:border-[var(--accent-lo)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
 // P10 ink action (Signal Ink signature #2): the commit button is ink,
-// not mint — unmistakably an action, never a side. Non-color state
-// grammar: hover deepens + lifts; disabled drops opacity AND its label
-// states the reason (existing pattern); focus uses the system ring.
+// not mint — unmistakably an action, never a side. P11: square, flat,
+// no hover lift (nothing on the desk moves); hover deepens only.
+// Disabled drops opacity AND its label states the reason (existing
+// pattern); focus uses the system ring.
 const TICKET_CTA_CLASS =
-  "relative mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border-0 bg-[var(--action)] px-4 py-[14px] [font-family:inherit] text-[15px] font-semibold text-(--action-fg) no-underline transition-[background-color,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:bg-[var(--action-hover)] disabled:cursor-not-allowed disabled:opacity-[0.45] disabled:transform-none";
+  "relative mt-4 flex w-full cursor-pointer items-center justify-center gap-2 border-0 bg-[var(--action)] px-4 py-[14px] [font-family:inherit] text-[15px] font-semibold text-(--action-fg) no-underline transition-colors duration-[120ms] [&:not(:disabled):hover]:bg-[var(--action-hover)] disabled:cursor-not-allowed disabled:opacity-[0.45]";
 const TICKET_NOTE_CLASS =
   "mt-2.5 text-center text-xs leading-[1.45] text-[var(--t2)]";
 const TICKET_TRUST_CLASS =
@@ -140,8 +147,8 @@ const TICKET_CLOSED_CLASS =
 function ticketModeButtonClass(active: boolean): string {
   return `${TICKET_MODE_BUTTON_BASE_CLASS} ${
     active
-      ? "bg-[var(--surface-1)] text-[var(--t1)] shadow-[0_1px_2px_rgba(13,17,20,0.06)]"
-      : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)]"
+      ? "border-[var(--rule-ink)] text-[var(--t1)]"
+      : "border-transparent text-[var(--t3)] hover:text-[var(--t1)]"
   }`;
 }
 

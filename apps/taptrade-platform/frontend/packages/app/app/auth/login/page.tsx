@@ -1,11 +1,13 @@
 "use client";
 
 /**
- * LoginPage — Predict-native auth entry.
+ * LoginPage — front-of-book auth entry (P11 "Standing Question").
  *
- * Card-centered on the cyan-glow shell (predict-auth-layout). Uses the
- * same mono/tokens as the rest of the player app. Replaces the old
- * neon-green sportsbook card wholesale.
+ * A bordered paper panel on bone: heavy ink rule across the top edge,
+ * rubric eyebrow, the brand lockup, square bone-recessed inputs with a
+ * press-blue focus border, and an ink-rectangle submit. No rounded
+ * card chrome, no shadows, no hover lifts — the panel sits flat on the
+ * page like a subscription form in the paper.
  */
 
 import { useCallback, useState } from "react";
@@ -21,28 +23,28 @@ import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
 
 const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
 const CARD_CLASS =
-  "relative w-full max-w-[440px] rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[34px] pb-[30px] pt-9";
+  "relative w-full max-w-[440px] border border-[var(--border-2)] border-t-[3px] border-t-[var(--rule-ink)] bg-[var(--surface-1)] px-[34px] pb-[30px] pt-9";
 const HEAD_CLASS = "mb-6 text-center";
 const EYEBROW_CLASS =
-  "mb-3.5 inline-block rounded-full border border-[rgba(43,228,128,0.3)] bg-[var(--accent-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]";
+  "mb-3.5 inline-block text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--t3)]";
 const SUBTITLE_CLASS = "m-0 text-sm leading-[1.55] text-[var(--t2)]";
 const FORM_CLASS = "flex flex-col gap-3.5";
 const FIELD_CLASS = "flex flex-col gap-1.5";
 const FIELD_LABEL_CLASS =
   "text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
 const INPUT_CLASS =
-  "w-full box-border rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3 text-sm text-[var(--t1)] outline-none transition-[border-color] duration-150 ease-[ease] placeholder:text-[var(--t4)] focus-visible:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] [font-family:inherit]";
+  "w-full box-border border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3 text-sm text-[var(--t1)] outline-none transition-[border-color] duration-150 ease-[ease] placeholder:text-[var(--t4)] focus-visible:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] [font-family:inherit]";
 const ERROR_CLASS =
-  "rounded-[var(--r-sm)] border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.1)] px-3 py-2.5 text-xs text-[var(--no-text)]";
+  "border border-[var(--no-border)] bg-[var(--no-soft)] px-3 py-2.5 text-xs text-[var(--no-text)]";
 const SUBMIT_CLASS =
-  "mt-1 cursor-pointer rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-4 py-3.5 text-sm font-bold tracking-[0.02em] text-[#04140a] transition-[transform,filter] duration-[180ms] ease-[ease] enabled:hover:-translate-y-px enabled:hover:brightness-[1.05] enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 [font-family:inherit]";
+  "mt-1 cursor-pointer border-0 bg-[var(--action)] px-4 py-3.5 text-sm font-bold tracking-[0.02em] text-(--action-fg) transition-colors duration-150 enabled:hover:bg-[var(--action-hover)] disabled:cursor-not-allowed disabled:opacity-50 [font-family:inherit]";
 const LINKS_CLASS = "flex justify-end";
 const LINK_CLASS =
   "text-xs text-[var(--t3)] no-underline transition-colors duration-150 hover:text-[var(--t1)]";
 const LINK_ACCENT_CLASS =
-  "font-semibold text-[var(--accent)] hover:text-[var(--accent)] hover:brightness-110";
+  "font-semibold text-[var(--accent-text)] hover:text-[var(--accent-text)] hover:underline";
 const DEV_CLASS =
-  "mt-[18px] rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3";
+  "mt-[18px] border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3";
 const DEV_EYEBROW_CLASS =
   "mb-1 block text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
 const MONO_CLASS =

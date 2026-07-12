@@ -184,5 +184,8 @@
   "FEES": "費用",
   "PRICE_MOVED": "價格變動 {{from}}¢ → {{to}}¢",
   "RESOLVES_BY": "由 {{source}} 判定",
-  "SEARCH_MARKETS": "搜尋市場"
+  "SEARCH_MARKETS": "搜尋市場",
+  "LEAD_STORY": "頭條市場",
+  "CHART_SOURCE_LINE": "資料來源：TapTrade 訂單流 · 今日",
+  "EDITION_LINE": "即時預測市場 · 僅限遊戲積分"
 }

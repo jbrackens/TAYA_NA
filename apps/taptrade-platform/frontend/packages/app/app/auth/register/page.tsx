@@ -1,17 +1,22 @@
 "use client";
 
 /**
- * RegisterPage — split-screen signup (P9, 2026-07-08).
+ * RegisterPage — split-screen signup (P9 structure, P11 dress).
  *
  * Layout mirrors the WorkOS-style reference the owner specified: a narrow
  * centered form column (brand lockup → heading → fields → Continue → OR →
  * Continue with Google/Apple/SSO → sign-in link → legal line) beside a
  * full-bleed event panel built from our in-house ambient crowd footage
- * (public/brand/hero-ambient.mp4 + auth-event-poster.jpg) under a forest
+ * (public/brand/hero-ambient.mp4 + auth-event-poster.jpg) under an ink
  * scrim — no stock imagery, no external hotlinks. The 2-step wizard and the
- * launch-compliance terms/disclosure acceptance are unchanged; only the
- * shell moved. Social buttons render unconditionally here (owner call) and
- * degrade honestly when a provider isn't configured.
+ * launch-compliance terms/disclosure acceptance are unchanged.
+ *
+ * P11 "Standing Question" restyle (2026-07-12): serif heading, square
+ * bone-recessed inputs with press-blue focus, ink-rectangle primary
+ * button, bordered-rectangle secondary, no rounded chrome, no hover
+ * lifts. The event-panel scrim moved from forest green to ink. All
+ * handlers, returnUrl threading, and disclosure copy are untouched (the
+ * qa-regression points-only lock does raw substring matching on it).
  */
 
 import { useCallback, useEffect, useState } from "react";
@@ -63,50 +68,49 @@ const EVENT_MEDIA_CLASS =
 const EVENT_POSTER_CLASS =
   "absolute inset-0 h-full w-full object-cover opacity-[0.82]";
 const EVENT_SCRIM_CLASS =
-  "absolute inset-0 bg-[linear-gradient(200deg,rgba(11,67,50,0.28)_0%,rgba(11,67,50,0.55)_55%,rgba(7,42,31,0.88)_100%)]";
+  "absolute inset-0 bg-[linear-gradient(200deg,rgba(26,23,18,0.28)_0%,rgba(26,23,18,0.55)_55%,rgba(26,23,18,0.9)_100%)]";
 const EVENT_COPY_CLASS =
   "absolute inset-x-0 bottom-0 p-12 text-[var(--brand-on-dark)]";
 const EVENT_STATEMENT_CLASS =
-  "type-display m-0 max-w-[480px] text-[clamp(28px,3vw,44px)] font-semibold leading-[1.08] tracking-[-0.02em]";
+  "type-display m-0 max-w-[480px] text-[clamp(28px,3vw,44px)] font-medium leading-[1.08]";
 const EVENT_SUB_CLASS =
-  "mt-4 max-w-[420px] text-sm leading-[1.55] text-[rgba(241,236,227,0.75)]";
+  "type-standfirst mt-4 max-w-[420px] text-[15px] leading-[1.55] text-[rgba(241,236,227,0.78)]";
 const HEAD_CLASS = "mb-6";
 const EYEBROW_CLASS =
-  "mb-3 inline-block font-['IBM_Plex_Mono',monospace] text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--t3)]";
+  "mb-3 inline-block font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--t3)]";
 const TITLE_CLASS =
-  "m-0 mb-1.5 text-[26px] font-bold tracking-[-0.02em] text-[var(--t1)]";
+  "type-display m-0 mb-1.5 text-[28px] font-medium leading-[1.15] text-[var(--t1)]";
 const SUBTITLE_CLASS = "m-0 text-[13px] text-[var(--t3)]";
 const PROGRESS_CLASS =
-  "relative mb-[22px] h-1 overflow-hidden rounded-full border border-[var(--border-1)] bg-[var(--surface-2)]";
+  "relative mb-[22px] h-1 overflow-hidden border border-[var(--border-1)] bg-[var(--surface-2)]";
 const PROGRESS_FILL_BASE_CLASS =
-  "absolute inset-y-0 left-0 rounded-[inherit] bg-[var(--accent)] transition-[width] duration-300 ease-[ease]";
+  "absolute inset-y-0 left-0 bg-[var(--accent)] transition-[width] duration-300 ease-[ease]";
 const DIVIDER_CLASS =
   "my-0.5 flex items-center gap-3 before:h-px before:flex-1 before:bg-[var(--border-1)] before:content-[''] after:h-px after:flex-1 after:bg-[var(--border-1)] after:content-['']";
 const DIVIDER_TEXT_CLASS =
   "text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
-const BANNER_BASE_CLASS =
-  "mb-3.5 rounded-[var(--r-rh-md)] px-3 py-2.5 text-[13px]";
+const BANNER_BASE_CLASS = "mb-3.5 border px-3 py-2.5 text-[13px]";
 const BANNER_ERROR_CLASS =
-  "border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.1)] text-[var(--no-text)]";
+  "border-[var(--no-border)] bg-[var(--no-soft)] text-[var(--no-text)]";
 const BANNER_SUCCESS_CLASS =
-  "border border-[var(--border-2)] bg-[var(--accent-soft)] text-[var(--accent)]";
+  "border-[var(--border-2)] bg-[var(--accent-soft)] text-[var(--accent-text)]";
 const FORM_CLASS = "flex flex-col gap-3.5";
 const FIELD_CLASS = "flex flex-col gap-1.5";
 const FIELD_LABEL_CLASS =
   "text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
 const INPUT_BASE_CLASS =
-  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-[13px] py-[11px] text-sm text-[var(--t1)] outline-none transition-[border-color] duration-150 ease-[ease] placeholder:text-[var(--t4)] focus-visible:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] [font-family:inherit]";
+  "border border-[var(--border-1)] bg-[var(--surface-2)] px-[13px] py-[11px] text-sm text-[var(--t1)] outline-none transition-[border-color] duration-150 ease-[ease] placeholder:text-[var(--t4)] focus-visible:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] [font-family:inherit]";
 const INPUT_ERROR_CLASS = "border-[var(--no-text)]";
 const FIELD_ERROR_CLASS = "text-[11px] text-[var(--no-text)]";
 const TERMS_CLASS =
-  "max-h-[220px] overflow-y-auto rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-4 py-3.5";
+  "max-h-[220px] overflow-y-auto border border-[var(--border-1)] bg-[var(--surface-2)] px-4 py-3.5";
 const TERMS_TITLE_CLASS = "m-0 mb-2 text-sm font-bold text-[var(--t1)]";
 const TERMS_COPY_CLASS = "m-0 mb-2.5 text-xs leading-[1.55] text-[var(--t2)]";
 const CHECK_CLASS =
   "flex cursor-pointer items-center gap-2.5 text-[13px] text-[var(--t1)]";
 const CHECK_INPUT_CLASS = "size-4 accent-[var(--accent)]";
 const SUMMARY_CLASS =
-  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3";
+  "border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3";
 const SUMMARY_EYEBROW_CLASS =
   "mb-2 block text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
 const SUMMARY_LIST_CLASS = "m-0 flex flex-col gap-1";
@@ -117,15 +121,15 @@ const MONO_CLASS =
   "tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
 const ACTIONS_CLASS = "mt-5 flex gap-2.5";
 const BUTTON_BASE_CLASS =
-  "flex-1 cursor-pointer rounded-[var(--r-rh-md)] border px-3.5 py-[11px] text-[13px] font-bold tracking-[0.02em] transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 [font-family:inherit]";
+  "flex-1 cursor-pointer border px-3.5 py-[11px] text-[13px] font-bold tracking-[0.02em] transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50 [font-family:inherit]";
 const BUTTON_GHOST_CLASS =
-  "border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t2)] enabled:hover:border-[var(--accent)] enabled:hover:text-[var(--t1)]";
+  "border-[var(--border-2)] bg-transparent text-[var(--t2)] enabled:hover:border-[var(--rule-ink)] enabled:hover:text-[var(--t1)]";
 const BUTTON_PRIMARY_CLASS =
-  "border-transparent bg-[var(--accent)] text-[#04140a] enabled:hover:-translate-y-px enabled:hover:brightness-[1.05] enabled:active:scale-[0.98]";
+  "border-transparent bg-[var(--action)] text-(--action-fg) enabled:hover:bg-[var(--action-hover)]";
 const FOOTER_CLASS =
   "mt-[18px] border-t border-[var(--border-1)] pt-3.5 text-center text-[13px] text-[var(--t2)]";
 const LINK_ACCENT_CLASS =
-  "font-semibold text-[var(--accent)] no-underline hover:brightness-110";
+  "font-semibold text-[var(--accent-text)] no-underline hover:underline";
 
 function progressWidthClass(step: number): string {
   return step === 1 ? "w-1/2" : "w-full";
@@ -328,12 +332,12 @@ export default function RegisterPage() {
                   predictions on this platform.
                 </p>
                 <p className="m-0 text-xs leading-[1.55] text-[var(--t2)]">
-                  TapTrade uses non-redeemable gameplay points. Starter
-                  points are for predictions only; they are not money and{" "}
+                  TapTrade uses non-redeemable gameplay points. Starter points
+                  are for predictions only; they are not money and{" "}
                   {/* keep "cannot be cashed" on one line — the qa-regression
                       points-only lock does raw substring matching */}
-                  cannot be cashed out, withdrawn, transferred, or redeemed
-                  for prizes.
+                  cannot be cashed out, withdrawn, transferred, or redeemed for
+                  prizes.
                 </p>
               </div>
 
@@ -432,7 +436,7 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* Event panel — in-house ambient crowd footage under a forest scrim.
+      {/* Event panel — in-house ambient crowd footage under an ink scrim.
           Poster renders for reduced-motion and while the loop buffers. */}
       <aside className={EVENT_PANEL_CLASS} aria-hidden="true">
         <img

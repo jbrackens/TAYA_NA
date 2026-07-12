@@ -47,7 +47,7 @@ const FEATURED_CATEGORY_SLUGS = [
 
 const ROUTE_LOADING_CLASS = "p-20 text-center text-[13px] text-[var(--t3)]";
 const DISCOVERY_GRID_CLASS =
-  "grid grid-cols-[1fr_320px] items-start gap-5 max-[960px]:grid-cols-1";
+  "grid grid-cols-[1fr_300px] items-start gap-10 max-[960px]:grid-cols-1 max-[960px]:gap-8";
 const HERO_CELL_CLASS = "min-w-0";
 
 // Open markets ranked by volume (most active first). The carousel then picks
@@ -160,6 +160,20 @@ export default function PredictDiscoveryPage() {
 
   return (
     <div>
+      {/* P11 dateline — masthead furniture above the lead story. */}
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2 border-b border-[var(--border-1)] pb-2 text-[11px] uppercase tracking-[0.14em] text-[var(--t3)]">
+        <span className="font-bold">
+          {new Date().toLocaleDateString("en-US", {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          })}
+        </span>
+        <span className="font-mono text-[10px] tracking-[0.1em] text-[var(--t4)]">
+          {t("EDITION_LINE", "Live prediction markets · play points only")}
+        </span>
+      </div>
       <div className={DISCOVERY_GRID_CLASS}>
         <div className={HERO_CELL_CLASS}>
           <FeaturedCarousel

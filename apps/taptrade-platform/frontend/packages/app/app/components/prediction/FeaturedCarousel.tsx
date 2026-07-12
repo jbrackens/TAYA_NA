@@ -46,9 +46,10 @@ const CAROUSEL_CLASS =
 const CAROUSEL_VIEWPORT_CLASS =
   "relative [&_.rh-hero-eyebrow]:pr-[104px] max-[720px]:[&_.rh-hero-eyebrow]:pr-[92px]";
 const CAROUSEL_NAV_CLASS =
-  "absolute top-[22px] right-6 z-[2] inline-flex items-center gap-1.5 max-[720px]:top-[18px] max-[720px]:right-[18px]";
+  "absolute top-[14px] right-0 z-[2] inline-flex items-center gap-1.5";
+// P11: square editorial pager arrows (print furniture, not app chrome).
 const CAROUSEL_ARROW_CLASS =
-  "inline-flex h-[30px] w-[30px] flex-[0_0_auto] cursor-pointer items-center justify-center rounded-full border border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t2)] transition-colors duration-[120ms] hover:border-[var(--border-2)] hover:bg-[var(--surface-1)] hover:text-[var(--t1)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)] max-[720px]:h-7 max-[720px]:w-7 [&_svg]:h-4 [&_svg]:w-4";
+  "inline-flex h-[30px] w-[30px] flex-[0_0_auto] cursor-pointer items-center justify-center border border-[var(--border-2)] bg-transparent text-[var(--t2)] transition-colors duration-[120ms] hover:bg-[var(--action-soft)] hover:text-[var(--t1)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)] max-[720px]:h-7 max-[720px]:w-7 [&_svg]:h-4 [&_svg]:w-4";
 const CAROUSEL_COUNT_CLASS =
   "min-w-[46px] text-center text-xs font-medium text-[var(--t3)] [font-variant-numeric:tabular-nums]";
 

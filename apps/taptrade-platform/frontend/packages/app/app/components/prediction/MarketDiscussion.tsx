@@ -13,24 +13,27 @@ import {
 } from "../../lib/api/market-social-client";
 import { logger } from "../../lib/logger";
 
+// P11: the discussion is a letters column — rubric over a strong rule,
+// flat on the paper, no card chrome.
 const SECTION_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-6 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[1100px]:order-5";
+  "border-t border-[var(--border-2)] pt-3 font-sans max-[1100px]:order-5";
 const HEAD_CLASS = "mb-4 flex items-baseline justify-between gap-3";
 const TITLE_CLASS =
-  "m-0 text-base font-semibold tracking-[-0.01em] text-[var(--t1)]";
-const COUNT_CLASS = "text-xs text-[var(--t3)]";
+  "m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--t1)]";
+const COUNT_CLASS =
+  "font-mono text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
 const HEAD_LINK_CLASS =
   "text-xs text-[var(--t2)] underline-offset-4 hover:text-[var(--t1)] hover:underline";
 const FORM_CLASS = "mb-5 flex flex-col gap-3";
 const TEXTAREA_CLASS =
-  "min-h-[92px] resize-y rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2.5 text-sm leading-[1.5] text-[var(--t1)] outline-none placeholder:text-[var(--t3)] focus:border-[var(--accent)]";
+  "min-h-[92px] resize-y border border-[var(--border-2)] bg-[var(--surface-1)] px-3 py-2.5 text-sm leading-[1.5] text-[var(--t1)] outline-none placeholder:text-[var(--t3)] focus:border-[var(--accent)]";
 const FORM_ROW_CLASS = "flex items-center justify-between gap-3";
 const STATUS_CLASS = "text-xs text-[var(--t3)]";
 const BUTTON_CLASS =
-  "inline-flex min-h-9 items-center justify-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 text-xs font-bold text-[var(--t1)] transition-colors hover:border-[var(--border-2)] hover:bg-[var(--action-soft)] disabled:cursor-not-allowed disabled:opacity-55";
-// P10 ink action: mint is never a CTA fill (Signal Ink rule).
+  "inline-flex min-h-9 items-center justify-center border border-[var(--border-2)] bg-transparent px-3 text-xs font-bold text-[var(--t1)] transition-colors hover:bg-[var(--action-soft)] disabled:cursor-not-allowed disabled:opacity-55";
+// P10 ink action: mint is never a CTA fill (Signal Ink rule). P11: square.
 const PRIMARY_BUTTON_CLASS =
-  "inline-flex min-h-9 items-center justify-center rounded-[var(--r-rh-md)] border-0 bg-[var(--action)] px-4 text-xs font-bold text-(--action-fg) transition-colors hover:bg-[var(--action-hover)] disabled:cursor-not-allowed disabled:opacity-55";
+  "inline-flex min-h-9 items-center justify-center border-0 bg-[var(--action)] px-4 text-xs font-bold text-(--action-fg) transition-colors hover:bg-[var(--action-hover)] disabled:cursor-not-allowed disabled:opacity-55";
 const LIST_CLASS = "flex flex-col gap-3";
 const COMMENT_CLASS =
   "border-t border-[var(--border-1)] pt-3 first:border-t-0 first:pt-0";

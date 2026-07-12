@@ -17,9 +17,14 @@ interface Props {
   onToggleWatchlist?: (marketId: string) => void;
 }
 
+// P11 "Standing Question": briefs sit in newspaper columns — generous
+// gutters and, on >=1024px, a hairline column rule down every gutter.
+// The rules are nth-child selectors keyed to each breakpoint's column
+// count, so "Load more" pagination (appending children) and category
+// filtering re-rule themselves automatically.
 const GRID_CLASS_BY_COLUMNS: Record<NonNullable<Props["columns"]>, string> = {
-  3: "grid auto-rows-fr grid-cols-3 items-stretch gap-5 max-[1120px]:grid-cols-2 max-[640px]:grid-cols-1 max-[640px]:gap-4",
-  4: "grid auto-rows-fr grid-cols-4 items-stretch gap-5 max-[1280px]:grid-cols-3 max-[960px]:grid-cols-2 max-[640px]:grid-cols-1 max-[640px]:gap-4",
+  3: "grid auto-rows-fr grid-cols-3 items-stretch gap-x-6 gap-y-8 max-[1120px]:grid-cols-2 max-[640px]:grid-cols-1 max-[640px]:gap-4 min-[1024px]:[&>*]:border-[var(--border-1)] min-[1121px]:[&>*:not(:nth-child(3n+1))]:border-l min-[1121px]:[&>*:not(:nth-child(3n+1))]:pl-6 min-[1024px]:max-[1120px]:[&>*:not(:nth-child(2n+1))]:border-l min-[1024px]:max-[1120px]:[&>*:not(:nth-child(2n+1))]:pl-6",
+  4: "grid auto-rows-fr grid-cols-4 items-stretch gap-x-6 gap-y-8 max-[1280px]:grid-cols-3 max-[960px]:grid-cols-2 max-[640px]:grid-cols-1 max-[640px]:gap-4 min-[1024px]:[&>*]:border-[var(--border-1)] min-[1281px]:[&>*:not(:nth-child(4n+1))]:border-l min-[1281px]:[&>*:not(:nth-child(4n+1))]:pl-6 min-[1024px]:max-[1280px]:[&>*:not(:nth-child(3n+1))]:border-l min-[1024px]:max-[1280px]:[&>*:not(:nth-child(3n+1))]:pl-6",
 };
 
 export function MarketGrid({

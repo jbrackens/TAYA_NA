@@ -120,9 +120,10 @@ function normalizeMarketUpdateFields(
   };
 }
 
-const GLASS_SURFACE_CLASS =
-  // P10 (2026-07-12): the Liquid Glass surface is retired — system card.
-  "border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-card)]";
+// P11 (2026-07-12): the article page — no cards, no shadows. Modules sit
+// flat on the paper and open with a rubric over a rule.
+const RUBRIC_HEADING_CLASS =
+  "m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--t1)]";
 const MARKET_WRAP_CLASS = "text-[var(--t1)]";
 const MARKET_CRUMB_CLASS =
   "mb-[18px] flex flex-wrap items-center gap-2 text-[13px] text-[var(--t3)]";
@@ -138,101 +139,104 @@ const MARKET_TICKET_STICKY_CLASS =
 const MARKET_DATA_ROW_CLASS =
   "grid grid-cols-2 gap-6 pt-4 max-[720px]:grid-cols-1";
 const MARKET_DEPTH_DISCLOSURE_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[1100px]:order-3 max-[720px]:px-5";
+  "border-t border-[var(--border-2)] pt-3 font-sans max-[1100px]:order-3";
 const MARKET_DEPTH_SUMMARY_CLASS =
-  "cursor-pointer list-none text-sm font-semibold text-[var(--t2)] transition-colors duration-[120ms] hover:text-[var(--t1)] [&::-webkit-details-marker]:hidden";
+  "cursor-pointer list-none text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--t2)] transition-colors duration-[120ms] hover:text-[var(--t1)] [&::-webkit-details-marker]:hidden";
 const LIQUIDITY_CARD_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+  "border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans";
 const LIQUIDITY_HEAD_CLASS =
-  "mb-[14px] flex items-center justify-between border-b border-[var(--border-1)] pb-3";
+  "mb-[14px] flex items-baseline justify-between border-b border-[var(--border-1)] pb-2";
 const LIQUIDITY_TITLE_CLASS =
-  "text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
+  "text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--t1)]";
 const LIQUIDITY_BADGE_CLASS =
-  "rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-2 py-1 font-['IBM_Plex_Mono',_monospace] text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
-const LIQUIDITY_COPY_CLASS = "mb-4 text-[13px] leading-5 text-[var(--t2)]";
+  "border border-[var(--border-2)] px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
+const LIQUIDITY_COPY_CLASS =
+  "mb-4 max-w-[68ch] text-[13px] leading-5 text-[var(--t2)]";
 const LIQUIDITY_GRID_CLASS = "grid grid-cols-2 gap-3";
 const LIQUIDITY_METRIC_CLASS =
-  "rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2";
+  "border-t border-[var(--border-1)] px-0.5 pt-2";
 const LIQUIDITY_METRIC_LABEL_CLASS =
-  "mb-1 font-['IBM_Plex_Mono',_monospace] text-[10px] uppercase tracking-[0.12em] text-[var(--t3)]";
+  "mb-1 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--t3)]";
 const LIQUIDITY_METRIC_VALUE_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] text-[13px] font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
-const AMM_CURVE_CLASS =
-  "mt-4 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-3";
+  "font-mono text-[13px] font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
+const AMM_CURVE_CLASS = "mt-4 border-t border-[var(--border-1)] pt-3";
 const AMM_CURVE_ROW_CLASS = "mb-3 last:mb-0";
 const AMM_CURVE_HEAD_CLASS =
   "mb-2 flex items-center justify-between gap-3 text-[11px] text-[var(--t3)]";
 const AMM_CURVE_LABEL_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] text-[10px] uppercase text-[var(--t3)]";
+  "font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--t3)]";
 const AMM_CURVE_VALUE_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] text-[11px] font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
+  "font-mono text-[11px] font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
 const AMM_CURVE_TRACK_CLASS =
-  "relative flex h-3 overflow-hidden rounded-full border border-[var(--border-1)] bg-[var(--surface-3)]";
-const AMM_CURVE_YES_FILL_CLASS =
-  "h-full rounded-l-full bg-[color:var(--yes-bg)]";
+  "relative flex h-3 overflow-hidden border border-[var(--border-1)] bg-[var(--surface-3)]";
+const AMM_CURVE_YES_FILL_CLASS = "h-full bg-[color:var(--yes-bg)]";
 const AMM_CURVE_NO_FILL_CLASS = "h-full bg-[color:var(--no-bg)]";
 const AMM_CURVE_MARKER_CLASS =
-  "absolute top-[-3px] h-[18px] w-0.5 rounded-full bg-[var(--t1)] shadow-[0_0_0_2px_var(--surface-2)]";
+  "absolute top-[-3px] h-[18px] w-0.5 bg-[var(--t1)]";
 const AMM_CURVE_AXIS_CLASS =
-  "mt-1 flex items-center justify-between font-['IBM_Plex_Mono',_monospace] text-[10px] text-[var(--t3)]";
+  "mt-1 flex items-center justify-between font-mono text-[10px] text-[var(--t3)]";
 const AMM_RESERVE_TRACK_CLASS =
-  "flex h-3 overflow-hidden rounded-full border border-[var(--border-1)] bg-[var(--surface-3)]";
+  "flex h-3 overflow-hidden border border-[var(--border-1)] bg-[var(--surface-3)]";
 const AMM_RESERVE_YES_CLASS = "h-full bg-[color:var(--yes-bg)]";
 const AMM_RESERVE_NO_CLASS = "h-full bg-[color:var(--no-bg)]";
-const AMM_QUOTE_LIST_CLASS = "mt-2 flex flex-col gap-2";
+const AMM_QUOTE_LIST_CLASS = "mt-2 flex flex-col";
 const AMM_QUOTE_ROW_CLASS =
-  "grid grid-cols-[minmax(0,_1fr)_auto_auto] items-center gap-3 rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-2 max-[520px]:grid-cols-1 max-[520px]:gap-1";
+  "grid grid-cols-[minmax(0,_1fr)_auto_auto] items-center gap-3 border-t border-[var(--border-1)] px-0.5 py-2 max-[520px]:grid-cols-1 max-[520px]:gap-1";
 const AMM_QUOTE_LABEL_CLASS =
   "min-w-0 text-[12px] font-medium text-[var(--t1)]";
 const AMM_QUOTE_VALUE_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t2)] [font-variant-numeric:tabular-nums]";
+  "font-mono text-[11px] text-[var(--t2)] [font-variant-numeric:tabular-nums]";
+// P11: the hero card is retired — MarketHead (article head, heavy ink
+// rule) and MarketChart (print graphic) present themselves on the paper.
 const MARKET_HERO_CLASS =
-  "overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] max-[1100px]:order-1 [&>section:first-child]:mb-0 [&>section:first-child]:rounded-none [&>section:first-child]:border-0 [&>section:first-child]:bg-transparent [&>section:first-child]:px-7 [&>section:first-child]:pt-5 [&>section:first-child]:pb-0 [&>section:nth-child(2)]:rounded-none [&>section:nth-child(2)]:border-0 [&>section:nth-child(2)]:bg-transparent [&>section:nth-child(2)]:px-7 [&>section:nth-child(2)]:pt-3 [&>section:nth-child(2)]:pb-5 [&>section:nth-child(2)_svg]:h-[280px] max-[720px]:[&>section:first-child]:px-5 max-[720px]:[&>section:first-child]:pt-[18px] max-[720px]:[&>section:nth-child(2)]:px-5 max-[720px]:[&>section:nth-child(2)]:pt-2.5 max-[720px]:[&>section:nth-child(2)]:pb-4 max-[720px]:[&>section:nth-child(2)_svg]:h-[220px]";
+  "flex min-w-0 flex-col gap-4 max-[1100px]:order-1";
 const MARKET_DETAILS_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-6 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[1100px]:order-4";
-const MARKET_DETAILS_TITLE_CLASS =
-  "mb-3 text-base font-semibold tracking-[-0.01em] text-[var(--t1)]";
+  "border-t border-[var(--border-2)] pt-3 font-sans max-[1100px]:order-4";
+const MARKET_DETAILS_TITLE_CLASS = `${RUBRIC_HEADING_CLASS} mb-3`;
 const MARKET_DETAILS_COPY_CLASS =
-  "mb-2.5 text-sm leading-[1.6] text-[var(--t2)]";
+  "mb-2.5 max-w-[68ch] text-[15px] leading-[1.65] text-[var(--t2)]";
 const MARKET_RULES_CLASS =
   "mt-[14px] flex list-none flex-col gap-2 border-t border-[var(--border-1)] p-0 pt-[14px]";
+// Rule bullets carry a press-blue square marker — print furniture, not
+// app dots.
 const MARKET_RULE_CLASS =
-  "relative pl-[18px] text-[13px] leading-[1.5] text-[var(--t2)] before:absolute before:left-1 before:top-2 before:h-1.5 before:w-1.5 before:rounded-full before:bg-[var(--brand-dot)] before:content-['']";
+  "relative pl-[18px] text-[13px] leading-[1.5] text-[var(--t2)] before:absolute before:left-0.5 before:top-[7px] before:h-1.5 before:w-1.5 before:bg-[var(--brand-dot)] before:content-['']";
 const MARKET_SHARE_ROW_CLASS =
   "mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border-1)] pt-4";
 const MARKET_SHARE_BUTTON_CLASS =
-  "inline-flex min-h-9 items-center justify-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 text-xs font-bold text-[var(--t1)] transition-colors hover:border-[var(--border-2)] hover:bg-[var(--action-soft)]";
+  "inline-flex min-h-9 items-center justify-center border border-[var(--border-2)] bg-transparent px-3 text-xs font-bold text-[var(--t1)] transition-colors hover:bg-[var(--action-soft)]";
 const MARKET_SHARE_STATUS_CLASS = "text-xs text-[var(--t3)]";
+// Related markets — an editorial column of mini-briefs: rubric on a
+// heavy rule, hairline-separated rows, serif titles, wire figures.
 const RELATED_CARD_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[1100px]:order-6";
-const RELATED_TITLE_CLASS =
-  "mb-[14px] border-b border-[var(--border-1)] pb-3 text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
-const RELATED_EMPTY_CLASS = "text-xs text-[var(--t3)]";
+  "border-t-[3px] border-[var(--rule-ink)] pt-2 font-sans max-[1100px]:order-6";
+const RELATED_TITLE_CLASS = `${RUBRIC_HEADING_CLASS} mb-1`;
+const RELATED_EMPTY_CLASS = "pt-2 text-xs text-[var(--t3)]";
 const RELATED_LIST_CLASS = "flex flex-col";
 const RELATED_ROW_CLASS =
-  "group block border-t border-[var(--border-1)] py-3 no-underline first:border-t-0 first:pt-0 last:pb-0";
+  "group block border-b border-[var(--border-1)] py-3 no-underline last:border-b-0 last:pb-0";
 const RELATED_QUESTION_CLASS =
-  "mb-1.5 text-[13px] font-medium leading-[1.35] text-[var(--t1)] group-hover:underline";
+  "type-display mb-1.5 text-[15px] font-medium leading-[1.25] text-[var(--t1)] group-hover:underline";
 const RELATED_LINE_CLASS =
-  "flex items-center justify-between font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+  "flex items-baseline justify-between font-mono text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
 const RELATED_YES_CLASS = "font-semibold text-[var(--yes-text)]";
 const PAGE_STATE_WRAP_CLASS = "grid min-h-[60vh] place-items-center px-4 py-8";
-const PAGE_STATE_CARD_CLASS = `${GLASS_SURFACE_CLASS} w-[min(100%,440px)] rounded-[var(--r-rh-lg)] p-7 text-center text-[var(--t1)]`;
-const PAGE_STATE_EYEBROW_BASE_CLASS =
-  "mb-[14px] inline-flex min-h-7 items-center justify-center rounded-[var(--r-pill)] border px-3 text-[11px] font-bold uppercase tracking-[0.12em]";
+// P11 page states — no card, no pill: a heavy ink rule, a rubric, a
+// serif line, sitting directly on the paper.
+const PAGE_STATE_CARD_CLASS =
+  "w-[min(100%,480px)] border-t-[3px] border-[var(--rule-ink)] pt-3 text-left text-[var(--t1)]";
 const PAGE_STATE_TITLE_CLASS =
-  "m-0 text-[22px] font-extrabold tracking-[-0.01em]";
+  "type-display m-0 text-balance text-[26px] font-medium leading-[1.15]";
 const PAGE_STATE_COPY_CLASS =
   "mt-2.5 mb-0 text-sm leading-[1.5] text-[var(--t2)]";
-// P10: the glass-era mint-gradient CTA is retired — ink action.
+// P10: the glass-era mint-gradient CTA is retired — ink action (P11:
+// flat, square, no hover lift).
 const PAGE_STATE_ACTION_CLASS =
-  "mt-[22px] inline-flex min-h-11 items-center justify-center rounded-[var(--r-rh-md)] border-0 bg-[var(--action)] px-5 text-sm font-bold text-(--action-fg) no-underline transition-[transform,background-color] duration-[180ms] ease-[ease] hover:-translate-y-px hover:bg-[var(--action-hover)]";
+  "mt-[22px] inline-flex min-h-11 items-center justify-center border-0 bg-[var(--action)] px-5 text-sm font-bold text-(--action-fg) no-underline transition-colors duration-[120ms] hover:bg-[var(--action-hover)]";
 
 function pageStateEyebrowClass(isError: boolean): string {
-  return `${PAGE_STATE_EYEBROW_BASE_CLASS} ${
-    isError
-      ? "border-[rgba(255,155,107,0.28)] bg-[rgba(255,155,107,0.08)] text-[var(--no)]"
-      : "border-[rgba(43,228,128,0.28)] bg-[rgba(43,228,128,0.08)] text-[var(--accent)]"
+  return `mb-3 block text-[11px] font-bold uppercase tracking-[0.14em] ${
+    isError ? "text-[var(--no-text)]" : "text-[var(--t3)]"
   }`;
 }
 
@@ -1186,9 +1190,9 @@ export default function MarketDetailPage() {
                 },
               ].map((step) => (
                 <li key={step.label} className="min-w-0">
-                  <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--t3)]">
+                  <div className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--t3)]">
                     <span
-                      className="h-1.5 w-1.5 rounded-full bg-[var(--brand-dot)]"
+                      className="h-1.5 w-1.5 bg-[var(--brand-dot)]"
                       aria-hidden="true"
                     />
                     {step.label}

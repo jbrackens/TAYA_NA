@@ -2,8 +2,9 @@
 
 /**
  * AllMarketsSection — paginated grid of open prediction markets, owning
- * its own filter state. The section header exposes category tabs, search,
- * sort, and closing-window filters. No title — the layout is self-evident.
+ * its own filter state. P11: the browse desk — an "ALL MARKETS" rubric on
+ * a heavy ink rule, editorial text-tab filters (category, sort, watchlist,
+ * closing window), a square wire search input, and mono taxonomy links.
  *
  * Both filters scope only this section (NOT the hero, Top Movers, or
  * Featured). They compose: pick "Politics" + "1D" = political markets
@@ -72,89 +73,98 @@ const TIME_PILLS: { value: DateWindow; labelKey?: string; label?: string }[] = [
   { value: "30d", label: "1M" },
 ];
 
+// P11 "Standing Question": the browse desk. A rubric on a heavy ink rule
+// heads the section; every control is editorial text furniture — small-caps
+// text tabs with an ink underline for the active state, a square wire
+// search input, plain mono taxonomy links. No pills, no fills, no rounding.
+const SECTION_HEAD_CLASS =
+  "mt-10 border-t-[3px] border-[var(--rule-ink)] pt-2 max-[768px]:mt-8";
+const SECTION_TITLE_CLASS =
+  "m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--t1)]";
+
 const FILTER_HEAD_CLASS =
-  "mt-8 mb-[18px] flex flex-wrap items-center justify-between gap-4 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[768px]:mt-6 max-[768px]:mb-4 max-[768px]:flex-col max-[768px]:flex-nowrap max-[768px]:items-stretch max-[768px]:justify-start max-[768px]:gap-2.5";
+  "mt-3 mb-[18px] flex flex-wrap items-center justify-between gap-4 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[768px]:mb-4 max-[768px]:flex-col max-[768px]:flex-nowrap max-[768px]:items-stretch max-[768px]:justify-start max-[768px]:gap-2.5";
 
 const CATEGORY_LIST_CLASS =
-  "flex items-center gap-6 border-b border-neutral-200 w-full max-[768px]:mx-[-16px] max-[768px]:w-[calc(100%+32px)] max-[768px]:flex-[0_0_auto] max-[768px]:flex-row max-[768px]:flex-nowrap max-[768px]:overflow-x-auto max-[768px]:overflow-y-hidden max-[768px]:whitespace-nowrap max-[768px]:px-4 max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
+  "flex items-center gap-6 border-b border-[var(--border-1)] w-full max-[768px]:mx-[-16px] max-[768px]:w-[calc(100%+32px)] max-[768px]:flex-[0_0_auto] max-[768px]:flex-row max-[768px]:flex-nowrap max-[768px]:overflow-x-auto max-[768px]:overflow-y-hidden max-[768px]:whitespace-nowrap max-[768px]:px-4 max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
 
 const CATEGORY_PILL_BASE_CLASS =
-  "relative cursor-pointer appearance-none bg-transparent pb-3 pt-2 text-sm font-medium border-b-2 transition-all duration-200 [font-family:inherit] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
+  "relative cursor-pointer appearance-none bg-transparent pb-3 pt-2 text-[11px] font-bold uppercase tracking-[0.14em] border-0 border-b-2 transition-colors duration-150 [font-family:inherit] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
 
 const TIME_PILLS_CLASS =
-  "inline-flex shrink-0 gap-1 rounded-md border border-[var(--border-1)] bg-[rgba(26,26,26,0.04)] p-[3px] max-[768px]:max-w-full max-[768px]:self-start max-[768px]:overflow-x-auto max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
+  "inline-flex shrink-0 items-baseline gap-4 max-[768px]:max-w-full max-[768px]:self-start max-[768px]:overflow-x-auto max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
 
 const TIME_PILL_BASE_CLASS =
-  "min-w-11 cursor-pointer appearance-none rounded-md border-0 px-[14px] py-1.5 [font-family:inherit] text-xs font-semibold transition-colors duration-[120ms] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
+  "cursor-pointer appearance-none bg-transparent border-0 border-b-2 px-0.5 pb-1.5 pt-1 [font-family:inherit] text-[11px] font-bold uppercase tracking-[0.14em] transition-colors duration-[120ms] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
 
 const DISCOVERY_CONTROLS_CLASS =
-  "flex w-full flex-wrap items-center justify-between gap-3 max-[768px]:items-stretch";
+  "flex w-full flex-wrap items-center justify-between gap-x-5 gap-y-3 max-[768px]:items-stretch";
 const SEARCH_INPUT_CLASS =
-  "min-h-10 min-w-[260px] flex-1 rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 text-sm text-[var(--t1)] outline-none transition-colors duration-[120ms] placeholder:text-[var(--t3)] focus:border-[var(--accent-lo)] max-[768px]:min-w-0";
+  "min-h-10 min-w-[260px] flex-1 border border-[var(--border-2)] bg-[var(--surface-2)] px-3 font-mono text-[13px] text-[var(--t1)] outline-none transition-colors duration-[120ms] [font-variant-numeric:tabular-nums] placeholder:text-[var(--t4)] focus:border-[var(--focus-ring)] max-[768px]:min-w-0";
 const WATCHLIST_FILTER_CLASS =
-  "min-h-10 rounded-md border px-3 text-sm font-semibold transition-colors duration-[120ms]";
+  "min-h-10 cursor-pointer appearance-none bg-transparent border-0 border-b-2 px-0.5 text-[11px] font-bold uppercase tracking-[0.14em] transition-colors duration-[120ms]";
 const TAXONOMY_PANEL_CLASS = "grid w-full gap-2.5";
-const TAXONOMY_GROUP_CLASS = "flex flex-wrap items-center gap-x-3 gap-y-2";
+const TAXONOMY_GROUP_CLASS = "flex flex-wrap items-baseline gap-x-3 gap-y-2";
 const TAXONOMY_LABEL_CLASS =
-  "shrink-0 font-['IBM_Plex_Mono',_monospace] text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
-const TAXONOMY_LIST_CLASS = "flex flex-wrap items-center gap-2";
+  "shrink-0 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--t3)]";
+const TAXONOMY_LIST_CLASS = "flex flex-wrap items-baseline gap-x-4 gap-y-1.5";
 const TAXONOMY_LINK_CLASS =
-  "rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-2.5 py-1.5 text-[12px] font-semibold text-[var(--t2)] no-underline transition-colors hover:border-[var(--accent-lo)] hover:text-[var(--accent-text)]";
+  "font-mono text-[12px] font-medium text-[var(--t2)] no-underline underline-offset-2 transition-colors hover:text-[var(--accent-text)] hover:underline";
 const TAG_BUTTON_BASE_CLASS =
-  "cursor-pointer appearance-none rounded-md border px-2.5 py-1.5 text-[12px] font-semibold transition-colors";
+  "cursor-pointer appearance-none border-0 bg-transparent p-0 font-mono text-[12px] font-medium underline-offset-2 transition-colors";
 
-const LOAD_MORE_CLASS = "mt-6 mb-0 flex justify-center";
+const LOAD_MORE_CLASS = "mt-8 mb-0 flex justify-center";
 
 const LOAD_MORE_BUTTON_CLASS =
-  "cursor-pointer appearance-none rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-3 font-['Inter',_sans-serif] text-sm font-semibold text-[var(--t1)] transition-colors duration-[120ms] [&:not(:disabled):hover]:border-[rgba(43,228,128,0.5)] [&:not(:disabled):hover]:bg-[var(--surface-2)] [&:not(:disabled):hover]:text-[var(--accent-text)] disabled:cursor-not-allowed disabled:opacity-[0.55]";
+  "cursor-pointer appearance-none border border-[var(--border-2)] bg-transparent px-8 py-3 font-['Inter',_sans-serif] text-[13px] font-semibold text-[var(--t1)] transition-colors duration-[120ms] [&:not(:disabled):hover]:bg-[var(--action-soft)] disabled:cursor-not-allowed disabled:opacity-[0.55]";
 
 const FEED_WITH_SUBNAV_CLASS =
-  "grid grid-cols-4 items-start gap-4 max-[1120px]:grid-cols-1";
+  "grid grid-cols-4 items-start gap-6 max-[1120px]:grid-cols-1 max-[1120px]:gap-4";
 const FEED_MARKETS_CLASS = "col-span-3 min-w-0 max-[1120px]:col-span-1";
 const SUBNAV_CLASS =
   "sticky top-4 self-start border-l border-[var(--border-1)] pl-4 max-[1120px]:order-first max-[1120px]:sticky max-[1120px]:top-0 max-[1120px]:border-b max-[1120px]:border-l-0 max-[1120px]:pb-3 max-[1120px]:pl-0";
 const SUBNAV_LABEL_CLASS =
-  "mb-3 font-['IBM_Plex_Mono',_monospace] text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--t3)]";
+  "mb-3 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--t3)]";
 const SUBNAV_LIST_CLASS =
-  "flex flex-col items-stretch gap-1 max-[1120px]:flex-row max-[1120px]:overflow-x-auto max-[1120px]:[scrollbar-width:none] max-[1120px]:[-ms-overflow-style:none] max-[1120px]:[-webkit-overflow-scrolling:touch] max-[1120px]:[&::-webkit-scrollbar]:hidden";
+  "flex flex-col items-stretch gap-1 max-[1120px]:flex-row max-[1120px]:gap-4 max-[1120px]:overflow-x-auto max-[1120px]:[scrollbar-width:none] max-[1120px]:[-ms-overflow-style:none] max-[1120px]:[-webkit-overflow-scrolling:touch] max-[1120px]:[&::-webkit-scrollbar]:hidden";
 const SUBNAV_BUTTON_BASE_CLASS =
-  "cursor-pointer appearance-none rounded-md border-0 px-3 py-2 text-left [font-family:inherit] text-[13px] transition-colors duration-[120ms] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[1120px]:flex-[0_0_auto]";
+  "cursor-pointer appearance-none border-0 bg-transparent px-0 py-2 text-left [font-family:inherit] text-[13px] transition-colors duration-[120ms] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[1120px]:flex-[0_0_auto] max-[1120px]:whitespace-nowrap";
 
-const EMPTY_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-14 text-center";
+const EMPTY_CLASS = "border border-[var(--border-1)] p-14 text-center";
 
-const EMPTY_TITLE_CLASS = "m-0 text-[18px] font-bold text-[var(--t1)]";
+const EMPTY_TITLE_CLASS =
+  "type-display m-0 text-[18px] font-medium text-[var(--t1)]";
 const EMPTY_TEXT_CLASS = "mt-2 mb-0 text-[13px] text-[var(--t3)]";
 
 function categoryPillClass(active: boolean): string {
   return `${CATEGORY_PILL_BASE_CLASS} ${
     active
-      ? "text-[var(--accent-text)] font-semibold border-[var(--accent-lo)]"
-      : "text-neutral-500 border-transparent hover:text-neutral-800 hover:border-neutral-300"
+      ? "text-[var(--t1)] border-[var(--rule-ink)]"
+      : "text-[var(--t3)] border-transparent hover:text-[var(--t1)]"
   }`;
 }
 
 function timePillClass(active: boolean): string {
   return `${TIME_PILL_BASE_CLASS} ${
     active
-      ? "bg-[var(--yes)] text-[#061a10]"
-      : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)]"
+      ? "text-[var(--t1)] border-[var(--rule-ink)]"
+      : "text-[var(--t3)] border-transparent hover:text-[var(--t1)]"
   }`;
 }
 
 function subcategoryButtonClass(active: boolean): string {
   return `${SUBNAV_BUTTON_BASE_CLASS} ${
     active
-      ? "bg-[var(--yes)] font-semibold text-[#061a10]"
-      : "bg-transparent font-medium text-[var(--t2)] hover:bg-[rgba(26,26,26,0.05)] hover:text-[var(--t1)]"
+      ? "font-semibold text-[var(--t1)] underline underline-offset-4"
+      : "font-medium text-[var(--t2)] hover:text-[var(--t1)]"
   }`;
 }
 
 function tagButtonClass(active: boolean): string {
   return `${TAG_BUTTON_BASE_CLASS} ${
     active
-      ? "border-[var(--accent-lo)] bg-[var(--accent-soft)] text-[var(--accent-text)]"
-      : "border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t2)] hover:border-[var(--accent-lo)] hover:text-[var(--accent-text)]"
+      ? "text-[var(--accent-text)] underline"
+      : "text-[var(--t2)] hover:text-[var(--accent-text)] hover:underline"
   }`;
 }
 
@@ -458,6 +468,11 @@ export function AllMarketsSection({ categories }: Props) {
 
   return (
     <>
+      <div className={SECTION_HEAD_CLASS}>
+        <h2 className={SECTION_TITLE_CLASS}>
+          {t("ALL_MARKETS", "All markets")}
+        </h2>
+      </div>
       <header className={FILTER_HEAD_CLASS}>
         <nav
           className={CATEGORY_LIST_CLASS}
@@ -529,8 +544,8 @@ export function AllMarketsSection({ categories }: Props) {
             type="button"
             className={`${WATCHLIST_FILTER_CLASS} ${
               showWatchlistOnly
-                ? "border-[var(--accent-lo)] bg-[var(--accent-soft)] text-[var(--accent-text)]"
-                : "border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--accent-lo)] hover:text-[var(--accent-text)]"
+                ? "border-[var(--rule-ink)] text-[var(--t1)]"
+                : "border-transparent text-[var(--t3)] hover:text-[var(--t1)]"
             }`}
             aria-pressed={showWatchlistOnly}
             onClick={() => setShowWatchlistOnly((value) => !value)}

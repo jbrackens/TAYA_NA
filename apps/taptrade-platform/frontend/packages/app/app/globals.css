@@ -14,21 +14,20 @@
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-/* ── P10 type system (2026-07-12) ────────────────────────────────────
- * Exactly two primary families + a tabular-numeral mono, all self-hosted
- * (no render-blocking Google Fonts stylesheet, no cross-origin fetch):
+/* ── P11 "Standing Question" type system (2026-07-12, owner-directed
+ * full editorial reset) ──────────────────────────────────────────────
+ * Exactly two primary families + a tabular-numeral mono, self-hosted:
  *
- *   Display — Bricolage Grotesque (OFL, variable 200–800 with optical
- *     sizes 12–96). Speaks on hero price, market questions in heroes,
- *     section headings, big stat values via `.type-display` only. Real
- *     ink traps at display sizes give the app the ownable voice Clash
- *     Display (now a documented 2026 template tell) no longer could.
+ *   Display — Newsreader (OFL, variable opsz 6–72 / wght 200–800,
+ *     roman + italic). The editorial voice: market questions are
+ *     headlines, section rubrics are small caps, standfirsts are
+ *     italic. Speaks via `.type-display` / `.type-standfirst` only.
  *   UI/body — Inter (variable 400–800). Never display, never brand.
- *   Data — IBM Plex Mono 400–700, tabular numerals.
+ *   Data — IBM Plex Mono 400–700: prices, tickers, tables — the wire
+ *     vocabulary that keeps the broadsheet tradable.
  *
- * Legacy loads removed in the same pass: Outfit, Space Grotesk,
- * Inter Tight, Schibsted Grotesk, Clash Display. The wordmark no longer
- * renders from a font at all — it is drawn vector art (BrandWordmark).
+ * Bricolage Grotesque (P10) is retired; the serif-headline + mono-price
+ * juxtaposition IS the identity now.
  */
 @font-face {
   font-family: "Inter";
@@ -38,11 +37,18 @@
   font-style: normal;
 }
 @font-face {
-  font-family: "Bricolage Grotesque";
-  src: url("/fonts/BricolageGrotesque-var.woff2") format("woff2");
+  font-family: "Newsreader";
+  src: url("/fonts/Newsreader-var.woff2") format("woff2");
   font-weight: 200 800;
   font-display: swap;
   font-style: normal;
+}
+@font-face {
+  font-family: "Newsreader";
+  src: url("/fonts/Newsreader-italic.woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: swap;
+  font-style: italic;
 }
 @font-face {
   font-family: "IBM Plex Mono";
@@ -74,12 +80,30 @@
 }
 
 :root {
-  --font-display: "Bricolage Grotesque", "Inter", -apple-system, sans-serif;
+  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
 }
 
 .type-display {
   font-family: var(--font-display);
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
+  font-optical-sizing: auto;
+}
+
+/* Editorial standfirst — the italic deck line under a headline. */
+.type-standfirst {
+  font-family: var(--font-display);
+  font-style: italic;
+  letter-spacing: 0;
+  font-optical-sizing: auto;
+}
+
+/* Editorial rubric — small-caps section labels ("CLOSING TODAY"). */
+.type-rubric {
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 @source "./";
@@ -139,7 +163,7 @@ body {
    * legacy call sites but resolves to none.
    * Legacy --bg-{navy,teal,mint,azure} retained per P6 carry-forward
    * policy until each consuming surface migrates off them. */
-  --bg-deep: #ffffff;
+  --bg-deep: #faf7f2; /* P11 bone paper (owner-directed editorial reset) */
 
   /* P9: the chart-paper grid is retired. Decoration budget moves to
    * typography, hairlines, and shadow depth. Page stays bare white. */
@@ -153,39 +177,38 @@ body {
    *   --t4 4.5:1 (white) — the ramp's floor; still prohibited below
    *   14px for content per DESIGN.md §8. Decorative-only gray moved to
    *   --t-ghost (2.3:1, NEVER for text). */
-  --t1: #0d1114;
-  --t2: #454c54;
-  --t3: #646c76;
-  --t4: #767e87;
-  --t-ghost: #a6adb5;
+  /* P11 warm editorial inks on bone (AA re-verified: t1 15.6:1, t2 8.2:1,
+   * t3 5.0:1, t4 4.6:1 on --bg-deep). */
+  --t1: #1a1712;
+  --t2: #474136;
+  --t3: #675f50;
+  --t4: #6f6858;
+  --t-ghost: #a9a293;
 
   /* Accent (mint emerald — brand channel). Replaces neon-lime #39ff14.
    * --accent-glow is kept as a COMPLETE box-shadow declaration so the
    * 17 existing `box-shadow: var(--accent-glow)` call sites still work.
    * Use --accent-glow-color if you need just the color. (D1.) */
-  --accent: #2be480;
-  --accent-lo: #1fa65e;
-  --accent-text: #0f8a4f; /* P9: mint as TEXT on white (AA 4.9:1); --accent stays fill-only */
-  --accent-soft: rgba(43, 228, 128, 0.14);
-  --accent-glow-color: rgba(
-    43,
-    228,
-    128,
-    0.45
-  ); /* last consumer: portfolio accuracy flourish */
+  /* P11: the accent channel is PRESS BLUE — the single non-semantic
+   * color in the system (links, active states, the brand period, LIVE
+   * tags). Mint is fully retired. */
+  --accent: #2447d6;
+  --accent-lo: #1e3db8;
+  --accent-text: #1e3fbe; /* AA on bone (6.1:1) */
+  --accent-soft: rgba(36, 71, 214, 0.08);
+  --accent-glow-color: rgba(36, 71, 214, 0.3); /* last consumer: portfolio accuracy flourish */
 
   /* Brand identity — TapTrade wordmark + mark (2026-06-06, "B / grotesque"
    * direction; replaces the retired chart-line mark). Deep-forest wordmark
    * with a mint "period" signature; the split-T mark sits on the forest tile.
    * Brand color is its own layer — NOT --accent (CTA mint) or --yes (signal). */
-  --brand-ink: #0b4332; /* wordmark on light (~10:1 on --bg-deep) + mark tile */
-  --brand-period: #10c8a0; /* the period signature + mark dot (mint) */
-  --brand-dot: var(
-    --brand-period
-  ); /* the tap dot — P10 alias, one name for the kinetic signature */
-  --brand-fg: #f8f9fa; /* the split-T sitting on the forest tile (light) */
-  --brand-on-dark: #f1ece3; /* wordmark on dark surfaces (ivory) */
-  --brand-period-dark: #2fe0a8; /* brighter mint period on dark */
+  /* P11 masthead identity: ink wordmark, press-blue terminal period. */
+  --brand-ink: #1a1712; /* masthead ink on bone */
+  --brand-period: #2447d6; /* the oversized terminal period (press blue) */
+  --brand-dot: var(--brand-period); /* one name for the period signature */
+  --brand-fg: #faf7f2; /* glyph on ink tiles */
+  --brand-on-dark: #f1ece3; /* masthead on dark surfaces (ivory) */
+  --brand-period-dark: #7e96ff; /* readable period on ink */
 
   /* ── P10 action layer (2026-07-12): primary actions are INK. ──────
    * Signal Ink rule: "ink speaks, the dot moves, color means." Colored
@@ -196,11 +219,11 @@ body {
    * State grammar is non-color (judge condition #3): hover deepens +
    * lifts, focus uses --focus-ring, disabled drops to 45% opacity with
    * its label explaining why (existing ticket pattern). */
-  --action: #0d1114;
-  --action-hover: #262d34;
-  --action-fg: #ffffff;
-  --action-soft: rgba(13, 17, 20, 0.07);
-  --action-soft-hover: rgba(13, 17, 20, 0.12);
+  --action: #1a1712;
+  --action-hover: #332e26;
+  --action-fg: #fffdf8;
+  --action-soft: rgba(26, 23, 18, 0.06);
+  --action-soft-hover: rgba(26, 23, 18, 0.11);
 
   /* Semantic (data layer). YES is seafoam green, NO is coral
    * (DESIGN.md §3). Keep brand mint on CTA/identity; these are
@@ -211,20 +234,24 @@ body {
    * at a glance, (b) saturated red/green caused eye fatigue at chart
    * scale, and (c) calm cool/warm complementary colors sit naturally
    * on the cool teal backdrop without fighting it. */
-  --yes: #5fe9ac;
-  --yes-soft: rgba(24, 176, 116, 0.1);
-  --yes-border: rgba(24, 176, 116, 0.28);
-  --yes-text: #0e7a52; /* AA on white (5.3:1) and --surface-2 (5.1:1) */
-  --yes-bar: #8fe5c4; /* paler seafoam for probability bar segments */
-  --no: #ff8368;
-  --no-soft: rgba(226, 84, 46, 0.09);
-  --no-border: rgba(226, 84, 46, 0.26);
-  --no-text: #b8401f; /* AA on white (5.0:1) and --surface-2 (4.8:1) */
-  --no-bar: #f4a990; /* paler coral for probability bar segments */
-  --focus-ring: #0e7a53; /* dark mint, AA non-text on white (6.0:1) */
+  /* P11 print-calibrated movement colors: deep enough to print, always
+   * paired with text labels. Strokes are the deep tones (charts read as
+   * print graphics, not neon). */
+  --yes: #157a52;
+  --yes-soft: rgba(21, 122, 82, 0.09);
+  --yes-border: rgba(21, 122, 82, 0.32);
+  --yes-text: #0d6b45; /* AA on bone (5.2:1) */
+  --yes-bar: #a9d4bf;
+  --no: #b8481f;
+  --no-soft: rgba(184, 72, 31, 0.08);
+  --no-border: rgba(184, 72, 31, 0.3);
+  --no-text: #a03c17; /* AA on bone (5.3:1) */
+  --no-bar: #e3b49c;
+  --focus-ring: #2447d6; /* press blue, AA non-text on bone (5.6:1) */
 
-  /* --live is the only warm color outside --no. Distinct, redder, pulses. */
-  --live: #ff6b6b;
+  /* P11: LIVE is a wire tag, not an alarm — press blue, and it does not
+   * pulse ("nothing blinks"). */
+  --live: #2447d6;
 
   /* Deprecation aliases retired in Phase 5 (2026-04-25): --gain, --whale,
    * and --whale-soft are gone. Phase 4 retired WhaleTicker / WhaleActivityCard
@@ -244,11 +271,14 @@ body {
   --tier-5: #8b5cf6; /* Legend — violet */
 
   /* Radius (glass-friendly; bumped from the prior 6/12/20 flat scale) */
-  --r-sm: 10px;
-  --r-md: 16px;
-  --r-lg: 22px;
-  --r-xl: 28px;
-  --r-pill: 999px;
+  /* P11 editorial radii: print boxes are square-cornered. --r-pill is
+   * now a rectangle tag radius (delta chips, rubric tags read as print
+   * furniture, not pills). Circular elements use rounded-full directly. */
+  --r-sm: 2px;
+  --r-md: 3px;
+  --r-lg: 4px;
+  --r-xl: 6px;
+  --r-pill: 3px;
 
   /* ────────────────────────────────────────────────────────────────
    * Robinhood-direction surfaces (added 2026-04-26, see DESIGN.md §4).
@@ -256,29 +286,26 @@ body {
    * MarketCard, AllMarketsSection). Pre-P2 components keep using the
    * --glass-* tokens above until their phase migrates them.
    * ──────────────────────────────────────────────────────────────── */
-  --surface-1: #ffffff;
-  --surface-2: #f6f7f8;
-  --border-1: #e9ebed;
-  --border-2: #d8dbdf;
+  --surface-1: #fffdf8; /* lifted paper (slips, panels) */
+  --surface-2: #f2ede2; /* recessed wash */
+  --border-1: #e4ddcd; /* warm hairline rule */
+  --border-2: #c6bda8; /* strong rule */
+  --rule-ink: #1a1712; /* the heavy editorial rule (section tops, masthead) */
 
-  /* P9 elevation — white-on-white needs a shadow recipe, not tinted
-   * surfaces. Two quiet layers: a contact line + a soft ambient falloff.
-   * Cards sit on --shadow-card; interactive cards lift to -hover on
-   * pointer; menus/popovers use -pop. Never colored, never glowing. */
-  --shadow-card:
-    0 1px 2px rgba(13, 17, 20, 0.04), 0 12px 32px -16px rgba(13, 17, 20, 0.1);
-  --shadow-card-hover:
-    0 2px 4px rgba(13, 17, 20, 0.05), 0 18px 44px -16px rgba(13, 17, 20, 0.14);
-  --shadow-pop:
-    0 2px 6px rgba(13, 17, 20, 0.06), 0 24px 56px -20px rgba(13, 17, 20, 0.18);
+  /* P11 elevation: print sits FLAT — hierarchy comes from rules and
+   * type, not floating panels. Card shadows resolve to nothing (the
+   * ~40 shadow-[var(--shadow-card)] call sites inherit flatness); only
+   * ephemeral overlays (menus, toasts, search results) keep a soft warm
+   * shadow so they read as ABOVE the page they interrupt. */
+  --shadow-card: 0 0 0 rgba(0, 0, 0, 0);
+  --shadow-card-hover: 0 0 0 rgba(0, 0, 0, 0);
+  --shadow-pop: 0 2px 6px rgba(40, 33, 20, 0.08), 0 20px 48px -18px rgba(40, 33, 20, 0.22);
 
-  /* Robinhood radii (less bubbly than glass). Co-existing with the
-   * glass scale above during the P2-P6 migration. New components
-   * reference --r-rh-*; old components keep --r-sm/md/lg/xl. */
-  --r-rh-sm: 8px;
-  --r-rh-md: 12px;
-  --r-rh-lg: 16px;
-  --r-rh-xl: 20px;
+  /* P11 editorial radii: near-square print boxes. */
+  --r-rh-sm: 2px;
+  --r-rh-md: 3px;
+  --r-rh-lg: 4px;
+  --r-rh-xl: 6px;
 }
 
 /* P9 page background: bare gallery white. The P8 chart-paper grid is
@@ -791,6 +818,20 @@ body {
     transform: scale(1);
     opacity: 1;
   }
+}
+
+/* P11 "nothing blinks" (owner-directed editorial reset, 2026-07-12):
+ * ambient attention-pulls are banned — LIVE dots, chart endpoints, and
+ * any decorative pulse render static. State-communicating motion (the
+ * loader, one-shot confirms, slide transitions) stays. This globally
+ * neuters Tailwind's pulse/ping utilities; delete these overrides if a
+ * future direction re-permits ambient motion. */
+.animate-pulse {
+  animation: none;
+}
+.animate-ping {
+  animation: none;
+  opacity: 0 !important;
 }
 
 /* Reduced motion: freeze CTA shimmer, slider shimmer, LIVE pulse, and

@@ -200,5 +200,8 @@
   "FEES": "Fees",
   "PRICE_MOVED": "Price moved {{from}}¢ → {{to}}¢",
   "RESOLVES_BY": "Resolves by {{source}}",
-  "SEARCH_MARKETS": "Search markets"
+  "SEARCH_MARKETS": "Search markets",
+  "LEAD_STORY": "Lead story",
+  "CHART_SOURCE_LINE": "Source: TapTrade order flow · today",
+  "EDITION_LINE": "Live prediction markets · play points only"
 }

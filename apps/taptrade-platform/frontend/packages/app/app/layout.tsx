@@ -28,7 +28,7 @@ export default function RootLayout({
         />
         <link
           rel="preload"
-          href="/fonts/BricolageGrotesque-var.woff2"
+          href="/fonts/Newsreader-var.woff2"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
