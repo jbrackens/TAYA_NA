@@ -3,6 +3,8 @@ package prediction
 import (
 	"strings"
 	"testing"
+
+	"github.com/lib/pq"
 )
 
 // The publication gate lives in buildMarketWhere: player-facing market queries
@@ -95,6 +97,57 @@ func TestBuildMarketWhereIncludesLaunchScrubbedWhenOptedIn(t *testing.T) {
 	where, _ := buildMarketWhere(MarketFilter{IncludeUnopened: true, IncludeLaunchScrubbed: true})
 	if strings.Contains(where, `\yredeemable\y`) || strings.Contains(where, `NOT (m.title`) {
 		t.Fatalf("IncludeLaunchScrubbed=true must not add the exclusion; got WHERE %q", where)
+	}
+}
+
+// The ids filter (batched hydration) is a WHERE condition like any other:
+// it must compose with — never bypass — the unopened and launch-scrub gates.
+
+func TestBuildMarketWhereFiltersByIDSet(t *testing.T) {
+	where, args := buildMarketWhere(MarketFilter{IDs: []string{"mkt-1", "mkt-2"}})
+	// Text comparison, not a uuid cast: a malformed public ?ids= value must
+	// yield zero rows, not error the whole query.
+	if !strings.Contains(where, "m.id::text = ANY($1)") {
+		t.Fatalf("ids filter should bind a text ANY() predicate at $1; got WHERE %q", where)
+	}
+	if !strings.Contains(where, "status <> 'unopened'") {
+		t.Fatalf("ids filter must still exclude unopened markets; got WHERE %q", where)
+	}
+	if !strings.Contains(where, "NOT (m.title") || !strings.Contains(where, `\yredeemable\y`) {
+		t.Fatalf("ids filter must still apply the launch-scrub regex; got WHERE %q", where)
+	}
+	if len(args) != 1 {
+		t.Fatalf("expected a single array arg, got %#v", args)
+	}
+	arr, ok := args[0].(*pq.StringArray)
+	if !ok {
+		t.Fatalf("ids arg should be a pq.StringArray, got %T", args[0])
+	}
+	if len(*arr) != 2 || (*arr)[0] != "mkt-1" || (*arr)[1] != "mkt-2" {
+		t.Fatalf("ids arg should carry the requested ids, got %#v", *arr)
+	}
+}
+
+func TestBuildMarketWhereEmptyIDSetAddsNoCondition(t *testing.T) {
+	where, args := buildMarketWhere(MarketFilter{IDs: []string{}})
+	if strings.Contains(where, "ANY(") {
+		t.Fatalf("empty ids slice must not add an ANY() condition; got WHERE %q", where)
+	}
+	if len(args) != 0 {
+		t.Fatalf("empty ids slice must bind no args, got %#v", args)
+	}
+}
+
+func TestBuildMarketWhereIDSetKeepsArgPositionsForLaterFilters(t *testing.T) {
+	// The ids predicate binds first; a status filter that follows must land
+	// at $2 so the composed query stays positionally correct.
+	s := MarketStatusOpen
+	where, args := buildMarketWhere(MarketFilter{IDs: []string{"mkt-1"}, Status: &s})
+	if !strings.Contains(where, "m.id::text = ANY($1)") || !strings.Contains(where, "m.status = $2") {
+		t.Fatalf("ids should bind at $1 and status at $2; got WHERE %q", where)
+	}
+	if len(args) != 2 {
+		t.Fatalf("expected array + status args, got %#v", args)
 	}
 }
 

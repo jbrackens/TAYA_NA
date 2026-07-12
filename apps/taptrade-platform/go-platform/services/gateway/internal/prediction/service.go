@@ -1245,6 +1245,13 @@ func (s *Service) finalizeRestingExchangeOrder(ctx context.Context, exchangeWall
 		return fmt.Errorf("exchange order finalizer unavailable")
 	}
 	reservedPoints, capturedPoints, placedAt, err := finalizer.FinalizeRestingOrderAtomic(ctx, exchangeWallet, order, terminal)
+	if errors.Is(err, ErrOrderAlreadyTerminal) {
+		// Lost the race to a concurrent fill/cancel/expiry: the winner's tx
+		// already settled reservations and RG accounting, and the finalize tx
+		// rolled back without touching them. Same idempotent no-op contract
+		// as cancelling an already-terminal order.
+		return nil
+	}
 	if err != nil {
 		return err
 	}
@@ -1395,7 +1402,10 @@ func (s *Service) ResolveDispute(ctx context.Context, disputeID string, uphold b
 // --- Market Trades ---
 
 func (s *Service) ListTrades(ctx context.Context, marketID string, limit int) ([]Trade, error) {
-	if limit <= 0 || limit > 100 {
+	// Ceiling matches the documented API contract (openapi.yaml: limit
+	// maximum 200) and the handler's clamp — the previous >100 reset
+	// silently turned limit=101..200 requests into 50 rows.
+	if limit <= 0 || limit > 200 {
 		limit = 50
 	}
 	return s.repo.ListTrades(ctx, marketID, limit)

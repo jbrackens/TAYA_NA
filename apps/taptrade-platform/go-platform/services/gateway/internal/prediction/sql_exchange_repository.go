@@ -222,6 +222,11 @@ func (r *SQLRepository) FinalizeRestingOrderAtomic(
 	if terminal == OrderStatusCancelled {
 		cancelledAt = now
 	}
+	// Status guard: only a still-resting order may be finalized. Without it,
+	// a fill committing between the caller's pre-check and this tx would be
+	// silently overwritten to cancelled/expired — and the reservation
+	// releases above would free funds/shares the fill already consumed.
+	// Zero rows ⇒ roll back everything and report the lost race.
 	if err := tx.QueryRowContext(ctx,
 		`UPDATE prediction_orders
 		   SET status = $2,
@@ -229,9 +234,13 @@ func (r *SQLRepository) FinalizeRestingOrderAtomic(
 		       cancelled_at = $3,
 		       updated_at = NOW()
 		 WHERE id = $1
+		   AND status IN ('pending', 'open', 'partial')
 		 RETURNING reserved_points, captured_points, created_at`,
 		order.ID, string(terminal), cancelledAt,
 	).Scan(&reservedPoints, &capturedPoints, &placedAt); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, 0, time.Time{}, fmt.Errorf("update order to %s: %w", terminal, ErrOrderAlreadyTerminal)
+		}
 		return 0, 0, time.Time{}, fmt.Errorf("update order to %s: %w", terminal, err)
 	}
 

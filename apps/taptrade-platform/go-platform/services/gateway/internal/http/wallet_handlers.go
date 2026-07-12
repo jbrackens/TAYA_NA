@@ -128,7 +128,10 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
 		}
-		pack, ok := pointPackByID(r.Context(), service, userID, req.PackID)
+		// One ledger read serves pack lookup (pinned 200-row window via
+		// ledgerTail), the grant-limit gate, and the abuse replay check.
+		ledger := service.Ledger(r.Context(), userID, 500)
+		pack, ok := pointPackByIDFromLedger(ledgerTail(ledger, pointPackLedgerWindow), userID, req.PackID)
 		if !ok {
 			return httpx.NotFound("point pack not found")
 		}
@@ -137,11 +140,11 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		}
 		now := time.Now().UTC()
 		rewardKey := "point_pack:" + userID + ":" + pack.ID
-		_, allowed := checkRewardGrantLimit(r.Context(), service, userID, rewardKey, pack.AmountPoints, now)
+		_, allowed := checkRewardGrantLimitFromLedger(ledger, rewardKey, pack.AmountPoints, now)
 		if !allowed {
 			return httpx.Forbidden("daily reward point limit reached")
 		}
-		if err := checkRewardAbuseClusters(r, service, userID, rewardKey, now); err != nil {
+		if err := checkRewardAbuseClusters(r, service, userID, ledger, rewardKey, now); err != nil {
 			return err
 		}
 		_, err := service.Credit(r.Context(), wallet.MutationRequest{
@@ -155,13 +158,16 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		}
 		pack.Claimed = true
 		balance := service.Balance(r.Context(), userID)
+		// Post-credit limit status must include the credit just written —
+		// one fresh read.
+		fresh := service.Ledger(r.Context(), userID, 500)
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 			"enabled":       true,
 			"unit":          "PTS",
 			"pack":          pack,
 			"claimPoints":   pack.AmountPoints,
 			"balancePoints": balance,
-			"rewardLimit":   rewardLimitStatus(r.Context(), service, userID, now),
+			"rewardLimit":   rewardLimitStatusFromLedger(fresh, now),
 		})
 	}))
 
@@ -193,7 +199,10 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
 		}
 		now := time.Now().UTC()
-		mission, ok := missionByID(r.Context(), service, leaderboardService, userID, req.MissionID, now)
+		// One ledger read serves mission derivation, the grant-limit gate,
+		// and the abuse replay check.
+		ledger := service.Ledger(r.Context(), userID, 500)
+		mission, ok := missionByIDFromLedger(r.Context(), ledger, leaderboardService, userID, req.MissionID, now)
 		if !ok {
 			return httpx.NotFound("mission not found")
 		}
@@ -204,11 +213,11 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 			return httpx.Forbidden("mission is not complete")
 		}
 		rewardKey := missionRewardKey(userID, mission.ID, now)
-		_, allowed := checkRewardGrantLimit(r.Context(), service, userID, rewardKey, mission.RewardPoints, now)
+		_, allowed := checkRewardGrantLimitFromLedger(ledger, rewardKey, mission.RewardPoints, now)
 		if !allowed {
 			return httpx.Forbidden("daily reward point limit reached")
 		}
-		if err := checkRewardAbuseClusters(r, service, userID, rewardKey, now); err != nil {
+		if err := checkRewardAbuseClusters(r, service, userID, ledger, rewardKey, now); err != nil {
 			return err
 		}
 		_, err := service.Credit(r.Context(), wallet.MutationRequest{
@@ -220,7 +229,10 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		if err != nil && !errors.Is(err, wallet.ErrIdempotencyConflict) {
 			return mapWalletError(err)
 		}
-		mission, _ = missionByID(r.Context(), service, leaderboardService, userID, mission.ID, now)
+		// Post-credit state (Claimed flag + limit totals including the new
+		// credit) comes from one fresh read shared by both derivations.
+		fresh := service.Ledger(r.Context(), userID, 500)
+		mission, _ = missionByIDFromLedger(r.Context(), fresh, leaderboardService, userID, mission.ID, now)
 		balance := service.Balance(r.Context(), userID)
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 			"enabled":       true,
@@ -228,7 +240,7 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 			"mission":       mission,
 			"claimPoints":   mission.RewardPoints,
 			"balancePoints": balance,
-			"rewardLimit":   rewardLimitStatus(r.Context(), service, userID, now),
+			"rewardLimit":   rewardLimitStatusFromLedger(fresh, now),
 		})
 	}))
 
@@ -260,7 +272,10 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
 		}
 		now := time.Now().UTC()
-		streak, ok := streakByID(r.Context(), service, userID, req.StreakID, now)
+		// One ledger read serves streak derivation, the grant-limit gate,
+		// and the abuse replay check.
+		ledger := service.Ledger(r.Context(), userID, 500)
+		streak, ok := streakByIDFromLedger(ledger, userID, req.StreakID, now)
 		if !ok {
 			return httpx.NotFound("streak not found")
 		}
@@ -271,11 +286,11 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 			return httpx.Forbidden("streak is not complete")
 		}
 		rewardKey := streakRewardKey(userID, streak.ID)
-		_, allowed := checkRewardGrantLimit(r.Context(), service, userID, rewardKey, streak.RewardPoints, now)
+		_, allowed := checkRewardGrantLimitFromLedger(ledger, rewardKey, streak.RewardPoints, now)
 		if !allowed {
 			return httpx.Forbidden("daily reward point limit reached")
 		}
-		if err := checkRewardAbuseClusters(r, service, userID, rewardKey, now); err != nil {
+		if err := checkRewardAbuseClusters(r, service, userID, ledger, rewardKey, now); err != nil {
 			return err
 		}
 		_, err := service.Credit(r.Context(), wallet.MutationRequest{
@@ -287,7 +302,10 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		if err != nil && !errors.Is(err, wallet.ErrIdempotencyConflict) {
 			return mapWalletError(err)
 		}
-		streak, _ = streakByID(r.Context(), service, userID, streak.ID, now)
+		// Post-credit state (Claimed flag + limit totals including the new
+		// credit) comes from one fresh read shared by both derivations.
+		fresh := service.Ledger(r.Context(), userID, 500)
+		streak, _ = streakByIDFromLedger(fresh, userID, streak.ID, now)
 		balance := service.Balance(r.Context(), userID)
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 			"enabled":       true,
@@ -295,7 +313,7 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 			"streak":        streak,
 			"claimPoints":   streak.RewardPoints,
 			"balancePoints": balance,
-			"rewardLimit":   rewardLimitStatus(r.Context(), service, userID, now),
+			"rewardLimit":   rewardLimitStatusFromLedger(fresh, now),
 		})
 	}))
 
@@ -388,16 +406,16 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		}
 
 		if len(parts) == 1 {
-			balance := service.Balance(r.Context(), userID)
-			// Available = balance - held point reservations.
-			available := service.AvailableBalance(r.Context(), userID)
-			reserved := balance - available
+			// Balance + available (balance - held reservations) + reserved in
+			// one wallet read; the previous Balance/AvailableBalance pair cost
+			// three queries on this frequently-polled endpoint.
+			summary := service.BalanceSummary(r.Context(), userID)
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 				"userId":          userID,
 				"unit":            "PTS",
-				"balancePoints":   balance,
-				"availablePoints": available,
-				"reservedPoints":  reserved,
+				"balancePoints":   summary.BalancePoints,
+				"availablePoints": summary.AvailablePoints,
+				"reservedPoints":  summary.ReservedPoints,
 			})
 		}
 
@@ -476,11 +494,13 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 			})
 		}
 		rewardKey := "daily_claim:" + userID + ":" + claimDate
-		_, allowed := checkRewardGrantLimit(r.Context(), service, userID, rewardKey, claim, now)
+		// One ledger read serves the grant-limit gate and abuse replay check.
+		ledger := service.Ledger(r.Context(), userID, 500)
+		_, allowed := checkRewardGrantLimitFromLedger(ledger, rewardKey, claim, now)
 		if !allowed {
 			return httpx.Forbidden("daily reward point limit reached")
 		}
-		if err := checkRewardAbuseClusters(r, service, userID, rewardKey, now); err != nil {
+		if err := checkRewardAbuseClusters(r, service, userID, ledger, rewardKey, now); err != nil {
 			return err
 		}
 		_, err := service.Credit(r.Context(), wallet.MutationRequest{
@@ -554,7 +574,22 @@ func dailyClaimPoints() int64 {
 	return n
 }
 
+// pointPackLedgerWindow is the claimed-state scan depth point packs have
+// always used — narrower than the 500-row window the other reward surfaces
+// read. Pinned so the shared-fetch claim path reproduces it exactly via
+// ledgerTail.
+const pointPackLedgerWindow = 200
+
 func pointPackDefinitions(ctx context.Context, service *wallet.Service, userID string) []pointPackDefinition {
+	return pointPackDefinitionsFromLedger(service.Ledger(ctx, userID, pointPackLedgerWindow), userID)
+}
+
+// pointPackDefinitionsFromLedger derives pack state from an already-fetched
+// ledger window so claim requests can share ONE ledger read across pack
+// lookup, grant-limit gate, and abuse replay check. Callers holding a wider
+// window must pass ledgerTail(entries, pointPackLedgerWindow) to keep the
+// pinned 200-row claimed-state semantics.
+func pointPackDefinitionsFromLedger(ledger []wallet.LedgerEntry, userID string) []pointPackDefinition {
 	defs := []struct {
 		id          string
 		name        string
@@ -574,7 +609,6 @@ func pointPackDefinitions(ctx context.Context, service *wallet.Service, userID s
 			env:         "POINT_PACK_MARKET_EXPLORER_CENTS",
 		},
 	}
-	ledger := service.Ledger(ctx, userID, 200)
 	packs := make([]pointPackDefinition, 0, len(defs))
 	for _, def := range defs {
 		amount := pointPackAmountPoints(def.env)
@@ -593,14 +627,24 @@ func pointPackDefinitions(ctx context.Context, service *wallet.Service, userID s
 	return packs
 }
 
-func pointPackByID(ctx context.Context, service *wallet.Service, userID string, packID string) (pointPackDefinition, bool) {
+func pointPackByIDFromLedger(ledger []wallet.LedgerEntry, userID string, packID string) (pointPackDefinition, bool) {
 	normalized := strings.TrimSpace(packID)
-	for _, pack := range pointPackDefinitions(ctx, service, userID) {
+	for _, pack := range pointPackDefinitionsFromLedger(ledger, userID) {
 		if pack.ID == normalized {
 			return pack, true
 		}
 	}
 	return pointPackDefinition{}, false
+}
+
+// ledgerTail returns the most recent n entries of an oldest-first ledger
+// window — byte-for-byte what a direct service.Ledger(ctx, userID, n) fetch
+// would return, given a wider window fetched once for the whole request.
+func ledgerTail(entries []wallet.LedgerEntry, n int) []wallet.LedgerEntry {
+	if n <= 0 || len(entries) <= n {
+		return entries
+	}
+	return entries[len(entries)-n:]
 }
 
 func pointPackAmountPoints(envKey string) int64 {
@@ -616,8 +660,15 @@ func pointPackAmountPoints(envKey string) int64 {
 }
 
 func missionDefinitions(ctx context.Context, service *wallet.Service, leaderboardService *leaderboards.PredictService, userID string, now time.Time) []missionDefinition {
+	return missionDefinitionsFromLedger(ctx, service.Ledger(ctx, userID, 500), leaderboardService, userID, now)
+}
+
+// missionDefinitionsFromLedger derives mission state from an already-fetched
+// 500-row ledger window; claim requests fetch the ledger once and share it
+// with the grant-limit and abuse checks instead of re-reading per derivation.
+// ctx is retained for the (non-ledger) leaderboard standing lookup.
+func missionDefinitionsFromLedger(ctx context.Context, ledger []wallet.LedgerEntry, leaderboardService *leaderboards.PredictService, userID string, now time.Time) []missionDefinition {
 	date := now.UTC().Format("2006-01-02")
-	ledger := service.Ledger(ctx, userID, 500)
 	dailyClaimed := ledgerHasIdempotencyKey(ledger, "daily_claim:"+userID+":"+date)
 	missionClaimed := ledgerHasIdempotencyKey(ledger, missionRewardKey(userID, "daily_check_in", now))
 	reward := missionRewardPoints("MISSION_DAILY_CHECK_IN_REWARD_CENTS")
@@ -892,9 +943,9 @@ func missionDefinitions(ctx context.Context, service *wallet.Service, leaderboar
 	}
 }
 
-func missionByID(ctx context.Context, service *wallet.Service, leaderboardService *leaderboards.PredictService, userID string, missionID string, now time.Time) (missionDefinition, bool) {
+func missionByIDFromLedger(ctx context.Context, ledger []wallet.LedgerEntry, leaderboardService *leaderboards.PredictService, userID string, missionID string, now time.Time) (missionDefinition, bool) {
 	normalized := strings.TrimSpace(missionID)
-	for _, mission := range missionDefinitions(ctx, service, leaderboardService, userID, now) {
+	for _, mission := range missionDefinitionsFromLedger(ctx, ledger, leaderboardService, userID, now) {
 		if mission.ID == normalized {
 			return mission, true
 		}
@@ -942,7 +993,12 @@ func missionRewardPoints(envKey string) int64 {
 }
 
 func streakDefinitions(ctx context.Context, service *wallet.Service, userID string, now time.Time) []streakDefinition {
-	ledger := service.Ledger(ctx, userID, 500)
+	return streakDefinitionsFromLedger(service.Ledger(ctx, userID, 500), userID, now)
+}
+
+// streakDefinitionsFromLedger derives streak state from an already-fetched
+// 500-row ledger window (see missionDefinitionsFromLedger).
+func streakDefinitionsFromLedger(ledger []wallet.LedgerEntry, userID string, now time.Time) []streakDefinition {
 	currentStreak := dailyClaimStreakDays(ledger, userID, now)
 	threeDayReward := streakRewardPoints("STREAK_DAILY_3_REWARD_CENTS")
 	weeklyReward := streakRewardPoints("STREAK_DAILY_7_REWARD_CENTS")
@@ -1026,9 +1082,9 @@ func streakDefinitions(ctx context.Context, service *wallet.Service, userID stri
 	}
 }
 
-func streakByID(ctx context.Context, service *wallet.Service, userID string, streakID string, now time.Time) (streakDefinition, bool) {
+func streakByIDFromLedger(ledger []wallet.LedgerEntry, userID string, streakID string, now time.Time) (streakDefinition, bool) {
 	normalized := strings.TrimSpace(streakID)
-	for _, streak := range streakDefinitions(ctx, service, userID, now) {
+	for _, streak := range streakDefinitionsFromLedger(ledger, userID, now) {
 		if streak.ID == normalized {
 			return streak, true
 		}
@@ -1087,13 +1143,15 @@ func badgeDefinitions(ctx context.Context, service *wallet.Service, leaderboardS
 	hasSeasonalCheckInMissionReward := ledgerHasIdempotencyKey(ledger, missionRewardKey(userID, "seasonal_check_in", time.Now().UTC()))
 	hasQuarterlyCheckInMissionReward := ledgerHasIdempotencyKey(ledger, missionRewardKey(userID, "quarterly_check_in", time.Now().UTC()))
 	hasPredictionOrder := ledgerHasPredictionOrderEvidence(ledger)
-	hasThreePredictionOrders := ledgerPredictionOrderEvidenceCount(ledger) >= 3
-	hasFivePredictionOrders := ledgerPredictionOrderEvidenceCount(ledger) >= 5
-	hasTenPredictionOrders := ledgerPredictionOrderEvidenceCount(ledger) >= 10
+	predictionOrderCount := ledgerPredictionOrderEvidenceCount(ledger)
+	hasThreePredictionOrders := predictionOrderCount >= 3
+	hasFivePredictionOrders := predictionOrderCount >= 5
+	hasTenPredictionOrders := predictionOrderCount >= 10
 	hasSettlementPayout := ledgerHasSettlementPayoutEvidence(ledger)
-	hasThreeSettlementPayouts := ledgerSettlementPayoutEvidenceCount(ledger) >= 3
-	hasFiveSettlementPayouts := ledgerSettlementPayoutEvidenceCount(ledger) >= 5
-	hasTenSettlementPayouts := ledgerSettlementPayoutEvidenceCount(ledger) >= 10
+	settlementPayoutCount := ledgerSettlementPayoutEvidenceCount(ledger)
+	hasThreeSettlementPayouts := settlementPayoutCount >= 3
+	hasFiveSettlementPayouts := settlementPayoutCount >= 5
+	hasTenSettlementPayouts := settlementPayoutCount >= 10
 	hasLeaderboardStanding := leaderboardEvidenceCount(ctx, leaderboardService, userID) > 0
 	return []badgeDefinition{
 		{
@@ -1299,8 +1357,10 @@ func ledgerSettlementPayoutEvidenceCount(entries []wallet.LedgerEntry) int {
 	return len(seen)
 }
 
-func checkRewardGrantLimit(ctx context.Context, service *wallet.Service, userID string, idempotencyKey string, amountPoints int64, now time.Time) (rewardGrantLimitStatus, bool) {
-	entries := service.Ledger(ctx, userID, 500)
+// checkRewardGrantLimitFromLedger evaluates the daily grant limit against an
+// already-fetched 500-row ledger window; claim handlers fetch the ledger once
+// per request and share it across every pre-credit gate.
+func checkRewardGrantLimitFromLedger(entries []wallet.LedgerEntry, idempotencyKey string, amountPoints int64, now time.Time) (rewardGrantLimitStatus, bool) {
 	status := rewardLimitStatusFromLedger(entries, now)
 	if ledgerHasIdempotencyKey(entries, idempotencyKey) {
 		return status, true
@@ -1356,8 +1416,11 @@ func rewardDailyGrantLimitPoints() int64 {
 	return n
 }
 
-func checkRewardAbuseClusters(r *stdhttp.Request, service *wallet.Service, userID string, idempotencyKey string, now time.Time) error {
-	if ledgerHasIdempotencyKey(service.Ledger(r.Context(), userID, 500), idempotencyKey) {
+// checkRewardAbuseClusters records device/IP cluster signals unless the claim
+// is a replay. The replay check reads the caller's already-fetched 500-row
+// ledger window instead of re-querying it.
+func checkRewardAbuseClusters(r *stdhttp.Request, service *wallet.Service, userID string, entries []wallet.LedgerEntry, idempotencyKey string, now time.Time) error {
+	if ledgerHasIdempotencyKey(entries, idempotencyKey) {
 		return nil
 	}
 	date := now.UTC().Format("2006-01-02")

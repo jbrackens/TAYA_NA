@@ -93,7 +93,7 @@ func TestReconciliationFixtureFollowsLaunchGatewayContracts(t *testing.T) {
 
 	for _, needle := range []string{
 		`json:"amountPoints"`,
-		`"amountPoints":  entry.AmountPoints`,
+		`"amountPoints":    entry.AmountPoints`,
 		`"prediction_order"`,
 	} {
 		if !strings.Contains(walletHandlers, needle) {

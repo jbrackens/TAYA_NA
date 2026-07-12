@@ -3183,3 +3183,36 @@ func TestWalletIdempotencyReplayConflictReturnsConflict(t *testing.T) {
 		t.Fatalf("expected error code %q, got %q", httpx.CodeConflict, envelope.Error.Code)
 	}
 }
+
+// TestLedgerTailMatchesDirectNarrowFetch pins the shared-fetch equivalence the
+// reward claim paths rely on: taking the tail of a wide Ledger window must be
+// byte-for-byte identical to fetching the narrow window directly (packs keep
+// their pinned 200-row claimed-state scan while sharing one 500-row read).
+func TestLedgerTailMatchesDirectNarrowFetch(t *testing.T) {
+	service := wallet.NewService()
+	userID := "u-ledger-tail"
+	for i := 0; i < 12; i++ {
+		if _, err := service.Credit(t.Context(), wallet.MutationRequest{
+			UserID:         userID,
+			AmountPoints:   100,
+			IdempotencyKey: "tail-seed-" + strconv.Itoa(i),
+			Reason:         "starter points",
+		}); err != nil {
+			t.Fatalf("seed credit %d: %v", i, err)
+		}
+	}
+
+	wide := service.Ledger(t.Context(), userID, 500)
+	for _, narrow := range []int{5, 12, 200} {
+		direct := service.Ledger(t.Context(), userID, narrow)
+		tail := ledgerTail(wide, narrow)
+		if len(tail) != len(direct) {
+			t.Fatalf("ledgerTail(%d) length %d, direct fetch length %d", narrow, len(tail), len(direct))
+		}
+		for i := range tail {
+			if tail[i] != direct[i] {
+				t.Fatalf("ledgerTail(%d)[%d] = %+v, direct fetch = %+v", narrow, i, tail[i], direct[i])
+			}
+		}
+	}
+}

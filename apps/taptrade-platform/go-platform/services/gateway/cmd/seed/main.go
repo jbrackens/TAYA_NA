@@ -173,7 +173,9 @@ func printSummary(db *sql.DB) {
 		if err := rows.Scan(&ticker, &title, &yesPrice, &volume); err != nil {
 			continue
 		}
-		fmt.Printf("  %-20s YES:%d%%  Vol:%-8d pts %s\n", ticker, yesPrice, volume/100, truncate(title, 40))
+		// Points unit-model (migration 050): volume_points IS whole Points —
+		// print it directly (the retired /100 was a cents-era conversion).
+		fmt.Printf("  %-20s YES:%d%%  Vol:%-8d pts %s\n", ticker, yesPrice, volume, truncate(title, 40))
 	}
 }
 

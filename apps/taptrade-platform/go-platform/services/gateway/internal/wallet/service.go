@@ -817,6 +817,51 @@ WHERE user_id = $1 AND status = 'held' AND expires_at > NOW()`,
 	return available
 }
 
+// BalanceSummary is the single-read shape for GET /api/v1/wallet/{id}:
+// the point balance plus the derived available/reserved split.
+type BalanceSummary struct {
+	BalancePoints   int64
+	AvailablePoints int64
+	ReservedPoints  int64
+}
+
+// BalanceSummary returns balance, available (balance minus active held
+// reservations, floored at 0) and reserved (balance minus available) in ONE
+// DB round trip. It replaces the handler pattern of Balance +
+// AvailableBalance, which cost three queries (AvailableBalance re-reads the
+// balance internally). Semantics match those two calls exactly, including
+// the swallow-to-zero posture on read errors.
+func (s *Service) BalanceSummary(ctx context.Context, userID string) BalanceSummary {
+	var balance, heldTotal int64
+	if s.db != nil {
+		ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
+		defer cancel()
+		err := s.db.QueryRowContext(ctx, `
+SELECT COALESCE((SELECT balance_points FROM wallet_balances WHERE user_id = $1), 0),
+       COALESCE((SELECT SUM(amount_points) FROM wallet_reservations
+                 WHERE user_id = $1 AND status = 'held' AND expires_at > NOW()), 0)`,
+			userID).Scan(&balance, &heldTotal)
+		if err != nil {
+			return BalanceSummary{}
+		}
+	} else {
+		s.mu.RLock()
+		balance = s.balances[userID]
+		s.mu.RUnlock()
+		// No reservations in memory mode — parity with AvailableBalance.
+	}
+
+	available := balance - heldTotal
+	if available < 0 {
+		available = 0
+	}
+	return BalanceSummary{
+		BalancePoints:   balance,
+		AvailablePoints: available,
+		ReservedPoints:  balance - available,
+	}
+}
+
 // Hold creates a point reservation that reduces available balance without
 // actually debiting. The hold can later be Captured (converting to a ledger
 // debit) or Released (restoring availability).

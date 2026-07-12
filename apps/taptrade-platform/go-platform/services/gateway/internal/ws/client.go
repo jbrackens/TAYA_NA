@@ -18,6 +18,7 @@ var (
 	droppedMessagesTotal         atomic.Int64
 	slowClientsDisconnectedTotal atomic.Int64
 	broadcastsDroppedTotal       atomic.Int64
+	disconnectsDroppedTotal      atomic.Int64
 )
 
 // WSDroppedMessages returns the count of messages dropped because a client's
@@ -31,6 +32,11 @@ func WSSlowClientsDisconnected() int64 { return slowClientsDisconnectedTotal.Loa
 // WSBroadcastsDropped returns how many broadcasts were dropped because the
 // hub's command queue was full (producer-side backpressure).
 func WSBroadcastsDropped() int64 { return broadcastsDroppedTotal.Load() }
+
+// WSDisconnectsDropped returns how many slow-client disconnect enqueues were
+// dropped because the hub's disconnect queue was full. Cleanup still runs via
+// the client's own close path; this only counts the skipped fast path.
+func WSDisconnectsDropped() int64 { return disconnectsDroppedTotal.Load() }
 
 // RenderMetrics returns the hub fan-out health counters in Prometheus text
 // format. It is folded into the gateway /metrics endpoint via the collector
@@ -49,6 +55,10 @@ func RenderMetrics() string {
 	b.WriteString("# HELP gateway_ws_broadcasts_dropped_total Broadcasts dropped because the hub's command queue was full.\n")
 	b.WriteString("# TYPE gateway_ws_broadcasts_dropped_total counter\n")
 	fmt.Fprintf(&b, "gateway_ws_broadcasts_dropped_total %d\n", broadcastsDroppedTotal.Load())
+
+	b.WriteString("# HELP gateway_ws_disconnects_dropped_total Slow-client disconnect enqueues dropped because the hub's disconnect queue was full.\n")
+	b.WriteString("# TYPE gateway_ws_disconnects_dropped_total counter\n")
+	fmt.Fprintf(&b, "gateway_ws_disconnects_dropped_total %d\n", disconnectsDroppedTotal.Load())
 	return b.String()
 }
 
@@ -78,9 +88,13 @@ func (w *wsConn) SetPongHandler(h func(string) error) {
 
 // Client represents a single WebSocket connection
 type Client struct {
-	hub              *Hub
-	conn             Conn
-	userID           string
+	hub    *Hub
+	conn   Conn
+	userID string
+	// channels is written by the client's readPump goroutine (subscribe/
+	// unsubscribe frames) and read by the hub goroutine during disconnect
+	// cleanup — every access goes through chMu.
+	chMu             sync.Mutex
 	channels         map[string]bool
 	send             chan []byte
 	ctx              context.Context
@@ -226,8 +240,13 @@ func (c *Client) handleSubscribe(channels []string) {
 			slog.Warn("ws channel auth denied", "user_id", c.userID, "channel", channel)
 			continue
 		}
-		if !c.channels[channel] {
+		c.chMu.Lock()
+		added := !c.channels[channel]
+		if added {
 			c.channels[channel] = true
+		}
+		c.chMu.Unlock()
+		if added {
 			c.hub.Subscribe(c, channel)
 		}
 	}
@@ -265,11 +284,29 @@ func (c *Client) handleUnsubscribe(channels []string) {
 		if channel == "" {
 			continue
 		}
-		if c.channels[channel] {
+		c.chMu.Lock()
+		removed := c.channels[channel]
+		if removed {
 			delete(c.channels, channel)
+		}
+		c.chMu.Unlock()
+		if removed {
 			c.hub.Unsubscribe(c, channel)
 		}
 	}
+}
+
+// subscribedChannels returns a snapshot of the client's channel set for
+// cross-goroutine readers (the hub's disconnect cleanup and the client's own
+// close path).
+func (c *Client) subscribedChannels() []string {
+	c.chMu.Lock()
+	defer c.chMu.Unlock()
+	channels := make([]string, 0, len(c.channels))
+	for channel := range c.channels {
+		channels = append(channels, channel)
+	}
+	return channels
 }
 
 // SendMessage queues a message to the client without ever blocking the caller.
@@ -293,13 +330,23 @@ func (c *Client) SendMessage(data []byte) {
 // disconnectSlow tears down a client that can't keep up. Idempotent and
 // safe to call from the hub goroutine: it cancels the client's context
 // (stopping its write pump via the ctx.Done branch — no send-channel close
-// race) and schedules hub-side cleanup through the non-blocking disconnect
-// channel.
+// race) and schedules hub-side cleanup WITHOUT ever blocking. The hub
+// goroutine is the sole drainer of the disconnect queue, so the blocking
+// Hub.Disconnect send would self-deadlock the event loop if a fan-out
+// tripped more slow clients than the queue holds. On a full queue the
+// enqueue is dropped and counted; cleanup still happens — the cancelled
+// context makes the client's pumps exit, and close() re-schedules
+// Hub.Disconnect from the client goroutine.
 func (c *Client) disconnectSlow() {
 	if c.slowDisconnected.CompareAndSwap(false, true) {
 		slowClientsDisconnectedTotal.Add(1)
 		c.cancel()
-		c.hub.Disconnect(c)
+		select {
+		case c.hub.disconnect <- c:
+		case <-c.hub.ctx.Done():
+		default:
+			disconnectsDroppedTotal.Add(1)
+		}
 	}
 }
 
@@ -309,11 +356,7 @@ func (c *Client) close() {
 		c.cancel()
 
 		// Unsubscribe from all channels
-		channels := make([]string, 0, len(c.channels))
-		for ch := range c.channels {
-			channels = append(channels, ch)
-		}
-		c.handleUnsubscribe(channels)
+		c.handleUnsubscribe(c.subscribedChannels())
 
 		// Signal the hub to remove this client
 		c.hub.Disconnect(c)
@@ -334,5 +377,7 @@ func (c *Client) UserID() string {
 
 // IsSubscribedTo checks if the client is subscribed to a channel
 func (c *Client) IsSubscribedTo(channel string) bool {
+	c.chMu.Lock()
+	defer c.chMu.Unlock()
 	return c.channels[channel]
 }

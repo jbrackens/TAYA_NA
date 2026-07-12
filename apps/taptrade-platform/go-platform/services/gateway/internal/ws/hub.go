@@ -157,10 +157,13 @@ func (h *Hub) handleUnsubscribe(cmd *unsubscribeCmd) {
 	slog.Info("ws client unsubscribed", "user_id", cmd.client.userID, "channel", cmd.channel)
 }
 
-// handleDisconnect removes a client from all channels
+// handleDisconnect removes a client from all channels. The channel set is
+// snapshotted through the client's own lock — the readPump goroutine may
+// still be mutating it while the hub cleans up.
 func (h *Hub) handleDisconnect(client *Client) {
+	channels := client.subscribedChannels()
 	h.mu.Lock()
-	for channel := range client.channels {
+	for _, channel := range channels {
 		if clients, exists := h.channels[channel]; exists {
 			delete(clients, client)
 			if len(clients) == 0 {

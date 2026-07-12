@@ -2,8 +2,10 @@ package http
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"taptrade/gateway/internal/prediction"
 )
@@ -70,12 +72,17 @@ func TestProviderOpsAuditEntryOmitsRetiredPromoFields(t *testing.T) {
 }
 
 func TestProviderOpsAuditAsAdminLogsRedactsLegacyUnsafeDetailsOnRead(t *testing.T) {
+	// Unique ID + current timestamp, not fixed literals: with GATEWAY_DB_DSN
+	// set the audit store is DB-backed (id is the PRIMARY KEY, snapshots load
+	// only the newest providerOpsAuditLimit rows by occurred_at), so a fixed
+	// ID collides with residue from prior runs and a fixed old date rots out
+	// of the load window as the shared test DB accumulates entries.
 	entry := auditLogEntry{
-		ID:         "audit-legacy-copy-redaction",
+		ID:         fmt.Sprintf("audit-legacy-copy-redaction-%d", time.Now().UnixNano()),
 		Action:     "wallet.credit",
 		ActorID:    "admin-legacy-copy",
 		TargetID:   "u-legacy-copy",
-		OccurredAt: "2026-06-30T18:15:00Z",
+		OccurredAt: time.Now().UTC().Format(time.RFC3339),
 		Details:    `{"reason":"cash payout adjustment","idempotencyKey":"legacy-safe-key","nested":{"note":"crypto payout review"}}`,
 	}
 	recordProviderOpsAuditEntry(entry)

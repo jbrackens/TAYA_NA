@@ -50,18 +50,24 @@ type caseResult struct {
 	FailNotes []string
 }
 
+// retiredKeys bans cents-era money literals and sportsbook-era bet fields.
+// The live wire format (Loop 180, docs/taptrade-economy-rules.md) is
+// point-native — amountPoints/balancePoints/pricePoints are the CURRENT
+// vocabulary and must stay loadable; only their *Cents ancestors are retired.
+// "stake" is a retired bet concept in any unit, so both spellings stay banned.
 var retiredKeys = map[string]struct{}{
-	"amountPoints":      {},
-	"amount_points":     {},
-	"balancePoints":     {},
-	"balance_points":    {},
+	"amountCents":       {},
+	"amount_cents":      {},
+	"balanceCents":      {},
+	"balance_cents":     {},
 	"betId":             {},
 	"depositId":         {},
 	"depositIntentId":   {},
 	"odds":              {},
-	"payoutPoints":      {},
-	"pricePoints":       {},
-	"seedPoints":        {},
+	"payoutCents":       {},
+	"priceCents":        {},
+	"seedCents":         {},
+	"stakeCents":        {},
 	"stakePoints":       {},
 	"withdrawalId":      {},
 	"withdrawalRequest": {},

@@ -307,9 +307,15 @@ type MarketFilter struct {
 	Search      *string
 	Tag         *string
 	CloseBefore *time.Time
-	Sort        string
-	Page        int
-	PageSize    int
+	// IDs restricts results to an explicit market-id set (batched hydration:
+	// e.g. the portfolio page resolving position/order market ids in one
+	// query instead of N GetMarket round-trips). Empty means no restriction.
+	// Composes WITH the safe-by-default gates below — an ids lookup still
+	// excludes `unopened` and launch-scrubbed markets unless opted in.
+	IDs      []string
+	Sort     string
+	Page     int
+	PageSize int
 	// IncludeUnopened opts IN to returning markets in the pre-publication
 	// `unopened` state. Default false: list queries exclude `unopened` so a
 	// not-yet-approved market (e.g. an AI draft awaiting admin review) is never

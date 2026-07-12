@@ -242,7 +242,14 @@ func (r *SQLRepository) ListMarkets(ctx context.Context, filter MarketFilter) ([
 	// GetMarket etc. all see it. Earlier inline SELECT here drifted apart
 	// from marketSelectQuery() when image_path was added (migration 018),
 	// breaking ListMarkets with a 500. Don't reintroduce that fork.
-	q := `SELECT rm.* FROM (` + marketSelectQuery() + where + `) rm
+	q := `SELECT rm.* FROM (` + marketSelectQuery() + where + `) rm`
+	if marketSortNeedsRankingJoins(filter.Sort) {
+		// The pe/pc/v24 joins exist solely to feed the activity-ranking
+		// ORDER BY (featured flag, category slug, 24h traded volume). Cheap
+		// sorts order on rm columns only, so skipping the joins avoids a
+		// per-row aggregate over prediction_trades — this is what keeps the
+		// SMM/reconciler worker sweeps (Sort:"id") off the expensive shape.
+		q += `
 	      LEFT JOIN prediction_events pe ON pe.id = rm.event_id
 	      LEFT JOIN prediction_categories pc ON pc.id = pe.category_id
 	      LEFT JOIN LATERAL (
@@ -250,7 +257,9 @@ func (r *SQLRepository) ListMarkets(ctx context.Context, filter MarketFilter) ([
 	          FROM prediction_trades t
 	          WHERE t.market_id = rm.id
 	            AND t.traded_at >= NOW() - INTERVAL '24 hours'
-	      ) v24 ON true` + marketOrderClause(filter.Sort)
+	      ) v24 ON true`
+	}
+	q += marketOrderClause(filter.Sort)
 	q += fmt.Sprintf(` LIMIT $%d OFFSET $%d`, len(args)+1, len(args)+2)
 	args = append(args, filter.PageSize, (filter.Page-1)*filter.PageSize)
 
@@ -680,24 +689,27 @@ func (r *SQLRepository) createOrderWithExec(ctx context.Context, execer sqlRowEx
 		 (user_id, market_id, side, action, order_type, price_points,
 		  quantity, filled_quantity, remaining_quantity, total_cost_points,
 		  status, wallet_reservation_id, idempotency_key, expires_at, filled_at,
-		  reserved_points, captured_points)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+		  reserved_points, captured_points, failure_reason)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
 		 RETURNING id, created_at, updated_at`,
 		o.UserID, o.MarketID, o.Side, o.Action, o.OrderType, o.PricePoints,
 		o.Quantity, o.FilledQuantity, o.RemainingQuantity, o.TotalCostPoints,
 		o.Status, o.WalletReservationID, o.IdempotencyKey, o.ExpiresAt, o.FilledAt,
-		o.ReservedCashPoints, o.CapturedCashPoints,
+		o.ReservedCashPoints, o.CapturedCashPoints, o.FailureReason,
 	).Scan(&o.ID, &o.CreatedAt, &o.UpdatedAt)
 }
 
 func (r *SQLRepository) UpdateOrder(ctx context.Context, o *Order) error {
+	// failure_reason is persisted so engine/persist-failure rejects keep
+	// their reason on the DB row, not only in the in-flight API response
+	// (the column existed but nothing ever wrote it).
 	_, err := r.db.ExecContext(ctx,
 		`UPDATE prediction_orders SET
 		  filled_quantity=$1, remaining_quantity=$2, status=$3,
-		  filled_at=$4, cancelled_at=$5, updated_at=NOW()
-		 WHERE id=$6`,
+		  filled_at=$4, cancelled_at=$5, failure_reason=$6, updated_at=NOW()
+		 WHERE id=$7`,
 		o.FilledQuantity, o.RemainingQuantity, o.Status,
-		o.FilledAt, o.CancelledAt, o.ID)
+		o.FilledAt, o.CancelledAt, o.FailureReason, o.ID)
 	return err
 }
 
@@ -1723,13 +1735,18 @@ func (r *SQLRepository) GetDiscovery(ctx context.Context) (*DiscoveryResponse, e
 // --- Helpers ---
 
 func marketSelectQuery() string {
+	// Points unit-model (migration 050): imported_markets.volume/liquidity are
+	// already whole Points — overlay them 1:1. The retired `im.volume * 100`
+	// was a cents-era conversion that inflated imported markets 100× (and the
+	// SMM's read-modify-write persisted the inflated value back into
+	// prediction_markets; migration 052 repairs those rows).
 	return `SELECT m.id, m.event_id, pe.category_id, pc.slug, pc.name, m.ticker, m.title, m.description,
 		               COALESCE(m.translations, '{}'::jsonb) AS translations,
 	               m.status, m.result,
 	               m.yes_price_points, m.no_price_points, m.last_trade_price_points,
-	               GREATEST(m.volume_points, COALESCE(ROUND(im.volume * 100), 0)::bigint) AS volume_points,
+	               GREATEST(m.volume_points, COALESCE(ROUND(im.volume), 0)::bigint) AS volume_points,
 	               m.open_interest_points,
-	               GREATEST(m.liquidity_points, COALESCE(ROUND(im.liquidity * 100), 0)::bigint) AS liquidity_points,
+	               GREATEST(m.liquidity_points, COALESCE(ROUND(im.liquidity), 0)::bigint) AS liquidity_points,
 	               m.amm_yes_shares, m.amm_no_shares, m.amm_liquidity_param, m.amm_subsidy_points,
 	               m.settlement_source_key, m.settlement_cutoff_at, m.settlement_rule, m.settlement_params,
 	               m.fallback_source_key, m.fee_rate_bps, m.maker_rebate_bps,
@@ -1757,8 +1774,26 @@ func marketOrderClause(sort string) string {
 		return ` ORDER BY rm.close_at ASC, rm.volume_points DESC, rm.id DESC`
 	case "newest":
 		return ` ORDER BY rm.created_at DESC, rm.volume_points DESC, rm.id DESC`
+	case "id":
+		// Internal-only cheap ordering for worker sweeps (SMM, reconciler)
+		// that need the row set, not a ranking. Not accepted by the public
+		// /markets handler — its sort allowlist gates what clients can pass.
+		return ` ORDER BY rm.id`
 	default:
 		return marketRankingOrderClause()
+	}
+}
+
+// marketSortNeedsRankingJoins reports whether the sort resolves to
+// marketRankingOrderClause — the only ORDER BY that references the pe/pc/v24
+// joins ListMarkets adds around the filtered subquery. Keep the cheap-sort
+// case list in lockstep with marketOrderClause above.
+func marketSortNeedsRankingJoins(sort string) bool {
+	switch strings.TrimSpace(sort) {
+	case "closing_soon", "newest", "id":
+		return false
+	default:
+		return true
 	}
 }
 
@@ -2055,6 +2090,17 @@ func buildMarketWhere(f MarketFilter) (string, []interface{}) {
 		conds = append(conds, "NOT "+compliance.LaunchProhibitedCopySQLCondition("m.title"))
 	}
 
+	if len(f.IDs) > 0 {
+		// Compare as text: this is a public filter, and casting arbitrary
+		// caller strings to uuid ("m.id = ANY($n::uuid[])") makes Postgres
+		// error the whole query on one malformed id — a garbage ?ids= value
+		// must yield zero rows, not a 500. The text cast costs nothing extra
+		// here: the launch-scrub regex above already keeps this query off a
+		// pure index path.
+		conds = append(conds, fmt.Sprintf("m.id::text = ANY($%d)", idx))
+		args = append(args, pq.Array(f.IDs))
+		idx++
+	}
 	if f.EventID != nil {
 		conds = append(conds, fmt.Sprintf("m.event_id = $%d", idx))
 		args = append(args, *f.EventID)

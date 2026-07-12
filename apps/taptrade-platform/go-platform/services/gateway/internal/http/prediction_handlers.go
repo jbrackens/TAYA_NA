@@ -21,6 +21,12 @@ type marketLifecycleRequest struct {
 	Reason string `json:"reason"`
 }
 
+// maxMarketIDFilterCount caps the public `ids` filter on GET /api/v1/markets.
+// 50 covers the largest batched-hydration page the player app issues
+// (portfolio: 50 orders + 20 history rows deduped) while keeping the ANY()
+// predicate bounded for anonymous callers.
+const maxMarketIDFilterCount = 50
+
 func decodeCreateMarketRequest(r *stdhttp.Request) (prediction.CreateMarketRequest, error) {
 	var req prediction.CreateMarketRequest
 	raw, err := io.ReadAll(r.Body)
@@ -282,6 +288,27 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		}
 		if ticker := r.URL.Query().Get("ticker"); ticker != "" {
 			filter.Ticker = &ticker
+		}
+		// Batched id lookup (comma-separated) so hydration flows (e.g. the
+		// portfolio page resolving position/order market ids) cost one query
+		// instead of N GET /markets/{id} round-trips. Capped so a public
+		// caller cannot turn one request into an unbounded ANY() scan. The
+		// filter composes into the same WHERE as every other param, so the
+		// unopened + launch-scrub safety gates still apply.
+		if rawIDs := strings.TrimSpace(r.URL.Query().Get("ids")); rawIDs != "" {
+			parts := strings.Split(rawIDs, ",")
+			ids := make([]string, 0, len(parts))
+			for _, part := range parts {
+				if trimmed := strings.TrimSpace(part); trimmed != "" {
+					ids = append(ids, trimmed)
+				}
+			}
+			if len(ids) > maxMarketIDFilterCount {
+				return httpx.BadRequest("ids filter accepts at most 50 ids", map[string]any{"field": "ids"})
+			}
+			if len(ids) > 0 {
+				filter.IDs = ids
+			}
 		}
 		if q := strings.TrimSpace(r.URL.Query().Get("q")); q != "" {
 			filter.Search = &q

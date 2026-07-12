@@ -242,6 +242,10 @@ func (s *SMM) tick(ctx context.Context) {
 		Status:   &statusOpen,
 		Page:     1,
 		PageSize: 1000,
+		// The sweep only needs the open-market row set; "id" skips the
+		// activity-ranking window functions + per-market 24h-volume lateral
+		// the default sort would compute on every 30s tick.
+		Sort: "id",
 		// Launch-scrubbed markets are hidden from public lists but remain
 		// tradeable by direct link, so the SMM keeps quoting them.
 		IncludeLaunchScrubbed: true,

@@ -2,6 +2,7 @@ package wallet
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -344,5 +345,100 @@ func TestManualCorrectionTaskLifecycle(t *testing.T) {
 	}
 	if resolved.ResolvedBy != "admin-risk-1" {
 		t.Fatalf("expected resolvedBy admin-risk-1, got %s", resolved.ResolvedBy)
+	}
+}
+
+// TestBalanceSummaryMemoryMode pins the memory-mode contract: available equals
+// balance (no reservations exist in memory mode) and reserved is zero — the
+// same answers Balance + AvailableBalance give.
+func TestBalanceSummaryMemoryMode(t *testing.T) {
+	svc := NewService()
+	ctx := context.Background()
+	if _, err := svc.Credit(ctx, MutationRequest{
+		UserID:         "u-summary-mem",
+		AmountPoints:   12345,
+		IdempotencyKey: "seed-summary-mem",
+		Reason:         "starter points",
+	}); err != nil {
+		t.Fatalf("seed balance: %v", err)
+	}
+
+	summary := svc.BalanceSummary(ctx, "u-summary-mem")
+	if summary.BalancePoints != 12345 || summary.AvailablePoints != 12345 || summary.ReservedPoints != 0 {
+		t.Fatalf("unexpected memory summary: %+v", summary)
+	}
+	if got := svc.Balance(ctx, "u-summary-mem"); got != summary.BalancePoints {
+		t.Fatalf("summary balance %d diverges from Balance %d", summary.BalancePoints, got)
+	}
+	if got := svc.AvailableBalance(ctx, "u-summary-mem"); got != summary.AvailablePoints {
+		t.Fatalf("summary available %d diverges from AvailableBalance %d", summary.AvailablePoints, got)
+	}
+
+	// Unknown user reads as all zeros, matching Balance/AvailableBalance.
+	if empty := svc.BalanceSummary(ctx, "u-summary-mem-unknown"); empty != (BalanceSummary{}) {
+		t.Fatalf("expected zero summary for unknown user, got %+v", empty)
+	}
+}
+
+// TestBalanceSummaryDBMode proves the one-query summary matches the legacy
+// Balance + AvailableBalance pair with an active held reservation in play.
+// Skips without a DB DSN, like the other DB-backed wallet proofs.
+func TestBalanceSummaryDBMode(t *testing.T) {
+	dsn := strings.TrimSpace(os.Getenv("WALLET_DB_DSN"))
+	if dsn == "" {
+		dsn = strings.TrimSpace(os.Getenv("GATEWAY_DB_DSN"))
+	}
+	if dsn == "" {
+		t.Skip("set WALLET_DB_DSN or GATEWAY_DB_DSN to run the DB-backed balance summary proof")
+	}
+
+	ctx := context.Background()
+	svc, err := NewServiceWithDB("postgres", dsn)
+	if err != nil {
+		t.Skipf("wallet DB not reachable: %v", err)
+	}
+	t.Cleanup(func() { _ = svc.DB().Close() })
+
+	userID := fmt.Sprintf("u-summary-db-%d", time.Now().UnixNano())
+	cleanup := func() {
+		_, _ = svc.DB().ExecContext(ctx, `DELETE FROM wallet_reservations WHERE user_id = $1`, userID)
+		_, _ = svc.DB().ExecContext(ctx, `DELETE FROM wallet_ledger WHERE user_id = $1`, userID)
+		_, _ = svc.DB().ExecContext(ctx, `DELETE FROM wallet_balances WHERE user_id = $1`, userID)
+	}
+	t.Cleanup(cleanup)
+
+	if _, err := svc.Credit(ctx, MutationRequest{
+		UserID:         userID,
+		AmountPoints:   10000,
+		IdempotencyKey: "seed-" + userID,
+		Reason:         "starter points",
+	}); err != nil {
+		t.Fatalf("seed balance: %v", err)
+	}
+	if _, err := svc.Hold(ctx, HoldRequest{
+		UserID:        userID,
+		AmountPoints:  3000,
+		ReferenceType: "test_summary",
+		ReferenceID:   "hold-" + userID,
+		ExpiresIn:     time.Minute,
+	}); err != nil {
+		t.Fatalf("hold: %v", err)
+	}
+
+	summary := svc.BalanceSummary(ctx, userID)
+	if summary.BalancePoints != 10000 || summary.AvailablePoints != 7000 || summary.ReservedPoints != 3000 {
+		t.Fatalf("unexpected DB summary: %+v", summary)
+	}
+	if got := svc.Balance(ctx, userID); got != summary.BalancePoints {
+		t.Fatalf("summary balance %d diverges from Balance %d", summary.BalancePoints, got)
+	}
+	if got := svc.AvailableBalance(ctx, userID); got != summary.AvailablePoints {
+		t.Fatalf("summary available %d diverges from AvailableBalance %d", summary.AvailablePoints, got)
+	}
+
+	// Missing balance row reads as all zeros — same swallow-to-zero posture
+	// as Balance/AvailableBalance.
+	if empty := svc.BalanceSummary(ctx, userID+"-missing"); empty != (BalanceSummary{}) {
+		t.Fatalf("expected zero summary for missing wallet row, got %+v", empty)
 	}
 }

@@ -152,6 +152,13 @@ var ErrPostOnlyWouldTake = errors.New(FailurePostOnlyWouldTake)
 // matched it first. The caller re-loads the book and re-plans (audit COR-02).
 var ErrBookChanged = errors.New("order book changed during match; replan required")
 
+// ErrOrderAlreadyTerminal is returned by FinalizeRestingOrderAtomic when its
+// status-guarded terminal write matches no row: a concurrent fill (or another
+// cancel/expiry) reached the order first. The finalize tx rolls back, so no
+// reservation is released against fills that already consumed it; callers
+// treat the order as settled by the race winner.
+var ErrOrderAlreadyTerminal = errors.New("order already in a terminal state")
+
 // recordMakerPreFill captures a maker's filled_quantity the first time it is
 // touched in a plan, so the persistence layer can re-assert it under the lock.
 func recordMakerPreFill(plan *MatchPlan, maker *Order) {

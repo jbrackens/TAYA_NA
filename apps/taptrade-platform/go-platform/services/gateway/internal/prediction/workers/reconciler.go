@@ -67,6 +67,10 @@ func (w *Reconciler) tick(ctx context.Context) {
 		Status:   &statusOpen,
 		Page:     1,
 		PageSize: 1000, // enough for any realistic active market count
+		// Reconciliation only needs id/execution_mode per open market; "id"
+		// skips the activity-ranking window functions + 24h-volume lateral
+		// the default sort would compute for nothing.
+		Sort: "id",
 		// Collateral invariants must hold on every market, including ones the
 		// public list hides behind the launch-safety scrub.
 		IncludeLaunchScrubbed: true,

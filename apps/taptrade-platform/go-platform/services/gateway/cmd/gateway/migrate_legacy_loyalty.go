@@ -32,13 +32,12 @@ import (
 
 // legacyLoyaltySnapshot mirrors the shape in
 // internal/loyalty/persist.go:loyaltySnapshot. Only the fields we actually
-// migrate are listed here — we tolerate extra fields in the JSON.
+// migrate are listed here — we tolerate extra fields in the JSON
+// (encoding/json skips unknown keys; the snapshot also carries
+// accrualByKey / adjustByKey / referralsByID, which this migration ignores).
 type legacyLoyaltySnapshot struct {
 	Accounts map[string]legacyAccount       `json:"accounts"`
 	Ledger   map[string][]legacyLedgerEntry `json:"ledger"`
-	_        map[string]any                 `json:"accrualByKey,omitempty"`
-	_        map[string]any                 `json:"adjustByKey,omitempty"`
-	_        map[string]any                 `json:"referralsByID,omitempty"`
 }
 
 type legacyAccount struct {
