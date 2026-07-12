@@ -17,6 +17,12 @@ export function formatWholePoints(points: number): string {
 export function formatCompactPoints(points: number): string {
   const value = Math.max(0, points);
 
+  // B tier added 2026-07-12 (P10): seeded markets carry billions of
+  // points of volume; "12927.3M pts" read as a rendering bug.
+  if (value >= 1_000_000_000) {
+    return trimTrailingZero(`${(value / 1_000_000_000).toFixed(1)}B pts`);
+  }
+
   if (value >= 1_000_000) {
     return trimTrailingZero(`${(value / 1_000_000).toFixed(1)}M pts`);
   }
@@ -107,5 +113,5 @@ export function normalizePriceShares(
 }
 
 function trimTrailingZero(value: string): string {
-  return value.replace(/\.0([MK])/, "$1");
+  return value.replace(/\.0([BMK])/, "$1");
 }

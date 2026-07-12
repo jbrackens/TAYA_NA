@@ -25,7 +25,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
-import BrandWordmark from "./components/BrandWordmark";
 import { MarketCard } from "./components/prediction/MarketCard";
 import {
   categoryLabel,
@@ -137,10 +136,11 @@ export default function HomePage() {
         aria-labelledby="home-hero-heading"
         className="pb-14 pt-8 max-[720px]:pb-10 max-[720px]:pt-4"
       >
-        <BrandWordmark height={28} className="text-[var(--brand-ink)]" />
+        {/* No hero wordmark: the shell TopBar already carries the
+            lockup — repeating it 60px lower read as a template tell. */}
         <h1
           id="home-hero-heading"
-          className="type-display m-0 mt-8 max-w-[780px] text-balance text-[clamp(38px,5.2vw,64px)] font-semibold leading-[1.05] tracking-[-0.02em] text-[var(--t1)] max-[720px]:mt-6"
+          className="type-display m-0 max-w-[780px] text-balance text-[clamp(38px,5.2vw,64px)] font-semibold leading-[1.05] tracking-[-0.02em] text-[var(--t1)] max-[720px]:mt-6"
         >
           {t("hero.title", "Trade what happens next.")}
         </h1>
@@ -159,7 +159,7 @@ export default function HomePage() {
         <div className="mt-8 flex flex-wrap gap-3">
           <Link
             href="/predict"
-            className="inline-flex h-12 items-center justify-center rounded-[var(--r-pill)] bg-[var(--action)] px-7 text-[15px] font-semibold !text-[var(--action-fg)] no-underline transition-colors duration-150 hover:bg-[var(--action-hover)]"
+            className="inline-flex h-12 items-center justify-center rounded-[var(--r-pill)] bg-[var(--action)] px-7 text-[15px] font-semibold !text-(--action-fg) no-underline transition-colors duration-150 hover:bg-[var(--action-hover)]"
           >
             {t("hero.browseMarkets", "Browse markets")}
           </Link>

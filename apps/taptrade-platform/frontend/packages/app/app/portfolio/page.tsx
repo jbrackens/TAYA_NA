@@ -475,7 +475,7 @@ function PositionsTable({
         action={
           <Link
             href="/predict"
-            className="inline-block rounded-[var(--r-rh-md)] bg-[var(--action)] px-[18px] py-[10px] text-[13px] font-semibold text-[var(--action-fg)] no-underline transition-colors duration-150 hover:bg-[var(--action-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--action-soft)]"
+            className="inline-block rounded-[var(--r-rh-md)] bg-[var(--action)] px-[18px] py-[10px] text-[13px] font-semibold text-(--action-fg) no-underline transition-colors duration-150 hover:bg-[var(--action-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--action-soft)]"
           >
             {t("positions.browse", "Browse markets")}
           </Link>

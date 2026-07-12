@@ -148,12 +148,10 @@ export function DiscoveryHero({
   // Machine-generated import tickers (IMP-<hex>) are data plumbing, not
   // content — the eyebrow shows the category alone for those markets.
   const isMachineTicker = /^IMP-[0-9A-F]{6,}$/i.test(displayMarket.ticker);
-  const eyebrowMeta = [
-    displayCategory ? displayCategory.toUpperCase() : "",
-    isMachineTicker ? "" : displayMarket.ticker,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  // Ticker hides below 560px — it crowded the carousel control on
+  // phones (P10 QA finding, 2026-07-12).
+  const eyebrowCategory = displayCategory ? displayCategory.toUpperCase() : "";
+  const eyebrowTicker = isMachineTicker ? "" : displayMarket.ticker;
   const yes = displayMarket.yesPricePoints;
   const no = displayMarket.noPricePoints;
 
@@ -198,10 +196,18 @@ export function DiscoveryHero({
                   />
                   {t("LIVE")}
                 </span>
-                {eyebrowMeta ? <span aria-hidden="true">·</span> : null}
+                {eyebrowCategory || eyebrowTicker ? (
+                  <span aria-hidden="true">·</span>
+                ) : null}
               </>
             )}
-            {eyebrowMeta ? <span>{eyebrowMeta}</span> : null}
+            {eyebrowCategory ? <span>{eyebrowCategory}</span> : null}
+            {eyebrowTicker ? (
+              <span className="max-[560px]:hidden">
+                {eyebrowCategory ? "· " : ""}
+                {eyebrowTicker}
+              </span>
+            ) : null}
           </header>
 
           {/* min-h reserves exactly two title lines so slides with 1-line

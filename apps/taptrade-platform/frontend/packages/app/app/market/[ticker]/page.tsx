@@ -226,7 +226,7 @@ const PAGE_STATE_COPY_CLASS =
   "mt-2.5 mb-0 text-sm leading-[1.5] text-[var(--t2)]";
 // P10: the glass-era mint-gradient CTA is retired — ink action.
 const PAGE_STATE_ACTION_CLASS =
-  "mt-[22px] inline-flex min-h-11 items-center justify-center rounded-[var(--r-rh-md)] border-0 bg-[var(--action)] px-5 text-sm font-bold text-[var(--action-fg)] no-underline transition-[transform,background-color] duration-[180ms] ease-[ease] hover:-translate-y-px hover:bg-[var(--action-hover)]";
+  "mt-[22px] inline-flex min-h-11 items-center justify-center rounded-[var(--r-rh-md)] border-0 bg-[var(--action)] px-5 text-sm font-bold text-(--action-fg) no-underline transition-[transform,background-color] duration-[180ms] ease-[ease] hover:-translate-y-px hover:bg-[var(--action-hover)]";
 
 function pageStateEyebrowClass(isError: boolean): string {
   return `${PAGE_STATE_EYEBROW_BASE_CLASS} ${
@@ -1013,10 +1013,15 @@ export default function MarketDetailPage() {
   const displayCategory = category ? categoryName(contentT, category) : "";
   // Humanized settlement source ("feed:fifa" → "fifa") for the rules
   // list and the settlement timeline — same treatment the ticket uses.
-  const settlementSourceLabel = (market?.settlementSourceKey || "")
-    .replace(/^(feed|source|manual):/i, "")
-    .replace(/[-_]+/g, " ")
+  const rawSettlementSource = (market?.settlementSourceKey || "")
+    .replace(/^(feed|source):/i, "")
+    .replace(/[-_:]+/g, " ")
     .trim();
+  const settlementSourceLabel = /^(admin\s*)?manual$/i.test(
+    rawSettlementSource,
+  )
+    ? t("MANUAL_REVIEW", "manual review")
+    : rawSettlementSource;
   const canPreviewOrders = isAuthenticated && !authLoading;
 
   async function handleShareMarket() {

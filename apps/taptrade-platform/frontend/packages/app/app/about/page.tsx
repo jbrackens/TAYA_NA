@@ -16,7 +16,10 @@ const FALLBACK_CONTENT = `
 <p>Binary YES/NO predictions on real-world events, transparent resolution rules, live depth, point-ledger history, portfolio tracking, rankings, rewards, and responsible-play tools. TapTrade points are for gameplay only and cannot be withdrawn, cashed out, redeemed, or transferred for money or prizes.</p>
 
 <h2>Licensing &amp; Regulation</h2>
-<p>TapTrade is designed around non-redeemable gameplay points. Access and features may vary by jurisdiction, age, and responsible-play settings.</p>
+<p>TapTrade is designed around non-redeemable gameplay points. Points cannot be deposited, withdrawn, or exchanged for money, and TapTrade is not registered with the CFTC or any other financial regulator. Access and features may vary by jurisdiction, age, and responsible-play settings.</p>
+
+<h2 id="fair-play">Fair Play &amp; Controls</h2>
+<p>You stay in charge of how you play. Notification preferences live in your account settings and default to market events only — never promotions. On deploys where play-limit and self-exclusion tooling is enabled, you will find them under your profile's Limits tab and Account &rarr; Take a break; on this deploy, those pages may be unavailable, in which case support can adjust or close your account on request at any time. Closing your account is always available under Account settings.</p>
 
 <h2>Contact</h2>
 <p>For support inquiries, reach us at <a href="mailto:support@taptrade.com">support@taptrade.com</a>.</p>

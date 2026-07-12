@@ -21,6 +21,7 @@ import { ToastProvider } from "./ToastProvider";
 import { TopBar } from "./prediction/TopBar";
 import { PredictFooter } from "./prediction/PredictFooter";
 import { BackendStatusBanner } from "./BackendStatusBanner";
+import { DemoDataBanner } from "./DemoDataBanner";
 import MobileTabBar from "./MobileTabBar";
 import { ChatSidebar } from "./chat/ChatSidebar";
 
@@ -54,6 +55,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               ) : (
                 <div className={APP_SHELL_CLASS}>
                   <TopBar />
+                  <DemoDataBanner />
                   <BackendStatusBanner />
                   <div className={APP_SHELL_BODY_CLASS}>
                     <ChatSidebar />

@@ -30,7 +30,7 @@ const BUTTON_CLASS =
   "inline-flex min-h-9 items-center justify-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 text-xs font-bold text-[var(--t1)] transition-colors hover:border-[var(--border-2)] hover:bg-[var(--action-soft)] disabled:cursor-not-allowed disabled:opacity-55";
 // P10 ink action: mint is never a CTA fill (Signal Ink rule).
 const PRIMARY_BUTTON_CLASS =
-  "inline-flex min-h-9 items-center justify-center rounded-[var(--r-rh-md)] border-0 bg-[var(--action)] px-4 text-xs font-bold text-[var(--action-fg)] transition-colors hover:bg-[var(--action-hover)] disabled:cursor-not-allowed disabled:opacity-55";
+  "inline-flex min-h-9 items-center justify-center rounded-[var(--r-rh-md)] border-0 bg-[var(--action)] px-4 text-xs font-bold text-(--action-fg) transition-colors hover:bg-[var(--action-hover)] disabled:cursor-not-allowed disabled:opacity-55";
 const LIST_CLASS = "flex flex-col gap-3";
 const COMMENT_CLASS =
   "border-t border-[var(--border-1)] pt-3 first:border-t-0 first:pt-0";

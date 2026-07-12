@@ -134,7 +134,7 @@ const TOP_BAR_BUTTON_GHOST_CLASS =
   "bg-transparent text-[var(--t1)] hover:bg-[var(--surface-2)]";
 // P10 ink action (Signal Ink signature #2): primary CTA is ink, not mint.
 const TOP_BAR_BUTTON_ACCENT_CLASS =
-  "bg-[var(--action)] text-[var(--action-fg)] hover:-translate-y-px hover:bg-[var(--action-hover)]";
+  "bg-[var(--action)] text-(--action-fg) hover:-translate-y-px hover:bg-[var(--action-hover)]";
 
 const TOP_BAR_MENU_WRAP_CLASS = "relative";
 const TOP_BAR_MENU_CLASS =

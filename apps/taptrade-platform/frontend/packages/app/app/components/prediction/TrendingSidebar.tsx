@@ -148,9 +148,10 @@ export function TrendingSidebar({ markets, limit = 6 }: Props) {
             contentT,
             m.categoryName || categoryFromTicker(m.ticker),
           );
-          const deltaText = delta
-            ? `${up ? "+" : ""}${delta.pct.toFixed(1)}%`
-            : "—";
+          const deltaText =
+            delta && !delta.flat
+              ? `${up ? "+" : ""}${delta.pct.toFixed(1)}%`
+              : "—";
           return (
             <li key={m.id}>
               <Link

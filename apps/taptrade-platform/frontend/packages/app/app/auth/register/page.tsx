@@ -23,6 +23,7 @@ import { claimStarterGrant } from "../../lib/api/wallet-client";
 import { safeReturnPath, returnUrlSuffix } from "../../lib/safeReturnPath";
 import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
 import BrandMark from "../../components/BrandMark";
+import BrandWordmark from "../../components/BrandWordmark";
 
 interface FormData {
   username: string;
@@ -53,8 +54,8 @@ const FORM_COL_CLASS =
   "flex min-h-screen flex-col overflow-y-auto px-6 py-8 sm:px-12 lg:px-16";
 const FORM_INNER_CLASS = "mx-auto flex w-full max-w-[400px] flex-1 flex-col";
 const BRAND_ROW_CLASS = "mb-10 inline-flex items-center gap-2.5 no-underline";
-const BRAND_WORDMARK_CLASS =
-  "text-[21px] font-bold leading-none tracking-[-0.03em] text-[var(--brand-ink)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
+// P10: drawn vector wordmark (Schibsted Grotesk text render retired).
+const BRAND_WORDMARK_CLASS = "text-[var(--brand-ink)]";
 const EVENT_PANEL_CLASS =
   "relative hidden overflow-hidden bg-[var(--brand-ink)] lg:block";
 const EVENT_MEDIA_CLASS =
@@ -247,10 +248,7 @@ export default function RegisterPage() {
         <div className={FORM_INNER_CLASS}>
           <Link href="/" className={BRAND_ROW_CLASS} aria-label="TapTrade home">
             <BrandMark size={26} />
-            <span className={BRAND_WORDMARK_CLASS}>
-              TapTrade
-              <span className="text-[var(--brand-period)]">.</span>
-            </span>
+            <BrandWordmark height={19} className={BRAND_WORDMARK_CLASS} />
           </Link>
 
           <header className={HEAD_CLASS}>
@@ -330,9 +328,12 @@ export default function RegisterPage() {
                   predictions on this platform.
                 </p>
                 <p className="m-0 text-xs leading-[1.55] text-[var(--t2)]">
-                  TapTrade uses non-redeemable gameplay points. Starter points
-                  are for predictions only; they are not money and cannot be
-                  cashed out, withdrawn, transferred, or redeemed for prizes.
+                  TapTrade uses non-redeemable gameplay points. Starter
+                  points are for predictions only; they are not money and{" "}
+                  {/* keep "cannot be cashed" on one line — the qa-regression
+                      points-only lock does raw substring matching */}
+                  cannot be cashed out, withdrawn, transferred, or redeemed
+                  for prizes.
                 </p>
               </div>
 

@@ -126,7 +126,7 @@ const TICKET_INPUT_CLASS =
 // grammar: hover deepens + lifts; disabled drops opacity AND its label
 // states the reason (existing pattern); focus uses the system ring.
 const TICKET_CTA_CLASS =
-  "relative mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border-0 bg-[var(--action)] px-4 py-[14px] [font-family:inherit] text-[15px] font-semibold text-[var(--action-fg)] no-underline transition-[background-color,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:bg-[var(--action-hover)] disabled:cursor-not-allowed disabled:opacity-[0.45] disabled:transform-none";
+  "relative mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border-0 bg-[var(--action)] px-4 py-[14px] [font-family:inherit] text-[15px] font-semibold text-(--action-fg) no-underline transition-[background-color,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:bg-[var(--action-hover)] disabled:cursor-not-allowed disabled:opacity-[0.45] disabled:transform-none";
 const TICKET_NOTE_CLASS =
   "mt-2.5 text-center text-xs leading-[1.45] text-[var(--t2)]";
 const TICKET_TRUST_CLASS =
@@ -356,10 +356,15 @@ export function TradeTicket({
     action === "buy" ? (preview?.maxLossPoints ?? effectiveSpend) : null;
   // Humanized settlement source for the money-moment one-liner
   // ("Resolves by FIFA official results"). Machine keys stay quiet.
-  const settlementSource = (market.settlementSourceKey || "")
-    .replace(/^(feed|source|manual):/i, "")
-    .replace(/[-_]+/g, " ")
+  const rawSettlementSource = (market.settlementSourceKey || "")
+    .replace(/^(feed|source):/i, "")
+    .replace(/[-_:]+/g, " ")
     .trim();
+  // Manual-attestation keys read as plumbing ("admin manual") — say what
+  // actually happens instead.
+  const settlementSource = /^(admin\s*)?manual$/i.test(rawSettlementSource)
+    ? t("MANUAL_REVIEW", "manual review")
+    : rawSettlementSource;
   const hasKnownBalance = typeof balance === "number";
   // Point-balance check applies only to buys. Sells require enough position.
   const insufficientFunds =
@@ -743,7 +748,9 @@ export function TradeTicket({
                   ? t("AVAILABLE_SHARES", { quantity: availableShares })
                   : t("BALANCE_AMOUNT", {
                       amount:
-                        typeof balance === "number" ? balance.toFixed(2) : "—",
+                        typeof balance === "number"
+                          ? Math.round(balance).toLocaleString()
+                          : "—",
                     })}
               </p>
             </div>

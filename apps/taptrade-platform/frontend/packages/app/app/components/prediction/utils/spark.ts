@@ -26,9 +26,13 @@ export function seriesDelta(
   if (!points || points.length < 2) return null;
   const first = points[0];
   const last = points[points.length - 1];
-  const delta = last - first;
-  const pct = first > 0 ? (delta / first) * 100 : 0;
-  return { delta, pct, up: delta >= 0, flat: delta === 0 };
+  // Series values are volume-weighted floats; round the cent delta for
+  // display and treat sub-half-cent moves as flat — a "+0.0%" pill is
+  // noise wearing a signal color.
+  const delta = Math.round(last - first);
+  const pct = first > 0 ? ((last - first) / first) * 100 : 0;
+  const flat = delta === 0 || Math.abs(pct) < 0.05;
+  return { delta, pct, up: delta >= 0, flat };
 }
 
 /**

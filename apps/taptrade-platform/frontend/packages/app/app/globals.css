@@ -378,12 +378,19 @@ body {
     opacity: 0.35;
   }
 }
-a {
-  color: inherit;
-  text-decoration: none;
-}
-button {
-  font-family: inherit;
+/* P10 (2026-07-12): these element resets MUST live in @layer base.
+ * Unlayered, they outranked every Tailwind text-color utility on
+ * anchors (unlayered CSS beats @layer utilities regardless of
+ * specificity) — which is why link color utilities silently failed and
+ * older code resorted to !important (`!text-*`) workarounds. */
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  button {
+    font-family: inherit;
+  }
 }
 
 /* ── Static Content Pages ── */
