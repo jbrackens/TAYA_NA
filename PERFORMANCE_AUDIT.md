@@ -450,9 +450,11 @@ bottleneck and recommended next action.
    and fail-closed deployed-env behavior).
 4. **Deploy wiring** — DONE: `docker-compose.demo.yml` +
    `deploy-demo.yml` now carry the store env with a per-deploy generated
-   webhook secret (STORE_AND_PAYMENTS.md §14). Faucets coexisting with the
-   paid store remains an open economy-design decision (brief provided
-   separately).
+   webhook secret (STORE_AND_PAYMENTS.md §14). Faucet posture resolved
+   (owner decision 2026-07-12, option B "real economy rehearsal"): starter
+   grant 1,000,000 → 1,000 points, daily claim 0 → 50 points/day, so paid
+   packs (500–12,000 points) carry real acquisition pressure. Values
+   live-verified (fresh user: 1,000 + 50 = 1,050 pts, idempotent).
 5. **Deferred small items** — TopBar search loads 100 markets per focus
    (kept: needs UX decision on server-side search); rewards page refetches
    6 collections per claim (kept: correctness-first pattern);
@@ -470,7 +472,11 @@ bottleneck and recommended next action.
    `desktop-firefox` Playwright projects are wired and committed, but the
    pinned browser archives (webkit-2272, firefox-1511) download at a
    crawl on this network and had not completed by end of session.
-   Coverage today is Chromium desktop + mobile (43/43). Follow-up (one
+   Coverage today is Chromium desktop + mobile (43/43). Confirmed
+   environment blocker (2026-07-12 evening): cdn.playwright.dev stalls or
+   refuses the webkit-2272/firefox-1511 archives from this network (15MB
+   stall, then 0-byte responses across 10 curl resume attempts; npmmirror
+   does not carry the revision yet). Follow-up on any normal network (one
    command each): `npx playwright install webkit firefox` from
    packages/app, then
    `npx playwright test journeys --project=setup --project=desktop-webkit --project=desktop-firefox`.

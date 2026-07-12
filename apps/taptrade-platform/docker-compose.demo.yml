@@ -154,12 +154,18 @@ services:
       SMM_HALF_SPREAD_CENTS: "3"
       SMM_MAX_POSITION_QTY: "500"
       SMM_TICK_INTERVAL: "30s"
-      # Play-money faucet: a freshly-registered player can claim a one-time
-      # starter balance ($10,000 here) so they are immediately tradeable. The
-      # grant is idempotent (one per user) and credits only the session user.
-      # A REAL-MONEY deployment MUST leave this at 0 (the default) — see the
+      # Faucet posture: "real economy rehearsal" (owner decision 2026-07-12,
+      # option B). The one-time starter grant covers a few trades (1,000
+      # points), the daily claim (50 points/day) keeps free players alive,
+      # and paid point packs (500-12,000 points) are the meaningful top-up -
+      # so the demo actually exercises the acquisition loop instead of
+      # drowning it under the old 1,000,000-point grant. Values are whole
+      # points despite the legacy _CENTS env names (unit model 2026-07-07).
+      # Grants are idempotent, session-user-only. A REAL-MONEY deployment
+      # MUST set the starter grant to 0 (the default) - see the
       # POST /api/v1/wallet/starter-grant handler.
-      STARTER_GRANT_CENTS: "1000000"
+      STARTER_GRANT_CENTS: "1000"
+      DAILY_CLAIM_CENTS: "50"
       # Point Store (owner decision 2026-07-12): paid point packs via the
       # DEMO provider — simulated checkout, clearly labeled, no real charges.
       # Purchases are jurisdiction-gated like deposits and count toward
