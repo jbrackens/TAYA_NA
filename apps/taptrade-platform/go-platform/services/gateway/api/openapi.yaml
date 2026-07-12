@@ -862,6 +862,102 @@ components:
         mission: { $ref: "#/components/schemas/Mission" }
         streak: { $ref: "#/components/schemas/Streak" }
         rewardLimit: { $ref: "#/components/schemas/RewardLimitStatus" }
+    StorePointPack:
+      type: object
+      description: One purchasable point-pack catalogue entry (point store, STORE_ENABLED only). Purchases credit non-redeemable gameplay points one way; totalPoints is computed from base plus bonus and never stored.
+      properties:
+        id: { type: string }
+        name: { type: string }
+        priceUsdCents: { type: integer, format: int64, description: Real point pack purchase price in integer cents. Rendered client-side; never mixed into point fields. }
+        basePoints: { type: integer, format: int64, description: Gameplay points included in the point pack purchase. }
+        bonusPoints: { type: integer, format: int64, description: Promotional extra gameplay points, shown separately. }
+        totalPoints: { type: integer, format: int64, description: Computed base plus bonus gameplay points. }
+        displayOrder: { type: integer }
+        badge: { type: string, description: Optional label from real pack configuration only (for example Popular or Best Value). }
+        introOnly: { type: boolean, description: Pack is served only before the caller's first completed purchase. }
+        promoStartsAt: { type: string, format: date-time, nullable: true }
+        promoEndsAt: { type: string, format: date-time, nullable: true }
+        unit: { type: string, enum: [PTS], description: Gameplay point unit for point-native fields. }
+    StorePackListResponse:
+      type: object
+      properties:
+        packs:
+          type: array
+          items: { $ref: "#/components/schemas/StorePointPack" }
+        firstPurchase: { type: boolean, description: True until the caller completes their first point pack purchase. }
+        unit: { type: string, enum: [PTS] }
+    StorePurchase:
+      type: object
+      description: One point pack purchase with the immutable server-resolved pack snapshot. Status machine is pending_payment to completed, failed, or canceled; terminal states are final and gameplay points credit exactly once on completion.
+      properties:
+        id: { type: string, description: Purchase id with the sp_ prefix. }
+        userId: { type: string }
+        packId: { type: string }
+        status: { type: string, enum: [pending_payment, completed, failed, canceled] }
+        priceUsdCents: { type: integer, format: int64 }
+        basePoints: { type: integer, format: int64 }
+        bonusPoints: { type: integer, format: int64 }
+        totalPoints: { type: integer, format: int64 }
+        provider: { type: string, enum: [demo], description: Checkout provider. The demo provider is a labeled simulation with no real charge; stripe is reserved and refused at boot. }
+        providerSessionId: { type: string }
+        failureReason: { type: string }
+        createdAt: { type: string, format: date-time }
+        completedAt: { type: string, format: date-time, nullable: true }
+        unit: { type: string, enum: [PTS] }
+    StoreCheckoutRequest:
+      type: object
+      description: The client sends only the pack id and an idempotency key; price and point amounts are resolved server-side from the catalogue row.
+      properties:
+        packId: { type: string }
+        idempotencyKey: { type: string, description: Client idempotency key. A double-submitted checkout returns the same purchase. }
+      required: [packId, idempotencyKey]
+    StoreCheckoutResponse:
+      type: object
+      properties:
+        purchase: { $ref: "#/components/schemas/StorePurchase" }
+        checkout:
+          type: object
+          properties:
+            providerSessionId: { type: string }
+            checkoutToken: { type: string, description: Opaque token for the simulated demo checkout screen. }
+    StorePurchaseListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/StorePurchase" }
+        total: { type: integer }
+    StorePurchaseStatusResponse:
+      type: object
+      properties:
+        purchase: { $ref: "#/components/schemas/StorePurchase" }
+    StoreConfirmRequest:
+      type: object
+      description: Demo-provider-only simulated checkout outcome. Duplicate confirmations are idempotent no-ops with no additional point movement.
+      properties:
+        outcome: { type: string, enum: [success, failure, cancel, delayed] }
+      required: [outcome]
+    StoreConfirmResponse:
+      type: object
+      properties:
+        purchase: { $ref: "#/components/schemas/StorePurchase" }
+        alreadyFulfilled: { type: boolean, description: True when the purchase was already completed and no points moved. }
+    StoreWebhookEvent:
+      type: object
+      description: Provider event addressed to a purchase. The body is verified with HMAC-SHA256 over the raw payload (X-Store-Signature header) inside a five-minute timestamp window; amounts never ride the event.
+      properties:
+        eventId: { type: string }
+        eventType: { type: string }
+        purchaseId: { type: string }
+        status: { type: string, enum: [completed, failed, canceled, pending] }
+        timestamp: { type: string, description: Unix seconds or RFC3339. }
+      required: [purchaseId, status, timestamp]
+    StoreWebhookAck:
+      type: object
+      properties:
+        purchaseId: { type: string }
+        status: { type: string }
+        alreadyFulfilled: { type: boolean }
     WalletBalance:
       type: object
       description: Authenticated point-wallet balance with point-native aliases only.
@@ -2024,6 +2120,109 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/RewardLimitStatus" }
+  /api/v1/store/packs:
+    get:
+      summary: List the purchasable point-pack catalogue for the caller
+      description: Point store surface, registered only when STORE_ENABLED is true. Serves active packs inside their promo windows with intro-only eligibility applied, plus the caller's first-purchase flag. Point pack purchases credit non-redeemable gameplay points one way.
+      security: [{ SessionCookie: [] }]
+      responses:
+        "200":
+          description: Point pack catalogue with eligibility
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StorePackListResponse" }
+        "403": { description: Authentication required }
+  /api/v1/store/checkout:
+    post:
+      summary: Create a point pack checkout for the caller
+      description: Resolves price and point amounts server-side from the pack row (the client supplies only packId plus an idempotency key), snapshots them onto a pending purchase, and registers a provider checkout session. A double-submitted idempotency key returns the same purchase with status 200.
+      security: [{ SessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StoreCheckoutRequest" }
+      responses:
+        "201":
+          description: New pending purchase with provider checkout session
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StoreCheckoutResponse" }
+        "200":
+          description: Idempotent replay returning the existing purchase
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StoreCheckoutResponse" }
+        "403": { description: Authentication required or pack not currently purchasable }
+        "404": { description: Point pack not found }
+  /api/v1/store/purchases:
+    get:
+      summary: List the caller's point pack purchase history
+      security: [{ SessionCookie: [] }]
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200 } }
+      responses:
+        "200":
+          description: Purchase history for the session user
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StorePurchaseListResponse" }
+        "403": { description: Authentication required }
+  /api/v1/store/purchases/{id}:
+    get:
+      summary: Read one purchase (owner or admin)
+      description: Players may only read their own purchases; admins may inspect another user's. A pending purchase re-checks the provider session, so delayed demo checkouts complete here once their delay elapses — fulfillment stays server-side and idempotent.
+      security: [{ SessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Purchase status
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StorePurchaseStatusResponse" }
+        "403": { description: Cannot access another user's purchase }
+        "404": { description: Purchase not found }
+  /api/v1/store/purchases/{id}/confirm:
+    post:
+      summary: Confirm a simulated demo checkout outcome (owner only)
+      description: Demo provider only; the purchase owner conveys the outcome chosen on the labeled simulated checkout screen. Points credit exactly once through the point ledger on success; duplicate confirmations are idempotent no-ops; failed and canceled outcomes flip status without any point movement.
+      security: [{ SessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StoreConfirmRequest" }
+      responses:
+        "200":
+          description: Confirmation result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StoreConfirmResponse" }
+        "400": { description: Unknown outcome }
+        "403": { description: Only the purchase owner may confirm, or provider is not demo }
+        "404": { description: Purchase not found }
+        "409": { description: Purchase already in a different terminal state }
+  /api/v1/store/webhook:
+    post:
+      summary: Receive a signature-verified provider event
+      description: Public and CSRF-exempt only while STORE_ENABLED is true. The handler verifies an HMAC-SHA256 signature over the raw body (X-Store-Signature) within a five-minute timestamp window before processing; replays are idempotent no-ops backed by the purchase state machine and point ledger keys.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StoreWebhookEvent" }
+      responses:
+        "200":
+          description: Event applied (or replayed idempotently)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StoreWebhookAck" }
+        "401": { description: Invalid webhook signature }
+        "404": { description: Purchase not found }
+        "503": { description: Webhook secret not configured }
   /api/v1/bonuses/active:
     get:
       summary: List active point-play bonuses for the caller

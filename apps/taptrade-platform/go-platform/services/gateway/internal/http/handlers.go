@@ -439,6 +439,12 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// the sole HTTP money-mutation surface.
 	registerAdminWalletMutationRoutes(mux, "/api/v1/admin", walletService)
 
+	// --- Point Store (STORE_ENABLED; STORE_AND_PAYMENTS.md) ---
+	// A new, demo-safe purchasable point-pack tree behind its own flag —
+	// fully separate from the legacy cashier/payments trees below, which
+	// stay retired and boot-blocked exactly as before.
+	registerPointStoreRoutes(mux, walletService)
+
 	if legacyMoneyRoutesEnabled() {
 		alphaCashierConfig, err := alphacashier.LoadConfigFromEnv(os.Getenv)
 		if err != nil {
@@ -653,7 +659,7 @@ func gatewayRouteDomains(legacyMoneyEnabled bool) []string {
 }
 
 func gatewayLaunchStatusDomains() []string {
-	return []string{
+	domains := []string{
 		"prediction",
 		"orders",
 		"portfolio",
@@ -665,6 +671,14 @@ func gatewayLaunchStatusDomains() []string {
 		"leaderboards",
 		"auth",
 	}
+	// The point store advertises itself only when its flag-gated tree is
+	// mounted. launch-boundary-report's include/exclude assertions are
+	// unaffected: point_store is in neither pinned set, and with
+	// STORE_ENABLED unset the domain stays absent.
+	if storeRoutesEnabled() {
+		domains = append(domains, "point_store")
+	}
+	return domains
 }
 
 func registerPredictionFeedAdapters(feedRegistry *feed.Registry) {

@@ -15,6 +15,7 @@ import (
 
 	"taptrade/gateway/internal/alphacashier"
 	gatewayhttp "taptrade/gateway/internal/http"
+	"taptrade/gateway/internal/store"
 	"taptrade/gateway/internal/tenant"
 	"taptrade/gateway/internal/tracing"
 	"taptrade/platform/logging"
@@ -301,6 +302,14 @@ func gatewayPublicPrefixes() []string {
 			"/v1/provider-callbacks/", // Legacy cashier provider callbacks verify raw-body signatures in-handler.
 		)
 	}
+	if storeEnabledFromOS() {
+		// The point store webhook is public only when the store tree is
+		// mounted; the handler performs its own HMAC verification against
+		// STORE_WEBHOOK_SECRET before processing (mirrors the legacy
+		// payments-webhook pattern above). All other /api/v1/store/* routes
+		// stay session-authenticated.
+		prefixes = append(prefixes, "/api/v1/store/webhook")
+	}
 	return prefixes
 }
 
@@ -319,6 +328,9 @@ func gatewayCSRFSkipPrefixes() []string {
 			"/v1/provider-callbacks/",
 		)
 	}
+	if storeEnabledFromOS() {
+		prefixes = append(prefixes, "/api/v1/store/webhook")
+	}
 	return prefixes
 }
 
@@ -336,6 +348,12 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 		return fmt.Errorf("ALPHA_CASHIER_ENABLED=true requires %s=true; TapTrade launch keeps the legacy cashier route tree disabled", legacyMoneyRoutesEnv)
 	}
 	if err := alphacashier.ValidateRuntimeConfig(getenv); err != nil {
+		return err
+	}
+	// Point store boot rules (STORE_AND_PAYMENTS.md §7): an enabled store in
+	// production/staging must carry a real STORE_WEBHOOK_SECRET, and
+	// STORE_PROVIDER=stripe is a reserved seam refused until implemented.
+	if err := store.ValidateRuntimeConfig(getenv); err != nil {
 		return err
 	}
 
@@ -456,6 +474,10 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 
 func legacyMoneyRoutesEnabledFromOS() bool {
 	return legacyMoneyRoutesEnabled(os.Getenv)
+}
+
+func storeEnabledFromOS() bool {
+	return store.EnabledFromEnv(os.Getenv)
 }
 
 func legacyMoneyRoutesEnabled(getenv func(string) string) bool {
