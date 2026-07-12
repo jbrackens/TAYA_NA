@@ -52,14 +52,21 @@ test.describe("/rewards — loyalty ledger + tiers", () => {
     );
     expect(demoBonus, "demo active point-play bonus missing").toBeTruthy();
     expect(demoBonus.unit).toBe("PTS");
-    expect(demoBonus.remainingPointsCents).toBe(15_000);
-    expect(demoBonus.playRequiredPointsCents).toBe(100_000);
-    expect(demoBonus.playCompletedPointsCents).toBe(25_000);
+    // Whole-Points unit model (2026-07-09, migration 050): wire fields
+    // are *Points; the transitional *PointsCents names are retired.
+    // (Smoke re-encoded 2026-07-12 during the P10 pass — it had gone
+    // stale against the points migration.)
+    expect(demoBonus.remainingPoints).toBe(15_000);
+    expect(demoBonus.playRequiredPoints).toBe(100_000);
+    expect(demoBonus.playCompletedPoints).toBe(25_000);
     for (const retired of [
       "remainingAmountCents",
       "wageringRequiredCents",
       "wageringCompletedCents",
       "wageringProgressPct",
+      "remainingPointsCents",
+      "playRequiredPointsCents",
+      "playCompletedPointsCents",
     ]) {
       expect(
         demoBonus[retired],

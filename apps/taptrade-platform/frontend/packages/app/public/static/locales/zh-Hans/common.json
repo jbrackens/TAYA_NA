@@ -10,5 +10,7 @@
   "ERROR_MESSAGE": "Error: {{message}}",
   "PREVIOUS": "Previous",
   "NEXT": "Next",
-  "PAGE_OF": "Page {{current}} of {{total}}"
+  "PAGE_OF": "Page {{current}} of {{total}}",
+  "DEMO_ENVIRONMENT_NOTE": "演示环境——市场、成交量与活动包含预置数据。",
+  "DISMISS": "关闭"
 }

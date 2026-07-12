@@ -199,5 +199,6 @@
   "MAX_LOSS": "Max loss",
   "FEES": "Fees",
   "PRICE_MOVED": "Price moved {{from}}¢ → {{to}}¢",
-  "RESOLVES_BY": "Resolves by {{source}}"
+  "RESOLVES_BY": "Resolves by {{source}}",
+  "SEARCH_MARKETS": "Search markets"
 }

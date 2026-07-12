@@ -45,6 +45,15 @@ export default defineConfig({
     video: "off",
     // Ignore HTTPS self-signed in case the stack ever runs behind a local cert.
     ignoreHTTPSErrors: true,
+    // PW_FULL_CHROMIUM=1 runs headless via the full chromium build —
+    // escape hatch for dev boxes where the separate headless-shell
+    // download flakes (2026-07-12). CI is unaffected.
+    ...(process.env.PW_FULL_CHROMIUM ? { channel: "chromium" as const } : {}),
+    // PW_EXECUTABLE_PATH points the runner at an explicit browser
+    // binary (same escape hatch, for a cached adjacent revision).
+    ...(process.env.PW_EXECUTABLE_PATH
+      ? { launchOptions: { executablePath: process.env.PW_EXECUTABLE_PATH } }
+      : {}),
   },
 
   projects: [

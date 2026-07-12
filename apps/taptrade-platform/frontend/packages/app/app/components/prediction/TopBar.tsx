@@ -322,7 +322,12 @@ export function TopBar() {
           aria-label={`${brand.name} — home`}
         >
           <BrandMark size={30} />
-          <BrandWordmark height={21} className={TOP_BAR_WORDMARK_CLASS} />
+          {/* Below 380px the full lockup pushes the auth buttons off-
+              screen — the split-T mark carries the brand alone. */}
+          <BrandWordmark
+            height={21}
+            className={`${TOP_BAR_WORDMARK_CLASS} max-[380px]:hidden`}
+          />
         </Link>
 
         {isDesktop && (

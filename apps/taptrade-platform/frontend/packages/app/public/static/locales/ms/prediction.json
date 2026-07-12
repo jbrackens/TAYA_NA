@@ -183,5 +183,6 @@
   "MAX_LOSS": "Kerugian maksimum",
   "FEES": "Yuran",
   "PRICE_MOVED": "Harga berubah {{from}}¢ → {{to}}¢",
-  "RESOLVES_BY": "Diselesaikan oleh {{source}}"
+  "RESOLVES_BY": "Diselesaikan oleh {{source}}",
+  "SEARCH_MARKETS": "Cari pasaran"
 }

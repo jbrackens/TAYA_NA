@@ -80,9 +80,20 @@ export default function MarketDiscussion({
     }
   }, [marketId]);
 
+  // The comments endpoint requires a session (P10 QA: anonymous fetches
+  // produced 401 → token-refresh 400 console noise on every public
+  // market page). Anonymous visitors get an honest sign-in state
+  // instead of a doomed request. Backend follow-up filed: make comment
+  // READS public so discussion is visible pre-signup.
   useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated) {
+      setLoading(false);
+      setLoadError(false);
+      return;
+    }
     void load();
-  }, [load]);
+  }, [load, isAuthenticated, authLoading]);
 
   async function submitComment() {
     if (!isAuthenticated || authLoading || saving) return;
@@ -174,7 +185,19 @@ export default function MarketDiscussion({
         </div>
       </header>
 
-      {loadError && !loading ? (
+      {!isAuthenticated && !authLoading ? (
+        <div className={EMPTY_CLASS}>
+          <p className="m-0 mb-3">
+            {t(
+              "DISCUSSION_SIGN_IN_TO_VIEW",
+              "Sign in to read and join the market discussion.",
+            )}
+          </p>
+          <Link href="/auth/login" className={BUTTON_CLASS}>
+            {t("DISCUSSION_SIGN_IN_CTA", "Sign in")}
+          </Link>
+        </div>
+      ) : loadError && !loading ? (
         <div className={EMPTY_CLASS} role="status">
           <p className="m-0 mb-3">
             {t("DISCUSSION_LOAD_FAILED", "Discussion could not load.")}

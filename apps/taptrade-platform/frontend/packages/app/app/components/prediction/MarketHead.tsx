@@ -75,8 +75,10 @@ const MARKET_HEAD_COUNTDOWN_CLASS =
   "font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
 const MARKET_HEAD_TITLE_CLASS =
   "m-0 mb-5 text-[28px] font-semibold leading-[1.22] tracking-[-0.02em] text-[var(--t1)] max-[720px]:text-[22px]";
+// Below 480px the three-cell strip overlapped the 30px price pair
+// (P10 QA, 2026-07-12) — side chips wrap under the prices instead.
 const MARKET_HEAD_SIDES_CLASS =
-  "grid grid-cols-[1fr_auto_1fr] items-center gap-4";
+  "grid grid-cols-[1fr_auto_1fr] items-center gap-4 max-[480px]:grid-cols-2 max-[480px]:gap-2 max-[480px]:[&>*:nth-child(2)]:order-first max-[480px]:[&>*:nth-child(2)]:col-span-2 max-[480px]:[&>*:nth-child(2)]:justify-self-center";
 const MARKET_HEAD_SIDE_CLASS = "flex items-center gap-2.5 min-w-0";
 const MARKET_HEAD_SIDE_DOT_CLASS = "h-2.5 w-2.5 shrink-0 rounded-full";
 const MARKET_HEAD_SIDE_NAME_CLASS =

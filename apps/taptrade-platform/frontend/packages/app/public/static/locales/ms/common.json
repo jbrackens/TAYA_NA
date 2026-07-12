@@ -10,5 +10,7 @@
   "ERROR_MESSAGE": "Error: {{message}}",
   "PREVIOUS": "Previous",
   "NEXT": "Next",
-  "PAGE_OF": "Page {{current}} of {{total}}"
+  "PAGE_OF": "Page {{current}} of {{total}}",
+  "DEMO_ENVIRONMENT_NOTE": "Persekitaran demo — pasaran, volum, dan aktiviti termasuk data benih.",
+  "DISMISS": "Tutup"
 }

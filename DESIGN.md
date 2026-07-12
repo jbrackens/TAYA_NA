@@ -1,5 +1,22 @@
 # Design System — TapTrade
 
+> **P10 "Signal Ink" (2026-07-12) is the active revision** — evidence base,
+> judge-panel scorecard, spec, and change log live in `docs/redesign/`.
+> Deltas over the P9 text below (which remains accurate where not
+> superseded): display face is **Bricolage Grotesque** (Clash Display
+> retired as a documented 2026 template tell; all fonts self-hosted, two
+> families + mono); the wordmark is **drawn vector art**
+> (`BrandWordmark.tsx`, split-crossbar t's + mint landing period — no
+> font render); **primary actions are INK** (`--action*` tokens; mint
+> survives only as the tap dot `--brand-dot`); the text ramp is
+> AA-at-token-level (`--t3` 5.0:1, `--t4` 4.5:1, decorative `--t-ghost`);
+> discovery surfaces render ONLY real price history (fabricated deltas/
+> sparklines deleted; demo-flag synthetic charts always wear a visible
+> SIMULATED chip); the hero carousel no longer auto-advances; the footer
+> carries a Fair-play & controls block on every deploy; `a`/`button`
+> element resets live in `@layer base` (unlayered they beat Tailwind
+> color utilities — the historic `!text-*` workarounds are obsolete).
+
 > Robinhood for prediction markets, **light theme**. Gallery-white surfaces, soft-flat cards on hairline borders and quiet two-layer shadows, big confident numbers, a dominant chart, mint as the action color. Markets are treated like stocks: the question is the sub-headline, the price IS the page, two pill buttons commit you to a side.
 
 This document governs both the **TapTrade player app** at `apps/taptrade-platform/frontend/packages/app/` (port 3000) and the **back-office** at `apps/taptrade-platform/frontend/packages/office/` (port 3001). Both surfaces share the same `:root` token set, the same Inter + IBM Plex Mono fonts, and the same gallery-white backdrop (P9, 2026-07-07 — the P8 warm cream + chart-paper grid is retired).

@@ -185,5 +185,6 @@
   "MAX_LOSS": "Max na lugi",
   "FEES": "Mga bayarin",
   "PRICE_MOVED": "Gumalaw ang presyo {{from}}¢ → {{to}}¢",
-  "RESOLVES_BY": "Ire-resolve ayon sa {{source}}"
+  "RESOLVES_BY": "Ire-resolve ayon sa {{source}}",
+  "SEARCH_MARKETS": "Maghanap ng markets"
 }

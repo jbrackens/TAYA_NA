@@ -183,5 +183,6 @@
   "MAX_LOSS": "最大損失",
   "FEES": "費用",
   "PRICE_MOVED": "價格變動 {{from}}¢ → {{to}}¢",
-  "RESOLVES_BY": "由 {{source}} 判定"
+  "RESOLVES_BY": "由 {{source}} 判定",
+  "SEARCH_MARKETS": "搜尋市場"
 }

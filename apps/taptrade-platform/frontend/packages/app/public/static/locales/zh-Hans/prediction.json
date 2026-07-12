@@ -183,5 +183,6 @@
   "MAX_LOSS": "最大损失",
   "FEES": "费用",
   "PRICE_MOVED": "价格变动 {{from}}¢ → {{to}}¢",
-  "RESOLVES_BY": "由 {{source}} 判定"
+  "RESOLVES_BY": "由 {{source}} 判定",
+  "SEARCH_MARKETS": "搜索市场"
 }
