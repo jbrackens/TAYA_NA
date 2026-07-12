@@ -91,6 +91,28 @@ jobs:
           chmod 600 ~/.ssh/deploy
           ssh-keyscan -H "$BOX" >> ~/.ssh/known_hosts 2>/dev/null
 
+      - name: Free disk space on the box
+        # 2026-07-12: a deploy failed mid-migration with Postgres "No space
+        # left on device" — the box accumulates a docker image generation
+        # per deploy. Volume-safe cleanup only: prune unused images/
+        # containers/networks + build cache (NEVER --volumes), cap the
+        # journal, drop apt caches. Fails the deploy loudly if the disk is
+        # still >90% full afterwards, instead of corrupting a migration.
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            set -e
+            df -h / | tail -1
+            docker system prune -af 2>/dev/null | tail -1 || true
+            docker builder prune -af 2>/dev/null | tail -1 || true
+            journalctl --vacuum-size=200M 2>/dev/null | tail -1 || true
+            apt-get clean 2>/dev/null || true
+            df -h / | tail -1
+            USED=$(df --output=pcent / | tail -1 | tr -dc 0-9)
+            if [ "$USED" -gt 90 ]; then
+              echo "::error::Disk still ${USED}% full after cleanup — manual intervention needed before migrations can run safely."
+              exit 1
+            fi'
+
       - name: Rsync app dir to the box
         run: |
           rsync -az --delete -e "ssh -i ~/.ssh/deploy $SSH_OPTS" \
