@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { formatPoints } from "../lib/points";
 
 interface WageringProgressProps {
   requiredPoints: number;
@@ -46,8 +47,8 @@ export const WageringProgress: React.FC<WageringProgressProps> = ({
       <div className="flex items-center justify-between text-xs">
         <span className="text-gray-400">
           {t("playProgressRequired", {
-            completed: formatPointsFromPoints(completedPoints),
-            required: formatPointsFromPoints(requiredPoints),
+            completed: formatPoints(completedPoints),
+            required: formatPoints(requiredPoints),
           })}
         </span>
         <span className={isExpired ? "text-red-400" : "text-gray-400"}>
@@ -57,7 +58,3 @@ export const WageringProgress: React.FC<WageringProgressProps> = ({
     </div>
   );
 };
-
-function formatPointsFromPoints(cents: number): string {
-  return `${Math.round(cents / 100).toLocaleString()} pts`;
-}

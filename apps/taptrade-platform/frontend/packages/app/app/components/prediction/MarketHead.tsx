@@ -128,10 +128,10 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
             {t("LIVE")}
           </span>
         )}
+        {/* settledLabel already reads "Settled · NO wins" — render it alone
+            so the eyebrow shows exactly one status token. */}
         {isSettled && settledLabel && (
-          <span className={MARKET_HEAD_SETTLED_CLASS}>
-            {t("SETTLED")} · {settledLabel}
-          </span>
+          <span className={MARKET_HEAD_SETTLED_CLASS}>{settledLabel}</span>
         )}
         {displayCategory && (
           <>
@@ -141,18 +141,26 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
             </span>
           </>
         )}
-        <span aria-hidden="true">·</span>
-        <span className={MARKET_HEAD_COUNTDOWN_CLASS}>
-          {isLive ? (
-            <>
-              {countdown}
-              <span className="mx-1.5 text-[var(--t4)]">·</span>
-              {formatCloseDate(displayMarket.closeAt)}
-            </>
-          ) : (
-            lifecycleLabel
-          )}
-        </span>
+        {/* For settled markets the settled badge above already carries the
+            status — repeating lifecycleLabel here rendered a third
+            "Settled" token. Other non-live statuses (halted/closed/…) keep
+            the lifecycle label as their only status. */}
+        {!isSettled && (
+          <>
+            <span aria-hidden="true">·</span>
+            <span className={MARKET_HEAD_COUNTDOWN_CLASS}>
+              {isLive ? (
+                <>
+                  {countdown}
+                  <span className="mx-1.5 text-[var(--t4)]">·</span>
+                  {formatCloseDate(displayMarket.closeAt)}
+                </>
+              ) : (
+                lifecycleLabel
+              )}
+            </span>
+          </>
+        )}
       </div>
 
       <h1 className={MARKET_HEAD_TITLE_CLASS}>{displayMarket.title}</h1>

@@ -1,3 +1,5 @@
+import { formatPoints } from "./points";
+
 export interface PointLedgerTransaction {
   type: string;
   amount: number;
@@ -67,6 +69,10 @@ export function pointLedgerTypeLabel(tx: PointLedgerTransaction): string {
   if (fingerprint.includes("starter grant")) return "Starter points";
   if (fingerprint.includes("daily claim")) return "Daily points";
   if (fingerprint.includes("point pack grant")) return "Point pack";
+  // Point Store credits (reasons: point_pack_purchase / promo_bonus, keys:
+  // store_purchase:<id>[:bonus]) — purchased vs bonus stay distinguishable.
+  if (fingerprint.includes("promo bonus")) return "Bonus points";
+  if (fingerprint.includes("point pack purchase")) return "Point pack purchase";
   if (fingerprint.includes("mission reward")) return "Mission reward";
   if (fingerprint.includes("streak reward")) return "Streak reward";
 
@@ -89,23 +95,20 @@ export function pointLedgerDetailLabel(tx: PointLedgerTransaction): string {
   if (fingerprint.includes("starter grant")) return "Starter point grant";
   if (fingerprint.includes("daily claim")) return "Daily claim";
   if (fingerprint.includes("point pack grant")) return "Point pack grant";
+  if (fingerprint.includes("promo bonus")) return "Promotional bonus points";
+  if (fingerprint.includes("point pack purchase")) {
+    return "Point pack purchase";
+  }
   if (fingerprint.includes("mission reward")) return "Mission reward";
   if (fingerprint.includes("streak reward")) return "Streak reward";
   return tx.description || tx.idempotencyKey || "Point movement";
 }
 
-export function formatPoints(value: number): string {
-  const abs = Math.abs(value);
-  const formatted =
-    Math.round(abs) === abs
-      ? abs.toLocaleString()
-      : abs.toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        });
-  return `${formatted} pts`;
-}
-
+// formatPoints lives in app/lib/points (single Points-display module);
+// the delta wrapper below derives sign from the movement type, so it
+// formats the absolute amount.
 export function formatPointDelta(tx: PointLedgerTransaction): string {
-  return `${isPositivePointMovement(tx) ? "+" : "-"}${formatPoints(tx.amount)}`;
+  return `${isPositivePointMovement(tx) ? "+" : "-"}${formatPoints(
+    Math.abs(tx.amount),
+  )}`;
 }

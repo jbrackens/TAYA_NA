@@ -134,6 +134,17 @@ function normalizeSnakeCase<T extends object>(obj: T): unknown {
 }
 
 /**
+ * Drops the cached balance (and any in-flight read) for a user so the next
+ * getBalance() hits the gateway. Wallet mutations that live OUTSIDE this
+ * module (e.g. a completed Point Store purchase crediting the ledger) must
+ * call this before re-reading, exactly like the claim helpers below do
+ * internally — otherwise the 15s TTL serves the stale pre-credit balance.
+ */
+export function invalidateBalanceCache(userId: string): void {
+  balanceCache.delete(userId);
+}
+
+/**
  * Get wallet balance for a user
  */
 export async function getBalance(userId: string): Promise<Balance> {
@@ -152,9 +163,7 @@ export async function getBalance(userId: string): Promise<Balance> {
       );
       const legacyRaw = raw as LegacyWalletBalanceRaw;
       const availablePoints =
-        raw.availablePoints ??
-        legacyRaw.availablePoints ??
-        raw.balancePoints;
+        raw.availablePoints ?? legacyRaw.availablePoints ?? raw.balancePoints;
       const result: Balance = {
         userId: raw.userId,
         availableBalance: toWholePoints(availablePoints),
@@ -233,9 +242,8 @@ export async function getTransactions(
   );
   const start = (page - 1) * limit;
   const transactions = filtered.slice(start, start + limit).map((item) => {
-    const amountPoints = item.amountPoints ?? item.amountPoints ?? 0;
-    const balancePoints =
-      item.balancePoints ?? item.balancePoints ?? amountPoints;
+    const amountPoints = item.amountPoints ?? 0;
+    const balancePoints = item.balancePoints ?? amountPoints;
     return {
       transactionId: item.entryId || "",
       userId: item.userId || userId,
@@ -448,10 +456,9 @@ function normalizeRewardLimit(
   return {
     enabled: status.enabled,
     unit: status.unit || POINT_UNIT,
-    limitPoints: status.limitPoints ?? status.limitPoints ?? 0,
-    grantedPoints: status.grantedPoints ?? status.grantedPoints ?? 0,
-    remainingPoints:
-      status.remainingPoints ?? status.remainingPoints ?? 0,
+    limitPoints: status.limitPoints ?? 0,
+    grantedPoints: status.grantedPoints ?? 0,
+    remainingPoints: status.remainingPoints ?? 0,
     windowDate: status.windowDate,
     nextResetAt: status.nextResetAt,
   };
@@ -463,7 +470,7 @@ function normalizePointPack(pack: PointPackRaw): PointPack {
     name: pack.name,
     description: pack.description,
     unit: pack.unit || POINT_UNIT,
-    amountPoints: pack.amountPoints ?? pack.amountPoints ?? 0,
+    amountPoints: pack.amountPoints ?? 0,
     enabled: pack.enabled,
     claimableOnce: pack.claimableOnce,
     claimed: pack.claimed,
@@ -476,7 +483,7 @@ function normalizeMission(mission: MissionRaw): Mission {
     name: mission.name,
     description: mission.description,
     unit: mission.unit || POINT_UNIT,
-    rewardPoints: mission.rewardPoints ?? mission.rewardPoints ?? 0,
+    rewardPoints: mission.rewardPoints ?? 0,
     progress: mission.progress,
     target: mission.target,
     completed: mission.completed,
@@ -491,7 +498,7 @@ function normalizeStreak(streak: StreakRaw): Streak {
     name: streak.name,
     description: streak.description,
     unit: streak.unit || POINT_UNIT,
-    rewardPoints: streak.rewardPoints ?? streak.rewardPoints ?? 0,
+    rewardPoints: streak.rewardPoints ?? 0,
     currentStreak: streak.currentStreak,
     target: streak.target,
     completed: streak.completed,
@@ -510,8 +517,8 @@ function normalizeRewardClaimBase(result: {
   return {
     enabled: result.enabled,
     unit: result.unit || POINT_UNIT,
-    claimPoints: result.claimPoints ?? result.claimPoints,
-    balancePoints: result.balancePoints ?? result.balancePoints,
+    claimPoints: result.claimPoints,
+    balancePoints: result.balancePoints,
     rewardLimit: normalizeRewardLimit(result.rewardLimit),
   };
 }
@@ -522,8 +529,8 @@ function normalizeStarterGrant(
   return {
     enabled: result.enabled,
     unit: result.unit || POINT_UNIT,
-    grantPoints: result.grantPoints ?? result.grantPoints,
-    balancePoints: result.balancePoints ?? result.balancePoints,
+    grantPoints: result.grantPoints,
+    balancePoints: result.balancePoints,
   };
 }
 

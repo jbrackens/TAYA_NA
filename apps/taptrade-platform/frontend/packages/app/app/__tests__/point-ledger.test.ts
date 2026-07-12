@@ -4,11 +4,11 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   formatPointDelta,
-  formatPoints,
   isPositivePointMovement,
   pointLedgerDetailLabel,
   pointLedgerTypeLabel,
 } from "../lib/point-ledger";
+import { formatPoints } from "../lib/points";
 
 const forbiddenValueTerms = /\b(deposit|withdrawal|cash|fiat|crypto|usd|\$)\b/i;
 const pointLedgerSource = readFileSync(

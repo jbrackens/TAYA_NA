@@ -25,6 +25,7 @@ import type { PortfolioSummary } from "@taptrade-ui/api-client/src/prediction-ty
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import { getPrivacy, updatePrivacy } from "../lib/api/privacy-client";
 import { FEATURE_RG } from "../lib/features";
+import { formatPoints } from "../lib/points";
 
 const api = createPredictionClient();
 
@@ -290,11 +291,11 @@ function PortfolioStrip({ summary }: { summary: PortfolioSummary }) {
       <div className="grid grid-cols-4 gap-3 max-[720px]:grid-cols-2">
         <Stat
           label={t("stats.invested", "Points in play")}
-          value={formatPointsFromPoints(summary.totalValuePoints)}
+          value={formatPoints(summary.totalValuePoints)}
         />
         <Stat
           label={t("stats.realizedPnl", "Settled result")}
-          value={`${pnlUp ? "+" : "-"}${formatPointsFromPoints(Math.abs(pnl))}`}
+          value={`${pnlUp ? "+" : "-"}${formatPoints(Math.abs(pnl))}`}
           tone={pnlUp ? "gain" : "no"}
         />
         <Stat
@@ -378,13 +379,5 @@ function ActionCard({
   );
 }
 
-function formatPoints(value: number): string {
-  const abs = Math.abs(value);
-  if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M pts`;
-  if (abs >= 10_000) return `${(value / 1_000).toFixed(1)}K pts`;
-  return `${Math.round(value).toLocaleString()} pts`;
-}
-
-function formatPointsFromPoints(cents: number): string {
-  return formatPoints(cents / 100);
-}
+// Points display goes through lib/points (whole-Points unit model — wire
+// integers ARE whole Points; never ÷100).

@@ -23,11 +23,8 @@ import Link from "next/link";
 import { Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  formatCompactPoints,
-  isOpenMarketStatus,
-  marketStatusLabel,
-} from "./market-display";
+import { isOpenMarketStatus, marketStatusLabel } from "./market-display";
+import { formatCompactPoints } from "../../lib/points";
 import { calculateMarketSentiment } from "./marketSentiment";
 import { getMarketImageProps } from "./utils/marketImage";
 

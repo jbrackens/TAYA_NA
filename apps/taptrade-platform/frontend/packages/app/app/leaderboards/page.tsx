@@ -13,6 +13,7 @@ import {
   type LeaderboardEntry,
 } from "../lib/api/leaderboards-client";
 import { logger } from "../lib/logger";
+import { formatPoints } from "../lib/points";
 
 // /leaderboards — Predict-native boards. Layout follows PLAN-loyalty-
 // leaderboards.md §5: left sidebar with all boards + the viewer's rank on
@@ -622,12 +623,6 @@ function formatMetric(board: LeaderboardDefinition, value: number): string {
   }
 }
 
-function formatPoints(cents: number): string {
-  const sign = cents < 0 ? "-" : "";
-  const points = Math.abs(cents) / 100;
-  const fractionDigits = points < 100 ? 2 : 0;
-  return `${sign}${new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits,
-  }).format(points)} pts`;
-}
+// Points display goes through lib/points (whole-Points unit model — wire
+// integers ARE whole Points; never ÷100). formatPoints preserves sign for
+// negative point results.

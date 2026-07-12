@@ -3,6 +3,7 @@
 import { useTranslation } from "react-i18next";
 import { WageringProgress } from "../components/WageringProgress";
 import type { PlayerBonus } from "../lib/api/bonus-client";
+import { formatPointsAmount } from "../lib/points";
 
 const CLAIM_WRAP_CLASS =
   "mb-5 mt-6 border-t border-[var(--border-1)] pt-5 text-left";
@@ -57,7 +58,7 @@ export function ActiveBonusesControl({ bonuses }: { bonuses: PlayerBonus[] }) {
             </div>
             <div className="text-right">
               <div className={PACK_AMOUNT_CLASS}>
-                {formatPoints(bonus.remainingPoints)}
+                {formatPointsAmount(bonus.remainingPoints)}
               </div>
               <div className={MISSION_PROGRESS_CLASS}>
                 {t("activeBonuses.remaining", "pts remaining")}
@@ -68,10 +69,4 @@ export function ActiveBonusesControl({ bonuses }: { bonuses: PlayerBonus[] }) {
       </div>
     </div>
   );
-}
-
-function formatPoints(raw: number): string {
-  // Storage is cents-equivalent; display divides by 100.
-  const display = Math.round(raw / 100);
-  return new Intl.NumberFormat("en-US").format(display);
 }

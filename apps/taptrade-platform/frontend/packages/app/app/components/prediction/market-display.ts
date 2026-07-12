@@ -5,21 +5,9 @@ import type {
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
-// Points unit-model (2026-07-07): 1 Point = 1 cent of play value; API
-// integers ARE whole Points. No /100 conversion, no fractional Points.
-export function formatCompactPoints(points: number): string {
-  const value = Math.max(0, points);
-
-  if (value >= 1_000_000) {
-    return trimTrailingZero(`${(value / 1_000_000).toFixed(1)}M pts`);
-  }
-
-  if (value >= 1_000) {
-    return trimTrailingZero(`${(value / 1_000).toFixed(1)}K pts`);
-  }
-
-  return `${Math.round(value).toLocaleString()} pts`;
-}
+// Points formatting (formatCompactPoints & friends) lives in app/lib/points —
+// the single Points-display module. This file keeps market status/sorting
+// helpers only.
 
 export function formatTimeLeft(closeAt: string): string {
   const diff = new Date(closeAt).getTime() - Date.now();
@@ -97,8 +85,4 @@ export function normalizePriceShares(
     yesShare: (yesPricePoints / total) * 100,
     noShare: (noPricePoints / total) * 100,
   };
-}
-
-function trimTrailingZero(value: string): string {
-  return value.replace(/\.0([MK])/, "$1");
 }

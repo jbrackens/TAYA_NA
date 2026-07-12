@@ -14,12 +14,7 @@ import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-ty
 import { deterministicDelta, heroChartPath } from "./utils/spark";
 import { useHeroPriceHistory } from "./utils/useHeroPriceHistory";
 import { categoryLabel, localizedMarket } from "./market-content";
-
-function formatHeroVolume(points: number): string {
-  if (points >= 1_000_000) return `${(points / 1_000_000).toFixed(1)}M pts`;
-  if (points >= 1_000) return `${(points / 1_000).toFixed(1)}K pts`;
-  return `${Math.round(points).toLocaleString()} pts`;
-}
+import { formatCompactPoints } from "../../lib/points";
 
 function formatHeroCloseLeft(iso: string): string {
   const ms = new Date(iso).getTime() - Date.now();
@@ -93,11 +88,11 @@ export function DiscoveryHero({
     150,
     heroPoints ?? undefined,
   );
-  const volumeLabel = formatHeroVolume(displayMarket.volumePoints);
+  const volumeLabel = formatCompactPoints(displayMarket.volumePoints);
   const oiLabel =
     displayMarket.openInterestPoints != null &&
     displayMarket.openInterestPoints > 0
-      ? formatHeroVolume(displayMarket.openInterestPoints)
+      ? formatCompactPoints(displayMarket.openInterestPoints)
       : "—";
   const closesLabel = formatHeroCloseLeft(displayMarket.closeAt);
 
@@ -327,7 +322,6 @@ export function DiscoveryHero({
             />
           </svg>
         </div>
-
       </div>
     </section>
   );

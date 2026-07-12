@@ -13,7 +13,14 @@ function emptyFallback(value: string): string {
 }
 
 function currentLocale(): string {
-  return i18n.resolvedLanguage || i18n.language || "en";
+  // Prefer the user's SELECTED language over i18next's resolvedLanguage.
+  // The copy sources consulted here (market.translations wire data and the
+  // caller-provided t()) do not depend on what's in the i18next store —
+  // but resolvedLanguage does: since EN resources are bundled at build time
+  // (P12, 2026-07-12), resolvedLanguage falls back to "en" whenever the
+  // active locale's namespace files haven't loaded yet (test env, offline),
+  // which would wrongly force English templates for zh-Hans/tl/ms/id users.
+  return i18n.language || i18n.resolvedLanguage || "en";
 }
 
 function usesEnglishCopy(): boolean {

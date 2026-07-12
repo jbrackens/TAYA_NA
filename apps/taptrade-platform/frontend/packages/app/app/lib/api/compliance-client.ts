@@ -149,8 +149,10 @@ function normalizePredictionLimits(raw: PredictionLimitsRaw): PredictionLimits {
     maxOrderPoints:
       typeof raw.max_order_points === "number"
         ? raw.max_order_points
-        : typeof raw.limitPoints === "number"
-          ? raw.limitPoints / 100
+        : // Whole-Points unit model (2026-07-07): limitPoints is already
+          // whole Points on the wire — no ÷100.
+          typeof raw.limitPoints === "number"
+          ? raw.limitPoints
           : undefined,
     unit: POINT_UNIT,
     effectiveDate: raw.effective_date,
@@ -359,17 +361,11 @@ export async function getLimitsHistory(
       : [];
     for (const limit of pointUseItems) {
       const limitPoints =
-        typeof limit.limitPoints === "number"
-          ? limit.limitPoints
-          : typeof limit.limitPoints === "number"
-            ? limit.limitPoints
-            : undefined;
+        typeof limit.limitPoints === "number" ? limit.limitPoints : undefined;
       history.push({
         limitType: "point_use_limit",
-        newValue:
-          typeof limitPoints === "number"
-            ? limitPoints / 100
-            : undefined,
+        // Whole-Points unit model: wire integers ARE whole Points.
+        newValue: limitPoints,
         effectiveDate: String(
           limit.resetsAt || limit.createdAt || new Date().toISOString(),
         ),
@@ -381,17 +377,11 @@ export async function getLimitsHistory(
       : [];
     for (const limit of predictionItems) {
       const limitPoints =
-        typeof limit.limitPoints === "number"
-          ? limit.limitPoints
-          : typeof limit.limitPoints === "number"
-            ? limit.limitPoints
-            : undefined;
+        typeof limit.limitPoints === "number" ? limit.limitPoints : undefined;
       history.push({
         limitType: "prediction_limit",
-        newValue:
-          typeof limitPoints === "number"
-            ? limitPoints / 100
-            : undefined,
+        // Whole-Points unit model: wire integers ARE whole Points.
+        newValue: limitPoints,
         effectiveDate: String(
           limit.resetsAt || limit.createdAt || new Date().toISOString(),
         ),

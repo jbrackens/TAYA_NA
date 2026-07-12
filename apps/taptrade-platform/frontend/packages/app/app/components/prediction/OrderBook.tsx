@@ -12,6 +12,7 @@
  */
 
 import { useTranslation } from "react-i18next";
+import { formatPointsAmount } from "../../lib/points";
 
 interface BookLevel {
   pricePoints: number;
@@ -109,15 +110,12 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
                       {l.shares}
                     </td>
                     <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
-                      {(l.shares * (100 - l.pricePoints)).toFixed(
-                        2,
-                      )}
+                      {formatPointsAmount(l.shares * (100 - l.pricePoints))}
                     </td>
                     <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
-                      {(
-                        (l.cumulativeShares * (100 - l.pricePoints)) /
-                        100
-                      ).toFixed(2)}
+                      {formatPointsAmount(
+                        l.cumulativeShares * (100 - l.pricePoints),
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -154,13 +152,10 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
                       {l.shares}
                     </td>
                     <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
-                      {(l.shares * l.pricePoints).toFixed(0)}
+                      {formatPointsAmount(l.shares * l.pricePoints)}
                     </td>
                     <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
-                      {(
-                        (l.cumulativeShares * l.pricePoints) /
-                        100
-                      ).toFixed(2)}
+                      {formatPointsAmount(l.cumulativeShares * l.pricePoints)}
                     </td>
                   </tr>
                 ))}

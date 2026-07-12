@@ -10,6 +10,7 @@
 
 import { useTranslation } from "react-i18next";
 import type { Trade } from "@taptrade-ui/api-client/src/prediction-types";
+import { formatPoints } from "../../lib/points";
 
 interface RecentTradesProps {
   trades: Trade[];
@@ -112,9 +113,8 @@ function tradePriceClass(side?: "yes" | "no"): string {
   return `font-semibold ${color}`;
 }
 
-function formatTradePoints(points: number): string {
-  return `${points.toFixed(2)} pts`;
-}
+// Trade sizes are whole Points (quantity × price in Points) — format via
+// the shared module so the tape matches every other Points surface.
 
 export default function RecentTrades({
   trades,
@@ -165,7 +165,7 @@ export default function RecentTrades({
                     <span className={tradePriceClass("no")}>{nPx}¢</span>
                   </span>
                   <span className={RECENT_TRADES_SIZE_CLASS}>
-                    {formatTradePoints(size)}
+                    {formatPoints(size)}
                   </span>
                   <span className={RECENT_TRADES_TIME_CLASS}>
                     {timeAgo(row.yesTrade.tradedAt)}
@@ -187,7 +187,7 @@ export default function RecentTrades({
                 </span>
                 <span className={tradePriceClass(sideKey)}>{px}¢</span>
                 <span className={RECENT_TRADES_SIZE_CLASS}>
-                  {formatTradePoints(size)}
+                  {formatPoints(size)}
                 </span>
                 <span className={RECENT_TRADES_TIME_CLASS}>
                   {timeAgo(trade.tradedAt)}
