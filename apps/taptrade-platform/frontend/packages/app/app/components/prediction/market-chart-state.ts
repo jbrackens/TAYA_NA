@@ -17,6 +17,13 @@ export interface ChartSeriesResolution {
   state: ChartState;
   /** Points to draw; empty when nothing should be drawn (loading/error). */
   values: number[];
+  /**
+   * True when  is the demo-flag synthetic walk rather than real
+   * price history. Callers MUST render the "Simulated data" chip when
+   * this is set (2026-07-12 integrity fix: the demo deploy previously
+   * drew synthetic series with no on-screen marker).
+   */
+  synthetic: boolean;
 }
 
 export function seededRandom(seed: number): () => number {
@@ -82,27 +89,33 @@ export function resolveChartSeries(args: {
     hasMovement(realValues);
 
   if (syntheticFallbackEnabled) {
-    // Demo behavior: identical to the pre-flag chart — synthetic walk while
-    // loading, on error, and for markets without price movement.
+    // Demo behavior: synthetic walk while loading, on error, and for
+    // markets without price movement — always flagged so the UI labels it.
     if (realIsDrawable && realValues !== null) {
-      return { state: "ready", values: realValues };
+      return { state: "ready", values: realValues, synthetic: false };
     }
     return {
       state: "ready",
       values: samplePath(syntheticSeed, range, currentPricePoints),
+      synthetic: true,
     };
   }
 
-  if (fetchStatus === "loading") return { state: "loading", values: [] };
-  if (fetchStatus === "error") return { state: "error", values: [] };
+  if (fetchStatus === "loading") {
+    return { state: "loading", values: [], synthetic: false };
+  }
+  if (fetchStatus === "error") {
+    return { state: "error", values: [], synthetic: false };
+  }
   if (realIsDrawable && realValues !== null) {
-    return { state: "ready", values: realValues };
+    return { state: "ready", values: realValues, synthetic: false };
   }
   // No points, or no price movement: a flat line at the true current price
   // is honest; a random walk is not.
   return {
     state: "empty",
     values: [currentPricePoints, currentPricePoints],
+    synthetic: false,
   };
 }
 

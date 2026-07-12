@@ -132,7 +132,11 @@ export default function MarketChart({
     };
   }, [ticker, range, retryNonce]);
 
-  const { state: chartState, values } = useMemo(() => {
+  const {
+    state: chartState,
+    values,
+    synthetic,
+  } = useMemo(() => {
     const realValues = history
       ? history.points.map((p) =>
           side === "no" ? 100 - p.yesPricePoints : p.yesPricePoints,
@@ -151,10 +155,7 @@ export default function MarketChart({
   const height = 300;
   // Selected side draws at full strength; its complement draws muted so
   // the binary reads as one market with two mirrored outcomes.
-  const complementValues = useMemo(
-    () => values.map((v) => 100 - v),
-    [values],
-  );
+  const complementValues = useMemo(() => values.map((v) => 100 - v), [values]);
   const line = values.length >= 2 ? buildPath(values, width, height) : "";
   const complementLine =
     complementValues.length >= 2
@@ -172,7 +173,12 @@ export default function MarketChart({
     : 0;
 
   return (
-    <section className={CHART_CARD_CLASS}>
+    <section className={`${CHART_CARD_CLASS} relative`}>
+      {synthetic && (
+        <span className="absolute right-3 top-3 z-10 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--t3)]">
+          {t("SIMULATED_DATA", "Simulated data")}
+        </span>
+      )}
       {chartState === "loading" && (
         <div
           className="h-[300px] w-full animate-pulse rounded-[var(--r-rh-sm)] bg-[var(--surface-2)]"
@@ -227,7 +233,12 @@ export default function MarketChart({
             <circle r="3" fill={complementColor} fillOpacity="0.45" />
           </g>
           <g transform={`translate(${width},${lineEndY})`}>
-            <circle r="4.5" fill={lineColor} stroke="var(--surface-1)" strokeWidth="1.5" />
+            <circle
+              r="4.5"
+              fill={lineColor}
+              stroke="var(--surface-1)"
+              strokeWidth="1.5"
+            />
           </g>
 
           {chartState === "empty" && (

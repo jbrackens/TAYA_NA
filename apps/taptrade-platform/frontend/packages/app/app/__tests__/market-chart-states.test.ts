@@ -131,3 +131,59 @@ describe("24h range stat", () => {
     assert.equal(format24hRange(58, 64), "58¢ – 64¢");
   });
 });
+
+// 2026-07-12 integrity fix: synthetic series must be flagged so the UI can
+// label them ("Simulated data" chip) — the demo deploy previously rendered
+// synthetic walks indistinguishable from real history.
+import { describe as describeSynth, it as itSynth } from "node:test";
+import assertSynth from "node:assert/strict";
+
+describeSynth("resolveChartSeries — synthetic flagging", () => {
+  const base = {
+    currentPricePoints: 42,
+    syntheticSeed: "T-1-yes",
+    range: "1d",
+  };
+
+  itSynth("flags the demo-mode synthetic walk", () => {
+    const r = resolveChartSeries({
+      ...base,
+      fetchStatus: "loading",
+      realValues: null,
+      syntheticFallbackEnabled: true,
+    });
+    assertSynth.equal(r.state, "ready");
+    assertSynth.equal(r.synthetic, true);
+  });
+
+  itSynth("never flags real history, even in demo mode", () => {
+    const r = resolveChartSeries({
+      ...base,
+      fetchStatus: "success",
+      realValues: [40, 41, 43],
+      syntheticFallbackEnabled: true,
+    });
+    assertSynth.equal(r.synthetic, false);
+    assertSynth.deepEqual(r.values, [40, 41, 43]);
+  });
+
+  itSynth("never flags honest states with the flag off", () => {
+    for (const fetchStatus of ["loading", "error"] as const) {
+      const r = resolveChartSeries({
+        ...base,
+        fetchStatus,
+        realValues: null,
+        syntheticFallbackEnabled: false,
+      });
+      assertSynth.equal(r.synthetic, false);
+    }
+    const empty = resolveChartSeries({
+      ...base,
+      fetchStatus: "success",
+      realValues: [42, 42],
+      syntheticFallbackEnabled: false,
+    });
+    assertSynth.equal(empty.state, "empty");
+    assertSynth.equal(empty.synthetic, false);
+  });
+});
