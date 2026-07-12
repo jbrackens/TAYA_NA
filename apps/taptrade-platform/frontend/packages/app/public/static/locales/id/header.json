@@ -49,5 +49,7 @@
   "USER_MENU": "Menu pengguna",
   "LOG_IN": "Masuk",
   "SIGN_UP": "Daftar",
-  "LOG_OUT": "Keluar"
+  "LOG_OUT": "Keluar",
+  "ADD_POINTS": "Tambah Poin",
+  "OPEN_POINT_STORE": "Buka Toko Poin"
 }

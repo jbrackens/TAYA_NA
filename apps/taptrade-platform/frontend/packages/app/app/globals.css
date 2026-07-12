@@ -252,14 +252,11 @@ body {
    * Cards sit on --shadow-card; interactive cards lift to -hover on
    * pointer; menus/popovers use -pop. Never colored, never glowing. */
   --shadow-card:
-    0 1px 2px rgba(13, 17, 20, 0.04),
-    0 12px 32px -16px rgba(13, 17, 20, 0.1);
+    0 1px 2px rgba(13, 17, 20, 0.04), 0 12px 32px -16px rgba(13, 17, 20, 0.1);
   --shadow-card-hover:
-    0 2px 4px rgba(13, 17, 20, 0.05),
-    0 18px 44px -16px rgba(13, 17, 20, 0.14);
+    0 2px 4px rgba(13, 17, 20, 0.05), 0 18px 44px -16px rgba(13, 17, 20, 0.14);
   --shadow-pop:
-    0 2px 6px rgba(13, 17, 20, 0.06),
-    0 24px 56px -20px rgba(13, 17, 20, 0.18);
+    0 2px 6px rgba(13, 17, 20, 0.06), 0 24px 56px -20px rgba(13, 17, 20, 0.18);
 
   /* Robinhood radii (less bubbly than glass). Co-existing with the
    * glass scale above during the P2-P6 migration. New components
@@ -398,7 +395,7 @@ button {
 }
 .content-page-body {
   color: var(--t2);
-  font-family: "Inter", "Outfit", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 16px;
   line-height: 1.75;
 }

@@ -1,0 +1,83 @@
+{
+  "kicker": "Toko Poin",
+  "title": "Tambah Poin",
+  "ledgerLink": "Lihat riwayat poin",
+  "packs": {
+    "heading": "Paket poin",
+    "unit": "pts",
+    "base": "{{points}} poin dasar",
+    "bonus": "+{{points}} poin bonus",
+    "priceLabel": "Harga",
+    "firstPurchase": "Ini akan menjadi pembelian paket poin pertama Anda."
+  },
+  "summary": {
+    "title": "Ringkasan pesanan",
+    "pack": "Paket poin",
+    "base": "Poin dasar",
+    "bonus": "Poin bonus",
+    "total": "Total poin",
+    "price": "Harga",
+    "status": "Status",
+    "continue": "Lanjut ke checkout"
+  },
+  "status": {
+    "pending_payment": "Menunggu checkout",
+    "completed": "Selesai",
+    "failed": "Tidak selesai",
+    "canceled": "Dibatalkan"
+  },
+  "checkout": {
+    "banner": "Checkout demo — hanya simulasi, tanpa tagihan sungguhan",
+    "title": "Checkout simulasi",
+    "subtitle": "Pilih hasil di bawah untuk menyelesaikan checkout simulasi ini. Poin hanya ditambahkan setelah checkout selesai.",
+    "orderRef": "Referensi pesanan",
+    "provider": "Penyedia",
+    "providerDemo": "Demo (simulasi)",
+    "amount": "Jumlah",
+    "pay": "Selesaikan checkout simulasi",
+    "outcomes": "Hasil demo lainnya",
+    "fail": "Simulasikan penolakan",
+    "delay": "Simulasikan penundaan",
+    "cancel": "Batalkan checkout",
+    "processing": "Memproses…"
+  },
+  "result": {
+    "successTitle": "Poin ditambahkan",
+    "successBody": "{{points}} pts ditambahkan ke saldo Anda.",
+    "successToast": "+{{points}} pts dari paket {{pack}}",
+    "newBalance": "Saldo baru",
+    "viewLedger": "Lihat riwayat poin",
+    "returnToMarket": "Kembali ke pasar",
+    "backToStore": "Kembali ke toko",
+    "failedTitle": "Checkout tidak selesai",
+    "failedBody": "{{reason}} Tidak ada poin yang ditambahkan. Anda bisa memulai checkout baru untuk paket yang sama.",
+    "failedReasonFallback": "Checkout simulasi tidak selesai.",
+    "retry": "Coba lagi",
+    "canceledTitle": "Checkout dibatalkan",
+    "canceledBody": "Checkout simulasi ini dibatalkan. Tidak ada poin yang ditambahkan.",
+    "backToSummary": "Kembali ke ringkasan pesanan",
+    "pendingTitle": "Menunggu penyelesaian",
+    "pendingBody": "Penyedia simulasi melaporkan penundaan. Poin hanya ditambahkan setelah checkout selesai — periksa status di bawah.",
+    "checkStatus": "Periksa status",
+    "checking": "Memeriksa…"
+  },
+  "how": {
+    "title": "Cara kerja poin"
+  },
+  "state": {
+    "loading": "Memuat toko poin…",
+    "loadingPurchase": "Memeriksa pesanan Anda…",
+    "signIn": "Masuk untuk melihat paket poin dan menambah poin ke saldo Anda.",
+    "login": "Masuk",
+    "error": "Toko poin tidak dapat dimuat.",
+    "purchaseError": "Pesanan ini tidak dapat dimuat.",
+    "checkoutError": "Checkout tidak dapat dimulai.",
+    "confirmError": "Hasil simulasi gagal.",
+    "retry": "Coba lagi"
+  },
+  "entry": {
+    "addPoints": "Tambah Poin",
+    "needMore": "Butuh lebih banyak poin?",
+    "visitStore": "Kunjungi Toko Poin"
+  }
+}

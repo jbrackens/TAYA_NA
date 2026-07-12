@@ -2,8 +2,8 @@
   "$schema": "taptrade-feature-manifest-v1",
   "generated": "2026-04-13",
   "summary": {
-    "total_features": 100,
-    "real": 100,
+    "total_features": 74,
+    "real": 74,
     "stubbed": 0,
     "missing": 0
   },
@@ -174,6 +174,13 @@
       "status": "REAL",
       "module": "bonus",
       "notes": "ActiveBonusesSection with WageringProgress"
+    },
+    {
+      "route": "/store",
+      "app_equivalent": "app/store/page.tsx",
+      "status": "REAL",
+      "module": "store",
+      "notes": "Point Store: live pack catalogue, order summary, demo checkout, and purchase result states wired to /api/v1/store/* (gateway STORE_ENABLED, demo provider)"
     }
   ],
   "components": [
@@ -209,15 +216,15 @@
     },
     {
       "legacy_path": "components/auth/mfa-modal",
-      "app_equivalent": "app/components/MfaModal.tsx",
-      "status": "REAL",
-      "notes": "MFA modal with CodeInput, wired to verifyMfa/requestMfaCode from auth-client"
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "MFA modal with CodeInput, wired to verifyMfa/requestMfaCode from auth-client \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/auth/accept-terms",
-      "app_equivalent": "app/components/AcceptTermsModal.tsx",
-      "status": "REAL",
-      "notes": "Scroll-to-accept modal wired to acceptTerms() from auth-client"
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Scroll-to-accept modal wired to acceptTerms() from auth-client \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/auth/email-confirmation",
@@ -281,15 +288,15 @@
     },
     {
       "legacy_path": "components/id-comply-modal",
-      "app_equivalent": "app/components/IdComplyModal.tsx",
-      "status": "REAL",
-      "notes": "ID-Comply KBA/IDPV verification modal with compliance API integration"
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "ID-Comply KBA/IDPV verification modal with compliance API integration \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/open-chat-button",
-      "app_equivalent": "app/components/OpenChatButton.tsx",
-      "status": "REAL",
-      "notes": "Floating chat button"
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Floating chat button \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/layout/betslip",
@@ -317,9 +324,9 @@
     },
     {
       "legacy_path": "components/pagination",
-      "app_equivalent": "app/components/Pagination.tsx",
-      "status": "REAL",
-      "notes": "Reusable pagination with page numbers and ellipsis"
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Reusable pagination with page numbers and ellipsis \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/transaction-history-list",
@@ -335,33 +342,33 @@
     },
     {
       "legacy_path": "components/avatar",
-      "app_equivalent": "app/components/Avatar.tsx",
-      "status": "REAL",
-      "notes": "Avatar with initials fallback and color hash"
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Avatar with initials fallback and color hash \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/current-balance",
-      "app_equivalent": "app/components/CurrentBalance.tsx",
-      "status": "REAL",
-      "notes": "Balance display wired to getBalance() with compact/full modes"
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Balance display wired to getBalance() with compact/full modes \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/count-down-time",
-      "app_equivalent": "app/components/CountdownTimer.tsx",
-      "status": "REAL",
-      "notes": "Countdown timer with days/hours/minutes/seconds"
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Countdown timer with days/hours/minutes/seconds \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/code-input",
-      "app_equivalent": "app/components/CodeInput.tsx",
-      "status": "REAL",
-      "notes": "6-digit code input for MFA with auto-focus and paste support"
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "6-digit code input for MFA with auto-focus and paste support \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/collapse",
-      "app_equivalent": "app/components/Collapse.tsx",
-      "status": "REAL",
-      "notes": "Expandable/collapsible section with animation"
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Expandable/collapsible section with animation \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/errors",
@@ -371,15 +378,15 @@
     },
     {
       "legacy_path": "components/form/country-select",
-      "app_equivalent": "app/components/CountrySelect.tsx",
-      "status": "REAL",
-      "notes": "Country dropdown with 20+ countries"
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Country dropdown with 20+ countries \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/form/nationality-select",
-      "app_equivalent": "app/components/CountrySelect.tsx",
-      "status": "REAL",
-      "notes": "Reuses CountrySelect component"
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Reuses CountrySelect component \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/modals",
@@ -395,21 +402,21 @@
     },
     {
       "legacy_path": "components/static-page",
-      "app_equivalent": "app/components/StaticPage.tsx",
-      "status": "REAL",
-      "notes": "StaticPage wrapper component for consistent content page styling"
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "StaticPage wrapper component for consistent content page styling \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/table",
-      "app_equivalent": "app/components/DataTable.tsx",
-      "status": "REAL",
-      "notes": "Reusable data table with headers, striped rows, loading skeleton"
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Reusable data table with headers, striped rows, loading skeleton \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/tabs",
-      "app_equivalent": "app/components/Tabs.tsx",
-      "status": "REAL",
-      "notes": "Reusable horizontal tab bar"
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Reusable horizontal tab bar \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "app/components/LiveNow.tsx",
@@ -509,9 +516,9 @@
     },
     {
       "name": "WalletBreakdown",
-      "status": "REAL",
+      "status": "RETIRED",
       "module": "bonus",
-      "notes": "Real+bonus balance display"
+      "notes": "Real+bonus balance display \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "name": "WageringProgress",
@@ -527,9 +534,9 @@
     },
     {
       "name": "BannerCarousel",
-      "status": "REAL",
+      "status": "RETIRED",
       "module": "content",
-      "notes": "CMS banner rotation on homepage"
+      "notes": "CMS banner rotation on homepage \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "name": "ContentPageRenderer",
@@ -554,6 +561,13 @@
       "status": "REAL",
       "module": "bonus",
       "notes": "Active bonuses with wagering progress on promotions page"
+    },
+    {
+      "route": "/store (pack grid, order summary, demo checkout, results)",
+      "app_equivalent": "app/components/store/",
+      "status": "REAL",
+      "module": "store",
+      "notes": "PackGrid/OrderSummary/DemoCheckout/PurchaseResult rendering live store-client responses; balance refresh dispatches to pointBalanceSlice"
     }
   ],
   "services": [
@@ -628,14 +642,20 @@
       "status": "REAL",
       "module": "content",
       "notes": "CMS page + banner delivery API client"
+    },
+    {
+      "app_equivalent": "app/lib/api/store-client.ts",
+      "status": "REAL",
+      "module": "store",
+      "notes": "getPacks/createCheckout/getPurchase/listPurchases/confirmPurchase against /api/v1/store/* with reusable client idempotency keys"
     }
   ],
   "slices": [
     {
       "legacy_path": "lib/slices/authSlice",
-      "app_equivalent": "app/lib/store/authSlice.ts",
-      "status": "REAL",
-      "notes": ""
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "lib/slices/betSlice",
@@ -663,27 +683,27 @@
     },
     {
       "legacy_path": "lib/slices/navigationSlice",
-      "app_equivalent": "app/lib/store/navigationSlice.ts",
-      "status": "REAL",
-      "notes": ""
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "lib/slices/profileSlice",
-      "app_equivalent": "app/lib/store/profileSlice.ts",
-      "status": "REAL",
-      "notes": ""
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "lib/slices/settingsSlice",
-      "app_equivalent": "app/lib/store/settingsSlice.ts",
-      "status": "REAL",
-      "notes": ""
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "lib/slices/siteSettingsSlice",
-      "app_equivalent": "app/lib/store/siteSettingsSlice.ts",
-      "status": "REAL",
-      "notes": ""
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "lib/slices/sportSlice",
@@ -693,21 +713,21 @@
     },
     {
       "legacy_path": "lib/slices/channels/channelSubscriptionSlice",
-      "app_equivalent": "app/lib/store/channelSubscriptionSlice.ts",
-      "status": "REAL",
-      "notes": ""
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "lib/slices/channels/channelsReducer",
-      "app_equivalent": "app/lib/store/channelSubscriptionSlice.ts",
-      "status": "REAL",
-      "notes": "Equivalent functionality in channelSubscriptionSlice with add/remove/cleanup subscriptions"
+      "app_equivalent": "",
+      "status": "RETIRED",
+      "notes": "Equivalent functionality in channelSubscriptionSlice with add/remove/cleanup subscriptions \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "name": "bonusSlice",
-      "status": "REAL",
+      "status": "RETIRED",
       "module": "bonus",
-      "notes": "Active bonuses + wallet breakdown Redux state"
+      "notes": "Active bonuses + wallet breakdown Redux state \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     }
   ]
 }

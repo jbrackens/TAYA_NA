@@ -20,6 +20,7 @@ import {
   claimPointPack,
   claimStreak,
   getBadges,
+  getBalance,
   getMissions,
   getPointPacks,
   getRewardLimitStatus,
@@ -31,12 +32,15 @@ import {
   type Streak,
 } from "../lib/api/wallet-client";
 import { logger } from "../lib/logger";
+import { formatPointsAmount } from "../lib/points";
+import { useAppDispatch } from "../lib/store/hooks";
+import { setCurrentBalance } from "../lib/store/pointBalanceSlice";
 
 // /rewards — Predict-native loyalty center. Layout follows PLAN-loyalty-
 // leaderboards.md §5: horizontal tier ladder strip at top, 2fr/1fr grid of
 // tier card + ledger table below. No illustrations, no centered hero, no
-// tier-circle icons, no "Congrats!" copy. All points displayed divided by
-// 100 (storage is cents-equivalent).
+// tier-circle icons, no "Congrats!" copy. Points render whole (unit model
+// 2026-07-07: wire integers ARE whole Points — never ÷100) via lib/points.
 
 const LEDGER_LIMIT = 20;
 
@@ -189,6 +193,7 @@ function currentTierBorderClass(tier: number) {
 export default function RewardsPage() {
   const { t } = useTranslation("rewards");
   const { user, isLoading: authLoading } = useAuth();
+  const dispatch = useAppDispatch();
   const [standing, setStanding] = useState<LoyaltyStanding | null>(null);
   const [ledger, setLedger] = useState<LoyaltyLedgerEntry[]>([]);
   const [tiers, setTiers] = useState<LoyaltyTier[]>([]);
@@ -309,6 +314,20 @@ export default function RewardsPage() {
     [missions],
   );
 
+  // The claim helpers in wallet-client invalidate the balance cache but the
+  // TopBar pill reads Redux — without a dispatch it stayed stale until the
+  // next navigation. After any successful claim, fetch the fresh balance
+  // (cache was just invalidated) and push it into pointBalanceSlice.
+  async function refreshHeaderBalance() {
+    if (!user?.id) return;
+    try {
+      const bal = await getBalance(user.id);
+      dispatch(setCurrentBalance(bal.availableBalance));
+    } catch (err: unknown) {
+      logger.warn("Rewards", "post-claim balance refresh failed", err);
+    }
+  }
+
   async function refreshRewardCollections() {
     const [
       packsResult,
@@ -359,13 +378,14 @@ export default function RewardsPage() {
           "dailyClaim.success",
           "Today's claim is recorded: {{points}} pts added to your point ledger.",
           {
-            points: formatPoints(result.claimPoints ?? 0),
+            points: formatPointsAmount(result.claimPoints ?? 0),
           },
         ),
       );
       if (result.rewardLimit) {
         setRewardLimit(result.rewardLimit);
       }
+      void refreshHeaderBalance();
       await refreshRewardCollections();
     } finally {
       setDailyClaimLoading(false);
@@ -389,12 +409,13 @@ export default function RewardsPage() {
       }
       setPointPackMessage(
         t("pointPacks.success", "{{points}} pts added to your point ledger.", {
-          points: formatPoints(result.claimPoints ?? 0),
+          points: formatPointsAmount(result.claimPoints ?? 0),
         }),
       );
       if (result.rewardLimit) {
         setRewardLimit(result.rewardLimit);
       }
+      void refreshHeaderBalance();
       await refreshRewardCollections();
     } finally {
       setPointPackLoadingId(null);
@@ -418,7 +439,7 @@ export default function RewardsPage() {
       }
       setMissionMessage(
         t("missions.success", "{{points}} pts added to your point ledger.", {
-          points: formatPoints(result.claimPoints ?? 0),
+          points: formatPointsAmount(result.claimPoints ?? 0),
         }),
       );
       if (result.mission) {
@@ -431,6 +452,7 @@ export default function RewardsPage() {
       if (result.rewardLimit) {
         setRewardLimit(result.rewardLimit);
       }
+      void refreshHeaderBalance();
       void refreshRewardCollections();
     } finally {
       setMissionLoadingId(null);
@@ -454,7 +476,7 @@ export default function RewardsPage() {
       }
       setStreakMessage(
         t("streaks.success", "{{points}} pts added to your point ledger.", {
-          points: formatPoints(result.claimPoints ?? 0),
+          points: formatPointsAmount(result.claimPoints ?? 0),
         }),
       );
       if (result.streak) {
@@ -467,6 +489,7 @@ export default function RewardsPage() {
       if (result.rewardLimit) {
         setRewardLimit(result.rewardLimit);
       }
+      void refreshHeaderBalance();
       void refreshRewardCollections();
     } finally {
       setStreakLoadingId(null);
@@ -560,7 +583,7 @@ export default function RewardsPage() {
               {standing.rankName}
             </span>
             <h2 id="rw-tier-title" className={BALANCE_CLASS}>
-              {formatPoints(standing.pointsBalance)}
+              {formatPointsAmount(standing.pointsBalance)}
               <span className={BALANCE_UNIT_CLASS}>
                 {" "}
                 {t("pointsShort", "pts")}
@@ -573,7 +596,7 @@ export default function RewardsPage() {
               <div className={PROGRESS_HEAD_CLASS}>
                 <span>
                   {t("progress.pointsTo", "{{points}} pts to", {
-                    points: formatPoints(standing.xpToNextRank),
+                    points: formatPointsAmount(standing.xpToNextRank),
                   })}{" "}
                   <strong>{standing.nextRankName}</strong>
                 </span>
@@ -598,6 +621,7 @@ export default function RewardsPage() {
           )}
 
           <BenefitsList tiers={visibleTiers} current={standing.rank} />
+          <StoreCrossLink />
           <RewardLimitControl status={rewardLimit} />
           <ActiveBonusesControl bonuses={activeBonuses} />
           <DailyClaimControl
@@ -693,12 +717,12 @@ export default function RewardsPage() {
                       }`}
                     >
                       {entry.deltaPoints >= 0 ? "+" : ""}
-                      {formatPoints(entry.deltaPoints)}
+                      {formatPointsAmount(entry.deltaPoints)}
                     </td>
                     <td
                       className={`${MONO_CLASS} ${NUM_CLASS} ${SUBTLE_CLASS}`}
                     >
-                      {formatPoints(entry.balanceAfter)}
+                      {formatPointsAmount(entry.balanceAfter)}
                     </td>
                   </tr>
                 ))}
@@ -739,6 +763,26 @@ interface StreaksControlProps {
   onClaim: (streakId: string) => void;
 }
 
+// Cross-link into the purchasable Point Store (a separate surface from the
+// free claimable packs above — those stay operator-granted).
+function StoreCrossLink() {
+  const { t } = useTranslation("store");
+  return (
+    <div className={LIMIT_CLASS}>
+      <h3 className={CLAIM_TITLE_CLASS}>
+        {t("entry.needMore", "Need more points?")}
+      </h3>
+      <Link
+        href="/store"
+        className={CROSS_LINK_CLASS}
+        data-testid="add-points-rewards"
+      >
+        {t("entry.visitStore", "Visit the Point Store")} →
+      </Link>
+    </div>
+  );
+}
+
 function RewardLimitControl({ status }: { status: RewardLimitStatus | null }) {
   const { t } = useTranslation("rewards");
   if (!status?.enabled) return null;
@@ -752,8 +796,8 @@ function RewardLimitControl({ status }: { status: RewardLimitStatus | null }) {
           "rewardLimit.body",
           "{{remaining}} of {{limit}} reward pts remain for today.",
           {
-            remaining: formatPoints(status.remainingPoints),
-            limit: formatPoints(status.limitPoints),
+            remaining: formatPointsAmount(status.remainingPoints),
+            limit: formatPointsAmount(status.limitPoints),
           },
         )}
       </p>
@@ -835,7 +879,7 @@ function PointPacksControl({
             </div>
             <div className="flex items-center gap-3">
               <span className={PACK_AMOUNT_CLASS}>
-                {formatPoints(pack.amountPoints)}
+                {formatPointsAmount(pack.amountPoints)}
               </span>
               <button
                 type="button"
@@ -896,7 +940,7 @@ function MissionsControl({
             </div>
             <div className="flex items-center gap-3">
               <span className={PACK_AMOUNT_CLASS}>
-                {formatPoints(mission.rewardPoints)}
+                {formatPointsAmount(mission.rewardPoints)}
               </span>
               <button
                 type="button"
@@ -958,7 +1002,7 @@ function StreaksControl({
             </div>
             <div className="flex items-center gap-3">
               <span className={PACK_AMOUNT_CLASS}>
-                {formatPoints(streak.rewardPoints)}
+                {formatPointsAmount(streak.rewardPoints)}
               </span>
               <button
                 type="button"
@@ -1057,7 +1101,7 @@ function TierLadder({
           >
             <span className={LADDER_NAME_CLASS}>{t.rankName}</span>
             <span className={LADDER_THRESHOLD_CLASS}>
-              {formatPoints(t.minXpPoints)}
+              {formatPointsAmount(t.minXpPoints)}
             </span>
           </div>
         );
@@ -1146,6 +1190,7 @@ function PreFirstSettleState({
             "Settle your first trade to start earning points and climb the tier ladder.",
           )}
         </p>
+        <StoreCrossLink />
         <RewardLimitControl status={rewardLimit} />
         <ActiveBonusesControl bonuses={activeBonuses} />
         <DailyClaimControl {...dailyClaim} />
@@ -1216,12 +1261,6 @@ function shouldShowReason(e: LoyaltyLedgerEntry): boolean {
   if (!e.reason) return false;
   if (e.eventType === "accrual") return false;
   return true;
-}
-
-function formatPoints(raw: number): string {
-  // Storage is cents-equivalent; display divides by 100.
-  const display = Math.round(raw / 100);
-  return new Intl.NumberFormat("en-US").format(display);
 }
 
 function formatDate(iso: string): string {

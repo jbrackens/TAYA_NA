@@ -1,0 +1,83 @@
+{
+  "kicker": "积分商店",
+  "title": "增加积分",
+  "ledgerLink": "查看积分记录",
+  "packs": {
+    "heading": "积分包",
+    "unit": "积分",
+    "base": "{{points}} 基础积分",
+    "bonus": "+{{points}} 赠送积分",
+    "priceLabel": "价格",
+    "firstPurchase": "这将是你的首次积分包购买。"
+  },
+  "summary": {
+    "title": "订单摘要",
+    "pack": "积分包",
+    "base": "基础积分",
+    "bonus": "赠送积分",
+    "total": "积分总计",
+    "price": "价格",
+    "status": "状态",
+    "continue": "继续结算"
+  },
+  "status": {
+    "pending_payment": "等待结算",
+    "completed": "已完成",
+    "failed": "未完成",
+    "canceled": "已取消"
+  },
+  "checkout": {
+    "banner": "演示结算 — 仅为模拟，不会产生真实费用",
+    "title": "模拟结算",
+    "subtitle": "选择下方的结果来完成本次模拟结算。只有结算完成后才会增加积分。",
+    "orderRef": "订单编号",
+    "provider": "服务方",
+    "providerDemo": "演示（模拟）",
+    "amount": "金额",
+    "pay": "完成模拟结算",
+    "outcomes": "其他演示结果",
+    "fail": "模拟拒绝",
+    "delay": "模拟延迟完成",
+    "cancel": "取消结算",
+    "processing": "处理中…"
+  },
+  "result": {
+    "successTitle": "积分已到账",
+    "successBody": "{{points}} 积分已加入你的余额。",
+    "successToast": "来自 {{pack}} 积分包的 +{{points}} 积分",
+    "newBalance": "最新余额",
+    "viewLedger": "查看积分记录",
+    "returnToMarket": "返回市场",
+    "backToStore": "返回商店",
+    "failedTitle": "结算未完成",
+    "failedBody": "{{reason}} 未增加任何积分。你可以为同一积分包重新开始结算。",
+    "failedReasonFallback": "模拟结算未能完成。",
+    "retry": "再试一次",
+    "canceledTitle": "结算已取消",
+    "canceledBody": "本次模拟结算已取消，未增加任何积分。",
+    "backToSummary": "返回订单摘要",
+    "pendingTitle": "等待完成",
+    "pendingBody": "模拟服务方报告延迟。积分只会在结算完成后到账 — 请在下方查看状态。",
+    "checkStatus": "查看状态",
+    "checking": "查询中…"
+  },
+  "how": {
+    "title": "积分说明"
+  },
+  "state": {
+    "loading": "正在加载积分商店…",
+    "loadingPurchase": "正在查询订单…",
+    "signIn": "登录后即可浏览积分包并为余额增加积分。",
+    "login": "登录",
+    "error": "积分商店加载失败。",
+    "purchaseError": "无法加载该订单。",
+    "checkoutError": "无法开始结算。",
+    "confirmError": "模拟结果提交失败。",
+    "retry": "再试一次"
+  },
+  "entry": {
+    "addPoints": "增加积分",
+    "needMore": "积分不够用？",
+    "visitStore": "前往积分商店"
+  }
+}

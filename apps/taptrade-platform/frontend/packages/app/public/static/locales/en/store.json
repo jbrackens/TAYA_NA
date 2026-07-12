@@ -1,0 +1,83 @@
+{
+  "kicker": "Point Store",
+  "title": "Add Points",
+  "ledgerLink": "View point ledger",
+  "packs": {
+    "heading": "Point packs",
+    "unit": "pts",
+    "base": "{{points}} base points",
+    "bonus": "+{{points}} bonus points",
+    "priceLabel": "Price",
+    "firstPurchase": "This would be your first point pack purchase."
+  },
+  "summary": {
+    "title": "Order summary",
+    "pack": "Point pack",
+    "base": "Base points",
+    "bonus": "Bonus points",
+    "total": "Total points",
+    "price": "Price",
+    "status": "Status",
+    "continue": "Continue to checkout"
+  },
+  "status": {
+    "pending_payment": "Awaiting checkout",
+    "completed": "Completed",
+    "failed": "Did not complete",
+    "canceled": "Canceled"
+  },
+  "checkout": {
+    "banner": "Demo checkout — simulated, no real charge",
+    "title": "Simulated checkout",
+    "subtitle": "Pick an outcome below to finish this simulated checkout. Points are added only on a completed checkout.",
+    "orderRef": "Order reference",
+    "provider": "Provider",
+    "providerDemo": "Demo (simulated)",
+    "amount": "Amount",
+    "pay": "Complete simulated checkout",
+    "outcomes": "Other demo outcomes",
+    "fail": "Simulate a decline",
+    "delay": "Simulate delayed completion",
+    "cancel": "Cancel checkout",
+    "processing": "Processing…"
+  },
+  "result": {
+    "successTitle": "Points added",
+    "successBody": "{{points}} pts were added to your balance.",
+    "successToast": "+{{points}} pts from the {{pack}} pack",
+    "newBalance": "New balance",
+    "viewLedger": "View point ledger",
+    "returnToMarket": "Return to market",
+    "backToStore": "Back to store",
+    "failedTitle": "Checkout did not complete",
+    "failedBody": "{{reason}} No points were added. You can start a new checkout for the same pack.",
+    "failedReasonFallback": "The simulated checkout did not complete.",
+    "retry": "Try again",
+    "canceledTitle": "Checkout canceled",
+    "canceledBody": "This simulated checkout was canceled. No points were added.",
+    "backToSummary": "Back to order summary",
+    "pendingTitle": "Completion pending",
+    "pendingBody": "The simulated provider reported a delay. Points are added only once the checkout completes — check the status below.",
+    "checkStatus": "Check status",
+    "checking": "Checking…"
+  },
+  "how": {
+    "title": "How points work"
+  },
+  "state": {
+    "loading": "Loading the point store…",
+    "loadingPurchase": "Checking your order…",
+    "signIn": "Sign in to browse point packs and add points to your balance.",
+    "login": "Log in",
+    "error": "The point store could not load.",
+    "purchaseError": "This purchase could not be loaded.",
+    "checkoutError": "Checkout could not be started.",
+    "confirmError": "The simulated outcome failed.",
+    "retry": "Try again"
+  },
+  "entry": {
+    "addPoints": "Add Points",
+    "needMore": "Need more points?",
+    "visitStore": "Visit the Point Store"
+  }
+}

@@ -49,5 +49,7 @@
   "USER_MENU": "用户菜单",
   "LOG_IN": "登录",
   "SIGN_UP": "注册",
-  "LOG_OUT": "退出登录"
+  "LOG_OUT": "退出登录",
+  "ADD_POINTS": "增加积分",
+  "OPEN_POINT_STORE": "打开积分商店"
 }

@@ -1,0 +1,83 @@
+{
+  "kicker": "積分商店",
+  "title": "增加積分",
+  "ledgerLink": "查看積分紀錄",
+  "packs": {
+    "heading": "積分包",
+    "unit": "積分",
+    "base": "{{points}} 基礎積分",
+    "bonus": "+{{points}} 贈送積分",
+    "priceLabel": "價格",
+    "firstPurchase": "這將是你的首次積分包購買。"
+  },
+  "summary": {
+    "title": "訂單摘要",
+    "pack": "積分包",
+    "base": "基礎積分",
+    "bonus": "贈送積分",
+    "total": "積分總計",
+    "price": "價格",
+    "status": "狀態",
+    "continue": "繼續結算"
+  },
+  "status": {
+    "pending_payment": "等待結算",
+    "completed": "已完成",
+    "failed": "未完成",
+    "canceled": "已取消"
+  },
+  "checkout": {
+    "banner": "示範結算 — 僅為模擬，不會產生真實費用",
+    "title": "模擬結算",
+    "subtitle": "選擇下方的結果來完成本次模擬結算。只有結算完成後才會增加積分。",
+    "orderRef": "訂單編號",
+    "provider": "服務方",
+    "providerDemo": "示範（模擬）",
+    "amount": "金額",
+    "pay": "完成模擬結算",
+    "outcomes": "其他示範結果",
+    "fail": "模擬拒絕",
+    "delay": "模擬延遲完成",
+    "cancel": "取消結算",
+    "processing": "處理中…"
+  },
+  "result": {
+    "successTitle": "積分已到帳",
+    "successBody": "{{points}} 積分已加入你的餘額。",
+    "successToast": "來自 {{pack}} 積分包的 +{{points}} 積分",
+    "newBalance": "最新餘額",
+    "viewLedger": "查看積分紀錄",
+    "returnToMarket": "返回市場",
+    "backToStore": "返回商店",
+    "failedTitle": "結算未完成",
+    "failedBody": "{{reason}} 未增加任何積分。你可以為同一積分包重新開始結算。",
+    "failedReasonFallback": "模擬結算未能完成。",
+    "retry": "再試一次",
+    "canceledTitle": "結算已取消",
+    "canceledBody": "本次模擬結算已取消，未增加任何積分。",
+    "backToSummary": "返回訂單摘要",
+    "pendingTitle": "等待完成",
+    "pendingBody": "模擬服務方回報延遲。積分只會在結算完成後到帳 — 請在下方查看狀態。",
+    "checkStatus": "查看狀態",
+    "checking": "查詢中…"
+  },
+  "how": {
+    "title": "積分說明"
+  },
+  "state": {
+    "loading": "正在載入積分商店…",
+    "loadingPurchase": "正在查詢訂單…",
+    "signIn": "登入後即可瀏覽積分包並為餘額增加積分。",
+    "login": "登入",
+    "error": "積分商店載入失敗。",
+    "purchaseError": "無法載入該訂單。",
+    "checkoutError": "無法開始結算。",
+    "confirmError": "模擬結果提交失敗。",
+    "retry": "再試一次"
+  },
+  "entry": {
+    "addPoints": "增加積分",
+    "needMore": "積分不夠用？",
+    "visitStore": "前往積分商店"
+  }
+}

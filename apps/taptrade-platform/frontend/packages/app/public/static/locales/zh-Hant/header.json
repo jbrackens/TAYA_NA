@@ -49,5 +49,7 @@
   "USER_MENU": "使用者選單",
   "LOG_IN": "登入",
   "SIGN_UP": "註冊",
-  "LOG_OUT": "登出"
+  "LOG_OUT": "登出",
+  "ADD_POINTS": "增加積分",
+  "OPEN_POINT_STORE": "開啟積分商店"
 }

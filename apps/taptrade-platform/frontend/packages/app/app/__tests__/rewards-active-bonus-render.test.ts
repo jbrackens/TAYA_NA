@@ -59,7 +59,9 @@ describe("ActiveBonusesControl", () => {
     const text = collectText(json);
     assert.match(text, /Active point-play bonuses/);
     assert.match(text, /Demo Point-Play Bonus/);
-    assert.match(text, /150/);
+    // Whole-Points unit model: remainingPoints 15_000 renders as 15,000 —
+    // the retired ÷100 display showed "150" for the same wire value.
+    assert.match(text, /15,000/);
     assert.match(text, /pts remaining/);
     assert.doesNotMatch(text, /wager|stake|cash|deposit|withdraw|fiat|crypto/i);
 

@@ -34,6 +34,7 @@ const PROTECTED_ROUTES = [
   "/portfolio",
   "/profile",
   "/rewards",
+  "/store",
 ];
 
 const RETIRED_MONEY_ROUTE_PATTERN =

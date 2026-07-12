@@ -1,0 +1,83 @@
+{
+  "kicker": "Kedai Mata",
+  "title": "Tambah Mata",
+  "ledgerLink": "Lihat lejar mata",
+  "packs": {
+    "heading": "Pek mata",
+    "unit": "pts",
+    "base": "{{points}} mata asas",
+    "bonus": "+{{points}} mata bonus",
+    "priceLabel": "Harga",
+    "firstPurchase": "Ini akan menjadi pembelian pek mata pertama anda."
+  },
+  "summary": {
+    "title": "Ringkasan pesanan",
+    "pack": "Pek mata",
+    "base": "Mata asas",
+    "bonus": "Mata bonus",
+    "total": "Jumlah mata",
+    "price": "Harga",
+    "status": "Status",
+    "continue": "Teruskan ke checkout"
+  },
+  "status": {
+    "pending_payment": "Menunggu checkout",
+    "completed": "Selesai",
+    "failed": "Tidak selesai",
+    "canceled": "Dibatalkan"
+  },
+  "checkout": {
+    "banner": "Checkout demo — simulasi sahaja, tiada caj sebenar",
+    "title": "Checkout simulasi",
+    "subtitle": "Pilih hasil di bawah untuk melengkapkan checkout simulasi ini. Mata hanya ditambah selepas checkout selesai.",
+    "orderRef": "Rujukan pesanan",
+    "provider": "Penyedia",
+    "providerDemo": "Demo (simulasi)",
+    "amount": "Amaun",
+    "pay": "Lengkapkan checkout simulasi",
+    "outcomes": "Hasil demo lain",
+    "fail": "Simulasi penolakan",
+    "delay": "Simulasi kelewatan",
+    "cancel": "Batalkan checkout",
+    "processing": "Memproses…"
+  },
+  "result": {
+    "successTitle": "Mata ditambah",
+    "successBody": "{{points}} pts telah ditambah ke baki anda.",
+    "successToast": "+{{points}} pts daripada pek {{pack}}",
+    "newBalance": "Baki baharu",
+    "viewLedger": "Lihat lejar mata",
+    "returnToMarket": "Kembali ke pasaran",
+    "backToStore": "Kembali ke kedai",
+    "failedTitle": "Checkout tidak selesai",
+    "failedBody": "{{reason}} Tiada mata ditambah. Anda boleh mulakan checkout baharu untuk pek yang sama.",
+    "failedReasonFallback": "Checkout simulasi tidak selesai.",
+    "retry": "Cuba lagi",
+    "canceledTitle": "Checkout dibatalkan",
+    "canceledBody": "Checkout simulasi ini dibatalkan. Tiada mata ditambah.",
+    "backToSummary": "Kembali ke ringkasan pesanan",
+    "pendingTitle": "Menunggu selesai",
+    "pendingBody": "Penyedia simulasi melaporkan kelewatan. Mata hanya ditambah selepas checkout selesai — semak status di bawah.",
+    "checkStatus": "Semak status",
+    "checking": "Menyemak…"
+  },
+  "how": {
+    "title": "Cara mata berfungsi"
+  },
+  "state": {
+    "loading": "Memuatkan kedai mata…",
+    "loadingPurchase": "Menyemak pesanan anda…",
+    "signIn": "Log masuk untuk melihat pek mata dan menambah mata ke baki anda.",
+    "login": "Log masuk",
+    "error": "Kedai mata tidak dapat dimuatkan.",
+    "purchaseError": "Pesanan ini tidak dapat dimuatkan.",
+    "checkoutError": "Checkout tidak dapat dimulakan.",
+    "confirmError": "Hasil simulasi gagal.",
+    "retry": "Cuba lagi"
+  },
+  "entry": {
+    "addPoints": "Tambah Mata",
+    "needMore": "Perlukan lebih banyak mata?",
+    "visitStore": "Lawati Kedai Mata"
+  }
+}

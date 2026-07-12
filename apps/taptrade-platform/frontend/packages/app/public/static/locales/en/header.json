@@ -49,5 +49,7 @@
   "USER_MENU": "User menu",
   "LOG_IN": "Log in",
   "SIGN_UP": "Sign up",
-  "LOG_OUT": "Log out"
+  "LOG_OUT": "Log out",
+  "ADD_POINTS": "Add Points",
+  "OPEN_POINT_STORE": "Open the Point Store"
 }
