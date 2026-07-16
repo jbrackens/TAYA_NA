@@ -14,7 +14,6 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { MarketGrid } from "./MarketGrid";
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
@@ -32,7 +31,6 @@ import {
 import type {
   Category,
   PredictionMarket,
-  Series,
 } from "@taptrade-ui/api-client/src/prediction-types";
 
 const api = createPredictionClient();
@@ -74,16 +72,16 @@ const TIME_PILLS: { value: DateWindow; labelKey?: string; label?: string }[] = [
 ];
 
 const FILTER_HEAD_CLASS =
-  "mt-8 mb-[18px] flex flex-wrap items-center justify-between gap-4 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[768px]:mt-6 max-[768px]:mb-4 max-[768px]:flex-col max-[768px]:flex-nowrap max-[768px]:items-stretch max-[768px]:justify-start max-[768px]:gap-2.5";
+  "mt-6 mb-[18px] flex flex-wrap items-center justify-between gap-4 [font-family:var(--font-terminal)] max-[768px]:mt-5 max-[768px]:mb-4 max-[768px]:flex-col max-[768px]:flex-nowrap max-[768px]:items-stretch max-[768px]:justify-start max-[768px]:gap-2.5";
 
 const CATEGORY_LIST_CLASS =
-  "flex items-center gap-6 border-b border-neutral-200 w-full max-[768px]:mx-[-16px] max-[768px]:w-[calc(100%+32px)] max-[768px]:flex-[0_0_auto] max-[768px]:flex-row max-[768px]:flex-nowrap max-[768px]:overflow-x-auto max-[768px]:overflow-y-hidden max-[768px]:whitespace-nowrap max-[768px]:px-4 max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
+  "flex items-center gap-6 border-b border-neutral-200 w-full !border-[var(--border-1)] max-[768px]:mx-[-16px] max-[768px]:w-[calc(100%+32px)] max-[768px]:flex-[0_0_auto] max-[768px]:flex-row max-[768px]:flex-nowrap max-[768px]:overflow-x-auto max-[768px]:overflow-y-hidden max-[768px]:whitespace-nowrap max-[768px]:px-4 max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
 
 const CATEGORY_PILL_BASE_CLASS =
   "relative cursor-pointer appearance-none bg-transparent pb-3 pt-2 text-sm font-medium border-b-2 transition-all duration-200 [font-family:inherit] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
 
 const TIME_PILLS_CLASS =
-  "inline-flex shrink-0 gap-1 rounded-md border border-[var(--border-1)] bg-[rgba(26,26,26,0.04)] p-[3px] max-[768px]:max-w-full max-[768px]:self-start max-[768px]:overflow-x-auto max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
+  "inline-flex shrink-0 gap-1 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-[3px] max-[768px]:max-w-full max-[768px]:self-start max-[768px]:overflow-x-auto max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
 
 const TIME_PILL_BASE_CLASS =
   "min-w-11 cursor-pointer appearance-none rounded-md border-0 px-[14px] py-1.5 [font-family:inherit] text-xs font-semibold transition-colors duration-[120ms] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
@@ -91,35 +89,26 @@ const TIME_PILL_BASE_CLASS =
 const DISCOVERY_CONTROLS_CLASS =
   "flex w-full flex-wrap items-center justify-between gap-3 max-[768px]:items-stretch";
 const SEARCH_INPUT_CLASS =
-  "min-h-10 min-w-[260px] flex-1 rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 text-sm text-[var(--t1)] outline-none transition-colors duration-[120ms] placeholder:text-[var(--t3)] focus:border-[var(--accent-lo)] max-[768px]:min-w-0";
+  "min-h-10 min-w-[260px] flex-1 rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 text-sm text-[var(--t1)] outline-none transition-colors duration-[120ms] placeholder:text-[var(--t3)] focus:border-[var(--accent-lo)] max-[768px]:min-w-0 max-[768px]:basis-full max-[768px]:w-full";
 const WATCHLIST_FILTER_CLASS =
   "min-h-10 rounded-md border px-3 text-sm font-semibold transition-colors duration-[120ms]";
-const TAXONOMY_PANEL_CLASS = "grid w-full gap-2.5";
-const TAXONOMY_GROUP_CLASS = "flex flex-wrap items-center gap-x-3 gap-y-2";
-const TAXONOMY_LABEL_CLASS =
-  "shrink-0 font-['IBM_Plex_Mono',_monospace] text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
-const TAXONOMY_LIST_CLASS = "flex flex-wrap items-center gap-2";
-const TAXONOMY_LINK_CLASS =
-  "rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-2.5 py-1.5 text-[12px] font-semibold text-[var(--t2)] no-underline transition-colors hover:border-[var(--accent-lo)] hover:text-[var(--accent-text)]";
-const TAG_BUTTON_BASE_CLASS =
-  "cursor-pointer appearance-none rounded-md border px-2.5 py-1.5 text-[12px] font-semibold transition-colors";
 
 const LOAD_MORE_CLASS = "mt-6 mb-0 flex justify-center";
 
 const LOAD_MORE_BUTTON_CLASS =
-  "cursor-pointer appearance-none rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-3 font-['Inter',_sans-serif] text-sm font-semibold text-[var(--t1)] transition-colors duration-[120ms] [&:not(:disabled):hover]:border-[rgba(43,228,128,0.5)] [&:not(:disabled):hover]:bg-[var(--surface-2)] [&:not(:disabled):hover]:text-[var(--accent-text)] disabled:cursor-not-allowed disabled:opacity-[0.55]";
+  "cursor-pointer appearance-none rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-3 [font-family:var(--font-terminal)] text-sm font-semibold text-[var(--t1)] transition-colors duration-[120ms] [&:not(:disabled):hover]:border-[var(--accent-lo)] [&:not(:disabled):hover]:bg-[var(--accent-soft)] [&:not(:disabled):hover]:text-[var(--accent-text)] disabled:cursor-not-allowed disabled:opacity-[0.55]";
 
 const FEED_WITH_SUBNAV_CLASS =
-  "grid grid-cols-4 items-start gap-4 max-[1120px]:grid-cols-1";
-const FEED_MARKETS_CLASS = "col-span-3 min-w-0 max-[1120px]:col-span-1";
+  "grid grid-cols-4 items-start gap-4 max-[1600px]:grid-cols-1";
+const FEED_MARKETS_CLASS = "col-span-3 min-w-0 max-[1600px]:col-span-1";
 const SUBNAV_CLASS =
-  "sticky top-4 self-start border-l border-[var(--border-1)] pl-4 max-[1120px]:order-first max-[1120px]:sticky max-[1120px]:top-0 max-[1120px]:border-b max-[1120px]:border-l-0 max-[1120px]:pb-3 max-[1120px]:pl-0";
+  "sticky top-4 self-start border-l border-[var(--border-1)] pl-4 max-[1600px]:order-first max-[1600px]:static max-[1600px]:border-b max-[1600px]:border-l-0 max-[1600px]:pb-3 max-[1600px]:pl-0";
 const SUBNAV_LABEL_CLASS =
-  "mb-3 font-['IBM_Plex_Mono',_monospace] text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--t3)]";
+  "mb-3 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--t3)]";
 const SUBNAV_LIST_CLASS =
-  "flex flex-col items-stretch gap-1 max-[1120px]:flex-row max-[1120px]:overflow-x-auto max-[1120px]:[scrollbar-width:none] max-[1120px]:[-ms-overflow-style:none] max-[1120px]:[-webkit-overflow-scrolling:touch] max-[1120px]:[&::-webkit-scrollbar]:hidden";
+  "flex flex-col items-stretch gap-1 max-[1600px]:flex-row max-[1600px]:overflow-x-auto max-[1600px]:[scrollbar-width:none] max-[1600px]:[-ms-overflow-style:none] max-[1600px]:[-webkit-overflow-scrolling:touch] max-[1600px]:[&::-webkit-scrollbar]:hidden";
 const SUBNAV_BUTTON_BASE_CLASS =
-  "cursor-pointer appearance-none rounded-md border-0 px-3 py-2 text-left [font-family:inherit] text-[13px] transition-colors duration-[120ms] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[1120px]:flex-[0_0_auto]";
+  "cursor-pointer appearance-none rounded-md border-0 px-3 py-2 text-left [font-family:inherit] text-[13px] transition-colors duration-[120ms] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[1600px]:flex-[0_0_auto]";
 
 const EMPTY_CLASS =
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-14 text-center";
@@ -131,7 +120,7 @@ function categoryPillClass(active: boolean): string {
   return `${CATEGORY_PILL_BASE_CLASS} ${
     active
       ? "text-[var(--accent-text)] font-semibold border-[var(--accent-lo)]"
-      : "text-neutral-500 border-transparent hover:text-neutral-800 hover:border-neutral-300"
+      : "text-neutral-500 border-transparent hover:text-neutral-800 hover:border-neutral-300 !text-[var(--t3)] hover:!border-[var(--border-2)] hover:!text-[var(--t1)]"
   }`;
 }
 
@@ -139,23 +128,15 @@ function timePillClass(active: boolean): string {
   return `${TIME_PILL_BASE_CLASS} ${
     active
       ? "bg-[var(--yes)] text-[#061a10]"
-      : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)]"
+      : "bg-transparent text-[var(--t3)] hover:bg-[var(--surface-1)] hover:text-[var(--t1)]"
   }`;
 }
 
 function subcategoryButtonClass(active: boolean): string {
   return `${SUBNAV_BUTTON_BASE_CLASS} ${
     active
-      ? "bg-[var(--yes)] font-semibold text-[#061a10]"
-      : "bg-transparent font-medium text-[var(--t2)] hover:bg-[rgba(26,26,26,0.05)] hover:text-[var(--t1)]"
-  }`;
-}
-
-function tagButtonClass(active: boolean): string {
-  return `${TAG_BUTTON_BASE_CLASS} ${
-    active
-      ? "border-[var(--accent-lo)] bg-[var(--accent-soft)] text-[var(--accent-text)]"
-      : "border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t2)] hover:border-[var(--accent-lo)] hover:text-[var(--accent-text)]"
+      ? "bg-[var(--accent-soft)] font-semibold text-[var(--accent-text)]"
+      : "bg-transparent font-medium text-[var(--t2)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)]"
   }`;
 }
 
@@ -199,6 +180,7 @@ interface Props {
 
 export function AllMarketsSection({ categories }: Props) {
   const { t } = useTranslation("prediction");
+  const { t: headerT } = useTranslation("header");
   const { t: contentT } = useTranslation("market-content");
   const { isAuthenticated } = useAuth();
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
@@ -212,9 +194,6 @@ export function AllMarketsSection({ categories }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [categorySlug, setCategorySlug] = useState<string>("all");
   const [subcategory, setSubcategory] = useState<string | null>(null);
-  const [series, setSeries] = useState<Series[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [dateWindow, setDateWindow] = useState<DateWindow>("all");
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState<MarketSort>("activity");
@@ -246,8 +225,6 @@ export function AllMarketsSection({ categories }: Props) {
         : [],
     [activeCategory, categorySlug, showSubnavCategory, subcategorySource],
   );
-  const visibleSeries = series.slice(0, 8);
-  const visibleTags = tags.slice(0, 12);
   const visibleMarkets = useMemo(() => {
     const base = subcategory
       ? subcategorySource.filter((market) =>
@@ -297,35 +274,13 @@ export function AllMarketsSection({ categories }: Props) {
 
   useEffect(() => {
     setSubcategory(null);
-    setSelectedTag(null);
   }, [categorySlug, dateWindow]);
-
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([
-      api.getSeries({ categoryId }).catch(() => [] as Series[]),
-      api.getTags({ categoryId }).catch(() => [] as string[]),
-    ]).then(([nextSeries, nextTags]) => {
-      if (cancelled) return;
-      setSeries(nextSeries);
-      setTags(nextTags);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [categoryId]);
 
   useEffect(() => {
     if (subcategory && !subcategories.includes(subcategory)) {
       setSubcategory(null);
     }
   }, [subcategory, subcategories]);
-
-  useEffect(() => {
-    if (selectedTag && tags.length > 0 && !tags.includes(selectedTag)) {
-      setSelectedTag(null);
-    }
-  }, [selectedTag, tags]);
 
   // Initial load + refetch when either filter changes.
   // closeBefore is computed inside the effect (NOT outside) because it
@@ -343,7 +298,6 @@ export function AllMarketsSection({ categories }: Props) {
       categoryId,
       closeBefore: dateWindowToCloseBefore(dateWindow),
       q: search || undefined,
-      tag: selectedTag || undefined,
       sort: sortBy,
     };
     const pageRequest = api.getMarkets({
@@ -380,15 +334,7 @@ export function AllMarketsSection({ categories }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [
-    categoryId,
-    categorySlug,
-    dateWindow,
-    query,
-    selectedTag,
-    showSubnavCategory,
-    sortBy,
-  ]);
+  }, [categoryId, categorySlug, dateWindow, query, showSubnavCategory, sortBy]);
 
   function loadMore() {
     if (loadingMore || !hasNext) return;
@@ -401,7 +347,6 @@ export function AllMarketsSection({ categories }: Props) {
         categoryId,
         closeBefore: dateWindowToCloseBefore(dateWindow),
         q: query.trim() || undefined,
-        tag: selectedTag || undefined,
         sort: sortBy,
       })
       .then((res) => {
@@ -453,7 +398,6 @@ export function AllMarketsSection({ categories }: Props) {
     categorySlug !== "all" ||
     dateWindow !== "all" ||
     subcategory !== null ||
-    selectedTag !== null ||
     query.trim() !== "" ||
     showWatchlistOnly;
   const emptyState = (
@@ -510,8 +454,8 @@ export function AllMarketsSection({ categories }: Props) {
           <input
             type="search"
             className={SEARCH_INPUT_CLASS}
-            placeholder={t("SEARCH_MARKETS_PLACEHOLDER")}
-            aria-label={t("SEARCH_MARKETS")}
+            placeholder={headerT("SEARCH_MARKETS_PLACEHOLDER")}
+            aria-label={headerT("SEARCH_MARKETS")}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
@@ -570,59 +514,6 @@ export function AllMarketsSection({ categories }: Props) {
             })}
           </div>
         </div>
-        {(visibleSeries.length > 0 || visibleTags.length > 0) && (
-          <div className={TAXONOMY_PANEL_CLASS}>
-            {visibleSeries.length > 0 && (
-              <section className={TAXONOMY_GROUP_CLASS}>
-                <div className={TAXONOMY_LABEL_CLASS}>
-                  {t("SERIES", "Series")}
-                </div>
-                <div className={TAXONOMY_LIST_CLASS}>
-                  {visibleSeries.map((item) => (
-                    <Link
-                      key={item.id}
-                      className={TAXONOMY_LINK_CLASS}
-                      href={`/series/${item.slug}`}
-                    >
-                      {item.title}
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            )}
-            {visibleTags.length > 0 && (
-              <section className={TAXONOMY_GROUP_CLASS}>
-                <div className={TAXONOMY_LABEL_CLASS}>{t("TAGS", "Tags")}</div>
-                <div className={TAXONOMY_LIST_CLASS}>
-                  {selectedTag && (
-                    <button
-                      type="button"
-                      className={tagButtonClass(false)}
-                      onClick={() => setSelectedTag(null)}
-                    >
-                      {t("ALL")}
-                    </button>
-                  )}
-                  {visibleTags.map((tag) => (
-                    <button
-                      key={tag}
-                      type="button"
-                      aria-pressed={selectedTag === tag}
-                      className={tagButtonClass(selectedTag === tag)}
-                      onClick={() =>
-                        setSelectedTag((current) =>
-                          current === tag ? null : tag,
-                        )
-                      }
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
-        )}
       </header>
 
       {loading && markets.length === 0 ? (
@@ -683,7 +574,7 @@ export function AllMarketsSection({ categories }: Props) {
           ) : visibleMarkets.length > 0 ? (
             <MarketGrid
               markets={visibleMarkets}
-              columns={4}
+              columns={3}
               watchedMarketIds={watchedMarketIds}
               onToggleWatchlist={toggleWatchlist}
             />

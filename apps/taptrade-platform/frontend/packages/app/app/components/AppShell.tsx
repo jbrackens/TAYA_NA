@@ -23,9 +23,9 @@ import { PredictFooter } from "./prediction/PredictFooter";
 import { BackendStatusBanner } from "./BackendStatusBanner";
 import MobileTabBar from "./MobileTabBar";
 import { ChatSidebar } from "./chat/ChatSidebar";
+import { isPredictionTerminalRoute } from "../lib/prediction-terminal";
 
-const AUTH_LAYOUT_CLASS =
-  "min-h-screen overflow-y-auto bg-transparent";
+const AUTH_LAYOUT_CLASS = "min-h-screen overflow-y-auto bg-transparent";
 
 const APP_SHELL_CLASS = "min-h-screen bg-transparent";
 
@@ -37,10 +37,19 @@ const APP_SHELL_CONTENT_CLASS = "flex-[1_1_1280px] min-w-0";
 const APP_SHELL_MAIN_CLASS =
   "max-w-[1280px] mx-auto my-0 pt-7 px-0 pb-20 max-[899px]:pb-[calc(108px_+_env(safe-area-inset-bottom))]";
 
+const TERMINAL_SHELL_BODY_CLASS =
+  "flex w-full min-h-[calc(100vh_-_74px)] items-start bg-transparent";
+
+const TERMINAL_SHELL_CONTENT_CLASS = "min-w-0 flex-1";
+
+const TERMINAL_SHELL_MAIN_CLASS =
+  "m-0 max-w-none p-0 pb-0 max-[899px]:pb-[calc(64px_+_env(safe-area-inset-bottom))]";
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthRoute = pathname?.startsWith("/auth/");
   const isLandingRoute = pathname === "/";
+  const isPredictTerminal = isPredictionTerminalRoute(pathname);
 
   return (
     <StoreProvider>
@@ -55,14 +64,38 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   {children}
                 </div>
               ) : (
-                <div className={APP_SHELL_CLASS}>
+                <div
+                  className={`${APP_SHELL_CLASS} ${
+                    isPredictTerminal ? "predict-terminal" : ""
+                  }`}
+                >
                   <TopBar />
                   <BackendStatusBanner />
-                  <div className={APP_SHELL_BODY_CLASS}>
-                    <ChatSidebar />
-                    <div className={APP_SHELL_CONTENT_CLASS}>
-                      <main className={APP_SHELL_MAIN_CLASS}>{children}</main>
-                      <PredictFooter />
+                  <div
+                    className={
+                      isPredictTerminal
+                        ? TERMINAL_SHELL_BODY_CLASS
+                        : APP_SHELL_BODY_CLASS
+                    }
+                  >
+                    {!isPredictTerminal && <ChatSidebar />}
+                    <div
+                      className={
+                        isPredictTerminal
+                          ? TERMINAL_SHELL_CONTENT_CLASS
+                          : APP_SHELL_CONTENT_CLASS
+                      }
+                    >
+                      <main
+                        className={
+                          isPredictTerminal
+                            ? TERMINAL_SHELL_MAIN_CLASS
+                            : APP_SHELL_MAIN_CLASS
+                        }
+                      >
+                        {children}
+                      </main>
+                      {!isPredictTerminal && <PredictFooter />}
                     </div>
                   </div>
                   <MobileTabBar />

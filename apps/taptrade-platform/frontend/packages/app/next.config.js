@@ -11,7 +11,9 @@ const chatOrigin = (() => {
   }
 })();
 const realtimeOrigin = (() => {
-  const raw = process.env.NEXT_PUBLIC_WS_URL || "";
+  const raw =
+    process.env.NEXT_PUBLIC_WS_URL ||
+    (process.env.NODE_ENV !== "production" ? "ws://localhost:18080/ws" : "");
   try {
     return raw ? new URL(raw).origin : "";
   } catch {

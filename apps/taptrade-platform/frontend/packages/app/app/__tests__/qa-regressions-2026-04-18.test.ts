@@ -1144,6 +1144,9 @@ describe("Navigation pill active colors", () => {
 
 describe("Predict discovery controls", () => {
   const allMarketsSource = read("components/prediction/AllMarketsSection.tsx");
+  const predictionWorkspaceSource = read(
+    "components/prediction/PredictionWorkspace.tsx",
+  );
   const discoverPageSource = read("discover/page.tsx");
   const seriesPageSource = read("series/[slug]/page.tsx");
   const marketGridSource = read("components/prediction/MarketGrid.tsx");
@@ -1178,6 +1181,21 @@ describe("Predict discovery controls", () => {
       predictionClientSource.includes('query.set("q", params.q)') &&
         predictionClientSource.includes('query.set("sort", params.sort)'),
       "PredictionApiClient.getMarkets should serialize q and sort",
+    );
+  });
+
+  it("keeps the featured carousel synchronized with the trade preview", () => {
+    assert.ok(
+      predictionWorkspaceSource.includes('aria-roledescription="carousel"') &&
+        predictionWorkspaceSource.includes("PREVIOUS_FEATURED_MARKET") &&
+        predictionWorkspaceSource.includes("NEXT_FEATURED_MARKET") &&
+        predictionWorkspaceSource.includes("CAROUSEL_COUNT"),
+      "PredictionWorkspace should expose accessible featured-market carousel controls",
+    );
+    assert.ok(
+      predictionWorkspaceSource.includes("setActiveFeaturedId(marketId)") &&
+        predictionWorkspaceSource.includes("setSelectedId(marketId)"),
+      "Changing the featured slide should keep the trade preview on the same market",
     );
   });
 
@@ -1229,7 +1247,7 @@ describe("Predict discovery controls", () => {
     );
   });
 
-  it("backs series and tag browsing with taxonomy API params", () => {
+  it("keeps taxonomy support in the client and dedicated series page without crowding the markets feed", () => {
     assert.ok(
       predictionClientSource.includes("/api/v1/series") &&
         predictionClientSource.includes("/api/v1/tags") &&
@@ -1240,12 +1258,12 @@ describe("Predict discovery controls", () => {
       "PredictionApiClient should expose series/tags and serialize seriesId/tag market filters",
     );
     assert.ok(
-      allMarketsSource.includes("getSeries") &&
-        allMarketsSource.includes("getTags") &&
-        allMarketsSource.includes("selectedTag") &&
-        allMarketsSource.includes("tag: selectedTag || undefined") &&
-        allMarketsSource.includes("href={`/series/${item.slug}`}"),
-      "AllMarketsSection should render backed series links and tag-filtered market queries",
+      !allMarketsSource.includes("getSeries") &&
+        !allMarketsSource.includes("getTags") &&
+        !allMarketsSource.includes("selectedTag") &&
+        !allMarketsSource.includes("TAXONOMY_PANEL_CLASS") &&
+        !allMarketsSource.includes("href={`/series/${item.slug}`}"),
+      "AllMarketsSection should omit the crowded Series/Tags controls",
     );
     assert.ok(
       seriesPageSource.includes("getSeries") &&
@@ -1448,8 +1466,8 @@ describe("Mobile navigation and chat parity", () => {
   it("keeps mobile primary nav aligned with desktop auth rules", () => {
     assert.ok(
       mobileTabBarSource.includes('href: "/discover"') &&
-        mobileTabBarSource.includes("NAV_DISCOVER"),
-      "mobile nav should expose Discover like the desktop primary nav",
+        mobileTabBarSource.includes("NAV_TRENDING"),
+      "mobile nav should expose Trending like the desktop primary nav",
     );
     assert.ok(
       mobileTabBarSource.includes("useAuth()") &&

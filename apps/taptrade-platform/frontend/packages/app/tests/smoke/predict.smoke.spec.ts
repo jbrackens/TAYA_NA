@@ -14,7 +14,11 @@ test.describe("/predict — discovery landing", () => {
     // Category filter strip should render — it's present on every discovery
     // variant in the plan's hierarchy table.
     await expect(
-      page.getByText(/politics|crypto|sports/i).first(),
+      page
+        .getByRole("tab", {
+          name: /politics|sports|entertainment|technology|economics/i,
+        })
+        .first(),
     ).toBeVisible();
 
     // At least one market card should render its tradeable prices. The Phase 3

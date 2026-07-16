@@ -1,7 +1,18 @@
 import React from "react";
 import "./globals.css";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import localFont from "next/font/local";
 import AppShell from "./components/AppShell";
 import { brand } from "./lib/brand";
+
+const MartianGrotesk = localFont({
+  src: "./fonts/martian-grotesk/MartianGrotesk-Variable.woff2",
+  variable: "--font-martian-grotesk",
+  display: "swap",
+  weight: "100 1000",
+  style: "normal",
+});
 
 export default function RootLayout({
   children,
@@ -9,17 +20,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      className={`${GeistSans.variable} ${GeistMono.variable} ${MartianGrotesk.variable}`}
+    >
       <head>
         <title>{brand.name}</title>
         <meta
           name="description"
           content="Trade Yes or No on politics, basketball, pageants, esports, gaming, and the moments Filipinos are watching."
         />
-        {/* Predict design system: Inter (Robinhood-direction primary, added
-         * 2026-04-26 per DESIGN.md §2), Inter Tight for display headings,
-         * IBM Plex Mono for tabular numerics, Schibsted Grotesk (700 only)
-         * for the wordmark (BrandMark/TopBar/footer/register). P12 perf
+        {/* Existing light surfaces retain Inter, Inter Tight, IBM Plex Mono,
+         * and Schibsted Grotesk. The prediction workspace uses self-hosted
+         * Geist Sans + Geist Mono through the variables on <html>. P12 perf
          * (2026-07-12): dropped Outfit (legacy — only remaining reference
          * was an unreachable fallback behind Inter in globals.css) and
          * Space Grotesk (zero usages); preconnects added so the blocking

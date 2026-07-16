@@ -1,5 +1,52 @@
 # Design System — TapTrade
 
+> **P10 approved direction (2026-07-12): `/predict` dark trading workspace.**
+> The owner approved the 1536×1024 concept mockup.
+> For `/predict`, this P10 note supersedes the P9 light-theme, no-sidebar,
+> mint-accent, card-grid, carousel, and Clash Display rules below. Other
+> player routes retain P9 until they receive matching approved concepts.
+>
+> P10 is a dense, edge-to-edge event-trading workspace: true charcoal base,
+> 74px header, 200px topic rail, fluid signal/feed column, and 380px sticky
+> trade-preview rail. Typography is IBM Plex Sans Condensed for product/UI
+> voice and IBM Plex Mono for numbers. The owned accent is periwinkle-violet;
+> green and red are reserved for directional data. Surfaces use 1px cool-gray
+> borders, 6–10px radii, and essentially no shadow or glow. The featured
+> signal is static (no auto-advance). Market rows expose real probability,
+> real 24h movement when available, close date, liquidity, and settlement
+> source. Selecting a row updates the trade preview; `Review trade` deep-links
+> into the existing authenticated market flow. Missing history renders an
+> honest empty state. No fabricated deltas, charts, community activity,
+> dollar balances, redeemability claims, or one-tap order submission.
+>
+> P10 responsive contract: 200/fluid/380 at ≥1280px; 72/fluid/340 at
+> 1024–1279px; one column below 1024px; 16px gutters and the existing fixed
+> bottom navigation below 900px. Mobile market rows reduce to question and
+> probability without horizontal overflow. The dark tokens are scoped by
+> `.predict-terminal`; do not replace global `:root` tokens until the
+> remaining player routes are intentionally migrated.
+
+> **P11 commercial-polish revision (2026-07-12):** owner review rejected the
+> condensed workspace typography and the approximate two-tone logo. For
+> `/predict`, P11 supersedes P10 typography and identity details: use
+> self-hosted **Geist Sans** for UI/display, **Geist Mono** only for tabular
+> prices, and the approved concept's compact monochrome violet split-market
+> mark paired with an uppercase Martian Grotesk wordmark. Product icons come
+> from the MIT-licensed Phosphor family with one consistent regular/duotone
+> weight system. The header keeps brand and navigation left, centers the search
+> region, and pins account controls right. `Featured market` replaces
+> recommendation-like “Today’s signal” language.
+>
+> P11 also moves the ticket into a modal trade sheet below 1180px instead of
+> placing it after the full discovery feed. Selecting a market or the featured
+> CTA opens that sheet; background scrolling locks, Escape/backdrop/close all
+> dismiss it, and the review action remains visible without internal scrolling
+> at a 390×844 viewport. Controls stay at least 44px, violet is reserved for
+> selection/action/chart state, and green/red remain semantic result colors.
+> The revision is informed by current Polymarket, Kalshi, DraftKings
+> Predictions, Robinhood, Apple HIG, and WCAG 2.2 patterns; it intentionally
+> avoids casino promotion density, pulsing prices, and auto-advancing content.
+
 > Robinhood for prediction markets, **light theme**. Gallery-white surfaces, soft-flat cards on hairline borders and quiet two-layer shadows, big confident numbers, a dominant chart, mint as the action color. Markets are treated like stocks: the question is the sub-headline, the price IS the page, two pill buttons commit you to a side.
 
 This document governs both the **TapTrade player app** at `apps/taptrade-platform/frontend/packages/app/` (port 3000) and the **back-office** at `apps/taptrade-platform/frontend/packages/office/` (port 3001). Both surfaces share the same `:root` token set, the same Inter + IBM Plex Mono fonts, and the same gallery-white backdrop (P9, 2026-07-07 — the P8 warm cream + chart-paper grid is retired).

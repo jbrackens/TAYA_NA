@@ -10,23 +10,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Compass,
-  Activity,
-  LayoutGrid,
-  PieChart,
-  Trophy,
-  Gift,
-} from "lucide-react";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
+import { PulseIcon as Activity } from "@phosphor-icons/react/dist/csr/Pulse";
+import { SquaresFourIcon as LayoutGrid } from "@phosphor-icons/react/dist/csr/SquaresFour";
+import { ChartPieSliceIcon as PieChart } from "@phosphor-icons/react/dist/csr/ChartPieSlice";
+import { TrophyIcon as Trophy } from "@phosphor-icons/react/dist/csr/Trophy";
+import { GiftIcon as Gift } from "@phosphor-icons/react/dist/csr/Gift";
+import { UserIcon as User } from "@phosphor-icons/react/dist/csr/User";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
 import { FEATURE_LIVE_MARKETS } from "../lib/features";
+import { isPredictionTerminalRoute } from "../lib/prediction-terminal";
 
 type TabDef = {
   href: string;
   labelKey: string;
-  Icon: typeof LayoutGrid;
+  Icon: PhosphorIcon;
   requiresAuth?: boolean;
   enabled?: boolean;
   matchPrefixes?: string[];
@@ -41,8 +41,8 @@ const TABS: TabDef[] = [
   },
   {
     href: "/discover",
-    labelKey: "NAV_DISCOVER",
-    Icon: Compass,
+    labelKey: "NAV_TRENDING",
+    Icon: Activity,
     matchPrefixes: ["/discover"],
   },
   {
@@ -72,11 +72,41 @@ const TABS: TabDef[] = [
   },
 ];
 
+const TERMINAL_TABS: TabDef[] = [
+  {
+    href: "/predict",
+    labelKey: "NAV_MARKETS",
+    Icon: LayoutGrid,
+    matchPrefixes: ["/predict", "/category/", "/market/"],
+  },
+  {
+    href: "/discover",
+    labelKey: "NAV_TRENDING",
+    Icon: Activity,
+    matchPrefixes: ["/discover"],
+  },
+  {
+    href: "/portfolio",
+    labelKey: "NAV_PORTFOLIO",
+    Icon: PieChart,
+    requiresAuth: true,
+  },
+  {
+    href: "/account",
+    labelKey: "NAV_ACCOUNT",
+    Icon: User,
+    requiresAuth: true,
+  },
+];
+
 const MOBILE_TAB_BAR_CLASS =
   "fixed left-3 right-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-[90] grid max-w-full overflow-hidden rounded-[var(--r-rh-xl)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1.5 shadow-[0_10px_28px_rgba(60,50,30,0.14)]";
 
+const TERMINAL_MOBILE_TAB_BAR_CLASS =
+  "fixed inset-x-0 bottom-0 z-[90] grid max-w-full overflow-hidden border-x-0 border-b-0 border-t border-[var(--border-1)] bg-[var(--surface-1)] px-2 pt-1.5 pb-[max(6px,env(safe-area-inset-bottom))]";
+
 const MOBILE_TAB_ITEM_CLASS =
-  "flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-[var(--r-rh-md)] px-0.5 py-2 text-center text-[10px] tracking-[0.02em] no-underline transition-[color,background] duration-150 ease-[ease] [font-family:inherit]";
+  "flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-[var(--r-rh-md)] px-0.5 py-2 text-center text-[11px] tracking-[0.01em] no-underline transition-[color,background] duration-150 ease-[ease] [font-family:inherit]";
 
 const MOBILE_TAB_ITEM_INACTIVE_CLASS =
   "font-semibold text-[var(--t3)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)]";
@@ -130,13 +160,17 @@ export default function MobileTabBar() {
   }, []);
 
   if (!isMobile) return null;
-  const visibleTabs = TABS.filter(
+  const isTerminalRoute = isPredictionTerminalRoute(pathname);
+  const availableTabs = isTerminalRoute ? TERMINAL_TABS : TABS;
+  const visibleTabs = availableTabs.filter(
     (tab) => tab.enabled !== false && (!tab.requiresAuth || isAuthenticated),
   );
 
   return (
     <nav
-      className={`${MOBILE_TAB_BAR_CLASS} ${gridClassForCount(visibleTabs.length)}`}
+      className={`${
+        isTerminalRoute ? TERMINAL_MOBILE_TAB_BAR_CLASS : MOBILE_TAB_BAR_CLASS
+      } ${gridClassForCount(visibleTabs.length)}`}
       aria-label="Primary (mobile)"
     >
       {visibleTabs.map((tab) => {
@@ -153,7 +187,12 @@ export default function MobileTabBar() {
             }`}
             aria-current={active ? "page" : undefined}
           >
-            <Icon size={18} className="block" aria-hidden="true" />
+            <Icon
+              size={19}
+              weight={active ? "fill" : "regular"}
+              className="block"
+              aria-hidden="true"
+            />
             <span>{t(tab.labelKey)}</span>
           </Link>
         );

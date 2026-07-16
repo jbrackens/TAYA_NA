@@ -15,17 +15,17 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  Search,
-  LogOut,
-  Plus,
-  User as UserIcon,
-  Settings,
-  TrendingUp,
-} from "lucide-react";
+import { MagnifyingGlassIcon as Search } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
+import { SignOutIcon as LogOut } from "@phosphor-icons/react/dist/csr/SignOut";
+import { PlusIcon as Plus } from "@phosphor-icons/react/dist/csr/Plus";
+import { UserIcon } from "@phosphor-icons/react/dist/csr/User";
+import { GearSixIcon as Settings } from "@phosphor-icons/react/dist/csr/GearSix";
+import { TrendUpIcon as TrendingUp } from "@phosphor-icons/react/dist/csr/TrendUp";
+import { BellSimpleIcon as Bell } from "@phosphor-icons/react/dist/csr/BellSimple";
 import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
+import { isPredictionTerminalRoute } from "../../lib/prediction-terminal";
 import { logger } from "../../lib/logger";
 import { searchMarkets } from "../../lib/marketSearch";
 import { useAuth } from "../../hooks/useAuth";
@@ -57,24 +57,39 @@ const NAV_LINKS: {
 }[] = [
   { href: "/", labelKey: "NAV_HOME" },
   { href: "/predict", labelKey: "NAV_MARKETS" },
-  { href: "/discover", labelKey: "NAV_DISCOVER" },
+  { href: "/discover", labelKey: "NAV_TRENDING" },
   { href: "/live", labelKey: "NAV_LIVE", enabled: FEATURE_LIVE_MARKETS },
   { href: "/portfolio", labelKey: "NAV_PORTFOLIO", requiresAuth: true },
   { href: "/leaderboards", labelKey: "NAV_LEADERBOARDS", requiresAuth: true },
   { href: "/rewards", labelKey: "NAV_REWARDS", requiresAuth: true },
 ];
 
+const TERMINAL_NAV_LINKS: typeof NAV_LINKS = [
+  { href: "/predict", labelKey: "NAV_MARKETS" },
+  { href: "/discover", labelKey: "NAV_TRENDING" },
+  { href: "/portfolio", labelKey: "NAV_PORTFOLIO", requiresAuth: true },
+];
+
 const TOP_BAR_CLASS =
   "sticky top-0 z-[100] border-b border-[var(--border-1)] bg-[var(--bg-deep)] [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
 
+const TERMINAL_TOP_BAR_CLASS =
+  "sticky top-0 z-[100] border-b border-[var(--border-1)] bg-[color:rgba(3,7,10,0.94)] backdrop-blur-xl [font-family:var(--font-terminal)]";
+
 const TOP_BAR_INNER_CLASS =
   "box-border mx-auto flex h-16 w-full max-w-[1588px] items-center gap-6 px-6 max-[900px]:h-16 max-[900px]:gap-3 max-[900px]:px-4 max-[480px]:gap-2 max-[480px]:px-3";
+
+const TERMINAL_TOP_BAR_INNER_CLASS =
+  "box-border mx-auto flex h-[74px] w-full items-center gap-8 px-6 max-[1100px]:gap-5 max-[900px]:h-16 max-[900px]:px-4 max-[480px]:gap-2 max-[480px]:px-3";
 
 const TOP_BAR_BRAND_CLASS =
   "inline-flex min-h-11 shrink-0 items-center gap-[10px] no-underline";
 
 const TOP_BAR_WORDMARK_CLASS =
   "whitespace-nowrap text-[26px] font-bold leading-none tracking-[-0.03em] [color:var(--brand-ink)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif] max-[900px]:text-[23px] max-[480px]:text-[21px]";
+
+const TERMINAL_TOP_BAR_WORDMARK_CLASS =
+  "whitespace-nowrap text-[19px] font-[650] uppercase leading-none tracking-[0.105em] text-[var(--brand-ink)] [font-family:var(--font-martian-grotesk)] [font-variation-settings:'wdth'_82,'wght'_650] max-[480px]:text-[17px]";
 
 const TOP_BAR_PERIOD_CLASS = "[color:var(--brand-period)]";
 
@@ -85,7 +100,10 @@ const TOP_BAR_LINK_CLASS =
   "relative pb-3 pt-2 text-sm font-medium border-b-2 transition-all duration-200 no-underline whitespace-nowrap";
 
 const TOP_BAR_LINK_INACTIVE_CLASS =
-  "text-neutral-500 !text-neutral-500 border-transparent hover:text-neutral-800 hover:!text-neutral-800 hover:border-neutral-300";
+  "text-neutral-500 border-transparent hover:text-neutral-800 hover:border-neutral-300";
+
+const TERMINAL_TOP_BAR_LINK_INACTIVE_CLASS =
+  "text-[var(--t3)] !text-[var(--t3)] border-transparent hover:text-[var(--t1)] hover:!text-[var(--t1)] hover:border-[var(--border-2)]";
 
 const TOP_BAR_LINK_ACTIVE_CLASS =
   "text-[var(--accent-text)] !text-[var(--accent-text)] font-semibold border-[var(--accent-lo)]";
@@ -108,6 +126,8 @@ const TOP_BAR_SEARCH_WRAP_CLASS = "relative max-[900px]:hidden";
 const TOP_BAR_SEARCH_LABEL_CLASS = "relative inline-flex items-center";
 const TOP_BAR_SEARCH_INPUT_CLASS =
   "h-10 w-[280px] rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-1)] py-0 pl-9 pr-3.5 text-[13px] text-[var(--t1)] outline-none transition-[border-color,box-shadow] duration-[120ms] ease-[ease] placeholder:text-[var(--t3)] focus-visible:border-[var(--accent-lo)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] [font-family:inherit]";
+const TERMINAL_TOP_BAR_SEARCH_INPUT_CLASS =
+  "h-[42px] w-[424px] rounded-[14px] border border-[var(--border-1)] bg-[var(--surface-3)] py-0 pl-11 pr-4 text-[14px] text-[var(--t1)] outline-none transition-[border-color,box-shadow] duration-[120ms] placeholder:text-[var(--t3)] focus-visible:border-[var(--accent-lo)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] [font-family:inherit] max-[1280px]:w-[340px] max-[1100px]:w-[280px]";
 const TOP_BAR_SEARCH_ICON_CLASS =
   "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--t3)]";
 const TOP_BAR_SEARCH_RESULTS_CLASS =
@@ -136,7 +156,7 @@ const TOP_BAR_ADD_POINTS_CLASS =
   "inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1 rounded-md bg-[var(--accent)] px-3 text-[13px] font-semibold text-[#061a10] no-underline transition-[transform,filter] duration-150 ease-[ease] hover:-translate-y-px hover:brightness-[1.05] max-[900px]:px-2.5";
 
 const TOP_BAR_AVATAR_CLASS =
-  "grid size-11 cursor-pointer place-items-center rounded-full border border-[rgba(255,255,255,0.18)] bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.25),transparent_60%),linear-gradient(145deg,#a56bff_0%,#5b38a8_100%)] text-[15px] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_2px_6px_rgba(0,0,0,0.3)] hover:brightness-[1.08]";
+  "grid size-11 cursor-pointer place-items-center rounded-full border border-[rgba(255,255,255,0.2)] bg-[var(--accent)] text-[15px] font-bold text-white transition-[background-color,border-color] duration-150 hover:border-[var(--accent-lo)] hover:bg-[#6d63dc]";
 
 const TOP_BAR_BUTTON_CLASS =
   "inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-md border-0 px-4 text-[13px] font-semibold no-underline transition-[transform,filter] duration-150 ease-[ease] [font-family:inherit] max-[480px]:px-2.5";
@@ -153,6 +173,8 @@ const TOP_BAR_MENU_ITEM_BASE_CLASS =
 const TOP_BAR_MENU_ITEM_CLASS = `${TOP_BAR_MENU_ITEM_BASE_CLASS} text-[var(--t1)]`;
 const TOP_BAR_MENU_LOGOUT_CLASS = `${TOP_BAR_MENU_ITEM_BASE_CLASS} text-[var(--no)]`;
 const TOP_BAR_MENU_DIVIDER_CLASS = "my-1 h-px bg-[var(--surface-2)]";
+const TOP_BAR_NOTIFICATION_CLASS =
+  "grid size-11 shrink-0 place-items-center rounded-md text-[var(--t2)] no-underline transition-colors duration-150 hover:bg-[var(--surface-2)] hover:text-[var(--t1)]";
 
 export function TopBar() {
   const { t } = useTranslation("header");
@@ -305,6 +327,8 @@ export function TopBar() {
   const initial = (user?.username || user?.email || "?")
     .charAt(0)
     .toUpperCase();
+  const isTerminalRoute = isPredictionTerminalRoute(pathname);
+  const visibleNavLinks = isTerminalRoute ? TERMINAL_NAV_LINKS : NAV_LINKS;
 
   const isActive = (href: string): boolean => {
     if (!pathname) return false;
@@ -323,47 +347,76 @@ export function TopBar() {
   };
 
   return (
-    <header className={TOP_BAR_CLASS}>
-      <div className={TOP_BAR_INNER_CLASS}>
+    <header
+      className={isTerminalRoute ? TERMINAL_TOP_BAR_CLASS : TOP_BAR_CLASS}
+    >
+      <div
+        className={
+          isTerminalRoute ? TERMINAL_TOP_BAR_INNER_CLASS : TOP_BAR_INNER_CLASS
+        }
+      >
         <Link
           href="/"
           className={TOP_BAR_BRAND_CLASS}
           aria-label={`${brand.name} — home`}
         >
-          <BrandMark size={30} />
-          <span className={TOP_BAR_WORDMARK_CLASS}>
-            {brand.name}
-            <span className={TOP_BAR_PERIOD_CLASS}>.</span>
+          <BrandMark size={isTerminalRoute ? 34 : 30} />
+          <span
+            className={
+              isTerminalRoute
+                ? TERMINAL_TOP_BAR_WORDMARK_CLASS
+                : TOP_BAR_WORDMARK_CLASS
+            }
+          >
+            {isTerminalRoute ? brand.name.toUpperCase() : brand.name}
+            {!isTerminalRoute && (
+              <span className={TOP_BAR_PERIOD_CLASS}>.</span>
+            )}
           </span>
         </Link>
 
         {isDesktop && (
-          <nav className={TOP_BAR_NAV_CLASS} aria-label="Primary">
-            {NAV_LINKS.filter(
-              (l) =>
-                l.enabled !== false && (!l.requiresAuth || isAuthenticated),
-            ).map((l) => {
-              const active = isActive(l.href);
-              return (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  className={`${TOP_BAR_LINK_CLASS} ${
-                    active
-                      ? TOP_BAR_LINK_ACTIVE_CLASS
-                      : TOP_BAR_LINK_INACTIVE_CLASS
-                  }`}
-                >
-                  {t(l.labelKey)}
-                </Link>
-              );
-            })}
+          <nav
+            className={`${TOP_BAR_NAV_CLASS} ${
+              isTerminalRoute ? "!w-auto !flex-none" : ""
+            }`}
+            aria-label="Primary"
+          >
+            {visibleNavLinks
+              .filter(
+                (l) =>
+                  l.enabled !== false && (!l.requiresAuth || isAuthenticated),
+              )
+              .map((l) => {
+                const active = isActive(l.href);
+                return (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    className={`${TOP_BAR_LINK_CLASS} ${
+                      active
+                        ? TOP_BAR_LINK_ACTIVE_CLASS
+                        : isTerminalRoute
+                          ? TERMINAL_TOP_BAR_LINK_INACTIVE_CLASS
+                          : TOP_BAR_LINK_INACTIVE_CLASS
+                    }`}
+                  >
+                    {t(l.labelKey)}
+                  </Link>
+                );
+              })}
           </nav>
         )}
 
-        <div className={TOP_BAR_RIGHT_CLASS}>
+        <div
+          className={`${TOP_BAR_RIGHT_CLASS} ${
+            isTerminalRoute ? "flex-1" : ""
+          }`}
+        >
           <div
-            className={TOP_BAR_SEARCH_WRAP_CLASS}
+            className={`${TOP_BAR_SEARCH_WRAP_CLASS} ${
+              isTerminalRoute ? "pl-20 max-[1280px]:pl-0" : ""
+            }`}
             ref={searchRef}
             role="combobox"
             aria-haspopup="listbox"
@@ -380,7 +433,11 @@ export function TopBar() {
               <input
                 ref={searchInputRef}
                 type="search"
-                className={TOP_BAR_SEARCH_INPUT_CLASS}
+                className={
+                  isTerminalRoute
+                    ? TERMINAL_TOP_BAR_SEARCH_INPUT_CLASS
+                    : TOP_BAR_SEARCH_INPUT_CLASS
+                }
                 placeholder={t("SEARCH_MARKETS_PLACEHOLDER")}
                 aria-label={t("SEARCH_MARKETS")}
                 aria-autocomplete="list"
@@ -444,9 +501,11 @@ export function TopBar() {
             )}
           </div>
 
-          {isAuthenticated && <TierPill />}
-          <LanguageSelector source={isDesktop ? "header" : "mobile_menu"} />
-          {isAuthenticated && (
+          {!isTerminalRoute && isAuthenticated && <TierPill />}
+          {!isTerminalRoute && (
+            <LanguageSelector source={isDesktop ? "header" : "mobile_menu"} />
+          )}
+          {!isTerminalRoute && isAuthenticated && (
             <>
               {/* The balance chip deep-links into the Point Store — the
                   pill is where users look when they want more points. */}
@@ -485,6 +544,16 @@ export function TopBar() {
             </>
           )}
 
+          {isTerminalRoute && isAuthenticated && (
+            <Link
+              href="/account/notifications"
+              className={`${TOP_BAR_NOTIFICATION_CLASS} ml-auto`}
+              aria-label={t("NAV_NOTIFICATIONS", "Notifications")}
+            >
+              <Bell size={18} aria-hidden="true" />
+            </Link>
+          )}
+
           {isLoading ? null : isAuthenticated ? (
             <div className={TOP_BAR_MENU_WRAP_CLASS} ref={menuRef}>
               <button
@@ -520,6 +589,13 @@ export function TopBar() {
                   >
                     <Settings size={14} /> {t("NAV_SETTINGS")}
                   </Link>
+                  <Link
+                    href="/store"
+                    className={TOP_BAR_MENU_ITEM_CLASS}
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <Plus size={14} /> {t("ADD_POINTS", "Add Points")}
+                  </Link>
                   <div className={TOP_BAR_MENU_DIVIDER_CLASS} />
                   <button
                     type="button"
@@ -535,7 +611,9 @@ export function TopBar() {
             <>
               <Link
                 href="/auth/login"
-                className={`${TOP_BAR_BUTTON_CLASS} ${TOP_BAR_BUTTON_GHOST_CLASS}`}
+                className={`${TOP_BAR_BUTTON_CLASS} ${TOP_BAR_BUTTON_GHOST_CLASS} ${
+                  isTerminalRoute ? "ml-auto" : ""
+                }`}
               >
                 {t("LOG_IN")}
               </Link>

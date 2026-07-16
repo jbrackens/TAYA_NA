@@ -1,27 +1,9 @@
 /**
- * BrandMark — TapTrade identity glyph (P9 revision, 2026-07-07).
+ * BrandMark — TapTrade's four-plane market mark.
  *
- * A split "T": two ink crossbar segments (the two sides of a binary
- * market) over a mint stem (the committed trade — the action color runs
- * through the mark), with a mint "tap dot" landing under the stem in the
- * solo variant — the tap that places the trade. Strokes share
- * one weight and the two channels are real negative space, so the glyph
- * stays crisp from a 16px favicon (where the channels close into a solid
- * T) up to large lockups.
- *
- * Variants — a responsive identity system, not one frozen asset:
- *   "glyph" — naked two-tone mark: crossbars in currentColor (brand ink on
- *             light; dark surfaces set text color to --brand-on-dark and
- *             remap --brand-period to its dark variant), stem in the brand
- *             mint. For chrome next to the wordmark.
- *   "solo"  — glyph + mint tap dot. For when the mark stands alone
- *             (loading screens, auth, share surfaces).
- * The app-icon/favicon tile lives in app/icon.svg (a container is needed
- * against browser chrome); page surfaces never draw the tile.
- *
- * (Replaces the 2026-06-06 tile mark: letter-in-a-rounded-square with a
- * corner dot read as a generic app icon with a notification badge, and
- * its stem overlapped the crossbar segments producing sub-pixel seams.)
+ * The geometry is the production SVG translation of the approved generated
+ * identity: two upper signal planes and two lower outcome stems separated by
+ * one continuous central void. It stays crisp at header and favicon sizes.
  */
 
 type BrandMarkProps = {
@@ -39,41 +21,34 @@ export default function BrandMark({
   return (
     <svg
       aria-hidden="true"
-      className={`block shrink-0 text-[var(--brand-ink)] ${className}`}
+      className={`block shrink-0 ${className}`}
       width={size}
       height={size}
-      viewBox="0 0 100 100"
+      viewBox="0 0 120 100"
       fill="none"
     >
-      {/* split crossbar — two sides of the market */}
-      <rect
-        x="12"
-        y="18"
-        width="25"
-        height="16"
-        rx="3"
-        fill="currentColor"
-      />
-      <rect
-        x="63"
-        y="18"
-        width="25"
-        height="16"
-        rx="3"
-        fill="currentColor"
-      />
-      {/* the stem — one committed trade; the brand mint runs through it */}
-      <rect
-        x="42"
-        y="18"
-        width="16"
-        height="56"
-        rx="3"
-        fill="var(--brand-period)"
-      />
+      <defs>
+        <linearGradient
+          id="taptrade-mark-gradient"
+          x1="8"
+          y1="2"
+          x2="108"
+          y2="100"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#9188ff" />
+          <stop offset="0.52" stopColor="#766af1" />
+          <stop offset="1" stopColor="#6258d3" />
+        </linearGradient>
+      </defs>
+      <g fill="url(#taptrade-mark-gradient)">
+        <path d="M0 0h34c11 0 22 9 22 21v13c-8-8-15-16-27-16H19C10 18 2 11 0 0Z" />
+        <path d="M120 0H86C75 0 64 9 64 21v13c8-8 15-16 27-16h10c9 0 17-7 19-18Z" />
+        <path d="M13 34h17c14 0 23 11 23 25v28l-13 13V61c0-7-5-11-12-13-8-2-14-7-15-14Z" />
+        <path d="M107 34H90c-14 0-23 11-23 25v28l13 13V61c0-7 5-11 12-13 8-2 14-7 15-14Z" />
+      </g>
       {variant === "solo" && (
-        /* the tap dot — the press that lands the trade */
-        <circle cx="50" cy="87" r="7" fill="var(--brand-period)" />
+        <circle cx="60" cy="88" r="3" fill="var(--brand-period)" />
       )}
     </svg>
   );
