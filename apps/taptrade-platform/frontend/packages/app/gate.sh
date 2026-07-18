@@ -75,9 +75,9 @@ print_summary() {
     echo -e "${BLUE}╠════════════════════════════════════════════════════════════════╣${RESET}"
 
     if [ "$FAIL_COUNT" -eq 0 ]; then
-        echo -e "${BLUE}║${RESET} ${GREEN}✓ ALL GATES PASSED (${PASS_COUNT}/8)${RESET}"
+        echo -e "${BLUE}║${RESET} ${GREEN}✓ ALL GATES PASSED (${PASS_COUNT}/9)${RESET}"
     else
-        echo -e "${BLUE}║${RESET} ${RED}✗ FAILURES DETECTED (${PASS_COUNT}/8 passed)${RESET}"
+        echo -e "${BLUE}║${RESET} ${RED}✗ FAILURES DETECTED (${PASS_COUNT}/9 passed)${RESET}"
     fi
 
     if [ "$WARN_COUNT" -gt 0 ]; then
@@ -300,6 +300,24 @@ gate_next_build() {
 }
 
 ###############################################################################
+# GATE 9: Biome Lint Wall (app-scoped)
+###############################################################################
+
+gate_biome() {
+    print_gate_start "9" "Biome Lint Wall (zero errors in app/)"
+
+    # App-scoped on purpose: the root `yarn lint:biome` also covers
+    # packages/office (own burn-down pending) and would hold this gate red
+    # forever. Biome exits non-zero on errors only — warnings pass.
+    # Config resolves up-tree to frontend/biome.json.
+    if npx @biomejs/biome check app 2>&1 | tail -5; then
+        print_pass
+    else
+        print_fail "Biome errors found — run 'npx @biomejs/biome check app' for details"
+    fi
+}
+
+###############################################################################
 # Main Execution
 ###############################################################################
 
@@ -329,6 +347,9 @@ main() {
     echo ""
 
     gate_next_build
+    echo ""
+
+    gate_biome
     echo ""
 
     # Print summary

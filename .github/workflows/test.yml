@@ -57,6 +57,13 @@ jobs:
       - name: Install dependencies (workspace root)
         run: yarn install --frozen-lockfile
 
+      - name: Biome lint wall (app-scoped)
+        # Lint only — platform-safe on ubuntu. Scoped to packages/app: the
+        # office package has its own pending burn-down and would hold this
+        # red forever. Visual regression stays darwin-local (snapshots are
+        # platform-suffixed) and is deliberately NOT run here.
+        run: npx @biomejs/biome check packages/app/app
+
       - name: Run unit tests
         # Top-level tests only. Integration tests live in __tests__/integration/
         # and need a running gateway; they run in a separate workflow.
