@@ -33,6 +33,7 @@ export default function PredictDiscoveryPage() {
   const [error, setError] = useState(false);
   const [reloadNonce, setReloadNonce] = useState(0);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reloadNonce is the retry signal — an intentional extra dependency
   useEffect(() => {
     let cancelled = false;
     setLoading(true);

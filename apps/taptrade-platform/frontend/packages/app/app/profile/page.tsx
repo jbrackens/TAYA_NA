@@ -192,6 +192,7 @@ export default function ProfilePage() {
   const [verifying, setVerifying] = useState(false);
 
   // Load profile on mount
+  // biome-ignore lint/correctness/useExhaustiveDependencies: toast is used only in the failure path; depending on provider identity would re-run the profile fetch on unrelated re-renders
   useEffect(() => {
     if (!user?.id) return;
 
@@ -208,7 +209,7 @@ export default function ProfilePage() {
           setPhone(p.phone || "");
           setDateOfBirth(p.dateOfBirth || "");
         }
-      } catch (err) {
+      } catch {
         if (!cancelled) {
           toast.error("Load Failed", "Could not load profile data.");
         }
@@ -286,6 +287,7 @@ export default function ProfilePage() {
         localStorage.setItem(localeStorageKey, prefLanguage);
         localStorage.setItem(legacyLocaleStorageKey, prefLanguage);
         localStorage.setItem("taptrade_timezone", prefTimezone);
+        // biome-ignore lint/suspicious/noDocumentCookie: same locale persistence cookie the LanguageSelector writes
         document.cookie = `${localeStorageKey}=${encodeURIComponent(prefLanguage)}; Max-Age=31536000; Path=/; SameSite=Lax`;
       }
       i18n.changeLanguage(prefLanguage);

@@ -17,13 +17,6 @@ interface AuthSession {
   expiresAt: string;
 }
 
-interface TokenResponse {
-  tokenType: string;
-  accessToken: string;
-  refreshToken: string;
-  expiresInSeconds: number;
-}
-
 class AuthClient {
   private baseUrl: string;
 

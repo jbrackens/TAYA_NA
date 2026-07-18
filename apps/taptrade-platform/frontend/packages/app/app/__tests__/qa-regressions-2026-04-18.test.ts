@@ -926,8 +926,6 @@ describe("MarketChart terminal colors", () => {
 describe("Navigation underline treatment", () => {
   const allMarketsSource = read("components/prediction/AllMarketsSection.tsx");
   const topBarSource = read("components/prediction/TopBar.tsx");
-  const marketChartSource = read("components/prediction/MarketChart.tsx");
-  const globalsSource = read("globals.css");
 
   function functionBody(source: string, name: string): string {
     const match = new RegExp(`function\\s+${name}\\([\\s\\S]*?^\\}`, "m").exec(
@@ -1072,7 +1070,6 @@ describe("Navigation underline treatment", () => {
 describe("Navigation pill active colors", () => {
   const allMarketsSource = read("components/prediction/AllMarketsSection.tsx");
   const marketChartSource = read("components/prediction/MarketChart.tsx");
-  const globalsSource = read("globals.css");
   const categoryPillsSource = read("components/prediction/CategoryPills.tsx");
 
   function functionBody(source: string, name: string): string {

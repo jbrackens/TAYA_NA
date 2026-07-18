@@ -36,7 +36,8 @@
       },
       "suspicious": {
         "noExplicitAny": "warn",
-        "noArrayIndexKey": "warn"
+        "noArrayIndexKey": "warn",
+        "noTemplateCurlyInString": "off"
       },
       "style": {
         "noNonNullAssertion": "warn"

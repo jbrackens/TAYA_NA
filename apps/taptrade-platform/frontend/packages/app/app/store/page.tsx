@@ -581,24 +581,22 @@ export default function StorePage() {
                   priceUsdCents: selectedPack.priceUsdCents,
                 }}
               >
-                <>
-                  {actionError ? (
-                    <div className={`${ERROR_NOTE_CLASS} mt-3.5`} role="alert">
-                      {actionError}
-                    </div>
-                  ) : null}
-                  <button
-                    type="button"
-                    data-testid="store-continue"
-                    className={CONTINUE_CLASS}
-                    disabled={creating}
-                    onClick={() => void handleContinue()}
-                  >
-                    {creating
-                      ? t("checkout.processing", "Processing…")
-                      : t("summary.continue", "Continue to checkout")}
-                  </button>
-                </>
+                {actionError ? (
+                  <div className={`${ERROR_NOTE_CLASS} mt-3.5`} role="alert">
+                    {actionError}
+                  </div>
+                ) : null}
+                <button
+                  type="button"
+                  data-testid="store-continue"
+                  className={CONTINUE_CLASS}
+                  disabled={creating}
+                  onClick={() => void handleContinue()}
+                >
+                  {creating
+                    ? t("checkout.processing", "Processing…")
+                    : t("summary.continue", "Continue to checkout")}
+                </button>
               </OrderSummary>
             ) : null}
             <HowPointsWork />

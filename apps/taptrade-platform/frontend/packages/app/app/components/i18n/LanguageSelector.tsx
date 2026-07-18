@@ -28,6 +28,7 @@ function persistLocale(locale: SupportedLocale) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(localeStorageKey, locale);
   window.localStorage.setItem(legacyLocaleStorageKey, locale);
+  // biome-ignore lint/suspicious/noDocumentCookie: locale persistence cookie so the server can render the chosen language
   document.cookie = `${localeStorageKey}=${encodeURIComponent(locale)}; Max-Age=31536000; Path=/; SameSite=Lax`;
 }
 

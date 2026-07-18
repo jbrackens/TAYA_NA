@@ -28,6 +28,7 @@ function syncAuthCookie(token?: string) {
   }
   const secure =
     typeof location !== "undefined" && location.protocol === "https:";
+  // biome-ignore lint/suspicious/noDocumentCookie: deliberate logout-path clear of the legacy auth cookie
   document.cookie = `authToken=; path=/; Max-Age=0; SameSite=Lax${secure ? "; Secure" : ""}`;
 }
 

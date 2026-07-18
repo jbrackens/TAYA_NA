@@ -220,6 +220,7 @@ export default function RewardsPage() {
   );
   const [activeBonuses, setActiveBonuses] = useState<PlayerBonus[]>([]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: t is read only in error paths — depending on it would refetch loyalty data on language switch
   useEffect(() => {
     let cancelled = false;
 

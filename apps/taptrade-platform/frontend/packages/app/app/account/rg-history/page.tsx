@@ -62,7 +62,7 @@ function RGHistoryPageContent() {
           ),
         };
         setGrouped(grouped);
-      } catch (err: unknown) {
+      } catch {
         toast.error("Failed to load history");
       } finally {
         setLoading(false);

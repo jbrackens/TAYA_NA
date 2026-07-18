@@ -393,7 +393,7 @@ function formatBoardMetric(
       return t("rank.metricSharpness", "{{value}}% point efficiency", {
         value: (entry.metricValue * 100).toFixed(2),
       });
-    case "pnl_weekly":
+    // pnl_weekly is the default metric shape.
     default: {
       const sign = entry.metricValue < 0 ? "−" : "+";
       return t("rank.metricPnl", "{{value}} point result", {
