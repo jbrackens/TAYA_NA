@@ -28,8 +28,7 @@ function syncAuthCookie(token?: string) {
   }
   const secure =
     typeof location !== "undefined" && location.protocol === "https:";
-  document.cookie =
-    "authToken=; path=/; Max-Age=0; SameSite=Lax" + (secure ? "; Secure" : "");
+  document.cookie = `authToken=; path=/; Max-Age=0; SameSite=Lax${secure ? "; Secure" : ""}`;
 }
 
 class ApiClient {
@@ -71,7 +70,7 @@ class ApiClient {
       const token =
         localStorage.getItem("taptrade_access_token") ||
         readCookie("authToken");
-      if (token) headers["Authorization"] = `Bearer ${token}`;
+      if (token) headers.Authorization = `Bearer ${token}`;
       if (includeCsrf) {
         const csrf = readCookie("csrf_token");
         if (csrf) headers["X-CSRF-Token"] = csrf;

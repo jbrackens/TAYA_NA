@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -16,7 +17,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
 import {
   selfExclude,
-  SelfExcludeResponse,
+  type SelfExcludeResponse,
 } from "../../lib/api/compliance-client";
 import { FEATURE_RG } from "../../lib/features";
 

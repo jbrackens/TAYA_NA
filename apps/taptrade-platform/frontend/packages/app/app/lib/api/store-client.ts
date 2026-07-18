@@ -193,13 +193,12 @@ export async function createCheckout(
   );
   return {
     purchase: normalizePurchase(raw.purchase),
-    checkout:
-      raw.checkout && raw.checkout.providerSessionId
-        ? {
-            providerSessionId: raw.checkout.providerSessionId,
-            checkoutToken: raw.checkout.checkoutToken || "",
-          }
-        : undefined,
+    checkout: raw.checkout?.providerSessionId
+      ? {
+          providerSessionId: raw.checkout.providerSessionId,
+          checkoutToken: raw.checkout.checkoutToken || "",
+        }
+      : undefined,
   };
 }
 

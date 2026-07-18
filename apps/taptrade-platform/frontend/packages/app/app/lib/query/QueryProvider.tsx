@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import type React from "react";
+import { useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const DEFAULT_OPTIONS = {
   queries: {
@@ -25,12 +26,12 @@ interface QueryProviderProps {
  * Uses `useState` so each SSR request gets its own client (no cross-request leakage).
  */
 export const QueryProvider: React.FC<QueryProviderProps> = ({ children }) => {
-  const [queryClient] = useState(() => new QueryClient({ defaultOptions: DEFAULT_OPTIONS }));
+  const [queryClient] = useState(
+    () => new QueryClient({ defaultOptions: DEFAULT_OPTIONS }),
+  );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 };
 

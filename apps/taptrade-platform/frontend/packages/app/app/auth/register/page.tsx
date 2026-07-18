@@ -421,7 +421,7 @@ export default function RegisterPage() {
           <footer className={FOOTER_CLASS}>
             Already have an account?{" "}
             <Link
-              href={"/auth/login" + returnSuffix}
+              href={`/auth/login${returnSuffix}`}
               className={LINK_ACCENT_CLASS}
             >
               Sign in

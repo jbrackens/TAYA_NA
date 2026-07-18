@@ -35,7 +35,7 @@ class AuthClient {
     username: string,
     password: string,
   ): { valid: boolean; error?: string } {
-    if (!username || !username.trim()) {
+    if (!username?.trim()) {
       return { valid: false, error: "username is required" };
     }
     if (!password || password.length < 6) {

@@ -97,8 +97,8 @@ async function login(): Promise<void> {
 
 function authHeaders(): Record<string, string> {
   const h: Record<string, string> = { "Content-Type": "application/json" };
-  if (cookies) h["Cookie"] = cookies;
-  if (accessToken) h["Authorization"] = `Bearer ${accessToken}`;
+  if (cookies) h.Cookie = cookies;
+  if (accessToken) h.Authorization = `Bearer ${accessToken}`;
   if (csrfToken) h["X-CSRF-Token"] = csrfToken;
   return h;
 }

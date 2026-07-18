@@ -123,7 +123,7 @@ interface LegacyBreakdownResponse extends BreakdownResponse {
 const ACTIVE_CACHE_TTL_MS = 15_000;
 const BREAKDOWN_CACHE_TTL_MS = 15_000;
 
-let activeBonusesCache: {
+const activeBonusesCache: {
   entry: TimedCacheEntry<PlayerBonus[]> | null;
   promise: Promise<PlayerBonus[]> | null;
 } = { entry: null, promise: null };
@@ -203,14 +203,10 @@ export async function getWalletBreakdown(
     .get<BreakdownResponse>(`/api/v1/wallet/${userId}/breakdown`)
     .then((res) => {
       const legacyRes = res as LegacyBreakdownResponse;
-      const basePoints =
-        res.basePoints ?? legacyRes.realMoneyPoints ?? 0;
-      const bonusPoints =
-        res.bonusPoints ?? legacyRes.bonusFundPoints ?? 0;
+      const basePoints = res.basePoints ?? legacyRes.realMoneyPoints ?? 0;
+      const bonusPoints = res.bonusPoints ?? legacyRes.bonusFundPoints ?? 0;
       const totalPoints =
-        res.totalPoints ??
-        legacyRes.totalPoints ??
-        basePoints + bonusPoints;
+        res.totalPoints ?? legacyRes.totalPoints ?? basePoints + bonusPoints;
       const data: WalletBreakdown = {
         basePoints,
         bonusPoints,
@@ -313,8 +309,7 @@ function normalizePlayContribution(
     betId: raw.betId,
     betType: raw.betType,
     playAmountPoints: raw.stakePoints ?? raw.stakePoints ?? 0,
-    contributionPoints:
-      raw.contributionPoints ?? raw.contributionPoints ?? 0,
+    contributionPoints: raw.contributionPoints ?? raw.contributionPoints ?? 0,
     oddsDecimal: raw.oddsDecimal,
     legCount: raw.legCount,
     contributedAt: raw.contributedAt,

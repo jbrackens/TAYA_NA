@@ -3,13 +3,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { getProfile, updateProfile } from "../lib/api/user-client";
-import { UserProfile, UpdateProfileRequest } from "../lib/api/user-client";
+import type { UserProfile, UpdateProfileRequest } from "../lib/api/user-client";
 import {
   setPredictionLimits,
   setPointUseLimits,
   verifyIdentity,
 } from "../lib/api/compliance-client";
-import {
+import type {
   SetPredictionLimitsRequest,
   SetPointUseLimitsRequest,
 } from "../lib/api/compliance-client";

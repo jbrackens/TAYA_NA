@@ -90,8 +90,7 @@ export default function LoginPage() {
 
   // LC-05: carry a deep-link returnUrl across to the sign-up flow so a
   // user who chose "Sign up" from a gated page still lands back on it.
-  const registerHref =
-    "/auth/register" + returnUrlSuffix(searchParams.get("returnUrl"));
+  const registerHref = `/auth/register${returnUrlSuffix(searchParams.get("returnUrl"))}`;
 
   return (
     <div className={SHELL_CLASS}>

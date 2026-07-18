@@ -124,7 +124,7 @@ export function heroChartPath(
     yFor(v),
   ]);
   const line = smoothPath(coords);
-  const fill = line + ` L${width},${height} L0,${height} Z`;
+  const fill = `${line} L${width},${height} L0,${height} Z`;
   const [ex, ey] = coords[N - 1];
   return { line, fill, end: { x: ex, y: ey }, baselineY: yFor(values[0]) };
 }

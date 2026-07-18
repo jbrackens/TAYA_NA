@@ -49,7 +49,7 @@ globalThis.fetch = (async (
     body: typeof init?.body === "string" ? init.body : undefined,
   });
   const next = responseQueue.shift();
-  if (!next) throw new Error("unexpected fetch: " + String(input));
+  if (!next) throw new Error(`unexpected fetch: ${String(input)}`);
   return fakeResponse(next.status, next.body);
 }) as typeof fetch;
 

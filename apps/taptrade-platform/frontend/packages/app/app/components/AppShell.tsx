@@ -11,7 +11,7 @@
  * route. Chat remains a leaf panel so provider failures cannot block markets.
  */
 
-import React from "react";
+import type React from "react";
 import { usePathname } from "next/navigation";
 import StoreProvider from "../lib/store/StoreProvider";
 import { QueryProvider } from "../lib/query/QueryProvider";

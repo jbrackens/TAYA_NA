@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import type React from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
@@ -9,7 +10,7 @@ import {
   getSessions,
   revokeSession,
 } from "../../lib/api/auth-client";
-import { Session } from "../../lib/api/auth-client";
+import type { Session } from "../../lib/api/auth-client";
 import { logger } from "../../lib/logger";
 
 const pageClass = "mx-auto max-w-[800px] px-4 py-6";
@@ -154,7 +155,7 @@ export default function SecurityPage() {
         throw new Error(data?.error?.message || "Failed to update 2FA setting");
       }
       setTwoFaEnabled(!twoFaEnabled);
-      toast.success("2FA " + (!twoFaEnabled ? "enabled" : "disabled"));
+      toast.success(`2FA ${!twoFaEnabled ? "enabled" : "disabled"}`);
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to update 2FA";

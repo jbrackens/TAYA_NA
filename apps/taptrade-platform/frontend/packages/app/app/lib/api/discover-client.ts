@@ -35,7 +35,7 @@ export async function getDiscover(
   params: DiscoverParams = {},
 ): Promise<DiscoverResponse> {
   const search: Record<string, string> = {};
-  if (params.q && params.q.trim()) search.q = params.q.trim();
+  if (params.q?.trim()) search.q = params.q.trim();
   if (params.limit) search.limit = String(params.limit);
   if (params.cursor) search.cursor = params.cursor;
 
