@@ -330,6 +330,13 @@ test.describe("store + trading journeys (fresh user)", () => {
     const { userId } = loadArcUser(testInfo.project.name);
     const before = await apiBalance(page.request, userId);
 
+    // Fail fast and loud if the serial-chain module state didn't survive
+    // (an empty marketPath makes goto("") resolve to baseURL — the landing
+    // page — and the amount-input wait then times out uninformatively).
+    expect(marketPath, "marketPath must be set by J3 in this worker").toMatch(
+      /^\/market\//,
+    );
+
     // Enter through the ticket CTA so the return context is real.
     await page.goto(marketPath);
     const balNow = await apiBalance(page.request, userId);
