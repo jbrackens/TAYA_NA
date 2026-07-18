@@ -1351,7 +1351,8 @@ button {
  * account, auth, content, and portfolio surfaces keep the current P9
  * gallery-white system until they receive matching approved concepts.
  */
-.predict-terminal {
+.predict-terminal,
+html[data-theme="terminal"] {
   --font-terminal:
     var(--font-geist-sans), "Inter", -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
@@ -1400,16 +1401,19 @@ button {
   color-scheme: dark;
 }
 
-.predict-terminal .type-display {
+.predict-terminal .type-display,
+html[data-theme="terminal"] .type-display {
   font-family: var(--font-display);
   letter-spacing: -0.025em;
 }
 
-.predict-terminal .font-mono {
+.predict-terminal .font-mono,
+html[data-theme="terminal"] .font-mono {
   font-family: var(--font-terminal-mono);
 }
 
-.predict-terminal ::selection {
+.predict-terminal ::selection,
+html[data-theme="terminal"] ::selection {
   background: rgba(123, 114, 242, 0.34);
   color: var(--t1);
 }
@@ -1431,7 +1435,8 @@ button {
   background-clip: padding-box;
 }
 
-.predict-terminal :focus-visible {
+.predict-terminal :focus-visible,
+html[data-theme="terminal"] :focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
