@@ -38,6 +38,17 @@ export default defineConfig({
     ["html", { outputFolder: "./playwright-report", open: "never" }],
   ],
 
+  // Visual regression thresholds (only affects toHaveScreenshot assertions,
+  // i.e. the visual-* projects below; smoke tests take no screenshots).
+  expect: {
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.01,
+      animations: "disabled",
+      caret: "hide",
+      scale: "css",
+    },
+  },
+
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3010",
     trace: "retain-on-failure",
@@ -97,6 +108,73 @@ export default defineConfig({
         storageState: "./tests/.auth/demo.json",
       },
     },
+
+    // ── Visual regression (FRONTEND_POLISH_PLAN.md P0) ─────────────────
+    // Gated behind RUN_VISUAL=1: baselines are darwin-owned (generated on
+    // the deploy-preflight Mac) and Playwright snapshots are platform-
+    // suffixed, so these projects must never run in the ubuntu workflows —
+    // linux font rendering guarantees a red gate against darwin baselines.
+    // Explicit testDir/testMatch: the global testMatch only sees
+    // *.smoke.spec.ts, which would silently run zero visual tests.
+    //
+    //   RUN_VISUAL=1 PLAYWRIGHT_BASE_URL=http://localhost:3020 \
+    //     npx playwright test --project=visual-desktop --project=visual-mobile
+    ...(process.env.RUN_VISUAL === "1"
+      ? [
+          {
+            name: "visual-desktop",
+            testDir: "./tests/visual",
+            testMatch: /.*\.visual\.spec\.ts/,
+            grep: /@anon/,
+            use: {
+              ...devices["Desktop Chrome"],
+              channel: "chrome",
+              viewport: { width: 1280, height: 800 },
+              contextOptions: { reducedMotion: "reduce" as const },
+            },
+          },
+          {
+            name: "visual-mobile",
+            testDir: "./tests/visual",
+            testMatch: /.*\.visual\.spec\.ts/,
+            grep: /@anon/,
+            use: {
+              ...devices["Pixel 5"],
+              channel: "chrome",
+              viewport: { width: 375, height: 812 },
+              contextOptions: { reducedMotion: "reduce" as const },
+            },
+          },
+          {
+            name: "visual-desktop-authed",
+            testDir: "./tests/visual",
+            testMatch: /.*\.visual\.spec\.ts/,
+            grep: /@authed/,
+            dependencies: ["setup"],
+            use: {
+              ...devices["Desktop Chrome"],
+              channel: "chrome",
+              viewport: { width: 1280, height: 800 },
+              contextOptions: { reducedMotion: "reduce" as const },
+              storageState: "./tests/.auth/demo.json",
+            },
+          },
+          {
+            name: "visual-mobile-authed",
+            testDir: "./tests/visual",
+            testMatch: /.*\.visual\.spec\.ts/,
+            grep: /@authed/,
+            dependencies: ["setup"],
+            use: {
+              ...devices["Pixel 5"],
+              channel: "chrome",
+              viewport: { width: 375, height: 812 },
+              contextOptions: { reducedMotion: "reduce" as const },
+              storageState: "./tests/.auth/demo.json",
+            },
+          },
+        ]
+      : []),
   ],
 
   // We do NOT use Playwright's webServer reverse-proxy — the dev server

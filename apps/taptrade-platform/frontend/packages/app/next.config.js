@@ -72,6 +72,11 @@ const securityHeaders = [
 
 module.exports = {
   output: "standalone",
+  // Visual-regression builds (FRONTEND_POLISH_PLAN.md P0) set
+  // NEXT_DIST_DIR=.next-visual so `next build`/`next start` for baseline
+  // capture never fight a concurrently running `next dev` over .next —
+  // dev boot clobbers prod artifacts in a shared dist dir.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   compress: true,
   allowedDevOrigins: ["127.0.0.1"],
   // isomorphic-dompurify instantiates a JSDOM window at module load on the
