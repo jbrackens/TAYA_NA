@@ -218,8 +218,11 @@ export default function SecurityPage() {
 
           <form onSubmit={handleChangePassword} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <label className={labelClass}>Current Password</label>
+              <label htmlFor="current-password" className={labelClass}>
+                Current Password
+              </label>
               <input
+                id="current-password"
                 type="password"
                 className={inputClass}
                 value={currentPassword}
@@ -229,8 +232,11 @@ export default function SecurityPage() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className={labelClass}>New Password</label>
+              <label htmlFor="new-password" className={labelClass}>
+                New Password
+              </label>
               <input
+                id="new-password"
                 type="password"
                 className={inputClass}
                 value={newPassword}
@@ -240,8 +246,11 @@ export default function SecurityPage() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className={labelClass}>Confirm Password</label>
+              <label htmlFor="confirm-password" className={labelClass}>
+                Confirm Password
+              </label>
               <input
+                id="confirm-password"
                 type="password"
                 className={inputClass}
                 value={confirmPassword}

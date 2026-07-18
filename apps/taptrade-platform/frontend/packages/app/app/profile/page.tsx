@@ -398,8 +398,11 @@ export default function ProfilePage() {
               <h2 className={sectionTitleClass}>Personal Information</h2>
               <div className={twoColumnGridClass}>
                 <div>
-                  <label className={labelClass}>First Name</label>
+                  <label htmlFor="first-name" className={labelClass}>
+                    First Name
+                  </label>
                   <input
+                    id="first-name"
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
@@ -407,8 +410,11 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>Last Name</label>
+                  <label htmlFor="last-name" className={labelClass}>
+                    Last Name
+                  </label>
                   <input
+                    id="last-name"
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
@@ -419,8 +425,11 @@ export default function ProfilePage() {
             </div>
 
             <div className={sectionClass}>
-              <label className={labelClass}>Email Address</label>
+              <label htmlFor="email-address" className={labelClass}>
+                Email Address
+              </label>
               <input
+                id="email-address"
                 type="email"
                 value={email}
                 disabled
@@ -433,8 +442,11 @@ export default function ProfilePage() {
             </div>
 
             <div className={sectionClass}>
-              <label className={labelClass}>Phone Number</label>
+              <label htmlFor="phone-number" className={labelClass}>
+                Phone Number
+              </label>
               <input
+                id="phone-number"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -444,8 +456,11 @@ export default function ProfilePage() {
             </div>
 
             <div className={sectionClass}>
-              <label className={labelClass}>Date of Birth</label>
+              <label htmlFor="date-of-birth" className={labelClass}>
+                Date of Birth
+              </label>
               <input
+                id="date-of-birth"
                 type="date"
                 value={dateOfBirth}
                 onChange={(e) => setDateOfBirth(e.target.value)}
@@ -469,8 +484,11 @@ export default function ProfilePage() {
               <h2 className={sectionTitleClass}>Preferences</h2>
 
               <div className={fieldClass}>
-                <label className={labelClass}>Language</label>
+                <label htmlFor="language" className={labelClass}>
+                  Language
+                </label>
                 <select
+                  id="language"
                   value={prefLanguage}
                   onChange={(e) =>
                     setPrefLanguage(normalizeLocale(e.target.value))
@@ -486,8 +504,11 @@ export default function ProfilePage() {
               </div>
 
               <div className={fieldClass}>
-                <label className={labelClass}>Timezone</label>
+                <label htmlFor="timezone" className={labelClass}>
+                  Timezone
+                </label>
                 <select
+                  id="timezone"
                   value={prefTimezone}
                   onChange={(e) => setPrefTimezone(e.target.value)}
                   className={inputClass}
@@ -517,8 +538,11 @@ export default function ProfilePage() {
               <h2 className={sectionTitleClass}>Point-Use Limits</h2>
               <div className={twoColumnGridClass}>
                 <div>
-                  <label className={labelClass}>Daily Limit (pts)</label>
+                  <label htmlFor="daily-limit-pts" className={labelClass}>
+                    Daily Limit (pts)
+                  </label>
                   <input
+                    id="daily-limit-pts"
                     type="number"
                     value={dailyLimit}
                     onChange={(e) => setDailyLimit(e.target.value)}
@@ -527,8 +551,11 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>Weekly Limit (pts)</label>
+                  <label htmlFor="weekly-limit-pts" className={labelClass}>
+                    Weekly Limit (pts)
+                  </label>
                   <input
+                    id="weekly-limit-pts"
                     type="number"
                     value={weeklyLimit}
                     onChange={(e) => setWeeklyLimit(e.target.value)}
@@ -537,8 +564,11 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>Monthly Limit (pts)</label>
+                  <label htmlFor="monthly-limit-pts" className={labelClass}>
+                    Monthly Limit (pts)
+                  </label>
                   <input
+                    id="monthly-limit-pts"
                     type="number"
                     value={monthlyLimit}
                     onChange={(e) => setMonthlyLimit(e.target.value)}
@@ -553,8 +583,11 @@ export default function ProfilePage() {
               <h2 className={sectionTitleClass}>Prediction Limits</h2>
               <div className={twoColumnGridClass}>
                 <div>
-                  <label className={labelClass}>Max Order Size (pts)</label>
+                  <label htmlFor="max-order-size-pts" className={labelClass}>
+                    Max Order Size (pts)
+                  </label>
                   <input
+                    id="max-order-size-pts"
                     type="number"
                     value={maxOrderPoints}
                     onChange={(e) => setMaxOrderPoints(e.target.value)}
@@ -640,8 +673,11 @@ export default function ProfilePage() {
             <div className={sectionClass}>
               <h2 className={sectionTitleClass}>Password</h2>
               <div className={fieldClass}>
-                <label className={labelClass}>Current Password</label>
+                <label htmlFor="current-password" className={labelClass}>
+                  Current Password
+                </label>
                 <input
+                  id="current-password"
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
@@ -650,8 +686,11 @@ export default function ProfilePage() {
                 />
               </div>
               <div className={fieldClass}>
-                <label className={labelClass}>New Password</label>
+                <label htmlFor="new-password" className={labelClass}>
+                  New Password
+                </label>
                 <input
+                  id="new-password"
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
@@ -660,8 +699,11 @@ export default function ProfilePage() {
                 />
               </div>
               <div className={fieldClass}>
-                <label className={labelClass}>Confirm Password</label>
+                <label htmlFor="confirm-password" className={labelClass}>
+                  Confirm Password
+                </label>
                 <input
+                  id="confirm-password"
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}

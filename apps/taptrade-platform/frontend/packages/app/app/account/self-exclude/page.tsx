@@ -228,8 +228,14 @@ function SelfExcludePageContent() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div className={fieldClass}>
-              <label className={labelClass}>Exclusion Duration</label>
-              <div className="flex flex-row gap-2.5">
+              <span id="exclusion-duration-label" className={labelClass}>
+                Exclusion Duration
+              </span>
+              <div
+                className="flex flex-row gap-2.5"
+                role="group"
+                aria-labelledby="exclusion-duration-label"
+              >
                 <button
                   type="button"
                   className={durationButtonClass(duration === "1")}
@@ -255,8 +261,11 @@ function SelfExcludePageContent() {
             </div>
 
             <div className={fieldClass}>
-              <label className={labelClass}>Reason for Self-Exclusion</label>
+              <label htmlFor="reason-for-self-exclusion" className={labelClass}>
+                Reason for Self-Exclusion
+              </label>
               <textarea
+                id="reason-for-self-exclusion"
                 className="resize-y rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-[14px] py-3 text-[13px] text-[var(--t1)] outline-none transition-colors duration-150 focus:border-[var(--accent)]"
                 value={reason}
                 onChange={handleReasonChange}

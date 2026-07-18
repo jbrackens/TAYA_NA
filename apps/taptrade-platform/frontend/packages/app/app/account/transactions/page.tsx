@@ -203,10 +203,17 @@ export default function PointsLedgerPage() {
       </div>
 
       <div className="mb-6">
-        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.05em] text-[var(--t3)]">
+        <span
+          id="tx-date-range-label"
+          className="mb-2 block text-xs font-semibold uppercase tracking-[0.05em] text-[var(--t3)]"
+        >
           Date range
-        </label>
-        <div className="flex flex-wrap gap-2">
+        </span>
+        <div
+          className="flex flex-wrap gap-2"
+          role="group"
+          aria-labelledby="tx-date-range-label"
+        >
           {(["all", "24h", "week", "month", "3m", "6m", "year"] as const).map(
             (r) => (
               <button
