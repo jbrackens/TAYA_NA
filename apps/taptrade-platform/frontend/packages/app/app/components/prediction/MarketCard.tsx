@@ -86,6 +86,7 @@ export function MarketCard({
   });
   const imageSrc = image.kind === "image" ? image.src : "";
   const [failedImageSrc, setFailedImageSrc] = useState<string | null>(null);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: image-error reset keyed to the source changing — intentional signal dependency
   useEffect(() => {
     setFailedImageSrc(null);
   }, [imageSrc]);

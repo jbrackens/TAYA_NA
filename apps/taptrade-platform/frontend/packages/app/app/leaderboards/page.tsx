@@ -99,6 +99,7 @@ export default function LeaderboardsPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Initial: board catalog + user's standing across all boards. Parallel fetch.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: initial-load effect: boardQuery/t are deliberately read once — re-running on URL query changes would clobber the user's manual board selection
   useEffect(() => {
     let cancelled = false;
 
@@ -144,6 +145,7 @@ export default function LeaderboardsPage() {
   }, [user?.id]);
 
   // Detail fetch: entries for the selected board.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: t is read only in the catch path — depending on it would refetch standings on every language switch
   useEffect(() => {
     let cancelled = false;
 

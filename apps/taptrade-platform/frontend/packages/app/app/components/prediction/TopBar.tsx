@@ -269,6 +269,7 @@ export function TopBar() {
     };
   }, [searchOpen]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: cursor reset keyed to query changes it doesn't read — intentional signal dependency
   useEffect(() => {
     setCursor(0);
   }, [query]);

@@ -272,6 +272,7 @@ export function AllMarketsSection({ categories }: Props) {
     };
   }, [isAuthenticated]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: subcategory reset keyed to navigation inputs it doesn't read — intentional signal dependency
   useEffect(() => {
     setSubcategory(null);
   }, [categorySlug, dateWindow]);
@@ -286,6 +287,7 @@ export function AllMarketsSection({ categories }: Props) {
   // closeBefore is computed inside the effect (NOT outside) because it
   // calls Date.now(); recomputing it on every render would produce a new
   // ISO string each time and trigger an infinite re-fetch loop.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: categorySlug is a deliberate refetch trigger alongside the resolved categoryId
   useEffect(() => {
     let cancelled = false;
     setLoading(true);

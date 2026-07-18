@@ -56,12 +56,6 @@ export default function NotificationsPage() {
     }));
   };
 
-  // Load preferences on mount
-  useEffect(() => {
-    // In a real app, we'd fetch this from the API
-    // For now, using default state above
-  }, [user?.id]);
-
   const handleToggle = (key: keyof typeof prefs) => {
     setPrefs((prev) => ({
       ...prev,

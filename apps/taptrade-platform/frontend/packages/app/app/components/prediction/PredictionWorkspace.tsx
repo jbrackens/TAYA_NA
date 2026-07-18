@@ -381,6 +381,7 @@ function FeaturedSignalCarousel({
     [count, markets, onActiveMarketChange],
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: slide-in animation keyed to the active market changing — intentional signal dependency
   useEffect(() => {
     const stage = stageRef.current;
     if (

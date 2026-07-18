@@ -379,6 +379,7 @@ export default function DiscoverPage() {
     (category) => category.slug.toLowerCase() === activeCategorySlug,
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reloadNonce is the retry signal — an intentional extra dependency
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -402,10 +403,12 @@ export default function DiscoverPage() {
     };
   }, [reloadNonce]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset-to-page-1 signal: re-runs on navigation inputs it doesn't read
   useEffect(() => {
     setPage(1);
   }, [activeCategorySlug, activeFilter]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reloadNonce is the retry signal — an intentional extra dependency
   useEffect(() => {
     if (!discovery) return;
     let cancelled = false;

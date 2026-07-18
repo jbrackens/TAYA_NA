@@ -125,6 +125,7 @@ export function FeaturedCarousel({
     return () => clearInterval(timer);
   }, [paused, reducedMotion, count]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: slide transition keyed to the active index it doesn't read — intentional signal dependency
   useEffect(() => {
     if (reducedMotion || count === 0) return;
     const el = stageRef.current;

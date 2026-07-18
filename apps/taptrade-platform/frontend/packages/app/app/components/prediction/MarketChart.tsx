@@ -109,6 +109,7 @@ export default function MarketChart({
   // whenever the ticker or range changes (or the user hits Retry). The
   // fetch state resets to loading on every change so a failed range
   // doesn't poison the next one.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: retryNonce is the Retry button's refetch signal — an intentional extra dependency
   useEffect(() => {
     let cancelled = false;
     setFetchStatus("loading");
