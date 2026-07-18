@@ -205,7 +205,11 @@ function SelfExcludePageContent() {
             <Link href="/account" className={secondaryButtonClass}>
               Cancel
             </Link>
-            <button className={primaryButtonClass} onClick={handleProceed}>
+            <button
+              type="button"
+              className={primaryButtonClass}
+              onClick={handleProceed}
+            >
               I Understand, Continue
             </button>
           </div>
@@ -329,12 +333,14 @@ function SelfExcludePageContent() {
 
           <div className={actionsClass}>
             <button
+              type="button"
               className={secondaryButtonClass}
               onClick={() => setStep("form")}
             >
               Back to Edit
             </button>
             <button
+              type="button"
               className={dangerButtonClass}
               onClick={handleConfirmExclude}
               disabled={loading}

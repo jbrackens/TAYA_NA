@@ -31,6 +31,7 @@ export default function Error({
         )}
       </p>
       <button
+        type="button"
         onClick={reset}
         className="cursor-pointer rounded-lg border-0 bg-[linear-gradient(135deg,var(--accent),var(--accent-lo))] px-6 py-2.5 text-sm font-semibold text-[#04140a] shadow-[0_4px_12px_rgba(43,228,128,0.25)]"
       >

@@ -190,6 +190,7 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
 
         <div className="flex flex-col gap-3">
           <button
+            type="button"
             onClick={handleActivity}
             className="cursor-pointer rounded-lg border-0 bg-[linear-gradient(135deg,var(--accent)_0%,#ea580c_100%)] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 ease-in-out hover:opacity-90"
           >
@@ -197,6 +198,7 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
           </button>
 
           <button
+            type="button"
             onClick={() => onLogoutRef.current()}
             className="cursor-pointer rounded-lg border border-[#d1d5db] bg-white px-4 py-2.5 text-sm font-medium text-[#374151] transition-all duration-200 ease-in-out"
           >

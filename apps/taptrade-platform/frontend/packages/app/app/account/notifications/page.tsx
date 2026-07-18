@@ -305,6 +305,7 @@ export default function NotificationsPage() {
         {/* Save Button */}
         <div className="flex gap-3">
           <button
+            type="button"
             className="cursor-pointer rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-6 py-3 text-sm font-bold text-white transition-all duration-150 hover:-translate-y-px hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={handleSave}
             disabled={saveLoading}

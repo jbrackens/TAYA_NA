@@ -34,7 +34,7 @@ export default function ProfileError({
           "We couldn't load your profile. Please check your connection and try again."}
       </p>
       <div className={actionRowClass}>
-        <button onClick={reset} className={primaryActionClass}>
+        <button type="button" onClick={reset} className={primaryActionClass}>
           Try Again
         </button>
         <a href="/" className={secondaryActionClass}>

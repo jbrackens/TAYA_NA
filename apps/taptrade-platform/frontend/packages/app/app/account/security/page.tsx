@@ -184,18 +184,21 @@ export default function SecurityPage() {
       {/* Tabs */}
       <div className="mb-6 flex gap-0 border-b border-[var(--border-1)]">
         <button
+          type="button"
           className={tabClass(tab === "password")}
           onClick={() => setTab("password")}
         >
           Password
         </button>
         <button
+          type="button"
           className={tabClass(tab === "twofa")}
           onClick={() => setTab("twofa")}
         >
           Two-Factor Auth
         </button>
         <button
+          type="button"
           className={tabClass(tab === "sessions")}
           onClick={() => setTab("sessions")}
         >
@@ -290,6 +293,7 @@ export default function SecurityPage() {
             </div>
 
             <button
+              type="button"
               onClick={handleToggle2FA}
               disabled={twoFaLoading}
               className={twoFaButtonClass(twoFaEnabled)}
@@ -349,6 +353,7 @@ export default function SecurityPage() {
                   )}
                   {!session.current && (
                     <button
+                      type="button"
                       className="cursor-pointer rounded-md border-0 bg-[var(--no)] px-3 py-1.5 text-xs font-semibold text-white transition-opacity duration-150 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                       onClick={() => handleRevokeSession(session.id)}
                       disabled={revokingId === session.id}

@@ -462,6 +462,7 @@ function TabBar({
     >
       {tabs.map((t) => (
         <button
+          type="button"
           key={t.key}
           role="tab"
           aria-selected={tab === t.key}

@@ -547,6 +547,7 @@ export function TradeTicket({
               aria-label={t("ORDER_TYPE")}
             >
               <button
+                type="button"
                 role="tab"
                 aria-selected={mode === "market"}
                 className={ticketModeButtonClass(mode === "market")}
@@ -555,6 +556,7 @@ export function TradeTicket({
                 {t("MARKET_ORDER")}
               </button>
               <button
+                type="button"
                 role="tab"
                 aria-selected={mode === "limit"}
                 className={ticketModeButtonClass(mode === "limit")}
@@ -581,6 +583,7 @@ export function TradeTicket({
               aria-label={t("ACTION")}
             >
               <button
+                type="button"
                 role="tab"
                 aria-selected={action === "buy"}
                 className={ticketModeButtonClass(action === "buy")}
@@ -589,6 +592,7 @@ export function TradeTicket({
                 {t("BUY")}
               </button>
               <button
+                type="button"
                 role="tab"
                 aria-selected={action === "sell"}
                 className={ticketModeButtonClass(action === "sell")}
@@ -614,6 +618,7 @@ export function TradeTicket({
             aria-label={t("SIDE")}
           >
             <button
+              type="button"
               role="tab"
               aria-selected={side === "yes"}
               onClick={() => setSideAndReset("yes")}
@@ -622,6 +627,7 @@ export function TradeTicket({
               {t("BUY_YES")}
             </button>
             <button
+              type="button"
               role="tab"
               aria-selected={side === "no"}
               onClick={() => setSideAndReset("no")}

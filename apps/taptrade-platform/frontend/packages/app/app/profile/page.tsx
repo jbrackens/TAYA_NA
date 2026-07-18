@@ -103,6 +103,7 @@ function TabNavigation({
     <div className={tabListClass}>
       {tabs.map((label, index) => (
         <button
+          type="button"
           key={index}
           onClick={() => onChange(index)}
           className={tabButtonClass(activeTabIndex === index)}
@@ -454,6 +455,7 @@ export default function ProfilePage() {
 
             <div className={sectionClass}>
               <button
+                type="button"
                 onClick={handleSaveProfile}
                 disabled={saving}
                 className={buttonClass}
@@ -498,7 +500,11 @@ export default function ProfilePage() {
                 </select>
               </div>
 
-              <button onClick={handleSavePreferences} className={buttonClass}>
+              <button
+                type="button"
+                onClick={handleSavePreferences}
+                className={buttonClass}
+              >
                 Save Preferences
               </button>
             </div>
@@ -561,6 +567,7 @@ export default function ProfilePage() {
 
             <div>
               <button
+                type="button"
                 onClick={handleSaveLimits}
                 disabled={savingLimits}
                 className={buttonClass}
@@ -616,6 +623,7 @@ export default function ProfilePage() {
                   features.
                 </p>
                 <button
+                  type="button"
                   className={buttonClass}
                   onClick={handleStartVerification}
                   disabled={verifying}
@@ -661,7 +669,11 @@ export default function ProfilePage() {
                   className={inputClass}
                 />
               </div>
-              <button onClick={handleChangePassword} className={buttonClass}>
+              <button
+                type="button"
+                onClick={handleChangePassword}
+                className={buttonClass}
+              >
                 Change Password
               </button>
             </div>

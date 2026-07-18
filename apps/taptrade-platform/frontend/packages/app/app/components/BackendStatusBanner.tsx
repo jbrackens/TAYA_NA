@@ -70,6 +70,7 @@ export function BackendStatusBanner() {
         })}
       </span>
       <button
+        type="button"
         onClick={() => setDismissed(true)}
         className="shrink-0 cursor-pointer rounded border border-[rgba(251,191,36,0.4)] bg-transparent px-2 py-0.5 text-[11px] text-amber-100"
       >

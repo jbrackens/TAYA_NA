@@ -34,7 +34,7 @@ export default function AccountError({
           "We couldn't load your account information. Please try again."}
       </p>
       <div className={actionRowClass}>
-        <button onClick={reset} className={primaryActionClass}>
+        <button type="button" onClick={reset} className={primaryActionClass}>
           Try Again
         </button>
         <a href="/" className={secondaryActionClass}>

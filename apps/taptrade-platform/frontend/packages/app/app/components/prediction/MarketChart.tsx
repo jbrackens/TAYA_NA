@@ -193,6 +193,7 @@ export default function MarketChart({
             {t("PRICE_HISTORY_UNAVAILABLE")}
           </div>
           <button
+            type="button"
             className="cursor-pointer rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-1.5 text-xs font-semibold text-[var(--t1)] transition-colors duration-[120ms] hover:border-[var(--border-2)]"
             onClick={() => setRetryNonce((n) => n + 1)}
           >
@@ -293,6 +294,7 @@ export default function MarketChart({
       >
         {RANGES.map((r) => (
           <button
+            type="button"
             key={r}
             role="tab"
             aria-selected={r === range}

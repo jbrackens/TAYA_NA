@@ -189,6 +189,7 @@ export default function PointsLedgerPage() {
         </div>
         <div className="flex items-center gap-2">
           <button
+            type="button"
             className={actionClass}
             onClick={handleExportCSV}
             disabled={exporting}
@@ -209,6 +210,7 @@ export default function PointsLedgerPage() {
           {(["all", "24h", "week", "month", "3m", "6m", "year"] as const).map(
             (r) => (
               <button
+                type="button"
                 key={r}
                 className={filterButtonClass(dateRange === r)}
                 onClick={() => {
@@ -313,6 +315,7 @@ export default function PointsLedgerPage() {
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-4 border-t border-[var(--border-1)] p-4">
                 <button
+                  type="button"
                   className="cursor-pointer rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2 text-xs font-semibold text-[var(--t2)] transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40"
                   onClick={() => setPage(() => Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
@@ -323,6 +326,7 @@ export default function PointsLedgerPage() {
                   Page {currentPage} of {totalPages}
                 </div>
                 <button
+                  type="button"
                   className="cursor-pointer rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2 text-xs font-semibold text-[var(--t2)] transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40"
                   onClick={() =>
                     setPage(() => Math.min(totalPages, currentPage + 1))
