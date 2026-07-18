@@ -44,7 +44,18 @@ export function DiscoveryHero({
 }) {
   const { t } = useTranslation("prediction");
   const { t: contentT } = useTranslation("market-content");
-  if (!market) {
+  // Hooks must run on every render in the same order (React invariant —
+  // this component previously early-returned above the history hook, so
+  // the null→market transition crashed with "rendered more hooks than
+  // during the previous render"). While market is null the hook gets an
+  // empty ticker and fetches nothing.
+  const displayMarket = market ? localizedMarket(contentT, market) : null;
+  const {
+    points: heroPoints,
+    movement,
+    loading: historyLoading,
+  } = useHeroPriceHistory(displayMarket?.ticker ?? "");
+  if (!market || !displayMarket) {
     return (
       <section className="min-h-[480px] rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-9 text-[var(--t3)]">
         {t("LOADING_MARKETS")}
@@ -52,7 +63,6 @@ export function DiscoveryHero({
     );
   }
 
-  const displayMarket = localizedMarket(contentT, market);
   const resolvedCategoryName = categoryName || market.categoryName || "";
   const displayCategory = resolvedCategoryName
     ? categoryLabel(contentT, resolvedCategoryName)
@@ -71,11 +81,8 @@ export function DiscoveryHero({
   // 2026-07-12 integrity fix: the delta pill renders ONLY from the real
   // /prices series (movement is null while loading / when the series is
   // flat or missing — the pill hides instead of inventing a number).
-  const {
-    points: heroPoints,
-    movement,
-    loading: historyLoading,
-  } = useHeroPriceHistory(displayMarket.ticker);
+  // The hook call itself lives above the early return with the other
+  // hooks; only the derived values are computed here.
   const isUp = movement ? movement.up : yes >= no;
   const isFlat = movement ? movement.deltaPoints === 0 : true;
   // Chart fill: real series when available; on the demo box only

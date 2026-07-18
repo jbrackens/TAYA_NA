@@ -46,6 +46,13 @@ export function useHeroPriceHistory(ticker: string): HeroPriceHistory {
   });
 
   useEffect(() => {
+    // Empty ticker = "no market yet" (DiscoveryHero calls this hook
+    // unconditionally to keep React's hook order stable while the
+    // market loads). Nothing to fetch; report a settled empty state.
+    if (!ticker) {
+      setState({ points: null, movement: null, loading: false });
+      return;
+    }
     let cancelled = false;
     setState({ points: null, movement: null, loading: true });
     api
