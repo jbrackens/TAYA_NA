@@ -77,15 +77,51 @@ ALTER TABLE prediction_disputes RENAME COLUMN bond_cents TO bond_points;
 -- wallets / wallet_balances / wallet_ledger / wallet_reservations
 ALTER TABLE wallets RENAME COLUMN balance_cents TO balance_points;
 ALTER TABLE wallets RENAME COLUMN bonus_balance_cents TO bonus_balance_points;
-ALTER TABLE wallet_balances RENAME COLUMN balance_cents TO balance_points;
-ALTER TABLE wallet_balances RENAME COLUMN bonus_balance_cents TO bonus_balance_points;
-ALTER TABLE wallet_ledger RENAME COLUMN amount_cents TO amount_points;
-ALTER TABLE wallet_ledger RENAME COLUMN balance_cents TO balance_points;
+-- wallet_balances / wallet_ledger are created by the wallet service's
+-- runtime bootstrap (internal/wallet/service.go), NOT by migrations —
+-- post-050 code creates them with *_points columns natively. On a fresh
+-- database (CI guard, new box) they don't exist at migrate time, so these
+-- renames are conditional: rename legacy columns when present, no-op
+-- otherwise. Same for player_activity_log and the RG limit tables below.
+-- +goose StatementBegin
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_name = 'wallet_balances' AND column_name = 'balance_cents') THEN
+    ALTER TABLE wallet_balances RENAME COLUMN balance_cents TO balance_points;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_name = 'wallet_balances' AND column_name = 'bonus_balance_cents') THEN
+    ALTER TABLE wallet_balances RENAME COLUMN bonus_balance_cents TO bonus_balance_points;
+  END IF;
+END $$;
+-- +goose StatementEnd
+-- +goose StatementBegin
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_name = 'wallet_ledger' AND column_name = 'amount_cents') THEN
+    ALTER TABLE wallet_ledger RENAME COLUMN amount_cents TO amount_points;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_name = 'wallet_ledger' AND column_name = 'balance_cents') THEN
+    ALTER TABLE wallet_ledger RENAME COLUMN balance_cents TO balance_points;
+  END IF;
+END $$;
+-- +goose StatementEnd
 ALTER TABLE wallet_reservations RENAME COLUMN amount_cents TO amount_points;
 ALTER TABLE wallet_reservations RENAME COLUMN captured_amount_cents TO captured_amount_points;
 
 -- player_activity_log
-ALTER TABLE player_activity_log RENAME COLUMN amount_cents TO amount_points;
+-- +goose StatementBegin
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_name = 'player_activity_log' AND column_name = 'amount_cents') THEN
+    ALTER TABLE player_activity_log RENAME COLUMN amount_cents TO amount_points;
+  END IF;
+END $$;
+-- +goose StatementEnd
 
 -- rewards / bonuses / campaigns / wagering (points grants live here)
 ALTER TABLE player_bonuses RENAME COLUMN granted_amount_cents TO granted_amount_points;
@@ -98,8 +134,24 @@ ALTER TABLE wagering_contributions RENAME COLUMN stake_cents TO stake_points;
 ALTER TABLE wagering_contributions RENAME COLUMN contribution_cents TO contribution_points;
 
 -- play-limit tooling (points caps)
-ALTER TABLE player_bet_limits RENAME COLUMN limit_cents TO limit_points;
-ALTER TABLE player_deposit_limits RENAME COLUMN limit_cents TO limit_points;
+-- +goose StatementBegin
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_name = 'player_bet_limits' AND column_name = 'limit_cents') THEN
+    ALTER TABLE player_bet_limits RENAME COLUMN limit_cents TO limit_points;
+  END IF;
+END $$;
+-- +goose StatementEnd
+-- +goose StatementBegin
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_name = 'player_deposit_limits' AND column_name = 'limit_cents') THEN
+    ALTER TABLE player_deposit_limits RENAME COLUMN limit_cents TO limit_points;
+  END IF;
+END $$;
+-- +goose StatementEnd
 
 -- +goose Down
 -- Reverse renames (values untouched in both directions).
@@ -139,13 +191,43 @@ ALTER TABLE prediction_collateral_ledger RENAME COLUMN balance_after_points TO b
 ALTER TABLE prediction_disputes RENAME COLUMN bond_points TO bond_cents;
 ALTER TABLE wallets RENAME COLUMN balance_points TO balance_cents;
 ALTER TABLE wallets RENAME COLUMN bonus_balance_points TO bonus_balance_cents;
-ALTER TABLE wallet_balances RENAME COLUMN balance_points TO balance_cents;
-ALTER TABLE wallet_balances RENAME COLUMN bonus_balance_points TO bonus_balance_cents;
-ALTER TABLE wallet_ledger RENAME COLUMN amount_points TO amount_cents;
-ALTER TABLE wallet_ledger RENAME COLUMN balance_points TO balance_cents;
+-- +goose StatementBegin
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_name = 'wallet_balances' AND column_name = 'balance_points') THEN
+    ALTER TABLE wallet_balances RENAME COLUMN balance_points TO balance_cents;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_name = 'wallet_balances' AND column_name = 'bonus_balance_points') THEN
+    ALTER TABLE wallet_balances RENAME COLUMN bonus_balance_points TO bonus_balance_cents;
+  END IF;
+END $$;
+-- +goose StatementEnd
+-- +goose StatementBegin
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_name = 'wallet_ledger' AND column_name = 'amount_points') THEN
+    ALTER TABLE wallet_ledger RENAME COLUMN amount_points TO amount_cents;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_name = 'wallet_ledger' AND column_name = 'balance_points') THEN
+    ALTER TABLE wallet_ledger RENAME COLUMN balance_points TO balance_cents;
+  END IF;
+END $$;
+-- +goose StatementEnd
 ALTER TABLE wallet_reservations RENAME COLUMN amount_points TO amount_cents;
 ALTER TABLE wallet_reservations RENAME COLUMN captured_amount_points TO captured_amount_cents;
-ALTER TABLE player_activity_log RENAME COLUMN amount_points TO amount_cents;
+-- +goose StatementBegin
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_name = 'player_activity_log' AND column_name = 'amount_points') THEN
+    ALTER TABLE player_activity_log RENAME COLUMN amount_points TO amount_cents;
+  END IF;
+END $$;
+-- +goose StatementEnd
 ALTER TABLE player_bonuses RENAME COLUMN granted_amount_points TO granted_amount_cents;
 ALTER TABLE player_bonuses RENAME COLUMN remaining_amount_points TO remaining_amount_cents;
 ALTER TABLE player_bonuses RENAME COLUMN wagering_required_points TO wagering_required_cents;
@@ -154,5 +236,21 @@ ALTER TABLE campaigns RENAME COLUMN budget_points TO budget_cents;
 ALTER TABLE campaigns RENAME COLUMN spent_points TO spent_cents;
 ALTER TABLE wagering_contributions RENAME COLUMN stake_points TO stake_cents;
 ALTER TABLE wagering_contributions RENAME COLUMN contribution_points TO contribution_cents;
-ALTER TABLE player_bet_limits RENAME COLUMN limit_points TO limit_cents;
-ALTER TABLE player_deposit_limits RENAME COLUMN limit_points TO limit_cents;
+-- +goose StatementBegin
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_name = 'player_bet_limits' AND column_name = 'limit_points') THEN
+    ALTER TABLE player_bet_limits RENAME COLUMN limit_points TO limit_cents;
+  END IF;
+END $$;
+-- +goose StatementEnd
+-- +goose StatementBegin
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_name = 'player_deposit_limits' AND column_name = 'limit_points') THEN
+    ALTER TABLE player_deposit_limits RENAME COLUMN limit_points TO limit_cents;
+  END IF;
+END $$;
+-- +goose StatementEnd
