@@ -414,20 +414,14 @@ export function TopBar() {
             isTerminalRoute ? "flex-1" : ""
           }`}
         >
+          {/* ARIA 1.2 combobox: the role lives on the input (the focusable
+              element), not the wrapper — the 1.1 wrapper-role pattern trips
+              a11y tooling and reads worse in screen readers. */}
           <div
             className={`${TOP_BAR_SEARCH_WRAP_CLASS} ${
               isTerminalRoute ? "pl-20 max-[1280px]:pl-0" : ""
             }`}
             ref={searchRef}
-            role="combobox"
-            aria-haspopup="listbox"
-            aria-expanded={searchOpen && searchResults.length > 0}
-            aria-owns="tb-search-listbox"
-            aria-activedescendant={
-              searchOpen && searchResults[cursor]
-                ? `tb-search-option-${searchResults[cursor].id}`
-                : undefined
-            }
           >
             <label className={TOP_BAR_SEARCH_LABEL_CLASS}>
               <Search size={14} className={TOP_BAR_SEARCH_ICON_CLASS} />
@@ -441,6 +435,14 @@ export function TopBar() {
                 }
                 placeholder={t("SEARCH_MARKETS_PLACEHOLDER")}
                 aria-label={t("SEARCH_MARKETS")}
+                role="combobox"
+                aria-haspopup="listbox"
+                aria-expanded={searchOpen && searchResults.length > 0}
+                aria-activedescendant={
+                  searchOpen && searchResults[cursor]
+                    ? `tb-search-option-${searchResults[cursor].id}`
+                    : undefined
+                }
                 aria-autocomplete="list"
                 aria-controls="tb-search-listbox"
                 value={query}
@@ -473,6 +475,9 @@ export function TopBar() {
                         key={m.id}
                         id={`tb-search-option-${m.id}`}
                         role="option"
+                        // Managed-focus listbox: focus stays on the input,
+                        // options are reachable via aria-activedescendant.
+                        tabIndex={-1}
                         aria-selected={active}
                         className={`${TOP_BAR_SEARCH_HIT_CLASS} ${
                           active

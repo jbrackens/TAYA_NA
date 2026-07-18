@@ -3,7 +3,11 @@
 import { useEffect } from "react";
 import { logger } from "./lib/logger";
 
-export default function Error({
+// Named AppError, not Error: shadowing the global Error inside a
+// component whose props reference the real Error type is asking for the
+// annotation to silently resolve to the component (Next only cares that
+// the default export is a component, not its name).
+export default function AppError({
   error,
   reset,
 }: {

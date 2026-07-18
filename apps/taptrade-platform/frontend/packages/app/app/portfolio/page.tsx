@@ -741,6 +741,7 @@ function HistoryTable({
               {formatPoints(Math.abs(h.realizedPoints))}
             </span>,
             <span
+              role="img"
               key="pts"
               className={cx(MONO, "whitespace-nowrap text-xs text-[var(--t3)]")}
               aria-label={
@@ -895,6 +896,7 @@ function DataTable({
       className="relative overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]"
       role="table"
     >
+      {/* biome-ignore lint/a11y/useFocusableInteractive: static presentation table — rows/headers are not widgets; real <table> conversion is queued for the P2 primitives pass */}
       <div
         className={cx(
           TABLE_GRID_ROW,
@@ -904,6 +906,7 @@ function DataTable({
         role="row"
       >
         {columns.map((c) => (
+          // biome-ignore lint/a11y/useFocusableInteractive: static header cell, not a sortable widget
           <span
             key={c.label}
             role="columnheader"
@@ -916,7 +919,7 @@ function DataTable({
           </span>
         ))}
       </div>
-      <ul className="m-0 list-none p-0">
+      <ul className="m-0 list-none p-0" role="rowgroup">
         {rows.map((r) => {
           const body = columns.map((c, i) => (
             <span
@@ -928,6 +931,7 @@ function DataTable({
             </span>
           ));
           return (
+            // biome-ignore lint/a11y/useFocusableInteractive: static presentation row — the interactive element is the Link inside
             <li
               key={r.key}
               role="row"

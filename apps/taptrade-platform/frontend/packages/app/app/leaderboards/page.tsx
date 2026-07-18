@@ -357,8 +357,6 @@ function CategoryPicker({
       className={`${CATEGORY_CLASS} ${
         activeInCategory ? TAB_ACTIVE_CLASS : TAB_INACTIVE_CLASS
       }`}
-      role="tab"
-      aria-selected={activeInCategory}
     >
       <span className={TAB_NAME_CLASS}>
         {t("categoryChampions", "Category Champions")}

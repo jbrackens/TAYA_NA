@@ -558,6 +558,7 @@ export default function HomePage() {
             viewBox="0 0 1440 560"
             preserveAspectRatio="none"
             fill="none"
+            aria-hidden="true"
           >
             <defs>
               <linearGradient id="heroYesFill" x1="0" y1="0" x2="0" y2="1">

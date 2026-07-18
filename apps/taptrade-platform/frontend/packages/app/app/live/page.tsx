@@ -277,6 +277,7 @@ export default function LiveMarketsPage() {
                   </div>
                 </div>
                 <div
+                  role="group"
                   className={SIDE_PANEL_CLASS}
                   aria-label={eventTitle(event)}
                 >

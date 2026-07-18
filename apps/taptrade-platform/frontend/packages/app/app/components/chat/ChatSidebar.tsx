@@ -475,7 +475,7 @@ function NativeChatStream({
   };
 
   return (
-    <div className={chatClasses.stream} aria-label="Community chat">
+    <div className={chatClasses.stream} role="log" aria-label="Community chat">
       <div className={chatClasses.messageList}>
         {messages.map((chatMessage) => (
           <article

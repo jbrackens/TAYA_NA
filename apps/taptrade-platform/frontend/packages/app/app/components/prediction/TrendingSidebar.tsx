@@ -164,6 +164,7 @@ export function TrendingSidebar({ markets, limit = 6 }: Props) {
                       className="block h-full w-full"
                       viewBox="0 0 60 28"
                       preserveAspectRatio="none"
+                      aria-hidden="true"
                     >
                       <path
                         d={sparklineFromValues(sideSeries)}

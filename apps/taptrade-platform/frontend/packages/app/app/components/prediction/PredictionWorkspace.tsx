@@ -152,6 +152,7 @@ function ProbabilityGauge({ value }: { value: number }) {
   const clamped = Math.max(0, Math.min(100, value));
   return (
     <div
+      role="img"
       className="relative h-[70px] w-[126px] shrink-0"
       aria-label={`${clamped}%`}
     >
@@ -430,6 +431,7 @@ function FeaturedSignalCarousel({
 
         {count > 1 && (
           <div
+            role="group"
             className="flex shrink-0 items-center gap-2"
             aria-label={t("FEATURED_MARKETS")}
           >
@@ -618,6 +620,7 @@ function TradePreview({
   const source = sourceLabel(market.settlementSourceKey);
 
   return (
+    // biome-ignore lint/a11y/useAriaPropsSupportedByRole: aria-modal is undefined unless role='dialog' (mobileOpen) — the conditional is opaque to static analysis
     <aside
       role={mobileOpen ? "dialog" : "complementary"}
       aria-modal={mobileOpen ? true : undefined}

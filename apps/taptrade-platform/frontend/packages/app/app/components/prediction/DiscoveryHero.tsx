@@ -139,6 +139,7 @@ export function DiscoveryHero({
           </h1>
 
           <div
+            role="img"
             className="type-display m-0 mb-3 text-[clamp(64px,7vw,110px)] font-semibold leading-[0.95] tracking-[-0.03em] text-[var(--t1)]"
             aria-label={`Yes price ${yes} cents`}
           >

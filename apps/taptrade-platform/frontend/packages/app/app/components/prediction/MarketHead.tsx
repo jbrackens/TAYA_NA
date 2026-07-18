@@ -164,6 +164,7 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
       <h1 className={MARKET_HEAD_TITLE_CLASS}>{displayMarket.title}</h1>
 
       <div
+        role="group"
         className={MARKET_HEAD_SIDES_CLASS}
         aria-label={t("YES_NO_PRICES", {
           yes,

@@ -126,7 +126,10 @@ export default function SocialAuthButtons({
     const startUrl = `/api/v1/auth/oauth/${p.slug}/start/`;
     try {
       const res = await fetch(startUrl, { redirect: "manual" });
-      if (res.type === "opaqueredirect" || (res.status >= 300 && res.status < 400)) {
+      if (
+        res.type === "opaqueredirect" ||
+        (res.status >= 300 && res.status < 400)
+      ) {
         window.location.href = startUrl;
         return;
       }
@@ -186,6 +189,7 @@ function AppleIcon() {
       height="20"
       className="block size-5"
       focusable="false"
+      aria-hidden="true"
     >
       <path
         fill="var(--t1)"
@@ -203,6 +207,7 @@ function SSOIcon() {
       height="20"
       className="block size-5"
       focusable="false"
+      aria-hidden="true"
       fill="none"
       stroke="var(--t1)"
       strokeWidth="1.8"
@@ -224,6 +229,7 @@ function GoogleIcon() {
       height="20"
       className="block size-5"
       focusable="false"
+      aria-hidden="true"
     >
       <path
         fill="#4285F4"
@@ -253,6 +259,7 @@ function XIcon() {
       height="20"
       className="block size-5"
       focusable="false"
+      aria-hidden="true"
     >
       <path
         fill="var(--t1)"
@@ -270,6 +277,7 @@ function FacebookIcon() {
       height="20"
       className="block size-5"
       focusable="false"
+      aria-hidden="true"
     >
       <path
         fill="#1877F2"
@@ -287,6 +295,7 @@ function TikTokIcon() {
       height="20"
       className="block size-5"
       focusable="false"
+      aria-hidden="true"
     >
       <path
         fill="var(--t1)"
@@ -304,6 +313,7 @@ function RedditIcon() {
       height="20"
       className="block size-5"
       focusable="false"
+      aria-hidden="true"
     >
       <path
         fill="#FF4500"
@@ -321,6 +331,7 @@ function DiscordIcon() {
       height="20"
       className="block size-5"
       focusable="false"
+      aria-hidden="true"
     >
       <path
         fill="#5865F2"

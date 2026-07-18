@@ -187,6 +187,7 @@ export function FeaturedCarousel({
         {/* Only the active slide is mounted (one chart + one price-history
          * fetch at a time); the key restarts the enter animation per change. */}
         <div
+          role="group"
           ref={stageRef}
           className="min-w-0"
           key={slide.key}
