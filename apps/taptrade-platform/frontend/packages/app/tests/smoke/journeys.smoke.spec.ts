@@ -216,7 +216,11 @@ test.describe("J1 browse markets", () => {
       page.getByRole("link", { name: /browse/i }).first(),
     ).toBeVisible();
 
-    await page.goto("/predict/");
+    // domcontentloaded, not load: Firefox starves the load event on the
+    // dev server (many parallel compile-time responses hold Gecko's
+    // connection pool open past the 30s timeout). The visibility
+    // assertions below are the real readiness gate on every engine.
+    await page.goto("/predict/", { waitUntil: "domcontentloaded" });
     const pill = page.getByRole("button", { name: /politics/i }).first();
     if (await pill.isVisible().catch(() => false)) {
       await pill.click();
