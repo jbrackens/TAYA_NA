@@ -104,7 +104,7 @@ function TabNavigation({
       {tabs.map((label, index) => (
         <button
           type="button"
-          key={index}
+          key={label}
           onClick={() => onChange(index)}
           className={tabButtonClass(activeTabIndex === index)}
         >

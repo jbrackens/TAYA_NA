@@ -934,6 +934,7 @@ function DataTable({
           const body = columns.map((c, i) => (
             // biome-ignore lint/a11y/useSemanticElements: ARIA table roles on a CSS-grid layout; real <table> conversion is queued for the P2 primitives pass
             <span
+              // biome-ignore lint/suspicious/noArrayIndexKey: cells map over the fixed column definition — the index IS the column identity
               key={i}
               role="cell"
               className={cx(TABLE_CELL, alignClass(c.align))}

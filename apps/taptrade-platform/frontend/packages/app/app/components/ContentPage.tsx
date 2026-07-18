@@ -118,6 +118,7 @@ export const ContentPageRenderer: React.FC<ContentPageProps> = ({
                     <div key={block.blockId} className="flex flex-col gap-3">
                       {faqItems.map((item, idx) => (
                         <details
+                          // biome-ignore lint/suspicious/noArrayIndexKey: static CMS FAQ list — never reordered or partially updated client-side
                           key={idx}
                           className="rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] p-4"
                         >

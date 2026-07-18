@@ -98,6 +98,7 @@ function RGHistoryPageContent() {
             </thead>
             <tbody>
               {items.map((item, idx) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: read-only history rows rendered once per fetch — never reordered in place
                 <tr className="hover:bg-[var(--surface-2)]" key={idx}>
                   <td className={tableCellClass}>
                     <span className="inline-block rounded-[var(--r-rh-sm)] bg-[var(--accent-soft)] px-2 py-1 text-xs font-semibold text-[var(--accent)]">
