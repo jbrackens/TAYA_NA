@@ -24,6 +24,8 @@
     "run-docker:app:stage": "yarn dockerize:app    && docker run --rm -p 3000:3000 --env-file packages/app/.env.staging         taptrade-ui/app",
     "run-docker:office:dev": "yarn dockerize:office && docker run --rm -p 3000:3000 --env-file packages/office/.env.development  taptrade-ui/office",
     "run-docker:office:stage": "yarn dockerize:office && docker run --rm -p 3000:3000 --env-file packages/office/.env.staging      taptrade-ui/office",
+    "lint:biome": "biome check .",
+    "lint:biome:fix": "biome check --write .",
     "dist": "lerna run dist",
     "build": "yarn bootstrap && lerna run build",
     "build:local": "lerna run build:local",
@@ -95,6 +97,7 @@
     "use-http": "^1.0.16"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.4",
     "@commitlint/cli": "^8.3.5",
     "@commitlint/config-conventional": "^8.3.4",
     "@playwright/test": "^1.59.1",

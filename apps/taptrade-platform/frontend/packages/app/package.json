@@ -32,19 +32,26 @@
     "watch": "node ./scripts/translations/watch.js"
   },
   "dependencies": {
+    "@base-ui-components/react": "1.0.0-rc.0",
+    "@number-flow/react": "^0.6.1",
     "@phosphor-icons/react": "2.1.10",
     "@taptrade-ui/api-client": "1.0.0",
     "@taptrade-ui/utils": "0.23.1-build.1",
+    "cmdk": "^1.1.1",
+    "embla-carousel-react": "^8.6.0",
     "geist": "1.7.2",
     "i18next": "^23.7.0",
     "isomorphic-dompurify": "^2.16.0",
     "jsonwebtoken": "^9.0.0",
     "libphonenumber-js": "^1.9.20",
+    "lightweight-charts": "^5.2.0",
     "lucide-react": "^1.7.0",
     "next": "16.2.9",
     "react-i18next": "^13.5.0",
     "react-redux": "^7.1.3",
+    "sonner": "^2.0.7",
     "uuid": "^8.3.1",
+    "vaul": "^1.1.2",
     "yup": "^0.32.11"
   },
   "devDependencies": {
