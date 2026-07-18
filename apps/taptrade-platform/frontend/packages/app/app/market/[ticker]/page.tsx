@@ -27,6 +27,7 @@ import { ShareNetworkIcon as ShareNetwork } from "@phosphor-icons/react/dist/csr
 import MarketHead from "../../components/prediction/MarketHead";
 import MarketChart from "../../components/prediction/MarketChart";
 import MarketDiscussion from "../../components/prediction/MarketDiscussion";
+import { Button } from "../../components/ui";
 import OrderBook from "../../components/prediction/OrderBook";
 import type { BookLevel } from "../../components/prediction/OrderBook";
 import RecentTrades from "../../components/prediction/RecentTrades";
@@ -218,8 +219,6 @@ const MARKET_RULE_CLASS =
   "relative pl-[18px] text-[13px] leading-[1.5] text-[var(--t2)] before:absolute before:left-1 before:top-2 before:h-1.5 before:w-1.5 before:rounded-full before:bg-[var(--accent)] before:content-['']";
 const MARKET_SHARE_ROW_CLASS =
   "mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border-1)] pt-4";
-const MARKET_SHARE_BUTTON_CLASS =
-  "inline-flex min-h-10 items-center justify-center gap-2 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-4 text-xs font-bold text-[var(--t1)] transition-colors hover:border-[var(--accent-lo)] hover:text-[var(--accent-text)]";
 const MARKET_SHARE_STATUS_CLASS = "text-xs text-[var(--t3)]";
 const RELATED_CARD_CLASS =
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5";
@@ -1357,14 +1356,10 @@ export default function MarketDetailPage() {
             </li>
           </ul>
           <div className={MARKET_SHARE_ROW_CLASS}>
-            <button
-              type="button"
-              className={MARKET_SHARE_BUTTON_CLASS}
-              onClick={handleShareMarket}
-            >
+            <Button className="gap-2" onClick={handleShareMarket}>
               <ShareNetwork size={16} aria-hidden="true" />
               {t("SHARE_MARKET", "Share market")}
-            </button>
+            </Button>
             {shareMessage && (
               <span className={MARKET_SHARE_STATUS_CLASS}>{shareMessage}</span>
             )}

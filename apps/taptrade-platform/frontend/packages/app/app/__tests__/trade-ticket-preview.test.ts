@@ -165,7 +165,7 @@ describe("TradeTicket order-book preview UX", () => {
     );
     assert.match(
       source,
-      /marketBuyHasNoLiquidity\s*\?\s*\([\s\S]*?<button\s+type="button"\s+className=\{TICKET_CTA_CLASS\}\s+disabled>/,
+      /marketBuyHasNoLiquidity\s*\?\s*\([\s\S]*?<Button[^>]*variant="cta"[^>]*\bdisabled\b[^>]*>/,
       "the no-liquidity state should render a disabled CTA instead of a live submit button",
     );
   });

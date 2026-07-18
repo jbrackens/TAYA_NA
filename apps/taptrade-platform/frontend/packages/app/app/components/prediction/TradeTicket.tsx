@@ -40,6 +40,7 @@ import type {
   TimeInForce,
 } from "@taptrade-ui/api-client/src/prediction-types";
 import { useToast } from "../ToastProvider";
+import { Button, Card } from "../ui";
 import { complianceDenialKind } from "../../lib/compliance-denial";
 import { storeReturnSuffix } from "../../lib/storeReturnPath";
 
@@ -99,8 +100,6 @@ interface TradeTicketProps {
 
 type TicketMode = "market" | "limit";
 
-const TICKET_CARD_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5";
 const TICKET_HEAD_CLASS = "mb-3 flex items-center justify-between";
 const TICKET_TITLE_CLASS =
   "text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
@@ -127,8 +126,6 @@ const TICKET_ROW_SUB_CLASS =
   "font-mono mt-0.5 text-right text-[11px] font-normal text-[var(--t4)]";
 const TICKET_INPUT_CLASS =
   "font-mono w-[128px] rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-2 text-right text-[14px] font-semibold text-[var(--t1)] outline-none transition-colors duration-[120ms] [font-variant-numeric:tabular-nums] focus:border-[var(--accent-lo)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
-const TICKET_CTA_CLASS =
-  "mt-4 flex w-full cursor-pointer items-center justify-center rounded-md border-0 bg-[var(--accent)] px-4 py-[14px] [font-family:inherit] text-[15px] font-semibold text-[var(--ticket-cta-text)] no-underline transition-[filter,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:brightness-[1.05] disabled:cursor-not-allowed disabled:opacity-[0.45] disabled:filter-none disabled:transform-none";
 const TICKET_NOTE_CLASS =
   "mt-2.5 text-center text-xs leading-[1.45] text-[var(--t2)]";
 const TICKET_TRUST_CLASS =
@@ -240,8 +237,8 @@ export function TradeTicket({
   const toast = useToast();
   const ticketCardClass =
     variant === "terminal"
-      ? `${TICKET_CARD_CLASS} !rounded-none !border-0 !bg-transparent !p-0`
-      : TICKET_CARD_CLASS;
+      ? "!rounded-none !border-0 !bg-transparent !p-0"
+      : undefined;
   const ticketStyle = {
     "--ticket-cta-text": variant === "terminal" ? "#ffffff" : "#061a10",
     ...(variant === "terminal" ? { fontFamily: "var(--font-terminal)" } : {}),
@@ -531,7 +528,9 @@ export function TradeTicket({
   };
 
   return (
-    <section
+    <Card
+      as="section"
+      padding="md"
       className={ticketCardClass}
       aria-label={t("TRADE_TICKET")}
       style={ticketStyle}
@@ -756,23 +755,28 @@ export function TradeTicket({
           </div>
 
           {authLoading ? (
-            <button type="button" className={TICKET_CTA_CLASS} disabled>
+            <Button variant="cta" size="none" className="mt-4" disabled>
               {t("CHECKING_SESSION")}
-            </button>
+            </Button>
           ) : !isAuthenticated ? (
             <>
-              <Link href={loginHref} className={TICKET_CTA_CLASS}>
+              <Button
+                variant="cta"
+                size="none"
+                className="mt-4"
+                render={<Link href={loginHref} />}
+              >
                 {t("LOG_IN_TO_TRADE")}
-              </Link>
+              </Button>
               <p className={TICKET_NOTE_CLASS}>
                 {t("SIGN_IN_TO_PLACE_ORDER", { side: side.toUpperCase() })}
               </p>
             </>
           ) : insufficientFunds ? (
             <>
-              <button type="button" className={TICKET_CTA_CLASS} disabled>
+              <Button variant="cta" size="none" className="mt-4" disabled>
                 {t("NOT_ENOUGH_POINTS")}
-              </button>
+              </Button>
               <p className={TICKET_NOTE_CLASS} role="alert">
                 {t("BALANCE_BELOW_ORDER", {
                   amount: formatPointAmount(amount),
@@ -790,9 +794,9 @@ export function TradeTicket({
             </>
           ) : marketBuyHasNoLiquidity ? (
             <>
-              <button type="button" className={TICKET_CTA_CLASS} disabled>
+              <Button variant="cta" size="none" className="mt-4" disabled>
                 {t("ORDER_STATUS", { status: t("CANCELLED_NO_LIQUIDITY") })}
-              </button>
+              </Button>
               <p className={TICKET_NOTE_CLASS} role="alert">
                 {t("ORDER_STATUS_BODY", {
                   quantity: requestedQuantity,
@@ -804,9 +808,9 @@ export function TradeTicket({
             </>
           ) : isAmmQuoteOnly ? (
             <>
-              <button type="button" className={TICKET_CTA_CLASS} disabled>
+              <Button variant="cta" size="none" className="mt-4" disabled>
                 {t("AMM_QUOTE_ONLY", "Quote only")}
-              </button>
+              </Button>
               <p className={TICKET_NOTE_CLASS} role="status">
                 {t(
                   "AMM_QUOTE_ONLY_DETAIL",
@@ -816,9 +820,9 @@ export function TradeTicket({
             </>
           ) : insufficientShares ? (
             <>
-              <button type="button" className={TICKET_CTA_CLASS} disabled>
+              <Button variant="cta" size="none" className="mt-4" disabled>
                 {t("NOT_ENOUGH_SHARES")}
-              </button>
+              </Button>
               <p className={TICKET_NOTE_CLASS} role="alert">
                 {t("NOT_ENOUGH_SHARES_DETAIL", {
                   available: availableShares,
@@ -828,10 +832,11 @@ export function TradeTicket({
               </p>
             </>
           ) : (
-            <button
-              type="button"
+            <Button
+              variant="cta"
+              size="none"
+              className="mt-4"
               onClick={handleSubmit}
-              className={TICKET_CTA_CLASS}
               disabled={submitting || quantity < 1}
             >
               {/*
@@ -847,7 +852,7 @@ export function TradeTicket({
                 : t(action === "sell" ? "SELL_AMOUNT" : "PLACE_TRADE_AMOUNT", {
                     amount: formatPointAmount(amount),
                   })}
-            </button>
+            </Button>
           )}
 
           <p className={TICKET_TRUST_CLASS}>
@@ -881,6 +886,6 @@ export function TradeTicket({
             ))}
         </>
       )}
-    </section>
+    </Card>
   );
 }
