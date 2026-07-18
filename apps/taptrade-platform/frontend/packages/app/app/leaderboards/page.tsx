@@ -256,7 +256,7 @@ export default function LeaderboardsPage() {
       </header>
 
       <div className={GRID_CLASS}>
-        <aside
+        <div
           className={SIDEBAR_CLASS}
           role="tablist"
           aria-label={t("boardsAria", "Boards")}
@@ -279,7 +279,7 @@ export default function LeaderboardsPage() {
               onSelect={selectBoard}
             />
           )}
-        </aside>
+        </div>
 
         <section className={DETAIL_CLASS} aria-labelledby="lb-detail-title">
           {selectedBoard ? (

@@ -1075,18 +1075,13 @@ function TierLadder({
 }) {
   const { t } = useTranslation("rewards");
   return (
-    <div
-      className={LADDER_CLASS}
-      role="list"
-      aria-label={t("ladder.aria", "Tier ladder")}
-    >
+    <ul className={LADDER_CLASS} aria-label={t("ladder.aria", "Tier ladder")}>
       {tiers.map((t) => {
         const isCurrent = t.rank === current;
         const isPast = t.rank < current;
         return (
-          <div
+          <li
             key={t.rank}
-            role="listitem"
             className={`${LADDER_STEP_BASE_CLASS} ${tierColorClass(
               t.rank,
               "ladder",
@@ -1103,10 +1098,10 @@ function TierLadder({
             <span className={LADDER_THRESHOLD_CLASS}>
               {formatPointsAmount(t.minXpPoints)}
             </span>
-          </div>
+          </li>
         );
       })}
-    </div>
+    </ul>
   );
 }
 

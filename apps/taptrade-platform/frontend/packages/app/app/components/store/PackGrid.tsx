@@ -49,6 +49,7 @@ export interface PackGridProps {
 export function PackGrid({ packs, selectedPackId, onSelect }: PackGridProps) {
   const { t } = useTranslation("store");
   return (
+    // biome-ignore lint/a11y/useSemanticElements: labeled control group; fieldset/legend swap is queued for the P2 primitives pass (fieldset layout quirks)
     <div
       className={GRID_CLASS}
       role="group"

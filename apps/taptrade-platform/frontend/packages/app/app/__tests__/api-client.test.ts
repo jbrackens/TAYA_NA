@@ -43,7 +43,9 @@ class ApiClient {
   buildUrl(path: string, params?: Record<string, string>): string {
     const url = new URL(`${this.baseUrl}${path}`);
     if (params)
-      Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+      Object.entries(params).forEach(([k, v]) => {
+        url.searchParams.set(k, v);
+      });
     return url.toString();
   }
 

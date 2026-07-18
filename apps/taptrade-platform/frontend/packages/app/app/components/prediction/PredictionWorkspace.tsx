@@ -408,7 +408,6 @@ function FeaturedSignalCarousel({
 
   return (
     <section
-      role="region"
       aria-roledescription="carousel"
       aria-labelledby="featured-markets-heading"
       onKeyDown={(event) => {
@@ -430,6 +429,7 @@ function FeaturedSignalCarousel({
         </h1>
 
         {count > 1 && (
+          // biome-ignore lint/a11y/useSemanticElements: labeled control group; fieldset/legend swap is queued for the P2 primitives pass (fieldset layout quirks)
           <div
             role="group"
             className="flex shrink-0 items-center gap-2"
@@ -461,6 +461,7 @@ function FeaturedSignalCarousel({
         )}
       </header>
 
+      {/* biome-ignore lint/a11y/useSemanticElements: APG carousel pattern: role=group + aria-roledescription is the correct markup; fieldset would be wrong here */}
       <div
         ref={stageRef}
         key={activeMarket.id}

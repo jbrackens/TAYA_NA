@@ -414,7 +414,7 @@ export function AllMarketsSection({ categories }: Props) {
   return (
     <>
       <header className={FILTER_HEAD_CLASS}>
-        <nav
+        <div
           className={CATEGORY_LIST_CLASS}
           role="tablist"
           aria-label={t("FILTER_BY_CATEGORY")}
@@ -449,7 +449,7 @@ export function AllMarketsSection({ categories }: Props) {
               </button>
             );
           })}
-        </nav>
+        </div>
         <div className={DISCOVERY_CONTROLS_CLASS}>
           <input
             type="search"
@@ -546,7 +546,7 @@ export function AllMarketsSection({ categories }: Props) {
               </div>
               <aside className={SUBNAV_CLASS} aria-label={activeCategoryLabel}>
                 <div className={SUBNAV_LABEL_CLASS}>{activeCategoryLabel}</div>
-                <nav className={SUBNAV_LIST_CLASS} role="tablist">
+                <div className={SUBNAV_LIST_CLASS} role="tablist">
                   <button
                     type="button"
                     role="tab"
@@ -568,7 +568,7 @@ export function AllMarketsSection({ categories }: Props) {
                       {item}
                     </button>
                   ))}
-                </nav>
+                </div>
               </aside>
             </div>
           ) : visibleMarkets.length > 0 ? (

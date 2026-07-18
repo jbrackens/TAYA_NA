@@ -163,6 +163,7 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
 
       <h1 className={MARKET_HEAD_TITLE_CLASS}>{displayMarket.title}</h1>
 
+      {/* biome-ignore lint/a11y/useSemanticElements: labeled control group; fieldset/legend swap is queued for the P2 primitives pass */}
       <div
         role="group"
         className={MARKET_HEAD_SIDES_CLASS}

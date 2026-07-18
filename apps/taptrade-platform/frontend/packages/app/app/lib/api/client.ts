@@ -183,7 +183,9 @@ class ApiClient {
         : process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080");
     const url = new URL(`${origin}${normalizedPath}`);
     if (params)
-      Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+      Object.entries(params).forEach(([k, v]) => {
+        url.searchParams.set(k, v);
+      });
     const res = await this.fetchWithRetry(url.toString(), {
       method: "GET",
       headers: this.getHeaders(),

@@ -209,6 +209,7 @@ export default function PointsLedgerPage() {
         >
           Date range
         </span>
+        {/* biome-ignore lint/a11y/useSemanticElements: labeled control group; fieldset/legend swap is queued for the P2 primitives pass (fieldset layout quirks) */}
         <div
           className="flex flex-wrap gap-2"
           role="group"

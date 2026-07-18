@@ -231,6 +231,7 @@ function SelfExcludePageContent() {
               <span id="exclusion-duration-label" className={labelClass}>
                 Exclusion Duration
               </span>
+              {/* biome-ignore lint/a11y/useSemanticElements: labeled control group; fieldset/legend swap is queued for the P2 primitives pass (fieldset layout quirks) */}
               <div
                 className="flex flex-row gap-2.5"
                 role="group"

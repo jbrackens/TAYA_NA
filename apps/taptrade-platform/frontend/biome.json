@@ -14,9 +14,11 @@
       "packages/utils/src/**",
       "!**/node_modules/**",
       "!**/.next/**",
+      "!**/.next-visual/**",
       "!**/dist/**",
       "!**/generated/**",
-      "!**/locales/**"
+      "!**/locales/**",
+      "!**/*.css"
     ]
   },
   "formatter": {

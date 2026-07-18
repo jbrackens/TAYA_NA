@@ -276,6 +276,7 @@ export default function LiveMarketsPage() {
                     </span>
                   </div>
                 </div>
+                {/* biome-ignore lint/a11y/useSemanticElements: labeled control group; fieldset/legend swap is queued for the P2 primitives pass (fieldset layout quirks) */}
                 <div
                   role="group"
                   className={SIDE_PANEL_CLASS}

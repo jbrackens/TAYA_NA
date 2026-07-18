@@ -123,11 +123,17 @@ export default function PortfolioPage() {
       // Hydrate distinct market IDs so the tables can render titles.
       const ids = new Set<string>();
       if (posRes.status === "fulfilled")
-        posRes.value.forEach((p) => ids.add(p.marketId));
+        posRes.value.forEach((p) => {
+          ids.add(p.marketId);
+        });
       if (ordRes.status === "fulfilled")
-        ordRes.value.data.forEach((o) => ids.add(o.marketId));
+        ordRes.value.data.forEach((o) => {
+          ids.add(o.marketId);
+        });
       if (histRes.status === "fulfilled")
-        histRes.value.data.forEach((h) => ids.add(h.marketId));
+        histRes.value.data.forEach((h) => {
+          ids.add(h.marketId);
+        });
 
       if (ids.size > 0) {
         // Batched hydration: one GET /markets?ids= per 50 distinct ids (the
@@ -455,7 +461,7 @@ function TabBar({
     },
   ];
   return (
-    <nav
+    <div
       className="mb-[18px] inline-flex gap-1 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-white/[0.04] p-[3px]"
       role="tablist"
       aria-label="Portfolio tabs"
@@ -486,7 +492,7 @@ function TabBar({
           )}
         </button>
       ))}
-    </nav>
+    </div>
   );
 }
 
@@ -892,11 +898,13 @@ function DataTable({
   gridClass: string;
 }) {
   return (
+    // biome-ignore lint/a11y/useSemanticElements: ARIA table roles on a CSS-grid layout; real <table> conversion is queued for the P2 primitives pass
     <div
       className="relative overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]"
       role="table"
     >
       {/* biome-ignore lint/a11y/useFocusableInteractive: static presentation table — rows/headers are not widgets; real <table> conversion is queued for the P2 primitives pass */}
+      {/* biome-ignore lint/a11y/useSemanticElements: ARIA table roles on a CSS-grid layout; real <table> conversion is queued for the P2 primitives pass */}
       <div
         className={cx(
           TABLE_GRID_ROW,
@@ -907,6 +915,7 @@ function DataTable({
       >
         {columns.map((c) => (
           // biome-ignore lint/a11y/useFocusableInteractive: static header cell, not a sortable widget
+          // biome-ignore lint/a11y/useSemanticElements: ARIA table roles on a CSS-grid layout; real <table> conversion is queued for the P2 primitives pass
           <span
             key={c.label}
             role="columnheader"
@@ -919,9 +928,11 @@ function DataTable({
           </span>
         ))}
       </div>
+      {/* biome-ignore lint/a11y/useSemanticElements: ARIA table roles on a CSS-grid layout; real <table> conversion is queued for the P2 primitives pass */}
       <ul className="m-0 list-none p-0" role="rowgroup">
         {rows.map((r) => {
           const body = columns.map((c, i) => (
+            // biome-ignore lint/a11y/useSemanticElements: ARIA table roles on a CSS-grid layout; real <table> conversion is queued for the P2 primitives pass
             <span
               key={i}
               role="cell"
@@ -932,8 +943,10 @@ function DataTable({
           ));
           return (
             // biome-ignore lint/a11y/useFocusableInteractive: static presentation row — the interactive element is the Link inside
+            // biome-ignore lint/a11y/useSemanticElements: ARIA table roles on a CSS-grid layout; real <table> conversion is queued for the P2 primitives pass
             <li
               key={r.key}
+              // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: same deferral — li carries role=row until the real <table> lands in P2
               role="row"
               className="border-t border-[var(--border-1)] first:border-t-0"
             >

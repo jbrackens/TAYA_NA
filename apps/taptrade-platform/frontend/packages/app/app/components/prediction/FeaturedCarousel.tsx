@@ -165,7 +165,6 @@ export function FeaturedCarousel({
   return (
     <section
       className={CAROUSEL_CLASS}
-      role="region"
       aria-roledescription="carousel"
       aria-label={t("FEATURED_MARKETS")}
       onMouseEnter={() => setPaused(true)}
@@ -186,6 +185,7 @@ export function FeaturedCarousel({
       <div className={CAROUSEL_VIEWPORT_CLASS}>
         {/* Only the active slide is mounted (one chart + one price-history
          * fetch at a time); the key restarts the enter animation per change. */}
+        {/* biome-ignore lint/a11y/useSemanticElements: APG carousel pattern: role=group + aria-roledescription is the correct markup; fieldset would be wrong here */}
         <div
           role="group"
           ref={stageRef}

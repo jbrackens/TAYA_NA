@@ -145,6 +145,7 @@ export default function SocialAuthButtons({
 
   const stacked = variant === "stacked";
   return (
+    // biome-ignore lint/a11y/useSemanticElements: labeled control group; fieldset/legend swap is queued for the P2 primitives pass (fieldset layout quirks)
     <div
       className={stacked ? STACK_CLASS : GRID_CLASS}
       role="group"

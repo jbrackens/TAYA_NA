@@ -460,6 +460,7 @@ export function TopBar() {
             {searchOpen && query.trim() !== "" && (
               <ul
                 id="tb-search-listbox"
+                // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: APG combobox pattern — ul IS the canonical listbox element
                 role="listbox"
                 className={TOP_BAR_SEARCH_RESULTS_CLASS}
               >
@@ -474,6 +475,7 @@ export function TopBar() {
                       <li
                         key={m.id}
                         id={`tb-search-option-${m.id}`}
+                        // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: APG combobox pattern — li options under aria-activedescendant management
                         role="option"
                         // Managed-focus listbox: focus stays on the input,
                         // options are reachable via aria-activedescendant.
