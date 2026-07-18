@@ -100,7 +100,7 @@ interface TradeTicketProps {
 type TicketMode = "market" | "limit";
 
 const TICKET_CARD_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5";
 const TICKET_HEAD_CLASS = "mb-3 flex items-center justify-between";
 const TICKET_TITLE_CLASS =
   "text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
@@ -122,12 +122,11 @@ const TICKET_ROWS_CLASS =
   "flex flex-col gap-3 text-[13px] [font-variant-numeric:tabular-nums]";
 const TICKET_ROW_CLASS = "flex items-center justify-between gap-3";
 const TICKET_ROW_LABEL_CLASS = "text-[var(--t3)] font-medium";
-const TICKET_ROW_VALUE_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] font-semibold text-[var(--t1)]";
+const TICKET_ROW_VALUE_CLASS = "font-mono font-semibold text-[var(--t1)]";
 const TICKET_ROW_SUB_CLASS =
-  "mt-0.5 text-right font-['IBM_Plex_Mono',_monospace] text-[11px] font-normal text-[var(--t4)]";
+  "font-mono mt-0.5 text-right text-[11px] font-normal text-[var(--t4)]";
 const TICKET_INPUT_CLASS =
-  "w-[128px] rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-2 text-right font-['IBM_Plex_Mono',_monospace] text-[14px] font-semibold text-[var(--t1)] outline-none transition-colors duration-[120ms] [font-variant-numeric:tabular-nums] focus:border-[var(--accent-lo)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+  "font-mono w-[128px] rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-2 text-right text-[14px] font-semibold text-[var(--t1)] outline-none transition-colors duration-[120ms] [font-variant-numeric:tabular-nums] focus:border-[var(--accent-lo)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
 const TICKET_CTA_CLASS =
   "mt-4 flex w-full cursor-pointer items-center justify-center rounded-md border-0 bg-[var(--accent)] px-4 py-[14px] [font-family:inherit] text-[15px] font-semibold text-[var(--ticket-cta-text)] no-underline transition-[filter,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:brightness-[1.05] disabled:cursor-not-allowed disabled:opacity-[0.45] disabled:filter-none disabled:transform-none";
 const TICKET_NOTE_CLASS =

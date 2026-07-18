@@ -61,30 +61,30 @@ function formatCloseDate(iso: string): string {
   return `${month} ${day}, ${hours}:${mins} UTC`;
 }
 
-const MARKET_HEAD_CLASS =
-  "font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+const MARKET_HEAD_CLASS = "flex h-full flex-col";
 const MARKET_HEAD_EYEBROW_CLASS =
-  "mb-3 flex flex-wrap items-center gap-2.5 text-xs font-medium text-[var(--t3)]";
+  "mb-4 flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
 const MARKET_HEAD_LIVE_CLASS =
-  "inline-flex items-center gap-1.5 font-semibold uppercase tracking-[0.08em] text-[var(--yes-text)]";
+  "inline-flex items-center gap-1.5 text-[var(--yes-text)]";
 const MARKET_HEAD_LIVE_DOT_CLASS =
-  "h-[7px] w-[7px] animate-pulse rounded-full bg-[var(--accent)] shadow-[0_0_0_4px_rgba(43,228,128,0.18)] motion-reduce:animate-none";
+  "h-[7px] w-[7px] rounded-full bg-[var(--yes)]";
 const MARKET_HEAD_SETTLED_CLASS =
-  "inline-flex items-center gap-1.5 font-['IBM_Plex_Mono',_monospace] text-[11px] font-bold tracking-[0.1em] text-[var(--t2)]";
+  "font-mono inline-flex items-center gap-1.5 text-[10px] font-bold tracking-[0.1em] text-[var(--t2)]";
 const MARKET_HEAD_COUNTDOWN_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+  "font-mono text-[10px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
 const MARKET_HEAD_TITLE_CLASS =
-  "m-0 mb-5 text-[28px] font-semibold leading-[1.22] tracking-[-0.02em] text-[var(--t1)] max-[720px]:text-[22px]";
+  "type-display m-0 mb-8 text-[34px] font-semibold leading-[1.08] tracking-[-0.035em] text-[var(--t1)] max-[720px]:mb-6 max-[720px]:text-[27px]";
 const MARKET_HEAD_SIDES_CLASS =
-  "grid grid-cols-[1fr_auto_1fr] items-center gap-4";
-const MARKET_HEAD_SIDE_CLASS = "flex items-center gap-2.5 min-w-0";
+  "mt-auto grid grid-cols-2 gap-3 border-t border-[var(--border-1)] pt-5";
+const MARKET_HEAD_SIDE_CLASS =
+  "min-w-0 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-3";
 const MARKET_HEAD_SIDE_DOT_CLASS = "h-2.5 w-2.5 shrink-0 rounded-full";
 const MARKET_HEAD_SIDE_NAME_CLASS =
-  "text-sm font-semibold text-[var(--t1)] leading-tight";
+  "text-xs font-semibold text-[var(--t1)] leading-tight";
 const MARKET_HEAD_SIDE_SUB_CLASS =
-  "whitespace-nowrap font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)] leading-tight [font-variant-numeric:tabular-nums]";
-const MARKET_HEAD_PRICES_CLASS =
-  "font-['Inter_Tight',_'Inter',_sans-serif] text-[40px] font-semibold leading-none tracking-[-0.03em] text-[var(--t1)] [font-variant-numeric:tabular-nums] max-[720px]:text-[30px]";
+  "font-mono whitespace-nowrap text-[10px] text-[var(--t3)] leading-tight [font-variant-numeric:tabular-nums]";
+const MARKET_HEAD_PRICE_CLASS =
+  "font-mono mt-3 text-[30px] font-semibold leading-none tracking-[-0.045em] [font-variant-numeric:tabular-nums] max-[720px]:text-[27px]";
 
 export default function MarketHead({ market, categoryName }: MarketHeadProps) {
   const { t } = useTranslation("prediction");
@@ -136,9 +136,7 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
         {displayCategory && (
           <>
             <span aria-hidden="true">·</span>
-            <span className="uppercase tracking-[0.06em]">
-              {displayCategory}
-            </span>
+            <span className="text-[var(--accent-text)]">{displayCategory}</span>
           </>
         )}
         {/* For settled markets the settled badge above already carries the
@@ -165,45 +163,43 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
 
       <h1 className={MARKET_HEAD_TITLE_CLASS}>{displayMarket.title}</h1>
 
-      <div className={MARKET_HEAD_SIDES_CLASS}>
+      <div
+        className={MARKET_HEAD_SIDES_CLASS}
+        aria-label={t("YES_NO_PRICES", {
+          yes,
+          no,
+          defaultValue: `Yes ${yes} cents, No ${no} cents`,
+        })}
+      >
         <div className={MARKET_HEAD_SIDE_CLASS}>
-          <span
-            className={`${MARKET_HEAD_SIDE_DOT_CLASS} bg-[var(--yes)]`}
-            aria-hidden="true"
-          />
-          <span className="min-w-0">
-            <span className={`${MARKET_HEAD_SIDE_NAME_CLASS} block`}>
-              {t("YES")}
-            </span>
-            <span className={`${MARKET_HEAD_SIDE_SUB_CLASS} block`}>
-              {yes}% {t("PROB")}
-            </span>
+          <div className="flex min-w-0 items-center gap-2">
+            <span
+              className={`${MARKET_HEAD_SIDE_DOT_CLASS} bg-[var(--yes)]`}
+              aria-hidden="true"
+            />
+            <span className={MARKET_HEAD_SIDE_NAME_CLASS}>{t("YES")}</span>
+          </div>
+          <div className={`${MARKET_HEAD_PRICE_CLASS} text-[var(--yes-text)]`}>
+            {yes}¢
+          </div>
+          <span className={`${MARKET_HEAD_SIDE_SUB_CLASS} mt-1 block`}>
+            {yes}% {t("PROB")}
           </span>
         </div>
-        <div
-          className={MARKET_HEAD_PRICES_CLASS}
-          aria-label={t("YES_NO_PRICES", {
-            yes,
-            no,
-            defaultValue: `Yes ${yes} cents, No ${no} cents`,
-          })}
-        >
-          {yes}¢<span className="mx-2.5 text-[var(--t4)]">—</span>
-          {no}¢
-        </div>
-        <div className={`${MARKET_HEAD_SIDE_CLASS} justify-end text-right`}>
-          <span className="min-w-0">
-            <span className={`${MARKET_HEAD_SIDE_NAME_CLASS} block`}>
-              {t("NO")}
-            </span>
-            <span className={`${MARKET_HEAD_SIDE_SUB_CLASS} block`}>
-              {no}% {t("PROB")}
-            </span>
+        <div className={`${MARKET_HEAD_SIDE_CLASS} text-right`}>
+          <div className="flex min-w-0 items-center justify-end gap-2">
+            <span className={MARKET_HEAD_SIDE_NAME_CLASS}>{t("NO")}</span>
+            <span
+              className={`${MARKET_HEAD_SIDE_DOT_CLASS} bg-[var(--no)]`}
+              aria-hidden="true"
+            />
+          </div>
+          <div className={`${MARKET_HEAD_PRICE_CLASS} text-[var(--no-text)]`}>
+            {no}¢
+          </div>
+          <span className={`${MARKET_HEAD_SIDE_SUB_CLASS} mt-1 block`}>
+            {no}% {t("PROB")}
           </span>
-          <span
-            className={`${MARKET_HEAD_SIDE_DOT_CLASS} bg-[var(--no)]`}
-            aria-hidden="true"
-          />
         </div>
       </div>
     </section>

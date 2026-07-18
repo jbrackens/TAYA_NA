@@ -34,6 +34,19 @@ test.describe("/market/[ticker] — market detail", () => {
 
     await assertPageHealthy(page, `/market/${firstTicker}`);
 
+    // Market details are part of the same dark trading workspace as the
+    // market directory, not the legacy padded shell.
+    await expect(page.locator(".predict-terminal")).toHaveCount(1);
+    await expect(
+      page.locator('section[aria-label="Trade ticket"]'),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth + 1,
+      ),
+      "market detail should not overflow horizontally",
+    ).toBe(true);
+
     // Market question renders — the market head card prints the question
     // as the largest text on the page.
     await expect(page.locator("h1").first()).toBeVisible({ timeout: 10_000 });

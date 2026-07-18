@@ -22,12 +22,15 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { ArrowLeftIcon as ArrowLeft } from "@phosphor-icons/react/dist/csr/ArrowLeft";
+import { ShareNetworkIcon as ShareNetwork } from "@phosphor-icons/react/dist/csr/ShareNetwork";
 import MarketHead from "../../components/prediction/MarketHead";
 import MarketChart from "../../components/prediction/MarketChart";
 import MarketDiscussion from "../../components/prediction/MarketDiscussion";
 import OrderBook from "../../components/prediction/OrderBook";
 import type { BookLevel } from "../../components/prediction/OrderBook";
 import RecentTrades from "../../components/prediction/RecentTrades";
+import { TerminalCategoryRail } from "../../components/prediction/TerminalCategoryRail";
 import {
   TradeTicket,
   type TradeTicketSubmitOptions,
@@ -105,75 +108,106 @@ function normalizeMarketUpdateFields(
   };
 }
 
-const GLASS_SURFACE_CLASS =
-  "relative border border-white/[0.13] bg-[color:var(--glass-regular)] bg-[image:linear-gradient(180deg,_rgba(255,255,255,0.14)_0%,_rgba(255,255,255,0.05)_30%,_rgba(255,255,255,0.025)_100%)] shadow-[inset_0_1px_0_var(--rim-top),inset_0_-1px_0_var(--rim-bottom),inset_1px_0_2px_var(--chroma-1),inset_-1px_0_2px_var(--chroma-2),0_2px_6px_rgba(0,0,0,0.18),0_8px_24px_rgba(0,0,0,0.28),0_16px_48px_rgba(0,0,0,0.2)] backdrop-blur-[30px] backdrop-saturate-[180%] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-1/2 before:rounded-[inherit] before:bg-[image:linear-gradient(180deg,_rgba(255,255,255,0.06)_0%,_transparent_100%)] before:mix-blend-overlay before:content-['']";
-const MARKET_WRAP_CLASS = "text-[var(--t1)]";
+const MARKET_WRAP_CLASS =
+  "grid min-h-[calc(100vh-74px)] grid-cols-[200px_minmax(0,1fr)_380px] grid-rows-[auto_1fr] bg-[var(--bg-deep)] text-[var(--t1)] max-[1279px]:grid-cols-[72px_minmax(0,1fr)_340px] max-[1023px]:flex max-[1023px]:min-h-0 max-[1023px]:flex-col";
+const MARKET_RAIL_CLASS =
+  "col-start-1 row-start-1 row-span-2 min-w-0 max-[1023px]:hidden";
+const MARKET_HERO_AREA_CLASS =
+  "col-start-2 row-start-1 min-w-0 px-8 pb-0 pt-7 max-[1279px]:px-6 max-[1023px]:order-1 max-[1023px]:px-4 max-[1023px]:pt-5";
+const MARKET_CONTENT_CLASS =
+  "col-start-2 row-start-2 flex min-w-0 flex-col gap-5 px-8 pb-10 pt-5 max-[1279px]:px-6 max-[1023px]:order-3 max-[1023px]:px-4 max-[1023px]:pb-8";
 const MARKET_CRUMB_CLASS =
-  "mb-[18px] flex flex-wrap items-center gap-2 text-[13px] text-[var(--t3)]";
+  "mb-4 flex min-h-9 flex-wrap items-center gap-2 text-[12px] text-[var(--t3)]";
 const MARKET_CRUMB_LINK_CLASS =
-  "text-[var(--t2)] no-underline hover:text-[var(--t1)]";
-const MARKET_CRUMB_SEP_CLASS = "opacity-50";
-const MARKET_GRID_CLASS =
-  "grid grid-cols-[minmax(0,_1fr)_360px] gap-6 max-[1100px]:grid-cols-1";
-const MARKET_MAIN_CLASS = "flex min-w-0 flex-col gap-6 max-[1100px]:contents";
-const MARKET_SIDE_CLASS = "flex min-w-0 flex-col gap-6 max-[1100px]:contents";
+  "inline-flex min-h-9 items-center gap-2 rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 font-semibold text-[var(--t2)] no-underline transition-colors hover:border-[var(--border-2)] hover:text-[var(--t1)]";
+const MARKET_CRUMB_SEP_CLASS = "text-[var(--t4)]";
+const MARKET_SIDE_CLASS =
+  "col-start-3 row-start-1 row-span-2 min-w-0 scroll-mt-16 border-l border-[var(--border-1)] bg-[var(--surface-1)] max-[1023px]:order-2 max-[1023px]:mx-4 max-[1023px]:mt-5 max-[1023px]:rounded-[var(--r-rh-lg)] max-[1023px]:border";
 const MARKET_TICKET_STICKY_CLASS =
-  "sticky top-[84px] max-[1100px]:static max-[1100px]:top-auto max-[1100px]:order-2";
+  "terminal-scrollbar sticky top-[74px] max-h-[calc(100vh-74px)] overflow-y-auto px-5 py-6 max-[1023px]:static max-[1023px]:max-h-none max-[1023px]:overflow-visible";
+const MARKET_TICKET_CONTEXT_CLASS =
+  "mb-5 border-b border-[var(--border-1)] pb-5";
+const MARKET_TICKET_EYEBROW_CLASS =
+  "mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--accent-text)]";
+const MARKET_TICKET_TITLE_CLASS =
+  "type-display m-0 text-[20px] font-semibold leading-[1.22] text-[var(--t1)]";
+const MARKET_TICKET_QUOTE_CLASS = "mt-5 flex items-end justify-between gap-4";
+const MARKET_TICKET_QUOTE_LABEL_CLASS = "text-xs text-[var(--t3)]";
+const MARKET_TICKET_QUOTE_VALUE_CLASS =
+  "font-mono mt-1 text-[44px] font-semibold leading-none tracking-[-0.04em] text-[var(--accent-lo)]";
+const MARKET_TICKET_BAR_CLASS =
+  "mt-4 flex h-2 overflow-hidden rounded-full bg-[var(--surface-3)]";
+const MARKET_TICKET_SOURCE_CLASS =
+  "mb-5 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-4 text-[12px] leading-[1.5] text-[var(--t2)]";
+const MARKET_MOBILE_TRADE_LINK_CLASS =
+  "fixed inset-x-4 bottom-[76px] z-[80] hidden min-h-12 items-center justify-between rounded-[var(--r-rh-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-white no-underline shadow-[0_14px_36px_rgba(0,0,0,0.42)] max-[1023px]:flex min-[900px]:bottom-4";
 const MARKET_DATA_ROW_CLASS =
-  "grid grid-cols-2 gap-6 pt-4 max-[720px]:grid-cols-1";
+  "grid grid-cols-2 gap-4 pt-4 max-[720px]:grid-cols-1";
 const MARKET_DEPTH_DISCLOSURE_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[1100px]:order-3 max-[720px]:px-5";
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-6 py-5 max-[720px]:px-5";
 const MARKET_DEPTH_SUMMARY_CLASS =
-  "cursor-pointer list-none text-sm font-semibold text-[var(--t2)] transition-colors duration-[120ms] hover:text-[var(--t1)] [&::-webkit-details-marker]:hidden";
+  "cursor-pointer list-none text-sm font-semibold text-[var(--t1)] transition-colors duration-[120ms] hover:text-[var(--accent-text)] [&::-webkit-details-marker]:hidden";
 const LIQUIDITY_CARD_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-5";
 const LIQUIDITY_HEAD_CLASS =
   "mb-[14px] flex items-center justify-between border-b border-[var(--border-1)] pb-3";
 const LIQUIDITY_TITLE_CLASS =
   "text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
 const LIQUIDITY_BADGE_CLASS =
-  "rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-2 py-1 font-['IBM_Plex_Mono',_monospace] text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
+  "font-mono rounded-md border border-[var(--border-1)] bg-[var(--surface-3)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
 const LIQUIDITY_COPY_CLASS = "mb-4 text-[13px] leading-5 text-[var(--t2)]";
 const LIQUIDITY_GRID_CLASS = "grid grid-cols-2 gap-3";
 const LIQUIDITY_METRIC_CLASS =
   "rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2";
 const LIQUIDITY_METRIC_LABEL_CLASS =
-  "mb-1 font-['IBM_Plex_Mono',_monospace] text-[10px] uppercase tracking-[0.12em] text-[var(--t3)]";
+  "font-mono mb-1 text-[10px] uppercase tracking-[0.12em] text-[var(--t3)]";
 const LIQUIDITY_METRIC_VALUE_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] text-[13px] font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
+  "font-mono text-[13px] font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
 const AMM_CURVE_CLASS =
   "mt-4 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-3";
 const AMM_CURVE_ROW_CLASS = "mb-3 last:mb-0";
 const AMM_CURVE_HEAD_CLASS =
   "mb-2 flex items-center justify-between gap-3 text-[11px] text-[var(--t3)]";
 const AMM_CURVE_LABEL_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] text-[10px] uppercase text-[var(--t3)]";
+  "font-mono text-[10px] uppercase text-[var(--t3)]";
 const AMM_CURVE_VALUE_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] text-[11px] font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
+  "font-mono text-[11px] font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
 const AMM_CURVE_TRACK_CLASS =
   "relative flex h-3 overflow-hidden rounded-full border border-[var(--border-1)] bg-[var(--surface-3)]";
-const AMM_CURVE_YES_FILL_CLASS =
-  "h-full rounded-l-full bg-[color:var(--yes-bg)]";
-const AMM_CURVE_NO_FILL_CLASS = "h-full bg-[color:var(--no-bg)]";
+const AMM_CURVE_YES_FILL_CLASS = "h-full rounded-l-full bg-[color:var(--yes)]";
+const AMM_CURVE_NO_FILL_CLASS = "h-full bg-[color:var(--no)]";
 const AMM_CURVE_MARKER_CLASS =
   "absolute top-[-3px] h-[18px] w-0.5 rounded-full bg-[var(--t1)] shadow-[0_0_0_2px_var(--surface-2)]";
 const AMM_CURVE_AXIS_CLASS =
-  "mt-1 flex items-center justify-between font-['IBM_Plex_Mono',_monospace] text-[10px] text-[var(--t3)]";
+  "font-mono mt-1 flex items-center justify-between text-[10px] text-[var(--t3)]";
 const AMM_RESERVE_TRACK_CLASS =
   "flex h-3 overflow-hidden rounded-full border border-[var(--border-1)] bg-[var(--surface-3)]";
-const AMM_RESERVE_YES_CLASS = "h-full bg-[color:var(--yes-bg)]";
-const AMM_RESERVE_NO_CLASS = "h-full bg-[color:var(--no-bg)]";
+const AMM_RESERVE_YES_CLASS = "h-full bg-[color:var(--yes)]";
+const AMM_RESERVE_NO_CLASS = "h-full bg-[color:var(--no)]";
 const AMM_QUOTE_LIST_CLASS = "mt-2 flex flex-col gap-2";
 const AMM_QUOTE_ROW_CLASS =
   "grid grid-cols-[minmax(0,_1fr)_auto_auto] items-center gap-3 rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-2 max-[520px]:grid-cols-1 max-[520px]:gap-1";
 const AMM_QUOTE_LABEL_CLASS =
   "min-w-0 text-[12px] font-medium text-[var(--t1)]";
 const AMM_QUOTE_VALUE_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t2)] [font-variant-numeric:tabular-nums]";
+  "font-mono text-[11px] text-[var(--t2)] [font-variant-numeric:tabular-nums]";
 const MARKET_HERO_CLASS =
-  "overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] max-[1100px]:order-1 [&>section:first-child]:mb-0 [&>section:first-child]:rounded-none [&>section:first-child]:border-0 [&>section:first-child]:bg-transparent [&>section:first-child]:px-7 [&>section:first-child]:pt-5 [&>section:first-child]:pb-0 [&>section:nth-child(2)]:rounded-none [&>section:nth-child(2)]:border-0 [&>section:nth-child(2)]:bg-transparent [&>section:nth-child(2)]:px-7 [&>section:nth-child(2)]:pt-3 [&>section:nth-child(2)]:pb-5 [&>section:nth-child(2)_svg]:h-[280px] max-[720px]:[&>section:first-child]:px-5 max-[720px]:[&>section:first-child]:pt-[18px] max-[720px]:[&>section:nth-child(2)]:px-5 max-[720px]:[&>section:nth-child(2)]:pt-2.5 max-[720px]:[&>section:nth-child(2)]:pb-4 max-[720px]:[&>section:nth-child(2)_svg]:h-[220px]";
+  "overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)]";
+const MARKET_HERO_GRID_CLASS =
+  "grid grid-cols-[minmax(280px,0.82fr)_minmax(420px,1.25fr)] max-[1180px]:grid-cols-1";
+const MARKET_HEAD_PANEL_CLASS = "min-w-0 p-7 max-[720px]:p-5";
+const MARKET_CHART_PANEL_CLASS =
+  "min-w-0 border-l border-[var(--border-1)] p-7 max-[1180px]:border-l-0 max-[1180px]:border-t max-[720px]:p-5 [&_svg]:h-[268px] max-[720px]:[&_svg]:h-[220px]";
+const MARKET_STATS_CLASS =
+  "grid grid-cols-4 border-t border-[var(--border-1)] max-[640px]:grid-cols-2";
+const MARKET_STAT_CLASS =
+  "min-w-0 border-r border-[var(--border-1)] px-5 py-4 last:border-r-0 max-[640px]:border-b max-[640px]:[&:nth-child(2)]:border-r-0 max-[640px]:[&:nth-last-child(-n+2)]:border-b-0";
+const MARKET_STAT_LABEL_CLASS =
+  "mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
+const MARKET_STAT_VALUE_CLASS =
+  "font-mono truncate text-[13px] font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
 const MARKET_DETAILS_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-6 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[1100px]:order-4";
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-6 py-6 max-[720px]:px-5";
 const MARKET_DETAILS_TITLE_CLASS =
   "mb-3 text-base font-semibold tracking-[-0.01em] text-[var(--t1)]";
 const MARKET_DETAILS_COPY_CLASS =
@@ -185,23 +219,24 @@ const MARKET_RULE_CLASS =
 const MARKET_SHARE_ROW_CLASS =
   "mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border-1)] pt-4";
 const MARKET_SHARE_BUTTON_CLASS =
-  "inline-flex min-h-9 items-center justify-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 text-xs font-bold text-[var(--t1)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]";
+  "inline-flex min-h-10 items-center justify-center gap-2 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-4 text-xs font-bold text-[var(--t1)] transition-colors hover:border-[var(--accent-lo)] hover:text-[var(--accent-text)]";
 const MARKET_SHARE_STATUS_CLASS = "text-xs text-[var(--t3)]";
 const RELATED_CARD_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[1100px]:order-6";
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5";
 const RELATED_TITLE_CLASS =
   "mb-[14px] border-b border-[var(--border-1)] pb-3 text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
 const RELATED_EMPTY_CLASS = "text-xs text-[var(--t3)]";
-const RELATED_LIST_CLASS = "flex flex-col";
+const RELATED_LIST_CLASS = "grid grid-cols-2 gap-3 max-[640px]:grid-cols-1";
 const RELATED_ROW_CLASS =
-  "group block border-t border-[var(--border-1)] py-3 no-underline first:border-t-0 first:pt-0 last:pb-0";
+  "group block rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-4 no-underline transition-colors hover:border-[var(--border-2)] hover:bg-[var(--surface-3)]";
 const RELATED_QUESTION_CLASS =
-  "mb-1.5 text-[13px] font-medium leading-[1.35] text-[var(--t1)] group-hover:text-[var(--accent)]";
+  "mb-3 text-[13px] font-semibold leading-[1.4] text-[var(--t1)] group-hover:text-[var(--accent-text)]";
 const RELATED_LINE_CLASS =
-  "flex items-center justify-between font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+  "font-mono flex items-center justify-between text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
 const RELATED_YES_CLASS = "font-semibold text-[var(--yes-text)]";
 const PAGE_STATE_WRAP_CLASS = "grid min-h-[60vh] place-items-center px-4 py-8";
-const PAGE_STATE_CARD_CLASS = `${GLASS_SURFACE_CLASS} w-[min(100%,440px)] rounded-[var(--r-lg)] p-7 text-center text-[var(--t1)]`;
+const PAGE_STATE_CARD_CLASS =
+  "w-[min(100%,440px)] rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-7 text-center text-[var(--t1)]";
 const PAGE_STATE_EYEBROW_BASE_CLASS =
   "mb-[14px] inline-flex min-h-7 items-center justify-center rounded-[var(--r-pill)] border px-3 text-[11px] font-bold uppercase tracking-[0.12em]";
 const PAGE_STATE_TITLE_CLASS =
@@ -209,19 +244,25 @@ const PAGE_STATE_TITLE_CLASS =
 const PAGE_STATE_COPY_CLASS =
   "mt-2.5 mb-0 text-sm leading-[1.5] text-[var(--t2)]";
 const PAGE_STATE_ACTION_CLASS =
-  "mt-[22px] inline-flex min-h-11 items-center justify-center rounded-[var(--r-md)] border border-[rgba(43,228,128,0.6)] bg-[image:linear-gradient(180deg,_rgba(255,255,255,0.25)_0%,_rgba(255,255,255,0)_50%),linear-gradient(115deg,_#2be480_0%,_#00ffaa_100%)] px-5 text-sm font-bold text-[#04140a] no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.5),_0_10px_28px_rgba(43,228,128,0.18)] transition-[transform,filter] duration-[180ms] ease-[ease] hover:-translate-y-px hover:brightness-[1.05]";
+  "mt-[22px] inline-flex min-h-11 items-center justify-center rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-5 text-sm font-bold text-white no-underline transition-[transform,filter] duration-[150ms] hover:-translate-y-px hover:brightness-110";
 
 function pageStateEyebrowClass(isError: boolean): string {
   return `${PAGE_STATE_EYEBROW_BASE_CLASS} ${
     isError
-      ? "border-[rgba(255,155,107,0.28)] bg-[rgba(255,155,107,0.08)] text-[var(--no)]"
-      : "border-[rgba(43,228,128,0.28)] bg-[rgba(43,228,128,0.08)] text-[var(--accent)]"
+      ? "border-[var(--no-border)] bg-[var(--no-soft)] text-[var(--no-text)]"
+      : "border-[var(--border-1)] bg-[var(--accent-soft)] text-[var(--accent-text)]"
   }`;
 }
 
 function clampPercent(value: number): number {
   if (!Number.isFinite(value)) return 0;
   return Math.min(100, Math.max(0, value));
+}
+
+function formatSourceLabel(value: string): string {
+  return value
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function formatAMMShareCount(value?: number): string {
@@ -1017,6 +1058,11 @@ export default function MarketDetailPage() {
   }, [market, event, categories]);
   const displayMarket = market ? localizedMarket(contentT, market) : null;
   const displayCategory = category ? categoryName(contentT, category) : "";
+  const humanSettlementRule =
+    market?.settlementRule && /\s/.test(market.settlementRule)
+      ? market.settlementRule
+      : null;
+  const resolutionCopy = humanSettlementRule || displayMarket?.description;
   const canPreviewOrders = isAuthenticated && !authLoading;
 
   async function handleShareMarket() {
@@ -1062,171 +1108,326 @@ export default function MarketDetailPage() {
 
   return (
     <div className={MARKET_WRAP_CLASS}>
-      <nav className={MARKET_CRUMB_CLASS} aria-label="Breadcrumb">
-        <Link href="/predict" className={MARKET_CRUMB_LINK_CLASS}>
-          {t("MARKETS_TITLE")}
-        </Link>
-        {category && (
-          <>
-            <span className={MARKET_CRUMB_SEP_CLASS}>›</span>
-            <Link
-              href={`/category/${category.slug}`}
-              className={MARKET_CRUMB_LINK_CLASS}
-            >
-              {displayCategory}
-            </Link>
-          </>
-        )}
-        <span className={MARKET_CRUMB_SEP_CLASS}>›</span>
-        <span>{displayMarket?.title}</span>
-      </nav>
+      <div className={MARKET_RAIL_CLASS}>
+        <TerminalCategoryRail
+          categories={categories}
+          mode="predict"
+          activeCategorySlug={category?.slug.toLowerCase()}
+        />
+      </div>
 
-      <div className={MARKET_GRID_CLASS}>
-        <div className={MARKET_MAIN_CLASS}>
-          <section className={MARKET_HERO_CLASS}>
-            <MarketHead
-              market={displayMarket ?? market}
-              categoryName={displayCategory}
-            />
-            <MarketChart
-              ticker={market.ticker}
-              side={selectedSide}
-              yesPricePoints={market.yesPricePoints}
-              noPricePoints={market.noPricePoints}
-            />
-          </section>
-
-          {/* Liquidity honesty (2026-06 audit locks): real depth or the
-            explicit AMM snapshot stays available, but collapsed — the P9.2
-            minimal page leads with price + trade, depth is on demand. */}
-          {isAuthenticated && (
-            <details className={MARKET_DEPTH_DISCLOSURE_CLASS}>
-              <summary className={MARKET_DEPTH_SUMMARY_CLASS}>
-                {t("MARKET_DEPTH_AND_TRADES", "Market depth & recent trades")}
-              </summary>
-              <div className={MARKET_DATA_ROW_CLASS}>
-                <MarketDepth
-                  ammQuoteStatus={ammQuoteStatus}
-                  ammQuotes={ammQuotes}
-                  market={market}
-                  orderBook={orderBook}
-                  orderBookStatus={orderBookStatus}
-                />
-                <RecentTrades trades={trades} />
-              </div>
-            </details>
-          )}
-
-          <section className={MARKET_DETAILS_CLASS}>
-            <h3 className={MARKET_DETAILS_TITLE_CLASS}>
-              {t("MARKET_DETAILS_RESOLUTION")}
-            </h3>
-            {displayMarket?.description && (
-              <p className={MARKET_DETAILS_COPY_CLASS}>
-                {displayMarket.description}
-              </p>
-            )}
-            <ul className={MARKET_RULES_CLASS}>
-              <li className={MARKET_RULE_CLASS}>
-                {isOpenMarketStatus(market.status)
-                  ? t("CLOSES_AT_UTC", {
-                      date: new Date(market.closeAt).toUTCString().slice(5, -4),
-                    })
-                  : t("MARKET_CURRENT_STATUS", {
-                      status: marketStatusLabel(market.status, t),
-                    })}
-              </li>
-            </ul>
-            <div className={MARKET_SHARE_ROW_CLASS}>
-              <button
-                type="button"
-                className={MARKET_SHARE_BUTTON_CLASS}
-                onClick={handleShareMarket}
+      <div className={MARKET_HERO_AREA_CLASS}>
+        <nav className={MARKET_CRUMB_CLASS} aria-label="Breadcrumb">
+          <Link href="/predict" className={MARKET_CRUMB_LINK_CLASS}>
+            <ArrowLeft size={16} aria-hidden="true" />
+            {t("BACK_TO_MARKETS")}
+          </Link>
+          {category && (
+            <>
+              <span className={MARKET_CRUMB_SEP_CLASS}>/</span>
+              <Link
+                href={`/category/${category.slug}`}
+                className="font-semibold text-[var(--t2)] no-underline hover:text-[var(--t1)]"
               >
-                {t("SHARE_MARKET", "Share market")}
-              </button>
-              {shareMessage && (
-                <span className={MARKET_SHARE_STATUS_CLASS}>
-                  {shareMessage}
-                </span>
-              )}
-            </div>
-          </section>
+                {displayCategory}
+              </Link>
+            </>
+          )}
+          <span className={MARKET_CRUMB_SEP_CLASS}>/</span>
+          <span className="font-mono uppercase tracking-[0.08em]">
+            {market.ticker}
+          </span>
+        </nav>
 
-          <MarketDiscussion
-            marketId={market.id}
+        <section className={MARKET_HERO_CLASS}>
+          <div className={MARKET_HERO_GRID_CLASS}>
+            <div className={MARKET_HEAD_PANEL_CLASS}>
+              <MarketHead
+                market={displayMarket ?? market}
+                categoryName={displayCategory}
+              />
+            </div>
+            <div className={MARKET_CHART_PANEL_CLASS}>
+              <div className="mb-3 flex items-end justify-between gap-4">
+                <div>
+                  <p className="m-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]">
+                    {t("PRICE_HISTORY", "Price history")}
+                  </p>
+                  <p className="m-0 mt-1 text-xs text-[var(--t2)]">
+                    {t("LIVE_MARKET_DATA", "Live market data")}
+                  </p>
+                </div>
+                <span className="font-mono text-[18px] font-semibold text-[var(--accent-lo)]">
+                  {selectedSide.toUpperCase()}{" "}
+                  {selectedSide === "yes"
+                    ? market.yesPricePoints
+                    : market.noPricePoints}
+                  ¢
+                </span>
+              </div>
+              <MarketChart
+                ticker={market.ticker}
+                side={selectedSide}
+                yesPricePoints={market.yesPricePoints}
+                noPricePoints={market.noPricePoints}
+              />
+            </div>
+          </div>
+          <dl className={MARKET_STATS_CLASS}>
+            {[
+              {
+                label: t("VOLUME", "Volume"),
+                value: formatCompactPoints(market.volumePoints),
+              },
+              {
+                label: t("LIQUIDITY", "Liquidity"),
+                value: formatCompactPoints(market.liquidityPoints),
+              },
+              {
+                label: t("OPEN_INTEREST", "Open interest"),
+                value: formatCompactPoints(market.openInterestPoints),
+              },
+              {
+                label: t("CLOSES", "Closes"),
+                value: new Date(market.closeAt).toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                }),
+              },
+            ].map((stat) => (
+              <div key={stat.label} className={MARKET_STAT_CLASS}>
+                <dt className={MARKET_STAT_LABEL_CLASS}>{stat.label}</dt>
+                <dd className={`m-0 ${MARKET_STAT_VALUE_CLASS}`}>
+                  {stat.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+        <a
+          href="#market-trade-workspace"
+          className={MARKET_MOBILE_TRADE_LINK_CLASS}
+        >
+          <span>{t("TRADE_MARKET", "Trade market")}</span>
+          <span className="font-mono">
+            {selectedSide.toUpperCase()}{" "}
+            {selectedSide === "yes"
+              ? market.yesPricePoints
+              : market.noPricePoints}
+            ¢
+          </span>
+        </a>
+      </div>
+
+      <aside
+        id="market-trade-workspace"
+        className={MARKET_SIDE_CLASS}
+        aria-label={t("TRADE_WORKSPACE", "Trade workspace")}
+      >
+        <div className={MARKET_TICKET_STICKY_CLASS}>
+          <div className={MARKET_TICKET_CONTEXT_CLASS}>
+            <p className={MARKET_TICKET_EYEBROW_CLASS}>
+              {displayCategory || t("PREDICTION_MARKET", "Prediction market")}
+            </p>
+            <h2 className={MARKET_TICKET_TITLE_CLASS}>
+              {displayMarket?.title}
+            </h2>
+            <div className={MARKET_TICKET_QUOTE_CLASS}>
+              <div>
+                <div className={MARKET_TICKET_QUOTE_LABEL_CLASS}>
+                  {t("LATEST_PROBABILITY", "Latest probability")}
+                </div>
+                <div className={MARKET_TICKET_QUOTE_VALUE_CLASS}>
+                  {market.yesPricePoints}¢
+                </div>
+              </div>
+              <div className="font-mono pb-1 text-right text-[11px] leading-5 text-[var(--t3)]">
+                <div className="font-semibold text-[var(--yes-text)]">
+                  {t("YES")} {market.yesPricePoints}¢
+                </div>
+                <div>
+                  {t("NO")} {market.noPricePoints}¢
+                </div>
+              </div>
+            </div>
+            <div
+              className={MARKET_TICKET_BAR_CLASS}
+              role="img"
+              aria-label={t("YES_NO_PRICES", {
+                yes: market.yesPricePoints,
+                no: market.noPricePoints,
+                defaultValue: `Yes ${market.yesPricePoints} cents, No ${market.noPricePoints} cents`,
+              })}
+            >
+              <span
+                className="h-full bg-[var(--accent)]"
+                style={{ width: `${clampPercent(market.yesPricePoints)}%` }}
+              />
+              <span className="h-full flex-1 bg-[var(--border-2)]" />
+            </div>
+          </div>
+
+          <div className={MARKET_TICKET_SOURCE_CLASS}>
+            <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]">
+              {t("RESOLUTION_SOURCE_LABEL", "Resolution source")}
+            </div>
+            <div className="font-semibold text-[var(--t1)]">
+              {formatSourceLabel(market.settlementSourceKey)}
+            </div>
+            {resolutionCopy && (
+              <p className="mb-0 mt-2 text-[var(--t2)]">{resolutionCopy}</p>
+            )}
+          </div>
+
+          <TradeTicket
+            variant="terminal"
+            market={market}
+            balance={typeof balance === "number" ? balance : undefined}
+            defaultSide={initialSide}
+            defaultAmount={initialAmount}
+            onSideChange={setSelectedSide}
             isAuthenticated={isAuthenticated}
             authLoading={authLoading}
+            // Available = quantity minus reserved (already-spoken-for in
+            // open sell orders). Sum across positions on this side; in
+            // practice the gateway returns at most one row per (user,
+            // market, side) but defensively reduce in case that changes.
+            availableYesShares={positions
+              .filter((p) => p.side === "yes")
+              .reduce(
+                (sum, p) =>
+                  sum + Math.max(0, p.quantity - (p.reservedQuantity || 0)),
+                0,
+              )}
+            availableNoShares={positions
+              .filter((p) => p.side === "no")
+              .reduce(
+                (sum, p) =>
+                  sum + Math.max(0, p.quantity - (p.reservedQuantity || 0)),
+                0,
+              )}
+            onPreview={canPreviewOrders ? handlePreview : undefined}
+            onSubmit={handleSubmit}
           />
-
-          <aside
-            className={RELATED_CARD_CLASS}
-            aria-label={t("RELATED_MARKETS")}
-          >
-            <h3 className={RELATED_TITLE_CLASS}>{t("RELATED_MARKETS")}</h3>
-            {related.length === 0 ? (
-              <p className={RELATED_EMPTY_CLASS}>{t("NO_RELATED_MARKETS")}</p>
-            ) : (
-              <div className={RELATED_LIST_CLASS}>
-                {related.map((market) => {
-                  const m = localizedMarket(contentT, market);
-                  return (
-                    <Link
-                      key={m.id}
-                      href={`/market/${m.ticker}`}
-                      className={RELATED_ROW_CLASS}
-                    >
-                      <div className={RELATED_QUESTION_CLASS}>{m.title}</div>
-                      <div className={RELATED_LINE_CLASS}>
-                        <span className={RELATED_YES_CLASS}>
-                          {t("YES")} {m.yesPricePoints}¢
-                        </span>
-                        <span>
-                          {t("VOLUME_VALUE", {
-                            value: formatCompactPoints(m.volumePoints),
-                          })}
-                        </span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </aside>
         </div>
+      </aside>
 
-        <aside className={MARKET_SIDE_CLASS}>
-          <div className={MARKET_TICKET_STICKY_CLASS}>
-            <TradeTicket
-              market={market}
-              balance={typeof balance === "number" ? balance : undefined}
-              defaultSide={initialSide}
-              defaultAmount={initialAmount}
-              onSideChange={setSelectedSide}
-              isAuthenticated={isAuthenticated}
-              authLoading={authLoading}
-              // Available = quantity minus reserved (already-spoken-for in
-              // open sell orders). Sum across positions on this side; in
-              // practice the gateway returns at most one row per (user,
-              // market, side) but defensively reduce in case that changes.
-              availableYesShares={positions
-                .filter((p) => p.side === "yes")
-                .reduce(
-                  (sum, p) =>
-                    sum + Math.max(0, p.quantity - (p.reservedQuantity || 0)),
-                  0,
-                )}
-              availableNoShares={positions
-                .filter((p) => p.side === "no")
-                .reduce(
-                  (sum, p) =>
-                    sum + Math.max(0, p.quantity - (p.reservedQuantity || 0)),
-                  0,
-                )}
-              onPreview={canPreviewOrders ? handlePreview : undefined}
-              onSubmit={handleSubmit}
-            />
+      <div className={MARKET_CONTENT_CLASS}>
+        <section className={MARKET_DETAILS_CLASS}>
+          <h3 className={MARKET_DETAILS_TITLE_CLASS}>
+            {t("MARKET_DETAILS_RESOLUTION")}
+          </h3>
+          {displayMarket?.description && (
+            <p className={MARKET_DETAILS_COPY_CLASS}>
+              {displayMarket.description}
+            </p>
+          )}
+          {humanSettlementRule &&
+            humanSettlementRule !== displayMarket?.description && (
+              <p className={MARKET_DETAILS_COPY_CLASS}>{humanSettlementRule}</p>
+            )}
+          <div className="mt-4 grid grid-cols-2 gap-3 max-[640px]:grid-cols-1">
+            <div className="rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-4">
+              <div className={MARKET_STAT_LABEL_CLASS}>
+                {t("RESOLUTION_SOURCE_LABEL", "Resolution source")}
+              </div>
+              <div className="text-sm font-semibold text-[var(--t1)]">
+                {formatSourceLabel(market.settlementSourceKey)}
+              </div>
+            </div>
+            <div className="rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-4">
+              <div className={MARKET_STAT_LABEL_CLASS}>
+                {t("MARKET_STATUS_LABEL", "Market status")}
+              </div>
+              <div className="text-sm font-semibold text-[var(--t1)]">
+                {marketStatusLabel(market.status, t)}
+              </div>
+            </div>
           </div>
+          <ul className={MARKET_RULES_CLASS}>
+            <li className={MARKET_RULE_CLASS}>
+              {isOpenMarketStatus(market.status)
+                ? t("CLOSES_AT_UTC", {
+                    date: new Date(market.closeAt).toUTCString().slice(5, -4),
+                  })
+                : t("MARKET_CURRENT_STATUS", {
+                    status: marketStatusLabel(market.status, t),
+                  })}
+            </li>
+          </ul>
+          <div className={MARKET_SHARE_ROW_CLASS}>
+            <button
+              type="button"
+              className={MARKET_SHARE_BUTTON_CLASS}
+              onClick={handleShareMarket}
+            >
+              <ShareNetwork size={16} aria-hidden="true" />
+              {t("SHARE_MARKET", "Share market")}
+            </button>
+            {shareMessage && (
+              <span className={MARKET_SHARE_STATUS_CLASS}>{shareMessage}</span>
+            )}
+          </div>
+        </section>
+
+        {/* Liquidity honesty (2026-06 audit locks): real depth or the
+          explicit AMM snapshot stays available, but collapsed so the page
+          leads with the tradable quote and real price history. */}
+        {isAuthenticated && (
+          <details className={MARKET_DEPTH_DISCLOSURE_CLASS}>
+            <summary className={MARKET_DEPTH_SUMMARY_CLASS}>
+              {t("MARKET_DEPTH_AND_TRADES", "Market depth & recent trades")}
+            </summary>
+            <div className={MARKET_DATA_ROW_CLASS}>
+              <MarketDepth
+                ammQuoteStatus={ammQuoteStatus}
+                ammQuotes={ammQuotes}
+                market={market}
+                orderBook={orderBook}
+                orderBookStatus={orderBookStatus}
+              />
+              <RecentTrades trades={trades} />
+            </div>
+          </details>
+        )}
+
+        <MarketDiscussion
+          marketId={market.id}
+          isAuthenticated={isAuthenticated}
+          authLoading={authLoading}
+        />
+
+        <aside className={RELATED_CARD_CLASS} aria-label={t("RELATED_MARKETS")}>
+          <h3 className={RELATED_TITLE_CLASS}>{t("RELATED_MARKETS")}</h3>
+          {related.length === 0 ? (
+            <p className={RELATED_EMPTY_CLASS}>{t("NO_RELATED_MARKETS")}</p>
+          ) : (
+            <div className={RELATED_LIST_CLASS}>
+              {related.map((market) => {
+                const m = localizedMarket(contentT, market);
+                return (
+                  <Link
+                    key={m.id}
+                    href={`/market/${m.ticker}`}
+                    className={RELATED_ROW_CLASS}
+                  >
+                    <div className={RELATED_QUESTION_CLASS}>{m.title}</div>
+                    <div className={RELATED_LINE_CLASS}>
+                      <span className={RELATED_YES_CLASS}>
+                        {t("YES")} {m.yesPricePoints}¢
+                      </span>
+                      <span>
+                        {t("VOLUME_VALUE", {
+                          value: formatCompactPoints(m.volumePoints),
+                        })}
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </aside>
       </div>
     </div>

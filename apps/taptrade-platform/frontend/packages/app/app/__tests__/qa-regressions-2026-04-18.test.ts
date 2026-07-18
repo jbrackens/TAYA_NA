@@ -895,15 +895,13 @@ describe("MarketCard P8 composition", () => {
   });
 });
 
-describe("MarketChart side colors", () => {
+describe("MarketChart terminal colors", () => {
   const marketChartSource = read("components/prediction/MarketChart.tsx");
 
-  it("colors the chart line by selected YES/NO side, not price movement", () => {
+  it("uses the terminal violet for price history, not movement colors", () => {
     assert.ok(
-      /const\s+lineColor\s*=\s*side\s*===\s*"no"\s*\?\s*"var\(--no-text\)"\s*:\s*"var\(--yes-text\)"/.test(
-        marketChartSource,
-      ),
-      "MarketChart line color should match the selected side button",
+      marketChartSource.includes('const lineColor = "var(--accent-lo)"'),
+      "MarketChart should use the terminal violet chart token",
     );
     assert.ok(
       !/const\s+lineColor\s*=\s*isUp\s*\?/.test(marketChartSource),
@@ -911,18 +909,15 @@ describe("MarketChart side colors", () => {
     );
   });
 
-  // P9.2 (2026-07-07): the in-chart stat footer is retired — implied
-  // probability lives in the trade ticket. The chart instead draws the
-  // complement side as a muted mirrored line; lock that pairing.
+  // P11 terminal: the complement stays visible as market context without
+  // competing with the violet primary series.
   it("draws the complement side as a muted mirror line", () => {
     assert.ok(
-      /const\s+complementColor\s*=\s*side\s*===\s*"no"\s*\?\s*"var\(--yes-text\)"\s*:\s*"var\(--no-text\)"/.test(
-        marketChartSource,
-      ),
-      "MarketChart should color the complement line with the other side token",
+      marketChartSource.includes('const complementColor = "var(--t4)"'),
+      "MarketChart should keep the complement on a quiet neutral token",
     );
     assert.ok(
-      marketChartSource.includes('strokeOpacity="0.35"'),
+      marketChartSource.includes('strokeOpacity="0.45"'),
       "MarketChart complement line should render muted",
     );
   });
@@ -1109,9 +1104,9 @@ describe("Navigation pill active colors", () => {
   it("renders the market chart range switcher as quiet text tabs", () => {
     const rangeClass = functionBody(marketChartSource, "rangeButtonClass");
     assert.ok(
-      rangeClass.includes("border-[var(--t1)]") &&
+      rangeClass.includes("border-[var(--accent-lo)]") &&
         rangeClass.includes("border-transparent"),
-      "chart range tabs should underline the active range in ink",
+      "chart range tabs should underline the active range in terminal violet",
     );
     assert.ok(
       !rangeClass.includes("bg-[var(--yes)]") &&

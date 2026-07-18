@@ -77,15 +77,14 @@ function collapseTrades(trades: Trade[]): TapeRow[] {
 }
 
 const RECENT_TRADES_CARD_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-5";
 const RECENT_TRADES_HEAD_CLASS =
   "mb-[14px] flex items-center justify-between border-b border-[var(--border-1)] pb-3";
 const RECENT_TRADES_TITLE_CLASS =
   "text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
-const RECENT_TRADES_SUB_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] text-[11px] text-[var(--t3)]";
+const RECENT_TRADES_SUB_CLASS = "font-mono text-[11px] text-[var(--t3)]";
 const RECENT_TRADES_TAPE_CLASS =
-  "flex max-h-[264px] flex-col gap-0.5 overflow-hidden font-['IBM_Plex_Mono',_monospace] text-xs [font-variant-numeric:tabular-nums]";
+  "font-mono flex max-h-[264px] flex-col gap-0.5 overflow-hidden text-xs [font-variant-numeric:tabular-nums]";
 const RECENT_TRADES_ROW_CLASS =
   "grid grid-cols-[56px_52px_1fr_52px] items-center gap-2 rounded-[var(--r-rh-sm)] px-2 py-1.5 text-[var(--t1)] [&:nth-child(odd)]:bg-white/[0.02]";
 const RECENT_TRADES_SIDE_BASE_CLASS =

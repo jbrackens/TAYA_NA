@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
+import { isPredictionTerminalRoute } from "../lib/prediction-terminal";
 
 const appRoot = fileURLToPath(new URL("../", import.meta.url));
 const read = (path: string) => readFileSync(`${appRoot}${path}`, "utf8");
@@ -53,6 +54,7 @@ describe("prediction terminal backend wiring", () => {
     const mobileTabs = read("components/MobileTabBar.tsx");
 
     assert.ok(route.includes('pathname === "/discover"'));
+    assert.ok(route.includes('pathname.startsWith("/market/")'));
     assert.ok(shell.includes("isPredictionTerminalRoute(pathname)"));
     assert.ok(topBar.includes("isPredictionTerminalRoute(pathname)"));
     assert.ok(mobileTabs.includes("isPredictionTerminalRoute(pathname)"));
@@ -61,5 +63,35 @@ describe("prediction terminal backend wiring", () => {
       topBar.includes('{ href: "/discover", labelKey: "NAV_TRENDING" }'),
     );
     assert.ok(mobileTabs.includes('labelKey: "NAV_TRENDING"'));
+    assert.ok(topBar.includes('pathname.startsWith("/market/")'));
+  });
+
+  it("routes market detail through the same terminal shell", () => {
+    for (const pathname of [
+      "/predict",
+      "/predict/",
+      "/discover",
+      "/discover/",
+      "/market/IMP-TEST",
+      "/market/IMP-TEST/",
+    ]) {
+      assert.equal(
+        isPredictionTerminalRoute(pathname),
+        true,
+        `${pathname} should use the terminal shell`,
+      );
+    }
+
+    for (const pathname of [null, "/", "/auth/login", "/portfolio"]) {
+      assert.equal(
+        isPredictionTerminalRoute(pathname),
+        false,
+        `${pathname ?? "null"} should keep its existing shell`,
+      );
+    }
+
+    const marketPage = read("market/[ticker]/page.tsx");
+    assert.ok(marketPage.includes("<TerminalCategoryRail"));
+    assert.ok(marketPage.includes('variant="terminal"'));
   });
 });

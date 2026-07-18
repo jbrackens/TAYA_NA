@@ -14,10 +14,10 @@ import {
 import { logger } from "../../lib/logger";
 
 const SECTION_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-6 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif] max-[1100px]:order-5";
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-6 py-6 max-[720px]:px-5";
 const HEAD_CLASS = "mb-4 flex items-baseline justify-between gap-3";
 const TITLE_CLASS =
-  "m-0 text-base font-semibold tracking-[-0.01em] text-[var(--t1)]";
+  "type-display m-0 text-base font-semibold tracking-[-0.01em] text-[var(--t1)]";
 const COUNT_CLASS = "text-xs text-[var(--t3)]";
 const HEAD_LINK_CLASS =
   "text-xs text-[var(--t2)] underline-offset-4 hover:text-[var(--accent)] hover:underline";
@@ -29,7 +29,7 @@ const STATUS_CLASS = "text-xs text-[var(--t3)]";
 const BUTTON_CLASS =
   "inline-flex min-h-9 items-center justify-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 text-xs font-bold text-[var(--t1)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55";
 const PRIMARY_BUTTON_CLASS =
-  "inline-flex min-h-9 items-center justify-center rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-4 text-xs font-bold text-[#04140a] transition-[filter] hover:brightness-[1.05] disabled:cursor-not-allowed disabled:opacity-55";
+  "inline-flex min-h-10 items-center justify-center rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-4 text-xs font-bold text-white transition-[filter] hover:brightness-[1.08] disabled:cursor-not-allowed disabled:opacity-55";
 const LIST_CLASS = "flex flex-col gap-3";
 const COMMENT_CLASS =
   "border-t border-[var(--border-1)] pt-3 first:border-t-0 first:pt-0";
@@ -78,7 +78,13 @@ export default function MarketDiscussion({
     // fetch is a guaranteed 401 (console noise on every logged-out market
     // view). Match the live-prices precedent: signed-out visitors see the
     // sign-in hint instead of a doomed request.
-    if (authLoading || !isAuthenticated) return;
+    if (authLoading) return;
+    if (!isAuthenticated) {
+      setComments([]);
+      setLoading(false);
+      setMessage(null);
+      return;
+    }
     void load();
   }, [load, authLoading, isAuthenticated]);
 

@@ -57,20 +57,19 @@ interface MarketChartProps {
 
 const RANGES: TimeRange[] = ["1H", "6H", "1D", "1W", "ALL"];
 
-const CHART_CARD_CLASS =
-  "font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+const CHART_CARD_CLASS = "";
 const CHART_SVG_CLASS = "block h-[300px] w-full";
 // P9.2: the range switcher is a quiet mono text-tab row under the plot
 // (Robinhood-style), not a segmented fill control. Active = ink text +
 // 2px ink underline; inactive = --t3.
 const CHART_SWITCHER_CLASS = "mt-4 flex items-center gap-5";
 const CHART_BUTTON_BASE_CLASS =
-  "cursor-pointer border-0 bg-transparent p-0 pb-1 font-['IBM_Plex_Mono',_monospace] text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors duration-[120ms] border-b-2";
+  "font-mono cursor-pointer border-0 border-b-2 bg-transparent p-0 pb-1 text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors duration-[120ms]";
 
 function rangeButtonClass(active: boolean): string {
   return `${CHART_BUTTON_BASE_CLASS} ${
     active
-      ? "text-[var(--t1)] border-[var(--t1)]"
+      ? "text-[var(--accent-text)] border-[var(--accent-lo)]"
       : "text-[var(--t3)] border-transparent hover:text-[var(--t1)]"
   }`;
 }
@@ -161,10 +160,11 @@ export default function MarketChart({
     complementValues.length >= 2
       ? buildPath(complementValues, width, height)
       : "";
+  const areaPath = line ? `${line} L ${width} ${height} L 0 ${height} Z` : "";
   // Keep the chart series tied to the selected contract side so NO matches
   // the NO button even when the NO price is moving up.
-  const lineColor = side === "no" ? "var(--no-text)" : "var(--yes-text)";
-  const complementColor = side === "no" ? "var(--yes-text)" : "var(--no-text)";
+  const lineColor = "var(--accent-lo)";
+  const complementColor = "var(--t4)";
   const lineEndY = values.length
     ? endpointY(values[values.length - 1], height)
     : 0;
@@ -193,7 +193,7 @@ export default function MarketChart({
             {t("PRICE_HISTORY_UNAVAILABLE")}
           </div>
           <button
-            className="cursor-pointer rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-1.5 font-['Inter',_sans-serif] text-xs font-semibold text-[var(--t1)] transition-colors duration-[120ms] hover:border-[var(--border-2)]"
+            className="cursor-pointer rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-1.5 text-xs font-semibold text-[var(--t1)] transition-colors duration-[120ms] hover:border-[var(--border-2)]"
             onClick={() => setRetryNonce((n) => n + 1)}
           >
             {t("RETRY")}
@@ -210,10 +210,40 @@ export default function MarketChart({
             ticker,
           })}
         >
+          <defs>
+            <linearGradient
+              id={`market-area-${ticker}-${side}`}
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="1"
+            >
+              <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.24" />
+              <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          {[25, 50, 75].map((tick) => (
+            <line
+              key={tick}
+              x1="0"
+              x2={width}
+              y1={endpointY(tick, height)}
+              y2={endpointY(tick, height)}
+              stroke="var(--border-1)"
+              strokeDasharray="3 5"
+              strokeWidth="1"
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+          <path
+            d={areaPath}
+            fill={`url(#market-area-${ticker}-${side})`}
+            stroke="none"
+          />
           <path
             d={complementLine}
             stroke={complementColor}
-            strokeOpacity="0.35"
+            strokeOpacity="0.45"
             strokeWidth="1.5"
             fill="none"
             strokeLinecap="round"
@@ -246,7 +276,7 @@ export default function MarketChart({
               x={width / 2}
               y={height / 2 - 14}
               textAnchor="middle"
-              fontFamily="Inter, sans-serif"
+              fontFamily="var(--font-terminal)"
               fontSize="14"
               fill="var(--t3)"
             >

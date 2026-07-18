@@ -4,6 +4,7 @@ export function isPredictionTerminalRoute(pathname: string | null): boolean {
     pathname === "/predict" ||
     pathname.startsWith("/predict/") ||
     pathname === "/discover" ||
-    pathname.startsWith("/discover/")
+    pathname.startsWith("/discover/") ||
+    pathname.startsWith("/market/")
   );
 }

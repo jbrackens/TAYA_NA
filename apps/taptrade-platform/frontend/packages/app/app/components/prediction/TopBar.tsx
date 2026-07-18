@@ -340,7 +340,8 @@ export function TopBar() {
       return (
         pathname === "/predict" ||
         pathname.startsWith("/predict/") ||
-        pathname.startsWith("/category/")
+        pathname.startsWith("/category/") ||
+        pathname.startsWith("/market/")
       );
     }
     return pathname === href || pathname.startsWith(`${href}/`);
