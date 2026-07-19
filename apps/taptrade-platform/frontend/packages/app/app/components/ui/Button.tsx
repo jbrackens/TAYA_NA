@@ -74,15 +74,37 @@ export function Button({
   className,
   render,
   ref,
+  disabled,
+  onClick,
   ...rest
 }: ButtonProps) {
+  // Custom render targets (e.g. render={<Link/>}) are not <button>s: the
+  // `disabled` attribute is invalid there, so it translates to
+  // aria-disabled + removal from the tab order + a click/pointer block.
+  // (Codex review 2026-07-19: forwarding button-only props to arbitrary
+  // elements left links without disabled semantics.)
+  const isCustomElement = render != null;
+  const disabledLinkProps =
+    isCustomElement && disabled
+      ? ({ "aria-disabled": true, tabIndex: -1, onClick: undefined } as const)
+      : { onClick };
+
   return useRender({
     // The default element is a real <button> with an explicit type;
     // custom render elements own their own semantics (Link needs none).
     render: render ?? <button type={type} />,
     ref,
     props: {
-      className: cx(buttonVariant(variant), SIZE[size], className),
+      className: cx(
+        buttonVariant(variant),
+        SIZE[size],
+        isCustomElement && disabled
+          ? "pointer-events-none cursor-not-allowed opacity-55"
+          : undefined,
+        className,
+      ),
+      ...(isCustomElement ? {} : { disabled }),
+      ...disabledLinkProps,
       ...rest,
     },
   });

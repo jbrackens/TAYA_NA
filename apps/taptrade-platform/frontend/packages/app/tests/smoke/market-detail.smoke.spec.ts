@@ -64,6 +64,55 @@ test.describe("/market/[ticker] — market detail", () => {
     checkErrors();
   });
 
+  test("share dialog exercises the ui/Dialog primitive with terminal tokens", async ({
+    page,
+  }) => {
+    // The suite runs SYSTEM Chrome, which on macOS implements
+    // navigator.share — strip it so the components/ui Dialog fallback
+    // path runs deterministically on every engine. This is the
+    // exercised-Dialog gate from the P1 re-review: the popup PORTALS into
+    // document.body (outside .predict-terminal) and must still resolve
+    // the route's DARK tokens through the html[data-theme] mirror.
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, "share", { value: undefined });
+    });
+    const discoveryResponse = await page.request.get("/api/v1/discovery");
+    const discovery = (await discoveryResponse.json()) as {
+      featured?: Array<{ ticker?: string }>;
+      trending?: Array<{ ticker?: string }>;
+    };
+    const ticker =
+      discovery.featured?.[0]?.ticker ?? discovery.trending?.[0]?.ticker;
+    if (!ticker) {
+      test.skip(true, "No seeded markets — skipping share dialog smoke");
+      return;
+    }
+
+    await page.goto(`/market/${ticker}`);
+    await page.getByTestId("share-market").click();
+
+    const dialog = page.getByTestId("share-dialog");
+    await expect(dialog).toBeVisible({ timeout: 10_000 });
+
+    // The link field carries the market URL.
+    await expect(page.getByTestId("share-link")).toHaveValue(
+      new RegExp(`/market/${ticker}`),
+    );
+
+    // Theme mirror proof: the portalled popup's surface token resolves to
+    // the terminal dark value (#080d11), not the light default.
+    const popupBg = await dialog.evaluate(
+      (el) => getComputedStyle(el).backgroundColor,
+    );
+    expect(popupBg, "portalled dialog must resolve dark terminal tokens").toBe(
+      "rgb(8, 13, 17)",
+    );
+
+    // The dialog is a real Base UI dialog: Escape dismisses it.
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden({ timeout: 5_000 });
+  });
+
   test.describe("unauthenticated trade ticket", () => {
     test.use({ storageState: { cookies: [], origins: [] } });
 

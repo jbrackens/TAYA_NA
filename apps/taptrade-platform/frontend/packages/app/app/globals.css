@@ -109,6 +109,11 @@ body {
    * DESIGN.md §12 Decisions Log for rationale.
    */
 :root {
+  /* CTA foreground for the money button (Button variant="cta"): dark ink
+   * on the light accent. Theme-scoped so any cta consumer resolves a
+   * correct color — Codex review 2026-07-19 flagged that this variable
+   * previously existed only in TradeTicket's inline style. */
+  --ticket-cta-text: #061a10;
   /* P9 (2026-07-07, owner-directed): gallery-white page backdrop replacing
    * the P8 warm cream + chart-paper grid. Pure white base, cool neutral
    * inks, hairline borders, and a quiet two-layer shadow recipe carry the
@@ -1388,6 +1393,7 @@ html[data-theme="terminal"] {
   --no-soft: rgba(240, 77, 82, 0.12);
   --no-border: rgba(240, 77, 82, 0.32);
   --focus-ring: #a39bff;
+  --ticket-cta-text: #ffffff;
   --shadow-card: none;
   --shadow-card-hover: none;
   --shadow-pop: 0 24px 64px rgba(0, 0, 0, 0.42);

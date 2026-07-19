@@ -27,7 +27,15 @@ import { ShareNetworkIcon as ShareNetwork } from "@phosphor-icons/react/dist/csr
 import MarketHead from "../../components/prediction/MarketHead";
 import MarketChart from "../../components/prediction/MarketChart";
 import MarketDiscussion from "../../components/prediction/MarketDiscussion";
-import { Button } from "../../components/ui";
+import {
+  Button,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  Input,
+} from "../../components/ui";
 import OrderBook from "../../components/prediction/OrderBook";
 import type { BookLevel } from "../../components/prediction/OrderBook";
 import RecentTrades from "../../components/prediction/RecentTrades";
@@ -651,6 +659,7 @@ export default function MarketDetailPage() {
   const [positions, setPositions] = useState<Position[]>([]);
   const [selectedSide, setSelectedSide] = useState<OrderSide>(initialSide);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
   const balance = useAppSelector(selectCurrentBalance);
   const dispatch = useAppDispatch();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
@@ -1064,25 +1073,45 @@ export default function MarketDetailPage() {
   const resolutionCopy = humanSettlementRule || displayMarket?.description;
   const canPreviewOrders = isAuthenticated && !authLoading;
 
+  const shareUrl =
+    typeof window !== "undefined" && market
+      ? window.location.href
+      : market
+        ? `/market/${market.ticker}`
+        : "";
+
   async function handleShareMarket() {
     if (!market || !displayMarket) return;
-    const url =
-      typeof window !== "undefined"
-        ? window.location.href
-        : `/market/${market.ticker}`;
     try {
       if (typeof navigator !== "undefined" && navigator.share) {
+        // Native share sheet where the platform has one (mobile).
         await navigator.share({
           title: displayMarket.title,
           text: displayMarket.description || displayMarket.title,
-          url,
+          url: shareUrl,
         });
-      } else if (typeof navigator !== "undefined" && navigator.clipboard) {
-        await navigator.clipboard.writeText(url);
+        setShareMessage(t("SHARE_COPIED", "Market link copied."));
+      } else {
+        // Desktop: a real dialog (components/ui Dialog — this is also the
+        // lead surface's live exercise of the portalled primitive on a
+        // dark route, per the P1 re-review).
+        setShareOpen(true);
       }
-      setShareMessage(t("SHARE_COPIED", "Market link copied."));
     } catch (err) {
       logger.warn("MarketDetail", "share failed", err);
+      setShareMessage(t("SHARE_FAILED", "Share could not be opened."));
+    }
+  }
+
+  async function handleCopyShareLink() {
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(shareUrl);
+      }
+      setShareOpen(false);
+      setShareMessage(t("SHARE_COPIED", "Market link copied."));
+    } catch (err) {
+      logger.warn("MarketDetail", "share copy failed", err);
       setShareMessage(t("SHARE_FAILED", "Share could not be opened."));
     }
   }
@@ -1356,13 +1385,48 @@ export default function MarketDetailPage() {
             </li>
           </ul>
           <div className={MARKET_SHARE_ROW_CLASS}>
-            <Button className="gap-2" onClick={handleShareMarket}>
+            <Button
+              className="gap-2"
+              onClick={handleShareMarket}
+              data-testid="share-market"
+            >
               <ShareNetwork size={16} aria-hidden="true" />
               {t("SHARE_MARKET", "Share market")}
             </Button>
             {shareMessage && (
               <span className={MARKET_SHARE_STATUS_CLASS}>{shareMessage}</span>
             )}
+            <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+              <DialogContent data-testid="share-dialog">
+                <DialogTitle>{t("SHARE_MARKET", "Share market")}</DialogTitle>
+                <DialogDescription>
+                  {t(
+                    "SHARE_DIALOG_HINT",
+                    "Copy the link to share this market.",
+                  )}
+                </DialogDescription>
+                <Input
+                  readOnly
+                  value={shareUrl}
+                  aria-label={t("SHARE_LINK", "Market link")}
+                  data-testid="share-link"
+                  onFocus={(event) => event.currentTarget.select()}
+                  className="w-full font-mono text-xs"
+                />
+                <div className="mt-4 flex justify-end gap-2">
+                  <DialogClose
+                    render={<Button size="md">{t("CLOSE", "Close")}</Button>}
+                  />
+                  <Button
+                    variant="primary"
+                    onClick={handleCopyShareLink}
+                    data-testid="share-copy"
+                  >
+                    {t("SHARE_COPY_LINK", "Copy link")}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </section>
 
