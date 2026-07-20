@@ -14,7 +14,7 @@
  * degrade honestly when a provider isn't configured.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
@@ -23,6 +23,7 @@ import { claimStarterGrant } from "../../lib/api/wallet-client";
 import { safeReturnPath, returnUrlSuffix } from "../../lib/safeReturnPath";
 import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
 import BrandMark from "../../components/BrandMark";
+import { Button, Input } from "../../components/ui";
 
 interface FormData {
   username: string;
@@ -93,9 +94,7 @@ const FORM_CLASS = "flex flex-col gap-3.5";
 const FIELD_CLASS = "flex flex-col gap-1.5";
 const FIELD_LABEL_CLASS =
   "text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
-const INPUT_BASE_CLASS =
-  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-[13px] py-[11px] text-sm text-[var(--t1)] outline-none transition-[border-color] duration-150 ease-[ease] placeholder:text-[var(--t4)] focus-visible:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] [font-family:inherit]";
-const INPUT_ERROR_CLASS = "border-[var(--no-text)]";
+// Input + step-button recipes migrated to components/ui primitives (P2).
 const FIELD_ERROR_CLASS = "text-[11px] text-[var(--no-text)]";
 const TERMS_CLASS =
   "max-h-[220px] overflow-y-auto rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-4 py-3.5";
@@ -115,12 +114,6 @@ const SUMMARY_DESC_CLASS = "m-0 text-[var(--t1)]";
 const MONO_CLASS =
   "tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
 const ACTIONS_CLASS = "mt-5 flex gap-2.5";
-const BUTTON_BASE_CLASS =
-  "flex-1 cursor-pointer rounded-[var(--r-rh-md)] border px-3.5 py-[11px] text-[13px] font-bold tracking-[0.02em] transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 [font-family:inherit]";
-const BUTTON_GHOST_CLASS =
-  "border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t2)] enabled:hover:border-[var(--accent)] enabled:hover:text-[var(--t1)]";
-const BUTTON_PRIMARY_CLASS =
-  "border-transparent bg-[var(--accent)] text-[#04140a] enabled:hover:-translate-y-px enabled:hover:brightness-[1.05] enabled:active:scale-[0.98]";
 const FOOTER_CLASS =
   "mt-[18px] border-t border-[var(--border-1)] pt-3.5 text-center text-[13px] text-[var(--t2)]";
 const LINK_ACCENT_CLASS =
@@ -371,27 +364,30 @@ export default function RegisterPage() {
 
           <div className={ACTIONS_CLASS}>
             {step > 1 && (
-              <button
+              <Button
+                size="none"
                 type="button"
                 onClick={onPrev}
                 disabled={submitting}
-                className={`${BUTTON_BASE_CLASS} ${BUTTON_GHOST_CLASS}`}
+                className="flex-1 px-4 py-[11px] text-[13px]"
               >
                 Back
-              </button>
+              </Button>
             )}
-            <button
+            <Button
+              variant="primary"
+              size="none"
               type="button"
               onClick={step === TOTAL_STEPS ? onSubmit : onNext}
               disabled={submitting}
-              className={`${BUTTON_BASE_CLASS} ${BUTTON_PRIMARY_CLASS}`}
+              className="flex-1 px-4 py-[11px] text-[13px]"
             >
               {submitting
                 ? "Processing…"
                 : step === TOTAL_STEPS
                   ? "Create account"
                   : "Continue"}
-            </button>
+            </Button>
           </div>
 
           {step === 1 && (
@@ -486,16 +482,18 @@ function Field({
   error?: string;
   autoComplete?: string;
 }) {
+  const inputId = useId();
   return (
-    <label className={FIELD_CLASS}>
+    <label className={FIELD_CLASS} htmlFor={inputId}>
       <span className={FIELD_LABEL_CLASS}>{label}</span>
-      <input
+      <Input
+        id={inputId}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         autoComplete={autoComplete}
-        className={`${INPUT_BASE_CLASS} ${error ? INPUT_ERROR_CLASS : ""}`}
+        aria-invalid={error ? true : undefined}
       />
       {error && <span className={FIELD_ERROR_CLASS}>{error}</span>}
     </label>
