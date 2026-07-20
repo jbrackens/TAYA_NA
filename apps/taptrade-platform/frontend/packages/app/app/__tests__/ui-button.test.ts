@@ -8,11 +8,18 @@
  *
  * Run: npx tsx --test app/__tests__/ui-button.test.ts
  */
+// React 19 requires this flag for act() to flush effects/refs in the
+// documented order outside a test framework that sets it automatically.
+(
+  globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
+).IS_REACT_ACT_ENVIRONMENT = true;
+
 import { describe, it, mock } from "node:test";
 import assert from "node:assert/strict";
 import { createElement } from "react";
 import { create, act } from "react-test-renderer";
-import { Button } from "../components/ui/Button";
+import { Button, checkDisabledRenderContract } from "../components/ui/Button";
+import { logger } from "../lib/logger";
 
 interface RenderedProps {
   type?: string;
@@ -142,5 +149,57 @@ describe("ui/Button element modes", () => {
     props.onClick?.(event);
     assert.equal(callerClick.mock.callCount(), 1);
     assert.equal(event.preventDefault.mock.callCount(), 0);
+  });
+
+  // ── Dev contract detector (Codex re-review round 4) ────────────────
+  // A render COMPONENT can defeat prop forcing by discarding props/ref;
+  // React cannot prevent that, so the detector must REPORT both shapes.
+
+  it("detector reports a render component that drops the ref", () => {
+    const errorSpy = mock.method(logger, "error", () => undefined);
+    try {
+      function HostileNoRef(): React.ReactElement {
+        return createElement("a", { href: "/x" }, "Go");
+      }
+      let r: ReturnType<typeof create> | undefined;
+      act(() => {
+        r = create(
+          createElement(Button, {
+            disabled: true,
+            render: createElement(HostileNoRef as never),
+          }),
+        );
+      });
+      act(() => r?.unmount());
+      const calls = errorSpy.mock.calls.map((c) => String(c.arguments[1]));
+      assert.ok(
+        calls.some((m) => m.includes("did not forward its ref")),
+        `expected ref-violation report, got: ${JSON.stringify(calls)}`,
+      );
+    } finally {
+      errorSpy.mock.restore();
+    }
+  });
+
+  it("contract check flags a missing node as a ref violation", () => {
+    const violation = checkDisabledRenderContract(null);
+    assert.match(violation?.message ?? "", /did not forward its ref/);
+  });
+
+  it("contract check flags stripped attributes", () => {
+    const violation = checkDisabledRenderContract({
+      tagName: "A",
+      getAttribute: () => null,
+    });
+    assert.match(violation?.message ?? "", /dropped required props/);
+  });
+
+  it("contract check accepts a compliant node", () => {
+    const violation = checkDisabledRenderContract({
+      tagName: "A",
+      getAttribute: (name: string) =>
+        name === "aria-disabled" ? "true" : name === "tabindex" ? "-1" : null,
+    });
+    assert.equal(violation, null);
   });
 });

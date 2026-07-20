@@ -124,19 +124,19 @@ export function Button({
   // Dev-mode cooperative-contract check: cloning seals HOST render
   // elements, but a render COMPONENT could drop the forced props on the
   // floor before they reach its DOM. That cannot be prevented in
-  // React's model — so it is detected: while disabled, the rendered
-  // node must actually carry aria-disabled.
+  // React's model — so it is detected. Two violation shapes (Codex
+  // re-review round 4): a component that drops the REF leaves the node
+  // null — the contract requires forwarding the ref, so null-while-
+  // mounted IS the violation, not a blind spot; a component that
+  // forwards the ref but cherry-picks props is caught by checking BOTH
+  // enforced attributes on the real DOM node.
   const nodeRef = useRef<HTMLElement | null>(null);
   useEffect(() => {
     if (process.env.NODE_ENV === "production") return;
     if (!isCustomElement || !disabled) return;
-    const node = nodeRef.current;
-    if (node && node.getAttribute("aria-disabled") !== "true") {
-      logger.error(
-        "ui/Button",
-        "disabled render component dropped required props — its underlying element lacks aria-disabled; forward received props to the DOM element",
-        { element: node.tagName },
-      );
+    const violation = checkDisabledRenderContract(nodeRef.current);
+    if (violation) {
+      logger.error("ui/Button", violation.message, violation.data);
     }
   }, [isCustomElement, disabled]);
 
@@ -160,4 +160,33 @@ export function Button({
       ...(disabledCustomProps ?? {}),
     },
   });
+}
+
+/**
+ * Pure contract check behind the dev-mode detector (exported for direct
+ * unit coverage — react-test-renderer cannot attach Base UI's composed
+ * refs to mock hosts, so the logic is verified here and the effect
+ * wiring is verified through the null path).
+ */
+export function checkDisabledRenderContract(
+  node: Pick<HTMLElement, "getAttribute" | "tagName"> | null,
+): { message: string; data: Record<string, unknown> } | null {
+  if (node == null) {
+    return {
+      message:
+        "disabled render component did not forward its ref — the cooperative render contract requires spreading received props AND ref onto the underlying element",
+      data: {},
+    };
+  }
+  if (
+    node.getAttribute("aria-disabled") !== "true" ||
+    node.getAttribute("tabindex") !== "-1"
+  ) {
+    return {
+      message:
+        "disabled render component dropped required props — its underlying element lacks aria-disabled/tabindex; forward received props to the DOM element",
+      data: { element: node.tagName },
+    };
+  }
+  return null;
 }
