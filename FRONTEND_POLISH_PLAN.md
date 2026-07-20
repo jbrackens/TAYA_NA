@@ -20,11 +20,9 @@ The goal: eliminate the AI-slop signatures documented in the July 2026 audit —
 | `sonner` | 2.0.7 | Toasts (replaces hand-rolled ToastProvider) | P3 |
 | `@number-flow/react` | 0.6.1 | Animated numbers (balances, prices, totals) | P3 |
 | `vaul` | 1.1.2 | Mobile bottom-sheet drawer (trade ticket) | P3 |
-| `cmdk` | 1.1.1 | ⌘K command palette / market search | P3 — **cut candidate** (§3a) |
-| `embla-carousel-react` | 8.6.0 | Carousel engine | P3 — **cut candidate** (§3a) |
 | `lightweight-charts` | 5.2.0 | Canvas market chart (market route only, dynamic import) | P4 |
 
-**Rule:** any of these still unimported at the end of P4 gets removed — same discipline that removed 8 unused deps in the audit. Cut candidates removed immediately if John cuts them at the P1 checkpoint.
+**Rule:** any of these still unimported at the end of P4 gets removed — same discipline that removed 8 unused deps in the audit. §3a cuts EXECUTED 2026-07-19 (John + Codex both concurring): `embla-carousel-react` and `cmdk` removed.
 
 ### Dev tooling
 
