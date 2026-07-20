@@ -896,16 +896,18 @@ describe("MarketCard P8 composition", () => {
 });
 
 describe("MarketChart terminal colors", () => {
-  const marketChartSource = read("components/prediction/MarketChart.tsx");
+  // P4: rendering moved to MarketChartCanvas (lightweight-charts); the
+  // P11 color contract is unchanged and now pinned there.
+  const canvasSource = read("components/prediction/MarketChartCanvas.tsx");
 
   it("uses the terminal violet for price history, not movement colors", () => {
     assert.ok(
-      marketChartSource.includes('const lineColor = "var(--accent-lo)"'),
-      "MarketChart should use the terminal violet chart token",
+      canvasSource.includes('cssVar(container, "--accent-lo")'),
+      "chart canvas should use the terminal violet chart token",
     );
     assert.ok(
-      !/const\s+lineColor\s*=\s*isUp\s*\?/.test(marketChartSource),
-      "MarketChart line color should not switch to YES/NO based on movement",
+      !/lineColor\s*[:=]\s*isUp\s*\?/.test(canvasSource),
+      "chart line color should not switch to YES/NO based on movement",
     );
   });
 
@@ -913,12 +915,12 @@ describe("MarketChart terminal colors", () => {
   // competing with the violet primary series.
   it("draws the complement side as a muted mirror line", () => {
     assert.ok(
-      marketChartSource.includes('const complementColor = "var(--t4)"'),
-      "MarketChart should keep the complement on a quiet neutral token",
+      canvasSource.includes('cssVar(container, "--t4")'),
+      "chart canvas should keep the complement on a quiet neutral token",
     );
     assert.ok(
-      marketChartSource.includes('strokeOpacity="0.45"'),
-      "MarketChart complement line should render muted",
+      canvasSource.includes("withAlpha(muted, 0.45)"),
+      "chart complement line should render muted at 0.45",
     );
   });
 });
