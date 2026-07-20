@@ -19,6 +19,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { Button, Card } from "../components/ui";
 import { useTranslation } from "react-i18next";
 import { logger } from "../lib/logger";
 import type {
@@ -47,8 +48,10 @@ const cx = (...classes: Array<string | false | null | undefined>) =>
 
 const MONO =
   "[font-family:'IBM_Plex_Mono',monospace] [font-variant-numeric:tabular-nums]";
-const STAT_CARD =
-  "relative flex flex-col gap-1 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[18px] py-4 text-[var(--t1)] no-underline [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
+// Stat-tile shell lives on the Card primitive now; the tile's own density
+// (px-[18px] py-4) and layout stay per-usage below.
+const STAT_TILE_LAYOUT =
+  "relative flex flex-col gap-1 px-[18px] py-4 text-[var(--t1)] no-underline [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
 const STAT_LABEL = "text-xs font-medium text-[var(--t3)]";
 const STAT_VALUE = cx(
   MONO,
@@ -58,10 +61,8 @@ const STAT_SUB = "text-[11px] text-[var(--t3)]";
 const TABLE_GRID_ROW = "grid items-center gap-[14px] px-[18px]";
 const TABLE_CELL = cx(MONO, "min-w-0 text-[13px] text-[var(--t1)]");
 const DIM_TEXT = "text-[var(--t3)]";
-const LOGIN_CTA =
-  "inline-block rounded-[var(--r-md)] border border-[rgba(43,228,128,0.6)] bg-[linear-gradient(180deg,rgba(255,255,255,0.25)_0%,rgba(255,255,255,0)_50%),linear-gradient(115deg,#2be480_0%,#00ffaa_100%)] px-[22px] py-3 text-[13px] font-bold text-[#04140a] no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_10px_24px_rgba(43,228,128,0.18)] hover:brightness-105";
-const ADD_POINTS_BUTTON =
-  "inline-flex min-h-11 shrink-0 items-center rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-colors duration-[120ms] hover:border-[rgba(43,228,128,0.5)] hover:bg-[var(--surface-2)] hover:text-[var(--accent-text)]";
+// Login CTA and Add Points moved onto the Button primitive (bespoke
+// gradient/glow recipes dropped deliberately).
 
 export default function PortfolioPage() {
   const { t } = useTranslation("portfolio");
@@ -201,9 +202,13 @@ export default function PortfolioPage() {
           <p className="mb-3 text-[var(--t2)]">
             {t("state.signIn", "Sign in to see your portfolio.")}
           </p>
-          <Link href="/auth/login" className={LOGIN_CTA}>
+          <Button
+            variant="primary"
+            size="lg"
+            render={<Link href="/auth/login" />}
+          >
             {t("state.login", "Log in")}
-          </Link>
+          </Button>
         </div>
       </PageState>
     );
@@ -220,13 +225,13 @@ export default function PortfolioPage() {
             {t("subtitle", "Open positions, active orders, settled results.")}
           </p>
         </div>
-        <Link
-          href="/store"
-          className={ADD_POINTS_BUTTON}
-          data-testid="add-points-portfolio"
+        <Button
+          size="lg"
+          className="shrink-0 text-[13px]"
+          render={<Link href="/store" data-testid="add-points-portfolio" />}
         >
           {tStore("entry.addPoints", "Add Points")}
-        </Link>
+        </Button>
       </header>
 
       <SummaryStrip summary={summary} bestRank={bestRank} />
@@ -328,8 +333,11 @@ function RankChip({ entry }: { entry: LeaderboardEntry | null }) {
   return (
     <Link
       href={href}
+      // Card can't render an anchor, so the interactive tile keeps the
+      // shell classes inline on the Link.
       className={cx(
-        STAT_CARD,
+        "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)]",
+        STAT_TILE_LAYOUT,
         "border-[rgba(43,228,128,0.3)] bg-[var(--accent-soft)] transition-[transform,border-color] duration-150 hover:-translate-y-px hover:border-[rgba(43,228,128,0.55)] focus-visible:border-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-soft)]",
       )}
       aria-label={rankAriaLabel(entry)}
@@ -423,11 +431,11 @@ function StatCard({
           ? "text-[var(--accent)]"
           : undefined;
   return (
-    <div className={STAT_CARD}>
+    <Card as="div" padding="none" className={STAT_TILE_LAYOUT}>
       <span className={STAT_LABEL}>{label}</span>
       <span className={cx(STAT_VALUE, valueTone)}>{value}</span>
       {sub && <span className={STAT_SUB}>{sub}</span>}
-    </div>
+    </Card>
   );
 }
 
