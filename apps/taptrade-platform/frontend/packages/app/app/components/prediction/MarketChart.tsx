@@ -21,6 +21,7 @@
  * fallback for seeded demo boxes.
  */
 
+import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
@@ -57,8 +58,32 @@ interface MarketChartProps {
 
 const RANGES: TimeRange[] = ["1H", "6H", "1D", "1W", "ALL"];
 
+// Range spans for synthesizing bucket timestamps when the series has no
+// real buckets (synthetic walks, flat empty-state lines). Real data uses
+// the server's bucketStart times.
+const RANGE_SPAN_SEC: Record<TimeRange, number> = {
+  "1H": 3_600,
+  "6H": 21_600,
+  "1D": 86_400,
+  "1W": 604_800,
+  ALL: 90 * 86_400,
+};
+
+// The canvas renderer is client-only (lightweight-charts touches window
+// at import time) and lazy: the market route pays for it on interaction
+// readiness, and the fixed-height fallback reserves the box so the late
+// mount can never shift layout (CLS).
+const MarketChartCanvas = dynamic(() => import("./MarketChartCanvas"), {
+  ssr: false,
+  loading: () => (
+    <div
+      className="h-[300px] w-full animate-pulse rounded-[var(--r-rh-sm)] bg-[var(--surface-2)]"
+      aria-hidden="true"
+    />
+  ),
+});
+
 const CHART_CARD_CLASS = "";
-const CHART_SVG_CLASS = "block h-[300px] w-full";
 // P9.2: the range switcher is a quiet mono text-tab row under the plot
 // (Robinhood-style), not a segmented fill control. Active = ink text +
 // 2px ink underline; inactive = --t3.
@@ -72,23 +97,6 @@ function rangeButtonClass(active: boolean): string {
       ? "text-[var(--accent-text)] border-[var(--accent-lo)]"
       : "text-[var(--t3)] border-transparent hover:text-[var(--t1)]"
   }`;
-}
-
-function buildPath(values: number[], width: number, height: number): string {
-  const stepX = width / (values.length - 1);
-  const pad = height * 0.06;
-  return values
-    .map((v, i) => {
-      const x = i * stepX;
-      const y = pad + (1 - v / 100) * (height - pad * 2);
-      return `${i === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
-    })
-    .join(" ");
-}
-
-function endpointY(value: number, height: number): number {
-  const pad = height * 0.06;
-  return pad + (1 - value / 100) * (height - pad * 2);
 }
 
 export default function MarketChart({
@@ -151,27 +159,28 @@ export default function MarketChart({
       syntheticFallbackEnabled: DEMO_SYNTHETIC_CHARTS,
     });
   }, [fetchStatus, history, ticker, side, range, activePricePoints]);
-  const width = 800;
-  const height = 300;
-  // Selected side draws at full strength; its complement draws muted so
-  // the binary reads as one market with two mirrored outcomes.
-  const complementValues = useMemo(() => values.map((v) => 100 - v), [values]);
-  const line = values.length >= 2 ? buildPath(values, width, height) : "";
-  const complementLine =
-    complementValues.length >= 2
-      ? buildPath(complementValues, width, height)
-      : "";
-  const areaPath = line ? `${line} L ${width} ${height} L 0 ${height} Z` : "";
-  // Keep the chart series tied to the selected contract side so NO matches
-  // the NO button even when the NO price is moving up.
-  const lineColor = "var(--accent-lo)";
-  const complementColor = "var(--t4)";
-  const lineEndY = values.length
-    ? endpointY(values[values.length - 1], height)
-    : 0;
-  const complementEndY = complementValues.length
-    ? endpointY(complementValues[complementValues.length - 1], height)
-    : 0;
+  // Bucket timestamps for the canvas: real series use the server's
+  // bucketStart; synthetic/flat series get a synthesized span ending now
+  // (deterministic under the visual suite's frozen clock).
+  const times = useMemo(() => {
+    if (
+      history &&
+      history.points.length === values.length &&
+      values.length > 0
+    ) {
+      return history.points.map((point) =>
+        Math.floor(Date.parse(point.bucketStart) / 1000),
+      );
+    }
+    const count = values.length;
+    if (count === 0) return [];
+    const end = Math.floor(Date.now() / 1000);
+    const span = RANGE_SPAN_SEC[range];
+    const step = count > 1 ? span / (count - 1) : span;
+    return Array.from({ length: count }, (_, i) =>
+      Math.floor(end - span + i * step),
+    );
+  }, [history, values, range]);
 
   return (
     <section className={`${CHART_CARD_CLASS} relative`}>
@@ -204,88 +213,23 @@ export default function MarketChart({
       )}
 
       {(chartState === "ready" || chartState === "empty") && (
-        <svg
-          className={CHART_SVG_CLASS}
-          viewBox={`0 0 ${width} ${height}`}
-          preserveAspectRatio="none"
-          aria-label={t(side === "no" ? "NO_PRICE_CHART" : "YES_PRICE_CHART", {
-            ticker,
-          })}
-        >
-          <defs>
-            <linearGradient
-              id={`market-area-${ticker}-${side}`}
-              x1="0"
-              y1="0"
-              x2="0"
-              y2="1"
-            >
-              <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.24" />
-              <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          {[25, 50, 75].map((tick) => (
-            <line
-              key={tick}
-              x1="0"
-              x2={width}
-              y1={endpointY(tick, height)}
-              y2={endpointY(tick, height)}
-              stroke="var(--border-1)"
-              strokeDasharray="3 5"
-              strokeWidth="1"
-              vectorEffect="non-scaling-stroke"
-            />
-          ))}
-          <path
-            d={areaPath}
-            fill={`url(#market-area-${ticker}-${side})`}
-            stroke="none"
+        <div className="relative">
+          <MarketChartCanvas
+            values={values}
+            times={times}
+            ariaLabel={t(
+              side === "no" ? "NO_PRICE_CHART" : "YES_PRICE_CHART",
+              { ticker },
+            )}
           />
-          <path
-            d={complementLine}
-            stroke={complementColor}
-            strokeOpacity="0.45"
-            strokeWidth="1.5"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            vectorEffect="non-scaling-stroke"
-          />
-          <path
-            d={line}
-            stroke={lineColor}
-            strokeWidth="2"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            vectorEffect="non-scaling-stroke"
-          />
-          <g transform={`translate(${width},${complementEndY})`}>
-            <circle r="3" fill={complementColor} fillOpacity="0.45" />
-          </g>
-          <g transform={`translate(${width},${lineEndY})`}>
-            <circle
-              r="4.5"
-              fill={lineColor}
-              stroke="var(--surface-1)"
-              strokeWidth="1.5"
-            />
-          </g>
-
           {chartState === "empty" && (
-            <text
-              x={width / 2}
-              y={height / 2 - 14}
-              textAnchor="middle"
-              fontFamily="var(--font-terminal)"
-              fontSize="14"
-              fill="var(--t3)"
-            >
-              {t("NO_TRADES_IN_RANGE")}
-            </text>
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center pb-7">
+              <span className="[font-family:var(--font-terminal)] text-sm text-[var(--t3)]">
+                {t("NO_TRADES_IN_RANGE")}
+              </span>
+            </div>
           )}
-        </svg>
+        </div>
       )}
 
       <div
