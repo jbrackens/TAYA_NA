@@ -138,7 +138,11 @@ export function Button({
     if (violation) {
       logger.error("ui/Button", violation.message, violation.data);
     }
-  }, [isCustomElement, disabled]);
+    // render?.type keeps the check live across TARGET SWAPS (a compliant
+    // target replaced by a violating one while still disabled) without
+    // re-running on every render — element objects are new each render,
+    // but the target's component identity is stable until it changes.
+  }, [isCustomElement, disabled, render?.type]);
 
   return useRender({
     // The default element is a real <button> with an explicit type;

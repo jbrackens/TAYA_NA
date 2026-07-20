@@ -194,6 +194,15 @@ describe("ui/Button element modes", () => {
     assert.match(violation?.message ?? "", /dropped required props/);
   });
 
+  it("contract check flags tabindex dropped even when aria-disabled survives", () => {
+    const violation = checkDisabledRenderContract({
+      tagName: "A",
+      getAttribute: (name: string) =>
+        name === "aria-disabled" ? "true" : null,
+    });
+    assert.match(violation?.message ?? "", /dropped required props/);
+  });
+
   it("contract check accepts a compliant node", () => {
     const violation = checkDisabledRenderContract({
       tagName: "A",
