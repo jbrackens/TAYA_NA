@@ -14,6 +14,7 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
+import { Sheet } from "../ui";
 import type {
   Category,
   DiscoveryResponse,
@@ -608,29 +609,22 @@ function MarketSignalRow({
 function TradePreview({
   market,
   values,
-  mobileOpen,
+  variant,
   onClose,
   onMarketUpdate,
 }: {
   market: PredictionMarket;
   values?: number[];
-  mobileOpen: boolean;
-  onClose: () => void;
+  /** rail = the ≥1180px sticky right column; sheet = inside ui/Sheet. */
+  variant: "rail" | "sheet";
+  onClose?: () => void;
   onMarketUpdate: (market: PredictionMarket) => void;
 }) {
   const { t } = useTranslation("prediction");
   const source = sourceLabel(market.settlementSourceKey);
 
-  return (
-    // biome-ignore lint/a11y/useAriaPropsSupportedByRole: aria-modal is undefined unless role='dialog' (mobileOpen) — the conditional is opaque to static analysis
-    <aside
-      role={mobileOpen ? "dialog" : "complementary"}
-      aria-modal={mobileOpen ? true : undefined}
-      aria-label={t("TRADE_PREVIEW")}
-      className={`terminal-scrollbar sticky top-[74px] h-[calc(100vh-74px)] overflow-y-auto border-l border-[var(--border-1)] bg-[var(--surface-1)] p-5 max-[1179px]:fixed max-[1179px]:inset-x-3 max-[1179px]:bottom-5 max-[1179px]:top-auto max-[1179px]:z-[130] max-[1179px]:h-auto max-[1179px]:max-h-[calc(100vh-40px)] max-[1179px]:rounded-xl max-[1179px]:border max-[899px]:bottom-[calc(68px+env(safe-area-inset-bottom))] max-[899px]:max-h-[calc(100vh-92px)] max-[760px]:p-4 ${
-        mobileOpen ? "max-[1179px]:block" : "max-[1179px]:hidden"
-      }`}
-    >
+  const body = (
+    <>
       <div className="flex items-start justify-between gap-4">
         <h2
           data-testid="selected-market-title"
@@ -646,14 +640,16 @@ function TradePreview({
           >
             <ExternalLink size={18} weight="regular" aria-hidden="true" />
           </Link>
-          <button
-            type="button"
-            onClick={onClose}
-            className="hidden size-11 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-[var(--t3)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--t1)] max-[1179px]:grid"
-            aria-label={t("CLOSE_TRADE_PREVIEW")}
-          >
-            <X size={18} weight="regular" aria-hidden="true" />
-          </button>
+          {variant === "sheet" && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="grid size-11 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-[var(--t3)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--t1)]"
+              aria-label={t("CLOSE_TRADE_PREVIEW")}
+            >
+              <X size={18} weight="regular" aria-hidden="true" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -669,13 +665,15 @@ function TradePreview({
         <ProbabilityGauge value={market.yesPricePoints} />
       </div>
 
-      <div className="mt-4 max-[1179px]:hidden">
-        <SignalChart
-          values={values}
-          compact
-          label={t("YES_PRICE_CHART", { ticker: market.ticker })}
-        />
-      </div>
+      {variant === "rail" && (
+        <div className="mt-4">
+          <SignalChart
+            values={values}
+            compact
+            label={t("YES_PRICE_CHART", { ticker: market.ticker })}
+          />
+        </div>
+      )}
 
       <div className="mt-4 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-3.5">
         <div className="flex items-center gap-2 text-[12px] font-medium text-[var(--t2)]">
@@ -694,6 +692,17 @@ function TradePreview({
           onMarketUpdate={onMarketUpdate}
         />
       </div>
+    </>
+  );
+
+  if (variant === "sheet") return body;
+
+  return (
+    <aside
+      aria-label={t("TRADE_PREVIEW")}
+      className="terminal-scrollbar sticky top-[74px] h-[calc(100vh-74px)] overflow-y-auto border-l border-[var(--border-1)] bg-[var(--surface-1)] p-5 max-[1179px]:hidden"
+    >
+      {body}
     </aside>
   );
 }
@@ -767,29 +776,26 @@ export function PredictionWorkspace({
     setActiveFeaturedId(marketId);
     setSelectedId(marketId);
   }, []);
+  // Reactive ≤1179px band: the rail unmounts and the ticket lives in the
+  // vaul sheet instead (never both — two mounted tickets would double
+  // preview fetches and fork amount state). SSR/first paint renders the
+  // rail; CSS hides it on the band until the effect flips the state.
+  const [isMobileBand, setIsMobileBand] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 1179px)");
+    const sync = () => setIsMobileBand(mql.matches);
+    sync();
+    mql.addEventListener("change", sync);
+    return () => mql.removeEventListener("change", sync);
+  }, []);
+  useEffect(() => {
+    if (!isMobileBand) setMobileTradeOpen(false);
+  }, [isMobileBand]);
+
   const openTrade = (marketId: string) => {
     setSelectedId(marketId);
-    if (
-      typeof window !== "undefined" &&
-      window.matchMedia("(max-width: 1179px)").matches
-    ) {
-      setMobileTradeOpen(true);
-    }
+    if (isMobileBand) setMobileTradeOpen(true);
   };
-
-  useEffect(() => {
-    if (!mobileTradeOpen) return;
-    const previousOverflow = document.body.style.overflow;
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMobileTradeOpen(false);
-    };
-    document.body.style.overflow = "hidden";
-    document.addEventListener("keydown", handleEscape);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [mobileTradeOpen]);
 
   if (!activeFeatured || !selected) {
     return (
@@ -863,21 +869,27 @@ export function PredictionWorkspace({
         </p>
       </div>
 
-      {mobileTradeOpen && (
-        <button
-          type="button"
-          onClick={() => setMobileTradeOpen(false)}
-          className="fixed inset-0 z-[115] hidden cursor-default border-0 bg-black/70 backdrop-blur-[2px] max-[1179px]:block"
-          aria-label={t("CLOSE_TRADE_PREVIEW")}
+      {!isMobileBand && (
+        <TradePreview
+          variant="rail"
+          market={selected}
+          values={histories.get(selected.ticker)}
+          onMarketUpdate={handleMarketUpdate}
         />
       )}
-      <TradePreview
-        market={selected}
-        values={histories.get(selected.ticker)}
-        mobileOpen={mobileTradeOpen}
-        onClose={() => setMobileTradeOpen(false)}
-        onMarketUpdate={handleMarketUpdate}
-      />
+      <Sheet
+        open={mobileTradeOpen && isMobileBand}
+        onOpenChange={setMobileTradeOpen}
+        title={t("TRADE_PREVIEW")}
+      >
+        <TradePreview
+          variant="sheet"
+          market={selected}
+          values={histories.get(selected.ticker)}
+          onClose={() => setMobileTradeOpen(false)}
+          onMarketUpdate={handleMarketUpdate}
+        />
+      </Sheet>
     </div>
   );
 }

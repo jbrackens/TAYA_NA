@@ -137,7 +137,6 @@ const POINTS_SURFACES = [
   "../portfolio/page.tsx",
   "../account/page.tsx",
   "../leaderboards/page.tsx",
-  "../components/prediction/TopBar.tsx",
   "../components/prediction/OrderBook.tsx",
   "../components/prediction/RecentTrades.tsx",
   "../components/prediction/DiscoveryHero.tsx",
@@ -157,12 +156,31 @@ describe("points surfaces use the shared module", () => {
     });
   }
 
-  it("TopBar renders the balance through formatPoints, not toFixed", () => {
+  it("TopBar renders the balance through ui/PointsFlow, not toFixed", () => {
+    // P3: the balance chip animates via PointsFlow, which carries the same
+    // whole-Points contract as lib/points (checked below). The ban on
+    // toFixed/÷100/local formatters is unchanged.
     const source = readFileSync(
       resolve(__dirname, "../components/prediction/TopBar.tsx"),
       "utf-8",
     );
     assert.ok(!source.includes("balance.toFixed"));
-    assert.ok(source.includes("formatPoints(balance)"));
+    assert.doesNotMatch(source, DIVIDE_BY_100);
+    assert.ok(
+      !source.includes("function formatPoints"),
+      "local formatPoints implementations are retired",
+    );
+    assert.ok(source.includes("<PointsFlow value={balance}"));
+  });
+
+  it("PointsFlow pins the whole-Points unit model", () => {
+    const source = readFileSync(
+      resolve(__dirname, "../components/ui/PointsFlow.tsx"),
+      "utf-8",
+    );
+    assert.ok(source.includes("Math.round(value)"));
+    assert.ok(source.includes("maximumFractionDigits: 0"));
+    assert.ok(source.includes('locales="en-US"'));
+    assert.doesNotMatch(source, DIVIDE_BY_100);
   });
 });

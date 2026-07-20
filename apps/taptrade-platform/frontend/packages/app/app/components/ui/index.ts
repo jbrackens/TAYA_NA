@@ -19,4 +19,6 @@ export {
   DialogTitle,
   DialogTrigger,
 } from "./Dialog";
+export { PointsFlow, type PointsFlowProps } from "./PointsFlow";
+export { Sheet, type SheetProps } from "./Sheet";
 export { OVERLAY_Z, cx, variants } from "./variants";

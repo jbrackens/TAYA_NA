@@ -17,6 +17,9 @@ export const OVERLAY_Z = {
   dialog: "z-[240]",
   menu: "z-[260]",
   tooltip: "z-[280]",
+  // Toasts sit above everything: they announce outcomes of actions taken
+  // inside dialogs/sheets, so they must never render behind one.
+  toast: "z-[300]",
 } as const;
 
 export function cx(...parts: Array<string | false | null | undefined>): string {

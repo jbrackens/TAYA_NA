@@ -7,7 +7,7 @@
  */
 
 import { useTranslation } from "react-i18next";
-import { Card } from "../ui";
+import { Card, PointsFlow } from "../ui";
 import { formatPointsAmount } from "../../lib/points";
 import { formatUsdCents } from "../../lib/usd";
 import type { StorePurchaseStatus } from "../../lib/api/store-client";
@@ -93,7 +93,7 @@ export function OrderSummary({
             {t("summary.total", "Total points")}
           </span>
           <span className={VALUE_CLASS}>
-            {formatPointsAmount(order.totalPoints)} {t("packs.unit", "pts")}
+            <PointsFlow value={order.totalPoints} /> {t("packs.unit", "pts")}
           </span>
         </div>
         <div className={ROW_CLASS}>

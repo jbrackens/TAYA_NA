@@ -124,3 +124,30 @@ export async function assertPageHealthy(
 
 export const test = base;
 export { expect };
+
+/**
+ * P3: on the <=1023px band the market page's trade workspace lives in a
+ * vaul bottom sheet behind the fixed "Trade market" CTA. Desktop renders
+ * the aside directly, so this is a no-op there. Call after navigating to
+ * a market page and before touching ticket controls.
+ */
+export async function openTradeTicket(page: Page): Promise<void> {
+  const trigger = page.getByTestId("open-trade-sheet");
+  const ticket = page.locator('section[aria-label="Trade ticket"]');
+  // Settle first: a bare isVisible() races page load and silently no-ops.
+  // Polled pair, not .or().first() — the union resolves in DOM order and
+  // picks the CSS-hidden sheet trigger on desktop.
+  await expect
+    .poll(
+      async () => {
+        if (await ticket.isVisible().catch(() => false)) return true;
+        return trigger.isVisible().catch(() => false);
+      },
+      { timeout: 15_000 },
+    )
+    .toBe(true);
+  if (await trigger.isVisible().catch(() => false)) {
+    await trigger.click();
+    await ticket.waitFor({ state: "visible", timeout: 10_000 });
+  }
+}

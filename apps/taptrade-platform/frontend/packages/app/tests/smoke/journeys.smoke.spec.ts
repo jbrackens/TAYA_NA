@@ -1,4 +1,6 @@
-import { test, expect, captureConsoleErrors } from "./_shared";
+import { test, expect, captureConsoleErrors,
+  openTradeTicket,
+} from "./_shared";
 import type { APIRequestContext, BrowserContext, Page } from "@playwright/test";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -157,9 +159,27 @@ async function openLiquidMarket(page: Page): Promise<string> {
     ticker = candidate!.ticker;
   }
   await page.goto(`/market/${ticker}/`);
-  await expect(page.getByText(/Buy YES|Buy NO/i).first()).toBeVisible({
-    timeout: 15_000,
-  });
+  // Readiness: ticket tabs on desktop; on the <=1023px band the ticket
+  // is sheeted (P3) and the fixed trade CTA is the readiness signal.
+  // (Polled pair, not .or().first(): the union resolves in DOM order and
+  // would pick the CSS-hidden sheet trigger on desktop.)
+  await expect
+    .poll(
+      async () => {
+        const tabs = await page
+          .getByText(/Buy YES|Buy NO/i)
+          .first()
+          .isVisible()
+          .catch(() => false);
+        if (tabs) return true;
+        return page
+          .getByTestId("open-trade-sheet")
+          .isVisible()
+          .catch(() => false);
+      },
+      { timeout: 15_000 },
+    )
+    .toBe(true);
   return ticker;
 }
 
@@ -310,6 +330,7 @@ test.describe("store + trading journeys (fresh user)", () => {
     // than the CURRENT balance can cover so the insufficient state is
     // guaranteed regardless of faucet configuration.
     const bal = await apiBalance(page.request, userId);
+    await openTradeTicket(page);
     const amount = page
       .locator('input[inputmode="numeric"], input[type="number"]')
       .first();
@@ -344,6 +365,7 @@ test.describe("store + trading journeys (fresh user)", () => {
     // Enter through the ticket CTA so the return context is real.
     await page.goto(marketPath);
     const balNow = await apiBalance(page.request, userId);
+    await openTradeTicket(page);
     const amount = page
       .locator('input[inputmode="numeric"], input[type="number"]')
       .first();
@@ -400,6 +422,7 @@ test.describe("store + trading journeys (fresh user)", () => {
     expect(before).toBeGreaterThanOrEqual(1000);
 
     await page.goto(marketPath);
+    await openTradeTicket(page);
     const amount = page
       .locator('input[inputmode="numeric"], input[type="number"]')
       .first();
