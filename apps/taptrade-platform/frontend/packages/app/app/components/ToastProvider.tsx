@@ -1,17 +1,20 @@
 "use client";
 
+/**
+ * Toasts — sonner underneath, the app's existing useToast() API on top
+ * (P3). The hand-rolled queue/timer/exit-animation provider is deleted;
+ * sonner owns scheduling, stacking, swipe-dismiss, pause-on-hover, and
+ * reduced-motion. The P9 card (white surface, hairline border, dot
+ * signature) and the a11y contract (errors interrupt, the rest stay
+ * polite) are unchanged — they live in the custom card below.
+ */
+
 import type React from "react";
-import {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useRef,
-  useEffect,
-} from "react";
+import { createContext, useContext, useMemo } from "react";
+import { Toaster, toast as sonnerToast } from "sonner";
 import { Check, X, Info, AlertTriangle } from "lucide-react";
 
-// ── Types ──
+// ── Types (public API, unchanged) ──
 export type ToastType = "success" | "error" | "info" | "warning";
 
 export interface Toast {
@@ -23,7 +26,6 @@ export interface Toast {
 }
 
 interface ToastContextValue {
-  toasts: Toast[];
   addToast: (toast: Omit<Toast, "id">) => string;
   removeToast: (id: string) => void;
   success: (title: string, message?: string) => string;
@@ -48,75 +50,34 @@ const icons: Record<ToastType, React.ReactNode> = {
   warning: <AlertTriangle size={14} strokeWidth={2} />,
 };
 
-// P9 (2026-07-08): toasts are system cards, not tinted glass. The retired
-// treatment (colored border on a translucent *-soft fill + tinted icon
-// block) survived from the soft-tint era and read as glassmorphism on the
-// white P9 backdrop — login/logout toasts were hard to read. Now: white
+// P9 (2026-07-08): toasts are system cards, not tinted glass — white
 // --surface-1 card, hairline --border-1, --shadow-card, INK title, --t2
-// message, and status speaks through the dot signature (DESIGN.md "The
-// dot") plus a tinted icon glyph — never through the card surface.
-const toastClasses: Record<
-  ToastType,
-  {
-    dot: string;
-    icon: string;
-  }
-> = {
-  success: {
-    dot: "bg-[var(--yes-bar)]",
-    icon: "text-[var(--yes-text)]",
-  },
-  error: {
-    dot: "bg-[var(--no-bar)]",
-    icon: "text-[var(--no-text)]",
-  },
-  info: {
-    dot: "bg-[var(--brand-period)]",
-    icon: "text-[var(--accent-text)]",
-  },
-  warning: {
-    dot: "bg-[#d97706]",
-    icon: "text-[#b45309]",
-  },
+// message; status speaks through the dot signature (DESIGN.md "The dot")
+// plus a tinted icon glyph — never through the card surface.
+const toastClasses: Record<ToastType, { dot: string; icon: string }> = {
+  success: { dot: "bg-[var(--yes-bar)]", icon: "text-[var(--yes-text)]" },
+  error: { dot: "bg-[var(--no-bar)]", icon: "text-[var(--no-text)]" },
+  info: { dot: "bg-[var(--brand-period)]", icon: "text-[var(--accent-text)]" },
+  warning: { dot: "bg-[#d97706]", icon: "text-[#b45309]" },
 };
 
-// ── Single Toast Component ──
-const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
+// ── The P9 card, rendered through sonner's custom slot ──
+function ToastCard({
   toast,
-  onRemove,
-}) => {
-  const [exiting, setExiting] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  sonnerId,
+}: {
+  toast: Omit<Toast, "id">;
+  sonnerId: string | number;
+}) {
   const c = toastClasses[toast.type];
-  const toastId = toast.id;
-  const toastDuration = toast.duration;
-
-  useEffect(() => {
-    const dur = toastDuration ?? 4000;
-    timerRef.current = setTimeout(() => {
-      setExiting(true);
-      setTimeout(() => onRemove(toastId), 300);
-    }, dur);
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [toastId, toastDuration, onRemove]);
-
-  const handleClose = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    setExiting(true);
-    setTimeout(() => onRemove(toast.id), 300);
-  }, [toast.id, onRemove]);
-
   return (
     <div
       // Errors interrupt (role=alert/assertive); informational toasts stay
       // polite. A single polite role previously under-announced failures.
       role={toast.type === "error" ? "alert" : "status"}
       aria-live={toast.type === "error" ? "assertive" : "polite"}
-      className={`pointer-events-auto flex min-w-[300px] max-w-[400px] items-start gap-3 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3.5 shadow-[var(--shadow-card)] transition-all duration-300 motion-reduce:transition-none ${exiting ? "translate-x-10 opacity-0" : "translate-x-0 opacity-100"}`}
+      className="pointer-events-auto flex min-w-[300px] max-w-[400px] items-start gap-3 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3.5 shadow-[var(--shadow-card)]"
     >
-      {/* Status: the dot signature + a small tinted glyph on the white card */}
       <div className="flex shrink-0 items-center gap-2 pt-[3px]">
         <span
           className={`h-2.5 w-2.5 rounded-full ${c.dot}`}
@@ -127,7 +88,6 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
         </span>
       </div>
 
-      {/* Text */}
       <div className="min-w-0 flex-1">
         <div className="text-[13px] font-semibold leading-[1.4] text-[var(--t1)]">
           {toast.title}
@@ -139,70 +99,57 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
         )}
       </div>
 
-      {/* Close */}
       <button
         type="button"
-        onClick={handleClose}
+        onClick={() => sonnerToast.dismiss(sonnerId)}
         className="shrink-0 cursor-pointer border-0 bg-transparent p-0.5 text-base leading-none text-[var(--t3)] transition-colors duration-150 hover:text-[var(--t1)]"
       >
         ×
       </button>
     </div>
   );
-};
+}
+
+function show(toast: Omit<Toast, "id">): string {
+  const id = sonnerToast.custom(
+    (sonnerId) => <ToastCard toast={toast} sonnerId={sonnerId} />,
+    { duration: toast.duration ?? 4000 },
+  );
+  return String(id);
+}
 
 // ── Provider ──
-let toastCounter = 0;
-
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [toasts, setToasts] = useState<Toast[]>([]);
-
-  const removeToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
-
-  const addToast = useCallback((toast: Omit<Toast, "id">): string => {
-    const id = `toast-${++toastCounter}-${Date.now()}`;
-    setToasts((prev) => [...prev, { ...toast, id }]);
-    return id;
-  }, []);
-
-  const success = useCallback(
-    (title: string, message?: string) =>
-      addToast({ type: "success", title, message }),
-    [addToast],
-  );
-  const error = useCallback(
-    (title: string, message?: string) =>
-      addToast({ type: "error", title, message }),
-    [addToast],
-  );
-  const info = useCallback(
-    (title: string, message?: string) =>
-      addToast({ type: "info", title, message }),
-    [addToast],
-  );
-  const warning = useCallback(
-    (title: string, message?: string) =>
-      addToast({ type: "warning", title, message }),
-    [addToast],
+  const value = useMemo<ToastContextValue>(
+    () => ({
+      addToast: show,
+      removeToast: (id) => sonnerToast.dismiss(id),
+      success: (title, message) => show({ type: "success", title, message }),
+      error: (title, message) => show({ type: "error", title, message }),
+      info: (title, message) => show({ type: "info", title, message }),
+      warning: (title, message) => show({ type: "warning", title, message }),
+    }),
+    [],
   );
 
   return (
-    <ToastContext.Provider
-      value={{ toasts, addToast, removeToast, success, error, info, warning }}
-    >
+    <ToastContext.Provider value={value}>
       {children}
 
-      {/* Toast Container — fixed top-right, BELOW the 64px header so
-          notifications never cover the nav/balance controls. */}
-      <div className="pointer-events-none fixed right-4 top-[76px] z-[9999] flex flex-col gap-2">
-        {toasts.map((t) => (
-          <ToastItem key={t.id} toast={t} onRemove={removeToast} />
-        ))}
-      </div>
+      {/* Fixed top-right, BELOW the 64px header so notifications never
+          cover the nav/balance controls (76px contract). zIndex mirrors
+          OVERLAY_Z.toast (z-[300]) — sonner takes a numeric style, not a
+          class. ToastProvider mounts inside AppShell's themed wrapper, so
+          cards resolve route-native tokens (html[data-theme] mirror). */}
+      <Toaster
+        position="top-right"
+        offset={{ top: 76, right: 16 }}
+        mobileOffset={{ top: 76, right: 16 }}
+        gap={8}
+        style={{ zIndex: 300 }}
+      />
     </ToastContext.Provider>
   );
 };
