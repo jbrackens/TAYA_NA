@@ -12,8 +12,9 @@
  */
 
 import { useRender } from "@base-ui-components/react/use-render";
-import { cloneElement } from "react";
+import { cloneElement, useEffect, useRef } from "react";
 import type { ButtonHTMLAttributes } from "react";
+import { logger } from "../../lib/logger";
 import { cx, variants } from "./variants";
 
 export type ButtonVariant =
@@ -68,6 +69,13 @@ export interface ButtonProps extends Omit<
    * Element form only (not Base UI's function form): the disabled
    * contract below is enforced by cloning the element, which requires
    * owning its props.
+   *
+   * COOPERATIVE CONTRACT (inherent to React composition — the same
+   * holds for Radix asChild and Base UI render everywhere): when the
+   * render target is a COMPONENT, it must forward received props to its
+   * underlying element. React cannot force a component to honor props
+   * it discards; a dev-mode runtime check below detects and reports
+   * violations against the rendered DOM node.
    */
   render?: React.ReactElement<Record<string, unknown>>;
   ref?: React.Ref<HTMLButtonElement>;
@@ -113,11 +121,30 @@ export function Button({
       ? cloneElement(render, { ...disabledCustomProps })
       : render;
 
+  // Dev-mode cooperative-contract check: cloning seals HOST render
+  // elements, but a render COMPONENT could drop the forced props on the
+  // floor before they reach its DOM. That cannot be prevented in
+  // React's model — so it is detected: while disabled, the rendered
+  // node must actually carry aria-disabled.
+  const nodeRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
+    if (!isCustomElement || !disabled) return;
+    const node = nodeRef.current;
+    if (node && node.getAttribute("aria-disabled") !== "true") {
+      logger.error(
+        "ui/Button",
+        "disabled render component dropped required props — its underlying element lacks aria-disabled; forward received props to the DOM element",
+        { element: node.tagName },
+      );
+    }
+  }, [isCustomElement, disabled]);
+
   return useRender({
     // The default element is a real <button> with an explicit type;
     // custom render elements own their own semantics (Link needs none).
     render: effectiveRender ?? <button type={type} />,
-    ref,
+    ref: ref != null ? [ref, nodeRef] : nodeRef,
     props: {
       className: cx(
         buttonVariant(variant),
