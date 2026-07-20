@@ -89,8 +89,44 @@ describe("ui/Button element modes", () => {
       0,
       "caller onClick must not run while disabled",
     );
-    assert.equal(event.preventDefault.mock.callCount(), 1);
-    assert.equal(event.stopPropagation.mock.callCount(), 1);
+    // The guard is attached at BOTH the hook layer and the cloned render
+    // element (defense in depth); Base UI composes them, so it may fire
+    // more than once. The invariant is that activation was blocked.
+    assert.ok(event.preventDefault.mock.callCount() >= 1);
+    assert.ok(event.stopPropagation.mock.callCount() >= 1);
+  });
+
+  it("disabled semantics survive hostile props on the render element itself", () => {
+    // Codex re-review round 3: Base UI merges the render element's own
+    // props over the hook's, so the disabled contract must hold even
+    // when the render target carries contradicting props and its own
+    // handler. The cloneElement enforcement replaces them outright.
+    const targetClick = mock.fn();
+    const props = renderProps(
+      createElement(
+        Button,
+        {
+          disabled: true,
+          render: createElement("a", {
+            href: "/x",
+            "aria-disabled": false,
+            tabIndex: 0,
+            onClick: targetClick,
+          }),
+        },
+        "Go",
+      ),
+    );
+    assert.equal(props["aria-disabled"], true, "hostile aria-disabled loses");
+    assert.equal(props.tabIndex, -1, "hostile tabIndex loses");
+    const event = fakeEvent();
+    props.onClick?.(event);
+    assert.equal(
+      targetClick.mock.callCount(),
+      0,
+      "the render target's own onClick must never run while disabled",
+    );
+    assert.ok(event.preventDefault.mock.callCount() >= 1);
   });
 
   it("enabled custom render forwards the caller onClick", () => {

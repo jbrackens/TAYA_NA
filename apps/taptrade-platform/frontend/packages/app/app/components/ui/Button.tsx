@@ -12,6 +12,7 @@
  */
 
 import { useRender } from "@base-ui-components/react/use-render";
+import { cloneElement } from "react";
 import type { ButtonHTMLAttributes } from "react";
 import { cx, variants } from "./variants";
 
@@ -62,8 +63,13 @@ export interface ButtonProps extends Omit<
   variant?: ButtonVariant;
   size?: ButtonSize;
   className?: string;
-  /** Replace the underlying element, e.g. render={<Link href=…/>}. */
-  render?: useRender.RenderProp;
+  /**
+   * Replace the underlying element, e.g. render={<Link href=…/>}.
+   * Element form only (not Base UI's function form): the disabled
+   * contract below is enforced by cloning the element, which requires
+   * owning its props.
+   */
+  render?: React.ReactElement<Record<string, unknown>>;
   ref?: React.Ref<HTMLButtonElement>;
 }
 
@@ -81,30 +87,36 @@ export function Button({
   // Custom render targets (e.g. render={<Link/>}) are not <button>s: the
   // `disabled` attribute is invalid there, so it translates to
   // aria-disabled + removal from the tab order + activation blocking.
-  // Two subtleties (Codex re-review 2026-07-19): these props must land
-  // AFTER ...rest so callers can't accidentally undo disabled semantics,
-  // and the click guard must preventDefault rather than omit onClick —
-  // Base UI merges the render element's OWN handlers after ours, so a
-  // Next <Link>'s internal navigation still runs on keyboard/programmatic
-  // activation; Link (like all well-behaved handlers) bails when the
-  // event is already defaultPrevented.
+  // Enforcement is by CLONING the render element with those props forced
+  // (Codex re-review 2026-07-19 round 3): Base UI merges the render
+  // element's own props over the hook's, so semantics attached only at
+  // the hook layer could be overridden by props on the render element
+  // itself — clone props replace the element's own, including its
+  // original onClick, which the guard supersedes entirely while
+  // disabled. The guard still preventDefault()s for any handler Base UI
+  // composes around it (Next <Link> bails on defaultPrevented).
   const isCustomElement = render != null;
+  const blockActivation = (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
   const disabledCustomProps =
     isCustomElement && disabled
       ? ({
           "aria-disabled": true,
           tabIndex: -1,
-          onClick: (event: React.MouseEvent) => {
-            event.preventDefault();
-            event.stopPropagation();
-          },
+          onClick: blockActivation,
         } as const)
       : null;
+  const effectiveRender =
+    render != null && disabledCustomProps
+      ? cloneElement(render, { ...disabledCustomProps })
+      : render;
 
   return useRender({
     // The default element is a real <button> with an explicit type;
     // custom render elements own their own semantics (Link needs none).
-    render: render ?? <button type={type} />,
+    render: effectiveRender ?? <button type={type} />,
     ref,
     props: {
       className: cx(
