@@ -7,11 +7,11 @@
 // and tells the user "check your email" when nothing was sent.
 import Link from "next/link";
 import { brand } from "../../lib/brand";
+import { Card } from "../../components/ui";
 
 const SUPPORT_EMAIL = brand.supportEmail;
+// Card recipe migrated to the components/ui Card primitive (P2).
 const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
-const CARD_CLASS =
-  "relative w-full max-w-[440px] rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[34px] pb-[30px] pt-9 text-[var(--t1)]";
 const HEAD_CLASS = "mb-6 text-center";
 const EYEBROW_CLASS =
   "mb-3.5 inline-block rounded-[var(--r-pill)] border border-[rgba(43,228,128,0.3)] bg-[var(--accent-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]";
@@ -32,7 +32,11 @@ const LINK_ROW_CLASS = "mb-2 last:mb-0";
 export default function ForgotPasswordPage() {
   return (
     <div className={SHELL_CLASS}>
-      <div className={CARD_CLASS}>
+      <Card
+        as="div"
+        padding="lg"
+        className="relative w-full max-w-[440px] text-[var(--t1)]"
+      >
         <div className={HEAD_CLASS}>
           <span className={EYEBROW_CLASS}>Reset access</span>
           <h1 className={TITLE_CLASS}>Forgot password?</h1>
@@ -68,7 +72,7 @@ export default function ForgotPasswordPage() {
             </Link>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Card } from "../components/ui";
 import { useTranslation } from "react-i18next";
 import {
   getGlobalActivity,
@@ -14,8 +15,7 @@ const HEADER_CLASS = "mb-5 flex items-end justify-between gap-4";
 const TITLE_CLASS = "m-0 text-[28px] font-extrabold tracking-[-0.02em]";
 const LINK_CLASS =
   "text-xs text-[var(--t2)] underline-offset-4 hover:text-[var(--accent)] hover:underline";
-const SECTION_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-6";
+// Card shell (padding="lg") replaced the p-6 section recipe.
 const LIST_CLASS = "flex flex-col gap-3";
 const ITEM_CLASS =
   "border-t border-[var(--border-1)] pt-3 first:border-t-0 first:pt-0";
@@ -60,7 +60,7 @@ export default function ActivityPage() {
           {t("BACK_TO_MARKETS", "Back to markets")}
         </Link>
       </header>
-      <section className={SECTION_CLASS}>
+      <Card as="section" padding="lg">
         {loading ? (
           <div className={STATE_CLASS}>
             {t("SOCIAL_LOADING_ACTIVITY", "Loading activity.")}
@@ -89,7 +89,7 @@ export default function ActivityPage() {
             ))}
           </div>
         )}
-      </section>
+      </Card>
     </main>
   );
 }

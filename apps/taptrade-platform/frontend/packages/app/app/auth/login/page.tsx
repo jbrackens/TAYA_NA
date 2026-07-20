@@ -16,10 +16,10 @@ import { safeReturnPath, returnUrlSuffix } from "../../lib/safeReturnPath";
 import { FEATURE_SOCIAL_AUTH } from "../../lib/features";
 import { brand } from "../../lib/brand";
 import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
+import { Button, Card, Input } from "../../components/ui";
 
+// Card/Input/Button recipes migrated to components/ui primitives (P2).
 const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
-const CARD_CLASS =
-  "relative w-full max-w-[440px] rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[34px] pb-[30px] pt-9";
 const HEAD_CLASS = "mb-6 text-center";
 const EYEBROW_CLASS =
   "mb-3.5 inline-block rounded-full border border-[rgba(43,228,128,0.3)] bg-[var(--accent-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]";
@@ -30,12 +30,8 @@ const FORM_CLASS = "flex flex-col gap-3.5";
 const FIELD_CLASS = "flex flex-col gap-1.5";
 const FIELD_LABEL_CLASS =
   "text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
-const INPUT_CLASS =
-  "w-full box-border rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3 text-sm text-[var(--t1)] outline-none transition-[border-color] duration-150 ease-[ease] placeholder:text-[var(--t4)] focus-visible:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] [font-family:inherit]";
 const ERROR_CLASS =
   "rounded-[var(--r-sm)] border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.1)] px-3 py-2.5 text-xs text-[var(--no-text)]";
-const SUBMIT_CLASS =
-  "mt-1 cursor-pointer rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-4 py-3.5 text-sm font-bold tracking-[0.02em] text-[#04140a] transition-[transform,filter] duration-[180ms] ease-[ease] enabled:hover:-translate-y-px enabled:hover:brightness-[1.05] enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 [font-family:inherit]";
 const LINKS_CLASS = "flex justify-end";
 const LINK_CLASS =
   "text-xs text-[var(--t3)] no-underline transition-colors duration-150 hover:text-[var(--t1)]";
@@ -94,7 +90,7 @@ export default function LoginPage() {
 
   return (
     <div className={SHELL_CLASS}>
-      <div className={CARD_CLASS}>
+      <Card as="div" padding="lg" className="relative w-full max-w-[440px]">
         <header className={HEAD_CLASS}>
           <span className={EYEBROW_CLASS}>Player access</span>
           <h1 className={TITLE_CLASS}>{brand.name}</h1>
@@ -105,29 +101,31 @@ export default function LoginPage() {
         </header>
 
         <form onSubmit={onSubmit} className={FORM_CLASS} noValidate>
-          <label className={FIELD_CLASS}>
+          <label className={FIELD_CLASS} htmlFor="login-username">
             <span className={FIELD_LABEL_CLASS}>Username or email</span>
-            <input
+            <Input
+              id="login-username"
               type="text"
               name="username"
               autoComplete="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className={INPUT_CLASS}
+              className="w-full"
               placeholder="you@example.com"
               required
             />
           </label>
 
-          <label className={FIELD_CLASS}>
+          <label className={FIELD_CLASS} htmlFor="login-password">
             <span className={FIELD_LABEL_CLASS}>Password</span>
-            <input
+            <Input
+              id="login-password"
               type="password"
               name="password"
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={INPUT_CLASS}
+              className="w-full"
               placeholder="••••••••"
               required
             />
@@ -135,13 +133,15 @@ export default function LoginPage() {
 
           {error && <div className={ERROR_CLASS}>{error}</div>}
 
-          <button
+          <Button
+            variant="cta"
+            size="none"
             type="submit"
             disabled={submitting || !username || !password}
-            className={SUBMIT_CLASS}
+            className="mt-1"
           >
             {submitting ? "Signing in…" : "Log in"}
-          </button>
+          </Button>
 
           <div className={LINKS_CLASS}>
             <Link href="/auth/forgot-password" className={LINK_CLASS}>
@@ -181,7 +181,7 @@ export default function LoginPage() {
             Create an account
           </Link>
         </footer>
-      </div>
+      </Card>
     </div>
   );
 }

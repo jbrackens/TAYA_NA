@@ -32,9 +32,12 @@ export type ButtonSize = "sm" | "md" | "lg" | "none";
 const buttonVariant = variants<ButtonVariant>(
   "inline-flex cursor-pointer select-none items-center justify-center gap-1.5 disabled:cursor-not-allowed",
   {
-    // The store/ticket CTA recipe.
+    // The accent action recipe. Foreground uses the theme-scoped
+    // --ticket-cta-text token (ink #061a10 on light surfaces, white on
+    // the dark terminal) — hardcoded white was only correct on dark
+    // routes; every P9 light-surface CTA uses ink on accent.
     primary:
-      "rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] font-bold text-white transition-[filter] hover:brightness-[1.08] disabled:opacity-55",
+      "rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] font-bold text-[var(--ticket-cta-text)] transition-[filter] hover:brightness-[1.08] disabled:opacity-55",
     // The discussion/panel action recipe.
     secondary:
       "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] font-bold text-[var(--t1)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:opacity-55",

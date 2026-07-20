@@ -7,12 +7,11 @@
  */
 
 import { useTranslation } from "react-i18next";
+import { Card } from "../ui";
 import { formatPointsAmount } from "../../lib/points";
 import { formatUsdCents } from "../../lib/usd";
 import type { StorePurchaseStatus } from "../../lib/api/store-client";
 
-const CARD_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5";
 const TITLE_CLASS =
   "m-0 mb-3.5 text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
 const ROWS_CLASS =
@@ -60,8 +59,8 @@ export function OrderSummary({
   };
 
   return (
-    <section
-      className={CARD_CLASS}
+    <Card
+      padding="md"
       data-testid="order-summary"
       aria-label={t("summary.title", "Order summary")}
     >
@@ -111,6 +110,6 @@ export function OrderSummary({
         ) : null}
       </div>
       {children}
-    </section>
+    </Card>
   );
 }

@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { resetPassword } from "../../lib/api";
+import { Button, Card, Input } from "../../components/ui";
 
+// Card/Input/Button recipes migrated to components/ui primitives (P2).
 const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
-const CARD_CLASS =
-  "relative w-full max-w-[440px] rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[34px] pb-[30px] pt-9 text-[var(--t1)]";
 const HEAD_CLASS = "mb-6 text-center";
 const EYEBROW_CLASS =
   "mb-3.5 inline-block rounded-[var(--r-pill)] border border-[rgba(43,228,128,0.3)] bg-[var(--accent-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]";
@@ -22,11 +22,7 @@ const ALERT_SUCCESS_CLASS =
 const FORM_CLASS = "flex flex-col gap-3.5";
 const LABEL_CLASS =
   "mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
-const INPUT_CLASS =
-  "w-full box-border rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3 text-sm text-[var(--t1)] outline-none transition-[border-color] duration-150 ease-[ease] placeholder:text-[var(--t4)] focus-visible:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] [font-family:inherit]";
 const FIELD_ERROR_CLASS = "mt-1 text-xs text-[var(--no-text)]";
-const SUBMIT_CLASS =
-  "cursor-pointer rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-4 py-3.5 text-sm font-bold tracking-[0.02em] text-[#04140a] transition-[transform,filter] duration-[180ms] ease-[ease] enabled:hover:-translate-y-px enabled:hover:brightness-[1.05] enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 [font-family:inherit]";
 const DIVIDER_CLASS =
   "mb-4 mt-[22px] flex items-center gap-3 before:h-px before:flex-1 before:bg-[rgba(255,255,255,0.08)] before:content-[''] after:h-px after:flex-1 after:bg-[rgba(255,255,255,0.08)] after:content-['']";
 const DIVIDER_TEXT_CLASS =
@@ -117,7 +113,11 @@ export default function ResetPasswordPage() {
 
   return (
     <div className={SHELL_CLASS}>
-      <div className={CARD_CLASS}>
+      <Card
+        as="div"
+        padding="lg"
+        className="relative w-full max-w-[440px] text-[var(--t1)]"
+      >
         <div className={HEAD_CLASS}>
           <span className={EYEBROW_CLASS}>Set a new password</span>
           <h1 className={TITLE_CLASS}>Reset password</h1>
@@ -141,7 +141,7 @@ export default function ResetPasswordPage() {
               <label className={LABEL_CLASS} htmlFor="rp-pw">
                 New password
               </label>
-              <input
+              <Input
                 id="rp-pw"
                 type="password"
                 value={password}
@@ -156,7 +156,7 @@ export default function ResetPasswordPage() {
                   }
                 }}
                 placeholder="At least 8 characters"
-                className={INPUT_CLASS}
+                className="w-full"
                 disabled={isLoading}
               />
               {errors.password && (
@@ -168,7 +168,7 @@ export default function ResetPasswordPage() {
               <label className={LABEL_CLASS} htmlFor="rp-pw2">
                 Confirm password
               </label>
-              <input
+              <Input
                 id="rp-pw2"
                 type="password"
                 value={confirmPassword}
@@ -183,7 +183,7 @@ export default function ResetPasswordPage() {
                   }
                 }}
                 placeholder="Confirm your password"
-                className={INPUT_CLASS}
+                className="w-full"
                 disabled={isLoading}
               />
               {errors.confirmPassword && (
@@ -191,9 +191,9 @@ export default function ResetPasswordPage() {
               )}
             </div>
 
-            <button type="submit" disabled={isLoading} className={SUBMIT_CLASS}>
+            <Button variant="cta" size="none" type="submit" disabled={isLoading}>
               {isLoading ? "Resetting…" : "Reset password"}
-            </button>
+            </Button>
           </form>
         )}
 
@@ -214,7 +214,7 @@ export default function ResetPasswordPage() {
             </Link>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

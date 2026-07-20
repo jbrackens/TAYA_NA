@@ -19,6 +19,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { Button, Card } from "../components/ui";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
@@ -62,8 +63,6 @@ const CROSS_LINK_CLASS =
 const GRID_CLASS =
   "grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] items-start gap-[18px] max-[1024px]:grid-cols-1";
 const SIDE_COL_CLASS = "flex flex-col gap-[18px]";
-const CONTINUE_CLASS =
-  "mt-4 flex w-full cursor-pointer items-center justify-center rounded-md border-0 bg-[var(--accent)] px-4 py-[14px] [font-family:inherit] text-[15px] font-semibold text-[#061a10] transition-[filter,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:brightness-[1.05] disabled:cursor-not-allowed disabled:opacity-[0.45]";
 const HOW_CARD_CLASS =
   "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-3.5";
 const HOW_TITLE_CLASS =
@@ -71,11 +70,10 @@ const HOW_TITLE_CLASS =
 const HOW_BODY_CLASS = "m-0 text-xs leading-[1.55] text-[var(--t2)]";
 const FIRST_PURCHASE_CLASS = "mt-3 text-xs leading-[1.5] text-[var(--t3)]";
 const STATE_CLASS = "flex min-h-[50vh] items-center justify-center px-6";
-const STATE_CARD_CLASS =
-  "w-full max-w-[440px] rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-[22px] text-center";
+// State cards/CTAs use ui/Card + ui/Button; only layout rides here.
+const STATE_CARD_SIZING = "w-full max-w-[440px] text-center";
+const STATE_CTA_SIZING = "gap-1.5 px-5 py-3 text-[13px] no-underline";
 const STATE_MESSAGE_CLASS = "m-0 mb-3.5 leading-[1.6] text-[var(--t2)]";
-const STATE_CTA_CLASS =
-  "inline-flex cursor-pointer items-center gap-1.5 rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-5 py-3 text-[13px] font-bold text-[#04140a] no-underline transition-[transform,filter] duration-[180ms] ease-[ease] hover:-translate-y-px hover:brightness-[1.05]";
 const ERROR_NOTE_CLASS =
   "mb-3 rounded-[var(--r-rh-sm)] border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.1)] p-2.5 text-center text-xs leading-[1.45] text-[var(--no-text)]";
 
@@ -420,24 +418,30 @@ export default function StorePage() {
   if (!user?.id || authError) {
     return (
       <div className={STATE_CLASS}>
-        <div className={STATE_CARD_CLASS}>
+        <Card as="div" padding="md" className={STATE_CARD_SIZING}>
           <p className={STATE_MESSAGE_CLASS}>
             {t(
               "state.signIn",
               "Sign in to browse point packs and add points to your balance.",
             )}
           </p>
-          <Link
-            href={`/auth/login?returnUrl=${encodeURIComponent(
-              purchaseParam
-                ? purchaseUrl(purchaseParam, safeReturn)
-                : browseUrl(safeReturn),
-            )}`}
-            className={STATE_CTA_CLASS}
+          <Button
+            variant="primary"
+            size="none"
+            className={STATE_CTA_SIZING}
+            render={
+              <Link
+                href={`/auth/login?returnUrl=${encodeURIComponent(
+                  purchaseParam
+                    ? purchaseUrl(purchaseParam, safeReturn)
+                    : browseUrl(safeReturn),
+                )}`}
+              />
+            }
           >
             {t("state.login", "Log in")}
-          </Link>
-        </div>
+          </Button>
+        </Card>
       </div>
     );
   }
@@ -445,20 +449,21 @@ export default function StorePage() {
   if (packsError && !purchaseParam) {
     return (
       <div className={STATE_CLASS}>
-        <div className={STATE_CARD_CLASS}>
+        <Card as="div" padding="md" className={STATE_CARD_SIZING}>
           <p className={STATE_MESSAGE_CLASS}>
             {packsError === GENERIC_ERROR
               ? t("state.error", "The point store could not load.")
               : packsError}
           </p>
-          <button
-            type="button"
-            className={STATE_CTA_CLASS}
+          <Button
+            variant="primary"
+            size="none"
+            className={STATE_CTA_SIZING}
             onClick={() => void loadPacks()}
           >
             {t("state.retry", "Try again")}
-          </button>
-        </div>
+          </Button>
+        </Card>
       </div>
     );
   }
@@ -481,16 +486,17 @@ export default function StorePage() {
         purchaseLoading || !purchase ? (
           <div className={STATE_CLASS}>
             {actionError ? (
-              <div className={STATE_CARD_CLASS}>
+              <Card as="div" padding="md" className={STATE_CARD_SIZING}>
                 <p className={STATE_MESSAGE_CLASS}>{actionError}</p>
-                <button
-                  type="button"
-                  className={STATE_CTA_CLASS}
+                <Button
+                  variant="primary"
+                  size="none"
+                  className={STATE_CTA_SIZING}
                   onClick={() => backToBrowse()}
                 >
                   {t("result.backToStore", "Back to store")}
-                </button>
-              </div>
+                </Button>
+              </Card>
             ) : (
               <TapDot
                 label={t("state.loadingPurchase", "Checking your order…")}
@@ -586,17 +592,18 @@ export default function StorePage() {
                     {actionError}
                   </div>
                 ) : null}
-                <button
-                  type="button"
+                <Button
+                  variant="cta"
+                  size="none"
+                  className="mt-4"
                   data-testid="store-continue"
-                  className={CONTINUE_CLASS}
                   disabled={creating}
                   onClick={() => void handleContinue()}
                 >
                   {creating
                     ? t("checkout.processing", "Processing…")
                     : t("summary.continue", "Continue to checkout")}
-                </button>
+                </Button>
               </OrderSummary>
             ) : null}
             <HowPointsWork />

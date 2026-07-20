@@ -11,8 +11,12 @@ import { forwardRef } from "react";
 import type { InputHTMLAttributes, TextareaHTMLAttributes } from "react";
 import { cx } from "./variants";
 
+// focus-visible ring: keyboard-only affordance from the auth screens
+// (P2), promoted to the primitive. aria-invalid drives the error border
+// (attribute selector outranks the base border class, so the override
+// is deterministic — call-site border classNames are not).
 const FIELD_CLASS =
-  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2.5 text-sm leading-[1.5] text-[var(--t1)] outline-none placeholder:text-[var(--t3)] focus:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55";
+  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2.5 text-sm leading-[1.5] text-[var(--t1)] outline-none placeholder:text-[var(--t3)] focus:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] aria-invalid:border-[var(--no-text)] disabled:cursor-not-allowed disabled:opacity-55";
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
 
