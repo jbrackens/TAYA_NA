@@ -30,6 +30,7 @@ import { logger } from "../../lib/logger";
 import { searchMarkets } from "../../lib/marketSearch";
 import { useAuth } from "../../hooks/useAuth";
 import BrandMark from "../BrandMark";
+import { Button } from "../ui";
 import { brand } from "../../lib/brand";
 import { useAppDispatch, useAppSelector } from "../../lib/store/hooks";
 import {
@@ -151,19 +152,15 @@ const TOP_BAR_BALANCE_LABEL_CLASS =
 // chip. The top bar is already width-tight at common desktop sizes (search
 // + tier pill + balance), so the label only appears on wide desktops and
 // the control collapses to the plus glyph below 1360px (aria-label keeps
-// it accessible).
-const TOP_BAR_ADD_POINTS_CLASS =
-  "inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1 rounded-md bg-[var(--accent)] px-3 text-[13px] font-semibold text-[#061a10] no-underline transition-[transform,filter] duration-150 ease-[ease] hover:-translate-y-px hover:brightness-[1.05] max-[900px]:px-2.5";
+// it accessible). Sizing rides on ui/Button variant="primary".
+const TOP_BAR_ADD_POINTS_SIZING =
+  "min-h-11 shrink-0 px-3 text-[13px] no-underline max-[900px]:px-2.5";
 
 const TOP_BAR_AVATAR_CLASS =
   "grid size-11 cursor-pointer place-items-center rounded-full border border-[rgba(255,255,255,0.2)] bg-[var(--accent)] text-[15px] font-bold text-white transition-[background-color,border-color] duration-150 hover:border-[var(--accent-lo)] hover:bg-[#6d63dc]";
 
-const TOP_BAR_BUTTON_CLASS =
-  "inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-md border-0 px-4 text-[13px] font-semibold no-underline transition-[transform,filter] duration-150 ease-[ease] [font-family:inherit] max-[480px]:px-2.5";
-const TOP_BAR_BUTTON_GHOST_CLASS =
-  "bg-transparent text-[var(--t1)] hover:bg-[var(--surface-2)]";
-const TOP_BAR_BUTTON_ACCENT_CLASS =
-  "bg-[var(--accent)] text-[#061a10] hover:-translate-y-px hover:brightness-[1.05]";
+const TOP_BAR_AUTH_CTA_SIZING =
+  "min-h-11 px-4 text-[13px] no-underline max-[480px]:px-2.5";
 
 const TOP_BAR_MENU_WRAP_CLASS = "relative";
 const TOP_BAR_MENU_CLASS =
@@ -539,17 +536,23 @@ export function TopBar() {
                   {typeof balance === "number" ? formatPoints(balance) : "—"}
                 </span>
               </Link>
-              <Link
-                href="/store"
-                className={`${TOP_BAR_ADD_POINTS_CLASS} max-[419px]:hidden`}
-                data-testid="add-points-topbar"
-                aria-label={t("ADD_POINTS", "Add Points")}
+              <Button
+                variant="primary"
+                size="none"
+                className={`${TOP_BAR_ADD_POINTS_SIZING} max-[419px]:hidden`}
+                render={
+                  <Link
+                    href="/store"
+                    data-testid="add-points-topbar"
+                    aria-label={t("ADD_POINTS", "Add Points")}
+                  />
+                }
               >
                 <Plus size={14} aria-hidden="true" />
                 <span className="max-[1359px]:hidden">
                   {t("ADD_POINTS", "Add Points")}
                 </span>
-              </Link>
+              </Button>
             </>
           )}
 
@@ -618,20 +621,24 @@ export function TopBar() {
             </div>
           ) : (
             <>
-              <Link
-                href="/auth/login"
-                className={`${TOP_BAR_BUTTON_CLASS} ${TOP_BAR_BUTTON_GHOST_CLASS} ${
+              <Button
+                variant="ghost"
+                size="none"
+                className={`${TOP_BAR_AUTH_CTA_SIZING} ${
                   isTerminalRoute ? "ml-auto" : ""
                 }`}
+                render={<Link href="/auth/login" />}
               >
                 {t("LOG_IN")}
-              </Link>
-              <Link
-                href="/auth/register"
-                className={`${TOP_BAR_BUTTON_CLASS} ${TOP_BAR_BUTTON_ACCENT_CLASS}`}
+              </Button>
+              <Button
+                variant="primary"
+                size="none"
+                className={TOP_BAR_AUTH_CTA_SIZING}
+                render={<Link href="/auth/register" />}
               >
                 {t("SIGN_UP")}
-              </Link>
+              </Button>
             </>
           )}
         </div>

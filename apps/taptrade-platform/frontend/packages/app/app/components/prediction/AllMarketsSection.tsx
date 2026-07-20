@@ -16,6 +16,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MarketGrid } from "./MarketGrid";
+import { Button, Card, Input } from "../ui";
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import {
   addMarketToWatchlist,
@@ -88,15 +89,8 @@ const TIME_PILL_BASE_CLASS =
 
 const DISCOVERY_CONTROLS_CLASS =
   "flex w-full flex-wrap items-center justify-between gap-3 max-[768px]:items-stretch";
-const SEARCH_INPUT_CLASS =
-  "min-h-10 min-w-[260px] flex-1 rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 text-sm text-[var(--t1)] outline-none transition-colors duration-[120ms] placeholder:text-[var(--t3)] focus:border-[var(--accent-lo)] max-[768px]:min-w-0 max-[768px]:basis-full max-[768px]:w-full";
-const WATCHLIST_FILTER_CLASS =
-  "min-h-10 rounded-md border px-3 text-sm font-semibold transition-colors duration-[120ms]";
 
 const LOAD_MORE_CLASS = "mt-6 mb-0 flex justify-center";
-
-const LOAD_MORE_BUTTON_CLASS =
-  "cursor-pointer appearance-none rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-3 [font-family:var(--font-terminal)] text-sm font-semibold text-[var(--t1)] transition-colors duration-[120ms] [&:not(:disabled):hover]:border-[var(--accent-lo)] [&:not(:disabled):hover]:bg-[var(--accent-soft)] [&:not(:disabled):hover]:text-[var(--accent-text)] disabled:cursor-not-allowed disabled:opacity-[0.55]";
 
 const FEED_WITH_SUBNAV_CLASS =
   "grid grid-cols-4 items-start gap-4 max-[1600px]:grid-cols-1";
@@ -109,9 +103,6 @@ const SUBNAV_LIST_CLASS =
   "flex flex-col items-stretch gap-1 max-[1600px]:flex-row max-[1600px]:overflow-x-auto max-[1600px]:[scrollbar-width:none] max-[1600px]:[-ms-overflow-style:none] max-[1600px]:[-webkit-overflow-scrolling:touch] max-[1600px]:[&::-webkit-scrollbar]:hidden";
 const SUBNAV_BUTTON_BASE_CLASS =
   "cursor-pointer appearance-none rounded-md border-0 px-3 py-2 text-left [font-family:inherit] text-[13px] transition-colors duration-[120ms] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[1600px]:flex-[0_0_auto]";
-
-const EMPTY_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-14 text-center";
 
 const EMPTY_TITLE_CLASS = "m-0 text-[18px] font-bold text-[var(--t1)]";
 const EMPTY_TEXT_CLASS = "mt-2 mb-0 text-[13px] text-[var(--t3)]";
@@ -403,14 +394,14 @@ export function AllMarketsSection({ categories }: Props) {
     query.trim() !== "" ||
     showWatchlistOnly;
   const emptyState = (
-    <div className={EMPTY_CLASS}>
+    <Card as="div" padding="none" className="p-14 text-center">
       <h3 className={EMPTY_TITLE_CLASS}>
         {filtered ? t("NO_FILTER_MATCH") : t("NO_OPEN_MARKETS")}
       </h3>
       <p className={EMPTY_TEXT_CLASS}>
         {filtered ? t("TRY_DIFFERENT_FILTER") : t("CHECK_BACK_SOON")}
       </p>
-    </div>
+    </Card>
   );
 
   return (
@@ -453,9 +444,9 @@ export function AllMarketsSection({ categories }: Props) {
           })}
         </div>
         <div className={DISCOVERY_CONTROLS_CLASS}>
-          <input
+          <Input
             type="search"
-            className={SEARCH_INPUT_CLASS}
+            className="min-w-[260px] flex-1 max-[768px]:min-w-0 max-[768px]:basis-full max-[768px]:w-full"
             placeholder={headerT("SEARCH_MARKETS_PLACEHOLDER")}
             aria-label={headerT("SEARCH_MARKETS")}
             value={query}
@@ -482,18 +473,18 @@ export function AllMarketsSection({ categories }: Props) {
               );
             })}
           </div>
-          <button
-            type="button"
-            className={`${WATCHLIST_FILTER_CLASS} ${
+          <Button
+            size="none"
+            className={`min-h-10 px-3 text-sm ${
               showWatchlistOnly
                 ? "border-[var(--accent-lo)] bg-[var(--accent-soft)] text-[var(--accent-text)]"
-                : "border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--accent-lo)] hover:text-[var(--accent-text)]"
+                : ""
             }`}
             aria-pressed={showWatchlistOnly}
             onClick={() => setShowWatchlistOnly((value) => !value)}
           >
             {t("WATCHLIST", "Watchlist")}
-          </button>
+          </Button>
           <div
             className={TIME_PILLS_CLASS}
             role="tablist"
@@ -523,11 +514,11 @@ export function AllMarketsSection({ categories }: Props) {
           {t("LOADING_MARKETS")}
         </div>
       ) : error && markets.length === 0 ? (
-        <div className={EMPTY_CLASS}>
+        <Card as="div" padding="none" className="p-14 text-center">
           <p className="m-0 text-[13px] text-[var(--t2)]">
             {t("COULD_NOT_LOAD_MARKETS")} {error}
           </p>
-        </div>
+        </Card>
       ) : !loading && markets.length === 0 ? (
         emptyState
       ) : (
@@ -585,14 +576,14 @@ export function AllMarketsSection({ categories }: Props) {
           )}
           {hasNext && subcategory === null && (
             <div className={LOAD_MORE_CLASS}>
-              <button
-                type="button"
-                className={LOAD_MORE_BUTTON_CLASS}
+              <Button
+                size="none"
+                className="px-7 py-3 text-sm [font-family:var(--font-terminal)]"
                 onClick={loadMore}
                 disabled={loadingMore}
               >
                 {loadingMore ? t("LOADING") : t("LOAD_MORE_MARKETS")}
-              </button>
+              </Button>
             </div>
           )}
         </>
