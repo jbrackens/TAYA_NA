@@ -133,6 +133,34 @@ Surface-per-PR, **hard checkpoint per surface — not batches:** after each surf
 
 **Exit:** DoD #2 grep clean repo-wide; journeys J1–J7 green.
 
+**P2 EXECUTED (2026-07-20, branch `feat/ui-propagation`, commits P2.1–P2.5).**
+Keystone: `Button primary` foreground moved from hardcoded `text-white` to the
+theme-scoped `--ticket-cta-text` token (ink `#061a10` light / white terminal) —
+pixel-neutral for existing dark-context call sites, and every light-surface CTA
+recipe (`#061a10`/`#04140a` ink-on-accent) then landed on the primitive without
+a color flip. Input primitive gained the auth screens' `focus-visible` ring +
+an `aria-invalid` error border (rest-state invisible; deterministic vs
+call-site border overrides).
+
+Wide-grep exit state: **zero** Card-shell recipes (`r-rh-lg + border-1 +
+surface-1`) and **zero** accent-CTA recipes remain outside `components/ui`.
+The remaining `*_CLASS` constants (~560 across the app) are the documented
+allowlist, by category:
+- **Segmented controls / tab identities** — sort+time pills, category underline
+  tabs, subnav (AllMarketsSection), leaderboards/portfolio tablists.
+- **Search identities** — TopBar pill search (default + terminal twins, ARIA
+  1.2 combobox wiring), balance chip; AllMarketsSection search migrated to
+  `Input`, TopBar pills deliberately kept.
+- **Brand chrome** — SocialAuthButtons (per-provider hover borders),
+  BrandMark/wordmark recipes, register-page split-screen panels.
+- **Card-shaped Links** — portfolio RankChip (Card cannot render a Next Link;
+  shell classes inline, byte-identical to Card `none` + tile layout).
+- **Typography/layout scaffolding** — label/row/value stacks, table recipes,
+  grid/wrap/spacing constants: not primitive material.
+Baselines re-captured: discover ×2, login ×2. Small recipe deltas on other
+surfaces sit under the accepted `maxDiffPixelRatio: 0.01` net by design;
+rendered-screen evidence for every surface is in the P2 checkpoint artifact.
+
 ### P3 — Feel layer — one small PR each, after P1
 
 **Review artifact for every P3 item is motion: a short screen recording/GIF or a live browser-pane demo** — these are animation/interaction changes; static screenshots would have John approving blind.
