@@ -27,6 +27,15 @@ import { ShareNetworkIcon as ShareNetwork } from "@phosphor-icons/react/dist/csr
 import MarketHead from "../../components/prediction/MarketHead";
 import MarketChart from "../../components/prediction/MarketChart";
 import MarketDiscussion from "../../components/prediction/MarketDiscussion";
+import {
+  Button,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  Input,
+} from "../../components/ui";
 import OrderBook from "../../components/prediction/OrderBook";
 import type { BookLevel } from "../../components/prediction/OrderBook";
 import RecentTrades from "../../components/prediction/RecentTrades";
@@ -218,8 +227,6 @@ const MARKET_RULE_CLASS =
   "relative pl-[18px] text-[13px] leading-[1.5] text-[var(--t2)] before:absolute before:left-1 before:top-2 before:h-1.5 before:w-1.5 before:rounded-full before:bg-[var(--accent)] before:content-['']";
 const MARKET_SHARE_ROW_CLASS =
   "mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border-1)] pt-4";
-const MARKET_SHARE_BUTTON_CLASS =
-  "inline-flex min-h-10 items-center justify-center gap-2 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-4 text-xs font-bold text-[var(--t1)] transition-colors hover:border-[var(--accent-lo)] hover:text-[var(--accent-text)]";
 const MARKET_SHARE_STATUS_CLASS = "text-xs text-[var(--t3)]";
 const RELATED_CARD_CLASS =
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5";
@@ -652,6 +659,7 @@ export default function MarketDetailPage() {
   const [positions, setPositions] = useState<Position[]>([]);
   const [selectedSide, setSelectedSide] = useState<OrderSide>(initialSide);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
   const balance = useAppSelector(selectCurrentBalance);
   const dispatch = useAppDispatch();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
@@ -1065,25 +1073,52 @@ export default function MarketDetailPage() {
   const resolutionCopy = humanSettlementRule || displayMarket?.description;
   const canPreviewOrders = isAuthenticated && !authLoading;
 
+  const shareUrl =
+    typeof window !== "undefined" && market
+      ? window.location.href
+      : market
+        ? `/market/${market.ticker}`
+        : "";
+
   async function handleShareMarket() {
     if (!market || !displayMarket) return;
-    const url =
-      typeof window !== "undefined"
-        ? window.location.href
-        : `/market/${market.ticker}`;
+    // Native share sheet only on TOUCH devices — desktop Chrome/Safari
+    // also implement navigator.share (a macOS picker), but the in-app
+    // dialog is the better desktop experience and makes the ui/Dialog
+    // path the real flow, not a test-only fallback (Codex re-review
+    // 2026-07-19).
+    const prefersNativeShare =
+      typeof navigator !== "undefined" &&
+      !!navigator.share &&
+      (navigator.maxTouchPoints > 0 ||
+        (typeof window !== "undefined" &&
+          window.matchMedia("(pointer: coarse)").matches));
     try {
-      if (typeof navigator !== "undefined" && navigator.share) {
+      if (prefersNativeShare) {
         await navigator.share({
           title: displayMarket.title,
           text: displayMarket.description || displayMarket.title,
-          url,
+          url: shareUrl,
         });
-      } else if (typeof navigator !== "undefined" && navigator.clipboard) {
-        await navigator.clipboard.writeText(url);
+        setShareMessage(t("SHARE_COPIED", "Market link copied."));
+      } else {
+        setShareOpen(true);
       }
-      setShareMessage(t("SHARE_COPIED", "Market link copied."));
     } catch (err) {
       logger.warn("MarketDetail", "share failed", err);
+      setShareMessage(t("SHARE_FAILED", "Share could not be opened."));
+    }
+  }
+
+  async function handleCopyShareLink() {
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(shareUrl);
+      }
+      setShareOpen(false);
+      setShareMessage(t("SHARE_COPIED", "Market link copied."));
+    } catch (err) {
+      logger.warn("MarketDetail", "share copy failed", err);
       setShareMessage(t("SHARE_FAILED", "Share could not be opened."));
     }
   }
@@ -1357,17 +1392,48 @@ export default function MarketDetailPage() {
             </li>
           </ul>
           <div className={MARKET_SHARE_ROW_CLASS}>
-            <button
-              type="button"
-              className={MARKET_SHARE_BUTTON_CLASS}
+            <Button
+              className="gap-2"
               onClick={handleShareMarket}
+              data-testid="share-market"
             >
               <ShareNetwork size={16} aria-hidden="true" />
               {t("SHARE_MARKET", "Share market")}
-            </button>
+            </Button>
             {shareMessage && (
               <span className={MARKET_SHARE_STATUS_CLASS}>{shareMessage}</span>
             )}
+            <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+              <DialogContent data-testid="share-dialog">
+                <DialogTitle>{t("SHARE_MARKET", "Share market")}</DialogTitle>
+                <DialogDescription>
+                  {t(
+                    "SHARE_DIALOG_HINT",
+                    "Copy the link to share this market.",
+                  )}
+                </DialogDescription>
+                <Input
+                  readOnly
+                  value={shareUrl}
+                  aria-label={t("SHARE_LINK", "Market link")}
+                  data-testid="share-link"
+                  onFocus={(event) => event.currentTarget.select()}
+                  className="w-full font-mono text-xs"
+                />
+                <div className="mt-4 flex justify-end gap-2">
+                  <DialogClose
+                    render={<Button size="md">{t("CLOSE", "Close")}</Button>}
+                  />
+                  <Button
+                    variant="primary"
+                    onClick={handleCopyShareLink}
+                    data-testid="share-copy"
+                  >
+                    {t("SHARE_COPY_LINK", "Copy link")}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </section>
 

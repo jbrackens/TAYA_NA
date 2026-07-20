@@ -37,8 +37,6 @@
     "@phosphor-icons/react": "2.1.10",
     "@taptrade-ui/api-client": "1.0.0",
     "@taptrade-ui/utils": "0.23.1-build.1",
-    "cmdk": "^1.1.1",
-    "embla-carousel-react": "^8.6.0",
     "geist": "1.7.2",
     "i18next": "^23.7.0",
     "isomorphic-dompurify": "^2.16.0",

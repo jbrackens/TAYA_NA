@@ -12,9 +12,8 @@ import {
   type MarketComment,
 } from "../../lib/api/market-social-client";
 import { logger } from "../../lib/logger";
+import { Button, Card, Textarea } from "../ui";
 
-const SECTION_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-6 py-6 max-[720px]:px-5";
 const HEAD_CLASS = "mb-4 flex items-baseline justify-between gap-3";
 const TITLE_CLASS =
   "type-display m-0 text-base font-semibold tracking-[-0.01em] text-[var(--t1)]";
@@ -22,14 +21,8 @@ const COUNT_CLASS = "text-xs text-[var(--t3)]";
 const HEAD_LINK_CLASS =
   "text-xs text-[var(--t2)] underline-offset-4 hover:text-[var(--accent)] hover:underline";
 const FORM_CLASS = "mb-5 flex flex-col gap-3";
-const TEXTAREA_CLASS =
-  "min-h-[92px] resize-y rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2.5 text-sm leading-[1.5] text-[var(--t1)] outline-none placeholder:text-[var(--t3)] focus:border-[var(--accent)]";
 const FORM_ROW_CLASS = "flex items-center justify-between gap-3";
 const STATUS_CLASS = "text-xs text-[var(--t3)]";
-const BUTTON_CLASS =
-  "inline-flex min-h-9 items-center justify-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 text-xs font-bold text-[var(--t1)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55";
-const PRIMARY_BUTTON_CLASS =
-  "inline-flex min-h-10 items-center justify-center rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-4 text-xs font-bold text-white transition-[filter] hover:brightness-[1.08] disabled:cursor-not-allowed disabled:opacity-55";
 const LIST_CLASS = "flex flex-col gap-3";
 const COMMENT_CLASS =
   "border-t border-[var(--border-1)] pt-3 first:border-t-0 first:pt-0";
@@ -156,10 +149,7 @@ export default function MarketDiscussion({
         );
 
   return (
-    <section
-      className={SECTION_CLASS}
-      aria-labelledby="market-discussion-title"
-    >
+    <Card as="section" aria-labelledby="market-discussion-title">
       <header className={HEAD_CLASS}>
         <h3 id="market-discussion-title" className={TITLE_CLASS}>
           {t("DISCUSSION_TITLE", "Discussion")}
@@ -177,8 +167,7 @@ export default function MarketDiscussion({
       </header>
 
       <div className={FORM_CLASS}>
-        <textarea
-          className={TEXTAREA_CLASS}
+        <Textarea
           value={body}
           maxLength={500}
           disabled={!isAuthenticated || authLoading || saving}
@@ -187,9 +176,8 @@ export default function MarketDiscussion({
         />
         <div className={FORM_ROW_CLASS}>
           <span className={STATUS_CLASS}>{message ?? composerHint}</span>
-          <button
-            type="button"
-            className={PRIMARY_BUTTON_CLASS}
+          <Button
+            variant="primary"
             disabled={
               !isAuthenticated ||
               authLoading ||
@@ -203,7 +191,7 @@ export default function MarketDiscussion({
               : replyTo
                 ? t("DISCUSSION_REPLY", "Reply")
                 : t("DISCUSSION_POST", "Post")}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -236,35 +224,31 @@ export default function MarketDiscussion({
               </div>
               <p className={BODY_CLASS}>{comment.body}</p>
               <div className={ACTIONS_CLASS}>
-                <button
-                  type="button"
-                  className={BUTTON_CLASS}
+                <Button
+                  size="sm"
                   disabled={!isAuthenticated || authLoading}
                   onClick={() =>
                     updateComment(comment.id, reactToMarketComment)
                   }
                 >
                   {t("DISCUSSION_REACT", "Upvote")} · {comment.reactionCount}
-                </button>
-                <button
-                  type="button"
-                  className={BUTTON_CLASS}
+                </Button>
+                <Button
+                  size="sm"
                   disabled={!isAuthenticated || authLoading}
                   onClick={() => followUser(comment.userId)}
                 >
                   {t("DISCUSSION_FOLLOW", "Follow")}
-                </button>
-                <button
-                  type="button"
-                  className={BUTTON_CLASS}
+                </Button>
+                <Button
+                  size="sm"
                   disabled={!isAuthenticated || authLoading}
                   onClick={() => setReplyTo(comment.id)}
                 >
                   {t("DISCUSSION_REPLY", "Reply")}
-                </button>
-                <button
-                  type="button"
-                  className={BUTTON_CLASS}
+                </Button>
+                <Button
+                  size="sm"
                   disabled={!isAuthenticated || authLoading}
                   onClick={() =>
                     updateComment(comment.id, (id) =>
@@ -273,13 +257,13 @@ export default function MarketDiscussion({
                   }
                 >
                   {t("DISCUSSION_REPORT", "Report")} · {comment.reportCount}
-                </button>
+                </Button>
               </div>
             </article>
           ))}
         </div>
       )}
-    </section>
+    </Card>
   );
 }
 

@@ -37,3 +37,8 @@ yarn-error.log*
 # public/static/locales/*
 .gstack/
 tests/smoke/.auth/
+
+# Visual-regression HAR cache: recorded locally (VISUAL_RECORD=1), replayed
+# for determinism. Contains local session cookies — never committed (same
+# reasoning as the e2e .auth untracking in 9f453e85).
+tests/visual/hars/

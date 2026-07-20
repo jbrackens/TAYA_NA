@@ -20,11 +20,9 @@ The goal: eliminate the AI-slop signatures documented in the July 2026 audit —
 | `sonner` | 2.0.7 | Toasts (replaces hand-rolled ToastProvider) | P3 |
 | `@number-flow/react` | 0.6.1 | Animated numbers (balances, prices, totals) | P3 |
 | `vaul` | 1.1.2 | Mobile bottom-sheet drawer (trade ticket) | P3 |
-| `cmdk` | 1.1.1 | ⌘K command palette / market search | P3 — **cut candidate** (§3a) |
-| `embla-carousel-react` | 8.6.0 | Carousel engine | P3 — **cut candidate** (§3a) |
 | `lightweight-charts` | 5.2.0 | Canvas market chart (market route only, dynamic import) | P4 |
 
-**Rule:** any of these still unimported at the end of P4 gets removed — same discipline that removed 8 unused deps in the audit. Cut candidates removed immediately if John cuts them at the P1 checkpoint.
+**Rule:** any of these still unimported at the end of P4 gets removed — same discipline that removed 8 unused deps in the audit. §3a cuts EXECUTED 2026-07-19 (John + Codex both concurring): `embla-carousel-react` and `cmdk` removed.
 
 ### Dev tooling
 
@@ -65,7 +63,7 @@ Also in play: **Figma MCP** (already connected via claude.ai connectors) for whe
 
 1. **Zero Biome errors in `packages/app`**, enforced by an **app-scoped** gate: `npx @biomejs/biome check packages/app` run from the frontend root (NOT the root `lint:biome` script, which also covers office's 50 outstanding errors). Plus a lint-staged entry so debt can't re-accumulate between gate runs.
 2. **One primitives layer:** `git grep -lE "[A-Z_]+_CLASS\b" packages/app/app` → empty, modulo an explicit allowlist committed in the plan's tracking issue (constants that survive must be individually justified). The narrow "button recipes only" version of this check passes vacuously — the wide grep is the real bar (~40 files today).
-3. **Visual regression green:** committed baselines for the six surfaces (hero `/`, discover `/predict`, market page, trade ticket, store, portfolio) × two viewports (1280×800, 375×812), **each in its route's native theme** — market/discover/predict render dark via `.predict-terminal` (route-scoped in `AppShell.tsx`; there is no user/OS theme toggle, so a light/dark axis does not exist to photograph). Diff ratio ≤ 1% under the determinism spec in P0.
+3. **Visual regression green:** committed baselines for the seven surfaces (14 screenshots — the suite's "15 passed" includes the auth-setup step). HARs are a LOCAL record-first cache (gitignored — they carry session cookies): a fresh checkout must run once with `VISUAL_RECORD=1` before replay runs are deterministic. Surfaces: hero `/`, discover `/predict`, market page, trade ticket (authed market), store, portfolio, login — × two viewports (1280×800, 375×812), **each in its route's native theme** — market/discover/predict render dark via `.predict-terminal` (route-scoped in `AppShell.tsx`; there is no user/OS theme toggle, so a light/dark axis does not exist to photograph). Diff ratio ≤ 1% under the determinism spec in P0.
 4. **Feel layer live:** animated balance/price numbers, mobile bottom-sheet trade ticket, sonner toasts, professional canvas market chart (+ palette/carousel only if they survive the §3a cut review).
 5. **Perf budget held:** per-route first-load JS within **+25 KB gzip** of the audit baseline (market route: documented +45 KB for lightweight-charts, dynamic-imported); no INP or **CLS** regression on traces (canvas is not an LCP candidate, so LCP is not the chart's gate — CLS from late chart mount is).
 6. **A11y intact or better:** Biome a11y rules clean; toast `role="alert"/"status"` semantics preserved; keyboard pass on trade + checkout flows.
@@ -126,7 +124,7 @@ Branch: `feat/ui-primitives` — **a component-migration branch (visual + behavi
 
 ### §3a — Cut candidates (John decides at the P1 checkpoint)
 
-- **Embla carousel swap — recommend CUT.** The critique established `FeaturedCarousel.tsx` is not slop: crossfade with only the active slide mounted (deliberately — one chart + one `/prices` fetch at a time), keyboard nav, ARIA carousel semantics, reduced-motion handling, hover/focus pause. A straight Embla swap mounts ~4 DiscoveryHeros (4 charts + 4 fetches), changes fade→drag, and loses the perf shape. Keep the hand-rolled component; remove the package.
+- **Embla carousel swap — recommend CUT.** (Rationale corrected per the 2026-07-19 Codex re-review: the LIVE `/predict` carousel is `PredictionWorkspace`'s `FeaturedSignal` — which renders one active slide but prefetches up to 4 featured + 4 row histories via the pooled fetcher; the crossfade `FeaturedCarousel.tsx` this section originally cited is the legacy component.) The cut still stands: both implementations already exist and work, an Embla swap would add a dependency to replace working accessible code, and no user-visible gain has been identified. Remove the package.
 - **cmdk palette — defer or cut.** Desktop power-user affordance on a mobile-first consumer product; creates a new results surface that must obey the movement-claims-from-real-series rule (results show name/category only, or wire real series). If deferred, remove the package under the §1 rule; it can return in a later cycle.
 
 ### P2 — Propagation — size M/L

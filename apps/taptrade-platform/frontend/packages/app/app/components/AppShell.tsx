@@ -12,6 +12,7 @@
  */
 
 import type React from "react";
+import { useLayoutEffect } from "react";
 import { usePathname } from "next/navigation";
 import StoreProvider from "../lib/store/StoreProvider";
 import { QueryProvider } from "../lib/query/QueryProvider";
@@ -27,7 +28,11 @@ import { isPredictionTerminalRoute } from "../lib/prediction-terminal";
 
 const AUTH_LAYOUT_CLASS = "min-h-screen overflow-y-auto bg-transparent";
 
-const APP_SHELL_CLASS = "min-h-screen bg-transparent";
+// `isolate` gives the page content its own stacking context so nothing
+// inside it can z-fight portalled overlays (Base UI root requirement);
+// overlays layer between the TopBar (z-[100]) and toasts (z-[9999]) via
+// the OVERLAY_Z band in components/ui.
+const APP_SHELL_CLASS = "isolate min-h-screen bg-transparent";
 
 const APP_SHELL_BODY_CLASS =
   "flex items-start w-full max-w-[1588px] min-h-[calc(100vh_-_66px)] mx-auto gap-4 px-6 bg-transparent";
@@ -50,6 +55,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const isAuthRoute = pathname?.startsWith("/auth/");
   const isLandingRoute = pathname === "/";
   const isPredictTerminal = isPredictionTerminalRoute(pathname);
+
+  // Mirror the route theme onto <html> so PORTALLED UI (dialogs, sheets,
+  // toasts render into document.body — outside the .predict-terminal
+  // wrapper) resolves the same tokens (globals.css pairs the selectors).
+  // The SSR'd wrapper class still owns first paint: portals only open
+  // after hydration, by which time this layout effect has run.
+  useLayoutEffect(() => {
+    if (isPredictTerminal) {
+      document.documentElement.dataset.theme = "terminal";
+    } else {
+      delete document.documentElement.dataset.theme;
+    }
+  }, [isPredictTerminal]);
 
   return (
     <StoreProvider>

@@ -109,6 +109,11 @@ body {
    * DESIGN.md §12 Decisions Log for rationale.
    */
 :root {
+  /* CTA foreground for the money button (Button variant="cta"): dark ink
+   * on the light accent. Theme-scoped so any cta consumer resolves a
+   * correct color — Codex review 2026-07-19 flagged that this variable
+   * previously existed only in TradeTicket's inline style. */
+  --ticket-cta-text: #061a10;
   /* P9 (2026-07-07, owner-directed): gallery-white page backdrop replacing
    * the P8 warm cream + chart-paper grid. Pure white base, cool neutral
    * inks, hairline borders, and a quiet two-layer shadow recipe carry the
@@ -1351,7 +1356,8 @@ button {
  * account, auth, content, and portfolio surfaces keep the current P9
  * gallery-white system until they receive matching approved concepts.
  */
-.predict-terminal {
+.predict-terminal,
+html[data-theme="terminal"] {
   --font-terminal:
     var(--font-geist-sans), "Inter", -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
@@ -1387,6 +1393,7 @@ button {
   --no-soft: rgba(240, 77, 82, 0.12);
   --no-border: rgba(240, 77, 82, 0.32);
   --focus-ring: #a39bff;
+  --ticket-cta-text: #ffffff;
   --shadow-card: none;
   --shadow-card-hover: none;
   --shadow-pop: 0 24px 64px rgba(0, 0, 0, 0.42);
@@ -1400,16 +1407,19 @@ button {
   color-scheme: dark;
 }
 
-.predict-terminal .type-display {
+.predict-terminal .type-display,
+html[data-theme="terminal"] .type-display {
   font-family: var(--font-display);
   letter-spacing: -0.025em;
 }
 
-.predict-terminal .font-mono {
+.predict-terminal .font-mono,
+html[data-theme="terminal"] .font-mono {
   font-family: var(--font-terminal-mono);
 }
 
-.predict-terminal ::selection {
+.predict-terminal ::selection,
+html[data-theme="terminal"] ::selection {
   background: rgba(123, 114, 242, 0.34);
   color: var(--t1);
 }
@@ -1431,7 +1441,8 @@ button {
   background-clip: padding-box;
 }
 
-.predict-terminal :focus-visible {
+.predict-terminal :focus-visible,
+html[data-theme="terminal"] :focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
