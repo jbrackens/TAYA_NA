@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import Link from "next/link";
+import { Button, Card } from "../components/ui";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
@@ -35,9 +36,8 @@ const CROSS_LINK_CLASS =
   "border-b border-[var(--border-1)] pb-0.5 text-[13px] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--t1)]";
 const GRID_CLASS =
   "grid grid-cols-[280px_minmax(0,1fr)] items-start gap-[18px] max-[1024px]:grid-cols-1";
-const SURFACE_CLASS =
-  "relative rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)]";
-const SIDEBAR_CLASS = `${SURFACE_CLASS} flex flex-col gap-1.5 p-2.5 max-[1024px]:flex-row max-[1024px]:overflow-x-auto max-[1024px]:[scroll-snap-type:x_mandatory]`;
+// Surface shell (rounded/border/surface-1) now comes from the Card
+// primitive; sidebar/detail/state cards keep their density inline.
 const TAB_BASE_CLASS =
   "grid cursor-pointer grid-cols-[1fr_auto] grid-rows-[auto_auto] items-center gap-x-3 gap-y-0.5 rounded-[var(--r-rh-md)] border p-3.5 text-left text-[var(--t2)] transition-[background,border-color] duration-[120ms] ease-[ease] [font-family:inherit] hover:bg-[var(--surface-2)] max-[1024px]:flex-[0_0_220px] max-[1024px]:[scroll-snap-align:start]";
 const TAB_ACTIVE_CLASS =
@@ -53,7 +53,6 @@ const TAB_RANK_ACTIVE_CLASS = "text-[var(--accent)]";
 const CATEGORY_CLASS = `${TAB_BASE_CLASS} cursor-default max-[1024px]:flex-[0_0_280px]`;
 const CATEGORY_SELECT_CLASS =
   "col-start-1 row-start-2 mt-1 cursor-pointer appearance-none rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-2)] px-2 py-1 text-xs text-[var(--t1)] focus-visible:[outline:2px_solid_var(--accent)] focus-visible:outline-offset-2 [font-family:inherit] max-[1024px]:min-h-9 max-[1024px]:w-full max-[1024px]:px-2.5 max-[1024px]:py-2 max-[1024px]:text-[13px]";
-const DETAIL_CLASS = `${SURFACE_CLASS} min-h-[420px] p-[22px]`;
 const DETAIL_HEAD_CLASS =
   "mb-[18px] flex items-start justify-between gap-[18px] max-[720px]:flex-col max-[720px]:gap-2";
 const DETAIL_TITLE_CLASS =
@@ -77,10 +76,8 @@ const VIEWER_ROW_CLASS =
   "bg-[var(--accent-soft)] [&>td]:font-semibold [&>td]:text-[var(--t1)]";
 const VIEWER_CELL_CLASS = "p-3 text-center text-[var(--t1)]";
 const STATE_CLASS = "flex min-h-[60vh] items-center justify-center px-6";
-const STATE_CARD_CLASS = `${SURFACE_CLASS} max-w-[440px] p-7 text-center`;
 const STATE_MESSAGE_CLASS = "m-0 mb-3.5 leading-[1.6] text-[var(--t2)]";
-const STATE_CTA_CLASS =
-  "inline-flex items-center gap-1.5 rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-[22px] py-3 text-[13px] font-bold text-[#04140a] no-underline transition-[transform,filter] duration-[180ms] ease-[ease] hover:-translate-y-px hover:brightness-[1.05]";
+// State CTA migrated to Button primary lg (same unification as rewards).
 
 export default function LeaderboardsPage() {
   const { t } = useTranslation("leaderboards");
@@ -258,8 +255,10 @@ export default function LeaderboardsPage() {
       </header>
 
       <div className={GRID_CLASS}>
-        <div
-          className={SIDEBAR_CLASS}
+        <Card
+          as="div"
+          padding="none"
+          className="relative flex flex-col gap-1.5 p-2.5 max-[1024px]:flex-row max-[1024px]:overflow-x-auto max-[1024px]:[scroll-snap-type:x_mandatory]"
           role="tablist"
           aria-label={t("boardsAria", "Boards")}
         >
@@ -281,9 +280,14 @@ export default function LeaderboardsPage() {
               onSelect={selectBoard}
             />
           )}
-        </div>
+        </Card>
 
-        <section className={DETAIL_CLASS} aria-labelledby="lb-detail-title">
+        <Card
+          as="section"
+          padding="none"
+          className="relative min-h-[420px] p-[22px]"
+          aria-labelledby="lb-detail-title"
+        >
           {selectedBoard ? (
             <DetailPanel
               board={selectedBoard}
@@ -297,7 +301,7 @@ export default function LeaderboardsPage() {
               {t("state.pickBoard", "Pick a board to see rankings.")}
             </div>
           )}
-        </section>
+        </Card>
       </div>
     </div>
   );
@@ -514,14 +518,22 @@ function PageState({
 }) {
   return (
     <div className={STATE_CLASS}>
-      <div className={STATE_CARD_CLASS}>
+      <Card
+        as="div"
+        padding="none"
+        className="relative max-w-[440px] p-7 text-center"
+      >
         <p className={STATE_MESSAGE_CLASS}>{message}</p>
         {cta && (
-          <Link href={cta.href} className={STATE_CTA_CLASS}>
+          <Button
+            variant="primary"
+            size="lg"
+            render={<Link href={cta.href} />}
+          >
             {cta.label}
-          </Link>
+          </Button>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

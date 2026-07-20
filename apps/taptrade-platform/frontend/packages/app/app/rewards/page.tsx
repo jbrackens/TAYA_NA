@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { Button, Card } from "../components/ui";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
 import { ActiveBonusesControl } from "./ActiveBonusesControl";
@@ -61,8 +62,7 @@ const LADDER_THRESHOLD_CLASS =
   "text-xs text-[var(--t3)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
 const GRID_CLASS =
   "grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-[18px] max-[1024px]:grid-cols-1";
-const SURFACE_CARD_CLASS =
-  "relative rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-[22px]";
+// Surface cards now render via the Card primitive (padding="lg").
 const TIER_CARD_HEAD_CLASS =
   "mb-[18px] flex items-baseline justify-between gap-3";
 const TIER_PILL_BASE_CLASS =
@@ -132,10 +132,8 @@ const PREFIRST_CARD_CLASS = "w-full max-w-[440px] text-center";
 const PREFIRST_TITLE_CLASS =
   "m-0 mb-2.5 text-[26px] font-extrabold text-[var(--t1)]";
 const PREFIRST_BODY_CLASS = "m-0 mb-5 text-sm leading-[1.6] text-[var(--t2)]";
-const CTA_CLASS =
-  "inline-flex items-center gap-1.5 rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-5 py-3 text-[13px] font-bold text-[#04140a] no-underline transition-[transform,filter] duration-[180ms] ease-[ease] hover:-translate-y-px hover:brightness-[1.05]";
-const CLAIM_BUTTON_CLASS = `${CTA_CLASS} cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:brightness-100`;
-const STATE_CARD_CLASS = `${SURFACE_CARD_CLASS} w-full max-w-[440px] text-center`;
+// CTA / claim-button / state-card recipes migrated to the Button and Card
+// primitives (primary lg; lift-hover and 13px text unified away).
 const STATE_MESSAGE_CLASS = "m-0 mb-3.5 leading-[1.6] text-[var(--t2)]";
 
 function tierColorClass(tier: number, target: "ladder" | "pill" | "dot") {
@@ -573,7 +571,12 @@ export default function RewardsPage() {
       <TierLadder tiers={visibleTiers} current={standing.rank} />
 
       <div className={GRID_CLASS}>
-        <section className={SURFACE_CARD_CLASS} aria-labelledby="rw-tier-title">
+        <Card
+          as="section"
+          padding="lg"
+          className="relative"
+          aria-labelledby="rw-tier-title"
+        >
           <header className={TIER_CARD_HEAD_CLASS}>
             <span
               className={`${TIER_PILL_BASE_CLASS} ${tierColorClass(
@@ -650,10 +653,12 @@ export default function RewardsPage() {
             onClaim={handleStreakClaim}
           />
           <BadgesControl badges={badges} />
-        </section>
+        </Card>
 
-        <section
-          className={SURFACE_CARD_CLASS}
+        <Card
+          as="section"
+          padding="lg"
+          className="relative"
           aria-labelledby="rw-ledger-title"
         >
           <header className={LEDGER_HEAD_CLASS}>
@@ -730,7 +735,7 @@ export default function RewardsPage() {
               </tbody>
             </table>
           )}
-        </section>
+        </Card>
       </div>
     </div>
   );
@@ -829,9 +834,9 @@ function DailyClaimControl({
           "Claim non-redeemable gameplay points once per day for predictions only.",
         )}
       </p>
-      <button
-        type="button"
-        className={CLAIM_BUTTON_CLASS}
+      <Button
+        variant="primary"
+        size="lg"
         disabled={loading || claimed}
         onClick={onClaim}
       >
@@ -840,7 +845,7 @@ function DailyClaimControl({
           : claimed
             ? t("dailyClaim.claimed", "Claimed today")
             : t("dailyClaim.cta", "Claim today")}
-      </button>
+      </Button>
       {message && <div className={CLAIM_STATUS_CLASS}>{message}</div>}
     </div>
   );
@@ -882,9 +887,9 @@ function PointPacksControl({
               <span className={PACK_AMOUNT_CLASS}>
                 {formatPointsAmount(pack.amountPoints)}
               </span>
-              <button
-                type="button"
-                className={CLAIM_BUTTON_CLASS}
+              <Button
+                variant="primary"
+                size="lg"
                 disabled={
                   !pack.enabled ||
                   Boolean(pack.claimed) ||
@@ -899,7 +904,7 @@ function PointPacksControl({
                     : pack.enabled
                       ? t("pointPacks.cta", "Claim")
                       : t("pointPacks.unavailable", "Unavailable")}
-              </button>
+              </Button>
             </div>
           </div>
         ))}
@@ -943,9 +948,9 @@ function MissionsControl({
               <span className={PACK_AMOUNT_CLASS}>
                 {formatPointsAmount(mission.rewardPoints)}
               </span>
-              <button
-                type="button"
-                className={CLAIM_BUTTON_CLASS}
+              <Button
+                variant="primary"
+                size="lg"
                 disabled={
                   !mission.enabled ||
                   !mission.completed ||
@@ -961,7 +966,7 @@ function MissionsControl({
                     : mission.completed
                       ? t("missions.cta", "Claim")
                       : t("missions.incomplete", "Incomplete")}
-              </button>
+              </Button>
             </div>
           </div>
         ))}
@@ -1005,9 +1010,9 @@ function StreaksControl({
               <span className={PACK_AMOUNT_CLASS}>
                 {formatPointsAmount(streak.rewardPoints)}
               </span>
-              <button
-                type="button"
-                className={CLAIM_BUTTON_CLASS}
+              <Button
+                variant="primary"
+                size="lg"
                 disabled={
                   !streak.enabled ||
                   !streak.completed ||
@@ -1023,7 +1028,7 @@ function StreaksControl({
                     : streak.completed
                       ? t("streaks.cta", "Claim")
                       : t("streaks.incomplete", "Incomplete")}
-              </button>
+              </Button>
             </div>
           </div>
         ))}
@@ -1194,9 +1199,9 @@ function PreFirstSettleState({
         <StreaksControl {...streaks} />
         <BadgesControl badges={badges} />
         <PointPacksControl {...pointPacks} />
-        <Link href="/predict" className={CTA_CLASS}>
+        <Button variant="primary" size="lg" render={<Link href="/predict" />}>
           {t("prefirst.browse", "Browse markets")} →
-        </Link>
+        </Button>
       </div>
     </div>
   );
@@ -1211,14 +1216,22 @@ function PageState({
 }) {
   return (
     <div className={STATE_CLASS}>
-      <div className={STATE_CARD_CLASS}>
+      <Card
+        as="div"
+        padding="lg"
+        className="relative w-full max-w-[440px] text-center"
+      >
         <p className={STATE_MESSAGE_CLASS}>{message}</p>
         {cta && (
-          <Link href={cta.href} className={CTA_CLASS}>
+          <Button
+            variant="primary"
+            size="lg"
+            render={<Link href={cta.href} />}
+          >
             {cta.label}
-          </Link>
+          </Button>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
