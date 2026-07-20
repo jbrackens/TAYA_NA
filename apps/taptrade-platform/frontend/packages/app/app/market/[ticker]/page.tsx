@@ -35,6 +35,7 @@ import {
   DialogDescription,
   DialogTitle,
   Input,
+  Sheet,
 } from "../../components/ui";
 import OrderBook from "../../components/prediction/OrderBook";
 import type { BookLevel } from "../../components/prediction/OrderBook";
@@ -130,8 +131,10 @@ const MARKET_CRUMB_CLASS =
 const MARKET_CRUMB_LINK_CLASS =
   "inline-flex min-h-9 items-center gap-2 rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 font-semibold text-[var(--t2)] no-underline transition-colors hover:border-[var(--border-2)] hover:text-[var(--t1)]";
 const MARKET_CRUMB_SEP_CLASS = "text-[var(--t4)]";
+// <=1023px the workspace lives in the vaul Sheet (P3) — the aside is
+// desktop-only and the old in-flow card styles are retired.
 const MARKET_SIDE_CLASS =
-  "col-start-3 row-start-1 row-span-2 min-w-0 scroll-mt-16 border-l border-[var(--border-1)] bg-[var(--surface-1)] max-[1023px]:order-2 max-[1023px]:mx-4 max-[1023px]:mt-5 max-[1023px]:rounded-[var(--r-rh-lg)] max-[1023px]:border";
+  "col-start-3 row-start-1 row-span-2 min-w-0 border-l border-[var(--border-1)] bg-[var(--surface-1)] max-[1023px]:hidden";
 const MARKET_TICKET_STICKY_CLASS =
   "terminal-scrollbar sticky top-[74px] max-h-[calc(100vh-74px)] overflow-y-auto px-5 py-6 max-[1023px]:static max-[1023px]:max-h-none max-[1023px]:overflow-visible";
 const MARKET_TICKET_CONTEXT_CLASS =
@@ -639,6 +642,19 @@ export default function MarketDetailPage() {
       : 100;
 
   const [market, setMarket] = useState<PredictionMarket | null>(null);
+  // <=1023px band: ticket in a vaul Sheet, opened by the fixed trade CTA.
+  const [ticketSheetOpen, setTicketSheetOpen] = useState(false);
+  const [isTicketBand, setIsTicketBand] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 1023px)");
+    const sync = () => setIsTicketBand(mql.matches);
+    sync();
+    mql.addEventListener("change", sync);
+    return () => mql.removeEventListener("change", sync);
+  }, []);
+  useEffect(() => {
+    if (!isTicketBand) setTicketSheetOpen(false);
+  }, [isTicketBand]);
   const [event, setEvent] = useState<PredictionEvent | null>(null);
   const [trades, setTrades] = useState<Trade[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -1141,6 +1157,100 @@ export default function MarketDetailPage() {
     );
   }
 
+  // The trade workspace renders once: in the desktop aside, or inside
+  // the vaul Sheet on the <=1023px band (never both — a second mounted
+  // TradeTicket would fork amount state and double preview fetches).
+  const renderTradeWorkspace = (inSheet: boolean) => (
+    <>
+        <div className={inSheet ? "" : MARKET_TICKET_STICKY_CLASS}>
+          <div className={MARKET_TICKET_CONTEXT_CLASS}>
+            <p className={MARKET_TICKET_EYEBROW_CLASS}>
+              {displayCategory || t("PREDICTION_MARKET", "Prediction market")}
+            </p>
+            <h2 className={MARKET_TICKET_TITLE_CLASS}>
+              {displayMarket?.title}
+            </h2>
+            <div className={MARKET_TICKET_QUOTE_CLASS}>
+              <div>
+                <div className={MARKET_TICKET_QUOTE_LABEL_CLASS}>
+                  {t("LATEST_PROBABILITY", "Latest probability")}
+                </div>
+                <div className={MARKET_TICKET_QUOTE_VALUE_CLASS}>
+                  {market.yesPricePoints}¢
+                </div>
+              </div>
+              <div className="font-mono pb-1 text-right text-[11px] leading-5 text-[var(--t3)]">
+                <div className="font-semibold text-[var(--yes-text)]">
+                  {t("YES")} {market.yesPricePoints}¢
+                </div>
+                <div>
+                  {t("NO")} {market.noPricePoints}¢
+                </div>
+              </div>
+            </div>
+            <div
+              className={MARKET_TICKET_BAR_CLASS}
+              role="img"
+              aria-label={t("YES_NO_PRICES", {
+                yes: market.yesPricePoints,
+                no: market.noPricePoints,
+                defaultValue: `Yes ${market.yesPricePoints} cents, No ${market.noPricePoints} cents`,
+              })}
+            >
+              <span
+                className="h-full bg-[var(--accent)]"
+                style={{ width: `${clampPercent(market.yesPricePoints)}%` }}
+              />
+              <span className="h-full flex-1 bg-[var(--border-2)]" />
+            </div>
+          </div>
+
+          <div className={MARKET_TICKET_SOURCE_CLASS}>
+            <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]">
+              {t("RESOLUTION_SOURCE_LABEL", "Resolution source")}
+            </div>
+            <div className="font-semibold text-[var(--t1)]">
+              {formatSourceLabel(market.settlementSourceKey)}
+            </div>
+            {resolutionCopy && (
+              <p className="mb-0 mt-2 text-[var(--t2)]">{resolutionCopy}</p>
+            )}
+          </div>
+
+          <TradeTicket
+            variant="terminal"
+            market={market}
+            balance={typeof balance === "number" ? balance : undefined}
+            defaultSide={initialSide}
+            defaultAmount={initialAmount}
+            onSideChange={setSelectedSide}
+            isAuthenticated={isAuthenticated}
+            authLoading={authLoading}
+            // Available = quantity minus reserved (already-spoken-for in
+            // open sell orders). Sum across positions on this side; in
+            // practice the gateway returns at most one row per (user,
+            // market, side) but defensively reduce in case that changes.
+            availableYesShares={positions
+              .filter((p) => p.side === "yes")
+              .reduce(
+                (sum, p) =>
+                  sum + Math.max(0, p.quantity - (p.reservedQuantity || 0)),
+                0,
+              )}
+            availableNoShares={positions
+              .filter((p) => p.side === "no")
+              .reduce(
+                (sum, p) =>
+                  sum + Math.max(0, p.quantity - (p.reservedQuantity || 0)),
+                0,
+              )}
+            onPreview={canPreviewOrders ? handlePreview : undefined}
+            onSubmit={handleSubmit}
+          />
+        </div>
+    </>
+  );
+
   return (
     <div className={MARKET_WRAP_CLASS}>
       <div className={MARKET_RAIL_CLASS}>
@@ -1240,9 +1350,11 @@ export default function MarketDetailPage() {
             ))}
           </dl>
         </section>
-        <a
-          href="#market-trade-workspace"
-          className={MARKET_MOBILE_TRADE_LINK_CLASS}
+        <button
+          type="button"
+          data-testid="open-trade-sheet"
+          onClick={() => setTicketSheetOpen(true)}
+          className={`${MARKET_MOBILE_TRADE_LINK_CLASS} cursor-pointer border-0`}
         >
           <span>{t("TRADE_MARKET", "Trade market")}</span>
           <span className="font-mono">
@@ -1252,101 +1364,25 @@ export default function MarketDetailPage() {
               : market.noPricePoints}
             ¢
           </span>
-        </a>
+        </button>
       </div>
 
-      <aside
-        id="market-trade-workspace"
-        className={MARKET_SIDE_CLASS}
-        aria-label={t("TRADE_WORKSPACE", "Trade workspace")}
+      {!isTicketBand && (
+        <aside
+          id="market-trade-workspace"
+          className={MARKET_SIDE_CLASS}
+          aria-label={t("TRADE_WORKSPACE", "Trade workspace")}
+        >
+          {renderTradeWorkspace(false)}
+        </aside>
+      )}
+      <Sheet
+        open={ticketSheetOpen && isTicketBand}
+        onOpenChange={setTicketSheetOpen}
+        title={t("TRADE_WORKSPACE", "Trade workspace")}
       >
-        <div className={MARKET_TICKET_STICKY_CLASS}>
-          <div className={MARKET_TICKET_CONTEXT_CLASS}>
-            <p className={MARKET_TICKET_EYEBROW_CLASS}>
-              {displayCategory || t("PREDICTION_MARKET", "Prediction market")}
-            </p>
-            <h2 className={MARKET_TICKET_TITLE_CLASS}>
-              {displayMarket?.title}
-            </h2>
-            <div className={MARKET_TICKET_QUOTE_CLASS}>
-              <div>
-                <div className={MARKET_TICKET_QUOTE_LABEL_CLASS}>
-                  {t("LATEST_PROBABILITY", "Latest probability")}
-                </div>
-                <div className={MARKET_TICKET_QUOTE_VALUE_CLASS}>
-                  {market.yesPricePoints}¢
-                </div>
-              </div>
-              <div className="font-mono pb-1 text-right text-[11px] leading-5 text-[var(--t3)]">
-                <div className="font-semibold text-[var(--yes-text)]">
-                  {t("YES")} {market.yesPricePoints}¢
-                </div>
-                <div>
-                  {t("NO")} {market.noPricePoints}¢
-                </div>
-              </div>
-            </div>
-            <div
-              className={MARKET_TICKET_BAR_CLASS}
-              role="img"
-              aria-label={t("YES_NO_PRICES", {
-                yes: market.yesPricePoints,
-                no: market.noPricePoints,
-                defaultValue: `Yes ${market.yesPricePoints} cents, No ${market.noPricePoints} cents`,
-              })}
-            >
-              <span
-                className="h-full bg-[var(--accent)]"
-                style={{ width: `${clampPercent(market.yesPricePoints)}%` }}
-              />
-              <span className="h-full flex-1 bg-[var(--border-2)]" />
-            </div>
-          </div>
-
-          <div className={MARKET_TICKET_SOURCE_CLASS}>
-            <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]">
-              {t("RESOLUTION_SOURCE_LABEL", "Resolution source")}
-            </div>
-            <div className="font-semibold text-[var(--t1)]">
-              {formatSourceLabel(market.settlementSourceKey)}
-            </div>
-            {resolutionCopy && (
-              <p className="mb-0 mt-2 text-[var(--t2)]">{resolutionCopy}</p>
-            )}
-          </div>
-
-          <TradeTicket
-            variant="terminal"
-            market={market}
-            balance={typeof balance === "number" ? balance : undefined}
-            defaultSide={initialSide}
-            defaultAmount={initialAmount}
-            onSideChange={setSelectedSide}
-            isAuthenticated={isAuthenticated}
-            authLoading={authLoading}
-            // Available = quantity minus reserved (already-spoken-for in
-            // open sell orders). Sum across positions on this side; in
-            // practice the gateway returns at most one row per (user,
-            // market, side) but defensively reduce in case that changes.
-            availableYesShares={positions
-              .filter((p) => p.side === "yes")
-              .reduce(
-                (sum, p) =>
-                  sum + Math.max(0, p.quantity - (p.reservedQuantity || 0)),
-                0,
-              )}
-            availableNoShares={positions
-              .filter((p) => p.side === "no")
-              .reduce(
-                (sum, p) =>
-                  sum + Math.max(0, p.quantity - (p.reservedQuantity || 0)),
-                0,
-              )}
-            onPreview={canPreviewOrders ? handlePreview : undefined}
-            onSubmit={handleSubmit}
-          />
-        </div>
-      </aside>
+        {renderTradeWorkspace(true)}
+      </Sheet>
 
       <div className={MARKET_CONTENT_CLASS}>
         <section className={MARKET_DETAILS_CLASS}>

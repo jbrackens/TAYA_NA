@@ -3,6 +3,7 @@ import {
   expect,
   assertPageHealthy,
   captureConsoleErrors,
+  openTradeTicket,
 } from "./_shared";
 
 test.describe("/market/[ticker] — market detail", () => {
@@ -33,6 +34,7 @@ test.describe("/market/[ticker] — market detail", () => {
     }
 
     await assertPageHealthy(page, `/market/${firstTicker}`);
+    await openTradeTicket(page);
 
     // Market details are part of the same dark trading workspace as the
     // market directory, not the legacy padded shell.
@@ -144,6 +146,7 @@ test.describe("/market/[ticker] — market detail", () => {
       }
 
       await assertPageHealthy(page, `/market/${firstTicker}`);
+      await openTradeTicket(page);
 
       // Regression: ISSUE-001 — the amount control displayed $0.00 when
       // balance was zero because it clamped to the user's balance.
