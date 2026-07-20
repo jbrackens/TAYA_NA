@@ -16,11 +16,10 @@
 
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
+import { Button, Card } from "../ui";
 import type { StorePurchase } from "../../lib/api/store-client";
 import { formatPoints, formatPointsAmount } from "../../lib/points";
 
-const CARD_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 text-center";
 const DOT_BASE_CLASS = "mx-auto mb-3 block size-2.5 rounded-full";
 const TITLE_CLASS =
   "m-0 mb-1.5 text-[17px] font-bold tracking-[-0.01em] text-[var(--t1)]";
@@ -31,10 +30,9 @@ const BALANCE_LABEL_CLASS = "font-medium text-[var(--t3)]";
 const BALANCE_VALUE_CLASS =
   "font-['IBM_Plex_Mono',_monospace] font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
 const ACTIONS_CLASS = "flex flex-col items-stretch gap-2";
-const PRIMARY_CLASS =
-  "flex w-full cursor-pointer items-center justify-center rounded-md border-0 bg-[var(--accent)] px-4 py-3 [font-family:inherit] text-[14px] font-semibold text-[#061a10] no-underline transition-[filter,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:brightness-[1.05] disabled:cursor-not-allowed disabled:opacity-[0.45]";
-const SECONDARY_CLASS =
-  "flex w-full cursor-pointer items-center justify-center rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3 [font-family:inherit] text-[13px] font-semibold text-[var(--t1)] no-underline transition-colors duration-[120ms] hover:border-[rgba(43,228,128,0.5)] hover:bg-[var(--surface-2)] hover:text-[var(--accent-text)] disabled:cursor-not-allowed disabled:opacity-[0.45]";
+// Result actions use ui/Button (cta + secondary); the one-off
+// green-tinged secondary hover unified onto the canonical recipe.
+const SECONDARY_SIZING = "w-full px-4 py-3 text-[13px]";
 const QUIET_LINK_CLASS =
   "mt-1 inline-block border-b border-[var(--border-1)] pb-0.5 text-[13px] text-[var(--t2)] no-underline hover:border-[var(--accent)] hover:text-[var(--t1)]";
 
@@ -52,12 +50,12 @@ function ResultShell({
   children?: React.ReactNode;
 }) {
   return (
-    <section className={CARD_CLASS} data-testid={testid} role="status">
+    <Card padding="md" className="text-center" data-testid={testid} role="status">
       <span className={`${DOT_BASE_CLASS} ${dotClass}`} aria-hidden="true" />
       <h2 className={TITLE_CLASS}>{title}</h2>
       <p className={BODY_CLASS}>{body}</p>
       {children}
-    </section>
+    </Card>
   );
 }
 
@@ -96,21 +94,22 @@ export function PurchaseSuccess({
       </div>
       <div className={ACTIONS_CLASS}>
         {returnPath ? (
-          <Link
-            href={returnPath}
-            className={PRIMARY_CLASS}
-            data-testid="return-to-market"
+          <Button
+            variant="cta"
+            size="none"
+            render={<Link href={returnPath} data-testid="return-to-market" />}
           >
             {t("result.returnToMarket", "Return to market")}
-          </Link>
+          </Button>
         ) : null}
-        <button
-          type="button"
-          className={returnPath ? SECONDARY_CLASS : PRIMARY_CLASS}
+        <Button
+          variant={returnPath ? "secondary" : "cta"}
+          size="none"
+          className={returnPath ? SECONDARY_SIZING : undefined}
           onClick={onBackToStore}
         >
           {t("result.backToStore", "Back to store")}
-        </button>
+        </Button>
         <Link href="/account/transactions" className={QUIET_LINK_CLASS}>
           {t("result.viewLedger", "View point ledger")} →
         </Link>
@@ -154,24 +153,24 @@ export function PurchaseFailed({
       )}
     >
       <div className={ACTIONS_CLASS}>
-        <button
-          type="button"
-          className={PRIMARY_CLASS}
+        <Button
+          variant="cta"
+          size="none"
           onClick={onRetry}
           disabled={retrying}
         >
           {retrying
             ? t("checkout.processing", "Processing…")
             : t("result.retry", "Try again")}
-        </button>
-        <button
-          type="button"
-          className={SECONDARY_CLASS}
+        </Button>
+        <Button
+          size="none"
+          className={SECONDARY_SIZING}
           onClick={onBackToStore}
           disabled={retrying}
         >
           {t("result.backToStore", "Back to store")}
-        </button>
+        </Button>
       </div>
     </ResultShell>
   );
@@ -194,13 +193,13 @@ export function PurchaseCanceled({
       )}
     >
       <div className={ACTIONS_CLASS}>
-        <button
-          type="button"
-          className={PRIMARY_CLASS}
+        <Button
+          variant="cta"
+          size="none"
           onClick={onBackToSummary}
         >
           {t("result.backToSummary", "Back to order summary")}
-        </button>
+        </Button>
       </div>
     </ResultShell>
   );
@@ -225,16 +224,16 @@ export function PurchasePending({
       )}
     >
       <div className={ACTIONS_CLASS}>
-        <button
-          type="button"
-          className={PRIMARY_CLASS}
+        <Button
+          variant="cta"
+          size="none"
           onClick={onCheckStatus}
           disabled={checking}
         >
           {checking
             ? t("result.checking", "Checking…")
             : t("result.checkStatus", "Check status")}
-        </button>
+        </Button>
       </div>
     </ResultShell>
   );
