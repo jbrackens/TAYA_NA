@@ -179,6 +179,49 @@ Branch: `feat/market-chart` (visual-only). `lightweight-charts` **v5** (`chart.a
 
 ### P5 — Certification
 
+**P3–P5 EXECUTED (2026-07-20/21, branches `feat/feel-layer` + `feat/market-chart`, merged `6a519d99` + `66e04a2f`).**
+
+*P3 shipped:* sonner behind the unchanged `useToast()` API (P9 card via
+`toast.custom`, error=alert/assertive split, 76px offset, `OVERLAY_Z.toast`
+z-300; provider timers deleted; contract test added). PointsFlow primitive
+(one subdued 300ms ease-out timing call sites cannot escalate; mask padding
+zeroed; chip suffix responsive — retired the two-line "pts" wrap at 375px)
+on TopBar balance, ticket cost/payout, store total, portfolio Invested; the
+USD price deliberately stays static. ui/Sheet on vaul replaced BOTH
+hand-rolled panels (workspace ≤1179px, market page ≤1023px; rail and sheet
+never mount together); cost disclosure proven above the confirm CTA at
+375×812 and 768×1024; journey arc 19/19 on all four engines.
+
+*P4 shipped:* MarketChartCanvas on lightweight-charts v5 (dynamic
+ssr:false, fixed 300px box, pinned 0–100 domain, quiet time scale +
+crosshair readout, pan/zoom off, `chart.remove()` verified). Fetch machine
+and integrity rules untouched. Mobile re-baseline note: the old SVG
+silently rendered 220px on mobile (svg aspect quirk) — the canvas enforces
+the designed 300px (isolated on a pre-P4 build).
+
+*P5 certification (prod build, localhost, Chrome):*
+- **CLS 0.00 on every route×device measured** (fixed-height reservations
+  work). LCP lab: landing 784/808ms, discover 612/596ms, market 644/1232ms,
+  login 492/508ms (desktop/mobile emulation); DevTools traces: market
+  296ms, discover 338ms. Worst chart interaction 56ms (Event Timing).
+- **Lighthouse (market, mobile): A11y 99, Best Practices 100, SEO 100.**
+  The one A11y finding (heading-order) predates the polish work.
+- **Bundle diff** (raw JS over the wire vs pre-P3 `e0d78b79`; gz = level-9
+  re-compression): landing +142KB raw/~flat gz; discover +130 raw/+57 gz;
+  market +291 raw/+107 gz; login +116 raw/+31 gz. Total chunks 2,256KB raw
+  vs the audit-era 1,736KB. Market's +107 gz ≈ chart (+~45, documented
+  budget) + feel layer; the shared-route +31–57 gz EXCEEDS the +25KB P3
+  budget — documented overage. Remediation lead (not executed): Sheet/
+  PointsFlow ship through the `components/ui` barrel, so vaul/number-flow
+  land in shared chunks; direct imports (or barrel `sideEffects` hygiene)
+  should reclaim most of the shared-route overage.
+- **Storybook go/no-go: NO for this cycle.** Six primitive families
+  (Button, Card, Input/Textarea, Dialog, PointsFlow, Sheet) are stable and
+  the HAR-frozen visual suite remains the working workbench; revisit only
+  if a Tabs/Tooltip/Menu wave lands.
+- Lighthouse ≥90 perf ceiling still requires the RSC initiative (out of
+  scope, unchanged).
+
 - chrome-devtools MCP traces (desktop + mobile emulation) on `/`, `/predict`, market page, `/store` — before/after vs the audit baseline; Lighthouse re-run.
 - Bundle report diff (per-route first-load JS) attached to the final PR.
 - **Storybook decision point:** adopt only if the primitives count keeps growing — the visual suite is the workbench until then. (Deliberately not installed today.)
