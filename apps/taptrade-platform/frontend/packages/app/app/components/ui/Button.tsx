@@ -80,14 +80,26 @@ export function Button({
 }: ButtonProps) {
   // Custom render targets (e.g. render={<Link/>}) are not <button>s: the
   // `disabled` attribute is invalid there, so it translates to
-  // aria-disabled + removal from the tab order + a click/pointer block.
-  // (Codex review 2026-07-19: forwarding button-only props to arbitrary
-  // elements left links without disabled semantics.)
+  // aria-disabled + removal from the tab order + activation blocking.
+  // Two subtleties (Codex re-review 2026-07-19): these props must land
+  // AFTER ...rest so callers can't accidentally undo disabled semantics,
+  // and the click guard must preventDefault rather than omit onClick —
+  // Base UI merges the render element's OWN handlers after ours, so a
+  // Next <Link>'s internal navigation still runs on keyboard/programmatic
+  // activation; Link (like all well-behaved handlers) bails when the
+  // event is already defaultPrevented.
   const isCustomElement = render != null;
-  const disabledLinkProps =
+  const disabledCustomProps =
     isCustomElement && disabled
-      ? ({ "aria-disabled": true, tabIndex: -1, onClick: undefined } as const)
-      : { onClick };
+      ? ({
+          "aria-disabled": true,
+          tabIndex: -1,
+          onClick: (event: React.MouseEvent) => {
+            event.preventDefault();
+            event.stopPropagation();
+          },
+        } as const)
+      : null;
 
   return useRender({
     // The default element is a real <button> with an explicit type;
@@ -103,9 +115,10 @@ export function Button({
           : undefined,
         className,
       ),
+      onClick,
       ...(isCustomElement ? {} : { disabled }),
-      ...disabledLinkProps,
       ...rest,
+      ...(disabledCustomProps ?? {}),
     },
   });
 }

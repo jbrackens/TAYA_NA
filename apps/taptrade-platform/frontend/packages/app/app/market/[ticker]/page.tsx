@@ -1082,9 +1082,19 @@ export default function MarketDetailPage() {
 
   async function handleShareMarket() {
     if (!market || !displayMarket) return;
+    // Native share sheet only on TOUCH devices — desktop Chrome/Safari
+    // also implement navigator.share (a macOS picker), but the in-app
+    // dialog is the better desktop experience and makes the ui/Dialog
+    // path the real flow, not a test-only fallback (Codex re-review
+    // 2026-07-19).
+    const prefersNativeShare =
+      typeof navigator !== "undefined" &&
+      !!navigator.share &&
+      (navigator.maxTouchPoints > 0 ||
+        (typeof window !== "undefined" &&
+          window.matchMedia("(pointer: coarse)").matches));
     try {
-      if (typeof navigator !== "undefined" && navigator.share) {
-        // Native share sheet where the platform has one (mobile).
+      if (prefersNativeShare) {
         await navigator.share({
           title: displayMarket.title,
           text: displayMarket.description || displayMarket.title,
@@ -1092,9 +1102,6 @@ export default function MarketDetailPage() {
         });
         setShareMessage(t("SHARE_COPIED", "Market link copied."));
       } else {
-        // Desktop: a real dialog (components/ui Dialog — this is also the
-        // lead surface's live exercise of the portalled primitive on a
-        // dark route, per the P1 re-review).
         setShareOpen(true);
       }
     } catch (err) {
