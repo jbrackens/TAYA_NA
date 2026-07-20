@@ -30,7 +30,7 @@ import { logger } from "../../lib/logger";
 import { searchMarkets } from "../../lib/marketSearch";
 import { useAuth } from "../../hooks/useAuth";
 import BrandMark from "../BrandMark";
-import { Button } from "../ui";
+import { Button, PointsFlow } from "../ui";
 import { brand } from "../../lib/brand";
 import { useAppDispatch, useAppSelector } from "../../lib/store/hooks";
 import {
@@ -38,7 +38,6 @@ import {
   setCurrentBalance,
 } from "../../lib/store/pointBalanceSlice";
 import { getBalance } from "../../lib/api/wallet-client";
-import { formatPoints } from "../../lib/points";
 import { TierPill } from "./TierPill";
 import { LanguageSelector } from "../i18n/LanguageSelector";
 import { localizedMarket } from "./market-content";
@@ -533,7 +532,14 @@ export function TopBar() {
                     "your account is empty" and panic. A neutral "—"
                     reads as "loading" without claiming a value.
                   */}
-                  {typeof balance === "number" ? formatPoints(balance) : "—"}
+                  {typeof balance === "number" ? (
+                    <>
+                      <PointsFlow value={balance} />
+                      <span className="max-[419px]:hidden">&nbsp;pts</span>
+                    </>
+                  ) : (
+                    "—"
+                  )}
                 </span>
               </Link>
               <Button

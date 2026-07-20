@@ -19,7 +19,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Button, Card } from "../components/ui";
+import { Button, Card, PointsFlow } from "../components/ui";
 import { useTranslation } from "react-i18next";
 import { logger } from "../lib/logger";
 import type {
@@ -290,7 +290,7 @@ function SummaryStrip({
     <section className="mb-6 grid grid-cols-5 gap-[14px] max-lg:grid-cols-3 max-[720px]:grid-cols-2">
       <StatCard
         label={t("summary.invested", "Invested")}
-        value={s ? formatPoints(s.totalValuePoints) : "—"}
+        value={s ? <PointsFlow value={s.totalValuePoints} suffix=" pts" /> : "—"}
       />
       <StatCard
         label={t("summary.realizedPnl", "Realized point result")}
@@ -418,7 +418,7 @@ function StatCard({
   tone,
 }: {
   label: string;
-  value: string;
+  value: React.ReactNode;
   sub?: string;
   tone?: "yes" | "no" | "gain";
 }) {

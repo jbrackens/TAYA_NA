@@ -40,7 +40,7 @@ import type {
   TimeInForce,
 } from "@taptrade-ui/api-client/src/prediction-types";
 import { useToast } from "../ToastProvider";
-import { Button, Card } from "../ui";
+import { Button, Card, PointsFlow } from "../ui";
 import { complianceDenialKind } from "../../lib/compliance-denial";
 import { storeReturnSuffix } from "../../lib/storeReturnPath";
 
@@ -734,7 +734,7 @@ export function TradeTicket({
             <div className={TICKET_ROW_CLASS}>
               <span className={TICKET_ROW_LABEL_CLASS}>{t("EST_COST")}</span>
               <span className={TICKET_ROW_VALUE_CLASS}>
-                {formatPointAmount(effectiveSpend)}
+                <PointsFlow value={effectiveSpend} suffix=" pts" />
               </span>
             </div>
 
@@ -749,7 +749,7 @@ export function TradeTicket({
                     : "text-[var(--no-text)]"
                 }`}
               >
-                {formatPointAmount(pointsIfCorrect)}
+                <PointsFlow value={pointsIfCorrect} suffix=" pts" />
               </span>
             </div>
           </div>
