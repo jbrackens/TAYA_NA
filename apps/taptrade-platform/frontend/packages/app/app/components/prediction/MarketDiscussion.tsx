@@ -151,9 +151,9 @@ export default function MarketDiscussion({
   return (
     <Card as="section" aria-labelledby="market-discussion-title">
       <header className={HEAD_CLASS}>
-        <h3 id="market-discussion-title" className={TITLE_CLASS}>
+        <h2 id="market-discussion-title" className={TITLE_CLASS}>
           {t("DISCUSSION_TITLE", "Discussion")}
-        </h3>
+        </h2>
         <div className="flex items-center gap-3">
           <Link href="/activity" className={HEAD_LINK_CLASS}>
             {t("DISCUSSION_ACTIVITY", "Activity feed")}
