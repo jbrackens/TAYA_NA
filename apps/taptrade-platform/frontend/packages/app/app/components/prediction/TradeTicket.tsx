@@ -40,7 +40,8 @@ import type {
   TimeInForce,
 } from "@taptrade-ui/api-client/src/prediction-types";
 import { useToast } from "../ToastProvider";
-import { Button, Card, PointsFlow } from "../ui";
+import { Button, Card } from "../ui";
+import { PointsFlow } from "../ui/PointsFlow";
 import { complianceDenialKind } from "../../lib/compliance-denial";
 import { storeReturnSuffix } from "../../lib/storeReturnPath";
 

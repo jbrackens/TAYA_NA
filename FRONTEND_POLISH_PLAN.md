@@ -215,6 +215,32 @@ the designed 300px (isolated on a pre-P4 build).
   PointsFlow ship through the `components/ui` barrel, so vaul/number-flow
   land in shared chunks; direct imports (or barrel `sideEffects` hygiene)
   should reclaim most of the shared-route overage.
+- **Overage remediation EXECUTED (2026-07-21, uncommitted).** Verified
+  empirically (script-bytes probe, gz = level-9, same method as above):
+  with no `sideEffects` hygiene in the app package, the barrel put a
+  147.7KB-raw commons chunk in the first-load of 32/33 routes carrying
+  vaul+radix+remove-scroll (~18.2KB gz), base-ui dialog machinery
+  (~14.8KB gz, P1-era — same disease), and @number-flow/react (~5.5KB
+  gz). Fix: Dialog/Sheet/PointsFlow removed from the barrel (policy
+  comment added in `components/ui/index.ts`) and imported directly at
+  their call sites (market page; PredictionWorkspace; TopBar,
+  TradeTicket, OrderSummary, portfolio). Chose direct imports over
+  `sideEffects: false` — deterministic, and tree-shaking hints are
+  unreliable across client-component barrels. Measured result: shared
+  routes −40 to −42KB gz each (login 314.6→274.3, landing →274.5, store
+  →274.2, portfolio →277.6); login lands ≈9KB gz BELOW the pre-P3
+  baseline (the fix also evicted P1-era base-ui from shared chunks).
+  vaul now ships to exactly 2 routes (/predict 314.1, market 321.3 —
+  one shared chunk, verified no duplication); number-flow stays shared
+  legitimately (TopBar balance chip lives in AppShell). Residual:
+  /predict ≈ +33 gz vs pre-P3, still ~8KB over the +25 budget — that is
+  now pure feel-layer payload on the trading workspace (vaul 18.3 +
+  number-flow 5.6 + sonner 9.9), not barrel leakage. Option if John
+  wants it under budget: `next/dynamic` the workspace Sheet — but that
+  puts a chunk fetch on the mobile money path (CTA → ticket), so it is
+  a product call, not hygiene. Gates: tsc ✓, biome 0 errors ✓, tests
+  358/358 ✓, gate.sh 9/9 ✓, visual suite 15/15 against unchanged
+  baselines (pixel-identical by construction).
 - **Storybook go/no-go: NO for this cycle.** Six primitive families
   (Button, Card, Input/Textarea, Dialog, PointsFlow, Sheet) are stable and
   the HAR-frozen visual suite remains the working workbench; revisit only

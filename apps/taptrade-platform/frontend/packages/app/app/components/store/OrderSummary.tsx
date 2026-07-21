@@ -7,7 +7,8 @@
  */
 
 import { useTranslation } from "react-i18next";
-import { Card, PointsFlow } from "../ui";
+import { Card } from "../ui";
+import { PointsFlow } from "../ui/PointsFlow";
 import { formatPointsAmount } from "../../lib/points";
 import { formatUsdCents } from "../../lib/usd";
 import type { StorePurchaseStatus } from "../../lib/api/store-client";

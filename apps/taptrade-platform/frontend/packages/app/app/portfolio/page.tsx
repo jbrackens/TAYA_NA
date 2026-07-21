@@ -19,7 +19,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Button, Card, PointsFlow } from "../components/ui";
+import { Button, Card } from "../components/ui";
+import { PointsFlow } from "../components/ui/PointsFlow";
 import { useTranslation } from "react-i18next";
 import { logger } from "../lib/logger";
 import type {

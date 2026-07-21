@@ -14,7 +14,7 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { Sheet } from "../ui";
+import { Sheet } from "../ui/Sheet";
 import type {
   Category,
   DiscoveryResponse,

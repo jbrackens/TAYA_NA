@@ -27,16 +27,15 @@ import { ShareNetworkIcon as ShareNetwork } from "@phosphor-icons/react/dist/csr
 import MarketHead from "../../components/prediction/MarketHead";
 import MarketChart from "../../components/prediction/MarketChart";
 import MarketDiscussion from "../../components/prediction/MarketDiscussion";
+import { Button, Input } from "../../components/ui";
 import {
-  Button,
   Dialog,
   DialogClose,
   DialogContent,
   DialogDescription,
   DialogTitle,
-  Input,
-  Sheet,
-} from "../../components/ui";
+} from "../../components/ui/Dialog";
+import { Sheet } from "../../components/ui/Sheet";
 import OrderBook from "../../components/prediction/OrderBook";
 import type { BookLevel } from "../../components/prediction/OrderBook";
 import RecentTrades from "../../components/prediction/RecentTrades";
@@ -1386,9 +1385,9 @@ export default function MarketDetailPage() {
 
       <div className={MARKET_CONTENT_CLASS}>
         <section className={MARKET_DETAILS_CLASS}>
-          <h3 className={MARKET_DETAILS_TITLE_CLASS}>
+          <h2 className={MARKET_DETAILS_TITLE_CLASS}>
             {t("MARKET_DETAILS_RESOLUTION")}
-          </h3>
+          </h2>
           {displayMarket?.description && (
             <p className={MARKET_DETAILS_COPY_CLASS}>
               {displayMarket.description}
@@ -1501,7 +1500,7 @@ export default function MarketDetailPage() {
         />
 
         <aside className={RELATED_CARD_CLASS} aria-label={t("RELATED_MARKETS")}>
-          <h3 className={RELATED_TITLE_CLASS}>{t("RELATED_MARKETS")}</h3>
+          <h2 className={RELATED_TITLE_CLASS}>{t("RELATED_MARKETS")}</h2>
           {related.length === 0 ? (
             <p className={RELATED_EMPTY_CLASS}>{t("NO_RELATED_MARKETS")}</p>
           ) : (

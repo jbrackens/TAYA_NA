@@ -30,7 +30,8 @@ import { logger } from "../../lib/logger";
 import { searchMarkets } from "../../lib/marketSearch";
 import { useAuth } from "../../hooks/useAuth";
 import BrandMark from "../BrandMark";
-import { Button, PointsFlow } from "../ui";
+import { Button } from "../ui";
+import { PointsFlow } from "../ui/PointsFlow";
 import { brand } from "../../lib/brand";
 import { useAppDispatch, useAppSelector } from "../../lib/store/hooks";
 import {
