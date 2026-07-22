@@ -14,7 +14,10 @@
  * commons chunk into the first-load of 32/33 routes. Import these
  * directly from their module at the call site:
  *  - Dialog     → "components/ui/Dialog"     (base-ui dialog machinery)
- *  - Sheet      → "components/ui/Sheet"      (vaul + radix + remove-scroll)
+ *  - Sheet      → "components/ui/Sheet.lazy" (vaul + radix + remove-scroll;
+ *                 async chunk — band-gated call sites mount it only while
+ *                 the mobile band matches; "./Sheet" only if a sheet must
+ *                 exist synchronously at first paint)
  *  - PointsFlow → "components/ui/PointsFlow" (@number-flow/react)
  */
 

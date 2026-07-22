@@ -35,7 +35,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "../../components/ui/Dialog";
-import { Sheet } from "../../components/ui/Sheet";
+import { Sheet } from "../../components/ui/Sheet.lazy";
 import OrderBook from "../../components/prediction/OrderBook";
 import type { BookLevel } from "../../components/prediction/OrderBook";
 import RecentTrades from "../../components/prediction/RecentTrades";
@@ -1375,13 +1375,15 @@ export default function MarketDetailPage() {
           {renderTradeWorkspace(false)}
         </aside>
       )}
-      <Sheet
-        open={ticketSheetOpen && isTicketBand}
-        onOpenChange={setTicketSheetOpen}
-        title={t("TRADE_WORKSPACE", "Trade workspace")}
-      >
-        {renderTradeWorkspace(true)}
-      </Sheet>
+      {isTicketBand && (
+        <Sheet
+          open={ticketSheetOpen}
+          onOpenChange={setTicketSheetOpen}
+          title={t("TRADE_WORKSPACE", "Trade workspace")}
+        >
+          {renderTradeWorkspace(true)}
+        </Sheet>
+      )}
 
       <div className={MARKET_CONTENT_CLASS}>
         <section className={MARKET_DETAILS_CLASS}>

@@ -215,7 +215,7 @@ the designed 300px (isolated on a pre-P4 build).
   PointsFlow ship through the `components/ui` barrel, so vaul/number-flow
   land in shared chunks; direct imports (or barrel `sideEffects` hygiene)
   should reclaim most of the shared-route overage.
-- **Overage remediation EXECUTED (2026-07-21, uncommitted).** Verified
+- **Overage remediation EXECUTED (2026-07-21, `fea342f0`, deployed).** Verified
   empirically (script-bytes probe, gz = level-9, same method as above):
   with no `sideEffects` hygiene in the app package, the barrel put a
   147.7KB-raw commons chunk in the first-load of 32/33 routes carrying
@@ -241,6 +241,24 @@ the designed 300px (isolated on a pre-P4 build).
   a product call, not hygiene. Gates: tsc ✓, biome 0 errors ✓, tests
   358/358 ✓, gate.sh 9/9 ✓, visual suite 15/15 against unchanged
   baselines (pixel-identical by construction).
+- **Residual reclaimed: lazy Sheet (2026-07-22, uncommitted).** John took
+  the `next/dynamic` option. `components/ui/Sheet.lazy.tsx` is a
+  dynamic-`ssr:false` twin of Sheet with identical props; both call sites
+  (workspace ≤1179px, market page ≤1023px) import the twin and mount it
+  only while their band matches, so the band-flip mount doubles as the
+  warmup — on mobile the chunk fetch fires at hydration, not on the CTA
+  tap. Verified in the prod build: chunk request present before any tap;
+  sheet opens at 375 with full cost disclosure; desktop 1280 never
+  fetches it (23 vs 25 chunks). vaul+radix+remove-scroll is now a
+  61KB-raw / 18.3KB-gz async chunk in the first-load of 0/34 routes.
+  Measured: /predict 314.1→296.8 gz (−17.3; ≈+16 vs pre-P3 — UNDER the
+  +25 budget with ~9KB headroom), market 321.3→302.9 (−18.4; both runs
+  symmetrically exclude the URL-encoded `[ticker]` page chunk, corrected
+  absolute 317.9), every other route byte-identical. **All routes now
+  inside the P5 budget.** Probe caveat for future runs: the script-bytes
+  prober misses `%5Bticker%5D`-encoded chunk paths — decode before
+  resolving on disk. Gates: tsc ✓, biome ✓, tests 358/358 ✓, gate.sh ✓,
+  visual suite 15/15 ✓.
 - **Storybook go/no-go: NO for this cycle.** Six primitive families
   (Button, Card, Input/Textarea, Dialog, PointsFlow, Sheet) are stable and
   the HAR-frozen visual suite remains the working workbench; revisit only

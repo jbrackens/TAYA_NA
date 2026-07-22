@@ -14,7 +14,7 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { Sheet } from "../ui/Sheet";
+import { Sheet } from "../ui/Sheet.lazy";
 import type {
   Category,
   DiscoveryResponse,
@@ -877,19 +877,21 @@ export function PredictionWorkspace({
           onMarketUpdate={handleMarketUpdate}
         />
       )}
-      <Sheet
-        open={mobileTradeOpen && isMobileBand}
-        onOpenChange={setMobileTradeOpen}
-        title={t("TRADE_PREVIEW")}
-      >
-        <TradePreview
-          variant="sheet"
-          market={selected}
-          values={histories.get(selected.ticker)}
-          onClose={() => setMobileTradeOpen(false)}
-          onMarketUpdate={handleMarketUpdate}
-        />
-      </Sheet>
+      {isMobileBand && (
+        <Sheet
+          open={mobileTradeOpen}
+          onOpenChange={setMobileTradeOpen}
+          title={t("TRADE_PREVIEW")}
+        >
+          <TradePreview
+            variant="sheet"
+            market={selected}
+            values={histories.get(selected.ticker)}
+            onClose={() => setMobileTradeOpen(false)}
+            onMarketUpdate={handleMarketUpdate}
+          />
+        </Sheet>
+      )}
     </div>
   );
 }
