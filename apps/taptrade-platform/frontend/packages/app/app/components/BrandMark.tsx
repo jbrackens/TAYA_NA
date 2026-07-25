@@ -36,9 +36,13 @@ export default function BrandMark({
           y2="100"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stopColor="#9188ff" />
-          <stop offset="0.52" stopColor="#766af1" />
-          <stop offset="1" stopColor="#6258d3" />
+          {/* Gradient stops read theme tokens (handoff spec §3 item 4,
+              2026-07-26) so a theme can recolour the mark. The
+              --brand-mark-stop-* defaults in globals.css are the
+              previous literal violet values — no visual change yet. */}
+          <stop stopColor="var(--brand-mark-stop-1, #9188ff)" />
+          <stop offset="0.52" stopColor="var(--brand-mark-stop-2, #766af1)" />
+          <stop offset="1" stopColor="var(--brand-mark-stop-3, #6258d3)" />
         </linearGradient>
       </defs>
       <g fill="url(#taptrade-mark-gradient)">

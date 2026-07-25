@@ -29,7 +29,7 @@ const REF_ROW_CLASS =
 const REF_LINE_CLASS =
   "flex items-center justify-between gap-3 overflow-hidden";
 const REF_VALUE_CLASS =
-  "overflow-hidden text-ellipsis whitespace-nowrap font-['IBM_Plex_Mono',_monospace] text-[var(--t2)] [font-variant-numeric:tabular-nums]";
+  "overflow-hidden text-ellipsis whitespace-nowrap font-mono text-[var(--t2)] [font-variant-numeric:tabular-nums]";
 const ALT_GROUP_CLASS = "mt-4 border-t border-[var(--border-1)] pt-3.5";
 const ALT_TITLE_CLASS =
   "m-0 mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";

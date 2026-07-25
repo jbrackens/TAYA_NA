@@ -77,8 +77,12 @@ export default function MarketChartCanvas({
         background: { type: ColorType.Solid, color: "transparent" },
         textColor: axisText,
         fontSize: 10,
+        // Canvas text cannot resolve CSS var() itself, so the numeric
+        // mono stack (--font-mono → Geist Mono via next/font's hashed
+        // family) is read off the computed style like the color tokens.
         fontFamily:
-          "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+          cssVar(container, "--font-mono") ||
+          "ui-monospace, SFMono-Regular, Menlo, monospace",
         attributionLogo: false,
       },
       grid: {

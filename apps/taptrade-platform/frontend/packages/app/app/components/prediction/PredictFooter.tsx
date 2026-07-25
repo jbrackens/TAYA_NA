@@ -30,7 +30,7 @@ export function PredictFooter() {
   return (
     <footer className="mt-10 rounded-[var(--r-rh-lg)] bg-[var(--brand-ink)] px-7 py-6 text-xs max-[640px]:px-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <span className="text-[19px] font-bold leading-none tracking-[-0.03em] text-[var(--brand-on-dark)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
+        <span className="text-[19px] font-semibold lowercase leading-none tracking-[-0.025em] text-[var(--brand-on-dark)]">
           {brand.name}
           <span className="text-[var(--brand-period-dark)]">.</span>
         </span>

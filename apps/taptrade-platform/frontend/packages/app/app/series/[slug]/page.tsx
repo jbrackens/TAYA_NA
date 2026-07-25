@@ -15,13 +15,13 @@ const api = createPredictionClient();
 
 const ROUTE_LOADING_CLASS = "p-20 text-center text-[13px] text-[var(--t3)]";
 const SERIES_HEAD_CLASS =
-  "mb-6 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+  "mb-6 font-sans";
 const SERIES_TITLE_ROW_CLASS =
   "flex flex-wrap items-baseline justify-between gap-3";
 const SERIES_TITLE_CLASS =
-  "m-0 font-['Inter',_sans-serif] text-[28px] font-bold tracking-[-0.02em] text-[var(--t1)]";
+  "m-0 font-sans text-[28px] font-bold tracking-[-0.02em] text-[var(--t1)]";
 const SERIES_META_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] text-xs text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+  "font-mono text-xs text-[var(--t3)] [font-variant-numeric:tabular-nums]";
 const SERIES_DESC_CLASS =
   "mt-2 max-w-3xl text-[14px] leading-6 text-[var(--t2)]";
 const SERIES_TAGS_CLASS = "mt-4 flex flex-wrap items-center gap-2";

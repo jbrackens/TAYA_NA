@@ -317,13 +317,13 @@ function TradeTicketPreview({
   loginCta,
 }: TradeTicketPreviewProps) {
   const mono =
-    "font-['IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace] [font-variant-numeric:tabular-nums]";
+    "font-mono [font-variant-numeric:tabular-nums]";
   return (
     <div role="img" aria-label={ariaLabel}>
       <div className="rounded-[42px] border border-[rgba(26,26,26,0.16)] bg-[#151716] p-3 shadow-[0_28px_80px_rgba(0,0,0,0.18)]">
         <div className="overflow-hidden rounded-[32px] bg-white p-5 text-left">
           <div className="flex items-center justify-between">
-            <span className="text-[17px] font-bold leading-none tracking-[-0.03em] text-[#0b4332] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
+            <span className="text-[17px] font-semibold lowercase leading-none tracking-[-0.025em] text-[#0b4332]">
               TapTrade<span className="text-[#10c8a0]">.</span>
             </span>
             <span className="inline-flex h-8 items-center rounded-[var(--r-pill)] bg-[var(--accent)] px-3.5 text-[12px] font-semibold text-[#061a10]">
@@ -438,7 +438,7 @@ export default function HomePage() {
   }, [menuOpen]);
 
   return (
-    <div className="relative min-h-screen bg-[#050706] text-[var(--t1)] [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
+    <div className="relative min-h-screen bg-[#050706] text-[var(--t1)] font-sans">
       <header className="mx-auto flex h-16 w-full max-w-[1440px] items-center justify-between bg-[#050706] px-8 text-white max-[720px]:px-5">
         <Link
           href="/"
@@ -449,7 +449,7 @@ export default function HomePage() {
             size={30}
             className="text-[var(--brand-on-dark)] [--brand-period:var(--brand-period-dark)]"
           />
-          <span className="text-[25px] font-bold leading-none tracking-[-0.02em] text-[var(--brand-on-dark)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif] max-[420px]:text-[22px]">
+          <span className="text-[25px] font-semibold lowercase leading-none tracking-[-0.025em] text-[var(--brand-on-dark)] max-[420px]:text-[22px]">
             {brand.name}
             <span className="text-[var(--brand-period-dark)]">.</span>
           </span>
@@ -596,7 +596,7 @@ export default function HomePage() {
             className="absolute flex -translate-y-1/2 items-center justify-end gap-2.5 max-[900px]:hidden"
             style={{ right: "3.6%", top: "20.7%" }}
           >
-            <span className="rounded-md border border-white/12 bg-[#0a120d]/85 px-2.5 py-1 font-['IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace] text-[12px] font-semibold tracking-[0.02em] text-[#71eeb8] [font-variant-numeric:tabular-nums]">
+            <span className="rounded-md border border-white/12 bg-[#0a120d]/85 px-2.5 py-1 font-mono text-[12px] font-semibold tracking-[0.02em] text-[#71eeb8] [font-variant-numeric:tabular-nums]">
               YES 62¢
             </span>
           </div>
@@ -604,7 +604,7 @@ export default function HomePage() {
             className="absolute flex -translate-y-1/2 items-center justify-end gap-2.5 max-[900px]:hidden"
             style={{ right: "3.6%", top: "75%" }}
           >
-            <span className="rounded-md border border-white/10 bg-[#0a120d]/85 px-2.5 py-1 font-['IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace] text-[12px] font-semibold tracking-[0.02em] text-[#ff8b6b]/80 [font-variant-numeric:tabular-nums]">
+            <span className="rounded-md border border-white/10 bg-[#0a120d]/85 px-2.5 py-1 font-mono text-[12px] font-semibold tracking-[0.02em] text-[#ff8b6b]/80 [font-variant-numeric:tabular-nums]">
               NO 38¢
             </span>
           </div>
@@ -623,7 +623,7 @@ export default function HomePage() {
             />
             {t("hero.eyebrow")}
           </p>
-          <h1 className="landing-rise landing-rise-delay-1 m-0 mt-5 max-w-[840px] text-balance text-[clamp(46px,6vw,84px)] font-semibold leading-[1.02] tracking-[-0.03em] text-white [font-family:'Inter_Tight','Inter',-apple-system,BlinkMacSystemFont,sans-serif] max-[720px]:text-[clamp(40px,10.5vw,56px)]">
+          <h1 className="landing-rise landing-rise-delay-1 m-0 mt-5 max-w-[840px] text-balance text-[clamp(46px,6vw,84px)] font-semibold leading-[1.02] tracking-[-0.03em] text-white font-sans max-[720px]:text-[clamp(40px,10.5vw,56px)]">
             {t("hero.title")}
           </h1>
           <p className="landing-rise landing-rise-delay-2 m-0 mt-6 max-w-[600px] text-[19px] leading-[1.55] text-white/78 max-[720px]:mt-5 max-[720px]:text-[17px]">
@@ -654,7 +654,7 @@ export default function HomePage() {
                 <p className="m-0 text-[12px] font-bold uppercase tracking-[0.18em] text-[#0b3c25]/80">
                   {t("browse.eyebrow")}
                 </p>
-                <h2 className="m-0 mt-4 max-w-[500px] text-balance text-[clamp(34px,3.8vw,48px)] font-semibold leading-[1.06] tracking-[-0.02em] [font-family:'Inter_Tight','Inter',-apple-system,BlinkMacSystemFont,sans-serif] max-[720px]:text-[30px]">
+                <h2 className="m-0 mt-4 max-w-[500px] text-balance text-[clamp(34px,3.8vw,48px)] font-semibold leading-[1.06] tracking-[-0.02em] font-sans max-[720px]:text-[30px]">
                   {t("browse.title")}
                 </h2>
                 <p className="mt-5 max-w-[480px] text-[17px] leading-[1.55] text-[#07150d]/78">
@@ -694,7 +694,7 @@ export default function HomePage() {
         >
           <div className="mx-auto grid max-w-[1180px] grid-cols-[minmax(0,0.95fr)_minmax(300px,0.72fr)] items-center gap-12 max-[900px]:grid-cols-1 max-[900px]:gap-10">
             <Reveal>
-              <h2 className="m-0 max-w-[620px] text-balance text-[clamp(34px,3.8vw,48px)] font-semibold leading-[1.06] tracking-[-0.02em] [font-family:'Inter_Tight','Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
+              <h2 className="m-0 max-w-[620px] text-balance text-[clamp(34px,3.8vw,48px)] font-semibold leading-[1.06] tracking-[-0.02em] font-sans">
                 {t("journey.title")}
               </h2>
               <p className="mt-5 max-w-[560px] text-[18px] leading-[1.55] text-[var(--t2)]">
@@ -706,7 +706,7 @@ export default function HomePage() {
                     key={row.titleKey}
                     className="grid grid-cols-[64px_minmax(0,1fr)] gap-5 border-b border-[var(--border-1)] py-6 max-[560px]:grid-cols-1 max-[560px]:gap-3"
                   >
-                    <span className="pt-[7px] font-['IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace] text-[12px] font-semibold text-[var(--yes-text)]">
+                    <span className="pt-[7px] font-mono text-[12px] font-semibold text-[var(--yes-text)]">
                       {row.step}
                     </span>
                     <div>
@@ -752,7 +752,7 @@ export default function HomePage() {
           <div className="mx-auto max-w-[1180px]">
             <div className="grid grid-cols-[0.72fr_1.28fr] gap-14 max-[900px]:grid-cols-1">
               <div>
-                <h2 className="m-0 text-balance text-[clamp(34px,3.8vw,48px)] font-semibold leading-[1.06] tracking-[-0.02em] [font-family:'Inter_Tight','Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
+                <h2 className="m-0 text-balance text-[clamp(34px,3.8vw,48px)] font-semibold leading-[1.06] tracking-[-0.02em] font-sans">
                   {t("trust.title")}
                 </h2>
                 <p className="mt-5 max-w-[360px] text-[18px] leading-[1.55] text-white/72">
@@ -781,7 +781,7 @@ export default function HomePage() {
 
         <section className="bg-[var(--accent)] px-8 py-24 text-center text-[#07150d] max-[720px]:px-5 max-[720px]:py-16">
           <Reveal className="mx-auto max-w-[760px]">
-            <h2 className="m-0 text-balance text-[clamp(38px,4.6vw,60px)] font-semibold leading-[1.04] tracking-[-0.03em] [font-family:'Inter_Tight','Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
+            <h2 className="m-0 text-balance text-[clamp(38px,4.6vw,60px)] font-semibold leading-[1.04] tracking-[-0.03em] font-sans">
               {t("cta.title")}
             </h2>
             <div className="mt-8">
@@ -815,7 +815,7 @@ export default function HomePage() {
               ))}
             </div>
             <div className="mt-6 border-t border-white/10 pt-8">
-              <p className="m-0 text-[clamp(56px,13vw,168px)] font-bold leading-[0.95] tracking-[-0.03em] text-[var(--brand-on-dark)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif]">
+              <p className="m-0 text-[clamp(56px,13vw,168px)] font-semibold lowercase leading-[0.95] tracking-[-0.025em] text-[var(--brand-on-dark)]">
                 {brand.name}
                 <span className="text-[var(--brand-period-dark)]">.</span>
               </p>

@@ -33,7 +33,7 @@ const TIER_PILL_BLOOM_CLASS =
   "shadow-[var(--accent-glow)] motion-reduce:shadow-none motion-reduce:transition-none";
 const TIER_SEPARATOR_CLASS = "mx-1.5 text-[var(--t3)] font-medium";
 const TIER_POINTS_CLASS =
-  "font-['IBM_Plex_Mono',_ui-monospace,_monospace] font-semibold [font-variant-numeric:tabular-nums]";
+  "font-mono font-semibold [font-variant-numeric:tabular-nums]";
 
 export function TierPill({ refreshMs = 60_000 }: TierPillProps) {
   const { user } = useAuth();

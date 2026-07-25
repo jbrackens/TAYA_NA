@@ -28,7 +28,7 @@ const BALANCE_ROW_CLASS =
   "mx-auto mb-4 flex max-w-[320px] items-center justify-between gap-3 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-3 text-[13px]";
 const BALANCE_LABEL_CLASS = "font-medium text-[var(--t3)]";
 const BALANCE_VALUE_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
+  "font-mono font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
 const ACTIONS_CLASS = "flex flex-col items-stretch gap-2";
 // Result actions use ui/Button (cta + secondary); the one-off
 // green-tinged secondary hover unified onto the canonical recipe.

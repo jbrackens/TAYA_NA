@@ -1,18 +1,8 @@
 import type React from "react";
 import "./globals.css";
-import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import localFont from "next/font/local";
 import AppShell from "./components/AppShell";
 import { brand } from "./lib/brand";
-
-const MartianGrotesk = localFont({
-  src: "./fonts/martian-grotesk/MartianGrotesk-Variable.woff2",
-  variable: "--font-martian-grotesk",
-  display: "swap",
-  weight: "100 1000",
-  style: "normal",
-});
 
 export default function RootLayout({
   children,
@@ -20,34 +10,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      className={`${GeistSans.variable} ${GeistMono.variable} ${MartianGrotesk.variable}`}
-    >
+    <html lang="en" className={GeistMono.variable}>
       <head>
         <title>{brand.name}</title>
         <meta
           name="description"
           content="Trade Yes or No on politics, basketball, pageants, esports, gaming, and the moments Filipinos are watching."
         />
-        {/* Existing light surfaces retain Inter, Inter Tight, IBM Plex Mono,
-         * and Schibsted Grotesk. The prediction workspace uses self-hosted
-         * Geist Sans + Geist Mono through the variables on <html>. P12 perf
-         * (2026-07-12): dropped Outfit (legacy — only remaining reference
-         * was an unreachable fallback behind Inter in globals.css) and
-         * Space Grotesk (zero usages); preconnects added so the blocking
-         * stylesheet + font files start their handshakes immediately.
-         */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&family=Schibsted+Grotesk:wght@700&display=swap"
-          rel="stylesheet"
-        />
+        {/* Ink & lime type pivot, step 2 (handoff spec §1, 2026-07-26):
+         * two families, both self-hosted, zero third-party font requests.
+         * Switzer (Fontshare, self-hosted woff2 in public/fonts/, declared
+         * via @font-face in globals.css) carries display, UI and body;
+         * Geist Mono (geist npm package → --font-geist-mono on <html>)
+         * carries every numeric with tabular figures. Removed: the Google
+         * Fonts stylesheet (Inter, Inter Tight, IBM Plex Mono, Schibsted
+         * Grotesk) and its preconnects, Geist Sans (its only consumer was
+         * the .predict-terminal font override deleted in step 1), and the
+         * Martian Grotesk wordmark font (148KB of variable font for eight
+         * letters — the wordmark is now Switzer 600 lowercase). */}
         {process.env.NODE_ENV === "production" && (
           <script
             dangerouslySetInnerHTML={{

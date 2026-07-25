@@ -42,7 +42,7 @@ const DEV_CLASS =
 const DEV_EYEBROW_CLASS =
   "mb-1 block text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
 const MONO_CLASS =
-  "tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+  "tabular-nums font-mono";
 const DIVIDER_CLASS =
   "my-5 mb-4 flex items-center gap-3 before:h-px before:flex-1 before:bg-[var(--border-1)] before:content-[''] after:h-px after:flex-1 after:bg-[var(--border-1)] after:content-['']";
 const DIVIDER_TEXT_CLASS =

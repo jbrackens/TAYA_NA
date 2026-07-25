@@ -41,7 +41,7 @@ const AUTO_ADVANCE_MS = 7000;
 const CAROUSEL_MESSAGE_CLASS =
   "flex min-h-[200px] items-center justify-center rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-9 text-center text-[13px] text-[var(--t3)]";
 const CAROUSEL_CLASS =
-  "font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+  "font-sans";
 const CAROUSEL_VIEWPORT_CLASS =
   "relative [&_.rh-hero-eyebrow]:pr-[104px] max-[720px]:[&_.rh-hero-eyebrow]:pr-[92px]";
 const CAROUSEL_NAV_CLASS =

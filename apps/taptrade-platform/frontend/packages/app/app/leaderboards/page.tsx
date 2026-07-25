@@ -48,7 +48,7 @@ const TAB_NAME_CLASS =
 const TAB_SUB_CLASS =
   "col-start-1 row-start-2 text-[11px] uppercase tracking-[0.04em] text-[var(--t3)]";
 const TAB_RANK_BASE_CLASS =
-  "col-start-2 row-span-2 row-start-1 self-center text-base font-bold text-[var(--t1)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+  "col-start-2 row-span-2 row-start-1 self-center text-base font-bold text-[var(--t1)] tabular-nums font-mono";
 const TAB_RANK_ACTIVE_CLASS = "text-[var(--accent)]";
 const CATEGORY_CLASS = `${TAB_BASE_CLASS} cursor-default max-[1024px]:flex-[0_0_280px]`;
 const CATEGORY_SELECT_CLASS =
@@ -60,7 +60,7 @@ const DETAIL_TITLE_CLASS =
 const DETAIL_BODY_CLASS =
   "m-0 max-w-[540px] text-[13px] leading-[1.6] text-[var(--t2)]";
 const DETAIL_WINDOW_CLASS =
-  "text-[11px] uppercase tracking-[0.08em] text-[var(--t3)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+  "text-[11px] uppercase tracking-[0.08em] text-[var(--t3)] tabular-nums font-mono";
 const EMPTY_CLASS = "py-[60px] text-center text-sm text-[var(--t2)]";
 const EMPTY_SUB_CLASS = "mt-1.5 text-xs text-[var(--t3)]";
 const TABLE_CLASS =
@@ -68,7 +68,7 @@ const TABLE_CLASS =
 const TEXT_LEFT_CLASS = "text-left";
 const NUM_CLASS = "text-right";
 const MONO_CLASS =
-  "tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+  "tabular-nums font-mono";
 const HIDE_SM_CLASS = "max-[720px]:hidden";
 const TRADER_CLASS = "font-medium text-[var(--t1)]";
 const SUBTLE_CLASS = "text-[var(--t3)]";

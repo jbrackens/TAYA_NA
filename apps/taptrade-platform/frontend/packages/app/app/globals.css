@@ -5,57 +5,69 @@
  * Next.js's App Router directory layout. */
 @import "tailwindcss";
 
-/* Tailwind v4 theme: point the sans stack at Inter so `font-sans` (and the
- * preflight default) match DESIGN.md §2 instead of ui-sans-serif. */
-@theme {
-  --font-sans:
-    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-
-/* Display voice — Clash Display (Fontshare, ITF Free Font License;
- * self-hosted woff2, ~15KB/weight). Owner decision 2026-07-06: Inter alone
- * gave the app no typographic identity — display surfaces (hero price,
- * market questions in heroes, section headings, big stat values) speak
- * Clash Display; body/UI stay Inter; small tabular data stays IBM Plex
- * Mono. Use the `.type-display` utility, not raw font-family strings. */
+/* ── Ink & lime type system (handoff spec §1, 2026-07-26) ─────────────
+ * Two families replace seven. Switzer (Fontshare, ITF Free Font
+ * License; self-hosted woff2 in public/fonts/, ~16-20KB/weight) is
+ * display, UI and body. Geist Mono (geist npm package, self-hosted via
+ * --font-geist-mono on <html> in layout.tsx) is EVERY numeric — prices,
+ * points, dates, counts, tickers — always with tabular figures so
+ * live-updating values don't jitter. Removed: Inter, Inter Tight,
+ * Clash Display, IBM Plex Mono, Geist Sans, Schibsted Grotesk, Martian
+ * Grotesk.
+ *
+ * Scale (§1): Display 27-40px/500 −0.015em · Market question 27px/500
+ * −0.035em · Subhead 17-21px/500 −0.005em · Body 13-14px/400 · Label/UI
+ * 11-14px/500 +0.01em · Eyebrow 10px/600 caps +0.12em · Numerics Geist
+ * Mono 10-44px/500, −0.04em at display sizes.
+ * Wordmark: Switzer 600 lowercase −0.025em. */
 @font-face {
-  font-family: "Clash Display";
-  src: url("/fonts/ClashDisplay-Regular.woff2") format("woff2");
+  font-family: "Switzer";
+  src: url("/fonts/Switzer-Regular.woff2") format("woff2");
   font-weight: 400;
   font-display: swap;
   font-style: normal;
 }
 @font-face {
-  font-family: "Clash Display";
-  src: url("/fonts/ClashDisplay-Medium.woff2") format("woff2");
+  font-family: "Switzer";
+  src: url("/fonts/Switzer-Medium.woff2") format("woff2");
   font-weight: 500;
   font-display: swap;
   font-style: normal;
 }
 @font-face {
-  font-family: "Clash Display";
-  src: url("/fonts/ClashDisplay-Semibold.woff2") format("woff2");
+  font-family: "Switzer";
+  src: url("/fonts/Switzer-Semibold.woff2") format("woff2");
   font-weight: 600;
   font-display: swap;
   font-style: normal;
 }
 @font-face {
-  font-family: "Clash Display";
-  src: url("/fonts/ClashDisplay-Bold.woff2") format("woff2");
+  font-family: "Switzer";
+  src: url("/fonts/Switzer-Bold.woff2") format("woff2");
   font-weight: 700;
   font-display: swap;
   font-style: normal;
 }
 
+/* Tailwind v4 theme: `font-sans` (and the preflight default) is Switzer;
+ * `font-mono` is Geist Mono via the next/font variable on <html>. */
+@theme {
+  --font-sans:
+    "Switzer", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono:
+    var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
 :root {
-  --font-display:
-    "Clash Display", "Inter Tight", "Inter", -apple-system, sans-serif;
+  /* One stack everywhere (§1): display is the same family as body —
+   * differentiation comes from size/weight/tracking, not a second sans. */
+  --font-display: "Switzer", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .type-display {
   font-family: var(--font-display);
-  letter-spacing: -0.01em;
+  /* §1 display tracking. */
+  letter-spacing: -0.015em;
 }
 
 @source "./";
@@ -90,12 +102,7 @@ html {
 }
 body {
   min-height: 100%;
-  font-family:
-    "Inter",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+  font-family: var(--font-sans);
   background: var(--bg-deep);
   color: var(--t1, #ffffff);
   -webkit-font-smoothing: antialiased;
@@ -273,6 +280,93 @@ body {
   --r-rh-xl: 20px;
 }
 
+/* ── Ink & lime palette (design handoff, 2026-07-26) ──────────────────
+ * Source: design_handoff_taptrade/Handoff Spec.dc.html §2 (colour) and
+ * Palette and Mark.dc.html §4f (info / disabled / pending groups).
+ * Step 1 of the pivot: tokens land here under NEW names; no existing
+ * token (--accent*, --yes*, --no*, --t1..t4, --surface-*, --border-*,
+ * --shadow-*) is repointed — current screens keep rendering on the P9/
+ * P10 values until each surface migrates in a later step.
+ *
+ * NAMING — role-named, with direction-scoped names where the old
+ * palette already owns the obvious word:
+ *   Surfaces   --paper (page) · --card (raised content) · --raised
+ *              (insets/panels/inert controls) · --hairline (all
+ *              dividers + borders)
+ *   Ink        --ink (headings, magnitudes) · --ink-2 (body) ·
+ *              --ink-3 (labels/meta/captions)
+ *   Accent     --lime (FILL ONLY: CTA, active nav) · --lime-text
+ *              (accent text/links) · --ink-on-lime (text on lime fill)
+ *   Direction  --dir-yes / --dir-no (text+pills; collide-free vs the
+ *              live --yes/--no) · --dir-yes-bar / --dir-no-bar (pale
+ *              fills, dots, progress)
+ *   Info       --info-text / --info-dot / --info-soft — names are
+ *              spec-fixed in §4f; do not rename.
+ *   Disabled   --inert-fill / --inert-border / --inert-label — the
+ *              explicit inert surface. NO opacity, NO filter.
+ *   Pending    --pending-fill / --pending-border / --pending-label —
+ *              in-flight controls (submitting CTA, debounced quote).
+ *
+ * COLOUR RULE (one job per channel): lime = brand/nav/action, never a
+ * signal; green/red = direction only; neutral ink = magnitude — a
+ * price is never coloured. Contrast is measured against --raised (the
+ * worst surface), not white.
+ *
+ * Later-step migration mapping (old → new), for screen work:
+ *   --bg-deep→--paper · --surface-1→--card · --surface-2→--raised ·
+ *   --border-1/2→--hairline · --t1→--ink · --t2→--ink-2 ·
+ *   --t3/--t4→--ink-3 · --accent→--lime · --accent-text→--lime-text ·
+ *   --ticket-cta-text→--ink-on-lime · --yes/--yes-text→--dir-yes ·
+ *   --no/--no-text→--dir-no · --yes-bar→--dir-yes-bar ·
+ *   --no-bar→--dir-no-bar
+ */
+:root {
+  /* Surfaces */
+  --paper: #f7f7f3;
+  --card: #ffffff;
+  --raised: #f1f1ec;
+  --hairline: #e4e4de;
+
+  /* Ink */
+  --ink: #111111;
+  --ink-2: #4a4a46;
+  --ink-3: #63635a;
+
+  /* Accent — lime is fill-only; #556f00 is its text tint */
+  --lime: #c6f24e;
+  --lime-text: #556f00;
+  --ink-on-lime: #17200a;
+
+  /* Direction — green/red mean direction ONLY */
+  --dir-yes: #147536;
+  --dir-no: #c1272d;
+  --dir-yes-bar: #86d9a5;
+  --dir-no-bar: #f0a9a3;
+
+  /* Info (§4f) — spec-fixed names. Cool slate; informational messages
+   * stop borrowing the accent. */
+  --info-text: #33556e;
+  --info-dot: #9fb8cc;
+  --info-soft: rgba(51, 85, 110, 0.08);
+
+  /* Disabled (§4f) — inertness comes from the surface, not from
+   * washing the type out: no opacity, no filter. */
+  --inert-fill: #f1f1ec;
+  --inert-border: #e4e4de;
+  --inert-label: #63635a;
+
+  /* Pending (§4f) — in flight: lime pulled most of the way to paper. */
+  --pending-fill: #e8eecf;
+  --pending-border: #dfe6c2;
+  --pending-label: #4a4a46;
+
+  /* BrandMark gradient stops — themeable hooks for the logo. Default
+   * to the current violet so appearance does not change this step. */
+  --brand-mark-stop-1: #9188ff;
+  --brand-mark-stop-2: #766af1;
+  --brand-mark-stop-3: #6258d3;
+}
+
 /* P9 page background: bare gallery white. The P8 chart-paper grid is
  * retired; --bg-pattern resolves to none but the hook stays for legacy
  * call sites. */
@@ -292,9 +386,14 @@ body {
 
 /* Mono utility for prices/volumes/tabular numbers. Use on any element
    * displaying point amounts — gives tabular-nums alignment so
-   * "41¢" and "59¢" sit at the same visual width. */
+   * "41¢" and "59¢" sit at the same visual width. §1: every number is
+   * Geist Mono with tabular figures, without exception — the Tailwind
+   * `font-mono` utility gets the same tabular guarantee below. */
 .mono {
-  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.font-mono {
   font-variant-numeric: tabular-nums;
 }
 
@@ -393,7 +492,7 @@ button {
 .content-page-body h1 {
   margin: 0 0 10px;
   color: var(--t1);
-  font-family: "Inter Tight", "Inter", sans-serif;
+  font-family: var(--font-sans);
   font-size: clamp(32px, 5vw, 48px);
   line-height: 1.02;
   font-weight: 800;
@@ -401,7 +500,7 @@ button {
 }
 .content-page-body {
   color: var(--t2);
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.75;
 }
@@ -414,7 +513,7 @@ button {
 .content-page-body h2 {
   margin: 30px 0 10px;
   color: var(--t1);
-  font-family: "Inter Tight", "Inter", sans-serif;
+  font-family: var(--font-sans);
   font-size: 22px;
   line-height: 1.2;
   font-weight: 750;
@@ -1356,16 +1455,16 @@ button {
  * account, auth, content, and portfolio surfaces keep the current P9
  * gallery-white system until they receive matching approved concepts.
  */
+/* Handoff Spec §3 item 8 (2026-07-26): the .predict-terminal FONT
+ * override is deleted — it repointed --font-terminal /
+ * --font-terminal-mono / --font-display at Geist on /predict,
+ * /discover and /market/*, so the core surfaces ran a different sans
+ * from the rest of the app. One stack everywhere: components still
+ * referencing var(--font-terminal) now fall back to the inherited
+ * body stack. The terminal COLOUR theme below stays until screens
+ * migrate. */
 .predict-terminal,
 html[data-theme="terminal"] {
-  --font-terminal:
-    var(--font-geist-sans), "Inter", -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
-  --font-terminal-mono:
-    var(--font-geist-mono), "IBM Plex Mono", ui-monospace, SFMono-Regular,
-    Menlo, monospace;
-  --font-display:
-    var(--font-geist-sans), "Inter Tight", "Inter", -apple-system, sans-serif;
   --bg-deep: #03070a;
   --surface-1: #080d11;
   --surface-2: #0d1319;
@@ -1401,21 +1500,9 @@ html[data-theme="terminal"] {
   --r-rh-md: 8px;
   --r-rh-lg: 10px;
   min-height: 100vh;
-  font-family: var(--font-terminal);
   background: var(--bg-deep);
   color: var(--t1);
   color-scheme: dark;
-}
-
-.predict-terminal .type-display,
-html[data-theme="terminal"] .type-display {
-  font-family: var(--font-display);
-  letter-spacing: -0.025em;
-}
-
-.predict-terminal .font-mono,
-html[data-theme="terminal"] .font-mono {
-  font-family: var(--font-terminal-mono);
 }
 
 .predict-terminal ::selection,

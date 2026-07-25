@@ -61,13 +61,13 @@ function categoryFromTicker(ticker: string): string {
 }
 
 const TOP_MOVERS_CLASS =
-  "px-1 pt-2 pb-1 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+  "px-1 pt-2 pb-1 font-sans";
 const TOP_MOVERS_HEADER_CLASS =
   "mb-[18px] flex items-center justify-between px-2";
 const TOP_MOVERS_TITLE_CLASS =
   "type-display m-0 text-[19px] font-semibold text-[var(--t1)]";
 const TOP_MOVERS_LIVE_CLASS =
-  "inline-flex items-center gap-1.5 font-['IBM_Plex_Mono',_monospace] text-[10px] uppercase tracking-[0.18em] text-[var(--accent-text)]";
+  "inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--accent-text)]";
 const TOP_MOVERS_DOT_CLASS =
   "h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent-lo)] shadow-[0_0_8px_rgba(15,138,76,0.35)] motion-reduce:animate-none";
 const TOP_MOVERS_LIST_CLASS = "m-0 list-none p-0";
@@ -85,7 +85,7 @@ const TOP_MOVERS_FOOTER_LINK_CLASS =
   "text-[13px] font-semibold text-[var(--accent-text)] no-underline hover:underline";
 
 function deltaClass(up: boolean): string {
-  return `mt-[5px] inline-block rounded-[var(--r-pill)] px-[7px] py-0.5 font-['IBM_Plex_Mono',_monospace] text-[11px] font-semibold [font-variant-numeric:tabular-nums] ${
+  return `mt-[5px] inline-block rounded-[var(--r-pill)] px-[7px] py-0.5 font-mono text-[11px] font-semibold [font-variant-numeric:tabular-nums] ${
     up
       ? "bg-[var(--yes-soft)] text-[var(--yes-text)]"
       : "bg-[var(--no-soft)] text-[var(--no-text)]"
@@ -183,7 +183,7 @@ export function TrendingSidebar({ markets, limit = 6 }: Props) {
                       {movement.pct.toFixed(1)}%
                     </span>
                   ) : (
-                    <span className="mt-[5px] inline-block px-[7px] py-0.5 font-['IBM_Plex_Mono',_monospace] text-[11px] font-semibold text-[var(--t4)]">
+                    <span className="mt-[5px] inline-block px-[7px] py-0.5 font-mono text-[11px] font-semibold text-[var(--t4)]">
                       —
                     </span>
                   )}

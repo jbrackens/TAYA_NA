@@ -3,7 +3,7 @@
 /**
  * OrderSummary — the label/value ticket for the selected pack (and, in the
  * checkout/result steps, for the server purchase snapshot). Follows the
- * TradeTicket row recipe: --t3 labels, IBM Plex Mono values, tabular nums.
+ * TradeTicket row recipe: --t3 labels, Geist Mono values, tabular nums.
  */
 
 import { useTranslation } from "react-i18next";
@@ -20,9 +20,9 @@ const ROWS_CLASS =
 const ROW_CLASS = "flex items-center justify-between gap-3";
 const LABEL_CLASS = "font-medium text-[var(--t3)]";
 const VALUE_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] font-semibold text-[var(--t1)]";
+  "font-mono font-semibold text-[var(--t1)]";
 const BONUS_VALUE_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] font-semibold text-[var(--accent-text)]";
+  "font-mono font-semibold text-[var(--accent-text)]";
 const TOTAL_ROW_CLASS =
   "flex items-center justify-between gap-3 border-t border-[var(--border-1)] pt-3";
 const STATUS_CLASS =

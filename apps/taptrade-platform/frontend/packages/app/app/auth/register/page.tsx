@@ -55,7 +55,7 @@ const FORM_COL_CLASS =
 const FORM_INNER_CLASS = "mx-auto flex w-full max-w-[400px] flex-1 flex-col";
 const BRAND_ROW_CLASS = "mb-10 inline-flex items-center gap-2.5 no-underline";
 const BRAND_WORDMARK_CLASS =
-  "text-[21px] font-bold leading-none tracking-[-0.03em] text-[var(--brand-ink)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
+  "text-[21px] font-semibold lowercase leading-none tracking-[-0.025em] text-[var(--brand-ink)]";
 const EVENT_PANEL_CLASS =
   "relative hidden overflow-hidden bg-[var(--brand-ink)] lg:block";
 const EVENT_MEDIA_CLASS =
@@ -72,7 +72,7 @@ const EVENT_SUB_CLASS =
   "mt-4 max-w-[420px] text-sm leading-[1.55] text-[rgba(241,236,227,0.75)]";
 const HEAD_CLASS = "mb-6";
 const EYEBROW_CLASS =
-  "mb-3 inline-block font-['IBM_Plex_Mono',monospace] text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--t3)]";
+  "mb-3 inline-block font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--t3)]";
 const TITLE_CLASS =
   "m-0 mb-1.5 text-[26px] font-bold tracking-[-0.02em] text-[var(--t1)]";
 const SUBTITLE_CLASS = "m-0 text-[13px] text-[var(--t3)]";
@@ -112,7 +112,7 @@ const SUMMARY_ROW_CLASS = "flex justify-between gap-2.5 text-xs";
 const SUMMARY_TERM_CLASS = "text-[var(--t3)]";
 const SUMMARY_DESC_CLASS = "m-0 text-[var(--t1)]";
 const MONO_CLASS =
-  "tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+  "tabular-nums font-mono";
 const ACTIONS_CLASS = "mt-5 flex gap-2.5";
 const FOOTER_CLASS =
   "mt-[18px] border-t border-[var(--border-1)] pt-3.5 text-center text-[13px] text-[var(--t2)]";

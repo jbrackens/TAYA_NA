@@ -59,7 +59,7 @@ const LADDER_STEP_BASE_CLASS =
   "relative flex flex-col gap-1.5 rounded-[var(--r-rh-md)] border-x border-b border-x-[var(--border-1)] border-b-[var(--border-1)] border-t-[3px] bg-[var(--surface-1)] px-3.5 pb-3.5 pt-4 max-[768px]:[scroll-snap-align:start]";
 const LADDER_NAME_CLASS = "text-sm font-bold text-[var(--t1)]";
 const LADDER_THRESHOLD_CLASS =
-  "text-xs text-[var(--t3)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+  "text-xs text-[var(--t3)] tabular-nums font-mono";
 const GRID_CLASS =
   "grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-[18px] max-[1024px]:grid-cols-1";
 // Surface cards now render via the Card primitive (padding="lg").
@@ -68,13 +68,13 @@ const TIER_CARD_HEAD_CLASS =
 const TIER_PILL_BASE_CLASS =
   "inline-flex items-center rounded-full px-3 py-1.5 text-xs font-bold tracking-[0.04em] text-[var(--t1)]";
 const BALANCE_CLASS =
-  "m-0 text-[34px] font-extrabold tracking-[-0.02em] text-[var(--t1)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace] max-[768px]:text-[28px]";
+  "m-0 text-[34px] font-extrabold tracking-[-0.02em] text-[var(--t1)] tabular-nums font-mono max-[768px]:text-[28px]";
 const BALANCE_UNIT_CLASS = "ml-1 text-sm font-medium text-[var(--t3)]";
 const PROGRESS_CLASS = "mb-5";
 const PROGRESS_HEAD_CLASS =
   "mb-2 flex justify-between text-[13px] text-[var(--t2)]";
 const PROGRESS_PCT_CLASS =
-  "font-bold text-[var(--t1)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+  "font-bold text-[var(--t1)] tabular-nums font-mono";
 const PROGRESS_TRACK_CLASS =
   "block h-2 w-full overflow-hidden rounded-full border border-[var(--border-1)] bg-[var(--surface-2)] [appearance:none] [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-[var(--accent)] [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-[var(--accent)] [&::-webkit-progress-value]:transition-all [&::-webkit-progress-value]:duration-[240ms] [&::-webkit-progress-value]:ease-out";
 const TOPPED_OUT_CLASS = "m-0 mb-5 text-sm text-[var(--t2)]";
@@ -98,9 +98,9 @@ const PACK_ROW_CLASS =
 const PACK_NAME_CLASS = "m-0 text-sm font-bold text-[var(--t1)]";
 const PACK_DESC_CLASS = "m-0 mt-0.5 text-xs leading-[1.45] text-[var(--t3)]";
 const PACK_AMOUNT_CLASS =
-  "whitespace-nowrap text-sm font-bold text-[var(--accent)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+  "whitespace-nowrap text-sm font-bold text-[var(--accent)] tabular-nums font-mono";
 const MISSION_PROGRESS_CLASS =
-  "mt-1 text-xs text-[var(--t3)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+  "mt-1 text-xs text-[var(--t3)] tabular-nums font-mono";
 const BADGE_GRID_CLASS = "mt-3 grid grid-cols-3 gap-2 max-[768px]:grid-cols-1";
 const BADGE_CARD_BASE_CLASS = "rounded-[var(--r-rh-md)] border p-3 text-left";
 const BADGE_EARNED_CLASS =
@@ -120,7 +120,7 @@ const LEDGER_TABLE_CLASS =
 const TEXT_LEFT_CLASS = "text-left";
 const NUM_CLASS = "text-right";
 const MONO_CLASS =
-  "tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+  "tabular-nums font-mono";
 const DATE_CLASS = `${MONO_CLASS} whitespace-nowrap text-[var(--t2)]`;
 const EVENT_CLASS = "text-[var(--t1)]";
 const REASON_CLASS = "mt-0.5 text-xs text-[var(--t3)]";

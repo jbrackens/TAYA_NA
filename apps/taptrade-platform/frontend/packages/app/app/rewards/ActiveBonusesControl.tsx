@@ -16,9 +16,9 @@ const PACK_ROW_CLASS =
 const PACK_NAME_CLASS = "m-0 text-sm font-bold text-[var(--t1)]";
 const PACK_DESC_CLASS = "m-0 mt-0.5 text-xs leading-[1.45] text-[var(--t3)]";
 const PACK_AMOUNT_CLASS =
-  "whitespace-nowrap text-sm font-bold text-[var(--accent)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+  "whitespace-nowrap text-sm font-bold text-[var(--accent)] tabular-nums font-mono";
 const MISSION_PROGRESS_CLASS =
-  "mt-1 text-xs text-[var(--t3)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+  "mt-1 text-xs text-[var(--t3)] tabular-nums font-mono";
 
 export function ActiveBonusesControl({ bonuses }: { bonuses: PlayerBonus[] }) {
   const { t } = useTranslation("rewards");

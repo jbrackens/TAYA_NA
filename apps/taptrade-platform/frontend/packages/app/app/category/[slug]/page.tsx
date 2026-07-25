@@ -19,11 +19,11 @@ const api = createPredictionClient();
 
 const ROUTE_LOADING_CLASS = "p-20 text-center text-[13px] text-[var(--t3)]";
 const CATEGORY_HEAD_CLASS =
-  "mb-6 flex flex-wrap items-baseline justify-between gap-3 font-['Inter',_-apple-system,_BlinkMacSystemFont,_sans-serif]";
+  "mb-6 flex flex-wrap items-baseline justify-between gap-3 font-sans";
 const CATEGORY_TITLE_CLASS =
-  "m-0 font-['Inter',_sans-serif] text-[28px] font-bold tracking-[-0.02em] text-[var(--t1)]";
+  "m-0 font-sans text-[28px] font-bold tracking-[-0.02em] text-[var(--t1)]";
 const CATEGORY_SUB_CLASS =
-  "font-['IBM_Plex_Mono',_monospace] text-xs text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+  "font-mono text-xs text-[var(--t3)] [font-variant-numeric:tabular-nums]";
 const CATEGORY_GRID_CLASS =
   "grid grid-cols-[repeat(auto-fill,_minmax(300px,_1fr))] gap-4";
 const CATEGORY_EMPTY_CLASS =

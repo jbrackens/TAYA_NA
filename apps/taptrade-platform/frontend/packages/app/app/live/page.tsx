@@ -17,7 +17,7 @@ const GLASS_SURFACE_CLASS =
 const STATE_CARD_CLASS = `${GLASS_SURFACE_CLASS} mx-auto my-[60px] max-w-[560px] rounded-[var(--r-lg)] p-14 text-center`;
 const HEADER_CLASS = "mb-5 flex flex-wrap items-end justify-between gap-4";
 const EYEBROW_CLASS =
-  "mt-0 mb-1.5 inline-flex items-center gap-2 font-['IBM_Plex_Mono',_monospace] text-[10px] uppercase tracking-[0.16em] text-[var(--t3)]";
+  "mt-0 mb-1.5 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--t3)]";
 const TITLE_CLASS = "mt-0 mb-2 text-[28px] font-extrabold text-[var(--t1)]";
 const SUB_CLASS = "m-0 max-w-[680px] text-sm leading-[1.5] text-[var(--t2)]";
 const REFRESH_BUTTON_CLASS =
@@ -28,7 +28,7 @@ const PROVIDER_CARD_CLASS =
   "rounded-xl border border-[var(--border-1)] bg-[var(--surface-1)] p-4 shadow-[0_1px_0_rgba(255,255,255,0.65)]";
 const PROVIDER_LABEL_CLASS = "mb-1 text-[13px] font-bold text-[var(--t1)]";
 const PROVIDER_META_CLASS =
-  "text-[11px] leading-[1.5] text-[var(--t3)] [font-family:'IBM_Plex_Mono',monospace]";
+  "text-[11px] leading-[1.5] text-[var(--t3)] font-mono";
 const EVENT_GRID_CLASS = "grid gap-3";
 const EVENT_CARD_CLASS =
   "group rounded-xl border border-[var(--border-1)] bg-[var(--surface-1)] p-0 shadow-[0_1px_0_rgba(255,255,255,0.7)] transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[0_12px_28px_rgba(60,50,30,0.08)]";
@@ -51,7 +51,7 @@ const SIDE_ROW_CLASS =
 const SIDE_LABEL_CLASS =
   "min-w-0 truncate text-[13px] font-semibold text-[var(--t1)]";
 const SIDE_SCORE_CLASS =
-  "font-['IBM_Plex_Mono',monospace] text-[14px] font-bold tabular-nums text-[var(--t1)]";
+  "font-mono text-[14px] font-bold tabular-nums text-[var(--t1)]";
 const DETAIL_ROW_CLASS =
   "mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-[var(--t3)]";
 const FOOTER_CLASS =

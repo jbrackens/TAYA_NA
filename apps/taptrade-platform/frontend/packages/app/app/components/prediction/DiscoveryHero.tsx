@@ -152,7 +152,7 @@ export function DiscoveryHero({
             {movement ? (
               <>
                 <span
-                  className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 font-['IBM_Plex_Mono',_monospace] text-[13px] font-semibold tabular-nums ${
+                  className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 font-mono text-[13px] font-semibold tabular-nums ${
                     isFlat
                       ? "bg-[var(--surface-2)] text-[var(--t3)]"
                       : isUp
@@ -181,7 +181,7 @@ export function DiscoveryHero({
               </>
             ) : historyLoading ? (
               <span
-                className="inline-flex items-center rounded-md bg-[var(--surface-2)] px-2.5 py-1 font-['IBM_Plex_Mono',_monospace] text-[13px] font-semibold text-[var(--t4)]"
+                className="inline-flex items-center rounded-md bg-[var(--surface-2)] px-2.5 py-1 font-mono text-[13px] font-semibold text-[var(--t4)]"
                 aria-hidden="true"
               >
                 —

@@ -48,11 +48,11 @@ const cx = (...classes: Array<string | false | null | undefined>) =>
   classes.filter(Boolean).join(" ");
 
 const MONO =
-  "[font-family:'IBM_Plex_Mono',monospace] [font-variant-numeric:tabular-nums]";
+  "font-mono [font-variant-numeric:tabular-nums]";
 // Stat-tile shell lives on the Card primitive now; the tile's own density
 // (px-[18px] py-4) and layout stay per-usage below.
 const STAT_TILE_LAYOUT =
-  "relative flex flex-col gap-1 px-[18px] py-4 text-[var(--t1)] no-underline [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
+  "relative flex flex-col gap-1 px-[18px] py-4 text-[var(--t1)] no-underline font-sans";
 const STAT_LABEL = "text-xs font-medium text-[var(--t3)]";
 const STAT_VALUE = cx(
   MONO,
@@ -799,7 +799,7 @@ function MarketCell({
   const displayMarket = localizedMarket(t, market);
   return (
     <div className="flex min-w-0 flex-col gap-0.5">
-      <span className="truncate text-[13px] font-semibold text-[var(--t1)] [font-family:'Inter',sans-serif]">
+      <span className="truncate text-[13px] font-semibold text-[var(--t1)] font-sans">
         {displayMarket.title}
       </span>
       <span
@@ -909,7 +909,7 @@ function DataTable({
   return (
     // biome-ignore lint/a11y/useSemanticElements: ARIA table roles on a CSS-grid layout; real <table> conversion is queued for the P2 primitives pass
     <div
-      className="relative overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]"
+      className="relative overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] font-sans"
       role="table"
     >
       {/* biome-ignore lint/a11y/useFocusableInteractive: static presentation table — rows/headers are not widgets; real <table> conversion is queued for the P2 primitives pass */}

@@ -4,7 +4,7 @@
  * PackGrid — the purchasable point-pack catalogue on /store.
  *
  * Cards are whole-card <button>s (keyboard accessible for free) with an
- * aria-pressed selected state. The total is the prominent figure (IBM Plex
+ * aria-pressed selected state. The total is the prominent figure (Geist
  * Mono, whole Points via lib/points); base and bonus render separately —
  * bonus uses "+N bonus points" promotional language, never implying a
  * denomination change. Prices come from priceUsdCents through lib/usd only.
@@ -28,17 +28,17 @@ const BADGE_CLASS =
   "inline-flex items-center rounded-[var(--r-pill)] bg-[var(--accent-soft)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--accent-text)]";
 const NAME_CLASS = "text-sm font-bold text-[var(--t1)]";
 const TOTAL_CLASS =
-  "text-[24px] font-semibold leading-tight text-[var(--t1)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+  "text-[24px] font-semibold leading-tight text-[var(--t1)] tabular-nums font-mono";
 const TOTAL_UNIT_CLASS = "ml-1 text-[13px] font-medium text-[var(--t3)]";
 const SPLIT_CLASS =
-  "text-xs text-[var(--t3)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+  "text-xs text-[var(--t3)] tabular-nums font-mono";
 const BONUS_CLASS =
-  "text-xs font-semibold text-[var(--accent-text)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+  "text-xs font-semibold text-[var(--accent-text)] tabular-nums font-mono";
 const PRICE_ROW_CLASS =
   "mt-2 flex w-full items-center justify-between border-t border-[var(--border-1)] pt-2.5";
 const PRICE_LABEL_CLASS = "text-[11px] font-medium text-[var(--t3)]";
 const PRICE_CLASS =
-  "text-sm font-semibold text-[var(--t1)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+  "text-sm font-semibold text-[var(--t1)] tabular-nums font-mono";
 
 export interface PackGridProps {
   packs: StorePack[];

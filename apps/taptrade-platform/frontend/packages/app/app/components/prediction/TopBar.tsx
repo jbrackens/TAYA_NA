@@ -72,7 +72,7 @@ const TERMINAL_NAV_LINKS: typeof NAV_LINKS = [
 ];
 
 const TOP_BAR_CLASS =
-  "sticky top-0 z-[100] border-b border-[var(--border-1)] bg-[var(--bg-deep)] [font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif]";
+  "sticky top-0 z-[100] border-b border-[var(--border-1)] bg-[var(--bg-deep)] font-sans";
 
 const TERMINAL_TOP_BAR_CLASS =
   "sticky top-0 z-[100] border-b border-[var(--border-1)] bg-[color:rgba(3,7,10,0.94)] backdrop-blur-xl [font-family:var(--font-terminal)]";
@@ -86,11 +86,15 @@ const TERMINAL_TOP_BAR_INNER_CLASS =
 const TOP_BAR_BRAND_CLASS =
   "inline-flex min-h-11 shrink-0 items-center gap-[10px] no-underline";
 
+// Wordmark: Switzer 600 lowercase at -0.025em (handoff spec §1,
+// 2026-07-26). Schibsted Grotesk and the Martian Grotesk condensed
+// terminal variant are dropped — one lockup recipe, family inherited
+// from the body stack.
 const TOP_BAR_WORDMARK_CLASS =
-  "whitespace-nowrap text-[26px] font-bold leading-none tracking-[-0.03em] [color:var(--brand-ink)] [font-family:'Schibsted_Grotesk','Inter',-apple-system,BlinkMacSystemFont,sans-serif] max-[900px]:text-[23px] max-[480px]:text-[21px]";
+  "whitespace-nowrap text-[26px] font-semibold lowercase leading-none tracking-[-0.025em] [color:var(--brand-ink)] max-[900px]:text-[23px] max-[480px]:text-[21px]";
 
 const TERMINAL_TOP_BAR_WORDMARK_CLASS =
-  "whitespace-nowrap text-[19px] font-[650] uppercase leading-none tracking-[0.105em] text-[var(--brand-ink)] [font-family:var(--font-martian-grotesk)] [font-variation-settings:'wdth'_82,'wght'_650] max-[480px]:text-[17px]";
+  "whitespace-nowrap text-[19px] font-semibold lowercase leading-none tracking-[-0.025em] text-[var(--brand-ink)] max-[480px]:text-[17px]";
 
 const TOP_BAR_PERIOD_CLASS = "[color:var(--brand-period)]";
 
@@ -140,14 +144,14 @@ const TOP_BAR_SEARCH_HIT_ACTIVE_CLASS = "bg-[var(--accent-soft)]";
 const TOP_BAR_SEARCH_HIT_TITLE_CLASS =
   "text-[13px] font-semibold text-[var(--t1)]";
 const TOP_BAR_SEARCH_HIT_META_CLASS =
-  "text-[11px] text-[var(--t3)] tabular-nums [font-family:'IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace]";
+  "text-[11px] text-[var(--t3)] tabular-nums font-mono";
 const TOP_BAR_SEARCH_EMPTY_CLASS =
   "px-3 py-3.5 text-center text-xs text-[var(--t3)]";
 
 const TOP_BAR_BALANCE_CLASS =
-  "inline-flex min-h-11 items-center gap-2 rounded-[var(--r-pill)] bg-[var(--accent-soft)] px-3 py-[7px] text-[13px] font-semibold text-[var(--yes-text)] tabular-nums no-underline transition-[filter] duration-[120ms] hover:brightness-[0.97] [font-family:'IBM_Plex_Mono',monospace]";
+  "inline-flex min-h-11 items-center gap-2 rounded-[var(--r-pill)] bg-[var(--accent-soft)] px-3 py-[7px] text-[13px] font-semibold text-[var(--yes-text)] tabular-nums no-underline transition-[filter] duration-[120ms] hover:brightness-[0.97] font-mono";
 const TOP_BAR_BALANCE_LABEL_CLASS =
-  "text-[11px] font-medium text-[var(--t3)] [font-family:'Inter',sans-serif]";
+  "text-[11px] font-medium text-[var(--t3)] font-sans";
 // Compact "Add Points" entry to /store, always adjacent to the balance
 // chip. The top bar is already width-tight at common desktop sizes (search
 // + tier pill + balance), so the label only appears on wide desktops and

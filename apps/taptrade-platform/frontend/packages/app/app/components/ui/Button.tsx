@@ -49,9 +49,27 @@ const buttonVariant = variants<ButtonVariant>(
       "rounded-[var(--r-rh-md)] border-0 bg-[var(--no)] font-bold text-white transition-[filter] hover:brightness-105 disabled:opacity-55",
     // The money button (trade ticket / store checkout): full-width,
     // self-sized — pair with size="none".
-    cta: "w-full rounded-md border-0 bg-[var(--accent)] px-4 py-[14px] text-[15px] font-semibold text-[var(--ticket-cta-text)] no-underline transition-[filter,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:brightness-[1.05] disabled:opacity-[0.45] disabled:filter-none disabled:transform-none",
+    //
+    // Disabled = the Ink & lime INERT treatment (handoff spec §3 item 1,
+    // 2026-07-26): explicit surface — --inert-fill / --inert-border /
+    // --inert-label — with NO opacity and NO filter. The old
+    // disabled:opacity-[0.45] put the label near 2.4:1 on the accent
+    // fill, making every blocked trade state unreadable. The disabled:
+    // classes beat the base border-0/bg/text by :disabled specificity,
+    // not by class order (see the class-order note above).
+    cta: "w-full rounded-md border-0 bg-[var(--accent)] px-4 py-[14px] text-[15px] font-semibold text-[var(--ticket-cta-text)] no-underline transition-[filter,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:brightness-[1.05] disabled:border disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:filter-none disabled:transform-none",
   },
 );
+
+// The inert cta recipe for the CUSTOM-RENDER path. A non-button render
+// target (e.g. <a>) never matches :disabled, so the disabled: classes in
+// the variant string are dead there — and appending same-property
+// arbitrary-value utilities (bg-[…] over bg-[…]) would resolve by
+// generated-CSS order, not class order. So the disabled custom cta
+// REPLACES the variant recipe outright with the inert surface. Layout
+// classes mirror the cta variant; state classes carry the §3 treatment.
+const CTA_INERT_CUSTOM =
+  "w-full rounded-md border border-[var(--inert-border)] bg-[var(--inert-fill)] px-4 py-[14px] text-[15px] font-semibold text-[var(--inert-label)] no-underline";
 
 const SIZE: Record<ButtonSize, string> = {
   sm: "min-h-9 px-3 text-xs",
@@ -154,10 +172,17 @@ export function Button({
     ref: ref != null ? [ref, nodeRef] : nodeRef,
     props: {
       className: cx(
-        buttonVariant(variant),
+        // Disabled custom cta swaps to the inert recipe (see
+        // CTA_INERT_CUSTOM); other variants keep the opacity treatment
+        // until their spec lands.
+        isCustomElement && disabled && variant === "cta"
+          ? CTA_INERT_CUSTOM
+          : buttonVariant(variant),
         SIZE[size],
         isCustomElement && disabled
-          ? "pointer-events-none cursor-not-allowed opacity-55"
+          ? variant === "cta"
+            ? "pointer-events-none cursor-not-allowed"
+            : "pointer-events-none cursor-not-allowed opacity-55"
           : undefined,
         className,
       ),
