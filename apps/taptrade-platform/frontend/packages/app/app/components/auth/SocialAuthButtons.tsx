@@ -12,10 +12,13 @@
  *
  * Clicks probe the start route first (redirect: manual) and follow the
  * provider redirect when it exists; a provider the deployment hasn't
- * configured (or the backend doesn't register — e.g. Apple/SSO today)
- * degrades to an honest inline notice instead of navigating to raw JSON.
- * Provider slugs for the six live ones MUST match the backend registry in
- * services/auth/internal/http/oauth.go (X is slug "twitter").
+ * configured degrades to an honest inline notice instead of navigating to
+ * raw JSON. Every slug in this registry MUST have a matching backend
+ * registration in services/auth/internal/http/oauth.go (X is slug
+ * "twitter") — step 7 (2026-07-26) dropped Apple and SSO, which had no
+ * backend on any deployment: a tile that can only fail is not an option.
+ * The per-provider hover borders are brand colours ON PURPOSE — the one
+ * place brand colour is right, as the platform's own affordance.
  */
 
 import { useState, type MouseEvent, type ReactNode } from "react";
@@ -28,19 +31,6 @@ interface Provider {
 }
 
 const PROVIDERS: Provider[] = [
-  {
-    slug: "apple",
-    name: "Apple",
-    brandClass: "hover:border-[#000000] focus-visible:border-[#000000]",
-    icon: <AppleIcon />,
-  },
-  {
-    slug: "sso",
-    name: "SSO",
-    brandClass:
-      "hover:border-[var(--accent-lo)] focus-visible:border-[var(--accent-lo)]",
-    icon: <SSOIcon />,
-  },
   {
     slug: "google",
     name: "Google",
@@ -179,46 +169,6 @@ export default function SocialAuthButtons({
         </p>
       )}
     </div>
-  );
-}
-
-function AppleIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width="20"
-      height="20"
-      className="block size-5"
-      focusable="false"
-      aria-hidden="true"
-    >
-      <path
-        fill="var(--t1)"
-        d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"
-      />
-    </svg>
-  );
-}
-
-function SSOIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width="20"
-      height="20"
-      className="block size-5"
-      focusable="false"
-      aria-hidden="true"
-      fill="none"
-      stroke="var(--t1)"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="11" width="18" height="10" rx="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-      <circle cx="12" cy="16" r="1.6" fill="var(--t1)" stroke="none" />
-    </svg>
   );
 }
 

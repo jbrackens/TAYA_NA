@@ -373,6 +373,7 @@ jobs:
             --build-arg NEXT_PUBLIC_CHAT_PUBLIC_URL=https://demo.99rtp.io/chat \
             --build-arg NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS=true \
             --build-arg NEXT_PUBLIC_HERO_AMBIENT_VIDEO=/brand/hero-ambient.mp4 \
+            --build-arg NEXT_PUBLIC_FEATURE_SOCIAL_AUTH=true \
             -t predict-frontend:app-slim \
             apps/taptrade-platform/frontend
           docker save predict-frontend:app-slim | gzip -1 | \

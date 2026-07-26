@@ -76,9 +76,13 @@ export const CHAT_PUBLIC_URL = (
 ).replace(/\/$/, "");
 
 /**
- * Social OAuth entry points. Off by default because the buttons are only safe
- * to show when provider client IDs/secrets and redirect URIs are configured
- * for the current deploy. Otherwise users hit visible 400s from /oauth/start.
+ * Social OAuth entry points on the LOGIN page (register renders its trio
+ * unconditionally — recorded owner call). The original rationale for
+ * defaulting off — visible 400s from /oauth/start — is obsolete:
+ * SocialAuthButtons probes the start route first and degrades to an honest
+ * inline notice when a provider isn't configured. The flag remains a
+ * per-deploy switch; demo sets it true via deploy-demo.yml build-arg
+ * (step 7, 2026-07-26).
  */
 export const FEATURE_SOCIAL_AUTH =
   process.env.NEXT_PUBLIC_FEATURE_SOCIAL_AUTH === "true";

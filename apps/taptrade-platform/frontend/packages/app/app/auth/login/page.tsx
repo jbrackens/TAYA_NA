@@ -1,11 +1,15 @@
 "use client";
 
 /**
- * LoginPage — Predict-native auth entry.
+ * LoginPage — Predict-native auth entry (Ink & lime, Auth 16a/16b).
  *
- * Card-centered on the cyan-glow shell (predict-auth-layout). Uses the
- * same mono/tokens as the rest of the player app. Replaces the old
- * neon-green sportsbook card wholesale.
+ * A centred 440px card, deliberately NOT the register split-screen:
+ * someone logging in has already been sold, so the persuasion panel
+ * would just be in the way. Two states: default (CTA inert until both
+ * fields have content — the inert surface, never faded lime, so the
+ * label stays readable) and error (the failure message sits ABOVE the
+ * CTA, in the reading path before the retry, while the CTA returns to
+ * active lime so retrying is obviously available).
  */
 
 import { useCallback, useState } from "react";
@@ -21,22 +25,26 @@ import { Button, Card, Input } from "../../components/ui";
 // Card/Input/Button recipes migrated to components/ui primitives (P2).
 const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
 const HEAD_CLASS = "mb-6 text-center";
+// Ink on the lime tint (Auth repaint note): lime is never text — at 11px
+// on a tinted fill, accent text was one of the weakest contrasts in the
+// app. Same pill shape, ink label.
 const EYEBROW_CLASS =
-  "mb-3.5 inline-block rounded-full border border-[rgba(43,228,128,0.3)] bg-[var(--accent-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]";
+  "mb-3.5 inline-block rounded-full border border-[var(--border-1)] bg-[var(--accent-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--t1)]";
+// The title is the wordmark: Switzer 600 lowercase −0.025em + lime period.
 const TITLE_CLASS =
-  "m-0 mb-2 text-[28px] font-extrabold tracking-[-0.02em] text-[var(--t1)]";
+  "m-0 mb-2 text-[27px] font-semibold lowercase tracking-[-0.025em] text-[var(--t1)]";
 const SUBTITLE_CLASS = "m-0 text-sm leading-[1.55] text-[var(--t2)]";
 const FORM_CLASS = "flex flex-col gap-3.5";
 const FIELD_CLASS = "flex flex-col gap-1.5";
 const FIELD_LABEL_CLASS =
   "text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
 const ERROR_CLASS =
-  "rounded-[var(--r-sm)] border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.1)] px-3 py-2.5 text-xs text-[var(--no-text)]";
+  "rounded-[var(--r-sm)] border border-[var(--no-border)] bg-[var(--no-soft)] px-3 py-2.5 text-xs leading-[1.5] text-[var(--no-text)]";
 const LINKS_CLASS = "flex justify-end";
 const LINK_CLASS =
-  "text-xs text-[var(--t3)] no-underline transition-colors duration-150 hover:text-[var(--t1)]";
+  "inline-flex min-h-11 items-center text-xs text-[var(--t3)] no-underline transition-colors duration-150 hover:text-[var(--t1)]";
 const LINK_ACCENT_CLASS =
-  "font-semibold text-[var(--accent)] hover:text-[var(--accent)] hover:brightness-110";
+  "px-1 text-[13px] font-semibold text-[var(--accent-text)] hover:text-[var(--accent-text)] hover:underline";
 const DEV_CLASS =
   "mt-[18px] rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3";
 const DEV_EYEBROW_CLASS =
@@ -93,7 +101,10 @@ export default function LoginPage() {
       <Card as="div" padding="lg" className="relative w-full max-w-[440px]">
         <header className={HEAD_CLASS}>
           <span className={EYEBROW_CLASS}>Player access</span>
-          <h1 className={TITLE_CLASS}>{brand.name}</h1>
+          <h1 className={TITLE_CLASS}>
+            {brand.name}
+            <span className="text-[var(--brand-period)]">.</span>
+          </h1>
           <p className={SUBTITLE_CLASS}>
             Sign in to track your positions, follow market moves, and trade on
             real-world outcomes.
@@ -131,7 +142,11 @@ export default function LoginPage() {
             />
           </label>
 
-          {error && <div className={ERROR_CLASS}>{error}</div>}
+          {error && (
+            <div className={ERROR_CLASS} role="alert">
+              {error}
+            </div>
+          )}
 
           <Button
             variant="cta"
