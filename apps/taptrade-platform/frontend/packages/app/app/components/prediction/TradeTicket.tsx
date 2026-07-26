@@ -757,6 +757,19 @@ export function TradeTicket({
                           : "—",
                     })}
               </p>
+              {/* QA fix ISSUE-017 (2026-07-26): amounts below one share
+                  used to disable the CTA with zero explanation
+                  (AMOUNT_TOO_SMALL only fired on click, which the
+                  disabled button swallowed). Say why, passively. */}
+              {action === "buy" && amount > 0 && quantity < 1 && price > 0 && (
+                <p className={TICKET_ROW_SUB_CLASS} role="status">
+                  {t("MIN_ONE_SHARE_HINT", {
+                    price,
+                    defaultValue:
+                      "At {{price}}¢ a share, you need at least {{price}} pts.",
+                  })}
+                </p>
+              )}
             </div>
 
             <div>
