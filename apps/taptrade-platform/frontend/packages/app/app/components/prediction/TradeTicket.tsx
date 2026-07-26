@@ -343,11 +343,21 @@ export function TradeTicket({
       : quantity * price;
   const hasKnownBalance = typeof balance === "number";
   // Point-balance check applies only to buys. Sells require enough position.
+  //
+  // QA fix ISSUE-013 (2026-07-26): gate on the FULL requested notional,
+  // not just the preview cost. The preview prices only the FILLABLE
+  // slice of a market order (e.g. 622 shares of a 6,172-share request on
+  // a thin book), so a wildly over-balance order sailed past this check
+  // and died server-side ("hold reservation: insufficient funds") — the
+  // gateway holds quantity × price for the whole request. Mirror that:
+  // whichever is larger of the fee-inclusive preview cost and the raw
+  // requested notional must fit the balance.
+  const requestedNotional = action === "buy" ? quantity * price : 0;
   const insufficientFunds =
     action === "buy" &&
     isAuthenticated &&
     hasKnownBalance &&
-    effectiveSpend > balance;
+    Math.max(effectiveSpend, requestedNotional) > balance;
   const insufficientShares =
     action === "sell" &&
     isAuthenticated &&
