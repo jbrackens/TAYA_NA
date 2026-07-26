@@ -2,6 +2,11 @@
  * Card — the app's surface-section primitive (P1): rounded r-rh-lg,
  * border-1, surface-1. Replaces the per-file SECTION_CLASS/CARD_CLASS
  * recipes. Server-component-safe (no hooks, no "use client").
+ *
+ * Step 4 (2026-07-26, States.dc.html 18b/18c): two structural variants —
+ *   variant="dashed"  — the empty-state frame (dashed strong hairline);
+ *   edge="no|info|pending" — the error/notice card's 3px left edge.
+ * Both compose with padding and each other.
  */
 
 import { forwardRef } from "react";
@@ -9,6 +14,9 @@ import type { HTMLAttributes } from "react";
 import { cx, variants } from "./variants";
 
 export type CardPadding = "none" | "md" | "lg";
+export type CardVariant = "solid" | "dashed";
+/** Left-edge accent tone for notice/error cards (States 18c). */
+export type CardEdge = "no" | "info" | "pending";
 
 const cardPadding = variants<CardPadding>(
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)]",
@@ -19,21 +27,46 @@ const cardPadding = variants<CardPadding>(
   },
 );
 
+const VARIANT_CLASS: Record<CardVariant, string> = {
+  solid: "",
+  dashed: "border-dashed border-[var(--border-2)]",
+};
+
+const EDGE_CLASS: Record<CardEdge, string> = {
+  no: "border-l-[3px] border-l-[var(--no)]",
+  info: "border-l-[3px] border-l-[var(--info-dot)]",
+  pending: "border-l-[3px] border-l-[var(--pending-border)]",
+};
+
 export interface CardProps extends HTMLAttributes<HTMLElement> {
   padding?: CardPadding;
+  variant?: CardVariant;
+  edge?: CardEdge;
   /** Render as <section> (default) or a plain <div>. */
   as?: "section" | "div" | "article" | "aside";
 }
 
 export const Card = forwardRef<HTMLElement, CardProps>(function Card(
-  { padding = "lg", as: Tag = "section", className, ...rest },
+  {
+    padding = "lg",
+    variant = "solid",
+    edge,
+    as: Tag = "section",
+    className,
+    ...rest
+  },
   ref,
 ) {
   return (
     <Tag
       // eslint-free repo: the ref cast is safe — all four tags are HTMLElement.
       ref={ref as React.Ref<never>}
-      className={cx(cardPadding(padding), className)}
+      className={cx(
+        cardPadding(padding),
+        VARIANT_CLASS[variant],
+        edge && EDGE_CLASS[edge],
+        className,
+      )}
       {...rest}
     />
   );

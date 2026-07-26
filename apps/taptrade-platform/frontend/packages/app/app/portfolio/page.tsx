@@ -59,9 +59,14 @@ const STAT_VALUE = cx(
   "text-[22px] font-semibold tracking-normal text-[var(--t1)]",
 );
 const STAT_SUB = "text-[11px] text-[var(--t3)]";
-const TABLE_GRID_ROW = "grid items-center gap-[14px] px-[18px]";
-const TABLE_CELL = cx(MONO, "min-w-0 text-[13px] text-[var(--t1)]");
 const DIM_TEXT = "text-[var(--t3)]";
+// Step 4 (11a-c): the 6-8 column tables are cards now — the audience is
+// mobile-majority, and a table that wide never fit 390px.
+const CARD_GRID = "grid grid-cols-2 gap-3 max-[900px]:grid-cols-1";
+// Phosphor "lock-fill", copied VERBATIM from
+// design_handoff_taptrade/logos/phosphor-paths.json (MIT; filled 256 grid).
+const PHOSPHOR_LOCK_FILL =
+  "M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80Zm-80,84a12,12,0,1,1,12-12A12,12,0,0,1,128,164Zm32-84H96V56a32,32,0,0,1,64,0Z";
 // Login CTA and Add Points moved onto the Button primitive (bespoke
 // gradient/glow recipes dropped deliberately).
 
@@ -183,6 +188,21 @@ export default function PortfolioPage() {
     [orders],
   );
 
+  // Step 4: portfolio-level unrealized total for the summary strip.
+  const totalUnrealized = useMemo(() => {
+    if (positions.length === 0 || marketsById.size === 0) return null;
+    let sum = 0;
+    let sawMark = false;
+    for (const p of positions) {
+      const m = marketsById.get(p.marketId);
+      if (!m) continue;
+      sawMark = true;
+      const mark = p.side === "yes" ? m.yesPricePoints : m.noPricePoints;
+      sum += p.quantity * mark - p.totalCostPoints;
+    }
+    return sawMark ? sum : null;
+  }, [positions, marketsById]);
+
   const counts = useMemo(
     () => ({
       positions: positions.length,
@@ -235,7 +255,11 @@ export default function PortfolioPage() {
         </Button>
       </header>
 
-      <SummaryStrip summary={summary} bestRank={bestRank} />
+      <SummaryStrip
+        summary={summary}
+        bestRank={bestRank}
+        unrealized={totalUnrealized}
+      />
 
       <TabBar tab={tab} setTab={setTab} counts={counts} />
 
@@ -279,28 +303,39 @@ function PageState({ children }: { children: React.ReactNode }) {
 function SummaryStrip({
   summary,
   bestRank,
+  unrealized,
 }: {
   summary: PortfolioSummary | null;
   bestRank: LeaderboardEntry | null;
+  /** Σ(qty × mark − cost) over hydrated positions; null until marks load. */
+  unrealized: number | null;
 }) {
   const { t } = useTranslation("portfolio");
   const s = summary;
   const pnl = s?.realizedPoints ?? 0;
   const pnlUp = pnl >= 0;
+  const unrealUp = (unrealized ?? 0) >= 0;
   return (
     <section className="mb-6 grid grid-cols-5 gap-[14px] max-lg:grid-cols-3 max-[720px]:grid-cols-2">
       <StatCard
         label={t("summary.invested", "Invested")}
         value={s ? <PointsFlow value={s.totalValuePoints} suffix=" pts" /> : "—"}
       />
+      {/* Step 4 (11a): Unrealized answers "am I up?" — the question the
+          old Open-positions COUNT (redundant with the tab badge) didn't. */}
+      <StatCard
+        label={t("summary.unrealized", "Unrealized")}
+        value={
+          unrealized !== null
+            ? `${unrealUp ? "+" : "−"}${formatPoints(Math.abs(unrealized))}`
+            : "—"
+        }
+        tone={unrealized !== null ? (unrealUp ? "yes" : "no") : undefined}
+      />
       <StatCard
         label={t("summary.realizedPnl", "Realized point result")}
         value={s ? `${pnlUp ? "+" : "−"}${formatPoints(Math.abs(pnl))}` : "—"}
-        tone={s ? (pnlUp ? "gain" : "no") : undefined}
-      />
-      <StatCard
-        label={t("summary.openPositions", "Open positions")}
-        value={s ? String(s.openPositions) : "—"}
+        tone={s ? (pnlUp ? "yes" : "no") : undefined}
       />
       <StatCard
         label={t("summary.accuracy", "Accuracy")}
@@ -315,7 +350,6 @@ function SummaryStrip({
               })
             : t("summary.noSettledPredictions", "No settled predictions yet")
         }
-        tone={s && s.accuracyPct >= 50 ? "gain" : undefined}
       />
       <RankChip entry={bestRank} />
     </section>
@@ -339,7 +373,7 @@ function RankChip({ entry }: { entry: LeaderboardEntry | null }) {
       className={cx(
         "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)]",
         STAT_TILE_LAYOUT,
-        "border-[rgba(43,228,128,0.3)] bg-[var(--accent-soft)] transition-[transform,border-color] duration-150 hover:-translate-y-px hover:border-[rgba(43,228,128,0.55)] focus-visible:border-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-soft)]",
+        "border-[var(--pending-border)] bg-[var(--accent-soft)] transition-[transform,border-color] duration-150 hover:-translate-y-px hover:border-[var(--accent-lo)] focus-visible:border-[var(--accent-lo)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-soft)]",
       )}
       aria-label={rankAriaLabel(entry)}
     >
@@ -421,16 +455,16 @@ function StatCard({
   label: string;
   value: React.ReactNode;
   sub?: string;
-  tone?: "yes" | "no" | "gain";
+  // Step 4: "gain" (accent-coloured numbers) retired — a number is a
+  // magnitude or a direction, never the brand accent (spec §2).
+  tone?: "yes" | "no";
 }) {
   const valueTone =
     tone === "yes"
       ? "text-[var(--yes-text)]"
       : tone === "no"
         ? "text-[var(--no-text)]"
-        : tone === "gain"
-          ? "text-[var(--accent)]"
-          : undefined;
+        : undefined;
   return (
     <Card as="div" padding="none" className={STAT_TILE_LAYOUT}>
       <span className={STAT_LABEL}>{label}</span>
@@ -469,9 +503,11 @@ function TabBar({
       count: counts.history,
     },
   ];
+  // Step 4 (11a/11b): underline tabs on a hairline, ≥44px targets. The
+  // old lime pill-track promoted a view switcher to a primary action.
   return (
     <div
-      className="mb-[18px] inline-flex gap-1 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-white/[0.04] p-[3px]"
+      className="mb-[18px] flex gap-[22px] overflow-x-auto border-b border-[var(--border-1)]"
       role="tablist"
       aria-label="Portfolio tabs"
     >
@@ -482,20 +518,16 @@ function TabBar({
           role="tab"
           aria-selected={tab === t.key}
           className={cx(
-            "inline-flex cursor-pointer items-center gap-2 rounded-[var(--r-pill)] border-0 bg-transparent px-4 py-2 text-xs font-semibold text-[var(--t3)] transition-colors duration-150 hover:text-[var(--t1)]",
-            tab === t.key && "bg-[var(--accent)] text-[#061a10]",
+            "inline-flex min-h-11 flex-none cursor-pointer items-center gap-1.5 border-0 border-b-2 bg-transparent px-0 pb-[11px] pt-3 text-sm whitespace-nowrap transition-colors duration-150",
+            tab === t.key
+              ? "border-b-[var(--t1)] font-semibold text-[var(--t1)]"
+              : "border-b-transparent font-medium text-[var(--t3)] hover:text-[var(--t1)]",
           )}
           onClick={() => setTab(t.key)}
         >
           <span>{t.label}</span>
           {t.count > 0 && (
-            <span
-              className={cx(
-                MONO,
-                "rounded-[var(--r-pill)] bg-black/20 px-[7px] py-px text-[10px] text-[var(--t2)]",
-                tab === t.key && "text-[#061a10]",
-              )}
-            >
+            <span className={cx(MONO, "text-[11px] text-[var(--t3)]")}>
               {t.count}
             </span>
           )}
@@ -522,64 +554,116 @@ function PositionsTable({
         action={
           <Link
             href="/predict"
-            className="font-semibold text-[var(--accent)] no-underline hover:underline"
+            className="mt-1 inline-flex min-h-11 items-center justify-center rounded-[10px] border border-[var(--border-2)] bg-[var(--surface-1)] px-[18px] text-[13px] font-semibold text-[var(--accent-text)] no-underline transition-[border-color] hover:border-[var(--t3)]"
           >
-            {t("positions.browse", "Browse markets")} →
+            {t("positions.browse", "Browse markets")}
           </Link>
         }
       />
     );
   }
+  // Step 4 (11a): value = qty × mark, unrealized = value − cost. The mark
+  // price rides on the market object this page already hydrates for
+  // titles — no new endpoint. "Value now" is the headline because it's
+  // what changed since the user last looked.
   return (
-    <DataTable
-      gridClass="grid-cols-[minmax(200px,2fr)_60px_60px_80px_90px_90px]"
-      columns={[
-        { label: t("table.market", "Market") },
-        { label: t("table.side", "Side"), align: "center" },
-        { label: t("table.qty", "Qty"), align: "right" },
-        { label: t("table.available", "Available"), align: "right" },
-        { label: t("table.avgPrice", "Avg price"), align: "right" },
-        { label: t("table.cost", "Cost"), align: "right" },
-      ]}
-      rows={positions.map((p) => {
+    <div className={CARD_GRID}>
+      {positions.map((p) => {
         const m = marketsById.get(p.marketId);
-        // available = quantity - reservedQuantity. reservedQuantity is the
-        // share lock count from resting sell orders the user has placed
-        // (engine plan §Sell NO/YES). Older AMM positions don't carry the
-        // field — treat undefined as zero so available == quantity for
-        // back-compat.
+        const mark = m
+          ? p.side === "yes"
+            ? m.yesPricePoints
+            : m.noPricePoints
+          : null;
+        const value = mark !== null ? p.quantity * mark : null;
+        const unrealized = value !== null ? value - p.totalCostPoints : null;
+        const pct =
+          unrealized !== null && p.totalCostPoints > 0
+            ? (unrealized / p.totalCostPoints) * 100
+            : null;
+        const up = (unrealized ?? 0) >= 0;
         const reserved = p.reservedQuantity ?? 0;
         const available = Math.max(0, p.quantity - reserved);
-        return {
-          key: p.id,
-          href: m ? `/market/${m.ticker}` : undefined,
-          cells: [
-            <MarketCell key="m" market={m} fallback={p.marketId} />,
-            <SideChip key="s" side={p.side} />,
-            <span key="q" className={MONO}>
-              {p.quantity}
-            </span>,
-            <span
-              key="av"
-              className={cx(MONO, reserved > 0 && "text-[var(--accent)]")}
-              title={
-                reserved > 0
-                  ? `${reserved} share${reserved === 1 ? "" : "s"} locked by resting sell orders`
-                  : undefined
-              }
-            >
-              {available}
-            </span>,
-            <span key="p" className={MONO}>
-              {formatPoints(p.avgPricePoints)}
-            </span>,
-            <span key="c" className={MONO}>
-              {formatPoints(p.totalCostPoints)}
-            </span>,
-          ],
-        };
+        return (
+          <Card as="article" padding="none" className="p-4" key={p.id}>
+            <div className="flex items-start gap-2.5">
+              <SideChip side={p.side} />
+              <MarketCell market={m} fallback={p.marketId} link />
+            </div>
+            <div className="mt-3.5 flex items-end justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-[11px] font-medium text-[var(--t3)]">
+                  {t("positions.valueNow", "Value now")}
+                </div>
+                <div
+                  className={cx(
+                    MONO,
+                    "mt-px text-[22px] font-semibold leading-[1.1] text-[var(--t1)]",
+                  )}
+                >
+                  {value !== null ? formatPoints(value) : "—"}
+                </div>
+              </div>
+              {unrealized !== null && (
+                <div className="flex-none text-right">
+                  <div
+                    className={cx(
+                      MONO,
+                      "text-sm font-semibold",
+                      up ? "text-[var(--yes-text)]" : "text-[var(--no-text)]",
+                    )}
+                  >
+                    {up ? "+" : "−"}
+                    {formatPoints(Math.abs(unrealized))}
+                  </div>
+                  {pct !== null && (
+                    <div className={cx(MONO, "mt-px text-[11px] text-[var(--t3)]")}>
+                      {up ? "+" : "−"}
+                      {Math.abs(pct).toFixed(1)}%
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="mt-3.5 grid grid-cols-3 gap-2.5 border-t border-[var(--border-1)] pt-3">
+              <ThreeUp label={t("table.qty", "Qty")} value={String(p.quantity)} />
+              <ThreeUp
+                label={t("table.avgPrice", "Avg price")}
+                value={formatPoints(p.avgPricePoints)}
+              />
+              <ThreeUp
+                label={t("table.cost", "Cost")}
+                value={formatPoints(p.totalCostPoints)}
+              />
+            </div>
+            {/* Step 4 (11a): Available demotes from a column that usually
+                mirrors Qty to a lock note shown only when shares really
+                are reserved by a resting sell. */}
+            {reserved > 0 && (
+              <div className="mt-3 flex items-center gap-2 rounded-[10px] bg-[var(--surface-2)] px-3 py-2.5">
+                <svg
+                  viewBox="0 0 256 256"
+                  className="h-3.5 w-3.5 flex-none text-[var(--accent-text)]"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  {/* phosphor lock-fill — verbatim from
+                      design_handoff_taptrade/logos/phosphor-paths.json */}
+                  <path d={PHOSPHOR_LOCK_FILL} />
+                </svg>
+                <span className="min-w-0 flex-1 text-[11px] leading-[1.45] text-[var(--t2)]">
+                  {t(
+                    "positions.locked",
+                    "{{locked}} of {{total}} shares are locked by a resting sell order. {{available}} available to sell now.",
+                    { locked: reserved, total: p.quantity, available },
+                  )}
+                </span>
+              </div>
+            )}
+          </Card>
+        );
       })}
-    />
+    </div>
   );
 }
 
@@ -626,63 +710,71 @@ function OrdersTable({
   };
 
   return (
-    <DataTable
-      gridClass="grid-cols-[minmax(180px,2fr)_60px_60px_90px_100px_100px_90px]"
-      columns={[
-        { label: t("table.market", "Market") },
-        { label: t("table.side", "Side"), align: "center" },
-        { label: t("table.qty", "Qty"), align: "right" },
-        { label: t("table.cost", "Cost"), align: "right" },
-        { label: t("table.status", "Status"), align: "center" },
-        { label: t("table.placed", "Placed"), align: "right" },
-        { label: "", align: "right" },
-      ]}
-      rows={orders.map((o) => {
+    <div className={CARD_GRID}>
+      {orders.map((o) => {
         const m = marketsById.get(o.marketId);
         const isCancelling = pendingCancel === o.id;
         const ticker = m?.ticker ?? o.marketId;
-        return {
-          key: o.id,
-          href: m ? `/market/${m.ticker}` : undefined,
-          cells: [
-            <MarketCell key="m" market={m} fallback={o.marketId} />,
-            <SideChip key="s" side={o.side} />,
-            <span key="q" className={MONO}>
-              {o.quantity}
-            </span>,
-            <span key="c" className={MONO}>
-              {formatPoints(o.totalCostPoints)}
-            </span>,
-            <StatusChip
-              key="st"
-              status={o.status}
-              failureReason={o.failureReason}
-            />,
-            <span key="d" className={cx(MONO, DIM_TEXT)}>
-              {formatDate(o.createdAt)}
-            </span>,
-            // Per-row Cancel. e.stopPropagation + preventDefault keep the
-            // click from triggering the row-level navigation `href`. The
-            // server's cancelOrder is idempotent on already-cancelled
-            // orders, but the button hides itself optimistically via
-            // onCancelled so users don't double-tap.
+        const filled = o.filledQuantity ?? 0;
+        const isPartial = o.status === "partial" && filled > 0;
+        return (
+          <Card as="article" padding="none" className="p-4" key={o.id}>
+            <div className="flex items-start gap-2.5">
+              <SideChip side={o.side} />
+              <MarketCell market={m} fallback={o.marketId} link />
+              <StatusChip status={o.status} failureReason={o.failureReason} />
+            </div>
+            {isPartial && (
+              <div className="mt-3.5">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-[11px] font-medium text-[var(--t3)]">
+                    {t("orders.filled", "Filled")}
+                  </span>
+                  <span className={cx(MONO, "text-xs text-[var(--t2)]")}>
+                    {t("orders.fillLabel", "{{filled}} of {{qty}}", {
+                      filled,
+                      qty: o.quantity,
+                    })}
+                  </span>
+                </div>
+                <span className="mt-1.5 block h-1.5 overflow-hidden rounded-full bg-[var(--surface-2)]">
+                  <span
+                    className="block h-full rounded-full bg-[var(--yes-bar)]"
+                    style={{
+                      width: `${Math.min(100, Math.round((filled / Math.max(1, o.quantity)) * 100))}%`,
+                    }}
+                  />
+                </span>
+              </div>
+            )}
+            <div className="mt-3.5 grid grid-cols-3 gap-2.5 border-t border-[var(--border-1)] pt-3">
+              <ThreeUp label={t("table.qty", "Qty")} value={String(o.quantity)} />
+              <ThreeUp
+                label={t("table.cost", "Cost")}
+                value={formatPoints(o.totalCostPoints)}
+              />
+              <ThreeUp
+                label={t("table.placed", "Placed")}
+                value={formatDate(o.createdAt)}
+              />
+            </div>
+            {/* Step 4 (11b): Cancel is a full-width 44px button — the old
+                11px row control was an accessibility miss on the one
+                destructive action this screen owns. */}
             <button
-              key="cx"
               type="button"
-              className="cursor-pointer rounded-[var(--r-sm)] border border-[var(--border-1)] bg-transparent px-[10px] py-1 text-[11px] font-semibold tracking-normal text-[var(--t2)] transition-colors duration-150 hover:border-[var(--no-text)] hover:bg-[var(--no-soft)] hover:text-[var(--no-text)] disabled:cursor-default disabled:opacity-50"
+              className="mt-3 flex min-h-11 w-full cursor-pointer items-center justify-center rounded-[10px] border border-[var(--border-1)] bg-[var(--surface-1)] text-[13px] font-semibold text-[var(--no-text)] transition-[border-color] duration-150 hover:border-[var(--no-border)] disabled:cursor-default disabled:opacity-50"
               disabled={isCancelling}
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                void handleCancel(o.id, ticker);
-              }}
+              onClick={() => void handleCancel(o.id, ticker)}
             >
-              {isCancelling ? "…" : t("orders.cancel", "Cancel")}
-            </button>,
-          ],
-        };
+              {isCancelling
+                ? t("orders.cancelling", "Cancelling…")
+                : t("orders.cancelOrder", "Cancel order")}
+            </button>
+          </Card>
+        );
       })}
-    />
+    </div>
   );
 }
 
@@ -697,6 +789,8 @@ function HistoryTable({
 }) {
   const { t } = useTranslation("portfolio");
   if (history.length === 0) {
+    // Step 4 (18b): an empty history is a statement about time, not a
+    // problem to solve — no action button.
     return (
       <EmptyState
         line={t(
@@ -707,79 +801,59 @@ function HistoryTable({
     );
   }
   return (
-    <DataTable
-      gridClass="grid-cols-[minmax(200px,2fr)_60px_60px_70px_70px_90px_70px_100px]"
-      columns={[
-        { label: t("table.market", "Market") },
-        { label: t("table.side", "Side"), align: "center" },
-        { label: t("table.qty", "Qty"), align: "right" },
-        { label: t("table.entry", "Entry"), align: "right" },
-        { label: t("table.exit", "Exit"), align: "right" },
-        { label: t("table.pnl", "Point result"), align: "right" },
-        { label: t("table.points", "Points"), align: "right" },
-        { label: t("table.settled", "Settled"), align: "right" },
-      ]}
-      rows={history.map((h) => {
+    <div className={CARD_GRID}>
+      {history.map((h) => {
         const m = marketsById.get(h.marketId);
         const up = h.realizedPoints >= 0;
-        // Settlement points are the actual point disbursement for this settled
-        // position. Show the exact settlement credit, not loyalty/XP accrual.
         const rawPoints = h.settlementPoints;
-        const pointsDisplay =
-          rawPoints && rawPoints > 0 ? formatPoints(rawPoints) : null;
-        return {
-          key: h.id,
-          href: m ? `/market/${m.ticker}` : undefined,
-          cells: [
-            <MarketCell key="m" market={m} fallback={h.marketId} />,
-            <SideChip key="s" side={h.side} />,
-            <span key="q" className={MONO}>
-              {h.quantity}
-            </span>,
-            <span key="e" className={MONO}>
-              {formatPoints(h.entryPricePoints)}
-            </span>,
-            <span key="x" className={MONO}>
-              {formatPoints(h.exitPricePoints)}
-            </span>,
-            <span
-              key="p"
-              className={cx(
-                MONO,
-                "font-bold",
-                up
-                  ? "text-[var(--accent)] [text-shadow:0_0_6px_var(--accent-glow-color)]"
-                  : "text-[var(--no-text)]",
-              )}
-            >
-              {up ? "+" : "−"}
-              {formatPoints(Math.abs(h.realizedPoints))}
-            </span>,
-            <span
-              role="img"
-              key="pts"
-              className={cx(MONO, "whitespace-nowrap text-xs text-[var(--t3)]")}
-              aria-label={
-                pointsDisplay !== null
-                  ? t("history.earnedPoints", "Settlement {{points}}", {
-                      points: pointsDisplay,
-                    })
-                  : undefined
-              }
-            >
-              {pointsDisplay !== null
-                ? t("history.pointsShort", "+{{points}}", {
-                    points: pointsDisplay,
-                  })
-                : ""}
-            </span>,
-            <span key="d" className={cx(MONO, DIM_TEXT)}>
-              {formatDate(h.paidAt)}
-            </span>,
-          ],
-        };
+        return (
+          <Card as="article" padding="none" className="p-4" key={h.id}>
+            <div className="flex items-start gap-2.5">
+              <SideChip side={h.side} />
+              <MarketCell market={m} fallback={h.marketId} link />
+            </div>
+            <div className="mt-3.5 flex items-end justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-[11px] font-medium text-[var(--t3)]">
+                  {t("table.pnl", "Point result")}
+                </div>
+                <div
+                  className={cx(
+                    MONO,
+                    "mt-px text-[22px] font-semibold leading-[1.1]",
+                    up ? "text-[var(--yes-text)]" : "text-[var(--no-text)]",
+                  )}
+                >
+                  {up ? "+" : "−"}
+                  {formatPoints(Math.abs(h.realizedPoints))}
+                </div>
+              </div>
+              <div className={cx(MONO, "flex-none text-right text-[11px] text-[var(--t3)]")}>
+                {t("history.settledOn", "Settled {{date}}", {
+                  date: formatDate(h.paidAt),
+                })}
+              </div>
+            </div>
+            <div className="mt-3.5 grid grid-cols-3 gap-2.5 border-t border-[var(--border-1)] pt-3">
+              <ThreeUp
+                label={t("table.entry", "Entry")}
+                value={formatPoints(h.entryPricePoints)}
+              />
+              <ThreeUp
+                label={t("table.exit", "Exit")}
+                value={formatPoints(h.exitPricePoints)}
+              />
+              <ThreeUp
+                label={t("history.paid", "Paid")}
+                value={
+                  rawPoints && rawPoints > 0 ? formatPoints(rawPoints) : "0 pts"
+                }
+              />
+            </div>
+          </Card>
+        );
       })}
-    />
+    </div>
   );
 }
 
@@ -788,20 +862,34 @@ function HistoryTable({
 function MarketCell({
   market,
   fallback,
+  link = false,
 }: {
   market: PredictionMarket | undefined;
   fallback: string;
+  /** Card layouts link via the title (whole-card links would swallow the
+   * Cancel button); table rows keep their own row-level href. */
+  link?: boolean;
 }) {
   const { t } = useTranslation("market-content");
   if (!market) {
     return <span className={cx(MONO, DIM_TEXT)}>{fallback.slice(0, 8)}…</span>;
   }
   const displayMarket = localizedMarket(t, market);
+  const title = link ? (
+    <Link
+      href={`/market/${market.ticker}`}
+      className="truncate text-[14px] font-medium leading-[1.35] text-[var(--t1)] no-underline hover:underline font-sans"
+    >
+      {displayMarket.title}
+    </Link>
+  ) : (
+    <span className="truncate text-[13px] font-semibold text-[var(--t1)] font-sans">
+      {displayMarket.title}
+    </span>
+  );
   return (
-    <div className="flex min-w-0 flex-col gap-0.5">
-      <span className="truncate text-[13px] font-semibold text-[var(--t1)] font-sans">
-        {displayMarket.title}
-      </span>
+    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+      {title}
       <span
         className={cx(
           MONO,
@@ -810,6 +898,17 @@ function MarketCell({
       >
         {displayMarket.ticker}
       </span>
+    </div>
+  );
+}
+
+function ThreeUp({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0">
+      <div className="text-[10px] font-medium text-[var(--t3)]">{label}</div>
+      <div className={cx(MONO, "mt-0.5 truncate text-[13px] font-medium text-[var(--t2)]")}>
+        {value}
+      </div>
     </div>
   );
 }
@@ -858,14 +957,16 @@ function StatusChip({
   const phrase = failureReason
     ? FAILURE_REASON_TEXT[failureReason] || failureReason
     : undefined;
+  // Step 4: a resting order is the palette's INFO state (§4f), not an
+  // accent state; terminal-era white/black literals go to tokens.
   const statusTone =
     status === "filled"
       ? "border-[var(--yes-border)] bg-[var(--yes-soft)] text-[var(--yes-text)]"
       : status === "open" || status === "partial"
-        ? "border-[rgba(43,228,128,0.3)] bg-[rgba(43,228,128,0.14)] text-[var(--accent)]"
+        ? "border-[var(--info-dot)] bg-[var(--info-soft)] text-[var(--info-text)]"
         : status === "cancelled" || status === "expired"
-          ? "border-white/10 bg-white/[0.04] text-[var(--t3)]"
-          : "border-white/10 bg-white/[0.06] text-[var(--t2)]";
+          ? "border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t3)]"
+          : "border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t2)]";
   return (
     <span
       className={cx(
@@ -880,109 +981,8 @@ function StatusChip({
   );
 }
 
-interface Column {
-  label: string;
-  align?: "left" | "right" | "center";
-}
-
-interface Row {
-  key: string;
-  href?: string;
-  cells: React.ReactNode[];
-}
-
-function alignClass(align?: Column["align"]) {
-  if (align === "right") return "text-right";
-  if (align === "center") return "text-center";
-  return "text-left";
-}
-
-function DataTable({
-  columns,
-  rows,
-  gridClass,
-}: {
-  columns: Column[];
-  rows: Row[];
-  gridClass: string;
-}) {
-  return (
-    // biome-ignore lint/a11y/useSemanticElements: ARIA table roles on a CSS-grid layout; real <table> conversion is queued for the P2 primitives pass
-    <div
-      className="relative overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] font-sans"
-      role="table"
-    >
-      {/* biome-ignore lint/a11y/useFocusableInteractive: static presentation table — rows/headers are not widgets; real <table> conversion is queued for the P2 primitives pass */}
-      {/* biome-ignore lint/a11y/useSemanticElements: ARIA table roles on a CSS-grid layout; real <table> conversion is queued for the P2 primitives pass */}
-      <div
-        className={cx(
-          TABLE_GRID_ROW,
-          gridClass,
-          "border-b border-[var(--border-1)] bg-white/[0.02] py-3",
-        )}
-        role="row"
-      >
-        {columns.map((c) => (
-          // biome-ignore lint/a11y/useFocusableInteractive: static header cell, not a sortable widget
-          // biome-ignore lint/a11y/useSemanticElements: ARIA table roles on a CSS-grid layout; real <table> conversion is queued for the P2 primitives pass
-          <span
-            key={c.label}
-            role="columnheader"
-            className={cx(
-              "text-[11px] font-medium uppercase tracking-normal text-[var(--t3)]",
-              alignClass(c.align),
-            )}
-          >
-            {c.label}
-          </span>
-        ))}
-      </div>
-      {/* biome-ignore lint/a11y/useSemanticElements: ARIA table roles on a CSS-grid layout; real <table> conversion is queued for the P2 primitives pass */}
-      <ul className="m-0 list-none p-0" role="rowgroup">
-        {rows.map((r) => {
-          const body = columns.map((c, i) => (
-            // biome-ignore lint/a11y/useSemanticElements: ARIA table roles on a CSS-grid layout; real <table> conversion is queued for the P2 primitives pass
-            <span
-              // biome-ignore lint/suspicious/noArrayIndexKey: cells map over the fixed column definition — the index IS the column identity
-              key={i}
-              role="cell"
-              className={cx(TABLE_CELL, alignClass(c.align))}
-            >
-              {r.cells[i]}
-            </span>
-          ));
-          return (
-            // biome-ignore lint/a11y/useFocusableInteractive: static presentation row — the interactive element is the Link inside
-            // biome-ignore lint/a11y/useSemanticElements: ARIA table roles on a CSS-grid layout; real <table> conversion is queued for the P2 primitives pass
-            <li
-              key={r.key}
-              // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: same deferral — li carries role=row until the real <table> lands in P2
-              role="row"
-              className="border-t border-[var(--border-1)] first:border-t-0"
-            >
-              {r.href ? (
-                <Link
-                  href={r.href}
-                  className={cx(
-                    TABLE_GRID_ROW,
-                    gridClass,
-                    "py-[14px] text-inherit no-underline transition-colors duration-150 hover:bg-[var(--surface-2)]",
-                  )}
-                >
-                  {body}
-                </Link>
-              ) : (
-                <div className={cx(TABLE_GRID_ROW, gridClass, "py-[14px]")}>
-                  {body}
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
+// Step 4: DataTable and its Column/Row plumbing retired — all three
+// tabs render cards (Position and Orders 11a-c).
 
 function EmptyState({
   line,
@@ -991,11 +991,18 @@ function EmptyState({
   line: string;
   action?: React.ReactNode;
 }) {
+  // Step 4 (18b): dashed Card variant; an action renders only when the
+  // user can DO something about the emptiness.
   return (
-    <div className="flex flex-col items-center gap-[10px] rounded-[var(--r-md)] border border-dashed border-white/10 bg-black/20 px-5 py-10 text-center text-[13px] text-[var(--t3)]">
+    <Card
+      as="div"
+      variant="dashed"
+      padding="none"
+      className="flex flex-col items-center gap-[10px] px-[18px] py-[26px] text-center text-[13px] text-[var(--t2)]"
+    >
       <span>{line}</span>
       {action}
-    </div>
+    </Card>
   );
 }
 
