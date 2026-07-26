@@ -2,14 +2,13 @@
 
 import type React from "react";
 import { useState } from "react";
-import { apiClient } from "../lib/api/client";
+import {
+  buildSupportMailto,
+  SUPPORT_EMAIL,
+  type SupportRequest,
+} from "./support-mailto";
 
-interface FormData {
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-}
+type FormData = SupportRequest;
 
 export default function ContactUsPage() {
   const [formData, setFormData] = useState<FormData>({
@@ -18,7 +17,6 @@ export default function ContactUsPage() {
     subject: "",
     message: "",
   });
-  const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,23 +27,19 @@ export default function ContactUsPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // QA fix ISSUE-004 (2026-07-26): the form previously POSTed to
+  // /api/v1/support/contact, an endpoint the gateway does not expose —
+  // every signed-out submission died with a raw 401 and the message was
+  // lost. Until a real support inbox endpoint ships, compose the message
+  // in the visitor's own mail client instead: no backend dependency, no
+  // silently dropped messages, and the address stays visible as a
+  // fallback. Follow-up tracked in TODOS.md: gateway support endpoint.
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
 
-    try {
-      await apiClient.post("/api/v1/support/contact", formData);
-      setSubmitted(true);
-      setFormData({ name: "", email: "", subject: "", message: "" });
-      setTimeout(() => setSubmitted(false), 5000);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to submit contact form",
-      );
-    } finally {
-      setLoading(false);
-    }
+    window.location.href = buildSupportMailto(formData);
+    setSubmitted(true);
   };
 
   return (
@@ -55,13 +49,20 @@ export default function ContactUsPage() {
       </h1>
 
       {submitted && (
-        <div className="mb-6 rounded-md border border-[rgba(34,197,94,0.3)] bg-[rgba(34,197,94,0.1)] p-4 text-sm text-[#86efac]">
-          Your message has been sent successfully. We'll get back to you soon!
+        <div
+          role="status"
+          className="mb-6 rounded-md border border-[var(--yes-border)] bg-[var(--yes-soft)] p-4 text-sm text-[var(--yes-text)]"
+        >
+          Your email app should have opened with your message ready to send.
+          If it didn't, email us directly at {SUPPORT_EMAIL}.
         </div>
       )}
 
       {error && (
-        <div className="mb-6 rounded-md border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.1)] p-4 text-sm text-[#fca5a5]">
+        <div
+          role="alert"
+          className="mb-6 rounded-md border border-[var(--no-border)] bg-[var(--no-soft)] p-4 text-sm text-[var(--no-text)]"
+        >
           {error}
         </div>
       )}
@@ -144,10 +145,9 @@ export default function ContactUsPage() {
 
         <button
           type="submit"
-          disabled={loading}
-          className="w-full cursor-pointer rounded-md border-0 bg-[var(--accent)] px-5 py-3 text-[15px] font-semibold text-[rgba(0,0,0,0.22)] transition-all duration-300 hover:bg-[#ea580c] disabled:cursor-not-allowed disabled:opacity-70"
+          className="w-full cursor-pointer rounded-md border-0 bg-[var(--accent)] px-5 py-3 text-[15px] font-semibold text-[var(--ticket-cta-text)] transition-[filter] duration-300 hover:brightness-[1.05] disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {loading ? "Sending..." : "Send Message"}
+          Send Message
         </button>
       </form>
 
