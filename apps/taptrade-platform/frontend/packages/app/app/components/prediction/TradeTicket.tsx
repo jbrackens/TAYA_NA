@@ -507,7 +507,21 @@ export function TradeTicket({
         );
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t("ORDER_FAILED"));
+      // QA fix ISSUE-014 (2026-07-26): a server-side rejection used to be
+      // invisible — the inline error renders at the BOTTOM of the ticket,
+      // which sits below the sticky rail's fold on laptop-height
+      // viewports, and the raw gateway string ("persist match: hold
+      // reservation: insufficient funds") leaked through verbatim. Fire a
+      // viewport-fixed error toast (always visible) with humanized copy,
+      // and keep the inline error as the in-ticket record.
+      const raw = err instanceof Error ? err.message : "";
+      const friendly = /insufficient funds/i.test(raw)
+        ? t("BALANCE_BELOW_ORDER", { amount: formatPointAmount(amount) })
+        : raw
+          ? raw.replace(/^persist match:\s*/i, "").replace(/_/g, " ")
+          : t("ORDER_FAILED");
+      setError(friendly);
+      toast.error(t("ORDER_FAILED"), friendly);
     } finally {
       setSubmitting(false);
     }
