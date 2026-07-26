@@ -176,7 +176,8 @@ function ProbabilityGauge({ value }: { value: number }) {
           strokeDasharray={`${clamped} 100`}
         />
       </svg>
-      <span className="absolute inset-x-0 bottom-0 text-center font-mono text-[20px] font-semibold text-[var(--accent-text)] tabular-nums">
+      {/* Step 3: a probability is a magnitude — ink, never the accent (spec §2). */}
+      <span className="absolute inset-x-0 bottom-0 text-center font-mono text-[20px] font-semibold text-[var(--t1)] tabular-nums">
         {clamped}
       </span>
     </div>
@@ -303,7 +304,9 @@ function FeaturedSignal({
             <div className="text-[12px] font-medium text-[var(--t2)]">
               {t("LATEST_PROBABILITY")}
             </div>
-            <div className="mt-1 font-mono text-[clamp(46px,5vw,68px)] font-semibold leading-none tracking-[-0.04em] text-[var(--accent-text)] tabular-nums">
+            {/* Step 3: the 68px hero readout is the spec's named example of an
+                uncoloured magnitude — ink, delta beside it carries colour. */}
+            <div className="mt-1 font-mono text-[clamp(46px,5vw,68px)] font-semibold leading-none tracking-[-0.04em] text-[var(--t1)] tabular-nums">
               {market.yesPricePoints}¢
             </div>
             {movement && (
@@ -327,7 +330,7 @@ function FeaturedSignal({
         <button
           type="button"
           onClick={onTrade}
-          className="mt-4 hidden min-h-12 w-full cursor-pointer items-center justify-center rounded-md border border-[var(--accent-lo)] bg-[var(--accent)] px-5 text-[14px] font-semibold text-white transition-colors hover:bg-[#6d63dc] max-[1179px]:flex"
+          className="mt-4 hidden min-h-[52px] w-full cursor-pointer items-center justify-center rounded-md border-0 bg-[var(--accent)] px-5 text-[15px] font-semibold text-[var(--ticket-cta-text)] transition-[filter] hover:brightness-[1.05] max-[1179px]:flex"
         >
           {t("REVIEW_TRADE")}
         </button>
@@ -445,7 +448,7 @@ function FeaturedSignalCarousel({
             </span>
             <button
               type="button"
-              className="grid size-11 cursor-pointer place-items-center rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] transition-colors hover:border-[var(--accent-lo)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]"
+              className="grid size-11 cursor-pointer place-items-center rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] transition-[border-color,box-shadow] hover:border-[var(--border-2)] hover:shadow-[var(--shadow-card-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]"
               aria-label={t("PREVIOUS_FEATURED_MARKET")}
               onClick={() => goTo(activeIndex - 1)}
             >
@@ -453,7 +456,7 @@ function FeaturedSignalCarousel({
             </button>
             <button
               type="button"
-              className="grid size-11 cursor-pointer place-items-center rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] transition-colors hover:border-[var(--accent-lo)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]"
+              className="grid size-11 cursor-pointer place-items-center rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] transition-[border-color,box-shadow] hover:border-[var(--border-2)] hover:shadow-[var(--shadow-card-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]"
               aria-label={t("NEXT_FEATURED_MARKET")}
               onClick={() => goTo(activeIndex + 1)}
             >
@@ -559,7 +562,7 @@ function MarketSignalRow({
         </span>
       </span>
 
-      <span className="font-mono text-[22px] font-semibold text-[var(--accent-text)] tabular-nums max-[720px]:text-right">
+      <span className="font-mono text-[22px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-right">
         {market.yesPricePoints}¢
       </span>
 
@@ -658,7 +661,7 @@ function TradePreview({
           <div className="text-[12px] font-medium text-[var(--t2)]">
             {t("LATEST_PROBABILITY")}
           </div>
-          <div className="mt-1 font-mono text-[48px] font-semibold leading-none tracking-[-0.04em] text-[var(--accent-text)] tabular-nums">
+          <div className="mt-1 font-mono text-[48px] font-semibold leading-none tracking-[-0.04em] text-[var(--t1)] tabular-nums">
             {market.yesPricePoints}¢
           </div>
         </div>

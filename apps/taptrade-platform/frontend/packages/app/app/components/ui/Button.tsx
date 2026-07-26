@@ -39,8 +39,11 @@ const buttonVariant = variants<ButtonVariant>(
     primary:
       "rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] font-bold text-[var(--ticket-cta-text)] transition-[filter] hover:brightness-[1.08] disabled:opacity-55",
     // The discussion/panel action recipe.
+    // Step 3 (2026-07-26): hover was border+text → accent, which after the
+    // lime repoint meant unreadable lime text. Hover is the strong
+    // hairline; the label never changes colour (spec hover rule).
     secondary:
-      "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] font-bold text-[var(--t1)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:opacity-55",
+      "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] font-bold text-[var(--t1)] transition-colors hover:border-[var(--border-2)] disabled:opacity-55",
     // Toolbar/inline affordances: no chrome until hover.
     ghost:
       "rounded-[var(--r-rh-md)] border border-transparent bg-transparent font-bold text-[var(--t2)] transition-colors hover:border-[var(--border-1)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)] disabled:opacity-55",
@@ -57,7 +60,7 @@ const buttonVariant = variants<ButtonVariant>(
     // fill, making every blocked trade state unreadable. The disabled:
     // classes beat the base border-0/bg/text by :disabled specificity,
     // not by class order (see the class-order note above).
-    cta: "w-full rounded-md border-0 bg-[var(--accent)] px-4 py-[14px] text-[15px] font-semibold text-[var(--ticket-cta-text)] no-underline transition-[filter,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:brightness-[1.05] disabled:border disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:filter-none disabled:transform-none",
+    cta: "w-full min-h-[52px] rounded-md border-0 bg-[var(--accent)] px-4 py-[14px] text-[15px] font-semibold text-[var(--ticket-cta-text)] no-underline transition-[filter,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:brightness-[1.05] disabled:border disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:filter-none disabled:transform-none",
   },
 );
 

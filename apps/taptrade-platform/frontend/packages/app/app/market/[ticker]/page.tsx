@@ -145,7 +145,8 @@ const MARKET_TICKET_TITLE_CLASS =
 const MARKET_TICKET_QUOTE_CLASS = "mt-5 flex items-end justify-between gap-4";
 const MARKET_TICKET_QUOTE_LABEL_CLASS = "text-xs text-[var(--t3)]";
 const MARKET_TICKET_QUOTE_VALUE_CLASS =
-  "font-mono mt-1 text-[44px] font-semibold leading-none tracking-[-0.04em] text-[var(--accent-lo)]";
+  // Step 3: probability readout is a magnitude — ink, never the accent.
+  "font-mono mt-1 text-[44px] font-semibold leading-none tracking-[-0.04em] text-[var(--t1)]";
 const MARKET_TICKET_BAR_CLASS =
   "mt-4 flex h-2 overflow-hidden rounded-full bg-[var(--surface-3)]";
 const MARKET_TICKET_SOURCE_CLASS =
@@ -1156,6 +1157,20 @@ export default function MarketDetailPage() {
     );
   }
 
+  // Step 3 / UAT-006 (Settlement 12a/12b): a settled market's rail shows
+  // FINAL settlement prices as a historical record, not live probability.
+  const isSettledMarket = market?.status === "settled";
+  const settledFinalYes =
+    market?.result === "yes" ? 100 : market?.result === "no" ? 0 : null;
+  const railYes =
+    isSettledMarket && settledFinalYes !== null
+      ? settledFinalYes
+      : (market?.yesPricePoints ?? 0);
+  const railNo =
+    isSettledMarket && settledFinalYes !== null
+      ? 100 - settledFinalYes
+      : (market?.noPricePoints ?? 0);
+
   // The trade workspace renders once: in the desktop aside, or inside
   // the vaul Sheet on the <=1023px band (never both — a second mounted
   // TradeTicket would fork amount state and double preview fetches).
@@ -1172,18 +1187,20 @@ export default function MarketDetailPage() {
             <div className={MARKET_TICKET_QUOTE_CLASS}>
               <div>
                 <div className={MARKET_TICKET_QUOTE_LABEL_CLASS}>
-                  {t("LATEST_PROBABILITY", "Latest probability")}
+                  {isSettledMarket
+                    ? t("SETTLED_AT_LABEL", "Settled at")
+                    : t("LATEST_PROBABILITY", "Latest probability")}
                 </div>
                 <div className={MARKET_TICKET_QUOTE_VALUE_CLASS}>
-                  {market.yesPricePoints}¢
+                  {railYes}¢
                 </div>
               </div>
               <div className="font-mono pb-1 text-right text-[11px] leading-5 text-[var(--t3)]">
                 <div className="font-semibold text-[var(--yes-text)]">
-                  {t("YES")} {market.yesPricePoints}¢
+                  {t("YES")} {railYes}¢
                 </div>
                 <div>
-                  {t("NO")} {market.noPricePoints}¢
+                  {t("NO")} {railNo}¢
                 </div>
               </div>
             </div>
@@ -1191,16 +1208,18 @@ export default function MarketDetailPage() {
               className={MARKET_TICKET_BAR_CLASS}
               role="img"
               aria-label={t("YES_NO_PRICES", {
-                yes: market.yesPricePoints,
-                no: market.noPricePoints,
-                defaultValue: `Yes ${market.yesPricePoints} cents, No ${market.noPricePoints} cents`,
+                yes: railYes,
+                no: railNo,
+                defaultValue: `Yes ${railYes} cents, No ${railNo} cents`,
               })}
             >
+              {/* Step 3: probability bars are the pale direction fill —
+                  lime is action/navigation, never a signal (spec §2). */}
               <span
-                className="h-full bg-[var(--accent)]"
-                style={{ width: `${clampPercent(market.yesPricePoints)}%` }}
+                className="h-full bg-[var(--yes-bar)]"
+                style={{ width: `${clampPercent(railYes)}%` }}
               />
-              <span className="h-full flex-1 bg-[var(--border-2)]" />
+              <span className="h-full flex-1 bg-[var(--no-bar)]" />
             </div>
           </div>
 
@@ -1332,12 +1351,24 @@ export default function MarketDetailPage() {
                 value: formatCompactPoints(market.openInterestPoints),
               },
               {
-                label: t("CLOSES", "Closes"),
-                value: new Date(market.closeAt).toLocaleDateString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                }),
+                // Step 3 / UAT-006: a settled market showing a FUTURE
+                // "Closes" date read as still-tradeable. The market
+                // object carries no settlement timestamp, so the cell
+                // states the verdict instead — the historical fact.
+                label: isSettledMarket
+                  ? t("RESULT_LABEL", "Result")
+                  : t("CLOSES", "Closes"),
+                value: isSettledMarket
+                  ? market.result === "yes"
+                    ? t("YES_WINS", "YES wins")
+                    : market.result === "no"
+                      ? t("NO_WINS", "NO wins")
+                      : t("SETTLED", "Settled")
+                  : new Date(market.closeAt).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    }),
               },
             ].map((stat) => (
               <div key={stat.label} className={MARKET_STAT_CLASS}>

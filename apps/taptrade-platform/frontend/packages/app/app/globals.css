@@ -268,11 +268,12 @@ body {
    * terminal theme; 9 call sites reference it. Ink & lime has three
    * surfaces, so the deepest inset tier lands on raised too. */
   --surface-3: var(--raised);
-  /* Step 2.5: the spec has ONE hairline for all dividers and borders.
-   * border-1/border-2 collapse onto it — hover states that swapped
-   * border-1→border-2 lose that affordance (flagged in step report). */
   --border-1: var(--hairline);
-  --border-2: var(--hairline);
+  /* Step 3 (2026-07-26): hover restored — border-2 is the STRONG
+   * hairline (#d4d4cc, the reference's card-frame tone). Bordered
+   * surfaces hover hairline→strong-hairline; raised cards add
+   * --shadow-card→--shadow-card-hover. Never a background change. */
+  --border-2: var(--hairline-strong);
 
   /* Ink & lime elevation (spec Radius & elevation): same two quiet
    * layers, rebased on ink #111111. Never colored, never glowing. */
@@ -344,6 +345,7 @@ body {
   --card: #ffffff;
   --raised: #f1f1ec;
   --hairline: #e4e4de;
+  --hairline-strong: #d4d4cc; /* hover tier + outer card frames */
 
   /* Ink */
   --ink: #111111;

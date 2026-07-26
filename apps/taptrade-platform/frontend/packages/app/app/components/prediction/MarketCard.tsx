@@ -20,7 +20,9 @@
  */
 
 import Link from "next/link";
-import { Star } from "lucide-react";
+// Step 3 (2026-07-26): Phosphor for UI icons (spec Assets — lucide stays
+// on toasts/account actions only). Package geometry == phosphor-paths.json.
+import { Star } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { isOpenMarketStatus, marketStatusLabel } from "./market-display";
@@ -114,7 +116,7 @@ export function MarketCard({
       {onToggleWatchlist && (
         <button
           type="button"
-          className={`absolute right-2.5 top-2.5 z-10 grid h-9 w-9 cursor-pointer place-items-center rounded-full border-0 bg-transparent transition-colors duration-150 ${
+          className={`absolute right-1.5 top-1.5 z-10 grid h-11 w-11 cursor-pointer place-items-center rounded-full border-0 bg-transparent transition-colors duration-150 ${
             watched
               ? "text-[var(--accent-text)]"
               : "text-[var(--t4)] hover:bg-[rgba(13,17,20,0.05)] hover:text-[var(--t2)]"
@@ -128,8 +130,8 @@ export function MarketCard({
           onClick={() => onToggleWatchlist(marketId)}
         >
           <Star
-            size={17}
-            fill={watched ? "currentColor" : "none"}
+            size={18}
+            weight={watched ? "fill" : "regular"}
             aria-hidden="true"
           />
         </button>

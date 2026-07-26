@@ -121,8 +121,20 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
         : t("SETTLED")
     : null;
 
-  const yes = displayMarket.yesPricePoints;
-  const no = displayMarket.noPricePoints;
+  // Step 3 / UAT-006 (Settlement 12a/12b): once settled, the sides strip
+  // is a HISTORICAL RECORD — final settlement prices (100/0), never the
+  // last-traded probabilities, which read as a still-live market. Voids
+  // have no settlement price and keep the last trade as the record.
+  const finalYes =
+    displayMarket.result === "yes"
+      ? 100
+      : displayMarket.result === "no"
+        ? 0
+        : null;
+  const yes =
+    isSettled && finalYes !== null ? finalYes : displayMarket.yesPricePoints;
+  const no =
+    isSettled && finalYes !== null ? 100 - finalYes : displayMarket.noPricePoints;
 
   return (
     <section className={MARKET_HEAD_CLASS}>
@@ -172,16 +184,24 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
       <div
         role="group"
         className={MARKET_HEAD_SIDES_CLASS}
-        aria-label={t("YES_NO_PRICES", {
-          yes,
-          no,
-          defaultValue: `Yes ${yes} cents, No ${no} cents`,
-        })}
+        aria-label={
+          isSettled
+            ? t("FINAL_PRICES", {
+                yes,
+                no,
+                defaultValue: `Final prices: Yes ${yes} cents, No ${no} cents`,
+              })
+            : t("YES_NO_PRICES", {
+                yes,
+                no,
+                defaultValue: `Yes ${yes} cents, No ${no} cents`,
+              })
+        }
       >
         <div className={MARKET_HEAD_SIDE_CLASS}>
           <div className="flex min-w-0 items-center gap-2">
             <span
-              className={`${MARKET_HEAD_SIDE_DOT_CLASS} bg-[var(--yes)]`}
+              className={`${MARKET_HEAD_SIDE_DOT_CLASS} bg-[var(--yes-bar)]`}
               aria-hidden="true"
             />
             <span className={MARKET_HEAD_SIDE_NAME_CLASS}>{t("YES")}</span>
@@ -197,7 +217,7 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
           <div className="flex min-w-0 items-center justify-end gap-2">
             <span className={MARKET_HEAD_SIDE_NAME_CLASS}>{t("NO")}</span>
             <span
-              className={`${MARKET_HEAD_SIDE_DOT_CLASS} bg-[var(--no)]`}
+              className={`${MARKET_HEAD_SIDE_DOT_CLASS} bg-[var(--no-bar)]`}
               aria-hidden="true"
             />
           </div>

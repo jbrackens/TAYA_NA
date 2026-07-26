@@ -223,5 +223,6 @@
   "SELL_SHARES_CTA": "Sell {{quantity}} share{{plural}} · est. {{amount}}",
   "DISCUSSION_COUNT_one": "{{count}} comment",
   "DISCUSSION_COUNT_other": "{{count}} comments",
-  "MIN_ONE_SHARE_HINT": "At {{price}}¢ a share, you need at least {{price}} pts."
+  "MIN_ONE_SHARE_HINT": "At {{price}}¢ a share, you need at least {{price}} pts.",
+  "FINAL_PRICES": "Final prices: Yes {{yes}} cents, No {{no}} cents"
 }

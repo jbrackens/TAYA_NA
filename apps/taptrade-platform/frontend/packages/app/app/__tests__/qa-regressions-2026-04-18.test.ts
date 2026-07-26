@@ -1082,7 +1082,10 @@ describe("Navigation pill active colors", () => {
     return match[0];
   }
 
-  it("uses seafoam for remaining segmented active fills", () => {
+  // Ink & lime step 3 (2026-07-26) reversed this contract: active
+  // selection is the LIME fill with ink-on-lime, and a DIRECTION token
+  // may never be a selection colour (spec §2 one-job-per-channel).
+  it("uses lime for segmented active fills, never a direction token", () => {
     for (const [label, activeClass] of [
       [
         "closing-window active",
@@ -1090,12 +1093,14 @@ describe("Navigation pill active colors", () => {
       ],
     ] as const) {
       assert.ok(
-        activeClass.includes("bg-[var(--yes)]"),
-        `${label} should use seafoam`,
+        activeClass.includes("bg-[var(--accent)]") &&
+          activeClass.includes("text-[var(--ticket-cta-text)]"),
+        `${label} should be the lime fill with ink-on-lime`,
       );
       assert.ok(
-        !activeClass.includes("bg-[var(--accent)]"),
-        `${label} should not use bright brand green`,
+        !activeClass.includes("bg-[var(--yes)]") &&
+          !activeClass.includes("bg-[var(--no)]"),
+        `${label} must not use a direction token as a selection colour`,
       );
     }
   });

@@ -16,7 +16,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MarketGrid } from "./MarketGrid";
-import { Button, Card, Input } from "../ui";
+import { Button, Input } from "../ui";
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import {
   addMarketToWatchlist,
@@ -80,13 +80,13 @@ const CATEGORY_LIST_CLASS =
   "flex items-center gap-6 border-b border-neutral-200 w-full !border-[var(--border-1)] max-[768px]:mx-[-16px] max-[768px]:w-[calc(100%+32px)] max-[768px]:flex-[0_0_auto] max-[768px]:flex-row max-[768px]:flex-nowrap max-[768px]:overflow-x-auto max-[768px]:overflow-y-hidden max-[768px]:whitespace-nowrap max-[768px]:px-4 max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
 
 const CATEGORY_PILL_BASE_CLASS =
-  "relative cursor-pointer appearance-none bg-transparent pb-3 pt-2 text-sm font-medium border-b-2 transition-all duration-200 [font-family:inherit] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
+  "relative min-h-11 cursor-pointer appearance-none bg-transparent pb-3 pt-2 text-sm font-medium border-b-2 transition-all duration-200 [font-family:inherit] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
 
 const TIME_PILLS_CLASS =
   "inline-flex shrink-0 gap-1 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-[3px] max-[768px]:max-w-full max-[768px]:self-start max-[768px]:overflow-x-auto max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
 
 const TIME_PILL_BASE_CLASS =
-  "min-w-11 cursor-pointer appearance-none rounded-md border-0 px-[14px] py-1.5 [font-family:inherit] text-xs font-semibold transition-colors duration-[120ms] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
+  "min-w-11 min-h-[38px] cursor-pointer appearance-none rounded-md border-0 px-[14px] [font-family:inherit] text-xs font-semibold transition-colors duration-[120ms] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
 
 const DISCOVERY_CONTROLS_CLASS =
   "flex w-full flex-wrap items-center justify-between gap-3 max-[768px]:items-stretch";
@@ -116,11 +116,15 @@ function categoryPillClass(active: boolean): string {
   }`;
 }
 
+// Step 3 (2026-07-26): active selection is the LIME fill with ink-on-lime —
+// direction green is never a selection colour (spec §2, flagged in 2.5).
+// Inactive hover darkens the label only: a background change on these light
+// surfaces reads as selection, not hover.
 function timePillClass(active: boolean): string {
   return `${TIME_PILL_BASE_CLASS} ${
     active
-      ? "bg-[var(--yes)] text-[#061a10]"
-      : "bg-transparent text-[var(--t3)] hover:bg-[var(--surface-1)] hover:text-[var(--t1)]"
+      ? "bg-[var(--accent)] text-[var(--ticket-cta-text)]"
+      : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)]"
   }`;
 }
 
@@ -166,6 +170,39 @@ function orderCategories(categories: Category[]): Category[] {
     });
 }
 
+
+// Phosphor "warning-circle-fill", copied VERBATIM from
+// design_handoff_taptrade/logos/phosphor-paths.json (phosphor-icons/core@main,
+// MIT; filled geometry on a 256 grid — never reconstruct by hand).
+const PHOSPHOR_WARNING_CIRCLE_FILL =
+  "M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm-8,56a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm8,104a12,12,0,1,1,12-12A12,12,0,0,1,128,184Z";
+
+const SKELETON_SHIMMER_CLASS =
+  "animate-[shimmer_1.5s_infinite] rounded-full bg-[linear-gradient(90deg,#f1f1ec_25%,#e6e6e0_50%,#f1f1ec_75%)] bg-[length:200%_100%]";
+
+// Step 3 (States 18a): mirrors MarketCard's real geometry — same card frame
+// (rounded-[12px], hairline, p-5, min-h-[248px]) and the same vertical
+// rhythm (category row, two title lines, sentiment bar, two side pills,
+// footer) — so the loaded grid replaces it without reflow.
+function MarketCardSkeleton() {
+  return (
+    <div className="relative flex h-full min-h-[248px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 max-[640px]:min-h-[238px] max-[640px]:p-4">
+      <div className="flex items-center gap-2">
+        <span className={`h-10 w-10 rounded-xl ${SKELETON_SHIMMER_CLASS}`} />
+        <span className={`h-2.5 w-20 ${SKELETON_SHIMMER_CLASS}`} />
+      </div>
+      <span className={`mt-4 block h-3.5 w-full ${SKELETON_SHIMMER_CLASS}`} />
+      <span className={`mt-2 block h-3.5 w-3/4 ${SKELETON_SHIMMER_CLASS}`} />
+      <span className={`mt-4 block h-2 w-28 ${SKELETON_SHIMMER_CLASS}`} />
+      <div className="mt-auto grid grid-cols-2 gap-2.5 pt-4">
+        <span className={`h-11 !rounded-lg ${SKELETON_SHIMMER_CLASS}`} />
+        <span className={`h-11 !rounded-lg ${SKELETON_SHIMMER_CLASS}`} />
+      </div>
+      <span className={`mt-3 block h-2.5 w-2/3 ${SKELETON_SHIMMER_CLASS}`} />
+    </div>
+  );
+}
+
 interface Props {
   categories: Category[];
 }
@@ -184,6 +221,9 @@ export function AllMarketsSection({ categories }: Props) {
   const [hasNext, setHasNext] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  // Step 3 (States 18c): errors get a real Retry — bumping the nonce
+  // re-runs the load effect without reloading the route.
+  const [reloadNonce, setReloadNonce] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [categorySlug, setCategorySlug] = useState<string>("all");
   const [subcategory, setSubcategory] = useState<string | null>(null);
@@ -329,7 +369,7 @@ export function AllMarketsSection({ categories }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [categoryId, categorySlug, dateWindow, query, showSubnavCategory, sortBy]);
+  }, [categoryId, categorySlug, dateWindow, query, showSubnavCategory, sortBy, reloadNonce]);
 
   function loadMore() {
     if (loadingMore || !hasNext) return;
@@ -408,15 +448,33 @@ export function AllMarketsSection({ categories }: Props) {
     subcategory !== null ||
     query.trim() !== "" ||
     showWatchlistOnly;
+  // Step 3 (States 18b): dashed frame; an empty state gets an action only
+  // when the user can DO something about it — filters qualify because the
+  // user created the emptiness themselves.
   const emptyState = (
-    <Card as="div" padding="none" className="p-14 text-center">
+    <div className="rounded-2xl border border-dashed border-[var(--border-2)] bg-[var(--surface-1)] px-[18px] py-[26px] text-center">
       <h3 className={EMPTY_TITLE_CLASS}>
         {filtered ? t("NO_FILTER_MATCH") : t("NO_OPEN_MARKETS")}
       </h3>
       <p className={EMPTY_TEXT_CLASS}>
         {filtered ? t("TRY_DIFFERENT_FILTER") : t("CHECK_BACK_SOON")}
       </p>
-    </Card>
+      {filtered && (
+        <button
+          type="button"
+          onClick={() => {
+            setCategorySlug("all");
+            setDateWindow("all");
+            setSubcategory(null);
+            setQuery("");
+            setShowWatchlistOnly(false);
+          }}
+          className="mt-3.5 inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[10px] border border-[var(--border-2)] bg-[var(--surface-1)] px-[18px] text-[13px] font-semibold text-[var(--accent-text)] transition-[border-color] hover:border-[var(--t3)]"
+        >
+          {t("CLEAR_FILTERS", "Clear filters")}
+        </button>
+      )}
+    </div>
   );
 
   return (
@@ -525,15 +583,52 @@ export function AllMarketsSection({ categories }: Props) {
       </header>
 
       {loading && markets.length === 0 ? (
-        <div className="p-14 text-center text-[13px] text-[var(--t3)]">
-          {t("LOADING_MARKETS")}
+        // Step 3 (States 18a): the list's shape is known before the data
+        // arrives, so the skeleton matches the REAL card geometry —
+        // same grid, same min-heights — and the load doesn't reflow.
+        <div
+          className="grid grid-cols-3 gap-4 max-[1100px]:grid-cols-2 max-[720px]:grid-cols-1"
+          aria-hidden="true"
+        >
+          {Array.from({ length: 6 }, (_, i) => (
+            <MarketCardSkeleton key={i} />
+          ))}
         </div>
       ) : error && markets.length === 0 ? (
-        <Card as="div" padding="none" className="p-14 text-center">
-          <p className="m-0 text-[13px] text-[var(--t2)]">
-            {t("COULD_NOT_LOAD_MARKETS")} {error}
+        // Step 3 (States 18c): hairline card with a coloured left edge,
+        // the phosphor warning glyph, and a ≥44px retry.
+        <div
+          role="alert"
+          className="rounded-2xl border border-[var(--border-1)] border-l-[3px] border-l-[var(--no)] bg-[var(--surface-1)] px-[18px] py-4"
+        >
+          <div className="flex items-center gap-[9px]">
+            <svg
+              viewBox="0 0 256 256"
+              width="16"
+              height="16"
+              fill="currentColor"
+              aria-hidden="true"
+              className="flex-none text-[var(--no)]"
+            >
+              {/* phosphor warning-circle-fill — verbatim from
+                  design_handoff_taptrade/logos/phosphor-paths.json */}
+              <path d={PHOSPHOR_WARNING_CIRCLE_FILL} />
+            </svg>
+            <span className="text-sm font-semibold tracking-[-0.005em] text-[var(--t1)]">
+              {t("COULD_NOT_LOAD_MARKETS")}
+            </span>
+          </div>
+          <p className="mb-0 mt-[9px] text-[13px] leading-[1.5] text-[var(--t2)]">
+            {error}
           </p>
-        </Card>
+          <button
+            type="button"
+            onClick={() => setReloadNonce((n) => n + 1)}
+            className="mt-3.5 inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[10px] border border-[var(--border-2)] bg-[var(--surface-1)] px-[18px] text-[13px] font-semibold text-[var(--t1)] transition-[border-color] hover:border-[var(--t3)]"
+          >
+            {t("RETRY", "Retry")}
+          </button>
+        </div>
       ) : !loading && markets.length === 0 ? (
         emptyState
       ) : (

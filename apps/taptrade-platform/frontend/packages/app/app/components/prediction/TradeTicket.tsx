@@ -107,13 +107,15 @@ const TICKET_TITLE_CLASS =
 const TICKET_MODE_CLASS =
   "inline-flex gap-0.5 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-[3px]";
 const TICKET_MODE_BUTTON_BASE_CLASS =
-  "cursor-pointer rounded-md border-0 px-3 py-[5px] [font-family:inherit] text-[11px] font-semibold transition-colors duration-[120ms] disabled:cursor-not-allowed disabled:opacity-40 disabled:text-[var(--t3)] disabled:hover:bg-transparent disabled:hover:text-[var(--t3)]";
+  // Step 3: 38px — THE documented hit-target exception (44px inside a
+  // 3px-padded track forces the track to 50px and dominates the ticket).
+  "min-h-[38px] cursor-pointer rounded-md border-0 px-3 [font-family:inherit] text-[11px] font-semibold transition-colors duration-[120ms] disabled:cursor-not-allowed disabled:opacity-40 disabled:text-[var(--t3)] disabled:hover:bg-transparent disabled:hover:text-[var(--t3)]";
 // P9.2: sides are Robinhood-style underline tabs, not price boxes — the
 // price belongs to the summary rows below.
 const TICKET_SIDES_CLASS =
   "relative mb-4 grid grid-cols-2 border-b border-[var(--border-1)]";
 const TICKET_SIDE_TAB_BASE_CLASS =
-  "cursor-pointer border-0 bg-transparent px-1 pb-2.5 pt-1 [font-family:inherit] text-sm font-semibold transition-colors duration-[120ms] focus-visible:outline-none";
+  "min-h-11 cursor-pointer border-0 bg-transparent px-1 pb-2.5 pt-1 [font-family:inherit] text-sm font-semibold transition-colors duration-[120ms] focus-visible:outline-none";
 // The tap-dot signature, applied to navigation: one indicator slides
 // between the two sides (180ms) instead of two static underlines.
 const TICKET_SIDE_INDICATOR_CLASS =
