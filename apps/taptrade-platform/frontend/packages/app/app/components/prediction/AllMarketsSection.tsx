@@ -24,6 +24,7 @@ import {
   removeMarketFromWatchlist,
 } from "../../lib/api/market-watchlist-client";
 import { useAuth } from "../../hooks/useAuth";
+import { useToast } from "../ToastProvider";
 import { categoryName } from "./market-content";
 import {
   extractMarketSubcategories,
@@ -174,6 +175,7 @@ export function AllMarketsSection({ categories }: Props) {
   const { t: headerT } = useTranslation("header");
   const { t: contentT } = useTranslation("market-content");
   const { isAuthenticated } = useAuth();
+  const toast = useToast();
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
   const [subcategoryCorpus, setSubcategoryCorpus] = useState<
     PredictionMarket[]
@@ -359,6 +361,19 @@ export function AllMarketsSection({ categories }: Props) {
   }
 
   function toggleWatchlist(marketId: string) {
+    // QA fix ISSUE-002 (2026-07-26): signed out, the star used to no-op
+    // silently (optimistic toggle → 401 → silent revert). Say what's
+    // needed instead of doing nothing.
+    if (!isAuthenticated) {
+      toast.info(
+        t("WATCHLIST_SIGN_IN", "Sign in to save markets"),
+        t(
+          "WATCHLIST_SIGN_IN_BODY",
+          "Log in and tap the star to build your watchlist.",
+        ),
+      );
+      return;
+    }
     const currentlyWatched = watchedMarketIds.has(marketId);
     setWatchedMarketIds((prev) => {
       const next = new Set(prev);
