@@ -204,5 +204,7 @@
   "YOU_PAY": "Mata digunakan",
   "YES": "Ya",
   "YES_PRICE_CHART": "Carta harga Ya untuk {{ticker}}",
-  "SELL_SHARES_CTA": "Sell {{quantity}} share{{plural}} · est. {{amount}}"
+  "SELL_SHARES_CTA": "Sell {{quantity}} share{{plural}} · est. {{amount}}",
+  "DISCUSSION_COUNT_one": "{{count}} comment",
+  "DISCUSSION_COUNT_other": "{{count}} comments"
 }
