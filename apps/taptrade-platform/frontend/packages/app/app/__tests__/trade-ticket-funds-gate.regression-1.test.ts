@@ -32,10 +32,10 @@ describe("TradeTicket insufficient-funds gate (ISSUE-013)", () => {
     );
   });
 
-  it("gates on the LARGER of preview cost and requested notional", () => {
+  it("gates on BOTH preview cost and requested notional", () => {
     assert.match(
       source,
-      /Math\.max\(effectiveSpend,\s*requestedNotional\)\s*>\s*balance/,
+      /effectiveSpend > balance \|\| requestedNotional > balance/,
       "insufficientFunds must never rely on the preview's fillable-slice cost alone",
     );
   });

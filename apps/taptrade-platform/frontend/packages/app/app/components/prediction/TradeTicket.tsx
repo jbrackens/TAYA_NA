@@ -357,7 +357,7 @@ export function TradeTicket({
     action === "buy" &&
     isAuthenticated &&
     hasKnownBalance &&
-    Math.max(effectiveSpend, requestedNotional) > balance;
+    (effectiveSpend > balance || requestedNotional > balance);
   const insufficientShares =
     action === "sell" &&
     isAuthenticated &&
