@@ -145,17 +145,26 @@ function Reveal({ children, className = "", delayMs = 0 }: RevealProps) {
 /**
  * Optional ambient footage behind the hero scrim (flag-gated by
  * HERO_AMBIENT_VIDEO — see docs/hero-ambient-video.md). Renders nothing on
- * the server, under prefers-reduced-motion, or when the flag is unset, so
- * the drawn chart composition is always the base hero. Sits at -z-40:
- * below the grid, the chart, and the scrim; ~26% opacity keeps it
- * atmosphere, not message.
+ * the server, under prefers-reduced-motion, when the viewer asked for data
+ * saving, below the lg breakpoint (the file is ~1.6MB — mobile connections
+ * get the drawn chart only), or when the flag is unset, so the drawn chart
+ * composition is always the base hero. Sits at -z-40: below the grid, the
+ * chart, and the scrim; ~26% opacity keeps it atmosphere, not message.
  */
 function HeroAmbientVideo() {
   const [canPlay, setCanPlay] = useState(false);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    setCanPlay(true);
+    const connection = (
+      navigator as Navigator & { connection?: { saveData?: boolean } }
+    ).connection;
+    if (connection?.saveData) return;
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const update = () => setCanPlay(desktop.matches);
+    update();
+    desktop.addEventListener("change", update);
+    return () => desktop.removeEventListener("change", update);
   }, []);
 
   if (!HERO_AMBIENT_VIDEO || !canPlay) return null;
@@ -216,63 +225,63 @@ function MarketPreviewCard({
     activeSideLabel,
   );
   const barFillClass = activeSide === "yes" ? "justify-start" : "justify-end";
-  const barColorClass =
-    activeSide === "yes" ? "bg-[var(--accent)]" : "bg-[var(--no)]";
+
+  // Landing 15b / UAT-001: the ONE interactive element on the page. Tapping
+  // a side flips the bar, the consensus line and the split — no navigation,
+  // no dead end; it teaches the mechanic in one gesture. Lime marks the
+  // selected side on BOTH toggles (selection, not a signal) — direction
+  // tokens never fill controls, so the near-black card stays one-channel.
+  const sideButtonClass = (pressed: boolean) =>
+    `inline-flex h-11 min-w-16 cursor-pointer items-center justify-center rounded-[10px] border px-4 text-[13px] font-bold transition-colors duration-150 ${
+      pressed
+        ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--ticket-cta-text)]"
+        : "border-white/20 bg-transparent text-white hover:border-white/40"
+    }`;
 
   return (
-    <article className="grid gap-3 rounded-[16px] border border-[#07150d]/25 bg-[#07150d] p-5 text-white transition-[transform,background-color,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:bg-[#0b1a11] hover:shadow-[0_14px_32px_rgba(4,24,13,0.35)]">
-      <span className="text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--accent)]">
+    <article className="grid gap-3 rounded-[16px] border border-[rgba(17,17,17,0.25)] bg-[var(--ink)] p-[18px] text-white transition-[transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(17,17,17,0.35)]">
+      <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--accent)]">
         {category}
       </span>
-      <span className="text-[19px] font-semibold leading-[1.3] tracking-[-0.01em] text-white max-[520px]:text-[18px]">
+      <span className="text-[17px] font-semibold leading-[1.3] tracking-[-0.01em] text-white">
         {question}
       </span>
-      <div className="grid grid-cols-[1fr_auto] items-center gap-4 text-white max-[520px]:grid-cols-1">
-        <div>
+      <div>
+        <div
+          className={`flex h-[7px] overflow-hidden rounded-[var(--r-pill)] bg-white/16 ${barFillClass}`}
+        >
           <div
-            className={`flex h-[7px] overflow-hidden rounded-[var(--r-pill)] bg-white/16 ${barFillClass}`}
-          >
-            <div
-              className={`h-full rounded-[var(--r-pill)] transition-[width,background-color] duration-300 ease-out ${barColorClass}`}
-              style={{ width: `${activePercent}%` }}
-            />
-          </div>
-          <p className="m-0 mt-2 text-[13px] font-semibold text-white/68">
-            {activeConsensus}
-          </p>
-          <p className="m-0 mt-1 text-[12px] font-semibold text-white/60 [font-variant-numeric:tabular-nums]">
-            {activeSideLabel} {activePercent}% · {inactiveSideLabel}{" "}
-            {inactivePercent}%
-          </p>
+            className="h-full rounded-[var(--r-pill)] bg-[var(--accent)] transition-[width] duration-300 ease-out"
+            style={{ width: `${activePercent}%` }}
+          />
         </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            className={`inline-flex h-11 min-w-16 cursor-pointer items-center justify-center rounded-[10px] border px-4 text-[13px] font-bold transition-colors duration-150 ${
-              activeSide === "yes"
-                ? "border-[var(--accent)] bg-[var(--accent)] text-[#061a10]"
-                : "border-white/20 bg-transparent text-white hover:border-[var(--accent)] hover:text-[var(--accent)]"
-            }`}
-            onPointerDown={() => setActiveSide("yes")}
-            onClick={() => setActiveSide("yes")}
-            aria-pressed={activeSide === "yes"}
-          >
-            {yesLabel}
-          </button>
-          <button
-            type="button"
-            className={`inline-flex h-11 min-w-16 cursor-pointer items-center justify-center rounded-[10px] border px-4 text-[13px] font-bold transition-colors duration-150 ${
-              activeSide === "no"
-                ? "border-[var(--no)] bg-[var(--no)] text-[#2a0f09]"
-                : "border-white/20 bg-transparent text-white hover:border-[var(--no)] hover:text-[var(--no-bar)]"
-            }`}
-            onPointerDown={() => setActiveSide("no")}
-            onClick={() => setActiveSide("no")}
-            aria-pressed={activeSide === "no"}
-          >
-            {noLabel}
-          </button>
-        </div>
+        <p className="m-0 mt-2 text-[13px] font-semibold text-white/68">
+          {activeConsensus}
+        </p>
+        <p className="m-0 mt-1 font-mono text-[12px] font-medium text-white/60 [font-variant-numeric:tabular-nums]">
+          {activeSideLabel} {activePercent}% · {inactiveSideLabel}{" "}
+          {inactivePercent}%
+        </p>
+      </div>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          className={sideButtonClass(activeSide === "yes")}
+          onPointerDown={() => setActiveSide("yes")}
+          onClick={() => setActiveSide("yes")}
+          aria-pressed={activeSide === "yes"}
+        >
+          {yesLabel}
+        </button>
+        <button
+          type="button"
+          className={sideButtonClass(activeSide === "no")}
+          onPointerDown={() => setActiveSide("no")}
+          onClick={() => setActiveSide("no")}
+          aria-pressed={activeSide === "no"}
+        >
+          {noLabel}
+        </button>
       </div>
     </article>
   );
@@ -292,13 +301,21 @@ type TradeTicketPreviewProps = {
   ifCorrectLabel: string;
   ptsLabel: string;
   maxLabel: string;
-  loginCta: string;
+  signUpCta: string;
 };
 
 /**
- * Code-native miniature of the live trade ticket (P8 light tokens), replacing
- * the exported screenshot that carried a stale brand tab and demo-data
- * artifacts. Purely illustrative: role="img", nothing here is interactive.
+ * Miniature of the live trade ticket, REGENERATED from TradeTicket.tsx's
+ * current Ink & lime render (Landing 15c, 2026-07-26) — the previous
+ * hand-maintained copy had drifted (mint palette, a "Log in to trade" CTA
+ * contradicting the signed-out copy). Contracts mirrored from the real
+ * ticket: neutral price magnitudes on BOTH side cells (--t1/--t2, never a
+ * direction colour), pale direction fills via --yes-soft/--yes-border,
+ * lime reserved for the selected quick-amount and the CTA, and the
+ * signed-out CTA inviting sign-up. If the real ticket changes shape,
+ * regenerate this from it — do not patch colours in place;
+ * landing-ink-lime.test.ts pins the contracts that drifted last time.
+ * Purely illustrative: role="img", nothing here is interactive.
  */
 function TradeTicketPreview({
   ariaLabel,
@@ -314,53 +331,53 @@ function TradeTicketPreview({
   ifCorrectLabel,
   ptsLabel,
   maxLabel,
-  loginCta,
+  signUpCta,
 }: TradeTicketPreviewProps) {
-  const mono =
-    "font-mono [font-variant-numeric:tabular-nums]";
+  const mono = "font-mono [font-variant-numeric:tabular-nums]";
   return (
     <div role="img" aria-label={ariaLabel}>
-      <div className="rounded-[42px] border border-[rgba(26,26,26,0.16)] bg-[#151716] p-3 shadow-[0_28px_80px_rgba(0,0,0,0.18)]">
-        <div className="overflow-hidden rounded-[32px] bg-white p-5 text-left">
-          <div className="flex items-center justify-between">
-            <span className="text-[17px] font-semibold lowercase leading-none tracking-[-0.025em] text-[#0b4332]">
-              TapTrade<span className="text-[#10c8a0]">.</span>
+      <div className="rounded-[34px] border border-[rgba(17,17,17,0.16)] bg-[#151716] p-2.5 shadow-[0_24px_64px_rgba(0,0,0,0.18)]">
+        <div className="overflow-hidden rounded-[26px] bg-white p-[18px] text-left">
+          <div className="flex items-center justify-between gap-2.5">
+            <span className="text-[15px] font-semibold lowercase leading-none tracking-[-0.025em] text-[var(--ink)]">
+              {brand.name}
+              <span className="text-[var(--brand-period)]">.</span>
             </span>
-            <span className="inline-flex h-8 items-center rounded-[var(--r-pill)] bg-[var(--accent)] px-3.5 text-[12px] font-semibold text-[#061a10]">
+            <span className="inline-flex h-[30px] items-center rounded-[var(--r-pill)] bg-[var(--accent)] px-[13px] text-[12px] font-semibold text-[var(--ticket-cta-text)]">
               {signUpLabel}
             </span>
           </div>
 
-          <div className="mt-5">
-            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#6E7680]">
+          <div className="mt-[18px]">
+            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--t3)]">
               <span
-                className="h-1 w-1 rounded-full bg-[var(--accent)] animate-[predict-pulse_1.6s_ease-in-out_infinite]"
+                className="h-[5px] w-[5px] flex-none rounded-full bg-[var(--yes-bar)] animate-[predict-pulse_1.6s_ease-in-out_infinite]"
                 aria-hidden="true"
               />
               {category} · {liveLabel}
             </span>
-            <p className="m-0 mt-1.5 text-[15px] font-semibold leading-[1.3] tracking-[-0.01em] text-[#0D1114]">
+            <p className="m-0 mt-[7px] text-[15px] font-medium leading-[1.3] tracking-[-0.01em] text-[var(--t1)]">
               {question}
             </p>
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-2.5">
-            <div className="rounded-[12px] border border-[var(--accent)] bg-[rgba(43,228,128,0.14)] p-3">
-              <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#0E7A52]">
+            <div className="rounded-[12px] border border-[var(--yes-border)] bg-[var(--yes-soft)] p-[11px]">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--yes-text)]">
                 {yesLabel}
               </span>
               <p
-                className={`m-0 mt-1 text-[24px] font-semibold leading-none text-[#0D1114] ${mono}`}
+                className={`m-0 mt-[5px] text-[22px] font-medium leading-none text-[var(--t1)] ${mono}`}
               >
                 62¢
               </p>
             </div>
-            <div className="rounded-[12px] border border-[#E9EBED] bg-white p-3">
-              <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#B8401F]">
+            <div className="rounded-[12px] border border-[var(--border-1)] bg-white p-[11px]">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--no-text)]">
                 {noLabel}
               </span>
               <p
-                className={`m-0 mt-1 text-[24px] font-semibold leading-none text-[#454C54] ${mono}`}
+                className={`m-0 mt-[5px] text-[22px] font-medium leading-none text-[var(--t2)] ${mono}`}
               >
                 38¢
               </p>
@@ -368,55 +385,58 @@ function TradeTicketPreview({
           </div>
 
           <div className="mt-4">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6E7680]">
+            <span className="text-[11px] font-semibold text-[var(--t3)]">
               {amountLabel}
             </span>
-            <div className="mt-1.5 flex items-baseline justify-between rounded-[12px] border border-[#E9EBED] bg-white px-4 py-3">
+            <div className="mt-1.5 flex items-baseline justify-between gap-2.5 rounded-[12px] border border-[var(--border-1)] bg-white px-3.5 py-[11px]">
               <span
-                className={`text-[22px] font-semibold leading-none text-[#0D1114] ${mono}`}
+                className={`text-[20px] font-medium leading-none text-[var(--t1)] ${mono}`}
               >
                 500{" "}
-                <span className="text-[12px] font-medium text-[#6E7680]">
+                <span className="text-[12px] font-normal text-[var(--t3)]">
                   {ptsLabel}
                 </span>
               </span>
-              <span className={`text-[11px] text-[#6E7680] ${mono}`}>
+              <span className={`text-[11px] text-[var(--t3)] ${mono}`}>
                 8 {sharesLabel}
               </span>
             </div>
-            <div className="mt-2.5 flex gap-2">
-              {["100", "500", "1000", maxLabel].map((amount) => (
+            <div className="mt-2 flex gap-1.5">
+              {["100", "500", "1000"].map((amount) => (
                 <span
                   key={amount}
-                  className={`inline-flex h-8 flex-1 items-center justify-center rounded-[var(--r-pill)] text-[12px] font-semibold ${mono} ${
+                  className={`inline-flex h-8 flex-1 items-center justify-center rounded-[var(--r-pill)] text-[12px] font-medium ${mono} ${
                     amount === "500"
-                      ? "bg-[var(--accent)] text-[#061a10]"
-                      : "border border-[#E9EBED] bg-white text-[#454C54]"
+                      ? "bg-[var(--accent)] text-[var(--ticket-cta-text)]"
+                      : "border border-[var(--border-1)] bg-white text-[var(--t2)]"
                   }`}
                 >
                   {amount}
                 </span>
               ))}
+              <span className="inline-flex h-8 flex-1 items-center justify-center rounded-[var(--r-pill)] border border-[var(--border-1)] bg-white text-[12px] font-semibold tracking-[0.04em] text-[var(--t2)]">
+                {maxLabel}
+              </span>
             </div>
           </div>
 
-          <div className="mt-4 grid gap-1.5 border-t border-[#E9EBED] pt-3">
-            <div className="flex items-center justify-between text-[12px]">
-              <span className="text-[#454C54]">{avgFillLabel}</span>
-              <span className={`font-semibold text-[#0D1114] ${mono}`}>
+          <div className="mt-4 grid gap-1.5 border-t border-[var(--border-1)] pt-3">
+            <div className="flex items-center justify-between gap-2.5 text-[12px]">
+              <span className="text-[var(--t2)]">{avgFillLabel}</span>
+              <span className={`font-medium text-[var(--t1)] ${mono}`}>
                 62¢
               </span>
             </div>
-            <div className="flex items-center justify-between text-[12px]">
-              <span className="text-[#454C54]">{ifCorrectLabel}</span>
-              <span className={`font-semibold text-[#0E7A52] ${mono}`}>
+            <div className="flex items-center justify-between gap-2.5 text-[12px]">
+              <span className="text-[var(--t2)]">{ifCorrectLabel}</span>
+              <span className={`font-medium text-[var(--yes-text)] ${mono}`}>
                 800 {ptsLabel}
               </span>
             </div>
           </div>
 
-          <span className="mt-4 flex h-11 items-center justify-center rounded-[var(--r-pill)] bg-[var(--accent)] text-[14px] font-semibold text-[#061a10]">
-            {loginCta}
+          <span className="mt-4 flex min-h-11 items-center justify-center rounded-[var(--r-pill)] bg-[var(--accent)] text-[14px] font-semibold text-[var(--ticket-cta-text)]">
+            {signUpCta}
           </span>
         </div>
       </div>
@@ -461,13 +481,13 @@ export default function HomePage() {
           </div>
           <Link
             href="/auth/login"
-            className="inline-flex h-11 items-center justify-center rounded-[var(--r-pill)] border border-[var(--accent)] px-7 text-[15px] font-medium !text-[var(--accent)] transition-colors hover:bg-[rgba(43,228,128,0.12)] max-[720px]:hidden"
+            className="inline-flex h-11 items-center justify-center rounded-[var(--r-pill)] border border-[var(--accent)] px-7 text-[15px] font-medium !text-[var(--accent)] transition-colors hover:bg-[color-mix(in_srgb,var(--lime)_12%,transparent)] max-[720px]:hidden"
           >
             {t("nav.login")}
           </Link>
           <Link
             href="/predict"
-            className="inline-flex h-11 items-center justify-center rounded-[var(--r-pill)] bg-[var(--accent)] px-8 text-[15px] font-semibold !text-[#061a10] transition-[transform,background-color] duration-150 ease-out hover:-translate-y-px hover:bg-[#54ec9b] max-[520px]:hidden"
+            className="inline-flex h-11 items-center justify-center rounded-[var(--r-pill)] bg-[var(--accent)] px-8 text-[15px] font-semibold !text-[var(--ticket-cta-text)] transition-[transform,filter] duration-150 ease-out hover:-translate-y-px hover:brightness-[1.05] max-[520px]:hidden"
           >
             {t("nav.browseMarkets")}
           </Link>
@@ -512,7 +532,7 @@ export default function HomePage() {
           <div className="grid gap-2 text-white">
             <Link
               href="/predict"
-              className="inline-flex h-12 items-center justify-center rounded-[var(--r-pill)] bg-[var(--accent)] text-[15px] font-semibold !text-[#061a10]"
+              className="inline-flex h-12 items-center justify-center rounded-[var(--r-pill)] bg-[var(--accent)] text-[15px] font-semibold !text-[var(--ticket-cta-text)]"
               onClick={() => setMenuOpen(false)}
             >
               {t("nav.browseMarkets")}
@@ -547,8 +567,12 @@ export default function HomePage() {
           aria-hidden="true"
         />
         {/* Market backdrop: a YES price path climbing while its NO complement
-         * decays — drawn, not filmed. vector-effect keeps strokes crisp while
-         * preserveAspectRatio=none lets the composition breathe at any width. */}
+         * decays — drawn, not filmed, the product's thesis as decoration
+         * (Landing 15a). Both curves use the muted direction tones
+         * (--yes-bar/--no-bar); saturated direction stays reserved for live
+         * signals, and no price chips ride the lines — magnitude belongs to
+         * the app, not the backdrop. vector-effect keeps strokes crisp while
+         * preserveAspectRatio=none lets the composition breathe. */}
         <div
           className="absolute inset-x-0 bottom-0 -z-20 h-[56%] landing-fade max-[720px]:h-[42%]"
           aria-hidden="true"
@@ -561,9 +585,19 @@ export default function HomePage() {
             aria-hidden="true"
           >
             <defs>
+              {/* var() is CSS-only — presentation attributes can't resolve
+               * it, so the token lands via style. */}
               <linearGradient id="heroYesFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#71eeb8" stopOpacity="0.16" />
-                <stop offset="100%" stopColor="#71eeb8" stopOpacity="0" />
+                <stop
+                  offset="0%"
+                  style={{ stopColor: "var(--yes-bar)" }}
+                  stopOpacity="0.16"
+                />
+                <stop
+                  offset="100%"
+                  style={{ stopColor: "var(--yes-bar)" }}
+                  stopOpacity="0"
+                />
               </linearGradient>
             </defs>
             <path
@@ -572,42 +606,19 @@ export default function HomePage() {
             />
             <path
               d="M0,388 L60,380 L110,396 L170,368 L230,376 L300,336 L360,348 L430,312 L500,326 L560,284 L640,296 L700,256 L770,272 L840,232 L900,244 L980,196 L1050,214 L1120,168 L1200,184 L1270,140 L1340,152 L1408,116"
-              stroke="#71eeb8"
+              style={{ stroke: "var(--yes-bar)" }}
               strokeOpacity="0.85"
               strokeWidth="2"
               vectorEffect="non-scaling-stroke"
             />
             <path
               d="M0,180 L80,196 L150,176 L220,208 L290,196 L360,232 L430,220 L500,258 L570,246 L640,284 L710,272 L780,308 L850,296 L920,332 L990,320 L1060,352 L1130,344 L1200,376 L1270,368 L1340,396 L1408,420"
-              stroke="#ff8b6b"
+              style={{ stroke: "var(--no-bar)" }}
               strokeOpacity="0.3"
               strokeWidth="1.5"
               vectorEffect="non-scaling-stroke"
             />
           </svg>
-          {/* Terminal ticks: live YES/NO quotes at the line endings. */}
-          <div
-            className="absolute flex -translate-y-1/2 items-center gap-2 max-[900px]:hidden"
-            style={{ left: "97.8%", top: "20.7%" }}
-          >
-            <span className="h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-[#71eeb8] shadow-[0_0_12px_rgba(113,238,184,0.65)] animate-[predict-pulse_1.6s_ease-in-out_infinite]" />
-          </div>
-          <div
-            className="absolute flex -translate-y-1/2 items-center justify-end gap-2.5 max-[900px]:hidden"
-            style={{ right: "3.6%", top: "20.7%" }}
-          >
-            <span className="rounded-md border border-white/12 bg-[#0a120d]/85 px-2.5 py-1 font-mono text-[12px] font-semibold tracking-[0.02em] text-[#71eeb8] [font-variant-numeric:tabular-nums]">
-              YES 62¢
-            </span>
-          </div>
-          <div
-            className="absolute flex -translate-y-1/2 items-center justify-end gap-2.5 max-[900px]:hidden"
-            style={{ right: "3.6%", top: "75%" }}
-          >
-            <span className="rounded-md border border-white/10 bg-[#0a120d]/85 px-2.5 py-1 font-mono text-[12px] font-semibold tracking-[0.02em] text-[#ff8b6b]/80 [font-variant-numeric:tabular-nums]">
-              NO 38¢
-            </span>
-          </div>
         </div>
         {/* Scrim: anchors the text column left, lets the chart read right. */}
         <div
@@ -618,7 +629,7 @@ export default function HomePage() {
         <div className="relative z-10 mx-auto flex min-h-[calc(100svh-64px)] w-full max-w-[1180px] flex-col justify-center px-8 pb-24 pt-12 max-[720px]:min-h-[600px] max-[720px]:px-5 max-[720px]:pb-16">
           <p className="landing-rise m-0 flex items-center gap-2.5 text-[12px] font-bold uppercase tracking-[0.18em] text-white/64">
             <span
-              className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_10px_rgba(43,228,128,0.8)] animate-[predict-pulse_1.6s_ease-in-out_infinite]"
+              className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_10px_rgba(198,242,78,0.8)] animate-[predict-pulse_1.6s_ease-in-out_infinite]"
               aria-hidden="true"
             />
             {t("hero.eyebrow")}
@@ -632,7 +643,7 @@ export default function HomePage() {
           <div className="landing-rise landing-rise-delay-3 mt-9 flex flex-wrap gap-3 max-[720px]:mt-8">
             <Link
               href="/predict"
-              className="inline-flex h-12 min-w-[154px] items-center justify-center rounded-[var(--r-pill)] bg-[var(--accent)] px-8 text-[15px] font-semibold !text-[#061a10] transition-[transform,background-color] duration-150 ease-out hover:-translate-y-px hover:bg-[#54ec9b]"
+              className="inline-flex h-12 min-w-[154px] items-center justify-center rounded-[var(--r-pill)] bg-[var(--accent)] px-8 text-[15px] font-semibold !text-[var(--ticket-cta-text)] transition-[transform,filter] duration-150 ease-out hover:-translate-y-px hover:brightness-[1.05]"
             >
               {t("nav.browseMarkets")}
             </Link>
@@ -647,23 +658,26 @@ export default function HomePage() {
       </section>
 
       <main>
-        <section className="bg-[var(--accent)] py-24 text-[#07150d] max-[720px]:py-16">
+        {/* Landing 15b: full-bleed lime with near-black cards on it — lime as
+         * a SURFACE, the inverse of every other screen. All text sitting
+         * directly on the accent is ink-on-lime (white on lime is ~1.3:1). */}
+        <section className="bg-[var(--accent)] py-24 text-[var(--ticket-cta-text)] max-[720px]:py-16">
           <div className="mx-auto max-w-[1180px] px-8 max-[720px]:px-5">
             <div className="grid grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] items-start gap-16 max-[900px]:grid-cols-1 max-[900px]:gap-10">
               <Reveal className="pt-2">
-                <p className="m-0 text-[12px] font-bold uppercase tracking-[0.18em] text-[#0b3c25]/80">
+                <p className="m-0 text-[12px] font-bold uppercase tracking-[0.18em] text-[var(--ticket-cta-text)]/80">
                   {t("browse.eyebrow")}
                 </p>
                 <h2 className="m-0 mt-4 max-w-[500px] text-balance text-[clamp(34px,3.8vw,48px)] font-semibold leading-[1.06] tracking-[-0.02em] font-sans max-[720px]:text-[30px]">
                   {t("browse.title")}
                 </h2>
-                <p className="mt-5 max-w-[480px] text-[17px] leading-[1.55] text-[#07150d]/78">
+                <p className="mt-5 max-w-[480px] text-[17px] leading-[1.55] text-[var(--ticket-cta-text)]/78">
                   {t("browse.body")}
                 </p>
                 <div className="mt-8">
                   <Link
                     href="/predict"
-                    className="inline-flex h-12 items-center justify-center rounded-[var(--r-pill)] bg-[#07150d] px-8 text-[15px] font-semibold !text-white transition-[transform,background-color] duration-150 ease-out hover:-translate-y-px hover:bg-[#12241a]"
+                    className="inline-flex h-12 items-center justify-center rounded-[var(--r-pill)] bg-[var(--ink)] px-8 text-[15px] font-semibold !text-white transition-transform duration-150 ease-out hover:-translate-y-px"
                   >
                     {t("browse.cta")}
                   </Link>
@@ -720,8 +734,8 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
-              <div className="mt-6 rounded-[12px] border border-[var(--border-1)] bg-[var(--accent-soft)] px-5 py-4">
-                <p className="m-0 text-[15px] leading-[1.55] text-[var(--t2)]">
+              <div className="mt-6 rounded-[12px] border border-[var(--border-1)] bg-[color-mix(in_srgb,var(--lime)_32%,transparent)] px-5 py-4">
+                <p className="m-0 text-[15px] leading-[1.55] text-[var(--ticket-cta-text)]">
                   {t("journey.note")}
                 </p>
               </div>
@@ -742,7 +756,7 @@ export default function HomePage() {
                 ifCorrectLabel={t("mockup.ifCorrect")}
                 ptsLabel={t("mockup.pts")}
                 maxLabel={t("mockup.max")}
-                loginCta={t("mockup.loginCta")}
+                signUpCta={t("mockup.signUpCta")}
               />
             </Reveal>
           </div>
@@ -779,7 +793,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="bg-[var(--accent)] px-8 py-24 text-center text-[#07150d] max-[720px]:px-5 max-[720px]:py-16">
+        <section className="bg-[var(--accent)] px-8 py-24 text-center text-[var(--ticket-cta-text)] max-[720px]:px-5 max-[720px]:py-16">
           <Reveal className="mx-auto max-w-[760px]">
             <h2 className="m-0 text-balance text-[clamp(38px,4.6vw,60px)] font-semibold leading-[1.04] tracking-[-0.03em] font-sans">
               {t("cta.title")}
@@ -787,7 +801,7 @@ export default function HomePage() {
             <div className="mt-8">
               <Link
                 href="/predict"
-                className="inline-flex h-12 items-center justify-center rounded-[var(--r-pill)] bg-[#07150d] px-8 text-[15px] font-semibold !text-white transition-[transform,background-color] duration-150 ease-out hover:-translate-y-px hover:bg-[#12241a]"
+                className="inline-flex h-12 items-center justify-center rounded-[var(--r-pill)] bg-[var(--ink)] px-8 text-[15px] font-semibold !text-white transition-transform duration-150 ease-out hover:-translate-y-px"
               >
                 {t("nav.browseMarkets")}
               </Link>
@@ -815,7 +829,9 @@ export default function HomePage() {
               ))}
             </div>
             <div className="mt-6 border-t border-white/10 pt-8">
-              <p className="m-0 text-[clamp(56px,13vw,168px)] font-semibold lowercase leading-[0.95] tracking-[-0.025em] text-[var(--brand-on-dark)]">
+              {/* Landing 15c: the giant footer wordmark clamps 168px → 54px —
+               * the one place the wordmark is a graphic rather than a label. */}
+              <p className="m-0 text-[clamp(54px,13vw,168px)] font-semibold lowercase leading-[0.95] tracking-[-0.025em] text-[var(--brand-on-dark)]">
                 {brand.name}
                 <span className="text-[var(--brand-period-dark)]">.</span>
               </p>
