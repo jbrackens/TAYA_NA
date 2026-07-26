@@ -8,6 +8,7 @@ import {
   getGlobalActivity,
   type SocialActivityItem,
 } from "../lib/api/market-social-client";
+import { ApiError } from "../lib/api/client";
 import { logger } from "../lib/logger";
 
 const WRAP_CLASS = "mx-auto max-w-[920px] px-4 pb-16 text-[var(--t1)]";
@@ -28,6 +29,11 @@ export default function ActivityPage() {
   const [items, setItems] = useState<SocialActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // QA fix ISSUE-003 (2026-07-26): signed-out visitors used to get the
+  // generic "Activity could not load." error (plus a console 401) —
+  // reading as an outage, not an auth gate. A 401 now renders a sign-in
+  // prompt like the rest of the gated surfaces.
+  const [authRequired, setAuthRequired] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -37,6 +43,10 @@ export default function ActivityPage() {
         const result = await getGlobalActivity(50);
         if (!cancelled) setItems(result);
       } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+          if (!cancelled) setAuthRequired(true);
+          return;
+        }
         logger.warn("ActivityPage", "activity load failed", err);
         if (!cancelled)
           setError(
@@ -64,6 +74,16 @@ export default function ActivityPage() {
         {loading ? (
           <div className={STATE_CLASS}>
             {t("SOCIAL_LOADING_ACTIVITY", "Loading activity.")}
+          </div>
+        ) : authRequired ? (
+          <div className={STATE_CLASS}>
+            {t("SOCIAL_ACTIVITY_SIGN_IN", "Sign in to see market activity.")}{" "}
+            <Link
+              href={`/auth/login?returnUrl=${encodeURIComponent("/activity")}`}
+              className={LINK_CLASS}
+            >
+              {t("LOG_IN", "Log in")}
+            </Link>
           </div>
         ) : error ? (
           <div className={STATE_CLASS}>{error}</div>
