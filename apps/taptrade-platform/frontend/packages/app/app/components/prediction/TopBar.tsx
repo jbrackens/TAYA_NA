@@ -74,8 +74,12 @@ const TERMINAL_NAV_LINKS: typeof NAV_LINKS = [
 const TOP_BAR_CLASS =
   "sticky top-0 z-[100] border-b border-[var(--border-1)] bg-[var(--bg-deep)] font-sans";
 
+// Step 2.5 follow-up (2026-07-26): the strip was hardcoded near-black
+// (rgba(3,7,10,.94)) — after the terminal theme retired it was the only
+// dark chrome left on the light pages, with the ink wordmark invisible
+// on it. Card surface + the hairline border-b it already had.
 const TERMINAL_TOP_BAR_CLASS =
-  "sticky top-0 z-[100] border-b border-[var(--border-1)] bg-[color:rgba(3,7,10,0.94)] backdrop-blur-xl [font-family:var(--font-terminal)]";
+  "sticky top-0 z-[100] border-b border-[var(--border-1)] bg-[var(--surface-1)] [font-family:var(--font-terminal)]";
 
 const TOP_BAR_INNER_CLASS =
   "box-border mx-auto flex h-16 w-full max-w-[1588px] items-center gap-6 px-6 max-[900px]:h-16 max-[900px]:gap-3 max-[900px]:px-4 max-[480px]:gap-2 max-[480px]:px-3";
