@@ -120,15 +120,14 @@ body {
    * on the light accent. Theme-scoped so any cta consumer resolves a
    * correct color — Codex review 2026-07-19 flagged that this variable
    * previously existed only in TradeTicket's inline style. */
-  --ticket-cta-text: #061a10;
-  /* P9 (2026-07-07, owner-directed): gallery-white page backdrop replacing
-   * the P8 warm cream + chart-paper grid. Pure white base, cool neutral
-   * inks, hairline borders, and a quiet two-layer shadow recipe carry the
-   * hierarchy that the grid used to. The pattern hook is retained for
-   * legacy call sites but resolves to none.
+  --ticket-cta-text: var(--ink-on-lime); /* Step 2.5: ink on lime */
+  /* Step 2.5 (2026-07-26): the legacy token NAMES below are repointed at
+   * the Ink & lime values centrally — components keep their old var()
+   * references and pick up the new palette from here. The P9 prose is
+   * retained where it still explains the token's ROLE.
    * Legacy --bg-{navy,teal,mint,azure} retained per P6 carry-forward
    * policy until each consuming surface migrates off them. */
-  --bg-deep: #ffffff;
+  --bg-deep: var(--paper);
   --bg-navy: #0c2a4a;
   --bg-teal: #0c2638;
   --bg-mint: #0d2a22;
@@ -169,37 +168,41 @@ body {
    * read muddy on pure white; these sit on the same blue-gray axis as the
    * borders so every gray in the system shares one temperature.
    * AAA (t1/t2) and AA-large (t3) on white. (DESIGN.md §3 + §8.) */
-  --t1: #0d1114;
-  --t2: #454c54;
-  --t3: #6e7680;
-  --t4: #a6adb5;
+  --t1: var(--ink);
+  --t2: var(--ink-2);
+  /* Step 2.5: t3 AND t4 both land on ink-3 — the spec's faintest text
+   * tint is #63635a (5.3:1 on the raised surface); the old t4 tier
+   * (#a6adb5) would fail AA everywhere in Ink & lime. Call sites lose
+   * one level of de-emphasis (flagged in the step report). */
+  --t3: var(--ink-3);
+  --t4: var(--ink-3);
 
   /* Accent (mint emerald — brand channel). Replaces neon-lime #39ff14.
    * --accent-glow is kept as a COMPLETE box-shadow declaration so the
    * 17 existing `box-shadow: var(--accent-glow)` call sites still work.
    * Use --accent-glow-color if you need just the color. (D1.) */
-  --accent: #2be480;
-  --accent-lo: #1fa65e;
-  --accent-text: #0f8a4f; /* P9: mint as TEXT on white (AA 4.9:1); --accent stays fill-only */
-  --accent-soft: rgba(43, 228, 128, 0.14);
-  --accent-glow-color: rgba(43, 228, 128, 0.45);
-  --accent-glow: 0 0 28px var(--accent-glow-color);
-  --accent-gradient: linear-gradient(
-    100deg,
-    #2be480 0%,
-    #00ffaa 50%,
-    #0094ff 100%
-  );
+  --accent: var(--lime); /* FILL ONLY — text call sites must use --accent-text */
+  --accent-lo: var(--lime-text); /* Step 2.5: old "darker accent" tier → lime text tint */
+  --accent-text: var(--lime-text); /* lime as TEXT/links (5.1:1 on raised) */
+  --accent-soft: rgba(198, 242, 78, 0.18);
+  /* Step 2.5: shadows are never coloured, never glowing in Ink & lime.
+   * --accent-glow resolves to none so the 17 `box-shadow:
+   * var(--accent-glow)` call sites go quiet without edits. */
+  --accent-glow-color: rgba(198, 242, 78, 0.35);
+  --accent-glow: none;
+  --accent-gradient: linear-gradient(100deg, #c6f24e 0%, #c6f24e 100%);
 
   /* Brand identity — TapTrade wordmark + mark (2026-06-06, "B / grotesque"
    * direction; replaces the retired chart-line mark). Deep-forest wordmark
    * with a mint "period" signature; the split-T mark sits on the forest tile.
    * Brand color is its own layer — NOT --accent (CTA mint) or --yes (signal). */
-  --brand-ink: #0b4332; /* wordmark on light (~10:1 on --bg-deep) + mark tile */
-  --brand-period: #10c8a0; /* the period signature + mark dot (mint) */
-  --brand-fg: #f8f9fa; /* the split-T sitting on the forest tile (light) */
-  --brand-on-dark: #f1ece3; /* wordmark on dark surfaces (ivory) */
-  --brand-period-dark: #2fe0a8; /* brighter mint period on dark */
+  /* Step 2.5: brand goes ink + lime (Palette and Mark: duotone layers
+   * recolour to ink #111111 / lime #c6f24e). */
+  --brand-ink: var(--ink); /* wordmark on light */
+  --brand-period: var(--lime); /* the period signature + mark dot */
+  --brand-fg: #f8f9fa; /* light glyph on dark tiles (unchanged) */
+  --brand-on-dark: #f1ece3; /* wordmark on dark surfaces (ivory, unchanged) */
+  --brand-period-dark: var(--lime); /* lime period on dark */
 
   /* Semantic (data layer). YES is seafoam green, NO is coral
    * (DESIGN.md §3). Keep brand mint on CTA/identity; these are
@@ -210,17 +213,21 @@ body {
    * at a glance, (b) saturated red/green caused eye fatigue at chart
    * scale, and (c) calm cool/warm complementary colors sit naturally
    * on the cool teal backdrop without fighting it. */
-  --yes: #5fe9ac;
-  --yes-soft: rgba(24, 176, 116, 0.1);
-  --yes-border: rgba(24, 176, 116, 0.28);
-  --yes-text: #0e7a52; /* AA on white (5.3:1) and --surface-2 (5.1:1) */
-  --yes-bar: #8fe5c4; /* paler seafoam for probability bar segments */
-  --no: #ff8368;
-  --no-soft: rgba(226, 84, 46, 0.09);
-  --no-border: rgba(226, 84, 46, 0.26);
-  --no-text: #b8401f; /* AA on white (5.0:1) and --surface-2 (4.8:1) */
-  --no-bar: #f4a990; /* paler coral for probability bar segments */
-  --focus-ring: #0e7a53; /* dark mint, AA non-text on white (6.0:1) */
+  /* Step 2.5: direction channel → muted Ink & lime pair. --yes/--no map
+   * to the SATURATED direction colours (audited: call sites use them for
+   * dots, danger fills with white text, and 4 text sites — all of which
+   * want the dark values). Pale fills keep coming from --yes/no-bar. */
+  --yes: var(--dir-yes);
+  --yes-soft: rgba(20, 117, 54, 0.08);
+  --yes-border: rgba(20, 117, 54, 0.28);
+  --yes-text: var(--dir-yes);
+  --yes-bar: var(--dir-yes-bar); /* pale fills, dots, progress */
+  --no: var(--dir-no);
+  --no-soft: rgba(193, 39, 45, 0.08);
+  --no-border: rgba(193, 39, 45, 0.26);
+  --no-text: var(--dir-no);
+  --no-bar: var(--dir-no-bar); /* pale fills, dots */
+  --focus-ring: var(--lime-text); /* AA non-text on paper/raised */
 
   /* --live is the only warm color outside --no. Distinct, redder, pulses. */
   --live: #ff6b6b;
@@ -255,21 +262,26 @@ body {
    * MarketCard, AllMarketsSection). Pre-P2 components keep using the
    * --glass-* tokens above until their phase migrates them.
    * ──────────────────────────────────────────────────────────────── */
-  --surface-1: #ffffff;
-  --surface-2: #f6f7f8;
-  --border-1: #e9ebed;
-  --border-2: #d8dbdf;
+  --surface-1: var(--card);
+  --surface-2: var(--raised);
+  /* Step 2.5: --surface-3 previously existed only inside the deleted
+   * terminal theme; 9 call sites reference it. Ink & lime has three
+   * surfaces, so the deepest inset tier lands on raised too. */
+  --surface-3: var(--raised);
+  /* Step 2.5: the spec has ONE hairline for all dividers and borders.
+   * border-1/border-2 collapse onto it — hover states that swapped
+   * border-1→border-2 lose that affordance (flagged in step report). */
+  --border-1: var(--hairline);
+  --border-2: var(--hairline);
 
-  /* P9 elevation — white-on-white needs a shadow recipe, not tinted
-   * surfaces. Two quiet layers: a contact line + a soft ambient falloff.
-   * Cards sit on --shadow-card; interactive cards lift to -hover on
-   * pointer; menus/popovers use -pop. Never colored, never glowing. */
+  /* Ink & lime elevation (spec Radius & elevation): same two quiet
+   * layers, rebased on ink #111111. Never colored, never glowing. */
   --shadow-card:
-    0 1px 2px rgba(13, 17, 20, 0.04), 0 12px 32px -16px rgba(13, 17, 20, 0.1);
+    0 1px 2px rgba(17, 17, 17, 0.04), 0 12px 32px -16px rgba(17, 17, 17, 0.1);
   --shadow-card-hover:
-    0 2px 4px rgba(13, 17, 20, 0.05), 0 18px 44px -16px rgba(13, 17, 20, 0.14);
+    0 2px 4px rgba(17, 17, 17, 0.05), 0 18px 44px -16px rgba(17, 17, 17, 0.14);
   --shadow-pop:
-    0 2px 6px rgba(13, 17, 20, 0.06), 0 24px 56px -20px rgba(13, 17, 20, 0.18);
+    0 2px 6px rgba(17, 17, 17, 0.06), 0 24px 56px -20px rgba(17, 17, 17, 0.18);
 
   /* Robinhood radii (less bubbly than glass). Co-existing with the
    * glass scale above during the P2-P6 migration. New components
@@ -283,10 +295,16 @@ body {
 /* ── Ink & lime palette (design handoff, 2026-07-26) ──────────────────
  * Source: design_handoff_taptrade/Handoff Spec.dc.html §2 (colour) and
  * Palette and Mark.dc.html §4f (info / disabled / pending groups).
- * Step 1 of the pivot: tokens land here under NEW names; no existing
- * token (--accent*, --yes*, --no*, --t1..t4, --surface-*, --border-*,
- * --shadow-*) is repointed — current screens keep rendering on the P9/
- * P10 values until each surface migrates in a later step.
+ * Step 1 landed these under NEW names. Step 2.5 (2026-07-26) repointed
+ * the legacy token names above at these values — the rename happened
+ * once, centrally; components keep their old var() references.
+ * Executed mapping (deviations from the step-1 sketch, by call-site
+ * audit): --yes/--yes-text→--dir-yes and --no/--no-text→--dir-no (the
+ * saturated pair; dots/danger-fills/text sites all want the dark
+ * values), --yes-bar/--no-bar→--dir-*-bar (pale fills), --t4→--ink-3
+ * (old faintest tier fails AA in this palette), --border-2→--hairline
+ * (one hairline for everything), --accent-lo→--lime-text,
+ * --accent-glow→none (shadows never glow).
  *
  * NAMING — role-named, with direction-scoped names where the old
  * palette already owns the obvious word:
@@ -362,9 +380,13 @@ body {
 
   /* BrandMark gradient stops — themeable hooks for the logo. Default
    * to the current violet so appearance does not change this step. */
-  --brand-mark-stop-1: #9188ff;
-  --brand-mark-stop-2: #766af1;
-  --brand-mark-stop-3: #6258d3;
+  /* Step 2.5: the violet gradient retires — the mark renders as the
+   * naked ink glyph (all three stops = ink, i.e. a flat fill), matching
+   * the "glyph" variant's own description. The lime tap dot comes from
+   * --brand-period. The provisional Fault mark swap is a later step. */
+  --brand-mark-stop-1: var(--ink);
+  --brand-mark-stop-2: var(--ink);
+  --brand-mark-stop-3: var(--ink);
 }
 
 /* P9 page background: bare gallery white. The P8 chart-paper grid is
@@ -523,7 +545,8 @@ button {
   margin: 0 0 16px;
 }
 .content-page-body a {
-  color: var(--yes-text);
+  /* Step 2.5: links take the accent text tint — green/red are direction only */
+  color: var(--accent-text);
   font-weight: 700;
   text-decoration: none;
 }
@@ -976,7 +999,8 @@ button {
 .not-found-code {
   font-size: 120px;
   font-weight: 800;
-  color: var(--accent);
+  /* Step 2.5: lime is fill-only; big display numeral takes the text tint */
+  color: var(--accent-text);
   line-height: 1;
   letter-spacing: -0.02em;
   margin-bottom: 12px;
@@ -1311,7 +1335,7 @@ button {
 
 .auth-submit {
   padding: 14px 16px;
-  color: #04140a;
+  color: var(--ticket-cta-text);
   border: none;
   border-radius: var(--r-rh-md);
   font-family: inherit;
@@ -1341,8 +1365,8 @@ button {
   padding: 4px 12px;
   margin-bottom: 14px;
   background: var(--accent-soft);
-  border: 1px solid rgba(43, 228, 128, 0.3);
-  color: var(--accent);
+  border: 1px solid var(--pending-border);
+  color: var(--accent-text); /* Step 2.5: lime is fill-only */
   border-radius: var(--r-pill);
   font-size: 11px;
   font-weight: 700;
@@ -1351,12 +1375,12 @@ button {
 }
 
 .auth-link {
-  color: var(--accent);
+  color: var(--accent-text); /* Step 2.5: lime is fill-only */
   text-decoration: none;
   font-weight: 600;
 }
 .auth-link:hover {
-  color: var(--accent);
+  color: var(--accent-text);
   filter: brightness(1.1);
   text-decoration: underline;
 }
@@ -1450,86 +1474,29 @@ button {
   }
 }
 
-/* ── P10 prediction terminal (approved 2026-07-12) ────────────────────
- * The dark workspace is intentionally route-scoped by AppShell. The
- * account, auth, content, and portfolio surfaces keep the current P9
- * gallery-white system until they receive matching approved concepts.
- */
-/* Handoff Spec §3 item 8 (2026-07-26): the .predict-terminal FONT
- * override is deleted — it repointed --font-terminal /
- * --font-terminal-mono / --font-display at Geist on /predict,
- * /discover and /market/*, so the core surfaces ran a different sans
- * from the rest of the app. One stack everywhere: components still
- * referencing var(--font-terminal) now fall back to the inherited
- * body stack. The terminal COLOUR theme below stays until screens
- * migrate. */
-.predict-terminal,
-html[data-theme="terminal"] {
-  --bg-deep: #03070a;
-  --surface-1: #080d11;
-  --surface-2: #0d1319;
-  --surface-3: #12171d;
-  --border-1: #20262d;
-  --border-2: #303641;
-  --t1: #f2f4f6;
-  --t2: #b2b7bf;
-  --t3: #858d99;
-  --t4: #68717d;
-  --accent: #6258d3;
-  --accent-lo: #8e86ff;
-  --accent-text: #aaa4ff;
-  --accent-soft: rgba(116, 104, 232, 0.15);
-  --brand-ink: #f2f4f6;
-  --brand-period: #7b72f2;
-  --brand-on-dark: #f2f4f6;
-  --brand-period-dark: #8a80ff;
-  --yes: #51d17c;
-  --yes-text: #64dc8b;
-  --yes-soft: rgba(81, 209, 124, 0.12);
-  --yes-border: rgba(81, 209, 124, 0.32);
-  --no: #f04d52;
-  --no-text: #ff7478;
-  --no-soft: rgba(240, 77, 82, 0.12);
-  --no-border: rgba(240, 77, 82, 0.32);
-  --focus-ring: #a39bff;
-  --ticket-cta-text: #ffffff;
-  --shadow-card: none;
-  --shadow-card-hover: none;
-  --shadow-pop: 0 24px 64px rgba(0, 0, 0, 0.42);
-  --r-rh-sm: 6px;
-  --r-rh-md: 8px;
-  --r-rh-lg: 10px;
-  min-height: 100vh;
-  background: var(--bg-deep);
-  color: var(--t1);
-  color-scheme: dark;
-}
-
-.predict-terminal ::selection,
-html[data-theme="terminal"] ::selection {
-  background: rgba(123, 114, 242, 0.34);
-  color: var(--t1);
-}
-
-.predict-terminal .terminal-scrollbar {
+/* ── P10 prediction terminal: RETIRED (Step 2.5, 2026-07-26) ──────────
+ * Handoff Spec §3 item 8 deleted the font override in step 1; step 2.5
+ * deletes the dark COLOUR theme too (spec §5: "Light, not dark" —
+ * third-party social embeds render on white and can't be restyled).
+ * /predict, /discover and /market/* now inherit the root Ink & lime
+ * tokens. AppShell still applies the .predict-terminal class and the
+ * html[data-theme] mirror for its LAYOUT variants — they are inert for
+ * theming. Components with hardcoded dark literals (e.g. the terminal
+ * TopBar's rgba(3,7,10,…) strip) keep them until their screen step.
+ * The thin scrollbar utility survives, tokenized. */
+.terminal-scrollbar {
   scrollbar-color: var(--border-2) transparent;
   scrollbar-width: thin;
 }
 
-.predict-terminal .terminal-scrollbar::-webkit-scrollbar {
+.terminal-scrollbar::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
-.predict-terminal .terminal-scrollbar::-webkit-scrollbar-thumb {
+.terminal-scrollbar::-webkit-scrollbar-thumb {
   border: 2px solid transparent;
   border-radius: 999px;
   background: var(--border-2);
   background-clip: padding-box;
-}
-
-.predict-terminal :focus-visible,
-html[data-theme="terminal"] :focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
 }
