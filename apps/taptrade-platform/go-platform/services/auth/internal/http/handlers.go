@@ -54,6 +54,11 @@ type AuthService struct {
 type registerRequest struct {
 	Username                      string `json:"username"`
 	Password                      string `json:"password"`
+	// QA fix ISSUE-023 (2026-07-26): the player app has always SENT an
+	// email at signup, but this struct silently dropped it at decode —
+	// so "USERNAME OR EMAIL" login could never match an email and no
+	// address was on file for recovery.
+	Email                         string `json:"email,omitempty"`
 	Role                          string `json:"role,omitempty"`
 	TermsAccepted                 *bool  `json:"terms_accepted,omitempty"`
 	TermsAcceptedCamel            *bool  `json:"termsAccepted,omitempty"`
@@ -77,6 +82,7 @@ const (
 type user struct {
 	ID                         string
 	Username                   string
+	Email                      string // lowercased; empty for legacy/seeded accounts
 	Password                   string // plaintext (dev mode only, deprecated)
 	PasswordHash               string // bcrypt hash (production mode)
 	Role                       string // "player" or "admin"
@@ -361,7 +367,15 @@ ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS terms_version TEXT NOT NULL DEFA
 ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMPTZ NULL;
 ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS launch_disclosure_accepted BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS launch_disclosure_version TEXT NOT NULL DEFAULT '';
-ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS launch_disclosure_accepted_at TIMESTAMPTZ NULL;`); err != nil {
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS launch_disclosure_accepted_at TIMESTAMPTZ NULL;
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS email VARCHAR(255);`); err != nil {
+		return err
+	}
+	// ISSUE-023: email login. Unique per address among rows that have one
+	// (legacy rows stay NULL/'' and never collide).
+	if _, err := db.ExecContext(ctx, `
+CREATE UNIQUE INDEX IF NOT EXISTS auth_users_email_lower_idx
+ON auth_users (lower(email)) WHERE email IS NOT NULL AND email <> ''`); err != nil {
 		return err
 	}
 
@@ -512,7 +526,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		termsVersion := firstNonEmpty(body.TermsVersion, body.TermsVersionCamel, taptradeLaunchTermsVersion)
 		disclosureVersion := firstNonEmpty(body.LaunchDisclosureVersion, body.LaunchDisclosureVersionCamel, taptradeDisclosureVersion)
 
-		newUser, err := auth.RegisterWithAcceptance(body.Username, body.Password, body.Role, termsVersion, disclosureVersion)
+		newUser, err := auth.RegisterWithAcceptance(body.Username, body.Password, body.Email, termsVersion, disclosureVersion)
 		if err != nil {
 			return err
 		}
@@ -904,6 +918,15 @@ func (a *AuthService) Login(username string, password string) (tokenResponse, er
 
 	account, exists := a.lookupUser(username)
 	authenticated := exists && a.verifyPassword(account, password)
+	if !authenticated && strings.Contains(username, "@") {
+		// ISSUE-023: the login field promises "USERNAME OR EMAIL", and
+		// registration stores the address — match it. Only reached when no
+		// username literally equals the input, so existing logins (including
+		// seeds whose username IS an email) are unaffected.
+		if byEmail, ok := a.lookupUserByEmail(username); ok && a.verifyPassword(byEmail, password) {
+			account, authenticated = byEmail, true
+		}
+	}
 	if !authenticated {
 		// Back-office staff fallback: authenticate against the gateway-owned
 		// admin_users directory (the self-contained RBAC staff table). Only
@@ -1013,18 +1036,30 @@ func (a *AuthService) verifyPassword(account user, password string) bool {
 }
 
 func (a *AuthService) Register(username, password, _ string) (user, error) {
-	return a.registerUser(username, password, rolePlayer, "", "")
+	return a.registerUser(username, password, "", "", "")
 }
 
-func (a *AuthService) RegisterWithAcceptance(username, password, _ string, termsVersion, disclosureVersion string) (user, error) {
-	return a.registerUser(username, password, rolePlayer, termsVersion, disclosureVersion)
+func (a *AuthService) RegisterWithAcceptance(username, password, email string, termsVersion, disclosureVersion string) (user, error) {
+	return a.registerUser(username, password, email, termsVersion, disclosureVersion)
 }
 
-func (a *AuthService) registerUser(username, password, _ string, termsVersion, disclosureVersion string) (user, error) {
+func (a *AuthService) registerUser(username, password, email string, termsVersion, disclosureVersion string) (user, error) {
 	username = strings.TrimSpace(username)
 	password = strings.TrimSpace(password)
+	// ISSUE-023: the address is stored (lowercased) so Login can match it.
+	// Optional at this layer — legacy callers and seeds pass "" — but when
+	// present it must look like an address and be unique.
+	email = strings.ToLower(strings.TrimSpace(email))
 	if username == "" {
 		return user{}, httpx.BadRequest("username is required", nil)
+	}
+	if email != "" {
+		if !strings.Contains(email, "@") || strings.ContainsAny(email, " \t") {
+			return user{}, httpx.BadRequest("email is invalid", map[string]any{"field": "email"})
+		}
+		if _, exists := a.lookupUserByEmail(email); exists {
+			return user{}, httpx.Conflict("email already registered", nil)
+		}
 	}
 	// Reserve the ':' namespace used by isolated social accounts
 	// (oauthSyntheticUsername = "<provider>:<subject>"). Without this, a user
@@ -1067,6 +1102,7 @@ func (a *AuthService) registerUser(username, password, _ string, termsVersion, d
 	newUser := user{
 		ID:                         newID,
 		Username:                   username,
+		Email:                      email,
 		PasswordHash:               string(hash),
 		Role:                       role,
 		TermsAccepted:              termsVersion != "",
@@ -1082,16 +1118,19 @@ func (a *AuthService) registerUser(username, password, _ string, termsVersion, d
 		defer cancel()
 		_, err := a.db.ExecContext(ctx, `
 INSERT INTO auth_users (
-  id, username, password_hash, role,
+  id, username, email, password_hash, role,
   terms_accepted, terms_version, terms_accepted_at,
   launch_disclosure_accepted, launch_disclosure_version, launch_disclosure_accepted_at
 )
-VALUES ($1, $2, $3, $4, $5, $6, NULLIF($7, '')::timestamptz, $8, $9, NULLIF($10, '')::timestamptz)`,
-			newUser.ID, newUser.Username, newUser.PasswordHash, newUser.Role,
+VALUES ($1, $2, NULLIF($3, ''), $4, $5, $6, $7, NULLIF($8, '')::timestamptz, $9, $10, NULLIF($11, '')::timestamptz)`,
+			newUser.ID, newUser.Username, newUser.Email, newUser.PasswordHash, newUser.Role,
 			newUser.TermsAccepted, newUser.TermsVersion, newUser.TermsAcceptedAt,
 			newUser.LaunchDisclosureAccepted, newUser.LaunchDisclosureVersion, newUser.LaunchDisclosureAcceptedAt,
 		)
 		if err != nil {
+			if strings.Contains(err.Error(), "auth_users_email_lower_idx") {
+				return user{}, httpx.Conflict("email already registered", nil)
+			}
 			if strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "unique constraint") {
 				return user{}, httpx.Conflict("username already registered", nil)
 			}
@@ -1240,12 +1279,12 @@ func (a *AuthService) lookupUser(username string) (user, bool) {
 		var termsAcceptedAt sql.NullTime
 		var disclosureAcceptedAt sql.NullTime
 		err := a.db.QueryRowContext(ctx, `
-SELECT id, username, password_hash, COALESCE(role, 'player'),
+SELECT id, username, COALESCE(email, ''), password_hash, COALESCE(role, 'player'),
        COALESCE(terms_accepted, false), COALESCE(terms_version, ''), terms_accepted_at,
        COALESCE(launch_disclosure_accepted, false), COALESCE(launch_disclosure_version, ''), launch_disclosure_accepted_at
 FROM auth_users
 WHERE username = $1`, username).Scan(
-			&u.ID, &u.Username, &u.PasswordHash, &u.Role,
+			&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.Role,
 			&u.TermsAccepted, &u.TermsVersion, &termsAcceptedAt,
 			&u.LaunchDisclosureAccepted, &u.LaunchDisclosureVersion, &disclosureAcceptedAt,
 		)
@@ -1268,6 +1307,37 @@ WHERE username = $1`, username).Scan(
 	defer a.mu.RUnlock()
 	account, exists := a.usersByUsername[username]
 	return account, exists
+}
+
+// lookupUserByEmail resolves a player account by its registered address
+// (ISSUE-023). Registration lowercases addresses on write, so the lookup
+// lowercases on read; legacy rows without an email simply never match.
+func (a *AuthService) lookupUserByEmail(email string) (user, bool) {
+	email = strings.ToLower(strings.TrimSpace(email))
+	if email == "" {
+		return user{}, false
+	}
+	if a.db != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), userDBTimeout)
+		defer cancel()
+		var username string
+		err := a.db.QueryRowContext(ctx, `
+SELECT username FROM auth_users WHERE lower(email) = $1`, email).Scan(&username)
+		if err == nil {
+			return a.lookupUser(username)
+		}
+		if err != sql.ErrNoRows {
+			log.Printf("warning: auth DB email lookup failed: %v; falling back to memory", err)
+		}
+	}
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	for _, account := range a.usersByUsername {
+		if account.Email == email {
+			return account, true
+		}
+	}
+	return user{}, false
 }
 
 // lookupAdminUser authenticates back-office staff against the gateway-owned
