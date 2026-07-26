@@ -3,6 +3,7 @@ import "./globals.css";
 import { GeistMono } from "geist/font/mono";
 import AppShell from "./components/AppShell";
 import { brand } from "./lib/brand";
+import { SUSPENSE_REVEAL_BOOTSTRAP } from "./lib/suspense-reveal-bootstrap";
 
 export default function RootLayout({
   children,
@@ -28,6 +29,15 @@ export default function RootLayout({
          * the .predict-terminal font override deleted in step 1), and the
          * Martian Grotesk wordmark font (148KB of variable font for eight
          * letters — the wordmark is now Switzer 600 lowercase). */}
+        {/* Streamed-Suspense reveal bootstrap: React 19.2 defers the
+         * $RC("B:n","S:n") payload swap to requestAnimationFrame, which
+         * never fires on hidden pages (background tab, prerender, headless
+         * audit) — hydration then client-renders the boundary and the S:n
+         * payload div is left orphaned, doubling the DOM until first paint.
+         * This flushes React's own $RV queue while hidden. Inert on visible
+         * loads. See app/lib/suspense-reveal-bootstrap.ts for the full
+         * mechanism write-up. */}
+        <script dangerouslySetInnerHTML={{ __html: SUSPENSE_REVEAL_BOOTSTRAP }} />
         {process.env.NODE_ENV === "production" && (
           <script
             dangerouslySetInnerHTML={{
