@@ -5,7 +5,7 @@
  *
  * Layout mirrors the WorkOS-style reference the owner specified: a narrow
  * centered form column (brand lockup → heading → fields → Continue → OR →
- * Continue with Google/Apple/SSO → sign-in link → legal line) beside a
+ * Continue with Google/Facebook/Discord → sign-in link → legal line) beside a
  * full-bleed event panel built from our in-house ambient crowd footage
  * (public/brand/hero-ambient.mp4 + auth-event-poster.jpg) under a forest
  * scrim — no stock imagery, no external hotlinks. The 2-step wizard and the
@@ -390,6 +390,15 @@ export default function RegisterPage() {
             </Button>
           </div>
 
+          {/* QA fix ISSUE-008 (2026-07-26): the stacked list offered
+              Apple/SSO — providers the auth service has never implemented
+              (oauth start → hard 404), so the honest-degrade notice was
+              promising a provider that cannot exist on any deployment.
+              List only backend-registered providers with a verified-email
+              flow (google/facebook/discord; see services/auth oauth.go).
+              Rendering stays UNCONDITIONAL per the owner call recorded in
+              the file header — unconfigured real providers degrade to the
+              inline notice. */}
           {step === 1 && (
             <>
               <div className={`${DIVIDER_CLASS} my-5`}>
@@ -397,7 +406,7 @@ export default function RegisterPage() {
               </div>
               <SocialAuthButtons
                 variant="stacked"
-                providers={["google", "apple", "sso"]}
+                providers={["google", "facebook", "discord"]}
               />
             </>
           )}
