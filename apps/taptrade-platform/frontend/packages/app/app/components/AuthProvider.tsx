@@ -38,7 +38,11 @@ export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<User>;
+  login: (
+    username: string,
+    password: string,
+    opts?: { welcomeToast?: boolean },
+  ) => Promise<User>;
   logout: () => void;
   refreshToken: () => Promise<void>;
   error: Error | null;
@@ -238,7 +242,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const login = useCallback(
-    async (username: string, password: string) => {
+    async (
+      username: string,
+      password: string,
+      opts?: { welcomeToast?: boolean },
+    ) => {
       setIsLoading(true);
       setError(null);
       try {
@@ -280,7 +288,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         persistStoredUser(authenticatedUser);
         setUser(authenticatedUser);
         setSessionStartTime(new Date());
-        toast.success("Welcome back!", session.username);
+        // QA fix ISSUE-010 (2026-07-26): the register flow reuses login()
+        // and used to greet brand-new accounts with "Welcome back!" —
+        // callers that follow registration pass welcomeToast:false and
+        // announce the account creation themselves.
+        if (opts?.welcomeToast !== false) {
+          toast.success("Welcome back!", session.username);
+        }
         return authenticatedUser;
       } catch (err) {
         // Issue #5 fix: clear cookies on any login failure to prevent half-auth

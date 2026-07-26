@@ -23,6 +23,7 @@ import { claimStarterGrant } from "../../lib/api/wallet-client";
 import { safeReturnPath, returnUrlSuffix } from "../../lib/safeReturnPath";
 import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
 import BrandMark from "../../components/BrandMark";
+import { useToast } from "../../components/ToastProvider";
 import { Button, Input } from "../../components/ui";
 
 interface FormData {
@@ -126,6 +127,7 @@ function progressWidthClass(step: number): string {
 export default function RegisterPage() {
   const router = useRouter();
   const { login } = useAuth();
+  const toast = useToast();
   const [step, setStep] = useState(1);
   // SSR-safe reduced-motion probe: default true (poster only) so the
   // heavy ambient loop never loads before the preference is known.
@@ -214,10 +216,24 @@ export default function RegisterPage() {
       });
       accountCreated = true;
       setSuccessMessage("Account created. Signing you in...");
-      const newUser = await login(form.username, form.password);
+      // QA fix ISSUE-010: suppress login()'s "Welcome back!" — this is a
+      // brand-new account; announce the creation instead.
+      const newUser = await login(form.username, form.password, {
+        welcomeToast: false,
+      });
+      toast.success("Account created", `Welcome, ${newUser.username}!`);
+      // QA fix ISSUE-011: the grant announcement was a setSuccessMessage
+      // immediately followed by router.replace — visible for one frame,
+      // then gone. New users never learned they had points to trade with.
+      // A toast survives the navigation.
       const grant = await claimStarterGrant(newUser.id);
       if (grant?.enabled) {
-        setSuccessMessage("Starter points added. Opening markets...");
+        toast.success(
+          "Starter points added",
+          typeof grant.balancePoints === "number"
+            ? `Balance: ${Math.round(grant.balancePoints).toLocaleString()} pts — you can trade right away.`
+            : "You can trade right away.",
+        );
       }
       router.replace(safeReturnPath(searchParams.get("returnUrl")));
     } catch (err: unknown) {
@@ -231,7 +247,7 @@ export default function RegisterPage() {
     } finally {
       setSubmitting(false);
     }
-  }, [form, validate, login, router, searchParams]);
+  }, [form, validate, login, router, searchParams, toast]);
 
   return (
     <div className={SHELL_CLASS}>
