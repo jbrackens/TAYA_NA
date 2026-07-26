@@ -265,10 +265,18 @@ export function TradeTicket({
 
   // Points unit-model (2026-07-07): a contract priced at 8c costs 8 Points.
   // quantity = whole contracts affordable; cost = quantity * price Points.
-  const quantity = useMemo(
-    () => (price > 0 ? Math.max(0, Math.floor(amount / price)) : 0),
-    [amount, price],
-  );
+  //
+  // QA fix ISSUE-018 (2026-07-26): the SELL input is labeled "Shares to
+  // sell" and sits under an "Available N [shares]" caption — but the
+  // value used to run through the buy-side points math (floor(amount /
+  // price)). Typing "1" to sell 1 share became 1 POINT → 0 shares → a
+  // silently disabled CTA, while typing a big number sailed through as
+  // points. In sell mode the input now IS the share count, which also
+  // lets the insufficientShares gate fire on real overs.
+  const quantity = useMemo(() => {
+    if (action === "sell") return Math.max(0, Math.floor(amount));
+    return price > 0 ? Math.max(0, Math.floor(amount / price)) : 0;
+  }, [action, amount, price]);
   const requestedQuantity = Math.floor(quantity);
 
   useEffect(() => {
@@ -439,7 +447,14 @@ export function TradeTicket({
               plural: filled === 1 ? "" : "s",
             }),
             t("ORDER_AMOUNT_ON_MARKET", {
-              amount: formatPointAmount(amount),
+              // ISSUE-018: `amount` is a SHARE count in sell mode — the
+              // points figure comes from the fill itself. Prefer the
+              // actual average fill price when the gateway reports one;
+              // fall back to the snapshot price estimate.
+              amount: formatPointAmount(
+                filled *
+                  (response?.order?.averageFillPricePoints ?? price),
+              ),
               ticker: market.ticker,
             }),
           );
@@ -541,6 +556,7 @@ export function TradeTicket({
     action,
     limitPricePoints,
     amount,
+    price,
     market.ticker,
     toast,
     t,
@@ -874,9 +890,18 @@ export function TradeTicket({
               */}
               {submitting
                 ? t("PLACING")
-                : t(action === "sell" ? "SELL_AMOUNT" : "PLACE_TRADE_AMOUNT", {
-                    amount: formatPointAmount(amount),
-                  })}
+                : action === "sell"
+                  ? // ISSUE-018: sell is share-denominated — the CTA states
+                    // the share count and the estimated proceeds, never
+                    // "N pts" for a share count.
+                    t("SELL_SHARES_CTA", {
+                      quantity: requestedQuantity,
+                      plural: requestedQuantity === 1 ? "" : "s",
+                      amount: formatPointAmount(requestedQuantity * price),
+                    })
+                  : t("PLACE_TRADE_AMOUNT", {
+                      amount: formatPointAmount(amount),
+                    })}
             </Button>
           )}
 

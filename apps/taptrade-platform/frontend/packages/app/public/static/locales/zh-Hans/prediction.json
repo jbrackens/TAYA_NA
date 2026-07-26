@@ -203,5 +203,6 @@
   "VIEW_MORE_MARKETS": "查看更多市场",
   "YOU_PAY": "使用点数",
   "YES": "是",
-  "YES_PRICE_CHART": "{{ticker}} 的“是”价格图"
+  "YES_PRICE_CHART": "{{ticker}} 的“是”价格图",
+  "SELL_SHARES_CTA": "Sell {{quantity}} share{{plural}} · est. {{amount}}"
 }

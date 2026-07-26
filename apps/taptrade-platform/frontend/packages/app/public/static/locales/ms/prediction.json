@@ -203,5 +203,6 @@
   "VIEW_MORE_MARKETS": "Lihat lebih banyak pasaran",
   "YOU_PAY": "Mata digunakan",
   "YES": "Ya",
-  "YES_PRICE_CHART": "Carta harga Ya untuk {{ticker}}"
+  "YES_PRICE_CHART": "Carta harga Ya untuk {{ticker}}",
+  "SELL_SHARES_CTA": "Sell {{quantity}} share{{plural}} · est. {{amount}}"
 }

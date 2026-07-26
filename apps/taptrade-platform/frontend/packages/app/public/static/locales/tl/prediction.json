@@ -205,5 +205,6 @@
   "VIEW_MORE_MARKETS": "Tingnan ang higit pang markets",
   "YOU_PAY": "Mga point na gagamitin",
   "YES": "Oo",
-  "YES_PRICE_CHART": "YES price chart para sa {{ticker}}"
+  "YES_PRICE_CHART": "YES price chart para sa {{ticker}}",
+  "SELL_SHARES_CTA": "Sell {{quantity}} share{{plural}} · est. {{amount}}"
 }

@@ -219,5 +219,6 @@
   "VIEW_MORE_MARKETS": "View more markets",
   "YOU_PAY": "Points used",
   "YES": "YES",
-  "YES_PRICE_CHART": "YES price chart for {{ticker}}"
+  "YES_PRICE_CHART": "YES price chart for {{ticker}}",
+  "SELL_SHARES_CTA": "Sell {{quantity}} share{{plural}} · est. {{amount}}"
 }
