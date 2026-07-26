@@ -34,17 +34,27 @@ describe("prediction terminal backend wiring", () => {
     assert.ok(catalog.includes("LOAD_MORE_MARKETS"));
   });
 
-  it("loads curated trending signals and movements from backend APIs", () => {
+  // Ink & lime step 5 (2026-07-26, Discover.dc.html 14a/14b): the
+  // paginated getMarkets list + filter pills gave way to the featured
+  // hero and two independent sections. The contract this test protects
+  // is unchanged: everything on /discover comes from real backend data —
+  // getDiscovery for the lists, the real /prices series for deltas.
+  it("loads curated discovery sections and movements from backend APIs", () => {
     const discover = read("discover/page.tsx");
 
-    assert.ok(discover.includes("api.getMarkets"));
     assert.ok(discover.includes("api.getDiscovery"));
     assert.ok(discover.includes("api.getMarketPriceHistory"));
     assert.ok(discover.includes('"1d"'));
-    assert.ok(discover.includes("meta.total"));
-    assert.ok(discover.includes('useState<MarketFilter>("trending")'));
-    assert.ok(!discover.includes('{ key: "all", label: "All" }'));
+    assert.ok(discover.includes("movementFromHistory"));
+    // Honest deltas: a row with no real series renders a dash, never an
+    // invented number.
+    assert.ok(discover.includes('movement == null || movement.direction === "flat"'));
+    assert.ok(discover.includes('id="discover-heading"'));
     assert.ok(discover.includes('id="trending-heading"'));
+    assert.ok(discover.includes('id="closing-heading"'));
+    // Trending leads with the delta; closing-soon leads with time.
+    assert.ok(discover.includes('lead="delta"'));
+    assert.ok(discover.includes('lead="time"'));
   });
 
   it("shares the terminal shell across predict and discover", () => {

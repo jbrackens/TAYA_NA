@@ -1,9 +1,25 @@
 "use client";
 
+/**
+ * DiscoverPage — "What's moving right now" (Ink & lime step 5,
+ * Discover.dc.html 14a/14b).
+ *
+ * Structure: featured hero (DiscoveryHero — the 64px ink price, honest
+ * chart, Buy pair) above two INDEPENDENT sections:
+ *   Trending      — rows lead with the 24h delta (why you care: movement)
+ *   Closing soon  — rows lead with time remaining (why you care: urgency)
+ * Each section owns its 18b empty state, because on a quiet day either
+ * list can be empty on its own.
+ *
+ * The movement pipeline is honest by construction: deltas come only from
+ * the real /prices series (rows show "—" while loading or when history
+ * is missing — never an invented number), and the hero's chart keeps the
+ * same discipline (no line without history; synthetic shapes only behind
+ * the demo flag, labelled "Simulated data").
+ */
+
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CaretLeftIcon } from "@phosphor-icons/react/dist/csr/CaretLeft";
-import { CaretRightIcon } from "@phosphor-icons/react/dist/csr/CaretRight";
 import { CpuIcon as Cpu } from "@phosphor-icons/react/dist/csr/Cpu";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -11,27 +27,23 @@ import type {
   Category,
   DiscoveryResponse,
   MarketPriceHistory,
-  PageMeta,
   PredictionMarket,
 } from "@taptrade-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import TapDot from "../components/TapDot";
-import {
-  dedupeMarkets,
-  normalizePriceShares,
-} from "../components/prediction/market-display";
+import { Card } from "../components/ui";
+import { DiscoveryHero } from "../components/prediction/DiscoveryHero";
+import { normalizePriceShares } from "../components/prediction/market-display";
 import { localizedMarket } from "../components/prediction/market-content";
 import {
   TERMINAL_CATEGORY_ICONS,
   TerminalCategoryRail,
 } from "../components/prediction/TerminalCategoryRail";
 import { getMarketImageProps } from "../components/prediction/utils/marketImage";
-import { sparklineFromValues } from "../components/prediction/utils/spark";
 import { logger } from "../lib/logger";
-import { formatCompactPoints } from "../lib/points";
 
 const api = createPredictionClient();
-const PAGE_SIZE = 8;
+const SECTION_ROWS = 5;
 const HISTORY_FETCH_CONCURRENCY = 4;
 const LAUNCH_CATEGORY_SLUGS = new Set([
   "sports",
@@ -42,16 +54,17 @@ const LAUNCH_CATEGORY_SLUGS = new Set([
   "technology",
 ]);
 
-type MarketFilter = "trending" | "active" | "yes" | "no" | "closing";
+// Phosphor "warning-circle-fill", copied VERBATIM from
+// design_handoff_taptrade/logos/phosphor-paths.json (MIT; filled 256 grid).
+const PHOSPHOR_WARNING_CIRCLE_FILL =
+  "M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm-8,56a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm8,104a12,12,0,1,1,12-12A12,12,0,0,1,128,184Z";
 
 interface MarketMovement {
+  deltaPoints: number;
   pct: number;
   direction: "up" | "down" | "flat";
   values: number[];
 }
-
-const MARKET_ROW_GRID_CLASS =
-  "grid grid-cols-[minmax(300px,1.7fr)_130px_105px_120px_110px_200px] items-center gap-4 max-[1350px]:grid-cols-[minmax(280px,1.6fr)_120px_100px_110px_190px] max-[1350px]:[&_.market-volume]:hidden max-[1040px]:grid-cols-[minmax(250px,1.5fr)_110px_100px_180px] max-[1040px]:[&_.market-change]:hidden max-[760px]:grid-cols-[minmax(0,1fr)_80px] max-[760px]:gap-3 max-[760px]:[&_.market-closes]:hidden";
 
 function marketKey(market: PredictionMarket): string {
   return market.id || market.ticker;
@@ -86,6 +99,7 @@ function movementFromHistory(
   if (!first) return null;
   const delta = last - first;
   return {
+    deltaPoints: delta,
     pct: Math.abs((delta / first) * 100),
     direction: delta > 0 ? "up" : delta < 0 ? "down" : "flat",
     values,
@@ -113,34 +127,19 @@ async function mapWithConcurrency<T, R>(
   return results;
 }
 
-function averageYesShare(markets: PredictionMarket[]): number {
-  if (markets.length === 0) return 0;
-  return Math.round(
-    markets.reduce(
-      (sum, market) =>
-        sum +
-        normalizePriceShares(market.yesPricePoints, market.noPricePoints)
-          .yesShare,
-      0,
-    ) / markets.length,
-  );
-}
-
-function formatCloseAt(value: string): { date: string; time: string } {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return { date: "—", time: "" };
-  return {
-    date: date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year:
-        date.getFullYear() === new Date().getFullYear() ? undefined : "numeric",
-    }),
-    time: date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    }),
-  };
+/** "12d" / "5h 12m" / "42m" — the closing-soon lead fact. */
+function timeRemaining(closeAt: string): { label: string; urgent: boolean } {
+  const deltaMs = new Date(closeAt).getTime() - Date.now();
+  if (!Number.isFinite(deltaMs) || deltaMs <= 0)
+    return { label: "—", urgent: false };
+  const totalMin = Math.floor(deltaMs / 60_000);
+  const days = Math.floor(totalMin / 1440);
+  const hours = Math.floor((totalMin % 1440) / 60);
+  const mins = totalMin % 60;
+  const urgent = deltaMs < 24 * 60 * 60 * 1000;
+  if (days > 0) return { label: `${days}d ${hours}h`, urgent };
+  if (hours > 0) return { label: `${hours}h ${mins}m`, urgent };
+  return { label: `${mins}m`, urgent };
 }
 
 function MarketThumbnail({ market }: { market: PredictionMarket }) {
@@ -162,181 +161,127 @@ function MarketThumbnail({ market }: { market: PredictionMarket }) {
         alt=""
         aria-hidden="true"
         onError={() => setFailed(true)}
-        className="size-12 shrink-0 rounded-md object-cover"
+        className="size-10 shrink-0 rounded-[10px] object-cover"
       />
     );
   }
   return (
     <span
-      className="grid size-12 shrink-0 place-items-center rounded-md border border-[var(--border-1)] bg-[var(--surface-3)] text-[var(--accent-text)]"
+      className="grid size-10 shrink-0 place-items-center rounded-[10px] border border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t3)]"
       aria-hidden="true"
     >
-      <Icon size={22} weight="duotone" />
+      <Icon size={20} weight="duotone" />
     </span>
   );
 }
 
-function MarketRow({
+/**
+ * One discovery row (14b). `lead` decides the right-column sub-fact:
+ * trending rows carry the 24h delta, closing-soon rows carry time left —
+ * different reasons to care.
+ */
+function SectionRow({
   market,
-  rank,
   movement,
+  lead,
 }: {
   market: PredictionMarket;
-  rank: number;
   movement?: MarketMovement | null;
+  lead: "delta" | "time";
 }) {
   const sentiment = getSentiment(market);
-  const close = formatCloseAt(market.closeAt);
   const probability = Math.round(sentiment.yesShare);
-  const spark = movement
-    ? sparklineFromValues(movement.values, 64, 24, 12)
-    : "";
-  const sentimentClass =
-    sentiment.tone === "yes"
-      ? "text-[var(--yes-text)]"
-      : sentiment.tone === "no"
-        ? "text-[var(--no-text)]"
-        : "text-[var(--t3)]";
-  const changeClass =
-    movement?.direction === "up"
-      ? "text-[var(--yes-text)]"
-      : movement?.direction === "down"
-        ? "text-[var(--no-text)]"
-        : "text-[var(--t3)]";
-  const changeLabel =
-    movement == null || movement.direction === "flat"
-      ? "—"
-      : `${movement.direction === "up" ? "+" : "-"}${movement.pct.toFixed(1)}%`;
+  const remaining = timeRemaining(market.closeAt);
+
+  const deltaNode = (() => {
+    if (lead === "time") {
+      return (
+        <span
+          className={`block font-mono text-[11px] font-medium tabular-nums ${
+            remaining.urgent ? "text-[var(--no-text)]" : "text-[var(--t3)]"
+          }`}
+        >
+          {remaining.label}
+        </span>
+      );
+    }
+    if (movement == null || movement.direction === "flat") {
+      return (
+        <span className="block font-mono text-[11px] font-medium text-[var(--t3)] tabular-nums">
+          —
+        </span>
+      );
+    }
+    const up = movement.direction === "up";
+    return (
+      <span
+        className={`block font-mono text-[11px] font-medium tabular-nums ${
+          up ? "text-[var(--yes-text)]" : "text-[var(--no-text)]"
+        }`}
+      >
+        {up ? "+" : "−"}
+        {Math.abs(movement.deltaPoints)}¢
+      </span>
+    );
+  })();
 
   return (
-    <article
-      className={`${MARKET_ROW_GRID_CLASS} border-t border-[var(--border-1)] px-5 py-3.5 transition-colors first:border-t-0 hover:bg-[var(--surface-2)] max-[760px]:px-4`}
+    <Link
+      href={`/market/${market.ticker}`}
+      className="block rounded-2xl border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3.5 no-underline transition-[border-color,box-shadow] duration-150 hover:border-[var(--border-2)] hover:shadow-[var(--shadow-card-hover)]"
     >
-      <div className="flex min-w-0 items-center gap-3">
-        <span className="w-6 shrink-0 font-mono text-[12px] text-[var(--t3)] tabular-nums max-[900px]:hidden">
-          {String(rank).padStart(2, "0")}
-        </span>
+      <article className="flex items-start gap-3">
         <MarketThumbnail market={market} />
-        <div className="min-w-0">
-          <div className="mb-1 flex flex-wrap items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.09em]">
-            <span className="text-[var(--accent-text)]">
-              {market.categoryName || market.categorySlug || "Market"}
-            </span>
-            <span className={sentimentClass}>• {sentiment.label}</span>
-          </div>
-          <Link
-            href={`/market/${market.ticker}`}
-            className="line-clamp-2 text-[15px] font-medium leading-[1.35] text-[var(--t1)] no-underline hover:text-[var(--accent-text)]"
-          >
-            {market.title}
-          </Link>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2 max-[760px]:justify-end">
-        <span className="font-mono text-[22px] font-semibold text-[var(--accent-text)] tabular-nums">
-          {probability}¢
-        </span>
-        {spark && (
-          <svg
-            viewBox="0 0 64 24"
-            className="h-6 w-16 text-[var(--accent-lo)] max-[760px]:hidden"
-            aria-hidden="true"
-          >
-            <path
-              d={spark}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--t3)]">
+            <span>{market.categoryName || market.categorySlug || "Market"}</span>
+            <span
+              aria-hidden="true"
+              className="h-[3px] w-[3px] flex-none rounded-full bg-[var(--border-2)]"
             />
-          </svg>
-        )}
-      </div>
-
-      <span
-        className={`market-change font-mono text-[12px] font-semibold tabular-nums ${changeClass}`}
-      >
-        {changeLabel}
-      </span>
-      <span className="market-volume font-mono text-[12px] text-[var(--t2)] tabular-nums">
-        {formatCompactPoints(market.volumePoints)}
-      </span>
-      <span className="market-closes font-mono text-[11px] leading-[1.45] text-[var(--t2)] tabular-nums">
-        <span className="block">{close.date}</span>
-        <span className="block text-[var(--t3)]">{close.time}</span>
-      </span>
-
-      <div className="market-actions grid grid-cols-2 gap-2 max-[760px]:col-span-2">
-        <Link
-          href={`/market/${market.ticker}?side=yes`}
-          className="flex min-h-11 items-center justify-between rounded-md border border-[var(--border-2)] bg-[var(--surface-1)] px-3 text-[12px] font-semibold text-[var(--yes-text)] no-underline transition-colors hover:border-[var(--yes-border)] hover:bg-[var(--yes-soft)]"
-          aria-label={`Trade YES on ${market.title} at ${market.yesPricePoints} cents`}
-        >
-          <span>YES</span>
-          <span className="font-mono text-[15px] tabular-nums">
-            {market.yesPricePoints}¢
+            {lead === "time" ? (
+              <span
+                className={`font-mono text-[10px] font-medium normal-case tracking-normal tabular-nums ${
+                  remaining.urgent ? "text-[var(--no-text)]" : "text-[var(--t3)]"
+                }`}
+              >
+                closes in {remaining.label}
+              </span>
+            ) : (
+              <span className="font-mono text-[10px] font-medium normal-case tracking-normal text-[var(--t3)]">
+                {sentiment.label}
+              </span>
+            )}
+          </div>
+          <h4 className="m-0 mt-1 line-clamp-2 text-[14px] font-medium leading-[1.35] tracking-[-0.005em] text-[var(--t1)]">
+            {market.title}
+          </h4>
+        </div>
+        <div className="flex-none text-right">
+          <span className="block font-mono text-[19px] font-medium leading-[1.1] text-[var(--t1)] tabular-nums">
+            {probability}¢
           </span>
-        </Link>
-        <Link
-          href={`/market/${market.ticker}?side=no`}
-          className="flex min-h-11 items-center justify-between rounded-md border border-[var(--border-2)] bg-[var(--surface-1)] px-3 text-[12px] font-semibold text-[var(--no-text)] no-underline transition-colors hover:border-[var(--no-border)] hover:bg-[var(--no-soft)]"
-          aria-label={`Trade NO on ${market.title} at ${market.noPricePoints} cents`}
-        >
-          <span>NO</span>
-          <span className="font-mono text-[15px] tabular-nums">
-            {market.noPricePoints}¢
-          </span>
-        </Link>
-      </div>
-    </article>
+          {deltaNode}
+        </div>
+      </article>
+    </Link>
   );
 }
 
-function filterDiscoveryMarkets(
-  discovery: DiscoveryResponse,
-  filter: MarketFilter,
-  categoryId?: string,
-): PredictionMarket[] {
-  const pool = dedupeMarkets([
-    ...discovery.trending,
-    ...discovery.closingSoon,
-  ]).filter((market) => !categoryId || market.categoryId === categoryId);
-  if (filter === "trending") {
-    return discovery.trending.filter(
-      (market) => !categoryId || market.categoryId === categoryId,
-    );
-  }
-  if (filter === "yes") {
-    return pool.filter((market) => getSentiment(market).yesShare >= 60);
-  }
-  if (filter === "no") {
-    return pool.filter((market) => getSentiment(market).noShare >= 60);
-  }
-  return pool;
-}
-
-function FilterButton({
-  active,
-  children,
-  onClick,
-}: {
-  active: boolean;
-  children: React.ReactNode;
-  onClick: () => void;
-}) {
+function SectionEmpty({ children }: { children: React.ReactNode }) {
+  // States 18b: dashed frame; discovery emptiness is about time, so no
+  // action button — the lists populate as markets attract activity.
   return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={`min-h-10 shrink-0 rounded-md border px-4 text-[13px] font-medium transition-colors ${
-        active
-          ? "border-[var(--accent-lo)] bg-[var(--accent-soft)] text-[var(--accent-text)]"
-          : "border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--border-2)] hover:text-[var(--t1)]"
-      }`}
+    <Card
+      as="div"
+      variant="dashed"
+      padding="none"
+      className="px-[18px] py-[26px] text-center"
     >
-      {children}
-    </button>
+      <p className="m-0 text-[13px] leading-[1.55] text-[var(--t2)]">
+        {children}
+      </p>
+    </Card>
   );
 }
 
@@ -349,20 +294,10 @@ export default function DiscoverPage() {
   ).toLowerCase();
   const [categories, setCategories] = useState<Category[]>([]);
   const [discovery, setDiscovery] = useState<DiscoveryResponse | null>(null);
-  const [markets, setMarkets] = useState<PredictionMarket[]>([]);
-  const [meta, setMeta] = useState<PageMeta>({
-    page: 1,
-    pageSize: PAGE_SIZE,
-    total: 0,
-    hasNext: false,
-  });
   const [movements, setMovements] = useState<
     Record<string, MarketMovement | null>
   >({});
-  const [activeFilter, setActiveFilter] = useState<MarketFilter>("trending");
-  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [listLoading, setListLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reloadNonce, setReloadNonce] = useState(0);
 
@@ -391,6 +326,7 @@ export default function DiscoverPage() {
         setCategories(nextCategories);
       })
       .catch((err: unknown) => {
+        logger.error("Discover", "discovery load failed", err);
         if (!cancelled) {
           setError(err instanceof Error ? err.message : String(err));
         }
@@ -403,81 +339,54 @@ export default function DiscoverPage() {
     };
   }, [reloadNonce]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reset-to-page-1 signal: re-runs on navigation inputs it doesn't read
+  const byCategory = (market: PredictionMarket) =>
+    !activeCategory || market.categoryId === activeCategory.id;
+
+  const heroMarket = useMemo(() => {
+    if (!discovery) return null;
+    return (
+      [...discovery.featured, ...discovery.trending].find(byCategory) ?? null
+    );
+    // biome-ignore lint/correctness/useExhaustiveDependencies: byCategory is derived from activeCategory below
+  }, [discovery, activeCategory]);
+
+  const trendingRows = useMemo(
+    () =>
+      (discovery?.trending ?? [])
+        .filter(byCategory)
+        .filter((m) => m.id !== heroMarket?.id)
+        .slice(0, SECTION_ROWS)
+        .map((m) => localizedMarket(contentT, m)),
+    // biome-ignore lint/correctness/useExhaustiveDependencies: byCategory is derived from activeCategory
+    [discovery, activeCategory, heroMarket?.id, contentT],
+  );
+
+  const closingRows = useMemo(
+    () =>
+      (discovery?.closingSoon ?? [])
+        .filter(byCategory)
+        .slice()
+        .sort(
+          (a, b) =>
+            new Date(a.closeAt).getTime() - new Date(b.closeAt).getTime(),
+        )
+        .slice(0, SECTION_ROWS)
+        .map((m) => localizedMarket(contentT, m)),
+    // biome-ignore lint/correctness/useExhaustiveDependencies: byCategory is derived from activeCategory
+    [discovery, activeCategory, contentT],
+  );
+
+  // 24h deltas for the TRENDING rows only — closing-soon rows lead with
+  // time and don't need history. Real /prices series or nothing.
   useEffect(() => {
-    setPage(1);
-  }, [activeCategorySlug, activeFilter]);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reloadNonce is the retry signal — an intentional extra dependency
-  useEffect(() => {
-    if (!discovery) return;
-    let cancelled = false;
-    setListLoading(true);
-    setError(null);
-    const categoryId = activeCategory?.id;
-
-    const load = async () => {
-      if (
-        activeFilter === "trending" ||
-        activeFilter === "yes" ||
-        activeFilter === "no"
-      ) {
-        const filtered = filterDiscoveryMarkets(
-          discovery,
-          activeFilter,
-          categoryId,
-        );
-        const start = (page - 1) * PAGE_SIZE;
-        return {
-          data: filtered.slice(start, start + PAGE_SIZE),
-          meta: {
-            page,
-            pageSize: PAGE_SIZE,
-            total: filtered.length,
-            hasNext: start + PAGE_SIZE < filtered.length,
-          },
-        };
-      }
-      const sort = activeFilter === "closing" ? "closing_soon" : "activity";
-      return api.getMarkets({
-        categoryId,
-        status: "open",
-        sort,
-        page,
-        pageSize: PAGE_SIZE,
-      });
-    };
-
-    load()
-      .then((response) => {
-        if (cancelled) return;
-        setMarkets(response.data);
-        setMeta(response.meta);
-      })
-      .catch((err: unknown) => {
-        logger.error("DiscoverTerminal", "market catalog load failed", err);
-        if (!cancelled) {
-          setMarkets([]);
-          setError(err instanceof Error ? err.message : String(err));
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setListLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [activeCategory?.id, activeFilter, discovery, page, reloadNonce]);
-
-  useEffect(() => {
-    if (markets.length === 0) {
+    if (trendingRows.length === 0) {
       setMovements({});
       return;
     }
     let cancelled = false;
     setMovements({});
     void mapWithConcurrency(
-      markets,
+      trendingRows,
       HISTORY_FETCH_CONCURRENCY,
       async (market) => {
         try {
@@ -493,39 +402,7 @@ export default function DiscoverPage() {
     return () => {
       cancelled = true;
     };
-  }, [markets]);
-
-  const pulseMarkets = useMemo(
-    () =>
-      discovery
-        ? dedupeMarkets([...discovery.trending, ...discovery.closingSoon])
-        : [],
-    [discovery],
-  );
-  const localizedMarkets = useMemo(
-    () => markets.map((market) => localizedMarket(contentT, market)),
-    [contentT, markets],
-  );
-  const yesLeaning = pulseMarkets.filter(
-    (market) => getSentiment(market).yesShare >= 60,
-  ).length;
-  const noLeaning = pulseMarkets.filter(
-    (market) => getSentiment(market).noShare >= 60,
-  ).length;
-  const pulseVolume = pulseMarkets.reduce(
-    (sum, market) => sum + market.volumePoints,
-    0,
-  );
-  const filterOptions: Array<{ key: MarketFilter; label: string }> = [
-    { key: "trending", label: "Trending" },
-    { key: "active", label: "Most active" },
-    { key: "yes", label: "Strong Yes" },
-    { key: "no", label: "Strong No" },
-    { key: "closing", label: "Closing soon" },
-  ];
-  const firstVisible =
-    meta.total === 0 ? 0 : (meta.page - 1) * meta.pageSize + 1;
-  const lastVisible = Math.min(meta.page * meta.pageSize, meta.total);
+  }, [trendingRows]);
 
   if (loading) {
     return (
@@ -544,146 +421,162 @@ export default function DiscoverPage() {
       />
 
       <section
-        className="min-w-0 px-9 py-8 max-[1279px]:px-6 max-[760px]:px-4 max-[760px]:py-6"
-        aria-labelledby="trending-heading"
+        className="min-w-0 max-w-[1080px] px-9 py-8 max-[1279px]:px-6 max-[760px]:px-4 max-[760px]:py-6"
+        aria-labelledby="discover-heading"
       >
+        <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--t3)]">
+          {t("DISCOVER_EYEBROW", "Discover")}
+        </div>
         <h1
-          id="trending-heading"
-          className="type-display m-0 text-[34px] font-semibold leading-tight text-[var(--t1)]"
+          id="discover-heading"
+          className="type-display m-0 mt-2 text-[clamp(26px,3vw,34px)] font-semibold leading-[1.12] text-[var(--t1)]"
         >
-          {t("DISCOVER_TRENDING", "Trending")}
+          {t("DISCOVER_HEADING", "What's moving right now")}
         </h1>
         <p className="mb-0 mt-2 text-[13px] leading-relaxed text-[var(--t3)]">
           {t(
-            "TRENDING_SIGNAL_SUBTITLE",
-            "Strong signals and time-sensitive markets, ranked for what needs attention now.",
+            "DISCOVER_SUBTITLE",
+            "Markets ranked by 24h activity and the contracts closing soonest.",
           )}
         </p>
 
-        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3 text-[12px] text-[var(--t2)]">
-          <span className="font-semibold text-[var(--t1)]">Signal pulse:</span>
-          <span className="font-mono text-[var(--accent-text)] tabular-nums">
-            {averageYesShare(pulseMarkets)}% Yes
-          </span>
-          <span aria-hidden="true">•</span>
-          <span>
-            <strong className="font-mono text-[var(--yes-text)]">
-              {yesLeaning}
-            </strong>{" "}
-            above 60% Yes
-          </span>
-          <span aria-hidden="true">•</span>
-          <span>
-            <strong className="font-mono text-[var(--no-text)]">
-              {noLeaning}
-            </strong>{" "}
-            above 60% No
-          </span>
-          <span aria-hidden="true">•</span>
-          <span>
-            <strong className="font-mono text-[var(--accent-text)]">
-              {formatCompactPoints(pulseVolume)}
-            </strong>{" "}
-            across {pulseMarkets.length} signal markets
-          </span>
-        </div>
-
-        <nav
-          className="terminal-scrollbar mt-5 flex gap-2 overflow-x-auto pb-1"
-          aria-label="Trending filters"
-        >
-          {filterOptions.map((option) => (
-            <FilterButton
-              key={option.key}
-              active={activeFilter === option.key}
-              onClick={() => setActiveFilter(option.key)}
-            >
-              {option.label}
-            </FilterButton>
-          ))}
-        </nav>
-
-        <section
-          className="mt-4 overflow-hidden rounded-lg border border-[var(--border-1)] bg-[var(--surface-1)]"
-          aria-label="Trending prediction markets"
-          aria-busy={listLoading}
-        >
-          <div
-            className={`${MARKET_ROW_GRID_CLASS} border-b border-[var(--border-1)] px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.09em] text-[var(--t3)] max-[760px]:hidden`}
-            aria-hidden="true"
+        {error ? (
+          <Card
+            as="div"
+            edge="no"
+            padding="none"
+            className="mt-6 px-[18px] py-4"
+            role="alert"
           >
-            <span>Market</span>
-            <span>Probability</span>
-            <span className="market-change">24h change</span>
-            <span className="market-volume">Volume</span>
-            <span className="market-closes">Closes</span>
-            <span className="text-right">Trade</span>
-          </div>
-
-          {error ? (
-            <div className="px-6 py-14 text-center">
-              <h2 className="m-0 text-[18px] font-semibold text-[var(--t1)]">
-                Trending markets could not be loaded
-              </h2>
-              <p className="mx-auto mt-2 max-w-[520px] text-[13px] text-[var(--t3)]">
-                {error}
-              </p>
-              <button
-                type="button"
-                onClick={() => setReloadNonce((value) => value + 1)}
-                className="mt-5 min-h-11 rounded-md border border-[var(--border-2)] bg-[var(--surface-2)] px-5 text-[13px] font-semibold text-[var(--t1)] hover:border-[var(--accent-lo)]"
+            <div className="flex items-center gap-[9px]">
+              <svg
+                viewBox="0 0 256 256"
+                width="16"
+                height="16"
+                fill="currentColor"
+                aria-hidden="true"
+                className="flex-none text-[var(--no)]"
               >
-                Retry
-              </button>
-            </div>
-          ) : localizedMarkets.length === 0 && !listLoading ? (
-            <div className="px-6 py-14 text-center text-[13px] text-[var(--t3)]">
-              No signal markets match this view.
-            </div>
-          ) : (
-            <div className={listLoading ? "opacity-60" : "opacity-100"}>
-              {localizedMarkets.map((market, index) => (
-                <MarketRow
-                  key={marketKey(market)}
-                  market={market}
-                  rank={(meta.page - 1) * meta.pageSize + index + 1}
-                  movement={movements[marketKey(market)]}
-                />
-              ))}
-            </div>
-          )}
-
-          <div className="flex items-center justify-between gap-4 border-t border-[var(--border-1)] px-5 py-3.5 text-[12px] text-[var(--t3)] max-[640px]:px-4">
-            <span className="font-mono tabular-nums">
-              Showing {firstVisible}–{lastVisible} of {meta.total}
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setPage((value) => Math.max(1, value - 1))}
-                disabled={page <= 1 || listLoading}
-                className="grid size-10 place-items-center rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--border-2)] hover:text-[var(--t1)] disabled:cursor-not-allowed disabled:opacity-35"
-                aria-label="Previous page"
-              >
-                <CaretLeftIcon size={16} aria-hidden="true" />
-              </button>
-              <span className="grid min-w-10 min-h-10 place-items-center rounded-md border border-[var(--accent-lo)] bg-[var(--accent-soft)] px-3 font-mono text-[var(--accent-text)] tabular-nums">
-                {page}
+                <path d={PHOSPHOR_WARNING_CIRCLE_FILL} />
+              </svg>
+              <span className="text-sm font-semibold tracking-[-0.005em] text-[var(--t1)]">
+                {t("DISCOVER_LOAD_FAILED", "Discovery could not be loaded")}
               </span>
-              <button
-                type="button"
-                onClick={() => setPage((value) => value + 1)}
-                disabled={!meta.hasNext || listLoading}
-                className="grid size-10 place-items-center rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--border-2)] hover:text-[var(--t1)] disabled:cursor-not-allowed disabled:opacity-35"
-                aria-label="Next page"
-              >
-                <CaretRightIcon size={16} aria-hidden="true" />
-              </button>
             </div>
-          </div>
-        </section>
+            <p className="mb-0 mt-[9px] text-[13px] leading-[1.5] text-[var(--t2)]">
+              {error}
+            </p>
+            <button
+              type="button"
+              onClick={() => setReloadNonce((value) => value + 1)}
+              className="mt-3.5 inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[10px] border border-[var(--border-2)] bg-[var(--surface-1)] px-[18px] text-[13px] font-semibold text-[var(--t1)] transition-[border-color] hover:border-[var(--t3)]"
+            >
+              {t("RETRY", "Retry")}
+            </button>
+          </Card>
+        ) : (
+          <>
+            <div className="mt-6">
+              <DiscoveryHero
+                market={heroMarket}
+                categoryName={
+                  heroMarket
+                    ? (visibleCategories.find(
+                        (c) => c.id === heroMarket.categoryId,
+                      )?.name ?? undefined)
+                    : undefined
+                }
+              />
+            </div>
 
-        <p className="mb-0 mt-4 border-t border-[var(--border-1)] pt-4 text-[11px] leading-[1.5] text-[var(--t3)]">
+            <div className="mt-8 grid grid-cols-2 items-start gap-8 max-[1100px]:grid-cols-1">
+              <section aria-labelledby="trending-heading">
+                <div className="flex items-baseline justify-between gap-3">
+                  <h2
+                    id="trending-heading"
+                    className="m-0 text-[19px] font-medium tracking-[-0.01em] text-[var(--t1)]"
+                  >
+                    {t("DISCOVER_TRENDING", "Trending")}
+                  </h2>
+                  <Link
+                    href="/predict"
+                    className="inline-flex min-h-11 items-center text-[13px] font-semibold text-[var(--accent-text)] no-underline hover:underline"
+                  >
+                    {t("VIEW_ALL_MARKETS", "View all")}
+                  </Link>
+                </div>
+                <p className="mb-3 mt-0.5 text-xs leading-[1.5] text-[var(--t3)]">
+                  {t(
+                    "DISCOVER_TRENDING_SUB",
+                    "Ranked by 24h activity — the delta is the story.",
+                  )}
+                </p>
+                {trendingRows.length === 0 ? (
+                  <SectionEmpty>
+                    {t(
+                      "DISCOVER_TRENDING_EMPTY",
+                      "Nothing trending yet. Markets appear here as trading picks up.",
+                    )}
+                  </SectionEmpty>
+                ) : (
+                  <div className="flex flex-col gap-2.5">
+                    {trendingRows.map((market) => (
+                      <SectionRow
+                        key={marketKey(market)}
+                        market={market}
+                        movement={movements[marketKey(market)]}
+                        lead="delta"
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section aria-labelledby="closing-heading">
+                <div className="flex items-baseline justify-between gap-3">
+                  <h2
+                    id="closing-heading"
+                    className="m-0 text-[19px] font-medium tracking-[-0.01em] text-[var(--t1)]"
+                  >
+                    {t("DISCOVER_CLOSING_SOON", "Closing soon")}
+                  </h2>
+                  <Link
+                    href="/predict"
+                    className="inline-flex min-h-11 items-center text-[13px] font-semibold text-[var(--accent-text)] no-underline hover:underline"
+                  >
+                    {t("VIEW_ALL_MARKETS", "View all")}
+                  </Link>
+                </div>
+                <p className="mb-3 mt-0.5 text-xs leading-[1.5] text-[var(--t3)]">
+                  {t(
+                    "DISCOVER_CLOSING_SUB",
+                    "Last chances first — time remaining is the story.",
+                  )}
+                </p>
+                {closingRows.length === 0 ? (
+                  <SectionEmpty>
+                    {t(
+                      "DISCOVER_CLOSING_EMPTY",
+                      "No markets are closing soon. Check back as deadlines approach.",
+                    )}
+                  </SectionEmpty>
+                ) : (
+                  <div className="flex flex-col gap-2.5">
+                    {closingRows.map((market) => (
+                      <SectionRow
+                        key={marketKey(market)}
+                        market={market}
+                        lead="time"
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+            </div>
+          </>
+        )}
+
+        <p className="mb-0 mt-8 border-t border-[var(--border-1)] pt-4 text-[11px] leading-[1.5] text-[var(--t3)]">
           {t("MARKET_RISK_FOOTER")}
         </p>
       </section>

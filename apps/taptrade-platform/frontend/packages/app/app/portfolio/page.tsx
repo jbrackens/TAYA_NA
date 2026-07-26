@@ -197,6 +197,8 @@ export default function PortfolioPage() {
       const m = marketsById.get(p.marketId);
       if (!m) continue;
       sawMark = true;
+      // Voided markets refund at cost: they contribute 0 unrealized.
+      if (m.status === "voided") continue;
       const mark = p.side === "yes" ? m.yesPricePoints : m.noPricePoints;
       sum += p.quantity * mark - p.totalCostPoints;
     }
@@ -570,13 +572,24 @@ function PositionsTable({
     <div className={CARD_GRID}>
       {positions.map((p) => {
         const m = marketsById.get(p.marketId);
+        // Step 5 carry-over: a voided market refunds at cost — pricing its
+        // position off the last trade showed a loss it will never take.
+        const isVoided = m?.status === "voided";
         const mark = m
           ? p.side === "yes"
             ? m.yesPricePoints
             : m.noPricePoints
           : null;
-        const value = mark !== null ? p.quantity * mark : null;
-        const unrealized = value !== null ? value - p.totalCostPoints : null;
+        const value = isVoided
+          ? p.totalCostPoints
+          : mark !== null
+            ? p.quantity * mark
+            : null;
+        const unrealized = isVoided
+          ? 0
+          : value !== null
+            ? value - p.totalCostPoints
+            : null;
         const pct =
           unrealized !== null && p.totalCostPoints > 0
             ? (unrealized / p.totalCostPoints) * 100

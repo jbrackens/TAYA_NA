@@ -116,7 +116,7 @@ export function DiscoveryHero({
               <>
                 <span className="inline-flex items-center gap-1.5 font-semibold uppercase tracking-[0.08em] text-[var(--yes-text)]">
                   <span
-                    className="h-[7px] w-[7px] animate-pulse rounded-full bg-[var(--accent)] shadow-[0_0_0_4px_rgba(43,228,128,0.18)]"
+                    className="h-[7px] w-[7px] animate-pulse rounded-full bg-[var(--yes-bar)] shadow-[0_0_0_4px_var(--yes-soft)]"
                     aria-hidden="true"
                   />
                   {t("LIVE")}
@@ -248,13 +248,13 @@ export function DiscoveryHero({
           <div className="mt-auto flex gap-3">
             <Link
               href={`/market/${displayMarket.ticker}`}
-              className="inline-flex flex-1 items-center justify-center whitespace-nowrap rounded-md border-0 bg-[var(--accent)] px-6 py-[15px] text-[15px] font-semibold text-[#061a10] no-underline tabular-nums shadow-[0_1px_2px_rgba(13,17,20,0.08)] transition-[background-color,transform,box-shadow] duration-150 ease-out hover:-translate-y-px hover:bg-[#54ec9b] hover:shadow-[0_3px_8px_rgba(43,228,128,0.35)] active:translate-y-0 active:shadow-[0_1px_2px_rgba(13,17,20,0.08)] max-[720px]:px-4 max-[720px]:text-[14px]"
+              className="inline-flex min-h-[52px] flex-1 items-center justify-center whitespace-nowrap rounded-xl border-0 bg-[var(--accent)] px-6 text-[15px] font-semibold text-[var(--ticket-cta-text)] no-underline tabular-nums transition-[filter,transform] duration-150 ease-out hover:-translate-y-px hover:brightness-[1.05] active:translate-y-0 max-[720px]:px-4 max-[720px]:text-[14px]"
             >
               {t("BUY_YES")} · {yes}¢
             </Link>
             <Link
               href={`/market/${displayMarket.ticker}`}
-              className="inline-flex flex-1 items-center justify-center whitespace-nowrap rounded-md border border-[var(--no-border)] bg-[var(--surface-1)] px-6 py-[15px] text-[15px] font-semibold text-[var(--no-text)] no-underline tabular-nums transition-[background-color,border-color] duration-150 ease-out hover:border-[var(--no)] hover:bg-[var(--no-soft)] max-[720px]:px-4 max-[720px]:text-[14px]"
+              className="inline-flex min-h-[52px] flex-1 items-center justify-center whitespace-nowrap rounded-xl border border-[var(--no-border)] bg-[var(--surface-1)] px-6 text-[15px] font-semibold text-[var(--no-text)] no-underline tabular-nums transition-[border-color] duration-150 ease-out hover:border-[var(--no)] max-[720px]:px-4 max-[720px]:text-[14px]"
             >
               {t("BUY_NO")} · {no}¢
             </Link>
@@ -265,7 +265,7 @@ export function DiscoveryHero({
               <div className="mb-1.5 text-xs text-[var(--t3)]">
                 {t("TOTAL_VOLUME", "Total volume")}
               </div>
-              <div className="type-display whitespace-nowrap text-[18px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
+              <div className="font-mono whitespace-nowrap text-[16px] font-medium text-[var(--t1)] tabular-nums">
                 {volumeLabel}
               </div>
             </div>
@@ -273,7 +273,7 @@ export function DiscoveryHero({
               <div className="mb-1.5 text-xs text-[var(--t3)]">
                 {t("OPEN_INTEREST")}
               </div>
-              <div className="type-display whitespace-nowrap text-[18px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
+              <div className="font-mono whitespace-nowrap text-[16px] font-medium text-[var(--t1)] tabular-nums">
                 {oiLabel}
               </div>
             </div>
@@ -281,7 +281,7 @@ export function DiscoveryHero({
               <div className="mb-1.5 text-xs text-[var(--t3)]">
                 {t("CLOSES")}
               </div>
-              <div className="type-display whitespace-nowrap text-[18px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[16px]">
+              <div className="font-mono whitespace-nowrap text-[16px] font-medium text-[var(--t1)] tabular-nums">
                 {closesLabel}
               </div>
             </div>
