@@ -83,7 +83,7 @@ export default function ContactUsPage() {
             onChange={handleChange}
             required
             placeholder="Your name"
-            className="box-border w-full rounded-md border border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.22)] px-3.5 py-3 text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(43,228,128,0.1)]"
+            className="box-border w-full rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3 text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(43,228,128,0.1)]"
           />
         </div>
 
@@ -102,7 +102,7 @@ export default function ContactUsPage() {
             onChange={handleChange}
             required
             placeholder="your@email.com"
-            className="box-border w-full rounded-md border border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.22)] px-3.5 py-3 text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(43,228,128,0.1)]"
+            className="box-border w-full rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3 text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(43,228,128,0.1)]"
           />
         </div>
 
@@ -121,7 +121,7 @@ export default function ContactUsPage() {
             onChange={handleChange}
             required
             placeholder="What is this about?"
-            className="box-border w-full rounded-md border border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.22)] px-3.5 py-3 text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(43,228,128,0.1)]"
+            className="box-border w-full rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3 text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(43,228,128,0.1)]"
           />
         </div>
 
@@ -139,7 +139,7 @@ export default function ContactUsPage() {
             onChange={handleChange}
             required
             placeholder="Please tell us more..."
-            className="box-border min-h-[140px] w-full resize-y rounded-md border border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.22)] px-3.5 py-3 font-[inherit] text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(43,228,128,0.1)]"
+            className="box-border min-h-[140px] w-full resize-y rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3 font-[inherit] text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(43,228,128,0.1)]"
           />
         </div>
 
@@ -151,18 +151,18 @@ export default function ContactUsPage() {
         </button>
       </form>
 
-      <div className="mt-10 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.22)] p-5">
+      <div className="mt-10 rounded-lg border border-[var(--border-1)] bg-[var(--surface-2)] p-5">
         <div className="mb-3 text-base font-bold text-[var(--t1)]">
           Other Ways to Reach Us
         </div>
-        <div className="mb-2 text-sm text-[#D3D3D3]">
+        <div className="mb-2 text-sm text-[var(--t2)]">
           <strong className="text-[var(--t1)]">Email:</strong>{" "}
           support@taptrade.com
         </div>
-        <div className="mb-2 text-sm text-[#D3D3D3]">
+        <div className="mb-2 text-sm text-[var(--t2)]">
           <strong className="text-[var(--t1)]">Phone:</strong> 1-800-TAPTRADE
         </div>
-        <div className="mb-2 text-sm text-[#D3D3D3]">
+        <div className="mb-2 text-sm text-[var(--t2)]">
           <strong className="text-[var(--t1)]">Support Hours:</strong> Monday -
           Friday, 9 AM - 10 PM EST
         </div>
