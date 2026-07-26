@@ -1341,10 +1341,13 @@ describe("Social auth feature gate", () => {
       "login should gate social buttons behind FEATURE_SOCIAL_AUTH",
     );
     const register = read("auth/register/page.tsx");
+    // QA fix ISSUE-018/008 (2026-07-26): apple/sso have no oauth
+    // registration in the auth service (start route → hard 404), so the
+    // stacked trio is now the backend-registered verified-email set.
     assert.ok(
-      register.includes('providers={["google", "apple", "sso"]}') &&
+      register.includes('providers={["google", "facebook", "discord"]}') &&
         register.includes('variant="stacked"'),
-      "register should render the Google/Apple/SSO trio in the stacked reference layout",
+      "register should render only backend-registered providers in the stacked layout",
     );
     const buttons = read("components/auth/SocialAuthButtons.tsx");
     assert.ok(
@@ -1396,8 +1399,10 @@ describe("Registration auth flow", () => {
   it("signs the user in after account creation instead of returning to login", () => {
     assert.ok(
       registerSource.includes("const { login } = useAuth();") &&
+        // QA fix ISSUE-010 (2026-07-26): register suppresses login()'s
+        // "Welcome back!" toast via opts — the call gained a third arg.
         registerSource.includes(
-          "const newUser = await login(form.username, form.password);",
+          "const newUser = await login(form.username, form.password, {",
         ),
       "register page should establish an authenticated session after successful signup",
     );
