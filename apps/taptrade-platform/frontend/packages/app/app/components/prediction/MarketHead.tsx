@@ -54,7 +54,12 @@ function formatCountdown(
 
 function formatCloseDate(iso: string): string {
   const d = new Date(iso);
-  const month = d.toLocaleString("en-US", { month: "short" });
+  // QA fix ISSUE-007 (2026-07-26): the month came from LOCAL time while
+  // the day/hours/mins came from UTC, so 2026-07-31T23:59Z rendered as
+  // "AUG 31, 23:59 UTC" in any UTC+n timezone (local month rolls over,
+  // UTC day doesn't) — contradicting the countdown beside it. Every
+  // component of a "… UTC"-labeled stamp must read UTC.
+  const month = d.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
   const day = d.getUTCDate();
   const hours = d.getUTCHours().toString().padStart(2, "0");
   const mins = d.getUTCMinutes().toString().padStart(2, "0");
