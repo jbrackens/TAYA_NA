@@ -566,9 +566,15 @@ func (s *sqlMarketSocialStore) PublicProfile(ctx context.Context, userID, viewer
 	var profile publicUserProfile
 	var lastActive sql.NullTime
 	var viewerFollowing bool
+	// QA fix ISSUE-020 (2026-07-26): DisplayName was hardcoded to the raw
+	// internal user id, so public profiles rendered "user-001" instead of
+	// "alice". Resolve the punter's username when one exists; fall back to
+	// the id for accounts without a punters row.
+	var displayName sql.NullString
 	err := s.db.QueryRowContext(ctx, `
 SELECT
   $1::text AS user_id,
+  (SELECT NULLIF(p.username, '') FROM punters p WHERE p.id = $1) AS display_name,
   COUNT(DISTINCT c.id) AS comment_count,
   COUNT(DISTINCT followers.follower_user_id) AS follower_count,
   COUNT(DISTINCT following.target_user_id) AS following_count,
@@ -582,11 +588,14 @@ LEFT JOIN prediction_market_comments c ON c.user_id = u.user_id
 LEFT JOIN prediction_user_follows followers ON followers.target_user_id = u.user_id
 LEFT JOIN prediction_user_follows following ON following.follower_user_id = u.user_id`,
 		userID, viewerID,
-	).Scan(&profile.UserID, &profile.CommentCount, &profile.FollowerCount, &profile.FollowingCount, &lastActive, &viewerFollowing)
+	).Scan(&profile.UserID, &displayName, &profile.CommentCount, &profile.FollowerCount, &profile.FollowingCount, &lastActive, &viewerFollowing)
 	if err != nil {
 		return publicUserProfile{}, err
 	}
 	profile.DisplayName = profile.UserID
+	if displayName.Valid && displayName.String != "" {
+		profile.DisplayName = displayName.String
+	}
 	profile.ViewerFollowing = viewerFollowing
 	if lastActive.Valid {
 		profile.LastActiveAt = lastActive.Time.UTC().Format(time.RFC3339)
