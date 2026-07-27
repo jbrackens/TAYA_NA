@@ -232,5 +232,8 @@
   "SHARE_MARKET": "分享",
   "SHARE_COPIED": "市場連結已複製。",
   "SHARE_FAILED": "無法開啟分享。",
-  "SELL_SHARES_CTA_other": "賣出 {{count}} 份 · 預計 {{amount}}"
+  "SELL_SHARES_CTA_other": "賣出 {{count}} 份 · 預計 {{amount}}",
+  "DISCLOSE_POSITION_LABEL": "公開我在該市場的持倉",
+  "DISCLOSE_POSITION_NONE": "持有倉位時才可公開",
+  "POSITION_DISCLOSURE_CHIP": "發文時持有 {{amount}} pts {{side}}"
 }

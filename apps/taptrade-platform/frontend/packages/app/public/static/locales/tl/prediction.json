@@ -235,5 +235,8 @@
   "SHARE_COPIED": "Nakopya ang link ng market.",
   "SHARE_FAILED": "Hindi mabuksan ang share.",
   "SELL_SHARES_CTA_one": "Ibenta ang {{count}} share · est. {{amount}}",
-  "SELL_SHARES_CTA_other": "Ibenta ang {{count}} shares · est. {{amount}}"
+  "SELL_SHARES_CTA_other": "Ibenta ang {{count}} shares · est. {{amount}}",
+  "DISCLOSE_POSITION_LABEL": "Isiwalat ang posisyon ko sa market na ito",
+  "DISCLOSE_POSITION_NONE": "Magagamit ang disclosure kapag may hawak kang posisyon",
+  "POSITION_DISCLOSURE_CHIP": "may hawak na {{amount}} pts {{side}} noon"
 }

@@ -249,5 +249,8 @@
   "SHARE_COPIED": "Market link copied.",
   "SHARE_FAILED": "Share could not be opened.",
   "SELL_SHARES_CTA_one": "Sell {{count}} share · est. {{amount}}",
-  "SELL_SHARES_CTA_other": "Sell {{count}} shares · est. {{amount}}"
+  "SELL_SHARES_CTA_other": "Sell {{count}} shares · est. {{amount}}",
+  "DISCLOSE_POSITION_LABEL": "Disclose my position on this market",
+  "DISCLOSE_POSITION_NONE": "Disclosure available when you hold a position",
+  "POSITION_DISCLOSURE_CHIP": "held {{amount}} pts {{side}} at the time"
 }

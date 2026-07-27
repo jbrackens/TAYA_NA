@@ -14,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"taptrade/gateway/internal/prediction"
 	"taptrade/platform/transport/httpx"
 )
 
@@ -26,11 +27,33 @@ type marketComment struct {
 	ReactionCount int    `json:"reactionCount"`
 	ReportCount   int    `json:"reportCount"`
 	CreatedAt     string `json:"createdAt"`
+	// Step 11: opt-in SNAPSHOT of the author's position(s) at post time
+	// ([]commentPositionDisclosure). Never recomputed on read — a live
+	// position changes, and a comment claiming one the author has since
+	// exited is worse than no disclosure. An exited position stays
+	// disclosed; nothing rewrites this field.
+	PositionDisclosure json.RawMessage `json:"positionDisclosure,omitempty"`
+}
+
+// commentPositionDisclosure is one held side as it stood when the
+// comment posted.
+type commentPositionDisclosure struct {
+	Side       string `json:"side"`
+	Quantity   int    `json:"quantity"`
+	CostPoints int64  `json:"costPoints"`
 }
 
 type marketCommentCreateRequest struct {
 	Body     string `json:"body"`
 	ParentID string `json:"parentId"`
+	// Opt-in, unchecked by default — the author decides per comment.
+	DisclosePosition bool `json:"disclosePosition"`
+}
+
+// authorPositionLister is the narrow slice of the prediction service the
+// social POST needs to snapshot the author's position at comment time.
+type authorPositionLister interface {
+	ListPositions(ctx context.Context, userID string) ([]prediction.Position, error)
 }
 
 type marketCommentReportRequest struct {
@@ -82,7 +105,7 @@ var errCannotFollowSelf = errors.New("cannot follow self")
 
 type marketSocialStore interface {
 	ListComments(ctx context.Context, marketID string, limit int) ([]marketComment, error)
-	CreateComment(ctx context.Context, marketID, parentID, userID, body string) (marketComment, error)
+	CreateComment(ctx context.Context, marketID, parentID, userID, body string, disclosure json.RawMessage) (marketComment, error)
 	React(ctx context.Context, commentID, userID string) (marketComment, error)
 	Report(ctx context.Context, commentID, userID, reason string) (marketComment, error)
 	ListReports(ctx context.Context, status string, limit int) ([]socialReport, error)
@@ -172,17 +195,18 @@ func (s *memoryMarketSocialStore) ListComments(_ context.Context, marketID strin
 	return rows, nil
 }
 
-func (s *memoryMarketSocialStore) CreateComment(_ context.Context, marketID, parentID, userID, body string) (marketComment, error) {
+func (s *memoryMarketSocialStore) CreateComment(_ context.Context, marketID, parentID, userID, body string, disclosure json.RawMessage) (marketComment, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.sequence++
 	comment := marketComment{
-		ID:        fmt.Sprintf("mc:%d", s.sequence),
-		MarketID:  marketID,
-		ParentID:  parentID,
-		UserID:    userID,
-		Body:      body,
-		CreatedAt: time.Now().UTC().Format(time.RFC3339),
+		ID:                 fmt.Sprintf("mc:%d", s.sequence),
+		MarketID:           marketID,
+		ParentID:           parentID,
+		UserID:             userID,
+		Body:               body,
+		CreatedAt:          time.Now().UTC().Format(time.RFC3339),
+		PositionDisclosure: disclosure,
 	}
 	s.comments = append(s.comments, comment)
 	s.activity = append(s.activity, socialActivityItem{
@@ -394,12 +418,13 @@ func (s *sqlMarketSocialStore) ListComments(ctx context.Context, marketID string
 	}
 	rows, err := s.db.QueryContext(ctx, `
 SELECT c.id, c.market_id, COALESCE(c.parent_id, ''), c.user_id, c.body,
-       COUNT(DISTINCT r.user_id), COUNT(DISTINCT p.user_id), c.created_at
+       COUNT(DISTINCT r.user_id), COUNT(DISTINCT p.user_id), c.created_at,
+       c.position_disclosure
 FROM prediction_market_comments c
 LEFT JOIN prediction_market_comment_reactions r ON r.comment_id = c.id
 LEFT JOIN prediction_market_comment_reports p ON p.comment_id = c.id AND p.status = 'open'
 WHERE c.market_id = $1
-GROUP BY c.id, c.market_id, c.parent_id, c.user_id, c.body, c.created_at
+GROUP BY c.id, c.market_id, c.parent_id, c.user_id, c.body, c.created_at, c.position_disclosure
 ORDER BY c.created_at DESC
 LIMIT $2`, marketID, limit)
 	if err != nil {
@@ -410,16 +435,20 @@ LIMIT $2`, marketID, limit)
 	for rows.Next() {
 		var c marketComment
 		var created time.Time
-		if err := rows.Scan(&c.ID, &c.MarketID, &c.ParentID, &c.UserID, &c.Body, &c.ReactionCount, &c.ReportCount, &created); err != nil {
+		var disclosure sql.NullString
+		if err := rows.Scan(&c.ID, &c.MarketID, &c.ParentID, &c.UserID, &c.Body, &c.ReactionCount, &c.ReportCount, &created, &disclosure); err != nil {
 			return nil, err
 		}
 		c.CreatedAt = created.UTC().Format(time.RFC3339)
+		if disclosure.Valid && disclosure.String != "" {
+			c.PositionDisclosure = json.RawMessage(disclosure.String)
+		}
 		comments = append(comments, c)
 	}
 	return comments, rows.Err()
 }
 
-func (s *sqlMarketSocialStore) CreateComment(ctx context.Context, marketID, parentID, userID, body string) (marketComment, error) {
+func (s *sqlMarketSocialStore) CreateComment(ctx context.Context, marketID, parentID, userID, body string, disclosure json.RawMessage) (marketComment, error) {
 	if err := s.ensureSchema(ctx); err != nil {
 		return marketComment{}, err
 	}
@@ -429,16 +458,21 @@ func (s *sqlMarketSocialStore) CreateComment(ctx context.Context, marketID, pare
 	if parentID != "" {
 		parent = sql.NullString{String: parentID, Valid: true}
 	}
+	var discArg interface{}
+	if len(disclosure) > 0 {
+		discArg = string(disclosure)
+	}
 	err := s.db.QueryRowContext(ctx, `
-INSERT INTO prediction_market_comments (market_id, parent_id, user_id, body)
-VALUES ($1, $2, $3, $4)
+INSERT INTO prediction_market_comments (market_id, parent_id, user_id, body, position_disclosure)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id, market_id, COALESCE(parent_id, ''), user_id, body, created_at`,
-		marketID, parent, userID, body,
+		marketID, parent, userID, body, discArg,
 	).Scan(&c.ID, &c.MarketID, &c.ParentID, &c.UserID, &c.Body, &created)
 	if err != nil {
 		return marketComment{}, err
 	}
 	c.CreatedAt = created.UTC().Format(time.RFC3339)
+	c.PositionDisclosure = disclosure
 	return c, nil
 }
 
@@ -543,19 +577,24 @@ WHERE comment_id = $1 AND user_id = $2`, commentID, reporterUserID, status, admi
 func (s *sqlMarketSocialStore) getComment(ctx context.Context, commentID string) (marketComment, error) {
 	var c marketComment
 	var created time.Time
+	var disclosure sql.NullString
 	err := s.db.QueryRowContext(ctx, `
 SELECT c.id, c.market_id, COALESCE(c.parent_id, ''), c.user_id, c.body,
-       COUNT(DISTINCT r.user_id), COUNT(DISTINCT p.user_id), c.created_at
+       COUNT(DISTINCT r.user_id), COUNT(DISTINCT p.user_id), c.created_at,
+       c.position_disclosure
 FROM prediction_market_comments c
 LEFT JOIN prediction_market_comment_reactions r ON r.comment_id = c.id
 LEFT JOIN prediction_market_comment_reports p ON p.comment_id = c.id AND p.status = 'open'
 WHERE c.id = $1
-GROUP BY c.id, c.market_id, c.parent_id, c.user_id, c.body, c.created_at`, commentID).
-		Scan(&c.ID, &c.MarketID, &c.ParentID, &c.UserID, &c.Body, &c.ReactionCount, &c.ReportCount, &created)
+GROUP BY c.id, c.market_id, c.parent_id, c.user_id, c.body, c.created_at, c.position_disclosure`, commentID).
+		Scan(&c.ID, &c.MarketID, &c.ParentID, &c.UserID, &c.Body, &c.ReactionCount, &c.ReportCount, &created, &disclosure)
 	if err != nil {
 		return marketComment{}, err
 	}
 	c.CreatedAt = created.UTC().Format(time.RFC3339)
+	if disclosure.Valid && disclosure.String != "" {
+		c.PositionDisclosure = json.RawMessage(disclosure.String)
+	}
 	return c, nil
 }
 
@@ -779,6 +818,8 @@ CREATE TABLE IF NOT EXISTS prediction_market_comments (
 );
 CREATE INDEX IF NOT EXISTS idx_prediction_market_comments_market_created
   ON prediction_market_comments (market_id, created_at DESC);
+ALTER TABLE prediction_market_comments
+  ADD COLUMN IF NOT EXISTS position_disclosure JSONB NULL;
 CREATE TABLE IF NOT EXISTS prediction_market_comment_reactions (
   comment_id TEXT NOT NULL REFERENCES prediction_market_comments(id) ON DELETE CASCADE,
   user_id TEXT NOT NULL,
@@ -995,7 +1036,7 @@ func writeSocialReportsCSV(w stdhttp.ResponseWriter, status string, reports []so
 	return nil
 }
 
-func registerMarketSocialRoutes(mux *stdhttp.ServeMux, store marketSocialStore, writeLimiter socialWriteLimiter, ipWriteLimiter socialWriteLimiter) {
+func registerMarketSocialRoutes(mux *stdhttp.ServeMux, store marketSocialStore, writeLimiter socialWriteLimiter, ipWriteLimiter socialWriteLimiter, positions authorPositionLister) {
 	mux.Handle("/api/v1/social/activity", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
@@ -1101,7 +1142,35 @@ func registerMarketSocialRoutes(mux *stdhttp.ServeMux, store marketSocialStore, 
 			if err := checkSocialWriteLimit(r, writeLimiter, ipWriteLimiter, userID, "comment"); err != nil {
 				return err
 			}
-			comment, err := store.CreateComment(r.Context(), marketID, strings.TrimSpace(req.ParentID), userID, body)
+			// Step 11: opt-in position disclosure — snapshot the
+			// author's held side(s) NOW, at post time. Checked with no
+			// position held simply posts without a chip (the UI greys
+			// the checkbox, but the backend never trusts that).
+			var disclosure json.RawMessage
+			if req.DisclosePosition && positions != nil {
+				held, err := positions.ListPositions(r.Context(), userID)
+				if err != nil {
+					return httpx.Internal("failed to snapshot position", err)
+				}
+				entries := make([]commentPositionDisclosure, 0, 2)
+				for _, p := range held {
+					if p.MarketID == marketID && p.Quantity > 0 {
+						entries = append(entries, commentPositionDisclosure{
+							Side:       string(p.Side),
+							Quantity:   p.Quantity,
+							CostPoints: p.TotalCostPoints,
+						})
+					}
+				}
+				if len(entries) > 0 {
+					encoded, err := json.Marshal(entries)
+					if err != nil {
+						return httpx.Internal("failed to snapshot position", err)
+					}
+					disclosure = encoded
+				}
+			}
+			comment, err := store.CreateComment(r.Context(), marketID, strings.TrimSpace(req.ParentID), userID, body, disclosure)
 			if err != nil {
 				return httpx.Internal("failed to create comment", err)
 			}

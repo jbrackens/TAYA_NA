@@ -8,7 +8,7 @@ import type {
   PredictionMarket,
   Series,
 } from "@taptrade-ui/api-client/src/prediction-types";
-import { MarketGrid } from "../../components/prediction/MarketGrid";
+import { MarketFeed } from "../../components/prediction/MarketFeed";
 import { logger } from "../../lib/logger";
 
 const api = createPredictionClient();
@@ -105,7 +105,7 @@ export default function SeriesPage() {
           {t("NO_OPEN_MARKETS_IN_CATEGORY")}
         </div>
       ) : (
-        <MarketGrid markets={markets} columns={3} />
+        <MarketFeed markets={markets} />
       )}
     </div>
   );

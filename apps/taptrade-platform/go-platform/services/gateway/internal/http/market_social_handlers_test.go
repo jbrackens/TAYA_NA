@@ -93,9 +93,9 @@ func TestMarketSocialSQLWriteLimiterBlocksAcrossRouteInstances(t *testing.T) {
 	t.Cleanup(cleanup)
 
 	firstMux := http.NewServeMux()
-	registerMarketSocialRoutes(firstMux, firstStore, firstUserLimiter, firstIPLimiter)
+	registerMarketSocialRoutes(firstMux, firstStore, firstUserLimiter, firstIPLimiter, nil)
 	secondMux := http.NewServeMux()
-	registerMarketSocialRoutes(secondMux, secondStore, secondUserLimiter, secondIPLimiter)
+	registerMarketSocialRoutes(secondMux, secondStore, secondUserLimiter, secondIPLimiter, nil)
 
 	createSocialComment(t, firstMux, userMarketID, userID, firstUserIP, "First instance user-limit comment.")
 	blockedSameUser := postSocialComment(secondMux, userMarketID, userID, secondUserIP, "Second instance same-user burst.")
@@ -201,7 +201,7 @@ func TestMarketSocialSQLStorePersistsAcrossServiceInstances(t *testing.T) {
 	cleanup()
 	t.Cleanup(cleanup)
 
-	comment, err := first.CreateComment(ctx, marketID, "", authorID, "DB-backed social graph proof.")
+	comment, err := first.CreateComment(ctx, marketID, "", authorID, "DB-backed social graph proof.", nil)
 	if err != nil {
 		t.Fatalf("first service create comment: %v", err)
 	}
@@ -861,7 +861,7 @@ func TestMarketSocialReportReasonRejectsMoneyWording(t *testing.T) {
 
 func TestMarketSocialPublicReadsRedactLegacyUnsafeUserText(t *testing.T) {
 	store := newMarketSocialStore(nil)
-	comment, err := store.CreateComment(context.Background(), "mkt-social-legacy-copy", "", "u-legacy-copy", "cash payout legacy comment")
+	comment, err := store.CreateComment(context.Background(), "mkt-social-legacy-copy", "", "u-legacy-copy", "cash payout legacy comment", nil)
 	if err != nil {
 		t.Fatalf("seed legacy unsafe comment: %v", err)
 	}
@@ -870,7 +870,7 @@ func TestMarketSocialPublicReadsRedactLegacyUnsafeUserText(t *testing.T) {
 	}
 
 	mux := http.NewServeMux()
-	registerMarketSocialRoutes(mux, store, nil, nil)
+	registerMarketSocialRoutes(mux, store, nil, nil, nil)
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
 	commentReq := httptest.NewRequest(http.MethodGet, "/api/v1/social/markets/mkt-social-legacy-copy/comments?limit=10", nil)

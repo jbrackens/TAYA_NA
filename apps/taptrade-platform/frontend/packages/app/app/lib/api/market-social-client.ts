@@ -1,5 +1,15 @@
 import { apiClient } from "./client";
 
+/**
+ * One held side as it stood WHEN THE COMMENT POSTED — a snapshot, never
+ * recomputed. An exited position stays disclosed by design.
+ */
+export interface CommentPositionDisclosure {
+  side: "yes" | "no";
+  quantity: number;
+  costPoints: number;
+}
+
 export interface MarketComment {
   id: string;
   marketId: string;
@@ -9,6 +19,7 @@ export interface MarketComment {
   reactionCount: number;
   reportCount: number;
   createdAt: string;
+  positionDisclosure?: CommentPositionDisclosure[];
 }
 
 export interface PublicUserProfile {
@@ -71,10 +82,13 @@ export async function createMarketComment(
   marketId: string,
   body: string,
   parentId?: string,
+  // Step 11: opt-in — the author decides per comment; the gateway
+  // snapshots their held side(s) at post time.
+  disclosePosition?: boolean,
 ): Promise<MarketComment> {
   const raw = await apiClient.post<MarketCommentMutationResponse>(
     `/api/v1/social/markets/${marketId}/comments`,
-    { body, parentId },
+    { body, parentId, disclosePosition: disclosePosition === true },
   );
   return raw.comment;
 }

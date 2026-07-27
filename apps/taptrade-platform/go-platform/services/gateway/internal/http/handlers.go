@@ -290,7 +290,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	registerDashboardRoutes(mux, predictionService)
 	registerDiscoverRoutes(mux, walletService.DB())
 	marketSocialStore := newMarketSocialStore(walletService.DB())
-	registerMarketSocialRoutes(mux, marketSocialStore, socialWriteUserLimiter(walletService.DB()), socialWriteIPLimiter(walletService.DB()))
+	registerMarketSocialRoutes(mux, marketSocialStore, socialWriteUserLimiter(walletService.DB()), socialWriteIPLimiter(walletService.DB()), predictionService)
 	registerMarketSocialAdminRoutes(mux, marketSocialStore)
 	registerMarketWatchlistRoutes(mux, newMarketWatchlistStore(walletService.DB()))
 	// Prediction-native admin read APIs (office /users + /audit-logs). Only

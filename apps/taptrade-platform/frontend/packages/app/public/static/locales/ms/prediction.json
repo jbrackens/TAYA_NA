@@ -232,5 +232,8 @@
   "SHARE_MARKET": "Kongsi",
   "SHARE_COPIED": "Pautan pasaran disalin.",
   "SHARE_FAILED": "Kongsi tidak dapat dibuka.",
-  "SELL_SHARES_CTA_other": "Jual {{count}} saham · anggaran {{amount}}"
+  "SELL_SHARES_CTA_other": "Jual {{count}} saham · anggaran {{amount}}",
+  "DISCLOSE_POSITION_LABEL": "Dedahkan posisi saya di pasaran ini",
+  "DISCLOSE_POSITION_NONE": "Pendedahan tersedia apabila anda memegang posisi",
+  "POSITION_DISCLOSURE_CHIP": "memegang {{amount}} pts {{side}} pada masa itu"
 }

@@ -1622,6 +1622,7 @@ export default function MarketDetailPage() {
           marketId={market.id}
           isAuthenticated={isAuthenticated}
           authLoading={authLoading}
+          canDisclosePosition={positions.some((p) => p.quantity > 0)}
         />
 
         <aside className={RELATED_CARD_CLASS} aria-label={t("RELATED_MARKETS")}>

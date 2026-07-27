@@ -38,12 +38,19 @@ interface MarketDiscussionProps {
   marketId: string;
   isAuthenticated: boolean;
   authLoading: boolean;
+  /**
+   * Step 11: whether the viewer currently holds a position on this
+   * market — gates the disclose checkbox (the gateway re-checks; a
+   * checked box with nothing held posts chipless).
+   */
+  canDisclosePosition?: boolean;
 }
 
 export default function MarketDiscussion({
   marketId,
   isAuthenticated,
   authLoading,
+  canDisclosePosition = false,
 }: MarketDiscussionProps) {
   const { t } = useTranslation("prediction");
   const [comments, setComments] = useState<MarketComment[]>([]);
@@ -52,6 +59,9 @@ export default function MarketDiscussion({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  // Opt-in, UNCHECKED by default, and the author decides per comment —
+  // the flag resets after every post rather than persisting.
+  const [disclosePosition, setDisclosePosition] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -91,10 +101,12 @@ export default function MarketDiscussion({
         marketId,
         trimmed,
         replyTo ?? undefined,
+        disclosePosition && canDisclosePosition,
       );
       setComments((prev) => [created, ...prev]);
       setBody("");
       setReplyTo(null);
+      setDisclosePosition(false);
       setMessage(t("DISCUSSION_POSTED", "Posted."));
     } catch (err) {
       logger.warn("MarketDiscussion", "comment create failed", err);
@@ -174,6 +186,27 @@ export default function MarketDiscussion({
           placeholder={composerHint}
           onChange={(event) => setBody(event.target.value)}
         />
+        {isAuthenticated && (
+          <label
+            className={`flex min-h-11 w-fit cursor-pointer items-center gap-2.5 text-[13px] ${
+              canDisclosePosition ? "text-[var(--t2)]" : "text-[var(--t3)]"
+            }`}
+          >
+            <input
+              type="checkbox"
+              className="h-[18px] w-[18px] cursor-pointer accent-[var(--accent)] disabled:cursor-not-allowed"
+              checked={disclosePosition && canDisclosePosition}
+              disabled={!canDisclosePosition || saving}
+              onChange={(event) => setDisclosePosition(event.target.checked)}
+            />
+            {canDisclosePosition
+              ? t("DISCLOSE_POSITION_LABEL", "Disclose my position on this market")
+              : t(
+                  "DISCLOSE_POSITION_NONE",
+                  "Disclosure available when you hold a position",
+                )}
+          </label>
+        )}
         <div className={FORM_ROW_CLASS}>
           <span className={STATUS_CLASS}>{message ?? composerHint}</span>
           <Button
@@ -222,6 +255,30 @@ export default function MarketDiscussion({
                   <span>{t("DISCUSSION_REPLY_TAG", "Reply")}</span>
                 )}
               </div>
+              {comment.positionDisclosure &&
+                comment.positionDisclosure.length > 0 && (
+                  <div className="mb-1.5 flex flex-wrap gap-1.5">
+                    {/* The chip shows the side and size AS THEY STOOD when
+                     * the comment posted — past-tense wording carries the
+                     * snapshot semantics, and an exited position stays
+                     * disclosed. Pale side fills, dark direction text. */}
+                    {comment.positionDisclosure.map((entry) => (
+                      <span
+                        key={entry.side}
+                        className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium normal-case tracking-normal ${
+                          entry.side === "yes"
+                            ? "border-[var(--yes-border)] bg-[var(--yes-soft)] text-[var(--yes-text)]"
+                            : "border-[var(--no-border)] bg-[var(--no-soft)] text-[var(--no-text)]"
+                        }`}
+                      >
+                        {t("POSITION_DISCLOSURE_CHIP", {
+                          amount: entry.costPoints.toLocaleString(),
+                          side: entry.side.toUpperCase(),
+                        })}
+                      </span>
+                    ))}
+                  </div>
+                )}
               <p className={BODY_CLASS}>{comment.body}</p>
               <div className={ACTIONS_CLASS}>
                 <Button

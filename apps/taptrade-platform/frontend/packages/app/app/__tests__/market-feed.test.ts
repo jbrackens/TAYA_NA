@@ -92,7 +92,7 @@ describe("single-column feed (Predict Light Social 3a)", () => {
     assert.match(section, /<MarketFeed/);
     assert.ok(
       !section.includes("<MarketGrid"),
-      "the grid is gone from /predict (category pages keep MarketCard)",
+      "the grid is gone — MarketFeed is the browse card everywhere (step 11)",
     );
   });
 

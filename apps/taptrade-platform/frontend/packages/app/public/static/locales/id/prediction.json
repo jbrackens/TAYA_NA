@@ -232,5 +232,8 @@
   "SHARE_MARKET": "Bagikan",
   "SHARE_COPIED": "Tautan market disalin.",
   "SHARE_FAILED": "Tidak dapat membuka fitur bagikan.",
-  "SELL_SHARES_CTA_other": "Jual {{count}} share · est. {{amount}}"
+  "SELL_SHARES_CTA_other": "Jual {{count}} share · est. {{amount}}",
+  "DISCLOSE_POSITION_LABEL": "Ungkapkan posisi saya di market ini",
+  "DISCLOSE_POSITION_NONE": "Pengungkapan tersedia saat Anda memegang posisi",
+  "POSITION_DISCLOSURE_CHIP": "memegang {{amount}} pts {{side}} saat itu"
 }
