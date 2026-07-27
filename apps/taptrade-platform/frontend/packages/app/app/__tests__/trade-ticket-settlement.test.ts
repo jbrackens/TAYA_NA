@@ -29,6 +29,8 @@ const marketPage = read("market/[ticker]/page.tsx");
 
 const SHIPPED_LOCALES = ["en", "id", "ms", "tl", "zh-Hans", "zh-Hant"];
 const SETTLEMENT_KEYS = [
+  "SETTLED_SHEET_LABEL",
+  "EST_PROCEEDS",
   "YOUR_POSITION",
   "SETTLED_AT",
   "SETTLED_AT_PER_SHARE",
@@ -152,6 +154,31 @@ describe("§3-06 settled payout band (Settlement 12a/12b/12e)", () => {
       "a void refunds at cost: returned = staked, result = 0",
     );
     assert.match(marketPage, /settlements=\{ticketSettlements\}/);
+  });
+
+  it("labels the sell total as proceeds, not cost", () => {
+    // §4 EST_PROCEEDS: selling brings points back — the row's value was
+    // already the proceeds estimate; only the label lied.
+    assert.match(
+      ticket,
+      /t\(action === "sell" \? "EST_PROCEEDS" : "EST_COST"\)/,
+    );
+  });
+
+  it("relabels the mobile sheet button on markets that can't be traded", () => {
+    // §4 SETTLED_SHEET_LABEL: "Trade market" was dishonest on a settled
+    // market — the sheet behind the button holds the payout band. Settled
+    // shows the FINAL rail price, voided shows no price at all.
+    assert.match(
+      marketPage,
+      /isSettledMarket \|\| market\.status === "voided"[\s\S]{0,120}SETTLED_SHEET_LABEL/,
+    );
+    assert.match(
+      marketPage,
+      /selectedSide === "yes" \? railYes : railNo/,
+      "the sheet button quotes the final price, not the stale snapshot",
+    );
+    assert.match(marketPage, /market\.status !== "voided" && \(/);
   });
 
   it("renders dispute grounds only when the gateway supplies them", () => {

@@ -227,5 +227,7 @@
   "RESOLUTION_PROPOSED": "Resolusi diusulkan",
   "RESOLUTION_PROPOSED_BODY": "Sumber melaporkan {{result}}. Poin ditahan sampai jendela tantangan ditutup, lalu dibayar otomatis.",
   "DISPUTED_BODY": "Penyelesaian dijeda sementara hasil yang diusulkan ditinjau. Poin Anda tetap terkunci sampai diputuskan — poin itu tidak berisiko dari sengketa ini.",
-  "DISPUTE_GROUNDS": "Alasan yang diajukan"
+  "DISPUTE_GROUNDS": "Alasan yang diajukan",
+  "SETTLED_SHEET_LABEL": "Lihat hasilnya",
+  "EST_PROCEEDS": "Perkiraan hasil"
 }

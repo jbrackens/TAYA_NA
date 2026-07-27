@@ -1052,7 +1052,12 @@ export function TradeTicket({
             </div>
 
             <div className={TICKET_ROW_CLASS}>
-              <span className={TICKET_ROW_LABEL_CLASS}>{t("EST_COST")}</span>
+              {/* §4 EST_PROCEEDS: in sell mode the points COME BACK to you
+               * — "Est. cost" read backwards. The value is already the
+               * proceeds estimate (qty × price); only the label lied. */}
+              <span className={TICKET_ROW_LABEL_CLASS}>
+                {t(action === "sell" ? "EST_PROCEEDS" : "EST_COST")}
+              </span>
               <span className={TICKET_ROW_VALUE_CLASS} aria-busy={quotePending}>
                 <PointsFlow value={displaySpend} suffix=" pts" />
                 {quotePending && (

@@ -1464,20 +1464,28 @@ export default function MarketDetailPage() {
             ))}
           </dl>
         </section>
+        {/* §4 SETTLED_SHEET_LABEL: "Trade market" is dishonest on a market
+         * that can no longer be traded — the sheet behind this button holds
+         * the payout band, not a ticket. Settled markets show the FINAL
+         * side price (the rail's derivation, not the stale snapshot);
+         * voided markets show no price at all — theirs means nothing. */}
         <button
           type="button"
           data-testid="open-trade-sheet"
           onClick={() => setTicketSheetOpen(true)}
           className={`${MARKET_MOBILE_TRADE_LINK_CLASS} cursor-pointer border-0`}
         >
-          <span>{t("TRADE_MARKET", "Trade market")}</span>
-          <span className="font-mono">
-            {selectedSide.toUpperCase()}{" "}
-            {selectedSide === "yes"
-              ? market.yesPricePoints
-              : market.noPricePoints}
-            ¢
+          <span>
+            {isSettledMarket || market.status === "voided"
+              ? t("SETTLED_SHEET_LABEL", "See the result")
+              : t("TRADE_MARKET", "Trade market")}
           </span>
+          {market.status !== "voided" && (
+            <span className="font-mono">
+              {selectedSide.toUpperCase()}{" "}
+              {selectedSide === "yes" ? railYes : railNo}¢
+            </span>
+          )}
         </button>
       </div>
 

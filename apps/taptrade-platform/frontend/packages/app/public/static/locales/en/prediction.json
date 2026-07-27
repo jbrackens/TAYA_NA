@@ -243,5 +243,7 @@
   "RESOLUTION_PROPOSED": "Resolution proposed",
   "RESOLUTION_PROPOSED_BODY": "The source reported {{result}}. Points are held until the challenge window closes, then paid automatically.",
   "DISPUTED_BODY": "Settlement is paused while the proposed result is reviewed. Your points stay locked until it's decided — they are not at risk from the dispute itself.",
-  "DISPUTE_GROUNDS": "Grounds cited"
+  "DISPUTE_GROUNDS": "Grounds cited",
+  "SETTLED_SHEET_LABEL": "See the result",
+  "EST_PROCEEDS": "Est. proceeds"
 }

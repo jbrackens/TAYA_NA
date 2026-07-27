@@ -229,5 +229,7 @@
   "RESOLUTION_PROPOSED": "May iminungkahing resolusyon",
   "RESOLUTION_PROPOSED_BODY": "Iniulat ng source ang {{result}}. Naka-hold ang points hanggang magsara ang challenge window, saka awtomatikong ibibigay.",
   "DISPUTED_BODY": "Naka-pause ang settlement habang sinusuri ang iminungkahing resulta. Nakakandado ang points mo hanggang mapagpasyahan — hindi ito nanganganib dahil sa dispute.",
-  "DISPUTE_GROUNDS": "Mga dahilang binanggit"
+  "DISPUTE_GROUNDS": "Mga dahilang binanggit",
+  "SETTLED_SHEET_LABEL": "Tingnan ang resulta",
+  "EST_PROCEEDS": "Tinatayang makukuha"
 }

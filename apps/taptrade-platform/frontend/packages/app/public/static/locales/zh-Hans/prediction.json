@@ -227,5 +227,7 @@
   "RESOLUTION_PROPOSED": "已提议结算结果",
   "RESOLUTION_PROPOSED_BODY": "来源报告结果为 {{result}}。点数将保留至质疑期结束，然后自动发放。",
   "DISPUTED_BODY": "提议的结果正在复核，结算已暂停。你的点数在裁定前保持锁定——争议本身不会使其受损。",
-  "DISPUTE_GROUNDS": "质疑理由"
+  "DISPUTE_GROUNDS": "质疑理由",
+  "SETTLED_SHEET_LABEL": "查看结果",
+  "EST_PROCEEDS": "预计所得"
 }

@@ -227,5 +227,7 @@
   "RESOLUTION_PROPOSED": "已提議結算結果",
   "RESOLUTION_PROPOSED_BODY": "來源報告結果為 {{result}}。點數將保留至質疑期結束，然後自動發放。",
   "DISPUTED_BODY": "提議的結果正在覆核，結算已暫停。你的點數在裁定前保持鎖定——爭議本身不會使其受損。",
-  "DISPUTE_GROUNDS": "質疑理由"
+  "DISPUTE_GROUNDS": "質疑理由",
+  "SETTLED_SHEET_LABEL": "查看結果",
+  "EST_PROCEEDS": "預計所得"
 }

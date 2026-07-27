@@ -227,5 +227,7 @@
   "RESOLUTION_PROPOSED": "Resolusi dicadangkan",
   "RESOLUTION_PROPOSED_BODY": "Sumber melaporkan {{result}}. Mata ditahan sehingga tetingkap cabaran ditutup, kemudian dibayar secara automatik.",
   "DISPUTED_BODY": "Penyelesaian dijeda sementara keputusan yang dicadangkan disemak. Mata anda kekal terkunci sehingga diputuskan — ia tidak berisiko daripada pertikaian itu sendiri.",
-  "DISPUTE_GROUNDS": "Alasan yang diberikan"
+  "DISPUTE_GROUNDS": "Alasan yang diberikan",
+  "SETTLED_SHEET_LABEL": "Lihat keputusan",
+  "EST_PROCEEDS": "Anggaran hasil"
 }
