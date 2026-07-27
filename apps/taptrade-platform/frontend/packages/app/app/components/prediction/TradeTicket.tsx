@@ -142,7 +142,7 @@ const TICKET_CLOSED_CLASS =
 // Store, below the (kept) disabled trade CTA. Carries the current market
 // path as a validated ?return= context so the store can route back.
 const TICKET_ADD_POINTS_CLASS =
-  "mt-2 flex w-full cursor-pointer items-center justify-center rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3 text-[13px] font-semibold text-[var(--t1)] no-underline transition-colors duration-[120ms] hover:border-[rgba(43,228,128,0.5)] hover:bg-[var(--surface-2)] hover:text-[var(--accent-text)]";
+  "mt-2 flex w-full cursor-pointer items-center justify-center rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3 text-[13px] font-semibold text-[var(--t1)] no-underline transition-colors duration-[120ms] hover:border-[var(--border-2)]";
 // Preview requests are debounced so per-keystroke amount edits don't fire
 // an api.previewOrder round-trip each; 250ms trails typing comfortably.
 const PREVIEW_DEBOUNCE_MS = 250;
@@ -482,6 +482,9 @@ export function TradeTicket({
               remainder: qty - filled,
               status: remainderFate,
             }),
+            // §3-07: a partial fill is a receipt with two numbers to
+            // reconcile — give it three reads, not one.
+            { duration: 12_000 },
           );
         }
       } else if (status === "open") {
@@ -511,6 +514,8 @@ export function TradeTicket({
             ticker: market.ticker,
             reason: why,
           }),
+          // §3-07: rejections need reading time too.
+          { duration: 12_000 },
         );
       } else {
         // pending/expired/unknown: don't pretend it worked.

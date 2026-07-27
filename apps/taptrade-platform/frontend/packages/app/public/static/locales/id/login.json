@@ -17,5 +17,6 @@
   "LOGIN_FAILED": "Login failed. Please try again.",
   "USERNAME_PLACEHOLDER": "Enter your username or email",
   "PASSWORD_PLACEHOLDER": "Enter your password",
-  "SIGNING_IN": "Signing In..."
+  "SIGNING_IN": "Signing In...",
+  "INCORRECT_CREDENTIALS": "Nama pengguna atau kata sandi salah."
 }

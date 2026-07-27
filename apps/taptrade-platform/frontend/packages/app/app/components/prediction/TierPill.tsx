@@ -27,8 +27,13 @@ interface TierPillProps {
   refreshMs?: number;
 }
 
+// Step 8 (390 header fix): min-w-0/overflow-hidden so a flex-crushed pill
+// CLIPS instead of bleeding its nowrap content over the balance chip;
+// below 420px the pill is rank-only (separator + points hidden) with the
+// rank truncating — the compressed header shows "Newcomer", never
+// "New…· 19k" smeared across its neighbours.
 const TIER_PILL_BASE_CLASS =
-  "inline-flex h-9 min-w-11 items-center whitespace-nowrap rounded-full border border-[color-mix(in_srgb,var(--tp-color)_30%,transparent)] bg-[color-mix(in_srgb,var(--tp-color)_14%,transparent)] px-[14px] text-xs font-bold tracking-[0.02em] text-[var(--t1)] no-underline [transition:background_120ms_ease,border-color_120ms_ease,box-shadow_400ms_ease] hover:border-[color-mix(in_srgb,var(--tp-color)_48%,transparent)] hover:bg-[color-mix(in_srgb,var(--tp-color)_22%,transparent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] max-[480px]:min-w-0 max-[480px]:px-2.5";
+  "inline-flex h-9 min-w-11 items-center overflow-hidden whitespace-nowrap rounded-full border border-[color-mix(in_srgb,var(--tp-color)_30%,transparent)] bg-[color-mix(in_srgb,var(--tp-color)_14%,transparent)] px-[14px] text-xs font-bold tracking-[0.02em] text-[var(--t1)] no-underline [transition:background_120ms_ease,border-color_120ms_ease,box-shadow_400ms_ease] hover:border-[color-mix(in_srgb,var(--tp-color)_48%,transparent)] hover:bg-[color-mix(in_srgb,var(--tp-color)_22%,transparent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] max-[480px]:min-w-0 max-[480px]:px-2.5 max-[359px]:hidden";
 const TIER_PILL_BLOOM_CLASS =
   "shadow-[var(--accent-glow)] motion-reduce:shadow-none motion-reduce:transition-none";
 const TIER_SEPARATOR_CLASS = "mx-1.5 text-[var(--t3)] font-medium";
@@ -113,14 +118,19 @@ export function TierPill({ refreshMs = 60_000 }: TierPillProps) {
       className={`${TIER_PILL_BASE_CLASS} ${bloom ? TIER_PILL_BLOOM_CLASS : ""}`}
       style={{ ["--tp-color" as string]: `var(--tier-${standing.rank})` }}
     >
-      <span>{standing.rankName}</span>
-      <span className={TIER_SEPARATOR_CLASS} aria-hidden="true">
+      <span className="min-w-0 truncate">{standing.rankName}</span>
+      <span
+        className={`${TIER_SEPARATOR_CLASS} max-[419px]:hidden`}
+        aria-hidden="true"
+      >
         ·
       </span>
       <span className={`${TIER_POINTS_CLASS} max-[480px]:hidden`}>
         {formatPoints(points)} pts
       </span>
-      <span className={`${TIER_POINTS_CLASS} min-[481px]:hidden`}>
+      <span
+        className={`${TIER_POINTS_CLASS} min-[481px]:hidden max-[419px]:hidden`}
+      >
         {formatCompact(points)}
       </span>
     </Link>

@@ -67,7 +67,7 @@ export default function AccountPage() {
   return (
     <div className="mx-auto max-w-[1100px] px-6 pb-[60px] pt-6">
       <header className="mb-5">
-        <h1 className="m-0 mb-1 text-[28px] font-extrabold tracking-[-0.02em] text-[var(--t1)]">
+        <h1 className="m-0 mb-1 text-[26px] font-semibold tracking-[-0.02em] text-[var(--t1)]">
           {t("hub.title", "Account")}
         </h1>
         <p className="m-0 text-[13px] text-[var(--t3)]">
@@ -80,7 +80,9 @@ export default function AccountPage() {
 
       <section className="mb-4 flex flex-wrap items-center justify-between gap-5 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[22px] py-5">
         <div className="flex items-center gap-[14px]">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[rgba(43,228,128,0.3)] bg-[var(--accent-soft)] text-xl font-bold text-[var(--accent)]">
+          {/* The avatar keeps the lime tint — the one place identity and
+           * accent legitimately overlap. Ink on the tint, never lime text. */}
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[color-mix(in_srgb,var(--lime)_90%,transparent)] bg-[color-mix(in_srgb,var(--lime)_32%,transparent)] text-[19px] font-semibold text-[var(--ticket-cta-text)]">
             {initial}
           </div>
           <div>
@@ -94,7 +96,9 @@ export default function AccountPage() {
           <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]">
             {t("hub.availableBalance", "Available points")}
           </span>
-          <span className="font-mono text-[22px] font-bold tracking-[-0.01em] text-[var(--accent)] tabular-nums">
+          {/* The largest number on the screen is a magnitude — neutral ink,
+           * same rule as every price. */}
+          <span className="font-mono text-[22px] font-medium tracking-[-0.01em] text-[var(--t1)] tabular-nums">
             {balance ? formatPoints(balance.availableBalance) : "—"}
           </span>
         </div>
@@ -105,8 +109,13 @@ export default function AccountPage() {
       <PrivacyCard />
 
       <section className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
+        {/* Step 8: Profile pointed at /account/security — a stale link from
+         * when /account/settings was the crashed pages-router page (see the
+         * header comment in account/settings/page.tsx). Settings has been a
+         * working App Router page since that rewrite; "details and account
+         * setup" is that page. Security keeps its own card below. */}
         <ActionCard
-          href="/account/security"
+          href="/account/settings"
           icon={<Settings size={20} />}
           title={t("actions.profile.title", "Profile")}
           desc={t(
@@ -258,7 +267,10 @@ function PrivacyCard() {
         </div>
       </label>
       {error && (
-        <div className="mt-2.5 rounded-[var(--r-sm)] border border-[rgba(255,155,107,0.2)] bg-[rgba(255,155,107,0.08)] px-3 py-2 text-xs text-[var(--no-text)]">
+        <div
+          className="mt-2.5 rounded-[var(--r-sm)] border border-[var(--no-border)] bg-[var(--no-soft)] px-3 py-2 text-xs text-[var(--no-text)]"
+          role="alert"
+        >
           {error}
         </div>
       )}
@@ -283,7 +295,7 @@ function PortfolioStrip({ summary }: { summary: PortfolioSummary }) {
         </div>
         <Link
           href="/portfolio"
-          className="whitespace-nowrap text-xs font-semibold text-[var(--accent)] no-underline hover:underline"
+          className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap text-xs font-semibold text-[var(--accent-text)] no-underline hover:underline"
         >
           {t("portfolio.open", "Open portfolio")} →
         </Link>
@@ -293,10 +305,13 @@ function PortfolioStrip({ summary }: { summary: PortfolioSummary }) {
           label={t("stats.invested", "Points in play")}
           value={formatPoints(summary.totalValuePoints)}
         />
+        {/* The one direction colour on the screen: the settled result is an
+         * outcome, so it keeps the direction pair. Accuracy is a magnitude
+         * — neutral ink like everything else. */}
         <Stat
           label={t("stats.realizedPnl", "Settled result")}
           value={`${pnlUp ? "+" : "-"}${formatPoints(Math.abs(pnl))}`}
-          tone={pnlUp ? "gain" : "no"}
+          tone={pnlUp ? "yes" : "no"}
         />
         <Stat
           label={t("stats.openPositions", "Open positions")}
@@ -314,7 +329,6 @@ function PortfolioStrip({ summary }: { summary: PortfolioSummary }) {
               ? `${summary.correctPredictions}/${summary.totalPredictions}`
               : t("stats.noSettledMarkets", "No settled markets yet")
           }
-          tone={summary.accuracyPct >= 50 ? "gain" : undefined}
         />
       </div>
     </section>
@@ -330,23 +344,23 @@ function Stat({
   label: string;
   value: string;
   sub?: string;
-  tone?: "yes" | "no" | "gain";
+  tone?: "yes" | "no";
 }) {
   const toneClass =
     tone === "yes"
       ? "text-[var(--yes-text)]"
       : tone === "no"
         ? "text-[var(--no-text)]"
-        : tone === "gain"
-          ? "text-[var(--accent)]"
-          : "text-[var(--t1)]";
+        : "text-[var(--t1)]";
 
   return (
     <div className="flex flex-col gap-0.5 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-[14px] py-3">
       <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]">
         {label}
       </span>
-      <span className={`font-mono text-lg font-bold tabular-nums ${toneClass}`}>
+      <span
+        className={`font-mono text-lg font-medium tabular-nums ${toneClass}`}
+      >
         {value}
       </span>
       {sub && <span className="text-[11px] text-[var(--t3)]">{sub}</span>}
@@ -368,12 +382,14 @@ function ActionCard({
   return (
     <Link
       href={href}
-      className="rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-5 py-[18px] no-underline transition-[border-color,background,transform] duration-150 hover:-translate-y-px hover:border-[var(--accent)] hover:bg-[rgba(43,228,128,0.06)]"
+      className="rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-5 py-[18px] no-underline shadow-[var(--shadow-card)] transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-px hover:border-[var(--border-2)] hover:shadow-[var(--shadow-card-hover)]"
     >
-      <div className="mb-2.5 inline-flex h-9 w-9 items-center justify-center rounded-[var(--r-sm)] bg-[var(--accent-soft)] text-[var(--accent)]">
+      <div className="mb-2.5 inline-flex h-9 w-9 items-center justify-center rounded-[var(--r-sm)] bg-[color-mix(in_srgb,var(--lime)_32%,transparent)] text-[var(--ticket-cta-text)]">
         {icon}
       </div>
-      <div className="mb-0.5 text-sm font-bold text-[var(--t1)]">{title}</div>
+      <div className="mb-0.5 text-sm font-semibold text-[var(--t1)]">
+        {title}
+      </div>
       <div className="text-xs leading-normal text-[var(--t3)]">{desc}</div>
     </Link>
   );

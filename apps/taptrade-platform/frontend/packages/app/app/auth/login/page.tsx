@@ -15,6 +15,7 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/useAuth";
 import { safeReturnPath, returnUrlSuffix } from "../../lib/safeReturnPath";
 import { FEATURE_SOCIAL_AUTH } from "../../lib/features";
@@ -62,6 +63,7 @@ const FOOTER_CLASS =
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useTranslation("login");
   const { login } = useAuth();
   const isLocalDev = process.env.NODE_ENV !== "production";
 
@@ -84,12 +86,20 @@ export default function LoginPage() {
         // the page the user originally asked for.
         router.push(safeReturnPath(searchParams.get("returnUrl")));
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "Login failed");
+        const raw = err instanceof Error ? err.message : "";
+        // The auth service answers a credential failure with the raw
+        // "invalid username or password" — humanize it (localized);
+        // anything else surfaces as-is so real faults stay diagnosable.
+        setError(
+          raw.toLowerCase().includes("invalid username or password")
+            ? t("INCORRECT_CREDENTIALS", "Incorrect username or password.")
+            : raw || t("LOGIN_FAILED", "Login failed. Please try again."),
+        );
       } finally {
         setSubmitting(false);
       }
     },
-    [username, password, login, router, searchParams],
+    [username, password, login, router, searchParams, t],
   );
 
   // LC-05: carry a deep-link returnUrl across to the sign-up flow so a

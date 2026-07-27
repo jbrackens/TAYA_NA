@@ -38,10 +38,13 @@ test("toast layer matches OVERLAY_Z.toast (z 300)", () => {
 });
 
 test("useToast() keeps the four helpers + addToast/removeToast", () => {
+  // Updated for Ink & lime step 8 (§3-07): the helpers grew a third
+  // per-toast options argument so receipts (partial fills, rejections,
+  // settlements) can pass a longer duration. This pins the NEW contract.
   for (const helper of ["success", "error", "info", "warning"]) {
     assert.match(
       src,
-      new RegExp(`${helper}: \\(title, message\\) => show`),
+      new RegExp(`${helper}: \\(title, message, opts\\) =>`),
       `${helper} helper missing`,
     );
   }

@@ -25,13 +25,20 @@ export interface Toast {
   duration?: number; // ms, default 4000
 }
 
+// Handoff spec §3-07: duration is per-toast. Receipts with numbers to
+// reconcile (partial fills, rejections, settlements) pass a longer one;
+// the 4s default is for acknowledgements.
+interface ToastOpts {
+  duration?: number;
+}
+
 interface ToastContextValue {
   addToast: (toast: Omit<Toast, "id">) => string;
   removeToast: (id: string) => void;
-  success: (title: string, message?: string) => string;
-  error: (title: string, message?: string) => string;
-  info: (title: string, message?: string) => string;
-  warning: (title: string, message?: string) => string;
+  success: (title: string, message?: string, opts?: ToastOpts) => string;
+  error: (title: string, message?: string, opts?: ToastOpts) => string;
+  info: (title: string, message?: string, opts?: ToastOpts) => string;
+  warning: (title: string, message?: string, opts?: ToastOpts) => string;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -57,7 +64,9 @@ const icons: Record<ToastType, React.ReactNode> = {
 const toastClasses: Record<ToastType, { dot: string; icon: string }> = {
   success: { dot: "bg-[var(--yes-bar)]", icon: "text-[var(--yes-text)]" },
   error: { dot: "bg-[var(--no-bar)]", icon: "text-[var(--no-text)]" },
-  info: { dot: "bg-[var(--brand-period)]", icon: "text-[var(--accent-text)]" },
+  // §3-02: info gets its own neutral-informational token — borrowing the
+  // brand period made lime a third meaning (action, identity, AND info).
+  info: { dot: "bg-[var(--info-dot)]", icon: "text-[var(--info-text)]" },
   warning: { dot: "bg-[#d97706]", icon: "text-[#b45309]" },
 };
 
@@ -126,10 +135,14 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
     () => ({
       addToast: show,
       removeToast: (id) => sonnerToast.dismiss(id),
-      success: (title, message) => show({ type: "success", title, message }),
-      error: (title, message) => show({ type: "error", title, message }),
-      info: (title, message) => show({ type: "info", title, message }),
-      warning: (title, message) => show({ type: "warning", title, message }),
+      success: (title, message, opts) =>
+        show({ type: "success", title, message, ...opts }),
+      error: (title, message, opts) =>
+        show({ type: "error", title, message, ...opts }),
+      info: (title, message, opts) =>
+        show({ type: "info", title, message, ...opts }),
+      warning: (title, message, opts) =>
+        show({ type: "warning", title, message, ...opts }),
     }),
     [],
   );

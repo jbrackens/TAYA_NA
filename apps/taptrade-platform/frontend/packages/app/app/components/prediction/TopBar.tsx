@@ -152,10 +152,16 @@ const TOP_BAR_SEARCH_HIT_META_CLASS =
 const TOP_BAR_SEARCH_EMPTY_CLASS =
   "px-3 py-3.5 text-center text-xs text-[var(--t3)]";
 
+// Step 8: the balance is a magnitude — ink, not the direction green the
+// chip carried since P8. The lime tint stays: the chip IS an action (it
+// deep-links to the Point Store).
 const TOP_BAR_BALANCE_CLASS =
-  "inline-flex min-h-11 items-center gap-2 rounded-[var(--r-pill)] bg-[var(--accent-soft)] px-3 py-[7px] text-[13px] font-semibold text-[var(--yes-text)] tabular-nums no-underline transition-[filter] duration-[120ms] hover:brightness-[0.97] font-mono";
+  "inline-flex min-h-11 shrink-0 items-center gap-2 rounded-[var(--r-pill)] bg-[var(--accent-soft)] px-3 py-[7px] text-[13px] font-semibold text-[var(--t1)] tabular-nums no-underline transition-[filter] duration-[120ms] hover:brightness-[0.97] font-mono";
+// Ultra-narrow (<360px): the pill row keeps only what matters — the
+// loyalty pill hides (TierPill max-[359px]:hidden, /rewards stays in the
+// menu) and the BAL label drops so the number itself never crushes.
 const TOP_BAR_BALANCE_LABEL_CLASS =
-  "text-[11px] font-medium text-[var(--t3)] font-sans";
+  "text-[11px] font-medium text-[var(--t3)] font-sans max-[359px]:hidden";
 // Compact "Add Points" entry to /store, always adjacent to the balance
 // chip. The top bar is already width-tight at common desktop sizes (search
 // + tier pill + balance), so the label only appears on wide desktops and
@@ -164,8 +170,12 @@ const TOP_BAR_BALANCE_LABEL_CLASS =
 const TOP_BAR_ADD_POINTS_SIZING =
   "min-h-11 shrink-0 px-3 text-[13px] no-underline max-[900px]:px-2.5";
 
+// Step 8: the avatar keeps the lime tint (identity ∩ accent) with INK on
+// it — the old recipe was white-on-lime (~1.3:1) with a stray P10 purple
+// hover literal. Hover follows the app rule: stronger hairline, no
+// background change.
 const TOP_BAR_AVATAR_CLASS =
-  "grid size-11 cursor-pointer place-items-center rounded-full border border-[rgba(255,255,255,0.2)] bg-[var(--accent)] text-[15px] font-bold text-white transition-[background-color,border-color] duration-150 hover:border-[var(--accent-lo)] hover:bg-[#6d63dc]";
+  "grid size-11 cursor-pointer place-items-center rounded-full border border-[color-mix(in_srgb,var(--lime)_90%,transparent)] bg-[color-mix(in_srgb,var(--lime)_32%,transparent)] text-[15px] font-semibold text-[var(--ticket-cta-text)] transition-[border-color] duration-150 hover:border-[var(--accent)]";
 
 const TOP_BAR_AUTH_CTA_SIZING =
   "min-h-11 px-4 text-[13px] no-underline max-[480px]:px-2.5";
@@ -517,7 +527,19 @@ export function TopBar() {
 
           {!isTerminalRoute && isAuthenticated && <TierPill />}
           {!isTerminalRoute && (
-            <LanguageSelector source={isDesktop ? "header" : "mobile_menu"} />
+            // Step 8 (390 header fix): signed in, the globe yields to the
+            // loyalty + balance chips below 420px — language stays
+            // reachable from Account → Settings. Signed out keeps it; that
+            // cluster has the room.
+            <span
+              className={
+                isAuthenticated
+                  ? "inline-flex min-w-0 max-[419px]:hidden"
+                  : "inline-flex min-w-0"
+              }
+            >
+              <LanguageSelector source={isDesktop ? "header" : "mobile_menu"} />
+            </span>
           )}
           {!isTerminalRoute && isAuthenticated && (
             <>
