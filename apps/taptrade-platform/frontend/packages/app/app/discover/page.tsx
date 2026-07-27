@@ -26,7 +26,6 @@ import { useTranslation } from "react-i18next";
 import type {
   Category,
   DiscoveryResponse,
-  MarketPriceHistory,
   PredictionMarket,
 } from "@taptrade-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
@@ -40,6 +39,12 @@ import {
   TerminalCategoryRail,
 } from "../components/prediction/TerminalCategoryRail";
 import { getMarketImageProps } from "../components/prediction/utils/marketImage";
+// Step 10: movement derivation shared with the /predict feed —
+// extracted so the two surfaces can't drift on honesty rules.
+import {
+  movementFromHistory,
+  type MarketMovement,
+} from "../components/prediction/market-movement";
 import { logger } from "../lib/logger";
 
 const api = createPredictionClient();
@@ -58,13 +63,6 @@ const LAUNCH_CATEGORY_SLUGS = new Set([
 // design_handoff_taptrade/logos/phosphor-paths.json (MIT; filled 256 grid).
 const PHOSPHOR_WARNING_CIRCLE_FILL =
   "M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm-8,56a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm8,104a12,12,0,1,1,12-12A12,12,0,0,1,128,184Z";
-
-interface MarketMovement {
-  deltaPoints: number;
-  pct: number;
-  direction: "up" | "down" | "flat";
-  values: number[];
-}
 
 function marketKey(market: PredictionMarket): string {
   return market.id || market.ticker;
@@ -85,25 +83,6 @@ function getSentiment(market: PredictionMarket): {
   if (noShare >= 60)
     return { label: "No-leaning", tone: "no", yesShare, noShare };
   return { label: "Balanced", tone: "neutral", yesShare, noShare };
-}
-
-function movementFromHistory(
-  history: MarketPriceHistory,
-): MarketMovement | null {
-  const values = history.points
-    .map((point) => point.yesPricePoints)
-    .filter((value) => Number.isFinite(value));
-  if (values.length < 2) return null;
-  const first = values[0];
-  const last = values[values.length - 1];
-  if (!first) return null;
-  const delta = last - first;
-  return {
-    deltaPoints: delta,
-    pct: Math.abs((delta / first) * 100),
-    direction: delta > 0 ? "up" : delta < 0 ? "down" : "flat",
-    values,
-  };
 }
 
 async function mapWithConcurrency<T, R>(

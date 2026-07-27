@@ -206,7 +206,6 @@
   "YOU_PAY": "Mga point na gagamitin",
   "YES": "Oo",
   "YES_PRICE_CHART": "YES price chart para sa {{ticker}}",
-  "SELL_SHARES_CTA": "Sell {{quantity}} share{{plural}} · est. {{amount}}",
   "DISCUSSION_COUNT_one": "{{count}} comment",
   "DISCUSSION_COUNT_other": "{{count}} comments",
   "MIN_ONE_SHARE_HINT": "At {{price}}¢ a share, you need at least {{price}} pts.",
@@ -231,5 +230,10 @@
   "DISPUTED_BODY": "Naka-pause ang settlement habang sinusuri ang iminungkahing resulta. Nakakandado ang points mo hanggang mapagpasyahan — hindi ito nanganganib dahil sa dispute.",
   "DISPUTE_GROUNDS": "Mga dahilang binanggit",
   "SETTLED_SHEET_LABEL": "Tingnan ang resulta",
-  "EST_PROCEEDS": "Tinatayang makukuha"
+  "EST_PROCEEDS": "Tinatayang makukuha",
+  "SHARE_MARKET": "I-share",
+  "SHARE_COPIED": "Nakopya ang link ng market.",
+  "SHARE_FAILED": "Hindi mabuksan ang share.",
+  "SELL_SHARES_CTA_one": "Ibenta ang {{count}} share · est. {{amount}}",
+  "SELL_SHARES_CTA_other": "Ibenta ang {{count}} shares · est. {{amount}}"
 }

@@ -970,6 +970,11 @@ function normalizePredictionMarket(
     bestNoBidPoints,
     bestNoAskPoints,
     lastQuoteAt: row.lastQuoteAt,
+    // §3-09: present only on user-facing list responses; absent means
+    // "unknown", never zero. This normalizer is a WHITELIST — like the
+    // gateway's MarshalJSON, new wire fields must be added HERE too.
+    commentCount:
+      typeof row.commentCount === "number" ? row.commentCount : undefined,
     unit: row.unit || "PTS",
   };
 }

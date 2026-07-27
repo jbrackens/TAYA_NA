@@ -1198,9 +1198,10 @@ export function TradeTicket({
                   ? // ISSUE-018: sell is share-denominated — the CTA states
                     // the share count and the estimated proceeds, never
                     // "N pts" for a share count.
+                    // Step 10: native i18next plural (_one/_other) — the
+                    // old {{plural}} suffix hack only worked for English.
                     t("SELL_SHARES_CTA", {
-                      quantity: requestedQuantity,
-                      plural: requestedQuantity === 1 ? "" : "s",
+                      count: requestedQuantity,
                       amount: formatPointAmount(requestedQuantity * price),
                     })
                   : t("PLACE_TRADE_AMOUNT", {

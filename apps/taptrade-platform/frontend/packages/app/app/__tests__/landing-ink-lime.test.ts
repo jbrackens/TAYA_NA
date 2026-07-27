@@ -29,8 +29,8 @@ function read(rel: string): string {
 
 const page = read("page.tsx");
 
-// The locales registered in app/lib/i18n/config.ts. public/static/locales/de
-// is an unshipped one-key stub — not part of the contract.
+// The locales registered in app/lib/i18n/config.ts (de was retired in
+// step 10 — it carried only legacy sportsbook namespaces).
 const SHIPPED_LOCALES = ["en", "id", "ms", "tl", "zh-Hans", "zh-Hant"];
 
 function readPageHome(locale: string): Record<string, string> {

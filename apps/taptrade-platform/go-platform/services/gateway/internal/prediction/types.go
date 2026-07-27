@@ -121,6 +121,12 @@ type Market struct {
 	CategoryID           string          `json:"categoryId,omitempty" db:"-"`
 	CategorySlug         string          `json:"categorySlug,omitempty" db:"-"`
 	CategoryName         string          `json:"categoryName,omitempty" db:"-"`
+	// CommentCount is the market's discussion size, stitched onto
+	// user-facing ListMarkets responses only (§3-09: the feed card's
+	// activity signal). Worker sweeps (Sort:"id") skip it, and
+	// GetMarket never carries it — the detail page loads the
+	// discussion itself. omitempty keeps it off every other payload.
+	CommentCount int `json:"commentCount,omitempty" db:"-"`
 	Ticker               string          `json:"ticker" db:"ticker"`
 	Title                string          `json:"title" db:"title"`
 	Description          string          `json:"description,omitempty" db:"description"`
@@ -209,7 +215,11 @@ func (m Market) MarshalJSON() ([]byte, error) {
 		BestNoBidPoints      *int            `json:"bestNoBidPoints,omitempty"`
 		BestNoAskPoints      *int            `json:"bestNoAskPoints,omitempty"`
 		LastQuoteAt          *time.Time      `json:"lastQuoteAt,omitempty"`
-		Unit                 string          `json:"unit"`
+		// §3-09: present only when the list path stitched it (>0);
+		// this marshaller is a WHITELIST — new wire fields land here,
+		// not just on the struct tag.
+		CommentCount int    `json:"commentCount,omitempty"`
+		Unit         string `json:"unit"`
 	}{
 		ID:                   m.ID,
 		EventID:              m.EventID,
@@ -253,6 +263,7 @@ func (m Market) MarshalJSON() ([]byte, error) {
 		BestNoBidPoints:      m.BestNoBidPoints,
 		BestNoAskPoints:      m.BestNoAskPoints,
 		LastQuoteAt:          publicJSONTimePtr(m.LastQuoteAt),
+		CommentCount:         m.CommentCount,
 		Unit:                 "PTS",
 	})
 }

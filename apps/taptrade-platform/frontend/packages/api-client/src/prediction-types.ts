@@ -87,6 +87,12 @@ export interface PredictionMarket {
   lastTradePricePoints?: number;
   volumePoints: number;
   openInterestPoints: number;
+  /**
+   * Discussion size, present only on user-facing ListMarkets responses
+   * (§3-09 — the feed card's activity signal). Absent on GetMarket and
+   * worker-shaped list calls; treat missing as "unknown", not zero.
+   */
+  commentCount?: number;
   liquidityPoints: number;
   settlementSourceKey: string;
   settlementRule: string;

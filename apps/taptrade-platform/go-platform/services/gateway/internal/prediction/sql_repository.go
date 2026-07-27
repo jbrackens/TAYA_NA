@@ -280,7 +280,46 @@ func (r *SQLRepository) ListMarkets(ctx context.Context, filter MarketFilter) ([
 		}
 		markets = append(markets, *m)
 	}
-	return markets, total, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
+	}
+
+	// §3-09 commentCount: one batched, index-backed GROUP BY over just
+	// this page's ids — stitched after the scan so marketSelectQuery()
+	// (shared with GetMarket and the workers) stays untouched. Gated on
+	// the sort being user-facing: the SMM/reconciler sweeps use
+	// Sort:"id" and keep their cheap shape, while every sort a person
+	// can pick (activity, closing_soon, newest) carries the count the
+	// feed card's activity signal needs.
+	if strings.TrimSpace(filter.Sort) != "id" && len(markets) > 0 {
+		ids := make([]string, len(markets))
+		for i := range markets {
+			ids[i] = markets[i].ID
+		}
+		countRows, err := r.db.QueryContext(ctx,
+			`SELECT market_id, COUNT(*) FROM prediction_market_comments
+			 WHERE market_id = ANY($1) GROUP BY market_id`, pq.Array(ids))
+		if err != nil {
+			return nil, 0, err
+		}
+		defer countRows.Close()
+		counts := make(map[string]int, len(ids))
+		for countRows.Next() {
+			var id string
+			var n int
+			if err := countRows.Scan(&id, &n); err != nil {
+				return nil, 0, err
+			}
+			counts[id] = n
+		}
+		if err := countRows.Err(); err != nil {
+			return nil, 0, err
+		}
+		for i := range markets {
+			markets[i].CommentCount = counts[markets[i].ID]
+		}
+	}
+	return markets, total, nil
 }
 
 func (r *SQLRepository) GetMarket(ctx context.Context, id string) (*Market, error) {

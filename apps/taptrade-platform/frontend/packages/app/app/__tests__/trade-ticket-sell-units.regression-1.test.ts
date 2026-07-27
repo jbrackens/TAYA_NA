@@ -52,16 +52,32 @@ describe("TradeTicket sell units (ISSUE-018)", () => {
     );
   });
 
-  it("ships the SELL_SHARES_CTA key in every locale", () => {
+  // Updated for Ink & lime step 10: the CTA moved to NATIVE i18next
+  // plural keys (_one/_other with {{count}}) — the old {{plural}} suffix
+  // interpolation only worked for English. Locales whose CLDR rules have
+  // no "one" form (id, ms, zh-Hans, zh-Hant) ship _other only.
+  it("ships native SELL_SHARES_CTA plural keys in every locale", () => {
+    const NEEDS_ONE = new Set(["en", "tl"]);
     for (const locale of ["en", "id", "ms", "tl", "zh-Hans", "zh-Hant"]) {
       const dict = JSON.parse(
         readPublic(`static/locales/${locale}/prediction.json`),
       ) as Record<string, string>;
       assert.ok(
-        typeof dict.SELL_SHARES_CTA === "string" &&
-          dict.SELL_SHARES_CTA.includes("{{quantity}}"),
-        `locale ${locale} must define SELL_SHARES_CTA with {{quantity}}`,
+        !("SELL_SHARES_CTA" in dict),
+        `${locale}: the un-pluralized key must be retired`,
       );
+      assert.ok(
+        typeof dict.SELL_SHARES_CTA_other === "string" &&
+          dict.SELL_SHARES_CTA_other.includes("{{count}}"),
+        `${locale}: SELL_SHARES_CTA_other with {{count}} required`,
+      );
+      if (NEEDS_ONE.has(locale)) {
+        assert.ok(
+          typeof dict.SELL_SHARES_CTA_one === "string" &&
+            dict.SELL_SHARES_CTA_one.includes("{{count}}"),
+          `${locale}: SELL_SHARES_CTA_one required`,
+        );
+      }
     }
   });
 });

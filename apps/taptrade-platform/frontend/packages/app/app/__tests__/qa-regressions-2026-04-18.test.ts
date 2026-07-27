@@ -2295,9 +2295,15 @@ describe("Full-page translation coverage", () => {
       ),
       "normalizePricePoint should not reattach retired price-history aliases",
     );
+    // Step 10: movementFromHistory moved from discover/page.tsx into the
+    // shared components/prediction/market-movement.ts (consumed by both
+    // /discover and the /predict feed) — the point-native read pins there.
+    const marketMovementSource = read(
+      "components/prediction/market-movement.ts",
+    );
     assert.ok(
       marketChartSource.includes("p.yesPricePoints") &&
-        discoverPageSource.includes("point.yesPricePoints") &&
+        marketMovementSource.includes("point.yesPricePoints") &&
         heroPriceHistorySource.includes("p.yesPricePoints"),
       "price-history UI consumers should read point-native history fields",
     );

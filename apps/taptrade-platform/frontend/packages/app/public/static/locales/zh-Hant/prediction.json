@@ -204,7 +204,6 @@
   "YOU_PAY": "使用點數",
   "YES": "是",
   "YES_PRICE_CHART": "{{ticker}} 的「是」價格圖",
-  "SELL_SHARES_CTA": "Sell {{quantity}} share{{plural}} · est. {{amount}}",
   "DISCUSSION_COUNT_one": "{{count}} comment",
   "DISCUSSION_COUNT_other": "{{count}} comments",
   "MIN_ONE_SHARE_HINT": "At {{price}}¢ a share, you need at least {{price}} pts.",
@@ -229,5 +228,9 @@
   "DISPUTED_BODY": "提議的結果正在覆核，結算已暫停。你的點數在裁定前保持鎖定——爭議本身不會使其受損。",
   "DISPUTE_GROUNDS": "質疑理由",
   "SETTLED_SHEET_LABEL": "查看結果",
-  "EST_PROCEEDS": "預計所得"
+  "EST_PROCEEDS": "預計所得",
+  "SHARE_MARKET": "分享",
+  "SHARE_COPIED": "市場連結已複製。",
+  "SHARE_FAILED": "無法開啟分享。",
+  "SELL_SHARES_CTA_other": "賣出 {{count}} 份 · 預計 {{amount}}"
 }

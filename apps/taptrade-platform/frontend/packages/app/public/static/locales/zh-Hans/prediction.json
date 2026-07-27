@@ -204,7 +204,6 @@
   "YOU_PAY": "使用点数",
   "YES": "是",
   "YES_PRICE_CHART": "{{ticker}} 的“是”价格图",
-  "SELL_SHARES_CTA": "Sell {{quantity}} share{{plural}} · est. {{amount}}",
   "DISCUSSION_COUNT_one": "{{count}} comment",
   "DISCUSSION_COUNT_other": "{{count}} comments",
   "MIN_ONE_SHARE_HINT": "At {{price}}¢ a share, you need at least {{price}} pts.",
@@ -229,5 +228,9 @@
   "DISPUTED_BODY": "提议的结果正在复核，结算已暂停。你的点数在裁定前保持锁定——争议本身不会使其受损。",
   "DISPUTE_GROUNDS": "质疑理由",
   "SETTLED_SHEET_LABEL": "查看结果",
-  "EST_PROCEEDS": "预计所得"
+  "EST_PROCEEDS": "预计所得",
+  "SHARE_MARKET": "分享",
+  "SHARE_COPIED": "市场链接已复制。",
+  "SHARE_FAILED": "无法打开分享。",
+  "SELL_SHARES_CTA_other": "卖出 {{count}} 份 · 预计 {{amount}}"
 }

@@ -204,7 +204,6 @@
   "YOU_PAY": "Mata digunakan",
   "YES": "Ya",
   "YES_PRICE_CHART": "Carta harga Ya untuk {{ticker}}",
-  "SELL_SHARES_CTA": "Sell {{quantity}} share{{plural}} · est. {{amount}}",
   "DISCUSSION_COUNT_one": "{{count}} comment",
   "DISCUSSION_COUNT_other": "{{count}} comments",
   "MIN_ONE_SHARE_HINT": "At {{price}}¢ a share, you need at least {{price}} pts.",
@@ -229,5 +228,9 @@
   "DISPUTED_BODY": "Penyelesaian dijeda sementara keputusan yang dicadangkan disemak. Mata anda kekal terkunci sehingga diputuskan — ia tidak berisiko daripada pertikaian itu sendiri.",
   "DISPUTE_GROUNDS": "Alasan yang diberikan",
   "SETTLED_SHEET_LABEL": "Lihat keputusan",
-  "EST_PROCEEDS": "Anggaran hasil"
+  "EST_PROCEEDS": "Anggaran hasil",
+  "SHARE_MARKET": "Kongsi",
+  "SHARE_COPIED": "Pautan pasaran disalin.",
+  "SHARE_FAILED": "Kongsi tidak dapat dibuka.",
+  "SELL_SHARES_CTA_other": "Jual {{count}} saham · anggaran {{amount}}"
 }
