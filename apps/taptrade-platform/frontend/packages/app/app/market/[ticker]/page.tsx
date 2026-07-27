@@ -42,6 +42,7 @@ import RecentTrades from "../../components/prediction/RecentTrades";
 import { TerminalCategoryRail } from "../../components/prediction/TerminalCategoryRail";
 import {
   TradeTicket,
+  type TicketSettlement,
   type TradeTicketSubmitOptions,
 } from "../../components/prediction/TradeTicket";
 import { logger } from "../../lib/logger";
@@ -824,6 +825,88 @@ export default function MarketDetailPage() {
     loadPositions();
   }, [loadPositions]);
 
+  // Settlement 12a/12b/12e: the viewer's own outcome on a settled or
+  // voided market, for the ticket's personal payout band. Settled markets
+  // prefer the portfolio history row (authoritative paid/realized from
+  // the disbursement); if the first history page doesn't carry this
+  // market (deep history), or the market was VOIDED (voided positions
+  // never enter /portfolio/history — they stay position rows, refunded
+  // at cost), derive from the position rows instead.
+  const marketStatus = market?.status;
+  const marketResult = market?.result;
+  const [ticketSettlements, setTicketSettlements] = useState<
+    TicketSettlement[]
+  >([]);
+  useEffect(() => {
+    if (
+      !isAuthenticated ||
+      !marketId ||
+      (marketStatus !== "settled" && marketStatus !== "voided")
+    ) {
+      setTicketSettlements([]);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        if (marketStatus === "settled") {
+          const history = await api.getSettledPositions(1, 50);
+          const rows = (history.data || []).filter(
+            (r) => r.marketId === marketId,
+          );
+          if (rows.length > 0) {
+            if (!cancelled) {
+              setTicketSettlements(
+                rows.map((r) => ({
+                  side: r.side,
+                  quantity: r.quantity,
+                  // paid − realized = what the position cost to open.
+                  stakedPoints: r.settlementPoints - r.realizedPoints,
+                  paidPoints: r.settlementPoints,
+                  resultPoints: r.realizedPoints,
+                })),
+              );
+            }
+            return;
+          }
+        }
+        const all = await api.getPositions();
+        if (cancelled) return;
+        const mine = (all || []).filter(
+          (p) => p.marketId === marketId && p.quantity > 0,
+        );
+        setTicketSettlements(
+          mine.map((p) => {
+            if (marketStatus === "voided") {
+              // A void refunds at cost: returned = staked, result = 0.
+              return {
+                side: p.side,
+                quantity: p.quantity,
+                stakedPoints: p.totalCostPoints,
+                paidPoints: p.totalCostPoints,
+                resultPoints: 0,
+              };
+            }
+            const paid = marketResult === p.side ? p.quantity * 100 : 0;
+            return {
+              side: p.side,
+              quantity: p.quantity,
+              stakedPoints: p.totalCostPoints,
+              paidPoints: paid,
+              resultPoints: paid - p.totalCostPoints,
+            };
+          }),
+        );
+      } catch (err: unknown) {
+        logger.warn("MarketDetail", "settlement outcome fetch failed", err);
+        if (!cancelled) setTicketSettlements([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, marketId, marketStatus, marketResult]);
+
   // Live price updates via the gateway's `market:<id>` channel. Gateway
   // publishes the post-AMM market state after every successful order on
   // this market. Payload shape mirrors the gateway's marketUpdatePayload
@@ -1244,6 +1327,7 @@ export default function MarketDetailPage() {
             onSideChange={setSelectedSide}
             isAuthenticated={isAuthenticated}
             authLoading={authLoading}
+            settlements={ticketSettlements}
             // Available = quantity minus reserved (already-spoken-for in
             // open sell orders). Sum across positions on this side; in
             // practice the gateway returns at most one row per (user,

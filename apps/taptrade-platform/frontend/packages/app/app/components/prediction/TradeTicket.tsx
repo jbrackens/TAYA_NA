@@ -26,6 +26,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   type CSSProperties,
 } from "react";
 import Link from "next/link";
@@ -58,6 +59,24 @@ export interface TradeTicketSubmitOptions {
   notionalCapPoints?: number;
 }
 
+/**
+ * The viewer's own outcome on a settled/voided market, computed by the
+ * page from the portfolio history row (settled) or the position row
+ * (voided) — see market/[ticker]/page.tsx. Everything the personal
+ * payout band needs; the ticket derives verdict and per-share settle
+ * price from `market.status`/`market.result` + `side`.
+ */
+export interface TicketSettlement {
+  side: OrderSide;
+  quantity: number;
+  /** What the position cost to open. */
+  stakedPoints: number;
+  /** What settlement paid out — for a voided market, the returned stake. */
+  paidPoints: number;
+  /** Signed result (paid − staked); 0 for voided. */
+  resultPoints: number;
+}
+
 interface TradeTicketProps {
   market: PredictionMarket;
   balance?: number;
@@ -73,6 +92,12 @@ interface TradeTicketProps {
   /** Available shares the user can sell from their YES/NO position. */
   availableYesShares?: number;
   availableNoShares?: number;
+  /**
+   * Settlement 12a/12b/12e: the viewer's settled/voided outcome(s) on
+   * this market — one entry per held side (almost always one). Absent or
+   * empty = no position, no band.
+   */
+  settlements?: TicketSettlement[];
   onPreview?: (
     side: OrderSide,
     quantity: number,
@@ -135,7 +160,7 @@ const TICKET_TRUST_CLASS =
   "mt-2.5 text-center text-xs leading-[1.45] text-[var(--t3)]";
 const TICKET_ERROR_CLASS = "mt-2.5 text-center text-xs text-[var(--no-text)]";
 const TICKET_COMPLIANCE_CLASS =
-  "mt-3 rounded-[var(--r-rh-sm)] border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.1)] p-2.5 text-center text-xs leading-[1.45] text-[var(--no-text)]";
+  "mt-3 rounded-[var(--r-rh-sm)] border border-[var(--no-border)] bg-[var(--no-soft)] p-2.5 text-center text-xs leading-[1.45] text-[var(--no-text)]";
 const TICKET_CLOSED_CLASS =
   "mt-3 rounded-[var(--r-rh-sm)] border border-dashed border-[var(--border-1)] p-2.5 text-center text-xs text-[var(--t3)]";
 // Insufficient-balance escape hatch: a secondary link-button into the Point
@@ -170,39 +195,231 @@ function formatPointAmount(points: number): string {
   return `${Math.round(points).toLocaleString()} pts`;
 }
 
+type Translate = (key: string, values?: Record<string, unknown>) => string;
+
+function formatSignedPoints(points: number): string {
+  const sign = points >= 0 ? "+" : "−";
+  return `${sign}${Math.abs(Math.round(points)).toLocaleString()}`;
+}
+
 /**
- * Replacement body for non-open markets (settled, halted, closed, voided).
- * Previously the full ticket rendered with a pre-filled amount and a
- * "buy 38 shares" projection on SETTLED markets, while a
- * "Trading is paused" banner sat at the bottom — investors read the
- * projection as a tradeable quote. The dedicated body shows only the
- * outcome and a one-line explanation.
+ * Settlement 12a/12b/12e — the viewer's own outcome, in the ticket.
+ * One principle throughout: the win and the loss get the same layout;
+ * only colour, glyph and one line of copy change. Voided is held
+ * neutral end to end — no green, no red, a dash where the settlement
+ * price would be, and the result stated as 0 rather than left blank.
+ * The payout is the hero, but the working sits right underneath it:
+ * showing the arithmetic is what separates a payout from a jackpot.
+ */
+function SettlementBand({
+  market,
+  s,
+  t,
+}: {
+  market: PredictionMarket;
+  s: TicketSettlement;
+  t: Translate;
+}) {
+  const voided = market.status === "voided";
+  const won = !voided && market.result === s.side;
+  const markClass = voided
+    ? "text-[var(--t3)]"
+    : won
+      ? "text-[var(--yes-text)]"
+      : "text-[var(--no-text)]";
+  const heroBgClass = voided
+    ? "bg-[var(--surface-2)]"
+    : won
+      ? "bg-[var(--yes-soft)]"
+      : "bg-[var(--no-soft)]";
+  const verdict = voided
+    ? t("SETTLEMENT_VERDICT_VOID")
+    : won
+      ? t("SETTLEMENT_VERDICT_WON")
+      : t("SETTLEMENT_VERDICT_LOST");
+  const resultLine = voided
+    ? t("VOID_RESULT_LINE")
+    : t("SETTLEMENT_RESULT_LINE", {
+        result: formatSignedPoints(s.resultPoints),
+        staked: Math.round(s.stakedPoints).toLocaleString(),
+      });
+  const resultClass = voided
+    ? "text-[var(--t3)]"
+    : s.resultPoints >= 0
+      ? "text-[var(--yes-text)]"
+      : "text-[var(--no-text)]";
+  const rows: Array<{ label: string; value: string; className?: string }> = [
+    {
+      label: t("YOUR_POSITION"),
+      value: `${s.quantity} ${s.side.toUpperCase()}`,
+    },
+    {
+      label: t("SETTLED_AT"),
+      value: voided ? "—" : t("SETTLED_AT_PER_SHARE", { price: won ? 100 : 0 }),
+    },
+    {
+      label: voided ? t("ROW_RETURNED") : t("ROW_PAID"),
+      value: formatPointAmount(s.paidPoints),
+      className: won ? "text-[var(--yes-text)]" : undefined,
+    },
+    { label: t("ROW_STAKED"), value: formatPointAmount(s.stakedPoints) },
+    {
+      label: t("ROW_RESULT"),
+      value: voided ? "0 pts" : `${formatSignedPoints(s.resultPoints)} pts`,
+      className: voided ? undefined : resultClass,
+    },
+  ];
+  return (
+    <section className="mb-3" aria-label={verdict}>
+      <div
+        className={`rounded-t-[var(--r-rh-md)] border border-b-0 border-[var(--border-1)] px-4 py-5 text-center ${heroBgClass}`}
+      >
+        <span
+          aria-hidden="true"
+          className={`inline-grid h-11 w-11 place-items-center rounded-full bg-[var(--surface-1)] ${markClass}`}
+        >
+          {/* Glyph geometry from Settlement.dc.html (Lucide check / x /
+           * minus) — read from the reference, not reconstructed. */}
+          <svg
+            viewBox="0 0 24 24"
+            width="22"
+            height="22"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            {voided ? (
+              <path d="M5 12h14" />
+            ) : won ? (
+              <path d="M20 6 9 17l-5-5" />
+            ) : (
+              <>
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+              </>
+            )}
+          </svg>
+        </span>
+        <div className={`mt-2.5 text-[13px] font-semibold ${markClass}`}>
+          {verdict}
+        </div>
+        <div className="mt-1.5 font-mono text-[32px] font-medium leading-[1.05] tracking-[-0.04em] text-[var(--t1)] [font-variant-numeric:tabular-nums]">
+          {formatPointAmount(s.paidPoints)}
+        </div>
+        <div
+          className={`mt-1.5 font-mono text-[12px] font-medium [font-variant-numeric:tabular-nums] ${resultClass}`}
+        >
+          {resultLine}
+        </div>
+      </div>
+      <div className="rounded-b-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-4 py-3.5">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--t3)]">
+          {t("HOW_THIS_PAID")}
+        </div>
+        <div className="mt-2.5 flex flex-col gap-2">
+          {rows.map((row) => (
+            <div
+              key={row.label}
+              className="flex items-baseline justify-between gap-3 text-[13px]"
+            >
+              <span className="text-[var(--t2)]">{row.label}</span>
+              <span
+                className={`font-mono font-medium [font-variant-numeric:tabular-nums] ${
+                  row.className ?? "text-[var(--t2)]"
+                }`}
+              >
+                {row.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Replacement body for non-open markets (settled, halted, closed, voided,
+ * proposed_resolution, disputed). Previously the full ticket rendered
+ * with a pre-filled amount and a "buy 38 shares" projection on SETTLED
+ * markets — investors read the projection as a tradeable quote. The
+ * dedicated body shows the outcome, the viewer's own result when they
+ * held a position (Settlement 12a/12b/12e), and a one-line explanation.
  */
 function renderSettledTicket(
   market: PredictionMarket,
-  t: (key: string, values?: Record<string, unknown>) => string,
+  t: Translate,
+  settlements: TicketSettlement[],
 ) {
-  const isSettled = market.status === "settled";
+  const status = market.status;
+  const isSettled = status === "settled";
+  const isVoided = status === "voided";
+  const isProposed = status === "proposed_resolution";
+  const isDisputed = status === "disputed";
   const outcomeLabel = isSettled
     ? market.result === "yes"
       ? t("SETTLED_YES_WINS")
       : market.result === "no"
         ? t("SETTLED_NO_WINS")
         : t("SETTLED")
-    : t("MARKET_STATUS", { status: market.status });
+    : isVoided
+      ? t("VOIDED")
+      : isProposed
+        ? t("RESOLUTION_PROPOSED")
+        : isDisputed
+          ? t("DISPUTED")
+          : t("MARKET_STATUS", { status });
   const explainer = isSettled
     ? market.result
       ? t("MARKET_RESOLVED_EXPLAINER", {
           result: market.result.toUpperCase(),
         })
       : t("MARKET_SETTLED_CLOSED")
-    : t("MARKET_PAUSED_EXPLAINER", { status: market.status });
+    : isVoided
+      ? t("MARKET_VOIDED_EXPLAINER")
+      : isProposed
+        ? t("RESOLUTION_PROPOSED_BODY", {
+            result: (market.result ?? "").toUpperCase() || t("RESOLVED"),
+          })
+        : isDisputed
+          ? t("DISPUTED_BODY")
+          : t("MARKET_PAUSED_EXPLAINER", { status });
+  // Grounds only render when the gateway supplies them — the field is
+  // optional in settlementParams and absent today (see step-9 notes).
+  const disputeGrounds =
+    isDisputed && typeof market.settlementParams?.disputeGrounds === "string"
+      ? market.settlementParams.disputeGrounds
+      : null;
+  const showBands = (isSettled || isVoided) && settlements.length > 0;
   return (
     <>
       <div className={TICKET_HEAD_CLASS}>
         <span className={TICKET_TITLE_CLASS}>{outcomeLabel}</span>
       </div>
+      {showBands &&
+        settlements.map((s) => (
+          <SettlementBand
+            key={`${s.side}-${s.quantity}`}
+            market={market}
+            s={s}
+            t={t}
+          />
+        ))}
       <div className={TICKET_CLOSED_CLASS}>{explainer}</div>
+      {disputeGrounds && (
+        <div className="mt-2.5 rounded-[var(--r-rh-sm)] bg-[var(--surface-2)] px-3.5 py-3">
+          <div className="text-[11px] font-medium text-[var(--t3)]">
+            {t("DISPUTE_GROUNDS")}
+          </div>
+          <p className="m-0 mt-1.5 text-xs leading-[1.5] text-[var(--t2)]">
+            {disputeGrounds}
+          </p>
+        </div>
+      )}
     </>
   );
 }
@@ -220,6 +437,7 @@ export function TradeTicket({
   onSubmit,
   onSideChange,
   variant = "default",
+  settlements = [],
 }: TradeTicketProps) {
   const { t } = useTranslation("prediction");
   const { t: tStore } = useTranslation("store");
@@ -344,13 +562,47 @@ export function TradeTicket({
   const pointsIfCorrect = shares * 100; // Correct contracts settle at 100 Points each.
   const summaryPrice =
     preview?.averageFillPricePoints || preview?.pricePoints || price;
-  const impliedProb = summaryPrice; // cents are already 0-100, readable as %
+  // (implied probability IS the price — cents are already 0-100, readable
+  // as % — so the rows below reuse displayPrice for both.)
   const effectiveSpend =
     action === "buy" &&
     mode === "market" &&
     typeof preview?.totalCostWithFeesPoints === "number"
       ? preview.totalCostWithFeesPoints
       : quantity * price;
+
+  // §3-03 quote freeze: on a screen where the total is what you're
+  // agreeing to, a number that moves between reading it and pressing it
+  // is the defect. previewLoading spans the full unsettled window (it is
+  // set the moment a dep changes, before the 250ms debounce timer even
+  // fires), so while it's true the summary rows HOLD the last settled
+  // quote and the CTA waits. The safety gates (insufficient funds/shares)
+  // deliberately keep reading the LIVE values.
+  const quotePending = previewLoading;
+  const lastSettledQuoteRef = useRef<{
+    spend: number;
+    price: number;
+    shares: number;
+    pointsIfCorrect: number;
+  } | null>(null);
+  useEffect(() => {
+    if (!previewLoading) {
+      lastSettledQuoteRef.current = {
+        spend: effectiveSpend,
+        price: summaryPrice,
+        shares,
+        pointsIfCorrect,
+      };
+    }
+  }, [previewLoading, effectiveSpend, summaryPrice, shares, pointsIfCorrect]);
+  const frozenQuote = quotePending ? lastSettledQuoteRef.current : null;
+  const displaySpend = frozenQuote ? frozenQuote.spend : effectiveSpend;
+  const displayPrice = frozenQuote ? frozenQuote.price : summaryPrice;
+  const displayShares = frozenQuote ? frozenQuote.shares : shares;
+  const displayPointsIfCorrect = frozenQuote
+    ? frozenQuote.pointsIfCorrect
+    : pointsIfCorrect;
+
   const hasKnownBalance = typeof balance === "number";
   // Point-balance check applies only to buys. Sells require enough position.
   //
@@ -380,12 +632,16 @@ export function TradeTicket({
     preview.filledQuantity === 0;
   const loginReturnPath = `/market/${market.ticker}?side=${side}&amount=${Math.round(amount)}`;
   const loginHref = `/auth/login?returnUrl=${encodeURIComponent(loginReturnPath)}`;
+  const registerHref = `/auth/register?returnUrl=${encodeURIComponent(loginReturnPath)}`;
 
   const handleSubmit = useCallback(async () => {
     if (!onSubmit) return;
     if (!isAuthenticated || authLoading || !isOpen || isAmmQuoteOnly) return;
     if (insufficientFunds || insufficientShares || marketBuyHasNoLiquidity)
       return;
+    // §3-03 belt-and-braces: the CTA is disabled while the quote is
+    // unsettled, but a queued click must not slip through either.
+    if (quotePending) return;
     if (quantity < 1) {
       setError(t("AMOUNT_TOO_SMALL"));
       return;
@@ -583,7 +839,7 @@ export function TradeTicket({
       aria-label={t("TRADE_TICKET")}
       style={ticketStyle}
     >
-      {!isOpen && renderSettledTicket(market, t)}
+      {!isOpen && renderSettledTicket(market, t, settlements)}
       {isOpen && (
         <>
           <div className={TICKET_HEAD_CLASS}>
@@ -782,20 +1038,30 @@ export function TradeTicket({
             <div>
               <div className={TICKET_ROW_CLASS}>
                 <span className={TICKET_ROW_LABEL_CLASS}>{t("PRICE")}</span>
+                {/* §3-03: the price no longer swaps to "Loading…" text —
+                 * the frozen figure holds and the pending dot on the
+                 * total row carries the in-flight signal. */}
                 <span className={TICKET_ROW_VALUE_CLASS}>
-                  {previewLoading ? t("LOADING") : `${summaryPrice}¢`}
+                  {displayPrice}¢
                 </span>
               </div>
               <p className={TICKET_ROW_SUB_CLASS}>
-                {t("IMPLIED_PROB")} {impliedProb}% ·{" "}
-                {t("SHARES_COUNT", { quantity: Math.floor(shares) })}
+                {t("IMPLIED_PROB")} {displayPrice}% ·{" "}
+                {t("SHARES_COUNT", { quantity: Math.floor(displayShares) })}
               </p>
             </div>
 
             <div className={TICKET_ROW_CLASS}>
               <span className={TICKET_ROW_LABEL_CLASS}>{t("EST_COST")}</span>
-              <span className={TICKET_ROW_VALUE_CLASS}>
-                <PointsFlow value={effectiveSpend} suffix=" pts" />
+              <span className={TICKET_ROW_VALUE_CLASS} aria-busy={quotePending}>
+                <PointsFlow value={displaySpend} suffix=" pts" />
+                {quotePending && (
+                  <span
+                    className="ml-1.5 inline-block h-2 w-2 animate-pulse rounded-full border border-[var(--pending-border)] bg-[var(--pending-fill)] align-middle"
+                    aria-hidden="true"
+                  />
+                )}
+                {quotePending && <span className="sr-only">{t("LOADING")}</span>}
               </span>
             </div>
 
@@ -810,7 +1076,7 @@ export function TradeTicket({
                     : "text-[var(--no-text)]"
                 }`}
               >
-                <PointsFlow value={pointsIfCorrect} suffix=" pts" />
+                <PointsFlow value={displayPointsIfCorrect} suffix=" pts" />
               </span>
             </div>
           </div>
@@ -821,16 +1087,26 @@ export function TradeTicket({
             </Button>
           ) : !isAuthenticated ? (
             <>
+              {/* §4 SIGNUP_TO_TRADE (step 9): the signed-out CTA invites
+               * sign-up — the landing, register split-screen and share
+               * cards all speak sign-up, and "Log in to trade" contradicted
+               * them (the same drift the landing mockup had). The note
+               * below stays the log-in path for returning users. */}
               <Button
                 variant="cta"
                 size="none"
                 className="mt-4"
-                render={<Link href={loginHref} />}
+                render={<Link href={registerHref} />}
               >
-                {t("LOG_IN_TO_TRADE")}
+                {t("SIGNUP_TO_TRADE")}
               </Button>
               <p className={TICKET_NOTE_CLASS}>
-                {t("SIGN_IN_TO_PLACE_ORDER", { side: side.toUpperCase() })}
+                <Link
+                  href={loginHref}
+                  className="text-inherit underline decoration-[var(--border-2)] underline-offset-2 hover:decoration-[var(--t2)]"
+                >
+                  {t("SIGN_IN_TO_PLACE_ORDER", { side: side.toUpperCase() })}
+                </Link>
               </p>
             </>
           ) : insufficientFunds ? (
@@ -898,7 +1174,10 @@ export function TradeTicket({
               size="none"
               className="mt-4"
               onClick={handleSubmit}
-              disabled={submitting || quantity < 1}
+              // §3-03: the CTA waits for the quote to settle — pressing a
+              // total that's still moving is agreeing to a number you
+              // haven't seen.
+              disabled={submitting || quantity < 1 || quotePending}
             >
               {/*
                 Label says "Place trade", not "Review trade", because
@@ -926,9 +1205,11 @@ export function TradeTicket({
           )}
 
           <p className={TICKET_TRUST_CLASS}>
+            {/* §3-03: the trust note quotes the price — it freezes with
+             * the rest of the quote. */}
             {t("TRADE_TRUST_NOTE", {
-              price: summaryPrice,
-              probability: impliedProb,
+              price: displayPrice,
+              probability: displayPrice,
             })}
           </p>
 
