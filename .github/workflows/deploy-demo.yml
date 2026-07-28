@@ -602,10 +602,22 @@ jobs:
       - name: Firewall origin to Cloudflare IPs
         # Restrict :80/:443 to CF ranges so direct-to-origin requests can't
         # forge CF-IPCountry. Re-runs every deploy to pick up new ranges.
-        # Non-fatal: if iptables is missing the EDGE_SHARED_SECRET check is
-        # the backstop — the deploy still succeeds.
+        #
+        # This step FAILS the run when the firewall doesn't come up (it used
+        # to emit a yellow ::warning::). The 2026-07-28 incident: a teardown
+        # bug left CF-ALLOW empty-but-referenced on every deploy — the origin
+        # was directly reachable for weeks and the only signal was a warning
+        # nobody had to act on. The app is already deployed by this step, so
+        # a red run here means "live, but the origin is not locked down" —
+        # which is exactly the thing that must not be quietly tolerated.
+        # The script self-verifies (references present + DROP rule in place)
+        # and exits non-zero if the filter is not actually in force.
         run: |
           ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
             'bash /opt/phoenix/scripts/security/cf-firewall.sh' || {
-              echo "::warning::cf-firewall.sh failed — EDGE_SHARED_SECRET still protects the origin, but fix the firewall."
+              echo "::error::cf-firewall.sh failed — the origin may be reachable directly. EDGE_SHARED_SECRET still guards the money paths, but fix the firewall now."
+              ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+                'echo "--- CF-ALLOW (v4) ---"; iptables -S CF-ALLOW 2>&1 | head -3;
+                 echo "--- references ---"; iptables -S | grep -- "-j CF-ALLOW$" || echo "(none)"' || true
+              exit 1
             }
