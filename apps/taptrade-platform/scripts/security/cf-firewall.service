@@ -1,0 +1,36 @@
+[Unit]
+# Re-assert the Cloudflare origin filter AFTER Docker has rebuilt its own
+# chains at boot.
+#
+# Why this exists alongside iptables-persistent (installed 2026-07-29):
+# netfilter-persistent restores /etc/iptables/rules.v4 very early, and that
+# file necessarily contains Docker's NAT rules with the container IPs that
+# were live when it was saved (e.g. DNAT --to-destination 172.18.0.5:18081).
+# Those IPs are reassigned whenever containers are recreated, so the restored
+# copy is stale by definition. Docker cleans up its OWN chains when dockerd
+# starts — but it deliberately never touches DOCKER-USER, which is where our
+# filter hangs. So the durable guarantee is: let persistence cover the early
+# boot window, then rebuild the filter from scratch once Docker is up, which
+# also refreshes the Cloudflare ranges and re-detects the public interface.
+#
+# The script is idempotent and self-verifying: it exits non-zero if the
+# filter is not actually in force, so a failure here is visible in
+# `systemctl status cf-firewall`.
+Description=Restrict origin :80/:443 to Cloudflare ranges (post-Docker)
+After=docker.service network-online.target
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/phoenix/scripts/security/cf-firewall.sh
+# The box may boot before Cloudflare's IP list is reachable; retry rather
+# than leaving the origin open.
+Restart=on-failure
+RestartSec=30s
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

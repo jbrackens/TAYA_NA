@@ -613,6 +613,18 @@ jobs:
         # The script self-verifies (references present + DROP rule in place)
         # and exits non-zero if the filter is not actually in force.
         run: |
+          # Keep the boot-time unit in sync with the repo (rsync lands the
+          # file under /opt/phoenix; systemd needs it in /etc). Idempotent:
+          # only reloads when the content actually changed.
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            SRC=/opt/phoenix/scripts/security/cf-firewall.service
+            DST=/etc/systemd/system/cf-firewall.service
+            if [ -f "$SRC" ] && ! cmp -s "$SRC" "$DST"; then
+              cp "$SRC" "$DST" && systemctl daemon-reload && systemctl enable cf-firewall.service
+              echo "cf-firewall.service updated + enabled"
+            else
+              echo "cf-firewall.service unchanged"
+            fi' || echo "::warning::could not sync cf-firewall.service unit"
           ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
             'bash /opt/phoenix/scripts/security/cf-firewall.sh' || {
               echo "::error::cf-firewall.sh failed — the origin may be reachable directly. EDGE_SHARED_SECRET still guards the money paths, but fix the firewall now."
