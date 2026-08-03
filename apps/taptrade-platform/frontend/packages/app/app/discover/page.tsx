@@ -4,18 +4,13 @@
  * DiscoverPage — "What's moving right now" (Ink & lime step 5,
  * Discover.dc.html 14a/14b).
  *
- * Structure: featured hero (DiscoveryHero — the 64px ink price, honest
- * chart, Buy pair) above two INDEPENDENT sections:
- *   Trending      — rows lead with the 24h delta (why you care: movement)
- *   Closing soon  — rows lead with time remaining (why you care: urgency)
- * Each section owns its 18b empty state, because on a quiet day either
- * list can be empty on its own.
+ * Structure: a single ranked board with seven in-place tabs. Each tab uses a
+ * distinct, truthful source for activity, discussion, conviction, or verified
+ * 24-hour price movement, without turning the page into seven small panels.
  *
  * The movement pipeline is honest by construction: deltas come only from
  * the real /prices series (rows show "—" while loading or when history
- * is missing — never an invented number), and the hero's chart keeps the
- * same discipline (no line without history; synthetic shapes only behind
- * the demo flag, labelled "Simulated data").
+ * is missing — never an invented number).
  */
 
 import Link from "next/link";
@@ -31,9 +26,16 @@ import type {
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import TapDot from "../components/TapDot";
 import { Card } from "../components/ui";
-import { DiscoveryHero } from "../components/prediction/DiscoveryHero";
-import { normalizePriceShares } from "../components/prediction/market-display";
 import { localizedMarket } from "../components/prediction/market-content";
+import {
+  buildDiscoverRankings,
+  marketKey,
+  marketShares,
+  type DiscoverRanking,
+  type DiscoverRankingKey,
+  type DiscoverRankingLead,
+} from "../components/prediction/discover-rankings";
+import { dedupeMarkets } from "../components/prediction/market-display";
 import {
   TERMINAL_CATEGORY_ICONS,
   TerminalCategoryRail,
@@ -46,10 +48,12 @@ import {
   type MarketMovement,
 } from "../components/prediction/market-movement";
 import { logger } from "../lib/logger";
+import { formatCompactPoints } from "../lib/points";
 
 const api = createPredictionClient();
-const SECTION_ROWS = 5;
 const HISTORY_FETCH_CONCURRENCY = 4;
+const CATALOG_RANKING_SIZE = 100;
+const HISTORY_CANDIDATE_LIMIT = 100;
 const LAUNCH_CATEGORY_SLUGS = new Set([
   "sports",
   "politics",
@@ -63,27 +67,6 @@ const LAUNCH_CATEGORY_SLUGS = new Set([
 // design_handoff_taptrade/logos/phosphor-paths.json (MIT; filled 256 grid).
 const PHOSPHOR_WARNING_CIRCLE_FILL =
   "M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm-8,56a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm8,104a12,12,0,1,1,12-12A12,12,0,0,1,128,184Z";
-
-function marketKey(market: PredictionMarket): string {
-  return market.id || market.ticker;
-}
-
-function getSentiment(market: PredictionMarket): {
-  label: string;
-  tone: "yes" | "no" | "neutral";
-  yesShare: number;
-  noShare: number;
-} {
-  const { yesShare, noShare } = normalizePriceShares(
-    market.yesPricePoints,
-    market.noPricePoints,
-  );
-  if (yesShare >= 60)
-    return { label: "Yes-leaning", tone: "yes", yesShare, noShare };
-  if (noShare >= 60)
-    return { label: "No-leaning", tone: "no", yesShare, noShare };
-  return { label: "Balanced", tone: "neutral", yesShare, noShare };
-}
 
 async function mapWithConcurrency<T, R>(
   items: T[],
@@ -154,93 +137,133 @@ function MarketThumbnail({ market }: { market: PredictionMarket }) {
   );
 }
 
-/**
- * One discovery row (14b). `lead` decides the right-column sub-fact:
- * trending rows carry the 24h delta, closing-soon rows carry time left —
- * different reasons to care.
- */
-function SectionRow({
+function RankingMetric({
   market,
   movement,
   lead,
 }: {
   market: PredictionMarket;
   movement?: MarketMovement | null;
-  lead: "delta" | "time";
+  lead: DiscoverRankingLead;
 }) {
-  const sentiment = getSentiment(market);
-  const probability = Math.round(sentiment.yesShare);
-  const remaining = timeRemaining(market.closeAt);
+  const { yesShare, noShare } = marketShares(market);
 
-  const deltaNode = (() => {
-    if (lead === "time") {
-      return (
-        <span
-          className={`block font-mono text-[11px] font-medium tabular-nums ${
-            remaining.urgent ? "text-[var(--no-text)]" : "text-[var(--t3)]"
-          }`}
-        >
-          {remaining.label}
-        </span>
-      );
-    }
-    if (movement == null || movement.direction === "flat") {
-      return (
-        <span className="block font-mono text-[11px] font-medium text-[var(--t3)] tabular-nums">
-          —
-        </span>
-      );
-    }
-    const up = movement.direction === "up";
-    return (
+  let value = "—";
+  let label = "";
+  let tone = "text-[var(--t3)]";
+
+  switch (lead) {
+    case "volume":
+      value = formatCompactPoints(market.volumePoints);
+      label = "volume";
+      break;
+    case "discussion":
+      value = `${market.commentCount ?? 0}`;
+      label = market.commentCount === 1 ? "comment" : "comments";
+      break;
+    case "yes":
+      value = `${Math.round(yesShare)}¢`;
+      label = "YES";
+      tone = "text-[var(--yes-text)]";
+      break;
+    case "no":
+      value = `${Math.round(noShare)}¢`;
+      label = "NO";
+      tone = "text-[var(--no-text)]";
+      break;
+    case "movement":
+      if (movement && movement.direction !== "flat") {
+        const up = movement.direction === "up";
+        value = `${up ? "+" : "−"}${Math.abs(movement.deltaPoints)}¢`;
+        label = "24h YES";
+        tone = up ? "text-[var(--yes-text)]" : "text-[var(--no-text)]";
+      } else {
+        label = "24h YES";
+      }
+      break;
+  }
+
+  return (
+    <div className="flex-none text-right">
       <span
-        className={`block font-mono text-[11px] font-medium tabular-nums ${
-          up ? "text-[var(--yes-text)]" : "text-[var(--no-text)]"
-        }`}
+        className={`block font-mono text-[15px] font-semibold leading-[1.15] tabular-nums ${tone}`}
       >
-        {up ? "+" : "−"}
-        {Math.abs(movement.deltaPoints)}¢
+        {value}
       </span>
-    );
-  })();
+      <span className="mt-0.5 block text-[10px] font-medium uppercase tracking-[0.08em] text-[var(--t3)]">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function rankingMetricHeading(lead: DiscoverRankingLead): string {
+  switch (lead) {
+    case "volume":
+      return "Volume";
+    case "discussion":
+      return "Discussion";
+    case "yes":
+      return "YES price";
+    case "no":
+      return "NO price";
+    case "movement":
+      return "24h YES";
+  }
+}
+
+function RankingRow({
+  market,
+  rank,
+  movement,
+  lead,
+}: {
+  market: PredictionMarket;
+  rank: number;
+  movement?: MarketMovement | null;
+  lead: DiscoverRankingLead;
+}) {
+  const remaining = timeRemaining(market.closeAt);
 
   return (
     <Link
       href={`/market/${market.ticker}`}
-      className="block rounded-2xl border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3.5 no-underline transition-[border-color,box-shadow] duration-150 hover:border-[var(--border-2)] hover:shadow-[var(--shadow-card-hover)]"
+      className="group block border-b border-[var(--border-1)] bg-[var(--surface-1)] no-underline transition-colors duration-150 last:border-b-0 hover:bg-[var(--surface-2)]"
     >
-      <article className="flex items-start gap-3">
-        <MarketThumbnail market={market} />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--t3)]">
-            <span>{market.categoryName || market.categorySlug || "Market"}</span>
+      <article className="grid grid-cols-[42px_minmax(0,1fr)_132px_116px] items-center gap-4 px-5 py-4 max-[860px]:grid-cols-[34px_minmax(0,1fr)_118px] max-[860px]:gap-3 max-[640px]:grid-cols-[28px_minmax(0,1fr)_82px] max-[640px]:px-3.5 max-[640px]:py-3.5">
+        <span className="font-mono text-[12px] font-semibold text-[var(--t3)] tabular-nums">
+          {String(rank).padStart(2, "0")}
+        </span>
+        <div className="flex min-w-0 items-start gap-2.5">
+          <MarketThumbnail market={market} />
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--t3)]">
+              <span>{market.categoryName || market.categorySlug || "Market"}</span>
+            </div>
+            <h3 className="m-0 mt-1 line-clamp-2 text-[16px] font-medium leading-[1.35] tracking-[-0.012em] text-[var(--t1)] group-hover:underline">
+              {market.title}
+            </h3>
             <span
-              aria-hidden="true"
-              className="h-[3px] w-[3px] flex-none rounded-full bg-[var(--border-2)]"
-            />
-            {lead === "time" ? (
-              <span
-                className={`font-mono text-[10px] font-medium normal-case tracking-normal tabular-nums ${
-                  remaining.urgent ? "text-[var(--no-text)]" : "text-[var(--t3)]"
-                }`}
-              >
-                closes in {remaining.label}
-              </span>
-            ) : (
-              <span className="font-mono text-[10px] font-medium normal-case tracking-normal text-[var(--t3)]">
-                {sentiment.label}
-              </span>
-            )}
+              className={`mt-1 hidden font-mono text-[10px] font-medium tabular-nums max-[860px]:block ${
+                remaining.urgent ? "text-[var(--no-text)]" : "text-[var(--t3)]"
+              }`}
+            >
+              closes in {remaining.label}
+            </span>
           </div>
-          <h4 className="m-0 mt-1 line-clamp-2 text-[14px] font-medium leading-[1.35] tracking-[-0.005em] text-[var(--t1)]">
-            {market.title}
-          </h4>
         </div>
-        <div className="flex-none text-right">
-          <span className="block font-mono text-[19px] font-medium leading-[1.1] text-[var(--t1)] tabular-nums">
-            {probability}¢
+        <RankingMetric market={market} movement={movement} lead={lead} />
+        <div className="text-right max-[860px]:hidden">
+          <span className="block text-[10px] font-medium uppercase tracking-[0.08em] text-[var(--t3)]">
+            Closes in
           </span>
-          {deltaNode}
+          <span
+            className={`mt-1 block font-mono text-[13px] font-semibold tabular-nums ${
+              remaining.urgent ? "text-[var(--no-text)]" : "text-[var(--t1)]"
+            }`}
+          >
+            {remaining.label}
+          </span>
         </div>
       </article>
     </Link>
@@ -248,19 +271,80 @@ function SectionRow({
 }
 
 function SectionEmpty({ children }: { children: React.ReactNode }) {
-  // States 18b: dashed frame; discovery emptiness is about time, so no
-  // action button — the lists populate as markets attract activity.
   return (
-    <Card
-      as="div"
-      variant="dashed"
-      padding="none"
-      className="px-[18px] py-[26px] text-center"
-    >
+    <div className="px-5 py-10 text-center">
       <p className="m-0 text-[13px] leading-[1.55] text-[var(--t2)]">
         {children}
       </p>
-    </Card>
+    </div>
+  );
+}
+
+function RankingBoard({
+  ranking,
+  movements,
+  viewAllLabel,
+  loadingMovement,
+}: {
+  ranking: DiscoverRanking;
+  movements: Readonly<Record<string, MarketMovement | null>>;
+  viewAllLabel: string;
+  loadingMovement: boolean;
+}) {
+  const tabId = `discover-ranking-tab-${ranking.key}`;
+  const isMovementRanking =
+    ranking.key === "gainers" || ranking.key === "decliners";
+
+  return (
+    <section
+      data-testid={`discover-ranking-${ranking.key}`}
+      id="discover-ranking-panel"
+      role="tabpanel"
+      aria-labelledby={tabId}
+    >
+      <div className="overflow-hidden rounded-[16px] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-card)]">
+        <div className="flex items-center justify-between gap-4 border-b border-[var(--border-1)] px-5 py-3.5 max-[640px]:px-3.5">
+          <span className="font-mono text-[11px] font-medium tabular-nums text-[var(--t3)]">
+            {ranking.markets.length} ranked market
+            {ranking.markets.length === 1 ? "" : "s"}
+          </span>
+          <Link
+            href={ranking.viewAllHref}
+            aria-label={`${viewAllLabel} ${ranking.heading} markets`}
+            className="inline-flex min-h-9 shrink-0 items-center text-[13px] font-semibold text-[var(--accent-text)] no-underline hover:underline"
+          >
+            {viewAllLabel}
+          </Link>
+        </div>
+        <div
+          className="grid grid-cols-[42px_minmax(0,1fr)_132px_116px] items-center gap-4 border-b border-[var(--border-1)] px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--t3)] max-[860px]:hidden"
+          aria-hidden="true"
+        >
+          <span>Rank</span>
+          <span>Market</span>
+          <span className="text-right">{rankingMetricHeading(ranking.lead)}</span>
+          <span className="text-right">Closes</span>
+        </div>
+        {loadingMovement && isMovementRanking ? (
+          <SectionEmpty>Updating verified 24-hour YES movement…</SectionEmpty>
+        ) : ranking.markets.length === 0 ? (
+          <SectionEmpty>{ranking.empty}</SectionEmpty>
+        ) : (
+          <ol className="m-0 list-none p-0">
+            {ranking.markets.map((market, index) => (
+              <li key={marketKey(market)}>
+                <RankingRow
+                  market={market}
+                  rank={index + 1}
+                  movement={movements[marketKey(market)]}
+                  lead={ranking.lead}
+                />
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -273,9 +357,13 @@ export default function DiscoverPage() {
   ).toLowerCase();
   const [categories, setCategories] = useState<Category[]>([]);
   const [discovery, setDiscovery] = useState<DiscoveryResponse | null>(null);
+  const [catalog, setCatalog] = useState<PredictionMarket[]>([]);
   const [movements, setMovements] = useState<
     Record<string, MarketMovement | null>
   >({});
+  const [activeRankingKey, setActiveRankingKey] =
+    useState<DiscoverRankingKey>("trending");
+  const [loadingMovements, setLoadingMovements] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadNonce, setReloadNonce] = useState(0);
@@ -298,11 +386,21 @@ export default function DiscoverPage() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    Promise.all([api.getDiscovery(), api.getCategories()])
-      .then(([nextDiscovery, nextCategories]) => {
+    Promise.all([
+      api.getDiscovery(),
+      api.getCategories(),
+      api.getMarkets({
+        status: "open",
+        sort: "activity",
+        page: 1,
+        pageSize: CATALOG_RANKING_SIZE,
+      }),
+    ])
+      .then(([nextDiscovery, nextCategories, nextCatalog]) => {
         if (cancelled) return;
         setDiscovery(nextDiscovery);
         setCategories(nextCategories);
+        setCatalog(nextCatalog.data);
       })
       .catch((err: unknown) => {
         logger.error("Discover", "discovery load failed", err);
@@ -318,54 +416,35 @@ export default function DiscoverPage() {
     };
   }, [reloadNonce]);
 
-  const byCategory = (market: PredictionMarket) =>
-    !activeCategory || market.categoryId === activeCategory.id;
+  const activeCategoryId = activeCategory?.id;
+  const historyCandidates = useMemo(() => {
+    if (!discovery) return [];
+    return dedupeMarkets([
+      ...catalog,
+      ...discovery.featured,
+      ...discovery.trending,
+      ...discovery.closingSoon,
+    ])
+      .filter(
+        (market) =>
+          !activeCategoryId || market.categoryId === activeCategoryId,
+      )
+      .slice(0, HISTORY_CANDIDATE_LIMIT);
+  }, [activeCategoryId, catalog, discovery]);
 
-  const heroMarket = useMemo(() => {
-    if (!discovery) return null;
-    return (
-      [...discovery.featured, ...discovery.trending].find(byCategory) ?? null
-    );
-    // biome-ignore lint/correctness/useExhaustiveDependencies: byCategory is derived from activeCategory below
-  }, [discovery, activeCategory]);
-
-  const trendingRows = useMemo(
-    () =>
-      (discovery?.trending ?? [])
-        .filter(byCategory)
-        .filter((m) => m.id !== heroMarket?.id)
-        .slice(0, SECTION_ROWS)
-        .map((m) => localizedMarket(contentT, m)),
-    // biome-ignore lint/correctness/useExhaustiveDependencies: byCategory is derived from activeCategory
-    [discovery, activeCategory, heroMarket?.id, contentT],
-  );
-
-  const closingRows = useMemo(
-    () =>
-      (discovery?.closingSoon ?? [])
-        .filter(byCategory)
-        .slice()
-        .sort(
-          (a, b) =>
-            new Date(a.closeAt).getTime() - new Date(b.closeAt).getTime(),
-        )
-        .slice(0, SECTION_ROWS)
-        .map((m) => localizedMarket(contentT, m)),
-    // biome-ignore lint/correctness/useExhaustiveDependencies: byCategory is derived from activeCategory
-    [discovery, activeCategory, contentT],
-  );
-
-  // 24h deltas for the TRENDING rows only — closing-soon rows lead with
-  // time and don't need history. Real /prices series or nothing.
+  // Gainers and decliners are derived only from the real 1d price series.
+  // The bounded concurrency keeps a seven-list page from flooding the API.
   useEffect(() => {
-    if (trendingRows.length === 0) {
+    if (historyCandidates.length === 0) {
       setMovements({});
+      setLoadingMovements(false);
       return;
     }
     let cancelled = false;
     setMovements({});
+    setLoadingMovements(true);
     void mapWithConcurrency(
-      trendingRows,
+      historyCandidates,
       HISTORY_FETCH_CONCURRENCY,
       async (market) => {
         try {
@@ -375,13 +454,35 @@ export default function DiscoverPage() {
           return [marketKey(market), null] as const;
         }
       },
-    ).then((entries) => {
-      if (!cancelled) setMovements(Object.fromEntries(entries));
-    });
+    )
+      .then((entries) => {
+        if (!cancelled) setMovements(Object.fromEntries(entries));
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingMovements(false);
+      });
     return () => {
       cancelled = true;
     };
-  }, [trendingRows]);
+  }, [historyCandidates]);
+
+  const rankings = useMemo(() => {
+    if (!discovery) return [];
+    return buildDiscoverRankings({
+      discovery,
+      catalog,
+      movements,
+      categoryId: activeCategoryId,
+    }).map((ranking) => ({
+      ...ranking,
+      markets: ranking.markets.map((market) =>
+        localizedMarket(contentT, market),
+      ),
+    }));
+  }, [activeCategoryId, catalog, contentT, discovery, movements]);
+  const activeRanking =
+    rankings.find((ranking) => ranking.key === activeRankingKey) ??
+    rankings[0];
 
   if (loading) {
     return (
@@ -400,24 +501,25 @@ export default function DiscoverPage() {
       />
 
       <section
-        className="min-w-0 max-w-[1080px] px-9 py-8 max-[1279px]:px-6 max-[760px]:px-4 max-[760px]:py-6"
+        className="min-w-0 w-full max-w-none px-9 py-8 max-[1279px]:px-6 max-[760px]:px-4 max-[760px]:py-6"
         aria-labelledby="discover-heading"
       >
-        <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--t3)]">
-          {t("DISCOVER_EYEBROW", "Discover")}
-        </div>
-        <h1
-          id="discover-heading"
-          className="type-display m-0 mt-2 text-[clamp(26px,3vw,34px)] font-semibold leading-[1.12] text-[var(--t1)]"
-        >
-          {t("DISCOVER_HEADING", "What's moving right now")}
-        </h1>
-        <p className="mb-0 mt-2 text-[13px] leading-relaxed text-[var(--t3)]">
-          {t(
-            "DISCOVER_SUBTITLE",
-            "Markets ranked by 24h activity and the contracts closing soonest.",
-          )}
-        </p>
+        <header>
+          <h1
+            id="discover-heading"
+            className="type-display m-0 text-[clamp(27px,3vw,34px)] font-semibold leading-[1.12] tracking-[-0.02em] text-[var(--t1)]"
+          >
+            {activeRanking?.heading ??
+              t("DISCOVER_HEADING", "What's moving right now")}
+          </h1>
+          <p className="mb-0 mt-2 max-w-[820px] text-[14px] leading-[1.55] text-[var(--t2)]">
+            {activeRanking?.description ??
+              t(
+                "DISCOVER_SUBTITLE",
+                "Markets ranked by activity, discussion, conviction, and verified 24-hour YES movement.",
+              )}
+          </p>
+        </header>
 
         {error ? (
           <Card
@@ -453,106 +555,57 @@ export default function DiscoverPage() {
               {t("RETRY", "Retry")}
             </button>
           </Card>
-        ) : (
+        ) : activeRanking ? (
           <>
-            <div className="mt-6">
-              <DiscoveryHero
-                market={heroMarket}
-                categoryName={
-                  heroMarket
-                    ? (visibleCategories.find(
-                        (c) => c.id === heroMarket.categoryId,
-                      )?.name ?? undefined)
-                    : undefined
-                }
+            <div
+              className="mt-7 overflow-x-auto pb-1"
+              data-testid="discover-ranking-tabs"
+            >
+              <div
+                role="tablist"
+                aria-label="Discover rankings"
+                className="flex min-w-max gap-2 border-b border-[var(--border-1)] pb-3"
+              >
+                {rankings.map((ranking) => {
+                  const selected = ranking.key === activeRanking.key;
+                  return (
+                    <button
+                      key={ranking.key}
+                      id={`discover-ranking-tab-${ranking.key}`}
+                      type="button"
+                      role="tab"
+                      aria-selected={selected}
+                      aria-controls="discover-ranking-panel"
+                      tabIndex={selected ? 0 : -1}
+                      onClick={() => setActiveRankingKey(ranking.key)}
+                      className={`min-h-9 cursor-pointer whitespace-nowrap rounded-full border px-3.5 text-[13px] font-semibold transition-colors ${
+                        selected
+                          ? "border-[var(--t1)] bg-[var(--t1)] text-[var(--surface-1)]"
+                          : "border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--border-2)] hover:text-[var(--t1)]"
+                      }`}
+                    >
+                      {ranking.heading}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="mt-4">
+              <RankingBoard
+                key={activeRanking.key}
+                ranking={activeRanking}
+                movements={movements}
+                loadingMovement={loadingMovements}
+                viewAllLabel={t("VIEW_ALL_MARKETS", "View all")}
               />
             </div>
-
-            <div className="mt-8 grid grid-cols-2 items-start gap-8 max-[1100px]:grid-cols-1">
-              <section aria-labelledby="trending-heading">
-                <div className="flex items-baseline justify-between gap-3">
-                  <h2
-                    id="trending-heading"
-                    className="m-0 text-[19px] font-medium tracking-[-0.01em] text-[var(--t1)]"
-                  >
-                    {t("DISCOVER_TRENDING", "Trending")}
-                  </h2>
-                  <Link
-                    href="/predict"
-                    className="inline-flex min-h-11 items-center text-[13px] font-semibold text-[var(--accent-text)] no-underline hover:underline"
-                  >
-                    {t("VIEW_ALL_MARKETS", "View all")}
-                  </Link>
-                </div>
-                <p className="mb-3 mt-0.5 text-xs leading-[1.5] text-[var(--t3)]">
-                  {t(
-                    "DISCOVER_TRENDING_SUB",
-                    "Ranked by 24h activity — the delta is the story.",
-                  )}
-                </p>
-                {trendingRows.length === 0 ? (
-                  <SectionEmpty>
-                    {t(
-                      "DISCOVER_TRENDING_EMPTY",
-                      "Nothing trending yet. Markets appear here as trading picks up.",
-                    )}
-                  </SectionEmpty>
-                ) : (
-                  <div className="flex flex-col gap-2.5">
-                    {trendingRows.map((market) => (
-                      <SectionRow
-                        key={marketKey(market)}
-                        market={market}
-                        movement={movements[marketKey(market)]}
-                        lead="delta"
-                      />
-                    ))}
-                  </div>
-                )}
-              </section>
-
-              <section aria-labelledby="closing-heading">
-                <div className="flex items-baseline justify-between gap-3">
-                  <h2
-                    id="closing-heading"
-                    className="m-0 text-[19px] font-medium tracking-[-0.01em] text-[var(--t1)]"
-                  >
-                    {t("DISCOVER_CLOSING_SOON", "Closing soon")}
-                  </h2>
-                  <Link
-                    href="/predict"
-                    className="inline-flex min-h-11 items-center text-[13px] font-semibold text-[var(--accent-text)] no-underline hover:underline"
-                  >
-                    {t("VIEW_ALL_MARKETS", "View all")}
-                  </Link>
-                </div>
-                <p className="mb-3 mt-0.5 text-xs leading-[1.5] text-[var(--t3)]">
-                  {t(
-                    "DISCOVER_CLOSING_SUB",
-                    "Last chances first — time remaining is the story.",
-                  )}
-                </p>
-                {closingRows.length === 0 ? (
-                  <SectionEmpty>
-                    {t(
-                      "DISCOVER_CLOSING_EMPTY",
-                      "No markets are closing soon. Check back as deadlines approach.",
-                    )}
-                  </SectionEmpty>
-                ) : (
-                  <div className="flex flex-col gap-2.5">
-                    {closingRows.map((market) => (
-                      <SectionRow
-                        key={marketKey(market)}
-                        market={market}
-                        lead="time"
-                      />
-                    ))}
-                  </div>
-                )}
-              </section>
-            </div>
           </>
+        ) : (
+          <div className="mt-7 overflow-hidden rounded-[16px] border border-[var(--border-1)] bg-[var(--surface-1)]">
+            <SectionEmpty>
+              No discovery rankings are available right now.
+            </SectionEmpty>
+          </div>
         )}
 
         <p className="mb-0 mt-8 border-t border-[var(--border-1)] pt-4 text-[11px] leading-[1.5] text-[var(--t3)]">
