@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { isPredictionTerminalRoute } from "../lib/prediction-terminal";
+import { DISCOVER_RANKING_SECTIONS } from "../components/prediction/discover-rankings";
 
 const appRoot = fileURLToPath(new URL("../", import.meta.url));
 const read = (path: string) => readFileSync(`${appRoot}${path}`, "utf8");
@@ -34,27 +35,46 @@ describe("prediction terminal backend wiring", () => {
     assert.ok(catalog.includes("LOAD_MORE_MARKETS"));
   });
 
-  // Ink & lime step 5 (2026-07-26, Discover.dc.html 14a/14b): the
-  // paginated getMarkets list + filter pills gave way to the featured
-  // hero and two independent sections. The contract this test protects
-  // is unchanged: everything on /discover comes from real backend data —
-  // getDiscovery for the lists, the real /prices series for deltas.
-  it("loads curated discovery sections and movements from backend APIs", () => {
+  it("loads seven in-place discovery ranking tabs and real movement from backend APIs", () => {
     const discover = read("discover/page.tsx");
 
     assert.ok(discover.includes("api.getDiscovery"));
+    assert.ok(discover.includes("api.getMarkets"));
     assert.ok(discover.includes("api.getMarketPriceHistory"));
     assert.ok(discover.includes('"1d"'));
     assert.ok(discover.includes("movementFromHistory"));
     // Honest deltas: a row with no real series renders a dash, never an
     // invented number.
-    assert.ok(discover.includes('movement == null || movement.direction === "flat"'));
+    assert.ok(discover.includes('movement && movement.direction !== "flat"'));
     assert.ok(discover.includes('id="discover-heading"'));
-    assert.ok(discover.includes('id="trending-heading"'));
-    assert.ok(discover.includes('id="closing-heading"'));
-    // Trending leads with the delta; closing-soon leads with time.
-    assert.ok(discover.includes('lead="delta"'));
-    assert.ok(discover.includes('lead="time"'));
+    assert.ok(discover.includes("buildDiscoverRankings"));
+    assert.ok(discover.includes("activeRankingKey"));
+    assert.ok(discover.includes("setActiveRankingKey"));
+    assert.ok(discover.includes('role="tablist"'));
+    assert.ok(discover.includes('role="tabpanel"'));
+    assert.ok(discover.includes("<RankingBoard"));
+    assert.ok(discover.includes("overflow-x-auto"));
+    assert.ok(discover.includes("max-w-none"));
+    assert.ok(!discover.includes("grid-cols-2 items-start gap-x-8 gap-y-10"));
+    assert.ok(discover.includes("max-[1023px]:grid-cols-1"));
+    assert.equal(DISCOVER_RANKING_SECTIONS.length, 7);
+    assert.deepEqual(
+      DISCOVER_RANKING_SECTIONS.map((section) => section.key),
+      [
+        "trending",
+        "active",
+        "discussed",
+        "yes",
+        "no",
+        "gainers",
+        "decliners",
+      ],
+    );
+    assert.ok(
+      DISCOVER_RANKING_SECTIONS.every(
+        (section) => section.viewAllHref === "/predict",
+      ),
+    );
   });
 
   it("shares the terminal shell across predict and discover", () => {
