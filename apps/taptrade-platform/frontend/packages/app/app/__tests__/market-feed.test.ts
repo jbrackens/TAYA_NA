@@ -1,6 +1,6 @@
 /**
- * Ink & lime step 10 — commentCount (§3-09) + the single-column feed
- * (Predict Light Social 3a), plus the two i18n cleanups.
+ * Ink & lime step 10 — commentCount (§3-09) + the feed used by discovery,
+ * plus the two i18n cleanups. Available Markets uses the restored grid.
  *
  * Source-level assertions (repo convention — node:test, no DOM harness):
  *  - the gateway stitches commentCount onto user-facing ListMarkets only
@@ -26,6 +26,7 @@ function read(rel: string): string {
 
 const feed = read("components/prediction/MarketFeed.tsx");
 const section = read("components/prediction/AllMarketsSection.tsx");
+const grid = read("components/prediction/MarketGrid.tsx");
 const sqlRepo = readFileSync(
   resolve(
     appRoot,
@@ -85,14 +86,28 @@ describe("§3-09 commentCount (step 10)", () => {
   });
 });
 
-describe("single-column feed (Predict Light Social 3a)", () => {
-  it("renders hero-then-rows and replaces the /predict grid", () => {
-    assert.match(feed, /function FeedHeroCard/);
-    assert.match(feed, /function FeedRow/);
-    assert.match(section, /<MarketFeed/);
+describe("Markets grid and discovery feed", () => {
+  it("renders Available Markets in a nine-card, responsive grid", () => {
+    assert.match(section, /const PAGE_SIZE = 9/);
+    assert.equal(
+      (section.match(/pageSize: PAGE_SIZE/g) ?? []).length,
+      2,
+      "the initial request and each Load More request should use the nine-card batch size",
+    );
+    assert.match(
+      section,
+      /setMarkets\(\(prev\) => \[\.\.\.prev, \.\.\.next\]\)/,
+      "Load More should append the next batch to the existing grid",
+    );
+    assert.match(section, /<MarketGrid[\s\S]*columns=\{3\}/);
+    assert.match(
+      grid,
+      /grid-cols-3[\s\S]*max-\[1120px\]:grid-cols-2[\s\S]*max-\[640px\]:grid-cols-1/,
+      "the restored grid should retain its desktop, tablet, and mobile columns",
+    );
     assert.ok(
-      !section.includes("<MarketGrid"),
-      "the grid is gone — MarketFeed is the browse card everywhere (step 11)",
+      !section.includes("<MarketFeed"),
+      "Available Markets should not fall back to the single-column feed",
     );
   });
 
@@ -123,10 +138,9 @@ describe("single-column feed (Predict Light Social 3a)", () => {
     assert.match(rowSlice, /aria-pressed=\{watched\}/);
   });
 
-  it("ships feed skeletons that match the real geometry", () => {
-    assert.match(feed, /export function FeedHeroSkeleton/);
-    assert.match(feed, /export function FeedRowSkeleton/);
-    assert.match(section, /<FeedHeroSkeleton \/>/);
+  it("ships a nine-card skeleton that matches the real grid", () => {
+    assert.match(section, /function MarketCardSkeleton/);
+    assert.match(section, /Array\.from\(\{ length: PAGE_SIZE \}/);
   });
 
   it("shares movement derivation with /discover", () => {

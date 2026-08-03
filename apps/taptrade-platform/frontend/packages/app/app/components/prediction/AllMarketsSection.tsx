@@ -15,11 +15,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  FeedHeroSkeleton,
-  FeedRowSkeleton,
-  MarketFeed,
-} from "./MarketFeed";
+import { MarketGrid } from "./MarketGrid";
 import { Button, Input } from "../ui";
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import {
@@ -41,7 +37,7 @@ import type {
 
 const api = createPredictionClient();
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 9;
 const SUBCATEGORY_CORPUS_SIZE = 120;
 
 type DateWindow = "all" | "24h" | "7d" | "30d";
@@ -181,8 +177,27 @@ function orderCategories(categories: Category[]): Category[] {
 const PHOSPHOR_WARNING_CIRCLE_FILL =
   "M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm-8,56a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm8,104a12,12,0,1,1,12-12A12,12,0,0,1,128,184Z";
 
-// Step 10: the grid skeleton moved to MarketFeed's FeedHeroSkeleton /
-// FeedRowSkeleton, which mirror the feed's real geometry (States 18a).
+const SKELETON_SHIMMER_CLASS =
+  "animate-[shimmer_1.5s_infinite] rounded-full bg-[linear-gradient(90deg,#f1f1ec_25%,#e6e6e0_50%,#f1f1ec_75%)] bg-[length:200%_100%]";
+
+function MarketCardSkeleton() {
+  return (
+    <div className="relative flex h-full min-h-[248px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 max-[640px]:min-h-[238px] max-[640px]:p-4">
+      <div className="flex items-center gap-2">
+        <span className={`h-10 w-10 rounded-xl ${SKELETON_SHIMMER_CLASS}`} />
+        <span className={`h-2.5 w-20 ${SKELETON_SHIMMER_CLASS}`} />
+      </div>
+      <span className={`mt-4 block h-3.5 w-full ${SKELETON_SHIMMER_CLASS}`} />
+      <span className={`mt-2 block h-3.5 w-3/4 ${SKELETON_SHIMMER_CLASS}`} />
+      <span className={`mt-4 block h-2 w-28 ${SKELETON_SHIMMER_CLASS}`} />
+      <div className="mt-auto grid grid-cols-2 gap-2.5 pt-4">
+        <span className={`h-11 !rounded-lg ${SKELETON_SHIMMER_CLASS}`} />
+        <span className={`h-11 !rounded-lg ${SKELETON_SHIMMER_CLASS}`} />
+      </div>
+      <span className={`mt-3 block h-2.5 w-2/3 ${SKELETON_SHIMMER_CLASS}`} />
+    </div>
+  );
+}
 
 interface Props {
   categories: Category[];
@@ -564,16 +579,13 @@ export function AllMarketsSection({ categories }: Props) {
       </header>
 
       {loading && markets.length === 0 ? (
-        // Step 10 (States 18a): the feed's shape is known before the data
-        // arrives — one hero, then rows — so the skeleton matches the REAL
-        // feed geometry and the load doesn't reflow.
+        // Match the loaded grid's nine-card first page to avoid layout shift.
         <div
-          className="mx-auto flex w-full max-w-[680px] flex-col gap-3"
+          className="grid auto-rows-fr grid-cols-3 items-stretch gap-5 max-[1120px]:grid-cols-2 max-[640px]:grid-cols-1 max-[640px]:gap-4"
           aria-hidden="true"
         >
-          <FeedHeroSkeleton />
-          {Array.from({ length: 5 }, (_, i) => (
-            <FeedRowSkeleton key={i} />
+          {Array.from({ length: PAGE_SIZE }, (_, i) => (
+            <MarketCardSkeleton key={i} />
           ))}
         </div>
       ) : error && markets.length === 0 ? (
@@ -619,8 +631,9 @@ export function AllMarketsSection({ categories }: Props) {
             <div className={FEED_WITH_SUBNAV_CLASS}>
               <div className={FEED_MARKETS_CLASS}>
                 {visibleMarkets.length > 0 ? (
-                  <MarketFeed
+                  <MarketGrid
                     markets={visibleMarkets}
+                    columns={3}
                     watchedMarketIds={watchedMarketIds}
                     onToggleWatchlist={toggleWatchlist}
                   />
@@ -656,8 +669,9 @@ export function AllMarketsSection({ categories }: Props) {
               </aside>
             </div>
           ) : visibleMarkets.length > 0 ? (
-            <MarketFeed
+            <MarketGrid
               markets={visibleMarkets}
+              columns={3}
               watchedMarketIds={watchedMarketIds}
               onToggleWatchlist={toggleWatchlist}
             />
