@@ -60,7 +60,7 @@ const buttonVariant = variants<ButtonVariant>(
     // fill, making every blocked trade state unreadable. The disabled:
     // classes beat the base border-0/bg/text by :disabled specificity,
     // not by class order (see the class-order note above).
-    cta: "w-full min-h-[52px] rounded-md border-0 bg-[var(--accent)] px-4 py-[14px] text-[15px] font-semibold text-[var(--ticket-cta-text)] no-underline transition-[filter,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:brightness-[1.05] disabled:border disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:filter-none disabled:transform-none",
+    cta: "w-full min-h-[52px] rounded-[var(--radius-md)] border-0 bg-[var(--accent)] px-4 py-[14px] text-[15px] font-semibold text-[var(--ticket-cta-text)] no-underline transition-[filter,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:brightness-[1.05] disabled:border disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:filter-none disabled:transform-none",
   },
 );
 

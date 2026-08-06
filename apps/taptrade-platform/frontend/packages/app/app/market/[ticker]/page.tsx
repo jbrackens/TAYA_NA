@@ -205,20 +205,20 @@ const AMM_QUOTE_LABEL_CLASS =
 const AMM_QUOTE_VALUE_CLASS =
   "font-mono text-[11px] text-[var(--t2)] [font-variant-numeric:tabular-nums]";
 const MARKET_HERO_CLASS =
-  "overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)]";
+  "overflow-hidden rounded-[var(--radius-lg)] border border-[var(--hairline)] bg-[var(--card)]";
 const MARKET_HERO_GRID_CLASS =
   "grid grid-cols-[minmax(280px,0.82fr)_minmax(420px,1.25fr)] max-[1180px]:grid-cols-1";
 const MARKET_HEAD_PANEL_CLASS = "min-w-0 p-7 max-[720px]:p-5";
 const MARKET_CHART_PANEL_CLASS =
   "min-w-0 border-l border-[var(--border-1)] p-7 max-[1180px]:border-l-0 max-[1180px]:border-t max-[720px]:p-5 [&_svg]:h-[268px] max-[720px]:[&_svg]:h-[220px]";
 const MARKET_STATS_CLASS =
-  "grid grid-cols-4 border-t border-[var(--border-1)] max-[640px]:grid-cols-2";
+  "grid grid-cols-4 gap-2.5 border-t border-[var(--hairline)] p-4 max-[640px]:grid-cols-2";
 const MARKET_STAT_CLASS =
-  "min-w-0 border-r border-[var(--border-1)] px-5 py-4 last:border-r-0 max-[640px]:border-b max-[640px]:[&:nth-child(2)]:border-r-0 max-[640px]:[&:nth-last-child(-n+2)]:border-b-0";
+  "min-w-0 rounded-[var(--radius-md)] border border-[var(--hairline)] bg-[var(--paper)] px-3.5 py-2.5";
 const MARKET_STAT_LABEL_CLASS =
-  "mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
+  "font-mono mb-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-[var(--ink-3)]";
 const MARKET_STAT_VALUE_CLASS =
-  "font-mono truncate text-[13px] font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
+  "font-mono truncate text-[14px] font-semibold text-[var(--ink)] [font-variant-numeric:tabular-nums]";
 const MARKET_DETAILS_CLASS =
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-6 py-6 max-[720px]:px-5";
 const MARKET_DETAILS_TITLE_CLASS =

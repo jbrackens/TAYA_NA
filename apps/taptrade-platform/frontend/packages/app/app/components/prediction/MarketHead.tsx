@@ -80,9 +80,9 @@ const MARKET_HEAD_COUNTDOWN_CLASS =
 const MARKET_HEAD_TITLE_CLASS =
   "type-display m-0 mb-8 text-[34px] font-semibold leading-[1.08] tracking-[-0.035em] text-[var(--t1)] max-[720px]:mb-6 max-[720px]:text-[27px]";
 const MARKET_HEAD_SIDES_CLASS =
-  "mt-auto grid grid-cols-2 gap-3 border-t border-[var(--border-1)] pt-5";
+  "mt-auto grid grid-cols-2 gap-3 border-t border-[var(--hairline)] pt-5";
 const MARKET_HEAD_SIDE_CLASS =
-  "min-w-0 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-3";
+  "min-w-0 rounded-[var(--radius-md)] border border-[var(--hairline)] bg-[var(--card)] p-3";
 const MARKET_HEAD_SIDE_DOT_CLASS = "h-2.5 w-2.5 shrink-0 rounded-full";
 const MARKET_HEAD_SIDE_NAME_CLASS =
   "text-xs font-semibold text-[var(--t1)] leading-tight";

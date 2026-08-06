@@ -389,6 +389,32 @@ body {
   --brand-mark-stop-1: var(--ink);
   --brand-mark-stop-2: var(--ink);
   --brand-mark-stop-3: var(--ink);
+
+  /* 1C additions (canonical system, Figma "TapTrade Design" 02 System,
+   * locked 2026-08-06). Names match the Figma variable code syntax. */
+  --inset: #edede6; /* search/input inset wells */
+  --lime-wash: #f6fae3; /* selected-side background — action voice */
+  --lime-tint: #eff6d8; /* active nav/tab background */
+  /* (soft YES/NO pill backgrounds already exist above as --yes-soft /
+   * --no-soft rgba tokens — the Figma primitives mirror those.) */
+
+  /* 1C radius scale — terminal bones: tight, few steps */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* 1C space scale */
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 20px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 40px;
+  --space-4xl: 48px;
 }
 
 /* P9 page background: bare gallery white. The P8 chart-paper grid is
