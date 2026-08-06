@@ -1,603 +1,243 @@
-# Design System — TapTrade
+# Design System — TapTrade · 1C "Lime skin, terminal bones"
 
-> **P10 approved direction (2026-07-12): `/predict` dark trading workspace.**
-> The owner approved the 1536×1024 concept mockup.
-> For `/predict`, this P10 note supersedes the P9 light-theme, no-sidebar,
-> mint-accent, card-grid, carousel, and Clash Display rules below. Other
-> player routes retain P9 until they receive matching approved concepts.
+> **This document describes the ONE canonical system, locked 2026-08-06.**
+> It supersedes every prior direction in this file's history: Liquid Glass,
+> warm-dark Robinhood, P8 warm-cream, P9 gallery-white, P10 dark terminal,
+> P11 commercial-polish, and the interim "Ink & lime" handoff framing. Those
+> are **retired**; their full text lives in git history and their dispositions
+> in §10. If another document contradicts this one, this one wins — and the
+> contradiction is a bug to fix, not a fork to entertain.
 >
-> P10 is a dense, edge-to-edge event-trading workspace: true charcoal base,
-> 74px header, 200px topic rail, fluid signal/feed column, and 380px sticky
-> trade-preview rail. Typography is IBM Plex Sans Condensed for product/UI
-> voice and IBM Plex Mono for numbers. The owned accent is periwinkle-violet;
-> green and red are reserved for directional data. Surfaces use 1px cool-gray
-> borders, 6–10px radii, and essentially no shadow or glow. The featured
-> signal is static (no auto-advance). Market rows expose real probability,
-> real 24h movement when available, close date, liquidity, and settlement
-> source. Selecting a row updates the trade preview; `Review trade` deep-links
-> into the existing authenticated market flow. Missing history renders an
-> honest empty state. No fabricated deltas, charts, community activity,
-> dollar balances, redeemability claims, or one-tap order submission.
+> **Source of truth pair:**
+> - **Values:** `apps/taptrade-platform/frontend/packages/app/app/globals.css`
+>   `:root` — CSS custom properties are canonical for every color/radius/space
+>   value. Figma mirrors code, not the other way around.
+> - **Composition:** Figma file **"TapTrade Design"** (key
+>   `aTjk5N7E3S3RVVlOXejfuV`, John's private project; invite-only). Pages:
+>   `00 Baseline · 01 Direction · 02 System · 03 Screens · 04 Handoff`.
+>   Figma variables carry `codeSyntax` emitting the exact CSS names below, so
+>   `get_variable_defs` round-trips cleanly.
 >
-> P10 responsive contract: 200/fluid/380 at ≥1280px; 72/fluid/340 at
-> 1024–1279px; one column below 1024px; 16px gutters and the existing fixed
-> bottom navigation below 900px. Mobile market rows reduce to question and
-> probability without horizontal overflow. The dark tokens are scoped by
-> `.predict-terminal`; do not replace global `:root` tokens until the
-> remaining player routes are intentionally migrated.
-
-> **P11 commercial-polish revision (2026-07-12):** owner review rejected the
-> condensed workspace typography and the approximate two-tone logo. For
-> `/predict`, P11 supersedes P10 typography and identity details: use
-> self-hosted **Geist Sans** for UI/display, **Geist Mono** only for tabular
-> prices, and the approved concept's compact monochrome violet split-market
-> mark paired with an uppercase Martian Grotesk wordmark. Product icons come
-> from the MIT-licensed Phosphor family with one consistent regular/duotone
-> weight system. The header keeps brand and navigation left, centers the search
-> region, and pins account controls right. `Featured market` replaces
-> recommendation-like “Today’s signal” language.
->
-> P11 also moves the ticket into a modal trade sheet below 1180px instead of
-> placing it after the full discovery feed. Selecting a market or the featured
-> CTA opens that sheet; background scrolling locks, Escape/backdrop/close all
-> dismiss it, and the review action remains visible without internal scrolling
-> at a 390×844 viewport. Controls stay at least 44px, violet is reserved for
-> selection/action/chart state, and green/red remain semantic result colors.
-> The revision is informed by current Polymarket, Kalshi, DraftKings
-> Predictions, Robinhood, Apple HIG, and WCAG 2.2 patterns; it intentionally
-> avoids casino promotion density, pulsing prices, and auto-advancing content.
-
-> Robinhood for prediction markets, **light theme**. Gallery-white surfaces, soft-flat cards on hairline borders and quiet two-layer shadows, big confident numbers, a dominant chart, mint as the action color. Markets are treated like stocks: the question is the sub-headline, the price IS the page, two pill buttons commit you to a side.
-
-This document governs both the **TapTrade player app** at `apps/taptrade-platform/frontend/packages/app/` (port 3000) and the **back-office** at `apps/taptrade-platform/frontend/packages/office/` (port 3001). Both surfaces share the same `:root` token set, the same Inter + IBM Plex Mono fonts, and the same gallery-white backdrop (P9, 2026-07-07 — the P8 warm cream + chart-paper grid is retired).
-
-The prior Liquid Glass spec (active 2026-04-24 → 2026-04-26) is retired. The warm-dark Robinhood spec (active 2026-04-26 → 2026-04-27) is retired. Their decisions remain in §11 for context. Glass tokens, rim highlights, chromatic fringes, multi-stop backdrop scene, and the dark surface system are all out. Historical TAYA NA references remain only in the decision log and archived handoff material.
-
----
-
-## Product Context
-
-- **What this is:** binary event-contract exchange. Users trade YES/NO on real-world outcomes (politics, crypto, sports, entertainment, tech, economics).
-- **Who it's for:** retail Gen Z and millennial traders who already live in a brokerage app. Comfortable with charts, prices, percentage deltas; not crypto-bros.
-- **Competitors studied (design reference):**
-  - Polymarket (light, blue, dense) — owns the "corporate-clean" lane.
-  - Kalshi (light, mint, editorial) — owns the "financial-editorial" lane.
-  - Pariflow (dark fintech) — prior Predict direction.
-  - **Robinhood (warm dark, big numbers, dominant chart) — direction adopted 2026-04-26.**
-- **Project type:** real-time trading web app.
-- **Positioning:** TapTrade should feel familiar to anyone who has bought a stock. Calm gallery-white surfaces, big confident prices, the chart owns the hero, mint pops on the action button.
-
----
-
-## Active Brand: TapTrade
-
-**Brand name:** `TapTrade` is the visible product name in the player app. Do not render `TAYA NA Predict` in active player-app chrome, browser titles, auth cards, share surfaces, or empty states.
-
-**Wordmark (refreshed 2026-06-06):** the wordmark is **`TapTrade.`** set in **Schibsted Grotesk 700**, color `--brand-ink` (deep forest `#0b4332`), tracking `-0.03em`, with a **mint period** (`--brand-period` `#10c8a0`) as the recurring signature element. Keep the wordmark clean — no descriptor baked into the lockup. Use a restrained descriptor _outside_ the wordmark when orientation matters: `prediction markets`, `event markets`, or `trade real-world outcomes` — in document-title metadata, auth supporting copy, first-time trade-ticket trust copy, empty states, and social/share descriptions. The brand color is its own layer: never `--accent` (CTA mint) or `--yes` (signal seafoam).
-
-**Brand mark (P9.1, 2026-07-07):** a naked **two-tone split "T"** glyph — two ink crossbar segments (the two sides of a binary market) over a **mint stem** (the committed trade; the brand mint runs through the mark), strokes on one weight with real negative-space channels. Crossbars draw in `currentColor` (ink on light; dark surfaces set the text color to `--brand-on-dark` and remap `--brand-period` to its dark variant so the stem brightens with them). The mint period stays the wordmark's signature; the stem is a slab, not a dot, so the pairing rhymes instead of repeating. Standing alone (loading, auth, share surfaces) the `solo` variant adds the **mint tap dot** under the stem — the tap that lands the trade. The deep-forest rounded-square tile survives only in `app/icon.svg` / `app/icon.png` (favicons need a container against browser chrome); page surfaces never draw the tile. Source of truth: `app/components/BrandMark.tsx`. The 2026-06-06 tile-with-corner-dot mark is **retired** — letter-in-a-tile read as a generic app icon, the corner dot read as a notification badge, and its stem overlapped the crossbar segments producing sub-pixel seams at chrome sizes.
-
-**The dot (P9.4, 2026-07-07):** the tap dot is the system's kinetic signature — one mint dot that lands. It already lives in the brand mark (solo variant), the LIVE badge, sentiment rows, and the chart endpoint; P9.4 makes it behave: loading states render `TapDot` (a single dot tapping the baseline with a contact ring — never spinners, never three-dot ellipses), and side/tab switches slide ONE indicator between positions instead of toggling two static ones. Rules: exactly one dot per surface moment, mint (`--brand-period`) when it speaks for the brand, side colors when it speaks for a side, and everything collapses under prefers-reduced-motion.
-
-**First-screen hierarchy:** the first viewport should answer, in order: this is TapTrade, this is a prediction-market trading app, this is a live market with a price, and these are the YES/NO actions. Do not add a marketing hero above the market hero.
-
-**Trust copy:** explain mechanics at the money moment, not in a tutorial block. The trade ticket may use one compact line such as: `63¢ means a 63% implied probability. Winning contracts pay $1 each.`
-
-**Auth-aware trading states:** market prices are public, money actions are not. Anonymous users see the quote and side/amount selectors, but the CTA says `Log in to trade` and preserves `side` + `amount` through `returnUrl`. Authenticated users see `Place trade`. Low-balance users see `Add funds`. Closed markets show status and settlement/resolution context.
-
-**Mobile chrome:** bottom navigation must use white P9 surfaces: `--surface-1`, `--border-1`, the `--shadow-card` recipe, no blur, no translucent dark glass, no glow. Tap targets stay at least 44px and include safe-area bottom spacing.
-
-**Accessibility rules for the rebrand pass:** disabled chart period controls must either be removed or expose an accessible unavailable state beyond desktop-only tooltips. Search combobox focus should use `aria-activedescendant`. Mint remains a fill color; use `--yes-text`, `--no-text`, or `--t*` tokens for text.
-
----
-
-## 1. Aesthetic Direction
-
-**Stock-detail-page treatment for prediction markets.** The hero IS a market detail. Big YES price (88px), green delta below it, gradient-filled chart dominates the right two-thirds, "Buy YES" and "Buy NO" sit as pill buttons. The market question becomes a sub-headline, not the page header. Below the hero: a stat row (24h volume, open interest, traders, closes), then a Top Movers rail. Discovery surfaces (homepage, category pages) reuse the same component vocabulary.
-
-**Mood descriptors:** familiar, trustworthy, modern app, calm, confident. Light theme keeps the same Robinhood-stock-detail-page mood; only the surface flips from dark to light.
-
-**Decoration level:** bare-white minimal (P9). No glass, no blur, no chromatic fringes, no backdrop scene, no page pattern — the chart-paper grid is retired. The decoration budget moves entirely to typography, hairline borders, and the two-layer shadow recipe (`--shadow-card` / `--shadow-card-hover` / `--shadow-pop`). Weight comes from ink, density, and the chart.
-
-**Explicit rejection:**
-
-- **No glass / glassmorphism.** The Liquid Glass material is retired. Genres reset.
-- **No bubble-radius.** Rounded but not playful. Cards 14px, pills full, smaller elements 6–10px.
-- **No 3-stop accent gradient.** The mint→teal→azure brand gradient is retired. Accent is a single color now.
-- **No multi-color backdrop.** One surface: gallery white (`#FFFFFF`), bare. No `--bg-navy`, `--bg-teal`, `--bg-mint`, `--bg-azure` orchestra, no pattern.
-- **No corporate pure-white.** Polymarket and Kalshi go pure white; we go warm cream. Distinguishable in the category lane.
-- **No editorial-magazine vibe.** Considered diagonal hatch (Robin Markets) and serif headers (Cosmos / Substack); both read "newsletter" not "trading app." Rejected. Background pattern is chart-paper grid (stock-trading vocabulary), title font is sans (Inter Tight).
-- **No purple/violet anywhere.** Reads as AI slop or crypto-broker.
-- **No 3-column icon grid with colored circles.** Reads as SaaS marketing-site cliché.
-- **No left sidebar** for categories. Category pills along the top.
-- **No pixel/CRT fonts.** Considered Y2K direction, rejected because it fights financial legitimacy.
-
----
-
-## 2. Typography
-
-- **Display (owner revision 2026-07-06):** `Clash Display` (Fontshare, ITF Free
-  Font License, self-hosted woff2 400/500/600/700 in `app/public/fonts/`).
-  Speaks on: hero price, hero market question, section headings, big stat
-  values, Top-movers prices. Apply via the `.type-display` utility only.
-  Rationale: Inter-everywhere had become the generic-AI-site default; the
-  display cut gives the app an ownable voice while body/UI stay Inter.
-- **Body + UI:** `Inter` (Google Fonts, weights 400/500/600/700/800). Robinhood uses a custom font (Capsule Sans) but Inter at weight 600 reads close enough; widely available, performant. Replaces Outfit.
-- **Display sub-variant for hero numbers:** `Inter Tight` if available — slightly tighter spacing for the 88px hero price. Falls back to Inter at -0.04em letter-spacing.
-- **Numeric / tabular:** `IBM Plex Mono` with `font-variant-numeric: tabular-nums`. Used for prices in cards and price tickers. Big hero price uses Inter Tight (not mono) because the 88px size carries its own weight; mono at that scale fights the chart.
-- **Fallback stack:** `-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`.
-- **Brand wordmark (chrome only, added 2026-06-06):** `Schibsted Grotesk` 700, used solely for the `TapTrade.` wordmark in nav / auth / landing — never for UI, body, or headlines (those stay Inter). The wordmark is the single sanctioned exception to the no-serif / no-display-font rule, because it is brand chrome, not content.
-
-Loaded in `app/layout.tsx` via Google Fonts `<link>` (Inter, Inter Tight, IBM Plex Mono, Schibsted Grotesk; Outfit + Space Grotesk remain as legacy loads pending removal).
-
-### Scale
-
-| Role                        | Weight | Size | Notes                                                                              |
-| --------------------------- | ------ | ---- | ---------------------------------------------------------------------------------- |
-| Hero price (the big number) | 600    | 88   | Inter Tight. Letter-spacing -0.04em. 56px ¢ subscript at 500 weight, color `--t3`. |
-| Page title                  | 700    | 28   | `/discover` page header etc. -0.02em.                                              |
-| Hero market question        | 600    | 28   | The market question, treated as sub-headline below the eyebrow. -0.02em.           |
-| Section heading             | 700    | 22   | "Featured markets," "Top Movers," "All markets." -0.02em.                          |
-| Card title                  | 600    | 16   | Card market question. Line-height 1.3. -0.01em.                                    |
-| Body                        | 400    | 14   | Prose copy. Color `--t2`.                                                          |
-| Eyebrow                     | 500    | 12   | "POLITICS / SENATE-DEM-2026" eyebrow on cards. Color `--t3`.                       |
-| Stat label                  | 400    | 12   | Stat-row metric labels ("24h volume"). Color `--t3`.                               |
-| Stat value                  | 600    | 18   | Stat-row metric values ("$45.6K"). Color `--t1`, tabular-nums.                     |
-| Card price (mono)           | 600    | 26   | Big single-side price on a card. Color `--t1`, tabular-nums, -0.02em.              |
-| Delta pill (mono)           | 600    | 12   | "+5.2%" badge inside soft-color pill. tabular-nums.                                |
-| Time-period pill            | 600    | 12   | "1D" "1W" etc. inside chart period selector.                                       |
-
-No letter-spacing on lowercase text. Curly quotes (`"`) and ellipsis (`…`) in copy.
-
----
-
-## 3. Color
-
-### Background and surfaces (light)
-
-| Token          | Value                                           | Usage                                                                                                                |
-| -------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `--bg-deep`    | `#FFFFFF`                                       | The page backdrop. Gallery white (P9, 2026-07-07). Replaces the P8 warm cream `#F7F3ED`.                             |
-| `--bg-pattern` | `none`                                          | P9: the chart-paper grid is retired. The hook stays for legacy call sites and resolves to `none`.                    |
-| `--surface-1`  | `#FFFFFF`                                       | Card and panel background. Pure white sits cleanly on the cream backdrop without competing.                          |
-| `--surface-2`  | `#FCFAF5`                                       | Hovered card / inner subsurface background. Slightly cream-tinted to match the page.                                 |
-| `--border-1`   | `#E5DFD2`                                       | Hairline beige border for cards, panels, separators. ~1px.                                                           |
-| `--border-2`   | `#D9D2BF`                                       | Slightly stronger beige for emphasized or hovered borders.                                                           |
-
-### Text (warm-dark on cream)
-
-`--t1: #1A1A1A` / `--t2: #4A4A4A` / `--t3: #8B8378` / `--t4: #B5AE9F`.
-
-Warm gray hierarchy — the muted tones (`--t3`, `--t4`) carry a warm beige cast (`#8B…`, `#B5…`) rather than cool slate, so they pair with the cream backdrop. The big hero price uses `--t1`. The ¢ subscript and "Today" labels use `--t3` for hierarchy.
-
-### Brand accent (mint, unchanged)
-
-`--accent: #2be480` is the only mint in the system. Used for:
-
-- Primary CTA pill ("Buy YES"). Filled mint, ink-dark text.
-- Active category pill (background mint, ink-dark text).
-- Eyebrow "LIVE" indicator + pulse dot.
-- Active state on time-period pill (soft mint background, mint text).
-- Up indicator on charts and delta pills.
-
-Accent family kept: `--accent-soft: rgba(43,228,128,0.14)` for soft pill backgrounds, `--accent-glow-color` for the LIVE pulse.
-
-**Retired:** `--accent-hi`, `--accent-lo`, `--accent-deep`, `--accent-gradient`. The 3-stop signature gradient is gone.
-
-### Brand identity color (third layer — wordmark/mark only, added 2026-06-06)
-
-A separate layer from action-mint (`--accent`) and signal-seafoam (`--yes`). It appears ONLY in the `TapTrade.` wordmark and the brand mark — never in UI controls, prices, or data.
-
-| Token                 | Value     | Usage                                                            |
-| --------------------- | --------- | ---------------------------------------------------------------- |
-| `--brand-ink`         | `#0b4332` | deep forest — the wordmark and the mark tile. ~10:1 on `--bg-deep`. |
-| `--brand-period`      | `#10c8a0` | mint — the "period" signature and the mark's dot.               |
-| `--brand-fg`          | `#f8f9fa` | the split-T sitting on the forest tile.                         |
-| `--brand-on-dark`     | `#f1ece3` | wordmark on dark surfaces (ivory).                              |
-| `--brand-period-dark` | `#2fe0a8` | brighter period on dark.                                        |
-
-### Semantic (data layer — kept seafoam + coral)
-
-`--yes` and `--no` are the trading-signal colors. **Resolved 2026-04-27 (P8):** the entire semantic palette stays unchanged through the light pivot — the same seafoam YES + coral NO hues we tuned in the dark theme work on the cream surface (verified in P8 mockup). The only change is two new tokens for the probability bar fill:
-
-| Token        | Value                    | Usage                                                                                                                                                                                     |
-| ------------ | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--yes`      | `#71eeb8`                | Seafoam — used for: line-chart strokes when up, "YES" labels in card pills, up-delta indicators, the YES-side probability-bar segment when needing the saturated tone.                    |
-| `--yes-text` | `#1A6849`                | Dark seafoam for text-on-light contexts (small "YES" pill labels). 6.7:1 on white `--surface-1`, 6.1:1 on cream `--bg-deep`, 6.5:1 on hover-surface `--surface-2` — AA pass on all three. |
-| `--yes-soft` | `rgba(113,238,184,0.18)` | Up-delta pill background.                                                                                                                                                                 |
-| `--yes-bar`  | `#8FE5C4`                | Calmer seafoam for the YES segment of the probability bar — desaturated so the bar feels like a calm split, not a brand.                                                                  |
-| `--no`       | `#ff8b6b`                | Coral, unchanged. Used for: line-chart strokes when down, "NO" labels in card pills, down indicators.                                                                                     |
-| `--no-text`  | `#A8472D`                | Dark coral for text-on-light contexts. 5.8:1 on white `--surface-1`, 5.3:1 on cream `--bg-deep`, 5.6:1 on hover-surface `--surface-2` — AA pass on all three.                             |
-| `--no-soft`  | `rgba(255,139,107,0.16)` | Down-delta pill background.                                                                                                                                                               |
-| `--no-bar`   | `#F4A990`                | Calmer coral for the NO segment of the probability bar.                                                                                                                                   |
-
-`--live: #ff6b6b` — the only red, used for the "LIVE" pulse dot only.
-
-### Loyalty tier colors (unchanged)
-
-| Tier       | Color                     | Note                                                |
-| ---------- | ------------------------- | --------------------------------------------------- |
-| 2026-07-08 | **Register page: split-screen reference layout + social trio (owner-directed)** | Owner: mimic the WorkOS-style sign-up reference and include Google/Apple/SSO. /auth/register is now a split screen — narrow form column (brand lockup, heading, fields, full-width Continue, OR, stacked 'Continue with Google/Apple/SSO', legal line, sign-in link) beside a full-bleed event panel built from the in-house ambient crowd footage (hero-ambient.mp4 + extracted poster) under a forest scrim with a Clash Display statement — no stock imagery, panel hidden under lg, poster serves reduced-motion. The 2-step wizard and launch-compliance terms/points-disclosure step are unchanged. Social buttons on register render unconditionally (owner call, superseding the FEATURE_SOCIAL_AUTH gate there; login keeps the gated grid): clicks PROBE the OAuth start route (trailing slash — Next's 308 otherwise masquerades as a provider redirect) and degrade to an honest inline 'not configured' notice instead of navigating into raw JSON. Verified: SSO click stays on-page with notice; mobile stacks cleanly. Suite 276/276 (social gate lock re-encoded to pin the probe). |
-| 2026-07-08 | **Toasts join the P9 system (login/logout readability)** | Owner: the welcome-back/logged-out messages were hard to read and still wore the retired soft-tint treatment (colored border on a translucent *-soft fill + tinted icon block + heavy dark shadow) — read as glassmorphism on white. Toasts are now system cards: --surface-1 white, --border-1 hairline, --shadow-card, --r-rh-md, INK title + --t2 message at AA, status carried by the dot signature (seafoam/coral/mint/amber 10px dot + small tinted glyph) — never by the card surface. Transition respects reduced motion. Verified via computed styles on the live logout toast: bg rgb(255,255,255), border rgb(233,235,237), backdropFilter none, dot rgb(16,200,160), title rgb(13,17,20). |
-| 2026-07-07 | **P9.4: signature pass — the tap dot system + ink anchor (owner: "you played it very safe")** | The P9 sweep fixed correctness but read as competent-generic; this pass adds the ownable layer without regressing into decoration. (1) `TapDot` loader: one mint dot taps the baseline with a contact ring — replaces text-only loading states on /predict and /discover; spinners and skeleton-blocks stay banned. (2) Ink anchor: PredictFooter becomes a deep-forest rounded panel (ivory wordmark + mint period, quiet ivory links) — the one deliberate brand-ink surface the white system spends per page; market data never renders on ink. (3) Kinetic tabs: the trade ticket's Buy Yes/Buy No underline is now a single indicator that slides and recolors (180ms, CSS `translate` — Tailwind v4 renders translate-x-* as the `translate` property, so the transition watches `translate`, not `transform`). (4) Display-scale hero: discovery price to clamp(64px,7vw,110px)/0.95 with the delta as a soft momentum tag. All motion collapses under prefers-reduced-motion. Suite green, gate 7/8. |
-| 2026-07-07 | **P9.3: /discover de-slop + shell gradient kill** | Owner flagged /discover as the next slop surface. Page fixes: the retired Liquid Glass state card (rim highlights, chroma fringes, 30px backdrop blur, dark shadows — a glass-era corpse) replaced with the P9 card; header un-boxed (naked breadcrumb/title/sub on white); warm rgba(60,50,30) shadows + ad-hoc 18/14px radii moved to --shadow-card + --r-rh-*; machine IMP tickers in row eyebrows replaced with category labels (same convention as the discovery hero); sentiment pills calmed to dot + colored text; dead change column renders an em-dash for flat/unknown instead of 0.0%/n-a/...; filter chips unified on the accent trio; rows gain a hover tint. Shell fixes (site-wide): the fixed mint radial-glow backdrop behind every page (rgba(43,228,128,.1) + --yes-soft ellipses) is deleted — flat white only per §1; APP_SHELL content now grows + centers `main`, so rail-less pages (/discover) stop hugging the left edge at wide viewports. Suite 276/276. |
-| 2026-07-07 | **P9.2: market detail page — Robinhood-structure minimal pass (owner-directed)** | Owner: the market page read as busy AI slop; mimic the Robinhood event-page structure while keeping Market/Limit and the points vocabulary. Hero: pill rows (volume/traders/ticker) retired; eyebrow = LIVE · category · closes-in · close date; new sides identity strip ([dot Yes prob%] big `8c — 92c` [prob% No dot]); chart draws BOTH sides from one history (selected side full strength, complement muted 35%, mirrored around 50c), no gradient wash/gridlines/axis labels (the old labels were white-on-white — invisible since P8), range switcher becomes quiet mono text tabs under the plot (segmented seafoam lock re-encoded to the discovery closing-window control only). Ticket: Robinhood-sparse — Buy Yes/Buy No underline tabs (side-colored), label/value rows (Points editable input replacing the big display + quick chips, Price + implied sub, Est. cost, Points if side correct), quiet Market/Limit switcher, CTA + trust copy unchanged; all order/preview/ toast logic untouched. Details section = close time + share only (settlement source/rule/fees rows retired). Depth + recent trades fold into a collapsed disclosure — the 2026-06 liquidity-honesty locks (MarketDepth/LiquiditySnapshot/AMMCurve) stay rendered, on demand. Related markets move from the aside to the main column; the aside is the sticky ticket alone. POTENTIAL_POINTS vocabulary token retired from the ticket (points-result wording carried by POINTS_IF_SIDE + trust copy; payout-wording bans unchanged). Suite 276/276. |
-| 2026-07-07 | **P9 shipped: gallery-white pivot (owner-directed), hero recomposition, chart auto-domain** | Owner call: drop the P8 cream + chart-paper grid for a light/white base aimed at the Gen-Z/millennial lane, keeping brand identity. Token layer: `--bg-deep #FFFFFF`, `--bg-pattern none`, cool neutral inks (`--t1..4` moved off the warm taupes onto the blue-gray axis), `--surface-2 #F6F7F8`, borders `#E9EBED/#D8DBDF`, new two-layer shadow recipe (`--shadow-card/-hover/-pop`), yes/no recalibrated for white AA, new `--accent-text` so mint never renders as low-contrast text. Hero: 5/7 two-column grid (identity/price/actions left, chart right); the chart y-domain now auto-scales to the series range (6c min span) instead of the absolute 0-100 band that rendered quiet markets as a flat stroke over dead space; dashed session-open baseline; fill wash cut 32%->13%; buy-no is white + coral hairline instead of the washed pink slab. Hero title reserves two lines so the 7s carousel auto-advance cannot pump the page height (the below-hero jump users reported as a glitch). Top-bar nav dropped its mid-air underline track; category nav keeps its full-width one. qa-regression locks re-encoded accordingly (mint-underline pair, top-bar track split); suite 275/275. Landing phone mockup updated to depict the white product. Office follow-up: `styles/p8-tokens.css` value-swapped to the P9 palette in the same change (token names unchanged, AntD overrides inherit). Trend grounding: 2026 calm-minimalism / structural-honesty / purposeful-motion direction (index.dev, uxpilot, tubik, envato 2026 trend reports); Polymarket/Kalshi white data-first lane. |
-| 1 Newcomer | `#94a3b8` slate           |                                                     |
-| 2 Trader   | `#cbd5e1` slate-light     |                                                     |
-| 3 Sharp    | `#d4a857` warm-gold-muted |                                                     |
-| 4 Whale    | `#9ca7bf` platinum-muted  |                                                     |
-| 5 Legend   | `#8b5cf6` violet          | The only violet anywhere; reserved for Legend tier. |
-
-### Rules — strict two-greens discipline
-
-The system has exactly two greens, and they live in **different layers**:
-
-| Layer              | Color                     | Used for                                                                                                                                                                                                                                     |
-| ------------------ | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Action / brand** | `--accent` mint `#2be480` | Primary CTAs (Buy YES button), active state on category pills, active state on time-period pills, LIVE indicator pulse. **Anything the user clicks or that says "Taya brand."**                                                              |
-| **Market signal**  | `--yes` seafoam `#71eeb8` | Up-direction indicators: chart strokes when price is up, sparkline strokes when up, delta pill `+X.X%` text and background, the +2¢ change indicator below the hero price, YES price displays. **Anything that says "this number went up."** |
-
-Mint and seafoam are visually distinguishable: mint is brighter/more saturated; seafoam is softer/desaturated. The eye reads them as related but distinct.
-
-- `--accent` never colors a YES price. Buy YES button has a mint background but its label text is `#061a10` ink-dark.
-- `--yes` never colors a CTA button. Up-arrow indicators next to a hero price are seafoam, not mint.
-- One coral. `--no` is the only coral. Used symmetrically with seafoam: NO prices, down-direction sparklines, down delta pills.
-- No purple anywhere except the Legend tier badge.
-- No amber anywhere. Amber was retired with the WhaleTicker (2026-04-24) and stays retired.
-
----
-
-## 4. Surfaces (replaces "Material System")
-
-Flat soft surfaces on a bare white page. No blur, no rim highlights, no chromatic edges, no backdrop refraction.
-
-### Page background
-
-```css
-body {
-  background: var(--bg-deep); /* #FFFFFF gallery white (P9) */
-  background-image:
-    linear-gradient(to right, rgba(26, 26, 26, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(26, 26, 26, 0.035) 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-```
-
-The grid is the only decoration in the system. **Stock-trading vocabulary, not editorial.** Considered alternatives logged 2026-04-27: diagonal hatch (Robin Markets — too editorial), ticker-tape horizontal lines (more "stock-ticker" than "stock-chart"), dotted grid (too retail-y). Graph paper won.
-
-### Card recipe
-
-```css
-.card {
-  background: var(--surface-1); /* white */
-  border: 1px solid var(--border-1); /* hairline beige */
-  border-radius: 14px;
-  padding: 20px;
-  transition:
-    transform 140ms,
-    box-shadow 140ms,
-    border-color 140ms;
-}
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(60, 50, 30, 0.08); /* warm soft shadow */
-  border-color: var(--border-2);
-}
-```
-
-That is the entire surface system. No tiers, no glass-thick / glass-thin / glass-inset hierarchy. One card style; emphasis comes from size and content, not material. The warm soft shadow on hover is intentional — on light surfaces a flat hover state reads as broken.
-
-The hero is the same surface, sized larger and split across a 2.5fr/1fr grid with the trade ticket.
-
-### Pills
-
-Three pill types share the same shape (full radius) but vary in fill:
-
-```css
-/* Primary action — Buy YES */
-.pill-primary {
-  background: var(--accent);
-  color: #061a10;
-  font-weight: 600;
-  padding: 16px 24px;
-  border-radius: 999px;
-  border: 0;
-}
-
-/* Soft action — Buy NO */
-.pill-soft {
-  background: var(--no-soft);
-  color: var(--no);
-  font-weight: 600;
-  padding: 16px 24px;
-  border-radius: 999px;
-  border: 0;
-}
-
-/* Category / period pill — secondary controls */
-.pill-tonal {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--t2);
-  padding: 9px 18px;
-  border-radius: 999px;
-  font-weight: 500;
-}
-.pill-tonal.is-active {
-  background: var(--accent);
-  color: #061a10;
-  font-weight: 600;
-}
-```
-
-### Delta pills (the "+5.2%" badges)
-
-```css
-.delta-up {
-  background: var(--accent-soft);
-  color: var(--accent);
-  padding: 4px 10px;
-  border-radius: 999px;
-  font: 600 12px / 1 var(--font-mono);
-}
-.delta-down {
-  background: var(--no-soft);
-  color: var(--no); /* same shape */
-}
-```
-
-### When NOT to use a card
-
-- Inline data (stat row, ticker lists). No card chrome; just typography and spacing.
-- Page-level headers and intro copy. Live on the page background directly.
-- The big hero price + chart area inside the hero card; the hero is one card, the price/chart/buttons are content within it.
-
----
-
-## 5. Layout
-
-### Shell structure
-
-- Top nav bar (`TopBar`) sticky at top, 60px tall, sits on `--bg-deep`.
-- Page content under it, `max-width: 1280px`, horizontally centered, padded `0 24px` (16px on mobile).
-- Pages stack their own sections vertically. No left sidebar.
-
-### Homepage `/predict`
-
-```
-[Top nav]
-
-[Category pills row]
-  All · Politics · Crypto · Sports · Tech · Entertainment · Economics
-
-[Hero card]
-  Eyebrow (LIVE · category · ticker)
-  Market question (sub-headline)
-  Big YES price (88px)              | Top Movers rail (vertical)
-  Delta + Today                     |   - Each row: category pill,
-  [Chart, gradient-filled]          |     question (2-line clamp),
-  [Time-period pills: 1H 1D 1W…]    |     mini sparkline,
-  [Buy YES] [Buy NO]                |     big price, delta pill
-  [Stats row: vol / OI / traders / closes]
-
-[Featured markets section]
-  Cards — sparkline + big single price + delta pill
-
-[All markets section]
-  Cards (paginated, "Load more")
-```
-
-### Filter behavior
-
-Both filters on `/predict` live in the **same row** at the top of the All Markets section. Category pills on the left, closing-window pills on the right. They compose: pick **Politics** + **1D** to see political markets closing within 24h.
-
-- **Category pills** (`All · Politics · Crypto · Sports · ...`) — primary filter. Scope only the All Markets section.
-- **Closing-window pills** (`All · 1D · 1W · 1M`) — secondary filter. Scope only the All Markets section. Visually distinct from the category pills (segmented control with subtle container).
-- **Both filters scope All Markets only.** Hero, Top Movers, and Featured grid stay visible at all filter states. Featured is curated cross-category by design and doesn't filter — picking "Politics" + "1D" still shows the Featured row above (general featured markets), then the All Markets grid filtered to political markets closing within 24h.
-- **Time-period pills** (1H/1D/1W/1M/3M/ALL) live INSIDE the hero chart only. They scope the chart's price history. Different control, different job from the closing-window pills.
-
-Self-correction history:
-
-- P4 (2026-04-26): closing-window pills removed; category pills moved to top-of-page above hero. Both wrong.
-- This commit (2026-04-26): closing-window pills restored. Category pills moved into the All Markets header row alongside the date pills. The filter row is the section header — there's no separate "All markets" title above the grid. This consolidation makes filter scoping self-evident: filters live where the filtering happens.
-
-### Grid
-
-- Featured markets: `repeat(auto-fill, minmax(280px, 1fr))`, gap 16px.
-- All markets: same.
-- Hero/Top Movers split: `2.5fr 1fr` (or `1fr 380px`) on desktop, single column ≤960px.
-
-### Radius
-
-Less bubbly than Liquid Glass:
-
-| Token      | Old (Liquid Glass) | New (Robinhood) | Used for                              |
-| ---------- | ------------------ | --------------- | ------------------------------------- |
-| `--r-sm`   | 10px               | 8px             | Inline elements, small inputs.        |
-| `--r-md`   | 16px               | 12px            | Compact pills, inputs.                |
-| `--r-lg`   | 22px               | 16px            | Cards, hero.                          |
-| `--r-xl`   | 28px               | 20px            | Modals, large surfaces.               |
-| `--r-pill` | 999px              | 999px           | Buttons, category pills, delta pills. |
-
-Inner elements always use a smaller radius than their parent (inner = outer − gap, minimum 4px).
-
----
-
-## 6. Motion
-
-Minimal-functional. No spring physics, no overshoot, no glass-wet feel.
-
-- **Easing:** `ease-out` for entering, `ease-in` for exiting, `ease-in-out` for moving.
-- **Duration:** 120ms for hover and tap, 180-220ms for transitions, 800ms for the LIVE pulse animation.
-- **Properties:** only `transform`, `opacity`, `background-color`, `border-color`. Never `width`, `height`, `top`, `left`.
-- **Reduced motion:** `@media (prefers-reduced-motion: reduce)` collapses all animations to instant.
-
-The two motion patterns that ship:
-
-1. **Card hover lift:** `translateY(-2px)` + `--surface-2` background, 120ms.
-2. **LIVE pulse:** `box-shadow` ring expanding from `rgba(43,228,128,0.18)` to transparent over 2s, infinite.
-
-Charts get an entrance fade on mount (200ms opacity 0 → 1). The line is drawn via SVG path; no animated stroke-dashoffset reveal.
-
----
-
-## 7. Components
-
-### Roster (post-redesign)
-
-- **DiscoveryHero** — hero card with eyebrow, market question, big price, delta, gradient-filled chart (sage line, soft seafoam fill below), Buy YES / Buy NO, stat row. Extracted to its own component (`components/prediction/DiscoveryHero.tsx`) on 2026-05-24 so it renders standalone or as a carousel slide.
-- **FeaturedCarousel** (added 2026-05-24) — the `/predict` hero. A carousel of the top market from **All / Sports / Crypto / Politics**, each slide a full DiscoveryHero (zero visual divergence). The active slide is the emphasized big hero; the carousel control is overlaid in the card's top-right (Kalshi-style) — a neutral "N of M" counter flanked by prev/next arrows, category-agnostic (each slide's eyebrow carries the category). Gentle 7s auto-advance (paused on hover/focus, disabled under `prefers-reduced-motion`), keyboard ← / → nav, graceful loading/empty/error states, no external dependency.
-- **TopMoversRail** (replaces TrendingSidebar) — vertical list of trending markets. Each row: category pill, question (2-line), mini sparkline, big price (right-aligned), delta pill below.
-- **MarketCard** (rewritten 2026-04-27 for P8) — see "MarketCard composition" below. Replaces the dark-theme P3 card (sparkline + dual mono prices + delta pill).
-- **AllMarketsSection** — paginated grid. Section header is a single row of pills: category pills (`All / Politics / Crypto / ...`) on the left, closing-window pill segmented control (`All / 1D / 1W / 1M`) on the right. No title — the layout is self-evident. Owns its own filter state. "Load more" pill at bottom.
-- **MarketFilterBar** — retired 2026-04-26. The category pill row it used to render now lives inline inside AllMarketsSection.
-- **TopBar** — top navigation, unchanged structurally; opaque cream background `--bg-deep` with a 1px hairline `--border-1` bottom edge for sticky-state distinction. No backdrop-filter — consistent with §9's "no backdrop-filter anywhere" rule and the P6 retirement of TopBar blur (see §11 `2026-04-27 P6 shipped`).
-- **MarketHead, OrderBook, RecentTrades, TradeTicket** — market detail page components, restyled for the new light surfaces.
-
-### MarketCard composition (P8)
-
-```
-┌─────────────────────────────────────────────────────┐
-│ Will Trump acquire Greenland before 2027?  [⊙ img] │ ← title 2-line clamp + corner image
-├─────────────────────────────────────────────────────┤
-│ ▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 7%   93%  │ ← probability bar split,
-│                                                     │   sage YES + coral NO,
-│                                                     │   widths = prices, % overlaid
-├─────────────────────────────────────────────────────┤
-│ [ YES   7¢ ]            [ NO   93¢ ]                │ ← clear pills with prices
-├─────────────────────────────────────────────────────┤
-│ Volume  $25K                 Closes  Dec 31, 2026  │ ← quiet stat footer (no OI)
-└─────────────────────────────────────────────────────┘
-```
-
-**Rules:**
-
-- **Card image is required.** Every card carries a circular image in the top-right corner, ~44×44px (≤15% of card area at 300px-wide grid). Imported markets use the `imagePath` populated by the discovery sync. Native (gateway-authored) markets use a deterministic placeholder — colored monogram disc, hue derived from category, label = first ~2 chars of the ticker. Never render a card with an empty corner.
-- **Probability bar replaces the sparkline.** Two solid horizontal segments inside a 28px-tall, 6px-radius track: sage `--yes-bar` for YES (left), coral `--no-bar` for NO (right). Segment widths are proportional to prices (which equal probabilities for binary contracts). The leading-side **percentage** is overlaid right-aligned in dark text on the larger segment; the trailing-side percentage is overlaid left-aligned in dark text on the smaller segment. Smooths to widths on price update with a 200ms transition.
-- **Min segment width on extremes.** When a side's probability is ≤5% (or, equivalently, a price ≤5¢), the corresponding bar segment renders at a min-width of 12px instead of its proportional width — anything narrower disappears visually and can't carry overlaid text. The dominant segment shrinks to absorb the difference (its width = 100% − 12px), keeping the track full-width. The percentage that would have been overlaid on the small segment is moved **outside** the bar — rendered just above the small segment in `--t2`, 12px IBM Plex Mono. Mirrored for the opposite extreme (NO ≤5%).
-- **Clear pills carry the price.** Two side-by-side pills below the bar: light gray fill `--surface-2`, hairline beige border, 999px radius. Left pill: `YES` label in `--yes-text` + price in `¢` mono `--yes-text`. Right pill: `NO` label in `--no-text` + price in `¢` mono `--no-text`. The pill IS the click affordance for fast-trade flows on `/predict`.
-- **Stat footer sits below the pills.** A single quiet row beneath the bar + pills carries two metrics as inline `label + value` pairs — Volume (anchored left) and Closes (anchored right): label in `--t3`, value in `--t1` IBM Plex Mono, tabular-nums. It is plain (non-link) text — the card body link above owns "open this market". The header carries only the title + corner image (no category eyebrow — category is implied by the surface the card sits on). **Open interest is not shown on the card**; it stays on the market detail hero.
-
-**Bar % vs pill ¢ — why both numbers?** In a binary market, YES price (¢) equals YES probability (%) by definition. They are mathematically the same number. The bar shows the **split visually** (the eye reads "this market is mostly NO" from the bar widths alone); the pills show the **execution price** (the user clicks one to trade). Different jobs, same number.
-
-### Legacy token disposition (carries forward from P6)
-
-The dark-theme tokens still living in `globals.css` — `--glass-*`, `--rim-*`, `--chroma-*`, `--bg-{navy,teal,mint,azure}`, `--accent-{hi,lo,deep,gradient}`, `--yes-{glow,border,hi,lo}`, `--no-{glow,border,hi,lo}` — are **not** deleted wholesale in P8. The retirement policy is per-surface, inherited from the P6 entry in §11: a token retires when the last surface consuming it migrates to the light system. The implementation agent for P8 should:
-
-1. Migrate `--bg-deep`, `--surface-*`, `--border-*`, `--t*` tokens to their P8 values (the warm-light values listed in §3 §4 above).
-2. Migrate the MarketCard component to the new composition.
-3. Leave the legacy dark tokens in `globals.css` untouched. PR #2 (`p7-cleanup-tokens`) already retires the 10 already-unreferenced glass-era tokens; remaining tokens get retired on future cleanup PRs as each consuming surface migrates.
-
-This avoids a wave of cascading breakage on secondary surfaces that haven't been restyled yet (cashier was migrated in P7 / PR #1 alongside auth, leaderboards, rewards, account, profile — those have already moved off the dark token system; the office back-office and any non-app legacy CSS still consume them).
-
-### Components retired in this redesign
-
-- **Backdrop scene + BackdropScene SVG.** No more multi-color backdrop. Single `--bg-deep`.
-- **Glass utility classes** (`.glass`, `.glass-thick`, `.glass-thin`, `.glass-rim`, `.glass-fringe`). Retire after P2-P6 sweep.
-- **Liquid-glass spring physics keyframes.** Replaced with simple ease-out transitions.
-- **CategoryPills** — folded into MarketFilterBar's category row.
-
-### Component rules
-
-- **Hero owns the page.** The hero card is the single most important element on `/predict` and `/market/[ticker]`. Other surfaces are supporting. On `/predict` the hero is a **FeaturedCarousel** rotating one emphasized DiscoveryHero at a time (top market from All / Sports / Crypto / Politics).
-- **Probability bars on cards, sparklines in the trending rail and hero chart.** P8 swap: cards visualize the YES/NO split (more useful for the buy decision); the sparkline pattern stays for the trending rail and hero chart where price-history-over-time is the right read.
-- **Delta pills are kept on the rail and hero.** Anywhere a single price is shown without a bar, a delta pill says where it's been recently. Sage `+X.X%` for up, coral `-X.X%` for down. On cards the delta is folded into the bar+pills (no separate delta pill on the card).
-- **Big numbers carry hierarchy.** Hero hero 72–88px, rail 30px, card pills 14–16px (price + side-label). Same Inter Tight + IBM Plex Mono recipe at every scale.
-
----
-
-## 8. Accessibility
-
-### Contrast (light theme)
-
-**P9 amendment (2026-07-07):** the page backdrop is now pure white (`#FFFFFF`) and `--surface-2` is the cool well `#F6F7F8`; text/signal tokens were recomputed for white — `--t1 #0D1114`, `--t2 #454C54`, `--t3 #6E7680`, `--yes-text #0E7A52` (5.3:1), `--no-text #B8401F` (5.0:1), `--accent-text #0F8A4F` (4.9:1, mint-as-text), `--accent-lo #1FA65E` (3.1:1, non-text indicators). Raw `--accent` remains fill-only. The cream columns below are historical (P8).
-
-Ratios computed with the WCAG 2.x relative-luminance formula. Cream `--bg-deep` = `#F7F3ED` (Y ≈ 0.899); white `--surface-1` = `#FFFFFF` (Y = 1.000); hover surface `--surface-2` = `#FCFAF5` (Y ≈ 0.956). AA = 4.5:1 normal text / 3.0:1 large; AA non-text UI = 3.0:1 (WCAG 2.5.8). Numbers below were recomputed 2026-04-27 after a review pass caught the original spec overstating ratios by ~1.3–2.0× — the token values were darkened until both white and cream cleared AA.
-
-- `--t1` `#1A1A1A` body text: 16.6:1 on cream, 17.5:1 on white. AAA on both.
-- `--t2` `#4A4A4A` secondary text: 8.4:1 on cream, 8.9:1 on white. AAA on both.
-- `--t3` `#8B8378` metadata text: 3.4:1 on cream, 3.6:1 on white. **Passes AA Large only** — use only for ≥18px or ≥14px-bold metadata text, never for body.
-- Mint `--accent` `#2be480` text on cream: 1.6:1 — fails. **Never use mint as text.** Mint is only for fills (button bg, active pill bg, LIVE pulse). Button label text on mint stays `#04140a` ink-dark (≈ 16:1).
-- Seafoam `--yes` `#71eeb8` text on white: 1.9:1 — fails. **Use `--yes-text` `#1A6849`** for all seafoam-colored text on light surfaces — 6.7:1 on white, 6.1:1 on cream, 6.5:1 on `--surface-2`. AA pass on all three. The `--yes` hue is reserved for fills (chart strokes, bar segments, soft pill backgrounds).
-- Coral `--no` `#ff8b6b` text on white: 2.8:1 — fails AA for body. **Use `--no-text` `#A8472D`** for coral-colored text on light — 5.8:1 on white, 5.3:1 on cream, 5.6:1 on `--surface-2`. AA pass on all three. `--no` for fills only.
-- Probability-bar overlay text: `7%` in `#1A4830` on `--yes-bar` `#8FE5C4` ≈ 7.0:1; `93%` in `#5C2516` on `--no-bar` `#F4A990` ≈ 6.3:1. Both AA. These two overlay colors are component-local constants and intentionally not promoted to tokens — they only ever appear inside the probability bar.
-
-### Reduced transparency
-
-`prefers-reduced-transparency: reduce` is now mostly a no-op since the system is opaque by default. Soft pill backgrounds (`var(--accent-soft)`, `var(--no-soft)`) become solid mint/coral at low alpha.
-
-### Reduced motion
-
-`prefers-reduced-motion: reduce` disables: card hover lift, LIVE pulse, chart entrance fade. Static states remain.
-
-### Keyboard navigation
-
-- All interactive elements have visible `:focus-visible` rings: 2px outline `#0E7A53` at 2px offset (a darker mint that clears 4.8:1 on cream and 6.0:1 on white, satisfying WCAG 2.5.8 non-text contrast). The brand mint `--accent` `#2be480` is **not** used for the focus ring on light surfaces because it only reaches 1.6:1 on cream and fails 3:1.
-- Tab order follows visual order: nav → category pills → hero buy buttons → time-period pills → stat row → featured cards → all markets.
-- The chart is non-interactive at keyboard level (visual only). Time-period pills are buttons in tab order.
-
----
-
-## 9. Performance budget
-
-- LCP < 2.0s.
-- CLS < 0.1.
-- Hero chart SVG inline; no JS chart library.
-- Sparkline SVGs inline; no JS chart library on cards.
-- Fonts: `font-display: swap`. Preconnect to Google Fonts CDN. Critical font (Inter regular + 600) preloaded.
-- No backdrop-filter anywhere (Liquid Glass blur dropped).
-- No box-shadow on cards (uses border instead).
-
----
-
-## 10. What's out of scope
-
-- **Dark mode.** Was the only mode through 2026-04-27. P8 pivot inverts: light is the only mode now. Dark mode could return as a user preference later but is not in scope for the P8 implementation. (Carried-forward retiree from the original §10: "Light mode. Dark only for now" — flipped 2026-04-27.)
-- Internationalization. English only for now.
-- Custom font (Capsule-style) — using Inter as approximation. May commission a custom display face later.
-- 3D / depth effects. The Robinhood look is flat-soft, not skeuomorphic.
-- Variable / animated gradients. Backgrounds are static (flat white only).
-- Dense table view (Bloomberg / dexscreener style). Considered for D direction; rejected for first pass. Could be added later as `/predict?view=dense`.
-
----
-
-## 11. Decisions Log
-
-| Date       | Decision                                                                                | Rationale                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| ---------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 2026-04-17 | Dropped left sidebar                                                                    | None of Kalshi / Polymarket / Pariflow use one; horizontal top nav is the category convention.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| 2026-04-17 | Outfit over IBM Plex Sans                                                               | Outfit is what Pariflow uses; scales cleaner at display sizes. (Superseded 2026-04-26.)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| 2026-04-17 | Orbitron removed                                                                        | Sci-fi/gaming signal. Fintech doesn't use decorative display fonts.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| 2026-04-17 | ~~Cyan #22d3ee accent~~                                                                 | Superseded 2026-04-23. Kept in log for context.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| 2026-04-17 | IBM Plex Mono for prices/volumes                                                        | Adds precision/trader-desk feel for numeric data.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| 2026-04-17 | Sparklines per market card                                                              | Deterministic placeholder until backend exposes historical prices.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| 2026-04-23 | ~~Reversed cyan → neon taptrade green `#39ff14`~~                                        | Superseded 2026-04-24. Kept in log for context.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| 2026-04-23 | Restored TN speech-bubble logo                                                          | Retired 2026-04-24 in favor of gradient BrandMark. Kept in log.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| 2026-04-23 | ~~Two-greens discipline~~                                                               | Superseded 2026-04-24. YES semantic color moved to blue. Kept in log.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| 2026-04-24 | **~~Pivoted to Liquid Glass on cool-palette scene~~**                                   | Superseded 2026-04-26. Liquid Glass executed cleanly but read as "another dark fintech with iOS 26 aesthetics" — the genre was exhausted. Adopted Robinhood-inspired direction. Liquid Glass spec preserved in git history pre-2026-04-26.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| 2026-04-24 | **Accent: taptrade lime → mint emerald `#2be480`**                                       | Mint reads as "trading tool" rather than "crypto casino." Stays under Robinhood spec.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| 2026-04-24 | ~~3-stop signature gradient mint → teal → azure~~                                       | Retired 2026-04-26 with Liquid Glass. Robinhood spec uses solo mint.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| 2026-04-24 | ~~YES blue / NO peach~~                                                                 | Superseded 2026-04-25. Kept in log.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| 2026-04-24 | ~~Backdrop teal/navy/mint orchestra~~                                                   | Retired 2026-04-26. Single warm-dark `#0F1414` instead.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| 2026-04-24 | **Retired WhaleTicker / amber palette**                                                 | Pariflow-era broadcast feature. Stays retired.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| 2026-04-24 | ~~Radii bumped to 10/16/22/28~~                                                         | Superseded 2026-04-26. Robinhood spec runs less bubbly: 8/12/16/20.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| 2026-04-24 | ~~Spring physics on interactive transitions~~                                           | Retired 2026-04-26 with Liquid Glass. Robinhood motion is minimal-functional.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| 2026-04-24 | ~~Mandatory `prefers-reduced-transparency` fallback~~                                   | Mostly moot under Robinhood spec — system is opaque by default.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| 2026-04-25 | **Phase 1–5 of Liquid Glass shipped**                                                   | 19 commits between `5fb8ef4e` and `66cb92c5`. Direction superseded 2026-04-26 before final QA.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| 2026-04-25 | **TopBar nav links conditionally rendered, not display-none**                           | Smoke test fix; structural decision unchanged by 2026-04-26 redesign.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| 2026-04-25 | **YES/NO palette: seafoam green + coral** (third iteration)                             | Reconsidered 2026-04-26: Robinhood uses ONE green (mint) for both brand and up-direction. P2 will decide whether to unify YES with the brand mint or keep seafoam as a deliberately-softer market signal. Coral NO stays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| 2026-04-26 | **Pivoted from Liquid Glass to Robinhood-inspired**                                     | Compared against Polymarket (corporate-clean), Kalshi (editorial-financial), Pariflow (dark-fintech), and the live Liquid Glass implementation. Liquid Glass execution was strong but visually generic — every dark fintech dashboard from 2023-2025 uses the same recipe. Robinhood-inspired direction (warm-dark, big numbers, dominant chart, soft-flat cards, mint as the action color, category pills as primary filter) claims the "stock-detail-page treatment for prediction markets" lane. Friendly enough for first-time traders, polished enough for Gen Z users who already live in a brokerage app. Decision validated by mock at `apps/taptrade-platform/frontend/packages/app/public/taya-direction-mocks.html` direction B.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| 2026-04-26 | **Migration phasing**                                                                   | Six phases land independently, one commit per phase. P1: this DESIGN.md rewrite (specs only). P2: tokens + DiscoveryHero + TopMoversRail. P3: MarketCard + AllMarketsSection cards. P4: MarketFilterBar reskin. P5: market detail page. P6: category + portfolio polish. Each phase ships behind no flags; the team accepts a partial-styled state between phases for a few hours.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| 2026-04-26 | **Self-correction: restored NO price on cards + closing-window pills on /predict**      | P3 dropped the NO price on MarketCard, showing only the leading side ("Robinhood single-price treatment"). P4 dropped the closing-window filter ("homepage stays focused on category browsing"). Both decisions made the homepage worse, surfaced by user testing the same day they shipped. Why P3 was wrong: prediction markets aren't stocks — both sides are tradeable instruments with prices that move independently. Forcing the user to mentally compute "if YES is 71¢, NO is 29¢" violates "don't make me think" (Krug). Polymarket and Kalshi both show both prices for this reason. Why P4 was wrong: closing-window scoping is a real use case on the homepage, not just a /discover concern. Politics markets in their final 24h have different risk/reward than 6-month-out markets. Fix: cards now show YES seafoam + NO coral side-by-side; AllMarketsSection has its own internal All/1D/1W/1M pill control in the section header. Composes with category pills (e.g., Politics + 1D = political markets closing within 24h).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| 2026-04-26 | **Filter consolidation: combined-filter row + Featured always shows**                   | Right after the previous self-correction, a second iteration: the standalone "All markets" heading was redundant, and the category pills (then sitting above the hero) read as page-level navigation rather than what they are: scope for the All Markets section. Move: drop the "All markets" heading, drop the standalone MarketFilterBar above the hero, render category pills + closing-window pills in the same row inside AllMarketsSection's header. Featured grid now shows at all filter states (was hidden when filter was active — confusing, since pills are now BELOW Featured). Filter row reads as the section header it actually is. MarketFilterBar.tsx deleted; AllMarketsSection owns both pieces of filter state.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2026-04-27 | **P5 shipped: market detail page collapsed hero + full-width trade ticket**             | Restyled MarketHead, MarketChart, OrderBook, RecentTrades, TradeTicket from glass to warm-dark surfaces. Two structural changes per design review: (1) MarketHead + MarketChart collapse into one continuous card via a `.md-hero` wrapper that uses CSS specificity (`.md-hero .mh`, `.md-hero .mc-card`) to drop the children's individual card chrome — no component prop changes. (2) TradeTicket moves from sticky right sidebar to a centered full-width block below the chart (max-width 720px). Order book and recent trades now sit in their own row below the ticket. Single-column vertical flow. Chart line color is now direction-aware (seafoam up / coral down) computed from previousPriceCents; the SVG glow filter and double-stroke are dropped. Stats row 18px/600.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| 2026-04-27 | **P6 shipped: TopBar + portfolio + category restyled, primary surfaces complete**       | TopBar drops backdrop-filter blur, drops `--accent-gradient` (mint pill is solid `--accent`), Inter replaces Outfit on the balance label, search results dropdown uses `--surface-1` instead of glass. Active nav link is mint-filled (was a soft white inset highlight). Portfolio's stat strip + tab bar + table all swap from glass to warm-dark surfaces; stat value color glows are dropped. Category page (`/category/[slug]`) page-title weight matches the design system (700 not 800), empty state uses `--surface-1` instead of dashed-glass. Primary player surfaces (predict, discover, market detail, category, portfolio, top nav) are now Robinhood-treated. Out of scope for this migration: cashier (sportsbook era), auth pages, leaderboards, rewards, account, profile — they retain the glass treatment until separately touched. The legacy `--glass-*`, `--rim-*`, `--chroma-*`, `--bg-{navy,teal,mint,azure}`, `--accent-{hi,lo,deep,gradient}`, `--yes-{glow,border,hi,lo}`, `--no-{glow,border,hi,lo}` tokens stay in `globals.css` for those secondary surfaces. The `.glass` utility class stays. Outfit font load stays in `layout.tsx` for the same reason. Each will be retired the next time the secondary surface that uses them is restyled.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| 2026-04-28 | **P7 shipped: all secondary surfaces migrated to Robinhood warm-dark**                  | Migrated 14 surfaces: `/account` hub, `/account/transactions`, `/account/security`, `/account/notifications`, `/account/rg-history`, `/account/self-exclude`, `/auth/login`, `/auth/register`, globals.css auth shell (`.auth-card`, `.auth-input`, `.auth-submit`, `.auth-link`) + `/auth/verify-email`, `/leaderboards`, `/rewards`, `/cashier` (submit-hover fix) + `/cashier/cheque`, `/privacy`, `/profile`. Every page now uses `--surface-1/2`, `--border-1/2`, `--r-rh-*` tokens; glass backgrounds, `backdrop-filter`, rim box-shadows, chromatic fringes, and gradient buttons are gone from all secondary surfaces. The `.glass` utility class and its tokens (`--glass-*`, `--rim-*`, `--chroma-*`) are retained in `globals.css` because `ContentPage.tsx`, `discover/page.tsx`, and `market/[ticker]/page.tsx` still use `.glass` — these are in-scope for a future P8 sweep when those components are revisited. The `--accent-glow-color`, `--accent-lo`, `--accent-gradient`, `--accent-glow` tokens are retained because P1-P6 components still use them (error pages, `MobileTabBar`, `BrandMark`, `LandingPage`, `portfolio`). TypeScript check passes clean (no new errors).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| 2026-04-27 | **Self-correction: P5 reverted from single-column to 2-col layout on /market/[ticker]** | The morning's P5 ship collapsed the page to a single vertical column with TradeTicket centered at `max-width: 720px` between the chart and orderbook. Live design review the same afternoon found three problems: (1) at >=1280px the ticket left **41% of horizontal space empty** (496px of dead-space wings) because the chart above and orderbook below filled the full 1216px content width — the centered island broke the layout rhythm; (2) the collapsed hero was 680px tall on a 720px viewport, pushing the trade button below the fold and violating Robinhood's "action above the fold" rule; (3) OrderBook and RecentTrades at 596px each looked hollow for the density of content they hold (3-level synth book, ~10 trades). Fix: restored the 2-col grid the file's own header diagram described — left column carries hero + orderbook/trades + details, right column carries TradeTicket (sticky `top: 84px`) + Related. Below 1100px collapses to single column via `display: contents` + grid `order` so the ticket sits in position 2 directly under the hero. Measured deltas at 1280×800: page height 2000px → 1513px (−24%), hero 680px → 628px, dead space 496px → 0, OrderBook+RecentTrades 596px → ~404px each. CSS-only change in `app/market/[ticker]/page.tsx`; no component prop changes. Lesson: the morning's "simplification" optimized for source clarity at the cost of visual composition — single-column is right for narrow viewports, but on wide viewports a centered slab between full-width siblings reads as a layout error. The file diagram was right; the implementation overshot.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| 2026-04-28 | **Legacy package-root carcass bulk-deleted**                                            | All sportsbook-era `components/`, `containers/` (not present), `hooks/`, `lib/`, `services/` at the package root removed, plus root-level files `core-theme.ts`, `pxp-theme/`, `i18n.js`, `next-i18next.config.js`, `index.ts`, `store.ts`, `store.config.ts`, `styled.d.ts`, `translations-bundle.js`, and the `translations/` locale tree. The App Router under `app/` is now the entire shippable surface. Verified via 168-file import-graph audit — zero escapes. Legacy webpack aliases (`i18n`, `next/config$`) removed from `next.config.js`; dead `"i18n"` path removed from `tsconfig.json`. Tsc baseline: 1 error (baseUrl deprecation) → 1 error (unchanged — no new errors introduced). 341 files deleted, 32,350 lines removed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| 2026-04-28 | **P8 implementation shipped: warm-light surfaces + new MarketCard composition**         | Token swap in globals.css (`--bg-deep`, `--surface-1/2`, `--border-1/2`, `--t1..4`) to the P8 light values. Added `--yes-text` (#1A6849), `--no-text` (#A8472D), `--yes-bar` (#8FE5C4), `--no-bar` (#F4A990), `--focus-ring` (#0E7A53) per the 2026-04-28 amendment — all clearing AA on white + cream. Body now renders the chart-paper grid via `--bg-pattern`. Removed the dark-theme `body::before` radial-gradient backdrop scene. MarketCard rewritten: corner image (mono fallback for native markets via `getMarketImageProps` in `utils/marketImage.ts` — category→hue map, ticker→2-char monogram), 3 stat rows (Volume / Closes / Open interest with leading-side label), probability bar with overlaid % and the min-segment-width rule for ≤5% extremes (12px min + label moved above bar), two clear YES/NO pills with `--yes-text`/`--no-text` text. TopBar: opaque cream + hairline border (no backdrop-filter, per the §9 rule). Chart strokes in `MarketChart.tsx` and the discovery hero (`predict/page.tsx`) now use `--yes-text`/`--no-text` for AA on light. TrendingSidebar sparkline and delta pills updated similarly. `:focus-visible` rule added to globals.css using `--focus-ring`. Bulk swap of `color: var(--yes/no);` → `color: var(--yes-text/no-text);` across components (RecentTrades, OrderBook, TradeTicket, MarketChart, etc., ~19 sites) so all colored TEXT clears AA. Legacy `--glass-*` / `--rim-*` / `--bg-{navy,teal,mint,azure}` / `--accent-{hi,lo,deep,gradient}` / `--yes-{glow,border,hi,lo}` / `--no-{glow,border,hi,lo}` tokens RETAINED per the per-surface retirement policy from P6 — secondary surfaces (auth shell, legacy carcass) still consume them. Verified visually in browser: `/predict`, `/market/[ticker]`, `/portfolio`, `/auth/login` all render correctly on cream + chart paper. Scoped typecheck 0 errors; unit suite 128/128.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2026-04-28 | **Office package migrated to P8 (cream + chart paper grid)**                            | Back-office still rendered against the sportsbook-era IBM Plex Sans + #0b0e1c navy / dark glass look while the player app shipped P8 on the same day. Migration phased into four PRs (#25 foundation, #26 App Router sweep, #27 Pages-Router cleanup, plus this docs entry): (1) `styles/p8-tokens.css` declares the same `:root` tokens as the player app — `--bg-deep`, `--bg-pattern`, `--surface-1/2`, `--border-1/2`, `--t1..4`, `--yes-text`, `--no-text`, `--yes-bar`, `--no-bar`, `--focus-ring`, `--accent[*]`, `--r-rh-*`. Inter + IBM Plex Mono come in via Google Fonts. (2) `styles/p8-antd.css` overrides AntD 4.16 (which has no runtime `theme.token` API) at the high-traffic component classes — layout, card, button, input/select/picker, table (rows + hover + selected), pagination, menu, modal/drawer, form labels, tags (success/error/warn/processing), dropdown, tabs, statistic, typography, message, divider, switch/checkbox/radio. (3) Bulk hex → token sweep across 40 App Router files (16 widgets, 17 dashboard pages, 6 shared primitives, dashboard layout) via a deterministic regex map. Map: `#0f1225/#111631 → --surface-1`, `#0b0e1c → --bg-deep`, `#1a1f3a → --border-1`, `#161a35 → --surface-2`, `#1a2040 → --accent-soft`, `#ffffff/#fff/#f8fafc/#e2e8f0 → --t1`, `#D3D3D3/#a0a0a0 → --t2`, `#94a3b8/#64748b → --t3`, `#4ade80 → --accent`, `#22c55e → --accent-lo`, `#4a7eff → --focus-ring`, `#fbbf24 → --warn`, `#f87171/#ef4444/#ff6b6b → --no-text`, `#101114 → #003827`, `'IBM Plex Sans' → 'Inter'`. Each replacement keeps a hex fallback inside the `var()` call so SSR first paint has a sensible color before `p8-tokens.css` mounts. (4) App Router `/auth/login` and `app/layout.tsx` aligned (Suspense boundary on `useSearchParams` + `force-dynamic` to unblock `next build` under Next.js 16). Pages-Router container inline colors (`containers/prediction-markets` YES column, `containers/users/details/financial-summary` Statistic colors) aligned to `--yes-text`/`--no-text`. Result: dashboard / audit-logs / trading / users / risk-management / prediction-admin / settlements all render against one cream palette end-to-end. `next build --webpack` clean (29s). Verified visually at runtime on port 3001. Out of scope: per-page styled-components on dashboard widgets that already inherit the AntD overrides (no targeted polish needed unless a future surface requires it), the dormant `theme.menu.color` branches in `components/layout/header/index.styles.ts` (inert; cleanup is a follow-up no-op). |
-| 2026-05-24 | **MarketCard layout remodel: dropped header eyebrow + open-interest, stats moved to a footer** | Founder-requested simplification to foreground the buy decision on discovery cards. (1) Removed the category eyebrow from the header — category is implied by the surface the card sits on. (2) Removed the Open interest stat from the card entirely (it stays on the market detail hero). (3) The surviving Volume / Closes metrics moved out of the old 3-row label-left/value-right list (which sat between the head and bar) into a single quiet inline footer below the bar + pills: Volume anchored left, Closes anchored right, each an inline `label + value` pair (`--t3` label + `--t1` IBM Plex Mono value), `white-space: nowrap`. The footer is plain non-link text; the body link (head + bar) still owns market navigation and the YES/NO pills remain side-preselect deep-links. Card vertical order is now title+image → probability bar → YES/NO pills → stat footer; the 14px section rhythm, the probability-bar min-segment rule, and the responsive `auto-fill minmax(300px, 1fr)` grid are unchanged. `openInterestCents` prop dropped from MarketCard and both call sites (MarketGrid, `/category/[slug]`). DESIGN.md §6 composition updated to match. Files: `components/prediction/MarketCard.tsx`, `MarketGrid.tsx`, `category/[slug]/page.tsx` (+ qa-regressions comment). Verified: scoped typecheck 0 errors, unit suite 144/144, browser-checked `/predict` at desktop (2-col) + mobile (1-col, footer no-wrap), no console errors. |
-| 2026-05-24 | **Featured hero → carousel (All / Sports / Crypto / Politics top markets)** | Replaced the single-market DiscoveryHero on `/predict` with a FeaturedCarousel of four slides: top market from All (the curated `discovery.featured[0]`) + the highest-volume open market in Sports, Crypto, and Politics (fetched via the same `getMarkets({categoryId,status:"open"})` pattern `/category/[slug]` uses, ranked client-side by `volumeCents`). DiscoveryHero was extracted from `predict/page.tsx` into its own component so each slide reuses it verbatim — no visual divergence. The carousel adds prev/next arrows + labeled chips (All/Sports/Crypto/Politics) that double as indicators + jump controls, the active slide emphasized as the big hero; gentle 7s auto-advance paused on hover/focus and disabled under `prefers-reduced-motion`; keyboard ← / →; and loading/empty/error states. No external carousel dependency (custom). A category with no open markets (or unknown slug) is skipped, so the carousel adapts. Slides are deduplicated: when a category's top market is already shown (e.g. the overall "All" pick is also the top Sports market in current seed data) that category falls through to its next highest-volume market, so all four slides are distinct. Files: `components/prediction/FeaturedCarousel.tsx` (new), `components/prediction/DiscoveryHero.tsx` (extracted), `predict/page.tsx` (rewired data + render). Verified: scoped typecheck 0 errors, unit suite 144/144, browser-checked /predict desktop + mobile (all 4 slides resolve to real markets; auto-advance + chips + arrows work), no console errors. |
-| 2026-05-24 | **Featured carousel control → Kalshi-style top-right overlay** | Per founder preference (researched against kalshi.com's live hero, which uses `‹ 1 of 7 ›`), replaced the under-card category-chip control with a neutral "N of M" counter + prev/next arrows overlaid in the hero card's top-right. Removed the category-labeled chips: they duplicated the AllMarkets filter pills directly below and coupled the carousel to categories. The carousel is now category-agnostic — each slide's eyebrow (`LIVE · SPORTS · …`) carries the category. The eyebrow reserves right-padding via a scoped rule (`.fc-viewport .rh-hero-eyebrow`) so it never runs under the control; DiscoveryHero stays untouched. Data + behavior unchanged (top market per All/Sports/Crypto/Politics, deduped; 7s auto-advance paused on hover/focus + reduced-motion-aware; keyboard ← / →). File: `components/prediction/FeaturedCarousel.tsx`. |
-| 2026-04-27 | **P8 spec: pivot from warm-dark to warm-light, restructure MarketCard**                 | Same Robinhood "stock-detail-page" mood — only the surface inverts: warm-dark `#0F1414` → warm-cream `#F7F3ED`, with a faint chart-paper grid (32px / 3.5%) the only decoration. Rejected alternatives: pure-white (Polymarket / Kalshi corporate-clean lane), diagonal hatch (Robin Markets — read editorial), serif title (read magazine). Trading palette unchanged — `--accent` mint, `--yes` seafoam, `--no` coral all kept; two new fill tokens `--yes-bar` / `--no-bar` added for the probability bar (slightly desaturated so the bar reads calm); two new text tokens `--yes-text` / `--no-text` added for AA contrast on white. MarketCard rewritten: corner circular image (≤15% of card area, every card carries one — `imagePath` from discovery sync for imports, deterministic monogram disc for native markets), three stat rows (Volume / Closes / Open interest with leading-side-pill), horizontal probability bar (sage YES + coral NO segments, widths = prices, % overlaid on segments), two clear pills below carrying YES ¢ / NO ¢ as the click-to-trade affordance. Replaces the dark-theme P3 card (deterministic-sparkline + dual-mono-prices + delta-pill). Bar % and pill ¢ are mathematically the same number for binary markets — bar shows the visual split, pills show the execution price; different jobs. Implementation deferred until PRs #1–#5 land (P7 secondary-surface migration + token cleanup + dead-code removal — those clean up the dark-theme token system and benefit a clean light-pivot branch). Once those merge, "P8" lands as one or more migration PRs that swap `--bg-deep`, `--surface-*`, `--border-*`, `--t*` tokens, retire dark-theme component CSS, and ship the new MarketCard composition. The §10 "Light mode. Dark only for now" exclusion is flipped — light is the only mode now. Preview at `~/.gstack/projects/jbrackens-TAYA_NA/designs/p8-light-pivot-20260427/preview.html`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+> **Scope:** governs the player app now; the back-office (`packages/office`)
+> still runs the previous value set and migrates to these tokens as a
+> follow-up sweep (token names are shared, so it is a value/composition
+> sweep, not a rename).
+
+## 0. Why 1C (decision record)
+
+Chosen 2026-08-06 over 1A (ship-as-is Ink & lime) and 1B (resurrected P11
+dark terminal), with side-by-side builds of the same live market on the
+`01 Direction` Figma page, grounded in Aug-2026 research:
+
+- Category leaders (Polymarket, Kalshi, Robinhood) all ship **light consumer
+  surfaces**; dark lives in their pro tiers (Kalshi Pro, Robinhood Legend).
+- "Technical Mono" — monospace near numbers, terminal cues, hairline density —
+  is the current mainstream movement; Geist Mono (which we ship) is one of its
+  leading faces.
+- Robinhood's CTA accent is a near-match for TapTrade lime `#C6F24E`; Kalshi
+  owns green, Polymarket owns blue. Ink+lime keeps us differentiated.
+
+**1B is reserved, not deleted:** its recipe (charcoal `#131519`-family,
+periwinkle-violet, Geist, no shadows) is the designated starting point for a
+future paid **Pro mode** — a product decision, not a restyle.
+
+## 1. Product Context (unchanged)
+
+Binary event-contract exchange: users trade YES/NO on real-world outcomes.
+Audience: retail Gen Z / millennial traders comfortable in brokerage apps.
+Positioning: the discipline of a trading terminal wearing the warmth of the
+TapTrade brand — familiar to anyone who has bought a stock, honest to anyone
+who reads numbers for a living.
+
+## 2. The Five Rules (the anti-slop contract)
+
+1. **Lime speaks only for actions.** `--lime` appears on primary CTAs, active
+   nav/tab states, and category micro-labels — ≤3 lime moments per screen.
+   Lime is never a data color, never body text (`--lime-text` `#556F00` is the
+   only lime-as-text, AA at 5.74:1 on white).
+2. **Green and red speak only for market direction.** `--dir-yes` / `--dir-no`
+   color prices, deltas, bars, settlement outcomes — never chrome, never
+   brand, never decoration. Selection is the action voice (lime wash +
+   lime-text stroke), even on a NO cell.
+3. **Every numeral is mono.** Geist Mono with `tabular-nums` for prices,
+   points, counts, timestamps, tickers. If it can be compared or summed, it
+   is mono.
+4. **Uppercase micro-labels, hairline borders.** Section labels are 9–11px
+   uppercase tracked +0.08–0.12em. Separation comes from 1px `--hairline`
+   and spacing — not shadows, not tints. (Legacy two-layer card shadows are
+   retired; a shadow may survive only on true overlays: menus, sheets, toasts.)
+5. **Honest data or no data.** No fabricated deltas, sparklines, activity, or
+   balances. Missing 24h change renders "—" in `--ink-3` (a dash must never
+   read as "up"). Empty chart ranges say so. Probability bars are sized by
+   real prices.
+
+## 3. Tokens
+
+Canonical values live in `globals.css` — this table mirrors it for reading
+convenience. Figma variable name → CSS name → value.
+
+### Surfaces & ink
+
+| Figma | CSS | Value | Role |
+|---|---|---|---|
+| `bg/page` | `--paper` | `#F7F7F3` | page backdrop |
+| `bg/card` | `--card` | `#FFFFFF` | cards, cells, panels |
+| `bg/raised` | `--raised` | `#F1F1EC` | inner wells, disabled fill |
+| `bg/inset` | `--inset` | `#EDEDE6` | search/input inset fields |
+| `border/hairline` | `--hairline` | `#E4E4DE` | default 1px border |
+| `border/strong` | `--hairline-strong` | `#D4D4CC` | hover tier, outer frames |
+| `text/primary` | `--ink` | `#111111` | primary text |
+| `text/secondary` | `--ink-2` | `#4A4A46` | secondary text |
+| `text/tertiary` | `--ink-3` | `#63635A` | metadata, micro-labels |
+
+### Action (lime)
+
+| Figma | CSS | Value | Role |
+|---|---|---|---|
+| `action/bg` | `--lime` | `#C6F24E` | CTA fill — fills only |
+| `action/text-on` | `--ink-on-lime` | `#17200A` | text on lime (13.0:1) |
+| `action/as-text` | `--lime-text` | `#556F00` | lime as text/stroke on light |
+| `action/wash` | `--lime-wash` | `#F6FAE3` | selected-side background |
+| `action/tint` | `--lime-tint` | `#EFF6D8` | active nav/tab background |
+
+### Direction (market voice)
+
+| Figma | CSS | Value | Role |
+|---|---|---|---|
+| `signal/yes` | `--dir-yes` | `#147536` | YES/up text, strokes, bar |
+| `signal/no` | `--dir-no` | `#C1272D` | NO/down text, strokes, bar |
+| `signal/yes-soft` | `--yes-soft` | `rgba(20,117,54,.08)` | soft YES pill bg |
+| `signal/no-soft` | `--no-soft` | `rgba(193,39,45,.08)` | soft NO pill bg |
+| — | `--dir-yes-bar` / `--dir-no-bar` | `#86D9A5` / `#F0A9A3` | probability-bar segments |
+
+### Status families (from the states work — §4f of the handoff, kept)
+
+- **Info** `--info-text #33556E` · `--info-dot #9FB8CC` · `--info-soft` —
+  informational messages never borrow the accent.
+- **Inert** `--inert-fill #F1F1EC` · `--inert-border #E4E4DE` ·
+  `--inert-label #63635A` — disabled comes from the surface, **never
+  opacity/filter** (opacity-disabled CTAs fail contrast; 5.35:1 as speced).
+- **Pending** `--pending-fill #E8EECF` · `--pending-border #DFE6C2` ·
+  `--pending-label #4A4A46` — in-flight: lime pulled toward paper.
+
+### Radius & space
+
+- Radius: `--radius-xs 4` · `--radius-sm 6` · `--radius-md 8` (default:
+  cards, cells, CTAs, inputs) · `--radius-lg 12` (hero/outer cards) ·
+  `--radius-pill 999` (reserved: pills that are truly round — LIVE dot
+  housing, avatars). The P9 10/16/22/28 ramp is retired.
+- Space: `--space-2xs 4 · xs 8 · sm 12 · md 16 · lg 20 · xl 24 · 2xl 32 ·
+  3xl 40 · 4xl 48`. Terminal density: prefer the small end; 18px section
+  padding, 12–14px card padding are the norm on data surfaces.
+
+## 4. Typography
+
+- **UI: Switzer** (self-hosted; weights 400/600/700). Figma stand-in is
+  Inter — every Figma text style notes this; do not ship Inter.
+- **Numerals: Geist Mono** (400/600) with `[font-variant-numeric:tabular-nums]`.
+- Ramp (Figma style → px/lh): `UI/Display 28/34·700` · `UI/Title 25/32·700`
+  (market question) · `UI/Heading 17/24·600` · `UI/Body 14/20` ·
+  `UI/Body-sm 13/18` · `UI/Label 12/16·600` · `UI/Micro 11/14·600·+1px caps`
+  · `Num/XL 34/40·600` (hero probability) · `Num/L 20/26·600` ·
+  `Num/M 14/20·600` · `Num/S 13/18` · `Num/Micro 10/14·600·+1.2px caps`.
+- Serif display is permitted **only** as a landing-page editorial flourish
+  (the Kalshi/Robinhood pattern) — never in product UI.
+
+## 5. Brand
+
+- Wordmark: lowercase **`taptrade`**, Switzer 700, `--ink`. The split-leaf
+  mark (ink left lobe, lime right lobe) precedes it; source of truth
+  `app/components/BrandMark.tsx`.
+- The landing page runs the **dark ink variant** (near-black ground, lime
+  accents, "Where local moments become markets."); the product runs light.
+  These are the only two brand surfaces — no third mood.
+- Prior identities — "TapTrade." with mint period, Schibsted Grotesk wordmark,
+  forest tile, Martian Grotesk uppercase — retired (§10).
+
+## 6. Components (Figma `02 System` ↔ code)
+
+| Figma component | States/variants | Code counterpart |
+|---|---|---|
+| `Button` | Primary/Secondary/Ghost/Disabled × M/S | `ui/Button` (`cta` et al) |
+| `Cell/Side` | Yes/No × Selected | market head tiles, ticket side select |
+| `Bar/Probability` | — (segments sized by real price) | hero/ticket split bar |
+| `Cell/Stat` | — | market stats strip cells |
+| `Row/KeyValue` | Default/Positive | ticket quote rows |
+| `Row/Market` | — | feed market rows |
+| `Tab/Range` | Default/Active | chart range tabs |
+| `Nav/CategoryRow` | Default/Active | left topic rail |
+| `Badge/Live` | — | LIVE indicator |
+| `Field/Search` | — | top-bar search |
+| `Toast/Notice` | Success/Info/Error | `ToastProvider` cards |
+| `Organism/TopBar` | — | `prediction/TopBar` |
+| `Organism/TradeTicket` | **10 states** (below) | `prediction/TradeTicket` |
+
+Component rules: selection is always the action voice (wash + lime-text
+stroke); disabled is always the inert recipe; one icon family (16px stroke
+geometric); icons never emoji.
+
+## 7. Trade ticket doctrine (handoff 10a–10n, kept and enforced)
+
+- **The quote rows ARE the review surface.** The CTA submits immediately via
+  **press-and-hold** — `Hold to place · N pts` — with helper text
+  "press and hold to submit". There is **no confirm modal**; a "Review trade"
+  label is a lie and shall not return.
+- Ten card states: Ready · Limit (exchange only) · Sell (from position) ·
+  Signed-out ("Log in to trade") · No-points (red balance, inert CTA,
+  Add-points escape) · No-liquidity · Verify-required · Settled-won ·
+  Halted · Quote-only (legacy AMM, read-only).
+- Post-submit notices (`Toast/Notice`): status speaks **only through the
+  dot** — the card is never tinted. A **partial fill** states the remainder
+  and the returned points in the card body; that detail may not be
+  toast-only. Rejected orders state that no points were taken.
+
+## 8. Layout
+
+- Desktop ≥1280: `200px topic rail · fluid main · 380px preview/ticket rail`,
+  64px top bar (brand · uppercase nav · search FILL · auth), 1px hairline
+  dividers between regions. 1024–1279: `72 · fluid · 340`. <1024: one
+  column; ticket becomes a modal sheet below 1180 (Escape/backdrop dismiss,
+  44px minimum controls); fixed bottom nav below 900.
+- Feed model: static **Featured market** (no auto-advance, no carousel) +
+  dense `Row/Market` list; selecting a row updates the preview rail.
+- The chart owns the hero's right panel; its y-domain auto-scales to the
+  series range (min 6¢ span); missing history renders an honest empty state.
+
+## 9. Accessibility (computed 2026-08-06, WCAG 2.x relative luminance)
+
+- `--ink` 17.58:1 on paper, 18.88:1 on card — AAA.
+- `--ink-2` 8.9:1 on card — AAA. `--ink-3` 6.06:1 card / 5.65:1 paper — AA
+  (fine for the 9–11px bold micro-labels).
+- `--lime-text` 5.74:1 on card, 5.38:1 on wash, 5.15:1 on tint — AA.
+- `--ink-on-lime` on `--lime` 13.0:1 — AAA. Raw lime as text: banned.
+- `--dir-yes` 5.79:1 / `--dir-no` 5.84:1 on card (5.39/5.44 on paper) — AA.
+- Inert label on inert fill 5.35:1 — AA without opacity tricks.
+- Focus: 2px `--lime-text` outline at 2px offset. All interactive targets
+  ≥44px on touch surfaces. `prefers-reduced-motion` collapses all motion.
+
+## 10. Retired directions — disposition ledger
+
+| Direction | Fate |
+|---|---|
+| Liquid Glass (04/24–04/26) | retired 2026-04-26; tokens deleted |
+| Warm-dark Robinhood (04/26–04/27) | retired 2026-04-27 |
+| P8 warm-cream + chart-paper (04/27–07/07) | retired 2026-07-07 |
+| P9 gallery-white + mint (07/07–~07/26) | superseded in code by Ink & lime repaint; formally retired 2026-08-06. Mint accent, seafoam/coral, Inter-as-ship-font, Schibsted wordmark all retired |
+| P10/P11 dark terminal (approved 07/12, code-retired 07/26) | **reserved as the future Pro-mode recipe**; not a consumer default |
+| Ink & lime handoff framing | absorbed: its tokens and states ARE the substrate of 1C; its rounded-friendly composition is replaced by terminal bones |
+
+Legacy CSS aliases (`--t1..4`, `--surface-1..3`, `--border-1/2`, `--r-rh-*`,
+`--accent*`, `--yes*`/`--no*` P9 forms) remain defined for unmigrated
+call-sites. **Migration rule: any component you touch moves to the new names
+in the same change.** The alias block is deleted when the last consumer goes.
+
+## 11. Decisions log
+
+The pre-1C dated log (2026-04-16 → 2026-08-03) is preserved in git history
+(`git log -p DESIGN.md`, entries §11 of prior revisions). New entries:
+
+| Date | Decision |
+|---|---|
+| 2026-08-06 | **1C locked as the single canonical system** (this document). Direction bake-off + research on `01 Direction` in Figma; system built on `02 System` (50 variables, 12 text styles, 13 components incl. 10-state TradeTicket); Market Detail + Feed frames on `03 Screens`. |
+| 2026-08-06 | **Code pilot landed** (`0ba9782c`): 1C tokens added to `globals.css`; market stats strip → separated mono cells; side tiles → white Cell/Side cards; `cta` radius → `--radius-md`. Figma codeSyntax reconciled to repo names (`--dir-yes`, `--ink-on-lime`). gate.sh 8/9 PASS. |
+| 2026-08-06 | **Ticket CTA doctrine affirmed**: press-and-hold submit, no confirm modal, quote rows are the review surface (handoff 10a decision, now system law). |

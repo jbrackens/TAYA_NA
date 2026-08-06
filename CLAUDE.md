@@ -39,7 +39,7 @@ Taya_Na_Predict/
 ├── reference/v2-prediction/               ← Old v2 prediction prototype kept for reference
 ├── CLAUDE.md                              ← this file
 ├── PRODUCT-USER-JOURNEYS.md               ← product spec: implemented user journeys
-└── DESIGN.md                              ← prediction design system (P8: warm-cream backdrop + chart-paper grid + Inter + IBM Plex Mono + mint emerald accent + AA contrast) — governs BOTH player app and backoffice as of 2026-04-28. READ BEFORE ANY UI CHANGE.
+└── DESIGN.md                              ← prediction design system (1C "lime skin, terminal bones", locked 2026-08-06: paper #F7F7F3 + ink + lime-on-actions-only, Switzer UI + Geist Mono numerals, terminal density, hairlines not shadows). Governs the player app; office migrates in a follow-up sweep. Composition source: Figma "TapTrade Design" (John's private project). READ BEFORE ANY UI CHANGE.
 ```
 
 ## GitHub Repo
@@ -145,7 +145,7 @@ Prices are **cents, 0–99** — always enforced by CHECK constraints and the in
 **Path:** `apps/taptrade-platform/frontend/packages/office/`
 
 - **Framework:** Next.js with Pages Router (NOT App Router) — but a parallel App Router tree under `app/` exists for newer admin pages (dashboard, audit-logs, trading, users). Both routers coexist.
-- **UI:** Ant Design 5.x (`^5.29`) + styled-components, both wired to the **P8 design tokens** as of 2026-04-28. Stylesheet stack: `antd/dist/antd.css` → `styles/p8-tokens.css` (declares `--bg-deep` / `--surface-1/2` / `--border-1/2` / `--t1..4` / `--yes-text` / `--no-text` / `--focus-ring` / `--accent[*]` / `--r-rh-*`) → `styles/p8-antd.css` (overrides AntD component classes against the tokens). New styling work MUST reference these CSS custom properties — DO NOT introduce hex literals.
+- **UI:** Ant Design 5.x (`^5.29`) + styled-components, both wired to the **legacy P8-named design tokens** (values P9-swapped 2026-07-07; the 1C sweep per DESIGN.md §0 scope note is pending for office). Stylesheet stack: `antd/dist/antd.css` → `styles/p8-tokens.css` (declares `--bg-deep` / `--surface-1/2` / `--border-1/2` / `--t1..4` / `--yes-text` / `--no-text` / `--focus-ring` / `--accent[*]` / `--r-rh-*`) → `styles/p8-antd.css` (overrides AntD component classes against the tokens). New styling work MUST reference these CSS custom properties — DO NOT introduce hex literals.
 - **API:** shared `useApi` hook via `services/api/api-service`
 - **Auth:** securedPage wrapper with PunterRoleEnum (ADMIN, TRADER, OPERATOR)
 
