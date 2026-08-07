@@ -37,9 +37,11 @@ describe("TradeTicket sell units (ISSUE-018)", () => {
   });
 
   it("labels the sell CTA with shares and estimated proceeds", () => {
+    // Renamed to the hold-to-place family (feat: press-and-hold submit) —
+    // the invariant is unchanged: the sell CTA states the SHARE count.
     assert.match(
       source,
-      /SELL_SHARES_CTA/,
+      /SELL_SHARES_HOLD_CTA/,
       "sell CTA must state the share count, never 'N pts' for a share count",
     );
   });
@@ -56,26 +58,35 @@ describe("TradeTicket sell units (ISSUE-018)", () => {
   // plural keys (_one/_other with {{count}}) — the old {{plural}} suffix
   // interpolation only worked for English. Locales whose CLDR rules have
   // no "one" form (id, ms, zh-Hans, zh-Hant) ship _other only.
-  it("ships native SELL_SHARES_CTA plural keys in every locale", () => {
+  // Renamed SELL_SHARES_CTA → SELL_SHARES_HOLD_CTA with the press-and-hold
+  // submit; the retired family must stay deleted so stale keys can't
+  // shadow the live ones.
+  it("ships native SELL_SHARES_HOLD_CTA plural keys in every locale", () => {
     const NEEDS_ONE = new Set(["en", "tl"]);
     for (const locale of ["en", "id", "ms", "tl", "zh-Hans", "zh-Hant"]) {
       const dict = JSON.parse(
         readPublic(`static/locales/${locale}/prediction.json`),
       ) as Record<string, string>;
       assert.ok(
-        !("SELL_SHARES_CTA" in dict),
+        !("SELL_SHARES_HOLD_CTA" in dict),
         `${locale}: the un-pluralized key must be retired`,
       );
+      for (const dead of ["SELL_SHARES_CTA", "SELL_SHARES_CTA_one", "SELL_SHARES_CTA_other"]) {
+        assert.ok(
+          !(dead in dict),
+          `${locale}: retired key ${dead} must stay deleted`,
+        );
+      }
       assert.ok(
-        typeof dict.SELL_SHARES_CTA_other === "string" &&
-          dict.SELL_SHARES_CTA_other.includes("{{count}}"),
-        `${locale}: SELL_SHARES_CTA_other with {{count}} required`,
+        typeof dict.SELL_SHARES_HOLD_CTA_other === "string" &&
+          dict.SELL_SHARES_HOLD_CTA_other.includes("{{count}}"),
+        `${locale}: SELL_SHARES_HOLD_CTA_other with {{count}} required`,
       );
       if (NEEDS_ONE.has(locale)) {
         assert.ok(
-          typeof dict.SELL_SHARES_CTA_one === "string" &&
-            dict.SELL_SHARES_CTA_one.includes("{{count}}"),
-          `${locale}: SELL_SHARES_CTA_one required`,
+          typeof dict.SELL_SHARES_HOLD_CTA_one === "string" &&
+            dict.SELL_SHARES_HOLD_CTA_one.includes("{{count}}"),
+          `${locale}: SELL_SHARES_HOLD_CTA_one required`,
         );
       }
     }

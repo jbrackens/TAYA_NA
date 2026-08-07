@@ -11,7 +11,7 @@
  *  - rows keep the watchlist star — the list star is the app's only save
  *    affordance (documented deviation from the reference)
  *  - movement derivation is shared between /discover and the feed
- *  - de/ is retired; SELL_SHARES_CTA uses native i18next plurals
+ *  - de/ is retired; SELL_SHARES_HOLD_CTA uses native i18next plurals
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
@@ -174,7 +174,7 @@ describe("i18n cleanups (step 10)", () => {
 
   it("uses native plural interpolation in the sell CTA call site", () => {
     const ticket = read("components/prediction/TradeTicket.tsx");
-    assert.match(ticket, /t\("SELL_SHARES_CTA", \{\s*\n?\s*count: requestedQuantity/);
+    assert.match(ticket, /t\("SELL_SHARES_HOLD_CTA", \{\s*\n?\s*count: requestedQuantity/);
     assert.ok(!ticket.includes("plural: requestedQuantity"));
   });
 });
