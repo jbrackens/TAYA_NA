@@ -259,5 +259,10 @@
   "SELL_SHARES_HOLD_CTA_other": "Hold to sell {{count}} shares · est. {{amount}}",
   "DECREASE_AMOUNT": "Decrease amount",
   "INCREASE_AMOUNT": "Increase amount",
-  "MAX_AMOUNT": "MAX"
+  "MAX_AMOUNT": "MAX",
+  "HAPPENING_NOW": "Happening now",
+  "SETTLES_WITHIN_24H": "Settles within 24h",
+  "MOMENT_MARKETS_COUNT_one": "{{count}} market",
+  "MOMENT_MARKETS_COUNT_other": "{{count}} markets",
+  "FIRST_CLOSE": "first close {{countdown}}"
 }

@@ -238,5 +238,10 @@
   "DISCLOSE_POSITION_NONE": "Magagamit ang disclosure kapag may hawak kang posisyon",
   "POSITION_DISCLOSURE_CHIP": "may hawak na {{amount}} pts {{side}} noon",
   "SELL_SHARES_HOLD_CTA_one": "Hawakan para ibenta ang {{count}} share · est. {{amount}}",
-  "SELL_SHARES_HOLD_CTA_other": "Hawakan para ibenta ang {{count}} shares · est. {{amount}}"
+  "SELL_SHARES_HOLD_CTA_other": "Hawakan para ibenta ang {{count}} shares · est. {{amount}}",
+  "HAPPENING_NOW": "Nangyayari ngayon",
+  "SETTLES_WITHIN_24H": "Magsasara sa loob ng 24h",
+  "MOMENT_MARKETS_COUNT_one": "{{count}} market",
+  "MOMENT_MARKETS_COUNT_other": "{{count}} markets",
+  "FIRST_CLOSE": "unang sara {{countdown}}"
 }

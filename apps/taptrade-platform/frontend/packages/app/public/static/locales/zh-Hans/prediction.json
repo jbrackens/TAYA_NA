@@ -235,5 +235,9 @@
   "DISCLOSE_POSITION_LABEL": "公开我在该市场的持仓",
   "DISCLOSE_POSITION_NONE": "持有仓位时才可公开",
   "POSITION_DISCLOSURE_CHIP": "发帖时持有 {{amount}} pts {{side}}",
-  "SELL_SHARES_HOLD_CTA_other": "长按卖出 {{count}} 份 · 预计 {{amount}}"
+  "SELL_SHARES_HOLD_CTA_other": "长按卖出 {{count}} 份 · 预计 {{amount}}",
+  "HAPPENING_NOW": "正在发生",
+  "SETTLES_WITHIN_24H": "24小时内结算",
+  "MOMENT_MARKETS_COUNT_other": "{{count}} 个市场",
+  "FIRST_CLOSE": "最早 {{countdown}} 后截止"
 }

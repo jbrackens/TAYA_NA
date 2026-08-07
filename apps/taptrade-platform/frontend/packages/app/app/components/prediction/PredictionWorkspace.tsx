@@ -35,6 +35,13 @@ import {
   TERMINAL_CATEGORY_ICONS,
   TerminalCategoryRail,
 } from "./TerminalCategoryRail";
+import { MomentCard } from "./MomentCard";
+import {
+  deriveMoments,
+  formatCompactCountdown,
+  groupFeedByEvent,
+  settlingSoon,
+} from "./moments";
 
 interface PredictionWorkspaceProps {
   discovery: DiscoveryResponse;
@@ -756,9 +763,32 @@ export function PredictionWorkspace({
     featuredMarkets.find((market) => market.id === activeFeaturedId) ??
     featuredMarkets[0] ??
     null;
+  // Moments IA (DESIGN.md; Figma 03 Screens → Feed v2): events are the
+  // unit of discovery. A 60s clock keeps countdowns honest without
+  // re-deriving on every render.
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNowMs(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
+  const moments = useMemo(() => deriveMoments(markets, 4), [markets]);
+  const settlesSoon = useMemo(
+    () => settlingSoon(markets, nowMs, 24 * 3_600_000, 3),
+    [markets, nowMs],
+  );
+  const settlesSoonIds = useMemo(
+    () => new Set(settlesSoon.map((market) => market.id)),
+    [settlesSoon],
+  );
+  // The soon-lane RELOCATES its markets out of the feed (a market appears
+  // once); cap raised 4 → 8 so event clusters stay visible below it.
   const rowMarkets = markets
-    .filter((market) => !featuredMarketIds.has(market.id))
-    .slice(0, 4);
+    .filter(
+      (market) =>
+        !featuredMarketIds.has(market.id) && !settlesSoonIds.has(market.id),
+    )
+    .slice(0, 8);
+  const feedGroups = useMemo(() => groupFeedByEvent(rowMarkets), [rowMarkets]);
   const [selectedId, setSelectedId] = useState(
     activeFeatured?.id ?? rowMarkets[0]?.id ?? "",
   );
@@ -821,6 +851,61 @@ export function PredictionWorkspace({
           onTrade={openTrade}
         />
 
+        {moments.length > 0 && (
+          <section className="mt-7" aria-labelledby="happening-now-heading">
+            <h2
+              id="happening-now-heading"
+              className="m-0 mb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--ink-3)]"
+            >
+              {t("HAPPENING_NOW")}
+            </h2>
+            <div className="flex gap-2.5 max-[760px]:flex-col">
+              {moments.map((moment) => {
+                const countdown = formatCompactCountdown(
+                  moment.firstCloseMs - nowMs,
+                );
+                return (
+                  <MomentCard
+                    key={moment.eventId}
+                    meta={
+                      countdown
+                        ? `${moment.categoryName} · ${t("FIRST_CLOSE", { countdown })}`
+                        : moment.categoryName
+                    }
+                    title={moment.headline.title}
+                    secondary={moment.secondary}
+                    countLabel={`${t("MOMENT_MARKETS_COUNT", { count: moment.marketCount })} →`}
+                    selected={selected.id === moment.headline.id}
+                    onSelect={() => openTrade(moment.headline.id)}
+                  />
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {settlesSoon.length > 0 && (
+          <section className="mt-7" aria-labelledby="settles-soon-heading">
+            <h2
+              id="settles-soon-heading"
+              className="m-0 mb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--ink-3)]"
+            >
+              {t("SETTLES_WITHIN_24H")}
+            </h2>
+            <div className="flex flex-col gap-1.5">
+              {settlesSoon.map((market) => (
+                <MarketSignalRow
+                  key={market.id}
+                  market={market}
+                  values={histories.get(market.ticker)}
+                  selected={selected.id === market.id}
+                  onSelect={() => openTrade(market.id)}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
         <section className="mt-7" aria-labelledby="more-markets-heading">
           <h2
             id="more-markets-heading"
@@ -842,15 +927,53 @@ export function PredictionWorkspace({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            {rowMarkets.map((market) => (
-              <MarketSignalRow
-                key={market.id}
-                market={market}
-                values={histories.get(market.ticker)}
-                selected={selected.id === market.id}
-                onSelect={() => openTrade(market.id)}
-              />
-            ))}
+            {feedGroups.map((group) => {
+              if (group.kind === "single") {
+                return (
+                  <MarketSignalRow
+                    key={group.market.id}
+                    market={group.market}
+                    values={histories.get(group.market.ticker)}
+                    selected={selected.id === group.market.id}
+                    onSelect={() => openTrade(group.market.id)}
+                  />
+                );
+              }
+              const { cluster } = group;
+              const countdown = formatCompactCountdown(
+                cluster.firstCloseMs - nowMs,
+              );
+              return (
+                <div key={cluster.eventId} className="flex flex-col gap-1.5">
+                  <div className="mt-2 flex items-center gap-2.5 px-1 first:mt-0">
+                    <span
+                      aria-hidden="true"
+                      className="h-3 w-[3px] rounded-[1px] bg-[var(--lime-text)]"
+                    />
+                    <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--ink)]">
+                      {cluster.categoryName}
+                    </span>
+                    <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.12em] text-[var(--ink-3)]">
+                      {t("MOMENT_MARKETS_COUNT", {
+                        count: cluster.markets.length,
+                      })}
+                      {countdown
+                        ? ` · ${t("FIRST_CLOSE", { countdown })}`
+                        : ""}
+                    </span>
+                  </div>
+                  {cluster.markets.map((market) => (
+                    <MarketSignalRow
+                      key={market.id}
+                      market={market}
+                      values={histories.get(market.ticker)}
+                      selected={selected.id === market.id}
+                      onSelect={() => openTrade(market.id)}
+                    />
+                  ))}
+                </div>
+              );
+            })}
           </div>
         </section>
 

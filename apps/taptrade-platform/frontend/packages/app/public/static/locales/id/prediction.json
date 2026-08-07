@@ -235,5 +235,9 @@
   "DISCLOSE_POSITION_LABEL": "Ungkapkan posisi saya di market ini",
   "DISCLOSE_POSITION_NONE": "Pengungkapan tersedia saat Anda memegang posisi",
   "POSITION_DISCLOSURE_CHIP": "memegang {{amount}} pts {{side}} saat itu",
-  "SELL_SHARES_HOLD_CTA_other": "Tahan untuk jual {{count}} share · est. {{amount}}"
+  "SELL_SHARES_HOLD_CTA_other": "Tahan untuk jual {{count}} share · est. {{amount}}",
+  "HAPPENING_NOW": "Sedang berlangsung",
+  "SETTLES_WITHIN_24H": "Selesai dalam 24 jam",
+  "MOMENT_MARKETS_COUNT_other": "{{count}} market",
+  "FIRST_CLOSE": "tutup pertama {{countdown}}"
 }
