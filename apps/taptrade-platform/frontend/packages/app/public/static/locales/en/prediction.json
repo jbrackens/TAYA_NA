@@ -264,5 +264,17 @@
   "SETTLES_WITHIN_24H": "Settles within 24h",
   "MOMENT_MARKETS_COUNT_one": "{{count}} market",
   "MOMENT_MARKETS_COUNT_other": "{{count}} markets",
-  "FIRST_CLOSE": "first close {{countdown}}"
+  "FIRST_CLOSE": "first close {{countdown}}",
+  "ONBOARD_INVITE": "New here? Make your first prediction in under a minute — we'll walk you through one market.",
+  "ONBOARD_SHOW_ME": "Show me",
+  "ONBOARD_DISMISS": "Dismiss the first-trade invitation",
+  "ONBOARD_SKIP": "Skip",
+  "ONBOARD_BEAT1": "One question, one price. The price IS the market's answer: 51¢ means a 51% chance of YES.",
+  "ONBOARD_STEP1": "1 of 3 · tap to continue",
+  "ONBOARD_BEAT2": "Points in, contracts out: 1 contract at the price shown. The rows above are the whole deal — nothing hidden.",
+  "ONBOARD_STEP2": "2 of 3 · tap to continue",
+  "ONBOARD_BEAT3": "Right → each contract settles at 100 points. Wrong → 0. Points are in-app play value only.",
+  "ONBOARD_STEP3": "3 of 3 · hold the button when ready",
+  "ONBOARD_RESTORED": "Welcome back — your pick is restored below. Hold the button when you're ready.",
+  "ONBOARD_RESTORED_STEP": "your saved trade"
 }

@@ -239,5 +239,17 @@
   "HAPPENING_NOW": "Sedang berlangsung",
   "SETTLES_WITHIN_24H": "Selesai dalam 24 jam",
   "MOMENT_MARKETS_COUNT_other": "{{count}} pasaran",
-  "FIRST_CLOSE": "tutup pertama {{countdown}}"
+  "FIRST_CLOSE": "tutup pertama {{countdown}}",
+  "ONBOARD_INVITE": "Baru di sini? Buat ramalan pertama anda dalam seminit — kami pandu melalui satu pasaran.",
+  "ONBOARD_SHOW_ME": "Tunjukkan",
+  "ONBOARD_DISMISS": "Tutup jemputan",
+  "ONBOARD_SKIP": "Langkau",
+  "ONBOARD_BEAT1": "Satu soalan, satu harga. Harga IALAH jawapan pasaran: 51¢ bermakna peluang YES 51%.",
+  "ONBOARD_STEP1": "1 daripada 3 · ketik untuk teruskan",
+  "ONBOARD_BEAT2": "Points masuk, kontrak keluar: 1 kontrak pada harga yang dipaparkan. Baris di atas ialah keseluruhan urusan — tiada yang tersembunyi.",
+  "ONBOARD_STEP2": "2 daripada 3 · ketik untuk teruskan",
+  "ONBOARD_BEAT3": "Betul → setiap kontrak bernilai 100 points. Salah → 0. Points ialah nilai main dalam apl, bukan wang.",
+  "ONBOARD_STEP3": "3 daripada 3 · tahan butang bila sedia",
+  "ONBOARD_RESTORED": "Selamat kembali — pilihan anda dipulihkan di bawah. Tahan butang bila anda sedia.",
+  "ONBOARD_RESTORED_STEP": "trade tersimpan anda"
 }

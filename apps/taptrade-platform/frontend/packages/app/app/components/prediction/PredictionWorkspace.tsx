@@ -12,14 +12,29 @@ import {
   useMemo,
   useRef,
   useState,
+  type ReactNode,
 } from "react";
 import { useTranslation } from "react-i18next";
 import { Sheet } from "../ui/Sheet.lazy";
 import type {
   Category,
   DiscoveryResponse,
+  OrderSide,
   PredictionMarket,
 } from "@taptrade-ui/api-client/src/prediction-types";
+import { useAuth } from "../../hooks/useAuth";
+import { CoachCallout } from "./CoachCallout";
+import { InviteRibbon } from "./InviteRibbon";
+import {
+  COACH_BEATS,
+  COACH_RESTORED,
+  clearTradeDraft,
+  dismissInvite,
+  isInviteDismissed,
+  pickTeachingMarket,
+  readTradeDraft,
+  saveTradeDraft,
+} from "./onboarding";
 import { formatCompactPoints } from "../../lib/points";
 import { localizedMarket } from "./market-content";
 import {
@@ -622,6 +637,8 @@ function TradePreview({
   variant,
   onClose,
   onMarketUpdate,
+  coachSlot,
+  defaultSide,
 }: {
   market: PredictionMarket;
   values?: number[];
@@ -629,6 +646,10 @@ function TradePreview({
   variant: "rail" | "sheet";
   onClose?: () => void;
   onMarketUpdate: (market: PredictionMarket) => void;
+  /** Onboarding coach beat rendered directly above the ticket. */
+  coachSlot?: ReactNode;
+  /** Restored trade-draft side (first-trade onboarding). */
+  defaultSide?: OrderSide;
 }) {
   const { t } = useTranslation("prediction");
   const source = sourceLabel(market.settlementSourceKey);
@@ -695,9 +716,14 @@ function TradePreview({
         </p>
       </div>
 
+      {coachSlot ? <div className="mt-4">{coachSlot}</div> : null}
       <div className="mt-4 rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] p-4">
         <ConnectedTradeTicket
+          // defaultSide seeds INITIAL state — a restored draft must
+          // remount the ticket for its side to apply, hence the key.
+          key={`${market.id}:${defaultSide ?? "unset"}`}
           market={market}
+          defaultSide={defaultSide}
           defaultAmount={100}
           onMarketUpdate={onMarketUpdate}
         />
@@ -830,6 +856,85 @@ export function PredictionWorkspace({
     if (isMobileBand) setMobileTradeOpen(true);
   };
 
+  // First-trade onboarding (frontend slice — Figma 03 Screens → First-trade
+  // onboarding). Teach on the real surface, gate at commitment: the ribbon
+  // invites signed-out visitors, three coach beats annotate the live ticket
+  // of a real teaching market, and the drafted intent survives the auth
+  // redirect. The welcome grant + settlement notification are BACKEND rules
+  // (not faked here); until they land a fresh account falls through to the
+  // ticket's insufficient-points state and its Add-Points escape hatch.
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const [inviteVisible, setInviteVisible] = useState(false);
+  const [guideStage, setGuideStage] = useState<"off" | 1 | 2 | 3 | "restored">(
+    "off",
+  );
+  const [restoredSide, setRestoredSide] = useState<OrderSide | undefined>(
+    undefined,
+  );
+  useEffect(() => {
+    if (authLoading) return;
+    setInviteVisible(!isAuthenticated && !isInviteDismissed());
+  }, [authLoading, isAuthenticated]);
+  const startGuide = useCallback(() => {
+    const teaching = pickTeachingMarket(markets, Date.now());
+    if (!teaching) return;
+    setSelectedId(teaching.id);
+    if (isMobileBand) setMobileTradeOpen(true);
+    setGuideStage(1);
+    setInviteVisible(false);
+  }, [markets, isMobileBand]);
+  const endGuide = useCallback(() => setGuideStage("off"), []);
+  const dismissRibbon = useCallback(() => {
+    dismissInvite();
+    setInviteVisible(false);
+  }, []);
+  // While guided and signed out, the intent persists continuously — the
+  // guided script trades YES, so the draft side is YES by construction.
+  useEffect(() => {
+    if (guideStage === "off" || guideStage === "restored") return;
+    if (isAuthenticated || !selected) return;
+    saveTradeDraft({
+      marketId: selected.id,
+      side: "yes",
+      savedAtMs: Date.now(),
+    });
+  }, [guideStage, isAuthenticated, selected]);
+  // After signup/login the draft restores once: reselect the market, show
+  // the restored coach note, and clear — a draft never restores twice.
+  const restoredOnceRef = useRef(false);
+  useEffect(() => {
+    if (authLoading || !isAuthenticated || restoredOnceRef.current) return;
+    const draft = readTradeDraft(Date.now());
+    if (!draft) return;
+    if (!markets.some((market) => market.id === draft.marketId)) return;
+    restoredOnceRef.current = true;
+    setSelectedId(draft.marketId);
+    setRestoredSide(draft.side);
+    setGuideStage("restored");
+    clearTradeDraft();
+  }, [authLoading, isAuthenticated, markets]);
+  const activeBeat =
+    guideStage === "off"
+      ? null
+      : guideStage === "restored"
+        ? COACH_RESTORED
+        : COACH_BEATS[guideStage - 1];
+  const coachSlot: ReactNode = activeBeat ? (
+    <CoachCallout
+      line={t(activeBeat.line)}
+      step={t(activeBeat.step)}
+      skipLabel={t("ONBOARD_SKIP")}
+      onAdvance={() => {
+        if (guideStage === "restored" || guideStage === 3) {
+          endGuide();
+        } else if (guideStage !== "off") {
+          setGuideStage((guideStage + 1) as 1 | 2 | 3);
+        }
+      }}
+      onSkip={endGuide}
+    />
+  ) : null;
+
   if (!activeFeatured || !selected) {
     return (
       <div className="grid min-h-[calc(100vh-74px)] place-items-center text-[14px] text-[var(--t3)]">
@@ -843,6 +948,17 @@ export function PredictionWorkspace({
       <TerminalCategoryRail categories={categories} mode="predict" />
 
       <div className="min-w-0 px-9 py-8 max-[1279px]:px-6 max-[760px]:px-4 max-[760px]:py-6">
+        {inviteVisible && (
+          <div className="mb-5">
+            <InviteRibbon
+              line={t("ONBOARD_INVITE")}
+              ctaLabel={t("ONBOARD_SHOW_ME")}
+              dismissLabel={t("ONBOARD_DISMISS")}
+              onStart={startGuide}
+              onDismiss={dismissRibbon}
+            />
+          </div>
+        )}
         <FeaturedSignalCarousel
           markets={featuredMarkets}
           histories={histories}
@@ -1001,6 +1117,8 @@ export function PredictionWorkspace({
           market={selected}
           values={histories.get(selected.ticker)}
           onMarketUpdate={handleMarketUpdate}
+          coachSlot={coachSlot}
+          defaultSide={restoredSide}
         />
       )}
       {isMobileBand && (
@@ -1015,6 +1133,8 @@ export function PredictionWorkspace({
             values={histories.get(selected.ticker)}
             onClose={() => setMobileTradeOpen(false)}
             onMarketUpdate={handleMarketUpdate}
+            coachSlot={coachSlot}
+            defaultSide={restoredSide}
           />
         </Sheet>
       )}

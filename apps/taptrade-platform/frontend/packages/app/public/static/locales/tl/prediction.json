@@ -243,5 +243,17 @@
   "SETTLES_WITHIN_24H": "Magsasara sa loob ng 24h",
   "MOMENT_MARKETS_COUNT_one": "{{count}} market",
   "MOMENT_MARKETS_COUNT_other": "{{count}} markets",
-  "FIRST_CLOSE": "unang sara {{countdown}}"
+  "FIRST_CLOSE": "unang sara {{countdown}}",
+  "ONBOARD_INVITE": "Bago ka rito? Gawin ang unang prediction mo sa loob ng isang minuto — gagabayan ka namin sa isang market.",
+  "ONBOARD_SHOW_ME": "Ituro mo",
+  "ONBOARD_DISMISS": "I-dismiss ang paanyaya",
+  "ONBOARD_SKIP": "Laktawan",
+  "ONBOARD_BEAT1": "Isang tanong, isang presyo. Ang presyo ANG sagot ng market: ang 51¢ ay 51% na tsansa ng YES.",
+  "ONBOARD_STEP1": "1 ng 3 · i-tap para magpatuloy",
+  "ONBOARD_BEAT2": "Points papasok, contracts palabas: 1 contract sa presyong nakikita. Ang mga row sa itaas ang buong usapan — walang tago.",
+  "ONBOARD_STEP2": "2 ng 3 · i-tap para magpatuloy",
+  "ONBOARD_BEAT3": "Tama → 100 points bawat contract. Mali → 0. Ang points ay in-app play value lang, hindi pera.",
+  "ONBOARD_STEP3": "3 ng 3 · hawakan ang button kapag handa ka na",
+  "ONBOARD_RESTORED": "Welcome back — naibalik ang pinili mo sa ibaba. Hawakan ang button kapag handa ka na.",
+  "ONBOARD_RESTORED_STEP": "ang naka-save mong trade"
 }

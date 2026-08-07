@@ -239,5 +239,17 @@
   "HAPPENING_NOW": "正在发生",
   "SETTLES_WITHIN_24H": "24小时内结算",
   "MOMENT_MARKETS_COUNT_other": "{{count}} 个市场",
-  "FIRST_CLOSE": "最早 {{countdown}} 后截止"
+  "FIRST_CLOSE": "最早 {{countdown}} 后截止",
+  "ONBOARD_INVITE": "新来的？一分钟内完成你的第一笔预测 — 我们带你走一遍一个市场。",
+  "ONBOARD_SHOW_ME": "带我看看",
+  "ONBOARD_DISMISS": "关闭首次交易邀请",
+  "ONBOARD_SKIP": "跳过",
+  "ONBOARD_BEAT1": "一个问题，一个价格。价格就是市场的答案：51¢ 意味着 51% 的 YES 概率。",
+  "ONBOARD_STEP1": "第 1 步（共 3 步）· 点按继续",
+  "ONBOARD_BEAT2": "投入 points，换得 contracts：每份合约按显示价格成交。上方各行就是全部条款 — 没有隐藏内容。",
+  "ONBOARD_STEP2": "第 2 步（共 3 步）· 点按继续",
+  "ONBOARD_BEAT3": "对了 → 每份合约结算 100 points。错了 → 0。Points 仅为应用内游戏价值。",
+  "ONBOARD_STEP3": "第 3 步（共 3 步）· 准备好后长按按钮",
+  "ONBOARD_RESTORED": "欢迎回来 — 你的选择已在下方恢复。准备好后长按按钮。",
+  "ONBOARD_RESTORED_STEP": "你保存的交易"
 }

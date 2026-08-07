@@ -239,5 +239,17 @@
   "HAPPENING_NOW": "Sedang berlangsung",
   "SETTLES_WITHIN_24H": "Selesai dalam 24 jam",
   "MOMENT_MARKETS_COUNT_other": "{{count}} market",
-  "FIRST_CLOSE": "tutup pertama {{countdown}}"
+  "FIRST_CLOSE": "tutup pertama {{countdown}}",
+  "ONBOARD_INVITE": "Baru di sini? Buat prediksi pertamamu dalam satu menit — kami pandu lewat satu market.",
+  "ONBOARD_SHOW_ME": "Tunjukkan",
+  "ONBOARD_DISMISS": "Tutup undangan",
+  "ONBOARD_SKIP": "Lewati",
+  "ONBOARD_BEAT1": "Satu pertanyaan, satu harga. Harga ADALAH jawaban market: 51¢ berarti peluang YES 51%.",
+  "ONBOARD_STEP1": "1 dari 3 · ketuk untuk lanjut",
+  "ONBOARD_BEAT2": "Points masuk, contracts keluar: 1 contract pada harga yang tampil. Baris di atas adalah seluruh kesepakatan — tidak ada yang disembunyikan.",
+  "ONBOARD_STEP2": "2 dari 3 · ketuk untuk lanjut",
+  "ONBOARD_BEAT3": "Benar → tiap contract bernilai 100 points. Salah → 0. Points adalah nilai main dalam aplikasi, bukan uang.",
+  "ONBOARD_STEP3": "3 dari 3 · tahan tombol saat siap",
+  "ONBOARD_RESTORED": "Selamat datang kembali — pilihanmu dipulihkan di bawah. Tahan tombol saat kamu siap.",
+  "ONBOARD_RESTORED_STEP": "trade tersimpanmu"
 }

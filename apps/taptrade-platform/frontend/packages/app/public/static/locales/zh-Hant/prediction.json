@@ -239,5 +239,17 @@
   "HAPPENING_NOW": "正在發生",
   "SETTLES_WITHIN_24H": "24小時內結算",
   "MOMENT_MARKETS_COUNT_other": "{{count}} 個市場",
-  "FIRST_CLOSE": "最早 {{countdown}} 後截止"
+  "FIRST_CLOSE": "最早 {{countdown}} 後截止",
+  "ONBOARD_INVITE": "新來的？一分鐘內完成你的第一筆預測 — 我們帶你走一遍一個市場。",
+  "ONBOARD_SHOW_ME": "帶我看看",
+  "ONBOARD_DISMISS": "關閉首次交易邀請",
+  "ONBOARD_SKIP": "跳過",
+  "ONBOARD_BEAT1": "一個問題，一個價格。價格就是市場的答案：51¢ 意味著 51% 的 YES 機率。",
+  "ONBOARD_STEP1": "第 1 步（共 3 步）· 點按繼續",
+  "ONBOARD_BEAT2": "投入 points，換得 contracts：每份合約按顯示價格成交。上方各行就是全部條款 — 沒有隱藏內容。",
+  "ONBOARD_STEP2": "第 2 步（共 3 步）· 點按繼續",
+  "ONBOARD_BEAT3": "對了 → 每份合約結算 100 points。錯了 → 0。Points 僅為應用內遊戲價值。",
+  "ONBOARD_STEP3": "第 3 步（共 3 步）· 準備好後長按按鈕",
+  "ONBOARD_RESTORED": "歡迎回來 — 你的選擇已在下方恢復。準備好後長按按鈕。",
+  "ONBOARD_RESTORED_STEP": "你保存的交易"
 }
