@@ -156,9 +156,17 @@ const TICKET_INPUT_CLASS =
   "font-mono w-[128px] rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-2 text-right text-[14px] font-semibold text-[var(--t1)] outline-none transition-colors duration-[120ms] [font-variant-numeric:tabular-nums] focus:border-[var(--accent-lo)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
 const TICKET_NOTE_CLASS =
   "mt-2.5 text-center text-xs leading-[1.45] text-[var(--t2)]";
+// Mobile quick controls (≤1023px): 44px touch targets per DESIGN.md §8.
+const TICKET_STEP_BTN_CLASS =
+  "flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-[var(--hairline)] bg-[var(--raised)] font-mono text-[18px] font-semibold text-[var(--ink)]";
+const TICKET_QUICK_CHIP_CLASS =
+  "h-11 flex-1 cursor-pointer rounded-[var(--radius-sm)] border border-[var(--hairline)] bg-[var(--card)] font-mono text-[12px] font-semibold text-[var(--ink-3)] [font-variant-numeric:tabular-nums]";
 const TICKET_TRUST_CLASS =
   "mt-2.5 text-center text-xs leading-[1.45] text-[var(--t3)]";
 const TICKET_ERROR_CLASS = "mt-2.5 text-center text-xs text-[var(--no-text)]";
+// Hold threshold: long enough to be deliberate, short enough to not feel
+// broken. Matches the prototype's 0.7s timed transition within jitter.
+const HOLD_TO_PLACE_MS = 650;
 const TICKET_COMPLIANCE_CLASS =
   "mt-3 rounded-[var(--r-rh-sm)] border border-[var(--no-border)] bg-[var(--no-soft)] p-2.5 text-center text-xs leading-[1.45] text-[var(--no-text)]";
 const TICKET_CLOSED_CLASS =
@@ -825,6 +833,40 @@ export function TradeTicket({
     t,
   ]);
 
+  // Press-and-hold submit (DESIGN.md §7, mobile-flow 2026-08-06). The hold
+  // IS the confirmation: the pointer must stay down for HOLD_TO_PLACE_MS
+  // before the order fires; releasing earlier cancels with nothing placed.
+  // Keyboard and assistive-tech activation (click with detail === 0)
+  // submits immediately — a timing gesture must never be the only path.
+  // Progress runs on rAF against real elapsed time so the overlay cannot
+  // drift from the actual threshold.
+  const [holdProgress, setHoldProgress] = useState(0);
+  const holdRafRef = useRef<number | null>(null);
+  const cancelHold = useCallback((): void => {
+    if (holdRafRef.current !== null) {
+      cancelAnimationFrame(holdRafRef.current);
+      holdRafRef.current = null;
+    }
+    setHoldProgress(0);
+  }, []);
+  const startHold = useCallback((): void => {
+    if (holdRafRef.current !== null) return;
+    const startedAt = performance.now();
+    const tick = (now: number): void => {
+      const progress = Math.min(1, (now - startedAt) / HOLD_TO_PLACE_MS);
+      setHoldProgress(progress);
+      if (progress >= 1) {
+        holdRafRef.current = null;
+        setHoldProgress(0);
+        void handleSubmit();
+        return;
+      }
+      holdRafRef.current = requestAnimationFrame(tick);
+    };
+    holdRafRef.current = requestAnimationFrame(tick);
+  }, [handleSubmit]);
+  useEffect(() => cancelHold, [cancelHold]);
+
   const setSideAndReset = (s: OrderSide) => {
     setSide(s);
     onSideChange?.(s);
@@ -1007,6 +1049,53 @@ export function TradeTicket({
                   }
                 />
               </div>
+              {/* Mobile quick controls (≤1023px, buy only): steppers +
+                  quick amounts at 44px touch size. Desktop keeps the bare
+                  input — pointer precision differs (mobile-flow 2026-08-06). */}
+              {action === "buy" && (
+                <div className="mt-2 hidden items-center gap-1.5 max-[1023px]:flex">
+                  <button
+                    type="button"
+                    aria-label={t("DECREASE_AMOUNT")}
+                    className={TICKET_STEP_BTN_CLASS}
+                    onClick={() =>
+                      setAmount(Math.max(1, Math.round(amount) - 50))
+                    }
+                  >
+                    −
+                  </button>
+                  {[100, 500, 1000].map((quick) => (
+                    <button
+                      key={quick}
+                      type="button"
+                      className={TICKET_QUICK_CHIP_CLASS}
+                      onClick={() => setAmount(quick)}
+                    >
+                      {quick.toLocaleString()}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    className={TICKET_QUICK_CHIP_CLASS}
+                    disabled={typeof balance !== "number" || balance < 1}
+                    onClick={() => {
+                      if (typeof balance === "number" && balance >= 1) {
+                        setAmount(Math.floor(balance));
+                      }
+                    }}
+                  >
+                    {t("MAX_AMOUNT")}
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={t("INCREASE_AMOUNT")}
+                    className={TICKET_STEP_BTN_CLASS}
+                    onClick={() => setAmount(Math.round(amount) + 50)}
+                  >
+                    +
+                  </button>
+                </div>
+              )}
               <p className={TICKET_ROW_SUB_CLASS}>
                 {action === "sell"
                   ? t("AVAILABLE_SHARES", { quantity: availableShares })
@@ -1174,40 +1263,83 @@ export function TradeTicket({
               </p>
             </>
           ) : (
-            <Button
-              variant="cta"
-              size="none"
-              className="mt-4"
-              onClick={handleSubmit}
-              // §3-03: the CTA waits for the quote to settle — pressing a
-              // total that's still moving is agreeing to a number you
-              // haven't seen.
-              disabled={submitting || quantity < 1 || quotePending}
-            >
-              {/*
-                Label says "Place trade", not "Review trade", because
-                clicking this button submits the order immediately. The
-                quote panel above already shows fill price, shares, and
-                points if correct — that IS the review surface. A "Review" label
-                would imply a confirm modal that does not exist and was
-                a stage gotcha during the 2026-05-03 demo dry-run.
-              */}
-              {submitting
-                ? t("PLACING")
-                : action === "sell"
-                  ? // ISSUE-018: sell is share-denominated — the CTA states
-                    // the share count and the estimated proceeds, never
-                    // "N pts" for a share count.
-                    // Step 10: native i18next plural (_one/_other) — the
-                    // old {{plural}} suffix hack only worked for English.
-                    t("SELL_SHARES_CTA", {
-                      count: requestedQuantity,
-                      amount: formatPointAmount(requestedQuantity * price),
-                    })
-                  : t("PLACE_TRADE_AMOUNT", {
-                      amount: formatPointAmount(amount),
-                    })}
-            </Button>
+            <>
+              <Button
+                variant="cta"
+                size="none"
+                className="relative mt-4 select-none touch-none overflow-hidden"
+                onPointerDown={(e) => {
+                  if (e.button !== 0) return;
+                  // Claim the pointer explicitly: the vaul Sheet captures
+                  // pointers for its drag-to-close, which would retarget
+                  // pointerup away from this button — and a hold whose
+                  // release can't cancel it is a misfire waiting to
+                  // happen. Last capture wins, so the button takes it.
+                  // Best-effort only: capture throws NotFoundError for
+                  // pointers with no active id (synthetic events, some
+                  // AT) — the hold must start regardless.
+                  try {
+                    e.currentTarget.setPointerCapture(e.pointerId);
+                  } catch {
+                    // no active pointer to capture — proceed uncaptured
+                  }
+                  startHold();
+                }}
+                onPointerUp={cancelHold}
+                onPointerLeave={cancelHold}
+                onPointerCancel={cancelHold}
+                onContextMenu={(e) => e.preventDefault()}
+                onClick={(e) => {
+                  // detail === 0 → keyboard (Enter/Space) or AT activation:
+                  // submit immediately. Pointer clicks (detail > 0) do
+                  // nothing — the hold is the pointer path.
+                  if (e.detail === 0) void handleSubmit();
+                }}
+                // §3-03: the CTA waits for the quote to settle — pressing a
+                // total that's still moving is agreeing to a number you
+                // haven't seen.
+                disabled={submitting || quantity < 1 || quotePending}
+              >
+                {holdProgress > 0 && (
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-y-0 left-0 bg-[var(--ink-on-lime)] opacity-[0.16]"
+                    style={{ width: `${Math.round(holdProgress * 100)}%` }}
+                  />
+                )}
+                {/*
+                  Label says "Hold to place" (DESIGN.md §7): completing the
+                  hold submits the order immediately — the quote panel above
+                  IS the review surface, and there is no confirm modal (a
+                  "Review" label was a stage gotcha in the 2026-05-03 demo
+                  dry-run). The hold replaces the old bare click as the
+                  deliberate-commit gesture; keyboard activation stays
+                  immediate because timing gestures need a non-timing path.
+                */}
+                <span className="relative">
+                  {submitting
+                    ? t("PLACING")
+                    : holdProgress > 0
+                      ? t("HOLDING_KEEP_PRESSING")
+                      : action === "sell"
+                        ? // ISSUE-018: sell is share-denominated — the CTA
+                          // states the share count and estimated proceeds,
+                          // never "N pts" for a share count.
+                          t("SELL_SHARES_HOLD_CTA", {
+                            count: requestedQuantity,
+                            amount: formatPointAmount(
+                              requestedQuantity * price,
+                            ),
+                          })
+                        : t("HOLD_TO_PLACE_AMOUNT", {
+                            amount: formatPointAmount(amount),
+                          })}
+                </span>
+              </Button>
+              <p className={TICKET_TRUST_CLASS} aria-live="polite">
+                {holdProgress > 0 ? t("HOLD_RELEASE_CANCELS") : t("HOLD_HINT")}
+              </p>
+            </>
           )}
 
           <p className={TICKET_TRUST_CLASS}>

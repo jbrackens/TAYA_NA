@@ -252,5 +252,14 @@
   "SELL_SHARES_CTA_other": "Sell {{count}} shares · est. {{amount}}",
   "DISCLOSE_POSITION_LABEL": "Disclose my position on this market",
   "DISCLOSE_POSITION_NONE": "Disclosure available when you hold a position",
-  "POSITION_DISCLOSURE_CHIP": "held {{amount}} pts {{side}} at the time"
+  "POSITION_DISCLOSURE_CHIP": "held {{amount}} pts {{side}} at the time",
+  "HOLD_TO_PLACE_AMOUNT": "Hold to place · {{amount}}",
+  "HOLDING_KEEP_PRESSING": "Holding… keep pressing",
+  "HOLD_HINT": "Press and hold to submit — release to cancel.",
+  "HOLD_RELEASE_CANCELS": "Releasing now cancels — nothing is placed yet.",
+  "SELL_SHARES_HOLD_CTA_one": "Hold to sell {{count}} share · {{amount}}",
+  "SELL_SHARES_HOLD_CTA_other": "Hold to sell {{count}} shares · {{amount}}",
+  "DECREASE_AMOUNT": "Decrease amount",
+  "INCREASE_AMOUNT": "Increase amount",
+  "MAX_AMOUNT": "MAX"
 }
