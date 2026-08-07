@@ -10,6 +10,8 @@
  */
 
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
+import { tickClass } from "./live";
+import { usePriceTick } from "./utils/usePriceTick";
 
 const CARD_CLASS =
   "flex min-w-0 flex-1 basis-0 cursor-pointer flex-col gap-2 rounded-[var(--radius-md)] border bg-[var(--card)] p-3.5 text-left transition-colors duration-[120ms]";
@@ -43,6 +45,7 @@ export function MomentCard({
   selected,
   onSelect,
 }: MomentCardProps) {
+  const tick = usePriceTick(secondary.yesPricePoints);
   return (
     <button
       type="button"
@@ -53,7 +56,9 @@ export function MomentCard({
       <span className={META_CLASS}>{meta}</span>
       <span className={TITLE_CLASS}>{title}</span>
       <span className={HEADLINE_CLASS}>
-        <span className={PRICE_CLASS}>{secondary.yesPricePoints}¢</span>
+        <span className={`${PRICE_CLASS} ${tickClass(tick)}`}>
+          {secondary.yesPricePoints}¢
+        </span>
         <span className="min-w-0 truncate">{secondary.title}</span>
       </span>
       <span className={COUNT_CLASS}>{countLabel}</span>

@@ -18,7 +18,7 @@
  * "closes in …" string.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
 import { categoryLabel, localizedMarket } from "./market-content";
@@ -103,6 +103,23 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
     [displayMarket.closeAt],
   );
   const [now, setNow] = useState<number>(() => Date.now());
+  // Live-dot beat (1C motion doctrine): the dot beats ONCE per real
+  // market event — price or volume actually changed — never on a loop.
+  // First render is a mount, not a movement.
+  const [dotBeat, setDotBeat] = useState(false);
+  const beatSnapshotRef = useRef<string | null>(null);
+  useEffect(() => {
+    const snapshot = `${market.yesPricePoints}|${market.noPricePoints}|${market.volumePoints}`;
+    if (beatSnapshotRef.current === null) {
+      beatSnapshotRef.current = snapshot;
+      return;
+    }
+    if (beatSnapshotRef.current === snapshot) return;
+    beatSnapshotRef.current = snapshot;
+    setDotBeat(true);
+    const timer = window.setTimeout(() => setDotBeat(false), 650);
+    return () => window.clearTimeout(timer);
+  }, [market.yesPricePoints, market.noPricePoints, market.volumePoints]);
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 30000);
@@ -141,7 +158,10 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
       <div className={MARKET_HEAD_EYEBROW_CLASS}>
         {isLive && (
           <span className={MARKET_HEAD_LIVE_CLASS}>
-            <span className={MARKET_HEAD_LIVE_DOT_CLASS} aria-hidden="true" />
+            <span
+              className={`${MARKET_HEAD_LIVE_DOT_CLASS} ${dotBeat ? "live-dot-beat" : ""}`}
+              aria-hidden="true"
+            />
             {t("LIVE")}
           </span>
         )}

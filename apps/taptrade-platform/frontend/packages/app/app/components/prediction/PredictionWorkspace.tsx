@@ -35,6 +35,9 @@ import {
   readTradeDraft,
   saveTradeDraft,
 } from "./onboarding";
+import { tickClass } from "./live";
+import { usePriceTick } from "./utils/usePriceTick";
+import { useLiveMarketUpdates } from "./utils/useLiveMarketUpdates";
 import { formatCompactPoints } from "../../lib/points";
 import { localizedMarket } from "./market-content";
 import {
@@ -293,6 +296,7 @@ function FeaturedSignal({
   onTrade: () => void;
 }) {
   const { t } = useTranslation("prediction");
+  const heroTick = usePriceTick(market.yesPricePoints);
   const movement = movementFromSeries(values);
   const description = market.description?.trim() || market.settlementRule;
 
@@ -328,7 +332,9 @@ function FeaturedSignal({
             </div>
             {/* Step 3: the 68px hero readout is the spec's named example of an
                 uncoloured magnitude — ink, delta beside it carries colour. */}
-            <div className="mt-1 font-mono text-[clamp(46px,5vw,68px)] font-semibold leading-none tracking-[-0.04em] text-[var(--t1)] tabular-nums">
+            <div
+              className={`mt-1 w-fit font-mono text-[clamp(46px,5vw,68px)] font-semibold leading-none tracking-[-0.04em] text-[var(--t1)] tabular-nums ${tickClass(heroTick)}`}
+            >
               {market.yesPricePoints}¢
             </div>
             {movement && (
@@ -557,6 +563,7 @@ function MarketSignalRow({
   onSelect: () => void;
 }) {
   const { t } = useTranslation("prediction");
+  const rowTick = usePriceTick(market.yesPricePoints);
   const movement = movementFromSeries(values);
   const spark = values ? sparklineFromValues(values, 64, 26, 12) : "";
 
@@ -584,7 +591,9 @@ function MarketSignalRow({
         </span>
       </span>
 
-      <span className="font-mono text-[22px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-right">
+      <span
+        className={`w-fit font-mono text-[22px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-right ${tickClass(rowTick)}`}
+      >
         {market.yesPricePoints}¢
       </span>
 
@@ -652,6 +661,7 @@ function TradePreview({
   defaultSide?: OrderSide;
 }) {
   const { t } = useTranslation("prediction");
+  const previewTick = usePriceTick(market.yesPricePoints);
   const source = sourceLabel(market.settlementSourceKey);
 
   const body = (
@@ -689,7 +699,9 @@ function TradePreview({
           <div className="text-[12px] font-medium text-[var(--t2)]">
             {t("LATEST_PROBABILITY")}
           </div>
-          <div className="mt-1 font-mono text-[48px] font-semibold leading-none tracking-[-0.04em] text-[var(--t1)] tabular-nums">
+          <div
+            className={`mt-1 w-fit font-mono text-[48px] font-semibold leading-none tracking-[-0.04em] text-[var(--t1)] tabular-nums ${tickClass(previewTick)}`}
+          >
             {market.yesPricePoints}¢
           </div>
         </div>
@@ -797,6 +809,22 @@ export function PredictionWorkspace({
     const timer = window.setInterval(() => setNowMs(Date.now()), 60_000);
     return () => window.clearInterval(timer);
   }, []);
+  // Live-ness: subscribe the visible surface to real market:{id} events —
+  // /predict stops being a still life. Auth-gated like the detail page.
+  const marketsRef = useRef(markets);
+  marketsRef.current = markets;
+  const handleRealtimeFields = useCallback(
+    (marketId: string, fields: Partial<PredictionMarket>) => {
+      setMarketOverrides((current) => {
+        const base =
+          current[marketId] ??
+          marketsRef.current.find((market) => market.id === marketId);
+        if (!base) return current;
+        return { ...current, [marketId]: { ...base, ...fields } };
+      });
+    },
+    [],
+  );
   const moments = useMemo(() => deriveMoments(markets, 4), [markets]);
   const settlesSoon = useMemo(
     () => settlingSoon(markets, nowMs, 24 * 3_600_000, 3),
@@ -934,6 +962,23 @@ export function PredictionWorkspace({
       onSkip={endGuide}
     />
   ) : null;
+
+  // Bounded live-channel set: the visible surface only (featured, soon
+  // lane, feed rows, current selection), never the whole catalog.
+  const liveIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const market of [...featuredMarkets, ...settlesSoon, ...rowMarkets]) {
+      if (ids.size >= 16) break;
+      ids.add(market.id);
+    }
+    if (selected) ids.add(selected.id);
+    return [...ids];
+  }, [featuredMarkets, settlesSoon, rowMarkets, selected]);
+  useLiveMarketUpdates(
+    liveIds,
+    isAuthenticated && !authLoading,
+    handleRealtimeFields,
+  );
 
   if (!activeFeatured || !selected) {
     return (

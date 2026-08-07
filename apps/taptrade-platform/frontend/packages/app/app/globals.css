@@ -417,6 +417,59 @@ body {
   --space-4xl: 48px;
 }
 
+/* ── 1C motion doctrine (DESIGN.md §Motion, 2026-08-07) ─────────────
+ * Motion is DATA-DRIVEN or FEEDBACK — never decorative. Every animation
+ * below fires on a real event (a market:{id} WS message, a user action)
+ * and settles; idle surfaces hold still. Direction speaks through the
+ * soft signal tokens; the wash never carries text contrast duty. */
+@keyframes price-tick-up {
+  from {
+    background-color: var(--yes-soft);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+@keyframes price-tick-down {
+  from {
+    background-color: var(--no-soft);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+.price-tick-up {
+  border-radius: 4px;
+  animation: price-tick-up 900ms ease-out;
+}
+.price-tick-down {
+  border-radius: 4px;
+  animation: price-tick-down 900ms ease-out;
+}
+/* The LIVE dot beats ONCE per real market event — the pulse is the
+ * market's, not a looping attention grab. */
+@keyframes live-dot-beat {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.live-dot-beat {
+  animation: live-dot-beat 600ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .price-tick-up,
+  .price-tick-down,
+  .live-dot-beat {
+    animation: none;
+  }
+}
+
 /* P9 page background: bare gallery white. The P8 chart-paper grid is
  * retired; --bg-pattern resolves to none but the hook stays for legacy
  * call sites. */

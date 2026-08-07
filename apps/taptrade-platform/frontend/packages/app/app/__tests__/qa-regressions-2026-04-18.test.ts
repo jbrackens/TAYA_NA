@@ -2031,15 +2031,21 @@ describe("Full-page translation coverage", () => {
       "func buildOrderBookHintPayload",
       "func buildMarketUpdatePayload",
     );
+    // Motion pass 2026-08-07: the normalizer moved to the shared
+    // components/prediction/live.ts (the /predict workspace subscribes
+    // too). Same invariant — point-native aliases normalize on every
+    // consumer — checked at the shared module plus the page's usage.
+    const liveModuleSource = read("components/prediction/live.ts");
     assert.ok(
       liveMarketPageSource.includes("normalizeMarketUpdateFields") &&
-        liveMarketPageSource.includes("payload.yesPricePoints") &&
-        liveMarketPageSource.includes("payload.noPricePoints") &&
-        liveMarketPageSource.includes("payload.lastTradePricePoints") &&
-        liveMarketPageSource.includes("payload.volumePoints") &&
-        liveMarketPageSource.includes("payload.openInterestPoints") &&
-        liveMarketPageSource.includes("normalizedMarketFields"),
-      "Market detail live updates should normalize WebSocket frames from point-native aliases",
+        liveMarketPageSource.includes("normalizedMarketFields") &&
+        liveModuleSource.includes("yesPricePoints") &&
+        liveModuleSource.includes("noPricePoints") &&
+        liveModuleSource.includes("lastTradePricePoints") &&
+        liveModuleSource.includes("volumePoints") &&
+        liveModuleSource.includes("openInterestPoints") &&
+        liveModuleSource.includes('unit: payload.unit || "PTS"'),
+      "Live market updates should normalize WebSocket frames from point-native aliases (shared live.ts, consumed by the market detail page)",
     );
     // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(

@@ -78,45 +78,14 @@ import {
   isOpenMarketStatus,
   marketStatusLabel,
 } from "../../components/prediction/market-display";
+import { normalizeMarketUpdateFields } from "../../components/prediction/live";
 import { formatCompactPoints } from "../../lib/points";
 
 const api = createPredictionClient();
 
-type LegacyMarketUpdate = Partial<PredictionMarket> & {
-  yesPricePoints?: number;
-  noPricePoints?: number;
-  lastTradePricePoints?: number;
-  volumePoints?: number;
-  openInterestPoints?: number;
-};
-
-function normalizeMarketUpdateFields(
-  payload: LegacyMarketUpdate,
-): Partial<PredictionMarket> {
-  const yesPricePoints = payload.yesPricePoints;
-  const noPricePoints = payload.noPricePoints;
-  const lastTradePricePoints = payload.lastTradePricePoints;
-  const volumePoints = payload.volumePoints;
-  const openInterestPoints = payload.openInterestPoints;
-  const pointPayload = { ...payload };
-  delete pointPayload.yesPricePoints;
-  delete pointPayload.noPricePoints;
-  delete pointPayload.lastTradePricePoints;
-  delete pointPayload.volumePoints;
-  delete pointPayload.openInterestPoints;
-
-  return {
-    ...pointPayload,
-    ...(typeof yesPricePoints === "number" ? { yesPricePoints } : {}),
-    ...(typeof noPricePoints === "number" ? { noPricePoints } : {}),
-    ...(typeof lastTradePricePoints === "number"
-      ? { lastTradePricePoints }
-      : {}),
-    ...(typeof volumePoints === "number" ? { volumePoints } : {}),
-    ...(typeof openInterestPoints === "number" ? { openInterestPoints } : {}),
-    unit: payload.unit || "PTS",
-  };
-}
+// normalizeMarketUpdateFields moved to components/prediction/live.ts —
+// shared with the /predict workspace's live subscriptions (motion pass,
+// 2026-08-07) so both surfaces apply market:{id} events identically.
 
 const MARKET_WRAP_CLASS =
   "grid min-h-[calc(100vh-74px)] grid-cols-[200px_minmax(0,1fr)_380px] grid-rows-[auto_1fr] bg-[var(--bg-deep)] text-[var(--t1)] max-[1279px]:grid-cols-[72px_minmax(0,1fr)_340px] max-[1023px]:flex max-[1023px]:min-h-0 max-[1023px]:flex-col";
