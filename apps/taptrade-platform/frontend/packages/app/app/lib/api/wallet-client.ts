@@ -270,6 +270,9 @@ export async function getTransactions(
 interface StarterGrantResult {
   enabled: boolean;
   unit?: string;
+  /** True exactly once: the claim that actually wrote the ledger row.
+   *  Replays succeed but report false — the welcome toast keys off this. */
+  granted?: boolean;
   grantPoints?: number;
   balancePoints?: number;
 }
@@ -529,6 +532,7 @@ function normalizeStarterGrant(
   return {
     enabled: result.enabled,
     unit: result.unit || POINT_UNIT,
+    granted: result.granted === true,
     grantPoints: result.grantPoints,
     balancePoints: result.balancePoints,
   };

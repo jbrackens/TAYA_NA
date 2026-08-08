@@ -52,5 +52,7 @@
   "SIGN_UP": "Daftar",
   "LOG_OUT": "Log keluar",
   "ADD_POINTS": "Tambah Mata",
-  "OPEN_POINT_STORE": "Buka Kedai Mata"
+  "OPEN_POINT_STORE": "Buka Kedai Mata",
+  "STARTER_GRANT_TOAST_TITLE": "Geran alu-aluan diterima",
+  "STARTER_GRANT_TOAST_BODY": "+{{points}} PTS untuk didagangkan — pilih pasaran dan buat ramalan pertama anda."
 }

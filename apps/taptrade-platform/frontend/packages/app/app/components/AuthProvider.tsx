@@ -9,6 +9,7 @@ import {
   useMemo,
   useRef,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { apiClient } from "../lib/api/client";
 import { login as authLogin, getSession } from "../lib/api/auth-client";
 import { getCoolOffStatus } from "../lib/api/compliance-client";
@@ -100,6 +101,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [error, setError] = useState<Error | null>(null);
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   const toast = useToast();
+  const { t } = useTranslation("header");
 
   // Starter point grant: when a session is established (login or restore),
   // claim the one-time faucet so a freshly-registered player is immediately
@@ -127,11 +129,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (res.enabled) {
         logger.info("Points", "starter grant applied", res.balancePoints);
       }
+      // The welcome moment: only the claim that actually wrote the ledger
+      // row (granted, server-decided) gets a toast — a returning user's
+      // idempotent replay stays silent.
+      if (res.enabled && res.granted && (res.grantPoints ?? 0) > 0) {
+        toast.success(
+          t("STARTER_GRANT_TOAST_TITLE"),
+          t("STARTER_GRANT_TOAST_BODY", { points: res.grantPoints }),
+        );
+      }
       if (typeof window !== "undefined") {
         localStorage.setItem(doneKey, "1");
       }
     });
-  }, [user]);
+  }, [user, toast, t]);
 
   // Check for existing session on mount
   useEffect(() => {

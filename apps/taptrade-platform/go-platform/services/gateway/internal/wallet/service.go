@@ -344,6 +344,25 @@ func (s *Service) Balance(ctx context.Context, userID string) int64 {
 	return s.balances[userID]
 }
 
+// HasCredit reports whether a credit with this idempotency key has already
+// been written for the user. Read-only; lets a faucet endpoint tell a fresh
+// grant from an idempotent replay without changing mutation semantics.
+func (s *Service) HasCredit(ctx context.Context, userID, idempotencyKey string) (bool, error) {
+	if userID == "" || idempotencyKey == "" {
+		return false, nil
+	}
+	if s.db != nil {
+		ctx, cancel := context.WithTimeout(ctx, walletDBTimeout)
+		defer cancel()
+		_, found, err := s.findExistingMutationDB(ctx, "credit", userID, idempotencyKey)
+		return found, err
+	}
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	_, found := s.idempotencyMap[fmt.Sprintf("credit:%s:%s", userID, idempotencyKey)]
+	return found, nil
+}
+
 // TryRecordRewardClusters records non-ledger abuse-control evidence for a
 // reward grant. It returns false without recording anything when any active
 // signal has already reached its distinct-user cap for the day.

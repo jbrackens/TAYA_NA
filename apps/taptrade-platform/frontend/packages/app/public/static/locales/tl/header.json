@@ -52,5 +52,7 @@
   "SIGN_UP": "Sign up",
   "LOG_OUT": "Log out",
   "ADD_POINTS": "Magdagdag ng Puntos",
-  "OPEN_POINT_STORE": "Buksan ang Point Store"
+  "OPEN_POINT_STORE": "Buksan ang Point Store",
+  "STARTER_GRANT_TOAST_TITLE": "Naitala ang welcome grant",
+  "STARTER_GRANT_TOAST_BODY": "+{{points}} PTS na pang-trade — pumili ng market at gawin ang unang prediksyon mo."
 }

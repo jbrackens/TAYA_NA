@@ -164,7 +164,10 @@ services:
       # Grants are idempotent, session-user-only. A REAL-MONEY deployment
       # MUST set the starter grant to 0 (the default) - see the
       # POST /api/v1/wallet/starter-grant handler.
-      STARTER_GRANT_CENTS: "1000"
+      # 500 per the onboarding doctrine (Figma 04 Handoff): enough for a
+      # real first position at typical prices, small enough to keep the
+      # points economy honest.
+      STARTER_GRANT_CENTS: "500"
       DAILY_CLAIM_CENTS: "50"
       # Point Store (owner decision 2026-07-12): paid point packs via the
       # DEMO provider — simulated checkout, clearly labeled, no real charges.

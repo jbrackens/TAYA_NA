@@ -1374,10 +1374,20 @@ describe("Registration auth flow", () => {
   });
 
   it("claims starter points and shows the points-only no-cashout disclosure", () => {
+    // ISSUE-011 intent (new users must LEARN they have points), current
+    // mechanism: AuthProvider claims once per session and announces on the
+    // server-truth `granted` flag. The register page must NOT also claim —
+    // the duplicate raced the session claim (concurrent same-key credits)
+    // and stacked a second toast.
     assert.ok(
-      registerSource.includes("import { claimStarterGrant }") &&
-        registerSource.includes("await claimStarterGrant(newUser.id)"),
-      "register page should claim starter points immediately after signup login",
+      !registerSource.includes("claimStarterGrant"),
+      "register page must not claim the starter grant directly — AuthProvider owns the claim",
+    );
+    assert.ok(
+      authProviderSource.includes("res.enabled && res.granted") &&
+        authProviderSource.includes("STARTER_GRANT_TOAST_TITLE") &&
+        authProviderSource.includes("STARTER_GRANT_TOAST_BODY"),
+      "AuthProvider should announce the welcome grant exactly when the server says it was granted",
     );
     // Whitespace-normalized: prettier re-wraps JSX text across lines, which
     // must not defeat a copy scan (the rendered string is unchanged).

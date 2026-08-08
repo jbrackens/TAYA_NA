@@ -52,5 +52,7 @@
   "SIGN_UP": "Sign up",
   "LOG_OUT": "Log out",
   "ADD_POINTS": "Add Points",
-  "OPEN_POINT_STORE": "Open the Point Store"
+  "OPEN_POINT_STORE": "Open the Point Store",
+  "STARTER_GRANT_TOAST_TITLE": "Welcome grant applied",
+  "STARTER_GRANT_TOAST_BODY": "+{{points}} PTS to trade with — pick a market and make your first call."
 }

@@ -52,5 +52,7 @@
   "SIGN_UP": "Daftar",
   "LOG_OUT": "Keluar",
   "ADD_POINTS": "Tambah Poin",
-  "OPEN_POINT_STORE": "Buka Toko Poin"
+  "OPEN_POINT_STORE": "Buka Toko Poin",
+  "STARTER_GRANT_TOAST_TITLE": "Hadiah selamat datang diterima",
+  "STARTER_GRANT_TOAST_BODY": "+{{points}} PTS untuk trading — pilih pasar dan buat prediksi pertamamu."
 }

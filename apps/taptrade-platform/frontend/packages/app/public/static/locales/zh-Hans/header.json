@@ -52,5 +52,7 @@
   "SIGN_UP": "注册",
   "LOG_OUT": "退出登录",
   "ADD_POINTS": "增加积分",
-  "OPEN_POINT_STORE": "打开积分商店"
+  "OPEN_POINT_STORE": "打开积分商店",
+  "STARTER_GRANT_TOAST_TITLE": "欢迎奖励已到账",
+  "STARTER_GRANT_TOAST_BODY": "+{{points}} PTS 可用于交易——选一个市场，做出你的第一个预测。"
 }

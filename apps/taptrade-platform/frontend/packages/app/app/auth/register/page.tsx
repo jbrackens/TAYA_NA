@@ -19,7 +19,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
 import { register as registerUser } from "../../lib/api";
-import { claimStarterGrant } from "../../lib/api/wallet-client";
 import { safeReturnPath, returnUrlSuffix } from "../../lib/safeReturnPath";
 import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
 import BrandMark from "../../components/BrandMark";
@@ -222,19 +221,12 @@ export default function RegisterPage() {
         welcomeToast: false,
       });
       toast.success("Account created", `Welcome, ${newUser.username}!`);
-      // QA fix ISSUE-011: the grant announcement was a setSuccessMessage
-      // immediately followed by router.replace — visible for one frame,
-      // then gone. New users never learned they had points to trade with.
-      // A toast survives the navigation.
-      const grant = await claimStarterGrant(newUser.id);
-      if (grant?.enabled) {
-        toast.success(
-          "Starter points added",
-          typeof grant.balancePoints === "number"
-            ? `Balance: ${Math.round(grant.balancePoints).toLocaleString()} pts — you can trade right away.`
-            : "You can trade right away.",
-        );
-      }
+      // QA fix ISSUE-011 (grant announcement), since moved: AuthProvider
+      // claims the starter grant once per session and toasts on the
+      // server-truth `granted` flag — one claim, one announcement, and it
+      // also covers OAuth signups and returning users when the faucet
+      // first turns on. Claiming here too raced that claim (concurrent
+      // same-key credits) and stacked a duplicate toast.
       router.replace(safeReturnPath(searchParams.get("returnUrl")));
     } catch (err: unknown) {
       const message =

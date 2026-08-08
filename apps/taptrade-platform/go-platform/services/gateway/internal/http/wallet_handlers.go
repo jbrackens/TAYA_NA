@@ -446,12 +446,29 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 				"balancePoints": balance,
 			})
 		}
-		_, err := service.Credit(r.Context(), wallet.MutationRequest{
+		// Fresh-vs-replay: the client claims on every new session, but only a
+		// grant that lands NOW deserves a welcome moment in the UI. If the
+		// pre-check errors, claim "already had it" — the credit below still
+		// dedupes, and the UI must never celebrate a replay.
+		grantKey := "starter_grant:" + userID
+		already, lookupErr := service.HasCredit(r.Context(), userID, grantKey)
+		if lookupErr != nil {
+			already = true
+		}
+		grantReq := wallet.MutationRequest{
 			UserID:         userID,
 			AmountPoints:   grant,
-			IdempotencyKey: "starter_grant:" + userID,
+			IdempotencyKey: grantKey,
 			Reason:         "starter point grant",
-		})
+		}
+		_, err := service.Credit(r.Context(), grantReq)
+		// Concurrent duplicate claims (double tab, dev double-effects) can
+		// mutually abort under SERIALIZABLE before either row commits — the
+		// replay recovery inside Credit finds nothing to return. One clean
+		// retry resolves to the idempotent outcome whichever request won.
+		if err != nil && !errors.Is(err, wallet.ErrIdempotencyConflict) {
+			_, err = service.Credit(r.Context(), grantReq)
+		}
 		// An idempotency conflict means the user already claimed their grant
 		// (same key, since-changed amount). That is success, not an error —
 		// they keep their original grant.
@@ -462,6 +479,7 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service, leader
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 			"enabled":       true,
 			"unit":          "PTS",
+			"granted":       err == nil && !already,
 			"grantPoints":   grant,
 			"balancePoints": balance,
 		})

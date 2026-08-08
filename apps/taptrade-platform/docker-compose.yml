@@ -66,6 +66,10 @@ services:
       # WS_BACKBONE: "redis"
       AUTH_SERVICE_URL: "http://auth:18081"
       PAYMENTS_WEBHOOK_SECRET: "whsec_local"
+      # Welcome grant (points-only dev faucet): one idempotent 500-PTS credit
+      # per user on first session, so a fresh registration can trade
+      # immediately. MUST stay 0/unset in any real-value deployment.
+      STARTER_GRANT_CENTS: "500"
       LOG_LEVEL: "debug"
     networks:
       - predict_network

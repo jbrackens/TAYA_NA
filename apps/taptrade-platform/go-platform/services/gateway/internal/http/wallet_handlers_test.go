@@ -74,6 +74,74 @@ func TestStarterGrantLedgerReasonIsPointNative(t *testing.T) {
 	}
 }
 
+// The welcome moment contract: `granted` is true exactly once — the claim
+// that actually writes the ledger row. Replays keep succeeding (idempotent)
+// but must report granted=false so the UI never celebrates twice, and a
+// disabled faucet reports enabled=false with no granted field implied.
+func TestStarterGrantGrantedFlagFiresExactlyOnce(t *testing.T) {
+	t.Setenv("STARTER_GRANT_CENTS", "500")
+
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, "gateway")
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+	userID := "u-starter-granted-once"
+
+	claim := func() map[string]any {
+		req := playerWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/wallet/starter-grant", nil), userID)
+		res := httptest.NewRecorder()
+		handler.ServeHTTP(res, req)
+		if res.Code != http.StatusOK {
+			t.Fatalf("expected 200, got %d body=%s", res.Code, res.Body.String())
+		}
+		var payload map[string]any
+		if err := json.Unmarshal(res.Body.Bytes(), &payload); err != nil {
+			t.Fatalf("decode: %v", err)
+		}
+		return payload
+	}
+
+	first := claim()
+	if first["granted"] != true {
+		t.Fatalf("first claim: expected granted=true, got %+v", first)
+	}
+	if first["grantPoints"] != float64(500) || first["balancePoints"] != float64(500) {
+		t.Fatalf("first claim: expected 500/500 points, got %+v", first)
+	}
+
+	second := claim()
+	if second["granted"] != false {
+		t.Fatalf("replay: expected granted=false, got %+v", second)
+	}
+	if second["balancePoints"] != float64(500) {
+		t.Fatalf("replay: balance must not double, got %+v", second)
+	}
+}
+
+func TestStarterGrantDisabledReportsNotEnabled(t *testing.T) {
+	t.Setenv("STARTER_GRANT_CENTS", "0")
+
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, "gateway")
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	req := playerWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/wallet/starter-grant", nil), "u-starter-disabled")
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+	if res.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	var payload map[string]any
+	if err := json.Unmarshal(res.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if payload["enabled"] != false {
+		t.Fatalf("expected enabled=false, got %+v", payload)
+	}
+	if _, hasGrant := payload["grantPoints"]; hasGrant {
+		t.Fatalf("disabled faucet must not advertise a grant amount, got %+v", payload)
+	}
+}
+
 func TestWalletLedgerEntryPayloadRedactsLegacyUnsafeReason(t *testing.T) {
 	payload := walletLedgerEntryPayload(wallet.LedgerEntry{
 		EntryID:         "legacy-entry-1",
