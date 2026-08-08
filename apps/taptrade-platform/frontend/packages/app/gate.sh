@@ -282,17 +282,24 @@ gate_router_conflict() {
 gate_next_build() {
     print_gate_start "8" "Next.js Build"
 
-    # Run next build with 5-minute timeout. --webpack keeps the bundler
+    # Run next build with a timeout. --webpack keeps the bundler
     # consistent with next.config.js (which has webpack-specific config:
     # polyfill fallbacks, externals, the @taptrade-ui/utils alias). Without
     # this flag, Next.js 16 defaults to Turbopack and would silently drop
     # the webpack config.
-    if timeout 300 npx next build --webpack 2>&1 | tee /tmp/next_build.log; then
+    #
+    # Default 10 minutes: the build passes in ~4 on a quiet machine, but a
+    # dev server, test suite, or second build sharing the box pushed it past
+    # the old 5-minute ceiling and failed the gate on machine load rather
+    # than on code. Override with GATE_BUILD_TIMEOUT_SECS for slower/faster
+    # environments; the timeout exists to catch a HUNG build, not a busy Mac.
+    local build_timeout="${GATE_BUILD_TIMEOUT_SECS:-600}"
+    if timeout "$build_timeout" npx next build --webpack 2>&1 | tee /tmp/next_build.log; then
         print_pass
     else
         local exit_code=$?
         if [ "$exit_code" -eq 124 ]; then
-            print_fail "Build timeout (5 minutes exceeded)"
+            print_fail "Build timeout (${build_timeout}s exceeded — GATE_BUILD_TIMEOUT_SECS to override)"
         else
             print_fail "Build failed (exit code: $exit_code)"
         fi
