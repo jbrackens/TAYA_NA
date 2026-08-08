@@ -1,7 +1,7 @@
 # Build context: go-platform/
 FROM golang:1.25 AS builder
 
-ARG GOPROXY=https://goproxy.io|https://proxy.golang.org|direct
+ARG GOPROXY=https://proxy.golang.org|https://goproxy.io|direct
 ENV GOPROXY=${GOPROXY}
 
 WORKDIR /build

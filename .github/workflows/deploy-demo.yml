@@ -207,7 +207,7 @@ jobs:
         # changes.
         run: |
           docker build \
-            --build-arg "GOPROXY=https://goproxy.io|https://proxy.golang.org|direct" \
+            --build-arg "GOPROXY=https://proxy.golang.org|https://goproxy.io|direct" \
             -f apps/taptrade-platform/go-platform/services/auth/Dockerfile \
             -t taptrade-auth:latest \
             apps/taptrade-platform/go-platform
@@ -242,7 +242,7 @@ jobs:
         # the runner makes the deploy depend only on SSH + docker load there.
         run: |
           docker build \
-            --build-arg "GOPROXY=https://goproxy.io|https://proxy.golang.org|direct" \
+            --build-arg "GOPROXY=https://proxy.golang.org|https://goproxy.io|direct" \
             -f apps/taptrade-platform/go-platform/services/gateway/Dockerfile \
             -t taptrade-gateway:latest \
             apps/taptrade-platform/go-platform
