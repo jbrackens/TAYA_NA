@@ -690,7 +690,8 @@ ORDER BY MAX(l.created_at) DESC`
 }
 
 // updateMarketAfterMatchWithTx writes the post-match market state. Touches
-// only fields the match engine changes: collateral_pool_points,
+// only fields the match engine changes: yes/no_price_points (repriced to the
+// last fill's YES-terms price by markTradePrice), collateral_pool_points,
 // last_trade_price_points, last_quote_at, volume_points.
 //
 // best_yes/no_bid/ask_points are deliberately NOT written here — those are
@@ -700,14 +701,16 @@ ORDER BY MAX(l.created_at) DESC`
 func (r *SQLRepository) updateMarketAfterMatchWithTx(ctx context.Context, tx *sql.Tx, m *Market) error {
 	_, err := tx.ExecContext(ctx,
 		`UPDATE prediction_markets SET
-		   collateral_pool_points = $2,
-		   last_trade_price_points = $3,
-		   last_quote_at = $4,
-		   volume_points = $5,
+		   yes_price_points = $2,
+		   no_price_points = $3,
+		   collateral_pool_points = $4,
+		   last_trade_price_points = $5,
+		   last_quote_at = $6,
+		   volume_points = $7,
 		   updated_at = NOW()
 		 WHERE id = $1`,
-		m.ID, m.CollateralPoolPoints, m.LastTradePricePoints,
-		m.LastQuoteAt, m.VolumePoints,
+		m.ID, m.YesPricePoints, m.NoPricePoints, m.CollateralPoolPoints,
+		m.LastTradePricePoints, m.LastQuoteAt, m.VolumePoints,
 	)
 	return err
 }

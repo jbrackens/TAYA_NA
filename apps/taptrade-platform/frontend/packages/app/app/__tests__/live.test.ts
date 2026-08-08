@@ -59,6 +59,19 @@ describe("live market event contract", () => {
     assert.equal(newer.fields.yesPricePoints, 52);
   });
 
+  it("applies same-instant events — ordered transport, later frame wins", () => {
+    // A resting order's broadcast and the fill that crosses it are stamped
+    // within the same timestamp tick. The socket delivers them in publish
+    // order; dropping the second one froze real price moves on screen.
+    const burst = applyMarketEvent(
+      { ts: "2026-08-07T10:00:00.500Z", yesPricePoints: 55 },
+      "2026-08-07T10:00:00.500Z",
+    );
+    assert.ok(burst);
+    assert.equal(burst.fields.yesPricePoints, 55);
+    assert.equal(burst.ts, "2026-08-07T10:00:00.500Z");
+  });
+
   it("rejects malformed payloads and keeps the watermark on ts-less events", () => {
     assert.equal(applyMarketEvent(null, ""), null);
     assert.equal(applyMarketEvent("string", ""), null);

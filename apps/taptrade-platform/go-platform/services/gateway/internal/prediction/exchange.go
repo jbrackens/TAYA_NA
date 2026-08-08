@@ -390,6 +390,26 @@ func applySelfMatch(taker, maker *Order) (bool, error) {
 	}
 }
 
+// markTradePrice restamps the plan's market quote snapshot from a fill: the
+// traded price, expressed in YES terms, becomes the market's headline
+// yes/no price and its last-trade price — the order-book analogue of the
+// retired AMM's repricing. LastTradePricePoints is always YES terms
+// (matching the AMM path and the price-history chart), whichever side the
+// taker was on. PersistMatchAtomic writes these columns in the same
+// transaction as the fills; the post-order `market:<id>` broadcast then
+// carries the new price to subscribers.
+func markTradePrice(plan *MatchPlan, takerSide OrderSide, takerSidePrice int, now time.Time) {
+	impliedYes := takerSidePrice
+	if takerSide == OrderSideNo {
+		impliedYes = ParPricePoints - takerSidePrice
+	}
+	plan.Market.YesPricePoints = impliedYes
+	plan.Market.NoPricePoints = ParPricePoints - impliedYes
+	lastTrade := impliedYes
+	plan.Market.LastTradePricePoints = &lastTrade
+	plan.Market.LastQuoteAt = &now
+}
+
 // fillSecondary applies a same-side transfer fill: buyer pays seller, position
 // moves, no collateral pool change.
 func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int, now time.Time, idFactory func() string) {
@@ -516,10 +536,8 @@ func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int,
 		})
 	}
 
-	// Market quote snapshot: last trade price.
-	lp := fillPrice
-	plan.Market.LastTradePricePoints = &lp
-	plan.Market.LastQuoteAt = &now
+	// Market quote snapshot: the fill reprices the market.
+	markTradePrice(plan, taker.Side, fillPrice, now)
 	plan.Market.VolumePoints += int64(fillQty) * int64(fillPrice)
 }
 
@@ -636,7 +654,10 @@ func fillIssuance(plan *MatchPlan, taker, maker *Order, fillQty int, now time.Ti
 		DeltaQty: fillQty, FillPricePoints: makerLimit, IsSell: false,
 	})
 
-	plan.Market.LastQuoteAt = &now
+	// Market quote snapshot: the fill reprices the market. The issuance pair
+	// executes at one implied YES price — takerPrice and makerLimit are
+	// complements — so stamping from the taker side covers both rows.
+	markTradePrice(plan, taker.Side, takerPrice, now)
 	plan.Market.VolumePoints += int64(fillQty) * int64(ParPricePoints)
 }
 

@@ -50,10 +50,17 @@ export function normalizeMarketUpdateFields(
 }
 
 /**
- * Watermark-gated event application. RFC3339 timestamps compare
+ * Watermark-gated event application. Fixed-width UTC timestamps compare
  * lexicographically in time order, so string comparison suffices.
  * Returns the normalized fields plus the advanced watermark, or null
  * when the event is stale/malformed and must be dropped.
+ *
+ * Strictly-older events drop; EQUAL timestamps apply. The transport is
+ * ordered (one TCP socket), so same-instant events — a resting order's
+ * broadcast and the fill that crosses it, stamped within the same
+ * timestamp tick — arrive in publish order and the later one is the
+ * truer state. Requiring strictly-newer here silently froze prices
+ * whenever a burst shared a timestamp.
  */
 export function applyMarketEvent(
   payload: unknown,
@@ -61,7 +68,7 @@ export function applyMarketEvent(
 ): { fields: Partial<PredictionMarket>; ts: string } | null {
   if (!payload || typeof payload !== "object") return null;
   const update = payload as MarketUpdatePayload;
-  if (update.ts && update.ts <= lastTs) return null;
+  if (update.ts && update.ts < lastTs) return null;
   return {
     fields: normalizeMarketUpdateFields(update),
     ts: update.ts ?? lastTs,

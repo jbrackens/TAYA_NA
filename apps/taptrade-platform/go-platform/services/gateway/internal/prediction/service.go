@@ -760,17 +760,13 @@ func orderBookPreviewFromPlan(req PlaceOrderRequest, market *Market, plan *Match
 		}
 	}
 
-	newYesPrice := market.YesPricePoints
-	newNoPrice := market.NoPricePoints
-	if plan.Market.LastTradePricePoints != nil {
-		if req.Side == OrderSideYes {
-			newYesPrice = *plan.Market.LastTradePricePoints
-			newNoPrice = ParPricePoints - newYesPrice
-		} else {
-			newNoPrice = *plan.Market.LastTradePricePoints
-			newYesPrice = ParPricePoints - newNoPrice
-		}
-	}
+	// The engine restamps plan.Market on every fill (markTradePrice), so the
+	// post-fill headline prices are already in YES terms. A no-fill plan
+	// leaves them at the market's current values — a preview that moves
+	// nothing predicts no move, even when the market carries an older
+	// last-trade price from history.
+	newYesPrice := plan.Market.YesPricePoints
+	newNoPrice := plan.Market.NoPricePoints
 
 	return &OrderPreview{
 		Side:                    req.Side,

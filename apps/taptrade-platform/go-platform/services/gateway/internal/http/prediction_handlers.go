@@ -586,6 +586,17 @@ type marketUpdatePayload struct {
 	Ts                   string                   `json:"ts"`
 }
 
+// wsEventTS returns the `ts` watermark for WS payloads: UTC milliseconds
+// with a FIXED-WIDTH fraction, so lexicographic string comparison equals
+// time order. RFC3339's whole-second precision was too coarse — a resting
+// order's broadcast and the fill that crosses it routinely land in the
+// same wall-clock second, and the frontend's ts watermark then saw the
+// fill event as "not newer" and dropped it (the price moved in the DB but
+// never on screen).
+func wsEventTS() string {
+	return time.Now().UTC().Format("2006-01-02T15:04:05.000Z07:00")
+}
+
 // buildOrderBookHintPayload is the wire shape published on `orderbook:<id>`
 // after a successful exchange match. Carries best bid/ask for a quick-look
 // update; clients refetch GET /markets/{id}/orderbook for full depth.
@@ -598,7 +609,7 @@ func buildOrderBookHintPayload(m *prediction.Market) map[string]any {
 		"bestNoAskPoints":  m.BestNoAskPoints,
 		"lastQuoteAt":      m.LastQuoteAt,
 		"unit":             "PTS",
-		"ts":               time.Now().UTC().Format(time.RFC3339),
+		"ts":               wsEventTS(),
 	}
 }
 
@@ -614,7 +625,7 @@ func buildMarketUpdatePayload(m *prediction.Market) marketUpdatePayload {
 		VolumePoints:         m.VolumePoints,
 		OpenInterestPoints:   m.OpenInterestPoints,
 		Unit:                 "PTS",
-		Ts:                   time.Now().UTC().Format(time.RFC3339),
+		Ts:                   wsEventTS(),
 	}
 }
 
@@ -633,7 +644,7 @@ func buildTradeFillPayload(t *prediction.Trade) map[string]any {
 		"unit":           "PTS",
 		"isAmmTrade":     t.IsAMMTrade,
 		"tradedAt":       t.TradedAt.UTC().Format(time.RFC3339),
-		"ts":             time.Now().UTC().Format(time.RFC3339),
+		"ts":             wsEventTS(),
 	}
 }
 
@@ -651,7 +662,7 @@ func buildPortfolioUpdatePayload(o *prediction.Order, t *prediction.Trade) map[s
 		"orderId":  o.ID,
 		"side":     o.Side,
 		"action":   o.Action,
-		"ts":       time.Now().UTC().Format(time.RFC3339),
+		"ts":       wsEventTS(),
 	}
 	if t != nil {
 		out["tradeId"] = t.ID
