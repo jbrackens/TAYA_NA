@@ -54,5 +54,10 @@
   "ADD_POINTS": "Add Points",
   "OPEN_POINT_STORE": "Open the Point Store",
   "STARTER_GRANT_TOAST_TITLE": "Welcome grant applied",
-  "STARTER_GRANT_TOAST_BODY": "+{{points}} PTS to trade with — pick a market and make your first call."
+  "STARTER_GRANT_TOAST_BODY": "+{{points}} PTS to trade with — pick a market and make your first call.",
+  "NOTIFICATIONS_LABEL": "Notifications",
+  "NOTIFICATIONS_EMPTY": "Nothing yet — settlements land here.",
+  "SETTLEMENT_TOAST_PAID_TITLE": "Settled {{result}} — +{{points}} PTS paid out",
+  "SETTLEMENT_TOAST_CLOSED_TITLE": "Settled {{result}} — position closed at 0 PTS",
+  "SETTLEMENT_TOAST_VOIDED_TITLE": "Market voided — {{points}} PTS returned"
 }

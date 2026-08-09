@@ -23,9 +23,10 @@ var ErrStaleMarketStatus = errors.New("market status changed concurrently; settl
 type SettlementEngine struct {
 	repo              Repository
 	wallet            WalletAdapter
-	loyalty           LoyaltyAdapter         // optional; nil means no loyalty accrual on settlement
-	onTierPromoted    TierPromotedHandler    // optional; fired post-commit per plan §8
-	onMarketLifecycle MarketLifecycleHandler // optional; fired post-commit on settle/void
+	loyalty           LoyaltyAdapter           // optional; nil means no loyalty accrual on settlement
+	onTierPromoted    TierPromotedHandler      // optional; fired post-commit per plan §8
+	onMarketLifecycle MarketLifecycleHandler   // optional; fired post-commit on settle/void
+	onPayouts         SettlementPayoutsHandler // optional; fired post-commit with all payouts/refunds
 	// Optional Prometheus-format counter registry. Wired through from the
 	// parent Service via SetMetrics so a settle records a counter. nil is
 	// safe — the Record* helpers no-op.
@@ -52,6 +53,16 @@ type SettlementAuditor interface {
 // fire-and-forget — a failed WebSocket push is expected OK per plan §8.
 type TierPromotedHandler func(userID string, fromTier, toTier int)
 
+// SettlementPayoutsHandler is a post-commit callback invoked once per
+// completed settlement ("settled") or void ("voided") with every payout or
+// refund that was written. This is the per-user notification seam — the
+// market-level lifecycle hook says "the market settled"; this one carries
+// WHO got paid WHAT, so the http layer can push, persist, and email each
+// position holder. Fired in a goroutine, fire-and-forget: payouts are
+// already committed, and a lost notification is recoverable from portfolio
+// history.
+type SettlementPayoutsHandler func(market *Market, kind string, payouts []Payout)
+
 // NewSettlementEngine creates a new settlement engine.
 // If wallet is nil, payouts are logged but not credited (useful for tests).
 func NewSettlementEngine(repo Repository, wallet WalletAdapter) *SettlementEngine {
@@ -72,6 +83,26 @@ func (s *SettlementEngine) SetLoyaltyAdapter(adapter LoyaltyAdapter) {
 // accrual advances the user's tier. Pass nil to disable. See plan §8.
 func (s *SettlementEngine) SetTierPromotedHandler(fn TierPromotedHandler) {
 	s.onTierPromoted = fn
+}
+
+// SetSettlementPayoutsHandler wires the post-commit per-user payout callback
+// fired after a settle (kind "settled") or void (kind "voided"). Pass nil to
+// disable.
+func (s *SettlementEngine) SetSettlementPayoutsHandler(fn SettlementPayoutsHandler) {
+	s.onPayouts = fn
+}
+
+// fireSettlementPayouts dispatches the payout callback if one is wired and
+// there is anything to report. Same fire-and-forget posture as
+// fireMarketLifecycle: everything is committed by the time this runs.
+func (s *SettlementEngine) fireSettlementPayouts(market *Market, kind string, payouts []Payout) {
+	if s.onPayouts == nil || len(payouts) == 0 {
+		return
+	}
+	m := *market
+	list := make([]Payout, len(payouts))
+	copy(list, payouts)
+	go s.onPayouts(&m, kind, list)
 }
 
 // SetMarketLifecycleHandler wires the post-commit callback fired after a
@@ -602,6 +633,7 @@ func (s *SettlementEngine) resolveMarket(ctx context.Context, req ResolveMarketR
 			}
 			s.metrics.RecordSettlement(marketID, string(result), settlement.OverrideReason != nil)
 			s.fireMarketLifecycle(market, lifecycle)
+			s.fireSettlementPayouts(market, "settled", payouts)
 			s.recordSettlementAudit(settledBy, settlement)
 			return settlement, payouts, nil
 		}
@@ -625,6 +657,7 @@ func (s *SettlementEngine) resolveMarket(ctx context.Context, req ResolveMarketR
 			}
 			s.metrics.RecordSettlement(marketID, string(result), settlement.OverrideReason != nil)
 			s.fireMarketLifecycle(market, lifecycle)
+			s.fireSettlementPayouts(market, "settled", payouts)
 			s.recordSettlementAudit(settledBy, settlement)
 			return settlement, payouts, nil
 		}
@@ -662,6 +695,7 @@ func (s *SettlementEngine) resolveMarket(ctx context.Context, req ResolveMarketR
 	// the flag wasn't threaded was stale).
 	s.metrics.RecordSettlement(marketID, string(result), settlement.OverrideReason != nil)
 	s.fireMarketLifecycle(market, lifecycle)
+	s.fireSettlementPayouts(market, "settled", payouts)
 	s.recordSettlementAudit(settledBy, settlement)
 	return settlement, payouts, nil
 }
@@ -892,6 +926,7 @@ func (s *SettlementEngine) VoidMarket(ctx context.Context, marketID string, reas
 				return nil, fmt.Errorf("persist voided market atomically: %w", err)
 			}
 			s.fireMarketLifecycle(market, lifecycle)
+			s.fireSettlementPayouts(market, "voided", payouts)
 			return payouts, nil
 		}
 	}
@@ -907,6 +942,7 @@ func (s *SettlementEngine) VoidMarket(ctx context.Context, marketID string, reas
 	_ = s.repo.CreateLifecycleEvent(ctx, lifecycle)
 
 	s.fireMarketLifecycle(market, lifecycle)
+	s.fireSettlementPayouts(market, "voided", payouts)
 	return payouts, nil
 }
 

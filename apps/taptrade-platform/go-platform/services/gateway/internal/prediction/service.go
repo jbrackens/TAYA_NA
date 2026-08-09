@@ -336,6 +336,12 @@ func (s *Service) SetTierPromotedHandler(fn TierPromotedHandler) {
 	s.settlement.SetTierPromotedHandler(fn)
 }
 
+// SetSettlementPayoutsHandler wires the post-commit per-user payout callback
+// (settle + void). The http layer uses it to notify every position holder.
+func (s *Service) SetSettlementPayoutsHandler(fn SettlementPayoutsHandler) {
+	s.settlement.SetSettlementPayoutsHandler(fn)
+}
+
 // SetMarketLifecycleHandler wires the post-commit callback fired after every
 // successful market lifecycle transition: open / halt / close / void from
 // TransitionMarketStatus, settled from ResolveMarket, voided from VoidMarket.

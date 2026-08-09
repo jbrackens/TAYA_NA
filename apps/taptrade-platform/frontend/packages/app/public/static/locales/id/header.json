@@ -54,5 +54,10 @@
   "ADD_POINTS": "Tambah Poin",
   "OPEN_POINT_STORE": "Buka Toko Poin",
   "STARTER_GRANT_TOAST_TITLE": "Hadiah selamat datang diterima",
-  "STARTER_GRANT_TOAST_BODY": "+{{points}} PTS untuk trading — pilih pasar dan buat prediksi pertamamu."
+  "STARTER_GRANT_TOAST_BODY": "+{{points}} PTS untuk trading — pilih pasar dan buat prediksi pertamamu.",
+  "NOTIFICATIONS_LABEL": "Notifikasi",
+  "NOTIFICATIONS_EMPTY": "Belum ada — hasil penyelesaian muncul di sini.",
+  "SETTLEMENT_TOAST_PAID_TITLE": "Selesai {{result}} — +{{points}} PTS dibayarkan",
+  "SETTLEMENT_TOAST_CLOSED_TITLE": "Selesai {{result}} — posisi ditutup di 0 PTS",
+  "SETTLEMENT_TOAST_VOIDED_TITLE": "Pasar dibatalkan — {{points}} PTS dikembalikan"
 }

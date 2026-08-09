@@ -283,6 +283,13 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 			enqueueMarketResolution(context.Background(), webhookEnq, market)
 		}
 	})
+	// Per-user settlement notifications (bell + WS + email). The payouts
+	// seam fires post-commit from every resolution path — admin resolve,
+	// finalize-after-window, auto-settler, void — with who got paid what.
+	notifStore := newNotificationStore(walletService.DB())
+	predictionService.SetSettlementPayoutsHandler(makeSettlementPayoutsHandler(
+		notifStore, wsHub, walletService.Balance, resolutionNotifier, walletService.DB()))
+	registerNotificationRoutes(mux, notifStore)
 	registerPredictionRoutes(mux, predictionService)
 	registerOrderRoutes(mux, predictionService, wsHub, webhookEnq)
 	registerPortfolioRoutes(mux, predictionService)

@@ -21,7 +21,6 @@ import { PlusIcon as Plus } from "@phosphor-icons/react/dist/csr/Plus";
 import { UserIcon } from "@phosphor-icons/react/dist/csr/User";
 import { GearSixIcon as Settings } from "@phosphor-icons/react/dist/csr/GearSix";
 import { TrendUpIcon as TrendingUp } from "@phosphor-icons/react/dist/csr/TrendUp";
-import { BellSimpleIcon as Bell } from "@phosphor-icons/react/dist/csr/BellSimple";
 import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
@@ -40,6 +39,7 @@ import {
 } from "../../lib/store/pointBalanceSlice";
 import { getBalance } from "../../lib/api/wallet-client";
 import { TierPill } from "./TierPill";
+import { NotificationsBell } from "./NotificationsBell";
 import { LanguageSelector } from "../i18n/LanguageSelector";
 import { localizedMarket } from "./market-content";
 import { FEATURE_LIVE_MARKETS } from "../../lib/features";
@@ -188,8 +188,6 @@ const TOP_BAR_MENU_ITEM_BASE_CLASS =
 const TOP_BAR_MENU_ITEM_CLASS = `${TOP_BAR_MENU_ITEM_BASE_CLASS} text-[var(--t1)]`;
 const TOP_BAR_MENU_LOGOUT_CLASS = `${TOP_BAR_MENU_ITEM_BASE_CLASS} text-[var(--no)]`;
 const TOP_BAR_MENU_DIVIDER_CLASS = "my-1 h-px bg-[var(--surface-2)]";
-const TOP_BAR_NOTIFICATION_CLASS =
-  "grid size-11 shrink-0 place-items-center rounded-md text-[var(--t2)] no-underline transition-colors duration-150 hover:bg-[var(--surface-2)] hover:text-[var(--t1)]";
 
 export function TopBar() {
   const { t } = useTranslation("header");
@@ -593,14 +591,14 @@ export function TopBar() {
             </>
           )}
 
-          {isTerminalRoute && isAuthenticated && (
-            <Link
-              href="/account/notifications"
-              className={`${TOP_BAR_NOTIFICATION_CLASS} ml-auto`}
-              aria-label={t("NAV_NOTIFICATIONS", "Notifications")}
-            >
-              <Bell size={18} aria-hidden="true" />
-            </Link>
+          {isAuthenticated && user?.id && (
+            // Settlement inbox: live toast + badge + dropdown. Replaces the
+            // old terminal-only static link to the preferences page — the
+            // bell now IS the inbox, on every route.
+            <NotificationsBell
+              userId={user.id}
+              className={isTerminalRoute ? "ml-auto" : ""}
+            />
           )}
 
           {isLoading ? null : isAuthenticated ? (

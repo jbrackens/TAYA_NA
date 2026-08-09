@@ -54,5 +54,10 @@
   "ADD_POINTS": "Magdagdag ng Puntos",
   "OPEN_POINT_STORE": "Buksan ang Point Store",
   "STARTER_GRANT_TOAST_TITLE": "Naitala ang welcome grant",
-  "STARTER_GRANT_TOAST_BODY": "+{{points}} PTS na pang-trade — pumili ng market at gawin ang unang prediksyon mo."
+  "STARTER_GRANT_TOAST_BODY": "+{{points}} PTS na pang-trade — pumili ng market at gawin ang unang prediksyon mo.",
+  "NOTIFICATIONS_LABEL": "Mga Notipikasyon",
+  "NOTIFICATIONS_EMPTY": "Wala pa — dito lalabas ang mga settlement.",
+  "SETTLEMENT_TOAST_PAID_TITLE": "Na-settle {{result}} — +{{points}} PTS ang naibayad",
+  "SETTLEMENT_TOAST_CLOSED_TITLE": "Na-settle {{result}} — nagsara ang posisyon sa 0 PTS",
+  "SETTLEMENT_TOAST_VOIDED_TITLE": "Na-void ang market — {{points}} PTS ang naibalik"
 }

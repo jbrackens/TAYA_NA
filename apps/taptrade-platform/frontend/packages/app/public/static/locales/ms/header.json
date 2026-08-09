@@ -54,5 +54,10 @@
   "ADD_POINTS": "Tambah Mata",
   "OPEN_POINT_STORE": "Buka Kedai Mata",
   "STARTER_GRANT_TOAST_TITLE": "Geran alu-aluan diterima",
-  "STARTER_GRANT_TOAST_BODY": "+{{points}} PTS untuk didagangkan — pilih pasaran dan buat ramalan pertama anda."
+  "STARTER_GRANT_TOAST_BODY": "+{{points}} PTS untuk didagangkan — pilih pasaran dan buat ramalan pertama anda.",
+  "NOTIFICATIONS_LABEL": "Pemberitahuan",
+  "NOTIFICATIONS_EMPTY": "Belum ada — penyelesaian muncul di sini.",
+  "SETTLEMENT_TOAST_PAID_TITLE": "Selesai {{result}} — +{{points}} PTS dibayar",
+  "SETTLEMENT_TOAST_CLOSED_TITLE": "Selesai {{result}} — posisi ditutup pada 0 PTS",
+  "SETTLEMENT_TOAST_VOIDED_TITLE": "Pasaran dibatalkan — {{points}} PTS dipulangkan"
 }
