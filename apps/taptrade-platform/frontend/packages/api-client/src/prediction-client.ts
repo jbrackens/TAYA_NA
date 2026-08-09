@@ -934,6 +934,7 @@ function normalizePredictionMarket(
   return {
     id: row.id,
     eventId: row.eventId,
+    eventTitle: row.eventTitle,
     categoryId: row.categoryId,
     categorySlug: row.categorySlug,
     categoryName: row.categoryName,

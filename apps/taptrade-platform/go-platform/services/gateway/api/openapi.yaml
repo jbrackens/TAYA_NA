@@ -36,6 +36,9 @@ components:
       properties:
         id: { type: string, format: uuid }
         eventId: { type: string, format: uuid }
+        eventTitle:
+          type: string
+          description: Parent event's editorial title (display join; omitted when the event has no title).
         ticker: { type: string }
         title: { type: string }
         description: { type: string }

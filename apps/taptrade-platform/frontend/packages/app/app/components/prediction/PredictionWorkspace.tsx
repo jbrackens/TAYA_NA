@@ -1030,8 +1030,8 @@ export function PredictionWorkspace({
                     key={moment.eventId}
                     meta={
                       countdown
-                        ? `${moment.categoryName} · ${t("FIRST_CLOSE", { countdown })}`
-                        : moment.categoryName
+                        ? `${moment.title} · ${t("FIRST_CLOSE", { countdown })}`
+                        : moment.title
                     }
                     title={moment.headline.title}
                     secondary={moment.secondary}
@@ -1112,7 +1112,7 @@ export function PredictionWorkspace({
                       className="h-3 w-[3px] rounded-[1px] bg-[var(--lime-text)]"
                     />
                     <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--ink)]">
-                      {cluster.categoryName}
+                      {cluster.title}
                     </span>
                     <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.12em] text-[var(--ink-3)]">
                       {t("MOMENT_MARKETS_COUNT", {

@@ -118,6 +118,9 @@ const (
 type Market struct {
 	ID                   string          `json:"id" db:"id"`
 	EventID              string          `json:"eventId" db:"event_id"`
+	// EventTitle is the parent event's (editorial) title, read-joined for
+	// display surfaces — the Moments feed labels clusters with it.
+	EventTitle           *string         `json:"eventTitle,omitempty" db:"event_title"`
 	CategoryID           string          `json:"categoryId,omitempty" db:"-"`
 	CategorySlug         string          `json:"categorySlug,omitempty" db:"-"`
 	CategoryName         string          `json:"categoryName,omitempty" db:"-"`
@@ -175,6 +178,7 @@ func (m Market) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		ID                   string          `json:"id"`
 		EventID              string          `json:"eventId"`
+		EventTitle           *string         `json:"eventTitle,omitempty"`
 		CategoryID           string          `json:"categoryId,omitempty"`
 		CategorySlug         string          `json:"categorySlug,omitempty"`
 		CategoryName         string          `json:"categoryName,omitempty"`
@@ -223,6 +227,7 @@ func (m Market) MarshalJSON() ([]byte, error) {
 	}{
 		ID:                   m.ID,
 		EventID:              m.EventID,
+		EventTitle:           m.EventTitle,
 		CategoryID:           m.CategoryID,
 		CategorySlug:         m.CategorySlug,
 		CategoryName:         m.CategoryName,

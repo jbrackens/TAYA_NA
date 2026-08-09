@@ -181,11 +181,13 @@ func (r *SQLRepository) GetEvent(ctx context.Context, id string) (*Event, error)
 	var e Event
 	var seriesID, desc, createdBy sql.NullString
 	var openAt, settleAt, settledAt sql.NullTime
-	err := row.Scan(&e.ID, &seriesID, &e.Title, &desc, &e.CategoryID, &e.Status, &e.Featured,
+	var categoryID sql.NullString // nullable — see scanEvent
+	err := row.Scan(&e.ID, &seriesID, &e.Title, &desc, &categoryID, &e.Status, &e.Featured,
 		&openAt, &e.CloseAt, &settleAt, &settledAt, &e.Metadata, &createdBy, &e.CreatedAt, &e.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
+	e.CategoryID = categoryID.String
 	if seriesID.Valid {
 		e.SeriesID = &seriesID.String
 	}
@@ -1793,7 +1795,7 @@ func marketSelectQuery() string {
 	               m.execution_mode, m.collateral_pool_points, m.settled_payout_pool_points,
 	               m.best_yes_bid_points, m.best_yes_ask_points,
 	               m.best_no_bid_points, m.best_no_ask_points, m.last_quote_at,
-	               m.article_source_id
+	               m.article_source_id, pe.title AS event_title
 	        FROM prediction_markets m
 	        LEFT JOIN prediction_events pe ON pe.id = m.event_id
 	        LEFT JOIN prediction_categories pc ON pc.id = pe.category_id
@@ -1914,7 +1916,7 @@ func scanMarketRow(row scannable) (*Market, error) {
 	// populated by the post-match refresher; null until first match.
 	var bestYesBid, bestYesAsk, bestNoBid, bestNoAsk sql.NullInt64
 	var lastQuoteAt sql.NullTime
-	var articleSourceID sql.NullString
+	var articleSourceID, eventTitle sql.NullString
 
 	err := row.Scan(&m.ID, &m.EventID, &categoryID, &categorySlug, &categoryName, &m.Ticker, &m.Title, &desc, &translations, &m.Status, &result,
 		&m.YesPricePoints, &m.NoPricePoints, &lastTradePrice,
@@ -1925,9 +1927,12 @@ func scanMarketRow(row scannable) (*Market, error) {
 		&openAt, &m.CloseAt, &m.CreatedAt, &m.UpdatedAt, &imagePath,
 		&m.ExecutionMode, &m.CollateralPoolPoints, &m.SettledPayoutPoolPoints,
 		&bestYesBid, &bestYesAsk, &bestNoBid, &bestNoAsk, &lastQuoteAt,
-		&articleSourceID)
+		&articleSourceID, &eventTitle)
 	if err != nil {
 		return nil, err
+	}
+	if eventTitle.Valid && eventTitle.String != "" {
+		m.EventTitle = &eventTitle.String
 	}
 	if categoryID.Valid {
 		m.CategoryID = categoryID.String
@@ -2005,11 +2010,16 @@ func scanEvent(rows *sql.Rows) (*Event, error) {
 	var e Event
 	var seriesID, desc, createdBy sql.NullString
 	var openAt, settleAt, settledAt sql.NullTime
-	err := rows.Scan(&e.ID, &seriesID, &e.Title, &desc, &e.CategoryID, &e.Status, &e.Featured,
+	// category_id is nullable in the schema (integration-test events and
+	// legacy rows carry NULL). Scanning it into a bare string made ONE such
+	// row 500 the whole /api/v1/events listing.
+	var categoryID sql.NullString
+	err := rows.Scan(&e.ID, &seriesID, &e.Title, &desc, &categoryID, &e.Status, &e.Featured,
 		&openAt, &e.CloseAt, &settleAt, &settledAt, &e.Metadata, &createdBy, &e.CreatedAt, &e.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
+	e.CategoryID = categoryID.String
 	if seriesID.Valid {
 		e.SeriesID = &seriesID.String
 	}

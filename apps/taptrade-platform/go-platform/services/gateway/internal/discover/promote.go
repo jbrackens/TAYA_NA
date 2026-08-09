@@ -452,16 +452,38 @@ func resolveCategoryIDs(ctx context.Context, db *sql.DB) (map[string]string, err
 //
 // Synthetic event names are intentionally neutral ("Politics Markets" etc.)
 // so audit logs and admin tools never display source-leak labels.
+// syntheticEventTitles gives each per-category catch-all event an editorial
+// desk name. These surface as Moments cluster headers on /predict — the old
+// machine-made "<Category> Markets" read like database furniture. A slug
+// without an entry falls back to that old pattern (a new category degrades,
+// never breaks).
+var syntheticEventTitles = map[string]string{
+	"politics":      "Elections & Government",
+	"economics":     "Economy & Rates",
+	"sports":        "Games & Championships",
+	"entertainment": "Screens & Stages",
+	"esports":       "Esports & Arenas",
+	"tech":          "Tech & AI",
+	"crypto":        "Crypto & Chains",
+	"general":       "The Big Board",
+}
+
 func ensureSyntheticEvents(ctx context.Context, db *sql.DB, catIDs map[string]string) (map[string]string, error) {
 	out := map[string]string{}
 	closeAt, _ := time.Parse(time.RFC3339, farFutureCloseAt)
 	for slug, catID := range catIDs {
-		title := titleCase(slug) + " Markets"
+		title, ok := syntheticEventTitles[slug]
+		if !ok {
+			title = titleCase(slug) + " Markets"
+		}
+		// DO UPDATE (was DO NOTHING) so renamed desks propagate to events
+		// that already exist — scoped to synthetic rows, which are ours.
 		_, err := db.ExecContext(ctx,
 			`INSERT INTO prediction_events
 			   (id, title, description, category_id, status, close_at, metadata, is_synthetic)
 			 VALUES (md5($1)::uuid, $2, $3, $4, 'open', $5, $6::jsonb, true)
-			 ON CONFLICT (id) DO NOTHING`,
+			 ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title
+			   WHERE prediction_events.is_synthetic = true`,
 			"synthetic-event-"+slug,
 			title,
 			"",

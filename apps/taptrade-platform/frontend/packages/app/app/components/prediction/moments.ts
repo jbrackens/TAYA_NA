@@ -12,9 +12,11 @@
  *    market count, a real market's real price)
  *  - no fabricated "trending"/"hot" — activity claims need volume data
  *
- * GET /api/v1/events 500s in dev (2026-08-07), so cluster labels derive
- * client-side from the member markets (majority category + close window)
- * until the backend exposes editorial event titles.
+ * Cluster labels prefer the parent event's EDITORIAL title, which the
+ * backend joins onto every market as `eventTitle` (synthetic import desks
+ * carry names like "Elections & Government"; seeded events carry real
+ * titles like "May 2026 FOMC Decision"). Majority category remains the
+ * fallback for markets whose event carries no title.
  */
 
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
@@ -22,6 +24,8 @@ import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-ty
 export interface EventCluster {
   eventId: string;
   markets: PredictionMarket[];
+  /** Header label: the event's editorial title, else majority category. */
+  title: string;
   /** Majority category display name among members (ties → first seen). */
   categoryName: string;
   /** Earliest member closeAt, as epoch ms (NaN when none parse). */
@@ -55,10 +59,14 @@ function majorityCategoryName(markets: PredictionMarket[]): string {
 
 function toCluster(eventId: string, markets: PredictionMarket[]): EventCluster {
   const times = markets.map(closeMs).filter((t) => Number.isFinite(t));
+  const categoryName = majorityCategoryName(markets);
+  // All members share an eventId, so any member's eventTitle is THE title.
+  const eventTitle = markets.find((m) => m.eventTitle)?.eventTitle || "";
   return {
     eventId,
     markets,
-    categoryName: majorityCategoryName(markets),
+    title: eventTitle || categoryName,
+    categoryName,
     firstCloseMs: times.length ? Math.min(...times) : Number.NaN,
   };
 }
@@ -108,6 +116,8 @@ export function settlingSoon(
 
 export interface Moment {
   eventId: string;
+  /** Header label: the event's editorial title, else majority category. */
+  title: string;
   categoryName: string;
   firstCloseMs: number;
   marketCount: number;
@@ -138,6 +148,7 @@ export function deriveMoments(
       );
       return {
         eventId: cluster.eventId,
+        title: cluster.title,
         categoryName: cluster.categoryName,
         firstCloseMs: cluster.firstCloseMs,
         marketCount: cluster.markets.length,

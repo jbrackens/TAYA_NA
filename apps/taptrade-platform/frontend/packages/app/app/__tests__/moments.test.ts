@@ -75,6 +75,35 @@ describe("Moments IA derivations", () => {
     }
   });
 
+  it("cluster title prefers the event's editorial title, falls back to category", () => {
+    const editorial = groupFeedByEvent([
+      market({ id: "a", eventId: "e1", eventTitle: "Elections & Government", categoryName: "Politics" }),
+      market({ id: "b", eventId: "e1", eventTitle: "Elections & Government", categoryName: "Politics" }),
+    ]);
+    assert.equal(editorial[0].kind, "cluster");
+    if (editorial[0].kind === "cluster") {
+      assert.equal(editorial[0].cluster.title, "Elections & Government");
+    }
+
+    const bare = groupFeedByEvent([
+      market({ id: "c", eventId: "e2", categoryName: "Sports" }),
+      market({ id: "d", eventId: "e2", categoryName: "Sports" }),
+    ]);
+    assert.equal(bare[0].kind, "cluster");
+    if (bare[0].kind === "cluster") {
+      assert.equal(bare[0].cluster.title, "Sports");
+    }
+
+    const moments = deriveMoments(
+      [
+        market({ id: "e", eventId: "e3", eventTitle: "May 2026 FOMC Decision", closeAt: hoursFromNow(5) }),
+        market({ id: "f", eventId: "e3", eventTitle: "May 2026 FOMC Decision", closeAt: hoursFromNow(6) }),
+      ],
+      4,
+    );
+    assert.equal(moments[0]?.title, "May 2026 FOMC Decision");
+  });
+
   it("settles-soon admits only open markets inside the window, soonest first", () => {
     const soon = settlingSoon(
       [

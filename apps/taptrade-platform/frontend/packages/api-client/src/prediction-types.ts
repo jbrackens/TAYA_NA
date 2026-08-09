@@ -73,6 +73,8 @@ export interface MarketTranslation {
 export interface PredictionMarket {
   id: string;
   eventId: string;
+  /** Parent event's editorial title — Moments cluster headers use it. */
+  eventTitle?: string;
   categoryId?: string;
   categorySlug?: string;
   categoryName?: string;
