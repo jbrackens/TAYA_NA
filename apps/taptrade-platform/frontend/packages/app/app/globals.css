@@ -1581,3 +1581,20 @@ button {
   background: var(--border-2);
   background-clip: padding-box;
 }
+
+/* Landing (dark) — the 1B recipe wearing 1C bones, per Figma 03 Screens →
+ * Landing / 1440. Scoped to the marketing front door only; the app stays
+ * paper. Lime stays the one action color; hairlines, not shadows. */
+.landing-1c {
+  --l-bg: #101207;
+  --l-inset: #0b0d04;
+  --l-raised: #161908;
+  --l-hairline: #324019;
+  --l-t1: #f7f7f3;
+  --l-t2: #b9bfad;
+  --l-t3: #7a806b;
+  --l-lime: #c6f24e;
+  --l-ink-on-lime: #17200a;
+  --l-up: #59c773;
+  --l-down: #db594f;
+}

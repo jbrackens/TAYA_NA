@@ -242,9 +242,13 @@ describe("points-only safety boundary", () => {
   });
 
   it("keeps public homepage teasers away from crypto and cash-value framing", () => {
+    // The 2026-08-09 dark-landing rebuild replaced the hardcoded teaser
+    // cards with editorial desk chips + a real-data ticker; the invariant
+    // (no crypto tease on the homepage) is now expressed through the desk
+    // list.
     const homepageSource = read("page.tsx");
-    assert.ok(homepageSource.includes("markets.esports.category"));
-    assert.ok(!homepageSource.includes("markets.crypto.category"));
+    assert.ok(homepageSource.includes('"ESPORTS & ARENAS"'));
+    assert.ok(!homepageSource.includes("CRYPTO & CHAINS"));
 
     const forbiddenHomepageCopy =
       /crypto|bitcoin|btc|usd|\$|dollar|cash|deposit|withdraw|withdrawal|prize|redeem|payout|wager|stake|fiat|kripto|加密|pembayaran|赔付|賠付/i;
