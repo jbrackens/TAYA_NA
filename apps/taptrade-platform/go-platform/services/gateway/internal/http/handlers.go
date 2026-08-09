@@ -745,6 +745,14 @@ func startHourlyMarketSyncWorker(db *sql.DB, repo discover.PredictionRepo, svc d
 	repoImport := discover.NewRepository(db)
 	run := func(ctx context.Context) {
 		t0 := time.Now()
+		// Curation sweep FIRST, before any upstream fetch: already-promoted
+		// spam gets retired even when every source is down — which is
+		// exactly when stale catalog junk would otherwise linger.
+		if voided, cerr := discover.CurateImportedCatalog(ctx, db, svc); cerr != nil {
+			slog.Warn("market sync: curation sweep failed", "error", cerr)
+		} else if voided > 0 {
+			slog.Info("market sync: curation sweep retired unsuitable imports", "voided", voided)
+		}
 		res, deduped, err := discover.Sync(ctx, repoImport, rehoster, limits)
 		if err != nil {
 			slog.Warn("market sync failed", "elapsed", time.Since(t0).Round(time.Millisecond), "error", err)
@@ -785,6 +793,7 @@ func startHourlyMarketSyncWorker(db *sql.DB, repo discover.PredictionRepo, svc d
 			"images_dropped_shared", res.ImagesDroppedShared,
 			"market_images_aligned", res.MarketImagesAligned,
 			"skipped", promoteRes.Skipped,
+			"unsuitable", promoteRes.Unsuitable,
 			"failed", promoteRes.Failed,
 		)
 	}

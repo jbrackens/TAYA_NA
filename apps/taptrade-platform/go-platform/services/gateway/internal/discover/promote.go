@@ -35,6 +35,7 @@ type PromoteResult struct {
 	Closed           int            // newly inserted, status=closed (ambiguous, awaiting manual)
 	Removed          int            // existing imported rows voided because upstream is inactive/expired
 	Skipped          int            // already exists, no new resolution to apply
+	Unsuitable       int            // rejected by the curation guard (ad-spam titles)
 	Failed           int            // logged via slog.Warn, sync continues
 	ByCategory       map[string]int // category -> count of created+resolved
 }
@@ -104,6 +105,14 @@ func Promote(
 			res.Skipped++
 			continue
 		}
+		// Curation guard: advertisements never enter the catalog. Existing
+		// rows are handled below (and by CurateImportedCatalog each cycle),
+		// so a signature added later still cleans up history.
+		if IsUnsuitableImport(m.Title) || IsUnsuitableImport(m.Description) {
+			res.Unsuitable++
+			slog.Info("promote: rejected unsuitable import", "title", m.Title)
+			continue
+		}
 
 		category := Classify(m)
 		eventID, ok := eventIDs[category]
@@ -116,6 +125,14 @@ func Promote(
 		ticker := generateTicker(m)
 		existing, _ := repo.GetMarketByTicker(ctx, ticker)
 		if existing != nil {
+			// A previously-promoted row that now fails the guard (either
+			// side of the sync) is retired, not resynced.
+			if IsUnsuitableImport(existing.Title) {
+				if voidExistingImported(ctx, svc, existing, "curation: unsuitable imported title") == "removed" {
+					res.Unsuitable++
+				}
+				continue
+			}
 			outcome := applyUpstreamStateToExisting(ctx, svc, existing, m)
 			switch outcome {
 			case "resolved":

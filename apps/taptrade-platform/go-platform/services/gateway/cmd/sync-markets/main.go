@@ -71,6 +71,16 @@ func main() {
 
 	slog.Info("sync-markets: starting", "limits", limits, "public_root", resolvedPublicRoot)
 	t0 := time.Now()
+	// Curation sweep first — retire already-promoted ad-spam regardless of
+	// upstream health (mirrors the in-process hourly worker). The repo/svc
+	// pair is the same NoopWallet service Promote uses below.
+	predRepo := prediction.NewSQLRepository(db)
+	predSvc := prediction.NewService(predRepo, nil)
+	if voided, cerr := discover.CurateImportedCatalog(ctx, db, predSvc); cerr != nil {
+		slog.Warn("sync-markets: curation sweep failed", "error", cerr)
+	} else if voided > 0 {
+		slog.Info("sync-markets: curation sweep retired unsuitable imports", "voided", voided)
+	}
 	res, deduped, err := discover.Sync(ctx, repo, rehoster, limits)
 	elapsed := time.Since(t0).Round(time.Millisecond)
 	if err != nil {
@@ -84,8 +94,6 @@ func main() {
 	// substitutes a NoopWallet — fine for sync because Promote never
 	// touches user balances (CreateMarket doesn't debit; ResolveMarket
 	// on a market with zero positions is a no-op for the wallet).
-	predRepo := prediction.NewSQLRepository(db)
-	predSvc := prediction.NewService(predRepo, nil)
 	promoteRes, err := discover.Promote(ctx, db, predRepo, predSvc, deduped)
 	if err != nil {
 		log.Fatalf("promote failed after %s: %v", time.Since(t0).Round(time.Millisecond), err)
