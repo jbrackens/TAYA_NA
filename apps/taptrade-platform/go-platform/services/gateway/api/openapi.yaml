@@ -398,6 +398,21 @@ components:
         correctPredictions: { type: integer }
         accuracyPct: { type: number }
         unit: { type: string, enum: [PTS] }
+    UserNotification:
+      type: object
+      description: >
+        One inbox row. `payload` carries the structured event (settlement
+        kind, market, side, payoutPoints in PTS) so clients render from
+        data; `title`/`body` are server-rendered fallbacks.
+      properties:
+        id: { type: integer, format: int64 }
+        kind: { type: string, enum: [settlement_paid, settlement_closed, market_voided] }
+        title: { type: string }
+        body: { type: string }
+        marketId: { type: string }
+        payload: { type: object, additionalProperties: true }
+        createdAt: { type: string, format: date-time }
+        readAt: { type: string, format: date-time }
     PortfolioHistoryItem:
       type: object
       description: Settled prediction-history row with point-native result fields.
@@ -1910,6 +1925,50 @@ paths:
                     type: array
                     items: { $ref: "#/components/schemas/PortfolioHistoryItem" }
                   meta: { $ref: "#/components/schemas/PageMeta" }
+  /api/v1/notifications:
+    get:
+      summary: Per-user notification inbox (settlement outcomes)
+      description: >
+        Newest-first notifications for the session user with the unread
+        count. First producer is the settlement payouts seam: one row per
+        held position when a market settles or voids.
+      security: [{ SessionCookie: [] }]
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+      responses:
+        "200":
+          description: Inbox page
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/UserNotification" }
+                  unreadCount: { type: integer }
+  /api/v1/notifications/read:
+    post:
+      summary: Mark notifications read (ownership-scoped)
+      security: [{ SessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids: { type: array, items: { type: integer, format: int64 } }
+                all: { type: boolean }
+      responses:
+        "200":
+          description: Count of rows newly marked read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  markedRead: { type: integer }
   /api/v1/wallet/{userId}:
     get:
       summary: Read a point-wallet balance
