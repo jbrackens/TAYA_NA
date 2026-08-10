@@ -77,7 +77,16 @@ func (s *Service) GetPriceHistory(ctx context.Context, marketID string, rng Pric
 	if err != nil {
 		return nil, fmt.Errorf("fetch price buckets: %w", err)
 	}
-	if !pricePointsHaveMovement(raw) {
+	// Imported snapshots fill the chart ONLY when the window has no local
+	// trades at all. The old gate ("no movement in trade buckets") predates
+	// the exchange repricing engine: back then local fills never moved
+	// prices, so snapshots were the only signal. Now a locally-traded
+	// market's own fills ARE its price truth — merging upstream's
+	// diverged price into a window that has real local trades fabricated
+	// moves that never happened here (observed: a market locally
+	// repriced to 13¢ rendered a 13→1 "crash" built from upstream's 1¢
+	// tail; QA ISSUE-001, 2026-08-10).
+	if len(raw) == 0 {
 		if importedRepo, ok := s.repo.(ImportedPriceHistoryReader); ok {
 			importedRaw, err := importedRepo.ListImportedPriceBuckets(ctx, market.Ticker, since, until, bucketSec)
 			if err != nil {
