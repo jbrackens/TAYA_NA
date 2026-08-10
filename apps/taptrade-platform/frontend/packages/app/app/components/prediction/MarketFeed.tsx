@@ -207,7 +207,7 @@ function FeedHeroCard({
           className="flex min-h-12 items-center justify-between gap-2 rounded-[12px] border border-[var(--yes-border)] bg-[var(--yes-soft)] px-3.5 no-underline transition-colors duration-150 hover:border-[var(--yes-bar)]"
           aria-label={t("BUY_YES")}
         >
-          <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--yes-text)]">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--yes-text)]">
             {t("YES")}
           </span>
           <span className="font-mono text-[16px] font-medium text-[var(--yes-text)] tabular-nums">
@@ -219,7 +219,7 @@ function FeedHeroCard({
           className="flex min-h-12 items-center justify-between gap-2 rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] px-3.5 no-underline transition-colors duration-150 hover:border-[var(--no-bar)]"
           aria-label={t("BUY_NO")}
         >
-          <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--no-text)]">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--no-text)]">
             {t("NO")}
           </span>
           <span className="font-mono text-[16px] font-medium text-[var(--no-text)] tabular-nums">
