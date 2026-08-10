@@ -99,7 +99,7 @@ export function MarketCard({
     sentiment.sentimentState === "no" ? noPricePoints : yesPricePoints;
 
   return (
-    <article className="relative flex h-full min-h-[248px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans text-[var(--t1)] transition-[transform,box-shadow,border-color] duration-[140ms] hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[var(--shadow-card-hover)] focus-within:-translate-y-0.5 focus-within:border-[var(--border-2)] focus-within:shadow-[var(--shadow-card-hover)] max-[640px]:min-h-[238px] max-[640px]:p-4">
+    <article className="relative flex h-full min-h-[248px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans text-[var(--t1)] transition-[border-color] duration-[140ms] hover:border-[var(--border-2)] focus-within:border-[var(--border-2)] max-[640px]:min-h-[238px] max-[640px]:p-4">
       {onToggleWatchlist && (
         <button
           type="button"
