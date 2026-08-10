@@ -622,9 +622,14 @@ func fillIssuance(plan *MatchPlan, taker, maker *Order, fillQty int, now time.Ti
 		CaptureKey:   "prediction_fill:" + makerTradeID,
 	})
 
-	// Issuance grows the collateral pool by 100¢ × qty.
+	// Issuance grows the collateral pool by 100¢ × qty — and mints qty new
+	// YES/NO pairs, so open interest grows by the same par notional. Only
+	// the retired AMM ever tracked OI before; exchange markets showed
+	// "0 pts" forever (QA ISSUE-002, 2026-08-10). Secondary transfers move
+	// holders without minting, so they leave OI alone.
 	delta := CollateralPoolDelta(TradeKindIssuance, fillQty)
 	plan.Market.CollateralPoolPoints += delta
+	plan.Market.OpenInterestPoints += delta
 	plan.LedgerEntries = append(plan.LedgerEntries, CollateralLedgerEntry{
 		MarketID:     plan.Market.ID,
 		TradeID:      &takerTradeID,

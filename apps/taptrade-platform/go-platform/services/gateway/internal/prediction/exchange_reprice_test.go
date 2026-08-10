@@ -174,3 +174,48 @@ func TestReprice_NoFillLeavesSnapshotUntouched(t *testing.T) {
 		t.Errorf("expected untouched last trade 77, got %v", plan.Market.LastTradePricePoints)
 	}
 }
+
+// Regression: ISSUE-002 — exchange fills never tracked open interest (only
+// the retired AMM did). Issuance mints pairs → OI grows by par notional;
+// secondary transfers move holders → OI unchanged.
+// Found by /qa on 2026-08-10.
+func TestOpenInterest_IssuanceGrowsSecondaryDoesNot(t *testing.T) {
+	e := NewExchangeEngine()
+	market := makeMarket()
+	market.YesPricePoints = 50
+	market.NoPricePoints = 50
+
+	taker := makeOrder("t", "alice", OrderSideYes, OrderActionBuy, OrderTypeMarket, nil, 10)
+	taker.TimeInForce = TIFIOC
+	maker := makeOrder("m", "bob", OrderSideNo, OrderActionBuy, OrderTypeLimit, intPtr(95), 25)
+	maker.Status = OrderStatusOpen
+
+	plan, err := e.BuildPlan(MatchInput{
+		Market: market, Taker: taker,
+		MakersIssuance: []Order{maker},
+		Now:            repriceNow(), IDFactory: counterIDs(),
+	})
+	if err != nil {
+		t.Fatalf("BuildPlan (issuance): %v", err)
+	}
+	if plan.Market.OpenInterestPoints != int64(10*ParPricePoints) {
+		t.Errorf("issuance OI: want %d, got %d", 10*ParPricePoints, plan.Market.OpenInterestPoints)
+	}
+
+	// Secondary transfer: same-side buyer meets seller — no minting.
+	market2 := makeMarket()
+	taker2 := makeOrder("t2", "alice", OrderSideYes, OrderActionBuy, OrderTypeLimit, intPtr(60), 10)
+	maker2 := makeOrder("m2", "bob", OrderSideYes, OrderActionSell, OrderTypeLimit, intPtr(60), 10)
+	maker2.ReservedQuantity = 10
+	plan2, err := e.BuildPlan(MatchInput{
+		Market: market2, Taker: taker2,
+		MakersSecondary: []Order{maker2},
+		Now:             repriceNow(), IDFactory: counterIDs(),
+	})
+	if err != nil {
+		t.Fatalf("BuildPlan (secondary): %v", err)
+	}
+	if plan2.Market.OpenInterestPoints != 0 {
+		t.Errorf("secondary OI: want 0 (transfer, no minting), got %d", plan2.Market.OpenInterestPoints)
+	}
+}

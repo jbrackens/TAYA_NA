@@ -707,10 +707,12 @@ func (r *SQLRepository) updateMarketAfterMatchWithTx(ctx context.Context, tx *sq
 		   last_trade_price_points = $5,
 		   last_quote_at = $6,
 		   volume_points = $7,
+		   open_interest_points = $8,
 		   updated_at = NOW()
 		 WHERE id = $1`,
 		m.ID, m.YesPricePoints, m.NoPricePoints, m.CollateralPoolPoints,
 		m.LastTradePricePoints, m.LastQuoteAt, m.VolumePoints,
+		m.OpenInterestPoints,
 	)
 	return err
 }
