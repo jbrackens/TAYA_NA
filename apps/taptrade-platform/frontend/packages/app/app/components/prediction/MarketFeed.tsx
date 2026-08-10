@@ -438,7 +438,7 @@ export function MarketFeed({
 // Same shimmer recipe as AllMarketsSection's grid skeletons (globals
 // @keyframes shimmer) so both loading states read as one system.
 const SHIMMER_CLASS =
-  "block animate-[shimmer_1.5s_infinite] rounded-full bg-[linear-gradient(90deg,#f1f1ec_25%,#e6e6e0_50%,#f1f1ec_75%)] bg-[length:200%_100%]";
+  "block animate-[shimmer_1.5s_infinite] rounded-full bg-[linear-gradient(90deg,var(--surface-2)_25%,var(--border-1)_50%,var(--surface-2)_75%)] bg-[length:200%_100%]";
 
 /** 18a: skeletons match the REAL feed geometry so the load doesn't reflow. */
 export function FeedHeroSkeleton() {
