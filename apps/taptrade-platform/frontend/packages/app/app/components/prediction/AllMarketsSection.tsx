@@ -178,7 +178,7 @@ const PHOSPHOR_WARNING_CIRCLE_FILL =
   "M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm-8,56a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm8,104a12,12,0,1,1,12-12A12,12,0,0,1,128,184Z";
 
 const SKELETON_SHIMMER_CLASS =
-  "animate-[shimmer_1.5s_infinite] rounded-full bg-[linear-gradient(90deg,#f1f1ec_25%,#e6e6e0_50%,#f1f1ec_75%)] bg-[length:200%_100%]";
+  "animate-[shimmer_1.5s_infinite] rounded-full bg-[linear-gradient(90deg,var(--surface-2)_25%,var(--border-1)_50%,var(--surface-2)_75%)] bg-[length:200%_100%]";
 
 function MarketCardSkeleton() {
   return (
