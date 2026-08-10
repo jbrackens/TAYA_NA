@@ -251,5 +251,7 @@
   "ONBOARD_BEAT3": "對了 → 每份合約結算 100 points。錯了 → 0。Points 僅為應用內遊戲價值。",
   "ONBOARD_STEP3": "第 3 步（共 3 步）· 準備好後長按按鈕",
   "ONBOARD_RESTORED": "歡迎回來 — 你的選擇已在下方恢復。準備好後長按按鈕。",
-  "ONBOARD_RESTORED_STEP": "你保存的交易"
+  "ONBOARD_RESTORED_STEP": "你保存的交易",
+  "NO_LIQUIDITY_CTA": "暫無流動性",
+  "NO_LIQUIDITY_BODY": "目前沒有人提供 {{ticker}} 的另一邊。掛一個限價單來設定你的價格並留在盤口等待。"
 }

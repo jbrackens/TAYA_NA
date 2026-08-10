@@ -1224,17 +1224,18 @@ export function TradeTicket({
               </Link>
             </>
           ) : marketBuyHasNoLiquidity ? (
+            // Pre-order preview state — nothing was placed, so nothing was
+            // "cancelled". The old copy rendered the preview's quote status
+            // through the ORDER_STATUS template and greeted users with
+            // "Order cancelled (no more liquidity)" on page load (QA
+            // ISSUE-004). Say what's true and point at the action that
+            // works on an empty book: a resting limit order.
             <>
               <Button variant="cta" size="none" className="mt-4" disabled>
-                {t("ORDER_STATUS", { status: t("CANCELLED_NO_LIQUIDITY") })}
+                {t("NO_LIQUIDITY_CTA")}
               </Button>
-              <p className={TICKET_NOTE_CLASS} role="alert">
-                {t("ORDER_STATUS_BODY", {
-                  quantity: requestedQuantity,
-                  side: side.toUpperCase(),
-                  ticker: market.ticker,
-                  reason: t("CANCELLED_NO_LIQUIDITY"),
-                })}
+              <p className={TICKET_NOTE_CLASS} role="status">
+                {t("NO_LIQUIDITY_BODY", { ticker: market.ticker })}
               </p>
             </>
           ) : isAmmQuoteOnly ? (

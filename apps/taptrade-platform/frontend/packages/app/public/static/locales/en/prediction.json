@@ -276,5 +276,7 @@
   "ONBOARD_BEAT3": "Right → each contract settles at 100 points. Wrong → 0. Points are in-app play value only.",
   "ONBOARD_STEP3": "3 of 3 · hold the button when ready",
   "ONBOARD_RESTORED": "Welcome back — your pick is restored below. Hold the button when you're ready.",
-  "ONBOARD_RESTORED_STEP": "your saved trade"
+  "ONBOARD_RESTORED_STEP": "your saved trade",
+  "NO_LIQUIDITY_CTA": "No liquidity right now",
+  "NO_LIQUIDITY_BODY": "No one is offering the other side of {{ticker}} at the moment. Place a limit order to name your price and rest on the book."
 }

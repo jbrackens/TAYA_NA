@@ -251,5 +251,7 @@
   "ONBOARD_BEAT3": "Benar → tiap contract bernilai 100 points. Salah → 0. Points adalah nilai main dalam aplikasi, bukan uang.",
   "ONBOARD_STEP3": "3 dari 3 · tahan tombol saat siap",
   "ONBOARD_RESTORED": "Selamat datang kembali — pilihanmu dipulihkan di bawah. Tahan tombol saat kamu siap.",
-  "ONBOARD_RESTORED_STEP": "trade tersimpanmu"
+  "ONBOARD_RESTORED_STEP": "trade tersimpanmu",
+  "NO_LIQUIDITY_CTA": "Belum ada likuiditas",
+  "NO_LIQUIDITY_BODY": "Belum ada yang menawarkan sisi lain dari {{ticker}} saat ini. Pasang limit order untuk menentukan hargamu dan menunggu di book."
 }

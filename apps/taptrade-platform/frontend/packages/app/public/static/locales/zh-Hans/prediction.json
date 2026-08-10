@@ -251,5 +251,7 @@
   "ONBOARD_BEAT3": "对了 → 每份合约结算 100 points。错了 → 0。Points 仅为应用内游戏价值。",
   "ONBOARD_STEP3": "第 3 步（共 3 步）· 准备好后长按按钮",
   "ONBOARD_RESTORED": "欢迎回来 — 你的选择已在下方恢复。准备好后长按按钮。",
-  "ONBOARD_RESTORED_STEP": "你保存的交易"
+  "ONBOARD_RESTORED_STEP": "你保存的交易",
+  "NO_LIQUIDITY_CTA": "暂无流动性",
+  "NO_LIQUIDITY_BODY": "目前没有人提供 {{ticker}} 的另一边。挂一个限价单来设定你的价格并留在盘口等待。"
 }

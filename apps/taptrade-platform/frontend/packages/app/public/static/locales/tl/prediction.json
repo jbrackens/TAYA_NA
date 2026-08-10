@@ -255,5 +255,7 @@
   "ONBOARD_BEAT3": "Tama → 100 points bawat contract. Mali → 0. Ang points ay in-app play value lang, hindi pera.",
   "ONBOARD_STEP3": "3 ng 3 · hawakan ang button kapag handa ka na",
   "ONBOARD_RESTORED": "Welcome back — naibalik ang pinili mo sa ibaba. Hawakan ang button kapag handa ka na.",
-  "ONBOARD_RESTORED_STEP": "ang naka-save mong trade"
+  "ONBOARD_RESTORED_STEP": "ang naka-save mong trade",
+  "NO_LIQUIDITY_CTA": "Walang liquidity ngayon",
+  "NO_LIQUIDITY_BODY": "Walang nag-aalok ng kabilang panig ng {{ticker}} sa ngayon. Maglagay ng limit order para itakda ang presyo mo at maghintay sa book."
 }

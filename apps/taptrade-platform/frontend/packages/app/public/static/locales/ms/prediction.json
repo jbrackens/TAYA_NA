@@ -251,5 +251,7 @@
   "ONBOARD_BEAT3": "Betul → setiap kontrak bernilai 100 points. Salah → 0. Points ialah nilai main dalam apl, bukan wang.",
   "ONBOARD_STEP3": "3 daripada 3 · tahan butang bila sedia",
   "ONBOARD_RESTORED": "Selamat kembali — pilihan anda dipulihkan di bawah. Tahan butang bila anda sedia.",
-  "ONBOARD_RESTORED_STEP": "trade tersimpan anda"
+  "ONBOARD_RESTORED_STEP": "trade tersimpan anda",
+  "NO_LIQUIDITY_CTA": "Tiada kecairan buat masa ini",
+  "NO_LIQUIDITY_BODY": "Tiada sesiapa menawarkan sisi lain {{ticker}} sekarang. Buat limit order untuk menetapkan harga anda dan menunggu di book."
 }
