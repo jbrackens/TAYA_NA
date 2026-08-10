@@ -77,16 +77,18 @@ func (s *Service) GetPriceHistory(ctx context.Context, marketID string, rng Pric
 	if err != nil {
 		return nil, fmt.Errorf("fetch price buckets: %w", err)
 	}
-	// Imported snapshots fill the chart ONLY when the window has no local
-	// trades at all. The old gate ("no movement in trade buckets") predates
-	// the exchange repricing engine: back then local fills never moved
-	// prices, so snapshots were the only signal. Now a locally-traded
-	// market's own fills ARE its price truth — merging upstream's
-	// diverged price into a window that has real local trades fabricated
-	// moves that never happened here (observed: a market locally
-	// repriced to 13¢ rendered a 13→1 "crash" built from upstream's 1¢
-	// tail; QA ISSUE-001, 2026-08-10).
-	if len(raw) == 0 {
+	// Imported snapshots fill the chart ONLY for markets that have never
+	// traded locally. The old gate ("no movement in trade buckets")
+	// predates the exchange repricing engine: back then local fills never
+	// moved prices, so snapshots were the only signal. Once local trading
+	// exists, upstream's series is another venue's price — its diverged
+	// level composes with the leading current-price fallback into cliffs
+	// that never happened here, both when the window HAS local trades
+	// (old-gate blend) and when the last local trade has aged out of it
+	// (13¢ leading pad → upstream 1¢ tail). LastTradePricePoints is the
+	// "has local trades" signal — every fill stamps it. (QA ISSUE-001,
+	// 2026-08-10.)
+	if len(raw) == 0 && market.LastTradePricePoints == nil {
 		if importedRepo, ok := s.repo.(ImportedPriceHistoryReader); ok {
 			importedRaw, err := importedRepo.ListImportedPriceBuckets(ctx, market.Ticker, since, until, bucketSec)
 			if err != nil {
