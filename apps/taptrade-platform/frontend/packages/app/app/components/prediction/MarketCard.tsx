@@ -76,6 +76,12 @@ export function MarketCard({
     image.kind === "image" && failedImageSrc !== image.src
       ? image
       : fallbackImage;
+  // Sentiment presentation matches the swept MarketFeed idiom (the pinned
+  // "sentiment sentence, not probability pill" decision): a thin
+  // direction-colored bar — Rule 2 allows direction on bars — plus an 11px
+  // sentence. The old treatment here (15px semibold red sentence + colored
+  // dot) made an opinion the loudest element of every card
+  // (/design-review FINDING-001, 2026-08-10).
   const sentiment = calculateMarketSentiment(yesPricePoints);
   const sentimentTextClass =
     sentiment.sentimentState === "neutral"
@@ -83,12 +89,14 @@ export function MarketCard({
       : sentiment.sentimentState === "yes"
         ? "text-[var(--yes-text)]"
         : "text-[var(--no-text)]";
-  const sentimentDotClass =
+  const sentimentBarClass =
     sentiment.sentimentState === "neutral"
       ? "bg-[var(--border-2)]"
       : sentiment.sentimentState === "yes"
         ? "bg-[var(--yes-bar)]"
         : "bg-[var(--no-bar)]";
+  const leadPct =
+    sentiment.sentimentState === "no" ? noPricePoints : yesPricePoints;
 
   return (
     <article className="relative flex h-full min-h-[248px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans text-[var(--t1)] transition-[transform,box-shadow,border-color] duration-[140ms] hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[var(--shadow-card-hover)] focus-within:-translate-y-0.5 focus-within:border-[var(--border-2)] focus-within:shadow-[var(--shadow-card-hover)] max-[640px]:min-h-[238px] max-[640px]:p-4">
@@ -150,14 +158,16 @@ export function MarketCard({
           </h3>
         </div>
 
-        <div className="mt-5 flex min-h-[58px] items-center max-[640px]:mt-4 max-[640px]:min-h-[52px]">
-          <span
-            className={`inline-flex items-center gap-2 text-[15px] font-semibold leading-snug max-[640px]:text-sm ${sentimentTextClass}`}
-          >
+        <div className="mt-5 flex min-h-[40px] items-center gap-2 max-[640px]:mt-4">
+          <span className="block h-1.5 flex-1 overflow-hidden rounded-[var(--r-pill)] bg-[var(--surface-2)]">
             <span
-              className={`h-2 w-2 rounded-full ${sentimentDotClass}`}
-              aria-hidden="true"
+              className={`block h-full rounded-[var(--r-pill)] ${sentimentBarClass}`}
+              style={{ width: `${Math.max(0, Math.min(100, leadPct))}%` }}
             />
+          </span>
+          <span
+            className={`flex-none whitespace-nowrap text-[11px] font-medium ${sentimentTextClass}`}
+          >
             {t(sentiment.displayStringKey, {
               percentage: sentiment.percentage,
             })}
