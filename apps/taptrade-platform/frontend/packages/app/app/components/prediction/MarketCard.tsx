@@ -39,6 +39,12 @@ function formatCloseAt(iso: string): string {
 const MONOGRAM_CLASS =
   "border border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t3)]";
 
+// Same uppercase micro-label idiom as MarketFeed's EYEBROW_CLASS (Rule 4:
+// 9–11px uppercase tracked +0.08–0.12em); casing is CSS-only so locale
+// copy stays sentence-case.
+const EYEBROW_CLASS =
+  "text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
+
 export function MarketCard({
   marketId,
   ticker,
@@ -181,7 +187,7 @@ export function MarketCard({
           className="flex min-h-10 items-center justify-between gap-3 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-2 font-sans no-underline transition-colors duration-150 hover:border-[var(--yes-bar)] hover:bg-[var(--yes-soft)] max-[768px]:min-h-11"
           aria-label={t("BUY_YES")}
         >
-          <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--yes-text)]">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--yes-text)]">
             {t("YES")}
           </span>
           <span className="font-mono text-[16px] font-semibold text-[var(--yes-text)] tabular-nums">
@@ -193,7 +199,7 @@ export function MarketCard({
           className="flex min-h-10 items-center justify-between gap-3 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-2 font-sans no-underline transition-colors duration-150 hover:border-[var(--no-bar)] hover:bg-[var(--no-soft)] max-[768px]:min-h-11"
           aria-label={t("BUY_NO")}
         >
-          <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--no-text)]">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--no-text)]">
             {t("NO")}
           </span>
           <span className="font-mono text-[16px] font-semibold text-[var(--no-text)] tabular-nums">
@@ -204,13 +210,15 @@ export function MarketCard({
 
       <div className="mt-4 flex items-baseline justify-between gap-3 border-t border-[var(--border-1)] pt-3 text-[12px] text-[var(--t3)]">
         <span className="truncate">
-          {t("VOLUME")}{" "}
+          <span className={EYEBROW_CLASS}>{t("VOLUME")}</span>{" "}
           <span className="font-mono font-semibold text-[var(--t2)] tabular-nums">
             {formatCompactPoints(volumePoints)}
           </span>
         </span>
         <span className="shrink-0">
-          {isOpen ? t("CLOSES") : t("STATUS")}{" "}
+          <span className={EYEBROW_CLASS}>
+            {isOpen ? t("CLOSES") : t("STATUS")}
+          </span>{" "}
           <span className="font-mono font-semibold text-[var(--t2)] tabular-nums">
             {isOpen ? formatCloseAt(closeAt) : marketStatusLabel(status, t)}
           </span>
