@@ -36,9 +36,6 @@ function formatCloseAt(iso: string): string {
   });
 }
 
-const MONOGRAM_CLASS =
-  "border border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t3)]";
-
 // Same uppercase micro-label idiom as MarketFeed's EYEBROW_CLASS (Rule 4:
 // 9–11px uppercase tracked +0.08–0.12em); casing is CSS-only so locale
 // copy stays sentence-case.
@@ -138,7 +135,7 @@ export function MarketCard({
         <div className="flex items-start gap-3 pr-8">
           {visibleImage.kind === "image" ? (
             <img
-              className="h-10 w-10 flex-none rounded-full object-cover"
+              className="h-10 w-10 flex-none rounded-[12px] border border-[var(--border-1)] object-cover"
               src={visibleImage.src}
               alt=""
               aria-hidden="true"
@@ -146,7 +143,7 @@ export function MarketCard({
             />
           ) : (
             <span
-              className={`inline-flex h-10 w-10 flex-none items-center justify-center rounded-full font-sans text-[12px] font-bold ${MONOGRAM_CLASS}`}
+              className="grid h-10 w-10 flex-none place-items-center rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-2)] font-mono text-[12px] font-medium text-[var(--t3)]"
               aria-hidden="true"
             >
               {visibleImage.monogram}
