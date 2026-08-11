@@ -23,7 +23,7 @@ const LAUNCH_DISCOVERY_CATEGORIES = new Set([
 ]);
 
 const ROUTE_STATE_CLASS =
-  "grid min-h-[calc(100vh-74px)] place-items-center bg-[var(--bg-deep)] px-6 text-center text-[13px] text-[var(--t3)]";
+  "grid min-h-[calc(100vh-64px)] place-items-center bg-[var(--bg-deep)] px-6 text-center text-[13px] text-[var(--t3)]";
 
 export default function PredictDiscoveryPage() {
   const { t } = useTranslation("prediction");

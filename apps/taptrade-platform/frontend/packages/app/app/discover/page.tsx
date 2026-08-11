@@ -486,7 +486,7 @@ export default function DiscoverPage() {
 
   if (loading) {
     return (
-      <div className="grid min-h-[calc(100vh-74px)] place-items-center bg-[var(--bg-deep)] text-[13px] text-[var(--t3)]">
+      <div className="grid min-h-[calc(100vh-64px)] place-items-center bg-[var(--bg-deep)] text-[13px] text-[var(--t3)]">
         <TapDot label={t("DISCOVER_LOADING")} />
       </div>
     );

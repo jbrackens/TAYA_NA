@@ -50,7 +50,7 @@ export function TerminalCategoryRail({
   const homeHref = mode === "discover" ? "/discover" : "/predict";
 
   return (
-    <aside className="terminal-scrollbar sticky top-[74px] flex h-[calc(100vh-74px)] min-w-0 flex-col overflow-y-auto border-r border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-5 max-[1023px]:hidden">
+    <aside className="terminal-scrollbar sticky top-16 flex h-[calc(100vh-64px)] min-w-0 flex-col overflow-y-auto border-r border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-5 max-[1023px]:hidden">
       <nav className="flex flex-col gap-1" aria-label={t("MARKET_TOPICS")}>
         <Link
           href={homeHref}

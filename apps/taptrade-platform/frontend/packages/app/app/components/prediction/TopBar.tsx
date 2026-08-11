@@ -84,8 +84,10 @@ const TERMINAL_TOP_BAR_CLASS =
 const TOP_BAR_INNER_CLASS =
   "box-border mx-auto flex h-16 w-full max-w-[1588px] items-center gap-6 px-6 max-[900px]:h-16 max-[900px]:gap-3 max-[900px]:px-4 max-[480px]:gap-2 max-[480px]:px-3";
 
+// Feed v2 parity (FEED2-001): the composed Organism/TopBar is a 64px strip,
+// 20px side padding, 26px cluster gap — not the 74px one-off it replaced.
 const TERMINAL_TOP_BAR_INNER_CLASS =
-  "box-border mx-auto flex h-[74px] w-full items-center gap-8 px-6 max-[1100px]:gap-5 max-[900px]:h-16 max-[900px]:px-4 max-[480px]:gap-2 max-[480px]:px-3";
+  "box-border mx-auto flex h-16 w-full items-center gap-[26px] px-5 max-[1100px]:gap-5 max-[900px]:px-4 max-[480px]:gap-2 max-[480px]:px-3";
 
 const TOP_BAR_BRAND_CLASS =
   "inline-flex min-h-11 shrink-0 items-center gap-[10px] no-underline";
@@ -111,8 +113,14 @@ const TOP_BAR_LINK_CLASS =
 const TOP_BAR_LINK_INACTIVE_CLASS =
   "text-neutral-500 border-transparent hover:text-neutral-800 hover:border-neutral-300";
 
+// FEED2-001: composed nav links are 11px semibold uppercase, +1px tracked,
+// flat (no underline chrome) — active is ink, inactive is tertiary.
+const TERMINAL_TOP_BAR_LINK_CLASS =
+  "relative whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.09em] no-underline transition-colors duration-150";
+const TERMINAL_TOP_BAR_LINK_ACTIVE_CLASS =
+  "text-[var(--t1)] !text-[var(--t1)]";
 const TERMINAL_TOP_BAR_LINK_INACTIVE_CLASS =
-  "text-[var(--t3)] !text-[var(--t3)] border-transparent hover:text-[var(--t1)] hover:!text-[var(--t1)] hover:border-[var(--border-2)]";
+  "text-[var(--t3)] !text-[var(--t3)] hover:text-[var(--t1)] hover:!text-[var(--t1)]";
 
 const TOP_BAR_LINK_ACTIVE_CLASS =
   "text-[var(--accent-text)] !text-[var(--accent-text)] font-semibold border-[var(--accent-lo)]";
@@ -135,8 +143,10 @@ const TOP_BAR_SEARCH_WRAP_CLASS = "relative max-[900px]:hidden";
 const TOP_BAR_SEARCH_LABEL_CLASS = "relative inline-flex items-center";
 const TOP_BAR_SEARCH_INPUT_CLASS =
   "h-10 w-[280px] rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-1)] py-0 pl-9 pr-3.5 text-[13px] text-[var(--t1)] outline-none transition-[border-color,box-shadow] duration-[120ms] ease-[ease] placeholder:text-[var(--t3)] focus-visible:border-[var(--accent-lo)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] [font-family:inherit]";
+// FEED2-001: composed Field/Search — 38px, radius 8, raised surface, mono
+// 13px, fluid width between the nav and auth clusters.
 const TERMINAL_TOP_BAR_SEARCH_INPUT_CLASS =
-  "h-[42px] w-[424px] rounded-[14px] border border-[var(--border-1)] bg-[var(--surface-3)] py-0 pl-11 pr-4 text-[14px] text-[var(--t1)] outline-none transition-[border-color,box-shadow] duration-[120ms] placeholder:text-[var(--t3)] focus-visible:border-[var(--accent-lo)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] [font-family:inherit] max-[1280px]:w-[340px] max-[1100px]:w-[280px]";
+  "h-[38px] w-full rounded-lg border border-[var(--border-1)] bg-[var(--surface-2)] py-0 pl-10 pr-3.5 text-[13px] text-[var(--t1)] outline-none transition-[border-color,box-shadow] duration-[120ms] placeholder:text-[var(--t3)] focus-visible:border-[var(--accent-lo)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] [font-family:var(--font-mono)]";
 const TOP_BAR_SEARCH_ICON_CLASS =
   "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--t3)]";
 const TOP_BAR_SEARCH_RESULTS_CLASS =
@@ -179,6 +189,11 @@ const TOP_BAR_AVATAR_CLASS =
 
 const TOP_BAR_AUTH_CTA_SIZING =
   "min-h-11 px-4 text-[13px] no-underline max-[480px]:px-2.5";
+
+// FEED2-001: composed auth cluster is compact (32px) on desktop pointer
+// surfaces; the 44px touch minimum returns below the 900px breakpoint.
+const TERMINAL_TOP_BAR_AUTH_CTA_SIZING =
+  "min-h-8 px-3 text-[12px] no-underline max-[900px]:min-h-11 max-[480px]:px-2.5";
 
 const TOP_BAR_MENU_WRAP_CLASS = "relative";
 const TOP_BAR_MENU_CLASS =
@@ -344,6 +359,20 @@ export function TopBar() {
   const isTerminalRoute = isPredictionTerminalRoute(pathname);
   const visibleNavLinks = isTerminalRoute ? TERMINAL_NAV_LINKS : NAV_LINKS;
 
+  // FEED2-001: the composed search field advertises ⌘K — honor it globally
+  // on terminal routes (Cmd/Ctrl+K focuses the field, like every terminal).
+  useEffect(() => {
+    if (!isTerminalRoute) return;
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [isTerminalRoute]);
+
   const isActive = (href: string): boolean => {
     if (!pathname) return false;
     if (href === "/predict") {
@@ -375,7 +404,7 @@ export function TopBar() {
           className={TOP_BAR_BRAND_CLASS}
           aria-label={`${brand.name} — home`}
         >
-          <BrandMark size={isTerminalRoute ? 34 : 30} />
+          <BrandMark size={isTerminalRoute ? 24 : 30} />
           <span
             className={
               isTerminalRoute
@@ -393,7 +422,7 @@ export function TopBar() {
         {isDesktop && (
           <nav
             className={`${TOP_BAR_NAV_CLASS} ${
-              isTerminalRoute ? "!w-auto !flex-none" : ""
+              isTerminalRoute ? "!w-auto !flex-none gap-5" : ""
             }`}
             aria-label="Primary"
           >
@@ -404,17 +433,23 @@ export function TopBar() {
               )
               .map((l) => {
                 const active = isActive(l.href);
+                const linkClass = isTerminalRoute
+                  ? `${TERMINAL_TOP_BAR_LINK_CLASS} ${
+                      active
+                        ? TERMINAL_TOP_BAR_LINK_ACTIVE_CLASS
+                        : TERMINAL_TOP_BAR_LINK_INACTIVE_CLASS
+                    }`
+                  : `${TOP_BAR_LINK_CLASS} ${
+                      active
+                        ? TOP_BAR_LINK_ACTIVE_CLASS
+                        : TOP_BAR_LINK_INACTIVE_CLASS
+                    }`;
                 return (
                   <Link
                     key={l.href}
                     href={l.href}
-                    className={`${TOP_BAR_LINK_CLASS} ${
-                      active
-                        ? TOP_BAR_LINK_ACTIVE_CLASS
-                        : isTerminalRoute
-                          ? TERMINAL_TOP_BAR_LINK_INACTIVE_CLASS
-                          : TOP_BAR_LINK_INACTIVE_CLASS
-                    }`}
+                    aria-current={active ? "page" : undefined}
+                    className={linkClass}
                   >
                     {t(l.labelKey)}
                   </Link>
@@ -433,11 +468,15 @@ export function TopBar() {
               a11y tooling and reads worse in screen readers. */}
           <div
             className={`${TOP_BAR_SEARCH_WRAP_CLASS} ${
-              isTerminalRoute ? "pl-20 max-[1280px]:pl-0" : ""
+              isTerminalRoute ? "min-w-0 flex-1" : ""
             }`}
             ref={searchRef}
           >
-            <label className={TOP_BAR_SEARCH_LABEL_CLASS}>
+            <label
+              className={`${TOP_BAR_SEARCH_LABEL_CLASS} ${
+                isTerminalRoute ? "w-full" : ""
+              }`}
+            >
               <Search size={14} className={TOP_BAR_SEARCH_ICON_CLASS} />
               <input
                 ref={searchInputRef}
@@ -447,7 +486,11 @@ export function TopBar() {
                     ? TERMINAL_TOP_BAR_SEARCH_INPUT_CLASS
                     : TOP_BAR_SEARCH_INPUT_CLASS
                 }
-                placeholder={t("SEARCH_MARKETS_PLACEHOLDER")}
+                placeholder={
+                  isTerminalRoute
+                    ? `${t("SEARCH_MARKETS")}  ·  ⌘K`
+                    : t("SEARCH_MARKETS_PLACEHOLDER")
+                }
                 aria-label={t("SEARCH_MARKETS")}
                 role="combobox"
                 aria-haspopup="listbox"
@@ -659,9 +702,11 @@ export function TopBar() {
               <Button
                 variant="ghost"
                 size="none"
-                className={`${TOP_BAR_AUTH_CTA_SIZING} ${
-                  isTerminalRoute ? "ml-auto" : ""
-                }`}
+                className={
+                  isTerminalRoute
+                    ? TERMINAL_TOP_BAR_AUTH_CTA_SIZING
+                    : TOP_BAR_AUTH_CTA_SIZING
+                }
                 render={<Link href="/auth/login" />}
               >
                 {t("LOG_IN")}
@@ -669,7 +714,11 @@ export function TopBar() {
               <Button
                 variant="primary"
                 size="none"
-                className={TOP_BAR_AUTH_CTA_SIZING}
+                className={
+                  isTerminalRoute
+                    ? TERMINAL_TOP_BAR_AUTH_CTA_SIZING
+                    : TOP_BAR_AUTH_CTA_SIZING
+                }
                 render={<Link href="/auth/register" />}
               >
                 {t("SIGN_UP")}

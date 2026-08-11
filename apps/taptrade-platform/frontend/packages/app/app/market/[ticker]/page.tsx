@@ -88,7 +88,7 @@ const api = createPredictionClient();
 // 2026-08-07) so both surfaces apply market:{id} events identically.
 
 const MARKET_WRAP_CLASS =
-  "grid min-h-[calc(100vh-74px)] grid-cols-[200px_minmax(0,1fr)_380px] grid-rows-[auto_1fr] bg-[var(--bg-deep)] text-[var(--t1)] max-[1279px]:grid-cols-[72px_minmax(0,1fr)_340px] max-[1023px]:flex max-[1023px]:min-h-0 max-[1023px]:flex-col";
+  "grid min-h-[calc(100vh-64px)] grid-cols-[200px_minmax(0,1fr)_380px] grid-rows-[auto_1fr] bg-[var(--bg-deep)] text-[var(--t1)] max-[1279px]:grid-cols-[72px_minmax(0,1fr)_340px] max-[1023px]:flex max-[1023px]:min-h-0 max-[1023px]:flex-col";
 const MARKET_RAIL_CLASS =
   "col-start-1 row-start-1 row-span-2 min-w-0 max-[1023px]:hidden";
 const MARKET_HERO_AREA_CLASS =
@@ -105,7 +105,7 @@ const MARKET_CRUMB_SEP_CLASS = "text-[var(--t4)]";
 const MARKET_SIDE_CLASS =
   "col-start-3 row-start-1 row-span-2 min-w-0 border-l border-[var(--border-1)] bg-[var(--surface-1)] max-[1023px]:hidden";
 const MARKET_TICKET_STICKY_CLASS =
-  "terminal-scrollbar sticky top-[74px] max-h-[calc(100vh-74px)] overflow-y-auto px-5 py-6 max-[1023px]:static max-[1023px]:max-h-none max-[1023px]:overflow-visible";
+  "terminal-scrollbar sticky top-16 max-h-[calc(100vh-64px)] overflow-y-auto px-5 py-6 max-[1023px]:static max-[1023px]:max-h-none max-[1023px]:overflow-visible";
 const MARKET_TICKET_CONTEXT_CLASS =
   "mb-5 border-b border-[var(--border-1)] pb-5";
 const MARKET_TICKET_EYEBROW_CLASS =

@@ -43,7 +43,7 @@ const APP_SHELL_MAIN_CLASS =
   "max-w-[1280px] mx-auto my-0 pt-7 px-0 pb-20 max-[899px]:pb-[calc(108px_+_env(safe-area-inset-bottom))]";
 
 const TERMINAL_SHELL_BODY_CLASS =
-  "flex w-full min-h-[calc(100vh_-_74px)] items-start bg-transparent";
+  "flex w-full min-h-[calc(100vh_-_64px)] items-start bg-transparent";
 
 const TERMINAL_SHELL_CONTENT_CLASS = "min-w-0 flex-1";
 

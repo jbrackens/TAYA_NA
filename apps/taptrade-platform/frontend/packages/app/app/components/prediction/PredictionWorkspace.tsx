@@ -748,7 +748,7 @@ function TradePreview({
   return (
     <aside
       aria-label={t("TRADE_PREVIEW")}
-      className="terminal-scrollbar sticky top-[74px] h-[calc(100vh-74px)] overflow-y-auto border-l border-[var(--border-1)] bg-[var(--surface-1)] p-5 max-[1179px]:hidden"
+      className="terminal-scrollbar sticky top-16 h-[calc(100vh-64px)] overflow-y-auto border-l border-[var(--border-1)] bg-[var(--surface-1)] p-5 max-[1179px]:hidden"
     >
       {body}
     </aside>
@@ -982,7 +982,7 @@ export function PredictionWorkspace({
 
   if (!activeFeatured || !selected) {
     return (
-      <div className="grid min-h-[calc(100vh-74px)] place-items-center text-[14px] text-[var(--t3)]">
+      <div className="grid min-h-[calc(100vh-64px)] place-items-center text-[14px] text-[var(--t3)]">
         {t("NO_FEATURED_MARKETS")}
       </div>
     );
