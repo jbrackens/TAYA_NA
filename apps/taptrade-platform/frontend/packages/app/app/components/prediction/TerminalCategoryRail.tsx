@@ -3,10 +3,8 @@
 import Link from "next/link";
 import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import { CurrencyBtcIcon as Bitcoin } from "@phosphor-icons/react/dist/csr/CurrencyBtc";
-import { BookmarkSimpleIcon as Bookmark } from "@phosphor-icons/react/dist/csr/BookmarkSimple";
 import { ChartLineUpIcon as EconomicsIcon } from "@phosphor-icons/react/dist/csr/ChartLineUp";
 import { CpuIcon as Cpu } from "@phosphor-icons/react/dist/csr/Cpu";
-import { HouseIcon as House } from "@phosphor-icons/react/dist/csr/House";
 import { BankIcon as Landmark } from "@phosphor-icons/react/dist/csr/Bank";
 import { MusicNotesIcon as Music2 } from "@phosphor-icons/react/dist/csr/MusicNotes";
 import { TrophyIcon as Trophy } from "@phosphor-icons/react/dist/csr/Trophy";
@@ -31,12 +29,23 @@ interface TerminalCategoryRailProps {
   activeCategorySlug?: string;
 }
 
+// FEED2-002: the composed Nav/CategoryRow idiom (02 System) — a 3×13 edge
+// bar + 11px semibold uppercase +1px-tracked label on a 30px row, radius 6.
+// Active = lime edge on a lime-wash row with ink text; inactive = hairline
+// edge with tertiary text. Below 1280 the 72px rail shows two-letter mono
+// monograms (the system's monogram idiom) instead of the retired icons.
 const BASE_LINK_CLASS =
-  "flex min-h-12 items-center gap-3 rounded-md border-l-2 px-3 text-[14px] font-medium no-underline transition-colors duration-150 max-[1279px]:justify-center max-[1279px]:px-2";
-const ACTIVE_LINK_CLASS =
-  "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-text)]";
+  "group flex min-h-[30px] items-center gap-2 rounded-[6px] px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.09em] no-underline transition-colors duration-150 max-[1279px]:justify-center max-[1279px]:px-2";
+const ACTIVE_LINK_CLASS = "bg-[var(--accent-soft)] text-[var(--t1)]";
 const INACTIVE_LINK_CLASS =
-  "border-transparent text-[var(--t2)] hover:border-[var(--border-2)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)]";
+  "text-[var(--t3)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)]";
+const EDGE_BAR_BASE_CLASS =
+  "h-[13px] w-[3px] flex-none rounded-[1px] max-[1279px]:hidden";
+const EDGE_BAR_ACTIVE_CLASS = "bg-[var(--accent)]";
+const EDGE_BAR_INACTIVE_CLASS = "bg-[var(--border-2)]";
+const RAIL_LABEL_CLASS = "max-[1279px]:sr-only";
+const RAIL_MONOGRAM_CLASS =
+  "hidden font-mono text-[11px] font-medium max-[1279px]:inline";
 
 export function TerminalCategoryRail({
   categories,
@@ -45,13 +54,14 @@ export function TerminalCategoryRail({
 }: TerminalCategoryRailProps) {
   const { t } = useTranslation("prediction");
   const { t: contentT } = useTranslation("market-content");
-  const visibleCategories = categories.slice(0, 5);
+  const visibleCategories = categories.slice(0, 7);
   const homeActive = !activeCategorySlug;
   const homeHref = mode === "discover" ? "/discover" : "/predict";
+  const monogramOf = (label: string) => label.slice(0, 2).toUpperCase();
 
   return (
-    <aside className="terminal-scrollbar sticky top-16 flex h-[calc(100vh-64px)] min-w-0 flex-col overflow-y-auto border-r border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-5 max-[1023px]:hidden">
-      <nav className="flex flex-col gap-1" aria-label={t("MARKET_TOPICS")}>
+    <aside className="terminal-scrollbar sticky top-16 flex h-[calc(100vh-64px)] min-w-0 flex-col overflow-y-auto border-r border-[var(--border-1)] bg-[var(--surface-1)] px-2.5 pb-5 pt-4 max-[1023px]:hidden">
+      <nav className="flex flex-col gap-0.5" aria-label={t("MARKET_TOPICS")}>
         <Link
           href={homeHref}
           aria-current={homeActive ? "page" : undefined}
@@ -59,18 +69,22 @@ export function TerminalCategoryRail({
             homeActive ? ACTIVE_LINK_CLASS : INACTIVE_LINK_CLASS
           }`}
         >
-          <House
-            size={20}
-            weight={homeActive ? "fill" : "regular"}
+          <span
+            className={`${EDGE_BAR_BASE_CLASS} ${
+              homeActive ? EDGE_BAR_ACTIVE_CLASS : EDGE_BAR_INACTIVE_CLASS
+            }`}
             aria-hidden="true"
           />
-          <span className="max-[1279px]:sr-only">{t("FOR_YOU")}</span>
+          <span className={RAIL_LABEL_CLASS}>{t("FOR_YOU")}</span>
+          <span className={RAIL_MONOGRAM_CLASS} aria-hidden="true">
+            {monogramOf(t("FOR_YOU"))}
+          </span>
         </Link>
 
         {visibleCategories.map((category) => {
           const slug = category.slug.toLowerCase();
-          const Icon = TERMINAL_CATEGORY_ICONS[slug] ?? Cpu;
           const active = activeCategorySlug === slug;
+          const label = categoryName(contentT, category);
           const href =
             mode === "discover"
               ? `/discover?category=${encodeURIComponent(slug)}`
@@ -84,13 +98,15 @@ export function TerminalCategoryRail({
                 active ? ACTIVE_LINK_CLASS : INACTIVE_LINK_CLASS
               }`}
             >
-              <Icon
-                size={20}
-                weight={active ? "fill" : "regular"}
+              <span
+                className={`${EDGE_BAR_BASE_CLASS} ${
+                  active ? EDGE_BAR_ACTIVE_CLASS : EDGE_BAR_INACTIVE_CLASS
+                }`}
                 aria-hidden="true"
               />
-              <span className="max-[1279px]:sr-only">
-                {categoryName(contentT, category)}
+              <span className={RAIL_LABEL_CLASS}>{label}</span>
+              <span className={RAIL_MONOGRAM_CLASS} aria-hidden="true">
+                {monogramOf(label)}
               </span>
             </Link>
           );
@@ -100,8 +116,14 @@ export function TerminalCategoryRail({
           href="/portfolio"
           className={`${BASE_LINK_CLASS} ${INACTIVE_LINK_CLASS}`}
         >
-          <Bookmark size={20} weight="regular" aria-hidden="true" />
-          <span className="max-[1279px]:sr-only">{t("SAVED")}</span>
+          <span
+            className={`${EDGE_BAR_BASE_CLASS} ${EDGE_BAR_INACTIVE_CLASS}`}
+            aria-hidden="true"
+          />
+          <span className={RAIL_LABEL_CLASS}>{t("SAVED")}</span>
+          <span className={RAIL_MONOGRAM_CLASS} aria-hidden="true">
+            {monogramOf(t("SAVED"))}
+          </span>
         </Link>
       </nav>
 
