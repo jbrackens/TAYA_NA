@@ -174,37 +174,46 @@ function settlementRuleLabel(market: PredictionMarket): string {
   return rule;
 }
 
-function ProbabilityGauge({ value }: { value: number }) {
-  const clamped = Math.max(0, Math.min(100, value));
+// FEED2-003: the gauge arc is retired — it existed nowhere in the composed
+// system. The designed readout (03 Screens › PreviewRail) is the mono
+// YES/NO side stack plus the split probability bar, segments sized by real
+// prices in the spec'd --yes-bar/--no-bar tokens (Rule 5).
+function SidePriceStack({
+  yesPricePoints,
+  noPricePoints,
+  yesLabel,
+  noLabel,
+}: {
+  yesPricePoints: number;
+  noPricePoints: number;
+  yesLabel: string;
+  noLabel: string;
+}) {
+  return (
+    <div className="flex shrink-0 flex-col items-end gap-1 pt-1 font-mono text-[12px] font-semibold tabular-nums">
+      <span className="text-[var(--yes-text)]">
+        {yesLabel} {yesPricePoints}¢
+      </span>
+      <span className="text-[var(--no-text)]">
+        {noLabel} {noPricePoints}¢
+      </span>
+    </div>
+  );
+}
+
+function SplitProbabilityBar({ yes }: { yes: number }) {
+  const clamped = Math.max(0, Math.min(100, yes));
   return (
     <div
       role="img"
-      className="relative h-[70px] w-[126px] shrink-0"
       aria-label={`${clamped}%`}
+      className="flex h-1.5 w-full gap-[2px]"
     >
-      <svg viewBox="0 0 126 72" className="h-full w-full" aria-hidden="true">
-        <path
-          d="M 13 62 A 50 50 0 0 1 113 62"
-          pathLength="100"
-          fill="none"
-          stroke="var(--border-2)"
-          strokeWidth="8"
-          strokeLinecap="butt"
-        />
-        <path
-          d="M 13 62 A 50 50 0 0 1 113 62"
-          pathLength="100"
-          fill="none"
-          stroke="var(--accent)"
-          strokeWidth="8"
-          strokeLinecap="butt"
-          strokeDasharray={`${clamped} 100`}
-        />
-      </svg>
-      {/* Step 3: a probability is a magnitude — ink, never the accent (spec §2). */}
-      <span className="absolute inset-x-0 bottom-0 text-center font-mono text-[20px] font-semibold text-[var(--t1)] tabular-nums">
-        {clamped}
-      </span>
+      <span
+        className="h-full rounded-[var(--r-pill)] bg-[var(--yes-bar)]"
+        style={{ width: `${clamped}%` }}
+      />
+      <span className="h-full min-w-0 flex-1 rounded-[var(--r-pill)] bg-[var(--no-bar)]" />
     </div>
   );
 }
@@ -346,7 +355,15 @@ function FeaturedSignal({
               </div>
             )}
           </div>
-          <ProbabilityGauge value={market.yesPricePoints} />
+          <SidePriceStack
+            yesPricePoints={market.yesPricePoints}
+            noPricePoints={market.noPricePoints}
+            yesLabel={t("YES")}
+            noLabel={t("NO")}
+          />
+        </div>
+        <div className="mb-4">
+          <SplitProbabilityBar yes={market.yesPricePoints} />
         </div>
         <div className="mt-auto min-h-0">
           <SignalChart
@@ -705,7 +722,15 @@ function TradePreview({
             {market.yesPricePoints}¢
           </div>
         </div>
-        <ProbabilityGauge value={market.yesPricePoints} />
+        <SidePriceStack
+          yesPricePoints={market.yesPricePoints}
+          noPricePoints={market.noPricePoints}
+          yesLabel={t("YES")}
+          noLabel={t("NO")}
+        />
+      </div>
+      <div className="mt-3">
+        <SplitProbabilityBar yes={market.yesPricePoints} />
       </div>
 
       {variant === "rail" && (
