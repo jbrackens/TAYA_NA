@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { CpuIcon as Cpu } from "@phosphor-icons/react/dist/csr/Cpu";
 import { ArrowSquareOutIcon as ExternalLink } from "@phosphor-icons/react/dist/csr/ArrowSquareOut";
 import { FileTextIcon as FileText } from "@phosphor-icons/react/dist/csr/FileText";
 import { XIcon as X } from "@phosphor-icons/react/dist/csr/X";
@@ -40,19 +39,11 @@ import { usePriceTick } from "./utils/usePriceTick";
 import { useLiveMarketUpdates } from "./utils/useLiveMarketUpdates";
 import { formatCompactPoints } from "../../lib/points";
 import { localizedMarket } from "./market-content";
-import {
-  heroChartPath,
-  movementFromSeries,
-  sparklineFromValues,
-} from "./utils/spark";
-import { getMarketImageProps } from "./utils/marketImage";
+import { heroChartPath, movementFromSeries } from "./utils/spark";
 import { useMoversHistories } from "./utils/useMoversHistories";
 import { ConnectedTradeTicket } from "./ConnectedTradeTicket";
 import { AllMarketsSection } from "./AllMarketsSection";
-import {
-  TERMINAL_CATEGORY_ICONS,
-  TerminalCategoryRail,
-} from "./TerminalCategoryRail";
+import { TerminalCategoryRail } from "./TerminalCategoryRail";
 import { MomentCard } from "./MomentCard";
 import {
   deriveMoments,
@@ -533,37 +524,40 @@ function FeaturedSignalCarousel({
   );
 }
 
-function MarketAvatar({ market }: { market: PredictionMarket }) {
-  const image = getMarketImageProps({
-    ticker: market.ticker,
-    imagePath: market.imagePath,
-    imageUrl: market.imageUrl,
-    image_url: market.image_url,
-    categoryLabel: market.categoryName || market.categorySlug,
-  });
-  const [imageFailed, setImageFailed] = useState(false);
-  const fallback = getMarketImageProps({
-    ticker: market.ticker,
-    categoryLabel: market.categoryName || market.categorySlug,
-  });
-  const visible = image.kind === "image" && !imageFailed ? image : fallback;
-  const CategoryIcon =
-    TERMINAL_CATEGORY_ICONS[(market.categorySlug || "").toLowerCase()] ?? Cpu;
-
-  return visible.kind === "image" ? (
-    <img
-      src={visible.src}
-      alt=""
-      aria-hidden="true"
-      className="h-12 w-12 shrink-0 rounded-md object-cover"
-      onError={() => setImageFailed(true)}
-    />
-  ) : (
-    <span
-      className="grid h-12 w-12 shrink-0 place-items-center rounded-md border border-[var(--border-1)] bg-[linear-gradient(145deg,var(--surface-3),var(--surface-2))] text-[var(--accent-text)]"
-      aria-hidden="true"
-    >
-      <CategoryIcon size={22} weight="duotone" />
+// FEED2-004: the composed Row/Market (02 System, node 23:2) — question
+// stack (mono eyebrow, 15px title, split probability bar) plus per-row
+// PROB/24H/CLOSES/LIQUIDITY column stacks with mono 9px labels. The icon
+// tile, sparkline, and source column retire (source stays on the detail
+// page); the shared table header is replaced by the per-row labels.
+function ColStack({
+  label,
+  value,
+  tone,
+  className = "",
+}: {
+  label: string;
+  value: string;
+  tone?: "yes" | "no" | "muted";
+  className?: string;
+}) {
+  const valueClass =
+    tone === "yes"
+      ? "text-[var(--yes-text)]"
+      : tone === "no"
+        ? "text-[var(--no-text)]"
+        : tone === "muted"
+          ? "text-[var(--t4)]"
+          : "text-[var(--t1)]";
+  return (
+    <span className={`flex flex-col gap-[3px] ${className}`}>
+      <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.13em] text-[var(--t3)]">
+        {label}
+      </span>
+      <span
+        className={`font-mono text-[14px] font-semibold tabular-nums ${valueClass}`}
+      >
+        {value}
+      </span>
     </span>
   );
 }
@@ -582,7 +576,6 @@ function MarketSignalRow({
   const { t } = useTranslation("prediction");
   const rowTick = usePriceTick(market.yesPricePoints);
   const movement = movementFromSeries(values);
-  const spark = values ? sparklineFromValues(values, 64, 26, 12) : "";
 
   return (
     <button
@@ -590,68 +583,51 @@ function MarketSignalRow({
       onClick={onSelect}
       aria-pressed={selected}
       data-testid={`market-signal-row-${market.id}`}
-      className={`grid min-h-[88px] w-full cursor-pointer grid-cols-[minmax(230px,1.6fr)_105px_105px_118px_100px_minmax(130px,0.8fr)] items-center gap-4 rounded-md border border-l-2 px-4 py-3 text-left transition-[background-color,border-color,transform] duration-150 max-[1190px]:grid-cols-[minmax(220px,1.5fr)_90px_90px_105px_minmax(120px,0.8fr)] max-[1190px]:[&_.terminal-liquidity]:hidden max-[720px]:grid-cols-[minmax(0,1fr)_74px] max-[720px]:gap-3 max-[720px]:px-3 ${
+      className={`grid min-h-[104px] w-full cursor-pointer grid-cols-[minmax(0,1fr)_70px_60px_80px_90px] items-center gap-5 rounded-[8px] border border-l-2 px-4 py-3 text-left transition-[background-color,border-color] duration-150 max-[1190px]:grid-cols-[minmax(0,1fr)_70px_60px_80px] max-[1190px]:[&_.terminal-liquidity]:hidden max-[720px]:grid-cols-[minmax(0,1fr)_70px] max-[720px]:gap-3 max-[720px]:px-3 ${
         selected
           ? "border-[var(--border-2)] border-l-[var(--accent-lo)] bg-[var(--surface-2)]"
-          : "border-[var(--border-1)] bg-[var(--surface-1)] hover:-translate-y-px hover:border-[var(--border-2)] hover:bg-[var(--surface-2)]"
+          : "border-[var(--border-1)] bg-[var(--surface-1)] hover:border-[var(--border-2)] hover:bg-[var(--surface-2)]"
       }`}
     >
-      <span className="flex min-w-0 items-center gap-3">
-        <MarketAvatar market={market} />
-        <span className="min-w-0">
-          <span className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--accent-text)]">
-            {market.categoryName || market.categorySlug || t("MARKET_ORDER")}
-          </span>
-          <span className="line-clamp-2 block text-[14px] font-medium leading-[1.35] text-[var(--t1)]">
-            {market.title}
-          </span>
+      <span className="flex min-w-0 flex-col gap-1.5">
+        <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--accent-text)]">
+          {market.categoryName || market.categorySlug || t("MARKET_ORDER")}
+        </span>
+        <span className="line-clamp-2 text-[15px] font-semibold leading-[1.33] text-[var(--t1)]">
+          {market.title}
+        </span>
+        <span className="mt-0.5 max-w-[448px]">
+          <SplitProbabilityBar yes={market.yesPricePoints} />
         </span>
       </span>
 
-      <span
-        className={`w-fit font-mono text-[22px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-right ${tickClass(rowTick)}`}
-      >
-        {market.yesPricePoints}¢
-      </span>
-
+      <ColStack
+        label={t("COL_PROB", "Prob")}
+        value={`${market.yesPricePoints}¢`}
+        className={`${tickClass(rowTick)}`}
+      />
       <span className="max-[720px]:hidden">
-        {movement ? (
-          <span
-            className={`flex items-center gap-2 font-mono text-[12px] font-semibold tabular-nums ${movement.up ? "text-[var(--yes-text)]" : "text-[var(--no-text)]"}`}
-          >
-            <svg
-              viewBox="0 0 64 26"
-              className="h-[26px] w-16"
-              aria-hidden="true"
-            >
-              <path
-                d={spark}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
-            </svg>
-            <span>
-              {movement.up ? "+" : ""}
-              {movement.deltaPoints}¢
-            </span>
-          </span>
-        ) : (
-          <span className="font-mono text-[12px] text-[var(--t4)]">—</span>
-        )}
+        <ColStack
+          label={t("COL_24H", "24h")}
+          value={
+            movement
+              ? `${movement.up ? "+" : ""}${movement.deltaPoints}¢`
+              : "—"
+          }
+          tone={movement ? (movement.up ? "yes" : "no") : "muted"}
+        />
       </span>
-
-      <span className="font-mono text-[11px] leading-[1.45] text-[var(--t2)] max-[720px]:hidden">
-        {formatCloseAt(market.closeAt)}
+      <span className="max-[720px]:hidden">
+        <ColStack
+          label={t("CLOSES")}
+          value={formatCloseAt(market.closeAt)}
+        />
       </span>
-      <span className="terminal-liquidity font-mono text-[12px] text-[var(--t2)] max-[720px]:hidden">
-        {formatCompactPoints(market.liquidityPoints)}
-      </span>
-      <span className="flex min-w-0 items-center gap-2 text-[11px] leading-[1.4] text-[var(--t2)] max-[720px]:hidden">
-        <FileText size={14} weight="regular" aria-hidden="true" />
-        <span className="line-clamp-2">
-          {sourceLabel(market.settlementSourceKey)}
-        </span>
+      <span className="terminal-liquidity max-[720px]:hidden">
+        <ColStack
+          label={t("LIQUIDITY")}
+          value={formatCompactPoints(market.liquidityPoints)}
+        />
       </span>
     </button>
   );
@@ -1099,18 +1075,6 @@ export function PredictionWorkspace({
           >
             {t("MORE_MARKETS_FOR_YOU")}
           </h2>
-
-          <div
-            className="mb-2 grid grid-cols-[minmax(230px,1.6fr)_105px_105px_118px_100px_minmax(130px,0.8fr)] gap-4 px-4 text-[10px] font-semibold uppercase tracking-[0.09em] text-[var(--t3)] max-[1190px]:grid-cols-[minmax(220px,1.5fr)_90px_90px_105px_minmax(120px,0.8fr)] max-[1190px]:[&_.terminal-liquidity]:hidden max-[720px]:hidden"
-            aria-hidden="true"
-          >
-            <span>{t("MARKET_ORDER")}</span>
-            <span>{t("IMPLIED_PROBABILITY")}</span>
-            <span>{t("DAY_CHANGE")}</span>
-            <span>{t("CLOSES")}</span>
-            <span className="terminal-liquidity">{t("LIQUIDITY")}</span>
-            <span>{t("SOURCE")}</span>
-          </div>
 
           <div className="flex flex-col gap-1.5">
             {feedGroups.map((group) => {
