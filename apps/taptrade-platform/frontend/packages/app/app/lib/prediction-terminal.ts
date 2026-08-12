@@ -3,6 +3,8 @@ export function isPredictionTerminalRoute(pathname: string | null): boolean {
   return (
     pathname === "/floor" ||
     pathname.startsWith("/floor/") ||
+    pathname === "/book" ||
+    pathname.startsWith("/book/") ||
     pathname.startsWith("/event/") ||
     pathname === "/predict" ||
     pathname.startsWith("/predict/") ||
