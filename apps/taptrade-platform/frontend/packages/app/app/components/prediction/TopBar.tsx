@@ -39,6 +39,7 @@ import {
 } from "../../lib/store/pointBalanceSlice";
 import { getBalance } from "../../lib/api/wallet-client";
 import { TierPill } from "./TierPill";
+import { CommandPalette } from "../floor/CommandPalette";
 import { NotificationsBell } from "./NotificationsBell";
 import { LanguageSelector } from "../i18n/LanguageSelector";
 import { localizedMarket } from "./market-content";
@@ -359,14 +360,15 @@ export function TopBar() {
   const isTerminalRoute = isPredictionTerminalRoute(pathname);
   const visibleNavLinks = isTerminalRoute ? TERMINAL_NAV_LINKS : NAV_LINKS;
 
-  // FEED2-001: the composed search field advertises ⌘K — honor it globally
-  // on terminal routes (Cmd/Ctrl+K focuses the field, like every terminal).
+  // FEED2-001 → REDESIGN-S4: ⌘K on terminal routes opens the command
+  // palette — the one surface absorbing search, jump, and navigation.
+  const [paletteOpen, setPaletteOpen] = useState(false);
   useEffect(() => {
     if (!isTerminalRoute) return;
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        searchInputRef.current?.focus();
+        setPaletteOpen((o) => !o);
       }
     };
     document.addEventListener("keydown", onKey);
@@ -472,6 +474,23 @@ export function TopBar() {
             }`}
             ref={searchRef}
           >
+            {isTerminalRoute ? (
+              // REDESIGN-S4: on terminal routes the field is the palette
+              // trigger — typing happens in the palette itself.
+              <button
+                type="button"
+                onClick={() => setPaletteOpen(true)}
+                className={`${TERMINAL_TOP_BAR_SEARCH_INPUT_CLASS} flex cursor-pointer items-center text-left text-[var(--t3)]`}
+              >
+                <Search
+                  size={14}
+                  className="mr-2.5 flex-none text-[var(--t3)]"
+                  aria-hidden="true"
+                />
+                {`${t("SEARCH_MARKETS")}  ·  ⌘K`}
+              </button>
+            ) : (
+              <>
             <label
               className={`${TOP_BAR_SEARCH_LABEL_CLASS} ${
                 isTerminalRoute ? "w-full" : ""
@@ -563,6 +582,8 @@ export function TopBar() {
                   })
                 )}
               </ul>
+            )}
+              </>
             )}
           </div>
 
@@ -727,6 +748,12 @@ export function TopBar() {
           )}
         </div>
       </div>
+      {isTerminalRoute && (
+        <CommandPalette
+          open={paletteOpen}
+          onClose={() => setPaletteOpen(false)}
+        />
+      )}
     </header>
   );
 }
