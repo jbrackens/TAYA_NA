@@ -249,6 +249,12 @@ export default function FloorPage() {
                     <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]">
                       {t("MOMENT_MARKETS_COUNT", { count: g.markets.length })}
                     </span>
+                    <Link
+                      href={`/event/${g.key}`}
+                      className="ml-auto font-mono text-[9px] font-semibold uppercase tracking-[0.12em] text-[var(--accent-text)] no-underline hover:text-[var(--t1)]"
+                    >
+                      {t("FLOOR_OPEN_EVENT", "Open event")} →
+                    </Link>
                   </div>
                 )}
                 {g.markets.map((m) => (
