@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowSquareOutIcon as ExternalLink } from "@phosphor-icons/react/dist/csr/ArrowSquareOut";
 import { FileTextIcon as FileText } from "@phosphor-icons/react/dist/csr/FileText";
 import { XIcon as X } from "@phosphor-icons/react/dist/csr/X";
@@ -893,6 +894,27 @@ export function PredictionWorkspace({
   // (not faked here); until they land a fresh account falls through to the
   // ticket's insufficient-points state and its Add-Points escape hatch.
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const router = useRouter();
+  // Promotion path (a): /predict advertises the Floor; dismissal is
+  // permanent per device, same contract as the invite ribbon.
+  const [floorBannerVisible, setFloorBannerVisible] = useState(false);
+  useEffect(() => {
+    try {
+      setFloorBannerVisible(
+        window.localStorage.getItem("taptrade:floor-banner-dismissed") !== "1",
+      );
+    } catch {
+      setFloorBannerVisible(true);
+    }
+  }, []);
+  const dismissFloorBanner = (): void => {
+    setFloorBannerVisible(false);
+    try {
+      window.localStorage.setItem("taptrade:floor-banner-dismissed", "1");
+    } catch {
+      // storage unavailable — dismissal lasts the session only
+    }
+  };
   const [inviteVisible, setInviteVisible] = useState(false);
   const [guideStage, setGuideStage] = useState<"off" | 1 | 2 | 3 | "restored">(
     "off",
@@ -994,6 +1016,20 @@ export function PredictionWorkspace({
       <TerminalCategoryRail categories={categories} mode="predict" />
 
       <div className="min-w-0 px-9 py-8 max-[1279px]:px-6 max-[760px]:px-4 max-[760px]:py-6">
+        {floorBannerVisible && (
+          <div className="mb-5">
+            <InviteRibbon
+              line={t(
+                "FLOOR_BANNER_LINE",
+                "Try the new Floor — one board, trade without leaving the list.",
+              )}
+              ctaLabel={t("FLOOR_BANNER_CTA", "Open the Floor")}
+              dismissLabel={t("ONBOARD_DISMISS")}
+              onStart={() => router.push("/floor")}
+              onDismiss={dismissFloorBanner}
+            />
+          </div>
+        )}
         {inviteVisible && (
           <div className="mb-5">
             <InviteRibbon
