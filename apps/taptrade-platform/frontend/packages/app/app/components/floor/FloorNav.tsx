@@ -53,25 +53,32 @@ function Item({
 export function FloorNav({ active }: { active: "floor" | "book" | "standing" }) {
   const { t } = useTranslation("prediction");
   return (
-    <nav
-      className="sticky top-16 flex h-[calc(100vh-64px)] flex-col gap-0.5 border-r border-[var(--border-1)] bg-[var(--surface-1)] px-2.5 pb-5 pt-4 max-[1023px]:hidden"
-      aria-label={t("FLOOR_NAV", "Floor navigation")}
-    >
-      <Item
-        href="/floor"
-        label={t("FLOOR_NAV_FLOOR", "Floor")}
-        active={active === "floor"}
-      />
-      <Item
-        href="/book"
-        label={t("FLOOR_NAV_BOOK", "My Book")}
-        active={active === "book"}
-      />
-      <Item
-        href="/standing"
-        label={t("FLOOR_NAV_STANDING", "Standing")}
-        active={active === "standing"}
-      />
-    </nav>
+    // The surface + rule live on the full-height grid cell, not on the
+    // sticky nav: a sticky child only paints its own 100vh, so on pages
+    // taller than the viewport the rail used to stop mid-page with a hard
+    // edge. Invisible at the old 2.87 L* page/card separation, obvious at
+    // the cool ramp's 3.98.
+    <div className="h-full border-r border-[var(--border-1)] bg-[var(--surface-1)] max-[1023px]:hidden">
+      <nav
+        className="sticky top-16 flex h-[calc(100vh-64px)] flex-col gap-0.5 px-2.5 pb-5 pt-4"
+        aria-label={t("FLOOR_NAV", "Floor navigation")}
+      >
+        <Item
+          href="/floor"
+          label={t("FLOOR_NAV_FLOOR", "Floor")}
+          active={active === "floor"}
+        />
+        <Item
+          href="/book"
+          label={t("FLOOR_NAV_BOOK", "My Book")}
+          active={active === "book"}
+        />
+        <Item
+          href="/standing"
+          label={t("FLOOR_NAV_STANDING", "Standing")}
+          active={active === "standing"}
+        />
+      </nav>
+    </div>
   );
 }

@@ -171,7 +171,7 @@ body {
   --t1: var(--ink);
   --t2: var(--ink-2);
   /* Step 2.5: t3 AND t4 both land on ink-3 — the spec's faintest text
-   * tint is #63635a (5.3:1 on the raised surface); the old t4 tier
+   * tint is #576066 (5.51:1 on the raised surface); the old t4 tier
    * (#a6adb5) would fail AA everywhere in Ink & lime. Call sites lose
    * one level of de-emphasis (flagged in the step report). */
   --t3: var(--ink-3);
@@ -270,7 +270,7 @@ body {
   --surface-3: var(--raised);
   --border-1: var(--hairline);
   /* Step 3 (2026-07-26): hover restored — border-2 is the STRONG
-   * hairline (#d4d4cc, the reference's card-frame tone). Bordered
+   * hairline (#cbd1d5, the reference's card-frame tone). Bordered
    * surfaces hover hairline→strong-hairline; raised cards add
    * --shadow-card→--shadow-card-hover. Never a background change. */
   --border-2: var(--hairline-strong);
@@ -340,17 +340,29 @@ body {
  *   --no-bar→--dir-no-bar
  */
 :root {
-  /* Surfaces */
-  --paper: #f7f7f3;
+  /* Surfaces — cool neutral family, hue ~204° (2026-08-12). The warm
+   * 60° ramp shared a hue family with the lime accent, so selection
+   * washes read as smudges on the page. Rotating the ground to 204°
+   * puts 129° between background and accent. Surfaces are designed on
+   * CIE L* targets, not HSL L: equal-HSL-L cool is darker than warm, and
+   * the drift is uneven per token, which is what re-spaces the tiers.
+   * Ramp L*: card 100.00 / paper 96.02 / raised 93.93 / inset 92.13
+   * (steps 3.98 / 2.09 / 1.80 — every tier better separated than the
+   * warm ramp's 2.87 / 2.11 / 1.45). */
+  --paper: #f1f4f6;
   --card: #ffffff;
-  --raised: #f1f1ec;
-  --hairline: #e4e4de;
-  --hairline-strong: #d4d4cc; /* hover tier + outer card frames */
+  --raised: #ebeef0;
+  --hairline: #dde2e5;
+  --hairline-strong: #cbd1d5; /* hover tier + outer card frames */
 
-  /* Ink */
-  --ink: #111111;
-  --ink-2: #4a4a46;
-  --ink-3: #63635a;
+  /* Ink — carries its own cool content now. On a warm ground a neutral
+   * grey reads cool for free via simultaneous contrast; invert the
+   * ground and that runs backwards, so near-neutral ink would read
+   * warm-brown on cool paper. Chroma 2/10/15 (ink/ink-2/ink-3) — well
+   * short of a named blue-grey. Every --ink-3 contrast IMPROVES. */
+  --ink: #101112;
+  --ink-2: #43494d;
+  --ink-3: #576066;
 
   /* Accent — lime is fill-only; #556f00 is its text tint */
   --lime: #c6f24e;
@@ -371,14 +383,21 @@ body {
 
   /* Disabled (§4f) — inertness comes from the surface, not from
    * washing the type out: no opacity, no filter. */
-  --inert-fill: #f1f1ec;
-  --inert-border: #e4e4de;
-  --inert-label: #63635a;
+  /* These four are literal copies of --raised/--hairline/--ink-3/--ink-2,
+   * not var() references, so they must move in lockstep or every
+   * disabled and in-flight control keeps the old warm greys while the
+   * live controls beside it turn cool. */
+  --inert-fill: #ebeef0;
+  --inert-border: #dde2e5;
+  --inert-label: #576066;
 
-  /* Pending (§4f) — in flight: lime pulled most of the way to paper. */
-  --pending-fill: #e8eecf;
-  --pending-border: #dfe6c2;
-  --pending-label: #4a4a46;
+  /* Pending (§4f) — in flight: lime pulled most of the way to paper.
+   * Re-mixed against the cool paper so the definition stays true: these
+   * hold their original ΔE from the ground rather than becoming a 127°
+   * hue opposition against it. */
+  --pending-fill: #e2ebd2;
+  --pending-border: #dae3c5;
+  --pending-label: #43494d;
 
   /* BrandMark gradient stops — themeable hooks for the logo. Default
    * to the current violet so appearance does not change this step. */
@@ -392,9 +411,14 @@ body {
 
   /* 1C additions (canonical system, Figma "TapTrade Design" 02 System,
    * locked 2026-08-06). Names match the Figma variable code syntax. */
-  --inset: #edede6; /* search/input inset wells */
-  --lime-wash: #f6fae3; /* selected-side background — action voice */
-  --lime-tint: #eff6d8; /* active nav/tab background */
+  --inset: #e5e9ec; /* search/input inset wells */
+  /* Both washes are lime pulled toward the ground, so they were re-mixed
+   * against the cool paper — holding each token's original ΔE from the
+   * page instead of stranding it 126° away in hue. --lime-tint was the
+   * worst case: 0.35 L* from the new paper, i.e. the active nav/tab
+   * background would have been separated by hue opposition alone. */
+  --lime-wash: #f0f7e6; /* selected-side background — action voice */
+  --lime-tint: #e9f3db; /* active nav/tab background */
   /* (soft YES/NO pill backgrounds already exist above as --yes-soft /
    * --no-soft rgba tokens — the Figma primitives mirror those.) */
 

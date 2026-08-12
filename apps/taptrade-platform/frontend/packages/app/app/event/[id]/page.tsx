@@ -234,17 +234,22 @@ export default function EventWorkspacePage() {
         ) : null}
       </main>
 
-      <aside
-        aria-label={t("FLOOR_INSPECTOR", "Inspector")}
-        className="terminal-scrollbar sticky top-16 h-[calc(100vh-64px)] overflow-y-auto border-l border-[var(--border-1)] bg-[var(--bg-deep)] p-4 max-[1179px]:hidden"
-      >
+      {/* Rule on the full-height grid cell; sticky panel inside it. A
+          sticky child paints only its own 100vh, so the border used to
+          stop mid-page once the ramp made it visible. */}
+      <div className="h-full border-l border-[var(--border-1)] max-[1179px]:hidden">
+        <aside
+          aria-label={t("FLOOR_INSPECTOR", "Inspector")}
+          className="terminal-scrollbar sticky top-16 h-[calc(100vh-64px)] overflow-y-auto p-4"
+        >
         <InspectorPanel
           market={selected}
           position={selected ? positionByMarket.get(selected.id) : undefined}
           openPositions={positionByMarket.size}
           onMarketUpdate={handleMarketUpdate}
         />
-      </aside>
+        </aside>
+      </div>
 
       {selected && (
         <div className="fixed inset-x-0 bottom-0 z-[90] hidden max-h-[70vh] overflow-y-auto rounded-t-[14px] border-t border-[var(--border-1)] bg-[var(--surface-1)] p-4 pb-6 shadow-[0_-12px_32px_rgba(13,17,20,0.18)] max-[1179px]:block">
