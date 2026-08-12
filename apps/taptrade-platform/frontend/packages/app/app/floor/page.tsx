@@ -23,6 +23,7 @@ import type {
 import { useAuth } from "../hooks/useAuth";
 import { logger } from "../lib/logger";
 import { FloorNav } from "../components/floor/FloorNav";
+import { FloorTabBar } from "../components/floor/FloorTabBar";
 import { RowMarketV2, type RowPosition } from "../components/floor/RowMarketV2";
 import { InspectorPanel } from "../components/floor/InspectorPanel";
 
@@ -142,7 +143,7 @@ export default function FloorPage() {
   );
 
   return (
-    <div className="mx-auto grid w-full max-w-[1920px] grid-cols-[150px_minmax(0,1fr)_340px] items-start gap-0 bg-[var(--bg-deep)] max-[1179px]:grid-cols-[150px_minmax(0,1fr)] max-[1023px]:grid-cols-1">
+    <div className="mx-auto grid w-full max-w-[1920px] grid-cols-[150px_minmax(0,1fr)_340px] items-start gap-0 bg-[var(--bg-deep)] max-[1179px]:grid-cols-[150px_minmax(0,1fr)] max-[1023px]:grid-cols-1 max-[1023px]:pb-16">
       <FloorNav active="floor" />
 
       <main className="min-w-0 px-6 py-5 max-[760px]:px-4">
@@ -273,6 +274,7 @@ export default function FloorPage() {
           />
         </div>
       )}
+      <FloorTabBar active="floor" />
     </div>
   );
 }

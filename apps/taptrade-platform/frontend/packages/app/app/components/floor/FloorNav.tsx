@@ -68,7 +68,7 @@ export function FloorNav({ active }: { active: "floor" | "book" | "standing" }) 
         active={active === "book"}
       />
       <Item
-        href="/leaderboards"
+        href="/standing"
         label={t("FLOOR_NAV_STANDING", "Standing")}
         active={active === "standing"}
       />

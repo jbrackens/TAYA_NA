@@ -67,7 +67,7 @@ export function CommandPalette({
     const allActions: Entry[] = [
       { id: "a-floor", kind: "action", label: t("FLOOR_NAV_FLOOR", "Floor"), meta: t("CMDK_GO", "Go to"), href: "/floor" },
       { id: "a-book", kind: "action", label: t("FLOOR_NAV_BOOK", "My Book"), meta: t("CMDK_GO", "Go to"), href: "/book" },
-      { id: "a-standing", kind: "action", label: t("FLOOR_NAV_STANDING", "Standing"), meta: t("CMDK_GO", "Go to"), href: "/leaderboards" },
+      { id: "a-standing", kind: "action", label: t("FLOOR_NAV_STANDING", "Standing"), meta: t("CMDK_GO", "Go to"), href: "/standing" },
     ];
     const actions = allActions.filter(
       (a) => !q || a.label.toLowerCase().includes(q.toLowerCase()),

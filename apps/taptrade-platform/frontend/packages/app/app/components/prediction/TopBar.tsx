@@ -371,8 +371,14 @@ export function TopBar() {
         setPaletteOpen((o) => !o);
       }
     };
+    // The mobile tab bar's ⌘K tab opens the same palette via a shell event.
+    const onOpen = () => setPaletteOpen(true);
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    window.addEventListener("taptrade:open-command-palette", onOpen);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("taptrade:open-command-palette", onOpen);
+    };
   }, [isTerminalRoute]);
 
   const isActive = (href: string): boolean => {

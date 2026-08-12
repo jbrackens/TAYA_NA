@@ -22,6 +22,7 @@ import type {
 } from "@taptrade-ui/api-client/src/prediction-types";
 import { useAuth } from "../hooks/useAuth";
 import { FloorNav } from "../components/floor/FloorNav";
+import { FloorTabBar } from "../components/floor/FloorTabBar";
 import { InspectorPanel } from "../components/floor/InspectorPanel";
 import type { RowPosition } from "../components/floor/RowMarketV2";
 
@@ -143,7 +144,7 @@ export default function MyBookPage() {
   }, []);
 
   return (
-    <div className="mx-auto grid w-full max-w-[1920px] grid-cols-[150px_minmax(0,1fr)_340px] items-start bg-[var(--bg-deep)] max-[1179px]:grid-cols-[150px_minmax(0,1fr)] max-[1023px]:grid-cols-1">
+    <div className="mx-auto grid w-full max-w-[1920px] grid-cols-[150px_minmax(0,1fr)_340px] items-start bg-[var(--bg-deep)] max-[1179px]:grid-cols-[150px_minmax(0,1fr)] max-[1023px]:grid-cols-1 max-[1023px]:pb-16">
       <FloorNav active="book" />
 
       <main className="min-w-0 px-6 py-5 max-[760px]:px-4">
@@ -372,6 +373,7 @@ export default function MyBookPage() {
           />
         </div>
       )}
+      <FloorTabBar active="book" />
     </div>
   );
 }
