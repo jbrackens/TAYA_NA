@@ -127,28 +127,31 @@ interface TradeTicketProps {
 type TicketMode = "market" | "limit";
 
 const TICKET_HEAD_CLASS = "mb-3 flex items-center justify-between";
+// FEED2-006: the ticket head speaks the composed Organism/TradeTicket —
+// a mono uppercase eyebrow, not a sentence-case heading.
 const TICKET_TITLE_CLASS =
-  "text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
+  "font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
 const TICKET_MODE_CLASS =
   "inline-flex gap-0.5 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-[3px]";
 const TICKET_MODE_BUTTON_BASE_CLASS =
   // Step 3: 38px — THE documented hit-target exception (44px inside a
   // 3px-padded track forces the track to 50px and dominates the ticket).
-  "min-h-[38px] cursor-pointer rounded-md border-0 px-3 [font-family:inherit] text-[11px] font-semibold transition-colors duration-[120ms] disabled:cursor-not-allowed disabled:opacity-40 disabled:text-[var(--t3)] disabled:hover:bg-transparent disabled:hover:text-[var(--t3)]";
-// P9.2: sides are Robinhood-style underline tabs, not price boxes — the
-// price belongs to the summary rows below.
-const TICKET_SIDES_CLASS =
-  "relative mb-4 grid grid-cols-2 border-b border-[var(--border-1)]";
+  "min-h-[38px] cursor-pointer rounded-md border-0 px-3 [font-family:inherit] text-[10px] font-mono font-semibold uppercase tracking-[0.08em] transition-colors duration-[120ms] disabled:cursor-not-allowed disabled:opacity-40 disabled:text-[var(--t3)] disabled:hover:bg-transparent disabled:hover:text-[var(--t3)]";
+// FEED2-006: sides are the composed price cells (label + live price),
+// superseding the P9.2 underline tabs. Selection is the lime wash + lime
+// hairline (Rule 2: selection is an action); direction color stays on the
+// side's own text only.
+const TICKET_SIDES_CLASS = "mb-4 grid grid-cols-2 gap-2.5";
 const TICKET_SIDE_TAB_BASE_CLASS =
-  "min-h-11 cursor-pointer border-0 bg-transparent px-1 pb-2.5 pt-1 [font-family:inherit] text-sm font-semibold transition-colors duration-[120ms] focus-visible:outline-none";
-// The tap-dot signature, applied to navigation: one indicator slides
-// between the two sides (180ms) instead of two static underlines.
-const TICKET_SIDE_INDICATOR_CLASS =
-  "pointer-events-none absolute bottom-[-1px] left-0 h-[2px] w-1/2 transition-[translate,background-color] duration-[180ms] ease-out";
+  "flex min-h-11 cursor-pointer items-center justify-between gap-2 rounded-[8px] border px-3 [font-family:inherit] text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors duration-[120ms] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)]";
+const TICKET_SIDE_PRICE_CLASS =
+  "font-mono text-[14px] font-semibold tabular-nums";
+// (The P9.2 sliding underline indicator retired with the tabs.)
 const TICKET_ROWS_CLASS =
   "flex flex-col gap-3 text-[13px] [font-variant-numeric:tabular-nums]";
 const TICKET_ROW_CLASS = "flex items-center justify-between gap-3";
-const TICKET_ROW_LABEL_CLASS = "text-[var(--t3)] font-medium";
+const TICKET_ROW_LABEL_CLASS =
+  "font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
 const TICKET_ROW_VALUE_CLASS = "font-mono font-semibold text-[var(--t1)]";
 const TICKET_ROW_SUB_CLASS =
   "font-mono mt-0.5 text-right text-[11px] font-normal text-[var(--t4)]";
@@ -190,11 +193,11 @@ function ticketModeButtonClass(active: boolean): string {
 
 function ticketSideTabClass(side: OrderSide, selected: boolean): string {
   if (!selected) {
-    return `${TICKET_SIDE_TAB_BASE_CLASS} text-[var(--t3)] hover:text-[var(--t1)]`;
+    return `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--border-2)]`;
   }
   return side === "yes"
-    ? `${TICKET_SIDE_TAB_BASE_CLASS} text-[var(--yes-text)]`
-    : `${TICKET_SIDE_TAB_BASE_CLASS} text-[var(--no-text)]`;
+    ? `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--accent-lo)] bg-[var(--accent-soft)] text-[var(--yes-text)]`
+    : `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--accent-lo)] bg-[var(--accent-soft)] text-[var(--no-text)]`;
 }
 
 // Points are whole cent-equivalent units (1 Point = 1c of play value) —
@@ -969,7 +972,10 @@ export function TradeTicket({
               onClick={() => setSideAndReset("yes")}
               className={ticketSideTabClass("yes", side === "yes")}
             >
-              {t("BUY_YES")}
+              <span>{t("BUY_YES")}</span>
+              <span className={TICKET_SIDE_PRICE_CLASS}>
+                {market.yesPricePoints}¢
+              </span>
             </button>
             <button
               type="button"
@@ -978,16 +984,11 @@ export function TradeTicket({
               onClick={() => setSideAndReset("no")}
               className={ticketSideTabClass("no", side === "no")}
             >
-              {t("BUY_NO")}
+              <span>{t("BUY_NO")}</span>
+              <span className={TICKET_SIDE_PRICE_CLASS}>
+                {market.noPricePoints}¢
+              </span>
             </button>
-            <span
-              aria-hidden="true"
-              className={`${TICKET_SIDE_INDICATOR_CLASS} ${
-                side === "yes"
-                  ? "translate-x-0 bg-[var(--yes)]"
-                  : "translate-x-full bg-[var(--no)]"
-              }`}
-            />
           </div>
 
           {/* Limit price input — appears in exchange + limit mode. Bounded
