@@ -14,6 +14,35 @@
 
 {
 	email ops@99rtp.io
+
+	# Preserve the visitor's IP through the edge (incident 2026-08-16).
+	#
+	# Caddy REPLACES X-Forwarded-For with its own peer unless that peer is a
+	# trusted proxy — measured, not assumed: with this unset, a request
+	# arriving as "X-Forwarded-For: 1.2.3.4" reached the backend as
+	# "::1". So Cloudflare's client IP was being discarded here, the gateway
+	# only ever saw CF edge addresses, and its per-client rate limiter
+	# bucketed the world by CF pop (before that, by Caddy itself — one
+	# bucket, 120rpm, whole site starved of market data).
+	#
+	# With CF trusted, the same request arrives as "1.2.3.4, <cf-edge>" and
+	# the gateway's right-to-left walk lands on the visitor. Spoofing is
+	# still covered: a forged XFF sits LEFT of the address CF appends, so
+	# the walk stops before reaching it (verified: "9.9.9.9, 1.2.3.4" keys
+	# on 1.2.3.4, not 9.9.9.9).
+	#
+	# Ranges from cloudflare.com/ips-v4 + ips-v6 — same source as
+	# scripts/security/cf-firewall.sh. Keep the two in sync; a stale entry
+	# degrades to edge-IP keying, it does not fail open.
+	servers {
+		trusted_proxies static \
+			173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 \
+			141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 \
+			197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 \
+			104.24.0.0/14 172.64.0.0/13 131.0.72.0/22 \
+			2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 \
+			2405:8100::/32 2a06:98c0::/29 2c0f:f248::/32
+	}
 }
 
 # ---- Player (public demo) ----
