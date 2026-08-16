@@ -160,7 +160,25 @@ services:
       # predict_network can reach it, so RemoteAddr cannot be an outsider.
       # Caddy pins XFF to Cloudflare's CF-Connecting-IP (see Caddyfile), so
       # the value the gateway keys on is the real client.
-      GATEWAY_TRUSTED_PROXY_CIDRS: "172.16.0.0/12,10.0.0.0/8,192.168.0.0/16"
+      # Both hops must be trusted, not just Caddy. TrustedProxyClientIP walks
+      # XFF right-to-left and returns the rightmost address it does NOT
+      # trust; Caddy appends its own peer (the Cloudflare edge) after our
+      # header_up runs, so trusting only the compose network keyed on ~200
+      # rotating CF edge IPs — verified live: rl:gateway:172.71.95.119,
+      # rl:gateway:104.23.166.42. With the CF ranges trusted the walk
+      # continues left to CF-Connecting-IP, the real visitor. This is what
+      # the function's own doc prescribes: "Behind nested proxies, pass each
+      # hop's CIDR." Ranges from cloudflare.com/ips-v4 + ips-v6, the same
+      # source scripts/security/cf-firewall.sh uses; they change rarely, and
+      # a stale entry degrades to edge-IP keying rather than failing open.
+      GATEWAY_TRUSTED_PROXY_CIDRS: >-
+        172.16.0.0/12,10.0.0.0/8,192.168.0.0/16,
+        173.245.48.0/20,103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,
+        141.101.64.0/18,108.162.192.0/18,190.93.240.0/20,188.114.96.0/20,
+        197.234.240.0/22,198.41.128.0/17,162.158.0.0/15,104.16.0.0/13,
+        104.24.0.0/14,172.64.0.0/13,131.0.72.0/22,
+        2400:cb00::/32,2606:4700::/32,2803:f800::/32,2405:b500::/32,
+        2405:8100::/32,2a06:98c0::/29,2c0f:f248::/32
       # 600/min per visitor. Generous for a human (a fast browse burst is
       # well under 100) while still cutting off scripted abuse at 10 req/s
       # from a single address. Shared-IP users (corporate NAT, mobile
