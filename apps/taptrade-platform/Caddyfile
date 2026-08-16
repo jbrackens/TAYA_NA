@@ -54,17 +54,19 @@ demo.99rtp.io {
 			# and is denied on money-path routes.
 			header_up -X-Edge-Auth
 			header_up X-Edge-Auth "{$EDGE_SHARED_SECRET}"
-			# Rate-limit keying (incident 2026-08-16): the gateway keys its
-			# public-read limiter on the client IP, honoring X-Forwarded-For
-			# only from GATEWAY_TRUSTED_PROXY_CIDRS. Caddy's default XFF
-			# appends OUR peer — the Cloudflare edge — so the gateway would
-			# key on ~200 rotating CF addresses. Pin XFF to CF-Connecting-IP
-			# (the authoritative client, which CF overwrites on every request)
-			# so one visitor is one bucket. Safe because :80/:443 are
-			# firewalled to CF ranges, so the header cannot be forged by a
-			# direct-to-origin caller.
-			header_up -X-Forwarded-For
-			header_up X-Forwarded-For "{http.request.header.CF-Connecting-IP}"
+			# X-Forwarded-For is deliberately NOT touched here. Caddy's
+			# default appends our peer, so the gateway receives
+			# <visitor>, <cf-edge> — and with both hops listed in
+			# GATEWAY_TRUSTED_PROXY_CIDRS its right-to-left walk lands on the
+			# visitor. Spoofing is covered: a forged client XFF only ever
+			# sits LEFT of the real address CF appends, so the walk stops
+			# before reaching it.
+			#
+			# Do not "pin" XFF to CF-Connecting-IP here. Tried 2026-08-16 and
+			# reverted: Go canonicalises header names, so the placeholder
+			# {http.request.header.CF-Connecting-IP} resolved to empty, XFF
+			# arrived blank, and the limiter fell back to keying every
+			# request on Caddy itself — the original bug, reintroduced.
 		}
 	}
 	handle {
@@ -86,17 +88,19 @@ office.99rtp.io {
 			header_up -X-Geo-Country
 			header_up -X-Edge-Auth
 			header_up X-Edge-Auth "{$EDGE_SHARED_SECRET}"
-			# Rate-limit keying (incident 2026-08-16): the gateway keys its
-			# public-read limiter on the client IP, honoring X-Forwarded-For
-			# only from GATEWAY_TRUSTED_PROXY_CIDRS. Caddy's default XFF
-			# appends OUR peer — the Cloudflare edge — so the gateway would
-			# key on ~200 rotating CF addresses. Pin XFF to CF-Connecting-IP
-			# (the authoritative client, which CF overwrites on every request)
-			# so one visitor is one bucket. Safe because :80/:443 are
-			# firewalled to CF ranges, so the header cannot be forged by a
-			# direct-to-origin caller.
-			header_up -X-Forwarded-For
-			header_up X-Forwarded-For "{http.request.header.CF-Connecting-IP}"
+			# X-Forwarded-For is deliberately NOT touched here. Caddy's
+			# default appends our peer, so the gateway receives
+			# <visitor>, <cf-edge> — and with both hops listed in
+			# GATEWAY_TRUSTED_PROXY_CIDRS its right-to-left walk lands on the
+			# visitor. Spoofing is covered: a forged client XFF only ever
+			# sits LEFT of the real address CF appends, so the walk stops
+			# before reaching it.
+			#
+			# Do not "pin" XFF to CF-Connecting-IP here. Tried 2026-08-16 and
+			# reverted: Go canonicalises header names, so the placeholder
+			# {http.request.header.CF-Connecting-IP} resolved to empty, XFF
+			# arrived blank, and the limiter fell back to keying every
+			# request on Caddy itself — the original bug, reintroduced.
 		}
 	}
 	# Generate the hash on the box:  docker run --rm caddy:2 caddy hash-password --plaintext 'YOURPASS'
