@@ -181,8 +181,21 @@ type RateLimitConfig struct {
 	// Useful for carving out healthchecks: path matches a PathPrefix
 	// but should still be allowed unconditionally.
 	SkipPathPrefixes []string
-	// KeyFunc derives the rate-limit key from the request. Default is the
-	// client IP (X-Forwarded-For first hop, falling back to RemoteAddr).
+	// KeyFunc derives the rate-limit key from the request. Default is
+	// ClientIP, which reads r.RemoteAddr ONLY and ignores X-Forwarded-For.
+	//
+	// Behind a reverse proxy that means every request keys on the PROXY's
+	// address, so the whole site shares one bucket. That is deliberate (an
+	// honoured XFF is trivially spoofed when the gateway is directly
+	// reachable) but it is not what most deployments want: set
+	// TrustedProxyClientIP, listing EVERY hop's CIDR — a chain like
+	// Cloudflare -> Caddy needs both, or the walk stops on the nearest
+	// untrusted hop, which is the edge rather than the visitor.
+	//
+	// This comment previously claimed the default honoured "X-Forwarded-For
+	// first hop". It never has. That inaccuracy cost a production incident
+	// on 2026-08-16 (demo served no market data: one shared 120rpm bucket
+	// for every visitor on earth), so it is spelled out at length here.
 	KeyFunc func(*http.Request) string
 }
 

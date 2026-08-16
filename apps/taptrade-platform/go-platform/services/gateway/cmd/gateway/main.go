@@ -226,6 +226,7 @@ func buildRateLimitMiddleware() httpx.Middleware {
 	// so the proxy itself gets rate-limited instead of individual clients.
 	// Set GATEWAY_TRUSTED_PROXY_CIDRS to enable per-client keying.
 	keyFunc := httpx.ClientIP
+	keying := "peer-addr"
 	if cidrs := strings.TrimSpace(os.Getenv("GATEWAY_TRUSTED_PROXY_CIDRS")); cidrs != "" {
 		fn, err := httpx.TrustedProxyClientIP(strings.Split(cidrs, ","))
 		if err != nil {
@@ -234,7 +235,18 @@ func buildRateLimitMiddleware() httpx.Middleware {
 			log.Fatalf("invalid GATEWAY_TRUSTED_PROXY_CIDRS: %v", err)
 		}
 		keyFunc = fn
+		keying = "per-client"
 		slog.Info("rate limiter trusts X-Forwarded-For from configured proxies", "cidrs", cidrs)
+	} else {
+		// The 2026-08-16 incident was invisible precisely because nothing
+		// said this out loud: behind a proxy, peer-addr keying puts every
+		// visitor in ONE bucket, so the public read limit becomes a
+		// site-wide budget and market data 429s under trivial load. Warn
+		// loudly — it is correct only for direct-to-gateway dev.
+		slog.Warn("rate limiter keys on the peer address — all clients behind a proxy SHARE ONE BUCKET",
+			"fix", "set GATEWAY_TRUSTED_PROXY_CIDRS to every proxy hop's CIDR",
+			"ok_if", "gateway is reached directly (dev)",
+		)
 	}
 
 	cfg := httpx.RateLimitConfig{
@@ -247,6 +259,7 @@ func buildRateLimitMiddleware() httpx.Middleware {
 	slog.Info("rate limiting enabled",
 		"backend", backend,
 		"rpm", rpm,
+		"keying", keying,
 		"scope", "public reads only",
 		"prefixes", cfg.PathPrefixes,
 	)
