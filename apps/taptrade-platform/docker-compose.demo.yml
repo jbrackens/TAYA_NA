@@ -141,6 +141,31 @@ services:
       WALLET_DB_MAX_IDLE_CONNS: "4"
       LOG_LEVEL: "info"
       CHAT_DEFAULT_ROOM: "general"
+      # Public-read rate limiting (incident 2026-08-16: "markets won't load").
+      #
+      # Neither of these was set, so the gateway ran the 120rpm default keyed
+      # on r.RemoteAddr — which behind Caddy is ALWAYS the proxy's container
+      # IP. Redis held exactly one bucket, rl:gateway:172.18.0.8, i.e. the
+      # entire public internet shared a single 120-requests-per-minute
+      # budget. A /predict load spends 3-5 of those (discovery, categories,
+      # markets, events are all rate-limited prefixes), so a couple of dozen
+      # page views a minute site-wide starved everyone of market data and the
+      # UI rendered empty. /api/v1/status is NOT a limited prefix, which is
+      # why the shell always loaded and only the data calls 429'd.
+      #
+      # TRUSTED_PROXY_CIDRS restores per-visitor keying: the gateway now
+      # honors X-Forwarded-For when the peer is inside the compose network.
+      # Private ranges are safe here because the gateway publishes no ports
+      # (see this service: no `ports:` block) — only containers on
+      # predict_network can reach it, so RemoteAddr cannot be an outsider.
+      # Caddy pins XFF to Cloudflare's CF-Connecting-IP (see Caddyfile), so
+      # the value the gateway keys on is the real client.
+      GATEWAY_TRUSTED_PROXY_CIDRS: "172.16.0.0/12,10.0.0.0/8,192.168.0.0/16"
+      # 600/min per visitor. Generous for a human (a fast browse burst is
+      # well under 100) while still cutting off scripted abuse at 10 req/s
+      # from a single address. Shared-IP users (corporate NAT, mobile
+      # carriers) now share a bucket rather than the whole planet doing so.
+      GATEWAY_RATELIMIT_RPM: "600"
       # no JWT_SECRET here (gateway delegates token validation to auth);
       # no GATEWAY_CORS_ORIGINS (single origin — CORS never triggers).
       # Synthetic Market Maker: dynamic two-sided liquidity on every open
