@@ -70,6 +70,12 @@ const FEATURED_CATEGORY_PRIORITY = [
   "general",
 ] as const;
 
+// Gold is deliberately visible on the primary discovery surface, but only as
+// a live/priority signal. Purple remains the interaction color and YES/NO
+// retain their directional semantics.
+const FEATURED_LIVE_STATUS_CLASS =
+  "inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[var(--live)] px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--on-gold)] shadow-[0_0_0_4px_var(--live-soft)]";
+
 function marketCategory(market: PredictionMarket): string {
   return (market.categorySlug || market.categoryName || "")
     .trim()
@@ -302,7 +308,7 @@ function FeaturedSignal({
   const description = market.description?.trim() || market.settlementRule;
 
   return (
-    <section className="grid min-h-[346px] grid-cols-[minmax(280px,0.8fr)_minmax(0,1.2fr)] overflow-hidden rounded-lg border border-[var(--border-1)] bg-[var(--surface-1)] max-[760px]:grid-cols-1">
+    <section className="grid min-h-[346px] grid-cols-[minmax(280px,0.8fr)_minmax(0,1.2fr)] overflow-hidden rounded-lg border border-[var(--border-1)] border-t-[3px] border-t-[var(--signal-gold)] bg-[var(--surface-1)] max-[760px]:grid-cols-1">
       <div className="flex flex-col border-r border-[var(--border-1)] p-6 max-[760px]:border-b max-[760px]:border-r-0">
         <span className="mb-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--accent-text)]">
           {market.categoryName || market.categorySlug || t("FEATURED_MARKET")}
@@ -463,12 +469,25 @@ function FeaturedSignalCarousel({
       }}
     >
       <header className="mb-4 flex items-center justify-between gap-3">
-        <h1
-          id="featured-markets-heading"
-          className="type-display m-0 text-[32px] font-semibold leading-tight text-[var(--t1)] max-[520px]:text-[26px]"
-        >
-          {t("FEATURED_MARKET")}
-        </h1>
+        <div className="flex min-w-0 items-center gap-3">
+          <h1
+            id="featured-markets-heading"
+            className="type-display m-0 text-[32px] font-semibold leading-tight text-[var(--t1)] max-[520px]:text-[26px]"
+          >
+            {t("FEATURED_MARKET")}
+          </h1>
+          <span
+            className={FEATURED_LIVE_STATUS_CLASS}
+            data-testid="predict-live-status"
+            aria-label={t("MARKET_DATA_LIVE")}
+          >
+            <span
+              className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--brand-dark)] motion-reduce:animate-none"
+              aria-hidden="true"
+            />
+            {t("LIVE")}
+          </span>
+        </div>
 
         {count > 1 && (
           // biome-ignore lint/a11y/useSemanticElements: labeled control group; fieldset/legend swap is queued for the P2 primitives pass (fieldset layout quirks)

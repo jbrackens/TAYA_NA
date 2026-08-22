@@ -13,6 +13,10 @@ const input = readFileSync(
   resolve(appRoot, "components/ui/Input.tsx"),
   "utf8",
 );
+const predictionWorkspace = readFileSync(
+  resolve(appRoot, "components/prediction/PredictionWorkspace.tsx"),
+  "utf8",
+);
 
 describe("TapTrade purple and gold color system", () => {
   it("pins the approved neutral, brand, and market-semantic primitives", () => {
@@ -73,6 +77,18 @@ describe("TapTrade purple and gold color system", () => {
       globals,
       /@layer base\s*\{[\s\S]*?a\s*\{\s*color:\s*inherit;/,
       "the global anchor reset must stay below Tailwind utilities",
+    );
+  });
+
+  it("makes gold visible in the normal Predict first viewport as a live and featured signal", () => {
+    assert.match(predictionWorkspace, /data-testid="predict-live-status"/);
+    assert.match(predictionWorkspace, /bg-\[var\(--live\)\][^\n]*text-\[var\(--on-gold\)\]/);
+    assert.match(predictionWorkspace, /t\("MARKET_DATA_LIVE"\)/);
+    assert.match(predictionWorkspace, /border-t-\[3px\] border-t-\[var\(--signal-gold\)\]/);
+    assert.doesNotMatch(
+      predictionWorkspace,
+      /predict-live-status[\s\S]{0,400}--(?:yes|no)/,
+      "the live status must not borrow YES/NO market semantics",
     );
   });
 });
