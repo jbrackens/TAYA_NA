@@ -7,6 +7,8 @@
  * Figma master: 178:7 · production export: 193:10.
  */
 
+import Image from "next/image";
+
 type BrandMarkTone = "brand" | "ink" | "light";
 
 type BrandMarkProps = {
@@ -30,12 +32,13 @@ export default function BrandMark({
   const height = (size * 17.8604) / 24.001;
 
   return (
-    <img
+    <Image
       aria-hidden="true"
       alt=""
       className={`block shrink-0 object-contain ${className}`}
       height={height}
       src={MARK_SOURCE[tone]}
+      unoptimized
       width={size}
     />
   );
