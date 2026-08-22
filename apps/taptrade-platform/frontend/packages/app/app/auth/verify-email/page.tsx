@@ -11,7 +11,7 @@ const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
 const TITLE_CLASS =
   "m-0 mb-4 text-2xl font-bold tracking-[-0.01em] text-[var(--t1)]";
 const MESSAGE_CLASS = "m-0 mb-6 text-sm leading-[1.6] text-[var(--t2)]";
-const ERROR_CLASS = "m-0 mb-4 text-[13px] text-[var(--no-text)]";
+const ERROR_CLASS = "m-0 mb-4 text-[13px] text-[var(--brand-dark)]";
 const SPINNER_WRAP_CLASS = "mb-6 flex justify-center";
 const SPINNER_CLASS =
   "inline-block size-7 animate-spin rounded-full border-2 border-[var(--border-2)] border-t-[var(--accent)]";

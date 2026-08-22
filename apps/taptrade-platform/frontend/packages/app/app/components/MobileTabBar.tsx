@@ -100,10 +100,10 @@ const TERMINAL_TABS: TabDef[] = [
 ];
 
 const MOBILE_TAB_BAR_CLASS =
-  "fixed left-3 right-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-[90] grid max-w-full overflow-hidden rounded-[var(--r-rh-xl)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1.5 shadow-[0_10px_28px_rgba(60,50,30,0.14)]";
+  "fixed left-3 right-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-[90] grid max-w-full overflow-hidden rounded-[var(--r-rh-xl)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1.5 shadow-[var(--shadow-card)]";
 
 const TERMINAL_MOBILE_TAB_BAR_CLASS =
-  "fixed inset-x-0 bottom-0 z-[90] grid max-w-full overflow-hidden border-x-0 border-b-0 border-t border-[var(--border-1)] bg-[var(--surface-1)] px-2 pt-1.5 pb-[max(6px,env(safe-area-inset-bottom))]";
+  "fixed inset-x-0 bottom-0 z-[90] grid max-w-full overflow-hidden border-x-0 border-b-0 border-t border-[color-mix(in_srgb,var(--brand-lavender)_28%,transparent)] bg-[var(--brand-deep)] px-2 pt-1.5 pb-[max(6px,env(safe-area-inset-bottom))]";
 
 const MOBILE_TAB_ITEM_CLASS =
   "flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-[var(--r-rh-md)] px-0.5 py-2 text-center text-[11px] tracking-[0.01em] no-underline transition-[color,background] duration-150 ease-[ease] [font-family:inherit]";
@@ -113,6 +113,10 @@ const MOBILE_TAB_ITEM_INACTIVE_CLASS =
 
 const MOBILE_TAB_ITEM_ACTIVE_CLASS =
   "bg-[var(--accent-soft)] font-bold text-[var(--accent-text)]";
+const TERMINAL_MOBILE_TAB_ITEM_ACTIVE_CLASS =
+  "bg-[var(--accent)] font-bold text-[var(--on-brand)]";
+const TERMINAL_MOBILE_TAB_ITEM_INACTIVE_CLASS =
+  "font-semibold text-[var(--brand-lavender)] hover:bg-[color-mix(in_srgb,var(--brand-lavender)_12%,transparent)] hover:text-[var(--on-brand)]";
 
 function gridClassForCount(count: number): string {
   switch (count) {
@@ -181,9 +185,13 @@ export default function MobileTabBar() {
             key={tab.href}
             href={tab.href}
             className={`${MOBILE_TAB_ITEM_CLASS} ${
-              active
-                ? MOBILE_TAB_ITEM_ACTIVE_CLASS
-                : MOBILE_TAB_ITEM_INACTIVE_CLASS
+              isTerminalRoute
+                ? active
+                  ? TERMINAL_MOBILE_TAB_ITEM_ACTIVE_CLASS
+                  : TERMINAL_MOBILE_TAB_ITEM_INACTIVE_CLASS
+                : active
+                  ? MOBILE_TAB_ITEM_ACTIVE_CLASS
+                  : MOBILE_TAB_ITEM_INACTIVE_CLASS
             }`}
             aria-current={active ? "page" : undefined}
           >

@@ -136,14 +136,13 @@ const TICKET_MODE_CLASS =
 const TICKET_MODE_BUTTON_BASE_CLASS =
   // Step 3: 38px — THE documented hit-target exception (44px inside a
   // 3px-padded track forces the track to 50px and dominates the ticket).
-  "min-h-[38px] cursor-pointer rounded-md border-0 px-3 [font-family:inherit] text-[10px] font-mono font-semibold uppercase tracking-[0.08em] transition-colors duration-[120ms] disabled:cursor-not-allowed disabled:opacity-40 disabled:text-[var(--t3)] disabled:hover:bg-transparent disabled:hover:text-[var(--t3)]";
+  "min-h-[38px] cursor-pointer rounded-md border-0 px-3 [font-family:inherit] text-[10px] font-mono font-semibold uppercase tracking-[0.08em] transition-[background-color,border-color,color,transform] duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100";
 // FEED2-006: sides are the composed price cells (label + live price),
-// superseding the P9.2 underline tabs. Selection is the lime wash + lime
-// hairline (Rule 2: selection is an action); direction color stays on the
-// side's own text only.
+// superseding the P9.2 underline tabs. Selection uses the purple/lavender
+// action channel; direction color stays on the side's own text only.
 const TICKET_SIDES_CLASS = "mb-4 grid grid-cols-2 gap-2.5";
 const TICKET_SIDE_TAB_BASE_CLASS =
-  "flex min-h-11 cursor-pointer items-center justify-between gap-2 rounded-[8px] border px-3 [font-family:inherit] text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors duration-[120ms] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)]";
+  "flex min-h-11 cursor-pointer items-center justify-between gap-2 rounded-[8px] border px-3 [font-family:inherit] text-[11px] font-semibold uppercase tracking-[0.08em] transition-[background-color,border-color,box-shadow,color,transform] duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]";
 const TICKET_SIDE_PRICE_CLASS =
   "font-mono text-[14px] font-semibold tabular-nums";
 // (The P9.2 sliding underline indicator retired with the tabs.)
@@ -156,29 +155,30 @@ const TICKET_ROW_VALUE_CLASS = "font-mono font-semibold text-[var(--t1)]";
 const TICKET_ROW_SUB_CLASS =
   "font-mono mt-0.5 text-right text-[11px] font-normal text-[var(--t4)]";
 const TICKET_INPUT_CLASS =
-  "font-mono w-[128px] rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-2 text-right text-[14px] font-semibold text-[var(--t1)] outline-none transition-colors duration-[120ms] [font-variant-numeric:tabular-nums] focus:border-[var(--accent-lo)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+  "font-mono w-[128px] rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-2 text-right text-[14px] font-semibold text-[var(--t1)] outline-none transition-[background-color,border-color,box-shadow,color] duration-[120ms] [font-variant-numeric:tabular-nums] focus:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--focus-ring)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
 const TICKET_NOTE_CLASS =
   "mt-2.5 text-center text-xs leading-[1.45] text-[var(--t2)]";
 // Mobile quick controls (≤1023px): 44px touch targets per DESIGN.md §8.
 const TICKET_STEP_BTN_CLASS =
-  "flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-[var(--hairline)] bg-[var(--raised)] font-mono text-[18px] font-semibold text-[var(--ink)]";
+  "flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-[var(--hairline)] bg-[var(--raised)] font-mono text-[18px] font-semibold text-[var(--ink)] transition-[background-color,border-color,color,transform] duration-[120ms] [&:not(:disabled):hover]:border-[var(--accent)] [&:not(:disabled):hover]:bg-[var(--accent-soft)] [&:not(:disabled):hover]:text-[var(--accent-text)] [&:not(:disabled):active]:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100";
 const TICKET_QUICK_CHIP_CLASS =
-  "h-11 flex-1 cursor-pointer rounded-[var(--radius-sm)] border border-[var(--hairline)] bg-[var(--card)] font-mono text-[12px] font-semibold text-[var(--ink-3)] [font-variant-numeric:tabular-nums]";
+  "h-11 flex-1 cursor-pointer rounded-[var(--radius-sm)] border border-[var(--hairline)] bg-[var(--card)] font-mono text-[12px] font-semibold text-[var(--ink-3)] transition-[background-color,border-color,color,transform] duration-[120ms] [font-variant-numeric:tabular-nums] [&:not(:disabled):hover]:border-[var(--accent)] [&:not(:disabled):hover]:bg-[var(--accent-soft)] [&:not(:disabled):hover]:text-[var(--accent-text)] [&:not(:disabled):active]:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100";
 const TICKET_TRUST_CLASS =
   "mt-2.5 text-center text-xs leading-[1.45] text-[var(--t3)]";
-const TICKET_ERROR_CLASS = "mt-2.5 text-center text-xs text-[var(--no-text)]";
+const TICKET_ERROR_CLASS =
+  "mt-2.5 text-center text-xs text-[var(--brand-dark)]";
 // Hold threshold: long enough to be deliberate, short enough to not feel
 // broken. Matches the prototype's 0.7s timed transition within jitter.
 const HOLD_TO_PLACE_MS = 650;
 const TICKET_COMPLIANCE_CLASS =
-  "mt-3 rounded-[var(--r-rh-sm)] border border-[var(--no-border)] bg-[var(--no-soft)] p-2.5 text-center text-xs leading-[1.45] text-[var(--no-text)]";
+  "mt-3 rounded-[var(--r-rh-sm)] border border-[var(--brand-dark)] bg-[var(--brand-lavender)] p-2.5 text-center text-xs leading-[1.45] text-[var(--brand-dark)]";
 const TICKET_CLOSED_CLASS =
   "mt-3 rounded-[var(--r-rh-sm)] border border-dashed border-[var(--border-1)] p-2.5 text-center text-xs text-[var(--t3)]";
 // Insufficient-balance escape hatch: a secondary link-button into the Point
 // Store, below the (kept) disabled trade CTA. Carries the current market
 // path as a validated ?return= context so the store can route back.
 const TICKET_ADD_POINTS_CLASS =
-  "mt-2 flex w-full cursor-pointer items-center justify-center rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3 text-[13px] font-semibold text-[var(--t1)] no-underline transition-colors duration-[120ms] hover:border-[var(--border-2)]";
+  "mt-2 flex w-full cursor-pointer items-center justify-center rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3 text-[13px] font-semibold text-[var(--t1)] no-underline transition-[background-color,border-color,color,transform] duration-[120ms] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent-text)] active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]";
 // Preview requests are debounced so per-keystroke amount edits don't fire
 // an api.previewOrder round-trip each; 250ms trails typing comfortably.
 const PREVIEW_DEBOUNCE_MS = 250;
@@ -186,14 +186,14 @@ const PREVIEW_DEBOUNCE_MS = 250;
 function ticketModeButtonClass(active: boolean): string {
   return `${TICKET_MODE_BUTTON_BASE_CLASS} ${
     active
-      ? "bg-[var(--surface-1)] text-[var(--t1)] shadow-[0_1px_2px_rgba(13,17,20,0.06)]"
-      : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)]"
+      ? "bg-[var(--accent-soft)] text-[var(--accent-text)] shadow-[var(--shadow-card)]"
+      : "bg-transparent text-[var(--t3)] hover:bg-[var(--surface-1)] hover:text-[var(--t1)] active:translate-y-px"
   }`;
 }
 
 function ticketSideTabClass(side: OrderSide, selected: boolean): string {
   if (!selected) {
-    return `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--border-2)]`;
+    return `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] active:translate-y-px`;
   }
   return side === "yes"
     ? `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--accent-lo)] bg-[var(--accent-soft)] text-[var(--yes-text)]`
@@ -472,7 +472,7 @@ export function TradeTicket({
       ? "!rounded-none !border-0 !bg-transparent !p-0"
       : undefined;
   const ticketStyle = {
-    "--ticket-cta-text": variant === "terminal" ? "#ffffff" : "#061a10",
+    "--ticket-cta-text": "var(--on-brand)",
     ...(variant === "terminal" ? { fontFamily: "var(--font-terminal)" } : {}),
   } as CSSProperties;
 

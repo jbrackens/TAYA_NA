@@ -20,7 +20,7 @@ export function SectionHead({ title, count, href }: Props) {
       {href && (
         <a
           href={href}
-          className="text-[13px] font-semibold text-[var(--yes-text)] no-underline hover:underline"
+          className="text-[13px] font-semibold text-[var(--accent-text)] no-underline hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)]"
         >
           {count != null ? `See all ${count} →` : "See all →"}
         </a>

@@ -44,13 +44,13 @@ const pageClass = "mx-auto max-w-[800px] px-4 py-6";
 const headerClass =
   "mb-6 flex items-start justify-between max-[640px]:flex-col max-[640px]:gap-4";
 const backClass =
-  "rounded-lg border border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.22)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)]";
+  "rounded-lg border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)]";
 const cardClass =
   "mb-4 rounded-xl border border-[var(--border-1)] bg-[var(--surface-1)] px-6 py-[22px]";
 const descClass = "m-0 mb-4 text-[13px] leading-normal text-[var(--t3)]";
 const labelClass = "text-[13px] font-semibold text-[var(--t2)]";
 const selectClass =
-  "cursor-pointer rounded-lg border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.04)] px-3 py-2.5 text-sm text-[var(--t1)] outline-none transition-colors duration-150 focus:border-[var(--accent)]";
+  "cursor-pointer rounded-lg border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2.5 text-sm text-[var(--t1)] outline-none transition-colors duration-150 focus:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)]";
 
 function browserTimezone(): string {
   try {
@@ -126,7 +126,7 @@ export default function SettingsPage() {
       </div>
 
       {savedFlash && (
-        <div className="mb-4 rounded-lg border border-[rgba(43,228,128,0.28)] bg-[var(--accent-soft)] px-[14px] py-2.5 text-[13px] font-semibold text-[var(--accent)]">
+        <div className="mb-4 rounded-lg border border-[var(--accent)] bg-[var(--accent-soft)] px-[14px] py-2.5 text-[13px] font-semibold text-[var(--accent-text)]">
           {savedFlash}
         </div>
       )}

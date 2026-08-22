@@ -32,15 +32,15 @@ const tabValues: TabType[] = (
 
 const statusBadgeClasses: Record<string, string> = {
   verified:
-    "inline-block rounded-[4px] bg-[#1e7e34] px-3 py-1 text-[12px] font-semibold text-[#22c55e]",
+    "inline-block rounded-[4px] bg-[var(--brand-lavender)] px-3 py-1 text-[12px] font-semibold text-[var(--brand-dark)]",
   pending:
-    "inline-block rounded-[4px] bg-[#665700] px-3 py-1 text-[12px] font-semibold text-[#fbbf24]",
+    "inline-block rounded-[4px] bg-[var(--reward-soft)] px-3 py-1 text-[12px] font-semibold text-[var(--reward-text)]",
   failed:
-    "inline-block rounded-[4px] bg-[#7f1d1d] px-3 py-1 text-[12px] font-semibold text-[var(--no)]",
+    "inline-block rounded-[4px] bg-[var(--surface-2)] px-3 py-1 text-[12px] font-semibold text-[var(--t2)]",
   unverified:
-    "inline-block rounded-[4px] bg-[#3a3a3a] px-3 py-1 text-[12px] font-semibold text-[var(--t3)]",
+    "inline-block rounded-[4px] bg-[var(--surface-2)] px-3 py-1 text-[12px] font-semibold text-[var(--t3)]",
   default:
-    "inline-block rounded-[4px] bg-[#0f3460] px-3 py-1 text-[12px] font-semibold text-[#4a7eff]",
+    "inline-block rounded-[4px] bg-[var(--brand-lavender)] px-3 py-1 text-[12px] font-semibold text-[var(--accent-text)]",
 };
 
 const tabListClass = "mb-6 flex border-b border-[var(--border-1)]";
@@ -53,7 +53,7 @@ const inputClass =
   "box-border w-full rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2 text-[14px] text-[var(--t1)]";
 const labelClass = "mb-2 block text-[14px] font-semibold text-[var(--t1)]";
 const buttonClass =
-  "cursor-pointer rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-5 py-2.5 text-[14px] font-semibold text-[#04140a] disabled:cursor-not-allowed disabled:opacity-60";
+  "cursor-pointer rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-5 py-2.5 text-[14px] font-semibold text-[var(--ticket-cta-text)] disabled:cursor-not-allowed disabled:opacity-60";
 const loadingClass = "max-w-[800px] p-10 text-[var(--t3)]";
 const pageClass = "max-w-[800px]";
 const pageTitleClass = "mb-6 text-[28px] font-bold text-[var(--t1)]";

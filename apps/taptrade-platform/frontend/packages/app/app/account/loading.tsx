@@ -1,6 +1,6 @@
 export default function AccountLoading() {
   const blockClass =
-    "animate-pulse rounded-xl bg-[linear-gradient(90deg,rgba(255,255,255,0.04)_25%,rgba(255,255,255,0.08)_50%,rgba(255,255,255,0.04)_75%)] bg-[length:200%_100%]";
+    "animate-pulse rounded-xl bg-[linear-gradient(90deg,var(--raised)_25%,var(--card)_50%,var(--raised)_75%)] bg-[length:200%_100%]";
 
   return (
     <div className="flex flex-col gap-5 p-6">

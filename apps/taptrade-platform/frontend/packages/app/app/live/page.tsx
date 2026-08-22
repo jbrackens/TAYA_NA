@@ -12,30 +12,30 @@ import {
 import { FEATURE_LIVE_MARKETS } from "../lib/features";
 
 const ROUTE_LOADING_CLASS = "p-20 text-center text-[13px] text-[var(--t3)]";
-const GLASS_SURFACE_CLASS =
-  "relative border border-white/[0.13] bg-[color:var(--glass-regular)] bg-[image:linear-gradient(180deg,_rgba(255,255,255,0.14)_0%,_rgba(255,255,255,0.05)_30%,_rgba(255,255,255,0.025)_100%)] shadow-[inset_0_1px_0_var(--rim-top),inset_0_-1px_0_var(--rim-bottom),inset_1px_0_2px_var(--chroma-1),inset_-1px_0_2px_var(--chroma-2),0_2px_6px_rgba(0,0,0,0.18),0_8px_24px_rgba(0,0,0,0.28),0_16px_48px_rgba(0,0,0,0.2)] backdrop-blur-[30px] backdrop-saturate-[180%] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-1/2 before:rounded-[inherit] before:bg-[image:linear-gradient(180deg,_rgba(255,255,255,0.06)_0%,_transparent_100%)] before:mix-blend-overlay before:content-['']";
-const STATE_CARD_CLASS = `${GLASS_SURFACE_CLASS} mx-auto my-[60px] max-w-[560px] rounded-[var(--r-lg)] p-14 text-center`;
+const NEUTRAL_SURFACE_CLASS =
+  "border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-card)]";
+const STATE_CARD_CLASS = `${NEUTRAL_SURFACE_CLASS} mx-auto my-[60px] max-w-[560px] rounded-[var(--r-lg)] p-14 text-center`;
 const HEADER_CLASS = "mb-5 flex flex-wrap items-end justify-between gap-4";
 const EYEBROW_CLASS =
-  "mt-0 mb-1.5 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--t3)]";
+  "mt-0 mb-1.5 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--live-text)]";
 const TITLE_CLASS = "mt-0 mb-2 text-[28px] font-extrabold text-[var(--t1)]";
 const SUB_CLASS = "m-0 max-w-[680px] text-sm leading-[1.5] text-[var(--t2)]";
 const REFRESH_BUTTON_CLASS =
-  "inline-flex min-h-10 items-center gap-2 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 text-[13px] font-semibold text-[var(--t1)]";
+  "inline-flex min-h-10 items-center gap-2 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 text-[13px] font-semibold text-[var(--t1)] transition-colors hover:bg-[var(--surface-2)] active:bg-[var(--raised)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)]";
 const PROVIDER_GRID_CLASS =
   "mb-6 grid grid-cols-2 gap-3 max-[720px]:grid-cols-1";
 const PROVIDER_CARD_CLASS =
-  "rounded-xl border border-[var(--border-1)] bg-[var(--surface-1)] p-4 shadow-[0_1px_0_rgba(255,255,255,0.65)]";
+  "rounded-xl border border-[var(--border-1)] bg-[var(--surface-1)] p-4 shadow-[var(--shadow-card)]";
 const PROVIDER_LABEL_CLASS = "mb-1 text-[13px] font-bold text-[var(--t1)]";
 const PROVIDER_META_CLASS =
   "text-[11px] leading-[1.5] text-[var(--t3)] font-mono";
 const EVENT_GRID_CLASS = "grid gap-3";
 const EVENT_CARD_CLASS =
-  "group rounded-xl border border-[var(--border-1)] bg-[var(--surface-1)] p-0 shadow-[0_1px_0_rgba(255,255,255,0.7)] transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[0_12px_28px_rgba(60,50,30,0.08)]";
+  "group rounded-xl border border-[var(--border-1)] bg-[var(--surface-1)] p-0 shadow-[var(--shadow-card)] transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[var(--shadow-card-hover)]";
 const EVENT_META_CLASS =
   "flex min-h-10 flex-wrap items-center gap-2 border-b border-[var(--border-1)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
 const LIVE_PILL_CLASS =
-  "inline-flex items-center gap-1.5 rounded-md bg-[rgba(255,107,107,0.14)] px-2 py-1 text-[10px] font-bold text-[var(--live)]";
+  "inline-flex items-center gap-1.5 rounded-md bg-[var(--live-soft)] px-2 py-1 text-[10px] font-bold text-[var(--live-text)]";
 const STATE_PILL_CLASS =
   "inline-flex rounded-md bg-[var(--surface-2)] px-2 py-1 text-[10px] font-bold text-[var(--t2)]";
 const EVENT_BODY_CLASS =

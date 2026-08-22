@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * Landing — the dark front door (Figma: 03 Screens → Landing / 1440).
+ * Landing — the deep-purple front door (Figma: 03 Screens → Landing / 1440).
  *
- * The 1B dark recipe wearing 1C bones: Fraunces Light display on the
- * landing tokens (globals.css `.landing-1c`), Geist Mono micro-labels,
- * lime strictly on actions and the LIVE signal, hairlines not shadows.
+ * The deep-purple recipe: Fraunces Light display on the landing tokens
+ * (globals.css `.landing-1c`), Geist Mono micro-labels, purple for
+ * structural action, and gold strictly for the LIVE signal and priority.
  * Every section sells something the product actually does: the ticker is
  * the REAL discovery feed (honest-data rule — no fabricated markets, no
  * invented deltas), the three steps are the real trade loop (moments →
@@ -169,13 +169,15 @@ const FOOTER_LEGAL =
   "TapTrade uses non-redeemable gameplay points. Points cannot be cashed out, withdrawn, transferred, or redeemed for prizes. Prediction markets are speculative; outcomes are not guaranteed. 18+.";
 
 const MICRO_CLASS =
-  "font-mono text-[11px] font-semibold uppercase tracking-[0.13em] text-[var(--l-lime)]";
+  "font-mono text-[11px] font-semibold uppercase tracking-[0.13em] text-[var(--l-lavender)]";
+const LIVE_MICRO_CLASS =
+  "font-mono text-[11px] font-semibold uppercase tracking-[0.13em] text-[var(--l-gold)]";
 const CHIP_CLASS =
   "rounded-full border border-[var(--l-hairline)] px-4 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.1em]";
-const LIME_CTA_CLASS =
-  "inline-flex items-center rounded-lg bg-[var(--l-lime)] font-semibold text-[var(--l-ink-on-lime)] no-underline transition-opacity duration-150 hover:opacity-90";
+const PRIMARY_CTA_CLASS =
+  "inline-flex items-center rounded-lg bg-[var(--l-purple)] font-semibold text-[var(--l-on-purple)] no-underline transition-colors duration-150 hover:bg-[var(--l-purple-hover)] active:bg-[var(--l-purple-active)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--l-gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--l-bg)]";
 const GHOST_CTA_CLASS =
-  "inline-flex items-center rounded-lg border border-[var(--l-hairline)] font-semibold text-[var(--l-t1)] no-underline transition-colors duration-150 hover:border-[var(--l-t3)]";
+  "inline-flex items-center rounded-lg border border-[var(--l-hairline)] font-semibold text-[var(--l-t1)] no-underline transition-colors duration-150 hover:border-[var(--l-lavender)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--l-gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--l-bg)]";
 
 export default function LandingPage() {
   const { t } = useTranslation("page-home");
@@ -192,7 +194,7 @@ export default function LandingPage() {
         >
           <BrandMark
             size={26}
-            tone="brand"
+            tone="light"
           />
           <span className="text-[17px] font-semibold text-[var(--l-t1)]">
             {brand.name}
@@ -204,13 +206,13 @@ export default function LandingPage() {
           </span>
           <Link
             href="/auth/login"
-            className="text-[14px] font-medium text-[var(--l-t1)] no-underline hover:text-[var(--l-lime)]"
+            className="text-[14px] font-medium text-[var(--l-t1)] no-underline transition-colors duration-150 hover:text-[var(--l-gold)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--l-gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--l-bg)]"
           >
             {t("nav.login")}
           </Link>
           <Link
             href="/predict"
-            className={`${LIME_CTA_CLASS} px-4 py-2 text-[14px]`}
+            className={`${PRIMARY_CTA_CLASS} px-4 py-2 text-[14px]`}
           >
             {t("nav.browseMarkets")}
           </Link>
@@ -219,10 +221,10 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="mx-auto max-w-[1360px] px-6 pb-24 pt-16 md:px-10 md:pt-24">
-        <p className={`m-0 flex items-center gap-2 ${MICRO_CLASS}`}>
+        <p className={`m-0 flex items-center gap-2 ${LIVE_MICRO_CLASS}`}>
           <span
             aria-hidden="true"
-            className="size-[7px] rounded-full bg-[var(--l-lime)]"
+            className="size-[7px] rounded-full bg-[var(--l-gold)]"
           />
           {t("hero.eyebrow")}
         </p>
@@ -237,7 +239,7 @@ export default function LandingPage() {
         <div className="mt-10 flex flex-wrap items-center gap-3">
           <Link
             href="/predict"
-            className={`${LIME_CTA_CLASS} px-6 py-3 text-[15px]`}
+            className={`${PRIMARY_CTA_CLASS} px-6 py-3 text-[15px]`}
           >
             {t("nav.browseMarkets")}
           </Link>
@@ -254,10 +256,10 @@ export default function LandingPage() {
       {ticker.length > 0 && (
         <div className="overflow-x-auto border-y border-[var(--l-hairline)] bg-[var(--l-inset)]">
           <div className="mx-auto flex max-w-[1360px] items-center gap-9 px-6 py-[18px] md:px-10">
-            <span className={`flex shrink-0 items-center gap-2 ${MICRO_CLASS}`}>
+            <span className={`flex shrink-0 items-center gap-2 ${LIVE_MICRO_CLASS}`}>
               <span
                 aria-hidden="true"
-                className="size-[7px] rounded-full bg-[var(--l-lime)]"
+                className="size-[7px] rounded-full bg-[var(--l-gold)]"
               />
               {t("ticker.live")}
             </span>
@@ -293,7 +295,7 @@ export default function LandingPage() {
                 key={step.num}
                 className="rounded-xl border border-[var(--l-hairline)] bg-[var(--l-raised)] p-7"
               >
-                <p className="m-0 font-mono text-[12px] font-semibold tracking-[0.11em] text-[var(--l-lime)]">
+                <p className="m-0 font-mono text-[12px] font-semibold tracking-[0.11em] text-[var(--l-lavender)]">
                   {step.num}
                 </p>
                 <h3 className="mb-0 mt-3.5 text-[20px] font-semibold text-[var(--l-t1)]">
@@ -324,7 +326,7 @@ export default function LandingPage() {
                   key={desk}
                   className={`${CHIP_CLASS} ${
                     desk === "THE BIG BOARD"
-                      ? "text-[var(--l-lime)]"
+                      ? "text-[var(--l-gold)]"
                       : "text-[var(--l-t3)]"
                   }`}
                 >
@@ -349,7 +351,7 @@ export default function LandingPage() {
           </p>
           <Link
             href="/auth/register"
-            className={`${LIME_CTA_CLASS} mt-8 px-7 py-[15px] text-[16px]`}
+            className={`${PRIMARY_CTA_CLASS} mt-8 px-7 py-[15px] text-[16px]`}
           >
             {t("grant.cta")}
           </Link>

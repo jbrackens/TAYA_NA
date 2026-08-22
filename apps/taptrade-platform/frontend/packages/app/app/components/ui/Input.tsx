@@ -16,7 +16,7 @@ import { cx } from "./variants";
 // (attribute selector outranks the base border class, so the override
 // is deterministic — call-site border classNames are not).
 const FIELD_CLASS =
-  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2.5 text-sm leading-[1.5] text-[var(--t1)] outline-none placeholder:text-[var(--t3)] focus:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] aria-invalid:border-[var(--no-text)] disabled:cursor-not-allowed disabled:opacity-55";
+  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2.5 text-sm leading-[1.5] text-[var(--t1)] outline-none transition-[background-color,border-color,box-shadow,color] placeholder:text-[var(--t3)] focus:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--focus-ring)] aria-invalid:border-[var(--brand-dark)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100";
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
 

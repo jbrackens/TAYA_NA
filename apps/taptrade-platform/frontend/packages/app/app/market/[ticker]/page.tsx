@@ -122,7 +122,7 @@ const MARKET_TICKET_BAR_CLASS =
 const MARKET_TICKET_SOURCE_CLASS =
   "mb-5 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-4 text-[12px] leading-[1.5] text-[var(--t2)]";
 const MARKET_MOBILE_TRADE_LINK_CLASS =
-  "fixed inset-x-4 bottom-[76px] z-[80] hidden min-h-12 items-center justify-between rounded-[var(--r-rh-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-white no-underline shadow-[0_14px_36px_rgba(0,0,0,0.42)] max-[1023px]:flex min-[900px]:bottom-4";
+  "fixed inset-x-4 bottom-[76px] z-[80] hidden min-h-12 items-center justify-between rounded-[var(--r-rh-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--on-brand)] no-underline shadow-[var(--shadow-pop)] transition-[background-color,box-shadow,transform] duration-150 hover:bg-[var(--brand-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-px max-[1023px]:flex min-[900px]:bottom-4";
 const MARKET_DATA_ROW_CLASS =
   "grid grid-cols-2 gap-4 pt-4 max-[720px]:grid-cols-1";
 const MARKET_DEPTH_DISCLOSURE_CLASS =
@@ -224,12 +224,12 @@ const PAGE_STATE_TITLE_CLASS =
 const PAGE_STATE_COPY_CLASS =
   "mt-2.5 mb-0 text-sm leading-[1.5] text-[var(--t2)]";
 const PAGE_STATE_ACTION_CLASS =
-  "mt-[22px] inline-flex min-h-11 items-center justify-center rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-5 text-sm font-bold text-white no-underline transition-[transform,filter] duration-[150ms] hover:-translate-y-px hover:brightness-110";
+  "mt-[22px] inline-flex min-h-11 items-center justify-center rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-5 text-sm font-bold text-[var(--on-brand)] no-underline transition-[background-color,transform] duration-[150ms] hover:-translate-y-px hover:bg-[var(--brand-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-0";
 
 function pageStateEyebrowClass(isError: boolean): string {
   return `${PAGE_STATE_EYEBROW_BASE_CLASS} ${
     isError
-      ? "border-[var(--no-border)] bg-[var(--no-soft)] text-[var(--no-text)]"
+      ? "border-[var(--brand-dark)] bg-[var(--brand-lavender)] text-[var(--brand-dark)]"
       : "border-[var(--border-1)] bg-[var(--accent-soft)] text-[var(--accent-text)]"
   }`;
 }

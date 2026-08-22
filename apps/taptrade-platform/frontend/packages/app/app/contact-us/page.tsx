@@ -10,6 +10,13 @@ import {
 
 type FormData = SupportRequest;
 
+const STATUS_CLASS =
+  "mb-6 rounded-md border border-[var(--accent)] bg-[var(--accent-soft)] p-4 text-sm text-[var(--brand-dark)]";
+const INPUT_CLASS =
+  "box-border w-full rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3 text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_var(--accent-soft)]";
+const TEXTAREA_CLASS =
+  "box-border min-h-[140px] w-full resize-y rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3 font-[inherit] text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_var(--accent-soft)]";
+
 export default function ContactUsPage() {
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -49,20 +56,14 @@ export default function ContactUsPage() {
       </h1>
 
       {submitted && (
-        <div
-          role="status"
-          className="mb-6 rounded-md border border-[var(--yes-border)] bg-[var(--yes-soft)] p-4 text-sm text-[var(--yes-text)]"
-        >
-          Your email app should have opened with your message ready to send.
-          If it didn't, email us directly at {SUPPORT_EMAIL}.
+        <div role="status" className={STATUS_CLASS}>
+          Your email app should have opened with your message ready to send. If
+          it didn't, email us directly at {SUPPORT_EMAIL}.
         </div>
       )}
 
       {error && (
-        <div
-          role="alert"
-          className="mb-6 rounded-md border border-[var(--no-border)] bg-[var(--no-soft)] p-4 text-sm text-[var(--no-text)]"
-        >
+        <div role="alert" className={STATUS_CLASS}>
           {error}
         </div>
       )}
@@ -83,7 +84,7 @@ export default function ContactUsPage() {
             onChange={handleChange}
             required
             placeholder="Your name"
-            className="box-border w-full rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3 text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(43,228,128,0.1)]"
+            className={INPUT_CLASS}
           />
         </div>
 
@@ -102,7 +103,7 @@ export default function ContactUsPage() {
             onChange={handleChange}
             required
             placeholder="your@email.com"
-            className="box-border w-full rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3 text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(43,228,128,0.1)]"
+            className={INPUT_CLASS}
           />
         </div>
 
@@ -121,7 +122,7 @@ export default function ContactUsPage() {
             onChange={handleChange}
             required
             placeholder="What is this about?"
-            className="box-border w-full rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3 text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(43,228,128,0.1)]"
+            className={INPUT_CLASS}
           />
         </div>
 
@@ -139,7 +140,7 @@ export default function ContactUsPage() {
             onChange={handleChange}
             required
             placeholder="Please tell us more..."
-            className="box-border min-h-[140px] w-full resize-y rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3 font-[inherit] text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(43,228,128,0.1)]"
+            className={TEXTAREA_CLASS}
           />
         </div>
 

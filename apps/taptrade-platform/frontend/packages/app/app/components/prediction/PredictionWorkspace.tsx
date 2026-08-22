@@ -1134,7 +1134,7 @@ export function PredictionWorkspace({
                   <div className="mt-2 flex items-center gap-2.5 px-1 first:mt-0">
                     <span
                       aria-hidden="true"
-                      className="h-3 w-[3px] rounded-[1px] bg-[var(--lime-text)]"
+                      className="h-3 w-[3px] rounded-[1px] bg-[var(--accent)]"
                     />
                     <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--ink)]">
                       {cluster.title}

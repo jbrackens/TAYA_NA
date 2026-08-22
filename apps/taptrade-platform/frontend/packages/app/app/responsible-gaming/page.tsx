@@ -6,7 +6,7 @@ import { FEATURE_RG } from "../lib/features";
 
 const FALLBACK_CONTENT = `
 <h1>Responsible Play</h1>
-<p style="font-size: 12px; color: #4a5580; margin-bottom: 32px;">Last updated: April 2026</p>
+<p style="font-size: 12px; color: var(--ink-3); margin-bottom: 32px;">Last updated: April 2026</p>
 
 <h2>Our Commitment</h2>
 <p>We are committed to responsible play. Use the tools below to manage your trading activity and set personal limits.</p>

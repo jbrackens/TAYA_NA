@@ -264,7 +264,7 @@ export default function FloorPage() {
       </div>
 
       {selected && (
-        <div className="fixed inset-x-0 bottom-0 z-[90] hidden max-h-[70vh] overflow-y-auto rounded-t-[14px] border-t border-[var(--border-1)] bg-[var(--surface-1)] p-4 pb-6 shadow-[0_-12px_32px_rgba(13,17,20,0.18)] max-[1179px]:block">
+        <div className="fixed inset-x-0 bottom-0 z-[90] hidden max-h-[70vh] overflow-y-auto rounded-t-[14px] border-t border-[var(--border-1)] bg-[var(--surface-1)] p-4 pb-6 shadow-[var(--shadow-pop)] max-[1179px]:block">
           <button
             type="button"
             onClick={() => setSelectedId(null)}

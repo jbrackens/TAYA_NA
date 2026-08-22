@@ -1038,10 +1038,10 @@ describe("Navigation pill active colors", () => {
     return match[0];
   }
 
-  // Ink & lime step 3 (2026-07-26) reversed this contract: active
-  // selection is the LIME fill with ink-on-lime, and a DIRECTION token
+  // Active selection uses the brand-purple fill with its high-contrast
+  // foreground, and a DIRECTION token
   // may never be a selection colour (spec §2 one-job-per-channel).
-  it("uses lime for segmented active fills, never a direction token", () => {
+  it("uses purple for segmented active fills, never a direction token", () => {
     for (const [label, activeClass] of [
       [
         "closing-window active",
@@ -1051,7 +1051,7 @@ describe("Navigation pill active colors", () => {
       assert.ok(
         activeClass.includes("bg-[var(--accent)]") &&
           activeClass.includes("text-[var(--ticket-cta-text)]"),
-        `${label} should be the lime fill with ink-on-lime`,
+        `${label} should be the purple fill with its contrast foreground`,
       );
       assert.ok(
         !activeClass.includes("bg-[var(--yes)]") &&
@@ -1075,7 +1075,7 @@ describe("Navigation pill active colors", () => {
     );
   });
 
-  it("uses seafoam tokens for active category pills", () => {
+  it("uses lavender and purple tokens for active category pills", () => {
     function constValue(source: string, name: string): string {
       const match = new RegExp(
         `const\\s+${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`,
@@ -1089,10 +1089,10 @@ describe("Navigation pill active colors", () => {
       "PILL_ACTIVE_CLASS",
     );
     assert.ok(
-      categoryActiveClass.includes("bg-[var(--yes-soft)]") &&
-        categoryActiveClass.includes("border-[var(--yes-border)]") &&
-        categoryActiveClass.includes("text-[var(--yes-text)]"),
-      "Active category pills should use seafoam tokens",
+      categoryActiveClass.includes("bg-[var(--accent-soft)]") &&
+        categoryActiveClass.includes("border-[var(--accent)]") &&
+        categoryActiveClass.includes("text-[var(--accent-text)]"),
+      "Active category pills should use lavender and purple tokens",
     );
   });
 });

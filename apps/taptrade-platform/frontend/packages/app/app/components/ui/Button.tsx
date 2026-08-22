@@ -29,38 +29,41 @@ export type ButtonSize = "sm" | "md" | "lg" | "none";
 // base: same-property Tailwind classes resolve by generated-CSS order,
 // not class order, so the base must never set a property a variant
 // overrides (cta uses rounded-md/font-semibold; the rest r-rh-md/bold).
+const BUTTON_FOCUS_CLASS =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]";
+const BUTTON_INERT_CLASS =
+  "disabled:border disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100 disabled:filter-none";
+
 const buttonVariant = variants<ButtonVariant>(
-  "inline-flex cursor-pointer select-none items-center justify-center gap-1.5 disabled:cursor-not-allowed",
+  `inline-flex cursor-pointer select-none items-center justify-center gap-1.5 disabled:cursor-not-allowed ${BUTTON_FOCUS_CLASS}`,
   {
-    // The accent action recipe. Foreground uses the theme-scoped
-    // --ticket-cta-text token (ink #061a10 on light surfaces, white on
-    // the dark terminal) — hardcoded white was only correct on dark
-    // routes; every P9 light-surface CTA uses ink on accent.
+    // Purple is the generic action color. Foreground remains theme-scoped
+    // so the token can keep its AA contrast contract in every route.
     primary:
-      "rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] font-bold text-[var(--ticket-cta-text)] transition-[filter] hover:brightness-[1.08] disabled:opacity-55",
+      `rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] font-bold text-[var(--ticket-cta-text)] transition-[filter,transform] [&:not(:disabled):hover]:brightness-[1.05] [&:not(:disabled):active]:translate-y-px [&:not(:disabled):active]:brightness-[0.96] ${BUTTON_INERT_CLASS}`,
     // The discussion/panel action recipe.
-    // Step 3 (2026-07-26): hover was border+text → accent, which after the
-    // lime repoint meant unreadable lime text. Hover is the strong
-    // hairline; the label never changes colour (spec hover rule).
+    // Hover elevates the purple action channel without changing the
+    // component's neutral default state.
     secondary:
-      "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] font-bold text-[var(--t1)] transition-colors hover:border-[var(--border-2)] disabled:opacity-55",
+      `rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] font-bold text-[var(--t1)] transition-[background-color,border-color,color,transform] [&:not(:disabled):hover]:border-[var(--accent)] [&:not(:disabled):hover]:bg-[var(--accent-soft)] [&:not(:disabled):hover]:text-[var(--accent-text)] [&:not(:disabled):active]:translate-y-px ${BUTTON_INERT_CLASS}`,
     // Toolbar/inline affordances: no chrome until hover.
     ghost:
-      "rounded-[var(--r-rh-md)] border border-transparent bg-transparent font-bold text-[var(--t2)] transition-colors hover:border-[var(--border-1)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)] disabled:opacity-55",
-    // Destructive confirms (self-exclude, cancellation).
+      `rounded-[var(--r-rh-md)] border border-transparent bg-transparent font-bold text-[var(--t2)] transition-[background-color,border-color,color,transform] [&:not(:disabled):hover]:border-[var(--border-1)] [&:not(:disabled):hover]:bg-[var(--surface-2)] [&:not(:disabled):hover]:text-[var(--t1)] [&:not(:disabled):active]:translate-y-px ${BUTTON_INERT_CLASS}`,
+    // Destructive confirms use the deep brand anchor. Red remains reserved
+    // for market NO positions and negative market outcomes.
     danger:
-      "rounded-[var(--r-rh-md)] border-0 bg-[var(--no)] font-bold text-white transition-[filter] hover:brightness-105 disabled:opacity-55",
+      `rounded-[var(--r-rh-md)] border-0 bg-[var(--brand-dark)] font-bold text-[var(--on-brand)] transition-[filter,transform] [&:not(:disabled):hover]:brightness-[1.05] [&:not(:disabled):active]:translate-y-px [&:not(:disabled):active]:brightness-[0.96] ${BUTTON_INERT_CLASS}`,
     // The money button (trade ticket / store checkout): full-width,
     // self-sized — pair with size="none".
     //
-    // Disabled = the Ink & lime INERT treatment (handoff spec §3 item 1,
-    // 2026-07-26): explicit surface — --inert-fill / --inert-border /
+    // Disabled uses the neutral inert treatment: explicit surface —
+    // --inert-fill / --inert-border /
     // --inert-label — with NO opacity and NO filter. The old
     // disabled:opacity-[0.45] put the label near 2.4:1 on the accent
     // fill, making every blocked trade state unreadable. The disabled:
     // classes beat the base border-0/bg/text by :disabled specificity,
     // not by class order (see the class-order note above).
-    cta: "w-full min-h-[52px] rounded-[var(--radius-md)] border-0 bg-[var(--accent)] px-4 py-[14px] text-[15px] font-semibold text-[var(--ticket-cta-text)] no-underline transition-[filter,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:brightness-[1.05] disabled:border disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:filter-none disabled:transform-none",
+    cta: "w-full min-h-[52px] rounded-[var(--radius-md)] border-0 bg-[var(--accent)] px-4 py-[14px] text-[15px] font-semibold text-[var(--ticket-cta-text)] no-underline transition-[filter,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:brightness-[1.05] [&:not(:disabled):active]:translate-y-0 [&:not(:disabled):active]:brightness-[0.96] disabled:border disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100 disabled:filter-none disabled:transform-none",
   },
 );
 

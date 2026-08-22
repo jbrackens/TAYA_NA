@@ -228,7 +228,7 @@ function RankingRow({
   return (
     <Link
       href={`/market/${market.ticker}`}
-      className="group block border-b border-[var(--border-1)] bg-[var(--surface-1)] no-underline transition-colors duration-150 last:border-b-0 hover:bg-[var(--surface-2)]"
+      className="group relative block border-b border-[var(--border-1)] bg-[var(--surface-1)] no-underline transition-colors duration-150 last:border-b-0 hover:bg-[var(--surface-2)] focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--focus-ring)] active:bg-[var(--accent-soft)]"
     >
       <article className="grid grid-cols-[42px_minmax(0,1fr)_132px_116px] items-center gap-4 px-5 py-4 max-[860px]:grid-cols-[34px_minmax(0,1fr)_118px] max-[860px]:gap-3 max-[640px]:grid-cols-[28px_minmax(0,1fr)_82px] max-[640px]:px-3.5 max-[640px]:py-3.5">
         <span className="font-mono text-[12px] font-semibold text-[var(--t3)] tabular-nums">
@@ -245,7 +245,7 @@ function RankingRow({
             </h3>
             <span
               className={`mt-1 hidden font-mono text-[10px] font-medium tabular-nums max-[860px]:block ${
-                remaining.urgent ? "text-[var(--no-text)]" : "text-[var(--t3)]"
+                remaining.urgent ? "text-[var(--live-text)]" : "text-[var(--t3)]"
               }`}
             >
               closes in {remaining.label}
@@ -259,7 +259,7 @@ function RankingRow({
           </span>
           <span
             className={`mt-1 block font-mono text-[13px] font-semibold tabular-nums ${
-              remaining.urgent ? "text-[var(--no-text)]" : "text-[var(--t1)]"
+              remaining.urgent ? "text-[var(--live-text)]" : "text-[var(--t1)]"
             }`}
           >
             {remaining.label}
@@ -311,7 +311,7 @@ function RankingBoard({
           <Link
             href={ranking.viewAllHref}
             aria-label={`${viewAllLabel} ${ranking.heading} markets`}
-            className="inline-flex min-h-9 shrink-0 items-center text-[13px] font-semibold text-[var(--accent-text)] no-underline hover:underline"
+            className="inline-flex min-h-9 shrink-0 items-center text-[13px] font-semibold text-[var(--accent-text)] no-underline transition-colors hover:text-[var(--brand-dark)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:text-[var(--brand-dark)]"
           >
             {viewAllLabel}
           </Link>
@@ -524,7 +524,7 @@ export default function DiscoverPage() {
         {error ? (
           <Card
             as="div"
-            edge="no"
+            edge="brand"
             padding="none"
             className="mt-6 px-[18px] py-4"
             role="alert"
@@ -536,7 +536,7 @@ export default function DiscoverPage() {
                 height="16"
                 fill="currentColor"
                 aria-hidden="true"
-                className="flex-none text-[var(--no)]"
+                className="flex-none text-[var(--brand-dark)]"
               >
                 <path d={PHOSPHOR_WARNING_CIRCLE_FILL} />
               </svg>
@@ -550,7 +550,7 @@ export default function DiscoverPage() {
             <button
               type="button"
               onClick={() => setReloadNonce((value) => value + 1)}
-              className="mt-3.5 inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[10px] border border-[var(--border-2)] bg-[var(--surface-1)] px-[18px] text-[13px] font-semibold text-[var(--t1)] transition-[border-color] hover:border-[var(--t3)]"
+              className="mt-3.5 inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[10px] border border-[var(--border-2)] bg-[var(--surface-1)] px-[18px] text-[13px] font-semibold text-[var(--t1)] transition-[background-color,border-color,color] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:border-[var(--brand-dark)] active:bg-[var(--brand-lavender)]"
             >
               {t("RETRY", "Retry")}
             </button>
@@ -578,10 +578,10 @@ export default function DiscoverPage() {
                       aria-controls="discover-ranking-panel"
                       tabIndex={selected ? 0 : -1}
                       onClick={() => setActiveRankingKey(ranking.key)}
-                      className={`min-h-9 cursor-pointer whitespace-nowrap rounded-full border px-3.5 text-[13px] font-semibold transition-colors ${
+                      className={`min-h-9 cursor-pointer whitespace-nowrap rounded-full border px-3.5 text-[13px] font-semibold transition-[background-color,border-color,color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] ${
                         selected
-                          ? "border-[var(--t1)] bg-[var(--t1)] text-[var(--surface-1)]"
-                          : "border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--border-2)] hover:text-[var(--t1)]"
+                          ? "border-[var(--brand-purple)] bg-[var(--brand-purple)] text-[var(--brand-fg)] hover:bg-[var(--brand-dark)] active:bg-[var(--brand-dark)]"
+                          : "border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--brand-purple)] hover:bg-[var(--brand-lavender)] hover:text-[var(--brand-purple)] active:border-[var(--brand-dark)] active:bg-[var(--brand-lavender)]"
                       }`}
                     >
                       {ranking.heading}

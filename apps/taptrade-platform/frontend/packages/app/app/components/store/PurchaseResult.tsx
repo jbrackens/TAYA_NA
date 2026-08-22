@@ -30,8 +30,7 @@ const BALANCE_LABEL_CLASS = "font-medium text-[var(--t3)]";
 const BALANCE_VALUE_CLASS =
   "font-mono font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
 const ACTIONS_CLASS = "flex flex-col items-stretch gap-2";
-// Result actions use ui/Button (cta + secondary); the one-off
-// green-tinged secondary hover unified onto the canonical recipe.
+// Result actions use the shared Button recipes.
 const SECONDARY_SIZING = "w-full px-4 py-3 text-[13px]";
 const QUIET_LINK_CLASS =
   "mt-1 inline-block border-b border-[var(--border-1)] pb-0.5 text-[13px] text-[var(--t2)] no-underline hover:border-[var(--accent)] hover:text-[var(--t1)]";
@@ -74,7 +73,7 @@ export function PurchaseSuccess({
   return (
     <ResultShell
       testid="purchase-success"
-      dotClass="bg-[var(--yes-bar)]"
+      dotClass="bg-[var(--reward)]"
       title={t("result.successTitle", "Points added")}
       body={t(
         "result.successBody",
@@ -144,7 +143,7 @@ export function PurchaseFailed({
   return (
     <ResultShell
       testid="purchase-failed"
-      dotClass="bg-[var(--no-bar)]"
+      dotClass="bg-[var(--border-2)]"
       title={t("result.failedTitle", "Checkout did not complete")}
       body={t(
         "result.failedBody",
@@ -216,7 +215,7 @@ export function PurchasePending({
   return (
     <ResultShell
       testid="purchase-pending"
-      dotClass="bg-[var(--brand-period)]"
+      dotClass="bg-[var(--reward)]"
       title={t("result.pendingTitle", "Completion pending")}
       body={t(
         "result.pendingBody",

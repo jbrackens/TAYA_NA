@@ -14,16 +14,16 @@ const SUPPORT_EMAIL = brand.supportEmail;
 const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
 const HEAD_CLASS = "mb-6 text-center";
 const EYEBROW_CLASS =
-  "mb-3.5 inline-block rounded-[var(--r-pill)] border border-[rgba(43,228,128,0.3)] bg-[var(--accent-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]";
+  "mb-3.5 inline-block rounded-[var(--r-pill)] border border-[var(--accent)] bg-[var(--accent-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--accent-text)]";
 const TITLE_CLASS =
   "m-0 mb-2 text-[28px] font-extrabold tracking-[-0.02em] text-[var(--t1)]";
 const SUBTITLE_CLASS = "m-0 text-sm leading-[1.55] text-[var(--t2)]";
 const ALERT_ERROR_CLASS =
-  "mb-4 rounded-[var(--r-sm)] border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.12)] px-3 py-2.5 text-xs text-[var(--no-text)]";
+  "mb-4 rounded-[var(--r-sm)] border border-[var(--border-2)] bg-[var(--surface-2)] px-3 py-2.5 text-xs text-[var(--t2)]";
 const LINK_CLASS =
   "font-semibold text-[var(--accent)] no-underline hover:text-[var(--accent)] hover:brightness-110 hover:underline";
 const DIVIDER_CLASS =
-  "mb-4 mt-[22px] flex items-center gap-3 before:h-px before:flex-1 before:bg-[rgba(255,255,255,0.08)] before:content-[''] after:h-px after:flex-1 after:bg-[rgba(255,255,255,0.08)] after:content-['']";
+  "mb-4 mt-[22px] flex items-center gap-3 before:h-px before:flex-1 before:bg-[var(--border-1)] before:content-[''] after:h-px after:flex-1 after:bg-[var(--border-1)] after:content-['']";
 const DIVIDER_TEXT_CLASS =
   "text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
 const LINKS_CLASS = "text-center text-[13px] text-[var(--t2)]";

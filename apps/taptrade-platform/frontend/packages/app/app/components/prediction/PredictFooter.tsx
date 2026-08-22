@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * PredictFooter — the ink anchor (P9.4, 2026-07-07).
+ * PredictFooter — the deep-purple anchor (P9.4, 2026-07-07).
  *
- * Every page ends on one deliberate deep-forest statement: the brand
+ * Every page ends on one deliberate deep-purple statement: the brand
  * surface the P9 white system otherwise never spends. The inverse Tap Path
- * lockup, quiet ivory links, and legal line sit under a hairline.
+ * lockup, quiet inverse links, and legal line sit under a hairline.
  * This is a brand-layer surface (DESIGN.md Active Brand) — market data
  * never renders on ink.
  */
@@ -40,15 +40,15 @@ export function PredictFooter() {
             <Link
               key={l.href}
               href={l.href}
-              className="font-medium text-[rgba(241,236,227,0.72)] no-underline transition-colors duration-[120ms] hover:text-[var(--brand-on-dark)]"
+              className="font-medium text-[color-mix(in_srgb,var(--brand-on-dark)_72%,transparent)] no-underline transition-colors duration-[120ms] hover:text-[var(--brand-on-dark)]"
             >
               {l.label}
             </Link>
           ))}
         </div>
       </div>
-      <div className="mt-5 border-t border-[rgba(241,236,227,0.14)] pt-4 text-[rgba(241,236,227,0.55)]">
-        <span className="font-bold text-[rgba(241,236,227,0.85)]">
+      <div className="mt-5 border-t border-[color-mix(in_srgb,var(--brand-on-dark)_14%,transparent)] pt-4 text-[color-mix(in_srgb,var(--brand-on-dark)_55%,transparent)]">
+        <span className="font-bold text-[color-mix(in_srgb,var(--brand-on-dark)_85%,transparent)]">
           {brand.name}
         </span>
         {" · "}© {YEAR} {brand.legalEntity}

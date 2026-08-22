@@ -6,13 +6,13 @@ import { logger } from "../lib/logger";
 const shellClass =
   "flex min-h-[50vh] flex-col items-center justify-center px-5 py-10 text-center";
 const iconClass = "mb-4 text-[48px] leading-none opacity-60";
-const titleClass = "mb-2 text-[20px] font-bold text-[#f8fafc]";
-const copyClass = "mb-6 max-w-[400px] text-[14px] leading-[1.6] text-[#64748b]";
+const titleClass = "mb-2 text-[20px] font-bold text-[var(--t1)]";
+const copyClass = "mb-6 max-w-[400px] text-[14px] leading-[1.6] text-[var(--t2)]";
 const actionRowClass = "flex gap-3";
 const primaryActionClass =
-  "cursor-pointer rounded-[8px] border-0 bg-[linear-gradient(135deg,var(--accent),var(--accent-lo))] px-6 py-2.5 text-[14px] font-semibold text-[#04140a]";
+  "cursor-pointer rounded-[8px] border-0 bg-[var(--accent)] px-6 py-2.5 text-[14px] font-semibold text-[var(--ticket-cta-text)]";
 const secondaryActionClass =
-  "flex items-center rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-transparent px-6 py-2.5 text-[14px] font-semibold text-[#D3D3D3] no-underline";
+  "flex items-center rounded-[8px] border border-[var(--border-1)] bg-[var(--surface-2)] px-6 py-2.5 text-[14px] font-semibold text-[var(--t1)] no-underline";
 
 export default function ProfileError({
   error,

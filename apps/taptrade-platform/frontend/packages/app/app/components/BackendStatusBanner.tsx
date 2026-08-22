@@ -60,7 +60,7 @@ export function BackendStatusBanner() {
   return (
     <div
       role="alert"
-      className="flex items-center justify-between gap-3 border-b border-[rgba(251,191,36,0.3)] bg-[linear-gradient(90deg,#92400e_0%,#78350f_100%)] px-4 py-2 text-[13px] font-medium text-amber-100"
+      className="flex items-center justify-between gap-3 border-b border-[var(--signal-gold)] bg-[var(--signal-gold)] px-4 py-2 text-[13px] font-medium text-[var(--brand-dark)]"
     >
       <span>
         ⚠{" "}
@@ -72,7 +72,7 @@ export function BackendStatusBanner() {
       <button
         type="button"
         onClick={() => setDismissed(true)}
-        className="shrink-0 cursor-pointer rounded border border-[rgba(251,191,36,0.4)] bg-transparent px-2 py-0.5 text-[11px] text-amber-100"
+        className="shrink-0 cursor-pointer rounded border border-[var(--brand-dark)] bg-transparent px-2 py-0.5 text-[11px] text-[var(--brand-dark)] transition-colors hover:bg-[var(--brand-dark)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-dark)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--signal-gold)]"
       >
         {t("DISMISS", { defaultValue: "Dismiss" })}
       </button>

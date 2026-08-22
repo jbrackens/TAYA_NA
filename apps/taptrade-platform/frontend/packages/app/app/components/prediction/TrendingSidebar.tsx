@@ -14,10 +14,8 @@
  * ordered by actual |movement|; rows without a usable series render
  * without any movement claim instead of a fabricated one.
  *
- * Color discipline (DESIGN.md §3 strict two-greens):
- *   - mint --accent: actions/brand only (the live dot in the header)
- *   - seafoam --yes: up-direction (sparkline up, delta-up pill)
- *   - coral --no: down-direction
+ * Color discipline: purple is for interface actions, gold is live activity,
+ * and YES/NO remain reserved for actual market-direction data.
  */
 
 import Link from "next/link";
@@ -67,9 +65,9 @@ const TOP_MOVERS_HEADER_CLASS =
 const TOP_MOVERS_TITLE_CLASS =
   "type-display m-0 text-[19px] font-semibold text-[var(--t1)]";
 const TOP_MOVERS_LIVE_CLASS =
-  "inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--accent-text)]";
+  "inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--live-text)]";
 const TOP_MOVERS_DOT_CLASS =
-  "h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent-lo)] shadow-[0_0_8px_rgba(15,138,76,0.35)] motion-reduce:animate-none";
+  "h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--live)] shadow-[0_0_8px_var(--live-soft)] motion-reduce:animate-none";
 const TOP_MOVERS_LIST_CLASS = "m-0 list-none p-0";
 const TOP_MOVERS_ROW_CLASS =
   "grid cursor-pointer grid-cols-[1fr_60px_auto] items-center gap-[14px] rounded-[var(--r-rh-sm)] border-b border-[var(--border-1)] px-2 py-[14px] text-inherit no-underline transition-colors duration-[120ms] hover:bg-[var(--surface-2)] last:border-b-0";

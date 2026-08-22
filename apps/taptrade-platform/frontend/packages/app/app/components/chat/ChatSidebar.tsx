@@ -100,49 +100,50 @@ const chatClasses = {
   statusSub:
     "text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--t3)]",
   onlineDot:
-    "h-2 w-2 shrink-0 rounded-full bg-[#11945f] shadow-[0_0_9px_rgba(17,148,95,0.45)]",
+    "h-2 w-2 shrink-0 rounded-full bg-[var(--live)] shadow-[0_0_9px_var(--live-soft)]",
   reportToggle:
-    "inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 border-0 border-t border-[var(--border-1)] bg-[var(--surface-1)] text-xs font-semibold text-[var(--t2)]",
+    "inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 border-0 border-t border-[var(--border-1)] bg-[var(--surface-1)] text-xs font-semibold text-[var(--t2)] transition-[background-color,color] hover:bg-[var(--accent-soft)] hover:text-[var(--accent-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-inset active:bg-[var(--brand-lavender)]",
   mobileButton:
-    "fixed right-[18px] bottom-[calc(92px+env(safe-area-inset-bottom))] z-[95] inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-3.5 text-[13px] font-semibold text-[#061a10] shadow-[0_10px_28px_rgba(60,50,30,0.18)]",
+    "fixed right-[18px] bottom-[calc(92px+env(safe-area-inset-bottom))] z-[95] inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-3.5 text-[13px] font-semibold text-[var(--on-brand)] shadow-[var(--shadow-pop)] transition-[background-color,box-shadow,transform] duration-150 hover:bg-[var(--brand-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-px",
   mobileOverlay:
-    "fixed inset-0 z-[120] flex items-end justify-stretch bg-[rgba(18,16,12,0.28)] px-2.5 pt-0 pb-[max(10px,env(safe-area-inset-bottom))]",
+    "fixed inset-0 z-[120] flex items-end justify-stretch bg-[color-mix(in_srgb,var(--ink)_28%,transparent)] px-2.5 pt-0 pb-[max(10px,env(safe-area-inset-bottom))]",
   mobileSheet:
-    "chat-mobile-sheet flex h-[min(78vh,680px)] min-h-[420px] w-full flex-col overflow-hidden rounded-2xl border border-[var(--border-1)] bg-[var(--surface-2)] shadow-[0_18px_48px_rgba(40,35,22,0.24)]",
+    "chat-mobile-sheet flex h-[min(78vh,680px)] min-h-[420px] w-full flex-col overflow-hidden rounded-2xl border border-[var(--border-1)] bg-[var(--surface-2)] shadow-[var(--shadow-pop)]",
   mobileHeader:
     "flex min-h-12 items-center justify-between gap-3 border-b border-[var(--border-1)] bg-[var(--surface-1)] py-0 pr-3 pl-3.5",
   mobileTitle:
     "flex min-w-0 items-center gap-2 text-[13px] font-extrabold text-[var(--t1)]",
   mobileClose:
-    "grid h-[34px] w-[34px] cursor-pointer place-items-center rounded-[var(--r-rh-sm)] border-0 bg-[var(--surface-2)] text-[var(--t2)]",
+    "grid h-[34px] w-[34px] cursor-pointer place-items-center rounded-[var(--r-rh-sm)] border-0 bg-[var(--surface-2)] text-[var(--t2)] transition-[background-color,color] hover:bg-[var(--accent-soft)] hover:text-[var(--accent-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:bg-[var(--brand-lavender)]",
   sidebarBase:
-    "sticky top-[82px] left-0 z-[70] flex h-[calc(100vh-104px)] flex-col overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[0_14px_36px_rgba(60,50,30,0.08)] max-[1099px]:hidden",
+    "sticky top-[82px] left-0 z-[70] flex h-[calc(100vh-104px)] flex-col overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-card)] max-[1099px]:hidden",
   sidebarOpen: "w-[280px] min-w-[280px]",
   sidebarCollapsed: "w-[52px] min-w-[52px]",
   railButton:
     "inline-flex h-full w-full cursor-pointer flex-col items-center justify-start gap-2 border-0 bg-[var(--surface-1)] pt-3.5 text-xs font-semibold text-[var(--t2)]",
-  railIcon: "h-7 w-7 rounded-lg bg-[var(--accent)] p-1.5 text-[#061a10]",
+  railIcon:
+    "h-7 w-7 rounded-lg bg-[var(--accent)] p-1.5 text-[var(--on-brand)]",
   reportForm:
     "grid gap-2 border-t border-[var(--border-1)] bg-[var(--surface-2)] p-3",
   reportRow: "flex items-center justify-between gap-2",
   reportClose:
-    "grid h-7 w-7 cursor-pointer place-items-center rounded-[var(--r-rh-sm)] border-0 bg-[var(--surface-1)] text-[var(--t3)]",
+    "grid h-7 w-7 cursor-pointer place-items-center rounded-[var(--r-rh-sm)] border-0 bg-[var(--surface-1)] text-[var(--t3)] transition-[background-color,color] hover:bg-[var(--accent-soft)] hover:text-[var(--accent-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-2)] active:bg-[var(--brand-lavender)]",
   reportLabel: "text-[11px] font-bold text-[var(--t2)]",
   reportInput:
-    "w-full rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-1)] px-2.5 text-xs text-[var(--t1)] font-[inherit]",
+    "w-full rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-1)] px-2.5 text-xs text-[var(--t1)] font-[inherit] outline-none transition-[border-color,box-shadow] focus-visible:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-2)]",
   reportTextArea:
-    "min-h-[72px] w-full resize-y rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-1)] px-2.5 py-2 text-xs text-[var(--t1)] font-[inherit]",
+    "min-h-[72px] w-full resize-y rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-1)] px-2.5 py-2 text-xs text-[var(--t1)] font-[inherit] outline-none transition-[border-color,box-shadow] focus-visible:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-2)]",
   reportSubmit:
-    "min-h-9 cursor-pointer rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] text-xs font-extrabold text-[#061a10] disabled:cursor-not-allowed disabled:opacity-55",
+    "min-h-9 cursor-pointer rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] text-xs font-extrabold text-[var(--on-brand)] transition-[background-color,transform] hover:bg-[var(--brand-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-2)] active:translate-y-px disabled:cursor-not-allowed disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100",
   reportStatus: "text-xs font-bold text-[var(--t2)]",
-  reportError: "text-[#b3261e]",
+  reportError: "text-[var(--brand-dark)]",
   state:
     "relative grid flex-1 place-items-center bg-[var(--surface-1)] p-3.5 text-center text-xs font-medium text-[var(--t3)]",
   stream: "flex min-h-0 flex-1 flex-col gap-3 bg-[var(--surface-1)] p-3",
   messageList:
-    "flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto pr-1 [scrollbar-color:rgba(13,31,45,0.22)_transparent] [scrollbar-width:thin]",
+    "flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto pr-1 [scrollbar-color:var(--border-2)_transparent] [scrollbar-width:thin]",
   message:
-    "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2.5 shadow-[0_1px_0_rgba(255,255,255,0.55)]",
+    "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2.5",
   messageMeta:
     "mb-1.5 flex items-center justify-between gap-2 text-[10px] font-medium text-[var(--t3)]",
   messageUser:
@@ -151,19 +152,19 @@ const chatClasses = {
   messageText:
     "m-0 overflow-hidden text-[12px] font-normal leading-[1.45] text-[var(--t1)] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3]",
   readonlyComposer:
-    "shrink-0 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-3 shadow-[0_8px_20px_rgba(48,42,28,0.08)]",
+    "shrink-0 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-3 shadow-[var(--shadow-card)]",
   readonlyComposerTitle:
     "m-0 text-[12px] font-semibold leading-tight text-[var(--t1)]",
   readonlyComposerCopy:
     "mt-1 mb-2.5 text-[11px] leading-[1.35] text-[var(--t3)]",
   readonlyComposerButton:
-    "inline-flex min-h-8 items-center justify-center rounded-md bg-[var(--accent)] px-3 text-xs font-semibold text-[#061a10] no-underline",
+    "inline-flex min-h-8 items-center justify-center rounded-md bg-[var(--accent)] px-3 text-xs font-semibold text-[var(--on-brand)] no-underline transition-[background-color,transform] hover:bg-[var(--brand-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-2)] active:translate-y-px",
   composer:
-    "grid shrink-0 grid-cols-[1fr_auto] gap-2 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-1.5 shadow-[0_8px_20px_rgba(48,42,28,0.08)]",
+    "grid shrink-0 grid-cols-[1fr_auto] gap-2 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-1.5 shadow-[var(--shadow-card)]",
   composerInput:
-    "h-8 min-w-0 border-0 bg-transparent px-1 text-xs font-medium text-[var(--t1)] outline-none placeholder:text-[var(--t3)]",
+    "h-8 min-w-0 rounded-[var(--r-rh-sm)] border-0 bg-transparent px-1 text-xs font-medium text-[var(--t1)] outline-none placeholder:text-[var(--t3)] focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]",
   composerButton:
-    "h-8 rounded-md border-0 bg-[var(--accent)] px-3 text-xs font-semibold text-[#061a10] disabled:cursor-not-allowed disabled:opacity-45",
+    "h-8 rounded-md border-0 bg-[var(--accent)] px-3 text-xs font-semibold text-[var(--on-brand)] transition-[background-color,transform] hover:bg-[var(--brand-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-2)] active:translate-y-px disabled:cursor-not-allowed disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100",
 };
 
 export function ChatSidebar() {
@@ -316,7 +317,7 @@ export function ChatSidebar() {
   if (collapsed) {
     return (
       <button
-        className="fixed bottom-6 right-6 z-[70] inline-flex h-12 cursor-pointer items-center gap-2 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-1)] pl-3 pr-4 text-[13px] font-semibold text-[var(--t1)] shadow-[0_10px_24px_rgba(60,50,30,0.14)] transition-[transform,box-shadow,border-color] duration-150 ease-out hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[0_14px_32px_rgba(60,50,30,0.18)] max-[1099px]:hidden"
+        className="fixed bottom-6 right-6 z-[70] inline-flex h-12 cursor-pointer items-center gap-2 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-1)] pl-3 pr-4 text-[13px] font-semibold text-[var(--t1)] shadow-[var(--shadow-card)] transition-[transform,box-shadow,border-color] duration-150 ease-out hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-[var(--shadow-card-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-0 max-[1099px]:hidden"
         type="button"
         aria-label="Open chat"
         onClick={() => persistCollapsed(false)}

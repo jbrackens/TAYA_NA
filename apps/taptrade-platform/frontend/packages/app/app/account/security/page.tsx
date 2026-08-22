@@ -37,7 +37,7 @@ function twoFaButtonClass(enabled: boolean) {
   return `cursor-pointer rounded-lg px-4 py-2.5 text-[13px] font-bold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
     enabled
       ? "border border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t1)] hover:bg-[var(--border-1)]"
-      : "border-0 bg-[var(--accent)] text-[#04140a] hover:opacity-90"
+      : "border-0 bg-[var(--accent)] text-[var(--ticket-cta-text)] hover:opacity-90"
   }`;
 }
 
@@ -260,7 +260,7 @@ export default function SecurityPage() {
             </div>
 
             {passwordError && (
-              <div className="rounded-lg border border-[rgba(255,155,107,0.2)] bg-[rgba(255,155,107,0.08)] px-3 py-2.5 text-[13px] font-medium text-[var(--no-text)]">
+              <div className="rounded-lg border border-[var(--accent)] bg-[var(--accent-soft)] px-3 py-2.5 text-[13px] font-medium text-[var(--brand-dark)]">
                 {passwordError}
               </div>
             )}
@@ -356,14 +356,14 @@ export default function SecurityPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   {session.current && (
-                    <span className="inline-block rounded bg-[rgba(43,228,128,0.1)] px-2 py-1 text-xs font-semibold text-[var(--accent)]">
+                    <span className="inline-block rounded bg-[var(--accent-soft)] px-2 py-1 text-xs font-semibold text-[var(--accent-text)]">
                       Current
                     </span>
                   )}
                   {!session.current && (
                     <button
                       type="button"
-                      className="cursor-pointer rounded-md border-0 bg-[var(--no)] px-3 py-1.5 text-xs font-semibold text-white transition-opacity duration-150 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="cursor-pointer rounded-md border-0 bg-[var(--brand-dark)] px-3 py-1.5 text-xs font-semibold text-[var(--on-brand)] transition-opacity duration-150 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                       onClick={() => handleRevokeSession(session.id)}
                       disabled={revokingId === session.id}
                     >

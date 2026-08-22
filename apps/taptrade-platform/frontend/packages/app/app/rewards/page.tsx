@@ -48,7 +48,7 @@ const LEDGER_LIMIT = 20;
 const WRAP_CLASS = "mx-auto max-w-[1120px] pb-[60px] max-[768px]:px-4";
 const HEAD_CLASS = "mb-[22px] flex items-end justify-between gap-4";
 const KICKER_CLASS =
-  "mb-1.5 inline-block text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]";
+  "mb-1.5 inline-block text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--reward-text)]";
 const TITLE_CLASS =
   "m-0 text-[34px] font-extrabold tracking-[-0.02em] text-[var(--t1)] max-[768px]:text-[26px]";
 const CROSS_LINK_CLASS =
@@ -76,7 +76,7 @@ const PROGRESS_HEAD_CLASS =
 const PROGRESS_PCT_CLASS =
   "font-bold text-[var(--t1)] tabular-nums font-mono";
 const PROGRESS_TRACK_CLASS =
-  "block h-2 w-full overflow-hidden rounded-full border border-[var(--border-1)] bg-[var(--surface-2)] [appearance:none] [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-[var(--accent)] [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-[var(--accent)] [&::-webkit-progress-value]:transition-all [&::-webkit-progress-value]:duration-[240ms] [&::-webkit-progress-value]:ease-out";
+  "block h-2 w-full overflow-hidden rounded-full border border-[var(--border-1)] bg-[var(--surface-2)] [appearance:none] [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-[var(--reward)] [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-[var(--reward)] [&::-webkit-progress-value]:transition-all [&::-webkit-progress-value]:duration-[240ms] [&::-webkit-progress-value]:ease-out";
 const TOPPED_OUT_CLASS = "m-0 mb-5 text-sm text-[var(--t2)]";
 const BENEFITS_TITLE_CLASS =
   "m-0 mb-2.5 text-[13px] font-bold uppercase tracking-[0.04em] text-[var(--t3)]";
@@ -98,13 +98,13 @@ const PACK_ROW_CLASS =
 const PACK_NAME_CLASS = "m-0 text-sm font-bold text-[var(--t1)]";
 const PACK_DESC_CLASS = "m-0 mt-0.5 text-xs leading-[1.45] text-[var(--t3)]";
 const PACK_AMOUNT_CLASS =
-  "whitespace-nowrap text-sm font-bold text-[var(--accent)] tabular-nums font-mono";
+  "whitespace-nowrap text-sm font-bold text-[var(--reward-text)] tabular-nums font-mono";
 const MISSION_PROGRESS_CLASS =
   "mt-1 text-xs text-[var(--t3)] tabular-nums font-mono";
 const BADGE_GRID_CLASS = "mt-3 grid grid-cols-3 gap-2 max-[768px]:grid-cols-1";
 const BADGE_CARD_BASE_CLASS = "rounded-[var(--r-rh-md)] border p-3 text-left";
 const BADGE_EARNED_CLASS =
-  "border-[color-mix(in_srgb,var(--accent)_45%,var(--border-1))] bg-[color-mix(in_srgb,var(--accent)_9%,var(--surface-2))]";
+  "border-[color-mix(in_srgb,var(--reward)_45%,var(--border-1))] bg-[var(--reward-soft)]";
 const BADGE_LOCKED_CLASS =
   "border-[var(--border-1)] bg-[var(--surface-2)] opacity-70";
 const BADGE_STATUS_CLASS =
@@ -124,8 +124,8 @@ const MONO_CLASS =
 const DATE_CLASS = `${MONO_CLASS} whitespace-nowrap text-[var(--t2)]`;
 const EVENT_CLASS = "text-[var(--t1)]";
 const REASON_CLASS = "mt-0.5 text-xs text-[var(--t3)]";
-const POS_CLASS = "text-[var(--accent)]";
-const NEG_CLASS = "text-[var(--no-text)]";
+const POS_CLASS = "text-[var(--reward-text)]";
+const NEG_CLASS = "text-[var(--t2)]";
 const SUBTLE_CLASS = "text-[var(--t3)]";
 const STATE_CLASS = "flex min-h-[60vh] items-center justify-center px-6";
 const PREFIRST_CARD_CLASS = "w-full max-w-[440px] text-center";

@@ -70,9 +70,9 @@ const MARKET_HEAD_CLASS = "flex h-full flex-col";
 const MARKET_HEAD_EYEBROW_CLASS =
   "mb-4 flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
 const MARKET_HEAD_LIVE_CLASS =
-  "inline-flex items-center gap-1.5 text-[var(--yes-text)]";
+  "inline-flex items-center gap-1.5 text-[var(--live-text)]";
 const MARKET_HEAD_LIVE_DOT_CLASS =
-  "h-[7px] w-[7px] rounded-full bg-[var(--yes)]";
+  "h-[7px] w-[7px] rounded-full bg-[var(--live)]";
 const MARKET_HEAD_SETTLED_CLASS =
   "font-mono inline-flex items-center gap-1.5 text-[10px] font-bold tracking-[0.1em] text-[var(--t2)]";
 const MARKET_HEAD_COUNTDOWN_CLASS =

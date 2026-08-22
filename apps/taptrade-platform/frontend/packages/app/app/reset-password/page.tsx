@@ -13,7 +13,7 @@ export default function ResetPasswordRedirect() {
   }, [router, searchParams]);
 
   return (
-    <div className="p-10 text-center text-[14px] text-[#64748b]">
+    <div className="p-10 text-center text-[14px] text-[var(--t3)]">
       Redirecting...
     </div>
   );

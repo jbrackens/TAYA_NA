@@ -55,7 +55,7 @@ import {
 const WRAP_CLASS = "mx-auto max-w-[1120px] pb-[60px] max-[768px]:px-4";
 const HEAD_CLASS = "mb-[22px] flex items-end justify-between gap-4";
 const KICKER_CLASS =
-  "mb-1.5 inline-block text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]";
+  "mb-1.5 inline-block text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--reward-text)]";
 const TITLE_CLASS =
   "m-0 text-[34px] font-extrabold tracking-[-0.02em] text-[var(--t1)] max-[768px]:text-[26px]";
 const CROSS_LINK_CLASS =
@@ -75,7 +75,7 @@ const STATE_CARD_SIZING = "w-full max-w-[440px] text-center";
 const STATE_CTA_SIZING = "gap-1.5 px-5 py-3 text-[13px] no-underline";
 const STATE_MESSAGE_CLASS = "m-0 mb-3.5 leading-[1.6] text-[var(--t2)]";
 const ERROR_NOTE_CLASS =
-  "mb-3 rounded-[var(--r-rh-sm)] border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.1)] p-2.5 text-center text-xs leading-[1.45] text-[var(--no-text)]";
+  "mb-3 rounded-[var(--r-rh-sm)] border border-[var(--border-2)] bg-[var(--surface-2)] p-2.5 text-center text-xs leading-[1.45] text-[var(--t2)]";
 
 const DELAYED_POLL_MS = 5_000;
 

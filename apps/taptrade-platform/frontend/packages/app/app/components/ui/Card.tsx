@@ -15,8 +15,8 @@ import { cx, variants } from "./variants";
 
 export type CardPadding = "none" | "md" | "lg";
 export type CardVariant = "solid" | "dashed";
-/** Left-edge accent tone for notice/error cards (States 18c). */
-export type CardEdge = "no" | "info" | "pending";
+/** Left-edge accent tone for notice, error, and brand-status cards (States 18c). */
+export type CardEdge = "brand" | "no" | "info" | "pending";
 
 const cardPadding = variants<CardPadding>(
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)]",
@@ -33,6 +33,8 @@ const VARIANT_CLASS: Record<CardVariant, string> = {
 };
 
 const EDGE_CLASS: Record<CardEdge, string> = {
+  brand:
+    "border-l-[3px] border-l-[var(--brand-dark)] !bg-[var(--brand-lavender)]",
   no: "border-l-[3px] border-l-[var(--no)]",
   info: "border-l-[3px] border-l-[var(--info-dot)]",
   pending: "border-l-[3px] border-l-[var(--pending-border)]",

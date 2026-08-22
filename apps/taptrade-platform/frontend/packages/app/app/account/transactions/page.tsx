@@ -291,8 +291,8 @@ export default function PointsLedgerPage() {
                           <span
                             className={
                               positive
-                                ? "font-bold text-[var(--accent)]"
-                                : "font-bold text-[var(--no-text)]"
+                                ? "font-bold text-[var(--reward-text)]"
+                                : "font-bold text-[var(--brand-dark)]"
                             }
                           >
                             {formatPointDelta(tx)}

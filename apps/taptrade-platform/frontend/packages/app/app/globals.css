@@ -5,7 +5,7 @@
  * Next.js's App Router directory layout. */
 @import "tailwindcss";
 
-/* ── Ink & lime type system (handoff spec §1, 2026-07-26) ─────────────
+/* ── TapTrade type system ──────────────────────────────────────────────
  * Two families replace seven. Switzer (Fontshare, ITF Free Font
  * License; self-hosted woff2 in public/fonts/, ~16-20KB/weight) is
  * display, UI and body. Geist Mono (geist npm package, self-hosted via
@@ -110,28 +110,20 @@ body {
 }
 
 /* ── Predict design system tokens ─────────────────────────────────────
-   * Liquid Glass aesthetic + Thndr-inspired mint emerald accent.
-   * Revised 2026-04-24: superseded the prior dark-broadcast / neon-
-   * taptrade-green direction. See DESIGN.md §3 for the full palette and
-   * DESIGN.md §12 Decisions Log for rationale.
-   */
+   * Cool-neutral information surfaces, structural TapTrade purple, and
+   * selectively deployed signal gold. Green and red remain market-side
+   * semantics only. */
 :root {
-  /* CTA foreground for the money button (Button variant="cta"): dark ink
-   * on the light accent. Theme-scoped so any cta consumer resolves a
-   * correct color — Codex review 2026-07-19 flagged that this variable
-   * previously existed only in TradeTicket's inline style. */
-  --ticket-cta-text: var(--ink-on-lime); /* Step 2.5: ink on lime */
-  /* Step 2.5 (2026-07-26): the legacy token NAMES below are repointed at
-   * the Ink & lime values centrally — components keep their old var()
-   * references and pick up the new palette from here. The P9 prose is
-   * retained where it still explains the token's ROLE.
-   * Legacy --bg-{navy,teal,mint,azure} retained per P6 carry-forward
-   * policy until each consuming surface migrates off them. */
+  /* Primary action foreground. Purple controls take white text; gold
+   * controls must explicitly use --on-gold instead. */
+  --ticket-cta-text: var(--on-brand);
+  /* Compatibility aliases keep legacy consumers on the current system
+   * while component migrations use role-based tokens. */
   --bg-deep: var(--paper);
-  --bg-navy: #0c2a4a;
-  --bg-teal: #0c2638;
-  --bg-mint: #0d2a22;
-  --bg-azure: #0e3858;
+  --bg-navy: var(--brand-deep);
+  --bg-teal: var(--brand-deep);
+  --bg-mint: var(--brand-deep);
+  --bg-azure: var(--brand-deep);
 
   /* P9: the chart-paper grid is retired. Decoration budget moves to
    * typography, hairlines, and shadow depth. Page stays bare white. */
@@ -150,19 +142,16 @@ body {
   --chroma-1: rgba(255, 120, 200, 0.05);
   --chroma-2: rgba(100, 180, 255, 0.05);
 
-  /* Surfaces — deprecation aliases to visually-close --bg-* values.
-   * Kept for Phase 1 so the ~50 components still referencing --s0..--s3
-   * continue to render sensible colors. Phase 4 will delete these along
-   * with the last --s0..--s3 call sites. (Plan decision D1.) */
-  --s0: var(--bg-teal);
-  --s1: var(--bg-navy);
-  --s2: var(--bg-deep);
-  --s3: var(--bg-deep);
+  /* Legacy surface aliases. */
+  --s0: var(--raised);
+  --s1: var(--surface-1);
+  --s2: var(--paper);
+  --s3: var(--paper);
 
   /* Borders — legacy aliases retained while shared surfaces finish Tailwind migration. */
-  --b1: #1f2a3d;
-  --b2: #374151;
-  --b3: #4b5563;
+  --b1: var(--hairline);
+  --b2: var(--hairline-strong);
+  --b3: var(--ink-3);
 
   /* Text — P9 cool neutrals on white. The P8 warm taupes (#8b8378/#b5ae9f)
    * read muddy on pure white; these sit on the same blue-gray axis as the
@@ -177,32 +166,23 @@ body {
   --t3: var(--ink-3);
   --t4: var(--ink-3);
 
-  /* Accent (mint emerald — brand channel). Replaces neon-lime #39ff14.
-   * --accent-glow is kept as a COMPLETE box-shadow declaration so the
-   * 17 existing `box-shadow: var(--accent-glow)` call sites still work.
-   * Use --accent-glow-color if you need just the color. (D1.) */
-  --accent: var(--lime); /* FILL ONLY — text call sites must use --accent-text */
-  --accent-lo: var(--lime-text); /* Step 2.5: old "darker accent" tier → lime text tint */
-  --accent-text: var(--lime-text); /* lime as TEXT/links (5.1:1 on raised) */
-  --accent-soft: rgba(198, 242, 78, 0.18);
-  /* Step 2.5: shadows are never coloured, never glowing in Ink & lime.
-   * --accent-glow resolves to none so the 17 `box-shadow:
-   * var(--accent-glow)` call sites go quiet without edits. */
-  --accent-glow-color: rgba(198, 242, 78, 0.35);
+  /* Purple is the interface's interaction channel: links, selected
+   * controls, focus, and generic primary actions. */
+  --accent: var(--brand-purple);
+  --accent-lo: var(--brand-dark);
+  --accent-text: var(--brand-purple);
+  --accent-soft: var(--brand-lavender);
+  --accent-glow-color: rgba(99, 52, 168, 0.24);
   --accent-glow: none;
-  --accent-gradient: linear-gradient(100deg, #c6f24e 0%, #c6f24e 100%);
+  --accent-gradient: linear-gradient(100deg, var(--brand-purple) 0%, var(--brand-purple) 100%);
 
-  /* Brand identity — TapTrade wordmark + mark (2026-06-06, "B / grotesque"
-   * direction; replaces the retired chart-line mark). Deep-forest wordmark
-   * with a mint "period" signature; the split-T mark sits on the forest tile.
-   * Brand color is its own layer — NOT --accent (CTA mint) or --yes (signal). */
-  /* Step 2.5: brand goes ink + lime (Palette and Mark: duotone layers
-   * recolour to ink #111111 / lime #c6f24e). */
-  --brand-ink: var(--ink); /* wordmark on light */
-  --brand-period: var(--lime); /* the period signature + mark dot */
-  --brand-fg: #f8f9fa; /* light glyph on dark tiles (unchanged) */
-  --brand-on-dark: #f1ece3; /* wordmark on dark surfaces (ivory, unchanged) */
-  --brand-period-dark: var(--lime); /* lime period on dark */
+  /* Brand identity. Deep purple anchors navigation and major surfaces;
+   * gold is the controlled signature and reward signal. */
+  --brand-ink: var(--brand-deep);
+  --brand-period: var(--signal-gold);
+  --brand-fg: var(--on-brand);
+  --brand-on-dark: var(--on-brand);
+  --brand-period-dark: var(--signal-gold);
 
   /* Semantic (data layer). YES is seafoam green, NO is coral
    * (DESIGN.md §3). Keep brand mint on CTA/identity; these are
@@ -227,27 +207,29 @@ body {
   --no-border: rgba(193, 39, 45, 0.26);
   --no-text: var(--dir-no);
   --no-bar: var(--dir-no-bar); /* pale fills, dots */
-  --focus-ring: var(--lime-text); /* AA non-text on paper/raised */
+  --focus-ring: var(--brand-purple); /* AA non-text on paper/raised */
 
-  /* --live is the only warm color outside --no. Distinct, redder, pulses. */
-  --live: #ff6b6b;
+  /* Gold is attention, not a generic CTA: live activity, rewards,
+   * featured markets, and priority information. */
+  --live: var(--signal-gold);
+  --live-soft: var(--signal-gold-soft);
+  --live-text: var(--signal-gold-text);
+  --reward: var(--signal-gold);
+  --reward-soft: var(--signal-gold-soft);
+  --reward-text: var(--signal-gold-text);
 
   /* Deprecation aliases retired in Phase 5 (2026-04-25): --gain, --whale,
-   * and --whale-soft are gone. Phase 4 retired WhaleTicker / WhaleActivityCard
-   * / TopMoversCard / FeaturedHero, then this Phase-5 sweep cleaned the
-   * remaining call sites (rewards / account / theme.ts) to use --accent or
-   * the literal #fbbf24 amber where amber was specifically intended
-   * (self-exclude shield, profile pending pill). */
+   * and --whale-soft are gone. Remaining consumers, including theme.ts,
+   * resolve through the explicit purple, gold, and YES/NO semantic tokens. */
 
-  /* Loyalty tier channels — muted neutrals + one violet accent.
-   * Unchanged (loyalty shipped against these). Top tier uses violet
-   * (not green) per the three-greens rule; see
-   * PLAN-loyalty-leaderboards.md §6 + DESIGN.md §12 Decisions Log. */
-  --tier-1: #94a3b8; /* Newcomer — slate */
-  --tier-2: #cbd5e1; /* Trader — slate-light */
-  --tier-3: #d4a857; /* Sharp — warm-gold-muted */
-  --tier-4: #9ca7bf; /* Whale — platinum-muted */
-  --tier-5: #8b5cf6; /* Legend — violet */
+  /* Loyalty levels stay within the approved system: cool neutrals establish
+   * progression, gold signals earned reward status, and purple marks the
+   * highest brand-aligned levels. */
+  --tier-1: var(--ink-3);
+  --tier-2: var(--ink-2);
+  --tier-3: var(--signal-gold);
+  --tier-4: var(--brand-dark);
+  --tier-5: var(--brand-purple);
 
   /* Radius (glass-friendly; bumped from the prior 6/12/20 flat scale) */
   --r-sm: 10px;
@@ -293,81 +275,40 @@ body {
   --r-rh-xl: 20px;
 }
 
-/* ── Ink & lime palette (design handoff, 2026-07-26) ──────────────────
- * Source: design_handoff_taptrade/Handoff Spec.dc.html §2 (colour) and
- * Palette and Mark.dc.html §4f (info / disabled / pending groups).
- * Step 1 landed these under NEW names. Step 2.5 (2026-07-26) repointed
- * the legacy token names above at these values — the rename happened
- * once, centrally; components keep their old var() references.
- * Executed mapping (deviations from the step-1 sketch, by call-site
- * audit): --yes/--yes-text→--dir-yes and --no/--no-text→--dir-no (the
- * saturated pair; dots/danger-fills/text sites all want the dark
- * values), --yes-bar/--no-bar→--dir-*-bar (pale fills), --t4→--ink-3
- * (old faintest tier fails AA in this palette), --border-2→--hairline
- * (one hairline for everything), --accent-lo→--lime-text,
- * --accent-glow→none (shadows never glow).
- *
- * NAMING — role-named, with direction-scoped names where the old
- * palette already owns the obvious word:
- *   Surfaces   --paper (page) · --card (raised content) · --raised
- *              (insets/panels/inert controls) · --hairline (all
- *              dividers + borders)
- *   Ink        --ink (headings, magnitudes) · --ink-2 (body) ·
- *              --ink-3 (labels/meta/captions)
- *   Accent     --lime (FILL ONLY: CTA, active nav) · --lime-text
- *              (accent text/links) · --ink-on-lime (text on lime fill)
- *   Direction  --dir-yes / --dir-no (text+pills; collide-free vs the
- *              live --yes/--no) · --dir-yes-bar / --dir-no-bar (pale
- *              fills, dots, progress)
- *   Info       --info-text / --info-dot / --info-soft — names are
- *              spec-fixed in §4f; do not rename.
- *   Disabled   --inert-fill / --inert-border / --inert-label — the
- *              explicit inert surface. NO opacity, NO filter.
- *   Pending    --pending-fill / --pending-border / --pending-label —
- *              in-flight controls (submitting CTA, debounced quote).
- *
- * COLOUR RULE (one job per channel): lime = brand/nav/action, never a
- * signal; green/red = direction only; neutral ink = magnitude — a
- * price is never coloured. Contrast is measured against --raised (the
- * worst surface), not white.
- *
- * Later-step migration mapping (old → new), for screen work:
- *   --bg-deep→--paper · --surface-1→--card · --surface-2→--raised ·
- *   --border-1/2→--hairline · --t1→--ink · --t2→--ink-2 ·
- *   --t3/--t4→--ink-3 · --accent→--lime · --accent-text→--lime-text ·
- *   --ticket-cta-text→--ink-on-lime · --yes/--yes-text→--dir-yes ·
- *   --no/--no-text→--dir-no · --yes-bar→--dir-yes-bar ·
- *   --no-bar→--dir-no-bar
- */
+/* ── TapTrade color system ────────────────────────────────────────────
+ * Cool-neutral information surfaces form the canvas. Purple establishes
+ * brand, navigation, selected controls, links, and focus. Gold is a
+ * deliberate live/reward/priority signal. Green and red belong only to
+ * market YES/NO direction and outcome information. */
 :root {
-  /* Surfaces — cool neutral family, hue ~204° (2026-08-12). The warm
-   * 60° ramp shared a hue family with the lime accent, so selection
-   * washes read as smudges on the page. Rotating the ground to 204°
-   * puts 129° between background and accent. Surfaces are designed on
-   * CIE L* targets, not HSL L: equal-HSL-L cool is darker than warm, and
-   * the drift is uneven per token, which is what re-spaces the tiers.
-   * Ramp L*: card 100.00 / paper 96.02 / raised 93.93 / inset 92.13
-   * (steps 3.98 / 2.09 / 1.80 — every tier better separated than the
-   * warm ramp's 2.87 / 2.11 / 1.45). */
+  /* Neutral interface foundation. */
   --paper: #f1f4f6;
   --card: #ffffff;
   --raised: #ebeef0;
   --hairline: #dde2e5;
   --hairline-strong: #cbd1d5; /* hover tier + outer card frames */
 
-  /* Ink — carries its own cool content now. On a warm ground a neutral
-   * grey reads cool for free via simultaneous contrast; invert the
-   * ground and that runs backwards, so near-neutral ink would read
-   * warm-brown on cool paper. Chroma 2/10/15 (ink/ink-2/ink-3) — well
-   * short of a named blue-grey. Every --ink-3 contrast IMPROVES. */
+  /* Content text. */
   --ink: #101112;
   --ink-2: #43494d;
   --ink-3: #576066;
 
-  /* Accent — lime is fill-only; #556f00 is its text tint */
-  --lime: #c6f24e;
-  --lime-text: #556f00;
-  --ink-on-lime: #17200a;
+  /* Brand colors. */
+  --brand-deep: #1e1235;
+  --brand-dark: #28153f;
+  --brand-purple: #6334a8;
+  --brand-lavender: #ece3f7;
+  --signal-gold: #f5c454;
+  --signal-gold-text: #885206;
+  --signal-gold-soft: rgba(245, 196, 84, 0.18);
+  --on-brand: #ffffff;
+  --on-gold: var(--brand-dark);
+
+  /* Deprecated compatibility aliases: old component references now render
+   * with the purple system while they are progressively renamed. */
+  --lime: var(--brand-purple);
+  --lime-text: var(--brand-purple);
+  --ink-on-lime: var(--on-brand);
 
   /* Direction — green/red mean direction ONLY */
   --dir-yes: #147536;
@@ -375,11 +316,11 @@ body {
   --dir-yes-bar: #86d9a5;
   --dir-no-bar: #f0a9a3;
 
-  /* Info (§4f) — spec-fixed names. Cool slate; informational messages
-   * stop borrowing the accent. */
-  --info-text: #33556e;
-  --info-dot: #9fb8cc;
-  --info-soft: rgba(51, 85, 110, 0.08);
+  /* Informational UI stays in the purple brand channel rather than adding
+   * a competing blue accent. */
+  --info-text: var(--brand-purple);
+  --info-dot: var(--brand-purple);
+  --info-soft: color-mix(in srgb, var(--brand-purple) 8%, transparent);
 
   /* Disabled (§4f) — inertness comes from the surface, not from
    * washing the type out: no opacity, no filter. */
@@ -391,34 +332,22 @@ body {
   --inert-border: #dde2e5;
   --inert-label: #576066;
 
-  /* Pending (§4f) — in flight: lime pulled most of the way to paper.
-   * Re-mixed against the cool paper so the definition stays true: these
-   * hold their original ΔE from the ground rather than becoming a 127°
-   * hue opposition against it. */
-  --pending-fill: #e2ebd2;
-  --pending-border: #dae3c5;
-  --pending-label: #43494d;
+  /* Pending — lavender retains a clearly branded in-flight state. */
+  --pending-fill: var(--brand-lavender);
+  --pending-border: color-mix(in srgb, var(--brand-purple) 24%, var(--brand-lavender));
+  --pending-label: var(--brand-dark);
 
-  /* BrandMark gradient stops — themeable hooks for the logo. Default
-   * to the current violet so appearance does not change this step. */
-  /* Step 2.5: the violet gradient retires — the mark renders as the
-   * naked ink glyph (all three stops = ink, i.e. a flat fill), matching
-   * the "glyph" variant's own description. The lime tap dot comes from
-   * --brand-period. The provisional Fault mark swap is a later step. */
-  --brand-mark-stop-1: var(--ink);
-  --brand-mark-stop-2: var(--ink);
-  --brand-mark-stop-3: var(--ink);
+  /* BrandMark gradient hooks. */
+  --brand-mark-stop-1: var(--brand-deep);
+  --brand-mark-stop-2: var(--brand-purple);
+  --brand-mark-stop-3: var(--brand-purple);
 
   /* 1C additions (canonical system, Figma "TapTrade Design" 02 System,
    * locked 2026-08-06). Names match the Figma variable code syntax. */
-  --inset: #e5e9ec; /* search/input inset wells */
-  /* Both washes are lime pulled toward the ground, so they were re-mixed
-   * against the cool paper — holding each token's original ΔE from the
-   * page instead of stranding it 126° away in hue. --lime-tint was the
-   * worst case: 0.35 L* from the new paper, i.e. the active nav/tab
-   * background would have been separated by hue opposition alone. */
-  --lime-wash: #f0f7e6; /* selected-side background — action voice */
-  --lime-tint: #e9f3db; /* active nav/tab background */
+  --inset: var(--raised); /* search/input inset wells */
+  /* Selected / branded soft surfaces. */
+  --lime-wash: var(--brand-lavender);
+  --lime-tint: var(--brand-lavender);
   /* (soft YES/NO pill backgrounds already exist above as --yes-soft /
    * --no-soft rgba tokens — the Figma primitives mirror those.) */
 
@@ -577,7 +506,7 @@ body {
   animation: card-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Pulsing red dot used by the LIVE pill and the whale ticker. */
+/* Gold pulse used by the LIVE pill and activity ticker. */
 .live-dot {
   width: 7px;
   height: 7px;
@@ -596,12 +525,14 @@ body {
     opacity: 0.35;
   }
 }
-a {
-  color: inherit;
-  text-decoration: none;
-}
-button {
-  font-family: inherit;
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  button {
+    font-family: inherit;
+  }
 }
 
 /* ── Static Content Pages ── */
@@ -676,16 +607,14 @@ button {
 .ps-auth-layout {
   min-height: 100vh;
   overflow-y: auto;
-  background:
-    radial-gradient(circle at top, rgba(57, 255, 20, 0.06), transparent 28%),
-    linear-gradient(180deg, #0a0d18 0%, #0d1120 100%);
+  background: linear-gradient(180deg, var(--paper) 0%, var(--raised) 100%);
 }
 
 /* ── Sidebar (Sport Navigation) ── */
 .ps-sidebar {
   width: 220px;
-  background: #0f1225;
-  border-right: 1px solid #1a1f3a;
+  background: var(--brand-deep);
+  border-right: 1px solid var(--brand-dark);
   position: fixed;
   top: 0;
   bottom: 0;
@@ -699,7 +628,7 @@ button {
   width: 4px;
 }
 .ps-sidebar::-webkit-scrollbar-thumb {
-  background: #1a1f3a;
+  background: var(--brand-purple);
   border-radius: 2px;
 }
 .ps-sidebar-brand {
@@ -707,16 +636,16 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid #1a1f3a;
+  border-bottom: 1px solid var(--brand-dark);
 }
 .ps-sidebar-title {
   font-size: 18px;
   font-weight: 800;
-  color: #f8fafc;
+  color: var(--on-brand);
   letter-spacing: -0.02em;
 }
 .ps-sidebar-title span {
-  color: #39ff14;
+  color: var(--signal-gold);
 }
 
 .ps-sidebar-section {
@@ -728,7 +657,7 @@ button {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #d3d3d3;
+  color: var(--brand-lavender);
 }
 .ps-sidebar-item {
   display: flex;
@@ -738,7 +667,7 @@ button {
   cursor: pointer;
   transition: all 0.15s;
   border-left: 3px solid transparent;
-  color: #f8fafc;
+  color: var(--on-brand);
   font-size: 13px;
   font-weight: 500;
   background: none;
@@ -749,13 +678,13 @@ button {
   text-align: left;
 }
 .ps-sidebar-item:hover {
-  background: #161a35;
-  color: #ffffff;
+  background: var(--brand-dark);
+  color: var(--on-brand);
 }
 .ps-sidebar-item.active {
-  background: #1a2040;
-  color: #39ff14;
-  border-left-color: #39ff14;
+  background: var(--brand-purple);
+  color: var(--on-brand);
+  border-left-color: var(--brand-lavender);
 }
 .ps-sidebar-item-left {
   display: flex;
@@ -768,8 +697,8 @@ button {
   font-size: 15px;
 }
 .ps-sidebar-badge {
-  background: #1e2749;
-  color: #d3d3d3;
+  background: var(--brand-dark);
+  color: var(--brand-lavender);
   padding: 2px 8px;
   border-radius: 10px;
   font-size: 11px;
@@ -778,8 +707,8 @@ button {
   text-align: center;
 }
 .ps-sidebar-badge.live {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  background: var(--brand-dark);
+  color: var(--signal-gold);
 }
 
 /* ── Main Area ── */
@@ -799,8 +728,8 @@ button {
   justify-content: space-between;
   padding: 0 24px;
   height: 56px;
-  background: #0f1225;
-  border-bottom: 1px solid #1a1f3a;
+  background: var(--brand-deep);
+  border-bottom: 1px solid var(--brand-dark);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -815,19 +744,19 @@ button {
   border-radius: 8px;
   border: none;
   background: transparent;
-  color: #f8fafc;
+  color: var(--on-brand);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
 }
 .ps-topbar-tab:hover {
-  background: #161a35;
-  color: #ffffff;
+  background: var(--brand-dark);
+  color: var(--on-brand);
 }
 .ps-topbar-tab.active {
-  background: #1a2040;
-  color: #39ff14;
+  background: var(--brand-purple);
+  color: var(--on-brand);
 }
 
 .ps-topbar-right {
@@ -842,16 +771,16 @@ button {
   gap: 8px;
   padding: 7px 14px;
   border-radius: 8px;
-  border: 1px solid #1a1f3a;
-  background: #0b0e1c;
-  color: #d3d3d3;
+  border: 1px solid var(--brand-dark);
+  background: var(--brand-deep);
+  color: var(--brand-lavender);
   font-size: 13px;
   cursor: pointer;
   transition: border-color 0.15s;
   min-width: 180px;
 }
 .ps-topbar-search:hover {
-  border-color: #2a3050;
+  border-color: var(--brand-purple);
 }
 .ps-topbar-search svg {
   flex-shrink: 0;
@@ -863,14 +792,14 @@ button {
   gap: 8px;
   padding: 7px 14px;
   border-radius: 8px;
-  background: #1a2040;
-  color: #22c55e;
+  background: var(--signal-gold);
+  color: var(--on-gold);
   font-size: 13px;
   font-weight: 700;
-  border: 1px solid #22c55e30;
+  border: 1px solid var(--signal-gold);
 }
 .ps-wallet-badge svg {
-  color: #22c55e;
+  color: var(--on-gold);
 }
 
 .ps-topbar-icon {
@@ -879,7 +808,7 @@ button {
   border-radius: 8px;
   border: none;
   background: transparent;
-  color: #d3d3d3;
+  color: var(--brand-lavender);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -889,8 +818,8 @@ button {
   position: relative;
 }
 .ps-topbar-icon:hover {
-  background: #161a35;
-  color: #ffffff;
+  background: var(--brand-dark);
+  color: var(--on-brand);
 }
 .ps-topbar-icon .badge {
   position: absolute;
@@ -899,38 +828,38 @@ button {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ef4444;
-  border: 2px solid #0f1225;
+  background: var(--signal-gold);
+  border: 2px solid var(--brand-deep);
 }
 
 .ps-btn-login {
   padding: 8px 18px;
   border-radius: 8px;
-  border: 1.5px solid #39ff14;
+  border: 1.5px solid var(--brand-lavender);
   background: transparent;
-  color: #39ff14;
+  color: var(--brand-lavender);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
 }
 .ps-btn-login:hover {
-  background: rgba(57, 255, 20, 0.1);
+  background: var(--brand-dark);
 }
 .ps-btn-signup {
   padding: 8px 18px;
   border-radius: 8px;
   border: none;
-  background: linear-gradient(135deg, #39ff14, #2ed600);
-  color: #101114;
+  background: var(--brand-purple);
+  color: var(--on-brand);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
-  box-shadow: 0 4px 12px rgba(57, 255, 20, 0.25);
+  box-shadow: var(--shadow-card);
 }
 .ps-btn-signup:hover {
-  opacity: 0.9;
+  background: var(--brand-dark);
   transform: translateY(-1px);
 }
 
@@ -938,19 +867,19 @@ button {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 2px solid #39ff14;
+  border: 2px solid var(--brand-lavender);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 14px;
   font-weight: 700;
-  color: #39ff14;
+  color: var(--brand-lavender);
   cursor: pointer;
-  background: rgba(57, 255, 20, 0.1);
+  background: var(--brand-dark);
   transition: all 0.15s;
 }
 .ps-avatar:hover {
-  background: rgba(57, 255, 20, 0.2);
+  background: var(--brand-purple);
 }
 
 /* ── Main Inner (centered content) ── */
@@ -971,7 +900,7 @@ button {
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: #d3d3d3;
+  color: var(--t3);
 }
 .empty-state .empty-icon {
   font-size: 48px;
@@ -981,25 +910,30 @@ button {
 .empty-state .empty-title {
   font-size: 16px;
   font-weight: 600;
-  color: #d3d3d3;
+  color: var(--t1);
   margin-bottom: 6px;
 }
 .empty-state .empty-sub {
   font-size: 13px;
-  color: #d3d3d3;
+  color: var(--t3);
 }
 .error-banner {
   padding: 14px 18px;
-  background: rgba(239, 68, 68, 0.06);
-  border: 1px solid rgba(239, 68, 68, 0.15);
+  background: var(--brand-lavender);
+  border: 1px solid var(--brand-purple);
   border-radius: 12px;
-  color: #f87171;
+  color: var(--brand-dark);
   font-size: 13px;
   font-weight: 500;
   margin-bottom: 20px;
 }
 .skeleton {
-  background: linear-gradient(90deg, #161a35 25%, #1e2243 50%, #161a35 75%);
+  background: linear-gradient(
+    90deg,
+    var(--raised) 25%,
+    var(--card) 50%,
+    var(--raised) 75%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 10px;
@@ -1058,7 +992,7 @@ button {
 .brand-letter {
   font-size: 46px;
   font-weight: 900;
-  color: #ffffff;
+  color: var(--on-brand);
   letter-spacing: -0.02em;
 }
 @keyframes pulseLogo {
@@ -1075,7 +1009,7 @@ button {
 .loading-text {
   font-size: 18px;
   font-weight: 600;
-  color: #d3d3d3;
+  color: var(--t3);
   letter-spacing: 0.05em;
 }
 .skeleton-cards {
@@ -1086,12 +1020,17 @@ button {
   max-width: 500px;
 }
 .skeleton-card {
-  background: linear-gradient(90deg, #161a35 25%, #1e2243 50%, #161a35 75%);
+  background: linear-gradient(
+    90deg,
+    var(--raised) 25%,
+    var(--card) 50%,
+    var(--raised) 75%
+  );
   background-size: 200% 100%;
   animation: shimmerCard 1.5s infinite;
   border-radius: 14px;
   height: 160px;
-  border: 1px solid #0f1225;
+  border: 1px solid var(--hairline);
 }
 @keyframes shimmerCard {
   0% {
@@ -1104,7 +1043,7 @@ button {
 .not-found-code {
   font-size: 120px;
   font-weight: 800;
-  /* Step 2.5: lime is fill-only; big display numeral takes the text tint */
+  /* The display numeral uses the structural brand color. */
   color: var(--accent-text);
   line-height: 1;
   letter-spacing: -0.02em;
@@ -1127,19 +1066,13 @@ button {
   margin-top: 16px;
   min-height: 44px;
   padding: 0 32px;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.25) 0%,
-      rgba(255, 255, 255, 0) 50%
-    ),
-    linear-gradient(115deg, #2be480 0%, #00ffaa 100%);
-  color: #04140a;
+  background: var(--brand-purple);
+  color: var(--on-brand);
   text-decoration: none;
   border-radius: var(--r-md);
   font-size: 16px;
   font-weight: 700;
-  border: 1px solid rgba(43, 228, 128, 0.6);
+  border: 1px solid var(--brand-purple);
   cursor: pointer;
   transition:
     transform 180ms ease,
@@ -1148,13 +1081,11 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    0 10px 28px rgba(43, 228, 128, 0.18);
+  box-shadow: var(--shadow-card-hover);
 }
 .home-button:hover {
+  background: var(--brand-dark);
   transform: translateY(-2px);
-  filter: brightness(1.05);
 }
 .home-button:active {
   transform: translateY(0);
@@ -1202,7 +1133,7 @@ button {
     bottom: auto;
     left: auto;
     border-right: none;
-    border-bottom: 1px solid #1a1f3a;
+    border-bottom: 1px solid var(--brand-dark);
     max-height: none;
     overflow-x: auto;
     overflow-y: hidden;
@@ -1210,11 +1141,11 @@ button {
   .ps-sidebar-brand {
     min-width: max-content;
     border-bottom: none;
-    border-right: 1px solid #1a1f3a;
+    border-right: 1px solid var(--brand-dark);
     padding: 12px 16px;
     position: sticky;
     left: 0;
-    background: #0f1225;
+    background: var(--brand-deep);
     z-index: 2;
   }
   .ps-sidebar-section {
@@ -1234,11 +1165,11 @@ button {
     border-left: none;
     border-bottom: 2px solid transparent;
     border-radius: 999px;
-    background: #161a35;
+    background: var(--brand-dark);
   }
   .ps-sidebar-item.active {
     border-left-color: transparent;
-    border-bottom-color: #39ff14;
+    border-bottom-color: var(--brand-lavender);
   }
   .ps-main {
     margin-left: 0;
@@ -1524,7 +1455,7 @@ button {
 }
 
 /* ── The tap dot — brand kinetic signature (P9.4, 2026-07-07) ─────────
- * One mint dot taps the baseline: lift, drop with a squash at contact,
+ * One gold dot taps the baseline: lift, drop with a squash at contact,
  * and a hairline ring blooms where it lands. Mirrors the tap dot under
  * the brand mark's stem. Used by app/components/TapDot.tsx for loading
  * states. The global prefers-reduced-motion override collapses both. */
@@ -1547,7 +1478,7 @@ button {
 @keyframes tap-dot-ring {
   0%,
   38% {
-    box-shadow: 0 0 0 0 rgba(16, 200, 160, 0.5);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--signal-gold) 50%, transparent);
     opacity: 0;
   }
   45% {
@@ -1555,7 +1486,7 @@ button {
   }
   90%,
   100% {
-    box-shadow: 0 0 0 11px rgba(16, 200, 160, 0);
+    box-shadow: 0 0 0 11px color-mix(in srgb, var(--signal-gold) 0%, transparent);
     opacity: 0;
   }
 }
@@ -1606,19 +1537,25 @@ button {
   background-clip: padding-box;
 }
 
-/* Landing (dark) — the 1B recipe wearing 1C bones, per Figma 03 Screens →
- * Landing / 1440. Scoped to the marketing front door only; the app stays
- * paper. Lime stays the one action color; hairlines, not shadows. */
+/* Landing (deep purple) — scoped to the marketing front door only. The
+ * application retains its cool-neutral canvas; this surface uses TapTrade's
+ * deepest brand tone as its field. Purple owns structure and action, while
+ * gold is reserved for live and priority signals. */
 .landing-1c {
-  --l-bg: #101207;
-  --l-inset: #0b0d04;
-  --l-raised: #161908;
-  --l-hairline: #324019;
-  --l-t1: #f7f7f3;
-  --l-t2: #b9bfad;
-  --l-t3: #7a806b;
-  --l-lime: #c6f24e;
-  --l-ink-on-lime: #17200a;
-  --l-up: #59c773;
-  --l-down: #db594f;
+  --l-bg: #1e1235;
+  --l-inset: #28153f;
+  --l-raised: #28153f;
+  --l-hairline: rgb(236 227 247 / 28%);
+  --l-t1: #f1f4f6;
+  --l-t2: #ece3f7;
+  --l-t3: #c7bed1;
+  --l-purple: #6334a8;
+  --l-purple-hover: color-mix(in srgb, var(--l-purple) 84%, #ffffff);
+  --l-purple-active: #28153f;
+  --l-lavender: #ece3f7;
+  --l-gold: #f5c454;
+  --l-gold-text: #28153f;
+  --l-on-purple: #ffffff;
+  --l-up: #147536;
+  --l-down: #c1272d;
 }

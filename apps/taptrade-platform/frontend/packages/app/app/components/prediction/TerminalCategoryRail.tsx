@@ -31,18 +31,19 @@ interface TerminalCategoryRailProps {
 
 // FEED2-002: the composed Nav/CategoryRow idiom (02 System) — a 3×13 edge
 // bar + 11px semibold uppercase +1px-tracked label on a 30px row, radius 6.
-// Active = lime edge on a lime-wash row with ink text; inactive = hairline
-// edge with tertiary text. Below 1280 the 72px rail shows two-letter mono
+// Active = brand-purple row; inactive = high-contrast lavender on deep purple.
+// Below 1280 the 72px rail shows two-letter mono
 // monograms (the system's monogram idiom) instead of the retired icons.
 const BASE_LINK_CLASS =
-  "group flex min-h-[30px] items-center gap-2 rounded-[6px] px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.09em] no-underline transition-colors duration-150 max-[1279px]:justify-center max-[1279px]:px-2";
-const ACTIVE_LINK_CLASS = "bg-[var(--accent-soft)] text-[var(--t1)]";
+  "group flex min-h-[30px] items-center gap-2 rounded-[6px] px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.09em] no-underline transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-lavender)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-deep)] max-[1279px]:justify-center max-[1279px]:px-2";
+const ACTIVE_LINK_CLASS = "bg-[var(--accent)] text-[var(--on-brand)]";
 const INACTIVE_LINK_CLASS =
-  "text-[var(--t3)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)]";
+  "text-[var(--brand-lavender)] hover:bg-[color-mix(in_srgb,var(--brand-lavender)_12%,transparent)] hover:text-[var(--on-brand)]";
 const EDGE_BAR_BASE_CLASS =
   "h-[13px] w-[3px] flex-none rounded-[1px] max-[1279px]:hidden";
 const EDGE_BAR_ACTIVE_CLASS = "bg-[var(--accent)]";
-const EDGE_BAR_INACTIVE_CLASS = "bg-[var(--border-2)]";
+const EDGE_BAR_INACTIVE_CLASS =
+  "bg-[color-mix(in_srgb,var(--brand-lavender)_35%,transparent)]";
 const RAIL_LABEL_CLASS = "max-[1279px]:sr-only";
 const RAIL_MONOGRAM_CLASS =
   "hidden font-mono text-[11px] font-medium max-[1279px]:inline";
@@ -60,7 +61,7 @@ export function TerminalCategoryRail({
   const monogramOf = (label: string) => label.slice(0, 2).toUpperCase();
 
   return (
-    <aside className="terminal-scrollbar sticky top-16 flex h-[calc(100vh-64px)] min-w-0 flex-col overflow-y-auto border-r border-[var(--border-1)] bg-[var(--surface-1)] px-2.5 pb-5 pt-4 max-[1023px]:hidden">
+    <aside className="terminal-scrollbar sticky top-16 flex h-[calc(100vh-64px)] min-w-0 flex-col overflow-y-auto border-r border-[color-mix(in_srgb,var(--brand-lavender)_28%,transparent)] bg-[var(--brand-deep)] px-2.5 pb-5 pt-4 max-[1023px]:hidden">
       <nav className="flex flex-col gap-0.5" aria-label={t("MARKET_TOPICS")}>
         <Link
           href={homeHref}
@@ -127,15 +128,15 @@ export function TerminalCategoryRail({
         </Link>
       </nav>
 
-      <div className="mt-auto border-t border-[var(--border-1)] px-2 pt-5 max-[1279px]:px-0">
-        <div className="flex items-center gap-2 text-[11px] font-medium text-[var(--t2)] max-[1279px]:justify-center">
+      <div className="mt-auto border-t border-[color-mix(in_srgb,var(--brand-lavender)_28%,transparent)] px-2 pt-5 max-[1279px]:px-0">
+        <div className="flex items-center gap-2 text-[11px] font-medium text-[var(--brand-lavender)] max-[1279px]:justify-center">
           <span
-            className="h-2 w-2 rounded-full bg-[var(--yes)]"
+            className="h-2 w-2 rounded-full bg-[var(--live)]"
             aria-hidden="true"
           />
           <span className="max-[1279px]:sr-only">{t("MARKET_DATA_LIVE")}</span>
         </div>
-        <p className="mt-2 text-[11px] leading-[1.45] text-[var(--t3)] max-[1279px]:hidden">
+        <p className="mt-2 text-[11px] leading-[1.45] text-[var(--brand-lavender)] max-[1279px]:hidden">
           {t("MARKET_RISK_SHORT")}
         </p>
       </div>

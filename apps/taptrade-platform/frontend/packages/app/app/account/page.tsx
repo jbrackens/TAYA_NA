@@ -80,9 +80,7 @@ export default function AccountPage() {
 
       <section className="mb-4 flex flex-wrap items-center justify-between gap-5 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[22px] py-5">
         <div className="flex items-center gap-[14px]">
-          {/* The avatar keeps the lime tint — the one place identity and
-           * accent legitimately overlap. Ink on the tint, never lime text. */}
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[color-mix(in_srgb,var(--lime)_90%,transparent)] bg-[color-mix(in_srgb,var(--lime)_32%,transparent)] text-[19px] font-semibold text-[var(--ticket-cta-text)]">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[var(--accent)] bg-[var(--accent-soft)] text-[19px] font-semibold text-[var(--accent-text)]">
             {initial}
           </div>
           <div>
@@ -268,7 +266,7 @@ function PrivacyCard() {
       </label>
       {error && (
         <div
-          className="mt-2.5 rounded-[var(--r-sm)] border border-[var(--no-border)] bg-[var(--no-soft)] px-3 py-2 text-xs text-[var(--no-text)]"
+          className="mt-2.5 rounded-[var(--r-sm)] border border-[var(--brand-dark)] bg-[var(--brand-lavender)] px-3 py-2 text-xs text-[var(--brand-dark)]"
           role="alert"
         >
           {error}
@@ -384,7 +382,7 @@ function ActionCard({
       href={href}
       className="rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-5 py-[18px] no-underline shadow-[var(--shadow-card)] transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-px hover:border-[var(--border-2)] hover:shadow-[var(--shadow-card-hover)]"
     >
-      <div className="mb-2.5 inline-flex h-9 w-9 items-center justify-center rounded-[var(--r-sm)] bg-[color-mix(in_srgb,var(--lime)_32%,transparent)] text-[var(--ticket-cta-text)]">
+      <div className="mb-2.5 inline-flex h-9 w-9 items-center justify-center rounded-[var(--r-sm)] bg-[var(--accent-soft)] text-[var(--accent-text)]">
         {icon}
       </div>
       <div className="mb-0.5 text-sm font-semibold text-[var(--t1)]">

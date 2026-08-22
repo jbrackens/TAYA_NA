@@ -1,7 +1,7 @@
 /**
- * Landing (dark 1C) — source contracts for the front door.
+ * Landing (deep-purple) — source contracts for the front door.
  *
- * The landing was rebuilt 2026-08-09 to the Figma dark recipe (03 Screens →
+ * The landing was rebuilt 2026-08-09 to the Figma purple/gold recipe (03 Screens →
  * Landing / 1440): Fraunces display on the `.landing-1c` tokens, real-data
  * ticker, the actual trade loop as steps, editorial desk chips, the
  * 500-PTS welcome band, and inline compliance copy. These pins replace the
@@ -35,7 +35,7 @@ function readPageHome(locale: string): Record<string, string> {
   ) as Record<string, string>;
 }
 
-describe("landing dark recipe (Figma 03 Screens)", () => {
+describe("landing purple/gold recipe (Figma 03 Screens)", () => {
   it("declares the landing tokens once and consumes only vars in the page", () => {
     assert.ok(
       globals.includes(".landing-1c"),
@@ -46,8 +46,9 @@ describe("landing dark recipe (Figma 03 Screens)", () => {
       "--l-inset",
       "--l-raised",
       "--l-hairline",
-      "--l-lime",
-      "--l-ink-on-lime",
+      "--l-purple",
+      "--l-gold",
+      "--l-on-purple",
     ]) {
       assert.ok(globals.includes(`${token}:`), `globals.css must define ${token}`);
     }
@@ -57,14 +58,18 @@ describe("landing dark recipe (Figma 03 Screens)", () => {
     );
   });
 
-  it("pairs every lime fill with ink-on-lime text", () => {
-    const limeFills = page.match(/bg-\[var\(--l-lime\)\]/g) ?? [];
-    assert.ok(limeFills.length > 0, "the landing must have lime action fills");
+  it("pairs every purple action fill with white text and reserves gold for live", () => {
+    const purpleFills = page.match(/bg-\[var\(--l-purple\)\]/g) ?? [];
+    assert.ok(purpleFills.length > 0, "the landing must have purple action fills");
     assert.ok(
       page.includes(
-        "bg-[var(--l-lime)] font-semibold text-[var(--l-ink-on-lime)]",
+        "bg-[var(--l-purple)] font-semibold text-[var(--l-on-purple)]",
       ),
-      "the shared lime CTA class must pair fill and ink in one place",
+      "the shared purple CTA class must pair its fill and text in one place",
+    );
+    assert.ok(
+      page.includes("bg-[var(--l-gold)]") && page.includes("LIVE_MICRO_CLASS"),
+      "LIVE uses the dedicated gold signal rather than a market-direction color",
     );
   });
 

@@ -1,12 +1,11 @@
 /**
- * Ink & lime step 8 — /account (Account.dc.html 17a/17b), the last surface.
+ * Purple/lavender step — /account (Account.dc.html 17a/17b), the last surface.
  *
  * Source-level assertions (repo convention — node:test, no DOM harness)
  * pinning the step's contracts:
  *  - points move from accent to ink: the balance and every stat value are
  *    neutral magnitudes; ONLY the settled result keeps a direction colour
- *  - the avatar keeps the lime tint with ink on it — the one place
- *    identity and accent legitimately overlap
+ *  - the avatar uses the selected lavender surface with AA purple text
  *  - action cards follow the hover rule (stronger hairline + shadow,
  *    never a background change) and keep their Lucide icons from source
  *  - Profile links to /account/settings (the stale /account/security
@@ -37,10 +36,7 @@ const SHIPPED_LOCALES = ["en", "id", "ms", "tl", "zh-Hans", "zh-Hant"];
 
 describe("account values are neutral ink (step 8)", () => {
   it("renders the balance and stat values in ink, never accent", () => {
-    assert.ok(
-      !account.includes("text-[var(--accent)]"),
-      "lime is action/identity tint on this screen, never a value colour",
-    );
+    assert.ok(!account.includes("text-[var(--accent)]"));
     assert.match(
       account,
       /font-mono text-\[22px\] font-medium tracking-\[-0\.01em\] text-\[var\(--t1\)\]/,
@@ -60,12 +56,12 @@ describe("account values are neutral ink (step 8)", () => {
     );
   });
 
-  it("keeps the lime-tint avatar with ink on it", () => {
+  it("keeps the lavender avatar with readable purple text", () => {
     assert.match(
       account,
-      /color-mix\(in_srgb,var\(--lime\)_32%,transparent\)[^"]*text-\[var\(--ticket-cta-text\)\]/,
+      /border-\[var\(--accent\)\] bg-\[var\(--accent-soft\)\][^"]*text-\[var\(--accent-text\)\]/,
     );
-    assert.ok(!/rgba\(43,\s*228,\s*128/.test(account), "mint literals gone");
+    assert.ok(!/rgba\(43,\s*228,\s*128/.test(account));
   });
 });
 
@@ -99,10 +95,10 @@ describe("account actions grid (step 8)", () => {
     );
   });
 
-  it("paints the privacy save-error with the direction tokens", () => {
+  it("keeps the privacy save-error out of market-direction colors", () => {
     assert.match(
       account,
-      /border-\[var\(--no-border\)\] bg-\[var\(--no-soft\)\][^"]*text-\[var\(--no-text\)\]/,
+      /border-\[var\(--brand-dark\)\] bg-\[var\(--brand-lavender\)\][^"]*text-\[var\(--brand-dark\)\]/,
     );
     assert.ok(!/rgba\(255,\s*155,\s*107/.test(account));
   });
@@ -121,11 +117,11 @@ describe("header chips at 390 (step 8)", () => {
     assert.match(topBar, /TOP_BAR_BALANCE_CLASS =\s*\n?\s*"inline-flex min-h-11 shrink-0/);
   });
 
-  it("retires the white-on-lime avatar and its P10 purple hover", () => {
+  it("uses an accessible lavender avatar state in the top bar", () => {
     assert.ok(!topBar.includes("#6d63dc"));
     assert.match(
       topBar,
-      /TOP_BAR_AVATAR_CLASS =[\s\S]{0,400}text-\[var\(--ticket-cta-text\)\]/,
+      /TOP_BAR_AVATAR_CLASS =[\s\S]{0,400}bg-\[var\(--accent-soft\)\][\s\S]{0,400}text-\[var\(--accent-text\)\]/,
     );
     assert.ok(
       !/TOP_BAR_AVATAR_CLASS =[\s\S]{0,400}text-white/.test(topBar),

@@ -75,12 +75,10 @@ const TERMINAL_NAV_LINKS: typeof NAV_LINKS = [
 const TOP_BAR_CLASS =
   "sticky top-0 z-[100] border-b border-[var(--border-1)] bg-[var(--bg-deep)] font-sans";
 
-// Step 2.5 follow-up (2026-07-26): the strip was hardcoded near-black
-// (rgba(3,7,10,.94)) — after the terminal theme retired it was the only
-// dark chrome left on the light pages, with the ink wordmark invisible
-// on it. Card surface + the hairline border-b it already had.
+// Prediction routes use the deepest TapTrade brand surface for primary
+// navigation; regular application routes keep the neutral canvas.
 const TERMINAL_TOP_BAR_CLASS =
-  "sticky top-0 z-[100] border-b border-[var(--border-1)] bg-[var(--surface-1)] [font-family:var(--font-terminal)]";
+  "sticky top-0 z-[100] border-b border-[color-mix(in_srgb,var(--brand-lavender)_28%,transparent)] bg-[var(--brand-deep)] [font-family:var(--font-terminal)]";
 
 const TOP_BAR_INNER_CLASS =
   "box-border mx-auto flex h-16 w-full max-w-[1588px] items-center gap-6 px-6 max-[900px]:h-16 max-[900px]:gap-3 max-[900px]:px-4 max-[480px]:gap-2 max-[480px]:px-3";
@@ -100,7 +98,7 @@ const TOP_BAR_WORDMARK_CLASS =
   "whitespace-nowrap text-[26px] font-semibold leading-none tracking-[-0.025em] [color:var(--brand-ink)] max-[900px]:text-[23px] max-[480px]:text-[21px]";
 
 const TERMINAL_TOP_BAR_WORDMARK_CLASS =
-  "whitespace-nowrap text-[19px] font-semibold leading-none tracking-[-0.025em] text-[var(--brand-ink)] max-[480px]:text-[17px]";
+  "whitespace-nowrap text-[19px] font-semibold leading-none tracking-[-0.025em] text-[var(--on-brand)] max-[480px]:text-[17px]";
 
 const TOP_BAR_NAV_CLASS =
   "flex items-center gap-6 w-full min-w-0 flex-1 max-[900px]:hidden";
@@ -111,14 +109,14 @@ const TOP_BAR_LINK_CLASS =
 const TOP_BAR_LINK_INACTIVE_CLASS =
   "text-neutral-500 border-transparent hover:text-neutral-800 hover:border-neutral-300";
 
-// FEED2-001: composed nav links are 11px semibold uppercase, +1px tracked,
-// flat (no underline chrome) — active is ink, inactive is tertiary.
+// Prediction navigation sits on deep purple; selection is the brand-purple
+// control and inactive links retain high-contrast lavender text.
 const TERMINAL_TOP_BAR_LINK_CLASS =
-  "relative whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.09em] no-underline transition-colors duration-150";
+  "relative whitespace-nowrap rounded-[var(--r-rh-sm)] px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.09em] no-underline transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-lavender)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-deep)]";
 const TERMINAL_TOP_BAR_LINK_ACTIVE_CLASS =
-  "text-[var(--t1)] !text-[var(--t1)]";
+  "bg-[var(--accent)] text-[var(--on-brand)] !text-[var(--on-brand)]";
 const TERMINAL_TOP_BAR_LINK_INACTIVE_CLASS =
-  "text-[var(--t3)] !text-[var(--t3)] hover:text-[var(--t1)] hover:!text-[var(--t1)]";
+  "text-[var(--brand-lavender)] !text-[var(--brand-lavender)] hover:bg-[color-mix(in_srgb,var(--brand-lavender)_12%,transparent)] hover:text-[var(--on-brand)] hover:!text-[var(--on-brand)]";
 
 const TOP_BAR_LINK_ACTIVE_CLASS =
   "text-[var(--accent-text)] !text-[var(--accent-text)] font-semibold border-[var(--accent-lo)]";
@@ -148,7 +146,7 @@ const TERMINAL_TOP_BAR_SEARCH_INPUT_CLASS =
 const TOP_BAR_SEARCH_ICON_CLASS =
   "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--t3)]";
 const TOP_BAR_SEARCH_RESULTS_CLASS =
-  "absolute left-0 right-0 top-[calc(100%_+_6px)] z-[110] m-0 max-h-[360px] list-none overflow-y-auto rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1 shadow-[0_20px_40px_rgba(0,0,0,0.5)]";
+  "absolute left-0 right-0 top-[calc(100%_+_6px)] z-[110] m-0 max-h-[360px] list-none overflow-y-auto rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1 shadow-[var(--shadow-pop)]";
 const TOP_BAR_SEARCH_HIT_CLASS =
   "flex cursor-pointer flex-col gap-0.5 rounded-[var(--r-sm)] px-3 py-2";
 const TOP_BAR_SEARCH_HIT_INACTIVE_CLASS = "hover:bg-[var(--accent-soft)]";
@@ -178,12 +176,9 @@ const TOP_BAR_BALANCE_LABEL_CLASS =
 const TOP_BAR_ADD_POINTS_SIZING =
   "min-h-11 shrink-0 px-3 text-[13px] no-underline max-[900px]:px-2.5";
 
-// Step 8: the avatar keeps the lime tint (identity ∩ accent) with INK on
-// it — the old recipe was white-on-lime (~1.3:1) with a stray P10 purple
-// hover literal. Hover follows the app rule: stronger hairline, no
-// background change.
+// The avatar uses the selected lavender surface with AA purple text.
 const TOP_BAR_AVATAR_CLASS =
-  "grid size-11 cursor-pointer place-items-center rounded-full border border-[color-mix(in_srgb,var(--lime)_90%,transparent)] bg-[color-mix(in_srgb,var(--lime)_32%,transparent)] text-[15px] font-semibold text-[var(--ticket-cta-text)] transition-[border-color] duration-150 hover:border-[var(--accent)]";
+  "grid size-11 cursor-pointer place-items-center rounded-full border border-[var(--accent)] bg-[var(--accent-soft)] text-[15px] font-semibold text-[var(--accent-text)] transition-[border-color,background-color] duration-150 hover:border-[var(--accent-lo)] hover:bg-[var(--brand-lavender)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)]";
 
 const TOP_BAR_AUTH_CTA_SIZING =
   "min-h-11 px-4 text-[13px] no-underline max-[480px]:px-2.5";
@@ -191,15 +186,15 @@ const TOP_BAR_AUTH_CTA_SIZING =
 // FEED2-001: composed auth cluster is compact (32px) on desktop pointer
 // surfaces; the 44px touch minimum returns below the 900px breakpoint.
 const TERMINAL_TOP_BAR_AUTH_CTA_SIZING =
-  "min-h-8 px-3 text-[12px] no-underline max-[900px]:min-h-11 max-[480px]:px-2.5";
+  "min-h-8 px-3 text-[12px] !text-[var(--brand-lavender)] no-underline hover:!text-[var(--on-brand)] max-[900px]:min-h-11 max-[480px]:px-2.5";
 
 const TOP_BAR_MENU_WRAP_CLASS = "relative";
 const TOP_BAR_MENU_CLASS =
-  "absolute right-0 top-[calc(100%_+_6px)] z-[110] min-w-[200px] rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1 shadow-[0_20px_40px_rgba(0,0,0,0.5)]";
+  "absolute right-0 top-[calc(100%_+_6px)] z-[110] min-w-[200px] rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1 shadow-[var(--shadow-pop)]";
 const TOP_BAR_MENU_ITEM_BASE_CLASS =
   "flex w-full cursor-pointer items-center gap-2 rounded-[var(--r-sm)] border-0 bg-transparent px-3 py-2 text-left text-[13px] no-underline hover:bg-[var(--surface-2)] [font-family:inherit]";
 const TOP_BAR_MENU_ITEM_CLASS = `${TOP_BAR_MENU_ITEM_BASE_CLASS} text-[var(--t1)]`;
-const TOP_BAR_MENU_LOGOUT_CLASS = `${TOP_BAR_MENU_ITEM_BASE_CLASS} text-[var(--no)]`;
+const TOP_BAR_MENU_LOGOUT_CLASS = `${TOP_BAR_MENU_ITEM_BASE_CLASS} text-[var(--brand-dark)]`;
 const TOP_BAR_MENU_DIVIDER_CLASS = "my-1 h-px bg-[var(--surface-2)]";
 
 export function TopBar() {
@@ -409,7 +404,10 @@ export function TopBar() {
           className={TOP_BAR_BRAND_CLASS}
           aria-label={`${brand.name} — home`}
         >
-          <BrandMark size={isTerminalRoute ? 24 : 30} tone="ink" />
+          <BrandMark
+            size={isTerminalRoute ? 24 : 30}
+            tone={isTerminalRoute ? "light" : "ink"}
+          />
           <span
             className={
               isTerminalRoute

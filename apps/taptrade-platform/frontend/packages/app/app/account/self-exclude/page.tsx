@@ -33,9 +33,9 @@ const labelClass = "text-[13px] font-semibold text-[var(--t2)]";
 const actionsClass = "mt-6 flex gap-3 max-[640px]:flex-col-reverse";
 const buttonBaseClass =
   "flex-1 cursor-pointer rounded-[var(--r-rh-md)] border px-5 py-3 text-center text-sm font-bold no-underline transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50";
-const primaryButtonClass = `${buttonBaseClass} border-transparent bg-[var(--accent)] text-[#04140a] hover:-translate-y-px hover:brightness-105`;
+const primaryButtonClass = `${buttonBaseClass} border-transparent bg-[var(--accent)] text-[var(--ticket-cta-text)] hover:-translate-y-px hover:brightness-105`;
 const secondaryButtonClass = `${buttonBaseClass} border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t1)] hover:border-[var(--accent)] hover:text-[var(--accent)]`;
-const dangerButtonClass = `${buttonBaseClass} border-transparent bg-[var(--no)] text-white hover:brightness-105`;
+const dangerButtonClass = `${buttonBaseClass} border-transparent bg-[var(--brand-dark)] text-[var(--on-brand)] hover:brightness-105`;
 
 function durationButtonClass(active: boolean) {
   return `flex-1 cursor-pointer rounded-[var(--r-rh-md)] border px-4 py-3 text-center text-[13px] font-semibold transition-all duration-150 ${
@@ -134,12 +134,12 @@ function SelfExcludePageContent() {
 
       {/* Warning Step */}
       {step === "warning" && (
-        <div className={`${cardClass} border-[var(--no-text)]`}>
+        <div className={`${cardClass} border-[var(--signal-gold-text)]`}>
           <div className="mb-4 text-center text-5xl">
             <AlertTriangle
               size={48}
               strokeWidth={1.5}
-              className="mx-auto text-[var(--no)]"
+              className="mx-auto text-[var(--signal-gold-text)]"
             />
           </div>
           <h2 className="mb-2 text-xl font-bold text-[var(--t1)]">
@@ -320,7 +320,7 @@ function SelfExcludePageContent() {
             <ShieldCheck
               size={48}
               strokeWidth={1.5}
-              className="mx-auto text-[#fbbf24]"
+              className="mx-auto text-[var(--signal-gold)]"
             />
           </div>
           <h2 className="mb-2 text-xl font-bold text-[var(--t1)]">
@@ -334,7 +334,7 @@ function SelfExcludePageContent() {
             <ReviewItem label="Duration" value={durationLabel} />
             <ReviewItem label="Reason" value={reason} />
 
-            <div className="flex items-center gap-2 rounded-[var(--r-rh-md)] border border-[rgba(255,155,107,0.2)] bg-[rgba(255,155,107,0.08)] px-4 py-3 text-[13px] font-semibold text-[var(--no-text)]">
+            <div className="flex items-center gap-2 rounded-[var(--r-rh-md)] border border-[color-mix(in_srgb,var(--signal-gold)_45%,var(--border-1))] bg-[var(--signal-gold-soft)] px-4 py-3 text-[13px] font-semibold text-[var(--brand-dark)]">
               <AlertTriangle size={16} strokeWidth={2} className="shrink-0" />
               This action cannot be undone. Your account will be permanently
               closed.

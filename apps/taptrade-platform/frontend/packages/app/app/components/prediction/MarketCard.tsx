@@ -102,14 +102,14 @@ export function MarketCard({
     sentiment.sentimentState === "no" ? noPricePoints : yesPricePoints;
 
   return (
-    <article className="relative flex h-full min-h-[248px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans text-[var(--t1)] transition-[border-color] duration-[140ms] hover:border-[var(--border-2)] focus-within:border-[var(--border-2)] max-[640px]:min-h-[238px] max-[640px]:p-4">
+    <article className="relative flex h-full min-h-[248px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans text-[var(--t1)] transition-[border-color] duration-[140ms] hover:border-[var(--border-2)] focus-within:border-[var(--accent)] max-[640px]:min-h-[238px] max-[640px]:p-4">
       {onToggleWatchlist && (
         <button
           type="button"
-          className={`absolute right-1.5 top-1.5 z-10 grid h-11 w-11 cursor-pointer place-items-center rounded-full border-0 bg-transparent transition-colors duration-150 ${
+          className={`absolute right-1.5 top-1.5 z-10 grid h-11 w-11 cursor-pointer place-items-center rounded-full border-0 bg-transparent transition-[background-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:bg-[var(--accent-soft)] ${
             watched
-              ? "text-[var(--accent-text)]"
-              : "text-[var(--t4)] hover:bg-[rgba(13,17,20,0.05)] hover:text-[var(--t2)]"
+              ? "text-[var(--accent-text)] hover:bg-[var(--accent-soft)]"
+              : "text-[var(--t4)] hover:bg-[var(--surface-2)] hover:text-[var(--t2)]"
           }`}
           aria-pressed={watched}
           aria-label={
@@ -129,7 +129,7 @@ export function MarketCard({
 
       <Link
         href={`/market/${ticker}`}
-        className="flex flex-1 flex-col text-inherit no-underline"
+        className="flex flex-1 flex-col rounded-[6px] text-inherit no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]"
         aria-label={title}
       >
         <div className="flex items-start gap-3 pr-8">
@@ -181,7 +181,7 @@ export function MarketCard({
       <div className="mt-4 grid grid-cols-2 gap-2.5">
         <Link
           href={`/market/${ticker}?side=yes`}
-          className="flex min-h-10 items-center justify-between gap-3 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-2 font-sans no-underline transition-colors duration-150 hover:border-[var(--yes-bar)] hover:bg-[var(--yes-soft)] max-[768px]:min-h-11"
+          className="flex min-h-10 items-center justify-between gap-3 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-2 font-sans no-underline transition-[background-color,border-color,box-shadow] duration-150 hover:border-[var(--yes-bar)] hover:bg-[var(--yes-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:bg-[var(--yes-soft)] max-[768px]:min-h-11"
           aria-label={t("BUY_YES")}
         >
           <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--yes-text)]">
@@ -193,7 +193,7 @@ export function MarketCard({
         </Link>
         <Link
           href={`/market/${ticker}?side=no`}
-          className="flex min-h-10 items-center justify-between gap-3 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-2 font-sans no-underline transition-colors duration-150 hover:border-[var(--no-bar)] hover:bg-[var(--no-soft)] max-[768px]:min-h-11"
+          className="flex min-h-10 items-center justify-between gap-3 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-2 font-sans no-underline transition-[background-color,border-color,box-shadow] duration-150 hover:border-[var(--no-bar)] hover:bg-[var(--no-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:bg-[var(--no-soft)] max-[768px]:min-h-11"
           aria-label={t("BUY_NO")}
         >
           <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--no-text)]">

@@ -30,9 +30,9 @@ import { settlementNotice } from "./notifications";
 const BELL_BUTTON_CLASS =
   "relative grid size-11 shrink-0 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-[var(--t2)] transition-colors duration-150 hover:bg-[var(--surface-2)] hover:text-[var(--t1)]";
 const BADGE_CLASS =
-  "absolute right-1.5 top-1.5 grid min-w-[16px] place-items-center rounded-full bg-[var(--no)] px-1 font-mono text-[9px] font-bold leading-[16px] text-white";
+  "absolute right-1.5 top-1.5 grid min-w-[16px] place-items-center rounded-full bg-[var(--signal-gold)] px-1 font-mono text-[9px] font-bold leading-[16px] text-[var(--brand-dark)]";
 const PANEL_CLASS =
-  "absolute right-0 top-[calc(100%_+_6px)] z-[110] w-[320px] rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1 shadow-[0_20px_40px_rgba(0,0,0,0.5)]";
+  "absolute right-0 top-[calc(100%_+_6px)] z-[110] w-[320px] rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1 shadow-[var(--shadow-pop)]";
 const PANEL_HEAD_CLASS =
   "px-3 py-2 font-mono text-[9px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
 const ROW_CLASS = "rounded-[var(--r-sm)] px-3 py-2 hover:bg-[var(--surface-2)]";

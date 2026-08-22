@@ -114,9 +114,9 @@ export function DiscoveryHero({
           <header className="mb-3.5 flex items-center gap-2.5 text-xs font-medium text-[var(--t3)]">
             {displayMarket.status === "open" && (
               <>
-                <span className="inline-flex items-center gap-1.5 font-semibold uppercase tracking-[0.08em] text-[var(--yes-text)]">
+                <span className="inline-flex items-center gap-1.5 font-semibold uppercase tracking-[0.08em] text-[var(--live-text)]">
                   <span
-                    className="h-[7px] w-[7px] animate-pulse rounded-full bg-[var(--yes-bar)] shadow-[0_0_0_4px_var(--yes-soft)]"
+                    className="h-[7px] w-[7px] animate-pulse rounded-full bg-[var(--live)] shadow-[0_0_0_4px_var(--live-soft)]"
                     aria-hidden="true"
                   />
                   {t("LIVE")}

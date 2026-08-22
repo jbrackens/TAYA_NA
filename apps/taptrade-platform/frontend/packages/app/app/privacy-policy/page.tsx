@@ -4,7 +4,7 @@ import { ContentPageRenderer } from "../components/ContentPage";
 
 const FALLBACK_CONTENT = `
 <h1>Privacy Policy</h1>
-<p style="font-size: 12px; color: #4a5580; margin-bottom: 32px;">Effective: April 2026</p>
+<p style="font-size: 12px; color: var(--ink-3); margin-bottom: 32px;">Effective: April 2026</p>
 
 <h2>1. Information We Collect</h2>
 <p>We collect information you provide when creating an account, such as username and email, plus information needed for eligibility, safety, verification, or compliance. We also collect usage data including prediction history, device information, and IP address.</p>

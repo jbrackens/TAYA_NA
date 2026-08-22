@@ -62,12 +62,17 @@ const icons: Record<ToastType, React.ReactNode> = {
 // message; status speaks through the dot signature (DESIGN.md "The dot")
 // plus a tinted icon glyph — never through the card surface.
 const toastClasses: Record<ToastType, { dot: string; icon: string }> = {
-  success: { dot: "bg-[var(--yes-bar)]", icon: "text-[var(--yes-text)]" },
-  error: { dot: "bg-[var(--no-bar)]", icon: "text-[var(--no-text)]" },
-  // §3-02: info gets its own neutral-informational token — borrowing the
-  // brand period made lime a third meaning (action, identity, AND info).
+  success: { dot: "bg-[var(--accent)]", icon: "text-[var(--accent-text)]" },
+  error: {
+    dot: "bg-[var(--brand-deep)]",
+    icon: "text-[var(--brand-deep)]",
+  },
+  // Info stays neutral; gold is reserved for priority and warning states.
   info: { dot: "bg-[var(--info-dot)]", icon: "text-[var(--info-text)]" },
-  warning: { dot: "bg-[#d97706]", icon: "text-[#b45309]" },
+  warning: {
+    dot: "bg-[var(--signal-gold)]",
+    icon: "text-[var(--signal-gold-text)]",
+  },
 };
 
 // ── The P9 card, rendered through sonner's custom slot ──

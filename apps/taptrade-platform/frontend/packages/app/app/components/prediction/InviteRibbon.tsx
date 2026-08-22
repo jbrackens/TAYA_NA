@@ -8,11 +8,10 @@
  */
 
 const WRAP_CLASS =
-  "flex w-full items-center gap-3 rounded-[var(--radius-md)] border border-[var(--lime-text)] bg-[var(--lime-tint)] py-2.5 pl-3.5 pr-2.5";
-const LINE_CLASS =
-  "m-0 min-w-0 flex-1 text-[13px] leading-[1.45] text-[var(--ink-on-lime)]";
+  "flex w-full items-center gap-3 rounded-[var(--radius-md)] border border-[var(--accent)] bg-[var(--accent-soft)] py-2.5 pl-3.5 pr-2.5";
+const LINE_CLASS = "m-0 min-w-0 flex-1 text-[13px] leading-[1.45] text-[var(--ink)]";
 const CTA_CLASS =
-  "shrink-0 cursor-pointer rounded-[var(--radius-sm)] border-0 bg-[var(--lime)] px-3 py-[7px] text-[12px] font-semibold text-[var(--ink-on-lime)]";
+  "shrink-0 cursor-pointer rounded-[var(--radius-sm)] border-0 bg-[var(--accent)] px-3 py-[7px] text-[12px] font-semibold text-[var(--ticket-cta-text)] transition-[filter,transform] hover:brightness-105 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--accent-soft)]";
 const DISMISS_CLASS =
   "shrink-0 cursor-pointer border-0 bg-transparent px-1.5 text-[15px] leading-none text-[var(--ink-3)]";
 

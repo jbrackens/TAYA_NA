@@ -11,40 +11,40 @@
 
 // ── Brand ──
 export const brand = {
-  primary: "var(--accent)", // Neon Green — primary actions, active states
-  primaryHover: "rgba(43, 228, 128,0.1)",
-  primaryGlow: "rgba(43, 228, 128,0.25)",
-  gradient: "linear-gradient(135deg, var(--accent), var(--accent-lo))",
-  danger: "#ef4444", // Red — live badges, destructive
-  dangerBg: "#7f1d1d",
-  dangerText: "var(--no)",
-  success: "#22c55e", // Green — balance, profit, wins
-  successBg: "rgba(34,197,94,0.1)",
-  successBorder: "#22c55e30",
-  info: "#4a7eff", // Blue — odds, links
-  warning: "#fbbf24", // Amber — warnings
+  primary: "var(--brand-purple)", // Interactive purple — actions and active states
+  primaryHover: "var(--brand-dark)",
+  primaryGlow: "var(--accent-glow-color)",
+  gradient: "var(--accent-gradient)",
+  danger: "var(--no)", // Negative market outcome / NO only
+  dangerBg: "var(--no-soft)",
+  dangerText: "var(--no-text)",
+  success: "var(--yes)", // Positive market outcome / YES only
+  successBg: "var(--yes-soft)",
+  successBorder: "var(--yes-border)",
+  info: "var(--brand-purple)", // Links and interactive information
+  warning: "var(--signal-gold)", // Attention, live activity, and priority
 } as const;
 
 // ── Surfaces & Backgrounds ──
 export const colors = {
-  // Backgrounds (dark → light)
-  bgDeep: "#0a0e1a", // Deepest background
-  bgBase: "#0b0e1c", // Body / input backgrounds
-  bgSurface: "#0f1225", // Cards, sidebar, header
-  bgElevated: "#111631", // Hover states, table headers
-  bgActive: "#1a2040", // Active sidebar items, selected states
-  bgHover: "#161a35", // Generic hover
+  // Legacy names mapped to the cool-neutral interface hierarchy.
+  bgDeep: "var(--paper)", // Page canvas
+  bgBase: "var(--raised)", // Secondary panels and input wells
+  bgSurface: "var(--card)", // Cards and primary content surfaces
+  bgElevated: "var(--raised)", // Hover states and table headers
+  bgActive: "var(--brand-lavender)", // Selected controls and filters
+  bgHover: "var(--raised)", // Generic hover
 
   // Borders
-  border: "#1a1f3a",
-  borderHover: "#2a3050",
+  border: "var(--hairline)",
+  borderHover: "var(--hairline-strong)",
 
   // Text
-  textPrimary: "#f8fafc", // Headings, strong text
-  textDefault: "#e2e8f0", // Body text
-  textSecondary: "#D3D3D3", // Secondary text on dark surfaces
-  textMuted: "#64748b", // Placeholders, captions
-  textDim: "#4a5580", // Section labels, disabled
+  textPrimary: "var(--ink)", // Headings and strong text
+  textDefault: "var(--ink-2)", // Body text
+  textSecondary: "var(--ink-2)", // Secondary body text
+  textMuted: "var(--ink-3)", // Placeholders and captions
+  textDim: "var(--inert-label)", // Section labels and disabled text
 
   // Semantic
   ...brand,
@@ -105,13 +105,13 @@ export const radius = {
 
 // ── Shadows ──
 export const shadow = {
-  sm: "0 2px 4px rgba(0, 0, 0, 0.2)",
-  md: "0 4px 12px rgba(0, 0, 0, 0.3)",
-  lg: "0 8px 16px rgba(0, 0, 0, 0.3)",
-  glow: "0 4px 12px rgba(43, 228, 128, 0.3)",
-  glowLg: "0 4px 16px rgba(43, 228, 128, 0.3)",
-  panel: "0 20px 40px rgba(0, 0, 0, 0.16)",
-  panelLg: "0 24px 48px rgba(0, 0, 0, 0.2)",
+  sm: "var(--shadow-card)",
+  md: "var(--shadow-card)",
+  lg: "var(--shadow-card-hover)",
+  glow: "var(--shadow-card)", // Compatibility alias; colored glow is retired
+  glowLg: "var(--shadow-card-hover)",
+  panel: "var(--shadow-card-hover)",
+  panelLg: "var(--shadow-pop)",
 } as const;
 
 // ── Transitions ──
@@ -170,14 +170,14 @@ export const surface = {
   },
   heroPanel: {
     background:
-      "linear-gradient(135deg, #1a1040 0%, #0f1225 50%, #0c1a2e 100%)",
-    border: `1px solid ${colors.borderHover}`,
+      "linear-gradient(135deg, var(--brand-deep) 0%, var(--brand-dark) 58%, var(--brand-purple) 100%)",
+    border: "1px solid var(--brand-purple)",
     borderRadius: "18px",
     boxShadow: shadow.panelLg,
   },
   chip: {
-    background: "rgba(43, 228, 128,0.08)",
-    border: "1px solid rgba(43, 228, 128,0.14)",
+    background: "var(--brand-lavender)",
+    border: "1px solid var(--brand-purple)",
     borderRadius: "12px",
   },
 } as const;

@@ -21,11 +21,11 @@ const CATEGORY_EMOJI: Record<string, string> = {
 const PILLS_WRAPPER_CLASS =
   "flex min-w-max gap-2.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden";
 const PILL_BASE_CLASS =
-  "inline-flex items-center gap-2 whitespace-nowrap rounded-md border px-4 py-2.5 text-[13px] font-bold transition-all duration-150";
+  "inline-flex items-center gap-2 whitespace-nowrap rounded-md border px-4 py-2.5 text-[13px] font-bold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)]";
 const PILL_ACTIVE_CLASS =
-  "border-[var(--yes-border)] bg-[var(--yes-soft)] text-[var(--yes-text)] shadow-[0_0_24px_rgba(113,238,184,0.12)]";
+  "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-text)] shadow-[0_0_24px_var(--accent-glow-color)]";
 const PILL_INACTIVE_CLASS =
-  "border-[rgba(42,49,80,0.9)] bg-[#0f1630] text-[#d3d3d3] hover:-translate-y-px hover:border-[#435079] hover:text-[#dbeafe]";
+  "border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:-translate-y-px hover:border-[var(--border-2)] hover:text-[var(--t1)]";
 const PILL_ICON_CLASS = "text-[15px] leading-none";
 
 function pillClass(active: boolean): string {

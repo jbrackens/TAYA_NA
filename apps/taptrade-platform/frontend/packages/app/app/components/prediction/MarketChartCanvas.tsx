@@ -64,12 +64,12 @@ export default function MarketChartCanvas({
       return;
     }
 
-    const accent = cssVar(container, "--accent");
-    const accentLo = cssVar(container, "--accent-lo") || accent;
-    const muted = cssVar(container, "--t4") || "#8a8f98";
-    const guide = cssVar(container, "--border-1") || "#2a323c";
-    const surface = cssVar(container, "--surface-1") || "#080d11";
-    const axisText = cssVar(container, "--t3") || "#8a8f98";
+    const accent = cssVar(container, "--accent") || "#6334a8";
+    const accentLo = cssVar(container, "--accent-lo") || "#28153f";
+    const muted = cssVar(container, "--t4") || "#576066";
+    const guide = cssVar(container, "--border-1") || "#dde2e5";
+    const surface = cssVar(container, "--surface-1") || "#ffffff";
+    const axisText = cssVar(container, "--t3") || "#576066";
 
     const chart = createChart(container, {
       autoSize: true,

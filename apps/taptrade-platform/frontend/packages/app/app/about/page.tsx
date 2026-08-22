@@ -4,7 +4,7 @@ import { ContentPageRenderer } from "../components/ContentPage";
 
 const FALLBACK_CONTENT = `
 <h1>About TapTrade</h1>
-<p style="font-size: 12px; color: #4a5580; margin-bottom: 32px;">Last updated: April 2026</p>
+<p style="font-size: 12px; color: var(--ink-3); margin-bottom: 32px;">Last updated: April 2026</p>
 
 <h2>Who We Are</h2>
 <p>TapTrade is a points-based prediction market platform where players take positions on real-world outcomes across politics, sports, entertainment, technology, culture, and economics. Markets express crowd probability from 1 to 99 and settle only in non-redeemable gameplay points.</p>

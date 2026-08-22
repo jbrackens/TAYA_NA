@@ -137,7 +137,7 @@ export function CommandPalette({
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-start justify-center bg-[rgba(13,17,20,0.35)] px-4 pt-[12vh]"
+      className="fixed inset-0 z-[200] flex items-start justify-center bg-[color-mix(in_srgb,var(--ink)_35%,transparent)] px-4 pt-[12vh]"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -145,7 +145,7 @@ export function CommandPalette({
       aria-modal="true"
       aria-label={t("CMDK_TITLE", "Command palette")}
     >
-      <div className="w-full max-w-[560px] overflow-hidden rounded-[10px] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[0_24px_64px_rgba(13,17,20,0.28)]">
+      <div className="w-full max-w-[560px] overflow-hidden rounded-[10px] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-pop)]">
         <input
           ref={inputRef}
           type="text"

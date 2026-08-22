@@ -20,7 +20,7 @@ import type {
 import { formatUsdCents } from "../../lib/usd";
 
 const BANNER_CLASS =
-  "mb-3 rounded-[var(--r-rh-sm)] border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.1)] p-2.5 text-center text-xs font-semibold leading-[1.45] text-[var(--no-text)]";
+  "mb-3 rounded-[var(--r-rh-sm)] border border-[color-mix(in_srgb,var(--reward)_45%,var(--border-1))] bg-[var(--reward-soft)] p-2.5 text-center text-xs font-semibold leading-[1.45] text-[var(--reward-text)]";
 const PANEL_TITLE_CLASS =
   "m-0 mb-1 text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
 const PANEL_SUB_CLASS = "m-0 mb-4 text-xs leading-[1.5] text-[var(--t3)]";

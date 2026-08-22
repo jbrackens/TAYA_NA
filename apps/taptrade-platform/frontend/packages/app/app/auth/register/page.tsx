@@ -7,7 +7,7 @@
  * centered form column (brand lockup → heading → fields → Continue → OR →
  * Continue with Google/Facebook/Discord → sign-in link → legal line) beside a
  * full-bleed event panel built from our in-house ambient crowd footage
- * (public/brand/hero-ambient.mp4 + auth-event-poster.jpg) under a forest
+ * (public/brand/hero-ambient.mp4 + auth-event-poster.jpg) under a deep-purple
  * scrim — no stock imagery, no external hotlinks. The 2-step wizard and the
  * launch-compliance terms/disclosure acceptance are unchanged; only the
  * shell moved. Social buttons render unconditionally here (owner call) and
@@ -63,13 +63,13 @@ const EVENT_MEDIA_CLASS =
 const EVENT_POSTER_CLASS =
   "absolute inset-0 h-full w-full object-cover opacity-[0.82]";
 const EVENT_SCRIM_CLASS =
-  "absolute inset-0 bg-[linear-gradient(200deg,rgba(11,67,50,0.28)_0%,rgba(11,67,50,0.55)_55%,rgba(7,42,31,0.88)_100%)]";
+  "absolute inset-0 bg-[linear-gradient(200deg,var(--brand-purple)_0%,var(--brand-deep)_55%,var(--brand-dark)_100%)] opacity-[0.86]";
 const EVENT_COPY_CLASS =
   "absolute inset-x-0 bottom-0 p-12 text-[var(--brand-on-dark)]";
 const EVENT_STATEMENT_CLASS =
   "type-display m-0 max-w-[480px] text-[clamp(28px,3vw,44px)] font-semibold leading-[1.08] tracking-[-0.02em]";
 const EVENT_SUB_CLASS =
-  "mt-4 max-w-[420px] text-sm leading-[1.55] text-[rgba(241,236,227,0.75)]";
+  "mt-4 max-w-[420px] text-sm leading-[1.55] text-[var(--brand-on-dark)] opacity-75";
 const HEAD_CLASS = "mb-6";
 const EYEBROW_CLASS =
   "mb-3 inline-block font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--t3)]";
@@ -87,15 +87,15 @@ const DIVIDER_TEXT_CLASS =
 const BANNER_BASE_CLASS =
   "mb-3.5 rounded-[var(--r-rh-md)] px-3 py-2.5 text-[13px]";
 const BANNER_ERROR_CLASS =
-  "border border-[rgba(255,155,107,0.3)] bg-[rgba(255,155,107,0.1)] text-[var(--no-text)]";
+  "border border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--brand-dark)]";
 const BANNER_SUCCESS_CLASS =
-  "border border-[var(--border-2)] bg-[var(--accent-soft)] text-[var(--accent)]";
+  "border border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--brand-dark)]";
 const FORM_CLASS = "flex flex-col gap-3.5";
 const FIELD_CLASS = "flex flex-col gap-1.5";
 const FIELD_LABEL_CLASS =
   "text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
 // Input + step-button recipes migrated to components/ui primitives (P2).
-const FIELD_ERROR_CLASS = "text-[11px] text-[var(--no-text)]";
+const FIELD_ERROR_CLASS = "text-[11px] text-[var(--accent-text)]";
 const TERMS_CLASS =
   "max-h-[220px] overflow-y-auto rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-4 py-3.5";
 const TERMS_TITLE_CLASS = "m-0 mb-2 text-sm font-bold text-[var(--t1)]";
@@ -111,8 +111,7 @@ const SUMMARY_LIST_CLASS = "m-0 flex flex-col gap-1";
 const SUMMARY_ROW_CLASS = "flex justify-between gap-2.5 text-xs";
 const SUMMARY_TERM_CLASS = "text-[var(--t3)]";
 const SUMMARY_DESC_CLASS = "m-0 text-[var(--t1)]";
-const MONO_CLASS =
-  "tabular-nums font-mono";
+const MONO_CLASS = "tabular-nums font-mono";
 const ACTIONS_CLASS = "mt-5 flex gap-2.5";
 const FOOTER_CLASS =
   "mt-[18px] border-t border-[var(--border-1)] pt-3.5 text-center text-[13px] text-[var(--t2)]";
@@ -247,9 +246,7 @@ export default function RegisterPage() {
         <div className={FORM_INNER_CLASS}>
           <Link href="/" className={BRAND_ROW_CLASS} aria-label="TapTrade home">
             <BrandMark size={26} tone="ink" />
-            <span className={BRAND_WORDMARK_CLASS}>
-              TapTrade
-            </span>
+            <span className={BRAND_WORDMARK_CLASS}>TapTrade</span>
           </Link>
 
           <header className={HEAD_CLASS}>
@@ -442,7 +439,7 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* Event panel — in-house ambient crowd footage under a forest scrim.
+      {/* Event panel — in-house ambient crowd footage under a deep-purple scrim.
           Poster renders for reduced-motion and while the loop buffers. */}
       <aside className={EVENT_PANEL_CLASS} aria-hidden="true">
         <img

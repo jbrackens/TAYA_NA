@@ -1,13 +1,13 @@
 /**
- * Ink & lime step 7 — /auth/login (Auth.dc.html 16a/16b).
+ * Purple/lavender auth step — /auth/login (Auth.dc.html 16a/16b).
  *
  * Source-level assertions (repo convention — the suite runs node:test,
  * not a DOM harness) pinning the step's contracts:
  *  - login stays a centred 440px card, never the register split-screen
- *  - the eyebrow pill takes ink on the lime tint, not lime text
- *  - the error card uses the direction tokens (--no-border/--no-soft/
- *    --no-text), announces via role="alert", and sits ABOVE the CTA in
- *    the reading path; the CTA itself returns to active lime on error
+ *  - the eyebrow pill takes ink on the lavender tint, not accent text
+ *  - the error card uses neutral brand feedback tokens, not market direction
+ *    colours; it announces via role="alert", and sits ABOVE the CTA in
+ *    the reading path; the CTA itself returns to active purple on error
  *    because disabled derives only from submitting/empty fields
  *  - the disabled CTA is the INERT surface (via Button variant="cta"),
  *    not an opacity fade
@@ -46,15 +46,12 @@ describe("login card shape (step 7)", () => {
   });
 
   it("renders the selected Tap Path mark with a title-case, 600 wordmark", () => {
-    assert.match(
-      login,
-      /text-\[27px\] font-semibold tracking-\[-0\.025em\]/,
-    );
+    assert.match(login, /text-\[27px\] font-semibold tracking-\[-0\.025em\]/);
     assert.match(login, /<BrandMark size=\{32\} tone="ink" \/>/);
     assert.doesNotMatch(login, /text-\[var\(--brand-period\)\]/);
   });
 
-  it("keeps the eyebrow pill ink on the lime tint — lime is never text", () => {
+  it("keeps the eyebrow pill ink on the lavender tint", () => {
     const eyebrow = login.match(/const EYEBROW_CLASS =\s*\n?\s*"([^"]+)"/)?.[1];
     assert.ok(eyebrow, "EYEBROW_CLASS present");
     assert.ok(eyebrow.includes("bg-[var(--accent-soft)]"));
@@ -68,11 +65,12 @@ describe("login card shape (step 7)", () => {
 });
 
 describe("login error state (step 7, Auth 16b)", () => {
-  it("paints the error card with the direction tokens and role=alert", () => {
+  it("keeps credential feedback in the purple system and role=alert", () => {
     assert.match(
       login,
-      /border-\[var\(--no-border\)\] bg-\[var\(--no-soft\)\][^"]*text-\[var\(--no-text\)\]/,
+      /border-\[var\(--accent\)\] bg-\[var\(--accent-soft\)\][^"]*text-\[var\(--brand-dark\)\]/,
     );
+    assert.ok(!login.includes("--no-"));
     assert.match(login, /role="alert"/);
   });
 
@@ -86,8 +84,11 @@ describe("login error state (step 7, Auth 16b)", () => {
     );
   });
 
-  it("returns the CTA to active lime on error — disabled ignores the error state", () => {
-    assert.match(login, /disabled=\{submitting \|\| !username \|\| !password\}/);
+  it("returns the CTA to active purple on error — disabled ignores the error state", () => {
+    assert.match(
+      login,
+      /disabled=\{submitting \|\| !username \|\| !password\}/,
+    );
   });
 
   it("uses the inert treatment for the disabled CTA, not opacity", () => {
@@ -108,9 +109,7 @@ describe("provider registry honesty (step 7)", () => {
   );
 
   it("offers six providers on login, three on register", () => {
-    const grid = social.match(
-      /DEFAULT_GRID_SLUGS = \[([\s\S]*?)\]/,
-    )?.[1];
+    const grid = social.match(/DEFAULT_GRID_SLUGS = \[([\s\S]*?)\]/)?.[1];
     assert.ok(grid, "grid slug list present");
     const gridSlugs = [...grid.matchAll(/"([a-z]+)"/g)].map((m) => m[1]);
     assert.deepEqual(gridSlugs, [
@@ -121,10 +120,7 @@ describe("provider registry honesty (step 7)", () => {
       "reddit",
       "discord",
     ]);
-    assert.match(
-      register,
-      /providers=\{\["google", "facebook", "discord"\]\}/,
-    );
+    assert.match(register, /providers=\{\["google", "facebook", "discord"\]\}/);
   });
 
   it("backs every offered slug with a services/auth oauth.go registration", () => {
