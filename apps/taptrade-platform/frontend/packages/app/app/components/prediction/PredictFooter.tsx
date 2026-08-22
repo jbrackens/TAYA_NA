@@ -4,8 +4,8 @@
  * PredictFooter — the ink anchor (P9.4, 2026-07-07).
  *
  * Every page ends on one deliberate deep-forest statement: the brand
- * surface the P9 white system otherwise never spends. Ivory wordmark
- * with the mint period, quiet ivory links, legal line under a hairline.
+ * surface the P9 white system otherwise never spends. The inverse Tap Path
+ * lockup, quiet ivory links, and legal line sit under a hairline.
  * This is a brand-layer surface (DESIGN.md Active Brand) — market data
  * never renders on ink.
  */
@@ -13,6 +13,7 @@
 import Link from "next/link";
 import { FEATURE_RG } from "../../lib/features";
 import { brand } from "../../lib/brand";
+import BrandMark from "../BrandMark";
 
 const YEAR = new Date().getFullYear();
 
@@ -30,9 +31,9 @@ export function PredictFooter() {
   return (
     <footer className="mt-10 rounded-[var(--r-rh-lg)] bg-[var(--brand-ink)] px-7 py-6 text-xs max-[640px]:px-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <span className="text-[19px] font-semibold lowercase leading-none tracking-[-0.025em] text-[var(--brand-on-dark)]">
-          {brand.name}
-          <span className="text-[var(--brand-period-dark)]">.</span>
+        <span className="inline-flex items-center gap-2.5 text-[19px] font-semibold leading-none tracking-[-0.025em] text-[var(--brand-on-dark)]">
+          <BrandMark size={28} tone="light" />
+          <span>{brand.name}</span>
         </span>
         <div className="flex flex-wrap gap-x-5 gap-y-2">
           {LINKS.map((l) => (

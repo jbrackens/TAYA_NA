@@ -21,6 +21,7 @@ import { safeReturnPath, returnUrlSuffix } from "../../lib/safeReturnPath";
 import { FEATURE_SOCIAL_AUTH } from "../../lib/features";
 import { brand } from "../../lib/brand";
 import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
+import BrandMark from "../../components/BrandMark";
 import { Button, Card, Input } from "../../components/ui";
 
 // Card/Input/Button recipes migrated to components/ui primitives (P2).
@@ -31,9 +32,9 @@ const HEAD_CLASS = "mb-6 text-center";
 // app. Same pill shape, ink label.
 const EYEBROW_CLASS =
   "mb-3.5 inline-block rounded-full border border-[var(--border-1)] bg-[var(--accent-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--t1)]";
-// The title is the wordmark: Switzer 600 lowercase −0.025em + lime period.
+// The selected Tap Path mark pairs with the data-driven title-case wordmark.
 const TITLE_CLASS =
-  "m-0 mb-2 text-[27px] font-semibold lowercase tracking-[-0.025em] text-[var(--t1)]";
+  "m-0 mb-2 inline-flex items-center justify-center gap-2.5 text-[27px] font-semibold tracking-[-0.025em] text-[var(--t1)]";
 const SUBTITLE_CLASS = "m-0 text-sm leading-[1.55] text-[var(--t2)]";
 const FORM_CLASS = "flex flex-col gap-3.5";
 const FIELD_CLASS = "flex flex-col gap-1.5";
@@ -112,8 +113,8 @@ export default function LoginPage() {
         <header className={HEAD_CLASS}>
           <span className={EYEBROW_CLASS}>Player access</span>
           <h1 className={TITLE_CLASS}>
-            {brand.name}
-            <span className="text-[var(--brand-period)]">.</span>
+            <BrandMark size={32} tone="ink" />
+            <span>{brand.name}</span>
           </h1>
           <p className={SUBTITLE_CLASS}>
             Sign in to track your positions, follow market moves, and trade on

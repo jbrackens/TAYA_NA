@@ -192,7 +192,7 @@ export default function LandingPage() {
         >
           <BrandMark
             size={26}
-            className="text-[var(--brand-on-dark)] [--brand-period:var(--brand-period-dark)]"
+            tone="brand"
           />
           <span className="text-[17px] font-semibold text-[var(--l-t1)]">
             {brand.name}

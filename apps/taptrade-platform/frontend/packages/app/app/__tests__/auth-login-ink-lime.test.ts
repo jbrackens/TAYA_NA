@@ -45,12 +45,13 @@ describe("login card shape (step 7)", () => {
     assert.match(login, /items-center justify-center/);
   });
 
-  it("renders the wordmark title: lowercase, 600, −0.025em, lime period", () => {
+  it("renders the selected Tap Path mark with a title-case, 600 wordmark", () => {
     assert.match(
       login,
-      /text-\[27px\] font-semibold lowercase tracking-\[-0\.025em\]/,
+      /text-\[27px\] font-semibold tracking-\[-0\.025em\]/,
     );
-    assert.match(login, /text-\[var\(--brand-period\)\]/);
+    assert.match(login, /<BrandMark size=\{32\} tone="ink" \/>/);
+    assert.doesNotMatch(login, /text-\[var\(--brand-period\)\]/);
   });
 
   it("keeps the eyebrow pill ink on the lime tint — lime is never text", () => {

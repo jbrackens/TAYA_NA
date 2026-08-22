@@ -93,17 +93,14 @@ const TERMINAL_TOP_BAR_INNER_CLASS =
 const TOP_BAR_BRAND_CLASS =
   "inline-flex min-h-11 shrink-0 items-center gap-[10px] no-underline";
 
-// Wordmark: Switzer 600 lowercase at -0.025em (handoff spec §1,
-// 2026-07-26). Schibsted Grotesk and the Martian Grotesk condensed
-// terminal variant are dropped — one lockup recipe, family inherited
-// from the body stack.
+// Tap Path uses a title-case wordmark beside the approved stepped-route mark.
+// The product keeps Switzer as its self-hosted UI family so white-label brand
+// names remain data-driven rather than baking a static wordmark into the app.
 const TOP_BAR_WORDMARK_CLASS =
-  "whitespace-nowrap text-[26px] font-semibold lowercase leading-none tracking-[-0.025em] [color:var(--brand-ink)] max-[900px]:text-[23px] max-[480px]:text-[21px]";
+  "whitespace-nowrap text-[26px] font-semibold leading-none tracking-[-0.025em] [color:var(--brand-ink)] max-[900px]:text-[23px] max-[480px]:text-[21px]";
 
 const TERMINAL_TOP_BAR_WORDMARK_CLASS =
-  "whitespace-nowrap text-[19px] font-semibold lowercase leading-none tracking-[-0.025em] text-[var(--brand-ink)] max-[480px]:text-[17px]";
-
-const TOP_BAR_PERIOD_CLASS = "[color:var(--brand-period)]";
+  "whitespace-nowrap text-[19px] font-semibold leading-none tracking-[-0.025em] text-[var(--brand-ink)] max-[480px]:text-[17px]";
 
 const TOP_BAR_NAV_CLASS =
   "flex items-center gap-6 w-full min-w-0 flex-1 max-[900px]:hidden";
@@ -412,7 +409,7 @@ export function TopBar() {
           className={TOP_BAR_BRAND_CLASS}
           aria-label={`${brand.name} — home`}
         >
-          <BrandMark size={isTerminalRoute ? 24 : 30} />
+          <BrandMark size={isTerminalRoute ? 24 : 30} tone="ink" />
           <span
             className={
               isTerminalRoute
@@ -420,10 +417,7 @@ export function TopBar() {
                 : TOP_BAR_WORDMARK_CLASS
             }
           >
-            {isTerminalRoute ? brand.name.toUpperCase() : brand.name}
-            {!isTerminalRoute && (
-              <span className={TOP_BAR_PERIOD_CLASS}>.</span>
-            )}
+            {brand.name}
           </span>
         </Link>
 

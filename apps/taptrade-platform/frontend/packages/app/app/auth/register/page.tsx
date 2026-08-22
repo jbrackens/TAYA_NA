@@ -55,7 +55,7 @@ const FORM_COL_CLASS =
 const FORM_INNER_CLASS = "mx-auto flex w-full max-w-[400px] flex-1 flex-col";
 const BRAND_ROW_CLASS = "mb-10 inline-flex items-center gap-2.5 no-underline";
 const BRAND_WORDMARK_CLASS =
-  "text-[21px] font-semibold lowercase leading-none tracking-[-0.025em] text-[var(--brand-ink)]";
+  "text-[21px] font-semibold leading-none tracking-[-0.025em] text-[var(--brand-ink)]";
 const EVENT_PANEL_CLASS =
   "relative hidden overflow-hidden bg-[var(--brand-ink)] lg:block";
 const EVENT_MEDIA_CLASS =
@@ -246,10 +246,9 @@ export default function RegisterPage() {
       <div className={FORM_COL_CLASS}>
         <div className={FORM_INNER_CLASS}>
           <Link href="/" className={BRAND_ROW_CLASS} aria-label="TapTrade home">
-            <BrandMark size={26} />
+            <BrandMark size={26} tone="ink" />
             <span className={BRAND_WORDMARK_CLASS}>
               TapTrade
-              <span className="text-[var(--brand-period)]">.</span>
             </span>
           </Link>
 
