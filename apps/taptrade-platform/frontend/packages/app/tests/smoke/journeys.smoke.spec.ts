@@ -224,7 +224,7 @@ async function buyPack(
 // J1 — Browse markets (demo storageState; read-only)
 // ---------------------------------------------------------------------------
 test.describe("J1 browse markets", () => {
-  test("home renders clean, Moments rankings browse, market detail", async ({
+  test("home renders clean, Moments filters browse, market detail", async ({
     page,
   }) => {
     const assertNoConsoleErrors = captureConsoleErrors(page, {
@@ -241,19 +241,18 @@ test.describe("J1 browse markets", () => {
     // connection pool open past the 30s timeout). The visibility
     // assertions below are the real readiness gate on every engine.
     await page.goto("/predict/", { waitUntil: "domcontentloaded" });
-    const ranking = page.getByRole("tab", {
-      name: "Most Active",
-      exact: true,
-    });
-    await expect(ranking).toBeVisible({ timeout: 10_000 });
-    await ranking.click();
-    await expect(ranking).toHaveAttribute("aria-selected", "true");
     await expect(page.getByTestId("market-card").first()).toBeVisible({
       timeout: 10_000,
     });
     await expect(
       page.getByRole("link", { name: /\d+% buy yes/i }).first(),
     ).toBeVisible();
+    const closingSoon = page.getByTestId("market-sort-closing_soon");
+    await closingSoon.click();
+    await expect(closingSoon).toHaveAttribute("aria-pressed", "true");
+    const oneWeek = page.getByTestId("market-window-7d");
+    await oneWeek.click();
+    await expect(oneWeek).toHaveAttribute("aria-pressed", "true");
 
     const ticker = await openLiquidMarket(page);
     expect(ticker).toBeTruthy();

@@ -6,7 +6,7 @@ import {
 } from "./_shared";
 
 test.describe("/predict — discovery landing", () => {
-  test("renders the Moments grid and switches rankings in place", async ({ page }) => {
+  test("renders the Moments grid and filters it in place", async ({ page }) => {
     const checkErrors = captureConsoleErrors(page);
 
     await assertPageHealthy(page, "/predict");
@@ -28,21 +28,33 @@ test.describe("/predict — discovery landing", () => {
     await page.getByRole("button", { name: /load more markets/i }).click();
     await expect(cards).toHaveCount(18, { timeout: 10_000 });
 
-    const activeTab = page.getByRole("tab", {
-      name: "Most Active",
-      exact: true,
-    });
-    await expect(activeTab).toBeVisible();
-    await activeTab.click();
-    await expect(activeTab).toHaveAttribute("aria-selected", "true");
-
     // The approved discovery card shows both live market sides as
     // percentage actions, not as a dense single-column price table.
-    await expect(cards.first()).toBeVisible({
+    await expect(
+      page.getByRole("link", { name: /\d+% buy yes/i }).first(),
+    ).toBeVisible({
       timeout: 10_000,
     });
-    await expect(page.getByRole("link", { name: /\d+% buy yes/i }).first()).toBeVisible();
-    await expect(page.getByRole("link", { name: /\d+% buy no/i }).first()).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /\d+% buy no/i }).first(),
+    ).toBeVisible();
+
+    const search = page.getByRole("searchbox", {
+      name: /search markets/i,
+    });
+    await expect(search).toBeVisible();
+    await search.fill("candidate");
+    await expect(search).toHaveValue("candidate");
+
+    const closingSoon = page.getByTestId("market-sort-closing_soon");
+    await expect(closingSoon).toHaveAttribute("aria-pressed", "false");
+    await closingSoon.click();
+    await expect(closingSoon).toHaveAttribute("aria-pressed", "true");
+
+    const oneDay = page.getByTestId("market-window-24h");
+    await expect(oneDay).toHaveAttribute("aria-pressed", "false");
+    await oneDay.click();
+    await expect(oneDay).toHaveAttribute("aria-pressed", "true");
 
     checkErrors();
   });

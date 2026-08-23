@@ -228,7 +228,6 @@ export function PredictionWorkspace({
           <div className="mt-4 min-[761px]:mt-6">
             <AllMarketsSection
               categories={catalogCategories}
-              discovery={discovery}
               categoryId={activeCategoryId}
               variant="moments"
             />

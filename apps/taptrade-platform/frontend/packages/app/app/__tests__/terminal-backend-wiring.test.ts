@@ -36,11 +36,17 @@ describe("prediction terminal backend wiring", () => {
 
     assert.ok(workspace.includes("<AllMarketsSection"));
     assert.ok(workspace.includes('variant="moments"'));
-    assert.ok(workspace.includes("discovery={discovery}"));
     assert.ok(catalog.includes("<MomentMarketsSection"));
     assert.ok(moments.includes('id="trending-markets"'));
     assert.ok(moments.includes('id="moments-market-heading"'));
     assert.match(moments, /api\s*\.getMarkets/);
+    assert.ok(moments.includes('data-testid="moment-filter-bar"'));
+    assert.ok(moments.includes("market-sort-${pill.value}"));
+    assert.ok(moments.includes("market-window-${pill.value}"));
+    assert.ok(moments.includes("q: query.trim() || undefined"));
+    assert.ok(moments.includes("closeBefore: dateWindowToCloseBefore(dateWindow)"));
+    assert.ok(moments.includes("sort: sortBy"));
+    assert.ok(!moments.includes("DISCOVER_RANKING_SECTIONS"));
     assert.ok(moments.includes("LOAD_MORE_MARKETS"));
     assert.ok(predictPage.includes("useSearchParams"));
     assert.ok(predictPage.includes("activeCategoryId"));

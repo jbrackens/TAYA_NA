@@ -1143,10 +1143,10 @@ describe("Predict discovery controls", () => {
     );
   });
 
-  it("uses the in-place Moments ranking grid instead of a carousel and persistent trade rail", () => {
+  it("uses the in-place Moments filter grid instead of a carousel and persistent trade rail", () => {
     assert.ok(
       predictionWorkspaceSource.includes('variant="moments"') &&
-        predictionWorkspaceSource.includes("discovery={discovery}"),
+        predictionWorkspaceSource.includes("categoryId={activeCategoryId}"),
       "PredictionWorkspace should mount the approved Moments presentation",
     );
     assert.ok(
@@ -1155,20 +1155,25 @@ describe("Predict discovery controls", () => {
       "The discovery viewport should not restore the removed carousel or trade rail",
     );
     assert.ok(
-      momentMarketsSource.includes("DISCOVER_RANKING_SECTIONS") &&
-        momentMarketsSource.includes('role="tablist"') &&
-        momentMarketsSource.includes('role="tabpanel"') &&
-        momentMarketsSource.includes("selectRanking") &&
-        momentMarketsSource.includes("activeKey"),
-      "The seven rankings should switch in place",
+      momentMarketsSource.includes('data-testid="moment-filter-bar"') &&
+        momentMarketsSource.includes('type="search"') &&
+        momentMarketsSource.includes("market-sort-${pill.value}") &&
+        momentMarketsSource.includes("market-window-${pill.value}") &&
+        momentMarketsSource.includes("q: query.trim() || undefined") &&
+        momentMarketsSource.includes(
+          "closeBefore: dateWindowToCloseBefore(dateWindow)",
+        ) &&
+        momentMarketsSource.includes("sort: sortBy") &&
+        !momentMarketsSource.includes("DISCOVER_RANKING_SECTIONS"),
+      "The established search, sort, and closing-window controls should filter in place",
     );
     assert.ok(
       momentMarketsSource.includes("const PAGE_SIZE = 9") &&
         momentMarketsSource.includes("pageSize: PAGE_SIZE") &&
         momentMarketsSource.includes(
-          "setTrendingMarkets((current) => dedupeMarkets([...current, ...next]))",
+          "dedupeMarkets([...current, ...(response.data || [])])",
         ) &&
-        momentMarketsSource.includes("<MarketGrid markets={visibleMarkets} columns={3} />"),
+        momentMarketsSource.includes("<MarketGrid markets={markets} columns={3} />"),
       "The live Moments grid should remain a responsive 3×3, nine-at-a-time market directory",
     );
   });

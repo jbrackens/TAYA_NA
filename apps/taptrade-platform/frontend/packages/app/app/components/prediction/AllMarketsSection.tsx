@@ -33,7 +33,6 @@ import {
 } from "./marketSubcategories";
 import type {
   Category,
-  DiscoveryResponse,
   PredictionMarket,
 } from "@taptrade-ui/api-client/src/prediction-types";
 
@@ -203,21 +202,19 @@ function MarketCardSkeleton() {
 
 interface Props {
   categories: Category[];
-  /** The approved Moments surface uses the existing discovery payload for
-   * its seven truthful, in-place rankings. */
-  discovery?: DiscoveryResponse;
+  /** The approved Moments surface shares the established directory filters
+   * while retaining the denser, participant-view market cards. */
   categoryId?: string;
   variant?: "catalog" | "moments";
 }
 
 export function AllMarketsSection({
   categories,
-  discovery,
   categoryId,
   variant = "catalog",
 }: Props) {
-  if (variant === "moments" && discovery) {
-    return <MomentMarketsSection discovery={discovery} categoryId={categoryId} />;
+  if (variant === "moments") {
+    return <MomentMarketsSection categoryId={categoryId} />;
   }
 
   return <CatalogAllMarketsSection categories={categories} />;
