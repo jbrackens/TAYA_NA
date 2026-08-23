@@ -184,27 +184,18 @@ body {
   --brand-on-dark: var(--on-brand);
   --brand-period-dark: var(--signal-gold);
 
-  /* Semantic (data layer). YES is seafoam green, NO is coral
-   * (DESIGN.md §3). Keep brand mint on CTA/identity; these are
-   * trading-signal colors for prices, side selectors, depth bars.
-   *
-   * Seafoam + coral was picked over the prior neon + fire-engine
-   * pair because (a) neon green collided with the mint brand accent
-   * at a glance, (b) saturated red/green caused eye fatigue at chart
-   * scale, and (c) calm cool/warm complementary colors sit naturally
-   * on the cool teal backdrop without fighting it. */
-  /* Step 2.5: direction channel → muted Ink & lime pair. --yes/--no map
-   * to the SATURATED direction colours (audited: call sites use them for
-   * dots, danger fills with white text, and 4 text sites — all of which
-   * want the dark values). Pale fills keep coming from --yes/no-bar. */
+  /* Semantic (data layer). YES is deep teal and NO is muted mulberry
+   * (DESIGN.md §3). They belong to market direction only—never brand,
+   * navigation, or generic CTA states. The cooler pair avoids a literal
+   * green/red read while retaining immediate two-sided market semantics. */
   --yes: var(--dir-yes);
-  --yes-soft: rgba(20, 117, 54, 0.08);
-  --yes-border: rgba(20, 117, 54, 0.28);
+  --yes-soft: color-mix(in srgb, var(--dir-yes) 8%, transparent);
+  --yes-border: color-mix(in srgb, var(--dir-yes) 28%, transparent);
   --yes-text: var(--dir-yes);
   --yes-bar: var(--dir-yes-bar); /* pale fills, dots, progress */
   --no: var(--dir-no);
-  --no-soft: rgba(193, 39, 45, 0.08);
-  --no-border: rgba(193, 39, 45, 0.26);
+  --no-soft: color-mix(in srgb, var(--dir-no) 8%, transparent);
+  --no-border: color-mix(in srgb, var(--dir-no) 26%, transparent);
   --no-text: var(--dir-no);
   --no-bar: var(--dir-no-bar); /* pale fills, dots */
   --focus-ring: var(--brand-purple); /* AA non-text on paper/raised */
@@ -310,11 +301,11 @@ body {
   --lime-text: var(--brand-purple);
   --ink-on-lime: var(--on-brand);
 
-  /* Direction — green/red mean direction ONLY */
-  --dir-yes: #147536;
-  --dir-no: #c1272d;
-  --dir-yes-bar: #86d9a5;
-  --dir-no-bar: #f0a9a3;
+  /* Direction — teal/mulberry mean market direction ONLY */
+  --dir-yes: #126d68;
+  --dir-no: #9c3b65;
+  --dir-yes-bar: #a7d8d3;
+  --dir-no-bar: #e5b5c9;
 
   /* Informational UI stays in the purple brand channel rather than adding
    * a competing blue accent. */
@@ -1556,6 +1547,6 @@ body {
   --l-gold: #f5c454;
   --l-gold-text: #28153f;
   --l-on-purple: #ffffff;
-  --l-up: #147536;
-  --l-down: #c1272d;
+  --l-up: var(--dir-yes);
+  --l-down: var(--dir-no);
 }

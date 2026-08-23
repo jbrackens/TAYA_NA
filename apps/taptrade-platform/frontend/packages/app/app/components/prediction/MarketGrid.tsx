@@ -8,6 +8,8 @@ import { categoryLabel, localizedMarket } from "./market-content";
 interface Props {
   markets: PredictionMarket[];
   columns?: 3 | 4;
+  /** One-based rank for the first market in this rendered result set. */
+  rankStart?: number;
   watchedMarketIds?: Set<string>;
   onToggleWatchlist?: (marketId: string) => void;
 }
@@ -20,6 +22,7 @@ const GRID_CLASS_BY_COLUMNS: Record<NonNullable<Props["columns"]>, string> = {
 export function MarketGrid({
   markets,
   columns = 4,
+  rankStart = 1,
   watchedMarketIds,
   onToggleWatchlist,
 }: Props) {
@@ -28,7 +31,7 @@ export function MarketGrid({
   if (!markets || markets.length === 0) return null;
 
   return (
-    <div className={GRID_CLASS_BY_COLUMNS[columns]}>
+    <div className={GRID_CLASS_BY_COLUMNS[columns]} data-testid="market-grid">
       {markets.map((market, index) => {
         const localized = localizedMarket(t, market);
         return (
@@ -39,6 +42,7 @@ export function MarketGrid({
           >
             <MarketCard
               marketId={localized.id}
+              rank={rankStart + index}
               ticker={localized.ticker}
               title={localized.title}
               yesPricePoints={localized.yesPricePoints}

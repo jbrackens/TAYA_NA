@@ -38,6 +38,7 @@ export default function BrandMark({
       className={`block shrink-0 object-contain ${className}`}
       height={height}
       src={MARK_SOURCE[tone]}
+      style={{ height: "auto" }}
       unoptimized
       width={size}
     />

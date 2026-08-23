@@ -25,6 +25,7 @@ import {
 } from "../../lib/api/market-watchlist-client";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../ToastProvider";
+import { MomentMarketsSection } from "./MomentMarketsSection";
 import { categoryName } from "./market-content";
 import {
   extractMarketSubcategories,
@@ -32,6 +33,7 @@ import {
 } from "./marketSubcategories";
 import type {
   Category,
+  DiscoveryResponse,
   PredictionMarket,
 } from "@taptrade-ui/api-client/src/prediction-types";
 
@@ -201,9 +203,27 @@ function MarketCardSkeleton() {
 
 interface Props {
   categories: Category[];
+  /** The approved Moments surface uses the existing discovery payload for
+   * its seven truthful, in-place rankings. */
+  discovery?: DiscoveryResponse;
+  categoryId?: string;
+  variant?: "catalog" | "moments";
 }
 
-export function AllMarketsSection({ categories }: Props) {
+export function AllMarketsSection({
+  categories,
+  discovery,
+  categoryId,
+  variant = "catalog",
+}: Props) {
+  if (variant === "moments" && discovery) {
+    return <MomentMarketsSection discovery={discovery} categoryId={categoryId} />;
+  }
+
+  return <CatalogAllMarketsSection categories={categories} />;
+}
+
+function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
   const { t } = useTranslation("prediction");
   const { t: headerT } = useTranslation("header");
   const { t: contentT } = useTranslation("market-content");

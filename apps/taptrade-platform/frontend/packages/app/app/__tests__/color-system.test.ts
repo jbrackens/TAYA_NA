@@ -17,6 +17,10 @@ const predictionWorkspace = readFileSync(
   resolve(appRoot, "components/prediction/PredictionWorkspace.tsx"),
   "utf8",
 );
+const marketCard = readFileSync(
+  resolve(appRoot, "components/prediction/MarketCard.tsx"),
+  "utf8",
+);
 
 describe("TapTrade purple and gold color system", () => {
   it("pins the approved neutral, brand, and market-semantic primitives", () => {
@@ -35,10 +39,10 @@ describe("TapTrade purple and gold color system", () => {
       "brand-lavender": "#ece3f7",
       "signal-gold": "#f5c454",
       "signal-gold-text": "#885206",
-      "dir-yes": "#147536",
-      "dir-yes-bar": "#86d9a5",
-      "dir-no": "#c1272d",
-      "dir-no-bar": "#f0a9a3",
+      "dir-yes": "#126d68",
+      "dir-yes-bar": "#a7d8d3",
+      "dir-no": "#9c3b65",
+      "dir-no-bar": "#e5b5c9",
     };
 
     for (const [name, hex] of Object.entries(expected)) {
@@ -48,6 +52,25 @@ describe("TapTrade purple and gold color system", () => {
         `--${name} should equal ${hex}`,
       );
     }
+  });
+
+  it("derives YES and NO soft surfaces from the shared direction primitives", () => {
+    assert.match(
+      globals,
+      /--yes-soft:\s*color-mix\(in srgb, var\(--dir-yes\) 8%, transparent\);/,
+    );
+    assert.match(
+      globals,
+      /--yes-border:\s*color-mix\(in srgb, var\(--dir-yes\) 28%, transparent\);/,
+    );
+    assert.match(
+      globals,
+      /--no-soft:\s*color-mix\(in srgb, var\(--dir-no\) 8%, transparent\);/,
+    );
+    assert.match(
+      globals,
+      /--no-border:\s*color-mix\(in srgb, var\(--dir-no\) 26%, transparent\);/,
+    );
   });
 
   it("uses purple for generic interaction and gold for live or reward attention", () => {
@@ -80,15 +103,15 @@ describe("TapTrade purple and gold color system", () => {
     );
   });
 
-  it("makes gold visible in the normal Predict first viewport as a live and featured signal", () => {
-    assert.match(predictionWorkspace, /data-testid="predict-live-status"/);
-    assert.match(predictionWorkspace, /bg-\[var\(--live\)\][^\n]*text-\[var\(--on-gold\)\]/);
-    assert.match(predictionWorkspace, /t\("MARKET_DATA_LIVE"\)/);
-    assert.match(predictionWorkspace, /border-t-\[3px\] border-t-\[var\(--signal-gold\)\]/);
+  it("makes gold visible in the normal Predict first viewport as a reward and live-market signal", () => {
+    assert.match(predictionWorkspace, /WORKSPACE_REWARD_WIN/);
+    assert.match(predictionWorkspace, /bg-\[var\(--signal-gold\)\][^\n]*text-\[var\(--on-gold\)\]/);
+    assert.match(predictionWorkspace, /border border-\[var\(--signal-gold\)\]/);
+    assert.match(marketCard, /bg-\[var\(--live\)\]/);
     assert.doesNotMatch(
-      predictionWorkspace,
-      /predict-live-status[\s\S]{0,400}--(?:yes|no)/,
-      "the live status must not borrow YES/NO market semantics",
+      marketCard,
+      /bg-\[var\(--live\)\][\s\S]{0,160}--(?:yes|no)/,
+      "the gold Trending signal must not borrow YES/NO market semantics",
     );
   });
 });

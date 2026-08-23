@@ -1102,6 +1102,9 @@ describe("Predict discovery controls", () => {
   const predictionWorkspaceSource = read(
     "components/prediction/PredictionWorkspace.tsx",
   );
+  const momentMarketsSource = read(
+    "components/prediction/MomentMarketsSection.tsx",
+  );
   const discoverPageSource = read("discover/page.tsx");
   const seriesPageSource = read("series/[slug]/page.tsx");
   // Step 11: MarketGrid/MarketCard retired — MarketFeed is the browse
@@ -1140,18 +1143,33 @@ describe("Predict discovery controls", () => {
     );
   });
 
-  it("keeps the featured carousel synchronized with the trade preview", () => {
+  it("uses the in-place Moments ranking grid instead of a carousel and persistent trade rail", () => {
     assert.ok(
-      predictionWorkspaceSource.includes('aria-roledescription="carousel"') &&
-        predictionWorkspaceSource.includes("PREVIOUS_FEATURED_MARKET") &&
-        predictionWorkspaceSource.includes("NEXT_FEATURED_MARKET") &&
-        predictionWorkspaceSource.includes("CAROUSEL_COUNT"),
-      "PredictionWorkspace should expose accessible featured-market carousel controls",
+      predictionWorkspaceSource.includes('variant="moments"') &&
+        predictionWorkspaceSource.includes("discovery={discovery}"),
+      "PredictionWorkspace should mount the approved Moments presentation",
     );
     assert.ok(
-      predictionWorkspaceSource.includes("setActiveFeaturedId(marketId)") &&
-        predictionWorkspaceSource.includes("setSelectedId(marketId)"),
-      "Changing the featured slide should keep the trade preview on the same market",
+      !predictionWorkspaceSource.includes('aria-roledescription="carousel"') &&
+        !predictionWorkspaceSource.includes("<ConnectedTradeTicket"),
+      "The discovery viewport should not restore the removed carousel or trade rail",
+    );
+    assert.ok(
+      momentMarketsSource.includes("DISCOVER_RANKING_SECTIONS") &&
+        momentMarketsSource.includes('role="tablist"') &&
+        momentMarketsSource.includes('role="tabpanel"') &&
+        momentMarketsSource.includes("selectRanking") &&
+        momentMarketsSource.includes("activeKey"),
+      "The seven rankings should switch in place",
+    );
+    assert.ok(
+      momentMarketsSource.includes("const PAGE_SIZE = 9") &&
+        momentMarketsSource.includes("pageSize: PAGE_SIZE") &&
+        momentMarketsSource.includes(
+          "setTrendingMarkets((current) => dedupeMarkets([...current, ...next]))",
+        ) &&
+        momentMarketsSource.includes("<MarketGrid markets={visibleMarkets} columns={3} />"),
+      "The live Moments grid should remain a responsive 3×3, nine-at-a-time market directory",
     );
   });
 

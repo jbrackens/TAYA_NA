@@ -224,7 +224,7 @@ async function buyPack(
 // J1 — Browse markets (demo storageState; read-only)
 // ---------------------------------------------------------------------------
 test.describe("J1 browse markets", () => {
-  test("home renders clean, categories browse, search, market detail", async ({
+  test("home renders clean, Moments rankings browse, market detail", async ({
     page,
   }) => {
     const assertNoConsoleErrors = captureConsoleErrors(page, {
@@ -241,17 +241,19 @@ test.describe("J1 browse markets", () => {
     // connection pool open past the 30s timeout). The visibility
     // assertions below are the real readiness gate on every engine.
     await page.goto("/predict/", { waitUntil: "domcontentloaded" });
-    const pill = page.getByRole("button", { name: /politics/i }).first();
-    if (await pill.isVisible().catch(() => false)) {
-      await pill.click();
-    }
-    // Scope to main content: the header search exists in DOM but is hidden
-    // on mobile widths.
-    const search = page.locator('main input[placeholder*="Search" i]').first();
-    await search.fill("World Cup");
-    await expect(page.getByText(/World Cup/i).first()).toBeVisible({
+    const ranking = page.getByRole("tab", {
+      name: "Most Active",
+      exact: true,
+    });
+    await expect(ranking).toBeVisible({ timeout: 10_000 });
+    await ranking.click();
+    await expect(ranking).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByTestId("market-card").first()).toBeVisible({
       timeout: 10_000,
     });
+    await expect(
+      page.getByRole("link", { name: /\d+% buy yes/i }).first(),
+    ).toBeVisible();
 
     const ticker = await openLiquidMarket(page);
     expect(ticker).toBeTruthy();
