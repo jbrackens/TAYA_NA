@@ -471,9 +471,9 @@ test.describe("store + trading journeys (fresh user)", () => {
       .locator('input[inputmode="numeric"], input[type="number"]')
       .first();
     await amount.fill("200");
-    // Exercise the production press-and-hold interaction. This is more
-    // representative and reliable than synthetic keyboard activation for
-    // the guarded CTA.
+    // Exercise the production press-and-hold interaction. A delayed
+    // locator click can release just before an under-load rAF reaches the
+    // hold threshold, so keep a real pointer down with enough slack.
     const submit = page.getByRole("button", { name: /^hold to place\b/i });
     await expect(submit).toBeEnabled({ timeout: 10_000 });
     const orderResponse = page.waitForResponse(
@@ -483,8 +483,17 @@ test.describe("store + trading journeys (fresh user)", () => {
         /^\/api\/v1\/orders\/?$/.test(new URL(response.url()).pathname),
       { timeout: 15_000 },
     );
-    await submit.click({ delay: 800 });
-    await orderResponse;
+    await submit.hover();
+    await page.mouse.down();
+    try {
+      await expect(
+        page.getByRole("button", { name: /^holding… keep pressing$/i }),
+      ).toBeVisible({ timeout: 2_000 });
+      await page.waitForTimeout(1_250);
+      await orderResponse;
+    } finally {
+      await page.mouse.up();
+    }
 
     await expect
       .poll(async () => before - (await apiBalance(page.request, userId)), {
