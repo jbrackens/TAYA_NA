@@ -382,12 +382,20 @@ test.describe("store + trading journeys (fresh user)", () => {
     await expect(page.getByTestId("purchase-success")).toBeVisible({
       timeout: 15_000,
     });
+    const purchaseId =
+      new URL(page.url()).searchParams.get("purchase") ??
+      page.url().match(/sp_[A-Za-z0-9]+/)?.[0] ??
+      "";
+    expect(purchaseId, `purchase id from ${page.url()}`).toMatch(/^sp_/);
 
     // Exact credit: popular = 2,500 base + 250 bonus.
     await expect
       .poll(async () => apiBalance(page.request, userId), { timeout: 10_000 })
       .toBe(before + 2750);
-    const rows = storeRows(await apiLedger(page.request, userId));
+    // Scope ledger assertions to this checkout. Playwright retries a serial
+    // describe from the first test after a later failure, so a successful
+    // earlier attempt can legitimately have its own immutable ledger rows.
+    const rows = storeRows(await apiLedger(page.request, userId), purchaseId);
     const purchases = rows.filter((r) => r.reason === "point_pack_purchase");
     const bonuses = rows.filter((r) => r.reason === "promo_bonus");
     expect(purchases.length).toBe(1);
@@ -428,9 +436,11 @@ test.describe("store + trading journeys (fresh user)", () => {
       .locator('input[inputmode="numeric"], input[type="number"]')
       .first();
     await amount.fill("200");
-    const submit = page.getByRole("button", { name: /place trade/i });
+    // The live ticket uses a deliberate press-and-hold CTA. Keyboard
+    // activation is the documented accessible alternative to the hold.
+    const submit = page.getByRole("button", { name: /hold to place/i });
     await expect(submit).toBeEnabled({ timeout: 10_000 });
-    await submit.click();
+    await submit.press("Enter");
 
     await expect
       .poll(async () => before - (await apiBalance(page.request, userId)), {

@@ -161,7 +161,7 @@ test.describe("/market/[ticker] — market detail", () => {
       await expect(signUp).toBeVisible();
       await expect(signUp).toHaveAttribute(
         "href",
-        /^\/auth\/register\?returnUrl=/,
+        /^\/auth\/register\/?\?returnUrl=/,
       );
       const amountInput = page.locator("#ticket-amount");
       await amountInput.fill("100");
@@ -173,7 +173,7 @@ test.describe("/market/[ticker] — market detail", () => {
       await expect(signIn).toBeVisible();
       await expect(signIn).toHaveAttribute(
         "href",
-        /^\/auth\/login\?returnUrl=/,
+        /^\/auth\/login\/?\?returnUrl=/,
       );
 
       checkErrors();
