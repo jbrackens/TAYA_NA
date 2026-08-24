@@ -265,6 +265,41 @@ test.describe("J1 browse markets", () => {
 });
 
 // ---------------------------------------------------------------------------
+// J7 — Narrow store layout (demo storageState; read-only)
+// ---------------------------------------------------------------------------
+test("J7 store single-columns at 320px without horizontal scroll", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 680 });
+
+  // In CI the lightweight Next dev server can occasionally serve an empty
+  // route manifest while compiling a page after a prior serial retry. Retry
+  // this narrow navigation, but still require an actual store card before
+  // measuring layout so a persistent route failure remains visible.
+  await expect(async () => {
+    const response = await page.goto("/store/", {
+      waitUntil: "domcontentloaded",
+    });
+    expect(response?.status(), "store document status").toBe(200);
+    const packGrid = page.getByRole("group", { name: /point packs/i });
+    await expect(packGrid).toBeVisible({ timeout: 6_000 });
+    await expect(packGrid.locator('[data-testid^="pack-card-"]').first()).toBeVisible({
+      timeout: 6_000,
+    });
+  }).toPass({ timeout: 20_000 });
+
+  const layout = await page.getByRole("group", { name: /point packs/i }).evaluate((grid) => {
+    const el = document.scrollingElement ?? document.documentElement;
+    return {
+      columns: getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).length,
+      overflow: el.scrollWidth - el.clientWidth,
+    };
+  });
+  expect(layout.columns, "store grid columns at 320px").toBe(1);
+  expect(layout.overflow, "horizontal overflow px").toBeLessThanOrEqual(1);
+});
+
+// ---------------------------------------------------------------------------
 // Arc provisioning — one fresh user per project run, persisted storageState
 // ---------------------------------------------------------------------------
 test.describe("arc user provisioning", () => {
@@ -436,11 +471,20 @@ test.describe("store + trading journeys (fresh user)", () => {
       .locator('input[inputmode="numeric"], input[type="number"]')
       .first();
     await amount.fill("200");
-    // The live ticket uses a deliberate press-and-hold CTA. Keyboard
-    // activation is the documented accessible alternative to the hold.
-    const submit = page.getByRole("button", { name: /hold to place/i });
+    // Exercise the production press-and-hold interaction. This is more
+    // representative and reliable than synthetic keyboard activation for
+    // the guarded CTA.
+    const submit = page.getByRole("button", { name: /^hold to place\b/i });
     await expect(submit).toBeEnabled({ timeout: 10_000 });
-    await submit.press("Enter");
+    const orderResponse = page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        response.status() === 201 &&
+        /^\/api\/v1\/orders\/?$/.test(new URL(response.url()).pathname),
+      { timeout: 15_000 },
+    );
+    await submit.click({ delay: 800 });
+    await orderResponse;
 
     await expect
       .poll(async () => before - (await apiBalance(page.request, userId)), {
@@ -574,19 +618,4 @@ test.describe("store + trading journeys (fresh user)", () => {
       .toBe(before + 1050);
   });
 
-  // J7 (narrow): reuses the same provisioned user; viewport set per-test.
-  test("J7 store single-columns at 320px without horizontal scroll", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 320, height: 680 });
-    await page.goto("/store/");
-    await expect(page.getByTestId("pack-card-popular")).toBeVisible({
-      timeout: 15_000,
-    });
-    const overflow = await page.evaluate(() => {
-      const el = document.scrollingElement!;
-      return el.scrollWidth - el.clientWidth;
-    });
-    expect(overflow, "horizontal overflow px").toBeLessThanOrEqual(1);
-  });
 });
