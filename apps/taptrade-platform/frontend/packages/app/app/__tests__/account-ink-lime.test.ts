@@ -117,6 +117,13 @@ describe("header chips at 390 (step 8)", () => {
     assert.match(topBar, /TOP_BAR_BALANCE_CLASS =\s*\n?\s*"inline-flex min-h-11 shrink-0/);
   });
 
+  it("drops the wordmark before it crowds required header controls", () => {
+    assert.match(
+      topBar,
+      /TOP_BAR_WORDMARK_CLASS =\s*\n?\s*"[^"]*max-\[359px\]:hidden/,
+    );
+  });
+
   it("uses an accessible lavender avatar state in the top bar", () => {
     assert.ok(!topBar.includes("#6d63dc"));
     assert.match(
