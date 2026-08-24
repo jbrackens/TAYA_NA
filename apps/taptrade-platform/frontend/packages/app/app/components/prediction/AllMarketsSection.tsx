@@ -25,6 +25,7 @@ import {
 } from "../../lib/api/market-watchlist-client";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../ToastProvider";
+import { MomentMarketsSection } from "./MomentMarketsSection";
 import { categoryName } from "./market-content";
 import {
   extractMarketSubcategories,
@@ -201,9 +202,25 @@ function MarketCardSkeleton() {
 
 interface Props {
   categories: Category[];
+  /** The approved Moments surface shares the established directory filters
+   * while retaining the denser, participant-view market cards. */
+  categoryId?: string;
+  variant?: "catalog" | "moments";
 }
 
-export function AllMarketsSection({ categories }: Props) {
+export function AllMarketsSection({
+  categories,
+  categoryId,
+  variant = "catalog",
+}: Props) {
+  if (variant === "moments") {
+    return <MomentMarketsSection categoryId={categoryId} />;
+  }
+
+  return <CatalogAllMarketsSection categories={categories} />;
+}
+
+function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
   const { t } = useTranslation("prediction");
   const { t: headerT } = useTranslation("header");
   const { t: contentT } = useTranslation("market-content");

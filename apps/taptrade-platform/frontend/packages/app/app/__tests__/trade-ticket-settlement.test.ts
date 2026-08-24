@@ -80,6 +80,14 @@ describe("§3-03 quote freeze", () => {
     assert.match(ticket, /if \(quotePending\) return;/);
   });
 
+  it("refreshes the hold-submit callback when quote state settles", () => {
+    const submitBlock = ticket.slice(
+      ticket.indexOf("const handleSubmit"),
+      ticket.indexOf("// Press-and-hold"),
+    );
+    assert.match(submitBlock, /\n\s*quotePending,\n/);
+  });
+
   it("signals the in-flight quote with the pending tokens", () => {
     assert.match(
       ticket,

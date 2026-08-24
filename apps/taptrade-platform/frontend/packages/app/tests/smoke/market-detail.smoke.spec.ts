@@ -36,8 +36,8 @@ test.describe("/market/[ticker] — market detail", () => {
     await assertPageHealthy(page, `/market/${firstTicker}`);
     await openTradeTicket(page);
 
-    // Market details are part of the same dark trading workspace as the
-    // market directory, not the legacy padded shell.
+    // Market details are part of the same trading workspace as the market
+    // directory, not the legacy padded shell.
     await expect(page.locator(".predict-terminal")).toHaveCount(1);
     await expect(
       page.locator('section[aria-label="Trade ticket"]'),
@@ -66,7 +66,7 @@ test.describe("/market/[ticker] — market detail", () => {
     checkErrors();
   });
 
-  test("share dialog exercises the ui/Dialog primitive with terminal tokens", async ({
+  test("share dialog exercises the ui/Dialog primitive with shared surface tokens", async ({
     page,
   }, testInfo) => {
     // On fine-pointer (desktop) devices the ui/Dialog IS the product's
@@ -74,7 +74,7 @@ test.describe("/market/[ticker] — market detail", () => {
     // get the native share sheet instead, so they skip. This is the
     // exercised-Dialog gate from the P1 re-review: the popup PORTALS into
     // document.body (outside .predict-terminal) and must still resolve
-    // the route's DARK tokens through the html[data-theme] mirror.
+    // the shared light surface tokens used by the current brand system.
     test.skip(
       testInfo.project.name.includes("mobile"),
       "touch devices use the native share sheet by design",
@@ -102,13 +102,13 @@ test.describe("/market/[ticker] — market detail", () => {
       new RegExp(`/market/${ticker}`),
     );
 
-    // Theme mirror proof: the portalled popup's surface token resolves to
-    // the terminal dark value (#080d11), not the light default.
+    // The portalled popup resolves the shared light card surface, rather
+    // than relying on a retired route-specific terminal theme.
     const popupBg = await dialog.evaluate(
       (el) => getComputedStyle(el).backgroundColor,
     );
-    expect(popupBg, "portalled dialog must resolve dark terminal tokens").toBe(
-      "rgb(8, 13, 17)",
+    expect(popupBg, "portalled dialog must resolve light surface tokens").toBe(
+      "rgb(255, 255, 255)",
     );
 
     // The dialog is a real Base UI dialog: Escape dismisses it.
@@ -155,15 +155,26 @@ test.describe("/market/[ticker] — market detail", () => {
       // (2026-07-12: the Phase-3 quick-amount chips were later replaced by a
       // plain amount input; the regression contract is unchanged — a typed
       // amount must survive a zero balance while logged out.)
-      await expect(
-        page.getByRole("link", { name: "Log in to trade" }),
-      ).toBeVisible();
+      const signUp = page.getByRole("link", {
+        name: "Sign up to place this trade",
+      });
+      await expect(signUp).toBeVisible();
+      await expect(signUp).toHaveAttribute(
+        "href",
+        /^\/auth\/register\/?\?returnUrl=/,
+      );
       const amountInput = page.locator("#ticket-amount");
       await amountInput.fill("100");
       await expect(amountInput).toHaveValue("100");
-      await expect(
-        page.getByRole("link", { name: "Log in to trade" }),
-      ).toBeVisible();
+      await expect(signUp).toBeVisible();
+      const signIn = page.getByRole("link", {
+        name: /Sign in to place this (YES|NO) order/,
+      });
+      await expect(signIn).toBeVisible();
+      await expect(signIn).toHaveAttribute(
+        "href",
+        /^\/auth\/login\/?\?returnUrl=/,
+      );
 
       checkErrors();
     });

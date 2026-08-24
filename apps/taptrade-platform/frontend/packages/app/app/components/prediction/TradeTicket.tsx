@@ -825,7 +825,7 @@ export function TradeTicket({
     insufficientShares,
     marketBuyHasNoLiquidity,
     isOpen,
-    isExchange,
+    quotePending,
     mode,
     action,
     limitPricePoints,

@@ -224,7 +224,7 @@ async function buyPack(
 // J1 — Browse markets (demo storageState; read-only)
 // ---------------------------------------------------------------------------
 test.describe("J1 browse markets", () => {
-  test("home renders clean, categories browse, search, market detail", async ({
+  test("home renders clean, Moments filters browse, market detail", async ({
     page,
   }) => {
     const assertNoConsoleErrors = captureConsoleErrors(page, {
@@ -241,17 +241,18 @@ test.describe("J1 browse markets", () => {
     // connection pool open past the 30s timeout). The visibility
     // assertions below are the real readiness gate on every engine.
     await page.goto("/predict/", { waitUntil: "domcontentloaded" });
-    const pill = page.getByRole("button", { name: /politics/i }).first();
-    if (await pill.isVisible().catch(() => false)) {
-      await pill.click();
-    }
-    // Scope to main content: the header search exists in DOM but is hidden
-    // on mobile widths.
-    const search = page.locator('main input[placeholder*="Search" i]').first();
-    await search.fill("World Cup");
-    await expect(page.getByText(/World Cup/i).first()).toBeVisible({
+    await expect(page.getByTestId("market-card").first()).toBeVisible({
       timeout: 10_000,
     });
+    await expect(
+      page.getByRole("link", { name: /\d+% buy yes/i }).first(),
+    ).toBeVisible();
+    const closingSoon = page.getByTestId("market-sort-closing_soon");
+    await closingSoon.click();
+    await expect(closingSoon).toHaveAttribute("aria-pressed", "true");
+    const oneWeek = page.getByTestId("market-window-7d");
+    await oneWeek.click();
+    await expect(oneWeek).toHaveAttribute("aria-pressed", "true");
 
     const ticker = await openLiquidMarket(page);
     expect(ticker).toBeTruthy();
@@ -261,6 +262,41 @@ test.describe("J1 browse markets", () => {
 
     assertNoConsoleErrors();
   });
+});
+
+// ---------------------------------------------------------------------------
+// J7 — Narrow store layout (demo storageState; read-only)
+// ---------------------------------------------------------------------------
+test("J7 store single-columns at 320px without horizontal scroll", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 680 });
+
+  // In CI the lightweight Next dev server can occasionally serve an empty
+  // route manifest while compiling a page after a prior serial retry. Retry
+  // this narrow navigation, but still require an actual store card before
+  // measuring layout so a persistent route failure remains visible.
+  await expect(async () => {
+    const response = await page.goto("/store/", {
+      waitUntil: "domcontentloaded",
+    });
+    expect(response?.status(), "store document status").toBe(200);
+    const packGrid = page.getByRole("group", { name: /point packs/i });
+    await expect(packGrid).toBeVisible({ timeout: 6_000 });
+    await expect(packGrid.locator('[data-testid^="pack-card-"]').first()).toBeVisible({
+      timeout: 6_000,
+    });
+  }).toPass({ timeout: 20_000 });
+
+  const layout = await page.getByRole("group", { name: /point packs/i }).evaluate((grid) => {
+    const el = document.scrollingElement ?? document.documentElement;
+    return {
+      columns: getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).length,
+      overflow: el.scrollWidth - el.clientWidth,
+    };
+  });
+  expect(layout.columns, "store grid columns at 320px").toBe(1);
+  expect(layout.overflow, "horizontal overflow px").toBeLessThanOrEqual(1);
 });
 
 // ---------------------------------------------------------------------------
@@ -381,12 +417,20 @@ test.describe("store + trading journeys (fresh user)", () => {
     await expect(page.getByTestId("purchase-success")).toBeVisible({
       timeout: 15_000,
     });
+    const purchaseId =
+      new URL(page.url()).searchParams.get("purchase") ??
+      page.url().match(/sp_[A-Za-z0-9]+/)?.[0] ??
+      "";
+    expect(purchaseId, `purchase id from ${page.url()}`).toMatch(/^sp_/);
 
     // Exact credit: popular = 2,500 base + 250 bonus.
     await expect
       .poll(async () => apiBalance(page.request, userId), { timeout: 10_000 })
       .toBe(before + 2750);
-    const rows = storeRows(await apiLedger(page.request, userId));
+    // Scope ledger assertions to this checkout. Playwright retries a serial
+    // describe from the first test after a later failure, so a successful
+    // earlier attempt can legitimately have its own immutable ledger rows.
+    const rows = storeRows(await apiLedger(page.request, userId), purchaseId);
     const purchases = rows.filter((r) => r.reason === "point_pack_purchase");
     const bonuses = rows.filter((r) => r.reason === "promo_bonus");
     expect(purchases.length).toBe(1);
@@ -427,9 +471,29 @@ test.describe("store + trading journeys (fresh user)", () => {
       .locator('input[inputmode="numeric"], input[type="number"]')
       .first();
     await amount.fill("200");
-    const submit = page.getByRole("button", { name: /place trade/i });
+    // Exercise the production press-and-hold interaction. A delayed
+    // locator click can release just before an under-load rAF reaches the
+    // hold threshold, so keep a real pointer down with enough slack.
+    const submit = page.getByRole("button", { name: /^hold to place\b/i });
     await expect(submit).toBeEnabled({ timeout: 10_000 });
-    await submit.click();
+    const orderResponse = page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        response.status() === 201 &&
+        /^\/api\/v1\/orders\/?$/.test(new URL(response.url()).pathname),
+      { timeout: 15_000 },
+    );
+    await submit.hover();
+    await page.mouse.down();
+    try {
+      await expect(
+        page.getByRole("button", { name: /^holding… keep pressing$/i }),
+      ).toBeVisible({ timeout: 2_000 });
+      await page.waitForTimeout(1_250);
+      await orderResponse;
+    } finally {
+      await page.mouse.up();
+    }
 
     await expect
       .poll(async () => before - (await apiBalance(page.request, userId)), {
@@ -563,19 +627,4 @@ test.describe("store + trading journeys (fresh user)", () => {
       .toBe(before + 1050);
   });
 
-  // J7 (narrow): reuses the same provisioned user; viewport set per-test.
-  test("J7 store single-columns at 320px without horizontal scroll", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 320, height: 680 });
-    await page.goto("/store/");
-    await expect(page.getByTestId("pack-card-popular")).toBeVisible({
-      timeout: 15_000,
-    });
-    const overflow = await page.evaluate(() => {
-      const el = document.scrollingElement!;
-      return el.scrollWidth - el.clientWidth;
-    });
-    expect(overflow, "horizontal overflow px").toBeLessThanOrEqual(1);
-  });
 });

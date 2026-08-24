@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import type {
   Category,
@@ -27,6 +28,7 @@ const ROUTE_STATE_CLASS =
 
 export default function PredictDiscoveryPage() {
   const { t } = useTranslation("prediction");
+  const searchParams = useSearchParams();
   const [discovery, setDiscovery] = useState<DiscoveryResponse | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,12 +102,20 @@ export default function PredictDiscoveryPage() {
   const railCategories = categories.filter((category) =>
     LAUNCH_DISCOVERY_CATEGORIES.has(category.slug.toLowerCase()),
   );
+  const activeCategorySlug = (
+    searchParams?.get("category") || ""
+  ).toLowerCase();
+  const activeCategory = railCategories.find(
+    (category) => category.slug.toLowerCase() === activeCategorySlug,
+  );
 
   return (
     <PredictionWorkspace
       discovery={discovery}
       categories={railCategories}
       catalogCategories={categories}
+      activeCategorySlug={activeCategory?.slug.toLowerCase()}
+      activeCategoryId={activeCategory?.id}
     />
   );
 }

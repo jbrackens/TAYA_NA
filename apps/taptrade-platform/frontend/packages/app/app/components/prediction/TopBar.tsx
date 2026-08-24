@@ -95,7 +95,7 @@ const TOP_BAR_BRAND_CLASS =
 // The product keeps Switzer as its self-hosted UI family so white-label brand
 // names remain data-driven rather than baking a static wordmark into the app.
 const TOP_BAR_WORDMARK_CLASS =
-  "whitespace-nowrap text-[26px] font-semibold leading-none tracking-[-0.025em] [color:var(--brand-ink)] max-[900px]:text-[23px] max-[480px]:text-[21px]";
+  "whitespace-nowrap text-[26px] font-semibold leading-none tracking-[-0.025em] [color:var(--brand-ink)] max-[900px]:text-[23px] max-[480px]:text-[21px] max-[359px]:hidden";
 
 const TERMINAL_TOP_BAR_WORDMARK_CLASS =
   "whitespace-nowrap text-[19px] font-semibold leading-none tracking-[-0.025em] text-[var(--on-brand)] max-[480px]:text-[17px]";

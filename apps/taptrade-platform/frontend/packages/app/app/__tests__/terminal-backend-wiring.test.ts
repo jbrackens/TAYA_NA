@@ -9,13 +9,16 @@ const appRoot = fileURLToPath(new URL("../", import.meta.url));
 const read = (path: string) => readFileSync(`${appRoot}${path}`, "utf8");
 
 describe("prediction terminal backend wiring", () => {
-  it("uses the connected trade controller in the redesigned workspace", () => {
+  it("keeps trade execution on market detail while discovery actions choose a side", () => {
     const workspace = read("components/prediction/PredictionWorkspace.tsx");
+    const card = read("components/prediction/MarketCard.tsx");
     const connectedTicket = read(
       "components/prediction/ConnectedTradeTicket.tsx",
     );
 
-    assert.ok(workspace.includes("<ConnectedTradeTicket"));
+    assert.ok(!workspace.includes("<ConnectedTradeTicket"));
+    assert.ok(card.includes("?side=yes"));
+    assert.ok(card.includes("?side=no"));
     assert.ok(!workspace.includes("const reviewHref ="));
     assert.ok(connectedTicket.includes("api.previewOrder"));
     assert.ok(connectedTicket.includes("api.placeOrder"));
@@ -24,15 +27,32 @@ describe("prediction terminal backend wiring", () => {
     assert.ok(connectedTicket.includes("getBalance"));
   });
 
-  it("restores the complete backend market directory on predict", () => {
+  it("mounts the complete Moments market directory on predict", () => {
     const workspace = read("components/prediction/PredictionWorkspace.tsx");
     const catalog = read("components/prediction/AllMarketsSection.tsx");
+    const moments = read("components/prediction/MomentMarketsSection.tsx");
+    const predictPage = read("predict/page.tsx");
+    const rail = read("components/prediction/TerminalCategoryRail.tsx");
 
     assert.ok(workspace.includes("<AllMarketsSection"));
-    assert.ok(workspace.includes("available-markets-heading"));
-    assert.ok(catalog.includes("api.getMarkets"));
-    assert.ok(catalog.includes("SEARCH_MARKETS_PLACEHOLDER"));
-    assert.ok(catalog.includes("LOAD_MORE_MARKETS"));
+    assert.ok(workspace.includes('variant="moments"'));
+    assert.ok(catalog.includes("<MomentMarketsSection"));
+    assert.ok(moments.includes('id="trending-markets"'));
+    assert.ok(moments.includes('id="moments-market-heading"'));
+    assert.match(moments, /api\s*\.getMarkets/);
+    assert.ok(moments.includes('data-testid="moment-filter-bar"'));
+    assert.ok(moments.includes("market-sort-${pill.value}"));
+    assert.ok(moments.includes("market-window-${pill.value}"));
+    assert.ok(moments.includes("q: query.trim() || undefined"));
+    assert.ok(moments.includes("closeBefore: dateWindowToCloseBefore(dateWindow)"));
+    assert.ok(moments.includes("sort: sortBy"));
+    assert.ok(!moments.includes("DISCOVER_RANKING_SECTIONS"));
+    assert.ok(moments.includes("LOAD_MORE_MARKETS"));
+    assert.ok(predictPage.includes("useSearchParams"));
+    assert.ok(predictPage.includes("activeCategoryId"));
+    assert.ok(workspace.includes("activeCategorySlug={activeCategorySlug}"));
+    assert.ok(moments.includes("categoryId,"));
+    assert.ok(rail.includes('href="/portfolio"'));
   });
 
   it("loads seven in-place discovery ranking tabs and real movement from backend APIs", () => {

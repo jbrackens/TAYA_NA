@@ -83,6 +83,12 @@ jobs:
           GATEWAY_PORT: '18080'
           GATEWAY_READ_REPO_MODE: db
           PAYMENTS_WEBHOOK_SECRET: whsec_local
+          # The journey suite exercises the existing demo point-store flow.
+          # Keep its opt-in boundary explicit so a fresh E2E stack exposes
+          # the catalogue routes that the Store journeys cover.
+          STORE_ENABLED: 'true'
+          STORE_PROVIDER: demo
+          STORE_WEBHOOK_SECRET: whsec_local
           AUTH_SERVICE_URL: http://localhost:18081
           GATEWAY_ALLOW_ADMIN_ANON: 'true'
           # E2E hammers public reads from one IP (journeys + smokes +
@@ -134,9 +140,12 @@ jobs:
 
       - name: Warm routes (dev-mode compiles on first hit)
         run: |
-          for p in / /auth/login /predict /portfolio /leaderboards /account /rewards; do
-            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 "http://localhost:3010$p" || echo 000)
+          for p in / /auth/login/ /predict/ /portfolio/ /leaderboards/ /account/ /rewards/ /store/; do
+            if ! code=$(curl -fsSL --retry 3 --retry-all-errors --retry-delay 1 -o /dev/null -w '%{http_code}' --max-time 60 "http://localhost:3010$p"); then
+              code=000
+            fi
             echo "warm $p -> $code"
+            [ "$code" = 200 ] || { echo "::error::failed to warm $p"; exit 1; }
           done
 
       - name: Install Playwright Chromium

@@ -5,9 +5,8 @@
  *
  * Layering: OVERLAY_Z (backdrop 200 / popup 240) — between the sticky
  * TopBar (z-[100]) and toasts (z-[9999]). Theme: the popup portals into
- * document.body, OUTSIDE the .predict-terminal wrapper; it resolves the
- * route's tokens through the html[data-theme="terminal"] mirror that
- * AppShell maintains (globals.css pairs the selectors) — do not add
+ * document.body, outside route wrappers, so it intentionally uses the
+ * shared semantic surface tokens from the root colour system — do not add
  * per-dialog container plumbing.
  */
 

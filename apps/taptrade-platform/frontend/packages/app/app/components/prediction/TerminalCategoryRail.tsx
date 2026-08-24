@@ -29,24 +29,9 @@ interface TerminalCategoryRailProps {
   activeCategorySlug?: string;
 }
 
-// FEED2-002: the composed Nav/CategoryRow idiom (02 System) — a 3×13 edge
-// bar + 11px semibold uppercase +1px-tracked label on a 30px row, radius 6.
-// Active = brand-purple row; inactive = high-contrast lavender on deep purple.
-// Below 1280 the 72px rail shows two-letter mono
-// monograms (the system's monogram idiom) instead of the retired icons.
-const BASE_LINK_CLASS =
-  "group flex min-h-[30px] items-center gap-2 rounded-[6px] px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.09em] no-underline transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-lavender)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-deep)] max-[1279px]:justify-center max-[1279px]:px-2";
-const ACTIVE_LINK_CLASS = "bg-[var(--accent)] text-[var(--on-brand)]";
-const INACTIVE_LINK_CLASS =
-  "text-[var(--brand-lavender)] hover:bg-[color-mix(in_srgb,var(--brand-lavender)_12%,transparent)] hover:text-[var(--on-brand)]";
-const EDGE_BAR_BASE_CLASS =
-  "h-[13px] w-[3px] flex-none rounded-[1px] max-[1279px]:hidden";
-const EDGE_BAR_ACTIVE_CLASS = "bg-[var(--accent)]";
-const EDGE_BAR_INACTIVE_CLASS =
-  "bg-[color-mix(in_srgb,var(--brand-lavender)_35%,transparent)]";
-const RAIL_LABEL_CLASS = "max-[1279px]:sr-only";
-const RAIL_MONOGRAM_CLASS =
-  "hidden font-mono text-[11px] font-medium max-[1279px]:inline";
+function monogramOf(label: string): string {
+  return label.slice(0, 2).toUpperCase();
+}
 
 export function TerminalCategoryRail({
   categories,
@@ -55,30 +40,68 @@ export function TerminalCategoryRail({
 }: TerminalCategoryRailProps) {
   const { t } = useTranslation("prediction");
   const { t: contentT } = useTranslation("market-content");
+  const isPredict = mode === "predict";
   const visibleCategories = categories.slice(0, 7);
   const homeActive = !activeCategorySlug;
-  const homeHref = mode === "discover" ? "/discover" : "/predict";
-  const monogramOf = (label: string) => label.slice(0, 2).toUpperCase();
+  const homeHref = isPredict ? "/predict" : "/discover";
+  const homeLabel = isPredict
+    ? t("WORKSPACE_ALL_MOMENTS", "All moments")
+    : t("FOR_YOU");
+  const railClass = isPredict
+    ? "sticky top-16 flex h-[calc(100vh-64px)] min-w-0 flex-col overflow-y-auto bg-[var(--brand-deep)] px-5 pb-8 pt-8 max-[1199px]:px-2.5 max-[1023px]:hidden"
+    : "terminal-scrollbar sticky top-16 flex h-[calc(100vh-64px)] min-w-0 flex-col overflow-y-auto border-r border-[color-mix(in_srgb,var(--brand-lavender)_28%,transparent)] bg-[var(--brand-deep)] px-2.5 pb-5 pt-4 max-[1023px]:hidden";
+  const linkBase = isPredict
+    ? "group flex min-h-[34px] items-center gap-2 rounded-lg px-3 text-[13px] font-medium no-underline transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-lavender)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-deep)] max-[1199px]:justify-center max-[1199px]:px-2"
+    : "group flex min-h-[30px] items-center gap-2 rounded-[6px] px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.09em] no-underline transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-lavender)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-deep)] max-[1279px]:justify-center max-[1279px]:px-2";
+  const activeLink = isPredict
+    ? "bg-[var(--brand-purple)] text-[var(--on-brand)]"
+    : "bg-[var(--accent)] text-[var(--on-brand)]";
+  const inactiveLink =
+    "text-[var(--brand-lavender)] hover:bg-[color-mix(in_srgb,var(--brand-lavender)_12%,transparent)] hover:text-[var(--on-brand)]";
+  const labelClass = isPredict
+    ? "max-[1199px]:sr-only"
+    : "max-[1279px]:sr-only";
+  const monogramClass = isPredict
+    ? "hidden font-mono text-[11px] font-medium max-[1199px]:inline"
+    : "hidden font-mono text-[11px] font-medium max-[1279px]:inline";
 
   return (
-    <aside className="terminal-scrollbar sticky top-16 flex h-[calc(100vh-64px)] min-w-0 flex-col overflow-y-auto border-r border-[color-mix(in_srgb,var(--brand-lavender)_28%,transparent)] bg-[var(--brand-deep)] px-2.5 pb-5 pt-4 max-[1023px]:hidden">
-      <nav className="flex flex-col gap-0.5" aria-label={t("MARKET_TOPICS")}>
+    <aside className={railClass}>
+      {isPredict && (
+        <header className="max-[1199px]:hidden">
+          <h2 className="type-display m-0 text-[28px] font-semibold leading-[1.03] tracking-[-0.04em] text-[var(--on-brand)]">
+            {t("WORKSPACE_MOMENTS_RAIL_LINE_ONE", "Trending")}
+            <br />
+            {t("WORKSPACE_MOMENTS_RAIL_LINE_TWO", "Moments")}
+          </h2>
+          <p className="mb-0 mt-4 text-[13px] leading-[1.34] text-[var(--brand-lavender)]">
+            {t(
+              "WORKSPACE_MOMENTS_RAIL_COPY",
+              "See what people are watching— and decide where you stand.",
+            )}
+          </p>
+          <p className="mb-0 mt-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--signal-gold)]">
+            {t("WORKSPACE_EXPLORE_TOPICS_LABEL", "Explore topics")}
+          </p>
+        </header>
+      )}
+
+      <nav
+        className={`flex flex-col gap-0.5 ${isPredict ? "mt-3 max-[1199px]:mt-0" : ""}`}
+        aria-label={
+          isPredict
+            ? t("WORKSPACE_EXPLORE_TOPICS_LABEL", "Explore topics")
+            : t("MARKET_TOPICS")
+        }
+      >
         <Link
           href={homeHref}
           aria-current={homeActive ? "page" : undefined}
-          className={`${BASE_LINK_CLASS} ${
-            homeActive ? ACTIVE_LINK_CLASS : INACTIVE_LINK_CLASS
-          }`}
+          className={`${linkBase} ${homeActive ? activeLink : inactiveLink}`}
         >
-          <span
-            className={`${EDGE_BAR_BASE_CLASS} ${
-              homeActive ? EDGE_BAR_ACTIVE_CLASS : EDGE_BAR_INACTIVE_CLASS
-            }`}
-            aria-hidden="true"
-          />
-          <span className={RAIL_LABEL_CLASS}>{t("FOR_YOU")}</span>
-          <span className={RAIL_MONOGRAM_CLASS} aria-hidden="true">
-            {monogramOf(t("FOR_YOU"))}
+          <span className={labelClass}>{homeLabel}</span>
+          <span className={monogramClass} aria-hidden="true">
+            {monogramOf(homeLabel)}
           </span>
         </Link>
 
@@ -89,57 +112,46 @@ export function TerminalCategoryRail({
           const href =
             mode === "discover"
               ? `/discover?category=${encodeURIComponent(slug)}`
-              : `/category/${category.slug}`;
+              : `/predict?category=${encodeURIComponent(slug)}`;
           return (
             <Link
               key={category.id}
               href={href}
               aria-current={active ? "page" : undefined}
-              className={`${BASE_LINK_CLASS} ${
-                active ? ACTIVE_LINK_CLASS : INACTIVE_LINK_CLASS
-              }`}
+              className={`${linkBase} ${active ? activeLink : inactiveLink}`}
             >
-              <span
-                className={`${EDGE_BAR_BASE_CLASS} ${
-                  active ? EDGE_BAR_ACTIVE_CLASS : EDGE_BAR_INACTIVE_CLASS
-                }`}
-                aria-hidden="true"
-              />
-              <span className={RAIL_LABEL_CLASS}>{label}</span>
-              <span className={RAIL_MONOGRAM_CLASS} aria-hidden="true">
+              <span className={labelClass}>{label}</span>
+              <span className={monogramClass} aria-hidden="true">
                 {monogramOf(label)}
               </span>
             </Link>
           );
         })}
 
-        <Link
-          href="/portfolio"
-          className={`${BASE_LINK_CLASS} ${INACTIVE_LINK_CLASS}`}
-        >
-          <span
-            className={`${EDGE_BAR_BASE_CLASS} ${EDGE_BAR_INACTIVE_CLASS}`}
-            aria-hidden="true"
-          />
-          <span className={RAIL_LABEL_CLASS}>{t("SAVED")}</span>
-          <span className={RAIL_MONOGRAM_CLASS} aria-hidden="true">
+        <Link href="/portfolio" className={`${linkBase} ${inactiveLink}`}>
+          <span className={labelClass}>{t("SAVED")}</span>
+          <span className={monogramClass} aria-hidden="true">
             {monogramOf(t("SAVED"))}
           </span>
         </Link>
       </nav>
 
-      <div className="mt-auto border-t border-[color-mix(in_srgb,var(--brand-lavender)_28%,transparent)] px-2 pt-5 max-[1279px]:px-0">
-        <div className="flex items-center gap-2 text-[11px] font-medium text-[var(--brand-lavender)] max-[1279px]:justify-center">
-          <span
-            className="h-2 w-2 rounded-full bg-[var(--live)]"
-            aria-hidden="true"
-          />
-          <span className="max-[1279px]:sr-only">{t("MARKET_DATA_LIVE")}</span>
+      {!isPredict && (
+        <div className="mt-auto border-t border-[color-mix(in_srgb,var(--brand-lavender)_28%,transparent)] px-2 pt-5 max-[1279px]:px-0">
+          <div className="flex items-center gap-2 text-[11px] font-medium text-[var(--brand-lavender)] max-[1279px]:justify-center">
+            <span
+              className="h-2 w-2 rounded-full bg-[var(--live)]"
+              aria-hidden="true"
+            />
+            <span className="max-[1279px]:sr-only">
+              {t("MARKET_DATA_LIVE")}
+            </span>
+          </div>
+          <p className="mt-2 text-[11px] leading-[1.45] text-[var(--brand-lavender)] max-[1279px]:hidden">
+            {t("MARKET_RISK_SHORT")}
+          </p>
         </div>
-        <p className="mt-2 text-[11px] leading-[1.45] text-[var(--brand-lavender)] max-[1279px]:hidden">
-          {t("MARKET_RISK_SHORT")}
-        </p>
-      </div>
+      )}
     </aside>
   );
 }

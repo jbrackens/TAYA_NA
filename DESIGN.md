@@ -55,7 +55,7 @@ who reads numbers for a living.
    nav/tab states, and category micro-labels — ≤3 lime moments per screen.
    Lime is never a data color, never body text (`--lime-text` `#556F00` is the
    only lime-as-text, AA at 5.74:1 on white).
-2. **Green and red speak only for market direction.** `--dir-yes` / `--dir-no`
+2. **Teal and mulberry speak only for market direction.** `--dir-yes` / `--dir-no`
    color prices, deltas, bars, settlement outcomes — never chrome, never
    brand, never decoration. Selection is the action voice (lime wash +
    lime-text stroke), even on a NO cell.
@@ -104,11 +104,11 @@ convenience. Figma variable name → CSS name → value.
 
 | Figma | CSS | Value | Role |
 |---|---|---|---|
-| `signal/yes` | `--dir-yes` | `#147536` | YES/up text, strokes, bar |
-| `signal/no` | `--dir-no` | `#C1272D` | NO/down text, strokes, bar |
-| `signal/yes-soft` | `--yes-soft` | `rgba(20,117,54,.08)` | soft YES pill bg |
-| `signal/no-soft` | `--no-soft` | `rgba(193,39,45,.08)` | soft NO pill bg |
-| — | `--dir-yes-bar` / `--dir-no-bar` | `#86D9A5` / `#F0A9A3` | probability-bar segments |
+| `signal/yes` | `--dir-yes` | `#126D68` | YES/up text, strokes, bar |
+| `signal/no` | `--dir-no` | `#9C3B65` | NO/down text, strokes, bar |
+| `signal/yes-soft` | `--yes-soft` | `color-mix(in srgb, var(--dir-yes) 8%, transparent)` | soft YES pill bg |
+| `signal/no-soft` | `--no-soft` | `color-mix(in srgb, var(--dir-no) 8%, transparent)` | soft NO pill bg |
+| — | `--dir-yes-bar` / `--dir-no-bar` | `#A7D8D3` / `#E5B5C9` | probability-bar segments |
 
 ### Status families (from the states work — §4f of the handoff, kept)
 
@@ -210,7 +210,7 @@ geometric); icons never emoji.
   (fine for the 9–11px bold micro-labels).
 - `--lime-text` 5.74:1 on card, 5.38:1 on wash, 5.15:1 on tint — AA.
 - `--ink-on-lime` on `--lime` 13.0:1 — AAA. Raw lime as text: banned.
-- `--dir-yes` 5.79:1 / `--dir-no` 5.84:1 on card (5.39/5.44 on paper) — AA.
+- `--dir-yes` 6.15:1 / `--dir-no` 6.51:1 on card — AA.
 - Inert label on inert fill 5.35:1 — AA without opacity tricks.
 - Focus: 2px `--lime-text` outline at 2px offset. All interactive targets
   ≥44px on touch surfaces. `prefers-reduced-motion` collapses all motion.
