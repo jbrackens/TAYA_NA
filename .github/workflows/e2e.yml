@@ -83,6 +83,12 @@ jobs:
           GATEWAY_PORT: '18080'
           GATEWAY_READ_REPO_MODE: db
           PAYMENTS_WEBHOOK_SECRET: whsec_local
+          # The journey suite exercises the existing demo point-store flow.
+          # Keep its opt-in boundary explicit so a fresh E2E stack exposes
+          # the catalogue routes that the Store journeys cover.
+          STORE_ENABLED: 'true'
+          STORE_PROVIDER: demo
+          STORE_WEBHOOK_SECRET: whsec_local
           AUTH_SERVICE_URL: http://localhost:18081
           GATEWAY_ALLOW_ADMIN_ANON: 'true'
           # E2E hammers public reads from one IP (journeys + smokes +
@@ -94,6 +100,9 @@ jobs:
           curl -fsS http://localhost:18080/healthz || { echo "::error::gateway failed to start"; tail -50 /tmp/gateway.log; exit 1; }
           # Gateway reachable (markets endpoint serves; empty pre-seed is fine).
           curl -fsS http://localhost:18080/api/v1/markets >/dev/null || { echo "::error::gateway /markets not serving"; tail -50 /tmp/gateway.log; exit 1; }
+          # The protected store catalogue must be mounted for the journey
+          # suite. A 403 proves the route exists without requiring a session.
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:18080/api/v1/store/packs)" = "403" || { echo "::error::gateway store catalogue not mounted"; tail -50 /tmp/gateway.log; exit 1; }
 
       - name: Seed demo data
         working-directory: ${{ env.GW }}
