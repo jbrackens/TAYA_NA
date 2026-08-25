@@ -78,6 +78,9 @@ module.exports = {
   // dev boot clobbers prod artifacts in a shared dist dir.
   distDir: process.env.NEXT_DIST_DIR || ".next",
   compress: true,
+  images: {
+    qualities: [75, 90],
+  },
   allowedDevOrigins: ["127.0.0.1"],
   // isomorphic-dompurify instantiates a JSDOM window at module load on the
   // server. Bundling it into .next/server chunks breaks jsdom's on-disk

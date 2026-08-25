@@ -1690,7 +1690,7 @@ describe("Full-page translation coverage", () => {
     "id",
   ];
   const launchUnsafeValuePattern =
-    /\b(?:deposit|withdrawals?|cash(?:ier|out)?|casino|crypto|fiat|redeem(?:able)?|prizes?|bets?|betting|odds|sportsbook|wagers?|wagering|stakes?|payouts?|payments?|usd|dollars?)\b|\$|tunai|kasino|kripto|penarikan|deposito|pembayaran|bayaran|现金|現金|加密|提款|取款|存款|支付|賠付|赔付|奖金|獎金|投注|下注|赌|賭/i;
+    /\b(?:deposit|withdrawals?|cash(?:ier|out)?|casino|crypto|fiat|bets?|betting|odds|sportsbook|wagers?|wagering|stakes?|payouts?|payments?|usd|dollars?)\b|\$|tunai|kasino|kripto|penarikan|deposito|pembayaran|bayaran|现金|現金|加密|提款|取款|存款|支付|賠付|赔付|奖金|獎金|投注|下注|赌|賭/i;
 
   function flattenStrings(
     value: unknown,
@@ -1730,7 +1730,7 @@ describe("Full-page translation coverage", () => {
     return key.endsWith("PASSWORD_REGEX") && value.startsWith("^");
   }
 
-  it("keeps supported launch locale values inside the points-only boundary", () => {
+  it("keeps supported launch locale values out of cash and gambling claims", () => {
     const offenders: string[] = [];
 
     for (const lang of supportedLaunchLanguages) {

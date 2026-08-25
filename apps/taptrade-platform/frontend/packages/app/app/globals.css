@@ -295,6 +295,15 @@ body {
   --on-brand: #ffffff;
   --on-gold: var(--brand-dark);
 
+  /* The lime channel is intentionally limited to featured redemption
+   * surfaces. It never doubles as a generic brand CTA or YES signal. */
+  --reward-lime: #c6f24e;
+  --reward-lime-soft: rgba(198, 242, 78, 0.16);
+  --on-reward-lime: #161a0f;
+  --reward-hero-bg: #090711;
+  --reward-hero-muted: #d2d6df;
+  --reward-hero-border: rgba(198, 242, 78, 0.38);
+
   /* Deprecated compatibility aliases: old component references now render
    * with the purple system while they are progressively renamed. */
   --lime: var(--brand-purple);

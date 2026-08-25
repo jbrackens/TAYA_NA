@@ -11,6 +11,60 @@ test.describe("/predict — discovery landing", () => {
 
     await assertPageHealthy(page, "/predict");
 
+    const rewardHero = page.locator('[aria-labelledby="reward-hero-heading"]');
+    await expect(rewardHero).toBeVisible();
+    await expect(
+      rewardHero.getByRole("heading", { name: /pick\.\s*win\.\s*redeem\./i }),
+    ).toBeVisible();
+    await expect(
+      rewardHero.getByText(
+        "Make your predictions, win points, and redeem them for rewards you actually want.",
+      ),
+    ).toBeVisible();
+
+    const rewardArtwork = rewardHero.getByAltText(
+      "Titanium smartphone featured as a redeemable reward.",
+    );
+    await expect(rewardArtwork).toBeVisible();
+    await expect
+      .poll(() =>
+        rewardArtwork.evaluate(
+          (image) => image instanceof HTMLImageElement && image.naturalWidth > 0,
+        ),
+      )
+      .toBe(true);
+    await expect(
+      page
+        .getByTestId("featured-reward-badge")
+        .filter({ visible: true }),
+    ).toContainText("120,000 points");
+
+    const startPicking = rewardHero.getByRole("button", {
+      name: /start picking/i,
+    });
+    await expect(startPicking).toBeVisible();
+    await expect(
+      rewardHero.getByRole("link", { name: /explore rewards/i }),
+    ).toBeVisible();
+
+    const heroBox = await rewardHero.boundingBox();
+    const artworkBox = await rewardArtwork.boundingBox();
+    expect(heroBox).not.toBeNull();
+    expect(artworkBox).not.toBeNull();
+    if (heroBox && artworkBox && (await page.evaluate(() => window.innerWidth)) >= 900) {
+      expect(artworkBox.x).toBeGreaterThan(heroBox.x + heroBox.width * 0.4);
+    }
+
+    await startPicking.click();
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const grid = document.getElementById("trending-markets");
+          return grid ? grid.getBoundingClientRect().top < window.innerHeight : false;
+        }),
+      )
+      .toBe(true);
+
     const cards = page.getByTestId("market-card");
     const grid = page.getByTestId("market-grid");
     await expect(cards).toHaveCount(9, { timeout: 10_000 });

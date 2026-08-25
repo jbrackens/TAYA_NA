@@ -11,6 +11,7 @@
  * persistent trade rail competing with public market discovery.
  */
 
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
@@ -35,54 +36,44 @@ function scrollToMarketGrid(): void {
     ?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function RewardPhone() {
+function FeaturedRewardArtwork() {
   return (
     <div
-      className="relative h-[264px] w-full overflow-hidden"
-      aria-hidden="true"
+      className="relative min-h-[264px] overflow-hidden min-[900px]:min-h-full"
+      data-testid="featured-iphone-reward-artwork"
     >
-      <span className="absolute bottom-[18px] right-[-10px] h-16 w-[300px] rounded-[50%] bg-[var(--signal-gold)]" />
-      <span className="absolute bottom-[14px] right-[18px] h-7 w-[250px] rounded-[50%] bg-[color-mix(in_srgb,var(--signal-gold)_72%,var(--brand-dark))]" />
-
-      <div className="absolute bottom-0 right-8 h-[248px] w-[168px] rounded-[28px] border border-[var(--signal-gold)] bg-[var(--brand-dark)] p-[7px] shadow-[0_18px_32px_rgba(0,0,0,0.28)]">
-        <div className="relative flex h-full flex-col overflow-hidden rounded-[22px] bg-[var(--brand-deep)] px-4 pt-14">
-          <span className="absolute left-1/2 top-[12px] flex h-[22px] w-[66px] -translate-x-1/2 items-center justify-center gap-1.5 rounded-[12px] bg-[var(--brand-lavender)]">
-            <i className="size-2.5 rounded-full bg-[var(--brand-dark)]" />
-            <i className="size-2.5 rounded-full bg-[var(--brand-dark)]" />
-          </span>
-          <span className="text-[9px] font-semibold uppercase tracking-[0.12em] text-[var(--signal-gold)]">
-            TapTrade
-          </span>
-          <span className="mt-3 text-[9px] uppercase tracking-[0.08em] text-[var(--brand-lavender)]">
-            This week
-          </span>
-          <span className="font-mono text-[22px] font-semibold leading-none tracking-[-0.04em] text-[var(--on-brand)] tabular-nums">
-            Top 5%
-            <small className="ml-1 text-[10px] tracking-normal text-[var(--signal-gold)]">
-              VIEW
-            </small>
-          </span>
-          <span className="mt-auto mb-4 rounded-lg bg-[var(--brand-lavender)] px-2 py-2 text-[8px] font-semibold leading-[1.35] text-[var(--brand-dark)]">
-            <span className="block text-[7px] uppercase tracking-[0.08em]">
-              Prediction streak
-            </span>
-            <span className="mt-0.5 block">4 strong calls in a row</span>
-          </span>
-        </div>
-      </div>
-
-      <div className="absolute bottom-[18px] left-0 w-[158px] rounded-xl bg-[var(--card)] p-3 shadow-[0_10px_26px_rgba(0,0,0,0.18)]">
-        <span className="block text-[9px] font-semibold uppercase tracking-[0.1em] text-[var(--brand-dark)]">
-          Your points
-        </span>
-        <span className="mt-1 block text-[17px] font-semibold leading-none text-[var(--ink)]">
-          120,000 PTS
-        </span>
-        <span className="mt-1 block text-[10px] text-[var(--ink-3)]">
-          Put your view on the board
-        </span>
-      </div>
+      <Image
+        src="/brand/featured-iphone-reward-hero-v2.webp"
+        alt="Titanium smartphone featured as a redeemable reward."
+        fill
+        priority
+        quality={90}
+        sizes="(max-width: 899px) calc(100vw - 40px), (max-width: 1199px) 42vw, 530px"
+        className="object-cover object-right"
+      />
     </div>
+  );
+}
+
+function FeaturedRewardBadge() {
+  const { t } = useTranslation("prediction");
+
+  return (
+    <aside
+      aria-label={t("WORKSPACE_REWARD_BADGE_LABEL", "FEATURED REWARD")}
+      data-testid="featured-reward-badge"
+      className="w-[196px] rounded-xl border border-[var(--reward-hero-border)] bg-[color-mix(in_srgb,var(--reward-hero-bg)_84%,transparent)] px-4 py-3 shadow-[0_16px_32px_rgba(0,0,0,0.28)] backdrop-blur-md"
+    >
+      <p className="m-0 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--reward-lime)]">
+        {t("WORKSPACE_REWARD_BADGE_LABEL", "FEATURED REWARD")}
+      </p>
+      <p className="mb-0 mt-1 text-[16px] font-semibold leading-tight text-[var(--on-brand)]">
+        {t("WORKSPACE_REWARD_BADGE_NAME", "iPhone 16 Pro")}
+      </p>
+      <p className="mb-0 mt-1 font-mono text-[13px] font-semibold tracking-[-0.025em] text-[var(--reward-lime)]">
+        {t("WORKSPACE_REWARD_BADGE_POINTS", "120,000 points")}
+      </p>
+    </aside>
   );
 }
 
@@ -92,56 +83,58 @@ function RewardHero() {
 
   return (
     <section
-      className="grid min-h-[360px] grid-cols-[minmax(0,570px)_minmax(0,1fr)] overflow-hidden rounded-[16px] bg-[var(--brand-deep)] px-12 py-12 text-[var(--on-brand)] max-[760px]:min-h-[616px] max-[760px]:grid-cols-1 max-[760px]:px-6 max-[760px]:py-6"
+      className="isolate grid overflow-hidden rounded-[16px] bg-[var(--reward-hero-bg)] text-[var(--on-brand)] min-[900px]:grid-cols-[minmax(0,1.07fr)_minmax(400px,0.93fr)]"
       aria-labelledby="reward-hero-heading"
     >
-      <div className="flex max-w-[510px] flex-col max-[760px]:h-[288px]">
-        <p className="m-0 text-[11px] font-semibold uppercase tracking-[0.13em] text-[var(--signal-gold)]">
-          {t("WORKSPACE_REWARD_KICKER", "Trending moments")}
-        </p>
+      <div className="relative z-10 flex min-h-[360px] flex-col justify-center px-6 py-8 min-[900px]:min-h-[420px] min-[900px]:px-10 min-[1200px]:px-12">
         <h1
           id="reward-hero-heading"
-          className="type-display m-0 mt-2 text-[40px] font-semibold leading-[0.99] tracking-[-0.035em] text-[var(--on-brand)]"
+          className="type-display m-0 max-w-[500px] text-[42px] font-semibold leading-[0.95] tracking-[-0.04em] text-[var(--on-brand)] min-[900px]:text-[40px] min-[1200px]:text-[48px]"
         >
           <span className="block">{t("WORKSPACE_REWARD_PICK", "Pick.")}</span>
-          <span className="block text-[var(--signal-gold)]">
+          <span className="block text-[var(--reward-lime)]">
             {t("WORKSPACE_REWARD_WIN", "Win.")}
           </span>
           <span className="block">
-            {t("WORKSPACE_REWARD_REDEEM", "Repeat.")}
+            {t("WORKSPACE_REWARD_REDEEM", "Redeem.")}
           </span>
         </h1>
-        <p className="mb-0 mt-3 max-w-[510px] text-[14px] leading-[1.42] text-[var(--on-brand)]">
+        <p className="mb-0 mt-3 max-w-[470px] text-[15px] leading-[1.48] text-[var(--reward-hero-muted)] min-[900px]:mt-4">
           {t(
             "WORKSPACE_REWARD_COPY",
-            "Take a position on the moments people are watching, then see whether you stand with the crowd.",
+            "Make your predictions, win points, and redeem them for rewards you actually want.",
           )}
         </p>
-        <div className="mt-3 flex flex-wrap gap-3">
+        <div className="mt-4 flex flex-wrap gap-3 min-[900px]:mt-5">
           <button
             type="button"
             onClick={scrollToGrid}
-            className="inline-flex min-h-10 cursor-pointer items-center justify-center rounded-lg border-0 bg-[var(--signal-gold)] px-4 text-[14px] font-semibold text-[var(--on-gold)] transition-transform duration-150 hover:-translate-y-px hover:brightness-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--signal-gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-deep)] active:translate-y-0"
+            className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg border-0 bg-[var(--reward-lime)] px-5 text-[14px] font-semibold text-[var(--on-reward-lime)] transition-transform duration-150 hover:-translate-y-px hover:brightness-[1.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--reward-lime)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--reward-hero-bg)] active:translate-y-0"
           >
             {t("WORKSPACE_START_PICKING", "Start Picking")}
           </button>
           <Link
             href="/rewards"
-            className="inline-flex min-h-10 items-center justify-center rounded-lg bg-[color-mix(in_srgb,var(--brand-purple)_26%,var(--brand-deep))] px-[18px] text-[14px] font-semibold text-[var(--on-brand)] no-underline transition-colors hover:bg-[color-mix(in_srgb,var(--brand-purple)_42%,var(--brand-deep))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-lavender)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-deep)]"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[color-mix(in_srgb,var(--brand-lavender)_36%,transparent)] bg-[color-mix(in_srgb,var(--brand-purple)_40%,transparent)] px-5 text-[14px] font-semibold text-[var(--on-brand)] no-underline transition-colors hover:bg-[color-mix(in_srgb,var(--brand-purple)_62%,transparent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--reward-lime)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--reward-hero-bg)]"
           >
-            {t("WORKSPACE_EXPLORE_REWARDS", "View Points")}
+            {t("WORKSPACE_EXPLORE_REWARDS", "Explore Rewards")}
           </Link>
         </div>
-        <p className="mb-0 mt-2.5 text-[12px] text-[var(--brand-lavender)]">
+        <p className="mb-0 mt-3 text-[12px] text-[var(--reward-hero-muted)]">
           {t(
             "WORKSPACE_REWARD_TRUST",
-            "Free to play  •  Clear market rules  •  Public activity",
+            "Free to play  •  New rewards every week  •  Real prizes",
           )}
         </p>
       </div>
-
-      <div className="self-end pl-[52px] max-[760px]:mt-4 max-[760px]:pl-0">
-        <RewardPhone />
+      <div className="relative min-h-[264px] overflow-hidden min-[900px]:min-h-full">
+        <FeaturedRewardArtwork />
+        <div className="absolute left-4 top-1/2 z-10 hidden w-[176px] -translate-y-1/2 min-[900px]:block">
+          <FeaturedRewardBadge />
+        </div>
+        <div className="absolute left-3 top-3 z-10 w-[196px] min-[900px]:hidden">
+          <FeaturedRewardBadge />
+        </div>
       </div>
     </section>
   );
