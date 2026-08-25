@@ -39,6 +39,7 @@ describe("TapTrade purple and gold color system", () => {
       "brand-lavender": "#ece3f7",
       "signal-gold": "#f5c454",
       "signal-gold-text": "#885206",
+      "reward-lime": "#c6f24e",
       "dir-yes": "#126d68",
       "dir-yes-bar": "#a7d8d3",
       "dir-no": "#9c3b65",
@@ -73,7 +74,7 @@ describe("TapTrade purple and gold color system", () => {
     );
   });
 
-  it("uses purple for generic interaction and gold for live or reward attention", () => {
+  it("uses purple for generic interaction, gold for live signals, and scoped lime for featured rewards", () => {
     assert.match(globals, /--accent:\s*var\(--brand-purple\);/);
     assert.match(globals, /--accent-soft:\s*var\(--brand-lavender\);/);
     assert.match(globals, /--focus-ring:\s*var\(--brand-purple\);/);
@@ -103,10 +104,15 @@ describe("TapTrade purple and gold color system", () => {
     );
   });
 
-  it("makes gold visible in the normal Predict first viewport as a reward and live-market signal", () => {
+  it("uses lime in the reward-led Predict hero and retains gold for live-market signals", () => {
     assert.match(predictionWorkspace, /WORKSPACE_REWARD_WIN/);
-    assert.match(predictionWorkspace, /bg-\[var\(--signal-gold\)\][^\n]*text-\[var\(--on-gold\)\]/);
-    assert.match(predictionWorkspace, /border border-\[var\(--signal-gold\)\]/);
+    assert.match(predictionWorkspace, /bg-\[var\(--reward-lime\)\][^\n]*text-\[var\(--on-reward-lime\)\]/);
+    assert.match(predictionWorkspace, /featured-iphone-reward-hero-v2\.webp/);
+    assert.match(predictionWorkspace, /featured-iphone-reward-artwork/);
+    assert.match(
+      predictionWorkspace,
+      /Titanium smartphone featured as a redeemable reward\./,
+    );
     assert.match(marketCard, /bg-\[var\(--live\)\]/);
     assert.doesNotMatch(
       marketCard,
