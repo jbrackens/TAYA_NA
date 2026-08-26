@@ -107,7 +107,7 @@ describe("TapTrade purple and gold color system", () => {
   it("uses lime in the reward-led Predict hero and retains gold for live-market signals", () => {
     assert.match(predictionWorkspace, /WORKSPACE_REWARD_WIN/);
     assert.match(predictionWorkspace, /bg-\[var\(--reward-lime\)\][^\n]*text-\[var\(--on-reward-lime\)\]/);
-    assert.match(predictionWorkspace, /featured-iphone-reward-hero-v2\.webp/);
+    assert.match(predictionWorkspace, /featured-iphone-reward-hero-v6\.webp/);
     assert.match(predictionWorkspace, /featured-iphone-reward-artwork/);
     assert.match(
       predictionWorkspace,

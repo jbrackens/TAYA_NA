@@ -43,7 +43,7 @@ function FeaturedRewardArtwork() {
       data-testid="featured-iphone-reward-artwork"
     >
       <Image
-        src="/brand/featured-iphone-reward-hero-v2.webp"
+        src="/brand/featured-iphone-reward-hero-v6.webp"
         alt="Titanium smartphone featured as a redeemable reward."
         fill
         priority
