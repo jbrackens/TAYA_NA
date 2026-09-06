@@ -1,12 +1,21 @@
 # ADR-0004: Dispute & appeal mechanism (resolution finality with recourse)
 
-**Status:** Proposed
+**Status:** Accepted — implemented 2026-05-22 (`d5984b82` gateway, `2d3bacb4` office dispute-review queue)
 **Date:** 2026-05-22
 **Deciders:** Eng lead, John (CEO), compliance/legal
+
+**Implemented in:**
+- `gateway/migrations/023_resolution_proposals_disputes.sql` — tables `prediction_resolution_proposals` and `prediction_disputes`.
+- `gateway/internal/prediction/resolution.go` — `ResolutionProposal` (with `ChallengeEndsAt`), `Dispute`, and `ListFinalizableProposals`. Payouts are credited only at `FinalizeResolution`, not at proposal time.
+- `gateway/internal/prediction/lifecycle.go` + `types.go` — Option A shipped: the FSM gained `proposed_resolution` and `disputed`. `closed → proposed_resolution → settled | disputed | voided`, `disputed → settled | voided`. `closed → settled` is still permitted for immediate finalize / backward compatibility.
+- `gateway/internal/http/admin_dispute_handlers.go` — admin dispute routes.
+- `office/app/(dashboard)/disputes/page.tsx` — the admin review queue.
 
 > Source: production-readiness audit (2026-05-22). Depends on [ADR-0003](./0003-resolution-source-architecture.md). See [README](./README.md).
 
 ## Context
+
+*(State as of 2026-05-22, before the fix — kept as the historical record.)*
 
 The market FSM (`gateway/internal/prediction/lifecycle.go:6–14`) is `unopened → open → halted → closed → settled/voided` — there is **no `disputed` state**. `settlement.go` `ResolveMarket` resolves and **atomically credits payouts immediately and irreversibly** (winners 100¢/contract). The only recourse is an admin `override_reason`; there is **no user-facing dispute/appeal**.
 

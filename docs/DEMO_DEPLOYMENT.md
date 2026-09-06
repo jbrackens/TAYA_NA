@@ -9,7 +9,8 @@ The Hetzner demo deploys from `main`.
 DNS is proxied (orange-cloud) through **Cloudflare**. CF SSL/TLS mode is
 **Full (Strict)** (CF validates the origin Let's Encrypt cert). The deploy
 pipeline automatically firewalls `:80/:443` to Cloudflare IP ranges
-(`scripts/security/cf-firewall.sh`) on every push.
+(`apps/taptrade-platform/scripts/security/cf-firewall.sh`, plus the
+`cf-firewall.service` unit beside it) on every push.
 
 `EDGE_SHARED_SECRET` (repo secret) is injected into both Caddy and the gateway
 at deploy time. Caddy stamps it as `X-Edge-Auth`; the gateway validates it so

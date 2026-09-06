@@ -1,0 +1,36 @@
+# ARCHIVED 2026-09-06. Historical record only — this does not describe the current system.
+# None of these variables is read by any service: the Go gateway has no chat
+# package and no CHAT_ENABLED / ROCKETCHAT_* handling. NEXT_PUBLIC_FEATURE_CHAT
+# is real and is set true by .github/workflows/deploy-demo.yml, but it only
+# reveals the player app's mock chat panel.
+# See CLAUDE.md for current architecture.
+
+# Gateway server env
+CHAT_ENABLED=false
+CHAT_PROVIDER=rocketchat
+CHAT_PUBLIC_URL=https://chat.staging.taptrade.com
+CHAT_INTERNAL_URL=http://rocketchat:3000
+CHAT_DEFAULT_ROOM=global
+CHAT_IFRAME_PATH=/channel/%s?layout=embedded
+CHAT_SESSION_TOKEN_TTL=1h
+CHAT_PARENT_ORIGIN=https://staging.taptrade.com
+CHAT_IFRAME_X_FRAME_OPTIONS=ALLOW-FROM https://staging.taptrade.com
+ROCKETCHAT_ADMIN_USER_ID=replace-me
+ROCKETCHAT_ADMIN_AUTH_TOKEN=replace-me
+DATABASE_URL=replace-me
+
+# Next.js frontend env
+NEXT_PUBLIC_FEATURE_CHAT=false
+NEXT_PUBLIC_CHAT_PUBLIC_URL=https://chat.staging.taptrade.com
+
+# Rocket.Chat spike/deploy env
+ROCKETCHAT_VERSION=8.4.2
+ROCKETCHAT_INITIAL_USER=yes
+ROCKETCHAT_ADMIN_USERNAME=taptrade-admin
+ROCKETCHAT_ADMIN_NAME=TapTrade Admin
+ROCKETCHAT_ADMIN_EMAIL=chat-admin@taptrade.com
+ROCKETCHAT_ADMIN_PASSWORD=replace-me
+ROCKETCHAT_FILE_UPLOAD_ENABLED=false
+ROCKETCHAT_ACCOUNTS_IFRAME_ENABLED=true
+ROCKETCHAT_IFRAME_SEND_ENABLED=true
+ROCKETCHAT_IFRAME_RECEIVE_ENABLED=true

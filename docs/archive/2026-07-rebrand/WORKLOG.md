@@ -1,3 +1,10 @@
+> **ARCHIVED 2026-09-06.** Historical record only — this does not describe the current system.
+> This is the execution log of the July 2026 TapTrade rebrand and the two passes that
+> followed it (the unmerged-branch integration of 2026-07-07 and the points unit-model
+> correction that shipped as migration `050_points_unit_model.sql`); all three completed
+> and merged to `main`.
+> See `CLAUDE.md` for current architecture.
+
 # TapTrade Rebrand — WORKLOG
 
 GOAL: zero non-allowlisted case-insensitive hits for tiangge|phoenix|talon across

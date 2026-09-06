@@ -1,12 +1,20 @@
 # ADR-0002: Authorization hardening for admin + wallet mutations (P0)
 
-**Status:** Proposed
+**Status:** Accepted — implemented 2026-05-22 (`d5984b82`, "feat(gateway): authz hardening (ADR-0002)")
 **Date:** 2026-05-22
 **Deciders:** Eng lead, John (CEO), security reviewer
 
-> Source: production-readiness audit (2026-05-22). **P0 — ship this week.** See [README](./README.md).
+**Implemented in:**
+- `gateway/internal/http/admin_handlers.go` — `requireAdminRole` now reads only the validated session role, with the comment "Admin authority comes only from the validated session role. Never trust a request header (e.g. `X-Admin-Role`) as a privilege source." The header branch is deleted.
+- `gateway/internal/http/authz_hardening_test.go` — `TestAdminRouteRejectsXAdminRoleHeader` asserts an `X-Admin-Role: admin` header gets 403; `TestAdminRouteAllowsValidatedSessionAdmin` covers the positive case.
+- `gateway/internal/http/wallet_handlers.go` — `registerWalletRoutes` no longer registers public `/credit` or `/debit`; the comment records the rule ("There is deliberately no public credit/debit endpoint — a session alone must never be able to move points"). Admin adjustments go through the admin-gated `/api/v1/admin/wallet/{credit,debit}` routes.
+- `gateway/cmd/gateway/main.go` — `GATEWAY_AUTH_ENABLED=false` is refused at boot when `ENVIRONMENT` is production or staging.
+
+> Source: production-readiness audit (2026-05-22). See [README](./README.md).
 
 ## Context
+
+*(State as of 2026-05-22, before the fix — kept as the historical record. Amounts were `*_cents` at the time; migration 050 renamed the unit to Points on 2026-07-07.)*
 
 Two confirmed, independently catastrophic holes plus one footgun, in a **value-bearing** system (internal wallet balances back real positions):
 

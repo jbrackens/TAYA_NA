@@ -1,3 +1,13 @@
+> **ARCHIVED 2026-09-06.** Historical record only — this does not describe the current system.
+> This is a mid-loop snapshot of the July 2026 TapTrade rebrand, frozen at iteration 8;
+> the rebrand finished on 2026-07-06, merged to `main`, and its branch
+> `chore/rebrand-taptrade` was deleted. Phases 2–5 are shown unchecked below but were all
+> executed — the Go module is `taptrade/gateway`, the npm scope is `@taptrade-ui/*`, and
+> the directories it lists as pending renames (`Phoenix-Predict-Combined`,
+> `talon-backoffice`) no longer exist. Every path under "Surfaces (active)" is dead.
+> A current state file lives at the repository root as `CURRENT_STATE.md`.
+> See `CLAUDE.md` for current architecture.
+
 # TapTrade Rebrand — CURRENT_STATE
 
 Loop iteration: 8 — GOAL MET; loop stopped. Branch ready for owner merge (25 commits). · Branch: chore/rebrand-taptrade

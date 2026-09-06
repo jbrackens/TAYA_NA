@@ -1,5 +1,23 @@
 # TapTrade Parity Run Log
 
+> **CLOSED RECORD — the loop that wrote this stopped on 2026-07-01 at Loop 520.** It has not
+> been appended to since; the only later commits are the 2026-07-06 rebrand sweep renaming
+> strings inside it. Read it as history, not as a live plan.
+>
+> - The release it tracks is the **Tiangge parity RC** (`7069c7c9`, 2026-07-01). That brand no
+>   longer exists and the RC never completed: Scenario 12 (safety / compliance / trust boundary)
+>   was still **Partial** at the last entry, with two signoff templates left at `Status: pending`.
+>   The "highest-leverage next slice" notes are the loop talking to its next iteration, not an
+>   assignment to a reader.
+> - **Units are stale.** The entries speak in `*_cents`. Migration `050_points_unit_model.sql`
+>   (2026-07-07 — six days after the last entry) renamed every one of those columns to `*_points`;
+>   the launch unit is non-redeemable Points. Do not copy a field name out of this file.
+> - The `make qa-*` targets, `scripts/qa/*` and the `revival/` artifact and signoff paths it cites
+>   do still exist in the tree, but nothing runs them on a schedule and `revival/` is on the
+>   dead-directory list in `docs/audit/IMPROVEMENT_PLAN.md` (IMP-05).
+>
+> Entries are newest-first. See `CLAUDE.md` for current architecture.
+
 ## 2026-07-01 Loop 499 - Loyalty Ledger Metadata Read Boundary
 
 Continued the stored-copy response-boundary review on the legacy loyalty

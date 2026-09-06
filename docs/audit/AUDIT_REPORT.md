@@ -1,5 +1,9 @@
 # Taya NA Predict — Codebase & Platform Audit
 
+> **Point-in-time record — 2026-06-14.** Kept as history; it is not a description of the system today and not a live plan.
+> Two reading notes. (1) **Paths:** this document predates the 2026-07-06 directory rename. Read `apps/Phoenix-Predict-Combined/go-platform/...` as `apps/taptrade-platform/go-platform/...` and `talon-backoffice/packages/...` as `frontend/packages/...`. (2) **Units:** it says "cents". Migration `050_points_unit_model.sql` (2026-07-07) renamed every `*_cents` column to `*_points`; the launch unit is non-redeemable Points, not money.
+> **Current status of the findings:** re-verified 2026-09-06 in [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md), which carries a per-task status table. Read that before acting on anything here.
+
 **Date:** 2026-06-14
 **Auditor:** Claude (Opus 4.6), full-codebase engagement with delegated workstreams + independent verification
 **Branch audited:** `main` @ HEAD

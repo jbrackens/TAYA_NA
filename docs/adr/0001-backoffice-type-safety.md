@@ -1,10 +1,12 @@
 # ADR-0001: Eliminate backoffice type-unsafety (retire `ignoreBuildErrors`)
 
-**Status:** Proposed
+**Status:** Accepted — implemented 2026-05-22 (`2d3bacb4`, "feat(office): TypeScript strict build (ADR-0001)")
 **Date:** 2026-05-22
 **Deciders:** Eng lead, John (CEO)
 
-> Source: production-readiness audit (2026-05-22). One of four remediation ADRs (see [README](./README.md)).
+**Implemented in:** `apps/taptrade-platform/frontend/packages/office/next.config.js:108` — `ignoreBuildErrors: false`. The suppression is gone, so `next build` for office fails on a type error; the deploy workflow builds the office image (`.github/workflows/deploy-demo.yml`, "Build office image"), which is where that build runs in CI today. There is no separate `tsc --noEmit` job for office.
+
+> Source: production-readiness audit (2026-05-22). One of four remediation ADRs (see [README](./README.md)). The Context below records the state as of 2026-05-22 and is kept as the historical record.
 
 ## Context
 

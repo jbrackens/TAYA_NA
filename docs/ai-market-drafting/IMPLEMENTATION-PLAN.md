@@ -1,9 +1,13 @@
 # AI Market Drafting — Implementation Plan (v3.1)
 
-**Status:** Approved for build (pending 3 open decisions in §13)
+**Status:** Shipped 2026-05-24 (Phases A–D). All three §13 decisions are resolved — see §16 (items 2 and 3, locked) and §19 (item 1). This file is an append-only build log; read §18 last, it supersedes the earlier "not started" and "required before live" notes.
 **Author:** drafted via /plan-eng-review, hardened by 2 independent Codex reviews + web research
-**Date:** 2026-05-23
+**Date:** 2026-05-23 (status corrected 2026-09-06)
 **Scope owner:** Backoffice + Gateway
+
+**Verified present 2026-09-06:** `office/lib/ai/` (`provider.ts`, `marketDrafter.ts`, `schemas.ts`, `marketQualityValidator.ts`, `marketDuplicateDetector.ts`, `marketResolutionSources.ts`, `marketTemplates.ts`, `evals/`), `office/lib/ingest/{ssrfGuard,urlFetch}.ts`, `office/app/api/market-bot/draft/route.ts`, `office/containers/prediction-markets/DraftFromArticleModal.tsx`, gateway migration `024_market_ai_drafting.sql`, and the routes `/api/v1/admin/market-sources`, `/api/v1/admin/ai-budget` and `/api/v1/admin/ai-budget/reserve` in `internal/http/prediction_handlers.go`.
+
+**Still open** (from §18, unchanged): a live end-to-end run against a real model; the redirect / DNS-rebinding SSRF integration test; and populating `cost_micros` (the column exists in migration 024; the spend cap counts tokens today).
 
 ## 1. What this is
 
@@ -445,7 +449,7 @@ the live `generateObject` calls, the real URL fetch/redirect path, and the gatew
 3. Surface per-call provider/model/usage/cost from the drafter into the gateway generation log (currently a minimal stage-only log) for the audit trail + spend caps.
 4. An LLM eval suite (golden articles) before trusting drafting quality.
 
-**Phase C (not started):** office UI — "Draft from article" entry in the create-market modal, candidate cards, prefill; event picker/create-event; resolution UI rendering the typed `settlement_params` criteria + adding `proposed_resolution`/`disputed` to the status map.
+*(The "Phase C (not started)" bullet that stood here was already false when §18 was written the same day, and was removed on 2026-09-06. Phase C shipped — see §18.)*
 
 ## 18. Phase C + §17 hardening complete (2026-05-24)
 

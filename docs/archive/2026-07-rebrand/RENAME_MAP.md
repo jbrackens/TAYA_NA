@@ -1,9 +1,17 @@
+> **ARCHIVED 2026-09-06.** Historical record only — this does not describe the current system.
+> This is the artifact-level rename map for the July 2026 TapTrade rebrand, which shipped
+> and merged to `main` on 2026-07-06; every item below — including the whole "Planned
+> (Phase 2 — not yet executed)" section — was executed, and the sed sweep that executed it
+> also rewrote this file's own left-hand column, which is why one "planned" entry now reads
+> as a self-identical rename.
+> See `CLAUDE.md` for current architecture.
+
 # TapTrade Rename Map (old → new; every entry must trace to inventory)
 
 ## Frozen token scheme
-See CURRENT_STATE.md table. Entries below are CONCRETE artifacts as they are planned/executed.
+See `CURRENT_STATE.md` in this directory. Entries below are CONCRETE artifacts as they are planned/executed.
 
-## Planned (Phase 2 — not yet executed)
+## Planned (Phase 2 — all items executed; see Executed below)
 - brand.ts default: "Tiangge" → "TapTrade"; support/privacy/legal emails @tiangge.com → @taptrade.com
 - BrandMark/wordmark strings, layout titles, locale files (7 locales × ~30 namespaces)
 - public/brand/* asset filenames containing tiangge

@@ -1,127 +1,68 @@
-# TapTrade Player App i18n Implementation Notes
+# TapTrade Player App i18n — how it actually works
+
+*Rewritten 2026-09-06. The previous version of this file described a plan for `apps/taptrade-platform/phoenix-frontend-brand-viegg` (Next 11, Pages Router, `next-i18next` 6, CommonJS translation modules). None of that describes the shipped system, and that tree is not built or deployed. This file now documents what is in the code.*
 
 ## Scope
 
-This work applies to the Player app in:
+The Player app: `apps/taptrade-platform/frontend/packages/app` (Next 16, React 19, App Router).
 
-`apps/taptrade-platform/phoenix-frontend-brand-viegg`
+Static product UI copy is localized. Dynamic content — market titles/descriptions, user-generated text, notifications — is handled separately; see [Market content](#market-content-is-translated-server-side) below.
 
-The goal is to localize static product UI copy while leaving dynamic market, user, CMS, chat, notification, and creator-submitted content in its source language.
+## What is wired up
 
-## Codebase Findings
+- **Library:** `i18next` + `react-i18next` (`package.json`: `"i18next": "^23.7.0"`, `"react-i18next": "^13.5.0"`). There is **no** `next-i18next` dependency and no `appWithTranslation`.
+- **Init:** `app/lib/i18n/config.ts` — `i18n.use(initReactI18next)`, plus a fetch backend for lazily loading namespaces.
+- **Provider:** `app/lib/i18n/I18nProvider.tsx` — `I18nextProvider` from `react-i18next`.
+- **Locale list and helpers:** `app/lib/i18n/locales.ts` — `supportedLocales`, `defaultLocale`, `isSupportedLocale`, `normalizeLocale`.
+- **Selector:** `app/components/i18n/LanguageSelector.tsx`.
+- **Persistence:** `localStorage` under `hula_locale` (`localeStorageKey`), with `taptrade_language` read as a legacy fallback (`legacyLocaleStorageKey`).
+- **Translation files:** raw JSON at `public/static/locales/<locale>/<namespace>.json`. 58 namespaces in `en`.
+- **Usage:** `useTranslation("<namespace>")` in ~58 component/page files.
 
-- Frontend framework: Next.js `11.1.3` with React `17.0.2`.
-- Routing model: Next.js Pages Router under `packages/app/pages`.
-- Rendering model: hybrid Next app using page `getInitialProps`, `namespacesRequired`, and client-side interactions.
-- Existing i18n library: `next-i18next` `6.0.2`.
-- Existing i18n setup: `packages/app/i18n.js` wraps the app through `appWithTranslation` in `packages/app/pages/_app.js`.
-- Existing locale generation: `packages/app/scripts/translations/generate.js` merges translation source files from brand and app-core packages into `packages/app/public/static/locales`.
-- Existing translation source convention: CommonJS modules in `translations/{locale}/{namespace}.js`, not raw JSON files.
-- Header/top navigation component: `packages/app-core/components/layout/header/index.tsx`.
-- Existing desktop language selector: `packages/app-core/components/layout/header/language-selector/index.tsx`.
-- Existing mobile navigation: sportsbook mobile drawer uses `packages/app-core/components/layout/sidebar/SidebarMenu/index.tsx`; prediction mobile navigation uses `packages/app-core/components/redesign/prediction-layout/mobile-chrome.tsx`.
-- User profile/preferences: account profile data is fetched through `useProfile`; client preferences such as timezone, odds format, and favorite sports currently use local/session storage helpers from `@taptrade-ui/utils`.
-- Existing persistence conventions: local storage and session storage are already used for client preferences. Locale should use `hula_locale` and be structured so profile sync can be added later.
-- Existing config conventions: runtime config is exposed through `publicRuntimeConfig` in `packages/app/next.config.js`; feature toggles are string env values such as `PREDICTION_MARKETS_ENABLED`.
-- Feature flag pattern: lightweight environment/runtime config, not a dedicated flag service.
-- Analytics pattern: Google Tag Manager via `react-gtm-module`; client-side events can be pushed to `window.dataLayer` if present.
-- UI library/design system: Ant Design `4.16.12`, styled-components, and local wrappers such as `CoreSelect`.
-- Validation/error/toast pattern: Ant Design `message`, local modals, and translated API error namespaces.
+### English is bundled, other locales are fetched
 
-## Library Decision
+`config.ts` statically imports the English JSON for the init namespaces (common, header, sidebar, footer, account, settings, rewards, portfolio, leaderboards, prediction, market-content, page-home, language-selector) so i18next initialises synchronously on server and client with zero locale fetches. Non-English locales load through the fetch backend when `changeLanguage()` runs in `I18nProvider`'s effect, so a returning non-English user briefly sees English. Both tradeoffs are documented in the source comments — read them before changing the init path.
 
-Use the existing `next-i18next` implementation. Do not add `next-intl`, `i18next`, or a translation service in this PR.
+## Supported locales
 
-The app already has:
+| Code | Label |
+|------|-------|
+| `en` | English (default and fallback) |
+| `zh-Hans` | 简体中文 |
+| `zh-Hant` | 繁體中文 |
+| `tl` | Tagalog |
+| `ms` | Bahasa Melayu |
+| `id` | Bahasa Indonesia |
 
-- `next-i18next` dependency.
-- `appWithTranslation`.
-- namespace-based translation loading.
-- a locale generation script.
-- existing translation namespaces for header, auth, wallet/cashier, account, sportsbook, and footer UI.
+Source of truth: `app/lib/i18n/locales.ts`. All six directories exist under `public/static/locales/`.
 
-The safe retrofit is to expand the supported locales and improve the existing selector/persistence rather than replacing the localization system.
+## Adding or changing a key
 
-## Supported Locales
+1. Edit `public/static/locales/en/<namespace>.json` directly. These JSON files **are** the source of truth — they are committed and served.
+2. Add the same key to the other five locale files. English is the fallback, so a missing key degrades to English rather than rendering the raw key — except on statically bundled namespaces used by prerendered routes, where a missing English key renders as the literal key string in the HTML.
+3. Consume it with `const { t } = useTranslation("prediction");` then `t("KEY_NAME")` / `t("KEY_WITH_VALUE", { value })`.
+4. If you add a **new namespace** that a prerendered route needs at first paint, add its English import to the bundled list in `app/lib/i18n/config.ts` as well as to `NAMESPACES`.
 
-Use these locale codes consistently:
+### Do not run `bootstrap:locales`
 
-- `en`
-- `zh-Hans`
-- `zh-Hant`
-- `tl`
-- `ms`
-- `id`
+`packages/app` still carries `yarn bootstrap:locales` → `scripts/translations/generate.js`, inherited from the old brand app. It regenerates `public/static/locales` from `packages/app/translations`, and that directory contains only `.gitkeep`. **Running it would wipe every committed locale file.** The same applies to `yarn watch` (`scripts/translations/watch.js`). Both scripts and the empty `translations/` directory are dead weight and should be removed rather than fixed.
 
-English is the default and fallback locale.
+## Market content is translated server-side
 
-## Translation Tone
+Market titles and descriptions are **not** hand-written locale files and **not** a future project — they are translated by a gateway-side batch backfill and consumed through the `market-content` namespace.
 
-Translations should use natural, conversational product language commonly seen on ecommerce, fintech, and news websites. Avoid literal or machine-like wording. Regulatory and responsible-gaming copy can be more formal, but ordinary navigation, buttons, empty states, and product helper text should feel clear and familiar.
+- Package: `go-platform/services/gateway/internal/markettranslate/` — `Backfill(ctx, store, translator, cfg)`, with a `Store` interface exposing `ListCandidates`, `CountUntranslated`, `CacheHashes`, `UpsertTranslation`. Source-hash caching means unchanged copy is not re-translated.
+- Command: `cmd/translate-markets` (also reachable via `cmd/sync-markets`).
+- Schema: migrations `028_market_translations.sql` and `029_market_translation_cache.sql`.
+- Config: `AI_TRANSLATION_API_KEY`, `AI_TRANSLATION_ENDPOINT`, `AI_TRANSLATION_MODEL`, `AI_TRANSLATION_PROVIDER`.
+- Deploy: an **optional** step in `.github/workflows/deploy-demo.yml` ("Optional market translation backfill"), which runs only on `workflow_dispatch` with `translate_markets`, or when the commit message contains `[translate-markets]`. It requires the `OPENROUTER_API_KEY` secret and fails loudly without it.
 
-## High-Priority Static UI Areas
+Consumers on the frontend include `app/category/[slug]/page.tsx`, `app/components/prediction/MarketFeed.tsx`, `MarketHead.tsx`, `CategoryPills.tsx` and the command palette.
 
-Initial migration should prioritize:
+Still out of scope for translation: chat messages, CMS/admin announcements, user-generated content, and notification bodies.
 
-- Header and quick navigation labels.
-- Existing desktop language selector.
-- Mobile sidebar and prediction mobile navigation.
-- Account language/timezone settings.
-- Prediction home, market list, market detail, activity, and trade ticket UI.
-- Auth modal labels.
-- Wallet/cashier labels.
-- Portfolio/account/transaction labels.
-- Toasts, empty states, form labels, validation messages, and modals.
+**Standing constraint if that scope ever widens:** nothing sent to a third-party translation provider may include session data, individual trading activity, or other user-identifying data without an explicit privacy/compliance review. The current backfill sends market title and description copy only.
 
-## Dynamic Content Out of Scope
+## Tone
 
-Do not translate in this PR:
-
-- Market titles.
-- Market descriptions and summaries.
-- Market creator copy.
-- Market rules when sourced as market content.
-- Chat messages.
-- CMS/admin announcements.
-- User-generated content.
-- Notification bodies generated outside static UI translation files.
-
-Dynamic translation should be designed as a separate cached, asynchronous service later.
-
-## Adding New Translation Keys
-
-1. Add the English source key in the relevant namespace under `packages/app-core/translations/en`.
-2. Add natural, conversational translations for high-priority UI in:
-   - `packages/app-core/translations/zh-Hans`
-   - `packages/app-core/translations/zh-Hant`
-   - `packages/app-core/translations/tl`
-   - `packages/app-core/translations/ms`
-   - `packages/app-core/translations/id`
-3. If a namespace is not ready for full translation, keep a target-locale file that falls back to English with `module.exports = require("../en/<namespace>.js");`.
-4. Use existing namespace patterns in components:
-   - `const { t } = useTranslation(["prediction"]);`
-   - `t("KEY_NAME")`
-   - `t("KEY_WITH_VALUE", { value })`
-5. Add the namespace to `namespacesRequired` on any page that does not already load it.
-6. Run locale generation after dependencies are bootstrapped:
-
-```sh
-yarn --cwd apps/taptrade-platform/phoenix-frontend-brand-viegg/packages/app bootstrap:locales
-```
-
-7. Run the relevant tests after dependencies are bootstrapped:
-
-```sh
-yarn --cwd apps/taptrade-platform/phoenix-frontend-brand-viegg/packages/app-core test lib/i18n/__tests__/locales.test.ts --runInBand
-```
-
-## Implementation Shape
-
-1. Add shared locale config and validation helpers.
-2. Expand `next-i18next` supported languages.
-3. Persist selected locale with `hula_locale`.
-4. Refactor the language selector to render all supported locales.
-5. Add mobile access to the selector.
-6. Add locale source files following the existing `translations/{locale}/{namespace}.js` convention.
-7. Replace high-priority hardcoded static UI strings with translation keys.
-8. Add focused tests for locale validation, persistence, selector rendering, and fallback behavior.
+See `docs/localization-glossary.md` for the term list and tone rules. In short: natural, conversational product language of the kind used on ecommerce, fintech and news sites; regulatory and responsible-gaming copy may be more formal.

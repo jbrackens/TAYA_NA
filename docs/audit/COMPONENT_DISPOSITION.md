@@ -1,5 +1,8 @@
 # Component disposition — dead vs. repurposable (P2-02 / P2-03 input)
 
+> **Point-in-time record — 2026-06-13** (committed `2e556626`). Kept as history; it is not a description of the system today and not a live plan.
+> **Paths:** this document predates the 2026-07-06 directory rename. Read `apps/Phoenix-Predict-Combined/go-platform/...` as `apps/taptrade-platform/go-platform/...` and `talon-backoffice/packages/...` as `frontend/packages/...`.
+
 Investigation behind the deferred dead-code cleanup. Each "0-importer" component
 was classified by **git provenance** (when/why it was added) and whether a
 **live or wanted prediction capability** maps to it. Nothing here has been

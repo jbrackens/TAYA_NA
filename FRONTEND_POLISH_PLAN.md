@@ -1,8 +1,39 @@
 # Frontend Polish Plan — from AI-slop to enterprise D2C
 
-**Date:** 2026-07-18 (revised same day after a 3-lens adversarial review — 25 findings incorporated)
-**Status:** Tooling installed and MCPs connected (§1 DONE, uncommitted — landing it is P0 step 0); phases P0–P5 awaiting execution
-**Prereqs:** [PERFORMANCE_AUDIT.md](PERFORMANCE_AUDIT.md) (baselines), [DESIGN.md](DESIGN.md) (token system — read before any UI change)
+**Written:** 2026-07-18 (revised same day after a 3-lens adversarial review — 25 findings incorporated)
+
+**Status (checked 2026-09-06): COMPLETE. §1 and P0–P5 all executed, merged and deployed
+between 2026-07-18 and 2026-07-22.** This is no longer a backlog — it is the record of a
+finished workstream, kept because live code cites it: `components/ui/index.ts` and
+`variants.ts` point here for the primitives layer and the barrel-export policy, and
+`playwright.config.ts` plus `tests/visual/surfaces.visual.spec.ts` point here for the
+visual-regression net. Do not re-execute any phase. Verified against the tree at
+`f89b5a8b`:
+
+- §1 tooling is **committed**, not uncommitted — `frontend/biome.json` is tracked
+  (`bdb3a974`, 2026-07-18), as are the five runtime libraries, every one of which is now
+  imported by real app code: `@base-ui-components/react` in `components/ui/Button.tsx`
+  and `Dialog.tsx`, `sonner` in `components/ToastProvider.tsx`, `@number-flow/react` in
+  `components/ui/PointsFlow.tsx`, `vaul` in `components/ui/Sheet.tsx` /
+  `Sheet.lazy.tsx` / `components/prediction/TradeTicket.tsx`, and `lightweight-charts` in
+  `components/prediction/MarketChartCanvas.tsx`. The §1 rule that unimported packages get
+  removed at the end of P4 needs no further action.
+- P0 landed: `packages/app/gate.sh` carries `# GATE 9: Biome Lint Wall (app-scoped)` and
+  its summary lines read `/9`, which is exactly the change P0 step 3 asked for.
+- P1 landed: `app/components/ui/` exists with `Button`, `Card`, `Input`, `Dialog`,
+  `Sheet`, `Sheet.lazy`, `PointsFlow`, `index.ts`, `variants.ts`. `Tabs`, `Tooltip` and
+  `DropdownMenu` were never built — the P5 Storybook go/no-go records that decision.
+- P2–P5 landed as the executed notes inside those sections describe, ending with the
+  lazy-Sheet commit `2dae39ca` (2026-07-22).
+
+**Two things below are now wrong and are corrected in place:** the dark-theme language in
+DoD #3 and P1 step 2 (the dark colour theme was deleted 2026-07-26), and the design
+prereq. `DESIGN.md` no longer describes the July token system this plan was written
+against — the 1C "lime skin" system was superseded in code on 2026-08-22 by the Tap Path
+purple + gold identity. Read the current `DESIGN.md`, not the token names quoted here.
+
+**Prereqs as written:** `docs/archive/2026-07-launch-prep/PERFORMANCE_AUDIT.md` (the
+baselines this plan measured against, now archived), [DESIGN.md](DESIGN.md).
 
 The goal: eliminate the AI-slop signatures documented in the July 2026 audit — per-file pasted Tailwind class recipes (~40 files carry `*_CLASS` constants), no lint wall, hand-rolled commodity components, no visual regression net — and land the feel layer that separates a real D2C trading product from a demo. All tooling is open source; nothing here adds a paid service.
 
@@ -63,7 +94,7 @@ Also in play: **Figma MCP** (already connected via claude.ai connectors) for whe
 
 1. **Zero Biome errors in `packages/app`**, enforced by an **app-scoped** gate: `npx @biomejs/biome check packages/app` run from the frontend root (NOT the root `lint:biome` script, which also covers office's 50 outstanding errors). Plus a lint-staged entry so debt can't re-accumulate between gate runs.
 2. **One primitives layer:** `git grep -lE "[A-Z_]+_CLASS\b" packages/app/app` → empty, modulo an explicit allowlist committed in the plan's tracking issue (constants that survive must be individually justified). The narrow "button recipes only" version of this check passes vacuously — the wide grep is the real bar (~40 files today).
-3. **Visual regression green:** committed baselines for the seven surfaces (14 screenshots — the suite's "15 passed" includes the auth-setup step). HARs are a LOCAL record-first cache (gitignored — they carry session cookies): a fresh checkout must run once with `VISUAL_RECORD=1` before replay runs are deterministic. Surfaces: hero `/`, discover `/predict`, market page, trade ticket (authed market), store, portfolio, login — × two viewports (1280×800, 375×812), **each in its route's native theme** — market/discover/predict render dark via `.predict-terminal` (route-scoped in `AppShell.tsx`; there is no user/OS theme toggle, so a light/dark axis does not exist to photograph). Diff ratio ≤ 1% under the determinism spec in P0.
+3. **Visual regression green:** committed baselines for the seven surfaces (14 screenshots — the suite's "15 passed" includes the auth-setup step). HARs are a LOCAL record-first cache (gitignored — they carry session cookies): a fresh checkout must run once with `VISUAL_RECORD=1` before replay runs are deterministic. Surfaces: hero `/`, discover `/predict`, market page, trade ticket (authed market), store, portfolio, login — × two viewports (1280×800, 375×812). Diff ratio ≤ 1% under the determinism spec in P0. *(Correction, 2026-09-06: this item originally said each surface photographs "in its route's native theme", because market/discover/predict rendered dark via `.predict-terminal`. That dark colour theme was deleted on 2026-07-26 — `globals.css` marks the P10 terminal RETIRED and notes that `AppShell` still applies the class for layout variants but that it is **inert for theming**. All seven surfaces photograph light. There is no light/dark axis and never a dark screenshot to expect.)*
 4. **Feel layer live:** animated balance/price numbers, mobile bottom-sheet trade ticket, sonner toasts, professional canvas market chart (+ palette/carousel only if they survive the §3a cut review).
 5. **Perf budget held:** per-route first-load JS within **+25 KB gzip** of the audit baseline (market route: documented +45 KB for lightweight-charts, dynamic-imported); no INP or **CLS** regression on traces (canvas is not an LCP candidate, so LCP is not the chart's gate — CLS from late chart mount is).
 6. **A11y intact or better:** Biome a11y rules clean; toast `role="alert"/"status"` semantics preserved; keyboard pass on trade + checkout flows.
@@ -112,13 +143,13 @@ New file `tests/visual/surfaces.visual.spec.ts` + config changes in `playwright.
 Branch: `feat/ui-primitives` — **a component-migration branch (visual + behavioral), presented to John as such.**
 
 1. Create `app/components/ui/`: `Button`, `Card`, `Input`, `Dialog`, `Sheet` (vaul), `Tabs`, `Tooltip`, `DropdownMenu` on Base UI, styled **exclusively** with the DESIGN.md tokens. Variants via a ~20-line local `variants()` helper — no cva dependency.
-2. **Portal/theme plumbing (blocking, before any component ships):** Base UI, vaul, and sonner portal into `document.body` — **outside** the `.predict-terminal` wrapper that carries the dark-theme token values on `/market/*`, `/predict` (route-scoped in `AppShell.tsx:69`; `:root` holds light values). Unhandled, every dialog/tooltip/sheet renders light-themed on the dark market page — the exact screens John judges. Fix: portal `container` pointed inside the themed wrapper (Base UI `Portal container`, vaul `container`, sonner Toaster mounted inside AppShell's route-classed div), or re-scope the terminal tokens via a route-set `data-theme` attribute on `<html>`. Decide once, in P1, before the first Dialog.
+2. **Portal/theme plumbing (blocking, before any component ships):** Base UI, vaul, and sonner portal into `document.body` — **outside** the `.predict-terminal` wrapper that then carried the dark-theme token values on `/market/*`, `/predict` (route-scoped in `AppShell.tsx`; `:root` held light values). Unhandled, every dialog/tooltip/sheet would render light-themed on the dark market page. Fix as executed: portal `container` pointed inside the themed wrapper (Base UI `Portal container`, vaul `container`, sonner Toaster mounted inside AppShell's route-classed div), plus the `html[data-theme]` mirror. *(Correction, 2026-09-06: this hazard no longer exists. The dark colour theme was deleted on 2026-07-26 — `.predict-terminal` and the `data-theme` mirror survive for layout variants only and are inert for theming, so every route including `/market/*` and `/predict` renders on the root tokens. The portal plumbing landed and is harmless, but nothing here is a live blocker.)*
 3. **Layering contract (defined once, here):** Base UI's documented `isolation: isolate` root wrapper; explicit overlay z-band between TopBar (`z-[100]`) and toasts (`z-[9999]`): dialogs/sheets at z-[200–300]. Base UI popups ship unstyled with no z-index — without this they paint under the sticky TopBar/MobileTabBar.
 4. **Scroll-lock ownership rule:** one lock system per route, converted in the same PR that converts the surface. The hand-rolled locks (PredictionWorkspace mobile sheet, ToastProvider overlay) are deleted when their surface migrates — never left coexisting with Base UI/vaul locks on the same route.
 5. Use the shadcn MCP registry as *reference implementations* (it ships Base UI variants) — copied in and restyled to our tokens, never consumed as a kit.
 6. Migrate **one lead surface: the market page** (`app/market/[ticker]`) — trade ticket buttons/inputs, discussion form, dialogs.
 7. **Functional gate BEFORE the design checkpoint:** J2 trade journey green on desktop-chromium + mobile-chromium, keyboard pass on the full trade flow (this is the money path — a rendered screen cannot show broken focus order or a dead submit).
-8. Render the screens (both viewports, native themes) and **stop for John's judgment.** Present the §3a cut list at the same checkpoint.
+8. Render the screens (both viewports) and **stop for John's judgment.** Present the §3a cut list at the same checkpoint.
 
 **Exit:** J2 + keyboard pass green, then John approves the rendered market page. No propagation before both.
 
@@ -129,7 +160,7 @@ Branch: `feat/ui-primitives` — **a component-migration branch (visual + behavi
 
 ### P2 — Propagation — size M/L
 
-Surface-per-PR, **hard checkpoint per surface — not batches:** after each surface migrates (discover/hero → store → portfolio → auth → activity), John gets full rendered screenshots (both viewports, native theme) exactly like P1, with visual-diff images as supplementary evidence only. The next surface does not start until the previous one has his yes — this is precisely the spread-before-review pattern that killed P10, at the granularity that prevents it. Delete each file's `*_CLASS` recipes (all of them, per DoD #2's wide grep — not just button constants) as they're absorbed. Re-baseline per-surface in dedicated commits.
+Surface-per-PR, **hard checkpoint per surface — not batches:** after each surface migrates (discover/hero → store → portfolio → auth → activity), John gets full rendered screenshots (both viewports) exactly like P1, with visual-diff images as supplementary evidence only. The next surface does not start until the previous one has his yes — this is precisely the spread-before-review pattern that killed P10, at the granularity that prevents it. Delete each file's `*_CLASS` recipes (all of them, per DoD #2's wide grep — not just button constants) as they're absorbed. Re-baseline per-surface in dedicated commits.
 
 **Exit:** DoD #2 grep clean repo-wide; journeys J1–J7 green.
 
@@ -286,7 +317,7 @@ the designed 300px (isolated on a pre-P4 build).
 | Risk | Mitigation |
 |---|---|
 | Base UI is 1.0.0-**rc** | Exact-pinned (caret removed 2026-07-18); usage depth (8 primitives) API-stable across RCs; fallback is `radix-ui` at equivalent depth — swap cost contained inside `components/ui/` |
-| Portalled overlays escape the route-scoped dark theme | P1 step 2 is blocking; the P1 checkpoint screens fail visibly if skipped |
+| Portalled overlays escape the route-scoped dark theme | P1 step 2 was blocking; the P1 checkpoint screens fail visibly if skipped. *Moot since 2026-07-26 — the dark colour theme was deleted; see the correction in P1 step 2.* |
 | Three coexisting scroll-lock systems (Base UI / vaul / hand-rolled) | One-lock-per-route rule (P1 step 4); hand-rolled locks deleted in the same PR their surface migrates |
 | Visual-baseline flake | Determinism spec in P0 step 1 (clock freeze, reduced-motion, masks, fonts, pinned topology); darwin-owned baselines, excluded from ubuntu CI |
 | Visual-baseline churn during P2 reads as noise | Re-baseline per-surface in dedicated commits; diffs are supplementary — rendered screens are the review artifact |

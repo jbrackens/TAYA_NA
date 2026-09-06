@@ -16,7 +16,7 @@ TapTrade uses non-redeemable gameplay points for prediction-market play. Points 
 
 ## Non-Negotiable Constraints
 
-- No fiat deposits.
+- No fiat deposits. **(Amended 2026-07-12 — see the note below.)**
 - No crypto deposits.
 - No withdrawals or cashouts.
 - No redeemable prizes.
@@ -24,6 +24,21 @@ TapTrade uses non-redeemable gameplay points for prediction-market play. Points 
 - No product copy implying points have monetary value.
 - No external wallet connection required for gameplay.
 - Every point movement must create an immutable ledger entry.
+
+> **Amendment — the point store (2026-07-12).** "No fiat deposits" was written
+> for a free-points posture. The owner brief of 2026-07-12 directs a
+> **purchasable point-pack store**: closed-loop, video-game / social-casino
+> model — money in, non-redeemable points out, **no cash-out ever**. It shipped
+> as a separate route tree (`/api/v1/store/*`) behind its own `STORE_ENABLED`
+> flag, with migration `051_store_point_packs.sql` and `internal/store/`, and is
+> live on the demo box with `STORE_PROVIDER=demo`. Note the "Allowed Point
+> Sources" section below already contemplates this ("Non-redeemable point packs,
+> if sold or granted"). What "no fiat deposits" still means, and what remains
+> non-negotiable, is that **no balance is redeemable and no value can leave the
+> platform** — the legacy cashier, withdrawal, crypto and provider-callback
+> trees stay absent and are a boot error in deployed environments. The full
+> contract is `STORE_AND_PAYMENTS.md`; where this file and that one disagree
+> about the store, that one is current.
 
 ## Launch Route Boundary
 
