@@ -151,7 +151,7 @@ test.describe("/market/[ticker] — market detail", () => {
       // Regression: ISSUE-001 — the amount control displayed $0.00 when
       // balance was zero because it clamped to the user's balance.
       // Found by /qa on 2026-04-25.
-      // Report: .gstack/qa-reports/qa-report-localhost-3000-2026-04-25.md
+      // Report: qa-report-localhost-3000-2026-04-25.md (gstack QA report; removed from the repo in the 2026-09-06 docs sweep)
       // (2026-07-12: the Phase-3 quick-amount chips were later replaced by a
       // plain amount input; the regression contract is unchanged — a typed
       // amount must survive a zero balance while logged out.)
