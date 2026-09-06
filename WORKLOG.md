@@ -303,9 +303,10 @@ pts if correct.
 
 ## 2026-09-06 — Project placed on hold; workspace cleaned for re-entry
 
-State at pause: `main` == `origin/main` == deployed HEAD f89b5a8b ("fix: use
-fictional prediction UI in reward hero"); its Aug 26 runs (Tests, G-02
-money-path guards, Deploy demo) all concluded success. Since the last entry
+State at pause: `main` == `origin/main`, deployed through the hold-cleanup
+commits themselves (deploy-guard incident and fix in the addendum below);
+the last feature commit is f89b5a8b ("fix: use fictional prediction UI in
+reward hero", Aug 26, all runs green). Since the last entry
 above (2026-07-07), main took: the Point Store (2026-07-12), P5 bundle
 remediation (fea342f0 barrel hygiene + 2dae39ca lazy Sheet), the ink-&-lime
 pivot, the 1C "lime skin, terminal bones" design lock (2026-08-06 — DESIGN.md
@@ -347,3 +348,14 @@ persistence not yet authorized); rotate the Gemini/Google AI Studio key and
 revoke the HF token pasted into a July session transcript. Branches remaining:
 main, feat/hula-na-cashier, feat/predict-redesign-p10 (archive), plus
 origin/pam/p0-modernization (remote archive).
+
+Addendum, same day — deploy-guard incident closed out: the first hold-commit
+deploy tripped deploy-demo's disk guard (box at 97% after prune). Cause:
+~23GB of unrotated container json logs (predict_gateway 14G,
+predict_rocketchat_mongo 8.7G) — docker's json-file driver has no default
+rotation. Fixed: demo-ops.yml gained read-only `disk_report` and WRITE
+`disk_cleanup` dispatch jobs (truncation took the box 97% → 34%), and every
+docker-compose.demo.yml service now carries a 50m×3 logging cap. The cap
+applies per container on its next recreate; services the deploy workflow
+never recreates (rocketchat/mongo, db-backup, caddy) keep unbounded logs
+until a manual `docker compose up -d` on the box.
