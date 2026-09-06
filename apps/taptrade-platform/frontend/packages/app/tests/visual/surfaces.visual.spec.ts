@@ -1,5 +1,5 @@
 /**
- * Visual regression net — FRONTEND_POLISH_PLAN.md P0.
+ * Visual regression net — docs/archive/FRONTEND_POLISH_PLAN.md P0.
  *
  * Six surfaces × two viewports, each in its route's NATIVE theme (theme is
  * route-scoped via .predict-terminal — there is no user/OS theme axis).

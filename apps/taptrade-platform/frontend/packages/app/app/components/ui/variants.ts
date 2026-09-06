@@ -1,5 +1,5 @@
 /**
- * components/ui — shared plumbing (FRONTEND_POLISH_PLAN.md P1).
+ * components/ui — shared plumbing (docs/archive/FRONTEND_POLISH_PLAN.md P1).
  *
  * variants(): the deliberately tiny local alternative to cva — a base
  * class list plus a named variant map. No dependency, no runtime cost

@@ -22,7 +22,7 @@ Taya_Na_Predict/
 ├── apps/taptrade-platform/
 │   ├── frontend/                          ← yarn-workspaces monorepo root (run yarn here)
 │   │   └── packages/
-│   │       ├── app/                       ← Player app (Next.js 16 App Router, port 3000)
+│   │       ├── app/                       ← Player app (Next.js 16 App Router, local dev port 3010)
 │   │       ├── office/                    ← Admin backoffice (Next.js 16 App Router, port 3001)
 │   │       ├── api-client/                ← Shared TS API client (prediction-client.ts)
 │   │       └── design-system/             ← Legacy styled-components kit — NOT used by app/
@@ -346,9 +346,9 @@ go run ./cmd/auth
 cd ../../../frontend
 yarn install --frozen-lockfile
 
-# Player app (port 3000)
+# Player app (local dev port 3010 — 3000 is occupied by an unrelated local project)
 cd packages/app
-NEXT_PUBLIC_API_URL=http://localhost:18080 yarn dev
+NEXT_PUBLIC_API_URL=http://localhost:18080 npx next dev --webpack -p 3010
 
 # Backoffice (port 3001) — office has no `dev` script of its own
 cd ../office
@@ -361,7 +361,7 @@ npx next dev --webpack -p 3001
 
 | Service | Port | Notes |
 |---------|------|-------|
-| Player app (Next.js) | 3000 | Next default; only `docker-compose.demo.yml` containerizes it |
+| Player app (Next.js) | 3010 | 3000 is occupied by an unrelated local project; root `.claude/launch.json` pins 3010. Only `docker-compose.demo.yml` containerizes it |
 | Backoffice (Next.js) | 3001 | set by the dev runner, not by package.json |
 | Go Gateway | 18080 | default in code; `PORT` overrides |
 | Go Auth Service | 18081 | default in code; `PORT` overrides |
@@ -371,6 +371,12 @@ npx next dev --webpack -p 3001
 ### Test credentials
 
 **Active login:** `demo@taptrade.local` / `demo123`
+
+> **Local drift notes (observed 2026-07, still unresolved at the 2026-09 hold).**
+> If `demo@taptrade.local` is rejected against your local DB, fall back to
+> `alice@predict.dev` / `predict123`. Separately, the dockerized gateway image can
+> go stale and market buys start returning 400 — rebuild the image, or run the
+> gateway from source (`go run ./cmd/gateway`) when trading locally.
 
 In DB mode (`AUTH_STORE_MODE=db`) and outside production/staging, the auth service seeds six accounts into `auth_users` on startup: `demo@taptrade.local` / `demo123` (player), `admin@taptrade.local` / `admin123` (admin), and the four Predict punters below with IDs matching `seed_prediction.sql`, so all of them log in out of the box.
 
@@ -474,7 +480,10 @@ CRYPTO_DEPOSIT_ADDRESS_SOURCE=         # MUST be unset
 # X / TikTok / Reddit return no email (isolated identity accounts). Each *_REDIRECT_URI must be
 # registered in the provider console and be same-origin with the player app so the
 # session cookies land on the right origin.
-AUTH_FRONTEND_URL=http://localhost:3000   # where OAuth callbacks send the user post-login
+AUTH_FRONTEND_URL=http://localhost:3000   # where OAuth callbacks send the user post-login.
+                                          # This is the code default (handlers.go). Local dev
+                                          # runs the player app on 3010 — set it to :3010 there,
+                                          # or OAuth returns the user to a dead port.
 GOOGLE_OAUTH_CLIENT_ID=         # + GOOGLE_OAUTH_CLIENT_SECRET / GOOGLE_OAUTH_REDIRECT_URI
 FACEBOOK_OAUTH_CLIENT_ID=       # + FACEBOOK_OAUTH_CLIENT_SECRET / FACEBOOK_OAUTH_REDIRECT_URI
 DISCORD_OAUTH_CLIENT_ID=        # + DISCORD_OAUTH_CLIENT_SECRET / DISCORD_OAUTH_REDIRECT_URI

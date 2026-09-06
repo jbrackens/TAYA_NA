@@ -109,7 +109,7 @@ export default defineConfig({
       },
     },
 
-    // ── Visual regression (FRONTEND_POLISH_PLAN.md P0) ─────────────────
+    // ── Visual regression (docs/archive/FRONTEND_POLISH_PLAN.md P0) ─────────────────
     // Gated behind RUN_VISUAL=1: baselines are darwin-owned (generated on
     // the deploy-preflight Mac) and Playwright snapshots are platform-
     // suffixed, so these projects must never run in the ubuntu workflows —
