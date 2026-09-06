@@ -1,1 +1,0 @@
-../../../../k8s-operations/setup_keycloak_oidc_json_secret.sh

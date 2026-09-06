@@ -72,7 +72,15 @@ Two corrections to the original task text:
 
 ### IMP-05 · Delete dead directories · S
 
-**Status (2026-09-06): OPEN, with the original target list rewritten.** Every path in the 2026-06-14 version was wrong: the `apps/Phoenix-Predict-Combined/` root does not exist, `archive/` and `tmp/` were already removed (`3ec79f0a`), the "1.0 GB" figure for brand-viegg counted untracked `node_modules`, and the "Do NOT delete `revival/`" line gave a reason that has never been true in this checkout.
+**Status (2026-09-06): DONE.** All seven paths below were deleted, and the script
+coupling described in the caveat was retired in the same commit. The repository went
+from 6,659 tracked files to 2,229.
+
+The original 2026-06-14 target list was wrong in every path: the
+`apps/Phoenix-Predict-Combined/` root does not exist, `archive/` and `tmp/` were already
+removed (`3ec79f0a`), the "1.0 GB" figure for brand-viegg counted untracked
+`node_modules`, and the "Do NOT delete `revival/`" line gave a reason that has never been
+true in this checkout.
 
 **The `revival/` protection reason was false and inverted.** It claimed an "active Go module path `phoenix-revival/platform`". `revival/` contains **zero** `.go` files — its tracked content is 1,248 `.md`, 116 `.json`, 96 `.jsonl`, 30 `.txt`, 5 `.csv`. The three Go modules in the repo are `taptrade/platform`, `taptrade/gateway` and `taptrade/auth`; no `phoenix-revival` module exists anywhere. `revival/` is in fact the **largest** dead tree at 75 MB.
 
@@ -88,10 +96,32 @@ Two corrections to the original task text:
 | `.context/` | 8 KB | |
 | `.gstack/` | 16 KB | |
 
-**The real caveat on `revival/`:** it is read *and written* by ~39 scripts under `apps/taptrade-platform/scripts/` (`qa/`, `release/`, `reconciliation/`, `platform/`), which write reports and artifacts into `revival/artifacts/` and `revival/NN_*.md`. It is also named by `apps/taptrade-platform/Makefile` and by workflows under `apps/taptrade-platform/.github/workflows/`. Those scripts and that stale workflow directory must be retired in the same commit, or they break. That coupling — not a Go module — is why this is owner-gated.
+**The caveat on `revival/`, and how it was resolved:** `revival/` was read *and written*
+by ~39 scripts under `apps/taptrade-platform/scripts/`, which wrote reports into
+`revival/artifacts/` and `revival/NN_*.md`. It was also named by
+`apps/taptrade-platform/Makefile` and by workflows under
+`apps/taptrade-platform/.github/workflows/`. All of that was retired together:
+
+- `apps/taptrade-platform/scripts/` — 54 of 56 files deleted. That tree existed to drive
+  the JVM stack, the preservation gates, and sportsbook route smoke; 43 of its scripts
+  referenced a deleted path directly, and the rest were JVM- or sportsbook-era.
+- **Two files were kept**, `scripts/security/cf-firewall.sh` and `cf-firewall.service`.
+  `.github/workflows/deploy-demo.yml` runs them on the demo box as
+  `/opt/phoenix/scripts/security/cf-firewall.sh`, so they are load-bearing for the live
+  deploy. `docker-compose.demo.yml` and `Caddyfile` also point at them by name.
+- `apps/taptrade-platform/Makefile` — deleted. All 66 targets drove the deleted scripts.
+  Seed, demo and migration helpers live in the gateway Makefile
+  (`go-platform/services/gateway/Makefile`) and were never in this one.
+- `apps/taptrade-platform/.github/workflows/` — deleted. GitHub only executes the
+  workflow directory at the repository root, so these five never ran.
+- `ALLOWLIST.md` — deleted. It was the preservation manifest for the trees above and
+  addressed them by their pre-rename `apps/Phoenix-Predict-Combined/` paths.
 
 - **Finding(s):** ARCH-01 (partly closed by `3ec79f0a`; see ARCH-CLEANUP §ARCH-01)
-- **Acceptance criteria:** `go build ./...` passes; `yarn install --frozen-lockfile && yarn test` passes; no CI workflow or script references a deleted path.
+- **Acceptance criteria met:** `go build ./...` passes; the gateway Go suite, the player
+  app (499 tests) and office (159 tests) pass; `scripts/check-cashier-all.sh`,
+  `check-conventions.sh`, `check-openapi-drift.sh` and `check-no-external-symlinks.sh`
+  all exit 0; no remaining CI workflow or script references a deleted path.
 - **Effort:** S–M · **Risk:** Medium (the script coupling) · **Dependencies:** None
 
 ### IMP-06 · Purge sportsbook leakage from api-client · M

@@ -1,2 +1,0 @@
-ALTER TABLE reporting_market_selections DROP CONSTRAINT reporting_market_selections_pkey;
-ALTER TABLE reporting_market_selections ADD CONSTRAINT reporting_market_selections_pkey PRIMARY KEY (selection_id, market_id);

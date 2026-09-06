@@ -1,1 +1,0 @@
-ALTER TABLE reporting_bets ADD COLUMN selection_id character varying NOT NULL;

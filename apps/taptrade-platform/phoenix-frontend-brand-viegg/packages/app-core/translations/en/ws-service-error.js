@@ -1,6 +1,0 @@
-module.exports = {
-  ERROR_HEADER: "Network error",
-  ERROR_CONTENT: "Please refresh the page to try again.",
-  REFRESH: "Refresh",
-  DISMISS: "Dismiss",
-};
