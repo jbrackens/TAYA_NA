@@ -1,12 +1,23 @@
+> **ARCHIVED 2026-09-06.** Historical record only — this does not describe the current system.
+> This is the 1C "lime skin" design system locked 2026-08-06; it was superseded in code
+> three weeks later by the Tap Path purple + gold identity (`83d92631`, `21b2c9ea`,
+> `7a8b7f56`, 2026-08-22), which is pinned by `app/__tests__/color-system.test.ts`.
+> Kept for its direction bake-off rationale and its §10 disposition ledger of earlier
+> directions. Its token table, Five Rules, brand section and contrast figures are all
+> wrong about the shipped app — do not copy values out of it.
+> See `CLAUDE.md` for current architecture, and `DESIGN.md` for the current design system.
+
 # Design System — TapTrade · 1C "Lime skin, terminal bones"
 
-> **This document describes the ONE canonical system, locked 2026-08-06.**
+> **This document described the canonical system as of 2026-08-06.**
 > It supersedes every prior direction in this file's history: Liquid Glass,
 > warm-dark Robinhood, P8 warm-cream, P9 gallery-white, P10 dark terminal,
 > P11 commercial-polish, and the interim "Ink & lime" handoff framing. Those
 > are **retired**; their full text lives in git history and their dispositions
-> in §10. If another document contradicts this one, this one wins — and the
-> contradiction is a bug to fix, not a fork to entertain.
+> in §10. *(A supremacy clause stood here — "if another document contradicts this
+> one, this one wins" — and was struck on archiving 2026-09-06: it would have told
+> a reader to treat the shipped Tap Path rebrand as a bug. The code and its tests
+> are the source of truth. Original wording is in git history.)*
 >
 > **Source of truth pair:**
 > - **Values:** `apps/taptrade-platform/frontend/packages/app/app/globals.css`

@@ -10,7 +10,8 @@ What does the player, operator, or developer see differently?
 
 - [ ] Uses prediction-market language, not sportsbook language
 - [ ] No new fixtures/selections/betslip/sport_key/punter_bets naming
-- [ ] YES/NO prices are cents, not odds
+- [ ] YES/NO prices are Points (1-99, yes+no=100), not odds and not cents
+      — migration 050 renamed every `*_cents` column to `*_points`
 
 ## Tests
 
