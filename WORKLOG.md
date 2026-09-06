@@ -328,13 +328,15 @@ docs/archive/ with banners (code comments repointed); CLAUDE.md local-dev
 drift fixed (player dev on port 3010 — 3000 belongs to an unrelated project —
 and the alice@predict.dev fallback login documented).
 
-CAUTION — parallel session branch: during this cleanup an unrelated Claude
-cloud session pushed origin/claude/remote-control-ss6aj1 (commit ab11aad9,
-"docs(archive): establish docs/archive convention"). That commit RENAMES the
-live DESIGN.md into docs/archive/ — wrong per DESIGN.md's own supersession
-header and CLAUDE.md's pointer — and its README references archive
-subdirectories that don't exist. Left untouched for owner disposition. Do not
-merge as-is; delete once that session is confirmed stopped.
+CAUTION — parallel session branch: while this cleanup ran, a separate Claude
+cloud session pushed origin/claude/remote-control-ss6aj1 (ab11aad9 →
+a8c54cb5): an archive-and-rewrite docs pass that moves the 1C DESIGN.md text
+to docs/archive/2026-07-rebrand/, REWRITES DESIGN.md against the shipped Tap
+Path system, and corrects CLAUDE.md. Its CI (Tests, G-01, G-02) is green,
+but it branched from f89b5a8b, so it overlaps and will conflict with this
+hold commit's CLAUDE.md and docs/archive/ changes. It rewrites the design
+system's source-of-truth document — owner review required before any merge;
+left untouched here.
 
 Parked decisions (unchanged, owner calls): feat/hula-na-cashier merge
 (real-money rail vs the points-only launch boundary); fee policy — the
