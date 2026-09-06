@@ -92,10 +92,12 @@ These are not unfinished work. They are boundaries the gateway enforces at boot
 ## Known open threads
 
 - **`origin/feat/hula-na-cashier`** — 22 commits, untouched since 2026-05-25. Real-money
-  cashier surfaces that the launch-safety gates classify as prohibited. It has no path
-  to `main` under a points-only product; the decision it is waiting on is whether to
-  delete the branch. (The other two archive branches were resolved on 2026-09-06 — see the
-  licensability thread above and `docs/archive/2026-07-redesign-research/`.)
+  cashier surfaces that the launch-safety gates classify as prohibited today. **Owner
+  decision 2026-09-06: KEEP the branch — the intent is to enable this rail one day.** It
+  has no path to `main` while the product is points-only, so treat it as a parked feature
+  branch, not pending work: do not merge it, and do not delete it. When it is revived it
+  will need rebasing over the rebrand and the points unit model. (The other two archive
+  branches were retired on 2026-09-06 — see the licensability thread above.)
 - **Back-office licensability** — the `pam/p0-modernization` branch (345 commits, terminated
   2026-07-06, never merged) was retired on 2026-09-06 to tag
   `archive/pam-p0-modernization-2026-07-06`. It is unmergeable as code (pre-rebrand paths,
@@ -156,6 +158,23 @@ cents-era keys inside stored bonus rule-config JSONB; CF origin-firewall reboot
 persistence (the 2026-07-28 fix is applied but not yet authorized to persist across
 reboots); and rotating the Gemini/Google AI Studio key plus revoking the Hugging Face
 token that were pasted into a July session transcript.
+
+## Standing decisions (2026-09-06)
+
+- **Demo box stays up.** Its original notes scoped it to a 2–6 week run; that window has
+  passed. Owner decision: keep it running through the pause — the cost is acceptable. Its
+  disk is capped now (50m x 3 per container) so the 2026-09-06 log-fill incident should not
+  recur, but nothing recreates rocketchat/mongo, db-backup or caddy on deploy, so those
+  three keep unbounded logs until someone runs `docker compose up -d` on the box.
+- **`feat/hula-na-cashier` is kept**, not pending. See the thread above.
+- **The Gemini / Hugging Face credentials are kept, not rotated.** `GEMINI_API_KEY` has a
+  real ongoing use — `packages/app/scripts/hero-ambient-generate.sh` generates the landing
+  hero video through the Veo/Gemini API (see `packages/app/docs/hero-ambient-video.md`).
+  Neither key is in the repository, in git history, or shipped to the demo box: the deploy
+  workflow references neither, `.env*` is git-ignored, and a scan of all commits found no
+  key-shaped strings. They do appear in plaintext in local Claude session logs under
+  `~/.claude/projects/` (ten files across six unrelated projects as of 2026-09-06), which
+  is a local-machine exposure only. Revisit if a log is ever shared or synced off-device.
 
 ## Where to look next
 
