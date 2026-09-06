@@ -4,7 +4,7 @@
  * "AUG 31, 23:59 UTC" in any UTC+n timezone, contradicting the
  * countdown ("Closes in 5d …") beside it.
  * Found by /qa on 2026-07-26
- * Report: .gstack/qa-reports/qa-report-localhost-3012-2026-07-26.md
+ * Report: qa-report-localhost-3012-2026-07-26.md (gstack QA report; removed from the repo in the 2026-09-06 docs sweep — the regression is described below)
  *
  * Source-level assertion (repo convention): every component of the
  * "… UTC"-labeled stamp must be derived in UTC.

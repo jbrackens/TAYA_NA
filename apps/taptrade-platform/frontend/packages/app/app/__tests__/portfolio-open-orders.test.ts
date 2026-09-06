@@ -1,7 +1,7 @@
 /**
  * Regression: ISSUE-001 — Portfolio Open orders showed cancelled/filled rows.
  * Found by /qa on 2026-05-13.
- * Report: .gstack/qa-reports/qa-report-localhost-3010-2026-05-13.md
+ * Report: qa-report-localhost-3010-2026-05-13.md (gstack QA report; removed from the repo in the 2026-09-06 docs sweep — the regression is described below)
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";

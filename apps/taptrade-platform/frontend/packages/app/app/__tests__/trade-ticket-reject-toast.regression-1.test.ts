@@ -5,7 +5,7 @@
  * raw gateway string "persist match: hold reservation: insufficient
  * funds" leaked to the user verbatim.
  * Found by /qa on 2026-07-26
- * Report: .gstack/qa-reports/qa-report-localhost-3012-2026-07-26.md
+ * Report: qa-report-localhost-3012-2026-07-26.md (gstack QA report; removed from the repo in the 2026-09-06 docs sweep — the regression is described below)
  *
  * Source-level assertions, matching trade-ticket-preview.test.ts.
  */

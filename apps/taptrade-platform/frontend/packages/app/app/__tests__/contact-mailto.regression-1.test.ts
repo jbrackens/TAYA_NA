@@ -3,7 +3,7 @@
  * an endpoint the gateway does not expose; signed-out submissions died
  * with a raw 401 and the message was silently lost.
  * Found by /qa on 2026-07-26
- * Report: .gstack/qa-reports/qa-report-localhost-3012-2026-07-26.md
+ * Report: qa-report-localhost-3012-2026-07-26.md (gstack QA report; removed from the repo in the 2026-09-06 docs sweep — the regression is described below)
  *
  * The fix composes a prefilled support mailto instead. These tests pin
  * the mailto contract: correct recipient, subject prefix, reply-to
