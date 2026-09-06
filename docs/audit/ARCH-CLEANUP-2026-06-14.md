@@ -1,12 +1,17 @@
 # Architecture cleanup — 2026-06-14 (autonomous session)
 
+> **Point-in-time record — 2026-06-14.** Kept as history; it is not a description of the system today and not a live plan.
+> **Paths:** this document predates the 2026-07-06 directory rename. Read `apps/Phoenix-Predict-Combined/go-platform/...` as `apps/taptrade-platform/go-platform/...` and `talon-backoffice/packages/...` as `frontend/packages/...`.
+
 Completion record for the architecture workstream of the 2026-06-14 audit:
 **ARCH-02 / IMP-06** (purge dead sportsbook code from the frontend),
 **ARCH-01** (dead directory weight), and **COR-06** (`context.Background()` in
 payments). All code changes landed on `main` as independently verified,
 CI-green units. The churned `AUDIT_REPORT.md` / `IMPROVEMENT_PLAN.md` working
-copies are a separate in-flight revision and were intentionally left untouched;
-fold this record into them as desired.
+copies were a separate in-flight revision and were intentionally left untouched
+at the time. **That fold was done on 2026-09-06:** `IMPROVEMENT_PLAN.md` now
+carries a per-task status table, IMP-06 is marked DONE against this record, and
+IMP-01 is marked WITHDRAWN against the COR-06 false-positive disposition below.
 
 ## ARCH-02 / IMP-06 — sportsbook frontend purge ✅
 

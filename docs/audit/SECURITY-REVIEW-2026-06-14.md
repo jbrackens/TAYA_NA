@@ -1,5 +1,8 @@
 # Security & Bug Review — 2026-06-14
 
+> **Point-in-time record — 2026-06-14.** Kept as history; it is not a description of the system today and not a live plan.
+> Two reading notes. (1) **Paths:** this document predates the 2026-07-06 directory rename. Read `apps/Phoenix-Predict-Combined/go-platform/...` as `apps/taptrade-platform/go-platform/...` and `talon-backoffice/packages/...` as `frontend/packages/...`. (2) **Units:** it says "cents". Migration `050_points_unit_model.sql` (2026-07-07) renamed every `*_cents` column to `*_points`; the launch unit is non-redeemable Points, not money.
+
 **Reviewer:** Claude (Opus 4.8), 6 parallel domain agents + manual verification of every Critical/High finding against source.
 **Scope:** the LIVE/deployed code only — Go gateway (`apps/Phoenix-Predict-Combined/go-platform/services/gateway`), auth service (`.../services/auth`), and the Next.js player + office frontends (`.../talon-backoffice/packages/{app,office,api-client}`). Dead trees (`phoenix-backend`, `archive`, `revival`, `phoenix-frontend-brand-viegg`) and `cmd/seed` dev tooling were excluded.
 **Method:** dimensional fan-out (auth/session, money matching/settlement, wallet/cashier, access-control/webhooks, injection/SSRF/DoS, frontend). Findings marked **[V]** were read and confirmed in source by the reviewer; **[R]** are agent-reported with corroboration noted.

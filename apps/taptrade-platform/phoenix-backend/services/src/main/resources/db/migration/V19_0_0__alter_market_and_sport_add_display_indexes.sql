@@ -1,1 +1,0 @@
-CREATE INDEX "index_markets_market_type" ON markets (market_type);

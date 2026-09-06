@@ -3,17 +3,40 @@
 **Status:** Built and **fail-closed in deployed environments** (boot policy
 below). Local dev / the demo box (ENVIRONMENT unset) keep the gates off by
 default. Country list pending legal sign-off.
-**Date:** 2026-05-22 (boot policy + money-surface coverage added 2026-06-10)
-**Related:** ADR-0003/0004 (resolution + disputes), launch policy (crypto-native, outside-US).
+**Date:** 2026-05-22 (boot policy + money-surface coverage added 2026-06-10; launch-posture
+correction 2026-09-06)
+**Related:** ADR-0003/0004 (resolution + disputes); `docs/taptrade-economy-rules.md` (launch model).
 
-Path shorthand: `gateway` = `apps/taptrade-platform/go-platform/services/gateway`.
+Path shorthand: `gateway` = `apps/taptrade-platform/go-platform/services/gateway`;
+`scripts/` = `apps/taptrade-platform/scripts/`.
+
+> **Launch-posture correction (2026-09-06).** This document was written against a
+> "crypto-native, outside-US" launch. **That posture was reversed.** Since
+> 2026-07-07 the launch model is a **non-redeemable Points economy** — see
+> `docs/taptrade-economy-rules.md` and migration `050_points_unit_model.sql`.
+> There is **no crypto rail, no withdrawal and no redemption of any kind**; the
+> gateway refuses to boot in production/staging with
+> `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED=true` or `ALPHA_CASHIER_ENABLED=true`,
+> and `internal/compliance/launch_safety.go` redacts "crypto", "deposit",
+> "withdraw", "cash", "payout", "money" and "redeem" from user-visible copy.
+>
+> One money-in path does exist and is live: the **point store**
+> (`/api/v1/store/*`, `STORE_ENABLED`, migration `051_store_point_packs.sql`,
+> landed 2026-07-12) sells point packs for a USD price. It is closed-loop —
+> money in, non-redeemable points out, no cash-out ever — and is a route tree
+> entirely separate from the retired cashier. See `STORE_AND_PAYMENTS.md`.
+> Its checkout is guarded by the same jurisdiction gate under the `deposit`
+> surface.
+>
+> **The geo-gate and boot-policy machinery described below is real, current and
+> load-bearing.** What has changed is which surfaces it guards (see below) and
+> the framing of the open legal questions at the end.
 
 ## What ships now
 
-The confirmed launch posture is **crypto-native, outside-US only**. The exact
-jurisdiction list is **legal's to choose**, not engineering's — but defaulting
-to "everything off" in a deployed environment proved too easy to ship by
-accident (audit blocker #3). So the posture is now **deny-by-default in
+The exact jurisdiction list is **legal's to choose**, not engineering's — but
+defaulting to "everything off" in a deployed environment proved too easy to ship
+by accident (audit blocker #3). So the posture is **deny-by-default in
 production/staging** (see boot policy), while local dev keeps the convenient
 defaults.
 
@@ -22,19 +45,27 @@ Two seams exist:
 1. **Geofencing** (`gateway/internal/compliance/geo_gate.go`, `GeoGate`).
    Pure `Evaluate(country) -> (allowed, reason)`. Enforced in
    `gateway/internal/http/pretrade_gate.go` (`checkComplianceGates(r, userID,
-   surface)`) on three surfaces:
-   - `trade` — `POST /api/v1/orders` (order placement)
-   - `deposit` — alpha-cashier deposit-intent create + submit-tx, legacy
-     `POST /api/v1/payments/deposit`
-   - `withdraw` — alpha-cashier withdrawal-request create, legacy
-     `POST /api/v1/payments/withdraw`
+   surface)`). The three surfaces are declared in
+   `internal/compliance/gate_surface.go`:
+   - `trade` — **live.** Order placement (`internal/http/prediction_handlers.go`)
+     and the bot order path (`internal/http/bot_handlers.go`).
+   - `deposit` — **live for one route only:** point-pack checkout
+     (`POST /api/v1/store/checkout`, `internal/store/handlers.go` — "purchases
+     are value-in: guarded by the same jurisdiction gate as the legacy deposit
+     surface", owner decision 2026-07-12). The alpha-cashier deposit-intent and
+     legacy `POST /api/v1/payments/deposit` call sites still carry the gate in
+     source, but those route trees are **not registered** at launch —
+     `internal/http/launch_boundary_test.go` asserts every one of them returns
+     404 by default.
+   - `withdraw` — **not reachable at launch.** The gate call sites exist in
+     `internal/alphacashier/handlers.go` and `internal/payments/handlers.go`;
+     both route trees are off, and the same boundary test pins them at 404.
 
    **Registration is deliberately un-gated**: creating an account is fine
-   anywhere; trading and money movement are not. This keeps support/test
-   accounts usable from anywhere without weakening the money path.
+   anywhere; trading and value-in are not.
 2. **Trading KYC** (same `pretrade_gate.go`, `trade` surface only). Reuses the
-   existing `compliance.KYCService` (the same service that already gates
-   *withdrawals* just-in-time via `payments.KYCGate`).
+   existing `compliance.KYCService`. The withdrawal-side KYC gate
+   (`payments.KYCGate`) sits on a route tree that is off at launch.
 
 ## Boot policy (deny-by-default, `cmd/gateway/main.go`)
 
@@ -65,7 +96,7 @@ must not be silently bypassable by a missing header).
 | `GEO_ALLOWED_COUNTRIES` | *(empty)* | If non-empty, switch to **allowlist** mode (deny anything not listed). Required in prod/staging. |
 | `GEO_COUNTRY_HEADER` | `CF-IPCountry` | Request header carrying the caller's country. |
 | `KYC_REQUIRED_FOR_TRADING` | `false` | Require an `approved` KYC status before placing an order. |
-| `KYC_ENFORCEMENT` | `false` | Gate withdrawals above `KYC_WITHDRAWAL_THRESHOLD_CENTS` (beta default `0` in the demo compose = every withdrawal). |
+| `KYC_ENFORCEMENT` | `false` | Gate withdrawals above `KYC_WITHDRAWAL_THRESHOLD_CENTS` (`internal/payments/handlers.go`; beta default `0` in the demo compose = every withdrawal). Dormant at launch — the withdrawal routes are not registered. The env name kept its `_CENTS` suffix through migration 050 because those legacy cashier amounts were genuinely cash cents. |
 | `KYC_ENFORCEMENT_ACK_DISABLED` | *(unset)* | Prod/staging: explicit acknowledgment that withdrawal KYC is off. |
 | `KYC_REQUIRED_FOR_TRADING_ACK_DISABLED` | *(unset)* | Prod/staging: explicit acknowledgment that trading KYC is off. |
 | `GEO_TRUSTED_PROXY_MODE` | *(unset)* | `require` = the deploy declares a trusted edge that always sets the country header; missing-signal denials then log at Error with a running counter (`missing_signal_denials_total`) so a broken edge is visible in minutes. |
@@ -123,23 +154,38 @@ Visibility: an admin can read resolution-source health at
 `GET /api/v1/admin/resolution-sources`; geo/KYC denials are logged with the
 user id and reason.
 
-## Open decisions for legal / compliance (engineering is blocked on these)
+## Open decisions for legal / compliance
 
-1. **Jurisdiction list.** "Outside-US" — is that a single US block, or a
-   positive allowlist of permitted countries? Which states/territories? Any
-   sanctioned-country blocks (OFAC) beyond US (e.g. CU/IR/KP/RU/SY)?
-2. **Geo source of truth.** Is edge IP-country (CF-IPCountry) sufficient, or is
-   declared residence / document-derived country required? VPN/proxy tolerance?
-3. **KYC trigger & depth.** Is KYC required to **trade**, only to **withdraw**
-   (current), or above a **cumulative threshold**? What tiers (email-only →
-   doc-verified)? Which provider? Data-retention obligations?
-4. **Crypto-native nuance.** Does "value-bearing virtual currency, not fiat
-   real-money" change the KYC/AML obligation vs. fiat? (Likely AML/travel-rule
-   implications — needs counsel.)
-5. **Records & reporting.** Suspicious-activity / transaction-reporting duties
-   for the chosen jurisdictions; how long to retain geo/KYC decisions.
+Re-scoped 2026-09-06 against the points-only launch. Decisions 1 and 2 still
+block enabling the gate; 3, 4 and 5 are deferred until (and unless) a real-money
+rail is reintroduced, which is itself an owner + counsel decision.
 
-Until 1–5 are answered, deployed environments run **staging-only acked
+**Still blocking — needed before `GEO_GATE_ENABLED=true` in production:**
+
+1. **Jurisdiction list.** A positive allowlist of permitted countries
+   (allowlist mode is mandatory in production/staging — the gateway will not
+   boot on a blocklist). Which states/territories? Any sanctioned-country
+   blocks (OFAC, e.g. CU/IR/KP/RU/SY)?
+2. **Geo source of truth.** Is edge IP-country (`CF-IPCountry`) sufficient, or
+   is declared residence / document-derived country required? VPN/proxy
+   tolerance?
+
+**Deferred until a redemption path exists — not launch blockers:**
+
+3. **KYC trigger & depth.** Tiers (email-only → doc-verified), provider,
+   data-retention. `KYC_REQUIRED_FOR_TRADING` is the only KYC flag that has a
+   live surface at launch; the withdrawal gate has no reachable route. Whether
+   point-pack purchases above some cumulative spend should trigger KYC is a
+   separate question that the store raises and this document does not answer.
+4. **Virtual-currency nuance.** Whether a non-redeemable in-app unit changes the
+   KYC/AML picture. With no withdrawal and no redemption, the travel-rule and
+   money-transmission questions that prompted this item do not arise in the same
+   form — the point store is closed-loop, value-in only. They return the moment
+   value can leave. Needs counsel *before* any such change, not after.
+5. **Records & reporting.** Suspicious-activity and transaction-reporting duties
+   for the chosen jurisdictions; retention period for geo/KYC decisions.
+
+Until 1 and 2 are answered, deployed environments run **staging-only acked
 permissive mode** (production cannot boot ungated). When answered: set the env
-vars above (and, for KYC depth beyond a binary approved-check, extend
-`checkComplianceGates` / the `KYCService` accordingly).
+vars above. For KYC depth beyond a binary approved-check, extend
+`checkComplianceGates` / the `KYCService`.

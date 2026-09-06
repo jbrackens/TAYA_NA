@@ -1,365 +1,210 @@
-# WebSocket Module
+# `internal/ws` — WebSocket hub
 
-Real-time bidirectional communication for the TapTrade Sportsbook gateway service.
+Real-time fan-out for the prediction-market gateway. One hub per gateway
+process, channel-based subscriptions, one WebSocket endpoint at `GET /ws`.
 
-## Overview
+This file is the only doc for the package. Everything below was checked against
+`hub.go`, `client.go`, `handler.go`, `message.go`, `backbone.go` and
+`notifier.go`; when they disagree, the code wins.
 
-This module provides WebSocket support for the gateway, enabling real-time event streaming to connected clients. The implementation uses a hub-and-spoke architecture with channel-based subscriptions.
+## Endpoint and authentication
 
-## Quick Start
+`GET /ws` is registered in `internal/http/handlers.go` and listed in
+`cmd/gateway/main.go`'s `publicPrefixes` — not because it is public, but because
+it authenticates itself rather than through `httpx.Auth`.
 
-### Connect to WebSocket
+`handler.go` resolves a token in this order:
 
-```bash
-# Using Authorization header
-curl -i -N \
-  -H "Connection: Upgrade" \
-  -H "Upgrade: websocket" \
-  -H "Sec-WebSocket-Version: 13" \
-  -H "Sec-WebSocket-Key: x3JJHMbDL1EzLkh9GBhXDw==" \
-  -H "Authorization: Bearer user123" \
-  http://localhost:18080/ws
-```
+1. the `access_token` cookie (preferred — no token in the URL),
+2. an `Authorization: Bearer <token>` header.
 
-### Subscribe to Channels
+Query-parameter auth was removed. The token is validated by calling the auth
+service at `${AUTH_SERVICE_URL}/api/v1/auth/session` (default
+`http://localhost:18081`, 5s timeout); the `userId` from that response becomes
+the client identity. Anything else returns HTTP 401 before the upgrade.
+
+Origin checking is driven by `WS_ALLOWED_ORIGINS` (comma-separated, exact
+case-insensitive match). If it is unset the upgrade is allowed in dev and
+**rejected** when `ENVIRONMENT` is `production` or `staging`.
+
+## Channels
+
+Channels are `<prefix>:<identifier>` strings. `client.go`'s
+`authorizeChannelAccess` decides who may subscribe:
+
+| Prefix | Access | Broadcast by |
+|---|---|---|
+| `market:<marketID>` | any authenticated user | `NotifyPredictionMarketUpdate`, `NotifyResolutionUpdate`, `NotifyDisputeFiled` |
+| `trades:<marketID>` | any authenticated user | `NotifyPredictionTrade` |
+| `orderbook:<marketID>` | any authenticated user | `NotifyPredictionOrderBookUpdate` |
+| `event:<eventID>` | any authenticated user | `NotifyEventUpdate` |
+| `category:<categorySlug>` | any authenticated user | `NotifyCategoryUpdate` |
+| `leaderboard:accuracy` | any authenticated user | `NotifyLeaderboardUpdate` |
+| `portfolio:<userID>` | owner only | `NotifyPortfolioUpdate` |
+| `wallet:<userID>` | owner only | `NotifyWalletUpdate` |
+| `loyalty:<userID>` | owner only | `NotifyLoyaltyTierPromoted` |
+
+Owner-only means the channel's identifier must equal the authenticated user id
+(case-insensitive). Unknown prefixes are rejected fail-closed; a name with no
+colon at all is treated as public and accepted. A rejected subscribe is logged
+but does not close the connection — the client simply never receives anything on
+that channel.
+
+Two things the table does not show:
+
+- The hub also broadcasts to `admin:resolutions` and `admin:disputes`
+  (`NotifyResolutionUpdate` / `NotifyDisputeFiled`), but `admin` is not an
+  allowed prefix in `authorizeChannelAccess`, so no client can currently
+  subscribe to them. Those two broadcasts go nowhere today.
+- `authorizeChannelAccess` still lists four prefixes left over from the
+  sportsbook fork — `markets`, `fixture` and `fixtures` as public, `bets` as
+  owner-only. Nothing broadcasts to any of them, so subscribing succeeds and
+  yields silence. In particular `markets:<id>` (plural) is not the market
+  channel; the real one is `market:<id>`.
+
+`NotifyEventUpdate`, `NotifyCategoryUpdate` and `NotifyLeaderboardUpdate` are
+implemented but have no caller outside this package — the channels exist, the
+producers do not yet.
+
+## Wire protocol
+
+Client → server (`message.go`):
 
 ```json
-{
-  "type": "subscribe",
-  "channels": [
-    "markets:fixture_123",
-    "bets:user_123",
-    "wallet:user_123"
-  ]
-}
+{"type": "subscribe",   "channels": ["market:m_123", "orderbook:m_123"]}
+{"type": "unsubscribe", "channels": ["orderbook:m_123"]}
 ```
 
-### Receive Events
+Server → client:
 
 ```json
 {
   "type": "event",
-  "channel": "markets:fixture_123",
-  "eventId": "evt_abc",
-  "data": {
-    "odds": 2.5
-  }
+  "channel": "market:m_123",
+  "eventId": "market_update",
+  "data": { }
 }
 ```
+
+`eventId` is a fixed per-method label (`market_update`, `trade`,
+`orderbook_update`, `portfolio_update`, `wallet_update`, `event_update`,
+`category_update`, `leaderboard_update`, `tier_promoted`, `resolution_update`,
+`dispute_filed`), not a unique id. `BroadcastEvent` also takes an event-type
+argument, but it is not serialised into the frame — clients key off `channel`
+plus `eventId`.
+
+Payload shapes are built by the producing handler, not by this package. The
+order-path payloads live in `internal/http/prediction_handlers.go`
+(`buildMarketUpdatePayload`, `buildTradeFillPayload`, `buildOrderBookHintPayload`,
+`buildPortfolioUpdatePayload`, `buildWalletUpdatePayload`). They are
+point-denominated — fields such as `yesPricePoints`, `pricePoints`,
+`balancePoints`, with `"unit": "PTS"`. There are no cents and no odds.
+
+## Go API
+
+```go
+hub := ws.NewHub()
+go hub.Run(ctx)
+mux.HandleFunc("/ws", ws.NewHandler(hub))
+```
+
+`*Hub` satisfies `ws.Notifier` (`notifier.go`), which is the interface handlers
+should depend on:
+
+```go
+NotifyPredictionMarketUpdate(marketID string, data interface{})
+NotifyPredictionTrade(marketID string, data interface{})
+NotifyPredictionOrderBookUpdate(marketID string, data interface{})
+NotifyPortfolioUpdate(userID string, data interface{})
+NotifyWalletUpdate(userID string, data interface{})
+NotifyEventUpdate(eventID string, data interface{})
+NotifyCategoryUpdate(categorySlug string, data interface{})
+NotifyLeaderboardUpdate(data interface{})
+NotifyLoyaltyTierPromoted(userID string, data interface{})
+```
+
+`*Hub` additionally has `NotifyResolutionUpdate(marketID, phase string, data interface{})`
+and `NotifyDisputeFiled(marketID string, data interface{})`. These are not on
+`ws.Notifier`: the market-lifecycle handler in `internal/http/handlers.go` calls
+the hub directly, and the dispute API depends on a one-method local interface
+(`disputeNotifier` in `internal/http/dispute_handlers.go`).
+
+Lower-level entry points: `Broadcast(channel string, message []byte)`,
+`BroadcastEvent(channel, eventID, eventType string, data interface{})`,
+`SetBackbone(Backbone)` (before `Run`), `ClientCount()`, `ChannelCount()`,
+`GetChannelSubscribers(channel)`, `BackboneHealthy()`, `Close()`.
+
+## Backpressure
+
+Nothing in the broadcast path blocks its caller — the HTTP order and settlement
+handlers publish on the request path, so a stalled hub would stall trading.
+
+- `Hub.Broadcast` drops the message if the hub command queue (100) is full and
+  increments `gateway_ws_broadcasts_dropped_total`.
+- `Client.SendMessage` drops the message if the client's send buffer (256) is
+  full, increments `gateway_ws_messages_dropped_total`, and disconnects that
+  client (`gateway_ws_slow_clients_disconnected_total`).
+- `gateway_ws_disconnects_dropped_total` counts slow-client disconnects that
+  could not be enqueued; cleanup still happens through the client's own close
+  path.
+
+WebSocket here is a cache-invalidation channel: a dropped frame is recoverable
+because clients refetch on the next event or on reconnect. Counters are rendered
+by `RenderMetrics()` and folded into the gateway `/metrics` endpoint.
+
+## Cross-instance delivery
+
+`backbone.go` fans broadcasts to other gateway instances so a trade matched on
+instance A reaches a subscriber connected to instance B.
+
+- Default `LocalBackbone`: no-op, single instance.
+- `RedisBackbone`: one Redis pub/sub channel (`ws:events`), messages tagged with
+  a random instance id so a publisher skips its own echo.
+
+Wiring is in `internal/http/handlers.go` and is opt-in: `WS_BACKBONE=redis` plus
+a `REDIS_URL` that `redis.ParseURL` accepts — it needs a scheme, e.g.
+`redis://localhost:6380/0`. A bare `host:port` fails to parse and the gateway
+falls back to the local backbone with an error log.
+
+Local fan-out never goes through the backbone, so a Redis outage degrades
+delivery to local-only rather than stopping it. `/readyz` reports it as
+`ws_backbone: ok | degraded`, informationally — a degraded backbone does not fail
+readiness.
+
+## Limits and timeouts
+
+| Setting | Value | Source |
+|---|---|---|
+| Max inbound message | 512 KB | `client.go` `maxMessageSize` |
+| Per-client send buffer | 256 messages | `client.go` `NewClient` |
+| Hub command buffers | 100 (subscribe/unsubscribe/disconnect/broadcast) | `hub.go` `NewHub` |
+| Backbone outbound queue | 256 | `hub.go` `NewHub` |
+| Ping interval | 30s | `client.go` `pingInterval` |
+| Pong deadline / read deadline | 60s | `client.go` `pongWait` |
+| Write timeout | 10s | `client.go` `writeWait` |
+
+## Concurrency
+
+One hub goroutine owns the subscription map and processes subscribe,
+unsubscribe, disconnect, broadcast and inbound-backbone commands; a second hub
+goroutine drains outbound broadcasts to the backbone. Each client runs a read
+pump and a write pump. `Broadcast`, `BroadcastEvent` and every `Notify*` method
+are safe to call from any goroutine.
 
 ## Files
 
-### Core Implementation
-
 | File | Purpose |
-|------|---------|
-| `hub.go` | Central hub managing connections and subscriptions |
-| `client.go` | Individual WebSocket connection handler |
-| `handler.go` | HTTP upgrade handler with authentication |
-| `message.go` | Message type definitions and serialization |
-| `notifier.go` | Service notification interface |
+|---|---|
+| `hub.go` | Subscription map, event loop, broadcast + `Notify*` methods |
+| `client.go` | Per-connection pumps, channel authorization, drop counters, metrics text |
+| `handler.go` | HTTP upgrade, origin check, auth-service token validation |
+| `message.go` | Frame types and JSON (de)serialisation |
+| `notifier.go` | `Notifier` interface |
+| `backbone.go` | Local and Redis cross-instance backbones |
+| `hub_test.go`, `slow_client_test.go`, `channels_race_test.go`, `backbone_test.go` | Tests |
 
-### Tests
-
-| File | Purpose |
-|------|---------|
-| `hub_test.go` | Comprehensive hub and integration tests |
-
-### Documentation
-
-| File | Purpose |
-|------|---------|
-| `README.md` | This file - module overview |
-| `USAGE.md` | Client usage guide and protocol documentation |
-| `INTEGRATION.md` | Service integration examples |
-| `ARCHITECTURE.md` | Design, concurrency model, and performance |
-
-## API Reference
-
-### Hub
-
-```go
-type Hub struct { ... }
-
-// Create a new hub
-func NewHub() *Hub
-
-// Start the hub's event loop (call in goroutine)
-func (h *Hub) Run(ctx context.Context)
-
-// Broadcast raw bytes to a channel
-func (h *Hub) Broadcast(channel string, message []byte)
-
-// Broadcast a typed event
-func (h *Hub) BroadcastEvent(channel string, eventID string, eventType string, data interface{})
-
-// Get all clients subscribed to a channel
-func (h *Hub) GetChannelSubscribers(channel string) []*Client
-
-// Metrics
-func (h *Hub) ClientCount() int
-func (h *Hub) ChannelCount() int
-
-// Graceful shutdown
-func (h *Hub) Close() error
-
-// Notifier interface
-func (h *Hub) NotifyMarketUpdate(fixtureID string, data interface{})
-func (h *Hub) NotifyFixtureUpdate(sportKey string, data interface{})
-func (h *Hub) NotifyBetUpdate(userID string, data interface{})
-func (h *Hub) NotifyWalletUpdate(userID string, data interface{})
-```
-
-### Client
-
-```go
-type Client struct { ... }
-
-// Create a new client
-func NewClient(hub *Hub, conn *websocket.Conn, userID string) *Client
-
-// Start read/write pumps
-func (c *Client) Start()
-
-// Send message to client
-func (c *Client) SendMessage(data []byte)
-
-// Get user ID
-func (c *Client) UserID() string
-
-// Check subscription
-func (c *Client) IsSubscribedTo(channel string) bool
-```
-
-### Handler
-
-```go
-// Create HTTP handler for WebSocket upgrade
-func NewHandler(hub *Hub) http.HandlerFunc
-```
-
-### Messages
-
-```go
-type SubscribeMessage struct {
-	Type     MessageType
-	Channels []string
-}
-
-type UnsubscribeMessage struct {
-	Type     MessageType
-	Channels []string
-}
-
-type Event struct {
-	Type    MessageType
-	Channel string
-	EventID string
-	Data    json.RawMessage
-}
-
-// Parse client message from JSON
-func ParseClientMessage(data []byte) (*ClientMessage, error)
-```
-
-### Notifier Interface
-
-```go
-type Notifier interface {
-	NotifyMarketUpdate(fixtureID string, data interface{})
-	NotifyFixtureUpdate(sportKey string, data interface{})
-	NotifyBetUpdate(userID string, data interface{})
-	NotifyWalletUpdate(userID string, data interface{})
-}
-```
-
-## Channel Names
-
-Channels follow the pattern `{namespace}:{identifier}`:
-
-- `markets:{fixtureId}` - Market updates for a fixture
-- `fixtures:{sportKey}` - Fixture updates for a sport (e.g., `fixtures:soccer`)
-- `bets:{userId}` - Bet updates for a user
-- `wallet:{userId}` - Wallet updates for a user
-
-## Registration
-
-The WebSocket endpoint is automatically registered at `GET /ws` during gateway startup:
-
-```go
-// In internal/http/handlers.go
-wsHub := ws.NewHub()
-go wsHub.Run(context.Background())
-registerWebSocketRoutes(mux, wsHub)
-```
-
-## Authentication
-
-Clients must provide a Bearer token to establish a WebSocket connection:
-
-- **Authorization header**: `Authorization: Bearer {token}`
-- **Query parameter**: `?token={token}`
-
-Token validation is performed on upgrade. Failed authentication returns HTTP 401.
-
-## Message Protocol
-
-### Client → Server
-
-```json
-{
-  "type": "subscribe",
-  "channels": ["markets:123", "fixtures:soccer"]
-}
-```
-
-```json
-{
-  "type": "unsubscribe",
-  "channels": ["markets:123"]
-}
-```
-
-### Server → Client
-
-```json
-{
-  "type": "event",
-  "channel": "markets:123",
-  "eventId": "evt_abc123",
-  "data": {
-    "odds": 2.5,
-    "status": "active"
-  }
-}
-```
-
-## Heartbeat
-
-- **Ping interval**: 30 seconds
-- **Pong deadline**: 60 seconds
-- Automatically managed by Client
-
-## Limits
-
-- **Max message size**: 512 KB
-- **Per-client send buffer**: 256 messages
-- **Hub command buffer**: 100 commands
-- **Write timeout**: 10 seconds
-- **Read deadline**: 60 seconds
-
-## Error Handling
-
-### Authentication Failures
-
-Failed authentication returns HTTP 401 Unauthorized before WebSocket upgrade.
-
-### Invalid Messages
-
-Invalid JSON or unknown message types are logged. Connection continues.
-
-### Network Errors
-
-Connection drops are handled gracefully with automatic cleanup.
-
-## Testing
-
-Run tests:
+Run the tests from `services/gateway`:
 
 ```bash
-go test -v ./services/gateway/internal/ws
+go test ./internal/ws/...
 ```
-
-Tests cover:
-- Subscribe/unsubscribe operations
-- Message broadcasting
-- Client disconnect cleanup
-- Multi-channel operations
-- Notifier interface
-- Event serialization
-
-## Dependencies
-
-- `github.com/gorilla/websocket` (v1.5.0+)
-- Standard library: `context`, `encoding/json`, `log`, `net/http`, `time`
-
-## Performance
-
-| Operation | Time | Space |
-|-----------|------|-------|
-| Subscribe | O(1) | O(1) |
-| Unsubscribe | O(1) | O(1) |
-| Broadcast | O(n) | O(n) |
-| Message | ~1-10ms | Per-client 256 msgs |
-
-Where n = number of subscribers to channel
-
-## Concurrency Model
-
-- **Hub**: Single event loop in Run()
-- **Clients**: Two goroutines per client (read/write pumps)
-- **Services**: Can safely call hub.Broadcast() from any goroutine
-- **Thread-safety**: No shared mutable state, channel-based synchronization
-
-## Examples
-
-### Broadcasting from a Service
-
-```go
-notifier.NotifyMarketUpdate("fixture_123", map[string]interface{}{
-    "odds": 2.5,
-    "status": "active",
-})
-```
-
-### Subscribing from Client
-
-```javascript
-ws.send(JSON.stringify({
-    type: 'subscribe',
-    channels: ['markets:fixture_123']
-}));
-```
-
-### Handling Events
-
-```javascript
-ws.onmessage = function(event) {
-    const msg = JSON.parse(event.data);
-    if (msg.type === 'event') {
-        console.log(`Event: ${msg.channel} - ${msg.eventId}`);
-        console.log(msg.data);
-    }
-};
-```
-
-## Integration
-
-Services can inject the Hub as a Notifier:
-
-```go
-type MyService struct {
-    notifier ws.Notifier
-}
-
-func (s *MyService) UpdateMarket(id string, data interface{}) {
-    s.notifier.NotifyMarketUpdate(id, data)
-}
-```
-
-## Documentation
-
-- **USAGE.md** - Complete protocol and usage guide
-- **INTEGRATION.md** - Service integration patterns and examples
-- **ARCHITECTURE.md** - Design decisions, concurrency model, performance analysis
-
-## Future Enhancements
-
-- Integration with auth service for token validation
-- Presence tracking for user awareness
-- Message acknowledgments for delivery guarantees
-- Message history for catchup on reconnect
-- Prometheus metrics export
-- Message compression
-- Hub clustering for multi-instance deployments
-- Per-client rate limiting

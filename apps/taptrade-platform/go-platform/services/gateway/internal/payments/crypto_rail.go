@@ -22,7 +22,7 @@ var ErrRailNotConfigured = errors.New("crypto rail not configured")
 
 // Prototype-only after the 2026-05-25 cashier pivot: this is the legacy custodial
 // BSC rail seam. It remains fail-closed for local/reference use and must not be
-// configured for production funds. See docs/cashier/README.md.
+// configured for production funds. See docs/archive/cashier/README.md (workstream dormant since 2026-09-06).
 //
 // CryptoRail abstracts a legacy on-chain deposit/withdrawal rail (e.g. USDC on
 // an EVM chain). TapTrade launch mode keeps this surface unregistered unless

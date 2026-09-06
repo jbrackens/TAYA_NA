@@ -1,5 +1,32 @@
 # TapTrade Cashier API
 
+> **NOT A RUNNING SERVICE.** This directory is a design-and-fixture scaffold from
+> the abandoned cashier / crypto workstream. It has no `package.json`, no HTTP
+> server (nothing here calls `createServer` or `listen`), no Dockerfile and no
+> entry in `apps/taptrade-platform/docker-compose.yml` or
+> `docker-compose.demo.yml`. `.github/workflows/deploy-demo.yml` builds only the
+> auth, gateway, player and office images. Nothing in the Go gateway or either
+> Next.js app imports it. The `src/*.mjs` files are exported functions with no
+> caller other than the guard scripts below.
+>
+> **Why it is still in the repository.** `scripts/check-cashier-all.sh` reads
+> this tree — the SQL migration, the rollback and seed files, `openapi.yaml`,
+> `observability-events.json` and the `fixtures/` directory — and that script is
+> run by the `cashier-guards` job in `.github/workflows/test.yml` on every push
+> and pull request to `main`. Deleting this tree breaks CI until that job and
+> those scripts are removed with it.
+>
+> **What replaced it.** The product moved to non-redeemable points. The gateway
+> mounts the cashier, crypto and payment route trees only behind
+> `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED`, which defaults to off, and refuses to
+> boot with it (or `ALPHA_CASHIER_ENABLED`) set in production or staging —
+> `apps/taptrade-platform/go-platform/services/gateway/cmd/gateway/main.go:354`
+> and `:358`. The design record for this workstream is archived at
+> `docs/archive/cashier/`.
+
+The rest of this file describes what the service was intended to be. It is a
+historical specification, not a description of running code.
+
 API boundary for non-custodial wallet and cashier state.
 
 Responsibilities:

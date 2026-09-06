@@ -1,8 +1,14 @@
 # ADR-0003: Pluggable resolution-source (oracle) architecture
 
-**Status:** Proposed
+**Status:** Accepted — implemented 2026-05-22 (`d5984b82`, "feat(gateway): ... resolution/dispute system (ADR-0003/0004)")
 **Date:** 2026-05-22
 **Deciders:** Eng lead, John (CEO), compliance/legal *(for real-value launch)*
+
+**Implemented in:**
+- `gateway/internal/prediction/feed/resolution_source.go` (+ `adapter.go`, `crypto.go`, `manual.go`) — the pluggable source registry and per-source health tracking (consecutive failures, last error). A failing source simply does not propose; the market stays `closed` for manual admin resolution.
+- `gateway/internal/http/admin_dispute_handlers.go` — `GET /api/v1/admin/resolution-sources` exposes source health to ops.
+
+**Shipped narrower than the ADR sketch:** the launch policy is admin/manual attestation only. Automated adapters are opt-in compatibility seams and must be explicitly enabled before registration. `Corroborator` (multi-source agreement, ADR item #3) exists as an interface with **no implementation** — the confirmed design is single-source propose plus the ADR-0004 challenge window, not mandatory corroboration. See the header comment in `feed/resolution_source.go`.
 
 > Source: production-readiness audit (2026-05-22). Coupled with [ADR-0004](./0004-dispute-and-appeal.md). See [README](./README.md).
 

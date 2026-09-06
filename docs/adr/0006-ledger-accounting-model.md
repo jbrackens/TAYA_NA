@@ -4,7 +4,9 @@
 
 **Deciders:** John Brackens (owner)
 **Date:** 2026-06-13
-**Related:** AUDIT_REPORT.md COR-06; reconciler `internal/prediction/workers/reconciler.go`; P3-05 alert `ReconcilerDriftDetected`. This ADR decides the model; implementation follows the decision.
+**Related:** reconciler `internal/prediction/workers/reconciler.go`; P3-05 alert `ReconcilerDriftDetected`. This ADR decides the model; implementation follows the decision.
+
+> **Cross-reference correction (2026-09-06).** This line used to cite "AUDIT_REPORT.md COR-06". That is a different finding — in `docs/audit/AUDIT_REPORT.md`, COR-06 is `context.Background()` in the payment paths, which `docs/audit/ARCH-CLEANUP-2026-06-14.md` later dispositioned as a FALSE POSITIVE. The 2026-06-14 audit records no separate finding ID for the ledger accounting model; it describes the ledger as production-ready (§"Web2 wallet"). This ADR stands on its own reasoning, not on that finding. Its status is unchanged: still **Proposed**, awaiting an owner decision — the ledger remains single-entry running-balance with the reconciler as the check.
 
 ## Context
 

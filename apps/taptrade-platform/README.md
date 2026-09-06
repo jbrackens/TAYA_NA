@@ -109,7 +109,7 @@ go run ./cmd/seed
 
 Alpha cashier is disabled by default. To exercise the closed Alpha USDC rail,
 run the gateway with the `ALPHA_CASHIER_*` variables documented in
-[the cashier plan](../../docs/cashier/CUSTODIAL_USDC_ALPHA_PLAN.md), then apply
+[the cashier plan](../../docs/archive/cashier/CUSTODIAL_USDC_ALPHA_PLAN.md), then apply
 `go-platform/services/gateway/migrations/030_alpha_cashier.sql`. Live-chain
 setup still requires a reviewed RPC URL, verified USDC token contract, and
 TapTrade-controlled treasury address; do not use the legacy `CRYPTO_*` rail for this

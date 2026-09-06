@@ -1,8 +1,12 @@
 # P2-06 — Branch Triage & Mainline Consolidation (owner-decision report)
 
-**Status:** analysis complete + **independently reviewed by Codex** (verdict: endorse-with-changes, folded in below). All history-rewriting actions remain **owner-gated** and are NOT auto-executed — they rewrite shared history and change what is deployed.
-**Generated:** 2026-06-14, during the autonomous IMPROVEMENT_PLAN loop; revised after the Codex review.
-**Deploy line (de-facto mainline):** `origin/feat/binary-exchange-engine` @ `52e0af06` — the branch `deploy-demo.yml` ships to Hetzner (live at demo.99rtp.io / office.99rtp.io).
+> **RESOLVED 2026-06-14 — this report describes a decision that has since been executed. Do not run anything in it.**
+> The deploy line was promoted to `main`; `feat/binary-exchange-engine` no longer exists on the remote; `.github/workflows/deploy-demo.yml` triggers on `push: branches: [main]` with the inline note "P2-06: consolidated onto main; feat/binary-exchange-engine retired 2026-06-14". `CLAUDE.md` records the same outcome. Of the ~20 branches §6 listed for pruning, only `feat/hula-na-cashier` still exists on the remote.
+> **§3 (the force-push execution sequence) has been deleted** rather than left in place — it contained a `git push --force-with-lease ... refs/heads/main` against the production trunk, seeded from a ref that no longer resolves. §6's prune list is kept only as a record of what was triaged; it is not a to-do list.
+
+**Status:** executed. Written 2026-06-14 as an owner-decision report; independently reviewed by Codex (verdict: endorse-with-changes, folded in).
+**Generated:** 2026-06-14, during the autonomous IMPROVEMENT_PLAN loop.
+**Deploy line at the time of writing:** `origin/feat/binary-exchange-engine` @ `52e0af06` — then the branch `deploy-demo.yml` shipped to Hetzner (demo.99rtp.io / office.99rtp.io). It is `main` now.
 
 ---
 
@@ -24,62 +28,34 @@ Make `main` take on the deploy line's history; archive the old `main` as a tag (
 
 ---
 
-## 3. Execution sequence (Codex-hardened; reversible at every step)
+## 3. Execution sequence — REMOVED
 
-> Run from the **main worktree only** (`/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict`). Use **direct refspecs** — never move the local `feat/binary-exchange-engine` ref (it's checked out stale in `-cashier`). **`main` is unprotected** (verified — see §5), so the `--force-with-lease` promote works directly; no admin override needed.
-
-```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict
-git fetch origin
-old_main=$(git rev-parse origin/main)                          # a6efaafe
-deploy_tip=$(git rev-parse origin/feat/binary-exchange-engine) # 52e0af06
-
-# Step 1 — Safety net: archive both tips, push (everything recoverable hereafter)
-git tag -a archive/main-2026-05-25 "$old_main" -m "main before mainline adoption"
-git tag -a archive/deploy-pre-mainline "$deploy_tip" -m "deploy line before mainline adoption"
-git push origin refs/tags/archive/main-2026-05-25 refs/tags/archive/deploy-pre-mainline
-
-# Step 2 — DUAL-BRANCH DEPLOY FIRST (the key fix): teach the workflow about main
-#   BEFORE promoting, so a main-triggered deploy can't be silently refused.
-#   deploy-demo.yml gates on branch == feat/binary-exchange-engine AND a
-#   DEMO_DEPLOY_BRANCH_ALLOWLIST. Add 'main' to BOTH, ship via the still-live feat branch, smoke it.
-git switch -c chore/mainline-retarget "$deploy_tip"
-#   edit .github/workflows/deploy-demo.yml: branches:[...,main] + allowlist += main
-git commit -am "ci(deploy): allow demo deploys from main during mainline promotion"
-new_tip=$(git rev-parse HEAD)
-git push origin HEAD:refs/heads/feat/binary-exchange-engine
-gh workflow run deploy-demo.yml --ref feat/binary-exchange-engine   # smoke #1 (still on feat)
-
-# Step 3 — Promote: force-with-lease main to that exact commit, then smoke FROM main
-git push --force-with-lease=main:"$old_main" origin "$new_tip":refs/heads/main
-gh workflow run deploy-demo.yml --ref main                          # smoke #2 (from main)
-
-# Step 4 — ONLY after the main deploy is green: narrow workflow to main-only,
-#   add branch protection to main (require PR + green CI + block force-push),
-#   retire feat/binary-exchange-engine, then prune the §6 merged branches.
-```
-
-**Do not delete `feat/binary-exchange-engine` until the main deploy is confirmed green** — it's the fastest rollback ref. **Rollback** (if needed) restores from the archive tags via `--force-with-lease`, then redeploys from feat.
-
-**Continuity risks to watch** (Codex): the workflow branch-allowlist guard (Step 2 closes it); a partial mid-run deploy (auth/gateway/migrations/frontends recreate in sequence) — the deploy gates on `/healthz` so a failure is visible; keep feat as the rollback ref until smoke #2 passes.
+The step-by-step promotion runbook that stood here has been deleted. It has already been carried out, and what it contained — a `--force-with-lease` push to `refs/heads/main`, seeded from `git rev-parse origin/feat/binary-exchange-engine` — would now fail at the seed step and, if adapted, would rewrite the production trunk. The shape of what was done is recorded in §2 (adopt the deploy line as `main`, keep the old tip as an archive tag) and the outcome is visible in `deploy-demo.yml`.
 
 ---
 
-## 4. The one decision that's genuinely yours — cashier rail
+## 4. The one decision that was genuinely the owner's — cashier rail
 
-The deploy line's `alphacashier` **replaced** `main`'s earlier BSC-USDT deposit-watcher scaffold (`internal/payments/{deposit_watcher,evm_rpc,usdt_conversion,crypto_deposits}.go`), and commit `b7063824` deliberately removed that watcher. Risk of dropping something **live** is low (`main` isn't deployed). The real question is **product intent**: confirm the current `alphacashier` rail supersedes the BSC-USDT scaffold before abandoning those ~22 commits. If anything in the older scaffold is still wanted, cherry-pick those specific commits onto the deploy line **before** Step 3 (`git diff 0a2241b9..main -- .../internal/payments` shows exactly what they touched).
+*Resolved by events: the launch is points-only and both rails are retired. `cmd/gateway/main.go` refuses to boot with `ALPHA_CASHIER_ENABLED=true` or the legacy money routes in production/staging. Nothing here needs cherry-picking.*
+
+The deploy line's `alphacashier` **replaced** `main`'s earlier BSC-USDT deposit-watcher scaffold (`internal/payments/{deposit_watcher,evm_rpc,usdt_conversion,crypto_deposits}.go`), and commit `b7063824` deliberately removed that watcher. Risk of dropping something **live** is low (`main` isn't deployed). The real question is **product intent**: confirm the current `alphacashier` rail supersedes the BSC-USDT scaffold before abandoning those ~22 commits. At the time, the open question was whether to cherry-pick any of those ~22 commits onto the deploy line before the promotion. They were not cherry-picked.
 
 ---
 
-## 5. Branch protection status (verified) + what to set after
+## 5. Branch protection status (as verified on 2026-06-14) + what was to be set after
+
+*Not re-verified. Branch protection is a GitHub setting, not repo content — check the repository settings rather than trusting this section.*
 
 - `main`: **not protected** · `feat/binary-exchange-engine`: **not protected** · default branch: **`main`**.
-- → The `--force-with-lease` promote in §3 works with no workaround.
-- → But it also means the trunk currently has **zero guardrails** — part of why P2-06 exists. **Step 4 must add protection to `main`:** require a PR + green required checks (G-02/G-03/G-04/Tests), and block force-pushes, so the promoted trunk is safe going forward.
+- → That is why the promotion could be pushed directly, with no admin override.
+- → It also meant the trunk had **zero guardrails**, part of why P2-06 existed. The follow-up was to protect `main`: require a PR plus green required checks (G-02/G-03/G-04/Tests) and block force-pushes. **Whether that was ever applied is not recorded here and cannot be read from the repository — check the GitHub branch-protection settings.**
 
 ---
 
-## 6. Branch cleanup (verified merge status)
+## 6. Branch cleanup (as triaged on 2026-06-14 — historical, not a to-do list)
+
+*Superseded. The remote now carries only `main`, `feat/hula-na-cashier`, `feat/predict-redesign-p10`, `pam/p0-modernization` and in-flight agent branches. Every branch named below other than `feat/hula-na-cashier` is already gone. Nothing here needs pruning.*
+
 
 **Merged into the deploy line — safe to prune** (`git branch -d <name>`; `-d` refuses any not actually merged):
 ```
@@ -97,5 +73,6 @@ feat/antd-v5  chore/safe-brand-text-cleanup
 
 ---
 
-## 7. What this unblocks
-Once `main` is the protected trunk + deploy source: **G-05** (CI on every PR) and **P3-11** (E2E on PRs to main) both clear, and the staging/prod pipeline (**P3-08**) has a real branch to target.
+## 7. What this unblocked
+
+`main` became the trunk and the deploy source. **P3-11** landed: `.github/workflows/e2e.yml` runs the end-to-end journey suite on pull requests to `main` against a freshly seeded stack.

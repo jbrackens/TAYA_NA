@@ -1,9 +1,16 @@
 # TapTrade Cashier Contract Invariants
 
-**Status:** Draft gate for contract implementation and audit.
+**Status:** SUPERSEDED 2026-09-06 — abandoned workstream (was: "Draft gate for
+contract implementation and audit."). No contract was implemented or deployed,
+and none will be: the product moved to non-redeemable points and settles nothing
+on chain. See `docs/archive/cashier/` for the design record and
+`contracts/README.md` for why this directory is still here.
 **Date:** 2026-05-25.
 
-These invariants apply to collateral, recovery, and any account/factory adapters.
+These invariants applied to collateral, recovery, and any account/factory
+adapters in the interface sketches under `src/`. They are kept as a record of the
+security properties the contracts were meant to hold, and because
+`scripts/check-cashier-contracts.mjs` asserts five of them are still stated here.
 
 ## Collateral
 

@@ -1,0 +1,117 @@
+{
+  "_archived": "ARCHIVED 2026-09-06. Historical record only. The cashier/crypto workstream was abandoned when the product moved to non-redeemable points; none of these items will be cleared. Status stays 'blocked' because the rail was never enabled.",
+  "status": "blocked",
+  "generatedAt": "2026-05-25T00:00:00.000Z",
+  "items": [
+    {
+      "id": "provider-tron-route-transcript",
+      "category": "provider",
+      "status": "blocked",
+      "publicBetaBlocker": true,
+      "description": "Selected provider demonstrates TRC-20 USDT deposit-address route with stable request/status ids."
+    },
+    {
+      "id": "provider-callback-signature-transcript",
+      "category": "provider",
+      "status": "blocked",
+      "publicBetaBlocker": true,
+      "description": "Provider callback signature verification transcript proves raw-body verification and replay handling."
+    },
+    {
+      "id": "wallet-provider-selected",
+      "category": "wallet",
+      "status": "blocked",
+      "publicBetaBlocker": true,
+      "description": "Embedded wallet and smart-account provider selected with testnet evidence."
+    },
+    {
+      "id": "settlement-chain-selected",
+      "category": "settlement",
+      "status": "blocked",
+      "publicBetaBlocker": true,
+      "description": "Settlement chain selected with finality, fee, stablecoin, and provider support evidence."
+    },
+    {
+      "id": "testnet-deposit-10-of-10",
+      "category": "testnet",
+      "status": "blocked",
+      "publicBetaBlocker": true,
+      "description": "Ten consecutive TRC-20 deposit testnet runs complete without double settlement or lost attribution."
+    },
+    {
+      "id": "testnet-withdrawal-run",
+      "category": "testnet",
+      "status": "blocked",
+      "publicBetaBlocker": true,
+      "description": "Gasless EVM withdrawal testnet run completes with user authorization hash and relayer policy decision."
+    },
+    {
+      "id": "external-contract-audit",
+      "category": "security",
+      "status": "blocked",
+      "publicBetaBlocker": true,
+      "description": "External contract audit complete with critical/high findings fixed or explicitly risk-accepted."
+    },
+    {
+      "id": "address-screening-provider-selected",
+      "category": "compliance",
+      "status": "blocked",
+      "publicBetaBlocker": true,
+      "description": "Address screening provider selected and integrated into policy decisions."
+    },
+    {
+      "id": "geo-policy-approved",
+      "category": "compliance",
+      "status": "complete",
+      "publicBetaBlocker": true,
+      "description": "Beta trading geofence policy is explicit: permissive beta mode disables trading geo/KYC gates for Asia, Africa, and LATAM while requiring startup acknowledgement in production-like environments.",
+      "evidence": [
+        "apps/taptrade-platform/go-platform/services/gateway/internal/http/pretrade_gate.go",
+        "apps/taptrade-platform/go-platform/services/gateway/cmd/gateway/main.go",
+        "apps/taptrade-platform/DEPLOYMENT.md",
+        "apps/taptrade-platform/docker-compose.demo.yml"
+      ]
+    },
+    {
+      "id": "incident-kill-switches-implemented",
+      "category": "operations",
+      "status": "complete",
+      "publicBetaBlocker": true,
+      "description": "Operator runtime flags can pause deposit, withdrawal, relayer, and provider-callback rails with immutable audit evidence.",
+      "evidence": [
+        "services/cashier-api/src/handlers.mjs",
+        "services/cashier-api/src/repository.mjs",
+        "services/cashier-api/src/sql-repository.mjs",
+        "services/cashier-api/test/handlers.test.mjs"
+      ]
+    },
+    {
+      "id": "operator-recovery-queue-implemented",
+      "category": "operations",
+      "status": "complete",
+      "publicBetaBlocker": true,
+      "description": "Operator recovery queue enforces auth, audit logging, and two-person approval.",
+      "evidence": [
+        "services/cashier-api/src/handlers.mjs",
+        "services/cashier-api/src/repository.mjs",
+        "services/cashier-api/src/sql-repository.mjs",
+        "services/cashier-api/test/handlers.test.mjs",
+        "services/cashier-api/test/sql-repository.test.mjs"
+      ]
+    },
+    {
+      "id": "daily-reconciliation-export-implemented",
+      "category": "operations",
+      "status": "complete",
+      "publicBetaBlocker": true,
+      "description": "Daily reconciliation export compares cashier state, provider state, and chain evidence.",
+      "evidence": [
+        "services/cashier-api/src/reconciliation.mjs",
+        "services/cashier-api/src/handlers.mjs",
+        "services/cashier-api/src/sql-repository.mjs",
+        "services/cashier-api/test/handlers.test.mjs",
+        "services/cashier-api/test/sql-repository.test.mjs"
+      ]
+    }
+  ]
+}

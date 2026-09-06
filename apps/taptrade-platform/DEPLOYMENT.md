@@ -2,8 +2,8 @@
 
 > Describes the deployment **as it actually runs today**: a single Hetzner box
 > running docker-compose behind Caddy, driven by GitHub Actions over SSH. The
-> previous Kubernetes/Cloud-SQL/Memorystore guide was fiction and was archived
-> under `archive/dead-2026-06/docs-sportsbook/` in P2-04.
+> previous Kubernetes/Cloud-SQL/Memorystore guide was fiction; it was retired in
+> the P2-04 cleanup and survives only in git history (commit `3ec79f0a`).
 
 ## Topology (demo)
 
@@ -19,48 +19,79 @@ GitHub Actions ──SSH──▶ Hetzner box (2 vCPU, :80/:443 firewalled to CF
                           ├─ predict_player   :3000
                           ├─ predict_office   :3001
                           ├─ postgres 16      (named docker volume — survives rsync --delete)
-                          ├─ redis            (auth sessions + rate limiter)
+                          ├─ redis            (auth sessions + rate limiter; not a
+                          │                    gateway read cache)
                           ├─ db-backup        6h pg_dump sidecar (opt-in)
                           └─ rocketchat       community feed
 ```
 
 Compose files: `docker-compose.yml` (base: postgres, redis, gateway, auth) +
-`docker-compose.demo.yml` (overlay: frontends, SMM, feature-flag env, db-backup,
-Rocket.Chat). The demo overlay **requires** `JWT_SECRET` (`${JWT_SECRET:?}`) and
-sets production-shape env.
+`docker-compose.demo.yml` (overlay: rocketchat-mongo, rocketchat, player, office,
+caddy, db-backup, plus SMM and feature-flag env). The demo overlay **requires**
+`JWT_SECRET` (`${JWT_SECRET:?}`) and sets production-shape env. Both files pin
+fixed `container_name` values (`predict_postgres`, `predict_gateway`, …), so only
+one stack can run on a box.
 
 ## CI/CD
 
-Three GitHub Actions workflows (`.github/workflows/`):
+Ten GitHub Actions workflows, all in the **repository-root** `.github/workflows/`
+(GitHub does not read the `apps/taptrade-platform/.github/workflows/` copies):
 
 | Workflow | Trigger | What it does |
 |---|---|---|
-| `deploy-demo.yml` | push to the live branch (guarded) | the deploy pipeline below |
-| `migrate-demo.yml` | manual (`workflow_dispatch`, goose command) | runs goose against the box DB in a throwaway golang container |
-| `test.yml` | push/PR (main + feat/binary-exchange-engine) | FE unit tests, Go `build`+`test -race`, cashier guard scripts, external-symlink guard |
+| `deploy-demo.yml` | push to `main` touching `apps/taptrade-platform/**`, or manual | the deploy pipeline below |
+| `migrate-demo.yml` | manual (`workflow_dispatch`, goose command) | runs goose against the box DB |
+| `demo-ops.yml` | manual | read-only box maintenance (catalog-sync diagnosis, gateway restart) |
+| `test.yml` | push/PR → `main` | external-symlink guard, cashier guard scripts, FE Biome + unit tests, Go `build` + `test -race` for platform/gateway/auth |
+| `e2e.yml` | PR → `main` (frontend/go-platform paths), or manual | Playwright journey suite against a freshly seeded stack |
+| `frontend-build.yml` | PR touching `frontend/**` | clean-clone install, typecheck, unit tests, production build |
+| `guard-conventions.yml` | PR → `main`, or manual | convention gate (G-01) |
+| `guard-db-migrations.yml` | push/PR → `main` | fresh-DB migration run (G-03) |
+| `guard-money-path.yml` | push/PR → `main` | money-path test gate (G-02) |
+| `guard-openapi-drift.yml` | push/PR → `main` | OpenAPI drift gate (G-04) |
+
+The four `guard-*` workflows are what block a PR; expect them on any change.
 
 ### deploy-demo pipeline (the validated manual flow, automated)
 
-1. **Guard branch** — only the designated live branch deploys.
-2. **Rsync** the app dir to the box (`rsync -az --delete`; the Postgres volume is
-   a named docker volume, so `--delete` can't touch DB data).
+1. **Guard branch** — `DEMO_DEPLOY_BRANCH_ALLOWLIST` is `main`; any other ref
+   aborts the run.
+2. **Rsync** `apps/taptrade-platform/` to `/opt/phoenix/` on the box
+   (`rsync -az --delete`; Postgres data and market thumbnails live on named docker
+   volumes, so `--delete` can't touch them). The box's compose project is pinned
+   to `phoenix` via `/opt/phoenix/.env`.
 3. **Patch Caddyfile** `basic_auth` hash on the box (the bcrypt hash never lives
    in source control — `${{ secrets.BACKOFFICE_BASIC_AUTH_HASH }}`).
 4. **Inject secrets** into the box `.env` for compose substitution:
    `OPENROUTER_API_KEY` (AI drafting/translation) and `EDGE_SHARED_SECRET`
    (anti-spoof edge auth — hard-fails if missing).
 5. **Build + recreate `auth`**, then health-check `:18081/healthz` (abort on fail).
-6. **Build `gateway`**, **apply migrations** (`run --rm migrate up`), **recreate
-   `gateway`**, health-check `:18080/healthz` (abort on fail — built first so a Go
-   failure aborts before any frontend is touched).
-7. Build + recreate the player and office frontends.
-8. Start Rocket.Chat; configure public read.
-9. **Recreate Caddy** (force-recreate to pick up new Caddyfile inode after rsync).
-10. **Firewall origin** — `cf-firewall.sh` restricts `:80/:443` to Cloudflare IP
+6. **Build `gateway`**, **apply migrations**, **recreate `gateway`**, health-check
+   `:18080/healthz` (abort on fail — built first so a Go failure aborts before any
+   frontend is touched).
+7. Build + recreate the player frontend, then health-check it and smoke the live
+   player routes. Catalog sync and market translation are **opt-in**
+   `workflow_dispatch` inputs (`sync_catalog`, `translate_markets`), default false.
+8. Build + recreate the office frontend.
+9. Start Rocket.Chat; configure public read; provision the global room.
+10. **Recreate Caddy** (force-recreate to pick up new Caddyfile inode after rsync).
+11. **Firewall origin** — `cf-firewall.sh` restricts `:80/:443` to Cloudflare IP
     ranges via iptables (re-runs every deploy to pick up new ranges).
 
-Migrations run via the compose `migrate` service (goose, idempotent). Apply them
-before recreating the gateway so the schema is always ahead of the binary.
+There is **no `migrate` compose service**. The gateway image ships `/app/migrate`
+and `/app/migrations/` alongside the gateway binary (see
+`go-platform/services/gateway/Dockerfile`), and migrations run through it:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+  run --rm --no-deps \
+    -e MIGRATIONS_DIR=/app/migrations \
+    -e MIGRATE_ALLOW_MISSING=true \
+    gateway ./migrate up
+```
+
+Goose is idempotent. Apply migrations before recreating the gateway so the schema
+is always ahead of the binary.
 
 ## Required production/staging configuration
 
@@ -69,20 +100,30 @@ when `ENVIRONMENT` ∈ {production, staging}. You MUST set:
 
 | Variable | Requirement |
 |---|---|
-| `PAYMENTS_WEBHOOK_SECRET` | non-default (not `whsec_local`) |
 | `GATEWAY_DB_DSN` / `WALLET_DB_DSN` | non-`localdev` credentials |
 | `GEO_GATE_ENABLED` | `true` (mandatory) |
 | `GEO_ALLOWED_COUNTRIES` | non-empty ISO-3166 allowlist (allowlist mode mandatory) |
 | `GEO_TRUSTED_PROXY_MODE` + `EDGE_SHARED_SECRET` | if require-mode is on, the secret is mandatory (anti-spoof, SEC-03) — set the same value on the Caddy container as `{$EDGE_SHARED_SECRET}` |
 | `KYC_ENFORCEMENT`, `KYC_REQUIRED_FOR_TRADING` | each `true` or explicitly `*_ACK_DISABLED=true` |
+| `PROVIDER_OPS_AUDIT_STORE_MODE` | must resolve to DB-backed (`db`, or unset with a valid `GATEWAY_DB_DSN`) — the JSON-file fallback cannot be the audit system of record (P3-06) |
 | `BETA_COMPLIANCE_MODE=permissive` | **invalid in production** (boot error); staging only with `COMPLIANCE_STARTUP_ACK=true` |
 | `GATEWAY_ALLOW_ADMIN_ANON` | refused in prod/staging |
+| `GATEWAY_AUTH_ENABLED=false` | refused in prod/staging |
+| `JWT_SECRET` | required by the demo overlay (`${JWT_SECRET:?}`) — set on **auth** only; the gateway delegates token validation to auth |
 
-If the **alpha cashier** is enabled (`ALPHA_CASHIER_ENABLED=true`) with withdrawals:
-`ALPHA_CASHIER_WITHDRAWAL_BROADCAST_ACK=true` and either
-`ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL=true` or
-`ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL_ACK_DISABLED=true` (A2-04). Full env reference
-is the commented block in `docker-compose.demo.yml` and `../../CLAUDE.md`.
+Refused outright in production/staging (each is a boot error):
+
+| Variable | Why |
+|---|---|
+| `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED=true` | launch must not expose deposit, withdrawal, cashier, crypto or provider-callback routes |
+| `ALPHA_CASHIER_ENABLED=true` | launch is points-only; there is no crypto cashier rail |
+| `CRYPTO_RPC_URL`, `CRYPTO_ASSET_CONTRACT`, `CRYPTO_DEPOSIT_ADDRESS_SOURCE` | legacy custodial rail is prototype-only and must not be configured |
+
+`PAYMENTS_WEBHOOK_SECRET` is validated (non-empty, not `whsec_local`) **only** when
+the legacy money routes are enabled — which is itself refused in prod/staging — so
+a points-only deployment does not need it to boot. The full env reference is the
+commented block in `docker-compose.demo.yml` and `../../CLAUDE.md`; the boot rules
+themselves live in `cmd/gateway/main.go: validateGatewayRuntimeConfig`.
 
 ## Network hardening (Cloudflare proxied mode)
 

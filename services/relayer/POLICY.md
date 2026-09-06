@@ -1,6 +1,13 @@
+> **Abandoned workstream — specification only.** `services/relayer/` is not a running
+> service and this document describes nothing that exists. The product moved to
+> non-redeemable points; the gateway's cashier, crypto and payment routes are
+> unmounted by default and refuse to boot in production or staging. See
+> `services/relayer/README.md` for why this tree is still in the repository, and
+> `docs/archive/cashier/` for the design record.
+
 # Relayer Policy
 
-**Status:** Draft.
+**Status:** SUPERSEDED 2026-09-06 — abandoned workstream (was: "Draft.").
 **Date:** 2026-05-25.
 
 The relayer is a constrained transaction submitter, not a general-purpose hot

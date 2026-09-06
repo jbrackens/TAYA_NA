@@ -1,7 +1,13 @@
 # STORE_AND_PAYMENTS — Point Store, Demo Checkout, and Stripe Readiness
 
-Status: **IMPLEMENTED & VERIFIED** (2026-07-12, branch
-`feat/store-and-perf-audit`). Backend live-smoked end to end (checkout →
+Status: **IMPLEMENTED & LIVE.** Landed 2026-07-12 (`7a7109d9`, `084e3d19`, `146041ea`)
+and merged to `main`; the branch `feat/store-and-perf-audit` no longer exists. Re-checked
+2026-09-06 against the tree at `f89b5a8b`: migration `051_store_point_packs.sql`,
+`internal/store/`, `internal/http/store_admin_handlers.go`, the player route
+`app/store/page.tsx` and the office page
+`app/(dashboard)/prediction-admin/store-packs/page.tsx` are all present, and the demo
+deploy still sets `STORE_ENABLED=true` / `STORE_PROVIDER=demo`.
+Backend live-smoked end to end (checkout →
 confirm → exactly-once ledger credits → replay no-ops → webhook signature
 enforcement); UI flows browser-verified with exact balance deltas; E2E
 journeys automated in Playwright (`tests/smoke/journeys-*`). Sections marked
