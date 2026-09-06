@@ -300,3 +300,48 @@ pending an explicit policy call. docs/taptrade-economy-rules.md gains the
 normative Unit Model section. Verified locally end-to-end: wire emits
 yesPricePoints=62; ticket shows 100 pts → 12 contracts → 96 pts cost → 1,200
 pts if correct.
+
+## 2026-09-06 — Project placed on hold; workspace cleaned for re-entry
+
+State at pause: `main` == `origin/main` == deployed HEAD f89b5a8b ("fix: use
+fictional prediction UI in reward hero"); its Aug 26 runs (Tests, G-02
+money-path guards, Deploy demo) all concluded success. Since the last entry
+above (2026-07-07), main took: the Point Store (2026-07-12), P5 bundle
+remediation (fea342f0 barrel hygiene + 2dae39ca lazy Sheet), the ink-&-lime
+pivot, the 1C "lime skin, terminal bones" design lock (2026-08-06 — DESIGN.md
+is the canonical record), the Caddy/Cloudflare edge-IP fix (d9861e56), Tap
+Path brand identity (83d92631) plus the purple/gold surface commits (21b2c9ea,
+7a8b7f56), and the trending-moments Predict rebuild (#78) with the reward hero
+(#79). KNOWN DOC DRIFT for re-entry: DESIGN.md does not yet document the
+purple/gold + Tap Path brand layer shipped Aug 22–26 — reconcile before the
+next visual pass.
+
+Cleanup executed today (each step verified by command output): ten superseded
+local branches deleted (nine merged by ancestry; feat/moments-predict-
+experience tree-diffed against main — the only delta was main's newer hero
+fix); merged origin/feat/tap-path-identity deleted; feat/predict-redesign-p10
+pushed to origin as an archive branch; the pam worktree removed (27 untracked
+legacy demo images discarded; history preserved on origin/pam/p0-modernization,
+local ref deleted); parent-folder era artifacts moved to ../_archive-2026-09/;
+CURRENT_STATE.md, spec.md, and FRONTEND_POLISH_PLAN.md archived into
+docs/archive/ with banners (code comments repointed); CLAUDE.md local-dev
+drift fixed (player dev on port 3010 — 3000 belongs to an unrelated project —
+and the alice@predict.dev fallback login documented).
+
+CAUTION — parallel session branch: during this cleanup an unrelated Claude
+cloud session pushed origin/claude/remote-control-ss6aj1 (commit ab11aad9,
+"docs(archive): establish docs/archive convention"). That commit RENAMES the
+live DESIGN.md into docs/archive/ — wrong per DESIGN.md's own supersession
+header and CLAUDE.md's pointer — and its README references archive
+subdirectories that don't exist. Left untouched for owner disposition. Do not
+merge as-is; delete once that session is confirmed stopped.
+
+Parked decisions (unchanged, owner calls): feat/hula-na-cashier merge
+(real-money rail vs the points-only launch boundary); fee policy — the
+implemented variance fee vs flat 1% (25×8¢ = 201 vs 202; see the 2026-07-07
+entry); the optional one-time JSONB cents-key rewrite in stored bonus
+rule-configs; CF origin firewall reboot persistence (fix applied 2026-07-28,
+persistence not yet authorized); rotate the Gemini/Google AI Studio key and
+revoke the HF token pasted into a July session transcript. Branches remaining:
+main, feat/hula-na-cashier, feat/predict-redesign-p10 (archive), plus
+origin/pam/p0-modernization (remote archive).

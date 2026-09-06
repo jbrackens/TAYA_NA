@@ -1,3 +1,7 @@
+> **ARCHIVED 2026-09-06.** Legacy master spec, untouched since the 2026-07-06
+> rebrand sweep. Superseded by CLAUDE.md, DESIGN.md, PRODUCT-USER-JOURNEYS.md,
+> and docs/. Historical reference only.
+
 # TapTrade Spec
 
 ## 1. Product Definition

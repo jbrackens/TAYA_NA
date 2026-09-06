@@ -19,7 +19,7 @@ Workspace root on this Mac: `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict
 Taya_Na_Predict/
 ├── apps/taptrade-platform/
 │   ├── frontend/packages/
-│   │   ├── app/                           ← Player app (Next.js 16 App Router, port 3000)
+│   │   ├── app/                           ← Player app (Next.js 16 App Router, local dev port 3010)
 │   │   ├── office/                        ← Admin backoffice (Next.js Pages Router, port 3001)
 │   │   └── api-client/                    ← Shared TS API client
 │   ├── go-platform/
@@ -276,9 +276,9 @@ AUTH_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable"
 AUTH_COOKIE_SECURE=false \
 go run ./cmd/auth
 
-# Player app (port 3000)
+# Player app (local dev port 3010 — 3000 is taken by an unrelated project)
 cd ../../../frontend/packages/app
-NEXT_PUBLIC_API_URL=http://localhost:18080 npm run dev
+NEXT_PUBLIC_API_URL=http://localhost:18080 npx next dev --webpack -p 3010
 
 # Backoffice (port 3001)
 cd ../office
@@ -289,7 +289,7 @@ npm run dev
 
 | Service | Port | Notes |
 |---------|------|-------|
-| Player app (Next.js) | 3000 | |
+| Player app (Next.js) | 3010 | 3000 is occupied by an unrelated local project; root `.claude/launch.json` pins 3010 |
 | Backoffice (Next.js) | 3001 | |
 | Go Gateway | 18080 | |
 | Go Auth Service | 18081 | |
@@ -299,6 +299,12 @@ npm run dev
 ### Test credentials
 
 **Active login:** `demo@taptrade.local` / `demo123`
+
+> **Local drift notes (observed 2026-07, unresolved at the 2026-09 hold):** if
+> `demo@taptrade.local` is rejected against your local DB, use
+> `alice@predict.dev` / `predict123`. Separately, the dockerized gateway image
+> can go stale (market buys return 400): rebuild it, or run the gateway from
+> source (`go run ./cmd/gateway`) when trading locally.
 
 The auth service (port 18081) auto-seeds `demo@taptrade.local` / `demo123` (player role) and `admin@taptrade.local` / `admin123` (admin role) into the `auth_users` table on startup. These are the only credentials the player app can log in with out of the box.
 

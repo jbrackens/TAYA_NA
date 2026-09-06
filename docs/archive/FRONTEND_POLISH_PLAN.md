@@ -1,3 +1,7 @@
+> **ARCHIVED 2026-09-06.** The P0–P5 polish program completed in July 2026
+> (P5 bundle remediation closed 2026-07-22). Kept for its gates and decision
+> record; a few code comments cite it by this path.
+
 # Frontend Polish Plan — from AI-slop to enterprise D2C
 
 **Date:** 2026-07-18 (revised same day after a 3-lens adversarial review — 25 findings incorporated)

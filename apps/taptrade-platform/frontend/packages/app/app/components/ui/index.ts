@@ -1,5 +1,5 @@
 /**
- * components/ui — the app's primitives layer (FRONTEND_POLISH_PLAN.md P1).
+ * components/ui — the app's primitives layer (docs/archive/FRONTEND_POLISH_PLAN.md P1).
  *
  * Rules of the layer:
  *  - styled EXCLUSIVELY with DESIGN.md tokens (no hex literals);

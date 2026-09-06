@@ -1,3 +1,8 @@
+> **ARCHIVED 2026-09-06.** Frozen record of the July 2026 TapTrade rebrand
+> loop (final state: iteration 8, GOAL MET; the cron it references is long
+> gone). Not current project state — for the state at the 2026-09 hold, read
+> the closing entry in WORKLOG.md at the repository root.
+
 # TapTrade Rebrand — CURRENT_STATE
 
 Loop iteration: 8 — GOAL MET; loop stopped. Branch ready for owner merge (25 commits). · Branch: chore/rebrand-taptrade
