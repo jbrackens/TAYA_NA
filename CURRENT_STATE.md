@@ -1,6 +1,7 @@
 # Current state — 2026-09-06
 
-Written against `main` at `f89b5a8b`. This file is deliberately short: it says what the
+Written against `main` at `f89b5a8b`, then reconciled with the 2026-09-06 hold commits
+(`6ae9ae78` … `aadab541`); the hold record is the last section. This file is deliberately short: it says what the
 product is, where the code lives, what landed last, and what is switched off. Anything
 that needs more detail than a sentence lives in `CLAUDE.md` or in the per-surface docs.
 
@@ -96,9 +97,8 @@ These are not unfinished work. They are boundaries the gateway enforces at boot
   delete the branch.
 - **`origin/pam/p0-modernization`** — 345 commits ahead of `main`, last commit
   2026-07-06 titled "final termination". A separate autonomous workstream that stopped.
-  Nothing on `main` depends on it.
-- **`origin/feat/tap-path-identity`** — zero commits ahead of `main`. Fully merged;
-  safe to delete.
+  Nothing on `main` depends on it; its local worktree and branch ref were removed on
+  2026-09-06, so the remote ref is the archive.
 - **`app/components/chat/ChatSidebar.tsx`** ships `MOCK_CHAT_MESSAGES` — fourteen
   hardcoded messages — behind `NEXT_PUBLIC_FEATURE_CHAT` (off). It is a stub sitting in
   production code, not a working feature.
@@ -106,6 +106,51 @@ These are not unfinished work. They are boundaries the gateway enforces at boot
   client-rendered SPA (109 files carry `"use client"`), so content-bearing routes hydrate
   a full client tree before their data paints. The July 2026 audit concluded this cannot
   be moved without incremental React Server Components adoption. Nobody has started that.
+
+## Project hold — 2026-09-06
+
+The project was paused on 2026-09-06 for a few weeks. The workspace was cleaned so
+re-entry starts from truth; this sweep (PR #80) is part of that cleanup.
+
+**State at pause.** `main` == `origin/main`, deployed through the hold commits
+(`71506d8d` is the last deploy; docs-only pushes do not trigger `deploy-demo.yml`).
+Tests and the money-path guard were green on every hold commit. Live smoke: `/`,
+`/predict/`, `/auth/register/` 200; `office.99rtp.io` 401 behind its basic-auth gate.
+
+**Cleanup executed** (each step verified by command output): ten superseded local
+branches deleted (nine merged by ancestry; `feat/moments-predict-experience` was
+tree-diffed against `main`, the only delta being main's newer hero fix); the merged
+`origin/feat/tap-path-identity` deleted; `feat/predict-redesign-p10` pushed to origin
+as an archive branch; the `pam-worktree` removed (history preserved on
+`origin/pam/p0-modernization`); the parent folder's era artifacts moved to
+`/Users/john/Sandbox/Taya_NA_Predict/_archive-2026-09/`; the July rebrand ledger
+(`WORKLOG.md`, `CURRENT_STATE.md`, `RENAME_MAP.md`) archived under
+`docs/archive/2026-07-rebrand/` — the hold entry that briefly lived in that WORKLOG is
+this section.
+
+**Deploy-guard incident, closed.** The first hold deploy tripped `deploy-demo.yml`'s
+disk guard: the box was 97% full from ~23GB of unrotated container json logs
+(`predict_gateway` 14G, `predict_rocketchat_mongo` 8.7G — docker's json-file driver has
+no default rotation). `demo-ops.yml` gained read-only `disk_report` and WRITE
+`disk_cleanup` dispatch jobs (truncation took the box to 34%), and every
+`docker-compose.demo.yml` service now carries a 50m×3 `logging:` cap. The cap applies
+per container on its next recreate; rocketchat/mongo, db-backup and caddy are not
+recreated by deploys, so they keep unbounded logs until a manual `docker compose up -d`
+on the box.
+
+**Local-dev drift to expect.** The player app runs on port 3010 (3000 is bound by an
+unrelated project on this Mac); if `demo@taptrade.local` is rejected locally, use
+`alice@predict.dev` / `predict123`; the dockerized gateway image can go stale (market
+buys return 400) — run it from source when trading locally.
+
+**Parked owner decisions** (unchanged; nothing here is blocked on code): whether to
+delete `feat/hula-na-cashier` (real-money rail vs the points-only boundary); the fee
+policy — the implemented variance fee vs a flat 1% (25×8 Points costs 201 vs 202; see
+the 2026-07-07 points entry in the archived WORKLOG); an optional one-time rewrite of
+cents-era keys inside stored bonus rule-config JSONB; CF origin-firewall reboot
+persistence (the 2026-07-28 fix is applied but not yet authorized to persist across
+reboots); and rotating the Gemini/Google AI Studio key plus revoking the Hugging Face
+token that were pasted into a July session transcript.
 
 ## Where to look next
 

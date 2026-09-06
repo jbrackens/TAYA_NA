@@ -24,7 +24,8 @@ to packages never built — are deleted outright rather than archived.
 | `2026-07-launch-prep/` | Launch-preparation records superseded by the points-only launch, including the Parity RC v1 spec and its loop log. |
 | `2026-07-parity-loop/` | The parity and prototype-audit loop logs. The loop stopped 2026-07-01; the trees it audited were deleted 2026-09-06. |
 | `cashier/` | The custodial and non-custodial cashier and crypto-rail workstream, abandoned when the product moved to non-redeemable points. |
-| `chat/` and `never-built/` | A Rocket.Chat integration that was specified but never built. |
+| `chat/` | Rocket.Chat launch records. The demo compose still runs a Rocket.Chat stack, but the player-side integration shipped only as a flag-gated stub (`ChatSidebar` with mock messages), so the runbook and evidence here never went live. |
+| `never-built/` | Specs for features that were never implemented (the prediction-markets filter-bar PRD). |
 | `demo-deployment/` | Manual demo-deploy plans from before deployment was automated in GitHub Actions. |
 | `sportsbook-era/` | Planning inherited from the Taya Na Sportsbook fork that assumes a sports-betting domain. |
 | `phoenix-original/` | The March 2026 founding Phoenix architecture documents, predating the prediction-market pivot. One is an AI build-plan for a sportsbook — read that directory's README first. |

@@ -37,7 +37,7 @@ against — the 1C "lime skin" system was superseded in code on 2026-08-22 by th
 purple + gold identity. Read the current `DESIGN.md`, not the token names quoted here.
 
 **Prereqs as written:** `docs/archive/2026-07-launch-prep/PERFORMANCE_AUDIT.md` (the
-baselines this plan measured against, now archived), [DESIGN.md](DESIGN.md).
+baselines this plan measured against, now archived), [DESIGN.md](../../DESIGN.md).
 
 The goal: eliminate the AI-slop signatures documented in the July 2026 audit — per-file pasted Tailwind class recipes (~40 files carry `*_CLASS` constants), no lint wall, hand-rolled commodity components, no visual regression net — and land the feel layer that separates a real D2C trading product from a demo. All tooling is open source; nothing here adds a paid service.
 

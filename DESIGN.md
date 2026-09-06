@@ -84,7 +84,7 @@ test.
 | `--ink-2` | `#43494d` | secondary text |
 | `--ink-3` | `#576066` | metadata, micro-labels, faintest tier |
 
-### 3.2 Brand — purple and gold (pinned)
+### 3.2 Brand — purple and gold (pinned unless noted)
 
 | CSS | Value | Role |
 |---|---|---|
@@ -94,8 +94,8 @@ test.
 | `--brand-lavender` | `#ece3f7` | soft branded surface (selection, pending, accent-soft) |
 | `--signal-gold` | `#f5c454` | live / reward / featured signal |
 | `--signal-gold-text` | `#885206` | gold as text on light surfaces |
-| `--signal-gold-soft` | `rgba(245, 196, 84, 0.18)` | soft gold wash |
-| `--on-brand` | `#ffffff` | text on purple fills |
+| `--signal-gold-soft` | `rgba(245, 196, 84, 0.18)` | soft gold wash — not asserted by the test |
+| `--on-brand` | `#ffffff` | text on purple fills — not asserted by the test |
 | `--on-gold` | `var(--brand-dark)` | text on gold fills |
 
 ### 3.3 Reward channel (scoped to the featured redemption hero)
@@ -167,14 +167,16 @@ or a filter:
 
 The lime action channel from the 1C system was not deleted; it was repointed at
 purple so unmigrated call sites kept rendering. Every one of these now resolves
-to something with no lime in it, and none of them has a single consumer left in
-`app/`:
+to something with no lime in it. Five of the six have no consumer left in
+`app/`; `--ink-on-lime` has exactly one — the hold-to-place progress fill on
+the trade CTA (`TradeTicket.tsx:1308`) — and should be repointed to `--on-brand`
+the next time that file is touched:
 
 | Alias | Now resolves to | Consumers in `app/` |
 |---|---|---|
 | `--lime` | `var(--brand-purple)` | 0 |
 | `--lime-text` | `var(--brand-purple)` | 0 |
-| `--ink-on-lime` | `var(--on-brand)` | 0 |
+| `--ink-on-lime` | `var(--on-brand)` | 1 (`TradeTicket.tsx:1308`) |
 | `--lime-wash` | `var(--brand-lavender)` | 0 |
 | `--lime-tint` | `var(--brand-lavender)` | 0 |
 | `--inset` | `var(--raised)` | 0 |
@@ -333,23 +335,37 @@ disabled is always the inert recipe; one icon family; icons are never emoji.
   lives.
 - The market-head chart panel splits `minmax(280px,0.82fr) / minmax(420px,1.25fr)`
   and stacks at ≤1180px.
-- **Mobile tab bar** (`MobileTabBar`) is fixed to the bottom with
+- **Mobile tab bar** (`MobileTabBar`, shown below 900px per D12) is fixed to the bottom with
   `env(safe-area-inset-bottom)` padding; touch targets are ≥44px on mobile
   surfaces.
-- The chart's y-domain auto-scales to the series range; missing history renders
-  an honest empty state.
+- The chart's y-domain is **pinned to 0–100** (`MarketChartCanvas.tsx:118-142`),
+  never auto-scaled, so the mirrored YES/NO series always cross at exactly 50;
+  missing history renders an honest empty state.
 
 ## 9. Motion
 
-Motion is data-driven or feedback — never decorative. Every animation fires on a
-real event (a `market:{id}` WebSocket message, a user action) and settles; idle
-surfaces hold still.
+Market-data motion is data-driven or feedback — never decorative. The price
+ticks and the LIVE dot fire on a real event (a `market:{id}` WebSocket message,
+a user action) and settle; idle market surfaces hold still. That doctrine is
+scoped to market surfaces: `globals.css` also ships six `infinite` loops that
+are loaders or attention cues, not data — listed below so nobody mistakes the
+rule for a global fact.
 
 - `price-tick-up` / `price-tick-down`: 900ms ease-out, fading from `--yes-soft`
   / `--no-soft` to transparent. Direction speaks through the soft signal tokens;
   the wash never carries text-contrast duty.
-- A `@media (prefers-reduced-motion: reduce)` block in `globals.css` collapses
-  motion globally. Any new animation must survive that block.
+- `live-dot-beat` (`globals.css:404`, applied by `MarketHead.tsx`): one 600ms
+  scale beat, fired once per real price/volume change and never on a timer. It
+  is the reference implementation of the doctrine.
+- Entrance motion — `landing-rise`, `landing-fade`, `card-in` — runs once on
+  mount (`both` fill) and settles.
+- Looping (`infinite`) animations, all loaders or attention cues:
+  `predict-pulse` (the legacy `.live-dot` pulse), `shimmer` / `shimmerCard`
+  (skeletons), `pulseLogo`, and the `tap-dot` / `tap-dot-ring` loader pair.
+  None of them may be attached to market data; the `.live-dot` loop is the one
+  that contradicts the doctrine and is the first candidate for removal.
+- Two `@media (prefers-reduced-motion: reduce)` blocks in `globals.css` collapse
+  motion. Any new animation must survive them.
 
 ## 10. Accessibility
 
@@ -407,8 +423,9 @@ The primitives (`--ink`, `--paper`, `--brand-purple`, `--signal-gold`, …) are
 referenced directly in the low tens, mostly on prediction surfaces.
 
 **Dead vocabulary.** `--lime`, `--lime-text`, `--lime-wash`, `--lime-tint`,
-`--ink-on-lime`, `--inset` and the whole `--space-*` scale have zero consumers.
-They stay defined only so nothing breaks; they are not a migration target.
+`--inset` and the whole `--space-*` scale have zero consumers; `--ink-on-lime`
+has exactly one (`TradeTicket.tsx:1308`, see §3.6). They stay defined only so
+nothing breaks; they are not a migration target.
 
 **There is no rename migration in progress.** A previous version of this
 document instructed every agent to rename `--t1` → `--ink` and `--r-rh-md` →
@@ -466,5 +483,10 @@ section, but these still need a sweep in the files themselves:
   "glass-med" / "Liquid Glass", both long retired.
 - `components/prediction/FeaturedCarousel.tsx:9` — cites a "Hero owns the page"
   rule that no longer exists.
-- `globals.css` and `public/static/locales/en/prediction.json` still contain a few `¢` / `c`
-  price glyphs; prices are Points.
+- The `¢` price glyph is still rendered as user-visible price text in 27
+  player-app components (68 occurrences — `MarketHead.tsx`, `MarketFeed.tsx`,
+  `OrderBook.tsx`, `RecentTrades.tsx`, the chart axis, …) as well as
+  `globals.css` and `public/static/locales/en/prediction.json`; prices are
+  Points, so this is a product-copy sweep, not a two-file fix.
+- `globals.css:1425` cited `DESIGN.md §9` for accessibility; §9 is now Motion
+  and accessibility is §10. Corrected in the same change that landed this file.

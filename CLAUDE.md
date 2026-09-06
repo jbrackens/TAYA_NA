@@ -95,7 +95,7 @@ branch. Do not include unrelated untracked files without explicit user approval.
 
 1. **Never give placeholder paths.** Use real, full paths. The workspace is `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/` — not `~/...` or `your-project/...`.
 2. **Never reintroduce sportsbook concepts.** No new code referencing `fixtures`, `selections`, `betslip`, `sport_key`, `punter_bets`, `freebets`, `odds_boosts`, `match_tracker`. This is a prediction market — markets have `yesPricePoints`/`noPricePoints`, not odds; users have positions, not bets.
-3. **Never reintroduce `*Cents` / `*_cents` names in the prediction economy.** Migration 050 renamed them to `*_points`; `app/__tests__/qa-regressions-2026-04-18.test.ts` fails the build if `yesPriceCents` / `noPriceCents` and friends reappear on the wire types.
+3. **Never reintroduce `*Cents` / `*_cents` names in the prediction economy.** Migration 050 renamed them to `*_points`; `app/__tests__/qa-regressions-2026-04-18.test.ts` fails CI if `yesPriceCents` / `noPriceCents` and friends reappear on the wire types.
 4. **Never use `@taptrade-ui/design-system` imports in `app/`** — it uses styled-components and causes webpack hangs. Use inline components or Tailwind.
 5. **Never introduce `console.log/warn/error` in production code.** Use the structured `logger` from `app/lib/logger.ts`.
 6. **Never use `any` type.** Use `unknown`, proper interfaces, or `Record<string, unknown>`.
@@ -118,7 +118,7 @@ The platform launches on non-redeemable Points. There is no cash-out.
 - `ALPHA_CASHIER_ENABLED=true` is likewise a boot error in production/staging, and outside those envs it additionally requires the legacy flag.
 - `CRYPTO_RPC_URL`, `CRYPTO_ASSET_CONTRACT` and `CRYPTO_DEPOSIT_ADDRESS_SOURCE` **must be unset**: in production/staging any non-empty value refuses boot (`cmd/gateway/main.go`, `validateGatewayRuntimeConfig`). They are not activation knobs.
 - `internal/payments/crypto_rail.go`, `internal/cashier/`, `internal/alphacashier/`, plus the root-level `contracts/`, `packages/cashier-sdk/` and `services/{cashier-api,bridge-watcher,relayer}` are the **dormant real-money workstream**. They are validated by `make cashier-check` and are not deployed. Do not treat them as live seams, and do not delete them without asking.
-- `internal/http/launch_docs_test.go` `TestLaunchDocsStayPointsOnly` fails the build if the gateway `README.md`, `Makefile` or `api/openapi.yaml` reintroduce cashier/deposit/withdraw/crypto/USD/dollar vocabulary.
+- `internal/http/launch_docs_test.go` `TestLaunchDocsStayPointsOnly` fails CI if the gateway `README.md`, `Makefile` or `api/openapi.yaml` reintroduce cashier/deposit/withdraw/crypto/USD/dollar vocabulary.
 - The play-money faucet is `STARTER_GRANT_CENTS` (the env name still says CENTS; the value is Points). 0 or unset disables it.
 - The point store (`internal/store`, migration 051, `/api/v1/store/*`) is the sanctioned way Points enter a wallet, gated by `STORE_ENABLED`.
 
@@ -177,7 +177,7 @@ The app ships 40 routes under `app/`. The ones that matter:
 - **UI:** Ant Design `^5.29.3` with `@ant-design/nextjs-registry` and `@ant-design/v5-patch-for-react-19`. No styled-components. AntD v5 is CSS-in-JS: there is no `antd/dist/antd.css` to import. The stylesheet stack is `styles/p8-tokens.css` → `styles/p8-antd.css` (AntD class overrides), plus the runtime theme in `app/lib/antd-config-provider.tsx`.
 - **Tokens:** `styles/p8-tokens.css` declares `--bg-deep` / `--surface-1/2` / `--border-1/2` / `--t1..4` / `--yes-text` / `--no-text` / `--focus-ring` / `--accent[*]` / `--r-rh-*`. These are the legacy P8-named tokens (values P9-swapped 2026-07-07); office has not yet been swept onto the player app's Tap Path values. New styling work MUST reference these CSS custom properties — DO NOT introduce hex literals.
 - **API:** `app/lib/admin-fetch.ts` for the App Router pages; the older containers use the shared `useApi` hook via `services/api/api-service`
-- **Auth:** the `(dashboard)` App Router pages are **not** wrapped in `securedPage` — the gateway is the authorization boundary (`requireAdminRole` + `requireRBACPermission`). The sidebar filters entries from `GET /api/v1/admin/me` as a UX hint only, and fails open. `securedPage` / `PunterRoleEnum` still exist in `utils/auth.ts` and are used by the legacy `containers/terms-and-conditions` page.
+- **Auth:** the `(dashboard)` App Router pages are **not** wrapped in `securedPage` — the gateway is the authorization boundary (`requireAdminRole` + `requireRBACPermission`). The sidebar filters entries from `GET /api/v1/admin/me` as a UX hint only, and fails open. `securedPage` still lives in `utils/auth.ts` and is used by the legacy `containers/terms-and-conditions` page; `PunterRoleEnum` is imported from `@taptrade-ui/utils`.
 
 ### Admin routes
 
@@ -610,3 +610,4 @@ repo ships no `.claude/skills/`):
 - Design system, brand → invoke design-consultation
 - Visual audit, design polish → invoke design-review
 - Architecture review → invoke plan-eng-review
+- Code quality, health check → invoke health

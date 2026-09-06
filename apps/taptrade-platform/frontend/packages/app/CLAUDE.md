@@ -75,7 +75,7 @@ These patterns are gate failures. Do not introduce them:
 ## Dev Server
 
 ```bash
-yarn dev   # next dev --webpack, port 3000
+npx next dev --webpack -p 3010   # 3000 is taken by an unrelated project on this Mac; root .claude/launch.json pins 3010
 ```
 
 Point it at the local backend with `NEXT_PUBLIC_API_URL=http://localhost:18080`.
