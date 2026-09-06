@@ -4,7 +4,12 @@
 # docs/hero-ambient-video.md. Requires: GEMINI_API_KEY env, curl, python3,
 # ffmpeg. Veo has NO free-tier quota — the key's project needs billing.
 #
-#   GEMINI_API_KEY=... ./scripts/hero-ambient-generate.sh [outdir] [model]
+#   GEMINI_API_KEY=$(secret GEMINI_API_KEY) ./scripts/hero-ambient-generate.sh [outdir] [model]
+#
+# Reference the key BY NAME, never paste the literal — a pasted key lands in
+# shell history and in any transcript where the command is shared. Store it with
+#   security add-generic-password -a "$USER" -s GEMINI_API_KEY -w   (prompts, no echo)
+# See docs/hero-ambient-video.md.
 #
 # model defaults to veo-3.1-fast-generate-preview (good quality/cost for
 # footage that lands at 26% opacity under a scrim). Note: the -lite tier

@@ -41,14 +41,28 @@ the drawn hero is also the no-JS / a11y / slow-connection fallback.
 ## One-command generation (Veo / Gemini API)
 
 ```sh
-GEMINI_API_KEY=... ./scripts/hero-ambient-generate.sh
+GEMINI_API_KEY=$(secret GEMINI_API_KEY) ./scripts/hero-ambient-generate.sh
 ```
+
+Store the key once in the macOS Keychain — the `-w` flag with no value prompts
+for it, so it never appears on a command line or in shell history:
+
+```sh
+security add-generic-password -a "$USER" -s GEMINI_API_KEY -w
+```
+
+`secret` is a one-line helper in `~/.zshrc`:
+`secret() { security find-generic-password -a "$USER" -s "$1" -w; }`.
+Any equivalent works (1Password's `op read`, a git-ignored `.env`) — the rule is
+that the key is referenced **by name**, never pasted as a literal. A pasted key
+lands in shell history and in any transcript where the command is shared.
 
 Launches the three scene candidates below on `veo-3.1-fast-generate-preview`,
 polls, downloads, and emits frame contact sheets for the QA gate. Veo has **no
 free-tier quota** — the key's Google Cloud project must have billing enabled
 (immediate 429 RESOURCE_EXHAUSTED on `predictLongRunning` while text models work
-= free tier). Never commit the key.
+= free tier). Never commit the key, never paste it into a command line, and never paste it
+into a chat or issue — reference it by name as above.
 
 ## Generation brief (Veo 3.1 / Seedance 2.0 / Kling 2.x)
 
