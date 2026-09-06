@@ -1,42 +1,80 @@
-# Next.js React Isomorphic App - `@taptrade-ui/app`
+# Player app — `@taptrade-ui/app`
+
+The TapTrade player app: a prediction market where users trade binary YES/NO
+contracts priced in Points (1–99, YES + NO = 100). Next.js 16 App Router; the
+route tree lives in `app/`.
 
 ## Configuration
 
-To be able to develop locally with different configuration you've to set special
-file `.env.local` which by default is ignored while commit because of
-[next.js recommendations](https://nextjs.org/docs/basic-features/environment-variables#default-environment-variables)
-
-### Example .env.local file
+Local overrides go in `.env.local`, which is git-ignored per
+[Next.js convention](https://nextjs.org/docs/basic-features/environment-variables#default-environment-variables).
 
 ```
-ENV_NAME=development
-API_GLOBAL_ENDPOINT=http://localhost:3010
-WS_GLOBAL_ENDPOINT=ws://localhost:3010
+NEXT_PUBLIC_API_URL=http://localhost:18080
+NEXT_PUBLIC_AUTH_URL=http://localhost:18081
+NEXT_PUBLIC_WS_URL=ws://localhost:18080/ws
 ```
+
+Feature flags default off and are read in `app/lib/features.ts`:
+`NEXT_PUBLIC_FEATURE_RG`, `NEXT_PUBLIC_FEATURE_KYC`,
+`NEXT_PUBLIC_FEATURE_LIMITS`, `NEXT_PUBLIC_FEATURE_CHAT`,
+`NEXT_PUBLIC_FEATURE_LIVE_MARKETS`, `NEXT_PUBLIC_FEATURE_SOCIAL_AUTH`.
+
+Install from the yarn workspace root (`frontend/`), not from this package.
 
 ## Scripts
 
-### Development
+- `dev` — `next dev --webpack` on port 3000
+- `run-local:dev` — the same dev server plus the translation watcher
+- `build` — `next build --webpack`, then the upstream-leak check
+- `test` — `tsx --test --test-reporter=tap app/__tests__/*.test.ts` (no
+  coverage)
+- `test:smoke` — Playwright smoke suite
+- `typecheck` — scoped `tsc`; `typecheck:full` runs `tsc --noEmit` over
+  everything
 
-- `run-local:dev` - runs development server with hot reload
-- `test` - runs tests suites with `--coverage` option
+`./gate.sh` runs the nine quality gates and must exit 0 before a change is
+called done. See `CLAUDE.md` in this package.
 
-## Current Product Surfaces
+## Product surfaces
 
-The player app includes sportsbook-native loyalty, leaderboards, analytics, and
-rewards:
+Prediction market:
 
-- `/account` shows rewards balance, tier progress, recent ledger activity,
-  competition snapshot, betting heatmap, and links to the Rewards Center
-- `/rewards` is a standalone 9-section Rewards Center with tier ladder, referral
-  program, full ledger history, heatmap, and competition standings
-- `/bets` shows `points earned` callouts on settled bets and a "Share this win"
-  button on winning bets (generates branded PNG)
-- `/bets/analytics` is a bet analytics dashboard with ROI over time, win rate
-  charts, cumulative P&L, stake distribution, and 5 summary stat cards
-- `/leaderboards` and `/leaderboards/[id]` expose live competition boards with
-  personalized rank, window dates, and prize info
-- Betslip shows estimated rewards points preview alongside the potential return
+- `/predict` — discovery: featured, trending, closing soon, recent
+- `/market/[ticker]` — market detail, price chart, order book, trade ticket
+- `/category/[slug]` — markets filtered by category
+- `/series/[slug]`, `/event/[id]` — the taxonomy above a market
+- `/portfolio` — open positions, orders, history, accuracy
+- `/discover`, `/book`, `/floor`, `/live`, `/standing`, `/activity`
+
+Account and social:
+
+- `/account` — prediction-native profile hub: identity, points balance,
+  portfolio summary, and links out to profile, points, security, alerts and
+  responsible-play settings
+- `/rewards` — loyalty standing, tiers, ledger, missions, streaks, point packs
+- `/leaderboards` and `/leaderboards/[id]` — accuracy boards
+- `/store` — point packs
+- `/profile`, `/users/[userId]`, `/auth`, `/responsible-gaming`
+
+There is no betslip and no `/bets` route; this is not a sportsbook. Prices are
+Points, not odds and not cents.
+
+## Real-time
+
+`app/lib/websocket/predict-ws.ts` holds one WebSocket to the gateway and
+multiplexes channel subscriptions. Channels in use by this app: `market:<id>`,
+`orderbook:<id>`, `portfolio:<userId>`, `loyalty:<userId>`. The full channel
+list and payload shapes are documented in
+`go-platform/services/gateway/internal/ws/README.md`.
+
+## API clients
+
+One client per domain under `app/lib/api/` — auth, wallet, user, compliance,
+content, discover, bonus, loyalty, leaderboards, notifications, privacy, store,
+chat, live-markets, market-social, market-watchlist — over the shared
+`client.ts`. The prediction endpoints themselves come from
+`@taptrade-ui/api-client`.
 
 ### Other scripts
 

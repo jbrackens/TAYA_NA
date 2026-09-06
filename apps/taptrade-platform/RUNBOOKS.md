@@ -1,9 +1,9 @@
 # Taya NA Predict — Operational Runbooks
 
-> Prediction-market operations. The previous sportsbook runbook (fixture
-> settlement, betslip recovery, freebets) documented tables that do not exist in
-> the prediction schema and was archived under
-> `archive/dead-2026-06/docs-sportsbook/` in P2-04.
+> Prediction-market operations. The previous sportsbook runbook documented tables
+> that no longer exist — migration `033_drop_dead_sportsbook_tables.sql` dropped
+> them — and was retired in the P2-04 cleanup; it survives only in git history
+> (commit `3ec79f0a`).
 
 Conventions: gateway `:18080`, auth `:18081`, Postgres `:5434` (local). On the
 box, prefix DB commands with the compose exec, e.g.

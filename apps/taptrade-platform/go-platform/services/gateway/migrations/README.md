@@ -1,138 +1,101 @@
-# TapTrade Gateway Migrations
+# Gateway migrations
 
-This directory contains database migrations for the Go gateway service using [Goose](https://github.com/pressly/goose). The early files still include sportsbook-era tables because the gateway was migrated in place; prediction-market tables start at `014_prediction_schema.sql`.
+Goose SQL migrations for the Go gateway, run by `services/gateway/cmd/migrate`.
 
-From the TapTrade-Predict-Combined root, validate these migrations against a clean Postgres container with:
+The gateway was migrated in place from the sportsbook fork, so the numbering
+starts in the old domain: **001–013 are sportsbook-era**, the prediction-market
+schema begins at `014_prediction_schema.sql`, and the directory currently runs
+through `056_backfill_exchange_open_interest.sql`.
+
+`033_drop_dead_sportsbook_tables.sql` drops eleven of those early tables —
+`freebets`, `bet_legs`, `odds_boosts`, `bets`, `incidents`, `match_timelines`,
+`selections`, `markets`, `fixtures`, `tournaments`, `sports`. Do not treat
+001–013 as a description of the live schema; read the current DDL from 014
+onward, or from the database itself.
+
+Migrations are the schema source of truth — there is no separate schema dump in
+this repo. A few worth knowing about:
+
+| Migration | What it does |
+|---|---|
+| `014_prediction_schema.sql` | Categories, series, events, markets, orders, positions, trades, settlement |
+| `019_prediction_exchange_engine.sql` | Order-book matching: exchange-mode columns, book indexes, collateral ledger |
+| `027_rbac_admin.sql` | Back-office staff directory, roles, permissions |
+| `037_multitenancy_foundation.sql` | Tenant scoping |
+| `050_points_unit_model.sql` | Renames every live `*_cents` column to `*_points` (rename only — no stored value is changed) |
+
+## Running migrations
+
+`cmd/migrate` reads three environment variables:
+
+| Variable | Required | Default |
+|---|---|---|
+| `GATEWAY_DB_DSN` | yes | — |
+| `GATEWAY_DB_DRIVER` | no | `postgres` |
+| `MIGRATIONS_DIR` | no | resolved relative to the binary |
+
+Against the local Postgres from `apps/taptrade-platform/docker-compose.yml`
+(database `predict`, user `predict`, host port **5434**):
+
+```bash
+cd apps/taptrade-platform/go-platform/services/gateway
+export GATEWAY_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable"
+export MIGRATIONS_DIR="$(pwd)/migrations"
+
+go run ./cmd/migrate up        # apply all pending
+go run ./cmd/migrate status    # show applied/pending
+go run ./cmd/migrate version   # current schema version
+go run ./cmd/migrate down      # roll back one
+go run ./cmd/migrate create add_something   # scaffold a new migration
+```
+
+`reset` (roll back everything) and `fix` are also accepted.
+
+Setting `MIGRATE_ALLOW_MISSING=true` makes `up` apply out-of-order migrations.
+That exists for the demo deploy, where a feature branch can add a lower-numbered
+migration after a higher-numbered one has already been applied. Leave it unset
+locally so ordering problems surface.
+
+## Adding a migration
+
+Add a new numbered file. Do not edit a migration that has already shipped —
+`014_prediction_schema.sql` in particular is applied everywhere and must not
+change. Prices, balances and volumes are stored in **Points** (`*_points`
+columns, `BIGINT`); the product is points-only and non-redeemable, so nothing new
+should introduce a `*_cents` column.
+
+## Validation gate
+
+From `apps/taptrade-platform/`:
 
 ```bash
 make validate-go-migrations
 ```
 
-That is the release gate for this directory. The legacy root target `make validate-migrations` validates the old Scala/Flyway backend and is not sufficient for the Go gateway schema.
+That runs `scripts/data/validate-go-gateway-migrations.sh`, which starts a
+throwaway `postgres:16-alpine` container on a free high port, applies this
+directory from empty, and writes a log under `revival/artifacts/` plus a report
+at `revival/GO_GATEWAY_DB_MIGRATION_VALIDATION.md`. It needs Docker. This is the
+release gate for this directory; the root `make validate-migrations` target
+covers the legacy JVM backend and does not check these files.
 
-## Migration Files
+## Seeding
 
-- `001_punters.sql` - Users/punters table with authentication fields
-- `002_sports_tournaments.sql` - Legacy sports and tournaments reference data
-- `003_fixtures.sql` - Sports fixtures/matches
-- `004_markets_selections.sql` - Betting markets and selections
-- `005_bets.sql` - User bets and their status
-- `006_wallets_ledger.sql` - User wallets and transaction ledger
-- `007_freebets_oddsboosts.sql` - Free bets and odds boost promotions
-- `008_match_timelines.sql` - Match timelines and incidents (goals, cards, etc)
-- `009_audit_logs.sql` - Audit logging with JSONB details
-- `010_indexes.sql` - Performance indexes and partial indexes
-- `030_alpha_cashier.sql` - Closed Alpha custodial USDC cashier tables for wallet connections, deposit intents, withdrawals, chain evidence, reconciliation, and audit events
-
-## Running Migrations
-
-### Prerequisites
-
-Set the database connection environment variable:
+There is no `seed.sql` in this directory. Seed data is loaded by
+`services/gateway/cmd/seed`, which applies `seed-data/seed_prediction.sql` and
+then optional demo phases:
 
 ```bash
-export GATEWAY_DB_DSN="postgres://user:password@localhost:5432/sportsbook"
+cd apps/taptrade-platform/go-platform/services/gateway
+GATEWAY_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable" \
+  go run ./cmd/seed              # -mode base (default): taxonomy, markets, users, wallets
 ```
 
-Optionally override the driver (defaults to postgres):
+`-mode demo` layers on clickable demo state, and `-mode wipe` removes only the
+rows the demo phases wrote. `services/gateway/Makefile` wraps all three as
+`make seed`, `make demo-data` and `make wipe-demo`. `GATEWAY_DB_DSN` is the only
+variable the seeder needs — it builds the wallet service on that same DSN.
 
-```bash
-export GATEWAY_DB_DRIVER="postgres"
-```
-
-### Commands
-
-Build the migration tool:
-
-```bash
-cd services/gateway
-go build -o bin/migrate ./cmd/migrate
-```
-
-Apply all pending migrations:
-
-```bash
-./bin/migrate up
-```
-
-Check migration status:
-
-```bash
-./bin/migrate status
-```
-
-Rollback one migration:
-
-```bash
-./bin/migrate down
-```
-
-Reset to a specific version:
-
-```bash
-./bin/migrate reset
-```
-
-Create a new migration:
-
-```bash
-./bin/migrate create add_column_to_table
-```
-
-## Database Schema
-
-### Core Tables
-
-- **punters**: User accounts with authentication
-- **sports**: Sport types (football, basketball, tennis)
-- **tournaments**: League/tournament definitions
-- **fixtures**: Individual matches/games
-
-### Betting Tables
-
-- **markets**: Betting markets for fixtures
-- **selections**: Individual bets within markets (outcome options)
-- **bets**: Placed bets by users
-- **odds_boosts**: Promotional odds enhancements
-
-### Financial Tables
-
-- **wallets**: User account balances
-- **ledger_entries**: Transaction audit trail
-- **freebets**: Promotional free bet allocations
-
-### Match Data Tables
-
-- **match_timelines**: Match progress tracking
-- **incidents**: Events during matches (goals, cards)
-
-### Audit Tables
-
-- **audit_logs**: User action audit trail with JSONB details
-
-## Development
-
-Load seed data into a development database:
-
-```bash
-psql -U user -d sportsbook -f migrations/seed.sql
-```
-
-The seed data includes:
-- 3 sample sports and tournaments
-- 5 sample fixtures (scheduled, in-progress, completed)
-- 10 sample markets with 20 selections
-- 3 sample users with wallets
-- 5 sample bets with various statuses
-- Ledger entries showing transaction history
-- Free bets and odds boosts
-
-## Notes
-
-- All tables use TEXT primary keys (UUID strings)
-- Timestamps use TIMESTAMP WITH TIME ZONE for UTC consistency
-- Foreign key constraints use ON DELETE CASCADE where appropriate
-- Amounts are stored in cents (BIGINT) for currency precision
-- JSONB is used for audit log details to support flexible logging
-- Indexes include partial indexes for common queries (pending bets, open markets, etc)
-- The migrations are idempotent using PostgreSQL's ON CONFLICT clauses in seed data
+Note that the same Makefile's `createdb` / `dev-setup` targets still create a
+database named `taptrade_predict` on port 5432. That is not the stack described
+above; use the `predict` database on 5434 from `docker-compose.yml`.

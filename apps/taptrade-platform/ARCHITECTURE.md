@@ -1,13 +1,23 @@
 # Taya NA Predict — Platform Architecture
 
-Prediction-market platform: binary YES/NO contracts priced 0–100¢ (price = implied
-probability), winners pay 100¢/contract at settlement. Forked from a sportsbook
-codebase on 2026-04-16 and transformed to the prediction domain; the shared
-infrastructure (auth, wallet/ledger, WebSocket hub, CSRF) was kept.
+Prediction-market platform: binary YES/NO contracts priced 1–99 Points (price =
+implied probability, `yes + no = 100`), winners pay 100 Points/contract at
+settlement. Forked from a sportsbook codebase on 2026-04-16 and transformed to
+the prediction domain; the shared infrastructure (auth, wallet/ledger, WebSocket
+hub, CSRF) was kept.
+
+The platform is **points-only and non-redeemable**. Migration `050_points_unit_model.sql`
+renamed every active `*_cents` column to `*_points` (a rename only — no stored
+value changed), and `GET /api/v1/status` reports `pointMode: non_redeemable_points`.
+The legacy money-route tree (deposits, withdrawals, payment webhooks, crypto, the
+alpha custodial cashier) is **not mounted by default** — those paths return 404 —
+and `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED=true` is refused at boot when
+`ENVIRONMENT` is `production` or `staging`.
 
 > This document describes the system **as it actually runs**. The previous
 > sportsbook-era ARCHITECTURE.md (and a fictional Kubernetes/Prometheus/ELK
-> topology) was archived under `archive/dead-2026-06/docs-sportsbook/` in P2-04.
+> topology) was retired in the P2-04 / ARCH-01 cleanup; those trees were deleted
+> from the working tree and survive only in git history (commit `3ec79f0a`).
 > The real deployment is a single Hetzner box running docker-compose behind
 > Caddy — see [DEPLOYMENT.md](DEPLOYMENT.md).
 
@@ -20,7 +30,7 @@ infrastructure (auth, wallet/ledger, WebSocket hub, CSRF) was kept.
 | API gateway | `go-platform/services/gateway` | Go 1.25, stdlib `net/http` + `httpx` middleware, `lib/pq` | 18080 |
 | Auth service | `go-platform/services/auth` | Go, opaque bearer tokens (SHA-256 digests), bcrypt | 18081 |
 | PostgreSQL 16 | docker-compose `postgres` | goose migrations | 5434 (host) |
-| Redis | docker-compose `redis` | auth sessions + rate limiting only | 6380 (host) |
+| Redis | docker-compose `redis` | auth sessions + auth rate limiting; optional cross-instance WS backbone | 6380 (host) |
 
 ## Request topology
 
@@ -34,12 +44,11 @@ infrastructure (auth, wallet/ledger, WebSocket hub, CSRF) was kept.
    ┌────────────────────────────────────────────────────────────┐
    │ Gateway (:18080)  — httpx middleware chain:                 │
    │   Recovery → Metrics → AccessLog → CSRF → Auth → RequestID  │
-   │   internal/prediction   CLOB exchange engine + legacy AMM   │
-   │   internal/wallet       cents ledger (idempotent, FOR UPDATE)│
-   │   internal/alphacashier custodial USDC rail (default OFF)   │
+   │   internal/prediction   CLOB exchange engine                │
+   │   internal/wallet       points ledger (idempotent, FOR UPDATE)│
    │   internal/compliance   geo gate + KYC + responsible-trading │
    │   internal/rbac         staff RBAC                          │
-   │   internal/ws           in-process hub (per-instance)       │
+   │   internal/ws           hub + cross-instance backbone       │
    └───────┬───────────────────────────────────┬────────────────┘
            │ validates session cookie           │ reads/writes
            ▼                                     ▼
@@ -59,23 +68,27 @@ in `internal/http/prediction_wallet_adapter.go`.
 3. Compliance gate (geo/KYC) — applied at the HTTP layer on both the session
    route and the bot route (`internal/http/pretrade_gate.go`).
 4. Branch on `execution_mode`:
-   - **`order_book`** (default, all new markets): `placeExchangeOrder` →
+   - **`order_book`** (every market): `placeExchangeOrder` →
      `ExchangeEngine.BuildPlan` (price-time priority, complementary issuance,
      self-match prevention, partial fills) → `PersistMatchAtomic`. Matching is
      serialized per market by `pg_advisory_xact_lock(hashtext(market_id))`; maker
      fill state is re-asserted under the lock with a guarded UPDATE and a bounded
      replan on contention (COR-02 fix).
-   - **`amm`** (legacy, pre-019 markets only): LMSR pricing in `amm.go`.
-     Slated for retirement (P2-09).
+   - **`amm`** — **retired** (P2-09). Market creation only ever produces
+     `order_book`; a pre-019 market still carrying `execution_mode='amm'` has new
+     orders rejected outright ("uses the retired AMM engine and is no longer
+     tradeable"). `amm.go` (LMSR) remains only so those markets stay settleable
+     and voidable — settlement is engine-agnostic.
 
 **Settlement** (`internal/prediction/settlement.go`): admin/AutoSettler resolves
-a closed market → payouts computed (100¢ × winning contracts) → committed in one
+a closed market → payouts computed (100 Points × winning contracts) → committed in one
 transaction whose **first** statement is a status-guarded market transition, so a
 concurrent settle/void can never both commit (COR-01 fix). Payout credits use
 idempotency key `prediction_payout:<market>:<position>`; void refunds use
 `prediction_void:<market>:<position>`.
 
-**Ledger** (`internal/wallet/`): single-entry running-balance with an idempotency
+**Ledger** (`internal/wallet/`): Points balances (`wallet_balances.balance_points` /
+`bonus_balance_points`) — single-entry running-balance with an idempotency
 key (and amount/reason conflict detection) on every mutation, `SELECT … FOR
 UPDATE` on the balance row, `SERIALIZABLE` isolation on standalone mutations. A
 reconciler (`internal/prediction/reconciliation.go`) detects collateral drift.
@@ -94,11 +107,25 @@ reconciler (`internal/prediction/reconciliation.go`) detects collateral drift.
 
 In-process hub, one goroutine fans out to per-client buffered channels (non-blocking
 sends after the PERF-03 fix — a slow client is dropped + disconnected, never freezes
-the hub). **Per-instance only**: there is no cross-instance pub/sub, so running >1
-gateway replica breaks realtime fan-out (ARCH-01; the Redis backbone is P2-07).
-Channels: `market:<id>`, `portfolio:<userId>`, `trades:<marketId>`. Auth happens
-before the upgrade (cookie/header, never query string); per-channel authorization is
-fail-closed.
+the hub).
+
+**Cross-instance fan-out** (`internal/ws/backbone.go`, ARCH-01 / P2-07) is done.
+The hub always fans its own broadcasts out locally and *additionally* publishes
+them to a `Backbone`:
+
+- `LocalBackbone` (default, and what `WS_BACKBONE` unset selects) — publish is a
+  no-op, so behaviour is identical to the pre-backbone gateway.
+- `RedisBackbone` — selected by `WS_BACKBONE=redis` with a valid `REDIS_URL`
+  (`internal/http/handlers.go`). Broadcasts are PUBLISHed tagged with the
+  publisher's id and subscribers skip their own echoes, so a trade matched on one
+  replica reaches subscribers on another. Because local delivery never goes
+  through the backbone, a Redis outage degrades to local-only rather than
+  crashing; `/readyz` reports `ws_backbone: ok | degraded` (informational — a
+  degraded backbone is not a readiness failure).
+
+Channels: `market:<id>`, `trades:<marketId>`, `orderbook:<marketId>`,
+`portfolio:<userId>`, `loyalty:<userId>`. Auth happens before the upgrade
+(cookie/header, never query string); per-channel authorization is fail-closed.
 
 ## Compliance & custody posture
 
@@ -110,22 +137,38 @@ fail-closed.
   the shared secret (SEC-03 fix). Bind the gateway port to loopback so only the
   edge can reach it.
 - **KYC** is DB-backed with a fail-closed vendor seam (manual-review default).
-- **Custody:** the live `internal/alphacashier` rail is **custodial** (one
-  treasury address; deposits become an internal cents IOU; withdrawals are
-  human-broadcast off-app under two-person control). It is **default-off**. The
-  non-custodial stack (`contracts/`, `services/{relayer,bridge-watcher,cashier-api}`,
-  `packages/cashier-sdk`) is the design seed for the hybrid-CLOB target and is not
-  yet runnable — see the audit (`docs/audit/AUDIT_REPORT.md` §A2) and ADR-0003/0004.
+- **Custody: none.** The platform holds no customer funds. Balances are
+  non-redeemable Points. The whole legacy money-route tree — `/api/v1/payments/*`
+  (including the crypto deposit endpoints), `/v1/provider-callbacks/*` and
+  `/api/v1/cashier/alpha/*` — is unmounted by default and returns 404
+  (`internal/http/launch_boundary_test.go` pins this). Mounting it needs
+  `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED=true`, which `validateGatewayRuntimeConfig`
+  refuses when `ENVIRONMENT` is production or staging, as it refuses
+  `ALPHA_CASHIER_ENABLED=true` and any `CRYPTO_RPC_URL` / `CRYPTO_ASSET_CONTRACT` /
+  `CRYPTO_DEPOSIT_ADDRESS_SOURCE` value.
+- **Dormant cashier code** still sits in the tree — `internal/alphacashier`,
+  `internal/payments`, `internal/cashier`, plus the non-custodial seed
+  (`contracts/`, `services/{relayer,bridge-watcher,cashier-api}`,
+  `packages/cashier-sdk`). None of it is reachable at launch. Its design record
+  is archived under `docs/archive/cashier/`.
 
 ## Data store
 
 Single PostgreSQL 16, goose migrations under
-`go-platform/services/gateway/migrations/` (001–013 are legacy sportsbook tables,
-never written by prediction code; 014 is the prediction schema; 019 the exchange
-engine; 030 the alpha cashier; 032 the perf indexes). The `wallet_*` tables are
-created in code by the wallet service at boot. Redis backs auth sessions and the
-auth rate limiter only — **the gateway has no read cache** (the old "Redis wraps
-reads" claim was never true of the prediction gateway).
+`go-platform/services/gateway/migrations/` — see `migrations/README.md` for the
+per-file inventory rather than duplicating it here. Landmarks: 001–013 created the
+sportsbook schema and **033 dropped the dead ones** (`fixtures`, `selections`,
+`markets`, `bets`, `freebets`, `odds_boosts`, …; `punters`, the CMS and audit
+tables were deliberately kept); 014 is the prediction schema; 019 the exchange
+engine; 027 back-office RBAC; 037 the multitenancy foundation; 050 the points unit
+model. Head is 056.
+
+The `wallet_*` tables are created in code by the wallet service at boot, not by a
+migration.
+
+Redis backs auth sessions and the auth rate limiter, plus the opt-in WebSocket
+backbone above — **the gateway has no read cache** (the old "Redis wraps reads"
+claim was never true of the prediction gateway).
 
 ## References
 

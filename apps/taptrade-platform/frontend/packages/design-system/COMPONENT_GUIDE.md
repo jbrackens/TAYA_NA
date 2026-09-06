@@ -1,5 +1,18 @@
 # TapTrade UI Design System - Component Guide
 
+> **Status: sportsbook-era, unused.** No package in this workspace imports
+> `@taptrade-ui/design-system`; the player app is forbidden from doing so (it
+> uses styled-components and hangs webpack) and only carries a tsconfig path
+> alias for it. Several components below — `MatchCard`, `OddsButton`,
+> `ScoreDisplay` — are sports-betting UI with decimal odds and match scores,
+> which the prediction market has no use for. The colours and type scale here
+> are the old dark theme, not the current design system: `DESIGN.md` at the repo
+> root governs the player app.
+>
+> The components and tokens described below do still exist in `src/`, so this
+> guide is accurate about the package. It is just not guidance to follow for new
+> work.
+
 ## Quick Start
 
 ```tsx
