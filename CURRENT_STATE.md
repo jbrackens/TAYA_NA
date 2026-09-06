@@ -94,11 +94,16 @@ These are not unfinished work. They are boundaries the gateway enforces at boot
 - **`origin/feat/hula-na-cashier`** — 22 commits, untouched since 2026-05-25. Real-money
   cashier surfaces that the launch-safety gates classify as prohibited. It has no path
   to `main` under a points-only product; the decision it is waiting on is whether to
-  delete the branch.
-- **`origin/pam/p0-modernization`** — 345 commits ahead of `main`, last commit
-  2026-07-06 titled "final termination". A separate autonomous workstream that stopped.
-  Nothing on `main` depends on it; its local worktree and branch ref were removed on
-  2026-09-06, so the remote ref is the archive.
+  delete the branch. (The other two archive branches were resolved on 2026-09-06 — see the
+  licensability thread above and `docs/archive/2026-07-redesign-research/`.)
+- **Back-office licensability** — the `pam/p0-modernization` branch (345 commits, terminated
+  2026-07-06, never merged) was retired on 2026-09-06 to tag
+  `archive/pam-p0-modernization-2026-07-06`. It is unmergeable as code (pre-rebrand paths,
+  pre-points units, migration numbers colliding with main's), but it verified real gaps that
+  `main` still has. **The headline: staff MFA does not exist** — `services/auth` has no TOTP
+  code, and the `2fa/toggle` endpoint flips an in-memory boolean that login never checks. That
+  and seven other verified gaps are registered in `docs/licensability-gaps.md`; the design
+  record is in `docs/archive/2026-07-pam-modernization/`.
 - **`app/components/chat/ChatSidebar.tsx`** ships `MOCK_CHAT_MESSAGES` — fourteen
   hardcoded messages — behind `NEXT_PUBLIC_FEATURE_CHAT` (off). It is a stub sitting in
   production code, not a working feature.

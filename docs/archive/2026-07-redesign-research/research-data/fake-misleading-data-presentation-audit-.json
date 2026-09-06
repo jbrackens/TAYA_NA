@@ -1,0 +1,90 @@
+{
+ "findings": [
+  {
+   "claim": "The '+N\u00a2 (+X.X%) Today' price-change pill on the discovery hero is fabricated from a hash of the market ticker, not from any price data. deterministicDelta (app/components/prediction/utils/spark.ts:28-37) computes delta = (seed % 11) - 4 from the ticker string; DiscoveryHero.tsx:75 renders it at lines 148-176 next to the label 'TODAY', and it also drives the chart's green/red color. It runs on ALL deploys (not gated by NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS) and carries no on-screen demo/synthetic label. The same fake number appears on every FeaturedCarousel slide.",
+   "kind": "evidence",
+   "source": "/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app/app/components/prediction/utils/spark.ts (lines 28-37) and app/components/prediction/DiscoveryHero.tsx (lines 75, 148-176)",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Remove or replace with a real 24h delta computed from GET /markets/:id/prices (useHeroPriceHistory already fetches the series \u2014 derive delta = last - first from it). While no real series exists, render a neutral dash, never a signed percentage. A fabricated 'Today' change on a trading product is the single most damaging honesty defect found."
+  },
+  {
+   "claim": "The 'Top Movers' rail is entirely synthetic: every row's 24h % delta comes from deterministicDelta (ticker hash) and every sparkline from sparklinePath, a seeded random walk whose up/down bias is set by the fake delta (TrendingSidebar.tsx:109,133; spark.ts:151-169). The header shows a pulsing live dot labeled '24H'. The component's own comment admits 'Sparklines and 24h delta are deterministic from the ticker (placeholder until backend exposes price history)' \u2014 but nothing on screen says so. Markets are ranked as 'movers' while their displayed movement is invented.",
+   "kind": "evidence",
+   "source": "/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app/app/components/prediction/TrendingSidebar.tsx (lines 12-13, 98-101, 109, 133) and app/components/prediction/utils/spark.ts (lines 151-169)",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Either wire rows to the real price-history endpoint (batch endpoint or accept N small fetches for 6 rows) or strip the fabricated delta pill + sparkline and rank by real volume with an honest 'by volume' label. Remove the pulsing '24H' live dot until the data is real."
+  },
+  {
+   "claim": "The hero chart silently falls back to a deterministic synthetic walk on every deploy \u2014 not just demo. heroChartPath (spark.ts:106-148) draws a 24-point seeded walk whenever useHeroPriceHistory returns null, which it does while loading, on fetch failure, AND when the market has no price movement (useHeroPriceHistory.ts:38-40). This fallback is NOT gated by NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS. The fabricated curve renders full-bleed under a pulsing 'LIVE' badge (DiscoveryHero.tsx:113-121, 272-328) with no visible label, so a quiet or failing market permanently shows an invented price history on the home page.",
+   "kind": "evidence",
+   "source": "/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app/app/components/prediction/utils/spark.ts (lines 106-148), app/components/prediction/utils/useHeroPriceHistory.ts (lines 38-40), app/components/prediction/DiscoveryHero.tsx (lines 81-95)",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Gate the hero fallback behind the same DEMO_SYNTHETIC_CHARTS flag MarketChart uses (spark.ts should accept a syntheticFallbackEnabled arg). Honest states: skeleton while loading, flat line at current price for no-movement, hide the plot on error. At minimum overlay a visible 'Illustrative' caption whenever the walk is drawn."
+  },
+  {
+   "claim": "The market-detail chart (MarketChart.tsx + market-chart-state.ts) is honest by default \u2014 loading skeleton, error+retry panel, flat line for no-movement \u2014 but when NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS=true the synthetic walk returns state 'ready' (market-chart-state.ts:84-94) and is pixel-identical to a real chart: no badge, watermark, or caption distinguishes it. The public demo is built with this flag ON (.github/workflows/deploy-demo.yml:351 passes --build-arg NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS=true), so investors/users on the live demo see fabricated price movement with zero disclosure. Each range tab (1H/6H/1D/1W/ALL) even reseeds a different fake walk, simulating range-specific history that doesn't exist; 6H additionally silently serves 1D data (MarketChart.tsx:40-49).",
+   "kind": "evidence",
+   "source": "/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app/app/components/prediction/market-chart-state.ts (lines 84-94), app/components/prediction/MarketChart.tsx (lines 40-49, 147), /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/.github/workflows/deploy-demo.yml (line 351)",
+   "sourceDate": "2026-07-12",
+   "designImplication": "When the flag is on, render a persistent visible 'Demo data \u2014 simulated chart' badge in the chart corner (resolveChartSeries can return a `synthetic: true` bit for the component to render). Longer term, drop the flag from deploy-demo.yml once seeded price history (demo-data Phase 2 trades) feeds the real endpoint."
+  },
+  {
+   "claim": "MarketCard's sentiment line converts price into a claim about people: en/prediction.json:43-47 renders 'Heavy Backing \u2022 {{percentage}}% say Yes' / 'Strong Doubt \u2022 {{percentage}}% say No' from calculateMarketSentiment(yesPricePoints) (marketSentiment.ts:20-53, MarketCard.tsx:100,177-189). A 75\u00a2 price becomes '75% say Yes' \u2014 implying a count of respondents that doesn't exist. Price is a probability estimate, not a population share; the landing page's own copy ('Market says 61% Yes') is the honest formulation.",
+   "kind": "evidence",
+   "source": "/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app/public/static/locales/en/prediction.json (lines 43-47), app/components/prediction/marketSentiment.ts, app/components/prediction/MarketCard.tsx (lines 100, 177-189)",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Reword the five MARKET_SENTIMENT_* strings (all 7 locales) to price framing: 'Market prices Yes at 75%' or 'Yes leads at 75\u00a2'. No code change needed beyond locale files."
+  },
+  {
+   "claim": "DiscoveryHero labels lifetime cumulative volume as '24h volume'. The stat at DiscoveryHero.tsx:242-250 renders market.volumePoints under t('24H_VOLUME') ('24h volume', en/prediction.json:38), but volume_points is a monotonically incremented per-trade counter on the market row (gateway amm.go:185, exchange.go:516,633) with no time-window query anywhere. A market with all its volume from weeks ago displays that total as yesterday's activity \u2014 systematically inflating apparent liquidity/recency.",
+   "kind": "evidence",
+   "source": "/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app/app/components/prediction/DiscoveryHero.tsx (lines 242-250), public/static/locales/en/prediction.json (line 38), go-platform/services/gateway/internal/prediction/amm.go (line 185)",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Relabel to 'Total volume' (matches MarketCard's plain 'Volume', which is correct), or add a real 24h-windowed volume field to the API and keep the label. Cheapest honest fix is the label."
+  },
+  {
+   "claim": "The logged-out landing page presents four invented markets as live product data: EXAMPLE_MARKETS (app/page.tsx:12-37) hardcodes yesPercent 61/62/57/54 with copy 'Market says 61% Yes' etc. (page-home.json:12-21), rendered under the section eyebrow 'Live markets' and heading 'Markets Filipinos are watching' with working YES/NO toggle buttons that recompute the bar (page.tsx:191-271, 641-680). Nothing on screen marks them as examples. The hero adds 'Live prediction markets \u00b7 Philippines' plus pulsing 'live' quote chips 'YES 62\u00a2 / NO 38\u00a2' on a hand-drawn decorative chart (page.tsx:579-601 \u2014 the code comment calls them 'live YES/NO quotes').",
+   "kind": "evidence",
+   "source": "/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app/app/page.tsx (lines 12-37, 191-271, 579-601, 641-680) and public/static/locales/en/page-home.json (lines 12-24)",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Best fix: fetch 4 real markets from the public /api/v1/discovery endpoint (it requires no auth) so the landing page shows true prices. Otherwise add a visible 'Example markets \u2014 illustrative' caption to the card stack, change the 'Live markets' eyebrow to 'How markets look', and drop the pulsing dots from the decorative hero quotes."
+  },
+  {
+   "claim": "TradeTicketPreview on the landing page (app/page.tsx:295-417) is a hardcoded miniature ticket \u2014 62\u00a2/38\u00a2 prices, 500 pts stake, '800 pts if correct', pulsing 'Live' dot. It is disclosed as a mockup only to screen readers (role='img', aria-label 'TapTrade player app mobile mockup'); sighted users see no such label. Lower severity because it visually reads as a device mockup, but the 'Live' badge on invented numbers undercuts that.",
+   "kind": "evidence",
+   "source": "/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app/app/page.tsx (lines 290-417) and public/static/locales/en/page-home.json (line 37-38)",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Add a small visible caption under the mockup ('Illustrative preview') and remove the animated 'Live' pulse from static example numbers."
+  },
+  {
+   "claim": "Community and trading surfaces are genuinely wired: MarketDiscussion.tsx fetches/creates comments via market-social-client (no seeded comments in the frontend), RecentTrades.tsx renders real Trade[] from the API/WebSocket, OrderBook and the market-detail liquidity card use real API fields (liquidityPoints, ammLiquidityParam), and MarketHead/CountdownTimer countdowns derive from real closeAt timestamps. No fake testimonials, user counts, licensing badges, or urgency mechanics exist anywhere in app/ \u2014 the footer's 'Non-redeemable point prediction markets' line (PredictFooter.tsx:54) and the About/Terms/Register pages disclose the play-points model plainly.",
+   "kind": "evidence",
+   "source": "/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app/app/components/prediction/MarketDiscussion.tsx, RecentTrades.tsx, PredictFooter.tsx (line 54), app/about/page.tsx",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Keep these patterns as the honesty baseline for the redesign. One caveat: on the demo deploy the trades tape and leaderboards display backend-seeded demo activity (make demo-data Phase 2/5, trade_kind='demo_history') indistinguishably from organic activity \u2014 a demo-environment banner would cover this without touching components."
+  },
+  {
+   "claim": "Balance displays disagree on units, risking a 100x-misstated balance: WalletBreakdown.tsx:93-95 divides by 100 ('formatPointsFromPoints(cents)') while CurrentBalance.tsx:100-102 and TopBar render the same class of point values with no division \u2014 yet market-display.ts:8-9 declares the 2026-07-07 unit model as '1 Point = 1 cent of play value; API integers ARE whole Points. No /100 conversion.' One of these components shows a wrong number.",
+   "kind": "inference",
+   "source": "/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app/app/components/WalletBreakdown.tsx (lines 93-95) vs app/components/CurrentBalance.tsx (lines 100-102) and app/components/prediction/market-display.ts (lines 8-9)",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Audit the bonus-client WalletBreakdown payload units against the wallet-client Balance units and standardize on the points-native model with one shared formatter; a user seeing 50.00 pts in one widget and 5,000 pts in another destroys trust faster than any styling issue."
+  },
+  {
+   "claim": "CountdownTimer.tsx (app/components/CountdownTimer.tsx, 145 lines) is imported nowhere in app/ or pages/ \u2014 it is dead code, and its styling (slate-on-dark) predates the P8/P9 light design system. No countdown-urgency dark patterns are currently live; all shipped countdowns (MarketHead 'closes in', DiscoveryHero 'Closes') state real market close times.",
+   "kind": "evidence",
+   "source": "/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app/app/components/CountdownTimer.tsx",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Delete the unused component during the redesign so it can't be casually reattached as a sales-pressure widget later."
+  },
+  {
+   "claim": "The demo flag's blast radius is asymmetric by design intent but not by implementation: features.ts:96-103 documents DEMO_SYNTHETIC_CHARTS as 'demo boxes ONLY... real deploys show honest loading/error/empty chart states', yet the two discovery-surface fabrications (hero walk fallback, Top Movers sparklines/deltas) ignore the flag entirely, so the documented guarantee only holds for the market-detail chart.",
+   "kind": "inference",
+   "source": "/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app/app/lib/features.ts (lines 96-103) vs app/components/prediction/utils/spark.ts",
+   "sourceDate": "2026-07-12",
+   "designImplication": "Make the flag the single chokepoint for ALL synthetic rendering: route spark.ts fallbacks through it, and have every synthetic path emit a visible on-screen 'Demo' marker so a mis-set env var can never silently fabricate data in production."
+  }
+ ],
+ "summary": "The player app has a split honesty profile. The market-detail chart pipeline (MarketChart.tsx + market-chart-state.ts) was deliberately reworked to be honest-by-default \u2014 real /prices data, skeleton/error/flat-line states, synthetic walks only behind NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS \u2014 and the social/trading surfaces (discussion, trade tape, order book, liquidity card, balances) are genuinely API-wired with no invented users, testimonials, compliance badges, or countdown-urgency mechanics. The play-money model is disclosed visibly (\"Non-redeemable point prediction markets\" in the footer; About/Terms/Register repeat it).\n\nBut the discovery surfaces still fabricate market movement on every deploy, with no flag gate and no on-screen labeling. deterministicDelta hashes the ticker string into a fake \"+N\u00a2 (+X%) Today\" change that renders in the hero (next to a pulsing LIVE badge) and in every \"Top Movers\" row (under a pulsing \"24H\" dot); Top Movers sparklines are seeded random walks whose direction is set by that same fake delta; and the hero chart silently substitutes a synthetic walk whenever real history is loading, failed, or flat. Compounding this, the hero labels lifetime cumulative volume as \"24h volume\", MarketCard converts price into \"'X% say Yes\" population claims, and the logged-out landing page presents four hardcoded example markets under a \"Live markets\" eyebrow with interactive YES/NO buttons and pulsing \"live\" quote chips. Meanwhile the flag-gated market-detail synthetic mode IS enabled on the public demo build (deploy-demo.yml passes NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS=true) and renders pixel-identically to real data \u2014 no badge distinguishes it.\n\nPriority fixes: (1) kill or gate the ungated fabrications in spark.ts \u2014 derive the hero delta from the already-fetched real series, replace Top Movers deltas/sparklines with real data or volume-ranked honest rows; (2) add a visible \"Demo data \u2014 simulated\" badge whenever any synthetic path renders, including the demo deploy's market chart; (3) relabel \"24h volume\" \u2192 \"Total volume\" and reword the MARKET_SENTIMENT_* strings to price framing; (4) swap the landing page's hardcoded markets for the public discovery API or caption them as illustrative; (5) reconcile the /100 unit divergence between WalletBreakdown and CurrentBalance/TopBar; (6) delete the unused CountdownTimer component. These are mostly label-and-wiring changes \u2014 the honest data paths already exist and the redesign should route everything through them.",
+ "topic": "Fake/misleading data presentation audit \u2014 TapTrade player app (apps/taptrade-platform/frontend/packages/app)"
+}

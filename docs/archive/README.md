@@ -22,6 +22,8 @@ to packages never built — are deleted outright rather than archived.
 |---|---|
 | `2026-07-rebrand/` | The TapTrade rebrand ledger (`CURRENT_STATE`, `WORKLOG`, `RENAME_MAP`). The rebrand shipped and merged in July 2026. |
 | `2026-07-launch-prep/` | Launch-preparation records superseded by the points-only launch, including the Parity RC v1 spec and its loop log. |
+| `2026-07-pam-modernization/` | The back-office licensability workstream (staff MFA, KYC review, AML, maker-checker, surveillance). Terminated 2026-07-06, never merged; reference implementation at tag `archive/pam-p0-modernization-2026-07-06`. What of it main still lacks is registered in `docs/licensability-gaps.md`. |
+| `2026-07-redesign-research/` | Competitor, regulatory, dark-pattern and a11y research gathered for the rejected July 2026 redesign. The design is dead (tag `archive/p10-signal-ink-2026-07-12`); the research is not. |
 | `2026-07-parity-loop/` | The parity and prototype-audit loop logs. The loop stopped 2026-07-01; the trees it audited were deleted 2026-09-06. |
 | `cashier/` | The custodial and non-custodial cashier and crypto-rail workstream, abandoned when the product moved to non-redeemable points. |
 | `chat/` | Rocket.Chat launch records. The demo compose still runs a Rocket.Chat stack, but the player-side integration shipped only as a flag-gated stub (`ChatSidebar` with mock messages), so the runbook and evidence here never went live. |
