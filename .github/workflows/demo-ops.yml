@@ -21,6 +21,10 @@ on:
         description: "Read-only disk usage breakdown (df, docker system df, biggest dirs/files)"
         type: boolean
         default: false
+      disk_cleanup:
+        description: "WRITE ACTION: truncate container json logs >200M (docker logs history is lost)"
+        type: boolean
+        default: false
 
 concurrency:
   group: demo-ops
@@ -117,6 +121,37 @@ jobs:
             echo "── /var/log:"; du -xh -d1 /var/log 2>/dev/null | sort -rh | head -8
             echo "── /tmp + /root:"; du -xh -d1 /tmp /root 2>/dev/null | sort -rh | head -10
             echo "── files over 300M:"; find / -xdev -type f -size +300M -exec ls -lh {} \; 2>/dev/null | awk "{print \$5, \$9}" | sort -rh | head -15
+          '
+
+  disk-cleanup:
+    if: ${{ inputs.disk_cleanup }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          ssh-keyscan -H "$BOX" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Truncate oversized container json logs (WRITE)
+        # 2026-09-06: ~23GB of unrotated json-file logs filled the box to 97%
+        # and tripped the deploy disk guard. Truncating a live json-log is
+        # safe (docker keeps writing to the same fd); `docker logs` history is
+        # lost, acceptable on the demo box. The permanent fix is the logging
+        # cap in docker-compose.demo.yml — this job recovers a box whose
+        # containers predate that cap.
+        run: |
+          ssh -i ~/.ssh/deploy -o StrictHostKeyChecking=accept-new root@"$BOX" '
+            echo "── before:"; df -h /
+            for f in $(find /var/lib/docker/containers -name "*-json.log" -size +200M); do
+              cid=$(basename "$f" -json.log)
+              name=$(docker ps -a --no-trunc --format "{{.ID}} {{.Names}}" | grep "$cid" | awk "{print \$2}")
+              echo "truncating ${cid:0:12} (${name:-unknown}) $(du -sh "$f" | cut -f1)"
+              truncate -s 0 "$f"
+            done
+            echo "── after:"; df -h /
           '
 
   restart-gateway:

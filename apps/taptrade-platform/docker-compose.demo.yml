@@ -36,16 +36,31 @@
 # the VM (29.3.1 -> 29.4.3) and the whole demo stayed down with no recovery.
 # For an unattended always-on demo ("we don't know when they'll test") a host
 # or Docker restart MUST self-heal — this is the fix.
+# Bound container stdout logs (added 2026-09-06). The box filled to 97% —
+# ~23GB of unrotated json-file logs (the top two offenders held 14G + 8.7G)
+# — and tripped the deploy's disk-space guard. json-file has NO default
+# rotation, so every service gets the same cap. Applies per container on its
+# next recreate; demo-ops.yml's disk_cleanup job truncates logs on a box
+# that predates the cap.
+x-default-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "3"
+
 services:
   postgres:
     restart: unless-stopped
+    logging: *default-logging
   redis:
     restart: unless-stopped
+    logging: *default-logging
 
   rocketchat-mongo:
     image: mongo:8.0
     container_name: predict_rocketchat_mongo
     restart: unless-stopped
+    logging: *default-logging
     command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     volumes:
       - rocketchat_mongo_data:/data/db
@@ -60,6 +75,7 @@ services:
     image: mongo:8.0
     container_name: predict_rocketchat_mongo_init
     restart: "no"
+    logging: *default-logging
     depends_on:
       rocketchat-mongo:
         condition: service_healthy
@@ -74,6 +90,7 @@ services:
     image: registry.rocket.chat/rocketchat/rocket.chat:8.4.2
     container_name: predict_rocketchat
     restart: unless-stopped
+    logging: *default-logging
     depends_on:
       rocketchat-mongo-init:
         condition: service_completed_successfully
@@ -104,6 +121,7 @@ services:
   auth:
     image: taptrade-auth:latest
     restart: unless-stopped
+    logging: *default-logging
     environment:
       AUTH_COOKIE_SECURE: "true"                 # Caddy terminates TLS; cookie is HTTPS-only
       JWT_SECRET: "${JWT_SECRET:?export a strong JWT_SECRET before up}"
@@ -135,6 +153,7 @@ services:
   gateway:
     image: taptrade-gateway:latest
     restart: unless-stopped
+    logging: *default-logging
     environment:
       WALLET_DB_DRIVER: "postgres"
       WALLET_DB_MAX_OPEN_CONNS: "20"             # local PG max_conns=100; only real knob
@@ -317,6 +336,7 @@ services:
     image: predict-frontend:app-slim
     container_name: predict_player
     restart: unless-stopped
+    logging: *default-logging
     environment:
       NEXT_PUBLIC_API_URL: ""                    # client same-origin; Caddy owns /api
     volumes:
@@ -332,6 +352,7 @@ services:
     image: predict-frontend:office-slim
     container_name: predict_office
     restart: unless-stopped
+    logging: *default-logging
     environment:
       NEXT_PUBLIC_API_URL: ""
       # The App Router login proxy at app/api/auth/login/route.ts does a
@@ -375,6 +396,7 @@ services:
     image: caddy:2
     container_name: predict_caddy
     restart: unless-stopped
+    logging: *default-logging
     ports:
       - "80:80"
       - "443:443"
@@ -400,6 +422,7 @@ services:
     image: postgres:16-alpine
     container_name: predict_db_backup
     restart: unless-stopped
+    logging: *default-logging
     depends_on:
       postgres:
         condition: service_healthy
