@@ -1,5 +1,10 @@
 # TapTrade Prototype Audit — loop log
 
+> **ARCHIVED 2026-09-06.** Historical record only — this does not describe the current system.
+> The audit loop that produced it ended 2026-07-01; the trees it audited
+> (`phoenix-backend/`, `phoenix-frontend-brand-viegg/`, `revival/`) were deleted 2026-09-06.
+> See `CLAUDE.md` for current architecture.
+
 > **CLOSED RECORD — the loop that wrote this stopped on 2026-07-01 at Loop 520.** It has not
 > been appended to since; the only later commits are the 2026-07-06 rebrand sweep renaming
 > strings inside it. Read it as history, not as a live plan.

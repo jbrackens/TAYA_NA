@@ -27,7 +27,10 @@ than archived.
 | Directory | What it holds |
 |---|---|
 | `2026-07-rebrand/` | The TapTrade rebrand ledger. The rebrand shipped and merged in July 2026. |
+| `2026-07-launch-prep/` | Launch-preparation records superseded by the points-only launch. |
+| `2026-07-parity-loop/` | The parity and prototype-audit loop logs. The loop stopped 2026-07-01; the trees it audited were deleted 2026-09-06. |
 | `cashier/` | The custodial/non-custodial cashier and crypto-rail workstream, abandoned when the product moved to non-redeemable points. |
 | `chat/` | A Rocket.Chat integration that was specified but never built. |
 | `demo-deployment/` | Manual demo-deploy plans from before deployment was automated in GitHub Actions. |
 | `sportsbook-era/` | Planning documents inherited from the Taya Na Sportsbook fork that assume a sports-betting domain. |
+| `phoenix-original/` | The March 2026 founding Phoenix architecture documents, predating the prediction-market pivot. One is an AI build-plan for a sportsbook — see that directory's README. |
