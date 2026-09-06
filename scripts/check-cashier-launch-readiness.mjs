@@ -3,7 +3,9 @@ import assert from "node:assert/strict";
 
 const matrix = JSON.parse(
   readFileSync(
-    new URL("../docs/cashier/LAUNCH_READINESS_MATRIX.json", import.meta.url),
+    // Archived to docs/archive/cashier on 2026-09-06; the workstream is dormant,
+    // and this guard keeps it provably blocked.
+    new URL("../docs/archive/cashier/LAUNCH_READINESS_MATRIX.json", import.meta.url),
     "utf8",
   ),
 );

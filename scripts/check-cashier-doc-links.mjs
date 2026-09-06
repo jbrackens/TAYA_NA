@@ -3,7 +3,10 @@ import { dirname, resolve } from "node:path";
 import assert from "node:assert/strict";
 
 const root = resolve(new URL("..", import.meta.url).pathname);
-const docsRoot = resolve(root, "docs/cashier");
+// The cashier workstream is dormant: its docs were archived to docs/archive/cashier
+// on 2026-09-06 when the product settled on non-redeemable points. The guard still
+// runs — the docs must stay internally consistent even while the workstream sleeps.
+const docsRoot = resolve(root, "docs/archive/cashier");
 
 function listMarkdown(dir) {
   const files = [];
